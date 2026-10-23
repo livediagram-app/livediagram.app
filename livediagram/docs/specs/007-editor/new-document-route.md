@@ -528,9 +528,9 @@ place. The editor reads the id from `window.location.pathname` on mount, so
 it cannot tell the difference from a direct visit.
 
 - **Why:** a hard navigation paid for a second full page load: the editor's
-  document, a second Clerk settle, a second identity round trip, and a
+  document, a second sign-in settle, a second identity round trip, and a
   second, visually different loading screen after "Creating…". The in-place
-  swap keeps the one Clerk session, the one document, and one continuous
+  swap keeps the one signed-in session, the one document, and one continuous
   opening screen.
 - **The editor code is fetched ahead.** `/new` starts loading the editor's
   chunk as soon as it mounts (a bypass needs it within a second; a wizard
@@ -583,8 +583,8 @@ document"**; everything else stays put.
 - **Reduced motion:** the drawing sits finished, the cursor, pulses, glows
   and bar are still.
 - `DiagramBuildAnimation` stays a bare illustration (no surface of its own),
-  so the sso-callback and OAuth consent cards keep composing it inside their
-  own card.
+  so a card can compose it inside its own (the Clerk-era sso-callback card
+  did).
 
 Every create from `/new` honours the URL placement context (the `?folder` /
 `?team` pre-seed): the document files there, not silently at the personal root.

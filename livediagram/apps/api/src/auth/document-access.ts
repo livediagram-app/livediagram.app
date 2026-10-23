@@ -37,8 +37,8 @@ import {
 } from './share-access';
 
 // Joined-member check for team documents (docs/specs/013-workspace/team-shared-documents.md). `caller` MUST be the
-// VERIFIED Clerk user id (never the unsigned X-Owner-Id header): a team
-// owner/member id is a Clerk id deliberately shared among teammates, so
+// VERIFIED account id (never the unsigned X-Owner-Id header): a team
+// owner/member id is an account id deliberately shared among teammates, so
 // trusting an attacker-supplied id here would let a removed member (or
 // anyone who learned a member's id) forge access. Guests (callerId null)
 // can never be members.
@@ -66,11 +66,11 @@ export type DocumentGrant = {
   community: boolean;
 };
 
-// `owner` is the hybrid identity (Clerk sub OR unsigned X-Owner-Id guest
-// header); `callerId` is the VERIFIED Clerk user id (null for guests).
+// `owner` is the hybrid identity (account id OR unsigned X-Owner-Id guest
+// header); `callerId` is the VERIFIED account id (null for guests).
 // For a personal document the hybrid `owner` path is safe (a guest id is
 // an unguessable UUID). For a TEAM document the identity must be verified,
-// because owner/member ids are Clerk ids shared among the team, so the
+// because owner/member ids are account ids shared among the team, so the
 // header path is disabled there and only `callerId` + share codes count.
 //
 // The doors that can narrow what they return to one tab (the document

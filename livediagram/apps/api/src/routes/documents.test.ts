@@ -105,13 +105,13 @@ vi.mock('../auth/share-access', () => ({ sharePasswordOk }));
 import type { RouteContext } from './context';
 import { handleDocuments } from './documents';
 
-// Guest-shaped context ('owner-1') with optional Clerk identity + headers.
+// Guest-shaped context ('owner-1') with optional account identity + headers.
 const makeCtx = (
   method: string,
   path: string,
   opts: {
     owner?: string | null;
-    clerkUserId?: string | null;
+    accountUserId?: string | null;
     body?: unknown;
     headers?: Record<string, string>;
   } = {},
@@ -119,7 +119,7 @@ const makeCtx = (
   makeTestRouteContext(method, path, {
     body: opts.body,
     headers: opts.headers,
-    clerkUserId: opts.clerkUserId,
+    accountUserId: opts.accountUserId,
     owner: opts.owner === undefined ? 'owner-1' : opts.owner,
   });
 
@@ -379,7 +379,7 @@ describe('GET /documents/:id owner-id redaction (docs/specs/014-identity/auth-an
     db.getDocument.mockResolvedValue(fakeDocument('user_owner', 'team-1'));
     canReadDocument.mockResolvedValue(true);
     const res = await handleDocuments(
-      makeCtx('GET', '/api/documents/d1', { owner: 'user_member', clerkUserId: 'user_member' }),
+      makeCtx('GET', '/api/documents/d1', { owner: 'user_member', accountUserId: 'user_member' }),
     );
     const { document: liveDoc } = (await res.json()) as { document: DocumentDTO };
     // No regression for them: a teammate already computed isOwner=false from
@@ -424,7 +424,7 @@ describe('handleDocuments folder assignment (PUT /documents/:id/folder)', () => 
     const res = await handleDocuments(
       makeCtx('PUT', '/api/documents/d1/folder', {
         owner: 'member-1',
-        clerkUserId: 'member-1',
+        accountUserId: 'member-1',
         body: { folderId: 'f1', teamId: null },
       }),
     );
@@ -438,7 +438,7 @@ describe('handleDocuments folder assignment (PUT /documents/:id/folder)', () => 
     const res = await handleDocuments(
       makeCtx('PUT', '/api/documents/d1/folder', {
         owner: 'stranger',
-        clerkUserId: 'stranger',
+        accountUserId: 'stranger',
         body: { folderId: null, teamId: null },
       }),
     );

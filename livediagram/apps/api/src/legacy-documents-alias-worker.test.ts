@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // The deprecated /api/diagrams alias through the real worker entry point
 // (docs/specs/015-api/public-api-and-tokens.md, "Deprecated diagram routes").
-vi.mock('./auth/clerk', () => ({ getClerkIdentity: async () => null }));
+vi.mock('./auth/accounts', () => ({ getAccountIdentity: async () => null }));
 const { resolveApiTokenMock } = vi.hoisted(() => ({ resolveApiTokenMock: vi.fn() }));
 vi.mock('./db', () => ({
   resolveApiToken: resolveApiTokenMock,

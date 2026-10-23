@@ -126,7 +126,7 @@ type) and on the worker (authoritative).
 ## The Community app
 
 `apps/community` is a static export (`basePath: '/community'`) like Help and Telemetry. It talks to the api at
-`/api/community/*` from the browser. Browsing needs no sign-in: the app loads Clerk only for My Shares (below). Pages:
+`/api/community/*` from the browser. Browsing needs no sign-in: the app asks for the session only for My Shares (below). Pages:
 
 ### Gallery (`/community/`)
 
@@ -306,8 +306,8 @@ A signed-in author can narrow the gallery to their own posts, to review them and
 - If sign-in has not loaded after 10 seconds (a blocked script, a network failure), it says **We couldn't load the
   Community.** with **Try Again**, which reloads the page. A build without sign-in given `is:mine` says **My Shares
   needs an account.**
-- The rest of the Community needs no identity, so the Community app loads Clerk only once My Shares is on, and a
-  build without a Clerk key does not offer it. The api answers `GET /api/community/mine` (Clerk session
+- The rest of the Community needs no identity, so the Community app asks for the editor's session only once My Shares is
+  on, and a build without sign-in does not offer it. The api answers `GET /api/community/mine` (signed-in session
   required, never cached); the public list ignores `is:mine`.
 - Turning it on is tracked as `Community·Selected·Mine`.
 
@@ -396,7 +396,7 @@ the Community off, and a self-host that wants one runs the service (`liveworkspa
 `COMMUNITY_URL` and `NEXT_PUBLIC_COMMUNITY_API` at it. The snapshot cache renders images, the app is static
 behind a small worker script that binds to the api for search-engine metadata and the sitemap (an optional binding: left
 out, the pages are served exactly as built). A self-host can leave it as is; nothing is published until someone publishes. Publishing and My Shares need sign-in, so
-a build without a Clerk key offers neither; the Community app reads the same `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` as
+a build without sign-in offers neither; the Community app reads the same `NEXT_PUBLIC_SIGN_IN_ENABLED` as
 the editor.
 
 ## Out of scope

@@ -124,18 +124,18 @@ Two deliberate non-changes:
 
 `NEXT_PUBLIC_*` values are baked into the static export by `next build`, so **staging is
 its own build** — the two workflows never share an artifact. Staging's build differs
-from production's in exactly two values:
+from production's in exactly one value:
 
 | Variable                            | Production                                        | Staging                               |
 | ----------------------------------- | ------------------------------------------------- | ------------------------------------- |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | `pk_live_*` (production tenant)                   | `pk_test_*` (test tenant)             |
 | `NEXT_PUBLIC_MCP_ORIGIN`            | empty (blank falls back to `mcp.livediagram.app`) | `https://mcp-staging.livediagram.app` |
 
 Everything else matches, on purpose: `NEXT_PUBLIC_API_BASE` stays unset so staging
 resolves `/api` same-origin through its own router, and
 `NEXT_PUBLIC_TELEMETRY_ENABLED` (from the hosted profile, [Deployment](deployment.md)
-"Hosted profile") / `NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED` are `true` in both so the staging
-build exercises the same code as production's.
+"Hosted profile") / `NEXT_PUBLIC_SIGN_IN_ENABLED` (on when the environment's
+`ACCOUNTS_CLIENT_ID` is set) are `true` in both so the staging build exercises the same
+code as production's.
 
 ## Integrations
 
@@ -147,7 +147,7 @@ first deploy it returns `{"aiEnabled":false,"emailEnabled":false}` on staging ag
 
 | Integration        | Staging setup                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Clerk** — ON     | A separate **development tenant** (`ethical-crane-19.clerk.accounts.dev`), `pk_test_*` key, its own JWKS URL. Staging sign-in cannot touch a production user. Needs **no origin configuration**: Clerk dev instances reflect any `Origin` back, which is why localhost works unconfigured. Isolation here comes from being a separate tenant, not from an allow-list. Pointing staging at a Clerk _production_ instance would change that — those do lock origins down, and `staging.livediagram.app` would need adding under Domains. |
+| **Sign-in** — ON   | Staging is its **own OAuth client** of the liveworkspace accounts Worker (`ACCOUNTS_CLIENT_ID_STAGING` / `ACCOUNTS_CLIENT_SECRET_STAGING`) with its **own resource** (`API_RESOURCE_STAGING`), so its access tokens carry an audience production's api refuses: a staging session cannot reach production data. The client's registered redirect URI is `https://staging.livediagram.app/api/auth/callback`. |
 | **Telemetry** — ON | Events land in staging's own D1, so the **public** `/telemetry` dashboard on production is unaffected; staging's dashboard shows staging's own traffic, which is how you verify a new event actually lands.                                                                                                                                                                                                                                                                                                                            |
 | **Resend** — OFF   | Wired but keyless. `APP_BASE_URL` and `RESEND_FROM` are set, so setting `RESEND_API_KEY --env staging` turns it on and every link points back at staging. Left unset on purpose: staging runs the same daily lifecycle cron as production, from the same verified domain, so switching it on mails **real people** (see the warning below). Turn it on for a specific test, then take the key off again.                                                                                                                               |
 | **AI models** — ON | Keyed by hand, as production is: `wrangler secret put OPENAI_API_KEY --env staging` and/or `GOOGLE_AI_STUDIO_API_KEY`; one key serves both AI features, two split them ([AI Assistance](../007-editor/ai-assistance.md)). `AI_ALLOWED_ORIGINS` restricts the endpoint to the staging origin. It spends real money per request; `GET /api/capabilities` reports whether it is on.                                                                                                                                                       |
@@ -163,12 +163,14 @@ first deploy it returns `{"aiEnabled":false,"emailEnabled":false}` on staging ag
 ## Secrets
 
 Production's secrets are untouched. Staging adds a `_STAGING`-suffixed twin for each
-value the deploy workflow syncs, plus the Clerk publishable key:
+value the deploy workflow syncs:
 
 | GitHub secret                               | Synced to                       | Notes                                                                                                                                                                                                              |
 | ------------------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_STAGING` | build step                      | `pk_test_*` from the Clerk test tenant.                                                                                                                                                                            |
-| `CLERK_JWKS_URL_STAGING`                    | staging api                     | Test tenant's JWKS URL.                                                                                                                                                                                            |
+| `ACCOUNTS_URL_STAGING` | staging api | The accounts Worker staging signs in through. |
+| `API_RESOURCE_STAGING` | staging api | Staging's own resource (the access-token audience). Never production's. |
+| `ACCOUNTS_CLIENT_ID_STAGING` | staging api, build step | Staging's own OAuth client; set, it also turns sign-in on in the staging build. |
+| `ACCOUNTS_CLIENT_SECRET_STAGING` | staging api | That client's secret. |
 | `GUEST_ID_HMAC_SECRET_STAGING`              | staging api                     | Own value — `openssl rand -hex 32`. Never production's.                                                                                                                                                            |
 | `TELEMETRY_KEY_STAGING`                     | staging api **and** staging mcp | livediagram's key on the staging telemetry service; same value on both and on the service, or server-side counts silently go missing ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)). |
 
@@ -253,9 +255,10 @@ automated from the workflow — same as production, [Deployment](deployment.md))
 Only those two workers get hostnames. The other six are reached exclusively over the
 router's service bindings and never touch DNS, exactly as in production.
 
-**Clerk needs nothing**, contrary to what this spec first said. A development instance
-is origin-permissive, so there is no allow-list to add the staging host to. That only
-becomes a step if staging is ever moved to a Clerk production instance.
+**Sign-in needs one registration**: staging's OAuth client on the accounts Worker, with
+`https://staging.livediagram.app/api/auth/callback` as its redirect URI and its own
+resource. (Under Clerk, staging used an origin-permissive development tenant and needed
+nothing.)
 
 ## What staging is not
 
@@ -287,7 +290,7 @@ leaves no trace either way, and no amount of reading the repo would have reveale
 caps (`IMAGE_MAX_PER_OWNER`, `IMAGE_MAX_BYTES_PER_OWNER`) went the same way: documented as
 hosted-set, set by nothing, so the R2 quota guard was off. They are in the hosted profile now,
 and the deploy's verify step is the probe that fails when one is not live. (The caps have since moved to liveworkspace's media service, which keeps them for every app; the hosted profile now carries the media service's URL instead.)
-`AI_REQUIRE_CLERK` is deliberately unset in **both** environments (the editor offers AI to
+`AI_REQUIRE_SIGN_IN` is deliberately unset in **both** environments (the editor offers AI to
 guests; see the comment above production's `AI_ALLOWED_ORIGINS`). Staging set it until
 September 2026, which made staging refuse AI to guests that production serves: exactly the
 drift this environment exists to catch, so it was removed.

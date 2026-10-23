@@ -5,15 +5,15 @@
 // until they sign in; rendered shape depends on what the deployment
 // supports:
 //
-//   - Clerk disabled, any session
+//   - sign-in disabled, any session
 //        → "No sign-in on this deployment": the documents are saved, but
 //          only this browser's guest id can open them.
 //
-//   - Clerk enabled, signed out
+//   - sign-in enabled, signed out
 //        → "Sign in to keep your documents across devices." + CTA to
 //          /live/sign-in/.
 //
-//   - Clerk enabled, signed in
+//   - sign-in enabled, signed in
 //        → renders nothing (the user already has the account that
 //          syncs everything).
 //
@@ -23,16 +23,15 @@
 // the other persisted toggles — see local-storage-safe).
 //
 // Same module-load enabled/disabled hook-swap pattern as
-// AuthControls and useClerkApiBootstrap — calling useAuth outside a
-// ClerkProvider would throw, so the disabled branch never touches
-// Clerk.
+// AuthControls and useAccountBootstrap, chosen from a compile-time
+// constant.
 
 import { useSyncExternalStore } from 'react';
 import { buttonClassName, CloseIcon, ButtonContent } from '@livediagram/ui';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import Link from 'next/link';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
-import { clerkEnabled } from '@/lib/clerk-config';
+import { signInEnabled } from '@/lib/auth-config';
 import { useLocalStorageValue, writeLocalStorageValue } from '@/hooks/ui/useLocalStorageValue';
 
 const DISMISS_KEY = 'livediagram:v2:signin-prompt-dismissed';
@@ -114,7 +113,7 @@ function PromptShell({
 // state where the prompt itself doesn't show (signed in, or the user has
 // dismissed it). The Explorer passes its "Open Explorer" button here so
 // the two never occupy the panel at once but the button still surfaces
-// for dismissed guests. While Clerk / the dismissal read are still
+// for dismissed guests. While the session / the dismissal read are still
 // loading we render nothing, so the fallback doesn't flash in before the
 // prompt has a chance to claim the slot.
 // `bar`: the one-line form (the editor's Explorer, under its Current Document card).
@@ -172,4 +171,4 @@ function SignInPromptDisabled({ fallback, bar = false }: SignInPromptProps) {
   );
 }
 
-export const SignInPrompt = clerkEnabled ? SignInPromptEnabled : SignInPromptDisabled;
+export const SignInPrompt = signInEnabled ? SignInPromptEnabled : SignInPromptDisabled;

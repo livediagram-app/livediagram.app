@@ -13,7 +13,7 @@ Five mechanisms, layered. Every cell below comes from one of them.
 | Grant resolution      | `apps/api/src/auth/document-access.ts` `resolveDocumentGrant`, wrapped by `routes/context.ts` `gateRead` / `gateEdit` / `gateGrant` | Personal owner, then joined team member (both `FULL_EDIT`), then a share link for this document plus the share password. Returns `{ role: 'edit' \| 'view', tabScope, shareCode }`. A tab-scoped grant passes only when the door names its tab. |
 | Owner-only guards     | `routes/context.ts` `ownsDocument`, `requireOwnedDocument`, `mayDeleteDocument`                                                     | Ownership is separate from the edit grant already: share family and tab linking need the owner; delete, trash and moves need the owner or a joined member.                                                                                      |
 | Read-only token choke | `apps/api/src/index.ts` `routeApiRequest`, `if (tokenAuth?.readOnly && isWrite) return forbidden('read_only_token')`                | A read-only token may only `GET` / `HEAD`, on every route.                                                                                                                                                                                      |
-| Session-only routes   | `routes/tokens.ts`, `routes/oauth.ts`, `routes/account.ts`, `routes/migrate.ts`, `routes/drive.ts`, `routes/teams.ts` (non-GET)     | Need `ctx.clerkUserId` (a Clerk session), so neither a guest nor any API token can reach them.                                                                                                                                                  |
+| Session-only routes   | `routes/tokens.ts`, `routes/oauth.ts`, `routes/account.ts`, `routes/migrate.ts`, `routes/drive.ts`, `routes/teams.ts` (non-GET)     | Need `ctx.accountUserId` (a signed-in session)  , so neither a guest nor any API token can reach them.                                                                                                                                                  |
 | Room op gate          | `apps/api/src/document-room.ts` `webSocketMessage`; op classes in `packages/api-schema/src/room-messages.ts`                        | `if (sender.role !== 'edit' && !isPresenceOp) return;` A view session may send only `PRESENCE_OP_KINDS`; `MUTATION_OP_KINDS` need edit; `SYSTEM_OP_KINDS` never come from a socket.                                                             |
 
 The editor mirrors this with two flags: `sessionRole` (`apps/editor/app/document/[id]/editor-page-helpers.ts`
@@ -61,7 +61,7 @@ polls and use the Q&A board, but cannot vote or answer any element-based session
 
 | Column   | Who                                                                                                                                                                    |
 | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Own**  | Owner of a personal document (Clerk session, or a guest by `X-Owner-Id`).                                                                                              |
+| **Own**  | Owner of a personal document (signed-in session, or a guest by `X-Owner-Id`).                                                                                              |
 | **Mem**  | Joined member of the team whose library holds the document. The row owner of a team document is a member like any other, plus the owner-only doors while still joined. |
 | **E**    | Edit share link, all tabs.                                                                                                                                             |
 | **V**    | View share link, all tabs.                                                                                                                                             |
@@ -70,7 +70,7 @@ polls and use the Q&A board, but cannot vote or answer any element-based session
 | **EmbE** | `/embed?s=` of an edit link: the editor with `embed` flag, zen-style chrome, no identity screen.                                                                       |
 | **EmbV** | `/embed?s=` of a view link.                                                                                                                                            |
 | **G**    | Guest (no account) on their own personal document. A guest on someone else's document is simply the link column they arrived through.                                  |
-| **FT**   | Full API token, whose Clerk owner is the document's owner or a member. With `X-Share-Code` it takes that link's role instead.                                          |
+| **FT**   | Full API token, whose account owner is the document's owner or a member. With `X-Share-Code` it takes that link's role instead.                                          |
 | **RO**   | Read-only API token, same owner.                                                                                                                                       |
 | **MCP**  | The MCP server (`apps/mcp/src/tools.ts`) acting with a full token: 11 tools, no share-code path, no room.                                                              |
 
@@ -151,7 +151,7 @@ baton (`runBlocked`); the room enforces the baton only for `poll-start` / `poll-
 | AI assistant                                       | Y   | Y   | Y   | S   | T   | S   | Y    | S    | Y¹  | Y¹  | N   | n/a | `ai-gate.ts` is not document-gated; panel hidden when `isReadOnly`                                      |
 | Link an existing tab from another document         | Y   | N²  | N   | N   | N   | N   | N    | N    | Y   | Y   | N   | N   | `document-subresource-routes.ts` `/link`: `ownsDocument`                                                |
 
-¹ Unless `AI_REQUIRE_CLERK=true`, which refuses guests and tokens. ² Except the row owner.
+¹ Unless `AI_REQUIRE_SIGN_IN=true`, which refuses guests and tokens. ² Except the row owner.
 
 ### Sharing
 
@@ -183,14 +183,14 @@ matches the server for members who are not the row owner.
 
 ### Teams, tokens and account
 
-| Ability                                         | Clerk session                  | Guest        | Full token | Read-only token | MCP | Granted or refused by                                      |
+| Ability                                         | Signed-in session              | Guest        | Full token | Read-only token | MCP | Granted or refused by                                      |
 | ----------------------------------------------- | ------------------------------ | ------------ | ---------- | --------------- | --- | ---------------------------------------------------------- |
-| Create a team                                   | Y                              | N            | N          | N               | N   | `teams.ts`: non-GET needs `clerkUserId`                    |
+| Create a team                                   | Y                              | N            | N          | N               | N   | `teams.ts`: non-GET needs `accountUserId`                  |
 | Read team, members, library                     | members (library: joined only) | N            | Y          | Y               | Y   | `teams.ts` uses `verifiedUserId` for reads                 |
 | See the team invite-link token                  | admins                         | N            | admins     | admins          | N   | `teams.ts` GET `/:id`, `isAdmin ? getTeamInviteLink`       |
 | Rename, delete team; invite; roles; invite link | joined admin                   | N            | N          | N               | N   | `teams.ts` `isAdmin` plus session                          |
 | Leave or decline                                | self                           | N            | N          | N               | N   | `teams.ts` DELETE member, `isSelf`                         |
-| List, mint, revoke API tokens                   | Y (Settings mints full only)   | N            | N          | N               | N   | `tokens.ts` `if (!clerkUserId) return forbidden()`         |
+| List, mint, revoke API tokens                   | Y (Settings mints full only)   | N            | N          | N               | N   | `tokens.ts` `if (!accountUserId) return forbidden()`       |
 | Mint through MCP consent (full or read-only)    | Y                              | N            | N          | N               | n/a | `oauth.ts` `handleOauthExchange`, `readOnly` from the body |
 | Delete account, migrate guest work, Drive       | Y                              | migrate only | N          | N               | N   | `account.ts`, `migrate.ts`, `drive.ts`                     |
 
@@ -237,9 +237,9 @@ dialog or Make a copy button, no image upload or paste (`useEditorImages.ts`, `u
    membership or mint further credentials", yet share links (edit role included) and the share password are
    reachable with a full token, and MCP exposes `share_document`.
 6. **Possible owner impersonation on the room upgrade (verify).** The `?o=` leg (`isPersonalOwner(claimedOwnerId,
-...)`) trusts an unsigned query value for personal documents. For a signed-in owner that value is a Clerk id,
+...)`) trusts an unsigned query value for personal documents. For a signed-in owner that value is an account id,
    which teammates can read from the members list, and the document id reaches every link visitor. Unlike the
-   `X-Owner-Id` header, which `index.ts` refuses when it is Clerk-shaped, the query param has no such check.
+   `X-Owner-Id` header, which `index.ts` refuses when it is account-shaped, the query param has no such check.
    If confirmed, a teammate holding a view link to a colleague's personal document could join its room as an
    editor with the owner bit. Worth a focused test.
 7. **Ownership is already separate from edit, but unevenly.** Owner-only: share family, tab linking, Take offline.
@@ -293,7 +293,7 @@ offers "can view" and "can edit" with ownership and admin rights handled separat
    `ownsDocument` / `mayDeleteDocument` only.
 4. **Fix the token escape hatches before adding roles**: refuse share-link and password reads to read-only tokens,
    hide the team invite-link token from tokens, and decide whether full tokens may mint share links.
-5. **Test anomaly 6 first.** If the `?o=` leg admits a Clerk id, refuse Clerk-shaped values there as `index.ts`
+5. **Test anomaly 6 first.** If the `?o=` leg admits an account id, refuse account-shaped values there as `index.ts`
    does for the header, and require a ticket for every signed-in owner.
 6. **Make viewers neutral in the room**: no selection lock from a session below edit, and exclude non-respondents
    from the Done check waiting list.

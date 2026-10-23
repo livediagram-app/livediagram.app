@@ -93,7 +93,6 @@ export {
   resetCommunityEnabledForTests,
   useCommunityEnabled,
 } from './community/useCommunityEnabled';
-export { clerkPublishableKeyOrNull } from './clerk-key';
 export {
   TRUSTED_TYPES_CSP,
   isAllowedScriptUrl,

@@ -51,8 +51,8 @@ export function EditorTabDialogs() {
     shareLinks,
     sharePasswordSet,
     shareUrlFor,
-    clerkUserId,
-    clerkDisplayName,
+    accountUserId,
+    accountDisplayName,
     documentId,
     documentTeamId,
     updateParticipantName,
@@ -119,10 +119,10 @@ export function EditorTabDialogs() {
           sharePasswordSet={sharePasswordSet}
           shareUrlFor={shareUrlFor}
           tabs={tabs}
-          // Signed-in via Clerk → name is locked to the account
+          // Signed-in to an account → name is locked to the account
           // display name (same rule as the welcome modal, docs/specs/014-identity/auth-and-guest-access.md).
           // Guests pass undefined so the input + shuffle stay live.
-          lockedName={clerkUserId ? clerkDisplayName : null}
+          lockedName={accountUserId ? accountDisplayName : null}
           onSaveName={updateParticipantName}
           onCreateLink={createShareLink}
           onRevokeLink={revokeShareLink}
@@ -134,7 +134,7 @@ export function EditorTabDialogs() {
           syncReady={readerKnown}
           documentId={documentId}
           documentName={documentName}
-          signedIn={!!clerkUserId}
+          signedIn={!!accountUserId}
           teamDocument={!!documentTeamId}
           // Known only for the open tab (the editor holds its elements); another first tab is left to the server.
           firstTabEmpty={

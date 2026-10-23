@@ -47,7 +47,7 @@ export type SessionAttachment = {
   //     so revoking or rescoping that code can close exactly its sockets.
   tabScope?: string | null;
   shareCode?: string | null;
-  //   - `account`: a verified Clerk account holds this session, from X-Verified-Account
+  //   - `account`: a verified account holds this session, from X-Verified-Account
   //     (docs/specs/014-identity/profile-picture.md §6). Only such a session may put a picture on the
   //     roster, and only such a session receives the pictures on it.
   account?: boolean;

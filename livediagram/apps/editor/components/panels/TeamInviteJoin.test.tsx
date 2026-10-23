@@ -14,9 +14,9 @@ import {
 } from '@/lib/local-identity';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-vi.mock('@/lib/clerk-config', () => ({ clerkEnabled: true, sessionsEnabled: true }));
-vi.mock('@/hooks/persistence/useClerkApiBootstrap', () => ({
-  useClerkApiBootstrap: () => ({ authLoaded: true, isSignedIn: false, clerkUserId: null }),
+vi.mock('@/lib/auth-config', () => ({ signInEnabled: true, sessionsEnabled: true }));
+vi.mock('@/hooks/persistence/useAccountBootstrap', () => ({
+  useAccountBootstrap: () => ({ authLoaded: true, isSignedIn: false, accountUserId: null }),
 }));
 const resolve = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/api-client', () => ({

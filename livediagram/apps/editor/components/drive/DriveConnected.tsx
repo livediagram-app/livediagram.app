@@ -14,7 +14,7 @@ import {
   apiConfirmDriveAccountSwitch,
   apiDriveConnect,
 } from '@/lib/api-client';
-import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
+import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { markConnectCancelled, markConnectConnected, takeConsent } from '@/lib/drive/consent';
 import { driveLog, driveWarn } from '@/lib/drive/log';
 import { track } from '@/lib/telemetry';
@@ -82,16 +82,16 @@ async function redeem(query: NonNullable<Query>, ownerId: string): Promise<Phase
 }
 
 export function DriveConnected() {
-  const { authLoaded, isSignedIn, clerkUserId } = useClerkApiBootstrap();
+  const { authLoaded, isSignedIn, accountUserId } = useAccountBootstrap();
   const query = useSyncExternalStore(noSubscription, readQuery, beforeHydration);
   const [phase, setPhase] = useState<Phase>('working');
 
   useEffect(() => {
-    if (!query || !authLoaded || !isSignedIn || !clerkUserId) return;
-    void redeem(query, clerkUserId).then((next) => {
+    if (!query || !authLoaded || !isSignedIn || !accountUserId) return;
+    void redeem(query, accountUserId).then((next) => {
       if (next) setPhase(next);
     });
-  }, [query, authLoaded, isSignedIn, clerkUserId]);
+  }, [query, authLoaded, isSignedIn, accountUserId]);
 
   if (authLoaded && !isSignedIn) {
     return (
@@ -102,7 +102,7 @@ export function DriveConnected() {
       </LandingCard>
     );
   }
-  if (typeof phase === 'object' && clerkUserId) {
+  if (typeof phase === 'object' && accountUserId) {
     const { returnPath } = phase;
     return (
       <LandingCard>
@@ -110,14 +110,14 @@ export function DriveConnected() {
         <DriveAccountSwitchDialog
           cloudSyncHref={CLOUD_SYNC_HREF}
           onSwitch={async () => {
-            await apiConfirmDriveAccountSwitch(clerkUserId);
+            await apiConfirmDriveAccountSwitch(accountUserId);
             track('Drive', 'Changed', 'AccountSwitched');
             driveLog('account-switched', {});
             markConnectConnected(sessionStorage);
             window.location.replace(returnPath);
           }}
           onKeep={async () => {
-            await apiCancelDriveAccountSwitch(clerkUserId);
+            await apiCancelDriveAccountSwitch(accountUserId);
             track('Drive', 'Changed', 'AccountKept');
             driveLog('account-kept', {});
             // The connection is as it was: neither Connected nor Cancelled.

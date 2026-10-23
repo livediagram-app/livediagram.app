@@ -16,7 +16,7 @@ week stay two libraries.
 
 - **A library**: an id, its owner, a **name**, an ordered list of **items**, created and updated
   times. It is owner-scoped exactly like documents, folders and [Custom themes](../011-theme/custom-themes.md):
-  keyed by the request owner id, the Clerk `sub` when signed in or the `X-Owner-Id` guest id otherwise
+  keyed by the request owner id, the account's `sub` when signed in or the `X-Owner-Id` guest id otherwise
   ([Auth + guest access](../014-identity/auth-and-guest-access.md)). **Guests have libraries too**, and
   a guest who signs up carries them over with the existing `POST /api/migrate` owner-id remap.
 - **An item**: an id, a **title** (may be empty), a **width** and **height** (the size of its

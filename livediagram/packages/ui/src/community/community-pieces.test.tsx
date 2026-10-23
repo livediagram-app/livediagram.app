@@ -2,7 +2,6 @@
 import { communityPostFixture } from '@livediagram/api-schema/testing';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { clerkPublishableKeyOrNull } from '../clerk-key';
 import { CommunityAuthorBadge, communityAuthorInitial } from './CommunityAuthorBadge';
 import { CommunityCopyCount, CommunityLikeCount } from './CommunityCounts';
 import { CommunityPostTile } from './CommunityPostTile';
@@ -127,15 +126,5 @@ describe('counts', () => {
   it('hold a placeholder card hidden from screen readers', () => {
     const { container } = render(<CommunityPostTileSkeleton />);
     expect(container.firstElementChild?.getAttribute('aria-hidden')).toBe('true');
-  });
-});
-
-describe('clerkPublishableKeyOrNull', () => {
-  it('turns sign-in on only for a real publishable key', () => {
-    expect(clerkPublishableKeyOrNull('pk_test_abc')).toBe('pk_test_abc');
-    expect(clerkPublishableKeyOrNull('pk_live_abc')).toBe('pk_live_abc');
-    expect(clerkPublishableKeyOrNull('sk_test_abc')).toBeNull();
-    expect(clerkPublishableKeyOrNull('')).toBeNull();
-    expect(clerkPublishableKeyOrNull(undefined)).toBeNull();
   });
 });

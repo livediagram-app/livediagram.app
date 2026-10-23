@@ -504,7 +504,7 @@ dark:text-slate-400`, then `+N` at 10px semibold; after the count badge; in a tr
 | Lists ready or failed                                        | `apps/editor/hooks/persistence/usePlacementOptions.test.tsx`                                         |
 | A folder deleted here never restored by its stale create     | `apps/editor/lib/drive/plan-inbound.test.ts`, `engine.outbound.test.ts`                              |
 | Settings row states                                          | `apps/editor/components/dialogs/settings/SettingsPlacementDefaultRow.test.tsx`                       |
-| End to end, guest and signed in, desktop and phone           | `apps/editor/e2e/default-folders.spec.ts`, `apps/editor/e2e/clerk-stub/default-folders-team.spec.ts` |
+| End to end, guest and signed in, desktop and phone           | `apps/editor/e2e/default-folders.spec.ts`, `apps/editor/e2e/signed-in/default-folders-team.spec.ts` |
 
 ### Constants and configuration (surfaces)
 

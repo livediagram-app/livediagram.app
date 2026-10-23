@@ -40,9 +40,9 @@ Each AI request optionally includes a `history` array of prior `{ role, content 
 
 ## Security
 
-- Auth required: Clerk JWT or `X-Owner-Id`. The hosted deployment additionally requires
-  Clerk (see `AI_REQUIRE_CLERK` below); self-hosters can accept anonymous owners by
-  leaving the flag unset.
+- Auth required: access token or `X-Owner-Id`. A deployment can additionally require
+  sign-in (see `AI_REQUIRE_SIGN_IN` below); leaving the flag unset, as the hosted one does,
+  accepts anonymous owners.
 - Per-IP rate limiter (`AI_RATE_LIMITER` binding, 20 req/60 s). Optional — absent on
   self-host deployments falls through to "allow", matching the pattern used by
   `WRITE_RATE_LIMITER` and `EVENTS_RATE_LIMITER`.
@@ -62,11 +62,11 @@ Each AI request optionally includes a `history` array of prior `{ role, content 
   403 for every genuine request from the editor. Self-hosters set their own hostname —
   whichever one the browser actually lands on after redirects — plus dev origins like
   `http://localhost:3102`.
-- Optional Clerk-only gate (`AI_REQUIRE_CLERK`). When set to `"true"`, `/api/ai` rejects
-  any request without a verified Clerk Bearer JWT with `401 { error: 'sign_in_required' }`;
+- Optional sign-in-only gate (`AI_REQUIRE_SIGN_IN`). When set to `"true"`, `/api/ai` rejects
+  any request without a verified access token with `401 { error: 'sign_in_required' }`;
   the legacy `X-Owner-Id` guest path still works for every OTHER endpoint, just not for
   AI. Unset = guests can still use AI (the default before this flag landed), preserving
-  the OSS self-host story where Clerk is optional. Combined with the origin allow-list,
+  the OSS self-host story where sign-in is optional. Combined with the origin allow-list,
   this is the spend-DoS defence on a public deployment: a third-party site can no longer
   drain the operator's OpenAI budget by minting fresh `X-Owner-Id` UUIDs.
 - Prompt capped at 1 000 characters server-side; element payload capped at 200 elements
@@ -98,7 +98,7 @@ together or not at all: one flag answers for both.
 
 ### `POST /api/ai`
 
-Auth required (Clerk Bearer JWT **or** `X-Owner-Id`).
+Auth required (an access token **or** `X-Owner-Id`).
 
 Request body:
 
@@ -171,7 +171,7 @@ exactly six:
 | `ai_error`           | 502    | The upstream model call failed.                            |
 | `ai_not_configured`  | 503    | No model key on this deployment (the self-host default).   |
 
-A request with no identity at all (neither a Clerk session nor an `X-Owner-Id`)
+A request with no identity at all (neither a signed-in session nor an `X-Owner-Id`)
 gets the worker-wide `bad_request` 400 every owner-scoped route sends.
 
 **`off_topic` is not one of them.** A prompt the model judges off-topic still returns **200**: the
@@ -265,7 +265,7 @@ stickies are FOUND in the browser by classical computer vision; this route is
 asked only to read the handwriting on the crops that came out of that.
 
 - Same admission sequence as `/api/ai` (shared `routes/ai-gate.ts`): the
-  reader's provider resolves → origin allow-list → Clerk-only flag → owner → method → rate limiter.
+  reader's provider resolves → origin allow-list → sign-in-only flag → owner → method → rate limiter.
 - **Body**: `{ crops: { id, image }[] }` — at most `READ_MAX_CROPS_PER_REQUEST`
   (6) crops per call, each a data URL of at most `CROP_MAX_BYTES` in one of
   `image/jpeg`, `image/png`, `image/webp`. The client batches a bigger run and
@@ -305,7 +305,7 @@ fires it, because the route cannot know whether the author kept the result).
 | `AI_MODEL`                                                   | Worker var (optional)     | Model id for the assistant. Defaults per provider (table above); required for the generic key.                                                                                                                            |
 | `AI_VISION_MODEL`                                            | Worker var (optional)     | Model id for reading note crops (`/api/ai/read-notes`, [Event storming](../021-event-storming/event-storming.md) Phase 8). Defaults as in "Which model": `AI_MODEL` only when the reader shares the assistant's provider. |
 | `AI_ALLOWED_ORIGINS`                                         | Worker var (optional)     | Comma-separated `Origin` values that may call `/api/ai`. Unset = no check. Example: `https://livediagram.app,http://localhost:3102`. Entries are matched case-sensitive against the request's `Origin` header verbatim.   |
-| `AI_REQUIRE_CLERK`                                           | Worker var (optional)     | Set to `"true"` to require a verified Clerk JWT on `/api/ai` (rejects the `X-Owner-Id` guest path with 401). Unset / any other value = guests allowed.                                                                    |
+| `AI_REQUIRE_SIGN_IN`                                           | Worker var (optional)     | Set to `"true"` to require a verified access token on `/api/ai` (rejects the `X-Owner-Id` guest path with 401). Unset / any other value = guests allowed.                                                                    |
 
 Set via `wrangler secret put <the key var>` for production; drop into `apps/api/.dev.vars`
 for local dev (gitignored). The two `AI_*` flags are plain `[vars]` (no secret value), so

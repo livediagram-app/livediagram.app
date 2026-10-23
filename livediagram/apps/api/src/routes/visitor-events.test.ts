@@ -86,7 +86,7 @@ describe('GET /documents/:id/tabs/:tabId — who counts as a visitor', () => {
   const path = '/api/documents/d1/tabs/t1';
 
   it('records nothing for a joined teammate reading a team document', async () => {
-    const { ctx, settle } = ctxWith('GET', path, { owner: 'bob', clerkUserId: 'bob' });
+    const { ctx, settle } = ctxWith('GET', path, { owner: 'bob', accountUserId: 'bob' });
     expect((await handleDocumentSubresources(ctx))?.status).toBe(200);
     await settle();
     expect(timeline.recordVisitorOpened).not.toHaveBeenCalled();
@@ -119,7 +119,7 @@ describe('POST /documents/:id/copy — who counts as a visitor', () => {
   });
 
   it('records no visitor copy when a joined teammate duplicates a team document', async () => {
-    const { ctx, settle } = ctxWith('POST', path, { owner: 'bob', clerkUserId: 'bob', body: {} });
+    const { ctx, settle } = ctxWith('POST', path, { owner: 'bob', accountUserId: 'bob', body: {} });
     await handleDocuments(ctx);
     await settle();
     expect(timeline.recordVisitorCopied).not.toHaveBeenCalled();

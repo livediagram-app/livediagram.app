@@ -9,7 +9,7 @@
 // travel (share links, embeds, exports); the notify endpoint resolves the
 // address server-side from team membership at send time.
 export type ElementActionAssignee = {
-  // The stable key: a Clerk user id, or — for a SELF-assignment made
+  // The stable key: an account id, or — for a SELF-assignment made
   // while signed out — the guest participant id (docs/specs/014-identity/auth-and-guest-access.md). Guests can
   // only pick themselves, so a guest id always means the assigner's own
   // browser identity. Null for an INVITED member the lazy claim hasn't
@@ -37,7 +37,7 @@ export type ElementAction = {
   // The team the assignee was picked from; null for a self-assignment
   // (Myself is not a team row).
   teamId: string | null;
-  // Who assigned it (Clerk user id, or a guest participant id for a
+  // Who assigned it (account id, or a guest participant id for a
   // signed-out self-assignment).
   assignerId: string;
   assignerName: string | null;

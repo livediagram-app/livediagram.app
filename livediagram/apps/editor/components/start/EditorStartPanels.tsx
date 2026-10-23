@@ -23,7 +23,7 @@ const StartFromTemplates = dynamic(
 // (useTemplatePickMove) keeps watching the tab.
 export function EditorStartPanels() {
   const ctx = useEditorContext();
-  const { hydrated, zenMode, embedMode, pendingDraw, activeTab, isReadOnly, clerkUserId } = ctx;
+  const { hydrated, zenMode, embedMode, pendingDraw, activeTab, isReadOnly, accountUserId } = ctx;
   // Empty-canvas hint (docs/specs/007-editor/new-document-route.md "The empty-canvas hint"): a card in the middle of
   // the canvas while the active tab has no elements. Not dismissible: it goes once there's content. The sign-in nudge
   // sits at the bottom, clear of it, so the two show together.
@@ -42,7 +42,7 @@ export function EditorStartPanels() {
     ownerId: ctx.selfParticipant.id,
     documentId: ctx.documentId,
     tabId: activeTab.id,
-    signedIn: !!clerkUserId,
+    signedIn: !!accountUserId,
     tabHasContent: activeTab.elements.length > 0,
   });
   const templateStart = templateStartMode({

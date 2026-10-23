@@ -1,6 +1,6 @@
 // The Google Drive mirror's calls to the api worker
 // (docs/specs/022-drive-mirror/blueprints/drive-mirror.md, "Routes"). Signed-in
-// only: apiHeaders attaches the Clerk Bearer, and the worker refuses anything
+// only: apiHeaders attaches the access token, and the worker refuses anything
 // else. The Drive traffic itself never touches the worker.
 
 import type {

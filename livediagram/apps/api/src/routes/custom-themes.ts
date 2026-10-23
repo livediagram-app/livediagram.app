@@ -1,7 +1,7 @@
 // /api/custom-themes — user-built themes, owner-scoped (docs/specs/011-theme/custom-themes.md).
 // Mirrors /api/folders one-for-one: requireOwner guard, 400/403/404
 // conventions, list / create / update / delete. Guests included (the
-// owner id is the X-Owner-Id header when there's no Clerk token).
+// owner id is the X-Owner-Id header when there's no account token).
 
 import {
   createCustomTheme,

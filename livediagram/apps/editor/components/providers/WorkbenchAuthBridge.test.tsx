@@ -2,24 +2,21 @@
 
 // The editor in a workbench is signed in by its session alone (docs/specs/013-workspace/blueprints/
 // workbench-embeds.md "The editor in a workbench", I9): the bridge publishes the person before any
-// child fetches; above it, Clerk and the e2e bridge stand down and nothing reads as a settled guest,
-// Clerk configured or not; and the bootstrap under the session runs no guest migration.
+// child fetches; above it, the accounts and e2e bridges stand down and nothing reads as a settled guest,
+// sign-in configured or not; and the bootstrap under the session runs no guest migration.
 
 import { act, cleanup, render } from '@testing-library/react';
 import { useEffect, useLayoutEffect, type ReactNode } from 'react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { WorkbenchSession } from './workbench-session-context';
 
-const config = vi.hoisted(() => ({ clerk: true }));
-vi.mock('@/lib/clerk-config', () => ({
-  get clerkEnabled() {
-    return config.clerk;
-  },
-  get clerkPublishableKey() {
-    return config.clerk ? 'pk_test' : null;
+const config = vi.hoisted(() => ({ signIn: true }));
+vi.mock('@/lib/auth-config', () => ({
+  get signInEnabled() {
+    return config.signIn;
   },
   get sessionsEnabled() {
-    return config.clerk;
+    return config.signIn;
   },
   e2eAuthEnabled: false,
 }));
@@ -27,7 +24,7 @@ vi.mock('next/navigation', () => ({ usePathname: () => '/embed/workbench/' }));
 const bridges = vi.hoisted(() => ({ mounted: 0 }));
 vi.mock('next/dynamic', () => ({
   default: () =>
-    function FakeClerkBridge() {
+    function FakeAccountsBridge() {
       useEffect(() => {
         bridges.mounted++;
       }, []);
@@ -65,16 +62,16 @@ function sessionOf(secret = SECRET): WorkbenchSession {
 // A fresh module graph per configuration: the bootstrap picks its variant when it loads.
 async function load() {
   vi.resetModules();
-  const [{ ClerkProvider }, { WorkbenchAuthBridge }, auth, boot, core, migration] =
+  const [{ AuthProvider }, { WorkbenchAuthBridge }, auth, boot, core, migration] =
     await Promise.all([
-      import('./ClerkProvider'),
+      import('./AuthProvider'),
       import('./WorkbenchAuthBridge'),
       import('./deferred-auth'),
-      import('@/hooks/persistence/useClerkApiBootstrap'),
+      import('@/hooks/persistence/useAccountBootstrap'),
       import('@/lib/api/core'),
       import('@/lib/guest-migration'),
     ]);
-  return { ClerkProvider, WorkbenchAuthBridge, auth, boot, core, migration };
+  return { AuthProvider, WorkbenchAuthBridge, auth, boot, core, migration };
 }
 
 // The first load transforms the module graph; every later one reuses it.
@@ -166,17 +163,17 @@ describe('WorkbenchAuthBridge', () => {
 
 describe('the workbench page’s surroundings', () => {
   for (const clerk of [true, false]) {
-    describe(clerk ? 'with Clerk configured' : 'without Clerk', () => {
+    describe(clerk ? 'with sign-in configured' : 'without sign-in', () => {
       beforeEach(() => {
-        config.clerk = clerk;
+        config.signIn = clerk;
       });
 
       it('never read as a settled guest, however long they wait', async () => {
         vi.useFakeTimers();
-        const { ClerkProvider, boot, auth } = await load();
+        const { AuthProvider, boot, auth } = await load();
         const seen: { loaded: boolean; signedIn: boolean | undefined; deferred: boolean }[] = [];
         function Above() {
-          const r = boot.useClerkApiBootstrap();
+          const r = boot.useAccountBootstrap();
           seen.push({
             loaded: r.authLoaded,
             signedIn: r.isSignedIn,
@@ -186,9 +183,9 @@ describe('the workbench page’s surroundings', () => {
         }
 
         render(
-          <ClerkProvider>
+          <AuthProvider>
             <Above />
-          </ClerkProvider>,
+          </AuthProvider>,
         );
         act(() => {
           vi.advanceTimersByTime(10_000);
@@ -200,16 +197,16 @@ describe('the workbench page’s surroundings', () => {
 
       it('let the editor beneath settle as the person, with no guest migration', async () => {
         localStorage.setItem('livediagram:v2:self-id', 'guest-1');
-        const { ClerkProvider, WorkbenchAuthBridge, boot, core } = await load();
-        let result: ReturnType<typeof boot.useClerkApiBootstrap> | null = null;
+        const { AuthProvider, WorkbenchAuthBridge, boot, core } = await load();
+        let result: ReturnType<typeof boot.useAccountBootstrap> | null = null;
         function Editor() {
-          result = boot.useClerkApiBootstrap();
+          result = boot.useAccountBootstrap();
           return null;
         }
         const page = (children: ReactNode) => (
-          <ClerkProvider>
+          <AuthProvider>
             <WorkbenchAuthBridge session={sessionOf()}>{children}</WorkbenchAuthBridge>
-          </ClerkProvider>
+          </AuthProvider>
         );
 
         render(page(<Editor />));
@@ -218,8 +215,8 @@ describe('the workbench page’s surroundings', () => {
         expect(result).toEqual({
           isSignedIn: true,
           authLoaded: true,
-          clerkUserId: 'user_1',
-          clerkDisplayName: 'Webber',
+          accountUserId: 'user_1',
+          accountDisplayName: 'Webber',
         });
         expect(apiMigrateGuestData).not.toHaveBeenCalled();
         expect(await core.apiHeaders('user_1')).toEqual({ Authorization: `Bearer ${SECRET}` });

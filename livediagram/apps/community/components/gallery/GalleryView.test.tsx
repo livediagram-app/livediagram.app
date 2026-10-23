@@ -32,9 +32,9 @@ vi.mock('@/lib/session', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/session')>()),
   signInAvailable: true,
 }));
-// Clerk itself is not loaded in tests: the lazy session reports whatever the test set.
-vi.mock('../auth/LazyClerkSession', () => ({
-  LazyClerkSession: ({ onSession }: { onSession: (s: CommunitySession) => void }) => {
+// The api's session is not asked for in tests: the session reports whatever the test set.
+vi.mock('../auth/AccountSession', () => ({
+  AccountSession: ({ onSession }: { onSession: (s: CommunitySession) => void }) => {
     useEffect(() => {
       h.emit = onSession;
       if (h.session) onSession(h.session);

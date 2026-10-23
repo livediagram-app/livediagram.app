@@ -19,12 +19,12 @@ export async function handleCommunity(ctx: RouteContext): Promise<Response> {
   if (!communityEnabled(env) || !communityServiceConfigured(env)) return notFound();
   if (segments.length !== 3 || segments[2] !== 'mine' || request.method !== 'GET')
     return notFound();
-  if (!ctx.clerkUserId) return signInRequired();
+  if (!ctx.accountUserId) return signInRequired();
   if (!parseCommunityListQuery(url.searchParams).ok) {
     return json({ error: 'invalid_query' }, { status: 400 });
   }
   const params = new URLSearchParams(url.searchParams);
-  params.set('owner', ctx.clerkUserId);
+  params.set('owner', ctx.accountUserId);
   const res = await communityService(env, `/mine?${params.toString()}`, {
     headers: communityKeyHeaders(request),
   });

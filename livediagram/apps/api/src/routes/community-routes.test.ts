@@ -48,7 +48,7 @@ function owner(method: string, path: string, opts: { body?: unknown; clerk?: str
   return makeTestRouteContext(method, path, {
     env,
     owner: clerk ?? 'guest-1',
-    clerkUserId: clerk,
+    accountUserId: clerk,
     body: opts.body,
   });
 }
@@ -241,7 +241,7 @@ describe('My Shares', () => {
       handleCommunity(
         makeTestRouteContext('GET', '/api/community/mine', {
           env,
-          clerkUserId: clerk,
+          accountUserId: clerk,
           headers: { 'X-Community-Key': KEY },
         }),
       );
@@ -400,7 +400,7 @@ describe('the community link', () => {
       handleShare(
         makeTestRouteContext('GET', `/api/share/${post.shareCode}/image.svg`, {
           env,
-          clerkUserId: clerk,
+          accountUserId: clerk,
         }),
       );
     const listed = await image();
@@ -607,7 +607,7 @@ describe('a document that changes hands', () => {
     expect(await gallery()).toEqual([]);
     const mine = (await (
       await handleCommunity(
-        makeTestRouteContext('GET', '/api/community/mine', { env, clerkUserId: AUTHOR }),
+        makeTestRouteContext('GET', '/api/community/mine', { env, accountUserId: AUTHOR }),
       )
     ).json()) as { posts: unknown[] };
     expect(mine.posts).toEqual([]);

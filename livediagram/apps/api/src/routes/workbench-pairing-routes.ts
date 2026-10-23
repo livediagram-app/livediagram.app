@@ -1,6 +1,6 @@
 // Workbench pairing (docs/specs/013-workspace/blueprints/workbench-embeds.md "Pairing"): a token asks to pair
 // with an origin and waits; the token's owner answers once in their own signed-in browser; Settings lists and
-// removes pairings. Only a Clerk session answers or unpairs, so no token, workbench session or guest can
+// removes pairings. Only a signed-in session answers or unpairs, so no token, workbench session or guest can
 // approve a pairing for itself.
 
 import {
@@ -93,7 +93,7 @@ export async function pollPairing(ctx: RouteContext, code: string): Promise<Resp
 
 // GET /api/workbench/pairing-requests/:code: the pairing page's view, for the token's owner.
 export async function readPairing(ctx: RouteContext, code: string): Promise<Response> {
-  const userId = ctx.clerkUserId;
+  const userId = ctx.accountUserId;
   if (!userId) return signInRequired();
   const request = await readPairingRequest(ctx.env, code, Date.now());
   if (!request || request.ownerId !== userId) return notFound();
@@ -114,7 +114,7 @@ export async function answerPairing(
   code: string,
   answer: 'approve' | 'decline',
 ): Promise<Response> {
-  const userId = ctx.clerkUserId;
+  const userId = ctx.accountUserId;
   if (!userId) return signInRequired();
   const result = await answerPairingRequest(ctx.env, {
     code,
@@ -145,14 +145,14 @@ export async function answerPairing(
 
 // GET /api/workbench/pairings (WB46): Settings > API tokens.
 export async function listPairings(ctx: RouteContext): Promise<Response> {
-  const userId = ctx.clerkUserId;
+  const userId = ctx.accountUserId;
   if (!userId) return signInRequired();
   return json({ pairings: await listWorkbenchPairings(ctx.env, userId, Date.now()) });
 }
 
 // DELETE /api/workbench/pairings/:id: Unpair, ending that pairing's sessions.
 export async function unpair(ctx: RouteContext, id: string): Promise<Response> {
-  const userId = ctx.clerkUserId;
+  const userId = ctx.accountUserId;
   if (!userId) return signInRequired();
   if ((await workbenchPairingOwner(ctx.env, id)) !== userId) return notFound();
   await endWorkbenchAccess(ctx.env, { pairingId: id }, 'unpaired');

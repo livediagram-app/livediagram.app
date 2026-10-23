@@ -19,7 +19,7 @@ const WS_TICKET_TTL_MS = 60_000;
 // visitor the tab scope and the code (docs/specs/013-workspace/tab-scoped-share-links.md), so the room can
 // confine the session and close it when that code is revoked or rescoped.
 //
-// `account` records that a verified Clerk session minted it, so the room knows which sessions may
+// `account` records that a verified session minted it, so the room knows which sessions may
 // publish a profile picture and which may receive one (docs/specs/014-identity/profile-picture.md §6).
 type WsAdmission = {
   role: ShareRole;

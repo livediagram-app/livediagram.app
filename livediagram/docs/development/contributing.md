@@ -110,11 +110,11 @@ pnpm --filter @livediagram/editor test:e2e
 
 Without a dev stack, it boots its own (`scripts/e2e-stack.mjs`) over the existing `apps/editor/out`, which it never rebuilds: run `pnpm --filter @livediagram/editor build` first, or it exits naming the missing build.
 
-The signed-in specs (`apps/editor/e2e/clerk-stub/`) need Clerk switched on, so they have their own build and run, on their own ports:
+The signed-in specs (`apps/editor/e2e/signed-in/`) need sign-in switched on, so they have their own build and run, on their own ports:
 
 ```sh
-pnpm --filter @livediagram/editor build:clerk-stub
-pnpm --filter @livediagram/editor test:e2e:clerk-stub
+pnpm --filter @livediagram/editor build:signed-in
+pnpm --filter @livediagram/editor test:e2e:signed-in
 ```
 
 The armed guest-signature specs (`apps/editor/e2e/armed/`) run against the usual build, on their own stack with guest signature enforcement on (`:3117`):

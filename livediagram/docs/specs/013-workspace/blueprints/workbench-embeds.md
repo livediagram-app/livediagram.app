@@ -88,8 +88,8 @@ It provides these names to sibling blueprints ([CLI](../../015-api/blueprints/cl
 | `apps/editor/components/providers/workbench-session-context.ts`                                                                                                                | `WorkbenchSession`, `WorkbenchSessionContext`, `useWorkbenchSession()`                                                                                                                                                    |
 | `apps/editor/components/providers/WorkbenchAuthBridge.tsx` (new, + test)                                                                                                       | A nested `DeferredAuthContext.Provider` with the session's identity; registers the `lvw_` token provider in a layout effect                                                                                               |
 | `apps/editor/components/providers/deferred-auth.tsx`                                                                                                                           | `DEFERRED_AUTH_PENDING` (`authLoaded: false`, signed out)                                                                                                                                                                 |
-| `apps/editor/components/providers/ClerkProvider.tsx`                                                                                                                           | `WORKBENCH_ROUTE = '/embed/workbench'`: the Clerk and E2E bridges stand down there and the state holds `DEFERRED_AUTH_PENDING`                                                                                            |
-| `apps/editor/hooks/persistence/useClerkApiBootstrap.ts`                                                                                                                        | Reads `useWorkbenchSession()` first; under a session no migration, no timeout, no provider, the session's identity returned                                                                                               |
+| `apps/editor/components/providers/AuthProvider.tsx`                                                                                                                            | `WORKBENCH_ROUTE = '/embed/workbench'`: the accounts and E2E bridges stand down there and the state holds `DEFERRED_AUTH_PENDING`                                                                        |
+| `apps/editor/hooks/persistence/useAccountBootstrap.ts`                                                                                                                         | Reads `useWorkbenchSession()` first; under a session no migration, no timeout, no provider, the session's identity returned                                                                              |
 | `apps/editor/app/document/[id]/editor-page.tsx`                                                                                                                                | `LivePage({ surface })`; `Session·Opened·Workbench`; status branches for the workbench                                                                                                                                    |
 | `apps/editor/app/embed/page.tsx`                                                                                                                                               | `<EditorPage surface="embed" />`                                                                                                                                                                                          |
 | `apps/editor/app/document/[id]/editor-surface.ts` (new, + test)                                                                                                                | `EditorSurface`, `surfaceFlags(surface)`: `embedMode`, `workbenchMode`, `appChrome`                                                                                                                                       |
@@ -114,7 +114,7 @@ It provides these names to sibling blueprints ([CLI](../../015-api/blueprints/cl
 | `apps/editor/components/dialogs/settings/SettingsTokenPairings.tsx` (new, + test)                                                                                              | A token card's paired workbenches with **Unpair**                                                                                                                                                                         |
 | `apps/editor/components/dialogs/settings/SettingsTokenCard.tsx`, `SettingsTokenList.tsx`, `SettingsTokensRow.tsx`                                                              | The card renders its pairings; the list passes them; the row loads them                                                                                                                                                   |
 | `apps/editor/hooks/persistence/useWorkbenchPairings.ts` (new, + test)                                                                                                          | List, group by token, unpair                                                                                                                                                                                              |
-| `apps/editor/e2e/clerk-stub/workbench-contrast.spec.ts` (new)                                                                                                                  | The pairing page (pending), the device page (entry, consent) and a paired-workbench row, light and dark, to WCAG 2.2 AA                                                                                                   |
+| `apps/editor/e2e/signed-in/workbench-contrast.spec.ts` (new)                                                                                                                   | The pairing page (pending), the device page (entry, consent) and a paired-workbench row, light and dark, to WCAG 2.2 AA                                                                                  |
 | `apps/editor/src/worker.ts` (+ test)                                                                                                                                           | Unchanged code; the test pins `/embed/workbench` frameable and `/workbench/pair` `DENY`                                                                                                                                   |
 | `packages/agent-verbs/src/verbs/workbench.ts` (new, + test), `catalogue.ts`, `index.ts`                                                                                      | `workbench.open`, `workbench.pair` (local); resource `workbench`; `workbenchOriginOf`, `workbenchNameOf`: the refusals both verbs share                                                                                   |
 | `apps/cli/src/commands/workbench-pair.ts` (new, + test)                                                                                                                      | `pairWorkbench(io, api, input, json, log)`: request, print, open, wait                                                                                                                                                    |
@@ -218,10 +218,10 @@ Don't allow).
 - **I2** A workbench session never reaches a route outside `WORKBENCH_ROUTES`: `403 workbench_confined`.
 - **I3** A session's level never exceeds its token's, and every gate re-evaluates the owner's access now (the gates
   run with the owner's identity on every request).
-- **I4** `ctx.clerkUserId` is null and `ctx.token` is null under a session; `resolveOwner()` and `verifiedUserId`
-  are the owner. So administration (`clerkUserId` only) is unreachable and `405 use_changesets` never fires.
+- **I4** `ctx.accountUserId` is null and `ctx.token` is null under a session; `resolveOwner()` and `verifiedUserId`
+  are the owner. So administration (`accountUserId` only) is unreachable and `405 use_changesets` never fires.
 - **I5** No ticket is minted for an origin its token is not paired with.
-- **I6** No pairing is answered except by the token's owner in a Clerk session; a token and a workbench session can
+- **I6** No pairing is answered except by the token's owner in a signed-in session; a token and a workbench session can
   neither read a request's page view nor answer it.
 - **I7** Secrets (ticket, session) are stored as SHA-256 hex only; logs carry the session id's first 8 characters
   and the token id, never a secret, a code or an origin path.
@@ -247,7 +247,7 @@ Don't allow).
    an existing request takes the given `name` when one is given, WB2) as
    `{ status: 'pending', pairingUrl, code, expiresAt, interval }`. One live request per token and origin, enforced by
    a partial unique index; a pending row past its expiry is deleted before the insert.
-3. **Read.** `GET /api/workbench/pairing-requests/:code` (Clerk session, owner only) returns the page's view:
+3. **Read.** `GET /api/workbench/pairing-requests/:code` (signed-in session, owner only) returns the page's view:
    `{ origin, name, tokenName, expiresAt, status }`, `status` read as `expired` when pending past its expiry.
 4. **Answer.** `POST .../:code/approve` in one batch: the request's `status` from `pending` to `approved`
    (`UPDATE ... WHERE status = 'pending' AND expires_at > now`) and `INSERT OR IGNORE` the pairing (`name` from the
@@ -256,7 +256,7 @@ Don't allow).
 5. **Wait.** `GET /api/workbench/pairing-requests/:code/status` (the requesting token only, by the code, WB45) returns
    `{ status, expiresAt, interval }`; the CLI polls it every `interval` seconds.
 6. **Paired.** Mints for that token and origin now pass the pairing check.
-7. **Unpair.** `DELETE /api/workbench/pairings/:id` (Clerk session, the token's owner) runs
+7. **Unpair.** `DELETE /api/workbench/pairings/:id` (signed-in session, the token's owner) runs
    `endWorkbenchAccess({ pairingId }, 'unpaired')`.
 8. **Token revoked.** Both revoke routes run `endWorkbenchAccess({ tokenId }, 'revoked')`: pairings, pending
    requests, tickets and sessions of the token go.
@@ -268,7 +268,7 @@ twice (the `status = 'pending'` guard).
 
 In order; the first failure answers:
 
-1. Bearer is a workbench session: `403 workbench_confined` (choke point). No `ctx.token` (a Clerk session or a
+1. Bearer is a workbench session: `403 workbench_confined` (choke point). No `ctx.token` (a signed-in session or a
    guest): `403 token_required`.
 2. `WORKBENCH_TICKET_RATE_LIMITER` keyed `workbench-ticket:<tokenId>`: over, `429 rate_limited`. The write limiter
    (`token:<tokenId>`) applies too, as for every token write.
@@ -304,7 +304,7 @@ RETURNING ...`. No row: `SELECT used_at, expires_at` classifies `used`, `expired
 
 ### A request bearing `lvw_` (the choke point, `index.ts`)
 
-Resolved where `lvd_` is, only when no Clerk JWT verified:
+Resolved where `lvd_` is, only when no account access token verified:
 
 1. `bearer` matching `isWorkbenchSessionFormat` → `resolveWorkbenchSession(env, bearer, now)`:
    `SELECT s.*, t.read_only, t.revoked, t.expires_at AS token_expires_at FROM workbench_sessions s JOIN api_tokens t
@@ -312,7 +312,7 @@ ON t.id = s.token_id WHERE s.secret_hash = ?`. No row → `unknown`; token revok
    `s.expires_at <= now` → `expired`. Refused: log `[workbench] bearer-refused { reason, sessionPrefix }`, answer
    `401 invalid_session` with `WWW-Authenticate: Bearer error="invalid_token"`.
 2. `ctx.workbench = { sessionId, ownerId, tokenId, pairingId, documentId, tabId, origin, level }`, `level` lowered to
-   `view` when the token is read-only; `clerkUserId` null; `resolveOwner = () => ownerId`;
+   `view` when the token is read-only; `accountUserId` null; `resolveOwner = () => ownerId`;
    `verifiedUserId = ownerId`; `ctx.token = null`.
 3. A request carrying `X-Share-Code`, `X-Owner-Id` or `X-Share-Password` beside `lvw_`: `403 workbench_confined`
    (WB8).
@@ -357,8 +357,8 @@ Everything else is `confined`, among it: `documents/:doc` `DELETE`, `copy`, `fol
 
 ### Route effects under a session
 
-- `document-room-routes.ts` mint: `account: ctx.clerkUserId !== null || ctx.workbench !== null`; `personTag` from
-  `ctx.clerkUserId ?? ctx.workbench?.ownerId`; `role: capWorkbenchRole(grant.role, ctx.workbench?.level)`;
+- `document-room-routes.ts` mint: `account: ctx.accountUserId !== null || ctx.workbench !== null`; `personTag` from
+  `ctx.accountUserId ?? ctx.workbench?.ownerId`; `role: capWorkbenchRole(grant.role, ctx.workbench?.level)`;
   `workbenchPairing: ctx.workbench?.pairingId ?? null`. The upgrade sets `X-Verified-Workbench-Pairing` on every
   path (empty when none), as every other trust header.
 - `images.ts` `GET /api/images/:id`: under `ctx.workbench` the owner shortcut is skipped and `d` must equal the
@@ -433,12 +433,12 @@ person.name, lastName: null, fullName: person.name, username: null, email: null,
 getToken: async () => currentSecret, signOut: noop, deleteAccount: null }` and registers
 `registerTokenProvider(() => currentSecret)` in a layout effect, before the editor's first fetch.
 
-`ClerkProvider` on `pathname.startsWith('/embed/workbench')` renders neither bridge and holds
-`DEFERRED_AUTH_PENDING`, so nothing above the page ever reads as a settled guest, Clerk configured or not.
+`AuthProvider` on `pathname.startsWith('/embed/workbench')` renders neither bridge and holds
+`DEFERRED_AUTH_PENDING`, so nothing above the page ever reads as a settled guest, sign-in configured or not.
 
-`useClerkApiBootstrap` reads `useWorkbenchSession()` first in both variants. With a session: no
+`useAccountBootstrap` reads `useWorkbenchSession()` first in both variants. With a session: no
 `settleGuestMigration`, no `subscribeGuestMigration` pending, no 5 s timeout, no provider registration; it returns
-`{ isSignedIn: true, authLoaded: true, clerkUserId: person.id, clerkDisplayName: person.name }`.
+`{ isSignedIn: true, authLoaded: true, accountUserId: person.id, accountDisplayName: person.name }`.
 
 `useIdentityBootstrap`, when `workbenchMode`:
 
@@ -599,7 +599,7 @@ Explorer's own not-found). The session row copies `scope` and `folder_id`. The a
 #### The choke point by scope
 
 `ctx.workbench` gains `scope` and `folderId`; `documentId` is null in the workspace scope. `resolveOwner()`,
-`verifiedUserId`, `clerkUserId` (null) and `token` (null) are as in the document scope (I4), so a workspace session
+`verifiedUserId`, `accountUserId` (null) and `token` (null) are as in the document scope (I4), so a workspace session
 is a person's editor and every route re-gates it with the owner's identity at the owner's access now.
 
 1. **Ambient headers.** The document scope refuses `X-Share-Code`, `X-Owner-Id` and `X-Share-Password`. The
@@ -628,7 +628,7 @@ is a person's editor and every route re-gates it with the owner's identity at th
 Everything else is `confined`, among it (Never the account): `account`, `migrate`, `guest-id`, `tokens/**`,
 `workbench/**` but the one above, every write to `participants` and `preferences`, `ai/**`, `oauth/**`, `drive/**`,
 `teams` writes and `teams/invites`, `teams/invite-link/**`, `teams/invite-decline/**`, `teams/:p/invite-link`
-(team administration), `community/**` and `documents/:p/community/**` (Community publishing needs a Clerk session,
+(team administration), `community/**` and `documents/:p/community/**` (Community publishing needs a signed-in session,
 so the token cannot, WB51), `documents/:p/tabs/:p/presence` (an agent's door), `forms/**` and `telemetry/**`.
 `events` and `unfurl` are called without credentials and never see `lvw_`.
 
@@ -765,24 +765,24 @@ Explorer view, the same control at the right end of the Explorer's bottom bar li
 
 ### Routes
 
-| Method | Path                                            | Caller                       | Success                                        | Rejections                                                                                                                                                                                        |
-| ------ | ----------------------------------------------- | ---------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| POST   | `/api/workbench/tickets`                        | token                        | 201 `WorkbenchTicketResponse`                  | 401 `invalid_token`, 403 `token_required`, 403 `workbench_confined`, 400 `bad_request`, 400 `invalid_origin`, 428 `pairing_required`, 404 `not_found`, 410 `document_trashed`, 429 `rate_limited` |
-| POST   | `/api/workbench/sessions`                       | anyone holding a ticket      | 201 `WorkbenchSessionResponse`                 | 400 `bad_request`, 401 `invalid_ticket` `{ reason }`, 404 `not_found`, 410 `document_trashed`, 429 `rate_limited`                                                                                 |
-| DELETE | `/api/workbench/sessions/current`               | workbench session            | 204                                            | 401 `invalid_session`, 403 `not_a_workbench_session`                                                                                                                                              |
-| POST   | `/api/workbench/pairing-requests`               | token                        | 200 `WorkbenchPairingRequestCreated`           | 401 `invalid_token`, 403 `token_required`, 400 `bad_request`, 400 `invalid_origin`, 429 `rate_limited`                                                                                            |
-| GET    | `/api/workbench/pairing-requests/:code/status`  | the requesting token         | 200 `WorkbenchPairingStatusResponse`           | 403 `token_required`, 404 `not_found`                                                                                                                                                             |
-| GET    | `/api/workbench/pairing-requests/:code`         | Clerk session, owner         | 200 `{ request: WorkbenchPairingRequestView }` | 401 `sign_in_required`, 404 `not_found`                                                                                                                                                           |
-| POST   | `/api/workbench/pairing-requests/:code/approve` | Clerk session, owner         | 200 `{ pairing: WorkbenchPairing }`            | 401 `sign_in_required`, 404 `not_found`, 409 `pairing_answered`, 410 `pairing_expired`                                                                                                            |
-| POST   | `/api/workbench/pairing-requests/:code/decline` | Clerk session, owner         | 204                                            | 401 `sign_in_required`, 404 `not_found`, 409 `pairing_answered`, 410 `pairing_expired`                                                                                                            |
-| GET    | `/api/workbench/pairings` (WB46)                | Clerk session                | 200 `WorkbenchPairingsResponse`                | 401 `sign_in_required`                                                                                                                                                                            |
-| DELETE | `/api/workbench/pairings/:id`                   | Clerk session, token's owner | 204                                            | 401 `sign_in_required`, 404 `not_found`                                                                                                                                                           |
+| Method | Path                                            | Caller                   | Success                                        | Rejections                                                                                                                                                                                        |
+| ------ | ----------------------------------------------- | ------------------------ | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| POST   | `/api/workbench/tickets`                        | token                    | 201 `WorkbenchTicketResponse`                  | 401 `invalid_token`, 403 `token_required`, 403 `workbench_confined`, 400 `bad_request`, 400 `invalid_origin`, 428 `pairing_required`, 404 `not_found`, 410 `document_trashed`, 429 `rate_limited` |
+| POST   | `/api/workbench/sessions`                       | anyone holding a ticket  | 201 `WorkbenchSessionResponse`                 | 400 `bad_request`, 401 `invalid_ticket` `{ reason }`, 404 `not_found`, 410 `document_trashed`, 429 `rate_limited`                                                                                 |
+| DELETE | `/api/workbench/sessions/current`               | workbench session        | 204                                            | 401 `invalid_session`, 403 `not_a_workbench_session`                                                                                                                                              |
+| POST   | `/api/workbench/pairing-requests`               | token                    | 200 `WorkbenchPairingRequestCreated`           | 401 `invalid_token`, 403 `token_required`, 400 `bad_request`, 400 `invalid_origin`, 429 `rate_limited`                                                                                            |
+| GET    | `/api/workbench/pairing-requests/:code/status`  | the requesting token     | 200 `WorkbenchPairingStatusResponse`           | 403 `token_required`, 404 `not_found`                                                                                                                                                             |
+| GET    | `/api/workbench/pairing-requests/:code`         | signed in, owner         | 200 `{ request: WorkbenchPairingRequestView }` | 401 `sign_in_required`, 404 `not_found`                                                                                                                                                           |
+| POST   | `/api/workbench/pairing-requests/:code/approve` | signed in, owner         | 200 `{ pairing: WorkbenchPairing }`            | 401 `sign_in_required`, 404 `not_found`, 409 `pairing_answered`, 410 `pairing_expired`                                                                                                            |
+| POST   | `/api/workbench/pairing-requests/:code/decline` | signed in, owner         | 204                                            | 401 `sign_in_required`, 404 `not_found`, 409 `pairing_answered`, 410 `pairing_expired`                                                                                                            |
+| GET    | `/api/workbench/pairings` (WB46)                | signed in                | 200 `WorkbenchPairingsResponse`                | 401 `sign_in_required`                                                                                                                                                                            |
+| DELETE | `/api/workbench/pairings/:id`                   | signed in, token's owner | 204                                            | 401 `sign_in_required`, 404 `not_found`                                                                                                                                                           |
 
 The status and name of each rejection the spec leaves unnamed are WB43. Any `lvw_` request (choke point): 401 `invalid_session`, 403 `workbench_confined`, 403 `workbench_read_only`, 404
 `not_found` (another document). `invalid_origin`, `pairing_required`, `invalid_ticket`, `invalid_session`,
 `workbench_confined`, `workbench_read_only`, `token_required`, `not_a_workbench_session`, `pairing_answered` and
 `pairing_expired` are `WORKBENCH_ERROR_CODES` in `packages/api-schema/src/workbench.ts`, as `CHANGESET_ERROR_CODES` are (WB26). `:code` must match `^[A-Za-z0-9_-]{22}$`,
-else 404. 401 `sign_in_required` is answered to tokens and sessions too (`clerkUserId` null).
+else 404. 401 `sign_in_required` is answered to tokens and sessions too (`accountUserId` null).
 
 ### Wire types (`packages/api-schema/src/workbench.ts`)
 
@@ -977,7 +977,7 @@ matches `session.workbenchPairing === pairingId`. `WORKBENCH_ENDED_CLOSE = 4006`
 
 ### OpenAPI
 
-Eleven `RouteSpec` entries, segment `workbench`, tag `Workbench`, `auth`: `clerk` for the token and Clerk routes,
+Eleven `RouteSpec` entries, segment `workbench`, tag `Workbench`, `auth`: `clerk` (the manifest's name for Bearer-only) for the token and signed-in routes,
 `public` for the redemption; `tokenUsable: true` for the ticket mint, the pairing request and its status only.
 Request and response schemas from the types above; 428, 401 and 409/410 bodies inline. `route-parity.test.ts`
 covers them by dispatch probe.
@@ -1085,7 +1085,7 @@ CREATE TABLE workbench_session_rooms (
 | Field                                    | Class      | Notes                                                                                                                                            |
 | ---------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `workbench_pairing_requests.code`        | handle     | 16 random bytes base64url, stored in the clear: it grants nothing without the owner's session and is served again while the request lives (WB29) |
-| `*.owner_id`                             | identity   | The token's owner (a Clerk id); account-only                                                                                                     |
+| `*.owner_id`                             | identity   | The token's owner (an account id); account-only                                                                                                  |
 | `*.origin`                               | identity   | Normalised by `parseWorkbenchOrigin`                                                                                                             |
 | `*.name`                                 | display    | 1 to 40 characters, trimmed; never enforced                                                                                                      |
 | `workbench_tickets.ticket_hash`          | credential | SHA-256 hex of the 16-byte ticket                                                                                                                |
@@ -1149,7 +1149,7 @@ CREATE TABLE workbench_session_rooms (
 - **E29** Unknown message type, or `v: 2`: ignored, `[workbench] message-ignored <type>` once per type.
 - **E30** Rate limit on the mint: 429, the CLI exits 6.
 - **E31** `APP_BASE_URL` unset on a self-host: the URLs use `DEFAULT_BASE_URL`; the self-hosting doc says to set it.
-- **E32** A host without Clerk: no tokens, so no mint; the page can only reach `refused('no-ticket')` or
+- **E32** A host without sign-in: no tokens, so no mint; the page can only reach `refused('no-ticket')` or
   `refused('ticket')`; the pair page says pairing is not available.
 - **E33** Two frames of one pairing on one document: two sessions, two sockets, one person tag; presence shows the
   person once per socket as for two browser tabs.
@@ -1177,7 +1177,7 @@ CREATE TABLE workbench_session_rooms (
 ## Security and trust
 
 - **Pairing is the gate on minting** (I5): a leaked token mints nothing for an origin its owner never approved, and
-  approval needs the owner's own Clerk session (I6), which no token, session or guest header carries.
+  approval needs the owner's own signed-in session (I6), which no token, session or guest header carries.
 - **The pair page cannot be clickjacked**: `/workbench/pair` keeps `DENY`; Allow is a button on a page the person
   opened themselves from the CLI or the workbench.
 - **What the page shows is what is enforced**: the origin is printed beside the name; the name is display only.
@@ -1199,7 +1199,7 @@ CREATE TABLE workbench_session_rooms (
 - **No secret in logs** (I7); `[workbench]` logs carry ids, prefixes, reasons and counts.
 - **The workspace scope is a second approval**: no document pairing ever answers a workspace mint (E35); widening is
   only by Allow on a workspace request, whose page says so.
-- **Never more than the token** in the workspace scope: `clerkUserId` and `token` are null, so every Clerk-only route
+- **Never more than the token** in the workspace scope: `accountUserId` and `token` are null, so every signed-in-only route
   (team administration, Community publishing, Drive, the account) refuses as it refuses the token, and
   `WORKSPACE_ROUTES` refuses them first with `workbench_confined`; a view session is read-only at the choke point and
   never lists share links (WB54).
@@ -1307,8 +1307,8 @@ editing until you allow it again." with **Unpair** and **Cancel** (WB36). After 
   first of the editor's controls in the focus order, after the canvas itself, and the Header region for F6; a move inside the frame moves focus to the new view's heading (the Explorer's
   pane heading, or the editor's canvas as on a load), and announces nothing more.
 - Reveal outlines honour reduced motion as changeset outlines do.
-- The contrast audit, `apps/editor/e2e/clerk-stub/workbench-contrast.spec.ts` (every surface needs a signed-in person,
-  which only the Clerk-enabled export renders, so not the guest-mode `contrast-audit.spec.ts`), holds the pairing page
+- The contrast audit, `apps/editor/e2e/signed-in/workbench-contrast.spec.ts` (every surface needs a signed-in person,
+  which only the signed-in export renders, so not the guest-mode `contrast-audit.spec.ts`), holds the pairing page
   (pending), the device page (code entry and consent) and the paired-workbench row, each in both schemes.
 
 ## Web Experience
@@ -1393,8 +1393,8 @@ and the two CLI rows.
 | Page machine: every transition of the phase table                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | `apps/editor/app/embed/workbench/workbench-machine.test.ts`                                                               |
 | Port: target origin on every send; foreign origin and source dropped; unknown logged once                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | `apps/editor/lib/workbench/workbench-port.test.ts`                                                                        |
 | Renewal timing, swap, mismatch, expiry to `ended`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | `apps/editor/app/embed/workbench/useWorkbenchRenewal.test.ts` (fake timers)                                               |
-| Bridge publishes before children fetch; Clerk bridge stands down; pending default without Clerk                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | `apps/editor/components/providers/WorkbenchAuthBridge.test.tsx`                                                           |
-| Bootstrap: no migration, no participant write, no lists, no share-link read, session level, `tabId`                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | `apps/editor/app/document/[id]/useIdentityBootstrap.test.ts`, `apps/editor/hooks/persistence/useClerkApiBootstrap.test.tsx` |
+| Bridge publishes before children fetch; accounts bridge stands down; pending default without sign-in                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | `apps/editor/components/providers/WorkbenchAuthBridge.test.tsx`                                                           |
+| Bootstrap: no migration, no participant write, no lists, no share-link read, session level, `tabId`                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | `apps/editor/app/document/[id]/useIdentityBootstrap.test.ts`, `apps/editor/hooks/persistence/useAccountBootstrap.test.tsx` |
 | Client confinement throws without fetching; preferences write local only                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | `apps/editor/lib/api/core.test.ts`, `apps/editor/lib/user-preferences.test.ts`                                              |
 | Surface flags and every gate of the Surface table                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | `apps/editor/app/document/[id]/editor-surface.test.ts`, `EditorView.test.tsx` (new), `settings-catalogue.test.ts`         |
 | Messages from the editor: ready once, tab, settle 250 ms, dedupe, reveal, theme                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | `apps/editor/app/document/[id]/useWorkbenchMessages.test.ts`                                                              |
@@ -1438,7 +1438,7 @@ The workspace scope's tests:
 The fake workbench (`apps/editor/e2e/fixtures/fake-workbench.html`) is served by `workbench-support.ts` from a Node `http`
 server on `127.0.0.1` at a free port; it frames the URL it is given, answers `hello` with `hello-ack { name: 'Fake
 Workbench' }`, answers `renew` with a ticket the test mints, and records every message into `window.received`.
-`scripts/e2e-stack.mjs` under `E2E_WORKBENCH=1` acts as Clerk as under `E2E_CLERK_JWKS` (its own JWKS and `/e2e/token`)
+`scripts/e2e-stack.mjs` under `E2E_WORKBENCH=1` acts as the accounts Worker as under `E2E_ACCOUNTS_STUB` (its own JWKS at `/e2e/accounts/api/auth/jwks` and `/e2e/token`)
 and sets `APP_BASE_URL` to the live server; `test:e2e:workbench` builds with `NEXT_PUBLIC_E2E_AUTH=1`, as under
 `E2E_DRIVE`.
 

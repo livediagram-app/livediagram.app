@@ -17,7 +17,7 @@ This guide is the practical path: provision Cloudflare resources, configure secr
 
 What you do NOT need:
 
-- Clerk: auth is optional. Without it, every user is a guest (a per-browser id stored in `localStorage`, carried as `X-Owner-Id`). With Clerk configured, the api worker reaches `CLERK_JWKS_URL` to verify Bearer tokens — an outbound call only on the auth path.
+- Sign-in: it is optional. Without it, every user is a guest (a per-browser id stored in `localStorage`, carried as `X-Owner-Id`). With sign-in configured, the api worker fetches the accounts Worker's public keys (`${ACCOUNTS_URL}/api/auth/jwks`) to check access tokens, and calls it when someone signs in or a session refreshes.
 - No _required_ SaaS: no Stripe (no paid tier) and no analytics vendor. The other integrations are all optional and stay off until you add a key: Resend for transactional email ([Transactional & lifecycle email (Resend)](../specs/014-identity/transactional-email.md)), a model key for the AI features ([AI Assistance](../specs/007-editor/ai-assistance.md)), and a Google OAuth client for the Google Drive mirror ([Google Drive mirror](../specs/022-drive-mirror/drive-mirror.md)), each covered in its own section below. The telemetry endpoint is first-party only and off by default.
 - A separate database host: D1 covers everything.
 
@@ -61,33 +61,29 @@ If you're deploying via GitHub Actions (the default workflow), set two repo secr
 - `CF_API_TOKEN`: the token from the step above.
 - `CF_ACCOUNT_ID`: your Cloudflare account id.
 
-Those two are the only **required** ones — the deploy workflow uses raw `pnpm exec wrangler deploy` against them. Optionally, it also syncs three worker secrets from repo secrets of the same name, each skipped when unset: `CLERK_JWKS_URL`, `GUEST_ID_HMAC_SECRET`, and `TELEMETRY_KEY`. Setting them here rather than by hand means they rotate by editing the GitHub secret — and, for `TELEMETRY_KEY`, that the api and mcp workers can't drift apart. See [Secrets policy](../specs/002-project-scope/secrets-policy.md) for the full table.
+Those two are the only **required** ones — the deploy workflow uses raw `pnpm exec wrangler deploy` against them. Optionally, it also syncs worker secrets from repo secrets of the same name, each skipped when unset: the four sign-in values (`ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`), `GUEST_ID_HMAC_SECRET`, and `TELEMETRY_KEY`. Setting them here rather than by hand means they rotate by editing the GitHub secret — and, for `TELEMETRY_KEY`, that the api and mcp workers can't drift apart. See [Secrets policy](../specs/002-project-scope/secrets-policy.md) for the full table.
 
-## Optional Clerk auth
+## Optional sign-in
 
-The hosted version uses Clerk for sign-in. To enable on your self-host:
+The hosted version signs people in with their liveworkspace account, through the liveworkspace accounts Worker. To enable sign-in on your self-host:
 
-1. Create a Clerk application in the [Clerk dashboard](https://dashboard.clerk.com).
-2. Copy the publishable key and the JWKS URL.
-3. Set them on the two workers / apps:
-   - **Live and Community (build-time, browser-side)**: set `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` in your CI build env, or in `apps/editor/.env.production` and `apps/community/.env.production` (Community uses it only for My Shares).
-   - **API (worker secret)**:
+1. Register your deployment as an OAuth client of an accounts Worker. Its redirect URI is `https://<your-host>/api/auth/callback`, and it needs its own resource (the audience its access tokens carry). You get a client id and a client secret.
+2. Set the values on the apps:
+   - **Editor and Community (build-time, browser-side)**: set `NEXT_PUBLIC_SIGN_IN_ENABLED=true` in your CI build env, or in `apps/editor/.env.production` and `apps/community/.env.production` (Community uses it only for My Shares).
+   - **API (worker secrets)**:
 
      ```sh
-     pnpm --filter @livediagram/api exec wrangler secret put CLERK_JWKS_URL
+     pnpm --filter @livediagram/api exec wrangler secret put ACCOUNTS_URL
+     pnpm --filter @livediagram/api exec wrangler secret put API_RESOURCE
+     pnpm --filter @livediagram/api exec wrangler secret put ACCOUNTS_CLIENT_ID
+     pnpm --filter @livediagram/api exec wrangler secret put ACCOUNTS_CLIENT_SECRET
      ```
 
-     Paste the JWKS URL when prompted.
+     Paste each value when prompted.
 
-4. **For Teams ([Teams](../specs/013-workspace/teams.md)) — add the email claim to the session token.** Invite auto-connection matches pending invites against the verified `email` claim in the Clerk JWT, which the default session token doesn't carry. In the Clerk dashboard, customise the session token (Sessions → Customize session token) to include:
+3. **Teams ([Teams](../specs/013-workspace/teams.md)) need nothing extra.** Invite auto-connection matches pending invites against the verified `email` claim on the access token, which the accounts Worker always includes. The worker never trusts a client-supplied email.
 
-   ```json
-   { "email": "{{user.primary_email_address}}" }
-   ```
-
-   Without it, teams still work (create / roles / member management), but an invited address only connects when an admin re-invites after the claim is configured; the worker never trusts a client-supplied email.
-
-5. **Recommended when Clerk is on — sign guest ids.** Set a random HMAC secret so the worker mints signed guest ids and `POST /api/migrate` requires a valid signature before moving a guest's data into a Clerk account. Without it, anyone who observed a guest's id (it appears in shared-document DTOs / presence) could claim that guest's data at sign-up. Generate and set:
+4. **Recommended when sign-in is on — sign guest ids.** Set a random HMAC secret so the worker mints signed guest ids and `POST /api/migrate` requires a valid signature before moving a guest's data into an account. Without it, anyone who observed a guest's id (it appears in shared-document DTOs / presence) could claim that guest's data at sign-up. Generate and set:
 
    ```sh
    openssl rand -hex 32 | pnpm --filter @livediagram/api exec wrangler secret put GUEST_ID_HMAC_SECRET
@@ -104,17 +100,9 @@ The hosted version uses Clerk for sign-in. To enable on your self-host:
 
    Set them in the file rather than the Cloudflare dashboard: every `wrangler deploy` replaces plain vars with the ones the file declares. Both are no-ops without `GUEST_ID_HMAC_SECRET`. `pnpm dev` blanks `GUEST_SIG_ENFORCE_AFTER`, so local guests made before your local secret keep working; every e2e stack enforces it.
 
-6. **API tokens ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md)) come with Clerk.** They're a signed-in-only feature, so a self-host with Clerk configured gets the API Tokens category in Settings automatically; a guest-only self-host has no accounts and therefore no tokens (nothing to configure). Each token lasts six months and is stored hashed.
+5. **API tokens ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md)) come with sign-in.** They're a signed-in-only feature, so a self-host with sign-in configured gets the API Tokens category in Settings automatically; a guest-only self-host has no accounts and therefore no tokens (nothing to configure). Each token lasts six months and is stored hashed.
 
-7. **Optional — "Continue with Google" button.** To surface Google OAuth on `/sign-in` and `/get-started`, enable the Google SSO connection in the Clerk dashboard (a production `pk_live_*` instance needs your own Google Cloud OAuth client registered against Clerk's redirect URI, `https://clerk.<domain>/v1/oauth_callback`, shown verbatim in the dashboard), then set the build-time flag on the editor app alongside the publishable key:
-
-   ```sh
-   NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED=true
-   ```
-
-   Like the publishable key it's baked in at build time (CI env or `apps/editor/.env.production`). It's gated on Clerk being configured, so it's a no-op in guest-only mode. Unset keeps just the email-code sign-in.
-
-Without the Clerk vars set, the api worker treats every request as a guest (resolves owner from `X-Owner-Id`), and the live frontend's ClerkProvider becomes a pass-through that renders the editor without any auth UI. Self-host without Clerk is a fully-supported path; the canvas works identically (and guest-id signing is moot, since there's no migrate without Clerk accounts).
+Without the sign-in values set, the api worker treats every request as a guest (resolves owner from `X-Owner-Id`), and the live frontend mounts no session bridge, so it renders the editor without any auth UI. Self-host without sign-in is a fully-supported path; the canvas works identically (and guest-id signing is moot, since there's no migrate without accounts).
 
 See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for the hybrid auth model.
 
@@ -157,13 +145,13 @@ See [Deployment](../specs/016-platform/deployment.md) for the deeper deploy mech
 
 Serve the editor over HTTPS (Cloudflare does by default, on `workers.dev` and on a custom domain). It also works over plain http, on a LAN address for instance: ids and hashes fall back to plain code there, and only the clipboard buttons need HTTPS ([Secure context](../specs/016-platform/secure-context.md)).
 
-## MCP server (optional, needs Clerk)
+## MCP server (optional, needs sign-in)
 
 The `apps/mcp` worker ([MCP server](../specs/015-api/mcp-server.md)) lets people connect an AI tool (Claude, any MCP
 client) to drive their documents. It's **optional** — don't deploy it and nothing
-else references it — and **needs Clerk**, exactly like API tokens and teams: the
-OAuth consent page authenticates the user via Clerk and the api's
-`/api/oauth/exchange` requires a Clerk identity, so a no-auth self-host can mint
+else references it — and **needs sign-in**, exactly like API tokens and teams: the
+OAuth consent page authenticates the user through sign-in and the api's
+`/api/oauth/exchange` requires an account identity, so a no-auth self-host can mint
 nothing. To run it:
 
 1. **Create a KV namespace** for OAuth state and put the id in `apps/mcp/wrangler.toml`:
@@ -232,9 +220,9 @@ reader prefers Google, each falling back to whichever key exists, and
   handwriting better AND costs less (docs/research/vision/handwriting-readers.md). On a
   single provider, setting `AI_MODEL` moves the reader too unless you set this.
 - `AI_ALLOWED_ORIGINS`: comma-separated `Origin` allow-list for `POST /api/ai` (e.g. `https://your-host,http://localhost:3102`). Unset = no origin check. Matched verbatim, case-sensitive. `apps/api/wrangler.toml` commits livediagram.app's origins here, so a fork sets its own or deletes the line, or every AI request answers 403.
-- `AI_REQUIRE_CLERK`: set to `"true"` to reject the guest (`X-Owner-Id`) path on `/api/ai` only, requiring a verified Clerk JWT. Unset = guests can use AI (so a Clerk-less fork still works).
+- `AI_REQUIRE_SIGN_IN`: set to `"true"` to reject the guest (`X-Owner-Id`) path on `/api/ai` only, requiring a verified access token. Unset = guests can use AI (so a fork without sign-in still works).
 
-The last two are the spend-DoS defence: on a public deployment they stop a third-party site from minting fresh owner ids to drain your model budget. The hosted livediagram.app sets `AI_ALLOWED_ORIGINS` and deliberately leaves `AI_REQUIRE_CLERK` unset so guests keep AI; a private or Clerk-less fork can leave both unset. Two further defences live alongside them: the `AI_RATE_LIMITER` binding (declared in `apps/api/wrangler.toml` as a Cloudflare rate-limit binding, 20 requests / 60 s per IP) caps how fast one client can drive the endpoint; absent binding falls through to "allow" so a self-host without the paid Cloudflare feature still works. AI is also per-user opt-in via the Settings dialog even once the key is present.
+The last two are the spend-DoS defence: on a public deployment they stop a third-party site from minting fresh owner ids to drain your model budget. The hosted livediagram.app sets `AI_ALLOWED_ORIGINS` and deliberately leaves `AI_REQUIRE_SIGN_IN` unset so guests keep AI; a private fork, or one without sign-in, can leave both unset. Two further defences live alongside them: the `AI_RATE_LIMITER` binding (declared in `apps/api/wrangler.toml` as a Cloudflare rate-limit binding, 20 requests / 60 s per IP) caps how fast one client can drive the endpoint; absent binding falls through to "allow" so a self-host without the paid Cloudflare feature still works. AI is also per-user opt-in via the Settings dialog even once the key is present.
 
 ## Email (optional, Resend)
 
@@ -255,7 +243,7 @@ If you enable this on a deployment that already has signed-in users, run the one
 
 ## Team invite reminders and expiry
 
-Teams need Clerk. With it on, the daily cron expires team invites nobody answered within 28 days (whether or not
+Teams need sign-in. With it on, the daily cron expires team invites nobody answered within 28 days (whether or not
 email is configured) and, with `RESEND_API_KEY` set, sends the three reminders first
 ([Teams](../specs/013-workspace/teams.md#reminders-and-expiry)). Migration `0095_team_invite_decline_and_reminders.sql`
 adds the columns; nothing else to configure.
@@ -264,9 +252,9 @@ adds the columns; nothing else to configure.
   network on the invite email's open Decline doors (`/api/teams/invite-decline/...`). Without the binding every
   request is allowed; the token is 256 random bits either way.
 
-## Workbenches (optional, needs Clerk)
+## Workbenches (optional, needs sign-in)
 
-A workbench is a developer tool that frames the editor signed in, beside an agent ([Workbench embeds](../specs/013-workspace/workbench-embeds.md)). It needs API tokens, so it exists only where Clerk is configured; without Clerk the routes answer as for any caller without a token and nothing breaks.
+A workbench is a developer tool that frames the editor signed in, beside an agent ([Workbench embeds](../specs/013-workspace/workbench-embeds.md)). It needs API tokens, so it exists only where sign-in is configured; without it the routes answer as for any caller without a token and nothing breaks.
 
 - `APP_BASE_URL` (api `[vars]`): set it to your deployment's public origin. Besides the links in emails, it builds the workbench frame URLs (`/embed/workbench`, and `/embed/workbench/explorer` for the whole workspace) and the pairing URL (`/workbench/pair`) the CLI prints. Use the origin that serves the app without redirecting (for example `https://www.example.com` when the apex redirects to `www`): a workbench checks the frame's messages against the origin of that URL, and a redirect changes it. Left at its default, those links point at livediagram.app.
 - `WORKBENCH_TICKET_RATE_LIMITER` (optional binding, declared in `apps/api/wrangler.toml`): caps ticket mints and pairing requests per token. Without the binding every request is allowed.
@@ -278,7 +266,7 @@ Plan mode (boards, Sheets and forms) moved to liveplanner. The migrations that m
 `sheet_cells`, the form tables) stay in the chain and the tables stay in D1, unread; nothing needs setting up for
 them, and `FORM_RATE_LIMITER` is no longer read.
 
-## Google Drive mirror (optional, needs Clerk)
+## Google Drive mirror (optional, needs sign-in)
 
 Signed-in users can mirror My Work to their own Google Drive ([Google Drive mirror](../specs/022-drive-mirror/drive-mirror.md)). It is **off until you set a Google OAuth client id**; with none, Settings has no Cloud Sync section and every `/api/drive` route answers `503 drive_not_configured`. The Drive traffic goes from each user's browser straight to Google; your worker only brokers tokens and stores a few small rows in D1.
 
@@ -330,4 +318,4 @@ The six downstream workers don't need their own domain; the router fans out via 
 
 - **`account not authorized` from wrangler**: the API token is missing a scope. See the token list above; most often it's missing **Account → Account Settings: Read**, which wrangler uses to look up your account.
 - **`Durable Object class is not exported`**: the api worker's `wrangler.toml` references `DocumentRoom` as the DO class. It IS exported from `apps/api/src/index.ts`; if you've forked + renamed, keep the export name in step with the binding.
-- **Editor loads but every request 403s**: the resolved owner doesn't match the document's stored owner. If you migrated from one auth setup to another (added Clerk after running guest-only), the old guest documents still belong to the old guest id. The `/api/migrate` endpoint moves rows from a guest id to a Clerk userId after sign-up; see [Auth + guest access](../specs/014-identity/auth-and-guest-access.md).
+- **Editor loads but every request 403s**: the resolved owner doesn't match the document's stored owner. If you migrated from one auth setup to another (added sign-in after running guest-only), the old guest documents still belong to the old guest id. The `/api/migrate` endpoint moves rows from a guest id to an account id after sign-up; see [Auth + guest access](../specs/014-identity/auth-and-guest-access.md).

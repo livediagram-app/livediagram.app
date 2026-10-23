@@ -9,7 +9,7 @@
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import { Button } from '@livediagram/ui';
 import { ApiError, apiDriveToken } from '@/lib/api-client';
-import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
+import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { googleClientId } from '@/lib/drive/config';
 import { createDriveRestClient } from '@/lib/drive/drive-rest-client';
 import { requestBrowserAccessToken } from '@/lib/drive/google-scripts';
@@ -52,7 +52,7 @@ type Phase =
   | { kind: 'import-failed' };
 
 export function DriveOpen() {
-  const { authLoaded, isSignedIn, clerkUserId } = useClerkApiBootstrap();
+  const { authLoaded, isSignedIn, accountUserId } = useAccountBootstrap();
   const drive = useDriveMirror();
   const state = useSyncExternalStore(noSubscription, readState, beforeHydration);
   const here = useSyncExternalStore(noSubscription, readHere, hereBeforeHydration);
@@ -61,9 +61,9 @@ export function DriveOpen() {
 
   // A token: the broker's, or a click away in browser-only mode.
   useEffect(() => {
-    if (!clerkUserId || drive.mode !== 'broker' || token) return;
+    if (!accountUserId || drive.mode !== 'broker' || token) return;
     let live = true;
-    void apiDriveToken(clerkUserId)
+    void apiDriveToken(accountUserId)
       .then((t) => live && setToken(t.accessToken))
       .catch((err: unknown) => {
         if (!live) return;
@@ -74,7 +74,7 @@ export function DriveOpen() {
     return () => {
       live = false;
     };
-  }, [clerkUserId, drive.mode, token]);
+  }, [accountUserId, drive.mode, token]);
 
   const client = useCallback(
     (accessToken: string) =>
@@ -86,12 +86,12 @@ export function DriveOpen() {
   );
 
   useEffect(() => {
-    if (!token || !state || !clerkUserId) return;
+    if (!token || !state || !accountUserId) return;
     let live = true;
     void resolveOpenWith(
       {
         drive: client(token),
-        port: createApiLivediagramPort(clerkUserId),
+        port: createApiLivediagramPort(accountUserId),
         host: window.location.host,
       },
       state,
@@ -110,7 +110,7 @@ export function DriveOpen() {
     return () => {
       live = false;
     };
-  }, [token, state, clerkUserId, client]);
+  }, [token, state, accountUserId, client]);
 
   const allowAccess = async () => {
     if (drive.mode === 'browser') {
@@ -121,13 +121,13 @@ export function DriveOpen() {
   };
 
   const importCopy = async (reason: OpenWithImportReason) => {
-    if (!token || !state || !clerkUserId) return;
+    if (!token || !state || !accountUserId) return;
     setPhase({ kind: 'importing' });
     try {
       const id = await importOpenWithCopy(
         {
           drive: client(token),
-          port: createApiLivediagramPort(clerkUserId),
+          port: createApiLivediagramPort(accountUserId),
           host: window.location.host,
         },
         state,

@@ -11,7 +11,7 @@ import type { DriveMirrorStatus } from '@/lib/drive/engine';
 import type { DriveTabMessage } from '@/lib/drive/tab-election';
 
 const auth = vi.hoisted(() => ({
-  value: { isSignedIn: false, authLoaded: false, clerkUserId: null as string | null },
+  value: { isSignedIn: false, authLoaded: false, accountUserId: null as string | null },
 }));
 const engines = vi.hoisted(
   () =>
@@ -31,8 +31,8 @@ const election = vi.hoisted(() => ({
 
 const route = vi.hoisted(() => ({ path: '/explorer/recent' }));
 vi.mock('next/navigation', () => ({ usePathname: () => route.path }));
-vi.mock('@/hooks/persistence/useClerkApiBootstrap', () => ({
-  useClerkApiBootstrap: () => auth.value,
+vi.mock('@/hooks/persistence/useAccountBootstrap', () => ({
+  useAccountBootstrap: () => auth.value,
 }));
 vi.mock('@/components/providers/deferred-auth', () => ({
   useDeferredAuth: () => ({ user: null }),
@@ -118,7 +118,7 @@ const status = (over: Partial<DriveMirrorStatus>): DriveMirrorStatus => ({
 });
 
 beforeEach(() => {
-  auth.value = { isSignedIn: false, authLoaded: false, clerkUserId: null };
+  auth.value = { isSignedIn: false, authLoaded: false, accountUserId: null };
   engines.length = 0;
   posted.length = 0;
   election.elect = true;
@@ -136,7 +136,7 @@ describe('DriveMirrorProvider', () => {
     // outcome in the same commit as the provider mounts.
     route.path = '/drive/connected';
     window.history.replaceState(null, '', '/drive/connected');
-    auth.value = { isSignedIn: true, authLoaded: true, clerkUserId: 'user_1' };
+    auth.value = { isSignedIn: true, authLoaded: true, accountUserId: 'user_1' };
     function MarksOnMount() {
       useEffect(() => markConnectCancelled(sessionStorage), []);
       return null;
@@ -154,7 +154,7 @@ describe('DriveMirrorProvider', () => {
     const view = render(tree());
     await flush();
     expect(engines).toHaveLength(0);
-    auth.value = { isSignedIn: true, authLoaded: true, clerkUserId: 'user_1' };
+    auth.value = { isSignedIn: true, authLoaded: true, accountUserId: 'user_1' };
     view.rerender(tree());
     await flush();
     await flush();
@@ -165,7 +165,7 @@ describe('DriveMirrorProvider', () => {
   it('back from a finished connection, asks the tab that runs the mirror to sync at once', async () => {
     election.elect = false;
     markConnectConnected(sessionStorage);
-    auth.value = { isSignedIn: true, authLoaded: true, clerkUserId: 'user_1' };
+    auth.value = { isSignedIn: true, authLoaded: true, accountUserId: 'user_1' };
     render(tree());
     await flush();
     await flush();
@@ -176,7 +176,7 @@ describe('DriveMirrorProvider', () => {
   it('never says Not connected while the new connection is being set up', async () => {
     election.elect = false;
     markConnectConnected(sessionStorage);
-    auth.value = { isSignedIn: true, authLoaded: true, clerkUserId: 'user_1' };
+    auth.value = { isSignedIn: true, authLoaded: true, accountUserId: 'user_1' };
     render(tree());
     await flush();
     await flush();
@@ -209,7 +209,7 @@ describe('DriveMirrorProvider', () => {
     beforeEach(() => vi.useFakeTimers({ now: 10 * 60 * 60_000 }));
     afterEach(() => vi.useRealTimers());
     const signedIn = async () => {
-      auth.value = { isSignedIn: true, authLoaded: true, clerkUserId: 'user_1' };
+      auth.value = { isSignedIn: true, authLoaded: true, accountUserId: 'user_1' };
       render(tree());
       await act(async () => {
         await vi.advanceTimersByTimeAsync(0);

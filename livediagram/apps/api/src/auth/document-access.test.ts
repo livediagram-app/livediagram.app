@@ -350,7 +350,7 @@ describe('share password gate (docs/specs/013-workspace/share-password.md)', () 
 
 describe('team-library access (docs/specs/013-workspace/team-shared-documents.md)', () => {
   // Membership is checked against the VERIFIED callerId (8th arg), the
-  // Clerk user id — NOT the hybrid `owner` (3rd arg, which may be the
+  // account id — NOT the hybrid `owner` (3rd arg, which may be the
   // unsigned X-Owner-Id header). The member here is a guest-shaped
   // `owner` (null) with a verified callerId to prove that's what counts.
   it('grants edit to a JOINED member of the document team', async () => {
@@ -385,7 +385,7 @@ describe('team-library access (docs/specs/013-workspace/team-shared-documents.md
   });
 
   // Security: a forged X-Owner-Id header (member id in `owner`) with NO
-  // verified Clerk session (callerId null) must NOT pass — otherwise a
+  // verified session (callerId null) must NOT pass — otherwise a
   // removed member could forge a current member's id. Membership is
   // never even consulted (callerId is null).
   it('denies a forged owner-id header with no verified caller on a team document', async () => {

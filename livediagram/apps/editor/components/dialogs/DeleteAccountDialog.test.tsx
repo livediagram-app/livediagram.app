@@ -13,7 +13,7 @@ vi.mock('@/components/providers/deferred-auth', () => ({
       calls.push('confirm');
       return auth.confirmed;
     },
-    deleteAccount: async () => void calls.push('clerk'),
+    deleteAccount: async () => void calls.push('session'),
   }),
 }));
 vi.mock('@/lib/api-client', () => ({
@@ -52,6 +52,6 @@ describe('DeleteAccountDialog', () => {
     auth.confirmed = true;
     const onDeleted = confirmDelete();
     await waitFor(() => expect(onDeleted).toHaveBeenCalled());
-    expect(calls).toEqual(['confirm', 'server', 'clerk']);
+    expect(calls).toEqual(['confirm', 'server', 'session']);
   });
 });

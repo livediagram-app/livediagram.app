@@ -129,13 +129,13 @@ Set in the repo under **Settings → Secrets and variables → Actions**:
 
 | Secret                 | Synced to       | See                                                                                                                                                       |
 | ---------------------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CLERK_JWKS_URL`       | api             | [04](../014-identity/auth-and-guest-access.md)                                                                                                            |
+| `ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET` | api | [04](../014-identity/auth-and-guest-access.md); `ACCOUNTS_CLIENT_ID` also turns sign-in on in the build |
 | `GUEST_ID_HMAC_SECRET` | api             | [04](../014-identity/auth-and-guest-access.md)                                                                                                            |
 | `TELEMETRY_KEY`        | api **and** mcp | [Telemetry](../017-telemetry/telemetry.md) — livediagram's key on the liveworkspace telemetry service; one GitHub secret drives both, so they can't drift |
 
 Syncing on every deploy means these rotate by editing the GitHub secret rather than by running `wrangler` against production. [Secrets policy](../002-project-scope/secrets-policy.md) holds the full worker-secret table.
 
-Staging has a `_STAGING`-suffixed twin of each optional secret plus its own Clerk publishable key, listed in [Staging environment](staging-environment.md). `CF_API_TOKEN` and `CF_ACCOUNT_ID` are shared: both environments live in the same Cloudflare account.
+Staging has a `_STAGING`-suffixed twin of each optional secret (its own accounts client registration among them), listed in [Staging environment](staging-environment.md). `CF_API_TOKEN` and `CF_ACCOUNT_ID` are shared: both environments live in the same Cloudflare account.
 
 ### Creating the API token
 

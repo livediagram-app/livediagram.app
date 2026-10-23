@@ -86,9 +86,9 @@ export async function handleCommunityOwnerRoutes(ctx: RouteContext): Promise<Res
   }
 
   // PUT: publish, or save an Edit Listing.
-  // G1: every public post is tied to an account, so publishing needs a verified Clerk session (never a guest id or
+  // G1: every public post is tied to an account, so publishing needs a verified signed-in session (never a guest id or
   // an API token), and a team library document is not one person's to give away.
-  if (!ctx.clerkUserId || ctx.clerkUserId !== doc.ownerId)
+  if (!ctx.accountUserId || ctx.accountUserId !== doc.ownerId)
     return reject(signInRequired(), 'sign_in_required');
   if (doc.teamId) return reject(conflict('team_document'), 'team_document');
   const parsed = validateCommunityPostInput(await request.json().catch(() => null));
@@ -97,11 +97,11 @@ export async function handleCommunityOwnerRoutes(ctx: RouteContext): Promise<Res
   if (await getDocumentSharePassword(env, id))
     return reject(conflict('share_password_set'), 'share_password_set');
   if (hidden) return reject(conflict('post_hidden'), 'post_hidden');
-  const author = await authorOf(ctx, ctx.clerkUserId);
+  const author = await authorOf(ctx, ctx.accountUserId);
 
   if (existing) {
     const res = await publishServicePost(env, id, {
-      owner: ctx.clerkUserId,
+      owner: ctx.accountUserId,
       shareCode: existing.shareCode,
       documentState: 'public',
       author,
@@ -123,7 +123,7 @@ export async function handleCommunityOwnerRoutes(ctx: RouteContext): Promise<Res
   // nothing behind.
   const shareCode = newCommunityLinkCode();
   const res = await publishServicePost(env, id, {
-    owner: ctx.clerkUserId,
+    owner: ctx.accountUserId,
     shareCode,
     documentState: 'public',
     author,
@@ -136,7 +136,7 @@ export async function handleCommunityOwnerRoutes(ctx: RouteContext): Promise<Res
     await saveNewCommunityLink(env, {
       shareCode,
       documentId: id,
-      authorId: ctx.clerkUserId,
+      authorId: ctx.accountUserId,
       postId: post.id,
       title: post.title,
       anonymous: post.anonymous,

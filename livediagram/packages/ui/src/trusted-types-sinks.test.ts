@@ -126,7 +126,10 @@ describe.each(APPS)('apps/%s', (app) => {
     // Its own build's scripts, under the prefix next.config.ts serves them from (basePath or assetPrefix).
     const config = read(`apps/${app}/next.config.ts`);
     const prefix = /(?:basePath|assetPrefix): '([^']+)'/.exec(config)?.[1] ?? '';
-    expect(layout).toContain(`const TRUSTED_TYPES_BOOT = trustedTypesBootScript(\n  '${prefix}',`);
+    // On one line, or split where the editor also names the Drive mirror's script origins.
+    expect(layout).toMatch(
+      new RegExp(`const TRUSTED_TYPES_BOOT = trustedTypesBootScript\\(\\s*'${prefix}'[,)]`),
+    );
   });
 
   it('sends the Trusted Types header on every page', () => {

@@ -43,7 +43,7 @@ spread over parallel jobs so the wall time is the slowest job, not the sum:
 | ------------------- | ------------------------------------------------ | ------------------------------------------------------------------------- |
 | **Smoke shard i/6** | live                                             | `test:e2e:smoke --shard=i/6`: a sixth of the `chromium` project's tests   |
 | **Sites audit**     | live, help, telemetry, community, then marketing | `test:e2e:sites`: the `sites` project, `optical-audit-sites.spec.ts`      |
-| **Signed-in specs** | live with Clerk stubbed (`build:clerk-stub`)     | the `clerk-stub` project ([Signed-in specs](#signed-in-specs-clerk-stub)) |
+| **Signed-in specs** | live with sign-in on (`build:signed-in`)         | the `signed-in` project ([Signed-in specs](#signed-in-specs))             |
 
 Only the sites audit opens help, telemetry, the Community and marketing, so only its job pays for their builds. Marketing builds after the
 others, as `turbo.json` orders it: its licences page runs Next's analyzer in each other app on that
@@ -90,7 +90,7 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
 - **A warm build cache**: each job restores Turbopack's build cache (`.next/cache`) from the latest
   run on `main` before it builds, so it compiles only what changed
   (`.github/actions/next-cache-restore`, the one place its key is made). Only runs on `main` save it,
-  keyed by version, lockfile and commit, one copy per set of builds (`live`, `live-clerk-stub`,
+  keyed by version, lockfile and commit, one copy per set of builds (`live`, `live-signed-in`,
   `sites`); pull requests read it and never write their own, so they cannot evict it. Turbopack
   re-checks every input, so a cache from an older commit only ever saves work, and a lockfile change
   starts cold. Each restore logs `[next-cache] <name>: restored <key>` or a miss. A cache only ever
@@ -105,9 +105,9 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
 - **Traces of first failures** in CI (`retain-on-first-failure`): a test that fails and then passes
   on retry still keeps the trace of its failing attempt, so a flaky test can be read rather than
   guessed at. Each invocation keeps its own artefacts (`test-results` and `playwright-report`, or
-  their `-clerk-stub` twins), since a run clears its output folder when it starts. `e2e.yml`
+  their `-signed-in` twins), since a run clears its output folder when it starts. `e2e.yml`
   uploads them whenever any holds a trace, a timed-out run included, one artefact per job
-  (`playwright-report-shard-i`, `playwright-report-sites`, `playwright-report-clerk-stub`). Locally a trace is kept for a
+  (`playwright-report-shard-i`, `playwright-report-sites`, `playwright-report-signed-in`). Locally a trace is kept for a
   retry only.
 - **No waiting on what is not coming.** A helper waits for a thing only when the app owes it:
   `dismissQuickTour` returns at once unless /new's tour handoff flag is in sessionStorage
@@ -170,26 +170,29 @@ developer with `pnpm dev` already running (live :3102 + api :8687) runs
 `pnpm --filter @livediagram/editor test:e2e` against that stack with no
 extra boot.
 
-## Signed-in specs (Clerk stub)
+## Signed-in specs
 
-Clerk is a build-time switch ([Auth + guest access](../014-identity/auth-and-guest-access.md)), so the
-guest-mode `out/` can never show a signed-in user. The specs in `apps/editor/e2e/clerk-stub/` run
-against a second export, `apps/editor/.next/out-clerk-stub/` (inside `.next/`, so every ignore and
-source scanner already skips it), built by `pnpm build:clerk-stub` with a
-publishable key for a host that cannot resolve. Each spec installs a fake `window.Clerk`
-(`e2e/clerk-stub/clerk-stub.ts`) before the page loads, which @clerk/react takes in place of
-downloading clerk-js, so a chosen user (name, email, pictures) sits behind the real hooks with no
-Clerk account, secret or network.
+Sign-in is a build-time switch ([Auth + guest access](../014-identity/auth-and-guest-access.md)), so the
+guest-mode `out/` can never show a signed-in user. The specs in `apps/editor/e2e/signed-in/` run
+against a second export, `apps/editor/.next/out-signed-in/` (inside `.next/`, so every ignore and
+source scanner already skips it), built by `pnpm build:signed-in` with sign-in on and
+`NEXT_PUBLIC_E2E_AUTH=1`, which swaps the accounts bridge for the test-only `E2EAuthBridge`. Each
+spec puts a session in `localStorage` (`installSession` in `e2e/signed-in/session.ts`) before the
+page loads, so a chosen user (name, email) is signed in with no accounts Worker, secret or network.
 
-`pnpm --filter @livediagram/editor test:e2e:clerk-stub` sets `E2E_CLERK_STUB=1`, which adds the
-`clerk-stub` project and boots the stack with `E2E_EDITOR_OUT=.next/out-clerk-stub` on its own ports
+`pnpm --filter @livediagram/editor test:e2e:signed-in` sets `E2E_SIGNED_IN=1`, which adds the
+`signed-in` project and boots the stack with `E2E_EDITOR_OUT=.next/out-signed-in` on its own ports
 (live `:3115`, api `:8115`, marketing `:3116`), so a guest stack already up on `:3102` is never
-reused for it. The stack also stands in for Clerk (`E2E_CLERK_JWKS=1`): it makes a signing key at
-boot, serves its JWKS on `/e2e/jwks.json`, starts the api worker with `CLERK_JWKS_URL` pointing at
-it, and mints a session token for any test account on `/e2e/token?sub=user_…`, which the fake
-`window.Clerk` hands out. So a stub account is a real verified account to the api and the realtime
-room, and two or three stub browsers can collaborate in one document. A test that changes an
+reused for it. The stack also stands in for the accounts Worker (`E2E_ACCOUNTS_STUB=1`): it makes a
+signing key at boot, serves its JWKS on the issuer's own path (`/e2e/accounts/api/auth/jwks`),
+starts the api worker with `ACCOUNTS_URL` and `API_RESOURCE` pointing at it, and mints an access
+token with that issuer and audience for any test account on `/e2e/token?sub=user_…`, which
+`installSession` hands the bridge. So a stub account is a real verified account to the api and the
+realtime room, and two or three stub browsers can collaborate in one document. A test that changes an
 account's synced settings takes a fresh id (`freshUserId`), since the stack's D1 outlives a test. `e2e.yml` builds and runs them in their own job, beside the smoke shards.
+
+The sign-in round trip itself (`/api/auth/*` against the accounts Worker) is covered by the api's unit
+tests (`apps/api/src/routes/auth.test.ts`), not here.
 
 ## Armed guest signatures
 
@@ -282,9 +285,9 @@ tests where it's cheap.
 - `scripts/e2e-stack.mjs`: the stack boot + static serve (live, help, telemetry, community, marketing).
 - `.github/workflows/e2e.yml`: the sharded workflow, run on every pull request;
   `.github/actions/e2e-setup/`: the setup its jobs share (pnpm, Node, install, image check).
-- `test:e2e`, `test:e2e:smoke`, `test:e2e:sites` and `test:e2e:clerk-stub` scripts in `apps/editor/package.json`; `build:clerk-stub`
-  (`apps/editor/scripts/build-clerk-stub.mjs`) builds the export the latter runs against.
-- `apps/editor/e2e/clerk-stub/`: the fake `window.Clerk` and the signed-in specs.
+- `test:e2e`, `test:e2e:smoke`, `test:e2e:sites` and `test:e2e:signed-in` scripts in `apps/editor/package.json`; `build:signed-in`
+  (`apps/editor/scripts/build-signed-in.mjs`) builds the export the latter runs against.
+- `apps/editor/e2e/signed-in/`: the session helper and the signed-in specs.
 
 Playwright is an `apps/editor` dev dependency; it is **not** wired into
 `pnpm test` / `turbo run test` (that stays the fast unit gate), so

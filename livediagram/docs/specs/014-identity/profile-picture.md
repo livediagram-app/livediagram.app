@@ -1,6 +1,11 @@
 # Profile picture
 
-**Status: shipped.** A signed-in user's avatar shows their profile picture:
+> **Dormant since the move off Clerk.** Sign-in now goes through the liveworkspace accounts Worker, which has no
+> profile picture, so `pictureUrl` is always `null` and everyone shows initials. The code (the Clerk image-host
+> allowlist in `packages/api-schema/src/profile-picture.ts` and the publish path) is still present but dormant. The
+> rest of this spec is the design as shipped with Clerk, kept for when the accounts Worker offers a picture.
+
+**Status: shipped, now dormant.** A signed-in user's avatar shows their profile picture:
 a picture they uploaded, else their Google picture. They see it in their own
 chrome, and signed-in collaborators see it on presence avatars, cursors,
 comments and team member lists, unless they turn it off. Anonymous share-link

@@ -567,7 +567,7 @@ type CapabilitiesResponse = {
   emailEnabled?: boolean;
   driveMode?: DriveMode;
   apiBase?: string; // `${url.origin}/api` (CLI9)
-  authEnabled?: boolean; // CLERK_JWKS_URL is set (CLI11)
+  authEnabled?: boolean; // ACCOUNTS_URL and API_RESOURCE are set (CLI11)
   oauthIssuer?: string; // OAUTH_ISSUER, an https origin; absent when unset or invalid
   documentFormat?: number; // DOCUMENT_FORMAT
   cli?: { minVersion: string }; // CLI_MIN_VERSION when it is x.y.z; absent otherwise
@@ -878,7 +878,7 @@ minted token revoked`, or `[oauth] handover revoke failed` when the revoke itsel
   title "livediagram CLI", heading "You're signed in", body "Return to your terminal. You can close this tab." On
   `access_denied`: "Sign-in cancelled", "Nothing was connected. You can close this tab."
 - **`/oauth/device` page**, in `OauthShell` (CLI65):
-  - not `clerkEnabled`: "Connecting apps isn't available" / "This deployment doesn't have accounts enabled, so
+  - not `signInEnabled`: "Connecting apps isn't available" / "This deployment doesn't have accounts enabled, so
     there's nothing to connect to."
   - signed out: "Sign in to connect the livediagram CLI", with Sign in (back to this URL) and Cancel.
   - entry: heading "Connect a terminal", label "Code shown in your terminal", an 8-letter field formatted
@@ -1038,7 +1038,7 @@ WebSocket) with a fixed clock; none waits on a real timer or the network.
 | Every emitted event has a chart and a sentence; `Token·Created·Cli`                           | `apps/telemetry` `metric-emitters.test.ts`, `event-explanation.test.ts`; `apps/editor/lib/mcp-consent-session.test.ts`                                                            |
 | Port-agnostic loopback; built-in client; `clientId` on the session                            | `apps/mcp/src/oauth.test.ts`, `oauth-clients.test.ts`                                                                                                                           |
 | Device grant endpoints and polling answers                                                    | `apps/mcp/src/oauth-device.test.ts`, `apps/mcp/src/oauth.test.ts` (the built-in client)                                                                                         |
-| The device page trusts only the server's client name                                          | `apps/editor/lib/mcp-device-session.test.ts`; `apps/editor/e2e/clerk-stub/oauth-device.spec.ts` (dark scheme)                                                                       |
+| The device page trusts only the server's client name                                          | `apps/editor/lib/mcp-device-session.test.ts`; `apps/editor/e2e/signed-in/oauth-device.spec.ts` (dark scheme)                                                                        |
 | `tokens/current` read and revoke; session refused; any role revokes                           | `apps/api/src/routes/tokens.test.ts`                                                                                                                                            |
 | api-client and render-png extractions keep the MCP's behaviour                                | `packages/api-client/src/client.test.ts`; existing `apps/mcp` suites stay green                                                                                                 |
 

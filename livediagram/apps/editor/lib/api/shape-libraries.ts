@@ -1,5 +1,5 @@
 // Shape library calls (docs/specs/013-workspace/shape-libraries.md "API"): list / create / update /
-// delete. Owner-scoped like custom themes; guests included (apiHeaders attaches the Clerk token when
+// delete. Owner-scoped like custom themes; guests included (apiHeaders attaches the access token when
 // signed in, else the X-Owner-Id header).
 import {
   MAX_SHAPE_LIBRARIES_PER_OWNER,

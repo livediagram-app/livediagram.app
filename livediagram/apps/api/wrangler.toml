@@ -46,7 +46,7 @@ globs = ["**/*.ttf", "**/*.otf"]
 # Scope of the protection, honestly: this stops a third-party WEB PAGE spending
 # the key, because a browser sets Origin and cannot forge it. It does NOT stop a
 # non-browser caller, which can send any Origin it likes. Bounding the budget
-# against that needs AI_REQUIRE_CLERK (deliberately NOT set here: the editor
+# against that needs AI_REQUIRE_SIGN_IN (deliberately NOT set here: the editor
 # offers AI to guests and /api/capabilities reports `aiEnabled` from the key's
 # presence alone, so requiring sign-in would leave guests a visible panel that
 # 401s — see the note in src/routes/capabilities.ts). AI_RATE_LIMITER (20/60s
@@ -224,7 +224,7 @@ simple = { limit = 120, period = 60 }
 
 # Per-owner limiter for POST /api/drive/token (docs/specs/022-drive-mirror/drive-mirror.md,
 # "Tokens"): each call reaches Google's token endpoint to mint a one-hour access
-# token, so a healthy browser needs about one an hour. 10 / 60s per Clerk user
+# token, so a healthy browser needs about one an hour. 10 / 60s per account
 # id bounds a looping client far below the general write limiter's 300. The
 # route answers 429 drive_token_rate_limited, which the browser treats like
 # Google's own rate limit (it backs off). Absent binding → allow (self-host).
@@ -302,25 +302,31 @@ simple = { limit = 20, period = 60 }
 #   - APP_BASE_URL: optional [vars] public origin for links in emails.
 #     Defaults to "https://livediagram.app".
 
-# CLERK_JWKS_URL is provisioned out-of-band so the value never lands
-# in the public repo (docs/specs/002-project-scope/secrets-policy.md):
+# Sign-in (docs/specs/014-identity/auth-and-guest-access.md) goes through the
+# liveworkspace accounts Worker. Four values, provisioned out-of-band so none
+# lands in the public repo (docs/specs/002-project-scope/secrets-policy.md):
 #
-#   - Local dev: drop `CLERK_JWKS_URL=https://...` into
-#     `apps/api/.dev.vars` (gitignored). Wrangler reads it on the
-#     next `wrangler dev`.
-#   - Production: stored as a Cloudflare Worker secret via
-#     `wrangler secret put CLERK_JWKS_URL`. The deploy workflow
-#     pulls it from the GitHub repo secret `CLERK_JWKS_URL` and
-#     pipes it into `wrangler secret put` on every deploy so the
-#     value can rotate by editing the GitHub secret. Secrets
-#     persist across deploys independently of this file.
+#   ACCOUNTS_URL            the accounts Worker's origin
+#                           (https://accounts.liveworkspace.app)
+#   API_RESOURCE            this API's registered resource, the access
+#                           token's audience (https://livediagram.app/api)
+#   ACCOUNTS_CLIENT_ID      this app's OAuth client id
+#   ACCOUNTS_CLIENT_SECRET  its client secret (the only real secret)
 #
-# When the secret is unset the api worker stays in pure-guest mode
-# and trusts `X-Owner-Id` exclusively (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md). Get the
-# URL from the Clerk dashboard → API Keys → "Show JWKS URL"; format
-# is `https://<your-instance>.clerk.accounts.dev/.well-known/jwks.json`
-# (test tenant) or `https://clerk.<your-domain>/.well-known/jwks.json`
-# (production tenant).
+#   - Local dev: put them in `apps/api/.dev.vars` (gitignored), plus
+#     AUTH_ORIGIN=http://localhost:3100 so the callback comes back
+#     through the router. Wrangler reads it on the next `wrangler dev`.
+#   - Production: Cloudflare Worker secrets. The deploy workflow pulls
+#     each from the GitHub repo secret of the same name and pipes it into
+#     `wrangler secret put` on every deploy, so a value rotates by
+#     editing the GitHub secret. Secrets persist across deploys
+#     independently of this file.
+#
+# With ACCOUNTS_URL or API_RESOURCE unset the api worker stays in
+# pure-guest mode and trusts `X-Owner-Id` exclusively
+# (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md).
+# The client id and secret come from registering livediagram with the
+# accounts Worker (liveworkspace/docs/integrating-an-app.md).
 #
 # GUEST_ID_HMAC_SECRET is provisioned the same way (`.dev.vars` locally,
 # `wrangler secret put GUEST_ID_HMAC_SECRET` + a matching GitHub repo
@@ -414,7 +420,7 @@ GUEST_SIG_ENFORCE_AFTER = ""
 
 # The staging MCP worker's OAuth server, for the CLI against staging.
 OAUTH_ISSUER = "https://mcp-staging.livediagram.app"
-# No AI_REQUIRE_CLERK, matching production: the editor offers AI to guests, so
+# No AI_REQUIRE_SIGN_IN, matching production: the editor offers AI to guests, so
 # requiring sign-in here made staging refuse what production allows (the photo
 # reader stopped with "sign in required"), which is drift, not a staging test.
 
@@ -518,7 +524,8 @@ renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
 [env.staging.triggers]
 crons = ["0 3 * * *", "* * * * *"]
 
-# CLERK_JWKS_URL, GUEST_ID_HMAC_SECRET and TELEMETRY_KEY come from the
+# The four ACCOUNTS_* / API_RESOURCE values, GUEST_ID_HMAC_SECRET and
+# TELEMETRY_KEY come from the
 # `_STAGING` GitHub secrets via the deploy workflow. RESEND_API_KEY and the
 # model keys (OPENAI_API_KEY and/or GOOGLE_AI_STUDIO_API_KEY) are provisioned by
 # hand exactly as they are for production:

@@ -44,11 +44,11 @@ export async function aiGate(ctx: RouteContext, feature: AiFeature): Promise<Res
     }
   }
 
-  // Clerk-only gate (docs/specs/007-editor/ai-assistance.md). When AI_REQUIRE_CLERK="true", reject the legacy
+  // Sign-in-only gate (docs/specs/007-editor/ai-assistance.md). When AI_REQUIRE_SIGN_IN="true", reject the legacy
   // X-Owner-Id guest path so an attacker can't mint fresh per-request UUIDs to
   // drain the operator's model budget. Opt-in, so an OSS self-host that runs no
-  // Clerk at all keeps the feature usable.
-  if (env.AI_REQUIRE_CLERK === 'true' && ctx.clerkUserId == null) {
+  // sign-in at all keeps the feature usable.
+  if (env.AI_REQUIRE_SIGN_IN === 'true' && ctx.accountUserId == null) {
     return signInRequired();
   }
 

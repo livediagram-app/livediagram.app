@@ -1,4 +1,4 @@
-// api_tokens — external API credentials, owner-scoped to a Clerk account
+// api_tokens — external API credentials, owner-scoped to an account
 // (docs/specs/015-api/public-api-and-tokens.md). We store only the SHA-256 hash; the auth hot path hashes the
 // presented token and looks the hash up here.
 

@@ -107,7 +107,7 @@ Run from the repo root:
 | `pnpm test`                                                               | Vitest across every workspace that has tests (`turbo run test`).                                                                                                                                                                                                                                                                                                                          |
 | `pnpm --filter @livediagram/editor perf:canvas`                           | The canvas performance probe ([Canvas performance](../specs/008-canvas/canvas-performance.md)): builds the 1,000-element reference board, traces every gesture at 4x CPU and writes the budget table to `apps/editor/test-results/perf/`. Needs a fresh `next build`; set `E2E_EDITOR_PORT` / `E2E_API_PORT` / `E2E_BASE_URL` to run beside a `pnpm dev`. Reports, never fails on a miss. |
 | `pnpm --filter @livediagram/editor test:e2e`                              | Playwright end-to-end suite ([End-to-end tests](../specs/003-system-architecture/e2e-smoke.md)); reuses a running `pnpm dev` or boots its own stack. Set `E2E_WEBKIT=1` (after `npx playwright install webkit`) to also run the image import spec in WebKit.                                                                                                                              |
-| `pnpm --filter @livediagram/editor test:e2e:clerk-stub`                   | The signed-in specs (`apps/editor/e2e/clerk-stub/`) against `.next/out-clerk-stub/`; run `pnpm --filter @livediagram/editor build:clerk-stub` first. Boots its own stack on `:3115` / `:8115` / `:3116`.                                                                                                                                                                                  |
+| `pnpm --filter @livediagram/editor test:e2e:signed-in`                    | The signed-in specs (`apps/editor/e2e/signed-in/`) against `.next/out-signed-in/`; run `pnpm --filter @livediagram/editor build:signed-in` first. Boots its own stack on `:3115` / `:8115` / `:3116`.                                                                                                                                                                                  |
 | `pnpm --filter @livediagram/editor test:e2e:armed`                        | The armed guest-signature specs (`apps/editor/e2e/armed/`) with guest signature enforcement on, against the guest-mode `out/`. Boots its own stack on `:3117` / `:8117` / `:3118`.                                                                                                                                                                                                        |
 | `cd apps/editor && bun scripts/ms-whiteboard-verify.mts <folder or .zip>` | Runs the [Microsoft Whiteboard import](../specs/020-import-export/whiteboard-import.md) over real board exports outside the repo and prints counts only (boards, replay stats, items per kind, report notes, timings, largest tab), never their content.                                                                                                                                  |
 | `pnpm --filter @livediagram/cli build`                                    | Bundle the CLI into `apps/cli/dist/livediagram.mjs` (see [Running the CLI from source](#running-the-cli-from-source-optional)).                                                                                                                                                                                                                                                           |
@@ -123,42 +123,47 @@ Run from the repo root:
 
 Turbo caches results, so re-running with no changes is a no-op.
 
-## Enabling Clerk auth locally (optional)
+## Enabling sign-in locally (optional)
 
-The editor works without Clerk. To exercise the signed-in code paths:
+The editor works without sign-in. To exercise the signed-in code paths, run liveworkspace beside it and register livediagram with its accounts API:
 
-1. Create a Clerk application in the [Clerk dashboard](https://dashboard.clerk.com).
-2. Copy the **publishable key** and the **JWKS URL**.
-3. Drop them into the two env files:
+1. Start liveworkspace (first-time setup is in `liveworkspace/README.md`, "Local development"): `pnpm dev:workspace` from the repo root runs the site, with the sign-in pages, on `http://localhost:3300`, and the accounts and telemetry Workers behind it, as liveworkspace.app has them. Locally the accounts Worker prints each sign-in code in its own output instead of emailing it.
+2. Register livediagram once against it. `http://localhost/api` is the one resource a development accounts Worker issues tokens for (`RESOURCES` in liveworkspace/apps/accounts/src/resources.ts). The secret is printed once:
+
+   ```sh
+   ADMIN_TOKEN=local-admin-token node liveworkspace/apps/accounts/scripts/register-client.ts \
+     --accounts http://localhost:3300 \
+     --name livediagram-dev \
+     --redirect http://localhost:3100/api/auth/callback \
+     --resource http://localhost/api
+   ```
+
+3. Drop the values into the two env files:
 
    ```sh
    # apps/editor/.env.local (gitignored)
-   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+   NEXT_PUBLIC_SIGN_IN_ENABLED=true
 
    # apps/community/.env.local (gitignored), optional: turns on My Shares
-   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+   NEXT_PUBLIC_SIGN_IN_ENABLED=true
 
    # apps/api/.dev.vars (gitignored)
-   CLERK_JWKS_URL=https://<your-instance>.clerk.accounts.dev/.well-known/jwks.json
+   ACCOUNTS_URL=http://localhost:3300
+   API_RESOURCE=http://localhost/api
+   ACCOUNTS_CLIENT_ID=...
+   ACCOUNTS_CLIENT_SECRET=...
+   AUTH_ORIGIN=http://localhost:3100
    ```
 
-4. Restart `pnpm dev`.
+4. Restart `pnpm dev` and open the app through the router (`http://localhost:3100`), so the sign-in cookies and the callback share one origin.
 
-To also show the **"Continue with Google"** button on `/sign-in` and `/get-started`, enable the Google SSO connection in the Clerk dashboard (dev instances can use Clerk's shared Google credentials with no Google Cloud setup) and add to `apps/editor/.env.local`:
+With these set, `/sign-in` hands off to the accounts site and comes back signed in. The api worker verifies the access token and derives the owner id from the `sub` claim instead of falling back to the `X-Owner-Id` header.
 
-```sh
-NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED=true
-```
-
-It only takes effect when `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is also set, and like any `NEXT_PUBLIC_*` change it needs a `pnpm dev` restart to bake in. Leave it unset to keep just the email-code flow.
-
-With these set the editor's sign-in flow at `/sign-in` becomes functional. The api worker verifies the Bearer JWT and derives the owner id from the `sub` claim instead of falling back to the `X-Owner-Id` header.
-
-Without these set: the api worker silently treats every request as a guest (the `X-Owner-Id` header path), and the live frontend's ClerkProvider becomes a pass-through that renders the editor without any auth UI. This is the self-host default. See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for the full hybrid model.
+Without these set: the api worker silently treats every request as a guest (the `X-Owner-Id` header path), and the editor mounts no session bridge, so it renders the editor without any auth UI. This is the self-host default. See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for the full hybrid model.
 
 ## Running the CLI from source (optional)
 
-The [CLI](../specs/015-api/cli.md) acts only with an API token, so it needs a host with sign-in: enable Clerk as
+The [CLI](../specs/015-api/cli.md) acts only with an API token, so it needs a host with sign-in: enable sign-in as
 above, sign in, and create a token in Settings › API Tokens. Then build the bundle and point it at the local api:
 
 ```bash
@@ -187,7 +192,7 @@ OPENAI_API_KEY=...             # or GOOGLE_AI_STUDIO_API_KEY=..., or both:
 #                              # which reads handwriting better than the big model.
 ```
 
-Restart `pnpm dev`. `GET /api/capabilities` will start reporting `{ aiEnabled: true }`, the Settings dialog grows an "AI Assistant" toggle, and the editor surfaces the panel once the user opts in. The two spend-DoS knobs `AI_ALLOWED_ORIGINS` and `AI_REQUIRE_CLERK` are hosted-only; leave them unset locally so the guest path keeps working. Production declares `AI_ALLOWED_ORIGINS` in `apps/api/wrangler.toml` `[vars]`, which `wrangler dev` also reads, so the api's `dev` script (and the e2e stack) blank it with `--var AI_ALLOWED_ORIGINS:`; without that, every AI request from a localhost editor answers 403 `origin_not_allowed`. See `apps/api/.env.example` for the full set of vars the worker reads.
+Restart `pnpm dev`. `GET /api/capabilities` will start reporting `{ aiEnabled: true }`, the Settings dialog grows an "AI Assistant" toggle, and the editor surfaces the panel once the user opts in. The two spend-DoS knobs `AI_ALLOWED_ORIGINS` and `AI_REQUIRE_SIGN_IN` are hosted-only; leave them unset locally so the guest path keeps working. Production declares `AI_ALLOWED_ORIGINS` in `apps/api/wrangler.toml` `[vars]`, which `wrangler dev` also reads, so the api's `dev` script (and the e2e stack) blank it with `--var AI_ALLOWED_ORIGINS:`; without that, every AI request from a localhost editor answers 403 `origin_not_allowed`. See `apps/api/.env.example` for the full set of vars the worker reads.
 
 ## Running tests
 
@@ -199,11 +204,11 @@ pnpm --filter @livediagram/editor exec vitest   # watch mode while developing
 
 Tests live alongside the code they cover, as `*.test.ts` / `*.test.tsx` files. The test runner is [Vitest](https://vitest.dev) with the shared config from `@livediagram/vitest-config`. See [Testing](../specs/003-system-architecture/testing.md) for the testing contract.
 
-The Google Drive mirror has an opt-in end-to-end run against the fake Google ([Google Drive mirror](../specs/022-drive-mirror/drive-mirror.md)): `pnpm --filter @livediagram/editor test:e2e:drive`. It rebuilds `apps/editor/out` with the test-only session bridge (`NEXT_PUBLIC_E2E_AUTH=1`) and a test client id, then boots the e2e stack with `E2E_DRIVE=1`, which gives the api worker test values for `CLERK_JWKS_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `DRIVE_TOKEN_KEY` and `GOOGLE_OAUTH_BASE_URL`. The test serves the JWKS (port 8795) and the fake Google (8796) itself. Rebuild the editor app normally before running the ordinary e2e again, and stop any `pnpm dev` on port 3102 first (or set `E2E_EDITOR_PORT`, `E2E_API_PORT`, `E2E_MARKETING_PORT` and `E2E_BASE_URL`), since Playwright reuses a running server.
+The Google Drive mirror has an opt-in end-to-end run against the fake Google ([Google Drive mirror](../specs/022-drive-mirror/drive-mirror.md)): `pnpm --filter @livediagram/editor test:e2e:drive`. It rebuilds `apps/editor/out` with the test-only session bridge (`NEXT_PUBLIC_E2E_AUTH=1`) and a test client id, then boots the e2e stack with `E2E_DRIVE=1`, which gives the api worker test values for `ACCOUNTS_URL`, `API_RESOURCE`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `DRIVE_TOKEN_KEY` and `GOOGLE_OAUTH_BASE_URL`. The test stands in for the accounts Worker's JWKS (port 8795) and the fake Google (8796) itself. Rebuild the editor app normally before running the ordinary e2e again, and stop any `pnpm dev` on port 3102 first (or set `E2E_EDITOR_PORT`, `E2E_API_PORT`, `E2E_MARKETING_PORT` and `E2E_BASE_URL`), since Playwright reuses a running server.
 
 `pnpm --filter @livediagram/editor test:e2e:drive-shots` uses the same build and stack to screenshot every Drive state (Settings > Account > Cloud Sync in every phase, Open with, the Explorer following a change made in Drive) in light and dark at 1280 x 800 (`E2E_DRIVE_SHOTS_SCALE=2` for 2x, `E2E_DRIVE_SHOTS_NARROW=1` for the phone layout), into `E2E_DRIVE_PR_SHOTS` (default `/tmp/ld-drive-pr-shots`) with a `README.md` naming each file. Run it on its own: it serves the same fake Google port as `test:e2e:drive`.
 
-Workbench embeds have an opt-in end-to-end run ([Workbench embeds](../specs/013-workspace/workbench-embeds.md)): `pnpm --filter @livediagram/editor test:e2e:workbench`. It rebuilds `apps/editor/out` with the test-only session bridge (`NEXT_PUBLIC_E2E_AUTH=1`), then boots the e2e stack with `E2E_WORKBENCH=1` on its own ports (live 3021, api 8791, marketing 3022): the stack acts as Clerk (as under `E2E_CLERK_JWKS`, minting session tokens on `/e2e/token`) and gives the api worker `APP_BASE_URL=http://localhost:3121`, so its workbench and pairing URLs point at the live server. The spec serves a fake workbench (`apps/editor/e2e/fixtures/fake-workbench.html`) from `127.0.0.1` on a free port, pairs it on the pairing page, and frames `/embed/workbench` in it; `workbench-workspace.spec.ts` pairs it again for the whole workspace and frames `/embed/workbench/explorer`, whose places (`/embed/workbench/explorer/**`, `/embed/workbench/document/**`) the stack serves from that one page, as the editor worker does.
+Workbench embeds have an opt-in end-to-end run ([Workbench embeds](../specs/013-workspace/workbench-embeds.md)): `pnpm --filter @livediagram/editor test:e2e:workbench`. It rebuilds `apps/editor/out` with the test-only session bridge (`NEXT_PUBLIC_E2E_AUTH=1`), then boots the e2e stack with `E2E_WORKBENCH=1` on its own ports (live 3021, api 8791, marketing 3022): the stack acts as the accounts Worker (as under `E2E_ACCOUNTS_STUB`, minting access tokens on `/e2e/token`) and gives the api worker `APP_BASE_URL=http://localhost:3121`, so its workbench and pairing URLs point at the live server. The spec serves a fake workbench (`apps/editor/e2e/fixtures/fake-workbench.html`) from `127.0.0.1` on a free port, pairs it on the pairing page, and frames `/embed/workbench` in it; `workbench-workspace.spec.ts` pairs it again for the whole workspace and frames `/embed/workbench/explorer`, whose places (`/embed/workbench/explorer/**`, `/embed/workbench/document/**`) the stack serves from that one page, as the editor worker does.
 
 ## Enabling the Google Drive mirror locally (optional)
 
@@ -220,7 +225,7 @@ NEXT_PUBLIC_GOOGLE_CLIENT_ID=123456789012-abc.apps.googleusercontent.com
 NEXT_PUBLIC_GOOGLE_API_KEY=... # optional: the Picker's browser key, for adopting a folder
 ```
 
-It is signed-in only, so Clerk must be enabled too (above). Without these Settings has no Cloud Sync section and every `/api/drive` route answers `503 drive_not_configured`.
+It is signed-in only, so sign-in must be enabled too (above). Without these Settings has no Cloud Sync section and every `/api/drive` route answers `503 drive_not_configured`.
 
 ## Trying the photo import without an AI key
 
@@ -238,8 +243,8 @@ on `E2E_API_PORT`; `E2E_NO_AI=1` answers `/api/capabilities` with
 `aiEnabled: false`.
 
 `E2E_EDITOR_OUT=<dir>` serves another export of the editor app (the signed-in specs use
-`.next/out-clerk-stub`), and `E2E_CLERK_JWKS=1` makes the stack stand in for Clerk: the api
-verifies session tokens the stack mints on `/e2e/token?sub=user_…` ([End-to-end tests](../specs/003-system-architecture/e2e-smoke.md)).
+`.next/out-signed-in`), and `E2E_ACCOUNTS_STUB=1` makes the stack stand in for the accounts Worker:
+the api verifies access tokens the stack mints on `/e2e/token?sub=user_…` ([End-to-end tests](../specs/003-system-architecture/e2e-smoke.md)).
 
 To try a hosted reader whose free budget is spent, swap `E2E_NO_AI=1` for
 `E2E_AI_BUDGET_SPENT=1`: the api still reports a model, every

@@ -1,6 +1,6 @@
 // Google Drive mirror rows (docs/specs/022-drive-mirror/drive-mirror.md, "Data";
 // blueprint "Data and persistence"). Every statement is scoped to one owner,
-// the verified Clerk user id the route resolved.
+// the verified account id the route resolved.
 
 import {
   DRIVE_LEASE_MS,

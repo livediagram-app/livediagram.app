@@ -14,26 +14,19 @@ import {
   SiteFooter,
   WebVitalsBoot,
   trustedHtml,
-  trustedScriptOrigins,
   trustedTypesBootScript,
 } from '@livediagram/ui';
 
 // The livediagram Community (docs/specs/025-community/community.md): an indexable static site served
-// under /community by the router. No third-party scripts, and sign-in (Clerk) loads only for My Shares; it stays self-host-clean
+// under /community by the router. No third-party scripts, and the session is asked for only by My Shares; it stays self-host-clean
 // (docs/specs/002-project-scope/open-source-and-business-model.md).
 const COMMUNITY_SITE_NAME = 'livediagram Community';
 const COMMUNITY_DESCRIPTION =
   'Documents people are proud of. Browse diagrams, drawings and workshops made with livediagram, then make your own copy.';
 
 // Trusted Types before anything else (docs/specs/016-platform/trusted-types.md): the default policy and the
-// violation log, this app's own scripts under its asset prefix, and the Clerk origin read from this build's key
-// (Next inlines only the literal expression).
-const TRUSTED_TYPES_BOOT = trustedTypesBootScript(
-  '/community',
-  trustedScriptOrigins({
-    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
-  }),
-);
+// violation log, and this app's own scripts under its asset prefix.
+const TRUSTED_TYPES_BOOT = trustedTypesBootScript('/community');
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

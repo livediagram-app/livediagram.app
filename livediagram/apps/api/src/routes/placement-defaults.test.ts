@@ -11,7 +11,7 @@ import { asGuest, asUser, errorOf, seedFolder, seedTeam } from './placement-test
 let db: SqliteD1;
 let logs: string[];
 
-type Who = { owner: string | null; clerkUserId: string | null };
+type Who = { owner: string | null; accountUserId: string | null };
 
 function call(who: Who, method: string, path: string, body?: unknown) {
   return handlePlacementDefaults(makeTestRouteContext(method, path, { env: db.env, ...who, body }));
@@ -52,7 +52,7 @@ describe('GET /api/placement-defaults', () => {
   });
 
   it('answers the missing-owner refusal without an identity', async () => {
-    const res = await call({ owner: null, clerkUserId: null }, 'GET', '/api/placement-defaults');
+    const res = await call({ owner: null, accountUserId: null }, 'GET', '/api/placement-defaults');
     expect(res.status).toBe(400);
   });
 });

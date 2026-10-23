@@ -66,26 +66,26 @@ import {
 } from '../email/notifications';
 import { handleTeams } from './teams';
 
-// Clerk-session context ('user-1'); verifiedUserId may diverge for the
+// Signed-in session context ('user-1'); verifiedUserId may diverge for the
 // token-caller shape (docs/specs/015-api/public-api-and-tokens.md). resolveOwner falls back to 'guest-1'.
 const makeCtx = (
   method: string,
   path: string,
   opts: {
-    clerkUserId?: string | null;
-    clerkEmail?: string | null;
-    // A token caller (docs/specs/015-api/public-api-and-tokens.md): verified account id with NO Clerk session.
+    accountUserId?: string | null;
+    accountEmail?: string | null;
+    // A token caller (docs/specs/015-api/public-api-and-tokens.md): verified account id with NO signed-in session.
     verifiedUserId?: string | null;
     body?: unknown;
   } = {},
 ): RouteContext => {
-  const clerkUserId = opts.clerkUserId === undefined ? 'user-1' : opts.clerkUserId;
-  const verifiedUserId = opts.verifiedUserId === undefined ? clerkUserId : opts.verifiedUserId;
+  const accountUserId = opts.accountUserId === undefined ? 'user-1' : opts.accountUserId;
+  const verifiedUserId = opts.verifiedUserId === undefined ? accountUserId : opts.verifiedUserId;
   return makeTestRouteContext(method, path, {
     body: opts.body,
-    clerkUserId,
+    accountUserId,
     verifiedUserId,
-    clerkEmail: opts.clerkEmail ?? null,
+    accountEmail: opts.accountEmail ?? null,
     owner: verifiedUserId ?? 'guest-1',
     // Evaluate the deferred work inline so tests can observe the dispatch
     // (`ctx.waitUntil?.(...)` skips its argument entirely when absent).
@@ -119,18 +119,18 @@ beforeEach(() => {
   db.updateTeamMemberRoleKeepingAdmin.mockResolvedValue(true);
 });
 
-describe('handleTeams Clerk-only gate (docs/specs/013-workspace/teams.md)', () => {
+describe('handleTeams signed-in only gate (docs/specs/013-workspace/teams.md)', () => {
   it('401 sign_in_required for the guest path, even with an X-Owner-Id-style owner', async () => {
-    const res = await handleTeams(makeCtx('GET', '/api/teams', { clerkUserId: null }));
+    const res = await handleTeams(makeCtx('GET', '/api/teams', { accountUserId: null }));
     expect(res.status).toBe(401);
     expect(await res.json()).toEqual({ error: 'sign_in_required' });
   });
 });
 
 describe('API-token callers (docs/specs/015-api/public-api-and-tokens.md §3.4: read yes, manage no)', () => {
-  // A token request verifies to the Clerk account (verifiedUserId) but
-  // carries no interactive session (clerkUserId null).
-  const asToken = { clerkUserId: null, verifiedUserId: 'user-1' };
+  // A token request verifies to the account (verifiedUserId) but
+  // carries no interactive session (accountUserId null).
+  const asToken = { accountUserId: null, verifiedUserId: 'user-1' };
 
   it('lists the caller’s teams', async () => {
     db.listTeamsByUser.mockResolvedValue([{ ...team, myRole: 'member', memberCount: 2 }]);
@@ -181,7 +181,7 @@ describe('GET /api/teams (list + lazy invite claim)', () => {
 
   it('claims pending invites first when the JWT carries an email claim', async () => {
     db.listTeamsByUser.mockResolvedValue([]);
-    await handleTeams(makeCtx('GET', '/api/teams', { clerkEmail: 'me@example.com' }));
+    await handleTeams(makeCtx('GET', '/api/teams', { accountEmail: 'me@example.com' }));
     expect(db.connectInvitesByEmail).toHaveBeenCalledWith({}, 'user-1', 'me@example.com');
   });
 });
@@ -192,7 +192,7 @@ describe('GET /api/teams/invites (docs/specs/013-workspace/teams.md accept/decli
       { memberId: 'm2', team, memberCount: 3, invitedAt: 5 },
     ]);
     const res = await handleTeams(
-      makeCtx('GET', '/api/teams/invites', { clerkEmail: 'me@example.com' }),
+      makeCtx('GET', '/api/teams/invites', { accountEmail: 'me@example.com' }),
     );
     expect(res.status).toBe(200);
     expect(db.connectInvitesByEmail).toHaveBeenCalledWith({}, 'user-1', 'me@example.com');
@@ -200,7 +200,7 @@ describe('GET /api/teams/invites (docs/specs/013-workspace/teams.md accept/decli
   });
 
   it('401 for the guest path', async () => {
-    const res = await handleTeams(makeCtx('GET', '/api/teams/invites', { clerkUserId: null }));
+    const res = await handleTeams(makeCtx('GET', '/api/teams/invites', { accountUserId: null }));
     expect(res.status).toBe(401);
   });
 });
@@ -289,7 +289,7 @@ describe('shareable invite link (docs/specs/013-workspace/teams.md)', () => {
     db.getTeamByInviteToken.mockResolvedValue(team);
     db.countJoinedMembers.mockResolvedValue(3);
     const res = await handleTeams(
-      makeCtx('GET', '/api/teams/invite-link/tok-123', { clerkUserId: null }),
+      makeCtx('GET', '/api/teams/invite-link/tok-123', { accountUserId: null }),
     );
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ team, memberCount: 3, alreadyMember: false });
@@ -315,7 +315,7 @@ describe('shareable invite link (docs/specs/013-workspace/teams.md)', () => {
   it('404 on an unknown / expired token', async () => {
     db.getTeamByInviteToken.mockResolvedValue(null);
     const res = await handleTeams(
-      makeCtx('GET', '/api/teams/invite-link/nope', { clerkUserId: null }),
+      makeCtx('GET', '/api/teams/invite-link/nope', { accountUserId: null }),
     );
     expect(res.status).toBe(404);
   });
@@ -323,7 +323,7 @@ describe('shareable invite link (docs/specs/013-workspace/teams.md)', () => {
   it('join: a signed-in caller joins via the token', async () => {
     db.joinTeamByInviteToken.mockResolvedValue({ teamId: 't1', alreadyMember: false });
     const res = await handleTeams(
-      makeCtx('POST', '/api/teams/invite-link/tok-123/join', { clerkEmail: 'me@example.com' }),
+      makeCtx('POST', '/api/teams/invite-link/tok-123/join', { accountEmail: 'me@example.com' }),
     );
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ teamId: 't1', alreadyMember: false });
@@ -337,7 +337,7 @@ describe('shareable invite link (docs/specs/013-workspace/teams.md)', () => {
 
   it('join requires sign-in (guest 401, no db write)', async () => {
     const res = await handleTeams(
-      makeCtx('POST', '/api/teams/invite-link/tok-123/join', { clerkUserId: null }),
+      makeCtx('POST', '/api/teams/invite-link/tok-123/join', { accountUserId: null }),
     );
     expect(res.status).toBe(401);
     expect(db.joinTeamByInviteToken).not.toHaveBeenCalled();
@@ -369,7 +369,7 @@ describe('shareable invite link (docs/specs/013-workspace/teams.md)', () => {
     db.getTeamInviteLink.mockResolvedValue({ token: 'tok-1', expiresAt: 999 });
     db.getMembership.mockResolvedValue(member()); // admin
     const res = await handleTeams(
-      makeCtx('GET', '/api/teams/t1', { clerkUserId: null, verifiedUserId: 'user-1' }),
+      makeCtx('GET', '/api/teams/t1', { accountUserId: null, verifiedUserId: 'user-1' }),
     );
     expect(await res.json()).toMatchObject({ inviteLink: null });
     expect(db.getTeamInviteLink).not.toHaveBeenCalled();
@@ -445,7 +445,7 @@ describe('POST /api/teams (create)', () => {
     db.createTeam.mockResolvedValue(team);
     const res = await handleTeams(
       makeCtx('POST', '/api/teams', {
-        clerkEmail: 'me@example.com',
+        accountEmail: 'me@example.com',
         body: { id: 't1', name: 'Crew', organisation: ' ACME ' },
       }),
     );
@@ -764,7 +764,7 @@ describe('GET /api/teams/:id/access-check (docs/specs/012-collaboration/assigned
   });
 
   it('allows an API-token caller (read surface)', async () => {
-    const res = await get(QS, { clerkUserId: null, verifiedUserId: 'user-1' });
+    const res = await get(QS, { accountUserId: null, verifiedUserId: 'user-1' });
     expect(res.status).toBe(200);
   });
 });
@@ -813,7 +813,7 @@ describe('POST /api/teams/:id/notify-action (docs/specs/012-collaboration/assign
   });
 
   it('401 for a token caller (mutations need the interactive session)', async () => {
-    const res = await post(body, { clerkUserId: null, verifiedUserId: 'user-1' });
+    const res = await post(body, { accountUserId: null, verifiedUserId: 'user-1' });
     expect(res.status).toBe(401);
     expect(notifyActionAssigned).not.toHaveBeenCalled();
   });
@@ -914,7 +914,7 @@ describe('POST /api/teams/:id/notify-action (docs/specs/012-collaboration/assign
 
   it('falls back to the caller’s email claim when they have no participant profile', async () => {
     db.getParticipant.mockResolvedValue(null);
-    await post(body, { clerkEmail: 'sam@x.com' });
+    await post(body, { accountEmail: 'sam@x.com' });
     const input = vi.mocked(notifyActionAssigned).mock.calls[0]![1];
     expect(input.assignerName).toBe('sam@x.com');
   });
@@ -1035,7 +1035,7 @@ describe('POST /api/teams/:id/notify-mention (docs/specs/012-collaboration/comme
   });
 
   it('401 for a token caller (mutations need the interactive session)', async () => {
-    const res = await post(body, { clerkUserId: null, verifiedUserId: 'user-1' });
+    const res = await post(body, { accountUserId: null, verifiedUserId: 'user-1' });
     expect(res.status).toBe(401);
   });
 

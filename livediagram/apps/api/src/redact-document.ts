@@ -32,7 +32,7 @@
 
 import type { DocumentDTO } from './types';
 
-// `caller` is the resolved owner of the request (Clerk sub, API-token owner,
+// `caller` is the resolved owner of the request (account id, API-token owner,
 // or the guest header) — the same value the access gates compare against.
 //
 // Returns the DTO untouched for the owner, and a copy with `ownerId` blanked

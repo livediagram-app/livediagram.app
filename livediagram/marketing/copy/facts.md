@@ -42,7 +42,7 @@ is the team, not the individual.
   visitors can make their own copy.
 - Export / import the active tab to Markdown / PDF / PNG / JSON.
 - Hybrid auth: guests get the full feature set keyed to a per-browser id;
-  signed-in users (Clerk) add cross-device sync and account self-delete.
+  signed-in users (a liveworkspace account) add cross-device sync and account self-delete.
 - The Community at `/community`: a public gallery of documents people share.
   Signed-in owners publish a document with a title, description, category and
   tags (anonymously by default); anyone can search it, open a document
@@ -57,8 +57,8 @@ is the team, not the individual.
 - MIT-licensed, publicly viewable, self-hostable end to end.
 - Hosted free at livediagram.app. No paid tier and no plan to introduce one.
 - The OSS core never calls home and never gates features behind a license
-  check. Clerk auth is the one optional SaaS dependency; without it the app
-  degrades to full-featured guest mode.
+  check. Sign-in through liveworkspace accounts is the one optional dependency;
+  without it the app degrades to full-featured guest mode.
 
 ## Stack
 

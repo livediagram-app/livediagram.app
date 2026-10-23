@@ -520,7 +520,7 @@ list=documents|shared')`. Never a word of the lens or an id.
 | The panel's My Work: folders then documents                | `apps/editor/components/panels/explorer-tree/PanelExplorerTree.test.tsx` |
 | A move to a root names the space                           | `apps/api/src/routes/document-placement-route.test.ts`                   |
 | Real browser as a guest, desktop and phone                 | `apps/editor/e2e/explorer-filters.spec.ts`                               |
-| Real browser signed in: team root, team lens, Space chip   | `apps/editor/e2e/clerk-stub/explorer-filters.spec.ts`                    |
+| Real browser signed in: team root, team lens, Space chip   | `apps/editor/e2e/signed-in/explorer-filters.spec.ts`                     |
 
 ## Defaults ledger
 

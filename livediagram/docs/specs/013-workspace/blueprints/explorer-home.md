@@ -321,7 +321,7 @@ What remains:
 
 ```sql
 CREATE TABLE document_opens (
-  owner_id       TEXT NOT NULL,   -- the person: guest id or Clerk id
+  owner_id       TEXT NOT NULL,   -- the person: guest id or account id
   document_id    TEXT NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
   last_opened_at INTEGER NOT NULL,
   last_open_day  TEXT NOT NULL,   -- 'YYYY-MM-DD', UTC
@@ -393,10 +393,10 @@ from` moves every row the account does not already hold; each leftover (opened u
 
 ## Security and trust
 
-- `home` is in `OWNER_SCOPED_SEGMENTS`: a Clerk-shaped `X-Owner-Id` is refused and, when armed, the guest signature
+- `home` is in `OWNER_SCOPED_SEGMENTS`: an account-shaped `X-Owner-Id` is refused and, when armed, the guest signature
   is required.
 - `visible` is the boundary: an event, an open or an entry about a document the person cannot open is never read.
-  Team membership is matched on the resolved owner id, as the Inbox does; teams are Clerk-only and a Clerk-shaped
+  Team membership is matched on the resolved owner id, as the Inbox does; teams are for accounts only and an account-shaped
   guest header never reaches a route.
 - Opens are private: the event is scoped to `user:<person>` only, left out of the feed, and not a What Happened
   verb. Nobody's open is in anybody else's response.
@@ -469,7 +469,7 @@ stay on their own lazy route.
 | The client sends `markUsed: false` only; a bulk import sends it, a single one does not  | `apps/editor/lib/api-client.test.ts`, `apps/editor/lib/board-scene-import.test.ts`            |
 | `create_document` passes `markUsed` through only when given                             | `apps/mcp/src/create-document-placement.test.ts`                                          |
 | An imported board is in Jump Back In unopened; a two-board import is not (guest, phone) | `apps/editor/e2e/creation-use.spec.ts`                                                      |
-| Signed in: the same, and an API create with `markUsed: false` stays out                 | `apps/editor/e2e/clerk-stub/creation-use.spec.ts`                                           |
+| Signed in: the same, and an API create with `markUsed: false` stays out                 | `apps/editor/e2e/signed-in/creation-use.spec.ts`                                           |
 | Reads: others only, opens private, rejections, rate limit, the unread mark, no timeline | `apps/api/src/routes/home.test.ts` (real SQLite)                                          |
 | The backfill marks its edit, never marks a real one; migration 0063 marks legacy rows   | `apps/api/src/home/real-edits.test.ts` (real SQLite)                                      |
 | The feed and the unread count leave opens out                                           | `apps/api/src/db/timeline-opens.test.ts` (real SQLite)                                    |

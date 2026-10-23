@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { hasActiveFilters } from '@/lib/query-state';
 import { SESSION_LOAD_TIMEOUT_MS, signInAvailable, type CommunitySession } from '@/lib/session';
 import { communityTelemetry } from '@/lib/telemetry';
-import { LazyClerkSession } from '../auth/LazyClerkSession';
+import { AccountSession } from '../auth/AccountSession';
 import { PostGrid } from '../shared/PostGrid';
 import {
   GalleryEmpty,
@@ -29,12 +29,12 @@ const SKELETON_MORE = 4;
 const GALLERY_PRIORITY_CARDS = 4;
 
 export function GalleryView() {
-  // Who is signed in, known only once My Shares has loaded Clerk.
+  // Who is signed in, known only once My Shares has asked.
   const [session, setSession] = useState<CommunitySession | null>(null);
   const gallery = useGallery(session);
   const { filters, facets, status, posts, setFilters, mine } = gallery;
-  // My Shares waiting on a Clerk that never answers (a blocked script, a network failure) says so rather than
-  // showing placeholders forever; Try Again reloads the page, which loads Clerk afresh.
+  // My Shares waiting on a session that never answers (a network failure) says so rather than showing
+  // placeholders forever; Try Again reloads the page, which asks afresh.
   const waitingForSession = mine && signInAvailable && session?.loaded !== true;
   const [sessionTimedOut, setSessionTimedOut] = useState(false);
   // Each wait gets its own 10 seconds: once My Shares stops waiting (sign-in arrived, or My Shares was turned off),
@@ -73,7 +73,7 @@ export function GalleryView() {
           mineAvailable={signInAvailable}
           onMineChosen={onMineChosen}
         />
-        {mine && signInAvailable ? <LazyClerkSession onSession={setSession} /> : null}
+        {mine && signInAvailable ? <AccountSession onSession={setSession} /> : null}
       </div>
 
       <section aria-label={mine ? 'My Shares' : 'Documents'}>

@@ -17,7 +17,7 @@ this spec does not restate it.
 ## Who and what
 
 - **Signed-in users only.** A guest has no lasting identity to attach a Google
-  account to. The verified Clerk user id owns the connection; the unsigned
+  account to. The verified account id owns the connection; the unsigned
   `X-Owner-Id` header never reaches any Drive route.
 - **My Work only.** Team libraries are not mirrored (whose Drive would
   hold a team's copy is unresolved). Documents shared with the user, and Offline
@@ -183,7 +183,7 @@ this spec does not restate it.
   folder and page token), `GET` / `PUT /api/drive/items` and
   `DELETE /api/drive/items/:kind/:ldId` (the mirrored items),
   `POST` / `DELETE /api/drive/lease` (the cross-device lease).
-- Every Drive route answers only a **Clerk session** (`401 sign_in_required`
+- Every Drive route answers only a **signed-in session** (`401 sign_in_required`
   otherwise): not the guest header, and not an API token, since a token that
   could mint Google access would outlive the person's attention to it.
 - `GET /api/capabilities` reports `driveMode`: `off`, `browser` (client id
@@ -544,7 +544,7 @@ What decides it:
 
 D1, owned by the api worker:
 
-- `drive_connections`: `owner_id` (Clerk user id, primary key),
+- `drive_connections`: `owner_id` (account id, primary key),
   `refresh_token_enc`, `root_folder_id`, `page_token`, `page_token_saved_at`,
   `status` (`connected` | `needs_reconnect`), `connected_at`, `lease_holder`,
   `lease_expires_at`, `google_account_id` (the consenting Google account's

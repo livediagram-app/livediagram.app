@@ -79,10 +79,8 @@ describe('isAllowedScriptUrl', () => {
   });
 
   it('lets a named third-party origin through', () => {
-    const clerk = 'https://clerk.livediagram.app';
-    expect(
-      isAllowedScriptUrl(`${clerk}/npm/@clerk/clerk-js@6/dist/clerk.browser.js`, page, '', [clerk]),
-    ).toBe(true);
+    const vendor = 'https://scripts.example.com';
+    expect(isAllowedScriptUrl(`${vendor}/sdk/v1/sdk.js`, page, '', [vendor])).toBe(true);
   });
 
   it('refuses anything else', () => {
@@ -97,12 +95,10 @@ describe('isAllowedScriptUrl', () => {
 });
 
 describe('trustedScriptOrigins', () => {
-  const key = (host: string) => `pk_test_${btoa(`${host}$`)}`;
   // docs/specs/022-drive-mirror/drive-mirror.md: the Drive mirror's Google libraries, only for a build that offers it.
   it("lets Google's Drive libraries load where the build offers the Drive mirror, and only there", () => {
     const page = 'https://www.livediagram.app';
     const withDrive = trustedScriptOrigins({
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: key('clerk.livediagram.app'),
       NEXT_PUBLIC_GOOGLE_CLIENT_ID: '123456789012-abc.apps.googleusercontent.com',
     });
     for (const src of [
@@ -113,36 +109,11 @@ describe('trustedScriptOrigins', () => {
     expect(isAllowedScriptUrl('https://evil.google.com/x.js', page, '/live', withDrive)).toBe(
       false,
     );
-    const without = trustedScriptOrigins({
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: key('clerk.livediagram.app'),
-    });
+    const without = trustedScriptOrigins({});
+    expect(without).toEqual([]);
     expect(isAllowedScriptUrl('https://apis.google.com/js/api.js', page, '/live', without)).toBe(
       false,
     );
-  });
-
-  it("reads the Clerk frontend API's origin from the publishable key, beside its sign-up CAPTCHA's", () => {
-    expect(
-      trustedScriptOrigins({ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: key('clerk.livediagram.app') }),
-    ).toEqual(['https://clerk.livediagram.app', 'https://challenges.cloudflare.com']);
-  });
-
-  it("lets Clerk's sign-up CAPTCHA load, and nothing else on its origin's neighbours", () => {
-    const origins = trustedScriptOrigins({
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: key('clerk.livediagram.app'),
-    });
-    const page = 'https://www.livediagram.app';
-    const turnstile = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
-    expect(isAllowedScriptUrl(turnstile, page, '/live', origins)).toBe(true);
-    expect(isAllowedScriptUrl('https://evil.cloudflare.com/x.js', page, '/live', origins)).toBe(
-      false,
-    );
-  });
-
-  it('names none without a key, or with one it cannot read', () => {
-    expect(trustedScriptOrigins({})).toEqual([]);
-    expect(trustedScriptOrigins({ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: 'pk_test_%%%' })).toEqual([]);
-    expect(trustedScriptOrigins({ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: 'sk_test_abc' })).toEqual([]);
   });
 });
 
@@ -194,15 +165,15 @@ describe('trustedTypesBootScript', () => {
   it('creates the default policy, which lets only allowed script URLs through and logs a refusal', () => {
     const { created } = stubTrustedTypes();
     const error = vi.spyOn(console, 'error').mockImplementation(() => {});
-    run(trustedTypesBootScript('/live', ['https://clerk.example.com']));
+    run(trustedTypesBootScript('/live', ['https://scripts.example.com']));
     const policy = created.find((c) => c.name === 'default')!;
     expect(Object.keys(policy.rules).sort()).toEqual(['createHTML', 'createScriptURL']);
     expect(policy.rules.createScriptURL!('/live/_next/static/chunks/a.js')).toBe(
       '/live/_next/static/chunks/a.js',
     );
     expect(policy.rules.createScriptURL!('/_next/static/chunks/a.js')).toBeNull();
-    expect(policy.rules.createScriptURL!('https://clerk.example.com/c.js')).toBe(
-      'https://clerk.example.com/c.js',
+    expect(policy.rules.createScriptURL!('https://scripts.example.com/c.js')).toBe(
+      'https://scripts.example.com/c.js',
     );
     expect(policy.rules.createScriptURL!('https://evil.example/x.js')).toBeNull();
     const own = `blob:${location.origin}/1234`;
@@ -257,12 +228,12 @@ describe('trustedTypesBootScript', () => {
     expect(() => trustedTypesBootScript('help', [])).toThrow(/asset prefix/);
     expect(() => trustedTypesBootScript('', ['https://a.example"];alert(1)//'])).toThrow(/origin/);
     expect(() => trustedTypesBootScript('', ['javascript:alert(1)'])).toThrow(/origin/);
-    expect(() => trustedTypesBootScript('/live', ['https://clerk.example.com'])).not.toThrow();
+    expect(() => trustedTypesBootScript('/live', ['https://scripts.example.com'])).not.toThrow();
   });
 
   // It is inlined in a <script> element: a closing tag anywhere in it would end that element early.
   it('never closes the inline script element it is written into', () => {
-    expect(trustedTypesBootScript('/live', ['https://clerk.example.com'])).not.toMatch(
+    expect(trustedTypesBootScript('/live', ['https://scripts.example.com'])).not.toMatch(
       /<\/script/i,
     );
   });

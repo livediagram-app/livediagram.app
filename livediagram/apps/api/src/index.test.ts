@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock the two async deps the request path touches before dispatch, so we can
 // drive the worker's top-level §4 guest-signature gate (docs/specs/015-api/public-api-and-tokens.md) directly.
-vi.mock('./auth/clerk', () => ({ getClerkIdentity: async () => null }));
+vi.mock('./auth/accounts', () => ({ getAccountIdentity: async () => null }));
 const { resolveApiTokenMock } = vi.hoisted(() => ({ resolveApiTokenMock: vi.fn() }));
 vi.mock('./db', () => ({
   resolveApiToken: resolveApiTokenMock,
@@ -42,7 +42,7 @@ describe('worker §4 guest X-Owner-Id signature gate', () => {
     expect(res.status).toBe(401);
   });
 
-  it('401s an X-Owner-Id carrying a Clerk sub with no signature (signed-up Bearer-only)', async () => {
+  it('401s an X-Owner-Id carrying an account id with no signature (signed-up Bearer-only)', async () => {
     const res = await worker.fetch(get('/api/documents', { 'X-Owner-Id': 'user_abc' }), env());
     expect(res.status).toBe(401);
   });
@@ -70,18 +70,18 @@ describe('worker §4 guest X-Owner-Id signature gate', () => {
   });
 });
 
-// The Clerk-shape refusal sits BEFORE the signature gate above and, unlike it,
+// The account-id-shape refusal sits BEFORE the signature gate above and, unlike it,
 // is unconditional — the shape has never been a legitimate guest credential, so
 // there is no legacy caller to grandfather and nothing to arm. That matters
 // because the signature gate ships OFF by default (`GUEST_SIG_ENFORCE_AFTER`
 // unset), which is the configuration these tests use.
-describe('worker refusal of a Clerk account id in X-Owner-Id', () => {
+describe('worker refusal of an account id in X-Owner-Id', () => {
   // Enforcement OFF: no secret, no cutoff. The gate above cannot fire here.
   const noEnforcement = () => ({}) as unknown as Env;
 
   beforeEach(() => resolveApiTokenMock.mockResolvedValue(null));
 
-  it('401s a Clerk sub presented as the guest header, with the gate disarmed', async () => {
+  it('401s an account id presented as the guest header, with the gate disarmed', async () => {
     const res = await worker.fetch(
       get('/api/documents', { 'X-Owner-Id': 'user_2abcDEF' }),
       noEnforcement(),
@@ -101,8 +101,8 @@ describe('worker refusal of a Clerk account id in X-Owner-Id', () => {
   });
 
   // The share resolver compares the header with the document owner, so a
-  // harvested Clerk sub must not reach it either.
-  it('refuses a Clerk sub as the guest header on the share resolver', async () => {
+  // harvested account id must not reach it either.
+  it('refuses an account id as the guest header on the share resolver', async () => {
     const res = await worker.fetch(
       get('/api/share/abc', { 'X-Owner-Id': 'user_2abcDEF' }),
       noEnforcement(),
@@ -132,7 +132,7 @@ describe('worker refusal of a Clerk account id in X-Owner-Id', () => {
     expect(res.status).not.toBe(401);
   });
 
-  it('does not touch a Bearer caller, whose owner id IS a Clerk sub', async () => {
+  it('does not touch a Bearer caller, whose owner id IS an account id', async () => {
     // A token request resolves its owner from the hashed-token lookup, so the
     // account id never arrives as a header and must not be penalised for
     // being one.
@@ -283,7 +283,7 @@ describe('worker refusal of an unknown API token', () => {
     }
   });
 
-  it('leaves a bearer that is not token-shaped to the Clerk path', async () => {
+  it('leaves a bearer that is not token-shaped to the account path', async () => {
     const res = await worker.fetch(
       get('/api/documents', { Authorization: 'Bearer eyJ.jwt.sig' }),
       noEnforcement(),
@@ -421,7 +421,7 @@ describe('workbench sessions at the front door', () => {
     expect(await res.json()).toEqual({ error: 'workbench_read_only' });
   });
 
-  it('hands an allowed route the owner as a person: no Clerk id, no token, writes keyed on the session', async () => {
+  it('hands an allowed route the owner as a person: no account id, no token, writes keyed on the session', async () => {
     const limit = vi.fn(async () => ({ success: true }));
 
     const res = await call(
@@ -434,7 +434,7 @@ describe('workbench sessions at the front door', () => {
 
     expect(res.status).toBe(204);
     expect(ctx.workbench).toEqual(SESSION);
-    expect(ctx.clerkUserId).toBeNull();
+    expect(ctx.accountUserId).toBeNull();
     expect(ctx.token).toBeNull();
     expect(ctx.resolveOwner()).toBe('user_1');
     expect(ctx.verifiedUserId).toBe('user_1');

@@ -6,7 +6,7 @@
 // reassigning and resolving already exist behind their edit gates. So
 // there is no other verb here in v1.
 //
-// Hybrid identity like the rest of the api (docs/specs/014-identity/auth-and-guest-access.md): the Clerk userId
+// Hybrid identity like the rest of the api (docs/specs/014-identity/auth-and-guest-access.md): the account id
 // when signed in, X-Owner-Id otherwise. Guests get their own page (their
 // self-assigned to-dos, threads on their documents), and it survives
 // sign-up through owner_aliases (docs/specs/013-workspace/inbox.md §2.2).

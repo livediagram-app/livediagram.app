@@ -1,9 +1,10 @@
+import { signedInHintOf } from '@livediagram/api-schema';
 import { GUEST_IDENTITY_KEYS } from './kept-keys';
 
 // Who this browser is, for the diagnostics report (docs/specs/007-editor/load-recovery.md "Diagnostics").
 // Readable from any app on the origin, so the help centre's Repair page reports it too, without the
-// sign-in provider loaded: the guest identity is plain localStorage, and the provider keeps a readable
-// `__client_uat` cookie that is `0` signed out and a timestamp signed in. That cookie says whether, not
+// session loaded: the guest identity is plain localStorage, and the api keeps a readable
+// `ld_signed_in` hint cookie that is `0` signed out and `1` signed in. That cookie says whether, not
 // who; the editor adds the account id it resolved.
 //
 // A full guest id is an `X-Owner-Id` credential, so only its first GUEST_ID_PREFIX_LENGTH characters
@@ -11,9 +12,6 @@ import { GUEST_IDENTITY_KEYS } from './kept-keys';
 
 /** How many characters of a guest id a report carries. */
 export const GUEST_ID_PREFIX_LENGTH = 8;
-
-/** The sign-in provider's "client updated at" cookie; development instances add a suffix. */
-const SIGN_IN_COOKIE = /^__client_uat(_[A-Za-z0-9-]+)?$/;
 
 export type BrowserIdentity = {
   /** From the sign-in cookie: true / false, or null when there is none (sign-in not set up, never visited). */
@@ -32,20 +30,8 @@ function read(storage: () => Storage, key: string): string | null {
   }
 }
 
-/** True / false from the sign-in cookie, null when there is none. Signed in on any instance wins. */
-export function signedInFromCookie(cookie: string): boolean | null {
-  let seen: boolean | null = null;
-  for (const part of cookie.split(';')) {
-    const at = part.indexOf('=');
-    if (at < 0) continue;
-    const name = part.slice(0, at).trim();
-    if (!SIGN_IN_COOKIE.test(name)) continue;
-    const value = Number(part.slice(at + 1).trim());
-    if (Number.isFinite(value) && value > 0) return true;
-    seen = false;
-  }
-  return seen;
-}
+/** True / false from the signed-in hint cookie, null when there is none. */
+export const signedInFromCookie = signedInHintOf;
 
 export function readBrowserIdentity(
   win: Pick<Window, 'localStorage'> & { document: Pick<Document, 'cookie'> } = window,

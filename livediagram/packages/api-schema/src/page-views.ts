@@ -21,7 +21,6 @@ export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
   'new',
   'oauth',
   'sign-in',
-  'sso-callback',
   // The workbench pairing page, /workbench/pair (docs/specs/013-workspace/workbench-embeds.md "Pairing").
   'workbench',
 ]);

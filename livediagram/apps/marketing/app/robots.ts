@@ -41,7 +41,6 @@ export default function robots(): MetadataRoute.Robots {
         '/oauth/',
         '/sign-in',
         '/get-started',
-        '/sso-callback',
         '/embed',
         '/drive/',
         '/api/',

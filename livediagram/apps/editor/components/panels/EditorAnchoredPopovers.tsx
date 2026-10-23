@@ -61,17 +61,17 @@ export function EditorAnchoredPopovers() {
     wontDoAction,
     deleteAction,
     teams,
-    clerkUserId,
+    accountUserId,
     setDocumentTeamId,
-    clerkDisplayName,
+    accountDisplayName,
     documentTeamId,
     emailEnabled,
   } = useEditorContext();
 
-  // The assigner/viewer identity for actions (docs/specs/012-collaboration/assigned-actions.md): the Clerk
+  // The assigner/viewer identity for actions (docs/specs/012-collaboration/assigned-actions.md): the
   // account, or the guest participant identity — guests can self-assign.
-  const actionSelfId = clerkUserId ?? selfParticipant.id;
-  const actionSelfName = clerkDisplayName ?? selfParticipant.name;
+  const actionSelfId = accountUserId ?? selfParticipant.id;
+  const actionSelfName = accountDisplayName ?? selfParticipant.name;
   // A read-only session has no autosave, so its comment changes go through the comment endpoints; an editor's ride
   // the room and its save (lib/comment-persistence.ts, shared with the Comment panel).
   const persist = commentPersisters({
@@ -182,7 +182,7 @@ export function EditorAnchoredPopovers() {
                 // A card's title names the LIST, not each action on it.
                 elementLabel={cardTarget ? null : targetLabel || null}
                 teams={teams}
-                ownerId={clerkUserId ?? null}
+                ownerId={accountUserId ?? null}
                 selfUserId={actionSelfId}
                 selfName={actionSelfName}
                 documentId={documentId}
@@ -194,9 +194,9 @@ export function EditorAnchoredPopovers() {
                 // server enforces the docs/specs/013-workspace/team-shared-documents.md placement rules; on success the
                 // local team id flips and the member fetch re-runs.
                 onMoveToTeam={async (teamId) => {
-                  if (!clerkUserId || !documentId) return false;
+                  if (!accountUserId || !documentId) return false;
                   try {
-                    await apiSetDocumentFolder(clerkUserId, documentId, null, teamId);
+                    await apiSetDocumentFolder(accountUserId, documentId, null, teamId);
                   } catch {
                     return false;
                   }

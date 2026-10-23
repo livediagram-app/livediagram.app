@@ -459,29 +459,29 @@ tracking-[0.08em] text-slate-500 pt-3`), entries in a `ul` with 4 px between.
 
 ## Testing
 
-| Rule                                                                                | Test                                                                                    |
-| ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| The allocation                                                                      | `packages/api-schema/src/within-reach.test.ts`                                          |
-| The use window                                                                      | `packages/api-schema/src/home.test.ts`                                                  |
-| Local opens: first, same day, next day, window, legacy shape, trashed, failure      | `apps/editor/lib/offline/offline-opens.test.ts`                                           |
-| A local making starts the record; one with `markUsed: false` has none               | `apps/editor/lib/offline/offline-store.test.ts`                                           |
-| A marked local load records; an unmarked one does not                               | `apps/editor/lib/api/tabs-local-open.test.ts`                                             |
-| Set: merge, dedupe, local measures, ties; phone order; hrefs; days; fade            | `apps/editor/app/explorer/home/home-model.test.ts`                                        |
-| Sentences, people, verbs, updates, location                                         | `apps/editor/app/explorer/home/home-copy.test.ts`                                         |
-| Read, error, retry, stale owner, unread clear, mark kept                            | `apps/editor/app/explorer/home/useHome.test.tsx`                                          |
-| A clear outlives an unread count still in flight                                    | `apps/editor/app/explorer/useTimelineUnread.test.tsx`                                     |
-| Grid and strip: group labels, quiet lines, cards, pill, fade, See More, telemetry   | `apps/editor/components/panels/home/JumpBackIn.test.tsx`                                  |
-| ⋯ menu: button beside the link, right-click, rename in place, gone, unloaded, strip | `apps/editor/components/panels/home/JumpBackInMenu.test.tsx`                              |
-| Menu props by id: lists, bound actions, shared dismiss, history, gone               | `apps/editor/app/explorer/useDocumentEntryFor.test.tsx`                                   |
-| Display headings: the heading row and its link, per section, no rule                | `apps/editor/components/panels/home/HomePane.test.tsx`                                    |
-| Greeting by hour, pills' copy, the sheets' documents                                | `apps/editor/app/explorer/home/hero-model.test.ts`                                        |
-| Hero: pills open their views, New Document, Help, sheets hidden, one lens field     | `apps/editor/components/panels/home/HomeHero.test.tsx`                                    |
-| The hero field hands the focus to the header field on Search results                | `apps/editor/app/explorer/lens/lens-focus-handoff.test.ts`                                |
-| Entries: one-person links, summary disclosure, telemetry, See Timeline              | `apps/editor/components/panels/home/WhatHappened.test.tsx`                                |
-| One column, two sections, no Timeline, the error state                              | `apps/editor/components/panels/home/HomePane.test.tsx`                                    |
-| Routes, titles, crumbs (Recent under Home), the landing 302                         | `routes.test.ts`, `view-titles.test.ts`, `apps/editor/src/worker.test.ts`                 |
-| Telemetry charted and explained                                                     | `apps/telemetry` `metric-emitters.test.ts`, `event-explanation.test.ts`                 |
-| Real browser: guest and signed in, desktop and phone, dark                          | `apps/editor/e2e/explorer-home.spec.ts`, `apps/editor/e2e/clerk-stub/explorer-home.spec.ts` |
+| Rule                                                                                | Test                                                                                   |
+| ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| The allocation                                                                      | `packages/api-schema/src/within-reach.test.ts`                                         |
+| The use window                                                                      | `packages/api-schema/src/home.test.ts`                                                 |
+| Local opens: first, same day, next day, window, legacy shape, trashed, failure      | `apps/editor/lib/offline/offline-opens.test.ts`                                          |
+| A local making starts the record; one with `markUsed: false` has none               | `apps/editor/lib/offline/offline-store.test.ts`                                          |
+| A marked local load records; an unmarked one does not                               | `apps/editor/lib/api/tabs-local-open.test.ts`                                            |
+| Set: merge, dedupe, local measures, ties; phone order; hrefs; days; fade            | `apps/editor/app/explorer/home/home-model.test.ts`                                       |
+| Sentences, people, verbs, updates, location                                         | `apps/editor/app/explorer/home/home-copy.test.ts`                                        |
+| Read, error, retry, stale owner, unread clear, mark kept                            | `apps/editor/app/explorer/home/useHome.test.tsx`                                         |
+| A clear outlives an unread count still in flight                                    | `apps/editor/app/explorer/useTimelineUnread.test.tsx`                                    |
+| Grid and strip: group labels, quiet lines, cards, pill, fade, See More, telemetry   | `apps/editor/components/panels/home/JumpBackIn.test.tsx`                                 |
+| ⋯ menu: button beside the link, right-click, rename in place, gone, unloaded, strip | `apps/editor/components/panels/home/JumpBackInMenu.test.tsx`                             |
+| Menu props by id: lists, bound actions, shared dismiss, history, gone               | `apps/editor/app/explorer/useDocumentEntryFor.test.tsx`                                  |
+| Display headings: the heading row and its link, per section, no rule                | `apps/editor/components/panels/home/HomePane.test.tsx`                                   |
+| Greeting by hour, pills' copy, the sheets' documents                                | `apps/editor/app/explorer/home/hero-model.test.ts`                                       |
+| Hero: pills open their views, New Document, Help, sheets hidden, one lens field     | `apps/editor/components/panels/home/HomeHero.test.tsx`                                   |
+| The hero field hands the focus to the header field on Search results                | `apps/editor/app/explorer/lens/lens-focus-handoff.test.ts`                               |
+| Entries: one-person links, summary disclosure, telemetry, See Timeline              | `apps/editor/components/panels/home/WhatHappened.test.tsx`                               |
+| One column, two sections, no Timeline, the error state                              | `apps/editor/components/panels/home/HomePane.test.tsx`                                   |
+| Routes, titles, crumbs (Recent under Home), the landing 302                         | `routes.test.ts`, `view-titles.test.ts`, `apps/editor/src/worker.test.ts`                |
+| Telemetry charted and explained                                                     | `apps/telemetry` `metric-emitters.test.ts`, `event-explanation.test.ts`                |
+| Real browser: guest and signed in, desktop and phone, dark                          | `apps/editor/e2e/explorer-home.spec.ts`, `apps/editor/e2e/signed-in/explorer-home.spec.ts` |
 
 ## Constants and configuration
 

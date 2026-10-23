@@ -35,7 +35,7 @@ function makeCtx(
   opts: {
     env?: Partial<Env>;
     origin?: string | null;
-    clerkUserId?: string | null;
+    accountUserId?: string | null;
     owner?: string | null;
     method?: string;
     body?: unknown;
@@ -59,9 +59,9 @@ function makeCtx(
     env: { OPENAI_API_KEY: 'test-key', ...opts.env } as Env,
     url: new URL(request.url),
     segments: ['api', 'ai', 'read-notes'],
-    clerkUserId: opts.clerkUserId ?? null,
-    verifiedUserId: opts.clerkUserId ?? null,
-    clerkEmail: null,
+    accountUserId: opts.accountUserId ?? null,
+    verifiedUserId: opts.accountUserId ?? null,
+    accountEmail: null,
     resolveOwner: () => (opts.owner === null ? null : (opts.owner ?? 'owner-anon')),
   };
 }
@@ -86,7 +86,7 @@ describe('the shared gate still guards this route', () => {
   });
 
   it('401 on the guest path when the deployment is Clerk-only', async () => {
-    const res = await handleAiReadNotes(makeCtx({ env: { AI_REQUIRE_CLERK: 'true' } }));
+    const res = await handleAiReadNotes(makeCtx({ env: { AI_REQUIRE_SIGN_IN: 'true' } }));
     expect(res.status).toBe(401);
   });
 

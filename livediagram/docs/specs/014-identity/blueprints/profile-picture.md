@@ -1,5 +1,10 @@
 # Profile picture: blueprint
 
+> **Dormant since the move off Clerk.** Sign-in now goes through the liveworkspace accounts Worker, which supplies
+> no profile picture, so `pictureUrl` is always `null` and every avatar draws initials. The code below (the Clerk
+> image-host allowlist in `packages/api-schema/src/profile-picture.ts`, the publish path, the room's `picture`
+> fields) is still present but never carries a picture. What follows is the design as built for Clerk.
+
 Derived from [Profile picture](../profile-picture.md). Defaults applied where the spec is silent
 are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
@@ -22,11 +27,11 @@ are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 | `apps/editor/hooks/persistence/useEditorPreferences.ts`                                                                          | `useCachedPreferences`                                                                                                                           |
 | `apps/editor/lib/comment-pictures.ts`                                                                                            | `useCommentPicturesLoader`, `useCommentAuthorPicture`                                                                                            |
 | `packages/ui/src/PictureDisc.tsx` (shared with the Community's author badge), `apps/editor/components/primitives/AuthorDisc.tsx` | GlyphDisc + picture overlay; a comment author's disc                                                                                             |
-| `apps/editor/components/providers/ClerkBridge.tsx`, `deferred-auth.tsx`                                                          | `pictureUrl` on the auth user                                                                                                                    |
+| `apps/editor/components/providers/AccountsBridge.tsx`, `deferred-auth.tsx`                 | `pictureUrl` on the auth user, always `null` now                                                                                                 |
 | `apps/editor/lib/api/room.ts`, `app/document/[id]/useRoomConnection.ts`                                                          | hello `picture`; `updateSelf` sends `identity`; signed-in joins mint a ticket                                                                    |
 | `apps/editor/app/document/[id]/usePresenceRows.ts`, `lib/presence-rows.ts`                                                       | Own entry carries our picture; cursor rows carry `picture`                                                                                       |
 | Surfaces                                                                                                                       | `AuthControls`, `SettingsAccountRows`, `ParticipantAvatar`, `RemoteCursor`, `CommentThreadPopover`, `CommentBubbles`, `team-pane-parts`          |
-| `apps/editor/e2e/clerk-stub/*`, `apps/editor/scripts/build-clerk-stub.mjs`                                                         | Fake `window.Clerk`, signed-in and collaborator specs, the Clerk-enabled export                                                                  |
+| `apps/editor/e2e/signed-in/*`, `apps/editor/scripts/build-signed-in.mjs`                                                         | Fake `window.Clerk`, signed-in and collaborator specs, the Clerk-enabled export                                                                  |
 | `scripts/e2e-stack.mjs`, `apps/editor/playwright.config.ts`                                                                      | `E2E_EDITOR_OUT`, `E2E_CLERK_JWKS` (`/e2e/jwks.json`, `/e2e/token`), the `clerk-stub` project                                                      |
 | `apps/help/app/account-and-data/signing-in/page.mdx`, liveworkspace.app/privacy                                       | User-facing copy                                                                                                                                 |
 | liveworkspace/apps/site/app/telemetry/livediagram/catalogue/settings.ts, `event-explanations.ts`                               | `ShowProfilePictureOn/Off`                                                                                                                       |
@@ -70,15 +75,15 @@ Clerk answers with a 160x96 band (spec §2).
 Published picture: signed in && `showProfilePictureEnabled(prefs)` → `pictureUrl`, else null.
 Recomputed on every auth emission and every `PREFERENCES_CHANGED_EVENT`.
 
-Publisher (`usePublishPicture(clerkUserId)`, called from `useEditorState` and `useExplorerState`
-after `useClerkApiBootstrap` registers the token provider): PUT when the published value differs from the last value PUT this page (D2). A 404 (no
+Publisher (`usePublishPicture(accountUserId)`, called from `useEditorState` and `useExplorerState`
+after `useAccountBootstrap` registers the token provider): PUT when the published value differs from the last value PUT this page (D2). A 404 (no
 participant row yet) is not retried until the value changes (D3). Clearing (null) with no row yet is answered 200: the
 account has no picture either way, and a fresh account's first page load would otherwise log a 404.
 
 Room:
 
 - Join: a signed-in client mints a ticket for every room (not only team documents). The ticket
-  row records `account = 1` when `ctx.clerkUserId` is set. Consume returns it; the upgrade
+  row records `account = 1` when `ctx.accountUserId` is set. Consume returns it; the upgrade
   stamps `X-Verified-Account: 1|0` on every path; the DO pins it on the attachment.
 - `helloPresence(claimed, session)`: `picture` kept when `session.account` and
   `isProfilePictureUrl(claimed.picture)`, else dropped (logged when a non-empty picture is
@@ -110,7 +115,7 @@ export const MAX_PICTURE_URL_LEN = 512;
 export function isProfilePictureUrl(url: unknown): url is string;
 
 // PUT /api/participants/<id>/picture   body { pictureUrl: string | null }
-//   401 when no verified Clerk session; 403 when clerkUserId !== id;
+//   401 when no verified Clerk session; 403 when accountUserId !== id;
 //   400 invalid_picture_url; 404 no participant row; 200 { pictureUrl }
 // GET /api/participants/<id> → { participant: { id, name, color, createdAt, pictureUrl } }
 //   pictureUrl is null unless the caller is signed in (verifiedUserId)
@@ -201,8 +206,8 @@ CLS 0: fixed boxes, the cursor pill is a transient absolutely positioned overlay
 | Account bit through the upgrade                                                                                                                        | `apps/api/src/routes/document-room-routes.test.ts`                                       |
 | Hello keeps / drops, per-recipient roster, identity frames                                                                                             | `apps/api/src/document-room.test.ts`                                                     |
 | Comment pictures route, anonymous empty                                                                                                                | `apps/api/src/routes/comment-pictures-routes.test.ts`                                    |
-| End to end: own chrome, fallback, framing at 2x, the switch                                                                                            | `apps/editor/e2e/clerk-stub/profile-picture.spec.ts`                                       |
-| End to end: collaborator sees presence / cursor / comment pictures, anonymous visitor sees initials and never requests one, switch off removes it live | `apps/editor/e2e/clerk-stub/collaborator-pictures.spec.ts`                                 |
+| End to end: own chrome, fallback, framing at 2x, the switch                                                                                            | None since the move off Clerk (the spec was removed)                                     |
+| End to end: collaborator sees presence / cursor / comment pictures, anonymous visitor sees initials and never requests one, switch off removes it live | None since the move off Clerk (the spec was removed)                                     |
 
 ## Constants and configuration
 

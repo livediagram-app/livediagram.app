@@ -257,7 +257,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   return (
     <EditorContext.Provider value={state}>
       {/* Owner-scoped custom themes (docs/specs/011-theme/custom-themes.md): keyed by the current
-          user's id (Clerk or guest self id) so the theme picker /
+          user's id (account or guest self id) so the theme picker /
           builder share one source of truth and getTheme resolves saved
           themes referenced by this document's tabs. */}
       <CustomThemeProvider

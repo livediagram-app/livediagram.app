@@ -47,7 +47,7 @@ export async function handleTeamActionRoutes(
   ctx: RouteContext,
   scope: { teamId: string; me: TeamMember; userId: string },
 ): Promise<Response | null> {
-  const { request, env, url, segments, clerkEmail } = ctx;
+  const { request, env, url, segments, accountEmail } = ctx;
   const { teamId, me, userId } = scope;
 
   // /api/teams/<id>/access-check — can this teammate open that document?
@@ -81,7 +81,7 @@ export async function handleTeamActionRoutes(
 
   // /api/teams/<id>/notify-action — email a teammate about an action just
   // assigned to them on a document element (docs/specs/012-collaboration/assigned-actions.md). A POST, so the shared
-  // mutation gate in teams.ts already required the interactive Clerk
+  // mutation gate in teams.ts already required the interactive signed-in
   // session. The server establishes every fact that matters itself: both
   // parties must be JOINED members of this team, the caller must be able
   // to access the document, and the document name + assigner name + assignee
@@ -137,7 +137,7 @@ export async function handleTeamActionRoutes(
     // The assigner's display name comes from the caller's own verified
     // identity (participant profile, then their email), so a spoofed
     // assignerName in a tab blob can never sign an email.
-    const assignerName = (await getParticipant(env, userId))?.name ?? clerkEmail ?? null;
+    const assignerName = (await getParticipant(env, userId))?.name ?? accountEmail ?? null;
     // An assignee who cannot open the document still hears about the action, but the email
     // names no document: its name is not theirs to learn from an assignment.
     const assigneeCanOpen = await memberCanOpenDocument(env, teamId, assignee, liveDoc);

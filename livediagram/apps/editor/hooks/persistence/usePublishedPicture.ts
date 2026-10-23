@@ -35,24 +35,24 @@ export function resetPublishedPictureCache(): void {
 
 /**
  * Keep the participant record's picture equal to the published one. Runs only for a signed-in
- * account (`clerkUserId`), after its token provider is registered. A 404 means the participant
+ * account (`accountUserId`), after its token provider is registered. A 404 means the participant
  * row does not exist yet; the next change or page load writes it (blueprint D3).
  */
-export function usePublishPicture(clerkUserId: string | null | undefined): void {
+export function usePublishPicture(accountUserId: string | null | undefined): void {
   const picture = usePublishedPicture();
   useEffect(() => {
-    if (!clerkUserId) return;
-    if (written.has(clerkUserId) && written.get(clerkUserId) === picture) return;
-    written.set(clerkUserId, picture);
-    void apiSetProfilePicture(clerkUserId, picture)
+    if (!accountUserId) return;
+    if (written.has(accountUserId) && written.get(accountUserId) === picture) return;
+    written.set(accountUserId, picture);
+    void apiSetProfilePicture(accountUserId, picture)
       .then((status) => {
         if (status >= 200 && status < 300) return;
-        written.delete(clerkUserId);
+        written.delete(accountUserId);
         if (status !== 404) console.warn('[profile-picture] publish failed', { status });
       })
       .catch((err: unknown) => {
-        written.delete(clerkUserId);
+        written.delete(accountUserId);
         console.warn('[profile-picture] publish failed', { error: String(err) });
       });
-  }, [clerkUserId, picture]);
+  }, [accountUserId, picture]);
 }

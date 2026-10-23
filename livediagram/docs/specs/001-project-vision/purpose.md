@@ -137,7 +137,7 @@ version is the easy default. See
 [03-open-source-and-business-model.md](../002-project-scope/open-source-and-business-model.md).
 
 The canvas is **always available without signing in**: a visitor can build a
-real diagram before being asked to create an account. Auth (Clerk) unlocks sync,
+real diagram before being asked to create an account. Signing in (a liveworkspace account) unlocks sync,
 teams and per-account history on top of that. See
 [04-auth-and-guest-access.md](../014-identity/auth-and-guest-access.md).
 

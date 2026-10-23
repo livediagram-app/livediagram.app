@@ -269,7 +269,7 @@ spec. No layout shift: roles and `tabIndex` add no box, and `inert` changes no s
 | Locked element menu focus and Escape                                                       | `apps/editor/components/canvas/LockedElementMenu.test.tsx`                                  |
 | Row ⋯ opens on Down / Up Arrow                                                             | `apps/editor/components/primitives/useRowMenu.test.tsx`                                     |
 | Shape tiles are named                                                                      | `apps/editor/lib/element-names.test.ts`                                                     |
-| Signed-in account menu by keyboard; a team folder's submenu                                | e2e `apps/editor/e2e/clerk-stub/menu-keyboard.spec.ts`, `default-folders-team.spec.ts`      |
+| Signed-in account menu by keyboard; a team folder's submenu                                | e2e `apps/editor/e2e/signed-in/menu-keyboard.spec.ts`, `default-folders-team.spec.ts`       |
 | Contrast and optical audits still pass                                                     | e2e `contrast-audit.spec.ts`, `optical-audit.spec.ts`                                     |
 
 ## Constants and configuration

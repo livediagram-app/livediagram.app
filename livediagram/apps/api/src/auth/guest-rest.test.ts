@@ -43,7 +43,7 @@ describe('OWNER_SCOPED_SEGMENTS', () => {
     ])
       expect(OWNER_SCOPED_SEGMENTS.has(s)).toBe(true);
   });
-  it('excludes public / auth-bootstrap / Clerk-only routes', () => {
+  it('excludes public / auth-bootstrap / signed-in only routes', () => {
     for (const s of [
       'guest-id',
       'share',

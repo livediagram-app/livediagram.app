@@ -116,7 +116,7 @@ export function PlacementBrowser({
   ) => Promise<PickerFolder | null>;
   // Inline team creation (the overview's "New Team" tile). Absent = tile
   // hidden; hosts pass it only for signed-in users, since teams are
-  // Clerk-only (docs/specs/013-workspace/teams.md).
+  // signed-in only (docs/specs/013-workspace/teams.md).
   onCreateTeam?: (name: string) => Promise<{ id: string; name: string } | null>;
   // Tile grid (default) or stacked rows; see the header comment.
   layout?: PlacementLayout;

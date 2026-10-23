@@ -7,15 +7,15 @@ import { defaultSaveLocationFor, isOfflineLocation } from './save-locations';
 describe('save locations', () => {
   // "The default depends on who is creating".
   it('starts a guest on This Browser when sign-in is enabled', () => {
-    expect(defaultSaveLocationFor({ signedIn: false, clerkEnabled: true })).toBe('browser');
+    expect(defaultSaveLocationFor({ signedIn: false, signInEnabled: true })).toBe('browser');
   });
 
   it('starts a signed-in person on livediagram', () => {
-    expect(defaultSaveLocationFor({ signedIn: true, clerkEnabled: true })).toBe('livediagram');
+    expect(defaultSaveLocationFor({ signedIn: true, signInEnabled: true })).toBe('livediagram');
   });
 
   it('starts everyone on livediagram on a deployment without sign-in', () => {
-    expect(defaultSaveLocationFor({ signedIn: false, clerkEnabled: false })).toBe('livediagram');
+    expect(defaultSaveLocationFor({ signedIn: false, signInEnabled: false })).toBe('livediagram');
   });
 
   it('routes only This Browser to the offline store', () => {

@@ -3,8 +3,8 @@
 // API token state (docs/specs/015-api/public-api-and-tokens.md), loaded for a signed-in user. Consumed by
 // the Settings token manager and the Explorer's timeline token-card menus;
 // each mounts its own controller and a change in one refreshes the rest (see
-// TOKENS_CHANGED_EVENT). `enabled` gates the fetch (off for guests / when Clerk is not
-// configured), mirroring useTeams. Tokens are Clerk-only, so `ownerId` here is
+// TOKENS_CHANGED_EVENT). `enabled` gates the fetch (off for guests / when sign-in is not
+// configured), mirroring useTeams. Tokens are signed-in only, so `ownerId` here is
 // always the signed-in account id when enabled.
 import { useCallback, useEffect, useState } from 'react';
 import type { ApiToken } from '@livediagram/api-schema';

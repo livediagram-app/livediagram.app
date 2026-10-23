@@ -52,7 +52,6 @@ const LIVE_ROUTE_SEGMENTS = new Set([
   'new',
   'oauth',
   'sign-in',
-  'sso-callback',
 ]);
 export default {
   async fetch(request, env) {

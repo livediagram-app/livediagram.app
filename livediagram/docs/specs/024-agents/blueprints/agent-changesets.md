@@ -50,7 +50,7 @@ Scope, by file:
 | `apps/api/src/room-selections.ts`                                                  | `RoomSelectionStore`: each session's selection in DO storage                                                                       |
 | `apps/api/src/person-tag.ts`, `db/ws-tickets.ts`, `routes/document-room-routes.ts` | The person tag ([agent presence](agent-presence.md)): minted into the ticket, forwarded on the upgrade                             |
 | `apps/api/src/document-room.ts`, `room-internal.ts`                                | `/mutation` accepts `changeset` and `tab-meta`; `GET /selections`; `select` recorded; close prunes                                 |
-| `apps/api/src/responses.ts`                                                        | CORS allows `X-Changeset-Seen`, `X-Livediagram-Client`; exposes `ETag`                                                             |
+| `apps/api/src/responses.ts`                                                        | CORS allows `X-Changeset-Seen`, `X-Livediagram-Client`; exposes `ETag`                                                           |
 | `apps/api/src/openapi/{manifest,document}.ts`, `scripts/gen-openapi-schemas`       | The five routes, `Tab.rev`, the header, the error bodies, the PUT's 405                                                            |
 | `apps/mcp/src/changeset-client.ts`                                                 | `submitChangeset`, `mcpOpsToEditOperations`, `changesetErrorText`                                                                  |
 | `apps/mcp/src/tools.ts`, `schema.ts`, `output-schema.ts`, `api.ts`                 | `add_tab`, `update_document` on changesets; `rename_document` on the name route; `rev`; the client header                          |
@@ -68,7 +68,7 @@ Scope, by file:
 | `apps/editor/app/document/[id]/{usePerTabLoad,useRoomResync,seed-fetched-...}`       | Record each loaded tab's `rev`; resync of named tabs                                                                               |
 | `apps/editor/app/document/[id]/useAutosave.ts`                                       | Passes the seen revision per tab                                                                                                   |
 | `apps/editor/components/canvas/ChangesetRevealOverlay.tsx`, `CanvasElementsLayer`    | The outline in the author's colour; `ChangesetRevealContext` provided by `EditorView`                                              |
-| `apps/editor/e2e/clerk-stub/agent-changesets.spec.ts`                                | The end-to-end spec, signed in (only an account mints a token)                                                                     |
+| `apps/editor/e2e/signed-in/agent-changesets.spec.ts`                                 | The end-to-end spec, signed in (only an account mints a token)                                                                     |
 | `apps/editor/hooks/ui/useToast.tsx`                                                  | `toast.action`: a keyed info toast with buttons, upserted by key, no timeout                                                       |
 | liveworkspace/apps/site/app/telemetry/livediagram/catalogue/collaboration.ts       | The `Agent` stack                                                                                                                  |
 
@@ -84,23 +84,23 @@ Scope, by file:
 | Edit operation       | `EditOperation` (engine)                                                     | One step of the body                                                          |
 | Replace              | `ChangesetRequest.replace` (`ReplaceBody`)                                   | The whole-tab body                                                            |
 | Element op           | `ElementOp` (`@livediagram/document`)                                        | The compiled unit the room and editors apply                                  |
-| Inverse              | `inverse`                                                                    | Element ops that undo it, from the before-images                              |
-| Tab revision         | `tabs.rev`, `TabRecord.rev`, `ETag: W/"<rev>"`                               | Advanced by every write of the tab                                            |
-| Base                 | `ChangesetBase { rev, elements? }`                                           | The revision read and the fingerprints of the targets as read                 |
-| Fingerprint          | `elementFingerprint(element)`                                                | 16 hex characters over the canonical element, live fields left out (CS6)      |
-| Live fields          | `LIVE_ELEMENT_FIELDS`                                                        | Multi-writer fields (comments, answers, ...) a fingerprint ignores            |
-| Before / after image | `fingerprints.before[id]`, `fingerprints.after[id]`                          | An element as the changeset found it / left it                                |
-| Target               | `targets` (engine `OperationTargets[]`), `createdIds`                        | Ids an operation addressed by selector; never a make-room shift               |
-| Held                 | `HeldElement { id, by: { name, color } }`, `409 elements_held`               | Selected by a person in an open editor, other than the agent's owner          |
-| Person tag           | `personTagFor(documentId, ownerId)`, attachment `personTag`                  | The room's opaque stand-in for an owner ([agent presence](agent-presence.md)) |
-| Seen revision        | `X-Changeset-Seen`, `ChangesetSeen`                                          | The highest changeset revision an editor has applied to a tab                 |
-| Merge on save        | `mergeChangesetsIntoSave`                                                    | Step 8 of the spec                                                            |
-| Superseded           | `superseded` count                                                           | A changeset's version not taken because a person changed it after             |
-| Revert               | `POST .../changesets/:id/revert`, `planRevert`, `revert_of`                  | The inverse as a new changeset                                                |
-| Kept                 | `kept: { id, reason }[]`                                                     | An element a revert leaves because it changed since                           |
-| Reveal               | `ChangesetRevealOverlay`, `CHANGESET_REVEAL_MS`                              | The outline in the author's colour                                            |
+| Inverse              | `inverse`                                                                      | Element ops that undo it, from the before-images                              |
+| Tab revision         | `tabs.rev`, `TabRecord.rev`, `ETag: W/"<rev>"`                                 | Advanced by every write of the tab                                            |
+| Base                 | `ChangesetBase { rev, elements? }`                                             | The revision read and the fingerprints of the targets as read                 |
+| Fingerprint          | `elementFingerprint(element)`                                                  | 16 hex characters over the canonical element, live fields left out (CS6)      |
+| Live fields          | `LIVE_ELEMENT_FIELDS`                                                          | Multi-writer fields (comments, answers, ...) a fingerprint ignores            |
+| Before / after image | `fingerprints.before[id]`, `fingerprints.after[id]`                            | An element as the changeset found it / left it                                |
+| Target               | `targets` (engine `OperationTargets[]`), `createdIds`                          | Ids an operation addressed by selector; never a make-room shift               |
+| Held                 | `HeldElement { id, by: { name, color } }`, `409 elements_held`                 | Selected by a person in an open editor, other than the agent's owner          |
+| Person tag           | `personTagFor(documentId, ownerId)`, attachment `personTag`                    | The room's opaque stand-in for an owner ([agent presence](agent-presence.md)) |
+| Seen revision        | `X-Changeset-Seen`, `ChangesetSeen`                                            | The highest changeset revision an editor has applied to a tab                 |
+| Merge on save        | `mergeChangesetsIntoSave`                                                      | Step 8 of the spec                                                            |
+| Superseded           | `superseded` count                                                             | A changeset's version not taken because a person changed it after             |
+| Revert               | `POST .../changesets/:id/revert`, `planRevert`, `revert_of`                    | The inverse as a new changeset                                                |
+| Kept                 | `kept: { id, reason }[]`                                                       | An element a revert leaves because it changed since                           |
+| Reveal               | `ChangesetRevealOverlay`, `CHANGESET_REVEAL_MS`                                | The outline in the author's colour                                            |
 | Front door           | `frontDoorOf`, `X-Livediagram-Client`, type `Mcp` / `Cli` / `Api` / `Editor` | Which surface submitted it                                                    |
-| Server-stored        | `documentServerStored`                                                       | Saved on the server: has a room                                               |
+| Server-stored        | `documentServerStored`                                                         | Saved on the server: has a room                                               |
 
 Banned: "batch", "commit", "patch" for a changeset; "op" for an edit operation (an op is a room op); "version" or
 "etag" for the tab revision in copy and identifiers other than the header; "lock" for held (the selection lock is
@@ -363,7 +363,7 @@ codes), `cap` (413), `message` (405, CS45). `now` elements pass `redactCommentAu
 | ---------------------- | ---------------------- | ---------------------------------------------- | --------------------------------------------------------- |
 | `X-Changeset-Seen`     | editor → tab PUT       | decimal integer 0 to `Number.MAX_SAFE_INTEGER` | window rule; invalid also logs `[changeset] seen-invalid` |
 | `X-Livediagram-Client` | MCP, CLI, editor → api | `mcp`, `cli` or `editor`                       | front door `Api` (CS25)                                   |
-| `ETag`                 | api → tab GET          | `W/"<rev>"`                                    | never absent                                              |
+| `ETag`                   | api → tab GET          | `W/"<rev>"`                                    | never absent                                              |
 
 ### Room
 
@@ -697,7 +697,7 @@ type `frontDoorOf(request)`: `Mcp`, `Cli`, `Api` or, for the toast's Undo, `Edit
 | Rooms for every server-stored document, none offline                                                          | `room-client.test.ts` "stub for a personal document"; `useRoomConnection` gate test                           |
 | Revert: inverse as a new changeset, kept list, twice, created tab                                             | `apps/api/src/changesets/revert-plan.test.ts`; `changesets.test.ts` revert cases                              |
 | One changeset read                                                                                            | `changesets.test.ts` "GET one answers results and text"                                                       |
-| Toast Undo is the revert; Ctrl+Z never reverts                                                                | `useChangesetFeed.test.tsx`; `apps/editor/e2e/clerk-stub/agent-changesets.spec.ts` "Ctrl+Z leaves it"           |
+| Toast Undo is the revert; Ctrl+Z never reverts                                                                | `useChangesetFeed.test.tsx`; `apps/editor/e2e/signed-in/agent-changesets.spec.ts` "Ctrl+Z leaves it"            |
 | Revertable while the record exists                                                                            | `db/changesets.test.ts` sweep with cascade; `changesets.test.ts` "404 after the sweep"                        |
 | Anyone with edit may revert                                                                                   | `changesets.test.ts` "team member reverts", "viewer refused"                                                  |
 | Applies as a peer's and folds into the baseline                                                               | `room-op-apply.test.ts` case `changeset`; `save-baseline.test.ts`                                             |
@@ -714,8 +714,8 @@ type `frontDoorOf(request)`: `Mcp`, `Cli`, `Api` or, for the toast's Undo, `Edit
 | OpenAPI parity                                                                                                | `apps/api/src/openapi/*.test.ts`                                                                              |
 | Owner columns                                                                                                 | `account-owner-columns.test.ts` entry for `agent_changesets.author_id`                                        |
 
-The end-to-end spec (`apps/editor/e2e/clerk-stub/agent-changesets.spec.ts`, dark mode, signed in through the Clerk
-stub, since only an account mints tokens) opens a personal document, submits a changeset with an
+The end-to-end spec (`apps/editor/e2e/signed-in/agent-changesets.spec.ts`, dark mode, signed in through the test
+session (`installSession`), since only an account mints tokens) opens a personal document, submits a changeset with an
 API token, and checks the element appears, the outline shows, the toast reads, Show frames it, the next autosave
 keeps it, and Undo reverts it.
 
