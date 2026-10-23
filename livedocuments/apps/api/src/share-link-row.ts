@@ -27,7 +27,7 @@ export type ShareLinkRow = {
 // Pure mapper from D1 row to wire-format DTO. Pulled out of db.ts
 // so the defensive role normalisation has a test surface of its
 // own without dragging the rest of the D1 module along (same
-// pattern as image-strip.ts, image-sniff.ts, tab-row.ts).
+// pattern as tab-row.ts, folder-row.ts).
 //
 // The level reads through `parseStoredLevel` (docs/specs/013-workspace/share-roles.md, blueprint I2): `level`
 // when the row has one, else the legacy two-valued `role`, and anything unknown reads as view, so a value this

@@ -18,7 +18,7 @@ Preferences live in **D1** as the source of truth, with
 `localStorage` as a fast warm cache so the editor never blocks on
 a network round-trip at boot.
 
-- **D1 table** `user_preferences` (migration `0016_user_preferences.sql`),
+- **D1 table** `user_preferences` (in the baseline migration),
   one row per owner (account user id for signed-in users, the per-
   browser participant id for guests). Columns: `owner_id TEXT
 PRIMARY KEY`, `prefs TEXT NOT NULL` (serialised JSON blob),
@@ -108,7 +108,7 @@ the same `guestOwnerId` moves zero rows.
 ### Renamed keys
 
 - **Renamed key.** `notifyDiagramJoin` became `notifyDocumentJoin` when the container became a
-  document. Migration 0055 renames it in D1; `upgradeLegacyPreferences`
+  document. `upgradeLegacyPreferences`
   (`packages/api-schema/src/legacy-preferences.ts`) renames it wherever an older copy can still
   arrive: the browser's cache on read, the server's copy before the merge, and the api's
   notification check. An opt-out is never lost; when both keys exist, the new one wins.

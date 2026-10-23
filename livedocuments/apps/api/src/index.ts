@@ -8,7 +8,7 @@ import { emailEnabled } from './email/client';
 import { runLifecycleSweep, welcomeOnSighting } from './email/lifecycle';
 import { NOTIFY_EMAIL_DEDUPE_MS } from './email/notifications';
 import { runTimelineExpirySweep } from './timeline';
-import { runImageRetention } from './image-refs/retention';
+import { flushMediaRefs } from './media';
 import {
   deleteOldChangesets,
   deleteOldNotifyEmailClaims,
@@ -486,15 +486,24 @@ const worker = {
   // One worker invocation per `triggers.crons` entry; dispatch on
   // `event.cron` for each pattern. Today's daily 03:00 UTC trigger
   // fires independent retention sweeps (telemetry's 60 days are kept centrally, liveworkspace/docs/telemetry.md):
-  //   - images,     30-day floor, unused only, after the reference-index backfill
-  //                 (docs/specs/009-elements/images.md "Retention").
   //   - trash,      30 days after deletion (docs/specs/013-workspace/trash.md).
   //   - empty,      documents empty and unsaved for 30 days move to the Trash
   //                 (docs/specs/013-workspace/empty-document-cleanup.md).
   // All are no-ops when nothing is over the floor; all use
   // `ctx.waitUntil` so they run concurrently and the worker can
   // exit as soon as the schedule callback returns.
+  // Unused images are swept by liveworkspace's media service, which this worker keeps told (below).
   async scheduled(event: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
+    // liveworkspace/docs/media.md "References": every minute, the documents whose images changed go to the
+    // media service; the daily run also says nothing is left, when nothing is.
+    if (event.cron === MEDIA_SYNC_CRON || event.cron === '0 3 * * *') {
+      ctx.waitUntil(
+        flushMediaRefs(env, event.cron === '0 3 * * *')
+          .then(() => undefined)
+          .catch((err) => console.error('[media] refs sync failed', err)),
+      );
+      if (event.cron === MEDIA_SYNC_CRON) return;
+    }
     // liveworkspace/docs/accounts.md "How an app keeps up": follow the teams change feed, and end the
     // workbench access of any token revoked on liveworkspace.app.
     if (event.cron === '*/5 * * * *') {
@@ -581,9 +590,6 @@ const worker = {
           .then((count) => console.log(`empty sweep: moved ${count} documents to the Trash`))
           .catch((err) => console.error('empty sweep failed', err)),
       );
-      // docs/specs/009-elements/images.md "Retention": reap unused images. runImageRetention logs
-      // its own outcome.
-      ctx.waitUntil(runImageRetention(env, now));
       // docs/specs/013-workspace/blueprints/workbench-embeds.md "Retention": spent tickets and requests,
       // sessions past their grace, pairings of tokens no longer live.
       ctx.waitUntil(
@@ -594,6 +600,8 @@ const worker = {
     }
   },
 } satisfies ExportedHandler<Env>;
+
+const MEDIA_SYNC_CRON = '* * * * *';
 
 export default worker;
 

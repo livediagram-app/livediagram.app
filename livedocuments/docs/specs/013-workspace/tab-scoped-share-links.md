@@ -18,7 +18,7 @@ Owners sometimes want to show one tab of a document, not the whole thing: the ro
 
 The baseline migration, `0001_livedocuments_baseline.sql`:
 
-- `share_links.tab_id TEXT NULL`: the tab the link is scoped to; NULL = All tabs. Existing rows are NULL, so every existing link keeps its meaning.
+- `share_links.tab_id TEXT NULL`: the tab the link is scoped to; NULL = All tabs.
 - `shared_with.tab_id TEXT NULL`: the scope the visitor was last granted, written alongside `role` on every share resolve (last visit wins, the rule `role` already follows).
 - `ws_tickets.tab_scope TEXT NULL` and `ws_tickets.share_code TEXT NULL`: a room ticket carries the scope and the admitting code from the mint to the upgrade (see [Realtime](#realtime)).
 

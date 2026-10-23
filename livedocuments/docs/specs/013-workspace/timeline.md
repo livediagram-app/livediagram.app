@@ -973,7 +973,7 @@ Still open:
   stars into another's.
 - **Per-entry dismissal** is a `deleted_at` on the membership row,
   soft so a re-emit doesn't resurrect what the user dismissed. Built,
-  exactly as planned here (§2.9, migration `0045_timeline_dismissal`).
+  exactly as planned here (§2.9).
 
 Favourites are not built. Everything here is additive.
 

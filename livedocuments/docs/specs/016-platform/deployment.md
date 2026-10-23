@@ -6,14 +6,14 @@ There is a second environment, **staging**, which does deploy on its own: every 
 
 ## Apps and their Cloudflare Workers
 
-| App              | Cloudflare Worker         | Type                                                                                                               |
-| ---------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `apps/marketing` | `livedocuments-marketing` | Static assets only (Next.js `output: 'export'`).                                                                   |
-| `apps/live`      | `livedocuments-live`      | Static assets + a tiny path-rewrite worker.                                                                        |
-| `apps/help`      | `livedocuments-help`      | Static assets only (help centre, [Help app](../018-help/help-app.md)).                                             |
-| `apps/api`       | `livedocuments-api`       | Worker (D1 binding + Durable Object).                                                                              |
-| `apps/mcp`       | `livedocuments-mcp`       | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)).                                      |
-| `apps/router`    | `livedocuments-router`    | Worker (service bindings to the other five).                                                                       |
+| App              | Cloudflare Worker         | Type                                                                          |
+| ---------------- | ------------------------- | ----------------------------------------------------------------------------- |
+| `apps/marketing` | `livedocuments-marketing` | Static assets only (Next.js `output: 'export'`).                              |
+| `apps/live`      | `livedocuments-live`      | Static assets + a tiny path-rewrite worker.                                   |
+| `apps/help`      | `livedocuments-help`      | Static assets only (help centre, [Help app](../018-help/help-app.md)).        |
+| `apps/api`       | `livedocuments-api`       | Worker (D1 binding + Durable Object).                                         |
+| `apps/mcp`       | `livedocuments-mcp`       | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)). |
+| `apps/router`    | `livedocuments-router`    | Worker (service bindings to the other five).                                  |
 
 The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`). The live worker serves files from `apps/live/out/` plus a small worker (`apps/live/src/worker.ts`) that rewrites every `/document/<id>` request to the single statically-built `/document/placeholder/` page — see [New document route](../007-editor/new-document-route.md). The help worker is static-assets-only too, served under `/help` ([55-help-app](../018-help/help-app.md)). The api worker holds the REST + WebSocket layer (see [11-api.md](../015-api/api.md)). The mcp worker exposes the AI tools over its own host `mcp.livedocuments.app` (it binds to the api worker, not the router; see [62-mcp-server.md](../015-api/mcp-server.md)). The router holds **no application logic** — only `MARKETING`, `LIVE`, `HELP` and `API` service bindings that forward requests to the right downstream worker.
 
@@ -87,8 +87,7 @@ All six deploy jobs use raw `pnpm exec wrangler` rather than `cloudflare/wrangle
 ### Renaming migrations
 
 Most migrations only add, so the new worker running briefly on the newer schema is harmless. A
-migration that **renames** (`0055_documents.sql`, [Document](../006-document/document.md#renaming-from-diagram))
-is different: from the moment it applies until the new api worker is live, the old worker's queries
+migration that **renames** a table or column is different: from the moment it applies until the new api worker is live, the old worker's queries
 name tables that no longer exist, and the other apps' workers deploy separately, so old and new
 versions briefly serve side by side. The deploy keeps that window short and recoverable:
 
@@ -107,8 +106,8 @@ There is no down migration; a problem after a renaming migration is fixed forwar
 
 Some configuration is what **livedocuments.app** runs with, not what the software defaults to. Committed `[vars]` would make it every fork's default; a value set only in the Cloudflare dashboard would be wiped by the next `wrangler deploy`, which replaces a worker's plain vars with exactly the ones it declares ([Staging environment](staging-environment.md) "Known sharp edge"). So it has a seam of its own: the **hosted profile**.
 
-- **What it holds.** `apps/api/hosted-vars.json`: `TELEMETRY_ENABLED = "true"` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)) and the per-owner image gallery caps `IMAGE_MAX_PER_OWNER = "100"` and `IMAGE_MAX_BYTES_PER_OWNER = "104857600"` ([Image element + per-owner gallery](../009-elements/images.md)). Its frontend mirror, `NEXT_PUBLIC_TELEMETRY_ENABLED`, is derived from it rather than stated twice. A few vars are **per environment**, under `environments.production` and `environments.staging`, such as `APP_BASE_URL`: the canonical public origin that email, workbench and pairing links are built from (`https://www.livedocuments.app` in production, never the apex that redirects to it; [Workbench embeds](../013-workspace/workbench-embeds.md)). An empty per-environment value is unset there.
-- **Who gets it.** The reusable workflow resolves `HOSTED` from the repository ID of `livedocuments-app/livedocuments.app`, so production and staging both apply it, a rename or transfer keeps it, and no fork matches. A fork's deploy applies nothing, so a fork is **telemetry-off and uncapped** until it opts in by declaring the vars in its own `[vars]`.
+- **What it holds.** `apps/api/hosted-vars.json`: `TELEMETRY_ENABLED = "true"` and, per environment, `TELEMETRY_URL` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)) and `MEDIA_URL`, liveworkspace's media service, which keeps the images and their caps ([Image element + per-owner gallery](../009-elements/images.md)). Its frontend mirror, `NEXT_PUBLIC_TELEMETRY_ENABLED`, is derived from it rather than stated twice. A few vars are **per environment**, under `environments.production` and `environments.staging`, such as `APP_BASE_URL`: the canonical public origin that email, workbench and pairing links are built from (`https://www.livedocuments.app` in production, never the apex that redirects to it; [Workbench embeds](../013-workspace/workbench-embeds.md)). An empty per-environment value is unset there.
+- **Who gets it.** The reusable workflow resolves `HOSTED` from the repository ID of `livedocuments-app/livedocuments.app`, so production and staging both apply it, a rename or transfer keeps it, and no fork matches. A fork's deploy applies nothing, so a fork is **telemetry-off** until it opts in by declaring the vars in its own `[vars]`.
 - **How it is applied.** On every hosted deploy, not once: the build step appends the frontend mirror to `$GITHUB_ENV`, and the api deploy passes each var as `wrangler deploy --var NAME:VALUE` (`node scripts/hosted-vars.mjs flags`). Every command takes the environment as `--env staging` (none is production), so a deploy only ever applies its own environment's entries.
 - **How it is checked.** After the api deploy, `node scripts/hosted-vars.mjs verify` reads the plain vars off every version serving traffic (`wrangler deployments status` + `wrangler versions view`) and fails the run on any hosted var that is missing or different, or that its environment leaves unset but the worker still holds. In CI, `apps/api/src/hosted-vars.test.ts` fails when the profile stops turning telemetry on, stops capping galleries (by the worker's own cap parser), names a var the worker does not read, or when `wrangler.toml` commits a hosted-only var as a default.
 
@@ -131,6 +130,7 @@ Set in the repo under **Settings → Secrets and variables → Actions**:
 | `ACCOUNTS_CLIENT_SECRET` | api             | [04](../014-identity/auth-and-guest-access.md)                                           |
 | `GUEST_ID_HMAC_SECRET`   | api             | [04](../014-identity/auth-and-guest-access.md)                                           |
 | `TELEMETRY_KEY`          | api **and** mcp | [22](../017-telemetry/telemetry.md) — one GitHub secret drives both, so they can't drift |
+| `MEDIA_KEY`              | api             | [Images](../009-elements/images.md) — the media service's `MEDIA_KEY_LIVEDOCUMENTS`      |
 
 The live build sets `NEXT_PUBLIC_SIGN_IN_ENABLED=true` exactly when `ACCOUNTS_CLIENT_ID` is set, so the editor offers sign-in only when the api can complete it.
 

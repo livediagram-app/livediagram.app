@@ -16,6 +16,25 @@ const db = vi.hoisted(() => ({
   servableImageIds: vi.fn(async (_env: unknown, _doc: string, ids: string[]) => new Set(ids)),
 }));
 vi.mock('./db', () => db);
+// The images' bytes come from the media service (src/media.ts); here, from the same bucket stub as the
+// snapshots, so each test arranges both in one place.
+vi.mock('./media', () => ({
+  mediaClient: (env: Env) => {
+    const images = env.IMAGES;
+    if (!images) return null;
+    return {
+      bytes: async (id: string) => {
+        const object = await images.get(id);
+        if (!object) return null;
+        return {
+          owner: '',
+          contentType: object.httpMetadata?.contentType ?? 'application/octet-stream',
+          body: new Response(await object.arrayBuffer()).body,
+        };
+      },
+    };
+  },
+}));
 
 import { getDocumentTabImageSvg, getDocumentThumbnailSvg } from './thumbnail';
 

@@ -13,7 +13,7 @@ openly licensed media (Flickr, Wikimedia Commons, Rawpixel and others).
 - **Free, no key, no account.** Search needs no credentials, so the feature works on every
   self-hosted deployment with no setup and adds no secret ([Secrets policy](../002-project-scope/secrets-policy.md)).
 - **Licences allow copying.** Openverse only indexes Creative Commons and public-domain works, so a
-  picked picture may be copied into the owner's gallery (R2). That keeps the
+  picked picture may be copied into the owner's gallery (the media service). That keeps the
   [element model](images.md#element-model) unchanged: there is still no external-URL image, and
   export, offline mode, the live image and retention all work as they do for an upload.
 - **Why not Unsplash.** Unsplash's API terms require hotlinking its URLs (no copying), a server-side

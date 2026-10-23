@@ -101,11 +101,6 @@ export default defineProject({ test: { environment: 'jsdom' } });
   in-memory SQLite (`node:sqlite`) with every migration applied and foreign
   keys on, as D1 has them. Use the second wherever the behaviour lives in the
   schema: cascades, primary-key collisions, `INSERT OR IGNORE` outcomes.
-  A migration that rebuilds a table is tested the same way: stop short of it
-  (`sqliteD1({}, { before: '0049' })`), seed rows under the old schema, run it
-  with `applyMigration`, and compare every row. A rebuilt **parent** table
-  cascades into its children on `DROP TABLE`, so this is the only test that
-  can see that loss.
 
 ## Scripts
 
@@ -144,13 +139,13 @@ tests," not a number.
 One set of files is the exception, held at **100% statements, branches,
 functions and lines** by per-glob thresholds in `apps/api/vitest.config.ts`:
 
-| Files                                                                                                  | Why                                                                                                                                                           |
-| ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/auth/**`                                                                                          | Decides WHO a request is — access-token checks, guest-id signatures, api tokens, the read/edit gates                                                          |
-| `src/api-token-row.ts`, `src/db/api-tokens.ts`, `src/routes/tokens.ts`                                 | Mint, resolve and revoke the credentials that act as an account                                                                                               |
-| `src/db/share.ts`, `src/db/shared.ts`, `src/db/ws-tickets.ts`                                          | Share links, the "shared with you" record, and the one-time realtime room tickets                                                                             |
-| `src/routes/share.ts`, `src/routes/shared.ts`, `src/routes/document-share-routes.ts`                   | The only unauthenticated read path into a document, and the owner-only routes that grant it                                                                   |
-| `src/image-refs/**`, `src/db/image-refs.ts`, `src/db/image-retention.ts`, `src/db/document-removal.ts` | Decide whether an uploaded image is still placed anywhere, and so whether the daily sweep may delete it ([Images](../009-elements/images.md#reference-index)) |
+| Files                                                                                | Why                                                                                                                                                                         |
+| ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/auth/**`                                                                        | Decides WHO a request is — access-token checks, guest-id signatures, api tokens, the read/edit gates                                                                        |
+| `src/api-token-row.ts`, `src/db/api-tokens.ts`, `src/routes/tokens.ts`               | Mint, resolve and revoke the credentials that act as an account                                                                                                             |
+| `src/db/share.ts`, `src/db/shared.ts`, `src/db/ws-tickets.ts`                        | Share links, the "shared with you" record, and the one-time realtime room tickets                                                                                           |
+| `src/routes/share.ts`, `src/routes/shared.ts`, `src/routes/document-share-routes.ts` | The only unauthenticated read path into a document, and the owner-only routes that grant it                                                                                 |
+| `src/image-refs/**`, `src/db/image-refs.ts`, `src/db/document-removal.ts`            | Decide whether an uploaded image is still placed anywhere, and so what the media service hears before its daily sweep ([Images](../009-elements/images.md#reference-index)) |
 
 The rest of the worker fails visibly. These fail by serving the right response
 to the **wrong person**, or by deleting a picture someone placed: an outcome no amount of production monitoring

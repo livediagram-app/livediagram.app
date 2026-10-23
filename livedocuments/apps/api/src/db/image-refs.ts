@@ -9,22 +9,25 @@
 // is ignored by every reader, which is what makes every gap here fail
 // towards keeping bytes.
 
+import { mediaRefQueueTabStatement } from '../media';
 import type { Env } from '../types';
 
 // ---------- Writers ---------------------------------------------------
 
 // A body replace: drop the tab's references the new body no longer has, then
-// add the ones it does. A save that changes no image writes no row.
+// add the ones it does. A save that changes no image writes no row. A change queues the tab's documents
+// for the media service first, while the old set is still there to compare (src/media.ts).
 export function imageRefReplaceStatements(
   env: Env,
   tabId: string,
   ids: string[],
 ): D1PreparedStatement[] {
   return [
+    mediaRefQueueTabStatement(env, tabId, ids, false),
     env.DB.prepare(
       'DELETE FROM image_refs WHERE tab_id = ?1 AND image_id NOT IN (SELECT value FROM json_each(?2))',
     ).bind(tabId, JSON.stringify(ids)),
-    ...imageRefAddStatements(env, tabId, ids),
+    ...insertRefs(env, tabId, ids),
   ];
 }
 
@@ -35,6 +38,11 @@ export function imageRefAddStatements(
   tabId: string,
   ids: string[],
 ): D1PreparedStatement[] {
+  if (ids.length === 0) return [];
+  return [mediaRefQueueTabStatement(env, tabId, ids, true), ...insertRefs(env, tabId, ids)];
+}
+
+function insertRefs(env: Env, tabId: string, ids: string[]): D1PreparedStatement[] {
   if (ids.length === 0) return [];
   return [
     env.DB.prepare(

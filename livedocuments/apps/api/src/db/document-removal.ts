@@ -10,6 +10,7 @@
 
 import type { Env } from '../types';
 import { imageGrantRemovalStatement } from './image-grants';
+import { mediaRefQueueDocumentsStatement } from '../media';
 
 // Which documents are being removed: one by id, every document an owner holds,
 // or a set of ids (the Trash purge, docs/specs/013-workspace/trash.md).
@@ -37,6 +38,9 @@ export function documentRemovalStatements(
                          AND NOT EXISTS (SELECT 1 FROM document_tabs o
                                           WHERE o.tab_id = dt.tab_id AND o.document_id NOT IN (${doomed}))`;
   return [
+    // The media service hears that these documents place nothing any more (src/media.ts), before the
+    // references below go.
+    mediaRefQueueDocumentsStatement(env, `d.id IN (${doomed.replace('?', '?2')})`, [value]),
     // image_refs has no FK (docs/specs/009-elements/images.md, "Reference index"), so the doomed
     // tabs' references go explicitly, first, while the links that name them still exist.
     env.DB.prepare(`DELETE FROM image_refs WHERE tab_id IN (${doomedTabs})`).bind(value, value),

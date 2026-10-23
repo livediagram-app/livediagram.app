@@ -68,6 +68,8 @@ on:
         required: false
       TELEMETRY_KEY:
         required: false
+      MEDIA_KEY:
+        required: false
 
 # The hosted profile (docs/specs/016-platform/deployment.md "Hosted profile"):
 # livedocuments.app's own deploys add the vars in apps/api/hosted-vars.json
@@ -305,6 +307,7 @@ jobs:
       ACCOUNTS_CLIENT_SECRET: ${{ secrets.ACCOUNTS_CLIENT_SECRET }}
       GUEST_ID_HMAC_SECRET: ${{ secrets.GUEST_ID_HMAC_SECRET }}
       TELEMETRY_KEY: ${{ secrets.TELEMETRY_KEY }}
+      MEDIA_KEY: ${{ secrets.MEDIA_KEY }}
       WRANGLER_ENV: ${{ inputs.wrangler_env }}
     steps:
       - uses: actions/checkout@v7
@@ -389,6 +392,18 @@ jobs:
         run: |
           printf '%s' "$TELEMETRY_KEY" \
             | pnpm exec wrangler secret put TELEMETRY_KEY ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
+
+      # MEDIA_KEY (liveworkspace/docs/media.md) is livedocuments' secret on the liveworkspace media service, which
+      # holds it as MEDIA_KEY_LIVEDOCUMENTS. Unset = the step skips, leaving whatever is already on the worker untouched.
+      - name: Sync MEDIA_KEY secret
+        if: ${{ env.MEDIA_KEY != '' }}
+        working-directory: apps/api
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: |
+          printf '%s' "$MEDIA_KEY" \
+            | pnpm exec wrangler secret put MEDIA_KEY ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
       # Runs straight before the deploy, after the secret syncs, so the time the
       # live worker runs against a schema newer than its code is only the deploy

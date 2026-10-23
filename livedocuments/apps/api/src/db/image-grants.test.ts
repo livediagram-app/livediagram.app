@@ -19,17 +19,9 @@ import { insert, liveDoc, team } from './test-trash-fixtures';
 // document serves an image only when the image's owner owns it, or it holds a
 // grant earned when the owner placed the image there or carried in by a copy.
 
-function image(sql: DatabaseSync, id: string, ownerId: string, sha256 = id) {
-  insert(sql, 'images', {
-    id,
-    owner_id: ownerId,
-    content_type: 'image/png',
-    byte_size: 1,
-    width: 1,
-    height: 1,
-    sha256,
-    created_at: 0,
-  });
+// Whose an image is, as the media service's images are known here (src/media.ts).
+function image(sql: DatabaseSync, id: string, ownerId: string) {
+  insert(sql, 'media_images', { id, owner_id: ownerId });
 }
 
 function grants(sql: DatabaseSync): string[] {
@@ -245,24 +237,24 @@ describe('an owner change', () => {
     expect(await documentServesImage(db.env, 'D', 'alice-img')).toBe(true);
   });
 
-  // Sign-up (docs/specs/015-api/api.md "Owner-keyed data"): the account already holds the same bytes, so the
-  // guest's image stays on the guest id while the document moves to the account.
-  it("keeps a guest's image serving after sign-up when the account holds the same bytes", async () => {
+  // Sign-up (docs/specs/015-api/api.md "Owner-keyed data"): the guest's images become the account's here, even
+  // one the media service keeps on the guest because the account already holds its bytes.
+  it("keeps a guest's images serving after sign-up", async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'D', { owner: 'guest-1' });
-    image(db.sql, 'guest-img', 'guest-1', 'same-bytes');
-    image(db.sql, 'account-img', 'user_ada', 'same-bytes');
+    image(db.sql, 'guest-img', 'guest-1');
+    image(db.sql, 'account-img', 'user_ada');
     image(db.sql, 'guest-only', 'guest-1');
     await upsertTab(db.env, 'D', tabWith('t1', 'guest-img'), 0);
     await upsertTab(db.env, 'D', tabWith('t2', 'guest-only'), 1);
     await migrateOwnerId(db.env, 'guest-1', 'user_ada');
-    const owners = db.sql.prepare('SELECT id, owner_id FROM images ORDER BY id').all() as {
+    const owners = db.sql.prepare('SELECT id, owner_id FROM media_images ORDER BY id').all() as {
       id: string;
       owner_id: string;
     }[];
     expect(owners.map((r) => `${r.id}:${r.owner_id}`)).toEqual([
       'account-img:user_ada',
-      'guest-img:guest-1',
+      'guest-img:user_ada',
       'guest-only:user_ada',
     ]);
     expect(await documentServesImage(db.env, 'D', 'guest-img')).toBe(true);

@@ -37,11 +37,11 @@ On a read of either delivery path:
   DOM-free renderer the MCP worker uses), write it to R2, stamp
   `thumb_rendered_at`, and return it. Icon elements render their real
   glyph via the `@livedocuments/icons/resolve` resolver the worker passes in. Image elements render their real picture: the
-  worker reads each upload from R2 and inlines it as a base64 data URL
+  worker reads each upload from the media service and inlines it as a base64 data URL
   through `embedTabImages` (`@livedocuments/api-schema`, shared with the
   MCP preview, [MCP server](../015-api/mcp-server.md) §5), in document order under a 3 MB total budget
   so a tab of large photos can't produce a multi-megabyte snapshot. An
-  image past the budget, missing from R2, or not a recognised raster
+  image past the budget, unknown to the media service, or not a recognised raster
   format keeps its placeholder box.
 
 This is **render-on-read**, not render-on-save, on purpose:
@@ -79,8 +79,8 @@ a slide drew in 1.33 ms as a 42 KB whole canvas and draws in 0.14 ms as a
 
 An empty / unparseable first tab yields no snapshot (the endpoints 404
 and the row shows its generic icon). Deleting a document clears its R2
-object. The freshness column needs no backfill: the first read of each
-document renders lazily.
+object. Nothing renders ahead of time: the first read of each document
+renders it lazily.
 
 ## Delivery path 1 — Explorer thumbnail (owner-authed)
 
@@ -137,15 +137,13 @@ document renders lazily.
   empty, so the row asks as before. The editor's own row follows its saves:
   after an autosave it says `empty` from the first tab when that tab is
   loaded, and keeps what the list said when it is not.
-- **The count is filled lazily, never by a bulk backfill.** The migration
-  only adds the column. A tab stored before it starts unknown and gets its
-  count from its next write, or from the thumbnail route: having parsed the
-  body to render it, the route stamps a still-unknown count (in the
-  request's `waitUntil`, best effort, never overwriting a known count). An
-  old empty document is therefore asked for at most once. A deploy without
-  the R2 binding renders no snapshot, so there its counts fill from writes only.
-- **Why no trigger and no backfill** (measured with SQLite, D1's engine,
-  sync off to isolate the work itself):
+- **The count is written with the body, never by a trigger.** A count
+  still unknown is stamped by the thumbnail route: having parsed the body
+  to render it, the route stamps it (in the request's `waitUntil`, best
+  effort, never overwriting a known count). A deploy without the R2
+  binding renders no snapshot, so there counts come from writes only.
+- **Why no trigger** (measured with SQLite, D1's engine, sync off to
+  isolate the work itself):
 
   | Tab body | Save, no count | Save, bound count | Save, trigger re-parse |
   | -------- | -------------- | ----------------- | ---------------------- |
@@ -155,12 +153,9 @@ document renders lazily.
 
   A trigger re-parses the body and rewrites the row a second time, about
   ten times the cost of a 2 MB autosave, on the hot path (one save about
-  every 600 ms per active editor). A one-statement backfill parses at about
-  480 MB/s locally (250 tabs of 2 MB in 1.0 s), so a full 10 GB D1
-  database needs over 20 s even before D1's replicated writes, against
-  D1's 30 s query limit and its guidance that a statement touching
-  hundreds of MB exceeds execution limits. Adding the column alone takes
-  under 5 ms on the same 500 MB table.- Degrades gracefully otherwise: no R2 binding or no access → 404 → the row
+  every 600 ms per active editor).
+
+- Degrades gracefully otherwise: no R2 binding or no access → 404 → the row
   shows the still, dashed sketch, captioned "Nothing drawn yet" where there
   is room. The no-snapshot 404 (past the access gate)
   carries the same `private, max-age=86400` as the image, because it is
@@ -299,6 +294,6 @@ document, so a per-card badge is noise — the team list omits it as well).
 
 ## Self-hosting
 
-The whole feature is gated on the optional `IMAGES` R2 binding, exactly
-like the image gallery ([Image element + per-owner gallery](../009-elements/images.md)): with no bucket, both endpoints 404 and
-the Explorer row shows its icon. No new binding, no required SaaS.
+The whole feature is gated on the optional `IMAGES` R2 binding, which holds only snapshots and share
+cards (uploaded images live in liveworkspace's media service, [Image element + per-owner gallery](../009-elements/images.md)):
+with no bucket, both endpoints 404 and the Explorer row shows its icon. No new binding, no required SaaS.

@@ -11,16 +11,16 @@ import { purgeRooms } from '../room-purge-client';
 import { detachUserFromTeams } from './teams';
 import { migrateTagStatements } from './tags';
 import { imageGrantOwnerChangeStatement } from './image-grants';
+import { mediaClient, mediaOwner } from '../media';
 import type { Env } from '../types';
 
 // R2 batch delete takes at most 1000 keys per call. An owner has no hard
-// cap on document count, so chunk the snapshot-key deletes to stay under
-// it (the image delete above relies on the per-owner gallery cap instead).
+// cap on document count, so chunk the snapshot-key deletes to stay under it.
 const R2_DELETE_CHUNK = 1000;
 
 // Wipe every row belonging to a given owner: every owner-keyed table in
-// docs/specs/015-api/api.md "Owner-keyed data", AND the R2 image bytes
-// (docs/specs/009-elements/images.md). account-owner-columns.test.ts holds
+// docs/specs/015-api/api.md "Owner-keyed data", AND their images in
+// liveworkspace's media service (src/media.ts). account-owner-columns.test.ts holds
 // both functions here to that list against the real schema. Called from
 // DELETE /api/account when the user opts in via the "Delete account"
 // dialog. The documents go through documentRemovalStatements, which drops
@@ -29,9 +29,8 @@ const R2_DELETE_CHUNK = 1000;
 // Folders carry their own owner_id and need their
 // own DELETE. Participants are owner-less in the schema but their id
 // IS the owner id, so a single id-match delete clears the display-
-// name / colour row too. Images carry owner_id on their D1 row and
-// the R2 object key matches the row id, so we enumerate before the
-// D1 wipe + bulk-delete from R2 + then drop the rows.
+// name / colour row too. Images live in the media service, which deletes
+// every image the account uploaded, in any app.
 //
 // Returns `{ documents, folders, images }` change counts for the
 // caller's log line. Idempotent: re-running with the same owner id is a
@@ -47,25 +46,20 @@ export async function deleteAccount(
   // that wipe would otherwise destroy shared team work, and the dead
   // account id would linger as a ghost (or sole-admin-blocking) member.
   await detachUserFromTeams(env, ownerId);
-  // R2 cleanup first. Enumerate the owner's image ids while the
-  // index row still exists, then delete each from R2. If R2 is
-  // unbound (self-host without R2), skip silently: the index rows
-  // come out via the DELETE FROM images below regardless. R2's
-  // batch delete takes up to 1000 keys per call which is well
-  // above any realistic per-owner gallery cap.
-  const imageRows = await env.DB.prepare('SELECT id FROM images WHERE owner_id = ?')
-    .bind(ownerId)
-    .all<{ id: string }>();
-  const imageIds = (imageRows.results ?? []).map((r) => r.id);
-  if (env.IMAGES && imageIds.length > 0) {
-    await env.IMAGES.delete(imageIds);
+  // Their images in liveworkspace's media service, from every app (src/media.ts). First, so a failure
+  // leaves the account whole to delete again.
+  const media = mediaClient(env);
+  let imagesDeleted = 0;
+  if (media) {
+    const forgotten = await media.forgetOwner(await mediaOwner(ownerId));
+    if (!forgotten.ok)
+      throw new Error(`media: deleting the owner's images answered ${forgotten.status}`);
+    imagesDeleted = forgotten.value.deleted;
   }
-  const imagesRes = await env.DB.prepare('DELETE FROM images WHERE owner_id = ?')
-    .bind(ownerId)
-    .run();
+  await env.DB.prepare('DELETE FROM media_images WHERE owner_id = ?').bind(ownerId).run();
   // Document SVG snapshots (docs/specs/006-document/document-snapshots.md) live in R2 under thumb/<documentId>,
-  // keyed off the document id rather than carried on a D1 row, so — like
-  // the images above — the cascade can't reach them. Enumerate the
+  // keyed off the document id rather than carried on a D1 row, so the
+  // cascade can't reach them. Enumerate the
   // owner's document ids while the rows still exist, then bulk-delete
   // their snapshot objects before the documents DELETE drops the ids.
   const documentRows = await env.DB.prepare('SELECT id FROM documents WHERE owner_id = ?')
@@ -154,7 +148,7 @@ export async function deleteAccount(
   return {
     documents: documentsRes.meta.changes ?? 0,
     folders: foldersRes.meta.changes ?? 0,
-    images: imagesRes.meta.changes ?? 0,
+    images: imagesDeleted,
   };
 }
 
@@ -176,17 +170,13 @@ export async function deleteAccount(
 // rows keep the role + last_seen they already had (which is the
 // more recent of the two paths the user actually used).
 //
-// images has a UNIQUE (owner_id, sha256) index that drives the
-// dedupe. UPDATE OR IGNORE skips rows whose sha256 already exists
-// on the account side (the user uploaded the same bytes under both
-// identities). The skipped guest row stays at fromOwnerId, so a
-// formerly-guest document (now account-owned) no longer serves it by
-// ownership. Before the documents move, every guest image those
-// documents place is granted to them, in the same batch
-// (docs/specs/009-elements/images.md "Placement grants"), so the
-// canvas keeps rendering the dedupe loser. Only the gallery list
-// filters by owner_id, so the dedupe loser stops showing up there,
-// which is the right outcome (the account twin is identical bytes anyway).
+// Images live in liveworkspace's media service (src/media.ts), which moves
+// the guest's to the account, except one whose bytes the account already
+// holds: that one stays on the guest there, so it leaves the gallery (the
+// account twin is identical bytes anyway). Before the documents move, every
+// guest image those documents place is granted to them, in the same batch
+// (docs/specs/009-elements/images.md "Placement grants"), so the canvas keeps
+// rendering it.
 //
 // Other tables (`share_links`, `tabs`) don't carry
 // their own owner_id, they link via `document_id` which is
@@ -206,10 +196,22 @@ export async function migrateOwnerId(
   // matters, and the batch keeps it: the grant before the documents move (it joins the guest's documents),
   // each INSERT OR IGNORE copy before its DELETE.
   const now = Date.now();
+  // The guest's images in liveworkspace's media service become the account's (src/media.ts). First, so a
+  // failure leaves the guest whole to migrate again; the merge is idempotent.
+  const media = mediaClient(env);
+  let imagesMoved = 0;
+  if (media) {
+    const merged = await media.mergeOwner(
+      await mediaOwner(fromOwnerId),
+      await mediaOwner(toOwnerId),
+    );
+    if (!merged.ok) throw new Error(`media: merging the guest's images answered ${merged.status}`);
+    imagesMoved = merged.value.moved.length;
+  }
   const move = (sql: string, ...binds: unknown[]) => env.DB.prepare(sql).bind(...binds);
   const statements = {
-    // The grant first, while the guest still owns the documents: an image left on the guest id by the
-    // dedupe below keeps serving in them.
+    // The grant first, while the guest still owns the documents and their images: each guest image they
+    // place keeps serving in them, whoever the media service leaves it on.
     grant: imageGrantOwnerChangeStatement(env, 'd.owner_id = ?2', [fromOwnerId], now),
     documents: move('UPDATE documents SET owner_id = ? WHERE owner_id = ?', toOwnerId, fromOwnerId),
     folders: move('UPDATE folders SET owner_id = ? WHERE owner_id = ?', toOwnerId, fromOwnerId),
@@ -292,13 +294,11 @@ export async function migrateOwnerId(
       fromOwnerId,
     ),
     participantDrop: move('DELETE FROM participants WHERE id = ?', fromOwnerId),
-    // images (docs/specs/009-elements/images.md). UPDATE OR IGNORE walks the unique (owner_id,
-    // sha256) collision case (same bytes on both identities) and
-    // leaves those guest rows in place; the grants written with the
-    // documents move above keep them served by every formerly-guest
-    // document that places them.
-    images: move(
-      'UPDATE OR IGNORE images SET owner_id = ? WHERE owner_id = ?',
+    // media_images (src/media.ts): after the grant above, which reads it. Every one moves, those the
+    // service kept on the guest too (the account already had those bytes): the grant keeps them served
+    // in the guest's documents, and the bytes are read by id.
+    mediaImages: move(
+      'UPDATE media_images SET owner_id = ? WHERE owner_id = ?',
       toOwnerId,
       fromOwnerId,
     ),
@@ -342,6 +342,6 @@ export async function migrateOwnerId(
     documents: changes('documents'),
     folders: changes('folders'),
     shared: changes('shared'),
-    images: changes('images'),
+    images: imagesMoved,
   };
 }

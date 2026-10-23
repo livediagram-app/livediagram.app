@@ -69,14 +69,9 @@ database_name = "livedocuments"
 database_id = "00000000-0000-4000-8000-000000000001"
 migrations_dir = "migrations"
 
-# R2 bucket holding the bytes of every uploaded image element
-# (docs/specs/009-elements/images.md). The binding name `IMAGES` is what `src/index.ts` reads
-# via the Env type. The bucket must be created out of band via
-# `wrangler r2 bucket create livedocuments-images` (production) or
-# the dashboard. Leaving the binding absent locally puts the api
-# in "no uploads" mode: the image endpoints return 503 and the
-# editor's palette hides the Image entry. See docs/specs/009-elements/images.md + docs/specs/002-project-scope/open-source-and-business-model.md
-# self-host promise.
+# R2 bucket holding document snapshots and share cards (thumb/<documentId>, og/<documentId>,
+# docs/specs/006-document/document-snapshots.md). Uploaded images live in liveworkspace's media service
+# (MEDIA_KEY below), not here. Created out of band via `wrangler r2 bucket create livedocuments-images`.
 [[r2_buckets]]
 binding = "IMAGES"
 bucket_name = "livedocuments-images"
@@ -123,16 +118,18 @@ new_classes = ["DocumentRoom"]
 # to the matching pattern so the body can dispatch.
 #
 # `0 3 * * *`: daily at 03:00 UTC. Fires independent retention sweeps
-# on this trigger (telemetry's retention is liveworkspace's, liveworkspace/docs/telemetry.md), among them:
-#   - images, 30-day floor for UNUSED images only (docs/specs/009-elements/images.md): reaped
-#     from R2 + D1 once nothing references them.
-# Plus the docs/specs/014-identity/transactional-email.md lifecycle onboarding emails, a no-op when
+# on this trigger (telemetry's retention is liveworkspace's, liveworkspace/docs/telemetry.md; unused
+# images are swept by liveworkspace's media service). Plus the
+# docs/specs/014-identity/transactional-email.md lifecycle onboarding emails, a no-op when
 # RESEND_API_KEY is unset.
 #
 # `*/5 * * * *`: every five minutes, follow liveworkspace's teams change feed into this app's copy
 # and mark tokens revoked on liveworkspace.app (liveworkspace/docs/accounts.md "How an app keeps up").
+#
+# `* * * * *`: every minute, the documents whose images changed go to liveworkspace's media service
+# (src/media.ts, liveworkspace/docs/media.md "References").
 [triggers]
-crons = ["0 3 * * *", "*/5 * * * *"]
+crons = ["0 3 * * *", "*/5 * * * *", "* * * * *"]
 
 # Per-IP limiter for share-code resolution (GET /api/share/<code>). That
 # read carries the optional share password and is otherwise unauthed +
@@ -194,21 +191,8 @@ type = "ratelimit"
 namespace_id = "1012"
 simple = { limit = 20, period = 60 }
 
-# Per-owner soft caps on the image gallery (docs/specs/009-elements/images.md). Both default to
-# "no limit" so OSS self-host operators run their own storage budget;
-# hosted livedocuments.app sets both, through `hosted-vars.json` (see the top of
-# this file), so a single owner can't drain the R2 bucket. POST /api/images
-# returns 403 { error: "gallery_full" } once either cap is reached:
-#
-#   - IMAGE_MAX_PER_OWNER: maximum number of image rows one owner
-#     may keep in the gallery. Hosted: "100".
-#   - IMAGE_MAX_BYTES_PER_OWNER: maximum total byte_size summed
-#     across one owner's images. Hosted: "104857600" (100 MB).
-#
-# Plain vars; values are decimal strings parsed via parseInt at request time.
-# Unset, blank, "0", or non-numeric values all read as "no limit". A self-host
-# sets them in [vars] above, never only in the Cloudflare dashboard: every
-# `wrangler deploy` replaces the worker's plain vars with the ones it declares.
+# The image gallery's caps (100 images and 100 MB per person, across every app) are the media service's
+# (liveworkspace/docs/media.md "Uploads"), not this worker's.
 
 # RESEND_API_KEY + RESEND_FROM + APP_BASE_URL drive transactional &
 # lifecycle email (docs/specs/014-identity/transactional-email.md). All optional; an absent RESEND_API_KEY makes
@@ -272,6 +256,17 @@ simple = { limit = 20, period = 60 }
 #
 # Unset = this worker sends no telemetry, so a self-host can ignore it.
 
+# MEDIA_KEY is livedocuments' secret on liveworkspace's media service (liveworkspace/docs/media.md,
+# src/media.ts), which keeps every app's uploaded images. The service holds the same value as
+# MEDIA_KEY_LIVEDOCUMENTS. Never in [vars]:
+#
+#   - Local dev: `MEDIA_KEY=dev-livedocuments-media-key` and
+#     `MEDIA_URL=http://localhost:8792/api/media` in `apps/api/.dev.vars`.
+#   - Production and staging: the MEDIA_KEY / MEDIA_KEY_STAGING GitHub secrets, synced by the
+#     deploy workflow. MEDIA_URL comes from hosted-vars.json.
+#
+# Unset = no images: the image endpoints answer 503 and the editor hides the Image entry.
+
 
 # ---------------------------------------------------------------------------
 # Staging (docs/specs/016-platform/staging-environment.md). Deploys as `livedocuments-api-staging` via
@@ -322,7 +317,7 @@ database_id = "00000000-0000-4000-8000-000000000002"
 migrations_dir = "migrations"
 
 # Own bucket: `wrangler r2 bucket create livedocuments-images-staging`. Sharing
-# production's would let the staging retention cron delete real image bytes.
+# production's would let staging's snapshots overwrite production's.
 [[env.staging.r2_buckets]]
 binding = "IMAGES"
 bucket_name = "livedocuments-images-staging"
@@ -394,10 +389,10 @@ new_classes = ["DocumentRoom"]
 # staging too, against staging's own data. Restated rather than inherited so
 # that reading this block tells you what the staging worker actually does.
 [env.staging.triggers]
-crons = ["0 3 * * *", "*/5 * * * *"]
+crons = ["0 3 * * *", "*/5 * * * *", "* * * * *"]
 
-# The four ACCOUNTS_* / API_RESOURCE values, GUEST_ID_HMAC_SECRET and
-# TELEMETRY_KEY come from the
+# The four ACCOUNTS_* / API_RESOURCE values, GUEST_ID_HMAC_SECRET,
+# TELEMETRY_KEY and MEDIA_KEY come from the
 # `_STAGING` GitHub secrets via the deploy workflow. RESEND_API_KEY is provisioned by
 # hand exactly as it is for production:
 #   cd apps/api && wrangler secret put RESEND_API_KEY --env staging

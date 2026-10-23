@@ -2,36 +2,35 @@
 
 ## Why
 
-Originally every `tabs` row carried a single `document_id` FK — one tab belonged to one document. That worked for the editor's "tabs are folders inside a document" mental model, but it forecloses a category of features the user has flagged for the next phase:
+A single `document_id` FK on every `tabs` row would make one tab belong to one document. That fits the editor's "tabs are folders inside a document" mental model, but it forecloses a category of features the user has flagged for the next phase:
 
 - **Copy a tab between documents** without duplicating the content (so an edit in one tab propagates to the other).
 - **A reference tab** that lives in several documents at once — e.g. a glossary, a shared timeline, an architecture diagram that's part of two product lines' workspaces.
 - **Change log without per-document scoping** (paired with item #14; the change log itself was removed on 2026-10-03, see [Collaboration](../012-collaboration/README.md)): once a tab can live in multiple documents, attributing a change to a single `(document_id, tab_id)` pair stops being meaningful. The change should be on the tab; consumers join through the link table when they care which documents it surfaces in.
 
-The migration sequences as items #13 → #14 → #15 → #16 in the post-prototype haul. #13 adds the link table; #14 drops the now-redundant `change_log.document_id`; #15 denormalises participant metadata out of `change_log`; #16 ages out old `change_log` rows on a cron. (Migration 0064 later dropped `change_log` outright along with the Activity panel.)
-
 ## Data model
 
-New table:
+In the baseline migration, `0001_livedocuments_baseline.sql`:
 
 ```sql
 CREATE TABLE document_tabs (
-  document_id  TEXT    NOT NULL,
+  document_id TEXT    NOT NULL,
   tab_id      TEXT    NOT NULL,
   order_index INTEGER NOT NULL,
   added_at    INTEGER NOT NULL,
+  folder      TEXT,
   PRIMARY KEY (document_id, tab_id),
-  FOREIGN KEY (document_id) REFERENCES diagrams(id) ON DELETE CASCADE,
-  FOREIGN KEY (tab_id)     REFERENCES tabs(id)     ON DELETE CASCADE
+  FOREIGN KEY (document_id) REFERENCES documents (id) ON DELETE CASCADE,
+  FOREIGN KEY (tab_id) REFERENCES tabs (id) ON DELETE CASCADE
 );
 
 CREATE INDEX document_tabs_by_document ON document_tabs(document_id, order_index);
 CREATE INDEX document_tabs_by_tab     ON document_tabs(tab_id);
 ```
 
-`order_index` lives on the link, not on the tab — two documents that share a tab can order it independently. `added_at` lets us surface "added to this document on date X" later. A later migration (0018, [Tab folders](tab-folders.md)) adds a nullable `folder` column to this table for the same reason: tab-folder membership is per-document, so a shared tab can be foldered in one document and loose in another.
+`order_index` lives on the link, not on the tab — two documents that share a tab can order it independently. `added_at` lets us surface "added to this document on date X" later. The nullable `folder` column ([Tab folders](tab-folders.md)) is here for the same reason: tab-folder membership is per-document, so a shared tab can be foldered in one document and loose in another.
 
-The link is the only place a tab meets a document. `tabs` holds the body (`id, name, data, updated_at`, [Per-tab storage](per-tab-storage.md)) and no pointer to any document: migration 0049 dropped the original `tabs.document_id` and `tabs.order_index`, which 0011 had backfilled `document_tabs` from. That column's `ON DELETE CASCADE` meant deleting the document a tab was created in destroyed the tab in every other document, even after it had been removed from that first document.
+The link is the only place a tab meets a document. `tabs` holds the body (`id, name, data, updated_at`, [Per-tab storage](per-tab-storage.md)) and no pointer to any document. A `tabs.document_id` with `ON DELETE CASCADE` would mean deleting the document a tab was created in destroyed the tab in every other document, even after it had been removed from that first document.
 
 ### Tab lifecycle
 
@@ -70,17 +69,7 @@ SELECT t.id, t.name, dt.order_index
 
 `POST /api/documents/:id/copy` (item #9) copies tab bodies into freshly minted tab rows — that doesn't change. The new tab rows get fresh ids and their own `document_tabs` entries pointing at the new document, and any tab / element link, and any Tab Window's tab, in a copied body is re-pointed from the source tab id to its copy's (`remapTabLinks`, `@livedocuments/document`). Cloning vs linking is a deliberate distinction: copy = independent content, link = shared content.
 
-## Phasing
-
-This spec describes the destination. The implementation lands in stages so each can be tested in isolation:
-
-1. **Migration 0011** — add `document_tabs`, backfill from `tabs.document_id` / `tabs.order_index`. Reads go through the link table; writes update both the link table AND the legacy columns. No surface change.
-2. **Item #14 — drop `change_log.document_id`** — change_log entries already key by `tab_id`; the `document_id` was just denormalisation. Migration drops the column, queries that filtered by `document_id` now derive the document set via `document_tabs`.
-3. **Item #15 — drop denormalised participant metadata from `change_log`** — `participant_name` and `participant_color` columns were copy-on-write snapshots for offline-friendly reads. Drop and join through `participants` on read instead.
-4. **Item #16 — 90-day `change_log` cron** — daily worker cron deletes `change_log` rows older than 90 days. Capacity guard against unbounded growth as collab traffic ramps up.
-5. **Migration 0049 — drop `tabs.document_id` + `tabs.order_index`.** A table rebuild; `tabs` is a parent table, so the migration parks and restores every `document_tabs`, `change_log` and collaboration-index row across the drop. Document deletion became link-aware first ("Delete a document" above), since with the column gone nothing else removes a tab its last document leaves behind.
-
 ## Cross-references
 
-- [API app](../015-api/api.md) — endpoint dispatch + the underlying schema overview. Updated alongside the migration in #13.
+- [API app](../015-api/api.md) — endpoint dispatch + the underlying schema overview.
 - [Per-tab storage](per-tab-storage.md) — the per-tab storage rationale. Still applies; the link table is orthogonal to where the tab body lives.

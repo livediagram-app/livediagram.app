@@ -19,6 +19,7 @@ import type { Env, TabDTO } from '../types';
 import { imageRefIds, imageRefIdsFromData } from '../image-refs/extract';
 import { tabStatsOf, tabStatsStatement, type TabStats } from './tab-stats';
 import { imageGrantLinkStatement, imageGrantPlacementStatements } from './image-grants';
+import { mediaRefQueueDocumentsStatement } from '../media';
 import { collabIndexStatements } from './collab-index';
 import {
   imageRefAddStatements,
@@ -223,7 +224,7 @@ export function tabWriteStatements(
     // upsert, which the rows' FK needs.
     ...collabIndexStatements(env, id, tab.elements),
     // The image reference index (docs/specs/009-elements/images.md, "Reference index"): a reference
-    // this batch missed is an image the retention sweep reaps.
+    // this batch missed is an image the media service may sweep (src/media.ts).
     ...imageRefReplaceStatements(env, id, imageRefIds(tab.elements, tab.pages)),
     // Placement grants (docs/specs/009-elements/images.md, "Placement grants"), after the
     // document_tabs upsert above, which they read.
@@ -385,6 +386,15 @@ export async function deleteTabRow(
   )
     .bind(documentId, tabId)
     .first<{ data: string | null }>();
+  // The document no longer shows the tab's images, if it had any: tell the media service (src/media.ts).
+  if (unlinked) {
+    await mediaRefQueueDocumentsStatement(
+      env,
+      'd.id = ?2 AND EXISTS (SELECT 1 FROM image_refs WHERE tab_id = ?3)',
+      [documentId, tabId],
+      false,
+    ).run();
+  }
   const remaining = await env.DB.prepare('SELECT COUNT(*) AS n FROM document_tabs WHERE tab_id = ?')
     .bind(tabId)
     .first<{ n: number }>();
@@ -434,7 +444,11 @@ export async function linkTabToDocument(
     .bind(now, documentId)
     .run();
   // Placement grants (docs/specs/009-elements/images.md): the new holder serves what the tab showed.
-  await imageGrantLinkStatement(env, documentId, tabId, now).run();
+  await env.DB.batch([
+    imageGrantLinkStatement(env, documentId, tabId, now),
+    // And the media service hears that it shows them (src/media.ts).
+    mediaRefQueueDocumentsStatement(env, 'd.id = ?2', [documentId]),
+  ]);
   return true;
 }
 

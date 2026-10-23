@@ -461,24 +461,30 @@ CREATE TABLE agent_changeset_parts (
 -- Images (docs/specs/009-elements/images.md)
 -- ---------------------------------------------------------------------------------------------------------------
 
--- One uploaded image, its bytes in the IMAGES R2 bucket under its id. (owner_id, sha256) dedupes a second upload
--- of the same bytes; (owner_id, created_at) serves the gallery.
-CREATE TABLE images (
-  id            TEXT    PRIMARY KEY,
-  owner_id      TEXT    NOT NULL,
-  content_type  TEXT    NOT NULL,
-  byte_size     INTEGER NOT NULL,
-  width         INTEGER NOT NULL,
-  height        INTEGER NOT NULL,
-  sha256        TEXT    NOT NULL,
-  original_name TEXT,
-  created_at    INTEGER NOT NULL
-);
-CREATE INDEX images_owner_created_idx ON images (owner_id, created_at DESC);
-CREATE UNIQUE INDEX images_owner_sha_idx ON images (owner_id, sha256);
+-- Images live in liveworkspace's media service (liveworkspace/docs/media.md): the bytes, the gallery, dedupe and
+-- the caps are its, and this api keeps what its own access rules need (src/media.ts).
+--
+-- Whose each image is, as this api names owners (an account id or a guest id), for every image this api has
+-- met: one uploaded here, one listed in someone's gallery here, or one a document asked for. The placement grants
+-- read it. An owner of '' is an id the service doesn't know, so a document placing it doesn't ask again on every
+-- read.
+CREATE TABLE media_images (
+  id       TEXT PRIMARY KEY,
+  owner_id TEXT NOT NULL
+) WITHOUT ROWID;
+CREATE INDEX media_images_owner_idx ON media_images (owner_id);
+
+-- The documents whose images changed since the service last heard (liveworkspace/docs/media.md "References"):
+-- written in the same batch as the change, sent by the every-minute cron. `queued_at` moves on each change, so
+-- the cron deletes only the rows it sent.
+CREATE TABLE media_ref_outbox (
+  document_id TEXT PRIMARY KEY,
+  queued_at   INTEGER NOT NULL
+) WITHOUT ROWID;
 
 -- Which images each tab places ("Reference index"), kept from the tab bodies in the same batch as each write, so
--- retention, the usage map and share-visitor reads never read a body. No foreign keys: the delete paths prune it.
+-- the media service's references, the usage map and share-visitor reads never read a body. No foreign keys: the
+-- delete paths prune it.
 CREATE TABLE image_refs (
   tab_id   TEXT NOT NULL,
   image_id TEXT NOT NULL,

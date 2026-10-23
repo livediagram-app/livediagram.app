@@ -566,7 +566,7 @@ and schema resource.
 
 A trust story for cautious users: the MCP consent screen offers a **"read-only
 access"** checkbox. When ticked, the minted `lwt_` token carries `read_only = 1`
-([Public API and API tokens](public-api-and-tokens.md) §3.4, migration 0039), and the api worker rejects every write it
+([Public API and API tokens](public-api-and-tokens.md) §3.4), and the api worker rejects every write it
 presents — `POST`/`PUT`/`DELETE` → `403 read_only_token` — at a **single
 dispatch choke point** in `apps/api/src/index.ts`, so no write route can be
 reached, present or future, with no per-route changes. The read tools
@@ -817,7 +817,7 @@ Worker (no DOM, no React).
   must be inline. A tab with no images does no extra work. The fetch-and-inline core is
   `embedTabImages` in `@livedocuments/api-schema`, shared with the api worker's
   snapshot render ([Document SVG snapshots](../006-document/document-snapshots.md)), which passes its own byte source
-  (R2) and a total byte budget.
+  (the media service) and a total byte budget.
 - **Picture budget.** resvg decodes every picture at full size and holds them all while it draws: about 4 bytes a
   pixel on top of about 28 MB for a 2048 px preview, in wasm memory that never shrinks. Measured: one 2880x1800
   screenshot 49 MB, four 112 MB, and a flat 8000x8000 PNG of 0.19 MB 461 MB, against a Worker's 128 MB in all. Time

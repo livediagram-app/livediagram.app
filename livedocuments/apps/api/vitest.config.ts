@@ -24,13 +24,12 @@ const GATE_KEEPERS = [
   'src/routes/shared.ts',
   'src/routes/tokens.ts',
   'src/routes/document-share-routes.ts',
-  // The image reference index and the sweep that trusts it: a gap here
+  // The image reference index, which the media service's sweep trusts: a gap here
   // deletes a picture someone placed (docs/specs/009-elements/images.md).
   'src/image-refs/**',
   'src/db/image-refs.ts',
   // Which documents may serve an image they don't own ("Placement grants").
   'src/db/image-grants.ts',
-  'src/db/image-retention.ts',
   'src/db/document-removal.ts',
 ];
 

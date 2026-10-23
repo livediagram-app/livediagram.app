@@ -29,7 +29,8 @@ livedocuments runs entirely on Cloudflare. The frontends are static (built with 
 - **Cloudflare Workers** serve the apps and host the API.
 - **Cloudflare D1** is the database where documents live, reached only through the API Worker.
 - **Cloudflare Durable Objects** power the per-document real-time room.
-- **Cloudflare R2** (optional) stores uploaded images and the thumbnails the Explorer shows. The api `wrangler.toml` already binds a `livedocuments-images` bucket, so create it, or remove that `[[r2_buckets]]` block to run without one. Without it, image uploads and live images are unavailable and documents show a generic icon in the Explorer.
+- **Cloudflare R2** (optional) stores the thumbnails the Explorer shows. The api `wrangler.toml` already binds a `livedocuments-images` bucket, so create it, or remove that `[[r2_buckets]]` block to run without one. Without it, live images are unavailable and documents show a generic icon in the Explorer.
+- **liveworkspace's media service** (optional) keeps uploaded images. The api Worker reaches it with a `MEDIA_KEY` secret; without one, image uploads are off and the editor hides the Image element.
 
 This means there is no separate database server, no container fleet, and no always-on box to babysit. You deploy Workers and static assets to your Cloudflare account. Durable Objects need the Workers paid plan on that account.
 
@@ -47,9 +48,9 @@ A self-hosted instance's servers make no required calls to any outside service. 
 - **No license gating.** Nothing phones home to unlock features.
 
 <Tip>
-  Ready to deploy? See [deploying livedocuments](/help/self-hosting/deploying-livedocuments/) for the
-  shape of the apps, then [configuration and optional auth](/help/self-hosting/configuration/) for
-  the settings you can turn on.
+  Ready to deploy? See [deploying livedocuments](/help/self-hosting/deploying-livedocuments/) for
+  the shape of the apps, then [configuration and optional auth](/help/self-hosting/configuration/)
+  for the settings you can turn on.
 </Tip>
 
 </ArticleLayout>

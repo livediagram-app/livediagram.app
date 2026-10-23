@@ -112,7 +112,7 @@ No new route, no new error.
 | `documents.trash_reason` | state | TEXT NULL; NULL or `'empty'`; meaningful only in the Trash |
 | `TrashedDocument.reason` | wire  | `'deleted' \| 'empty'`, derived                            |
 
-The baseline migration adds the nullable column: NULL means a person deleted it (D141). No index: nothing filters on it. The sweep scans live rows; an index ordering them by `saved_at` would
+The baseline migration holds the nullable column: NULL means a person deleted it. No index: nothing filters on it. The sweep scans live rows; an index ordering them by `saved_at` would
 cost every autosave a write to save a once-a-day scan (Performance). Account deletion and purges remove the row with the rest; guest-to-account
 migration moves `owner_id` only. Restore clears the column, so a live row's value is always NULL.
 
@@ -203,4 +203,4 @@ No new environment variable or binding; self-hosting needs only the migration.
 
 ## Defaults ledger
 
-D141 to D144 in [DEFAULTS.md](DEFAULTS.md).
+D141 to D144 in [DEFAULTS.md](DEFAULTS.md); D141 is retired there.

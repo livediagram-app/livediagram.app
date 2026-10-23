@@ -46,7 +46,7 @@ describe('documentServesImage (placement)', () => {
     const db = setup();
     liveDoc(db.sql, 'A');
     liveDoc(db.sql, 'B');
-    images(db.sql, 0, 'i1', 'i2', 'i3');
+    images(db.sql, 'i1', 'i2', 'i3');
     await upsertTab(db.env, 'A', tabWith('t1', 'i1'), 0);
     await upsertTab(db.env, 'A', tabWith('t2', 'i2'), 1);
     await upsertTab(db.env, 'B', tabWith('t3', 'i3'), 0);

@@ -11,40 +11,39 @@ Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS
 
 Scope, by file:
 
-| File                                                                           | Role                                                                                           |
-| ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
-| `packages/api-schema/src/home.ts`                                              | Wire types, verbs, limits, the window, rejections, the open marker header                      |
-| `packages/api-schema/src/within-reach.ts`                                      | `withinReach`, `utcDay`; shared with the view and the Shapes flyout                            |
-| `packages/api-schema/src/creation-use.ts`                                      | `readMarkUsed`, `MARK_USED_INVALID`                                                            |
-| `packages/api-schema/src/error-telemetry.ts`                                   | `home` resource                                                                                |
-| `apps/api/migrations/0001_livedocuments_baseline.sql`                          | `document_opens`, its indexes, `timeline_events_actor_idx`                                     |
-| `apps/api/migrations/0001_livedocuments_baseline.sql`                          | Drops frecency: the rank index, `frecency_key`, `open_days`, `first_opened_at`, the seed stamp |
-| `apps/api/src/home/local-day.ts`                                               | `parseTimeZone`, `localDay`                                                                    |
-| `apps/api/src/home/what-happened.ts`                                           | `verbOf`, `groupWhatHappened` (pure)                                                           |
-| `apps/api/src/home/record-open.ts`                                             | `recordDocumentOpen`: the dedupe, the write, the last open, the fingerprints                   |
-| `apps/api/src/timeline/seen.ts`                                                | `SEEN_WINDOW_MS`, `isNewVisit`: the unread mark's visit rule, shared with the Timeline route   |
-| `apps/api/src/timeline/backfill.ts`                                            | The reconstructed edit says `backfilled: true`; it and the reconstructed creation keep a row   |
-| `apps/api/src/db/document-visibility.ts`                                       | `VISIBLE_DOCUMENTS_CTES`: the documents a person can open, shared with the Inbox               |
-| `apps/api/src/db/document-opens.ts`                                            | The `document_opens` statements: read, record, touch, migrate, delete, sweep                   |
-| `apps/api/src/db/home.ts`                                                      | `readJumpBackIn`, `REAL_EDIT`, `MARKED_MAKING`, `readWhatHappenedRows`, `readMe`               |
-| `apps/api/src/db/collab-index.ts`                                              | The Inbox's `SCOPE_CTES` composed from `VISIBLE_DOCUMENTS_CTES`                                |
-| `apps/api/src/db/timeline.ts`                                                  | `NOT_IN_FEED`: the feed and the unread count leave `document_opened` out                       |
-| `apps/api/src/db/account.ts`                                                   | Account deletion and sign-up migration of `document_opens`                                     |
-| `apps/api/src/timeline/document-events.ts`, `tab-save.ts`                      | `recordDocumentOpened`; `markUsed`, `reply` and `assigneeId` on the snapshots                  |
-| `apps/api/src/routes/documents.ts`                                             | The create reads `markUsed` and marks a genuine create; the copy route marks the copy          |
-| `apps/api/src/timeline/tab-diff.ts`                                            | `newComments` says whether each new comment is a reply                                         |
-| `apps/api/src/routes/document-subresource-routes.ts`                           | The tab read records a marked open; the comment POST stamps `reply`                            |
-| `apps/api/src/routes/home.ts`                                                  | `GET /api/home`                                                                                |
-| `apps/api/src/index.ts`, `auth/guest-rest.ts`, `types.ts`                      | Dispatch, `HOME_RATE_LIMITER`, the `home_opens` sweep, `home` owner-scoped                     |
-| `apps/api/src/responses.ts`                                                    | CORS allows `X-Document-Open`                                                                  |
-| `apps/api/wrangler.toml`                                                       | `HOME_RATE_LIMITER` in the default and `[env.staging]` blocks                                  |
-| `apps/api/src/openapi/manifest.ts`, `apps/api/scripts/gen-openapi-schemas.mjs` | The route; the `HomeResponse` schema; the create body's `markUsed`                             |
-| `packages/agent-verbs/src/mcp/schema.ts`, `apps/mcp/src/tools.ts`              | `create_document`'s optional `markUsed`, passed through to the create                          |
-| `apps/live/lib/api/documents.ts`                                               | `apiCreateDocument(..., { markUsed })` sends `markUsed: false` only                            |
-| `apps/live/lib/api/home.ts`                                                    | `apiReadHome`                                                                                  |
-| `apps/live/lib/api/tabs.ts`                                                    | `apiLoadTab(..., { open })` sends the marker                                                   |
-| `apps/live/app/document/[id]/seed-fetched-document.ts`                         | The editor's first-tab read is the marked one, unless embedded                                 |
-| `apps/live/app/document/[id]/{useIdentityBootstrap,useEditorState}.ts`         | `embed` reaches the seed                                                                       |
+| File                                                                           | Role                                                                                         |
+| ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- |
+| `packages/api-schema/src/home.ts`                                              | Wire types, verbs, limits, the window, rejections, the open marker header                    |
+| `packages/api-schema/src/within-reach.ts`                                      | `withinReach`, `utcDay`; shared with the view and the Shapes flyout                          |
+| `packages/api-schema/src/creation-use.ts`                                      | `readMarkUsed`, `MARK_USED_INVALID`                                                          |
+| `packages/api-schema/src/error-telemetry.ts`                                   | `home` resource                                                                              |
+| `apps/api/migrations/0001_livedocuments_baseline.sql`                          | `document_opens`, its indexes, `timeline_events_actor_idx`                                   |
+| `apps/api/src/home/local-day.ts`                                               | `parseTimeZone`, `localDay`                                                                  |
+| `apps/api/src/home/what-happened.ts`                                           | `verbOf`, `groupWhatHappened` (pure)                                                         |
+| `apps/api/src/home/record-open.ts`                                             | `recordDocumentOpen`: the dedupe, the write, the last open, the fingerprints                 |
+| `apps/api/src/timeline/seen.ts`                                                | `SEEN_WINDOW_MS`, `isNewVisit`: the unread mark's visit rule, shared with the Timeline route |
+| `apps/api/src/timeline/backfill.ts`                                            | The reconstructed edit says `backfilled: true`; it and the reconstructed creation keep a row |
+| `apps/api/src/db/document-visibility.ts`                                       | `VISIBLE_DOCUMENTS_CTES`: the documents a person can open, shared with the Inbox             |
+| `apps/api/src/db/document-opens.ts`                                            | The `document_opens` statements: read, record, touch, migrate, delete, sweep                 |
+| `apps/api/src/db/home.ts`                                                      | `readJumpBackIn`, `REAL_EDIT`, `MARKED_MAKING`, `readWhatHappenedRows`, `readMe`             |
+| `apps/api/src/db/collab-index.ts`                                              | The Inbox's `SCOPE_CTES` composed from `VISIBLE_DOCUMENTS_CTES`                              |
+| `apps/api/src/db/timeline.ts`                                                  | `NOT_IN_FEED`: the feed and the unread count leave `document_opened` out                     |
+| `apps/api/src/db/account.ts`                                                   | Account deletion and sign-up migration of `document_opens`                                   |
+| `apps/api/src/timeline/document-events.ts`, `tab-save.ts`                      | `recordDocumentOpened`; `markUsed`, `reply` and `assigneeId` on the snapshots                |
+| `apps/api/src/routes/documents.ts`                                             | The create reads `markUsed` and marks a genuine create; the copy route marks the copy        |
+| `apps/api/src/timeline/tab-diff.ts`                                            | `newComments` says whether each new comment is a reply                                       |
+| `apps/api/src/routes/document-subresource-routes.ts`                           | The tab read records a marked open; the comment POST stamps `reply`                          |
+| `apps/api/src/routes/home.ts`                                                  | `GET /api/home`                                                                              |
+| `apps/api/src/index.ts`, `auth/guest-rest.ts`, `types.ts`                      | Dispatch, `HOME_RATE_LIMITER`, the `home_opens` sweep, `home` owner-scoped                   |
+| `apps/api/src/responses.ts`                                                    | CORS allows `X-Document-Open`                                                                |
+| `apps/api/wrangler.toml`                                                       | `HOME_RATE_LIMITER` in the default and `[env.staging]` blocks                                |
+| `apps/api/src/openapi/manifest.ts`, `apps/api/scripts/gen-openapi-schemas.mjs` | The route; the `HomeResponse` schema; the create body's `markUsed`                           |
+| `packages/agent-verbs/src/mcp/schema.ts`, `apps/mcp/src/tools.ts`              | `create_document`'s optional `markUsed`, passed through to the create                        |
+| `apps/live/lib/api/documents.ts`                                               | `apiCreateDocument(..., { markUsed })` sends `markUsed: false` only                          |
+| `apps/live/lib/api/home.ts`                                                    | `apiReadHome`                                                                                |
+| `apps/live/lib/api/tabs.ts`                                                    | `apiLoadTab(..., { open })` sends the marker                                                 |
+| `apps/live/app/document/[id]/seed-fetched-document.ts`                         | The editor's first-tab read is the marked one, unless embedded                               |
+| `apps/live/app/document/[id]/{useIdentityBootstrap,useEditorState}.ts`         | `embed` reaches the seed                                                                     |
 
 ## Domain and naming
 
@@ -297,8 +296,7 @@ unparseable body), never an empty Home, as `apiListTimeline` does.
 
 ## Data and persistence
 
-The baseline migration, `0001_livedocuments_baseline.sql`, creates `document_opens` and `timeline_events_actor_idx`
-(`D65`, `D127`):
+The baseline migration, `0001_livedocuments_baseline.sql`, creates `document_opens` and `timeline_events_actor_idx`:
 
 ```sql
 CREATE TABLE document_opens (
@@ -478,4 +476,4 @@ No environment variable. The rate limiter binding is optional; absent means allo
 
 ## Defaults ledger
 
-D65 to D80, D126, D127 and D133 to D139 in [DEFAULTS.md](DEFAULTS.md); D72, D76, D80 and D133 are retired there.
+D65 to D80, D126, D127 and D133 to D139 in [DEFAULTS.md](DEFAULTS.md); D65, D72, D76, D79, D80, D127 and D133 are retired there.

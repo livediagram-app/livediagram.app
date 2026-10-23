@@ -112,12 +112,7 @@ by any column.
 - **A document's stats** are summed over the tabs it links: elements, comments and bytes added, the
   mode taken from the tab written last. `GET /api/documents` and each team library carry them on every
   row as `stats` (`{ mode, elements, comments, bytes }`), or `null` when the document has no tabs or one
-  of its tabs has no record yet.
-- **Counting the existing tabs.** Tabs written before the stats existed are counted by the daily
-  cron, a bounded number per run, each dated by the tab's own last write so a counted old tab never
-  outranks a newer one for Type; a write that lands meanwhile keeps its own count, never overwritten
-  by the older one. The api logs
-  `tab-stats: backfilled n=<n> left=<more|none>` each run.
+  of its tabs has no record.
 
 ## Not in scope
 

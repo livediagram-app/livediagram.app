@@ -1,392 +1,284 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { mediaGuestOwner } from '@liveworkspace/media';
 import { makeTestRouteContext } from './test-route-context';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
+import { mediaServiceFor, type TestMediaService } from '../test-media-service';
+import { liveDoc, tabWith } from '../db/test-image-fixtures';
+import { upsertTab } from '../db/tabs';
 import type { Env } from '../types';
 
-// Characterisation tests for handleImages' authorisation surface
-// (docs/specs/009-elements/images.md). Covers: the 503 fallback when R2 is absent (self-host), the
-// owner gate on the gallery list / usage / delete, and the byte-read
-// access policy (image owner OR a share-readable document that references
-// the image). Pins behaviour ahead of the requireOwner extraction.
+// handleImages over the real media service (liveworkspace/docs/media.md), in this process: the gallery,
+// uploads and deletes go to it, and the byte read keeps this api's own policy (docs/specs/009-elements/images.md):
+// the image's owner, OR a reader of a document that places the image and may serve it.
 
-const { db, canReadDocument, resolveDocumentGrant } = vi.hoisted(() => ({
-  db: {
-    deleteImage: vi.fn(),
-    documentServesImage: vi.fn(),
-    findImageBySha: vi.fn(),
-    getDocumentMeta: vi.fn(),
-    getImage: vi.fn(),
-    imageTotalsByOwner: vi.fn(),
-    imageUsageByOwner: vi.fn(),
-    insertImage: vi.fn(),
-    listImagesByOwner: vi.fn(),
-  },
-  canReadDocument: vi.fn(),
-  resolveDocumentGrant: vi.fn(),
-}));
-vi.mock('../db', () => db);
+const { resolveDocumentGrant } = vi.hoisted(() => ({ resolveDocumentGrant: vi.fn() }));
 vi.mock('../auth/document-access', () => ({
-  canReadDocument,
+  canReadDocument: vi.fn(),
   canEditDocument: vi.fn(),
   resolveDocumentGrant,
 }));
 
-import type { RouteContext } from './context';
-import { handleImages } from './images';
+import { handleImages, originalNameOf } from './images';
+import { ORIGINAL_NAME_MAX } from '@liveworkspace/media';
 
-function imagesBinding() {
-  return {
-    get: vi.fn(),
-    put: vi.fn(),
-    delete: vi.fn(),
-  };
-}
+const PNG = new Uint8Array([
+  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 1, 2, 3, 4,
+]);
+const OTHER_PNG = new Uint8Array([...PNG, 9]);
 
-// Guest-shaped context ('owner-1') with the IMAGES binding stubbed in.
-const makeCtx = (
-  method: string,
-  path: string,
-  opts: { owner?: string | null; images?: unknown } = {},
-): RouteContext =>
-  makeTestRouteContext(method, path, {
-    owner: opts.owner === undefined ? 'owner-1' : opts.owner,
-    env: { IMAGES: opts.images === undefined ? imagesBinding() : opts.images } as unknown as Env,
-  });
+let db: SqliteD1;
+let media: TestMediaService;
 
 beforeEach(() => {
-  for (const fn of Object.values(db)) fn.mockReset();
-  canReadDocument.mockReset();
+  db = sqliteD1();
+  media = mediaServiceFor(db.env);
   resolveDocumentGrant.mockReset();
-  // The byte-read gate asks for the grant; drive it from canReadDocument so
-  // the allow / deny cases below keep reading as they did.
-  resolveDocumentGrant.mockImplementation(async (...args: unknown[]) =>
-    (await canReadDocument(...args)) ? { role: 'view', tabScope: null } : null,
-  );
 });
+afterEach(() => vi.unstubAllGlobals());
+
+type Opts = { owner?: string | null; workbench?: unknown; token?: { id: string }; env?: Env };
+
+const call = (method: string, path: string, opts: Opts = {}, request?: RequestInit) => {
+  const ctx = makeTestRouteContext(method, path, {
+    owner: opts.owner === undefined ? 'user_ada' : opts.owner,
+    env: opts.env ?? db.env,
+    ...(opts.workbench ? { workbench: opts.workbench as never } : {}),
+    ...(opts.token ? { token: opts.token } : {}),
+  });
+  if (!request) return handleImages(ctx);
+  return handleImages({
+    ...ctx,
+    request: new Request(`https://api.test${path}`, { method, ...request }),
+  });
+};
+
+const upload = (bytes: Uint8Array, opts: Opts = {}, headers: Record<string, string> = {}) =>
+  call('POST', '/api/images', opts, {
+    headers: {
+      'Content-Type': 'image/png',
+      'Content-Length': String(bytes.byteLength),
+      'X-Image-Width': '4',
+      'X-Image-Height': '3',
+      ...headers,
+    },
+    body: bytes,
+  });
+
+async function uploaded(bytes = PNG, opts: Opts = {}): Promise<string> {
+  const res = await upload(bytes, opts);
+  expect(res.status).toBe(200);
+  return (await res.json<{ image: { id: string } }>()).image.id;
+}
+
+const mirror = () =>
+  db.sql.prepare('SELECT id, owner_id FROM media_images ORDER BY id').all() as {
+    id: string;
+    owner_id: string;
+  }[];
 
 describe('handleImages', () => {
-  it('503 when the R2 binding is absent (self-host without R2)', async () => {
-    const res = await handleImages(makeCtx('GET', '/api/images', { images: null }));
-    expect(res.status).toBe(503);
+  it('503 without the media service (self-host without MEDIA_KEY)', async () => {
+    const env = { ...db.env, MEDIA_KEY: undefined } as Env;
+    expect((await call('GET', '/api/images', { env })).status).toBe(503);
   });
 
   it('400 listing the gallery with no owner', async () => {
-    const res = await handleImages(makeCtx('GET', '/api/images', { owner: null }));
-    expect(res.status).toBe(400);
+    expect((await call('GET', '/api/images', { owner: null })).status).toBe(400);
   });
 
-  it('200 lists the owner-scoped gallery', async () => {
-    db.listImagesByOwner.mockResolvedValue([{ id: 'i1' }]);
-    const res = await handleImages(makeCtx('GET', '/api/images'));
-    expect(res.status).toBe(200);
-    expect(db.listImagesByOwner).toHaveBeenCalledWith(expect.anything(), 'owner-1');
+  it('uploads to the service, dedupes the same bytes, and remembers whose each image is', async () => {
+    const first = await upload(PNG);
+    expect(first.status).toBe(200);
+    const body = (await first.json()) as { image: Record<string, unknown>; deduped: boolean };
+    expect(body.deduped).toBe(false);
+    expect(body.image).toMatchObject({ contentType: 'image/png', width: 4, height: 3 });
+    expect(body.image).not.toHaveProperty('app');
+    const again = (await (await upload(PNG)).json()) as { image: { id: string }; deduped: boolean };
+    expect(again).toMatchObject({ image: { id: body.image.id }, deduped: true });
+    expect(mirror()).toEqual([{ id: body.image.id, owner_id: 'user_ada' }]);
   });
 
-  it('400 on usage with no owner', async () => {
-    const res = await handleImages(makeCtx('GET', '/api/images/usage', { owner: null }));
-    expect(res.status).toBe(400);
+  it("keeps a guest's id in this api: the service holds the guest's images under a hash", async () => {
+    await uploaded(PNG, { owner: 'guest-1' });
+    const owners = media.sql.prepare('SELECT owner FROM images').all() as { owner: string }[];
+    expect(owners).toEqual([{ owner: await mediaGuestOwner('livedocuments.app', 'guest-1') }]);
+    expect(mirror()[0]!.owner_id).toBe('guest-1');
   });
 
-  it('DELETE 403 when the image belongs to another owner', async () => {
-    db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'someone-else' });
-    const res = await handleImages(makeCtx('DELETE', '/api/images/i1'));
-    expect(res.status).toBe(403);
-    expect(db.deleteImage).not.toHaveBeenCalled();
+  it('lists the gallery from every app, remembering each image as the owner’s', async () => {
+    const id = await uploaded();
+    media.sql
+      .prepare(
+        `INSERT INTO images (id, owner, app, content_type, byte_size, width, height, sha256, created_at)
+         VALUES ('from-diagrams', 'user_ada', 'livediagram.app', 'image/png', 1, 1, 1, 'x', 1)`,
+      )
+      .run();
+    db.sql.exec('DELETE FROM media_images');
+    const res = await call('GET', '/api/images');
+    const { images } = (await res.json()) as { images: { id: string }[] };
+    expect(images.map((i) => i.id).sort()).toEqual(['from-diagrams', id].sort());
+    expect(images[0]).not.toHaveProperty('app');
+    expect(mirror().map((r) => r.owner_id)).toEqual(['user_ada', 'user_ada']);
   });
 
-  it('DELETE is idempotent: 200 ok when the image is already gone', async () => {
-    db.getImage.mockResolvedValue(null);
-    const res = await handleImages(makeCtx('DELETE', '/api/images/i9'));
-    expect(res.status).toBe(200);
-  });
-
-  it('DELETE 200 removes the R2 object + row for the owner', async () => {
-    db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'owner-1' });
-    const ctx = makeCtx('DELETE', '/api/images/i1');
-    const res = await handleImages(ctx);
-    expect(res.status).toBe(200);
-    expect(db.deleteImage).toHaveBeenCalledWith(expect.anything(), 'i1');
-  });
-
-  it('DELETE removes the row before the bytes, so a D1 failure leaves both in place', async () => {
-    db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'owner-1' });
-    db.deleteImage.mockRejectedValue(new Error('D1 down'));
-    const images = imagesBinding();
-    await expect(handleImages(makeCtx('DELETE', '/api/images/i1', { images }))).rejects.toThrow(
-      'D1 down',
+  it('refuses an unsupported type or an oversize file without calling the service', async () => {
+    const svg = await upload(PNG, {}, { 'Content-Type': 'image/svg+xml' });
+    expect(svg.status).toBe(415);
+    const big = await call(
+      'POST',
+      '/api/images',
+      {},
+      {
+        headers: { 'Content-Type': 'image/png', 'Content-Length': String(11 * 1024 * 1024) },
+        body: PNG,
+      },
     );
-    expect(images.delete).not.toHaveBeenCalled();
+    expect(big.status).toBe(413);
+    expect(media.calls).toEqual([]);
   });
 
-  it('DELETE answers ok and logs when only the R2 delete fails after the row is gone', async () => {
-    db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'owner-1' });
-    const images = imagesBinding();
-    images.delete.mockRejectedValue(new Error('R2 down'));
-    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
-    const res = await handleImages(makeCtx('DELETE', '/api/images/i1', { images }));
-    expect(res.status).toBe(200);
-    expect(db.deleteImage).toHaveBeenCalledWith(expect.anything(), 'i1');
-    expect(error.mock.calls[0]![0]).toBe('[images] R2 delete failed after the row was removed');
-    error.mockRestore();
+  it("passes the service's refusals on: a full gallery, bytes that aren't the declared type", async () => {
+    await uploaded();
+    media.env.IMAGE_MAX_PER_OWNER = '1';
+    const full = await upload(OTHER_PNG);
+    expect(full.status).toBe(403);
+    expect(await full.json()).toMatchObject({ error: 'gallery_full', reason: 'count', limit: 1 });
+    const fake = await upload(new Uint8Array([1, 2, 3, 4]), { owner: 'user_bob' });
+    expect(fake.status).toBe(415);
   });
 
-  it('byte-read 404 for an unknown image', async () => {
-    db.getImage.mockResolvedValue(null);
-    const res = await handleImages(makeCtx('GET', '/api/images/i9'));
-    expect(res.status).toBe(404);
-  });
-
-  it('byte-read 200 for the image owner', async () => {
-    db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'owner-1' });
-    const ctx = makeCtx('GET', '/api/images/i1');
-    (ctx.env.IMAGES as unknown as ReturnType<typeof imagesBinding>).get.mockResolvedValue({
-      body: 'bytes',
-      httpMetadata: { contentType: 'image/png' },
-    });
-    const res = await handleImages(ctx);
-    expect(res.status).toBe(200);
-  });
-
-  it('byte-read 404 for a non-owner with no document hint', async () => {
-    db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'someone-else' });
-    const res = await handleImages(makeCtx('GET', '/api/images/i1'));
-    expect(res.status).toBe(404);
-  });
-
-  it('byte-read 200 for a non-owner via a share-readable document that references the image', async () => {
-    db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'someone-else' });
-    db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'someone-else' });
-    canReadDocument.mockResolvedValue(true);
-    db.documentServesImage.mockResolvedValue(true);
-    const ctx = makeCtx('GET', '/api/images/i1?d=d1');
-    (ctx.env.IMAGES as unknown as ReturnType<typeof imagesBinding>).get.mockResolvedValue({
-      body: 'bytes',
-      httpMetadata: { contentType: 'image/png' },
-    });
-    const res = await handleImages(ctx);
-    expect(res.status).toBe(200);
-  });
-
-  // docs/specs/009-elements/images.md, "Placement grants": a readable document that places the
-  // image but may not serve it (an id pasted where its owner has no tie) answers 404.
-  it('404s a readable document that places the image but may not serve it', async () => {
-    db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'victim' });
-    db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'reader' });
-    canReadDocument.mockResolvedValue(true);
-    db.documentServesImage.mockResolvedValue(false);
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const ctx = makeCtx('GET', '/api/images/i1?d=d1');
-    const res = await handleImages(ctx);
-    expect(res.status).toBe(404);
-    expect(
-      (ctx.env.IMAGES as unknown as ReturnType<typeof imagesBinding>).get,
-    ).not.toHaveBeenCalled();
-    expect(warn).toHaveBeenCalledWith('[images] not servable by document', {
-      documentId: 'd1',
-      imageId: 'i1',
-    });
-    warn.mockRestore();
-  });
-
-  // docs/specs/013-workspace/tab-scoped-share-links.md: a tab-scoped visitor reads images their tab uses.
-  it('asks whether the scoped tab, not the whole document, uses the image', async () => {
-    db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'someone-else' });
-    db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'someone-else' });
-    resolveDocumentGrant.mockResolvedValue({ role: 'view', tabScope: 't2' });
-    db.documentServesImage.mockResolvedValue(false);
-    const res = await handleImages(makeCtx('GET', '/api/images/i1?d=d1'));
-    expect(res.status).toBe(404);
-    expect(db.documentServesImage).toHaveBeenCalledWith(expect.anything(), 'd1', 'i1', 't2');
-  });
-
-  // docs/specs/013-workspace/workbench-embeds.md: a workbench session reads images through its own document
-  // only, never by owning them, so it cannot walk its owner's gallery by id.
-  describe('under a workbench session', () => {
-    const session = (path: string) =>
-      makeTestRouteContext('GET', path, {
-        owner: 'owner-1',
-        env: { IMAGES: imagesBinding() } as unknown as Env,
-        workbench: { documentId: 'd1', ownerId: 'owner-1' } as never,
-      });
-
-    it('skips the owner shortcut: no document, no bytes', async () => {
-      db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'owner-1' });
-      const res = await handleImages(session('/api/images/i1'));
-      expect(res.status).toBe(404);
+  describe('the hash-only dedupe shortcut', () => {
+    const probe = (opts: Opts) => upload(new Uint8Array([0]), opts, { 'X-Image-Sha256': sha });
+    let sha = '';
+    beforeEach(async () => {
+      const digest = await crypto.subtle.digest('SHA-256', PNG);
+      sha = Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('');
     });
 
-    it('refuses any document but the session own', async () => {
-      db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'owner-1' });
-      const res = await handleImages(session('/api/images/i1?d=d2'));
-      expect(res.status).toBe(404);
-      expect(db.getDocumentMeta).not.toHaveBeenCalled();
+    it("answers the owner's own editor from the hash alone", async () => {
+      const id = await uploaded();
+      const res = await probe({});
+      expect(await res.json()).toMatchObject({ image: { id }, deduped: true });
     });
 
-    it('serves an image its own document serves', async () => {
-      db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'owner-1' });
-      db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'owner-1' });
-      canReadDocument.mockResolvedValue(true);
-      db.documentServesImage.mockResolvedValue(true);
-      const ctx = session('/api/images/i1?d=d1');
-      (ctx.env.IMAGES as unknown as ReturnType<typeof imagesBinding>).get.mockResolvedValue({
-        body: 'bytes',
-        httpMetadata: { contentType: 'image/png' },
-      });
-      const res = await handleImages(ctx);
+    it.each([
+      [
+        'a workbench session',
+        { workbench: { documentId: 'd1', ownerId: 'user_ada', sessionId: 's1' } },
+      ],
+      ['an API token', { token: { id: 'tok-1' } }],
+    ])('never answers %s from the hash alone', async (_label, opts) => {
+      const id = await uploaded();
+      const res = await probe(opts);
+      expect(res.status).toBe(415);
+      expect(JSON.stringify(await res.json())).not.toContain(id);
+    });
+  });
+
+  describe('the byte read', () => {
+    it('serves the owner, privately and with the stored type', async () => {
+      const id = await uploaded();
+      const res = await call('GET', `/api/images/${id}`);
+      expect(res.status).toBe(200);
+      expect(res.headers.get('Content-Type')).toBe('image/png');
+      expect(res.headers.get('Cache-Control')).toBe('private, max-age=86400');
+      expect(res.headers.get('X-Content-Type-Options')).toBe('nosniff');
+      expect(new Uint8Array(await res.arrayBuffer())).toEqual(PNG);
+    });
+
+    it('404s an unknown image, and remembers so without asking again', async () => {
+      expect((await call('GET', '/api/images/nope')).status).toBe(404);
+      expect((await call('GET', '/api/images/nope')).status).toBe(404);
+      expect(media.calls).toEqual(['GET /app/images/nope']);
+    });
+
+    it('404s a non-owner with no document to read it through', async () => {
+      const id = await uploaded();
+      expect((await call('GET', `/api/images/${id}`, { owner: 'user_bob' })).status).toBe(404);
+    });
+
+    it('serves a reader of a document that places the image and may serve it', async () => {
+      const id = await uploaded();
+      liveDoc(db.sql, 'd1', 'user_ada');
+      await upsertTab(db.env, 'd1', tabWith('t1', id), 0);
+      resolveDocumentGrant.mockResolvedValue({ role: 'view', tabScope: null });
+      const res = await call('GET', `/api/images/${id}?d=d1`, { owner: 'visitor' });
       expect(res.status).toBe(200);
     });
-  });
-});
 
-// docs/specs/009-elements/images.md "Size cap": the cap is enforced by the insert itself, so
-// uploads racing past the early totals check are refused, and their R2 object removed.
-describe('POST /api/images under a per-owner cap', () => {
-  const PNG = new Uint8Array([
-    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 1, 2, 3, 4,
-  ]);
-
-  function upload(images: ReturnType<typeof imagesBinding>, vars: Record<string, string>) {
-    const ctx = makeTestRouteContext('POST', '/api/images', {
-      owner: 'owner-1',
-      env: { IMAGES: images, ...vars } as unknown as Env,
+    it('serves an image uploaded in another app, asking the service whose it is', async () => {
+      media.sql
+        .prepare(
+          `INSERT INTO images (id, owner, app, content_type, byte_size, width, height, sha256, created_at)
+           VALUES ('from-diagrams', 'user_ada', 'livediagram.app', 'image/png', 16, 4, 3, 'x', 1)`,
+        )
+        .run();
+      media.objects.set('from-diagrams', { bytes: PNG, contentType: 'image/png' });
+      liveDoc(db.sql, 'd1', 'user_ada');
+      await upsertTab(db.env, 'd1', tabWith('t1', 'from-diagrams'), 0);
+      resolveDocumentGrant.mockResolvedValue({ role: 'view', tabScope: null });
+      const res = await call('GET', '/api/images/from-diagrams?d=d1', { owner: 'visitor' });
+      expect(res.status).toBe(200);
+      expect(mirror()).toEqual([{ id: 'from-diagrams', owner_id: 'user_ada' }]);
     });
-    const request = new Request('https://api.test/api/images', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'image/png',
-        'Content-Length': String(PNG.byteLength),
-        'X-Image-Width': '4',
-        'X-Image-Height': '4',
-      },
-      body: PNG,
+
+    it('404s a readable document that places the image but may not serve it', async () => {
+      const id = await uploaded();
+      liveDoc(db.sql, 'd2', 'user_mallory');
+      await upsertTab(db.env, 'd2', tabWith('t2', id), 0);
+      resolveDocumentGrant.mockResolvedValue({ role: 'view', tabScope: null });
+      const res = await call('GET', `/api/images/${id}?d=d2`, { owner: 'visitor' });
+      expect(res.status).toBe(404);
     });
-    return handleImages({ ...ctx, request });
-  }
 
-  it('passes the caps to the insert', async () => {
-    db.imageTotalsByOwner.mockResolvedValue({ count: 0, bytes: 0 });
-    db.findImageBySha.mockResolvedValue(null);
-    db.insertImage.mockResolvedValue({ id: 'new' });
-    const res = await upload(imagesBinding(), {
-      IMAGE_MAX_PER_OWNER: '3',
-      IMAGE_MAX_BYTES_PER_OWNER: '1000',
-    });
-    expect(res.status).toBe(200);
-    expect(db.insertImage.mock.calls[0]![2]).toEqual({ maxImages: 3, maxBytes: 1000 });
-  });
+    // docs/specs/013-workspace/workbench-embeds.md: a workbench session reads images through its own document
+    // only, never by owning them, so it cannot walk its owner's gallery by id.
+    describe('under a workbench session', () => {
+      const workbench = { scope: 'document', documentId: 'd1', ownerId: 'user_ada' };
 
-  it('403 gallery_full and removes the R2 object when the insert is refused by a racing upload', async () => {
-    db.imageTotalsByOwner
-      .mockResolvedValueOnce({ count: 2, bytes: 0 })
-      .mockResolvedValueOnce({ count: 3, bytes: 0 });
-    db.findImageBySha.mockResolvedValue(null);
-    db.insertImage.mockResolvedValue(null);
-    const images = imagesBinding();
-    const res = await upload(images, { IMAGE_MAX_PER_OWNER: '3' });
-    expect(res.status).toBe(403);
-    expect(await res.json()).toEqual({
-      error: 'gallery_full',
-      reason: 'count',
-      limit: 3,
-      current: 3,
-    });
-    const key: unknown = images.put.mock.calls[0]![0];
-    expect(images.delete).toHaveBeenCalledWith(key);
-  });
+      it('skips the owner shortcut and refuses any document but its own', async () => {
+        const id = await uploaded();
+        expect((await call('GET', `/api/images/${id}`, { workbench })).status).toBe(404);
+        resolveDocumentGrant.mockResolvedValue({ role: 'view', tabScope: null });
+        expect((await call('GET', `/api/images/${id}?d=d2`, { workbench })).status).toBe(404);
+        expect(resolveDocumentGrant).not.toHaveBeenCalled();
+      });
 
-  it('answers a racing upload of the same bytes with the winner, as a dedupe, deleting its own bytes', async () => {
-    db.imageTotalsByOwner.mockResolvedValue({ count: 0, bytes: 0 });
-    db.findImageBySha.mockResolvedValueOnce(null).mockResolvedValueOnce({ id: 'winner' });
-    db.insertImage.mockResolvedValue(null);
-    const images = imagesBinding();
-    const res = await upload(images, {});
-    expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ image: { id: 'winner' }, deduped: true });
-    expect(images.delete).toHaveBeenCalledWith(images.put.mock.calls[0]![0]);
-  });
-
-  it('deletes the bytes it wrote when the insert fails outright', async () => {
-    db.imageTotalsByOwner.mockResolvedValue({ count: 0, bytes: 0 });
-    db.findImageBySha.mockResolvedValue(null);
-    db.insertImage.mockRejectedValue(new Error('D1 down'));
-    const images = imagesBinding();
-    await expect(upload(images, {})).rejects.toThrow('D1 down');
-    expect(images.delete).toHaveBeenCalledWith(images.put.mock.calls[0]![0]);
-  });
-
-  it('names the byte cap when that is the one the race crossed', async () => {
-    db.imageTotalsByOwner
-      .mockResolvedValueOnce({ count: 0, bytes: 980 })
-      .mockResolvedValueOnce({ count: 1, bytes: 995 });
-    db.findImageBySha.mockResolvedValue(null);
-    db.insertImage.mockResolvedValue(null);
-    const res = await upload(imagesBinding(), { IMAGE_MAX_BYTES_PER_OWNER: '1000' });
-    expect(await res.json()).toEqual({
-      error: 'gallery_full',
-      reason: 'bytes',
-      limit: 1000,
-      current: 995,
-    });
-  });
-});
-
-// docs/specs/009-elements/images.md "Size cap": the X-Image-Sha256 shortcut answers a bare hash with the gallery row,
-// so it is only the owner's own editor's; a workbench session or an API token uploads the body.
-describe('POST /api/images hash-only dedupe shortcut', () => {
-  const SHA = 'a'.repeat(64);
-  const post = (opts: { workbench?: boolean; token?: boolean }) => {
-    const images = imagesBinding();
-    const ctx = makeTestRouteContext('POST', '/api/images', {
-      owner: 'owner-1',
-      env: { IMAGES: images } as unknown as Env,
-      ...(opts.workbench
-        ? { workbench: { documentId: 'd1', ownerId: 'owner-1', sessionId: 's1' } as never }
-        : {}),
-      ...(opts.token ? { token: { id: 'tok-1' } } : {}),
-    });
-    // A non-zero length with a body that is not an image: the probe never meant to send the file.
-    const request = new Request('https://api.test/api/images', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'image/png',
-        'Content-Length': '1',
-        'X-Image-Sha256': SHA,
-        'X-Image-Width': '4',
-        'X-Image-Height': '4',
-      },
-      body: new Uint8Array([0]),
-    });
-    return handleImages({ ...ctx, request });
-  };
-
-  beforeEach(() => {
-    db.findImageBySha.mockResolvedValue({ id: 'secret', originalName: 'payslip.png' });
-  });
-
-  it('answers the owner own editor from the hash alone', async () => {
-    const res = await post({});
-    expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({
-      image: { id: 'secret', originalName: 'payslip.png' },
-      deduped: true,
+      it('serves an image its own document serves', async () => {
+        const id = await uploaded();
+        liveDoc(db.sql, 'd1', 'user_ada');
+        await upsertTab(db.env, 'd1', tabWith('t1', id), 0);
+        resolveDocumentGrant.mockResolvedValue({ role: 'view', tabScope: null });
+        expect((await call('GET', `/api/images/${id}?d=d1`, { workbench })).status).toBe(200);
+      });
     });
   });
 
-  it.each([
-    ['a workbench session', { workbench: true }],
-    ['an API token', { token: true }],
-  ])('never answers %s from the hash alone', async (_label, opts) => {
-    const res = await post(opts);
-    expect(res.status).toBe(415);
-    expect(JSON.stringify(await res.json())).not.toContain('secret');
-    expect(db.findImageBySha).not.toHaveBeenCalled();
+  describe('DELETE', () => {
+    it("refuses another owner's image", async () => {
+      const id = await uploaded();
+      expect((await call('DELETE', `/api/images/${id}`, { owner: 'user_bob' })).status).toBe(403);
+      expect(media.objects.has(id)).toBe(true);
+    });
+
+    it("deletes the owner's image from the service and forgets it here", async () => {
+      const id = await uploaded();
+      const res = await call('DELETE', `/api/images/${id}`);
+      expect(await res.json()).toEqual({ ok: true });
+      expect(media.objects.has(id)).toBe(false);
+      expect(mirror()).toEqual([]);
+    });
+
+    it('is idempotent: ok when the image is already gone', async () => {
+      expect(await (await call('DELETE', '/api/images/gone')).json()).toEqual({ ok: true });
+    });
   });
 });
 
 // A file's own name rides a header, percent-encoded by the editor: a header is Latin-1 only.
 describe('originalNameOf', () => {
-  it('decodes an encoded name, keeps an older raw one, and caps the length', async () => {
-    const { originalNameOf, ORIGINAL_NAME_MAX } = await import('./images');
-    const screenshot = 'Screenshot 2026-10-10 at 9.41.02 AM.png';
+  it('decodes an encoded name, keeps an older raw one, and caps the length', () => {
+    const screenshot = 'Screenshot 2026-10-10 at 9.41.02 AM.png';
     expect(originalNameOf(encodeURIComponent(screenshot))).toBe(screenshot);
     expect(originalNameOf(encodeURIComponent('diagram 図 😀.png'))).toBe('diagram 図 😀.png');
     expect(originalNameOf('100% done.png')).toBe('100% done.png');

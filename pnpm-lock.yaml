@@ -2928,6 +2928,9 @@ importers:
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
+      '@liveworkspace/media':
+        specifier: workspace:*
+        version: link:../../../packages/media
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
@@ -2944,6 +2947,9 @@ importers:
       '@livedocuments/vitest-config':
         specifier: workspace:*
         version: link:../../packages/vitest-config
+      '@liveworkspace/media-service':
+        specifier: workspace:*
+        version: link:../../../liveworkspace/apps/media
       '@types/node':
         specifier: ^26.6.4
         version: 26.6.5

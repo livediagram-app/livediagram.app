@@ -12,7 +12,7 @@ Scope, by file:
 | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
 | `packages/document/src/editor-mode.ts`                    | `EDITOR_MODES` (read off `EDITOR_MODE_CATALOGUE`), `EditorMode`, `DEFAULT_EDITOR_MODE`, `isEditorMode` (`D27`) |
 | `packages/api-schema/src/placement-defaults.ts`           | Keys, `CreationIntent`, `CREATION_INTENT`, `readCreationIntent`, `defaultKeysFor`, telemetry values            |
-| `apps/api/migrations/0001_livedocuments_baseline.sql`     | The `placement_defaults` table (`D17`)                                                                         |
+| `apps/api/migrations/0001_livedocuments_baseline.sql`     | The `placement_defaults` table                                                                                 |
 | `apps/api/src/db/placement-defaults.ts`                   | `listPlacementDefaults`, `setPlacementDefault`, `clearPlacementDefault`                                        |
 | `apps/api/src/db/account.ts`                              | Account deletion and owner migration statements                                                                |
 | `apps/api/src/placement/placement-types.ts`               | `RequestedPlacement`, `PlacementCaller`, `PlacementLookups`, `PlacementOutcome`, steps                         |
@@ -218,7 +218,7 @@ No environment variable or binding is added.
 
 ## Defaults ledger
 
-D17 to D25, D27, D105 to D120, D123 and D124 in [DEFAULTS.md](DEFAULTS.md).
+D17 to D25, D27, D105 to D120, D123 and D124 in [DEFAULTS.md](DEFAULTS.md); D17 is retired there.
 
 ## Surfaces (live)
 

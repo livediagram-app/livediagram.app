@@ -1,15 +1,15 @@
 {
   "TELEMETRY_ENABLED": "true",
-  "IMAGE_MAX_PER_OWNER": "100",
-  "IMAGE_MAX_BYTES_PER_OWNER": "104857600",
   "environments": {
     "production": {
       "APP_BASE_URL": "https://www.livedocuments.app",
-      "TELEMETRY_URL": "https://liveworkspace.app/api/telemetry"
+      "TELEMETRY_URL": "https://liveworkspace.app/api/telemetry",
+      "MEDIA_URL": "https://liveworkspace.app/api/media"
     },
     "staging": {
       "APP_BASE_URL": "https://staging.livedocuments.app",
-      "TELEMETRY_URL": "https://staging.liveworkspace.app/api/telemetry"
+      "TELEMETRY_URL": "https://staging.liveworkspace.app/api/telemetry",
+      "MEDIA_URL": "https://staging.liveworkspace.app/api/media"
     }
   }
 }

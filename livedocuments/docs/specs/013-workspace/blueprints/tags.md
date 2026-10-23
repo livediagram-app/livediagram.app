@@ -111,4 +111,4 @@ Every write carries `owner_id` in its statement (the insert selects from the cal
 
 ## Defaults ledger
 
-D154 to D162 in [DEFAULTS.md](DEFAULTS.md).
+D154 to D162 in [DEFAULTS.md](DEFAULTS.md); D154 is retired there.

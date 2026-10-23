@@ -26,7 +26,7 @@ The baseline migration, `0001_livedocuments_baseline.sql`, adds two nullable col
 - `expiry TEXT` — the chosen lifetime token (`week` / `month` / `sixMonths`); NULL = never. Kept so **Extend** knows what duration to re-apply.
 - `expires_at INTEGER` — the moment the link stops working (ms epoch); NULL = never. Set to `created_at + lifetime` at creation.
 
-Pre-existing rows have NULL in both → never expire. The `ShareLink` DTO gains `expiry` and `expiresAt`.
+A link with NULL in both never expires. The `ShareLink` DTO gains `expiry` and `expiresAt`.
 
 ## Enforcement
 

@@ -3,7 +3,7 @@
 Derived from [Explorer Details view](../explorer-details-view.md) and the Preview hint of
 [Tooltips, hover cards and popovers](../../004-interface-design/tooltips-hover-cards-popovers.md#preview).
 The spec decides; this file adds engineering precision. Defaults are ledgered in
-[DEFAULTS.md](DEFAULTS.md) as `D145` to `D153`.
+[DEFAULTS.md](DEFAULTS.md) as `D145` to `D153`; `D145`, `D147` and `D148` are retired there.
 
 | File                                                          | Role                                                                                    |
 | ------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
@@ -66,25 +66,6 @@ SUM, 'comments', SUM, 'bytes', SUM)`. It reads no `tabs` column, so no body.
 - `readDocumentStats(text)` parses that JSON; a value that fails to parse or carries a mode that
   `parseEditorMode` rejects is `null` with a warning `tab-stats: unreadable doc_stats`.
 
-### Backfill
-
-`runTabStatsBackfill(env, clock)` loops while under `TAB_STATS_BACKFILL_BUDGET_MS` and
-`TAB_STATS_BACKFILL_MAX_ROWS`:
-
-1. `SELECT t.id, t.data, t.updated_at FROM tabs t WHERE NOT EXISTS (SELECT 1 FROM tab_stats s WHERE s.tab_id = t.id) LIMIT ?`
-   with `TAB_STATS_BACKFILL_PAGE_ROWS`.
-2. Each body counts through `tabStatsOfData`; a body that fails to parse counts as Pages with no elements
-   and no comments, its bytes measured, and warns `tab-stats: corrupt tab <id> counted empty`.
-3. One batch of `INSERT ... ON CONFLICT(tab_id) DO NOTHING`, `written_at` set to the tab's own
-   `updated_at` (never the run's time, which would make the backfilled tab the document's newest and
-   so its Type). A write that landed since step 1
-   already wrote the newer stats, which stay.
-4. A page shorter than the page size ends the loop: `left=none`; otherwise `left=more`.
-
-It logs `tab-stats: backfilled n=<n> left=<more|none>` once per run and returns the count. The
-cron runs it in `waitUntil` beside the other sweeps, its failure logged as
-`tab-stats: backfill failed`.
-
 ### The view
 
 - `useExplorerViewMode` accepts the stored `'details'`; anything else unknown still falls back to
@@ -142,8 +123,8 @@ CREATE TABLE tab_stats (
 );
 ```
 
-- Derived data: deleting every row loses nothing the backfill cannot rebuild.
-- The migration creates the table only (constant time); no statement reads a body.
+- Derived data: each row is rewritten from its tab body by the tab's next write.
+- No statement reads a body to fill the table; only tab writes fill it.
 - A tab deleted cascades its row away. A document deleted keeps tabs other documents link, and their
   stats.
 - The Trash, restore and purge need nothing: stats follow tabs.
@@ -153,10 +134,9 @@ CREATE TABLE tab_stats (
 | Case                                 | Handling                                                  |
 | ------------------------------------ | --------------------------------------------------------- |
 | Document with no tabs                | `stats: null`, cells `–`                                  |
-| Some tabs not yet counted            | `stats: null` until the backfill reaches them             |
+| A tab with no stats row              | `stats: null`                                             |
 | Legacy mode `infographic`            | Pages (`opensInOf` reads through `parseEditorMode`)       |
-| Corrupt tab body in the backfill     | Counted empty, warned                                     |
-| Write racing the backfill            | The write's row wins (`DO NOTHING`)                       |
+| Corrupt tab body                     | Counted empty, its bytes measured                         |
 | Shared row                           | No `stats`: `–`; no Created: `–` "Not known" (`D153`)     |
 | Offline row                          | Counted in the browser, the first tab's mode (`D152`)     |
 | Unknown stored sort or view mode     | Defaults                                                  |
@@ -173,8 +153,6 @@ CREATE TABLE tab_stats (
 - The list reads, per document, its `document_tabs` rows and their `tab_stats` rows: narrow rows, no
   body, no overflow page.
 - A write adds one small statement to a batch it already sends.
-- The backfill parses at most `TAB_STATS_BACKFILL_PAGE_ROWS` bodies at once (each at most
-  `MAX_TAB_BYTES`), and at most `TAB_STATS_BACKFILL_MAX_ROWS` per run.
 - The Details view renders every row of the folder, as the list does; each row's snapshot prefetch
   uses one `IntersectionObserver` per row with the thumbnails' `200px` margin, disconnected after its
   first sighting.
@@ -225,13 +203,10 @@ CREATE TABLE tab_stats (
 
 ## Observability
 
-| Fingerprint                                     | Where                                   |
-| ----------------------------------------------- | --------------------------------------- |
-| `tab-stats: backfilled n=<n> left=<more\|none>` | Each cron run                           |
-| `tab-stats: backfill failed`                    | A run that threw                        |
-| `tab-stats: corrupt tab <id> counted empty`     | Backfill on an unparseable body         |
-| `tab-stats: unreadable doc_stats`               | A summary row whose stats did not parse |
-| `[explorer-drop] …`                             | Drops on Details folder rows            |
+| Fingerprint                       | Where                                   |
+| --------------------------------- | --------------------------------------- |
+| `tab-stats: unreadable doc_stats` | A summary row whose stats did not parse |
+| `[explorer-drop] …`               | Drops on Details folder rows            |
 
 ## Testing
 
@@ -255,14 +230,11 @@ CREATE TABLE tab_stats (
 
 ## Constants and configuration
 
-| Constant                       | Value                                 | Provenance                                                    | Safe range     |
-| ------------------------------ | ------------------------------------- | ------------------------------------------------------------- | -------------- |
-| `PREVIEW_OPEN_DELAY_MS`        | 600                                   | Spec                                                          | 400-1000       |
-| `PREVIEW_WARMUP_MS`            | 500                                   | Spec, as the tooltip's                                        | 300-800        |
-| `TAB_STATS_BACKFILL_PAGE_ROWS` | 10                                    | `D147`: 10 bodies of at most `MAX_TAB_BYTES` stay under 20 MB | 1-20           |
-| `TAB_STATS_BACKFILL_MAX_ROWS`  | 5000                                  | `D148`                                                        | 500-20000      |
-| `TAB_STATS_BACKFILL_BUDGET_MS` | 60 000                                | As the image-refs backfill                                    | 10 000-120 000 |
-| `DETAILS_SORT_STORAGE_KEY`     | `livedocuments:explorer-details-sort` | Beside `livedocuments:explorer-view`                          | n/a            |
+| Constant                   | Value                                 | Provenance                           | Safe range |
+| -------------------------- | ------------------------------------- | ------------------------------------ | ---------- |
+| `PREVIEW_OPEN_DELAY_MS`    | 600                                   | Spec                                 | 400-1000   |
+| `PREVIEW_WARMUP_MS`        | 500                                   | Spec, as the tooltip's               | 300-800    |
+| `DETAILS_SORT_STORAGE_KEY` | `livedocuments:explorer-details-sort` | Beside `livedocuments:explorer-view` | n/a        |
 
 ## Defaults ledger
 

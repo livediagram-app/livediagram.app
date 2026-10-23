@@ -9,7 +9,7 @@ Follow the references below only as needed; never upfront.
 - ./tags.md - when implementing or changing tags: the tables, `/api/tags`, the owner migration merge, the provider and its optimistic writes, the picker, chips, the Tags page, sidebar rows and the panel section
 - ./explorer-filters.md - when implementing or changing Explorer filters: the lens grammar, matching, suggestions, view models, `q`
 - ./explorer-structure.md - when implementing or changing the Explorer sidebar: layout rules, rows, ARIA tree keyboard hook
-- ./explorer-details-view.md - when implementing or changing the Details view: `tab_stats` and its writers, `DocumentSummary.stats`, the backfill, the preview hint, the table and its sort
+- ./explorer-details-view.md - when implementing or changing the Details view: `tab_stats` and its writers, `DocumentSummary.stats`, the preview hint, the table and its sort
 - ./explorer-home.md - when changing Home's data: recording opens, Jump Back In's Within reach set, the `/api/home` read and its wire
 - ./explorer-home-view.md - when changing the Home page: its route, Jump Back In (grid, phone strip, See More), What Happened entries, local opens
 - ./share-roles.md - when implementing or changing access levels (Viewer, Participant, Editor): the participant content rule, the participant writing rule, the room's participant write path, editor capabilities, the Share dialog and role pill

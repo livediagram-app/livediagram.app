@@ -28,8 +28,8 @@ export const MAX_IMAGE_MB = MAX_IMAGE_BYTES / (1024 * 1024);
 // to say so.
 //
 // SVG is absent on purpose and must stay absent. It is XML, it can carry an
-// inline <script>, and the api sniffs magic numbers precisely so a declared
-// content-type can't smuggle one past this list (apps/api/src/image-sniff.ts).
+// inline <script>, and the media service sniffs magic numbers precisely so a declared
+// content-type can't smuggle one past this list (@liveworkspace/media).
 export const ACCEPTED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'] as const;
 export type AcceptedImageType = (typeof ACCEPTED_IMAGE_TYPES)[number];
 

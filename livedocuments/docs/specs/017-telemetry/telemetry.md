@@ -39,11 +39,6 @@ Events are stored by liveworkspace's telemetry service in **its own** D1 databas
 
 livedocuments' own `DB` has no telemetry table: events are stored only by liveworkspace.
 
-<!-- legacy-names -->
-
-**Renamed history.** Migration `0055_documents.sql` carried every stored event that named the container over to its new name when it became a document ([Document](../006-document/document.md#renaming-from-diagram)): the `Diagram` category, the `Diagram` type under Team and Element·Linked, `DiagramToTeam`, `DiagramJoined`, `NotifyDiagramJoinOn/Off`, the `/diagram` page, the MCP tool tokens and the error route and page labels. Types that name a drawing (`ErDiagram`) or the tab kind are unchanged, so the dashboard reads one continuous line per event.
-<!-- /legacy-names -->
-
 ## Retention
 
 The central service keeps 60 days (twice the dashboard's longest window, Last 30 days, so each window can be compared with the one before it) and sweeps older rows daily. livedocuments' api no longer runs an events sweep.

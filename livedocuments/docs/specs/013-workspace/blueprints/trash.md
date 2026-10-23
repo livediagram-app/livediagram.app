@@ -136,9 +136,9 @@ stops reconnecting.
 | Field                             | Class | Notes                                                         |
 | --------------------------------- | ----- | ------------------------------------------------------------- |
 | `documents.trashed_at`            | state | INTEGER NULL, epoch ms; partial index `documents_trashed_idx` |
-| `OfflineDocumentRecord.trashedAt` | state | optional number; absent on every record written before it     |
+| `OfflineDocumentRecord.trashedAt` | state | optional number; absent means live                            |
 
-The baseline migration adds the column and index; every existing row is live (NULL). No backfill. Snapshot and restore are the row itself: nothing
+The baseline migration holds the column and index; a row is live while it is NULL. Snapshot and restore are the row itself: nothing
 is copied. Account deletion and guest-to-account migration act on `owner_id` and so carry trashed rows with
 the rest. Deleting a team re-homes its trashed documents to their owners' personal Trash (`team_id = NULL`).
 
@@ -263,4 +263,4 @@ No new environment variable or binding; self-hosting needs only the migration.
 
 ## Defaults ledger
 
-D1 to D6 in [DEFAULTS.md](DEFAULTS.md).
+D1 to D6 in [DEFAULTS.md](DEFAULTS.md); D1 is retired there.
