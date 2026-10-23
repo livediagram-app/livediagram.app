@@ -1,6 +1,6 @@
 # Team invites blueprint
 
-Derived from [Teams](../teams.md) ("Invites, connect-on-sign-in, and accept/decline", "Declining from the email", "Reminders and expiry") and [Transactional & lifecycle email (Resend)](../../014-identity/transactional-email.md) (#4, #13). Implementation detail only; design lives in the specs.
+Derived from [Teams](../teams.md) ("Invites, connect-on-sign-in, and accept/decline", "Declining from the email", "Reminders and expiry") and [Transactional email (Resend)](../../014-identity/transactional-email.md) (#4, #13). Implementation detail only; design lives in the specs.
 
 ## Domain and naming
 

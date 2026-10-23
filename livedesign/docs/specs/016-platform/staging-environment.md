@@ -149,14 +149,14 @@ first deploy it returns `{"emailEnabled":false}` on staging against
 | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Sign-in** — ON   | Staging is its **own OAuth client** of the liveworkspace accounts Worker (`ACCOUNTS_CLIENT_ID_STAGING` / `ACCOUNTS_CLIENT_SECRET_STAGING`) with its **own resource** (`API_RESOURCE_STAGING`), so its access tokens carry an audience production's api refuses: a staging session cannot reach production data. The client's registered redirect URI is `https://staging.livedesign.app/api/auth/callback`. |
 | **Telemetry** — ON | Events land in staging's own D1, so the **public** `/telemetry` dashboard on production is unaffected; staging's dashboard shows staging's own traffic, which is how you verify a new event actually lands.                                                                                                                                                                                                 |
-| **Resend** — OFF   | Wired but keyless. `APP_BASE_URL` and `RESEND_FROM` are set, so setting `RESEND_API_KEY --env staging` turns it on and every link points back at staging. Left unset on purpose: staging runs the same daily lifecycle cron as production, from the same verified domain, so switching it on mails **real people** (see the warning below). Turn it on for a specific test, then take the key off again.    |
+| **Resend** — OFF   | Wired but keyless. `APP_BASE_URL` and `RESEND_FROM` are set, so setting `RESEND_API_KEY --env staging` turns it on and every link points back at staging. Left unset on purpose: staging runs the same daily email cron as production, from the same verified domain, so switching it on mails **real people** (see the warning below). Turn it on for a specific test, then take the key off again.        |
 
-> **Email warning.** Staging runs the same daily lifecycle-email cron as production
-> (welcome / week-1 / week-2, token-expiry warnings). With `RESEND_API_KEY` set, any
+> **Email warning.** Staging sends the same emails as production
+> (notifications, milestones, token-expiry warnings). With `RESEND_API_KEY` set, any
 > address that signs into staging receives them, from the same verified domain as
 > production's — so a staging account made with a colleague's address mails that
 > colleague. That is why the key is unset by default: absent, the email feature is inert
-> and the `email_lifecycle` table is never touched ([Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md)).
+> ([Transactional email (Resend)](../014-identity/transactional-email.md)).
 > Set it for a specific test, use addresses you own, and remove it afterwards.
 
 ## Secrets

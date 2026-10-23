@@ -471,7 +471,7 @@ CREATE TABLE agent_changeset_parts (
 | `design_id`, `tab_id`, `rev`  | reference          | `(tab_id, rev)` unique: one changeset per revision                       |
 | `base_rev`                    | audit              | Null without a base                                                      |
 | `author_id`                   | personal           | Owner-keyed; deleted with the account, moved by guest migration (CS27)   |
-| `author_name`, `author_color` | personal, snapshot | From `participants` at write; fallback CS16                              |
+| `author_name`, `author_color` | personal, snapshot | From the author's profile at write; fallback CS16                        |
 | `token_id`                    | audit              | Null for a person; never on the wire except to the author                |
 | `summary`                     | content            | At most 80 characters                                                    |
 | `fingerprints`                | derived            | JSON `{ before, after, beforeOrder? }`: fingerprints by id, order (CS17) |
@@ -543,7 +543,7 @@ rows wait with their design and go with its purge (cascade). A tab unlinked from
 - Submit and revert pass `gateEdit` with the tab, so a tab-scoped link writes its own tab only; the token's role is
   applied inside the gate ([share roles blueprint](../../013-workspace/blueprints/share-roles.md)).
 - A token can never reach the whole-tab PUT: 405 before any read.
-- Agent attribution comes only from the server: `author_*` from the resolved owner's participant row, `token_id`
+- Agent attribution comes only from the server: `author_*` from the resolved owner's profile, `token_id`
   from `ctx.token.id`. Nothing in the body names an author.
 - `changeset` is a system kind: the room drops it from any client socket, and `/mutation` is reachable only through
   the worker's stub.

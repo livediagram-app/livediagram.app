@@ -297,7 +297,7 @@ RETURNING ...`. No row: `SELECT used_at, expires_at` classifies `used`, `expired
    level is the ticket's `role` lowered by the grant (`edit` only when both are `edit`).
 5. Insert the session: `id` a UUID, the secret `lvw_` + 43 base64url characters (32 random bytes), its hash,
    `expires_at = min(now + WORKBENCH_SESSION_TTL_MS, token.expires_at)` (WB6).
-6. `person`: the owner's `participants` row as `{ id, name, color }`; no row gives `name` and `color`
+6. `person`: the owner's profile as `{ id, name, color }`; no profile gives `name` and `color`
    null (WB7). Answer `201 WorkbenchSessionResponse`. Log `[workbench] session-opened`.
 
 ### A request bearing `lvw_` (the choke point, `index.ts`)

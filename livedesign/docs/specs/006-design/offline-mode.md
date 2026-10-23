@@ -127,7 +127,7 @@ auth has settled, the path names a design registered in the local index
 - **The reader resolves in the background** once auth answers, exactly as a
   cloud open resolves it (`resolveParticipant` in
   `app/design/[id]/resolve-participant.ts`: the account id or signed guest id,
-  then the participant row), followed by the Explorer lists and the guest naming
+  then the profile), followed by the Explorer lists and the guest naming
   nudge. The design is not reloaded: an offline design is the reader's own
   whoever they turn out to be.
 - **`/new` does not wait either.** For a guest ([Who is a guest, before sign-in answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-sign-in-answers))

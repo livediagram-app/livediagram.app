@@ -502,10 +502,10 @@ hardening landed first:
    holds from then. Production only
    started signing on 2026-09-25 (`GUEST_SIGNING_LIVE_AT`), so most guest ids
    were still unsigned when it was armed: about 219, holding 274 designs. An
-   id whose participant row predates `GUEST_SIGNING_LIVE_AT` keeps the legacy
+   id whose profile (dated by the accounts Worker) predates `GUEST_SIGNING_LIVE_AT` keeps the legacy
    upgrade (migrate flow 2) without a signature, so those guests self-heal
    whenever they return. Every id minted signed must prove possession, which
-   includes the id a legacy guest moves onto: its participant row is stamped
+   includes the id a legacy guest moves onto: its profile is stamped
    with the time of the move, never the legacy date (`migrateOwnerId`,
    `apps/api/src/db/account.ts`). Retire
    the exception (unset `GUEST_SIGNING_LIVE_AT`) once the remaining legacy ids

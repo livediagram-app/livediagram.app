@@ -106,12 +106,13 @@ Turbo caches results, so re-running with no changes is a no-op.
 The editor works without sign-in. To exercise the signed-in code paths, run liveworkspace beside it and register livedesign with its accounts API:
 
 1. Start liveworkspace (first-time setup is in `liveworkspace/README.md`, "Local development"): `pnpm dev:workspace` from the repo root runs the site, with the sign-in pages, on `http://localhost:3000`, and the accounts and telemetry Workers behind it, as liveworkspace.app has them. Locally the accounts Worker prints each sign-in code in its own output instead of emailing it.
-2. Register livedesign once against it. `http://localhost/api` is the one resource a development accounts Worker issues tokens for (`RESOURCES` in liveworkspace/apps/accounts/src/resources.ts). The secret is printed once:
+2. Register livedesign once against it. `--app livedesign.app` is the app its settings, profiles and milestones are kept under (liveworkspace/docs/accounts.md). `http://localhost/api` is the one resource a development accounts Worker issues tokens for (`RESOURCES` in liveworkspace/apps/accounts/src/resources.ts). The secret is printed once:
 
    ```sh
    ADMIN_TOKEN=local-admin-token node liveworkspace/apps/accounts/scripts/register-client.ts \
      --accounts http://localhost:3000 \
      --name livedesign-dev \
+     --app livedesign.app \
      --redirect http://localhost:3400/api/auth/callback \
      --resource http://localhost/api
    ```
@@ -134,7 +135,7 @@ The editor works without sign-in. To exercise the signed-in code paths, run live
 
 With these set, `/sign-in` hands off to the accounts site and comes back signed in. The api worker verifies the access token and derives the owner id from the `sub` claim instead of falling back to the `X-Owner-Id` header.
 
-Without these set: the api worker silently treats every request as a guest (the `X-Owner-Id` header path), and the live frontend mounts no session bridge, so it renders the editor without any auth UI. This is the self-host default. See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for the full hybrid model.
+Without these set: the api worker silently treats every request as a guest (the `X-Owner-Id` header path), and the live frontend mounts no session bridge, so it renders the editor without any auth UI. This is the self-host default. Preferences, names and colours are then kept in the browser only, since livedesign keeps none of its own ([User preferences](../specs/007-editor/user-preferences.md)). See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for the full hybrid model.
 
 ## Running the CLI from source (optional)
 
