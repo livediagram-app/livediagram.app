@@ -70,11 +70,6 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     const frameable = url.pathname === '/embed' || url.pathname.startsWith('/embed/');
-    // The Explorer lives on liveworkspace.app (../lib/explorer-redirect.ts): every /explorer address goes there,
-    // keeping its path and query (the browser keeps the hash), before any HTML is served.
-    if (isOldExplorerPath(url.pathname)) {
-      return Response.redirect(explorerRedirectUrl(url.pathname, url.search), 302);
-    }
     // `/project` (and the editor's address before the rename, see ../lib/legacy-editor-path) shares one HTML file. We
     // rewrite the request rather than redirect so the browser URL
     // stays `/project/<id>` (that's the whole point of the path
@@ -118,5 +113,4 @@ export default {
 import { isEditorPath } from '../lib/legacy-editor-path';
 import { FORM_PLACEHOLDER_PATH, isFormPath } from '../lib/form-path';
 import { isWorkspaceFramePath, WORKSPACE_FRAME_PAGE } from '../lib/workbench/workbench-frame-path';
-import { explorerRedirectUrl, isOldExplorerPath } from '../lib/explorer-redirect';
 import { isSharePagePath, sharePage, type Fetcher } from './share-page';

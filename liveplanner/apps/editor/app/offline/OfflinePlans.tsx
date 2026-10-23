@@ -4,12 +4,13 @@ import { useEffect, useState } from 'react';
 import type { ProjectSummary } from '@liveplanner/api-schema';
 import { Brand, SITE_ID, SiteSwitcher } from '@liveplanner/ui';
 import { ThisBrowserIcon } from '@/components/primitives/explorer-icons';
-import { liveworkspaceExplorer } from '@/lib/explorer-redirect';
+import { explorerHref } from '@/lib/explorer-href';
 import { offlineListProjects, subscribeOfflineIds } from '@/lib/offline/offline-store';
 
 // This Browser: the plans kept only in this browser (Take Offline, or made with no connection). The index never
-// sees them, so the Explorer on liveworkspace.app can't list them; its This Browser row opens this page, as does the
-// editor's Explorer panel. Newest first, each opening in the editor.
+// sees them: the Explorer on this address lists them from the store's This Browser list (lib/offline/this-browser.ts),
+// and liveworkspace.app, which can't read this browser's storage here, links to this page, as does the editor's
+// Explorer panel. Newest first, each opening in the editor.
 export function OfflinePlans() {
   const [plans, setPlans] = useState<ProjectSummary[] | null>(null);
   useEffect(() => {
@@ -31,10 +32,10 @@ export function OfflinePlans() {
     <div className="flex min-h-dvh flex-col bg-slate-50 dark:bg-slate-900">
       <header className="flex h-14 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 dark:border-slate-700 dark:bg-slate-900">
         <SiteSwitcher current={SITE_ID}>
-          <Brand href={liveworkspaceExplorer()} size="md" />
+          <Brand href={explorerHref()} size="md" />
         </SiteSwitcher>
         <a
-          href={liveworkspaceExplorer()}
+          href={explorerHref()}
           className="text-sm font-medium text-brand-700 hover:underline dark:text-brand-300"
         >
           Open the Explorer

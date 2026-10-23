@@ -158,10 +158,10 @@ describe('EditorHeader title on a touch screen', () => {
 });
 
 describe('EditorHeader logo', () => {
-  it('links the logo to the Explorer on liveworkspace.app, not the homepage', () => {
+  it('links the logo to the Explorer on this address, not the homepage', () => {
     renderHeader();
     expect(screen.getByRole('link', { name: 'liveplanner' }).getAttribute('href')).toBe(
-      'https://liveworkspace.app/explorer?from=liveplanner',
+      '/explorer',
     );
   });
 });

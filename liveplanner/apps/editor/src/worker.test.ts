@@ -37,27 +37,6 @@ describe('editor worker editor route', () => {
     await worker.fetch(new Request('https://liveplanner.app/pricing'), e);
     expect(seen).toEqual(['/pricing']);
   });
-
-  it('sends every /explorer address to the Explorer on liveworkspace.app, keeping path and query', async () => {
-    const cases: [string, string][] = [
-      ['/explorer', 'https://liveworkspace.app/explorer?from=liveplanner'],
-      ['/explorer/', 'https://liveworkspace.app/explorer?from=liveplanner'],
-      [
-        '/explorer/folder?id=f1',
-        'https://liveworkspace.app/explorer/folder?id=f1&from=liveplanner',
-      ],
-      [
-        '/explorer?settings=notifications',
-        'https://liveworkspace.app/explorer?settings=notifications&from=liveplanner',
-      ],
-      ['/explorer/profile', 'https://liveworkspace.app/explorer/profile?from=liveplanner'],
-    ];
-    for (const [path, to] of cases) {
-      const res = await worker.fetch(new Request(`https://liveplanner.app${path}`), env().env);
-      expect(res.status, path).toBe(302);
-      expect(res.headers.get('Location'), path).toBe(to);
-    }
-  });
 });
 
 describe('editor worker security headers', () => {
@@ -113,11 +92,7 @@ describe('editor worker security headers', () => {
 
   it('denies framing on the pairing page and the editor', async () => {
     const { env: e } = env();
-    for (const path of [
-      '/workbench/pair?code=x',
-      '/project/doc-1',
-      '/embedded',
-    ]) {
+    for (const path of ['/workbench/pair?code=x', '/project/doc-1', '/embedded']) {
       const res = await worker.fetch(new Request(`https://liveplanner.app${path}`), e);
       expect(res.headers.get('X-Frame-Options')).toBe('DENY');
     }

@@ -63,9 +63,9 @@ describe('useProjectActions', () => {
     await actions().deleteProject('p1');
     expect(tombstonedAtDelete).toBe(true);
     expect(isProjectDeleted('p1')).toBe(true);
-    // To the Explorer on liveworkspace.app, the plan in the address for its Undo.
+    // To the Explorer on this address, the plan in the address for its Undo.
     expect(assign).toHaveBeenCalledWith(
-      expect.stringMatching(/\/explorer\?trashed=p1.*&from=liveplanner$/),
+      expect.stringMatching(/^\/explorer\?trashed=p1/),
     );
     expect(takeDeleteUndo()).toEqual({ id: 'p1', title: 'Roadmap' });
   });

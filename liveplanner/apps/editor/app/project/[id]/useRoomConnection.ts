@@ -6,7 +6,7 @@ import {
   type MutableRefObject,
   type SetStateAction,
 } from 'react';
-import { liveworkspaceExplorer } from '@/lib/explorer-redirect';
+import { explorerHref } from '@/lib/explorer-href';
 import { setRemoteBesideTab, syncRemoteBesideTabs } from '@/lib/split-presence';
 import { noteAccessEnded } from '@/lib/access-notice';
 import type { Tab } from '@liveplanner/project';
@@ -384,8 +384,8 @@ export function useRoomConnection(opts: {
         const effect = shareLinkOpEffect(op, from, sessionShareCodeRef.current);
         if (effect === 'leave') {
           // The Explorer says why we arrived (lib/access-notice.ts), rather than landing without a word.
-          // The note rides in the address: the Explorer is on liveworkspace.app, another origin.
-          window.location.assign(liveworkspaceExplorer('', '?ended=revoked'));
+          // The note rides in the address: the Explorer is another site's page, served here.
+          window.location.assign(explorerHref('', '?ended=revoked'));
         } else if (effect === 'reload') window.location.reload();
       } else if (op.kind === 'changeset') {
         // An agent's changeset, applied, outlined and toasted by useChangesetFeed. System-only, like

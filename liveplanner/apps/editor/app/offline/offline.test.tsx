@@ -29,7 +29,7 @@ describe('This Browser', () => {
     const links = screen.getAllByRole('listitem').map((li) => li.querySelector('a')!);
     expect(links.map((a) => a.getAttribute('href'))).toEqual(['/project/b', '/project/a']);
     expect(screen.getByRole('link', { name: 'Open the Explorer' }).getAttribute('href')).toMatch(
-      /\/explorer\?from=liveplanner$/,
+      /^\/explorer$/,
     );
   });
 

@@ -20,9 +20,9 @@ describe('trashOpenPlan', () => {
     const leave = vi.fn();
     expect(await trashOpenPlan('a', 'Roadmap', leave)).toBe(true);
     expect(seen).toEqual([true]);
-    // To the Explorer on liveworkspace.app, the plan in the address for its Undo.
+    // To the Explorer on this address, the plan in the address for its Undo.
     expect(leave).toHaveBeenCalledWith(
-      expect.stringMatching(/\/explorer\?trashed=a&title=Roadmap&from=liveplanner$/),
+      expect.stringMatching(/^\/explorer\?trashed=a&title=Roadmap$/),
     );
     expect(takeDeleteUndo()).toEqual({ id: 'a', title: 'Roadmap' });
   });
