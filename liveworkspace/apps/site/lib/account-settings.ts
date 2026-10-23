@@ -171,3 +171,11 @@ export function appSettingsLinks(): AppSettingsLink[] {
     href: `${site.url}/explorer?settings=editor`,
   }));
 }
+
+// The settings page's sections, in order, for the "On this page" list beside them
+// (components/settings/SettingsPanel.tsx renders a card for each, with these ids).
+export const SETTINGS_CONTENTS: { id: string; title: string }[] = [
+  { id: 'profile', title: 'Profile' },
+  ...TOGGLE_SECTIONS.map((section) => ({ id: section.id, title: section.title })),
+  { id: 'apps', title: 'Your apps' },
+];

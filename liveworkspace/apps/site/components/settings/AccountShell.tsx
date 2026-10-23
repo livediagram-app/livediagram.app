@@ -14,19 +14,27 @@ const TABS = [
 
 const noChange = () => () => {};
 
+export type AccountContentsEntry = { id: string; title: string };
+
+const CONTENTS_LINK =
+  'block rounded-lg px-2 py-1.5 text-slate-600 transition-colors duration-micro hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white';
+
 // The frame of the account pages (liveworkspace/docs/site.md "Your account"): the title, a tab per
 // page, and the page itself once the person is known to be signed in. Signed out, it asks them to
 // sign in and come back here. A page inside a tab (one team) leaves the title and tabs out
-// (`hero={false}`) and brings its own heading and the way back.
+// (`hero={false}`) and brings its own heading and the way back. A long page passes `contents`, and
+// gets the legal pages' "On this page" list beside it (a fold-out above it on narrow screens).
 export function AccountShell({
   path,
   intro,
   hero = true,
+  contents,
   children,
 }: {
   path: string;
   intro?: ReactNode;
   hero?: boolean;
+  contents?: AccountContentsEntry[];
   children: ReactNode;
 }) {
   const session = useSession();
@@ -39,7 +47,9 @@ export function AccountShell({
   return (
     <>
       <Header />
-      <main className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6 sm:py-16">
+      <main
+        className={`mx-auto w-full px-4 py-12 sm:px-6 sm:py-16 ${contents ? 'max-w-6xl' : 'max-w-4xl'}`}
+      >
         {hero && (
           <>
             <p className="text-sm font-semibold tracking-[.18em] text-slate-500 uppercase dark:text-slate-400">
@@ -53,7 +63,7 @@ export function AccountShell({
             </p>
             <nav
               aria-label="Account"
-              className="mt-8 inline-flex rounded-full border border-slate-200 bg-white p-1 text-sm font-medium shadow-sm dark:border-slate-700 dark:bg-slate-900"
+              className="mt-8 inline-flex rounded-full border border-slate-200 bg-white/90 p-1 text-sm font-medium shadow-sm backdrop-blur lg:sticky lg:top-20 lg:z-40 dark:border-slate-700 dark:bg-slate-900/90"
             >
               {TABS.map((tab) => (
                 <a
@@ -69,34 +79,72 @@ export function AccountShell({
           </>
         )}
 
-        <div className={hero ? 'mt-10' : ''}>
-          {session.state === 'checking' && (
-            <div aria-busy className="space-y-3">
-              <div className="h-24 animate-pulse rounded-2xl bg-slate-200/70 motion-reduce:animate-none dark:bg-slate-800/70" />
-              <div className="h-24 animate-pulse rounded-2xl bg-slate-200/70 motion-reduce:animate-none dark:bg-slate-800/70" />
-            </div>
-          )}
-          {session.state === 'out' && (
-            <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-900">
-              <p className="text-lg font-semibold text-slate-900 dark:text-white">
-                Sign in to see your account
-              </p>
-              <p className="mt-2 text-slate-600 dark:text-slate-400">
-                Your teams, API tokens and settings are here, the same in every app.
-              </p>
-              <a
-                href={signInHref(here)}
-                className="mt-6 inline-flex rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition-colors duration-micro hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+        <div
+          className={`${hero ? 'mt-10' : ''} ${contents ? 'grid gap-6 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-12' : ''}`}
+        >
+          {contents && session.state === 'in' && (
+            <aside>
+              <details className="rounded-2xl border border-slate-200 bg-white p-4 lg:hidden dark:border-slate-800 dark:bg-slate-900">
+                <summary className="cursor-pointer text-sm font-semibold text-slate-900 dark:text-white">
+                  On this page
+                </summary>
+                <Contents entries={contents} />
+              </details>
+              <nav
+                aria-label="On this page"
+                className="sticky top-36 hidden max-h-[calc(100vh-10rem)] overflow-y-auto lg:block"
               >
-                Sign in
-              </a>
-            </div>
+                <p className="px-2 text-xs font-semibold tracking-[.18em] text-slate-500 uppercase dark:text-slate-400">
+                  On this page
+                </p>
+                <Contents entries={contents} />
+              </nav>
+            </aside>
           )}
-          {session.state === 'in' && children}
+          {contents && session.state !== 'in' && <div aria-hidden className="hidden lg:block" />}
+          <div className="min-w-0">
+            {session.state === 'checking' && (
+              <div aria-busy className="space-y-3">
+                <div className="h-24 animate-pulse rounded-2xl bg-slate-200/70 motion-reduce:animate-none dark:bg-slate-800/70" />
+                <div className="h-24 animate-pulse rounded-2xl bg-slate-200/70 motion-reduce:animate-none dark:bg-slate-800/70" />
+              </div>
+            )}
+            {session.state === 'out' && (
+              <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-900">
+                <p className="text-lg font-semibold text-slate-900 dark:text-white">
+                  Sign in to see your account
+                </p>
+                <p className="mt-2 text-slate-600 dark:text-slate-400">
+                  Your teams, API tokens and settings are here, the same in every app.
+                </p>
+                <a
+                  href={signInHref(here)}
+                  className="mt-6 inline-flex rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition-colors duration-micro hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+                >
+                  Sign in
+                </a>
+              </div>
+            )}
+            {session.state === 'in' && children}
+          </div>
         </div>
       </main>
       <Footer />
     </>
+  );
+}
+
+function Contents({ entries }: { entries: AccountContentsEntry[] }) {
+  return (
+    <ol className="mt-3 space-y-0.5 text-sm">
+      {entries.map((entry) => (
+        <li key={entry.id}>
+          <a href={`#${entry.id}`} className={CONTENTS_LINK}>
+            {entry.title}
+          </a>
+        </li>
+      ))}
+    </ol>
   );
 }
 
