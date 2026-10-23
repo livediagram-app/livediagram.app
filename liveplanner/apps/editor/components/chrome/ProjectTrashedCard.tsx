@@ -7,14 +7,40 @@
 // ApiErrorPage, so it drops into the same status chrome.
 import { useState } from 'react';
 import { Button, TrashIcon, buttonClassName } from '@liveplanner/ui';
-import type { TrashedProject } from '@liveplanner/api-schema';
-import { trashedCardHeading, trashedCardLead } from '@/lib/trash-groups';
+import { TRASH_RETENTION_MS, type TrashReason } from '@liveworkspace/index-client';
+
+// A plan in the Trash, as the index says: when it went, and why (deleted, or empty for too long).
+export type TrashedPlan = { trashedAt: number; reason: TrashReason | null };
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+export function trashedCardHeading(row: Pick<TrashedPlan, 'reason'> | null): {
+  label: string;
+  title: string;
+} {
+  return row?.reason === 'empty'
+    ? { label: 'In the Trash', title: 'This plan is in the Trash' }
+    : { label: 'Deleted', title: 'This plan was deleted' };
+}
+
+export function daysLeftLabel(trashedAt: number, now: number): string {
+  const days = Math.max(0, Math.ceil((trashedAt + TRASH_RETENTION_MS - now) / DAY_MS));
+  if (days === 0) return 'Removed at the next clean-up';
+  return days === 1 ? '1 day left' : `${days} days left`;
+}
+
+// The deleted card's lead for someone who may restore it, with the days left.
+export function trashedCardLead(row: TrashedPlan, now: number): string {
+  const where =
+    row.reason === 'empty' ? 'It was empty, so it moved to the Trash' : 'It is in the Trash';
+  return `${where} (${daysLeftLabel(row.trashedAt, now).toLowerCase()}).`;
+}
 
 export function ProjectTrashedCard({
   restorable,
   onRestore,
 }: {
-  restorable: TrashedProject | null;
+  restorable: TrashedPlan | null;
   onRestore: () => Promise<void>;
 }) {
   const [restoring, setRestoring] = useState(false);

@@ -21,7 +21,7 @@ function call(db: SqliteD1, method: string, path: string, body?: unknown) {
 }
 
 function projectName(sql: DatabaseSync, id: string): string | undefined {
-  return sql.prepare('SELECT name FROM projects WHERE id = ?').get(id)?.name as string | undefined;
+  return sql.prepare('SELECT name FROM plan WHERE id = ?').get(id)?.name as string | undefined;
 }
 
 function tabName(sql: DatabaseSync, id: string): string | undefined {
@@ -32,7 +32,7 @@ function tabName(sql: DatabaseSync, id: string): string | undefined {
 function legacyProject(sql: DatabaseSync, id: string, name: string) {
   sql
     .prepare(
-      'INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, ?, ?)',
+      'INSERT INTO test_plans (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, ?, ?)',
     )
     .run(id, 'owner', name, T0, T0);
 }
@@ -140,29 +140,3 @@ describe('PUT /api/projects/:id/tabs/:tabId name cap', () => {
   });
 });
 
-describe('POST /api/projects/:id/copy name cap', () => {
-  it('shortens a default "Copy of" name that runs past the cap', async () => {
-    const db = sqliteD1();
-    await call(db, 'POST', '/api/projects', {
-      id: 'D',
-      name: 'Quarterly platform migration plan for payments',
-    });
-    const res = await call(db, 'POST', '/api/projects/D/copy', {});
-    expect(res.status).toBe(201);
-    const { project: liveDoc } = (await res.json()) as { project: { id: string; name: string } };
-    expect(liveDoc.name).toBe('Copy of Quarterly platform migration plan for payments');
-    const res2 = await call(db, 'POST', '/api/projects/D/copy', { name: LONG });
-    const copy = (await res2.json()) as { project: { id: string; name: string } };
-    expect(copy.project.name).toBe(LONG_CAPPED);
-    expect(projectName(db.sql, copy.project.id)).toBe(LONG_CAPPED);
-  });
-
-  it('shortens the default name built from a source already at the cap', async () => {
-    const db = sqliteD1();
-    await call(db, 'POST', '/api/projects', { id: 'D', name: LONG_CAPPED });
-    const res = await call(db, 'POST', '/api/projects/D/copy', {});
-    const { project: liveDoc } = (await res.json()) as { project: { name: string } };
-    expect([...liveDoc.name].length).toBeLessThanOrEqual(NAME_MAX_LENGTH);
-    expect(liveDoc.name.startsWith('Copy of Quarterly')).toBe(true);
-  });
-});

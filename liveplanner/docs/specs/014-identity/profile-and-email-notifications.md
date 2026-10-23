@@ -58,19 +58,14 @@ the **Delete account** trigger lives on the profile page's Danger zone and is
 no drift). The dialog component itself is unchanged and simply reused — the
 confirmation flow (type your email, then wipe liveplanner's data and close the
 liveworkspace account, then end the session) is exactly as [Transactional & lifecycle email (Resend)](transactional-email.md) describes.
-Account deletion is immediate and total within liveplanner: it removes the account's projects
-**including every one in its [Trash](../013-workspace/trash.md)**, which the
+Account deletion is immediate and total within liveplanner: it deletes the account's own projects for good
+through the index, **including every one in its [Trash](../013-workspace/trash.md)**, which the
 dialog and the Danger Zone row both say.
 
-**Teams on deletion** (`detachUserFromTeams`, runs before the row wipe): the
-account's memberships are removed so no ghost member (or dead sole admin)
-lingers. If the user was the **last joined member**, the team is deleted
-outright. Otherwise their **team-library projects transfer to an heir** — the
-longest-standing remaining joined member, admins first — so shared team work
-survives the account (mirrors [Team shared projects](../013-workspace/team-shared-projects.md)'s "deleting a team must never destroy
-members' work"), and the heir is **promoted to admin** when the deleted user
-was the only one. The user's own `shared_with` references (rows for OTHER
-people's projects they visited) are wiped too.
+**Teams on deletion.** Teams are the liveworkspace account's: closing the account leaves every team there
+first, a team it ran alone goes, and one where it was the only admin passes to the longest-standing member
+([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md) "Teams"). Plans filed in a team's
+library stay with the team. liveplanner itself holds no team rows to clean up.
 
 ## 2. Capabilities gains `emailEnabled`
 
@@ -117,6 +112,12 @@ notified.
 
 ## 4. The two notifications
 
+**Neither is sent now (October 2026).** Both read what moved to liveworkspace: the first visit through a share
+link was recorded in liveplanner's `shared_with`, and team invitations were liveplanner's. Visits and shares are
+the index's now, and teams and their invitations liveworkspace's ([one-explorer.md](../../../../liveworkspace/docs/one-explorer.md),
+[Teams](../013-workspace/teams.md)). The preferences (`notifyProjectJoin`, `notifyInviteResponse`) and the email
+templates remain; what follows describes how they were sent, for when a signal returns.
+
 Both are **transactional** (sent whenever email is on AND the recipient
 hasn't opted out), best-effort in `ctx.waitUntil`, and never on the
 request's critical path — same contract as every [Transactional & lifecycle email (Resend)](transactional-email.md) send. Recipients'
@@ -132,8 +133,8 @@ visitor in `shared_with` via `recordSharedAccess`, but only when the visitor
 identifies and isn't the owner. `recordSharedAccess` now reports whether the
 row was **new** (first visit) vs a repeat. On a new visit by a **verified**
 visitor (a signed-in session or API token, `ctx.verifiedUserId`) the worker fires
-`notifyProjectJoin(env, liveDoc, joinerName)`. A guest's `X-Owner-Id` is
-unproven and free to mint, so every fresh one would be another first visit;
+`notifyProjectJoin(env, liveDoc, joinerName)`. A guest id was
+unproven and free to mint then, so every fresh one would be another first visit;
 a guest visit is still recorded in `shared_with` and counted as
 `Project·Joined`, but never emails. `notifyProjectJoin`:
 

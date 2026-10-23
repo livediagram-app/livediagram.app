@@ -134,9 +134,13 @@ The editor works without sign-in. To exercise the signed-in code paths, run live
 
 4. Restart `pnpm dev` and open the app through the router (`http://localhost:3200`), so the sign-in cookies and the callback share one origin.
 
-With these set, `/sign-in` hands off to the accounts site and comes back signed in. The api worker verifies the access token and derives the owner id from the `sub` claim instead of falling back to the `X-Owner-Id` header.
+With these set, `/sign-in` hands off to the accounts site and comes back signed in, and a guest gets a liveworkspace guest token through the same site (`/api/auth/guest`, back to `/auth/guest`). The api worker verifies either token and takes the owner id from its `sub` claim.
 
-Without these set: the api worker silently treats every request as a guest (the `X-Owner-Id` header path), and the live frontend mounts no session bridge, so it renders the editor without any auth UI. This is the default for any deployment without sign-in configured. See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for the full hybrid model.
+Without these set: the api worker treats every request as a link visitor (there is no guest identity without the accounts site), and the live frontend mounts no session bridge, so it renders the editor without any auth UI.
+
+### The index
+
+The Explorer, sharing and access are liveworkspace's index ([One Explorer](../../../liveworkspace/docs/one-explorer.md)). Run it from the monorepo (`corepack pnpm dev:index`, port 8793; [the index](../../../liveworkspace/docs/index-service.md) "Running it locally"), and give the api worker `INDEX_ORIGIN=http://127.0.0.1:8793` and `INDEX_KEY=dev-liveplanner-index-key` in `apps/api/.dev.vars` (see `apps/api/.env.example`). The router forwards `/api/index/*` there. Without it, the Explorer has nothing to list and a plan cannot be opened from the server. This is the default for any deployment without sign-in configured. See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for the full hybrid model.
 
 ## Running the CLI from source (optional)
 

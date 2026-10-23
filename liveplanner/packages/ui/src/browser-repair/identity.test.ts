@@ -15,6 +15,8 @@ function storage(entries: Record<string, string>): Storage {
 }
 
 const GUEST = '6f1c2d3e-aaaa-bbbb-cccc-123456789abc';
+// A guest token as liveworkspace issues it; only its claims are read.
+const TOKEN = `h.${btoa(JSON.stringify({ sub: `guest_${GUEST}`, kind: 'guest' })).replace(/=+$/, '')}.s`;
 
 describe('signedInFromCookie', () => {
   it('reads the signed-in hint cookie', () => {
@@ -29,16 +31,13 @@ describe('readBrowserIdentity', () => {
   it('reads the guest identity and keeps only the id prefix', () => {
     const id = readBrowserIdentity({
       localStorage: storage({
-        'liveplanner:v2:self-id': GUEST,
-        'liveplanner:v2:self-sig': 'sig',
+        'liveplanner:v2:guest-token': TOKEN,
       }),
       document: { cookie: 'lp_signed_in=0' },
     });
     expect(id).toEqual({
       signedIn: false,
       guestIdPrefix: '6f1c2d3e',
-      guestSigned: true,
-      pendingUpgrade: false,
     });
   });
 
@@ -56,9 +55,15 @@ describe('readBrowserIdentity', () => {
     expect(id).toEqual({
       signedIn: null,
       guestIdPrefix: null,
-      guestSigned: false,
-      pendingUpgrade: false,
     });
+  });
+
+  it('reads no guest from a token it cannot parse', () => {
+    const id = readBrowserIdentity({
+      localStorage: storage({ 'liveplanner:v2:guest-token': 'not-a-token' }),
+      document: { cookie: '' },
+    });
+    expect(id.guestIdPrefix).toBeNull();
   });
 });
 
@@ -66,24 +71,20 @@ describe('formatBrowserIdentity', () => {
   const guest: BrowserIdentity = {
     signedIn: false,
     guestIdPrefix: '6f1c2d3e',
-    guestSigned: true,
-    pendingUpgrade: false,
   };
 
   it('describes a guest', () => {
     expect(formatBrowserIdentity(guest)).toEqual([
       'Signed in: no',
-      'Guest id in this browser: 6f1c2d3e… (signed: yes)',
-      'Identity upgrade pending: no',
+      'Guest id in this browser: 6f1c2d3e…',
     ]);
   });
 
   it('names the account when the caller knows it, and flags guest projects not yet moved', () => {
     expect(formatBrowserIdentity(guest, 'user_2abc')).toEqual([
       'Signed in: yes (user_2abc)',
-      'Guest id in this browser: 6f1c2d3e… (signed: yes)',
-      'Identity upgrade pending: no',
-      'Guest plans moved to the account: NOT YET (guest id still present)',
+      'Guest id in this browser: 6f1c2d3e…',
+      'Guest plans moved to the account: NOT YET (guest token still present)',
     ]);
   });
 
@@ -93,7 +94,6 @@ describe('formatBrowserIdentity', () => {
     expect(formatBrowserIdentity({ ...none, signedIn: null })).toEqual([
       'Signed in: unknown',
       'Guest id in this browser: none',
-      'Identity upgrade pending: no',
     ]);
   });
 });

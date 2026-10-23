@@ -59,7 +59,7 @@ export type OfflineProjectRecord = {
   // records written before the field existed stay valid.
   tagIds?: string[];
   // When the project was moved to this browser's local Trash
-  // (docs/specs/013-workspace/trash.md, see ./offline-trash.ts). Absent = live.
+  // (docs/specs/013-workspace/trash.md). Absent = live.
   // A trashed record keeps everything else so a restore is exact.
   trashedAt?: number;
   // This Browser's opens of the project (docs/specs/013-workspace/explorer-home.md "Opens"),

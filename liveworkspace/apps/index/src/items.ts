@@ -21,7 +21,7 @@ import type { PersonContext, RouteContext } from './context';
 import type { Env } from './env';
 import { getFolderRow, readName, reachableFolder, teamFilter } from './folders';
 import { mintGrant, signingKey } from './grants';
-import { badRequest, fail, forbidden, json, noContent, notFound, readObject } from './http';
+import { badRequest, conflict, fail, forbidden, json, noContent, notFound, readObject } from './http';
 import { listItems, type ListSpec } from './lists';
 import { drainTombstones, purgeRows } from './purge';
 import { decorate, getItemRow, type Access, type ItemRow } from './rows';
@@ -90,6 +90,8 @@ export async function handleTrash(ctx: PersonContext): Promise<Response> {
   const { request, env, url, person } = ctx;
   if (request.method === 'GET') return handleList(ctx, 'trash');
   if (request.method !== 'DELETE') return notFound();
+  // Emptying the Trash purges every app's items: not for an app acting for a person.
+  if (person.app) return forbidden('wrong_app');
   const team = url.searchParams.get('team');
   if (team && !person.teams.includes(team)) return forbidden('not_team_member');
   const scope = team ? teamScope(team) : personalScope(person.id);
@@ -125,10 +127,15 @@ export async function createItem(ctx: PersonContext): Promise<Response> {
   const body = await readObject(request);
   if (!body) return badRequest();
   if (!isApp(body.app)) return badRequest('invalid_app');
+  // An app acting for a person makes its own kind only.
+  if (person.app && person.app !== body.app) return forbidden('wrong_app');
   const title = body.title === undefined ? DEFAULT_TITLE : readName(body.title, TITLE_MAX);
   if (!title) return badRequest('invalid_title');
   if (!optionalId(body.teamId)) return badRequest('invalid_team');
   if (!optionalId(body.folderId)) return badRequest('invalid_folder');
+  // A client may name the id it minted (an offline item synced up, an API client that made one): 409
+  // `item_exists` when it is taken.
+  if (body.id !== undefined && !isId(body.id)) return badRequest('invalid_body');
   const intent = body.intent ?? null;
   if (intent !== null && (typeof intent !== 'string' || intent.length > INTENT_MAX)) {
     return badRequest();
@@ -149,7 +156,7 @@ export async function createItem(ctx: PersonContext): Promise<Response> {
 
   const now = Date.now();
   const row: ItemRow = {
-    id: crypto.randomUUID(),
+    id: (body.id as string | undefined) ?? crypto.randomUUID(),
     app: body.app,
     kind: APP_KINDS[body.app],
     owner_id: person.id,
@@ -165,7 +172,12 @@ export async function createItem(ctx: PersonContext): Promise<Response> {
     trashed_at: null,
     trash_reason: null,
   };
-  await insertItem(env, row);
+  try {
+    await insertItem(env, row);
+  } catch (err) {
+    if (String(err).includes('UNIQUE')) return conflict('item_exists');
+    throw err;
+  }
   const access: Access = { level: 'edit', tabId: null, via: 'owner', code: null };
   const grant = await mintGrant(env, {
     app: row.app,

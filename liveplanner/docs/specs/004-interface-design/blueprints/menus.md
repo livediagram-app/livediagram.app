@@ -17,26 +17,25 @@ Scope, by file:
 | `packages/ui/src/menu/useControlMenu.ts`                                   | Control menu hook: dialog role, keyboard-only initial focus, Escape, focus return                            |
 | `packages/ui/src/menu/index.ts`                                            | Public surface, re-exported from `packages/ui/src/index.ts`                                                  |
 | `packages/tailwind-config/theme.css`                                       | The inset menu focus ring; the app-wide ring at brand 600 in light                                           |
-| `apps/editor/components/primitives/PortalMenu.tsx`                           | Anchored menu (command or control) and its list rows, each role-aware                                        |
-| `apps/editor/components/primitives/MenuTiles.tsx`                            | The tile family: `MenuToolbar`, `MenuToolButton`, `MenuTile`, `MenuTileGrid`, role-aware                     |
-| `apps/editor/components/primitives/menu-item-props.ts`                       | `useMenuItemProps`: a row's role, `tabIndex` and states from the menu it sits in                             |
-| `apps/editor/components/primitives/usePortalMenuPlacement.ts`                | An anchored menu's position, viewport clamp and outside-press dismissal                                      |
-| `apps/editor/components/primitives/MenuFlyoutSection.tsx`                    | Submenu (in a command menu) or sub-panel (in a control menu)                                                 |
-| `apps/editor/components/primitives/MenuFlyoutPanel.tsx`                      | The flyout's surface: `menu` or `dialog`                                                                     |
-| `apps/editor/components/primitives/MenuCheckRow.tsx`                         | `menuitemcheckbox`, roving                                                                                   |
-| `apps/editor/components/primitives/useRowMenu.ts`                            | Built on `useMenuButton`                                                                                     |
-| `apps/editor/components/primitives/EllipsisTriggerButton.tsx`                | Accepts `onKeyDown` for Down / Up Arrow                                                                      |
-| `apps/editor/components/palette/ContextMenu.tsx`                             | Control menu at a point (element, selection, cell)                                                           |
-| `apps/editor/components/chrome/TabPortalMenu.tsx`                            | Tab and Canvas control menu                                                                                  |
-| `apps/editor/components/panels/LayerRowMenu.tsx`                             | Layer control menu                                                                                           |
-| `apps/editor/components/canvas/ElementEllipsisMenu.tsx`                      | Element quick menu (`kind="command"`) or session settings (`kind="control"`)                                 |
-| `apps/editor/components/chrome/ZoomMenu.tsx`                                 | Hover-open command menu with a button of its own                                                             |
-| `apps/editor/components/chrome/AuthControls.tsx`                             | Account command menu                                                                                         |
-| `apps/editor/components/chrome/EmbedChrome.tsx`                              | Embed tab command menu                                                                                       |
-| `apps/editor/components/dialogs/ShareCopyMenu.tsx`                           | Command menu, or control menu when it carries a header control                                               |
-| `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.ts`                     | Canvas shortcuts stand down inside a menu surface                                                            |
-| `apps/editor/components/canvas/SelectionPopover.tsx`                         | More actions: `aria-haspopup="dialog"` and the stable id `selection-more-actions`                            |
-| `apps/editor/lib/element-names.ts`                                           | `shapeKindLabel`: names the Shape tiles of the element and selection menus                                   |
+| `apps/editor/components/primitives/PortalMenu.tsx`                         | Anchored menu (command or control) and its list rows, each role-aware                                        |
+| `apps/editor/components/primitives/MenuTiles.tsx`                          | The tile family: `MenuToolbar`, `MenuToolButton`, `MenuTile`, `MenuTileGrid`, role-aware                     |
+| `apps/editor/components/primitives/menu-item-props.ts`                     | `useMenuItemProps`: a row's role, `tabIndex` and states from the menu it sits in                             |
+| `apps/editor/components/primitives/usePortalMenuPlacement.ts`              | An anchored menu's position, viewport clamp and outside-press dismissal                                      |
+| `apps/editor/components/primitives/MenuFlyoutSection.tsx`                  | Submenu (in a command menu) or sub-panel (in a control menu)                                                 |
+| `apps/editor/components/primitives/MenuFlyoutPanel.tsx`                    | The flyout's surface: `menu` or `dialog`                                                                     |
+| `apps/editor/components/primitives/MenuCheckRow.tsx`                       | `menuitemcheckbox`, roving                                                                                   |
+| `apps/editor/components/primitives/useRowMenu.ts`                          | Built on `useMenuButton`                                                                                     |
+| `apps/editor/components/primitives/EllipsisTriggerButton.tsx`              | Accepts `onKeyDown` for Down / Up Arrow                                                                      |
+| `apps/editor/components/palette/ContextMenu.tsx`                           | Control menu at a point (element, selection, cell)                                                           |
+| `apps/editor/components/chrome/TabPortalMenu.tsx`                          | Tab and Canvas control menu                                                                                  |
+| `apps/editor/components/panels/LayerRowMenu.tsx`                           | Layer control menu                                                                                           |
+| `apps/editor/components/canvas/ElementEllipsisMenu.tsx`                    | Element quick menu (`kind="command"`) or session settings (`kind="control"`)                                 |
+| `apps/editor/components/chrome/ZoomMenu.tsx`                               | Hover-open command menu with a button of its own                                                             |
+| `apps/editor/components/chrome/AuthControls.tsx`                           | Account command menu                                                                                         |
+| `apps/editor/components/chrome/EmbedChrome.tsx`                            | Embed tab command menu                                                                                       |
+| `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.ts`                   | Canvas shortcuts stand down inside a menu surface                                                            |
+| `apps/editor/components/canvas/SelectionPopover.tsx`                       | More actions: `aria-haspopup="dialog"` and the stable id `selection-more-actions`                            |
+| `apps/editor/lib/element-names.ts`                                         | `shapeKindLabel`: names the Shape tiles of the element and selection menus                                   |
 | `packages/ui/src/SiteSwitcher.tsx`                                         | Site switcher command menu (the logo's, [site switcher](../../../../../liveworkspace/docs/site-switcher.md)) |
 | `../liveworkspace/apps/site/app/telemetry/liveplanner/StickyWindowBar.tsx` | View picker command menu                                                                                     |
 
@@ -146,7 +145,6 @@ Options: `onClose()`, `onEscape?()` (default `onClose`), `trigger?`, `label: str
 | `ContextMenu`                                                    | Control, `label` prop                                | None: the focused element at open |
 | `TabPortalMenu` `PortalMenu`                                     | Control, "Tab menu" / "Canvas menu"                  | `anchor` (tab ⋯) or none (canvas) |
 | `LayerRowMenu`                                                   | Control, "<layer> layer menu"                        | None                              |
-| `ShareCopyMenu`                                                  | Control with a header control, else command          | Its button                        |
 | Custom colour menu (`ColourPicker`)                              | Command, "<colour> menu"                             | The swatch                        |
 | `ElementEllipsisMenu`                                            | `kind` prop                                          | Its ⋯                             |
 | `ZoomMenu`                                                       | Command, `initialFocus` `none` on hover              | The percentage button             |
@@ -250,13 +248,13 @@ spec. No layout shift: roles and `tabIndex` add no box, and `inert` changes no s
 
 ## Testing
 
-| Rule (spec)                                                                                | Test                                                                                      |
-| ------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
-| Key to intent, wrap, Home/End, typeahead, initial                                          | `packages/ui/src/menu/menu-keys.test.ts`                                                  |
-| Own items, ownership chain, tabbable neighbour                                             | `packages/ui/src/menu/menu-dom.test.ts`                                                   |
-| Focus in, arrows, activate, Escape, Tab, return                                            | `packages/ui/src/menu/useMenu.test.tsx`                                                   |
-| Trigger props, Down / Up open                                                              | `packages/ui/src/menu/useMenuButton.test.tsx`                                             |
-| Keyboard-only focus, Escape layering, return                                               | `packages/ui/src/menu/useControlMenu.test.tsx`                                            |
+| Rule (spec)                                                                                | Test                                                                                        |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
+| Key to intent, wrap, Home/End, typeahead, initial                                          | `packages/ui/src/menu/menu-keys.test.ts`                                                    |
+| Own items, ownership chain, tabbable neighbour                                             | `packages/ui/src/menu/menu-dom.test.ts`                                                     |
+| Focus in, arrows, activate, Escape, Tab, return                                            | `packages/ui/src/menu/useMenu.test.tsx`                                                     |
+| Trigger props, Down / Up open                                                              | `packages/ui/src/menu/useMenuButton.test.tsx`                                               |
+| Keyboard-only focus, Escape layering, return                                               | `packages/ui/src/menu/useControlMenu.test.tsx`                                              |
 | Rows take the kind's roles                                                                 | `apps/editor/components/primitives/PortalMenu.test.tsx`                                     |
 | Submenu keys and roles                                                                     | `apps/editor/components/primitives/MenuFlyoutSection.test.tsx`, `UseAsDefaultMenu.test.tsx` |
 | Canvas stands down inside a menu                                                           | `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.dom.test.tsx`                          |
@@ -265,7 +263,7 @@ spec. No layout shift: roles and `tabIndex` add no box, and `inert` changes no s
 | Row ⋯ opens on Down / Up Arrow                                                             | `apps/editor/components/primitives/useRowMenu.test.tsx`                                     |
 | Shape tiles are named                                                                      | `apps/editor/lib/element-names.test.ts`                                                     |
 | Signed-in account menu by keyboard; a team folder's submenu                                | e2e `apps/editor/e2e/signed-in/menu-keyboard.spec.ts`, `default-folders-team.spec.ts`       |
-| Contrast and optical audits still pass                                                     | e2e `contrast-audit.spec.ts`, `optical-audit.spec.ts`                                     |
+| Contrast and optical audits still pass                                                     | e2e `contrast-audit.spec.ts`, `optical-audit.spec.ts`                                       |
 
 ## Constants and configuration
 

@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
 import type { Tab } from '@liveplanner/project';
-import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { copyProject } from './projects';
+import { sqliteD1, type SqliteD1, testCopyPlan } from '../test-sqlite-d1';
 import { tabStatsOf } from './tab-stats';
 import { seedTabs, swapTabData, upsertTab, upsertTabAtRev } from './tabs';
 
@@ -16,7 +15,7 @@ function withProject(id = 'A'): SqliteD1 {
   const db = sqliteD1();
   db.sql
     .prepare(
-      'INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, ?, ?)',
+      'INSERT INTO test_plans (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, ?, ?)',
     )
     .run(id, 'owner', id, T0, T0);
   return db;
@@ -128,7 +127,7 @@ describe('copyProject', () => {
   it("counts the copy's tabs from the copied bodies", async () => {
     const db = withProject();
     await upsertTab(db.env, 'A', tab('t1', 2), 0);
-    const copy = await copyProject(db.env, 'A', 'B', 'visitor', 'Copy of A');
+    const copy = await testCopyPlan(db.env, 'A', 'B', 'visitor', 'Copy of A');
     const copied = copy!.tabs[0]!.id;
     expect(statsRow(db.sql, copied)).toEqual(expected(db.sql, copied));
   });

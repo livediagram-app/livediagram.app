@@ -25,6 +25,7 @@ describe('verifiedSessionOf', () => {
       workbenchPairing: 'w',
       adderKey: 'a',
       projectId: 'd',
+      grantExp: null,
     });
   });
 

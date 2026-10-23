@@ -36,6 +36,11 @@ export const INDEX_API_URL = `https://liveworkspace.app${INDEX_API_PATH}`;
 
 // An app's server names itself here and carries its key as `Authorization: Bearer <key>`.
 export const INDEX_APP_HEADER = 'X-Index-App';
+// An app's server acting for an account it has already checked (an API token's, say): the account's id,
+// and the teams it has joined, comma-separated. Only with the app's key, only for that app's items.
+export const INDEX_PERSON_HEADER = 'X-Index-Person';
+export const INDEX_TEAMS_HEADER = 'X-Index-Teams';
+export const DELEGATED_TEAMS_MAX = 50;
 // A link visitor's share code, and its password when the item has one.
 export const SHARE_CODE_HEADER = 'X-Share-Code';
 export const SHARE_PASSWORD_HEADER = 'X-Share-Password';
@@ -128,6 +133,7 @@ export const INDEX_ERRORS = [
   'invalid_password',
   'not_team_member',
   'folder_exists',
+  'item_exists',
   'folder_not_found',
   'cycle',
   'tag_name_taken',

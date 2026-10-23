@@ -22,7 +22,7 @@ describe('cells named by key', () => {
   it('match exactly the keys given, splitting each at its first colon', async () => {
     const { env, sql } = sqliteD1();
     sql.exec(
-      `INSERT INTO projects (id, owner_id, name, created_at, saved_at) VALUES ('d', 'o', 'D', 1, 1)`,
+      `INSERT INTO test_plans (id, owner_id, name, created_at, saved_at) VALUES ('d', 'o', 'D', 1, 1)`,
     );
     sql.exec(
       `INSERT INTO sheets (plan_id, id, tab_id, title, layout, rev, created_at, updated_at, updated_by)

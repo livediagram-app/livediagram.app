@@ -6,21 +6,21 @@ engineering precision. Defaults applied where the spec is silent are ledgered in
 
 Scope, by file:
 
-| File                                                                        | Role                                                                                                             |
-| --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `packages/project/src/quick-swatches.ts`                                   | The seven swatches per role and theme, slot ids, hue names, slot lookup                                          |
-| `packages/project/src/colors.ts`                                           | `unpaintedShapeInk(surface)`: the theme default on the Default scheme; `supportsColours` admits `text`           |
-| `packages/project/src/element-types.ts`, `arrow-types.ts`                  | `strokeSwatch` / `fillSwatch` on `ShapeElement`, `strokeSwatch` on `ArrowElement`, `textSwatch` on `TextElement` |
-| `packages/project/src/validate.ts`                                         | Rejects a swatch field that is not a slot                                                                        |
-| `packages/project/src/quick-swatch-rederive.ts`                            | `rederiveQuickSwatches(el, theme)`: a bound colour re-read from its slot                                         |
-| `packages/project/src/theme-graph.ts`                                      | The four theme walks call the re-derive last                                                                     |
+| File                                                                          | Role                                                                                                             |
+| ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `packages/project/src/quick-swatches.ts`                                      | The seven swatches per role and theme, slot ids, hue names, slot lookup                                          |
+| `packages/project/src/colors.ts`                                              | `unpaintedShapeInk(surface)`: the theme default on the Default scheme; `supportsColours` admits `text`           |
+| `packages/project/src/element-types.ts`, `arrow-types.ts`                     | `strokeSwatch` / `fillSwatch` on `ShapeElement`, `strokeSwatch` on `ArrowElement`, `textSwatch` on `TextElement` |
+| `packages/project/src/validate.ts`                                            | Rejects a swatch field that is not a slot                                                                        |
+| `packages/project/src/quick-swatch-rederive.ts`                               | `rederiveQuickSwatches(el, theme)`: a bound colour re-read from its slot                                         |
+| `packages/project/src/theme-graph.ts`                                         | The four theme walks call the re-derive last                                                                     |
 | `apps/editor/lib/style-presets.ts`                                            | Hand-set colour and presets clear the matching binding                                                           |
 | `apps/editor/hooks/canvas/useColorStyleSetters.ts`, `useShapeStyleSetters.ts` | Resets clear both bindings                                                                                       |
 | `apps/editor/lib/format-painter.ts`, `format-config.ts`                       | The painter carries a binding only together with its colour                                                      |
 | `apps/editor/lib/quick-style.ts`                                              | Pure: eligibility, sections, shared values, the apply transforms, clear                                          |
 | `apps/editor/lib/style-memory.ts`                                             | Pure: memory shape, record from an edit, apply to a new element, forget, parse                                   |
 | `apps/editor/lib/quick-style-placement.ts`                                    | Pure: the candidate walk that keeps the panel clear of chrome                                                    |
-| `apps/editor/hooks/canvas/useStyleMemory.ts`                                  | Per-project memory state + `localStorage`; `recordEdit`, `styleNewElement`, `forget`                            |
+| `apps/editor/hooks/canvas/useStyleMemory.ts`                                  | Per-project memory state + `localStorage`; `recordEdit`, `styleNewElement`, `forget`                             |
 | `apps/editor/hooks/canvas/useQuickStyle.ts`                                   | Panel actions: one commit per choice, memory, telemetry                                                          |
 | `apps/editor/hooks/ui/useQuickStylePlacement.ts`                              | Measures chrome and the panel, runs the walk, re-runs on chrome change                                           |
 | `apps/editor/components/canvas/QuickStylePanel.tsx`                           | The panel: compact, a fixed width from `panelFrame()`                                                            |
@@ -30,8 +30,8 @@ Scope, by file:
 | `apps/editor/hooks/canvas/useSwatchOverrides.ts`                              | The active theme's overrides, read from and written to the synced preferences                                    |
 | `apps/editor/components/primitives/CustomThemeProvider.tsx`                   | Calls the prune on delete and when the custom-theme list loads                                                   |
 | `apps/editor/components/canvas/SwatchOverridePopover.tsx`                     | The right-click popover: picker, hex field, Clear override                                                       |
-| `apps/editor/app/project/[id]/useEditorState.ts`                             | Wires memory into the style hooks and the creation hooks; exposes the panel's view-model                         |
-| `apps/editor/app/project/[id]/EditorView.tsx`                                | Mounts the panel                                                                                                 |
+| `apps/editor/app/project/[id]/useEditorState.ts`                              | Wires memory into the style hooks and the creation hooks; exposes the panel's view-model                         |
+| `apps/editor/app/project/[id]/EditorView.tsx`                                 | Mounts the panel                                                                                                 |
 
 ## Domain and naming
 
@@ -380,7 +380,7 @@ label", "Icon after label"; "Clear Styles". The panel's region label: "Quick sty
 | Selection changes while a tooltip is open | Tooltip unmounts with its option                                           |
 | Element deleted by a peer mid-choice      | The commit maps the live elements; a missing id is simply not there        |
 | Locked element in the selection           | Not a target; never written                                                |
-| `projectId` null                         | Memory inert                                                               |
+| `projectId` null                          | Memory inert                                                               |
 
 ## Security and trust
 
@@ -412,37 +412,37 @@ QuickTextAlign | QuickIconAlign | QuickClearStyles`.
 
 ## Testing
 
-| Spec rule                                                                         | Test                                                             |
-| --------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| Seven swatches, default first, six from the palette                               | `quick-swatches.test.ts`                                         |
-| Toned hues, readable backgrounds, visible strokes                                 | `quick-swatches.test.ts`                                         |
-| Text swatches read at 4.5:1 on the canvas                                         | `quick-swatches.test.ts`                                         |
-| Text elements get the Colours category (single + multi menus)                     | `colors.test.ts`                                                 |
-| Text colour row: text elements only, bound slot follows the theme                 | `quick-style.test.ts`, `quick-swatch-rederive.test.ts`           |
-| Bound colours follow a theme change (shapes + arrows)                             | `quick-swatch-rederive.test.ts`                                  |
-| Hand-set colour / preset / reset clears the binding                               | `style-presets.test.ts`, `quick-style.test.ts`                   |
-| Painter carries a binding only with its colour                                    | `format-painter.test.ts`, `format-config.test.ts`                |
-| Validation rejects a bad slot                                                     | `validate.test.ts`                                               |
-| Sections, mixed selection, shared value, style set                                | `quick-style.test.ts`                                            |
-| Flowing in one choice                                                             | `quick-style.test.ts`, `e2e/quick-style-panel.spec.ts`           |
-| Clear Styles resets fields and forgets kinds                                      | `quick-style.test.ts`, `style-memory.test.ts`, e2e               |
-| Memory per kind, arrows separate, field by field                                  | `style-memory.test.ts`                                           |
-| Theme defaults are not memories                                                   | `style-memory.test.ts`                                           |
-| Carries to the next drawn element of the kind only                                | `style-memory.test.ts`, e2e                                      |
-| Parse drops junk                                                                  | `style-memory.test.ts`                                           |
-| Placement order and fallback                                                      | `quick-style-placement.test.ts`                                  |
-| Placement re-runs on chrome change only, never while still                        | `useQuickStylePlacement.test.tsx`                                |
-| Left edge centred, walks below / above / beside left chrome, then the right edge  | `quick-style-placement.test.ts`, `e2e/quick-style-panel.spec.ts` |
-| The panel sits on the left edge                                                   | `quick-style-placement.test.ts`, `e2e/quick-style-panel.spec.ts` |
-| One click on Flowing sets dashed + flow                                           | `e2e/quick-style-panel.spec.ts`                                  |
-| Overrides replace a slot, keyed by theme, capped, pruned; parse drops junk        | `swatch-overrides.test.ts`, `swatch-override-prefs.test.ts`      |
-| Synced per user; theme switch shows that theme's slots; Clear override restores   | `useSwatchOverrides.test.tsx`                                    |
-| Overridden slot applies the custom colour unbound; highlight by colour            | `quick-style.test.ts`                                            |
-| Right-click / Shift+F10 opens the popover; picking saves; Clear override restores | `QuickStylePanel.test.tsx`, `e2e/quick-style-panel.spec.ts`      |
-| Toolbar panel is 186 px, targets 24 × 24; swatch rows one line, never clipped     | `e2e/quick-style-panel.spec.ts`                                  |
-| Radio groups, names, keyboard                                                     | `QuickStylePanel.test.tsx`                                       |
-| Any mix: rows apply where they fit, others passed over                            | `quick-style.test.ts`                                            |
-| Named stock colours mark no swatch; a choice or Clear Styles removes the name     | `quick-style.test.ts`                                            |
+| Spec rule                                                                         | Test                                                        |
+| --------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Seven swatches, default first, six from the palette                               | `quick-swatches.test.ts`                                    |
+| Toned hues, readable backgrounds, visible strokes                                 | `quick-swatches.test.ts`                                    |
+| Text swatches read at 4.5:1 on the canvas                                         | `quick-swatches.test.ts`                                    |
+| Text elements get the Colours category (single + multi menus)                     | `colors.test.ts`                                            |
+| Text colour row: text elements only, bound slot follows the theme                 | `quick-style.test.ts`, `quick-swatch-rederive.test.ts`      |
+| Bound colours follow a theme change (shapes + arrows)                             | `quick-swatch-rederive.test.ts`                             |
+| Hand-set colour / preset / reset clears the binding                               | `style-presets.test.ts`, `quick-style.test.ts`              |
+| Painter carries a binding only with its colour                                    | `format-painter.test.ts`, `format-config.test.ts`           |
+| Validation rejects a bad slot                                                     | `validate.test.ts`                                          |
+| Sections, mixed selection, shared value, style set                                | `quick-style.test.ts`                                       |
+| Flowing in one choice                                                             | `quick-style.test.ts`                                       |
+| Clear Styles resets fields and forgets kinds                                      | `quick-style.test.ts`, `style-memory.test.ts`, e2e          |
+| Memory per kind, arrows separate, field by field                                  | `style-memory.test.ts`                                      |
+| Theme defaults are not memories                                                   | `style-memory.test.ts`                                      |
+| Carries to the next drawn element of the kind only                                | `style-memory.test.ts`, e2e                                 |
+| Parse drops junk                                                                  | `style-memory.test.ts`                                      |
+| Placement order and fallback                                                      | `quick-style-placement.test.ts`                             |
+| Placement re-runs on chrome change only, never while still                        | `useQuickStylePlacement.test.tsx`                           |
+| Left edge centred, walks below / above / beside left chrome, then the right edge  | `quick-style-placement.test.ts`                             |
+| The panel sits on the left edge                                                   | `quick-style-placement.test.ts`                             |
+| One click on Flowing sets dashed + flow                                           | none (the e2e spec was removed)                             |
+| Overrides replace a slot, keyed by theme, capped, pruned; parse drops junk        | `swatch-overrides.test.ts`, `swatch-override-prefs.test.ts` |
+| Synced per user; theme switch shows that theme's slots; Clear override restores   | `useSwatchOverrides.test.tsx`                               |
+| Overridden slot applies the custom colour unbound; highlight by colour            | `quick-style.test.ts`                                       |
+| Right-click / Shift+F10 opens the popover; picking saves; Clear override restores | `QuickStylePanel.test.tsx`                                  |
+| Toolbar panel is 186 px, targets 24 × 24; swatch rows one line, never clipped     | none (the e2e spec was removed)                             |
+| Radio groups, names, keyboard                                                     | `QuickStylePanel.test.tsx`                                  |
+| Any mix: rows apply where they fit, others passed over                            | `quick-style.test.ts`                                       |
+| Named stock colours mark no swatch; a choice or Clear Styles removes the name     | `quick-style.test.ts`                                       |
 
 ## Constants and configuration
 

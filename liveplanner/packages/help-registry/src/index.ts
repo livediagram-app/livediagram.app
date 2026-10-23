@@ -158,10 +158,10 @@ export const categories: Category[] = [
     slug: 'explorer',
     title: 'Explorer',
     description:
-      'Organise everything you build: how the Explorer keeps your plans, folders, teams, and assets easy to find and manage.',
-    articleCount: 14,
+      'Organise everything you build: one library, shared by every liveworkspace app, that keeps your plans, folders and teams easy to find and manage.',
+    articleCount: 12,
     kind: 'feature',
-    groups: ['Your Library', 'Activity', 'Assets and Imports'],
+    groups: ['Your Library', 'Activity'],
   },
   {
     slug: 'tabs',
@@ -359,15 +359,17 @@ export const articles: Article[] = [
   {
     slug: 'guest-identity',
     title: 'How Guest Identity Works',
-    description: 'The per-browser id that owns your plans when you are not signed in.',
-    keywords: 'anonymous browser id localstorage owner identity without account project',
+    description:
+      'The liveworkspace guest identity that owns your plans when you are not signed in.',
+    keywords:
+      'anonymous browser guest id token identity owner without account liveworkspace redirect every app project',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
   {
     slug: 'signing-in',
     title: 'Signing In',
-    description: 'Create an account, sign in, and migrate your guest plans.',
+    description: 'Create an account, sign in, and bring your guest plans with you.',
     keywords:
       'login log in sign up register email code google oauth account create migrate avatar initials project',
     category: 'Account and Data',
@@ -386,7 +388,7 @@ export const articles: Article[] = [
     title: 'Trash',
     description: 'Deleted plans wait 30 days: restore one, or delete it for good.',
     keywords:
-      'trash bin recycle deleted undo undelete restore recover get back permanently empty blank unused automatic automatically clean up cleanup thirty days project',
+      'trash bin recycle deleted undelete restore recover get back permanently delete forever empty trash thirty days project',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -569,7 +571,7 @@ export const articles: Article[] = [
   {
     slug: 'offline-mode',
     title: 'Offline Mode',
-    description: 'Save a plan only in this browser, and move it to or from your account.',
+    description: 'Plans kept only in this browser, and moving them to your account.',
     keywords:
       'local only pill this browser private no sync device localstorage disconnect save location clear site data lost guest default start move to account after sign in share upload project',
     category: 'Privacy and Security',
@@ -599,7 +601,7 @@ export const articles: Article[] = [
   {
     slug: 'share-link-security',
     title: 'Share Link Security',
-    description: 'Passwords and expiry for the links you hand out.',
+    description: 'A password and lifetimes for the links you hand out.',
     keywords:
       'password protect expire lock secure links safety access pass expiry extend revoke viewer editor',
     category: 'Privacy and Security',
@@ -875,7 +877,7 @@ export const articles: Article[] = [
   {
     slug: 'comments',
     title: 'Comments',
-    description: 'Comment on cards and Sheet cells, mention teammates, and resolve threads.',
+    description: 'Comment on cards and Sheet cells, and resolve threads.',
     keywords: 'thread feedback reply resolve discussion note annotate mention',
     category: 'Collaboration',
     categorySlug: 'collaboration',
@@ -894,9 +896,9 @@ export const articles: Article[] = [
     slug: 'explorer-page',
     title: 'Explorer Page',
     description:
-      "The full-page library: the sidebar's Overview, Spaces and More, views, and folders.",
+      "The full-page library every liveworkspace app shares: Plans or All, the sidebar's Overview, Spaces and More, views and search.",
     keywords:
-      'library home dashboard files my projects my diagrams list manage browse sidebar overview spaces more keyboard navigation tree plans',
+      'library home dashboard files my plans list manage browse sidebar overview spaces more search all apps every app filter canvases designs liveworkspace duplicate copy plans project',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -905,9 +907,9 @@ export const articles: Article[] = [
     slug: 'tags',
     title: 'Tags',
     description:
-      'Coloured labels you put on your plans to group related ones together, across folders and teams.',
+      'Coloured labels you put on your items to group related ones together, across folders, teams and apps.',
     keywords:
-      'tag tags label labels labelling categorise categorize group grouping colour color code coded organise organize project client status filter chip chips rename delete plan',
+      'tag tags label labels labelling categorise categorize group grouping colour color code coded organise organize project client status chip chips rename delete plan',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -916,9 +918,9 @@ export const articles: Article[] = [
     slug: 'explorer-panel',
     title: 'Explorer Panel',
     description:
-      'The compact in-editor Explorer: the same Overview, Spaces and More, opening plans in place.',
+      'The compact in-editor Explorer: a rail of sections beside a list, opening plans in place.',
     keywords:
-      'sidebar overview spaces more tree keyboard switch projects library in editor menu button hamburger popover open more menu new share export plans',
+      'sidebar rail switch projects library in editor menu button hamburger popover open explorer every app new share export plans',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -926,10 +928,9 @@ export const articles: Article[] = [
   {
     slug: 'list-and-card-views',
     title: 'List, Card and Details Views',
-    description:
-      'Toggle browse views between compact rows, preview cards and a sortable details table.',
+    description: 'Toggle browse views between compact rows, cards and a sortable details table.',
     keywords:
-      'card grid view toggle thumbnail preview snapshot layout rows tiles gallery details table columns sort type mode comments access permission size objects created updated date',
+      'card grid view toggle layout rows tiles gallery details table columns sort type comments access size created updated date',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -938,9 +939,9 @@ export const articles: Article[] = [
     slug: 'home',
     title: 'Home',
     description:
-      'The Explorer\u2019s landing view: what you use most and last, what happened, and every history.',
+      'The Explorer’s landing view: what you opened last, and what was shared with you recently.',
     keywords:
-      'home jump back in within reach most used last used recent see more grid strip return often what happened others teammates summary expand landing start banner greeting activity history project history team activity whats new latest events log notifications updates recent changes calendar month view stacked grouped collapse day colour color red amber green unread unseen new badge since last visit who did what other people filter local time board sheet dashboard form plan',
+      'home jump back in recent last opened see more shared with you recently landing start what happened timeline history plan',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',
@@ -949,19 +950,20 @@ export const articles: Article[] = [
     slug: 'activity',
     title: 'Inbox',
     description:
-      'What is outstanding for you across every plan: your cards, new form responses and open comment threads.',
+      'What is outstanding for you across every app: actions assigned to you or by you, and open comment threads.',
     keywords:
-      'activity inbox to do todo tasks my actions assigned to me assigned by me outstanding waiting open threads unresolved comments replies pending work queue what needs me badge count cross project all projects cross diagram all diagrams local only offline this browser plan plans',
+      'activity inbox to do todo tasks my actions assigned to me assigned by me outstanding waiting open threads unresolved comments replies mentions pending work queue what needs me badge count all apps plan plans',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',
   },
   {
     slug: 'recent',
-    title: 'Recent Plans',
-    description: 'The plans that changed most recently, across every folder, team and share.',
+    title: 'Recent',
+    description:
+      'Everything you can open, by when you last opened it, across every folder, team and share.',
     keywords:
-      'history last opened latest edited previously hide exclude remove clutter show restore visible folder location where filed root breadcrumb diagrams filter newest twelve project',
+      'history last opened latest previously recently opened folder location where filed chip project plan',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',
@@ -969,9 +971,9 @@ export const articles: Article[] = [
   {
     slug: 'shared-with-you',
     title: 'Shared With Me',
-    description: 'Plans other people have shared with you, collected in one place.',
+    description: 'Items other people have shared with you through a link, collected in one place.',
     keywords:
-      'shared with me received from others incoming shares collaborations dismiss role owner project',
+      'shared with me received from others incoming shares links collaborations remove dismiss project plan',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',
@@ -979,30 +981,9 @@ export const articles: Article[] = [
   {
     slug: 'folders',
     title: 'Folders',
-    description: 'Group plans into a nestable tree, and move them between folders.',
-    keywords: 'organise organize directory nest move tree group files project',
-    category: 'Explorer',
-    categorySlug: 'explorer',
-    group: 'Your Library',
-  },
-  {
-    slug: 'default-folders',
-    title: 'Default Folders',
-    description:
-      'Choose the folder new plans, retrospectives and Kanban boards land in automatically.',
+    description: 'Group your items into a nestable tree, and move them between folders.',
     keywords:
-      'default folder where new projects go automatic placement retrospectives kanban use as default settings projects new project plan plans',
-    category: 'Explorer',
-    categorySlug: 'explorer/folders',
-    parentSlug: 'folders',
-  },
-  {
-    slug: 'filters',
-    title: 'Search and Filter Plans',
-    description:
-      'Narrow any plan list with words, chips or typed filters like made-by:ai, and share it as a link.',
-    keywords:
-      'search find filter filters chips narrow refine query token tokens made by ai generated opens in mode diagram draw template retrospective kanban edited date last week recent people me others owner space team shared unsorted unfiled root lens results pages plan project',
+      'organise organize directory nest move tree group files change folder subfolder delete folder project plan',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -1010,9 +991,10 @@ export const articles: Article[] = [
   {
     slug: 'personal-space',
     title: 'My Work and Folders',
-    description: 'Your own library: the folders you create, and your unfiled plans at its root.',
+    description:
+      'Your own library: the folders you create, your unfiled items, Unsorted and Favourites.',
     keywords:
-      'my projects personal space library my work your projects your diagrams own files root folder organise organize unsorted unfiled made by ai generated favourite favorite star starred bookmark pin quick access plans',
+      'my projects personal space library my work your plans own files root folder organise organize unsorted unfiled favourite favorite star starred bookmark quick access plans',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -1020,20 +1002,12 @@ export const articles: Article[] = [
   {
     slug: 'team-spaces',
     title: 'Team Spaces',
-    description: 'Each team as a space beside My Work, its shared folders, and your invites.',
-    keywords: 'teams team spaces shared workspace invites membership group new team',
+    description: 'Each team as a space beside My Work, with its shared folders, and Manage Teams.',
+    keywords:
+      'teams team spaces shared workspace library manage teams liveworkspace membership group',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
-  },
-  {
-    slug: 'themes-library',
-    title: 'Saved Themes',
-    description: 'Your custom themes as swatch previews, ready to edit, duplicate, or reuse.',
-    keywords: 'custom themes swatches colours colors library reuse manage',
-    category: 'Explorer',
-    categorySlug: 'explorer',
-    group: 'Assets and Imports',
   },
   {
     slug: 'profile',
@@ -1049,16 +1023,20 @@ export const articles: Article[] = [
   {
     slug: 'teams',
     title: 'Teams',
-    description: 'Invite members, assign roles, and share plans across a team.',
-    keywords: 'workspace organisation organization members invite group company project',
+    description:
+      'Your liveworkspace teams, run on liveworkspace.app, and the library every member shares.',
+    keywords:
+      'workspace organisation organization members invite group company manage teams liveworkspace project',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
   {
     slug: 'sharing',
     title: 'Sharing and Embeds',
-    description: 'Share links, passwords, expiry, embeds, and live images.',
-    keywords: 'share link collaborate invite embed read only publish url send',
+    description:
+      'Share links at Viewer, Participant or Editor level, a password, lifetimes, embeds and live images.',
+    keywords:
+      'share link collaborate invite embed read only publish url send viewer participant editor create and copy link turn off',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
@@ -1148,7 +1126,7 @@ export const articles: Article[] = [
   {
     slug: 'share-passwords',
     title: 'Share Passwords',
-    description: 'Gate view or edit access behind a password.',
+    description: 'Guard every share link to a plan with one password.',
     keywords: 'protect lock secure gate private restrict access remember',
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
@@ -1185,7 +1163,7 @@ export const articles: Article[] = [
   {
     slug: 'live-image',
     title: 'Live Image',
-    description: 'Copy an always-current image of a plan for READMEs and docs.',
+    description: 'An always-current image of a plan, made from a share link, for READMEs and docs.',
     keywords: 'readme badge always current screenshot png url auto updating project',
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
@@ -1261,8 +1239,8 @@ export const articles: Article[] = [
   },
   {
     slug: 'search-projects',
-    title: 'Finding Plans and Folders',
-    description: 'Search across your plans, folders, and the plans shared with you.',
+    title: 'Finding Plans',
+    description: 'Search your plans by name, and where to search folders and shared items.',
     keywords: 'find lookup locate files library open diagrams project',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',
@@ -1271,7 +1249,7 @@ export const articles: Article[] = [
   {
     slug: 'search-teams',
     title: 'Searching Teams',
-    description: 'Find teams and their shared folders and plans from the search panel.',
+    description: 'Find the teams you belong to and open their libraries from the search panel.',
     keywords: 'find team shared folders lookup locate project',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',

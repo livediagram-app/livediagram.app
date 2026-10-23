@@ -58,7 +58,7 @@ describe('repairBrowserStorage', () => {
   it('removes clearable keys from both storages and keeps the rest', () => {
     const localStorage = new MemoryStorage();
     const sessionStorage = new MemoryStorage();
-    localStorage.setItem('liveplanner:v2:self-id', 'guest');
+    localStorage.setItem('liveplanner:v2:guest-token', 'guest');
     localStorage.setItem('liveplanner:user-preferences:v2', '{}');
     localStorage.setItem('liveplanner:panel-layout:v1', '{}');
     localStorage.setItem('__clerk_x', '1');
@@ -71,7 +71,7 @@ describe('repairBrowserStorage', () => {
       'liveplanner:stale-chunk-reloads',
       'liveplanner:user-preferences:v2',
     ]);
-    expect(localStorage.getItem('liveplanner:v2:self-id')).toBe('guest');
+    expect(localStorage.getItem('liveplanner:v2:guest-token')).toBe('guest');
     expect(localStorage.getItem('__clerk_x')).toBe('1');
     expect(sessionStorage.length).toBe(0);
   });

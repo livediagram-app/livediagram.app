@@ -47,7 +47,7 @@ Scope, by file:
 | `apps/api/src/index.ts`                                                           | The daily sweep                                                                                                                 |
 | `apps/api/src/room-client.ts`                                                     | `roomStubFor(env, projectId)` for every project; `relayChangeset`, `relayTabRename`, `relayProjectRename`, `readRoomSelections` |
 | `apps/api/src/room-selections.ts`                                                 | `RoomSelectionStore`: each session's selection in DO storage                                                                    |
-| `apps/api/src/person-tag.ts`, `db/ws-tickets.ts`, `routes/project-room-routes.ts` | The person tag ([agent presence](agent-presence.md)): minted into the ticket, forwarded on the upgrade                          |
+| `apps/api/src/person-tag.ts`, `room-ticket.ts`, `routes/project-room-routes.ts`   | The person tag ([agent presence](agent-presence.md)): minted into the ticket, forwarded on the upgrade                          |
 | `apps/api/src/plan-room/plan-room.ts`, `room-internal.ts`                         | `/mutation` accepts `changeset` and `tab-meta`; `GET /selections`; `select` recorded; close prunes                              |
 | `apps/api/src/responses.ts`                                                       | CORS allows `X-Changeset-Seen`, `X-Liveplanner-Client`; exposes `ETag`                                                          |
 | `apps/api/src/openapi/{manifest,project}.ts`, `scripts/gen-openapi-schemas`       | The five routes, `Tab.rev`, the header, the error bodies, the PUT's 405                                                         |

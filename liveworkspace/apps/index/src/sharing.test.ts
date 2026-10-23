@@ -52,12 +52,27 @@ describe('share links', () => {
     );
     await settle();
     expect(h.appCalls).toEqual([
+      // The rescope, so the link's visitors reload into what it now opens.
+      expect.objectContaining({
+        method: 'POST',
+        url: `https://liveplanner.app/api/internal/items/${item.id}/revoke`,
+        body: { codes: [link.code], reason: 'rescoped' },
+      }),
       expect.objectContaining({
         method: 'POST',
         url: `https://liveplanner.app/api/internal/items/${item.id}/revoke`,
         body: { codes: [link.code] },
       }),
     ]);
+  });
+
+  it('tells the app nothing when a link is saved unchanged', async () => {
+    const ada = await person('user_a');
+    const item = await makeItem(ada.auth);
+    const link = await share(ada.auth, item.id, { level: 'view' });
+    await call(`/share/${link.code}`, { method: 'PATCH', auth: ada.auth, body: { level: 'view' } });
+    await settle();
+    expect(h.appCalls).toEqual([]);
   });
 
   it('refuses a bad level or tab', async () => {

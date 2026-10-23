@@ -32,6 +32,13 @@ Two kinds of caller:
 - **An app's server** (its api Worker or an item's Durable Object): `Authorization: Bearer <app key>` and
   `X-Index-App: <app>`, the same scheme the media and community services use. Its secrets are
   `INDEX_KEY_<APP>` on the index and `INDEX_KEY` on the app.
+- **An app's server acting for an account** it has checked itself, when that account's access token is not in
+  hand (an API token `lwt_…` from the CLI or an AI tool, which the app resolves with accounts): the app's key
+  and `X-Index-App` as above, plus `X-Index-Person: <account id>` and `X-Index-Teams: <team ids,
+comma-separated, ≤ 50>`. Every person route then answers as that account, but only for the app's own items:
+  its lists are filtered to the app, `POST /items` makes only the app's kind, any other app's item answers 404,
+  and `DELETE /trash` is refused (403 `wrong_app`). A guest id, a link or a malformed person is refused (401).
+  `createIndexDelegateClient` in `@liveworkspace/index-client` makes these calls.
 
 Errors are `{ "error": "<code>" }` with a 4xx status. Lists are paged with `limit` (≤ 200) and an opaque
 `cursor`; a response carries `nextCursor` when there is more.
@@ -96,8 +103,9 @@ type ItemSummary = {
 |                                |                     | `shared`, `trash`, `unsorted`), `folder`, `team`, `tag`, `q`                 |
 |                                |                     | (title, tag and folder search). Sorted by `updatedAt`, or by                 |
 |                                |                     | `lastOpenedAt` for `recent`.                                                 |
-| `POST /items`                  | person              | `{app, title?, folderId?, teamId?, intent?, source?}` → 201                  |
-|                                |                     | `{item, grant}`. The index makes the id; the item's Durable Object           |
+| `POST /items`                  | person              | `{app, id?, title?, folderId?, teamId?, intent?, source?}` → 201             |
+|                                |                     | `{item, grant}`. The index makes the id unless the client names the one it   |
+|                                |                     | minted (409 `item_exists` when taken); the item's Durable Object             |
 |                                |                     | starts empty the first time it is opened with a grant.                       |
 | `GET /items/:id`               | person or link      | `{item}`                                                                     |
 | `PATCH /items/:id`             | editor              | `{title?, folderId?, teamId?}` → `{item}`. Moving into or out of a           |
@@ -162,7 +170,26 @@ A grant is a JWT, ES256, signed by the index's own key; its public keys are at `
 It lasts 10 minutes. The editor fetches it while the item's code loads and asks for a fresh one a minute
 before it runs out; the item's Durable Object checks each against the cached keys and drops a socket
 whose grant has lapsed without a renewal. Changing a link, a password or a team takes effect within
-those 10 minutes; revoking a link also tells the item at once (`POST <app>/api/internal/items/:id/revoke`).
+those 10 minutes; revoking a link also tells the item at once (`POST <app>/api/internal/items/:id/revoke`
+`{codes}`), and so does rescoping one to another level or tab (the same call with `reason: "rescoped"`, so the app
+reloads the link's visitors into what it now opens rather than send them away).
+
+### Carrying a grant to the app
+
+How an app takes the grant is its own business; liveplanner's is the first, and the others follow it:
+
+- **REST**: the editor sends it as `X-Index-Grant: <grant>` beside its `Authorization` (the person's token,
+  which still says who is asking). The api checks it offline with `createGrantVerifier` (`aud` the app),
+  that `item` is the plan in the path, and the level the route needs (`view` < `participate` < `edit`, a
+  `tab` confining it to one tab). A caller without one, such as an API token from the CLI or an AI tool,
+  gets one from the index as a delegated caller (above), cached until a minute before it lapses.
+- **WebSocket**: a socket cannot send headers, so the grant rides the upgrade as `?t=<grant>`. A session
+  the app opens for a paired tool seals its own limits into the ticket:
+  `<grant>~<pairing>~<cap>~<HMAC(INDEX_KEY)>`, so neither can be raised.
+- **Renewal**: the room sends `{kind: "grant-renew", expiresAt}` 30 seconds before a socket's grant runs out; the
+  editor answers `{kind: "grant", grant}` with a fresh one. A fresh grant saying the same moves the lapse
+  on; one with another level or tab closes the socket (4005) so it reconnects as what it now is; none in
+  time closes it (4007). Revoking a link closes the sockets that link admitted.
 
 ## What an item pushes
 

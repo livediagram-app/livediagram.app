@@ -105,6 +105,22 @@ describe('making and reading an item', () => {
     expect((await post({ app: 'liveplanner', teamId: 'team1' })).status).toBe(201);
   });
 
+  it('takes the id a client minted, once', async () => {
+    const ada = await person('user_a');
+    const bob = await person('user_b');
+    const id = '6f9d1d5e-2a7b-4c1e-9d3a-0b8e5f7a1c2d';
+    const post = (auth: string, b: unknown) => call('/items', { method: 'POST', auth, body: b });
+    const made = await post(ada.auth, { app: 'liveplanner', id });
+    expect(made.status).toBe(201);
+    expect((await body<{ item: Item }>(made)).item.id).toBe(id);
+    // Taken, by anyone: the row is never handed over.
+    const again = await post(bob.auth, { app: 'liveplanner', id });
+    expect(again.status).toBe(409);
+    expect(await body(again)).toEqual({ error: 'item_exists' });
+    expect((await post(ada.auth, { app: 'liveplanner', id: '' })).status).toBe(400);
+    expect((await post(ada.auth, { app: 'liveplanner', id: 7 })).status).toBe(400);
+  });
+
   it('files into a folder only in the same scope', async () => {
     const ada = await person('user_a', { teams: [{ id: 'team1' }] });
     const folder = await body<{ folder: { id: string } }>(

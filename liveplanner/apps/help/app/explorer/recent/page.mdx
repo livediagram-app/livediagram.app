@@ -1,65 +1,44 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { RecentView } from '@/components/illustrations/explorer-feeds';
 
 export const metadata = helpMetadata({
-  title: 'Recent Plans',
+  title: 'Recent',
   description:
-    "Recent lists the twelve plans you can open that changed most recently, your own, your teams' and those shared with you, each with where it lives.",
+    'Recent lists everything you can open by when you last opened it, your own items, your teams’ and those shared with you, each with where it lives.',
   path: '/help/explorer/recent/',
 });
 
 <ArticleLayout
-  title="Recent Plans"
-  description="The plans that changed most recently, across every folder, team and share, reached from See More on Home."
+  title="Recent"
+  description="Everything you opened lately, newest first, across every folder, team and share."
   categoryTitle="Explorer"
   categorySlug="explorer"
 >
 
-**Recent** lists the plans that changed most recently, newest first, so the work in progress is always one click away. It has no row in the [Explorer](/explorer) sidebar, where [Home](/help/explorer/home/) answers "what was I working on" and "what happened": open it from **See More** in Home's Jump Back In (the last tile of the strip on a phone), or at [/explorer/recent](/explorer/recent). Its breadcrumb reads **Home › Recent** and leads back to Home.
-
-<Figure caption="Recent, reached from Home: the newest plans first, each naming where it lives.">
-  <RecentView />
-</Figure>
+**Recent** lists the items you opened most recently, newest first, so the work in progress is always one click away. Find it under **Library** in the **More** group of the [Explorer](/explorer) sidebar, or press **See more** beside Jump back in on [Home](/help/explorer/home/).
 
 ## What lands here
 
-Recent draws on every plan you can open: your own, your teams', and the ones [shared with you](/help/explorer/shared-with-you/). It shows the **12** that were saved most recently, by you or by anyone you work with, so a teammate's edit to a team plan brings it up the list too.
+Recent goes by when **you** last opened something: your own items, your teams' and the ones [shared with you](/help/explorer/shared-with-you/). Opening an item is private, so your Recent is yours alone, and nobody else sees what you opened.
 
-It is a view across your whole library, not a folder of its own: a plan appearing in Recent has not been moved or copied, and you will still find it in its folder (or at the root of My Work).
+It is a view across your whole library, not a folder of its own: an item appearing in Recent has not been moved or copied, and you will still find it in its folder.
 
-<Note>
-  Recent goes by when a plan last changed, not when you last looked at it: simply opening a
-  plan does not move it. For the plans you open most and last, look at Jump Back In on
-  [Home](/help/explorer/home/#jump-back-in).
-</Note>
+With **Plans** chosen at the top of the page, Recent shows only plans; with **All**, it shows what you opened in every liveworkspace app.
 
 ## Working from Recent
 
-- **Open** a plan by clicking it.
-- Switch between [List, Card and Details views](/help/explorer/list-and-card-views/) with the toggle in the header; on a computer, List view adds an owner column, since Recent mixes your plans with other people's.
-- Type in the Explorer's search box to [filter](/help/explorer/filters/) the list: Recent then shows the 12 newest plans that match.
-- Each plan's **⋯** menu (or a right-click) carries the same actions as anywhere else in the Explorer: Rename, Duplicate, Change Folder, Favourite, History, Hide from Recent, and Delete, plus **Open Team** on a team plan.
-- [Plans in This Browser](/help/privacy-and-security/offline-mode/) appear here too, and their menu adds **Sync Plan** (or **Take Offline** on a cloud plan).
-- A plan shared with you has a shorter menu: **Open** and **Dismiss**.
+- **Open** an item by clicking it.
+- Switch between [List, Card and Details views](/help/explorer/list-and-card-views/) with the buttons at the top right.
+- Each item's **⋯** menu (or a right-click) carries the same actions as anywhere else in the Explorer.
+- **New Plan** makes a plan in My Work.
 
-## Seeing where a plan lives
+## Seeing where an item lives
 
-Recent spans every folder, so each plan shows a small chip naming the folder it sits in, beside its name. Click the chip to jump straight to that folder instead of opening the plan, which is the quickest way to see what else you filed alongside it. (In List and Details views on a phone the chip is hidden to save room.)
-
-Plans at the root show **My Work**. Team plans name the team, and the chip opens the team's library. Plans shared with you don't show one at all: they sit in the other person's library rather than yours.
-
-## Hiding a plan from Recent
-
-Some plans you open now and then but never want cluttering the list. Choose **Hide from Recent** in a plan's menu and it stops appearing here, no matter how recently it changed; the next newest plan takes its place. The same menu then reads **Show in Recent**, so it is easy to put back. The menu item is also in the editor's Explorer panel.
-
-The plan itself is untouched: it stays in its folder, in search, on its share links, and opens normally. Only this list changes, which is why there is no badge on it anywhere else: the menu item tells you the state where you would change it.
-
-**The choice is yours alone.** Hiding a team plan from your Recent doesn't hide it from your teammates'. (Plans shared with you can't be hidden; use **Dismiss** instead.) It travels with your account, so it applies on your other devices too, and works the same whether or not you're signed in. Up to 60 plans can be hidden at once; past that, the one you hid longest ago comes back.
+Recent spans every folder, so each item shows a small chip naming the folder it sits in. Click the chip to jump straight to that folder instead of opening the item.
 
 <Tip>
-  Recent is owner-scoped like the rest of the Explorer: a guest sees the plans their own browser
-  can open, and signing in carries them into your account.
+  A guest's Recent is kept for their guest identity, and signing in carries it into the account with
+  everything else.
 </Tip>
 
 </ArticleLayout>

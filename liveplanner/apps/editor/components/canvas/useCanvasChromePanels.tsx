@@ -97,14 +97,8 @@ export function useCanvasChromePanels({
     commentRows,
     commentsPanelPosition,
     currentProjectId,
-    projectList,
-    projectListLoading,
+    currentShareCode,
     elements,
-    folders,
-    userPreferences,
-    onToggleRecentExclusion,
-    favouriteIds,
-    onToggleFavourite,
     tabVote,
     voteResults,
     onJumpToVoteResult,
@@ -114,55 +108,26 @@ export function useCanvasChromePanels({
     onNextVoteResult,
     onPrevVoteResult,
     onDoneVoteReview,
-    onCreateFolder,
-    onDeleteProject,
-    onDeleteFolder,
-    onDismissShared,
-    onDuplicateProject,
     onMoveCommentsPanel,
-    onMoveProjectToFolder,
-    onMoveProjectTo,
-    onLibraryChanged,
     onNewProject,
     explorerMenuActions,
     onOpenActionForElement,
     onToggleActionDone,
     onOpenCommentsForElement,
-    onOpenProject,
-    onRenameCurrent,
-    onRenameFolder,
-    onTeamFolders,
     onResetCommentsPanel,
     readOnly,
     takePart,
     selfParticipant,
     setActiveDockAnchor,
     setActiveDockPanel,
-    sharedProjects,
-    teamProjects,
-    teamFolders,
-    teams,
     zenMode,
   } = props;
   // Stable handler identities for the React.memo'd Explorer so it skips re-rendering on every drag frame even
   // though this chrome host re-renders with the canvas. useStableCallbacks
   // keeps each reference fixed while always invoking the latest prop, so
   // there's no stale-closure risk despite the parent's per-frame churn.
-  // (The panels' data props are already stable: list state doesn't change
-  // mid-drag, and EditorView memoises the `teams` array.)
   const explorerHandlers = useStableCallbacks({
-    onDismissShared,
-    onOpenProject,
     onNewProject,
-    onRenameCurrent,
-    onDeleteProject,
-    onDuplicateProject,
-    onCreateFolder,
-    onRenameFolder,
-    onDeleteFolder,
-    onMoveProjectToFolder,
-    onMoveProjectTo,
-    onLibraryChanged,
     onMenuShare: explorerMenuActions?.onShare,
     onMenuExport: explorerMenuActions?.onExport,
     onMenuSearch: explorerMenuActions?.onSearch,
@@ -216,36 +181,13 @@ export function useCanvasChromePanels({
   const explorerEl =
     zenMode || explorerHidden || !explorerOpened ? null : (
       <LazyExplorer
-        recentExcludedIds={userPreferences.recentExcludedIds ?? []}
-        onToggleRecentExclusion={onToggleRecentExclusion}
-        favouriteIds={favouriteIds}
-        onToggleFavourite={onToggleFavourite}
         // A popover under the menu button (docs/specs/007-editor/toolbar-layout.md): never placed or dragged.
         position={null}
-        projects={projectList}
-        ownerId={selfParticipant?.id ?? null}
-        folders={folders}
-        loading={projectListLoading}
-        shared={sharedProjects}
-        teams={teams}
-        teamFolders={teamFolders}
-        teamProjects={teamProjects}
-        onDismissShared={explorerHandlers.onDismissShared}
         currentProjectId={currentProjectId}
+        currentShareCode={currentShareCode ?? null}
         onMoveTo={NO_MOVE}
-        onOpenProject={explorerHandlers.onOpenProject}
         onNewProject={explorerHandlers.onNewProject}
         menuActions={explorerMenu}
-        onRenameCurrent={explorerHandlers.onRenameCurrent}
-        onDeleteProject={explorerHandlers.onDeleteProject}
-        onLibraryChanged={explorerHandlers.onLibraryChanged}
-        onDuplicateProject={explorerHandlers.onDuplicateProject}
-        onCreateFolder={explorerHandlers.onCreateFolder}
-        onRenameFolder={explorerHandlers.onRenameFolder}
-        onDeleteFolder={explorerHandlers.onDeleteFolder}
-        onTeamFolders={onTeamFolders}
-        onMoveProjectToFolder={explorerHandlers.onMoveProjectToFolder}
-        onMoveProjectTo={onMoveProjectTo ? explorerHandlers.onMoveProjectTo : undefined}
         popoverOpen={explorerOpen}
         popoverAnchor={activeDockAnchor ?? undefined}
         asPopover

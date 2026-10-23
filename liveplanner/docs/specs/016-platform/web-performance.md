@@ -22,7 +22,7 @@ Measured 2026-10-11 (gzip level 9), before and after the changes that set these 
 | Editor: `/explorer/home` (and most sections) | 1,780 KiB | 570 KiB   |
 | Editor: `/new`                               | 1,877 KiB | 669 KiB   |
 | Editor: `/join`, `/oauth/*`                  | ~1,500    | 316–354   |
-| Editor: `/project/<id>`                     | 1,493 KiB | 1,489 KiB |
+| Editor: `/project/<id>`                      | 1,493 KiB | 1,489 KiB |
 | Help: an article                             | 238 KiB   | 207 KiB   |
 | Telemetry: the dashboard                     | 287 KiB   | 280 KiB   |
 | Marketing: `/` (HTML, gzipped)               | 114 KiB   | 93 KiB    |
@@ -31,7 +31,7 @@ Then the project page's own first load (measured 2026-10-11 the same way, on top
 
 | Page                          | Before    | After     |
 | ----------------------------- | --------- | --------- |
-| Editor: `/project/<id>`      | 1,489 KiB | 1,240 KiB |
+| Editor: `/project/<id>`       | 1,489 KiB | 1,240 KiB |
 | Marketing: a `/features` page | 221 KiB   | 207 KiB   |
 
 ## Rules
@@ -152,8 +152,7 @@ seen on the project).
 - A query that serves one person starts from that person's rows (their visible projects, their
   candidates) and seeks everything else by index. A query led by a table-wide index (all open
   threads, every project in id order, every project-scoped event) slows as the database grows,
-  not as the person's work does. `apps/api/src/db/home-plans.test.ts` pins the plans of the Home and
-  Inbox reads against the real migrations.
+  not as the person's work does. (The Home and Inbox reads this rule was written for moved to liveworkspace's index.)
 - Cells named by key are matched as `(row_id, col_id)` pairs, so the primary key seeks each one
   (`apps/api/src/db/sheets-plans.test.ts`).
 - A check that needs only a project's owner and team reads that row, not the full project.

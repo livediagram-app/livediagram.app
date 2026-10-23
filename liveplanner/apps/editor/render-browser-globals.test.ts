@@ -26,7 +26,6 @@ const OUTSIDE_RENDER: Record<string, string> = {
   'apps/editor/hooks/ui/usePanelDock.ts': 'inside an effect',
   'apps/editor/hooks/canvas/useProjectActions.ts': 'inside a handler',
   'apps/editor/hooks/canvas/useClipboard.ts': 'inside a handler',
-  'apps/editor/hooks/persistence/useProjectListActions.ts': 'inside handlers',
   'apps/editor/components/primitives/useHandleReorder.ts':
     'prefersReducedMotion, called from a drag handler',
   'apps/editor/components/primitives/useMovablePanelMeasure.ts': 'inside an effect',

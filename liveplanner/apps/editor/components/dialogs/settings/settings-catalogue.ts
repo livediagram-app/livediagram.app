@@ -1,6 +1,6 @@
 import type { HelpArticleKey } from '@/lib/help-articles';
 import type { SettingsCategoryId, SettingsIconId } from './settings-icons';
-import { titleCase, type TelemetryCategory } from '@liveplanner/api-schema';
+import type { TelemetryCategory } from '@liveplanner/api-schema';
 import { panelEnabled, type PanelSwitch, type UserPreferences } from '@/lib/user-preferences';
 import { isPowerUserMode, setPowerUserMode } from '@/lib/power-user-mode';
 import { PLAN_TOUR_TRACKS, planTrackSeen, type PlanTourTrack } from '@/lib/plan-tour';
@@ -18,8 +18,6 @@ import {
 } from '@/lib/ui-scale';
 import { setUiScalePreview } from '@/lib/ui-scale-preview';
 import type { SettingsIllustrationId } from './settings-illustrations';
-import type { PlacementDefaultKey } from '@liveplanner/api-schema';
-import { DEFAULT_KEY_ENTRIES } from '@/lib/placement-defaults/default-key-entries';
 
 // One email notification switch (docs/specs/014-identity/profile-and-email-notifications.md): only
 // where the deployment sends email AND the reader is signed in, since a guest has no address.
@@ -214,14 +212,6 @@ export type SettingsTrashRowSpec = RowBase & { kind: 'trash' };
 // its own row's, changed in that row (docs/specs/007-editor/power-user-mode.md#in-settings).
 export type SettingsPresetSummaryRowSpec = RowBase & { kind: 'presetSummary' };
 
-// One default folder entry (docs/specs/013-workspace/default-folders.md "Settings"): where new
-// projects of that key go, with Change and Clear. Not a preference: it reads and writes
-// `/api/placement-defaults` through the page's store, so it carries no read/write pair.
-export type SettingsPlacementDefaultRowSpec = RowBase & {
-  kind: 'placementDefault';
-  placementKey: PlacementDefaultKey;
-};
-
 export type SettingsRowSpec =
   | SettingsToggleRowSpec
   | SettingsChoiceRowSpec
@@ -235,8 +225,7 @@ export type SettingsRowSpec =
   | SettingsIdentityRowSpec
   | SettingsDeleteAccountRowSpec
   | SettingsTrashRowSpec
-  | SettingsPresetSummaryRowSpec
-  | SettingsPlacementDefaultRowSpec;
+  | SettingsPresetSummaryRowSpec;
 
 export type SettingsCategorySpec = {
   id: SettingsCategoryId;
@@ -644,44 +633,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
   {
-    id: 'projects',
-    label: 'Plans',
-    sectionNotes: {
-      'Default Folders': {
-        note: 'Where each kind of new plan is saved when you create it without choosing a place.',
-        helpArticle: 'defaultFolders',
-      },
-    },
-    rows: [
-      // One row per default folder entry, in list order: guests have defaults too.
-      ...DEFAULT_KEY_ENTRIES.map((entry): SettingsPlacementDefaultRowSpec => ({
-        kind: 'placementDefault',
-        key: `placementDefault-${entry.key}`,
-        placementKey: entry.key,
-        section: 'Default Folders',
-        // Settings labels are title case ("Kanban Boards"); the entries' own labels are sentence case.
-        label: titleCase(entry.label),
-        keywords:
-          'default folder where new projects go save location place file automatically always save placement plans',
-        description: `Where new ${entry.noun} go when you create one without choosing a place.`,
-      })),
-      {
-        // Home's banner (docs/specs/013-workspace/explorer-home.md "Hiding the banner"): its own close writes `false`,
-        // and this switch brings it back.
-        kind: 'toggle',
-        key: 'homeBanner',
-        section: 'Explorer',
-        keywords: 'home banner hero greeting welcome header top search explorer hide show close',
-        label: 'Show Home Banner',
-        description:
-          "The greeting, status pills and large search at the top of Explorer Home. When it's hidden, Home's search sits in the header, as on every other Explorer page.",
-        read: (p) => p.homeBanner !== false,
-        write: (p, v) => ({ ...p, homeBanner: v }),
-        event: { category: 'UI', on: 'HomeBannerOn', off: 'HomeBannerOff' },
-      },
-    ],
-  },
-  {
     id: 'account',
     label: 'Account',
     rows: [
@@ -857,7 +808,7 @@ export function visibleCategories(ctx: SettingsRowContext): SettingsCategorySpec
 // What a workbench's Settings leave out (docs/specs/013-workspace/blueprints/workbench-embeds.md,
 // Surface table): the account and everything beyond the one project. A category nested under one
 // goes with it, so nothing is left without its parent.
-const WORKBENCH_HIDDEN_CATEGORIES = new Set(['projects', 'account', 'tokens']);
+const WORKBENCH_HIDDEN_CATEGORIES = new Set(['account', 'tokens']);
 
 function hiddenInWorkbench(category: SettingsCategorySpec): boolean {
   return (

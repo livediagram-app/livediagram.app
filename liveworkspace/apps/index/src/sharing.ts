@@ -69,11 +69,19 @@ function readTab(value: unknown): string | null | undefined | typeof INVALID {
   return isId(value) ? value : INVALID;
 }
 
-function tellRevoked(ctx: RouteContext, row: ItemRow, codes: string[]) {
+// The app ends the sessions a link admitted: at once when it is revoked, and when it is rescoped (another level or
+// tab), so its visitors reload into what the link now opens rather than keep the old reach until their grant lapses.
+function tellRevoked(
+  ctx: RouteContext,
+  row: ItemRow,
+  codes: string[],
+  reason: 'revoked' | 'rescoped' = 'revoked',
+) {
   if (codes.length === 0) return;
   ctx.waitUntil(
     callApp(ctx.env, row.app, 'POST', `/items/${encodeURIComponent(row.id)}/revoke`, {
       codes,
+      ...(reason === 'rescoped' ? { reason } : {}),
     }).then((res) => {
       if (!res.ok) console.warn('[index] revoke not delivered', { app: row.app, error: res.error });
     }),
@@ -234,6 +242,9 @@ export async function handleShareCode(ctx: RouteContext): Promise<Response> {
       .prepare('UPDATE share_links SET level = ?, tab_id = ? WHERE code = ?')
       .bind(next.level, next.tab_id, link.code)
       .run();
+    if (next.level !== link.level || next.tab_id !== link.tab_id) {
+      tellRevoked(ctx, loaded.row, [link.code], 'rescoped');
+    }
     return json({ link: toLink(next) });
   }
   if (segments.length === 2 && method === 'DELETE') {
@@ -279,6 +290,7 @@ async function resolveShare(ctx: RouteContext, code: string): Promise<Response> 
   const row = await getItemRow(env, link.item_id);
   if (!row || row.trashed_at !== null) return notFound();
   const person = caller.person;
+  if (person?.app && person.app !== row.app) return notFound();
   let access: Access | Response | null = directAccess(row, person);
   if (!access) {
     // The code is in the path, so the password header may come alone.

@@ -19,9 +19,6 @@ import type {
 import type { ArrowEnd, DragMode, QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { UserPreferences } from '@/lib/user-preferences';
-import type { ProjectListItem, Folder, SharedWithItem } from '@/lib/api-client';
-import type { TeamFolderHandlers } from '@/components/panels/Explorer.types';
-import type { TeamProjectRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
 import type { CanvasTool } from '@/components/palette/palette.types';
 
 // A connection-point marker shown while dragging an arrow endpoint: the
@@ -245,7 +242,6 @@ export type CanvasProps = {
   onCancelDraw: () => void;
   onUndo: () => void;
   onRedo: () => void;
-  projectList: ProjectListItem[];
   // Lightweight id + name of this project's tabs, so a link badge's
   // hover card can name the tab/element a link points at (docs/specs/008-canvas/canvas-and-palette.md). Kept
   // minimal + memoised by the caller so element edits don't churn it.
@@ -258,19 +254,6 @@ export type CanvasProps = {
   // False while the active tab's content is still on its way (a tab never opened before): its elements arrive with
   // the board once it lands, not as additions. Omitted, the tab is loaded.
   activeTabLoaded?: boolean;
-  folders: Folder[];
-  // Shared-with-you list. Empty by default so legacy callers can
-  // omit it.
-  sharedProjects?: SharedWithItem[];
-  onDismissShared?: (projectId: string) => void;
-  // Teams the signed-in user belongs to + their swept libraries
-  // (docs/specs/013-workspace/team-shared-projects.md), forwarded to the Explorer popover for its Teams
-  // accordion, team rows in Recent, and the current team project.
-  // Empty by default so guest / legacy callers can omit them.
-  teams?: { id: string; name: string }[];
-  teamFolders?: TeamFolderRow[];
-  teamProjects?: TeamProjectRow[];
-  projectListLoading: boolean;
   // Map panel (docs/specs/008-canvas/minimap.md) position + move/reset, shared with the other panels.
   mapPosition: { x: number; y: number } | null;
   onMoveMap: (x: number, y: number) => void;
@@ -287,13 +270,6 @@ export type CanvasProps = {
   sessionTools?: import('@/components/chrome/session-tools-props').SessionToolsProps;
   // Live vote panel (docs/specs/012-collaboration/session-tools.md): turnout while casting is open, then the
   // clickable ranked results. Null when no vote is running on this tab.
-  // Per-user preferences (docs/specs/007-editor/user-preferences.md) + the Recent exclusion toggle
-  // (docs/specs/013-workspace/hide-from-recent.md), for the Explorer panel's Recent list.
-  userPreferences: import('@/lib/user-preferences').UserPreferences;
-  onToggleRecentExclusion: (projectId: string) => void;
-  // Per-user stars (docs/specs/013-workspace/favourites.md).
-  favouriteIds: Set<string>;
-  onToggleFavourite: (projectId: string) => void;
   voteResults: { id: string; votes: number }[];
   onJumpToVoteResult: (index: number) => void;
   // Whether the local participant started the running vote — the only
@@ -341,32 +317,11 @@ export type CanvasProps = {
   // (done) or reopen the action in place. Absent for a read-only visitor.
   onToggleActionDone?: (elementId: string, done: boolean, actionId: string) => void;
   currentProjectId: string | null;
-  onOpenProject: (id: string, shareCode?: string) => void;
+  // The link this session came in on, so the Explorer panel reads the open plan as the link allows.
+  currentShareCode?: string | null;
   onNewProject: () => void;
   // The Explorer panel's ⋯ menu verbs beyond new / open (docs/specs/013-workspace/folders.md).
   explorerMenuActions?: import('@/components/panels/Explorer.types').ExplorerMenuActions;
-  onRenameCurrent: (name: string) => void;
-  onDeleteProject: (id: string) => void;
-  // The Explorer panel's Trash restored or deleted a project: refetch the lists.
-  onLibraryChanged?: () => void;
-  onDuplicateProject: (id: string) => void;
-  onCreateFolder: (input: { name: string; parentId: string | null }) => Promise<Folder | void>;
-  onRenameFolder: (id: string, name: string) => void;
-  onDeleteFolder: (id: string) => void;
-  // Team-library folder mutations for the Explorer panel's team tree
-  // (docs/specs/013-workspace/team-shared-projects.md); absent while signed out or without teams.
-  onTeamFolders?: TeamFolderHandlers;
-  onMoveProjectToFolder: (projectId: string, folderId: string | null) => void;
-  // Scope-crossing move (docs/specs/013-workspace/team-shared-projects.md): the Explorer panel's move picker routes
-  // any pick that involves a team (either side) here — re-folder within a
-  // team, personal -> team, or team -> personal.
-  onMoveProjectTo?: (
-    projectId: string,
-    dest: { teamId: string | null; folderId: string | null },
-    // Where the project is coming from (null = the personal tree), so a
-    // personal -> team move counts as Team·Added·Project (docs/specs/017-telemetry/telemetry.md).
-    fromTeamId?: string | null,
-  ) => void;
   onDeselect: () => void;
   onSelect: (id: string) => void;
   // Right-click on the canvas background. Receives the cursor's

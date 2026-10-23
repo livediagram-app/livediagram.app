@@ -328,8 +328,8 @@ action)` tracks `Comment · Added|Deleted|Resolved|Unresolved · Item`, applies 
   An `add` with mentions that the api accepted then calls `opts.onMentioned(text, mentions, itemId)`, which the
   editor wires to `useCommentMentions.notifyMentioned` (`Comment · Mentioned`, then `apiNotifyMention` with
   `itemId`, so the email opens the card).
-- **Activity**: `readActivity` adds `cardThreads` from `CARD_THREADS_SQL` (`db/plan-card-threads.ts`), the card
-  placement shared with `CARDS_SQL` (`itemPlacementCtes` in `db/plan-board-index.ts`). `useActivityFeed` merges them
+- **Activity** (since removed: the Inbox is the index's now): `readActivity` added `cardThreads` from `CARD_THREADS_SQL`, the card
+  placement shared with `CARDS_SQL`. `useActivityFeed` merges them
   into `threads` as `{ kind: 'card' }` rows ordered by latest comment; `ActivityPane` draws them with
   `ActivityCardThreadRow`, linking `cardDeepLinkHref`.
   `receive` runs `keepOwnCommentAuthors` before `mergeItemChanges`. `PlanContext.commentItem` and `ownerId`;
@@ -403,7 +403,7 @@ replays the write with the keys the first write was given. Votes push nothing.
 | Card points at a missing item                   | "Item not found" face                                                 |
 | Move relative to a neighbour that was deleted   | Falls back to the column end                                          |
 | Undo patch after someone else changed the field | Writes the old value anyway (last write wins), as canvas undo         |
-| Create at the cap                               | `413 items_full`; toast "This project holds 2,000 items"             |
+| Create at the cap                               | `413 items_full`; toast "This project holds 2,000 items"              |
 | Comment on a full thread                        | `413 comments_full`; toast "This card holds the most comments it can" |
 | Delete a comment already gone                   | `404 comment_not_found`; the store refetches                          |
 | Resolve a resolved thread                       | 204, nothing written or relayed                                       |
@@ -449,29 +449,29 @@ include `fields` or comment text.
 
 ## Testing
 
-| Rule                                           | Test                                                                                                                                                                                  |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Validation per kind, every rejection           | `packages/items/src/fields.test.ts`                                                                                                                                                   |
-| Rank always between, stable under repeats      | `rank.test.ts` (property: 1,000 random inserts; 2,000 appends and prepends stay at most 8 digits)                                                                                     |
-| Bulk create grows linearly, keeps column order | `packages/items/src/store-growth.test.ts`; no per-card key query: `apps/api/src/routes/item-routes.test.ts`                                                                           |
-| Write checks shared with offline               | `packages/items/src/write-checks.test.ts`, `apps/editor/lib/offline/offline-items.test.ts`                                                                                              |
-| Partial many-item write: answer, client, undo  | `apps/api/src/routes/item-routes.test.ts`, `apps/editor/lib/api/items-patches.test.ts`, `apps/editor/hooks/plan/usePlanItems.undo.test.ts`                                                |
-| Archive drag-off is one move                   | `apps/editor/hooks/plan/usePlanBoardDrop.restore.test.ts`, `apps/api/src/routes/item-routes.test.ts`                                                                                    |
-| apply functions                                | `apply.test.ts`                                                                                                                                                                       |
-| Projection: columns, lanes, unplaced, quick    | `board.test.ts`                                                                                                                                                                       |
-| Tab-scoped set                                 | `board.test.ts` (`itemIdsShownOnTab`)                                                                                                                                                 |
-| Routes: gates, rejections, keys, cascade, copy | `apps/api/src/routes/item-routes.test.ts`                                                                                                                                             |
-| Room op redacted for a tab-scoped session      | `apps/api/src/room-scope.test.ts`                                                                                                                                                     |
-| Store transitions, inverses, sync order        | `packages/items/src/store.test.ts`                                                                                                                                                    |
-| Undo interleaving                              | `apps/editor/hooks/plan/item-undo-journal.test.ts`                                                                                                                                      |
-| Agent verbs and tools                          | `agent-verbs/src/verbs/item.test.ts`, `apps/mcp/src/output-schema.test.ts`                                                                                                            |
-| Offline store                                  | `apps/editor/lib/offline/offline-items.test.ts`                                                                                                                                         |
-| Comments field: read-only, budget, restore     | `packages/items/src/comments-field.test.ts`                                                                                                                                           |
-| Thread ops, item writes, redaction, restore    | `packages/project/src/item-comments.test.ts`                                                                                                                                         |
-| Comment routes: gates, own/edit delete, relay  | `apps/api/src/routes/item-comment-routes.test.ts`                                                                                                                                     |
-| Editor comment writes, room merge, refusals    | `apps/editor/hooks/plan/usePlanItems.comments.test.ts`, `apps/editor/lib/api/items-comments.test.ts`                                                                                      |
-| Panel thread and card count                    | `apps/editor/components/plan/ItemComments.test.tsx`                                                                                                                                     |
-| Tab export: items, catalogue, Markdown, layout | `packages/project/src/export-tab-plan.test.ts`, `apps/editor/components/dialogs/ExportTabDialog.plan.test.tsx`                                                                         |
+| Rule                                           | Test                                                                                                                                                                                        |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Validation per kind, every rejection           | `packages/items/src/fields.test.ts`                                                                                                                                                         |
+| Rank always between, stable under repeats      | `rank.test.ts` (property: 1,000 random inserts; 2,000 appends and prepends stay at most 8 digits)                                                                                           |
+| Bulk create grows linearly, keeps column order | `packages/items/src/store-growth.test.ts`; no per-card key query: `apps/api/src/routes/item-routes.test.ts`                                                                                 |
+| Write checks shared with offline               | `packages/items/src/write-checks.test.ts`, `apps/editor/lib/offline/offline-items.test.ts`                                                                                                  |
+| Partial many-item write: answer, client, undo  | `apps/api/src/routes/item-routes.test.ts`, `apps/editor/lib/api/items-patches.test.ts`, `apps/editor/hooks/plan/usePlanItems.undo.test.ts`                                                  |
+| Archive drag-off is one move                   | `apps/editor/hooks/plan/usePlanBoardDrop.restore.test.ts`, `apps/api/src/routes/item-routes.test.ts`                                                                                        |
+| apply functions                                | `apply.test.ts`                                                                                                                                                                             |
+| Projection: columns, lanes, unplaced, quick    | `board.test.ts`                                                                                                                                                                             |
+| Tab-scoped set                                 | `board.test.ts` (`itemIdsShownOnTab`)                                                                                                                                                       |
+| Routes: gates, rejections, keys, cascade, copy | `apps/api/src/routes/item-routes.test.ts`                                                                                                                                                   |
+| Room op redacted for a tab-scoped session      | `apps/api/src/room-scope.test.ts`                                                                                                                                                           |
+| Store transitions, inverses, sync order        | `packages/items/src/store.test.ts`                                                                                                                                                          |
+| Undo interleaving                              | `apps/editor/hooks/plan/item-undo-journal.test.ts`                                                                                                                                          |
+| Agent verbs and tools                          | `agent-verbs/src/verbs/item.test.ts`, `apps/mcp/src/output-schema.test.ts`                                                                                                                  |
+| Offline store                                  | `apps/editor/lib/offline/offline-items.test.ts`                                                                                                                                             |
+| Comments field: read-only, budget, restore     | `packages/items/src/comments-field.test.ts`                                                                                                                                                 |
+| Thread ops, item writes, redaction, restore    | `packages/project/src/item-comments.test.ts`                                                                                                                                                |
+| Comment routes: gates, own/edit delete, relay  | `apps/api/src/routes/item-comment-routes.test.ts`                                                                                                                                           |
+| Editor comment writes, room merge, refusals    | `apps/editor/hooks/plan/usePlanItems.comments.test.ts`, `apps/editor/lib/api/items-comments.test.ts`                                                                                        |
+| Panel thread and card count                    | `apps/editor/components/plan/ItemComments.test.tsx`                                                                                                                                         |
+| Tab export: items, catalogue, Markdown, layout | `packages/project/src/export-tab-plan.test.ts`, `apps/editor/components/dialogs/ExportTabDialog.plan.test.tsx`                                                                              |
 | Tab import: parse, plan, land, report          | `apps/editor/lib/import-tab.test.ts`, `packages/items/src/tab-import.test.ts`, `apps/editor/hooks/plan/usePlanTabImport.test.ts`, `apps/editor/hooks/persistence/useTabImport.plan.test.ts` |
 
 ## Constants and configuration

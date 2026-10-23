@@ -28,7 +28,7 @@ const ids = () =>
 beforeEach(() => {
   sql = sqliteD1();
   sql.sql.exec(
-    `INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d1', 'o', 'D', 0, 1, 1);`,
+    `INSERT INTO test_plans (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d1', 'o', 'D', 0, 1, 1);`,
   );
 });
 

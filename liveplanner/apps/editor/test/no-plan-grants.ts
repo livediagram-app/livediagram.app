@@ -1,0 +1,11 @@
+// Every unit test runs without the index's grants (lib/api/plan-grants.ts): a request about a plan goes out as the
+// test sent it, with no grant request ahead of it in the stubbed fetch. The grants' own behaviour is tested in
+// lib/api/plan-grants.test.ts, which takes the real module back with `vi.unmock`.
+import { vi } from 'vitest';
+
+vi.mock('@/lib/api/plan-grants', async (importActual) => ({
+  ...(await importActual<typeof import('@/lib/api/plan-grants')>()),
+  planGrant: async () => null,
+  keepPlanGrantFresh: () => () => {},
+  withPlanGrant: async (_base: string, _input: string, init?: RequestInit) => init,
+}));

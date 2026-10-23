@@ -19,7 +19,6 @@ import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 // "Offline"); its recovery tools are the lazy part.
 import { LoadErrorCard } from '@/components/chrome/LoadErrorCard';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
-import { ProjectTagsProvider } from '@/components/tags/ProjectTagsProvider';
 import { LocalMovePrompt } from '@/components/dialogs/LocalMovePrompt';
 import { EditorContext } from './EditorContext';
 import { EditorView } from './EditorView';
@@ -93,19 +92,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     sharePasswordGate,
     loadingProject,
     explorerPosition,
-    projectList,
-    folders,
-    projectListLoading,
-    sharedProjects,
-    dismissSharedProject,
-    openProject,
     newProject,
-    deleteProject,
-    duplicateProject,
-    createFolder,
-    renameFolder,
-    deleteFolder,
-    moveProjectToFolder,
     setExplorerPosition,
     projectOwnerName,
     setSharePasswordGate,
@@ -121,28 +108,11 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   // free when no status screen shows.
   const fullExplorer = (
     <LazyExplorer
-      recentExcludedIds={state.userPreferences?.recentExcludedIds ?? []}
-      onToggleRecentExclusion={state.toggleRecentExclusion}
-      favouriteIds={state.favouriteIds ?? new Set()}
-      onToggleFavourite={state.toggleFavourite}
       position={explorerPosition}
-      projects={projectList}
-      ownerId={ownerId}
-      folders={folders}
-      loading={projectListLoading}
-      shared={sharedProjects}
-      onDismissShared={(id) => void dismissSharedProject(id)}
       currentProjectId={null}
       onMoveTo={(x, y) => setExplorerPosition({ x, y })}
       onReset={() => setExplorerPosition(null)}
-      onOpenProject={openProject}
       onNewProject={newProject}
-      onDeleteProject={(id) => void deleteProject(id)}
-      onDuplicateProject={(id) => void duplicateProject(id)}
-      onCreateFolder={createFolder}
-      onRenameFolder={renameFolder}
-      onDeleteFolder={(id) => void deleteFolder(id)}
-      onMoveProjectToFolder={moveProjectToFolder}
     />
   );
 
@@ -259,11 +229,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
       >
         {/* Who the comment composers can @-mention (docs/specs/012-collaboration/comment-mentions.md). */}
         <MentionContext.Provider value={state.commentMentions}>
-          {/* The reader's tags for the Explorer panel's rows and menus (docs/specs/013-workspace/tags.md), loaded
-              the first time one of them shows, so opening a project costs no extra request. */}
-          <ProjectTagsProvider ownerId={ownerId} lazy>
-            <EditorView />
-          </ProjectTagsProvider>
+          <EditorView />
         </MentionContext.Provider>
       </CustomThemeProvider>
       {/* Moving this browser's projects in This Browser after signing in

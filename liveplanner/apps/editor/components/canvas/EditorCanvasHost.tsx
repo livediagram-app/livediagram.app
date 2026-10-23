@@ -8,7 +8,7 @@ import { describeOne } from '@/lib/element-names';
 import { canvasSurface, DEFAULT_BACKGROUND_COLOR } from '@liveplanner/project';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { isBoxed, isVoteHost, threadAt } from '@liveplanner/project';
 import { commentPersisters } from '@/lib/comment-persistence';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
@@ -19,7 +19,6 @@ import { answeringKeys, participantKey, selfInRoom } from '@/lib/identity';
 import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
 import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
 import { track } from '@/lib/telemetry';
-import { useTeamFolderActions } from '@/hooks/ui/useTeamFolderActions';
 import { getTheme, themeChartPalette, themeViewMap, type ThemeId } from '@/lib/themes';
 import { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { useAppearance } from '@/hooks/ui/useAppearance';
@@ -54,9 +53,6 @@ export function EditorCanvasHost() {
     onSetFormatMode,
     formatPanelPosition,
     setFormatPanelPosition,
-    toggleRecentExclusion,
-    favouriteIds,
-    toggleFavourite,
     voteResults,
     jumpToVoteResult,
     setActiveLayer,
@@ -131,20 +127,12 @@ export function EditorCanvasHost() {
     commitPolygon,
     styleNewElement,
     commitLabel,
-    createFolder,
     deleteCurvePoint,
-    deleteProject,
-    refreshOwnProjects,
-    deleteFolder,
     deleteMultiSelected,
     deleteSelected,
     projectId,
-    projectList,
-    projectListLoading,
     projectName,
-    dismissSharedProject,
     dropPaletteItem,
-    duplicateProject,
     duplicateMultiSelected,
     contextMenu,
     duplicateSelected,
@@ -157,7 +145,6 @@ export function EditorCanvasHost() {
     endVote,
     exitFormatTool,
     fitToScreen,
-    folders,
     followLink,
     formatSourceId,
     handleCanvasDoubleClick,
@@ -176,8 +163,6 @@ export function EditorCanvasHost() {
     livePresence,
     lockedByOther,
     mapPosition,
-    moveProjectToFolder,
-    moveProjectTo,
     narrowMultiSelection,
     newProject,
     openActionPopover,
@@ -186,14 +171,12 @@ export function EditorCanvasHost() {
     reopenAction,
     linkedActions,
     openComments,
-    openProject,
     openNote,
     pauseTimer,
     pendingDraw,
     redo,
     remoteCursorRows,
     remoteSelectionsByElement,
-    renameFolder,
     resetTimer,
     resumeTimer,
     retractVote,
@@ -206,7 +189,6 @@ export function EditorCanvasHost() {
     readSelection,
     selectElement,
     selectMarquee,
-    confirm,
     selfParticipant,
     sessionShareCode,
     pressSessionButton,
@@ -223,8 +205,6 @@ export function EditorCanvasHost() {
     setCanvasThemeTab,
     setCommentsPanelPosition,
     setContextMenu,
-    setProjectList,
-    setProjectName,
     setEditingId,
     setExportOpen,
     setExportScope,
@@ -247,17 +227,12 @@ export function EditorCanvasHost() {
     setTextAlignSelected,
     setViewportOffset,
     setViewportZoom,
-    sharedProjects,
     shiftDupGhostIds,
     snapGuideStore,
     spawnConnectSelected,
     startTimer,
     startVote,
     tabSummaries,
-    teamProjects,
-    teamFolders,
-    teams,
-    refreshTeamLibraries,
     toggleAspectLockSelected,
     toggleInMultiSelect,
     toggleLockMultiSelected,
@@ -281,20 +256,6 @@ export function EditorCanvasHost() {
 
   // The Session strip's tools (docs/specs/012-collaboration/session-tools.md "The Session strip").
   const sessionTools = useSessionTools();
-  // A stable reference for the list-shaped prop the Explorer takes, so the
-  // (React.memo'd) panel doesn't re-render on every drag frame just because
-  // the editor re-rendered. It recomputes only when its real input changes.
-  const explorerTeams = useMemo(() => teams.map((t) => ({ id: t.id, name: t.name })), [teams]);
-  // Team-library folder mutations for the Explorer panel's team tree
-  // (docs/specs/013-workspace/team-shared-projects.md) - see useTeamFolderActions.
-  const viewerId = selfParticipant?.id ?? null;
-  const onTeamFolders = useTeamFolderActions({
-    accountUserId,
-    viewerId,
-    teamFolders,
-    refreshTeamLibraries,
-    confirm,
-  });
   // The canvas paints the backdrop the VIEWER resolves, not blindly the one
   // the tab stores: a tab on the Default theme follows this browser's
   // appearance (docs/specs/007-editor/editor-app.md). Subscribing to the appearance here is what makes the
@@ -565,14 +526,6 @@ export function EditorCanvasHost() {
           onCancelDraw={cancelDrawShape}
           onUndo={undo}
           onRedo={redo}
-          projectList={projectList}
-          folders={folders}
-          sharedProjects={sharedProjects}
-          teams={explorerTeams}
-          teamFolders={teamFolders}
-          teamProjects={teamProjects}
-          onDismissShared={(id) => void dismissSharedProject(id)}
-          projectListLoading={projectListLoading}
           mapPosition={mapPosition}
           onMoveMap={(x, y) =>
             // Equality-guarded so a drag tick that resolves to the same spot
@@ -584,10 +537,6 @@ export function EditorCanvasHost() {
           activeLayerId={activeLayerId}
           layerCounts={layerCounts}
           sessionTools={sessionTools}
-          userPreferences={userPreferences}
-          onToggleRecentExclusion={toggleRecentExclusion}
-          favouriteIds={favouriteIds}
-          onToggleFavourite={toggleFavourite}
           formatConfig={formatConfig}
           onToggleFormatGroup={onToggleFormatGroup}
           onSetFormatMode={onSetFormatMode}
@@ -666,7 +615,7 @@ export function EditorCanvasHost() {
                   done ? completeAction(id, actionId) : reopenAction(id, actionId)
           }
           currentProjectId={projectId}
-          onOpenProject={openProject}
+          currentShareCode={sessionShareCode}
           onNewProject={newProject}
           explorerMenuActions={{
             // The header's Share gate: the owner, or a joined member of the project's team
@@ -688,25 +637,6 @@ export function EditorCanvasHost() {
               track('UI', 'Opened', 'Settings');
             },
           }}
-          onRenameCurrent={(next) => {
-            const prev = projectName.trim();
-            const nextTrim = next.trim();
-            setProjectName(next);
-            if (nextTrim && projectId)
-              setProjectList((prev) =>
-                prev.map((d) => (d.id === projectId ? { ...d, name: nextTrim } : d)),
-              );
-            if (nextTrim && nextTrim !== prev) track('Project', 'Renamed');
-          }}
-          onDeleteProject={(id) => void deleteProject(id)}
-          onLibraryChanged={refreshOwnProjects}
-          onDuplicateProject={(id) => void duplicateProject(id)}
-          onCreateFolder={createFolder}
-          onRenameFolder={renameFolder}
-          onDeleteFolder={(id) => void deleteFolder(id)}
-          onTeamFolders={onTeamFolders}
-          onMoveProjectToFolder={moveProjectToFolder}
-          onMoveProjectTo={moveProjectTo}
           onDeselect={() => {
             // Clicking empty canvas also cancels an armed arrow-connect, and
             // wraps up the Format tool — restoring the pre-Format tool — so a

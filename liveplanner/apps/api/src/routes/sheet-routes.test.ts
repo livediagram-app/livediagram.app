@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sentJson } from '@liveplanner/vitest-config/sent-request';
 import type { SheetResponse, SheetsResponse, SheetWriteResponse } from '@liveplanner/api-schema';
 import { emptyLayout, type SheetWrite } from '@liveplanner/sheets';
-import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
+import { sqliteD1, type SqliteD1, testCopyPlan } from '../test-sqlite-d1';
 import * as db from '../db';
 import { makeTestRouteContext } from './test-route-context';
 import { handleProjects } from './projects';
@@ -87,15 +87,15 @@ beforeEach(() => {
     }),
   };
   sql.sql.exec(`
-    INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d1', 'owner', 'Plan', 1, 1, 1);
+    INSERT INTO test_plans (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d1', 'owner', 'Plan', 1, 1, 1);
     INSERT INTO participants (id, name, color, created_at) VALUES ('owner', 'Webber', '#3b82f6', 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 'One', '{"elements":[]}', 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t2', 'Two', '{"elements":[]}', 1);
     INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
     INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d1', 't2', 1, 1);
-    INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', NULL, 1);
-    INSERT INTO share_links (code, project_id, role, level, tab_id, created_at) VALUES ('PART', 'd1', 'view', 'participate', NULL, 1);
-    INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('TAB2', 'd1', 'edit', 't2', 1);
+    INSERT INTO test_share_links (code, project_id, role, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', NULL, 1);
+    INSERT INTO test_share_links (code, project_id, role, level, tab_id, created_at) VALUES ('PART', 'd1', 'view', 'participate', NULL, 1);
+    INSERT INTO test_share_links (code, project_id, role, tab_id, created_at) VALUES ('TAB2', 'd1', 'edit', 't2', 1);
   `);
 });
 
@@ -654,7 +654,7 @@ describe('deleting, copies and seeds', () => {
       kind: 'cells',
       cells: [{ r: s.layout.rows[0]!, c: s.layout.cols[0]!, i: { n: 9 } }],
     });
-    const copy = await db.copyProject(sql.env, 'd1', 'd2', 'owner', 'Copy');
+    const copy = await testCopyPlan(sql.env, 'd1', 'd2', 'owner', 'Copy');
     expect(copy).not.toBeNull();
     const copied = await db.listSheets(sql.env, 'd2');
     expect(copied).toHaveLength(1);

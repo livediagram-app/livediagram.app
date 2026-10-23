@@ -1,5 +1,7 @@
 import { DatabaseSync } from 'node:sqlite';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { GrantClaims } from '@liveworkspace/index-client';
+import { setGrantVerifierForTests } from '../index-service';
 import { cpuBudgetMs, cpuMsOfAsync } from '@liveplanner/vitest-config/cpu-time';
 import type { Element } from '@liveplanner/project';
 import worker from '../index';
@@ -15,7 +17,29 @@ import { MAINTENANCE_EVERY_MS, PlanRoom } from './plan-room';
 // object's `ctx.storage.sql`, node:sqlite behind the SqlStorage surface), so nothing is shared between plans but
 // D1, as in production.
 
-vi.mock('../auth/accounts', () => ({ getAccountIdentity: async () => null }));
+vi.mock('../auth/accounts', () => ({
+  getPersonIdentity: async () => ({ kind: 'guest', guestId: 'guest_owner' }),
+}));
+
+// The index's grants, signed by a stand-in (`G.<claims>`): the owner edits every plan it names.
+const grantOf = (item: string) =>
+  `G.${btoa(JSON.stringify({ item, sub: 'guest_owner', level: 'edit', tab: null, team: null, exp: 9e9 }))}`;
+beforeEach(() => {
+  setGrantVerifierForTests(async (token: string) =>
+    token.startsWith('G.') ? (JSON.parse(atob(token.slice(2))) as GrantClaims) : null,
+  );
+});
+
+// What reached the index: every push the plans made, answered as stored.
+const indexCalls: string[] = [];
+beforeEach(() => {
+  indexCalls.length = 0;
+  vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
+    const req = new Request(input, init);
+    indexCalls.push(`${req.method} ${new URL(req.url).pathname}`);
+    return Response.json({ ok: true });
+  });
+});
 
 const box = (id: string, label = id): Element => ({
   id,
@@ -42,7 +66,11 @@ function planNamespace(envOf: () => Env) {
     const store = new Map<string, unknown>();
     const transaction = nodeTransaction(db);
     const plan = { db, transactions: 0 } as Plan;
-    const id = { name, equals: (other: { name?: string }) => other?.name === name, toString: () => name };
+    const id = {
+      name,
+      equals: (other: { name?: string }) => other?.name === name,
+      toString: () => name,
+    };
     const state = {
       id,
       storage: {
@@ -63,7 +91,9 @@ function planNamespace(envOf: () => Env) {
           store.clear();
           db.exec('PRAGMA foreign_keys = OFF');
           const tables = db
-            .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'")
+            .prepare(
+              "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'",
+            )
             .all();
           for (const t of tables) db.exec(`DROP TABLE IF EXISTS "${String(t.name)}"`);
           db.exec('PRAGMA foreign_keys = ON');
@@ -105,12 +135,17 @@ type World = {
   env: Env;
   plans: Map<string, Plan>;
   calls: string[];
-  send: (method: string, path: string, body?: unknown, headers?: Record<string, string>) => Promise<Response>;
+  send: (
+    method: string,
+    path: string,
+    body?: unknown,
+    headers?: Record<string, string>,
+  ) => Promise<Response>;
 };
 
 function world(extra: Partial<Env> = {}): World {
   const d1 = sqliteD1();
-  const env = { DB: d1.env.DB, ...extra } as unknown as Env;
+  const env = { DB: d1.env.DB, INDEX_ORIGIN: 'https://index.test', ...extra } as unknown as Env;
   const { ns, plans, calls } = planNamespace(() => env);
   Reflect.set(env, 'PLAN_ROOM', ns);
   const executionCtx = {
@@ -118,20 +153,36 @@ function world(extra: Partial<Env> = {}): World {
     passThroughOnException: () => {},
     props: {},
   } as unknown as ExecutionContext;
-  const send = (method: string, path: string, body?: unknown, headers: Record<string, string> = {}) =>
-    worker.fetch(
+  const send = (
+    method: string,
+    path: string,
+    body?: unknown,
+    headers: Record<string, string> = {},
+  ) => {
+    const planId = path.split('/')[3] ?? (body as { id?: string } | undefined)?.id ?? '';
+    return worker.fetch(
       new Request(`https://api.test${path}`, {
         method,
-        headers: { 'X-Owner-Id': 'owner', 'Content-Type': 'application/json', ...headers },
+        headers: {
+          Authorization: 'Bearer guest-token',
+          'X-Index-Grant': grantOf(planId),
+          'Content-Type': 'application/json',
+          ...headers,
+        },
         ...(body === undefined ? {} : { body: JSON.stringify(body) }),
       }),
       env,
       executionCtx,
     );
+  };
   return { d1, env, plans, calls, send };
 }
 
-async function createPlan(w: World, id: string, tabs = [{ id: 't1', name: 'Board', elements: [box('a')] }]) {
+async function createPlan(
+  w: World,
+  id: string,
+  tabs = [{ id: 't1', name: 'Board', elements: [box('a')] }],
+) {
   const res = await w.send('POST', '/api/projects', { id, name: id, tabs });
   expect(res.status).toBe(201);
 }
@@ -142,17 +193,21 @@ const count = (db: DatabaseSync, table: string) =>
 afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+  setGrantVerifierForTests(null);
 });
 
 describe("a plan's content lives in its own Durable Object", () => {
-  it('keeps each plan in its own SQLite, D1 holding only the project row', async () => {
+  it('keeps each plan in its own SQLite, D1 holding none of it', async () => {
     const w = world();
     await createPlan(w, 'A');
     await createPlan(w, 'B', [{ id: 't1', name: 'Same id, other plan', elements: [box('b')] }]);
     expect(count(w.plans.get('A')!.db, 'tabs')).toBe(1);
     expect(count(w.plans.get('B')!.db, 'tabs')).toBe(1);
-    // D1 has the rows, and none of the content (its plan tables are the test store's, never written here).
-    expect(w.d1.sql.prepare("SELECT id FROM projects ORDER BY id").all().map((r) => r.id)).toEqual(['A', 'B']);
+    // Each plan knows itself (its own `plan` row); D1 has none of the content.
+    expect(w.plans.get('A')!.db.prepare('SELECT owner_id FROM plan').all()).toEqual([
+      { owner_id: 'guest_owner' },
+    ]);
     expect(count(w.d1.sql, 'tabs')).toBe(0);
   });
 
@@ -179,8 +234,8 @@ describe("a plan's content lives in its own Durable Object", () => {
     expect(tab.tab.elements.map((e) => e.label)).toEqual(['Edited', 'c']);
   });
 
-  it('pushes what D1 indexes (the listing summary, the Inbox) from its outbox', async () => {
-    const w = world();
+  it('pushes its summary and Inbox rows to the index from its outbox, never on the save itself', async () => {
+    const w = world({ INDEX_KEY: 'index-key' });
     await createPlan(w, 'A', [{ id: 't1', name: 'Board', elements: [] }]);
     const action = {
       ...box('act'),
@@ -197,19 +252,19 @@ describe("a plan's content lives in its own Durable Object", () => {
         updatedAt: 1,
       },
     } as unknown as Element;
+    indexCalls.length = 0;
     await w.send('PUT', '/api/projects/A/tabs/t1', { id: 't1', name: 'Board', elements: [action] });
     const plan = w.plans.get('A')!;
     expect(count(plan.db, 'outbox')).toBeGreaterThan(0);
-    expect(count(w.d1.sql, 'collab_actions')).toBe(0);
+    expect(indexCalls).toEqual([]);
 
     await plan.room.drain();
 
     expect(count(plan.db, 'outbox')).toBe(0);
-    expect(w.d1.sql.prepare('SELECT project_id, tab_id, tab_name FROM collab_actions').all()).toEqual([
-      { project_id: 'A', tab_id: 't1', tab_name: 'Board' },
+    expect(indexCalls.sort()).toEqual([
+      'PUT /api/index/app/items/A/collab/t1',
+      'PUT /api/index/app/items/A/summary',
     ]);
-    const summary = w.d1.sql.prepare("SELECT content_summary FROM projects WHERE id = 'A'").get()!;
-    expect(JSON.parse(String(summary.content_summary))).toMatchObject({ hasContent: true });
   });
 
   it('runs its daily upkeep from its alarm: old changesets go', async () => {
@@ -260,22 +315,32 @@ describe('/api/internal/items (docs/specs/015-api/api.md "Internal")', () => {
     expect(one.status).toBe(201);
     expect(w.plans.get('D')!.db.prepare('SELECT name FROM tabs').all()).toEqual([{ name: 'Two' }]);
 
-    const missing = await w.send('POST', '/api/internal/items/A/copy-to/E', { tabId: 'nope' }, auth);
+    const missing = await w.send(
+      'POST',
+      '/api/internal/items/A/copy-to/E',
+      { tabId: 'nope' },
+      auth,
+    );
     expect(missing.status).toBe(404);
     const again = await w.send('POST', '/api/internal/items/A/copy-to/C', {}, auth);
     expect(again.status).toBe(409);
   });
 
-  it('purges a plan: every row, every session', async () => {
+  it('purges a plan: every row, every session, and what D1 keeps about it', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const w = world({ INDEX_KEY: 'index-key' });
     await createPlan(w, 'A');
     const plan = w.plans.get('A')!;
+    w.d1.sql.exec(`INSERT INTO form_links (code, project_id, tab_id, created_at) VALUES ('f1', 'A', 't1', 1),
+                   ('f2', 'B', 't1', 1);
+                   INSERT INTO form_reads (code, owner_id, seen_number) VALUES ('f1', 'u', 1);`);
     const res = await w.send('DELETE', '/api/internal/items/A', undefined, auth);
     expect(res.status).toBe(200);
     expect(
       plan.db.prepare("SELECT COUNT(*) AS n FROM sqlite_master WHERE type = 'table'").get()!.n,
     ).toBe(0);
+    expect(w.d1.sql.prepare('SELECT code FROM form_links').all()).toEqual([{ code: 'f2' }]);
+    expect(count(w.d1.sql, 'form_reads')).toBe(0);
   });
 
   it('ends the sessions of revoked codes, refusing a body that is not codes', async () => {
@@ -317,7 +382,7 @@ describe('speed', () => {
   });
 
   it('reads a 200-tab plan in one call within budget', async () => {
-    const w = world();
+    const w = world({ INDEX_KEY: 'index-key' });
     const tabs = Array.from({ length: 200 }, (_, i) => ({
       id: `t${i}`,
       name: `Tab ${i}`,
@@ -335,21 +400,20 @@ describe('speed', () => {
     expect(status).toBe(200);
     expect(listed).toBe(200);
     expect(w.calls).toEqual(['route']);
-    // The push to D1 goes DRAIN_TABS tabs at a time, each batch bounded whatever the plan's size.
+    // The push to the index goes DRAIN_TABS tabs a drain, so each drain's requests are bounded whatever the
+    // plan's size.
     const plan = w.plans.get('A')!;
-    const d1 = w.env.DB as unknown as { batch: (s: unknown[]) => Promise<unknown> };
-    const batch = d1.batch.bind(d1);
     const sizes: number[] = [];
-    d1.batch = (statements) => {
-      sizes.push(statements.length);
-      return batch(statements);
-    };
     const drainMs = await cpuMsOfAsync(async () => {
-      while (count(plan.db, 'outbox') > 0) await plan.room.drain();
+      while (count(plan.db, 'outbox') > 0) {
+        indexCalls.length = 0;
+        await plan.room.drain();
+        sizes.push(indexCalls.length);
+      }
     });
-    console.info('[perf] 200-tab plan', { readMs, drainMs, batches: sizes });
+    console.info('[perf] 200-tab plan', { readMs, drainMs, requestsPerDrain: sizes });
     expect(sizes).toHaveLength(Math.ceil(200 / DRAIN_TABS));
-    expect(Math.max(...sizes)).toBeLessThanOrEqual(DRAIN_TABS * 4 + 2);
+    expect(Math.max(...sizes)).toBeLessThanOrEqual(DRAIN_TABS + 1);
     expect(readMs).toBeLessThan(cpuBudgetMs(50));
     expect(drainMs).toBeLessThan(cpuBudgetMs(200));
   });

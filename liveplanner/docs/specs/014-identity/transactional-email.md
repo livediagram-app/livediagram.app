@@ -61,6 +61,8 @@ invite** — read from the [User preferences](../007-editor/user-preferences.md)
     it, and the project is in their own team's library.
 13. **Team invite reminders** — gone with the invitations themselves (item 4).
 
+**No team members to reach, for now.** Since teams moved to liveworkspace and plans to its index (October 2026), liveplanner keeps no list of a team's members. Items 11 and 12 can only reach someone whose address liveplanner already holds, and comment mentions and the assignee list have nobody from a team to suggest, so in practice these team emails are not sent until a member source returns ([Teams](../013-workspace/teams.md)).
+
 The three opt-out lifecycle/notification categories (`notifyComments`,
 `notifyTips`, `notifyMilestones`) join the [Account settings & email notifications](profile-and-email-notifications.md) pair in `getNotificationPrefs`
 and as switches in Settings > Notifications; every opt-out email's footer links to

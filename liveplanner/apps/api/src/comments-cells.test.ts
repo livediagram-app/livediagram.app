@@ -8,16 +8,10 @@ import {
   rewriteCommentAuthors,
   threadsOfTab,
 } from './comments';
-import {
-  claimedComments,
-  newComments,
-  newlyResolvedThreads,
-  removedComments,
-} from './timeline/tab-diff';
 import type { ParticipantDTO } from './types';
 
 // A Sheet's cell threads (docs/specs/029-sheets/sheet.md "Cell comments") behind the same trust boundary as an
-// element's thread: authors locked on save, ids redacted, deletes found, and timeline events keyed per thread.
+// element's thread: authors locked on save, ids redacted, deletes found.
 
 const B4 = 'row004:colb01';
 const c = (id: string, extra: Partial<Comment> = {}): Comment => ({
@@ -92,22 +86,5 @@ describe('cell threads behind the comment trust boundary', () => {
     const [thread] = threadsOfTab(tab, 'open', null, (_el, cell) => (cell === B4 ? 'B4' : null));
     expect(thread).toMatchObject({ elementId: 'sh', cell: B4, cellRef: 'B4' });
     expect(threadsOfTab(tab, 'resolved', null)).toEqual([]);
-  });
-});
-
-describe('timeline events for cell threads', () => {
-  it('records new, claimed, removed and resolved cell comments, keyed per thread', () => {
-    expect(
-      newComments([sheet([c('a'), c('b')])], [sheet([c('a')])]).map((x) => [x.id, x.reply]),
-    ).toEqual([['b', true]]);
-    expect(
-      claimedComments([sheet([c('a', { authorId: 'me' })])], [sheet([c('a')])]).map((x) => x.id),
-    ).toEqual(['a']);
-    expect(removedComments([sheet([c('b')])], [sheet([c('a'), c('b')])])).toEqual([
-      { id: 'a', elementId: `sh#${B4}`, opening: true },
-    ]);
-    expect(newlyResolvedThreads([sheet([c('a')], true)], [sheet([c('a')])])).toEqual([
-      { elementId: `sh#${B4}`, text: 't a' },
-    ]);
   });
 });

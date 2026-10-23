@@ -8,7 +8,6 @@ import { applyItemComment, itemThread, type ItemCommentChange } from '@liveplann
 import type { ItemCommentAddResponse, ItemResponse } from '@liveplanner/api-schema';
 import type { Item, ItemPerson } from '@liveplanner/items';
 import { forbidden, json, methodNotAllowed, noContent } from '../responses';
-import { recordCommentResolved, retractComments } from '../timeline';
 import { afterCommentPosted, newComment } from './comment-routes';
 import { gateEdit, readBody, type PlanRouteContext } from './context';
 import { itemCaller, type ItemCaller } from './item-route-kit';
@@ -45,14 +44,10 @@ async function add(ctx: PlanRouteContext, projectId: string, itemId: string): Pr
   if (body instanceof Response) return body;
   const comment = await newComment(ctx, caller.owner, body);
   if (comment instanceof Response) return comment;
-  let reply = false;
   const change = commentWrite({ kind: 'add', comment });
-  const res = await writeItem(ctx, caller, itemId, (item, by) => {
-    reply = (itemThread(item)?.comments.length ?? 0) > 0;
-    return change(item, by);
-  });
+  const res = await writeItem(ctx, caller, itemId, change);
   if (res.status !== 200) return res;
-  afterCommentPosted(ctx, asCommenter(caller), comment, reply);
+  afterCommentPosted(ctx, asCommenter(caller), comment);
   console.info('[items] comment added', { projectId, agent: ctx.token !== null });
   // The comment's id, so a mention email can name the stored comment rather than carry its text.
   const answer: ItemCommentAddResponse = {
@@ -75,21 +70,13 @@ async function remove(
   const tabId = ctx.url.searchParams.get('tabId') ?? undefined;
   const editor = await gateEdit(ctx, projectId, doc.ownerId, doc.teamId, tabId);
   const change = commentWrite({ kind: 'remove', commentId });
-  let opening = false;
   const res = await writeItem(ctx, caller, itemId, (item, by) => {
     const comments = itemThread(item)?.comments;
     const target = comments?.find((c) => c.id === commentId);
     if (target && !editor && target.authorId !== caller.owner) return forbidden();
-    opening = comments?.[0]?.id === commentId;
     return change(item, by);
   });
   if (res.ok) {
-    // Its words leave the feed too, and so does the card thread's resolved event when it opened it.
-    ctx.waitUntil?.(
-      retractComments(ctx.env, projectId, [
-        { id: commentId, threadKey: opening ? `${projectId}:item:${itemId}` : null },
-      ]),
-    );
     console.info('[items] comment deleted', { projectId, editor, agent: ctx.token !== null });
   }
   return res;
@@ -104,24 +91,10 @@ async function setResolved(
   const caller = await itemCaller(ctx, projectId, 'participate');
   if (caller instanceof Response) return caller;
   const resolved = verb === 'resolve';
-  let opening: string | null = null;
   const change = commentWrite({ kind: 'resolve', resolved });
-  const res = await writeItem(ctx, caller, itemId, (item, by) => {
-    opening = itemThread(item)?.comments[0]?.text ?? null;
-    return change(item, by);
-  });
-  // A 204 is a resolve that changed nothing (PR17 on the canvas): nothing written, nothing recorded.
+  const res = await writeItem(ctx, caller, itemId, change);
+  // A 204 is a resolve that changed nothing (PR17 on the canvas): nothing written.
   const changed = res.status === 200;
-  if (changed && resolved)
-    ctx.waitUntil?.(
-      recordCommentResolved(
-        ctx.env,
-        caller.doc!,
-        `${projectId}:item:${itemId}`,
-        opening,
-        caller.owner,
-      ),
-    );
   console.info(`[items] comments ${changed ? (resolved ? 'resolved' : 'reopened') : 'unchanged'}`, {
     projectId,
     agent: ctx.token !== null,

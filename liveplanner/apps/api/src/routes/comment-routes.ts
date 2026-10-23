@@ -44,7 +44,6 @@ import {
   payloadTooLarge,
 } from '../responses';
 import { relayElementDelta } from '../room-client';
-import { recordCommentAdded, recordCommentResolved, retractComments } from '../timeline';
 import type { TabDTO } from '../types';
 import {
   deniedOnTab,
@@ -62,10 +61,6 @@ type ThreadVerb = 'reply' | 'resolve' | 'reopen';
 type Doc = NonNullable<Awaited<ReturnType<typeof getProject>>>;
 type CommentCaller = { doc: Doc; owner: string };
 type Caller = CommentCaller;
-
-// A thread's timeline key: the element's id, or `<elementId>#<cell>` for a Sheet cell's (timeline/tab-diff.ts).
-const threadKeyOf = (elementId: string, cell: string | undefined) =>
-  cell === undefined ? elementId : `${elementId}#${cell}`;
 
 // The caller and the project, when the caller may take part on the tab.
 async function participant(
@@ -161,28 +156,9 @@ function appended(tab: TabDTO, elementId: string, comment: Comment, cell?: strin
   };
 }
 
-// The timeline and the owner's email for a posted comment (add and reply alike, on the canvas or on a card).
-export function afterCommentPosted(
-  ctx: PlanRouteContext,
-  caller: Caller,
-  comment: Comment,
-  reply: boolean,
-): void {
+// The owner's email for a posted comment (add and reply alike, on the canvas or on a card).
+export function afterCommentPosted(ctx: PlanRouteContext, caller: Caller, comment: Comment): void {
   const { doc, owner } = caller;
-  ctx.waitUntil?.(
-    recordCommentAdded(
-      ctx.env,
-      doc,
-      {
-        id: comment.id,
-        text: comment.text,
-        authorName: comment.authorName,
-        authorColor: comment.authorColor,
-        reply,
-      },
-      owner,
-    ),
-  );
   if (emailEnabled(ctx.env) && owner !== doc.ownerId)
     ctx.waitUntil?.(
       notifyNewComment(
@@ -205,14 +181,9 @@ async function addComment(ctx: PlanRouteContext, id: string, tabId: string): Pro
   if (cell !== undefined && !isCellKey(cell)) return badRequest('invalid cell');
   const comment = await newComment(ctx, caller.owner, body);
   if (comment instanceof Response) return comment;
-  let reply = false;
-  const written = await writeTab(ctx, id, tabId, (tab) => {
-    const target = tab.elements.find((el) => el.id === elementId);
-    reply = (target ? (threadAt(target, cell)?.comments.length ?? 0) : 0) > 0;
-    return appended(tab, elementId, comment, cell);
-  });
+  const written = await writeTab(ctx, id, tabId, (tab) => appended(tab, elementId, comment, cell));
   if (written instanceof Response) return written;
-  afterCommentPosted(ctx, caller, comment, reply);
+  afterCommentPosted(ctx, caller, comment);
   console.info('[comments] added', {
     projectId: id,
     tabId,
@@ -231,17 +202,10 @@ async function deleteOwn(
 ): Promise<Response> {
   const caller = await participant(ctx, id, tabId);
   if (caller instanceof Response) return caller;
-  let threadKey: string | null = null;
   const written = await writeTab(ctx, id, tabId, (tab) => {
     const host = findCommentHost(tab.elements, commentId);
     if (!host) return notFound();
     if (host.comment.authorId !== caller.owner) return forbidden();
-    const el = tab.elements.find((e) => e.id === host.elementId)!;
-    // The opening comment's text is what the thread's resolved event says.
-    threadKey =
-      threadAt(el, host.cell)?.comments[0]?.id === commentId
-        ? `${id}:${threadKeyOf(host.elementId, host.cell)}`
-        : null;
     return {
       elements: removeComment(tab.elements, commentId),
       elementId: host.elementId,
@@ -249,7 +213,6 @@ async function deleteOwn(
     };
   });
   if (written instanceof Response) return written;
-  ctx.waitUntil?.(retractComments(ctx.env, id, [{ id: commentId, threadKey }]));
   console.info('[comments] deleted', { projectId: id, tabId, agent: ctx.token !== null });
   return noContent();
 }
@@ -273,20 +236,16 @@ async function threadVerb(
       return host ? appended(tab, host.elementId, comment, host.cell) : notFound();
     });
     if (written instanceof Response) return written;
-    afterCommentPosted(ctx, caller, comment, true);
+    afterCommentPosted(ctx, caller, comment);
     console.info('[comments] replied', { projectId: id, tabId, agent: ctx.token !== null });
     return json({ comment }, { status: 201 });
   }
   const resolved = verb === 'resolve';
-  let opening: string | null = null;
-  let threadKey = '';
   const written = await writeTab(ctx, id, tabId, (tab) => {
     const host = findCommentHost(tab.elements, commentId);
     if (!host) return notFound();
     const el = tab.elements.find((e) => e.id === host.elementId)!;
     const thread = threadAt(el, host.cell)!;
-    opening = thread.comments[0]?.text ?? null;
-    threadKey = threadKeyOf(el.id, host.cell);
     // Resolving a resolved thread, or reopening an open one, writes and relays nothing (PR17).
     if (thread.resolved === resolved) return 'unchanged';
     const delta: ElementDelta = {
@@ -301,10 +260,6 @@ async function threadVerb(
     };
   });
   if (written instanceof Response) return written;
-  if (written.change && resolved)
-    ctx.waitUntil?.(
-      recordCommentResolved(ctx.env, caller.doc, `${id}:${threadKey}`, opening, caller.owner),
-    );
   console.info(
     `[comments] ${written.change ? (resolved ? 'resolved' : 'reopened') : `${verb} unchanged`}`,
     {

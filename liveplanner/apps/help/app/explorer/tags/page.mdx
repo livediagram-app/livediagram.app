@@ -4,52 +4,41 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Tags',
   description:
-    'Put coloured tags on your plans to group related ones together across folders and teams, then see them side by side on the Tags page.',
+    'Put coloured tags on your plans and other items to group related ones together across folders and teams, then find them on the Tags page.',
   path: '/help/explorer/tags/',
 });
 
 <ArticleLayout
   title="Tags"
-  description="Coloured labels that gather related plans, wherever they live."
+  description="Coloured labels that gather related items, wherever they live."
   categoryTitle="Explorer"
   categorySlug="explorer"
 >
 
-A **tag** is a coloured label you put on your plans: a client, a plan, a quarter, a status. A folder says where a plan lives, and a plan is in exactly one; tags say what it is about, so one plan can carry several, and a tag can gather plans from different folders and teams. Tagging never moves anything.
+A **tag** is a coloured label you put on your items: a client, a project, a quarter, a status. A folder says where an item lives, and an item is in exactly one; tags say what it is about, so one item can carry several, and a tag can gather items from different folders, teams and apps. Tagging never moves anything.
 
-Your tags are **yours alone**. Tagging a team plan marks it for you, not for the rest of the team, and nobody else ever sees your tags.
+Your tags are **yours alone**, and the same in every liveworkspace app. Tagging a team plan marks it for you, not for the rest of the team.
 
-## Tagging a plan
+## Tagging an item
 
-Open a plan's menu (its **⋯** button, or a right-click) anywhere in the Explorer or the editor's Explorer panel, and choose **Tags**. The tag picker opens in its place:
+Open an item's menu (its **⋯** button, or a right-click) anywhere in the Explorer or the editor's Explorer panel, and choose **Tags**. The tag picker opens:
 
-- **Tick a tag** to put it on the plan, untick it to take it off. Each tick saves at once; there is nothing to confirm.
-- **Type** to find a tag. When what you typed matches no tag, **Create "…"** makes a new tag with that name and puts it on the plan. Pressing **Enter** does the same, or ticks the tag whose name you typed exactly.
-- **The swatch** at the end of a row changes that tag's colour.
-- **Manage Tags** opens the Tags page.
-
-The arrow keys move between the field and the tags, **Space** or **Enter** ticks one, and **Escape** closes the picker.
-
-A plan shared with you can't be tagged: it lives in its owner's library. You can tag your own plans, your teams' plans and the plans in this browser.
+- **Tick a tag** to put it on the item, untick it to take it off. Each tick saves at once.
+- **Type a name** in the **New tag** field and press **Add** to make a tag and put it on the item in one go. Each new tag gets the next colour in turn.
+- Press **Done** to close the picker.
 
 ## Seeing your tags
 
-A tagged plan shows its tags as small coloured chips beside its name, in the list, card and details views alike. Two show at most; **+2** (and so on) names the rest when you hover it. **Click a chip** to see every plan with that tag. In the editor's Explorer panel the rows are narrower, so a tagged plan shows coloured dots instead.
+A tagged item shows its tags as small coloured chips beside its name in the lists. **Click a chip** to see every item with that tag.
 
 ## The Tags page
 
-**Tags** is the first row inside **Library**, in the sidebar's **More** group (a Tags page opens Library for you). It opens the Tags page, and expands to a row for each of your tags with how many plans carry it.
+**Tags** sits inside **Library**, in the sidebar's **More** group, and expands to a row for each of your tags. The Tags page lists every tag; click one, or its row in the sidebar, to see the items that carry it.
 
-The Tags page shows **one section per tag**, alphabetically: the tag, how many plans carry it, and its plans underneath, newest first, in the list, card or details view. A plan with two tags appears under both. Click a tag's name, or its row in the sidebar, to see that tag on its own.
+## Renaming and deleting tags
 
-## Making and managing tags
+A tag's **⋯** menu on the Tags page offers **Rename** and **Delete Tag**. Deleting a tag takes it off every item; the items themselves stay where they are.
 
-- **New Tag**, at the top of the Tags page, makes a tag with a name and a colour. You can also make one straight from the tag picker.
-- A tag's **⋯** menu (on its section, or at the top of its own page) offers **Rename**, **Change Colour** and **Delete**.
-- **Deleting a tag** takes it off every plan. The plans themselves stay where they are. It can't be undone, so you are asked first.
-
-Names are up to 32 characters, and each of your tags needs its own name (ignoring capitals). Colours come from the same picker as everywhere else, and standard colours adjust for dark mode. You can have up to 100 tags.
-
-Tags made while you were a guest come with you when you sign up; one with the same name as a tag you already had joins it.
+Names are up to 32 characters, and you can have up to 100 tags. Tags made while you were a guest come with you when you sign in.
 
 </ArticleLayout>

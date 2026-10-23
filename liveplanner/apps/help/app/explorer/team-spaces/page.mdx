@@ -1,45 +1,38 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { TeamSpacesSidebar } from '@/components/illustrations/explorer-feeds';
 
 export const metadata = helpMetadata({
   title: 'Team Spaces',
   description:
-    'Each team you belong to is a top-level space in the Explorer sidebar, beside My Work, with its shared folders beneath it and your pending invites close by.',
+    'Each team you belong to is a space in the Explorer sidebar beside My Work, with its folders beneath it. Teams are made and run on liveworkspace.app.',
   path: '/help/explorer/team-spaces/',
 });
 
 <ArticleLayout
   title="Team Spaces"
-  description="Browse the teams you belong to and their shared folders right in the Explorer, and keep an eye on pending invites."
+  description="Browse the teams you belong to and their shared folders right in the Explorer."
   categoryTitle="Explorer"
   categorySlug="explorer"
 >
 
-Each team you belong to is a space of its own in the Explorer sidebar: a top-level row under **Spaces**, right after your own [My Work](/help/explorer/personal-space/). Expand a team to walk its shared folders, and keep your pending invites one click away. For the full picture of how teams, roles, and invites work, see the [Teams guide](/help/collaboration/teams/).
-
-<Figure caption="The Spaces group when signed in: My Work, each team with its member count and shared folders, Invites, and New Team.">
-  <TeamSpacesSidebar />
-</Figure>
+Each team you belong to is a space of its own in the Explorer sidebar: a row under **Spaces**, right after your own [My Work](/help/explorer/personal-space/). For how teams, roles and invites work, see the [Teams guide](/help/collaboration/teams/).
 
 ## Your teams
 
-Each team you are a member of appears as a row with the team glyph, and a badge showing the member count once the team has more than one person. Click a team to open its page; expand it with the arrow to walk its shared folder tree without leaving the sidebar, and click a folder to open the team page with that folder already showing. A team with no folders yet has no arrow.
+Each team you are a member of appears as a row with the team glyph. Click a team to open its library; expand it with the arrow to walk its folders without leaving the sidebar, and click a folder to open it.
 
-Team-shared plans live in [a folder tree every member can manage](/help/collaboration/teams/team-shared-projects/), separate from My Work. The team page holds that library, the member list, a **⋯** menu to leave the team (admins can also edit or delete it there; the last admin can't leave until someone else is made an admin), and the team's own activity feed, which includes what happened before you joined. Admins invite people from the team page, by email or with **Invite by Link**.
+A team's library holds the team's folders and items, from every liveworkspace app, and every member can manage them ([Team Shared Plans](/help/collaboration/teams/team-shared-projects/)). On a team's library, **Create** offers **New Plan** and **New Folder**, so what you make lands in the team.
 
-The editor's Explorer panel (behind the menu button) lists your teams too, so you can reach team plans without leaving a board.
+The editor's Explorer panel (behind the menu button) lists your teams in its rail too, so you can reach team plans without leaving a board.
 
-## Invites
+## Manage Teams
 
-While an invitation is waiting for you, an **Invites** row appears under your teams, with a badge counting them. Open it to see one card per invite, naming the team, its organisation and how many members it has, then **Accept** it (which takes you to the team page) or **Decline** it. The row goes away once nothing is waiting. You also hear about an invite by email.
+Teams belong to your liveworkspace account, not to liveplanner, and are made, renamed, staffed and deleted on liveworkspace.app. **Manage Teams**, the last row of Spaces, takes you there. Invitations wait there too, and are answered there.
 
-## New Team
-
-**New Team**, the last row of Spaces, opens the **New Team** dialog: give the team a **Team name** and, if you like, an **Organisation**, then choose **Create Team**. You land on the new team's page as its admin, ready to invite people. Each person you invite shows in the member list straight away, marked **Invited**, until they accept.
+The teams the Explorer shows come from your sign-in: a team you make or join on liveworkspace.app appears here once liveplanner next refreshes your sign-in, within the hour, when you load the Explorer again. Signing out and back in brings it at once.
 
 ## Signed-in only
 
-Teams need an account, so team rows, Invites and New Team appear only when you are signed in. Guests see a **Sign in to access Teams** card in their place ("Free, and your guest plans come with you"). On deployments configured without authentication, neither appears, since teams cannot exist without it.
+Teams need an account, so team rows and Manage Teams appear only when you are signed in.
 
 </ArticleLayout>

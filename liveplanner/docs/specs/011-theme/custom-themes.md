@@ -8,7 +8,7 @@ The catalogue ships a fixed set of themes. Teams want their own palette (brand c
 
 ## Ownership + storage
 
-- Custom themes are **owner-scoped**, exactly like projects and folders ([API app](../015-api/api.md)): keyed by the request owner id, which is the account `sub` for signed-in users or the `X-Owner-Id` guest id otherwise ([Auth + guest access](../014-identity/auth-and-guest-access.md)). **Guests get them too** — consistent with the canvas-works-without-sign-in principle — and a guest who signs up carries them over via the existing `POST /api/migrate` owner-id remap.
+- Custom themes are **owner-scoped**, exactly like projects and folders ([API app](../015-api/api.md)): keyed by the request owner id, which is the account `sub` for signed-in users or the id the guest token names otherwise ([Auth + guest access](../014-identity/auth-and-guest-access.md)). **Guests get them too** — consistent with the canvas-works-without-sign-in principle — and a guest who signs up does not, for now, carry them over: signing in moves a guest's plans in the index, but the `custom_themes` rows stay under the guest id ([Guest → account](../014-identity/auth-and-guest-access.md#guest--account)).
 - Stored in **D1** via the api worker (the browser never touches D1 directly). New table `custom_themes`:
 
   ```sql
@@ -65,7 +65,7 @@ export type CustomTheme = {
 };
 ```
 
-The `definition` is the **themable payload only** — it omits `id` / `label` (those live on the row) and the `extra` flag (custom themes are never "show more" gated). The api stores `definition` as a JSON string in the `definition` column and parses on read. `api-client` gains `apiListCustomThemes` / `apiCreate…` / `apiUpdate…` / `apiDeleteCustomTheme` in a new `lib/api/custom-themes.ts`, mirroring `lib/api/folders.ts` (deduped list, `apiHeaders` auth, `expectOk`).
+The `definition` is the **themable payload only** — it omits `id` / `label` (those live on the row) and the `extra` flag (custom themes are never "show more" gated). The api stores `definition` as a JSON string in the `definition` column and parses on read. `api-client` gains `apiListCustomThemes` / `apiCreate…` / `apiUpdate…` / `apiDeleteCustomTheme` in a new `lib/api/custom-themes.ts`, mirroring the folders client of the time (deduped list, `apiHeaders` auth, `expectOk`).
 
 ## Making custom themes resolvable (`getTheme`)
 

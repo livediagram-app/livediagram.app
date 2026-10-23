@@ -2,6 +2,10 @@
 
 **Status: built.**
 
+> The shared Share dialog (`@liveworkspace/explorer`) copies a link as `/project/shared?s=<code>`
+> (`shareUrl` in `apps/editor/lib/explorer-host.ts`), the address whose head is filled in below, so a copied link
+> previews as its plan.
+
 When a share link is pasted into Slack, Teams, Discord, iMessage, WhatsApp, X, LinkedIn or anything else that
 draws a link preview, the preview names the project and shows a picture of it. A link that is not a working,
 open share link previews as liveplanner itself, with the brand card.

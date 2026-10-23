@@ -1,7 +1,7 @@
 # Live image share link
 
 > **Status: implemented, as part of [Project SVG snapshots](../006-project/project-snapshots.md).** The
-> endpoint and Share-dialog option below shipped, but two design points here are
+> endpoint below shipped, but two design points here are
 > now superseded by [Project SVG snapshots](../006-project/project-snapshots.md) — read it for the authoritative behaviour:
 >
 > - **Not re-rendered per request.** The image serves a **cached SVG snapshot**
@@ -15,7 +15,8 @@
 >   MCP worker ([MCP server](../015-api/mcp-server.md)), so the worker imports it directly. No `@liveplanner/render`
 >   package was created.
 >
-> The rest of this spec (URL shape, password exclusion, share dialog) holds.
+> The rest of this spec (URL shape, password exclusion) holds. The Share-dialog menu it describes went with
+> liveplanner's own Share dialog: the shared one from `@liveworkspace/explorer` has no live-image control.
 >
 > The same drawing, fitted onto a 1200 x 630 PNG, is what a pasted share link previews with in a chat app:
 > [Share-link previews](share-link-previews.md).
@@ -33,9 +34,9 @@ export).
   auth header), which matches a share link's existing semantics.
   - **Password-protected shares** ([Share password](share-password.md)) get **no** image URL — an `<img>`
     can't supply the password, so exposing an unguarded image would bypass the
-    gate. The Share dialog hides the image option while a password is set.
+    gate.
   - Revoking / expiring the share link also kills the image URL (it resolves
-    through the same `share_links` authority as the share view).
+    through the index, the same authority as the share view).
 - **Format: SVG.** Scalable, tiny, crisp at any size, and renders from the same
   vector logic as the SVG export. Best for embedding and staying live.
 
@@ -43,8 +44,8 @@ export).
 
 `GET /api/share/<code>/image.svg` on the api worker:
 
-1. Resolve `<code>` through `getShareLink` (the single authority — expiry +
-   role). 404 if missing / revoked / expired.
+1. Resolve `<code>` with the index (`resolveShare`, the single authority for expiry,
+   level and tab). 404 if missing / revoked / expired.
 2. If the project has a share password, 404 (no image for gated shares).
 3. Load the rendered tab (default: the first tab; `?tab=<id>` selects another). A tab-scoped link ([Tab-scoped share links](tab-scoped-share-links.md)) always renders its own tab, and a `?tab=` naming any other is a 404.
 4. Render it to SVG and return `Content-Type: image/svg+xml` with a short
@@ -122,12 +123,8 @@ regression-free. New top-level package ⇒ update `README.md` +
 
 ## Share dialog
 
-A **Live image** menu on each pass in the Share dialog (owner, non-password, shared):
-a menu off the `.../image.svg` URL to copy the raw URL, a Markdown
-`![](...)` snippet, or an HTML `<img>` snippet (the same `ShareCopyMenu`
-the Embed control uses). The menu also carries a **per-tab picker** (a
-`<select>`, shown when the project has more than one tab) that threads
-`?tab=<id>` into the copied URL / snippets; see
+The shared Share dialog (`@liveworkspace/explorer`) has no **Live image** menu, so the address is
+built by hand from a link's code: `/api/share/<code>/image.svg`, with `?tab=<id>` to pick a tab; see
 [Project SVG snapshots](../006-project/project-snapshots.md#share-dialog) for the caching detail
 (a non-default tab renders on read, uncached). Out of scope for v1: a
 PNG variant (Worker rasterization) and themed cache invalidation.

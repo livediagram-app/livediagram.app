@@ -2,15 +2,14 @@
 // "The workspace frame", WB56). A place is an Explorer view or a project. Inside the frame each place has a path
 // under /embed/workbench, walked by the frame's own history: Home is /embed/workbench/explorer, a folder
 // /embed/workbench/explorer/folder/<id>, every other view its /explorer path under /embed/workbench, and a project
-// /embed/workbench/project/<id>. The Explorer itself keeps speaking its own /explorer hrefs; these functions
-// translate both ways, so nothing inside it learns where it runs.
+// /embed/workbench/project/<id>. The Explorer (@liveworkspace/explorer) itself keeps speaking its own /explorer
+// hrefs; these functions translate both ways, so nothing inside it learns where it runs.
 
-import { explorerPathFor, selectedFromRoute } from '@/app/explorer/routes';
-import type { SelectedNode } from '@/app/explorer/views';
+import { explorerPath, viewFromLocation, type ExplorerView } from '@liveworkspace/explorer';
 import { WORKSPACE_FRAME_PAGE } from './workbench-frame-path';
 
 export type WorkspacePlace =
-  | { kind: 'explorer'; node: SelectedNode }
+  | { kind: 'explorer'; node: ExplorerView }
   | { kind: 'project'; projectId: string; tabId: string | null; shareCode: string | null };
 
 const FRAME_PREFIX = '/embed/workbench';
@@ -36,7 +35,7 @@ export function workspaceFramePath(place: WorkspacePlace): string {
   const { node } = place;
   if (node.kind === 'home') return WORKSPACE_FRAME_PAGE;
   if (node.kind === 'folder') return `${FOLDER_ROOT}${encodeURIComponent(node.id)}`;
-  return `${FRAME_PREFIX}${explorerPathFor(node)}`;
+  return `${FRAME_PREFIX}${explorerPath(node)}`;
 }
 
 // The /explorer route a frame path stands for, with its query (the lens's `q`, a team page's `folder`), or null for
@@ -69,7 +68,7 @@ export function workspacePlaceOf(pathname: string, search: URLSearchParams): Wor
   }
   const route = explorerRouteOfFrame(pathname, search);
   if (!route) return HOME;
-  return { kind: 'explorer', node: selectedFromRoute(route.pathname, route.search) };
+  return { kind: 'explorer', node: viewFromLocation(route.pathname, route.search) };
 }
 
 const sameOrigin = (url: URL, origin: string) => url.origin === origin;
@@ -109,7 +108,7 @@ export function isNewProjectHref(href: string, origin: string): boolean {
 
 // The same place in a full tab: Open in liveplanner.
 export function appHrefOfPlace(place: WorkspacePlace): string {
-  if (place.kind === 'explorer') return explorerPathFor(place.node);
+  if (place.kind === 'explorer') return explorerPath(place.node);
   const path = `/project/${encodeURIComponent(place.projectId)}`;
   return place.shareCode ? `${path}?s=${encodeURIComponent(place.shareCode)}` : path;
 }

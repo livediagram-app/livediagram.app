@@ -82,7 +82,7 @@ only small per-browser state, under `liveplanner:*` keys:
 - **One-off prompts and counters**: the pending tour, the sign-in prompt and banner dismissals, the power-user offer,
   the last active day.
 - **The share-password cache**: one entry per share code, so a returning visitor skips the gate
-  ([Share password](../013-workspace/share-password.md#password-cache)).
+  ([Share password](../013-workspace/share-password.md)).
 
 ## Next
 

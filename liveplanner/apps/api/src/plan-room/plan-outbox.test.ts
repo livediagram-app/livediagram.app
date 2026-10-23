@@ -2,16 +2,30 @@ import { describe, expect, it } from 'vitest';
 import type { Element } from '@liveplanner/project';
 import { deleteTabRow, upsertTab } from '../db/tabs';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { DRAIN_TABS, drainOutbox, jsonChunks, readContentSummary } from './plan-outbox';
+import { DRAIN_TABS, drainOutbox, readContentSummary } from './plan-outbox';
+import {
+  IndexError,
+  type CollabPush,
+  type IndexAppClient,
+  type ItemSummary,
+} from '@liveworkspace/index-client';
 
-// What a plan pushes to D1 (plan-outbox.ts): the triggers key each change in the write's own transaction, and
-// a drain turns the keys into one D1 batch. Real SQLite (test-sqlite-d1.ts), where a plan's tables sit beside
-// D1's; `drainOutbox` is called directly, so the D1 reads below use the raw handle (no automatic push).
+// What a plan pushes to the index (plan-outbox.ts): the triggers key each change in the write's own transaction,
+// and a drain pushes the keys with this app's key. Real SQLite (test-sqlite-d1.ts); the index is a recording fake.
 
 const T0 = 1_700_000_000_000;
 
-const box = (id: string, extra: Record<string, unknown> = {}): Element =>
-  ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, label: id, ...extra });
+const box = (id: string, extra: Record<string, unknown> = {}): Element => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 10,
+  label: id,
+  ...extra,
+});
 
 const actionOn = (id: string): Element =>
   box(id, {
@@ -31,62 +45,88 @@ const actionOn = (id: string): Element =>
 
 function plan(): SqliteD1 {
   const db = sqliteD1();
-  db.sql.exec(`INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at)
-               VALUES ('P', 'owner', 'P', 1, ${T0}, ${T0})`);
+  db.sql.exec(`INSERT INTO test_plans (id, owner_id, name, saved_at, created_at)
+               VALUES ('P', 'owner', 'P', ${T0}, ${T0})`);
   return db;
 }
 
 const rows = (db: SqliteD1, query: string) => db.sql.prepare(query).all();
 const keys = (db: SqliteD1) =>
-  rows(db, "SELECT kind || ':' || key AS k FROM outbox WHERE plan_id = 'P' ORDER BY id").map((r) => String(r.k));
+  rows(db, "SELECT kind || ':' || key AS k FROM outbox WHERE plan_id = 'P' ORDER BY id").map((r) =>
+    String(r.k),
+  );
+
+// The index as the drain sees it: every push recorded, a failure on demand.
+function fakeIndex(fail: (kind: string) => Error | null = () => null) {
+  const collab: { tab: string; push: CollabPush }[] = [];
+  const summaries: { summary: ItemSummary; savedAt: number | undefined }[] = [];
+  const client = {
+    pushCollab: async (_id: string, tab: string, push: CollabPush) => {
+      const err = fail('collab');
+      if (err) throw err;
+      collab.push({ tab, push });
+    },
+    pushSummary: async (_id: string, summary: ItemSummary, savedAt?: number) => {
+      const err = fail('summary');
+      if (err) throw err;
+      summaries.push({ summary, savedAt });
+    },
+  } as unknown as IndexAppClient;
+  return { client, collab, summaries };
+}
 
 describe('the outbox', () => {
-  it('keys a tab write in the same transaction, and a drain pushes its Inbox rows and empties it', async () => {
+  it('keys a tab write in the same transaction, and a drain pushes its Inbox rows and summary and empties it', async () => {
     const db = plan();
     await upsertTab(db.env, 'P', { id: 't1', name: 'Board', elements: [actionOn('a')] }, 0);
     expect(keys(db)).toEqual(['tab:t1', 'summary:']);
-    expect(rows(db, 'SELECT * FROM collab_actions')).toEqual([]);
+    const index = fakeIndex();
 
-    const pushed = await drainOutbox(db.env, 'P');
+    const pushed = await drainOutbox(db.env, 'P', index.client);
 
-    expect(pushed).toMatchObject({ more: false });
+    expect(pushed).toMatchObject({ more: false, pushes: 2 });
     expect(keys(db)).toEqual([]);
-    expect(rows(db, 'SELECT project_id, tab_id, tab_name, action_id FROM collab_actions')).toEqual([
-      { project_id: 'P', tab_id: 't1', tab_name: 'Board', action_id: 'act-a' },
-    ]);
-    const summary = rows(db, "SELECT content_summary FROM projects WHERE id = 'P'")[0]!;
-    expect(JSON.parse(String(summary.content_summary))).toMatchObject({
-      hasContent: true,
-      tabCounts: { t1: 1 },
-    });
+    expect(index.collab).toHaveLength(1);
+    expect(index.collab[0]!.tab).toBe('t1');
+    expect(index.collab[0]!.push.actions.map((a) => a.actionId)).toEqual(['act-a']);
+    expect(index.summaries[0]!.summary).toMatchObject({ elements: 1, empty: false });
   });
 
-  it('replaces a tab’s rows on the next write, and drops them, and its tab-scoped links, when the tab goes', async () => {
+  it("stamps the owner's newest save for the lifecycle email with the summary", async () => {
+    const db = plan();
+    db.sql.exec(
+      `INSERT INTO email_lifecycle (owner_id, email, created_at) VALUES ('owner', 'o@x.test', 1)`,
+    );
+    await upsertTab(db.env, 'P', { id: 't1', name: 'Board', elements: [actionOn('a')] }, 0);
+    await drainOutbox(db.env, 'P', fakeIndex().client);
+    const row = rows(db, "SELECT active_at FROM email_lifecycle WHERE owner_id = 'owner'")[0]!;
+    expect(Number(row.active_at)).toBeGreaterThan(0);
+  });
+
+  it('pushes an empty collab for a tab that is gone', async () => {
     const db = plan();
     await upsertTab(db.env, 'P', { id: 't1', name: 'Board', elements: [actionOn('a')] }, 0);
-    await drainOutbox(db.env, 'P');
-    await upsertTab(db.env, 'P', { id: 't1', name: 'Renamed', elements: [actionOn('b')] }, 0);
-    await drainOutbox(db.env, 'P');
-    expect(rows(db, 'SELECT tab_name, action_id FROM collab_actions')).toEqual([
-      { tab_name: 'Renamed', action_id: 'act-b' },
-    ]);
-
-    db.sql.exec(`INSERT INTO share_links (code, project_id, role, created_at, tab_id)
-                 VALUES ('tabbed', 'P', 'view', ${T0}, 't1'), ('whole', 'P', 'view', ${T0}, NULL)`);
+    await drainOutbox(db.env, 'P', fakeIndex().client);
     await deleteTabRow(db.env, 'P', 't1');
-    await drainOutbox(db.env, 'P');
-    expect(rows(db, 'SELECT * FROM collab_actions')).toEqual([]);
-    expect(rows(db, 'SELECT code FROM share_links')).toEqual([{ code: 'whole' }]);
+    const index = fakeIndex();
+    await drainOutbox(db.env, 'P', index.client);
+    expect(index.collab).toEqual([{ tab: 't1', push: { threads: [], actions: [] } }]);
   });
 
-  it('writes nothing for a plan whose project row is gone', async () => {
+  it('keeps the keys of a failed push for the next drain, and drops those the index does not hold', async () => {
     const db = plan();
     await upsertTab(db.env, 'P', { id: 't1', name: 'Board', elements: [actionOn('a')] }, 0);
-    db.sql.exec('PRAGMA foreign_keys = OFF');
-    db.sql.exec("DELETE FROM projects WHERE id = 'P'");
-    db.sql.exec('PRAGMA foreign_keys = ON');
-    await drainOutbox(db.env, 'P');
-    expect(rows(db, 'SELECT * FROM collab_actions')).toEqual([]);
+    await expect(
+      drainOutbox(
+        db.env,
+        'P',
+        fakeIndex((k) => (k === 'summary' ? new Error('down') : null)).client,
+      ),
+    ).rejects.toThrow('down');
+    expect(keys(db)).toEqual(['summary:']);
+    const gone = fakeIndex(() => new IndexError(404, 'not_found'));
+    await drainOutbox(db.env, 'P', gone.client);
+    expect(keys(db)).toEqual([]);
   });
 
   it(`takes at most ${DRAIN_TABS} tabs a drain, saying there is more`, async () => {
@@ -94,12 +134,13 @@ describe('the outbox', () => {
     for (let i = 0; i < DRAIN_TABS + 5; i++) {
       await upsertTab(db.env, 'P', { id: `t${i}`, name: `T${i}`, elements: [] }, i);
     }
-    const tabKeys = keys(db).filter((k) => k.startsWith('tab:')).length;
-    expect(tabKeys).toBe(DRAIN_TABS + 5);
-    const first = await drainOutbox(db.env, 'P');
+    expect(keys(db).filter((k) => k.startsWith('tab:')).length).toBe(DRAIN_TABS + 5);
+    const index = fakeIndex();
+    const first = await drainOutbox(db.env, 'P', index.client);
     expect(first.more).toBe(true);
-    expect(first.keys).toBeLessThan(DRAIN_TABS + 5 + 1);
-    // The test store pushes the rest before its own D1 batch (test-sqlite-d1.ts); the room drains again.
+    expect(index.collab).toHaveLength(DRAIN_TABS);
+    const second = await drainOutbox(db.env, 'P', index.client);
+    expect(second.more).toBe(false);
     expect(keys(db)).toEqual([]);
   });
 });
@@ -123,19 +164,5 @@ describe('readContentSummary', () => {
     const db = plan();
     await upsertTab(db.env, 'P', { id: 't', name: 'T', elements: [] }, 0);
     expect((await readContentSummary(db.env, 'P')).summary.hasContent).toBe(false);
-  });
-});
-
-describe('jsonChunks', () => {
-  it('keeps every bound value under 1 MB, in order, splitting only between rows', () => {
-    const row = { text: 'x'.repeat(100_000) };
-    const chunks = jsonChunks(Array.from({ length: 25 }, () => row));
-    expect(chunks.length).toBeGreaterThan(2);
-    for (const c of chunks) expect(c.length).toBeLessThanOrEqual(1_000_000);
-    expect(chunks.flatMap((c) => JSON.parse(c) as unknown[])).toHaveLength(25);
-  });
-
-  it('makes no chunk for no rows', () => {
-    expect(jsonChunks([])).toEqual([]);
   });
 });

@@ -10,7 +10,6 @@ import {
   pickRecentDiagrams,
   recentThumbPath,
   serializeRecentDiagrams,
-  type ProjectSummary,
   type RecentDiagram,
 } from '@liveplanner/api-schema';
 import { USER_PREFERENCES_STORAGE_KEY } from '@liveplanner/telemetry-client';
@@ -24,12 +23,15 @@ import {
 // the request itself failed, which is worth trying again on the next list.
 type FetchSnapshotSvg = (id: string, savedAt: number) => Promise<string | null>;
 
+// What the note is picked from: a plan's id, name, last save, and whether it is empty.
+export type RecentSource = Parameters<typeof pickRecentDiagrams>[0][number];
+
 // Set once the note is forgotten (sign-out): a project list still in flight from the signed-in
 // session must not write it back before the page leaves.
 let forgotten = false;
 // The latest list and its fetcher, so hiding a diagram from Recent takes it off the note at once
 // rather than at the next list.
-let latest: { projects: readonly ProjectSummary[]; fetchSnapshotSvg: FetchSnapshotSvg } | null =
+let latest: { projects: readonly RecentSource[]; fetchSnapshotSvg: FetchSnapshotSvg } | null =
   null;
 let listening = false;
 // One thumbnail sync at a time; a list that lands mid-sync asks for one more pass after it.
@@ -37,7 +39,7 @@ let syncing = false;
 let syncAgain = false;
 
 export function rememberRecentDiagrams(
-  projects: readonly ProjectSummary[],
+  projects: readonly RecentSource[],
   fetchSnapshotSvg: FetchSnapshotSvg,
 ): void {
   if (forgotten || typeof window === 'undefined') return;

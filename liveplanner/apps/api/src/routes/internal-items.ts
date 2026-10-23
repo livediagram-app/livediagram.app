@@ -4,11 +4,13 @@
 //
 //   POST   /api/internal/items/:from/copy-to/:to  {tabId?}  copy a plan's content (or one tab) into a new plan
 //   DELETE /api/internal/items/:id                          drop everything the plan stores, end its sessions
-//   POST   /api/internal/items/:id/revoke         {codes}   end the sessions of revoked share links
+//   POST   /api/internal/items/:id/revoke         {codes, reason?}  end the sessions of revoked or rescoped links
 //
-// Each is one call to the plan's Durable Object (plan-client.ts). The project row and its D1 side (sharing,
-// placement, trash) are the index's to manage; these touch the plan's own store only.
+// Each is one call to the plan's Durable Object (plan-client.ts). Where the plan is filed, its sharing and its
+// Trash are the index's; a purge also drops what D1 and R2 keep about the plan (its form links, the workbench
+// tickets and sessions scoped to it, its cached snapshots: db/projects.ts `purgePlanRows`).
 import { timingSafeEqual } from '../auth/timing-safe';
+import { purgePlanRows } from '../db/projects';
 import { planRoom } from '../plan-client';
 import { badRequest, json, notFound } from '../responses';
 import type { Env } from '../types';
@@ -51,6 +53,7 @@ export async function handleInternalItems(request: Request, env: Env): Promise<R
   // DELETE /api/internal/items/:id
   if (segments.length === 4 && request.method === 'DELETE') {
     await planRoom(env, id).purge();
+    await purgePlanRows(env, id);
     return json({ ok: true });
   }
 
@@ -65,7 +68,9 @@ export async function handleInternalItems(request: Request, env: Env): Promise<R
     ) {
       return badRequest('codes must be an array of share codes');
     }
-    const closed = await planRoom(env, id).revokeCodes(codes);
+    // A rescoped link (another level or tab) reloads its visitors into what it now opens; a revoked one sends them away.
+    const rescoped = body?.['reason'] === 'rescoped';
+    const closed = await planRoom(env, id).revokeCodes(codes, rescoped ? 'rescoped' : 'revoked');
     return json({ ok: true, closed });
   }
 

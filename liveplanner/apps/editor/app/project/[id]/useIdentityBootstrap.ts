@@ -10,15 +10,12 @@ import {
 import { projectIdFromPath, isEditorPath } from '@/lib/legacy-editor-path';
 import type { Tab } from '@liveplanner/project';
 import {
-  apiListShareLinks,
   apiLoadProject,
   apiLoadShared,
   getSessionSharePassword,
   readCachedSharePassword,
   setSessionSharePassword,
   writeCachedSharePassword,
-  type ShareLink,
-  type SharedWithItem,
   type ShareRole,
 } from '@/lib/api-client';
 import { isOfflineId, OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
@@ -30,6 +27,17 @@ import { trackDailyReturn } from '@/lib/daily-return';
 import { resolveProjectSession } from './editor-page-helpers';
 import { makeSeedFetchedProject } from './seed-fetched-project';
 import { isProjectTrashedError } from '@/lib/project-trashed';
+import { planGrant } from '@/lib/api/plan-grants';
+import { indexClient } from '@/lib/index-client';
+
+// Whether the index has this plan in its Trash, for the person (the deleted card rather than not found).
+async function isTrashedInIndex(id: string): Promise<boolean> {
+  try {
+    return (await indexClient.getItem(id)).item.trashedAt !== null;
+  } catch {
+    return false;
+  }
+}
 import { armLoadWatchdog, getLoadProgress, setLoadStep } from '@/lib/load-progress';
 import { track } from '@/lib/telemetry';
 import { projectLoadOrigin, noteProjectLoadEnded, startEditorTiming } from '@/lib/timing';
@@ -71,8 +79,6 @@ export function useIdentityBootstrap(opts: {
   workbench: WorkbenchProjectSession | null;
   activeId: string;
   selfParticipant: Participant;
-  refreshProjectList: (ownerId: string) => void;
-  refreshSharedList: (ownerId: string) => void;
   resetTabs: Dispatch<SetStateAction<Tab[]>>;
   refs: {
     lastPersistedSelfRef: MutableRefObject<{ name: string; color: string } | null>;
@@ -108,9 +114,6 @@ export function useIdentityBootstrap(opts: {
     setSessionShareCode: SetState<string | null>;
     // The one tab a tab-scoped link opens (docs/specs/013-workspace/tab-scoped-share-links.md); null = all.
     setSessionTabScope: (scope: string | null) => void;
-    setSharedProjects: SetState<SharedWithItem[]>;
-    setShareLinks: SetState<ShareLink[]>;
-    setSharePasswordSet: SetState<boolean>;
     setSharePasswordGate: SetState<{ invalid: boolean } | null>;
     setIdentityPromptOpen: SetState<boolean>;
   };
@@ -155,10 +158,6 @@ export function useIdentityBootstrap(opts: {
     const generation = ++runRef.current;
     const live = () => runRef.current === generation;
     const resetTabs = guardRun({ resetTabs: opts.resetTabs }, live).resetTabs;
-    const { refreshProjectList, refreshSharedList } = guardRun(
-      { refreshProjectList: opts.refreshProjectList, refreshSharedList: opts.refreshSharedList },
-      live,
-    );
     const {
       setActiveId,
       setProjectId,
@@ -184,9 +183,6 @@ export function useIdentityBootstrap(opts: {
       setSessionRole,
       setSessionShareCode,
       setSessionTabScope,
-      setSharedProjects,
-      setShareLinks,
-      setSharePasswordSet,
       setSharePasswordGate,
       setIdentityPromptOpen,
     } = guardRun(set, live);
@@ -360,18 +356,6 @@ export function useIdentityBootstrap(opts: {
         lastPersistedSelfRef.current = { name: self.name, color: self.color };
       }
 
-      // The NotFound / load-error pages render the Explorer panel behind
-      // the status card so the user can still navigate to their other
-      // projects — which only works if those early-return paths fetch the
-      // Explorer's lists too. Called on each of them below; the success
-      // path keeps its own calls at the end of this effect (AFTER the
-      // share-visit registration, so refreshSharedList sees the new row).
-      const seedExplorerLists = () => {
-        // An early open's lists wait for the real participant (settleEarlyIdentity).
-        if (early) return;
-        refreshProjectList(self.id);
-        refreshSharedList(self.id);
-      };
 
       // An address that names no project and carries no share link (docs/specs/007-editor/new-project-route.md
       // "Unknown addresses"): the not-found card over the Explorer. It used to send the reader to /new, so a
@@ -379,7 +363,6 @@ export function useIdentityBootstrap(opts: {
       if (!id && !shareCodeParam) {
         debugLog('[load] not an editor address, showing not found');
         setProjectNotFound(true);
-        seedExplorerLists();
         setHydrated(true);
         setLoadingProject(false);
         setNameConfirmed(hasConfirmedName());
@@ -406,7 +389,7 @@ export function useIdentityBootstrap(opts: {
         setLoadStep('share');
         let resolution;
         try {
-          resolution = await apiLoadShared(shareCodeParam, self.id);
+          resolution = await apiLoadShared(shareCodeParam, self.id, id);
         } catch (err) {
           // Couldn't reach the server to resolve the share link (network
           // / 5xx). Retryable, so show the error page instead of the
@@ -415,7 +398,6 @@ export function useIdentityBootstrap(opts: {
           // visitor sees that it was deleted.
           if (isProjectTrashedError(err)) setProjectTrashed(true);
           else setLoadError(true);
-          seedExplorerLists();
           setHydrated(true);
           setLoadingProject(false);
           setNameConfirmed(hasConfirmedName());
@@ -429,7 +411,6 @@ export function useIdentityBootstrap(opts: {
           // silent blank canvas (which used to read as "the
           // project loaded but is empty").
           setProjectNotFound(true);
-          seedExplorerLists();
           setHydrated(true);
           setLoadingProject(false);
           setNameConfirmed(hasConfirmedName());
@@ -481,6 +462,15 @@ export function useIdentityBootstrap(opts: {
           // A share link always opens a server project: it has a room.
           setProjectServerStored(true);
           setProjectId(fetched.id);
+          // A link's own address (`/project/shared?s=<code>`) names no plan: the bar names the one it opened, so a
+          // reload, a deep link and the grant all address the plan itself.
+          if (!id) {
+            window.history.replaceState(
+              window.history.state,
+              '',
+              `/project/${encodeURIComponent(fetched.id)}${window.location.search}${window.location.hash}`,
+            );
+          }
           setIsOwner(session.isOwner);
           // Visitors inherit the role from their share code; owners are
           // always 'edit' (see resolveProjectSession).
@@ -498,32 +488,6 @@ export function useIdentityBootstrap(opts: {
           const isOwnerVisit = session.isOwner;
           if (!isOwnerVisit && !hasConfirmedName()) {
             setIdentityPromptOpen(true);
-          }
-          // Optimistically add the current project to the shared-with
-          // list so it appears in the Explorer immediately, before the
-          // refreshSharedList network round-trip completes. The server
-          // fetch will replace this with the full list; deduplicate so
-          // returning visitors don't see a duplicate row.
-          if (!isOwnerVisit) {
-            setSharedProjects((prev) =>
-              prev.some((d) => d.id === fetched.id)
-                ? prev
-                : [
-                    {
-                      id: fetched.id,
-                      name: fetched.name,
-                      savedAt: fetched.savedAt,
-                      role,
-                      shareCode: shareCodeParam,
-                      tabId: scopeTabId,
-                      ownerName: fetched.ownerName ?? null,
-                      ownerColor: fetched.ownerColor ?? null,
-                      // Not known from the tab summaries: ask for the thumbnail, as the server list will say.
-                      empty: false,
-                    },
-                    ...prev,
-                  ],
-            );
           }
           // Project·Joined is counted by the api worker when it resolves
           // the share code, once per (visitor, project) (docs/specs/017-telemetry/telemetry.md). Emitting
@@ -543,7 +507,6 @@ export function useIdentityBootstrap(opts: {
           setProjectId(id);
           if (isProjectTrashedError(err)) setProjectTrashed(true);
           else setLoadError(true);
-          seedExplorerLists();
           setHydrated(true);
           setLoadingProject(false);
           setNameConfirmed(hasConfirmedName());
@@ -553,10 +516,11 @@ export function useIdentityBootstrap(opts: {
           // URL had a ?d=<id> but the API didn't return anything for
           // us — either the project doesn't exist or we don't own it.
           // Surface a NotFound page instead of dropping the user into
-          // the new-project welcome flow.
+          // the new-project welcome flow. A plan in the Trash has no grant, so the api cannot tell it from a
+          // missing one; the index can (its item outlives the trashing), and then it gets the deleted card.
           setProjectId(id);
-          setProjectNotFound(true);
-          seedExplorerLists();
+          if (await isTrashedInIndex(id)) setProjectTrashed(true);
+          else setProjectNotFound(true);
           setHydrated(true);
           setLoadingProject(false);
           setNameConfirmed(hasConfirmedName());
@@ -576,23 +540,10 @@ export function useIdentityBootstrap(opts: {
         // Every server-stored project has a room, personal ones included (docs/specs/024-agents/
         // agent-changesets.md "Rooms for personal projects"); an offline one has none.
         setProjectServerStored(!offline);
-        setIsOwner(offline || fetched.ownerId === self.id);
+        // The owner's chrome goes to whoever holds edit on the plan without a link: its owner, or a member of the
+        // team that owns it. The index decides that, so a guest's plans stay theirs once the guest becomes an account.
+        setIsOwner(offline || (await planGrant(fetched.id))?.level === 'edit');
         setSessionRole('edit');
-        // A team project opened here was let in as owner or joined member, and every joined
-        // member may share it (mayShareProject), so they get the list too.
-        if (offline || fetched.ownerId === self.id || fetched.teamId) {
-          // Prefetch the share-link list so the dialog opens
-          // populated — cloud only; an offline project has nothing
-          // on the server to share.
-          if (!offline) {
-            apiListShareLinks(self.id, fetched.id)
-              .then(({ links, passwordSet }) => {
-                setShareLinks(links);
-                setSharePasswordSet(passwordSet);
-              })
-              .catch(() => {});
-          }
-        }
         // Owner branch (`?d=<id>` / `/project/<id>`): a signed-in
         // user is by definition the owner here and their identity is
         // settled — skip the identity prompt entirely. Guests fall
@@ -604,10 +555,6 @@ export function useIdentityBootstrap(opts: {
         setProjectId(id);
       }
       setNameConfirmed(hasConfirmedName());
-      seedExplorerLists();
-      // Folder list is auto-loaded by the useFolders hook once
-      // selfParticipant.id transitions off the placeholder — no
-      // manual fetch needed here.
       setHydrated(true);
       setLoadingProject(false);
       // A load that outlived its watchdog replaces the load-error screen it put up.
@@ -641,8 +588,6 @@ export function useIdentityBootstrap(opts: {
       trackDailyReturn(!!accountUserId);
       if (!accountUserId && !hasConfirmedName()) opts.set.setIdentityPromptOpen(true);
       opts.set.setNameConfirmed(hasConfirmedName());
-      opts.refreshProjectList(self.id);
-      opts.refreshSharedList(self.id);
     })().catch((err: unknown) => console.warn('[load] resolving the reader failed', err));
   });
   useLayoutEffect(() => {

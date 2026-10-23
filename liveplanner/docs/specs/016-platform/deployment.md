@@ -9,7 +9,7 @@ There is a second environment, **staging**, which does deploy on its own: every 
 | App              | Cloudflare Worker       | Type                                                                          |
 | ---------------- | ----------------------- | ----------------------------------------------------------------------------- |
 | `apps/marketing` | `liveplanner-marketing` | Static assets only (Next.js `output: 'export'`).                              |
-| `apps/editor`      | `liveplanner-editor`      | Static assets + a tiny path-rewrite worker.                                   |
+| `apps/editor`    | `liveplanner-editor`    | Static assets + a tiny path-rewrite worker.                                   |
 | `apps/help`      | `liveplanner-help`      | Static assets only (help centre, [Help app](../018-help/help-app.md)).        |
 | `apps/api`       | `liveplanner-api`       | Worker (D1 binding + Durable Object).                                         |
 | `apps/mcp`       | `liveplanner-mcp`       | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)). |
@@ -120,14 +120,14 @@ Set in the repo under **Settings → Secrets and variables → Actions**:
 
 **Optional**, each synced into `wrangler secret put` by the deploy workflow and skipped when unset, so an environment that sets none still deploys:
 
-| Secret                   | Synced to       | See                                                                                      |
-| ------------------------ | --------------- | ---------------------------------------------------------------------------------------- |
-| `ACCOUNTS_URL`           | api             | [04](../014-identity/auth-and-guest-access.md)                                           |
-| `API_RESOURCE`           | api             | [04](../014-identity/auth-and-guest-access.md)                                           |
-| `ACCOUNTS_CLIENT_ID`     | api             | [04](../014-identity/auth-and-guest-access.md) — also turns sign-in on in the live build |
-| `ACCOUNTS_CLIENT_SECRET` | api             | [04](../014-identity/auth-and-guest-access.md)                                           |
-| `GUEST_ID_HMAC_SECRET`   | api             | [04](../014-identity/auth-and-guest-access.md)                                           |
-| `TELEMETRY_KEY`          | api **and** mcp | [22](../017-telemetry/telemetry.md) — one GitHub secret drives both, so they can't drift |
+| Secret                   | Synced to       | See                                                                                                                                                 |
+| ------------------------ | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ACCOUNTS_URL`           | api             | [04](../014-identity/auth-and-guest-access.md)                                                                                                      |
+| `API_RESOURCE`           | api             | [04](../014-identity/auth-and-guest-access.md)                                                                                                      |
+| `ACCOUNTS_CLIENT_ID`     | api             | [04](../014-identity/auth-and-guest-access.md) — also turns sign-in on in the live build                                                            |
+| `ACCOUNTS_CLIENT_SECRET` | api             | [04](../014-identity/auth-and-guest-access.md)                                                                                                      |
+| `INDEX_KEY`              | api             | [One Explorer](../../../../liveworkspace/docs/one-explorer-contracts.md#reaching-the-index) — the same value as the index's `INDEX_KEY_LIVEPLANNER` |
+| `TELEMETRY_KEY`          | api **and** mcp | [22](../017-telemetry/telemetry.md) — one GitHub secret drives both, so they can't drift                                                            |
 
 The live build sets `NEXT_PUBLIC_SIGN_IN_ENABLED=true` exactly when `ACCOUNTS_CLIENT_ID` is set, so the editor offers sign-in only when the api can complete it.
 

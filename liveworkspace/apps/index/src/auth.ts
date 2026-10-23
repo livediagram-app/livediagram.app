@@ -1,18 +1,23 @@
 // Who is asking (liveworkspace/docs/one-explorer-contracts.md "Reaching the index"):
 //   - a person, by an accounts access token or a guest token, checked offline against accounts' keys;
+//   - an app's server acting for an account it checked itself (an API token's), by its key, X-Index-App and
+//     X-Index-Person: that account, for that app's items only;
 //   - a link visitor, by a share code (and its password), with or without a person;
 //   - an app's server, by its key and X-Index-App;
 //   - accounts, by the merge key.
 
 import { createPersonVerifier } from '@liveworkspace/auth-client';
 import {
+  DELEGATED_TEAMS_MAX,
   INDEX_APP_HEADER,
+  INDEX_PERSON_HEADER,
+  INDEX_TEAMS_HEADER,
   isApp,
   SHARE_CODE_HEADER,
   SHARE_PASSWORD_HEADER,
   type App,
 } from '@liveworkspace/index-client';
-import { isShareCode } from './codec';
+import { isId, isShareCode } from './codec';
 import { accountsUrl, appKey, audiences, type Env } from './env';
 import { timingSafeEqual } from './timing-safe';
 
@@ -21,6 +26,8 @@ export type Person = {
   kind: 'account' | 'guest';
   // The teams the person has joined, from their token's claim. A guest has none.
   teams: string[];
+  // Set when an app's server acts for the person: only that app's items are theirs to reach here.
+  app?: App;
 };
 
 export type ShareCredentials = { code: string; password: string | null };
@@ -71,8 +78,31 @@ export function shareOf(request: Request): ShareCredentials | null {
   return { code: code.toUpperCase(), password: password || null };
 }
 
-export async function callerOf(request: Request, env: Env): Promise<Caller> {
-  return { person: await personOf(request, env), share: shareOf(request) };
+// The account an app's server acts for, or null when the request names none. A request that names one without
+// the app's key, or names a guest or a malformed id, is refused rather than read as nobody.
+export async function delegatedPersonOf(
+  request: Request,
+  env: Env,
+): Promise<Person | null | 'refused'> {
+  const personId = request.headers.get(INDEX_PERSON_HEADER);
+  if (personId === null) return null;
+  const app = await callerApp(request, env);
+  // An account only: a guest has no API token, and a link visitor is no person.
+  if (!app || !isId(personId) || personId.startsWith('guest_') || personId.includes(':')) {
+    return 'refused';
+  }
+  const teams = (request.headers.get(INDEX_TEAMS_HEADER) ?? '')
+    .split(',')
+    .map((t) => t.trim())
+    .filter(Boolean);
+  if (teams.length > DELEGATED_TEAMS_MAX || !teams.every(isId)) return 'refused';
+  return { id: personId, kind: 'account', teams, app };
+}
+
+export async function callerOf(request: Request, env: Env): Promise<Caller | null> {
+  const delegated = await delegatedPersonOf(request, env);
+  if (delegated === 'refused') return null;
+  return { person: delegated ?? (await personOf(request, env)), share: shareOf(request) };
 }
 
 // The app this request speaks for, or null when it doesn't carry that app's key.

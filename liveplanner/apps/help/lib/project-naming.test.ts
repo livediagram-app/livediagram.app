@@ -37,6 +37,9 @@ const PAGE_SEARCH_WORDS = /^\s*page: '[^']*\bdocument\b[^']*',$/;
 // "documentation" are taken out.
 const DOM_WORDS =
   /ownerDocument|contentDocument|documentElement|compareDocumentPosition|DOCUMENT_POSITION_\w+|createDocumentFragment|DocumentFragment|DocumentTimeline|DocumentOrShadowRoot|[Dd]ocumentation|[Uu]ndocumented|[Dd]ocumented|[Dd]ocumenting/g;
+// Another liveworkspace app's own address for its items (livediagram's and livedocuments' `/document/`), which the
+// shared Explorer opens on that app's site.
+const OTHER_APP_PATHS = /^\s*(livediagram|livedocuments): '\/document\/',$/;
 // A line stating the rule itself.
 const RULE = /never "document"/;
 const NAMED = /document/i;
@@ -45,16 +48,19 @@ const misnames = (line: string) =>
   !DOM_DOCUMENT.test(line) &&
   !FLOWCHART_DOCUMENT.test(line) &&
   !PAGE_SEARCH_WORDS.test(line) &&
+  !OTHER_APP_PATHS.test(line) &&
   !RULE.test(line);
 
 function scannedFiles(): string[] {
-  return execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' })
-    .split('\n')
-    // A file deleted in the working tree but not yet staged is still listed; it is not part of the change.
-    .filter(
-      (f) =>
-        SCANNED.test(f) && !ALLOWED_FILES.some((re) => re.test(f)) && existsSync(`${ROOT}/${f}`),
-    );
+  return (
+    execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' })
+      .split('\n')
+      // A file deleted in the working tree but not yet staged is still listed; it is not part of the change.
+      .filter(
+        (f) =>
+          SCANNED.test(f) && !ALLOWED_FILES.some((re) => re.test(f)) && existsSync(`${ROOT}/${f}`),
+      )
+  );
 }
 
 describe('a project is never called a document', () => {

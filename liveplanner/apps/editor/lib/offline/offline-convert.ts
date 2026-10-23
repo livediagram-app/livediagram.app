@@ -7,8 +7,8 @@
 // every other device), so the UI gates it behind a confirmation.
 
 import { fetchItems } from '../api/items';
-import { apiLoadProject, apiLoadTab, fetchCloudFavouriteIds } from '@/lib/api-client';
-import { fetchCloudTags } from '@/lib/api/tags';
+import { apiLoadProject, apiLoadTab } from '@/lib/api-client';
+import { indexClient } from '@/lib/index-client';
 import { PROJECT_CONVERSION_HEADER } from '@liveplanner/api-schema';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
 import {
@@ -102,15 +102,12 @@ async function downloadAndRemoveCloudCopy(
   const sheets = await fetchAllSheets({ ownerId, projectId, shareCode, tabId: null });
   const tabs = fetchedTabs;
 
-  // The cloud star is a row keyed on the project, so the server delete below
-  // takes it too; carry it onto the offline record (docs/specs/013-workspace/favourites.md). A failed
-  // read aborts here, before anything is written: taken as "not starred" it would drop the star.
-  const starred = (await fetchCloudFavouriteIds(ownerId)).includes(liveDoc.id);
-  // Its tags too (docs/specs/013-workspace/tags.md "An offline project's tags live in the browser"), read the same
-  // way: a failed read aborts rather than dropping them with the server row.
-  const tagIds = (await fetchCloudTags(ownerId)).links
-    .filter((l) => l.projectId === liveDoc.id)
-    .map((l) => l.tagId);
+  // The person's star and tags are the index's, on the plan's item, which the server delete below takes too; carry
+  // them onto the offline record (docs/specs/013-workspace/favourites.md, tags.md "An offline project's tags live in
+  // the browser"). A failed read aborts here, before anything is written: taken as "none" it would drop them.
+  const { item } = await indexClient.getItem(liveDoc.id);
+  const starred = item.favourite;
+  const tagIds = item.tagIds;
   const now = Date.now();
   const rec: OfflineProjectRecord = {
     id: liveDoc.id,

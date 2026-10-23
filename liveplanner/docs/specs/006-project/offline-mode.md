@@ -1,9 +1,8 @@
 # Offline Mode
 
 **Offline Mode** lets you create a project that is saved **only in the current
-browser** — never to the API, never to the server. It is the default for a guest's
-new project ([Auth + guest access → Guest projects start local](../014-identity/auth-and-guest-access.md#guest-projects-start-local))
-and an opt-in choice for everyone else. It suits private/local-first work, air-gapped or
+browser** — never to the API, never to the server. It is an opt-in choice for
+everyone, guests included: every new project starts on liveplanner ([Save Locations](save-locations.md#the-default)). It suits private/local-first work, air-gapped or
 no-account use, and anyone who wants a project that physically never leaves
 their machine. It also keeps the editor's degrade-never-break rule ([Business model + licence](../002-project-scope/business-model-and-licence.md)): the editor is fully
 usable with the API _and_ auth switched off.
@@ -16,19 +15,18 @@ Tab bodies are stamped with their **tab kind** on the way into IndexedDB (`upser
 
 ## Turning it on
 
-Offline Mode is **on by default for a guest and off by default for a signed-in person**
-([Save Locations → The default depends on who is creating](save-locations.md#the-default-depends-on-who-is-creating)).
+Offline Mode is **off by default for everyone**, guests included
+([Save Locations → The default](save-locations.md#the-default)).
 Nobody is asked when creating a project; the default decides:
 
 - The **New Project** wizard ([Dedicated route for new-project creation](../007-editor/new-project-route.md#one-step-wizard))
   asks only for a mode and creates the project in the default location for who is creating
-  ([Save Locations](save-locations.md)): **This Browser** for a guest, **liveplanner** for a signed-in person.
+  ([Save Locations](save-locations.md)): **liveplanner**, whoever is creating.
   Either moves later: **Take Offline** moves a cloud project into This Browser, **Sync Project** puts one in This Browser on
   liveplanner.
 - The links that create without the wizard (`/new?template=`, `/new?blank=1`,
   [Dedicated route for new-project creation → Start Blank](../007-editor/new-project-route.md#start-blank-skip-the-wizard))
-  take the same default, so a guest following a template from the landing page
-  gets a project in This Browser.
+  take the same default.
 - The location only changes _where the project is stored_; the mode, templates and theme work identically.
 
 No global "offline mode" switch: the choice is **per project**, so a person can
@@ -119,12 +117,11 @@ auth has settled, the path names a project registered in the local index
   Project from the Share dialog waits too (the gate's `ready`).
 - **The reader resolves in the background** once auth answers, exactly as a
   cloud open resolves it (`resolveParticipant` in
-  `app/project/[id]/resolve-participant.ts`: the account id or signed guest id,
+  `app/project/[id]/resolve-participant.ts`: the account id or the guest token's id,
   then the participant row), followed by the Explorer lists and the guest naming
   nudge. The project is not reloaded: an offline project is the reader's own
   whoever they turn out to be.
-- **`/new` does not wait either.** For a guest ([Who is a guest, before sign-in answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-sign-in-answers))
-  creating This Browser, the create writes to IndexedDB and hands off without
+- **`/new` does not wait either.** For a project created in This Browser, the create writes to IndexedDB and hands off without
   waiting on auth, the guest id or the participant, which resolve in the
   background (`commitNewProject` in `app/new/page.tsx`).
 - The editor reads back the record `/new` has just written rather than taking
@@ -175,7 +172,7 @@ Explorer lists follow after the paint.
   or otherwise).
 - **The reader's own.** An offline project counts as one of the reader's own
   projects: Space `mine` and owner "You", like a project in My Work
-  ([Explorer structure: projects in This Browser](../013-workspace/explorer-structure.md#projects-in-this-browser)).
+  ([Explorer structure: projects in This Browser](../013-workspace/explorer-structure.md)).
 - **Sidebar.** The full-page Explorer's **This Browser** row (the More group,
   [Explorer structure](../013-workspace/explorer-structure.md)) opens
   `/explorer/offline`, the list of every offline project, titled **This
@@ -183,10 +180,10 @@ Explorer lists follow after the paint.
 - **Home.** An offline project's opens are counted in its own local record, never
   sent anywhere, so Home's Jump Back In places it among the reader's other
   projects by the same rule, with the **This Browser** pill on its thumbnail
-  ([Explorer Home](../013-workspace/explorer-home.md#opens)).
+  ([Explorer Home](../013-workspace/explorer-home.md)).
 - **Inbox.** The Inbox reads offline projects in the browser and lists their open actions, Plan cards and comment
   threads among the cloud ones, each row with the **This Browser** pill
-  ([Inbox §2.6](../013-workspace/inbox.md#26-projects-in-this-browser)).
+  ([Inbox §2.6](../013-workspace/inbox.md)).
 
 ### This Browser pill
 
@@ -278,13 +275,13 @@ Action: **"Sync Project"** (one name everywhere: the Explorer row menu, the
 Share dialog gate, Share Form's, and the move prompt after signing in).
 
 - Uploads the project's meta + tabs to the API ([API app](../015-api/api.md)), creating a normal
-  cloud project owned by the current identity (signed-in account, or the guest
-  `X-Owner-Id` if not signed in — [Auth + guest access](../014-identity/auth-and-guest-access.md)).
+  cloud project owned by the current identity (signed-in account, or the guest's
+  liveworkspace guest token if not signed in — [Auth + guest access](../014-identity/auth-and-guest-access.md)).
 - **Everything on the record travels**, not just tabs: the created date, the folder (kept only when it is one of the
   caller's own personal folders, else the root of My Work) and the star ([Favourite projects](../013-workspace/favourites.md)). The
   local copy is deleted next, so anything the create leaves behind is gone.
 - **A refused folder lands at the root, on the sync's say-so.** The create carries the folder as
-  its placement ([Folders → Placement on create](../013-workspace/folders.md#placement-on-create)),
+  its placement ([Folders → Placement on create](../013-workspace/folders.md)),
   and the server refuses a folder deleted since, or not the caller's, by name rather than
   filing it elsewhere. On `folder_not_found` or `folder_scope_mismatch` the sync creates the
   project again at the root of My Work and logs `[offline-sync] placement refused reason=<code>, filed at root`;
@@ -372,10 +369,10 @@ Offline Mode is independent of sign-in:
   account — a signed-in user's offline projects do **not** appear on their other
   devices (that's the point).
 - It differs from a **guest cloud** project ([Auth + guest access](../014-identity/auth-and-guest-access.md)): a guest's cloud project is
-  anonymous but still on the server (keyed by the browser's participant id);
+  on the server and in liveworkspace's index under the guest's liveworkspace identity, and moves to the account at sign-in;
   an offline project never touches the server at all.
-- Sign-in / sign-out never migrates offline projects by itself (the migrate flow, [Auth + guest access](../014-identity/auth-and-guest-access.md),
-  only moves guest _cloud_ projects to the account). After signing in, a prompt
+- Sign-in / sign-out never migrates offline projects by itself (the index's guest-to-account move, [Auth + guest access](../014-identity/auth-and-guest-access.md#guest--account),
+  only moves a guest's _cloud_ projects). After signing in, a prompt
   **offers** to move them ([Moving projects in This Browser after signing in](../014-identity/auth-and-guest-access.md#moving-projects-in-this-browser-after-signing-in));
   a project the person leaves stays put.
 - The "This Browser" badge and pill read the same for a guest as for anyone: the
@@ -403,7 +400,7 @@ target:
   the offline rows when the cloud fetch fails.
 - **Create is the one caller-decided branch**, because there is no registered id
   to dispatch on yet: the New Project wizard calls `offlineCreateProject`
-  directly when the location is This Browser (picked, or a guest's default), and
+  directly when the location is This Browser (picked on purpose), and
   that call is what registers the id every later operation routes on.
 - Only the project/tab CRUD path needs the local store; server-only endpoints
   (share, teams, room ticket, thumbnails) are simply never called for an offline

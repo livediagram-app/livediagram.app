@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Tab } from '@liveplanner/project';
-import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { copyProject } from './projects';
+import { sqliteD1, type SqliteD1, testCopyPlan } from '../test-sqlite-d1';
 import {
   getTab,
   isTabRevStale,
@@ -57,7 +56,7 @@ describe('tab revisions', () => {
 
   function projectWith(): SqliteD1 {
     const db = sqliteD1();
-    db.sql.exec(`INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at)
+    db.sql.exec(`INSERT INTO test_plans (id, owner_id, name, shareable, saved_at, created_at)
                  VALUES ('D', 'o', 'Doc', 0, 1, 1)`);
     return db;
   }
@@ -110,7 +109,7 @@ describe('tab revisions', () => {
       ),
     ).toBe(true);
     expect(revOf(db, 't1')).toBe(3);
-    await copyProject(db.env, 'D', 'D2', 'o', 'Copy');
+    await testCopyPlan(db.env, 'D', 'D2', 'o', 'Copy');
     const copied = db.sql
       .prepare(
         "SELECT t.rev FROM tabs t JOIN plan_tabs dt ON dt.tab_id = t.id WHERE dt.plan_id = 'D2'",

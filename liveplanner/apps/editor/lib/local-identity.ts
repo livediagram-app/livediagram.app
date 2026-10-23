@@ -16,32 +16,17 @@
 // incompatibly we'll bump to `v3:` and drop the old keys at read
 // time so a returning guest doesn't end up with mixed-version state.
 
-import {
-  readLocalStorageSafe,
-  removeLocalStorageSafe,
-  writeLocalStorageSafe,
-} from './local-storage-safe';
+import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-safe';
+import { readGuestToken } from './guest-token';
+import { GUEST_TOKEN_STORAGE_KEY } from './guest-token-key';
 import { track } from './telemetry';
 
 const NS = 'liveplanner:v2:';
 
 const KEYS = {
-  // Per-browser guest participant id (`crypto.randomUUID()`),
-  // carried to the api worker as `X-Owner-Id` until/unless the
-  // user signs in with an account. See docs/specs/014-identity/auth-and-guest-access.md — "Hybrid identity".
-  selfId: `${NS}self-id`,
-  // HMAC signature of the guest id, minted by the api worker at
-  // POST /api/guest-id (auth/owner-signature.ts). Replayed in the
-  // /api/migrate body so the worker can prove the caller actually owns
-  // the guest data it's claiming — observing the bare id is not enough.
-  // Absent for legacy guests created before signing shipped, or when the
-  // worker has no GUEST_ID_HMAC_SECRET configured. See docs/specs/014-identity/auth-and-guest-access.md.
-  selfSig: `${NS}self-sig`,
-  // An upgrade to a signed id that has been asked for but not yet adopted: {from, to, sig}.
-  // Written before the worker moves the data, cleared once the new id is kept, so a reload
-  // in between resumes the same upgrade instead of minting another id
-  // (docs/specs/014-identity/auth-and-guest-access.md, "An interrupted upgrade resumes").
-  pendingUpgrade: `${NS}pending-signed-id`,
+  // The guest's id is its token's (lib/guest-token.ts, liveworkspace/docs/one-explorer-contracts.md "Guests"),
+  // kept by the token module; it is listed here so a browser repair keeps it.
+  guestToken: GUEST_TOKEN_STORAGE_KEY,
   // Boolean flag — '1' once the user has confirmed their display
   // name via the welcome modal at least once. Used to suppress the
   // identity prompt on subsequent project opens. Only meaningful
@@ -56,8 +41,8 @@ const KEYS = {
   // PROJECT records per person — the `responses` on a done check,
   // estimate card or temperature check (docs/specs/012-collaboration/participant-responses.md).
   //
-  // Deliberately NOT `selfId`: that is the guest's owner id, an
-  // `X-Owner-Id` credential, and writing it into a shared project would
+  // Deliberately NOT `selfId`: that is the guest's owner id, and
+  // writing it into a shared project would
   // hand it to every co-viewer. Deliberately not the room's presence id
   // either — that one is minted per socket (docs/specs/015-api/public-api-and-tokens.md §6), so it changes
   // on reconnect and matches nothing that was saved. This sits between
@@ -69,102 +54,38 @@ const KEYS = {
 // (docs/specs/007-editor/load-recovery.md "Repairing a browser").
 export const LOCAL_IDENTITY_KEYS = KEYS;
 
+// The guest's id (`guest_<uuid>`, the same in every app), from its token; null with none.
 export function getGuestSelfId(): string | null {
-  return readLocalStorageSafe(KEYS.selfId);
+  return readGuestToken()?.id ?? null;
 }
 
 // The guest id as an external store (docs/specs/003-system-architecture/react-state-and-effects.md):
-// components read it with useSyncExternalStore(subscribeGuestSelfId, getGuestSelfId), and every write
-// here notifies them; another tab's write arrives as a storage event.
-const guestIdListeners = new Set<() => void>();
-const notifyGuestId = () => guestIdListeners.forEach((fn) => fn());
+// another tab's new token arrives as a storage event.
 export function subscribeGuestSelfId(onChange: () => void): () => void {
-  guestIdListeners.add(onChange);
   const onStorage = (e: StorageEvent) => {
-    if (e.key === null || e.key === KEYS.selfId) onChange();
+    if (e.key === null || e.key === KEYS.guestToken) onChange();
   };
   if (typeof window !== 'undefined') window.addEventListener('storage', onStorage);
   return () => {
-    guestIdListeners.delete(onChange);
     if (typeof window !== 'undefined') window.removeEventListener('storage', onStorage);
   };
 }
 
-function setGuestSelfId(id: string): void {
-  writeLocalStorageSafe(KEYS.selfId, id);
-  notifyGuestId();
-}
-
-export function clearGuestSelfId(): void {
-  removeLocalStorageSafe(KEYS.selfId);
-  removeLocalStorageSafe(KEYS.selfSig);
-  notifyGuestId();
-}
-
-type PendingGuestUpgrade = { from: string; to: string; sig: string };
-
-export function getPendingGuestUpgrade(): PendingGuestUpgrade | null {
-  const raw = readLocalStorageSafe(KEYS.pendingUpgrade);
-  if (!raw) return null;
-  try {
-    const v = JSON.parse(raw) as Partial<PendingGuestUpgrade>;
-    return typeof v.from === 'string' && typeof v.to === 'string' && typeof v.sig === 'string'
-      ? { from: v.from, to: v.to, sig: v.sig }
-      : null;
-  } catch {
-    return null;
-  }
-}
-
-export function setPendingGuestUpgrade(pending: PendingGuestUpgrade | null): void {
-  if (pending) writeLocalStorageSafe(KEYS.pendingUpgrade, JSON.stringify(pending));
-  else removeLocalStorageSafe(KEYS.pendingUpgrade);
-}
-
-export function getGuestSelfSig(): string | null {
-  return readLocalStorageSafe(KEYS.selfSig);
-}
-
-// Persist the id + its signature together: they are a pair, and a
-// signature without its matching id (or vice-versa) is useless. Pass
-// `null` sig to clear it (e.g. a worker with signing disabled).
-export function setGuestIdentity(id: string, sig: string | null): void {
-  writeLocalStorageSafe(KEYS.selfId, id);
-  if (sig) writeLocalStorageSafe(KEYS.selfSig, sig);
-  else removeLocalStorageSafe(KEYS.selfSig);
-  notifyGuestId();
-}
-
-// Read the existing guest id, or mint + persist a fresh one. The
-// editor / new-project / explorer routes all need this exact "find
-// or create" gesture as the X-Owner-Id fallback for signed-out
-// visitors, and the inline `getGuestSelfId() ?? randomUUID() +
-// setGuestSelfId()` chunk was duplicated at every call site. SSR-safe
-// via the shared local-storage helpers: when storage is unavailable
-// (no window, private mode, storage disabled) the mint still runs and
-// returns a one-shot UUID, the call site just won't see it survive a
-// reload.
+// The guest id, or a stand-in for this page load when there is no guest token (the handoff could not run): the
+// page still renders, and the api refuses what needs an identity, as it does for a link visitor.
+let standIn: string | null = null;
 export function ensureGuestSelfId(): string {
-  const stored = getGuestSelfId();
-  if (stored) return stored;
-  const fresh = crypto.randomUUID();
-  setGuestSelfId(fresh);
-  // A fresh mint means a browser we've never seen: the daily
-  // new-visitors signal (docs/specs/017-telemetry/telemetry.md). Returning visitors hit the
-  // `stored` early-return above and never re-emit.
-  reportParticipantCreated();
-  return fresh;
+  const id = getGuestSelfId();
+  if (id) return id;
+  standIn ??= `guest_${crypto.randomUUID()}`;
+  return standIn;
 }
 
-// Set once this page load has counted a new visitor. Two mints can race
-// inside one load: the signed mint (guest-identity.ts) awaits the network
-// while a synchronous caller (TeamInviteJoin, /new's commit fallback) mints
-// a local id, and with storage unavailable every call re-mints. Either way
-// it is one browser, so it counts once.
+// Set once this page load has counted a new visitor, so it counts once.
 let participantCreatedReported = false;
 
-// The single emit point for `Participant`/`Created` (docs/specs/017-telemetry/telemetry.md), shared by the
-// local mint above and the signed mint in guest-identity.ts.
+// The single emit point for `Participant`/`Created` (docs/specs/017-telemetry/telemetry.md): a guest token for a
+// guest this browser has not had (guest-token.ts).
 export function reportParticipantCreated(): void {
   if (participantCreatedReported) return;
   participantCreatedReported = true;

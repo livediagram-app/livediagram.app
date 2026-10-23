@@ -1,14 +1,10 @@
 import type { Metadata } from 'next';
-import { ExplorerPane } from '../ExplorerPane';
-import { viewProjectTitle } from '../view-titles';
 
-// /explorer/home: the Explorer's landing view (docs/specs/013-workspace/explorer-home.md). The
-// layout's ExplorerShell provides the chrome and state; this page only pins the route and the tab
-// title.
+// The Explorer's Home view: ExplorerShell (the layout) renders it from the address.
 export const metadata: Metadata = {
-  title: viewProjectTitle('home'),
+  title: 'Home | liveplanner',
 };
 
 export default function Page() {
-  return <ExplorerPane />;
+  return null;
 }

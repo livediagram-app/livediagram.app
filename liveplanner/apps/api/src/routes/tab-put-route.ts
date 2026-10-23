@@ -25,7 +25,6 @@ import { MAX_TAB_BYTES, bodyExceedsCap, storeTab } from '../limits';
 import { capStoredName } from '../names';
 import { badRequest, conflict, json, payloadTooLarge } from '../responses';
 import { applyRoomLedger, fetchRoomLedger } from '../room-client';
-import { recordTabSave } from '../timeline';
 import type { TabSaveProject } from '../db/tab-save-project';
 import { readBody, type PlanRouteContext } from './context';
 
@@ -142,11 +141,6 @@ export async function handleTabPut(
       continue;
     }
     logMerge(id, tabId, merge);
-    // docs/specs/013-workspace/timeline.md: the coalesced "worked on" event plus anything the save
-    // added that the feed cares about. Off the response path: this fires on every autosave.
-    ctx.waitUntil?.(
-      recordTabSave(env, existing, owner, sanitised.elements, existingTab?.elements ?? []),
-    );
     // docs/specs/014-identity/transactional-email.md (#1): an edit-role visitor adding a comment
     // notifies the owner. Their own comment only, read from the authors the server just set.
     if (

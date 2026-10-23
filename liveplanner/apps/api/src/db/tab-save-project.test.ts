@@ -8,7 +8,7 @@ import { getProjectForSave } from './tab-save-project';
 function setUp() {
   const db = sqliteD1();
   db.sql.exec(`
-    INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at, team_id)
+    INSERT INTO test_plans (id, owner_id, name, shareable, saved_at, created_at, team_id)
       VALUES ('d1', 'owner', 'Plan', 0, 5, 3, NULL);
     INSERT INTO participants (id, name, color, created_at) VALUES ('owner', 'Ada', '#ff0000', 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 'One', '{"elements":[]}', 1), ('t2', 'Two', '{"elements":[]}', 1);
@@ -41,11 +41,9 @@ describe('getProjectForSave', () => {
     });
   });
 
-  it('reads a trashed or unknown project as missing', async () => {
-    const { env, sql } = setUp();
+  it('reads an unknown project as missing', async () => {
+    const { env } = setUp();
     expect(await getProjectForSave(env, 'nope')).toBeNull();
-    sql.exec(`UPDATE projects SET trashed_at = 9 WHERE id = 'd1'`);
-    expect(await getProjectForSave(env, 'd1')).toBeNull();
   });
 
   it('has no owner name before the owner has a participant row', async () => {

@@ -14,6 +14,9 @@ import { SIGNED_IN_HINT_COOKIE } from '@liveplanner/api-schema';
 //   GET  /api/auth/callback?code&state       → back in the app, signed in
 //   POST /api/auth/token                     → { accessToken, expiresAt, user }
 //   POST /api/auth/sign-out                  → drops the refresh cookie
+//   GET  /api/auth/guest?state=              → the accounts site's guest handoff, which comes back to
+//                                              /auth/guest#guest_token=…&state=… (liveworkspace/docs/
+//                                              one-explorer-contracts.md "Guests")
 //
 // Handled before the caller's identity is resolved (src/index.ts): none of
 // these carry a Bearer, so they would otherwise all share one 'anonymous'
@@ -279,6 +282,27 @@ function noStore(cookies: string[] = []): Headers {
   return headers;
 }
 
+// A guest's identity is liveworkspace's (liveworkspace/docs/accounts.md "Guests"): the browser goes to the accounts
+// site with this app's client, which answers with a year-long guest token in the fragment of /auth/guest. Routed
+// through here so the client id and resource live in one place; the editor makes and checks `state` itself.
+const GUEST_STATE = /^[A-Za-z0-9_-]{8,200}$/;
+
+function guest(request: Request, env: Env, config: Configured | null): Response {
+  const state = new URL(request.url).searchParams.get('state') ?? '';
+  if (!GUEST_STATE.test(state)) return json({ error: 'invalid_state' }, { status: 400 });
+  // No accounts site to ask: straight back, saying so, and the page carries on without a guest identity.
+  if (!config) {
+    const back = new URLSearchParams({ error: 'guest_not_configured', state });
+    return redirect(`${appOrigin(env, request)}/auth/guest#${back.toString()}`, []);
+  }
+  const to = new URL(`${config.accountsUrl.replace(/\/+$/, '')}/api/auth/guest`);
+  to.searchParams.set('client_id', config.clientId);
+  to.searchParams.set('redirect_uri', `${appOrigin(env, request)}/auth/guest`);
+  to.searchParams.set('state', state);
+  to.searchParams.set('resource', config.resource);
+  return redirect(to.toString(), []);
+}
+
 // Signing out of liveplanner only: the accounts site keeps its own session, so signing in again
 // is one click with no code, as it is for every other liveworkspace app.
 function signOut(): Response {
@@ -293,6 +317,8 @@ export async function handleAuth(
 ): Promise<Response> {
   if (segments.length !== 3) return notFound();
   const config = configured(env);
+  const route = `${request.method} ${segments[2]}`;
+  if (route === 'GET guest') return guest(request, env, config);
   // A guest-only deployment: nothing to sign in to.
   if (!config) return json({ error: 'sign_in_not_configured' }, { status: 404 });
   // Each step is one network's worth of requests, apart from everyone's project writes.
@@ -300,7 +326,6 @@ export async function handleAuth(
     const ok = await env.WRITE_RATE_LIMITER.limit({ key: `auth:${clientRateKey(request)}` });
     if (!ok.success) return rateLimited();
   }
-  const route = `${request.method} ${segments[2]}`;
   switch (route) {
     case 'GET sign-in':
       return signIn(request, env, config);

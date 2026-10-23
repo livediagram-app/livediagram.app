@@ -5,8 +5,11 @@
 // and the like.
 
 import {
+  DELEGATED_TEAMS_MAX,
   INDEX_API_PATH,
   INDEX_APP_HEADER,
+  INDEX_PERSON_HEADER,
+  INDEX_TEAMS_HEADER,
   SHARE_CODE_HEADER,
   SHARE_PASSWORD_HEADER,
   type App,
@@ -68,6 +71,8 @@ export type IndexClientOptions = {
   baseUrl?: string;
   // The person's access or guest token, or null for a link visitor with no identity.
   getToken: () => string | null | Promise<string | null>;
+  // Sent on every call besides the token: an app's server acting for a person (createIndexDelegateClient).
+  headers?: Record<string, string>;
   fetch?: typeof fetch;
 };
 
@@ -86,12 +91,13 @@ export type RequestOptions = { signal?: AbortSignal };
 export function createIndexClient({
   baseUrl = INDEX_API_PATH,
   getToken,
+  headers: fixedHeaders,
   fetch: doFetch,
 }: IndexClientOptions) {
   const base = baseUrl.replace(/\/+$/, '');
 
   async function call<T>(path: string, options: CallOptions = {}): Promise<T> {
-    const headers = new Headers();
+    const headers = new Headers(fixedHeaders);
     const token = await getToken();
     if (token) headers.set('Authorization', `Bearer ${token}`);
     if (options.share) {
@@ -222,6 +228,43 @@ export function createIndexClient({
 }
 
 export type IndexClient = ReturnType<typeof createIndexClient>;
+
+export type IndexDelegateOptions = {
+  app: App;
+  // The app's INDEX_KEY.
+  key: string;
+  // The account the app acts for, which the app has already checked (an API token's account, say).
+  personId: string;
+  // The teams that account has joined, as the app knows them (its token's answer).
+  teams?: readonly string[];
+  // The index API, when not production's.
+  baseUrl?: string | null;
+  fetch?: typeof fetch;
+};
+
+// The index as an app's server calls it for an account it has checked itself, when the account's own access
+// token is not in hand (an API token from the CLI or an AI tool). The index treats the call as that account's,
+// but only for this app's items: it lists only them, makes only them, and answers any other as missing
+// (liveworkspace/docs/one-explorer-contracts.md "Reaching the index").
+export function createIndexDelegateClient({
+  app,
+  key,
+  personId,
+  teams = [],
+  baseUrl,
+  fetch: doFetch,
+}: IndexDelegateOptions): IndexClient {
+  return createIndexClient({
+    baseUrl: (baseUrl || `https://liveworkspace.app${INDEX_API_PATH}`).replace(/\/+$/, ''),
+    getToken: () => key,
+    headers: {
+      [INDEX_APP_HEADER]: app,
+      [INDEX_PERSON_HEADER]: personId,
+      [INDEX_TEAMS_HEADER]: teams.slice(0, DELEGATED_TEAMS_MAX).join(','),
+    },
+    ...(doFetch ? { fetch: doFetch } : {}),
+  });
+}
 
 export type IndexAppClientOptions = {
   app: App;

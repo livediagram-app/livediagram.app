@@ -73,6 +73,8 @@ export async function loadItem(
   if (!caller.person && !caller.share) return unauthorized();
   const row = await getItemRow(env, id);
   if (!row) return notFound();
+  // An app acting for a person reaches its own items only; another app's answers as missing.
+  if (caller.person?.app && caller.person.app !== row.app) return notFound();
   const access = await accessTo(env, row, caller);
   if (access instanceof Response) return access;
   if (options.manage && access.via === 'link') return fail(403, 'forbidden');

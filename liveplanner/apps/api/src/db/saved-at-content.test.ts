@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Item } from '@liveplanner/items';
 import { sqliteD1 } from '../test-sqlite-d1';
-import { T0, insert, liveDoc } from './test-trash-fixtures';
 import { deleteItemRow, insertItems, updateItemAtRev, updateItemsAtRev } from './items';
 import { projectSavedStatement, headWriteStatement } from './sheets';
 
@@ -9,7 +8,30 @@ import { projectSavedStatement, headWriteStatement } from './sheets';
 // either marks it saved, as a tab write does, so the Explorer's "Updated" line and its snapshot follow it. Only a
 // write that landed does.
 
+const T0 = 1_700_000_000_000;
 const NOW = T0 + 60_000;
+
+function insert(
+  sql: ReturnType<typeof sqliteD1>['sql'],
+  table: string,
+  row: Record<string, string | number | null>,
+) {
+  const cols = Object.keys(row);
+  sql
+    .prepare(`INSERT INTO ${table} (${cols.join(', ')}) VALUES (${cols.map(() => '?').join(', ')})`)
+    .run(...Object.values(row));
+}
+
+// A started plan's own row.
+function liveDoc(sql: ReturnType<typeof sqliteD1>['sql'], id: string, opts: { savedAt?: number } = {}) {
+  insert(sql, 'test_plans', {
+    id,
+    owner_id: 'owner',
+    name: `Project ${id}`,
+    saved_at: opts.savedAt ?? T0,
+    created_at: opts.savedAt ?? T0,
+  });
+}
 const PERSON = { id: 'p1', name: 'Ali', color: '#ff0000' };
 
 const item = (id: string, key: number, rev = 1): Item => ({

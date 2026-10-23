@@ -1,58 +1,7 @@
-import type { Page } from '@playwright/test';
-import {
-  expect,
-  expectNoPageErrors,
-  seedTab,
-  startBlankProject,
-  test,
-  paletteTile,
-} from './fixtures';
+import { expect, expectNoPageErrors, startBlankProject, test } from './fixtures';
 
-// A line-art icon's weight, end to end (docs/specs/004-interface-design/iconography.md, "Canvas icons"):
-// the context menu's Weight row lands on the element, persists, and draws the chosen on-screen stroke.
-
-const ICON = {
-  id: 'ic',
-  type: 'shape',
-  shape: 'icon',
-  iconId: 'server',
-  x: 400,
-  y: 260,
-  width: 88,
-  height: 88,
-};
-
-const glyphStroke = (page: Page) =>
-  page
-    .locator('[data-element-id="ic"] svg[viewBox="0 0 24 24"]')
-    .first()
-    .getAttribute('stroke-width');
-
-test.describe('Icon weight', () => {
-  test('draws regular by default and bold once chosen, across a reload', async ({
-    page,
-    pageErrors,
-  }) => {
-    await page.emulateMedia({ colorScheme: 'dark' });
-    await startBlankProject(page);
-    await seedTab(page, [ICON]);
-
-    await expect.poll(() => glyphStroke(page)).toBe('1.25');
-
-    await page.locator('[data-element-id="ic"]').click({ button: 'right' });
-    await page.getByRole('button', { name: 'Weight', exact: true }).click();
-    await page.getByRole('button', { name: 'Bold', exact: true }).click();
-    await expect.poll(() => glyphStroke(page)).toBe('2');
-
-    // Autosave, then a fresh load draws the stored weight.
-    await page.waitForTimeout(1500);
-    await page.reload();
-    await page.locator('[data-canvas-a11y-root]').waitFor();
-    await expect.poll(() => glyphStroke(page)).toBe('2');
-
-    expectNoPageErrors(pageErrors);
-  });
-});
+// The chrome's glyph weight (docs/specs/004-interface-design/iconography.md). (The canvas icons' Weight row went
+// with the diagram shapes: Plan draws no line-art icon elements.)
 
 test.describe('Chrome glyph weight', () => {
   test('draws the house weight in on-screen px, whatever CSS does to the size', async ({
@@ -61,7 +10,11 @@ test.describe('Chrome glyph weight', () => {
   }) => {
     await page.emulateMedia({ colorScheme: 'dark' });
     await startBlankProject(page);
-    const glyph = (await paletteTile(page, 'Add Square')).locator('svg.lvd-glyph').first();
+    // A chrome button's glyph: the status bar's Search.
+    const glyph = page
+      .getByRole('button', { name: 'Search', exact: true })
+      .locator('svg.lvd-glyph')
+      .first();
     await expect(glyph).toHaveAttribute('stroke-width', '1.25');
     const child = glyph.locator('> *').first();
     await expect

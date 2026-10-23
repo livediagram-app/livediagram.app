@@ -49,7 +49,7 @@ Three regions stacked vertically, filling the viewport:
 └────────────────────────────────────────────────────┘
 ```
 
-- **Header:** brand wordmark (a link to the Explorer home, [Brand mark](../004-interface-design/brand-mark.md#links)), project-name field (click to rename), and the Share button. The private/shared/team badge sits next to the title (Team when the project lives in a team library and has no share links, [Team shared projects](../013-workspace/team-shared-projects.md)), followed by the [role pill](#role-pill). (The full-page `/explorer` library is reached from the AuthControls menu and the **Explorer** link in the marketing site header, and the header logo opens its Home.) The editor header carries no product menu: the product's surfaces (Home, Explorer, Help) are links in the Explorer panel's footer ([The editor's Explorer](../013-workspace/explorer-structure.md#the-editors-explorer)); the other apps' headers keep the menu.
+- **Header:** brand wordmark (a link to the Explorer home, [Brand mark](../004-interface-design/brand-mark.md#links)), project-name field (click to rename), and the Share button. The private/shared/team badge sits next to the title (Team when the project lives in a team library and has no share links, [Team shared projects](../013-workspace/team-shared-projects.md)), followed by the [role pill](#role-pill). (The full-page `/explorer` library is reached from the AuthControls menu and the **Explorer** link in the marketing site header, and the header logo opens its Home.) The editor header carries no product menu: the product's surfaces (Home, Explorer, Help) are links in the Explorer panel's footer ([The editor's Explorer](../013-workspace/explorer-structure.md)); the other apps' headers keep the menu.
 - **Tab area:** owns most of the viewport. A Board, Sheet, Dashboard or Form fills it ([Plan tabs](../026-plan/plan-tabs.md)); an empty tab shows Start Planning ([Start panel](start-panel.md)). Plan shows no palette ([Plan mode](../026-plan/plan-mode.md#no-palette)). The canvas host underneath is [Canvas and palette](../008-canvas/canvas-and-palette.md).
 - **Tab bar (status bar):** horizontal row of tabs with `+` to add. Click to switch, double-click to rename, drag to reorder. When the tabs run past the bar it scrolls sideways, the edge with more tabs beyond it fading out (`scroll-edge-fade`, as the strip's rails do) rather than clipping a label mid-word, and **the active tab is always in view**: switching to a tab, or adding one, scrolls the row the least distance that shows all of it, and **Add tab** with it when it is the last tab (smoothly, or at once under reduced motion). Its right-hand cluster (`ChromeControls`, shared with the Explorer's bottom bar) holds **Search**, **Settings**, and the appearance toggle. In the editor each shows a text label beside its icon from `sm` up ("Search", "Settings", and the appearance in force: "Light" / "Dark" / "System") and is icon-only on a phone; the Explorer's bar stays icon-only. **Button Labels** in Settings › Appearance (`dockButtonNames`, on by default) turns those labels off on a desktop too, as Minimal chrome does; a phone never shows them, whatever it says. There is no keyboard-shortcuts button: the shortcut reference and the per-device on/off switch live in Settings' **Keyboard** category ([User preferences](user-preferences.md)), which the "Keyboard shortcuts" search command opens directly.
 
@@ -145,49 +145,26 @@ The account menu's **Account** item opens the host page's own Settings dialog on
 
 ## Share dialog
 
-The "Share This Project" modal (`apps/editor/components/dialogs/ShareDialog.tsx`, opened from the header Share button, for the owner and, on a team project, every joined member: [Team shared projects](../013-workspace/team-shared-projects.md)) follows the same dialog conventions as Settings / Export: a dimmed blurred backdrop (`bg-slate-900/40 backdrop-blur-sm`, click-to-close, Esc closes), a centred panel with dark-mode styling, and a scrollable body capped to the viewport.
+The header Share button opens the shared Share dialog, `ShareDialog` from
+[`@liveworkspace/explorer`](../../../../packages/explorer/README.md), the same one every liveworkspace app and the
+Explorer's item menu use (`apps/editor/components/dialogs/EditorTabDialogs.tsx`, loaded on first open). It talks
+to liveworkspace's index directly: share links, their levels and the password are the index's
+([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Sharing and access").
 
-### The pass metaphor
+- **New link**: three level cards, **Viewer**, **Participant** and **Editor** ([Share roles](../013-workspace/share-roles.md)),
+  **Opens** (Every tab, or one tab, [Tab-scoped share links](../013-workspace/tab-scoped-share-links.md)), **Lasts**
+  (Forever, 1 week, 1 month, 6 months, [Share-link expiry](../013-workspace/share-link-expiry.md)) and
+  **Create and Copy Link**.
+- **Links**: each link with its level chip, its address, a Level and an Opens picker, its time left (or Forever,
+  or Expired) with **Extend**, **Copy**, and a turn-off button.
+- **Password**: one password for every link ("Links need a password." / "No password: a link alone opens it."),
+  with **Set Password**, **Change** and **Remove** ([Share password](../013-workspace/share-password.md)).
+- A link's address is liveplanner's: `/project/<id>?s=<code>` (`shareUrl` in `apps/editor/lib/explorer-host.ts`).
+- A project in This Browser opens the Sync Project gate instead (`ShareOfflineGate`,
+  [Offline Mode](../006-project/offline-mode.md#sharing-a-project-in-this-browser)).
 
-A share link is presented as a **pass**: a ticket that admits whoever holds it. The metaphor answers the three questions an owner actually has, in the order they have them: _who can get in_ (the list of passes), _what does a new one let them do_ (the role), and _how do I hand it over_ (copy). Every link-level fact reads as something printed on the ticket (the role on its header band, the tabs it admits, how long it is valid), so the owner scans cards rather than parsing rows of controls.
-
-A pass is a card headed by a solid role-coloured band (a stub down the left edge was tried and cut the link short, so the band runs across the top and the body has the card's whole width):
-
-- **Header band** (full width): the role's glyph beside its word, `EDITOR`, `PARTICIPANT` or `VIEWER`, on a solid role colour: brand for edit, teal for participate, violet for view ([Share roles](../013-workspace/share-roles.md)). The colour is the role at a glance across the whole list.
-- **Body** (below), three lines, the second and third sharing one row from `sm` up (a phone stacks them):
-  1. The link, in a monospaced read-only field (select-on-focus for a manual copy) with the pass's copy button **inside** its right edge: a quiet icon button, the grey copy glyph with no word or fill (brand on hover) (the field is the thing being copied, so the action lives in it), named and tooltipped "Copy link"; for a beat after copying it becomes an emerald check and reads "Copied".
-  2. What it is printed with: **Opens** the tabs it admits (the rescope picker, [Tab-scoped share links](../013-workspace/tab-scoped-share-links.md), shown only on a multi-tab project; on a single-tab project every pass opens every tab, so the term is left off), **Valid** for how long ("Forever" or the countdown, [Share-link expiry](../013-workspace/share-link-expiry.md)), and a **Password** tag while the project has a share password.
-  3. The other ways to hand it over, **Embed** ([Read-only embeds](../013-workspace/embeds.md)) and **Live image** ([Live image](../013-workspace/live-image-share.md), hidden while a password is set), with **Revoke** at the far edge.
-
-Passes are listed newest first. Files: `ShareDialog.tsx` (orchestration), `ShareStatus.tsx`, `ShareComposer.tsx`, `SharePassTicket.tsx` (the ticket shell), `ActiveSharePass.tsx`, `ExpiredSharePass.tsx`, `SharePasswordSection.tsx`, `ShareIdentity.tsx`, with the role catalogue (`ROLE_PASS`) in `share-dialog-parts.tsx`.
-
-An **expired** pass keeps the same card, greyed: a muted header band, the URL struck through, a rose `Expired` stamp, and **Extend** + **Delete** in place of the hand-over actions.
-
-### Arrival and departure
-
-Passes never appear or vanish in one frame. A **new pass opens its own space**: its row eases from zero height to its natural height while the card fades in and settles 6px (`animate-row-open`, 250ms, the long chrome token), so the passes below glide down rather than jump. It then wears a soft brand ring for `PASS_HIGHLIGHT_MS` (1.4s, a timer), which fades out over 250ms. A **revoked or deleted pass closes its space**: it fades, shrinks a touch and collapses (`animate-row-close`, 250ms), and only when that finishes is the revoke or delete sent (an exit hold, `usePassExit`), so the list below glides up. If the request fails, the pass opens back up. The gap between passes lives inside each collapsing row, so it closes with it. Reduced motion collapses both to an instant change, as everywhere ([Motion](../004-interface-design/motion.md)).
-
-### Layout, top to bottom
-
-1. **Header**: the title and a **status line** (`ShareStatus`, `role="status"`) that states the project's exposure in one phrase, with a dot: "Private: only you can open it." (slate) when no active pass exists and the project is not in a team library, "Team: every member of the team can open it." (emerald) for a team library project with no pass (with passes, "Shared: every member of the team can open it, and anyone holding ..."), otherwise "Shared: anyone holding the pass / one of the N passes can get in" (a pinging emerald live dot, an ambient indicator per [Motion](../004-interface-design/motion.md)), ending ", with the password." when a password is set. This replaces the static explanation of roles, which the role cards below now carry. The title row ends with **Show Me** (below), **Help** (the labelled Help link, to the Sharing article) and the close cross.
-2. **Issue a pass** (the primary action), one tinted panel holding the role and the fine print. The **role picker** (`ShareRolePicker`) is one compact card naming the chosen role, its glyph and blurb, with a caret; pressing it (a click, never a hover) or Down on it unfolds the three roles beneath it in place (easing open, a radio group inside: arrow keys wrap, Home and End reach the ends, Escape folds it), **Editor** ("Plans with you in real time."), **Participant** ("Works cards and cells, comments and votes. Can't reshape a board.") and **Viewer** ("Watches along. Can't comment, vote or change a thing."), each in its own colour (glyph tile, title, hover tint, a ring once chosen: brand, teal, violet); choosing one folds it again. It unfolds in place rather than floating, so the dialog's scroll never clips it. Then the pass's **fine print**, one labelled row per term with the labels in one column (stacked above their controls below `sm`): **Valid**, a four-way segmented control (a radio group, arrow keys wrap) reading Forever / 1 week / 1 month / 6 months, whose selected segment takes the chosen role's colour; and **Opens**, the tabs select, only on a multi-tab project. Then **Create Pass**, filled in the chosen role's colour like the selected lifetime. Creating copies the new link to the clipboard straight away (a toast confirms "Pass created and copied"; if the clipboard refuses, the toast says the pass was created and to copy it from the card), and the new pass arrives with its copy button showing "Copied".
-3. **Passes** (active, newest first), set off from the composer by a hairline rule, its count in a `CountBadge` beside the caption (the Expired caption carries one too). Revoking a pass asks first in a `ConfirmPopover` beside the bin ("Revoke this pass? The link stops working at once for everyone holding it." / **Revoke**), per [Destructive actions](#destructive-actions). Empty state: a dashed ghost ticket reading "No passes yet. Only you can open this project." When every pass has expired it reads "Every pass has expired. Extend one below or issue a new one."
-4. **Expired passes** ([Share-link expiry](../013-workspace/share-link-expiry.md)), only when non-empty.
-5. **Password** ([Share password](../013-workspace/share-password.md)): a switch row (the shared `SettingsToggleRow`), "Password Protection", with the hint "Everyone opening a pass must enter it first, embeds included." Switching it on reveals the field with **Save**. Once saved, the field gives way to a **Password Set** line with **Replace** (an empty field with **Save** and **Cancel**) and **Remove**: only a hash is stored, so the password cannot be shown again. Switching it off removes it too. A password cannot be switched off without removing it, so the switch never disagrees with what the server enforces.
-6. **Footer**: for guests only, **Sharing as**: the identity avatar, then under the caption the shuffle button hard against the left of an inline name field (next to the name it changes, not out by Done). This is the name peers see on cursors and comments. It sits in the footer so it is always visible without leading the dialog with a form; it is saved when a pass is created (as before) and whenever the dialog closes (Done, the close button, Esc, or the backdrop). Signed-in users' names come from their liveworkspace account, so the identity hides. **Done** closes.
-
-### Show Me
-
-**Show Me** ([Show Me](show-me.md)) runs a guided tour of issuing and managing passes, there and then, on the
-dialog itself; it is never offered or started on its own, and the offline gate has none. Each step scrolls its
-control into view; the control stays
-usable, so the owner can pick a role, set a lifetime or create a pass while the step is up, and what they do is
-kept. The steps: **Choose What They Can Do** (the role picker), **Choose Which Tabs It Opens** (the Opens select,
-only on a multi-tab project), **Set How Long It Lasts** (Valid), **Create the Pass** (Create Pass), **Your Passes**
-(the Passes section), **Add a Password** (the Password section), then a closing card, **That Is Sharing**, with a
-link to the Sharing article. While it runs, Escape belongs to the tour (it never closes the dialog). Only the owner
-opens the dialog, so only the owner sees Show Me. Telemetry: `UI` · `Started` · `ShareTour`, and `UI` · `Ended` ·
-`ShareTourCompleted` or `ShareTourSkipped`.
+The dialog offers no embed code or live-image snippet. An embed is `/embed?s=<code>` ([Read-only embeds](../013-workspace/embeds.md))
+and a live image `/api/share/<code>/image.svg` ([Live image](../013-workspace/live-image-share.md)), built by hand from a link.
 
 ## Destructive actions
 

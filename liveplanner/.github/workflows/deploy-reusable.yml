@@ -64,7 +64,8 @@ on:
         required: false
       ACCOUNTS_CLIENT_SECRET:
         required: false
-      GUEST_ID_HMAC_SECRET:
+      # liveplanner's key at the central index (liveworkspace/docs/one-explorer-contracts.md).
+      INDEX_KEY:
         required: false
       TELEMETRY_KEY:
         required: false
@@ -302,7 +303,7 @@ jobs:
       API_RESOURCE: ${{ secrets.API_RESOURCE }}
       ACCOUNTS_CLIENT_ID: ${{ secrets.ACCOUNTS_CLIENT_ID }}
       ACCOUNTS_CLIENT_SECRET: ${{ secrets.ACCOUNTS_CLIENT_SECRET }}
-      GUEST_ID_HMAC_SECRET: ${{ secrets.GUEST_ID_HMAC_SECRET }}
+      INDEX_KEY: ${{ secrets.INDEX_KEY }}
       TELEMETRY_KEY: ${{ secrets.TELEMETRY_KEY }}
       WRANGLER_ENV: ${{ inputs.wrangler_env }}
     steps:
@@ -360,18 +361,18 @@ jobs:
               | pnpm exec wrangler secret put "$name" ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
           done
 
-      # Same provisioning story for the guest-id HMAC secret (docs/specs/014-identity/auth-and-guest-access.md):
-      # when present it makes /api/migrate require a signed guest id;
-      # empty/unset leaves the worker on legacy unsigned migrate.
-      - name: Sync GUEST_ID_HMAC_SECRET secret
-        if: ${{ env.GUEST_ID_HMAC_SECRET != '' }}
+      # Same provisioning story for liveplanner's key at the central index (liveworkspace/docs/one-explorer.md):
+      # the plan rooms push their summaries with it and the api asks for API tokens' grants with it. It holds
+      # the same value as the index's key for liveplanner. Empty/unset leaves the worker's copy untouched.
+      - name: Sync INDEX_KEY secret
+        if: ${{ env.INDEX_KEY != '' }}
         working-directory: apps/api
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
-          printf '%s' "$GUEST_ID_HMAC_SECRET" \
-            | pnpm exec wrangler secret put GUEST_ID_HMAC_SECRET ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
+          printf '%s' "$INDEX_KEY" \
+            | pnpm exec wrangler secret put INDEX_KEY ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
       # TELEMETRY_KEY (docs/specs/017-telemetry/telemetry.md) is liveplanner's Worker key for liveworkspace's
       # central telemetry service, and has to hold the SAME value on the api and mcp workers as the

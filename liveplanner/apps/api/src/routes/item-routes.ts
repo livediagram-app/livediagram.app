@@ -39,7 +39,6 @@ import {
   updateItemAtRev,
 } from '../db';
 import { badRequest, conflict, forbidden, json, methodNotAllowed, noContent } from '../responses';
-import { retractCardComments } from '../timeline';
 import { handleItemCommentRoutes } from './item-comment-routes';
 import {
   excludedStatus,
@@ -266,8 +265,6 @@ async function remove(ctx: PlanRouteContext, projectId: string, itemId: string):
   const deleted = await deleteItemRow(ctx.env, projectId, itemId);
   if (deleted === null) return itemNotFound();
   relay(ctx, projectId, [], [itemId], deleted.rev);
-  // Its comments' words leave the feed with it (docs/specs/013-workspace/timeline.md §4.3).
-  ctx.waitUntil?.(retractCardComments(ctx.env, projectId, deleted.item));
   console.info('[items] deleted', { projectId, agent: ctx.token !== null });
   return noContent();
 }

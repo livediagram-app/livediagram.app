@@ -22,7 +22,7 @@ const tab: Tab = { id: 't1', name: 'Board', elements: [] };
 
 async function projectWithTab(): Promise<SqliteD1> {
   const db = sqliteD1();
-  db.sql.exec(`INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at)
+  db.sql.exec(`INSERT INTO test_plans (id, owner_id, name, shareable, saved_at, created_at)
                VALUES ('D', 'o', 'Doc', 0, 1, 1)`);
   await upsertTab(db.env, 'D', tab, 0);
   return db;

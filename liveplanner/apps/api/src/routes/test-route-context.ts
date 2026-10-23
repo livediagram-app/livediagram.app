@@ -1,3 +1,6 @@
+import type { TeamClaim } from '@liveworkspace/auth-client';
+import type { PlanGrant } from '../index-service';
+import { TEST_GRANT_HOOK, type TestGrantCaller } from '../test-sqlite-d1';
 import type { PlanRouteContext, WorkbenchContext } from './context';
 import type { Env, PlanEnv } from '../types';
 
@@ -34,6 +37,11 @@ export function makeTestRouteContext(
     // Sent as is, for a body that does not parse.
     rawBody?: string;
     headers?: Record<string, string>;
+    // The caller's joined teams, as its token carries them.
+    teams?: TeamClaim[] | null;
+    // The index's grant on the plan: given, or (undefined) worked out from a sqliteD1 env as the index would
+    // (test-sqlite-d1.ts `testGrantFor`).
+    grant?: PlanGrant | null;
     // Per-test bindings (e.g. a SNAPSHOTS stub); an empty
     // Env otherwise.
     env?: Env | PlanEnv;
@@ -51,9 +59,12 @@ export function makeTestRouteContext(
   });
   const accountUserId = opts.accountUserId ?? null;
   const verifiedUserId = opts.verifiedUserId === undefined ? accountUserId : opts.verifiedUserId;
+  const env = planEnvFor(segments, opts.env);
+  const grant =
+    opts.grant !== undefined ? opts.grant : testGrant(env, segments, method, opts, verifiedUserId);
   return {
     request,
-    env: planEnvFor(segments, opts.env),
+    env,
     url,
     segments,
     accountUserId,
@@ -62,8 +73,37 @@ export function makeTestRouteContext(
     resolveOwner: () => opts.owner ?? null,
     token: opts.token ?? null,
     workbench: opts.workbench ?? null,
+    teams: opts.teams ?? null,
+    bearer: null,
+    grant,
     ...(opts.waitUntil ? { waitUntil: opts.waitUntil } : {}),
   };
+}
+
+// The grant the index would give this caller on the plan the path names (or, for a create, the body names).
+function testGrant(
+  env: Env | PlanEnv,
+  segments: string[],
+  method: string,
+  opts: { owner?: string | null; teams?: TeamClaim[] | null; headers?: Record<string, string>; body?: unknown },
+  verifiedUserId: string | null,
+): PlanGrant | null {
+  const hook = (env as unknown as Record<string, unknown>)[TEST_GRANT_HOOK] as
+    | ((planId: string, who: TestGrantCaller) => PlanGrant | null)
+    | undefined;
+  if (!hook || segments[1] !== 'projects') return null;
+  const create = segments.length === 2 && method === 'POST';
+  const planId = create
+    ? ((opts.body as { id?: unknown } | undefined)?.id as string | undefined)
+    : segments[2];
+  if (typeof planId !== 'string' || !planId) return null;
+  const headers = new Headers(opts.headers);
+  return hook(planId, {
+    person: opts.owner ?? verifiedUserId ?? null,
+    teams: (opts.teams ?? []).map((t) => t.id),
+    code: headers.get('X-Share-Code'),
+    create,
+  });
 }
 
 // A request about a plan (/api/projects/<id>/…, /api/forms/<code>/…) runs inside the plan's Durable Object
@@ -96,3 +136,6 @@ function emptyPlanDb(): D1Database {
       statements.map(() => ({ results: [], success: true, meta: { changes: 0 } })),
   } as unknown as D1Database;
 }
+
+/** A signed-in caller: the owner and the verified id are the same account id. */
+export const asUser = (userId: string) => ({ owner: userId, accountUserId: userId });

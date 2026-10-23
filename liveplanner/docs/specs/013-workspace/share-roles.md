@@ -87,37 +87,32 @@ capabilities, the Participant palette, the room) keep a new feature from widenin
 
 ## Ownership
 
-Ownership is a set of powers, held by the project's **owner**: its creator, or whoever moved it into their own
-library. Sharing (creating, revoking and rescoping links, the share password) stays with the owner; delete, Trash
-and moves stay with the owner and joined team members. No level grants any of them. The full ownership model is
-[Later](#later).
+Ownership is a set of powers, held by the plan's **owner** (its creator) and every joined member of the team it is
+filed in. Who holds them is the index's to say: it issues the owner and team members an `edit` grant, and keeps
+sharing, moves and the Trash to them ([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md)
+"Sharing and access"). No level grants any of them. The full ownership model is [Later](#later).
 
 ## Share links
 
-- The Share dialog offers three role cards, in this order: **Editor** ("Plans with you in real time."),
-  **Participant** ("Works cards and cells, comments and votes. Can't reshape a board.") and **Viewer** ("Watches, pans and
-  zooms. Can't comment, vote or change a thing."). A pass's header band prints `EDITOR`, `PARTICIPANT` or `VIEWER`, each with a
-  glyph and a colour that meets WCAG 2.2 AA against its word ([Editor app](../007-editor/editor-app.md#share-dialog)).
-- `POST /api/projects/:id/share` takes `role: 'view' | 'participate' | 'edit'`; an omitted role is `edit`, as today.
+Share links are the index's, made and managed in the shared Share dialog (`ShareDialog` in
+[`@liveworkspace/explorer`](../../../../packages/explorer/README.md)). What liveplanner owns is what each level may do
+once a plan is open.
+
+- The Share dialog offers three levels, in this order: **Viewer** ("Watches along. Can’t comment or change a
+  thing."), **Participant** ("Comments, votes and works items. Can’t reshape it.") and **Editor** ("Works with you
+  in real time."). Each link shows its level on a chip and can be changed in place.
+- A link visitor's level comes from the grant the index issues for the link (`level`, and `tab` when the link opens
+  one tab). The api and the room check it on every request and socket ([API](../015-api/api.md) "Access").
 - The editor's role pill reads Editing, Participating or Viewing.
-- **A visit is through one link.** Opening a project through a share link records that link with the visit
-  (`shared_with.share_code`). Shared with you, Home and every leg that reads a past visit open the project through
-  that same link only while it is live. **Revoking a link** (or deleting the tab it is scoped to) ends every visit it
-  granted: those people lose the project from Shared with you, and from the copy and activity legs, even when
-  another link of the same level is still live; a newer link reaches them only if they open it. A visit recorded
-  before links were recorded keeps the older rule (the oldest live link of its level and scope) until its next open.
-- **Losing access is explained, never silent.** A session open on a revoked pass leaves for the Explorer, which shows
-  a warning toast ("The link you opened that project with was revoked, so it is no longer open to you."). A session
-  ended by an access change (a team removal, a share password, [API](../015-api/api.md) "Access changes end the
-  sessions they affect") reloads into the access check, and a refusal then reads **No Longer Shared With You** ("Your
-  access to this project was removed while you had it open. Ask its owner to share it with you again.") instead of
-  "doesn't exist or isn't yours". The editor notes the reason in `sessionStorage` just before it goes and the first
-  page after takes it once (`apps/editor/lib/access-notice.ts`, honoured for a minute).
-- The collaborators list badges each person Editor, Participant or Viewer; "Shared with you" chips read Edit,
-  Participate or View.
+- **Losing access is explained, never silent.** A session ended by an access change (a link turned off, a password
+  set, a grant whose level or tab changed on renewal) reloads into the access check, and a refusal then reads **No
+  Longer Shared With You** ("Your access to this project was removed while you had it open. Ask its owner to share
+  it with you again.") instead of "doesn't exist or isn't yours". The editor notes the reason in `sessionStorage`
+  just before it goes and the first page after takes it once (`apps/editor/lib/access-notice.ts`, honoured for a
+  minute).
+- The collaborators list badges each person Editor, Participant or Viewer.
 - **Embeds look only below Editor**: an embed of a Participant link renders as a Viewer, since an embed has no
   identity screen to put a name on what it adds ([Embeds](embeds.md)).
-- The MCP's `share_project` creates a **Participant** link when no level is named.
 
 ## Integrity
 
@@ -144,13 +139,11 @@ and moves stay with the owner and joined team members. No level grants any of th
 - **Edit links stay Editor; view links stay Viewer, which now only looks.** A view link handed out before this
   change loses commenting (decided 2026-10-10): an owner who wants an audience to
   chime in issues a Participant link.
-- **No old reader escalates.** Before the server can write a `participate` link, every reader of a stored level
-  reads an unknown value as Viewer. An editor bundle from before this change reads a Participant link as Editor,
-  shows editing controls, and the server refuses its first save; a reload fixes it.
+- **No old reader escalates.** Every reader of a level reads an unknown value as Viewer.
 
 ## Telemetry
 
-`Project·Shared` and `Project·Joined` take the type `Participate` beside `Edit` and `View`
+`Project·Joined` takes the type `Participate` beside `Edit` and `View`
 ([Telemetry](../017-telemetry/telemetry.md)).
 
 ## Later

@@ -3,12 +3,12 @@
 // The editor's deleted state (docs/specs/013-workspace/trash.md, "While a
 // project is in the Trash"). Set when the load answers project_trashed, when
 // the room says the project was trashed, or when a save is refused because
-// of it. Whether the reader may restore it is read from their own Trash: the
-// row is there exactly when they may (owner, or a joined team member), and
-// never for a share-link visitor.
+// of it. Whether the reader may restore it is the index's answer
+// (liveworkspace/docs/one-explorer-contracts.md): the item, which outlives the trashing, at edit for them (its owner,
+// or a member of the team that owns it), and never for a share-link visitor.
 import { useCallback, useEffect, useState } from 'react';
-import type { TrashedProject } from '@liveplanner/api-schema';
-import { apiListTrash, apiRestoreProject } from '@/lib/api-client';
+import type { TrashedPlan } from '@/components/chrome/ProjectTrashedCard';
+import { indexClient } from '@/lib/index-client';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@/lib/debug-log';
 import { isProjectDeleted } from '@/lib/project-tombstones';
@@ -16,23 +16,22 @@ import { isProjectDeleted } from '@/lib/project-tombstones';
 type ProjectTrashedState = {
   trashed: boolean;
   setProjectTrashed: (trashed: boolean) => void;
-  // The reader's Trash row for this project, or null when they may not
+  // When and why it went to the Trash, or null when the reader may not
   // restore it (or it hasn't been looked up yet).
-  restorable: TrashedProject | null;
+  restorable: TrashedPlan | null;
   restore: () => Promise<void>;
 };
 
 export function useProjectTrashed(opts: {
-  ownerId: string | null;
   projectId: string | null;
   // A share-link session never looks: a visitor holds no Trash for it.
   viaShareLink: boolean;
 }): ProjectTrashedState {
-  const { ownerId, projectId, viaShareLink } = opts;
+  const { projectId, viaShareLink } = opts;
   const [trashed, setTrashed] = useState(false);
-  const [restorable, setRestorable] = useState<TrashedProject | null>(null);
+  const [restorable, setRestorable] = useState<TrashedPlan | null>(null);
   // Which Trash it sits in, for the telemetry `type`.
-  const [from, setFrom] = useState<'Personal' | 'Team' | 'Local'>('Personal');
+  const [from, setFrom] = useState<'Personal' | 'Team'>('Personal');
 
   const setProjectTrashed = useCallback(
     (next: boolean) => {
@@ -49,28 +48,30 @@ export function useProjectTrashed(opts: {
   );
 
   useEffect(() => {
-    if (!trashed || viaShareLink || !ownerId || !projectId) return;
+    if (!trashed || viaShareLink || !projectId) return;
     let live = true;
-    void apiListTrash(ownerId).then((listing) => {
-      if (!live) return;
-      const local = listing.local.find((r) => r.id === projectId);
-      const cloud = listing.cloud?.find((r) => r.id === projectId);
-      setRestorable(local ?? cloud ?? null);
-      setFrom(local ? 'Local' : cloud?.teamId ? 'Team' : 'Personal');
-    });
+    indexClient
+      .getItem(projectId)
+      .then(({ item }) => {
+        if (!live || item.trashedAt === null || item.access !== 'edit') return;
+        setRestorable({ trashedAt: item.trashedAt, reason: item.trashReason });
+        setFrom(item.teamId ? 'Team' : 'Personal');
+      })
+      // Not the reader's to restore, or the index unreachable: the card says it was deleted.
+      .catch(() => {});
     return () => {
       live = false;
     };
-  }, [trashed, viaShareLink, ownerId, projectId]);
+  }, [trashed, viaShareLink, projectId]);
 
   const restore = useCallback(async () => {
-    if (!ownerId || !projectId || !restorable) return;
-    await apiRestoreProject(ownerId, projectId);
+    if (!projectId || !restorable) return;
+    await indexClient.restoreItem(projectId);
     track('Trash', 'Restored', from);
     // Reopen it from scratch: a fresh load is the one path that hydrates
     // everything a live project has.
     window.location.reload();
-  }, [ownerId, projectId, restorable, from]);
+  }, [projectId, restorable, from]);
 
   return { trashed, setProjectTrashed, restorable, restore };
 }

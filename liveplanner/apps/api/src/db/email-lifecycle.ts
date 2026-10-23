@@ -93,10 +93,8 @@ export async function getOwnerEmail(env: Env, ownerId: string): Promise<string |
   return email ? email : null;
 }
 
-// docs/specs/014-identity/transactional-email.md (#4): owners who signed up at or before `cutoff`, still have ZERO
-// projects, and haven't yet been nudged or reached week 1. The NOT EXISTS
-// subquery is the "never drew anything" test (guest projects migrate in on
-// sign-up, so a real account that drew anything is excluded). Soonest-first.
+// docs/specs/014-identity/transactional-email.md (#4): owners who signed up at or before `cutoff`, have never saved
+// a plan of their own (`active_at` unset), and haven't yet been nudged or reached week 1. Soonest-first.
 export async function dueForActivation(
   env: Env,
   cutoff: number,
@@ -106,7 +104,7 @@ export async function dueForActivation(
     `SELECT el.owner_id, el.email FROM email_lifecycle el
      WHERE el.created_at <= ? AND el.activation_sent_at IS NULL AND el.week1_sent_at IS NULL
        AND el.email <> '' AND el.send_attempts < ?
-       AND NOT EXISTS (SELECT 1 FROM projects d WHERE d.owner_id = el.owner_id)
+       AND el.active_at IS NULL
      ORDER BY el.created_at ASC LIMIT ?`,
   )
     .bind(cutoff, MAX_SEND_ATTEMPTS, limit)
@@ -122,10 +120,9 @@ export async function markActivationSent(env: Env, ownerId: string): Promise<voi
     .run();
 }
 
-// docs/specs/014-identity/transactional-email.md (#5): owners whose most recent project activity was at or before
-// `cutoff` (active once, now quiet), not yet win-backed. MAX(saved_at) is NULL
-// for a zero-project owner and NULL <= ? is false, so they're excluded (the
-// activation nudge handles those). Quietest-longest first.
+// docs/specs/014-identity/transactional-email.md (#5): owners whose newest save on a plan of their own was at or
+// before `cutoff` (active once, now quiet), not yet win-backed. `active_at` is NULL for an owner who never saved
+// and NULL <= ? is false, so they're excluded (the activation nudge handles those). Quietest-longest first.
 export async function dueForWinback(
   env: Env,
   cutoff: number,
@@ -134,7 +131,7 @@ export async function dueForWinback(
   const { results } = await env.DB.prepare(
     `SELECT el.owner_id, el.email FROM email_lifecycle el
      WHERE el.winback_sent_at IS NULL AND el.email <> '' AND el.send_attempts < ?
-       AND (SELECT MAX(d.saved_at) FROM projects d WHERE d.owner_id = el.owner_id) <= ?
+       AND el.active_at <= ?
      ORDER BY el.created_at ASC LIMIT ?`,
   )
     .bind(MAX_SEND_ATTEMPTS, cutoff, limit)
@@ -162,17 +159,12 @@ export async function recordSendFailure(env: Env, ownerId: string): Promise<numb
   return row?.send_attempts ?? 0;
 }
 
-// docs/specs/014-identity/transactional-email.md (#6): atomically claim the one-time milestone email for an owner.
-// The conditional UPDATE means only the first caller wins (changes === 1), so a
-// burst of saves at the milestone count can't double-send. False = already
-// claimed, or no row (a guest has none).
-export async function claimMilestone(env: Env, ownerId: string): Promise<boolean> {
-  const res = await env.DB.prepare(
-    'UPDATE email_lifecycle SET milestone_sent_at = ? WHERE owner_id = ? AND milestone_sent_at IS NULL',
-  )
-    .bind(Date.now(), ownerId)
-    .run();
-  return res.meta.changes === 1;
+// A plan's owner was active at `at` (its newest save): what the activation nudge and win-back read. Only ever
+// moves forward; a guest has no row, so it touches nothing.
+export function ownerActiveStatement(env: Env, ownerId: string, at: number): D1PreparedStatement {
+  return env.DB.prepare(
+    'UPDATE email_lifecycle SET active_at = MAX(COALESCE(active_at, 0), ?) WHERE owner_id = ?',
+  ).bind(at, ownerId);
 }
 
 // docs/specs/014-identity/transactional-email.md (#6): atomically claim the one-time "first shared link" milestone for

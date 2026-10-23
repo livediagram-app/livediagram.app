@@ -32,15 +32,13 @@ import { resolveIconExportArt, resolveStickerArt } from '@liveplanner/icons/reso
 import {
   getTab,
   getTabBody,
-  getThumbRenderedAt,
-  markThumbRendered,
   stampTabElementCount,
   thumbnailKey,
   type StoredTabBody,
   listItems,
   listSheets,
 } from './db';
-import { getPlanItemTypes } from './plan-room/plan-content';
+import { getPlanItemTypes, markThumbRendered } from './plan-room/plan-content';
 import { planRoom } from './plan-client';
 import type { ProjectDTO, Env, PlanEnv } from './types';
 import { dashboardImageOf } from './thumbnail-dashboard';
@@ -52,7 +50,7 @@ const THUMBNAIL_CONTENT_TYPE = 'image/svg+xml; charset=utf-8';
 
 // The project fields a snapshot needs. `thumbRenderedAt` is optional: a
 // caller that already read it alongside the project row (the Explorer
-// thumbnail route, via getProjectThumbMeta) passes it and saves a query;
+// thumbnail route, from the plan's own row) passes it and saves a read;
 // one that didn't leaves it out and it is read here.
 // `itemTypes` likewise: a caller that read them passes them; one that did not (the Explorer thumbnail route, whose
 // one read leaves the catalogue out) leaves them out, and they are read only when a render draws cards. Never
@@ -89,7 +87,7 @@ export async function getProjectThumbnailSvg(
   const renderedAt =
     liveDoc.thumbRenderedAt !== undefined
       ? liveDoc.thumbRenderedAt
-      : await getThumbRenderedAt(env, liveDoc.id);
+      : ((await planRoom(env, liveDoc.id).outline()).meta?.thumbRenderedAt ?? null);
   if (renderedAt !== null && renderedAt >= liveDoc.savedAt) {
     const cached = await env.SNAPSHOTS.get(key);
     // A present object is the happy path. A miss here means the object

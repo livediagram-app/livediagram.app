@@ -3,7 +3,7 @@ import { sentJson } from '@liveplanner/vitest-config/sent-request';
 import type { ItemCommentAddResponse, ItemResponse, ItemsResponse } from '@liveplanner/api-schema';
 import type { CommentThread } from '@liveplanner/project';
 import type { Item } from '@liveplanner/items';
-import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
+import { sqliteD1, type SqliteD1, testCopyPlan } from '../test-sqlite-d1';
 import * as db from '../db';
 import { makeTestRouteContext } from './test-route-context';
 import { handleProjects } from './projects';
@@ -61,12 +61,12 @@ beforeEach(async () => {
     }),
   };
   sql.sql.exec(`
-    INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at)
+    INSERT INTO test_plans (id, owner_id, name, shareable, saved_at, created_at)
       VALUES ('d1', 'owner', 'Plan', 1, 1, 1);
     INSERT INTO participants (id, name, color, created_at) VALUES ('owner', 'Webber', '#3b82f6', 1);
     INSERT INTO participants (id, name, color, created_at) VALUES ('visitor', 'Vee', '#16a34a', 1);
-    INSERT INTO share_links (code, project_id, role, level, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', 'participate', NULL, 1);
-    INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('LOOK', 'd1', 'view', NULL, 1);
+    INSERT INTO test_share_links (code, project_id, role, level, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', 'participate', NULL, 1);
+    INSERT INTO test_share_links (code, project_id, role, tab_id, created_at) VALUES ('LOOK', 'd1', 'view', NULL, 1);
   `);
   item = (
     await call<ItemResponse>({ path: '/items', body: { type: 'task', fields: { title: 'A' } } })
@@ -170,65 +170,6 @@ describe('deleting', () => {
     expect(thread(last.body.item)).toBeUndefined();
   });
 
-  it('takes a deleted comment’s words off the Timeline, with the resolved snippet it opened', async () => {
-    const opening = thread((await post('the question')).body.item)!.comments[0]!;
-    const reply = thread((await post('an answer')).body.item)!.comments[1]!;
-    await call({ path: `/items/${item.id}/comments/resolve` });
-    const events = () =>
-      (
-        sql.sql
-          .prepare(
-            `SELECT event_type, source_id FROM timeline_events
-              WHERE event_type IN ('comment_added', 'comment_resolved') ORDER BY event_type, source_id`,
-          )
-          .all() as { event_type: string; source_id: string }[]
-      ).map((r) => `${r.event_type}:${r.source_id}`);
-    const resolved = `comment_resolved:d1:item:${item.id}`;
-    expect(events()).toEqual(
-      [`comment_added:${opening.id}`, `comment_added:${reply.id}`].sort().concat(resolved),
-    );
-
-    await call({ method: 'DELETE', path: `/items/${item.id}/comments/${reply.id}` });
-    expect(events()).toEqual([`comment_added:${opening.id}`, resolved]);
-
-    await call({ method: 'DELETE', path: `/items/${item.id}/comments/${opening.id}` });
-    expect(events()).toEqual([]);
-  });
-
-  // docs/specs/013-workspace/timeline.md §4.3: a card deleted whole takes every comment's words with it.
-  it('takes a deleted card’s comments off the Timeline, and only its own', async () => {
-    await post('the question');
-    await post('an answer');
-    await call({ path: `/items/${item.id}/comments/resolve` });
-    const other = (
-      await call<ItemResponse>({ path: '/items', body: { type: 'task', fields: { title: 'B' } } })
-    ).body.item;
-    const kept = thread(
-      (await call<ItemResponse>({ path: `/items/${other.id}/comments`, body: { text: 'stays' } }))
-        .body.item,
-    )!.comments[0]!;
-    const count = () =>
-      (
-        sql.sql
-          .prepare(
-            `SELECT COUNT(*) AS n FROM timeline_events
-              WHERE event_type IN ('comment_added', 'comment_resolved')`,
-          )
-          .get() as { n: number }
-      ).n;
-    expect(count()).toBe(4);
-
-    expect((await call({ method: 'DELETE', path: `/items/${item.id}` })).status).toBe(204);
-    expect(
-      sql.sql
-        .prepare(
-          `SELECT event_type, source_id FROM timeline_events
-            WHERE event_type IN ('comment_added', 'comment_resolved')`,
-        )
-        .all()
-        .map((r) => ({ ...r })),
-    ).toEqual([{ event_type: 'comment_added', source_id: kept.id }]);
-  });
 });
 
 describe('resolving', () => {
@@ -307,7 +248,7 @@ describe('restore and copies', () => {
 
   it('keeps comments in a copy', async () => {
     await post('keep me');
-    await db.copyProject(sql.env, 'd1', 'd2', 'owner', 'Copy');
+    await testCopyPlan(sql.env, 'd1', 'd2', 'owner', 'Copy');
     expect(thread((await db.listItems(sql.env, 'd2'))[0]!)!.comments).toHaveLength(1);
   });
 });

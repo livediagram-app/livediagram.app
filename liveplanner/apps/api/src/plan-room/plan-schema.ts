@@ -1,6 +1,7 @@
 // The plan's own schema (docs/specs/015-api/api.md "Storage"), in its Durable Object's SQLite: everything the
-// plan holds as content. D1 keeps only what is not content (the projects row, folders, sharing, people, the
-// timeline) and the Inbox's index tables this plan pushes to it (plan-outbox.ts).
+// plan holds as content, and what it knows of itself. Where the plan is and who may reach it is liveworkspace's
+// index (liveworkspace/docs/one-explorer.md), which this plan pushes its summary and its tabs' comments and
+// actions to (plan-outbox.ts).
 //
 // One database per plan, so `plan_id` names the same plan on every row. It stays a column (and in the keys)
 // because the content modules were written for a store holding many plans, and keeping their SQL keyed by plan
@@ -14,13 +15,29 @@
 // follow-up for tabs over 2 MB; until then the cap refuses them, as it did on D1.
 const V1 = `
 CREATE TABLE IF NOT EXISTS plan (
-  id             TEXT    PRIMARY KEY,
-  items_rev      INTEGER NOT NULL DEFAULT 0,
-  items_next_key INTEGER NOT NULL DEFAULT 1,
-  item_types     TEXT    NULL,
-  item_types_rev INTEGER NOT NULL DEFAULT 0,
-  saved_at       INTEGER NOT NULL,
-  created_at     INTEGER NOT NULL
+  id                  TEXT    PRIMARY KEY,
+  items_rev           INTEGER NOT NULL DEFAULT 0,
+  items_next_key      INTEGER NOT NULL DEFAULT 1,
+  item_types          TEXT    NULL,
+  item_types_rev      INTEGER NOT NULL DEFAULT 0,
+  saved_at            INTEGER NOT NULL,
+  -- 0 until the plan is started: made by a create, or on its first open with a grant (plan-content.ts initPlan).
+  created_at          INTEGER NOT NULL,
+  -- What the plan knows of itself for its own reads (a project read, emails, an agent's listing). The index
+  -- holds the truth for the title, owner and team (liveworkspace/docs/one-explorer.md); these are kept from the
+  -- grants and renames that reach the plan, and the editor puts a stale name right.
+  name                TEXT    NOT NULL DEFAULT '',
+  owner_id            TEXT    NOT NULL DEFAULT '',
+  team_id             TEXT    NULL,
+  -- What made it ('mcp', 'cli', ...), and the creation intent (docs/specs/013-workspace/default-folders.md).
+  source              TEXT    NULL,
+  opens_in            TEXT    NULL,
+  tab_kind            TEXT    NULL,
+  template_family     TEXT    NULL,
+  -- The comment email's throttle (email/notifications.ts).
+  comment_notified_at INTEGER NULL,
+  -- When the cached first-tab snapshot in R2 was drawn (thumbnail.ts): fresh while at or after saved_at.
+  thumb_rendered_at   INTEGER NULL
 );
 
 CREATE TABLE IF NOT EXISTS tabs (
@@ -166,12 +183,10 @@ BEGIN
                       WHERE r.sheet_id = sheets.id AND dt.plan_id = sheets.plan_id);
 END;
 
--- What the plan owes D1 (plan-outbox.ts): a key per thing whose derived rows changed, filled by the
+-- What the plan owes the index (plan-outbox.ts): a key per thing whose derived rows changed, filled by the
 -- triggers below so no write path can forget it, drained by the room's alarm.
---   tab:     a tab's comment threads, actions, board columns and form heading (the Inbox's index)
---   order:   a tab's place in the plan, which the board rows carry
---   item:    a card, for the Inbox's cards
---   summary: the plan's listing summary and saved_at, for the Explorer
+--   tab:     a tab's comment threads and actions (the Inbox), and a Form tab's name and heading on its link
+--   summary: the plan's listing summary and its last change, for the Explorer
 -- A key written again while a flush is in flight is deleted and inserted again under a new id, so the flush's delete
 -- (by the ids it read) keeps it for the next one. Not INSERT OR REPLACE: inside a trigger, the conflict policy of
 -- the statement that fired it wins, and an upsert's is ABORT. A Durable Object holds one plan, so plan_id is always the same there; it keeps
@@ -202,12 +217,6 @@ BEGIN
   DELETE FROM outbox WHERE (plan_id, kind, key) IN (SELECT OLD.plan_id, 'tab', OLD.tab_id UNION ALL SELECT OLD.plan_id, 'summary', '');
   INSERT INTO outbox (plan_id, kind, key) SELECT OLD.plan_id, 'tab', OLD.tab_id UNION ALL SELECT OLD.plan_id, 'summary', '';
 END;
-CREATE TRIGGER IF NOT EXISTS outbox_link_order AFTER UPDATE OF order_index ON plan_tabs
-  WHEN NEW.order_index IS NOT OLD.order_index
-BEGIN
-  DELETE FROM outbox WHERE (plan_id, kind, key) IN (SELECT NEW.plan_id, 'order', NEW.tab_id UNION ALL SELECT NEW.plan_id, 'summary', '');
-  INSERT INTO outbox (plan_id, kind, key) SELECT NEW.plan_id, 'order', NEW.tab_id UNION ALL SELECT NEW.plan_id, 'summary', '';
-END;
 CREATE TRIGGER IF NOT EXISTS outbox_stats AFTER INSERT ON tab_stats
 BEGIN
   DELETE FROM outbox WHERE (plan_id, kind, key) IN (SELECT plan_id, 'summary', '' FROM plan_tabs WHERE tab_id = NEW.tab_id);
@@ -217,21 +226,6 @@ CREATE TRIGGER IF NOT EXISTS outbox_stats_update AFTER UPDATE ON tab_stats
 BEGIN
   DELETE FROM outbox WHERE (plan_id, kind, key) IN (SELECT plan_id, 'summary', '' FROM plan_tabs WHERE tab_id = NEW.tab_id);
   INSERT INTO outbox (plan_id, kind, key) SELECT plan_id, 'summary', '' FROM plan_tabs WHERE tab_id = NEW.tab_id;
-END;
-CREATE TRIGGER IF NOT EXISTS outbox_item_insert AFTER INSERT ON items
-BEGIN
-  DELETE FROM outbox WHERE (plan_id, kind, key) IN (SELECT NEW.plan_id, 'item', NEW.id);
-  INSERT INTO outbox (plan_id, kind, key) SELECT NEW.plan_id, 'item', NEW.id;
-END;
-CREATE TRIGGER IF NOT EXISTS outbox_item_update AFTER UPDATE ON items
-BEGIN
-  DELETE FROM outbox WHERE (plan_id, kind, key) IN (SELECT NEW.plan_id, 'item', NEW.id);
-  INSERT INTO outbox (plan_id, kind, key) SELECT NEW.plan_id, 'item', NEW.id;
-END;
-CREATE TRIGGER IF NOT EXISTS outbox_item_delete AFTER DELETE ON items
-BEGIN
-  DELETE FROM outbox WHERE (plan_id, kind, key) IN (SELECT OLD.plan_id, 'item', OLD.id);
-  INSERT INTO outbox (plan_id, kind, key) SELECT OLD.plan_id, 'item', OLD.id;
 END;
 CREATE TRIGGER IF NOT EXISTS outbox_plan_insert AFTER INSERT ON plan
 BEGIN

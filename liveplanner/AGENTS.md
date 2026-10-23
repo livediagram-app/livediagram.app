@@ -197,7 +197,7 @@ See [Domain language](docs/specs/003-system-architecture/domain-language.md).
 ```
 apps/
   marketing/    # static marketing site (Next.js, /)
-  editor/       # the planner app: Explorer and the project editor (Next.js, clean routes)
+  editor/       # the planner app: the project editor, hosting the shared Explorer (@liveworkspace/explorer) (Next.js, clean routes)
   help/         # help centre (Next.js export + MDX, /help)
   api/          # Cloudflare Worker REST + WebSocket API (D1 + Durable Objects, /api)
   mcp/          # Cloudflare Worker MCP server for AI tools (OAuth + tools, mcp.liveplanner.app)
@@ -210,7 +210,7 @@ packages/
   templates/      # template catalogue + pure element builders (editor template starts + MCP)
   template-previews/ # per-template preview SVGs (editor template starts + marketing template gallery)
   help-registry/  # help-centre article/category registry + keywords (help app + editor search)
-  explorer-lens/  # the Explorer filter lens: parse, match and autocomplete filter tokens (pure)
+  explorer-lens/  # the former Explorer filter lens: parse, match and autocomplete filter tokens (pure; unused by the shared Explorer)
   page-background/ # a page background's colours, patterns and motions + their parser (form covers, pure)
   forms/          # Form tabs: form model, answer checks, answer-to-card mapping, starters (pure)
   plan-art/       # Plan tab images (Board, Sheet, Dashboard as laid out) for editor exports + MCP previews (pure)
@@ -266,12 +266,12 @@ See [Secrets policy](docs/specs/002-project-scope/secrets-policy.md). **No secre
 See [Auth + guest access](docs/specs/014-identity/auth-and-guest-access.md).
 
 - **The planner always works without signing in.** Friction-free engagement is the acquisition strategy. Never put a sign-in wall in front of the editor.
-- **Hybrid identity** — the api accepts two equivalent ways of identifying the owner of a request:
-  - **Guest path**: a per-browser participant id (`liveplanner:v2:self-id` in `localStorage`) carried as `X-Owner-Id`. Default for unsigned visitors. Full feature set (persistence, share links, real-time collab).
-  - **Authed path**: an account access token in `Authorization: Bearer <token>`, verified against the accounts Worker's published keys (`ACCOUNTS_URL`) and this API's audience (`API_RESOURCE`).
-  - The api worker uses the `sub` claim as the owner id.
-- The two paths coexist forever — a signed-in user can still hand a share link to a guest who edits without auth.
-- Sign-in lives at `/sign-in/` and sign-up at `/get-started/` (both hand off to the liveworkspace accounts site; email code). On sign-up, a guest's projects migrate from the localStorage id to the account id via `POST /api/migrate`.
+- **One kind of identity, two kinds of person** — every caller sends a liveworkspace token as `Authorization: Bearer <token>`, verified against the accounts Worker's published keys (`ACCOUNTS_URL`) and this API's audience (`API_RESOURCE`); the api uses its `sub` claim as the owner id:
+  - **Guest**: a year-long guest token (`kind: "guest"`, `sub: guest_<uuid>`) fetched once through the accounts site (`/api/auth/guest`, back to `/auth/guest`) and kept in `localStorage` (`liveplanner:v2:guest-token`). The same guest in every liveworkspace app. Full feature set.
+  - **Account**: an account access token from signing in.
+  - There is no `X-Owner-Id` header, guest signature or `/api/migrate`.
+- **Access is the index's.** Where a plan is filed, who may open it and its sharing live in liveworkspace's index ([one-explorer.md](../liveworkspace/docs/one-explorer.md)); the editor sends the index's grant as `X-Index-Grant`, and the room takes it as `?t=`. A share link alone admits a link visitor.
+- Sign-in lives at `/sign-in/` and sign-up at `/get-started/` (both hand off to the liveworkspace accounts site; email code). Signing in moves a guest's items to the account; the index does that, not liveplanner.
 
 ## Core principle: reuse over duplication
 

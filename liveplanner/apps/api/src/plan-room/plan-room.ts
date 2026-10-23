@@ -1,6 +1,8 @@
 import { DurableObject } from 'cloudflare:workers';
 import {
   ACCESS_CHANGED_CLOSE,
+  GRANT_LAPSED_CLOSE,
+  ROOM_GRANT_ASK_BEFORE_MS,
   WORKBENCH_ENDED_CLOSE,
   PROJECT_FORMAT,
   PROJECT_TRASHED_CLOSE,
@@ -8,6 +10,7 @@ import {
   parseBuildId,
   ROOM_PING,
   ROOM_PONG,
+  capWorkbenchRole,
   type AccessLevel,
 } from '@liveplanner/api-schema';
 import { opForTheWire, stampCommentAuthor } from '@liveplanner/project';
@@ -31,7 +34,7 @@ import {
   resolveCatchup,
 } from '../project-room-rules';
 import { opForScope } from '../room-scope';
-import { recheckAdmittedLink } from '../room-link-recheck';
+import { openRoomTicket } from '../room-ticket';
 import { gateClientOp } from '../room-op-gate';
 import { answerInternal, type InternalRoom } from '../room-internal';
 import { rosterFrames, type RosterEntry } from '../room-roster';
@@ -345,9 +348,9 @@ export class PlanRoom extends DurableObject<Env> {
     if (!env || !planId || !this.schemaReady) return;
     this.draining = true;
     try {
-      const { keys, statements, more } = await drainOutbox(env, planId);
+      const { keys, pushes, more } = await drainOutbox(env, planId);
       this.lastFlushAt = Date.now();
-      if (keys > 0) console.debug('[plan-outbox] pushed', { planId, keys, statements });
+      if (keys > 0) console.debug('[plan-outbox] pushed', { planId, keys, pushes });
       // A big import's tabs go a batch at a time, back to back, not a minute apart.
       if (more) this.flushAt = Date.now() + FLUSH_IDLE_MS;
     } catch (error) {
@@ -448,11 +451,15 @@ export class PlanRoom extends DurableObject<Env> {
   }
 
   // Share links the index revoked: each one's sessions hear it and end now, as the worker's own revoke does.
-  async revokeCodes(planId: string, codes: string[]): Promise<number> {
+  async revokeCodes(
+    planId: string,
+    codes: string[],
+    reason: 'revoked' | 'rescoped' = 'revoked',
+  ): Promise<number> {
     this.bindPlan(planId);
     let closed = 0;
     for (const code of codes) {
-      const op = { kind: 'share-revoked', code };
+      const op = { kind: reason === 'rescoped' ? 'share-rescoped' : 'share-revoked', code };
       const before = this.state.getWebSockets().length;
       this.broadcastSystemOp(op);
       this.closeSessionsOfChangedLink(op);
@@ -501,36 +508,91 @@ export class PlanRoom extends DurableObject<Env> {
       v.workbenchPairing,
       v.adderKey,
       v.projectId,
+      v.grantExp ?? null,
     );
     if (v.projectId) this.bindPlan(v.projectId);
-    // A share session whose link changed while it was joining is told now (room-link-recheck.ts).
-    this.state.waitUntil(this.recheckJoinedLink(server));
+    this.armAlarm();
     return new Response(null, { status: 101, webSocket: client });
   }
 
-  // Read an accepted share session's link again and, when it was revoked or rescoped since the
-  // ticket was minted, send this one session that op and close it, as the broadcast would have.
-  // Owner and team sessions carry no code and are left alone.
-  async recheckJoinedLink(ws: WebSocket): Promise<void> {
-    const session = this.readSession(ws);
+  // ---------- Grants (liveworkspace/docs/one-explorer-contracts.md "Grants") ---------------------------------
+  //
+  // Every session joined with the index's grant, which lapses after ten minutes. ROOM_GRANT_ASK_BEFORE_MS before
+  // it does, the room asks the session for a fresh one (`grant-renew`); the session answers with a `grant` frame
+  // (its editor renews a minute early anyway, and sends each new grant unasked). A session still holding a
+  // lapsed grant is closed with GRANT_LAPSED_CLOSE, and its editor rejoins with a fresh one, or not at all.
+
+  // The earliest moment a session's grant needs the room: its ask, or its lapse once asked.
+  private nextGrantDue(): number | null {
+    let due: number | null = null;
+    for (const ws of this.state.getWebSockets()) {
+      const s = this.readSession(ws);
+      if (!s?.grantExp) continue;
+      const at = s.renewAsked ? s.grantExp : s.grantExp - ROOM_GRANT_ASK_BEFORE_MS;
+      if (due === null || at < due) due = at;
+    }
+    return due;
+  }
+
+  // Ask the sessions whose grant is about to lapse, and close those whose grant has.
+  private checkGrants(now: number): void {
+    let lapsed = 0;
+    for (const ws of this.state.getWebSockets()) {
+      const s = this.readSession(ws);
+      if (!s?.grantExp) continue;
+      if (s.grantExp <= now) {
+        try {
+          ws.close(GRANT_LAPSED_CLOSE, 'grant-lapsed');
+        } catch {
+          // Already gone.
+        }
+        this.opRates.delete(ws);
+        lapsed++;
+        continue;
+      }
+      if (!s.renewAsked && s.grantExp - ROOM_GRANT_ASK_BEFORE_MS <= now) {
+        this.sendTo(ws, { kind: 'grant-renew', expiresAt: s.grantExp });
+        try {
+          ws.serializeAttachment({ ...s, renewAsked: true } satisfies SessionAttachment);
+        } catch {
+          // The socket is going; its lapse closes it.
+        }
+      }
+    }
+    if (lapsed > 0) console.info('[grant] sessions lapsed', { closed: lapsed });
+  }
+
+  // A session's fresh grant (the `grant` frame): the same plan, level and tab move its lapse on. One that says
+  // something else (a level changed, a tab rescoped) ends the session, and the editor rejoins with what it holds
+  // now. A grant that does not check is ignored; the old one still lapses.
+  async renewGrant(ws: WebSocket, ticket: unknown): Promise<void> {
     const env = this.roomEnv;
-    if (!env || !session?.shareCode || !session.projectId) return;
-    let op: Awaited<ReturnType<typeof recheckAdmittedLink>>;
-    try {
-      op = await recheckAdmittedLink(env, {
-        shareCode: session.shareCode,
-        tabScope: session.tabScope ?? null,
-        projectId: session.projectId,
-      });
-    } catch (err) {
-      // The session keeps its ticket's link, as before this check; a later change still broadcasts.
-      console.warn('[room-link] join recheck failed', { error: String(err) });
+    const session = this.readSession(ws);
+    if (!env || !session?.projectId || typeof ticket !== 'string' || ticket.length > 8192) return;
+    const opened = await openRoomTicket(env, ticket, session.projectId);
+    if (!opened) {
+      console.warn('[grant] renewal refused', { reason: 'invalid' });
       return;
     }
-    if (!op) return;
-    console.info('[room-link] joined on a changed link', { kind: op.kind });
-    this.sendTo(ws, { kind: 'op', from: 'system', op });
-    this.closeSockets((each) => (each === ws ? [SHARE_LINK_CHANGED_CLOSE, op.kind] : null));
+    const { claims, workbench } = opened;
+    const level = workbench ? capWorkbenchRole(claims.level, workbench.cap) : claims.level;
+    if (level !== session.verifiedRole || (claims.tab ?? null) !== (session.tabScope ?? null)) {
+      console.info('[grant] renewal changed access', { from: session.verifiedRole, to: level });
+      this.closeSockets((each) => (each === ws ? [ACCESS_CHANGED_CLOSE, 'access-changed'] : null));
+      return;
+    }
+    const current = this.readSession(ws);
+    if (!current) return;
+    try {
+      ws.serializeAttachment({
+        ...current,
+        grantExp: claims.exp * 1000,
+        renewAsked: false,
+      } satisfies SessionAttachment);
+    } catch {
+      return;
+    }
+    this.armAlarm();
   }
 
   // Admit one server-side socket into the room: pin its hibernation-proof
@@ -545,6 +607,7 @@ export class PlanRoom extends DurableObject<Env> {
     workbenchPairing: string | null = null,
     adderKey: string | null = null,
     projectId: string | null = null,
+    grantExp: number | null = null,
   ): void {
     ws.serializeAttachment(
       newSessionAttachment(
@@ -556,6 +619,7 @@ export class PlanRoom extends DurableObject<Env> {
           workbenchPairing,
           adderKey,
           projectId,
+          grantExp,
         },
         crypto.randomUUID(),
       ),
@@ -749,6 +813,10 @@ export class PlanRoom extends DurableObject<Env> {
     if (!decision.admit) return;
     const session = this.readSession(ws);
     if (!session) return;
+    if (msg.kind === 'grant') {
+      this.state.waitUntil(this.renewGrant(ws, (msg as { grant?: unknown }).grant));
+      return;
+    }
     if (msg.kind === 'hello') {
       // Force the server-resolved role AND the server-assigned ephemeral id
       // onto the stored presence: the hello frame's own `role` / `id` are
@@ -911,7 +979,12 @@ export class PlanRoom extends DurableObject<Env> {
   // The room's one alarm, at the earliest of: an agent presence expiry (agent-presence I5, PR29), the outbox's
   // next push, the plan's next upkeep. None when nothing is due.
   private armAlarm(): void {
-    const due = [this.agents.nextExpiry(), this.flushAt, this.maintenanceAt].filter(
+    const due = [
+      this.agents.nextExpiry(),
+      this.flushAt,
+      this.maintenanceAt,
+      this.nextGrantDue(),
+    ].filter(
       (t): t is number => t !== null,
     );
     if (due.length === 0) void this.state.storage.deleteAlarm();
@@ -924,6 +997,7 @@ export class PlanRoom extends DurableObject<Env> {
     for (const r of expired) agentPresenceLog('expired', r);
     if (expired.length > 0) this.broadcastPresence();
     const now = Date.now();
+    this.checkGrants(now);
     if (this.flushAt !== null && this.flushAt <= now) await this.drain();
     if (this.maintenanceAt !== null && this.maintenanceAt <= now) await this.maintain(now);
     this.armAlarm();

@@ -9,8 +9,15 @@ export function isEditorPath(pathname: string): boolean {
   return [EDITOR, LEGACY_EDITOR].some((s) => pathname === `/${s}` || pathname.startsWith(`/${s}/`));
 }
 
+// A share link's own address, `/project/shared?s=<code>`: the code names the plan, so the path names none
+// (docs/specs/013-workspace/share-link-previews.md). It is the address the Share dialog copies, because its page
+// head names the plan.
+export const SHARED_PATH_SEGMENT = 'shared';
+
 export function projectIdFromPath(pathname: string): { id: string | null; legacy: boolean } {
   const match = /^\/(project|diagram)\/([^/?#]+)/.exec(pathname);
-  if (!match || match[2] === 'placeholder') return { id: null, legacy: false };
+  if (!match || match[2] === 'placeholder' || match[2] === SHARED_PATH_SEGMENT) {
+    return { id: null, legacy: false };
+  }
   return { id: match[2]!, legacy: match[1] === LEGACY_EDITOR };
 }

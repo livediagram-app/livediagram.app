@@ -29,6 +29,9 @@ function splitPath(path: string): string[] | null {
   }
 }
 
+// The lists an app acting for a person sees filtered to that app.
+const LISTS = new Set(['items', 'trash', 'shared', 'inbox']);
+
 // The routes that need a person: anything listing or changing a person's own things.
 const PERSON_ROUTES: Record<string, (ctx: PersonContext) => Promise<Response>> = {
   folders: handleFolders,
@@ -89,6 +92,12 @@ const worker = {
       return handleMerge(request, env);
     }
     const caller = await callerOf(request, env);
+    if (!caller) return unauthorized();
+    // An app acting for a person reaches that app's items only: its lists are that app's.
+    const delegate = caller.person?.app;
+    if (delegate && LISTS.has(segments[0] ?? '') && segments.length === 1) {
+      url.searchParams.set('app', delegate);
+    }
     return route({
       request,
       env,

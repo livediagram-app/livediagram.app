@@ -29,7 +29,7 @@ export type PlanRoomClient = {
   // The plan is gone for good: end every session and drop everything it stored.
   purge(): Promise<void>;
   // Share links revoked elsewhere (the index): their sessions end now.
-  revokeCodes(codes: string[]): Promise<number>;
+  revokeCodes(codes: string[], reason?: 'revoked' | 'rescoped'): Promise<number>;
 };
 
 export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomClient {
@@ -46,7 +46,7 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
     exportCopy: (onlyTabId, redact) => room.exportCopy(planId, onlyTabId, redact),
     importCopy: (copy) => room.importCopy(planId, copy),
     purge: () => room.purge(planId),
-    revokeCodes: (codes) => room.revokeCodes(planId, codes),
+    revokeCodes: (codes, reason) => room.revokeCodes(planId, codes, reason),
   };
 }
 
@@ -60,6 +60,6 @@ export type PlanRoomRpc = {
   exportCopy(planId: string, onlyTabId: string | null, redact: string | null): Promise<PlanCopy | null>;
   importCopy(planId: string, copy: PlanCopy): Promise<void>;
   purge(planId: string): Promise<void>;
-  revokeCodes(planId: string, codes: string[]): Promise<number>;
+  revokeCodes(planId: string, codes: string[], reason?: 'revoked' | 'rescoped'): Promise<number>;
   fetch(request: Request): Promise<Response>;
 };

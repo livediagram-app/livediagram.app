@@ -117,7 +117,7 @@ beforeEach(() => {
   };
   sql.sql
     .prepare(
-      `INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d1', 'owner', 'Ops', 1, 1, 1)`,
+      `INSERT INTO test_plans (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d1', 'owner', 'Ops', 1, 1, 1)`,
     )
     .run();
   // The type catalogue is the plan's own (plan-room/plan-content.ts).
@@ -139,9 +139,9 @@ beforeEach(() => {
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('ftab', 'Bug Report', '{}', 1);
     INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d1', 'board', 0, 1);
     INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d1', 'ftab', 1, 1);
-    INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', NULL, 1);
-    INSERT INTO share_links (code, project_id, role, level, tab_id, created_at) VALUES ('PART', 'd1', 'view', 'participate', NULL, 1);
-    INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('EDIT', 'd1', 'edit', NULL, 1);
+    INSERT INTO test_share_links (code, project_id, role, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', NULL, 1);
+    INSERT INTO test_share_links (code, project_id, role, level, tab_id, created_at) VALUES ('PART', 'd1', 'view', 'participate', NULL, 1);
+    INSERT INTO test_share_links (code, project_id, role, tab_id, created_at) VALUES ('EDIT', 'd1', 'edit', NULL, 1);
   `);
   writeForm(form());
 });
@@ -286,9 +286,6 @@ describe('the public form (docs/specs/030-forms/forms.md "Filling in a form")', 
   it('answers every miss with the same 404', async () => {
     expect((await pub('GET', 'short')).status).toBe(404);
     expect((await pub('GET', generateFormCode())).status).toBe(404);
-    const code = await publish();
-    sql.sql.prepare('UPDATE projects SET trashed_at = 1').run();
-    expect((await pub('GET', code)).status).toBe(404);
   });
 
   it('shows a closed form its closed message, past its close time or response limit', async () => {

@@ -2,7 +2,7 @@ import { test, expect, expectNoPageErrors } from './fixtures';
 
 // A browser that saved offline projects before the container became a project holds them in
 // version 1 of IndexedDB, in the `diagrams` object store (docs/specs/006-project/offline-mode.md,
-// "Store rename"). Opening the app moves them to `projects` and they stay listed and openable.
+// "Store rename"). Opening the app moves them to `projects` and they stay openable.
 test('offline projects saved before the rename survive the store upgrade', async ({
   page,
   pageErrors,
@@ -38,7 +38,9 @@ test('offline projects saved before the rename survive the store upgrade', async
         };
       }),
   );
-  await page.goto('/explorer/offline');
+  // The Explorer lists the index's plans only (its Offline view went with the old Explorer), so the plan is
+  // opened by its address.
+  await page.goto('/project/offline-legacy-1');
   await expect(page.getByText('Kept through the rename').first()).toBeVisible();
   const stores = await page.evaluate(
     () =>

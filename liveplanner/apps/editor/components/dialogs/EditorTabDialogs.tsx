@@ -9,6 +9,8 @@ import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { useIsOfflineProject } from '@/hooks/persistence/useIsOfflineProject';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { panelEnabled } from '@/lib/user-preferences';
+import { indexClient } from '@/lib/index-client';
+import { shareUrl } from '@/lib/explorer-host';
 
 const ExportTabDialog = dynamic(
   () => import('@/components/dialogs/ExportTabDialog').then((m) => m.ExportTabDialog),
@@ -18,8 +20,13 @@ const ImportTabDialog = dynamic(
   () => import('@/components/dialogs/ImportTabDialog').then((m) => m.ImportTabDialog),
   { ssr: false },
 );
+// The shared Explorer's Share dialog (@liveworkspace/explorer): links are the index's, managed there.
 const ShareDialog = dynamic(
-  () => import('@/components/dialogs/ShareDialog').then((m) => m.ShareDialog),
+  () => import('@liveworkspace/explorer').then((m) => m.ShareDialog),
+  { ssr: false },
+);
+const ShareOfflineGate = dynamic(
+  () => import('@/components/dialogs/ShareOfflineGate').then((m) => m.ShareOfflineGate),
   { ssr: false },
 );
 
@@ -43,19 +50,7 @@ export function EditorTabDialogs() {
     setImportOpen,
     shareDialogOpen,
     selfParticipant,
-    shareLinks,
-    sharePasswordSet,
-    shareUrlFor,
-    accountUserId,
-    accountDisplayName,
     projectId,
-    projectTeamId,
-    updateParticipantName,
-    createShareLink,
-    revokeShareLink,
-    extendShareLink,
-    rescopeShareLink,
-    setProjectSharePassword,
     setShareDialogOpen,
     syncToCloud,
   } = useEditorContext();
@@ -108,27 +103,18 @@ export function EditorTabDialogs() {
           onClose={() => setImportOpen(false)}
         />
       ) : null}
-      {shareDialogOpen ? (
-        <ShareDialog
-          participant={selfParticipant}
-          links={shareLinks}
-          sharePasswordSet={sharePasswordSet}
-          shareUrlFor={shareUrlFor}
-          tabs={tabs}
-          // Signed-in to an account → name is locked to the account
-          // display name (same rule as the welcome modal, docs/specs/014-identity/auth-and-guest-access.md).
-          // Guests pass undefined so the input + shuffle stay live.
-          lockedName={accountUserId ? accountDisplayName : null}
-          onSaveName={updateParticipantName}
-          onCreateLink={createShareLink}
-          onRevokeLink={revokeShareLink}
-          onRescopeLink={rescopeShareLink}
-          onExtendLink={extendShareLink}
-          onSetPassword={setProjectSharePassword}
-          offline={isOffline}
+      {shareDialogOpen && isOffline ? (
+        <ShareOfflineGate
           onSyncToCloud={syncToCloud}
-          syncReady={readerKnown}
-          teamProject={!!projectTeamId}
+          ready={readerKnown}
+          onClose={() => setShareDialogOpen(false)}
+        />
+      ) : shareDialogOpen && projectId ? (
+        <ShareDialog
+          client={indexClient}
+          item={{ id: projectId, app: 'liveplanner', kind: 'plan', sharedVia: null, title: projectName }}
+          tabs={tabs.map((t) => ({ id: t.id, name: t.name }))}
+          shareUrl={shareUrl}
           onClose={() => setShareDialogOpen(false)}
         />
       ) : null}

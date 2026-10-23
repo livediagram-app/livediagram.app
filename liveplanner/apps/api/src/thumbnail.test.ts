@@ -19,7 +19,10 @@ const db = vi.hoisted(() => ({
   thumbnailKey: (id: string) => `thumb/${id}`,
 }));
 vi.mock('./db', () => db);
-vi.mock('./plan-room/plan-content', () => ({ getPlanItemTypes: db.getProjectItemTypes }));
+vi.mock('./plan-room/plan-content', () => ({
+  getPlanItemTypes: db.getProjectItemTypes,
+  markThumbRendered: db.markThumbRendered,
+}));
 
 import {
   getProjectThumbnailSvg as workerThumbnail,
@@ -36,6 +39,8 @@ function getProjectThumbnailSvg(
   opts: ThumbnailOptions = {},
 ): Promise<string | null> {
   const room = {
+    // The freshness stamp lives on the plan's own row (plan-content.ts).
+    outline: async () => ({ meta: { thumbRenderedAt: (await db.getThumbRenderedAt(env, liveDoc.id)) ?? null } }),
     image: (_planId: string, subject: ThumbnailSubject, tabId: string | null) =>
       renderPlanImage(env as never, subject, tabId, opts),
   };

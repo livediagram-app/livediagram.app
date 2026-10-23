@@ -7,19 +7,13 @@ import { objectOrEmpty, type WorkbenchRole } from '@liveplanner/api-schema';
 // its segment and returns `notFound()` for sub-paths / methods it
 // doesn't recognise (preserving the original fall-through-to-404).
 
-import {
-  canEditProject,
-  canParticipateProject,
-  canReadProject,
-  resolveProjectGrant,
-  type ProjectGrant,
-} from '../auth/project-access';
-import type { SharePasswordAttempt } from '../auth/share-access';
+import { capWorkbenchRole, levelAtLeast, type AccessLevel } from '@liveplanner/api-schema';
+import type { TeamClaim } from '@liveworkspace/auth-client';
+import type { ShareAccess } from '@liveworkspace/index-client';
 import type { WorkbenchReach } from '../db/workbench';
-import { clientRateKey } from '../client-ip';
-import { getProject, getMembership, getTrashedProjectMeta } from '../db';
-import { badRequest, projectTrashed, forbidden, missingAuth, notFound } from '../responses';
-import type { ProjectDTO, Env, PlanEnv } from '../types';
+import type { GrantCaller, PlanGrant } from '../index-service';
+import { badRequest, forbidden, missingAuth, notFound } from '../responses';
+import type { ProjectDTO, Env, PlanEnv, ShareRole } from '../types';
 
 // A workbench session as the choke point resolved it (blueprint "A request bearing lvw_", "The choke point by
 // scope"): one project in the project scope, the workspace (from an optional folder) in the workspace scope.
@@ -32,6 +26,9 @@ export type WorkbenchContext = {
   origin: string;
   level: WorkbenchRole;
   expiresAt: number;
+  // The teams the session's token had joined when it was opened, so the api can ask the index for a team plan's
+  // grant on the owner's behalf. Absent: none.
+  teams?: TeamClaim[] | null;
 } & WorkbenchReach;
 
 export type RouteContext = {
@@ -59,8 +56,8 @@ export type RouteContext = {
   // verified. Never read from a header — it
   // drives teams' invite auto-connection so it must be unforgeable.
   accountEmail: string | null;
-  // Hybrid identity (docs/specs/014-identity/auth-and-guest-access.md): the verified account id, else the
-  // legacy X-Owner-Id header, else null. Resolved once in `fetch`.
+  // The caller's id (docs/specs/014-identity/auth-and-guest-access.md): the verified account id, else a verified
+  // guest token's `guest_…` id, else null (a link visitor with no identity). Resolved once in `fetch`.
   resolveOwner: () => string | null;
   // The API token the request presented, or null for a signed-in session or a guest. Only a token
   // makes a changeset an agent's, and a token may never do a whole-tab save
@@ -70,6 +67,15 @@ export type RouteContext = {
   // caller. Under one, `accountUserId` and `token` are null and `resolveOwner()` is the owner: a person's editor on
   // one project, never a token and never an administrator. Optional so unit tests can leave it out.
   workbench?: WorkbenchContext | null;
+  // The caller's joined teams, from its token (null for a guest or a token minted before teams were in it).
+  teams?: TeamClaim[] | null;
+  // The browser's own bearer (an access or guest token), passed to the index as it is; null for an API token,
+  // a workbench session and a link visitor with no identity.
+  bearer?: string | null;
+  // The index's grant on the plan this request is about (liveworkspace/docs/one-explorer-contracts.md "Grants"):
+  // the X-Index-Grant the request carried, checked, or one the worker fetched for it (routes/projects.ts). It is
+  // the whole of who may do what to a plan; null or for another plan, nothing.
+  grant?: PlanGrant | null;
   // Schedule background work that may outlive the response (docs/specs/014-identity/transactional-email.md email
   // sends). Forwards to the fetch handler's ExecutionContext.waitUntil.
   // Optional so unit tests can build a RouteContext without a real
@@ -81,249 +87,126 @@ export type RouteContext = {
 // A RouteContext inside a plan's Durable Object (plan-room/plan-route.ts): its env reaches the plan's content.
 export type PlanRouteContext = RouteContext & { env: PlanEnv };
 
-// Visitor share code carried on edit/view-link requests so a non-owner
-// can authorise against a project they don't own.
-//
-// Exported because its PRESENCE is the only honest signal that a caller
-// arrived through a share link. "Isn't the owner" is not that signal: a
-// joined team member reads every project in their team's library without a
-// code (docs/specs/013-workspace/team-shared-projects.md), so the visitor-facing timeline events keyed on
-// `owner !== ownerId` were reporting teammates as strangers with a link.
+// The share code a link visitor's request carries (X-Share-Code), with its password (X-Share-Password). Its
+// PRESENCE is the only honest signal that a caller arrived through a share link: a joined team member reads every
+// team plan without one.
 export function shareCodeOf(request: Request): string | null {
   return request.headers.get('X-Share-Code');
 }
 
-// Share password (docs/specs/013-workspace/share-password.md) carried alongside the share code when the
-// project the visitor is accessing is password-protected. Owners never
-// send it (their identity short-circuits the check); a non-owner with a
-// share code must, or the access gate denies password-protected projects.
-export function sharePasswordOf(request: Request): SharePasswordAttempt | null {
-  const value = request.headers.get('X-Share-Password');
-  return value === null ? null : { value, rateKey: clientRateKey(request) };
+export function shareAccessOf(request: Request): ShareAccess | null {
+  const code = shareCodeOf(request);
+  if (!code) return null;
+  const password = request.headers.get('X-Share-Password');
+  return password === null ? { code } : { code, password };
 }
 
-// Route-side wrappers around canReadProject / canEditProject. Most
-// handler call sites need the same six args to the auth helpers
-// (env, projectId, caller, share code, project owner, share
-// password); four of them (env, caller, share code, share password)
-// fall straight out of the RouteContext, so condensing them into a
-// (ctx, projectId, projectOwnerId) helper drops a stack of
-// repetitive 6-line invocations to 1-liners. Behaviour stays
-// identical: each helper just forwards the ctx-derived args.
-//
-// `tabId` names the tab the request touches. Leave it off for a
-// project-level door: a tab-scoped link is then refused (fail closed,
-// docs/specs/013-workspace/tab-scoped-share-links.md).
+// Who the index is asked for on this request's behalf (index-service.ts): an API token's or a workbench session's
+// account, vouched for with this app's key, or the browser's own bearer (none for a link visitor).
+export function grantCallerOf(ctx: RouteContext): GrantCaller {
+  if (ctx.token || ctx.workbench) {
+    const personId = ctx.verifiedUserId ?? ctx.resolveOwner() ?? '';
+    return { kind: 'delegate', personId, teams: (ctx.teams ?? []).map((t) => t.id) };
+  }
+  return { kind: 'bearer', token: ctx.bearer ?? null };
+}
 
-export function gateRead(
+// What a caller holds on a plan (docs/specs/013-workspace/share-roles.md): a level, the one tab it is confined to
+// (docs/specs/013-workspace/tab-scoped-share-links.md), and the share code that granted it. All of it is the
+// index's grant, read here; a workbench session holds no more than its own level.
+export type ProjectGrant = {
+  role: ShareRole;
+  tabScope: string | null;
+  shareCode: string | null;
+};
+
+export function grantOn(ctx: RouteContext, projectId: string): ProjectGrant | null {
+  const grant = ctx.grant;
+  if (!grant || grant.item !== projectId) return null;
+  const role = ctx.workbench ? capWorkbenchRole(grant.level, ctx.workbench.level) : grant.level;
+  return { role, tabScope: grant.tab, shareCode: grant.shareCode };
+}
+
+// The ladder (docs/specs/013-workspace/share-roles.md): every level holds everything below it. `tabId` names the
+// tab the request touches; left off, the request is project-level and a tab-scoped grant reaches nothing there
+// (fail closed, docs/specs/013-workspace/tab-scoped-share-links.md).
+function holds(
   ctx: RouteContext,
   projectId: string,
-  projectOwnerId: string,
-  projectTeamId: string | null = null,
+  needs: AccessLevel,
+  tabId: string | undefined,
+): boolean {
+  const grant = grantOn(ctx, projectId);
+  if (!grant || !levelAtLeast(grant.role, needs)) return false;
+  return grant.tabScope === null || grant.tabScope === tabId;
+}
+
+// The gates every plan route runs. The owner and team arguments are what the D1 projects row used to answer;
+// the grant now carries the whole decision, so they are accepted and unused.
+export async function gateRead(
+  ctx: RouteContext,
+  projectId: string,
+  _projectOwnerId?: string,
+  _projectTeamId?: string | null,
   tabId?: string,
 ): Promise<boolean> {
-  return canReadProject(
-    ctx.env,
-    projectId,
-    ctx.resolveOwner(),
-    shareCodeOf(ctx.request),
-    projectOwnerId,
-    sharePasswordOf(ctx.request),
-    projectTeamId,
-    // Server-verified account id (signed-in session or API token) for the
-    // team-membership check — never the unsigned X-Owner-Id header
-    // (docs/specs/013-workspace/team-shared-projects.md access trust boundary).
-    ctx.verifiedUserId,
-    tabId,
-  );
+  return holds(ctx, projectId, 'view', tabId);
 }
 
 // The Participant gate (docs/specs/013-workspace/share-roles.md): every write a Participant may make beside an
 // Editor (comments, Q&A notes and upvotes, Plan cards, Sheet cells). A Viewer only looks, so it is refused. Agent
 // presence stays on gateRead: an agent acts at its owner's level.
-export function gateParticipate(
+export async function gateParticipate(
   ctx: RouteContext,
   projectId: string,
-  projectOwnerId: string,
-  projectTeamId: string | null = null,
+  _projectOwnerId?: string,
+  _projectTeamId?: string | null,
   tabId?: string,
 ): Promise<boolean> {
-  return canParticipateProject(
-    ctx.env,
-    projectId,
-    ctx.resolveOwner(),
-    shareCodeOf(ctx.request),
-    projectOwnerId,
-    sharePasswordOf(ctx.request),
-    projectTeamId,
-    ctx.verifiedUserId,
-    tabId,
-  );
+  return holds(ctx, projectId, 'participate', tabId);
 }
 
-export function gateEdit(
+export async function gateEdit(
   ctx: RouteContext,
   projectId: string,
-  projectOwnerId: string,
-  projectTeamId: string | null = null,
+  _projectOwnerId?: string,
+  _projectTeamId?: string | null,
   tabId?: string,
 ): Promise<boolean> {
-  return canEditProject(
-    ctx.env,
-    projectId,
-    ctx.resolveOwner(),
-    shareCodeOf(ctx.request),
-    projectOwnerId,
-    sharePasswordOf(ctx.request),
-    projectTeamId,
-    // Server-verified account id (signed-in session or API token) for the
-    // team-membership check — never the unsigned X-Owner-Id header
-    // (docs/specs/013-workspace/team-shared-projects.md access trust boundary).
-    ctx.verifiedUserId,
-    tabId,
-  );
+  return holds(ctx, projectId, 'edit', tabId);
 }
 
 // The caller's grant on a project, scope included, for the doors that narrow
 // what they return to a scoped visitor's tab rather than refuse them
 // (docs/specs/013-workspace/tab-scoped-share-links.md). Null = no access.
-export function gateGrant(
+export async function gateGrant(
   ctx: RouteContext,
   projectId: string,
-  projectOwnerId: string,
-  projectTeamId: string | null = null,
+  _projectOwnerId?: string,
+  _projectTeamId?: string | null,
 ): Promise<ProjectGrant | null> {
-  return resolveProjectGrant(
-    ctx.env,
-    projectId,
-    ctx.resolveOwner(),
-    shareCodeOf(ctx.request),
-    projectOwnerId,
-    sharePasswordOf(ctx.request),
-    projectTeamId,
-    ctx.verifiedUserId,
-  );
+  return grantOn(ctx, projectId);
 }
 
-// Route-entry guards. Each resolves the caller / loads + authorises the
-// project and returns EITHER the value the handler needs OR the exact
-// Response it should return instead. The caller's one-liner is:
-//
-//   const owner = requireOwner(ctx);
-//   if (owner instanceof Response) return owner;
-//
-// which collapses the `const owner = resolveOwner(); if (!owner) return
-// missingAuth();` pair (and its load-and-check cousins) that every
-// owner-scoped path in projects.ts repeated by hand. Centralising them
-// means the authz status-code mapping (400 / 404 / 403) lives in one
-// place a reviewer can check, instead of N copies that can drift.
-
-// The resolved owner id, or the 400 to return when neither an account
-// token nor X-Owner-Id identifies the caller.
+// The resolved caller id, or the 400 to return when no token identifies the caller.
 export function requireOwner(ctx: RouteContext): string | Response {
   return ctx.resolveOwner() ?? missingAuth();
 }
 
-// Is `ctx` the owner of this project? The one rule both owner-only guards
-// below share, and the reason it isn't a bare `owner === ownerId`.
-//
-// For a PERSONAL project the hybrid identity is safe: the owner id is either
-// an account `sub` the caller proved with a verified JWT, or a guest UUID that
-// is unguessable.
-//
-// For a TEAM project it is NOT. A team's owner id is an account id deliberately
-// visible to every teammate (`GET /api/teams/<id>` lists `members[].userId`),
-// so accepting the unsigned `X-Owner-Id` header here would let anyone who
-// ever learned it — a removed member, an invitee who declined — present it as
-// a credential and reach the owner-only surfaces: reading the share password
-// in the clear, minting an edit-role share link, clearing the password,
-// deleting the project. So a team project's ownership must be proven with a
-// server-VERIFIED account id (signed-in session or API token), never the header.
-//
-// This is the same trust boundary auth/project-access.ts draws for the
-// read/edit gates; it belongs here too rather than only there.
-//
-// And the owner of a team project must still BE in the team. A member who
-// leaves or is removed has their team work handed on (handTeamWorkToHeir),
-// but rows from before that existed are still owned by people who have gone,
-// and ownership is what the share-link, password, delete and move-out routes
-// check first.
+// Is `ctx` the plan's owner, as the plan knows it? Only the doors that show the owner more (comment authors,
+// the owner's own notices) ask; who may change or share the plan is the index's.
 export async function ownsProject(
   ctx: RouteContext,
-  liveDoc: Pick<ProjectDTO, 'ownerId' | 'teamId'>,
+  liveDoc: Pick<ProjectDTO, 'id' | 'ownerId'>,
 ): Promise<boolean> {
-  if (liveDoc.teamId) {
-    if (ctx.verifiedUserId == null || ctx.verifiedUserId !== liveDoc.ownerId) return false;
-    const membership = await getMembership(ctx.env, liveDoc.teamId, ctx.verifiedUserId);
-    return membership?.status === 'joined';
-  }
-  return ctx.resolveOwner() === liveDoc.ownerId;
+  const caller = ctx.resolveOwner();
+  return caller !== null && caller === liveDoc.ownerId && grantOn(ctx, liveDoc.id) !== null;
 }
 
-// Does `ctx` manage this project? Its owner, OR a joined member of its team
-// (docs/specs/013-workspace/team-shared-projects.md: a team's library belongs to
-// every joined member, so each may share, delete and restore its projects). NOT a
-// share-link visitor: editing content via a link is one thing, deciding who else
-// gets in or destroying the project is owner/team-only. The member leg is checked
-// against the verified account id, never the header, like ownsProject.
-async function managesProject(
-  ctx: RouteContext,
-  liveDoc: Pick<ProjectDTO, 'ownerId' | 'teamId'>,
-): Promise<boolean> {
-  if (await ownsProject(ctx, liveDoc)) return true;
-  if (!liveDoc.teamId || !ctx.verifiedUserId) return false;
-  const membership = await getMembership(ctx.env, liveDoc.teamId, ctx.verifiedUserId);
-  return membership?.status === 'joined';
-}
-
-// May `ctx` delete this project? Exactly who manages it (managesProject). Also
-// gates what the delete confirmation reads first (the shared-tabs notice).
-export const mayDeleteProject = managesProject;
-
-// The answer for a project id no LIVE row holds (docs/specs/013-workspace/trash.md):
-// 410 `project_trashed` when it is in the Trash and the caller could have
-// opened it (owner, joined team member, share-code holder), else the 404 a
-// never-existing id gets, so the deleted state leaks nothing to a stranger.
-export async function missingProject(ctx: RouteContext, projectId: string): Promise<Response> {
-  const trashed = await getTrashedProjectMeta(ctx.env, projectId);
-  if (!trashed) return notFound();
-  const grant = await gateGrant(ctx, projectId, trashed.ownerId, trashed.teamId);
-  return grant ? projectTrashed() : notFound();
-}
-
-// Owner-only resource: resolve the caller, load the project, and confirm
-// the caller owns it. Returns the project, or 400 (no owner) / 404
-// (missing) / 403 (foreign). 404-before-403 means a foreign id can't be
-// distinguished from a missing one until ownership is proven, but once
-// the row exists a non-owner gets 403 — matching every owner-only branch
-// projects.ts hand-rolled (DELETE :id, /folder, /share, /share-password,
-// /share/:code).
-export async function requireOwnedProject(
-  ctx: RouteContext,
-  projectId: string,
-): Promise<ProjectDTO | Response> {
-  const owner = ctx.resolveOwner();
-  if (!owner) return missingAuth();
-  const existing = await getProject(ctx.env, projectId);
-  if (!existing) return missingProject(ctx, projectId);
-  if (!(await ownsProject(ctx, existing))) return forbidden();
-  return existing;
-}
-
-// The share-link family's guard (docs/specs/013-workspace/team-shared-projects.md): the
-// same 400 / 404 / 403 ladder as requireOwnedProject, but a joined member of a team
-// project passes as well as its owner, since the team's projects are all of theirs
-// to share.
-export async function requireManagedProject(
-  ctx: RouteContext,
-  projectId: string,
-): Promise<ProjectDTO | Response> {
-  const owner = ctx.resolveOwner();
-  if (!owner) return missingAuth();
-  const existing = await getProject(ctx.env, projectId);
-  if (!existing) return missingProject(ctx, projectId);
-  if (!(await managesProject(ctx, existing))) return forbidden();
-  return existing;
+// The answer for a plan id no started plan holds: the 404 a never-existing id gets. The Trash is the index's, so
+// a trashed plan never gets a grant and never reaches here with one.
+export async function missingProject(_ctx: RouteContext, _projectId: string): Promise<Response> {
+  return notFound();
 }
 
 // A refused request on a tab: 404 when the caller's grant is confined to another tab, 403 otherwise.
@@ -331,8 +214,7 @@ export async function deniedOnTab(
   ctx: RouteContext,
   liveDoc: { id: string; ownerId: string; teamId: string | null },
 ): Promise<Response> {
-  const grant = await gateGrant(ctx, liveDoc.id, liveDoc.ownerId, liveDoc.teamId);
-  return grant ? notFound() : forbidden();
+  return grantOn(ctx, liveDoc.id) ? notFound() : forbidden();
 }
 
 // The refusal for a Participant door (docs/specs/013-workspace/share-roles.md): no grant, 403; a grant confined
@@ -342,7 +224,7 @@ export async function deniedParticipate(
   liveDoc: { id: string; ownerId: string; teamId: string | null },
   tabId?: string,
 ): Promise<Response> {
-  const grant = await gateGrant(ctx, liveDoc.id, liveDoc.ownerId, liveDoc.teamId);
+  const grant = grantOn(ctx, liveDoc.id);
   if (grant && grant.tabScope !== null && grant.tabScope !== tabId) return notFound();
   if (grant)
     console.info('[access-levels] participation refused', { projectId: liveDoc.id, tabId });

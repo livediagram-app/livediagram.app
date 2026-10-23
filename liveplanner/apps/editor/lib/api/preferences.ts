@@ -2,8 +2,8 @@
 //
 // Per-user editor preference flags persisted server-side so a signed-
 // in user's choices follow them across devices. Guests get a copy
-// keyed by their X-Owner-Id, so a localStorage clear still recovers
-// the flags as long as the same browser participant id is in play.
+// keyed by their guest id, so a localStorage clear still recovers
+// the flags as long as the same guest token is in play.
 //
 // The shape is opaque to the api-client by design: docs/specs/007-editor/user-preferences.md's
 // UserPreferences lives in apps/editor/lib/user-preferences.ts as the

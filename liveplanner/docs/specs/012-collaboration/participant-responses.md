@@ -47,12 +47,12 @@ here:
 
 | Id                                                                                    | Stable across reconnects? | Safe to publish? |
 | ------------------------------------------------------------------------------------- | ------------------------- | ---------------- |
-| **Owner id** (`X-Owner-Id`)                                                           | yes                       | **no**           |
+| **Owner id** (the token's `sub`)                                                      | yes                       | **no**           |
 | **Presence id** ([Public API and API tokens](../015-api/public-api-and-tokens.md) §6) | **no** — per socket       | yes              |
 | **Collab key**                                                                        | yes                       | yes              |
 
-The owner id is a credential: for a guest it is exactly what authenticates
-their API calls, so writing it into a shared project hands it to every
+The owner id is not to be published: for a guest it once was exactly what authenticated
+their API calls, and it still names them in every app, so writing it into a shared project hands it to every
 co-viewer. The presence id is deliberately a fresh server-minted random per
 socket, so peers never read an owner id off a roster — which also means it
 matches nothing that was ever saved, and changes on every reconnect.

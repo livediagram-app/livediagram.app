@@ -11,8 +11,8 @@
 
 import { storeAsCreates } from '@liveplanner/items';
 import { PROJECT_CONVERSION_HEADER } from '@liveplanner/api-schema';
-import { apiCreateProject, apiSetFavourite } from '@/lib/api-client';
-import { apiSetProjectTag } from '@/lib/api/tags';
+import { apiCreateProject } from '@/lib/api-client';
+import { indexClient } from '@/lib/index-client';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
 import { fetchCloudItems } from '../api/items';
 import { fetchCloudSheets, sheetAsCreate } from '../api/sheets';
@@ -136,14 +136,13 @@ export async function syncOfflineProject(
     // Gone already: another tab finished a sync of it first. Nothing here is left to move.
     if (done.outcome === 'missing') return { id: rec.id };
     if (done.outcome === 'deleted') {
-      // The star lived on the offline record (docs/specs/013-workspace/favourites.md), which just went. Re-star
-      // on the server AFTER the delete: while the id is still registered offline,
-      // apiSetFavourite would route the star straight back to the local store.
-      if (done.rec.favourite) await apiSetFavourite(ownerId, rec.id, true);
+      // The star lived on the offline record (docs/specs/013-workspace/favourites.md), which just went: it goes onto
+      // the plan's index item, which the upload made. A failed star leaves the plan synced, unstarred.
+      if (done.rec.favourite) await indexClient.favourite(rec.id).catch(() => {});
       // Its tags the same way (docs/specs/013-workspace/tags.md). One deleted meanwhile is refused and left off;
       // the project is synced either way.
       await Promise.allSettled(
-        (done.rec.tagIds ?? []).map((tagId) => apiSetProjectTag(ownerId, tagId, done.rec.id, true)),
+        (done.rec.tagIds ?? []).map((tagId) => indexClient.tagItem(tagId, done.rec.id)),
       );
       return { id: rec.id };
     }

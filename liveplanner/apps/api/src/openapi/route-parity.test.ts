@@ -21,7 +21,12 @@ import {
 // Probe as a signed-in caller, so the signed-in-only surfaces (teams, tokens,
 // OAuth exchange) route instead of answering 401 for every path under them.
 vi.mock('../auth/accounts', () => ({
-  getAccountIdentity: async () => ({ userId: 'user_probe', email: null }),
+  getPersonIdentity: async () => ({
+    kind: 'account',
+    userId: 'user_probe',
+    email: null,
+    teams: [{ id: 'probe-param', name: 'Probe', role: 'owner' }],
+  }),
 }));
 
 const vocabulary = routeVocabulary();
@@ -63,7 +68,7 @@ describe('OpenAPI manifest ↔ dispatch (method, path-template) parity', () => {
   it('probes enough of the dispatch to mean something', () => {
     // Vacuity guard: a broken source walk or an env that routes nothing would
     // pass every case below without checking anything.
-    expect(vocabulary.size).toBeGreaterThan(20);
+    expect(vocabulary.size).toBeGreaterThan(15);
     expect(results.length).toBeGreaterThan(1000);
     expect(results.filter((r) => r.outcome === 'routed').length).toBeGreaterThan(10);
     expect(results.filter((r) => r.outcome === 'storage').length).toBeGreaterThan(40);

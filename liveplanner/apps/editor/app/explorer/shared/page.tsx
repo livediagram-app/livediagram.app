@@ -1,14 +1,10 @@
 import type { Metadata } from 'next';
-import { ExplorerPane } from '../ExplorerPane';
-import { viewProjectTitle } from '../view-titles';
 
-// /explorer/shared — projects opened via someone else's share link.
-// The layout's ExplorerShell provides the chrome + state; this page
-// only pins the route and the tab title (docs/specs/013-workspace/folders.md, routes.ts).
+// The Explorer's Shared With Me view: ExplorerShell (the layout) renders it from the address.
 export const metadata: Metadata = {
-  title: viewProjectTitle('shared'),
+  title: 'Shared With Me | liveplanner',
 };
 
 export default function Page() {
-  return <ExplorerPane />;
+  return null;
 }

@@ -1,13 +1,15 @@
 // An API request about one plan, answered inside the plan's Durable Object (docs/specs/015-api/api.md
-// "Storage"). The worker resolves who is calling (accounts token, API token, workbench session, guest header),
-// runs the cross-cutting gates (rate limits, read-only tokens, workbench confinement, body caps), then hands the
-// request and that identity to the plan's room (`route` RPC). The room rebuilds the RouteContext and runs the same
-// handlers as before, against its own SQLite for content and D1 for everything else, so every per-route access
-// check (gateRead / gateEdit / gateParticipate and the owner guards) is unchanged.
+// "Storage"). The worker resolves who is calling (accounts or guest token, API token, workbench session) and the
+// index's grant on the plan (routes/plan-grant.ts), runs the cross-cutting gates (rate limits, read-only tokens,
+// workbench confinement, body caps), then hands the request and that identity to the plan's room (`route` RPC).
+// The room rebuilds the RouteContext and runs the handlers against its own SQLite for content and D1 for
+// everything else; every access check (gateRead / gateEdit / gateParticipate) reads the grant.
 
 import type { PlanRouteContext, RouteContext, WorkbenchContext } from '../routes/context';
 import { handleForms } from '../routes/forms';
 import { handlePlanRequest } from '../routes/projects';
+import type { TeamClaim } from '@liveworkspace/auth-client';
+import type { PlanGrant } from '../index-service';
 import type { PlanEnv } from '../types';
 
 // The caller as the worker resolved it: plain data, so it crosses the RPC boundary.
@@ -19,6 +21,10 @@ export type RouteIdentity = {
   owner: string | null;
   token: { id: string; readOnly?: boolean } | null;
   workbench: WorkbenchContext | null;
+  teams: TeamClaim[] | null;
+  bearer: string | null;
+  // The index's grant on this plan, checked by the worker (routes/plan-grant.ts).
+  grant: PlanGrant | null;
 };
 
 export function identityOf(ctx: RouteContext): RouteIdentity {
@@ -29,6 +35,9 @@ export function identityOf(ctx: RouteContext): RouteIdentity {
     owner: ctx.resolveOwner(),
     token: ctx.token ?? null,
     workbench: ctx.workbench ?? null,
+    teams: ctx.teams ?? null,
+    bearer: ctx.bearer ?? null,
+    grant: ctx.grant ?? null,
   };
 }
 
@@ -51,6 +60,9 @@ export async function answerPlanRequest(
     resolveOwner: () => identity.owner,
     token: identity.token,
     workbench: identity.workbench,
+    teams: identity.teams,
+    bearer: identity.bearer,
+    grant: identity.grant,
     waitUntil,
   };
   // A throw crosses back to the worker, which logs it and answers 500 as for any route (index.ts).

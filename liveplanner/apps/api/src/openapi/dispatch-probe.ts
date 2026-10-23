@@ -28,6 +28,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import worker from '../index';
+import { setGrantVerifierForTests } from '../index-service';
 import { answerPlanRequest, type RouteIdentity } from '../plan-room/plan-route';
 import type { Env, PlanEnv } from '../types';
 
@@ -174,15 +175,36 @@ export async function probeDispatch(
     );
   // Feature gates open, so a handler reaches its own routing instead of
   // answering "not configured" for every path: telemetry on.
+  // An index configured (its calls are the trapped `fetch`), and every request carrying an edit grant on the
+  // placeholder plan, so a plan route reaches its own routing instead of answering "no access".
   const env = {
     DB: trap('DB'),
     SNAPSHOTS: trap('SNAPSHOTS'),
     TELEMETRY_ENABLED: 'true',
+    INDEX_ORIGIN: 'https://index.probe',
   } as unknown as Env;
+  const now = Math.floor(Date.now() / 1000);
+  setGrantVerifierForTests(async () => ({
+    iss: 'probe',
+    aud: 'liveplanner',
+    sub: 'user_probe',
+    item: PARAM,
+    level: 'edit',
+    tab: null,
+    team: null,
+    iat: now,
+    exp: now + 600,
+    jti: 'probe',
+  }));
   // The worker hands every request about one plan to the plan's Durable Object (`route`), which answers it with
   // the same handlers against its own store. The probe runs that answer in process, the plan's store a trap too,
   // so a path the plan does not serve is still a clean 404; any other use of the room is storage.
-  const planEnv = { ...env, PLAN_DB: trap('PLAN_DB') } as unknown as PlanEnv;
+  // Inside the room, a call back to the plan itself (plan-room.ts `localNamespace`) reads its store: a trap too.
+  const planEnv = {
+    ...env,
+    PLAN_DB: trap('PLAN_DB'),
+    PLAN_ROOM: { idFromName: (name: string) => name, get: () => trap('PLAN_ROOM (local)') },
+  } as unknown as PlanEnv;
   const room = new Proxy(
     {},
     {
@@ -219,7 +241,11 @@ export async function probeDispatch(
         const res = await worker.fetch(
           new Request(`https://probe.test/api/${path.join('/')}`, {
             method,
-            headers: { 'X-Owner-Id': 'probe-owner', 'Content-Type': 'application/json' },
+            headers: {
+              Authorization: 'Bearer probe-token',
+              'X-Index-Grant': 'probe-grant',
+              'Content-Type': 'application/json',
+            },
           }),
           env,
           executionCtx,
@@ -233,6 +259,7 @@ export async function probeDispatch(
     }
   } finally {
     globalThis.fetch = realFetch;
+    setGrantVerifierForTests(null);
   }
   return results;
 }

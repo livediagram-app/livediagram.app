@@ -26,7 +26,7 @@ import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { titleCaseType, track } from '@/lib/telemetry';
 import { trackDailyReturn } from '@/lib/daily-return';
 import { markNameConfirmed } from '@/lib/local-identity';
-import { ensureSignedGuestIdentity } from '@/lib/guest-identity';
+import { ensureGuestIdentity } from '@/lib/guest-identity';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
 import {
   templateFamilyOf,
@@ -45,8 +45,6 @@ import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
 import { handStartQuery } from '@/components/start/start-query';
-import { handTemplatePick } from '@/lib/placement-defaults/template-pick-handoff';
-import { isBlankTemplate } from '@liveplanner/templates';
 import { NEW_PROJECT_THEME_ID, newProjectContent } from '@/lib/new-project-content';
 
 // In-place handoff (docs/specs/007-editor/new-project-route.md): once a project is created, this page
@@ -118,7 +116,7 @@ export default function NewProjectPage() {
 
   // Where a new project is stored: This Browser for a guest (docs/specs/006-project/save-locations.md), decided at
   // commit.
-  const { resolveSaveLocation } = useNewProjectLocation({ authLoaded, accountUserId });
+  const { resolveSaveLocation } = useNewProjectLocation();
 
   useEffect(() => {
     document.title = 'New Plan | liveplanner';
@@ -188,7 +186,7 @@ export default function NewProjectPage() {
     }
     if (selfRef.current.id !== 'pending') return selfRef.current;
     // Still pending (auth never settled): resolve the guest's signed id here.
-    const fallback = { ...selfRef.current, id: (await ensureSignedGuestIdentity()).id };
+    const fallback = { ...selfRef.current, id: (await ensureGuestIdentity()).id };
     setSelf(fallback);
     return fallback;
   };
@@ -209,13 +207,6 @@ export default function NewProjectPage() {
     // Save location (docs/specs/006-project/save-locations.md): only This Browser takes the offline branch.
     const offline = isOfflineLocation(settings.saveLocation);
     const { projectId, tabId } = createIdsFor(retrying);
-    // A blank in the cloud: the template picked later on Start Planning may move it to that template's default folder
-    // (docs/specs/013-workspace/default-folders.md "A template picked after creation").
-    handTemplatePick(
-      !offline && (!templateKind || isBlankTemplate(templateKind))
-        ? { projectId, tabId, placementChosen: settings.placementChosen === true }
-        : null,
-    );
     // A Retry re-runs the create, not the preference write below.
     lastCreateArgs.current = { kind: templateKind, settings, ids: { projectId, tabId } };
     // Named after its template ("Untitled Diagram"); renamed in the editor.
@@ -311,14 +302,13 @@ export default function NewProjectPage() {
     setOpenedId(projectId);
   };
 
-  // Every create from /new goes where new projects go by default (docs/specs/007-editor/new-project-route.md): the
-  // store for who is creating, decided now (a guest at once, a signed-in browser once identity settles), and the
-  // /new?folder= / ?team= context when there is one; without one it carries no placement, so a default folder may
-  // answer (docs/specs/013-workspace/default-folders.md "Precedence").
+  // Every create from /new goes where new plans go by default (docs/specs/007-editor/new-project-route.md): liveplanner,
+  // whoever is creating, and the /new?folder= / ?team= context when there is one; without one the index files it at
+  // the root of the person's space.
   const createByDefault = async (kind: TemplateKind | null) => {
     const placement = placementParamsFromSearch(window.location.search);
     const placed = !!(placement.folderId || placement.teamId);
-    const saveLocation = await resolveSaveLocation(placed, resolveSelf);
+    const saveLocation = await resolveSaveLocation();
     await commitNewProject(kind, { saveLocation, ...placement, placementChosen: placed });
   };
 

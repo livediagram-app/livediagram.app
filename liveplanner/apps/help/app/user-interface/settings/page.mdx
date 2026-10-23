@@ -4,7 +4,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Settings',
   description:
-    'Every liveplanner setting explained: appearance, shortcuts, tours, default folders, account, notifications, API tokens, privacy and what syncs.',
+    'Every liveplanner setting explained: appearance, shortcuts, tours, account, notifications, API tokens, privacy and what syncs.',
   path: '/help/user-interface/settings/',
 });
 
@@ -53,11 +53,6 @@ Each category groups its settings into cards, one card per section, with a short
 
 One switch per guided tour. **Plan Tours** switches the planning tours all at once, with **Boards Tour**, **Sheets Tour** and **Dashboards Tour** beneath it, and **Forms Tour** sits on its own. Each tour offers itself once, where it belongs, and its switch turns itself off once you have taken or dismissed it. Switch one back on and close Settings to take that tour again: it starts straight away if you are where it belongs, or the next time you are. See [The Plan Tour](/help/plan/plan-tour/).
 
-## Plans
-
-- **Default Folders**: the folder each kind of new plan goes to (**Plans**, **Retrospectives** and **Kanban Boards**) when you create one without choosing a place, with **Change** and **Clear**. See [Default Folders](/help/explorer/folders/default-folders/).
-- **Show Home Banner**, under **Explorer**: the greeting, status pills and large search at the top of [Explorer Home](/help/explorer/home/). Closing the banner on Home turns this off; switch it back on to bring the banner back.
-
 ## Account
 
 **Account** shows who you are (a guest, or your name and email when signed in), your [Trash](/help/account-and-data/trash/) (deleted plans wait there for 30 days), and **Delete Account**. It holds two sub-categories:
@@ -79,7 +74,7 @@ Anywhere Settings says something needs an account, it ends with a **Sign In** li
 
 ## Settings follow you, most of them
 
-Settings are **stored against your identity, not your browser**, and apply to every plan you open on every device you sign in from. For a guest, "your identity" is the per-browser id, so the preferences last as long as that browser does and [migrate with your plans](/help/getting-started/guest-vs-account/) if you later sign up.
+Settings are **stored against your identity, not your browser**, and apply to every plan you open on every device you sign in from. For a guest, "your identity" is the [guest identity](/help/account-and-data/guest-identity/) liveworkspace gives this browser, so the preferences last as long as that does.
 
 A few things deliberately stay on the device you are using:
 

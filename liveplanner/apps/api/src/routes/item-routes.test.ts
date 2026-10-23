@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sentJson } from '@liveplanner/vitest-config/sent-request';
 import type { ItemResponse, ItemsResponse } from '@liveplanner/api-schema';
 import { itemPersonId, presetSetup, type Item } from '@liveplanner/items';
-import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
+import { sqliteD1, type SqliteD1, testCopyPlan } from '../test-sqlite-d1';
 import * as db from '../db';
 import { makeTestRouteContext } from './test-route-context';
 import { handleProjects } from './projects';
@@ -71,7 +71,7 @@ beforeEach(() => {
     planBoard: presetSetup('bug-triage'),
   };
   sql.sql.exec(`
-    INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at)
+    INSERT INTO test_plans (id, owner_id, name, shareable, saved_at, created_at)
       VALUES ('d1', 'owner', 'Plan', 1, 1, 1);
   `);
   sql.sql
@@ -82,10 +82,10 @@ beforeEach(() => {
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t2', 'Other', '{"elements":[]}', 1);
     INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
     INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d1', 't2', 1, 1);
-    INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', NULL, 1);
-    INSERT INTO share_links (code, project_id, role, level, tab_id, created_at) VALUES ('PART', 'd1', 'view', 'participate', NULL, 1);
-    INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('EDIT', 'd1', 'edit', NULL, 1);
-    INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('TAB1', 'd1', 'edit', 't1', 1);
+    INSERT INTO test_share_links (code, project_id, role, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', NULL, 1);
+    INSERT INTO test_share_links (code, project_id, role, level, tab_id, created_at) VALUES ('PART', 'd1', 'view', 'participate', NULL, 1);
+    INSERT INTO test_share_links (code, project_id, role, tab_id, created_at) VALUES ('EDIT', 'd1', 'edit', NULL, 1);
+    INSERT INTO test_share_links (code, project_id, role, tab_id, created_at) VALUES ('TAB1', 'd1', 'edit', 't1', 1);
   `);
 });
 
@@ -580,11 +580,11 @@ describe('projects and items', () => {
       path: '/items',
       body: { type: 'task', fields: { title: 'B', status: 'new', labels: ['bug'] } },
     });
-    await db.copyProject(sql.env, 'd1', 'd3', 'owner', 'Copy');
+    await testCopyPlan(sql.env, 'd1', 'd3', 'owner', 'Copy');
     const copied = await db.listItems(sql.env, 'd3');
     expect(copied.map((i) => i.key).sort()).toEqual([1, 2]);
     expect((await db.getItemStoreHead(sql.env, 'd3')).nextKey).toBe(3);
-    await db.copyProject(sql.env, 'd1', 'd4', 'owner', 'Tab copy', 't1');
+    await testCopyPlan(sql.env, 'd1', 'd4', 'owner', 'Tab copy', 't1');
     // The tab has a board, so it shows (and its copy takes) every item.
     expect((await db.listItems(sql.env, 'd4')).map((i) => i.fields['title']).sort()).toEqual([
       'A',
@@ -829,7 +829,7 @@ describe('the type catalogue', () => {
 
   it('travels with a copy', async () => {
     await put(catalogue);
-    await db.copyProject(sql.env, 'd1', 'd5', 'owner', 'Copy');
+    await testCopyPlan(sql.env, 'd1', 'd5', 'owner', 'Copy');
     expect((await db.getProject(sql.env, 'd5'))?.itemTypes?.types[0]?.id).toBe('customer-call');
   });
 });

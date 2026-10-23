@@ -16,36 +16,27 @@ anything on the canvas. A project in This Browser still says what it is on the p
 | **liveplanner**  | A normal cloud project, saved to the api (D1), reachable from any device.                                    |
 | **This Browser** | Offline Mode ([Offline Mode](offline-mode.md)): saved only in this browser's IndexedDB, never to the server. |
 
-## The default depends on who is creating
+## The default
 
-| Who                               | Default          |
-| --------------------------------- | ---------------- |
-| A guest, with sign-in enabled     | **This Browser** |
-| A signed-in person                | **liveplanner**  |
-| Anyone on a guest-only deployment | **liveplanner**  |
+Every new plan starts on **liveplanner**, whoever is creating it. A guest has a liveworkspace guest identity
+([liveworkspace/docs/accounts.md "Guests"](../../../../liveworkspace/docs/accounts.md)), so a guest's plans are index
+items like anyone's: listed in the shared Explorer ([liveworkspace/docs/one-explorer.md](../../../../liveworkspace/docs/one-explorer.md)),
+and moved to the account when the guest signs in. (Guests used to start in This Browser, to keep a visitor's
+experiments off the server; with the Explorer listing the index's items, a plan in This Browser would never show
+there.) This Browser is chosen only on purpose, with **Take Offline**.
 
-Why a guest starts local: [Auth + guest access → Guest projects start local](../014-identity/auth-and-guest-access.md#guest-projects-start-local).
-
-- One function answers it: `defaultSaveLocationFor({ signedIn, signInEnabled })` in
-  `apps/editor/lib/save-locations.ts`. Every create from `/new` asks it at commit, through
-  `resolveSaveLocation` in `useNewProjectLocation` (`apps/editor/app/new/useNewProjectLocation.ts`): a mode chosen
-  in the wizard, its **Create** and **Skip**, and the wizard-less links (`/new?template=`, `/new?blank=1`).
-- A `/new?folder=` / `?team=` context names a server place, so it is
-  liveplanner whoever is creating.
-- Before sign-in has answered, `signedIn` is the `lp_signed_in` hint cookie
-  ([Who is a guest, before sign-in answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-sign-in-answers)).
-  A browser that looks signed in waits for the settled answer before creating, so a signed-in person is never handed
-  a project in This Browser; a guest never waits.
-- There is no per-person override: no setting chooses the store. Where a project is **filed** on liveplanner is the
-  person's to set, in Settings > Projects > Default Folders ([Default folders](../013-workspace/default-folders.md)).
-  A preference that once did both, "Always save new projects in <place> and skip this step" (`skipLocationStep`),
+- One function answers it: `defaultSaveLocationFor()` in `apps/editor/lib/save-locations.ts`. Every create from
+  `/new` asks it at commit, through `resolveSaveLocation` in `useNewProjectLocation`
+  (`apps/editor/app/new/useNewProjectLocation.ts`), so the create never waits on sign-in to decide.
+- There is no per-person override: no setting chooses the store. A preference that once did both, "Always save new projects in <place> and skip this step" (`skipLocationStep`),
   is retired and no longer read ([User preferences](../007-editor/user-preferences.md)).
 
 ## The folder browser
 
-Where a project goes within liveplanner is chosen with the shared `PlacementBrowser`, in the Explorer's Move dialog
-([Folders](../013-workspace/folders.md)) and the default folder picker ([Default folders](../013-workspace/default-folders.md)).
-Both render it in its **`list` layout**: stacked
+Where a plan goes within liveplanner is chosen with the shared Explorer's `PlacementBrowser`
+(in `@liveworkspace/explorer`), in its Move dialog
+([liveworkspace/docs/one-explorer.md](../../../../liveworkspace/docs/one-explorer.md)).
+It renders in its **`list` layout**: stacked
 rows, icon beside label, the kind caption ("Top level", "Folder", "Open
 folder") pinned right like a file explorer's Type column, with the inline New
 Folder row last. Same browse, same placement strings, same double-click
@@ -132,8 +123,7 @@ its own preset `type`; the location id itself never leaves as content.
 
 ## Help centre ([Help app](../018-help/help-app.md))
 
-The Offline Mode article says a guest's new projects start in this browser and a signed-in person's on liveplanner,
-and how to move one either way. No article of its own: each location's article (offline today) is where the substance
+The Offline Mode article says every new plan starts on liveplanner, and how to move one either way. No article of its own: each location's article (offline today) is where the substance
 is.
 
 ## Implementation map
@@ -141,8 +131,7 @@ is.
 - `apps/editor/lib/save-locations.ts` (+ test): the ids and helpers above.
 - `apps/editor/app/new/useNewProjectLocation.ts`: `resolveSaveLocation`, the location every create from `/new` uses.
 - `apps/editor/app/new/page.tsx`: derives the offline create branch from the location id.
-- `apps/editor/components/placement/PlacementBrowser.tsx`: the `layout` prop
-  (`tiles` | `list`) on the browser, its `PlacementCard`, and `NewFolderTile`.
+- `@liveworkspace/explorer`: the `PlacementBrowser` the Move dialog uses.
 
 ## References
 

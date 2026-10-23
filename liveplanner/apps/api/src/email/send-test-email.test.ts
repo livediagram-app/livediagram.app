@@ -25,11 +25,6 @@ import {
   accountDeletedEmail,
   activationEmail,
   commentNotificationEmail,
-  projectJoinedEmail,
-  firstShareEmail,
-  inviteResponseEmail,
-  milestoneEmail,
-  teamInviteEmail,
   tokenExpiringEmail,
   week1Email,
   week2Email,
@@ -76,17 +71,11 @@ describe.skipIf(!ENABLED)('live email send (manual harness)', () => {
     'week2-teams': week2Email(env),
     activation: activationEmail(env),
     'win-back': winBackEmail(env),
-    milestone: milestoneEmail(env, 10),
-    'first-share': firstShareEmail(env),
     // Transactional
-    'team-invite': teamInviteEmail(env, 'Acme Inc'),
     'account-deleted': accountDeletedEmail(env),
     'token-expiry': tokenExpiringEmail(env, 'CI deploy token', Date.UTC(2026, 0, 5)),
     // Opt-out notifications
     'comment-notification': commentNotificationEmail(env, 'Q3 Roadmap', 'diagram-id-123', 'Anna'),
-    'project-joined': projectJoinedEmail(env, 'Q3 Roadmap', 'Anna'),
-    'invite-accepted': inviteResponseEmail(env, 'Acme Inc', 'sam@example.com', true),
-    'invite-declined': inviteResponseEmail(env, 'Acme Inc', 'sam@example.com', false),
   };
   for (const [name, msg] of Object.entries(cases)) {
     it(`sends ${name} to ${TO}`, async () => {

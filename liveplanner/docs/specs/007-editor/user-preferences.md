@@ -83,7 +83,7 @@ to re-flip every setting on each device. Per-account sync is the
 expected behaviour for an account-bound app.
 
 Guests get the same persistence model (the api keys them by
-their `X-Owner-Id` participant id), so server-side storage is
+the id their guest token names), so server-side storage is
 effectively a remote copy of localStorage for that device, but
 with a cross-browser bonus: a guest who clears localStorage but
 keeps the same browser session still recovers their preferences.
@@ -97,11 +97,12 @@ blob. Don't fold panel placement into `UserPreferences`.
 
 ### Sign-up migration
 
-`POST /api/migrate` ([Auth + guest access](../014-identity/auth-and-guest-access.md)) moves `user_preferences.owner_id`
-along with the projects + folders + shared-with rows, so a guest
-who signs up keeps the settings they'd already chosen. Idempotent
-in the same shape as the existing migrations: a second call with
-the same `guestOwnerId` moves zero rows.
+There is none now. `POST /api/migrate` once moved `user_preferences.owner_id`
+with a guest's projects; it went when guests became liveworkspace guest
+tokens ([Auth + guest access](../014-identity/auth-and-guest-access.md#guest--account)).
+Signing in moves a guest's plans in the index, but the preferences row
+stays under the guest id, so a guest who signs up starts from the
+account's own settings (or the defaults).
 
 <!-- legacy-names -->
 
@@ -512,9 +513,9 @@ and the dialog stays as the one complete, browsable index of them.
   **Accessibility** (reduce motion, and a **UI Scale** link row that opens
   Appearance), **Tours** (one switch per guided tour, see **Tours** below),
   **Projects** (a **Default Folders** section with one row per
-  [default folder](../013-workspace/default-folders.md#settings) entry, with Change and Clear; those are not a
+  [default folder](../013-workspace/default-folders.md) entry, with Change and Clear; those are not a
   preference, they read and write `/api/placement-defaults`), and an **Explorer** section with **Show Home Banner**
-  (`homeBanner`, missing means shown; [Explorer Home](../013-workspace/explorer-home.md#hiding-the-banner))), **Account** (identity, Trash, delete account, see
+  (`homeBanner`, missing means shown; [Explorer Home](../013-workspace/explorer-home.md))), **Account** (identity, Trash, delete account, see
   [Account settings & email notifications](../014-identity/profile-and-email-notifications.md); with the
   sub-categories **Notifications** (in-editor, plus the seven email preferences) and **API Tokens** (create, view and
   revoke API tokens, see [Public API and tokens §3.6](../015-api/public-api-and-tokens.md#36-management--the-settings-dialogs-api-tokens-category);
@@ -762,7 +763,7 @@ event on the preferences key.
 
 - **`GET /api/preferences`** — returns `{ prefs: UserPreferences }`
   for the resolved owner. Empty object when no row exists. Auth:
-  the standard hybrid identity (account Bearer OR `X-Owner-Id`).
+  the standard identity (an account or guest Bearer).
 - **`PUT /api/preferences`** — body `{ prefs: UserPreferences }`,
   upserts the row for the resolved owner. Returns 204. The blob
   is opaque to the api worker beyond a size cap (4 KB; defends

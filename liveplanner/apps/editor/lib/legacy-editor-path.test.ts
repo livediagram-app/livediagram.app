@@ -12,6 +12,8 @@ describe('projectIdFromPath', () => {
   });
   it('ignores the static placeholder and other paths', () => {
     expect(projectIdFromPath('/project/placeholder')).toEqual({ id: null, legacy: false });
+    // A share link's own address names no plan: the code does.
+    expect(projectIdFromPath('/project/shared')).toEqual({ id: null, legacy: false });
     expect(projectIdFromPath('/explorer/recent')).toEqual({ id: null, legacy: false });
   });
 });

@@ -15,8 +15,13 @@ import {
   ORIGIN,
   pairToken,
   rows,
+  USER_1_TEAMS,
   workbenchDb,
 } from './workbench-test-fixtures';
+
+vi.mock('../index-service', async (original) =>
+  (await import('./workbench-test-fixtures')).indexServiceWithTestIndex(original as never),
+);
 
 const SESSION_CONTEXT: WorkbenchContext = {
   sessionId: 'sess1',
@@ -44,6 +49,7 @@ async function mintTicket(
       verifiedUserId: 'user_1',
       token,
       body,
+      teams: USER_1_TEAMS,
     }),
   );
   const { url } = (await res.json()) as { url: string };
@@ -175,7 +181,7 @@ describe('POST /api/workbench/sessions', () => {
     const db = await workbenchDb();
     pairToken(db);
     const ticket = await mintTicket(db);
-    db.sql.exec(`UPDATE projects SET owner_id = 'user_2' WHERE id = 'doc1'`);
+    db.sql.exec(`UPDATE plan SET owner_id = 'user_2' WHERE id = 'doc1'`);
 
     const res = await redeem(db, { ticket });
 

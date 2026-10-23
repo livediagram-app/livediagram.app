@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { Element, Tab } from '@liveplanner/project';
-import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { copyProject } from './projects';
+import { sqliteD1, type SqliteD1, testCopyPlan } from '../test-sqlite-d1';
 import { sheetRefIds } from './sheet-refs';
 import { deleteTabRow, upsertTab } from './tabs';
 
@@ -48,8 +47,8 @@ const refs = (tabId: string) =>
 beforeEach(() => {
   sql = sqliteD1();
   sql.sql.exec(`
-    INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d1', 'o', 'D', 0, 1, 1);
-    INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d2', 'o', 'E', 0, 1, 1);
+    INSERT INTO test_plans (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d1', 'o', 'D', 0, 1, 1);
+    INSERT INTO test_plans (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d2', 'o', 'E', 0, 1, 1);
   `);
 });
 
@@ -132,7 +131,7 @@ describe('the reference index on tab writes', () => {
   it('carries the references to a copied project’s tabs', async () => {
     sheetRow('d1', 'sheetA00', 't1');
     await upsertTab(sql.env, 'd1', tab('t1', [sheetEl('e1', 'sheetA00')]), 0);
-    await copyProject(sql.env, 'd1', 'd3', 'o', 'Copy');
+    await testCopyPlan(sql.env, 'd1', 'd3', 'o', 'Copy');
     const copied = sql.sql
       .prepare(`SELECT tab_id FROM plan_tabs WHERE plan_id = 'd3'`)
       .get() as { tab_id: string };

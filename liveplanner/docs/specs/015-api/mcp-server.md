@@ -243,7 +243,7 @@ canvas overrides; the model then personalises labels via `update_project`'s
    as such and is compiled by the api ([API app](api.md)), so the MCP and the
    [CLI](cli.md) build projects alike.
    Making a project is a use of it, so it joins the user's
-   Jump Back In at once ([Explorer Home](../013-workspace/explorer-home.md#making-a-project));
+   Jump Back In at once ([Explorer Home](../013-workspace/explorer-home.md));
    `markUsed: false` is passed through to the create
    ([API](api.md#marking-a-project-used)) for a model making many projects in one go,
    so a batch never pushes the user's own work out of reach. Absent, nothing is sent and the

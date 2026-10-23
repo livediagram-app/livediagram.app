@@ -34,6 +34,9 @@ apps/index/src/merge.ts       a guest becoming an account
   `INDEX_AUDIENCES`. Team membership is the token's `teams` claim; the index keeps no copy of teams.
 - **A link visitor**, with `X-Share-Code` (and `X-Share-Password` when the item has one), with or without
   a token.
+- **An app's server acting for an account** it checked itself (an API token's), with its key, `X-Index-App`,
+  `X-Index-Person` and `X-Index-Teams`: that account on the person routes, for the app's own items only
+  (`auth.ts` `delegatedPersonOf`, `delegate.test.ts`).
 - **An app's server**, with `Authorization: Bearer <INDEX_KEY>` and `X-Index-App: <app>`, to push an
   item's summary and its comments and actions. The index calls the app back with the same key, at
   `${APP_ORIGIN_<APP>}/api/internal/items/:id` (purge), `…/copy-to/:to` (copy) and `…/revoke`.

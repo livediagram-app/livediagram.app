@@ -18,7 +18,13 @@ import {
   type SheetsRoomOp,
 } from '@liveplanner/api-schema';
 import { nextFreeColor, type Participant } from '@/lib/identity';
-import { apiCreateRoomTicket, connectRoom, type RoomHandlers } from '@/lib/api-client';
+import {
+  apiCreateRoomTicket,
+  connectRoom,
+  getSessionSharePassword,
+  type RoomHandlers,
+} from '@/lib/api-client';
+import { keepPlanGrantFresh, planGrant } from '@/lib/api/plan-grants';
 import {
   createPresenceCoalescer,
   type CursorPos,
@@ -490,6 +496,10 @@ export function useRoomConnection(opts: {
     // mints its first ticket itself, so it exists while that request runs and keeps what the editor
     // says meanwhile (its selection, its tab) for the room.
     const { self, shareCode } = connectAs();
+    const share = shareCode ? { code: shareCode, password: getSessionSharePassword() } : null;
+    // The grant every request and the room's ticket carry, fetched again a minute before it lapses while the
+    // plan is open (plan-grants.ts), so neither a save nor a renewal waits on the index.
+    const stopGrant = keepPlanGrantFresh(projectId, share);
     let firstMint = true;
     const openedRoom = connectRoom(projectId, self, handlers, {
       // The api worker resolves the role the mint stored on the ticket and
@@ -504,9 +514,11 @@ export function useRoomConnection(opts: {
         firstMint = false;
         return minted?.ticket ?? null;
       },
+      renewGrant: async () => (await planGrant(projectId, share))?.grant ?? null,
     });
     roomRef.current = openedRoom;
     return () => {
+      stopGrant();
       presence.cancel();
       openedRoom.close();
       roomRef.current = null;

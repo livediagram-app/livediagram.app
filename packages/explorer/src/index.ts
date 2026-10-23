@@ -11,6 +11,7 @@ export {
   explorerPath,
   viewFromLocation,
   DEFAULT_BASE_PATH,
+  VIEW_TITLES,
   type ExplorerView,
   type ExplorerViewKind,
 } from './views';

@@ -1,6 +1,6 @@
 // Custom-theme calls (docs/specs/011-theme/custom-themes.md): list / create / update / delete. Owner-
 // scoped like folders; guests included (apiHeaders attaches the
-// token when signed in, else the X-Owner-Id header).
+// account token when signed in, else the guest token).
 import type { CustomTheme, CustomThemeDefinition } from '@liveplanner/api-schema';
 import { dedupeInFlight } from '../dedupe';
 import {

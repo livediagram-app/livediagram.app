@@ -171,7 +171,7 @@ const SEGMENTS =
 const segment = (active: boolean) =>
   `flex h-7 items-center justify-center rounded px-2 text-xs font-medium transition ${
     active
-      ? 'bg-white text-brand-700 shadow-sm dark:bg-slate-700 dark:text-brand-300'
+      ? 'bg-white text-brand-700 shadow-sm dark:bg-slate-700 dark:text-brand-200'
       : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
   }`;
 

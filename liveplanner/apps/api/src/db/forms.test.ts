@@ -1,4 +1,3 @@
-import { resendPlanTab } from '../plan-room/plan-content';
 import { describe, expect, it } from 'vitest';
 import { sqliteD1 } from '../test-sqlite-d1';
 import {
@@ -9,9 +8,7 @@ import {
   generateFormCode,
   getFormLink,
   getLiveFormLink,
-  markFormSeen,
 } from './forms';
-import { readActivity } from './collab-index';
 
 // form_links' helpers (docs/specs/030-forms/blueprints/forms.md §11).
 
@@ -29,7 +26,7 @@ describe('claimFormEmail', () => {
   it('sends one email per window, then counts what it held', async () => {
     const { env, sql } = sqliteD1();
     sql.exec(
-      `INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d', 'o', 'D', 0, 1, 1)`,
+      `INSERT INTO test_plans (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d', 'o', 'D', 0, 1, 1)`,
     );
     const link = await createFormLink(env, 'd', 't', 1);
     const code = link!.code;
@@ -43,62 +40,11 @@ describe('claimFormEmail', () => {
   });
 });
 
-describe('the Inbox read (docs/specs/030-forms/forms.md "Hearing about responses")', () => {
-  it("lists forms with unseen responses on the reader's own projects only", async () => {
-    const { env, sql } = sqliteD1();
-    const tab = (id: string, doc: string) => {
-      sql.prepare('INSERT INTO tabs (id, name, data, updated_at) VALUES (?, ?, ?, 1)').run(
-        id,
-        'Bug Report',
-        JSON.stringify({
-          kind: 'form',
-          form: { heading: 'Bugs', destination: { tabId: 'board' } },
-        }),
-      );
-      sql
-        .prepare(
-          'INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES (?, ?, 0, 1)',
-        )
-        .run(doc, id);
-    };
-    sql.exec(`
-      INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at) VALUES ('mine', 'me', 'Ops', 0, 1, 1);
-      INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at) VALUES ('theirs', 'other', 'X', 0, 1, 1);
-    `);
-    tab('t1', 'mine');
-    tab('t2', 'theirs');
-    const mine = (await createFormLink(env, 'mine', 't1', 1))!;
-    const theirs = (await createFormLink(env, 'theirs', 't2', 1))!;
-    // Publishing asks the plan for the tab's name and heading on the link (form-link-routes.ts).
-    await resendPlanTab(env, 't1');
-    await resendPlanTab(env, 't2');
-    for (const code of [mine.code, mine.code, mine.code, theirs.code])
-      await claimResponseNumber(env, code, 5000, 500);
-    let read = await readActivity(env, 'me', { limit: 10 });
-    expect(read.formResponses).toEqual([
-      {
-        projectId: 'mine',
-        projectName: 'Ops',
-        teamId: null,
-        via: 'own',
-        tabId: 't1',
-        heading: 'Bugs',
-        boardTabId: 'board',
-        unseen: 3,
-        latestAt: 5000,
-      },
-    ]);
-    await markFormSeen(env, mine.code, 'me');
-    read = await readActivity(env, 'me', { limit: 10 });
-    expect(read.formResponses).toEqual([]);
-  });
-});
-
 describe('claimResponseNumber and deleteFormLink (docs/specs/030-forms/forms.md "Publishing and the form link")', () => {
   const setup = () => {
     const { env, sql } = sqliteD1();
     sql.exec(
-      `INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d', 'o', 'D', 0, 1, 1)`,
+      `INSERT INTO test_plans (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d', 'o', 'D', 0, 1, 1)`,
     );
     return env;
   };

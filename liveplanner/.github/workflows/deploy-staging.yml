@@ -91,12 +91,11 @@ jobs:
       CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
       # Every value below is staging's OWN. The ACCOUNTS_* client is staging's
       # own registration with its own resource (an audience production refuses),
-      # so a staging token cannot reach production, and the
-      # HMAC secret must differ or a guest id minted on staging would be
-      # claimable on production.
+      # so a staging token cannot reach production, and the index key is
+      # staging's index's.
       ACCOUNTS_URL: ${{ secrets.ACCOUNTS_URL_STAGING }}
       API_RESOURCE: ${{ secrets.API_RESOURCE_STAGING }}
       ACCOUNTS_CLIENT_ID: ${{ secrets.ACCOUNTS_CLIENT_ID_STAGING }}
       ACCOUNTS_CLIENT_SECRET: ${{ secrets.ACCOUNTS_CLIENT_SECRET_STAGING }}
-      GUEST_ID_HMAC_SECRET: ${{ secrets.GUEST_ID_HMAC_SECRET_STAGING }}
+      INDEX_KEY: ${{ secrets.INDEX_KEY_STAGING }}
       TELEMETRY_KEY: ${{ secrets.TELEMETRY_KEY_STAGING }}

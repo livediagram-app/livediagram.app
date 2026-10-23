@@ -1,24 +1,10 @@
-// /api/projects — project metadata, per-tab content, copy, folder
-// assignment, tab linking, comments, share links, the realtime WS
-// upgrade. The largest resource: every sub-path
-// under a project id lives here.
+// /api/projects/<id>/... inside the plan's Durable Object: per-tab content, comments, cards, sheets, the type
+// catalogue, forms, agent presence and changesets.
 
-import { broadcastShareOp } from '../room-client';
 import { redactCommentAuthorIds } from '../comments';
-import {
-  deleteFormLinksForTab,
-  deleteShareLinksForTab,
-  deleteTabRow,
-  getProject,
-  getProjectForSave,
-  getParticipant,
-  getTab,
-} from '../db';
+import { deleteFormLinksForTab, deleteTabRow, getProject, getProjectForSave, getTab } from '../db';
 import { conflict, forbidden, json, noContent, notFound } from '../responses';
-import { recordVisitorOpened, retractTabComments } from '../timeline';
-import { PROJECT_OPEN_HEADER, readProjectOpen, tabEtag } from '@liveplanner/api-schema';
-import { recordProjectOpen } from '../home/record-open';
-import { handleProjectShareRoutes } from './project-share-routes';
+import { tabEtag } from '@liveplanner/api-schema';
 import { handleFormLinkRoutes } from './form-link-routes';
 import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
 import { handleTabRename } from './tab-name-route';
@@ -37,7 +23,6 @@ import {
   gateGrant,
   missingProject,
   requireOwner,
-  shareCodeOf,
   type PlanRouteContext,
 } from './context';
 import { answerTabView, parseViewQuery } from './project-views-route';
@@ -129,34 +114,6 @@ export async function handleProjectSubresources(ctx: PlanRouteContext): Promise<
           ? tab
           : { ...tab, elements: redactCommentAuthorIds(tab.elements, owner) };
       if (view) return answerTabView(ctx, view, existing, safe, owner);
-      // docs/specs/013-workspace/timeline.md §4.3: somebody arrived through a SHARE LINK and opened this.
-      // The tab read is the honest signal for "opened" — the project GET is hit
-      // by link previews and polls, whereas fetching tab content means a person
-      // is looking at the canvas. Coalesced per visitor per day inside the
-      // emit, so a stranger with a link can't flood the owner's feed by
-      // refreshing.
-      //
-      // Gated on a share code being PRESENT, not merely on the caller not being
-      // the owner. The read gate also admits any joined member of the project's
-      // team (docs/specs/013-workspace/team-shared-projects.md), who presents no code — so the looser test reported
-      // teammates browsing their own library as visitors. The bubble reads
-      // "opened by a visitor · Someone with the share link" and files under the
-      // sharing filter, so an owner saw that for a project they had never
-      // shared a link for, once per teammate per day.
-      if (owner !== existing.ownerId && shareCodeOf(request) !== null) {
-        ctx.waitUntil?.(
-          getParticipant(env, owner).then((p) =>
-            recordVisitorOpened(env, existing, owner, p?.name ?? null),
-          ),
-        );
-      }
-      // docs/specs/013-workspace/explorer-home.md "Opens": the reader's own open, for their Home.
-      // Only when the editor declares this read an open: a resync, a duplicate, Take Offline and
-      // an embed read the same tab and are not opens. The read gate above has
-      // already admitted the reader, and the open is theirs whoever they are.
-      if (readProjectOpen(request.headers.get(PROJECT_OPEN_HEADER))) {
-        ctx.waitUntil?.(recordProjectOpen(env, existing, owner, Date.now()));
-      }
       // The revision as a weak ETag too (docs/specs/024-agents/agent-changesets.md "The tab
       // revision", CS5): what an agent read, for its changeset base.
       return json({ tab: safe }, { headers: { ETag: tabEtag(tab.rev) } });
@@ -177,15 +134,8 @@ export async function handleProjectSubresources(ctx: PlanRouteContext): Promise<
       // §4.17). The editor is let through: its saves and deletes race, so adding a tab and deleting
       // the other in one save can reach here first.
       if (ctx.token && existing.tabs.length <= 1) return conflict('last_tab');
-      const removed = await deleteTabRow(env, id, tabId);
-      // Its comments' words leave this project's feed with it (docs/specs/013-workspace/timeline.md §4.3).
-      if (removed) ctx.waitUntil?.(retractTabComments(env, id, removed));
-      // The links scoped to it die with it (docs/specs/013-workspace/tab-scoped-share-links.md), and their
-      // holders leave the editor as on a revoke.
-      const revoked = await deleteShareLinksForTab(env, id, tabId);
-      for (const code of revoked) {
-        ctx.waitUntil?.(broadcastShareOp(env, id, { kind: 'share-revoked', code }));
-      }
+      await deleteTabRow(env, id, tabId);
+      // A link scoped to it (the index's) now opens nothing here: the tab reads as missing.
       // A Form tab's link goes with it, and a form whose board or sheet it was stops taking responses (its link kept)
       // (docs/specs/030-forms/forms.md "Publishing and the form link").
       await deleteFormLinksForTab(env, id, tabId);
@@ -220,13 +170,6 @@ export async function handleProjectSubresources(ctx: PlanRouteContext): Promise<
   // /api/projects/<id>/tabs/<tabId>/link — owner only.
   // A tab belongs to exactly one plan (its Durable Object holds it), so there is no linking an existing tab into
   // another project any more: POST …/tabs/<tabId>/link is gone (docs/specs/015-api/api.md "Storage").
-
-  // /api/projects/<id>/share* — the share-link family lives in
-  // project-share-routes.ts.
-  {
-    const shareResp = await handleProjectShareRoutes(ctx);
-    if (shareResp) return shareResp;
-  }
 
   return null;
 }

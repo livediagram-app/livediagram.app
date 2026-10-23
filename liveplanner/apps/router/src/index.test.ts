@@ -153,6 +153,38 @@ describe('local-dev dispatch (origin proxy)', () => {
     }
   });
 
+  it('forwards /api/index/* to the index, path, query, method, body and Authorization kept, cookies dropped', async () => {
+    const fetchMock = vi.fn((_req: Request) => Promise.resolve(new Response('ok')));
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      const { env, api } = makeEnv();
+      await router.fetch(
+        new Request('https://liveplanner.app/api/index/items/p1/grant?x=1', {
+          method: 'POST',
+          headers: { Authorization: 'Bearer g', 'X-Share-Code': 'C', Cookie: 'a=b' },
+          body: '{"tab":null}',
+        }),
+        { ...env, INDEX_ORIGIN: 'http://127.0.0.1:8793' },
+      );
+      const req = fetchMock.mock.calls[0]![0];
+      expect(req.url).toBe('http://127.0.0.1:8793/api/index/items/p1/grant?x=1');
+      expect(req.method).toBe('POST');
+      expect(req.headers.get('Authorization')).toBe('Bearer g');
+      expect(req.headers.get('X-Share-Code')).toBe('C');
+      expect(req.headers.get('Cookie')).toBeNull();
+      expect(await req.text()).toBe('{"tab":null}');
+      // Never the api worker, and production's index when no origin is named.
+      expect(api.urls).toEqual([]);
+      await dispatch('/api/index/items', env);
+      expect(fetchMock.mock.calls[1]![0].url).toBe('https://liveworkspace.app/api/index/items');
+      // `/api/indexes` is not the index.
+      await dispatch('/api/indexes', env);
+      expect(api.urls).toEqual(['https://liveplanner.app/api/indexes']);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('503s with a pointer at the fix when neither binding nor origin exists', async () => {
     const res = await dispatch('/new', {});
     expect(res.status).toBe(503);

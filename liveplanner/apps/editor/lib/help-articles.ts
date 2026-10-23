@@ -20,7 +20,6 @@ export const HELP_ARTICLES = {
   // Sharing
   sharing: 'collaboration/sharing',
   shareLinkExpiry: 'collaboration/sharing/share-link-expiry',
-  sharePasswords: 'collaboration/sharing/share-passwords',
   // Palette behaviour
   // Of the elements added in docs/specs/009-elements/youtube-video.md and docs/specs/009-elements/mind-node.md, docs/specs/009-elements/lane.md, docs/specs/009-elements/entity.md, docs/specs/009-elements/embed-providers.md, only the embed has a
   // surface that links its article (the link picker, when it is restricted to
@@ -47,13 +46,10 @@ export const HELP_ARTICLES = {
   tags: 'explorer/tags',
   linkingTabs: 'tabs/using-tabs',
   // Teams
-  teamRolesAndInvites: 'collaboration/teams/roles-and-invites',
   // Canvas / themes
   changingTheBackground: 'user-interface/themes/changing-theme',
-  themes: 'user-interface/themes',
   changingTheme: 'user-interface/themes/changing-theme',
   choosingAFinish: 'user-interface/themes/changing-theme',
-  customThemes: 'user-interface/themes/custom-themes',
   choosingFonts: 'user-interface/themes/changing-theme',
   // Links / activity / comments
   // Plan mode's card types (docs/specs/026-plan/item-types.md).
@@ -77,13 +73,7 @@ export const HELP_ARTICLES = {
   sessionVoting: 'collaboration/session-tools/voting',
   sessionTimer: 'collaboration/session-tools/timer',
   home: 'explorer/home',
-  // The Inbox's article keeps the slug it had as Activity, so links already out there keep working.
-  inbox: 'explorer/activity',
-  recentProjects: 'explorer/recent',
-  sharedWithYou: 'explorer/shared-with-you',
   folders: 'explorer/folders',
-  defaultFolders: 'explorer/folders/default-folders',
-  explorerFilters: 'explorer/filters',
   dataElements: 'plan/visualisations',
   sankeyDiagram: 'plan/visualisations',
   // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md).
@@ -147,10 +137,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about link expiry',
     description: 'How long a share link lasts and where expired links go.',
   },
-  sharePasswords: {
-    title: 'Learn about share passwords',
-    description: 'How the optional password gate protects every link.',
-  },
   embedElements: {
     title: 'Learn about embeds',
     description: 'Which services can be embedded, and how they load.',
@@ -191,22 +177,13 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about linking tabs',
     description: 'How linking to another tab works.',
   },
-  teamRolesAndInvites: {
-    title: 'Learn about teams',
-    description: 'Admin and Member roles, and how invites work.',
-  },
   changingTheBackground: {
     title: 'Learn about the canvas',
     description: 'Tips for the background, patterns and the canvas behind what you draw.',
   },
-  themes: { title: 'Learn about themes', description: 'How themes restyle a whole tab.' },
   changingTheme: {
     title: 'Learn about changing the theme',
     description: "Tips for restyling a tab's colours in one go.",
-  },
-  customThemes: {
-    title: 'Learn about custom themes',
-    description: 'Build your own palette and reuse it across plans.',
   },
   choosingAFinish: {
     title: 'Learn about finishes',
@@ -254,35 +231,15 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   home: {
     title: 'Learn about Home',
-    description: 'Jump Back In, and what others did while you were away.',
-  },
-  inbox: {
-    title: 'Learn about the Inbox',
-    description: 'Open actions assigned to you or by you, and comment threads you are in.',
-  },
-  recentProjects: {
-    title: 'Learn about Recent',
-    description: 'Your most recently opened plans, personal and team, in one list.',
+    description: 'Jump back in, and what was shared with you recently.',
   },
   tags: {
     title: 'Learn about tags',
     description: 'Coloured labels that group related plans across folders and teams.',
   },
-  sharedWithYou: {
-    title: 'Learn about Shared With Me',
-    description: 'Plans other people have shared with you, collected here.',
-  },
   folders: {
     title: 'Learn about folders',
     description: 'Tips for organising plans into a nestable tree of folders.',
-  },
-  defaultFolders: {
-    title: 'Learn about default folders',
-    description: 'Where new plans land when you pick no place.',
-  },
-  explorerFilters: {
-    title: 'Learn about search and filters',
-    description: 'Narrow any list with words, chips or typed filters like made-by:ai.',
   },
   dataElements: {
     title: 'Learn about data elements',

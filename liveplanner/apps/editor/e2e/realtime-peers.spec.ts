@@ -3,10 +3,10 @@ import {
   dismissQuickTour,
   expect,
   test,
-  guestSigFor,
-  mintSignedGuest,
-  ownerHeaders,
-  paletteTile,
+  mintGuest,
+  adoptGuest,
+  planHeaders,
+  seedPlan,
 } from './fixtures';
 
 // Two people on one shared project (docs/specs/012-collaboration/realtime-conflict-resolution.md): each sees
@@ -23,15 +23,14 @@ async function openAs(
   owner: string | null,
 ): Promise<Page> {
   const ctx = await browser.newContext({ baseURL, viewport: { width: 1440, height: 860 } });
+  if (owner) await adoptGuest(ctx, owner);
   await ctx.addInitScript(
-    ({ o, sig }) => {
+    ({ o }) => {
       if (o) {
-        localStorage.setItem('liveplanner:v2:self-id', o);
-        if (sig) localStorage.setItem('liveplanner:v2:self-sig', sig);
         localStorage.setItem('liveplanner:v2:name-confirmed', '1');
       }
     },
-    { o: owner, sig: owner ? guestSigFor(owner) : null },
+    { o: owner },
   );
   const page = await ctx.newPage();
   await page.goto(url);
@@ -45,28 +44,27 @@ test('two peers see each other, edit live, and every edit is kept', async ({
   browser,
   baseURL,
 }) => {
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   const id = crypto.randomUUID();
   const tabId = crypto.randomUUID();
-  const headers = ownerHeaders(owner, { Origin: new URL(baseURL!).origin });
-  const seeded = await page.request.post(`${apiBase}/projects`, {
-    headers,
-    data: {
-      id,
-      name: 'Room',
-      tabs: [
-        {
-          id: tabId,
-          name: 'Board',
-          opensIn: 'diagram',
-          elements: [
-            { id: 'a', type: 'shape', shape: 'square', x: 100, y: 100, width: 200, height: 100 },
-          ],
-        },
-      ],
-    },
+  const seeded = await seedPlan(page.request, owner, {
+    id,
+    name: 'Room',
+    tabs: [
+      {
+        id: tabId,
+        name: 'Board',
+        opensIn: 'diagram',
+        elements: [
+          { id: 'a', type: 'shape', shape: 'square', x: 100, y: 100, width: 200, height: 100 },
+        ],
+      },
+    ],
   });
   expect(seeded.ok()).toBe(true);
+  const headers = await planHeaders(page.request, owner, id, {
+    Origin: new URL(baseURL!).origin,
+  });
   const share = await page.request.post(`${apiBase}/projects/${id}/share`, {
     headers,
     data: { role: 'edit' },
@@ -75,7 +73,7 @@ test('two peers see each other, edit live, and every edit is kept', async ({
 
   const ownerPage = await openAs(browser, baseURL!, `/project/${id}`, owner);
   await ownerPage.locator(CANVAS).waitFor();
-  const peerPage = await openAs(browser, baseURL!, `/project/shared?s=${code}`, null);
+  const peerPage = await openAs(browser, baseURL!, `/project/${id}?s=${code}`, null);
   await peerPage.getByRole('button', { name: /^join$/i }).click();
   await peerPage.locator(CANVAS).waitFor();
   await dismissQuickTour(ownerPage);
@@ -85,19 +83,15 @@ test('two peers see each other, edit live, and every edit is kept', async ({
   const online = ownerPage.locator('[role="img"][aria-label$="(Online)"]');
   await expect.poll(() => online.count()).toBeGreaterThanOrEqual(2);
 
-  // A peer's edit reaches the owner live.
-  await (
-    await paletteTile(peerPage, 'Add Square')
-  ).dragTo(peerPage.locator(CANVAS), { targetPosition: { x: 700, y: 500 } });
+  // A peer's edit reaches the owner live: the peer duplicates the square.
+  await squares(peerPage).first().click();
+  await peerPage.keyboard.press('ControlOrMeta+d');
   await peerPage.keyboard.press('Escape');
   await expect(squares(ownerPage)).toHaveCount(2);
 
-  // The owner edits too; the autosave keeps both, and a reload shows both.
-  await (
-    await paletteTile(ownerPage, 'Add Square')
-  ).dragTo(ownerPage.locator(CANVAS), {
-    targetPosition: { x: 300, y: 600 },
-  });
+  // The owner edits too (another duplicate); the autosave keeps both, and a reload shows both.
+  await squares(ownerPage).last().click();
+  await ownerPage.keyboard.press('ControlOrMeta+d');
   await ownerPage.keyboard.press('Escape');
   await expect
     .poll(async () => {

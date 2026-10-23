@@ -51,7 +51,7 @@ API tokens are a **signed-in-only** feature. The editor, sharing, and real-time 
 
 ## Tokens versus the guest path
 
-The editor itself does not use a token. When you are not signed in, the app identifies you with a per-browser [guest id](/help/account-and-data/guest-identity/) sent in an `X-Owner-Id` header, with a server signature alongside it. That path is for the first-party app only: it is not a credential you should build integrations on, and it is not used like a token. For anything outside the editor, use a bearer token.
+The editor itself does not use an API token. When you are signed in it sends your account's short-lived access token, and when you are not, a [guest](/help/account-and-data/guest-identity/) token that liveworkspace issued to this browser. Those are for the first-party app only: they are not credentials you should build integrations on. For anything outside the editor, use an API token.
 
 ## Keep tokens safe
 

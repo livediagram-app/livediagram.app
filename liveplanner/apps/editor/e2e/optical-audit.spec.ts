@@ -4,19 +4,10 @@ import {
   darkVisitor,
   projectRow,
   freshDarkPage,
-  jumpBackIn,
   seedProject,
-  seedOpenedProject,
   shareLink,
 } from './audit-screens';
-import {
-  dismissQuickTour,
-  expect,
-  expectNoPageErrors,
-  test,
-  untilHydrated,
-  mintSignedGuest,
-} from './fixtures';
+import { dismissQuickTour, expect, expectNoPageErrors, test, mintGuest } from './fixtures';
 import { auditOptical, OPTICAL_TOLERANCE_PX } from './optical';
 
 // Optical alignment audit (docs/specs/004-interface-design/optical-alignment.md): on each screen, every glyph
@@ -45,7 +36,7 @@ async function expectCentred(page: Page, screen: string): Promise<void> {
 
 // A seeded project open in the editor, its quick tour dismissed; returns the seeded Spinner shape.
 async function openSeededEditor(page: Page, baseURL: string): Promise<Locator> {
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   const id = await seedProject(page, owner, new URL(baseURL).origin);
   await darkVisitor(page, owner);
   await page.goto(`/project/${id}`);
@@ -57,12 +48,11 @@ async function openSeededEditor(page: Page, baseURL: string): Promise<Locator> {
 }
 
 test.describe('Optical alignment audit', () => {
-  test('the New Project wizard', async ({ page, pageErrors }) => {
+  test('Start Planning on a new plan', async ({ page, pageErrors }) => {
     await darkVisitor(page);
     await page.goto('/new');
-    await page.getByText('New Plan', { exact: false }).first().waitFor();
-    await untilHydrated(page.getByRole('button', { name: /^create$/i }));
-    await expectCentred(page, 'wizard');
+    await page.getByRole('heading', { name: 'Start Planning' }).waitFor();
+    await expectCentred(page, 'Start Planning');
     expectNoPageErrors(pageErrors);
   });
 
@@ -92,34 +82,28 @@ test.describe('Optical alignment audit', () => {
   test('the Share dialog', async ({ page, pageErrors, baseURL }) => {
     await openSeededEditor(page, baseURL!);
     await page.getByRole('button', { name: /^Share$/ }).click();
-    await page.getByRole('dialog', { name: 'Share This Plan' }).waitFor();
+    await page.getByRole('dialog', { name: /^Share / }).waitFor();
     await expectCentred(page, 'Share dialog');
     expectNoPageErrors(pageErrors);
   });
 
   test('the Join dialog a share link opens', async ({ page, browser, baseURL }) => {
-    const owner = await mintSignedGuest(page.request);
+    const owner = await mintGuest(page.request);
     const origin = new URL(baseURL!).origin;
     const id = await seedProject(page, owner, origin);
     const code = await shareLink(page, owner, origin, id);
     const visitor = await freshDarkPage(browser, 4);
-    await visitor.goto(`/project/shared?s=${code}`);
+    await visitor.goto(`/project/${id}?s=${code}`);
     await visitor.getByRole('button', { name: /^join$/i }).waitFor();
     await expectCentred(visitor, 'Join dialog');
     await visitor.context().close();
   });
 
-  // Home as a returning owner meets it (the project they opened in Jump Back In), then My
-  // projects, which lists it as a row.
+  // My Work, which lists the seeded plan as a row.
   test('the Explorer', async ({ page, pageErrors, baseURL }) => {
-    // Signed, so the identity holds across the two page loads.
-    const owner = await mintSignedGuest(page.request);
-    await seedOpenedProject(page, owner, new URL(baseURL!).origin);
+    const owner = await mintGuest(page.request);
+    await seedProject(page, owner, new URL(baseURL!).origin);
     await darkVisitor(page, owner);
-    await page.goto('/explorer');
-    await jumpBackIn(page, 'Contrast').waitFor();
-    await expectCentred(page, 'Explorer Home');
-
     await page.goto('/explorer/all');
     await projectRow(page, 'Contrast').waitFor();
     await expectCentred(page, 'Explorer, My Work');
@@ -132,7 +116,7 @@ test.describe('Optical alignment audit', () => {
 // rather than left to the day a "Q" comes up.
 test('initials with a tailed capital centre on their cap band', async ({ page }) => {
   await page.goto('/new');
-  await page.getByText('New Plan', { exact: false }).first().waitFor();
+  await page.getByRole('heading', { name: 'Start Planning' }).waitFor();
   await page.evaluate(() => {
     const disc = document.createElement('span');
     disc.setAttribute('aria-label', 'Tailed initials');

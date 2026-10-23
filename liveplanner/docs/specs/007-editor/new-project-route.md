@@ -142,7 +142,7 @@ missing project the condition is expected to clear on its own. The
 same card serves the failed-create path on `/new`, with one exception: a
 create refused for its **placement** (`team_forbidden`, `folder_not_found`,
 `folder_scope_mismatch`, `placement_invalid`, see
-[Folders → Placement on create](../013-workspace/folders.md#placement-on-create)) will not clear on
+[Folders → Placement on create](../013-workspace/folders.md)) will not clear on
 a retry, so the card says why and offers **Use the default place** instead.
 On `/new`, **Retry** re-runs the same create under the same project and tab
 ids it first tried: a create that reached the server but whose answer was lost
@@ -329,7 +329,7 @@ project"**; everything else stays put.
 
 The URL's placement context travels in the create body as
 `{ teamId?, folderId? }`, and the server files the project in the same write
-([Folders → Placement on create](../013-workspace/folders.md#placement-on-create)). There is no
+([Folders → Placement on create](../013-workspace/folders.md)). There is no
 follow-up placement request, so a project asked for in a team can never be left personal
 by a request that failed quietly.
 
@@ -361,7 +361,7 @@ new tab.
 
 - No new endpoints. `POST /api/projects` already accepts an
   optional `tabs` array per [Per-tab storage](../006-project/per-tab-storage.md) — the route uses it,
-  and the placement `{ teamId?, folderId? }` ([Folders → Placement on create](../013-workspace/folders.md#placement-on-create)).
+  and the placement `{ teamId?, folderId? }` ([Folders → Placement on create](../013-workspace/folders.md)).
 
 ## Tests / sanity-check checklist
 

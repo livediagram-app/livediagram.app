@@ -1,13 +1,10 @@
 import type { Metadata } from 'next';
-import { RetiredViewRedirect } from '../RetiredViewRedirect';
 
-// /explorer/unsorted is retired (docs/specs/013-workspace/folders.md#the-root-and-the-retired-buckets):
-// it replaces itself with its successor, so links to it keep working.
+// The Explorer's Unsorted view: ExplorerShell (the layout) renders it from the address.
 export const metadata: Metadata = {
-  title: 'Explorer | liveplanner',
-  robots: { index: false, follow: false },
+  title: 'Unsorted | liveplanner',
 };
 
 export default function Page() {
-  return <RetiredViewRedirect from="unsorted" />;
+  return null;
 }

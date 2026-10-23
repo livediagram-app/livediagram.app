@@ -122,51 +122,25 @@ export async function untilHydrated(locator: Locator): Promise<void> {
     .toBe(true);
 }
 
-// The wizard asks only for a mode (docs/specs/007-editor/new-project-route.md "One-step wizard"): choosing one
-// creates the project there and then, and lands on the editor with the mode's start screen over the canvas
-// (docs/specs/007-editor/start-panel.md).
-// Resolves to the new project's id; `url` carries a `/new?folder=` / `?team=` context.
-export async function createInMode(page: Page, mode: string, url = '/new'): Promise<string> {
+// A new plan through /new (docs/specs/007-editor/new-project-route.md): it asks nothing, makes the plan as it
+// mounts and opens it in place, an empty tab on Start Planning. `_mode` is kept so callers that named a mode need
+// not change; Plan is the only one. `url` may carry a `/new?folder=` / `?team=` / `?template=` context.
+// Resolves to the new plan's id.
+export async function createInMode(page: Page, _mode = 'plan', url = '/new'): Promise<string> {
   await page.goto(url);
-  await page.getByText('New Plan', { exact: false }).waitFor();
-  const card = page.locator(`[data-new-mode="${mode}"]`);
-  await untilHydrated(card);
-  await card.click();
+  await page.waitForURL(/\/project\/[^/?#]+/, { timeout: 30_000 });
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   return new URL(page.url()).pathname.split('/').pop()!;
-}
-
-// The start screen over a new tab, by its mode's title (Start Diagramming, ...).
-const startScreen = (page: Page, title: RegExp = /^Start /) =>
-  page.getByRole('region', { name: title });
-
-// Start a project from a named TEMPLATE in a named group of Start Diagramming: a Diagram project from the
-// wizard, then the template picked on its start screen, so template creation (builders, layers, per-template
-// canvas overrides, the tab kind) is its own path, as a person takes it.
-export async function startTemplateProject(
-  page: Page,
-  group: string,
-  template: RegExp,
-): Promise<void> {
-  await createInMode(page, 'diagram');
-  const start = startScreen(page, /^Start Diagramming$/);
-  const rail = start.locator(`[data-rail]`).filter({ hasText: group }).first();
-  await untilHydrated(rail);
-  await rail.click();
-  await start.getByRole('button', { name: template }).first().click();
-  await start.waitFor({ state: 'detached' });
 }
 
 // The Diagram tour and its /new handoff offer are gone (Plan is the only editor mode), so nothing is
 // owed: kept so the specs that call it need not change.
 export async function dismissQuickTour(_page: Page): Promise<void> {}
 
-// A blank canvas straight away: /new?blank=1, the wizard bypass Start Blank
-// links to (docs/specs/007-editor/new-project-route.md).
+// A blank canvas straight away: /new?blank=1 (docs/specs/007-editor/new-project-route.md).
 export async function openStartBlank(page: Page): Promise<void> {
   await page.goto('/new?blank=1');
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
-  await dismissQuickTour(page);
 }
 
 // A Team Retro straight away: its retro board's cards take votes, so the tab offers the Session strip
@@ -174,16 +148,13 @@ export async function openStartBlank(page: Page): Promise<void> {
 export async function openTeamRetro(page: Page): Promise<void> {
   await page.goto('/new?template=team-retro');
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
-  await dismissQuickTour(page);
 }
 
-// A blank Diagram project through the wizard: Diagram on the Mode step, Create, then the start screen's × (a blank
-// canvas, docs/specs/007-editor/start-panel.md "Bringing it back").
+// A blank plan through /new. Its start screen (Start Planning) cannot close: it stays over the empty tab until
+// something is drawn, so seedTab (or a board picked from it) is what clears it (docs/specs/026-plan/plan-mode.md
+// "Starting a board").
 export async function startBlankProject(page: Page): Promise<void> {
-  await createInMode(page, 'diagram');
-  const start = startScreen(page, /^Start Diagramming$/);
-  await start.getByRole('button', { name: 'Close' }).click();
-  await start.waitFor({ state: 'detached' });
+  await createInMode(page);
 }
 
 export type Seed = Record<string, unknown>[];
@@ -191,7 +162,8 @@ export type Seed = Record<string, unknown>[];
 // Write the seed into the new project's first tab through the api, reload.
 export async function seedTab(page: Page, elements: Seed): Promise<void> {
   const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
-  const headers = await pageOwnerHeaders(page, { 'Content-Type': 'application/json' });
+  const planId = new URL(page.url()).pathname.split('/').filter(Boolean).pop()!;
+  const headers = await pageOwnerHeaders(page, { 'Content-Type': 'application/json' }, planId);
   await page.evaluate(
     async ({ base, elements, headers }) => {
       const id = location.pathname.split('/').filter(Boolean).pop()!;
@@ -229,48 +201,104 @@ export async function seedTab(page: Page, elements: Seed): Promise<void> {
   if (first) await settledBox(page.locator(`[data-element-id="${String(first.id)}"]`).first());
 }
 
-// A guest as production makes one: minted and signed by the api worker
-// (docs/specs/014-identity/auth-and-guest-access.md). The e2e stack signs guest ids, so a hand-made
-// unsigned id would be upgraded (and its data moved) the moment the app opens.
-const guestSigs = new Map<string, string>();
+// A guest as production makes one: a guest token from liveworkspace (liveworkspace/docs/accounts.md "Guests"), here
+// from the e2e stack's accounts stand-in (scripts/e2e-stack.mjs, /e2e/guest-token). Answers the guest id
+// (`guest_<uuid>`); ownerHeaders sends its token.
+const guestTokens = new Map<string, string>();
 
-export async function mintSignedGuest(
+export async function mintGuest(
   request: import('@playwright/test').APIRequestContext,
 ): Promise<string> {
-  const res = await request.post(`${process.env.NEXT_PUBLIC_API_BASE ?? '/api'}/guest-id`, {
-    data: {},
-  });
+  const res = await request.get('/e2e/guest-token');
   expect(res.ok()).toBe(true);
-  const { ownerId, ownerSig } = (await res.json()) as { ownerId: string; ownerSig: string | null };
-  if (ownerSig) guestSigs.set(ownerId, ownerSig);
-  return ownerId;
+  const { token, guestId } = (await res.json()) as { token: string; guestId: string };
+  guestTokens.set(guestId, token);
+  return guestId;
 }
 
-export function guestSigFor(owner: string): string | null {
-  return guestSigs.get(owner) ?? null;
+export function guestTokenFor(owner: string): string | null {
+  return guestTokens.get(owner) ?? null;
+}
+
+// The page (or every page of a context) opens as this guest: its token is where the app keeps it.
+export async function adoptGuest(target: Page | BrowserContext, owner: string): Promise<void> {
+  const token = guestTokens.get(owner);
+  if (!token) throw new Error(`no guest token for ${owner}: mint it with mintGuest`);
+  await target.addInitScript((t) => {
+    try {
+      localStorage.setItem('liveplanner:v2:guest-token', t);
+    } catch {
+      // A page with no storage keeps none.
+    }
+  }, token);
 }
 
 export function ownerHeaders(
   owner: string,
   extra: Record<string, string> = {},
 ): Record<string, string> {
-  const sig = guestSigs.get(owner);
-  return { 'X-Owner-Id': owner, ...(sig ? { 'X-Owner-Sig': sig } : {}), ...extra };
+  const token = guestTokens.get(owner);
+  return { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...extra };
+}
+
+// The index's grant on a plan for whoever `headers` names (liveworkspace/docs/one-explorer-contracts.md "Grants"):
+// every api request about one plan carries it as X-Index-Grant.
+export async function planGrant(
+  request: import('@playwright/test').APIRequestContext,
+  headers: Record<string, string>,
+  planId: string,
+): Promise<string> {
+  const res = await request.post(`/api/index/items/${encodeURIComponent(planId)}/grant`, {
+    headers,
+  });
+  expect(res.ok(), `grant on ${planId}: ${res.status()}`).toBe(true);
+  return ((await res.json()) as { grant: string }).grant;
+}
+
+// ownerHeaders plus the grant on one plan.
+export async function planHeaders(
+  request: import('@playwright/test').APIRequestContext,
+  owner: string,
+  planId: string,
+  extra: Record<string, string> = {},
+): Promise<Record<string, string>> {
+  const headers = ownerHeaders(owner);
+  return { ...headers, 'X-Index-Grant': await planGrant(request, headers, planId), ...extra };
+}
+
+// A plan made as the app makes one: the item at the index first, then its content with the grant the create
+// answers (liveworkspace/docs/one-explorer-contracts.md "Items"). `data` is the api's create body ({ id, name,
+// tabs, ... }). Answers the content create's response.
+export async function seedPlan(
+  request: import('@playwright/test').APIRequestContext,
+  owner: string | Record<string, string>,
+  data: { id: string; name: string } & Record<string, unknown>,
+): Promise<import('@playwright/test').APIResponse> {
+  const headers = typeof owner === 'string' ? ownerHeaders(owner) : owner;
+  const made = await request.post('/api/index/items', {
+    headers,
+    data: { id: data.id, app: 'liveplanner', title: data.name },
+  });
+  expect(made.ok(), `index create: ${made.status()}`).toBe(true);
+  const { grant } = (await made.json()) as { grant: { grant: string } };
+  return request.post('/api/projects', {
+    headers: { ...headers, 'X-Index-Grant': grant.grant, 'Content-Type': 'application/json' },
+    data,
+  });
 }
 
 // The page's OWN guest identity as request headers, for api calls a spec makes from inside the page
-// (`page.evaluate`, which cannot import this module). The stack enforces guest signatures as
-// production does, so the id travels with the signature the app stored beside it. Read once, before
-// the evaluate, and passed in as an argument.
+// (`page.evaluate`, which cannot import this module): its guest token, and with `planId` the grant on that plan.
+// Read once, before the evaluate, and passed in as an argument.
 export async function pageOwnerHeaders(
   page: Page,
   extra: Record<string, string> = {},
+  planId?: string,
 ): Promise<Record<string, string>> {
-  const { id, sig } = await page.evaluate(() => ({
-    id: localStorage.getItem('liveplanner:v2:self-id') ?? '',
-    sig: localStorage.getItem('liveplanner:v2:self-sig'),
-  }));
-  return { 'X-Owner-Id': id, ...(sig ? { 'X-Owner-Sig': sig } : {}), ...extra };
+  const token = await page.evaluate(() => localStorage.getItem('liveplanner:v2:guest-token') ?? '');
+  const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+  if (planId) headers['X-Index-Grant'] = await planGrant(page.request, headers, planId);
+  return { ...headers, ...extra };
 }
 
 // A box once it has stopped moving: a surface that pops in (the `pop-in` scale animation) reports a
@@ -291,16 +319,4 @@ export async function settledBox(
     })
     .toBe(true);
   return box!;
-}
-
-/** A palette tile, from its category's flyout on the category bar (docs/specs/007-editor/toolbar-layout.md "The
- *  category bar"): opens the category (a press, so it stays open whatever the pointer does next) unless its flyout is
- *  already showing, and returns the tile. */
-export async function paletteTile(page: Page, name: string, category = 'Shapes'): Promise<Locator> {
-  const flyout = page.locator('[data-category-flyout]');
-  const button = page.locator(`[data-category-bar-button][aria-label="${category}"]`);
-  if ((await button.getAttribute('aria-expanded')) !== 'true') await button.click();
-  const tile = flyout.getByRole('button', { name, exact: true }).first();
-  await tile.waitFor();
-  return tile;
 }

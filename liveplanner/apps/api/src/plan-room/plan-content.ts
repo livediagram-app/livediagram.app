@@ -12,14 +12,63 @@ import { tabStatsOfData, tabStatsStatement } from '../db/tab-stats';
 import { rowToTabSummary, type TabRow } from '../tab-row';
 import type { PlanEnv, TabSummaryDTO } from '../types';
 
-// What a project read takes from the plan: its tabs in order (no body) and its type catalogue.
+// What the plan knows of itself (plan-schema.ts): its name, owner, team, provenance and creation intent. Null
+// until the plan is started, by a create or by its first open with a grant (startPlan).
+export type PlanMeta = {
+  name: string;
+  ownerId: string;
+  teamId: string | null;
+  source: string | null;
+  opensIn: string | null;
+  tabKind: string | null;
+  templateFamily: string | null;
+  createdAt: number;
+  thumbRenderedAt: number | null;
+};
+
+// What a project read takes from the plan: its tabs in order (no body), its type catalogue, and what it knows
+// of itself.
 export type PlanOutline = {
   tabs: TabSummaryDTO[];
   itemTypes: ItemTypeCatalogue | null;
   itemTypesRev: number;
-  // The plan's last save, ahead of D1's copy until the outbox pushes it.
+  // The plan's last save.
   savedAt: number;
+  meta: PlanMeta | null;
 };
+
+type PlanHeadRow = {
+  item_types: string | null;
+  item_types_rev: number;
+  saved_at: number;
+  created_at: number;
+  name: string;
+  owner_id: string;
+  team_id: string | null;
+  source: string | null;
+  opens_in: string | null;
+  tab_kind: string | null;
+  template_family: string | null;
+  thumb_rendered_at: number | null;
+};
+
+const PLAN_HEAD_COLS =
+  'item_types, item_types_rev, saved_at, created_at, name, owner_id, team_id, source, opens_in, tab_kind, template_family, thumb_rendered_at';
+
+function metaOf(head: PlanHeadRow | null): PlanMeta | null {
+  if (!head || !head.created_at) return null;
+  return {
+    name: head.name,
+    ownerId: head.owner_id,
+    teamId: head.team_id,
+    source: head.source,
+    opensIn: head.opens_in,
+    tabKind: head.tab_kind,
+    templateFamily: head.template_family,
+    createdAt: head.created_at,
+    thumbRenderedAt: head.thumb_rendered_at,
+  };
+}
 
 export async function readPlanOutline(env: PlanEnv, planId: string): Promise<PlanOutline> {
   const [tabs, plan] = await env.PLAN_DB.batch([
@@ -30,38 +79,115 @@ export async function readPlanOutline(env: PlanEnv, planId: string): Promise<Pla
         WHERE dt.plan_id = ?
         ORDER BY dt.order_index ASC`,
     ).bind(planId),
-    env.PLAN_DB.prepare('SELECT item_types, item_types_rev, saved_at FROM plan WHERE id = ?').bind(
-      planId,
-    ),
+    env.PLAN_DB.prepare(`SELECT ${PLAN_HEAD_COLS} FROM plan WHERE id = ?`).bind(planId),
   ]);
-  const head = (plan?.results?.[0] ?? null) as {
-    item_types: string | null;
-    item_types_rev: number;
-    saved_at: number;
-  } | null;
+  const head = (plan?.results?.[0] ?? null) as PlanHeadRow | null;
   return {
     tabs: ((tabs?.results ?? []) as TabRow[]).map(rowToTabSummary),
     itemTypes: readItemTypeCatalogue(head?.item_types ?? null),
     itemTypesRev: head?.item_types_rev ?? 0,
     savedAt: head?.saved_at ?? 0,
+    meta: metaOf(head),
   };
 }
 
-// The plan's row, made with the plan: its dates and, on a genuine create, the type catalogue the create carries
-// (docs/specs/026-plan/item-types.md "Storage and sync"). A re-commit of an existing plan keeps its catalogue.
-export async function initPlan(
+// What the plan knows of itself, alone (no tabs): for the doors that only need its owner or name.
+export async function readPlanMeta(env: PlanEnv, planId: string): Promise<PlanMeta | null> {
+  const head = await env.PLAN_DB.prepare(`SELECT ${PLAN_HEAD_COLS} FROM plan WHERE id = ?`)
+    .bind(planId)
+    .first<PlanHeadRow>();
+  return metaOf(head ?? null);
+}
+
+// What a create or a first open writes about the plan (startPlan, upsertPlanMeta). A started plan keeps its
+// owner, team, provenance and intent; only its name and last save move after.
+export type PlanStart = {
+  name: string;
+  ownerId: string;
+  teamId: string | null;
+  source: string | null;
+  opensIn: string | null;
+  tabKind: string | null;
+  templateFamily: string | null;
+  savedAt: number;
+  createdAt: number;
+  itemTypes?: ItemTypeCatalogue | null;
+};
+
+// Start the plan (docs/specs/015-api/api.md "Storage"), or on a plan already started rename it and move its
+// last save. On a genuine start the type catalogue the create carries goes in too
+// (docs/specs/026-plan/item-types.md "Storage and sync"); a started plan keeps its catalogue.
+export async function initPlan(env: PlanEnv, planId: string, d: PlanStart): Promise<void> {
+  await env.PLAN_DB.prepare(
+    `INSERT INTO plan (id, item_types, saved_at, created_at, name, owner_id, team_id, source, opens_in, tab_kind,
+                       template_family)
+     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
+     ON CONFLICT (id) DO UPDATE SET
+       item_types = CASE WHEN plan.created_at = 0 THEN COALESCE(plan.item_types, excluded.item_types)
+                         ELSE plan.item_types END,
+       saved_at = excluded.saved_at,
+       name = excluded.name,
+       created_at = CASE WHEN plan.created_at = 0 THEN excluded.created_at ELSE plan.created_at END,
+       owner_id = CASE WHEN plan.created_at = 0 THEN excluded.owner_id ELSE plan.owner_id END,
+       team_id = CASE WHEN plan.created_at = 0 THEN excluded.team_id ELSE plan.team_id END,
+       source = CASE WHEN plan.created_at = 0 THEN excluded.source ELSE plan.source END,
+       opens_in = CASE WHEN plan.created_at = 0 THEN excluded.opens_in ELSE plan.opens_in END,
+       tab_kind = CASE WHEN plan.created_at = 0 THEN excluded.tab_kind ELSE plan.tab_kind END,
+       template_family = CASE WHEN plan.created_at = 0 THEN excluded.template_family
+                              ELSE plan.template_family END`,
+  )
+    .bind(
+      planId,
+      d.itemTypes ? JSON.stringify(d.itemTypes) : null,
+      d.savedAt,
+      d.createdAt,
+      d.name,
+      d.ownerId,
+      d.teamId,
+      d.source,
+      d.opensIn,
+      d.tabKind,
+      d.templateFamily,
+    )
+    .run();
+}
+
+// A rename (and its save time) on a started plan; false when the plan is not started.
+export async function renamePlan(
   env: PlanEnv,
   planId: string,
-  d: { savedAt: number; createdAt: number; itemTypes?: ItemTypeCatalogue | null },
-): Promise<void> {
-  await env.PLAN_DB.prepare(
-    `INSERT INTO plan (id, item_types, saved_at, created_at) VALUES (?1, ?2, ?3, ?4)
-     ON CONFLICT (id) DO UPDATE SET
-       item_types = COALESCE(plan.item_types, excluded.item_types),
-       saved_at = excluded.saved_at`,
+  name: string,
+  savedAt: number,
+): Promise<boolean> {
+  const res = await env.PLAN_DB.prepare(
+    'UPDATE plan SET name = ?, saved_at = ? WHERE id = ? AND created_at > 0',
   )
-    .bind(planId, d.itemTypes ? JSON.stringify(d.itemTypes) : null, d.savedAt, d.createdAt)
+    .bind(name, savedAt, planId)
     .run();
+  return (res.meta.changes ?? 0) > 0;
+}
+
+// The snapshot cache's freshness stamp (thumbnail.ts).
+export async function markThumbRendered(env: PlanEnv, planId: string, now: number): Promise<void> {
+  await env.PLAN_DB.prepare('UPDATE plan SET thumb_rendered_at = ? WHERE id = ?')
+    .bind(now, planId)
+    .run();
+}
+
+// docs/specs/014-identity/transactional-email.md (#1) throttle: claim the right to email the owner about a new
+// comment, at most once per window. One conditional UPDATE, so a burst of comment saves can't each fire one.
+export async function claimCommentNotify(
+  env: PlanEnv,
+  planId: string,
+  now: number,
+  cutoff: number,
+): Promise<boolean> {
+  const res = await env.PLAN_DB.prepare(
+    'UPDATE plan SET comment_notified_at = ? WHERE id = ? AND (comment_notified_at IS NULL OR comment_notified_at < ?)',
+  )
+    .bind(now, planId, cutoff)
+    .run();
+  return res.meta.changes === 1;
 }
 
 // A plan's card types alone, for a snapshot that draws its cards. Null for a plan with no catalogue.
@@ -270,8 +396,9 @@ export async function importPlanCopy(
   const stmts: D1PreparedStatement[] = [
     db
       .prepare(
+        // created_at stays 0: the copy's first open with a grant starts it, as its new owner (initPlan).
         `INSERT INTO plan (id, item_types, items_rev, items_next_key, saved_at, created_at)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?5)
+         VALUES (?1, ?2, ?3, ?4, ?5, 0)
          ON CONFLICT (id) DO UPDATE SET item_types = excluded.item_types, items_rev = excluded.items_rev,
            items_next_key = excluded.items_next_key, saved_at = excluded.saved_at`,
       )

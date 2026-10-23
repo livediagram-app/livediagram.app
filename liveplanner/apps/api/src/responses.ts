@@ -8,9 +8,9 @@ import {
   BUILD_ID_HEADER,
   CHANGESET_SEEN_HEADER,
   CLIENT_HEADER,
+  INDEX_GRANT_HEADER,
   PROJECT_CONVERSION_HEADER,
   PROJECT_FORMAT_HEADER,
-  PROJECT_OPEN_HEADER,
   PROJECT_TRASHED_ERROR,
 } from '@liveplanner/api-schema';
 
@@ -31,7 +31,7 @@ export const CORS_HEADERS = {
   // in this list, which surfaces as "Failed to fetch" with no other
   // signal, so each new header has to land here too. Take Offline and Sync
   // Diagram declare themselves with PROJECT_CONVERSION_HEADER.
-  'Access-Control-Allow-Headers': `Authorization, Content-Type, X-Owner-Id, X-Owner-Sig, X-Share-Code, X-Share-Password, X-Allow-Empty, X-Room-Cursor, ${PROJECT_CONVERSION_HEADER}, ${PROJECT_OPEN_HEADER}, ${CHANGESET_SEEN_HEADER}, ${CLIENT_HEADER}`,
+  'Access-Control-Allow-Headers': `Authorization, Content-Type, ${INDEX_GRANT_HEADER}, X-Share-Code, X-Share-Password, X-Allow-Empty, X-Room-Cursor, ${PROJECT_CONVERSION_HEADER}, ${CHANGESET_SEEN_HEADER}, ${CLIENT_HEADER}`,
   'Access-Control-Max-Age': '86400',
   // The server release signal (docs/specs/016-platform/new-version-prompt.md, stale-builds.md), readable
   // by an editor on another origin (local dev, a deployment with a separate api host).
@@ -137,8 +137,7 @@ export function rateLimited(): Response {
 
 // signed-in only surfaces (teams, docs/specs/013-workspace/teams.md). Unlike missingAuth() below —
 // which names both identity sources because either is acceptable —
-// this is for endpoints where the guest X-Owner-Id path is
-// structurally insufficient (membership is keyed by account id +
+// this is for endpoints a guest token cannot use (membership is keyed by account id +
 // verified email), so the only fix is signing in. 401 rather than 400
 // so the client can branch to its "sign in to use teams" surface.
 export function signInRequired(): Response {
@@ -158,20 +157,10 @@ export function conflict(reason: string): Response {
   return json({ error: reason }, { status: 409 });
 }
 
-// Returned whenever `resolveOwner()` yields null on a mutation /
-// owner-scoped read. Owner can be null for two reasons under hybrid
-// auth (docs/specs/014-identity/auth-and-guest-access.md):
-//
-//   1. Pure-guest path with no `X-Owner-Id` header sent.
-//   2. A Bearer token was sent but verification failed silently
-//      (expired, invalid signature, JWKS unreachable, etc.):
-//      `getAccountIdentity` returns null on any error so the guest path
-//      still serves.
-//
-// Before sign-in existed this was a flat "missing X-Owner-Id" message,
-// which now misdirects signed-in users debugging an auth failure to
-// look at the wrong header. The new message names both legitimate
-// identity sources so the caller can tell which one they're missing.
+// Returned whenever `resolveOwner()` yields null on a mutation / owner-scoped read
+// (docs/specs/014-identity/auth-and-guest-access.md): no Bearer was sent, or the one sent failed verification
+// (expired, invalid signature, minted for another app, keys unreachable). Every caller, a guest included, holds
+// a token liveworkspace minted.
 export function missingAuth(): Response {
-  return badRequest('authentication required: send a valid account access token or X-Owner-Id');
+  return badRequest('authentication required: send a valid access, guest or API token');
 }

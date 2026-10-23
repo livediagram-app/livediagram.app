@@ -175,6 +175,8 @@ export type ItemListQuery = {
 };
 
 export type CreateItemInput = {
+  // The id the client minted (an offline item synced up, an API client's); the index makes one without it.
+  id?: string;
   app: App;
   title?: string;
   folderId?: string | null;

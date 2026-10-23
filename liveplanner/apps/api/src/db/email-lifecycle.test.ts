@@ -7,6 +7,7 @@ import {
   getOwnerEmail,
   markStageSent,
   MAX_SEND_ATTEMPTS,
+  ownerActiveStatement,
   recordSendFailure,
   recordSighting,
 } from './email-lifecycle';
@@ -86,6 +87,17 @@ describe('send attempts', () => {
     expect(await dueForActivation(db.env, NOW, 10)).toHaveLength(0);
   });
 
+  it('leaves an owner who has saved a plan out of the activation nudge', async () => {
+    const db = sqliteD1();
+    db.sql
+      .prepare(
+        `INSERT INTO email_lifecycle (owner_id, email, created_at) VALUES ('user_b', 'b@x.test', 1)`,
+      )
+      .run();
+    await ownerActiveStatement(db.env, 'user_b', 5).run();
+    expect(await dueForActivation(db.env, NOW, 10)).toHaveLength(0);
+  });
+
   it('gives the row a clean count on a success or a changed address', async () => {
     const db = withQuietOwner();
     await recordSendFailure(db.env, 'user_a');
@@ -98,8 +110,8 @@ describe('send attempts', () => {
   });
 });
 
-// docs/specs/014-identity/transactional-email.md #7: win-back reads the owner's newest project save, so it runs
-// against the real schema (it once read a `projects.updated_at` that never existed and threw every day).
+// docs/specs/014-identity/transactional-email.md #7: win-back reads the owner's newest save, which each plan's
+// summary push stamps (plan-outbox.ts), so it runs against the real schema.
 describe('dueForWinback', () => {
   const CUTOFF = 1_000;
 
@@ -110,25 +122,24 @@ describe('dueForWinback', () => {
         `INSERT INTO email_lifecycle (owner_id, email, created_at) VALUES ('user_a', 'a@x.test', 1)`,
       )
       .run();
-    savedAt.forEach((at, i) =>
-      db.sql
-        .prepare(
-          'INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, ?, ?)',
-        )
-        .run(`d${i}`, 'user_a', 'D', at, 1),
-    );
+    return { db, saves: savedAt };
+  }
+
+  async function stamped(savedAt: number[]) {
+    const { db, saves } = withOwner(savedAt);
+    for (const at of saves) await ownerActiveStatement(db.env, 'user_a', at).run();
     return db;
   }
 
   it('picks an owner whose newest save is at or before the cutoff', async () => {
-    const db = withOwner([10, CUTOFF]);
+    const db = await stamped([CUTOFF, 10]);
     expect(await dueForWinback(db.env, CUTOFF, 10)).toEqual([
       { ownerId: 'user_a', email: 'a@x.test' },
     ]);
   });
 
   it('skips an owner who saved after the cutoff, and one with no projects', async () => {
-    expect(await dueForWinback(withOwner([10, CUTOFF + 1]).env, CUTOFF, 10)).toEqual([]);
-    expect(await dueForWinback(withOwner([]).env, CUTOFF, 10)).toEqual([]);
+    expect(await dueForWinback((await stamped([10, CUTOFF + 1])).env, CUTOFF, 10)).toEqual([]);
+    expect(await dueForWinback((await stamped([])).env, CUTOFF, 10)).toEqual([]);
   });
 });

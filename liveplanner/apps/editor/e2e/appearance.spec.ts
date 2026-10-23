@@ -1,5 +1,5 @@
 import { DARK_CANVAS_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR } from '@liveplanner/project';
-import { expect, test, dismissQuickTour, expectNoPageErrors, paletteTile } from './fixtures';
+import { expect, test, dismissQuickTour, expectNoPageErrors, seedTab } from './fixtures';
 
 // Appearance (docs/specs/007-editor/editor-app.md) end to end: the three settings on the real control, and
 // the thing the merge was for — a tab on the Default theme repainting
@@ -68,12 +68,13 @@ test.describe('Appearance', () => {
     // stored colours to contradict the viewer.
     await expect.poll(() => canvasColour(page)).toBe(rgb(DARK_CANVAS));
 
-    // Drop a shape. On the Default scheme it carries NO colours of its own, so
+    // A shape on the tab. On the Default scheme it carries NO colours of its own, so
     // what it is drawn in is entirely the canvas's ink — the thing the merge
     // depends on, and the thing a unit test can't see reach a memoised view.
     const square = page.getByRole('img', { name: 'Square', exact: true });
-    await (await paletteTile(page, 'Add Square')).click();
-    await page.locator(CANVAS).click({ position: { x: 420, y: 300 } });
+    await seedTab(page, [
+      { id: 'sq', type: 'shape', shape: 'square', x: 400, y: 300, width: 120, height: 120 },
+    ]);
     await expect(square).toHaveCount(1);
     await expect
       .poll(async () => (await squareInk(page)).border, { message: 'element ink follows too' })
