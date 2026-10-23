@@ -1,7 +1,14 @@
 // Checks a liveworkspace access token inside an app's own Worker. This replaces the
 // `CLERK_JWKS_URL` check: same shape (a JWT checked against a published key set), so
 // verifying stays a local signature check with no call to the accounts Worker per request.
-import { createRemoteJWKSet, jwtVerify, type JWTPayload, type JWTVerifyGetKey } from 'jose';
+import {
+  createLocalJWKSet,
+  createRemoteJWKSet,
+  jwtVerify,
+  type JSONWebKeySet,
+  type JWTPayload,
+  type JWTVerifyGetKey,
+} from 'jose';
 import { readTeamsClaim, type TeamClaim } from './account';
 
 export interface VerifierOptions {
@@ -96,4 +103,9 @@ export function createPersonVerifier(options: VerifierOptions) {
     const account = readAccount(payload);
     return account ? { kind: 'account', ...account } : null;
   };
+}
+
+/** A key set already in hand (the accounts Worker's own, which it can't fetch from itself), for `keys`. */
+export function localKeySet(jwks: JSONWebKeySet): JWTVerifyGetKey {
+  return createLocalJWKSet(jwks);
 }

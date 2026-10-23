@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { handleAccountApi } from './account-api.ts';
 import type { Auth } from './auth.ts';
 import type { Env } from './env.ts';
+import { __setBearerVerifier } from './bearer.ts';
 import { signGuestCookie } from './guests.ts';
 import { addClient, addUser, testD1 } from './test-d1.ts';
 
@@ -168,7 +169,10 @@ describe('the account API, signed in', () => {
   it('names people for this browser’s guest too, and nobody else signed out', async () => {
     signedIn = null;
     env.BETTER_AUTH_SECRET = 'guest-secret';
-    const guest = await signGuestCookie('guest_00000000-0000-4000-8000-000000000001', 'guest-secret');
+    const guest = await signGuestCookie(
+      'guest_00000000-0000-4000-8000-000000000001',
+      'guest-secret',
+    );
     const res = await call('/people?ids=user_bea', { headers: { cookie: `lw_guest=${guest}` } });
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ people: [{ id: 'user_bea', name: 'Bea' }] });
@@ -523,5 +527,84 @@ describe('the account API, for the apps', () => {
     await call('/teams', { method: 'POST', body: { name: 'Design' } });
     const feed = (await (await internal('/teams/changes')).json()) as { teams: { name: string }[] };
     expect(feed.teams.map((t) => t.name)).toEqual(['Design']);
+  });
+});
+
+describe("the account API, for the Explorer on an app's address (by the app's bearer)", () => {
+  // Stands in for this Worker's keys: 'tok-ada' is Ada's access token, 'tok-guest' a guest's, anything else forged.
+  beforeEach(() => {
+    signedIn = null;
+    __setBearerVerifier(
+      () => async (token) =>
+        token === 'tok-ada'
+          ? {
+              kind: 'account',
+              userId: 'user_ada',
+              email: 'ada@example.com',
+              emailVerified: true,
+              scopes: [],
+              teams: null,
+            }
+          : token === 'tok-guest'
+            ? { kind: 'guest', guestId: 'guest_00000000-0000-4000-8000-000000000009' }
+            : null,
+    );
+  });
+  afterEach(() => __setBearerVerifier(null));
+
+  const bearer = (token: string, init: Parameters<typeof call>[1] = {}) => ({
+    ...init,
+    headers: {
+      authorization: `Bearer ${token}`,
+      origin: 'https://liveplanner.app',
+      ...init.headers,
+    },
+  });
+
+  it("reads names, the person's teams and a team's members, with no session", async () => {
+    signedIn = { id: 'user_ada', name: 'Ada', email: 'ada@example.com', emailVerified: true };
+    const made = (await (
+      await call('/teams', { method: 'POST', body: { name: 'Design' } })
+    ).json()) as {
+      id: string;
+    };
+    signedIn = null;
+    const teams = await call('/teams', bearer('tok-ada'));
+    expect(teams.status).toBe(200);
+    expect(((await teams.json()) as { teams: { id: string }[] }).teams.map((t) => t.id)).toEqual([
+      made.id,
+    ]);
+    const members = await call(`/teams/${made.id}/members`, bearer('tok-ada'));
+    expect(members.status).toBe(200);
+    const people = await call('/people?ids=user_ada,user_bea', bearer('tok-ada'));
+    expect(((await people.json()) as { people: unknown[] }).people).toHaveLength(2);
+  });
+
+  it("reads and writes the app's settings from the app's origin", async () => {
+    const patched = await call(
+      '/settings/liveplanner.app',
+      bearer('tok-ada', { method: 'PATCH', body: { app: { homeBanner: false } } }),
+    );
+    expect(patched.status).toBe(200);
+    const read = (await (await call('/settings/liveplanner.app', bearer('tok-ada'))).json()) as {
+      app: Record<string, unknown>;
+    };
+    expect(read.app.homeBanner).toBe(false);
+    expect((await call('/settings', bearer('tok-ada'))).status).toBe(200);
+  });
+
+  it('lets a guest read names alone', async () => {
+    expect((await call('/people?ids=user_ada', bearer('tok-guest'))).status).toBe(200);
+    expect((await call('/teams', bearer('tok-guest'))).status).toBe(401);
+    expect((await call('/settings/liveplanner.app', bearer('tok-guest'))).status).toBe(401);
+  });
+
+  it('refuses a forged bearer, and everything the page does not need', async () => {
+    expect((await call('/teams', bearer('forged'))).status).toBe(401);
+    expect(
+      (await call('/teams', bearer('tok-ada', { method: 'POST', body: { name: 'x' } }))).status,
+    ).toBe(404);
+    expect((await call('/tokens', bearer('tok-ada'))).status).toBe(404);
+    expect((await call('/profile', bearer('tok-ada'))).status).toBe(404);
   });
 });

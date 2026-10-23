@@ -1,6 +1,7 @@
 export {
   createPersonVerifier,
   createVerifier,
+  localKeySet,
   type AccountClaims,
   type GuestClaims,
   type PersonClaims,

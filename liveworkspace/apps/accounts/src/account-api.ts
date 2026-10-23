@@ -7,6 +7,7 @@
 //     reading profiles and setting one's own, an app's sign-ups and milestones, accounts' emails, and
 //     for notification emails, many people's notify switches at once and a team's people.
 import { AUTH_BASE_PATH } from './auth-options.ts';
+import { bearerOf, bearerPerson } from './bearer.ts';
 import { noteGuestSeen } from './guest-sweep.ts';
 import { guestOfRequest } from './guests.ts';
 import type { Auth } from './auth.ts';
@@ -103,6 +104,8 @@ export async function handleAccountApi(request: Request, env: Env, auth: Auth): 
   if (parts[0] === 'index' && parts[1] === 'teams' && parts.length === 2) {
     return handleIndexTeams(request, env);
   }
+  const bearer = bearerOf(request);
+  if (bearer) return handleBearer(request, env, auth, parts, bearer);
   return handleSignedIn(request, env, auth, parts);
 }
 
@@ -253,13 +256,7 @@ async function handleSignedIn(
 
   if (section === 'teams') {
     if (!id) {
-      if (method === 'GET') {
-        const [teams, invitations] = await Promise.all([
-          listMyTeams(db, actor.id),
-          listMyInvitations(db, actor.email),
-        ]);
-        return json({ teams, invitations });
-      }
+      if (method === 'GET') return myTeams(db, actor);
       if (method === 'POST') {
         const body = await readBody(request);
         return answer(await createTeam(db, actor, body.name, Date.now(), body.organisation), 201);
@@ -280,28 +277,7 @@ async function handleSignedIn(
       if (method === 'DELETE') return answer(await clearInviteLink(db, actor, id));
     } else if (sub === 'members' && !action) {
       if (!subId) {
-        if (method === 'GET') {
-          const me = await getMembership(db, id, actor.id);
-          if (!me) return error(404, 'not_found');
-          const [members, inviteLink] = await Promise.all([
-            listMembers(db, id),
-            me.role === 'admin'
-              ? currentInviteLink(db, id, env.BETTER_AUTH_SECRET, env.BASE_URL)
-              : null,
-          ]);
-          return json({
-            team: {
-              id,
-              name: me.teamName,
-              organisation: me.organisation,
-              myRole: me.role,
-              myMemberId: me.memberId,
-            },
-            members,
-            // The join link admits anyone signed in, so only the admins see it.
-            inviteLink,
-          });
-        }
+        if (method === 'GET') return teamMembers(db, env, actor, id);
         if (method === 'POST') {
           const body = await readBody(request);
           const result = await inviteMember(db, actor, id, body.email, body.role);
@@ -384,10 +360,7 @@ async function handleSignedIn(
 
   // The settings every app shows; each app's own are its server's to read and write.
   if (section === 'settings' && !id) {
-    if (method === 'GET') {
-      const { all, updatedAt } = await readSettings(db, actor.id, null);
-      return json({ all, updatedAt });
-    }
+    if (method === 'GET') return sharedSettings(db, actor);
     if (method === 'PATCH') {
       const result = await writeSettings(db, actor.id, null, {
         all: (await readBody(request)).all,
@@ -402,14 +375,108 @@ async function handleSignedIn(
   // rows can depend on a shared switch), PATCH `{ app }` changes only the app's. Always the signed-in
   // person's own rows.
   if (section === 'settings' && id && !sub) {
-    if (!isSettingsApp(id)) return error(404, 'not_found');
-    if (method === 'GET') return json(await readSettings(db, actor.id, id));
-    if (method === 'PATCH') {
-      const result = await writeSettings(db, actor.id, id, { app: (await readBody(request)).app });
-      return result.ok ? json(result.value) : answer(result);
-    }
+    const answered = await appSettings(request, db, actor, id);
+    if (answered) return answered;
   }
 
+  return error(404, 'not_found');
+}
+
+// --- The reads both doors answer: the session's on liveworkspace.app, the bearer's on an app's address ---
+
+type Reader = Pick<Actor, 'id' | 'email'>;
+
+async function myTeams(db: Env['AUTH_DB'], actor: Reader): Promise<Response> {
+  const [teams, invitations] = await Promise.all([
+    listMyTeams(db, actor.id),
+    listMyInvitations(db, actor.email),
+  ]);
+  return json({ teams, invitations });
+}
+
+async function teamMembers(
+  db: Env['AUTH_DB'],
+  env: Env,
+  actor: Reader,
+  id: string,
+): Promise<Response> {
+  const me = await getMembership(db, id, actor.id);
+  if (!me) return error(404, 'not_found');
+  const [members, inviteLink] = await Promise.all([
+    listMembers(db, id),
+    me.role === 'admin' ? currentInviteLink(db, id, env.BETTER_AUTH_SECRET, env.BASE_URL) : null,
+  ]);
+  return json({
+    team: {
+      id,
+      name: me.teamName,
+      organisation: me.organisation,
+      myRole: me.role,
+      myMemberId: me.memberId,
+    },
+    members,
+    // The join link admits anyone signed in, so only the admins see it.
+    inviteLink,
+  });
+}
+
+async function sharedSettings(db: Env['AUTH_DB'], actor: Reader): Promise<Response> {
+  const { all, updatedAt } = await readSettings(db, actor.id, null);
+  return json({ all, updatedAt });
+}
+
+async function appSettings(
+  request: Request,
+  db: Env['AUTH_DB'],
+  actor: Reader,
+  id: string,
+): Promise<Response | null> {
+  if (!isSettingsApp(id)) return error(404, 'not_found');
+  if (request.method === 'GET') return json(await readSettings(db, actor.id, id));
+  if (request.method === 'PATCH') {
+    const result = await writeSettings(db, actor.id, id, { app: (await readBody(request)).app });
+    return result.ok ? json(result.value) : answer(result);
+  }
+  return null;
+}
+
+// --- The Explorer on an app's own address, by the app's bearer (bearer.ts) ---
+
+// Only what that page reads and the one thing it writes (Home's banner, in the app's settings): names for a guest or
+// an account, and for an account its teams, a team's members and its settings. A bearer is no ambient credential,
+// so a write needs no same-origin check: a page can only send one it holds. Everything else stays the session's.
+async function handleBearer(
+  request: Request,
+  env: Env,
+  auth: Auth,
+  parts: string[],
+  token: string,
+): Promise<Response> {
+  const person = await bearerPerson(token, env, auth);
+  if (!person) return error(401, 'signed_out');
+  const { method } = request;
+  const [section, id, sub, extra] = parts;
+  const db = env.AUTH_DB;
+  if (section === 'people' && !id && method === 'GET') {
+    if (person.kind === 'guest' && (await overLinkLimit(request, env, 'people'))) {
+      return error(429, 'rate_limited');
+    }
+    return peopleNames(request, db);
+  }
+  if (person.kind !== 'account') return error(401, 'signed_out');
+  const actor: Reader = {
+    id: person.userId,
+    email: person.emailVerified && person.email ? person.email.toLowerCase() : null,
+  };
+  if (section === 'teams' && !id && method === 'GET') return myTeams(db, actor);
+  if (section === 'teams' && id && sub === 'members' && !extra && method === 'GET') {
+    return teamMembers(db, env, actor, id);
+  }
+  if (section === 'settings' && !id && method === 'GET') return sharedSettings(db, actor);
+  if (section === 'settings' && id && !sub) {
+    const answered = await appSettings(request, db, actor, id);
+    if (answered) return answered;
+  }
   return error(404, 'not_found');
 }
 
