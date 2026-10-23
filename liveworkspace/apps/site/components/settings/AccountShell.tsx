@@ -9,6 +9,7 @@ import { Header } from '../Header';
 const TABS = [
   { href: '/account/teams', label: 'Teams' },
   { href: '/account/tokens', label: 'API tokens' },
+  { href: '/account/settings', label: 'Settings' },
 ];
 
 const noChange = () => () => {};
@@ -81,7 +82,7 @@ export function AccountShell({
                 Sign in to see your account
               </p>
               <p className="mt-2 text-slate-600 dark:text-slate-400">
-                Your teams and API tokens are here, the same in every app.
+                Your teams, API tokens and settings are here, the same in every app.
               </p>
               <a
                 href={signInHref(here)}

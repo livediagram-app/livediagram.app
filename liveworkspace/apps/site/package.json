@@ -26,6 +26,7 @@
     "@liveplanner/forms": "workspace:*",
     "@liveplanner/icons": "workspace:*",
     "@liveplanner/ui": "workspace:*",
+    "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/sites": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*",
     "next": "^16.4.1",

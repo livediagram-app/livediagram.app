@@ -2,7 +2,12 @@
 
 import { useRef, useState, useSyncExternalStore } from 'react';
 import { lucideGlyph, useClickOutside, useMenu, useMenuButton } from '@livediagram/ui';
-import { lucideChevronDown, lucideKey, lucideUsers } from '@livediagram/icons/lucide';
+import {
+  lucideChevronDown,
+  lucideKey,
+  lucideSettings,
+  lucideUsers,
+} from '@livediagram/icons/lucide';
 import { signInHref } from '@/lib/accounts';
 import { initials } from '@/lib/initials';
 import { signOut, useSession } from '@/lib/session';
@@ -12,16 +17,23 @@ const noChange = () => () => {};
 const ChevronIcon = lucideGlyph(lucideChevronDown, 16);
 const TeamsIcon = lucideGlyph(lucideUsers, 16);
 const KeyIcon = lucideGlyph(lucideKey, 16);
+const SettingsIcon = lucideGlyph(lucideSettings, 16);
 
 // The account pages the menu leads to.
 const PAGES = [
   { href: '/account/teams', label: 'Teams', hint: 'Who you work with', Icon: TeamsIcon },
   { href: '/account/tokens', label: 'API tokens', hint: 'Connect tools and AI', Icon: KeyIcon },
+  {
+    href: '/account/settings',
+    label: 'Settings',
+    hint: 'Profile, emails and privacy',
+    Icon: SettingsIcon,
+  },
 ];
 
 // The header's account control (liveworkspace/docs/site.md "The header"): Sign in, or the signed-in
 // person's avatar (their initials; accounts keep no pictures) and name, opening a menu of their
-// Teams, API tokens and Sign out. Until the page knows who is signed in (lib/session.ts), it holds
+// Teams, API tokens, Settings and Sign out. Until the page knows who is signed in (lib/session.ts), it holds
 // its place without showing either, so nothing jumps.
 export function AccountControl() {
   const session = useSession();
@@ -97,7 +109,9 @@ function AccountMenu({ name }: { name: string }) {
           <div className="flex items-center gap-3 px-2.5 pt-2 pb-3">
             <Avatar name={name} large />
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">{name}</p>
+              <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
+                {name}
+              </p>
               <p className="text-xs text-slate-500 dark:text-slate-400">liveworkspace account</p>
             </div>
           </div>

@@ -5289,6 +5289,9 @@ importers:
       '@liveplanner/ui':
         specifier: workspace:*
         version: link:../../../liveplanner/packages/ui
+      '@liveworkspace/settings':
+        specifier: workspace:*
+        version: link:../../../packages/settings
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
