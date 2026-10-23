@@ -6,8 +6,8 @@ Status: shipped
 
 A flattening of the palette's category structure.
 
-In Pages the strip shows these categories as a **category bar**, each opening a flyout of its tiles, with no
-Popular and one-word names ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)). The bands below are
+In Pages the strip shows these categories as a **category bar**, each opening a flyout of its tiles, with
+one-word names ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)). The bands below are
 the bar's dividers.
 
 This is the category catalogue and each category's **default** tiles. Which categories a palette offers, under what
@@ -48,12 +48,11 @@ for a set you go to deliberately.
 Data had been standalone before and was folded into Tools when the drill-in landed; six charts sitting behind a
 category tile turned out to be the same mistake in a smaller way.
 
-## Why Popular has no band
+## No Popular
 
-Popular is not a _kind_ of thing: it draws from every category at once. Filing it under "Common" would claim a peer
-relationship with Shapes and Write that it does not have, so where it shows (the More and Search surfaces) it sits
-**full width above the first heading**, with no band of its own. The grid has a `fullWidth` option for this, and it
-lays its glyph beside the label rather than above it.
+There was a Popular category, a pick of twelve tiles from across the others, with no band of its own. It is gone
+([Toolbar layout](../007-editor/toolbar-layout.md#what-is-on-it) "No Popular"): with every category one press away
+on the bar, a pick from across them added nothing. Every tile now sits in exactly one category of a layout.
 
 ## Rows, not tiles, for most categories
 
@@ -92,15 +91,13 @@ caption, label, blurb and description, and picking a result arms the same placem
 ([Canvas and palette](../008-canvas/canvas-and-palette.md)). The Icons and Stickers tabs still search their own
 catalogues ([Browsing the palette by category](palette-category-browse.md)).
 
-## The pickers unfold from their trigger
+## The picker unfolds from its trigger
 
-Both palette dropdowns grew from their own centre-top, which made opening the canvas-tool picker and the category
-picker look identical — the one thing the animation exists to distinguish.
-
-The menu's `transform-origin` is now the corner its trigger sits at: top-left for the left-aligned canvas-tool picker,
-top-right for the right-aligned category picker (and the bottom corners when a menu flips up). One direction-agnostic
-keyframe scales uniformly out of that origin, replacing the old `scaleY`-only pair — squashing the Y axis on top of a
-corner origin read as a blind coming down rather than a menu growing out of a button.
+A palette dropdown's menu (`PaletteDropdown`, today the selection mode) takes the corner its trigger sits at as its
+`transform-origin`: top-left for a left-aligned menu, top-right for a right-aligned one, and the bottom corners when
+a menu flips up. One direction-agnostic keyframe scales uniformly out of that origin, rather than a `scaleY`-only
+pair: squashing the Y axis on top of a corner origin read as a blind coming down rather than a menu growing out of a
+button.
 
 ## What did not move
 

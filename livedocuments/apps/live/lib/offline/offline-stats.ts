@@ -3,8 +3,7 @@ import { tabStatsOf, type Tab } from '@livedocuments/document';
 
 // What the Explorer's Details view shows for a document saved only in this browser
 // (docs/specs/013-workspace/explorer-details-view.md): its tabs counted with the api's own rule,
-// bytes as the JSON the api would store. This Browser keeps no per-tab write time, so the mode is
-// the first tab's. Null for a document with no tab.
+// bytes as the JSON the api would store. Null for a document with no tab.
 
 // Counting serialises every tab, so a record is counted once per save: keyed by id and savedAt.
 const CACHE_MAX = 500;
@@ -35,6 +34,5 @@ function count(tabs: Tab[]): DocumentStats | null {
     comments += s.commentCount;
     bytes += s.dataBytes;
   }
-  const { id: _id, name: _name, ...first } = tabs[0]!;
-  return { mode: tabStatsOf(first, '').mode, elements, comments, bytes };
+  return { elements, comments, bytes };
 }

@@ -34,7 +34,6 @@ function arrange() {
   };
   const stats = async (
     tabId: string,
-    mode: string,
     elements: number,
     comments: number,
     bytes: number,
@@ -43,7 +42,7 @@ function arrange() {
     tabStatsStatement(
       db.env,
       tabId,
-      { mode: mode as 'pages', elementCount: elements, commentCount: comments, dataBytes: bytes },
+      { elementCount: elements, commentCount: comments, dataBytes: bytes },
       at,
     ).run();
   return { db, doc, tab, stats };
@@ -62,10 +61,9 @@ describe('documentStatsSql', () => {
     doc('D');
     tab('D', 't1', 0);
     tab('D', 't2', 1);
-    await stats('t1', 'pages', 4, 1, 1000, T0 + 2);
-    await stats('t2', 'pages', 6, 2, 500, T0 + 1);
+    await stats('t1', 4, 1, 1000, T0 + 2);
+    await stats('t2', 6, 2, 500, T0 + 1);
     expect(docStats(db.sql, 'D')).toEqual({
-      mode: 'pages',
       elements: 10,
       comments: 3,
       bytes: 1500,
@@ -77,7 +75,7 @@ describe('documentStatsSql', () => {
     doc('D');
     tab('D', 't1', 0);
     tab('D', 't2', 1);
-    await stats('t1', 'pages', 4, 1, 1000, T0);
+    await stats('t1', 4, 1, 1000, T0);
     expect(docStats(db.sql, 'D')).toBeNull();
   });
 
@@ -91,9 +89,9 @@ describe('documentStatsSql', () => {
     const { db, doc, tab, stats } = arrange();
     doc('D');
     tab('D', 't1', 0);
-    await stats('t1', 'pages', 4, 1, 1000, T0);
-    await stats('t1', 'pages', 2, 0, 200, T0 + 5);
-    expect(docStats(db.sql, 'D')).toEqual({ mode: 'pages', elements: 2, comments: 0, bytes: 200 });
+    await stats('t1', 4, 1, 1000, T0);
+    await stats('t1', 2, 0, 200, T0 + 5);
+    expect(docStats(db.sql, 'D')).toEqual({ elements: 2, comments: 0, bytes: 200 });
   });
 });
 
@@ -101,7 +99,7 @@ describe('readDocumentStats', () => {
   it('is null, with a warning, for a value it cannot read', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     expect(readDocumentStats('not json')).toBeNull();
-    expect(readDocumentStats('{"mode":"bogus","elements":1,"comments":0,"bytes":1}')).toBeNull();
+    expect(readDocumentStats('{"elements":-1,"comments":0,"bytes":1}')).toBeNull();
     expect(warn).toHaveBeenCalledTimes(2);
     expect(String(warn.mock.calls[0]![0])).toContain('tab-stats: unreadable doc_stats');
   });
@@ -109,16 +107,16 @@ describe('readDocumentStats', () => {
 
 describe('tabStatsOfData', () => {
   it('counts a stored body', () => {
-    const data = JSON.stringify({ opensIn: 'pages', elements: [{ id: 'a' }] });
+    const data = JSON.stringify({ elements: [{ id: 'a' }] });
     expect(tabStatsOfData(data)).toEqual({
-      stats: { mode: 'pages', elementCount: 1, commentCount: 0, dataBytes: data.length },
+      stats: { elementCount: 1, commentCount: 0, dataBytes: data.length },
       corrupt: false,
     });
   });
 
-  it('counts a corrupt body as an empty Pages tab, its bytes measured', () => {
+  it('counts a corrupt body as an empty tab, its bytes measured', () => {
     expect(tabStatsOfData('{not json')).toEqual({
-      stats: { mode: 'pages', elementCount: 0, commentCount: 0, dataBytes: 9 },
+      stats: { elementCount: 0, commentCount: 0, dataBytes: 9 },
       corrupt: true,
     });
     expect(tabStatsOfData('null').corrupt).toBe(true);

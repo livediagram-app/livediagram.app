@@ -19,7 +19,5 @@ export function menuStep(
   return inTheMenu(id, title, `${env.hasMore ? 'More' : 'Right-click it'}, then ${body}`, path);
 }
 
-// "Click" or "Tap", "Double-click" or "Double-tap", as the screen is pressed.
+// "Click" or "Tap", as the screen is pressed.
 export const pressWord = (env: Pick<MenuTourEnv, 'touch'>) => (env.touch ? 'Tap' : 'Click');
-export const doublePressWord = (env: Pick<MenuTourEnv, 'touch'>) =>
-  env.touch ? 'Double-tap' : 'Double-click';

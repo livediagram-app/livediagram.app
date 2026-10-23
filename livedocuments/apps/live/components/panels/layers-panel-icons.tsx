@@ -13,7 +13,6 @@ import {
   lucideGripVertical,
   lucideLock,
   lucideLockOpen,
-  lucideMerge,
   lucidePencil,
   lucideScanEye,
   lucideSendToBack,
@@ -37,7 +36,6 @@ export const UnlockIcon = lucideGlyph(lucideLockOpen, 15);
 export const SoloIcon = lucideGlyph(lucideScanEye, 16);
 export const BringToTopIcon = lucideGlyph(lucideBringToFront, 16);
 export const SendToBottomIcon = lucideGlyph(lucideSendToBack, 16);
-export const MergeIcon = lucideGlyph(lucideMerge, 16);
 export const RenameIcon = lucideGlyph(lucidePencil, 16);
 export const ClearIcon = lucideGlyph(lucideEraser, 16);
 export const DeleteIcon = lucideGlyph(lucideTrash2, 16);

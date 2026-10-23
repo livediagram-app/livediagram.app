@@ -10,7 +10,7 @@ afterEach(() => {
 
 function pages() {
   const onTemplate = vi.fn();
-  render(<StartFromTemplates mode="pages" tabId="t1" onTemplate={onTemplate} />);
+  render(<StartFromTemplates tabId="t1" onTemplate={onTemplate} />);
   const search = screen.getByRole('textbox', { name: 'Find a template' });
   return { onTemplate, search };
 }

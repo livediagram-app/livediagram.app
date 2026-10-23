@@ -2,7 +2,7 @@
 
 // Who can see the open document, for the Explorer panel's Current Document card (docs/specs/013-workspace/
 // explorer-structure.md "The editor's Explorer"): the same visibility the editor header's badge reads, published by
-// the editor as it changes. A module store, like active-tab-name-store.ts, so the panel never re-renders for the
+// the editor as it changes. A module store, so the panel never re-renders for the
 // editor's own churn and no prop runs through the chrome to reach it.
 import { useLayoutEffect, useSyncExternalStore } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';

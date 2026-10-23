@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildTemplate, buildTemplatedTab } from './template-builders';
 import {
-  BLANK_TEMPLATE_FOR_MODE,
   isBlankTemplate,
-  templateEditorMode,
   TEMPLATES,
   TEMPLATE_CATEGORIES,
   TEMPLATE_CONTENT_LAYER_ID,
@@ -129,7 +127,6 @@ describe('templateCanvasOverrides', () => {
   it('makes an article that opens in Pages on one article page of writing', () => {
     // docs/specs/007-editor/article-pages.md: the template's page and writing are tab data.
     const o = templateCanvasOverrides('article');
-    expect(o.opensIn).toBe('pages');
     expect(o.pages).toEqual([expect.objectContaining({ kind: 'article', flow: 'art-brief' })]);
     expect(o.articles?.['art-brief']?.blocks.length).toBeGreaterThan(5);
   });
@@ -137,7 +134,6 @@ describe('templateCanvasOverrides', () => {
   // docs/specs/008-canvas/canvas-and-palette.md "Templates": Working Backwards is a PR/FAQ article in the Report look.
   it('makes Working Backwards a PR/FAQ article: press release, a page break, both FAQs and a review list', () => {
     const o = templateCanvasOverrides('working-backwards');
-    expect(o.opensIn).toBe('pages');
     expect(o.pages).toEqual([expect.objectContaining({ kind: 'article', flow: 'art-prfaq' })]);
     const flow = o.articles!['art-prfaq']!;
     expect(flow.style).toEqual({ look: 'report' });
@@ -160,12 +156,11 @@ describe('templateCanvasOverrides', () => {
     expect(flow.blocks.map(text).join(' ')).not.toMatch(/\*\*|^#|\[ \]/);
   });
 
-  it('opens the slide deck in Pages on six 16:9 slide pages, keeping its layers', () => {
+  it('opens the slide deck on six 16:9 slide pages, keeping its layers', () => {
     // canvas-and-palette.md "Templates on pages": a plain surround, the pages are the paper.
     const o = templateCanvasOverrides('slide-deck');
     expect(o).toMatchObject({
       backgroundPattern: 'blank',
-      opensIn: 'pages',
       layers: templateLayers('slide-deck'),
     });
     expect(o.pages).toHaveLength(6);
@@ -186,7 +181,7 @@ describe('templateCanvasOverrides', () => {
 
   it('opens the logo exploration on Logo pages', () => {
     const o = templateCanvasOverrides('logo-design');
-    expect(o).toMatchObject({ backgroundPattern: 'blank', opensIn: 'pages' });
+    expect(o).toMatchObject({ backgroundPattern: 'blank' });
     // Six lockup artboards, then the palette.
     expect(o.pages?.map((p) => p.name)).toEqual([
       'Horizontal',
@@ -204,15 +199,15 @@ describe('templateCanvasOverrides', () => {
 
   it('opens the group card on a cover and an inside, both Portrait post (4:5) pages', () => {
     const o = templateCanvasOverrides('live-card');
-    expect(o).toMatchObject({ backgroundPattern: 'blank', opensIn: 'pages' });
+    expect(o).toMatchObject({ backgroundPattern: 'blank' });
     expect(o.pages?.map((p) => [p.name, p.size, p.orientation, p.kind])).toEqual([
       ['Cover', 'social', 'portrait', 'infographic'],
       ['Inside', 'social', 'portrait', 'infographic'],
     ]);
   });
 
-  it('leaves the blank template to inherit the theme backdrop, opening in Pages', () => {
-    expect(templateCanvasOverrides('blank')).toEqual({ opensIn: 'pages' });
+  it('leaves the blank template to inherit the theme backdrop', () => {
+    expect(templateCanvasOverrides('blank')).toEqual({});
   });
 });
 
@@ -399,22 +394,7 @@ describe('untitledNameForTemplate', () => {
   });
 });
 
-// Templates (docs/specs/008-canvas/canvas-and-palette.md "Templates on pages"): every template opens in Pages, the one mode, and
-// the mode's blank is of that mode.
-describe('templateEditorMode', () => {
-  it('is the mode every template opens in', () => {
-    for (const t of TEMPLATES) {
-      expect(templateEditorMode(t.kind), t.kind).toBe('pages');
-      expect(templateCanvasOverrides(t.kind).opensIn, t.kind).toBe('pages');
-    }
-  });
-
-  it('gives the mode a blank of its own mode', () => {
-    for (const [mode, kind] of Object.entries(BLANK_TEMPLATE_FOR_MODE)) {
-      expect(templateEditorMode(kind)).toBe(mode);
-    }
-  });
-
+describe('templates', () => {
   // A session tool could be started but never watched or ended: Pages has no Session strip.
   it('ships no template carrying a session tool', () => {
     for (const t of TEMPLATES) {

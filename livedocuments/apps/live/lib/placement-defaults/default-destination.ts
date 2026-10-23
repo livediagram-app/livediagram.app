@@ -87,7 +87,7 @@ export function resolveDefaultFor(
 
 /** What a new document of this entry is made as. */
 export function representativeIntent(key: PlacementDefaultKey): CreationIntent {
-  return { mode: key.slice('mode:'.length) as EditorMode, tabKind: 'diagram' };
+  return { mode: key.slice('mode:'.length) as EditorMode };
 }
 
 export type RememberedFolder = { name: string; teamId: string | null };

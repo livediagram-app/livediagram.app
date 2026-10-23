@@ -99,13 +99,9 @@ test.describe('Power user mode', () => {
     );
     await expect(
       children.getByRole('list', { name: 'Set By Power User Mode' }).getByRole('listitem'),
-    ).toHaveCount(11);
+    ).toHaveCount(4);
     await closeSettings(page);
     await page.screenshot({ path: 'test-results/power-user-minimal-chrome.png' });
-
-    // Kept: the empty-canvas banner holds actions, so it is a control, not a hint.
-    await expect(page.getByText('Tab 1 is empty')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Show Templates' })).toBeVisible();
 
     // Status bar: icons only, names kept.
     await expect(tabBar(page).getByText('Tabs', { exact: true })).toHaveCount(0);
@@ -152,13 +148,10 @@ test.describe('Power user mode', () => {
 
     // Panel headers: the title stays for assistive technology only, and the
     // help button goes.
-    await page
-      .getByRole('button', { name: /layers/i })
-      .first()
-      .click();
-    const layersTitle = page.locator('.sr-only', { hasText: /^Layers$/ });
-    await expect(layersTitle).toHaveCount(1);
-    await expect(page.getByRole('link', { name: /learn about layers/i })).toHaveCount(0);
+    await page.getByRole('button', { name: 'Contents', exact: true }).click();
+    const contentsTitle = page.locator('.sr-only', { hasText: /^Contents$/ });
+    await expect(contentsTitle).toHaveCount(1);
+    await expect(page.getByRole('link', { name: /learn about contents/i })).toHaveCount(0);
     // A panel without a ⋯ menu just drops its help; the help centre stays in
     // the Explorer's footer links.
     await page.keyboard.press('Escape');

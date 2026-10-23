@@ -30,22 +30,22 @@ describe('live-image builders (docs/specs/013-workspace/live-image-share.md + do
 
   it('threads the tab id through the Markdown + HTML wrappers', () => {
     expect(liveImageMarkdown(origin, 'C', 't2')).toBe(
-      '![diagram](https://livedocuments.app/api/share/C/image.svg?tab=t2)',
+      '![document](https://livedocuments.app/api/share/C/image.svg?tab=t2)',
     );
     expect(liveImageHtml(origin, 'C', 't2')).toBe(
-      '<img src="https://livedocuments.app/api/share/C/image.svg?tab=t2" alt="diagram" />',
+      '<img src="https://livedocuments.app/api/share/C/image.svg?tab=t2" alt="document" />',
     );
   });
 
   it('wraps the URL in Markdown image syntax', () => {
     expect(liveImageMarkdown(origin, 'C')).toBe(
-      '![diagram](https://livedocuments.app/api/share/C/image.svg)',
+      '![document](https://livedocuments.app/api/share/C/image.svg)',
     );
   });
 
   it('wraps the URL in an HTML <img>', () => {
     expect(liveImageHtml(origin, 'C')).toBe(
-      '<img src="https://livedocuments.app/api/share/C/image.svg" alt="diagram" />',
+      '<img src="https://livedocuments.app/api/share/C/image.svg" alt="document" />',
     );
   });
 });

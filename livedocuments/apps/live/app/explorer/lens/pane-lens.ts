@@ -20,9 +20,6 @@ export type LensRow = {
   savedAt: number;
   ownerId: string;
   source?: string | null;
-  opensIn?: string | null;
-  tabKind?: string | null;
-  templateFamily?: string | null;
   team?: { id: string } | null;
   teamId?: string | null;
   shared?: unknown;
@@ -39,7 +36,6 @@ export function lensSubjectOf(row: LensRow, viewerId: string): LensSubject {
       ownerId: row.team || row.teamId ? row.ownerId : viewerId,
       teamId: row.team?.id ?? row.teamId ?? null,
       source: row.source ?? null,
-      opensIn: row.opensIn,
     },
     viewerId,
   );

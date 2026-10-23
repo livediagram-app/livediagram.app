@@ -14,7 +14,10 @@ want to create a document" end-to-end.
 
 ## Motivation
 
-`/live` currently serves two distinct experiences from one component:
+> **History:** this section and "State changes in `/live`" record why the route was split, in livediagram. The welcome
+> state and template picker they name are gone; what `/new` does today is in [What `/new` makes](#what-new-makes).
+
+`/live` served two distinct experiences from one component:
 
 1. **Editor** — `/live?d=<id>` (owner) or `/live?s=<code>` (visitor).
    State: load document, autosave, room broadcast, etc.
@@ -38,8 +41,7 @@ each one own a clean state model without conditional gates.
 
 ## Goals
 
-- A dedicated `/new` route that owns the welcome / template /
-  identity-mint flow end-to-end.
+- A dedicated `/new` route that owns creating a document end-to-end.
 - `/live` becomes editor-only. Hydration only handles `?d=` /
   `?s=` URLs and never has to consider "do I mint an id?".
 - Visiting `/live` with no params redirects to `/new` instead
@@ -54,10 +56,8 @@ each one own a clean state model without conditional gates.
   the `identityOnlyScreenOpen` mini-flow stays in the editor route
   because it's about the visitor's session, not about creating a
   new document.
-- Splitting the per-tab "Pick a template" flow (the templates
-  variant of the existing picker that fires when you open an empty
-  tab on an existing document). That stays in `/live` because the
-  document is already loaded.
+- Moving what an empty tab on an existing document shows (its start, Start Making Pages). That stays in the editor
+  because the document is already loaded.
 - Changing what gets persisted at "Submit" time. The new route
   still POSTs `/api/documents` with the chosen template tab seeded,
   same as the current `commitDocumentId()` path.
@@ -69,7 +69,7 @@ each one own a clean state model without conditional gates.
 | `/live`                 | Bare entry point                      | Redirect → `/new` (or `/document/shared?s=<code>` if a legacy visitor query is present). Renders nothing else.          |
 | `/document/<id>`        | Editor for an existing owned document | Static placeholder file fronts every id (see "Path scheme" below). Client reads the id from `window.location.pathname`. |
 | `/document/shared?s=<>` | Visitor view of a shared document     | Same placeholder file. Client reads the share code from the `s` query param.                                            |
-| `/new`                  | Welcome / create-new flow             | Identity, template, theme picker. POSTs the document + navigates to `/document/<id>`.                                   |
+| `/new`                  | Welcome / create-new flow             | Asks nothing: makes the document (from `?template=` or blank), POSTs it and hands it to the editor at `/document/<id>`. |
 
 ## Path scheme
 
@@ -201,7 +201,7 @@ knowing about when adding another.
 
 ## State changes in `/live`
 
-Removed from the editor route:
+Removed from the editor route at the split (history, see Motivation):
 
 - `templatePickerMode = 'welcome'` and the `effectiveTemplatePickerMode`
   derivation.

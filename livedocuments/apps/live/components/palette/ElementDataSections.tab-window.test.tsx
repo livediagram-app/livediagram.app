@@ -30,17 +30,6 @@ const flags = {
   isChecklist: false,
   isLegend: false,
   isSankey: false,
-  isMindNode: false,
-  isEntity: false,
-  isModeButton: false,
-  isPortal: false,
-  isSessionButton: false,
-  isReveal: false,
-  isPicker: false,
-  isReactionPad: false,
-  isEstimate: false,
-  isAgenda: false,
-  isDecision: false,
 };
 
 it("offers a tab window's Shows list, so its tab can be changed", () => {

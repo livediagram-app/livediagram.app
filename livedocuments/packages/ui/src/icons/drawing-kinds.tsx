@@ -3,21 +3,6 @@ import type { ComponentType } from 'react';
 
 import { Glyph, type IconProps } from './Glyph';
 
-// The kinds of drawing a visitor can start (docs/specs/019-marketing/marketing-site.md "Hero"): a marker for
-// freehand drawing.
-
-// A marker silhouette on its 24-unit grid, body, nib and the band below, in the text colour and
-// centred in its box.
-export function MarkerIcon({ size = 16, ...rest }: IconProps) {
-  return (
-    <Glyph size={size} units={24} {...rest}>
-      <path d="M7 13 L15.5 4.5 L18 7 L9.5 15.5 L6.4 16 Z" />
-      <path d="M6.4 16 L7 13 L9.5 15.5 Z" fill="currentColor" />
-      <path d="M4 19.5 H20" />
-    </Glyph>
-  );
-}
-
 // A page with a little chart above two lines of writing, on its 24-unit grid: Pages mode's mark
 // (docs/specs/007-editor/pages-mode.md), for the pages it lays out, infographics and articles.
 export function PagesIcon({ size = 16, ...rest }: IconProps) {
@@ -26,43 +11,6 @@ export function PagesIcon({ size = 16, ...rest }: IconProps) {
       <rect x="4.5" y="2.5" width="15" height="19" rx="2" />
       <path d="M8.5 11V8.5M12 11V6M15.5 11V9" />
       <path d="M8.5 15H15.5M8.5 18H13" />
-    </Glyph>
-  );
-}
-
-// A board of three columns, the middle one holding a raised card, on the 24-unit grid.
-export function PlanIcon({ size = 16, ...rest }: IconProps) {
-  return (
-    <Glyph size={size} units={24} {...rest}>
-      <rect x="2.5" y="4" width="19" height="16" rx="2" />
-      <path d="M8.83 4V20M15.17 4V20" />
-      <rect x="4.5" y="7" width="2.5" height="3" rx="0.6" />
-      <rect x="10.2" y="6" width="3.6" height="5" rx="0.8" fill="currentColor" />
-      <rect x="17" y="7" width="2.5" height="3" rx="0.6" />
-    </Glyph>
-  );
-}
-
-// A flipchart on an easel, its pad holding two lines of writing, on the 24-unit grid.
-export function FlipchartIcon({ size = 16, ...rest }: IconProps) {
-  return (
-    <Glyph size={size} units={24} {...rest}>
-      <path d="M3 3.5H21" />
-      <rect x="4.5" y="3.5" width="15" height="12" rx="1" />
-      <path d="M8 8H16M8 11.5H13" />
-      <path d="M12 15.5V21M8 15.5L5.5 21M16 15.5L18.5 21" />
-    </Glyph>
-  );
-}
-
-// Two item cards, one behind the other, each with its type stripe, on the 24-unit grid.
-export function PlanCardsIcon({ size = 16, ...rest }: IconProps) {
-  return (
-    <Glyph size={size} units={24} {...rest}>
-      <path d="M7 5.5V4.5a1.5 1.5 0 0 1 1.5-1.5h11A1.5 1.5 0 0 1 21 4.5v9a1.5 1.5 0 0 1-1.5 1.5H18" />
-      <rect x="3" y="8" width="15" height="12" rx="1.5" />
-      <path d="M6 8v12" />
-      <path d="M9 12h6M9 15.5h4" />
     </Glyph>
   );
 }

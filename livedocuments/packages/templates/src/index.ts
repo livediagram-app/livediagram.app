@@ -8,13 +8,8 @@ export * from './template-modes';
 export * from './template-categories';
 export { templateKeywords } from './template-keywords';
 export { templateMatchesQuery, templateQueryWords } from './template-search';
-export {
-  POPULAR_BY_MODE,
-  POPULAR_PER_MODE,
-  POPULAR_TEMPLATE_KINDS,
-  popularKindsFor,
-} from './popular';
-export { isUntitledDocumentName, UNTITLED_DOCUMENT_NAME } from './legacy-untitled';
+export { POPULAR_TEMPLATE_KINDS, stepPopularKinds } from './popular';
+export { isUntitledDocumentName, UNTITLED_DOCUMENT_NAME } from './untitled';
 export * from './template-layers';
 export { buildTemplate, templateTabs, type TemplateTabDef } from './build-template';
 export * from './page-layouts';

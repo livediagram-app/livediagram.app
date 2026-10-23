@@ -19,12 +19,10 @@ describe('serialiseLens', () => {
 
   it('writes one token per dimension, in dimension order, then the text words', () => {
     const { lens } = parseLens(
-      'plan space:team:T1 edited:7d Q3 opens-in:pages made-by:ai people:others',
+      'plan space:team:T1 edited:7d Q3 made-by:ai people:others',
       aggregate,
     );
-    expect(serialiseLens(lens)).toBe(
-      'opens-in:pages made-by:ai edited:7d people:others space:team:T1 plan Q3',
-    );
+    expect(serialiseLens(lens)).toBe('made-by:ai edited:7d people:others space:team:T1 plan Q3');
   });
 
   it('writes several values as one comma list, whichever spelling was typed', () => {

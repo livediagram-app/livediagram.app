@@ -2,7 +2,6 @@
 // reading only the image reference index (db/image-refs.ts).
 
 import type { Env } from '../types';
-import { isImageRefIndexComplete } from './image-refs';
 
 // Page size of the daily sweep: R2 delete() takes at most 1000 keys.
 export const IMAGE_SWEEP_PAGE = 1000;
@@ -43,11 +42,6 @@ const LIVE_REFERENCE = `EXISTS (SELECT 1 FROM image_refs r JOIN tabs t ON t.id =
 export async function deleteOldUnusedImages(env: Env, cutoff: number): Promise<number> {
   if (!env.IMAGES) return 0;
   const bucket = env.IMAGES;
-  if (!(await isImageRefIndexComplete(env))) {
-    console.log('image sweep: paused, reference index backfill incomplete');
-    return 0;
-  }
-
   const { old, unused } = (await env.DB.prepare(
     `SELECT COUNT(*) AS old, COALESCE(SUM(NOT ${LIVE_REFERENCE}), 0) AS unused
        FROM images WHERE created_at < ?`,

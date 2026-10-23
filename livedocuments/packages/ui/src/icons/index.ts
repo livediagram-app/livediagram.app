@@ -40,14 +40,7 @@ export {
   TeamIcon,
 } from './status';
 export { ActionIcon, CommentIcon, LinkIcon, NoteIcon } from './badges';
-export {
-  EDITOR_MODE_ICONS,
-  PagesIcon,
-  PlanCardsIcon,
-  PlanIcon,
-  FlipchartIcon,
-  MarkerIcon,
-} from './drawing-kinds';
+export { EDITOR_MODE_ICONS, PagesIcon } from './drawing-kinds';
 export {
   LayersStackIcon,
   RedoIcon,

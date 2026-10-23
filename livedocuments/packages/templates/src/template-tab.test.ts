@@ -14,13 +14,12 @@ import { TEMPLATES } from './templates';
 import { templateCatalogue } from './template-catalogue';
 
 // What the MCP writes from a template must be a tab the api accepts, any strokes packed
-// (docs/specs/006-document/stroke-points.md), opening in Pages.
+// (docs/specs/006-document/stroke-points.md).
 describe('buildTemplateTab', () => {
-  it('builds every template as a valid tab opening in Pages, with packed strokes', () => {
+  it('builds every template as a valid tab, with packed strokes', () => {
     for (const { kind } of TEMPLATES) {
       const tab = buildTemplateTab(`tab-${kind}`, kind, kind);
       expect(isValidTab(tab), kind).toBe(true);
-      expect(tab.opensIn, kind).toBe('pages');
       expect(tab.templateChosen, kind).toBe(true);
       for (const el of tab.elements) {
         if (el.type !== 'freehand') continue;

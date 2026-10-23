@@ -7,7 +7,7 @@ import { editorViewportOf } from '@/lib/editor-viewport';
 // category bar"): the strip as drawn is wider than the room centring leaves it, the editor's width less the menu
 // card on both sides. The category bar drops its names to fit and can drop nothing more, so on a tablet (768px) its
 // glyphs alone still ran 13px under the card, cutting the tab's name. Crowded, the strip sits at the right instead,
-// clear of the card. Measured from the real sizes, as useBarLabels and useStripTileLimit are.
+// clear of the card. Measured from the real sizes, as useBarLabels is.
 
 const MENU_GAP_PX = 8;
 

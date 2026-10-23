@@ -59,7 +59,7 @@ export function MyDocumentsTree() {
       <line x1={24} y1={44} x2={396} y2={44} className="stroke-slate-200" strokeWidth={1.5} />
       {row(56, 'Projects', 0, { open: true })}
       {row(82, 'Acme Corp', 24, { open: true })}
-      {row(108, 'Kickoff diagram', 48, { glyph: 'doc' })}
+      {row(108, 'Kickoff deck', 48, { glyph: 'doc' })}
       {row(134, 'Architecture', 48, { glyph: 'doc', active: true })}
       {row(160, 'Archive', 0, {})}
       {row(186, 'Quick sketch', 0, { glyph: 'doc' })}

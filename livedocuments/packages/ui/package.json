@@ -41,7 +41,6 @@
   "dependencies": {
     "@livedocuments/api-schema": "workspace:*",
     "@livedocuments/document": "workspace:*",
-    "@livedocuments/help-registry": "workspace:*",
     "@livedocuments/icons": "workspace:^",
     "@livedocuments/tailwind-config": "workspace:*",
     "@livedocuments/telemetry-client": "workspace:*",

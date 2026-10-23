@@ -70,7 +70,7 @@ function show(
   return { ...view, h, onSetCanvasTool };
 }
 
-// The tiles in the strip itself, not in the More popover.
+// The strip's card, not the popovers hanging from it.
 const strip = () => document.querySelector('[data-toolbar-palette] > div') as HTMLElement;
 
 // The category bar's buttons, in order (docs/specs/007-editor/toolbar-layout.md "The category bar").
@@ -87,12 +87,11 @@ const openFlyout = (name: string) => {
 };
 
 describe('ToolbarPalette', () => {
-  it("shows Pages' categories on the strip, with the selection mode and Search, and no category picker", () => {
+  it("shows Pages' categories on the strip, with the selection mode and Search", () => {
     show();
     expect(screen.getByRole('button', { name: 'Selection mode' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Search elements' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Palette category' })).toBeNull();
-    // No Popular, every name one word.
+    // Every name one word.
     expect(barNames()).toEqual([
       'Shapes',
       'Write',

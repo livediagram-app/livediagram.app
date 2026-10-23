@@ -17,27 +17,21 @@ const FAN = [
 
 export function PreviewFan({
   kinds,
-  plateClassName = 'h-24 rounded-xl',
-  cardClassName = 'h-14 [&>svg]:h-10',
 }: {
   // The category's templates; the first three make the fan.
   kinds: readonly TemplateKind[];
-  // The plate's height and corner radius.
-  plateClassName?: string;
-  // Each fanned card's height and its preview's height inside it.
-  cardClassName?: string;
 }) {
   return (
     // Art, not a glyph framed by a control: its cards fall inside the optical audit's shape
     // size (docs/specs/004-interface-design/optical-alignment.md), so they opt out of it.
     <span
       data-optical-ignore=""
-      className={`preview-art-tile relative block overflow-hidden bg-slate-50 ${plateClassName}`}
+      className="preview-art-tile relative block h-24 overflow-hidden rounded-xl bg-slate-50"
     >
       {kinds.slice(0, 3).map((kind, i) => (
         <span
           key={kind}
-          className={`absolute left-1/2 top-1/2 flex w-[42%] items-center justify-center rounded-lg border border-slate-200 bg-white shadow-sm transition [&>svg]:w-auto ${cardClassName} ${FAN[i]}`}
+          className={`absolute left-1/2 top-1/2 flex w-[42%] items-center justify-center rounded-lg border border-slate-200 bg-white shadow-sm transition [&>svg]:w-auto h-14 [&>svg]:h-10 ${FAN[i]}`}
         >
           <TemplatePreview kind={kind} />
         </span>

@@ -15,8 +15,6 @@ export { SERIF } from './page-kit';
 // soft shadow the editor lifts it on.
 export const SURFACE =
   'fill-white stroke-slate-200 drop-shadow-[0_1px_1.5px_rgb(15_23_42/0.10)] dark:fill-slate-800 dark:stroke-slate-700 dark:drop-shadow-none';
-// A surface one step back (a column, a well).
-export const WELL = 'fill-slate-50 stroke-slate-200 dark:fill-slate-900/70 dark:stroke-slate-700';
 // Ink for text and for the grey bars standing in for text.
 export const INK = 'fill-slate-800 dark:fill-slate-100';
 export const MUTED = 'fill-slate-500 dark:fill-slate-400';

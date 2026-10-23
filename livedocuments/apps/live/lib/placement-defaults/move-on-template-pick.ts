@@ -3,8 +3,7 @@
 // editor imports it dynamically): it reads the template's intent, the document's place, the person's defaults and the
 // folders they can see, then moves the document when a default answers somewhere else. Every failure leaves the
 // document where it is: being unable to apply a default is no reason to disturb the work.
-import { creationIntentOf, type PlacementDefaultKey } from '@livedocuments/api-schema';
-import { type TemplateKind } from '@livedocuments/templates';
+import { CREATION_INTENT, type PlacementDefaultKey } from '@livedocuments/api-schema';
 import {
   apiGetTeamLibrary,
   apiListFolders,
@@ -15,7 +14,6 @@ import {
 import { apiListPlacementDefaults } from '@/lib/api/placement-defaults';
 import { debugLog } from '@/lib/debug-log';
 import { isOfflineId } from '@/lib/offline/offline-store';
-import { buildTemplatedTab } from '@/lib/template-builders';
 import { buildDefaultFolderIndex } from './default-destination';
 import { defaultKeyEntry } from './default-key-entries';
 import type { TemplatePickHandoff } from './template-pick-handoff';
@@ -31,7 +29,6 @@ export async function moveOnTemplatePick(at: {
   documentId: string;
   // The wizard's handoff, taken at the pick (useTemplatePickMove).
   handoff: TemplatePickHandoff;
-  kind: TemplateKind;
   // Teams are Clerk-only: a guest's team folders are never read.
   signedIn: boolean;
 }): Promise<string | null> {
@@ -58,7 +55,7 @@ export async function moveOnTemplatePick(at: {
       libraries.flat(),
       teams,
     );
-    const intent = creationIntentOf(buildTemplatedTab(at.kind, 'brand', 'intent', 'Tab 1'));
+    const intent = CREATION_INTENT;
     const target = templatePickMoveTarget({
       handoff,
       intent,

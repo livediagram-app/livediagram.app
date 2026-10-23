@@ -56,7 +56,7 @@ export function TextTab({
         themeId={themeId}
         font={font}
         textSize={previewSize ?? size}
-        label={`A sample diagram lettered in ${fontLabel}`}
+        label={`A sample lettered in ${fontLabel}`}
       />
 
       <PagedCarousel

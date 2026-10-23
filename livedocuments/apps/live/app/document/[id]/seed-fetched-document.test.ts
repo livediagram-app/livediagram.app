@@ -28,8 +28,6 @@ const fetched = {
   createdAt: 1,
   ownerName: null,
   ownerColor: null,
-  opensIn: null,
-  tabKind: null,
 } satisfies LiveDoc;
 
 function seed(recordOpen: boolean, noteChangesetSeen = vi.fn()) {

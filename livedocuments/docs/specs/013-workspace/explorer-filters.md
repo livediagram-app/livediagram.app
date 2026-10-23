@@ -53,7 +53,7 @@ An **aggregate view** lists documents from every place at once: **Recent**, **Fa
 
 Every document view shows one row of chips under its page header and breadcrumb:
 
-- One chip per dimension, in dimension order (Opens in, Made by AI, Edited, People), then **Space**
+- One chip per dimension, in dimension order (Made by AI, Edited, People), then **Space**
   on aggregate views only. The folder or team the reader is in is the breadcrumb, never a chip.
 - **Clear** ends the row while the lens is set and empties `q`. It keeps its place when hidden, so nothing moves.
 - A chip opens a listbox of its values under it. Choosing a value toggles it and leaves the listbox open; Escape,
@@ -64,18 +64,19 @@ Every document view shows one row of chips under its page header and breadcrumb:
 
 ## Dimensions
 
-Each dimension is a closed list of values. The interface says what a value means; it never calls an editor mode a "type".
+Each dimension is a closed list of values. The interface says what a value means.
 
-| Dimension | Key        | Chip label  | Values and their labels                                                                          |
-| --------- | ---------- | ----------- | ------------------------------------------------------------------------------------------------ |
-| Text      | (none)     | (the field) | Free words                                                                                       |
-| Opens in  | `opens-in` | Opens in    | `pages` Pages: the editor mode the document was created to open in                               |
-| Made by   | `made-by`  | Made by AI  | `ai` Made by AI: the document's `source` is an AI tool through the MCP server (not the CLI)      |
-| Edited    | `edited`   | Edited      | `today` Today, `7d` Last 7 days, `30d` Last 30 days, `12m` Last 12 months, `this-year` This year |
-| People    | `people`   | People      | `me` Me, `others` Others: the owner of a document; the actor of a Timeline event                 |
-| Space     | `space`    | Space       | `mine` My Work, `shared` Shared With Me, `team:<id>` the team's name. Aggregate views only       |
+| Dimension | Key       | Chip label  | Values and their labels                                                                          |
+| --------- | --------- | ----------- | ------------------------------------------------------------------------------------------------ |
+| Text      | (none)    | (the field) | Free words                                                                                       |
+| Made by   | `made-by` | Made by AI  | `ai` Made by AI: the document's `source` is an AI tool through the MCP server (not the CLI)      |
+| Edited    | `edited`  | Edited      | `today` Today, `7d` Last 7 days, `30d` Last 30 days, `12m` Last 12 months, `this-year` This year |
+| People    | `people`  | People      | `me` Me, `others` Others: the owner of a document; the actor of a Timeline event                 |
+| Space     | `space`   | Space       | `mine` My Work, `shared` Shared With Me, `team:<id>` the team's name. Aggregate views only       |
 
-- **Opens in** reads the creation intent recorded on the document (Default folders: `opensIn` on the document summary), one value per editor mode (`EDITOR_MODES`). A document whose recorded value is unknown (made before the intent was recorded) matches no value; it shows whenever the dimension is not set.
+- **No Opens in.** Every document opens in Pages, the one editor mode, so a filter by mode would narrow nothing:
+  there is no `opens-in` dimension. `opens-in:pages` is a word like any other unknown key: searched as text and
+  reported `unknown_dimension`.
 - **Made by AI is a filter, not a place.** AI-made documents are no bucket of their own: they live at the root of
   their space or in a folder like any other document, and `made-by:ai` finds them anywhere. Every row and card of an
   AI-made document carries a **Made by AI** badge (a sparkle and the words), so what the filter reads is visible. The
@@ -88,7 +89,7 @@ Each dimension is a closed list of values. The interface says what a value means
 - **Space** on a document is `mine` for one in My Work or in this browser ([Offline Mode](../006-document/offline-mode.md),
   the documents the sidebar marks "This Browser"), `team:<id>` for one in a team, `shared` for a row of Shared With Me. A
   token names a team by id; every label shows the team's **name**, never the id.
-- A row that cannot answer a dimension (a Shared With Me row carries no provenance or mode) matches no
+- A row that cannot answer a dimension (a Shared With Me row carries no provenance) matches no
   value of it.
 - **More filters** (favourited, sharing) join later behind a "More filters" disclosure.
 
@@ -129,7 +130,7 @@ The string is words separated by whitespace.
   is **pending**: neither applied nor text, and not reported until the caret leaves it.
 
 The **canonical** string writes **one token per dimension, its values as a comma list**: the tokens in dimension order
-(Opens in, Made by, Edited, People, Space), each list in its dimension's value order (teams after My
+(Made by, Edited, People, Space), each list in its dimension's value order (teams after My
 documents and Shared With Me, by id), then the text words, single spaces between. Parsing accepts both spellings;
 writing produces only this one. Writing a chip edits the string in place: the dimension's tokens merge into one,
 written where the first stood, or added after the last token; clearing a chip removes every token of its dimension.
@@ -222,7 +223,7 @@ Keyboard:
 ## Telemetry
 
 Each time a dimension gains a value it did not hold, from a chip, an accepted suggestion or a typed token, the Explorer emits
-`Explorer / Selected / <Dimension>` once, with `<Dimension>` from the closed set `Text`, `OpensIn`,
+`Explorer / Selected / <Dimension>` once, with `<Dimension>` from the closed set `Text`,
 `MadeBy`, `Edited`, `People`, `Space` ([Telemetry](../017-telemetry/telemetry.md)). Text counts when it goes from empty to
 non-empty. Never a value, a word or an id. A lens arriving with a link, or restored by Back, counts for nothing: only
 the reader's own change does.

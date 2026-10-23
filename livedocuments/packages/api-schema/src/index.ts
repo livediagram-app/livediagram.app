@@ -14,8 +14,7 @@
 
 import type { AccessLevel } from './access-levels';
 import type { DocumentSource } from './document-source';
-import type { BackgroundPattern, EditorMode, ShapeKind, Tab } from '@livedocuments/document';
-import type { CreationTabKind } from './placement-defaults';
+import type { BackgroundPattern, ShapeKind, Tab } from '@livedocuments/document';
 
 // ---------------------------------------------------------------------
 // Documents
@@ -63,15 +62,6 @@ export type LiveDoc = {
   // hiding the badge in that case.
   ownerName: string | null;
   ownerColor: string | null;
-} & RecordedIntent;
-
-// The creation intent recorded on a document when it was created, written once by the create and
-// never re-derived (docs/specs/013-workspace/default-folders.md "Recorded intent"). A null `opensIn`
-// is unknown (made before intents were recorded, or by a create without one), and `tabKind` is
-// then unknown too.
-export type RecordedIntent = {
-  opensIn: EditorMode | null;
-  tabKind: CreationTabKind | null;
 };
 
 // Lightweight list projection — drops `tabs` so listing 100 documents
@@ -95,12 +85,11 @@ export type DocumentSummary = {
   // What the Details view shows (docs/specs/013-workspace/explorer-details-view.md), summed over the
   // document's tabs; null when it has no tab or one of its tabs is not counted yet.
   stats: DocumentStats | null;
-} & RecordedIntent;
+};
 
 // A document's tab stats (docs/specs/013-workspace/explorer-details-view.md "Where the numbers come
-// from"): the mode of the tab written last, and elements, comments and stored bytes over every tab.
+// from"): elements, comments and stored bytes over every tab.
 export type DocumentStats = {
-  mode: EditorMode;
   elements: number;
   comments: number;
   bytes: number;
@@ -620,7 +609,6 @@ export * from './document-source';
 export * from './catalogues';
 export * from './comment-threads';
 export * from './agent-presence';
-export * from './document-paths';
 // Share-link previews (docs/specs/013-workspace/share-link-previews.md).
 export * from './share-preview';
 export * from './http-errors';

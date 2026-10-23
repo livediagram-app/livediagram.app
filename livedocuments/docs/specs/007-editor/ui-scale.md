@@ -27,8 +27,8 @@ each be sized on their own (see "The setting"):
 **Toolbar** (`toolbar`):
 
 - **The Toolbar strip** ([Toolbar layout](toolbar-layout.md)) and the
-  top-left Explorer menu button. The strip's More popover does not scale: it is a menu opened
-  from the strip, so it stays at its design size like every other menu (see below).
+  top-left Explorer menu button. The popovers hanging from the strip (a category's flyout, Search) do not scale:
+  they are menus opened from the strip, so they stay at their design size like every other menu (see below).
 
 **Corner buttons** (`cornerButtons`):
 
@@ -124,5 +124,5 @@ value as a percentage ("110%"):
   scaled size.
 - **What makes room for a scaled surface moves with it**: the bottom-right
   corner's panel stack clears the zoom cluster at the corner buttons' scale,
-  the top corners clear the Toolbar strip at the toolbar's scale, the strip fits fewer tiles before More, and a
+  the top corners clear the Toolbar strip at the toolbar's scale, the category bar drops its names sooner, and a
   popover opened from a button stays inside the window at its scaled width.

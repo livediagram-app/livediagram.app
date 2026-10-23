@@ -34,8 +34,8 @@ drag image (a snapshot of the tile) and no on-canvas feedback.
 - A catalogue tile's drag payload is defined once, in `tileDragStart`
   (`components/palette/palette-tile-drag.ts`): shapes (`kind` or `kind|choice`) and sticky notes on
   the palette mime with the ghost preview, line icons and stickers on their own
-  mimes. Every rendering of a tile uses it: the grid tile, the Toolbar strip's tile, and the list
-  row, wherever a category body draws them, in the Toolbar strip's More popover, including what a body's own search turns up (the Icons and Stickers
+  mimes. Every rendering of a tile uses it: a flyout's picture tile and card, Search's results, and the list row,
+  wherever a category body draws them, including what a body's own search turns up (the Icons and Stickers
   catalogues' tiles drag on their own mimes). Tiles that arm a gesture (Text, Polygon, Arrow) offer no drag.
 - Every drag source clears the preview on `dragend`.
 - `components/canvas/PaletteDragGhost.tsx` — an overlay rendered by `Canvas`

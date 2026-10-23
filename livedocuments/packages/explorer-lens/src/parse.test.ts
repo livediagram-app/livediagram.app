@@ -19,29 +19,17 @@ describe('parseLens', () => {
   });
 
   it('reads every dimension from its token', () => {
-    const { lens, issues } = parseLens(
-      'opens-in:pages made-by:ai edited:7d people:me space:team:T1',
-      aggregate,
-    );
+    const { lens, issues } = parseLens('made-by:ai edited:7d people:me space:team:T1', aggregate);
     expect(issues).toEqual([]);
     expect(lens).toEqual({
       text: [],
       filters: {
-        'opens-in': ['pages'],
         'made-by': ['ai'],
         edited: ['7d'],
         people: ['me'],
         space: ['team:T1'],
       },
     });
-  });
-
-  // docs/specs/007-editor/pages-mode.md "One mode": a link from livediagram, or from before a rename, names a mode
-  // Pages took over.
-  it("reads livediagram's modes and Pages' old names as Pages", () => {
-    const { lens, issues } = parseLens('opens-in:draw,illustrate', aggregate);
-    expect(issues).toEqual([]);
-    expect(lens.filters['opens-in']).toEqual(['pages']);
   });
 
   it('keeps free words as text, in order, as typed', () => {
@@ -124,7 +112,7 @@ describe('parseLens', () => {
       ['board:kanban', 'unknown_dimension', null, null],
       ['edited:year', 'unknown_value', 'edited', 'year'],
       ['space:everyone', 'unknown_value', 'space', 'everyone'],
-      ['opens-in:Whiteboard', 'unknown_value', 'opens-in', 'Whiteboard'],
+      ['opens-in:pages', 'unknown_dimension', null, null],
       ['space:team:nope', 'unknown_team', 'space', 'team:nope'],
       ['space:mine,team:nope', 'unknown_team', 'space', 'team:nope'],
     ])('keeps %s as text, whole, reported as %s', (word, reason, dimension, value) => {

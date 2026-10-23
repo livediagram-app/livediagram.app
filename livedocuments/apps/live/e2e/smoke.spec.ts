@@ -1,10 +1,12 @@
 import {
+  onPage,
   test,
   expect,
+  createDocument,
   dismissQuickTour,
   expectNoPageErrors,
   openStartBlank,
-  startBlankDocument,
+  openBlankPage,
   paletteTile,
 } from './fixtures';
 
@@ -13,26 +15,28 @@ import {
 // tests can't reach. Every test also fails on any uncaught page error
 // (the `pageErrors` fixture).
 
-test('the new-document wizard renders', async ({ page, pageErrors }) => {
-  await page.goto('/new');
-  await expect(page.getByText('New Document', { exact: false })).toBeVisible();
-  // The Mode step is the client-rendered heart of the wizard (docs/specs/007-editor/new-document-route.md
-  // "Choosing a mode"); its five mode cards prove the picker mounted, not just the shell.
-  const modes = page.getByRole('group', { name: 'What are you making?' });
-  await expect(modes).toBeVisible();
-  await expect(modes.locator('[data-new-mode]')).toHaveCount(5);
+// `/new` asks nothing: it makes a document as it mounts and opens it on its start, where the templates are
+// (docs/specs/007-editor/new-document-route.md, start-diagramming.md).
+test('/new makes a document and opens it on its start', async ({ page, pageErrors }) => {
+  await createDocument(page);
+  await expect(page).toHaveURL(/\/document\/[0-9a-f-]{36}/);
+  await expect(page.getByRole('region', { name: /^Start / })).toBeVisible();
   expectNoPageErrors(pageErrors);
 });
 
-// The editor header carries no apps menu over the new-document wizard: the product's links live in the Explorer
-// panel's footer (docs/specs/013-workspace/explorer-structure.md "Layout").
-test('the new-document wizard shows with no apps menu in the header', async ({
+// The editor header carries no apps menu (docs/specs/007-editor/live-app.md "Header"): its logo switches between
+// liveworkspace's sites (the Switch site button, SiteSwitcher), and the product's own links (Home, Explorer, Help) live
+// in the Explorer panel's footer (docs/specs/013-workspace/explorer-structure.md "Layout"), never in the header.
+test('the editor header switches sites from its logo, with no apps menu', async ({
   page,
   pageErrors,
 }) => {
-  await page.goto('/new');
-  await expect(page.locator('[data-new-mode="diagram"]')).toBeVisible();
-  await expect(page.getByRole('button', { name: /^switch section/i })).toHaveCount(0);
+  await openStartBlank(page);
+  const header = page.locator('header[data-region="header"]');
+  await expect(header).toBeVisible();
+  await expect(header.getByRole('button', { name: 'Switch site' })).toHaveCount(1);
+  // The product's links (ProductNavLinks, a "Go to" navigation) are the Explorer panel's, not the header's.
+  await expect(header.getByRole('navigation', { name: 'Go to' })).toHaveCount(0);
   expectNoPageErrors(pageErrors);
 });
 
@@ -49,8 +53,8 @@ test('create a blank document, add a shape, and it survives a reload', async ({
   page,
   pageErrors,
 }) => {
-  await startBlankDocument(page);
-  // The wizard created a real document and routed to it.
+  await openBlankPage(page);
+  // /new created a real document and routed to it.
   await expect(page).toHaveURL(/\/document\/[0-9a-f-]{36}/);
   // The tour offer opens 800 ms after the editor is ready and its backdrop takes every click
   // (TourHost): answer it first, or a slow runner's canvas click lands on the backdrop.
@@ -64,7 +68,7 @@ test('create a blank document, add a shape, and it survives a reload', async ({
   const canvas = page.locator('[data-canvas-a11y-root]');
   const square = page.getByRole('img', { name: 'Square', exact: true });
   await (await paletteTile(page, 'Add Square')).click();
-  await canvas.click({ position: { x: 420, y: 300 } });
+  await canvas.click({ position: await onPage(page, 0.3, 0.25) });
   await expect(square).toHaveCount(1);
 
   // The autosave round-trip through the api + D1 is the part no unit

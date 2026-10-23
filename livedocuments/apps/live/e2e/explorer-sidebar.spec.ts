@@ -121,25 +121,26 @@ test.describe('explorer sidebar', () => {
 
   test('shows This Browser while it holds a document', async ({ page, pageErrors }) => {
     await darkVisitor(page, await mintSignedGuest(page.request));
-    // Seeded through the store the app upgrades on load (e2e/legacy-offline-store.spec.ts).
+    // Seeded straight into the offline store (lib/offline/offline-backend.ts), before the app opens it.
     await page.goto('/icon.svg');
     await page.evaluate(
       () =>
         new Promise<void>((resolve, reject) => {
           const del = indexedDB.deleteDatabase('livedocuments-offline');
           del.onsuccess = () => {
-            const req = indexedDB.open('livedocuments-offline', 1);
-            req.onupgradeneeded = () => req.result.createObjectStore('diagrams', { keyPath: 'id' });
+            const req = indexedDB.open('livedocuments-offline', 2);
+            req.onupgradeneeded = () =>
+              req.result.createObjectStore('documents', { keyPath: 'id' });
             req.onsuccess = () => {
               const db = req.result;
-              const tx = db.transaction('diagrams', 'readwrite');
-              tx.objectStore('diagrams').put({
+              const tx = db.transaction('documents', 'readwrite');
+              tx.objectStore('documents').put({
                 id: 'offline-sidebar-1',
                 name: 'Only here',
                 folderId: null,
                 createdAt: Date.now(),
                 savedAt: Date.now(),
-                tabs: [{ id: 't1', name: 'Tab 1', kind: 'diagram', elements: [] }],
+                tabs: [{ id: 't1', name: 'Tab 1', elements: [] }],
               });
               tx.oncomplete = () => {
                 db.close();

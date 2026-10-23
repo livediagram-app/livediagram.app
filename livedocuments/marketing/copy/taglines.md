@@ -11,45 +11,44 @@ there. No em dashes.
 
 For tight bios, badges, app subtitles.
 
-- Diagram together, no sign-in. [30]
-- Multiplayer diagrams. [22]
-- Draw together, instantly. [26]
-- Open a link, start drawing. [28]
-- The no-login diagram canvas. [29]
+- Write and present together. [27]
+- Docs, decks and infographics. [29]
+- Pages, made together. [21]
+- Open the editor and start. [26]
+- Write it. Present it. Share. [28]
 
 ## Short, <= 40 characters
 
 Classic "tagline" slot on most directories.
 
-- Real-time diagrams, no sign-in wall. [37]
-- Collaborative diagrams in the browser. [39]
-- Open a link, draw, share. Together. [36]
-- Multiplayer diagramming, free forever. [39]
-- Diagram with your team in real time. [37]
+- Articles, decks and infographics, live. [39]
+- Write and present together, live. [33]
+- Real-time documents made of pages. [34]
+- Free, open source, no sign-up wall. [35]
 
 ## Medium, <= 60 characters
 
 Listing headlines, Open Graph titles, search-result titles.
 
-- A multiplayer diagram canvas that works without sign-in. [56]
-- Real-time diagrams and mindmaps. Open a link and draw. [55]
-- Collaborative diagramming. Free, open source, no login. [56]
-- Build diagrams with your team in real time, sign-in optional. [60]
+- A live editor for articles, slide decks and infographics. [57]
+- Write, present and design on pages together, live. [50]
+- Documents made of pages. Free, open source, no sign-up. [55]
+- Write articles and present decks with your team, live. [54]
 
 ## Long, <= 80 characters
 
 Hero subheads, Twitter/X header copy, longer headline fields.
 
-- A collaborative diagram editor that works without signing in: open, draw, share. [80]
-- Real-time multiplayer diagrams and mindmaps. MIT-licensed and free forever. [75]
-- Diagram together in the browser. No sign-in wall, no paid tier, no lock-in. [75]
+- A free, real-time editor for articles, slide decks and infographics. [68]
+- Write, present and design on pages together. MIT-licensed and free forever. [75]
+- Articles, decks and infographics in the browser. No sign-up wall, no paid tier. [79]
 
 ## Long, <= 100 characters
 
 Meta-description-adjacent fields, longer banner copy.
 
-- A collaborative diagram and mindmap canvas with live cursors and comments. No sign-in wall. [92]
-- Open a link and start drawing with your team. Real-time, MIT-licensed, free, self-hostable. [92]
+- Articles that flow onto pages, decks you present, infographics you design. Together, in real time. [98]
+- Write and present with your team in real time. MIT-licensed, free and self-hostable. [84]
 
 ## Pick-list by use
 

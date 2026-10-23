@@ -26,18 +26,13 @@ export type PaletteDropdownOption = {
   // only ever fall between groups that both still have visible items, never
   // leading / trailing / doubled. Options without a group never divide.
   group?: number;
-  // Grid layout only: span the whole row instead of taking one column. For an
-  // option that belongs above the bands rather than inside one (docs/specs/010-palette/palette-top-level-categories.md —
-  // Popular is every category at once, so it has no band of its own).
-  fullWidth?: boolean;
 };
 
-// The Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md) sets its dropdown-style controls (the
-// selection mode, the category picker, More) on a faint tint so they read as
-// menus rather than as more tiles beside them. Brand, not slate: the editor
+// The strip (docs/specs/007-editor/toolbar-layout.md) sets its menu triggers (the selection mode, Search) on a
+// faint tint so they read as menus rather than as more buttons beside them. Brand, not slate: the editor
 // retargets the brand ramp to the active tab's theme (useEditorAccent), so the
-// tint follows the theme in both modes. Exported so the strip's More button,
-// which is not a PaletteDropdown, wears exactly the same tone.
+// tint follows the theme in both modes. Exported so the triggers that are not a PaletteDropdown (Search, the
+// page toolbar's Style) wear exactly the same tone.
 export const TOOLBAR_TRIGGER_TONE =
   'bg-brand-50 text-brand-700 hover:bg-brand-100 dark:bg-brand-500/15 dark:text-brand-200 dark:hover:bg-brand-500/25';
 
@@ -48,10 +43,8 @@ const ICON_WRAP =
 
 // A compact select-style dropdown for the palette: a bordered trigger that
 // shows the current option (icon + label + chevron) and a listbox popover
-// to switch. Replaces the bespoke inline dropdown that the icon-category
-// filter used to carry, and now also drives the canvas-tool and palette-
-// category pickers, so all three share one keyboard / outside-click / a11y
-// implementation instead of three copies.
+// to switch. It drives the strip's selection mode, with one keyboard / outside-click / a11y
+// implementation.
 //
 // The menu is portalled to <body> and positioned with `position: fixed`
 // against the trigger's rect: the palette body is an `overflow-y-auto`
@@ -103,8 +96,8 @@ export function PaletteDropdown({
   // filter to explain what the funnel does).
   hoverCardTitle?: string;
   hoverCardDescription?: string;
-  // Which edge the popover hangs from. Right-aligned dropdowns (the
-  // right-hand category picker) keep the menu inside the panel.
+  // Which edge the popover hangs from. A right-aligned dropdown keeps the
+  // menu inside its panel.
   align?: 'left' | 'right';
   // Brand-tinted trigger for an "active filter" state (icon filter when a
   // specific category is picked).
@@ -253,7 +246,7 @@ export function PaletteDropdown({
   // Click to open by default: the dropdown opens on click and closes on click / outside pointer-down (see the effect
   // above). `openOnHover` opens it for a resting mouse as well, but hovering never changes the value: only a pick does.
   const selected = options.find((o) => o.id === value) ?? options[0];
-  // 'flush' triggers (the palette's tool + category pickers) get roomier
+  // 'flush' triggers get roomier
   // padding than the bordered filter dropdowns so they're a bigger, easier
   // hit target at the top of the panel.
   const shape =
@@ -322,12 +315,9 @@ export function PaletteDropdown({
               // hugging its content as before.
               grid ? 'grid min-w-[13rem] grid-cols-3 gap-1 px-1.5 pb-1.5 pt-1.5' : ''
             } ${
-              // The menu grows out of the CORNER its trigger sits at, so
-              // opening the canvas-tool picker (top-left of the palette)
-              // unfolds from the left and the category picker (top-right)
-              // unfolds from the right. Without this both grew from their own
-              // centre-top and the two openings looked identical, which is
-              // the one thing the animation is there to distinguish.
+              // The menu grows out of the CORNER its trigger sits at: a
+              // left-aligned dropdown unfolds from the left, a right-aligned
+              // one from the right.
               coords?.flipUp
                 ? align === 'right'
                   ? 'origin-bottom-right animate-dropdown-up'
@@ -371,8 +361,7 @@ export function PaletteDropdown({
                   const prev = visible[i - 1];
                   // Compared against `prev?.group` rather than requiring both
                   // to be defined, so an UNGROUPED option sitting above the
-                  // first band (Popular) still lets that band open with its
-                  // own heading.
+                  // first band still lets that band open with its own heading.
                   const divide = i > 0 && opt.group !== prev?.group;
                   // A header opens each band, including the first — which has
                   // no divider before it, so `divide` alone would skip it.
@@ -418,14 +407,7 @@ export function PaletteDropdown({
                           onChange(opt.id);
                           setOpen(false);
                         }}
-                        className={`relative flex cursor-pointer items-center rounded-md text-[11px] font-medium leading-tight transition ${
-                          // A full-width tile reads as a banner, not a tall
-                          // one-column card stretched sideways, so it lays its
-                          // glyph BESIDE the label rather than above it.
-                          opt.fullWidth
-                            ? 'col-span-full justify-center gap-2 px-2 py-1.5 text-left'
-                            : 'flex-col justify-start gap-1.5 px-1.5 py-2 text-center'
-                        } ${
+                        className={`relative flex cursor-pointer flex-col items-center justify-start gap-1.5 rounded-md px-1.5 py-2 text-center text-[11px] font-medium leading-tight transition ${
                           // The band tint is DROPPED on the selected tile.
                           // Both set a background, and which one wins is
                           // stylesheet order rather than class order — so the
@@ -455,9 +437,7 @@ export function PaletteDropdown({
                             {opt.icon}
                           </span>
                         ) : null}
-                        <span className={opt.fullWidth ? 'truncate' : 'w-full truncate'}>
-                          {opt.label}
-                        </span>
+                        <span className="w-full truncate">{opt.label}</span>
                         {/* Kept, but tucked into the corner: the shortcut is
                               worth discovering and worth nothing at the cost of
                               the label's line. */}

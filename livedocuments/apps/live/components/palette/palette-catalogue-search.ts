@@ -2,7 +2,7 @@
 // "Search: every element type"): Icons, Stickers and Technology, each entry a dynamic tile
 // (palette-dynamic-tiles) so it places as its category's own tile does. Only the catalogues the
 // mode's palette offers are searched.
-import type { EditorMode, Element } from '@livedocuments/document';
+import type { Element } from '@livedocuments/document';
 import { paletteRank, type IconDef, type StickerDef, type TechIconDef } from '@livedocuments/icons';
 import { getLineArtIconCatalog } from '@/lib/icons';
 import { getStickerCatalog } from '@/lib/stickers';
@@ -90,15 +90,13 @@ function onTab<T>(cat: Catalogue<T>, ids: Set<string>): PaletteTileDef[] {
 }
 
 /** The catalogue tiles the Search lists: the query's matches, or before anything is typed, the
- *  entries already on the tab; from each catalogue the mode offers. */
+ *  entries already on the tab; from each catalogue the palette offers. */
 export function searchCatalogueTiles({
   query,
-  mode,
   tabElements = [],
   loaded = true,
 }: {
   query: string;
-  mode: EditorMode;
   tabElements?: readonly Element[];
   // Whether the catalogues have loaded (useIconCatalogs): a component passes the subscription's value so the React
   // Compiler re-runs this when they land. Before then they hold nothing to list.
@@ -109,7 +107,7 @@ export function searchCatalogueTiles({
   const ids = browsing ? idsOnTab(tabElements) : null;
   const out: PaletteTileDef[] = [];
   const add = <T>(cat: Catalogue<T>, onTabIds: Set<string> | undefined) => {
-    if (!paletteCategoryOffered(mode, cat.category)) return;
+    if (!paletteCategoryOffered(cat.category)) return;
     out.push(...(ids ? onTab(cat, onTabIds!) : matchesIn(cat, query)));
   };
   add(ICONS, ids?.icons);

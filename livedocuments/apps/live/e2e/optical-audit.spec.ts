@@ -9,14 +9,7 @@ import {
   seedOpenedDocument,
   shareLink,
 } from './audit-screens';
-import {
-  dismissQuickTour,
-  expect,
-  expectNoPageErrors,
-  test,
-  untilHydrated,
-  mintSignedGuest,
-} from './fixtures';
+import { dismissQuickTour, expect, expectNoPageErrors, test, mintSignedGuest } from './fixtures';
 import { auditOptical, OPTICAL_TOLERANCE_PX } from './optical';
 
 // Optical alignment audit (docs/specs/004-interface-design/optical-alignment.md): on each screen, every glyph
@@ -57,15 +50,6 @@ async function openSeededEditor(page: Page, baseURL: string): Promise<Locator> {
 }
 
 test.describe('Optical alignment audit', () => {
-  test('the New Document wizard', async ({ page, pageErrors }) => {
-    await darkVisitor(page);
-    await page.goto('/new');
-    await page.getByText('New Document', { exact: false }).first().waitFor();
-    await untilHydrated(page.getByRole('button', { name: /^create$/i }));
-    await expectCentred(page, 'wizard');
-    expectNoPageErrors(pageErrors);
-  });
-
   // One editor screen per test: each 4x audit is CPU-bound, so four of them in one test left it at the
   // mercy of whatever else the runner was doing within one 30-second budget.
   test('the editor with its default panels', async ({ page, pageErrors, baseURL }) => {
@@ -131,8 +115,8 @@ test.describe('Optical alignment audit', () => {
 // holding one is judged by its cap band, not its ink. Participant names are random, so this is pinned here
 // rather than left to the day a "Q" comes up.
 test('initials with a tailed capital centre on their cap band', async ({ page }) => {
-  await page.goto('/new');
-  await page.getByText('New Document', { exact: false }).first().waitFor();
+  await page.goto('/explorer');
+  await page.getByRole('treeitem', { name: /^Home/ }).waitFor();
   await page.evaluate(() => {
     const disc = document.createElement('span');
     disc.setAttribute('aria-label', 'Tailed initials');

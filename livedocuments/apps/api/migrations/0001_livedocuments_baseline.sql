@@ -164,9 +164,6 @@ CREATE TABLE documents (
   presentation        TEXT    NULL,
   trashed_at          INTEGER NULL,
   trash_reason        TEXT    NULL,
-  -- The creation intent (docs/specs/013-workspace/default-folders.md).
-  opens_in            TEXT,
-  tab_kind            TEXT,
   join_notified_at    INTEGER
 );
 CREATE INDEX idx_documents_owner_recent ON documents (owner_id, saved_at DESC);
@@ -206,7 +203,6 @@ CREATE INDEX document_tabs_by_tab ON document_tabs (tab_id);
 -- Counts written with each tab body, so listings never read a body.
 CREATE TABLE tab_stats (
   tab_id        TEXT    PRIMARY KEY REFERENCES tabs (id) ON DELETE CASCADE,
-  mode          TEXT    NOT NULL,
   element_count INTEGER NOT NULL,
   comment_count INTEGER NOT NULL,
   data_bytes    INTEGER NOT NULL,
@@ -486,16 +482,6 @@ CREATE TABLE image_refs (
   PRIMARY KEY (tab_id, image_id)
 ) WITHOUT ROWID;
 CREATE INDEX image_refs_image_idx ON image_refs (image_id);
-
--- The reference index's backfill over tabs saved before it existed. A new database has none, so it starts complete.
-CREATE TABLE image_refs_backfill (
-  id           INTEGER PRIMARY KEY CHECK (id = 1),
-  created_at   INTEGER NOT NULL,
-  cursor       INTEGER NOT NULL DEFAULT 0,
-  completed_at INTEGER
-);
-INSERT INTO image_refs_backfill (id, created_at, cursor, completed_at)
-VALUES (1, CAST(strftime('%s', 'now') AS INTEGER) * 1000, 0, CAST(strftime('%s', 'now') AS INTEGER) * 1000);
 
 -- The images a document may serve beyond its owner's own ("Placement grants"). No foreign keys, like image_refs:
 -- the document-removal batch deletes them.

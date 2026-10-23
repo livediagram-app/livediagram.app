@@ -1,6 +1,10 @@
 import type { Tab } from '@livedocuments/document';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { BUILD_ID_HEADER, DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER } from '@livedocuments/api-schema';
+import {
+  BUILD_ID_HEADER,
+  DOCUMENT_FORMAT,
+  DOCUMENT_FORMAT_HEADER,
+} from '@livedocuments/api-schema';
 import { resetServerReleaseForTests, serverBuild, serverDocumentFormat } from '../server-release';
 
 // getGuestSelfSig is the only ../local-identity symbol core.ts uses; mock
@@ -291,19 +295,10 @@ describe('stripUiTabFields', () => {
   });
 });
 
-// The kind is stamped at the PERSISTENCE boundary, not only at the editor's
-// commit choke point: several mutation paths reach the wire (history commit,
-// the non-undoable session tick, remote applies), and a field that depends on
-// which one ran is a field you cannot trust. Every tab that goes out says
-// what it is.
-describe('tabForWire — tab kind', () => {
+describe('tabForWire', () => {
   const tab = (over: Partial<Tab> = {}): Tab => ({ id: 't', name: 'T', elements: [], ...over });
 
-  it('stamps the ordinary kind onto a tab that has none', () => {
-    expect(tabForWire(tab()).kind).toBe('diagram');
-  });
-
-  it('still strips the UI-only fields', () => {
+  it('strips the UI-only fields', () => {
     const out = tabForWire(tab({ templateChosen: true, folder: 'f1' }));
     expect('templateChosen' in out).toBe(false);
     expect('folder' in out).toBe(false);

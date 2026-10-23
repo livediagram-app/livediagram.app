@@ -1,7 +1,7 @@
 # Default folders
 
 Status: shipped. The server side (storage, the API, resolution on create, the intent every create
-caller sends, the intent recorded on the document) and the surfaces that set, show and clear a
+caller sends) and the surfaces that set, show and clear a
 default ([Surfaces](#surfaces)) are live.
 
 ## What
@@ -17,9 +17,8 @@ team: two teammates may send the same new documents to different places.
 | -------------------- | -------------------------------------------------------------------------------------------------- |
 | **default folder**   | The folder a person's new documents of one key land in when no place is chosen.                    |
 | **default key**      | What a default is for: `<dimension>:<value>`, e.g. `mode:pages` (`PlacementDefaultKey`).           |
-| **creation intent**  | What a new document is made as, captured once when it is created: opens in and tab kind.           |
-| **opens in**         | The editor mode the document's first tab opens in (`EditorMode`).                                  |
-| **tab kind**         | What the first tab is (`TabKind`).                                                                 |
+| **creation intent**  | What a new document is made as, sent with its create: the editor mode it opens in.                 |
+| **opens in**         | The editor mode a new document opens in (`EditorMode`).                                            |
 | **explicit root**    | The root of My Work, chosen on purpose (the placement picker's root tile): a place like any other. |
 | **dangling default** | A default whose folder is gone, no longer the person's to see, or in a team the person has left.   |
 
@@ -45,44 +44,29 @@ order:
 
 ## Creation intent
 
-- **Captured once, at creation**, and never re-derived: content drawn afterwards does not move a
-  document. The intent is recorded on the document ([Recorded intent](#recorded-intent)).
-  - `mode`: the editor mode the first tab opens in: `pages`, including a document with no tab.
-  - `tabKind`: the first tab's kind. Absent on the wire reads as the general tab.
-- **Sent on the create** as `intent: { mode, tabKind? }` beside the placement
-  ([Placement on create](folders.md#placement-on-create)).
+- **Sent on the create** as `intent: { mode }` beside the placement
+  ([Placement on create](folders.md#placement-on-create)). `mode` is the editor mode the document
+  opens in: `pages`, the one mode (`CREATION_INTENT` in `@livedocuments/api-schema`).
+- **Read once, to place the document.** The create uses it to pick the default key and nothing
+  else ([The intent is not kept](#the-intent-is-not-kept)).
 - **Who sends it:**
-  - every create that makes something new: the New Document wizard and its bypasses
-    (`/new?blank=1`, `/new?template=`), imports into the account and the MCP `create_document` tool, which sends the intent of the first
-    tab it built;
-  - **Duplicate**, which sends the source's **recorded** intent unchanged, together with an explicit
-    placement, so it is recorded and never routed ([Duplicate](#duplicate)).
-- **Who does not:** a create that keeps a place the document already has and has no recorded intent
-  to carry. An Offline Mode sync keeps the folder it had in the browser and records unknown. A create without an intent never consults defaults.
-- An intent that is present but malformed (no known `mode`, a `tabKind` outside its list) refuses the create, `intent_invalid` (400), before anything is written.
+  - the New Document wizard and its bypasses (`/new?blank=1`, `/new?template=`);
+  - a workbench's create in place;
+  - the MCP `create_document` tool.
+- **Derived when absent:** a create that seeds `tabs` and sends no `intent` takes the Pages intent
+  from its first compiled tab, as the MCP does.
+- **Who does not send it:** a create that keeps a place the document already has. An Offline Mode
+  sync keeps the folder it had in the browser, and a [Duplicate](#duplicate) sends its source's
+  place. A create without an intent never consults defaults.
+- An intent that is present but malformed (not an object, or no known `mode`) refuses the create,
+  `intent_invalid` (400), before anything is written.
 
-## Recorded intent
+## The intent is not kept
 
-The creation intent is also **written on the document**, by the same insert that creates it, and
-never re-derived or rewritten afterwards:
-
-| Column     | Field     | Holds                                          |
-| ---------- | --------- | ---------------------------------------------- |
-| `opens_in` | `opensIn` | The editor mode the document opens in, or null |
-| `tab_kind` | `tabKind` | The first tab's kind at creation, or null      |
-
-- **Null `opensIn` means unknown**, never Pages: the document was made before intents were
-  recorded, or by a create that carries none (an Offline Mode sync, an API
-  script, the Duplicate of a document whose own intent is unknown). Its `tabKind` is then unknown too.
-- **With a known `opensIn`**, `tabKind` is always known.
-- The first tab's kind is a column of its own because the document has no other honest record of
-  it: tabs are reordered, removed and shared between documents after creation.
-- The fields are on both the document summary and the document.
-- A copy made by `POST /api/documents/:id/copy` carries the source's recorded values, as Duplicate
-  does: they are a fact about the content, not derived again.
-- A stored value outside its list (one since retired) reads as null.
-- They are kept for the [Explorer filters](explorer-filters.md), whose `opens-in:` token reads `opensIn`.
-  Copy says "opens in" for a mode and never "type" (see [Domain language](../003-system-architecture/domain-language.md)).
+- The document stores **no record of its intent**: no column, and no field on the document or its
+  summary. Once the create has chosen a place, the intent is gone.
+- Nothing reads it later: with one editor mode, every document opens in Pages, so there is nothing
+  to filter or route by after creation.
 
 ## Duplicate
 
@@ -90,11 +74,9 @@ never re-derived or rewritten afterwards:
   placement, the root of My Work included (as an explicit root). When the server refuses that
   place (a team the person is not in, someone else's personal folder), the Duplicate is filed at the
   explicit root of My Work instead, saying so in its log.
-- It records the **source's recorded intent** (`opensIn`, `tabKind`), unchanged;
-  an unknown one stays unknown.
-- It is **never routed by a default**: its placement is always explicit.
-- The server copy (`POST /api/documents/:id/copy`) agrees: it carries the same two values, and
-  files the copy at the root of the copier's My Work, a place it chooses, never a default.
+- It sends **no intent**, and is **never routed by a default**: its placement is always explicit.
+- The server copy (`POST /api/documents/:id/copy`) agrees: it files the copy at the root of the
+  copier's My Work, a place it chooses, never a default.
 
 ## Precedence
 

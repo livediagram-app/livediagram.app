@@ -97,10 +97,10 @@ screen-px length it writes on that root or a descendant with `toSurfacePx`.
   → `toSurfacePx`.
 - **`ToolbarPalette`**: zoom on the root, which is `inset-x-0` and still spans
   the canvas when zoomed, so the card stays centred; `top` is restated as
-  `toSurfacePx(12)`. The More popover sits inside the zoomed root but does not
-  scale: it spreads `uiUnscaleStyle(scale)` (`zoom: 1 / scale`, nothing at 1),
-  so its effective zoom is 1 and `moreRight` (screen px), its `w-[26rem]` and
-  its `max-h-[calc(100dvh-14rem)]` all apply as written.
+  `toSurfacePx(12)`. Its popovers (`StripPopover`: a category's flyout, Search)
+  sit inside the zoomed root but do not scale: each spreads `uiUnscaleStyle(scale)`
+  (`zoom: 1 / scale`, nothing at 1), so its effective zoom is 1 and `right`
+  (screen px), its width class and its `max-h-[calc(100dvh-14rem)]` all apply as written.
 - **`SnapWidth`**: divides measured widths by the element's
   `currentCSSZoom` (1 where unsupported), so it writes surface px.
 - **The bottom-right cluster** (`[data-zoom-cluster]`): zoom on the root;
@@ -124,9 +124,8 @@ What makes room for a scaled surface:
 - `toolbarTopClearancePx(scale)` in `CanvasChrome`: `12 + 46 × scale + 10` at
   the toolbar's scale, the top corners' offset while the strip spans them.
 - `useStripCrowdsCorners` takes a `scaleKey` (`"<toolbar>/<panels>"`) and
-  `useStripTileLimit` the toolbar's `scale`, as effect dependencies: they
+  `useBarLabels` the toolbar's `scale`, as effect dependencies: they
   measure in screen px already, but a zoom change resizes no observed box.
-  The tile limit's first-paint fallback reads `viewportWidth / scale`.
 - `useQuickStylePlacement` needs nothing: releasing the slider is a captured
   `pointerup`, which re-measures it.
 
@@ -219,11 +218,11 @@ dashboard's `APPEARANCE_SETTINGS` stack.
 | Panel keeps screen position          | `MovablePanel` test: `left` = `x / scale`, `zoom` set    |
 | A panel reads only the panels part   | `MovablePanel` test, provider with differing parts       |
 | Nothing outside the provider scales  | `useUiScale(part)` is 1 with no provider                 |
-| Toolbar More popover stays unscaled  | `apps/live/lib/ui-scale.test.ts` `uiUnscaleStyle`        |
+| Strip popovers stay unscaled         | `apps/live/lib/ui-scale.test.ts` `uiUnscaleStyle`        |
 | Bottom-right clearance scales        | `apps/live/lib/panel-layout.test.ts`                     |
 
-Verified in a real browser across the range: drag, corner snap, Toolbar More
-popover, cluster popovers, live preview, and one part scaled alone.
+Verified in a real browser across the range: drag, corner snap, the strip's
+popovers, cluster popovers, live preview, and one part scaled alone.
 
 ## Defaults ledger
 

@@ -17,7 +17,7 @@ interchangeable. These are design decisions, taken before any feature that uses 
   ([Pages mode](../007-editor/pages-mode.md)). The mode stays a named value (`EDITOR_MODE_CATALOGUE` in
   `packages/document/src/editor-mode.ts`) so a stored mode reads through one place.
 - A tab stores the mode it **opens in**. A stored mode from livediagram (Diagram, Draw, Workshop, Plan, or Pages'
-  old names Illustrate and Infographic), a `/new?mode=` link or an `opens-in:` filter all read as Pages
+  old names Illustrate and Infographic), or a `/new?mode=` link all read as Pages
   (`parseEditorMode`).
 - A mode is never a type of document or tab.
 

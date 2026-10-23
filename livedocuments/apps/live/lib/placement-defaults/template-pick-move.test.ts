@@ -13,7 +13,7 @@ const index = buildDefaultFolderIndex(
   [],
 );
 const defaults = new Map<PlacementDefaultKey, string>([['mode:pages', 'decks']]);
-const deck = { mode: 'pages', tabKind: 'diagram' } as const;
+const deck = { mode: 'pages' } as const;
 const handoff = { documentId: 'd', tabId: 't', placementChosen: false };
 const at = (over: Partial<Parameters<typeof templatePickMoveTarget>[0]> = {}) =>
   templatePickMoveTarget({

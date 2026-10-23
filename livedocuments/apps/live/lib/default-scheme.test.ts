@@ -56,8 +56,8 @@ describe('getTheme under an appearance', () => {
 
 describe('resolveTabBackdrop', () => {
   // docs/specs/011-theme/light-and-dark.md: a tab paints its own backdrop colour.
-  it('paints a tab that opens in Pages as itself', () => {
-    const t = tab({ opensIn: 'pages', theme: 'slate', backgroundColor: '#fdf2f8' });
+  it('paints a tab as itself', () => {
+    const t = tab({ theme: 'slate', backgroundColor: '#fdf2f8' });
     expect(resolveTabBackdrop(t).backgroundColor).toBe('#fdf2f8');
   });
 

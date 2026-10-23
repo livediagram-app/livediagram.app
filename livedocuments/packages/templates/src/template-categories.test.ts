@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { EDITOR_MODES } from '@livedocuments/document';
 import {
   TEMPLATE_ALSO_IN,
   TEMPLATE_CATEGORIES,
@@ -7,7 +6,7 @@ import {
   templateCategories,
   templateCategory,
 } from './template-categories';
-import { isBlankTemplate, templateEditorMode } from './template-modes';
+import { isBlankTemplate } from './template-modes';
 import { templateKeywords } from './template-keywords';
 import { templateMatchesQuery } from './template-search';
 import { TEMPLATES, type TemplateKind } from './templates';
@@ -63,11 +62,10 @@ describe('template categories', () => {
     expect(isInTemplateCategory('blank', 'presentations')).toBe(false);
   });
 
-  it('leaves no category empty, every template in it opening in Pages', () => {
+  it('leaves no category empty', () => {
     for (const id of ids) {
       const inIt = TEMPLATES.filter((t) => isInTemplateCategory(t.kind, id));
       expect(inIt.length, id).toBeGreaterThan(0);
-      for (const t of inIt) expect(EDITOR_MODES, t.kind).toContain(templateEditorMode(t.kind));
     }
   });
 });

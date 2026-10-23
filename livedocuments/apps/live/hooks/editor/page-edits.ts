@@ -480,7 +480,7 @@ export function pageEdits({
     // (docs/specs/007-editor/start-diagramming.md "Start Making Pages"). Undo puts it all back.
     if (units.length <= 1) {
       commitTab((t) => ({ ...t, elements: [], pages: [], articles: {} }));
-      restoreEmptyCard(startClosedKey(tabId, 'pages'));
+      restoreEmptyCard(startClosedKey(tabId));
       debugLog('[page] last page removed', { tabId, pageId });
       return;
     }

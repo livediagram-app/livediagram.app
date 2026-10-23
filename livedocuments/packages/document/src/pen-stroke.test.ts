@@ -1,13 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
-  PEN_STREAMLINE,
   STROKE_POINT_MAX_ERROR,
   STROKE_PRESSURE_MAX_ERROR,
   createFreehand,
   freehandGeometry,
   freehandPenStroke,
   isPenStroke,
-  penPointerKind,
   penPressureWidth,
   penStrokeCentreline,
   penStrokeOutline,
@@ -32,15 +30,6 @@ function thickness(stroke: PenStroke): number {
   const near = penStrokeOutline(stroke).filter((p) => Math.abs(p.x - mid) < 20);
   return Math.max(...near.map((p) => p.y)) - Math.min(...near.map((p) => p.y));
 }
-
-describe('pen pointer kinds and streamline', () => {
-  it('streamlines a mouse at 0.5 and a pen or finger at 0.2, as Excalidraw does', () => {
-    expect(PEN_STREAMLINE).toEqual({ mouse: 0.5, pen: 0.2, touch: 0.2 });
-    expect(penPointerKind('pen')).toBe('pen');
-    expect(penPointerKind('touch')).toBe('touch');
-    expect(penPointerKind(undefined)).toBe('mouse');
-  });
-});
 
 describe('penStrokeOutline width', () => {
   for (const width of [1, 1.5, 2.5]) {
@@ -168,7 +157,7 @@ describe('settled ink', () => {
   const pressures = Array.from({ length: 40 }, (_, i) => 0.1 + 0.45 * (1 + Math.sin(i * 0.23)));
   const cases = [0.5, 3, 12].flatMap((step) =>
     ([1, -1] as const).flatMap((dir) =>
-      [PEN_STREAMLINE.mouse, PEN_STREAMLINE.pen].flatMap((streamline) =>
+      [0.5, 0.2].flatMap((streamline) =>
         [false, true].map((pressure) => ({ step, dir, streamline, pressure })),
       ),
     ),

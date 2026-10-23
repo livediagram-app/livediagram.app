@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 import { apiBase } from './audit-screens';
 import {
-  createInMode,
+  createDocument,
   expect,
   expectNoPageErrors,
   guestSigFor,
@@ -12,7 +12,7 @@ import {
 
 // Default folders for a guest, in dark mode (docs/specs/013-workspace/default-folders.md
 // "Surfaces"; folders.md "Deleting a folder"): set from the folder menu and shown by the marker,
-// where the New Document wizard files a new document without asking, listed in Settings, and left
+// where /new files a new document without asking, listed in Settings, and left
 // dangling (and said so) when the folder is deleted, its contents moving up to its parent.
 
 type Seeded = { owner: string; headers: Record<string, string> };
@@ -91,18 +91,18 @@ test.describe('default folders', () => {
     await row.locator('[data-tree-row]').first().click({ button: 'right' });
     await page.getByRole('menuitem', { name: 'Use as Default for' }).click();
     await expect(page.getByText('New documents that open as')).toBeVisible();
-    await page.getByRole('menuitemcheckbox', { name: 'Retrospectives' }).click();
-    await expect(page.getByRole('menuitemcheckbox', { name: 'Retrospectives' })).toHaveAttribute(
+    await page.getByRole('menuitemcheckbox', { name: 'Documents' }).click();
+    await expect(page.getByRole('menuitemcheckbox', { name: 'Documents' })).toHaveAttribute(
       'aria-checked',
       'true',
     );
-    await expect.poll(() => defaults(page, s)).toEqual({ 'template:retrospective': retros });
+    await expect.poll(() => defaults(page, s)).toEqual({ 'mode:pages': retros });
     // The marker, and its words as the row's description.
     await page.keyboard.press('Escape');
     await expect(row.locator('[data-default-marker]').first()).toBeVisible();
-    await expect(row).toHaveAccessibleDescription('Default folder for new retrospectives');
+    await expect(row).toHaveAccessibleDescription('Default folder for new documents');
 
-    // My Work holds every key without a working default, and only clears.
+    // My Work holds every key without a working default, and only clears: choosing Documents there clears it.
     await page.mouse.click(900, 600);
     // Its own line: the item's centre may sit on one of the folders it holds.
     await nav(page)
@@ -111,16 +111,12 @@ test.describe('default folders', () => {
       .first()
       .click({ button: 'right' });
     await page.getByRole('menuitem', { name: 'Use as Default for' }).click();
-    await expect(page.getByRole('menuitemcheckbox', { name: 'Diagrams' })).toHaveAttribute(
-      'aria-disabled',
-      'true',
-    );
-    await page.getByRole('menuitemcheckbox', { name: 'Retrospectives' }).click();
+    await page.getByRole('menuitemcheckbox', { name: 'Documents' }).click();
     await expect.poll(() => defaults(page, s)).toEqual({});
     expectNoPageErrors(pageErrors);
   });
 
-  test('the wizard files a new document in its default folder without asking, else at the root', async ({
+  test('/new files a new document in its default folder without asking, else at the root', async ({
     page,
     pageErrors,
     baseURL,
@@ -128,14 +124,14 @@ test.describe('default folders', () => {
     const s = await guest(page, baseURL!);
     const projects = await folder(page, s, 'Projects');
     const workshops = await folder(page, s, 'Workshops', projects);
-    await setDefault(page, s, 'mode:draw', workshops);
 
-    // No Location step: choosing Draw makes the whiteboard, in the whiteboards' default folder.
-    const whiteboard = await createInMode(page, 'draw');
-    expect(await documentFolder(page, s, whiteboard)).toBe(workshops);
-    // Diagrams have no default: the root of My Work.
-    const diagram = await createInMode(page, 'diagram');
-    expect(await documentFolder(page, s, diagram)).toBeNull();
+    // No default yet: the root of My Work.
+    const loose = await createDocument(page);
+    expect(await documentFolder(page, s, loose)).toBeNull();
+    // With one, the document is filed there without a question.
+    await setDefault(page, s, 'mode:pages', workshops);
+    const filed = await createDocument(page);
+    expect(await documentFolder(page, s, filed)).toBe(workshops);
     expectNoPageErrors(pageErrors);
   });
 
@@ -148,7 +144,7 @@ test.describe('default folders', () => {
     const projects = await folder(page, s, 'Projects');
     const workshops = await folder(page, s, 'Workshops', projects);
     const archive = await folder(page, s, 'Archive', workshops);
-    await setDefault(page, s, 'mode:draw', workshops);
+    await setDefault(page, s, 'mode:pages', workshops);
 
     // Visiting it while it exists lets Settings name it once it is gone.
     await page.goto(`/explorer/folder?id=${projects}`);
@@ -158,7 +154,7 @@ test.describe('default folders', () => {
     await page.getByRole('menuitem', { name: 'Delete', exact: true }).click();
     const confirm = page.getByRole('dialog').filter({ hasText: 'Delete "Workshops"?' });
     await expect(confirm).toContainText('Its documents and subfolders move to "Projects".');
-    await expect(confirm).toContainText('New whiteboards are saved here by default.');
+    await expect(confirm).toContainText('New documents are saved here by default.');
     await confirm.getByRole('button', { name: 'Delete folder' }).click();
 
     await expect
@@ -168,13 +164,13 @@ test.describe('default folders', () => {
         return body.folders.find((f) => f.id === archive)?.parentId;
       })
       .toBe(projects);
-    expect(await defaults(page, s)).toEqual({ 'mode:draw': workshops });
+    expect(await defaults(page, s)).toEqual({ 'mode:pages': workshops });
 
     await page.goto(`/explorer/folder?id=${projects}&settings=documents`);
     await expect(page.getByText('Workshops (deleted), using My Work')).toBeVisible({
       timeout: 30_000,
     });
-    await page.getByRole('button', { name: 'Clear default folder for whiteboards' }).click();
+    await page.getByRole('button', { name: 'Clear default folder for documents' }).click();
     await expect.poll(() => defaults(page, s)).toEqual({});
     expectNoPageErrors(pageErrors);
   });
@@ -188,8 +184,8 @@ test.describe('default folders', () => {
     const projects = await folder(page, s, 'Projects');
     const sprints = await folder(page, s, 'Sprints', projects);
     const workshops = await folder(page, s, 'Workshops');
-    await setDefault(page, s, 'mode:draw', workshops);
-    const id = await createInMode(page, 'draw', `/new?folder=${sprints}`);
+    await setDefault(page, s, 'mode:pages', workshops);
+    const id = await createDocument(page, `/new?folder=${sprints}`);
     expect(await documentFolder(page, s, id)).toBe(sprints);
     expectNoPageErrors(pageErrors);
   });

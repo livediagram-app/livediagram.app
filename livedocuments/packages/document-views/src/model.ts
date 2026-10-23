@@ -6,7 +6,6 @@ import {
   pageKindOf,
   isKnownElement,
   kindWordOf,
-  tabKindOf,
   type Element,
   type RefTable,
   type Tab,
@@ -52,7 +51,7 @@ function headerFacts(
   rev: number | undefined,
 ): HeaderFacts {
   return {
-    tab: { id: tab.id, ref: tabRefOf(tab.id), name: tab.name, kind: tabKindOf(tab) },
+    tab: { id: tab.id, ref: tabRefOf(tab.id), name: tab.name },
     elements: printed.length,
     counts: countElements(printed),
     hidden,

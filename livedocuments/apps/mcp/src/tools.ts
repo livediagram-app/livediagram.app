@@ -29,7 +29,7 @@ import {
 import {
   DEFAULT_MCP_SHARE_LEVEL,
   TRASH_RETENTION_DAYS,
-  creationIntentOf,
+  CREATION_INTENT,
   type LiveDoc,
   type TrashedDocument,
 } from '@livedocuments/api-schema';
@@ -189,7 +189,7 @@ export function registerTools(server: McpServer, env: Env): void {
     // filter and badge read source != null, wherever the document is filed.
     // The creation intent (docs/specs/013-workspace/default-folders.md): with no folder named, the
     // server files the document in the user's default folder for it, when they have one.
-    const intent = creationIntentOf(tabs[0]);
+    const intent = CREATION_INTENT;
     const { document: created } = await apiJson<{ document?: LiveDoc }>(env, token, '/documents', {
       method: 'POST',
       // markUsed only when the model gave one: absent, the making counts (the api's default).

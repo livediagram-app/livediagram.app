@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { CHANGESET_MAX_OPERATIONS, type EditRejection } from '@livedocuments/api-schema';
-import { formatOperation } from './format-operation';
 import { parseEditOperations } from './parse';
 import { formatRejections } from './rejections';
 import type { EditLog, EditOperation } from './types';
@@ -301,78 +300,11 @@ describe('parseEditOperations: refusals', () => {
   });
 });
 
-describe('formatOperation round trip', () => {
-  const lines = [
-    'add square id=verify label="Verify email" text=sm below:n3 gap:40',
-    'add text label=Note at:0,-20',
-    'set type:sticky in:f2 fill=green width=200 locked=true note= tags=["a","b"] all',
-    'set "Orders service" label="200" title="a: b" text="#tag" value="" data={"x":"a b"}',
-    'rm n7 all keep-arrows',
-    'move n4 right-of:"Orders service"',
-    'move type:sticky by=10,-5 all',
-    'connect n3 -> verify id=a9 label=ok again',
-    'rewire a3 from=n1',
-    'rewire a3 to="Orders DB"',
-    'rewire a3 from=n1 to="Orders DB"',
-    'insert diamond label=Valid? between n3 "Orders DB"',
-    'unwrap f2',
-    'order n3 back',
-    'order n3 above=n4',
-    'order n3 below="Orders DB"',
-    'layout in:f2 style=tree direction=right',
-    'layout n3',
-    'test n3 label=Login',
-    '{"op":"add","element":{"id":"x","type":"text","label":"a b"}}',
-  ];
-
-  it('parses back to the same operations', () => {
-    const operations = operationsOf(lines.join('\n'));
-    const printed = operations.map(formatOperation);
-    expect(operationsOf(printed.join('\n'))).toEqual(operations);
-  });
-
-  it('prints the canonical line form', () => {
-    expect(operationsOf(lines.join('\n')).map(formatOperation)).toEqual([
-      'add square id=verify label="Verify email" text=sm below:n3 gap:40',
-      'add text label=Note at:0,-20',
-      'set type:sticky in:f2 fill=green width=200 locked=true note= tags=["a","b"] all',
-      'set "Orders service" label="200" title="a: b" text="#tag" value="" data={"x":"a b"}',
-      'rm n7 all keep-arrows',
-      'move n4 right-of:"Orders service"',
-      'move type:sticky by=10,-5 all',
-      'connect n3 -> verify id=a9 label=ok again',
-      'rewire a3 from=n1',
-      'rewire a3 to="Orders DB"',
-      'rewire a3 from=n1 to="Orders DB"',
-      'insert diamond label=Valid? between n3 "Orders DB"',
-      'unwrap f2',
-      'order n3 back',
-      'order n3 above=n4',
-      'order n3 below="Orders DB"',
-      'layout in:f2 style=tree direction=right',
-      'layout n3',
-      'test n3 label=Login',
-      '{"op":"add","element":{"id":"x","type":"text","label":"a b"}}',
-    ]);
-  });
-
+describe('gap:', () => {
   it('refuses gap: with no number rather than reading 0', () => {
     for (const line of ['add square below:n3 gap:', 'add square below:n3 gap:wide']) {
       const [error] = errorsOf(line);
       expect(error!.details.join(' ')).toContain('a number after gap:');
     }
-  });
-
-  it('prints an add with no fields and no placement', () => {
-    expect(formatOperation({ op: 'add', kind: 'square' })).toBe('add square');
-  });
-
-  it('quotes selectors from the JSON form that hold spaces', () => {
-    expect(
-      formatOperation({ op: 'move', target: 'n1', place: { rel: 'below', ref: 'Orders service' } }),
-    ).toBe('move n1 below:"Orders service"');
-    expect(formatOperation({ op: 'set', target: 'n1', fields: { label: 'x y' } })).toBe(
-      'set n1 label="x y"',
-    );
   });
 });

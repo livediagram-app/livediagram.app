@@ -103,7 +103,7 @@ export const createDocumentOutput = {
   url,
   lint: z
     .array(z.string())
-    .describe('The diagram lint summary line of each tab as written, in tabIds order.'),
+    .describe('The lint summary line of each tab as written, in tabIds order.'),
 };
 
 // What a changeset answered (docs/specs/024-agents/agent-changesets.md): its id (null when it
@@ -113,7 +113,7 @@ const changesetAnswer = {
   changesetId: z.string().nullable().describe('The changeset written; null when nothing changed.'),
   rev: z.number().describe('The tab revision now, to pass as rev on the next update_document.'),
   text: z.string().describe('What the changeset did, one line per element, and how to revert it.'),
-  lint: z.string().describe('The diagram lint summary line of the tab as written.'),
+  lint: z.string().describe('The lint summary line of the tab as written.'),
 };
 
 export const addTabOutput = {

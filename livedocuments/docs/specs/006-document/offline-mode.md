@@ -62,13 +62,6 @@ have cloud documents and offline documents side by side.
 
 <!-- legacy-names -->
 
-- **Store rename (version 2).** Offline documents were kept in the `diagrams` object store until
-  the container became a document ([Document](document.md#renaming-from-diagram)). Opening
-  version 2 of `livedocuments-offline` moves every record into `documents` inside the upgrade
-  transaction, then drops the old store, logging how many moved
-  (`apps/live/lib/offline/legacy-offline-store.ts`). A tab still running the code from before the upgrade
-  asks for version 1, which the browser refuses once another tab has opened version 2; its offline
-  documents are out of reach in that tab until it reloads.
 - **Durability honesty (important).** An offline document has **no backup**:
   clearing site data, some private-browsing sessions, and browser
   storage-pressure eviction can delete it. We request

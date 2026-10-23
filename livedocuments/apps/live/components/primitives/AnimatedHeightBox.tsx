@@ -5,9 +5,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 // new child also soft-fades in. The height transition is gated on after
 // the first measured frame so the box doesn't animate its own mount.
 //
-// With `maxPx` set it caps the height there and scrolls past it; omit
-// `maxPx` to let it grow to the full content height (no inner scroll).
-// Uncapped it clips with `overflow-clip`, not `overflow-hidden`: hidden makes
+// It grows to the full content height (no inner scroll), and clips with `overflow-clip`, not `overflow-hidden`: hidden makes
 // a scroll box of its own, which would pin a sticky BackBar inside it rather
 // than to the scroller around it.
 //
@@ -19,13 +17,11 @@ const ENTER_CLASS = {
 } as const;
 
 export function AnimatedHeightBox({
-  maxPx,
   viewKey,
   className,
   enter = 'fade',
   children,
 }: {
-  maxPx?: number;
   // How the swapped-in view arrives: a soft fade, or a short slide for a drill-in, `forward` (from the right, going
   // in a level) or `back` (from the left, coming out). Reduced motion turns both slides into the fade.
   enter?: 'fade' | 'forward' | 'back';
@@ -52,16 +48,12 @@ export function AnimatedHeightBox({
       cancelAnimationFrame(raf);
     };
   }, []);
-  const exceedsCap = maxPx !== undefined && height !== null && height > maxPx;
   return (
     <div
-      className={`${exceedsCap ? 'overflow-y-auto' : 'overflow-clip'}${
+      className={`overflow-clip${
         animate ? ' transition-[height] duration-short ease-out' : ''
       }${className ? ` ${className}` : ''}`}
-      style={{
-        height:
-          height === null ? undefined : maxPx === undefined ? height : Math.min(height, maxPx),
-      }}
+      style={{ height: height ?? undefined }}
     >
       {/* Stable (non-keyed) wrapper so the ResizeObserver keeps measuring
           across view swaps; its keyed child remounts + soft-fades while

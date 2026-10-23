@@ -1910,10 +1910,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "CreationTabKind": {
-    "const": "diagram",
-    "type": "string"
-  },
   "CurrentTokenResponse": {
     "additionalProperties": false,
     "properties": {
@@ -2116,21 +2112,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "browser": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "callout": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -2928,16 +2909,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "name": {
         "type": "string"
       },
-      "opensIn": {
-        "anyOf": [
-          {
-            "$ref": "#/components/schemas/EditorMode"
-          },
-          {
-            "type": "null"
-          }
-        ]
-      },
       "ownerColor": {
         "type": [
           "string",
@@ -2981,16 +2952,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           }
         ]
       },
-      "tabKind": {
-        "anyOf": [
-          {
-            "$ref": "#/components/schemas/CreationTabKind"
-          },
-          {
-            "type": "null"
-          }
-        ]
-      },
       "tabs": {
         "items": {
           "$ref": "#/components/schemas/TabSummary"
@@ -3005,22 +2966,20 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     },
     "required": [
-      "createdAt",
-      "folderId",
       "id",
-      "name",
-      "opensIn",
-      "ownerColor",
       "ownerId",
-      "ownerName",
+      "name",
+      "tabs",
+      "shareable",
+      "shareCode",
+      "folderId",
+      "teamId",
+      "source",
       "presentation",
       "savedAt",
-      "shareCode",
-      "shareable",
-      "source",
-      "tabKind",
-      "tabs",
-      "teamId"
+      "createdAt",
+      "ownerName",
+      "ownerColor"
     ],
     "type": "object"
   },
@@ -3121,13 +3080,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "elements": {
         "type": "number"
-      },
-      "mode": {
-        "$ref": "#/components/schemas/EditorMode"
       }
     },
     "required": [
-      "mode",
       "elements",
       "comments",
       "bytes"
@@ -3154,16 +3109,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "name": {
         "type": "string"
-      },
-      "opensIn": {
-        "anyOf": [
-          {
-            "$ref": "#/components/schemas/EditorMode"
-          },
-          {
-            "type": "null"
-          }
-        ]
       },
       "ownerId": {
         "type": "string"
@@ -3200,16 +3145,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           }
         ]
       },
-      "tabKind": {
-        "anyOf": [
-          {
-            "$ref": "#/components/schemas/CreationTabKind"
-          },
-          {
-            "type": "null"
-          }
-        ]
-      },
       "teamId": {
         "type": [
           "string",
@@ -3218,20 +3153,18 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     },
     "required": [
+      "id",
+      "ownerId",
+      "name",
+      "shareable",
+      "shareCode",
+      "folderId",
+      "teamId",
+      "source",
+      "savedAt",
       "createdAt",
       "empty",
-      "folderId",
-      "id",
-      "name",
-      "opensIn",
-      "ownerId",
-      "savedAt",
-      "shareCode",
-      "shareable",
-      "source",
-      "stats",
-      "tabKind",
-      "teamId"
+      "stats"
     ],
     "type": "object"
   },
@@ -3275,10 +3208,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "colour_overrides_theme",
       "arrows_freed"
     ],
-    "type": "string"
-  },
-  "EditorMode": {
-    "const": "pages",
     "type": "string"
   },
   "Element": {
@@ -4422,7 +4351,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "object"
   },
   "HuedPenColourName": {
-    "description": "The eight hued stock colours, each tuned per board.",
+    "description": "The eight hued stock colours, each tuned per backdrop.",
     "enum": [
       "blue",
       "red",
@@ -5473,9 +5402,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "hidden": {
             "type": "number"
           },
-          "mode": {
-            "$ref": "#/components/schemas/EditorMode"
-          },
           "outOfScope": {
             "const": false,
             "type": "boolean"
@@ -5526,9 +5452,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
               "id": {
                 "type": "string"
               },
-              "kind": {
-                "$ref": "#/components/schemas/TabKind"
-              },
               "name": {
                 "type": "string"
               },
@@ -5539,8 +5462,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "required": [
               "id",
               "ref",
-              "name",
-              "kind"
+              "name"
             ],
             "type": "object"
           },
@@ -7647,7 +7569,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "hexagon",
       "document",
       "banner",
-      "callout",
       "card",
       "badge",
       "step",
@@ -8233,9 +8154,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "id": {
         "$ref": "#/components/schemas/TabId"
       },
-      "kind": {
-        "$ref": "#/components/schemas/TabKind"
-      },
       "layers": {
         "items": {
           "$ref": "#/components/schemas/Layer"
@@ -8247,9 +8165,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "name": {
         "type": "string"
-      },
-      "opensIn": {
-        "$ref": "#/components/schemas/EditorMode"
       },
       "pageOrientation": {
         "$ref": "#/components/schemas/PageOrientation"
@@ -8284,10 +8199,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "object"
   },
   "TabId": {
-    "type": "string"
-  },
-  "TabKind": {
-    "const": "diagram",
     "type": "string"
   },
   "TabRecord": {
@@ -8344,9 +8255,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "id": {
         "$ref": "#/components/schemas/TabId"
       },
-      "kind": {
-        "$ref": "#/components/schemas/TabKind"
-      },
       "layers": {
         "items": {
           "$ref": "#/components/schemas/Layer"
@@ -8358,9 +8266,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "name": {
         "type": "string"
-      },
-      "opensIn": {
-        "$ref": "#/components/schemas/EditorMode"
       },
       "orderIndex": {
         "type": "number"
@@ -9927,9 +9832,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "hidden": {
         "type": "number"
       },
-      "mode": {
-        "$ref": "#/components/schemas/EditorMode"
-      },
       "pages": {
         "additionalProperties": false,
         "properties": {
@@ -9976,9 +9878,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "id": {
             "type": "string"
           },
-          "kind": {
-            "$ref": "#/components/schemas/TabKind"
-          },
           "name": {
             "type": "string"
           },
@@ -9989,8 +9888,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "required": [
           "id",
           "ref",
-          "name",
-          "kind"
+          "name"
         ],
         "type": "object"
       },

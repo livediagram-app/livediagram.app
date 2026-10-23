@@ -7,14 +7,12 @@ import {
   LENS_MAX_INPUT_LENGTH,
   LENS_VALUE_SEPARATOR,
   MADE_BY_VALUES,
-  OPENS_IN_VALUES,
   PEOPLE_VALUES,
   SPACE_FIXED_VALUES,
   SPACE_TEAM_PREFIX,
   isLensDimension,
   type LensDimension,
 } from './dimensions';
-import { parseEditorMode } from '@livedocuments/document';
 import type {
   Lens,
   LensContext,
@@ -41,7 +39,6 @@ type WordReading =
 type ValueReading = { ok: true; value: string } | { ok: false; problem: WordProblem };
 
 const NO_FILTERS: LensFilters = {
-  'opens-in': [],
   'made-by': [],
   edited: [],
   people: [],
@@ -109,9 +106,7 @@ function readSpaceValue(raw: string, context: LensContext): ValueReading {
 function readValue(dimension: LensDimension, raw: string, context: LensContext): ValueReading {
   if (raw === '') return problem('missing_value', dimension, null);
   if (dimension === 'space') return readSpaceValue(raw, context);
-  // A link shared before a mode's rename says `opens-in:facilitate`: read it as today's mode.
-  const lower = raw.toLowerCase();
-  const value = dimension === 'opens-in' ? (parseEditorMode(lower) ?? lower) : lower;
+  const value = raw.toLowerCase();
   if (inOrder<string>(FIXED_VALUES[dimension], [value]).length === 0) {
     return problem('unknown_value', dimension, raw);
   }
@@ -140,7 +135,6 @@ export function readWord(word: string, context: LensContext): WordReading {
 function filtersOf(applied: ReadonlyMap<LensDimension, readonly string[]>): LensFilters {
   const of = (dimension: LensDimension) => applied.get(dimension) ?? [];
   return {
-    'opens-in': inOrder(OPENS_IN_VALUES, of('opens-in')),
     'made-by': inOrder(MADE_BY_VALUES, of('made-by')),
     edited: inOrder(EDITED_VALUES, of('edited')),
     people: inOrder(PEOPLE_VALUES, of('people')),

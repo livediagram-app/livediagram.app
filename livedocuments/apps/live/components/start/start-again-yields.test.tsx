@@ -43,7 +43,7 @@ describe('Show Templates and a mode message', () => {
     dismissEmptyCard('t:pages');
     render(
       <>
-        <StartAgainTray mode="pages" tabId="t" tabName="Tab 2" />
+        <StartAgainTray tabId="t" tabName="Tab 2" />
         <ModeBanner icon={<span>✎</span>} message="Click to place text" onAction={() => {}} />
       </>,
     );
@@ -59,7 +59,7 @@ describe('Show Templates and a mode message', () => {
     dismissEmptyCard('t:pages');
     render(
       <>
-        <StartAgainTray mode="pages" tabId="t" tabName="Tab 2" />
+        <StartAgainTray tabId="t" tabName="Tab 2" />
         <TrayBanner />
       </>,
     );

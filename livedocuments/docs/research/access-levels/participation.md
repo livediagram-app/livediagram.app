@@ -1,5 +1,10 @@
 # Participation: what taking part in a session means, and who may
 
+> **livediagram-era research.** Written for livediagram before livedocuments was forked from it. It describes
+> features livedocuments does not have (live polls, Q&A boards, dot votes, quizzes, the facilitator baton, workshop
+> session tools) and cites code, migrations and a `docs/agent-cli` branch that are not in this repository. Kept as
+> background for the access-levels design; read the specs for what livedocuments does today.
+
 Research note for the access-levels design. Read-only research: nothing here changes a spec. It answers one angle:
 how live-facilitation products separate **running** a session from **taking part** in it, how they treat anonymous
 and link visitors, what abuse they defend against, how commenting relates to participating, and what that means

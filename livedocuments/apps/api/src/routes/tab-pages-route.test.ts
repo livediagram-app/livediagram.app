@@ -62,7 +62,6 @@ async function setUp(status = 204, tab: Record<string, unknown> = {}) {
 // The stored tab, as far as these tests read it.
 type StoredTab = {
   elements: unknown[];
-  opensIn?: string;
   pages?: unknown[];
   articles: Record<string, unknown>;
 };
@@ -106,18 +105,6 @@ describe('page changes', () => {
     );
   });
 
-  it('still answers at the address before the rename, and reads a stored `illustrate` as Pages', async () => {
-    vi.spyOn(console, 'info').mockImplementation(() => {});
-    const { db } = await setUp(204, { opensIn: 'illustrate' });
-    const res = await call(
-      db,
-      { pages: [{ op: 'add', kind: 'slide' }] },
-      { path: '/api/documents/D/tabs/t1/illustrate' },
-    );
-    expect(res.status).toBe(200);
-    expect(stored(db).pages).toHaveLength(1);
-  });
-
   it('lands a layout’s elements as a changeset, relayed before the pages', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const { db, room } = await setUp();
@@ -139,7 +126,7 @@ describe('page changes', () => {
     const res = await call(db, { pages: [{ op: 'delete', page: 4 }] });
     expect(res.status).toBe(400);
     expect(await res.json()).toMatchObject({ error: 'page_unknown', change: 0 });
-    expect(stored(db).opensIn).toBeUndefined();
+    expect(stored(db).pages).toBeUndefined();
   });
 
   it('is gated like any write (a read-only token is refused in index.ts): a stranger is refused, a missing tab is 404', async () => {
@@ -202,7 +189,6 @@ describe('an article write', () => {
   it('refuses an ambiguous write with 400', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const { db } = await setUp(204, {
-      opensIn: 'pages',
       pages: [
         { id: 'a', orientation: 'portrait', kind: 'article', flow: 'f' },
         { id: 'b', orientation: 'portrait', kind: 'article', flow: 'g' },
@@ -221,10 +207,9 @@ describe('the room ops', () => {
       id: 't',
       name: 'T',
       elements: [],
-      opensIn: 'pages' as const,
       pageOrientation: 'portrait' as const,
     };
-    const after = { id: 't', name: 'T', elements: [], opensIn: 'pages' as const, pages: [] };
+    const after = { id: 't', name: 'T', elements: [], pages: [] };
     expect(pagesRoomOps(before, after)).toEqual([
       { kind: 'tab-meta', tabId: 't', patch: { pages: [] }, clear: ['pageOrientation'] },
     ]);

@@ -7,7 +7,7 @@ import { connectTestClient } from './mcp-test-client';
 // The Pages tools end to end through a real SDK client (docs/specs/024-agents/pages-for-agents.md): a
 // mistake the caller can fix is a tool error in words, naming the change it stopped at.
 const LIVE_DOC = { id: 'd1', name: 'Deck', tabs: [{ id: 't1', name: 'Slides', orderIndex: 0 }] };
-const TAB = { id: 't1', name: 'Slides', rev: 3, opensIn: 'pages', elements: [] };
+const TAB = { id: 't1', name: 'Slides', rev: 3, elements: [] };
 const ARTICLE = { flow: 'art-1', title: 'Brief', pages: [1], blocks: 2, words: 3, look: null };
 
 function api(answer: (body: unknown) => Response) {

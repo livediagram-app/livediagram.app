@@ -18,10 +18,8 @@
     "@livedocuments/agent-verbs": "workspace:*",
     "@livedocuments/api-client": "workspace:*",
     "@livedocuments/api-schema": "workspace:*",
-    "@livedocuments/diagram-lint": "workspace:*",
     "@livedocuments/document": "workspace:*",
     "@livedocuments/document-views": "workspace:*",
-    "@livedocuments/icons": "workspace:*",
     "@livedocuments/render-png": "workspace:*",
     "zod": "^4.6.7"
   },

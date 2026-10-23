@@ -82,7 +82,7 @@ Frame `url` exactly as printed. It has the form `<app origin>/embed/workbench?d=
 
 A ticket works **once**, within **one minute**. On a self-hosted instance the app origin is whatever that instance serves the app from. Take it from `new URL(url).origin` and accept messages only from that origin.
 
-If the ticket has expired or was already used, the frame shows **Open this diagram from your workbench** and sends no messages: mint a fresh one. If the page is not framed, or framed by another origin, it says "This view opens only inside" your origin, and does nothing else.
+If the ticket has expired or was already used, the frame shows **Open this document from your workbench** and sends no messages: mint a fresh one. If the page is not framed, or framed by another origin, it says "This view opens only inside" your origin, and does nothing else.
 
 ## The Handshake
 

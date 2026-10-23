@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { Glyph, Tooltip, atLeastInset } from '@livedocuments/ui';
-import { BAND_BLEND, BAND_TINT, TOOLBAR_CARD, TOOLBAR_CONTROL_REST } from './toolbar-surface';
+import { TOOLBAR_CARD, TOOLBAR_CONTROL_REST } from './toolbar-surface';
 
 // A phone held sideways (docs/specs/007-editor/live-app.md "A phone held sideways"): the header and
 // the tab bar fold away there so the canvas fills the screen, and a handle at the canvas's top-right
@@ -48,7 +48,7 @@ export function LandscapeBarsHandle({ shown, onToggle }: { shown: boolean; onTog
           right: atLeastInset('0.75rem', 'right'),
           top: shown ? '0.75rem' : atLeastInset('0.75rem', 'top'),
         }}
-        className={`pointer-events-auto absolute ${TOOLBAR_CARD} ${BAND_TINT} ${BAND_BLEND}`}
+        className={`pointer-events-auto absolute ${TOOLBAR_CARD}`}
       >
         <Tooltip label={label}>
           <button

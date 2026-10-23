@@ -176,9 +176,7 @@ describe('tool output schemas', () => {
     // A new tool must be added to CALLS, or its schema is never exercised.
     const client = await connectTestClient(api);
     const { tools } = await client.listTools();
-    // Deprecated aliases share their successor's output schema (tools.test.ts).
-    const current = tools.filter((t) => !(t.description ?? '').startsWith('Deprecated'));
-    expect(new Set(CALLS.map((c) => c.tool))).toEqual(new Set(current.map((t) => t.name)));
+    expect(new Set(CALLS.map((c) => c.tool))).toEqual(new Set(tools.map((t) => t.name)));
   });
 
   for (const { tool, args } of CALLS) {

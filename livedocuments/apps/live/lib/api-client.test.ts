@@ -521,7 +521,7 @@ describe('apiCreateDocument placement (docs/specs/013-workspace/folders.md "Plac
   });
 
   it('carries the creation intent (docs/specs/013-workspace/default-folders.md)', async () => {
-    const intent = { mode: 'pages', tabKind: 'diagram' } as const;
+    const intent = { mode: 'pages' } as const;
     const body = await sentBody({ id: 'd1', name: 'N', intent });
     expect(body.intent).toEqual(intent);
   });

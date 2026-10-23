@@ -8,7 +8,7 @@ developer docs stay in [`docs/`](../docs/).
 Every claim here must map to a shipped feature. If a feature changes, fix the
 copy in the same change, the same way [Marketing site](../docs/specs/019-marketing/marketing-site.md)
 governs the landing page. When in doubt about what is true today, read
-[Build phase](../docs/specs/005-project-roadmap/prototype-scope.md).
+the [marketing FAQ](../apps/marketing/lib/faq-content.tsx) and the help centre.
 
 ## Layout
 
@@ -28,10 +28,11 @@ marketing/
 - **Voice**: plain, concrete, a little understated. Describe what the product
   does, not how amazing it is.
 - **No em dashes.** Use commas, colons, or parentheses.
-- **The hook is "no sign-in wall"**: open a link, draw, share. Lead with it.
-- **Don't overclaim.** Team workspaces, transactional email, and CRDT editing
-  are not shipped yet (see "What's still ahead" in the fact sheet). Never imply
-  they are.
+- **The hook is "documents made of pages, made together"**: write an article,
+  present a deck, lay out an infographic, with your team, live. Lead with it.
+- **Don't overclaim.** Check "Not yet shipped" in the fact sheet: no CRDT
+  editing, and no diagrams, whiteboards, boards, sheets, forms, workshops or
+  in-editor AI assistant. Never imply they exist.
 - **Free means free.** MIT-licensed, self-hostable, no paid tier, no plan for
   one. Say so where the format allows.
 - **Brand color** is amber, `#F59E0B` ("livedocuments amber"); text and fills in it use `#A34A0C`. See

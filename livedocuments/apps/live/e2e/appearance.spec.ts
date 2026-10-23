@@ -1,5 +1,5 @@
 import { DARK_CANVAS_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR } from '@livedocuments/document';
-import { expect, test, dismissQuickTour, expectNoPageErrors, paletteTile } from './fixtures';
+import { openBlankPage, onPage, expect, test, expectNoPageErrors, paletteTile } from './fixtures';
 
 // Appearance (docs/specs/007-editor/live-app.md) end to end: the three settings on the real control, and
 // the thing the merge was for — a tab on the Default theme repainting
@@ -11,14 +11,8 @@ import { expect, test, dismissQuickTour, expectNoPageErrors, paletteTile } from 
 
 const CANVAS = '[data-canvas-a11y-root]';
 
-// The wizard's Skip path (docs/specs/007-editor/new-document-route.md): a blank document on the Default colour
-// scheme, in one click. What this suite needs is a default tab, not the wizard.
-async function startBlank(page: import('@playwright/test').Page): Promise<void> {
-  // Straight to a blank canvas: the /new?blank=1 bypass (Start Blank).
-  await page.goto('/new?blank=1');
-  await page.locator(CANVAS).waitFor();
-  await dismissQuickTour(page);
-}
+// A blank document on the Default colour scheme (fixtures openBlankPage): what this suite needs is a default tab.
+const startBlank = openBlankPage;
 const DARK_CANVAS = DARK_CANVAS_BACKGROUND_COLOR;
 const LIGHT_CANVAS = DEFAULT_BACKGROUND_COLOR;
 
@@ -68,15 +62,15 @@ test.describe('Appearance', () => {
     // stored colours to contradict the viewer.
     await expect.poll(() => canvasColour(page)).toBe(rgb(DARK_CANVAS));
 
-    // Drop a shape. On the Default scheme it carries NO colours of its own, so
-    // what it is drawn in is entirely the canvas's ink — the thing the merge
-    // depends on, and the thing a unit test can't see reach a memoised view.
+    // Drop a shape on the page. On the Default scheme it carries NO colours of its own, so
+    // what it is drawn in is entirely the ink of the paper under it: the page's own dark
+    // background, whatever the appearance.
     const square = page.getByRole('img', { name: 'Square', exact: true });
     await (await paletteTile(page, 'Add Square')).click();
-    await page.locator(CANVAS).click({ position: { x: 420, y: 300 } });
+    await page.locator(CANVAS).click({ position: await onPage(page, 0.3, 0.25) });
     await expect(square).toHaveCount(1);
     await expect
-      .poll(async () => (await squareInk(page)).border, { message: 'element ink follows too' })
+      .poll(async () => (await squareInk(page)).border, { message: 'element ink is the page’s' })
       .toBe(rgb('#64748b'));
 
     // System → Light. An explicit pick outranks the device, which is still dark.
@@ -86,7 +80,8 @@ test.describe('Appearance', () => {
     await expect
       .poll(() => canvasColour(page), { message: 'canvas follows the appearance' })
       .toBe(rgb(LIGHT_CANVAS));
-    await expect.poll(async () => (await squareInk(page)).border).toBe(rgb('#0ea5e9')); // brand-500, the light canvas's ink
+    // The square sits on the page, whose dark paper the appearance does not repaint: its ink stays.
+    await expect.poll(async () => (await squareInk(page)).border).toBe(rgb('#64748b'));
 
     // Light → Dark, explicitly.
     await appearanceButton(page).click();

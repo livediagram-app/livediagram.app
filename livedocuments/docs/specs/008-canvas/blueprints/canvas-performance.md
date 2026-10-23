@@ -72,18 +72,17 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
   idempotent. Listeners fire only when the snapshot changes.
 - Sources, each calling `end()` on its gesture's end, cancel and unmount:
 
-| Source                                                                                    | Gesture          | Begins                                                                                     |
-| ----------------------------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------ |
-| `useEditorDrag`, `boxed` + `move`                                                         | `move`           | When the drag engages (`DRAG_ENGAGE_PX`)                                                   |
-| `useEditorDrag`, `boxed` + `resize-*`                                                     | `resize`         | On the drag                                                                                |
-| `useEditorDrag`, `arrow-translate`                                                        | `move`           | On the drag                                                                                |
-| `useEditorDrag`, `arrow-scale`                                                            | `resize`         | On the drag                                                                                |
-| `useEditorDrag`, other `arrow-*`                                                          | `reshape`        | On the drag                                                                                |
-| `useCanvasPanAndMarquee`                                                                  | `pan`, `marquee` | When the pan or the marquee state is set                                                   |
-| `useCanvasPinchZoom`, plain wheel                                                         | `pan`            | On the first wheel event; ends `WHEEL_SETTLE_MS` after the last                            |
-| `useCanvasPinchZoom`, Ctrl/Cmd, pinch                                                     | `zoom`           | Likewise                                                                                   |
-| `useCanvasDrawGesture` (`drawDrag`, `penPoints`), `useWhiteboardPenGesture` (`penStroke`) | `stroke`         | While the drawing state is set (draw-to-size, pencil, pen)                                 |
-| `useCanvasEraser` sweep                                                                   | `erase`          | On `beginErase`; ends on `pointerup` or `pointercancel` (both record the sweep) or unmount |
+| Source                                | Gesture          | Begins                                                          |
+| ------------------------------------- | ---------------- | --------------------------------------------------------------- |
+| `useEditorDrag`, `boxed` + `move`     | `move`           | When the drag engages (`DRAG_ENGAGE_PX`)                        |
+| `useEditorDrag`, `boxed` + `resize-*` | `resize`         | On the drag                                                     |
+| `useEditorDrag`, `arrow-translate`    | `move`           | On the drag                                                     |
+| `useEditorDrag`, `arrow-scale`        | `resize`         | On the drag                                                     |
+| `useEditorDrag`, other `arrow-*`      | `reshape`        | On the drag                                                     |
+| `useCanvasPanAndMarquee`              | `pan`, `marquee` | When the pan or the marquee state is set                        |
+| `useCanvasPinchZoom`, plain wheel     | `pan`            | On the first wheel event; ends `WHEEL_SETTLE_MS` after the last |
+| `useCanvasPinchZoom`, Ctrl/Cmd, pinch | `zoom`           | Likewise                                                        |
+| `useCanvasDrawGesture` (`drawDrag`)   | `stroke`         | While the drawing state is set (draw-to-size)                   |
 
 - Discrete actions (a click, a key, a zoom button) open no gesture.
 
@@ -150,14 +149,15 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   restyles the plane and not the 2,760 nodes beneath it on the reference board. Every part of an
   element that takes a press already sets its own cursor (`BoxedElementView`'s `cursor-*` class,
   `ArrowView`'s hit line), so what shows does not change.
-- `[data-pen-in-hand] *` and `[data-path-cursor] *` (`cursor: inherit !important`) match the plane
-  too, so a whiteboard pen or a path in its edit mode still shows its cursor over the elements.
+- `[data-path-cursor] *` (`cursor: inherit !important`) matches the plane too, so a path in its edit mode still
+  shows its cursor over the elements. (`globals.css` still carries a `[data-pen-in-hand] *` rule from livediagram's
+  whiteboard pens; nothing sets that attribute in livedocuments.)
 - Invariant: a change of the canvas world's cursor class (a switch between the class-cursor tools, a pan's start
-  and end, a diagram stroke landing) restyles no element view. It does not cover:
-  - a whiteboard pen or a path in its edit mode, whose cursor passes through the plane on purpose (above), so a
-    zoom (the pen's cursor follows its width on screen) or a path hover still restyles the board;
-  - the eraser and the spotlight, whose own rules match every `[data-element-id]`, so switching to or from them
-    restyles each element once;
+  and end, a drawn element landing) restyles no element view. It does not cover:
+  - a path in its edit mode, whose cursor passes through the plane on purpose (above), so a path hover still
+    restyles the board;
+  - the spotlight, whose own rules match every `[data-element-id]`, so switching to or from it restyles each
+    element once;
   - the world's other children (`IsometricDepthLayer`, `ArticleFlows`, `CanvasPages`, `LogoCanvasOverlays`),
     which sit outside the plane and inherit the world's cursor (pages rely on it: no cursor of their own), so a
     pan restyles isometric depth blocks and an article's text.
@@ -230,8 +230,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 - `useBoxedElementAnimation`: `entered` starts as `still || arrivesWithBoard`. Only an element
   that starts not entered arms the 400 ms timer that drops `animate-element-pop-in`; an element
   that starts entered arms nothing, so opening a board sets no timers and re-renders no view
-  afterwards. An element mounted on a still canvas stays entered if the tab switches to Diagram
-  mode.
+  afterwards.
 
 ### The Map is one image
 
@@ -251,7 +250,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 ### At rest
 
 - The still-canvas rule is held in a real browser by `e2e/canvas-still.spec.ts`: on a seeded board,
-  whiteboard and diagram, with a selection's toolbar showing, it counts animation-frame requests
+  with a selection's toolbar showing, it counts animation-frame requests
   over a still second (none), after checking the counter saw the board load. And by the probe's
   idle row.
 
@@ -279,8 +278,10 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   ignored by `chromium`; `pnpm perf:canvas` runs it against the e2e stack. Its pure parts
   (`reference-board.ts`, `budget.ts`, `trace-tasks.ts`) have unit tests beside them, which the
   live app's Vitest runs: it excludes only `e2e/**/*.spec.ts`.
-- It seeds one document per series (`whiteboard`: a tab opening in Draw mode; `diagram`), each the reference board, through
-  the api, and opens it as its owner at 1440 × 900, dark, the CPU throttled 4× before load.
+- It seeds one document per series, each the reference board, through
+  the api, and opens it as its owner at 1440 × 900, dark, the CPU throttled 4× before load. The two series keep
+  their livediagram names, `whiteboard` and `diagram` (`Measurement['tab']`): the `whiteboard` tab stores
+  `opensIn: 'draw'`, which reads as Pages, so both open in Pages and differ only by that stored value.
 - **Open** (`openBoard`): `REPEATS` (5) opens per tab, each in a fresh browser context; the row is
   `medianOfRuns` of the five. The gesture rows run on the last one. Before load, an init script
   records `longtask` and `long-animation-frame` entries (`{ start, end }`, buffered) into one
@@ -290,8 +291,7 @@ OPEN_QUIET_MS`), up to `OPEN_SETTLE_TIMEOUT_MS` (60,000; a harness error past it
   does it call `dismissQuickTour`, press Escape and `v`. `interactiveMs(from, busy)` is pure
   (`interactive.ts`): from the tab's GET response, the start of the first `OPEN_QUIET_MS` gap
   between busy intervals (sorted by start, overlaps merged), as an offset from `from`.
-- Each zoom starts from Shift+1 (fit, centring the board); 100% then presses Mod+0 (a bare `0` is
-  the eraser). A screenshot per tab and zoom goes with the report. After an undo the probe waits
+- Each zoom starts from Shift+1 (fit, centring the board); 100% then presses Mod+0. A screenshot per tab and zoom goes with the report. After an undo the probe waits
   1 s, so its commit lands outside the next gesture's window.
 - Each gesture is a step (`setup`, `act`, `reset`, so every run starts alike: a select starts
   deselected, a drag and a stroke are undone, a pan and a zoom put the view back) and runs
@@ -315,8 +315,8 @@ OPEN_QUIET_MS`), up to `OPEN_SETTLE_TIMEOUT_MS` (60,000; a harness error past it
 - For each tab and each zoom (fit, 100%), with `Emulation.setCPUThrottlingRate` at the calibrated
   rate, it runs:
   open, idle (2 s), pan (30 wheel ticks), zoom (16 Ctrl-wheel ticks), select, drag (30 moves),
-  deselect, marquee (25 moves), stroke (30 moves; the pen on the whiteboard, the pencil on the
-  diagram), hover (40 moves).
+  deselect, marquee (25 moves), stroke (30 moves on bare canvas, after pressing `1` on the `whiteboard` series or `p` on the `diagram`
+  series; livedocuments has no pens, so neither arms one), hover (40 moves).
 - The probe never sends `Profiler.start`: the trace categories are `devtools.timeline` and
   `disabled-by-default-devtools.timeline` only. Starting V8's profiler makes source positions
   available for every compiled function in one main-thread task (about 1.1 s at 4× on a

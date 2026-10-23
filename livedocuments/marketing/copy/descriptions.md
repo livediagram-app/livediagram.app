@@ -5,8 +5,8 @@ stores, GitHub, Product Hunt, and similar. Pick the one whose limit matches the
 field, then trim to taste. Counts in brackets are approximate (characters for
 the short ones, words for the long ones).
 
-Built from [`facts.md`](facts.md). No em dashes. Don't promise team workspaces,
-email, or CRDT editing: not shipped yet.
+Built from [`facts.md`](facts.md). No em dashes. Don't promise anything under
+"Not yet shipped" there.
 
 ---
 
@@ -14,13 +14,13 @@ email, or CRDT editing: not shipped yet.
 
 For HTML `<meta name="description">` and search snippets.
 
-> A collaborative diagram and mindmap editor that works without signing in.
-> Real-time cursors, comments, and sharing. Free, open source, self-hostable. [148]
+> A free, real-time editor for articles, slide decks and infographics. Write,
+> present and design together. Open source and self-hostable. [135]
 
 Alternate:
 
-> Build diagrams and mindmaps with your team in real time. No sign-in wall, no
-> paid tier. Open source and self-hostable on Cloudflare. [131]
+> Write articles, build slide decks and lay out infographics with your team in
+> real time. No sign-up wall, no paid tier. Open source. [131]
 
 ---
 
@@ -28,10 +28,10 @@ Alternate:
 
 For social posts and short "about" fields.
 
-> livedocuments is a multiplayer diagram canvas in the browser. Open a link and
-> start drawing with your team: live cursors, comments, shapes, arrows,
-> mindmaps, and undo and redo. No sign-in wall. MIT-licensed, free, and
-> self-hostable. [230]
+> livedocuments is a real-time editor for documents made of pages: articles
+> that flow onto pages, slide decks you present with a laser and spotlight, and
+> infographics for print or social. Live cursors, comments and assigned
+> actions. No sign-up wall. Free and open source. [269]
 
 ---
 
@@ -39,10 +39,11 @@ For social posts and short "about" fields.
 
 For directory cards and "short pitch" fields.
 
-> livedocuments is a real-time, multiplayer diagram and mindmap editor that works
-> without signing in. Open a link and start drawing with your team: live
-> cursors, comments, 17 templates, and undo that never touches anyone else's
-> work. MIT-licensed, free forever, and self-hostable on Cloudflare. [49 words]
+> livedocuments is a free, real-time editor for articles, slide decks and
+> infographics. Open the editor and start, no sign-up needed. Write and present
+> together with live cursors, comments and assigned actions, start from 35
+> templates, and export to PDF, PNG or Markdown. MIT-licensed and self-hostable
+> on Cloudflare. [47 words]
 
 ---
 
@@ -50,18 +51,17 @@ For directory cards and "short pitch" fields.
 
 For Product Hunt, app store short descriptions, README intros.
 
-> livedocuments is a collaborative diagram and mindmap editor in the browser. The
-> canvas never sits behind a sign-in wall, so getting started is as simple as
-> opening a link and drawing. Teams work on the same canvas in real time: live
-> cursors, selection rings, comment threads, and a laser pointer.
+> livedocuments is a real-time editor in the browser for documents made of
+> pages. Write an article and it flows onto as many pages as it needs. Build a
+> slide deck and present it full screen, with presenter notes, a laser pointer
+> and a spotlight. Lay out an infographic or poster for print or social.
 >
-> Build with ten core shapes, sticky notes, images, freehand sketching with
-> shape recognition, and arrows you can curve, bend, and label. Start from 17
-> templates, recolor everything with 18 themes, and step back any slip with
-> undo. Share view or edit links any time.
+> Teams work on the same document live, with cursors, comments and assigned
+> actions. Start from 35 templates, recolour every page with one of twenty-four
+> themes, and share view or edit links any time.
 >
 > It is MIT-licensed, free for everyone with no paid tier, and self-hostable end
-> to end on Cloudflare. [113 words]
+> to end on Cloudflare. [104 words]
 
 ---
 
@@ -69,32 +69,32 @@ For Product Hunt, app store short descriptions, README intros.
 
 For longer listing bodies and "about this project" sections.
 
-> livedocuments is a collaborative diagram and mindmap editor that runs entirely
-> in the browser. Its defining choice: the canvas always works without signing
-> in. A visitor can open a link and build a real diagram before being asked to
-> create anything. Friction-free starting is the whole point.
+> livedocuments is a free, real-time editor for documents made of pages:
+> articles, slide decks and infographics. It runs in the browser, and there is
+> no sign-up wall: open the editor and start, then share when you are ready.
 >
-> Collaboration is real time and built in, not bolted on. Everyone on a diagram
-> sees live cursors, selection rings, and comment threads, with a laser pointer
-> for walking a group through a design. Each document gets its own realtime room,
-> so presence and edits stay snappy.
+> Articles are for writing. Type with Markdown shortcuts or paste from web
+> pages, Google Docs and Word, and the writing flows onto new pages as it grows,
+> with pictures, charts and tables sitting in the text. Slide decks start from
+> 61 slide layouts and present full screen, with presenter notes, a time
+> budget, a laser pointer and a spotlight. Infographics and posters come in
+> print and social sizes, from 92 layouts.
 >
-> The canvas is deep enough for real work: ten core shapes, sticky notes, text,
-> images, and arrows you can draw straight, curved, or angled, with draggable
-> handles, configurable thickness and arrowheads, and optional labels. A Pencil
-> tool does freehand sketching with optional shape recognition that snaps your
-> scribbles into clean rectangles, circles, and diamonds. Multi-select, groups,
-> and a format painter keep large diagrams manageable. Start from 17 templates,
-> recolor the whole canvas with 18 themes, and organize work into tabs and
-> nested folders.
+> Every page holds shapes, connectors, text, sticky notes, images, icons,
+> tables and charts. Start from 35 templates and recolour every page with one of
+> twenty-four themes. A document is a stack of tabs, filed in nested folders.
 >
-> Nothing is lost: every change saves on its own, and undo and redo step back
-> and forth through your recent edits. Share view-only or editable
-> links and revoke them whenever you like. Export any tab to Markdown, PDF, PNG,
-> or JSON.
+> Collaboration is built in: live cursors, selection rings, presence on each
+> tab, comment threads and actions you can assign to a teammate. Every change
+> saves on its own, and undo steps back through your own edits without touching
+> anyone else's. Share view-only or editable links, with expiry and passwords,
+> and export pages as PDF, PNG, SVG or GIF.
+>
+> AI assistants and scripts can work on documents too, through the MCP server,
+> the CLI and the API.
 >
 > livedocuments is MIT-licensed, free for everyone with no paid tier and no plan
-> for one, and self-hostable end to end on Cloudflare. [254 words]
+> for one, and self-hostable end to end on Cloudflare. [244 words]
 
 ---
 
@@ -103,57 +103,64 @@ For longer listing bodies and "about this project" sections.
 For directories with a generous body field, a landing-page "about" block, or a
 detailed GitHub / Product Hunt write-up.
 
-> ### livedocuments: diagram together, no sign-in required
+> ### livedocuments: write, present and design together
 >
-> livedocuments is a collaborative diagram and mindmap editor that lives in the
-> browser. It is built around one stubborn principle: the canvas always works
-> without signing in. A visitor can open a link and build a real diagram before
-> being asked to create an account. There is no sign-in wall in front of the
-> editor, ever, because the easiest way to get a team drawing together is to
-> remove every step between them and the canvas.
+> livedocuments is a free, real-time editor for documents made of pages. It
+> lives in the browser and has no sign-up wall: open the editor and start,
+> then share a link when you want others in. Signing in is free too, and keeps
+> your documents with you across devices.
 >
-> #### Real-time multiplayer, built in
+> #### Articles that flow onto pages
 >
-> Collaboration is the product, not a feature. Everyone on a diagram sees live
-> cursors, selection rings, and comment threads as they happen, plus a laser
-> pointer for walking a group through a design in a call. Each document runs in
-> its own realtime room, so presence and edits stay responsive even with a
-> crowd on the canvas.
+> An article is writing laid out on pages. Type with Markdown shortcuts and a
+> menu for every block, or paste from web pages, Google Docs and Word and keep
+> the headings, lists and links. When the writing runs past the bottom of a
+> page it flows onto a new one. Pictures, charts and tables sit in the text, and
+> teammates comment on the words themselves. Pick one of five looks, then
+> export the whole thing as a PDF.
 >
-> #### A canvas that holds up to real work
+> #### Slide decks you present
 >
-> Build with ten core shapes, sticky notes, text, and images. Connect them with
-> arrows you can draw straight, curved, or angled, each with draggable curve and
-> elbow handles, configurable thickness and arrowhead size, and optional labels.
-> The Pencil tool handles freehand sketching, with an optional shape-recognition
-> mode that converts rough scribbles into clean rectangles, circles, diamonds,
-> and lines. Marquee select, shift-click, groups, and a format painter keep big
-> diagrams under control. Lock elements you don't want to move, and link any
-> element to another tab or an external URL.
+> Add 16:9 or 4:3 slides, each started from one of 61 layouts, and present the
+> deck full screen. Each slide can carry presenter notes and a time budget, and
+> a laser pointer and spotlight help you guide the room. Presenting happens on
+> your screen only, so collaborators carry on working.
 >
-> #### Start fast, stay organized
+> #### Infographics and posters
 >
-> Open one of 17 templates (mind map, flowchart, Kanban, SWOT, retrospective,
-> org chart, timeline, fishbone, user journey, UI wireframes, and more) or start
-> blank. Recolor an entire diagram, every shape and arrow, with one of 18 themes
-> in a single click. Group related work into tabs within a document, link across
-> them, copy a tab into another document, and file everything into nested
-> folders.
+> Lay out pages in print sizes (A4, US Letter, A3) or social sizes, starting
+> from one of 92 layouts. Every page holds shapes, connectors, text, sticky
+> notes, images, icons, tables, charts and Sankey diagrams. Start from 35
+> templates, and recolour every page with one of twenty-four themes in a single
+> click.
 >
-> #### Nothing gets lost
+> #### Made together, live
 >
-> Every change saves on its own as you work, and undo and redo step back and
-> forth through your recent edits without touching anyone else's work.
-> Share view-only or editable links per document and revoke them whenever you
-> want. Anyone you share with can make their own copy. Export any tab to
-> Markdown, PDF, PNG, or JSON, and import the JSON back as a new tab.
+> Share a link and people join the same document in real time, with live
+> cursors, selection rings and presence on each tab. Comment on anything, reply
+> in threads and resolve them, and assign an action to a teammate so follow-ups
+> stay with the document. Undo is personal: it rewinds your own changes, not
+> anyone else's.
+>
+> #### Shared your way
+>
+> Create editor or view-only links, give them an expiry, add a password, and
+> revoke them whenever you like. Embed a live document in a wiki, or a live
+> image in a README. Export pages as PDF, PNG, SVG or an animated GIF, and any
+> tab as JSON to bring back later.
+>
+> #### Ready for agents
+>
+> Your own AI assistant can read, write and share documents through the MCP
+> server. The `@livedocuments/cli` command line and a documented REST API do the
+> same for coding agents and scripts.
 >
 > #### Free, open, and yours
 >
 > livedocuments is MIT-licensed and publicly viewable. The hosted version at
 > livedocuments.app is free for everyone, with no paid tier and no plan to
-> introduce one. If you ship it, every user gets it. You can self-host the
+> introduce one. If we ship it, every user gets it. You can self-host the
 > entire stack on your own Cloudflare account; the open-source core never calls
 > home and never gates features behind a license check.
 >
-> Open a link, draw, share. That is the whole pitch. [495 words]
+> Write it, present it, share it. [415 words]

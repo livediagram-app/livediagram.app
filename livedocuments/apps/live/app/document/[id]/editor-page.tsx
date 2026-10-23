@@ -27,7 +27,7 @@ import { useEditorState } from './useEditorState';
 import { takeAccessEnded } from '@/lib/access-notice';
 import { surfaceFlags, type EditorSurface } from './editor-surface';
 import { MentionContext } from '@/components/canvas/collab/comment/MentionContext';
-import { isEditorPath } from '@/lib/legacy-editor-path';
+import { isEditorPath } from '@/lib/editor-path';
 
 const NotFound = dynamic(() => import('@/components/chrome/NotFound').then((m) => m.NotFound), {
   ssr: false,

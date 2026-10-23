@@ -24,6 +24,7 @@ import {
   ZenGlyph,
   iso,
 } from './palette-modes-parts';
+import { BAR, BarGlyph } from './toolbar-layout';
 
 // --- The picker -------------------------------------------------------------
 
@@ -57,12 +58,18 @@ function Chevron({ x, y }: { x: number; y: number }) {
   );
 }
 
-/** The start of the palette strip across the top of the canvas: the canvas-tool picker on the
- *  left (showing the chosen tool) and the category picker beside it. Sits at the top of every
- *  mode scene. */
+/** The palette strip across the top of the canvas: the canvas-tool picker on the left (showing the chosen tool),
+ *  then the category bar (its categories as glyphs, toolbar-layout's BAR) and Search. Sits at the top of every mode
+ *  scene. */
 export function PickerTrigger({ x = 24, y = 14, tool }: { x?: number; y?: number; tool: ToolKey }) {
   const t = TOOLS.find((o) => o.key === tool) ?? TOOLS[0];
-  const w = 236;
+  // Each category a 20-wide button, a 9-wide divider between the bands.
+  const slots = BAR.reduce<{ name: string; left: number; w: number }[]>((out, name) => {
+    const prev = out.at(-1);
+    return [...out, { name, left: prev ? prev.left + prev.w : x + 146, w: name === '|' ? 9 : 20 }];
+  }, []);
+  const end = slots.at(-1)!.left + slots.at(-1)!.w;
+  const w = end - x + 34;
   return (
     <g>
       <rect
@@ -98,10 +105,45 @@ export function PickerTrigger({ x = 24, y = 14, tool }: { x?: number; y?: number
         className="stroke-slate-200"
         strokeWidth={1.2}
       />
-      <Label x={x + 150} y={y + 41} size={11} weight={500} tone="body">
-        Popular
-      </Label>
-      <Chevron x={x + w - 16} y={y + 40} />
+      {slots.map((slot, i) =>
+        slot.name === '|' ? (
+          <line
+            key={i}
+            x1={slot.left + 4}
+            y1={y + 32}
+            x2={slot.left + 4}
+            y2={y + 48}
+            className="stroke-slate-200"
+            strokeWidth={1}
+          />
+        ) : (
+          <g key={slot.name} transform={`translate(${slot.left + slot.w / 2} ${y + 40})`}>
+            <BarGlyph name={slot.name} />
+          </g>
+        ),
+      )}
+      {/* Search, last on the strip behind its own divider. */}
+      <line
+        x1={end + 5}
+        y1={y + 30}
+        x2={end + 5}
+        y2={y + 50}
+        className="stroke-slate-200"
+        strokeWidth={1.2}
+      />
+      <circle
+        cx={end + 18}
+        cy={y + 39}
+        r={5}
+        className="fill-none stroke-slate-500"
+        strokeWidth={1.6}
+      />
+      <path
+        d={`M${end + 22} ${y + 43} l4 4`}
+        className="stroke-slate-500"
+        strokeWidth={1.6}
+        strokeLinecap="round"
+      />
     </g>
   );
 }
@@ -110,7 +152,7 @@ export function PickerTrigger({ x = 24, y = 14, tool }: { x?: number; y?: number
  *  it in its three named bands, with the current tool in its selected tone and
  *  the shortcut letters in the tiles' corners. */
 export function ToolPicker({ active = 'select' }: { active?: ToolKey }) {
-  const mx = 84;
+  const mx = 24;
   const tileW = 80;
   const tileH = 42;
   const gap = 4;

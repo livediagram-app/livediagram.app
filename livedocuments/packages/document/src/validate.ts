@@ -95,7 +95,6 @@ export const SHAPE_KINDS = new Set<string>([
   'document',
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md).
   'banner',
-  'callout',
   'card',
   'badge',
   'step',
@@ -195,14 +194,6 @@ function endpointRule(ep: unknown): string | null {
       return isNonEmptyStr(ep.elementId) && ANCHORS.has(ep.anchor as string) ? null : PINNED_RULE;
     case 'on-arrow':
       return isNonEmptyStr(ep.arrowId) && isNum(ep.t) ? null : 'an on-arrow end: arrowId and t';
-    // LEGACY (docs/specs/009-elements/web-components-and-no-groups.md): groups are gone and no
-    // current code writes this, but a browser still running a pre-removal build can. Accepting it
-    // keeps that save from failing; migrateLegacyGroups freezes it to a free end on the next read
-    // (rowToTab / the offline store), so nothing downstream sees it.
-    case 'pinned-group':
-      return isNonEmptyStr(ep.groupId) && ANCHORS.has(ep.anchor as string)
-        ? null
-        : 'a pinned-group end: groupId and an anchor';
     default:
       return 'an end of kind free, pinned or on-arrow';
   }

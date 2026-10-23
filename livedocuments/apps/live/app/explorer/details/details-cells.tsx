@@ -1,7 +1,7 @@
 'use client';
 
 import type { AccessLevel, DocumentStats } from '@livedocuments/api-schema';
-import { editorModeLabel } from '@livedocuments/document';
+import { DEFAULT_EDITOR_MODE, editorModeLabel } from '@livedocuments/document';
 import { lucideKey, lucideMessageSquare, lucideShapes } from '@livedocuments/icons/lucide';
 import { EDITOR_MODE_ICONS, Glyph, Prims, Tooltip, lucideGlyph } from '@livedocuments/ui';
 import { ROLE_PASS } from '@/components/dialogs/share-dialog-parts';
@@ -70,9 +70,9 @@ export const NOT_COUNTED = 'Not counted yet';
 
 export function TypeCell({ stats }: { stats: DocumentStats | null | undefined }) {
   if (!stats) return <NoValue label={NOT_COUNTED} />;
-  const Icon = EDITOR_MODE_ICONS[stats.mode];
+  const Icon = EDITOR_MODE_ICONS[DEFAULT_EDITOR_MODE];
   return (
-    <NamedIcon label={editorModeLabel(stats.mode)}>
+    <NamedIcon label={editorModeLabel(DEFAULT_EDITOR_MODE)}>
       <Icon aria-hidden size={14} className="text-slate-500 dark:text-slate-400" />
     </NamedIcon>
   );

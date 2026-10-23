@@ -29,8 +29,8 @@ describe('acceptsInlineIcon', () => {
 });
 
 describe('positionsInlineIcon', () => {
-  it('takes an icon on a card, callout or header but leaves its place to the kind', () => {
-    for (const kind of ['card', 'callout', 'site-header'] as const) {
+  it('takes an icon on a card or header but leaves its place to the kind', () => {
+    for (const kind of ['card', 'site-header'] as const) {
       expect(acceptsInlineIcon(createShape(kind, 0, 0)), kind).toBe(true);
       expect(positionsInlineIcon(createShape(kind, 0, 0)), kind).toBe(false);
     }

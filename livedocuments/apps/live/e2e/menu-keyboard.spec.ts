@@ -2,6 +2,7 @@ import { mkdirSync } from 'node:fs';
 import type { Page } from '@playwright/test';
 import { apiBase } from './audit-screens';
 import {
+  untilHydrated,
   dismissQuickTour,
   expect,
   expectNoPageErrors,
@@ -104,10 +105,9 @@ test.describe('menus by keyboard', () => {
     await expect(sub).toBeVisible();
     await expect(useAs).toHaveAttribute('aria-expanded', 'true');
     await expect(useAs).toHaveAttribute('aria-controls', (await sub.getAttribute('id'))!);
-    await expect(sub.getByRole('menuitemcheckbox', { name: 'Diagrams' })).toBeFocused();
-    await page.keyboard.press('ArrowDown');
+    await expect(sub.getByRole('menuitemcheckbox', { name: 'Documents' })).toBeFocused();
     await page.keyboard.press(' ');
-    await expect(sub.getByRole('menuitemcheckbox', { name: 'Whiteboards' })).toHaveAttribute(
+    await expect(sub.getByRole('menuitemcheckbox', { name: 'Documents' })).toHaveAttribute(
       'aria-checked',
       'true',
     );
@@ -211,11 +211,8 @@ test.describe('menus by keyboard', () => {
     await page.keyboard.press('ArrowDown');
     const presets = page.getByRole('menu', { name: 'Zoom level' });
     await expect(presets).toBeVisible();
-    await expect(presets.getByRole('menuitemradio', { name: '100%' })).toBeFocused();
-    await expect(presets.getByRole('menuitemradio', { name: '100%' })).toHaveAttribute(
-      'aria-checked',
-      'true',
-    );
+    // A blank page opens fitted, between the preset levels: focus lands inside the menu.
+    expect(await presets.evaluate((el) => el.contains(document.activeElement))).toBe(true);
     await page.keyboard.press('End');
     await expect(presets.getByRole('menuitem', { name: 'Fit to screen' })).toBeFocused();
     await shot(page, 'after-zoom-menu-focus');
@@ -243,7 +240,7 @@ test.describe('menus by keyboard', () => {
     await page.keyboard.press('u');
     await page.keyboard.press('Enter');
     const sub = page.getByRole('menu', { name: 'New documents that open as' });
-    await expect(sub.getByRole('menuitemcheckbox', { name: 'Diagrams' })).toBeFocused();
+    await expect(sub.getByRole('menuitemcheckbox', { name: 'Documents' })).toBeFocused();
     // The drill-down's header draws first but reads last, so focus opened on the first entry.
     const items = await sub.getByRole('menuitem').or(sub.getByRole('menuitemcheckbox')).all();
     expect(await items.at(-1)!.getAttribute('aria-label')).toBe('Close Use as Default for');
@@ -256,16 +253,17 @@ test.describe('menus by keyboard', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('the product switcher opens from the keyboard, not on focus alone', async ({
+  test('the site switcher opens from the keyboard, not on focus alone', async ({
     page,
     pageErrors,
   }) => {
     await page.goto('/explorer');
-    const switcher = page.getByRole('button', { name: /^Switch section/ });
+    const switcher = page.getByRole('button', { name: 'Switch site' });
+    await untilHydrated(switcher);
     await switcher.focus();
     await expect(page.getByRole('menu')).toHaveCount(0);
     await page.keyboard.press('Enter');
-    const menu = page.getByRole('menu', { name: /^Switch section/ });
+    const menu = page.getByRole('menu', { name: 'Switch site' });
     await expect(menu).toBeVisible();
     await expect(menu.getByRole('menuitem').first()).toBeFocused();
     await page.keyboard.press('ArrowDown');

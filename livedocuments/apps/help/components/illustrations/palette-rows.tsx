@@ -6,6 +6,7 @@
 // way the editor does. Composed from the shared primitives.
 
 import { Scene, Panel, Label } from './primitives';
+import { STRIP_W, Strip } from './toolbar-layout';
 
 type Row = { caption: string; blurb: string; key?: string };
 
@@ -26,9 +27,7 @@ const CATEGORY_ROWS: Record<string, Row[]> = {
     { caption: 'Line', blurb: 'A plain line, no pointers' },
   ],
   Build: [
-    { caption: 'Mind Node', blurb: 'Tab adds a child, Enter a sibling' },
     { caption: 'Table', blurb: 'An editable grid of cells' },
-    { caption: 'Lane', blurb: 'A titled band that carries its steps' },
     { caption: 'Stack', blurb: 'A box that carries what sits in it' },
     { caption: 'Timeline', blurb: 'A track for sequencing events' },
   ],
@@ -55,15 +54,15 @@ const CATEGORY_ROWS: Record<string, Row[]> = {
 type PaletteCategory = keyof typeof CATEGORY_ROWS;
 
 const ROW_H = 30;
-const HEAD_H = 40;
+const HEAD_H = 30;
 
 /** The height a category's panel needs, so a scene can size itself around it. */
 function paletteRowsHeight(category: PaletteCategory): number {
   return HEAD_H + CATEGORY_ROWS[category]!.length * ROW_H + 10;
 }
 
-/** The palette body (as More opens it) on one row-style category: the category dropdown
- *  at the top, then its rows. `active` marks the row whose tool is armed. */
+/** A row-style category's flyout: its name in the title bar, then its rows. `active` marks the row whose tool is
+ *  armed. */
 export function PaletteCategoryPanel({
   x,
   y,
@@ -79,28 +78,7 @@ export function PaletteCategoryPanel({
 }) {
   const rows = CATEGORY_ROWS[category]!;
   return (
-    <Panel x={x} y={y} w={w} h={paletteRowsHeight(category)}>
-      {/* The category dropdown: the open category's name and a chevron. */}
-      <rect
-        x={x + 10}
-        y={y + 9}
-        width={w - 20}
-        height={24}
-        rx={7}
-        className="fill-slate-50 stroke-slate-200"
-        strokeWidth={1.4}
-      />
-      <Label x={x + 20} y={y + 22} size={11} weight={700} tone="strong">
-        {category}
-      </Label>
-      <path
-        d={`M${x + w - 28} ${y + 19} l4 4 l4 -4`}
-        fill="none"
-        className="stroke-slate-400"
-        strokeWidth={1.6}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <Panel x={x} y={y} w={w} h={paletteRowsHeight(category)} title={category.toUpperCase()}>
       {rows.map((row, i) => {
         const ry = y + HEAD_H + i * ROW_H;
         const on = row.caption === active;
@@ -154,13 +132,15 @@ export function PaletteCategoryPanel({
   );
 }
 
-/** A row-style category on its own, centred in a scene, with one row armed. */
+/** A row-style category's flyout under the palette strip, its button pressed on the category bar, with one row
+ *  armed. */
 export function PaletteRows({ category, active }: { category: PaletteCategory; active?: string }) {
   const w = 256;
   const h = paletteRowsHeight(category);
   return (
-    <Scene w={420} h={h + 32} bg="plain">
-      <PaletteCategoryPanel x={(420 - w) / 2} y={16} w={w} category={category} active={active} />
+    <Scene w={420} h={h + 64} bg="plain">
+      <Strip x={(420 - STRIP_W) / 2} y={8} open={category} />
+      <PaletteCategoryPanel x={(420 - w) / 2} y={48} w={w} category={category} active={active} />
     </Scene>
   );
 }

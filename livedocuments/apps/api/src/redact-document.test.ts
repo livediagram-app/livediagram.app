@@ -55,7 +55,7 @@ describe('redactDocumentForReader', () => {
     // Belt and braces on the `caller &&` guard: an already-blank row must not
     // read as "this caller is the owner" for a caller with no identity, which
     // a bare `caller === ownerId` would.
-    const blanked = { ...liveDoc, ownerId: '' } as DocumentDTO;
+    const blanked: DocumentDTO = { ...liveDoc, ownerId: '' };
     expect(redactDocumentForReader(blanked, '').ownerId).toBe('');
     expect(redactDocumentForReader(blanked, null).ownerId).toBe('');
   });

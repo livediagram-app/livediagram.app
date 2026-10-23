@@ -1,13 +1,12 @@
-// Scenes for the palette's Popular and Stickers articles: the palette body
-// (as More opens it) showing each category. Tile captions are the real ones (palette-tile-defs `caption`, or
-// the label less "Add"), Popular's twelve come from palette-layouts, the sticker badges from
-// packages/icons/src/sticker-catalog.ts, and the technology marks from tech-icon-catalog.ts.
+// Scenes for the palette's Stickers article: a category's flyout hanging under the palette strip, its button
+// pressed on the category bar. The sticker badges come from packages/icons/src/sticker-catalog.ts.
 
 import type { ReactNode } from 'react';
 import { Label, Panel, Scene } from './primitives';
+import { STRIP_W, Strip } from './toolbar-layout';
 
-/** The palette body as a panel: its title bar, then the header band (selection mode on the
- *  left, the category picker on the right) the body hangs under. */
+/** The palette strip with `category` pressed on its bar, and that category's flyout under it, `h` tall from the
+ *  strip's top: the category's name, then its body. */
 function PaletteFrame({
   category,
   h,
@@ -18,50 +17,12 @@ function PaletteFrame({
   children: ReactNode;
 }) {
   return (
-    <Panel x={60} y={10} w={300} h={h} title="PALETTE">
-      {/* Selection mode picker */}
-      <rect
-        x={72}
-        y={42}
-        width={40}
-        height={24}
-        rx={6}
-        className="fill-brand-50 stroke-brand-100"
-        strokeWidth={1}
-      />
-      <path
-        d="M80 48 L80 60 L83.5 57 L85.5 61 L87.5 60 L85.5 56 L89.5 55.5 Z"
-        className="fill-brand-600"
-      />
-      <path
-        d="M100 52 l3 3 l3 -3"
-        className="stroke-brand-600"
-        strokeWidth={1.4}
-        fill="none"
-        strokeLinecap="round"
-      />
-      {/* Category picker */}
-      <rect
-        x={244}
-        y={42}
-        width={104}
-        height={24}
-        rx={6}
-        className="fill-brand-50 stroke-brand-100"
-        strokeWidth={1}
-      />
-      <Label x={254} y={55} size={10} weight={700} className="fill-brand-700">
-        {category}
-      </Label>
-      <path
-        d="M334 52 l3 3 l3 -3"
-        className="stroke-brand-600"
-        strokeWidth={1.4}
-        fill="none"
-        strokeLinecap="round"
-      />
-      {children}
-    </Panel>
+    <g>
+      <Strip x={(420 - STRIP_W) / 2} y={8} open={category} />
+      <Panel x={60} y={48} w={300} h={h - 38} title={category.toUpperCase()}>
+        {children}
+      </Panel>
+    </g>
   );
 }
 

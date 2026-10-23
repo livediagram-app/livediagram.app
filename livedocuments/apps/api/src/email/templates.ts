@@ -165,7 +165,7 @@ function shell(env: Env, section: Section): string {
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px">
       <tr><td align="center" style="padding:20px 32px 0">
         ${lockup(base, 14, true)}
-        <p style="margin:8px 0 0;color:#94a3b8;font-size:12px;line-height:1.6">Diagram, draw and make pages together, live. Free and open source. <a href="${base}" style="color:${WORDMARK_ACCENT};text-decoration:none">${base.replace(/^https?:\/\//, '')}</a></p>
+        <p style="margin:8px 0 0;color:#94a3b8;font-size:12px;line-height:1.6">Write, present and design on pages together, live. Free and open source. <a href="${base}" style="color:${WORDMARK_ACCENT};text-decoration:none">${base.replace(/^https?:\/\//, '')}</a></p>
       </td></tr>
     </table>
   </td></tr></table>
@@ -178,16 +178,16 @@ export function welcomeEmail(env: Env): RenderedEmail {
     kind: 'Welcome',
     subject: 'Welcome to livedocuments',
     html: shell(env, {
-      heading: 'Welcome, let’s draw something',
+      heading: 'Welcome, let’s make something',
       intro:
-        'livedocuments is a fast, no-friction canvas for diagrams. Here’s how to get your first one going:',
+        'livedocuments is a fast, no-friction way to make articles, slide decks and infographics. Here’s how to get your first one going:',
       points: [
-        '<strong>Drop a shape</strong> from the palette, double-click it to type, and drag the corners to resize.',
-        '<strong>Connect things</strong> by hovering an element’s edge and dragging an arrow to another, and the arrow stays pinned as you move them.',
-        '<strong>Start from a template</strong> (slide deck, article, infographic, logo and more) or pick one of the built-in themes for an instant look.',
+        '<strong>Start from a template</strong> (slide deck, article, infographic, logo and more) or a blank page, and pick one of the built-in themes for an instant look.',
+        '<strong>Write an article</strong> by typing or importing Markdown, and it flows onto as many pages as it needs.',
+        '<strong>Present a slide deck</strong> full screen, with a laser and a spotlight to point things out.',
       ],
       outro: 'Everything autosaves as you go, so you can just start and come back later.',
-      ctaText: 'Start drawing',
+      ctaText: 'Start a document',
       ctaHref: `${base}/new`,
     }),
   };
@@ -220,7 +220,7 @@ export function week2Email(env: Env): RenderedEmail {
     kind: 'Week2',
     subject: 'Bring your team onto the canvas',
     html: shell(env, {
-      heading: 'Diagrams are better together',
+      heading: 'Documents are better together',
       intro:
         'If you’re working with other people, a team gives everyone a shared home for documents:',
       points: [
@@ -583,14 +583,14 @@ export function activationEmail(env: Env): RenderedEmail {
     html: shell(env, {
       heading: 'Ready when you are',
       intro:
-        'You signed up for livedocuments but haven’t made a diagram yet. It takes about thirty seconds to get going:',
+        'You signed up for livedocuments but haven’t made a document yet. It takes about thirty seconds to get going:',
       points: [
-        'Open a blank canvas and drop a shape, or start from a template (slide deck, article, infographic and more).',
+        'Open a blank page and start typing, or start from a template (slide deck, article, infographic and more).',
         'Double-click to type, drag from an edge to connect, and it all autosaves as you go.',
         'Pick a theme for an instant look you can change any time.',
       ],
       outro: 'No pressure: the canvas is free and always here.',
-      ctaText: 'Make your first diagram',
+      ctaText: 'Make your first document',
       ctaHref: `${base}/new`,
       footer: tipsFooter(env),
     }),

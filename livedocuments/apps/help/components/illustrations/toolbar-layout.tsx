@@ -34,9 +34,8 @@ function ShapeGlyph({
   }
 }
 
-// A pill-shaped dropdown in the strip: tinted, so it reads as a menu beside
-// the plain tiles, the way the real strip draws its selection mode, category
-// and More controls.
+// A pill-shaped dropdown in the strip: tinted, so it reads as a menu beside the category bar's plain buttons, the
+// way the real strip draws its selection mode.
 function Pill({
   x,
   y,
@@ -73,29 +72,108 @@ function Pill({
   );
 }
 
-// Diagram's category bar, in order: category names, and '|' for the divider between the bands.
-const BAR: readonly string[] = [
+/** The category bar's categories on an infographic page, in order (apps/live palette-layouts.ts), with '|' for the
+ *  divider between the bands. */
+export const BAR: readonly string[] = [
   'Shapes',
-  'Draw',
+  'Write',
   '|',
-  'Build',
   'Concepts',
+  'Components',
+  'Devices',
   '|',
   'Icons',
-  'Tech',
+  'Stickers',
   'Media',
+  '|',
+  'Data',
 ];
-// A name's width at the strip's 8.5px type, and the padding either side of it. Tight enough that the whole
-// strip, Search included, fits a 420-wide scene beside the menu card (the figure scan in help-pages.md).
-const charW = 4.5;
-const PAD = 5;
-const nameW = (name: string) => Math.round(name.length * charW + 2 * PAD);
+
+/** A category's glyph on the bar, centred on the origin and about 12 units across: the universal symbol for it. */
+export function BarGlyph({ name, active = false }: { name: string; active?: boolean }) {
+  const s = {
+    className: active ? 'stroke-brand-700' : 'stroke-slate-500',
+    strokeWidth: 1.4,
+    fill: 'none',
+    strokeLinecap: 'round',
+    strokeLinejoin: 'round',
+  } as const;
+  const dot = active ? 'fill-brand-700' : 'fill-slate-500';
+  switch (name) {
+    case 'Shapes':
+      return (
+        <g>
+          <rect x={-6} y={-6} width={7} height={7} rx={1} {...s} />
+          <circle cx={2.5} cy={2.5} r={3.5} {...s} />
+        </g>
+      );
+    case 'Write':
+      return <path d="M-5 -5 H5 M0 -5 V6" {...s} />;
+    case 'Concepts':
+      return (
+        <g>
+          <path d="M-3.5 -3 H3.5 M-3.5 -3 L0 3.5" {...s} />
+          <circle cx={-4} cy={-3.5} r={2} {...s} />
+          <circle cx={4} cy={-3.5} r={2} {...s} />
+          <circle cx={0} cy={4} r={2} {...s} />
+        </g>
+      );
+    case 'Components':
+      return (
+        <g>
+          <rect x={-6} y={-5} width={12} height={10} rx={1.5} {...s} />
+          <path d="M-6 -1 H6 M-3.5 2 H1" {...s} />
+        </g>
+      );
+    case 'Devices':
+      return (
+        <g>
+          <rect x={-3.5} y={-6} width={7} height={12} rx={1.5} {...s} />
+          <path d="M-1 3.5 H1" {...s} />
+        </g>
+      );
+    case 'Icons':
+      return (
+        <path
+          d="M0 -6 L1.8 -1.9 L6 -1.6 L2.8 1.2 L3.7 5.5 L0 3.2 L-3.7 5.5 L-2.8 1.2 L-6 -1.6 L-1.8 -1.9 Z"
+          {...s}
+        />
+      );
+    case 'Stickers':
+      return (
+        <g>
+          <circle r={5.5} {...s} />
+          <path d="M-2.5 1.5 Q0 4 2.5 1.5" {...s} />
+          <circle cx={-2} cy={-1.5} r={0.8} className={dot} />
+          <circle cx={2} cy={-1.5} r={0.8} className={dot} />
+        </g>
+      );
+    case 'Media':
+      return (
+        <g>
+          <rect x={-6} y={-5} width={12} height={10} rx={1.5} {...s} />
+          <path d="M-6 3.5 L-2 -0.5 L1 2.5 L3 0.5 L6 3.5" {...s} />
+          <circle cx={2.5} cy={-2} r={1} className={dot} />
+        </g>
+      );
+    case 'Data':
+      return <path d="M-4 5 V1 M0 5 V-5 M4 5 V-2" {...s} />;
+    default:
+      return null;
+  }
+}
+
+// A category's button on the strip, and a divider between the bands. The scenes draw the bar as glyphs alone, as the
+// editor does where the strip has no room for the names: with them, a page's whole bar would not fit a 420-wide scene
+// beside the menu card.
+const SLOT_W = 20;
+const DIVIDER_W = 9;
 
 /** The width of the strip drawn by `Strip`. */
-export const STRIP_W = 49 + BAR.reduce((w, c) => w + (c === '|' ? 9 : nameW(c)), 0) + 36;
+export const STRIP_W = 49 + BAR.reduce((w, c) => w + (c === '|' ? DIVIDER_W : SLOT_W), 0) + 36;
 
-/** The palette strip as Diagram's category bar, top-left corner at (x, y), STRIP_W wide and 32 tall: the selection
- *  mode, the categories by name (`open` pressed, its flyout showing), and Search. */
+/** The palette strip, top-left corner at (x, y), STRIP_W wide and 32 tall: the selection mode, the category bar (its
+ *  categories as glyphs, `open` pressed with its flyout showing), and Search. */
 export function Strip({ x, y, open }: { x: number; y: number; open?: string }) {
   const slots = barSlots(x);
   const end = slots.at(-1)!.left + slots.at(-1)!.w;
@@ -114,20 +192,13 @@ export function Strip({ x, y, open }: { x: number; y: number; open?: string }) {
     return (
       <g key={name}>
         {pressed ? (
-          <rect x={at} y={y + 4} width={w} height={24} rx={6} className="fill-brand-100" />
+          <rect x={at + 1} y={y + 4} width={w - 2} height={24} rx={6} className="fill-brand-100" />
         ) : null}
-        <Label
-          x={at + w / 2}
-          y={y + 19}
-          size={8.5}
-          weight={pressed ? 700 : 500}
-          anchor="middle"
-          className={pressed ? 'fill-brand-700' : 'fill-slate-600'}
-        >
-          {name}
-        </Label>
+        <g transform={`translate(${at + w / 2} ${y + 16})`}>
+          <BarGlyph name={name} active={pressed} />
+        </g>
         {pressed ? (
-          <rect x={at + 6} y={y + 27} width={w - 12} height={2} rx={1} className="fill-brand-500" />
+          <rect x={at + 5} y={y + 27} width={w - 10} height={2} rx={1} className="fill-brand-500" />
         ) : null}
       </g>
     );
@@ -170,12 +241,12 @@ export function Strip({ x, y, open }: { x: number; y: number; open?: string }) {
   );
 }
 
-// Each of the bar's items on a strip drawn at x: its left edge and width (a divider is 9 wide).
+// Each of the bar's items on a strip drawn at x: its left edge and width.
 function barSlots(x: number): { name: string; left: number; w: number }[] {
   return BAR.reduce<{ name: string; left: number; w: number }[]>((out, name) => {
     const prev = out.at(-1);
     const left = prev ? prev.left + prev.w : x + 49;
-    return [...out, { name, left, w: name === '|' ? 9 : nameW(name) }];
+    return [...out, { name, left, w: name === '|' ? DIVIDER_W : SLOT_W }];
   }, []);
 }
 

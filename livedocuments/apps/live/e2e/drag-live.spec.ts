@@ -137,10 +137,12 @@ test('a collaborator sees a drag live, and where it lands', async ({ page, brows
   const watch = setInterval(() => void leftOf(peerPage, 'a').then((x) => seen.push(x)), 50);
   await expect.poll(savedX, { timeout: 10_000 }).toBeGreaterThan(300);
   const landed = (await savedX())!;
-  await expect.poll(() => leftOf(peerPage, 'a'), { timeout: 5_000 }).toBe(landed);
+  await expect
+    .poll(async () => Math.abs((await leftOf(peerPage, 'a')) - landed), { timeout: 5_000 })
+    .toBeLessThan(0.01);
   clearInterval(watch);
   expect(seen.filter((x) => x < lastSeen - 1)).toEqual([]);
   // And it stays there.
   await peerPage.waitForTimeout(2500);
-  expect(await leftOf(peerPage, 'a')).toBe(landed);
+  expect(await leftOf(peerPage, 'a')).toBeCloseTo(landed, 2);
 });

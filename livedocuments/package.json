@@ -12,7 +12,6 @@
     "typecheck": "turbo run typecheck --filter=@livedocuments/*",
     "staging:check": "turbo run staging:check --filter=@livedocuments/*",
     "licences": "pnpm --filter @livedocuments/marketing licences",
-    "bench:stroke-points": "node --expose-gc --import ./scripts/ts-source-hooks.mjs scripts/stroke-points-bench.ts",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
     "clean": "turbo run clean --filter=@livedocuments/* && rm -rf node_modules",

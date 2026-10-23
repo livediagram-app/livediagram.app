@@ -114,7 +114,7 @@ is the whole of what the repo enforces.
 
 - Each workspace lints its own tree; build output (`dist`, `build`, `.next*`, `out`, `.turbo`,
   `.wrangler`, `coverage`), `node_modules` and Next's `next-env.d.ts` are ignored.
-- Files outside every workspace (root `scripts/`, `docs/demo/`) are not part of `pnpm lint`; the root
+- Files outside every workspace (root `scripts/`) are not part of `pnpm lint`; the root
   `oxlint.config.ts` exists so an editor lints them with the same rules.
 
 ## Guarantees

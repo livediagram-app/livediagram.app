@@ -56,26 +56,19 @@ export async function enableDebugLogs(context: BrowserContext): Promise<void> {
 }
 
 // The Pages and element tours (docs/specs/007-editor/pages-tour.md) offer themselves 800 ms into a tab and their
-// overlays would take the presses of every spec there; they have their own unit tests. Marked seen (with the old
-// Draw and Forms tour flags) for every page of the context.
-async function markModeToursSeen(context: BrowserContext): Promise<void> {
+// overlays would take the presses of every spec there; they have their own unit tests. Marked seen for every page of
+// the context.
+export async function markModeToursSeen(context: BrowserContext): Promise<void> {
   await context.addInitScript(() => {
     const key = 'livedocuments:user-preferences:v1';
     try {
       const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
       // The Pages tour offers each page kind once (lib/tour-tracks.ts): every kind answered.
-      if (
-        prefs.drawTourSeen !== true ||
-        prefs.formTourSeen !== true ||
-        !Array.isArray(prefs.pagesTourKinds) ||
-        !Array.isArray(prefs.elementTourKinds)
-      )
+      if (!Array.isArray(prefs.pagesTourKinds) || !Array.isArray(prefs.elementTourKinds))
         localStorage.setItem(
           key,
           JSON.stringify({
             ...prefs,
-            drawTourSeen: true,
-            formTourSeen: true,
             pagesTourSeen: true,
             pagesTourKinds: ['slide', 'infographic', 'article', 'logo'],
             // Element tours (docs/specs/007-editor/element-tours.md): the offer beside a Sankey's toolbar.
@@ -129,11 +122,9 @@ export function expectNoPageErrors(pageErrors: string[]): void {
   expect(pageErrors, `unexpected page errors:\n${pageErrors.join('\n')}`).toEqual([]);
 }
 
-// The wizard is a static export: its buttons are in the HTML before React attaches their handlers. A mode
-// card clicked in that gap is kept and acted on at hydration (new-document-route.md "A choice before
-// hydration"), but every other control's click in that gap does nothing, more often the busier the
-// machine. React tags every element it has hydrated with a `__reactProps$` key; wait for it on the
-// element about to be used.
+// The app is a static export: its buttons are in the HTML before React attaches their handlers, and a click in that
+// gap does nothing, more often the busier the machine. React tags every element it has hydrated with a
+// `__reactProps$` key; wait for it on the element about to be used.
 export async function untilHydrated(locator: Locator): Promise<void> {
   await expect
     .poll(() =>
@@ -142,39 +133,14 @@ export async function untilHydrated(locator: Locator): Promise<void> {
     .toBe(true);
 }
 
-// The wizard asks only for a mode (docs/specs/007-editor/new-document-route.md "One-step wizard"): choosing one
-// creates the document there and then, and lands on the editor with the mode's start screen over the canvas
-// (docs/specs/007-editor/start-diagramming.md).
-// Resolves to the new document's id; `url` carries a `/new?folder=` / `?team=` context.
-export async function createInMode(page: Page, mode: string, url = '/new'): Promise<string> {
+// `/new` makes a document as it mounts and opens it on its start, Start Making Pages
+// (docs/specs/007-editor/new-document-route.md). Resolves to the new document's id once the editor is up; `url`
+// carries a `/new?folder=` / `?team=` / `?blank=1` context.
+export async function createDocument(page: Page, url = '/new'): Promise<string> {
   await page.goto(url);
-  await page.getByText('New Document', { exact: false }).waitFor();
-  const card = page.locator(`[data-new-mode="${mode}"]`);
-  await untilHydrated(card);
-  await card.click();
+  await page.waitForURL(/\/document\//, { timeout: 30_000 });
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   return new URL(page.url()).pathname.split('/').pop()!;
-}
-
-// The start screen over a new tab, by its mode's title (Start Diagramming, ...).
-const startScreen = (page: Page, title: RegExp = /^Start /) =>
-  page.getByRole('region', { name: title });
-
-// Start a document from a named TEMPLATE in a named group of Start Diagramming: a Diagram document from the
-// wizard, then the template picked on its start screen, so template creation (builders, layers, per-template
-// canvas overrides, the tab kind) is its own path, as a person takes it.
-export async function startTemplateDocument(
-  page: Page,
-  group: string,
-  template: RegExp,
-): Promise<void> {
-  await createInMode(page, 'diagram');
-  const start = startScreen(page, /^Start Diagramming$/);
-  const rail = start.locator(`[data-rail]`).filter({ hasText: group }).first();
-  await untilHydrated(rail);
-  await rail.click();
-  await start.getByRole('button', { name: template }).first().click();
-  await start.waitFor({ state: 'detached' });
 }
 
 // Skip the Pages tour when it offers itself. It lands a BEAT AFTER the canvas does, and its card swallows pointer
@@ -191,40 +157,50 @@ export async function dismissQuickTour(page: Page): Promise<void> {
   await skip.waitFor({ state: 'detached' });
 }
 
-// A blank canvas straight away: /new?blank=1, the wizard bypass Start Blank
-// links to (docs/specs/007-editor/new-document-route.md).
+// A blank document straight away: /new?blank=1, the document Start Blank links to
+// (docs/specs/007-editor/new-document-route.md). Its one page is still unchosen, asking What Is This Page For?
+// (docs/specs/007-editor/pages-mode.md "Page kinds"): right for a spec that seeds its own elements.
 export async function openStartBlank(page: Page): Promise<void> {
   await page.goto('/new?blank=1');
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);
 }
 
-// A blank session tab straight away: /new?template=blank-session creates it with no wizard.
-export async function openBlankSession(page: Page): Promise<void> {
-  // The Workshop tour offers itself 800 ms into Workshop (WorkshopTourHost OFFER_DELAY_MS) and its
-  // overlay would take these specs' presses; it has its own unit tests.
-  await page.addInitScript(() => {
-    const key = 'livedocuments:user-preferences:v1';
-    try {
-      const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
-      if (prefs.workshopTourSeen !== true)
-        localStorage.setItem(key, JSON.stringify({ ...prefs, workshopTourSeen: true }));
-    } catch {
-      // No storage: nothing to mark.
-    }
-  });
-  await page.goto('/new?template=blank-session');
-  await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
-  await dismissQuickTour(page);
+// A blank document whose page is chosen as an Infographic, so the page's choice is put away and the page takes
+// elements: for a spec that places elements by hand (onPage).
+export async function openBlankPage(page: Page): Promise<void> {
+  await openStartBlank(page);
+  const choice = page.locator('[data-first-page-choice]');
+  const infographic = choice.getByRole('button', { name: /^Infographic/ });
+  await untilHydrated(infographic);
+  // The choice is an edit: wait for its autosave, or a spec's own write (seedTab) races it and loses.
+  const saved = page.waitForResponse(
+    (r) => r.request().method() === 'PUT' && /\/api\/documents\/[^/]+\/tabs\//.test(r.url()),
+  );
+  await infographic.click();
+  await choice.waitFor({ state: 'detached' });
+  await saved;
 }
 
-// A blank Diagram document through the wizard: Diagram on the Mode step, Create, then the start screen's × (a blank
-// canvas, docs/specs/007-editor/start-diagramming.md "Bringing it back").
+// A point on the first page as a fraction of its width and height (0..1), relative to the canvas: what a canvas
+// click's `position` takes. Elements are placed only on a page, which sits small in the middle of a blank tab.
+export async function onPage(
+  page: Page,
+  fx: number,
+  fy: number,
+): Promise<{ x: number; y: number }> {
+  const sheet = await settledBox(page.locator('[data-page-id]').first());
+  const canvas = (await page.locator('[data-canvas-a11y-root]').boundingBox())!;
+  return {
+    x: Math.round(sheet.x + sheet.width * fx - canvas.x),
+    y: Math.round(sheet.y + sheet.height * fy - canvas.y),
+  };
+}
+
+// A blank document with its start closed: the same /new?blank=1 (kept as its own name for the specs that read as
+// "start a blank document").
 export async function startBlankDocument(page: Page): Promise<void> {
-  await createInMode(page, 'diagram');
-  const start = startScreen(page, /^Start Diagramming$/);
-  await start.getByRole('button', { name: 'Close' }).click();
-  await start.waitFor({ state: 'detached' });
+  await openStartBlank(page);
 }
 
 export type Seed = Record<string, unknown>[];

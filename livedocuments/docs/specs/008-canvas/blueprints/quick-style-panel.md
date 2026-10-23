@@ -284,7 +284,7 @@ arrow), `useElementCreation.dropPaletteItem`, `useArrowConnect.connectArrowTo`,
 
 `useQuickStylePlacement(panelRef, active) => { left, top } | null`
 measures `main[data-canvas-a11y-root]` (area), the panel and obstacles
-`[data-tour-id="palette"], [data-toolbar-more], [data-floating-panel], [data-zoom-cluster]` with a
+`[data-tour-id="palette"], [data-floating-panel], [data-zoom-cluster]` with a
 non-empty rect, in a layout effect before paint, then again on: `ResizeObserver` (area, panel,
 obstacles, so a resizing panel is followed), `resize`, `pointerup` / `keyup`
 (capture), `transitionend` on the panel or an obstacle (one elsewhere on the canvas is ignored), and

@@ -23,10 +23,8 @@ export type ShapeKind =
   // replacing the grouped composites the Components palette used to build.
   // Banner: an accent bar, title (the label) over a subtitle line.
   | 'banner'
-  // Callout: a card with an accent badge, a heading line and a body (label).
-  | 'callout'
   // Card (docs/specs/009-elements/card.md): a diagram node with slots (header band, media, title, meta line,
-  // body, tags). The Callout is its preset; a stored `callout` migrates to one on read.
+  // body, tags). The Callout is its preset.
   | 'card'
   // Badge and Step number (docs/specs/009-elements/badge.md, step-number.md): small marks that may attach to a
   // point on a host element (`attachedTo` / `attachAt`) and travel with it.

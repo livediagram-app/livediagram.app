@@ -74,7 +74,7 @@ describe('create_document intent', () => {
   it('sends pages for elements', async () => {
     const { run, posted } = harness(undefined);
     await run([elements]);
-    expect(posted[0]!.intent).toEqual({ mode: 'pages', tabKind: 'diagram' });
+    expect(posted[0]!.intent).toEqual({ mode: 'pages' });
   });
 
   it.each(['blank-slide-deck', 'article', 'logo-design', 'floor-plan'])(
@@ -82,7 +82,7 @@ describe('create_document intent', () => {
     async (template) => {
       const { run, posted } = harness(undefined);
       await run([{ name: 'Tab', template }]);
-      expect(posted[0]!.intent).toEqual({ mode: 'pages', tabKind: 'diagram' });
+      expect(posted[0]!.intent).toEqual({ mode: 'pages' });
     },
   );
 });

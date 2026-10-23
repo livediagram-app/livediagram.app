@@ -26,9 +26,7 @@ export function ZoomedLaserOverlay(props: Omit<ComponentProps<typeof LaserOverla
 }
 
 // The corner zoom controls, showing the zoom from the viewport store.
-export function ViewZoomControls(
-  props: Omit<ComponentProps<typeof ZoomControls>, 'zoom' | 'zoomOff'>,
-) {
+export function ViewZoomControls(props: Omit<ComponentProps<typeof ZoomControls>, 'zoom'>) {
   return <ZoomControls {...props} zoom={useViewportOf(zoomOf)} />;
 }
 

@@ -63,7 +63,7 @@ export const changesetLs = defineVerb({
   cli: {
     positionals: ['doc'],
     examples: [
-      'livedocuments changeset ls "Auth flow"',
+      'livedocuments changeset ls "Launch deck"',
       'livedocuments changeset ls 3f9c --tab Overview --limit 5',
     ],
     prints: 'one changeset a line: id, revision, tab, author, summary, counts, time',
@@ -93,7 +93,7 @@ export const changesetShow = defineVerb({
   cli: {
     positionals: ['doc', 'changeset'],
     examples: [
-      'livedocuments changeset show "Auth flow" cs_8k2m4q7d1x',
+      'livedocuments changeset show "Launch deck" cs_8k2m4q7d1x',
       'livedocuments changeset show 3f9c cs_8k2m4q7d1x --json',
     ],
     prints: 'the summary line, then the result lines',
@@ -143,7 +143,7 @@ export const changesetRevert = defineVerb({
   cli: {
     positionals: ['doc', 'changeset'],
     examples: [
-      'livedocuments changeset revert "Auth flow" cs_8k2m4q7d1x',
+      'livedocuments changeset revert "Launch deck" cs_8k2m4q7d1x',
       'livedocuments changeset revert 3f9c cs_8k2m4q7d1x -q',
     ],
     prints: 'what it reverted and the new revision, then each element kept and why',

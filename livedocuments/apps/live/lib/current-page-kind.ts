@@ -22,11 +22,6 @@ export function currentPageIdNow(): string | null {
   return currentPageId;
 }
 
-/** Listen for the page someone is on changing (its kind or its id). */
-export function subscribeCurrentPage(listener: () => void): () => void {
-  return subscribe(listener);
-}
-
 function subscribe(listener: () => void): () => void {
   listeners.add(listener);
   return () => {

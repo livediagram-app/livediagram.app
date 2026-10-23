@@ -2,7 +2,7 @@ import type { PaletteProps } from './palette.types';
 
 // The editor add-handlers a palette surface is wired to: one per kind of
 // thing a tile can place or arm. Named once here so the strip
-// (docs/specs/007-editor/toolbar-layout.md), its More popover and its Search all take the same set, and
+// (docs/specs/007-editor/toolbar-layout.md), its category flyouts and its Search all take the same set, and
 // a handler missing from the list cannot leave a tile that silently does nothing.
 export const PALETTE_ADD_HANDLER_KEYS = [
   'onAddShape',

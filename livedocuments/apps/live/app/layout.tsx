@@ -10,7 +10,7 @@ import { ConfirmProvider } from '@/hooks/ui/useConfirm';
 import { ToastProvider } from '@/hooks/ui/useToast';
 import { googleFontsHref } from '@livedocuments/document';
 import { BRAND_OG_IMAGE, BRAND_TWITTER_IMAGE } from '@livedocuments/ui/seo';
-import { SITE_NAME } from '@livedocuments/ui/site';
+import { SITE_DESCRIPTION, SITE_NAME } from '@livedocuments/ui/site';
 import {
   APPEARANCE_BOOT_SCRIPT,
   BRAND_ICONS,
@@ -46,7 +46,7 @@ const TRUSTED_TYPES_BOOT = trustedTypesBootScript(
 );
 
 const TITLE = 'livedocuments';
-const DESCRIPTION = 'Diagrams, whiteboards, illustrations and documents. Multiplayer canvas.';
+const DESCRIPTION = SITE_DESCRIPTION;
 
 export const metadata: Metadata = {
   title: TITLE,

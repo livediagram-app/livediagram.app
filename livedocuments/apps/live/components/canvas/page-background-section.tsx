@@ -138,14 +138,8 @@ export function BackgroundSection({
   themePresets,
   onBackground,
   onPreview,
-  only,
-  motionNote,
 }: {
   page: Page;
-  // The categories offered, narrowing the page kind's own (a form's cover takes no picture).
-  only?: readonly BackgroundCategory[];
-  // The Animated category's note on when it moves, for something that is not a slide.
-  motionNote?: string;
   // The tab theme's own gradients (themeBackgroundPresets), offered first among the gradients.
   themePresets: readonly ThemeBackgroundPreset[];
   onBackground: (patch: Partial<PageBackground>) => void;
@@ -157,13 +151,12 @@ export function BackgroundSection({
   // A slide page and a wireframe page's screen move (docs/specs/007-editor/pages-mode.md "Animated
   // backgrounds", wireframe-pages.md "The screen").
   const kind = pageKindOf(page);
-  const offered: BackgroundCategory[] =
+  const categories: BackgroundCategory[] =
     kind === 'logo'
       ? ['solid', 'gradient']
       : kind === 'slide' || kind === 'wireframe'
         ? ['solid', 'gradient', 'image', 'animated']
         : ['solid', 'gradient', 'image'];
-  const categories = only ? offered.filter((c) => only.includes(c)) : offered;
   // Opens on the current fill's category; choosing another changes nothing on the page.
   const [chosen, setChosen] = useState<BackgroundCategory | null>(null);
   const opened = backgroundCategoryOf(fill);
@@ -223,7 +216,6 @@ export function BackgroundSection({
             themePresets={themePresets}
             onPick={pick}
             onPreview={preview}
-            {...(motionNote ? { note: motionNote } : {})}
           />
         ) : category === 'image' ? (
           <ImageBackgroundChoices

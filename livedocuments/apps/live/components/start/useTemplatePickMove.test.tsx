@@ -23,23 +23,21 @@ describe('useTemplatePickMove', () => {
   it('moves at the first pick on the document /new made, and says where', async () => {
     handTemplatePick({ documentId: 'd', tabId: 't', placementChosen: false });
     const { result } = renderHook(() => useTemplatePickMove(base));
-    result.current('slide-deck');
+    result.current();
     expect(readTemplatePick()).toBeNull();
     await vi.waitFor(() =>
       expect(info).toHaveBeenCalledWith(expect.stringMatching(/^Moved to Decks/)),
     );
-    expect(move).toHaveBeenCalledWith(
-      expect.objectContaining({ documentId: 'd', kind: 'slide-deck' }),
-    );
-    result.current('slide-deck');
+    expect(move).toHaveBeenCalledWith(expect.objectContaining({ documentId: 'd' }));
+    result.current();
     expect(move).toHaveBeenCalledTimes(1);
   });
 
   it('does nothing without a handoff, or for a folder the person chose', () => {
     const { result } = renderHook(() => useTemplatePickMove(base));
-    result.current('slide-deck');
+    result.current();
     handTemplatePick({ documentId: 'd', tabId: 't', placementChosen: true });
-    result.current('slide-deck');
+    result.current();
     expect(move).not.toHaveBeenCalled();
   });
 

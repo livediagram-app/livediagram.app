@@ -68,7 +68,7 @@ export const changesetApply = defineVerb({
     positionals: ['doc'],
     flags: { file: { short: 'f' } },
     examples: [
-      'livedocuments edit "Auth flow" -f ops.txt',
+      'livedocuments edit "Launch deck" -f ops.txt',
       'livedocuments changeset apply 3f9c -f - --dry-run < arch.json',
     ],
     prints: 'one result line per element, then the revision, lint verdict and revert command',
@@ -79,12 +79,12 @@ const ELEMENT_OPERATIONS = {
   add: {
     summary: 'Add an element',
     words: '<kind> [id=<id>] key=value… [<placement>]',
-    example: 'square id=verify label="Verify email" below:n3',
+    example: 'square id=pilot label="Pilot" below:n3',
   },
   set: {
     summary: 'Change fields of elements',
     words: '<selector> key=value…',
-    example: 'n3 label="Sign in" shape=stadium',
+    example: 'n3 label="Beta" shape=stadium',
   },
   rm: { summary: 'Remove elements', words: '<selector>', example: 'n7' },
   move: {
@@ -95,12 +95,12 @@ const ELEMENT_OPERATIONS = {
   connect: {
     summary: 'Draw an arrow from one element to another',
     words: '<from> <to> [key=value…]',
-    example: 'n3 n7 label=retry',
+    example: 'n3 n7 label=feedback',
   },
   insert: {
     summary: 'Put an element on an arrow, between its ends',
     words: '<kind> key=value… between <a> <b>',
-    example: 'square label=Verify between n3 n4',
+    example: 'square label=Pilot between n3 n4',
   },
 } as const;
 
@@ -131,7 +131,7 @@ function elementVerb(op: ElementOperation): Verb {
     cli: {
       positionals: ['doc', '...words'],
       examples: [
-        `livedocuments element ${op} "Auth flow" ${example}`,
+        `livedocuments element ${op} "Launch deck" ${example}`,
         `livedocuments element ${op} 3f9c ${example} --dry-run`,
       ],
       prints: 'one result line per element, then the revision, lint verdict and revert command',
@@ -197,7 +197,7 @@ export const tabDiff = defineVerb({
   cli: {
     positionals: ['doc'],
     examples: [
-      'livedocuments tab diff "Auth flow" --since 41',
+      'livedocuments tab diff "Launch deck" --since 41',
       'livedocuments tab diff 3f9c --tab Overview --since 41 --json',
     ],
     prints: 'the diff view: one line per element added, removed or changed',

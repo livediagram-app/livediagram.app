@@ -82,7 +82,7 @@ const DOCS: {
 }[] = [
   { title: 'Annual report', kind: 'article' },
   { title: 'Launch poster', kind: 'poster' },
-  { title: 'Team retro', kind: 'sticky' },
+  { title: 'Project notes', kind: 'sticky' },
   { title: 'Kickoff deck', kind: 'slide' },
   { title: 'Brand mark', kind: 'logo' },
   { title: 'Sign-up screen', kind: 'wireframe' },

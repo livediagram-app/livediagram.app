@@ -3,8 +3,7 @@
 // as a `replace` changeset compiles, so the CLI and the MCP create documents the way they replace tabs. A tab the
 // engine refuses refuses the whole create, by its id, before anything is written.
 
-import { creationIntentOf, type CreationIntent } from '@livedocuments/api-schema';
-import type { Tab } from '@livedocuments/document';
+import { CREATION_INTENT, type CreationIntent } from '@livedocuments/api-schema';
 import { applyReplace, type ReplaceBody } from '@livedocuments/edit-operations';
 import { engineLog } from '../changesets/log';
 import { engineRefusal } from '../changesets/request';
@@ -22,7 +21,7 @@ function sourceOf(tab: Record<string, unknown>): ReplaceBody | null {
 
 export function compileSeededTabs(tabs: readonly unknown[], documentId: string): CompiledSeed {
   const out: unknown[] = [];
-  let first: Tab | null = null;
+  let firstCompiled = false;
   for (const [index, raw] of tabs.entries()) {
     const body = isRecord(raw) && typeof raw.id === 'string' ? sourceOf(raw) : null;
     if (!isRecord(raw) || !body) {
@@ -52,7 +51,7 @@ export function compileSeededTabs(tabs: readonly unknown[], documentId: string):
       source: Object.keys(body)[0],
     });
     out.push({ ...rest, ...compiled.tab });
-    if (index === 0) first = compiled.tab;
+    if (index === 0) firstCompiled = true;
   }
-  return { tabs: out, intent: first ? creationIntentOf(first) : null };
+  return { tabs: out, intent: firstCompiled ? CREATION_INTENT : null };
 }

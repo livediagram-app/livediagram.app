@@ -75,11 +75,9 @@ otherwise.
 There is no separate Callout element any more. The palette's **Callout** places a card with `cardMedia: 'badge'`, a
 title "Heads up" and a body, which is what a Callout was.
 
-Stored callouts **migrate on read**: `shape: 'callout'` becomes `shape: 'card'` with `cardMedia: 'badge'`, keeping
-`pageTitle`, the label, `iconId` and every colour and geometry field, so a migrated callout looks as it did. The
-migration runs where the other stored-element migrations run (the api's read path, the thumbnail render, the offline
-load and the JSON import), so the editor, MCP, share links and thumbnails only ever see cards. The validator still
-accepts `callout` on write, so a browser on a cached build can still save; the next read migrates it.
+`callout` is no shape kind (`ShapeKind` and `SHAPE_KINDS` hold none), and nothing migrates one: livedocuments has
+no stored documents from before the change. `callout` lives on only as the palette's component id
+(`ComponentKind`) and the card variant that dresses the card (`applyShapeVariant`, `CARD_PRESET_VARIANTS`).
 
 ## Animation
 
@@ -90,7 +88,7 @@ their own.
 
 ## Palette
 
-**Components**: Card and Callout; **Popular** keeps Callout. A wireframe page's **Elements** holds the Card instead
+**Components**: Card and Callout. A wireframe page's **Elements** holds the Card instead
 ([Wireframe pages](../007-editor/wireframe-pages.md)).
 
 The Card tile drops a card with a tile, a title, a meta line, a body and two tags, so the first one shows what the
@@ -112,8 +110,8 @@ and using one closes the popover.
 | Accent  | `accent`  | A left accent edge, title and body; no media, meta line or tags            | 260 × 110 |
 | Callout | `callout` | The Callout (below)                                                        | 380 × 116 |
 
-Every preset is an ordinary card, so any slot can be switched back on afterwards. Elsewhere (the category's More
-body, the rows view, Search) the Card tile places the Service preset as before. Telemetry: the placement's type
+Every preset is an ordinary card, so any slot can be switched back on afterwards. Elsewhere (the rows view, Search) the Card
+tile places the Service preset as before. Telemetry: the placement's type
 carries the variant, as the Callout's and the Funnel's do.
 
 ## Editing the slots

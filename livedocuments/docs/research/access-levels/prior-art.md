@@ -1,5 +1,10 @@
 # Access levels: how other products do it
 
+> **livediagram-era research.** Written for livediagram before livedocuments was forked from it. It describes
+> features livedocuments does not have (live polls, Q&A boards, dot votes, quizzes, the facilitator baton, workshop
+> session tools) and cites code, migrations and a `docs/agent-cli` branch that are not in this repository. Kept as
+> background for the access-levels design; read the specs for what livedocuments does today.
+
 Research for the access-levels design ([draft spec](../../specs/013-workspace/share-roles.md), on the
 `docs/agent-cli` branch). It surveys how collaborative, whiteboarding and facilitation products name and
 bound their access levels, and what that means for livedocuments's proposed four: **Viewer**, **Participant**,

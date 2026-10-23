@@ -1,6 +1,5 @@
-import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
 import { IsometricOrbitButton } from '@/components/chrome/IsometricOrbitButton';
-import { ZoomMenu, type ZoomRange } from '@/components/chrome/ZoomMenu';
+import { ZoomMenu } from '@/components/chrome/ZoomMenu';
 import { ZenExitIcon, ZenIcon } from '@/components/palette/palette-icons';
 import { HoverCard, Glyph } from '@livedocuments/ui';
 
@@ -27,29 +26,14 @@ type ZoomControlsProps = {
   // A phone (docs/specs/007-editor/live-app.md): the cluster also carries Activity + Layers there, so
   // the step buttons go (pinch zooms) and Fit stays.
   pinchOnly?: boolean;
-  // An element maximised over the canvas: the controls stay in place, disabled, their hover cards saying why.
-  zoomOff?: boolean;
-  // What the controls zoom: the canvas, or a Sheet covering it, which only their hover cards tell apart.
-  zoomScope?: 'canvas' | 'sheet';
-  // The levels the zoom can reach, when narrower than the canvas's: the preset menu offers only those.
-  zoomRange?: ZoomRange | undefined;
 };
 
-// The hover cards' lines, by what the controls zoom.
+// The hover cards' lines.
 const ZOOM_COPY = {
-  canvas: {
-    out: 'Zoom out by 10%.',
-    in: 'Zoom in by 10%.',
-    fit: 'Pan and zoom so everything on the tab fits.',
-  },
-  sheet: {
-    out: 'Zoom the sheet out by 10%.',
-    in: 'Zoom the sheet in by 10%.',
-    fit: 'Show the sheet at 100%.',
-  },
+  out: 'Zoom out by 10%.',
+  in: 'Zoom in by 10%.',
+  fit: 'Pan and zoom so everything on the tab fits.',
 } as const;
-
-export const ZOOM_OFF_REASON = 'Zoom is off while a board, view or sheet fills the canvas.';
 
 // Floating zoom controls, bottom-right of the canvas. Three
 // controls: -10% / current % (click to fit, hover for the preset-level
@@ -68,23 +52,7 @@ export function ZoomControls({
   zenActive,
   zenEnterHere,
   pinchOnly = false,
-  zoomOff = false,
-  zoomScope = 'canvas',
-  zoomRange,
 }: ZoomControlsProps) {
-  const copy = ZOOM_COPY[zoomScope];
-  const why = (description: string) => (zoomOff ? ZOOM_OFF_REASON : description);
-  // On a touch screen (pinch zooms; a tablet too, not only a phone) with zoom off (a Dashboard, a covering board) all
-  // that is left is a disabled level: nothing to offer, so the cluster goes rather than sit over the page (plan-tabs.md
-  // "On a phone").
-  const touch = useCoarsePointer();
-  if (
-    (pinchOnly || touch) &&
-    zoomOff &&
-    !(onIsoOrbit && onIsoReset) &&
-    !(onToggleZen && (zenActive || zenEnterHere))
-  )
-    return null;
   return (
     <div
       data-zoom-controls
@@ -96,24 +64,18 @@ export function ZoomControls({
       className="pointer-events-auto flex animate-fade-in items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
     >
       {pinchOnly ? null : (
-        <HoverCard title="Zoom out" description={why(copy.out)}>
-          <IconButton onClick={onZoomOut} label="Zoom out" disabled={zoomOff}>
+        <HoverCard title="Zoom out" description={ZOOM_COPY.out}>
+          <IconButton onClick={onZoomOut} label="Zoom out">
             <Glyph size={14} units={14}>
               <line x1="3" y1="7" x2="11" y2="7" />
             </Glyph>
           </IconButton>
         </HoverCard>
       )}
-      <ZoomMenu
-        zoom={zoom}
-        onSetZoom={onSetZoom}
-        onFitToScreen={onFitToScreen}
-        range={zoomRange}
-        {...(zoomOff ? { offReason: ZOOM_OFF_REASON } : {})}
-      />
+      <ZoomMenu zoom={zoom} onSetZoom={onSetZoom} onFitToScreen={onFitToScreen} />
       {pinchOnly ? null : (
-        <HoverCard title="Zoom in" description={why(copy.in)}>
-          <IconButton onClick={onZoomIn} label="Zoom in" disabled={zoomOff}>
+        <HoverCard title="Zoom in" description={ZOOM_COPY.in}>
+          <IconButton onClick={onZoomIn} label="Zoom in">
             <Glyph size={14} units={14}>
               <line x1="3" y1="7" x2="11" y2="7" />
               <line x1="7" y1="3" x2="7" y2="11" />
@@ -128,12 +90,11 @@ export function ZoomControls({
         {pinchOnly ? null : (
           <div className="mx-0.5 h-6 w-px bg-slate-200 dark:bg-slate-700" aria-hidden />
         )}
-        <HoverCard title="Fit to screen" description={why(copy.fit)}>
+        <HoverCard title="Fit to screen" description={ZOOM_COPY.fit}>
           <button
             type="button"
             onClick={onFitToScreen}
             aria-label="Fit to screen"
-            disabled={zoomOff}
             className="flex h-9 items-center justify-center rounded-md px-2.5 text-xs font-medium text-slate-700 transition enabled:hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 dark:text-slate-200 dark:enabled:hover:bg-slate-800"
           >
             Fit
@@ -175,12 +136,10 @@ export function ZoomControls({
 function IconButton({
   onClick,
   label,
-  disabled = false,
   children,
 }: {
   onClick: () => void;
   label: string;
-  disabled?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -188,7 +147,6 @@ function IconButton({
       type="button"
       onClick={onClick}
       aria-label={label}
-      disabled={disabled}
       className="flex h-9 w-9 items-center justify-center rounded-md text-slate-600 transition enabled:hover:bg-slate-100 enabled:hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40 dark:text-slate-300 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-white"
     >
       {children}

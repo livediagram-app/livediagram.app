@@ -284,7 +284,7 @@ export const articles: Article[] = [
     title: 'The Tab Bar',
     description:
       'Switch between the tabs in a document, add new ones, and group them into folders.',
-    keywords: 'tabs boards pages switch bottom bar sheets add rename',
+    keywords: 'tabs pages switch bottom bar add rename',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -443,7 +443,7 @@ export const articles: Article[] = [
     description:
       'Pick tools and add shapes, text, icons and more to your pages from the palette strip.',
     keywords:
-      'quick add search elements toolbar strip launcher categories dropdown popular selection mode tiles bands',
+      'quick add search elements toolbar strip launcher categories category bar flyout selection mode tiles bands',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
   },
@@ -893,7 +893,7 @@ export const articles: Article[] = [
     slug: 'the-canvas',
     title: 'The Canvas',
     description: 'The infinite canvas, the palette, and adding elements.',
-    keywords: 'board workspace drawing area infinite surface whiteboard',
+    keywords: 'workspace drawing area infinite surface pages',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Basics',
@@ -1214,7 +1214,7 @@ export const articles: Article[] = [
   {
     slug: 'toolbar-layout',
     title: 'Toolbar Layout',
-    description: 'The palette strip across the top of the canvas, its More and its Search.',
+    description: 'The palette strip across the top of the canvas, its category bar and its Search.',
     keywords:
       'toolbar strip top bar excalidraw panel layout floating palette compact menu button explorer more tiles recent recently used order reorder search find element per page kind slide wireframe logo',
     category: 'Palette',
@@ -1387,7 +1387,7 @@ export const articles: Article[] = [
     title: 'Linking Across Tabs',
     description:
       'Turn an element into a jump point to another tab, another document, or a web address.',
-    keywords: 'jump navigation cross reference hyperlink go to connect boards',
+    keywords: 'jump navigation cross reference hyperlink go to connect',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1405,7 +1405,7 @@ export const articles: Article[] = [
     slug: 'locking-tabs',
     title: 'Locking a Tab',
     description: "Make a tab's whole canvas read-only so it cannot be changed by accident.",
-    keywords: 'read only protect freeze prevent editing lock board unlock padlock',
+    keywords: 'read only protect freeze prevent editing lock unlock padlock',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1774,7 +1774,7 @@ export const articles: Article[] = [
     description:
       'Draw a tab or an element Flexible, Professional, hand-drawn Sketch or bold Marker.',
     keywords:
-      'finish sketch sketchy hand drawn handdrawn whiteboard rough wobbly hatching professional crisp print clean flexible look style drawing marker felt tip sharpie flip chart bold ink',
+      'finish sketch sketchy hand drawn handdrawn rough wobbly hatching professional crisp print clean flexible look style drawing marker felt tip sharpie flip chart bold ink',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Styling Elements',
@@ -2235,9 +2235,9 @@ export const articles: Article[] = [
   {
     slug: 'auto-layout',
     title: 'Auto Layout',
-    description: 'Tidy Up the arrow graph as a flowchart, tree, or mindmap.',
+    description: 'Tidy up the arrow graph in layers, as a tree, or radially.',
     keywords:
-      'arrange flowchart tree mindmap tidy up automatic graph preview hover try before greyed out disabled already tidy lanes swimlane route arrows',
+      'arrange layered flowchart tree radial mindmap tidy up automatic graph preview hover try before greyed out disabled already tidy route arrows',
     category: 'Tools',
     categorySlug: 'tools/layout-cleanup',
     parentSlug: 'layout-cleanup',
@@ -2276,7 +2276,7 @@ export const articles: Article[] = [
     title: 'Finding Tabs and Elements',
     description:
       'Inside a document, jump to any tab or element, including text inside table cells.',
-    keywords: 'find jump locate text label shape board lookup',
+    keywords: 'find jump locate text label shape page lookup',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',
     parentSlug: 'the-search-panel',
@@ -2295,7 +2295,7 @@ export const articles: Article[] = [
     slug: 'search-create-tab',
     title: 'Creating a Tab from Search',
     description: 'Spin up a new tab straight from the search panel with the Create new tab action.',
-    keywords: 'new board page quick create add',
+    keywords: 'new page quick create add',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',
     parentSlug: 'the-search-panel',

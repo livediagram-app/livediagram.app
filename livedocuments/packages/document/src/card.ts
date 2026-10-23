@@ -63,8 +63,7 @@ function cardTagWidth(text: string, tagPx: number): number {
 
 /** The slots a card has switched on, read off the element. */
 export function cardSlotsOf(el: ShapeElement): CardSlots {
-  // A callout not yet migrated draws as the badge card it becomes.
-  const media = el.shape === 'callout' ? 'badge' : el.cardMedia;
+  const media = el.cardMedia;
   return {
     header: el.cardHeader === true,
     media: isCardMedia(media),
@@ -77,10 +76,9 @@ export function cardSlotsOf(el: ShapeElement): CardSlots {
   };
 }
 
-/** The media a card draws, with a callout not yet migrated reading as a badge. */
+/** The media a card draws. */
 export function cardMediaOf(el: ShapeElement): CardMedia | null {
-  const media = el.shape === 'callout' ? 'badge' : el.cardMedia;
-  return isCardMedia(media) ? media : null;
+  return isCardMedia(el.cardMedia) ? el.cardMedia : null;
 }
 
 function layoutOnce(w: number, h: number, s: CardSlots): CardLayout {
@@ -224,24 +222,6 @@ export function withCardHeader<T extends Element>(el: T, on: boolean): T {
   if (on) next.cardHeader = true;
   else delete next.cardHeader;
   return next;
-}
-
-// --- The Callout ----------------------------------------------------------------------------------
-
-/**
- * A stored callout becomes the card it always was (docs/specs/009-elements/card.md "The Callout is a Card preset"):
- * badge media, its heading as the title, its body as the label, every other field kept. Returns the same array when
- * there is nothing to migrate.
- */
-export function migrateLegacyCallouts(elements: Element[]): Element[] {
-  if (!elements.some(isLegacyCallout)) return elements;
-  return elements.map((el) =>
-    isLegacyCallout(el) ? ({ ...el, shape: 'card', cardMedia: 'badge' } as Element) : el,
-  );
-}
-
-function isLegacyCallout(el: Element): boolean {
-  return el.type === 'shape' && el.shape === 'callout';
 }
 
 /** The starting words a card line takes when it is switched on from the menu. */

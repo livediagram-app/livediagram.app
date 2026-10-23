@@ -1,5 +1,5 @@
 import { usePaletteKind } from '@/lib/palette-kind';
-import { DEFAULT_EDITOR_MODE, type EmbedProvider } from '@livedocuments/document';
+import type { EmbedProvider } from '@livedocuments/document';
 import { useEffect, useState } from 'react';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
@@ -13,16 +13,15 @@ import { paletteCategoryTabs } from './palette-category-tabs';
 import type { PaletteAddHandlers } from './palette-add-handlers';
 import { paletteCategoriesFor } from './palette-layouts';
 import type { AddShapeOptions } from '@/lib/draw-mode';
-import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
 
 // Everything a palette SURFACE needs that isn't how it is drawn: the tile
 // add-handler bundle, the category catalogue with each category's body, the
 // three searchable catalogues' state, and the canvas-tool picker's options.
-// The strip (docs/specs/007-editor/toolbar-layout.md), its More popover and its Search all read
+// The strip (docs/specs/007-editor/toolbar-layout.md), its category flyouts and its Search all read
 // from this one catalogue, so they never drift apart.
 //
 // `onTileUsed` is the host's hook into "a tile was used": the strip closes
-// its More popover. Every add-handler calls it, so a tile behaves the same
+// its open flyout or Search. Every add-handler calls it, so a tile behaves the same
 // from any category and any surface.
 type Deps = Pick<
   PaletteProps,
@@ -64,8 +63,6 @@ export function usePaletteCatalogue({
   // (the shared useIsMobileViewport, as MovablePanel uses) so the option
   // appears / disappears as the viewport crosses the breakpoint; a client
   // mount reads it synchronously, so there's no flicker.
-  // The viewer's editor mode picks the palette layout (palette-layouts).
-  const editorMode = useEditorModeState()?.mode ?? DEFAULT_EDITOR_MODE;
   const isMobile = useIsMobileViewport();
   // If the viewport shrinks into mobile while Spotlight is active (desktop ->
   // resize / rotate), revert to Select: the option has just left the picker,
@@ -163,16 +160,12 @@ export function usePaletteCatalogue({
   const [techQuery, setTechQuery] = useState('');
   const techResults = searchTechIcons(techQuery, 'all');
 
-  // Ordered by BAND (docs/specs/010-palette/palette-top-level-categories.md): Common, then Decorate, then Dynamic
-  // (the headings CATEGORY_BANDS names).
-  // It renders the dropdown straight from this order, so the array IS
-  // the grid layout.
-  // The mode's palette layout (palette-layouts): its categories, in order, with their tiles.
+  // Ordered by band (docs/specs/010-palette/palette-top-level-categories.md): the category bar draws a divider
+  // where the band changes, so the array IS the bar's order.
   // In Pages mode, the palette's kind (lib/palette-kind.ts): the page someone is on's. Each kind is its own layout
   // (palette-layouts.ts).
   const paletteKind = usePaletteKind();
-  const pages = editorMode === 'pages';
-  const categories = paletteCategoriesFor(editorMode, pages ? { pagesKind: paletteKind } : {});
+  const categories = paletteCategoriesFor({ pagesKind: paletteKind });
   const tabs = paletteCategoryTabs({
     categories,
     pendingDraw,
@@ -208,7 +201,6 @@ export function usePaletteCatalogue({
   return {
     tileActions,
     tabs,
-    editorMode,
     canvasToolOptions,
     onCanvasToolChange,
     iconCatalogsLoaded,

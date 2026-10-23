@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, type ReactNode } from 'react';
-import { finishFaceShadows, resolveFinish, type Finish } from '@livedocuments/document';
+import { resolveFinish, type Finish } from '@livedocuments/document';
 
 // The tab's finish (docs/specs/008-canvas/finish.md): the drawing style every element without its own is
 // drawn in. A context for the same reasons as CanvasSurfaceContext: the element views are React.memo'd, and
@@ -44,11 +44,4 @@ export function FaceFinishProvider({ finish, children }: { finish: Finish; child
 /** The finish the face being drawn is in; Flexible outside an element. */
 export function useFaceFinish(): Finish {
   return useContext(FaceFinishContext);
-}
-
-/** A face part's own inline shadow in its face's finish: as given, or none where the finish draws none
- *  (finishFaceShadows). */
-export function useFaceShadow(): (shadow: string | undefined) => string | undefined {
-  const finish = useFaceFinish();
-  return finishFaceShadows(finish) ? (shadow) => shadow : () => undefined;
 }

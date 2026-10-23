@@ -6,7 +6,7 @@ import { ArrowToArrow } from '@/components/illustrations/palette-shapes-arrows';
 export const metadata = helpMetadata({
   title: 'Connecting Arrows to Arrows',
   description:
-    'Snap an arrow endpoint to a point along another arrow, the sequence-diagram pattern, and it rides along as the line moves.',
+    'Snap an arrow endpoint to a point along another arrow, so a branch or callout rides along as the line moves.',
   path: '/help/palette/arrows/arrow-to-arrow/',
 });
 
@@ -19,9 +19,9 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("arrows").filter((a) => a.slug !== "arrow-to-arrow")}
 >
 
-An arrow's endpoint can connect to a point along another arrow's line, not just to a shape. This is the classic sequence-diagram pattern: messages attach to a lifeline (itself an arrow) at a chosen height, and stay attached as the lifeline moves.
+An arrow's endpoint can connect to a point along another arrow's line, not just to a shape. Use it to branch one line into several, or to point a callout at a step on a timeline: the attached arrow stays put on the line as that line moves.
 
-<Figure caption="A message arrow snapped onto a lifeline at one of its evenly-spaced snap points.">
+<Figure caption="An arrow snapped onto another arrow at one of its evenly-spaced snap points.">
   <ArrowToArrow />
 </Figure>
 
@@ -36,13 +36,13 @@ While you drag an arrow endpoint near another arrow, that arrow reveals a row of
 
 ## A persistent, dynamic connection
 
-The connection is not a one-off placement. The endpoint stores a position along the target line, and it works out its exact position from that line every time the diagram is drawn. The practical result:
+The connection is not a one-off placement. The endpoint stores a position along the target line, and it works out its exact position from that line every time the page is drawn. The practical result:
 
 - The endpoint **tracks the target** as the target arrow moves.
 - It keeps up as the target **reshapes** between straight, curved, and angled styles.
 - It follows even as the target's own endpoints move.
 
-So an attached message rides along its lifeline, staying at the same relative height however you rearrange the diagram.
+So an attached arrow rides along its line, staying at the same relative place however you rearrange the page.
 
 ## Tidying up
 
@@ -51,8 +51,8 @@ Deleting a target arrow also removes the arrows attached to it, so you never lea
 Duplicate a target together with the arrows attached to it and the copies attach to the copied line, not the original.
 
 <Tip>
-  For a sequence diagram, draw your lifelines first as long vertical arrows, then draw each message
-  across them: the snap points make it easy to keep messages evenly spaced down the page.
+  For a timeline, draw the main line first as one long arrow, then attach each callout to it: the
+  snap points make it easy to keep them evenly spaced along the line.
 </Tip>
 
 </ArticleLayout>

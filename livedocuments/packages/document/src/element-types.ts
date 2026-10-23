@@ -284,8 +284,8 @@ export type ShapeElement = {
   // false to keep long lines on one line (and off the card).
   codeWrap?: boolean;
   // A heading line beside the multi-line label, used by the web components
-  // (docs/specs/009-elements/web-components-and-no-groups.md): a banner's subtitle (`pageSubtitle`), a callout's
-  // and a card's heading (`pageTitle`) and meta line (`pageSubtitle`). Bounded in validate.ts.
+  // (docs/specs/009-elements/web-components-and-no-groups.md): a banner's subtitle (`pageSubtitle`), a card's
+  // heading (`pageTitle`, a Callout's included) and meta line (`pageSubtitle`). Bounded in validate.ts.
   //
   // Separate fields, not the first lines of the body: the label can be reordered, reformatted or
   // emptied without the heading moving or vanishing.

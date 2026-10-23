@@ -230,9 +230,7 @@ export function useSelectionEditing(opts: {
       const firstTab = tabs[0];
       const firstEl = firstTab?.elements[0];
       if (firstEl && firstEl.id === elementId) {
-        if (trimmed && trimmed !== 'Blank Diagram') {
-          setDocumentName(trimmed);
-        }
+        if (trimmed) setDocumentName(trimmed);
       }
     }
     // Parallel auto-rename for the active tab while its name still matches

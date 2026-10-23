@@ -85,7 +85,7 @@ export const documentLs = defineVerb({
   quiet: ({ documents }) => documents.map((d) => d.ref),
   cli: {
     positionals: ['query'],
-    examples: ['livedocuments document ls', 'livedocuments document ls auth --limit 5'],
+    examples: ['livedocuments document ls', 'livedocuments document ls launch --limit 5'],
     prints: 'one document a line: ref, name, library, last saved',
   },
 });
@@ -108,7 +108,7 @@ export const documentView = defineVerb({
   text: ({ text }) => [text],
   cli: {
     positionals: ['doc'],
-    examples: ['livedocuments document view "Auth flow"', 'livedocuments document view 3f9c'],
+    examples: ['livedocuments document view "Launch deck"', 'livedocuments document view 3f9c'],
     prints: 'the overview view',
   },
 });

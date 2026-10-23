@@ -23,7 +23,7 @@ const index = buildDefaultFolderIndex(
 
 const defaults = (entries: [PlacementDefaultKey, string][]) => new Map(entries);
 
-const PAGES = { mode: 'pages', tabKind: 'diagram' } as const;
+const PAGES = { mode: 'pages' } as const;
 
 describe('workingDefault', () => {
   it('answers a personal or listed team folder', () => {

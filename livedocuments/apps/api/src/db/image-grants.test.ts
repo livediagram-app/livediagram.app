@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
 import { sqliteD1 } from '../test-sqlite-d1';
 import { copyDocument, setDocumentFolder } from './documents';
@@ -11,7 +11,6 @@ import {
   imageGrantPlacementStatements,
   servableImageIds,
 } from './image-grants';
-import { resetImageRefIndexMemo } from './image-refs';
 import { linkTabToDocument, upsertTab } from './tabs';
 import { tabWith } from './test-image-fixtures';
 import { insert, liveDoc, team } from './test-trash-fixtures';
@@ -19,8 +18,6 @@ import { insert, liveDoc, team } from './test-trash-fixtures';
 // Placement grants (docs/specs/009-elements/images.md, "Placement grants"): a
 // document serves an image only when the image's owner owns it, or it holds a
 // grant earned when the owner placed the image there or carried in by a copy.
-
-afterEach(() => resetImageRefIndexMemo());
 
 function image(sql: DatabaseSync, id: string, ownerId: string, sha256 = id) {
   insert(sql, 'images', {

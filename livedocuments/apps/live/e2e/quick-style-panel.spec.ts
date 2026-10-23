@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import type { StoredDocument, StoredTab } from './stored';
-import { expect, expectNoPageErrors, test, openStartBlank, pageOwnerHeaders } from './fixtures';
+import { expect, expectNoPageErrors, test, openBlankPage, pageOwnerHeaders } from './fixtures';
 
 // The quick style panel and style memory, end to end (docs/specs/008-canvas/quick-style-panel.md). Unit
 // tests prove the rules; only the editor proves a choice lands, is remembered
@@ -11,7 +11,7 @@ type El = Record<string, unknown> & { id: string; type: string; shape?: string }
 
 async function openBoard(page: Page): Promise<void> {
   await page.emulateMedia({ colorScheme: 'dark' });
-  await openStartBlank(page);
+  await openBlankPage(page);
 }
 
 // The saved elements of the document's first tab, read through the api.
@@ -41,18 +41,34 @@ async function saved(page: Page, ok: (els: El[]) => boolean): Promise<El[]> {
   return last;
 }
 
+// Elements are placed only on a page, which sits small in the middle of a blank tab: the specs' points are
+// read on a 700 x 500 board from (200, 200) laid over the page's middle 80%.
+async function onBoard(
+  page: Page,
+  at: { x: number; y: number },
+): Promise<{ x: number; y: number }> {
+  const sheet = (await page.locator('[data-page-id]').first().boundingBox())!;
+  return {
+    x: sheet.x + sheet.width * (0.1 + (0.8 * (at.x - 200)) / 700),
+    y: sheet.y + sheet.height * (0.1 + (0.8 * (at.y - 200)) / 500),
+  };
+}
+
 async function drawShape(page: Page, key: 'o' | 'r', at: { x: number; y: number }) {
   await page.keyboard.press('Escape');
   await page.keyboard.press(key);
-  await page.mouse.click(at.x, at.y);
+  const p = await onBoard(page, at);
+  await page.mouse.click(p.x, p.y);
 }
 
 async function drawArrow(page: Page, from: { x: number; y: number }, to: { x: number; y: number }) {
   await page.keyboard.press('Escape');
   await page.keyboard.press('a');
-  await page.mouse.move(from.x, from.y);
+  const a = await onBoard(page, from);
+  const b = await onBoard(page, to);
+  await page.mouse.move(a.x, a.y);
   await page.mouse.down();
-  await page.mouse.move(to.x, to.y, { steps: 8 });
+  await page.mouse.move(b.x, b.y, { steps: 8 });
   await page.mouse.up();
 }
 

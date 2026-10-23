@@ -19,7 +19,6 @@ const pagesTab = (): Tab =>
   ({
     id: 'tab-deck',
     name: 'Deck',
-    opensIn: 'pages',
     pages,
     elements: [shapeAt('square', 'aaaa1111', cover.x + 100, cover.y + 100)],
     articles: {
@@ -104,7 +103,6 @@ describe('the pages view', () => {
     const tab = {
       id: 'tab-wide',
       name: 'Wide',
-      opensIn: 'pages',
       pages: [page],
       elements: [
         shapeAt('square', 'cccc3333', r.x + 50, r.y + 50),
@@ -122,7 +120,6 @@ describe('the pages view', () => {
     const articleOnly = {
       id: 'tab-art',
       name: 'Notes',
-      opensIn: 'pages',
       pages: [{ id: 'a', orientation: 'portrait', kind: 'article', flow: 'f' }],
       articles: { f: { blocks: [{ id: 'b', type: 'paragraph', runs: [{ text: 'Hi' }] }] } },
       elements: [],

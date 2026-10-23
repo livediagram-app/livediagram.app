@@ -3,7 +3,7 @@
 // and the hero's template fan, so the catalogue never weighs on any other Home.
 
 import {
-  BLANK_TEMPLATE_FOR_MODE,
+  BLANK_TEMPLATE,
   EXTRA_BLANK_TEMPLATES,
   POPULAR_TEMPLATE_KINDS,
   isBlankTemplate,
@@ -27,7 +27,7 @@ export const WELCOME_FAN: readonly TemplateKind[] = [
 /** Start Blank: Pages' blank, then the first blanks of a page kind (docs/specs/007-editor/start-diagramming.md
  *  "Recommended and groups"), cut to WELCOME_BLANKS_MAX. */
 export const WELCOME_BLANKS: readonly TemplateKind[] = [
-  BLANK_TEMPLATE_FOR_MODE.pages,
+  BLANK_TEMPLATE,
   ...EXTRA_BLANK_TEMPLATES,
 ].slice(0, WELCOME_BLANKS_MAX);
 

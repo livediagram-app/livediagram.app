@@ -1,6 +1,6 @@
 import { seededRandom } from '@livedocuments/document';
 import {
-  BLANK_TEMPLATE_FOR_MODE,
+  BLANK_TEMPLATE,
   EXTRA_BLANK_TEMPLATES,
   TEMPLATES,
   TEMPLATE_CATEGORIES,
@@ -67,7 +67,7 @@ const SHOWN_AS_ANOTHER_BLANK: readonly string[] = [
 
 // Blank Slate's blanks: the empty page that asks what it is for, then a blank of each page kind.
 const BLANK_SLATE_KINDS = [
-  BLANK_TEMPLATE_FOR_MODE.pages,
+  BLANK_TEMPLATE,
   ...EXTRA_BLANK_TEMPLATES.filter((k) => !SHOWN_AS_ANOTHER_BLANK.includes(k)),
 ];
 

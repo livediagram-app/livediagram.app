@@ -71,7 +71,6 @@ describe('components are single elements (docs/specs/009-elements/web-components
       label: 'Banner title',
       pageSubtitle: 'Subtitle or description',
     });
-    expect(createShape('callout', 0, 0)).toMatchObject({ pageTitle: 'Heads up' });
     expect(createShape('stat-row', 0, 0).stats).toHaveLength(3);
     expect(createShape('process', 0, 0).processSteps).toEqual(['Plan', 'Build', 'Ship']);
     expect(createShape('site-header', 0, 0)).toMatchObject({
@@ -95,7 +94,7 @@ describe('components are single elements (docs/specs/009-elements/web-components
 
   it('isWebComponentShape names exactly the five kinds', () => {
     expect(
-      (['banner', 'callout', 'stat-row', 'process', 'site-header'] as const).every(
+      (['banner', 'card', 'stat-row', 'process', 'site-header'] as const).every(
         isWebComponentShape,
       ),
     ).toBe(true);
@@ -106,7 +105,7 @@ describe('components are single elements (docs/specs/009-elements/web-components
 describe('validation bounds the rows (docs/specs/009-elements/web-components-and-no-groups.md)', () => {
   const base = createShape('stat-row', 0, 0);
   it('accepts the defaults', () => {
-    for (const k of ['banner', 'callout', 'stat-row', 'process', 'site-header'] as const) {
+    for (const k of ['banner', 'card', 'stat-row', 'process', 'site-header'] as const) {
       expect(isValidElement(createShape(k, 0, 0))).toBe(true);
     }
   });

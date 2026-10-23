@@ -8,10 +8,19 @@
 // the answer can't feed back on itself.
 
 import { useLayoutEffect, useState, type RefObject } from 'react';
-import { stripCrowdsCorners } from '@/components/palette/toolbar-strip-tiles';
 
 // The Toolbar layout's strip: its tile row, not the full-width positioning layer around it.
 export const STRIP_SELECTOR = '[data-toolbar-palette] [data-tour-id="palette"]';
+
+// Whether the strip reaches into a top-corner panel stack, horizontally, with
+// `gap` to spare. An empty corner (zero width) never counts. The canvas chrome
+// then starts its top corner stacks below the strip (docs/specs/007-editor/toolbar-layout.md).
+type Span = { left: number; right: number };
+export function stripCrowdsCorners(strip: Span, corners: Span[], gap = 8): boolean {
+  return corners.some(
+    (c) => c.right - c.left > 0 && strip.left < c.right + gap && strip.right > c.left - gap,
+  );
+}
 
 export function useStripCrowdsCorners(
   corners: RefObject<Partial<Record<string, HTMLElement | null>>>,

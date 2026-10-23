@@ -40,7 +40,6 @@ function article(
   return {
     id: 't',
     name: 'T',
-    opensIn: 'pages',
     pages,
     articles: { f: { blocks, ...(opts.style ? { style: opts.style } : {}) } },
     elements: [],

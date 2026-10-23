@@ -4,7 +4,6 @@
 
 export { validateEditOperation, validateEditOperations } from './parse-json';
 export { parseEditOperations } from './parse';
-export { formatOperation } from './format-operation';
 export {
   addableKinds,
   elementFormatText,

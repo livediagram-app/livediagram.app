@@ -63,7 +63,7 @@ Illustration is not offered: closing the panel leaves the same empty tab.
 - To someone who can edit (an **Editor**), after hydration, outside zen and an embed, with no draw tool armed.
 - While the tab is empty: no elements, and its one page still has no kind.
 
-While one of the palette's popovers is open (a category's flyout, More or Search), the start **steps aside**: it
+While one of the palette's popovers is open (a category's flyout or Search), the start **steps aside**: it
 stays mounted, so its search, its group and its scroll are kept, but is hidden, and the tiles hang over a clear
 canvas. Closing the popover brings it back as it was; using a tile closes the popover, and the content it lands
 hides the start for good. The palette publishes the state in `lib/palette-popover-open.ts`, and `StartPanel` hides

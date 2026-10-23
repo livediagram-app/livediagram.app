@@ -209,7 +209,7 @@ async function renderTabBodyToSvg(
   // upsertTab); re-attach them so the value is a complete Tab. The
   // renderer only reads `elements` + `backgroundColor`, both already in
   // the parsed body.
-  // Migrated like every other stored-tab read (docs/specs/011-theme/retired-schemes.md).
+  // Settled like every other stored-tab read (docs/specs/011-theme/retired-schemes.md "Where a stored tab is settled").
   const tab = migrateStoredTab({ id: liveDoc.id, name: liveDoc.name, ...parsed } as Tab);
   // A Pages tab previews as its first page alone, drawn as an export draws it
   // (docs/specs/006-document/document-snapshots.md "Pages tabs"): every page side by

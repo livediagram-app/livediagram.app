@@ -143,14 +143,6 @@ describe('TabWindowFace', () => {
     expect(own.request).not.toHaveBeenCalled();
   });
 
-  it('shows a Plan tab, asking for its content like any other tab', () => {
-    const plan = show(windowEl('board'), {
-      tabs: [tab('slides', 'Slides'), { ...tab('board', 'Board'), opensIn: 'plan' } as never],
-    });
-    expect(screen.queryByText("This tab isn't available.")).toBeNull();
-    expect(plan.request).toHaveBeenCalled();
-  });
-
   it('waits, offers Retry, says when the tab is not available', () => {
     show(windowEl('flow'), { status: () => 'loading' });
     expect(screen.getByText('Loading Flow…')).toBeTruthy();

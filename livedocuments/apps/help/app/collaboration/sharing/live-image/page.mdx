@@ -24,7 +24,7 @@ Both come from a share link and both stay current, but they suit different homes
 ## Getting a live image
 
 <Step n={1}>Open the **Share** dialog and create or pick a pass for the document.</Step>
-<Step n={2}>Open the pass's **Live image** menu, beside **Embed**, and choose the format you need: **Copy image URL** for the bare link, **Copy Markdown** for a `![diagram](…)` snippet, or **Copy HTML** for an `<img>` tag.</Step>
+<Step n={2}>Open the pass's **Live image** menu, beside **Embed**, and choose the format you need: **Copy image URL** for the bare link, **Copy Markdown** for a `![document](…)` snippet, or **Copy HTML** for an `<img>` tag.</Step>
 <Step n={3}>Paste it where you want the picture to appear. A README takes the Markdown; a web page takes the HTML or the raw URL.</Step>
 
 <Figure caption="The Live image menu copies the image as a URL, Markdown or HTML, with a Tab picker on documents with several tabs.">
@@ -50,8 +50,8 @@ A live image also stops working when its share link is revoked or [expires](/hel
 A live image only exposes what its share link exposes, as a flat picture with no editing actions. It works on self-hosted instances once the optional R2 bucket is set up (without it, image URLs return not found): the URL is built from your own origin, so a self-hosted document produces a self-hosted image.
 
 <Tip>
-  A live image in your project's README keeps the architecture diagram beside the code and always
-  current, without anyone re-exporting and re-committing a PNG.
+  A live image in your project's README keeps the overview slide beside the code and always current,
+  without anyone re-exporting and re-committing a PNG.
 </Tip>
 
 </ArticleLayout>

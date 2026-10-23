@@ -10,8 +10,8 @@
 // tile actions, so those three arrive as their own small bundles instead of
 // nine loose parameters.
 //
-// Order IS layout: the category picker renders the dropdown straight from the layout's order,
-// grouping by `group` under the CATEGORY_BANDS headings.
+// Order IS layout: the category bar draws the categories in the layout's order, with a divider
+// where `group` (the band) changes.
 
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { IconPickerTab } from '@/components/palette/IconPickerTab';
@@ -83,7 +83,7 @@ export function paletteCategoryTabs(
   // The body each category of the mode's layout swaps in. Which categories, in what order, under
   // what name and holding which tiles is the layout's call (palette-layouts, resolved by the
   // caller); a body decides only how its tiles are presented. A category with no body of its own
-  // (Popular, or one a layout adds) is a plain tile grid.
+  // (one a layout adds) is a plain tile grid.
   const tab = { pendingDraw, actions: tileActions };
   const bodyFor = (c: ResolvedPaletteCategory): React.ReactNode => {
     const tiles = c.tiles ?? [];

@@ -85,18 +85,15 @@ drifting.
 - **JS cascades** call `cascadeDelayMs`. That's `Timeline` and `ExpandedStack`.
 - **Cascade items run at `micro`**: `menu-drop`, `lvd-row-in`, `tl-fan-out(-up)`, and `pop-in` /
   `slide-row-in` / `fade-in` when used with `.stagger-enter`.
-- `ToolbarStripRail` drops its `--stagger-step: 22ms` override and takes the shared step.
 
 ### Exit holds
 
 Each is set to the token of the exit animation it waits for.
 
-| Where                              | Before | After             |
-| ---------------------------------- | ------ | ----------------- |
-| `TabPresenceStack` `POP_OUT_MS`    | 240    | `MOTION_MS.micro` |
-| `ToolbarStripRail` `RAIL_LEAVE_MS` | 160    | `MOTION_MS.micro` |
-| `ToolbarStripRail` `REORDER_MS`    | 200    | `MOTION_MS.short` |
-| `QuickConnectRing` `EXIT_MS`       | 200    | `MOTION_MS.short` |
+| Where                           | Before | After             |
+| ------------------------------- | ------ | ----------------- |
+| `TabPresenceStack` `POP_OUT_MS` | 240    | `MOTION_MS.micro` |
+| `QuickConnectRing` `EXIT_MS`    | 200    | `MOTION_MS.short` |
 
 Timers of every other kind are not touched. That covers `GRACE_MS`, `CLOSE_DELAY_MS`,
 `RING_CLOSE_DELAY_MS`, `LONG_PRESS_MS`, `REVEAL_DELAY_MS`, debounces, `AUTO_DISMISS_MS`,
@@ -146,8 +143,8 @@ Every chrome `duration-<n>` becomes a token. Hover-driven ones become `duration-
 
 - **`apps/live`**
   - `micro`: `RecentDocumentsCard`, `BackBar`, `ChevronIcon`, `PanelSnapSlot`,
-    `TimelineLanesOverlay`, and the `MovablePanel` fade.
-  - `short`: `ToolbarStripRail`, `AccordionSection`,
+    and the `MovablePanel` fade.
+  - `short`: `AccordionSection`,
     `MovablePanel` rows, `AnimatedHeightBox`, the `PortalMenu` body and chevron, the
     `template-picker-wizard` progress bar and `NoteBox`.
   - `long`: `TourPopover`, `TourHost`, `PresentationHud`.
@@ -346,7 +343,7 @@ logging, because motion isn't a decision point.
 | The shared theme is within budget            | `packages/tailwind-config/src/theme-budget.test.ts`                                         |
 | Each workspace is within budget              | `motion-budget.test.ts` in live, help, marketing, telemetry, ui and template-previews       |
 | Timeline cascades use the shared cap         | `packages/ui/src/timeline/ExpandedStack.test.tsx`                                           |
-| Exit holds equal their tokens                | `ToolbarStripRail.test.tsx`, `TabPresenceStack.test.tsx`                                    |
+| Exit holds equal their tokens                | `TabPresenceStack.test.tsx`                                                                 |
 | Reduced motion creates no transitions        | `apps/live/app/reduced-motion.test.ts`                                                      |
 | Canvas entry keeps 360ms                     | `apps/live/app/canvas-motion.test.ts`, `apps/live/components/canvas/canvas-motion.test.tsx` |
 | Chrome animations settle in 250ms at runtime | `apps/live/e2e/motion-budget.spec.ts`                                                       |

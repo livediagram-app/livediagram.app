@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect } from 'react';
-import type { TemplateKind } from '@livedocuments/templates';
 import { useToast } from '@/hooks/ui/useToast';
 import {
   handTemplatePick,
@@ -20,30 +19,26 @@ export function useTemplatePickMove(at: {
   signedIn: boolean;
   // The active tab has content: drawn by hand, the template's default no longer applies.
   tabHasContent: boolean;
-}): (kind: TemplateKind) => void {
+}): () => void {
   const toast = useToast();
   const { ownerId, documentId, tabId, signedIn, tabHasContent } = at;
   useEffect(() => {
     if (tabHasContent && documentId && readTemplatePick()?.documentId === documentId)
       handTemplatePick(null);
   }, [tabHasContent, documentId]);
-  return useCallback(
-    (kind: TemplateKind) => {
-      if (!documentId) return;
-      // Taken now, before the template's elements land and the effect above would drop it.
-      const handoff = takeTemplatePick(documentId, tabId);
-      if (!handoff || handoff.placementChosen) return;
-      void import('@/lib/placement-defaults/move-on-template-pick').then(async (m) => {
-        const message = await m.moveOnTemplatePick({
-          ownerId,
-          documentId,
-          handoff,
-          kind,
-          signedIn,
-        });
-        if (message) toast.info(message);
+  return useCallback(() => {
+    if (!documentId) return;
+    // Taken now, before the template's elements land and the effect above would drop it.
+    const handoff = takeTemplatePick(documentId, tabId);
+    if (!handoff || handoff.placementChosen) return;
+    void import('@/lib/placement-defaults/move-on-template-pick').then(async (m) => {
+      const message = await m.moveOnTemplatePick({
+        ownerId,
+        documentId,
+        handoff,
+        signedIn,
       });
-    },
-    [ownerId, documentId, tabId, signedIn, toast],
-  );
+      if (message) toast.info(message);
+    });
+  }, [ownerId, documentId, tabId, signedIn, toast]);
 }

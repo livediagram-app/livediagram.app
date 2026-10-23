@@ -1,20 +1,13 @@
 // The lens's shapes (docs/specs/013-workspace/explorer-filters.md, blueprint
 // docs/specs/013-workspace/blueprints/explorer-filters.md "Interfaces and contracts").
 
-import type {
-  EditedValue,
-  LensDimension,
-  MadeByValue,
-  OpensInValue,
-  PeopleValue,
-} from './dimensions';
+import type { EditedValue, LensDimension, MadeByValue, PeopleValue } from './dimensions';
 
 /** A space as the lens names it: My Work, Shared With Me, or one team by id. */
 export type SpaceValue = 'mine' | 'shared' | `team:${string}`;
 
 /** The value type of each dimension. */
 export type LensValueOf = {
-  'opens-in': OpensInValue;
   'made-by': MadeByValue;
   edited: EditedValue;
   people: PeopleValue;
@@ -97,7 +90,6 @@ export type LensSubject = {
   space: SpaceValue;
   people: PeopleValue;
   madeByAi: boolean | null;
-  opensIn: OpensInValue | null;
 };
 
 /** What suggestions need beyond parsing: the rows in scope, to mark a value that matches nothing. */

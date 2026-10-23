@@ -18,8 +18,6 @@ function summary(overrides: Partial<DocumentSummary>): DocumentSummary {
     folderId: null,
     teamId: null,
     source: null,
-    opensIn: null,
-    tabKind: null,
     savedAt: 1,
     createdAt: 1,
     empty: false,

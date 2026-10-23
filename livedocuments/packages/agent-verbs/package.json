@@ -24,7 +24,6 @@
     "@livedocuments/document": "workspace:*",
     "@livedocuments/document-views": "workspace:*",
     "@livedocuments/edit-operations": "workspace:*",
-    "@livedocuments/page-background": "workspace:*",
     "@livedocuments/templates": "workspace:*",
     "zod": "^4.6.7"
   },

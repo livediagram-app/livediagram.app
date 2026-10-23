@@ -304,11 +304,10 @@ test('a document stored only in this browser joins Jump Back In with its pill', 
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'Welcome to livedocuments. What are you making first?',
   );
-  await expect(page.getByRole('region', { name: 'Start Blank' })).toBeVisible();
-  await expect(page.getByRole('link', { name: /Blank Diagram/ })).toHaveAttribute(
-    'href',
-    '/new?template=blank',
-  );
+  const blanks = page.getByRole('region', { name: 'Start Blank' });
+  await expect(blanks).toBeVisible();
+  // Each blank makes its template at once.
+  await expect(blanks.getByRole('link').first()).toHaveAttribute('href', /^\/new\?template=/);
 
   await seedLocalDocuments(page, [{ name: 'Kept on this laptop', daysAgo: [0], lastOpenedIn: 0 }]);
   await page.reload();

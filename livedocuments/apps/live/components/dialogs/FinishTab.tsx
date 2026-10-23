@@ -50,7 +50,7 @@ export function FinishTab({
           canvasBackground={canvasBackground}
           themeId={themeId}
           font={font}
-          label={`A sample diagram drawn in the ${FINISH_LABELS[current]} finish`}
+          label={`A sample drawn in the ${FINISH_LABELS[current]} finish`}
         />
       </div>
     </div>

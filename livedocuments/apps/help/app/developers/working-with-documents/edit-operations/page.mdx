@@ -16,7 +16,7 @@ A **changeset** changes a tab with a short list of edit operations, applied toge
 The same vocabulary reaches a tab three ways:
 
 - **The API**: `POST /documents/{id}/tabs/{tabId}/changesets` with `"operations"` as a string (the line form) or an array of objects (the JSON form).
-- **The CLI**: `livedocuments edit "Auth flow" -f ops.txt` sends a file (or stdin, with `-f -`) as one changeset, and `livedocuments element add|set|rm|move|connect|insert` sends one operation. `livedocuments guide edit` explains the line form, and `livedocuments schema view sticky` lists the fields a kind takes.
+- **The CLI**: `livedocuments edit "Launch deck" -f ops.txt` sends a file (or stdin, with `-f -`) as one changeset, and `livedocuments element add|set|rm|move|connect|insert` sends one operation. `livedocuments guide edit` explains the line form, and `livedocuments schema view sticky` lists the fields a kind takes.
 - **The MCP server**: `update_document` in `ops` mode turns its `add`, `update` and `remove` into `add`, `set` and `rm`, so removing a node removes its arrows too.
 
 ## Two Forms
@@ -69,7 +69,7 @@ A few rules hold for every operation:
 - **Kinds.** `add` and `insert` take a shape kind (`square`, `circle`, `diamond`, `cylinder`, `stadium`, `hexagon` and the rest) or `text`, `sticky`, `table` or `link-card`. A shape kind it does not know is turned into the nearest one, with a `shape_coerced` warning. Arrows are made with `connect`; images, videos and drawn strokes are not made by name, but an `add` in the JSON form can carry a whole element (`{ "op": "add", "element": { … } }`), which is how an uploaded image goes on a tab.
 - **Ids.** `id=` names a new element so later operations in the same changeset can use it. It is a short slug: a lowercase letter, then up to 23 lowercase letters, digits, `-` or `_`. Without one, the element takes the slug of its label (or of its kind, as `arrow`, `arrow-2`).
 - **Fields.** `label`, `note`, `shape`, `fill`, `stroke`, `text-color`, `border`, `text` (a size: `sm`, `md`, `lg` or `scale`), `font` and `line` (`straight`, `angled` or `curved`) work on the kinds that have them, beside any stored field of the element. `fill=` takes a colour slot of the tab's theme by name (such as `theme`), which follows a theme change; a hex colour works too, with a `colour_overrides_theme` warning. A sticky takes its own colour names instead. A number, `true` or `false` is read as JSON, and a value starting with `[` or `{` is read as JSON as written.
-- **Comments are not fields.** Comment threads and votes travel live between people, so edit operations never change them; comments have their own [endpoints](/help/developers/agent-comments-presence/).
+- **Comments are not fields.** Comment threads travel live between people, so edit operations never change them; comments have their own [endpoints](/help/developers/agent-comments-presence/).
 - **Locks.** A changeset on a locked tab, or one that would change a locked element or an element on a locked layer, is refused with `element_locked`.
 
 ## Selectors

@@ -15,12 +15,12 @@ describe('selectAllIds', () => {
   } as unknown as Pick<Tab, 'elements' | 'pages'>;
 
   it('selects the page someone is on alone, in Pages mode', () => {
-    expect([...selectAllIds(tab, 'pages', new Set(), 'p2')].sort()).toEqual(['b', 'c']);
-    expect([...selectAllIds(tab, 'pages', new Set(['c']), 'p2')]).toEqual(['b']);
+    expect([...selectAllIds(tab, new Set(), 'p2')].sort()).toEqual(['b', 'c']);
+    expect([...selectAllIds(tab, new Set(['c']), 'p2')]).toEqual(['b']);
   });
 
   it('selects the whole tab with no page known', () => {
-    expect(selectAllIds(tab, 'pages', new Set(), null).size).toBe(3);
-    expect(selectAllIds(tab, 'pages', new Set(), 'gone').size).toBe(3);
+    expect(selectAllIds(tab, new Set(), null).size).toBe(3);
+    expect(selectAllIds(tab, new Set(), 'gone').size).toBe(3);
   });
 });

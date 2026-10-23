@@ -56,11 +56,6 @@ export type DocumentListItem = Pick<
   // Nothing drawn (docs/specs/006-document/document-snapshots.md): the row asks for no thumbnail. Absent on a
   // synthetic row, which asks as before.
   empty?: DocumentSummary['empty'];
-  // The creation intent recorded on the document (docs/specs/013-workspace/default-folders.md
-  // "Recorded intent"), which the Explorer filters read. Absent on a row that cannot say (an
-  // offline record, a synthetic shared row): it reads as unknown.
-  opensIn?: DocumentSummary['opensIn'];
-  tabKind?: DocumentSummary['tabKind'];
   // The Details view's Created column and counted stats (docs/specs/013-workspace/explorer-details-view.md).
   // Absent on a synthetic row (shared with you), which reads as not counted.
   createdAt?: DocumentSummary['createdAt'];

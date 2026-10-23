@@ -15,7 +15,6 @@ const page = (id: string, name?: string) => ({
 const pages = {
   id: 't',
   name: 'T',
-  opensIn: 'pages',
   pages: [page('p-a'), page('p-b', 'Back')],
   elements: [],
 } as unknown as Tab;

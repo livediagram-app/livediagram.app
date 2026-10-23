@@ -13,10 +13,8 @@ import { CANVAS_ROOT_SELECTOR } from '@/lib/canvas-selectors';
 import { PANEL_PRESENCE_EVENT } from '@/lib/panel-presence';
 
 const AREA_SELECTOR = `main${CANVAS_ROOT_SELECTOR}`;
-// The palette strip, every panel or dock popover, the strip's More popover
-// and the bottom-right cluster.
-const OBSTACLE_SELECTOR =
-  '[data-tour-id="palette"], [data-toolbar-more], [data-floating-panel], [data-zoom-cluster]';
+// The palette strip, every panel or dock popover and the bottom-right cluster.
+const OBSTACLE_SELECTOR = '[data-tour-id="palette"], [data-floating-panel], [data-zoom-cluster]';
 
 const toRect = (r: DOMRect): Rect => ({
   left: r.left,

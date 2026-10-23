@@ -18,12 +18,10 @@ describe('templateFollowerTabs', () => {
       backgroundColor: '#000',
       backgroundPattern: 'lines',
       defaultTextSize: 'md',
-      opensIn: 'pages',
       locked: true,
     });
     const [follower] = templateFollowerTabs(landed, [{ id: 'b', name: 'Backlog', elements: [] }], {
       backgroundPattern: 'grid',
-      opensIn: 'pages',
     });
     expect(follower).toMatchObject({
       id: 'b',
@@ -32,7 +30,6 @@ describe('templateFollowerTabs', () => {
       backgroundColor: '#000',
       backgroundPattern: 'grid',
       defaultTextSize: 'md',
-      opensIn: 'pages',
       templateChosen: true,
     });
     // Only the look carries over, never the tab's own state.

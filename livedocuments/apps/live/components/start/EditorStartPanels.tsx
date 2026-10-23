@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 import { pagesOf } from '@livedocuments/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { StartAgainTray } from '@/components/start/StartAgainTray';
-import { templateStartMode } from '@/components/start/template-start-mode';
+import { showsTemplateStart } from '@/components/start/template-start-mode';
 import { useTemplatePickMove } from '@/components/start/useTemplatePickMove';
 
 // The template start (docs/specs/007-editor/start-diagramming.md) carries every template's preview: loaded the first
@@ -29,13 +29,12 @@ export function EditorStartPanels() {
     signedIn: !!clerkUserId,
     tabHasContent: activeTab.elements.length > 0,
   });
-  const templateStart = templateStartMode({
+  const templateStart = showsTemplateStart({
     hydrated,
     zen: zenMode,
     embed: embedMode,
     readOnly: isReadOnly,
     drawToolArmed: !!pendingDraw,
-    mode: ctx.editorMode.mode,
     elementCount: activeTab.elements.length,
     // Read only for an empty tab: EditorView renders often, and a tab with content shows no start.
     pages: activeTab.elements.length === 0 ? pagesOf(activeTab) : [],
@@ -43,21 +42,15 @@ export function EditorStartPanels() {
   return templateStart ? (
     <>
       <StartFromTemplates
-        key={`${activeTab.id}:${templateStart}`}
-        mode={templateStart}
+        key={activeTab.id}
         tabId={activeTab.id}
         onTemplate={(kind) => {
           void ctx.chooseTemplate(kind);
-          moveOnTemplatePick(kind);
+          moveOnTemplatePick();
         }}
       />
       {/* Closed, it can be brought back from the palette tray (StartAgainTray). */}
-      <StartAgainTray
-        key={`tray:${activeTab.id}:${templateStart}`}
-        mode={templateStart}
-        tabId={activeTab.id}
-        tabName={activeTab.name}
-      />
+      <StartAgainTray key={`tray:${activeTab.id}`} tabId={activeTab.id} tabName={activeTab.name} />
     </>
   ) : null;
 }

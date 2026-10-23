@@ -5,10 +5,9 @@ Status: shipped
 ## What
 
 The **canvas-tool** picker (Select / Hand / Format / Laser /
-Spotlight / Isometric / Zen) and the **palette category** picker
-(Popular / Shapes / Write / Concepts / Components / Devices / Icons / ...) lay
-their options out as an icon-over-label **tile grid** instead of one long
-vertical list.
+Spotlight / Isometric / Zen), the strip's selection mode, lays its options out as an icon-over-label **tile grid**
+instead of one long vertical list. The palette's categories are a bar of their own, not a dropdown
+([Toolbar layout](../007-editor/toolbar-layout.md) "The category bar").
 
 Eight tools in a single column is a lot of travel and a lot of reading for what
 is a flat choice between equal-weight modes. The context menus already made

@@ -39,9 +39,6 @@ function liveDoc(over: Partial<DocumentDTO> = {}): DocumentDTO {
     createdAt: 0,
     ownerName: null,
     ownerColor: null,
-    // No recorded creation intent (docs/specs/013-workspace/default-folders.md).
-    opensIn: null,
-    tabKind: null,
     ...over,
   };
 }
@@ -294,8 +291,6 @@ describe('getDocumentThumbnailSvg', () => {
   });
 });
 
-// Retired schemes (docs/specs/011-theme/retired-schemes.md): the thumbnail parses `tabs.data` itself,
-// so it runs the same stored-tab migration as every other read.
 // docs/specs/006-document/document-snapshots.md "Pages tabs": the first page alone, as an export draws it.
 describe('a thumbnail of a Pages tab', () => {
   const A4 = { orientation: 'portrait', size: 'a4', kind: 'infographic' };
@@ -305,7 +300,6 @@ describe('a thumbnail of a Pages tab', () => {
   // Two A4 pages side by side (the second starts past the first's 794px width), each with a labelled square and an
   // image; the first page has a picture background.
   const tabData = JSON.stringify({
-    opensIn: 'pages',
     pages: [
       {
         id: 'p1',
@@ -388,40 +382,6 @@ describe('a thumbnail of a Pages tab', () => {
     const tabImage = (await getDocumentTabImageSvg(env, liveDoc(), 't1'))!;
     expect(tabImage).toContain('Cover');
     expect(tabImage).not.toContain('Later');
-  });
-});
-
-describe('a thumbnail of a Charcoal tab', () => {
-  it('renders the migrated tab, not the colours Charcoal baked', async () => {
-    vi.spyOn(console, 'info').mockImplementation(() => {});
-    const images = r2();
-    images.get.mockResolvedValue(null);
-    db.getThumbRenderedAt.mockResolvedValue(null);
-    db.getTabBody.mockResolvedValue(
-      stored(
-        JSON.stringify({
-          theme: 'charcoal',
-          backgroundColor: '#2b2b33',
-          patternColor: '#636373',
-          elements: [
-            {
-              id: 'e1',
-              type: 'shape',
-              shape: 'square',
-              x: 0,
-              y: 0,
-              width: 100,
-              height: 80,
-              fillColor: '#2c2c33',
-            },
-          ],
-        }),
-      ),
-    );
-    const out = await getDocumentThumbnailSvg({ IMAGES: images } as unknown as Env, liveDoc());
-    expect(out).not.toContain('#2c2c33');
-    expect(out).not.toContain('#2b2b33');
-    expect(out).toContain('<rect x="1" y="1" width="98" height="78"');
   });
 });
 

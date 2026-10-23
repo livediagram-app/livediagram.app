@@ -312,8 +312,7 @@ export function AppearanceToggle(props: { labelled?: boolean; quick?: boolean })
   `cursor-pointer`.
 - Role status icon: the status bar control box, emerald 700 / 300 glyph for Editing, amber 700 / 300 for Viewing.
 - Panel headers: the button cluster carries `ml-auto`, so it stays at the right when the title is hidden.
-- Palette tiles under the flag: `h-9 w-full`, so the icon stays centred in the cell the captioned tile filled; the
-  Toolbar strip's fixed tiles and its always-visible shortcut letters are unchanged.
+- Palette tiles under the flag: `h-9 w-full`, so the icon stays centred in the cell the captioned tile filled.
 - Offer copy: message "Power user mode: fewer labels, faster defaults.", actions "No Thanks" and
   "Try It" (primary, last).
 - Settings copy:

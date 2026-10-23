@@ -3,7 +3,8 @@
 // Composed only from the shared primitives so the house style holds.
 
 import { useId } from 'react';
-import { Scene, Shape, Arrow, Tile, Label } from './primitives';
+import { Scene, Shape, Arrow, Label } from './primitives';
+import { STRIP_W, Strip } from './toolbar-layout';
 
 // --- Zen mode ---------------------------------------------------------------
 
@@ -55,39 +56,8 @@ export function ZenBefore() {
       <Shape x={96} y={108} w={80} h={44} label="A" />
       <Shape x={232} y={108} w={80} h={44} accent label="B" />
       <Arrow from={[176, 130]} to={[232, 130]} />
-      {/* Palette: one horizontal strip pinned to the top centre */}
-      <rect
-        x={140}
-        y={34}
-        width={140}
-        height={30}
-        rx={8}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <Tile x={170} y={49} active size={22}>
-        <rect
-          x={-6}
-          y={-6}
-          width={12}
-          height={12}
-          rx={2}
-          className="stroke-white"
-          strokeWidth={2}
-          fill="none"
-        />
-      </Tile>
-      <Tile x={210} y={49} size={22}>
-        <circle r={6} className="stroke-brand-500" strokeWidth={2} fill="none" />
-      </Tile>
-      <Tile x={250} y={49} size={22}>
-        <path
-          d="M0 -7 L7 0 L0 7 L-7 0 Z"
-          className="stroke-brand-500"
-          strokeWidth={2}
-          fill="none"
-        />
-      </Tile>
+      {/* Palette: one horizontal strip pinned to the top centre (the selection mode, the category bar, Search) */}
+      <Strip x={(420 - STRIP_W) / 2} y={34} />
       {/* Undo / Redo and Layers, left of the zoom dock */}
       <rect
         x={218}
@@ -326,42 +296,6 @@ export function LightDarkToggle() {
 // --- Markdown import --------------------------------------------------------
 
 // --- Layout cleanup ---------------------------------------------------------
-
-/** Before/after for the layout tidiers: a scattered, mis-sized jumble of
- *  shapes tidied into a neat layout. */
-export function CleanupBeforeAfter() {
-  return (
-    <Scene w={420} h={220}>
-      {/* Messy, left */}
-      {/* The same four shapes and three arrows as the right, off-grid and mis-sized. */}
-      <Shape x={24} y={44} w={60} h={30} label="A" />
-      <Shape x={124} y={30} w={50} h={44} kind="circle" label="C" />
-      <Shape x={38} y={118} w={46} h={40} label="B" />
-      <Shape x={116} y={134} w={70} h={26} accent label="D" />
-      <Arrow from={[84, 57]} to={[124, 54]} tone="muted" />
-      <Arrow from={[58, 74]} to={[60, 118]} tone="muted" />
-      <Arrow from={[84, 142]} to={[116, 146]} tone="muted" />
-      {/* Divider */}
-      <line
-        x1={210}
-        y1={28}
-        x2={210}
-        y2={192}
-        className="stroke-slate-200"
-        strokeWidth={1.5}
-        strokeDasharray="4 4"
-      />
-      {/* Tidied, right */}
-      <Shape x={252} y={48} w={64} h={36} label="A" />
-      <Shape x={252} y={110} w={64} h={36} label="B" />
-      <Shape x={352} y={46} w={40} h={40} kind="circle" label="C" />
-      <Shape x={340} y={110} w={64} h={36} accent label="D" />
-      <Arrow from={[316, 66]} to={[352, 66]} />
-      <Arrow from={[316, 128]} to={[340, 128]} />
-      <Arrow from={[284, 84]} to={[284, 110]} />
-    </Scene>
-  );
-}
 
 /** Auto-Align: shapes a few pixels off the grid snapping onto it (the whole tab, no selection). */
 export function AutoAlignGrid() {

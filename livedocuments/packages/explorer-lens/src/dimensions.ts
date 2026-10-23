@@ -1,15 +1,9 @@
 // The lens's catalogue (docs/specs/013-workspace/explorer-filters.md "Dimensions"): every
 // dimension, its closed values, their British English labels and the closed telemetry types.
 
-import { EDITOR_MODES, type EditorMode } from '@livedocuments/document';
-
 /** The dimensions in canonical order: the order tokens are written in and chips are shown in. */
-export const LENS_DIMENSIONS = ['opens-in', 'made-by', 'edited', 'people', 'space'] as const;
+export const LENS_DIMENSIONS = ['made-by', 'edited', 'people', 'space'] as const;
 export type LensDimension = (typeof LENS_DIMENSIONS)[number];
-
-/** The editor modes a document can be created to open in: the one list of modes. */
-export const OPENS_IN_VALUES = EDITOR_MODES;
-export type OpensInValue = EditorMode;
 
 export const MADE_BY_VALUES = ['ai'] as const;
 export type MadeByValue = (typeof MADE_BY_VALUES)[number];
@@ -26,7 +20,6 @@ export const SPACE_TEAM_PREFIX = 'team:';
 
 /** Every dimension whose values are a fixed list, with that list. */
 export const FIXED_VALUES = {
-  'opens-in': OPENS_IN_VALUES,
   'made-by': MADE_BY_VALUES,
   edited: EDITED_VALUES,
   people: PEOPLE_VALUES,
@@ -34,7 +27,6 @@ export const FIXED_VALUES = {
 
 /** The chip label of each dimension; also how messages name it. */
 export const DIMENSION_LABELS: Record<LensDimension, string> = {
-  'opens-in': 'Opens in',
   'made-by': 'Made by AI',
   edited: 'Edited',
   people: 'People',
@@ -43,7 +35,6 @@ export const DIMENSION_LABELS: Record<LensDimension, string> = {
 
 /** The label of every fixed value. A team's label is its name. */
 export const VALUE_LABELS = {
-  'opens-in': { pages: 'Pages' },
   'made-by': { ai: 'Made by AI' },
   edited: {
     today: 'Today',
@@ -62,7 +53,6 @@ export type LensFacet = 'text' | LensDimension;
 /** The closed telemetry type of each facet; never a value, a word or an id. */
 export const LENS_TELEMETRY_TYPES = {
   text: 'Text',
-  'opens-in': 'OpensIn',
   'made-by': 'MadeBy',
   edited: 'Edited',
   people: 'People',

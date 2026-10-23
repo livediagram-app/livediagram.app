@@ -18,7 +18,6 @@ export const CHIP_LOOKS: readonly ChipLook[] = ['solid', 'ink', 'outline', 'tint
 export const BADGE_NEW_LABEL = 'New';
 export const BADGE_LABEL_MAX = 24;
 export const STEP_LABEL_MAX = 3;
-export const STEP_SIZE_PX = 28;
 export const STEP_SEQUENCE_BEAT_S = 0.4;
 
 export function isChipShape(kind: string): kind is ChipShape {

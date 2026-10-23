@@ -2,8 +2,6 @@
 
 import { track } from '@/lib/telemetry';
 import { HoverCard, Glyph } from '@livedocuments/ui';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
-import { TabNameInBox } from '@/components/chrome/tab-name-in-box';
 import { ToolbarMenuCard } from './ToolbarMenuCard';
 
 // The Toolbar layout's menu button (docs/specs/007-editor/toolbar-layout.md), top-left of the canvas where
@@ -27,7 +25,6 @@ export function ToolbarExplorerButton({
   // Given the button itself, which the popover anchors to.
   onToggle: (button: HTMLElement) => void;
 }) {
-  const phone = useIsMobileViewport();
   const button = (
     <button
       type="button"
@@ -55,8 +52,6 @@ export function ToolbarExplorerButton({
       <HoverCard title="Explorer" description="Your documents, folders and teams." disabled={open}>
         {button}
       </HoverCard>
-      {/* The open tab's name (not on a phone). */}
-      {phone || inline ? null : <TabNameInBox />}
     </ToolbarMenuCard>
   );
 }

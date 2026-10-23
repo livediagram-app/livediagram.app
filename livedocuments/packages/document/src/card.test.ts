@@ -7,14 +7,10 @@ import {
   createComponent,
   createShape,
   isValidElement,
-  migrateLegacyCallouts,
-  migrateStoredElements,
-  normaliseElement,
   svgBoxed,
   withCardHeader,
   withCardMedia,
   withWebRows,
-  type Element,
   type ShapeElement,
 } from './index';
 
@@ -80,15 +76,13 @@ describe('card layout (docs/specs/009-elements/card.md)', () => {
     expect(l.body.height).toBeGreaterThan(0);
   });
 
-  it('reads its slots off the element, and a callout as a badge card', () => {
+  it('reads its slots off the element', () => {
     expect(cardSlotsOf(card())).toMatchObject({
       media: true,
       title: true,
       meta: true,
       badge: false,
     });
-    const callout = { ...card({ cardMedia: undefined }), shape: 'callout' } as ShapeElement;
-    expect(cardSlotsOf(callout)).toMatchObject({ media: true, badge: true });
   });
 });
 
@@ -122,7 +116,7 @@ describe('card writes', () => {
   });
 });
 
-describe('the Callout preset and migration', () => {
+describe('the Callout preset', () => {
   it('places the Callout as a badge card with its old size and copy', () => {
     const el = createComponent('callout', 100, 100, {
       accent: '#123456',
@@ -134,40 +128,11 @@ describe('the Callout preset and migration', () => {
     expect(el.pageTitle).toBe('Heads up');
     expect([el.width, el.height]).toEqual([380, 116]);
   });
-
-  it('migrates a stored callout to a card, keeping its fields (I2)', () => {
-    const stored = {
-      ...card({ cardMedia: undefined, tags: undefined, pageSubtitle: undefined }),
-      shape: 'callout',
-      pageTitle: 'Note',
-      label: 'Body',
-      fillColor: '#fff0f0',
-    } as unknown as Element;
-    const [out] = migrateStoredElements([stored]) as ShapeElement[];
-    expect(out).toMatchObject({
-      shape: 'card',
-      cardMedia: 'badge',
-      pageTitle: 'Note',
-      label: 'Body',
-    });
-    expect(out!.fillColor).toBe('#fff0f0');
-  });
-
-  it('returns the same array when there is no callout', () => {
-    const els = [card()];
-    expect(migrateLegacyCallouts(els)).toBe(els);
-  });
-
-  it('turns an agent-written callout into a card on write', () => {
-    const out = normaliseElement({ ...card(), shape: 'callout' }) as ShapeElement;
-    expect(out.shape).toBe('card');
-  });
 });
 
 describe('card validation', () => {
-  it('accepts a card and a legacy callout, and bounds the slots', () => {
+  it('accepts a card and bounds the slots', () => {
     expect(isValidElement(card())).toBe(true);
-    expect(isValidElement({ ...card(), shape: 'callout' })).toBe(true);
     expect(isValidElement(card({ tags: Array(7).fill('x') }))).toBe(false);
     expect(isValidElement(card({ tags: ['x'.repeat(33)] }))).toBe(false);
     expect(isValidElement(card({ cardMedia: 'photo' as never }))).toBe(false);

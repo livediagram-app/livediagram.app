@@ -34,14 +34,10 @@ test.describe('a first-time guest with signatures enforced', () => {
 
   test('creates a document after arriving on /', async ({ page, pageErrors }) => {
     const api = recordApi(page);
+    // `/` sends a visitor to /new, which signs the guest before anything else and makes the document.
     await page.goto('/');
-    await page.waitForURL(/\/new/);
-    await page.getByText('New Document', { exact: false }).waitFor();
-    // Landing signs the guest before anything else; the wizard then starts from that page's identity.
-    await expect
-      .poll(() => page.evaluate(() => localStorage.getItem('livedocuments:v2:self-sig')))
-      .toBeTruthy();
-    await startBlankDocument(page);
+    await page.waitForURL(/\/document\//, { timeout: 30_000 });
+    await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
     await expectSignedGuestCreated(page, api);
     expectNoPageErrors(pageErrors);
   });

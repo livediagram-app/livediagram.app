@@ -73,8 +73,8 @@ describe('tool blurbs', () => {
   });
 });
 
-// Each browsable category carries a `description` that users read in the
-// category picker, and several of those blurbs list the elements the category
+// Each browsable category carries a `description` that users read in its
+// flyout, and several of those blurbs list the elements the category
 // holds. Adding a tile does not update the blurb, and nothing failed when it
 // went stale: Behaviour named five of its eight elements for three releases,
 // and Collaborate dropped the comment pin the day it shipped.
@@ -86,12 +86,10 @@ describe('tool blurbs', () => {
 // fails this test, and the failure is the prompt to re-read that category's
 // description and decide whether it still describes what is in the tab.
 //
-// Categories filled from a catalogue or a layout rather than from tiles (Popular,
-// Icons, Stickers, Technology) hold none, and are pinned at 0 so that stays
-// true by intent rather than by accident.
+// Categories filled from a catalogue rather than from tiles (Icons, Stickers,
+// Technology) hold none, and are pinned at 0 so that stays true by intent
+// rather than by accident.
 const TILES_PER_CATEGORY: Record<string, number> = {
-  // Popular has no tiles of its own: each mode's layout fills it (palette-layouts).
-  popular: 0,
   shapes: 13,
   build: 3,
   write: 3,

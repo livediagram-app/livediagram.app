@@ -11,7 +11,6 @@
 
 import type { Env } from '../types';
 import { visitLinkSql } from './visit-link';
-import { imageRefIndexDocumentStatement, isImageRefIndexComplete } from './image-refs';
 
 // The one predicate every reader shares: document `d` (aliased) may serve image
 // `i` (aliased). Owner match first, so the common case never touches the
@@ -139,17 +138,13 @@ export function imageGrantRemovalStatement(
 
 // The byte endpoint's share check: document `documentId` places image `imageId`
 // (a tab-scoped visitor's tab only) AND may serve it. Answered from the
-// reference index, never a tab body; while the index backfill is incomplete,
-// the document's own tabs are indexed first. One indexed query.
+// reference index, never a tab body. One indexed query.
 export async function documentServesImage(
   env: Env,
   documentId: string,
   imageId: string,
   onlyTabId: string | null = null,
 ): Promise<boolean> {
-  if (!(await isImageRefIndexComplete(env))) {
-    await imageRefIndexDocumentStatement(env, documentId).run();
-  }
   const row = await env.DB.prepare(
     `SELECT 1 AS present
        FROM document_tabs dt

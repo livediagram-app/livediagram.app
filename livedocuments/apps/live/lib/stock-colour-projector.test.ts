@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import {
-  LABEL_BACKDROP_CONTRAST,
   contrastRatio,
   createFreehand,
   penColourHex,
@@ -78,47 +77,6 @@ describe('createStockColourProjector', () => {
   });
 });
 
-// docs/specs/011-theme/light-and-dark.md "A theme never sinks a label into what is behind it": given the stored and the
-// drawn canvas, a label the drawn canvas sank is drawn in an ink that reads there, and keeps that object between
-// renders.
-describe('labels against the drawn canvas', () => {
-  const caption = (id: string): Element =>
-    ({
-      id,
-      type: 'text',
-      x: 0,
-      y: 0,
-      width: 120,
-      height: 24,
-      label: 'Caption',
-      textColor: '#334155',
-    }) as unknown as Element;
-  const inkOf = (el: Element | undefined) => (el as { textColor?: string }).textColor ?? '';
-  const canvases = { stored: '#ffffff', drawn: '#0d121a' };
-
-  it('re-inks a label the drawn canvas sank', () => {
-    const project = createStockColourProjector();
-    const out = project([caption('a')], 'dark', undefined, canvases);
-    expect(contrastRatio(inkOf(out[0]), '#0d121a')).toBeGreaterThanOrEqual(LABEL_BACKDROP_CONTRAST);
-  });
-
-  it('keeps a re-inked label’s object while it is unchanged', () => {
-    const project = createStockColourProjector();
-    const a = caption('a');
-    const first = project([a, caption('b')], 'dark', undefined, canvases);
-    // Another element changes; the re-inked label does not.
-    const second = project([a, caption('c')], 'dark', undefined, canvases);
-    expect(second[0]).toBe(first[0]);
-  });
-
-  it('leaves labels alone when the canvas is drawn as stored', () => {
-    const project = createStockColourProjector();
-    const a = caption('a');
-    const board = [a];
-    expect(project(board, 'light', undefined, { stored: '#ffffff', drawn: '#ffffff' })).toBe(board);
-  });
-});
-
 // docs/specs/011-theme/light-and-dark.md "A page's own paper": a layout placed on a light slide in Steel keeps its
 // dark words in dark chrome, rather than the dark half's light ink sinking into the slide.
 describe('createStockColourProjector on a page with its own fill', () => {
@@ -140,13 +98,13 @@ describe('createStockColourProjector on a page with its own fill', () => {
   it('draws the theme half the page needs, not the chrome’s', () => {
     const project = createStockColourProjector();
     const pageView = { surfaces: new Map([['t', 'light' as const]]), maps };
-    const out = project([title], 'dark', maps.dark, undefined, pageView);
+    const out = project([title], 'dark', maps.dark, pageView);
     expect(contrastRatio(inkOf(out[0]), paper)).toBeGreaterThanOrEqual(4.5);
   });
 
   it('still draws the chrome’s half off a filled page', () => {
     const project = createStockColourProjector();
-    const out = project([title], 'dark', maps.dark, undefined, {
+    const out = project([title], 'dark', maps.dark, {
       surfaces: new Map(),
       maps,
     });
@@ -156,8 +114,8 @@ describe('createStockColourProjector on a page with its own fill', () => {
   it('draws an element afresh when it moves onto a filled page', () => {
     const project = createStockColourProjector();
     const board = [title];
-    const off = project(board, 'dark', maps.dark, undefined, { surfaces: new Map(), maps });
-    const on = project(board, 'dark', maps.dark, undefined, {
+    const off = project(board, 'dark', maps.dark, { surfaces: new Map(), maps });
+    const on = project(board, 'dark', maps.dark, {
       surfaces: new Map([['t', 'light' as const]]),
       maps,
     });

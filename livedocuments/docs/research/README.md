@@ -8,7 +8,7 @@ Research holds dated measurements and experiment reports. They record what was m
 
 Where a large tab spends its time during pan, zoom, drag and marquee.
 
-- ./canvas-performance.md - when a large tab feels slow: method, per-gesture breakdown, named hot spots
+- ./canvas-performance.md - when a large tab feels slow: method, per-gesture breakdown, named hot spots (livediagram-era measurements)
 
 ## Agent CLI
 
@@ -30,4 +30,4 @@ constraints, and where taking part in a session belongs. The resulting spec is d
 - ./access-levels/prior-art.md - when comparing access levels with Google, Figma, Miro, Lucid, Notion and facilitation tools
 - ./access-levels/current-abilities.md - when asking what an owner, member, link, embed or token can do today, with code sites
 - ./access-levels/constraints.md - when weighing a role model against migration, the room, persistence, tokens and WCAG
-- ./access-levels/participation.md - when deciding which session acts are viewing, participating, facilitating or editing
+- ./access-levels/participation.md - when deciding which session acts are viewing, participating, facilitating or editing (livediagram-era: workshop session tools livedocuments does not have)

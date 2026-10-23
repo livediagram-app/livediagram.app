@@ -438,7 +438,7 @@ export function SharePassesDialog() {
     },
     {
       title: 'Viewer',
-      blurb: "Watches, pans and zooms. Can't comment, vote or change a thing.",
+      blurb: "Watches, pans and zooms. Can't comment or change a thing.",
       tile: 'fill-violet-500 dark:fill-violet-700',
       text: 'fill-violet-700 dark:fill-violet-300',
       on: false,

@@ -30,17 +30,17 @@ export const AUTO_LAYOUT_CHOICES: Record<AutoLayoutChoice, ChoiceSpec> = {
     telemetryType: 'Smart',
   },
   'flow-down': {
-    commandName: 'Auto Layout: Flowchart (down)',
-    keywords: 'auto layout flowchart flow vertical down top bottom arrange',
-    tileName: 'Flowchart Down',
+    commandName: 'Auto Layout: Layered (down)',
+    keywords: 'auto layout layered flowchart flow vertical down top bottom arrange',
+    tileName: 'Layered Down',
     tileLine: 'Top to bottom, in layers',
     options: { style: 'flow', direction: 'TB' },
     telemetryType: 'FlowchartDown',
   },
   'flow-right': {
-    commandName: 'Auto Layout: Flowchart (right)',
-    keywords: 'auto layout flowchart flow horizontal right left sideways arrange',
-    tileName: 'Flowchart Right',
+    commandName: 'Auto Layout: Layered (right)',
+    keywords: 'auto layout layered flowchart flow horizontal right left sideways arrange',
+    tileName: 'Layered Right',
     tileLine: 'Left to right, in layers',
     options: { style: 'flow', direction: 'LR' },
     telemetryType: 'FlowchartRight',
@@ -54,9 +54,9 @@ export const AUTO_LAYOUT_CHOICES: Record<AutoLayoutChoice, ChoiceSpec> = {
     telemetryType: 'Tree',
   },
   mindmap: {
-    commandName: 'Auto Layout: Mindmap',
+    commandName: 'Auto Layout: Radial',
     keywords: 'auto layout mindmap mind map radial hub spoke brainstorm arrange',
-    tileName: 'Mindmap',
+    tileName: 'Radial',
     tileLine: 'Branches around a centre',
     options: { style: 'mindmap' },
     telemetryType: 'Mindmap',
@@ -66,9 +66,3 @@ export const AUTO_LAYOUT_CHOICES: Record<AutoLayoutChoice, ChoiceSpec> = {
 // The explicit styles shown as their own commands, in display order.
 // 'smart' stays the plain "Auto Layout" entry rather than joining this row.
 export const AUTO_LAYOUT_STYLE_IDS = ['flow-down', 'flow-right', 'tree', 'mindmap'] as const;
-
-// The Tidy Up popover's tiles, in the order the spec gives: Smart first, then the explicit styles.
-export const AUTO_LAYOUT_TILE_ORDER: readonly AutoLayoutChoice[] = [
-  'smart',
-  ...AUTO_LAYOUT_STYLE_IDS,
-];

@@ -1,5 +1,5 @@
 import { titleCase } from '@livedocuments/api-schema';
-import { UNTITLED_DOCUMENT_NAME, isUntitledDocumentName } from './legacy-untitled';
+import { UNTITLED_DOCUMENT_NAME, isUntitledDocumentName } from './untitled';
 
 // The Pages templates (docs/specs/008-canvas/canvas-and-palette.md "Templates"): every template opens in Pages,
 // on pages of its own.
@@ -341,7 +341,7 @@ export function templateCreateHref(kind: TemplateKind): string {
 // Default name for a freshly-created document: "Untitled <Template Title>" in
 // title case so a templated document is recognisable in the Explorer (e.g.
 // "Untitled Event Poster"), while a blank one (or no template) keeps the plain
-// "Untitled document" (UNTITLED_DOCUMENT_NAME, legacy-untitled.ts).
+// "Untitled document" (UNTITLED_DOCUMENT_NAME, untitled.ts).
 
 export function untitledNameForTemplate(kind: TemplateKind | null): string {
   if (!kind || kind === 'blank') return UNTITLED_DOCUMENT_NAME;

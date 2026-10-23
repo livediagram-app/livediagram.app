@@ -83,7 +83,6 @@ describe('the self-drawing shape family', () => {
     expect(isSelfDrawingShape('icon')).toBe(false);
     // The web components that DO carry a label keep it (docs/specs/009-elements/web-components-and-no-groups.md).
     expect(isSelfDrawingShape('banner')).toBe(false);
-    expect(isSelfDrawingShape('callout')).toBe(false);
     expect(isSelfDrawingShape('site-header')).toBe(false);
   });
 });

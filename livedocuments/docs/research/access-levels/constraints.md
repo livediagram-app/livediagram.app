@@ -1,5 +1,10 @@
 # Access levels: the constraints any model must satisfy
 
+> **livediagram-era research.** Written for livediagram before livedocuments was forked from it. It describes
+> features livedocuments does not have (live polls, Q&A boards, dot votes, quizzes, the facilitator baton, workshop
+> session tools) and cites code, migrations and a `docs/agent-cli` branch that are not in this repository. Kept as
+> background for the access-levels design; read the specs for what livedocuments does today.
+
 Research note for the access-levels design. It asks one question: whatever levels we choose, what must
 the model honour, given how livedocuments is actually built? It then weighs four candidate models against
 those constraints. Read-only research; it decides nothing. Sources are the specs and code on `main` at
@@ -270,7 +275,7 @@ ideas.
 | C11 server-bound key needed      | yes                             | yes                                           | yes (participant only)                                               | yes, and for facilitation                   |
 | C14 persistence without editor   | yes                             | yes                                           | yes                                                                  | yes, plus facilitator writes                |
 | C26 hues and glyphs              | 3                               | 3                                             | 4                                                                    | 3 or 4, plus a capability mark              |
-| Matches a familiar product       | Google Docs words               | Google ladder, livedocuments words                | none directly                                                        | none directly                               |
+| Matches a familiar product       | Google Docs words               | Google ladder, livedocuments words            | none directly                                                        | none directly                               |
 
 ### (1) Three roles: view, comment, edit (the worktree draft)
 

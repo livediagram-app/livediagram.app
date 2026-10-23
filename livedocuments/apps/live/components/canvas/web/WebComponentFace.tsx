@@ -13,8 +13,6 @@ export function WebComponentFace({ kind, ...props }: WebFaceProps & { kind: WebC
   switch (kind) {
     case 'banner':
       return <BannerFace {...props} />;
-    // A callout not yet migrated draws as the badge card it becomes (docs/specs/009-elements/card.md).
-    case 'callout':
     case 'card':
       return <CardFace {...props} />;
     case 'stat-row':

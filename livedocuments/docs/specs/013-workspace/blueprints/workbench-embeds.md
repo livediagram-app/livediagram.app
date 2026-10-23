@@ -698,7 +698,7 @@ Explorer's toast "Couldn’t create the document. Try again." and stays; logged 
 **Back** (`WorkbenchBackButton`, WB59): shown on a document place, in the canvas's top-left card
 (`ToolbarMenuCard`, the card the app's Explorer menu button uses, which a workbench otherwise leaves empty), level
 with the palette strip at `top-3 left-3`. The card carries `data-toolbar-menu`, so the strip keeps clear of it as it
-does of the menu button (`useStripCrowded`, `useBarLabels`, `useStripTileLimit`); on a phone it rides in the
+does of the menu button (`useStripCrowded`, `useBarLabels`); on a phone it rides in the
 strip's row (`inline`, the glyph alone). `EditorCanvasHost` passes the frame's hooks to `Canvas` as
 `workbenchBack`, and `CanvasChrome` renders the card first of its controls, so Back is the first stop after the
 canvas itself; the card is the editor's Header region for F6 (`data-region="header"`). It shows when a phone is held

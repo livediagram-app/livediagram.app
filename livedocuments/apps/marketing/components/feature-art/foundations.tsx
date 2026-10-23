@@ -107,7 +107,7 @@ function Sparkle({ x, y, r = 4 }: { x: number; y: number; r?: number }) {
   );
 }
 
-/** MCP: you ask your AI tool for a diagram; it calls livedocuments and the diagram appears. */
+/** MCP: you ask your AI tool for a slide deck; it calls livedocuments and the deck appears. */
 export function McpArt() {
   return (
     <Frame>
@@ -132,7 +132,7 @@ export function McpArt() {
         {/* You ask. */}
         <rect x="74" y="32" width="80" height="14" rx="7" fill={SKY} />
         <text x="114" y="41.2" textAnchor="middle" fontSize="6" fontWeight="600" fill="#fff">
-          Draw our login flow
+          Make our launch deck
         </text>
 
         {/* The tool call, running then done. */}
@@ -190,12 +190,21 @@ export function McpArt() {
         </g>
 
         {/* What lands in livedocuments. */}
-        <MiniWindow x={176} y={8} w={112} h={80} title="Login flow">
+        <MiniWindow x={176} y={8} w={112} h={80} title="Launch deck">
           <g className="fa-b-late">
-            <Node x={190} y={30} w={36} h={16} label="Sign in" r={8} />
-            <Node x={240} y={30} w={36} h={16} label="Verify" />
-            <Node x={240} y={62} w={36} h={16} label="Session" />
-            <Node x={190} y={62} w={36} h={16} label="Retry" />
+            <rect
+              className="fill-white stroke-slate-200 dark:fill-slate-900 dark:stroke-slate-700"
+              x="182"
+              y="21"
+              width="100"
+              height="63"
+              rx="1.5"
+              strokeWidth="0.8"
+            />
+            <Node x={190} y={30} w={36} h={16} label="Plan" r={8} />
+            <Node x={240} y={30} w={36} h={16} label="Build" />
+            <Node x={240} y={62} w={36} h={16} label="Ship" />
+            <Node x={190} y={62} w={36} h={16} label="Review" />
             <Arrow d="M226 38 H234" head={[239, 38, 0]} />
             <Arrow d="M258 46 V56" head={[258, 61, 90]} />
             <Arrow d="M240 70 H232" head={[227, 70, 180]} />

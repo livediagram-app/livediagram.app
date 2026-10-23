@@ -18,7 +18,6 @@ import { flyoutCardColumns, flyoutLayout } from './category-flyout-groups';
 import { opensSide } from './category-flyout-items';
 import { CategoryFlyoutSide, sidePlacement, type SideOpen } from './CategoryFlyoutSide';
 import type { PaletteTileDef } from './palette-tile-defs';
-import type { EditorMode } from '@livedocuments/document';
 import { StripOpenedBody, Divider } from './strip-rail-items';
 import type { PaletteTileActions } from './PaletteTileGrid';
 
@@ -160,7 +159,7 @@ function typedSearch(): boolean {
 
 type CategoryBarState = ReturnType<typeof useCategoryBar>;
 
-/** The bar's buttons, a divider between the bands (Popular, then Common, Structure, Decorate). */
+/** The bar's buttons, a divider between the bands (Common, Structure, Decorate). */
 export function CategoryBarButtons({
   bar,
   categories,
@@ -171,7 +170,7 @@ export function CategoryBarButtons({
   categories: readonly BarCategory[];
   // Names beside the glyphs; off where the window is too narrow for them (and on a phone).
   labels: boolean;
-  // A phone's strip: the bar is the part that gives way and swipes sideways, as the tile rail does, so the
+  // A phone's strip: the bar is the part that gives way and swipes sideways, so the
   // selection mode and Search beside it stay in reach (docs/specs/007-editor/toolbar-layout.md "On a phone").
   scrollable?: boolean;
 }) {
@@ -277,7 +276,6 @@ export function CategoryBarButtons({
 export function CategoryBarFlyout({
   bar,
   categories,
-  mode,
   actions,
   pendingDraw,
   isMobile,
@@ -285,7 +283,6 @@ export function CategoryBarFlyout({
 }: {
   bar: CategoryBarState;
   categories: readonly BarCategory[];
-  mode: EditorMode;
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null;
   isMobile: boolean;
@@ -320,7 +317,7 @@ export function CategoryBarFlyout({
   // An opener's body: the category it stands for, at its group (an AWS opener opens Technology's AWS marks).
   const openBody = (categoryId: string, group: string | null): ReactNode => (
     <StripOpenedBody
-      opened={{ key: `${categoryId}/${group ?? ''}`, category: categoryId, group, label: '' }}
+      opened={{ key: `${categoryId}/${group ?? ''}`, category: categoryId, group }}
       content={categories.find((c) => c.id === categoryId)?.content ?? null}
     />
   );
@@ -358,7 +355,6 @@ export function CategoryBarFlyout({
           <CategoryFlyout
             key={category.id}
             category={category}
-            mode={mode}
             actions={actions}
             pendingDraw={pendingDraw}
             focusFirst={bar.viaKeyboard}

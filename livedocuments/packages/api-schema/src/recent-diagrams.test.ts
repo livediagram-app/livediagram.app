@@ -15,7 +15,6 @@ const doc = (id: string, savedAt: number, extra: { empty?: boolean } = {}) => ({
   name: `Doc ${id}`,
   savedAt,
   empty: extra.empty ?? false,
-  opensIn: 'pages' as const,
 });
 
 describe('pickRecentDiagrams', () => {
@@ -34,12 +33,11 @@ describe('pickRecentDiagrams', () => {
     expect(picked.map((d) => d.id)).toEqual(['c']);
   });
 
-  it('carries the mode it opens in', () => {
+  it('carries the id, name and save time', () => {
     expect(pickRecentDiagrams([doc('a', 1)])[0]).toEqual({
       id: 'a',
       name: 'Doc a',
       savedAt: 1,
-      mode: 'pages',
       teamName: null,
     });
   });
@@ -67,7 +65,7 @@ describe('parseRecentDiagrams', () => {
   });
 
   it('reads a note written before teams as your own diagrams', () => {
-    const raw = '{"v":1,"diagrams":[{"id":"a","name":"A","savedAt":1,"mode":"draw"}]}';
+    const raw = '{"v":1,"diagrams":[{"id":"a","name":"A","savedAt":1}]}';
     expect(parseRecentDiagrams(raw)[0]?.teamName).toBeNull();
   });
 
@@ -76,16 +74,6 @@ describe('parseRecentDiagrams', () => {
       '{"v":1,"diagrams":[{"id":"a","name":"A","savedAt":2,"teamName":"Design"},' +
       '{"id":"b","name":"B","savedAt":1,"teamName":42},{"id":"c","name":"C","savedAt":0,"teamName":""}]}';
     expect(parseRecentDiagrams(raw).map((d) => d.teamName)).toEqual(['Design', null, null]);
-  });
-
-  it('reads a mode livediagram stored as Pages', () => {
-    const raw = '{"v":1,"diagrams":[{"id":"a","name":"A","savedAt":1,"mode":"facilitate"}]}';
-    expect(parseRecentDiagrams(raw)[0]?.mode).toBe('pages');
-  });
-
-  it('drops an unknown mode to null', () => {
-    const raw = '{"v":1,"diagrams":[{"id":"a","name":"A","savedAt":1,"mode":"bogus"}]}';
-    expect(parseRecentDiagrams(raw)[0]?.mode).toBeNull();
   });
 });
 

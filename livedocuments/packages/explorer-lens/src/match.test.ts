@@ -23,7 +23,6 @@ const subject = (overrides: Partial<LensSubject> = {}): LensSubject => ({
   space: 'mine',
   people: 'me',
   madeByAi: false,
-  opensIn: 'pages',
   ...overrides,
 });
 
@@ -34,7 +33,6 @@ describe('documentSubject', () => {
     ownerId: 'me-id',
     teamId: null,
     source: null,
-    opensIn: 'pages',
   };
 
   it('reads a personal document of the reader, this browser’s included', () => {
@@ -44,7 +42,6 @@ describe('documentSubject', () => {
       space: 'mine',
       people: 'me',
       madeByAi: false,
-      opensIn: 'pages',
     });
   });
 
@@ -59,13 +56,6 @@ describe('documentSubject', () => {
   it('reads a document the CLI made as made by a person, not by AI', () => {
     expect(documentSubject({ ...summary, source: 'cli' }, 'me-id').madeByAi).toBe(false);
   });
-
-  it('reads an unrecorded or retired intent as unknown', () => {
-    const unrecorded = { ...summary, opensIn: undefined };
-    expect(documentSubject(unrecorded, 'me-id')).toMatchObject({ opensIn: null });
-    const retired = { ...summary, opensIn: 'whiteboard' };
-    expect(documentSubject(retired, 'me-id')).toMatchObject({ opensIn: null });
-  });
 });
 
 describe('sharedSubject', () => {
@@ -76,7 +66,6 @@ describe('sharedSubject', () => {
       space: 'shared',
       people: 'others',
       madeByAi: null,
-      opensIn: null,
     });
   });
 });
@@ -92,7 +81,6 @@ describe('matchesLens', () => {
   });
 
   it.each([
-    ['opens-in:pages', { opensIn: 'pages' }, { opensIn: null }],
     ['made-by:ai', { madeByAi: true }, { madeByAi: false }],
     ['people:others', { people: 'others' }, { people: 'me' }],
     ['space:team:T1', { space: 'team:T1' }, { space: 'mine' }],
@@ -113,16 +101,15 @@ describe('matchesLens', () => {
   });
 
   it('matches no value of a dimension the row cannot answer', () => {
-    const unknown = subject({ opensIn: null, madeByAi: null });
-    expect(matchesLens(unknown, lensOf('opens-in:pages'), now)).toBe(false);
+    const unknown = subject({ madeByAi: null });
     expect(matchesLens(unknown, lensOf('made-by:ai'), now)).toBe(false);
     expect(matchesLens(unknown, lensOf('plan'), now)).toBe(true);
   });
 
   it('combines dimensions with and', () => {
-    const lens = lensOf('opens-in:pages people:me');
-    expect(matchesLens(subject({ opensIn: 'pages' }), lens, now)).toBe(true);
-    expect(matchesLens(subject({ opensIn: 'pages', people: 'others' }), lens, now)).toBe(false);
+    const lens = lensOf('made-by:ai people:me');
+    expect(matchesLens(subject({ madeByAi: true }), lens, now)).toBe(true);
+    expect(matchesLens(subject({ madeByAi: true, people: 'others' }), lens, now)).toBe(false);
   });
 
   describe('edited', () => {

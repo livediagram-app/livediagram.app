@@ -57,7 +57,7 @@ const HERO_HEIGHT = 300;
 export const COMPONENT_SIZE: Record<ComponentKind, { width: number; height: number }> = {
   banner: SHAPE_DEFAULT_SIZE.banner,
   header: SHAPE_DEFAULT_SIZE['site-header'],
-  callout: SHAPE_DEFAULT_SIZE.callout,
+  callout: { width: 380, height: 116 },
   stat: SHAPE_DEFAULT_SIZE['stat-row'],
   process: SHAPE_DEFAULT_SIZE.process,
   hero: { width: HERO_WIDTH, height: HERO_HEIGHT },

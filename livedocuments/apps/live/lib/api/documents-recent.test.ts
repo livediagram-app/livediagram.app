@@ -40,8 +40,8 @@ describe('apiListDocuments', () => {
     stubFetch(() =>
       Response.json({
         documents: [
-          { id: 'old', name: 'Old', savedAt: 1, empty: false, opensIn: 'pages' },
-          { id: 'new', name: 'New', savedAt: 2, empty: false, opensIn: null },
+          { id: 'old', name: 'Old', savedAt: 1, empty: false },
+          { id: 'new', name: 'New', savedAt: 2, empty: false },
         ],
       }),
     );
@@ -49,8 +49,8 @@ describe('apiListDocuments', () => {
     await apiListDocuments('owner-recent');
 
     expect(parseRecentDiagrams(localStorage.getItem(RECENT_DIAGRAMS_KEY))).toEqual([
-      { id: 'new', name: 'New', savedAt: 2, mode: null, teamName: null },
-      { id: 'old', name: 'Old', savedAt: 1, mode: 'pages', teamName: null },
+      { id: 'new', name: 'New', savedAt: 2, teamName: null },
+      { id: 'old', name: 'Old', savedAt: 1, teamName: null },
     ]);
   });
 
@@ -58,14 +58,13 @@ describe('apiListDocuments', () => {
     __setOfflineBackend(memBackend());
     const seen = stubFetch(() =>
       Response.json({
-        documents: [{ id: 'mine', name: 'Mine', savedAt: 1, empty: false, opensIn: null }],
+        documents: [{ id: 'mine', name: 'Mine', savedAt: 1, empty: false }],
         teamRecent: [
           {
             id: 'team',
             name: 'Team',
             savedAt: 3,
             empty: false,
-            opensIn: 'pages',
             teamName: 'Design',
           },
         ],
@@ -77,8 +76,8 @@ describe('apiListDocuments', () => {
 
     expect(seen[0]).toMatch(/\/documents\?include=team-recent$/);
     expect(parseRecentDiagrams(localStorage.getItem(RECENT_DIAGRAMS_KEY))).toEqual([
-      { id: 'team', name: 'Team', savedAt: 3, mode: 'pages', teamName: 'Design' },
-      { id: 'mine', name: 'Mine', savedAt: 1, mode: null, teamName: null },
+      { id: 'team', name: 'Team', savedAt: 3, teamName: 'Design' },
+      { id: 'mine', name: 'Mine', savedAt: 1, teamName: null },
     ]);
   });
 
@@ -133,7 +132,7 @@ describe('apiListDocuments thumbnails', () => {
       url.includes('/thumbnail')
         ? new Response(SVG)
         : Response.json({
-            documents: [{ id: 'cloud', name: 'Cloud', savedAt: 1, empty: false, opensIn: null }],
+            documents: [{ id: 'cloud', name: 'Cloud', savedAt: 1, empty: false }],
           }),
     );
 

@@ -1,14 +1,14 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from '@testing-library/react';
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { ICON_CATEGORIES } from '@/lib/icons';
 import { STICKER_CATEGORIES } from '@/lib/stickers';
-import { CatalogueGroupTile, catalogueStripGroups } from './catalogue-strip-groups';
+import { catalogueStripGroups } from './catalogue-strip-groups';
 import { BrowseStartGroup, PaletteCategoryBrowser } from './PaletteCategoryBrowser';
 
-// docs/specs/007-editor/toolbar-layout.md "More": Icons, Stickers and Technology show their browse groups on the
-// strip, each opening the browse on that group.
+// Icons, Stickers and Technology's browse groups, which an opener for one group (palette-openers) wears and opens
+// alone (docs/specs/007-editor/toolbar-layout.md "A tile's side panel").
 
 beforeAll(() => ensureIconCatalogs());
 
@@ -23,7 +23,7 @@ describe('catalogueStripGroups', () => {
     expect(catalogueStripGroups('technology')?.length).toBeGreaterThan(0);
   });
 
-  it('is built once the catalogues have loaded, not on every strip render', () => {
+  it('is built once the catalogues have loaded, not on every render', () => {
     expect(catalogueStripGroups('technology')).toBe(catalogueStripGroups('technology'));
     const t = performance.now();
     for (let i = 0; i < 1000; i++) catalogueStripGroups('icons');
@@ -32,22 +32,6 @@ describe('catalogueStripGroups', () => {
 
   it('is null for a category of tiles', () => {
     expect(catalogueStripGroups('shapes')).toBeNull();
-  });
-});
-
-describe('CatalogueGroupTile', () => {
-  it('toggles from its own tile, marked as the popover’s button', () => {
-    const onToggle = vi.fn();
-    render(
-      <CatalogueGroupTile
-        group={{ id: 'g', label: 'People', icon: null }}
-        open
-        onToggle={onToggle}
-      />,
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'People' }));
-    const anchor = onToggle.mock.calls[0]![0] as HTMLElement;
-    expect(anchor.hasAttribute('data-toolbar-more-button')).toBe(true);
   });
 });
 
@@ -85,7 +69,7 @@ describe('BrowseStartGroup', () => {
     expect(screen.getByLabelText('Search')).toBeTruthy();
   });
 
-  it('shows the group alone, without search or breadcrumb, when bare (a strip group’s popover)', () => {
+  it('shows the group alone, without search or breadcrumb, when bare (an opener’s side panel)', () => {
     const { container } = render(
       <BrowseStartGroup.Provider value={{ id: 'b', bare: true }}>
         {browse}

@@ -170,7 +170,7 @@ function backdropVariants(scheme: ThemeDefinition): ThemeDefinition[] {
 }
 
 // Resolve an id to a BUILT-IN ThemeDefinition, falling back to Default. A
-// retired scheme is not resolved here: its tabs are migrated on read
+// retired scheme is no longer in the catalogue, so it falls back to Default too
 // (docs/specs/011-theme/retired-schemes.md).
 //
 // `appearance` only ever changes the answer for Default, which has a light and

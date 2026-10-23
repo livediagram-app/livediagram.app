@@ -40,7 +40,6 @@ const doc = (id: string, savedAt: number, extra: Partial<DocumentSummary> = {}):
     name: `Doc ${id}`,
     savedAt,
     empty: false,
-    opensIn: 'diagram',
     ...extra,
   }) as DocumentSummary;
 

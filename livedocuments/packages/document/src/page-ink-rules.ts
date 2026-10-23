@@ -47,7 +47,6 @@ const BOX_KINDS = new Set<string>([
   'parallelogram',
   'hexagon',
   'document',
-  'callout',
   'card',
   'stadium',
   'cloud',

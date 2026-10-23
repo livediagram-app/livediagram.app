@@ -7,7 +7,6 @@ import { articleTemplateOverrides } from './article-template';
 import { workingBackwardsOverrides } from './template-working-backwards';
 import { blankPageTemplateOverrides } from './blank-page-templates';
 import { templateLayers } from './template-layers';
-import { templateEditorMode } from './template-modes';
 import { templatePages } from './template-pages';
 import type { TemplateKind } from './templates';
 
@@ -22,10 +21,10 @@ const PAGES_SURROUND: BackgroundPattern = 'blank';
 
 // Tab-level overrides a specific template ships with, applied on top of whatever theme is selected: its surround,
 // its layers (docs/specs/006-document/layers.md "Layered templates", matching the `layerId`s its builder pre-stamps),
-// the mode it opens in, and its pages and writing, so every application path (the picker, /new, the MCP worker)
+// and its pages and writing, so every application path (the picker, /new, the MCP worker)
 // lands them in one commit.
 export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
-  const overrides: Partial<Tab> = { opensIn: templateEditorMode(kind) };
+  const overrides: Partial<Tab> = {};
   if (!THEME_PATTERN.has(kind)) overrides.backgroundPattern = PAGES_SURROUND;
   const layers = templateLayers(kind);
   if (layers) overrides.layers = layers;

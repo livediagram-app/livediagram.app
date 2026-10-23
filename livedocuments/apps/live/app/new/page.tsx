@@ -26,7 +26,7 @@ import { markNameConfirmed } from '@/lib/local-identity';
 import { ensureSignedGuestIdentity } from '@/lib/guest-identity';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
 import { untitledNameForTemplate, type TemplateKind } from '@livedocuments/templates';
-import { creationIntentOf } from '@livedocuments/api-schema';
+import { CREATION_INTENT } from '@livedocuments/api-schema';
 import {
   choosePlacementAgainUrl,
   newDocumentKind,
@@ -259,7 +259,7 @@ export default function NewDocumentPage() {
           // What it opens as, captured now and never re-derived
           // (docs/specs/013-workspace/default-folders.md): with no place chosen, the server files it
           // in the person's default folder for it.
-          intent: creationIntentOf(tab),
+          intent: CREATION_INTENT,
         });
       }
     } catch (err) {

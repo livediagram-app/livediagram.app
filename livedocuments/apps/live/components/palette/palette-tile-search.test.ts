@@ -5,7 +5,7 @@ import type { Element } from '@livedocuments/document';
 import {
   elementSignature,
   mergeByName,
-  modeElementTiles,
+  paletteElementTiles,
   rankTiles,
   searchableElementTiles,
   searchElementTiles,
@@ -21,16 +21,16 @@ const el = (e: Record<string, unknown>) =>
 
 describe('searchableElementTiles', () => {
   it('lists every tile of the palette once, in layout order', () => {
-    const tiles = modeElementTiles('pages');
+    const tiles = paletteElementTiles();
     expect(new Set(ids(tiles)).size).toBe(tiles.length);
-    // Popular leads, so its Text comes first.
-    expect(tiles[0]?.id).toBe('tools:text');
-    expect(ids(searchableElementTiles({ mode: 'pages', hasImage: true }))).toEqual(ids(tiles));
+    // Shapes leads, so its Square comes first.
+    expect(tiles[0]?.id).toBe('shapes:square');
+    expect(ids(searchableElementTiles({ hasImage: true }))).toEqual(ids(tiles));
     expect(ids(tiles)).toEqual(expect.arrayContaining(['data:pie', 'devices:phone']));
   });
 
   it('leaves out the image-upload tiles where the editor has none', () => {
-    const tiles = searchableElementTiles({ mode: 'pages', hasImage: false });
+    const tiles = searchableElementTiles({ hasImage: false });
     const needsImage = PALETTE_TILES.filter((t) => t.needsImage).map((t) => t.id);
     expect(ids(tiles).filter((id) => needsImage.includes(id))).toEqual([]);
   });
@@ -38,18 +38,17 @@ describe('searchableElementTiles', () => {
 
 describe('searchElementTiles', () => {
   it('finds a tile by a synonym', () => {
-    const found = searchElementTiles({ query: 'database', mode: 'pages', hasImage: true });
+    const found = searchElementTiles({ query: 'database', hasImage: true });
     expect(ids(found)).toContain('shapes:cylinder');
   });
 
   it('finds nothing for nonsense', () => {
-    expect(searchElementTiles({ query: 'zzqqxx', mode: 'pages', hasImage: true })).toEqual([]);
+    expect(searchElementTiles({ query: 'zzqqxx', hasImage: true })).toEqual([]);
   });
 
   it('lists only the element types on the tab before anything is typed', () => {
     const onTab = searchElementTiles({
       query: '  ',
-      mode: 'pages',
       hasImage: true,
       tabElements: [
         el({ type: 'shape', shape: 'circle' }),
@@ -57,12 +56,12 @@ describe('searchElementTiles', () => {
         el({ type: 'sticky' }),
       ],
     });
-    // Layout order (Popular first), each type once.
+    // Layout order (Shapes before Write), each type once.
     expect(ids(onTab)).toEqual(['shapes:circle', 'tools:sticky']);
   });
 
   it('lists nothing before typing on an empty tab', () => {
-    expect(searchElementTiles({ query: '', mode: 'pages', hasImage: true })).toEqual([]);
+    expect(searchElementTiles({ query: '', hasImage: true })).toEqual([]);
   });
 });
 
@@ -126,7 +125,7 @@ describe('rankTiles', () => {
 describe('a worst-case query', () => {
   it('ranks every tile well inside a keystroke budget', () => {
     const start = performance.now();
-    for (let i = 0; i < 50; i++) searchElementTiles({ query: 'e', mode: 'pages', hasImage: true });
+    for (let i = 0; i < 50; i++) searchElementTiles({ query: 'e', hasImage: true });
     // 50 searches matching most of the catalogue; a keystroke runs one.
     expect((performance.now() - start) / 50).toBeLessThan(16);
   });

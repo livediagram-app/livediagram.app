@@ -10,7 +10,7 @@ afterEach(() => {
 });
 
 const mount = (onTemplate = vi.fn(), tabId = 't1') =>
-  render(<StartFromTemplates mode="pages" tabId={tabId} onTemplate={onTemplate} />);
+  render(<StartFromTemplates tabId={tabId} onTemplate={onTemplate} />);
 
 describe('StartFromTemplates', () => {
   it('names its start', () => {

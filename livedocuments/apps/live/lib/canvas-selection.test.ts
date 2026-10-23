@@ -66,27 +66,6 @@ describe('deriveCanvasSelection', () => {
     expect(s.showUnionResize).toBe(false);
   });
 
-  // Something drawn over the canvas covers it, so no selection chrome floats there, alone or in a
-  // multi-selection; the selection itself stands.
-  it('shows no toolbar, popover or plus while the canvas is covered', () => {
-    const board = box('b');
-    const one = derive({ elements: [board, box('a')], selectedId: 'b', canvasCovered: true });
-    expect(one.selected).toBe(board);
-    expect(one.showPopover).toBe(false);
-    expect(one.showPlus).toBe(false);
-    const other = derive({ elements: [board, box('a')], selectedId: 'a', canvasCovered: true });
-    expect(other.showPopover).toBe(false);
-    expect(other.showPlus).toBe(false);
-    const all = derive({
-      elements: [board, box('a')],
-      selectedId: 'b',
-      multiSelectedIds: new Set(['a', 'b']),
-      canvasCovered: true,
-    });
-    expect(all.showMultiToolbar).toBe(false);
-    expect(derive({ elements: [board], selectedId: 'b' }).showPopover).toBe(true);
-  });
-
   it('hides handles + plus while editing the selected element (popover hides too)', () => {
     const s = derive({ elements: [box('a')], selectedId: 'a', editingId: 'a' });
     expect(s.showPopover).toBe(false);

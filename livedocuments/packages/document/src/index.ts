@@ -8,8 +8,6 @@
 // self-drawing data shapes the same way the inline editor does.
 import type { TagColour } from './tag-colours';
 import { isSelfDrawingShape } from './data-shapes';
-import type { TabKind } from './tab-kind';
-import type { EditorMode } from './editor-mode';
 import type { Page, PageOrientation } from './page';
 import type { ArticleFlow } from './article-flow';
 
@@ -309,20 +307,9 @@ export type BoxedElement =
   | VideoElement;
 export type Element = BoxedElement | ArrowElement;
 
-// What KIND a tab is (./tab-kind): livedocuments has only the general tab.
-//
-// 'diagram' is an ordinary tab and is written explicitly onto tabs the
-// editor commits; tabs stored before the field carry nothing, which reads
-// as 'diagram' via `tabKindOf` (see ./tab-kind).
-
 export type Tab = {
   id: TabId;
   name: string;
-  kind?: TabKind;
-  // The tab's editor mode, the same for everyone on it and the mode it opens in
-  // (docs/specs/007-editor/pages-mode.md "One mode"). livedocuments has one, Pages: any stored mode,
-  // or none, reads as Pages (via `opensInOf`).
-  opensIn?: EditorMode;
   // Pages mode's pages (docs/specs/007-editor/pages-mode.md "The pages"): the A4 sheets,
   // in row order, each portrait or landscape, that everyone lays the tab out on. Absent = one page
   // (read via `pagesOf`).
@@ -403,7 +390,6 @@ export type Tab = {
 // --- Type guards -----------------------------------------------------------
 
 export { takesTypedLabel } from './element-types';
-export { DEFAULT_TAB_KIND, stampTabKind, tabKindOf, type TabKind } from './tab-kind';
 export * from './accent-edge';
 export * from './card';
 export * from './chip';
@@ -457,9 +443,6 @@ export * from './page-default-background';
 export * from './pages-edits';
 export * from './pages-background-copy';
 export * from './tab-window';
-export * from './tab-has-drawing';
-export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
-export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';
 
 export function isBoxed(element: Element): element is BoxedElement {
   return (
@@ -598,7 +581,6 @@ export * from './duplicate';
 export * from './polyline';
 export * from './pen-stroke';
 export * from './stroke-points';
-export * from './stroke-fit';
 export * from './stroke-points-cache';
 export * from './freehand-points';
 export * from './stroke-points-debug';
@@ -648,7 +630,6 @@ export { mixHex } from './color-wash';
 export * from './theme-graph';
 export * from './themes';
 export * from './theme-halves';
-export * from './label-backdrop';
 export * from './theme-presets';
 
 // Human-readable name for an element's kind ('Square', 'Table', 'Icon', ...),
@@ -668,7 +649,6 @@ export * from './svg-path-outline';
 export * from './shape-hit';
 // The band a shape's label sits in (docs/specs/008-canvas/canvas-and-palette.md "Shape primitives").
 export * from './label-body';
-export * from './shape-area';
 export * from './indicator-placement';
 export * from './anchor-choice';
 export * from './arrow-body-drop';
@@ -677,7 +657,6 @@ export * from './arrow-path-hits';
 export * from './arrow-rebind';
 export * from './arrow-endpoint-spread';
 export * from './arrow-orthogonal';
-export * from './arrow-reciprocal';
 // Arrows breaking around intervening boxes at render time (docs/specs/008-canvas/arrow-route-behind.md).
 export * from './arrow-behind';
 export * from './element-grid';
@@ -690,14 +669,11 @@ export * from './geometry-guides';
 // Layer order + union bounds, and the load-time migration of documents saved
 // while groups existed (docs/specs/009-elements/web-components-and-no-groups.md).
 export * from './layer-order';
-export * from './legacy-groups';
-export * from './legacy-docks';
 export * from './legacy-stroke-points';
 export * from './stored-elements';
 export { isSafeColourValue } from './unsafe-colours';
 export * from './stored-tab';
 export { settleTabFields } from './tab-fields';
-export { retiredSchemeOf, migrateRetiredScheme } from './retired-schemes';
 
 // Photoshop-style layers (docs/specs/006-document/layers.md): the Layer type used by the Tab field
 // above, band-aware render ordering, and the pure layer operations.

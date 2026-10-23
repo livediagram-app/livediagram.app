@@ -348,30 +348,11 @@ SaaS dependency beyond the optional Clerk that teams already need.
 
 <!-- legacy-names -->
 
-### 3.8 Deprecated diagram routes
+### 3.8 An old request form
 
-The container was called a diagram before it became a document ([Document](../006-document/document.md)). The public routes moved from `/api/diagrams…` to `/api/documents…`; the old paths stay served until **30 April 2027** so scripts written against them keep working (`apps/api/src/legacy-documents-alias.ts`):
+The team notification bodies still accept a `diagramId` in place of `documentId`
+(`apps/api/src/legacy-request-forms.ts`); their responses use the new names only.
 
-- A request to `/api/diagrams…` is moved to the same path under `/api/documents…` before anything else runs, so authentication, the guest signature gate and rate limits apply to it exactly as to the current route.
-- The request body's keys `diagram`, `diagrams`, `diagramId`, `diagramName`, `diagramTeamId` and `diagramOwnerId` are renamed to their `document` forms; the response's keys are renamed back, at any depth. Values are never touched.
-- Element links cross in both directions: an old `{ kind: 'diagram', diagramId }` link in a request is
-  upgraded before the keys are renamed (`upgradeLegacyLinks`), and a response hands back the old
-  form (`downgradeLinks`), so neither side ever sees a half-renamed link.
-- An old client's `X-Diagram-Conversion` header travels on as `X-Document-Conversion`, and the
-  `document_trashed` error code goes back as `diagram_trashed`.
-- A body declared over the 8 MiB cap is refused with 413 before it is read, and the rewritten request
-  carries its own `Content-Length`, so the size gate behind the alias still applies.
-- Every aliased response carries `Deprecation: true`, `Sunset: Fri, 30 Apr 2027 00:00:00 GMT` and `Link: </api/documents>; rel="successor-version"`, and each call logs `[legacy-documents-alias] <method> <path>`, so the alias's remaining traffic is visible before it is removed.
-- A WebSocket upgrade on the old path passes through unchanged.
-
-Outside `/api/diagrams…` the paths never changed, so nothing marks a request as coming from an old
-client. Those routes accept the old **request** forms until the sunset (`apps/api/src/legacy-request-forms.ts`):
-the timeline's `scope=diagram:<id>`, and a `diagramId` in the team notification bodies. Their
-**responses** use the new names only (`document` in `/share/{code}` and `/trash/{id}/restore`, the
-`document_*` timeline types): repeating a whole document under two keys would double the largest
-payloads.
-
-After the sunset the alias module and this section go; `/api/diagrams…` then answers 404 like any unknown route.
 <!-- /legacy-names -->
 
 ## 4. `X-Owner-Id` trust change

@@ -20,8 +20,8 @@ const doc = (id: string, over: Partial<PaneDocument> = {}): PaneDocument => ({
   ownerId: 'me',
   ...over,
 });
-const stats = (mode: 'pages', elements: number, comments: number, bytes: number) =>
-  ({ mode, elements, comments, bytes }) as const;
+const stats = (elements: number, comments: number, bytes: number) =>
+  ({ elements, comments, bytes }) as const;
 const folder = (id: string, over: Partial<Folder> = {}): Folder =>
   ({ id, name: id, parentId: null, createdAt: 0, updatedAt: 0, teamId: null, ...over }) as Folder;
 
@@ -102,9 +102,9 @@ describe('sortDetailsEntries', () => {
 
   it('sorts by counted stats and keeps the uncounted last in both directions', () => {
     const docs = [
-      doc('few', { stats: stats('pages', 1, 1, 100) }),
+      doc('few', { stats: stats(1, 1, 100) }),
       doc('none', { stats: null }),
-      doc('many', { stats: stats('pages', 9, 7, 9000) }),
+      doc('many', { stats: stats(9, 7, 9000) }),
     ];
     expect(sort('comments', 'desc', docs)).toEqual(['many', 'few', 'none']);
     expect(sort('comments', 'asc', docs)).toEqual(['few', 'many', 'none']);

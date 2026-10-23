@@ -1,7 +1,7 @@
 // The Toolbar strip's Search (docs/specs/007-editor/toolbar-layout.md "Search: every element type"):
 // which element tiles a query finds among the ones the current editor mode's palette offers. Pure,
 // so the ranking is tested without a strip.
-import { componentShapeKind, type EditorMode, type Element } from '@livedocuments/document';
+import { componentShapeKind, type Element } from '@livedocuments/document';
 import { paletteRank } from '@livedocuments/icons';
 import { tileKeywords } from '@/lib/palette-tile-keywords';
 import { paletteCategoriesFor } from './palette-layouts';
@@ -81,17 +81,10 @@ function tilesOnTab(
   });
 }
 
-/** Tiles in first-seen order, each once: Popular repeats tiles its mode's other categories hold. */
-function unique(tiles: Iterable<PaletteTileDef>): PaletteTileDef[] {
-  const seen = new Map<string, PaletteTileDef>();
-  for (const t of tiles) if (!seen.has(t.id)) seen.set(t.id, t);
-  return [...seen.values()];
-}
-
-/** Every element tile a mode's palette offers, in layout order. The catalogue categories (Icons,
- *  Stickers, ...) hold no tiles and so add none. */
-export function modeElementTiles(mode: EditorMode): PaletteTileDef[] {
-  return unique(paletteCategoriesFor(mode).flatMap((c) => c.tiles ?? []));
+/** Every element tile the palette offers, in layout order (a layout files each tile in one category, so each is
+ *  here once). The catalogue categories (Icons, Stickers, ...) hold no tiles and so add none. */
+export function paletteElementTiles(): PaletteTileDef[] {
+  return paletteCategoriesFor().flatMap((c) => c.tiles ?? []);
 }
 
 /** The query's matches, ranked exact name, name prefix, name substring, then keyword only; ties
@@ -133,16 +126,10 @@ export function mergeByName(
     .map((r) => r.tile);
 }
 
-/** Every element tile the mode's palette offers, in layout order. Image-upload tiles are left out
+/** Every element tile the palette offers, in layout order. Image-upload tiles are left out
  *  without image support, as in every grid. */
-export function searchableElementTiles({
-  mode,
-  hasImage,
-}: {
-  mode: EditorMode;
-  hasImage: boolean;
-}): PaletteTileDef[] {
-  return modeElementTiles(mode).filter((t) => hasImage || !t.needsImage);
+export function searchableElementTiles({ hasImage }: { hasImage: boolean }): PaletteTileDef[] {
+  return paletteElementTiles().filter((t) => hasImage || !t.needsImage);
 }
 
 /** What the Search lists: the query's matches, best first, or before anything is typed, the
@@ -155,7 +142,6 @@ export function searchElementTiles({
   query: string;
   // The tab's elements: an empty query lists the tiles of the element types on it.
   tabElements?: readonly Element[];
-  mode: EditorMode;
   hasImage: boolean;
 }): PaletteTileDef[] {
   const tiles = searchableElementTiles(offered);

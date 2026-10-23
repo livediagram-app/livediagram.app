@@ -12,8 +12,7 @@ editor mode, Pages ([Pages mode](../007-editor/pages-mode.md)): a run of pages o
 | **document**    | The top-level container: its name, owner, location, share links and tabs.                                                      |
 | **tab**         | One tab of a document, with its own pages, layers and elements.                                                                |
 | **page**        | One page of a tab: a design page, a slide, an article page, a logo or a wireframe ([Pages mode](../007-editor/pages-mode.md)). |
-| **tab kind**    | What a tab is (`TabKind`, `packages/document/src/tab-kind.ts`); livedocuments has one, the general tab.                            |
-| **editor mode** | How a tab is worked on: always Pages; a stored livediagram mode reads as Pages.                                                |
+| **editor mode** | How a tab is worked on: always Pages.                                                                                          |
 
 - As a term, "diagram" names nothing the person sees: it survives in code as the general tab kind's
   stored value (`'diagram'`) and in legacy names.

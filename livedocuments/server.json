@@ -2,7 +2,7 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.livedocuments-app/livedocuments",
   "title": "livedocuments",
-  "description": "Create, edit, share and render real-time collaborative diagrams and mindmaps on livedocuments.app.",
+  "description": "Create, edit, share and render articles, slide decks and infographics on livedocuments.app.",
   "version": "0.1.0",
   "websiteUrl": "https://livedocuments.app",
   "repository": {

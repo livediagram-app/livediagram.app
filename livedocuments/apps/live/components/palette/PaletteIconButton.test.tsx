@@ -72,26 +72,3 @@ describe('IconButton hint', () => {
     expect(screen.getByRole('button').parentElement?.className).not.toBe('contents');
   });
 });
-
-// docs/specs/004-interface-design/touch-targets.md "Keyboard hints": a tile's always-on shortcut letter
-// teaches a key, so a touch screen, with no keyboard to press it on, does not draw it.
-describe('IconButton shortcut letter', () => {
-  it('hides the corner letter on a coarse pointer', () => {
-    render(
-      <IconButton
-        label="Add square"
-        description="Drop a square."
-        onClick={noop}
-        shortcut="R"
-        shortcutAlwaysVisible
-      >
-        <svg />
-      </IconButton>,
-    );
-    const letter = screen
-      .getByRole('button', { name: 'Add square' })
-      .querySelector('[aria-hidden]:last-child');
-    expect(letter?.textContent).toBe('R');
-    expect(letter?.className).toMatch(/\bpointer-coarse:hidden\b/);
-  });
-});

@@ -37,7 +37,7 @@ describe('LensChips', () => {
     cleanup();
     renderChips('', scoped);
     expect(screen.queryByRole('button', { name: 'Space, any' })).toBeNull();
-    expect(screen.getByRole('button', { name: 'Opens in, any' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Edited, any' })).toBeTruthy();
   });
 
   it('names a set chip by its values and shows them as text', () => {

@@ -1,4 +1,3 @@
-import { isDeprecatedDescription, successorToolName } from './legacy-tool-names';
 import { describe, expect, it, vi } from 'vitest';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { Env } from './env';
@@ -137,13 +136,8 @@ function harness(api: 'ok' | 'down' = 'down') {
 // convention) and the telemetry token is PascalCase (docs/specs/017-telemetry/telemetry.md bounds `type` to a
 // short token), so the two spellings have to be derived from each other rather
 // than typed twice.
-function isDeprecated(r: Registered): boolean {
-  return isDeprecatedDescription(r.config.description);
-}
-
-// A deprecated alias counts as its successor, so the feature's history stays one line.
 function expectedToken(toolName: string): string {
-  return successorToolName(toolName)
+  return toolName
     .split('_')
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join('');
@@ -177,8 +171,7 @@ const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 describe('registerTools', () => {
   it('registers the fifteen documented tools, each with a description', () => {
     const { registered } = harness();
-    const current = registered.filter((r) => !isDeprecated(r));
-    expect(current.map((r) => r.name).sort()).toEqual([
+    expect(registered.map((r) => r.name).sort()).toEqual([
       'add_tab',
       'change_pages',
       'create_document',
@@ -320,8 +313,7 @@ describe('tool annotations', () => {
 
   it('annotates each tool with the behaviour docs/specs/015-api/mcp-server.md §4.14 assigns it', () => {
     const { registered } = harness();
-    // A deprecated alias carries its successor's annotations (checked above).
-    for (const r of registered.filter((r) => !isDeprecated(r))) {
+    for (const r of registered) {
       const behaviour = BEHAVIOURS[r.name];
       // A tool missing from the table is a new tool whose behaviour nobody has
       // decided yet. Decide it here and in the spec; don't delete this line.
@@ -337,7 +329,6 @@ describe('tool annotations', () => {
     // reverse) is a lie to the client either way.
     const { registered } = harness();
     const readOnly = registered
-      .filter((r) => !isDeprecated(r))
       .filter((r) => r.config.annotations?.readOnlyHint === true)
       .map((r) => r.name)
       .sort();
@@ -361,7 +352,6 @@ describe('tool annotations', () => {
     }
 
     const destructive = registered
-      .filter((r) => !isDeprecated(r))
       .filter((r) => r.config.annotations?.destructiveHint === true)
       .map((r) => r.name)
       .sort();

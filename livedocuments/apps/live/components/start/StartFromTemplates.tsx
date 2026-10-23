@@ -16,7 +16,6 @@ import {
   lucideShapes,
   lucideStar,
 } from '@livedocuments/icons/lucide';
-import type { EditorMode } from '@livedocuments/document';
 import type { TemplateKind } from '@livedocuments/templates';
 import { dismissEmptyCard } from '@/components/canvas/empty-card-dismissed';
 import { useEmptyCardDismissed } from '@/components/canvas/useEmptyCardDismissed';
@@ -25,7 +24,7 @@ import { StartPanel } from './StartPanel';
 import { templateCard } from './template-card';
 import { setStartPanelOpen } from './start-panel-open';
 import { startClosedKey } from './start-closed-key';
-import { TEMPLATE_STARTS } from './start-template-items';
+import { TEMPLATE_START } from './start-template-items';
 import { useStartPalette } from '@/components/start/useStartPalette';
 
 const glyph = (icon: Parameters<typeof lucideGlyph>[0]) => lucideGlyph(icon, 16);
@@ -48,31 +47,24 @@ function WireframesIcon() {
   return <DeviceGlyph device="iphone" size={16} />;
 }
 
-const COPY: Record<
-  EditorMode,
-  { title: string; line: string; noMatch: string; help: HelpArticleKey }
-> = {
-  pages: {
-    title: 'Start Making Pages',
-    line: 'Pick something to make, or close this to start from a blank page.',
-    noMatch: 'page templates',
-    help: 'templates',
-  },
+const COPY: { title: string; line: string; noMatch: string; help: HelpArticleKey } = {
+  title: 'Start Making Pages',
+  line: 'Pick something to make, or close this to start from a blank page.',
+  noMatch: 'page templates',
+  help: 'templates',
 };
 
 export function StartFromTemplates({
-  mode,
   tabId,
   onTemplate,
 }: {
-  mode: EditorMode;
   tabId: string;
   onTemplate: (kind: TemplateKind) => void;
 }) {
   // The tab's own colours (start-palette.ts).
   const palette = useStartPalette();
-  const start = TEMPLATE_STARTS[mode];
-  const copy = COPY[mode];
+  const start = TEMPLATE_START;
+  const copy = COPY;
   const categories = useMemo(
     () =>
       start.groups.map((g) => ({
@@ -85,7 +77,7 @@ export function StartFromTemplates({
   );
   // The × starts from nothing: the panel stays closed on this tab, for this person (empty-card-dismissed.ts), until the
   // palette tray's Show Templates brings it back (StartAgainTray).
-  const closedKey = startClosedKey(tabId, mode);
+  const closedKey = startClosedKey(tabId);
   const closed = useEmptyCardDismissed(closedKey);
   // On screen: the tours hold their offer until it goes (start-panel-open.ts).
   useEffect(() => {
@@ -99,7 +91,7 @@ export function StartFromTemplates({
   };
   return (
     <StartPanel
-      titleId={`start-${mode}-title`}
+      titleId="start-pages-title"
       title={copy.title}
       line={copy.line}
       searchLabel="Find a template"

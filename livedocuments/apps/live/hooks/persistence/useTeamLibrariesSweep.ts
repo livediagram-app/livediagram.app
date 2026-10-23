@@ -98,8 +98,6 @@ export function useTeamLibrariesSweep(
               ownerId: d.ownerId,
               // What the Explorer filters and the Made by AI badge read (explorer-filters.md).
               source: d.source,
-              opensIn: d.opensIn,
-              tabKind: d.tabKind,
               // The Details view's columns (docs/specs/013-workspace/explorer-details-view.md).
               createdAt: d.createdAt,
               stats: d.stats,

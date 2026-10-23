@@ -40,7 +40,7 @@ export const PEN_COLOURS = [
   { id: 'violet', label: 'Violet', hue: 295, chroma: 0.19 },
   { id: 'pink', label: 'Pink', hue: 350, chroma: 0.18 },
 ] as const satisfies readonly PenColourSpec[];
-/** The eight hued stock colours, each tuned per board. */
+/** The eight hued stock colours, each tuned per backdrop. */
 export type HuedPenColourName = (typeof PEN_COLOURS)[number]['id'];
 
 // Ink by name (docs/specs/008-canvas/canvas-and-palette.md "Colours"): the board's own drawing colour,
@@ -200,22 +200,6 @@ export function penColourHex(name: PenColourName, board: Appearance): string {
   return name === INK_PEN_COLOUR ? PEN_INK[board] : TABLE[board][name];
 }
 
-/**
- * A marker's colour as stored: a stock name ("blue", a PenColourName) that adapts to the board,
- * or a custom `#rrggbb` that is the same on both. Null is the board's own ink.
- */
-export type PenColour = string;
-
-export function isCustomPenColour(v: unknown): v is string {
-  return typeof v === 'string' && hexRgb(v) !== null;
-}
-
-/** What a stored colour draws in on a board; null (the ink) draws in `ink`. */
-export function penColourCss(colour: PenColour | null, board: Appearance, ink: string): string {
-  if (colour === null) return ink;
-  return isPenColourName(colour) ? penColourHex(colour, board) : colour;
-}
-
 /** The boards a custom colour is under 3:1 on: the picker's "Hard to see on the dark board". */
 export function penColourHardToSee(hex: string): Appearance[] {
   return (['light', 'dark'] as const).filter((b) => !(penContrast(hex, b) >= PEN_MIN_CONTRAST));
@@ -230,45 +214,6 @@ export function oklchHex(l: number, c: number, h: number): string {
 export function hexOklch(hex: string): { l: number; c: number; h: number } | null {
   const rgb = hexRgb(hex);
   return rgb ? rgbOklch(rgb) : null;
-}
-
-// Snap colours: under this OKLCH chroma a
-// colour is neutral (black, grey, white, slate) and becomes the ink. Greys measure 0 to 0.03 and
-// slates about 0.04; dusty pastels start near 0.06. Safe range 0.03 to 0.08.
-export const PEN_NEUTRAL_CHROMA = 0.05;
-
-/** What a custom colour snaps to: a stock colour, or the board's own ink. */
-export type SnapTarget = PenColourName | 'ink';
-
-/** How far a hue (degrees) is from a stock colour's, round the circle: 0 to 180. */
-export function penColourHueDistance(hue: number, name: HuedPenColourName): number {
-  const d = Math.abs((((hue - PEN_COLOURS.find((c) => c.id === name)!.hue) % 360) + 360) % 360);
-  return Math.min(d, 360 - d);
-}
-
-/** The stock colour nearest a hue (degrees, round the circle); a tie goes to the earlier one. */
-export function penColourAtHue(hue: number): HuedPenColourName {
-  let best: HuedPenColourName = PEN_COLOURS[0].id;
-  let bestDist = Infinity;
-  for (const c of PEN_COLOURS) {
-    const dist = penColourHueDistance(hue, c.id);
-    if (dist < bestDist) {
-      best = c.id;
-      bestDist = dist;
-    }
-  }
-  return best;
-}
-
-/**
- * The stock colour a custom `#rrggbb` snaps to: the ink when it is neutral, else the stock colour
- * nearest in hue (lightness is not compared: each stock colour takes its own per board). Null for
- * anything that is not `#rrggbb`.
- */
-export function nearestPenColour(hex: string): SnapTarget | null {
-  const oklch = hexOklch(hex);
-  if (!oklch) return null;
-  return oklch.c < PEN_NEUTRAL_CHROMA ? 'ink' : penColourAtHue(oklch.h);
 }
 
 /**

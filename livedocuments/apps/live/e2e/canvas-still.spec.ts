@@ -70,7 +70,7 @@ test.describe('a still canvas', () => {
     page,
     pageErrors,
   }) => {
-    await openStill(page, '/new?template=whiteboard');
+    await openStill(page, '/new?blank=1');
     expect(await framesOverAStillSecond(page)).toBe(0);
     expectNoPageErrors(pageErrors);
   });

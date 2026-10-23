@@ -14,7 +14,6 @@ import {
   DataTabIcon,
   DevicesTabIcon,
   DrawTabIcon,
-  PopularTabIcon,
   IconsTabIcon,
   MediaTabIcon,
   ShapesTabIcon,
@@ -44,29 +43,16 @@ function WireframeTabIcon() {
  * palette changed — by the time it was noticed it was offering a Tools category that no longer
  * existed and hiding six that did.
  *
- * Order IS layout: the category picker renders the dropdown straight from this
- * array, grouping by `group` under the CATEGORY_BANDS headings (0 Common,
- * 1 Structure, 2 Decorate, 3 Dynamic).
+ * Order IS layout: the category bar draws the categories in this order, with a divider
+ * where `group` (the band: 0 Common, 1 Structure, 2 Decorate, 3 Dynamic) changes.
  */
 export const PALETTE_CATEGORIES: {
   id: string;
   label: string;
   group?: number;
-  fullWidth?: boolean;
   description: string;
   icon: React.ReactNode;
 }[] = [
-  {
-    // Popular (docs/specs/007-editor/pages-mode.md "The palette's kind"): every page kind's
-    // landing category, twelve tiles that kind is most often built from, picked across its
-    // categories by its palette layout. No band: it draws from every category at once, so it
-    // spans the row above the first heading rather than sitting under one.
-    id: 'popular',
-    label: 'Popular',
-    fullWidth: true,
-    description: 'The tiles most reached for in this mode, from across its categories.',
-    icon: <PopularTabIcon />,
-  },
   {
     id: 'shapes',
     label: 'Shapes',
@@ -159,7 +145,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Media',
     group: 2,
     description:
-      'Pictures and figures: an uploaded image or a circular avatar; in Pages, embeds, a Tab Window onto another tab and a Link Card.',
+      'Pictures and figures: an uploaded image or a circular avatar, embeds, a Tab Window onto another tab and a Link Card.',
     icon: <MediaTabIcon />,
   },
   {

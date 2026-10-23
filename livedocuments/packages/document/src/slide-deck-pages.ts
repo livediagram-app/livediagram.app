@@ -3,7 +3,6 @@
 // viewer reads the same deck an editor would store.
 
 import { pageUnits } from './article-pages';
-import { opensInOf } from './editor-mode';
 import { pagesOf, type Page } from './page';
 import type { Tab } from './index';
 import type { Deck, Slide } from './slide-deck';
@@ -12,12 +11,12 @@ import type { Deck, Slide } from './slide-deck';
 // same slide and the deck they each save is the same deck.
 export const pageSlideIdFor = (tabId: string, pageId: string): string => `page:${tabId}:${pageId}`;
 
-// The tabs whose pages the deck follows: Pages tabs whose pages have loaded. A tab not yet loaded carries no
+// The tabs whose pages the deck follows: tabs whose pages have loaded. A tab not yet loaded carries no
 // `pages`, and reading it would take its page slides for slides of deleted pages. Read once per `pages` array: an
 // element edit keeps the array, so the deck's per-edit checks cost a lookup, not a parse of every page.
 const readPages = new WeakMap<object, Page[]>();
 function followedPages(tab: Tab): Page[] | null {
-  if (opensInOf(tab) !== 'pages' || !Array.isArray(tab.pages)) return null;
+  if (!Array.isArray(tab.pages)) return null;
   // An empty list reads as the default first page, which takes the tab's orientation: not cached.
   if (tab.pages.length === 0) return pagesOf(tab);
   const known = readPages.get(tab.pages);

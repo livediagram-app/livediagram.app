@@ -6,7 +6,6 @@ import {
   endpointPosition,
   exportFontIds,
   laidOutPagesOf,
-  opensInOf,
   pagesWithWriting,
   prefixSvgIds,
   r2,
@@ -121,9 +120,6 @@ function keepEnds(
 /** The typefaces the drawing of this tab writes in: its elements', and its pages' writing. */
 export function tabDrawingFontIdsOf(tab: Tab): string[] {
   const ids = new Set(exportFontIds(tab.elements, tab.font, tab.finish));
-  if (opensInOf(tab) === 'pages') {
-    for (const page of laidOutPagesOf(tab))
-      for (const id of pageWritingFonts(tab, page)) ids.add(id);
-  }
+  for (const page of laidOutPagesOf(tab)) for (const id of pageWritingFonts(tab, page)) ids.add(id);
   return [...ids];
 }

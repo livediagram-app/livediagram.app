@@ -9,14 +9,7 @@ import {
   seedOpenedDocument,
   shareLink,
 } from './audit-screens';
-import {
-  dismissQuickTour,
-  expect,
-  expectNoPageErrors,
-  test,
-  untilHydrated,
-  mintSignedGuest,
-} from './fixtures';
+import { dismissQuickTour, expect, expectNoPageErrors, test, mintSignedGuest } from './fixtures';
 
 // Contrast audit, dark mode (docs/specs/003-system-architecture/e2e-smoke.md; the palette it guards is
 // docs/specs/004-interface-design/color-scheme.md, Dark palette (Steel)). Every visible text node on each
@@ -39,16 +32,6 @@ function expectAA(report: ContrastReport, screen: string): void {
 }
 
 test.describe('Contrast audit, dark mode', () => {
-  test('the New Document wizard', async ({ page, pageErrors }) => {
-    await darkVisitor(page);
-    await page.goto('/new');
-    await page.getByText('New Document', { exact: false }).first().waitFor();
-    await untilHydrated(page.getByRole('button', { name: /^create$/i }));
-    await expect(page.locator('html')).toHaveClass(/dark/);
-    expectAA(await auditContrast(page), 'wizard');
-    expectNoPageErrors(pageErrors);
-  });
-
   test('the editor, its panels and dialogs', async ({ page, pageErrors, baseURL }) => {
     const owner = await mintSignedGuest(page.request);
     const origin = new URL(baseURL!).origin;

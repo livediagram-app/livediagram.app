@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { getDocument, getTab, listDocumentsByOwner } from '../db';
+import { getDocument, getTab } from '../db';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
 import { asUser } from './placement-test-support';
@@ -50,16 +50,9 @@ describe('seeded tabs compiled on create', () => {
       201,
     );
     expect((await getTab(db.env, 'd1', 't1'))?.pages?.length).toBeGreaterThan(0);
-    const summary = (await listDocumentsByOwner(db.env, 'user_alice')).find((d) => d.id === 'd1');
-    expect(summary).toMatchObject({ opensIn: 'pages', tabKind: 'diagram' });
-  });
-
-  it('keeps an intent the create gives', async () => {
-    await create([{ id: 't1', name: 'Deck', template: 'blank-slide-deck' }], {
-      intent: { mode: 'pages' },
-    });
-    const summary = (await listDocumentsByOwner(db.env, 'user_alice')).find((d) => d.id === 'd1');
-    expect(summary).toMatchObject({ opensIn: 'pages' });
+    expect(
+      compileSeededTabs([{ id: 't1', name: 'Deck', template: 'blank-slide-deck' }], 'd1'),
+    ).toMatchObject({ intent: { mode: 'pages' } });
   });
 
   it('refuses the whole create by the tab the engine refused, writing nothing', async () => {

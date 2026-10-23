@@ -2,25 +2,20 @@
 // Rows are first reduced to subjects, so one rule serves documents, shared rows and, later, events.
 
 import { isMadeByAiSource } from '@livedocuments/api-schema';
-import { OPENS_IN_VALUES, type EditedValue, type OpensInValue } from './dimensions';
+import type { EditedValue } from './dimensions';
 import type { Lens, LensSubject } from './types';
 
 const DAY_MS = 86_400_000;
 
-/** The fields of a document summary the lens reads. `opensIn` is the recorded creation intent; absent, null or
- *  retired values read as unknown. A document in this browser (Offline Mode) has no team, so it reads as `mine`. */
+/** The fields of a document summary the lens reads. A document in this browser (Offline Mode) has no team, so it
+ *  reads as `mine`. */
 type LensDocumentSummary = {
   name: string;
   savedAt: number;
   ownerId: string;
   teamId: string | null;
   source: string | null;
-  opensIn?: string | null;
 };
-
-function known<T extends string>(values: readonly T[], value: string | null | undefined): T | null {
-  return values.find((candidate) => candidate === value) ?? null;
-}
 
 /** A personal, team or this-browser document as the reader sees it. */
 export function documentSubject(summary: LensDocumentSummary, viewerId: string): LensSubject {
@@ -30,11 +25,10 @@ export function documentSubject(summary: LensDocumentSummary, viewerId: string):
     space: summary.teamId === null ? 'mine' : `team:${summary.teamId}`,
     people: summary.ownerId === viewerId ? 'me' : 'others',
     madeByAi: isMadeByAiSource(summary.source),
-    opensIn: known<OpensInValue>(OPENS_IN_VALUES, summary.opensIn),
   };
 }
 
-/** A row of Shared With Me: always someone else's, and silent on provenance and mode. */
+/** A row of Shared With Me: always someone else's, and silent on provenance. */
 export function sharedSubject(item: { name: string; savedAt: number }): LensSubject {
   return {
     name: item.name,
@@ -42,7 +36,6 @@ export function sharedSubject(item: { name: string; savedAt: number }): LensSubj
     space: 'shared',
     people: 'others',
     madeByAi: null,
-    opensIn: null,
   };
 }
 
@@ -88,7 +81,6 @@ export function compileLens(lens: Lens, now: number): (subject: LensSubject) => 
   const cutoffs = filters.edited.map((value) => editedCutoff(value, now));
   const cutoff = cutoffs.length === 0 ? null : Math.min(...cutoffs);
   return (subject) =>
-    admits(filters['opens-in'], subject.opensIn) &&
     (filters['made-by'].length === 0 || subject.madeByAi === true) &&
     (cutoff === null || subject.savedAt >= cutoff) &&
     admits(filters.people, subject.people) &&

@@ -1,5 +1,5 @@
-// The web components (docs/specs/009-elements/web-components-and-no-groups.md): Banner, Callout, Stat row, Process steps and
-// Header as single shape kinds, plus the Hero's caption card on an image.
+// The web components (docs/specs/009-elements/web-components-and-no-groups.md): Banner, Card, Stat row, Process steps and
+// Header as single shape kinds, plus the Hero's caption card on an image. The Callout is a Card preset.
 //
 // They used to be bundles of primitives held together by a shared groupId,
 // which meant a resize was a uniform zoom of loose boxes and a stray drag
@@ -18,13 +18,11 @@ import { CONCEPT_ROWS, boundConceptRows, isConceptShape, type ConceptRow } from 
 
 // --- Vocabulary -------------------------------------------------------------
 
-export type WebComponentShape =
-  'banner' | 'callout' | 'card' | 'stat-row' | 'process' | 'site-header';
+export type WebComponentShape = 'banner' | 'card' | 'stat-row' | 'process' | 'site-header';
 
 export function isWebComponentShape(kind: ShapeKind): kind is WebComponentShape {
   return (
     kind === 'banner' ||
-    kind === 'callout' ||
     kind === 'card' ||
     kind === 'stat-row' ||
     kind === 'process' ||

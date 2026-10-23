@@ -17,25 +17,10 @@ const windowOn = (extra: Partial<ShapeElement> = {}) =>
   ({ ...createShape('tab-window', 100, 50), id: 'w1', ...extra }) as ShapeElement;
 
 describe('which tabs a window may show', () => {
-  const tabs = [
-    { id: 'slides', opensIn: 'pages' },
-    { id: 'diagram' },
-    { id: 'board', kind: 'board' },
-    { id: 'sheet', kind: 'sheet' },
-    { id: 'dash', kind: 'dashboard' },
-    { id: 'planned', opensIn: 'plan' },
-    { id: 'drawing', opensIn: 'draw' },
-  ];
+  const tabs = [{ id: 'slides' }, { id: 'diagram' }, { id: 'notes' }];
 
-  it('offers every tab but its own, Plan tabs included, in tab-bar order', () => {
-    expect(tabWindowOffers(tabs, 'slides').map((t) => t.id)).toEqual([
-      'diagram',
-      'board',
-      'sheet',
-      'dash',
-      'planned',
-      'drawing',
-    ]);
+  it('offers every tab but its own, in tab-bar order', () => {
+    expect(tabWindowOffers(tabs, 'slides').map((t) => t.id)).toEqual(['diagram', 'notes']);
   });
 
   it('never shows its own tab', () => {

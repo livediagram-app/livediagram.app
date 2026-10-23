@@ -33,12 +33,12 @@ If neither side can be cleared without an enormous bend, the arrow stays straigh
 
 ## When it does not
 
-It is deliberately a one-shot at draw time, not a rule the diagram lives under:
+It is deliberately a one-shot at draw time, not a rule the page lives under:
 
 - **Arrows are never re-routed later.** Move a box onto an existing arrow and the arrow keeps its route; it is not re-curved. (By default its line passes behind the box with a short gap; see **Pass Behind Boxes** in [Arrow Styles](/help/palette/arrows/arrow-styles/).) Nothing quietly reshapes work you have already arranged.
 - **Repositioning an endpoint never triggers it.** Only a brand-new arrow's head placement does.
 - **Anything you chose wins.** If the arrow already has a style, a curve, or bend points, that is left alone.
-- **Imported and generated diagrams keep their own geometry**: [imports](/help/tabs/import-tabs/), templates, AI authoring and auto layout all decide their own routing.
+- **Imported and generated content keeps its own geometry**: [imports](/help/tabs/import-tabs/), templates, AI authoring and auto layout all decide their own routing.
 - **Shapes that already overlap an end don't count.** An arrow drawn out of a shape inside a stack, or between overlapping shapes, can't clear them, so it ignores them.
 
 ## Changing it

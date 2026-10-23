@@ -2,7 +2,6 @@
 // metadata + owner. Which documents place each image comes from the image
 // reference index (db/image-refs.ts), never from a tab body.
 
-import { imageRefIndexOwnerStatement, isImageRefIndexComplete } from './image-refs';
 import { imageRowToSummary, type ImageRow } from '../image-row';
 import type { Env, ImageSummary } from '../types';
 
@@ -123,16 +122,10 @@ export async function imageTotalsByOwner(
 // badge, so an image with no entry reads as unused. One query over the
 // reference index; a shared tab (docs/specs/006-document/tab-document-many-to-many.md)
 // is attributed to every one of the owner's documents that links it.
-//
-// While the index backfill is incomplete the owner's tabs are indexed first,
-// so an older image never reads as unused (and gets deleted by hand).
 export async function imageUsageByOwner(
   env: Env,
   ownerId: string,
 ): Promise<Record<string, { id: string; name: string }[]>> {
-  if (!(await isImageRefIndexComplete(env))) {
-    await imageRefIndexOwnerStatement(env, ownerId).run();
-  }
   const rows = await env.DB.prepare(
     `SELECT DISTINCT r.image_id, d.id AS document_id, d.name AS document_name
        FROM documents d

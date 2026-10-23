@@ -1,14 +1,15 @@
 # Palette Favourites (removed)
 
 Status: removed 2026-10-03, superseded by **Popular**
-(Editor modes, "The palette per mode").
+(Editor modes, "The palette per mode"), which has since gone too: the category bar shows every category, each one
+press away ([Toolbar layout](../007-editor/toolbar-layout.md#what-is-on-it) "No Popular").
 
 The palette used to open on **Favourites**: a per-browser grid of the person's
 go-to tiles, with an **Edit Favourites** dialog to add and remove them, a
 **Reorder** mode, a star on every palette row to favourite it on the spot, and a
 search box across every category.
 
-It is gone. Every editor mode's palette now opens on its own **Popular**: a
+It is gone. Every editor mode's palette then opened on its own **Popular**: a
 fixed pick of twelve tiles from across that mode's categories, the same for
 everyone, not edited or reordered.
 
@@ -23,7 +24,7 @@ What went with it:
   which searches every tile.
 - Its events, retired on the telemetry dashboard
   ([Telemetry, "Retired features"](../017-telemetry/telemetry.md#retired-features)).
-- Its help article: `palette/favourites` redirects to `palette/popular`.
+- Its help article: `palette/favourites` redirects to `palette/toolbar-layout`.
 
 What stays: tile ids are still stable (`palette-tile-defs`), since palette
 layouts, the Search panel and the Toolbar strip address tiles by id.

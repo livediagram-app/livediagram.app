@@ -45,9 +45,6 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   // `article` frame go through the participant rules (text only) and never relay as sent; everything else needs an
   // Editor.
   const level = parseStoredLevel(sender.role);
-  // A Viewer only looks (docs/specs/013-workspace/share-roles.md): of the presence class, a reaction is taking
-  // part, so it needs a Participant.
-  if (level === 'view' && opKind === 'reaction') return DROP;
   if (!presence && level !== 'edit') {
     if (level === 'participate' && opKind === 'el') return { kind: 'participant-content' };
     if (level === 'participate' && opKind === 'article') return { kind: 'participant-article' };

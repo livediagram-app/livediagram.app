@@ -47,7 +47,7 @@ The editor has no history of changesets. Once you close the note, or if the chan
 `changeset ls` lists a document's recent changesets, newest first, 20 by default:
 
 ```bash
-livedocuments changeset ls "Auth flow"
+livedocuments changeset ls "Launch deck"
 livedocuments changeset ls 3f9c --tab Overview --limit 5
 ```
 
@@ -61,7 +61,7 @@ cs_3h7v2n9c4p  rev 39  "Overview"  Webber (agent)  +0 ~3 -1  2026-10-11 08:52
 A revert shows as its own line ending in `reverts cs_…`. `changeset show` prints one changeset's line, then what it did, one line per element, the same lines the write printed:
 
 ```bash
-livedocuments changeset show "Auth flow" cs_8k2m4q7d1x
+livedocuments changeset show "Launch deck" cs_8k2m4q7d1x
 ```
 
 ```text
@@ -74,7 +74,7 @@ rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: livedocuments changeset re
 Every write the CLI makes ends with that same footer, so the command that takes it back is printed beside the change. To undo one:
 
 ```bash
-livedocuments changeset revert "Auth flow" cs_8k2m4q7d1x
+livedocuments changeset revert "Launch deck" cs_8k2m4q7d1x
 ```
 
 ```text
@@ -87,7 +87,7 @@ kept pay (changed)
 To see everything that changed in a tab since you last looked, whoever changed it, use `tab diff` with a revision the CLI has read (the CLI keeps a copy of each tab it reads with `tab view`):
 
 ```bash
-livedocuments tab diff "Auth flow" --since 41
+livedocuments tab diff "Launch deck" --since 41
 ```
 
 ```text

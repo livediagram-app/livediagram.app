@@ -80,7 +80,7 @@ export default {
     if (url.pathname === '/explorer' || url.pathname === '/explorer/') {
       return Response.redirect(`${url.origin}${EXPLORER_LANDING_PATH}`, 302);
     }
-    // `/document` (and the editor's address before the rename, see ../lib/legacy-editor-path) shares one HTML file. We
+    // `/document` shares one HTML file. We
     // rewrite the request rather than redirect so the browser URL
     // stays `/document/<id>` (that's the whole point of the path
     // scheme).
@@ -111,7 +111,7 @@ export default {
     return withSecurityHeaders(await env.ASSETS.fetch(request), { frameable });
   },
 };
-import { isEditorPath } from '../lib/legacy-editor-path';
+import { isEditorPath } from '../lib/editor-path';
 import { isWorkspaceFramePath, WORKSPACE_FRAME_PAGE } from '../lib/workbench/workbench-frame-path';
 import { EXPLORER_LANDING_PATH } from '../lib/explorer-landing';
 import { isSharePagePath, sharePage, type Fetcher } from './share-page';

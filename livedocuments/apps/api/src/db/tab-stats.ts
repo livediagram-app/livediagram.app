@@ -2,13 +2,13 @@
 // from"): per tab, what the Explorer's Details view sums over a document, kept in `tab_stats`
 // (the baseline migration) beside each tab so a document list reads them without reading any tab body.
 import type { DocumentStats } from '@livedocuments/api-schema';
-import { parseEditorMode, tabStatsOf, type TabStats } from '@livedocuments/document';
+import { tabStatsOf, type TabStats } from '@livedocuments/document';
 import type { Env } from '../types';
 
 // The counting itself is the document model's, shared with the browser's own documents.
 export { tabStatsOf, type TabStats };
 
-// A stored body's stats, parsing it. A body that is not a JSON object counts as an empty Diagram
+// A stored body's stats, parsing it. A body that is not a JSON object counts as an empty
 // tab, its bytes still measured, and says so (`corrupt`), so a caller can log it and never retry.
 export function tabStatsOfData(data: string): { stats: TabStats; corrupt: boolean } {
   try {
@@ -33,19 +33,17 @@ export function tabStatsStatement(
   const guard =
     ifStoredData === undefined
       ? 'WHERE true'
-      : 'WHERE EXISTS (SELECT 1 FROM tabs WHERE id = ?1 AND data = ?7)';
+      : 'WHERE EXISTS (SELECT 1 FROM tabs WHERE id = ?1 AND data = ?6)';
   return env.DB.prepare(
-    `INSERT INTO tab_stats (tab_id, mode, element_count, comment_count, data_bytes, written_at)
-     SELECT ?1, ?2, ?3, ?4, ?5, ?6 ${guard}
+    `INSERT INTO tab_stats (tab_id, element_count, comment_count, data_bytes, written_at)
+     SELECT ?1, ?2, ?3, ?4, ?5 ${guard}
      ON CONFLICT(tab_id) DO UPDATE SET
-       mode = excluded.mode,
        element_count = excluded.element_count,
        comment_count = excluded.comment_count,
        data_bytes = excluded.data_bytes,
        written_at = excluded.written_at`,
   ).bind(
     tabId,
-    stats.mode,
     stats.elementCount,
     stats.commentCount,
     stats.dataBytes,
@@ -55,18 +53,11 @@ export function tabStatsStatement(
 }
 
 // A document's stats as a `doc_stats` column: JSON text, or NULL when the document links no tab or
-// a tab without stats. Reads `document_tabs` and `tab_stats` only, never a tab body. The mode is
-// the tab written last, ties to the earlier tab in the document's order.
+// a tab without stats. Reads `document_tabs` and `tab_stats` only, never a tab body.
 export function documentStatsSql(documentIdSql: string): string {
   return `(SELECT CASE
              WHEN COUNT(*) = 0 OR COUNT(s.tab_id) < COUNT(*) THEN NULL
              ELSE json_object(
-               'mode', (SELECT s2.mode
-                          FROM document_tabs dt2
-                          JOIN tab_stats s2 ON s2.tab_id = dt2.tab_id
-                         WHERE dt2.document_id = ${documentIdSql}
-                         ORDER BY s2.written_at DESC, dt2.order_index ASC
-                         LIMIT 1),
                'elements', SUM(s.element_count),
                'comments', SUM(s.comment_count),
                'bytes', SUM(s.data_bytes))
@@ -83,9 +74,8 @@ export function readDocumentStats(raw: string | null | undefined): DocumentStats
   if (raw == null) return null;
   try {
     const v = JSON.parse(raw) as Record<string, unknown>;
-    const mode = parseEditorMode(v.mode);
-    if (mode && isCount(v.elements) && isCount(v.comments) && isCount(v.bytes)) {
-      return { mode, elements: v.elements, comments: v.comments, bytes: v.bytes };
+    if (isCount(v.elements) && isCount(v.comments) && isCount(v.bytes)) {
+      return { elements: v.elements, comments: v.comments, bytes: v.bytes };
     }
   } catch {
     // Reported below with the shape it had.

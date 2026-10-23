@@ -597,10 +597,10 @@ export function InboxSections() {
       />
       <InboxRow
         y={102}
-        kind="card"
-        title="#12 Add the audit table"
-        chip="Ledger"
-        where="Sprint board · Plan"
+        kind="action"
+        title="Check the launch numbers"
+        chip="Marketing"
+        where="Launch deck · Slides"
         who="Y"
         colour="brand"
         time="1d"
@@ -611,7 +611,7 @@ export function InboxSections() {
         kind="action"
         title="Draft the rollout note"
         chip="Payments"
-        where="Release · Plan"
+        where="Release notes · Article"
         who="S"
         colour="emerald"
         time="3d"
@@ -689,8 +689,8 @@ export function RecentView() {
 /** Shared With Me: a table of name, owner, role, last update, and the dismiss cross. */
 export function SharedWithMeTable() {
   const rows = [
-    { name: 'Sprint board', owner: 'Maya Patel', role: 'Edit', at: '2h ago' },
-    { name: 'System map', owner: 'Alex Kim', role: 'View', at: 'yesterday' },
+    { name: 'Launch deck', owner: 'Maya Patel', role: 'Edit', at: '2h ago' },
+    { name: 'Brand guide', owner: 'Alex Kim', role: 'View', at: 'yesterday' },
     { name: 'Hiring plan', owner: 'Rosa Diaz', role: 'Edit', at: '3 days ago' },
   ];
   return (

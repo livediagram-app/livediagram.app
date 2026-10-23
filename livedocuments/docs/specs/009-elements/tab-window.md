@@ -2,22 +2,21 @@
 
 ## What
 
-A **Tab Window**: an element that shows another tab of the same document, live, fitted inside it. Build a diagram
-on its own tab, put a window onto it on a slide, and the slide follows every change to the diagram. A
+A **Tab Window**: an element that shows another tab of the same document, live, fitted inside it. Build an
+infographic on its own tab, put a window onto it on a slide, and the slide follows every change to the infographic. A
 `shape: 'tab-window'` holding the tab it shows in `windowTabId`.
 
 ## Why
 
-A deck explains the work done on the document's other tabs: the architecture, the flow, the board. Copying those
-elements onto a slide makes a second copy that goes stale the moment the diagram changes, and someone has to
-remember to paste it again. A window is one source of truth: the diagram is edited where it lives and every slide
+A deck explains the work done on the document's other tabs: the infographic, the article, the logo. Copying those
+elements onto a slide makes a second copy that goes stale the moment the original changes, and someone has to
+remember to paste it again. A window is one source of truth: the tab is edited where it lives and every slide
 showing it is up to date.
 
 ## The element
 
-- **What it shows** (`windowTabId`): one tab of the document, never the tab the window is on. A Plan tab (a Board,
-  Sheet or Dashboard tab, or any tab in Plan mode) is offered like any other. Absent until chosen.
-- **The drawing**: the tab's content drawn as the editor shows it (the export renderer, in this person's appearance, the tab's own theme, its photos and the document's cards), **zoomed to fit** inside the window on the tab's own canvas, centred, never cropped: its paper and its pattern (dots, grid, lines, at the tab's pattern size and opacity), as the editor paints them for that tab in its mode, at the drawing's zoom and lined up with it, filling the window edge to edge, so the window reads as that tab and not as a picture on a blank card. A Plan tab is drawn as laid out, as its image export draws it: its cards, its Sheets' cells and its plan views' pictures. A **Pages** tab is drawn as its pages, where they lie on the canvas, each as its page export draws it (its sheet, its background, its article writing and what reaches onto it, cut at its edges), on the desk between them; an article's writing is the editor's own where that article is laid out, else as estimated without a browser (the agents' previews' estimate). A **Form** tab is drawn as its form on its tab's look, as respondents see it (the picture its thumbnail and an agent's preview draw). Every mode is drawn: Diagram, Draw, Workshop (its timer and vote are live session tools, never drawn), Pages and Plan. It follows every change to the tab (an edit, a collaborator's) at a deferred priority, so a burst of edits never competes with the canvas.
+- **What it shows** (`windowTabId`): one tab of the document, never the tab the window is on. Absent until chosen.
+- **The drawing**: the tab's content drawn as the editor shows it (the export renderer, in this person's appearance, the tab's own theme, its photos and the document's cards), **zoomed to fit** inside the window on the tab's own canvas, centred, never cropped: its paper and its pattern (dots, grid, lines, at the tab's pattern size and opacity), as the editor paints them for that tab in its mode, at the drawing's zoom and lined up with it, filling the window edge to edge, so the window reads as that tab and not as a picture on a blank card. A tab is drawn as its pages, where they lie on the canvas, each as its page export draws it (its sheet, its background, its article writing and what reaches onto it, cut at its edges), on the desk between them; an article's writing is the editor's own where that article is laid out, else as estimated without a browser (the agents' previews' estimate). It follows every change to the tab (an edit, a collaborator's) at a deferred priority, so a burst of edits never competes with the canvas.
 - **Moving**: the drawing moves as the tab does on the canvas. Each shown element's animation plays in the window
   with its own Speed and Repeat, by the same motion the canvas draws: the Shape set's motions (Blink, Heartbeat,
   Breathe, Bounce, Wobble, Shake, Jelly, Float, Swing) and swells (Shimmer, Highlight), a sticky's Flutter, Sway,
@@ -40,17 +39,17 @@ showing it is up to date.
 
 ## States
 
-| State                                                  | The window shows                                                                   |
-| ------------------------------------------------------ | ---------------------------------------------------------------------------------- |
-| No tab chosen                                          | "Show a tab here" with **Choose a Tab** (an Editor); "No tab chosen" (anyone else) |
-| The tab's content on its way                           | "Loading <name>…"                                                                  |
-| Its fetch failed                                       | "Couldn't load <name>." with **Retry**                                             |
-| Loaded with nothing on it (no elements, pages or form) | "Nothing on <name> yet."                                                           |
-| The tab deleted, or not shared with this person        | "This tab isn't available." with **Choose a Tab** (an Editor)                      |
-| Loaded                                                 | The drawing                                                                        |
+| State                                            | The window shows                                                                   |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------- |
+| No tab chosen                                    | "Show a tab here" with **Choose a Tab** (an Editor); "No tab chosen" (anyone else) |
+| The tab's content on its way                     | "Loading <name>…"                                                                  |
+| Its fetch failed                                 | "Couldn't load <name>." with **Retry**                                             |
+| Loaded with nothing on it (no elements or pages) | "Nothing on <name> yet."                                                           |
+| The tab deleted, or not shared with this person  | "This tab isn't available." with **Choose a Tab** (an Editor)                      |
+| Loaded                                           | The drawing                                                                        |
 
 A tab's content arrives only when it is opened or fetched (per-tab storage), so a window asks for its tab's content
-as it is shown, as a Dashboard's Diagram slot does. A fetch of that tab already under way elsewhere (the visit-time
+as it is shown. A fetch of that tab already under way elsewhere (the visit-time
 load, the side pane, an export, the search sweep) is waited for, not repeated, and the window shows how it ended:
 the drawing, or "Couldn't load" with **Retry**. Nothing asks again on a timer. **Retry** shows Loading until it
 settles, also for a tab the editor's own visit failed on, and a tab that then loads clears that failure everywhere.
@@ -79,9 +78,7 @@ windows show the copy rather than "This tab isn't available".
 
 A PDF, PNG or SVG export draws each window's tab inside it, fitted, as on screen: the export fetches each shown tab's
 content and photos first, waiting for a fetch already under way rather than drawing the tab's empty placeholder. It
-fetches every tab a window shows, a Plan tab included. A Pages tab draws as its pages and a Form tab as its form, as on
-screen. A Board or Dashboard tab draws laid out, as on screen; a Sheet's cells and a Dashboard's figures from Sheets
-are not read for a window in an export, so a Sheet draws its frame and headers alone and a figure its placeholder. A window inside a shown tab is drawn as its frame (no recursion). Ids inside a shown tab's
+fetches every tab a window shows, and draws each as its pages, as on screen. A window inside a shown tab is drawn as its frame (no recursion). Ids inside a shown tab's
 drawing are prefixed per window, so its gradients, patterns and markers never collide with the page's. Thumbnails
 (Contents, the Slide Deck, layouts) and the API's tab render draw the frame, named for its tab where the caller
 knows it, else "Tab Window".
@@ -125,7 +122,7 @@ Gated on the session's `can` (`edit` for choosing the tab), never on read-only a
 ## Agents
 
 The REST API and the MCP server take `tab-window` with `windowTabId` (a tab id of the same document). An agent
-building a deck puts a window onto the tab it drew the diagram on rather than copying the diagram.
+building a deck puts a window onto the tab it built the infographic on rather than copying the infographic.
 
 ## Non-goals
 

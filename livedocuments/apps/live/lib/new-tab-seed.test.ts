@@ -28,11 +28,6 @@ describe('newTabSeed', () => {
     });
   });
 
-  // The look is the seed's; a stored mode from livediagram is never carried.
-  it('never carries an opening mode', () => {
-    expect(newTabSeed({ ...source, opensIn: 'pages' }).opensIn).toBeUndefined();
-  });
-
   it('falls back to defaults with no source tab', () => {
     expect(newTabSeed(undefined)).toEqual({});
   });

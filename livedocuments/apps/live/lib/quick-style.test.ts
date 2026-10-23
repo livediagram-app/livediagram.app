@@ -77,8 +77,8 @@ describe('quickStyleView: which sections show', () => {
     expect(sections([shape('a', { iconId: 'server' })])).toContain('iconAlign');
   });
 
-  it('offers no icon alignment on a kind that places its own icon (a card, callout, header)', () => {
-    for (const kind of ['card', 'callout', 'site-header'] as const) {
+  it('offers no icon alignment on a kind that places its own icon (a card, header)', () => {
+    for (const kind of ['card', 'site-header'] as const) {
       expect(sections([shape('a', { shape: kind, iconId: 'server' })]), kind).not.toContain(
         'iconAlign',
       );

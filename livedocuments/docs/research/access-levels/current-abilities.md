@@ -1,5 +1,10 @@
 # What each identity can do today
 
+> **livediagram-era research.** Written for livediagram before livedocuments was forked from it. It describes
+> features livedocuments does not have (live polls, Q&A boards, dot votes, quizzes, the facilitator baton, workshop
+> session tools) and cites code, migrations and a `docs/agent-cli` branch that are not in this repository. Kept as
+> background for the access-levels design; read the specs for what livedocuments does today.
+
 Research note for the access-levels design. Read from the code at `main` commit `fc2d2d650`; nothing was changed
 or exercised at runtime, so every cell is what the code says, and the few findings marked **(verify)** want a
 test before anyone acts on them.

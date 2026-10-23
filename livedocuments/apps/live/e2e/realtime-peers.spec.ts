@@ -4,6 +4,7 @@ import {
   expect,
   test,
   guestSigFor,
+  markModeToursSeen,
   mintSignedGuest,
   ownerHeaders,
   paletteTile,
@@ -30,14 +31,11 @@ async function openAs(
         if (sig) localStorage.setItem('livedocuments:v2:self-sig', sig);
         localStorage.setItem('livedocuments:v2:name-confirmed', '1');
       }
-      // The Workshop tour offers itself over the board (fixtures openBlankSession); its overlay would take the presses.
-      localStorage.setItem(
-        'livedocuments:user-preferences:v1',
-        JSON.stringify({ workshopTourSeen: true }),
-      );
     },
     { o: owner, sig: owner ? guestSigFor(owner) : null },
   );
+  // The Pages tour offers itself over the page; its overlay would take the presses.
+  await markModeToursSeen(ctx);
   const page = await ctx.newPage();
   await page.goto(url);
   return page;
@@ -63,7 +61,6 @@ test('two peers see each other, edit live, and every edit is kept', async ({
         {
           id: tabId,
           name: 'Board',
-          opensIn: 'workshop',
           elements: [
             { id: 'a', type: 'shape', shape: 'square', x: 100, y: 100, width: 200, height: 100 },
           ],

@@ -144,8 +144,8 @@ export const documentRename = defineVerb({
   cli: {
     positionals: ['doc', 'name'],
     examples: [
-      'livedocuments document rename "Auth flow" "Sign-in flow"',
-      'livedocuments document rename 3f9c "Sign-in flow"',
+      'livedocuments document rename "Launch deck" "Launch plan"',
+      'livedocuments document rename 3f9c "Launch plan"',
     ],
     prints: '~ document <ref> "<old>"→"<new>"',
   },
@@ -188,7 +188,7 @@ export const documentShare = defineVerb({
   cli: {
     positionals: ['doc'],
     examples: [
-      'livedocuments document share "Auth flow"',
+      'livedocuments document share "Launch deck"',
       'livedocuments document share 3f9c --role edit --expiry week',
     ],
     prints: 'the link',
@@ -323,7 +323,7 @@ export const tabAdd = defineVerb({
     positionals: ['doc', 'name'],
     flags: { file: { short: 'f' } },
     examples: [
-      'livedocuments tab add "Auth flow" Details -f detail.mmd',
+      'livedocuments tab add "Launch deck" Details -f details.json',
       'livedocuments tab add 3f9c Deck --template blank-slide-deck',
     ],
     prints:
@@ -362,8 +362,8 @@ export const tabRename = defineVerb({
   cli: {
     positionals: ['doc', 'tab', 'name'],
     examples: [
-      'livedocuments tab rename "Auth flow" Overview Summary',
-      'livedocuments tab rename 3f9c tab-2 "Data model"',
+      'livedocuments tab rename "Launch deck" Overview Summary',
+      'livedocuments tab rename 3f9c tab-2 "Speaker notes"',
     ],
     prints: '~ tab <id> "<old>"→"<new>"',
   },
@@ -388,7 +388,7 @@ export const tabRm = defineVerb({
   quiet: quietId,
   cli: {
     positionals: ['doc', 'tab'],
-    examples: ['livedocuments tab rm "Auth flow" Scratch', 'livedocuments tab rm 3f9c tab-2'],
+    examples: ['livedocuments tab rm "Launch deck" Scratch', 'livedocuments tab rm 3f9c tab-2'],
     prints: '- tab <id> "<name>"',
   },
 });

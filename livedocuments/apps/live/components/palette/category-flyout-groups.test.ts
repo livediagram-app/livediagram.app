@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   barLabel,
-  CATEGORY_BAR_MODES,
   flyoutCardColumns,
   flyoutColumns,
   flyoutGroups,
@@ -16,7 +15,7 @@ import type { PaletteTileDef } from './palette-tile-defs';
 // The category flyout's arrangement (docs/specs/007-editor/toolbar-layout.md "The category bar").
 
 const tiles = (id: string): PaletteTileDef[] =>
-  paletteCategoriesFor('pages').find((c) => c.id === id)?.tiles ?? [];
+  paletteCategoriesFor().find((c) => c.id === id)?.tiles ?? [];
 
 const tile = (id: string, dividerAfter = false): PaletteTileDef => ({
   id,
@@ -29,10 +28,6 @@ const tile = (id: string, dividerAfter = false): PaletteTileDef => ({
 });
 
 describe('the category bar', () => {
-  it('is Pages’s strip', () => {
-    expect([...CATEGORY_BAR_MODES]).toEqual(['pages']);
-  });
-
   it('names every category in one word', () => {
     expect(barLabel('write', 'Write & Build')).toBe('Write');
     expect(barLabel('shapes', 'Shapes')).toBe('Shapes');
@@ -42,10 +37,8 @@ describe('the category bar', () => {
 describe('a flyout’s layout', () => {
   it('draws pictures where the glyph is the answer, cards otherwise', () => {
     expect(flyoutLayout('shapes')).toBe('grid');
-    expect(flyoutLayout('popular')).toBe('grid');
     expect(flyoutLayout('build')).toBe('cards');
     expect(flyoutColumns('shapes')).toBe(5);
-    expect(flyoutColumns('popular')).toBe(4);
     expect(flyoutColumns('anything-else')).toBe(5);
   });
 
@@ -65,30 +58,25 @@ describe('a flyout’s layout', () => {
 
 describe('a flyout’s groups', () => {
   it('heads Data and Components by the tile that starts each group', () => {
-    expect(flyoutGroups('data', tiles('data')).map((g) => g.title)).toEqual([
-      'Charts',
-      'Meters',
-      'Tables',
-    ]);
-    expect(flyoutGroups('components', tiles('components')).map((g) => g.title)).toEqual([
+    expect(flyoutGroups(tiles('data')).map((g) => g.title)).toEqual(['Charts', 'Meters', 'Tables']);
+    expect(flyoutGroups(tiles('components')).map((g) => g.title)).toEqual([
       'Layout',
       'Page Blocks',
       'Code and Lists',
     ]);
   });
 
-  it('never splits Popular, and has nothing to show for no tiles', () => {
-    expect(flyoutGroups('popular', tiles('popular'))).toHaveLength(1);
-    expect(flyoutGroups('x', [tile('a', true), tile('b')])).toEqual([
+  it('keeps a half-named category as one block, and has nothing to show for no tiles', () => {
+    expect(flyoutGroups([tile('a', true), tile('b')])).toEqual([
       {
         id: 'a',
         title: null,
         tiles: [expect.objectContaining({ id: 'a' }), expect.objectContaining({ id: 'b' })],
       },
     ]);
-    expect(flyoutGroups('shapes', [])).toEqual([]);
+    expect(flyoutGroups([])).toEqual([]);
     // One group: no heading, whatever its first tile is called.
-    expect(flyoutGroups('shapes', [tile('shapes:square')])[0]!.title).toBeNull();
+    expect(flyoutGroups([tile('shapes:square')])[0]!.title).toBeNull();
   });
 });
 

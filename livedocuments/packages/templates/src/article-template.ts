@@ -54,7 +54,7 @@ export function articleTabOverrides(
 ): Partial<Tab> {
   const pages: Page[] = [{ id: PAGE_ID, orientation: 'portrait', kind: 'article', flow }];
   const doc: ArticleFlow = { blocks, ...(style ? { style } : {}) };
-  return { opensIn: 'pages', pages, articles: { [flow]: doc } };
+  return { pages, articles: { [flow]: doc } };
 }
 
 /** The Project Brief template's pages and writing (opens in Pages). */

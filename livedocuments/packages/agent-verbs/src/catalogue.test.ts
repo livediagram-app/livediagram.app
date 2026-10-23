@@ -158,7 +158,7 @@ describe('the guides and the skill', () => {
 
   it('teach reading a selection reference from a workbench', () => {
     const text = GUIDE_TOPICS.workbench.text;
-    expect(text).toContain('[livedocuments] "Home screen" › tab "Wireframe"');
+    expect(text).toContain('[livedocuments] "Launch deck" › tab "Slides"');
     for (const command of [
       'livedocuments tab view',
       'livedocuments tab render',

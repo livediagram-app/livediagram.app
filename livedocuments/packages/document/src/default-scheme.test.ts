@@ -25,7 +25,7 @@ describe('the Default colour scheme', () => {
     expect(light.id).toBe(dark.id);
     expect(light.label).toBe(dark.label);
     // Different canvas.
-    // The light canvas is an off-white (docs/specs/011-theme/retired-schemes.md "Default's previous light half").
+    // The light canvas is an off-white (docs/specs/011-theme/retired-schemes.md "What has left").
     expect(light.backgroundColor).toBe('#fbfaf7');
     expect(dark.backgroundColor).toBe('#0d121a');
     expect(light.patternColor).not.toBe(dark.patternColor);
@@ -52,8 +52,8 @@ describe('the Default colour scheme', () => {
   });
 });
 
-// Charcoal was merged into Default. Documents saved against it are migrated to
-// Default on read (docs/specs/011-theme/retired-schemes.md), so the catalogue no longer carries it at all.
+// Charcoal was merged into Default (docs/specs/011-theme/retired-schemes.md): the catalogue no longer carries it, and
+// its id resolves to Default as any unknown id does.
 describe('the Charcoal scheme it replaced', () => {
   it('is no longer offered in the catalogue', () => {
     expect(THEMES.map((t) => t.id)).not.toContain('charcoal');

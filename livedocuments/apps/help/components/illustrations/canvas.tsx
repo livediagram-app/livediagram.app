@@ -3,25 +3,7 @@
 // Composed only from the shared primitives so the house style holds.
 
 import { Scene, Shape, Arrow, SelectionBox, Cursor, Panel, Tabs, Label, Tile } from './primitives';
-import { MenuCard, Strip, stripCategory } from './toolbar-layout';
-
-/** The canvas with the menu button and the palette strip across the top and a small flow on
- *  it: the editor at a glance. */
-export function CanvasOverview() {
-  return (
-    <Scene w={420} h={240}>
-      <MenuCard x={8} y={16} />
-      <Strip x={78} y={16} />
-      <Shape x={40} y={92} w={84} h={48} kind="rect" label="Start" />
-      <Shape x={172} y={92} w={84} h={48} kind="diamond" />
-      <Shape x={172} y={172} w={84} h={44} kind="rect" accent label="Done" />
-      <Arrow from={[124, 116]} to={[172, 116]} />
-      <Arrow from={[214, 140]} to={[214, 172]} />
-      {/* Left of Done, so the name tag sits clear of its edge. */}
-      <Cursor x={112} y={168} name="You" />
-    </Scene>
-  );
-}
+import { Strip, stripCategory } from './toolbar-layout';
 
 /** Dropping a shape from a category's flyout onto the canvas (a curved drag trail from the Square tile in Shapes'
  *  flyout to a freshly placed, still-selected shape). */

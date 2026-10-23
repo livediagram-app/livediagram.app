@@ -1,45 +1,35 @@
-// The Popular shelf (docs/specs/008-canvas/canvas-and-palette.md "Template categories", docs/specs/007-editor/
-// templates-by-mode.md "The mode filter"): where most people start, a short curated list per mode filter, each
-// opening with its blank(s). Shared by the editor's template step and the marketing gallery, so the two shelves can
-// never disagree.
-import type { EditorMode } from '@livedocuments/document';
+// The Popular shelf (docs/specs/008-canvas/canvas-and-palette.md "Template categories"): where most people start, a
+// short curated list opening with the blanks. Shared by the editor's template step and the marketing gallery, so the
+// two shelves can never disagree.
 import { TEMPLATES, type TemplateKind } from './templates';
 
-type PopularChoice = 'all' | EditorMode;
+// The gallery's shelf. The blanks lead, so the picker needs no separate blank card.
+export const POPULAR_TEMPLATE_KINDS: readonly TemplateKind[] = [
+  'blank-illustration',
+  'blank-slide-deck',
+  'blank-article',
+  'article',
+  'slide-deck',
+  'event-poster',
+  'year-in-review',
+  'social-carousel',
+  'wireframe-mobile-app',
+  'logo-design',
+];
 
-export const POPULAR_BY_MODE: Readonly<Record<PopularChoice, readonly TemplateKind[]>> = {
-  // The blanks lead, so the picker needs no separate blank card.
-  all: [
-    'blank-illustration',
-    'blank-slide-deck',
-    'blank-article',
-    'article',
-    'slide-deck',
-    'event-poster',
-    'year-in-review',
-    'social-carousel',
-    'wireframe-mobile-app',
-    'logo-design',
-  ],
-  pages: [
-    'blank-illustration',
-    'article',
-    'blank-slide-deck',
-    'event-poster',
-    'year-in-review',
-    'social-carousel',
-  ],
-};
-
-// Popular under Everything (the marketing gallery's and the step's default shelf).
-export const POPULAR_TEMPLATE_KINDS: readonly TemplateKind[] = POPULAR_BY_MODE.all;
-
-// The fewest cards any mode's Popular holds (popular.test.ts pins every list to it).
-export const POPULAR_PER_MODE = 5;
+// The editor's template step: a shorter list, Blank Illustration first.
+const STEP_POPULAR: readonly TemplateKind[] = [
+  'blank-illustration',
+  'article',
+  'blank-slide-deck',
+  'event-poster',
+  'year-in-review',
+  'social-carousel',
+];
 
 const LISTED = new Set(TEMPLATES.filter((t) => !t.hidden).map((t) => t.kind));
 
-/** Popular for a mode filter: its curated list, hidden templates left out. */
-export function popularKindsFor(choice: PopularChoice): TemplateKind[] {
-  return POPULAR_BY_MODE[choice].filter((k) => LISTED.has(k));
+/** The template step's Popular: its curated list, hidden templates left out. */
+export function stepPopularKinds(): TemplateKind[] {
+  return STEP_POPULAR.filter((k) => LISTED.has(k));
 }

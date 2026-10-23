@@ -25,13 +25,11 @@ export function PaletteToolRow({
   def,
   actions,
   pendingDraw,
-  id,
   highlighted = false,
 }: {
   def: PaletteTileDef;
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null | undefined;
-  id?: string;
   // The keyboard-walked row (docs/specs/010-palette/palette-top-level-categories.md). Distinct from `armed`, which means a
   // draw gesture is queued: this is only "the arrow keys are pointing here".
   highlighted?: boolean;
@@ -49,13 +47,12 @@ export function PaletteToolRow({
   return (
     <button
       ref={rowRef}
-      id={id}
       type="button"
       role="option"
       aria-selected={highlighted}
       onClick={onClick}
       // Rows drag onto the canvas exactly like the tile they stand for: shapes, sticky notes, icons and
-      // stickers alike, including the rows a search turns up (the Toolbar strip's More popover).
+      // stickers alike, including the rows a search turns up.
       draggable={dragStart !== undefined}
       onDragStart={dragStart}
       // Clearing the preview is NOT optional: it is what removes the canvas
@@ -109,7 +106,6 @@ export function PaletteToolRows({
   actions,
   pendingDraw,
   activeIndex,
-  optionIdPrefix,
 }: {
   tiles: PaletteTileDef[];
   actions: PaletteTileActions;
@@ -118,19 +114,16 @@ export function PaletteToolRows({
   // search box that owns the arrow keys (docs/specs/010-palette/palette-top-level-categories.md) — the list itself takes no
   // focus, so the caller drives it.
   activeIndex?: number;
-  // Prefix for the per-row DOM ids the caller points aria-activedescendant at.
-  optionIdPrefix?: string;
 }) {
   const defs = visibleTiles(tiles, actions.hasImage);
   return (
-    <div className="flex flex-col gap-0.5" role={optionIdPrefix ? 'listbox' : undefined}>
+    <div className="flex flex-col gap-0.5">
       {defs.map((def, i) => (
         <PaletteToolRow
           key={def.id}
           def={def}
           actions={actions}
           pendingDraw={pendingDraw}
-          id={optionIdPrefix ? `${optionIdPrefix}-${i}` : undefined}
           highlighted={activeIndex === i}
         />
       ))}

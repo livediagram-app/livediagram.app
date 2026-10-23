@@ -22,10 +22,7 @@
     "react-dom": "^19.3.0"
   },
   "dependencies": {
-    "@livedocuments/document": "workspace:*",
-    "@livedocuments/icons": "workspace:*",
-    "@livedocuments/templates": "workspace:*",
-    "@livedocuments/ui": "workspace:*"
+    "@livedocuments/templates": "workspace:*"
   },
   "devDependencies": {
     "@livedocuments/oxlint-config": "workspace:*",

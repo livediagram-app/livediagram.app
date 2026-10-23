@@ -153,7 +153,7 @@ describe('POST /documents with default folders', () => {
   it.each([
     ['a string', 'mode:pages'],
     ['an unknown mode', { mode: 'pixel', kind: 'diagram' }],
-    ['the legacy whiteboard kind', { mode: 'pages', tabKind: 'whiteboard' }],
+    ['a livediagram mode', { mode: 'draw' }],
     ['a missing mode', { tabKind: 'diagram' }],
   ])('refuses %s as an intent, writing nothing', async (_label, intent) => {
     const res = await create(asUser('user_alice'), { intent });

@@ -4,7 +4,7 @@ import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { editorViewportOf } from '@/lib/editor-viewport';
 
 // Whether the category bar names its categories (docs/specs/007-editor/toolbar-layout.md "The category bar"), from
-// the strip's REAL sizes, as useStripTileLimit fits tiles: the centred strip may take the editor's width less the
+// the strip's REAL sizes: the centred strip may take the editor's width less the
 // top-left menu card on both sides (that card's width varies: the mode switch, the tab's name). The strip is drawn
 // named first and its width kept; while that width fits, the names show, and once it does not, glyphs alone do,
 // until the window grows back past the width it needs. Measured before paint, so no frame shows the overflow.

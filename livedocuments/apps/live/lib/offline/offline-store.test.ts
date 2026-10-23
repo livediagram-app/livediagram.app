@@ -1,6 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livedocuments/document';
-import type { OfflineDocumentRecord } from './offline-store';
+import { afterEach, describe, expect, it } from 'vitest';
 import {
   __setOfflineBackend,
   applyMeta,
@@ -105,21 +103,6 @@ describe('offline store ops (in-memory backend)', () => {
     expect((await backend.get('d1'))?.opens).toEqual({ days: ['2026-10-03'], lastOpenedAt: now });
   });
 
-  it('migrates a tab saved against a retired scheme on load (docs/specs/011-theme/retired-schemes.md)', async () => {
-    vi.spyOn(console, 'info').mockImplementation(() => {});
-    __setOfflineBackend(memBackend());
-    const charcoal = tab('t1', {
-      theme: 'charcoal',
-      backgroundColor: '#2b2b33',
-      patternColor: '#636373',
-    });
-    await offlineCreateDocument({ id: 'd1', name: 'Doc', tabs: [charcoal] }, 100);
-    expect(await offlineLoadTab('d1', 't1')).toMatchObject({
-      theme: 'brand',
-      backgroundColor: '#0d121a',
-    });
-  });
-
   it('saves + loads + deletes individual tabs', async () => {
     __setOfflineBackend(memBackend());
     await offlineCreateDocument({ id: 'd1', name: 'Doc', tabs: [] }, 100);
@@ -139,11 +122,6 @@ describe('offline store ops (in-memory backend)', () => {
     await offlineCreateDocument({ id: 'd1', name: 'Doc', tabs: [] }, 100);
     await offlineSetDocumentFolder('d1', 'f1', 200);
     expect((await offlineListDocuments())[0]?.folderId).toBe('f1');
-    // No creation intent is recorded in the browser (docs/specs/013-workspace/default-folders.md).
-    expect((await offlineListDocuments())[0]).toMatchObject({
-      opensIn: null,
-      tabKind: null,
-    });
     await offlineSetDocumentFolder('d1', null, 300);
     expect((await offlineListDocuments())[0]?.folderId).toBeNull();
   });
@@ -153,26 +131,6 @@ describe('offline store ops (in-memory backend)', () => {
     await offlineCreateDocument({ id: 'd1', name: 'Doc', tabs: [tab('t1')] }, 100);
     await offlineSaveDocumentMeta('d1', { name: 'Renamed' }, 200);
     expect((await offlineLoadDocument('d1'))?.name).toBe('Renamed');
-  });
-});
-
-// Both stores must agree on what a tab IS. An offline board that lost its
-// kind would come back from a Sync Document as an ordinary diagram — the
-// cloud copy would then be wrong too, and nothing could tell.
-describe('upsertTab — tab kind', () => {
-  const rec = (): OfflineDocumentRecord =>
-    ({
-      id: 'off:1',
-      name: 'D',
-      folderId: null,
-      createdAt: 1,
-      savedAt: 1,
-      tabs: [],
-    }) satisfies OfflineDocumentRecord;
-  const tab = (over: Partial<Tab> = {}): Tab => ({ id: 't', name: 'T', elements: [], ...over });
-
-  it('stamps the ordinary kind on the way in', () => {
-    expect(upsertTab(rec(), tab(), 2).tabs[0]!.kind).toBe('diagram');
   });
 });
 

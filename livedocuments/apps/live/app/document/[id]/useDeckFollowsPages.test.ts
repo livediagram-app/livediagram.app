@@ -11,7 +11,6 @@ const tab = (pageIds: string[], elements: unknown[] = []) =>
     id: 't',
     name: 'Deck',
     elements,
-    opensIn: 'pages',
     pages: pageIds.map((id) => ({ id, orientation: 'landscape', kind: 'slide' })),
   }) as unknown as Tab;
 

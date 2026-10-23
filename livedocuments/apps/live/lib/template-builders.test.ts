@@ -139,9 +139,8 @@ describe('templates on pages', () => {
     'team-welcome',
     'workshop-kickoff',
   ]);
-  it.each(PAGED_KINDS)('%s: opens in Pages on pages of its kind', (kind) => {
+  it.each(PAGED_KINDS)('%s: opens on pages of its kind', (kind) => {
     const o = templateCanvasOverrides(kind);
-    expect(o.opensIn).toBe('pages');
     expect(o.pages?.length).toBeGreaterThan(0);
     const want = (i: number) =>
       SLIDE_DECK_KINDS.has(kind)
@@ -229,7 +228,6 @@ describe('buildTemplatedTab', () => {
     // theme's defaults overwrite it.
     const tab = buildTemplatedTab('slide-deck', 'slate', 'tab-1', 'deck');
     const o = templateCanvasOverrides('slide-deck');
-    expect(tab.opensIn).toBe('pages');
     expect(tab.pages).toEqual(o.pages);
   });
 });

@@ -16,7 +16,6 @@
 // thinner one, since team and token events never reach them — and it
 // migrates to their account on sign-up (docs/specs/013-workspace/timeline.md §9).
 
-import { upgradeLegacyScope } from '../legacy-request-forms';
 import {
   TIMELINE_PAGE_MAX,
   TIMELINE_PAGE_SIZE,
@@ -198,7 +197,7 @@ export async function handleTimeline(ctx: RouteContext): Promise<Response> {
 function resolveScope(url: URL, ownerId: string): TimelineScopeRef | null {
   const raw = url.searchParams.get('scope');
   if (!raw) return { scopeType: 'user', scopeId: ownerId };
-  return parseScope(upgradeLegacyScope(raw));
+  return parseScope(raw);
 }
 
 // Who may read which feed.

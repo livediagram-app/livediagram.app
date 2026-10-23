@@ -67,7 +67,7 @@ function Footer({
 }
 
 /** The editor's top row in a pane, from (x, y) to `right`: the menu button card, then the palette
- *  strip with a run of tiles. */
+ *  strip, its category bar a run of glyph buttons (a pane has no room for the names). */
 function ChromeTopRow({ x, y, right }: { x: number; y: number; right: number }) {
   const sx = x + 22;
   const tiles = Math.floor((right - sx - 12) / 14);

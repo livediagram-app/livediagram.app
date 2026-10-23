@@ -1,10 +1,6 @@
 # Highlighter
 
-A wide, semi-transparent freehand marker, picked from the palette's **Draw** category like the two pens. It is for calling attention to things during reviews and workshops (circling a region, underlining a label), not for sketching shapes, so it deliberately drops the Pencil's shape-recognition and close-to-fill behaviours.
-
-## History
-
-It started as a draw tile in the Draw category, then became a held **canvas tool** (a selection mode in the tool dropdown, with its own Highlighter Panel). It is a **Draw tile again**: what it makes is an element, a marker stroke, so it sits beside the other things that make strokes, and the selection modes go back to being ways of working on the canvas rather than ways of adding to it. The held behaviour, the Mode Button and the Highlighter Panel went with the mode; its Colour and Strength moved into the [Quick style panel](quick-style-panel.md), the way a whiteboard marker's do.
+A wide, semi-transparent freehand marker stroke. livedocuments keeps and draws highlight strokes (a document brought over from livediagram, a stroke written through the API or MCP), but has **no tile to draw a new one**: the pens went with livediagram's Draw mode, and the Pages palette offers no pens ([Canvas and palette](canvas-and-palette.md)). A highlight deliberately drops a pencil's shape-recognition and close-to-fill behaviours.
 
 ## Model
 
@@ -23,44 +19,7 @@ Both renderers (the canvas `FreehandSvg` and the headless `svgFreehandShape` use
 - **Stroke width**: a wide round stroke (`penWidth ?? 14` px, `vector-effect: non-scaling-stroke`), ignoring the `strokeWidth` border presets (they only reach hairline widths).
 - **Round caps + joins**, never dashed, never filled.
 - **Translucency**: `stroke-opacity: 0.45` plus `mix-blend-mode: multiply`, so text and shapes underneath stay legible and overlapping strokes darken like a real marker. This is part of the pen recipe, independent of the user-facing `opacity` field, which still composes on top.
-- **Colour**: created in the highlighter's current colour (default **marker yellow**, `#fde047`) regardless of theme; recolourable afterwards from the Quick style panel or the context menu's Colours category like any element. The theme's `elementStroke` is deliberately not used: highlighters are yellow until the user says otherwise.
-
-## The tile
-
-- `tools:highlighter` in the **Draw** category, third, after **Freehand** and **Shape Pen** (the three pens together, then Polygon, then Arrow and Line). Caption **Highlighter**, blurb "A wide translucent marker stroke", the highlighter-nib glyph.
-- **One-shot, like Freehand.** Picking the tile arms the marker; the next drag lays one stroke, which is **selected** on release, and the tile puts itself down. The tile shows pressed while armed. Escape, the mode banner's Cancel or another tile disarms it.
-- The stroke lands in the highlighter's current **Colour** and **Width** (see Settings).
-- The **mode banner** reads **"Drag to highlight"**, the same banner every other one-shot arm wears.
-- A gesture too short to be a stroke disarms, as for the pencil.
-- No single-letter shortcut ([Canvas and palette](canvas-and-palette.md): only the common flowchart vocabulary gets letters). It is not a command-palette tool switch: like the pens, it is reached from the palette (and its search).
-- `PendingDraw` carries `{ type: 'freehand'; variant: 'highlighter' }`. Commit path is the same sampling + simplification as the pencil, then always `createFreehand(points, false)` + `pen: 'highlighter'` + the current colour (and `penWidth` when the width is not Medium): no recognition branch, no auto-close. Recognition is the Shape Pen's job (Two pens instead of a pen and a mode); the highlighter is a third variant of the same gesture.
-- Cursor: a highlighter-nib glyph, distinct from the pencil nib. The live draw preview (`CanvasDrawPreview`) paints the in-flight polyline with the marker recipe in the current colour and width, so what you see while dragging is what commits.
-
-## Settings: the Quick style panel
-
-The highlighter's settings live in the [Quick style panel](quick-style-panel.md), as a whiteboard marker's do (Draw mode "The quick style panel stays"). Two rows:
-
-- **Highlighter colour**: five marker swatches, **Yellow** (`#fde047`, the default), **Green** (`#86efac`), **Pink** (`#f9a8d4`), **Blue** (`#93c5fd`), **Orange** (`#fdba74`). Fixed hexes, not theme colours: a highlight that changed colour with the theme would stop reading as one. The row ends with **More colours**, opening the [colour picker](../004-interface-design/colour-picker.md) with the soft standard colours, Custom colours and **Add a custom colour** (four coloured dots).
-- **Highlighter width**: **Thin** (8 px), **Medium** (14 px, the default), **Bold** (22 px), each drawn as a preview of its band.
-
-What the rows style, in the order the panel looks:
-
-1. **Selected highlights.** With one or more unlocked highlight strokes selected, the rows restyle them (`strokeColor`, `penWidth`; Medium clears `penWidth`), one undo step per choice. A choice is marked only when every selected highlight shares it. In a mixed selection the rows sit above the rows for everything else and touch only the highlights; the caption counts what is styled. A stroke whose colour or width matches no option (recoloured from the context menu, imported) marks none.
-2. **The armed tile, nothing selected.** Picking the tile clears the selection, so the panel shows the rows for the **next stroke**, captioned **Highlighter**: the highlighter's current colour and width, which every stroke then lands in. This is the only way to set them before drawing.
-
-The current colour and width are **session-local editor state**, not a persisted preference: the highlighter resets to Yellow / Medium on a fresh load, like a real pen cup. Restyling a selected highlight does not change them; only choosing with the tile armed does. Nothing here is stored except on the strokes themselves.
-
-**Width is a panel-only setting.** The context menu offers a highlight's colour (Colours) but not its width; the panel holds both, as it holds a whiteboard marker's width. This is a deliberate exception to the panel's "the menu stays complete" rule, scoped to the highlighter's two rows.
-
-- Draw mode (Draw mode) has no highlighter: a whiteboard's pens are its markers, and its dock replaces the palette.
-
-## Not a selection mode
-
-`'highlighter'` is not on the editor's `CanvasTool` union, not in the tool dropdown, and not a `SelectionMode` (`packages/document/src/selection-mode.ts`).
-
-## Popular
-
-The tile is not in Diagram mode's Popular (Editor modes): Table kept the slot it took when the tile was first retired.
+- **Colour**: its own stored colour (livediagram's default was **marker yellow**, `#fde047`) regardless of theme; recolourable from the context menu's Colours category like any element. The theme's `elementStroke` is deliberately not used: a highlight keeps its own colour.
 
 ## Everything else is inherited
 
@@ -68,4 +27,4 @@ Selection, move/resize (non-scaling stroke keeps the marker width), rotation, lo
 
 ## Telemetry
 
-Committing a stroke fires `track('Element', 'Added', 'Highlighter')`. Picking the tile fires the palette's own tile event like every Draw tile. There is no `Canvas·Used·Highlighter` any more: it is not a mode. A panel choice on selected highlights fires `Element·Changed·QuickStroke` (colour) or `Element·Changed·QuickStrokeWidth` (width), the panel's existing tokens; a choice for the next stroke is a setting, `UI·Changed·HighlighterColour` / `UI·Changed·HighlighterWidth`, charted as **Highlighter Settings** in the dashboard's Look & Feel stack.
+A copy of a highlight stroke reports as `Element · Added · Highlighter` (`apps/live/lib/element-telemetry.ts`). No setting or tile event remains.

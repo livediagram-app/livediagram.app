@@ -4,8 +4,8 @@
 
 Two decisions, the second resting on the first:
 
-1. The palette's **Components** (Banner, Callout, Stat row, Process steps, Hero, Header) are
-   **single elements**, not bundles of primitives held together by a shared `groupId`, each with
+1. The palette's **Components** (Banner, Stat row, Process steps, Hero, Header, and the Callout, a Card
+   preset) are **single elements**, not bundles of primitives held together by a shared `groupId`, each with
    a layout that re-flows as it is resized and every piece of text editable in place.
 2. **The editor has no groups**: no `groupId` field, no Group / Ungroup actions or `⌘G`, no
    group mode, group selection or drill-in, no group toolbar actions, no group quick-connect or
@@ -26,8 +26,10 @@ drilling into the group. The better answer is to make it one element.
 
 ## The elements
 
-The Callout has since become a preset of the Card ([The card](card.md)): its row below describes the stored
-`callout` kind that the read migration turns into a card with `cardMedia: 'badge'`.
+The Callout is no kind of its own: it is a preset of the Card ([The card](card.md) "The Callout is a Card preset").
+The palette's Callout places a `card` with `cardMedia: 'badge'`, a heading (`pageTitle`) and a body (`label`), so it
+lays out, colours and edits as a card. The web component kinds are `banner`, `card`, `stat-row`, `process` and
+`site-header` (`WebComponentShape`); the card has its own spec, and the table below covers the rest.
 
 Each is a `ShapeElement` kind except the Hero, which is an image (see below). All of them keep
 the ordinary element behaviours for free: move, resize, rotate, lock, layers, colours, font,
@@ -36,7 +38,6 @@ shadow, comments, links, copy / paste, undo.
 | Kind          | Text                                                    | Rows (bounded)                        |
 | ------------- | ------------------------------------------------------- | ------------------------------------- |
 | `banner`      | `label` = title, `pageSubtitle` = subtitle              | none                                  |
-| `callout`     | `pageTitle` = heading, `label` = body                   | none                                  |
 | `stat-row`    | none                                                    | `stats: { value, caption }[]`, 1 to 6 |
 | `process`     | none                                                    | `processSteps: string[]`, 2 to 8      |
 | `site-header` | `label` = brand                                         | `navLinks: string[]`, 0 to 6          |
@@ -61,8 +62,9 @@ The point of making them single elements is that they can lay themselves out. Ea
 pure function in `@livedocuments/document` (`web-components.ts`) that both the canvas view and the
 headless SVG renderer call, so an export matches the editor.
 
-- **Banner / callout**: the text region is the box minus its padding. Title and body re-wrap to
-  the width; nothing scales with the box except the room the text has.
+- **Banner**: the text region is the box minus its padding. Title and subtitle re-wrap to the
+  width; nothing scales with the box except the room the text has. (A Callout lays out as the card
+  it is, `cardLayout`.)
 - **Stat row**: the cards share the width equally with a fixed gap. The value's font size follows
   the card height (clamped), so a taller row gets bigger numbers rather than more empty card.
 - **Process**: the steps spread evenly across the width, connectors run between neighbouring
@@ -78,7 +80,7 @@ headless SVG renderer call, so an export matches the editor.
   accent) when unset, with white text by default. Theme switches retheme only their stroke
   (`THEME_COLOUR_FIELDS` exception), because writing the theme's pale element fill into an
   accent bar under white text is how the old grouped banner went unreadable.
-- **Callout, Stat row, Process** are ordinary cards: the theme's surface fill and ink text, with
+- **Stat row, Process** (and the Card, the Callout included) are ordinary cards: the theme's surface fill and ink text, with
   the accent (stroke) for the badge, the values and the step circles.
 - **Hero**: the caption card is the image's `fillColor` (the theme accent at creation), white text.
 
@@ -92,14 +94,10 @@ hero.
 
 ## Existing documents
 
-- Components already on a tab were built as loose primitives and **stay as they are**: they
-  are simply separate elements. We do not try to recognise and fuse them.
-- `groupId` on stored elements is **ignored** and stripped on load.
-- A legacy `pinned-group` arrow end is **frozen to a free endpoint** at the position it resolved
-  to, by `migrateLegacyGroups`, at the two boundaries where stored tabs enter: the api worker's
-  `rowToTab` (so the editor, MCP, share links and thumbnails all see migrated data) and the
-  offline store's tab load. The validator still accepts the legacy endpoint shape on write, so a
-  browser running a cached pre-change build can still save; the next read migrates it.
+- livedocuments starts with no stored documents, so no grouped element or group arrow end exists to
+  migrate, and nothing on the read path looks for one.
+- An arrow end is free, pinned to an element, or on another arrow; the validator refuses any other
+  kind, a group end included.
 
 ## No groups
 
@@ -109,5 +107,5 @@ The editor has none of these:
 - Group mode (the "Click another element to add to the group" pill).
 - Group selection, drill-in (`soloSelectedId`), and group-aware drag / delete / lock / layer /
   duplicate / clipboard / format-painter paths.
-- Group quick-connect and `pinned-group` endpoints (except the load-time migration above).
+- Group quick-connect and `pinned-group` endpoints.
 - A help article on groups.

@@ -25,17 +25,11 @@ async function seed(page: Page, owner: string, origin: string): Promise<Seeded> 
   const tabs = () => [{ id: crypto.randomUUID(), name: 'Tab 1', elements: [] }];
   const doc = (name: string, extra: Record<string, unknown>) =>
     post('/documents', { id: crypto.randomUUID(), name, tabs: tabs(), ...extra });
-  await doc('Roadmap', { folderId: null, intent: { mode: 'diagram' } });
-  await doc('Sprint retro', {
-    folderId: null,
-    intent: { mode: 'diagram', templateFamily: 'retrospective' },
-  });
-  await doc('Architecture by AI', { folderId: null, source: 'mcp', intent: { mode: 'diagram' } });
-  await doc('Board in Acme', {
-    folderId: acme,
-    intent: { mode: 'diagram', templateFamily: 'kanban' },
-  });
-  await doc('AI payment flow', { folderId: projects, source: 'mcp', intent: { mode: 'diagram' } });
+  await doc('Roadmap', { folderId: null, intent: { mode: 'pages' } });
+  await doc('Sprint retro', { folderId: null, intent: { mode: 'pages' } });
+  await doc('Architecture by AI', { folderId: null, source: 'mcp', intent: { mode: 'pages' } });
+  await doc('Board in Acme', { folderId: acme, intent: { mode: 'pages' } });
+  await doc('AI payment flow', { folderId: projects, source: 'mcp', intent: { mode: 'pages' } });
   return { projects };
 }
 
@@ -74,7 +68,7 @@ test.describe('explorer filters', () => {
     await expect(pane(page).locator('[data-made-by-ai]')).toHaveCount(1);
     await page.screenshot({ path: test.info().outputPath('my-documents-root.png') });
     // The chip row: no Space chip on a scoped view.
-    await expect(filters(page).getByRole('button', { name: 'Opens in, any' })).toBeVisible();
+    await expect(filters(page).getByRole('button', { name: 'People, any' })).toBeVisible();
     await expect(filters(page).getByRole('button', { name: /^Space/ })).toHaveCount(0);
     expectNoPageErrors(pageErrors);
   });
@@ -106,15 +100,15 @@ test.describe('explorer filters', () => {
       '2 of 5 documents',
     );
 
-    // A multi-select chip: Template, Kanban, from the listbox.
-    await filters(page).getByRole('button', { name: 'Template, any' }).click();
-    const listbox = page.getByRole('listbox', { name: 'Template' });
+    // A multi-select chip: People, Others, from the listbox. Every seeded document is the guest's own.
+    await filters(page).getByRole('button', { name: 'People, any' }).click();
+    const listbox = page.getByRole('listbox', { name: 'People' });
     await expect(listbox).toHaveAttribute('aria-multiselectable', 'true');
     await page.screenshot({ path: test.info().outputPath('chip-listbox.png') });
-    await listbox.getByRole('option', { name: 'Kanban' }).click();
+    await listbox.getByRole('option', { name: 'Others' }).click();
     await page.keyboard.press('Escape');
     // A chip adds its token after the ones already written.
-    await expect(page).toHaveURL(/q=made-by%3Aai\+template%3Akanban$/);
+    await expect(page).toHaveURL(/q=made-by%3Aai\+people%3Aothers$/);
     await expect(pane(page).getByText('No documents match these filters')).toBeVisible();
     await page.screenshot({ path: test.info().outputPath('filtered-empty.png') });
 
@@ -136,30 +130,27 @@ test.describe('explorer filters', () => {
     await expect(docLink(page, 'Roadmap')).toBeVisible({ timeout: 30_000 });
 
     await field(page).click();
-    await field(page).pressSequentially('temp');
+    await field(page).pressSequentially('peo');
     await expect(field(page)).toHaveAttribute('aria-expanded', 'true');
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('Enter');
-    await expect(field(page)).toHaveValue('template:');
+    await expect(field(page)).toHaveValue('people:');
     await page.keyboard.press('ArrowDown');
-    await expect(page.getByRole('option', { name: 'Retrospective, Template' })).toHaveAttribute(
+    await page.keyboard.press('ArrowDown');
+    await expect(page.getByRole('option', { name: 'Others, People' })).toHaveAttribute(
       'aria-selected',
       'true',
     );
     await page.screenshot({ path: test.info().outputPath('suggestions.png') });
     await page.keyboard.press('Enter');
     await expect(field(page)).toHaveValue('');
-    await expect(
-      page.getByRole('button', { name: 'Remove filter Template: Retrospective' }),
-    ).toBeVisible();
-    await expect(page).toHaveURL(/q=template%3Aretrospective$/);
-    await expect(docLink(page, 'Sprint retro')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Remove filter People: Others' })).toBeVisible();
+    await expect(page).toHaveURL(/q=people%3Aothers$/);
     await page.screenshot({ path: test.info().outputPath('typed-token-pill.png') });
+    // Every seeded document is the guest's own.
     await expect(docLink(page, 'Roadmap')).toHaveCount(0);
     // The chip lights for the typed token.
-    await expect(
-      filters(page).getByRole('button', { name: 'Template: Retrospective' }),
-    ).toBeVisible();
+    await expect(filters(page).getByRole('button', { name: 'People: Others' })).toBeVisible();
 
     // An unknown token stays as text, and is named.
     await field(page).pressSequentially('colour:red ');

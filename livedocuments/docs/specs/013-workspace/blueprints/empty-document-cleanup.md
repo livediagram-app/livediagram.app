@@ -10,12 +10,12 @@ Scope, by file:
 | File                                                                      | Role                                                                                                         |
 | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | `packages/api-schema/src/trash.ts`                                        | `TrashReason`, `TrashedDocument.reason`, `EMPTY_DOCUMENT_STALE_DAYS` / `_MS`                                 |
-| `apps/api/migrations/0001_livedocuments_baseline.sql`                         | `documents.trash_reason`                                                                                     |
+| `apps/api/migrations/0001_livedocuments_baseline.sql`                     | `documents.trash_reason`                                                                                     |
 | `apps/api/src/db/empty-document-sweep.ts`                                 | `trashEmptyDocuments`: the set-based move, capped                                                            |
 | `apps/api/src/db/trash.ts`                                                | `listTrash` reads the reason; `restoreDocument` clears it and restarts stale                                 |
 | `apps/api/src/index.ts`                                                   | The 03:00 cron calls the sweep beside the purge                                                              |
 | `apps/api/src/openapi/schemas.generated.ts`                               | Regenerated: `TrashedDocument.reason`                                                                        |
-| `apps/mcp/src/{tools,output-schema}.ts`                                   | `list_trash` rows carry `reason`                                                                             |
+| `apps/mcp/src/tools.ts`, `packages/agent-verbs/src/mcp/output-schema.ts`  | `list_trash` rows carry `reason`                                                                             |
 | `apps/live/lib/offline/offline-trash.ts`                                  | Local rows are `reason: 'deleted'`                                                                           |
 | `apps/live/lib/trash-groups.ts`                                           | `trashedOnLabel(row)`, `trashedCardHeading(row)`, `trashedCardLead(row, now)`: the reason copy, in one place |
 | `apps/live/components/{panels/TrashPane,chrome/DocumentTrashedCard}.tsx`  | The row and the deleted card copy                                                                            |

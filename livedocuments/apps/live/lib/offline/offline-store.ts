@@ -11,9 +11,9 @@
 // dispatch can answer "is this id offline?" cheaply (./offline-ids, which keeps
 // every tab of the browser in step).
 
-import type { LiveDoc, DocumentSummary, RecordedIntent, TabSummary } from '@livedocuments/api-schema';
+import type { LiveDoc, DocumentSummary, TabSummary } from '@livedocuments/api-schema';
 import { utcDay } from '@livedocuments/api-schema';
-import { drawnCount, migrateStoredTab, stampTabKind } from '@livedocuments/document';
+import { drawnCount, migrateStoredTab } from '@livedocuments/document';
 import type { Tab } from '@livedocuments/document';
 import { DocumentTrashedError } from '../document-trashed';
 import {
@@ -96,10 +96,6 @@ export function tabToSummary(
   return summary;
 }
 
-// No creation intent is recorded in the browser: unknown, never Diagram
-// (docs/specs/013-workspace/default-folders.md "Recorded intent").
-const UNKNOWN_INTENT: RecordedIntent = { opensIn: null, tabKind: null };
-
 // Project a stored record into the full `LiveDoc` the editor hydrates from.
 // The server-only fields take their inert defaults (unshared, no team, no
 // provenance, no owner join) — offline documents are private by construction.
@@ -119,7 +115,6 @@ export function recordToDocument(rec: OfflineDocumentRecord): LiveDoc {
     createdAt: rec.createdAt,
     ownerName: null,
     ownerColor: null,
-    ...UNKNOWN_INTENT,
   };
 }
 
@@ -134,7 +129,6 @@ export function recordToSummary(rec: OfflineDocumentRecord): DocumentSummary {
     folderId: rec.folderId,
     teamId: null,
     source: null,
-    ...UNKNOWN_INTENT,
     savedAt: rec.savedAt,
     createdAt: rec.createdAt,
     empty: drawnCount(rec.tabs[0] ?? {}) === 0,
@@ -179,13 +173,8 @@ export function applyMeta(
 // Upsert one tab body into a record (the autosave path). A new tab id is
 // appended; an existing one is replaced in place, preserving order.
 export function upsertTab(rec: OfflineDocumentRecord, tab: Tab, at: number): OfflineDocumentRecord {
-  // Stamp the tab kind here for the same reason the cloud path stamps it
-  // in tabForWire: both stores must agree on what a tab IS, or a
-  // Sync Document would hand the cloud a board that has forgotten itself.
-  const stamped = stampTabKind(tab);
-  const i = rec.tabs.findIndex((t) => t.id === stamped.id);
-  const tabs =
-    i === -1 ? [...rec.tabs, stamped] : rec.tabs.map((t) => (t.id === stamped.id ? stamped : t));
+  const i = rec.tabs.findIndex((t) => t.id === tab.id);
+  const tabs = i === -1 ? [...rec.tabs, tab] : rec.tabs.map((t) => (t.id === tab.id ? tab : t));
   return { ...rec, tabs, savedAt: at };
 }
 
@@ -296,8 +285,8 @@ export async function offlineLoadDocument(id: string): Promise<LiveDoc | null> {
 export async function offlineLoadTab(id: string, tabId: string): Promise<Tab | null> {
   const rec = await offlineBackend().get(id);
   const tab = rec?.tabs.find((t) => t.id === tabId) ?? null;
-  // The offline twin of the api's rowToTab: a document kept in this browser can
-  // still be on a retired scheme (docs/specs/011-theme/retired-schemes.md) or carry retired element fields.
+  // The offline twin of the api's rowToTab: a tab kept in this browser is settled the same way
+  // (docs/specs/011-theme/retired-schemes.md "Where a stored tab is settled").
   return tab ? migrateStoredTab(tab) : null;
 }
 

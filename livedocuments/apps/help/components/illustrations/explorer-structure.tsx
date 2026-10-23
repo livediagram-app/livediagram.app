@@ -978,20 +978,13 @@ export function UseAsDefaultScene() {
   const my = 16;
   const mw = 156;
   const items = ['Rename', 'New Subfolder', 'Change Folder', 'Use as Default for'];
-  const kinds = [
-    'Diagrams',
-    'Whiteboards',
-    'Pages documents',
-    'Plan boards',
-    'Retrospectives',
-    'Kanban boards',
-  ];
-  const ticked = new Set(['Whiteboards', 'Retrospectives']);
+  const kinds = ['Documents'];
+  const ticked = new Set(['Documents']);
   const fx = 180;
   const fy = 72;
   const fw = 222;
   return (
-    <Scene w={420} h={250} bg="plain">
+    <Scene w={420} h={184} bg="plain">
       {/* The folder menu */}
       <rect
         x={mx}
@@ -1003,7 +996,7 @@ export function UseAsDefaultScene() {
         strokeWidth={1.5}
       />
       <Label x={mx + 12} y={my + 16} size={10} weight={700} tone="strong">
-        Workshops
+        Client work
       </Label>
       <line
         x1={mx}
@@ -1055,7 +1048,7 @@ export function UseAsDefaultScene() {
         x={fx}
         y={fy}
         width={fw}
-        height={170}
+        height={54}
         rx={8}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}

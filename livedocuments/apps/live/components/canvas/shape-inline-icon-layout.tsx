@@ -1,4 +1,4 @@
-import { type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import {
   hasRichFormatting,
   inlineIconGap,
@@ -20,7 +20,6 @@ import {
 } from '@/components/canvas/label-style';
 import { IconGlyph } from '@/components/primitives/icon-glyph';
 import { ShapeMarkerGlyph } from '@/components/canvas/ShapeMarker';
-import { HoverCard } from '@livedocuments/ui';
 
 // Inline-icon + marker + label layout for a shape, split out of
 // BoxedElementView. Arranges an optional glyph and status marker beside
@@ -43,8 +42,6 @@ export function ShapeInlineIconLayout({
   alignY,
   padding,
   fontFamily,
-  draggableIcon,
-  onIconPointerDown,
 }: {
   element: ShapeElement;
   // Whether an inline icon glyph is present. False for a marker-only shape, so
@@ -70,32 +67,15 @@ export function ShapeInlineIconLayout({
   alignY: TextAlignY;
   padding: number;
   fontFamily?: string;
-  // When true the glyph itself is grabbable (parent shape selected): a
-  // pointer-drag repositions it to a different side via onIconPointerDown.
-  draggableIcon?: boolean;
-  onIconPointerDown?: (e: ReactPointerEvent) => void;
 }) {
   const isRow = position === 'left' || position === 'right';
   const iconFirst = position === 'left' || position === 'above';
   const { fontSize, iconSize, elementIconSize } = inlineIconMetrics(element, label, textSize);
 
-  const iconGlyph = (
-    <div
-      className={`relative shrink-0 ${draggableIcon ? 'pointer-events-auto cursor-grab' : ''}`}
-      style={{ width: iconSize, height: iconSize }}
-      onPointerDown={draggableIcon ? onIconPointerDown : undefined}
-    >
+  const iconBox = (
+    <div className="relative shrink-0" style={{ width: iconSize, height: iconSize }}>
       <IconGlyph iconId={element.iconId} stroke={iconStroke} hasLabel={false} />
     </div>
-  );
-  // Only the draggable icon earns a hover card (the affordance hint); a static
-  // icon needs none, so it skips the wrapper entirely.
-  const iconBox = draggableIcon ? (
-    <HoverCard title="Drag to move" description="Move the icon to another side of the label.">
-      {iconGlyph}
-    </HoverCard>
-  ) : (
-    iconGlyph
   );
   // The text flows (NOT absolute / flex-1) so the icon sits right beside
   // it and the whole group stays centred — `flex-1` previously stretched

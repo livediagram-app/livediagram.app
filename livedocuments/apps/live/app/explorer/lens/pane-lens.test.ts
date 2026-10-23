@@ -21,14 +21,11 @@ function doc(id: string, over: Record<string, unknown> = {}) {
 }
 
 describe('lensSubjectOf', () => {
-  it('reads one of my own documents as mine, by me, with its recorded intent', () => {
-    expect(
-      lensSubjectOf(doc('a', { source: 'mcp', opensIn: 'pages', tabKind: 'diagram' }), 'me'),
-    ).toMatchObject({
+  it('reads one of my own documents as mine, by me', () => {
+    expect(lensSubjectOf(doc('a', { source: 'mcp' }), 'me')).toMatchObject({
       space: 'mine',
       people: 'me',
       madeByAi: true,
-      opensIn: 'pages',
     });
   });
 
@@ -94,10 +91,7 @@ describe('scopeDocuments', () => {
 });
 
 describe('narrowRows', () => {
-  const rows = [
-    doc('Roadmap', { source: 'mcp' }),
-    doc('Retro notes', { opensIn: 'pages', tabKind: 'diagram' }),
-  ];
+  const rows = [doc('Roadmap', { source: 'mcp' }), doc('Retro notes')];
 
   it('keeps the rows the lens matches', () => {
     expect(narrowRows(rows, lensOf('made-by:ai'), 'me', NOW).map((d) => d.id)).toEqual(['Roadmap']);

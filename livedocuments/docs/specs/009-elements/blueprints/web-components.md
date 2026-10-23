@@ -9,20 +9,14 @@ Scope, by file:
 | File                                                        | Role                                                                             |
 | ----------------------------------------------------------- | -------------------------------------------------------------------------------- |
 | `packages/document/src/web-components.ts`                   | Vocabulary, bounds, defaults, the pure layouts, `withWebRows`                    |
-| `packages/document/src/component-factories.ts`              | `createComponent`, `createHero`, `COMPONENT_SIZE`, `ComponentColors`             |
+| `packages/document/src/component-factories.ts`              | `createComponent`, `createHero`, `createCalloutCard`, `COMPONENT_SIZE`           |
 | `packages/document/src/shape-factory.ts`                    | Default sizes and starting content per kind                                      |
+| `packages/document/src/shape-variants.ts`                   | `applyShapeVariant`: the `callout` Card preset                                   |
 | `packages/document/src/svg-render-web.ts`                   | `svgWebComponent`, `svgHeroCaption`: the headless render                         |
 | `packages/document/src/themes.ts`                           | `themeColourFields`: accent bars retheme only their stroke                       |
 | `packages/document/src/colors.ts`                           | `defaultTextColor`, `SELF_PAINTING_SHAPES`, `acceptsInlineIcon`, `RADIUS_SHAPES` |
 | `packages/document/src/data-shapes.ts`                      | `isSelfDrawingShape`: stat row and process carry no label                        |
-| `packages/document/src/validate.ts`                         | Row, masthead and caption bounds; the legacy `pinned-group` end                  |
-| `packages/document/src/legacy-groups.ts`                    | `hasLegacyGroups`, `migrateLegacyGroups`                                         |
-| `packages/document/src/stored-elements.ts`                  | `migrateStoredElements`: legacy groups, then legacy docks                        |
-| `packages/document/src/stored-tab.ts`                       | `migrateStoredTab`: every stored-tab entry point runs it                         |
-| `apps/api/src/tab-row.ts`                                   | `rowToTab` runs the migration                                                    |
-| `apps/api/src/thumbnail.ts`                                 | The thumbnail render runs the migration on the tab it parses                     |
-| `apps/live/lib/offline/offline-store.ts`                    | `offlineLoadTab` runs the migration                                              |
-| `apps/live/lib/import-merge.ts`                             | `mergeImportedTab` runs the migration on a JSON tab import [QA2]                 |
+| `packages/document/src/validate.ts`                         | Row, masthead and caption bounds; arrow ends `free`, `pinned` or `on-arrow`      |
 | `apps/live/components/canvas/web/*.tsx`                     | One face per kind, `HeroCaptionCard`, `LabelRegion`, `WebFaceProps`              |
 | `apps/live/components/canvas/InlineTextLine.tsx`            | The in-place single-line editor                                                  |
 | `apps/live/components/canvas/ElementFaceRouter.tsx`         | Routes faces; computes `editable`                                                |
@@ -35,23 +29,23 @@ Scope, by file:
 
 ## Domain and naming
 
-| Term           | Identifier                                                                            | Meaning                                                       |
-| -------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| Web component  | `WebComponentShape`, `isWebComponentShape`                                            | `banner`, `callout`, `stat-row`, `process`, `site-header`     |
-| Component      | `ComponentKind`                                                                       | Palette id: `banner hero header callout stat process avatar`  |
-| Accent bar     | `isAccentBarShape`                                                                    | `banner`, `site-header`: a solid bar under white text         |
-| Card component | (the other three)                                                                     | Theme surface fill, ink text, accent emphasis                 |
-| Hero           | `ImageElement` with `heroCaption`                                                     | An image with a caption card                                  |
-| Caption card   | `HeroCaption = { title, subtitle }`                                                   | The hero's two lines                                          |
-| Masthead line  | `pageTitle`, `pageSubtitle`                                                           | Single-line heading fields shared by banner, callout and card |
-| Row            | `StatItem`, `processSteps[i]`, `navLinks[i]`                                          | One stat, step or link                                        |
-| Rows patch     | `WebRows`                                                                             | `{ stats?, processSteps?, navLinks? }`                        |
-| Layout         | `bannerLayout`, `statRowLayout`, `processLayout`, `headerLayout`, `heroCaptionLayout` | Pure element-relative rects                                   |
-| Legacy group   | `groupId`, `{ kind: 'pinned-group' }` (stored only)                                   | Traces migrated away on read                                  |
+| Term           | Identifier                                                                            | Meaning                                                             |
+| -------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Web component  | `WebComponentShape`, `isWebComponentShape`                                            | `banner`, `card`, `stat-row`, `process`, `site-header`              |
+| Component      | `ComponentKind`                                                                       | Palette id: `banner hero header callout stat process avatar`        |
+| Accent bar     | `isAccentBarShape`                                                                    | `banner`, `site-header`: a solid bar under white text               |
+| Card component | `card`, `stat-row`, `process`                                                         | Theme surface fill, ink text, accent emphasis                       |
+| Callout        | `callout` (a `ComponentKind` and a card variant, never a kind)                        | A `card` with badge media, heading and body ([card.md](../card.md)) |
+| Hero           | `ImageElement` with `heroCaption`                                                     | An image with a caption card                                        |
+| Caption card   | `HeroCaption = { title, subtitle }`                                                   | The hero's two lines                                                |
+| Masthead line  | `pageTitle`, `pageSubtitle`                                                           | Single-line heading fields shared by banner and card                |
+| Row            | `StatItem`, `processSteps[i]`, `navLinks[i]`                                          | One stat, step or link                                              |
+| Rows patch     | `WebRows`                                                                             | `{ stats?, processSteps?, navLinks? }`                              |
+| Layout         | `bannerLayout`, `statRowLayout`, `processLayout`, `headerLayout`, `heroCaptionLayout` | Pure element-relative rects                                         |
 
 Banned synonyms: "widget", "block" (the block-type picker), "group" for anything live, "header"
 for the kind in code (the kind is `site-header`; "Header" is the user-facing name), "hero" as a
-shape kind.
+shape kind, "callout" as a shape kind (it is a Card preset).
 
 ## Behaviour and state
 
@@ -62,14 +56,17 @@ shape kind.
 - `hero`: `createHero` (520 × 300 image, `objectFit: 'cover'`, `borderRadius: 'lg'`,
   `heroCaption: HERO_DEFAULT_CAPTION`, `fillColor: accent`, `textColor: ACCENT_BAR_TEXT`).
 - `banner`, `header`: the shape with `strokeColor: accent`, `textColor: ACCENT_BAR_TEXT`.
-- `callout`, `stat`, `process`: `fillColor: surface`, `strokeColor: accent`, `textColor: ink`.
-- Starting content (`createShape`): banner "Banner title" / "Subtitle or description", callout
-  "Heads up" / "A short note with some supporting detail.", `STAT_DEFAULTS`,
+- `stat`, `process`: `fillColor: surface`, `strokeColor: accent`, `textColor: ink`.
+- `callout`: a `card` dressed the same (surface, accent, ink), then the `callout` variant
+  (`applyShapeVariant`): 380 × 116, `cardMedia: 'badge'`, "Heads up" / "A short note with some supporting
+  detail.", and no meta line, tags or icon. `createCalloutCard(x, y)` is the same card unpainted, for templates
+  and agents.
+- Starting content (`createShape`): banner "Banner title" / "Subtitle or description", `STAT_DEFAULTS`,
   `PROCESS_DEFAULT_STEPS`, header "Brand" + `NAV_DEFAULT_LINKS` (`D12`).
 
 ### Editing
 
-1. **Label.** Banner title, callout body, header brand: the shared label editor, placed in the
+1. **Label.** Banner title, card body (a Callout's included), header brand: the shared label editor, placed in the
    kind's label region (`LabelRegion`). Stat row and process have no label (`isSelfDrawingShape`).
 2. **In-place lines** (`InlineTextLine`). States: **inert** (not `editable`: `pointer-events-none`,
    `tabIndex -1`), **idle** (editable), **editing** (focused; the DOM is the truth). Focus →
@@ -84,7 +81,7 @@ shape kind.
    Step", "Add Link") calls `appendWebRowTo(id)`, offered only while `canAppendWebRow` [QA1] (`D5`).
 5. **Menu.** "Stats" / "Steps" / "Links" section in the Tools flyout: per-row inputs committing on
    blur, ↑ / ↓ reorder, × remove (disabled at the min), Add (disabled at the max) [QA4].
-6. **Masthead.** `setPageHeading(id, field, value)` on `banner`, `callout`, `card`; an empty line
+6. **Masthead.** `setPageHeading(id, field, value)` on `banner` and `card` (`MASTHEAD_SHAPES`); an empty line
    stores `undefined` (`D11`).
 7. **Hero caption.** Lines via `setHeroCaptionLine` (trimmed, collapsed, sliced to
    `PAGE_HEADING_MAX`); only on an image that has a caption. The "Caption Card" toggle adds
@@ -120,23 +117,16 @@ shape kind.
 - Hero card: `fillColor ?? '#0f172a'` at 0.82 opacity; text `textColor ?? ACCENT_BAR_TEXT`
   (`D7`). Images have no theme colour fields, so a theme switch leaves the card.
 
-### Legacy groups (read path)
+### No groups
 
-`migrateStoredTab(tab)` runs `migrateRetiredScheme`, then
-`upgradeLegacyLinks(migrateStoredElements(elements))`, where
-`migrateStoredElements(elements) = dropLegacyDocks(migrateLegacyGroups(elements))`. It runs in
-`rowToTab`, the thumbnail render, `offlineLoadTab` and `mergeImportedTab` [QA2]. The groups step:
-
-1. `hasLegacyGroups` false → return the same array (no copy).
-2. Union box per `groupId` over non-arrow elements.
-3. Each `pinned-group` end becomes `{ kind: 'free', x, y }` at `anchorFraction(anchor)` of its
-   group's box; a group with no members gives `(0, 0)` (`D9`).
-4. `groupId` is deleted from every element.
+No element carries a `groupId`, and nothing in the editor reads or writes one. An arrow end is `free`, `pinned` or
+`on-arrow`; `validate.ts` refuses any other kind, so there is no end that follows a group. livedocuments has no
+stored documents from before groups went, so no read path migrates them.
 
 Invariants:
 
 - **I1:** each component is exactly one element and carries no `groupId`.
-- **I2:** after `migrateStoredElements`, no element has `groupId` and no end is `pinned-group`.
+- **I2:** no arrow end names a group: validation accepts `free`, `pinned` and `on-arrow` ends only.
 - **I3:** row counts stay within `[min, max]` per kind; every row string is at most `WEB_TEXT_MAX`.
 - **I4:** canvas and export place every card, circle, link and line from the same layout call.
 
@@ -144,7 +134,7 @@ Invariants:
 
 ```ts
 // packages/document/src/web-components.ts
-export type WebComponentShape = 'banner' | 'callout' | 'stat-row' | 'process' | 'site-header';
+export type WebComponentShape = 'banner' | 'card' | 'stat-row' | 'process' | 'site-header';
 export type StatItem = { value: string; caption: string };
 export type HeroCaption = { title: string; subtitle: string };
 export type WebRows = { stats?: StatItem[]; processSteps?: string[]; navLinks?: string[] };
@@ -160,14 +150,6 @@ export function createComponent(
   cy: number,
   colors: ComponentColors,
 ): Element;
-
-// packages/document/src/legacy-groups.ts / stored-elements.ts / stored-tab.ts
-export function hasLegacyGroups(elements: readonly Element[]): boolean;
-export function migrateLegacyGroups(elements: Element[]): Element[];
-export function migrateStoredElements(elements: Element[]): Element[];
-export function migrateStoredTab<
-  T extends Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'elements'>,
->(tab: T): T;
 
 // apps/live/hooks/canvas/useWebComponentSetters.ts
 setWebRows: (elementId: string, rows: WebRows) => void;
@@ -186,22 +168,18 @@ Validation (`isValidElement`; a failure rejects the tab with `invalid tab`, 400)
 | `navLinks`                  | Array of at most `NAV_LINKS_MAX` strings of at most `WEB_TEXT_MAX`                          |
 | `pageTitle`, `pageSubtitle` | String of at most `PAGE_HEADING_MAX`                                                        |
 | `heroCaption` (image)       | Object with `title` and `subtitle`, each at most `PAGE_HEADING_MAX`                         |
-| Arrow end `pinned-group`    | Accepted on write (non-empty `groupId`, known `anchor`); migrated on read                   |
+| Arrow end                   | `free`, `pinned` or `on-arrow`; any other kind refused                                      |
 
 The minimums (`STATS_MIN`, `PROCESS_MIN_STEPS`) are enforced by the write paths, not by validation.
 
 ## Data and persistence
 
-| Field                               | Class     | Notes                                           |
-| ----------------------------------- | --------- | ----------------------------------------------- |
-| `stats`, `processSteps`, `navLinks` | persisted | Order is meaning                                |
-| `pageTitle`, `pageSubtitle`         | persisted | Absent when empty                               |
-| `heroCaption`                       | persisted | Presence is the toggle                          |
-| `groupId`, `pinned-group` ends      | legacy    | Never written by current code; migrated on read |
-| Inline edit text                    | ephemeral | In the DOM until blur                           |
-
-Migration runs on every read and is idempotent; a tab with nothing to migrate comes back as the
-same object. Nothing is written back until the next save.
+| Field                               | Class     | Notes                  |
+| ----------------------------------- | --------- | ---------------------- |
+| `stats`, `processSteps`, `navLinks` | persisted | Order is meaning       |
+| `pageTitle`, `pageSubtitle`         | persisted | Absent when empty      |
+| `heroCaption`                       | persisted | Presence is the toggle |
+| Inline edit text                    | ephemeral | In the DOM until blur  |
 
 ## Errors and edge cases
 
@@ -214,32 +192,28 @@ same object. Nothing is written back until the next save.
 | E5  | Export text wider than its rect           | Character-estimate clip with an ellipsis (`D10`)           |
 | E6  | Pasted rich text into a line              | `contentEditable="plaintext-only"`                         |
 | E7  | Escape in a line                          | Restores the stored value, no commit                       |
-| E8  | Legacy group with no members              | Free end at `(0, 0)` (`D9`)                                |
-| E9  | Old client saves a `pinned-group` end     | Accepted; migrated on the next read                        |
-| E10 | Icon dropped on banner, stat row, process | Stands alone (`acceptsInlineIcon` false)                   |
-| E11 | Icon on callout or header                 | Badge glyph / logo; drawn in export too [GA2]              |
-| E12 | Peer selects an accent bar                | Only the ring shows the peer's colour [QA5]                |
+| E8  | Icon dropped on banner, stat row, process | Stands alone (`acceptsInlineIcon` false)                   |
+| E9  | Icon on a card (a Callout) or header      | Badge glyph / logo; drawn in export too [GA2]              |
+| E10 | Peer selects an accent bar                | Only the ring shows the peer's colour [QA5]                |
 
 ## Security and trust
 
 All fields arrive through `isValidTab` at the api; strings are bounded, rendered as React text on
-the canvas and escaped with `xmlEscape` in export. `migrateStoredTab` runs on the api read path
-and in the thumbnail render, so MCP, share links and thumbnails never see legacy shapes.
+the canvas and escaped with `xmlEscape` in export.
 
 ## Performance and limits
 
-Layouts are `O(rows)` with at most 8 rows; `migrateLegacyGroups` is one `O(n)` scan, and returns
-the input unchanged in the common case.
+Layouts are `O(rows)` with at most 8 rows.
 
 ## Presentation and UX
 
 - Palette: the Components tab (Banner, Callout, Stat row, Process, Hero, Header), drag-to-draw or
   tap-to-drop at `COMPONENT_SIZE`.
-- Radius: banner, callout, header and stat cards expose corner radius (`RADIUS_SHAPES`); banner,
+- Radius: banner, card (a Callout included), header and stat cards expose corner radius (`RADIUS_SHAPES`); banner,
   header, stat row and process expose no Border controls (`SELF_PAINTING_SHAPES`) [QA4].
-- Header logo: the inline icon when set, else the brand's first letter; callout badge: the inline
-  icon, else "i" [QA4].
-- Disc glyphs (the callout badge, the header monogram, the process step numbers) sit on their cap
+- Header logo: the inline icon when set, else the brand's first letter; a card's badge (the Callout's):
+  the inline icon, else "i" [QA4].
+- Disc glyphs (a card's badge, the header monogram, the process step numbers) sit on their cap
   band: `GlyphDisc` on the canvas, `capBandBaselineY` in the export.
 - Quick Style Panel: the same predicates as the menu (`supportsBorderControls`,
   `acceptsInlineIcon`), and text alignment on every web component.
@@ -249,7 +223,7 @@ the input unchanged in the common case.
 ## Accessibility
 
 - Every in-place line is `role="textbox"` with an `aria-label` ("Stat 1 value", "Step 2",
-  "Link 3", "Banner subtitle", "Callout heading", "Hero title", "Hero supporting line").
+  "Link 3", "Banner subtitle", "Card title", "Hero title", "Hero supporting line").
 - Menu row controls: "Move stat up", "Move stat down", "Remove stat" (and per noun).
 - Inert lines are out of the tab order (`tabIndex -1`).
 - White on the accent bar depends on the theme accent; built-in accents are not contrast-checked
@@ -261,8 +235,7 @@ Faces are canvas-space; in-place edits touch the DOM only until blur, then one c
 
 ## Observability
 
-None for groups: the migration's no-op and rewrite paths emit nothing, while the scheme step of
-the same pipeline logs `[tab-migrate] retired-scheme` [GA1].
+None: web components log nothing of their own.
 
 ## Testing
 
@@ -279,13 +252,6 @@ the same pipeline logs `[tab-migrate] retired-scheme` [GA1].
 | Faces commit, inert until selected           | web component faces (six cases)                                                       | `apps/live/components/canvas/web/WebComponentFace.test.tsx`      |
 | Menu add, remove, reorder, bounds            | WebRowsMenuSection (five cases)                                                       | `apps/live/components/palette/context-menu-web-editors.test.tsx` |
 | Setters, caption toggle                      | useWebComponentSetters (five cases)                                                   | `apps/live/hooks/canvas/useWebComponentSetters.test.ts`          |
-| Migration freezes and strips (I2)            | migrateLegacyGroups (five cases)                                                      | `packages/document/src/legacy-groups.test.ts`                    |
-| Migration pipeline                           | migrateStoredElements (two cases)                                                     | `packages/document/src/stored-elements.test.ts`                  |
-| Tab migration includes the element step      | migrates a retired scheme and retired element fields in one pass                      | `packages/document/src/stored-tab.test.ts`                       |
-| api read migrates                            | freezes a legacy group out of the stored elements                                     | `apps/api/src/tab-row.test.ts`                                   |
-| Offline load runs the tab migration          | migrates a tab saved against a retired scheme on load                                 | `apps/live/lib/offline/offline-store.test.ts`                    |
-| JSON import runs the tab migration           | migrates an imported tab saved against a retired scheme                               | `apps/live/lib/import-merge.test.ts`                             |
-| Thumbnail runs the tab migration             | renders the migrated tab, not the colours Charcoal baked                              | `apps/api/src/thumbnail.test.ts`                                 |
 | ⌘G left to the browser                       | leaves Cmd+G to the browser now that there are no groups                              | `apps/live/hooks/canvas/useEditorKeyboardShortcuts.test.ts`      |
 | Single selection bounds itself               | a single selection is bounded by the element itself                                   | `apps/live/lib/canvas-selection.test.ts`                         |
 | Drag-to-draw sizes per axis                  | sizes to the dragged box, per axis                                                    | `apps/live/lib/draw-commit.test.ts`                              |
@@ -296,21 +262,22 @@ the same pipeline logs `[tab-migrate] retired-scheme` [GA1].
 
 ## Constants and configuration
 
-| Name                                      | Value                                                            | Provenance / safe range                             |
-| ----------------------------------------- | ---------------------------------------------------------------- | --------------------------------------------------- |
-| `WEB_TEXT_MAX`                            | 80                                                               | Row labels, not prose; 40 to 120                    |
-| `STATS_MIN` / `STATS_MAX`                 | 1 / 6                                                            | A row needs one card; six fit 482px                 |
-| `PROCESS_MIN_STEPS` / `PROCESS_MAX_STEPS` | 2 / 8                                                            | A process has two steps; eight stay legible         |
-| `NAV_LINKS_MAX`                           | 6                                                                | A header's nav; 4 to 8                              |
-| `STAT_GAP`                                | 16                                                               | Card gap, capped by width [QA3]                     |
-| `HEADER_BRAND_MIN`                        | 90                                                               | Brand room before links drop; 60 to 140             |
-| `ACCENT_BAR_TEXT`                         | `'#ffffff'`                                                      | The text an accent bar carries                      |
-| `PAGE_HEADING_MAX`                        | 200                                                              | Masthead and caption lines                          |
-| `HERO_DEFAULT_CAPTION`                    | "Hero title" / "A short supporting line of text over the image." | Starting copy                                       |
-| Hero size                                 | 520 × 300                                                        | `HERO_WIDTH`, `HERO_HEIGHT`                         |
-| Hero card fallback                        | `'#0f172a'` at 0.82                                              | Tailwind slate-900                                  |
-| Default sizes                             | 440×104, 380×116, 482×96, 420×110, 640×84                        | `SHAPE_DEFAULT_SIZE`, the grouped composites' sizes |
+| Name                                      | Value                                                            | Provenance / safe range                            |
+| ----------------------------------------- | ---------------------------------------------------------------- | -------------------------------------------------- |
+| `WEB_TEXT_MAX`                            | 80                                                               | Row labels, not prose; 40 to 120                   |
+| `STATS_MIN` / `STATS_MAX`                 | 1 / 6                                                            | A row needs one card; six fit 482px                |
+| `PROCESS_MIN_STEPS` / `PROCESS_MAX_STEPS` | 2 / 8                                                            | A process has two steps; eight stay legible        |
+| `NAV_LINKS_MAX`                           | 6                                                                | A header's nav; 4 to 8                             |
+| `STAT_GAP`                                | 16                                                               | Card gap, capped by width [QA3]                    |
+| `HEADER_BRAND_MIN`                        | 90                                                               | Brand room before links drop; 60 to 140            |
+| `ACCENT_BAR_TEXT`                         | `'#ffffff'`                                                      | The text an accent bar carries                     |
+| `PAGE_HEADING_MAX`                        | 200                                                              | Masthead and caption lines                         |
+| `HERO_DEFAULT_CAPTION`                    | "Hero title" / "A short supporting line of text over the image." | Starting copy                                      |
+| Hero size                                 | 520 × 300                                                        | `HERO_WIDTH`, `HERO_HEIGHT`                        |
+| Hero card fallback                        | `'#0f172a'` at 0.82                                              | Tailwind slate-900                                 |
+| Default sizes                             | 440×104, 482×96, 420×110, 640×84; a Callout 380×116              | `SHAPE_DEFAULT_SIZE`; the Callout's in its variant |
 
-Telemetry: `Element·Added·<Banner|Callout|StatRow|ProcessSteps|Header|Hero>` on create and copy;
+Telemetry: `Element·Added·<Banner|Callout|StatRow|ProcessSteps|Header|Hero>` on create, and on copy as the
+element's kind (a copied Callout counts as a `Card`);
 `Element·Changed·<StatRow|ProcessSteps|Header>` from the menu and ring, `Element·Changed·Hero` from
 the caption toggle. Inline edits emit nothing [GA13].

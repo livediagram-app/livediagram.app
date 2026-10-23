@@ -1,7 +1,7 @@
 # livedocuments
 
-The command line for [livedocuments](https://livedocuments.app): read, build, edit and discuss diagrams from a terminal,
-built first for coding agents and second for scripts.
+The command line for [livedocuments](https://livedocuments.app): read, build, edit and discuss documents (articles, slide
+decks and infographics) from a terminal, built first for coding agents and second for scripts.
 
 ```bash
 npx @livedocuments/cli --help
@@ -33,11 +33,11 @@ The CLI never prompts. A self-hosted livedocuments is reached with `--host https
 ## Start
 
 ```bash
-livedocuments document ls auth            # find a document
-livedocuments tab view "Auth flow"        # its first tab, as an outline
-livedocuments tab lint "Auth flow"        # what is wrong with how it is drawn
-livedocuments edit "Auth flow" -f ops.txt # change it with edit operations
-livedocuments guide edit                  # how edit operations read
+livedocuments document ls launch            # find a document
+livedocuments tab view "Launch deck"        # its first tab, as an outline
+livedocuments tab lint "Launch deck"        # what is wrong with how it is drawn
+livedocuments edit "Launch deck" -f ops.txt # change it with edit operations
+livedocuments guide edit                    # how edit operations read
 ```
 
 Every write is one changeset, checked against what you last read, and prints how to revert it. `livedocuments skill

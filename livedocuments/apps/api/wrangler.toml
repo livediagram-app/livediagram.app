@@ -116,13 +116,7 @@ class_name = "DocumentRoom"
 
 [[migrations]]
 tag = "v1"
-new_classes = ["DiagramRoom"]
-
-# The class was DiagramRoom until the container became a document
-# (docs/specs/006-document/document.md). A rename keeps every room's storage.
-[[migrations]]
-tag = "v2"
-renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
+new_classes = ["DocumentRoom"]
 
 # Scheduled jobs the worker handles via the `scheduled` export. One
 # entry per cron; each fires the same handler with `event.cron` set
@@ -401,11 +395,7 @@ class_name = "DocumentRoom"
 
 [[env.staging.migrations]]
 tag = "v1"
-new_classes = ["DiagramRoom"]
-
-[[env.staging.migrations]]
-tag = "v2"
-renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
+new_classes = ["DocumentRoom"]
 
 # The daily 03:00 UTC sweeps (retention + the docs/specs/014-identity/transactional-email.md email crons) run on
 # staging too, against staging's own data. Restated rather than inherited so

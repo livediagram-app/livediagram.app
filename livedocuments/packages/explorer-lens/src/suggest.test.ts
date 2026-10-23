@@ -11,7 +11,6 @@ const subject = (overrides: Partial<LensSubject> = {}): LensSubject => ({
   space: 'mine',
   people: 'me',
   madeByAi: false,
-  opensIn: 'pages',
   ...overrides,
 });
 
@@ -37,17 +36,17 @@ describe('suggestTokens', () => {
   });
 
   it('offers the dimensions a word starts', () => {
-    expect(suggestTokens('plan op', 7, context)).toEqual([
+    expect(suggestTokens('plan ma', 7, context)).toEqual([
       {
-        id: 'dimension:opens-in',
+        id: 'dimension:made-by',
         kind: 'dimension',
-        dimension: 'opens-in',
+        dimension: 'made-by',
         value: null,
-        insert: 'opens-in:',
+        insert: 'made-by:',
         range: { start: 5, end: 7 },
-        label: 'Opens in',
-        dimensionLabel: 'Opens in',
-        name: 'Opens in',
+        label: 'Made by AI',
+        dimensionLabel: 'Made by AI',
+        name: 'Made by AI',
         matchesNothing: false,
       },
     ]);
@@ -146,8 +145,8 @@ describe('suggestTokens', () => {
   });
 
   it('clamps a caret outside the input', () => {
-    expect(ids('op', 99)).toEqual(['dimension:opens-in']);
-    expect(ids('op', -3)).toEqual([]);
+    expect(ids('ma', 99)).toEqual(['dimension:made-by']);
+    expect(ids('ma', -3)).toEqual([]);
   });
 
   it('caps the suggestions', () => {
@@ -199,8 +198,8 @@ describe('acceptSuggestion', () => {
     acceptSuggestion(input, suggestTokens(input, caret, context)[index]!);
 
   it('writes a dimension key and leaves the caret after the colon', () => {
-    expect(accept('plan op', 7)).toEqual({ input: 'plan opens-in:', caret: 14 });
-    expect(accept('op plan', 2)).toEqual({ input: 'opens-in: plan', caret: 9 });
+    expect(accept('plan ma', 7)).toEqual({ input: 'plan made-by:', caret: 13 });
+    expect(accept('ma plan', 2)).toEqual({ input: 'made-by: plan', caret: 8 });
   });
 
   it('writes a value with one space and the caret after it', () => {

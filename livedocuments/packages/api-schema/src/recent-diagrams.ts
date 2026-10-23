@@ -3,7 +3,6 @@
 // the static marketing site loading Clerk or calling the api. One contract, written by apps/live and read
 // by apps/marketing on the same origin.
 
-import { parseEditorMode, type EditorMode } from '@livedocuments/document';
 import type { DocumentSummary } from './index';
 
 // The localStorage key the note lives under. Versioned: a change to the shape takes a new key.
@@ -33,8 +32,6 @@ export type RecentDiagram = {
   id: string;
   name: string;
   savedAt: number;
-  // The mode it opens in (its glyph on a tile without a thumbnail); null when unknown.
-  mode: EditorMode | null;
   // The team whose library holds it, for the tile's team mark; null for your own.
   teamName: string | null;
 };
@@ -44,7 +41,7 @@ type RecentDiagramsNote = { v: 1; diagrams: RecentDiagram[] };
 // The documents worth coming back to, newest save first: nothing empty, nothing hidden from Recent
 // (docs/specs/013-workspace/hide-from-recent.md), at most RECENT_DIAGRAMS_LIMIT.
 export function pickRecentDiagrams(
-  documents: readonly (Pick<DocumentSummary, 'id' | 'name' | 'savedAt' | 'empty' | 'opensIn'> & {
+  documents: readonly (Pick<DocumentSummary, 'id' | 'name' | 'savedAt' | 'empty'> & {
     teamName?: string;
   })[],
   hidden: readonly string[] = [],
@@ -58,7 +55,6 @@ export function pickRecentDiagrams(
       id: d.id,
       name: d.name,
       savedAt: d.savedAt ?? 0,
-      mode: d.opensIn ?? null,
       teamName: d.teamName ?? null,
     }));
 }
@@ -89,8 +85,6 @@ export function parseRecentDiagrams(raw: string | null): RecentDiagram[] {
         id: d.id,
         name: d.name,
         savedAt: d.savedAt,
-        // A note written before a mode's rename keeps its old id (`facilitate`): read as today's.
-        mode: parseEditorMode(d.mode) ?? null,
         // A note written before teams joined it has none: your own.
         teamName: typeof d.teamName === 'string' && d.teamName.length > 0 ? d.teamName : null,
       }));

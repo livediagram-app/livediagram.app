@@ -3,7 +3,7 @@
 // `replace` body. Here rather than in @livedocuments/document because the catalogue lives here and
 // this package already imports the document one (the reverse would be a cycle).
 
-import { buildTab, getBuiltInTheme, stampTabKind, type Tab } from '@livedocuments/document';
+import { buildTab, getBuiltInTheme, type Tab } from '@livedocuments/document';
 import { withBlankPageThemed } from './blank-page-templates';
 import { buildTemplate, templateTabs } from './build-template';
 import { TEMPLATES, templateKindOf, type TemplateKind } from './templates';
@@ -49,10 +49,8 @@ export function closestTemplatesHint(given: string): string {
 
 // A template tab: the curated scaffold at its hand-tuned coordinates (layout deliberately NOT run,
 // that is the point of a template), themed by buildTab like any other elements, plus the template's
-// canvas overrides and the templateChosen flag the editor's Quick Start reads. stampTabKind fills
-// the tab's kind
-// (docs/specs/003-system-architecture/domain-language.md), so a tab minted here is indistinguishable from
-// one the editor commits.
+// canvas overrides and the templateChosen flag the editor's Quick Start reads, so a tab minted here is
+// indistinguishable from one the editor commits.
 export function buildTemplateTab(
   tabId: string,
   name: string,
@@ -60,11 +58,11 @@ export function buildTemplateTab(
   themeId?: string,
 ): Tab {
   return withBlankPageThemed(
-    stampTabKind({
+    {
       ...buildTab(tabId, name, buildTemplate(kind, 0, 0), 'preserve', themeId),
       templateChosen: true,
       ...templateCanvasOverrides(kind),
-    }),
+    },
     kind,
     getBuiltInTheme(themeId),
   );
@@ -92,7 +90,7 @@ export function buildTemplateTabs(
   const ids = defs.map((_, i) => (i === 0 ? first.id : newId()));
   return defs.map((def, i) =>
     withBlankPageThemed(
-      stampTabKind({
+      {
         ...buildTab(
           ids[i]!,
           i === 0 ? first.name : (def.name ?? first.name),
@@ -102,7 +100,7 @@ export function buildTemplateTabs(
         ),
         templateChosen: true,
         ...templateCanvasOverrides(kind),
-      }),
+      },
       kind,
       getBuiltInTheme(themeId),
     ),

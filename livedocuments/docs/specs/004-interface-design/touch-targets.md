@@ -19,7 +19,7 @@ floor at 24px; the editor aims past it, because a page editor is used with a thu
   (`touch-target-guard` in `packages/tailwind-config`, run by each site's `touch-target-guard.test.ts`)
   fails a class list that names either utility without a position.
 - **`touch-target-y` for packed rows.** Where neighbours sit closer than 44px apart (the palette
-  strip's tiles, 2px apart) the pad reaches vertically only, so two pads never compete for one tap.
+  strip's category buttons, side by side) the pad reaches vertically only, so two pads never compete for one tap.
   The toolbar cards apply it to their 36px items (`PHONE_TOOLBAR_ITEMS`).
 - **Shared controls carry it**, so every caller does: the chrome buttons (`CHROME_BTN`), the
   `⋯` triggers (`EllipsisTriggerButton`, the tab menu), the help `?` (`HelpArticleLink`), panel
@@ -48,8 +48,7 @@ floor at 24px; the editor aims past it, because a page editor is used with a thu
   theme card's actions, a Dashboard's grip, dividers and row handle) is shown there all the time
   (`[@media(hover:none)]`), quietly where it would crowd. A canvas comment bubble's quick delete stays hover-only:
   shown on every bubble it would invite a mistaken tap, and the open thread offers Delete.
-- **Keyboard hints are not drawn on a touch screen.** A tile's always-on shortcut letter (the Palette
-  strip, a picker's corner key) teaches a key there is no keyboard to
+- **Keyboard hints are not drawn on a touch screen.** A picker's corner key (the selection mode's) teaches a key there is no keyboard to
   press, so it carries `pointer-coarse:hidden`; `aria-keyshortcuts` stays for a paired keyboard.
 - **Text fields are 16px on a touch screen.** iOS zooms the page into any focused field under 16px and
   leaves it zoomed, so a search box drawn at 14 or 15px reads at 16px under `pointer: coarse` (the

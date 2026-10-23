@@ -1,5 +1,9 @@
 # Canvas performance on large boards
 
+> **livediagram-era research.** Measured in livediagram on a whiteboard and diagram board, before livedocuments was
+> forked from it; livedocuments has neither mode, and every tab opens in Pages. The rules it led to live on in
+> [Canvas performance](../specs/008-canvas/canvas-performance.md).
+
 Measured 2026-10-02 on a real 658-element whiteboard on staging (277 shapes, 215 arrows, 76
 freehand, 74 text, 14 paths, 2 stickies; 164 KB), at the 19% zoom that fits it on screen. The
 resulting rules live in [Canvas performance](../specs/008-canvas/canvas-performance.md).

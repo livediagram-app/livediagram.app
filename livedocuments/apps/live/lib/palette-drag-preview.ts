@@ -17,9 +17,6 @@ type PaletteDragPreview = {
   // The shape's default footprint (canvas units); the ghost scales it by zoom.
   width: number;
   height: number;
-  // The tile's creation choice (a preset, a view, a Dashboard Layout tile's `layout:`), for a drop target that reads
-  // it while dragging (a Dashboard's drop zones).
-  choice?: string;
 };
 
 let current: PaletteDragPreview | null = null;

@@ -20,8 +20,12 @@ const infoPage = (id: string): Page => ({
   orientation: 'portrait',
   kind: 'infographic',
 });
-const deckTab = (id: string, pages: Page[] | undefined, mode = 'pages'): Tab =>
-  ({ id, name: id, elements: [], opensIn: mode, ...(pages ? { pages } : {}) }) as Tab;
+const deckTab = (id: string, pages: Page[] | undefined): Tab => ({
+  id,
+  name: id,
+  elements: [],
+  ...(pages ? { pages } : {}),
+});
 const pageSlide = (tabId: string, pageId: string, extra: Partial<Slide> = {}): Slide => ({
   id: `s-${tabId}-${pageId}`,
   tabId,

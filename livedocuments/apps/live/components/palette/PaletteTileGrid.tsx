@@ -131,34 +131,27 @@ export function visibleTiles(defs: PaletteTileDef[], hasImage: boolean): Palette
   return defs.filter((d) => !d.needsImage || hasImage);
 }
 
-// One catalogue tile, rendered exactly as its home tab renders it. `compact` is the
-// Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md): icon only, name in the hover card, and the
-// shortcut letter always showing in the corner rather than only while the
-// modifier is held, the way a tool bar reads.
+// One catalogue tile, rendered exactly as its home tab renders it.
 export function PaletteTile({
   def,
   actions,
   pendingDraw,
-  compact,
 }: {
   def: PaletteTileDef;
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null | undefined;
-  compact?: boolean;
 }) {
-  return <TileButton def={def} actions={actions} pendingDraw={pendingDraw} compact={compact} />;
+  return <TileButton def={def} actions={actions} pendingDraw={pendingDraw} />;
 }
 
 function TileButton({
   def,
   actions,
   pendingDraw,
-  compact,
 }: {
   def: PaletteTileDef;
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null | undefined;
-  compact?: boolean;
 }) {
   const a = def.action;
   const onClick = tileHandler(def, actions, pendingDraw);
@@ -182,9 +175,6 @@ function TileButton({
       noTint={def.noTint}
       active={tileActive(def, pendingDraw)}
       shortcut={def.shortcut}
-      hideCaption={compact}
-      stripTile={compact}
-      shortcutAlwaysVisible={compact}
       finishAction={a}
     >
       {def.icon}

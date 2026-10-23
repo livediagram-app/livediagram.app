@@ -93,8 +93,6 @@ type IconButtonProps = {
   // its glyphs are a dense gallery where per-tile names would be noise (and
   // it stays a 6-up grid), unlike the shape / tool / device grids.
   hideCaption?: boolean;
-  // A Toolbar strip tile (PaletteTile `compact`): a phone's strip draws it a little narrower, so more fit in view.
-  stripTile?: boolean;
   // Override the caption text (default is derived from `label`). Used where
   // the derived name is too long for the tile, e.g. "Bubble".
   caption?: string;
@@ -115,11 +113,6 @@ type IconButtonProps = {
   // regardless of theme: the sticky note (always amber), the image
   // placeholder + link card (neutral chrome), and Technology brand icons.
   noTint?: boolean;
-  // Show the shortcut letter permanently, small in the bottom-right corner,
-  // instead of the badge that appears only while Cmd/Ctrl is held. The
-  // Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md) sets it: a tool bar is where people
-  // learn the letters, so it shows them the whole time.
-  shortcutAlwaysVisible?: boolean;
   // The tile's action: its glyph previews the tab's finish (palette-tile-finish.ts). Omitted for a button that
   // places nothing (a tool).
   finishAction?: PaletteTileDef['action'];
@@ -140,12 +133,10 @@ export function IconButton({
   onDragEnd,
   hint,
   hideCaption,
-  stripTile = false,
   caption: captionOverride,
   dragKind,
   filled,
   noTint,
-  shortcutAlwaysVisible,
   finishAction,
 }: IconButtonProps) {
   // A reason greys the tile out as `disabled` does, but keeps it focusable so the reason can be read.
@@ -172,17 +163,11 @@ export function IconButton({
         // Publish the footprint so the canvas ghost (docs/specs/010-palette/palette-drag-ghost.md) can preview
         // where this shape will land.
         const { width, height } = SHAPE_DEFAULT_SIZE[dragKind];
-        setPaletteDragPreview({
-          kind: dragKind,
-          width,
-          height,
-          ...(dragChoice ? { choice: dragChoice } : {}),
-        });
+        setPaletteDragPreview({ kind: dragKind, width, height });
       }
     : onDragStart;
   const modHeld = useModKeyHeld();
-  const showBadge = !disabled && !!shortcut && modHeld && !shortcutAlwaysVisible;
-  const showCornerLetter = !disabled && !!shortcut && shortcutAlwaysVisible;
+  const showBadge = !disabled && !!shortcut && modHeld;
   const tone = refused
     ? 'cursor-not-allowed text-slate-600 opacity-50 dark:text-slate-100'
     : active
@@ -225,7 +210,7 @@ export function IconButton({
       }}
       className={
         hideCaption
-          ? `relative flex h-9 w-9 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-50 ${stripTile ? 'phone:w-8' : ''} ${tone}`
+          ? `relative flex h-9 w-9 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-50 ${tone}`
           : minimalChrome
             ? // Keeps its grid cell's width, so the icon stays centred where the
               // captioned tile had it.
@@ -256,14 +241,6 @@ export function IconButton({
             {shortcut}
           </span>
         </kbd>
-      ) : null}
-      {showCornerLetter ? (
-        <span
-          aria-hidden
-          className="pointer-events-none absolute bottom-0 right-0.5 text-[8px] font-medium uppercase leading-none text-slate-500 dark:text-slate-400 pointer-coarse:hidden"
-        >
-          {shortcut}
-        </span>
       ) : null}
     </button>
   );

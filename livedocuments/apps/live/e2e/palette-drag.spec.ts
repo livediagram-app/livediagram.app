@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, test, expectNoPageErrors, openBlankSession, openStartBlank } from './fixtures';
+import { expect, test, expectNoPageErrors, openStartBlank } from './fixtures';
 
 // Palette drag-to-canvas (docs/specs/010-palette/palette-drag-ghost.md) from the Palette strip
 // (docs/specs/007-editor/toolbar-layout.md "The category bar"): a tile in a category's flyout drags onto the canvas
@@ -50,7 +50,7 @@ test.describe('Toolbar strip drag', () => {
       query: 'speech',
       tile: 'Speech balloon',
       placedAs: /^Sticker$/,
-      open: openBlankSession,
+      open: openStartBlank,
     },
   ]) {
     test(`a "${tile}" tile from the ${category} flyout drags onto the canvas`, async ({

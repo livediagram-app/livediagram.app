@@ -257,7 +257,7 @@ describe('resolvePlacement', () => {
 describe('resolvePlacement with default folders', () => {
   // No choice: neither a team nor the folderId key in the body.
   const root = { teamId: null, folderId: null, chosen: false };
-  const pages = { mode: 'pages', tabKind: 'diagram' } as const;
+  const pages = { mode: 'pages' } as const;
   const defaults = (entries: [PlacementDefaultKey, string][]) =>
     vi.fn(async (): Promise<ReadonlyMap<PlacementDefaultKey, string>> => new Map(entries));
 

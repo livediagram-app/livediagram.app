@@ -39,7 +39,7 @@ const SIZE_TILE: Record<PageSizeId, { label: string; hint: string }> = {
   'slide-classic': { label: 'Classic', hint: 'Classic slide (4:3), always landscape' },
   logo: { label: 'Logo', hint: 'Logo artboard (1024 x 1024)' },
   device: { label: 'Device', hint: 'A wireframe page is its device' },
-  fit: { label: 'Fit', hint: 'Sized around the board it was made for' },
+  fit: { label: 'Fit', hint: 'Sized around its content' },
 };
 
 // A size drawn to scale in a 28 px box, in the page's current orientation (Fit to Content in

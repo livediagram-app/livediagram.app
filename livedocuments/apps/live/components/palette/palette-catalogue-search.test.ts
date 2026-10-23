@@ -20,25 +20,21 @@ const el = (e: Record<string, unknown>) =>
 
 describe('searchCatalogueTiles', () => {
   it('finds icons and stickers, and leaves out Technology, which Pages does not offer', () => {
-    const pages = searchCatalogueTiles({ query: 'database', mode: 'pages' });
+    const pages = searchCatalogueTiles({ query: 'database' });
     expect(from(pages, 'icon:').length).toBeGreaterThan(0);
     expect(from(pages, 'tech:')).toEqual([]);
     const sticker = getStickerCatalog()[0]!;
-    expect(ids(searchCatalogueTiles({ query: sticker.label, mode: 'pages' }))).toContain(
-      `sticker:${sticker.id}`,
-    );
+    expect(ids(searchCatalogueTiles({ query: sticker.label }))).toContain(`sticker:${sticker.id}`);
   });
 
   it('caps each catalogue, best match first', () => {
-    const found = searchCatalogueTiles({ query: 'e', mode: 'pages' });
+    const found = searchCatalogueTiles({ query: 'e' });
     for (const prefix of ['icon:', 'sticker:']) {
       expect(from(found, prefix).length).toBeLessThanOrEqual(CATALOGUE_MATCH_LIMIT);
     }
     const first = getLineArtIconCatalog()[0]!;
     // An exact name ranks first.
-    expect(ids(searchCatalogueTiles({ query: first.label, mode: 'pages' }))[0]).toBe(
-      `icon:${first.id}`,
-    );
+    expect(ids(searchCatalogueTiles({ query: first.label }))[0]).toBe(`icon:${first.id}`);
   });
 
   it('lists the entries on the tab before anything is typed', () => {
@@ -46,7 +42,6 @@ describe('searchCatalogueTiles', () => {
     const sticker = getStickerCatalog()[0]!;
     const onTab = searchCatalogueTiles({
       query: '',
-      mode: 'pages',
       tabElements: [
         el({ shape: 'icon', iconId: icon.id }),
         el({ shape: 'icon', iconId: 'aws-s3' }),
@@ -58,17 +53,17 @@ describe('searchCatalogueTiles', () => {
   });
 
   it('lists nothing before typing on a tab with no catalogue entries', () => {
-    expect(searchCatalogueTiles({ query: ' ', mode: 'pages' })).toEqual([]);
+    expect(searchCatalogueTiles({ query: ' ' })).toEqual([]);
   });
 
   it('searches every catalogue well inside a keystroke budget', () => {
     const start = performance.now();
-    for (let i = 0; i < 20; i++) searchCatalogueTiles({ query: 'e', mode: 'pages' });
+    for (let i = 0; i < 20; i++) searchCatalogueTiles({ query: 'e' });
     // A query matching most of every catalogue; a keystroke runs one.
     expect((performance.now() - start) / 20).toBeLessThan(16);
   });
 
   it('lists nothing until the catalogues have loaded', () => {
-    expect(searchCatalogueTiles({ query: 'database', mode: 'pages', loaded: false })).toEqual([]);
+    expect(searchCatalogueTiles({ query: 'database', loaded: false })).toEqual([]);
   });
 });

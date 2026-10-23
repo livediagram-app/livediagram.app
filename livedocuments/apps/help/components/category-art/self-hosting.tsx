@@ -6,7 +6,7 @@ const LINES: { text: string; tone: string }[] = [
   { text: '✓ api      ready', tone: 'fill-emerald-300' },
   { text: '✓ live     ready', tone: 'fill-emerald-300' },
   { text: '✓ router   ready', tone: 'fill-emerald-300' },
-  { text: '→ diagrams.acme.dev', tone: 'fill-sky-300' },
+  { text: '→ docs.acme.dev', tone: 'fill-sky-300' },
 ];
 
 // Self-Hosting: your own copy, on your own infrastructure. A server rack, the terminal that deployed to it,

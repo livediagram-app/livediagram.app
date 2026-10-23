@@ -6,6 +6,7 @@
 import { type ReactNode } from 'react';
 
 import { Scene, Shape, Arrow, Panel, Label } from './primitives';
+import { BAR, BarGlyph } from './toolbar-layout';
 
 // A tiny stand-in flow drawn at any origin / scale, so the same diagram can sit
 // inside a roomy monitor or a cramped phone without redrawing it per frame.
@@ -102,12 +103,51 @@ function MiniCornerCluster({ x, y }: { x: number; y: number }) {
   );
 }
 
-/** The editor's top row in miniature, `w` wide from (x, y): the menu button card, then the
- *  palette strip (its two dropdowns, a run of tiles, More and Search). */
+// The category bar in miniature: each name a short bar as long as the name, in its bands (toolbar-layout's BAR).
+const MINI_CHAR = 2.3;
+const MINI_GAP = 5;
+const MINI_DIVIDER = 6;
+const MINI_BAR_W = BAR.reduce(
+  (w, c) => w + (c === '|' ? MINI_DIVIDER : c.length * MINI_CHAR + MINI_GAP),
+  0,
+);
+
+/** The editor's top row in miniature, in `w` from (x, y): the menu button card, then the palette strip centred in
+ *  the rest (the selection mode, the category bar with its categories by name, and Search). */
 function MiniTopRow({ x, y, w }: { x: number; y: number; w: number }) {
-  const sx = x + 26;
-  const sw = w - 26;
-  const tiles = Math.max(0, Math.floor((sw - 84) / 14));
+  const sw = Math.round(26 + MINI_BAR_W + 22);
+  const sx = Math.round(x + 26 + (w - 26 - sw) / 2);
+  let at = sx + 26;
+  const bar = BAR.map((name, i) => {
+    const left = at;
+    if (name === '|') {
+      at += MINI_DIVIDER;
+      return (
+        <line
+          key={i}
+          x1={left + 3}
+          y1={y + 4}
+          x2={left + 3}
+          y2={y + 14}
+          className="stroke-slate-200"
+          strokeWidth={1}
+        />
+      );
+    }
+    const len = name.length * MINI_CHAR;
+    at += len + MINI_GAP;
+    return (
+      <rect
+        key={name}
+        x={left}
+        y={y + 7.5}
+        width={len}
+        height={3}
+        rx={1.5}
+        className="fill-slate-300"
+      />
+    );
+  });
   return (
     <g>
       <rect
@@ -134,23 +174,26 @@ function MiniTopRow({ x, y, w }: { x: number; y: number; w: number }) {
         className="fill-white stroke-slate-200"
         strokeWidth={1.2}
       />
+      {/* The selection mode, then a divider before the bar. */}
       <rect x={sx + 4} y={y + 4} width={14} height={10} rx={2.5} className="fill-brand-100" />
-      <rect x={sx + 22} y={y + 4} width={26} height={10} rx={2.5} className="fill-brand-100" />
-      {Array.from({ length: tiles }, (_, i) => (
-        <rect
-          key={i}
-          x={sx + 56 + i * 14}
-          y={y + 5}
-          width={8}
-          height={8}
-          rx={1.5}
-          className={i === 0 ? 'fill-brand-500' : 'fill-none stroke-slate-400'}
-          strokeWidth={1}
-        />
-      ))}
-      {[0, 1, 2].map((i) => (
-        <circle key={i} cx={sx + sw - 24 + i * 3} cy={y + 9} r={0.9} className="fill-brand-500" />
-      ))}
+      <line
+        x1={sx + 22}
+        y1={y + 4}
+        x2={sx + 22}
+        y2={y + 14}
+        className="stroke-slate-200"
+        strokeWidth={1}
+      />
+      {bar}
+      {/* Search, last, behind its own divider. */}
+      <line
+        x1={sx + sw - 17}
+        y1={y + 4}
+        x2={sx + sw - 17}
+        y2={y + 14}
+        className="stroke-slate-200"
+        strokeWidth={1}
+      />
       <circle
         cx={sx + sw - 9}
         cy={y + 8.5}
@@ -292,8 +335,8 @@ export function MobileEditor() {
       <rect x={188} y={22} width={44} height={5} rx={2.5} className="fill-slate-200" />
       <rect x={158} y={34} width={104} height={172} rx={6} className="fill-slate-50" />
       {/* The menu button (Explorer) in its own card, then the palette strip
-          (docs/specs/007-editor/toolbar-layout.md): selection
-          mode, category, a couple of tiles, More, and Search at the end. */}
+          (docs/specs/007-editor/toolbar-layout.md "On a phone"): the selection
+          mode, the category bar's glyphs running on (it swipes sideways), and Search at the end. */}
       <rect
         x={162}
         y={40}
@@ -319,23 +362,15 @@ export function MobileEditor() {
         strokeWidth={1.2}
       />
       <rect x={182} y={44} width={9} height={10} rx={2.5} className="fill-brand-100" />
-      <rect x={193} y={44} width={9} height={10} rx={2.5} className="fill-brand-100" />
       <circle cx={186.5} cy={49} r={2} className="fill-brand-500" />
-      <path d="M195 47h5M195 49h5M195 51h5" className="stroke-brand-500" strokeWidth={1} />
-      <rect
-        x={206}
-        y={46}
-        width={6}
-        height={6}
-        rx={1}
-        className="fill-none stroke-slate-500"
-        strokeWidth={1}
-      />
-      <circle cx={219} cy={49} r={3.2} className="fill-none stroke-slate-500" strokeWidth={1} />
-      {/* More */}
-      <circle cx={229} cy={49} r={0.9} className="fill-brand-500" />
-      <circle cx={232} cy={49} r={0.9} className="fill-brand-500" />
-      <circle cx={235} cy={49} r={0.9} className="fill-brand-500" />
+      {/* The bar's first categories; the rest swipe in. */}
+      {(['Shapes', 'Write', 'Concepts', 'Components'] as const).map((name, i) => (
+        <g key={name} transform={`translate(${197 + i * 10 + (i > 1 ? 4 : 0)} 49) scale(0.42)`}>
+          <BarGlyph name={name} />
+        </g>
+      ))}
+      <line x1={214} y1={45} x2={214} y2={53} className="stroke-slate-200" strokeWidth={0.8} />
+      <line x1={240} y1={44} x2={240} y2={54} className="stroke-slate-200" strokeWidth={1} />
       {/* Search, last */}
       <circle cx={246} cy={48.5} r={3} className="fill-none stroke-slate-500" strokeWidth={1.1} />
       <path

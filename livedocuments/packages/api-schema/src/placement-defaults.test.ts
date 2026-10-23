@@ -1,12 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { EDITOR_MODES } from '@livedocuments/document';
 import {
+  CREATION_INTENT,
   PLACEMENT_DEFAULT_KEYS,
-  creationIntentOf,
   defaultKeysFor,
   isPlacementDefaultKey,
-  legacyPlacementDefaultKeys,
-  parsePlacementDefaultKey,
   placementDefaultTelemetryType,
   readCreationIntent,
 } from './placement-defaults';
@@ -46,17 +44,9 @@ describe('isPlacementDefaultKey', () => {
   });
 });
 
-describe('creationIntentOf', () => {
-  it('reads a tab opening in Pages', () => {
-    expect(creationIntentOf({ opensIn: 'pages' })).toEqual({ mode: 'pages', tabKind: 'diagram' });
-  });
-
-  it('reads a tab that names no mode as Pages', () => {
-    expect(creationIntentOf({})).toEqual({ mode: 'pages', tabKind: 'diagram' });
-  });
-
-  it('reads a document with no tab as Pages', () => {
-    expect(creationIntentOf(undefined)).toEqual({ mode: 'pages', tabKind: 'diagram' });
+describe('CREATION_INTENT', () => {
+  it('opens in Pages', () => {
+    expect(CREATION_INTENT).toEqual({ mode: 'pages' });
   });
 });
 
@@ -65,32 +55,14 @@ describe('readCreationIntent', () => {
     expect(readCreationIntent(value)).toEqual({ ok: true, intent: null });
   });
 
-  it('reads a mode alone as the general tab', () => {
-    expect(readCreationIntent({ mode: 'pages' })).toEqual({
-      ok: true,
-      intent: { mode: 'pages', tabKind: 'diagram' },
-    });
+  it('reads a mode', () => {
+    expect(readCreationIntent({ mode: 'pages' })).toEqual({ ok: true, intent: { mode: 'pages' } });
   });
 
-  it('reads a null tab kind as absent', () => {
-    expect(readCreationIntent({ mode: 'pages', tabKind: null })).toEqual({
+  it('ignores fields beyond the mode', () => {
+    expect(readCreationIntent({ mode: 'pages', tabKind: 'diagram', extra: 1 })).toEqual({
       ok: true,
-      intent: { mode: 'pages', tabKind: 'diagram' },
-    });
-  });
-
-  it("reads Pages mode's old names, and livediagram's other modes, as Pages", () => {
-    for (const mode of ['illustrate', 'infographic', 'diagram', 'plan'])
-      expect(readCreationIntent({ mode })).toEqual({
-        ok: true,
-        intent: { mode: 'pages', tabKind: 'diagram' },
-      });
-  });
-
-  it('ignores fields beyond its two', () => {
-    expect(readCreationIntent({ mode: 'pages', templateFamily: 'kanban', extra: 1 })).toEqual({
-      ok: true,
-      intent: { mode: 'pages', tabKind: 'diagram' },
+      intent: { mode: 'pages' },
     });
   });
 
@@ -99,32 +71,15 @@ describe('readCreationIntent', () => {
     ['an array', ['pages']],
     ['a missing mode', { tabKind: 'diagram' }],
     ['an unknown mode', { mode: 'pixel' }],
-    ['an unknown tab kind', { mode: 'pages', tabKind: 'whiteboard' }],
+    ['a livediagram mode', { mode: 'diagram' }],
   ])('refuses %s', (_label, value) => {
     expect(readCreationIntent(value)).toEqual({ ok: false });
   });
 });
 
-describe('parsePlacementDefaultKey', () => {
-  it("reads a key stored under either of Pages mode's old names as today's", () => {
-    expect(parsePlacementDefaultKey('mode:illustrate')).toBe('mode:pages');
-    expect(parsePlacementDefaultKey('mode:infographic')).toBe('mode:pages');
-    expect(parsePlacementDefaultKey('mode:pages')).toBe('mode:pages');
-    expect(parsePlacementDefaultKey('mode:pixel')).toBeNull();
-    expect(parsePlacementDefaultKey('template:kanban')).toBeNull();
-  });
-
-  it('clears every old name with the key', () => {
-    expect(legacyPlacementDefaultKeys('mode:pages').sort()).toEqual([
-      'mode:illustrate',
-      'mode:infographic',
-    ]);
-  });
-});
-
 describe('defaultKeysFor', () => {
   it('tries the mode key', () => {
-    expect(defaultKeysFor({ mode: 'pages', tabKind: 'diagram' })).toEqual(['mode:pages']);
+    expect(defaultKeysFor({ mode: 'pages' })).toEqual(['mode:pages']);
   });
 });
 

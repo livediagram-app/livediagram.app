@@ -64,12 +64,10 @@ const ChevronIcon = (
 export function BreadcrumbTrail({
   items,
   rootLabel,
-  rootHref = '/',
   linkComponent: Link = AnchorLink,
 }: {
   items: BreadcrumbItem[];
   rootLabel: string;
-  rootHref?: string;
   linkComponent?: LinkLike;
 }) {
   // On a touch screen each link's tap area is 44px tall: padding the line keeps, a negative margin
@@ -77,7 +75,7 @@ export function BreadcrumbTrail({
   return (
     <>
       <Link
-        href={rootHref}
+        href="/"
         className="flex shrink-0 items-center gap-1.5 transition-colors pointer-coarse:-my-3 pointer-coarse:py-3 hover:text-slate-900 dark:hover:text-slate-100"
       >
         {HomeIcon}

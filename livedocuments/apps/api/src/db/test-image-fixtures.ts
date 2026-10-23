@@ -17,22 +17,10 @@ export const YOUNG = CUTOFF + DAY;
 
 type Bucket = { delete: ReturnType<typeof vi.fn> };
 
-// `indexPending` leaves the reference index's backfill to run, as a restart of it does.
-export function setup(opts: { indexPending?: boolean } = {}): SqliteD1 & { bucket: Bucket } {
+export function setup(): SqliteD1 & { bucket: Bucket } {
   const bucket: Bucket = { delete: vi.fn(async () => {}) };
   const db = sqliteD1({ IMAGES: bucket } as unknown as Partial<Env>);
-  if (opts.indexPending) {
-    db.sql.exec('UPDATE image_refs_backfill SET cursor = 0, completed_at = NULL');
-  }
   return { ...db, bucket };
-}
-
-export function linkDocumentTab(sql: DatabaseSync, documentId: string, tabId: string) {
-  sql
-    .prepare(
-      'INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES (?, ?, 0, 0)',
-    )
-    .run(documentId, tabId);
 }
 
 export function liveDoc(sql: DatabaseSync, id: string, ownerId = 'owner', name = id) {

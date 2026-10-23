@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isPageMotion, parseColourBackground, parseColourFill, parsePagePattern } from './index';
+import { isPageMotion, parseColourFill, parsePagePattern } from './index';
 
 // A page background's colours (docs/specs/007-editor/pages-mode.md "Backgrounds").
 
@@ -45,25 +45,7 @@ describe('parseColourFill', () => {
   });
 });
 
-describe('parseColourBackground', () => {
-  it('keeps the valid fill and pattern, and nothing when neither is', () => {
-    expect(
-      parseColourBackground({ fill: { kind: 'solid', color: '#fff' }, pattern: 'dots' }),
-    ).toEqual({
-      fill: { kind: 'solid', color: '#fff' },
-      pattern: 'dots',
-    });
-    expect(parseColourBackground({ pattern: 'grid', fill: { kind: 'image' } })).toEqual({
-      pattern: 'grid',
-    });
-    expect(parseColourBackground({ fill: { kind: 'solid', color: '#fff' } })).toEqual({
-      fill: { kind: 'solid', color: '#fff' },
-    });
-    expect(parseColourBackground({ pattern: 'stripes' })).toBeUndefined();
-    expect(parseColourBackground('x')).toBeUndefined();
-    expect(parseColourBackground(null)).toBeUndefined();
-  });
-
+describe('patterns and motions', () => {
   it('knows the patterns and motions', () => {
     expect(parsePagePattern('lines')).toBe('lines');
     expect(isPageMotion('threads')).toBe(true);

@@ -30,7 +30,7 @@ describe('buildViewModel', () => {
   it('counts printed, hidden and unknown elements and carries the revision', () => {
     const model = buildViewModel(tab, { rev: 7 });
     expect(model.facts).toMatchObject({
-      tab: { ref: '0b34', name: 'Checkout', kind: 'diagram' },
+      tab: { ref: '0b34', name: 'Checkout' },
       elements: 3,
       hidden: 2,
       unknown: 1,

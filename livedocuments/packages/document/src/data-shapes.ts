@@ -186,7 +186,7 @@ export function takesChartPalette(kind: ShapeKind): boolean {
 //
 // So are the two web components with no label (docs/specs/009-elements/web-components-and-no-groups.md): a stat row's and a
 // process's text is their rows, each edited in place, and there is no title to
-// type into. The banner, callout and header DO carry a label and are not here.
+// type into. The banner, card and header DO carry a label and are not here.
 export function isSelfDrawingShape(kind: ShapeKind): boolean {
   return (
     // A tab window (docs/specs/009-elements/tab-window.md) draws another tab; it takes no label.

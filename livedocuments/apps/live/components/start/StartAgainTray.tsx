@@ -7,7 +7,6 @@
 // Either way it steps aside while a mode's message is up, which takes the same place.
 import { lucideGlyph } from '@livedocuments/ui';
 import { lucideSparkles } from '@livedocuments/icons/lucide';
-import type { EditorMode } from '@livedocuments/document';
 import {
   PaletteTray,
   PaletteTrayAction,
@@ -20,16 +19,8 @@ import { startClosedKey } from './start-closed-key';
 
 const SparklesGlyph = lucideGlyph(lucideSparkles, 15);
 
-export function StartAgainTray({
-  mode,
-  tabId,
-  tabName,
-}: {
-  mode: EditorMode;
-  tabId: string;
-  tabName: string;
-}) {
-  const key = startClosedKey(tabId, mode);
+export function StartAgainTray({ tabId, tabName }: { tabId: string; tabName: string }) {
+  const key = startClosedKey(tabId);
   const closed = useEmptyCardDismissed(key);
   const strip = usePaletteStripBox(closed);
   if (!closed) return null;

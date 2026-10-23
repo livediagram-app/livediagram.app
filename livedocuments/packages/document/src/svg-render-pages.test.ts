@@ -14,7 +14,7 @@ const portrait = (id: string, extra: object = {}) => ({
 });
 
 function tab(pages: object[], elements: Tab['elements'] = []): Tab {
-  return { id: 't', name: 'T', opensIn: 'pages', pages, elements } as unknown as Tab;
+  return { id: 't', name: 'T', pages, elements } as unknown as Tab;
 }
 
 describe('a Pages tab drawn as its pages', () => {

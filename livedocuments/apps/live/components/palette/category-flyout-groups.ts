@@ -1,13 +1,8 @@
 import type { PaletteTileDef } from './palette-tile-defs';
 
-// The category flyout's arrangement (docs/specs/007-editor/toolbar-layout.md "The category bar"): which modes show
-// the bar, whether it has room to name its categories, how each one's tiles are laid out in its flyout, the short line under its name, and
-// the names of its groups. Pure, so the rules are testable without rendering the strip.
-
-import type { EditorMode } from '@livedocuments/document';
-
-/** The modes whose strip is a category bar: Pages. */
-export const CATEGORY_BAR_MODES: ReadonlySet<EditorMode> = new Set(['pages']);
+// The category bar's arrangement (docs/specs/007-editor/toolbar-layout.md "The category bar"): each category's
+// one-word name, how its tiles are laid out in its flyout, the short line under its name, and the names of its
+// groups. Pure, so the rules are testable without rendering the strip.
 
 // The bar names every category in one word, so a name never wraps or crowds its neighbours: a layout's longer
 // name gives way to its short one here (the flyout's header uses the same, so the two never disagree).
@@ -24,8 +19,8 @@ export function barLabel(categoryId: string, label: string): string {
  *  category bodies' (docs/specs/010-palette/palette-top-level-categories.md "Rows, not tiles"). */
 type FlyoutLayout = 'grid' | 'cards';
 
-// The grid categories and their columns: Popular's twelve as three even rows of four, Shapes five to a row.
-const GRID_COLUMNS: Readonly<Record<string, number>> = { popular: 4, shapes: 5 };
+// The grid categories and their columns: Shapes five to a row.
+const GRID_COLUMNS: Readonly<Record<string, number>> = { shapes: 5 };
 
 export function flyoutLayout(categoryId: string): FlyoutLayout {
   return categoryId in GRID_COLUMNS ? 'grid' : 'cards';
@@ -36,10 +31,6 @@ export function flyoutColumns(categoryId: string): number {
   return GRID_COLUMNS[categoryId] ?? 5;
 }
 
-// Categories shown as one block whatever their dividers: Popular's picks come from every category, so its strip
-// dividers would split twelve tiles into groups of one and three.
-const UNGROUPED: ReadonlySet<string> = new Set(['popular']);
-
 /** A card category's columns: one for a short list (Media's two), so its flyout is narrow; two otherwise. */
 export const SHORT_CARD_LIST = 3;
 export function flyoutCardColumns(tileCount: number): 1 | 2 {
@@ -49,7 +40,6 @@ export function flyoutCardColumns(tileCount: number): 1 | 2 {
 // The line under a flyout's name: what the category is for, short enough for one line at 26rem. A category not
 // listed falls back to its own description.
 const TAGLINES: Readonly<Record<string, string>> = {
-  popular: 'The tiles a diagram is most often built from.',
   shapes: 'The basics, the flowchart vocabulary and more.',
   write: 'Words on the canvas: text, notes and comments.',
   draw: 'Sketch, outline and connect by hand.',
@@ -65,7 +55,7 @@ const TAGLINES: Readonly<Record<string, string>> = {
   devices: 'Frames to set a screen design in.',
 };
 
-export function flyoutTagline(categoryId: string, fallback: string, _mode?: EditorMode): string {
+export function flyoutTagline(categoryId: string, fallback: string): string {
   return TAGLINES[categoryId] ?? fallback;
 }
 
@@ -100,11 +90,11 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
 export type FlyoutGroup = { id: string; title: string | null; tiles: PaletteTileDef[] };
 
 /** The category's tiles split into its named groups, in order; one untitled group when they are not all named. */
-export function flyoutGroups(categoryId: string, tiles: readonly PaletteTileDef[]): FlyoutGroup[] {
+export function flyoutGroups(tiles: readonly PaletteTileDef[]): FlyoutGroup[] {
   const runs: PaletteTileDef[][] = [[]];
   tiles.forEach((tile, i) => {
     runs.at(-1)!.push(tile);
-    if (tile.dividerAfter && i < tiles.length - 1 && !UNGROUPED.has(categoryId)) runs.push([]);
+    if (tile.dividerAfter && i < tiles.length - 1) runs.push([]);
   });
   const groups = runs.filter((run) => run.length > 0);
   const named = groups.length > 1 && groups.every((run) => GROUP_NAMES[run[0]!.id]);

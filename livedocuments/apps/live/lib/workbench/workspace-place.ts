@@ -16,7 +16,7 @@ export type WorkspacePlace =
 const FRAME_PREFIX = '/embed/workbench';
 const FOLDER_ROOT = `${WORKSPACE_FRAME_PAGE}/folder/`;
 const DOCUMENT_ROOT = `${FRAME_PREFIX}/document/`;
-// The editor's placeholder page name is never a document (lib/legacy-editor-path).
+// The editor's placeholder page name is never a document (lib/editor-path).
 const NOT_A_DOCUMENT = 'placeholder';
 
 const HOME: WorkspacePlace = { kind: 'explorer', node: { kind: 'home' } };

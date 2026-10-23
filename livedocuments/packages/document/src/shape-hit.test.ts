@@ -42,7 +42,7 @@ describe('pickedByOutline', () => {
     expect(pickedByOutline(shape(kind))).toBe(true);
   });
 
-  it.each<ShapeKind>(['icon', 'pie-chart', 'callout'])(
+  it.each<ShapeKind>(['icon', 'pie-chart'])(
     'keeps the box of a %s, which paints its own face',
     (kind) => {
       expect(pickedByOutline(shape(kind))).toBe(false);

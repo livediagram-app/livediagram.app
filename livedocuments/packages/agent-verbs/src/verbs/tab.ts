@@ -45,7 +45,7 @@ export const tabLs = defineVerb({
   quiet: ({ tabs }) => tabs.map((t) => t.ref),
   cli: {
     positionals: ['doc'],
-    examples: ['livedocuments tab ls "Auth flow"', 'livedocuments tab ls 3f9c -q'],
+    examples: ['livedocuments tab ls "Launch deck"', 'livedocuments tab ls 3f9c -q'],
     prints: 'one tab a line: position, ref, name',
   },
 });
@@ -138,7 +138,7 @@ export const tabView = defineVerb({
   cli: {
     positionals: ['doc'],
     examples: [
-      'livedocuments tab view "Auth flow"',
+      'livedocuments tab view "Launch deck"',
       'livedocuments tab view 3f9c --view show --ref orders',
     ],
     prints: 'the view as the api serves it',
@@ -147,9 +147,9 @@ export const tabView = defineVerb({
 
 export const tabLint = defineVerb({
   id: 'tab.lint',
-  summary: 'The diagram lint: what is wrong with how the tab is drawn',
+  summary: 'The lint: what is wrong with how the tab is drawn',
   description:
-    'Prints the diagram lint of a tab: a summary line, then one finding a line, each ending with a fix as edit operations. Exits 1 when a finding is an error.',
+    'Prints the lint of a tab: a summary line, then one finding a line, each ending with a fix as edit operations. Exits 1 when a finding is an error.',
   behaviour: 'read',
   input: z.object({
     doc: z.string().describe('A name, id prefix or livedocuments URL'),
@@ -172,7 +172,10 @@ export const tabLint = defineVerb({
   exitCode: ({ errors }) => (errors > 0 ? 1 : 0),
   cli: {
     positionals: ['doc'],
-    examples: ['livedocuments tab lint "Auth flow"', 'livedocuments tab lint 3f9c --tab Overview'],
+    examples: [
+      'livedocuments tab lint "Launch deck"',
+      'livedocuments tab lint 3f9c --tab Overview',
+    ],
     prints: 'the lint summary line, then one finding a line',
   },
 });

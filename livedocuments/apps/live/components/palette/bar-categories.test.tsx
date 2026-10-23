@@ -4,17 +4,12 @@ import { paletteCategoriesFor } from './palette-layouts';
 
 // What the category bar offers (docs/specs/007-editor/toolbar-layout.md "The category bar").
 
-const bar = () =>
-  barCategoriesFor(paletteCategoriesFor('pages').map((c) => ({ ...c, content: null })));
+const bar = () => barCategoriesFor(paletteCategoriesFor().map((c) => ({ ...c, content: null })));
 
 describe('the category bar’s categories', () => {
-  it('drops Popular, keeping the rest in order, names shortened', () => {
+  it('keeps every category in order, names shortened', () => {
     const cats = bar();
-    expect(cats.map((c) => c.id)).toEqual(
-      paletteCategoriesFor('pages')
-        .map((c) => c.id)
-        .filter((id) => id !== 'popular'),
-    );
+    expect(cats.map((c) => c.id)).toEqual(paletteCategoriesFor().map((c) => c.id));
     expect(cats.find((c) => c.id === 'write')?.label).toBe('Write');
   });
 

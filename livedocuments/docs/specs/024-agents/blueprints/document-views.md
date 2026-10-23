@@ -10,61 +10,61 @@ file only adds engineering precision. Defaults applied where the spec is silent 
 
 Scope, by file:
 
-| File                                                                    | Role                                                                                                                        |
-| ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `packages/document/src/element-refs.ts`                                 | Refs, slug ids and kind words: `computeRefs`, `resolveRef`, `isSlugId`, `slugIdFor`, `kindWordOf`, `isKnownElement`         |
-| `packages/document/src/containment.ts`                                  | The centre rule and the content origin: `boxCentre`, `boxHoldsPoint`, `smallestHolder`, `deriveContainers`, `contentOrigin` |
-| `packages/document/src/style-keys.ts`                                   | `STYLE_KEYS`, `styleKeysFor`: the style keys views print and edit operations write                                          |
-| `packages/document/src/index.ts`                                        | Re-exports `./element-refs`, `./containment` and `./style-keys`                                                             |
-| `packages/api-schema/src/document-views.ts`                             | `VIEW_NAMES`, `ViewName`, `VIEW_QUERY`, `ViewDoor`, every view's JSON wire type, `UNKNOWN_VIEW_ERROR`                       |
-| `packages/api-schema/src/ref-errors.ts`                                 | `TARGET_NOT_FOUND_ERROR`, `TARGET_AMBIGUOUS_ERROR`, `RefCandidate`, `RefErrorBody`                                          |
-| `packages/api-schema/src/telemetry-schema.ts`                           | `TELEMETRY_ACTIONS` gains `Viewed`                                                                                          |
-| `packages/api-schema/src/index.ts`                                      | Re-exports both new files                                                                                                   |
-| `packages/document-views/{package.json,tsconfig.json,oxlint.config.ts}` | The new package `@livedocuments/document-views` (depends on `document`, `api-schema`), shaped like `explorer-lens`          |
-| `packages/document-views/vitest.config.ts`                              | 100% line, branch, function and statement thresholds                                                                        |
-| `packages/document-views/src/index.ts`                                  | The public surface: `renderView`, every view function, the budget                                                           |
-| `packages/document-views/src/constants.ts`                              | The view constants in [Constants and configuration](#constants-and-configuration)                                           |
-| `packages/document-views/src/text.ts`                                   | `cutAtWord`, `jsonString`, `attrValue`, `cellText`, `plural`                                                                |
-| `packages/document-views/src/fields.ts`                                 | Typed reads of shared optional fields (`textField`, `boxOf`, `threadOf`, …): views never cast an element                    |
-| `packages/document-views/src/view-attribute.ts`                         | `ViewAttribute`, `flagAttribute`, `countAttribute`, `shapeKindOf`                                                           |
-| `packages/document-views/src/visibility.ts`                             | `partitionVisible`: printed elements, hidden-layer elements                                                                 |
-| `packages/document-views/src/tree.ts`                                   | `buildViewTree`: `deriveContainers`, then reading order per container                                                       |
-| `packages/document-views/src/reading-order.ts`                          | `readingOrder`, `rowsOf`                                                                                                    |
-| `packages/document-views/src/freehand-runs.ts`                          | `freehandRuns`: consecutive bare strokes folded into one line                                                               |
-| `packages/document-views/src/content-summary.ts`                        | `contentSummaryOf`: entity, table, code block, charts, checklist, Sankey                                                    |
-| `packages/document-views/src/state-attribute.ts`                        | `stateAttributeOf`: the one state attribute of each content kind that has one                                               |
-| `packages/document-views/src/attributes.ts`                             | `attributesOf`: the ordered attribute list of one element                                                                   |
-| `packages/document-views/src/style-attributes.ts`                       | `styleAttributesOf` for `style`                                                                                             |
-| `packages/document-views/src/edges.ts`                                  | `edgesOf`: outgoing arrows per source, own-line arrows, end rendering                                                       |
-| `packages/document-views/src/header.ts`                                 | `countElements`, `viewHeader`, `headerLine`                                                                                 |
-| `packages/document-views/src/model.ts`                                  | `buildViewModel(tab, context)` (`ViewContext.selected` too), the model every view reads; `headerFactsOf`, `tabRefsFor`      |
-| `packages/document-views/src/{outline,graph,layout,comments}.ts`        | One view each                                                                                                               |
-| `packages/document-views/src/{show,find,diff,overview}.ts`              | One view each                                                                                                               |
-| `packages/document-views/src/show-selected.ts` (new, + test)            | `showSelectedView(model, elements, options)`: `show` for `ref=selected` (VW65 to VW68)                                      |
-| `packages/document-views/src/budget.ts`                                 | `estimateTokens`, `fitLines`, `fitOf`, `ViewFit`, `ViewResult` (the outline's ladder, `fitOutline`, is in `outline.ts`)     |
-| `packages/document-views/src/elision.ts`                                | `buildElision`, `elisionLine`, `elisionCommand`, in the reading door's own syntax                                           |
-| `packages/document-views/src/render-view.ts`                            | `renderView(request, tab, context)`: resolves `ref` and `only`, then dispatches; the api and the CLI call it                |
-| `packages/document-views/src/performance.test.ts`                       | A 10,000-element tab with 100 containers renders and fits within a second                                                   |
-| `packages/document-views/src/__fixtures__/*.ts`                         | The checkout tab, its "after" twin, the three-tab document, the agent-built tab, the 300-element tab, the edge cases        |
-| `packages/document-views/src/__fixtures__/golden/*`                     | One golden file per view (see [Testing](#testing))                                                                          |
-| `apps/api/package.json`                                                 | Depends on `@livedocuments/document-views`                                                                                  |
-| `apps/api/src/responses.ts`                                             | `textPlain(body, init)`                                                                                                     |
-| `apps/api/src/routes/document-views-route.ts`                           | `parseViewQuery`, `answerTabView` (+ the selection for `show selected`), `answerOverview`, the `Agent·Viewed` event         |
-| `apps/api/src/room-client.ts`                                           | `readRoomSelections(env, documentId, tabId, personTag, reader)`: the warning names its reader                               |
-| `apps/api/src/routes/document-subresource-routes.ts`                    | The tab GET hands a `view` query to `answerTabView` after its gate and redaction                                            |
-| `apps/api/src/routes/documents.ts`                                      | The document GET hands `view=overview` to `answerOverview` after its gate and redaction                                     |
-| `apps/api/src/db/tabs.ts`                                               | `tabBodiesInOrder(env, documentId, offset, limit)`                                                                          |
-| `apps/api/src/openapi/{manifest,document,types}.ts`                     | The view query parameters; `textResponse` on the two GETs                                                                   |
-| `apps/api/scripts/gen-openapi-schemas.mjs`                              | The view wire types join `ROOT_TYPES`                                                                                       |
-| `apps/mcp/src/api.ts`                                                   | `apiText` → `{ text, etag }`, through the shared api client as `apiJson`                                                    |
-| `apps/mcp/src/tool-helpers.ts`                                          | `viewResult`: the view text first, then its one-line JSON                                                                   |
-| `apps/mcp/src/read-document.ts`                                         | `readDocument`: the view (the outline by default), `format: "json"`, `image: true`, ref refusals as results                 |
-| `apps/mcp/src/{tools,schema,output-schema}.ts`                          | `read_document` registered on `readDocument`; its input and output schemas; `READ_DOCUMENT_DEFAULT_BUDGET`                  |
-| `apps/mcp/src/image-result.ts`                                          | `tabPreview`: the PNG on its own, which `imageResult` and `readDocument` attach                                             |
-| `apps/telemetry/app/catalogue/connections.ts`                           | The `Agent·Viewed` chart, by view                                                                                           |
-| `docs/development/architecture.md`, `README.md`                         | The new package in the layout and the package list                                                                          |
-| `@livedocuments/edit-operations`, `@livedocuments/diagram-lint` (own)   | Import refs, slug ids, kind words, `deriveContainers` and `contentOrigin` from `@livedocuments/document`                    |
-| The cross-tab comments route (agent-presence's blueprint)               | Imports `computeRefs` from `@livedocuments/document`                                                                        |
+| File                                                                              | Role                                                                                                                        |
+| --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `packages/document/src/element-refs.ts`                                           | Refs, slug ids and kind words: `computeRefs`, `resolveRef`, `isSlugId`, `slugIdFor`, `kindWordOf`, `isKnownElement`         |
+| `packages/document/src/containment.ts`                                            | The centre rule and the content origin: `boxCentre`, `boxHoldsPoint`, `smallestHolder`, `deriveContainers`, `contentOrigin` |
+| `packages/document/src/style-keys.ts`                                             | `STYLE_KEYS`, `styleKeysFor`: the style keys views print and edit operations write                                          |
+| `packages/document/src/index.ts`                                                  | Re-exports `./element-refs`, `./containment` and `./style-keys`                                                             |
+| `packages/api-schema/src/document-views.ts`                                       | `VIEW_NAMES`, `ViewName`, `VIEW_QUERY`, `ViewDoor`, every view's JSON wire type, `UNKNOWN_VIEW_ERROR`                       |
+| `packages/api-schema/src/ref-errors.ts`                                           | `TARGET_NOT_FOUND_ERROR`, `TARGET_AMBIGUOUS_ERROR`, `RefCandidate`, `RefErrorBody`                                          |
+| `packages/api-schema/src/telemetry-schema.ts`                                     | `TELEMETRY_ACTIONS` gains `Viewed`                                                                                          |
+| `packages/api-schema/src/index.ts`                                                | Re-exports both new files                                                                                                   |
+| `packages/document-views/{package.json,tsconfig.json,oxlint.config.ts}`           | The new package `@livedocuments/document-views` (depends on `document`, `api-schema`), shaped like `explorer-lens`          |
+| `packages/document-views/vitest.config.ts`                                        | 100% line, branch, function and statement thresholds                                                                        |
+| `packages/document-views/src/index.ts`                                            | The public surface: `renderView`, every view function, the budget                                                           |
+| `packages/document-views/src/constants.ts`                                        | The view constants in [Constants and configuration](#constants-and-configuration)                                           |
+| `packages/document-views/src/text.ts`                                             | `cutAtWord`, `jsonString`, `attrValue`, `cellText`, `plural`                                                                |
+| `packages/document-views/src/fields.ts`                                           | Typed reads of shared optional fields (`textField`, `boxOf`, `threadOf`, …): views never cast an element                    |
+| `packages/document-views/src/view-attribute.ts`                                   | `ViewAttribute`, `flagAttribute`, `countAttribute`, `shapeKindOf`                                                           |
+| `packages/document-views/src/visibility.ts`                                       | `partitionVisible`: printed elements, hidden-layer elements                                                                 |
+| `packages/document-views/src/tree.ts`                                             | `buildViewTree`: `deriveContainers`, then reading order per container                                                       |
+| `packages/document-views/src/reading-order.ts`                                    | `readingOrder`, `rowsOf`                                                                                                    |
+| `packages/document-views/src/freehand-runs.ts`                                    | `freehandRuns`: consecutive bare strokes folded into one line                                                               |
+| `packages/document-views/src/content-summary.ts`                                  | `contentSummaryOf`: table, code block, charts, checklist, Sankey, concept graphics                                          |
+| `packages/document-views/src/state-attribute.ts`                                  | `stateAttributeOf`: the one state attribute of each content kind that has one                                               |
+| `packages/document-views/src/attributes.ts`                                       | `attributesOf`: the ordered attribute list of one element                                                                   |
+| `packages/document-views/src/style-attributes.ts`                                 | `styleAttributesOf` for `style`                                                                                             |
+| `packages/document-views/src/edges.ts`                                            | `edgesOf`: outgoing arrows per source, own-line arrows, end rendering                                                       |
+| `packages/document-views/src/header.ts`                                           | `countElements`, `viewHeader`, `headerLine`                                                                                 |
+| `packages/document-views/src/model.ts`                                            | `buildViewModel(tab, context)` (`ViewContext.selected` too), the model every view reads; `headerFactsOf`, `tabRefsFor`      |
+| `packages/document-views/src/{outline,graph,layout,comments}.ts`                  | One view each                                                                                                               |
+| `packages/document-views/src/{show,find,diff,overview}.ts`                        | One view each                                                                                                               |
+| `packages/document-views/src/show-selected.ts` (new, + test)                      | `showSelectedView(model, elements, options)`: `show` for `ref=selected` (VW65 to VW68)                                      |
+| `packages/document-views/src/budget.ts`                                           | `estimateTokens`, `fitLines`, `fitOf`, `ViewFit`, `ViewResult` (the outline's ladder, `fitOutline`, is in `outline.ts`)     |
+| `packages/document-views/src/elision.ts`                                          | `buildElision`, `elisionLine`, `elisionCommand`, in the reading door's own syntax                                           |
+| `packages/document-views/src/render-view.ts`                                      | `renderView(request, tab, context)`: resolves `ref` and `only`, then dispatches; the api and the CLI call it                |
+| `packages/document-views/src/performance.test.ts`                                 | A 10,000-element tab with 100 containers renders and fits within a second                                                   |
+| `packages/document-views/src/__fixtures__/*.ts`                                   | The checkout tab, its "after" twin, the three-tab document, the agent-built tab, the 300-element tab, the edge cases        |
+| `packages/document-views/src/__fixtures__/golden/*`                               | One golden file per view (see [Testing](#testing))                                                                          |
+| `apps/api/package.json`                                                           | Depends on `@livedocuments/document-views`                                                                                  |
+| `apps/api/src/responses.ts`                                                       | `textPlain(body, init)`                                                                                                     |
+| `apps/api/src/routes/document-views-route.ts`                                     | `parseViewQuery`, `answerTabView` (+ the selection for `show selected`), `answerOverview`, the `Agent·Viewed` event         |
+| `apps/api/src/room-client.ts`                                                     | `readRoomSelections(env, documentId, tabId, personTag, reader)`: the warning names its reader                               |
+| `apps/api/src/routes/document-subresource-routes.ts`                              | The tab GET hands a `view` query to `answerTabView` after its gate and redaction                                            |
+| `apps/api/src/routes/documents.ts`                                                | The document GET hands `view=overview` to `answerOverview` after its gate and redaction                                     |
+| `apps/api/src/db/tabs.ts`                                                         | `tabBodiesInOrder(env, documentId, offset, limit)`                                                                          |
+| `apps/api/src/openapi/{manifest,document,types}.ts`                               | The view query parameters; `textResponse` on the two GETs                                                                   |
+| `apps/api/scripts/gen-openapi-schemas.mjs`                                        | The view wire types join `ROOT_TYPES`                                                                                       |
+| `apps/mcp/src/api.ts`                                                             | `apiText` → `{ text, etag }`, through the shared api client as `apiJson`                                                    |
+| `apps/mcp/src/tool-helpers.ts`                                                    | `viewResult`: the view text first, then its one-line JSON                                                                   |
+| `apps/mcp/src/read-document.ts`                                                   | `readDocument`: the view (the outline by default), `format: "json"`, `image: true`, ref refusals as results                 |
+| `apps/mcp/src/tools.ts`, `packages/agent-verbs/src/mcp/{schema,output-schema}.ts` | `read_document` registered on `readDocument`; its input and output schemas; `READ_DOCUMENT_DEFAULT_BUDGET`                  |
+| `apps/mcp/src/image-result.ts`                                                    | `tabPreview`: the PNG on its own, which `imageResult` and `readDocument` attach                                             |
+| `apps/telemetry/app/catalogue/connections.ts`                                     | The `Agent·Viewed` chart, by view                                                                                           |
+| `docs/development/architecture.md`, `README.md`                                   | The new package in the layout and the package list                                                                          |
+| `@livedocuments/edit-operations`, `@livedocuments/diagram-lint` (own)             | Import refs, slug ids, kind words, `deriveContainers` and `contentOrigin` from `@livedocuments/document`                    |
+| The cross-tab comments route (agent-presence's blueprint)                         | Imports `computeRefs` from `@livedocuments/document`                                                                        |
 
 The repo layout block in `AGENTS.md` gains the package only with the operator's permission (agent files are not
 edited without it); the change names the gap.
@@ -306,8 +306,7 @@ outside the closing quote. A slice without whitespace is cut hard at `max`. Note
 **`attrValue(text)`** (`VW15`): bare when it matches `ATTR_BARE_PATTERN` (`^[A-Za-z0-9._:/#?&=%+@~-]+$`), else a JSON
 string.
 
-**`cellText(text)`**: `JSON.stringify(text).slice(1, -1)` with `|` escaped as `\|`; inside entity braces `;` and `}`
-are escaped as `\;` and `\}` too.
+**`cellText(text)`**: `JSON.stringify(text).slice(1, -1)` with `|` escaped as `\|`.
 
 **Content summaries** (`contentSummaryOf`), printed after the label:
 
@@ -423,7 +422,6 @@ them with `all`; with `all` they print with `· resolved ·`. `authorId` never p
   at <x>,<y> <w>x<h> [r=<deg>]                (content-origin coordinates; arrows print their ends instead)
   <field>: <compact JSON value>                every remaining stored field, keys sorted by code unit
   cells:                                       a table: one "  | a | b |" line per row, cellText escaped
-  fields:                                      an entity: one "  - name type" line per field
   comments: <open|resolved> · <count>          then each comment as in the comments view
   ← <source ref> <source label> [label=<arrow label>] [<arrow ref>]
   → <target ref> <target label> [label=<arrow label>] [<arrow ref>]
@@ -453,7 +451,7 @@ reserved words of edit operations are (EO10); an element whose id is `selected` 
    (`VW67`). Its JSON is `ShowSelectedView`.
 
 **`find`** (`VW35`): `q` is NFKC-normalised and lower-cased; it matches a printed element's label, note, table
-cells, entity field names and types, checklist item text, a Sankey's node names (field `node`), code and comment text, and a printed arrow's label, each
+cells, checklist item text, a Sankey's node names (field `node`), code and comment text, and a printed arrow's label, each
 NFKC-normalised and lower-cased, as a substring. Each match prints its container chain (each ancestor as
 `<kindWord> <ref> <label>`, indented by depth, printed once for siblings) and then its own outline line; a matching
 arrow prints as an own-line arrow under its source's chain. The closing line (kept at any budget, before the
@@ -739,7 +737,6 @@ the tab and its `rev`.
 | E8   | Free, on-arrow ends                            | `free`, `arrow:<ref>`; a non-pinned source prints on its own line                                |
 | E9   | Parallel arrows                                | Both on the source line                                                                          |
 | E10  | Self-loop                                      | `→ <own ref>`                                                                                    |
-| E11  | Mind map cycle or dangling parent              | Broken at the lowest index; a dangling parent reads as a root                                    |
 | E12  | Unknown type or shape                          | `? <name>` line with ref and label, counted `· n unknown`, contained by geometry when it has one |
 | E13  | Element without geometry                       | Root, after the rows, in array order                                                             |
 | E14  | Id with unsafe characters                      | `id:"…"` ref                                                                                     |

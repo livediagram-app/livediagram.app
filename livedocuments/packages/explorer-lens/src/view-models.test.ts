@@ -9,7 +9,7 @@ const scoped: LensContext = { ...aggregate, view: 'scoped' };
 
 describe('lensChips', () => {
   it('shows one chip per dimension, Space only on aggregate views', () => {
-    const order = ['opens-in', 'made-by', 'edited', 'people'];
+    const order = ['made-by', 'edited', 'people'];
     expect(lensChips(parseLens('', aggregate), aggregate).map((c) => c.dimension)).toEqual([
       ...order,
       'space',
@@ -18,7 +18,7 @@ describe('lensChips', () => {
   });
 
   it('lights a multi-select chip with every value its tokens hold', () => {
-    const people = lensChips(parseLens('plan people:others people:me', aggregate), aggregate)[3];
+    const people = lensChips(parseLens('plan people:others people:me', aggregate), aggregate)[2];
     expect(people).toEqual({
       dimension: 'people',
       label: 'People',
@@ -35,7 +35,7 @@ describe('lensChips', () => {
   });
 
   it('names an unset chip as any, with Any selected', () => {
-    const edited = lensChips(parseLens('', aggregate), aggregate)[2];
+    const edited = lensChips(parseLens('', aggregate), aggregate)[1];
     expect(edited).toMatchObject({ values: [], valueLabels: [], name: 'Edited, any' });
     expect(edited?.options[0]).toEqual({ value: null, label: 'Any', selected: true });
     expect(edited?.options.map((o) => o.label)).toEqual([
@@ -49,14 +49,14 @@ describe('lensChips', () => {
   });
 
   it('makes Made by AI a toggle named by itself', () => {
-    const off = lensChips(parseLens('', aggregate), aggregate)[1];
-    const on = lensChips(parseLens('made-by:ai', aggregate), aggregate)[1];
+    const off = lensChips(parseLens('', aggregate), aggregate)[0];
+    const on = lensChips(parseLens('made-by:ai', aggregate), aggregate)[0];
     expect(off).toMatchObject({ control: 'toggle', name: 'Made by AI', values: [] });
     expect(on).toMatchObject({ control: 'toggle', name: 'Made by AI', values: ['ai'] });
   });
 
   it('names a team by its name, never its id', () => {
-    const space = lensChips(parseLens('space:team:T1,mine', aggregate), aggregate)[4];
+    const space = lensChips(parseLens('space:team:T1,mine', aggregate), aggregate)[3];
     expect(space).toMatchObject({ values: ['mine', 'team:T1'], name: 'Space: My Work, Acme' });
     expect(space?.options.map((o) => o.label)).toEqual([
       'Any',

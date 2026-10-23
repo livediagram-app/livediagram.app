@@ -172,7 +172,7 @@ describe('useTabCanvas tidiers', () => {
     const h = setup(loop, false, notify);
     h.api.autoLayoutTab('mindmap');
     expect(h.commit).not.toHaveBeenCalled();
-    expect(notify.mock.calls[0]![0]).toMatch(/^Mindmap needs a centre to branch from/);
+    expect(notify.mock.calls[0]![0]).toMatch(/^Radial needs a centre to branch from/);
   });
 
   it('runs a judged press from the popover without judging it again', () => {

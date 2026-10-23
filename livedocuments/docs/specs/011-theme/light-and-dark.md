@@ -41,17 +41,12 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   pair does, the box keeps its stored fill and text instead (its outline still follows the half). `packages/document/src/theme-halves.test.ts` covers the rule, and
   `apps/live/lib/template-theme-contrast.test.ts` every template under every theme, for a light- and a dark-mode
   viewer.
-- **A theme never sinks a label into what is behind it.** Picking a theme or a look, or drawing a tab in the other
-  half, repaints each colour on its own, so it can move a label's backdrop (a panel the theme paints, the canvas)
-  without its ink, or the ink without the backdrop: a template's dark `PAPER_INK` on a panel a dark theme repaints
-  deep brown, or its slate caption on a canvas that turned dark. Wherever that leaves a label under 3:1 against what is
-  behind it (the same backdrop as above) and reading worse than before, the label's ink is walked in lightness, its
-  hue and chroma kept, until it reaches 3:1 (`withReadableLabelInks`, `packages/document/src/label-backdrop.ts`, on
-  `reachContrast`). A pick stores the walked ink, as it stores the rest of the theme; a view only draws it. A label no
-  theme touched keeps its ink however low it reads, since that is someone's choice. Pages tabs are left out:
-  their words sit on pages with their own paper. `apps/live/lib/template-overlay-contrast.test.ts` holds every
-  template's labels at 3:1 under every theme, picked in either half and seen in either
-  ([#819](https://github.com/livedocuments-app/livedocuments.app/issues/819)).
+- **A label's ink is not walked against what is behind it.** Picking a theme or a look, or drawing a tab in the other
+  half, repaints each colour on its own: a label keeps the ink its theme gives it, whatever its backdrop (a panel the
+  theme paints, the canvas) turns to. Every tab is a Pages tab, whose words sit on pages with their own paper
+  (the next point). `apps/live/lib/template-overlay-contrast.test.ts` holds the
+  labels of every template that is not a Pages template at 3:1 against what is drawn behind them, under every theme,
+  picked in either half and seen in either; today those are the two blank templates, which hold no labels.
 - **A page's own paper.** An element on a page with a fill of its own (a solid, a gradient, an
   image) is drawn for that page, not for the viewer's chrome: its theme colours in the half whose surface matches
   the page's (a light slide takes the light half, a dark one the dark half), its stock colours for that surface. A
@@ -78,10 +73,9 @@ and so is the theme browser's "Turn on Dark mode" switch: no theme needs a parti
 
 ## Retired: Autumn and Jewel
 
-Autumn and Jewel leave the catalogue, being too close to other multi-colour themes. A tab saved on either is migrated on
-load ([Retired colour schemes](retired-schemes.md)): Autumn becomes **Tropical**, Jewel becomes **Rainbow**, and every
-element colour still equal to what the retired theme painted becomes the new theme's colour for the same role; a colour
-someone picked is kept.
+Autumn and Jewel left the catalogue, being too close to other multi-colour themes; **Tropical** and **Rainbow** are the
+nearest that remain. A tab naming either resolves to Default, as any id outside the catalogue does
+([Retired colour schemes](retired-schemes.md)).
 
 ## Telemetry
 

@@ -36,7 +36,6 @@ const tabOf = (extra: Partial<Tab> = {}): Tab => ({
   id: 't',
   name: 'T',
   elements: [],
-  opensIn: 'pages',
   ...extra,
 });
 

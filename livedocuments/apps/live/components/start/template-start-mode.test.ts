@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { templateStartMode } from './template-start-mode';
+import { showsTemplateStart } from './template-start-mode';
 
 // docs/specs/007-editor/start-diagramming.md "When it shows"
 const base = {
@@ -8,26 +8,25 @@ const base = {
   embed: false,
   readOnly: false,
   drawToolArmed: false,
-  mode: 'pages' as const,
   elementCount: 0,
   pages: [{}],
 };
 
-describe('templateStartMode', () => {
+describe('showsTemplateStart', () => {
   it('offers Start Making Pages on an empty tab', () => {
-    expect(templateStartMode(base)).toBe('pages');
-    expect(templateStartMode({ ...base, pages: [] })).toBe('pages');
+    expect(showsTemplateStart(base)).toBe(true);
+    expect(showsTemplateStart({ ...base, pages: [] })).toBe(true);
   });
 
   it('offers none once the tab has content, or its page a kind or company', () => {
-    expect(templateStartMode({ ...base, elementCount: 1 })).toBeNull();
-    expect(templateStartMode({ ...base, pages: [{ kind: 'article' }] })).toBeNull();
-    expect(templateStartMode({ ...base, pages: [{}, {}] })).toBeNull();
+    expect(showsTemplateStart({ ...base, elementCount: 1 })).toBe(false);
+    expect(showsTemplateStart({ ...base, pages: [{ kind: 'article' }] })).toBe(false);
+    expect(showsTemplateStart({ ...base, pages: [{}, {}] })).toBe(false);
   });
 
   it('offers none to someone who cannot edit, nor in zen, an embed, before hydration or with a tool armed', () => {
     for (const k of ['readOnly', 'zen', 'embed', 'drawToolArmed'] as const)
-      expect(templateStartMode({ ...base, [k]: true }), k).toBeNull();
-    expect(templateStartMode({ ...base, hydrated: false })).toBeNull();
+      expect(showsTemplateStart({ ...base, [k]: true }), k).toBe(false);
+    expect(showsTemplateStart({ ...base, hydrated: false })).toBe(false);
   });
 });

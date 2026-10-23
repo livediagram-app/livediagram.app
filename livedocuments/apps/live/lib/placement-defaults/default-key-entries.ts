@@ -36,7 +36,7 @@ export function inListOrder(keys: readonly PlacementDefaultKey[]): PlacementDefa
   return PLACEMENT_DEFAULT_KEYS.filter((k) => keys.includes(k));
 }
 
-/** The default marker's words: "Default folder for new whiteboards"; empty for no keys. */
+/** The default marker's words: "Default folder for new documents"; empty for no keys. */
 export function defaultFolderDescription(keys: readonly PlacementDefaultKey[]): string {
   if (keys.length === 0) return '';
   const nouns = inListOrder(keys).map((k) => defaultKeyEntry(k).noun);

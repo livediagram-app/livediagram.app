@@ -1,8 +1,8 @@
 // Palette category scenes for the Components, Devices and Icons articles (docs/specs/018-help/help-app.md,
 // drawing docs/specs/010-palette/palette-top-level-categories.md and docs/specs/010-palette/palette-category-browse.md).
 //
-// Drawn as the palette body (More's popover) shows them: a header band with the
-// category dropdown on the right, then the category body. Components and
+// Drawn as the category's flyout shows them, hanging under the palette strip with the category pressed on its
+// bar: the category's name, then its body. Components and
 // Devices are rows (a glyph chip, the tile's caption and its one-line blurb),
 // Components under its group headings (Layout, Page Blocks, Code and Lists); Icons is a search
 // box over a grid of category tiles. Captions and blurbs are the editor's own
@@ -11,12 +11,17 @@
 import type { ReactNode } from 'react';
 
 import { Scene, Panel, Label } from './primitives';
+import { STRIP_W, Strip } from './toolbar-layout';
 
 const PX = 60;
 const PW = 300;
 
-/** The palette frame: the header band with the canvas-tool picker on the left
- *  and the category dropdown on the right, naming the open category. */
+// How far the bodies sit below where the old header band put them: the strip above the flyout, and the flyout's
+// title bar.
+const DROP = 18;
+
+/** The palette strip with `category` pressed on its category bar, and that category's flyout under it: its name in
+ *  the title bar, then its body. `h` and `sceneH` are measured as if the panel's body began at y 52. */
 function PaletteFrame({
   category,
   h,
@@ -28,56 +33,11 @@ function PaletteFrame({
   sceneH: number;
   children: ReactNode;
 }) {
-  const py = 12;
   return (
-    <Scene w={420} h={sceneH} bg="plain">
-      <Panel x={PX} y={py} w={PW} h={h}>
-        {/* Canvas-tool picker */}
-        <rect
-          x={PX + 10}
-          y={py + 9}
-          width={40}
-          height={22}
-          rx={6}
-          className="fill-slate-50 stroke-slate-200"
-          strokeWidth={1.2}
-        />
-        <path
-          d={`M${PX + 19} ${py + 14} l7 6 -3.4 0.6 1.8 3.4 -1.5 0.7 -1.8 -3.4 -2.6 2.2 z`}
-          className="fill-slate-500"
-        />
-        <path
-          d={`M${PX + 38} ${py + 18} l3 3 3 -3`}
-          className="fill-none stroke-slate-400"
-          strokeWidth={1.4}
-        />
-        {/* Category dropdown */}
-        <rect
-          x={PX + PW - 130}
-          y={py + 9}
-          width={120}
-          height={22}
-          rx={6}
-          className="fill-slate-50 stroke-slate-200"
-          strokeWidth={1.2}
-        />
-        <Label x={PX + PW - 120} y={py + 21} size={11} weight={600} tone="strong">
-          {category}
-        </Label>
-        <path
-          d={`M${PX + PW - 26} ${py + 18} l3 3 3 -3`}
-          className="fill-none stroke-slate-400"
-          strokeWidth={1.4}
-        />
-        <line
-          x1={PX}
-          y1={py + 40}
-          x2={PX + PW}
-          y2={py + 40}
-          className="stroke-slate-200"
-          strokeWidth={1.5}
-        />
-        {children}
+    <Scene w={420} h={sceneH + DROP} bg="plain">
+      <Strip x={(420 - STRIP_W) / 2} y={8} open={category} />
+      <Panel x={PX} y={48} w={PW} h={h - DROP} title={category.toUpperCase()}>
+        <g transform={`translate(0 ${DROP})`}>{children}</g>
       </Panel>
     </Scene>
   );

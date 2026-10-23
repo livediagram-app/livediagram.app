@@ -76,7 +76,6 @@ describe('tabPreview', () => {
           label: 'On slide',
         },
       ],
-      opensIn: 'pages',
       pages: [{ id: 'p1', orientation: 'landscape', kind: 'slide', size: 'slide' }],
     } as never;
     const blocks = await tabPreview(tab);
@@ -129,7 +128,6 @@ describe('tabPreview', () => {
     const tab = {
       id: 't',
       name: 'Deck',
-      opensIn: 'pages',
       elements: [shot('a', 40), shot('b', 480)],
       pages: [{ id: 'p1', orientation: 'landscape', kind: 'slide', size: 'slide' }],
     } as never;

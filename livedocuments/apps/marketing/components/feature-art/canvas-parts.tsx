@@ -26,7 +26,6 @@ const PANEL_SUNK = 'fill-slate-50 stroke-slate-200 dark:fill-slate-900 dark:stro
 export const TEXT = 'fill-slate-700 dark:fill-slate-200';
 export const MUTED = 'fill-slate-400 dark:fill-slate-500';
 export const RULE = 'stroke-slate-200 dark:stroke-slate-700';
-export const LINE = 'fill-slate-200 dark:fill-slate-700';
 const FLOAT =
   'drop-shadow-[0_1.5px_2px_rgb(15_23_42/0.12)] dark:drop-shadow-[0_1.5px_2px_rgb(0_0_0/0.45)]';
 // The ring round an avatar or a pin, in the colour of what it sits on.

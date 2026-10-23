@@ -23,7 +23,7 @@
 // the helper deliberately doesn't touch state outside the api
 // round-trip so it can stand alone.
 
-import type { CreationIntent, DocumentPlacement, RecordedIntent } from '@livedocuments/api-schema';
+import type { DocumentPlacement } from '@livedocuments/api-schema';
 import { remapTabLinks, type Tab } from '@livedocuments/document';
 import { apiCreateDocument, apiLoadDocument, apiLoadTab, apiSaveDocumentMeta } from './api-client';
 import { ApiError } from './api/core';
@@ -37,12 +37,6 @@ const PLACE_REFUSALS: ReadonlySet<string> = new Set([
   'folder_scope_mismatch',
 ]);
 const EXPLICIT_ROOT: DocumentPlacement = { teamId: null, folderId: null };
-
-// The source's recorded creation intent, carried unchanged; none when it is unknown.
-function recordedIntentOf(src: RecordedIntent): CreationIntent | undefined {
-  if (!src.opensIn || !src.tabKind) return undefined;
-  return { mode: src.opensIn, tabKind: src.tabKind };
-}
 
 // `placement` files the copy in the create itself (docs/specs/013-workspace/folders.md "Placement
 // on create"). Absent, the copy goes beside its source: the source's own team and folder. Either way
@@ -93,7 +87,6 @@ export async function duplicateDocument(
   // A failed create must return undefined per the contract above —
   // returning the id anyway made callers toast "Document duplicated"
   // and navigate to a document that doesn't exist.
-  const intent = recordedIntentOf(src);
   const create = (place: DocumentPlacement) =>
     apiCreateDocument(ownerId, {
       id: newId,
@@ -101,7 +94,6 @@ export async function duplicateDocument(
       tabs: remappedTabs,
       teamId: place.teamId,
       folderId: place.folderId,
-      ...(intent ? { intent } : {}),
     });
   try {
     await create(placement ?? { teamId: src.teamId, folderId: src.folderId });

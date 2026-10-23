@@ -5,7 +5,6 @@ Derived from [Colour scheme, Dark palette (Steel)](../color-scheme.md#dark-palet
 dark selection from [Canvas and palette, Selection](../../008-canvas/canvas-and-palette.md#selection) and the audit
 from [End-to-end smoke tests](../../003-system-architecture/e2e-smoke.md). The spec decides; this file adds engineering
 precision. Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
-The Charcoal migration has its own blueprint ([Retired schemes](../../011-theme/blueprints/retired-schemes.md)).
 
 Scope, by file:
 
@@ -108,8 +107,7 @@ low-contrast node fails the audit with its text, colours, ratio and element.
 ## Data and persistence
 
 Nothing new is stored. `DARK_CANVAS_*` reach stored data only through tabs saved with the Default scheme in dark
-mode (their backdrop). Tabs holding the previous dark half are migrated on read; see
-[Retired schemes](../../011-theme/blueprints/retired-schemes.md).
+mode (their backdrop).
 
 ## Errors and edge cases
 

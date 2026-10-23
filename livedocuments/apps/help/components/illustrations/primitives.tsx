@@ -430,7 +430,6 @@ export function Panel({
   h,
   title,
   children,
-  accentBar = false,
 }: {
   x: number;
   y: number;
@@ -438,7 +437,6 @@ export function Panel({
   h: number;
   title?: string;
   children?: ReactNode;
-  accentBar?: boolean;
 }) {
   const barH = title ? 22 : 0;
   return (
@@ -456,15 +454,15 @@ export function Panel({
         <>
           <path
             d={`M${x} ${y + 10} a10 10 0 0 1 10 -10 H${x + w - 10} a10 10 0 0 1 10 10 V${y + barH} H${x} Z`}
-            className={accentBar ? 'fill-brand-500' : 'fill-slate-50'}
+            className="fill-slate-50"
           />
           <Label
             x={x + 12}
             y={y + barH / 2 + 1}
             size={10}
             weight={700}
-            tone={accentBar ? 'onAccent' : 'muted'}
-            className={accentBar ? undefined : 'fill-slate-400'}
+            tone="muted"
+            className="fill-slate-400"
           >
             {title}
           </Label>

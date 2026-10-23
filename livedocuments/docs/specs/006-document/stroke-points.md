@@ -124,8 +124,7 @@ A block the editor cannot decode at draw time (it never passed validation) draws
 
 ## Measured wins
 
-Measured by the stroke-points bench (`pnpm bench:stroke-points`, `scripts/stroke-points-bench.ts`)
-on a synthesised whiteboard shaped like the largest real board measured: 3,300 pen strokes,
+Measured by a stroke-points bench (since removed) on a synthesised whiteboard shaped like the largest real board measured: 3,300 pen strokes,
 66,000 points, a pressure on every point. Before is the former shape as the pen wrote it (full
 doubles); timings are medians on a developer machine and move with it, the ratios hold.
 

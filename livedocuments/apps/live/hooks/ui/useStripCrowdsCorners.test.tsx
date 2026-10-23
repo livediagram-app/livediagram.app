@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { STRIP_SELECTOR, useStripCrowdsCorners } from './useStripCrowdsCorners';
+import { STRIP_SELECTOR, stripCrowdsCorners, useStripCrowdsCorners } from './useStripCrowdsCorners';
 
 // Whether a bar across the top (the Toolbar strip) reaches into a top-corner panel stack
 // (docs/specs/007-editor/toolbar-layout.md).
@@ -53,5 +53,18 @@ describe('useStripCrowdsCorners', () => {
     const corners = mount(STRIP_HTML, [200, 900]);
     const { result } = renderHook(() => useStripCrowdsCorners(corners, null, 'l', '1'));
     expect(result.current).toBe(false);
+  });
+});
+
+describe('stripCrowdsCorners', () => {
+  const strip = { left: 300, right: 900 };
+  it('is crowded when a corner stack reaches under the strip, with a gap to spare', () => {
+    expect(stripCrowdsCorners(strip, [{ left: 890, right: 1180 }])).toBe(true);
+    expect(stripCrowdsCorners(strip, [{ left: 905, right: 1180 }])).toBe(true);
+    expect(stripCrowdsCorners(strip, [{ left: 910, right: 1180 }])).toBe(false);
+  });
+
+  it('ignores an empty corner', () => {
+    expect(stripCrowdsCorners(strip, [{ left: 800, right: 800 }])).toBe(false);
   });
 });

@@ -8,22 +8,18 @@
 
 import {
   DEFAULT_EDITOR_MODE,
-  DEFAULT_TAB_KIND,
   EDITOR_MODES,
-  parseEditorMode,
+  isEditorMode,
   type EditorMode,
-  type TabKind,
 } from '@livedocuments/document';
 
-/** The tab kinds a document can be created with. */
-export const CREATION_TAB_KINDS = ['diagram'] as const satisfies readonly TabKind[];
-export type CreationTabKind = (typeof CREATION_TAB_KINDS)[number];
-
-/** What a new document is made as, captured once when it is created: the create body's `intent`. */
+/** What a new document is made as: the create body's `intent`. */
 export type CreationIntent = {
   mode: EditorMode;
-  tabKind: CreationTabKind;
 };
+
+/** The intent of every new document: it opens in Pages, the one mode. */
+export const CREATION_INTENT: CreationIntent = { mode: DEFAULT_EDITOR_MODE };
 
 export type PlacementDefaultKey = `mode:${EditorMode}`;
 
@@ -53,30 +49,6 @@ export function isPlacementDefaultKey(value: unknown): value is PlacementDefault
   return isMember(PLACEMENT_DEFAULT_KEYS, value);
 }
 
-// Keys stored under a name since retired: Pages mode was Illustrate mode, and Infographic mode before.
-const LEGACY_PLACEMENT_DEFAULT_KEYS: Readonly<Record<string, PlacementDefaultKey>> = {
-  'mode:illustrate': 'mode:pages',
-  'mode:infographic': 'mode:pages',
-};
-
-/** A stored or requested key as today's key: a current key as it is, a retired one renamed,
- *  anything else null. */
-export function parsePlacementDefaultKey(value: unknown): PlacementDefaultKey | null {
-  if (isPlacementDefaultKey(value)) return value;
-  return typeof value === 'string' ? (LEGACY_PLACEMENT_DEFAULT_KEYS[value] ?? null) : null;
-}
-
-/** The retired names a key may still be stored under, so clearing it clears them too. */
-export function legacyPlacementDefaultKeys(key: PlacementDefaultKey): string[] {
-  return Object.keys(LEGACY_PLACEMENT_DEFAULT_KEYS).filter(
-    (k) => LEGACY_PLACEMENT_DEFAULT_KEYS[k] === key,
-  );
-}
-
-export function isCreationTabKind(value: unknown): value is CreationTabKind {
-  return isMember(CREATION_TAB_KINDS, value);
-}
-
 const pascal = (part: string) =>
   part
     .split('-')
@@ -89,25 +61,15 @@ export function placementDefaultTelemetryType(key: PlacementDefaultKey): string 
   return `Default${key.split(':').map(pascal).join('')}`;
 }
 
-/** The creation intent of a new document, from its first tab. Every tab opens in Pages. */
-export function creationIntentOf(tab: { opensIn?: string } | undefined): CreationIntent {
-  return { mode: parseEditorMode(tab?.opensIn) ?? DEFAULT_EDITOR_MODE, tabKind: 'diagram' };
-}
-
-/** A create body's `intent`: none when absent or null, refused (`intent_invalid`) when malformed.
- *  An absent or null `tabKind` is the general tab. */
+/** A create body's `intent`: none when absent or null, refused (`intent_invalid`) when malformed. */
 export function readCreationIntent(
   value: unknown,
 ): { ok: true; intent: CreationIntent | null } | { ok: false } {
   if (value === undefined || value === null) return { ok: true, intent: null };
   if (typeof value !== 'object' || Array.isArray(value)) return { ok: false };
-  const { mode, tabKind } = value as { mode?: unknown; tabKind?: unknown };
-  // A create from a client from before a mode's rename still names it `illustrate` or `infographic`.
-  const parsedMode = parseEditorMode(mode);
-  if (!parsedMode) return { ok: false };
-  const kind = tabKind ?? DEFAULT_TAB_KIND;
-  if (!isCreationTabKind(kind)) return { ok: false };
-  return { ok: true, intent: { mode: parsedMode, tabKind: kind } };
+  const { mode } = value as { mode?: unknown };
+  if (!isEditorMode(mode)) return { ok: false };
+  return { ok: true, intent: { mode } };
 }
 
 /** The keys a create with this intent tries: its mode's. */

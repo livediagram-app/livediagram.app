@@ -138,15 +138,13 @@ describe('duplicateDocument', () => {
 });
 
 // Duplicate (docs/specs/013-workspace/default-folders.md "Duplicate"): beside its source, always an
-// explicit placement, recording the source's recorded intent unchanged, never routed by a default.
-describe('duplicateDocument placement and recorded intent', () => {
+// explicit placement, never routed by a default.
+describe('duplicateDocument placement', () => {
   const placed = (over: Record<string, unknown>) =>
     ({
       ...sourceDocument([{ id: 't1' }]),
       teamId: null,
       folderId: null,
-      opensIn: null,
-      tabKind: null,
       ...over,
     }) as Awaited<ReturnType<typeof apiLoadDocument>>;
 
@@ -173,16 +171,7 @@ describe('duplicateDocument placement and recorded intent', () => {
     expect(mCreate.mock.calls[0]![1]).toHaveProperty('folderId', null);
   });
 
-  it("records the source's recorded intent, unchanged", async () => {
-    mLoadDocument.mockResolvedValue(placed({ opensIn: 'pages', tabKind: 'diagram' }));
-    await duplicateDocument('owner', 'src');
-    expect(mCreate.mock.calls[0]![1].intent).toEqual({
-      mode: 'pages',
-      tabKind: 'diagram',
-    });
-  });
-
-  it('sends no intent for a source whose intent is unknown', async () => {
+  it('sends no intent', async () => {
     mLoadDocument.mockResolvedValue(placed({}));
     await duplicateDocument('owner', 'src');
     expect(mCreate.mock.calls[0]![1]).not.toHaveProperty('intent');

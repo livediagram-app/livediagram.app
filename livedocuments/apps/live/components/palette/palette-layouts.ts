@@ -7,9 +7,7 @@
 //
 // An entry with no `tiles` holds its category's own tiles (tilesForCategory), so a layout spells
 // out only where a kind differs. The catalogue categories (Icons, Stickers, Tech) are
-// bodies with their own content and take no tile list. Every kind lands on its own Popular, a
-// fixed pick of twelve tiles from across its categories.
-import type { EditorMode } from '@livedocuments/document';
+// bodies with their own content and take no tile list.
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { tileById, tilesForCategory, type PaletteTileDef } from './palette-tile-defs';
 import { openerById } from './palette-openers';
@@ -31,8 +29,6 @@ type PaletteLayoutEntry = {
 export const DIVIDE = '|';
 
 type PaletteLayout = {
-  // The category the palette opens on.
-  landing: string;
   categories: readonly PaletteLayoutEntry[];
 };
 
@@ -68,31 +64,10 @@ const PAGES_COMPONENTS = [
 // The Pages palette's Write.
 const PAGES_WRITE = tilesForCategory('write').map((t) => t.id);
 
-// Pages mode: Popular, the mock-up kit, glyphs, stickers, pictures and charts; no pens, tech
-// icons or behaviours.
+// Pages mode: the mock-up kit, glyphs, stickers, pictures and charts; no pens, tech icons or
+// behaviours.
 const PAGES: PaletteLayout = {
-  landing: 'popular',
   categories: [
-    {
-      // Twelve tiles an infographic is most often built from, in the order they are reached for:
-      // words and simple marks, a picture and a speech bubble, the charts, then the ready-made
-      // blocks. Each is also in one of the categories below.
-      id: 'popular',
-      tiles: [
-        'tools:text',
-        'shapes:square',
-        'shapes:circle',
-        'tools:image',
-        'shapes:speech-bubble',
-        'data:pie',
-        'data:bar',
-        'data:progress-ring',
-        'components:stat',
-        'components:process',
-        'tools:timeline',
-        'components:callout',
-      ],
-    },
     { id: 'shapes' },
     { id: 'write', tiles: PAGES_WRITE },
     // No Build (docs/specs/010-palette/build-category.md "In Pages: no Build"): frames organise a diagram, not a
@@ -114,32 +89,13 @@ const PAGES: PaletteLayout = {
 
 // The Pages palette by its kind (docs/specs/007-editor/pages-mode.md "The palette's kind"): Design is PAGES; a slide,
 // a wireframe and a logo page each have their own, offering what that page is made of and nothing it has no use for.
-// Every tile is in one category (Popular aside, a pick from across them).
+// Every tile is in one category.
 
 // A slide (docs/specs/007-editor/pages-mode.md "The palette's kind"): what a talk is told with. Words, shapes, pictures
 // and the embeds a talk plays first (Common), then what explains a point (Structure: charts, concept graphics, ready-made
 // blocks and device frames for a screenshot), then the decorations; no website Header.
 const PAGES_SLIDE: PaletteLayout = {
-  landing: 'popular',
   categories: [
-    {
-      id: 'popular',
-      description: 'What a slide is most often made of: a title, a picture, a chart and a point.',
-      tiles: [
-        'tools:text',
-        'tools:image',
-        'shapes:square',
-        'shapes:circle',
-        'shapes:speech-bubble',
-        'data:bar',
-        'data:pie',
-        'components:stat',
-        'components:process',
-        'components:callout',
-        'tools:timeline',
-        'media:embed-youtube',
-      ],
-    },
     { id: 'write', tiles: PAGES_WRITE },
     { id: 'shapes' },
     // Pictures and the embeds a talk plays (a video, a prototype, a page), in Common: a slide reaches for them first.
@@ -165,9 +121,7 @@ const PAGES_SLIDE: PaletteLayout = {
 // Concepts (a screen is built from its own parts) and no Devices (the page is its device already).
 const SCREEN_BAND = 7;
 const PAGES_WIREFRAME: PaletteLayout = {
-  landing: 'wireframe',
   categories: [
-    { id: 'popular' },
     {
       id: 'components',
       band: SCREEN_BAND,
@@ -210,21 +164,7 @@ const PAGES_WIREFRAME: PaletteLayout = {
 // Polygon), Shapes, Text, glyphs to start from, the Library, and a picture to trace; no charts, blocks, frames,
 // stickers or embeds.
 const PAGES_LOGO: PaletteLayout = {
-  landing: 'draw',
   categories: [
-    {
-      id: 'popular',
-      description: 'What a mark is most often drawn with: outlines, text and shapes.',
-      tiles: [
-        'tools:polygon',
-        'tools:text',
-        'shapes:square',
-        'shapes:circle',
-        'shapes:triangle',
-        'shapes:hexagon',
-        'shapes:star',
-      ],
-    },
     {
       id: 'draw',
       description: 'Outlines placed point by point.',
@@ -239,22 +179,18 @@ const PAGES_LOGO: PaletteLayout = {
   ],
 };
 
-const PAGES_BY_KIND: Readonly<Record<PaletteKind, PaletteLayout>> = {
+export const PALETTE_LAYOUTS: Readonly<Record<PaletteKind, PaletteLayout>> = {
   design: PAGES,
   slide: PAGES_SLIDE,
-  // An article's strip is its formatting (the docked page toolbar); its More and Search keep Pages'.
+  // An article's strip is its formatting (the docked page toolbar); its Search keeps Pages'.
   article: PAGES,
   wireframe: PAGES_WIREFRAME,
   logo: PAGES_LOGO,
 };
 
-export const PALETTE_LAYOUTS = {
-  pages: PAGES,
-} as const;
-
-/** The layout the palette shows: Pages mode's, for its kind. */
-function paletteLayoutFor(_mode: EditorMode, pagesKind: PaletteKind = 'design'): PaletteLayout {
-  return PAGES_BY_KIND[pagesKind];
+/** The layout the palette shows, for its kind. */
+function paletteLayoutFor(pagesKind: PaletteKind = 'design'): PaletteLayout {
+  return PALETTE_LAYOUTS[pagesKind];
 }
 
 export type ResolvedPaletteCategory = (typeof PALETTE_CATEGORIES)[number] & {
@@ -296,21 +232,14 @@ function resolve(entry: PaletteLayoutEntry): ResolvedPaletteCategory {
   };
 }
 
-/** The categories a mode's palette offers, in order, with their tiles. Pages mode offers its kind's
- *  (`pagesKind`). */
-export function paletteCategoriesFor(
-  mode: EditorMode,
-  { pagesKind }: { pagesKind?: PaletteKind } = {},
-): ResolvedPaletteCategory[] {
-  return paletteLayoutFor(mode, pagesKind).categories.map(resolve);
+/** The categories the palette offers for its kind (`pagesKind`), in order, with their tiles. */
+export function paletteCategoriesFor({
+  pagesKind,
+}: { pagesKind?: PaletteKind } = {}): ResolvedPaletteCategory[] {
+  return paletteLayoutFor(pagesKind).categories.map(resolve);
 }
 
-/** Whether a mode's palette offers category `id`. */
-export function paletteCategoryOffered(mode: EditorMode, id: string): boolean {
-  return paletteLayoutFor(mode).categories.some((e) => e.id === id);
-}
-
-/** The category the palette opens on: the mode's own. */
-export function paletteLandingCategory(mode: EditorMode): string {
-  return paletteLayoutFor(mode).landing;
+/** Whether the palette offers category `id`. */
+export function paletteCategoryOffered(id: string): boolean {
+  return paletteLayoutFor().categories.some((e) => e.id === id);
 }

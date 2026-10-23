@@ -55,8 +55,6 @@ const local = (
     folderId: null,
     teamId: null,
     source: null,
-    opensIn: null,
-    tabKind: null,
     savedAt,
     createdAt: 1,
     empty: true,

@@ -8,12 +8,12 @@ import { useCurrentPageKind } from './current-page-kind';
 
 export type PaletteKind = 'design' | 'slide' | 'article' | 'wireframe' | 'logo';
 
-// The category each kind opens on: Popular for Design, Slide and Article (the bar has no Popular,
-// so the strip keeps what it shows), Elements for Wireframe, Draw for Logo.
-export const PALETTE_KIND_LANDING: Readonly<Record<PaletteKind, string>> = {
-  design: 'popular',
-  slide: 'popular',
-  article: 'popular',
+// The category a kind opens on, where it has one of its own: Elements for Wireframe, Draw for Logo. Design, Slide
+// and Article open on none: the strip keeps what it shows.
+export const PALETTE_KIND_LANDING: Readonly<Record<PaletteKind, string | null>> = {
+  design: null,
+  slide: null,
+  article: null,
   wireframe: 'wireframe',
   logo: 'draw',
 };

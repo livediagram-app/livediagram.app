@@ -13,10 +13,9 @@ describe('untitledNameForTemplate', () => {
 });
 
 describe('isDefaultDocumentName', () => {
-  it("counts every template's untitled name, and the plain and legacy untitled", () => {
+  it("counts every template's untitled name, and the plain untitled", () => {
     for (const name of [
       'Untitled document',
-      'Untitled diagram',
       'Untitled Illustration',
       'Untitled Slide Deck',
       'Untitled Event Poster',

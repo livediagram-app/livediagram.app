@@ -3,7 +3,7 @@
 import { useEffect, useEffectEvent, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { uiUnscaleStyle } from '@/lib/ui-scale';
 
-// A popover hanging under the Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md): More
+// A popover hanging under the strip (docs/specs/007-editor/toolbar-layout.md): a category's flyout
 // and Search. Both are strip menus, so they share how they open, where they hang and how they close.
 
 // Clicks inside these don't count as "outside" a strip popover: the icon

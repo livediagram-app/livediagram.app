@@ -11,7 +11,7 @@ export const SKILL_FRONTMATTER_MAX_TOKENS = 80;
 export const SKILL_BODY_MAX_TOKENS = 1500;
 
 export const SKILL_DESCRIPTION =
-  'Read, build, edit and comment on livedocuments documents with the livedocuments CLI. Use when asked to draw, change or check a diagram on livedocuments.app, or when a message carries a [livedocuments] line.';
+  'Read, edit and comment on documents with the livedocuments CLI. Use to write or change an article, slide deck or infographic on livedocuments.app, or when a message carries a [livedocuments] line.';
 
 export const SKILL_DIRECTORIES: readonly { path: string; agent: string }[] = [
   { path: '~/.claude/skills', agent: 'Claude Code, every project' },

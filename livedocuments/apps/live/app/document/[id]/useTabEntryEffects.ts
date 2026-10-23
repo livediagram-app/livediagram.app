@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useEffectEvent, useRef, useState, type RefObject } from 'react';
-import { isEditorPath } from '@/lib/legacy-editor-path';
+import { isEditorPath } from '@/lib/editor-path';
 
 // The side effects of LANDING on a tab (hydration, a tab switch, or the
 // active tab's elements finishing their lazy load), lifted out of

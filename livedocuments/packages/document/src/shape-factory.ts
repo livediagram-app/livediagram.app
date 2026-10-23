@@ -104,7 +104,6 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md), at the sizes the grouped composites they
   // replace arrived at, so a canvas built from either reads the same.
   banner: { width: 440, height: 104 },
-  callout: { width: 380, height: 116 },
   // Card (docs/specs/009-elements/card.md): room for a title, a meta line, two body lines and a tag row.
   card: { width: 300, height: 150 },
   // Badge (docs/specs/009-elements/badge.md): fitted to its text on every commit (badgeSize); this is "New" (BADGE_NEW_LABEL).
@@ -321,18 +320,6 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       pageSubtitle: 'Stripe, EU region',
       label: 'Takes card payments and issues refunds.',
       tags: ['PCI', 'v2'],
-      textSize: 'sm',
-      textAlignX: 'left',
-      textAlignY: 'top',
-      strokeWidth: 'thin',
-      borderRadius: 'md',
-    };
-  }
-  if (kind === 'callout') {
-    return {
-      ...base,
-      pageTitle: 'Heads up',
-      label: 'A short note with some supporting detail.',
       textSize: 'sm',
       textAlignX: 'left',
       textAlignY: 'top',

@@ -17,16 +17,6 @@ import type { FreehandElement } from './element-types';
 import { decodeStrokePoints } from './stroke-points-cache';
 import type { NormalisedPoint, StrokePoints } from './stroke-points';
 
-export type PenPointerKind = 'pen' | 'mouse' | 'touch';
-
-// How far perfect-freehand drags each point towards the last: Excalidraw's
-// DEFAULT_STROKE_STREAMLINE for a mouse, its precise value for a pen or a finger,
-// whose samples are denser and steadier.
-export const PEN_STREAMLINE: Readonly<Record<PenPointerKind, number>> = {
-  mouse: 0.5,
-  pen: 0.2,
-  touch: 0.2,
-};
 // Excalidraw's freedraw recipe: how much pressure thins the line, and how much
 // the outline is smoothed.
 const PEN_THINNING = 0.6;
@@ -41,11 +31,6 @@ export const PEN_MID_PRESSURE = 0.5;
 const PERFECT_FREEHAND_END_NOISE = 3;
 
 const easing = (t: number) => Math.sin((t * Math.PI) / 2);
-
-/** The settings row for a `PointerEvent.pointerType`: anything unknown is a mouse. */
-export function penPointerKind(pointerType: string | undefined): PenPointerKind {
-  return pointerType === 'pen' || pointerType === 'touch' ? pointerType : 'mouse';
-}
 
 /**
  * perfect-freehand's `size` for a pen `width`: its radius at pressure p is

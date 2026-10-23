@@ -8,8 +8,8 @@ snapping to it, and exporting it.
 ## One mode
 
 The mode stays a named value (`EditorMode`, `packages/document/src/editor-mode.ts`) whose only id is
-`pages`, so the places that name a mode (a tab's `opensIn`, a `/new?mode=` link, an `opens-in:` Explorer
-filter) read through one function. A stored mode from livediagram (`diagram`, `draw`, `workshop`, `plan`
+`pages`, so the places that name a mode (a tab's `opensIn`, a `/new?mode=` link) read through one
+function. A stored mode from livediagram (`diagram`, `draw`, `workshop`, `plan`
 and Pages' older names, `illustrate` and `infographic`) reads as Pages (`parseEditorMode`); anything else
 reads as nothing. There is no mode switch and no mode step on `/new`.
 
@@ -108,18 +108,17 @@ mode.
 The palette has a **kind**, which is always the kind of the page someone is on: it
 is never shown and never chosen. Each kind is its own palette layout (`palette-layouts.ts`),
 offering what that page is made of and nothing it has no use for; within a kind every tile sits in
-one category (Popular, a pick from across them, aside).
+one category.
 
-- **Design** (infographic pages): Popular, Shapes,
+- **Design** (infographic pages): Shapes,
   Write, Concepts, Components, Devices, Icons, Stickers, Media, Data.
-- **Slide** (slide pages): Popular (a
-  title, a picture, a chart and a point), then in Common **Write**, **Shapes**, **Media** (with
+- **Slide** (slide pages): in Common **Write**, **Shapes**, **Media** (with
   its embeds: a video, a prototype or a page a talk plays); in Structure **Data**,
   **Concepts**, **Components** (no website Header) and **Devices** (a screenshot in a frame); then
   **Icons** and **Stickers**.
 - **Article** (article pages): the strip holds the article's
   formatting in place of the category bar: its page toolbar, docked ([Article pages](article-pages.md)
-  "The page toolbar"). Search and More keep the Design palette. Offered on an article page alone
+  "The page toolbar"). Search keeps the Design palette. Offered on an article page alone
   (anywhere else the strip would be empty).
 - **Wireframe** (wireframe pages): **Components** and **Elements** first, in a band of their own
   (a divider after Elements), then the rest without **Concepts** and **Devices**

@@ -98,10 +98,6 @@ export function deriveCanvasSelection(input: {
   // An element that never shows quick-connect pluses, beyond the rules below: an object in an
   // article's writing connects to nothing (docs/specs/007-editor/article-pages.md "Zones").
   plusBlocked?: (el: Element) => boolean;
-  // A Plan board or view is drawn over the canvas (maximised, or filling its tab). The canvas under it cannot be
-  // worked on, so no selection toolbar, popover or plus floats over it, whatever is selected and however it came to be (a press before, select-all, undo, a
-  // collaborator, the tab opening with the board selected). The selection itself is kept.
-  canvasCovered?: boolean;
 }): CanvasSelection {
   const {
     elements,
@@ -114,7 +110,6 @@ export function deriveCanvasSelection(input: {
     elementMenuOpen,
     labelRectOf,
     plusBlocked,
-    canvasCovered: covered = false,
   } = input;
 
   // An element's selection extent (docs/specs/008-canvas/arrow-labels.md): an arrow spans
@@ -137,11 +132,9 @@ export function deriveCanvasSelection(input: {
   const selectedIsBoxed = selected ? isBoxed(selected) : false;
   const selectionBounds: Rect | null = selected ? selectionExtent(selected) : null;
 
-  const canvasCovered = covered;
   const selectedLocked = selected ? selected.locked === true : false;
   const showPopover = !!(
     selected &&
-    !canvasCovered &&
     !elementMenuOpen &&
     editingId !== selected.id &&
     !isPaintMode &&
@@ -150,7 +143,6 @@ export function deriveCanvasSelection(input: {
   );
   const showPlus = !!(
     selected &&
-    !canvasCovered &&
     !elementMenuOpen &&
     selectedIsBoxed &&
     // Quick-connect works on a single element. A marquee multi-select stays
@@ -211,12 +203,7 @@ export function deriveCanvasSelection(input: {
       ? unionRects(elements.filter((el) => multiSelectedIds.has(el.id)).map(selectionExtent))
       : null;
   const showMultiToolbar =
-    !!multiToolbarBounds &&
-    multiSelectedIds.size > 1 &&
-    !canvasCovered &&
-    !isPaintMode &&
-    !tabLocked &&
-    !readOnly;
+    !!multiToolbarBounds && multiSelectedIds.size > 1 && !isPaintMode && !tabLocked && !readOnly;
 
   return {
     multiPrimaryId,

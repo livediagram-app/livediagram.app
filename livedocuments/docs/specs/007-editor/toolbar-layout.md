@@ -41,8 +41,8 @@ under the pointer as a category is switched.
   (`palette-layouts.ts`), a hairline divider between the bands (Common, Structure,
   Decorate, Dynamic, Collaborate). No hover card: resting on a button opens its flyout, which names it.
 - **Names are one word**, never more: a layout's longer name gives way on the bar (`barLabel`).
-- **No Popular.** With every category one press away, a pick from across them adds nothing. The layouts keep their
-  Popular entry; the bar leaves it out (`barCategoriesFor`).
+- **No Popular.** With every category one press away, a pick from across them adds nothing, so no layout has one
+  (the category and its glyph are gone).
 - **No Build.** The bar has no Build category: the
   Stack sits in Components and the Timeline and Table in Data and Concepts.
 - **The bars**, by page kind (`palette-layouts.ts`):
@@ -60,8 +60,8 @@ under the pointer as a category is switched.
   estimate let the bar run under it. **Too wide even bare**, as on a tablet (768px) where the glyphs can need more
   than the centring leaves, the strip sits at the right instead, 12px from the edge, clear of
   the card (`useStripCrowded`, measured the same way); it centres again once there is room. A phone always shows the glyphs, 44 px apart, and the bar swipes
-  sideways while the selection mode and Search stay put (the tile rail's rule, "On a phone"). A swiping rail (the bar,
-  the tile rail, an article's dock) fades the edge with more beyond it over 20px (`scroll-edge-fade`, a scroll-driven
+  sideways while the selection mode and Search stay put ("On a phone"). A swiping rail (the bar, an article's dock)
+  fades the edge with more beyond it over 20px (`scroll-edge-fade`, a scroll-driven
   mask where the browser has them), so a glyph cut by the edge reads as more to swipe to, not a stray sliver of an
   icon; an edge with nothing beyond it stays sharp.
 - **The open category** is pressed (the brand tint) with a short brand bar under it.
@@ -97,7 +97,7 @@ scrolling when long:
 - **A header:** the category's glyph on a soft brand plate, its name, one line on what it is for, and its tile count
   as a `CountBadge` ([Counts are badges](../004-interface-design/counts.md)).
 - **Its tiles in named groups**, each a small heading with a hairline, the groups where the category's fixed
-  dividers fall ("The strip's order and dividers"), named by the tile that starts each (`Basics`, `More Shapes`;
+  dividers fall ("A flyout's order and groups"), named by the tile that starts each (`Basics`, `More Shapes`;
   `Charts`, `Meters`; `Desktop`, `Mobile`; `Pictures`, `Embeds`, `People`; ...). A category shows its groups only when every one is named, else one
   block, so a layout whose dividers fall elsewhere never shows half its groups headed and half bare.
 - **Pictures or cards**, by the palette's own rule ([Rows, not tiles](../010-palette/palette-top-level-categories.md#rows-not-tiles-for-most-categories)):
@@ -177,12 +177,13 @@ A strip shows one category at a time, so finding an element means knowing which 
   lookup per tile. The catalogues add a linear rank over their entries (123 icons and 225 stickers today): measured at 0.4 ms for a query matching most of them, the element
   tiles 0.2 ms; tests hold both under a frame.
 
-## The strip's order and dividers
+## A flyout's order and groups
 
 A flyout shows its category **in its own order**, always. **Using a tile never reorders it** (an earlier version brought each used tile to the front,
 which moved things under the pointer after every add; it is gone, its stored list with it).
 
-**Fixed dividers** split a category into its groups of related tiles (a tile's `dividerAfter`):
+**Fixed dividers** split a category into its groups of related tiles (a tile's `dividerAfter`, or a layout's own
+`DIVIDE`), which the flyout heads by name ("The flyout"):
 
 - **Shapes**: the basics (Square, Circle, Diamond) | the rest.
 - **Write**: Text | Note, Callout.
@@ -191,18 +192,10 @@ which moved things under the pointer after every add; it is gone, its stored lis
 - **Media**: Image | the embeds | Avatar.
 - **Data**: the charts (Pie, Bar, Line, Legend) | the meters (Progress, Donut, Rating) | Table.
 
-Popular divides where its tiles' own groups do (after the Diamond), and the Icons and Stickers
-catalogues have none. A divider shows only between two tiles both on the strip, and on a phone's
-swiping strip only while a tile on each side of it is at least partly in view: scrolled to where
-the tiles after it are out of sight, it is hidden, never left standing at the strip's edge (`useEdgeDividers`, re-checked as the strip scrolls or resizes). They take room, about
-a fifth of a tile each: a category that fits whole with them shows them; one whose tiles fit only
-without them drops them before any tile; one that overflows shows as many tiles as fit with their
-dividers between them, so a divider costs a tile only when the strip's spare part-tile can't hold
-it.
+The Icons and Stickers catalogues have none: they browse by their own groups ("Icons and Stickers: two panes").
 
-The chosen category lasts the page load: the strip is hidden rather than
-unmounted while zen or the welcome flow hides the chrome. Nothing is stored,
-so a new page load starts on the page kind's landing.
+The strip is hidden rather than unmounted while zen or the welcome flow hides the chrome, so a catalogue's flyout
+still reopens on the group it was left on. Nothing about the bar is stored across page loads.
 
 ## The tab's name
 
@@ -324,18 +317,12 @@ panels in their corners, the bottom-row popovers over their buttons. What change
 
 ## Motion
 
-- **A change to the strip's tiles animates** (`ToolbarStripRail`, FLIP; a category switched, or the window letting more or fewer tiles on): tiles that moved slide
-  from their old slot to their new one over 200ms (the `short` token of [Motion](../004-interface-design/motion.md)), a tile new to the strip
-  pops in, and the one pushed off the end pops out where it stood. Reduced
-  motion collapses it to instant.
-- **Switching category animates.** The tile rail eases its width to the new
-  set (the strip is centred, so it grows and shrinks evenly), the new tiles
-  pop in a 10ms beat apart (a cascade, settling within 250ms), and the outgoing ones shrink away on a layer over
-  the top. Only a real switch animates; the first set is simply there.
-  Reduced motion collapses it to instant (`ToolbarStripRail`).
-- **The rail is always as wide as its tiles.** Its width follows the tiles as laid out, whenever they change
-  (a category switch, a tile added or gone), never a tile caught mid-slide: no empty gap
-  after the last tile once they settle.
+- **A flyout glides between buttons.** Pointing at another category while one is open slides the flyout to the new
+  button over 200 ms (the `short` token of [Motion](../004-interface-design/motion.md)) rather than jumping
+  ("Opening a flyout").
+- **A change of kind cascades in.** When the palette's kind changes (someone moves onto a page of another kind), the
+  new bar's buttons, or an article's docked formatting, rise and fade in a moment apart, settling within 250 ms
+  (`usePaletteKindMotion`). Nothing moves on the first render or under reduced motion.
 
 ## Look
 
@@ -344,10 +331,8 @@ panels in their corners, the bottom-row popovers over their buttons. What change
   - The Palette's tile grid split its body into three fractional columns
     (76.67px), so every glyph straddled a pixel. It uses fixed, even 76px
     columns spread edge to edge instead.
-  - The strip was centred with `-translate-x-1/2` and followed a
-    text-width category label, both fractional. It is centred by flexbox,
-    and `SnapWidth` rounds the label and the whole card to whole pixels (the
-    card matching the canvas's parity so centring stays whole).
+  - The strip was centred with `-translate-x-1/2`, a fractional offset. It is centred by flexbox, and `SnapWidth`
+    rounds the whole card to whole pixels (matching the canvas's parity so centring stays whole).
   - Thirteen-pixel glyphs (the selection mode icons) centred on a half
     pixel in an even tile. They are 14px.
     Separately, the corner panels were permanently promoted to their own
@@ -363,8 +348,8 @@ panels in their corners, the bottom-row popovers over their buttons. What change
 
 ## Decided in review
 
-- **The strip opens on the page kind's landing every time** (`palette-layouts.ts`). It does not remember the last
-  category across documents.
+- **The bar has no current category.** Each flyout opens from its own button, and nothing remembers the last
+  category used, across documents or page loads.
 - **The top corners give way to the strip.** When the strip reaches a panel
   docked in a top corner, measured against the real corner stack
   (`useStripCrowdsCorners`, re-checked as panels dock and the window
@@ -376,7 +361,7 @@ panels in their corners, the bottom-row popovers over their buttons. What change
 - **A phone's toolbar items keep their size** (`PHONE_TOOLBAR_ITEMS`): 36px, the bottom-right
   cluster's 44px, each with a 44px-tall tap area ([Touch targets](../004-interface-design/touch-targets.md)).
   Only the selection mode gives up 4px of side padding, and the strip's dividers their margins down to
-  1px, so more tiles show beside the menu card. The row keeps its 12px gutters and 8px gap.
+  1px, so more of the bar shows beside the menu card. The row keeps its 12px gutters and 8px gap.
 - **The menu button opens the Explorer**, not a menu of its own (an earlier
   cut had New / Recent / Search / Settings entries).
 - **The other panels dock in their corners** ([Panel docking](panel-docking.md)). The bottom-row popovers are

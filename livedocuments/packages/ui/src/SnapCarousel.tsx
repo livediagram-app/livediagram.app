@@ -17,7 +17,6 @@ import { Glyph } from './icons/Glyph';
 export function SnapCarousel({
   heading,
   label,
-  itemNoun = 'templates',
   actions,
   itemsKey,
   className,
@@ -29,9 +28,6 @@ export function SnapCarousel({
   heading: ReactNode;
   // Plain-text name for the arrows' accessible labels ("Next Agile templates").
   label: string;
-  // What the cards are, closing the arrows' labels ("Next Agile templates",
-  // "Next more categories").
-  itemNoun?: string;
   // Controls set to the left of the arrows, spaced off them (the template
   // picker's expand toggle). They stay visible when every card fits.
   actions?: ReactNode;
@@ -101,13 +97,13 @@ export function SnapCarousel({
           >
             <CarouselArrow
               direction="prev"
-              label={`${label} ${itemNoun}`}
+              label={`${label} templates`}
               disabled={!canPrev}
               onClick={() => page(-1)}
             />
             <CarouselArrow
               direction="next"
-              label={`${label} ${itemNoun}`}
+              label={`${label} templates`}
               disabled={!canNext}
               onClick={() => page(1)}
             />

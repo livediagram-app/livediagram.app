@@ -7,7 +7,6 @@ import { surfaceFlags, type EditorSurface } from './editor-surface';
 import { useTabRevisions } from './useTabRevisions';
 import { useWorkbenchEnd } from './useWorkbenchEnd';
 import { useWorkbenchMessages } from './useWorkbenchMessages';
-import { usePublishTabRename } from '@/hooks/editor/active-tab-name-store';
 import { openSearchWithPrefetch } from '@/lib/open-search';
 import { useTourSquare } from '@/hooks/editor/useTourSquare';
 import { useModeDefaultTool } from '@/hooks/editor/useModeDefaultTool';
@@ -23,7 +22,6 @@ import {
   useEffectEvent,
 } from 'react';
 import {
-  stampTabKind,
   isBoxed,
   resolveSlide,
   slideFrame,
@@ -226,15 +224,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // that never materialised `layers`, and on undo/remote applies (which
     // bypass commitTabs entirely).
     rawCommitTabs((ts) => {
-      // Tab kind: a committed tab says what KIND of board it
-      // is, rather than leaving a reader to know that absence means
-      // 'diagram'. Same choke point as the layer stamp below, and
-      // `stampTabKind` returns the tab unchanged when it already has one,
-      // so an untouched tab keeps its identity for the memoised views. Only the tabs this commit changed or added
-      // are stamped: an untouched tab may be a placeholder whose content has not loaded, and stamping it would make
-      // it look edited to the autosave (docs/specs/006-document/per-tab-storage.md).
-      const before = new Set<Tab>(ts);
-      const mapped = mapTabs(ts).map((t) => (before.has(t) ? t : stampTabKind(t)));
+      const mapped = mapTabs(ts);
       // Locked pages (docs/specs/007-editor/pages-mode.md "Locking a page"): in Pages
       // mode nothing is added to, moved onto, changed on or taken off a locked page.
       // Badges and step numbers (docs/specs/009-elements/badge.md "Attachment"), after the commit moved their hosts.
@@ -1104,7 +1094,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     getViewportCanvasRect,
     fitToScreen,
     fitToBounds,
-    focusOn,
     scrollIntoView,
   } = useEditorViewport({ activeTab, readSelection });
   // A phone's keyboard never hides the caret on the canvas (useKeyboardAvoidance).
@@ -1819,8 +1808,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     confirm,
     toast,
   });
-  // The menu box renames the open tab on a click on its name (active-tab-name-store).
-  usePublishTabRename(activeId, renameTab, !isStructureReadOnly);
 
   // Tab-folder membership (docs/specs/006-document/tab-folders.md), kept separate from the busy
   // useTabActions. Menu-only: drag-reorder lives above.
@@ -2578,7 +2565,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     },
     onSelectAll: () => {
       // Hidden / locked layers are left out; in Pages mode, every page but the one someone is on.
-      const allIds = selectAllIds(activeTab, editorMode.mode, layerInertIds, currentPageIdNow());
+      const allIds = selectAllIds(activeTab, layerInertIds, currentPageIdNow());
       if (allIds.size === 0) return;
       setSelectedId(null);
       setMultiSelectedIds(allIds);
@@ -2635,14 +2622,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
   useWorkbenchEnd(workbench, documentTrashed.trashed);
 
-  // Focus zooms in no further than this on a small element.
-  const FOCUS_ZOOM_MAX = 1.5;
-  // Focus: a board's or a Sheet's header glides the view to fit it.
-  const focusBounds = useCallback(
-    (b: { x: number; y: number; w: number; h: number }) => focusOn(b, FOCUS_ZOOM_MAX),
-    [focusOn],
-  );
-
   return {
     surface,
     tourSquare,
@@ -2655,8 +2634,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     changesetReveals: changesetFeed.reveals,
     // What the agents present name in focus on the active tab, for the focus rings.
     agentFocusByElement,
-    // A header's Focus: glide the view to fit an element (hooks/canvas/useCanvasFocus.tsx).
-    focusBounds,
     // The person's editor mode on the active tab, for the mode switch and the canvas.
     editorMode,
     pagesMode: logo.view,

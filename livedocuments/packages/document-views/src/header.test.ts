@@ -4,7 +4,7 @@ import { arrowBetween, shapeAt } from './__fixtures__/build';
 import { countElements, headerLine, threadCounts, viewHeader, type HeaderFacts } from './header';
 
 const facts = (over: Partial<HeaderFacts> = {}): HeaderFacts => ({
-  tab: { id: 't', ref: '0b34', name: 'Checkout platform', kind: 'diagram' },
+  tab: { id: 't', ref: '0b34', name: 'Checkout platform' },
   elements: 30,
   counts: { boxes: 19, arrows: 11 },
   hidden: 0,
@@ -24,7 +24,7 @@ describe('headerLine (R16, VW8)', () => {
   it('prints the singulars, hidden and unknown counts, and leaves absent segments out', () => {
     const line = headerLine(
       facts({
-        tab: { id: 't', ref: 'es', name: 'Deck "1"', kind: 'diagram' },
+        tab: { id: 't', ref: 'es', name: 'Deck "1"' },
         elements: 2,
         counts: { boxes: 1, arrows: 1 },
         hidden: 2,

@@ -28,7 +28,6 @@ describe('tabAsSeen', () => {
     const tab = {
       id: 't',
       name: 'Board',
-      opensIn: 'pages',
       backgroundPattern: 'blank',
       elements: [path],
     } as Tab;

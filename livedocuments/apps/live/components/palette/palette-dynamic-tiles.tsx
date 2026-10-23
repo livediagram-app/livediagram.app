@@ -6,7 +6,7 @@ import { TechIconArt } from '@/components/primitives/tech-icon-glyph';
 import type { PaletteTileDef } from './palette-tile-defs';
 
 // Dynamic tiles: individual Icons / Stickers / Technology catalogue entries as palette tiles, for
-// the Toolbar layout's strip (toolbar-strip-tiles). Unlike the fixed creation tiles these aren't
+// Search (palette-catalogue-search). Unlike the fixed creation tiles these aren't
 // listed in PALETTE_TILES: the catalogues are open-ended and load async (lib/icon-registry), so a
 // tile is built from its catalogue entry at render time, under a PREFIXED id (`icon:<iconId>`,
 // `tech:<iconId>`, `sticker:<stickerId>`). A catalogue name reads in sentence case, so a tile

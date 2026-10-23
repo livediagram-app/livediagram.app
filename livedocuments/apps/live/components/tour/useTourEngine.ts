@@ -142,8 +142,7 @@ export function useTourEngine<Api>({
 }) {
   const [active, setActive] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
-  // Direction of the last step change, for the popover content's
-  // directional slide (the TemplatePicker wizard's tip-next / tip-prev).
+  // Direction of the last step change, for the popover content's directional slide.
   const [stepDir, setStepDir] = useState<'forward' | 'backward'>('forward');
   // Read by the step-run effect: a step whose target is missing is skipped the way the person was going.
   const stepDirRef = useRef(stepDir);

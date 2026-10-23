@@ -1,15 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { resetImageRefIndexMemo } from './image-refs';
 import { documentServesImage } from './image-grants';
 import { imageUsageByOwner } from './images';
 import { upsertTab } from './tabs';
-import { images, linkDocumentTab, liveDoc, refsFor, setup, tabWith } from './test-image-fixtures';
+import { images, liveDoc, setup, tabWith } from './test-image-fixtures';
 
 // The usage map and the share-visitor read (docs/specs/009-elements/images.md,
 // "Reference index"): both answer from the index, never a tab body.
 
 afterEach(() => {
-  resetImageRefIndexMemo();
   vi.restoreAllMocks();
 });
 
@@ -32,24 +30,12 @@ describe('imageUsageByOwner', () => {
     });
   });
 
-  it('reads the index, never a body, once the index is complete', async () => {
+  it('reads the index, never a body', async () => {
     const db = setup();
     liveDoc(db.sql, 'A');
     await upsertTab(db.env, 'A', tabWith('t1', 'img'), 0);
     db.sql.exec('DELETE FROM image_refs');
     expect(await imageUsageByOwner(db.env, 'owner')).toEqual({});
-  });
-
-  it("indexes the owner's tabs first while the backfill is incomplete", async () => {
-    const db = setup({ indexPending: true });
-    liveDoc(db.sql, 'A');
-    db.sql.exec(
-      `INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 't1', '${JSON.stringify(tabWith('t1', 'img'))}', 0)`,
-    );
-    linkDocumentTab(db.sql, 'A', 't1');
-    images(db.sql, 0, 'img');
-    expect(await imageUsageByOwner(db.env, 'owner')).toEqual({ img: [{ id: 'A', name: 'A' }] });
-    expect(refsFor(db.sql, 'img')).toBe(1);
   });
 });
 
@@ -79,20 +65,9 @@ describe('documentServesImage (placement)', () => {
     expect(await documentServesImage(db.env, 'A', 'i2', 't1')).toBe(false);
   });
 
-  it('answers from the index once it is complete', async () => {
+  it('answers from the index', async () => {
     const db = await twoTabs();
     db.sql.exec('DELETE FROM image_refs');
     expect(await documentServesImage(db.env, 'A', 'i1')).toBe(false);
-  });
-
-  it("indexes the document's tabs first while the backfill is incomplete", async () => {
-    const db = setup({ indexPending: true });
-    liveDoc(db.sql, 'A');
-    db.sql.exec(
-      `INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 't1', '${JSON.stringify(tabWith('t1', 'img'))}', 0)`,
-    );
-    linkDocumentTab(db.sql, 'A', 't1');
-    images(db.sql, 0, 'img');
-    expect(await documentServesImage(db.env, 'A', 'img')).toBe(true);
   });
 });

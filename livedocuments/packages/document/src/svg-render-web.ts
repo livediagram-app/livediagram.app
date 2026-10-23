@@ -1,5 +1,5 @@
-// The web components in the headless render (docs/specs/009-elements/web-components-and-no-groups.md): banner, callout, stat
-// row, process steps, header, and an image's hero caption card.
+// The web components in the headless render (docs/specs/009-elements/web-components-and-no-groups.md): banner, stat row,
+// process steps, header, and an image's hero caption card (the card, a Callout included, has its own render).
 //
 // Geometry comes from web-components.ts, the same pure layouts the canvas
 // views position from, so an export lands every card, circle and link where
@@ -137,8 +137,6 @@ export function svgWebComponent(el: Shape, o: WebFaceOptions): string {
         })
       );
     }
-    // A callout not yet migrated draws as the badge card it becomes (docs/specs/009-elements/card.md).
-    case 'callout':
     case 'card':
       return svgCard(el, o);
     case 'stat-row': {

@@ -2,48 +2,51 @@
 
 The canonical, true-today facts all marketing copy is built from. If something
 below stops being true, fix it here first, then propagate to the taglines and
-descriptions. Mirrors [Build phase](../../docs/specs/005-project-roadmap/prototype-scope.md)
-and [Purpose](../../docs/specs/001-project-vision/purpose.md).
+descriptions. Mirrors the site's own words (`SITE_DESCRIPTION` and `SITE_PITCH`
+in `packages/ui/src/site.ts`) and the marketing FAQ (`apps/marketing/lib/faq-content.tsx`).
 
 ## One line
 
-A collaborative diagram editor that works without signing in. Open a link,
-draw, share.
+A free, real-time editor for documents made of pages: articles, slide decks and
+infographics, made together.
 
 ## What it is
 
-A real-time multiplayer canvas in the browser for building diagrams and
-mindmaps together. The canvas never sits behind an auth wall, so the friction
-to start is "open the link, start drawing."
+A real-time editor in the browser for documents made of pages. Write an article
+that flows onto as many pages as it needs, build a slide deck and present it,
+or lay out an infographic or poster for print or social. Every document is a
+stack of tabs, each holding its pages, and people work on them together live.
+There is no sign-up wall: open the editor and start.
 
 ## Who it's for
 
-Teams that think visually together: engineers sketching architecture and system
-designs, product and design teams mapping journeys and brainstorms, and
-cross-functional groups in workshops, planning, and retros. The unit of value
-is the team, not the individual.
+Teams who write and present together: briefs, reports and proposals, launch
+decks and quarterly reviews, posters, one-pagers and social posts. The unit of
+value is the team, not the individual.
 
 ## Shipped today
 
-- Real-time multiplayer: live cursors, selection rings, comment threads, and
-  laser-pointer broadcast, one Durable Object room per document.
-- Canvas: ten core shapes, sticky notes, text, images, arrows (straight /
-  curved / angled with draggable handles, configurable thickness and arrowheads,
-  optional labels), freehand Pencil tool with optional shape recognition,
-  per-element links and locks.
-- Multi-select: marquee drag, shift-click, format painter, groups.
-- 17 templates (Blank, Mind map, Flowchart, Kanban, SWOT, Retrospective, Org
-  chart, Timeline, Fishbone, Pyramid, Flywheel, Venn, User journey, Logo
-  design, plus three UI wireframes).
-- 18 themes that recolor the whole canvas in one click.
+- Articles: writing that flows onto pages, with headings, lists, quotes, code,
+  pictures and charts. Paste from web pages, Google Docs or Word and the
+  formatting comes with it; import Markdown into a tab.
+- Slide decks: 16:9 or 4:3 slides from 61 slide layouts, presented full screen
+  with presenter notes, a time budget, a laser pointer and a spotlight.
+- Infographics and posters in print sizes (A4, US Letter, A3) and social sizes,
+  from 92 infographic layouts.
+- On every page: shapes, connectors, text, sticky notes, images, icons, tables,
+  charts, Sankey diagrams and embeds.
+- 35 templates, including logo and wireframe templates, and twenty-four themes
+  that recolour every page in one click.
+- Real-time collaboration: live cursors, selection rings, presence on each tab,
+  comment threads and assigned actions.
 - Undo and redo (Cmd/Ctrl+Z, Cmd/Ctrl+Shift+Z), personal to each editor.
-- Tabs per document (link across them, copy a tab into another document), nested
-  folders in the Explorer.
-- Editor or view-only share links, revocable any time. "Shared with you"
-  visitors can make their own copy.
-- Export / import the active tab to Markdown / PDF / PNG / JSON.
-- Hybrid auth: guests get the full feature set keyed to a per-browser id;
-  signed-in users (Clerk) add cross-device sync and account self-delete.
+- Tabs per document, nested folders in the Explorer, and a 30-day Trash.
+- Editor or view-only share links, with expiry, passwords and revoke any time;
+  live embeds and live images for wikis and READMEs.
+- Export pages as PDF, PNG, SVG or an animated GIF, articles as Markdown, and
+  any tab as JSON to import back.
+- For AI agents and scripts: an MCP server, a CLI (`@livedocuments/cli`) and a
+  REST API that read, write and share documents.
 - Anonymous first-party telemetry with a public dashboard at `/telemetry`. No
   third-party analytics, no identifiers on the wire. Off in self-hosted forks
   unless configured.
@@ -52,9 +55,9 @@ is the team, not the individual.
 
 - MIT-licensed, publicly viewable, self-hostable end to end.
 - Hosted free at livedocuments.app. No paid tier and no plan to introduce one.
-- The OSS core never calls home and never gates features behind a license
-  check. Clerk auth is the one optional SaaS dependency; without it the app
-  degrades to full-featured guest mode.
+- The open-source core never calls home and never gates features behind a
+  license check. Without sign-in configured, a self-hosted copy runs in guest
+  mode with saving, sharing and real-time collaboration all working.
 
 ## Stack
 
@@ -64,9 +67,10 @@ Node-hosted backend, no SSR.
 
 ## Not yet shipped (do not imply these exist)
 
-- Team workspaces (a document belongs to one identity today).
-- Transactional email (Resend).
-- Operational transform / CRDT (realtime is last-writer-wins today).
+- Operational transform / CRDT (realtime is last-writer-wins per element today).
+- Diagrams, whiteboards, mind maps, boards, sheets, forms, workshops (votes,
+  timers) and an in-editor AI assistant are not part of livedocuments. AI works
+  through your own assistant, over MCP, the CLI or the API.
 
 ## Links
 

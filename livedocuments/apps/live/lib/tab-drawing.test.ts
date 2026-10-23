@@ -22,9 +22,8 @@ describe('renderTabDrawingSvg', () => {
       { id: 'p1', orientation: 'landscape', kind: 'slide' },
       { id: 'p2', orientation: 'landscape', kind: 'slide' },
     ];
-    const [one, two] = laidOutPagesOf(tab({ opensIn: 'pages', pages }));
+    const [one, two] = laidOutPagesOf(tab({ pages }));
     const t = tab({
-      opensIn: 'pages',
       pages,
       elements: [
         box('a', 'Opening', { x: one!.rect.x + 40, y: one!.rect.y + 40 }),
@@ -50,13 +49,12 @@ describe('renderTabDrawingSvg', () => {
   });
 
   it('draws a blank Pages tab as its blank page', () => {
-    const svg = renderTabDrawingSvg(tab({ opensIn: 'pages' }));
+    const svg = renderTabDrawingSvg(tab({}));
     expect(svg).toContain('<svg x="');
   });
 
   it("draws an article's writing as estimated when the editor has not laid it out", () => {
     const t = tab({
-      opensIn: 'pages',
       pages: [{ id: 'p1', orientation: 'portrait', kind: 'article', flow: 'f' }],
       articles: {
         f: {
@@ -84,7 +82,7 @@ describe('pageElements', () => {
       { id: 'p1', orientation: 'landscape', kind: 'slide' },
       { id: 'p2', orientation: 'landscape', kind: 'slide' },
     ];
-    const [one, two] = laidOutPagesOf(tab({ opensIn: 'pages', pages }));
+    const [one, two] = laidOutPagesOf(tab({ pages }));
     const a = box('a', 'A', { x: one!.rect.x + 10, y: one!.rect.y + 10 });
     const b = box('b', 'B', { x: two!.rect.x + 10, y: two!.rect.y + 10 });
     const c = box('c', 'C', { x: two!.rect.x + 400, y: two!.rect.y + 10 });

@@ -42,7 +42,7 @@ export const TEMPLATE_CATEGORIES: readonly Omit<CategoryInfo, 'searchWords'>[] =
   .map(({ id, label, description }) => ({ id, label, description }));
 
 // The blanks: in no category, reached from Popular or by search (docs/specs/007-editor/start-diagramming.md
-// "Recommended and groups"). Mirrors isBlankTemplate (BLANK_TEMPLATE_FOR_MODE, EXTRA_BLANK_TEMPLATES and Blank Tab);
+// "Recommended and groups"). Mirrors isBlankTemplate (BLANK_TEMPLATE, EXTRA_BLANK_TEMPLATES and Blank Tab);
 // the categories test pins them together.
 type BlankKind =
   | 'blank'

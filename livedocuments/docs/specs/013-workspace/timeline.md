@@ -6,9 +6,8 @@ grid of cards, stacked when a day gets busy, and switchable into a
 calendar month grid. Its page is **Timeline**, with a row of its own in the
 sidebar's Overview group, under the Inbox (§8).
 
-Modelled on the Timeline subsystem in the Manager Toolkit monorepo
-(`specs/dashboard/timeline/spec.md` + `packages/ui/src/timeline/*` there),
-adapted to livedocuments's data model and its light/dark UI.
+Modelled on the Timeline in Manager Toolkit (a separate product, in its own repository), adapted to
+livedocuments's data model and its light/dark UI.
 
 ## Why
 

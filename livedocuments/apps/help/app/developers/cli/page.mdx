@@ -108,12 +108,12 @@ A stored token goes in your operating system's own secret store: the macOS Keych
 Commands are a resource, then a verb. `doc` and `el` are short for `document` and `element`.
 
 ```bash
-livedocuments document ls auth                  # documents whose name contains "auth"
-livedocuments tab ls "Auth flow"                # the document's tabs
-livedocuments tab view "Auth flow"              # the first tab, as an outline
-livedocuments tab view "Auth flow" --tab Flow --view graph
-livedocuments tab lint "Auth flow"              # what is wrong with how it is drawn
-livedocuments tab render "Auth flow" --png auth.png
+livedocuments document ls launch                # documents whose name contains "launch"
+livedocuments tab ls "Launch deck"              # the document's tabs
+livedocuments tab view "Launch deck"            # the first tab, as an outline
+livedocuments tab view "Launch deck" --tab Slides --view graph
+livedocuments tab lint "Launch deck"            # what is wrong with how it is drawn
+livedocuments tab render "Launch deck" --png launch.png
 ```
 
 `document ls` covers your personal library and every team you have joined, newest first. Wherever a command takes a document, you can give its **name**, the start of its **id**, or a pasted **livedocuments link**; a share link acts through that link. A name that matches more than one document is refused with the candidates, rather than guessed. `--tab` takes a tab name or the start of its id, and the first tab is used when you leave it out.
@@ -134,11 +134,11 @@ livedocuments schema sticky                     # the element kinds, or one kind
 ```bash
 livedocuments document create "Shop" -f arch.json            # from an elements file
 livedocuments document create "Pitch" --template slide-deck
-livedocuments element set "Auth flow" n3 label="Sign in" shape=stadium
-livedocuments edit "Auth flow" -f ops.txt                     # many edit operations at once
-livedocuments changeset revert "Auth flow" cs_8k2m4q7d1x
-livedocuments tab add "Auth flow" Details -f detail.json      # a new tab, empty, from a file or --template
-livedocuments tab rm "Auth flow" Scratch                      # delete one tab; the others stay
+livedocuments element set "Launch deck" n3 label="Beta" shape=stadium
+livedocuments edit "Launch deck" -f ops.txt                   # many edit operations at once
+livedocuments changeset revert "Launch deck" cs_8k2m4q7d1x
+livedocuments tab add "Launch deck" Details -f detail.json    # a new tab, empty, from a file or --template
+livedocuments tab rm "Launch deck" Scratch                    # delete one tab; the others stay
 ```
 
 Every change is **one changeset**, applied all or nothing and checked against the version of the tab you last read, so the CLI never silently overwrites someone else's work. Each write prints what changed, the new revision, a lint summary and the command that reverts it. Add `--dry-run` to see the plan without writing anything, and `--summary` to say what the change is for. `livedocuments guide edit` explains how edit operations read.
@@ -237,8 +237,8 @@ The CLI counts which commands succeed, and which fail because of the server or t
 <Note>
   A full-access token can change and share everything you can. Give an agent a **Read-only access**
   token when it only needs to read, keep `LIVEDOCUMENTS_TOKEN` out of source control and logs, and
-  revoke a token from **API Tokens** (or with `livedocuments auth logout`) the moment you no longer need
-  it or think it may have leaked.
+  revoke a token from **API Tokens** (or with `livedocuments auth logout`) the moment you no longer
+  need it or think it may have leaked.
 </Note>
 
 </ArticleLayout>

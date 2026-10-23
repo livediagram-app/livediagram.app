@@ -1,7 +1,7 @@
 // Document views (docs/specs/024-agents/document-views.md): the view names, the query the api's two
 // doors take, and every view's JSON form, shared by the api, the MCP, the CLI and
 // `@livedocuments/document-views` (docs/specs/024-agents/blueprints/document-views.md, VW49).
-import type { EditorMode, Finish, PageKind, TabKind } from '@livedocuments/document';
+import type { Finish, PageKind } from '@livedocuments/document';
 import type { ArticleSummary, PageSummary } from './pages';
 
 // Every view. `lint` is answered by `@livedocuments/diagram-lint` (docs/specs/024-agents/diagram-lint.md), not
@@ -96,19 +96,17 @@ export const INVALID_VIEW_VALUE_ERROR = 'invalid_value';
 
 export type ViewHeader = {
   view: ViewName;
-  tab: { id: string; ref: string; name: string; kind: TabKind };
+  tab: { id: string; ref: string; name: string };
   elements: number;
   counts: { boxes: number; arrows: number };
   hidden: number;
   unknown: number;
   threads: { open: number; total: number };
   rev: number | null;
-  // The tab's mode when it is not Diagram, and its finish when one is set (docs/specs/024-agents/blueprints/
-  // document-views.md "The outline grammar"), so a reader knows a Draw tab or a sketch finish took.
-  mode?: EditorMode;
+  // Its finish when one is set (docs/specs/024-agents/blueprints/document-views.md "The outline grammar"), so a
+  // reader knows a sketch finish took.
   finish?: Finish;
-  // A Pages tab's pages, by kind (docs/specs/024-agents/pages-for-agents.md "Reading");
-  // absent on a tab in another mode.
+  // The tab's pages, by kind (docs/specs/024-agents/pages-for-agents.md "Reading").
   pages?: { pages: number; kinds: Partial<Record<PageKind, number>> };
 };
 

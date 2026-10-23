@@ -170,10 +170,6 @@ export function inkOn(color: string): string {
   return bestInk(color, '#0f172a', '#ffffff');
 }
 
-// The green that means FINISHED: a resolved comment thread, a done action
-// (docs/specs/012-collaboration/assigned-actions.md). One value, so every surface agrees on what done looks like.
-export const COLLAB_DONE_COLOR = '#16a34a';
-
 // The ink for dark paper: the blue-slate set of the Default scheme's dark half
 // (docs/specs/008-canvas/canvas-and-palette.md) — fill a step above the backdrop, a slate-500 stroke
 // at 3:1 or better on both, white text. Sticky notes, images, link cards
@@ -496,7 +492,7 @@ export function supportsBorderControls(element: Element): boolean {
 // Kinds that take an inline icon but place it themselves, so its position (`iconPosition`) is not the user's to set:
 // a card's media slot and a callout's badge (docs/specs/009-elements/card.md), a header's logo. Their Icon position
 // controls would write a field nothing reads.
-const SELF_PLACED_ICON_SHAPES: ReadonlySet<string> = new Set(['card', 'callout', 'site-header']);
+const SELF_PLACED_ICON_SHAPES: ReadonlySet<string> = new Set(['card', 'site-header']);
 
 /** Whether a shape's inline icon goes where `iconPosition` says, so offering that choice does something. */
 export function positionsInlineIcon(element: Element): boolean {
@@ -548,7 +544,6 @@ const RADIUS_SHAPES = new Set<string>([
   'square',
   'browser',
   'banner',
-  'callout',
   'card',
   'site-header',
   'stat-row',

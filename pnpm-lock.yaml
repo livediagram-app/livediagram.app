@@ -2989,18 +2989,12 @@ importers:
       '@livedocuments/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
-      '@livedocuments/diagram-lint':
-        specifier: workspace:*
-        version: link:../../packages/diagram-lint
       '@livedocuments/document':
         specifier: workspace:*
         version: link:../../packages/document
       '@livedocuments/document-views':
         specifier: workspace:*
         version: link:../../packages/document-views
-      '@livedocuments/icons':
-        specifier: workspace:*
-        version: link:../../packages/icons
       '@livedocuments/render-png':
         specifier: workspace:*
         version: link:../../packages/render-png
@@ -3162,9 +3156,6 @@ importers:
       next:
         specifier: ^16.4.1
         version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-      polygon-clipping:
-        specifier: 0.15.7
-        version: 0.15.7
       prosemirror-commands:
         specifier: ^1.7.2
         version: 1.7.2
@@ -3217,9 +3208,6 @@ importers:
       '@testing-library/react':
         specifier: ^16.3.3
         version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-      '@types/jsdom':
-        specifier: ^30.0.0
-        version: 30.0.0
       '@types/node':
         specifier: ^26.6.4
         version: 26.6.5
@@ -3520,9 +3508,6 @@ importers:
       '@livedocuments/edit-operations':
         specifier: workspace:*
         version: link:../edit-operations
-      '@livedocuments/page-background':
-        specifier: workspace:*
-        version: link:../page-background
       '@livedocuments/templates':
         specifier: workspace:*
         version: link:../templates
@@ -3992,18 +3977,9 @@ importers:
 
   livedocuments/packages/template-previews:
     dependencies:
-      '@livedocuments/document':
-        specifier: workspace:*
-        version: link:../document
-      '@livedocuments/icons':
-        specifier: workspace:*
-        version: link:../icons
       '@livedocuments/templates':
         specifier: workspace:*
         version: link:../templates
-      '@livedocuments/ui':
-        specifier: workspace:*
-        version: link:../ui
       react:
         specifier: ^19.3.0
         version: 19.3.1
@@ -4072,9 +4048,6 @@ importers:
       '@livedocuments/document':
         specifier: workspace:*
         version: link:../document
-      '@livedocuments/help-registry':
-        specifier: workspace:*
-        version: link:../help-registry
       '@livedocuments/icons':
         specifier: workspace:^
         version: link:../icons

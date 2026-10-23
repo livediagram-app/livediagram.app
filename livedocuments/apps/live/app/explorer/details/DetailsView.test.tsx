@@ -104,9 +104,7 @@ describe('DetailsView', () => {
   it('shows a counted document: mode, comments, access and size', () => {
     render(
       <DetailsView
-        {...view([
-          doc('Deck', { stats: { mode: 'pages', elements: 12, comments: 3, bytes: 12 * 1024 } }),
-        ])}
+        {...view([doc('Deck', { stats: { elements: 12, comments: 3, bytes: 12 * 1024 } })])}
       />,
     );
     const cells = within(screen.getAllByRole('row')[1]!).getAllByRole('cell');
@@ -123,9 +121,7 @@ describe('DetailsView', () => {
 
   it('caps the count in the bubble at 99+', () => {
     render(
-      <DetailsView
-        {...view([doc('Busy', { stats: { mode: 'pages', elements: 1, comments: 150, bytes: 1 } })])}
-      />,
+      <DetailsView {...view([doc('Busy', { stats: { elements: 1, comments: 150, bytes: 1 } })])} />,
     );
     const cell = within(screen.getAllByRole('row')[1]!).getAllByRole('cell')[2]!;
     expect(within(cell).getByText('99+')).toBeTruthy();

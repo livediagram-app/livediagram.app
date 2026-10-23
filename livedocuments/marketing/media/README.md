@@ -5,37 +5,60 @@ demo recordings.
 
 ## Screenshots
 
-Product screenshots of the live app at [livedocuments.app](https://livedocuments.app),
-split by viewport so the desktop and mobile pitches stay independent. Each is
-captioned with what it shows so copywriters can match it to a claim in
-[`../copy/facts.md`](../copy/facts.md).
+Product screenshots, split by viewport so the desktop and mobile pitches stay
+independent. Each should be captioned with what it shows so copywriters can
+match it to a claim in [`../copy/facts.md`](../copy/facts.md).
+
+**Not yet checked.** The captions that used to sit here described livediagram
+(a mind-map hero, Kanban and retrospective boards, an org chart, the old `/new`
+template modal) and matched none of the files below, so they were removed.
+Before using a file, open it and check it shows livedocuments as it is today:
+articles, slide decks and infographics. Retake anything showing diagrams,
+whiteboards, boards, sheets or removed chrome, then add a caption here.
 
 ### Desktop (`desktop/`)
 
-| File                | Shows                                                                                                                                                                               |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `landing.png`       | The marketing landing page: "A picture tells a thousand words, tell your story" hero, the **Start drawing** CTA, and a mind-map editor preview below.                               |
-| `explorer.png`      | The Explorer library (`/live/explorer`): folders (Unsorted, Management, Product) with document counts, the Recent / Folders / Image Gallery / Shared sidebar, New diagram/folder.   |
-| `new.png`           | The **Quick Start** new-document modal (`/live/new`): the template grid (Blank, Mind map, Org chart, Retrospective, Flowchart, Kanban, SWOT, Timeline) and the theme picker.        |
-| `share.png`         | The **Share this diagram** dialog: editor vs view-only links, optional password gate, active links with copy, create-new-link.                                                      |
-| `comments.png`      | A comment thread open on an element, the element toolbar, and the Comments panel listing comment-bearing elements.                                                                  |
-| `more.png`          | The element context menu: Duplicate, Edit link, Bring to front / Send to back, Add note, Comment.                                                                                   |
-| `settings.png`      | The Settings dialog with its grouped toggles: Canvas, Interface, Privacy (anonymous usage events). Stale: it shows the removed AI category and Minimal panel layout toggle; retake. |
-| `org-hierarchy.png` | An org-chart diagram (CEO to VPs to leads) in **dark mode**, with theme-coloured tabs.                                                                                              |
-| `backlog.png`       | A Kanban sprint board (Backlog to Done) in dark mode. Stale: it shows the removed Minimal layout's dock popover; retake.                                                            |
-| `sprint-review.png` | A retrospective / Sprint Review board with per-person image-upload cards. Stale: it shows the removed Tab Activity panel; retake.                                                   |
+- `API_Tokens.png`
+- `collaborate.png`
+- `comments.png`
+- `editor_1.png`
+- `editor_2_animation.png`
+- `editor_dark.png`
+- `editor_dark_context.png`
+- `editor_flowchart.png`
+- `editor_generated.png`
+- `editor_new_template.png`
+- `editor_new_theme.png`
+- `editor_wireframe.png`
+- `help_1.png`
+- `help_2.png`
+- `isometric.png`
+- `landing_page.png`
+- `landing_page_2.png`
+- `recent_1.png`
+- `recent_2_cards.png`
+- `search.png`
+- `share.png`
+- `spotlight.png`
+- `teams.png`
+- `telemetry_1.png`
+- `telemetry_2.png`
 
 ### Mobile (`mobile/`)
 
-Stale: these predate the phone's Toolbar layout (the palette as one strip across the top, the Explorer behind a menu button) and show the old dock chrome, which is gone. Retake them.
-
-| File           | Shows                                                                                            |
-| -------------- | ------------------------------------------------------------------------------------------------ |
-| `canvas.PNG`   | The mobile editor: a diagram on the canvas with the bottom dock visible.                         |
-| `diagram.PNG`  | A diagram open on a phone, the dock collapsed so the canvas takes the full viewport.             |
-| `explorer.PNG` | The Explorer library on mobile, with the document list and the sidebar accessible from the dock. |
-| `palette.PNG`  | The mobile palette popover open above the dock, showing the shapes / tools / devices accordions. |
-| `search.PNG`   | The search panel on mobile, surfacing results across documents, folders, tabs, and elements.     |
+- `article.PNG`
+- `context.PNG`
+- `editor.PNG`
+- `editor_dark.PNG`
+- `editor_recent.PNG`
+- `help.PNG`
+- `landing.PNG`
+- `new_template.PNG`
+- `new_theme.PNG`
+- `recent.PNG`
+- `search.PNG`
+- `teams.PNG`
+- `telemetry.PNG`
 
 ## Logo (`logo/`)
 
@@ -65,8 +88,9 @@ also into `apps/marketing/public/`), rasterised by Playwright's Chromium. A test
 
 - **Brand color** is amber `#F59E0B` ("livedocuments amber"); the logo has its own amber-to-orange prism palette. Page background
   `#F8FAFC`, canvas white. Full palette in [Theme](../../docs/specs/004-interface-design/color-scheme.md).
-- **Show, don't tell.** Screenshots should feature a real diagram with visible
-  multiplayer cursors, since "no sign-in, real-time" is the pitch.
+- **Show, don't tell.** Screenshots should feature a real article, deck or
+  infographic with visible multiplayer cursors, since "made together, live" is
+  the pitch.
 - **Keep claims current.** When the UI changes, retake the affected screenshot:
   a stale shot that shows a removed control is worse than none.
 - **Keep large binaries out of git where practical.** Prefer SVG for logos and

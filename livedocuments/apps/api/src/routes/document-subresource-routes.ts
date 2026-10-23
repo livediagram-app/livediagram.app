@@ -67,9 +67,7 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
   if (
     segments.length === 6 &&
     segments[3] === 'tabs' &&
-    // `illustrate`: the address before Illustrate mode became Pages mode, still sent by older
-    // CLI and MCP builds (docs/specs/024-agents/pages-for-agents.md).
-    (segments[5] === 'pages' || segments[5] === 'illustrate') &&
+    segments[5] === 'pages' &&
     ctx.request.method === 'POST'
   ) {
     return handleTabPages(ctx, segments[2]!, segments[4]!);

@@ -74,27 +74,6 @@ export async function tabIdsWithComments(env: Env, documentId: string): Promise<
   return results.map((r) => r.tab_id);
 }
 
-// A page of the document's tabs that hold a Plan board, in tab order, bodies included: the plan route
-// never parses a tab without a board.
-export async function tabBodiesWithBoards(
-  env: Env,
-  documentId: string,
-  offset: number,
-  limit: number,
-): Promise<TabDTO[]> {
-  const { results } = await env.DB.prepare(
-    `SELECT t.id, dt.document_id, t.name, dt.order_index, t.data, t.updated_at, t.rev, dt.folder
-       FROM tabs t
-       JOIN document_tabs dt ON dt.tab_id = t.id
-      WHERE dt.document_id = ? AND instr(t.data, '"plan-board"') > 0
-      ORDER BY dt.order_index, t.id
-      LIMIT ? OFFSET ?`,
-  )
-    .bind(documentId, limit, offset)
-    .all<TabRow>();
-  return results.map(rowToTab);
-}
-
 // A page of a document's tabs in order, bodies included: `overview` reads a document this way so it
 // never holds more than `limit` bodies at once (docs/specs/024-agents/blueprints/document-views.md, VW47).
 export async function tabBodiesInOrder(
@@ -159,19 +138,6 @@ export async function getTabBody(
     .bind(...(tabId === null ? [documentId] : [documentId, tabId]))
     .first<{ id: string; data: string; element_count: number | null }>();
   return row ? { id: row.id, data: row.data, elementCount: row.element_count ?? null } : null;
-}
-
-// How much the document's first tab has to draw (drawnCount): its stored count, or a parse of its body while the count is
-// not yet known (the baseline migration). Zero with no tab or an unreadable body. Needs no snapshot store, unlike a render.
-export async function firstTabElementCount(env: Env, documentId: string): Promise<number> {
-  const body = await getTabBody(env, documentId);
-  if (!body) return 0;
-  if (body.elementCount !== null) return body.elementCount;
-  try {
-    return drawnCount(JSON.parse(body.data) as { elements?: unknown });
-  } catch {
-    return 0;
-  }
 }
 
 // The lazy backfill (the baseline migration): a reader that has parsed a body whose count is still unknown

@@ -2,7 +2,7 @@
 // document in place", WB58): never the /new wizard. The wizard's href says where and what (`folder`, `team`,
 // `template`); the place the frame shows fills in where it says nothing, a folder view its folder and a team page its
 // team. The document is made as /new makes it (lib/new-document-content.ts) and opened in the frame.
-import { creationIntentOf } from '@livedocuments/api-schema';
+import { CREATION_INTENT } from '@livedocuments/api-schema';
 import { untitledNameForTemplate, type TemplateKind } from '@livedocuments/templates';
 import { apiCreateDocument } from '@/lib/api-client';
 import { NEW_DOCUMENT_THEME_ID, newDocumentContent } from '@/lib/new-document-content';
@@ -55,7 +55,7 @@ export async function createDocumentInPlace(
     tabs: tabs ?? [tab],
     teamId: request.teamId,
     folderId: request.folderId,
-    intent: creationIntentOf(tab),
+    intent: CREATION_INTENT,
   });
   return documentId;
 }
