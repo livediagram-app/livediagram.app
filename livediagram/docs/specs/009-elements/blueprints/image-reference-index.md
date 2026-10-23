@@ -56,6 +56,8 @@ Each writer appends statements to the D1 batch that writes the body.
 
 `imageRefReplaceStatements(env, tabId, ids)`, with `ids` bound as one JSON array:
 
+0. `mediaRefQueueTabStatement(env, tabId, ids, false)`: queues the tab's documents for the media service when
+   the set changes ([Images](images.md#retention)); `imageRefAddStatements` runs it add-only first too.
 1. `DELETE FROM image_refs WHERE tab_id = ?1 AND image_id NOT IN (SELECT value FROM json_each(?2))`
 2. `imageRefAddStatements`: when `ids` is non-empty,
    `INSERT OR IGNORE INTO image_refs (tab_id, image_id) SELECT ?1, value FROM json_each(?2)`
@@ -92,7 +94,8 @@ States: `settling` (`now - created_at < IMAGE_REFS_BACKFILL_SETTLE_MS`), `runnin
    2. `cursor >= max`: `completeImageRefsBackfill(env, now)`, log, return `complete`.
    3. `to = min(cursor + IMAGE_REFS_BACKFILL_PAGE_ROWS, max)`.
    4. Corrupt tabs in `(cursor, to]` that mention `"imageId"`, one at a time (`nextCorruptTabMentioningImages`,
-      keyset on `rowid`, `LIMIT 1`): `imageRefAddStatements(imageRefIdsFromText(data))`, warn.
+      keyset on `rowid`, `LIMIT 1`): `imageRefBackfillAddStatements(imageRefIdsFromText(data))` (the inserts
+      without the media queue), warn.
    5. One batch: `[imageRefIndexPageStatement(cursor, to), imageRefsBackfillAdvanceStatement(to)]`.
 4. Budget spent: log the range, return `running`.
 
@@ -131,11 +134,14 @@ the isolate's life (`D2`); `resetImageRefIndexMemo()` clears it for tests.
 **Share read** `documentServesImage(env, documentId, imageId, onlyTabId)` (`db/image-grants.ts`): when not
 complete, run `imageRefIndexDocumentStatement` first. Then one query: the document places the image
 (`document_tabs` ⋈ `image_refs`, `[AND dt.tab_id = ?]`) AND `SERVES`, where
-`SERVES = i.owner_id = d.owner_id OR EXISTS (SELECT 1 FROM image_grants g WHERE g.document_id = d.id AND g.image_id = i.id)`.
+`SERVES = i.owner_id = d.owner_id OR EXISTS (SELECT 1 FROM image_grants g WHERE g.document_id = d.id AND g.image_id = i.id)`,
+`i` being the image's `media_images` row (whose it is, as this api names owners; [Images](images.md#data-and-persistence)).
+An image with no row there serves nowhere and earns no grant until this api meets it (an upload, a gallery list, or
+the first byte read, which fills the row).
 A refusal logs `[images] not servable by document` with the document and image ids.
 
 **Render read** `servableImageIds(env, documentId, ids)`: of a tab's ids, those `SERVES` admits, one query over a
-bound JSON array. `thumbnail.ts` `loadEmbeddedImages` reads R2 only for those; the rest keep the placeholder.
+bound JSON array. `thumbnail.ts` `loadEmbeddedImages` reads the media service only for those; the rest keep the placeholder.
 
 ### Placement grants
 

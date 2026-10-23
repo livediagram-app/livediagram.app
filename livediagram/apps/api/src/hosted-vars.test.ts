@@ -76,7 +76,7 @@ describe('hosted profile', () => {
     }
   });
 
-  it('is never a committed default, so a fork is telemetry-off and uncapped', async () => {
+  it('is never a committed default, so a fork is telemetry-off', async () => {
     const { shared, environments } = (await load()).readHostedProfile();
     const hosted = [
       ...Object.keys(shared),

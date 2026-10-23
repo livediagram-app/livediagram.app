@@ -878,8 +878,6 @@ livediagram.app's per-environment Google identity lives in `apps/api/hosted-vars
 ```json
 {
   "TELEMETRY_ENABLED": "true",
-  "IMAGE_MAX_PER_OWNER": "100",
-  "IMAGE_MAX_BYTES_PER_OWNER": "104857600",
   "environments": {
     "production": { "GOOGLE_CLIENT_ID": "" },
     "staging": { "GOOGLE_CLIENT_ID": "" }

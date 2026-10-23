@@ -1,9 +1,7 @@
-// Magic-number sniffing for the accepted raster formats (docs/specs/009-elements/images.md). The api
-// runs it at the upload boundary so a declared content-type can't smuggle an
-// SVG past ACCEPTED_IMAGE_TYPES (see apps/api/src/image-sniff.ts for that
-// security rationale), and the image embedder (./embed-images.ts) runs it to
-// label bytes whose stored type is missing. Pure and worker-safe, so both
-// workers share the one signature table.
+// Magic-number sniffing for the accepted raster formats (docs/specs/009-elements/images.md). The image
+// embedder (./embed-images.ts) runs it to label bytes whose stored type is missing. Uploads are sniffed
+// by liveworkspace's media service (@liveworkspace/media), so a declared content-type can't smuggle an
+// SVG past ACCEPTED_IMAGE_TYPES. Pure and worker-safe.
 
 import type { AcceptedImageType } from './image-limits';
 
