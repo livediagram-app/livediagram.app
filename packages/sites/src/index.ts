@@ -118,6 +118,12 @@ export type AppItems = {
   previewPath: string | null;
   // What the Share dialog offers beyond a link's address, as the app serves it (address patterns on its site).
   share: AppShare;
+  // The person's Library in the app's API, which the Explorer on liveworkspace.app reads by the workspace token: their
+  // images (`GET`/`POST`, `GET usage`, `GET`/`DELETE <id>`; the media service behind it) and their shape libraries
+  // (`GET`, `PUT`/`DELETE <id>`; a Durable Object behind it). Null where the app keeps none, and the Library leaves
+  // that page out.
+  imagesPath: string | null;
+  shapeLibrariesPath: string | null;
 };
 
 /** The Share dialog's extras an app serves, so the Explorer on liveworkspace.app offers them for its items without
@@ -170,6 +176,8 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     onIndex: false,
     sharePath: '/document/shared?s=',
     previewPath: null,
+    imagesPath: '/api/images',
+    shapeLibrariesPath: '/api/shape-libraries',
     share: shareOf('/api/documents/:id', 'document', 'livediagram tab'),
   },
   liveplanner: {
@@ -182,6 +190,8 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     onIndex: true,
     sharePath: '/project/shared?s=',
     previewPath: '/api/projects/:id/thumbnail',
+    imagesPath: null,
+    shapeLibrariesPath: null,
     share: shareOf(itemTabsPath('projects'), null, 'liveplanner tab'),
   },
   livedocuments: {
@@ -194,6 +204,8 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     onIndex: false,
     sharePath: '/document/shared?s=',
     previewPath: null,
+    imagesPath: '/api/images',
+    shapeLibrariesPath: null,
     share: shareOf(itemTabsPath('documents'), null, 'livedocuments tab'),
   },
   livedesign: {
@@ -206,6 +218,8 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     onIndex: true,
     sharePath: '/design/shared?s=',
     previewPath: '/api/designs/:id/thumbnail',
+    imagesPath: '/api/images',
+    shapeLibrariesPath: null,
     share: shareOf('/api/designs/:id', 'design', 'livedesign tab'),
   },
 };

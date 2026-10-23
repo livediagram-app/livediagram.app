@@ -97,6 +97,8 @@ export function viewList(
     case 'inbox':
     case 'timeline':
     case 'invites':
+    case 'gallery':
+    case 'shape-libraries':
       return null;
     case 'all':
       // With a lens: every item of mine, at any depth.

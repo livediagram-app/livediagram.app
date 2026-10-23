@@ -63,6 +63,7 @@ import {
   type WorkspaceIdentity,
 } from '@/lib/explorer/token';
 import { inboxHost } from '@/lib/explorer/inbox';
+import { libraryHosts } from '@/lib/explorer/library';
 import { useExplorerSettings } from '@/lib/explorer/settings';
 import { shareHostFor } from '@/lib/explorer/share';
 import {
@@ -224,6 +225,8 @@ export function ExplorerShell() {
   );
   const teams = useMemo(() => teamsOfToken(identity?.token ?? null), [identity]);
   const helpHref = useMemo(() => helpHrefFor(app), [app]);
+  // The app's Image Gallery and Shape Libraries, where it keeps them (stable per app).
+  const library = libraryHosts(app);
 
   // Home's first run: the app's starts, loaded only once Home finds nothing.
   const [loaded, setLoaded] = useState<{ app: AppName; manifest: WelcomeManifest } | null>(null);
@@ -351,6 +354,8 @@ export function ExplorerShell() {
           signInBanner={signInBanner}
           arrivalNotice={notice}
           inbox={inbox}
+          gallery={library.gallery}
+          shapeLibraries={library.shapeLibraries}
           heroHidden={settings.heroHidden}
           onHideHero={settings.onHideHero}
           onTimeline={trackTimeline}

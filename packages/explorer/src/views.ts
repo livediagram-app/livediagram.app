@@ -30,7 +30,11 @@ export type ExplorerView =
   // A team's library, at its root or one of its folders.
   | ({ kind: 'team'; id: string; folderId?: string } & Lensed)
   // The team invitations waiting for the person, each answered where teams are run.
-  | { kind: 'invites' };
+  | { kind: 'invites' }
+  // The person's images, from the host's media source (only where the host has one).
+  | { kind: 'gallery' }
+  // The person's shape libraries, from the host's store (only where the host has one).
+  | { kind: 'shape-libraries' };
 
 /** How a view takes the lens: `scoped` (its breadcrumb is the place), `aggregate` (it lists every place), or
  *  null for a view that lists no items of its own (typing there opens Search results). */
@@ -70,7 +74,7 @@ export type ExplorerViewKind = ExplorerView['kind'];
 /** The views that list items (and folders): every view but those drawn by panes of their own. */
 export type ItemsView = Exclude<
   ExplorerView,
-  { kind: 'home' | 'inbox' | 'timeline' | 'invites' }
+  { kind: 'home' | 'inbox' | 'timeline' | 'invites' | 'gallery' | 'shape-libraries' }
 >;
 
 export const DEFAULT_BASE_PATH = '/explorer';
@@ -91,6 +95,9 @@ export function explorerPath(view: ExplorerView, base = DEFAULT_BASE_PATH): stri
       return view.folderId
         ? `${b}/team?id=${enc(view.id)}&folder=${enc(view.folderId)}${lens('&')}`
         : `${b}/team?id=${enc(view.id)}${lens('&')}`;
+    // livediagram's address for its gallery, kept so its links still land.
+    case 'gallery':
+      return `${b}/images`;
     default:
       return `${b}/${view.kind}${lens('?')}`;
   }
@@ -121,7 +128,10 @@ export function viewFromLocation(
     case 'timeline':
     case 'home':
     case 'invites':
+    case 'shape-libraries':
       return { kind: section };
+    case 'images':
+      return { kind: 'gallery' };
     case 'search':
       return { kind: 'search', q };
     // The old Generated view: Search results, made by AI.
@@ -172,4 +182,6 @@ export const VIEW_TITLES: Record<Exclude<ExplorerViewKind, 'folder' | 'team'>, s
   favourites: 'Favourites',
   search: 'Search results',
   invites: SIDEBAR_LABELS.invites,
+  gallery: SIDEBAR_LABELS.gallery,
+  'shape-libraries': SIDEBAR_LABELS.shapeLibraries,
 };

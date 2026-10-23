@@ -58,7 +58,8 @@ import { useFolderRowMenu, useMyWorkMenu } from './sidebar/rowMenus';
 import { useTreeNavigation } from './sidebar/useTreeNavigation';
 import { useExtras } from './extras';
 import { SidebarSignInNudge, teamMemberBadge } from './SidebarSignInNudge';
-import { MailIcon } from '../ui/library-icons';
+import { ImageIcon, MailIcon, ShapesIcon } from '../ui/library-icons';
+import { useLibraryHost } from '../library/context';
 
 type Tone = 'sky' | 'violet' | 'amber' | 'emerald' | 'indigo' | 'rose';
 
@@ -83,6 +84,8 @@ const LIBRARY_VIEWS: ReadonlySet<ExplorerView['kind']> = new Set([
   'recent',
   'favourites',
   'unsorted',
+  'gallery',
+  'shape-libraries',
 ]);
 
 const START_FOLDS: ReadonlySet<string> = new Set([MY_WORK]);
@@ -425,6 +428,7 @@ export function timelineBadge(count: number | undefined): {
 export function Sidebar() {
   const { view, navigate, folders, teams, inbox, viewerId, manageTeamsUrl } = useExplorer();
   const { sidebarLinks } = useHostExtras();
+  const library = useLibraryHost();
   const { expanded, toggle } = useExpanded(view);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const rename: SidebarRename = { renamingId, setRenamingId };
@@ -601,6 +605,25 @@ export function Sidebar() {
             onActivate={() => navigate({ kind: 'unsorted' })}
             depth={1}
           />
+          {/* The host's Library pages (livediagram's), where it has them. */}
+          {library.gallery ? (
+            <SidebarRow
+              icon={<ImageIcon />}
+              label={SIDEBAR_LABELS.gallery}
+              selected={view.kind === 'gallery'}
+              onActivate={() => navigate({ kind: 'gallery' })}
+              depth={1}
+            />
+          ) : null}
+          {library.shapeLibraries ? (
+            <SidebarRow
+              icon={<ShapesIcon />}
+              label={SIDEBAR_LABELS.shapeLibraries}
+              selected={view.kind === 'shape-libraries'}
+              onActivate={() => navigate({ kind: 'shape-libraries' })}
+              depth={1}
+            />
+          ) : null}
         </SidebarRow>
         {/* The host's own rows (This Browser on liveworkspace.app): each leaves for its page. */}
         {sidebarLinks.map((link) => (

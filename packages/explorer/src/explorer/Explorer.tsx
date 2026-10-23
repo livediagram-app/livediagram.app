@@ -41,6 +41,7 @@ import { HomeHero } from './HomeHero';
 import { HomePane } from './HomePane';
 import { InboxPane } from './InboxPane';
 import { InvitesPane } from './InvitesPane';
+import { GalleryView, ShapeLibrariesView } from '../library/LibraryViews';
 import { ItemsPane } from './ItemsPane';
 import { SearchField } from './SearchField';
 import { Sidebar } from './Sidebar';
@@ -451,6 +452,10 @@ function Pane({
       return <TimelinePane onOpenNav={onOpenNav} />;
     case 'invites':
       return <InvitesPane onOpenNav={onOpenNav} />;
+    case 'gallery':
+      return <GalleryView onOpenNav={onOpenNav} />;
+    case 'shape-libraries':
+      return <ShapeLibrariesView onOpenNav={onOpenNav} />;
     default:
       return <ItemsPane view={view} onOpenNav={onOpenNav} />;
   }

@@ -19,7 +19,7 @@ import {
   TrashIcon,
   UnsortedIcon,
 } from '../ui/icons';
-import { MailIcon } from '../ui/library-icons';
+import { ImageIcon, MailIcon, ShapesIcon } from '../ui/library-icons';
 import type { ExplorerView } from '../views';
 import type { Words } from '../words';
 
@@ -117,6 +117,20 @@ export function emptyCopy(
         icon: <MailIcon />,
         title: 'No pending invites',
         description: 'Sign in to see the team invitations waiting for you.',
+        cta: false,
+      };
+    case 'gallery':
+      return {
+        icon: <ImageIcon />,
+        title: 'No images yet',
+        description: `Every image you add to a ${w.lowerOne} collects here, ready to reuse in any of them.`,
+        cta: false,
+      };
+    case 'shape-libraries':
+      return {
+        icon: <ShapesIcon />,
+        title: 'No shape libraries yet',
+        description: 'Import a draw.io library and its shapes collect here.',
         cta: false,
       };
     case 'home':

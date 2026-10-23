@@ -19,6 +19,8 @@ describe('views and their addresses', () => {
     { kind: 'team', id: 'team-1' },
     { kind: 'team', id: 'team-1', folderId: 'f2' },
     { kind: 'invites' },
+    { kind: 'gallery' },
+    { kind: 'shape-libraries' },
   ];
   it.each(views)('round-trips %o', (view) => {
     const path = explorerPath(view, '/explorer');
@@ -46,6 +48,11 @@ describe('views and their addresses', () => {
     expect(viewFromLocation('/explorer/generated')).toEqual({ kind: 'search', q: 'made-by:ai' });
     // The sidebar's highlight is the place, whatever the lens.
     expect(sameView({ kind: 'recent', q: 'edited:7d' }, { kind: 'recent' })).toBe(true);
+  });
+
+  it('keeps livediagram’s gallery address', () => {
+    expect(explorerPath({ kind: 'gallery' })).toBe('/explorer/images');
+    expect(viewFromLocation('/explorer/images')).toEqual({ kind: 'gallery' });
   });
 
   it('honours a host base path', () => {
