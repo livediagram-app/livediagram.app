@@ -88,23 +88,7 @@ describe('eventExplanation', () => {
     );
   });
 
-  it('names the Explorer sidebar row someone picked', () => {
-    expect(eventExplanation('UI', 'Selected', 'Sidebar.Inbox')).toBe(
-      "Someone picked the inbox row in the Explorer's sidebar.",
-    );
-    expect(eventExplanation('UI', 'Selected', 'Sidebar.Trash')).toBe(
-      "Someone picked the trash row in the Explorer's sidebar.",
-    );
-    expect(eventExplanation('UI', 'Selected', 'Sidebar.Activity')).toBe(
-      EXACT['UI|Selected|Sidebar.Activity'],
-    );
-    expect(EXACT['UI|Selected|Sidebar.Activity']).toMatch(/renamed Inbox. No longer recorded/);
-    expect(eventExplanation('UI', 'Selected', 'Sidebar.SharedWithMe')).toBe(
-      "Someone picked the shared with me row in the Explorer's sidebar.",
-    );
-    expect(eventExplanation('UI', 'Selected', 'ExplorerPanel.MyProjects')).toBe(
-      "Someone picked the my projects row in the editor's Explorer panel.",
-    );
+  it('names the sign-in banner the Explorer showed', () => {
     expect(eventExplanation('UI', 'Selected', 'SignInBannerExplorer')).toBe(
       EXACT['UI|Selected|SignInBannerExplorer'],
     );

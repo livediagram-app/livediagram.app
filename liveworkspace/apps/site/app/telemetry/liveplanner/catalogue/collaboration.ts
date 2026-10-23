@@ -1,4 +1,4 @@
-// Working together: live sessions, sharing, discussion, History and team Activity, teams and the session tools (docs/specs/017-telemetry/telemetry.md).
+// Working together: live sessions, embeds, discussion, teams and the session tools (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import type { Metric, MetricStack } from '../metric-series';
@@ -19,68 +19,6 @@ export const VOTE_REVIEWS_ENDED = chart(
   'Vote Reviews Ended',
   'The review of a revealed vote closed.',
   { types: ['VoteReview'] },
-);
-
-export const TEAM_PROJECTS_MOVED = chart(
-  'Team',
-  'Moved',
-  'Team Projects Moved',
-  'A project moved within a team library.',
-);
-
-export const SHARE_LINKS_COPIED = chart(
-  'UI',
-  'Copied',
-  'Share Links Copied',
-  'A project share link, embed code or live image copied. (Team invite links are in Team Activity.)',
-  {
-    typeIn: (t) => t !== 'TeamInviteLink' && t !== 'Diagnostics' && t !== 'Diagnostics.Help',
-  },
-);
-
-export const SHARE_SETTINGS = chart(
-  'Project',
-  'Shared',
-  'Share Link Settings',
-  'A password or an expiry set on a share link.',
-  { typeIn: (t) => t !== 'Edit' && t !== 'View' && t !== 'Participate' },
-);
-
-export const SHARE_LINKS_REMOVED = chart(
-  'Project',
-  'Removed',
-  'Share Links Removed',
-  'A share link switched off.',
-  { rising: 'neutral' },
-);
-
-export const FEED_RETRIES = chart(
-  'Activity',
-  'Loaded',
-  'Inbox Retries',
-  "The Explorer's Inbox retried after failing to load.",
-  { rising: 'bad' },
-);
-
-export const TIMELINE_LOADS = chart(
-  'Timeline',
-  'Loaded',
-  'History Loads',
-  "More of a project's History or a team's Activity loaded, or a failed load retried.",
-);
-
-export const TIMELINE_VIEW_SWITCHED = chart(
-  'Timeline',
-  'Changed',
-  'History View Switched',
-  "A project's History or a team's Activity switched between its list and calendar.",
-);
-
-export const TIMELINE_FILTERED = chart(
-  'Timeline',
-  'Selected',
-  'History Filtered',
-  "A project's History or a team's Activity narrowed to everyone, others, or a kind of event.",
 );
 
 export const COMMENTS_DELETED = chart(
@@ -132,25 +70,9 @@ export const TIMERS_RESUMED = chart(
   { types: ['TimerResumed'] },
 );
 
-export const TEAM_REMOVALS = chart(
-  'Team',
-  'Removed',
-  'Team Removals',
-  'A member removed, an invite withdrawn, a project or an invite link taken out of a team, or someone leaving.',
-  { rising: 'neutral' },
-);
-
-export const LIVE_IMAGE_TABS = chart(
-  'UI',
-  'Selected',
-  'Live Image Tabs Picked',
-  'A tab chosen for a live image link.',
-  { types: ['LiveImageTab'] },
-);
-
 // ---- Collaboration tab -------------------------------------------------------
-// Everything but Live Together counts an INVITATION (a link made, a member
-// added, a vote opened); Live Together counts two people on one canvas at the
+// Everything but Live Together counts a way in (an embed, a workbench frame, a
+// project made in a team) or a session tool; Live Together counts two people on one canvas at the
 // same moment, which is what the rest is FOR, so read the rest against it. The
 // session tools (docs/specs/012-collaboration/session-tools.md) are read by their drop-off: votes
 // started vs revealed, dots cast vs retracted, timers started vs finished.
@@ -162,55 +84,6 @@ export const MULTIPLAYER_SESSIONS: Metric = {
   title: 'Multiplayer Sessions',
   blurb:
     'A project was open with at least one other person live in the room. Counted once per project per visit, however many people turn up.',
-};
-
-export const EDIT_LINKS_SHARED: Metric = {
-  category: 'Project',
-  action: 'Shared',
-  type: 'Edit',
-  title: 'Edit Links Shared',
-};
-
-export const VIEW_LINKS_SHARED: Metric = {
-  category: 'Project',
-  action: 'Shared',
-  type: 'View',
-  title: 'View Links Shared',
-};
-
-// Participant links (docs/specs/013-workspace/share-roles.md): take part and write, never reshape the board.
-export const PARTICIPATE_LINKS_SHARED: Metric = {
-  category: 'Project',
-  action: 'Shared',
-  type: 'Participate',
-  title: 'Participant Links Shared',
-};
-
-export const PARTICIPANTS_JOINED: Metric = {
-  category: 'Project',
-  action: 'Joined',
-  type: 'Participate',
-  title: 'Participants Joined',
-  blurb:
-    'People who came into a project through a Participant link. Counted once per person per project, not on every revisit.',
-};
-
-export const COLLABORATORS_JOINED: Metric = {
-  category: 'Project',
-  action: 'Joined',
-  type: 'Edit',
-  title: 'Collaborators Joined',
-  blurb:
-    'People who came into a project through an edit link. Counted once per person per project, not on every revisit.',
-};
-
-export const VIEWERS_JOINED: Metric = {
-  category: 'Project',
-  action: 'Joined',
-  type: 'View',
-  title: 'Viewers Joined',
-  blurb:
-    'People who came into a project through a view-only link. Counted once per person per project, not on every revisit.',
 };
 
 export const COMMENTS_ADDED: Metric = {
@@ -246,37 +119,12 @@ export const COMMENTS_MENTIONED: Metric = {
   blurb: 'A comment was sent that @-mentioned at least one teammate.',
 };
 
-export const TEAMS_CREATED: Metric = {
-  category: 'Team',
-  action: 'Created',
-  type: null,
-  title: 'Teams Created',
-  blurb: 'A new team workspace was created.',
-};
-
-export const INVITES_ACCEPTED: Metric = {
-  category: 'Team',
-  action: 'Joined',
-  type: null,
-  title: 'Invites Accepted',
-  blurb: 'Someone joined a team, by accepting an email invite or opening an invite link.',
-};
-
-export const INVITES_DECLINED: Metric = {
-  category: 'Team',
-  action: 'Declined',
-  type: 'Invite',
-  rising: 'neutral',
-  title: 'Invites Declined',
-  blurb: 'The recipient turned an invitation down. Read against accepted, not against sent.',
-};
-
 export const PROJECTS_SHARED_TO_A_TEAM: Metric = {
   category: 'Team',
   action: 'Added',
   type: 'Project',
   title: 'Projects Shared to a Team',
-  blurb: "A project was moved into a team's shared library for everyone on the team.",
+  blurb: "A project was created straight into a team's shared library, for everyone on the team.",
 };
 
 export const VOTES_STARTED: Metric = {
@@ -401,26 +249,12 @@ export const LIVE_TOGETHER: MetricStack = {
   headline: MULTIPLAYER_SESSIONS,
 };
 
-export const SHARING_AND_JOINING: MetricStack = {
+export const EMBEDS_AND_WORKBENCH: MetricStack = {
   stack: true,
-  title: 'Sharing & Joining',
-  blurb: 'Edit, Participant and view links made, and the people who came in through them.',
-  members: [
-    EDIT_LINKS_SHARED,
-    PARTICIPATE_LINKS_SHARED,
-    VIEW_LINKS_SHARED,
-    COLLABORATORS_JOINED,
-    PARTICIPANTS_JOINED,
-    VIEWERS_JOINED,
-    SHARE_LINKS_COPIED,
-    SHARE_SETTINGS,
-    SHARE_LINKS_REMOVED,
-    EMBEDS_VIEWED,
-    WORKBENCH_SESSIONS,
-    WORKBENCH_WORKSPACES,
-    LIVE_IMAGE_TABS,
-  ],
-  headline: [COLLABORATORS_JOINED, PARTICIPANTS_JOINED, VIEWERS_JOINED],
+  title: 'Embeds & Workbench',
+  blurb:
+    'Projects opened inside another site through an embed, or inside a developer tool’s frame.',
+  members: [EMBEDS_VIEWED, WORKBENCH_SESSIONS, WORKBENCH_WORKSPACES],
 };
 
 export const DISCUSSION: MetricStack = {
@@ -438,27 +272,12 @@ export const DISCUSSION: MetricStack = {
   headline: COMMENTS_ADDED,
 };
 
-export const INVITE_LINKS_COPIED = chart(
-  'UI',
-  'Copied',
-  'Invite Links Copied',
-  'A team invite link copied to share.',
-  { types: ['TeamInviteLink'] },
-);
 export const TEAM_ACTIVITY: MetricStack = {
   stack: true,
   title: 'Team Activity',
-  blurb: 'Teams made, the invite funnel (sent, accepted, declined), and projects shared to a team.',
-  members: [
-    TEAMS_CREATED,
-    INVITES_ACCEPTED,
-    INVITES_DECLINED,
-    PROJECTS_SHARED_TO_A_TEAM,
-    TEAM_PROJECTS_MOVED,
-    TEAM_REMOVALS,
-    INVITE_LINKS_COPIED,
-  ],
-  headline: INVITES_ACCEPTED,
+  blurb: 'Projects created straight into a team’s shared library.',
+  members: [PROJECTS_SHARED_TO_A_TEAM],
+  headline: PROJECTS_SHARED_TO_A_TEAM,
 };
 
 export const VOTING: MetricStack = {
@@ -512,93 +331,4 @@ export const STOPWATCHES: MetricStack = {
     SESSION_TIMER_OPENED,
   ],
   headline: STOPWATCHES_STARTED,
-};
-
-// History and team Activity (docs/specs/013-workspace/timeline.md) and the Explorer's Inbox
-// (docs/specs/013-workspace/inbox.md).
-export const TIMELINE_STACKS_EXPANDED = chart(
-  'Timeline',
-  'Opened',
-  'Stacks Expanded',
-  "A stacked run of changes in a project's History or a team's Activity opened up to show each one.",
-  { types: ['Stack'] },
-);
-
-export const ACTIVITY_OPENED = chart(
-  'Activity',
-  'Opened',
-  'Inbox Opened',
-  "The Explorer's Inbox opened, once per visit.",
-);
-
-export const ACTIVITY_THREADS = chart(
-  'Activity',
-  'Selected',
-  'Inbox Items Opened',
-  "An action, a Plan card or a comment thread opened from the Explorer's Inbox.",
-);
-
-// Explorer Home (docs/specs/013-workspace/explorer-home.md): arrivals by type, projects opened
-// from each part of Home, summaries expanded, and failed reads retried.
-export const HOME_LANDINGS = chart(
-  'Home',
-  'Opened',
-  'Home Landings',
-  'The Explorer opened straight onto Home, its default page.',
-  { types: ['Landing'] },
-);
-
-export const HOME_VISITS = chart(
-  'Home',
-  'Opened',
-  'Home Visits',
-  'Home opened after starting elsewhere in the Explorer.',
-  { types: ['Nav'] },
-);
-
-export const HOME_WELCOMES = chart(
-  'Home',
-  'Opened',
-  'First-Run Homes',
-  'Home shown to someone with no projects yet, offering blanks and popular templates to start from.',
-  { types: ['Welcome'] },
-);
-
-export const HOME_PROJECTS_OPENED = chart(
-  'Home',
-  'Selected',
-  'Projects Opened from Home',
-  'A project opened from Jump Back In (most used or recent) or What Happened, See More followed, or a start taken from the first-run Home.',
-);
-
-export const HOME_GROUPS_EXPANDED = chart(
-  'Home',
-  'Opened',
-  'Home Summaries Expanded',
-  "A summary of several people's work on one project opened up to every action.",
-  { types: ['Group'] },
-);
-
-export const HOME_LOADS = chart('Home', 'Loaded', 'Home Retries', 'A failed read of Home retried.');
-
-export const TIMELINE_AND_ACTIVITY: MetricStack = {
-  stack: true,
-  title: 'Home & Activity',
-  blurb:
-    "Keeping up with what changed: Explorer Home, the Explorer's Inbox, and a project's History or a team's Activity.",
-  members: [
-    HOME_LANDINGS,
-    HOME_VISITS,
-    HOME_WELCOMES,
-    HOME_PROJECTS_OPENED,
-    HOME_GROUPS_EXPANDED,
-    HOME_LOADS,
-    TIMELINE_STACKS_EXPANDED,
-    ACTIVITY_OPENED,
-    ACTIVITY_THREADS,
-    TIMELINE_LOADS,
-    TIMELINE_VIEW_SWITCHED,
-    TIMELINE_FILTERED,
-    FEED_RETRIES,
-  ],
 };

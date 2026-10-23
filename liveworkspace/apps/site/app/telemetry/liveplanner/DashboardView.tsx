@@ -12,6 +12,7 @@ import {
   ELEMENT_EDITING,
   ELEMENTS_ADDED,
   EMAILS_SENT,
+  EMBEDS_AND_WORKBENCH,
   EXCEPTIONS,
   FAILED_REQUESTS,
   FORMS,
@@ -28,12 +29,10 @@ import {
   PANELS_OPENED,
   PLAN_BOARDS,
   RETURNING_VISITORS,
-  SHARING_AND_JOINING,
   SHEETS,
   SIGN_IN_PROMPTS,
   SIGN_UPS,
   TAB_ACTIONS,
-  TIMELINE_AND_ACTIVITY,
   VOTING,
 } from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';
@@ -89,11 +88,11 @@ export const GROUPS: MetricGroup[] = [
     metrics: [PALETTE_USE, CANVAS_MODES, LOOK_AND_FEEL, PANELS_OPENED, OFFLINE_MODE],
   },
   // Live Together is the only stack that counts two people on one canvas at
-  // the same moment; the rest of Collaboration counts invitations to be there,
-  // so read them against it.
+  // the same moment; the rest of Collaboration counts the ways in and the
+  // session tools, so read them against it.
   {
     title: 'Collaboration',
-    metrics: [LIVE_TOGETHER, SHARING_AND_JOINING, TIMELINE_AND_ACTIVITY, VOTING],
+    metrics: [LIVE_TOGETHER, EMBEDS_AND_WORKBENCH, VOTING],
   },
   {
     title: 'Connections',

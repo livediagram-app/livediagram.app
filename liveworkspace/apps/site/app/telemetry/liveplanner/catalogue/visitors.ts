@@ -264,7 +264,6 @@ export const FORM_TOUR: MetricStack = {
 // only when its button is pressed. One stack for all of them: every start, the starts per surface, then how they end.
 const SHOW_ME_SURFACES = [
   { token: 'CardTypeTour', title: 'Card Type', where: 'the card type editor' },
-  { token: 'ShareTour', title: 'Share', where: 'the Share dialog' },
   { token: 'DashboardTour', title: 'Dashboard', where: 'Dashboard Settings' },
   { token: 'SankeyFlowsTour', title: 'Sankey Flows', where: 'a Sankey’s Flows dialog' },
 ] as const;

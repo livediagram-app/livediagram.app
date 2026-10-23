@@ -60,18 +60,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Action|Resolved|WontDo':
     "Someone closed an assigned action as Won't Do: decided against, closed without being done.",
   'Action|Unresolved|': 'Someone reopened an assigned action that had been marked done.',
-  'Activity|Loaded|Retry':
-    'Someone clicked "Try again" after the Explorer\'s Inbox failed to load, retrying the read.',
-  'Activity|Opened|':
-    "Someone opened the Explorer's Inbox, which lists open actions and Plan cards assigned to them, actions they assigned to others, and comment threads they're in. Counted once per visit, not on every re-fetch.",
-  'Activity|Selected|Action':
-    "Someone clicked an action row in the Explorer's Inbox, jumping to the element it's assigned on.",
-  'Activity|Selected|Card':
-    "Someone clicked a Plan card row in the Explorer's Inbox, jumping to the card on its board.",
-  'Activity|Selected|FormResponses':
-    "Someone clicked a form's row in the Explorer's Inbox (its new responses), jumping to the board they land on.",
-  'Activity|Selected|Thread':
-    "Someone clicked a comment-thread row in the Explorer's Inbox, jumping to the element it's on.",
   'Canvas|Used|WaterCooler':
     'Someone walked their Avatar-mode character up to a water cooler and took a cup of water.',
   'Canvas|Used|CoffeeMachine':
@@ -112,34 +100,17 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Project|Created|Cloud': 'A brand-new project was created.',
   'Project|Created|Offline': 'A brand-new project was created.',
   'Project|Deleted|': 'A project was deleted.',
-  'Project|Duplicated|': 'A project was duplicated into a new one.',
   'Project|Duplicated|Copy': 'A project was duplicated into a new one.',
-  'Project|Joined|Edit':
-    'Someone came into a project through an edit-role share link. Counted once per person per project, not on every revisit.',
-  'Project|Joined|Participate':
-    'Someone came into a project through a Participant share link. Counted once per person per project, not on every revisit.',
   'Project|Loaded|':
     'A project was opened, counted on every open (including a page refresh and the first open of a project just created).',
-  'Project|Moved|': 'A project was moved into (or out of) a folder.',
   'Project|Moved|SavedToCloud':
     'Someone synced a project in This Browser to their account, turning it into a cloud project kept on the server.',
   'Project|Moved|TakenOffline':
     'Someone took a project offline, moving it out of their account into this browser only.',
   'Project|Redone|': 'Someone hit Redo on a project edit.',
-  'Project|Removed|ShareLink':
-    "Someone revoked a share link from a project's Share dialog, so it stops working.",
   'Project|Renamed|': 'A project was renamed.',
   'Project|Reverted|':
     "Someone reverted a single change from a tab's activity log, in the since-removed Activity panel.",
-  'Project|Shared|Edit': 'Someone generated an edit-role share link for a project.',
-  'Project|Shared|ExpiryWeek': 'Someone set a share link to expire after a week, when creating it.',
-  'Project|Shared|Extended':
-    'Someone re-armed an expiring share link for another full round of its original lifetime.',
-  'Project|Shared|Participate':
-    'Someone generated a Participant share link: people take part and write without reshaping the board.',
-  'Project|Shared|PasswordCleared': "Someone removed the password from a project's share link.",
-  'Project|Shared|PasswordSet': "Someone set a password on a project's share link.",
-  'Project|Shared|View': 'Someone generated a view-role share link for a project.',
   'Project|Undone|': 'Someone hit Undo on a project edit.',
   'Project|Used|Multiplayer':
     'A project was open with at least one other person live in the room, counted once per project per visit. The one event that counts collaboration happening rather than being offered.',
@@ -538,58 +509,13 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The facilitator of a live session stepped down, leaving nobody in charge of its shared tools.',
   'Facilitator|Started|Claimed':
     'Someone took the facilitator role in a live session, becoming the one in charge of its shared tools: the timer, votes, and polls.',
-  'Folder|Created|': 'A new folder was created in the project explorer.',
   'Folder|Created|Tab':
     'A new tab folder was created inside a project, by typing a name the project had not used before.',
-  'Folder|Created|Team': 'A new folder was created in the project explorer.',
-  'Folder|Deleted|': 'A folder was deleted (contained projects move to the top level).',
-  'Folder|Deleted|Team': 'A folder was deleted (contained projects move to the top level).',
-  'Folder|Moved|': 'A folder was re-parented under another folder (or the root).',
-  'Folder|Moved|Team': 'A folder was re-parented under another folder (or the root).',
-  'Folder|Renamed|': 'A folder was renamed.',
   'Folder|Renamed|Tab': 'A tab folder was renamed.',
-  'Folder|Renamed|Team': 'A folder was renamed.',
   'Help|Searched|NoResults':
     'Someone searched the help centre and found no matching article: a direct list of articles worth writing. The search words are never recorded.',
   'Help|Searched|Results':
     'Someone searched the help centre and got at least one matching article. Counted once per finished search; the search words are never recorded.',
-  'Home|Loaded|Retry': 'Someone pressed "Try again" after Home failed to load.',
-  'Home|Opened|Group':
-    "Someone expanded a summary of several people's work on one project in Home's What Happened, to see every action.",
-  'Home|Opened|Landing':
-    'Someone arrived at the Explorer with Home as the very section that loaded.',
-  'Home|Opened|Nav': 'Someone went to Home from another section of the Explorer.',
-  'UI|Selected|Sidebar.TrashDropProject':
-    "Someone dragged a project onto the Trash row in the Explorer's sidebar, moving it to the Trash.",
-  'UI|Selected|Sidebar.TrashDropFolder':
-    "Someone dragged one of their folders onto the Trash row in the Explorer's sidebar to delete it.",
-  'Home|Opened|Welcome':
-    'Someone with no projects yet saw the first-run Home, with its blanks and popular templates to start from.',
-  'Home|Selected|Welcome.AllTemplates':
-    'Someone with no projects yet followed Browse All Templates from the first-run Home.',
-  'Home|Selected|Welcome.Blank':
-    'Someone with no projects yet started a blank from the first-run Home.',
-  'Home|Selected|Welcome.Search':
-    'Someone with no projects yet searched the templates from the field at the top of the first-run Home.',
-  'Home|Selected|Welcome.SignIn':
-    'Someone signed out with no projects followed Sign In from the first-run Home, to find their work.',
-  'Home|Selected|Welcome.StartBlank':
-    'Someone with no projects yet started a blank diagram from the field at the top of the first-run Home.',
-  'Home|Selected|Welcome.Template':
-    'Someone with no projects yet started a popular template from the first-run Home.',
-  'Home|Selected|Hero.Projects':
-    'Someone followed the projects pill at the top of Home to My Work.',
-  'Home|Selected|Hero.Inbox': 'Someone followed the Inbox pill at the top of Home to their Inbox.',
-  'Home|Selected|Hero.NewProject':
-    'Someone started a new project from the New project button in the search field at the top of Home.',
-  'Home|Selected|JumpBackIn.MostUsed':
-    "Someone opened a project from Home's Jump Back In that was among the ones they used on the most days.",
-  'Home|Selected|JumpBackIn.Recent':
-    "Someone opened a project from Home's Jump Back In that was among the ones they used most recently.",
-  'Home|Selected|JumpBackIn.SeeMore':
-    "Someone followed See More from Home's Jump Back In to the Recent page.",
-  'Home|Selected|WhatHappened':
-    "Someone opened a project from Home's What Happened, which lists what other people did to their projects.",
   'Layer|Added|': 'A new layer was added in the Layers panel.',
   'Layer|Changed|Opacity': "A layer's opacity was adjusted.",
   'Layer|Cleared|': 'A layer was emptied (its elements deleted, the layer kept).',
@@ -943,70 +869,16 @@ export const EXACT: Readonly<Record<string, string>> = {
     'An admin invited someone to a team by email. This counts invitations sent, not accepted: that is Joined.',
   'Team|Changed|': "Someone updated a team's name or organisation in its settings.",
   'Team|Changed|Role': "An admin changed a team member's role between Admin and Member.",
-  'Team|Created|': 'Someone created a new team.',
-  'Team|Declined|Invite':
-    'Someone turned down a team invite. Read against Joined: the two are the accept rate on an invitation.',
-  'Team|Declined|Email':
-    "Someone turned down a team invite from the email's Decline link, without signing in.",
   'Team|Deleted|': 'An admin deleted a team.',
-  'Team|Joined|': 'Someone accepted a team invite, by email or by invite link.',
-  'Team|Moved|Project':
-    "A project already in a team's shared library was moved: re-foldered within the team, moved to a different team, or taken back to the owner's personal space.",
-  'Team|Removed|Project': 'An admin removed a member who had joined the team.',
-  'Team|Removed|Link': "A team's shareable invite link was turned off.",
-  'Team|Removed|Rejected':
-    'An admin cleared a declined or expired team invite from the member list.',
-  'Team|Removed|Self': 'Someone left a team they had joined.',
   'Team|Shared|Link':
     "An admin turned on a team's shareable invite link, so anyone who has it can ask to join.",
   'Theme|Created|Custom': 'Someone created a custom theme with their own colours.',
   'Theme|Deleted|Custom': 'Someone deleted a custom theme they had created.',
-  'Timeline|Changed|Calendar':
-    "Someone switched a project's History or a team's Activity from list view to calendar view.",
-  'Timeline|Changed|List':
-    "Someone switched a project's History or a team's Activity from calendar view to list view.",
-  'Timeline|Loaded|More':
-    'Someone clicked "Show More" at the bottom of a project\'s History or a team\'s Activity, loading the next page.',
-  'Timeline|Loaded|Retry':
-    'Someone clicked "Try again" after a project\'s History or a team\'s Activity failed to load, retrying the read.',
-  'Timeline|Opened|Landing':
-    "Someone arrived at the Explorer with the Timeline as the very section that loaded. No longer recorded: the Explorer's Timeline was removed.",
-  'Timeline|Opened|Menu':
-    "Someone opened the ⋯ menu on a Timeline card or on a collapsed run of cards. No longer recorded: the Explorer's Timeline was removed.",
-  'Timeline|Opened|Nav':
-    "Someone went to the Timeline from elsewhere in the Explorer: its sidebar row, or Home's See Timeline link. No longer recorded: the Explorer's Timeline was removed.",
-  'Timeline|Opened|Stack':
-    'Someone expanded a collapsed run of similar entries (like "12 projects renamed") in a project\'s History or a team\'s Activity into its individual cards.',
   'Timeline|Removed|Entry':
     "Someone removed a single entry from their Timeline feed. No longer recorded: the Explorer's Timeline was removed.",
   'Timeline|Removed|Stack':
     "Someone removed every entry in a collapsed run from their Timeline feed at once, from its ⋯ menu. No longer recorded: the Explorer's Timeline was removed.",
-  'Timeline|Selected|Everyone':
-    "Someone switched a project's History or a team's Activity to show everyone's activity, not just their own.",
-  'Timeline|Selected|Others':
-    "Someone switched a project's History or a team's Activity to show only other people's activity, hiding their own.",
   'Trash|Opened|Settings': 'Someone opened the Trash from Settings, under Account.',
-  'Explorer|Selected|Text':
-    'Someone typed words into the Explorer search to narrow a list of projects.',
-  'Explorer|Selected|OpensIn':
-    'Someone filtered an Explorer list by the editor mode projects open in (Diagram or Draw).',
-  'Explorer|Selected|Template':
-    'Someone filtered an Explorer list by the template family projects were made from (Retrospective, Kanban).',
-  'Explorer|Selected|MadeBy': 'Someone filtered an Explorer list to the projects an AI made.',
-  'Explorer|Selected|Edited':
-    'Someone filtered an Explorer list by when projects were last edited.',
-  'Explorer|Selected|People':
-    'Someone filtered an Explorer list by who owns the projects (Me or Others).',
-  'Explorer|Created|Tag':
-    'Someone made a tag, a coloured label for grouping their projects, from the tag picker or the Tags page.',
-  'Explorer|Added|Tag': 'Someone put one of their tags on a project.',
-  'Explorer|Removed|Tag': 'Someone took one of their tags off a project.',
-  'Explorer|Renamed|Tag': 'Someone renamed one of their tags.',
-  'Explorer|Changed|TagColour': 'Someone changed the colour of one of their tags.',
-  'Explorer|Deleted|Tag':
-    'Someone deleted one of their tags, which takes it off every project it was on.',
-  'Explorer|Selected|Space':
-    'Someone filtered an aggregate Explorer list by where projects live (My Work, Shared With Me, a team).',
   'Token|Created|MCP':
     'An AI tool was connected to the account over MCP, which creates an API token for it to use.',
   'Token|Created|Manual':
@@ -1123,12 +995,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone copied the diagnostics report from a failed project load, to send to support.',
   'UI|Copied|Diagnostics.Help':
     "Someone copied the browser diagnostics report from the help centre's Repair page.",
-  'UI|Copied|EmbedCode':
-    "Someone copied an embed URL or an iframe snippet from the Share dialog's Embed menu.",
-  'UI|Copied|LiveImage':
-    "Someone copied a live-updating image URL from the Share dialog's Live Image menu.",
-  'UI|Copied|ShareLink': 'Someone copied a share link to the clipboard.',
-  'UI|Copied|TeamInviteLink': "Someone copied a team's shareable invite link to their clipboard.",
   'UI|Ended|TourCompleted':
     "Someone reached the end of the Diagram tour (the welcome tour until October 2026), or a step's target never appeared on screen and the tour finished early.",
   'UI|Ended|TourDeclined':
@@ -1139,8 +1005,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone reached the end of the card type editor's Show Me tour.",
   'UI|Ended|CardTypeTourSkipped':
     "Someone left the card type editor's Show Me tour before its end.",
-  'UI|Ended|ShareTourCompleted': "Someone reached the end of the Share dialog's Show Me tour.",
-  'UI|Ended|ShareTourSkipped': "Someone left the Share dialog's Show Me tour before its end.",
   'UI|Ended|DashboardTourCompleted':
     "Someone reached the end of the dashboard's tour: Dashboard Settings' Show Me, or the Dashboards tour it offers.",
   'UI|Ended|DashboardTourSkipped': "Someone left Dashboard Settings' Show Me tour before its end.",
@@ -1445,13 +1309,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone picked Boards on the Plan tour's first card, on a tab with both a board and a sheet (until October 2026, on every offer, touring an example board).",
   'UI|Selected|PlanTourSheets':
     "Someone picked Spreadsheets on the Plan tour's first card, on a tab with both a board and a sheet (until October 2026, on every offer, touring an example sheet).",
-  // The Inbox was once the Activity row (docs/specs/013-workspace/explorer-structure.md#telemetry).
-  'UI|Selected|Sidebar.Activity':
-    "Someone picked the Activity row in the Explorer's sidebar, the row since renamed Inbox. No longer recorded: the row now counts as Inbox.",
-  'UI|Selected|ExplorerPanel.Activity':
-    "Someone picked the Activity row in the editor's Explorer panel, the row since renamed Inbox. No longer recorded: the row now counts as Inbox.",
-  'UI|Selected|LiveImageTab':
-    "Someone picked a specific tab from the dropdown in the Share dialog's Live Image menu, pointing the live-updating image at that tab instead of the default.",
   'UI|Selected|SignInBanner':
     'Someone clicked "Sign in" on the guest sign-in banner. An earlier version of this event, before it recorded which surface (the editor or the Explorer) showed the banner. No longer recorded.',
   'UI|Selected|SignInBannerEditor':
@@ -1519,8 +1376,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Play on the Tour toolbar beside a selected Sankey diagram, starting its tour.',
   'UI|Started|SankeyFlowsTour':
     "Someone pressed Show Me in a Sankey's Flows dialog, starting its tour of writing flows.",
-  'UI|Started|ShareTour':
-    'Someone pressed Show Me in the Share dialog, starting its tour of issuing and managing passes.',
   'UI|Started|PagesTour':
     "Someone pressed Yes on the Pages tour's first card, beginning its walkthrough of the pages.",
   'UI|Started|AvatarTour':
@@ -1542,12 +1397,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|AutoRebindOff': 'Someone turned off auto-attach for arrows, in Settings > Editor.',
   'UI|Toggled|AutoRebindOn': 'Someone turned on auto-attach for arrows, in Settings > Editor.',
   'UI|Toggled|Dark': "Someone set the editor's appearance to Dark.",
-  'UI|Toggled|ExplorerViewCard':
-    'Someone switched the Explorer to Card view, showing a large preview of each project.',
-  'UI|Toggled|ExplorerViewDetails':
-    'Someone switched the Explorer to Details view, a sortable table of type, comments, access, size and dates.',
-  'UI|Toggled|ExplorerViewList':
-    'Someone switched the Explorer to List view, showing projects as compact rows.',
   'UI|Toggled|HiddenLayersExport':
     'Someone turned on including hidden layers when exporting an image.',
   'UI|Toggled|IsometricExport':
@@ -1583,10 +1432,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|DockButtonNamesOn':
     'Someone turned Button Labels back on in Settings > Appearance, naming the bottom-right buttons beside their icons on a wide desktop.',
   'UI|Toggled|MinimapOn': 'Someone turned on the minimap, in Settings > Editor.',
-  'UI|Toggled|HomeBannerOff':
-    "Someone hid Explorer Home's banner, from its close button or Settings > Projects. Home then opens on its page header.",
-  'UI|Toggled|HomeBannerOn':
-    "Someone turned Explorer Home's banner back on, in Settings > Projects.",
   'UI|Toggled|NotificationsOff':
     'Someone turned off in-editor toast notifications, in Settings > Notifications.',
   'UI|Toggled|NotificationsOn':
@@ -2250,9 +2095,6 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Action|Opened': 'Someone opened the popover for an action already assigned to an element.',
   'Action|Resolved': 'Someone marked an assigned action as done.',
   'Action|Unresolved': 'Someone reopened an assigned action that had been marked done.',
-  'Activity|Loaded':
-    "Something happened while loading the Explorer's Inbox (the list of outstanding actions and comment threads).",
-  'Activity|Opened': "Someone opened or interacted with the Explorer's Inbox.",
   'Form|Created': 'Someone started a form from Start Planning.',
   'Form|Added': 'Someone added a question to a form.',
   'Form|Linked':
@@ -2264,7 +2106,6 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'Someone synced a project in This Browser from Share Form, so its form could be published.',
   'Form|Sent': 'A response came in through a form link.',
   'Form|Reported': 'Someone reported a form they were sent.',
-  'Activity|Selected': "Someone clicked a row in the Explorer's Inbox, jumping to what it's about.",
   'Canvas|Used': 'Someone picked up one of the canvas tools or modes, or used a canvas feature.',
   'Canvas|Zoomed': 'Someone changed the zoom from the zoom controls.',
   'Comment|Added': 'A comment was added to an element thread.',
@@ -2277,19 +2118,13 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Project|Deleted': 'A project was deleted.',
   'Project|Exported': 'Someone exported a tab, a selection or a page to a file or the clipboard.',
   'Project|Duplicated': 'A project was duplicated into a new one.',
-  'Project|Joined':
-    'Someone came into a project through a share link. Counted once per person per project, not on every revisit.',
   'Project|Loaded':
     'A project was opened, counted on every open (including a page refresh and the first open of a project just created).',
   'Project|Moved': 'A project was moved into (or out of) a folder.',
   'Project|Redone': 'Someone hit Redo on a project edit.',
-  'Project|Removed':
-    "Someone removed something from a project's sharing, such as revoking a share link.",
   'Project|Renamed': 'A project was renamed.',
   'Project|Reverted':
     "Someone reverted a single change from a tab's activity log, in the since-removed Activity panel.",
-  'Project|Shared':
-    "Someone created or changed a project's share link: its role, how long it lasts, or its password.",
   'Project|Undone': 'Someone hit Undo on a project edit.',
   'Project|Used': 'A project was used in a particular way, such as with other people live in it.',
   'Element|Changed':
@@ -2329,10 +2164,8 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'Something changed about who is facilitating a live session, or an element lock the facilitator freed.',
   'Facilitator|Ended': 'The facilitator role in a live session ended.',
   'Facilitator|Started': 'Someone became the facilitator of a live session.',
-  'Folder|Created': 'A new folder was created in the project explorer.',
-  'Folder|Deleted': 'A folder was deleted (contained projects move to the top level).',
-  'Folder|Moved': 'A folder was re-parented under another folder (or the root).',
-  'Folder|Renamed': 'A folder was renamed.',
+  'Folder|Created': 'A tab folder was created inside a project.',
+  'Folder|Renamed': 'A tab folder was renamed.',
   'Help|Helpful':
     'Someone said a help-centre article was helpful, using the "Was this helpful?" control at the end of the article. The type is the article. Counted once per article per visit, using whichever answer the reader leaves the page on.',
   'Help|Searched':
@@ -2416,39 +2249,12 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Team|Added':
     'Something was added to a team: an invitation sent, or a project added to its shared library.',
   'Team|Changed': "Something about a team's settings, or a member's role, was changed.",
-  'Team|Created': 'Someone created a new team.',
-  'Team|Declined': 'Someone turned down a team invite.',
   'Team|Deleted': 'An admin deleted a team.',
-  'Team|Joined': 'Someone accepted a team invite, by email or by invite link.',
-  'Team|Moved': "A project already in a team's shared library was moved somewhere else.",
-  'Team|Removed':
-    'Someone was taken off a team, left one, or had a pending invite or the invite link withdrawn.',
   'Team|Shared': 'A team turned on a way for people to ask to join it.',
   'Theme|Created': 'Someone created a custom theme with their own colours.',
   'Theme|Deleted': 'Someone deleted a custom theme they had created.',
-  'Home|Loaded': "More of Home's Timeline column loaded, or Home was read again after failing.",
-  'Home|Opened': "Someone opened the Explorer's Home, or expanded a summary within it.",
-  'Home|Selected': "Someone opened a project from one part of the Explorer's Home.",
-  'Timeline|Changed': "Someone switched how the Explorer's Timeline displays its history.",
-  'Timeline|Loaded':
-    'The Timeline loaded more of its history, either the next page or a retry after a failed read.',
-  'Timeline|Opened': 'Someone opened the Timeline, or a menu or collapsed group within it.',
   'Timeline|Removed': 'Someone removed one or more entries from their Timeline feed.',
-  'Timeline|Selected':
-    "Someone changed a Timeline filter: turned a category chip (such as Comments, Renames, or Sharing) off, or switched between seeing everyone's activity and just their own.",
-  'Folder|Changed':
-    'Someone chose a default folder: where new projects of one kind (diagrams, whiteboards, retrospectives or Kanban boards) land when they pick no place.',
-  'Folder|Cleared':
-    'Someone cleared a default folder, so new projects of that kind land in My Work again.',
   'Trash|Opened': 'Someone opened the Trash, where deleted projects wait for 30 days.',
-  'Explorer|Created': 'Someone made something in the Explorer (a tag).',
-  'Explorer|Added': 'Someone put one of their tags on a project.',
-  'Explorer|Removed': 'Someone took one of their tags off a project.',
-  'Explorer|Renamed': 'Someone renamed one of their tags.',
-  'Explorer|Changed': 'Someone changed one of their tags (its colour).',
-  'Explorer|Deleted': 'Someone deleted one of their tags.',
-  'Explorer|Selected':
-    'Someone narrowed an Explorer list with a filter: a chip, a suggestion or a typed token. The type names which kind of filter, never what was picked.',
   'Plan|Added':
     'Someone made an item on a Plan board (its type is the value), or placed a Plan card (Card).',
   'Plan|Moved':
@@ -2481,11 +2287,8 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Plan|Changed':
     "Someone changed a Plan board's set-up, a card type, a project's colour or a timeline view: the value names the part (columns, WIP limits, rows, scope, card fields, voting, hide writing, or a timeline's dates, scale, rows or types).",
   'Plan|Revealed': 'Someone pressed Reveal on a board hiding writing, turning every card face up.',
-  'Trash|Cleared':
-    'Someone emptied one group of their Trash (their own projects, a team, or this browser), deleting everything in it for good.',
-  'Trash|Deleted': 'Someone deleted a project in the Trash for good, before its 30 days were up.',
   'Trash|Restored':
-    'Someone brought a deleted project back from the Trash, putting it back where it was.',
+    'Someone brought a deleted project back from its deleted page, putting it back where it was.',
   'Token|Created':
     'A new API token was created, either by hand or for an AI tool connected over MCP.',
   'Token|Linked': 'A token’s owner allowed a developer tool to open their projects.',
@@ -2497,8 +2300,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     "Someone cleared liveplanner's saved settings and caches in their browser (Repair This Browser); the value says where from.",
   'UI|Closed':
     'Someone closed or dismissed a banner, card, or presentation somewhere in the editor.',
-  'UI|Copied':
-    'Someone copied something to their clipboard from a Share or invite control, such as a share link, an embed snippet, a live image URL, or a team invite link.',
+  'UI|Copied': "Someone copied something to their clipboard, such as a browser's diagnostics.",
   'UI|Ended': 'The welcome tour finished, either completed in full or skipped partway through.',
   'UI|Moved': "Someone dragged something to a new position in the editor's interface.",
   'UI|Opened':

@@ -100,13 +100,6 @@ export const APPEARANCE_SETTINGS = settingsStack('Appearance Settings', 'How the
   toggle('UI', 'MinimapOn', 'MinimapOff', 'Show Minimap', 'The minimap in the corner.'),
   toggle(
     'UI',
-    'HomeBannerOn',
-    'HomeBannerOff',
-    'Home Banner',
-    'The greeting and large search at the top of Explorer Home, closed from its corner or switched in Settings.',
-  ),
-  toggle(
-    'UI',
     'DockButtonNamesOn',
     'DockButtonNamesOff',
     'Button Labels',
