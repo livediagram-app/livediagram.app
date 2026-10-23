@@ -139,7 +139,8 @@ An item's share links, each drawn as a pass: `client`, `item` (with `teamId?`), 
 - A copy the browser refuses says so. Every refusal from the index is a note.
 
 The Explorer opens it from an item's menu with the host's `share` prop (`ShareHost`): `loadTabs(item)`,
-`handOver(item)`, `helpHref` and `onTelemetry`, asked per item since the Explorer may list every app's.
+`handOver(item)`, `helpHref` and `onTelemetry(action, type, item)`, asked per item since the Explorer may list
+every app's; the item lets a host count a dialog's events for that item's app.
 
 ### `<ExplorerPanel>`
 

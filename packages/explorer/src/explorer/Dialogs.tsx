@@ -108,7 +108,11 @@ export function ExplorerDialogs() {
           shareUrl={shareUrl ?? defaultShareUrl}
           handOver={shareHost?.handOver?.(item)}
           helpHref={shareHost?.helpHref}
-          onTelemetry={shareHost?.onTelemetry}
+          onTelemetry={
+            shareHost?.onTelemetry
+              ? (action, type) => shareHost.onTelemetry?.(action, type, item)
+              : undefined
+          }
           notify={(text, tone) => toast.show(text, { tone })}
           onClose={close}
         />

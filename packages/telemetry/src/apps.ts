@@ -57,3 +57,33 @@ export function telemetryAppOfOrigin(origin: string): TelemetryApp | null {
   }
   return null;
 }
+
+// liveworkspace.app itself, as a sender: the one Explorer (liveworkspace/docs/site.md "The Explorer")
+// lives there for every app, so its events count for the app the page is filtered to, or, filtered to
+// All Apps, for liveworkspace.app. Only the Explorer's own events are taken from it
+// (explorer-events.ts), in an app's name or its own.
+export const PLATFORM_TELEMETRY_APP = 'liveworkspace.app';
+export type PlatformTelemetryApp = typeof PLATFORM_TELEMETRY_APP;
+
+// What a batch may name: an app, or the platform.
+export type TelemetrySender = TelemetryApp | PlatformTelemetryApp;
+
+// Every sender, for the All apps summary.
+export const TELEMETRY_SENDERS: readonly TelemetrySender[] = [
+  ...TELEMETRY_APPS,
+  PLATFORM_TELEMETRY_APP,
+];
+
+export function isTelemetrySender(value: unknown): value is TelemetrySender {
+  return value === PLATFORM_TELEMETRY_APP || isTelemetryApp(value);
+}
+
+export const PLATFORM_TELEMETRY_ORIGINS: readonly string[] = [
+  'https://liveworkspace.app',
+  'https://www.liveworkspace.app',
+  'https://staging.liveworkspace.app',
+];
+
+export function isPlatformOrigin(origin: string): boolean {
+  return PLATFORM_TELEMETRY_ORIGINS.includes(origin);
+}

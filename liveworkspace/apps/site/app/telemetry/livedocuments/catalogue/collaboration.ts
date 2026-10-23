@@ -351,6 +351,14 @@ export const TIMELINE_STACKS_EXPANDED = chart(
   { types: ['Stack'] },
 );
 
+export const TIMELINE_CARDS_OPENED = chart(
+  'Timeline',
+  'Opened',
+  'Timeline Cards Opened',
+  'A document opened from its card on the Timeline.',
+  { types: ['Card'] },
+);
+
 export const TIMELINE_ENTRIES_REMOVED = chart(
   'Timeline',
   'Removed',
@@ -432,6 +440,7 @@ export const TIMELINE_AND_ACTIVITY: MetricStack = {
     TIMELINE_VISITS,
     TIMELINE_MENUS,
     TIMELINE_STACKS_EXPANDED,
+    TIMELINE_CARDS_OPENED,
     TIMELINE_ENTRIES_REMOVED,
     ACTIVITY_OPENED,
     ACTIVITY_THREADS,

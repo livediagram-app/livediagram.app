@@ -17,3 +17,17 @@ describe('telemetry apps', () => {
     expect(telemetryAppOfOrigin('http://livediagram.app')).toBeNull();
   });
 });
+
+describe('liveworkspace.app as a sender', () => {
+  it('may name itself or an app, and its origins are its own', async () => {
+    const { isTelemetrySender, isPlatformOrigin, TELEMETRY_SENDERS } = await import('./apps');
+    expect(isTelemetrySender('liveworkspace.app')).toBe(true);
+    expect(isTelemetrySender('liveplanner.app')).toBe(true);
+    expect(isTelemetrySender('all')).toBe(false);
+    expect(isTelemetryApp('liveworkspace.app')).toBe(false);
+    expect(TELEMETRY_SENDERS).toContain('liveworkspace.app');
+    expect(isPlatformOrigin('https://liveworkspace.app')).toBe(true);
+    expect(isPlatformOrigin('https://livediagram.app')).toBe(false);
+    expect(telemetryAppOfOrigin('https://liveworkspace.app')).toBeNull();
+  });
+});

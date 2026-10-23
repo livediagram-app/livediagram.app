@@ -41,6 +41,7 @@ export type {
   InboxTelemetry,
   Located,
   ShareHost,
+  ShareHostTelemetry,
   ShareUrl,
   SignInBannerHost,
   SignInBannerTelemetry,

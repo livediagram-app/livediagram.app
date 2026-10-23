@@ -60,6 +60,18 @@ import {
   type WorkspaceIdentity,
 } from '@/lib/explorer/token';
 import { inboxHost } from '@/lib/explorer/inbox';
+import { useExplorerSettings } from '@/lib/explorer/settings';
+import {
+  setExplorerSender,
+  trackHome,
+  trackInbox,
+  trackLens,
+  trackSignInBanner,
+  trackTimeline,
+  trackViewToggled,
+  trackWelcome,
+  trackWelcomeOpened,
+} from '@/lib/explorer/telemetry';
 import { prefetchPreview, renderPreview } from '@/lib/explorer/previews';
 import { loadWelcome } from '@/lib/explorer/welcome';
 import { ExplorerHeader } from './ExplorerHeader';
@@ -184,6 +196,11 @@ export function ExplorerShell() {
   const app: AppName = arrived.app ?? FALLBACK_APP;
   const [filter, setFilter] = useState<AppFilter | null>(null);
   const shownFilter: AppFilter = filter ?? (arrived.app ? 'app' : 'all');
+  // Every event counts for the app the page shows, or liveworkspace.app for All Apps. Set as the page renders, so
+  // the Explorer's first reports (its effects run before this component's) already count for the right one.
+  setExplorerSender(app, shownFilter);
+  // Whether events may be sent: the person's setting, or a guest's browser.
+  useExplorerSettings(app, identity?.kind ?? null);
 
   const view: ExplorerView = useMemo(
     () => viewFromLocation(pathname, searchParams.toString()),
@@ -215,12 +232,16 @@ export function ExplorerShell() {
       onFirstRun,
       signedIn,
       signInHref: signInHref(pathname || '/explorer'),
+      onSelected: trackWelcome,
+      onOpened: trackWelcomeOpened,
     }),
     [loaded, app, onFirstRun, signedIn, pathname],
   );
+  const inbox = useMemo(() => ({ ...inboxHost, onTelemetry: trackInbox }), []);
   const signInBanner = useMemo(
     () => ({
       helpHref: `${siteOfApp(app).url}/help/getting-started/guest-vs-account/`,
+      onTelemetry: trackSignInBanner,
     }),
     [app],
   );
@@ -297,7 +318,11 @@ export function ExplorerShell() {
           signInHref={signInHref(pathname || '/explorer')}
           signInBanner={signInBanner}
           arrivalNotice={notice}
-          inbox={inboxHost}
+          inbox={inbox}
+          onTimeline={trackTimeline}
+          onHome={trackHome}
+          onLensSelected={trackLens}
+          onViewToggled={trackViewToggled}
         />
       ) : (
         <>

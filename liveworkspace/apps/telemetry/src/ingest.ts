@@ -3,11 +3,15 @@
 // time. Always 204, because telemetry must never surface an error to the page or Worker that sent it.
 
 import {
+  isExplorerTelemetryEvent,
+  isPlatformOrigin,
   isTelemetryApp,
+  isTelemetrySender,
+  PLATFORM_TELEMETRY_APP,
   telemetryAppOfOrigin,
   TELEMETRY_BATCH_MAX,
   TELEMETRY_KEY_HEADER,
-  type TelemetryApp,
+  type TelemetrySender,
 } from '@liveworkspace/telemetry';
 import { insertEvents } from './db';
 import { appKey, type Env } from './env';
@@ -31,13 +35,13 @@ export async function handleIngest(request: Request, env: Env): Promise<Response
     return noop();
   }
   const { app, events } = (body ?? {}) as { app?: unknown; events?: unknown };
-  if (!isTelemetryApp(app) || !Array.isArray(events)) return noop();
+  if (!isTelemetrySender(app) || !Array.isArray(events)) return noop();
 
   const sender = await senderOf(request, env, app);
   if (sender === null) return noop();
   // Browsers share one public door, so each network gets a budget. An app's own Workers hold its key
   // and are bounded by their own traffic, so they skip it.
-  if (sender === 'browser' && env.EVENTS_RATE_LIMITER) {
+  if (sender !== 'server' && env.EVENTS_RATE_LIMITER) {
     const { success } = await env.EVENTS_RATE_LIMITER.limit({ key: rateKey(request) });
     if (!success) return noop();
   }
@@ -47,6 +51,8 @@ export async function handleIngest(request: Request, env: Env): Promise<Response
     .filter(vocabulary.isValid)
     // What only the app's Workers count, a browser can't add to: a stale bundle would count it twice.
     .filter((e) => sender === 'server' || !vocabulary.isServerOnly(e))
+    // liveworkspace.app speaks for an app only through its Explorer, so only the Explorer's events.
+    .filter((e) => sender !== 'platform' || isExplorerTelemetryEvent(e))
     .slice(0, TELEMETRY_BATCH_MAX);
   try {
     await insertEvents(env, app, valid, Date.now());
@@ -58,23 +64,30 @@ export async function handleIngest(request: Request, env: Env): Promise<Response
 
 // Who sent the batch, or null when it can't speak for `app`:
 //   - 'server': it carries that app's own Worker key (Workers send no Origin);
-//   - 'browser': its Origin is one of that app's pages, or a localhost page in development.
+//   - 'browser': its Origin is one of that app's pages, or a localhost page in development;
+//   - 'platform': its Origin is liveworkspace.app, whose Explorer speaks for the app it is filtered to,
+//     or for liveworkspace.app itself (All Apps). Only the Explorer's events are taken from it.
 // Spoofable by curl, like any Origin check, which is what the rate limit and the closed vocabulary
 // are for: the worst a forger can do is add plausible counts at a bounded rate.
 async function senderOf(
   request: Request,
   env: Env,
-  app: TelemetryApp,
-): Promise<'server' | 'browser' | null> {
+  app: TelemetrySender,
+): Promise<'server' | 'browser' | 'platform' | null> {
   const key = request.headers.get(TELEMETRY_KEY_HEADER);
   if (key !== null) {
+    if (!isTelemetryApp(app)) return null;
     const expected = appKey(env, app);
     return expected && (await timingSafeEqual(key, expected)) ? 'server' : null;
   }
   const origin = request.headers.get('Origin');
   if (origin === null) return null;
-  if (telemetryAppOfOrigin(origin) === app) return 'browser';
-  return env.ENVIRONMENT === 'development' && isLocalhost(origin) ? 'browser' : null;
+  if (isPlatformOrigin(origin)) return 'platform';
+  if (isTelemetryApp(app) && telemetryAppOfOrigin(origin) === app) return 'browser';
+  if (env.ENVIRONMENT !== 'development' || !isLocalhost(origin)) return null;
+  // A localhost page in development: the site's Explorer (liveworkspace.app's own name) as the
+  // platform, an app as itself.
+  return app === PLATFORM_TELEMETRY_APP ? 'platform' : 'browser';
 }
 
 function isLocalhost(origin: string): boolean {

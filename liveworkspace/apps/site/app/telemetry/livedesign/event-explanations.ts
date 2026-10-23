@@ -707,6 +707,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone opened the ⋯ menu on a Timeline card or on a collapsed run of cards.',
   'Timeline|Opened|Nav':
     "Someone went to the Timeline from elsewhere in the Explorer: its sidebar row, or Home's See Timeline link.",
+  'Timeline|Opened|Card': "Someone opened a design from its card on the Explorer's Timeline.",
   'Timeline|Opened|Stack':
     'Someone expanded a collapsed run of similar Timeline entries (like "12 designs renamed") into its individual cards.',
   'Timeline|Removed|Entry': 'Someone removed a single entry from their Timeline feed.',

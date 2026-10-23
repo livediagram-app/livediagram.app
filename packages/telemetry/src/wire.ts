@@ -1,6 +1,6 @@
 // What an app sends the central ingest (liveworkspace/docs/telemetry.md "Sending events").
 
-import type { TelemetryApp } from './apps';
+import type { TelemetrySender } from './apps';
 
 // Where the service lives. Apps take it as configuration (NEXT_PUBLIC_TELEMETRY_URL in the browser,
 // TELEMETRY_URL in a Worker), so local development and staging can point elsewhere.
@@ -25,7 +25,7 @@ export type TelemetryWireEvent = {
 // A batch, as POSTed. The browser sends it as `text/plain` JSON so a cross-site send needs no CORS
 // preflight and carries no cookies.
 export type TelemetryBatch = {
-  app: TelemetryApp;
+  app: TelemetrySender;
   events: TelemetryWireEvent[];
 };
 

@@ -5,6 +5,7 @@ import { SETTINGS_CHANGED, SETTINGS_STACKS } from './metric-catalogue';
 import { GROUPS as SETTINGS } from './SettingsView';
 import { COMPUTED_EMITTERS, TOUR_STEP_SOURCE } from './computed-emitters';
 import { COMPUTED, scanEmitters, type Emit } from './emitter-scan';
+import { isValidTelemetryEvent } from '@livediagram/api-schema';
 import { platformEmitters } from '../platform-emitters';
 import { GROUPS as EXCEPTIONS, RECOVERY_GROUPS, RECOVERY_TYPES } from './ExceptionsView';
 import { GROUPS as HELP } from './HelpView';
@@ -51,7 +52,7 @@ const REPO = resolve(__dirname, '../../../../../../livediagram');
 // Plus what liveworkspace's own Workers send in this app's name (the onboarding emails).
 const EMITS = [
   ...scanEmitters(REPO, ['apps', 'packages'], join(REPO, 'apps', 'telemetry')),
-  ...platformEmitters(),
+  ...platformEmitters(isValidTelemetryEvent),
 ];
 
 type Known = Emit & { category: string; action: string };

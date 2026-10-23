@@ -1,9 +1,14 @@
-import type { TelemetryApp, TelemetryDailyRow, TelemetryWireEvent } from '@liveworkspace/telemetry';
+import type {
+  TelemetryApp,
+  TelemetryDailyRow,
+  TelemetrySender,
+  TelemetryWireEvent,
+} from '@liveworkspace/telemetry';
 import type { Env } from './env';
 
 export async function insertEvents(
   env: Env,
-  app: TelemetryApp,
+  app: TelemetrySender,
   events: readonly TelemetryWireEvent[],
   ts: number,
 ): Promise<void> {

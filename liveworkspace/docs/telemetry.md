@@ -46,7 +46,9 @@ The answer is always `204`, whether the batch was stored or not, so telemetry ca
 error to the page or Worker that sent it. A batch stores at most 100 events.
 
 **From a browser**, each app's `@<app>/telemetry-client` buffers events and sends them in batches,
-with `navigator.sendBeacon` on page hide. It sends the body as `text/plain`, with no cookies, so a
+with `navigator.sendBeacon` on page hide. The batching is one engine for every sender,
+`@liveworkspace/telemetry/emitter` (`createTelemetryEngine`); each app's client only fixes its app and
+its vocabulary's types. It sends the body as `text/plain`, with no cookies, so a
 cross-site send needs no CORS preflight. The service stores a browser batch only when its `Origin` is
 one of its app's own sites (`TELEMETRY_APP_ORIGINS`), so one site can't post in another's name.
 Browser batches are rate-limited per network (120 a minute; the IPv6 /64), and the address is never
@@ -80,6 +82,36 @@ Each app configures where to send:
 
 A person's opt-out (the app's user preference) is still honoured in the browser, before anything is
 sent.
+
+## The Explorer on liveworkspace.app
+
+The one Explorer lives on liveworkspace.app ([site.md](site.md#the-explorer-explorer)), so the events
+each app's own Explorer used to send now come from there: the Timeline, Home and its first run, the
+filter lens, the Inbox, the List / Card / Details toggle, Home's banner closed, the Share dialog and a
+guest's sign-in banner. They keep the names the apps always gave them, so each app's dashboard keeps
+counting them.
+
+- **Whose they are.** An event counts for the app the page is filtered to, or, filtered to All Apps,
+  for `liveworkspace.app` itself (`PLATFORM_TELEMETRY_APP`). A Share dialog's events count for the
+  app of the item it shares, and a revoked pass under that app's noun (liveplanner's `Project`, the
+  others' `Document`).
+- **What it may send.** Only the Explorer's events, each with its closed set of type tokens:
+  `EXPLORER_TELEMETRY_EVENTS` in `packages/telemetry/src/explorer-events.ts`. The site's emitter
+  (`apps/site/lib/explorer/telemetry.ts`) drops anything else before it is kept, and the ingest takes
+  a batch from liveworkspace.app's origin (`PLATFORM_TELEMETRY_ORIGINS`) only for these events, in an
+  app's name (and in that app's vocabulary) or in its own. No app's page or Worker key can speak for
+  `liveworkspace.app`.
+- **Batching.** The same engine as the apps': one request per app every 10 seconds, sooner once 25
+  events wait, and a beacon on page hide. Never one request per event.
+- **The person's choice.** Signed in, their `telemetryEnabled` setting (the `all` scope every app
+  shares, on unless turned off), read with the app's settings once per page; until it is read, a
+  few events wait rather than go out unasked. A guest's choice lives in each app's own browser
+  storage, so on liveworkspace.app a guest's browser that asks sites not to track (Global Privacy
+  Control or Do Not Track) sends nothing.
+- **The dashboards.** Each app's checks scan the site's emitter beside the accounts Worker
+  (`apps/site/app/telemetry/platform-emitters.ts`), through that app's vocabulary, and read its
+  computed types from `EXPLORER_TELEMETRY_EVENTS`; every one has a chart on each app's dashboard.
+  All apps adds `liveworkspace.app`'s own events (the Explorer on All Apps) to its totals.
 
 ## The dashboard
 
@@ -144,7 +176,8 @@ HTTPS, not a service binding. Only the key has to be copied across.
 ## Adding an app
 
 1. Add its site to `TELEMETRY_APPS` and its origins to `TELEMETRY_APP_ORIGINS` in
-   `packages/telemetry/src/apps.ts`.
+   `packages/telemetry/src/apps.ts`. Its vocabulary must take the Explorer's events
+   (`EXPLORER_TELEMETRY_EVENTS`), which its dashboard then charts.
 2. Add its vocabulary to `apps/telemetry/src/vocabularies.ts`, and a `TELEMETRY_KEY_<APP>` secret to
    `src/env.ts` and `appKey`.
 3. Add its dashboard under `apps/site/app/telemetry/<app>/`, with a `Body` the page loads when the

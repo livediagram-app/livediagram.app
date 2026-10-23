@@ -5,7 +5,7 @@ import {
   ALL_TELEMETRY_APPS,
   buildTelemetrySummary,
   isTelemetryAppFilter,
-  TELEMETRY_APPS,
+  TELEMETRY_SENDERS,
   telemetryQueryStart,
 } from '@liveworkspace/telemetry';
 import { dailyCountsSince } from './db';
@@ -37,7 +37,7 @@ export async function handleSummary(
   const now = Date.now();
   const app = asked === ALL_TELEMETRY_APPS ? null : asked;
   const rows = await dailyCountsSince(env, telemetryQueryStart(now), app);
-  const res = json(buildTelemetrySummary(now, asked, app ? [app] : TELEMETRY_APPS, rows));
+  const res = json(buildTelemetrySummary(now, asked, app ? [app] : TELEMETRY_SENDERS, rows));
   if (!cached) return res;
   res.headers.set('Cache-Control', `public, max-age=${CACHE_SECONDS}`);
   ctx.waitUntil(caches.default.put(cacheKey, res.clone()));

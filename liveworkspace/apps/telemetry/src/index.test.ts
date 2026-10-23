@@ -21,8 +21,11 @@ describe('telemetry worker', () => {
           body: JSON.stringify({
             app,
             // Each app's own word for what it makes: liveplanner's is a project.
+            // liveworkspace.app sends only the Explorer's events.
             events: [
-              { category: app === 'liveplanner.app' ? 'Project' : 'Document', action: 'Created' },
+              app === 'liveworkspace.app'
+                ? { category: 'UI', action: 'Toggled', type: 'ExplorerViewList' }
+                : { category: app === 'liveplanner.app' ? 'Project' : 'Document', action: 'Created' },
             ],
           }),
         }),
@@ -36,17 +39,20 @@ describe('telemetry worker', () => {
     await send('liveplanner.app');
     await send('livedocuments.app');
     await send('livedesign.app');
+    await send('liveworkspace.app');
 
     const all = (await (
       await worker.fetch(get('/api/telemetry/summary'), env, ctx)
     ).json()) as TelemetrySummary;
     expect(all.app).toBe('all');
-    expect(all.windows.today.total).toBe(5);
+    expect(all.windows.today.total).toBe(6);
     expect(all.windows.today.byApp).toEqual({
       'livediagram.app': 1,
       'liveplanner.app': 2,
       'livedocuments.app': 1,
       'livedesign.app': 1,
+      // The Explorer on liveworkspace.app, filtered to All Apps.
+      'liveworkspace.app': 1,
     });
 
     const one = (await (

@@ -14,11 +14,13 @@
 
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { platformComputedEmitters } from '../platform-emitters';
 import {
   ALL_CTA_SOURCES,
   ALL_TIMING_TYPES,
   SHEET_CHANGE_KINDS,
   pascalToken,
+  isValidTelemetryEvent,
 } from '@liveplanner/api-schema';
 import { countedVerbs } from '@liveplanner/agent-verbs';
 import { FORM_STARTERS, QUESTION_TYPE_TELEMETRY } from '@liveplanner/forms';
@@ -159,6 +161,8 @@ const AGENT_FRONT_DOORS = tokensAfter(
 );
 
 export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
+  // The Explorer on liveworkspace.app, in this app's name: its closed token lists (../platform-emitters.ts).
+  ...platformComputedEmitters(isValidTelemetryEvent),
   // The api worker.
   'apps/api/src/email/client.ts Email·Sent': { values: EMAIL_KINDS },
   'apps/api/src/email/client.ts Error·Api': {

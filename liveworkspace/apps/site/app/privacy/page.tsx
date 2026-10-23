@@ -232,13 +232,14 @@ const SECTIONS: LegalSection[] = [
     body: (
       <>
         <p>
-          To learn which features actually help, the apps record anonymous, first-party product
-          events, such as &ldquo;a document was created&rdquo;. Each event is a few fixed labels (a
-          category, an action and an optional type) and the app it came from. Events never include
-          anything that identifies you or your work: no names, no content, no account id, no IP
-          address. Page views are counted the same way, with ids and anything after a <code>?</code>{' '}
-          or <code>#</code> removed in your browser first, as are errors (only a generic kind) and
-          timings (only the range they fell in).
+          To learn which features actually help, the apps and the Explorer on liveworkspace.app
+          record anonymous, first-party product events, such as &ldquo;a document was
+          created&rdquo;. Each event is a few fixed labels (a category, an action and an optional
+          type) and the app it came from (the Explorer&rsquo;s count for the app it shows, or for
+          liveworkspace.app). Events never include anything that identifies you or your work: no
+          names, no content, no account id, no IP address. Page views are counted the same way, with
+          ids and anything after a <code>?</code> or <code>#</code> removed in your browser first,
+          as are errors (only a generic kind) and timings (only the range they fell in).
         </p>
         <p>
           Your browser sends them straight to liveworkspace&rsquo;s telemetry service at
@@ -247,9 +248,11 @@ const SECTIONS: LegalSection[] = [
           app&rsquo;s server also remembers which sessions it has already counted, for 90 days. The
           data is never sold or shared: the only place it goes beyond our own use is the public{' '}
           <a href="/telemetry">telemetry dashboard</a>, which shows exactly the totals we see. You
-          can turn off the events your browser sends in each app&rsquo;s Settings. A few totals are
-          counted by our servers and can&rsquo;t be turned off: sign-ups and sign-ins, first visits
-          to a share link, multiplayer sessions, emails sent and server errors.
+          can turn off the events your browser sends: signed in, one setting turns them off in every
+          app and on liveworkspace.app; as a guest, in each app&rsquo;s Settings, and on
+          liveworkspace.app your browser&rsquo;s Global Privacy Control or Do Not Track does. A few
+          totals are counted by our servers and can&rsquo;t be turned off: sign-ups and sign-ins,
+          first visits to a share link, multiplayer sessions, emails sent and server errors.
         </p>
       </>
     ),

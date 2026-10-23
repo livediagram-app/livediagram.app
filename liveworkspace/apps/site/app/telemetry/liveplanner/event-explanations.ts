@@ -368,6 +368,12 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Changed|WireframeFrameLight': "Someone drew a wireframe page's device in the Light look.",
   'Tab|Changed|WireframeFrameOutline':
     "Someone drew a wireframe page's device in the Outline look.",
+  'UI|Toggled|ExplorerViewCard':
+    'Someone switched the Explorer to Card view, showing a large preview of each plan.',
+  'UI|Toggled|ExplorerViewDetails':
+    'Someone switched the Explorer to Details view, a sortable table of its plans.',
+  'UI|Toggled|ExplorerViewList':
+    'Someone switched the Explorer to List view, showing plans as compact rows.',
   'UI|Toggled|WireframeSystemBarsOn':
     "Someone turned a wireframe page's status bar and home indicator on.",
   'UI|Toggled|WireframeSystemBarsOff':

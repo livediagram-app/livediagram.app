@@ -81,8 +81,16 @@ export type ShareHost = {
   loadTabs?: (item: Item) => Promise<{ id: string; name: string }[]>;
   handOver?: (item: Item) => ShareHandOver | undefined;
   helpHref?: ShareHelpHref;
-  onTelemetry?: ShareTelemetry;
+  onTelemetry?: ShareHostTelemetry;
 };
+
+/** The Share dialog's reports (ShareTelemetry), with the item it shares, so a host listing every app's items can
+ *  count each under its own app. */
+export type ShareHostTelemetry = (
+  action: Parameters<ShareTelemetry>[0],
+  type: string,
+  item: Item,
+) => void;
 
 /** What a guest's sign-in banner reports, for the host's telemetry: Sign In followed (`Selected`), its reasons
  *  opened (`Opened`), the banner closed (`Closed`). `type` is a fixed token. */

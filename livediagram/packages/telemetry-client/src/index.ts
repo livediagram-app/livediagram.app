@@ -27,20 +27,12 @@ import {
   pageViewPath,
   type TelemetryAction,
   type TelemetryCategory,
-  type TelemetryEvent,
 } from '@livediagram/api-schema';
-import {
-  TELEMETRY_EVENTS_PATH,
-  TELEMETRY_URL,
-  type TelemetryApp,
-  type TelemetryBatch,
-} from '@liveworkspace/telemetry';
+import { TELEMETRY_URL, type TelemetryApp } from '@liveworkspace/telemetry';
+import { createTelemetryEngine } from '@liveworkspace/telemetry/emitter';
 
 export { onPageHide } from './page-hide';
 export * from './timing';
-
-const FLUSH_DELAY_MS = 10_000;
-const MAX_BUFFER = 25;
 
 // Where the editor keeps its per-user preferences (docs/specs/007-editor/user-preferences.md). The help
 // centre shares the livediagram.app origin, so an opt-out made in the
@@ -108,141 +100,11 @@ export function createTelemetryEmitter(opts: {
   // caller owns caching / invalidation if the read is hot.
   isOptedIn: () => boolean;
 }): TelemetryEmitter {
-  const { url: serviceUrl, app, enabled, isOptedIn } = opts;
-
-  let buffer: TelemetryEvent[] = [];
-  // Events from exactly one failed flush, waiting for one more attempt.
-  // Kept separate from `buffer` so "has this already been retried?" is a
-  // property of which list an event is in, rather than a flag we'd have to
-  // carry on the wire or track by index (docs/specs/017-telemetry/telemetry.md).
-  let retryBuffer: TelemetryEvent[] = [];
-  let flushTimer: ReturnType<typeof setTimeout> | null = null;
-  let listenersAttached = false;
-  let hiddenFlushQueued = false;
-
-  function armTimer(): void {
-    if (flushTimer !== null) return;
-    flushTimer = setTimeout(() => {
-      flushTimer = null;
-      flush();
-    }, FLUSH_DELAY_MS);
-  }
-
-  // A network-level failure means the request never got a response, so the
-  // events almost certainly didn't land — worth one more attempt. Retried
-  // events go to the FRONT of the next batch so the wire order still
-  // matches the order they happened in.
-  //
-  // Deliberately one attempt and no more. A retry trades a small chance of
-  // over-counting (the request reached the server and only the response was
-  // lost) against a systematic under-count, and that trade is only worth
-  // making once: an endlessly retried batch on a dead network would grow
-  // the buffer, duplicate on every recovery, and still be lost at unload.
-  function requeue(events: TelemetryEvent[], alreadyRetried: number): void {
-    // Drop the portion that had already used its one retry.
-    const fresh = events.slice(alreadyRetried);
-    if (fresh.length === 0) return;
-    // Bound it exactly like the live buffer. On overflow the OLDEST go,
-    // because they're the ones that have already had their chance and the
-    // newest events are the ones still worth reporting.
-    retryBuffer = [...retryBuffer, ...fresh].slice(-MAX_BUFFER);
-    // Nothing else may be scheduled (a failure with an idle buffer arms no
-    // timer), so make sure the retry actually gets a moment to happen.
-    armTimer();
-  }
-
-  function flush(useBeacon = false): void {
-    if (buffer.length === 0 && retryBuffer.length === 0) return;
-    const retriedCount = retryBuffer.length;
-    const events = [...retryBuffer, ...buffer];
-    retryBuffer = [];
-    buffer = [];
-    if (flushTimer !== null) {
-      clearTimeout(flushTimer);
-      flushTimer = null;
-    }
-    const url = `${serviceUrl}${TELEMETRY_EVENTS_PATH}`;
-    const batch: TelemetryBatch = { app, events };
-    // text/plain: the service is cross-site, and a plain-text POST without credentials is a CORS
-    // "simple request", so it needs no preflight and carries no cookies.
-    const body = JSON.stringify(batch);
-    try {
-      if (
-        useBeacon &&
-        typeof navigator !== 'undefined' &&
-        typeof navigator.sendBeacon === 'function'
-      ) {
-        // sendBeacon returns false when the UA's queue is full, and that
-        // batch is simply gone. It used to be ignored; fall through to the
-        // keepalive fetch instead, which is the same "outlive the page"
-        // guarantee by another route. No requeue on this path either way —
-        // we're unloading, so there's no later to retry in.
-        // A beacon that throws falls through to the fetch too, rather than losing the batch to the
-        // catch below.
-        try {
-          if (navigator.sendBeacon(url, new Blob([body], { type: 'text/plain' }))) return;
-        } catch {
-          // Fall through to the keepalive fetch.
-        }
-      }
-      // `keepalive` lets the POST outlive a navigation the same way a
-      // beacon would, for the timer-driven flush path.
-      void fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body,
-        keepalive: true,
-        credentials: 'omit',
-      }).catch(() => {
-        // Only on a REJECTION — a network failure, where the request never
-        // got a response. A non-2xx is deliberately not retried: the server
-        // answered, so re-sending risks duplicating something it already
-        // stored, and a 429 would only make the thing it's complaining
-        // about worse.
-        if (!useBeacon) requeue(events, retriedCount);
-      });
-    } catch {
-      // Swallow — telemetry can never throw into the host app.
-    }
-  }
-
-  // Flush on the first hidden/unload so the tail of a session isn't lost.
-  function ensureListeners(): void {
-    if (listenersAttached || typeof document === 'undefined') return;
-    listenersAttached = true;
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'hidden') flush(true);
-    });
-    window.addEventListener('pagehide', () => flush(true));
-  }
-
-  function track(category: TelemetryCategory, action: TelemetryAction, type?: string): void {
-    if (!enabled || typeof window === 'undefined') return;
-    if (!isOptedIn()) return;
-    buffer.push({ category, action, type: type ?? null });
-    ensureListeners();
-    // Tracked while the page is hidden: the page-hide flush has already run, and the page may never
-    // come back, so send it by beacon at the end of this task. This is where the Web Vitals that
-    // finalise on hide (INP, CLS) arrive (docs/specs/017-telemetry/timing-telemetry.md); deferring to
-    // a microtask sends a burst of them as one beacon, not one each.
-    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
-      if (!hiddenFlushQueued) {
-        hiddenFlushQueued = true;
-        queueMicrotask(() => {
-          hiddenFlushQueued = false;
-          flush(true);
-        });
-      }
-      return;
-    }
-    if (buffer.length >= MAX_BUFFER) {
-      flush();
-      return;
-    }
-    armTimer();
-  }
-
-  return { track };
+  // The batching, retry and page-hide flush are liveworkspace's one engine (@liveworkspace/telemetry
+  // emitter.ts); this package only fixes the app and the vocabulary's types.
+  const { app, ...engineOpts } = opts;
+  const engine = createTelemetryEngine(engineOpts);
+  return { track: (category, action, type) => engine.track(app, category, action, type) };
 }
 
 /**

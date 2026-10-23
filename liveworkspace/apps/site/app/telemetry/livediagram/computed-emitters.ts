@@ -15,6 +15,7 @@
 
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { platformComputedEmitters } from '../platform-emitters';
 import {
   ALL_CTA_SOURCES,
   ALL_TIMING_TYPES,
@@ -24,6 +25,7 @@ import {
   PLACEMENT_DEFAULT_KEYS,
   pascalToken,
   placementDefaultTelemetryType,
+  isValidTelemetryEvent,
 } from '@livediagram/api-schema';
 import { countedVerbs, SYNC_WATCH_TYPE } from '@livediagram/agent-verbs';
 import { MCP_TOOL_VERBS } from '@livediagram/agent-verbs/mcp';
@@ -314,6 +316,8 @@ const AGENT_FRONT_DOORS = tokensAfter(
 );
 
 export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
+  // The Explorer on liveworkspace.app, in this app's name: its closed token lists (../platform-emitters.ts).
+  ...platformComputedEmitters(isValidTelemetryEvent),
   // A share link's access level (docs/specs/013-workspace/share-roles.md), from LEVEL_TELEMETRY_TYPE.
   'apps/api/src/routes/share.ts Document·Joined': { values: Object.values(LEVEL_TELEMETRY_TYPE) },
   // The api worker.

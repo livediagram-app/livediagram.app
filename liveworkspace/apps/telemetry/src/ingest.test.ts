@@ -55,6 +55,50 @@ describe('ingest', () => {
     expect(env.rows).toHaveLength(0);
   });
 
+  it('takes only the Explorer’s events from liveworkspace.app, in an app’s name or its own', async () => {
+    const env = testEnv({ ENVIRONMENT: 'production' });
+    const lens = { category: 'Explorer', action: 'Selected', type: 'OpensIn' };
+    const view = { category: 'UI', action: 'Toggled', type: 'ExplorerViewCard' };
+    await handleIngest(
+      post(
+        { app: 'liveplanner.app', events: [lens, projectCreated, view] },
+        fromPage('https://liveworkspace.app'),
+      ),
+      env,
+    );
+    await handleIngest(
+      post({ app: 'liveworkspace.app', events: [view, created] }, fromPage('https://liveworkspace.app')),
+      env,
+    );
+    // An unknown token for a known pair is not the Explorer's either.
+    await handleIngest(
+      post(
+        { app: 'livediagram.app', events: [{ ...lens, type: 'Anything' }] },
+        fromPage('https://liveworkspace.app'),
+      ),
+      env,
+    );
+    expect(env.rows.map((r) => [r.app, r.category, r.type])).toEqual([
+      ['liveplanner.app', 'Explorer', 'OpensIn'],
+      ['liveplanner.app', 'UI', 'ExplorerViewCard'],
+      ['liveworkspace.app', 'UI', 'ExplorerViewCard'],
+    ]);
+  });
+
+  it('never lets an app’s page, or a key, speak for liveworkspace.app', async () => {
+    const env = testEnv({ ENVIRONMENT: 'production' });
+    const view = { category: 'UI', action: 'Toggled', type: 'ExplorerViewCard' };
+    await handleIngest(
+      post({ app: 'liveworkspace.app', events: [view] }, fromPage('https://livediagram.app')),
+      env,
+    );
+    await handleIngest(
+      post({ app: 'liveworkspace.app', events: [view] }, { 'X-Telemetry-Key': 'lp-key' }),
+      env,
+    );
+    expect(env.rows).toHaveLength(0);
+  });
+
   it('takes localhost pages only in development', async () => {
     const prod = testEnv({ ENVIRONMENT: 'production' });
     const dev = testEnv();

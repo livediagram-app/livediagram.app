@@ -5,6 +5,7 @@ import { SETTINGS_CHANGED, SETTINGS_STACKS } from './metric-catalogue';
 import { GROUPS as SETTINGS } from './SettingsView';
 import { COMPUTED_EMITTERS } from './computed-emitters';
 import { COMPUTED, scanEmitters, type Emit } from './emitter-scan';
+import { isValidTelemetryEvent } from '@liveplanner/api-schema';
 import { platformEmitters } from '../platform-emitters';
 import { GROUPS as EXCEPTIONS, RECOVERY_GROUPS, RECOVERY_TYPES } from './ExceptionsView';
 import { GROUPS as HELP } from './HelpView';
@@ -49,7 +50,7 @@ const REPO = resolve(__dirname, '../../../../../../liveplanner');
 // Plus what liveworkspace's own Workers send in this app's name (the onboarding emails).
 const EMITS = [
   ...scanEmitters(REPO, ['apps', 'packages'], join(REPO, 'apps', 'telemetry')),
-  ...platformEmitters(),
+  ...platformEmitters(isValidTelemetryEvent),
 ];
 
 type Known = Emit & { category: string; action: string };
@@ -110,9 +111,9 @@ describe('the emitter scan', () => {
     // Guards the scan itself: a path or parser slip would pass every card below.
     const has = (c: string, a: string, t: string | null) =>
       KNOWN.some((e) => e.category === c && e.action === a && e.type === t);
-    expect(
-      has('Project', 'Exported', COMPUTED as never) || has('Project', 'Exported', 'PNG'),
-    ).toBe(true);
+    expect(has('Project', 'Exported', COMPUTED as never) || has('Project', 'Exported', 'PNG')).toBe(
+      true,
+    );
     expect(has('UI', 'Toggled', 'TelemetryOn')).toBe(true); // Settings catalogue row
     expect(has('Tab', 'Moved', 'Folder')).toBe(true); // ternary action
     expect(has('Tab', 'Removed', 'Folder')).toBe(true);

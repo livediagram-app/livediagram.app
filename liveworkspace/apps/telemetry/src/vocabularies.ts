@@ -18,7 +18,12 @@ import {
   isServerEmittedEvent as isLiveplannerServerEvent,
   isValidTelemetryEvent as isLiveplannerEvent,
 } from '@liveplanner/api-schema';
-import type { TelemetryApp, TelemetryWireEvent } from '@liveworkspace/telemetry';
+import {
+  isExplorerTelemetryEvent,
+  TELEMETRY_TYPE_PATTERN,
+  type TelemetrySender,
+  type TelemetryWireEvent,
+} from '@liveworkspace/telemetry';
 
 type Vocabulary = {
   isValid: (value: unknown) => value is TelemetryWireEvent;
@@ -27,7 +32,19 @@ type Vocabulary = {
   isServerOnly: (event: TelemetryWireEvent) => boolean;
 };
 
-export const VOCABULARIES: Record<TelemetryApp, Vocabulary> = {
+// liveworkspace.app's own: the Explorer's events, sent while it is filtered to All Apps.
+function isPlatformEvent(value: unknown): value is TelemetryWireEvent {
+  if (typeof value !== 'object' || value === null) return false;
+  const e = value as Record<string, unknown>;
+  if (typeof e.category !== 'string' || typeof e.action !== 'string') return false;
+  if (e.type !== undefined && e.type !== null) {
+    if (typeof e.type !== 'string' || !TELEMETRY_TYPE_PATTERN.test(e.type)) return false;
+  }
+  return isExplorerTelemetryEvent(e as TelemetryWireEvent);
+}
+
+export const VOCABULARIES: Record<TelemetrySender, Vocabulary> = {
+  'liveworkspace.app': { isValid: isPlatformEvent, isServerOnly: () => false },
   'livediagram.app': {
     isValid: isLivediagramEvent as Vocabulary['isValid'],
     isServerOnly: isLivediagramServerEvent,

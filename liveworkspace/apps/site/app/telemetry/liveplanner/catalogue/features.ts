@@ -426,12 +426,21 @@ export const PANELS_DOCKED = chart(
   { types: ['PanelDock'], rising: 'neutral' },
 );
 
+// The Explorer's List / Card / Details toggle, on liveworkspace.app filtered to Plans.
+export const EXPLORER_VIEW = chart(
+  'UI',
+  'Toggled',
+  'Explorer View',
+  'The Explorer switched between a list, cards and details.',
+  { typeIn: (type) => (type ?? '').startsWith('ExplorerView'), rising: 'neutral' },
+);
+
 export const EDITOR_CHROME: MetricStack = {
   stack: true,
   title: 'Editor Chrome',
   blurb:
-    'Getting around and arranging the workspace: zoom, zen mode, the bars on a phone held sideways, panel layout.',
-  members: [CANVAS_ZOOMS, ZEN_MODE, LANDSCAPE_BARS, PANELS_DOCKED],
+    'Getting around and arranging the workspace: zoom, zen mode, the bars on a phone held sideways, panel layout, the Explorer’s view.',
+  members: [CANVAS_ZOOMS, ZEN_MODE, LANDSCAPE_BARS, PANELS_DOCKED, EXPLORER_VIEW],
 };
 
 // Dialogs and panels opened (UI·Opened), split by what was opened.
