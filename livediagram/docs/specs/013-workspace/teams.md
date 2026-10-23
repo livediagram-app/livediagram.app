@@ -8,9 +8,9 @@ Multi-user team permissions have been "still ahead" since [Build phase](../005-p
 
 ## Data model
 
-Two D1 tables, owned by the api worker, are a **mirror** of liveworkspace's teams. Nothing in livediagram writes them except the sync below.
+Two D1 tables, owned by the api worker, are a **mirror** of liveworkspace's teams. Nothing in livediagram writes them except the sync below, and a team made from livediagram going in at once ([Making a team](#making-a-team)).
 
-- **`teams`**: `id` (the liveworkspace team id), `name`, `organisation` (always null now; liveworkspace teams have a name only), `created_at`, `updated_at`.
+- **`teams`**: `id` (the liveworkspace team id), `name`, `organisation` (always null here: the mirror keeps the name, and a team's organisation line is shown on liveworkspace.app), `created_at`, `updated_at`.
 - **`team_members`**: `id` (the liveworkspace member row id), `team_id`, `user_id`, `email`, `role` (`'admin' | 'member'`), `status` (always `'joined'`), `created_at`, `updated_at`. Only joined members are mirrored: invitations live and are answered on liveworkspace.app.
 - **`team_sync_state`**: one row holding the change-feed cursor and when it last ran.
 
@@ -45,13 +45,22 @@ Share roles (Editor / Participant / Viewer) do not apply here: the team page is 
 All under `/api/teams`, account Bearer or API token required, handled by `apps/api/src/routes/teams.ts`:
 
 - `GET /api/teams` — teams the caller has joined, each with `myRole` and `memberCount`.
+- `POST /api/teams` `{ name, organisation? }` — makes a team ([Making a team](#making-a-team)). A signed-in session only.
 - `GET /api/teams/invites` — the invitations waiting for the caller on liveworkspace.app ([Invitations](#invitations)).
 - `GET /api/teams/:id` — team + member list + `myRole` (`inviteLink` is always null). Members only.
 - `GET /api/teams/:id/library` — the team's folders and documents ([Team Shared Documents](team-shared-documents.md)).
 - `GET /api/teams/:id/access-check`, `POST /api/teams/:id/notify-action`, `POST /api/teams/:id/notify-mention` — as [Assigned actions](../012-collaboration/assigned-actions.md) and [Comment mentions](../012-collaboration/comment-mentions.md) describe; the two notices need a signed-in session.
-- Every route that used to administer a team (create, rename, delete, invite, change a role, remove, the invite link, accept, decline) answers **`410 { error: 'teams_moved', manageAt }`**, where `manageAt` is liveworkspace.app's teams page.
+- The routes that would administer a team (rename, delete, invite, change a role, remove, an invite link, accept, decline) answer **`410 { error: 'teams_moved', manageAt }`**, where `manageAt` is liveworkspace.app's teams page.
 
 Wire DTOs (`Team`, `TeamListItem`, `TeamMember`, `TeamRole`, `TeamInvite`) live in `@livediagram/api-schema`.
+
+## Making a team
+
+The **New Team** tile in the Move dialog makes a team without leaving livediagram, and files the document being moved into it. `POST /api/teams` (`apps/api/src/routes/team-create.ts`) asks liveworkspace to make it for the person signed in, vouching for them with the access token they sent (`createTeamFor` in `@liveworkspace/auth-client`, `POST /api/account/internal/teams`); they become its admin. The answer goes into the mirror at once (`mirrorCreatedTeam`), with the same ids the change feed brings later, so a document can be filed into the team on the very next request. It is the same team on liveworkspace.app and in every app, and managed there.
+
+- The name is trimmed and cut at 80 characters, as liveworkspace cuts it; an empty one is `400 name_required`. The organisation, likewise, or null.
+- An API token or a workbench can't make one: `401 sign_in_required` without a signed-in session and its access token.
+- liveworkspace's refusal is passed on (`409 team_limit_reached` at 50 teams), and nothing is mirrored. Without accounts configured, or with liveworkspace out of reach, it is `503`.
 
 ## Invitations
 
@@ -79,9 +88,9 @@ The right-pane team view is **one calm card**:
 
 ## Telemetry
 
-Category `Team` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)). Moving documents in and out of a team sends `Team/Added/Document`, `Team/Moved/Document` and `Team/Removed/Document`. Creating, editing and deleting teams, invites and roles happen on liveworkspace.app and are not counted here.
+Category `Team` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)). Making a team from the New Team tile sends `Team/Created`. Moving documents in and out of a team sends `Team/Added/Document`, `Team/Moved/Document` and `Team/Removed/Document`. Editing and deleting teams, invites and roles happen on liveworkspace.app and are not counted here.
 
 ## Out of scope
 
-- Administering a team inside livediagram.
+- Administering a team inside livediagram, beyond making one.
 - Team avatars and descriptions.

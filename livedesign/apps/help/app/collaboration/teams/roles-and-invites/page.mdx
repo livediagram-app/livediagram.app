@@ -10,7 +10,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Roles and Invites" description="Admin and Member roles, and inviting people to a team." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Teams", slug: "teams" }} subArticles={getSubArticles("teams").filter((a) => a.slug !== "roles-and-invites")}>
 
-Teams belong to your liveworkspace account, so a team is the same in every liveworkspace app, livedesign included. You make and run them on [liveworkspace.app](https://liveworkspace.app/account/teams); livedesign shows your teams, their members and their shared designs. Everything here needs a signed-in account.
+Teams belong to your liveworkspace account, so a team is the same in every liveworkspace app, livedesign included. You run them on [liveworkspace.app](https://liveworkspace.app/account/teams); livedesign shows your teams, their members, their shared designs and the invitations waiting for you, and you can make a team from its Move dialog. Everything here needs a signed-in account.
 
 ## Admin and Member
 
@@ -36,11 +36,12 @@ In livedesign, open a team in the Explorer and choose **Manage on liveworkspace.
 </Step>
 <Step n={2}>
   They get an email from liveworkspace with a link to their teams page, where the invitation waits.
-  They don't need an account yet: it waits until they sign up with that address.
+  They don't need an account yet: it waits until they sign up with that address. Signed in to
+  livedesign, they also see it under **Invites** in the Explorer sidebar, with a count.
 </Step>
 <Step n={3}>
-  They accept or decline there. Accepting takes a signed-in account whose verified email address is
-  the one invited.
+  They accept or decline on liveworkspace.app (**Answer on liveworkspace.app** in Invites goes
+  there). Accepting takes a signed-in account whose verified email address is the one invited.
 </Step>
 
 Once they've joined, the team shows up in livedesign within a few minutes, usually at once.

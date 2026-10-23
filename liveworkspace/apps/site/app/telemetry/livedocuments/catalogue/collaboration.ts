@@ -16,7 +16,7 @@ export const SHARE_LINKS_COPIED = chart(
   'UI',
   'Copied',
   'Share Links Copied',
-  'A document share link, embed code or live image copied. (Team invite links are in Team Activity.)',
+  'A document share link, embed code or live image copied.',
   {
     typeIn: (t) => t !== 'TeamInviteLink' && t !== 'Diagnostics' && t !== 'Diagnostics.Help',
   },
@@ -121,7 +121,7 @@ export const TEAM_REMOVALS = chart(
   'Team',
   'Removed',
   'Team Removals',
-  'A member removed, an invite withdrawn, a document or an invite link taken out of a team, or someone leaving.',
+  'A document taken out of a team to its owner’s My Work. Members, invitations and leaving are run on liveworkspace.app.',
   { rising: 'neutral' },
 );
 
@@ -249,7 +249,7 @@ export const TEAMS_CREATED: Metric = {
   action: 'Created',
   type: null,
   title: 'Teams Created',
-  blurb: 'A new team workspace was created.',
+  blurb: "A team made from the Move dialog's New Team tile, on liveworkspace.",
 };
 
 export const DOCUMENTS_SHARED_TO_A_TEAM: Metric = {
@@ -305,25 +305,12 @@ export const DISCUSSION: MetricStack = {
   headline: COMMENTS_ADDED,
 };
 
-export const INVITE_LINKS_COPIED = chart(
-  'UI',
-  'Copied',
-  'Invite Links Copied',
-  'A team invite link copied to share.',
-  { types: ['TeamInviteLink'] },
-);
 export const TEAM_ACTIVITY: MetricStack = {
   stack: true,
   title: 'Team Activity',
   blurb:
     'Teams made, and documents shared to a team or moved between teams. Invitations are answered on liveworkspace.app.',
-  members: [
-    TEAMS_CREATED,
-    DOCUMENTS_SHARED_TO_A_TEAM,
-    TEAM_DOCUMENTS_MOVED,
-    TEAM_REMOVALS,
-    INVITE_LINKS_COPIED,
-  ],
+  members: [TEAMS_CREATED, DOCUMENTS_SHARED_TO_A_TEAM, TEAM_DOCUMENTS_MOVED, TEAM_REMOVALS],
   headline: TEAMS_CREATED,
 };
 

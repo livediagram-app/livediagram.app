@@ -746,24 +746,22 @@ team folder) gets the one-verb menu below.
 kind of thing**, resolved from the Explorer's own state and run through
 the Explorer's own handlers (`useTimelineEntityMenus`):
 
-| Card                                   | Verbs                                                                                                    |
-| -------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| API token (created, expiring)          | Open API Tokens (Settings, in place) · **Revoke Token** (confirmed with the token manager's own warning) |
-| Team (created, renamed, members, role) | Open Team · Edit Team _(admin)_ · Leave Team · Delete Team _(admin)_                                     |
-| Invite received                        | Open Invites · **Accept Invite** · **Decline Invite**                                                    |
-| Images uploaded                        | Open Images                                                                                              |
-| Design the Explorer can't resolve      | Open Design                                                                                              |
+| Card                                   | Verbs                                                                        |
+| -------------------------------------- | ---------------------------------------------------------------------------- |
+| API token (created, expiring)          | Open API Tokens (Settings, in place) · Manage API Tokens (liveworkspace.app) |
+| Team (created, renamed, members, role) | Open Team · Manage Team (liveworkspace.app)                                  |
+| Invite received                        | Open Invites                                                                 |
+| Images uploaded                        | Open Images                                                                  |
+| Design the Explorer can't resolve      | Open Design                                                                  |
 
-Plus **Remove from Timeline** on all of them (§2.9), and the destructive
-verbs last, under their own separator (never red), the way the design menu
-keeps Delete. The first version gave these cards only the remove verb,
+Plus **Remove from Timeline** on all of them (§2.9). The first version gave these cards only the remove verb,
 on the argument that a ⋯ holding a single "Open" that duplicated the
 card's own click was a control that exists to look consistent. Half
-right: the reader who sees "API Token Expiring" wants to revoke it
-_there_, not go and find it. Confirm copy comes from the panes' own
-helpers (`token-copy.ts`),
-so the warning a reader sees is the one they'd see on the Tokens
-or Team page.
+right: the reader who sees "API Token Expiring" wants to act on it
+_there_, not go and find it. Teams and API tokens are run on
+liveworkspace.app (liveworkspace/docs/accounts.md), so their verbs (revoke a
+token; rename, leave or delete a team; answer an invite) are a link there,
+the same one the Team page and Settings give.
 
 **A tombstone, or an entity the Explorer no longer holds** — a revoked
 token, an answered invite, a team the reader has left —

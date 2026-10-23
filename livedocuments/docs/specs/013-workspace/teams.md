@@ -10,7 +10,7 @@ Multi-user team permissions have been "still ahead" since [Build phase](../005-p
 
 Two D1 tables, owned by the api worker, are a **mirror** of liveworkspace's teams. Nothing in livedocuments writes them except the sync below, and a team made from livedocuments going in at once ([Making a team](#making-a-team)).
 
-- **`teams`**: `id` (the liveworkspace team id), `name`, `organisation` (always null now; liveworkspace teams have a name only), `created_at`, `updated_at`.
+- **`teams`**: `id` (the liveworkspace team id), `name`, `organisation` (always null here: the mirror keeps the name, and a team's organisation line is shown on liveworkspace.app), `created_at`, `updated_at`.
 - **`team_members`**: `id` (the liveworkspace member row id), `team_id`, `user_id`, `email`, `role` (`'admin' | 'member'`), `status` (always `'joined'`), `created_at`, `updated_at`. Only joined members are mirrored: invitations live and are answered on liveworkspace.app.
 - **`team_sync_state`**: one row holding the change-feed cursor and when it last ran.
 
