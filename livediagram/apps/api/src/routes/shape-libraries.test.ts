@@ -1,10 +1,15 @@
 import { makeTestRouteContext } from './test-route-context';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { MAX_SHAPE_LIBRARIES_PER_OWNER, MAX_TAB_BYTES } from '@livediagram/api-schema';
+import {
+  MAX_SHAPE_LIBRARIES_PER_OWNER,
+  MAX_SHAPE_LIBRARY_ITEMS,
+  MAX_TAB_BYTES,
+  type ShapeLibraryItem,
+} from '@livediagram/api-schema';
 import { testPersonStores } from '../test-person-store';
 import type { Env } from '../types';
 import type { RouteContext } from './context';
-import { handleShapeLibraries } from './shape-libraries';
+import { handleShapeLibraries, shapePreviews } from './shape-libraries';
 
 // handleShapeLibraries (docs/specs/013-workspace/blueprints/shape-libraries.md "Interfaces and
 // contracts"): each person's libraries in their own store, plus the cap, the size budget, item
@@ -176,5 +181,65 @@ describe('a person store that never held anything', () => {
     expect(await list('nobody')).toEqual([]);
     const db = stores.databaseOf('nobody')!;
     expect(db.prepare('SELECT COUNT(*) AS n FROM sqlite_master').get()).toEqual({ n: 0 });
+  });
+});
+
+describe('GET /api/shape-libraries/:id/previews', () => {
+  it('draws every shape of the library as an SVG, by shape id, cached privately', async () => {
+    const lib = await create({
+      items: [item, { ...item, id: 'i2', title: 'Store', elements: [{ ...square, id: 'e2' }] }],
+    });
+    const res = await send('GET', `/api/shape-libraries/${lib.id}/previews`);
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Cache-Control')).toBe('private, max-age=300');
+    const { previews } = await res.json<{ previews: Record<string, string> }>();
+    expect(Object.keys(previews).sort()).toEqual(['i1', 'i2']);
+    expect(previews.i1).toMatch(/^<svg[\s\S]*<\/svg>$/);
+    expect(previews.i1).toContain('fill="transparent"');
+  });
+
+  it("404 for a missing library, and for another person's", async () => {
+    const lib = await create();
+    expect((await send('GET', '/api/shape-libraries/nope/previews')).status).toBe(404);
+    expect(
+      (await send('GET', `/api/shape-libraries/${lib.id}/previews`, { owner: 'owner-2' })).status,
+    ).toBe(404);
+    expect((await send('GET', '/api/shape-libraries/bad id!/previews')).status).toBe(404);
+  });
+
+  it('needs a person', async () => {
+    const res = await send('GET', '/api/shape-libraries/lib-1/previews', { owner: null });
+    expect(res.status).toBeGreaterThanOrEqual(400);
+  });
+
+  // The worst case a library may hold: MAX_SHAPE_LIBRARY_ITEMS shapes, each a small drawing of labelled shapes and an
+  // arrow, inside the size budget. One request draws them all.
+  it('draws the largest library a person may keep within budget', () => {
+    const items = Array.from({ length: MAX_SHAPE_LIBRARY_ITEMS }, (_, i) => ({
+      id: `i${i}`,
+      title: `Shape ${i}`,
+      width: 200,
+      height: 120,
+      elements: [
+        { ...square, id: `a${i}`, label: 'Service' },
+        { ...square, id: `b${i}`, x: 140, shape: 'circle', label: 'Store' },
+        { ...square, id: `c${i}`, y: 80, shape: 'diamond' },
+        {
+          id: `l${i}`,
+          type: 'arrow',
+          from: { kind: 'free', x: 120, y: 30 },
+          to: { kind: 'free', x: 140, y: 30 },
+        },
+      ],
+    })) as unknown as ShapeLibraryItem[];
+    expect(JSON.stringify(items).length).toBeLessThan(MAX_TAB_BYTES);
+    const started = performance.now();
+    const previews = shapePreviews(items);
+    const ms = performance.now() - started;
+    const bytes = JSON.stringify({ previews }).length;
+    expect(Object.keys(previews)).toHaveLength(MAX_SHAPE_LIBRARY_ITEMS);
+    // Measured 62 ms and 1.2 MB (before compression) on a laptop; the budgets leave CI room.
+    expect(ms).toBeLessThan(500);
+    expect(bytes).toBeLessThan(2_000_000);
   });
 });

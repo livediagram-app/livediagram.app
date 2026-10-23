@@ -13,6 +13,8 @@ import {
   type ShapeLibraryItem,
   type ShapeLibrarySource,
 } from '@livediagram/api-schema';
+import { renderElementsToSvg, type Tab } from '@livediagram/document';
+import { resolveIconExportArt, resolveStickerArt } from '@livediagram/icons/resolve';
 import { personStore } from '../person-client';
 import { badRequest, conflict, json, noContent, notFound, payloadTooLarge } from '../responses';
 import { requireOwner, type RouteContext, readBody } from './context';
@@ -75,6 +77,20 @@ export async function handleShapeLibraries(ctx: RouteContext): Promise<Response>
     }
   }
 
+  // /api/shape-libraries/<id>/previews: every shape of one library drawn as an SVG, by shape id, for an Explorer that
+  // cannot draw them itself (liveworkspace.app's, and the Explorer on this site's /explorer). One request a library,
+  // not one a shape; `?v=<updatedAt>` keys a cached answer to the library's version.
+  if (segments.length === 4 && segments[3] === 'previews' && request.method === 'GET') {
+    const libraryId = segments[2]!;
+    if (!ID.test(libraryId)) return notFound();
+    const library = await store.shapeLibrary(libraryId);
+    if (!library) return notFound();
+    return json(
+      { previews: shapePreviews(library.items) },
+      { headers: { 'Cache-Control': 'private, max-age=300' } },
+    );
+  }
+
   // /api/shape-libraries/<id>: update / delete. Another person's library is not in this person's store, so it
   // answers as no library at all.
   if (segments.length === 3) {
@@ -107,4 +123,29 @@ export async function handleShapeLibraries(ctx: RouteContext): Promise<Response>
     }
   }
   return notFound();
+}
+
+// Each shape drawn by the same DOM-free renderer as a canvas's snapshot, on a transparent ground, so a tile shows it
+// as the palette does. Its images are not fetched (a library shape keeps none of its own); its icons and stickers
+// draw their real art. A shape the renderer cannot draw is left out, and its tile stays plain.
+export function shapePreviews(items: readonly ShapeLibraryItem[]): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const item of items) {
+    try {
+      const tab = {
+        id: `library-item-${item.id}`,
+        name: item.title,
+        elements: item.elements,
+      } as Tab;
+      out[item.id] = renderElementsToSvg(tab, {
+        padding: 4,
+        background: 'transparent',
+        resolveIconArt: resolveIconExportArt,
+        resolveStickerArt,
+      });
+    } catch (error) {
+      console.warn('[shape-libraries] preview failed', { item: item.id, error: String(error) });
+    }
+  }
+  return out;
 }

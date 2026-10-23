@@ -997,6 +997,22 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tokenUsable: true,
     statuses: [204, 401, 404],
   },
+  {
+    method: 'GET',
+    path: '/shape-libraries/{id}/previews',
+    segment: 'shape-libraries',
+    tag: 'Shape libraries',
+    summary:
+      'Every shape of one library drawn as an SVG, keyed by shape id, for an Explorer that cannot draw them itself.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    responseSchema: {
+      type: 'object',
+      properties: { previews: { type: 'object', additionalProperties: { type: 'string' } } },
+      required: ['previews'],
+    },
+    statuses: [200, 401, 404],
+  },
 
   // ---- API tokens ----
   {
@@ -1224,7 +1240,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/trash',
     segment: 'trash',
     tag: 'Trash',
-    summary: 'Empty the personal Trash of canvases, or one team Trash with team=<id> (joined members only).',
+    summary:
+      'Empty the personal Trash of canvases, or one team Trash with team=<id> (joined members only).',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: [{ name: 'team', required: false, description: 'Empty this team Trash instead.' }],
