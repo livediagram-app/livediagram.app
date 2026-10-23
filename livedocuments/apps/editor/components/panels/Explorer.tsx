@@ -17,6 +17,7 @@ import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
 import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
 import { getSessionSharePassword } from '@/lib/api-client';
 import { indexClient } from '@/lib/index-client';
+import { explorerLibrary } from '@/lib/explorer-library';
 import { itemHref, newDocumentHref, shareUrl, useTokenTeams } from '@/lib/explorer-host';
 import { explorerShareHost } from '@/lib/explorer-share-host';
 import { explorerInboxHost } from '@/lib/explorer-inbox-host';
@@ -143,6 +144,8 @@ function ExplorerImpl({
         share={shareHost}
         inbox={inboxHost}
         itemMenu={itemMenu}
+        // The Library section: the Image Gallery over this app's API.
+        {...explorerLibrary}
         // Side by side in a desktop popover; chips over the pane on a phone and in the corner panel that stands
         // beside the new-plan wizard and the status screens, which must stay narrow or it covers their card.
         layout={sheet ? 'sheet' : isMobile || !asPopover ? 'stacked' : 'side'}
