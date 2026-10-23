@@ -1,8 +1,8 @@
 import type { DatabaseSync, SQLInputValue } from 'node:sqlite';
-import type { DocumentSql, DocumentSqlCursor } from './document-room/document-db';
+import type { ItemSql as DocumentSql, ItemSqlCursor as DocumentSqlCursor } from '@liveworkspace/index-app';
 
 // `ctx.storage.sql` for node tests: SqlStorage's `exec` over a node:sqlite database, for the document's SQLite
-// (document-db.ts) and the document schema's migration. Like SqlStorage, a call without bindings may hold several
+// (@liveworkspace/index-app item-db.ts) and the document schema's migration. Like SqlStorage, a call without bindings may hold several
 // statements (the schema); a call with bindings is one statement. Not a `.test.ts` file, so vitest doesn't collect
 // it as a suite.
 

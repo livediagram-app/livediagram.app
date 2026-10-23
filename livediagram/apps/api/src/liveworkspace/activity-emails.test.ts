@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { accountsServiceFor, type TestAccountsService } from '../test-accounts-service';
 import type { Env } from '../types';
-import { ACTIVITY_REPORT_INTERVAL_MS, reportOwnerActivity } from './activity';
+import { reportOwnerActivity } from './activity';
 import { claimMilestone, getOwnerEmail, getOwnerEmails } from './emails';
 
 const GUEST = '0f5ca4af-9a8a-4a60-be5e-1179e5555880';
@@ -19,31 +19,28 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+// The once-a-minute pacing is the canvas's (its summary push, document-room/document-outbox.ts); this sends.
 describe('reportOwnerActivity', () => {
-  it('reports an account’s save at most once a minute per document', async () => {
-    await reportOwnerActivity(env, 'user_a', 'd1', 1000);
-    expect(
-      reportOwnerActivity(env, 'user_a', 'd1', 1000 + ACTIVITY_REPORT_INTERVAL_MS - 1),
-    ).toBeNull();
-    await reportOwnerActivity(env, 'user_a', 'd2', 2000);
-    await reportOwnerActivity(env, 'user_a', 'd1', 1000 + ACTIVITY_REPORT_INTERVAL_MS);
+  it('reports an account’s save', async () => {
+    await reportOwnerActivity(env, 'user_a', 1000);
+    await reportOwnerActivity(env, 'user_a', 2000);
     expect(accounts.activity).toEqual([
       { userId: 'user_a', at: 1000 },
       { userId: 'user_a', at: 2000 },
-      { userId: 'user_a', at: 1000 + ACTIVITY_REPORT_INTERVAL_MS },
     ]);
   });
 
-  it('sends nothing for a guest or without sign-in', () => {
-    expect(reportOwnerActivity(env, GUEST, 'd1')).toBeNull();
-    expect(reportOwnerActivity({} as Env, 'user_a', 'd1')).toBeNull();
+  it('sends nothing for a guest or without sign-in', async () => {
+    await reportOwnerActivity(env, GUEST, 1000);
+    await reportOwnerActivity({} as Env, 'user_a', 1000);
+    expect(accounts.activity).toEqual([]);
   });
 
-  it('never rejects, and a failed report tries again on the next save', async () => {
+  it('never rejects when liveworkspace is out of reach', async () => {
     accounts.failWith = 503;
-    await reportOwnerActivity(env, 'user_a', 'd1', 1000);
+    await expect(reportOwnerActivity(env, 'user_a', 1000)).resolves.toBeUndefined();
     accounts.failWith = null;
-    await reportOwnerActivity(env, 'user_a', 'd1', 1001);
+    await reportOwnerActivity(env, 'user_a', 1001);
     expect(accounts.activity).toEqual([{ userId: 'user_a', at: 1001 }]);
   });
 });

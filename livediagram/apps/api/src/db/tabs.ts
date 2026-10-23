@@ -1,6 +1,6 @@
 // tabs — one row per tab in the document's own SQLite (docs/specs/015-api/api.md "Storage"), placed in the document
 // by `document_tabs`. Runs only inside the document's Durable Object, on `env.DOCUMENT_DB`
-// (document-room/document-db.ts).
+// (@liveworkspace/index-app item-db.ts).
 
 import { capElementActions, drawnCount, type Tab } from '@livediagram/document';
 import { rowToTab, type TabRow } from '../tab-row';

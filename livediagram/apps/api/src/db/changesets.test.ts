@@ -22,8 +22,8 @@ const tab: Tab = { id: 't1', name: 'Board', elements: [] };
 
 async function documentWithTab(): Promise<SqliteD1> {
   const db = sqliteD1();
-  db.sql.exec(`INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
-               VALUES ('D', 'o', 'Doc', 0, 1, 1)`);
+  db.sql.exec(`INSERT INTO test_documents (id, owner_id, name, saved_at, created_at)
+               VALUES ('D', 'o', 'Doc', 1, 1)`);
   await upsertTab(db.env, 'D', tab, 0);
   return db;
 }

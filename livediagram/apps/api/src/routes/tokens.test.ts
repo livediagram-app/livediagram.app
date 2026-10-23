@@ -12,11 +12,6 @@ const { db } = vi.hoisted(() => ({
 vi.mock('../db', () => db);
 vi.mock('../liveworkspace/profiles', () => ({ getParticipant: db.getParticipant }));
 
-const { timeline } = vi.hoisted(() => ({
-  timeline: { recordTokenRevoked: vi.fn() },
-}));
-vi.mock('../timeline', () => timeline);
-
 const { endAccess } = vi.hoisted(() => ({ endAccess: vi.fn() }));
 vi.mock('../workbench-store', () => ({ workbenchStore: () => ({ endAccess }) }));
 
@@ -42,8 +37,6 @@ beforeEach(() => {
   endAccess.mockReset();
   db.revokePresentedToken.mockResolvedValue(undefined);
   db.retractTimelineWarning.mockResolvedValue(undefined);
-  for (const fn of Object.values(timeline)) fn.mockReset();
-  endAccess.mockReset();
 });
 
 // Tokens are made, listed and revoked on liveworkspace.app (liveworkspace/docs/accounts.md "API
@@ -103,28 +96,13 @@ describe('/api/tokens/current (docs/specs/015-api/blueprints/cli.md "Token self-
     });
   });
 
-  it('revokes itself, recording it', async () => {
+  it('revokes itself, ending its workbench access', async () => {
     const work: Promise<unknown>[] = [];
     const res = await handleTokens(tokenCtx('DELETE', false, (p) => void work.push(p)));
     expect(res.status).toBe(204);
     expect(db.revokePresentedToken).toHaveBeenCalledWith(expect.anything(), 'lwt_secret');
     expect(endAccess).toHaveBeenCalledWith({ tokenId: 'tok_1' }, 'revoked');
     await Promise.all(work);
-    expect(timeline.recordTokenRevoked).toHaveBeenCalled();
-    await handleTokens(
-      makeTestRouteContext('DELETE', '/api/tokens/current', {
-        accountUserId: null,
-        owner: 'user_1',
-        token: { id: 'tok_1', readOnly: false, name: null, expiresAt: 99 },
-        waitUntil: (p) => void work.push(p),
-      }),
-    );
-    await Promise.all(work);
-    expect(timeline.recordTokenRevoked).toHaveBeenLastCalledWith(
-      expect.anything(),
-      { id: 'tok_1', name: 'API token' },
-      'user_1',
-    );
   });
 
   it('revokes without a bearer to pass on, and reads a token with no name', async () => {

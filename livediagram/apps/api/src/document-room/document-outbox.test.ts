@@ -1,12 +1,19 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { Element } from '@livediagram/document';
 import { deleteTabRow, upsertTab } from '../db/tabs';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { DRAIN_TABS, drainOutbox, jsonChunks, readContentSummary } from './document-outbox';
+import { accountsServiceFor } from '../test-accounts-service';
+import { DRAIN_TABS, drainOutbox, readContentSummary, recordEditor } from './document-outbox';
+import {
+  IndexError,
+  type AppTimelineEvent,
+  type CollabPush,
+  type IndexAppClient,
+  type ItemSummary,
+} from '@liveworkspace/index-client';
 
-// What a document pushes to D1 (document-outbox.ts): the triggers key each change in the write's own transaction, and
-// a drain turns the keys into one D1 batch. Real SQLite (test-sqlite-d1.ts), where a document's tables sit beside
-// D1's; `drainOutbox` is called directly, so the D1 reads below use the raw handle (no automatic push).
+// What a document pushes to the index (document-outbox.ts): the triggers key each change in the write's own transaction,
+// and a drain pushes the keys with this app's key. Real SQLite (test-sqlite-d1.ts); the index is a recording fake.
 
 const T0 = 1_700_000_000_000;
 
@@ -40,8 +47,8 @@ const actionOn = (id: string): Element =>
 
 function document(): SqliteD1 {
   const db = sqliteD1();
-  db.sql.exec(`INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
-               VALUES ('P', 'owner', 'P', 1, ${T0}, ${T0})`);
+  db.sql.exec(`INSERT INTO test_documents (id, owner_id, name, saved_at, created_at)
+               VALUES ('P', 'owner', 'P', ${T0}, ${T0})`);
   return db;
 }
 
@@ -51,80 +58,153 @@ const keys = (db: SqliteD1) =>
     (r) => String(r.k),
   );
 
+// The index as the drain sees it: every push recorded, a failure on demand.
+function fakeIndex(fail: (kind: string) => Error | null = () => null) {
+  const collab: { tab: string; push: CollabPush }[] = [];
+  const summaries: { summary: ItemSummary; savedAt: number | undefined }[] = [];
+  const events: AppTimelineEvent[][] = [];
+  const client = {
+    pushEvents: async (_id: string, batch: AppTimelineEvent[]) => {
+      const err = fail('events');
+      if (err) throw err;
+      events.push(batch);
+    },
+    pushCollab: async (_id: string, tab: string, push: CollabPush) => {
+      const err = fail('collab');
+      if (err) throw err;
+      collab.push({ tab, push });
+    },
+    pushSummary: async (_id: string, summary: ItemSummary, savedAt?: number) => {
+      const err = fail('summary');
+      if (err) throw err;
+      summaries.push({ summary, savedAt });
+    },
+  } as unknown as IndexAppClient;
+  return { client, collab, summaries, events };
+}
+
 describe('the outbox', () => {
-  it('keys a tab write in the same transaction, and a drain pushes its Inbox rows and empties it', async () => {
+  it('keeps one edit key per person at their latest write, and reports them all in one batch', async () => {
     const db = document();
-    await upsertTab(db.env, 'P', { id: 't1', name: 'Board', elements: [actionOn('a')] }, 0);
-    // A new tab links into the document, so the document's image set is pushed too (a tab's images find their
-    // document through its link).
-    expect(keys(db)).toEqual(['tab:t1', 'images:', 'summary:']);
-    expect(rows(db, 'SELECT * FROM collab_actions')).toEqual([]);
-
-    const pushed = await drainOutbox(db.env, 'P');
-
-    expect(pushed).toMatchObject({ more: false });
-    expect(keys(db)).toEqual([]);
-    expect(rows(db, 'SELECT document_id, tab_id, tab_name, action_id FROM collab_actions')).toEqual(
-      [{ document_id: 'P', tab_id: 't1', tab_name: 'Board', action_id: 'act-a' }],
-    );
-    const summary = rows(db, "SELECT content_summary FROM documents WHERE id = 'P'")[0]!;
-    expect(JSON.parse(String(summary.content_summary))).toMatchObject({
-      hasContent: true,
-      tabCounts: { t1: 1 },
-    });
-  });
-
-  it('replaces a tab’s rows on the next write, and drops them, and its tab-scoped links, when the tab goes', async () => {
-    const db = document();
-    await upsertTab(db.env, 'P', { id: 't1', name: 'Board', elements: [actionOn('a')] }, 0);
-    await drainOutbox(db.env, 'P');
-    await upsertTab(db.env, 'P', { id: 't1', name: 'Renamed', elements: [actionOn('b')] }, 0);
-    await drainOutbox(db.env, 'P');
-    expect(rows(db, 'SELECT tab_name, action_id FROM collab_actions')).toEqual([
-      { tab_name: 'Renamed', action_id: 'act-b' },
+    await drainOutbox(db.env, 'P', fakeIndex().client);
+    const exec = (q: string, ...b: (string | number)[]) => db.sql.prepare(q).run(...b);
+    recordEditor(exec, 'P', 'user_a', T0 + 1);
+    recordEditor(exec, 'P', 'user_b', T0 + 2);
+    recordEditor(exec, 'P', 'user_a', T0 + 3);
+    // A person whose id starts like another's keeps their own key.
+    recordEditor(exec, 'P', 'user_ab', T0 + 4);
+    expect(keys(db)).toEqual([
+      `edit:user_b@${T0 + 2}`,
+      `edit:user_a@${T0 + 3}`,
+      `edit:user_ab@${T0 + 4}`,
     ]);
 
-    db.sql.exec(`INSERT INTO share_links (code, document_id, role, created_at, tab_id)
-                 VALUES ('tabbed', 'P', 'view', ${T0}, 't1'), ('whole', 'P', 'view', ${T0}, NULL)`);
-    await deleteTabRow(db.env, 'P', 't1');
-    await drainOutbox(db.env, 'P');
-    expect(rows(db, 'SELECT * FROM collab_actions')).toEqual([]);
-    expect(rows(db, 'SELECT code FROM share_links')).toEqual([{ code: 'whole' }]);
+    const failing = fakeIndex((kind) => (kind === 'events' ? new Error('down') : null));
+    await expect(drainOutbox(db.env, 'P', failing.client)).rejects.toThrow('down');
+    expect(keys(db)).toHaveLength(3);
+
+    const index = fakeIndex();
+    await drainOutbox(db.env, 'P', index.client);
+    expect(index.events).toEqual([
+      [
+        { type: 'edited', actorId: 'user_b', at: T0 + 2 },
+        { type: 'edited', actorId: 'user_a', at: T0 + 3 },
+        { type: 'edited', actorId: 'user_ab', at: T0 + 4 },
+      ],
+    ]);
+    expect(keys(db)).toEqual([]);
   });
 
-  it('writes nothing for a document whose document row is gone', async () => {
+  it('keys a tab write in the same transaction, and a drain pushes its Inbox rows and summary and empties it', async () => {
     const db = document();
     await upsertTab(db.env, 'P', { id: 't1', name: 'Board', elements: [actionOn('a')] }, 0);
-    db.sql.exec('PRAGMA foreign_keys = OFF');
-    db.sql.exec("DELETE FROM documents WHERE id = 'P'");
-    db.sql.exec('PRAGMA foreign_keys = ON');
-    await drainOutbox(db.env, 'P');
-    expect(rows(db, 'SELECT * FROM collab_actions')).toEqual([]);
+    // A new tab also owes the media service the document's images (none here, and no service to tell).
+    expect(keys(db)).toEqual(['tab:t1', 'images:', 'summary:']);
+    const index = fakeIndex();
+
+    const pushed = await drainOutbox(db.env, 'P', index.client);
+
+    expect(pushed).toMatchObject({ more: false, pushes: 2 });
+    expect(keys(db)).toEqual([]);
+    expect(index.collab).toHaveLength(1);
+    expect(index.collab[0]!.tab).toBe('t1');
+    expect(index.collab[0]!.push.actions.map((a) => a.actionId)).toEqual(['act-a']);
+    expect(index.summaries[0]!.summary).toMatchObject({ elements: 1, empty: false });
   });
 
-  it('pushes the images the document places to D1 and the media queue, and only a changed set', async () => {
+  it("reports the owner's newest save to liveworkspace's onboarding emails with the summary", async () => {
+    const db = sqliteD1();
+    const accounts = accountsServiceFor(db.env);
+    db.sql.exec(`INSERT INTO test_documents (id, owner_id, name, saved_at, created_at)
+                 VALUES ('P', 'user_ada', 'P', ${T0}, ${T0})`);
+    await upsertTab(db.env, 'P', { id: 't1', name: 'Board', elements: [actionOn('a')] }, 0);
+    await drainOutbox(db.env, 'P', fakeIndex().client);
+    expect(accounts.activity).toEqual([{ userId: 'user_ada', at: expect.any(Number) }]);
+    vi.unstubAllGlobals();
+  });
+
+  it('pushes an empty collab for a tab that is gone', async () => {
     const db = document();
+    await upsertTab(db.env, 'P', { id: 't1', name: 'Board', elements: [actionOn('a')] }, 0);
+    await drainOutbox(db.env, 'P', fakeIndex().client);
+    await deleteTabRow(db.env, 'P', 't1');
+    const index = fakeIndex();
+    await drainOutbox(db.env, 'P', index.client);
+    expect(index.collab).toEqual([{ tab: 't1', push: { threads: [], actions: [] } }]);
+  });
+
+  it('keeps the keys of a failed push for the next drain, and drops those the index does not hold', async () => {
+    const db = document();
+    await upsertTab(db.env, 'P', { id: 't1', name: 'Board', elements: [actionOn('a')] }, 0);
+    await expect(
+      drainOutbox(
+        db.env,
+        'P',
+        fakeIndex((k) => (k === 'summary' ? new Error('down') : null)).client,
+      ),
+    ).rejects.toThrow('down');
+    expect(keys(db)).toEqual(['summary:']);
+    const gone = fakeIndex(() => new IndexError(404, 'not_found'));
+    await drainOutbox(db.env, 'P', gone.client);
+    expect(keys(db)).toEqual([]);
+  });
+
+  it('tells the media service the images the document places, the whole set, when it changes', async () => {
+    const db = sqliteD1({ MEDIA_KEY: 'k', MEDIA_URL: 'https://media.test' });
+    db.sql.exec(`INSERT INTO test_documents (id, owner_id, name, saved_at, created_at)
+                 VALUES ('P', 'owner', 'P', ${T0}, ${T0})`);
+    const synced: unknown[] = [];
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
+      const req = new Request(input, init);
+      if (new URL(req.url).pathname.endsWith('/refs')) synced.push(await req.json());
+      return Response.json({ ok: true });
+    });
     const picture = (id: string, imageId: string): Element =>
       ({ id, type: 'image', x: 0, y: 0, width: 10, height: 10, imageId }) as unknown as Element;
     await upsertTab(db.env, 'P', { id: 't1', name: 'A', elements: [picture('p1', 'img-1')] }, 0);
     await upsertTab(db.env, 'P', { id: 't2', name: 'B', elements: [picture('p2', 'img-1')] }, 1);
-    await drainOutbox(db.env, 'P');
-    expect(rows(db, 'SELECT document_id, image_id FROM document_images')).toEqual([
-      { document_id: 'P', image_id: 'img-1' },
-    ]);
-    expect(rows(db, 'SELECT document_id FROM media_ref_outbox')).toEqual([{ document_id: 'P' }]);
+    await drainOutbox(db.env, 'P', fakeIndex().client);
+    expect(synced).toEqual([{ documents: [{ document: 'P', images: ['img-1'] }], complete: true }]);
 
-    // A save that keeps the set owes the media service nothing.
-    db.sql.exec('DELETE FROM media_ref_outbox');
+    // A save that keeps what the tabs place owes the service nothing.
+    synced.length = 0;
+    await upsertTab(
+      db.env,
+      'P',
+      { id: 't2', name: 'Renamed', elements: [picture('p2', 'img-1')] },
+      1,
+    );
+    expect(keys(db)).not.toContain('images:');
+    // A tab that stops placing one sends the whole set again: still img-1 (t1 places it), then none.
     await upsertTab(db.env, 'P', { id: 't2', name: 'B', elements: [] }, 1);
-    await drainOutbox(db.env, 'P');
-    expect(rows(db, 'SELECT image_id FROM document_images')).toEqual([{ image_id: 'img-1' }]);
-    expect(rows(db, 'SELECT document_id FROM media_ref_outbox')).toEqual([]);
-
+    await drainOutbox(db.env, 'P', fakeIndex().client);
     await upsertTab(db.env, 'P', { id: 't1', name: 'A', elements: [] }, 0);
-    await drainOutbox(db.env, 'P');
-    expect(rows(db, 'SELECT image_id FROM document_images')).toEqual([]);
-    expect(rows(db, 'SELECT document_id FROM media_ref_outbox')).toEqual([{ document_id: 'P' }]);
+    await drainOutbox(db.env, 'P', fakeIndex().client);
+    expect(synced).toEqual([
+      { documents: [{ document: 'P', images: ['img-1'] }], complete: true },
+      { documents: [{ document: 'P', images: [] }], complete: true },
+    ]);
+    vi.unstubAllGlobals();
   });
 
   it(`takes at most ${DRAIN_TABS} tabs a drain, saying there is more`, async () => {
@@ -132,12 +212,13 @@ describe('the outbox', () => {
     for (let i = 0; i < DRAIN_TABS + 5; i++) {
       await upsertTab(db.env, 'P', { id: `t${i}`, name: `T${i}`, elements: [] }, i);
     }
-    const tabKeys = keys(db).filter((k) => k.startsWith('tab:')).length;
-    expect(tabKeys).toBe(DRAIN_TABS + 5);
-    const first = await drainOutbox(db.env, 'P');
+    expect(keys(db).filter((k) => k.startsWith('tab:')).length).toBe(DRAIN_TABS + 5);
+    const index = fakeIndex();
+    const first = await drainOutbox(db.env, 'P', index.client);
     expect(first.more).toBe(true);
-    expect(first.keys).toBeLessThan(DRAIN_TABS + 5 + 1);
-    // The test store pushes the rest before its own D1 batch (test-sqlite-d1.ts); the room drains again.
+    expect(index.collab).toHaveLength(DRAIN_TABS);
+    const second = await drainOutbox(db.env, 'P', index.client);
+    expect(second.more).toBe(false);
     expect(keys(db)).toEqual([]);
   });
 });
@@ -168,19 +249,5 @@ describe('readContentSummary', () => {
     const db = document();
     await upsertTab(db.env, 'P', { id: 't', name: 'T', elements: [] }, 0);
     expect((await readContentSummary(db.env, 'P')).summary.hasContent).toBe(false);
-  });
-});
-
-describe('jsonChunks', () => {
-  it('keeps every bound value under 1 MB, in order, splitting only between rows', () => {
-    const row = { text: 'x'.repeat(100_000) };
-    const chunks = jsonChunks(Array.from({ length: 25 }, () => row));
-    expect(chunks.length).toBeGreaterThan(2);
-    for (const c of chunks) expect(c.length).toBeLessThanOrEqual(1_000_000);
-    expect(chunks.flatMap((c) => JSON.parse(c) as unknown[])).toHaveLength(25);
-  });
-
-  it('makes no chunk for no rows', () => {
-    expect(jsonChunks([])).toEqual([]);
   });
 });

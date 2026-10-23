@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
 import type { Tab } from '@livediagram/document';
-import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { copyDocument } from './documents';
+import { sqliteD1, type SqliteD1, testCopyDocument } from '../test-sqlite-d1';
 import { tabStatsOf } from './tab-stats';
 import { seedTabs, swapTabData, upsertTab, upsertTabAtRev } from './tabs';
 
@@ -16,7 +15,7 @@ function withDocument(id = 'A'): SqliteD1 {
   const db = sqliteD1();
   db.sql
     .prepare(
-      'INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, ?, ?)',
+      'INSERT INTO test_documents (id, owner_id, name, saved_at, created_at) VALUES (?, ?, ?, ?, ?)',
     )
     .run(id, 'owner', id, T0, T0);
   return db;
@@ -123,11 +122,11 @@ describe('swapTabData (participant and Q&A writes)', () => {
   });
 });
 
-describe('copyDocument', () => {
+describe('a copy (testCopyDocument)', () => {
   it("counts the copy's tabs from the copied bodies", async () => {
     const db = withDocument();
     await upsertTab(db.env, 'A', tab('t1', 'draw', 2), 0);
-    const copy = await copyDocument(db.env, 'A', 'B', 'visitor', 'Copy of A');
+    const copy = await testCopyDocument(db.env, 'A', 'B', 'visitor', 'Copy of A');
     const copied = copy!.tabs[0]!.id;
     expect(statsRow(db.sql, copied)).toEqual(expected(db.sql, copied));
   });
@@ -135,7 +134,7 @@ describe('copyDocument', () => {
   it('counts a Community copy after its redaction', async () => {
     const db = withDocument();
     await upsertTab(db.env, 'A', tab('t1', 'draw', 2), 0);
-    const copy = await copyDocument(db.env, 'A', 'B', 'visitor', 'Copy of A', null, true);
+    const copy = await testCopyDocument(db.env, 'A', 'B', 'visitor', 'Copy of A', null, true);
     const copied = copy!.tabs[0]!.id;
     expect(statsRow(db.sql, copied)).toEqual(expected(db.sql, copied));
     expect(statsRow(db.sql, copied)?.comment_count).toBe(0);

@@ -8,7 +8,7 @@ import {
   type ShapeLibraryItem,
   type ShapeLibrarySource,
 } from '@livediagram/api-schema';
-import type { DocumentSql } from '../document-room/document-db';
+import type { ItemSql as DocumentSql } from '@liveworkspace/index-app';
 import { rowToShapeLibrary, type ShapeLibraryRow } from '../shape-library-row';
 
 const COLS = 'id, name, source, items, created_at, updated_at';

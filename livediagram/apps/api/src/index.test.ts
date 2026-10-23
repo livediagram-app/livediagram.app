@@ -62,11 +62,7 @@ describe('worker guest identity', () => {
 
   it('reads a request with no token as no one, whatever header it sends', async () => {
     const res = await worker.fetch(
-      new Request('https://x.test/api/folders', {
-        method: 'POST',
-        headers: { 'X-Owner-Id': 'guest_1', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: 'f' }),
-      }),
+      new Request('https://x.test/api/folders', { headers: { 'X-Owner-Id': 'guest_1' } }),
       env(),
     );
     expect(res.status).toBe(400);

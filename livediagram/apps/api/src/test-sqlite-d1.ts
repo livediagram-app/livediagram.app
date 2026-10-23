@@ -1,92 +1,62 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
-import { readdirSync, readFileSync } from 'node:fs';
-import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
-import { fileURLToPath } from 'node:url';
-import { DocumentDb } from './document-room/document-db';
+import { DatabaseSync } from 'node:sqlite';
+import { ItemDb } from '@liveworkspace/index-app';
+import { memoryWorkbenchNamespace } from '@liveworkspace/index-app/testing';
+import { IndexError, type IndexClient, type ShareAccess } from '@liveworkspace/index-client';
+import type { AccessLevel } from '@livediagram/api-schema';
+import { accountCredentials } from './auth/accounts';
 import { migrateDocumentSchema } from './document-room/document-schema';
+import type { GrantCaller, GrantOutcome, ItemGrant } from './index-service';
+import { closeWorkbenchSessions } from './room-access-client';
 import { nodeDocumentSql, nodeTransaction } from './test-document-sql';
 import { testPersonStores } from './test-person-store';
 import type { Env, DocumentEnv } from './types';
-import { memoryWorkbenchNamespace } from '@liveworkspace/index-app/testing';
-import { accountCredentials } from './auth/accounts';
-import { closeWorkbenchSessions } from './room-access-client';
 
-// A REAL D1 for tests: an in-memory SQLite database with every migration in
-// apps/api/migrations applied, behind the D1 prepare/bind/first/all/run/batch
-// surface the db/ modules call.
+// The api's storage for tests. A canvas's content (docs/specs/015-api/api.md "Storage") is its own Durable Object in
+// production; here every canvas's tables sit in one in-memory SQLite database, behind `env.DOCUMENT_DB`, so a test
+// arranges and asserts on them through one handle, and a handler runs as it does inside a canvas's object.
+// `env.DOCUMENT_ROOM` answers the canvas RPCs (document-client.ts) from those same tables, and hands `fetch` (the
+// room's relays) to the DOCUMENT_ROOM the test passed, if any. `flush` drains what the canvases owe the index and the
+// media service (document-outbox.ts), for a test that asserts on those pushes. Each person's stores are in memory.
 //
-// test-d1.ts records which SQL ran; this one answers whether it WORKED. Use it
-// where the behaviour lives in the schema: foreign-key cascades, primary-key
-// collisions, INSERT OR IGNORE outcomes. D1 enforces foreign keys, so this
-// turns them on too.
-//
-// The documents' content (docs/specs/015-api/api.md "Storage") is each document's own Durable Object in production. Here
-// every document's tables sit in the same database as D1's (their names do not overlap), behind `env.DOCUMENT_DB`, so a
-// test arranges and asserts on both through one handle, and a handler runs as it does inside a document's object.
-// `env.DOCUMENT_ROOM` answers the document RPCs (document-client.ts) from those same tables, and hands `fetch` (the room's
-// relays) to the DOCUMENT_ROOM the test passed, if any. A document row inserted into D1 gets its document row, as a
-// create does, and what a document owes D1 (document-outbox.ts) is pushed before every D1 call, so a test reads D1 as
-// it would be once the document's push has landed.
-//
-// Not a `.test.ts` file, so vitest doesn't collect it as a suite.
-
-const MIGRATIONS_DIR = fileURLToPath(new URL('../migrations/', import.meta.url).href);
+// What the index holds in production (liveworkspace/docs/one-explorer.md) is test scaffolding here: `test_documents`
+// writes a started canvas's own row (what a create writes), `test_share_links` holds the links the index would grant
+// through and `test_folders` the folders it would list. `testGrantFor` (below) reads them, as the index's access rule
+// does. Not a `.test.ts` file, so vitest doesn't collect it as a suite.
 
 export type SqliteD1 = {
-  // The worker's bindings and the documents' (DOCUMENT_DB): every content module and every D1 module runs against it.
+  // The worker's bindings and the canvases' (DOCUMENT_DB): every content module runs against it.
   env: DocumentEnv;
   // The raw handle, for arranging rows and asserting on them directly.
   sql: DatabaseSync;
-  // Land what the documents owe D1 now (every D1 call does this first), for a test that reads D1 through `sql`.
+  // Drain what the canvases owe the index and the media service now.
   flush: () => Promise<void>;
 };
 
-// D1 binds a boolean as 1 / 0; node:sqlite refuses one outright.
-function toSql(value: unknown): SQLInputValue {
-  if (typeof value === 'boolean') return value ? 1 : 0;
-  if (value === undefined) throw new TypeError('D1_TYPE_ERROR: undefined is not a bindable value');
-  return value as SQLInputValue;
-}
-
-function migrationFiles(): string[] {
-  return readdirSync(MIGRATIONS_DIR)
-    .filter((f) => f.endsWith('.sql'))
-    .sort();
-}
-
-// Run the one migration whose file name starts with `prefix` (e.g. '0049'),
-// for a test that seeds rows under the previous schema first.
-export function applyMigration(sql: DatabaseSync, prefix: string): void {
-  const file = migrationFiles().find((f) => f.startsWith(`${prefix}_`));
-  if (!file) throw new Error(`no migration ${prefix}`);
-  sql.exec(readFileSync(MIGRATIONS_DIR + file, 'utf8'));
-}
-
-// Run every migration from `prefix` on, bringing a database seeded under an older schema up to
-// the one the current code reads.
-export function migrateFrom(sql: DatabaseSync, prefix: string): void {
-  for (const file of migrationFiles().filter((f) => f >= prefix)) {
-    sql.exec(readFileSync(MIGRATIONS_DIR + file, 'utf8'));
-  }
-}
-
-// `before` stops short of that migration (e.g. '0049'), leaving it for the
-// test to apply with applyMigration.
 export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
   const sql = new DatabaseSync(':memory:');
   sql.exec('PRAGMA foreign_keys = ON');
-  for (const file of migrationFiles()) sql.exec(readFileSync(MIGRATIONS_DIR + file, 'utf8'));
   const documentSql = nodeDocumentSql(sql);
   migrateDocumentSchema((q) => documentSql.exec(q));
-  // A document row comes with its document's, as a create makes both.
-  sql.exec(`CREATE TEMP TRIGGER documents_document AFTER INSERT ON documents
+  sql.exec(`CREATE TEMP VIEW test_documents AS
+    SELECT id, owner_id, name, team_id, source, saved_at, created_at FROM document`);
+  sql.exec(`CREATE TEMP TRIGGER test_documents_insert INSTEAD OF INSERT ON test_documents
     BEGIN
-      INSERT OR IGNORE INTO document (id, saved_at, created_at)
-      VALUES (NEW.id, COALESCE(NEW.saved_at, 0), COALESCE(NEW.created_at, 0));
+      INSERT INTO document (id, owner_id, name, team_id, source, saved_at, created_at)
+      VALUES (NEW.id, NEW.owner_id, COALESCE(NEW.name, ''), NEW.team_id, NEW.source, COALESCE(NEW.saved_at, 0),
+              MAX(COALESCE(NEW.created_at, 1), 1))
+      ON CONFLICT (id) DO UPDATE SET owner_id = excluded.owner_id, name = excluded.name,
+        team_id = excluded.team_id, source = excluded.source, saved_at = excluded.saved_at,
+        created_at = excluded.created_at;
     END`);
+  sql.exec(`CREATE TEMP TABLE test_folders (
+    id TEXT PRIMARY KEY, owner_id TEXT NOT NULL, team_id TEXT NULL, parent_id TEXT NULL, name TEXT NOT NULL)`);
+  sql.exec(`CREATE TEMP TABLE test_share_links (
+    code TEXT PRIMARY KEY, document_id TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'edit',
+    tab_id TEXT NULL, created_at INTEGER NOT NULL DEFAULT 0, expires_at INTEGER NULL, password TEXT NULL)`);
 
-  // Push what the documents owe D1 before D1 answers anything. A call made while a push runs waits for it; the
-  // push's own D1 batch (inside it, by its async context) goes straight through.
+  // Drain what the canvases owe (their outboxes). A call made while a drain runs waits for it; one made from inside
+  // the drain (by its async context) returns at once.
   const inPush = new AsyncLocalStorage<true>();
   let pushing: Promise<void> | null = null;
   const push = async (): Promise<void> => {
@@ -110,72 +80,7 @@ export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
     }
   };
 
-  const statement = (query: string, args: SQLInputValue[]) => {
-    const rows = () =>
-      sql
-        .prepare(query)
-        .all(...args)
-        .map((row) => ({ ...row }));
-    return {
-      bind: (...next: unknown[]) => statement(query, next.map(toSql)),
-      first: async (column?: string) => {
-        await push();
-        const row = rows()[0] ?? null;
-        return column && row ? (row[column] ?? null) : row;
-      },
-      all: async () => {
-        await push();
-        return { results: rows(), success: true, meta: {} };
-      },
-      run: async () => {
-        await push();
-        const res = sql.prepare(query).run(...args);
-        return {
-          success: true,
-          meta: { changes: Number(res.changes), last_row_id: Number(res.lastInsertRowid) },
-        };
-      },
-      // What D1's batch hands back per statement: a read's rows, a write's
-      // change count.
-      batchResult: async () => {
-        const prepared = sql.prepare(query);
-        if (prepared.columns().length > 0) {
-          return { results: rows(), success: true, meta: { changes: 0 } };
-        }
-        const res = prepared.run(...args);
-        return { results: [], success: true, meta: { changes: Number(res.changes) } };
-      },
-    };
-  };
-
-  // D1 isolates each batch from every other. Each batch here awaits between its statements, so two run
-  // concurrently (the cron's sweeps, under waitUntil) would interleave inside one SQLite connection and the
-  // second BEGIN would fail. Batches therefore queue behind one another, as D1 serialises them.
-  let batches: Promise<unknown> = Promise.resolve();
-  const runBatch = async (statements: { batchResult: () => Promise<unknown> }[]) => {
-    sql.exec('BEGIN');
-    try {
-      const results = [];
-      for (const s of statements) results.push(await s.batchResult());
-      sql.exec('COMMIT');
-      return results;
-    } catch (err) {
-      sql.exec('ROLLBACK');
-      throw err;
-    }
-  };
-  const db = {
-    prepare: (query: string) => statement(query, []),
-    // D1 runs a batch as one transaction: all of it lands or none of it does.
-    batch: async (statements: { batchResult: () => Promise<unknown> }[]) => {
-      await push();
-      const run = batches.then(() => runBatch(statements));
-      batches = run.catch(() => undefined);
-      return run;
-    },
-  };
-
-  const documentDb = new DocumentDb(documentSql, {
+  const documentDb = new ItemDb(documentSql, {
     transaction: nodeTransaction(sql),
     ensureSchema: () => {},
     onWrite: () => {},
@@ -183,9 +88,13 @@ export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
   const env = {
     PERSON_STORE: testPersonStores(),
     ...base,
-    DB: db,
     DOCUMENT_DB: documentDb.asD1(),
   } as unknown as DocumentEnv;
+  Object.defineProperty(env, TEST_GRANT_HOOK, {
+    value: (documentId: string, who: TestGrantCaller) => testGrantFor(sql, documentId, who),
+    enumerable: false,
+  });
+  Object.defineProperty(env, TEST_SQL, { value: sql, enumerable: false });
   // A test that sets env.DOCUMENT_ROOM later (its relay recorder) gets it wrapped the same way.
   let rooms = testDocumentRooms(env, sql, base.DOCUMENT_ROOM);
   Object.defineProperty(env, 'DOCUMENT_ROOM', {
@@ -205,6 +114,185 @@ export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
   return { env, sql, flush: push };
 }
 
+const TEST_SQL = '__testSql';
+
+// The index as a test's caller reaches it (index-service.ts `indexFor` and `requestGrant`, mocked with these): its
+// grants by `testGrantFor`'s rule, a link resolved from `test_share_links`, and the folders in `test_folders` (a
+// person's own, and their teams').
+export function testIndexFor(env: unknown, caller: GrantCaller): IndexClient | null {
+  const sql = (env as Record<string, unknown>)[TEST_SQL] as DatabaseSync | undefined;
+  if (!sql) return null;
+  const person = caller.kind === 'delegate' ? caller.personId : null;
+  const teams = caller.kind === 'delegate' ? caller.teams : [];
+  const client: Partial<IndexClient> = {
+    grant: async (documentId, share) => {
+      const grant = testGrantFor(sql, documentId, {
+        person,
+        teams,
+        code: share?.code ?? null,
+        create: false,
+      });
+      if (!grant) throw new IndexError(404, 'not_found');
+      return {
+        grant: grant.token,
+        level: grant.level,
+        tabId: grant.tab,
+        expiresAt: grant.exp * 1000,
+      };
+    },
+    // An item the caller reaches (by the same rule as a grant), as the index lists it; 404 otherwise.
+    getItem: async (documentId) => {
+      const grant = testGrantFor(sql, documentId, { person, teams, code: null, create: false });
+      if (!grant) throw new IndexError(404, 'not_found');
+      const row = sql
+        .prepare('SELECT name, owner_id, team_id, created_at, saved_at FROM document WHERE id = ?')
+        .get(documentId) as {
+        name: string;
+        owner_id: string;
+        team_id: string | null;
+        created_at: number;
+        saved_at: number;
+      };
+      return {
+        item: {
+          id: documentId,
+          name: row.name,
+          ownerId: row.owner_id,
+          teamId: row.team_id,
+          createdAt: row.created_at,
+          updatedAt: row.saved_at,
+          trashedAt: null,
+        } as unknown as Awaited<ReturnType<IndexClient['getItem']>>['item'],
+      };
+    },
+    folderPreviews: async (ids) => {
+      const rows = sql
+        .prepare(
+          `SELECT id FROM test_folders
+            WHERE id IN (SELECT value FROM json_each(?))
+              AND ((team_id IS NULL AND owner_id = ?) OR team_id IN (SELECT value FROM json_each(?)))`,
+        )
+        .all(JSON.stringify(ids), person ?? '', JSON.stringify(teams)) as { id: string }[];
+      return { previews: rows.map((r) => ({ folderId: r.id, itemCount: 0, items: [] })) };
+    },
+  };
+  return client as IndexClient;
+}
+
+export async function testRequestGrant(
+  env: Env,
+  caller: GrantCaller,
+  documentId: string,
+  share: ShareAccess | null,
+): Promise<GrantOutcome> {
+  const client = testIndexFor(env, caller);
+  if (!client) return { ok: false, status: 503, error: 'index_unavailable' };
+  try {
+    return { ok: true, grant: await client.grant(documentId, share) };
+  } catch (err) {
+    if (err instanceof IndexError) return { ok: false, status: err.status, error: err.code };
+    throw err;
+  }
+}
+
+// What the index would grant on a canvas in a test (test-route-context.ts): the owner and a member of its team
+// edit; a live `test_share_links` code grants its level, on its tab. A create (no started canvas yet) is the
+// caller's own. Null for anything else.
+export const TEST_GRANT_HOOK = '__testGrant';
+
+export type TestGrantCaller = {
+  person: string | null;
+  teams: readonly string[];
+  code: string | null;
+  create: boolean;
+};
+
+function testGrantFor(
+  sql: DatabaseSync,
+  documentId: string,
+  who: TestGrantCaller,
+): ItemGrant | null {
+  const document = sql
+    .prepare('SELECT owner_id, team_id, created_at FROM document WHERE id = ?')
+    .get(documentId) as
+    { owner_id: string; team_id: string | null; created_at: number } | undefined;
+  const grant = (
+    level: AccessLevel,
+    tab: string | null,
+    sub: string,
+    code: string | null,
+  ): ItemGrant => ({
+    item: documentId,
+    level,
+    tab,
+    sub,
+    team: document?.team_id ?? null,
+    owner: document?.owner_id || (who.create ? who.person : null),
+    exp: Math.floor(Date.now() / 1000) + 600,
+    shareCode: code,
+    token: `test-grant:${documentId}:${sub}`,
+  });
+  if (!document || !document.created_at)
+    return who.create && who.person ? grant('edit', null, who.person, null) : null;
+  if (who.person && who.person === document.owner_id) return grant('edit', null, who.person, null);
+  if (who.person && document.team_id && who.teams.includes(document.team_id))
+    return grant('edit', null, who.person, null);
+  if (who.code) {
+    const link = sql
+      .prepare(
+        'SELECT role, tab_id, expires_at FROM test_share_links WHERE code = ? AND document_id = ?',
+      )
+      .get(who.code, documentId) as
+      { role: string; tab_id: string | null; expires_at: number | null } | undefined;
+    if (link && (link.expires_at === null || link.expires_at > Date.now())) {
+      return grant(
+        link.role as AccessLevel,
+        link.tab_id,
+        who.person ?? `link:${who.code}`,
+        who.code,
+      );
+    }
+  }
+  return null;
+}
+
+// A share link the index would grant through, for a test (as the index's createShareLink was called).
+export function testShareLink(
+  db: SqliteD1,
+  documentId: string,
+  code: string,
+  role: AccessLevel,
+  tabId: string | null = null,
+  expiresAt: number | null = null,
+): void {
+  db.sql
+    .prepare(
+      'INSERT INTO test_share_links (code, document_id, role, tab_id, created_at, expires_at) VALUES (?, ?, ?, ?, 1, ?)',
+    )
+    .run(code, documentId, role, tabId, expiresAt);
+}
+
+// A started canvas, as a create writes it: its own row (owner, name, team).
+export function testDocument(
+  db: SqliteD1,
+  id: string,
+  ownerId: string,
+  opts: { name?: string; teamId?: string | null; savedAt?: number; createdAt?: number } = {},
+): void {
+  db.sql
+    .prepare(
+      'INSERT INTO test_documents (id, owner_id, name, team_id, source, saved_at, created_at) VALUES (?, ?, ?, ?, NULL, ?, ?)',
+    )
+    .run(
+      id,
+      ownerId,
+      opts.name ?? 'Untitled',
+      opts.teamId ?? null,
+      opts.savedAt ?? 1,
+      opts.createdAt ?? 1,
+    );
+}
+
 // The document RPCs (document-client.ts) over the shared tables, and the room's `fetch` handed to the test's own
 // DOCUMENT_ROOM (a recorder of relays), or answered 404 without one.
 function testDocumentRooms(
@@ -213,6 +301,16 @@ function testDocumentRooms(
   rooms: DurableObjectNamespace | undefined,
 ): DurableObjectNamespace {
   type FakeId = DurableObjectId & { documentName: string; roomId: unknown };
+  // The canvas's Community post's link as the room reads it (document-room.ts communityOf).
+  const communityOf = async (documentId: string) => {
+    const cp = await import('./document-room/community-post');
+    const post = await cp.readCommunityPost(env);
+    if (!post) return null;
+    const meta = await (
+      await import('./document-room/document-content')
+    ).readDocumentMeta(env, documentId);
+    return { code: post.shareCode, open: cp.openCommunityCode(env, post, meta) === post.shareCode };
+  };
   const roomOf = (id: FakeId) =>
     rooms ? (rooms.get(id.roomId as DurableObjectId) as { fetch: typeof fetch }) : null;
   const ns = {
@@ -254,20 +352,93 @@ function testDocumentRooms(
         ),
       hasTab: async (documentId: string, tabId: string) =>
         (await import('./db/tabs')).documentHasTab(env, documentId, tabId),
-      placesImage: async (documentId: string, imageId: string, onlyTabId: string | null) =>
-        (await import('./db/image-refs')).documentPlacesImage(env, documentId, imageId, onlyTabId),
+      servesImage: async (documentId: string, imageId: string, onlyTabId: string | null) =>
+        (await (
+          await import('./db/image-refs')
+        ).documentPlacesImage(env, documentId, imageId, onlyTabId)) &&
+        (await import('./db/image-grants')).documentMayServeImage(env, documentId, imageId),
       exportCopy: async (
         documentId: string,
         onlyTabId: string | null,
-        redact: string | null,
-        community = false,
-      ) =>
-        (await import('./document-room/document-content')).exportDocumentCopy(
+        copier: { by: string | null; code: string | null } | null,
+      ) => {
+        const content = await import('./document-room/document-content');
+        const meta = await content.readDocumentMeta(env, documentId);
+        if (!meta) return null;
+        const post = copier?.code ? await communityOf(documentId) : null;
+        const community = post !== null && post.open && post.code === copier?.code;
+        const by = copier?.by ?? null;
+        const copy = await content.exportDocumentCopy(
           env,
           documentId,
           onlyTabId,
-          redact,
+          by !== null && by !== meta.ownerId ? by : null,
           community,
+        );
+        return copy ? { copy, community } : null;
+      },
+      community: (documentId: string) => communityOf(documentId),
+      communityPostTitle: async (documentId: string, code: string) => {
+        const post = await communityOf(documentId);
+        if (!post || post.code !== code || !post.open) return null;
+        return (
+          (await (await import('./document-room/community-post')).readCommunityPost(env))?.title ??
+          null
+        );
+      },
+      communityListing: async (documentId: string, code: string) => {
+        const post = await communityOf(documentId);
+        if (!post || post.code !== code || !post.open) return null;
+        const cp = await import('./document-room/community-post');
+        const stored = await cp.readCommunityPost(env);
+        return stored
+          ? { postId: stored.postId, author: await cp.communityPostAuthor(env, stored) }
+          : null;
+      },
+      joined: async (documentId: string, personId: string) => {
+        const meta = await (
+          await import('./document-room/document-content')
+        ).readDocumentMeta(env, documentId);
+        if (!meta) return;
+        await (
+          await import('./email/notifications')
+        ).notifyDocumentJoin(
+          env,
+          { id: documentId, ownerId: meta.ownerId, name: meta.name },
+          personId,
+        );
+      },
+      notifyAction: async (documentId: string, input: Record<string, unknown>) => {
+        const meta = await (
+          await import('./document-room/document-content')
+        ).readDocumentMeta(env, documentId);
+        if (!meta) return false;
+        await (
+          await import('./email/notifications')
+        ).notifyActionAssigned(env, {
+          ...(input as unknown as import('./document-client').ActionNotice),
+          document: { id: documentId, name: meta.name },
+        });
+        return true;
+      },
+      notifyMention: async (documentId: string, input: Record<string, unknown>) => {
+        const meta = await (
+          await import('./document-room/document-content')
+        ).readDocumentMeta(env, documentId);
+        if (!meta) return false;
+        await (
+          await import('./email/notifications')
+        ).notifyMentioned(env, {
+          ...(input as unknown as import('./document-client').MentionNotice),
+          document: { id: documentId, name: meta.name },
+        });
+        return true;
+      },
+      anonymise: async (documentId: string, personId: string) =>
+        (await import('./document-room/document-anonymise')).anonymiseDocument(
+          env,
+          documentId,
+          personId,
         ),
       importCopy: async (documentId: string, copy: unknown) =>
         (await import('./document-room/document-content')).importDocumentCopy(
@@ -302,4 +473,31 @@ function testDocumentRooms(
     }),
   };
   return ns as unknown as DurableObjectNamespace;
+}
+
+// What a copy does to the canvases' tables (the copy RPCs plus the new canvas's start), for tests that assert on the
+// copied rows: `exportDocumentCopy` from the source, `importDocumentCopy` and `initDocument` on the new id.
+export async function testCopyDocument(
+  env: DocumentEnv,
+  sourceId: string,
+  newId: string,
+  owner: string,
+  name: string,
+  onlyTabId: string | null = null,
+  redactForCommunity = false,
+): Promise<import('./types').DocumentDTO | null> {
+  const content = await import('./document-room/document-content');
+  const copy = await content.exportDocumentCopy(env, sourceId, onlyTabId, null, redactForCommunity);
+  if (!copy) return null;
+  await content.importDocumentCopy(env, newId, copy);
+  const now = Date.now();
+  await content.initDocument(env, newId, {
+    name,
+    ownerId: owner,
+    teamId: null,
+    source: null,
+    savedAt: now,
+    createdAt: now,
+  });
+  return (await import('./db/documents')).getDocument(env, newId);
 }

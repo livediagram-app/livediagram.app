@@ -10,9 +10,11 @@ vi.mock('./auth/accounts', () => ({
   accountCredentials: () => null,
 }));
 const { resolveApiTokenMock } = vi.hoisted(() => ({ resolveApiTokenMock: vi.fn() }));
-vi.mock('./db', () => ({
-  resolveApiToken: resolveApiTokenMock,
-  listDocumentsByOwner: async () => [],
+vi.mock('./db', () => ({ resolveApiToken: resolveApiTokenMock }));
+// The caller's canvases are the index's (routes/document-index-routes.ts): an empty list.
+vi.mock('./index-service', async (original) => ({
+  ...(await original<typeof import('./index-service')>()),
+  indexFor: () => ({ listItems: async () => ({ items: [], nextCursor: null }) }),
 }));
 
 import worker from './index';

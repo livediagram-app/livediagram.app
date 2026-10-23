@@ -161,6 +161,14 @@ export function readCreationIntent(
   return { ok: true, intent: { ...intent, templateFamily } };
 }
 
+/** The intent the index files a create by (its default folders, docs/specs/013-workspace/default-folders.md):
+ *  `mode:tabKind:templateFamily`, whose last part names the template family the index's defaults key on. Null for
+ *  no intent. */
+export function indexIntentOf(intent: CreationIntent | null): string | null {
+  if (!intent) return null;
+  return [intent.mode, intent.tabKind, intent.templateFamily].filter(Boolean).join(':');
+}
+
 /** Every key an intent names, most specific first: kind, template, mode. */
 export function candidateKeysFor(intent: CreationIntent): string[] {
   const keys: string[] = [];

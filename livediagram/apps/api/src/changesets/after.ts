@@ -3,13 +3,12 @@ import { hasNewComments } from '../comments';
 import { emailEnabled } from '../email/client';
 import { notifyNewComment } from '../email/notifications';
 import { reportServerEvent } from '../server-telemetry';
-import { recordTabSave } from '../timeline';
-import type { DocumentDTO, Env } from '../types';
+import type { DocumentDTO, DocumentEnv, Env } from '../types';
 import type { FrontDoor } from './front-door';
 import type { Author } from './write';
 
 // What follows a written changeset, off the response path (docs/specs/024-agents/blueprints/
-// agent-changesets.md "The pipeline" step 11): the Timeline and the new-comment email exactly as a
+// agent-changesets.md "The pipeline" step 11): the new-comment email exactly as a
 // save does, with the author as the actor (CS29), and the Agent telemetry for a token's changeset.
 // Never for a dry run (CS12).
 
@@ -30,7 +29,7 @@ function telemetry(env: Env, action: AgentAction, frontDoor: FrontDoor): Promise
 }
 
 async function run(
-  env: Env,
+  env: DocumentEnv,
   w: {
     document: DocumentDTO;
     author: Author;
@@ -41,10 +40,9 @@ async function run(
     action: 'Applied' | 'Reverted';
   },
 ): Promise<void> {
+  // The edit itself reaches the Timeline from the canvas (document-room.ts records whoever wrote).
   const previous = w.stored?.elements ?? [];
-  const work: Promise<unknown>[] = [
-    recordTabSave(env, w.document, w.author.id, w.next.elements, previous),
-  ];
+  const work: Promise<unknown>[] = [];
   if (
     emailEnabled(env) &&
     w.author.id !== w.document.ownerId &&

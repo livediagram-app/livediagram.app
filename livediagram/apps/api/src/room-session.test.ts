@@ -17,6 +17,9 @@ describe('verifiedSessionOf', () => {
         'X-Verified-Workbench-Pairing': 'w',
         'X-Verified-Adder': 'a',
         'X-Verified-Document': 'd',
+        'X-Verified-Grant-Exp': '1700000000',
+        'X-Verified-Item-Owner': 'o',
+        'X-Verified-Item-Team': '',
       }),
     );
     expect(v).toEqual({
@@ -29,6 +32,8 @@ describe('verifiedSessionOf', () => {
       workbenchPairing: 'w',
       adderKey: 'a',
       documentId: 'd',
+      grantExp: 1_700_000_000_000,
+      head: { owner: 'o', team: null },
     });
   });
 

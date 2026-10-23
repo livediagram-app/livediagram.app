@@ -2,8 +2,36 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
 import { NAME_MAX_LENGTH } from '@livediagram/document';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
+
+// The titles the index was asked to give a copy.
+const { copies } = vi.hoisted(() => ({ copies: [] as { id: string; title?: string }[] }));
+vi.mock('../index-service', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../index-service')>()),
+  indexFor: () => ({
+    copyItem: async (id: string, input: { title?: string } = {}) => {
+      copies.push({ id, ...input });
+      return {
+        item: {
+          id: `${id}-copy`,
+          ownerId: 'owner',
+          teamId: null,
+          folderId: null,
+          title: input.title ?? 'Copy of …',
+          source: null,
+          intent: null,
+          summary: {},
+          sharedVia: null,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      };
+    },
+  }),
+}));
+
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
+import { handleDocumentIndexRoutes } from './document-index-routes';
 
 // The name cap is enforced by the worker (docs/specs/006-document/name-length.md,
 // "The server is the enforcement point"): every document and tab name it stores
@@ -21,7 +49,7 @@ function call(db: SqliteD1, method: string, path: string, body?: unknown) {
 }
 
 function documentName(sql: DatabaseSync, id: string): string | undefined {
-  return sql.prepare('SELECT name FROM documents WHERE id = ?').get(id)?.name as string | undefined;
+  return sql.prepare('SELECT name FROM document WHERE id = ?').get(id)?.name as string | undefined;
 }
 
 function tabName(sql: DatabaseSync, id: string): string | undefined {
@@ -32,12 +60,13 @@ function tabName(sql: DatabaseSync, id: string): string | undefined {
 function legacyDocument(sql: DatabaseSync, id: string, name: string) {
   sql
     .prepare(
-      'INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, ?, ?)',
+      'INSERT INTO test_documents (id, owner_id, name, saved_at, created_at) VALUES (?, ?, ?, ?, ?)',
     )
     .run(id, 'owner', name, T0, T0);
 }
 
 beforeEach(() => {
+  copies.length = 0;
   vi.spyOn(console, 'info').mockImplementation(() => {});
 });
 afterEach(() => vi.restoreAllMocks());
@@ -140,29 +169,19 @@ describe('PUT /api/documents/:id/tabs/:tabId name cap', () => {
   });
 });
 
+// A copy is the index's to make (it names one asked for no name "Copy of …"); a name asked for is capped here first.
 describe('POST /api/documents/:id/copy name cap', () => {
-  it('shortens a default "Copy of" name that runs past the cap', async () => {
+  it('shortens a name asked for before the index makes the copy', async () => {
     const db = sqliteD1();
-    await call(db, 'POST', '/api/documents', {
-      id: 'D',
-      name: 'Quarterly platform migration plan for payments',
-    });
-    const res = await call(db, 'POST', '/api/documents/D/copy', {});
+    const res = (await handleDocumentIndexRoutes(
+      makeTestRouteContext('POST', '/api/documents/D/copy', {
+        env: db.env,
+        owner: 'owner',
+        body: { name: LONG },
+      }),
+    ))!;
     expect(res.status).toBe(201);
-    const { document: liveDoc } = (await res.json()) as { document: { id: string; name: string } };
-    expect(liveDoc.name).toBe('Copy of Quarterly platform migration plan for payments');
-    const res2 = await call(db, 'POST', '/api/documents/D/copy', { name: LONG });
-    const copy = (await res2.json()) as { document: { id: string; name: string } };
-    expect(copy.document.name).toBe(LONG_CAPPED);
-    expect(documentName(db.sql, copy.document.id)).toBe(LONG_CAPPED);
-  });
-
-  it('shortens the default name built from a source already at the cap', async () => {
-    const db = sqliteD1();
-    await call(db, 'POST', '/api/documents', { id: 'D', name: LONG_CAPPED });
-    const res = await call(db, 'POST', '/api/documents/D/copy', {});
-    const { document: liveDoc } = (await res.json()) as { document: { name: string } };
-    expect([...liveDoc.name].length).toBeLessThanOrEqual(NAME_MAX_LENGTH);
-    expect(liveDoc.name.startsWith('Copy of Quarterly')).toBe(true);
+    expect(copies).toEqual([{ id: 'D', title: LONG_CAPPED }]);
+    expect((await res.json<{ document: { name: string } }>()).document.name).toBe(LONG_CAPPED);
   });
 });

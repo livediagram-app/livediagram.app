@@ -4,8 +4,8 @@
 // (document-room/tab-shares.ts). Answers the tab as this document now holds it, so the editor can show it without
 // reading the whole document.
 //
-// Runs in this document's room. Auth: the caller must own this document AND `from`, which must hold the tab. The
-// second half stops anyone grafting in a tab they cannot read.
+// Runs in this document's room. Auth: the caller must own this document AND `from` (a grant the index gives them on
+// it), which must hold the tab. The second half stops anyone grafting in a tab they cannot read.
 
 import { getDocumentMeta, getTab } from '../db';
 import { documentRoom } from '../document-client';
@@ -18,6 +18,7 @@ import {
   requireOwner,
   type DocumentRouteContext,
 } from './context';
+import { resolveDocumentGrant } from './document-grant';
 
 export async function handleTabLink(ctx: DocumentRouteContext): Promise<Response | null> {
   const { request, env, segments } = ctx;
@@ -45,7 +46,10 @@ export async function handleTabLink(ctx: DocumentRouteContext): Promise<Response
   if (from === id) return badRequest('from: another document');
   const source = await getDocumentMeta(env, from);
   if (!source) return notFound();
-  if (!(await ownsDocument(ctx, source))) return forbidden();
+  // The request carries the grant on this document alone: the caller's on `from` is the index's to give.
+  const sourceGrant = await resolveDocumentGrant(ctx, from);
+  if (sourceGrant instanceof Response) return sourceGrant;
+  if (!(await ownsDocument({ ...ctx, grant: sourceGrant }, source))) return forbidden();
 
   // Already here (linked before, or the same id by chance): answered as it is, as a repeat link always was.
   const held = await getTab(env, id, tabId);

@@ -2,25 +2,42 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Env } from '../types';
 
 // Share-link previews (docs/specs/013-workspace/share-link-previews.md): the card and the share card answer exactly
-// where the live image answers, and the share card is cached per save.
+// where the index opens the link to an anonymous visitor (as the live image does), and the share card is cached per
+// save.
 
-vi.mock('../db', () => ({
+const { getShareLink, getDocumentThumbMeta, communityPost } = vi.hoisted(() => ({
+  // The index's answer to an anonymous resolve: the link, or its refusal.
   getShareLink: vi.fn(),
-  communityLinkAccess: vi.fn(),
   getDocumentThumbMeta: vi.fn(),
-  getDocumentSharePassword: vi.fn(),
+  // The canvas's Community post, as its room answers it.
+  communityPost: vi.fn(),
+}));
+vi.mock('../db', () => ({
+  getDocumentThumbMeta,
   shareCardKey: (id: string) => `og/${id}`,
   communityShareCardKey: (id: string) => `og-community/${id}`,
+}));
+vi.mock('../index-service', () => ({
+  // A deployment without an index (NO_INDEX here) reaches none.
+  indexFor: (env: { NO_INDEX?: boolean }) =>
+    env.NO_INDEX
+      ? null
+      : {
+          resolveShare: async (code: string, password: string | null) => {
+            const link = (await getShareLink(code, password)) as Link | 'password' | null;
+            if (!link) throw new IndexError(404, 'not_found');
+            if (link === 'password') throw new IndexError(401, 'password_required');
+            return { item: { id: link.documentId }, level: link.role, tabId: link.tabId };
+          },
+        },
+}));
+vi.mock('../document-client', () => ({
+  documentRoom: () => ({ community: communityPost }),
 }));
 vi.mock('../document-image', () => ({ documentImageSvg: vi.fn() }));
 vi.mock('../share-card-png', () => ({ shareCardPng: vi.fn() }));
 
-import {
-  communityLinkAccess,
-  getDocumentSharePassword,
-  getDocumentThumbMeta,
-  getShareLink,
-} from '../db';
+import { IndexError } from '@liveworkspace/index-client';
 import { documentImageSvg } from '../document-image';
 import { shareCardPng } from '../share-card-png';
 import { makeTestRouteContext } from './test-route-context';
@@ -35,16 +52,16 @@ import {
 const SAVED_AT = 1_000;
 const PNG = new Uint8Array([137, 80, 78, 71]);
 
-type Link = NonNullable<Awaited<ReturnType<typeof getShareLink>>>;
-const link = (over: Partial<Link> = {}) =>
-  ({
-    code: 'CODE1234',
-    documentId: 'd1',
-    role: 'view',
-    tabId: null,
-    purpose: 'share',
-    ...over,
-  }) as Link;
+type Link = { code: string; documentId: string; role: string; tabId: string | null };
+const link = (over: Partial<Link> = {}): Link => ({
+  code: 'CODE1234',
+  documentId: 'd1',
+  role: 'view',
+  tabId: null,
+  ...over,
+});
+// The canvas's Community post, its link this code.
+const post = (open = true) => ({ code: 'CODE1234', open });
 const doc = {
   id: 'd1',
   ownerId: 'o',
@@ -62,9 +79,15 @@ function bucket(stored: Stored | null = null) {
   };
 }
 
-function call(path: string, opts: { images?: ReturnType<typeof bucket>; method?: string } = {}) {
+function call(
+  path: string,
+  opts: { images?: ReturnType<typeof bucket>; method?: string; noIndex?: boolean } = {},
+) {
   const waits: Promise<unknown>[] = [];
-  const env = (opts.images ? { IMAGES: opts.images } : {}) as unknown as Env;
+  const env = {
+    ...(opts.images ? { IMAGES: opts.images } : {}),
+    ...(opts.noIndex ? { NO_INDEX: true } : {}),
+  } as unknown as Env;
   const ctx = makeTestRouteContext(opts.method ?? 'GET', `/api${path}`, {
     env,
     waitUntil: (p) => void waits.push(p),
@@ -77,8 +100,7 @@ beforeEach(() => {
   vi.spyOn(console, 'warn').mockImplementation(() => {});
   vi.mocked(getShareLink).mockResolvedValue(link());
   vi.mocked(getDocumentThumbMeta).mockResolvedValue(doc);
-  vi.mocked(getDocumentSharePassword).mockResolvedValue(null);
-  vi.mocked(communityLinkAccess).mockResolvedValue('public');
+  communityPost.mockResolvedValue(null);
   vi.mocked(documentImageSvg).mockResolvedValue('<svg width="10" height="10"/>');
   vi.mocked(shareCardPng).mockResolvedValue(PNG);
 });
@@ -108,7 +130,7 @@ describe('GET /api/share/<code>/card', () => {
     const res = (await call('/share/CODE1234/card').result)!;
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ name: 'Payments flow' });
-    expect(getShareLink).toHaveBeenCalledWith(expect.anything(), 'CODE1234');
+    expect(getShareLink).toHaveBeenCalledWith('CODE1234', null);
     expect(getDocumentThumbMeta).toHaveBeenCalledWith(expect.anything(), 'd1');
   });
 
@@ -122,17 +144,22 @@ describe('GET /api/share/<code>/card', () => {
     expect((await call('/share/CODE1234/card').result)!.status).toBe(404);
   });
 
+  it('is 404 on a deployment without an index', async () => {
+    expect((await call('/share/CODE1234/card', { noIndex: true }).result)!.status).toBe(404);
+    expect(getShareLink).not.toHaveBeenCalled();
+  });
+
   it('never names a document with a share password', async () => {
-    vi.mocked(getDocumentSharePassword).mockResolvedValue('hash');
+    vi.mocked(getShareLink).mockResolvedValue('password');
     const res = (await call('/share/CODE1234/card').result)!;
     expect(res.status).toBe(404);
     expect(await res.text()).not.toContain('Payments');
   });
 
   it('names a public Community post, and nothing about one that is not public', async () => {
-    vi.mocked(getShareLink).mockResolvedValue(link({ purpose: 'community' }));
+    communityPost.mockResolvedValue(post());
     expect((await call('/share/CODE1234/card').result)!.status).toBe(200);
-    vi.mocked(communityLinkAccess).mockResolvedValue('hidden' as never);
+    communityPost.mockResolvedValue(post(false));
     expect((await call('/share/CODE1234/card').result)!.status).toBe(404);
     expect(getDocumentThumbMeta).toHaveBeenCalledTimes(1);
   });
@@ -199,7 +226,7 @@ describe('GET /api/share/<code>/image.png', () => {
   });
 
   it('draws a Community link from the redacted snapshot, stored apart, with no stale window', async () => {
-    vi.mocked(getShareLink).mockResolvedValue(link({ purpose: 'community' }));
+    communityPost.mockResolvedValue(post());
     const images = bucket();
     const { result, waits } = call('/share/CODE1234/image.png', { images });
     const res = (await result)!;
@@ -213,9 +240,11 @@ describe('GET /api/share/<code>/image.png', () => {
   });
 
   it('is 404 wherever the card is: a dead code, a password, a hidden post', async () => {
-    vi.mocked(getDocumentSharePassword).mockResolvedValue('hash');
+    vi.mocked(getShareLink).mockResolvedValueOnce('password');
     expect((await call('/share/CODE1234/image.png').result)!.status).toBe(404);
-    vi.mocked(getShareLink).mockResolvedValue(null);
+    vi.mocked(getShareLink).mockResolvedValueOnce(null);
+    expect((await call('/share/CODE1234/image.png').result)!.status).toBe(404);
+    communityPost.mockResolvedValue(post(false));
     expect((await call('/share/CODE1234/image.png').result)!.status).toBe(404);
     expect(documentImageSvg).not.toHaveBeenCalled();
   });

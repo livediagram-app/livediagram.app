@@ -1,17 +1,22 @@
 // /api/internal/items/**: the liveworkspace index's doors into a canvas's content (docs/specs/015-api/api.md
 // "Internal"), answered by the shared kit (@liveworkspace/index-app handleInternalItems): the bearer check against
-// INDEX_KEY, the paths and their bodies. This file only says what each door does to a canvas: each is one call to
-// the canvas's Durable Object (document-client.ts) or the person's own stores, and a copy also carries the image grants the source held
-// (docs/specs/009-elements/images.md "Placement grants").
-import { handleInternalItems as handle } from '@liveworkspace/index-app';
-import { imageGrantCopyStatements } from '../db/image-grants';
+// INDEX_KEY, the paths and their bodies. See it for the doors: a purge (one canvas, or up to a hundred for a closed
+// account), revoked links, notices for the emails, a copy into a new canvas, and a person closed, merged or
+// anonymised.
+//
+// Each is a call to the canvas's Durable Object (document-client.ts) or the person's own stores. Where the canvas is
+// filed, its sharing and its Trash are the index's; a purge also drops what the api keeps about the canvas beside it
+// (db/documents.ts `purgeDocumentRows`) and tells the media service it places nothing now. A notice is worked out
+// off the index's path: a share link made (the first-share milestone), or someone's first time in through a link
+// (the owner's "someone joined" email).
+import { JOINED_TELEMETRY_TYPE, handleInternalItems as handle } from '@liveworkspace/index-app';
+import { countCommunityCopy } from '../community-service';
+import { deleteAccount, mergeGuest } from '../db/account';
+import { purgeDocumentRows } from '../db/documents';
 import { documentRoom } from '../document-client';
-import { copyImageIds } from '../document-room/document-content';
-import { migrateOwnerId } from '../db/account';
-import { mergeCommunityCopier } from '../community-service';
-import { disconnectDrive } from '../drive/disconnect';
-import { personStore } from '../person-client';
-import { workbenchStore } from '../workbench-store';
+import { forgetImageRefs } from '../document-room/document-outbox';
+import { notifyFirstShare } from '../email/notifications';
+import { reportServerEvent } from '../server-telemetry';
 import type { Env } from '../types';
 
 export function handleInternalItems(
@@ -23,36 +28,45 @@ export function handleInternalItems(
     key: env.INDEX_KEY,
     waitUntil,
     handlers: {
-      purge: (id) => documentRoom(env, id).purge(),
-      revoke: (id, codes) => documentRoom(env, id).revokeCodes(codes),
-      copy: async (from, to, tabId) => {
-        const copy = await documentRoom(env, from).exportCopy(tabId, null);
+      purge: async (id) => {
+        await documentRoom(env, id).purge();
+        // The media service hears the canvas places nothing now, so an image only it placed can be swept.
+        await Promise.all([purgeDocumentRows(env, id), forgetImageRefs(env, id)]);
+      },
+      // A rescoped link (another level or tab) reloads its visitors into what it now opens; a revoked one sends
+      // them away.
+      revoke: (id, codes, reason) => documentRoom(env, id).revokeCodes(codes, reason),
+      notice: (id, notice) =>
+        notice.type === 'shared'
+          ? notifyFirstShare(env, notice.actorId)
+          : // Someone's first time in through a link: the owner's email, and Document·Joined by the link's level.
+            Promise.all([
+              documentRoom(env, id).joined(notice.personId),
+              reportServerEvent(env, 'Document', 'Joined', JOINED_TELEMETRY_TYPE[notice.level]),
+            ]),
+      copy: async (from, to, tabId, copier) => {
+        // The source as the copier may take it: anyone but the owner takes the comments as the tab read serves
+        // them; through the canvas's Community post's link, without its comments or the people on its actions.
+        const source = await documentRoom(env, from).exportCopy(tabId, copier);
         // No such canvas, or no such tab in it.
-        if (!copy || (tabId && copy.tabs.length === 0)) return 'not_found';
+        if (!source || (tabId && source.copy.tabs.length === 0)) return 'not_found';
         // The target is a new canvas: importCopy is one transaction, so a copy into one that already holds this
-        // content fails its keys and writes nothing (the kit answers 409).
-        await documentRoom(env, to).importCopy(copy);
-        const grants = imageGrantCopyStatements(env, from, to, copyImageIds(copy), Date.now());
-        if (grants.length > 0) await env.DB.batch(grants);
-        return { tabs: copy.tabs.length, items: 0 };
+        // content fails its keys and writes nothing (the kit answers 409). The copy carries a grant for each image
+        // its source could serve, so it serves them too (docs/specs/009-elements/images.md "Placement grants").
+        await documentRoom(env, to).importCopy(source.copy);
+        // A copy through a Community post's link counts toward the post (docs/specs/025-community/community.md
+        // "Likes"), once per copier. The api's own copy door counted it first with the copier's network
+        // (routes/document-index-routes.ts); this counts a copy made anywhere else.
+        if (source.community && copier.by)
+          waitUntil(countCommunityCopy(env, from, copier.by, `copier:${copier.by}`));
+        return { tabs: source.copy.tabs.length, items: 0 };
       },
-      // A closed account, wherever it was closed: what livediagram keeps for them in their own stores. Their
-      // workbench (pairings, tickets and sessions, whose rooms it closes), their Drive mirror and shape libraries.
-      personClosed: async (personId) => {
-        await workbenchStore(env, personId).close();
-        // The Drive grant is revoked at Google first, while the store still holds its sealed token.
-        await disconnectDrive(env, personId);
-        await personStore(env, personId).purge();
-      },
-      // A guest who became an account (accounts merged them, with their settings and profile; the index tells each
-      // app): what livediagram keeps for the guest beside their canvases becomes the account's. Their canvases, folders,
-      // links they opened, stars, defaults, Timeline and opens; their images in liveworkspace's media service; their
-      // shape libraries, adopted by the account's store; their Community copies. Idempotent, so a retry moves nothing
-      // twice. A guest has no workbench (it needs a token).
-      personMerged: async (guestId, userId) => {
-        await migrateOwnerId(env, guestId, userId);
-        await mergeCommunityCopier(env, guestId, userId);
-      },
+      // A closed account, wherever it was closed: what livediagram keeps for them beside their canvases.
+      personClosed: async (personId) => void (await deleteAccount(env, personId)),
+      // A guest who became an account: what livediagram keeps for the guest becomes the account's.
+      personMerged: (guestId, userId) => mergeGuest(env, guestId, userId),
+      // Their name off each canvas of someone else's that names them.
+      anonymise: (id, personId) => documentRoom(env, id).anonymise(personId),
     },
   });
 }

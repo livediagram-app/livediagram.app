@@ -12,7 +12,7 @@
 //     for every path parameter.
 //   - Probe: every (method, path) built from that vocabulary, one level deeper
 //     than anything known, is sent through `worker.fetch` against an env whose
-//     storage bindings (D1, R2, Durable Objects) and outbound `fetch` are
+//     storage bindings (R2, Durable Objects) and outbound `fetch` are
 //     TRAPS: touching one records the fact and throws.
 //
 // Each probe lands in one of three outcomes:
@@ -28,6 +28,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import worker from '../index';
+import { setGrantVerifierForTests } from '../index-service';
 import { answerDocumentRequest, type RouteIdentity } from '../document-room/document-route';
 import type { Env, DocumentEnv } from '../types';
 
@@ -94,10 +95,17 @@ function dispatchSources(): Map<string, string[]> {
   }
   const switchBody = index.slice(index.indexOf('switch (segments[1])'));
   const out = new Map<string, string[]>();
-  for (const m of switchBody.matchAll(/case '([^']+)':([\s\S]*?)(?=\n\s*case '|\n\s*\}\n)/g)) {
+  const cases = [...switchBody.matchAll(/case '([^']+)':([\s\S]*?)(?=\n\s*case '|\n\s*\}\n)/g)];
+  const handlersOf = (block: string) =>
+    [...block.matchAll(/(handle\w+)\(/g)].map((h) => handlerFile.get(h[1]!));
+  // Another segment's own handler, called with rewritten segments (a share link's read of its canvas), is that
+  // segment's routing, not this one's.
+  const segmentHandlers = new Set(cases.flatMap((m) => handlersOf(m[2]!)));
+  for (const m of cases) {
     const block = m[2]!;
     const sources = [block];
-    const queue = [...block.matchAll(/(handle\w+)\(/g)].map((h) => handlerFile.get(h[1]!));
+    const own = new Set(handlersOf(block));
+    const queue = [...own];
     const seen = new Set<string>();
     while (queue.length > 0) {
       const file = queue.pop();
@@ -106,7 +114,10 @@ function dispatchSources(): Map<string, string[]> {
       const source = readSource(file);
       if (!source) continue;
       sources.push(source);
-      for (const rel of source.matchAll(/from '\.\/([\w-]+)'/g)) queue.push(`routes/${rel[1]}.ts`);
+      for (const rel of source.matchAll(/from '\.\/([\w-]+)'/g)) {
+        const sibling = `routes/${rel[1]}.ts`;
+        if (!segmentHandlers.has(sibling) || own.has(sibling)) queue.push(sibling);
+      }
     }
     out.set(m[1]!, sources);
   }
@@ -174,8 +185,9 @@ export async function probeDispatch(
     );
   // Feature gates open, so a handler reaches its own routing instead of
   // answering "not configured" for every path: telemetry on, a model key, and Community and media keys set.
+  // An index configured (its calls are the trapped `fetch`), and every request carrying an edit grant on the
+  // placeholder canvas, so a canvas route reaches its own routing instead of answering "no access".
   const env = {
-    DB: trap('DB'),
     IMAGES: trap('IMAGES'),
     DOCUMENT_ROOM: trap('DOCUMENT_ROOM'),
     PERSON_STORE: trap('PERSON_STORE'),
@@ -191,11 +203,30 @@ export async function probeDispatch(
     GOOGLE_CLIENT_ID: 'probe-client',
     GOOGLE_CLIENT_SECRET: 'probe-secret',
     DRIVE_TOKEN_KEY: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
+    INDEX_ORIGIN: 'https://index.probe',
   } as unknown as Env;
+  const now = Math.floor(Date.now() / 1000);
+  setGrantVerifierForTests(async () => ({
+    iss: 'probe',
+    aud: 'livediagram',
+    sub: 'user_probe',
+    item: PARAM,
+    level: 'edit',
+    tab: null,
+    team: null,
+    iat: now,
+    exp: now + 600,
+    jti: 'probe',
+  }));
   // The worker hands every request about one document to the document's Durable Object (`route`), which answers it with
   // the same handlers against its own store. The probe runs that answer in process, the document's store a trap too,
-  // so a path the document does not serve is still a clean 404; any other use of the room is storage.
-  const documentEnv = { ...env, DOCUMENT_DB: trap('DOCUMENT_DB') } as unknown as DocumentEnv;
+  // so a path the document does not serve is still a clean 404; any other use of the room is storage. Inside the room,
+  // a call back to the canvas itself (document-room.ts `localNamespace`) reads its store: a trap too.
+  const documentEnv = {
+    ...env,
+    DOCUMENT_DB: trap('DOCUMENT_DB'),
+    DOCUMENT_ROOM: { idFromName: (name: string) => name, get: () => trap('DOCUMENT_ROOM (local)') },
+  } as unknown as DocumentEnv;
   const room = new Proxy(
     {},
     {
@@ -232,7 +263,11 @@ export async function probeDispatch(
         const res = await worker.fetch(
           new Request(`https://probe.test/api/${path.join('/')}`, {
             method,
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              Authorization: 'Bearer probe-token',
+              'X-Index-Grant': 'probe-grant',
+              'Content-Type': 'application/json',
+            },
           }),
           env,
           executionCtx,
@@ -246,6 +281,7 @@ export async function probeDispatch(
     }
   } finally {
     globalThis.fetch = realFetch;
+    setGrantVerifierForTests(null);
   }
   return results;
 }

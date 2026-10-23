@@ -6,7 +6,6 @@
 // `.test.ts` file, so vitest doesn't collect it.
 
 import { vi } from 'vitest';
-import { __resetActivityReports } from './liveworkspace/activity';
 import { __resetProfileCache } from './liveworkspace/profiles';
 import type { Env } from './types';
 
@@ -38,7 +37,6 @@ const json = (body: unknown, status = 200) =>
 // was before. Undo with vi.unstubAllGlobals().
 export function accountsServiceFor(env: Partial<Env>): TestAccountsService {
   __resetProfileCache();
-  __resetActivityReports();
   env.ACCOUNTS_URL = ACCOUNTS_URL;
   env.ACCOUNTS_CLIENT_ID ??= 'livediagram';
   env.ACCOUNTS_CLIENT_SECRET ??= 'secret';

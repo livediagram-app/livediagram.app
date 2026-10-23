@@ -1,10 +1,11 @@
-// An API request about one document, answered inside the document's Durable Object (docs/specs/015-api/api.md
-// "Storage"). The worker resolves who is calling (accounts token, API token, workbench session, guest header),
-// runs the cross-cutting gates (rate limits, read-only tokens, workbench confinement, body caps), then hands the
-// request and that identity to the document's room (`route` RPC). The room rebuilds the RouteContext and runs the same
-// handlers as before, against its own SQLite for content and D1 for everything else, so every per-route access
-// check (gateRead / gateEdit / gateParticipate and the owner guards) is unchanged.
+// An API request about one canvas, answered inside the canvas's Durable Object (docs/specs/015-api/api.md
+// "Storage"). The worker resolves who is calling (accounts or guest token, API token, workbench session) and the
+// index's grant on the canvas (routes/document-grant.ts), runs the cross-cutting gates (rate limits, read-only
+// tokens, workbench confinement, body caps), then hands the request and that identity to the canvas's room
+// (`route` RPC). The room rebuilds the RouteContext and runs the handlers against its own SQLite; every access
+// check (gateRead / gateEdit / gateParticipate) reads the grant.
 
+import type { TeamClaim } from '@liveworkspace/auth-client';
 import type { DocumentRouteContext, RouteContext, WorkbenchContext } from '../routes/context';
 import { handleDocumentRequest } from '../routes/documents';
 import type { DocumentEnv } from '../types';
@@ -17,15 +18,15 @@ export type RouteIdentity = {
   accountEmail: string | null;
   // resolveOwner()'s answer.
   owner: string | null;
-  token: { id: string; readOnly?: boolean } | null;
+  token: { id: string; readOnly?: boolean; name?: string | null; expiresAt?: number } | null;
   workbench: WorkbenchContext | null;
   bearer: string | null;
-  teams: readonly string[];
-  // The index's grant on this document, as the worker settled it.
+  teams: TeamClaim[] | null;
+  // The index's grant on this canvas, checked by the worker (routes/document-grant.ts).
   grant: ItemGrant | null;
 };
 
-export function identityOf(ctx: RouteContext, grant: ItemGrant | null = null): RouteIdentity {
+export function identityOf(ctx: RouteContext): RouteIdentity {
   return {
     accountUserId: ctx.accountUserId,
     verifiedUserId: ctx.verifiedUserId,
@@ -34,17 +35,19 @@ export function identityOf(ctx: RouteContext, grant: ItemGrant | null = null): R
     token: ctx.token ?? null,
     workbench: ctx.workbench ?? null,
     bearer: ctx.bearer ?? null,
-    teams: ctx.teams ?? [],
-    grant,
+    teams: ctx.teams ?? null,
+    grant: ctx.grant ?? null,
   };
 }
 
-// The room's side: the request answered as the worker would have answered it.
+// The room's side: the request answered as the worker would have answered it. `community` is the canvas's
+// Community post's link, as the room holds it (routes/context.ts grantOn).
 export async function answerDocumentRequest(
   env: DocumentEnv,
   request: Request,
   identity: RouteIdentity,
   waitUntil: (promise: Promise<unknown>) => void,
+  community: { code: string; open: boolean } | null = null,
 ): Promise<Response> {
   const url = new URL(request.url);
   const ctx: DocumentRouteContext = {
@@ -61,6 +64,7 @@ export async function answerDocumentRequest(
     bearer: identity.bearer,
     teams: identity.teams,
     grant: identity.grant,
+    community,
     waitUntil,
   };
   // A throw crosses back to the worker, which logs it and answers 500 as for any route (index.ts).

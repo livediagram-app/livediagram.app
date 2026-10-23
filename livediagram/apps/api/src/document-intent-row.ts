@@ -28,3 +28,18 @@ export function readRecordedIntent(row: RecordedIntentRow): RecordedIntent {
     templateFamily: isTemplateFamily(row.template_family) ? row.template_family : null,
   };
 }
+
+// The same, from the intent the index files a canvas under (`<opensIn>:<tabKind>:<templateFamily>`, routes/documents.ts
+// indexIntentOf), or nothing recorded for none.
+export function recordedIntentOf(intent: string | null | undefined): RecordedIntent {
+  if (!intent) return UNKNOWN;
+  const [opens_in = null, tab_kind = null, template_family = null] = intent.split(':');
+  return readRecordedIntent({
+    opens_in: opens_in || null,
+    tab_kind: tab_kind || null,
+    template_family: template_family || null,
+  });
+}
+
+// Nothing recorded: a canvas read from its own store, which keeps no intent (the index does).
+export const NO_RECORDED_INTENT: RecordedIntent = UNKNOWN;

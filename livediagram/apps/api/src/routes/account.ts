@@ -2,7 +2,6 @@
 
 import { bearerTokenOf } from '@livediagram/api-schema';
 import { closeAccount } from '@liveworkspace/auth-client';
-import { forgetCommunityCopier, syncCommunity } from '../community-service';
 import { deleteAccount } from '../db';
 import { emailEnabled, sendEmail } from '../email/client';
 import { accountDeletedEmail } from '../email/templates';
@@ -24,9 +23,6 @@ export async function handleAccount(ctx: RouteContext): Promise<Response> {
   if (request.method === 'DELETE') {
     if (!accountUserId) return missingAuth();
     const deleted = await deleteAccount(env, accountUserId);
-    // docs/specs/025-community/community.md: the copies they took stop counting, and their posts go.
-    ctx.waitUntil?.(forgetCommunityCopier(env, accountUserId));
-    ctx.waitUntil?.(syncCommunity(env));
     const accounts = configured(env);
     const accessToken = bearerTokenOf(request.headers.get('Authorization'));
     if (accounts && accessToken) {

@@ -19,7 +19,7 @@ function arrange() {
   const doc = (id: string) =>
     db.sql
       .prepare(
-        'INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, ?, ?)',
+        'INSERT INTO test_documents (id, owner_id, name, saved_at, created_at) VALUES (?, ?, ?, ?, ?)',
       )
       .run(id, 'owner', id, T0, T0);
   const tab = (docId: string, tabId: string, order: number) => {
@@ -50,9 +50,9 @@ function arrange() {
 }
 
 function docStats(sql: DatabaseSync, id: string) {
-  const row = sql
-    .prepare(`SELECT ${documentStatsSql('documents.id')} FROM documents WHERE id = ?`)
-    .get(id) as { doc_stats: string | null };
+  const row = sql.prepare(`SELECT ${documentStatsSql('?1')}`).get(id) as {
+    doc_stats: string | null;
+  };
   return readDocumentStats(row.doc_stats);
 }
 

@@ -46,7 +46,11 @@ function handledMethodsBySegment(): Map<string, Set<string>> {
     }
   };
   const out = new Map<string, Set<string>>();
-  for (const m of index.matchAll(/case '([^']+)':\s*\n\s*return await (\w+)\(/g)) {
+  const cases = [...index.matchAll(/case '([^']+)':\s*\n\s*return await (\w+)\(/g)];
+  // Another segment's own handler, called with rewritten segments (a share link's read of its canvas), is that
+  // segment's routing, not this one's.
+  const segmentHandlers = new Set(cases.map((m) => handlerFile.get(m[2]!)));
+  for (const m of cases) {
     const file = handlerFile.get(m[2]!);
     const source = file ? read(file) : null;
     if (!source) continue;
@@ -54,6 +58,7 @@ function handledMethodsBySegment(): Map<string, Set<string>> {
     // split across several); follow those too or their verbs go unseen.
     const sources = [source];
     for (const rel of source.matchAll(/from '\.\/([\w-]+)'/g)) {
+      if (segmentHandlers.has(`${rel[1]}.ts`)) continue;
       const sibling = read(`${rel[1]}.ts`);
       if (sibling) sources.push(sibling);
     }
@@ -320,6 +325,6 @@ describe('OpenAPI teams surface', () => {
   it('marks the team reads token-usable and no team write', () => {
     const teams = ROUTE_MANIFEST.filter((r) => r.segment === 'teams');
     const usable = teams.filter((r) => r.tokenUsable).map((r) => `${r.method} ${r.path}`);
-    expect(usable).toEqual(['GET /teams', 'GET /teams/{id}', 'GET /teams/{id}/library']);
+    expect(usable).toEqual(['GET /teams', 'GET /teams/{id}/library']);
   });
 });

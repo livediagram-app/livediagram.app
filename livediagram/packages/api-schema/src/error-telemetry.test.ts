@@ -99,13 +99,11 @@ describe('apiRouteLabel', () => {
     expect(apiRouteLabel('POST', 'https://livediagram.app/api/documents/x/tabs/y/comments')).toBe(
       'Post.Documents.Tabs.Comments',
     );
-    expect(apiRouteLabel('GET', 'http://localhost:8787/api/timeline?cursor=abc')).toBe(
-      'Get.Timeline',
-    );
+    expect(apiRouteLabel('GET', 'http://localhost:8787/api/teams?cursor=abc')).toBe('Get.Teams');
     expect(apiRouteLabel('GET', '/api/shape-libraries')).toBe('Get.ShapeLibraries');
     expect(apiRouteLabel('POST', '/api/trash/0b7c5f9e-1111/restore')).toBe('Post.Trash.Restore');
-    // Explorer Home (docs/specs/013-workspace/explorer-home.md): one read.
-    expect(apiRouteLabel('GET', '/api/home?tz=Europe%2FAmsterdam')).toBe('Get.Home');
+    // Explorer Home and the Timeline are the liveworkspace index's now, not this api's resources.
+    expect(apiRouteLabel('GET', '/api/home?tz=Europe%2FAmsterdam')).toBe('Get.Unknown');
   });
 
   it('never echoes a share code or an unknown resource', () => {

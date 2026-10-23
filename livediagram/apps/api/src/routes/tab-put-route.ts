@@ -20,8 +20,6 @@ import { MAX_TAB_BYTES, bodyExceedsCap, storeTab } from '../limits';
 import { capStoredName } from '../names';
 import { badRequest, conflict, json, payloadTooLarge } from '../responses';
 import { applyRoomLedger, fetchRoomLedger } from '../room-client';
-import { recordTabSave } from '../timeline';
-import { reportOwnerActivity } from '../liveworkspace/activity';
 import type { TabSaveDocument } from '../db/tab-save-document';
 import { readBody, type DocumentRouteContext } from './context';
 
@@ -133,17 +131,8 @@ export async function handleTabPut(
       continue;
     }
     logMerge(id, tabId, merge);
-    // liveworkspace's onboarding series: the owner saved something they own, at most once a minute a
-    // document (liveworkspace/activity.ts).
-    if (owner === existing.ownerId) {
-      const activity = reportOwnerActivity(env, owner, id);
-      if (activity) ctx.waitUntil?.(activity);
-    }
-    // docs/specs/013-workspace/timeline.md: the coalesced "worked on" event plus anything the save
-    // added that the feed cares about. Off the response path: this fires on every autosave.
-    ctx.waitUntil?.(
-      recordTabSave(env, existing, owner, sanitised.elements, existingTab?.elements ?? []),
-    );
+    // The owner's activity for liveworkspace's onboarding series goes with the canvas's summary push
+    // (document-room/document-outbox.ts), at most once a minute.
     // docs/specs/014-identity/transactional-email.md (#1): an edit-role visitor adding a comment
     // notifies the owner. Their own comment only, read from the authors the server just set.
     if (

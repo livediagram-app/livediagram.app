@@ -5,13 +5,19 @@ import {
   DRIVE_ACCOUNT_SWITCH_TTL_MS,
   type DriveItem,
 } from '@livediagram/api-schema';
-import { sqliteD1 as bareD1, type SqliteD1 } from '../test-sqlite-d1';
+import { sqliteD1 as bareD1, testDocument, type SqliteD1 } from '../test-sqlite-d1';
 import type { testPersonStores } from '../test-person-store';
 import { getSealedRefreshToken } from '../db/drive';
 import { signDriveState } from '../drive/state';
 import type { Env } from '../types';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDrive } from './drive';
+
+// The mirror asks the index which canvases and folders still exist (db/drive.ts removedItems).
+vi.mock('../index-service', async (original) => ({
+  ...(await original<typeof import('../index-service')>()),
+  indexFor: (await import('../test-sqlite-d1')).testIndexFor,
+}));
 
 // /api/drive/* (docs/specs/022-drive-mirror/blueprints/drive-mirror.md, "Routes").
 
@@ -63,16 +69,10 @@ afterEach(() => {
 // dropped when the list is read), and each person's store as a node:sqlite database.
 function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
   const db = bareD1(base);
-  for (const id of ['d1', 'd2']) {
-    db.sql
-      .prepare(
-        "INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, 'user_a', ?, 0, 1, 1)",
-      )
-      .run(id, id);
-  }
+  for (const id of ['d1', 'd2']) testDocument(db, id, 'user_a', { name: id });
   db.sql
     .prepare(
-      "INSERT INTO folders (id, owner_id, name, created_at, updated_at) VALUES ('fo', 'user_a', 'F', 1, 1)",
+      "INSERT INTO test_folders (id, owner_id, team_id, parent_id, name) VALUES ('fo', 'user_a', NULL, NULL, 'F')",
     )
     .run();
   return db;

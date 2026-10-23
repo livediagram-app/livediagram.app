@@ -1,187 +1,200 @@
-import { describe, expect, it } from 'vitest';
-import type { DatabaseSync } from 'node:sqlite';
-import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { trashDocument } from '../db/trash';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { trashPurgeDueAt } from '@livediagram/api-schema';
+import type { Env } from '../types';
 import { makeTestRouteContext } from './test-route-context';
 import { handleTrash } from './trash';
 
-// /api/trash (docs/specs/013-workspace/trash.md, "The API"): list, restore,
-// purge one, empty. The authority is the delete authority: the owner of a
-// personal document, any joined member for a team one.
+// /api/trash for API clients (docs/specs/013-workspace/trash.md "The API"; index-adapters.ts): the Trash is the
+// index's, so each door is the index's answer in the shape the MCP server and the CLI have always read. Who may list,
+// restore or purge what is the index's rule; its refusal passes through.
 
+const INDEX_ORIGIN = 'https://index.test';
 const T0 = 1_700_000_000_000;
 
-function insert(sql: DatabaseSync, table: string, row: Record<string, string | number | null>) {
-  const cols = Object.keys(row);
-  sql
-    .prepare(`INSERT INTO ${table} (${cols.join(', ')}) VALUES (${cols.map(() => '?').join(', ')})`)
-    .run(...Object.values(row));
-}
+let index: Record<string, () => Response>;
+let calls: { method: string; path: string; search: URLSearchParams }[];
 
-function liveDoc(sql: DatabaseSync, id: string, owner: string, team: string | null = null) {
-  insert(sql, 'documents', {
-    id,
-    owner_id: owner,
-    name: `Diagram ${id}`,
-    shareable: 0,
-    team_id: team,
-    saved_at: T0,
-    created_at: T0,
+beforeEach(() => {
+  index = {};
+  calls = [];
+  vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
+    const req = new Request(input, init);
+    const url = new URL(req.url);
+    const path = url.pathname.replace('/api/index', '');
+    calls.push({ method: req.method, path, search: url.searchParams });
+    const answer = index[`${req.method} ${path}`];
+    return answer ? answer() : Response.json({ error: 'not_found' }, { status: 404 });
   });
-}
+});
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
-// user_me has a personal document `mine`; the team `crew` (user_me and
-// user_bob joined) holds `ours`; user_bob has a personal `bobs`. All trashed.
-async function world(): Promise<SqliteD1> {
-  const db = sqliteD1();
-  insert(db.sql, 'teams', { id: 'crew', name: 'Crew', created_at: T0, updated_at: T0 });
-  for (const user of ['user_me', 'user_bob']) {
-    insert(db.sql, 'team_members', {
-      id: `m-${user}`,
-      team_id: 'crew',
-      user_id: user,
-      role: 'member',
-      status: 'joined',
-      created_at: T0,
-      updated_at: T0,
-    });
-  }
-  liveDoc(db.sql, 'mine', 'user_me');
-  liveDoc(db.sql, 'ours', 'user_bob', 'crew');
-  liveDoc(db.sql, 'bobs', 'user_bob');
-  for (const id of ['mine', 'ours', 'bobs']) await trashDocument(db.env, id, T0);
-  return db;
-}
+const item = (id: string, over: Record<string, unknown> = {}) => ({
+  id,
+  app: 'livediagram',
+  ownerId: 'user_me',
+  teamId: null,
+  folderId: null,
+  title: `Diagram ${id}`,
+  createdAt: T0,
+  updatedAt: T0,
+  trashedAt: T0,
+  ...over,
+});
 
-const me = { owner: 'user_me', accountUserId: 'user_me' };
-
-function call(
-  db: SqliteD1,
-  method: string,
-  path: string,
-  opts: Parameters<typeof makeTestRouteContext>[2] = {},
-) {
-  return handleTrash(makeTestRouteContext(method, path, { env: db.env, ...opts }));
-}
-
-function ids(db: SqliteD1): string[] {
-  return db.sql
-    .prepare('SELECT id FROM documents ORDER BY id')
-    .all()
-    .map((r) => r.id as string);
-}
-
-function trashedAt(db: SqliteD1, id: string): unknown {
-  return db.sql.prepare('SELECT trashed_at FROM documents WHERE id = ?').get(id)?.trashed_at;
+function call(method: string, path: string, opts: { owner?: string | null; env?: Env } = {}) {
+  const owner = opts.owner === undefined ? 'user_me' : opts.owner;
+  return handleTrash(
+    makeTestRouteContext(method, path, {
+      env: opts.env ?? ({ INDEX_ORIGIN, INDEX_KEY: 'k' } as Env),
+      owner,
+      verifiedUserId: owner,
+      token: { id: 'tok_1' },
+      teams: [{ id: 'crew', name: 'Crew', role: 'member' }],
+    }),
+  );
 }
 
 describe('GET /api/trash', () => {
-  it('lists the personal Trash and the joined team Trash', async () => {
-    const db = await world();
-    const res = await call(db, 'GET', '/api/trash', me);
+  it('lists the personal and joined team Trash, with each purge date and team name', async () => {
+    index['GET /trash'] = () =>
+      Response.json({
+        items: [
+          item('mine'),
+          item('ours', { ownerId: 'user_bob', teamId: 'crew', trashedAt: T0 + 5 }),
+          item('gone', { teamId: 'left', trashReason: 'offline' }),
+        ],
+        nextCursor: null,
+      });
+    const res = await call('GET', '/api/trash');
     expect(res.status).toBe(200);
-    const { trash } = (await res.json()) as { trash: { id: string; teamName: string | null }[] };
-    expect(trash.map((t) => [t.id, t.teamName]).sort()).toEqual([
-      ['mine', null],
-      ['ours', 'Crew'],
+    expect((await res.json<{ trash: unknown[] }>()).trash).toEqual([
+      {
+        id: 'mine',
+        name: 'Diagram mine',
+        teamId: null,
+        teamName: null,
+        trashedAt: T0,
+        purgeAt: trashPurgeDueAt(T0),
+        reason: 'deleted',
+      },
+      {
+        id: 'ours',
+        name: 'Diagram ours',
+        teamId: 'crew',
+        teamName: 'Crew',
+        trashedAt: T0 + 5,
+        purgeAt: trashPurgeDueAt(T0 + 5),
+        reason: 'deleted',
+      },
+      {
+        id: 'gone',
+        name: 'Diagram gone',
+        teamId: 'left',
+        teamName: null,
+        trashedAt: T0,
+        purgeAt: trashPurgeDueAt(T0),
+        reason: 'offline',
+      },
+    ]);
+    expect(calls.map((c) => [c.method, c.path, c.search.get('app')])).toEqual([
+      ['GET', '/trash', 'livediagram'],
     ]);
   });
 
-  it('needs a caller', async () => {
-    const db = await world();
-    expect((await call(db, 'GET', '/api/trash')).status).toBe(400);
+  it('reads every page', async () => {
+    let page = 0;
+    index['GET /trash'] = () =>
+      Response.json({ items: [item(`p${page}`)], nextCursor: ++page < 3 ? `c${page}` : null });
+    const res = await call('GET', '/api/trash');
+    expect((await res.json<{ trash: { id: string }[] }>()).trash.map((t) => t.id)).toEqual([
+      'p0',
+      'p1',
+      'p2',
+    ]);
+    expect(calls.map((c) => c.search.get('cursor'))).toEqual([null, 'c1', 'c2']);
+  });
+
+  it('needs a caller, and an index', async () => {
+    expect((await call('GET', '/api/trash', { owner: null })).status).toBe(400);
+    const res = await call('GET', '/api/trash', { env: {} as Env });
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({ error: 'index_unavailable' });
+    expect(calls).toEqual([]);
   });
 });
 
 describe('POST /api/trash/:id/restore', () => {
-  it('restores the owner’s document and returns it', async () => {
-    const db = await world();
-    const res = await call(db, 'POST', '/api/trash/mine/restore', me);
+  it('restores the document and answers it', async () => {
+    index['POST /items/mine/restore'] = () =>
+      Response.json({ item: item('mine', { trashedAt: null }) });
+    const res = await call('POST', '/api/trash/mine/restore');
     expect(res.status).toBe(200);
-    expect((await res.json<{ document: { id: string } }>()).document.id).toBe('mine');
-    expect(trashedAt(db, 'mine')).toBeNull();
+    expect(await res.json()).toEqual({ document: { id: 'mine', name: 'Diagram mine' } });
   });
 
-  it('restores a team document for any joined member', async () => {
-    const db = await world();
-    expect((await call(db, 'POST', '/api/trash/ours/restore', me)).status).toBe(200);
-    expect(trashedAt(db, 'ours')).toBeNull();
-  });
-
-  it('refuses someone else’s personal document as missing', async () => {
-    const db = await world();
-    expect((await call(db, 'POST', '/api/trash/bobs/restore', me)).status).toBe(404);
-    expect(trashedAt(db, 'bobs')).toBe(T0);
-  });
-
-  it('refuses a guest holding the team owner’s id', async () => {
-    // A team document's owner id is visible to teammates; the header alone
-    // never proves membership or ownership.
-    const db = await world();
-    const res = await call(db, 'POST', '/api/trash/ours/restore', { owner: 'user_bob' });
+  it("passes the index's refusal on: a document the caller may not restore reads as missing", async () => {
+    const res = await call('POST', '/api/trash/bobs/restore');
     expect(res.status).toBe(404);
-  });
-
-  it('answers 404 for a live or unknown id', async () => {
-    const db = await world();
-    liveDoc(db.sql, 'live', 'user_me');
-    expect((await call(db, 'POST', '/api/trash/live/restore', me)).status).toBe(404);
-    expect((await call(db, 'POST', '/api/trash/nope/restore', me)).status).toBe(404);
+    expect(await res.json()).toEqual({ error: 'not_found' });
   });
 });
 
 describe('DELETE /api/trash/:id', () => {
   it('purges one document for good', async () => {
-    const db = await world();
-    expect((await call(db, 'DELETE', '/api/trash/mine', me)).status).toBe(204);
-    expect(ids(db)).toEqual(['bobs', 'ours']);
+    index['DELETE /items/mine'] = () => new Response(null, { status: 204 });
+    const res = await call('DELETE', '/api/trash/mine');
+    expect(res.status).toBe(204);
+    expect(calls).toHaveLength(1);
+    expect(calls[0]!.search.get('permanent')).toBeTruthy();
   });
 
-  it('refuses what the caller may not delete', async () => {
-    const db = await world();
-    expect((await call(db, 'DELETE', '/api/trash/bobs', me)).status).toBe(404);
-    expect(ids(db)).toEqual(['bobs', 'mine', 'ours']);
+  it("passes the index's refusal on", async () => {
+    index['DELETE /items/ours'] = () => Response.json({ error: 'forbidden' }, { status: 403 });
+    const res = await call('DELETE', '/api/trash/ours');
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: 'forbidden' });
   });
 });
 
 describe('DELETE /api/trash', () => {
-  it('empties the personal Trash only', async () => {
-    const db = await world();
-    const res = await call(db, 'DELETE', '/api/trash', me);
+  it("empties the personal Trash of canvases and answers how many went", async () => {
+    index['DELETE /trash'] = () => Response.json({ purged: 3 });
+    const res = await call('DELETE', '/api/trash');
     expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ purged: 3 });
+    expect(calls).toHaveLength(1);
+    expect(calls[0]!.search.get('app')).toBe('livediagram');
+    expect(calls[0]!.search.get('team')).toBeNull();
+  });
+
+  it("empties a joined team's Trash", async () => {
+    index['DELETE /trash'] = () => Response.json({ purged: 1 });
+    const res = await call('DELETE', '/api/trash?team=crew');
     expect(await res.json()).toEqual({ purged: 1 });
-    expect(ids(db)).toEqual(['bobs', 'ours']);
+    expect(calls[0]!.search.get('team')).toBe('crew');
+    expect(calls[0]!.search.get('app')).toBe('livediagram');
   });
 
-  it('empties a team Trash for a joined member', async () => {
-    const db = await world();
-    const res = await call(db, 'DELETE', '/api/trash?team=crew', me);
-    expect(await res.json()).toEqual({ purged: 1 });
-    expect(ids(db)).toEqual(['bobs', 'mine']);
+  it('a team the caller has not joined reads as missing, without asking the index', async () => {
+    const res = await call('DELETE', '/api/trash?team=strangers');
+    expect(res.status).toBe(404);
+    expect(calls).toEqual([]);
   });
 
-  it('refuses a team Trash to anyone not joined', async () => {
-    const db = await world();
-    const stranger = { owner: 'user_x', accountUserId: 'user_x' };
-    expect((await call(db, 'DELETE', '/api/trash?team=crew', stranger)).status).toBe(404);
-    expect((await call(db, 'DELETE', '/api/trash?team=crew', { owner: 'user_me' })).status).toBe(
-      404,
-    );
-    expect(ids(db)).toEqual(['bobs', 'mine', 'ours']);
-  });
-
-  it('leaves live documents alone', async () => {
-    const db = await world();
-    liveDoc(db.sql, 'live', 'user_me');
-    await call(db, 'DELETE', '/api/trash', me);
-    expect(ids(db)).toContain('live');
+  it("passes the index's refusal on", async () => {
+    index['DELETE /trash'] = () => Response.json({ error: 'forbidden' }, { status: 403 });
+    expect((await call('DELETE', '/api/trash')).status).toBe(403);
   });
 });
 
 describe('unknown /api/trash routes', () => {
-  it('answer 404', async () => {
-    const db = await world();
-    expect((await call(db, 'PUT', '/api/trash', me)).status).toBe(404);
-    expect((await call(db, 'GET', '/api/trash/mine', me)).status).toBe(404);
+  it('answer 404 without asking the index', async () => {
+    expect((await call('PUT', '/api/trash')).status).toBe(404);
+    expect((await call('PUT', '/api/trash/mine')).status).toBe(404);
+    expect((await call('GET', '/api/trash/mine')).status).toBe(404);
+    expect((await call('POST', '/api/trash/mine/other')).status).toBe(404);
+    expect(calls).toEqual([]);
   });
 });

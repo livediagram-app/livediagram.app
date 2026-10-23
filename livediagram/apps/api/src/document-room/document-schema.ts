@@ -1,25 +1,55 @@
 // The document's own schema (docs/specs/015-api/api.md "Storage"), in its Durable Object's SQLite: everything the
-// document holds as content. D1 keeps only what is not content (the documents row, folders, sharing, people, the
-// timeline, the image registry and grants) and the index tables this document pushes to it (document-outbox.ts).
+// document holds as content, and what it knows of itself. Where the document is filed and who may reach it is
+// liveworkspace's index (liveworkspace/docs/one-explorer.md), which this document pushes its summary, its tabs'
+// comments and actions, and who edited it to (document-outbox.ts); the images it places it tells the media service
+// itself (liveworkspace/docs/media.md "References").
 //
 // One database per document, so `document_id` names the same document on every row. It stays a column (and in
 // the keys) because the content modules were written for a store holding many documents, and keeping their SQL
 // keyed by document is what lets them run unchanged; it costs a few bytes a row.
 //
-// Made on first use, never on construction (document-db.ts `ensureSchema`): a Durable Object a stray id wakes
+// Made on first use, never on construction (@liveworkspace/index-app item-db.ts `ensureSchema`): a Durable Object a stray id wakes
 // stores nothing. Versioned by `_document_schema`; a later change adds a step to STEPS, never edits one.
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
-// follow-up for tabs over 2 MB; until then the cap refuses them, as it did on D1.
+// follow-up for tabs over 2 MB; until then the cap refuses them.
 const V1 = `
 CREATE TABLE IF NOT EXISTS document (
-  id           TEXT    PRIMARY KEY,
+  id                  TEXT    PRIMARY KEY,
   -- The slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised JSON, or NULL for none.
-  presentation TEXT    NULL,
-  saved_at     INTEGER NOT NULL,
-  created_at   INTEGER NOT NULL
+  presentation        TEXT    NULL,
+  saved_at            INTEGER NOT NULL,
+  -- 0 until the document is started: made by a create, or on its first open with a grant (document-content.ts
+  -- initDocument).
+  created_at          INTEGER NOT NULL,
+  -- What the document knows of itself for its own reads (a document read, emails, an agent's listing). The index
+  -- holds the truth for the title, owner and team (liveworkspace/docs/one-explorer.md); these are kept from the
+  -- grants and renames that reach the document, and the editor puts a stale name right.
+  name                TEXT    NOT NULL DEFAULT '',
+  owner_id            TEXT    NOT NULL DEFAULT '',
+  team_id             TEXT    NULL,
+  -- What made it ('mcp', 'cli', ...).
+  source              TEXT    NULL,
+  -- The comment email's throttle (email/notifications.ts).
+  comment_notified_at INTEGER NULL,
+  -- When the cached first-tab snapshot in R2 was drawn (thumbnail.ts): fresh while at or after saved_at.
+  thumb_rendered_at   INTEGER NULL
 );
+
+-- The document's Community post (docs/specs/025-community/community.md), at most one: its link's share code (an
+-- index share link; a grant through it is a content-only pass, routes/context.ts), its post at the liveworkspace
+-- Community service, what the link's doors show of it, and the listing state last sent (community-post.ts).
+CREATE TABLE IF NOT EXISTS community_post (
+  share_code TEXT    PRIMARY KEY,
+  author_id  TEXT    NOT NULL,
+  post_id    TEXT    NOT NULL,
+  title      TEXT    NOT NULL,
+  anonymous  INTEGER NOT NULL DEFAULT 1,
+  hidden_at  INTEGER NULL,
+  sent_state TEXT    NULL,
+  checked_at INTEGER NOT NULL DEFAULT 0
+) WITHOUT ROWID;
 
 CREATE TABLE IF NOT EXISTS tabs (
   id            TEXT    PRIMARY KEY,
@@ -58,13 +88,39 @@ CREATE TABLE IF NOT EXISTS tab_stats (
 );
 
 -- Which images each tab places (docs/specs/009-elements/images.md "Reference index"), kept from the tab bodies in
--- the same transaction as each write, so the share check and the push to D1's document_images never read a body.
+-- the same transaction as each write, so the share check and the push to the media service never read a body.
 CREATE TABLE IF NOT EXISTS image_refs (
   tab_id   TEXT NOT NULL REFERENCES tabs (id) ON DELETE CASCADE,
   image_id TEXT NOT NULL,
   PRIMARY KEY (tab_id, image_id)
 ) WITHOUT ROWID;
 CREATE INDEX IF NOT EXISTS image_refs_image_idx ON image_refs (image_id);
+
+-- Who owns each image the document places, as the media service answered (docs/specs/009-elements/images.md
+-- "Placement grants"): the share check reads it instead of asking the service on every image request. An owner of
+-- '' is an id the service doesn't know, so a document placing it doesn't ask again on every read.
+CREATE TABLE IF NOT EXISTS image_owners (
+  image_id TEXT PRIMARY KEY,
+  owner_id TEXT NOT NULL
+) WITHOUT ROWID;
+
+-- The images this document may serve beyond its owner's own ("Placement grants"): one the owner's collaborator
+-- placed, or one a copy brought from its source.
+CREATE TABLE IF NOT EXISTS image_grants (
+  image_id   TEXT    PRIMARY KEY,
+  created_at INTEGER NOT NULL
+) WITHOUT ROWID;
+
+-- The once-only state of the document's notification emails (notify-claims.ts): one row per email claimed, keyed by
+-- what makes two the same (a hash, never text or an address), with its sender for the hourly cap. Rows past the
+-- longest window are dropped as new ones are claimed.
+CREATE TABLE IF NOT EXISTS notify_claims (
+  key    TEXT    PRIMARY KEY,
+  sender TEXT    NOT NULL,
+  at     INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS notify_claims_sender ON notify_claims (sender, at);
+CREATE INDEX IF NOT EXISTS notify_claims_at ON notify_claims (at);
 
 CREATE TABLE IF NOT EXISTS agent_changesets (
   id           TEXT    PRIMARY KEY,
@@ -126,20 +182,6 @@ BEGIN
   INSERT INTO share_outbox (kind, tab_id, to_document) SELECT 'body', NEW.id, document_id FROM tab_shares WHERE tab_id = NEW.id;
 END;
 
--- What the document owes D1 (document-outbox.ts): a key per thing whose derived rows changed, filled by the
--- triggers below so no write path can forget it, drained by the room's alarm.
---   tab:     a tab's comment threads and actions (the Inbox's index)
---   images:  the images the document places (D1's document_images, the media service's references, the
---            placement grants)
---   summary: the document's listing summary and saved_at, for the Explorer
--- A key written again while a flush is in flight is deleted and inserted again under a new id, so the flush's
--- delete (by the ids it read) keeps it for the next one. Not INSERT OR REPLACE: inside a trigger, the conflict
--- policy of the statement that fired it wins, and an upsert's is ABORT. A Durable Object holds one document, so
--- document_id is always the same there; it keeps the keys apart where one SQLite holds several documents (the
--- tests).
---
--- A tab's own triggers find its document through its link and write nothing for a tab no document links: the
--- link's triggers (a create links after the insert, a delete unlinks before the delete) cover those moments.
 -- Who has voted as a guest (docs/specs/012-collaboration/vote-integrity.md): a guest id costs nothing to make, so a
 -- guest's Q&A upvote is admitted against a cap of guest voters per network (vote-integrity.ts).
 CREATE TABLE IF NOT EXISTS guest_voters (
@@ -150,6 +192,20 @@ CREATE TABLE IF NOT EXISTS guest_voters (
   PRIMARY KEY (document_id, network_tag, person_tag)
 ) WITHOUT ROWID;
 
+-- What the document owes the index and the media service (document-outbox.ts): a key per thing whose derived rows
+-- changed, filled by the triggers below so no write path can forget it, drained by the room's alarm.
+--   tab:     a tab's comment threads and actions (the Inbox)
+--   summary: the document's listing summary and its last change, for the Explorer
+--   edit:    who edited it and when (<person>@<time>, one per person), for the Timeline and Most Used
+--   images:  the images the document places (the media service's references, the placement grants)
+-- A key written again while a flush is in flight is deleted and inserted again under a new id, so the flush's
+-- delete (by the ids it read) keeps it for the next one. Not INSERT OR REPLACE: inside a trigger, the conflict
+-- policy of the statement that fired it wins, and an upsert's is ABORT. A Durable Object holds one document, so
+-- document_id is always the same there; it keeps the keys apart where one SQLite holds several documents (the
+-- tests).
+--
+-- A tab's own triggers find its document through its link and write nothing for a tab no document links: the
+-- link's triggers (a create links after the insert, a delete unlinks before the delete) cover those moments.
 CREATE TABLE IF NOT EXISTS outbox (
   id          INTEGER PRIMARY KEY,
   document_id TEXT    NOT NULL,

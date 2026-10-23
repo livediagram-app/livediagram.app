@@ -25,7 +25,7 @@ vi.mock('../auth/accounts', () => ({
     kind: 'account',
     userId: 'user_probe',
     email: null,
-    teams: null,
+    teams: [{ id: 'probe-param', name: 'Probe', role: 'owner' }],
   }),
 }));
 

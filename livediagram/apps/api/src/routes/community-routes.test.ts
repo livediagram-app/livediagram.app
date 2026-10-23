@@ -1,30 +1,88 @@
 // The Community end to end, this api and the liveworkspace Community service both real (docs/specs/025-community/
-// community.md; liveworkspace/docs/community.md): the owner's publish guards and Edit Listing, My Shares, the sync
-// that keeps the service in step with the documents, the off switch, and how a community link behaves on the share
-// resolve, the share list, the password route and the copy route. The service's own rules (lists, likes, reports,
-// caching) are tested with the service.
+// community.md; liveworkspace/docs/community.md): the owner's publish guards and Edit Listing, My Shares, the canvas's
+// check that keeps the service in step with where it stands at the index, the off switch, and how a community link
+// behaves on the share resolve, the live image and the copy route. The service's own rules (lists, likes, reports,
+// caching) are tested with the service; the index's share links, passwords and Trash are the index's, faked here
+// over `test_share_links`.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { syncCommunity } from '../community-service';
+import { IndexError, type IndexClient } from '@liveworkspace/index-client';
 import { accountsServiceFor, type TestAccountsService } from '../test-accounts-service';
-import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
+import type { GrantCaller, ItemGrant } from '../index-service';
+import {
+  sqliteD1,
+  testDocument,
+  testIndexFor,
+  TEST_GRANT_HOOK,
+  type SqliteD1,
+  type TestGrantCaller,
+} from '../test-sqlite-d1';
 import { communityServiceFor, type TestCommunityService } from '../test-community-service';
-import type { Env } from '../types';
+import type { DocumentEnv, Env } from '../types';
 
-const { thumbnail } = vi.hoisted(() => ({
+const { thumbnail, index } = vi.hoisted(() => ({
   thumbnail: { svg: '<svg/>' },
+  // Where each canvas stands at the index: in the Trash, behind a share password.
+  index: { trashed: new Set<string>(), password: new Set<string>() },
 }));
 vi.mock('../thumbnail', () => ({
   getDocumentThumbnailSvg: vi.fn(async () => thumbnail.svg),
   getDocumentTabImageSvg: vi.fn(async () => thumbnail.svg),
   getCommunityThumbnailSvg: vi.fn(async () => thumbnail.svg),
   renderTabSvg: vi.fn(async () => thumbnail.svg),
+  renderDocumentImage: vi.fn(async () => thumbnail.svg),
 }));
+vi.mock('../index-service', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../index-service')>();
+  // The grants a request fetches (a link visitor's, a copy's) as the index would give them (test-sqlite-d1.ts),
+  // verified as the index signed them.
+  const grants = new Map<string, ItemGrant>();
+  const requestGrant = async (
+    env: unknown,
+    caller: GrantCaller,
+    documentId: string,
+    share: { code: string } | null,
+  ) => {
+    const hook = (env as Record<string, unknown>)[TEST_GRANT_HOOK] as (
+      id: string,
+      who: TestGrantCaller,
+    ) => ItemGrant | null;
+    const grant = hook(documentId, {
+      person: caller.kind === 'delegate' ? caller.personId : null,
+      teams: caller.kind === 'delegate' ? caller.teams : [],
+      code: share?.code ?? null,
+      create: false,
+    });
+    if (!grant) return { ok: false as const, status: 404, error: 'not_found' };
+    grants.set(grant.token, grant);
+    return {
+      ok: true as const,
+      grant: {
+        grant: grant.token,
+        level: grant.level,
+        tabId: grant.tab,
+        expiresAt: grant.exp * 1000,
+      },
+    };
+  };
+  const verifyGrant = async (_env: unknown, token: string, documentId: string) => {
+    const grant = grants.get(token);
+    return grant && grant.item === documentId ? grant : null;
+  };
+  return {
+    ...original,
+    indexService: { ...original.indexService, requestGrant, verifyGrant },
+    indexFor: (env: unknown, caller: GrantCaller) => indexDoors(env, caller),
+    requestGrant,
+  };
+});
 
+import { checkCommunityPost } from '../document-room/community-post';
+import { readDocumentMeta } from '../document-room/document-content';
+import { answerDocumentRequest, type RouteIdentity } from '../document-room/document-route';
 import { makeTestRouteContext } from './test-route-context';
 import { handleCommunityOwnerRoutes } from './community-owner-routes';
 import { handleCommunity } from './community';
 import { handleShare } from './share';
-import { handleDocumentShareRoutes } from './document-share-routes';
 import { handleCapabilities } from './capabilities';
 import { handleDocuments } from './documents';
 import { handleTabRender } from './tab-render-route';
@@ -36,6 +94,78 @@ let accounts: TestAccountsService;
 let db: SqliteD1;
 let env: Env;
 let service: TestCommunityService;
+
+// The index's doors this flow calls, over the test's tables: its share links (made, listed, revoked, resolved,
+// refusing a canvas in the Trash or behind a password), the canvas as it stands, and a copy.
+function indexDoors(env: unknown, caller: GrantCaller): IndexClient | null {
+  const base = testIndexFor(env, caller);
+  if (!base) return null;
+  const item = (id: string) => {
+    const row = db.sql
+      .prepare('SELECT owner_id, team_id, name FROM document WHERE id = ?')
+      .get(id) as { owner_id: string; team_id: string | null; name: string } | undefined;
+    if (!row) throw new IndexError(404, 'not_found');
+    return {
+      id,
+      ownerId: row.owner_id,
+      teamId: row.team_id,
+      title: row.name,
+      trashedAt: index.trashed.has(id) ? 5 : null,
+    };
+  };
+  const doors: Partial<IndexClient> = {
+    getItem: async (id) => ({ item: item(id) as never }),
+    listShareLinks: async (id) => ({
+      links: (
+        db.sql.prepare('SELECT code FROM test_share_links WHERE document_id = ?').all(id) as {
+          code: string;
+        }[]
+      ).map((l) => ({ code: l.code }) as never),
+      passwordSet: index.password.has(id),
+    }),
+    createShareLink: async (id, input = {}) => {
+      const code = `CODE${Math.random().toString(36).slice(2, 12).toUpperCase()}`;
+      db.sql
+        .prepare(
+          'INSERT INTO test_share_links (code, document_id, role, tab_id, created_at, expires_at) VALUES (?, ?, ?, NULL, 1, NULL)',
+        )
+        .run(code, id, input.level ?? 'view');
+      return { link: { code, itemId: id, level: input.level ?? 'view', tabId: null } as never };
+    },
+    revokeShareLink: async (code) => {
+      db.sql.prepare('DELETE FROM test_share_links WHERE code = ?').run(code);
+    },
+    resolveShare: async (code, password) => {
+      const link = db.sql
+        .prepare('SELECT document_id, role, tab_id FROM test_share_links WHERE code = ?')
+        .get(code) as { document_id: string; role: string; tab_id: string | null } | undefined;
+      if (!link) throw new IndexError(404, 'not_found');
+      if (index.trashed.has(link.document_id)) throw new IndexError(404, 'not_found');
+      if (index.password.has(link.document_id) && !password)
+        throw new IndexError(401, 'password_required');
+      return {
+        item: item(link.document_id) as never,
+        level: link.role as never,
+        tabId: link.tab_id,
+      };
+    },
+    copyItem: async (id, input = {}) => ({
+      item: {
+        ...item(id),
+        id: `${id}-copy`,
+        title: input.title ?? `Copy of ${item(id).title}`,
+        folderId: null,
+        source: null,
+        intent: null,
+        summary: {},
+        sharedVia: null,
+        createdAt: 1,
+        updatedAt: 1,
+      } as never,
+    }),
+  };
+  return { ...base, ...doors };
+}
 
 const body = {
   title: 'Payments platform',
@@ -56,13 +186,14 @@ function owner(method: string, path: string, opts: { body?: unknown; clerk?: str
 }
 
 async function publish(docId = 'd1'): Promise<{ id: string; shareCode: string }> {
-  const res = (await handleCommunityOwnerRoutes(
-    owner('PUT', `/api/documents/${docId}/community`, { body }),
-  ))!;
+  const res = await handleDocuments(owner('PUT', `/api/documents/${docId}/community`, { body }));
   expect(res.status).toBe(201);
   const { post } = (await res.json()) as { post: { id: string; shareCode: string } };
   return post;
 }
+
+const community = (method: string, opts: { body?: unknown; clerk?: string | null } = {}) =>
+  handleDocuments(owner(method, '/api/documents/d1/community', opts));
 
 // What a page sees in the gallery: the ids of the listed posts.
 async function gallery(): Promise<string[]> {
@@ -71,30 +202,82 @@ async function gallery(): Promise<string[]> {
   return body.posts.map((p) => p.id);
 }
 
-// Reports hide a post on the service; the sync closes its link here.
+// The canvas's own check of where its post stands (its alarm, document-room.ts).
+async function check(): Promise<void> {
+  const store = env as Env & DocumentEnv;
+  await checkCommunityPost(store, 'd1', await readDocumentMeta(store, 'd1'), Date.now());
+}
+
+// Reports hide a post on the service; the canvas's next check closes its link.
 async function hideOnService(postId: string) {
   service.sql.prepare("UPDATE posts SET state = 'hidden', hidden_at = 77 WHERE id = ?").run(postId);
-  await syncCommunity(env);
+  await check();
 }
+
+const count = (sql: string) => (db.sql.prepare(sql).get() as { n: number }).n;
+
+// The worker's side of a request (no canvas store: it settles the grant and hands the canvas its request), with the
+// canvas's room answering as the real one does, its Community post's link included (document-room.ts `route`).
+function worker(): Env {
+  const rooms = env.DOCUMENT_ROOM;
+  const roomsWithCommunity = {
+    ...rooms,
+    idFromName: (name: string) => rooms.idFromName(name),
+    get: (id: DurableObjectId) => {
+      const stub = rooms.get(id) as unknown as Record<
+        string,
+        (...args: unknown[]) => Promise<unknown>
+      >;
+      return {
+        ...stub,
+        route: async (documentId: string, request: Request, identity: RouteIdentity) =>
+          answerDocumentRequest(
+            env as never,
+            request,
+            identity,
+            () => {},
+            (await stub.community!(documentId)) as { code: string; open: boolean } | null,
+          ),
+      };
+    },
+  };
+  return new Proxy(env, {
+    has: (target, key) => key !== 'DOCUMENT_DB' && key in target,
+    get: (target, key) =>
+      key === 'DOCUMENT_DB'
+        ? undefined
+        : key === 'DOCUMENT_ROOM'
+          ? roomsWithCommunity
+          : (Reflect.get(target, key) as unknown),
+  });
+}
+
+// A request as it reaches the worker: the grant is the index's to give, fetched for it there.
+const viaWorker = (ctx: ReturnType<typeof makeTestRouteContext>) =>
+  ({ ...ctx, env: worker(), grant: undefined }) as unknown as ReturnType<
+    typeof makeTestRouteContext
+  >;
 
 beforeEach(() => {
   db = sqliteD1();
   env = db.env;
+  index.trashed.clear();
+  index.password.clear();
   service = communityServiceFor(env);
   thumbnail.svg = '<svg/>';
   accounts = accountsServiceFor(env);
   accounts.profiles.set(AUTHOR, { name: 'Ada', color: '#f97316', createdAt: 1 });
-  for (const id of ['d1', 'd2']) {
-    db.sql
-      .prepare(
-        'INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, 1, 1)',
-      )
-      .run(id, AUTHOR, `Doc ${id}`);
-    setFirstTab(id, 1);
-  }
+  testDocument(db, 'd1', AUTHOR, { name: 'Doc d1' });
+  setFirstTab('d1', 1);
+  vi.spyOn(console, 'log').mockImplementation(() => {});
+  vi.spyOn(console, 'info').mockImplementation(() => {});
+  vi.spyOn(console, 'warn').mockImplementation(() => {});
 });
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+});
 
 // The document's first tab, holding `count` elements (publishing refuses an empty document).
 function setFirstTab(documentId: string, count: number) {
@@ -118,9 +301,10 @@ describe('owner routes', () => {
   it('publishes, reads back, edits the listing and removes', async () => {
     const post = await publish();
     expect(await gallery()).toEqual([post.id]);
-    const read = await (await handleCommunityOwnerRoutes(
-      owner('GET', '/api/documents/d1/community'),
-    ))!.json();
+    expect(
+      count(`SELECT COUNT(*) AS n FROM test_share_links WHERE code = '${post.shareCode}'`),
+    ).toBe(1);
+    const read = await (await community('GET')).json();
     expect(read).toMatchObject({
       post: {
         id: post.id,
@@ -133,31 +317,21 @@ describe('owner routes', () => {
     expect(JSON.stringify(read)).not.toContain(AUTHOR);
     expect(JSON.stringify(read)).not.toContain('"own"');
 
-    const edited = (await handleCommunityOwnerRoutes(
-      owner('PUT', '/api/documents/d1/community', { body: { ...body, title: 'Renamed' } }),
-    ))!;
+    const edited = await community('PUT', { body: { ...body, title: 'Renamed' } });
     expect(edited.status).toBe(200);
     expect((await edited.json<{ post: { id: string; title: string } }>()).post).toMatchObject({
       id: post.id,
       title: 'Renamed',
     });
     // The link's doors show the new title too.
-    expect(db.sql.prepare('SELECT title FROM community_links').get()).toEqual({ title: 'Renamed' });
+    expect(db.sql.prepare('SELECT title FROM community_post').get()).toEqual({ title: 'Renamed' });
 
-    expect(
-      (await handleCommunityOwnerRoutes(owner('DELETE', '/api/documents/d1/community')))!.status,
-    ).toBe(204);
-    expect(
-      await (await handleCommunityOwnerRoutes(owner('GET', '/api/documents/d1/community')))!.json(),
-    ).toEqual({ post: null });
-    expect(
-      (await handleCommunityOwnerRoutes(owner('DELETE', '/api/documents/d1/community')))!.status,
-    ).toBe(404);
+    expect((await community('DELETE')).status).toBe(204);
+    expect(await (await community('GET')).json()).toEqual({ post: null });
+    expect((await community('DELETE')).status).toBe(404);
     expect(await gallery()).toEqual([]);
-    expect(
-      db.sql.prepare("SELECT COUNT(*) AS n FROM share_links WHERE purpose = 'community'").get(),
-    ).toEqual({ n: 0 });
-    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM community_links').get()).toEqual({ n: 0 });
+    expect(count('SELECT COUNT(*) AS n FROM test_share_links')).toBe(0);
+    expect(count('SELECT COUNT(*) AS n FROM community_post')).toBe(0);
   });
 
   it('refuses a guest, a password, bad input and an empty board, leaving no link behind', async () => {
@@ -166,28 +340,20 @@ describe('owner routes', () => {
       owner: AUTHOR,
       body,
     });
-    expect(await (await handleCommunityOwnerRoutes(guest))!.json()).toEqual({
-      error: 'sign_in_required',
-    });
+    expect(await (await handleDocuments(guest)).json()).toEqual({ error: 'sign_in_required' });
 
-    db.sql.prepare("UPDATE documents SET share_password = 'pw' WHERE id = 'd1'").run();
-    const pw = (await handleCommunityOwnerRoutes(
-      owner('PUT', '/api/documents/d1/community', { body }),
-    ))!;
+    index.password.add('d1');
+    const pw = await community('PUT', { body });
     expect([pw.status, await pw.json()]).toEqual([409, { error: 'share_password_set' }]);
-    db.sql.prepare("UPDATE documents SET share_password = NULL WHERE id = 'd1'").run();
+    index.password.delete('d1');
 
-    const bad = (await handleCommunityOwnerRoutes(
-      owner('PUT', '/api/documents/d1/community', { body: { ...body, category: 'cats' } }),
-    ))!;
+    const bad = await community('PUT', { body: { ...body, category: 'cats' } });
     expect([bad.status, await bad.json()]).toEqual([400, { error: 'invalid_category' }]);
 
     setFirstTab('d1', 0);
-    const empty = (await handleCommunityOwnerRoutes(
-      owner('PUT', '/api/documents/d1/community', { body }),
-    ))!;
+    const empty = await community('PUT', { body });
     expect([empty.status, await empty.json()]).toEqual([409, { error: 'empty_document' }]);
-    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM share_links').get()).toEqual({ n: 0 });
+    expect(count('SELECT COUNT(*) AS n FROM test_share_links')).toBe(0);
   });
 
   it('passes on the per-author cap from the service', async () => {
@@ -197,18 +363,17 @@ describe('owner routes', () => {
       SELECT 'p' || value, 'livediagram.app', 'x' || value, 'c' || value, '${AUTHOR}', 'Ada', '#000000', 'T', 'D',
              'other', 't', 1, 1
         FROM json_each('[${Array.from({ length: 50 }, (_, i) => i).join(',')}]')`);
-    const res = (await handleCommunityOwnerRoutes(
-      owner('PUT', '/api/documents/d1/community', { body }),
-    ))!;
+    const res = await community('PUT', { body });
     expect([res.status, await res.json()]).toEqual([409, { error: 'post_limit' }]);
-    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM share_links').get()).toEqual({ n: 0 });
+    expect(count('SELECT COUNT(*) AS n FROM test_share_links')).toBe(0);
   });
 
+  // Someone without the canvas's grant learns nothing of it, a post included: 404, as any door of a canvas that
+  // isn't theirs answers.
   it('is not someone else’s to publish', async () => {
-    const res = (await handleCommunityOwnerRoutes(
-      owner('PUT', '/api/documents/d1/community', { body, clerk: 'user_other' }),
-    ))!;
-    expect(res.status).toBe(403);
+    const res = await community('PUT', { body, clerk: 'user_other' });
+    expect(res.status).toBe(404);
+    expect(count('SELECT COUNT(*) AS n FROM test_share_links')).toBe(0);
   });
 
   it('ignores other paths', async () => {
@@ -220,45 +385,44 @@ describe('owner routes', () => {
 
   it('has no Community without the service key', async () => {
     env.COMMUNITY_KEY = undefined;
-    expect(
-      (await handleCommunityOwnerRoutes(owner('GET', '/api/documents/d1/community')))!.status,
-    ).toBe(404);
+    expect((await community('GET')).status).toBe(404);
   });
 });
 
 describe('My Shares', () => {
+  const mine = (clerk: string | null) =>
+    handleCommunity(
+      makeTestRouteContext('GET', '/api/community/mine', {
+        env,
+        accountUserId: clerk,
+        headers: { 'X-Community-Key': KEY },
+      }),
+    );
+  type Mine = {
+    posts: { id: string; state: string; documentId: string; liked: boolean }[];
+    totals: { posts: number; likes: number; copies: number };
+  };
+
   it('lists the signed-in author’s posts from the service, hidden ones included, with the browser’s hearts', async () => {
-    const shown = await publish('d1');
-    const hidden = await publish('d2');
-    await service.read(`/posts/${shown.id}/like`, {
+    const post = await publish('d1');
+    await service.read(`/posts/${post.id}/like`, {
       method: 'PUT',
       headers: { 'X-Community-Key': KEY, Origin: 'https://livediagram.app' },
     });
-    await hideOnService(hidden.id);
 
-    const mine = (clerk: string | null) =>
-      handleCommunity(
-        makeTestRouteContext('GET', '/api/community/mine', {
-          env,
-          accountUserId: clerk,
-          headers: { 'X-Community-Key': KEY },
-        }),
-      );
     expect((await mine(null)).status).toBe(401);
     const res = await mine(AUTHOR);
     expect(res.status).toBe(200);
     expect(res.headers.get('Cache-Control')).toBe('private, no-store');
-    const result = (await res.json()) as {
-      posts: { id: string; state: string; documentId: string; liked: boolean }[];
-      totals: { posts: number; likes: number; copies: number };
-    };
-    expect(result.posts.map((p) => [p.id, p.state, p.documentId, p.liked]).sort()).toEqual(
-      [
-        [shown.id, 'listed', 'd1', true],
-        [hidden.id, 'hidden', 'd2', false],
-      ].sort(),
-    );
-    expect(result.totals).toEqual({ posts: 2, likes: 1, copies: 0 });
+    const listed = (await res.json()) as Mine;
+    expect(listed.posts.map((p) => [p.id, p.state, p.documentId, p.liked])).toEqual([
+      [post.id, 'listed', 'd1', true],
+    ]);
+    expect(listed.totals).toEqual({ posts: 1, likes: 1, copies: 0 });
+
+    await hideOnService(post.id);
+    const hidden = (await (await mine(AUTHOR)).json()) as Mine;
+    expect(hidden.posts.map((p) => [p.id, p.state])).toEqual([[post.id, 'hidden']]);
     expect(await (await mine('user_x')).json()).toMatchObject({ posts: [] });
   });
 
@@ -277,62 +441,63 @@ describe('My Shares', () => {
 describe('keeping in step', () => {
   it('takes a trashed document’s post out of the gallery, and puts it back on restore', async () => {
     const post = await publish();
-    db.sql.prepare("UPDATE documents SET trashed_at = 5 WHERE id = 'd1'").run();
-    await syncCommunity(env, 'd1');
+    index.trashed.add('d1');
+    await check();
     expect(await gallery()).toEqual([]);
-    db.sql.prepare("UPDATE documents SET trashed_at = NULL WHERE id = 'd1'").run();
-    await syncCommunity(env);
+    index.trashed.delete('d1');
+    await check();
     expect(await gallery()).toEqual([post.id]);
   });
 
   it('closes a post whose document moved into a team library or took a password, keeping it in My Shares', async () => {
     const post = await publish();
-    db.sql.prepare("UPDATE documents SET team_id = 'team-1' WHERE id = 'd1'").run();
-    await syncCommunity(env);
+    db.sql.prepare("UPDATE document SET team_id = 'team-1' WHERE id = 'd1'").run();
+    await check();
     expect(await gallery()).toEqual([]);
     expect(service.sql.prepare('SELECT document_state FROM posts').get()).toEqual({
       document_state: 'closed',
     });
-    db.sql
-      .prepare("UPDATE documents SET team_id = NULL, share_password = 'pw' WHERE id = 'd1'")
-      .run();
-    await syncCommunity(env);
+    db.sql.prepare("UPDATE document SET team_id = NULL WHERE id = 'd1'").run();
+    index.password.add('d1');
+    await check();
     expect(await gallery()).toEqual([]);
-    db.sql.prepare("UPDATE documents SET share_password = NULL WHERE id = 'd1'").run();
-    await syncCommunity(env);
+    index.password.delete('d1');
+    await check();
     expect(await gallery()).toEqual([post.id]);
   });
 
-  it('deletes the post of a document deleted for good, and forgets its link', async () => {
+  it('deletes the post of a document whose link is gone, and forgets it', async () => {
     await publish();
-    db.sql.prepare("DELETE FROM documents WHERE id = 'd1'").run();
-    await syncCommunity(env);
+    db.sql.prepare('DELETE FROM test_share_links').run();
+    await check();
     expect(service.sql.prepare('SELECT COUNT(*) AS n FROM posts').get()).toEqual({ n: 0 });
-    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM community_links').get()).toEqual({ n: 0 });
+    expect(count('SELECT COUNT(*) AS n FROM community_post')).toBe(0);
   });
 
   it('sends nothing when nothing changed', async () => {
     await publish();
-    const spy = vi.fn(fetch);
+    const working = fetch;
+    const spy = vi.fn(working);
     vi.stubGlobal('fetch', spy);
-    await syncCommunity(env, 'd1');
-    expect(spy).not.toHaveBeenCalled();
+    await check();
+    expect(spy.mock.calls.map(([input]) => new Request(input).url)).not.toContainEqual(
+      expect.stringContaining('/sync'),
+    );
   });
 
-  it('keeps what failed to send for the next run', async () => {
+  it('keeps what failed to send for the next check', async () => {
     await publish();
-    db.sql.prepare("UPDATE documents SET trashed_at = 5 WHERE id = 'd1'").run();
+    index.trashed.add('d1');
     const working = fetch;
     vi.stubGlobal('fetch', async () => new Response('down', { status: 503 }));
-    vi.spyOn(console, 'warn').mockImplementation(() => {});
-    await syncCommunity(env);
-    expect(db.sql.prepare('SELECT sent_state FROM community_links').get()).toEqual({
+    await expect(check()).rejects.toThrow();
+    expect(db.sql.prepare('SELECT sent_state FROM community_post').get()).toEqual({
       sent_state: 'public',
     });
     vi.stubGlobal('fetch', working);
-    await syncCommunity(env);
+    await check();
     expect(await gallery()).toEqual([]);
-    expect(db.sql.prepare('SELECT sent_state FROM community_links').get()).toEqual({
+    expect(db.sql.prepare('SELECT sent_state FROM community_post').get()).toEqual({
       sent_state: 'away',
     });
   });
@@ -342,15 +507,13 @@ describe('a hidden post', () => {
   it('is final: its author sees it, but can neither edit nor remove it', async () => {
     const post = await publish();
     await hideOnService(post.id);
-    const read = await handleCommunityOwnerRoutes(owner('GET', '/api/documents/d1/community'));
-    expect(await read!.json()).toMatchObject({ post: { id: post.id, state: 'hidden' } });
-    const edit = await handleCommunityOwnerRoutes(
-      owner('PUT', '/api/documents/d1/community', { body: { ...body, title: 'Something else' } }),
-    );
-    expect(edit!.status).toBe(409);
-    expect(await edit!.json()).toEqual({ error: 'post_hidden' });
-    const remove = await handleCommunityOwnerRoutes(owner('DELETE', '/api/documents/d1/community'));
-    expect(remove!.status).toBe(409);
+    const read = await community('GET');
+    expect(await read.json()).toMatchObject({ post: { id: post.id, state: 'hidden' } });
+    const edit = await community('PUT', { body: { ...body, title: 'Something else' } });
+    expect(edit.status).toBe(409);
+    expect(await edit.json()).toEqual({ error: 'post_hidden' });
+    const remove = await community('DELETE');
+    expect(remove.status).toBe(409);
     expect(service.sql.prepare('SELECT state, title FROM posts').get()).toEqual({
       state: 'hidden',
       title: 'Payments platform',
@@ -359,12 +522,12 @@ describe('a hidden post', () => {
 });
 
 describe('the community link', () => {
-  it('resolves read-only with the post, and stops resolving once the sync hears it was hidden', async () => {
+  it('resolves read-only with the post, and stops resolving once the check hears it was hidden', async () => {
     const post = await publish();
     const visit = () =>
       handleShare(
         makeTestRouteContext('GET', `/api/share/${post.shareCode}`, {
-          env,
+          env: worker(),
           owner: 'guest-visitor',
         }),
       );
@@ -374,7 +537,6 @@ describe('the community link', () => {
       tabId: null,
       community: { postId: post.id, author: { name: 'Ada', color: '#f97316', picture: null } },
     });
-    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM shared_with').get()).toEqual({ n: 0 });
     await hideOnService(post.id);
     expect((await visit()).status).toBe(404);
   });
@@ -382,14 +544,17 @@ describe('the community link', () => {
   it('closes the link when its document moves into a team library or the Trash', async () => {
     const post = await publish();
     const visit = () =>
-      handleShare(makeTestRouteContext('GET', `/api/share/${post.shareCode}`, { env }));
+      handleShare(makeTestRouteContext('GET', `/api/share/${post.shareCode}`, { env: worker() }));
     const image = () =>
-      handleShare(makeTestRouteContext('GET', `/api/share/${post.shareCode}/image.svg`, { env }));
+      handleShare(
+        makeTestRouteContext('GET', `/api/share/${post.shareCode}/image.svg`, { env: worker() }),
+      );
     expect((await visit()).status).toBe(200);
-    db.sql.prepare("UPDATE documents SET team_id = 'team-1' WHERE id = 'd1'").run();
+    db.sql.prepare("UPDATE document SET team_id = 'team-1' WHERE id = 'd1'").run();
     expect((await visit()).status).toBe(404);
     expect((await image()).status).toBe(404);
-    db.sql.prepare("UPDATE documents SET team_id = NULL, trashed_at = 5 WHERE id = 'd1'").run();
+    db.sql.prepare("UPDATE document SET team_id = NULL WHERE id = 'd1'").run();
+    index.trashed.add('d1');
     expect((await image()).status).not.toBe(200);
   });
 
@@ -398,7 +563,7 @@ describe('the community link', () => {
     const image = (clerk: string | null = null) =>
       handleShare(
         makeTestRouteContext('GET', `/api/share/${post.shareCode}/image.svg`, {
-          env,
+          env: worker(),
           accountUserId: clerk,
         }),
       );
@@ -410,46 +575,19 @@ describe('the community link', () => {
     expect((await image(AUTHOR)).status).toBe(404);
   });
 
-  it('is not listed for the owner, survives revoke-all, and cannot be revoked by code', async () => {
-    const post = await publish();
-    const list = await (await handleDocumentShareRoutes(
-      owner('GET', '/api/documents/d1/share'),
-    ))!.json();
-    expect(list).toMatchObject({ links: [] });
-    await handleDocumentShareRoutes(owner('DELETE', '/api/documents/d1/share'));
-    const revokeOne = (await handleDocumentShareRoutes(
-      owner('DELETE', `/api/documents/d1/share/${post.shareCode}`),
-    ))!;
-    expect(revokeOne.status).toBe(404);
-    expect(
-      db.sql.prepare("SELECT COUNT(*) AS n FROM share_links WHERE purpose = 'community'").get(),
-    ).toEqual({ n: 1 });
-  });
-
-  it('refuses a share password while published, and allows one once the post is hidden', async () => {
-    const post = await publish();
-    const setPassword = async (password: string | null) =>
-      (await handleDocumentShareRoutes(
-        owner('PUT', '/api/documents/d1/share-password', { body: { password } }),
-      ))!;
-    const res = await setPassword('secret');
-    expect([res.status, await res.json()]).toEqual([409, { error: 'community_published' }]);
-    expect((await setPassword(null)).status).toBe(200);
-    await hideOnService(post.id);
-    expect((await setPassword('secret')).status).toBe(200);
-  });
-
   it('counts a copy taken through it once per person, and names the copy after the post', async () => {
     const post = await publish();
     const copy = () =>
       handleDocuments(
-        makeTestRouteContext('POST', '/api/documents/d1/copy', {
-          env,
-          owner: 'guest-visitor',
-          body: {},
-          headers: { 'X-Share-Code': post.shareCode },
-          waitUntil: (p: Promise<unknown>) => void p,
-        }),
+        viaWorker(
+          makeTestRouteContext('POST', '/api/documents/d1/copy', {
+            env,
+            owner: 'guest-visitor',
+            body: {},
+            headers: { 'X-Share-Code': post.shareCode },
+            waitUntil: (p: Promise<unknown>) => void p,
+          }),
+        ),
       );
     const first = await copy();
     expect(first.status).toBe(201);
@@ -477,40 +615,34 @@ describe('switched off', () => {
       makeTestRouteContext('GET', '/api/capabilities', { env }),
     );
     expect(await capabilities.json()).toMatchObject({ communityEnabled: false });
-    expect(
-      (await handleCommunityOwnerRoutes(owner('GET', '/api/documents/d1/community')))!.status,
-    ).toBe(404);
-    const share = (path: string) => handleShare(makeTestRouteContext('GET', path, { env }));
+    expect((await community('GET')).status).toBe(404);
+    const share = (path: string) =>
+      handleShare(makeTestRouteContext('GET', path, { env: worker() }));
     expect((await share(`/api/share/${post.shareCode}`)).status).toBe(404);
     expect((await share(`/api/share/${post.shareCode}/image.svg`)).status).toBe(404);
-    const password = (await handleDocumentShareRoutes(
-      owner('PUT', '/api/documents/d1/share-password', { body: { password: 'secret' } }),
-    ))!;
-    expect(password.status).toBe(200);
-    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM community_links').get()).toEqual({ n: 1 });
+    expect(count('SELECT COUNT(*) AS n FROM community_post')).toBe(1);
 
     env.COMMUNITY_ENABLED = undefined;
-    db.sql.prepare("UPDATE documents SET share_password = NULL WHERE id = 'd1'").run();
     expect((await share(`/api/share/${post.shareCode}`)).status).toBe(200);
   });
 });
 
 describe('what a community link reveals', () => {
   const share = (path: string) =>
-    handleShare(makeTestRouteContext('GET', path, { env, owner: 'guest-visitor' }));
+    handleShare(makeTestRouteContext('GET', path, { env: worker(), owner: 'guest-visitor' }));
   const readDocument = (code: string, query = '') =>
     handleDocuments(
-      makeTestRouteContext('GET', `/api/documents/d1${query}`, {
-        env,
-        owner: 'guest-visitor',
-        headers: { 'X-Share-Code': code },
-      }),
+      viaWorker(
+        makeTestRouteContext('GET', `/api/documents/d1${query}`, {
+          env,
+          owner: 'guest-visitor',
+          headers: { 'X-Share-Code': code },
+        }),
+      ),
     );
 
   it('sends the service nothing of an anonymous author it would show', async () => {
-    const res = (await handleCommunityOwnerRoutes(
-      owner('PUT', '/api/documents/d1/community', { body: { ...body, anonymous: true } }),
-    ))!;
+    const res = await community('PUT', { body: { ...body, anonymous: true } });
     expect(res.status).toBe(201);
     const text = await (await service.read('/posts')).text();
     expect(text).not.toContain(AUTHOR);
@@ -520,10 +652,9 @@ describe('what a community link reveals', () => {
   });
 
   it("names nobody: not the owner's name or colour, nor where the document sits", async () => {
-    db.sql.prepare("UPDATE documents SET folder_id = NULL WHERE id = 'd1'").run();
-    const post = (await (await handleCommunityOwnerRoutes(
-      owner('PUT', '/api/documents/d1/community', { body: { ...body, anonymous: true } }),
-    ))!.json()) as { post: { shareCode: string } };
+    const post = (await (
+      await community('PUT', { body: { ...body, anonymous: true } })
+    ).json()) as { post: { shareCode: string } };
     const resolved = (await (await share(`/api/share/${post.post.shareCode}`)).json()) as {
       document: Record<string, unknown>;
       community: { author: { name: string } };
@@ -543,28 +674,34 @@ describe('what a community link reveals', () => {
 
   it('draws nothing through render.svg: that drawing is unredacted, so it never opts in', async () => {
     const { shareCode } = await publish();
-    const res = (await handleTabRender(
-      makeTestRouteContext('GET', '/api/documents/d1/tabs/tab-d1/render.svg', {
-        env,
-        owner: 'guest-visitor',
-        headers: { 'X-Share-Code': shareCode },
-      }),
-    ))!;
+    const res = await handleDocuments(
+      viaWorker(
+        makeTestRouteContext('GET', '/api/documents/d1/tabs/tab-d1/render.svg', {
+          env,
+          owner: 'guest-visitor',
+          headers: { 'X-Share-Code': shareCode },
+        }),
+      ),
+    );
     expect(res.status).toBe(403);
     const own = (await handleTabRender(owner('GET', '/api/documents/d1/tabs/tab-d1/render.svg')))!;
     expect(own.status).toBe(200);
   });
 
-  it('answers a closed link with 404 alone: not trashed, not a password prompt', async () => {
+  it('answers a closed link with 404 alone, not trashed; its image behind a password too', async () => {
     const post = await publish();
-    db.sql.prepare("UPDATE documents SET trashed_at = 5 WHERE id = 'd1'").run();
+    index.trashed.add('d1');
+    await check();
     expect((await share(`/api/share/${post.shareCode}`)).status).toBe(404);
-    db.sql
-      .prepare("UPDATE documents SET trashed_at = NULL, share_password = 'pw' WHERE id = 'd1'")
-      .run();
-    expect((await share(`/api/share/${post.shareCode}`)).status).toBe(404);
+    index.trashed.delete('d1');
+    index.password.add('d1');
+    await check();
     expect((await share(`/api/share/${post.shareCode}/image.svg`)).status).toBe(404);
   });
+
+  // The index resolves a link before this api can tell it is a Community post's, and answers a canvas behind a
+  // share password with its password prompt (401); the index no longer refuses a password while a post is public.
+  it.todo('answers a closed link behind a share password with 404 alone, not a password prompt');
 
   it('counts no comment threads in the overview a Community visitor reads', async () => {
     const post = await publish();
@@ -592,34 +729,28 @@ describe('a document that changes hands', () => {
   it("closes its previous owner's post, and lets the new owner publish their own", async () => {
     const post = await publish();
     accounts.profiles.set('user_bob', { name: 'Bob', color: '#000000', createdAt: 1 });
-    db.sql.prepare("UPDATE documents SET owner_id = 'user_bob' WHERE id = 'd1'").run();
-    await syncCommunity(env);
+    db.sql.prepare("UPDATE document SET owner_id = 'user_bob' WHERE id = 'd1'").run();
+    await check();
 
     expect(
-      (await handleShare(makeTestRouteContext('GET', `/api/share/${post.shareCode}`, { env })))
-        .status,
+      (
+        await handleShare(
+          makeTestRouteContext('GET', `/api/share/${post.shareCode}`, { env: worker() }),
+        )
+      ).status,
     ).toBe(404);
     expect(await gallery()).toEqual([]);
-    const mine = (await (
-      await handleCommunity(
-        makeTestRouteContext('GET', '/api/community/mine', { env, accountUserId: AUTHOR }),
-      )
-    ).json()) as { posts: unknown[] };
-    expect(mine.posts).toEqual([]);
 
     const bob = (method: string, opts: { body?: unknown } = {}) =>
-      handleCommunityOwnerRoutes(
-        owner(method, '/api/documents/d1/community', { ...opts, clerk: 'user_bob' }),
-      );
-    expect(await (await bob('GET'))!.json()).toEqual({ post: null });
-    const published = (await bob('PUT', { body }))!;
+      community(method, { ...opts, clerk: 'user_bob' });
+    expect(await (await bob('GET')).json()).toEqual({ post: null });
+    const published = await bob('PUT', { body });
     expect(published.status).toBe(201);
     expect(service.sql.prepare('SELECT owner FROM posts').all()).toEqual([{ owner: 'user_bob' }]);
-    expect(db.sql.prepare('SELECT author_id FROM community_links').all()).toEqual([
+    expect(db.sql.prepare('SELECT author_id FROM community_post').all()).toEqual([
       { author_id: 'user_bob' },
     ]);
-    expect(
-      db.sql.prepare("SELECT COUNT(*) AS n FROM share_links WHERE purpose = 'community'").get(),
-    ).toEqual({ n: 1 });
+    // The previous owner's link went with their post.
+    expect(count('SELECT COUNT(*) AS n FROM test_share_links')).toBe(1);
   });
 });

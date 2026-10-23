@@ -5,7 +5,7 @@ import type { DocumentDTO, Env } from './types';
 // The render-cache reads/writes the snapshot freshness + first-tab body
 // through the db layer; mock it so the test pins the cache decision tree
 // (fresh → stream R2, stale → render+put+stamp, empty → null) without a
-// live D1. renderElementsToSvg stays real — it's pure.
+// live store. renderElementsToSvg stays real — it's pure.
 const db = vi.hoisted(() => ({
   getTabBody: vi.fn(),
   stampTabElementCount: vi.fn(),
@@ -17,6 +17,10 @@ const db = vi.hoisted(() => ({
   servableImageIds: vi.fn(async (_env: unknown, _doc: string, ids: string[]) => new Set(ids)),
 }));
 vi.mock('./db', () => db);
+// The freshness stamp lives on the document's own row (document-content.ts).
+vi.mock('./document-room/document-content', () => ({
+  markThumbRendered: db.markThumbRendered,
+}));
 // The images' bytes come from the media service (src/media.ts); here, from the same bucket stub as the
 // snapshots, so each test arranges both in one place.
 vi.mock('./media', () => ({
@@ -50,6 +54,10 @@ import {
 // drawn by the document (renderDocumentImage), with the options its room would give it.
 function withRoom(env: Env, opts: ThumbnailOptions = {}): Env {
   const room = {
+    // The freshness stamp lives on the document's own row (document-content.ts).
+    outline: async () => ({
+      meta: { thumbRenderedAt: ((await db.getThumbRenderedAt()) as number | null) ?? null },
+    }),
     image: (
       _documentId: string,
       subject: ThumbnailSubject,

@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { getMembership, getTeam } from '../db/teams';
 import { accountsServiceFor, type TestAccountsService } from '../test-accounts-service';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
@@ -39,7 +38,7 @@ const create = (
 };
 
 describe('POST /api/teams (docs/specs/013-workspace/teams.md "Making a team")', () => {
-  it('makes the team on liveworkspace with the caller as admin, and files it here at once', async () => {
+  it('makes the team on liveworkspace with the caller as admin', async () => {
     const res = await create({ name: '  Design  ', organisation: 'Acme' });
     expect(res.status).toBe(201);
     const { team } = (await res.json()) as { team: { id: string; name: string } };
@@ -47,28 +46,26 @@ describe('POST /api/teams (docs/specs/013-workspace/teams.md "Making a team")', 
     expect(accounts.teams).toEqual([
       { id: 'team_1', name: 'Design', organisation: 'Acme', admin: 'user_a' },
     ]);
-    expect(await getTeam(db.env, 'team_1')).toMatchObject({ name: 'Design' });
-    expect(await getMembership(db.env, 'team_1', 'user_a')).toMatchObject({
-      role: 'admin',
-      status: 'joined',
-    });
   });
 
   it('cuts a long name as liveworkspace does, and refuses an empty one', async () => {
-    const res = await create({ name: 'x'.repeat(200) });
-    const made = (await res.json()) as { team: { name: string } };
+    const res = await create({ name: 'x'.repeat(200), organisation: '   ' });
+    const made = (await res.json()) as { team: { name: string; organisation: string | null } };
     expect(made.team.name).toHaveLength(80);
+    expect(made.team.organisation).toBeNull();
     expect((await create({ name: '   ' })).status).toBe(400);
     expect((await create({})).status).toBe(400);
+    expect(accounts.teams).toHaveLength(1);
   });
 
   it('needs a signed-in session with its access token', async () => {
     expect((await create({ name: 'A' }, { user: null })).status).toBe(401);
     expect((await create({ name: 'A' }, { token: null })).status).toBe(401);
+    expect(accounts.calls).toHaveLength(0);
   });
 
   it('answers 503 without sign-in configured, or with liveworkspace out of reach', async () => {
-    expect((await create({ name: 'A' }, { env: { DB: db.env.DB } as Env })).status).toBe(503);
+    expect((await create({ name: 'A' }, { env: {} as Env })).status).toBe(503);
     vi.unstubAllGlobals();
     vi.stubGlobal('fetch', async () => {
       throw new TypeError('network');
@@ -80,6 +77,6 @@ describe('POST /api/teams (docs/specs/013-workspace/teams.md "Making a team")', 
     accounts.failWith = 409;
     const res = await create({ name: 'A' });
     expect(res.status).toBe(409);
-    expect(await getTeam(db.env, 'team_1')).toBeNull();
+    expect(accounts.teams).toEqual([]);
   });
 });

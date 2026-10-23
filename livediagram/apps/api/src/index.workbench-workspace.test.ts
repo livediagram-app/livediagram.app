@@ -34,17 +34,10 @@ vi.mock('./routes/shape-libraries', () => stub('handleShapeLibraries'));
 vi.mock('./routes/documents', () => stub('handleDocuments'));
 vi.mock('./routes/folders', () => stub('handleFolders'));
 vi.mock('./routes/images', () => stub('handleImages'));
-vi.mock('./routes/guest-id', () => stub('handleGuestId'));
 vi.mock('./routes/participants', () => stub('handleParticipants'));
-vi.mock('./routes/favourites', () => stub('handleFavourites'));
-vi.mock('./routes/placement-defaults', () => stub('handlePlacementDefaults'));
-vi.mock('./routes/timeline', () => stub('handleTimeline'));
-vi.mock('./routes/activity', () => stub('handleActivity'));
-vi.mock('./routes/home', () => stub('handleHome'));
 vi.mock('./routes/preferences', () => stub('handlePreferences'));
 vi.mock('./routes/share', () => stub('handleShare'));
 vi.mock('./routes/teams', () => stub('handleTeams'));
-vi.mock('./routes/shared', () => stub('handleShared'));
 vi.mock('./routes/trash', () => stub('handleTrash'));
 vi.mock('./routes/drive', () => stub('handleDrive'));
 vi.mock('./routes/tokens', () => stub('handleTokens'));
@@ -105,14 +98,8 @@ describe('a workspace session at the front door', () => {
     ['GET', 'folders', 'handleFolders'],
     ['POST', 'folders', 'handleFolders'],
     ['DELETE', 'folders/f1', 'handleFolders'],
-    ['GET', 'shared', 'handleShared'],
-    ['PUT', 'favourites/doc1', 'handleFavourites'],
-    ['GET', 'home', 'handleHome'],
-    ['GET', 'timeline', 'handleTimeline'],
-    ['GET', 'activity', 'handleActivity'],
     ['GET', 'trash', 'handleTrash'],
     ['POST', 'trash/doc1/restore', 'handleTrash'],
-    ['GET', 'placement-defaults', 'handlePlacementDefaults'],
     ['GET', 'images', 'handleImages'],
     ['POST', 'images', 'handleImages'],
     ['PUT', 'shape-libraries/lib1', 'handleShapeLibraries'],

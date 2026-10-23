@@ -7,19 +7,11 @@ import { objectOrEmpty, type WorkbenchRole } from '@livediagram/api-schema';
 // its segment and returns `notFound()` for sub-paths / methods it
 // doesn't recognise (preserving the original fall-through-to-404).
 
-import {
-  canEditDocument,
-  canParticipateDocument,
-  canReadDocument,
-  resolveDocumentGrant,
-  type DocumentGrant,
-} from '../auth/document-access';
-import type { SharePasswordAttempt } from '../auth/share-access';
+import { capWorkbenchRole, levelAtLeast, type AccessLevel } from '@livediagram/api-schema';
+import type { TeamClaim } from '@liveworkspace/auth-client';
 import type { WorkbenchReach } from '../workbench-store';
-import { clientRateKey } from '../client-ip';
-import { getDocument, getMembership, getTrashedDocumentMeta } from '../db';
-import { badRequest, documentTrashed, forbidden, missingAuth, notFound } from '../responses';
-import type { DocumentDTO, Env, DocumentEnv } from '../types';
+import { badRequest, forbidden, missingAuth, notFound } from '../responses';
+import type { DocumentDTO, Env, DocumentEnv, ShareRole } from '../types';
 import type { GrantCaller, ItemGrant } from '../index-service';
 
 // A workbench session as the choke point resolved it (blueprint "A request bearing lvw_", "The choke point by
@@ -33,6 +25,9 @@ export type WorkbenchContext = {
   origin: string;
   level: WorkbenchRole;
   expiresAt: number;
+  // The teams the session's token had joined when it was opened, so the api can ask the index for a team canvas's
+  // grant on the owner's behalf. Absent: none.
+  teams?: TeamClaim[] | null;
 } & WorkbenchReach;
 
 export type RouteContext = {
@@ -74,12 +69,17 @@ export type RouteContext = {
   // The verified bearer of a signed-in person or a guest (an accounts access token or guest token), passed on to
   // the index as theirs; null for an API token, a workbench session or a link visitor.
   bearer?: string | null;
-  // The teams the caller is in, from their token's claim: what an API token delegates to the index with.
-  teams?: readonly string[];
+  // The teams the caller is in, from their token's claim (null for a guest or a token minted without them): what
+  // an API token delegates to the index with, and the list GET /api/teams answers.
+  teams?: TeamClaim[] | null;
   // The index's grant on the document the request is about (liveworkspace/docs/one-explorer-contracts.md
   // "Grants"), settled by the worker before the request reaches the document's room. Null when the caller holds
   // none; unset outside a document's own routes.
   grant?: ItemGrant | null;
+  // The canvas's Community post's link as the canvas's room holds it (document-room/community-post.ts): a grant
+  // through `code` is a content-only pass while the post is `open`, and no pass at all otherwise (grantOn). Unset
+  // outside a canvas's own routes, and null for a canvas with no post.
+  community?: { code: string; open: boolean } | null;
   // Schedule background work that may outlive the response (docs/specs/014-identity/transactional-email.md email
   // sends). Forwards to the fetch handler's ExecutionContext.waitUntil.
   // Optional so unit tests can build a RouteContext without a real
@@ -96,273 +96,141 @@ export type DocumentRouteContext = RouteContext & { env: DocumentEnv };
 export function grantCallerOf(ctx: RouteContext): GrantCaller {
   if (ctx.token || ctx.workbench) {
     const personId = ctx.verifiedUserId ?? ctx.resolveOwner() ?? '';
-    return { kind: 'delegate', personId, teams: [...(ctx.teams ?? [])] };
+    return { kind: 'delegate', personId, teams: (ctx.teams ?? []).map((t) => t.id) };
   }
   return { kind: 'bearer', token: ctx.bearer ?? null };
 }
 
-// Visitor share code carried on edit/view-link requests so a non-owner
-// can authorise against a document they don't own.
-//
-// Exported because its PRESENCE is the only honest signal that a caller
-// arrived through a share link. "Isn't the owner" is not that signal: a
-// joined team member reads every document in their team's library without a
-// code (docs/specs/013-workspace/team-shared-documents.md), so the visitor-facing timeline events keyed on
-// `owner !== ownerId` were reporting teammates as strangers with a link.
-export function shareCodeOf(request: Request): string | null {
-  return request.headers.get('X-Share-Code');
-}
+// A link visitor's share code (X-Share-Code) and its password (X-Share-Password), as @liveworkspace/index-app
+// reads them. The code's PRESENCE is the only honest signal that a caller arrived through a share link: a joined
+// team member reads every team canvas without one.
+export { shareAccessOf, shareCodeOf } from '@liveworkspace/index-app';
 
-// Share password (docs/specs/013-workspace/share-password.md) carried alongside the share code when the
-// document the visitor is accessing is password-protected. Owners never
-// send it (their identity short-circuits the check); a non-owner with a
-// share code must, or the access gate denies password-protected documents.
-export function sharePasswordOf(request: Request): SharePasswordAttempt | null {
-  const value = request.headers.get('X-Share-Password');
-  return value === null ? null : { value, rateKey: clientRateKey(request) };
-}
+// What a caller holds on a canvas (docs/specs/013-workspace/share-roles.md): a level, the one tab it is confined to
+// (docs/specs/013-workspace/tab-scoped-share-links.md), and the share code that granted it. All of it is the
+// index's grant, read here; a workbench session holds no more than its own level.
+//
+// `community` marks a grant through the canvas's Community post's link (docs/specs/025-community/community.md
+// "Viewing a post's document"): read-only like any view link, and a content-only pass: no realtime room and no
+// comments.
+export type DocumentGrant = {
+  role: ShareRole;
+  tabScope: string | null;
+  shareCode: string | null;
+  community: boolean;
+};
 
-// Route-side wrappers around canReadDocument / canEditDocument. Most
-// handler call sites need the same six args to the auth helpers
-// (env, documentId, caller, share code, document owner, share
-// password); four of them (env, caller, share code, share password)
-// fall straight out of the RouteContext, so condensing them into a
-// (ctx, documentId, documentOwnerId) helper drops a stack of
-// repetitive 6-line invocations to 1-liners. Behaviour stays
-// identical: each helper just forwards the ctx-derived args.
-//
-// `tabId` names the tab the request touches. Leave it off for a
-// document-level door: a tab-scoped link is then refused (fail closed,
-// docs/specs/013-workspace/tab-scoped-share-links.md).
-//
-// A Community post's link is refused too unless the door passes `COMMUNITY_CONTENT`
-// (docs/specs/025-community/community.md "Viewing a post's document"): the link is a content-only pass,
-// so the document, its tabs, images and copy serve it, and comments, history, the timeline and any door
-// added later do not. Fail closed, like the tab scope.
+// A Community post's link is refused unless the door passes `COMMUNITY_CONTENT` (docs/specs/025-community/
+// community.md "Viewing a post's document"): the link is a content-only pass, so the canvas, its tabs, images and
+// copy serve it, and comments, history, the timeline and any door added later do not. Fail closed, like the tab
+// scope.
 export const COMMUNITY_CONTENT = { community: true } as const;
 type GateOptions = { community?: boolean };
 
-export function gateRead(
+export function grantOn(
   ctx: RouteContext,
   documentId: string,
-  documentOwnerId: string,
-  documentTeamId: string | null = null,
+  opts: GateOptions = {},
+): DocumentGrant | null {
+  const grant = ctx.grant;
+  if (!grant || grant.item !== documentId) return null;
+  const post = ctx.community ?? null;
+  const community = grant.shareCode !== null && post !== null && grant.shareCode === post.code;
+  // A post hidden after reports, off the Community, or no longer its author's own opens nothing through its link.
+  if (community && (!post.open || !opts.community)) return null;
+  const role = ctx.workbench ? capWorkbenchRole(grant.level, ctx.workbench.level) : grant.level;
+  // A Community post's link opens to view, whatever the index's link says.
+  return {
+    role: community ? 'view' : role,
+    tabScope: grant.tab,
+    shareCode: grant.shareCode,
+    community,
+  };
+}
+
+// The ladder (docs/specs/013-workspace/share-roles.md): every level holds everything below it. `tabId` names the
+// tab the request touches; left off, the request is canvas-level and a tab-scoped grant reaches nothing there
+// (fail closed, docs/specs/013-workspace/tab-scoped-share-links.md).
+function holds(
+  ctx: RouteContext,
+  documentId: string,
+  needs: AccessLevel,
+  tabId: string | undefined,
+  opts: GateOptions = {},
+): boolean {
+  const grant = grantOn(ctx, documentId, opts);
+  if (!grant || !levelAtLeast(grant.role, needs)) return false;
+  return grant.tabScope === null || grant.tabScope === tabId;
+}
+
+// The gates every canvas route runs. The grant carries the whole decision; the owner and team arguments are
+// accepted and unused, so a door reads the same as it always has.
+export async function gateRead(
+  ctx: RouteContext,
+  documentId: string,
+  _documentOwnerId?: string,
+  _documentTeamId?: string | null,
   tabId?: string,
   opts: GateOptions = {},
 ): Promise<boolean> {
-  return canReadDocument(
-    ctx.env,
-    documentId,
-    ctx.resolveOwner(),
-    shareCodeOf(ctx.request),
-    documentOwnerId,
-    sharePasswordOf(ctx.request),
-    documentTeamId,
-    // Server-verified account id (signed-in session or API token) for the
-    // team-membership check — never the unsigned X-Owner-Id header
-    // (docs/specs/013-workspace/team-shared-documents.md access trust boundary).
-    ctx.verifiedUserId,
-    tabId,
-    opts.community ?? false,
-  );
+  return holds(ctx, documentId, 'view', tabId, opts);
 }
 
 // The Participant gate (docs/specs/013-workspace/share-roles.md): every write a Participant may make beside an
-// Editor (comments, Q&A notes and upvotes). A Viewer only looks, so it is refused. Agent
-// presence stays on gateRead: an agent acts at its owner's level.
-export function gateParticipate(
+// Editor (comments, Q&A notes and upvotes). A Viewer only looks, so it is refused. Agent presence stays on
+// gateRead: an agent acts at its owner's level.
+export async function gateParticipate(
   ctx: RouteContext,
   documentId: string,
-  documentOwnerId: string,
-  documentTeamId: string | null = null,
+  _documentOwnerId?: string,
+  _documentTeamId?: string | null,
   tabId?: string,
 ): Promise<boolean> {
-  return canParticipateDocument(
-    ctx.env,
-    documentId,
-    ctx.resolveOwner(),
-    shareCodeOf(ctx.request),
-    documentOwnerId,
-    sharePasswordOf(ctx.request),
-    documentTeamId,
-    ctx.verifiedUserId,
-    tabId,
-  );
+  return holds(ctx, documentId, 'participate', tabId);
 }
 
-export function gateEdit(
+export async function gateEdit(
   ctx: RouteContext,
   documentId: string,
-  documentOwnerId: string,
-  documentTeamId: string | null = null,
+  _documentOwnerId?: string,
+  _documentTeamId?: string | null,
   tabId?: string,
 ): Promise<boolean> {
-  return canEditDocument(
-    ctx.env,
-    documentId,
-    ctx.resolveOwner(),
-    shareCodeOf(ctx.request),
-    documentOwnerId,
-    sharePasswordOf(ctx.request),
-    documentTeamId,
-    // Server-verified account id (signed-in session or API token) for the
-    // team-membership check — never the unsigned X-Owner-Id header
-    // (docs/specs/013-workspace/team-shared-documents.md access trust boundary).
-    ctx.verifiedUserId,
-    tabId,
-  );
+  return holds(ctx, documentId, 'edit', tabId);
 }
 
-// The caller's grant on a document, scope included, for the doors that narrow
-// what they return to a scoped visitor's tab rather than refuse them
-// (docs/specs/013-workspace/tab-scoped-share-links.md). Null = no access.
-//
-// A Community post's link answers null unless the door passes `COMMUNITY_CONTENT` (see gateRead).
+// The caller's grant on a canvas, scope included, for the doors that narrow what they return to a scoped visitor's
+// tab rather than refuse them (docs/specs/013-workspace/tab-scoped-share-links.md). Null = no access. A Community
+// post's link answers null unless the door passes `COMMUNITY_CONTENT`.
 export async function gateGrant(
   ctx: RouteContext,
   documentId: string,
-  documentOwnerId: string,
-  documentTeamId: string | null = null,
+  _documentOwnerId?: string | null,
+  _documentTeamId?: string | null,
   opts: GateOptions = {},
 ): Promise<DocumentGrant | null> {
-  const grant = await resolveDocumentGrant(
-    ctx.env,
-    documentId,
-    ctx.resolveOwner(),
-    shareCodeOf(ctx.request),
-    documentOwnerId,
-    sharePasswordOf(ctx.request),
-    documentTeamId,
-    ctx.verifiedUserId,
-  );
-  return grant?.community && !opts.community ? null : grant;
+  return grantOn(ctx, documentId, opts);
 }
 
-// Route-entry guards. Each resolves the caller / loads + authorises the
-// document and returns EITHER the value the handler needs OR the exact
-// Response it should return instead. The caller's one-liner is:
-//
-//   const owner = requireOwner(ctx);
-//   if (owner instanceof Response) return owner;
-//
-// which collapses the `const owner = resolveOwner(); if (!owner) return
-// missingAuth();` pair (and its load-and-check cousins) that every
-// owner-scoped path in documents.ts repeated by hand. Centralising them
-// means the authz status-code mapping (400 / 404 / 403) lives in one
-// place a reviewer can check, instead of N copies that can drift.
-
-// The resolved owner id, or the 400 to return when neither an account
-// token nor X-Owner-Id identifies the caller.
+// The resolved caller id, or the 400 to return when no token identifies the caller.
 export function requireOwner(ctx: RouteContext): string | Response {
   return ctx.resolveOwner() ?? missingAuth();
 }
 
-// Is `ctx` the owner of this document? The one rule both owner-only guards
-// below share, and the reason it isn't a bare `owner === ownerId`.
-//
-// For a PERSONAL document the hybrid identity is safe: the owner id is either
-// an account `sub` the caller proved with a verified JWT, or a guest UUID that
-// is unguessable.
-//
-// For a TEAM document it is NOT. A team's owner id is an account id deliberately
-// visible to every teammate (`GET /api/teams/<id>` lists `members[].userId`),
-// so accepting the unsigned `X-Owner-Id` header here would let anyone who
-// ever learned it — a removed member, an invitee who declined — present it as
-// a credential and reach the owner-only surfaces: reading the share password
-// in the clear, minting an edit-role share link, clearing the password,
-// deleting the document. So a team document's ownership must be proven with a
-// server-VERIFIED account id (signed-in session or API token), never the header.
-//
-// This is the same trust boundary auth/document-access.ts draws for the
-// read/edit gates; it belongs here too rather than only there.
-//
-// And the owner of a team document must still BE in the team. A member who
-// leaves or is removed has their team work handed on (handTeamWorkToHeir),
-// but rows from before that existed are still owned by people who have gone,
-// and ownership is what the share-link, password, delete and move-out routes
-// check first.
+// Is `ctx` the canvas's owner, as the canvas knows it? Only the doors that show the owner more (comment authors,
+// publishing to the Community, the owner's own notices) ask; who may change or share the canvas is the index's.
 export async function ownsDocument(
   ctx: RouteContext,
-  liveDoc: Pick<DocumentDTO, 'ownerId' | 'teamId'>,
+  liveDoc: Pick<DocumentDTO, 'id' | 'ownerId'>,
 ): Promise<boolean> {
-  if (liveDoc.teamId) {
-    if (ctx.verifiedUserId == null || ctx.verifiedUserId !== liveDoc.ownerId) return false;
-    const membership = await getMembership(ctx.env, liveDoc.teamId, ctx.verifiedUserId);
-    return membership?.status === 'joined';
-  }
-  return ctx.resolveOwner() === liveDoc.ownerId;
+  const caller = ctx.resolveOwner();
+  return caller !== null && caller === liveDoc.ownerId && grantOn(ctx, liveDoc.id) !== null;
 }
 
-// Does `ctx` manage this document? Its owner, OR a joined member of its team
-// (docs/specs/013-workspace/team-shared-documents.md: a team's library belongs to
-// every joined member, so each may share, delete and restore its documents). NOT a
-// share-link visitor: editing content via a link is one thing, deciding who else
-// gets in or destroying the document is owner/team-only. The member leg is checked
-// against the verified account id, never the header, like ownsDocument.
-async function managesDocument(
-  ctx: RouteContext,
-  liveDoc: Pick<DocumentDTO, 'ownerId' | 'teamId'>,
-): Promise<boolean> {
-  if (await ownsDocument(ctx, liveDoc)) return true;
-  if (!liveDoc.teamId || !ctx.verifiedUserId) return false;
-  const membership = await getMembership(ctx.env, liveDoc.teamId, ctx.verifiedUserId);
-  return membership?.status === 'joined';
-}
-
-// May `ctx` delete this document? Exactly who manages it (managesDocument). Also
-// gates what the delete confirmation reads first (the shared-tabs notice).
-export const mayDeleteDocument = managesDocument;
-
-// The answer for a document id no LIVE row holds (docs/specs/013-workspace/trash.md):
-// 410 `document_trashed` when it is in the Trash and the caller could have
-// opened it (owner, joined team member, share-code holder), else the 404 a
-// never-existing id gets, so the deleted state leaks nothing to a stranger.
-export async function missingDocument(ctx: RouteContext, documentId: string): Promise<Response> {
-  const trashed = await getTrashedDocumentMeta(ctx.env, documentId);
-  if (!trashed) return notFound();
-  const grant = await gateGrant(
-    ctx,
-    documentId,
-    trashed.ownerId,
-    trashed.teamId,
-    COMMUNITY_CONTENT,
-  );
-  return grant ? documentTrashed() : notFound();
-}
-
-// Owner-only resource: resolve the caller, load the document, and confirm
-// the caller owns it. Returns the document, or 400 (no owner) / 404
-// (missing) / 403 (foreign). 404-before-403 means a foreign id can't be
-// distinguished from a missing one until ownership is proven, but once
-// the row exists a non-owner gets 403 — matching every owner-only branch
-// documents.ts hand-rolled (DELETE :id, /folder, /share, /share-password,
-// /share/:code).
-export async function requireOwnedDocument(
-  ctx: RouteContext,
-  documentId: string,
-): Promise<DocumentDTO | Response> {
-  const owner = ctx.resolveOwner();
-  if (!owner) return missingAuth();
-  const existing = await getDocument(ctx.env, documentId);
-  if (!existing) return missingDocument(ctx, documentId);
-  if (!(await ownsDocument(ctx, existing))) return forbidden();
-  return existing;
-}
-
-// The share-link family's guard (docs/specs/013-workspace/team-shared-documents.md): the
-// same 400 / 404 / 403 ladder as requireOwnedDocument, but a joined member of a team
-// document passes as well as its owner, since the team's documents are all of theirs
-// to share.
-export async function requireManagedDocument(
-  ctx: RouteContext,
-  documentId: string,
-): Promise<DocumentDTO | Response> {
-  const owner = ctx.resolveOwner();
-  if (!owner) return missingAuth();
-  const existing = await getDocument(ctx.env, documentId);
-  if (!existing) return missingDocument(ctx, documentId);
-  if (!(await managesDocument(ctx, existing))) return forbidden();
-  return existing;
+// The answer for a canvas id no started canvas holds: the 404 a never-existing id gets. The Trash is the index's,
+// so a trashed canvas never gets a grant and never reaches here with one.
+export async function missingDocument(_ctx: RouteContext, _documentId: string): Promise<Response> {
+  return notFound();
 }
 
 // A refused request on a tab: 404 when the caller's grant is confined to another tab, 403 otherwise.
@@ -370,8 +238,7 @@ export async function deniedOnTab(
   ctx: RouteContext,
   liveDoc: { id: string; ownerId: string; teamId: string | null },
 ): Promise<Response> {
-  const grant = await gateGrant(ctx, liveDoc.id, liveDoc.ownerId, liveDoc.teamId);
-  return grant ? notFound() : forbidden();
+  return grantOn(ctx, liveDoc.id) ? notFound() : forbidden();
 }
 
 // The refusal for a Participant door (docs/specs/013-workspace/share-roles.md): no grant, 403; a grant confined
@@ -381,7 +248,7 @@ export async function deniedParticipate(
   liveDoc: { id: string; ownerId: string; teamId: string | null },
   tabId?: string,
 ): Promise<Response> {
-  const grant = await gateGrant(ctx, liveDoc.id, liveDoc.ownerId, liveDoc.teamId);
+  const grant = grantOn(ctx, liveDoc.id);
   if (grant && grant.tabScope !== null && grant.tabScope !== tabId) return notFound();
   if (grant)
     console.info('[access-levels] participation refused', { documentId: liveDoc.id, tabId });

@@ -9,12 +9,7 @@
 import { getDocument } from '../db';
 import { sharedTabsSummary } from '../document-room/tab-shares';
 import { forbidden, json } from '../responses';
-import {
-  mayDeleteDocument,
-  missingDocument,
-  requireOwner,
-  type DocumentRouteContext,
-} from './context';
+import { gateGrant, missingDocument, requireOwner, type DocumentRouteContext } from './context';
 
 // Returns null when the request isn't this route.
 export async function handleDocumentSharedTabs(
@@ -24,12 +19,14 @@ export async function handleDocumentSharedTabs(
   if (segments.length !== 4 || segments[3] !== 'shared-tabs' || request.method !== 'GET') {
     return null;
   }
-  // Answered for exactly who may delete the document, in the DELETE's order:
-  // 400 with no caller, 404 when missing, 403 without a claim.
+  // Answered for exactly who may delete the document, in the DELETE's order: 400 with no caller, 404 when missing,
+  // 403 without a claim. Deleting is the owner's or their team's (an edit grant of their own, not a share link's).
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
   const existing = await getDocument(env, segments[2]!);
   if (!existing) return missingDocument(ctx, segments[2]!);
-  if (!(await mayDeleteDocument(ctx, existing))) return forbidden();
+  const grant = await gateGrant(ctx, existing.id);
+  if (!grant || grant.role !== 'edit' || grant.shareCode !== null || grant.tabScope !== null)
+    return forbidden();
   return json({ sharedTabs: await sharedTabsSummary(env, existing.id) });
 }

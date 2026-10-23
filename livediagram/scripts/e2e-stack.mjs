@@ -550,13 +550,6 @@ function shutdown(code) {
 process.on('SIGINT', () => shutdown(0));
 process.on('SIGTERM', () => shutdown(0));
 
-function waitForExit(child) {
-  return new Promise((resolve, reject) => {
-    child.on('exit', (code) => (code === 0 ? resolve() : reject(new Error(`exit ${code}`))));
-    child.on('error', reject);
-  });
-}
-
 async function waitForPort(port, label, timeoutMs = 60_000) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
@@ -899,10 +892,6 @@ async function main() {
     startLiveServer();
     return;
   }
-  console.log('[e2e] applying local D1 migrations…');
-  await waitForExit(
-    run('pnpm', ['--filter', '@livediagram/api', 'run', 'db:migrate:local'], { cwd: ROOT }),
-  );
   console.log('[e2e] starting api worker…');
   run(
     'pnpm',

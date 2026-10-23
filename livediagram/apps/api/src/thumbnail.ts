@@ -21,8 +21,6 @@ import { resolveIconExportArt, resolveStickerArt } from '@livediagram/icons/reso
 import {
   getTab,
   getTabBody,
-  getThumbRenderedAt,
-  markThumbRendered,
   stampTabElementCount,
   communityThumbnailKey,
   thumbnailKey,
@@ -33,6 +31,7 @@ import { imageRefIds } from './image-refs/extract';
 import { redactTabForCommunity } from './community-redact';
 import { mediaClient } from './media';
 import { documentRoom } from './document-client';
+import { markThumbRendered } from './document-room/document-content';
 import type { DocumentDTO, DocumentEnv, Env } from './types';
 
 // Content type for the cached SVG snapshot. Local to this module — the
@@ -83,7 +82,7 @@ export async function getDocumentThumbnailSvg(
   const renderedAt =
     liveDoc.thumbRenderedAt !== undefined
       ? liveDoc.thumbRenderedAt
-      : await getThumbRenderedAt(env, liveDoc.id);
+      : ((await documentRoom(env, liveDoc.id).outline()).meta?.thumbRenderedAt ?? null);
   if (renderedAt !== null && renderedAt >= liveDoc.savedAt) {
     const cached = await env.IMAGES.get(key);
     // A present object is the happy path. A miss here means the object

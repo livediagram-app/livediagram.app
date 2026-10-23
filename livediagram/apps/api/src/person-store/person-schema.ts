@@ -1,7 +1,7 @@
 // A person's own SQLite (person-store.ts): what livediagram keeps for one person rather than for one canvas.
 // livediagram ships fresh, so the schema is one step; a later change appends a step, never edits this one.
 
-import type { DocumentSql } from '../document-room/document-db';
+import type { ItemSql as DocumentSql } from '@liveworkspace/index-app';
 
 const V1 = `
 -- Shape libraries (docs/specs/013-workspace/shape-libraries.md): the person's named sets of reusable shapes. The

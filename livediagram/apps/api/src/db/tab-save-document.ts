@@ -1,8 +1,8 @@
 // What a tab save needs of its document (docs/specs/015-api/api.md "Tab save"), in one query. The save ran the
-// full getDocument (the row with its share-code and Community subqueries, then the owner's participant and
-// the tab summaries) and used a handful of fields of it, two sequential round trips before anything else on every
-// autosave (~600 ms while someone edits). Live documents only, like every document read.
+// full getDocument (the owner's participant and the tab summaries) and used a handful of fields of it; this reads
+// only the canvas's own row and its tab count.
 
+import { readDocumentMeta } from '../document-room/document-content';
 import type { DocumentDTO, DocumentEnv } from '../types';
 
 export type TabSaveDocument = Pick<
@@ -13,39 +13,25 @@ export type TabSaveDocument = Pick<
   tabCount: number;
 };
 
-type Row = {
-  id: string;
-  owner_id: string;
-  team_id: string | null;
-  name: string;
-  created_at: number;
-  tab_count: number;
-};
-
-// Runs inside the document's Durable Object: the row from D1, the tab count from the document's own store.
+// Runs inside the canvas's Durable Object: what it knows of itself and its tab count, both from its own store.
 export async function getDocumentForSave(
   env: DocumentEnv,
   id: string,
 ): Promise<TabSaveDocument | null> {
-  const [row, count] = await Promise.all([
-    env.DB.prepare(
-      `SELECT d.id, d.owner_id, d.team_id, d.name, d.created_at
-         FROM documents d
-        WHERE d.id = ? AND d.trashed_at IS NULL`,
-    )
-      .bind(id)
-      .first<Omit<Row, 'tab_count'>>(),
+  // Both reads start before either is awaited; the count is its own async step so a throw while preparing it
+  // rejects with the meta read settled, never leaving that one unhandled.
+  const countTabs = async () =>
     env.DOCUMENT_DB.prepare('SELECT COUNT(*) AS n FROM document_tabs WHERE document_id = ?')
       .bind(id)
-      .first<{ n: number }>(),
-  ]);
-  if (!row) return null;
+      .first<{ n: number }>();
+  const [meta, count] = await Promise.all([readDocumentMeta(env, id), countTabs()]);
+  if (!meta) return null;
   return {
-    id: row.id,
-    ownerId: row.owner_id,
-    teamId: row.team_id ?? null,
-    name: row.name,
-    createdAt: row.created_at,
+    id,
+    ownerId: meta.ownerId,
+    teamId: meta.teamId,
+    name: meta.name,
+    createdAt: meta.createdAt,
     tabCount: count?.n ?? 0,
   };
 }

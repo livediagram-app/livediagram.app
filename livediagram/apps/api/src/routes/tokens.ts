@@ -10,7 +10,6 @@ import { forbidden, json, methodNotAllowed, noContent, notFound } from '../respo
 import type { RouteContext } from './context';
 import { revokePresentedToken } from '../db';
 import { getParticipant } from '../liveworkspace/profiles';
-import { recordTokenRevoked } from '../timeline';
 import { workbenchStore } from '../workbench-store';
 
 export async function handleTokens(ctx: RouteContext): Promise<Response> {
@@ -58,8 +57,5 @@ async function handleCurrentToken(ctx: RouteContext): Promise<Response> {
   if (secret) await revokePresentedToken(env, secret);
   await workbenchStore(env, owner).endAccess({ tokenId: token.id }, 'revoked');
   console.info('[tokens] current revoked', { tokenId: token.id });
-  ctx.waitUntil?.(
-    recordTokenRevoked(env, { id: token.id, name: current.name || 'API token' }, owner),
-  );
   return noContent();
 }

@@ -12,8 +12,13 @@ import {
   pairToken,
   rows,
   tokenOf,
+  USER_1_TEAMS,
   workbenchDb,
 } from './workbench-test-fixtures';
+
+vi.mock('../index-service', async (original) =>
+  (await import('./workbench-test-fixtures')).indexServiceWithTestIndex(original as never),
+);
 
 type Opts = {
   token?: ReturnType<typeof tokenOf> | null;
@@ -32,6 +37,7 @@ function mint(db: SqliteD1, opts: Opts = {}) {
       env: opts.env ?? db.env,
       owner: opts.owner === undefined ? 'user_1' : opts.owner,
       verifiedUserId: 'user_1',
+      teams: USER_1_TEAMS,
       token,
       body:
         opts.rawBody === undefined
@@ -195,30 +201,10 @@ describe('POST /api/workbench/tickets', () => {
     expect([foreign.status, missing.status, tab.status]).toEqual([404, 404, 404]);
   });
 
-  it('answers 410 for the owner own trashed document', async () => {
-    const db = await workbenchDb();
-    await pairToken(db);
-    db.sql.exec(`UPDATE documents SET trashed_at = 1 WHERE id = 'doc1'`);
-
-    const res = await mint(db);
-
-    expect(res.status).toBe(410);
-  });
-
-  it('answers 404, not 410, for a trashed document the owner could never open', async () => {
-    const db = await workbenchDb();
-    await pairToken(db);
-    db.sql.exec(`UPDATE documents SET trashed_at = 1 WHERE id = 'doc2'`);
-
-    const res = await mint(db, { body: { documentId: 'doc2', origin: ORIGIN } });
-
-    expect(res.status).toBe(404);
-  });
-
   it('ignores a share code: only the owner own access counts', async () => {
     const db = await workbenchDb();
     await pairToken(db);
-    db.sql.exec(`INSERT INTO share_links (code, document_id, role, created_at)
+    db.sql.exec(`INSERT INTO test_share_links (code, document_id, role, created_at)
                  VALUES ('code1', 'doc2', 'edit', 1)`);
 
     const res = await mint(db, {

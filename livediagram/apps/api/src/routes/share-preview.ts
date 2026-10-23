@@ -8,15 +8,9 @@
 // share password and a Community post that is not public are all 404.
 
 import { BRAND_CARD_PATH, type SharePreviewResponse } from '@livediagram/api-schema';
-import {
-  communityLinkAccess,
-  communityShareCardKey,
-  getDocumentSharePassword,
-  getDocumentThumbMeta,
-  getShareLink,
-  shareCardKey,
-  type DocumentThumbMeta,
-} from '../db';
+import { communityShareCardKey, getDocumentThumbMeta, shareCardKey, type DocumentThumbMeta } from '../db';
+import { documentRoom } from '../document-client';
+import { indexFor } from '../index-service';
 import { documentImageSvg } from '../document-image';
 import { json, notFound, pngImage } from '../responses';
 import { shareCardPng } from '../share-card-png';
@@ -30,21 +24,30 @@ export const COMMUNITY_SHARE_CARD_CACHE = 'public, max-age=30';
 // The brand card stands in for a document with nothing to draw yet; short, so its first drawing shows soon after.
 export const BRAND_CARD_REDIRECT_CACHE = 'public, max-age=300';
 
-type PreviewSubject = { doc: DocumentThumbMeta; tabId: string | null; community: boolean };
+export type PreviewSubject = { doc: DocumentThumbMeta; tabId: string | null; community: boolean };
 
-// The one gate both doors share: the live image's rules, in the live image's order.
-async function previewSubject(
+// The one gate the live image and both preview doors share: what the link opens for someone with nothing but its
+// code, as the index resolves it (an unknown, revoked or expired code, a canvas in the Trash and a canvas behind a
+// share password resolve to nothing: an <img> or a chat app's crawler can't type a password), then, for the
+// canvas's Community post's link, whether the post is public now.
+export async function previewSubject(
   env: RouteContext['env'],
   code: string,
 ): Promise<PreviewSubject | null> {
-  const link = await getShareLink(env, code);
-  if (!link) return null;
-  const community = link.purpose === 'community';
-  if (community && (await communityLinkAccess(env, link.code)) !== 'public') return null;
-  // A trashed document reads as missing here.
-  const doc = await getDocumentThumbMeta(env, link.documentId);
+  const client = indexFor(env, { kind: 'bearer', token: null });
+  if (!client) return null;
+  let link: { id: string; tabId: string | null };
+  try {
+    const { item, tabId } = await client.resolveShare(code, null);
+    link = { id: item.id, tabId };
+  } catch {
+    return null;
+  }
+  const post = await documentRoom(env, link.id).community();
+  const community = post !== null && post.code === code;
+  if (community && !post.open) return null;
+  const doc = await getDocumentThumbMeta(env, link.id);
   if (!doc) return null;
-  if (await getDocumentSharePassword(env, doc.id)) return null;
   return { doc, tabId: link.tabId, community };
 }
 

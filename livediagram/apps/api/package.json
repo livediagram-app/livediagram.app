@@ -13,9 +13,7 @@
     "test:coverage": "vitest run --coverage",
     "gen:openapi": "node scripts/gen-openapi-schemas.mjs",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist .wrangler node_modules .turbo coverage",
-    "db:migrate:local": "wrangler d1 migrations apply livediagram --local",
-    "db:migrate:remote": "wrangler d1 migrations apply livediagram --remote"
+    "clean": "rm -rf dist .wrangler node_modules .turbo coverage"
   },
   "dependencies": {
     "@livediagram/api-schema": "workspace:*",

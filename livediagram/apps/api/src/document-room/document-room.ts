@@ -1,6 +1,19 @@
+import {
+  createItemHeadSync,
+  earliestRoomGrantDue,
+  FLUSH_IDLE_MS,
+  FLUSH_RETRY_MS,
+  nextFlushAt,
+  renewRoomGrant,
+  roomGrantStep,
+  type ItemHeadSync,
+} from '@liveworkspace/index-app';
 import { DurableObject } from 'cloudflare:workers';
 import {
   ACCESS_CHANGED_CLOSE,
+  EMPTY_DOCUMENT_STALE_MS,
+  GRANT_LAPSED_CLOSE,
+  ROOM_GRANT_ASK_BEFORE_MS,
   WORKBENCH_ENDED_CLOSE,
   DOCUMENT_FORMAT,
   DOCUMENT_TRASHED_CLOSE,
@@ -33,7 +46,6 @@ import {
 } from '../document-room-rules';
 import { followerIdsOf, followTargetOf } from '../room-follows';
 import { opForScope } from '../room-scope';
-import { recheckAdmittedLink } from '../room-link-recheck';
 import { gateClientOp } from '../room-op-gate';
 import { answerInternal, type InternalRoom } from '../room-internal';
 import { rosterFrames, type RosterEntry } from '../room-roster';
@@ -49,21 +61,39 @@ import {
   type SessionAttachment,
 } from '../room-session';
 
-import { CHANGESET_RETENTION_MS } from '@livediagram/api-schema';
+import { CHANGESET_RETENTION_MS, type CommunityAuthor } from '@livediagram/api-schema';
 import { deleteOldChangesets } from '../db/changesets';
 import { documentHasTab } from '../db/tabs';
 import { documentPlacesImage } from '../db/image-refs';
+import { documentMayServeImage } from '../db/image-grants';
+import { indexFor, indexService } from '../index-service';
+import { notifyActionAssigned, notifyDocumentJoin, notifyMentioned } from '../email/notifications';
+import type { ActionNotice, MentionNotice } from '../document-client';
+import {
+  checkCommunityPost,
+  COMMUNITY_CHECK_MS as COMMUNITY_CHECK_EVERY_MS,
+  communityCheckDueAt,
+  communityPostAuthor,
+  openCommunityCode,
+  readCommunityPost,
+  type CommunityPost,
+} from './community-post';
+import { communityService, communityServiceConfigured } from '../community-service';
+import { anonymiseDocument } from './document-anonymise';
 import { renderDocumentImage, type ThumbnailSubject } from '../thumbnail';
-import { DocumentDb } from './document-db';
+import { ItemDb } from '@liveworkspace/index-app';
 import { hasDocumentSchema, migrateDocumentSchema } from './document-schema';
 import {
   exportDocumentCopy,
   importDocumentCopy,
+  readDocumentMeta,
   readDocumentOutline,
   type DocumentCopy,
+  type DocumentMeta,
   type DocumentOutline,
 } from './document-content';
-import { drainOutbox } from './document-outbox';
+import { readContentSummary } from './document-outbox';
+import { drainOutbox, recordEditor } from './document-outbox';
 import {
   allShares,
   drainShares,
@@ -81,11 +111,11 @@ import { answerDocumentRequest, type RouteIdentity } from './document-route';
 // is two things at once:
 //
 //   - The document's content: tabs (with their stats) and the changeset log, in its own SQLite
-//     (document-schema.ts), which the content modules reach as `env.DOCUMENT_DB` (document-db.ts). Every API
+//     (document-schema.ts), which the content modules reach as `env.DOCUMENT_DB` (@liveworkspace/index-app item-db.ts). Every API
 //     request about the document runs here (`route`, document-route.ts), so a save is one call to this object and
-//     one SQLite transaction, with no D1 round trip on its path. What D1's cross-document reads need (the Inbox's
-//     index, the listing summary, saved_at, the media service's image references) is pushed from the outbox on
-//     idle (document-outbox.ts).
+//     one SQLite transaction, with no round trip on its path. What other services need (the index's summary, the
+//     Inbox's comments and actions, who edited it, the media service's image references) is pushed from the
+//     outbox on idle (document-outbox.ts).
 //   - The realtime room: connected WebSockets and their identity, presence, and the ordered op stream. It
 //     classifies each op by kind, orders mutations (seq within an epoch, kept in storage), rewrites comment
 //     authors, and keeps collaboration state (the ledger, the live poll, the facilitator baton). Payloads stay
@@ -135,7 +165,7 @@ const MAX_MESSAGE_CHARS = 256 * 1024;
 
 // How many recent mutation ops the room keeps for reconnect catch-up
 // (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1). A reconnecting client within this many ops of the
-// live tail replays the delta; further behind, it re-hydrates from D1.
+// live tail replays the delta; further behind, it re-hydrates from the document's stored tabs.
 // Bounded so an idle-but-connected room can't grow the buffer without end;
 // the log lives in memory (like opRates) and resets on hibernation, which
 // only ever forces the safe path (a resync), never data loss.
@@ -151,14 +181,15 @@ const SHARE_LINK_OPS = new Set(['share-revoked', 'share-rescoped']);
 // 4000-4999 application range; the client reloads or leaves on the op itself.
 const SHARE_LINK_CHANGED_CLOSE = 4003;
 
-// How long the outbox waits after a write before it pushes (the contract's "on idle"), and the least gap between
-// two pushes (its "at most once a minute"). A failed push retries after FLUSH_RETRY_MS.
-export const FLUSH_IDLE_MS = 2_000;
-export const FLUSH_MIN_GAP_MS = 60_000;
-const FLUSH_RETRY_MS = 60_000;
-// The document's own daily upkeep: old changesets go (a D1 cron before).
+// How long the outbox waits after a write before it pushes, the least gap between two pushes, and the retry after a
+// failed one: @liveworkspace/index-app's (outbox.ts), the same for every app's items.
+export { FLUSH_IDLE_MS, FLUSH_MIN_GAP_MS } from '@liveworkspace/index-app';
+// The document's own daily upkeep: old changesets go, and a canvas left empty and unsaved for
+// EMPTY_DOCUMENT_STALE_MS goes to the Trash (docs/specs/013-workspace/empty-document-cleanup.md).
 export const MAINTENANCE_EVERY_MS = 24 * 60 * 60 * 1000;
 const MAINTENANCE_KEY = 'maintenance-at';
+// The save time of the canvas the empty clean-up last moved to the Trash: restored unchanged, it is not moved again.
+const EMPTY_SWEPT_KEY = 'empty-swept-for';
 
 export class DocumentRoom extends DurableObject<Env> {
   // The object's state under the name the room's code has always used for it (`this.ctx` is the same).
@@ -222,8 +253,8 @@ export class DocumentRoom extends DurableObject<Env> {
   // DOCUMENT_ROOM that answers this document's own id with this object (no hop). Undefined only for a unit test that
   // builds a room from a fake state alone; then the content and telemetry paths are skipped.
   roomEnv: DocumentEnv | undefined;
-  // The document's SQLite behind the D1 surface (document-db.ts).
-  readonly db: DocumentDb;
+  // The document's SQLite behind the D1-shaped surface the content modules use (@liveworkspace/index-app item-db.ts).
+  readonly db: ItemDb;
   // The document this object is, from the first call that names it (every RPC and room join does).
   private documentId: string | null = null;
   private schemaReady = false;
@@ -237,6 +268,14 @@ export class DocumentRoom extends DurableObject<Env> {
   private shareAt: number | null = null;
   // The next daily upkeep (persisted, so a wake keeps the day).
   private maintenanceAt: number | null = null;
+  // Content writes so far (noteWrite), so route() can tell a request that wrote from one that didn't.
+  private writes = 0;
+  // The canvas's Community post as last read (null: none), and when it next asks where it stands.
+  private communityAt: number | null = null;
+  // The canvas's owner and team, kept from every grant the room is handed (a socket's ticket, a renewal, an API
+  // request's grant), so a guest's merge into an account or a move to another team reaches the canvas's emails,
+  // pushes and alarm (@liveworkspace/index-app item-head.ts).
+  private readonly head: ItemHeadSync;
 
   // The Q&A board write queue (docs/specs/012-collaboration/qa-board.md). Every board write for this document
   // runs through here ONE AT A TIME. A Durable Object only serialises the
@@ -255,7 +294,7 @@ export class DocumentRoom extends DurableObject<Env> {
   constructor(state: DurableObjectState, env?: Env) {
     super(state, env as Env);
     this.state = state;
-    this.db = new DocumentDb(state.storage.sql, {
+    this.db = new ItemDb(state.storage.sql, {
       transaction: (fn) => state.storage.transactionSync(fn),
       ensureSchema: () => this.ensureSchema(),
       onWrite: () => this.noteWrite(),
@@ -268,6 +307,35 @@ export class DocumentRoom extends DurableObject<Env> {
         }
       : undefined;
     this.ledger = new RoomLedgerStore(state.storage);
+    this.head = createItemHeadSync({
+      read: async () => {
+        if (this.documentId === null || !this.hasSchema()) return null;
+        this.ensureSchema();
+        const row = state.storage.sql
+          .exec<{ owner_id: string; team_id: string | null }>(
+            'SELECT owner_id, team_id FROM document WHERE id = ? AND created_at > 0',
+            this.documentId,
+          )
+          .toArray()[0];
+        return row ? { ownerId: row.owner_id, teamId: row.team_id ?? null } : null;
+      },
+      write: async (h) => {
+        state.storage.sql.exec(
+          'UPDATE document SET owner_id = ?, team_id = ? WHERE id = ?',
+          h.ownerId,
+          h.teamId,
+          this.documentId,
+        );
+        console.info('[room] owner or team taken from the grant', { team: h.teamId !== null });
+        // The summary push names the owner; a team change can open or close a Community post.
+        state.storage.sql.exec(
+          "INSERT OR IGNORE INTO outbox (document_id, kind, key) VALUES (?, 'summary', '')",
+          this.documentId,
+        );
+        this.noteWrite();
+        if (this.communityAt !== null) this.communityAt = Date.now();
+      },
+    });
     this.participantWrites = new RoomParticipantWrites({
       env: this.roomEnv,
       enqueue: (step) => this.queueTabWrite(step),
@@ -334,8 +402,8 @@ export class DocumentRoom extends DurableObject<Env> {
 
   // ---------- The document's content ----------------------------------------------------------------------
 
-  // After a wake: the document id and anything the outbox still owes D1. Reads only; a document with no schema yet
-  // (an id nothing has written) stays without one.
+  // After a wake: the document id, anything the outbox still owes, and its Community post's next check. Reads only;
+  // a document with no schema yet (an id nothing has written) stays without one.
   private restoreContentState(maintenanceAt: number | undefined): void {
     this.maintenanceAt = maintenanceAt ?? null;
     const sql = this.state.storage.sql;
@@ -343,8 +411,17 @@ export class DocumentRoom extends DurableObject<Env> {
     this.ensureSchema();
     const row = sql.exec('SELECT id FROM document LIMIT 1').toArray()[0];
     if (typeof row?.id === 'string' && this.documentId === null) this.documentId = row.id;
-    if (this.owesD1()) this.flushAt = Date.now();
+    if (this.owesIndex()) this.flushAt = Date.now();
     if (this.owesShares()) this.shareAt = Date.now();
+    const post = sql
+      .exec<{ checked_at: number }>('SELECT checked_at FROM community_post LIMIT 1')
+      .toArray()[0];
+    this.communityAt = post ? post.checked_at + COMMUNITY_CHECK_EVERY_MS : null;
+  }
+
+  private hasSchema(): boolean {
+    const sql = this.state.storage.sql;
+    return this.schemaReady || (!!sql && hasDocumentSchema((q) => sql.exec(q)));
   }
 
   // Every call names its document; an object answers for one document only.
@@ -373,10 +450,12 @@ export class DocumentRoom extends DurableObject<Env> {
     }
   }
 
-  // A content write happened: push to D1 on idle, at most once a minute (document-outbox.ts), and send a shared
-  // tab's holders their copy on idle. Writes the drain itself makes (its outbox delete) schedule nothing.
+  // A content write happened: push to the index and the media service on idle, at most once a minute
+  // (document-outbox.ts), and send a shared tab's holders their copy on idle. Writes the drain itself makes (its
+  // outbox delete) schedule nothing.
   private noteWrite(): void {
     if (this.draining) return;
+    this.writes++;
     if (this.maintenanceAt === null) {
       this.maintenanceAt = Date.now() + MAINTENANCE_EVERY_MS;
       void this.state.storage.put(MAINTENANCE_KEY, this.maintenanceAt);
@@ -387,28 +466,28 @@ export class DocumentRoom extends DurableObject<Env> {
       this.shareAt = now + FLUSH_IDLE_MS;
       this.armAlarm();
     }
-    if (this.flushAt !== null || !this.owesD1()) return;
-    this.flushAt = Math.max(now + FLUSH_IDLE_MS, this.lastFlushAt + FLUSH_MIN_GAP_MS);
+    if (this.flushAt !== null || !this.owesIndex()) return;
+    this.flushAt = nextFlushAt(now, this.lastFlushAt);
     this.armAlarm();
   }
 
-  // Push what the outbox holds to D1, and send what the shared tabs' holders are owed, now. A failure keeps it and
-  // retries later.
+  // Push what the outbox holds to the index and the media service, and send what the shared tabs' holders are owed,
+  // now. A failure keeps it and retries later.
   async drain(): Promise<void> {
-    await this.drainD1();
+    await this.drainIndex();
     await this.drainShares();
   }
 
-  private async drainD1(): Promise<void> {
+  private async drainIndex(): Promise<void> {
     const env = this.roomEnv;
     const documentId = this.documentId;
     this.flushAt = null;
     if (!env || !documentId || !this.schemaReady) return;
     this.draining = true;
     try {
-      const { keys, statements, more } = await drainOutbox(env, documentId);
+      const { keys, pushes, more } = await drainOutbox(env, documentId);
       this.lastFlushAt = Date.now();
-      if (keys > 0) console.debug('[document-outbox] pushed', { documentId, keys, statements });
+      if (keys > 0) console.debug('[document-outbox] pushed', { documentId, keys, pushes });
       // A big import's tabs go a batch at a time, back to back, not a minute apart.
       if (more) this.flushAt = Date.now() + FLUSH_IDLE_MS;
     } catch (error) {
@@ -418,8 +497,8 @@ export class DocumentRoom extends DurableObject<Env> {
       this.draining = false;
     }
     // Anything written while the push was in flight goes next time.
-    if (this.flushAt === null && this.owesD1()) {
-      this.flushAt = Math.max(Date.now() + FLUSH_IDLE_MS, this.lastFlushAt + FLUSH_MIN_GAP_MS);
+    if (this.flushAt === null && this.owesIndex()) {
+      this.flushAt = nextFlushAt(Date.now(), this.lastFlushAt);
     }
   }
 
@@ -445,12 +524,12 @@ export class DocumentRoom extends DurableObject<Env> {
     }
     // Anything written while the send was in flight goes next time.
     if (this.shareAt === null && this.owesShares()) this.shareAt = Date.now() + FLUSH_IDLE_MS;
-    if (this.flushAt === null && this.owesD1()) {
-      this.flushAt = Math.max(Date.now() + FLUSH_IDLE_MS, this.lastFlushAt + FLUSH_MIN_GAP_MS);
+    if (this.flushAt === null && this.owesIndex()) {
+      this.flushAt = nextFlushAt(Date.now(), this.lastFlushAt);
     }
   }
 
-  private owesD1(): boolean {
+  private owesIndex(): boolean {
     return this.state.storage.sql.exec('SELECT 1 FROM outbox LIMIT 1').toArray().length > 0;
   }
 
@@ -458,7 +537,8 @@ export class DocumentRoom extends DurableObject<Env> {
     return this.state.storage.sql.exec('SELECT 1 FROM share_outbox LIMIT 1').toArray().length > 0;
   }
 
-  // The document's daily upkeep, once a day per document with content: changesets past their retention go (CS28).
+  // The document's daily upkeep, once a day per document with content: changesets past their retention go (CS28),
+  // and a canvas with nothing on any tab, unsaved for EMPTY_DOCUMENT_STALE_MS, goes to the Trash.
   private async maintain(now: number): Promise<void> {
     const env = this.roomEnv;
     const documentId = this.documentId;
@@ -468,9 +548,39 @@ export class DocumentRoom extends DurableObject<Env> {
     try {
       const gone = await deleteOldChangesets(env, now - CHANGESET_RETENTION_MS);
       if (gone > 0) console.info('[changeset] retention', { documentId, deleted: gone });
+      await this.trashIfEmptyAndStale(env, documentId, now);
     } catch (error) {
       console.warn('[document-room] upkeep failed', { documentId, error: String(error) });
     }
+  }
+
+  // The empty clean-up (docs/specs/013-workspace/empty-document-cleanup.md): a started canvas with no element or
+  // page on any tab, unsaved for EMPTY_DOCUMENT_STALE_MS, goes to the Trash with the reason `empty`, asked of the
+  // index as its owner. Restored unchanged, it is not moved again.
+  private async trashIfEmptyAndStale(
+    env: DocumentEnv,
+    documentId: string,
+    now: number,
+  ): Promise<void> {
+    const meta = await readDocumentMeta(env, documentId);
+    if (!meta) return;
+    const { summary, savedAt } = await readContentSummary(env, documentId);
+    if (summary.hasContent || savedAt > now - EMPTY_DOCUMENT_STALE_MS) return;
+    if ((await this.state.storage.get<number>(EMPTY_SWEPT_KEY)) === savedAt) return;
+    const client = indexFor(env, {
+      kind: 'delegate',
+      personId: meta.ownerId,
+      teams: meta.teamId ? [meta.teamId] : [],
+    });
+    if (!client) return;
+    try {
+      await client.deleteItem(documentId, { reason: 'empty' });
+      console.info('[trash] empty canvas moved', { documentId });
+    } catch (error) {
+      // Already in the Trash, gone, or no longer theirs: nothing to move.
+      console.info('[trash] empty canvas not moved', { documentId, error: String(error) });
+    }
+    await this.state.storage.put(EMPTY_SWEPT_KEY, savedAt);
   }
 
   // This env's DOCUMENT_ROOM, answering this document's own id with this object: the code shared with the worker (a
@@ -502,9 +612,86 @@ export class DocumentRoom extends DurableObject<Env> {
 
   async route(documentId: string, request: Request, identity: RouteIdentity): Promise<Response> {
     this.bindDocument(documentId);
-    return answerDocumentRequest(this.requireEnv(), request, identity, (p) =>
-      this.state.waitUntil(p),
+    const env = this.requireEnv();
+    if (identity.grant?.item === documentId) await this.takeHead(identity.grant);
+    const community = await this.communityOf(documentId);
+    const writesBefore = this.writes;
+    const response = await answerDocumentRequest(
+      env,
+      request,
+      identity,
+      (p) => this.state.waitUntil(p),
+      community,
     );
+    // A request that wrote is an edit by whoever asked: their Timeline entry and a Most Used day
+    // (document-outbox.ts recordEditor). Reads, refusals and requests that changed nothing are not.
+    if (response.ok && identity.owner && this.writes > writesBefore) {
+      const sql = this.state.storage.sql;
+      recordEditor((q, ...b) => sql.exec(q, ...b), documentId, identity.owner, Date.now());
+      this.noteWrite();
+    }
+    // A post published or removed by this request starts or stops its checks.
+    if (request.method !== 'GET' && new URL(request.url).pathname.endsWith('/community'))
+      this.communityAt = communityCheckDueAt(await readCommunityPost(env));
+    this.armAlarm();
+    return response;
+  }
+
+  // The canvas's Community post's link as the doors read it: its code, and whether it opens the canvas now
+  // (community-post.ts openCommunityCode). Null for a canvas with no post.
+  async community(documentId?: string): Promise<{ code: string; open: boolean } | null> {
+    if (documentId !== undefined) this.bindDocument(documentId);
+    if (this.documentId === null || !this.hasSchema()) return null;
+    return this.communityOf(this.documentId);
+  }
+
+  private async communityOf(documentId: string): Promise<{ code: string; open: boolean } | null> {
+    if (!this.hasSchema()) return null;
+    const env = this.requireEnv();
+    const post = await readCommunityPost(env);
+    if (!post) return null;
+    const meta = await readDocumentMeta(env, documentId);
+    return { code: post.shareCode, open: openCommunityCode(env, post, meta) === post.shareCode };
+  }
+
+  // What a visitor through the canvas's Community post's open link is told of the post (docs/specs/025-community/
+  // community.md "Viewing a post's document"): its id at the service and who it shows as author. Null when `code`
+  // is not the post's link or the post does not open the canvas now.
+  async communityListing(
+    documentId: string,
+    code: string,
+  ): Promise<{ postId: string; author: CommunityAuthor } | null> {
+    this.bindDocument(documentId);
+    if (!this.hasSchema()) return null;
+    const env = this.requireEnv();
+    const post = await readCommunityPost(env);
+    if (!post || post.shareCode !== code) return null;
+    const meta = await readDocumentMeta(env, documentId);
+    if (openCommunityCode(env, post, meta) !== code) return null;
+    return { postId: post.postId, author: await communityPostAuthor(env, post) };
+  }
+
+  // A copy through the canvas's Community post's link is named after the post (docs/specs/025-community/
+  // community.md "Making a copy"): its title, when `code` is the post's link and the post is open. Null otherwise.
+  async communityPostTitle(documentId: string, code: string): Promise<string | null> {
+    this.bindDocument(documentId);
+    if (!this.hasSchema()) return null;
+    const env = this.requireEnv();
+    const post = await readCommunityPost(env);
+    if (!post || post.shareCode !== code) return null;
+    const meta = await readDocumentMeta(env, documentId);
+    return openCommunityCode(env, post, meta) ? post.title : null;
+  }
+
+  // Take the owner and team a grant names as the canvas's own copy. A failure is logged, never the caller's: the
+  // next grant tries again.
+  private async takeHead(grant: { owner?: string | null; team: string | null }): Promise<void> {
+    if (!this.roomEnv) return;
+    try {
+      await this.head.sync(grant);
+    } catch (err) {
+      console.warn('[room] owner and team not taken from the grant', { error: String(err) });
+    }
   }
 
   async image(
@@ -528,29 +715,44 @@ export class DocumentRoom extends DurableObject<Env> {
     return documentHasTab(this.requireEnv(), documentId, tabId);
   }
 
-  async placesImage(
+  // Whether the canvas places this image (on one tab, for a tab-scoped visitor) and may serve it
+  // (db/image-grants.ts): the byte endpoint's share check, answered where both live.
+  async servesImage(
     documentId: string,
     imageId: string,
     onlyTabId: string | null,
   ): Promise<boolean> {
     this.bindDocument(documentId);
-    return documentPlacesImage(this.requireEnv(), documentId, imageId, onlyTabId);
+    const env = this.requireEnv();
+    if (!(await documentPlacesImage(env, documentId, imageId, onlyTabId))) return false;
+    return documentMayServeImage(env, documentId, imageId);
   }
 
+  // The source side of a copy, for whoever copies (the index names them and the link they came through): anyone
+  // but the owner takes the comments as the tab read serves them to them; a copy through the canvas's open
+  // Community post's link takes it without its comments or the people on its actions (docs/specs/025-community/
+  // community.md "Making a copy"). `community` says which, so the copy is counted toward the post.
   async exportCopy(
     documentId: string,
     onlyTabId: string | null,
-    redactAuthorsFor: string | null,
-    redactForCommunity = false,
-  ): Promise<DocumentCopy | null> {
+    copier: { by: string | null; code: string | null } | null,
+  ): Promise<{ copy: DocumentCopy; community: boolean } | null> {
     this.bindDocument(documentId);
-    return exportDocumentCopy(
-      this.requireEnv(),
+    if (!this.hasSchema()) return null;
+    const env = this.requireEnv();
+    const meta = await readDocumentMeta(env, documentId);
+    if (!meta) return null;
+    const post = copier?.code ? await this.communityOf(documentId) : null;
+    const community = post !== null && post.open && post.code === copier?.code;
+    const by = copier?.by ?? null;
+    const copy = await exportDocumentCopy(
+      env,
       documentId,
       onlyTabId,
-      redactAuthorsFor,
-      redactForCommunity,
+      by !== null && by !== meta.ownerId ? by : null,
+      community,
     );
+    return copy ? { copy, community } : null;
   }
 
   async importCopy(documentId: string, copy: DocumentCopy): Promise<void> {
@@ -558,12 +760,17 @@ export class DocumentRoom extends DurableObject<Env> {
     await importDocumentCopy(this.requireEnv(), documentId, copy);
   }
 
-  // Share links the index revoked: each one's sessions hear it and end now, as the worker's own revoke does.
-  async revokeCodes(documentId: string, codes: string[]): Promise<number> {
+  // Share links the index revoked or rescoped: each one's sessions hear it and end now. `rescoped`: they reload
+  // into what the link opens now.
+  async revokeCodes(
+    documentId: string,
+    codes: string[],
+    reason: 'revoked' | 'rescoped' = 'revoked',
+  ): Promise<number> {
     this.bindDocument(documentId);
     let closed = 0;
     for (const code of codes) {
-      const op = { kind: 'share-revoked', code };
+      const op = { kind: reason === 'rescoped' ? 'share-rescoped' : 'share-revoked', code };
       const before = this.state.getWebSockets().length;
       this.broadcastSystemOp(op);
       this.closeSessionsOfChangedLink(op);
@@ -571,6 +778,63 @@ export class DocumentRoom extends DurableObject<Env> {
       closed += before - this.state.getWebSockets().length;
     }
     return closed;
+  }
+
+  // Someone opened the canvas through a share link for the first time: the owner hears of it
+  // (email/notifications.ts notifyDocumentJoin), off the caller's path. A canvas never started has no owner to tell.
+  async joined(documentId: string, personId: string): Promise<void> {
+    this.bindDocument(documentId);
+    if (!this.hasSchema()) return;
+    const env = this.requireEnv();
+    const meta = await readDocumentMeta(env, documentId);
+    if (!meta) return;
+    this.state.waitUntil(
+      notifyDocumentJoin(env, { id: documentId, ownerId: meta.ownerId, name: meta.name }, personId),
+    );
+  }
+
+  // An action assigned or a comment's mentions (routes/team-notify-routes.ts checked the people and the canvas): the
+  // emails go from here, off the caller's path, where their once-only claims are kept. A canvas never started has
+  // nothing to name.
+  async notifyAction(documentId: string, input: ActionNotice): Promise<boolean> {
+    const document = await this.noticeDocument(documentId);
+    if (!document) return false;
+    this.state.waitUntil(
+      notifyActionAssigned(this.requireEnv(), { ...input, document }).catch(() => {}),
+    );
+    return true;
+  }
+
+  async notifyMention(documentId: string, input: MentionNotice): Promise<boolean> {
+    const document = await this.noticeDocument(documentId);
+    if (!document) return false;
+    this.state.waitUntil(notifyMentioned(this.requireEnv(), { ...input, document }).catch(() => {}));
+    return true;
+  }
+
+  private async noticeDocument(documentId: string): Promise<{ id: string; name: string } | null> {
+    this.bindDocument(documentId);
+    if (!this.hasSchema()) return null;
+    const meta = await readDocumentMeta(this.requireEnv(), documentId);
+    return meta ? { id: documentId, name: meta.name } : null;
+  }
+
+  // A closed account's name off this canvas (document-anonymise.ts): the index's person purge, through the api.
+  async anonymise(documentId: string, personId: string): Promise<number> {
+    this.bindDocument(documentId);
+    // A canvas never started (or purged) holds nothing of anyone: read its storage as it is, without making the
+    // schema and document row a first query would.
+    const sql = this.state.storage.sql;
+    const started =
+      this.hasSchema() &&
+      sql.exec('SELECT 1 FROM document WHERE id = ? AND created_at > 0', documentId).toArray()
+        .length > 0;
+    if (!started) return 0;
+    const changed = await anonymiseDocument(this.requireEnv(), documentId, personId);
+    // The owner may have been the one anonymised: the next grant reads the stored copy again.
+    this.head.forget();
+    if (changed > 0) console.info('[room] anonymised a closed account', { rows: changed });
+    return changed;
   }
 
   // ---------- RPC: a tab shared with other documents (tab-shares.ts) ----------------------------------------------
@@ -648,36 +912,88 @@ export class DocumentRoom extends DurableObject<Env> {
       v.workbenchPairing,
       v.adderKey,
       v.documentId,
+      v.grantExp ?? null,
     );
-    if (v.documentId) this.bindDocument(v.documentId);
-    // A share session whose link changed while it was joining is told now (room-link-recheck.ts).
-    this.state.waitUntil(this.recheckJoinedLink(server));
+    if (v.documentId) {
+      this.bindDocument(v.documentId);
+      if (v.head) await this.takeHead(v.head);
+    }
+    this.armAlarm();
     return new Response(null, { status: 101, webSocket: client });
   }
 
-  // Read an accepted share session's link again and, when it was revoked or rescoped since the
-  // ticket was minted, send this one session that op and close it, as the broadcast would have.
-  // Owner and team sessions carry no code and are left alone.
-  async recheckJoinedLink(ws: WebSocket): Promise<void> {
-    const session = this.readSession(ws);
+  // ---------- Grants (liveworkspace/docs/one-explorer-contracts.md "Grants") ---------------------------------
+  //
+  // Every session joined with the index's grant, which lapses after ten minutes. ROOM_GRANT_ASK_BEFORE_MS before
+  // it does, the room asks the session for a fresh one (`grant-renew`); the session answers with a `grant` frame
+  // (its editor renews a minute early anyway, and sends each new grant unasked). A session still holding a
+  // lapsed grant is closed with GRANT_LAPSED_CLOSE, and its editor rejoins with a fresh one, or not at all. The
+  // decisions are @liveworkspace/index-app's (room-ticket.ts).
+
+  private nextGrantDue(): number | null {
+    return earliestRoomGrantDue(
+      this.state.getWebSockets().map((ws) => this.readSession(ws)),
+      ROOM_GRANT_ASK_BEFORE_MS,
+    );
+  }
+
+  // Ask the sessions whose grant is about to lapse, and close those whose grant has.
+  private checkGrants(now: number): void {
+    let lapsed = 0;
+    for (const ws of this.state.getWebSockets()) {
+      const s = this.readSession(ws);
+      const step = roomGrantStep(s, now, ROOM_GRANT_ASK_BEFORE_MS);
+      if (step === 'lapsed') {
+        this.closeSockets((each) => (each === ws ? [GRANT_LAPSED_CLOSE, 'grant-lapsed'] : null));
+        lapsed++;
+      } else if (step === 'ask' && s?.grantExp) {
+        this.sendTo(ws, { kind: 'grant-renew', expiresAt: s.grantExp });
+        try {
+          ws.serializeAttachment({ ...s, renewAsked: true } satisfies SessionAttachment);
+        } catch {
+          // The socket is going; its lapse closes it.
+        }
+      }
+    }
+    if (lapsed > 0) console.info('[grant] sessions lapsed', { closed: lapsed });
+  }
+
+  // A session's fresh grant (the `grant` frame): the same canvas, level and tab move its lapse on. One that says
+  // something else (a level changed, a tab rescoped) ends the session, and the editor rejoins with what it holds
+  // now. A grant that does not check is ignored; the old one still lapses.
+  async renewGrant(ws: WebSocket, ticket: unknown): Promise<void> {
     const env = this.roomEnv;
-    if (!env || !session?.shareCode || !session.documentId) return;
-    let op: Awaited<ReturnType<typeof recheckAdmittedLink>>;
-    try {
-      op = await recheckAdmittedLink(env, {
-        shareCode: session.shareCode,
-        tabScope: session.tabScope ?? null,
-        documentId: session.documentId,
-      });
-    } catch (err) {
-      // The session keeps its ticket's link, as before this check; a later change still broadcasts.
-      console.warn('[room-link] join recheck failed', { error: String(err) });
+    const session = this.readSession(ws);
+    if (!env || !session?.documentId) return;
+    const renewal = await renewRoomGrant(indexService, env, ticket, session.documentId, {
+      level: session.verifiedRole,
+      tab: session.tabScope,
+    });
+    if (renewal.kind === 'invalid') {
+      console.warn('[grant] renewal refused', { reason: 'invalid' });
       return;
     }
-    if (!op) return;
-    console.info('[room-link] joined on a changed link', { kind: op.kind });
-    this.sendTo(ws, { kind: 'op', from: 'system', op });
-    this.closeSockets((each) => (each === ws ? [SHARE_LINK_CHANGED_CLOSE, op.kind] : null));
+    if (renewal.kind === 'changed') {
+      console.info('[grant] renewal changed access', {
+        from: session.verifiedRole,
+        to: renewal.level,
+      });
+      this.closeSockets((each) => (each === ws ? [ACCESS_CHANGED_CLOSE, 'access-changed'] : null));
+      return;
+    }
+    await this.takeHead(renewal.claims);
+    const current = this.readSession(ws);
+    if (!current) return;
+    try {
+      ws.serializeAttachment({
+        ...current,
+        grantExp: renewal.grantExp,
+        renewAsked: false,
+      } satisfies SessionAttachment);
+    } catch {
+      return;
+    }
+    this.armAlarm();
   }
 
   // Admit one server-side socket into the room: pin its hibernation-proof
@@ -694,6 +1010,7 @@ export class DocumentRoom extends DurableObject<Env> {
     workbenchPairing: string | null = null,
     adderKey: string | null = null,
     documentId: string | null = null,
+    grantExp: number | null = null,
   ): void {
     ws.serializeAttachment(
       newSessionAttachment(
@@ -707,6 +1024,7 @@ export class DocumentRoom extends DurableObject<Env> {
           workbenchPairing,
           adderKey,
           documentId,
+          grantExp,
         },
         crypto.randomUUID(),
       ),
@@ -845,6 +1163,7 @@ export class DocumentRoom extends DurableObject<Env> {
     this.closeSockets(() => [DOCUMENT_TRASHED_CLOSE, 'document-purged']);
     this.opLog = [];
     await this.leaveShares();
+    await this.leaveCommunity();
     await this.ledger.settled();
     await this.state.storage.deleteAlarm();
     await this.state.storage.deleteAll();
@@ -853,7 +1172,47 @@ export class DocumentRoom extends DurableObject<Env> {
     this.flushAt = null;
     this.shareAt = null;
     this.maintenanceAt = null;
+    this.communityAt = null;
+    this.head.forget();
     console.info('[room] purged');
+  }
+
+  // A canvas going for good takes its Community post with it: the service hears it is gone. Best effort.
+  private async leaveCommunity(): Promise<void> {
+    const env = this.roomEnv;
+    const documentId = this.documentId;
+    if (!env || !documentId || !this.hasSchema() || !communityServiceConfigured(env)) return;
+    this.ensureSchema();
+    if (!(await readCommunityPost(env))) return;
+    try {
+      await communityService(env, '/sync', {
+        method: 'POST',
+        body: { documents: [], gone: [documentId] },
+      });
+    } catch (error) {
+      console.warn('[community] gone not sent', { error: String(error) });
+    }
+  }
+
+  // Ask the index where the Community post's canvas stands, and send the service what changed (community-post.ts).
+  private async checkCommunity(now: number): Promise<void> {
+    const env = this.roomEnv;
+    const documentId = this.documentId;
+    this.communityAt = null;
+    if (!env || !documentId || !this.hasSchema()) return;
+    let post: CommunityPost | null;
+    try {
+      const meta: DocumentMeta | null = await readDocumentMeta(env, documentId);
+      post = await checkCommunityPost(env, documentId, meta, now);
+    } catch (error) {
+      console.warn('[community] check failed', { error: String(error) });
+      post = await readCommunityPost(env);
+      if (post) {
+        this.communityAt = now + COMMUNITY_CHECK_EVERY_MS;
+        return;
+      }
+    }
+    this.communityAt = communityCheckDueAt(post);
   }
 
   // A document going for good tells the other holders of its shared tabs it left, so their copies stop counting
@@ -973,6 +1332,10 @@ export class DocumentRoom extends DurableObject<Env> {
     if (!decision.admit) return;
     const session = this.readSession(ws);
     if (!session) return;
+    if (msg.kind === 'grant') {
+      this.state.waitUntil(this.renewGrant(ws, (msg as { grant?: unknown }).grant));
+      return;
+    }
     if (msg.kind === 'hello') {
       // Force the server-resolved role AND the server-assigned ephemeral id
       // onto the stored presence: the hello frame's own `role` / `id` are
@@ -1249,14 +1612,16 @@ export class DocumentRoom extends DurableObject<Env> {
   }
 
   // The room's one alarm, at the earliest of: the facilitator grace deadline, an agent presence expiry
-  // (agent-presence I5, PR29), the outbox's next push, the next send to a shared tab's holders, the document's
-  // next upkeep. None when nothing is due.
+  // (agent-presence I5, PR29), a session's grant to ask for or lapse, the outbox's next push, the next send to a
+  // shared tab's holders, the Community post's next check, the document's next upkeep. None when nothing is due.
   private armAlarm(): void {
     const due = [
       this.baton.deadline() ?? null,
       this.agents.nextExpiry(),
+      this.nextGrantDue(),
       this.flushAt,
       this.shareAt,
+      this.communityAt,
       this.maintenanceAt,
     ].filter((t): t is number => t !== null);
     if (due.length === 0) void this.state.storage.deleteAlarm();
@@ -1273,8 +1638,10 @@ export class DocumentRoom extends DurableObject<Env> {
     if (expired.length > 0) this.broadcastPresence();
     this.baton.alarm();
     const now = Date.now();
-    if (this.flushAt !== null && this.flushAt <= now) await this.drainD1();
+    this.checkGrants(now);
+    if (this.flushAt !== null && this.flushAt <= now) await this.drainIndex();
     if (this.shareAt !== null && this.shareAt <= now) await this.drainShares();
+    if (this.communityAt !== null && this.communityAt <= now) await this.checkCommunity(now);
     if (this.maintenanceAt !== null && this.maintenanceAt <= now) await this.maintain(now);
     this.armAlarm();
   }

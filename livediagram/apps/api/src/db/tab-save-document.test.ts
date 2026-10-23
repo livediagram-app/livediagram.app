@@ -1,6 +1,6 @@
 // The tab save's one-query document read (db/tab-save-document.ts), against the real migrations: the fields the
-// save uses (the writer's name and colour come from liveworkspace, read by the save itself), the tab count, and a
-// trashed document reading as missing.
+// save uses (the writer's name and colour come from liveworkspace, read by the save itself), the tab count, and an
+// unknown document reading as missing. The Trash is the index's (liveworkspace/docs/one-explorer.md).
 import { describe, expect, it } from 'vitest';
 import { sqliteD1 } from '../test-sqlite-d1';
 import { getDocument } from './documents';
@@ -9,8 +9,8 @@ import { getDocumentForSave } from './tab-save-document';
 function setUp() {
   const db = sqliteD1();
   db.sql.exec(`
-    INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at, team_id)
-      VALUES ('d1', 'owner', 'Plan', 0, 5, 3, NULL);
+    INSERT INTO test_documents (id, owner_id, name, saved_at, created_at, team_id)
+      VALUES ('d1', 'owner', 'Plan', 5, 3, NULL);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 'One', '{"elements":[]}', 1), ('t2', 'Two', '{"elements":[]}', 1);
     INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1), ('d1', 't2', 1, 1);
   `);
@@ -37,10 +37,8 @@ describe('getDocumentForSave', () => {
     });
   });
 
-  it('reads a trashed or unknown document as missing', async () => {
-    const { env, sql } = setUp();
+  it('reads an unknown document as missing', async () => {
+    const { env } = setUp();
     expect(await getDocumentForSave(env, 'nope')).toBeNull();
-    sql.exec(`UPDATE documents SET trashed_at = 9 WHERE id = 'd1'`);
-    expect(await getDocumentForSave(env, 'd1')).toBeNull();
   });
 });

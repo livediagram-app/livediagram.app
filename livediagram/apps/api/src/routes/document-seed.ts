@@ -69,3 +69,14 @@ export function compileSeededTabs(tabs: readonly unknown[], documentId: string):
     intent: first ? creationIntentOf(first.tab, family) : null,
   };
 }
+
+// The intent the index files an API client's create by when the create names none: the template family of its first
+// seeded tab, the part of an intent the index's default folders key on (index-client placementDefaultKeysFor).
+// Read from the body as sent, before anything is compiled. Null when the first tab names no known template.
+export function seedIntentOf(tabs: unknown): string | null {
+  if (!Array.isArray(tabs) || !isRecord(tabs[0])) return null;
+  const template = tabs[0].template;
+  return typeof template === 'string' && isTemplateKind(template)
+    ? templateFamilyOf(template)
+    : null;
+}

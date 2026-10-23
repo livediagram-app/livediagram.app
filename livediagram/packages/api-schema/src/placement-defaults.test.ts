@@ -7,6 +7,7 @@ import {
   candidateKeysFor,
   creationIntentOf,
   defaultKeysFor,
+  indexIntentOf,
   isPlacementDefaultKey,
   legacyPlacementDefaultKeys,
   parsePlacementDefaultKey,
@@ -228,5 +229,18 @@ describe('placementDefaultTelemetryType', () => {
       'DefaultTemplateRetrospective',
       'DefaultTemplateKanban',
     ]);
+  });
+});
+
+describe('indexIntentOf', () => {
+  it('joins the parts the intent names, mode first', () => {
+    expect(indexIntentOf({ mode: 'diagram', tabKind: 'diagram' })).toBe('diagram:diagram');
+    expect(
+      indexIntentOf({ mode: 'draw', tabKind: 'event-storming', templateFamily: 'retrospective' }),
+    ).toBe('draw:event-storming:retrospective');
+  });
+
+  it('is null for no intent', () => {
+    expect(indexIntentOf(null)).toBeNull();
   });
 });

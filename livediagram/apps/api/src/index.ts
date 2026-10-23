@@ -3,27 +3,11 @@ import {
   isLegacyDocumentsPath,
   toLegacyResponse,
 } from './legacy-documents-alias';
-import { flushMediaRefs } from './media';
-import { teamIdsOf } from '@liveworkspace/index-app';
-import { accountCredentials, getPersonIdentity } from './auth/accounts';
+import { getPersonIdentity } from './auth/accounts';
 import { AccountsUnavailable, type ResolvedApiToken } from './db/api-tokens';
-import { catchUpTeams, syncTeams } from './db/team-sync';
 import { handleAuth } from './routes/auth';
-import { NOTIFY_EMAIL_DEDUPE_MS } from './email/notifications';
-import { runTimelineExpirySweep } from './timeline';
-import {
-  deleteOldNotifyEmailClaims,
-  deleteOldTimelineEvents,
-  purgeExpiredTrash,
-  resolveApiToken,
-  trashEmptyDocuments,
-} from './db';
-import {
-  apiRouteLabel,
-  bearerTokenOf,
-  errorTypeToken,
-  TIMELINE_RETENTION_MS,
-} from '@livediagram/api-schema';
+import { resolveApiToken } from './db';
+import { apiRouteLabel, bearerTokenOf, errorTypeToken } from '@livediagram/api-schema';
 import {
   API_TOKEN_PREFIX,
   isApiTokenFormat,
@@ -37,10 +21,8 @@ import { PersonStore } from './person-store/person-store';
 import { WorkbenchStore } from './workbench-store-do';
 import { handleInternalItems } from './routes/internal-items';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
-import { deleteOldDocumentOpens } from './db/document-opens';
 import { reportServerEvent } from './server-telemetry';
 import { clientRateKey } from './client-ip';
-import { syncCommunity } from './community-service';
 import { MAX_BODY_BYTES, MAX_IMAGE_BYTES } from './limits';
 import { handleAccount } from './routes/account';
 import { handleAiReadNotes } from './routes/ai-read-notes';
@@ -56,16 +38,10 @@ import { handleEvents } from './routes/events';
 import { handleFolders } from './routes/folders';
 import { handleImages } from './routes/images';
 import { handleParticipants } from './routes/participants';
-import { handleFavourites } from './routes/favourites';
-import { handlePlacementDefaults } from './routes/placement-defaults';
-import { handleTimeline } from './routes/timeline';
-import { handleActivity } from './routes/activity';
-import { handleHome } from './routes/home';
 import { handlePreferences } from './routes/preferences';
 import { handleShare } from './routes/share';
 import { isSharePreviewPath } from './routes/share-preview';
 import { handleTeams } from './routes/teams';
-import { handleShared } from './routes/shared';
 import { handleTrash } from './routes/trash';
 import { handleDrive } from './routes/drive';
 import { handleWorkbench } from './routes/workbench';
@@ -199,13 +175,8 @@ async function routeApiRequest(
   // reads (see RouteContext.verifiedUserId); administration surfaces keep
   // reading `accountUserId` directly. A guest is never one.
   const verifiedUserId = accountUserId ?? tokenAuth?.ownerId ?? workbench?.ownerId ?? null;
-  // Teams are run on liveworkspace.app; the caller's token carries the teams they're in. When that
-  // differs from this app's copy, catch the copy up before anything below reads it (db/team-sync.ts).
-  // Remembered per isolate, so this is a Map lookup unless their teams just changed.
-  const teamsClaim = account?.teams ?? tokenAuth?.teams ?? null;
-  if (verifiedUserId && teamsClaim) {
-    await catchUpTeams(env, accountCredentials(env), verifiedUserId, teamsClaim, executionCtx);
-  }
+  // Teams are run on liveworkspace.app; the caller's token carries the teams they're in (no copy here).
+  const teamsClaim = account?.teams ?? tokenAuth?.teams ?? workbench?.teams ?? null;
 
   // Per-owner write rate limit. Gates POST / PUT / DELETE at a
   // generous ceiling (wrangler.toml WRITE_RATE_LIMITER) so a bot
@@ -332,7 +303,7 @@ async function routeApiRequest(
       : null,
     workbench,
     bearer: person ? bearerTokenOf(request.headers.get('Authorization')) : null,
-    teams: teamIdsOf(teamsClaim),
+    teams: teamsClaim,
     waitUntil: (promise) => executionCtx?.waitUntil(promise),
   };
   try {
@@ -358,8 +329,6 @@ async function routeApiRequest(
         return await handleShare(ctx);
       case 'community':
         return await handleCommunity(ctx);
-      case 'shared':
-        return await handleShared(ctx);
       case 'images':
         return await handleImages(ctx);
       case 'documents':
@@ -376,18 +345,8 @@ async function routeApiRequest(
         return await handleOauthExchange(ctx);
       case 'account':
         return await handleAccount(ctx);
-      case 'favourites':
-        return await handleFavourites(ctx);
-      case 'placement-defaults':
-        return await handlePlacementDefaults(ctx);
       case 'trash':
         return await handleTrash(ctx);
-      case 'timeline':
-        return await handleTimeline(ctx);
-      case 'activity':
-        return await handleActivity(ctx);
-      case 'home':
-        return await handleHome(ctx);
       case 'preferences':
         return await handlePreferences(ctx);
       case 'participants':
@@ -421,131 +380,6 @@ const worker = {
     return withServerRelease(await routeApiRequest(request, env, executionCtx), env.BUILD_ID);
   },
 
-  // Scheduled handler. Wired to the cron schedule in wrangler.toml.
-  // One worker invocation per `triggers.crons` entry; dispatch on
-  // `event.cron` for each pattern. Today's daily 03:00 UTC trigger
-  // fires independent retention sweeps:
-  //   - events,     60-day floor: the retired table drains (docs/specs/017-telemetry/telemetry.md
-  //                 "Where events are stored").
-  //   - images,     30-day floor, unused only, after the reference-index backfill
-  //                 (docs/specs/009-elements/images.md "Retention").
-  //   - trash,      30 days after deletion (docs/specs/013-workspace/trash.md).
-  //   - empty,      documents empty and unsaved for 30 days move to the Trash
-  //                 (docs/specs/013-workspace/empty-document-cleanup.md).
-  // All are no-ops when nothing is over the floor; all use
-  // `ctx.waitUntil` so they run concurrently and the worker can
-  // exit as soon as the schedule callback returns.
-  async scheduled(event: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
-    // liveworkspace/docs/accounts.md "How an app keeps up": follow the teams change feed. A token revoked on
-    // liveworkspace.app ends its workbench access from its owner's workbench store (workbench-store.ts), whose
-    // alarm checks the tokens behind live sessions.
-    if (event.cron === '*/5 * * * *') {
-      const credentials = accountCredentials(env);
-      if (!credentials) return;
-      ctx.waitUntil(
-        syncTeams(env, credentials, ctx)
-          .then((count) => console.log(`team sync: applied ${count} changes`))
-          .catch((err) => console.error('team sync failed', err)),
-      );
-      return;
-    }
-    if (event.cron === '0 3 * * *') {
-      const now = Date.now();
-      // docs/specs/013-workspace/timeline.md §3.5: the Timeline feed keeps a year.
-      scheduleSweep(
-        ctx,
-        env,
-        'timeline',
-        'events',
-        now - TIMELINE_RETENTION_MS,
-        deleteOldTimelineEvents,
-      );
-      // docs/specs/013-workspace/explorer-home.md "Opens": an open older than the Timeline's year
-      // is forgotten, the same retention as the events it sits beside.
-      scheduleSweep(
-        ctx,
-        env,
-        'home_opens',
-        'rows',
-        now - TIMELINE_RETENTION_MS,
-        deleteOldDocumentOpens,
-      );
-      // A document's changesets are kept by the document's own Durable Object, swept by its daily upkeep alarm
-      // (document-room/document-room.ts `maintain`), not from here.
-      // docs/specs/012-collaboration/assigned-actions.md §4: a notify-email claim past its dedupe window
-      // decides nothing any more.
-      scheduleSweep(
-        ctx,
-        env,
-        'notify_email_claims',
-        'rows',
-        now - NOTIFY_EMAIL_DEDUPE_MS,
-        deleteOldNotifyEmailClaims,
-      );
-      // docs/specs/013-workspace/timeline.md §4.5: tokens (those seen here) and share links about to
-      // expire, on the Timeline.
-      ctx.waitUntil(
-        runTimelineExpirySweep(env)
-          .then((count) => console.log(`timeline expiry sweep: emitted ${count} events`))
-          .catch((err) => console.error('timeline expiry sweep failed', err)),
-      );
-      // docs/specs/013-workspace/trash.md: purge what has been in the Trash for
-      // 30 days, oldest first, capped per run (TRASH_PURGE_MAX_BATCHES).
-      ctx.waitUntil(
-        purgeExpiredTrash(env, now)
-          .then((count) => console.log(`trash sweep: purged ${count} documents`))
-          .catch((err) => console.error('trash sweep failed', err)),
-      );
-      // docs/specs/013-workspace/empty-document-cleanup.md: move documents empty and
-      // unsaved for 30 days to the Trash, stamped `now`, so the purge above
-      // never takes one this run: it waits its full 30 days there.
-      ctx.waitUntil(
-        trashEmptyDocuments(env, now)
-          .then((count) => console.log(`empty sweep: moved ${count} documents to the Trash`))
-          .catch((err) => console.error('empty sweep failed', err)),
-      );
-      // Spent workbench tickets, requests and sessions are swept by each person's workbench store's own alarm
-      // (docs/specs/013-workspace/blueprints/workbench-embeds.md "Retention"), not from here.
-    }
-    // docs/specs/025-community/community.md "Keeping in step": every minute, what changed about published documents
-    // goes to the liveworkspace Community service, and the posts it hid after reports close their links here.
-    if (event.cron === COMMUNITY_SYNC_CRON) ctx.waitUntil(syncCommunity(env));
-    // liveworkspace/docs/media.md "References": every minute, the documents whose images changed go to the
-    // media service; the daily run also says nothing is left, when nothing is.
-    if (event.cron === COMMUNITY_SYNC_CRON || event.cron === '0 3 * * *') {
-      ctx.waitUntil(
-        flushMediaRefs(env, event.cron === '0 3 * * *')
-          .then(() => undefined)
-          .catch((err) => console.error('[media] refs sync failed', err)),
-      );
-    }
-  },
 } satisfies ExportedHandler<Env>;
 
-const COMMUNITY_SYNC_CRON = '* * * * *';
-
 export default worker;
-
-// Run one daily retention sweep in the background: delete rows older than
-// `cutoff`, then log the count (or the failure) to `wrangler tail`. The
-// retention sweeps (events / sessions / timeline / opens) share this exact waitUntil +
-// then/catch shape; `label` + `unit` keep each log line reading naturally. A
-// zero is the normal case most days — observability without a metrics pipeline.
-function scheduleSweep(
-  ctx: ExecutionContext,
-  env: Env,
-  label: string,
-  unit: string,
-  cutoff: number,
-  deleteOlderThan: (env: Env, cutoff: number) => Promise<number>,
-): void {
-  ctx.waitUntil(
-    deleteOlderThan(env, cutoff)
-      .then((count) => {
-        console.log(`${label} sweep: deleted ${count} ${unit} older than ${cutoff}`);
-      })
-      .catch((err) => {
-        console.error(`${label} sweep failed`, err);
-      }),
-  );
-}

@@ -444,6 +444,35 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 400, 401, 403, 404, 410],
   },
   {
+    method: 'GET',
+    path: '/documents/{id}/tabs',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      "The canvas's tabs alone, in order: id, name and kind, without their content. Read-gated like GET /documents/{id}; a tab's share link sees its own tab alone. What the Share dialog's tab picker reads.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    responseSchema: {
+      type: 'object',
+      properties: {
+        tabs: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              name: { type: 'string' },
+              kind: { type: ['string', 'null'] },
+            },
+            required: ['id', 'name', 'kind'],
+          },
+        },
+      },
+      required: ['tabs'],
+    },
+    statuses: [200, 404],
+  },
+  {
     method: 'POST',
     path: '/documents/{id}/copy',
     segment: 'documents',
@@ -454,23 +483,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     requestSchema: { type: 'object', properties: { name: nameField } },
     responseSchema: wrap('document', 'Document'),
     statuses: [201, 401, 403, 404, 410],
-  },
-  {
-    method: 'PUT',
-    path: '/documents/{id}/folder',
-    segment: 'documents',
-    tag: 'Documents',
-    summary: 'Move a document into a personal or team folder.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: {
-      type: 'object',
-      properties: {
-        folderId: { type: ['string', 'null'] },
-        teamId: { type: ['string', 'null'] },
-      },
-    },
-    statuses: [204, 400, 401, 403, 404, 410],
   },
   {
     method: 'GET',
@@ -751,17 +763,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 400, 401, 403, 404, 409, 410, 413, 429],
   },
   {
-    method: 'GET',
-    path: '/documents/{id}/share',
-    segment: 'documents',
-    tag: 'Sharing',
-    summary: "List a document's share links and password state.",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    responseSchema: listOf('links', 'ShareLink'),
-    statuses: [200, 401, 403, 404, 410],
-  },
-  {
     method: 'POST',
     path: '/documents/{id}/share',
     segment: 'documents',
@@ -780,68 +781,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     },
     responseSchema: wrap('link', 'ShareLink'),
     statuses: [201, 400, 401, 403, 404, 410],
-  },
-  {
-    method: 'DELETE',
-    path: '/documents/{id}/share',
-    segment: 'documents',
-    tag: 'Sharing',
-    summary: 'Revoke all share links for a document.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    statuses: [200, 401, 403, 404, 410],
-  },
-  {
-    method: 'PUT',
-    path: '/documents/{id}/share-password',
-    segment: 'documents',
-    tag: 'Sharing',
-    summary: "Set or clear a document's share password.",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: {
-      type: 'object',
-      properties: { password: { type: ['string', 'null'] } },
-      required: ['password'],
-    },
-    statuses: [200, 400, 401, 403, 404, 410],
-  },
-  {
-    method: 'DELETE',
-    path: '/documents/{id}/share/{code}',
-    segment: 'documents',
-    tag: 'Sharing',
-    summary: 'Revoke one share link by its code.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    statuses: [204, 401, 403, 404, 410],
-  },
-  {
-    method: 'PUT',
-    path: '/documents/{id}/share/{code}',
-    segment: 'documents',
-    tag: 'Sharing',
-    summary: 'Change which tabs a share link opens: one tab, or null for all.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: {
-      type: 'object',
-      properties: { tabId: { type: ['string', 'null'] } },
-      required: ['tabId'],
-    },
-    responseSchema: wrap('link', 'ShareLink'),
-    statuses: [200, 400, 401, 403, 404, 410],
-  },
-  {
-    method: 'POST',
-    path: '/documents/{id}/share/{code}/extend',
-    segment: 'documents',
-    tag: 'Sharing',
-    summary: 'Re-arm an expiring share link.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    responseSchema: wrap('link', 'ShareLink'),
-    statuses: [200, 400, 401, 403, 404, 410],
   },
   {
     method: 'GET',
@@ -933,52 +872,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tokenUsable: true,
     responseSchema: listOf('folders', 'Folder'),
     statuses: [200, 401],
-  },
-  {
-    method: 'POST',
-    path: '/folders',
-    segment: 'folders',
-    tag: 'Folders',
-    summary: 'Create a folder (personal or team).',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: {
-      type: 'object',
-      properties: {
-        id: { type: 'string' },
-        name: { type: 'string' },
-        parentId: { type: ['string', 'null'] },
-        teamId: { type: ['string', 'null'] },
-      },
-      required: ['id', 'name'],
-    },
-    responseSchema: wrap('folder', 'Folder'),
-    statuses: [201, 400, 401, 403, 404, 409],
-  },
-  {
-    method: 'PUT',
-    path: '/folders/{id}',
-    segment: 'folders',
-    tag: 'Folders',
-    summary: 'Rename or reparent a folder.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: {
-      type: 'object',
-      properties: { name: { type: 'string' }, parentId: { type: ['string', 'null'] } },
-    },
-    responseSchema: wrap('folder', 'Folder'),
-    statuses: [200, 400, 401, 403, 404, 409],
-  },
-  {
-    method: 'DELETE',
-    path: '/folders/{id}',
-    segment: 'folders',
-    tag: 'Folders',
-    summary: 'Delete a folder.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    statuses: [204, 401, 403, 404],
   },
 
   // ---- Images ----
@@ -1185,27 +1078,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/shared',
-    segment: 'shared',
-    tag: 'Sharing',
-    summary: 'List documents shared with the caller.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    responseSchema: listOf('shared', 'SharedWithItem'),
-    statuses: [200, 401],
-  },
-  {
-    method: 'DELETE',
-    path: '/shared/{documentId}',
-    segment: 'shared',
-    tag: 'Sharing',
-    summary: 'Remove a document from the caller\'s "shared with you" list.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    statuses: [200, 401],
-  },
-  {
-    method: 'GET',
     path: '/share/{code}',
     segment: 'share',
     tag: 'Sharing',
@@ -1334,94 +1206,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [204, 400, 401, 409, 413],
   },
 
-  // ---- Favourites (docs/specs/013-workspace/favourites.md) ----
-  {
-    method: 'GET',
-    path: '/favourites',
-    segment: 'favourites',
-    tag: 'Account',
-    summary: 'The document ids the caller has starred, newest first.',
-    auth: 'guest-or-clerk',
-    responseSchema: {
-      type: 'object',
-      properties: { ids: { type: 'array', items: { type: 'string' } } },
-    },
-    statuses: [200, 401],
-  },
-  {
-    method: 'PUT',
-    path: '/favourites/{documentId}',
-    segment: 'favourites',
-    tag: 'Account',
-    summary: 'Star a document for the caller. Idempotent; 404 when there is no such document.',
-    auth: 'guest-or-clerk',
-    statuses: [204, 401, 404],
-  },
-  {
-    method: 'DELETE',
-    path: '/favourites/{documentId}',
-    segment: 'favourites',
-    tag: 'Account',
-    summary: 'Un-star a document for the caller.',
-    auth: 'guest-or-clerk',
-    statuses: [204, 401],
-  },
-
-  // ---- Default folders (docs/specs/013-workspace/default-folders.md) ----
-  {
-    method: 'GET',
-    path: '/placement-defaults',
-    segment: 'placement-defaults',
-    tag: 'Folders',
-    summary:
-      "The caller's default folders, one per key (mode:diagram, mode:draw, kind:event-storming, " +
-      'template:retrospective, template:kanban), dangling ones included.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    responseSchema: {
-      type: 'object',
-      properties: {
-        defaults: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: { key: { type: 'string' }, folderId: { type: 'string' } },
-            required: ['key', 'folderId'],
-          },
-        },
-      },
-    },
-    statuses: [200, 401],
-  },
-  {
-    method: 'PUT',
-    path: '/placement-defaults/{key}',
-    segment: 'placement-defaults',
-    tag: 'Folders',
-    summary:
-      "Set the caller's default folder for a key: their own personal folder or a folder of a team " +
-      'they have joined. Refusals: default_key_invalid, default_folder_invalid (400), ' +
-      'folder_not_found (404).',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: {
-      type: 'object',
-      properties: { folderId: { type: 'string', minLength: 1 } },
-      required: ['folderId'],
-    },
-    statuses: [204, 400, 401, 404, 429],
-  },
-  {
-    method: 'DELETE',
-    path: '/placement-defaults/{key}',
-    segment: 'placement-defaults',
-    tag: 'Folders',
-    summary: "Clear the caller's default folder for a key. Idempotent; default_key_invalid (400).",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    statuses: [204, 400, 401, 429],
-  },
-
   // ---- Trash (docs/specs/013-workspace/trash.md) ----
   {
     method: 'GET',
@@ -1440,7 +1224,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/trash',
     segment: 'trash',
     tag: 'Trash',
-    summary: 'Empty the personal Trash, or one team Trash with team=<id> (joined members only).',
+    summary: 'Empty the personal Trash of canvases, or one team Trash with team=<id> (joined members only).',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: [{ name: 'team', required: false, description: 'Empty this team Trash instead.' }],
@@ -1449,7 +1233,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       properties: { purged: { type: 'number' } },
       required: ['purged'],
     },
-    statuses: [200, 400, 401, 404],
+    statuses: [200, 400, 401, 403, 404],
   },
   {
     method: 'POST',
@@ -1472,104 +1256,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'guest-or-clerk',
     tokenUsable: true,
     statuses: [204, 400, 401, 404],
-  },
-
-  // ---- Timeline (docs/specs/013-workspace/timeline.md) ----
-  {
-    method: 'GET',
-    path: '/timeline',
-    segment: 'timeline',
-    tag: 'Account',
-    summary: "The caller's activity feed, newest first. Keyset-paginated via nextCursor.",
-    auth: 'guest-or-clerk',
-    responseSchema: {
-      type: 'object',
-      properties: {
-        items: { type: 'array', items: { $ref: '#/components/schemas/TimelineEvent' } },
-        nextCursor: { type: 'string' },
-        lastSeenAt: { type: 'number' },
-      },
-    },
-    statuses: [200, 400, 401, 403],
-  },
-  {
-    method: 'GET',
-    path: '/timeline/unread',
-    segment: 'timeline',
-    tag: 'Account',
-    summary: "Count of other people's events since the caller last read their feed (capped at 99).",
-    auth: 'guest-or-clerk',
-    responseSchema: { type: 'object', properties: { count: { type: 'number' } } },
-    statuses: [200, 400, 401],
-  },
-  {
-    method: 'POST',
-    path: '/timeline/refresh',
-    segment: 'timeline',
-    tag: 'Account',
-    summary: 'Seed the feed on first use and mark it seen. Throttled to once every 5s.',
-    auth: 'guest-or-clerk',
-    responseSchema: { type: 'object', properties: { lastSeenAt: { type: 'number' } } },
-    statuses: [200, 400, 401],
-  },
-  {
-    method: 'DELETE',
-    path: '/timeline/events/{id}',
-    segment: 'timeline',
-    tag: 'Account',
-    summary:
-      "Remove one event from the caller's own feed. Other readers of the same event keep it. 404 when the feed never held it.",
-    auth: 'guest-or-clerk',
-    statuses: [204, 401, 404],
-  },
-  {
-    method: 'POST',
-    path: '/timeline/events/dismiss',
-    segment: 'timeline',
-    tag: 'Account',
-    summary:
-      "Remove several events (a whole stack) from the caller's own feed in one call. Up to 200 ids; unknown ids are ignored.",
-    auth: 'guest-or-clerk',
-    requestSchema: {
-      type: 'object',
-      required: ['ids'],
-      properties: { ids: { type: 'array', items: { type: 'string' } } },
-    },
-    responseSchema: { type: 'object', properties: { dismissed: { type: 'number' } } },
-    statuses: [200, 400, 401],
-  },
-
-  // ---- Activity (docs/specs/013-workspace/inbox.md) ----
-  {
-    method: 'GET',
-    path: '/activity',
-    segment: 'activity',
-    tag: 'Account',
-    summary:
-      'What is outstanding for the caller across every document they can open: open actions assigned to them or by them, and unresolved comment threads they are in. Capped at 100 per kind, newest first.',
-    auth: 'guest-or-clerk',
-    responseSchema: {
-      type: 'object',
-      properties: {
-        actions: { type: 'array', items: { $ref: '#/components/schemas/ActivityAction' } },
-        threads: { type: 'array', items: { $ref: '#/components/schemas/ActivityThread' } },
-      },
-      required: ['actions', 'threads'],
-    },
-    statuses: [200, 400, 401],
-  },
-
-  // ---- Explorer Home (docs/specs/013-workspace/explorer-home.md) ----
-  {
-    method: 'GET',
-    path: '/home',
-    segment: 'home',
-    tag: 'Account',
-    summary:
-      "The Explorer's Home in one read: Jump back in (the caller's Within reach set: the 4 documents they used on the most days over the last 90, then the 4 they used most recently, none twice; most used first) and What happened (other people's actions on documents the caller can open over the last 14 days, one group per document per day in `tz`). Query: `tz` (IANA, default UTC). 400 `tz_invalid`.",
-    auth: 'guest-or-clerk',
-    responseSchema: { $ref: '#/components/schemas/HomeResponse' },
-    statuses: [200, 400, 401, 429],
   },
 
   // ---- Account ----
@@ -1628,105 +1314,14 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/teams/invite-link/{token}',
-    segment: 'teams',
-    tag: 'Teams',
-    summary:
-      'Retired: an old team invite link. Answers 410 teams_moved with manageAt; join links are opened on liveworkspace.app.',
-    auth: 'public',
-    statuses: [410],
-  },
-  {
-    method: 'GET',
-    path: '/teams/invite-decline/{token}',
-    segment: 'teams',
-    tag: 'Teams',
-    summary:
-      "Retired: an old invitation email's Decline link. Answers 410 teams_moved with manageAt, since invitations are answered on liveworkspace.app.",
-    auth: 'public',
-    statuses: [410],
-  },
-  {
-    method: 'POST',
-    path: '/teams/invite-decline/{token}',
-    segment: 'teams',
-    tag: 'Teams',
-    summary:
-      "Retired: an old invitation email's Decline link. Answers 410 teams_moved with manageAt, since invitations are answered on liveworkspace.app.",
-    auth: 'public',
-    statuses: [410],
-  },
-  {
-    method: 'POST',
-    path: '/teams/invite-link/{token}/join',
-    segment: 'teams',
-    tag: 'Teams',
-    summary:
-      'Retired: joining through an old team invite link. Answers 410 teams_moved with manageAt; join links are opened on liveworkspace.app.',
-    auth: 'clerk',
-    statuses: [410],
-  },
-  {
-    method: 'GET',
-    path: '/teams/{id}',
-    segment: 'teams',
-    tag: 'Teams',
-    summary:
-      'Get a team, its joined members and your role (inviteLink is always null: teams are managed on liveworkspace.app).',
-    auth: 'clerk',
-    tokenUsable: true,
-    responseSchema: { type: 'object' },
-    statuses: [200, 401, 404],
-  },
-  {
-    method: 'PUT',
-    path: '/teams/{id}',
-    segment: 'teams',
-    tag: 'Teams',
-    summary:
-      'Retired: renaming a team. Answers 410 teams_moved with manageAt; teams are managed on liveworkspace.app.',
-    auth: 'clerk',
-    statuses: [410],
-  },
-  {
-    method: 'DELETE',
-    path: '/teams/{id}',
-    segment: 'teams',
-    tag: 'Teams',
-    summary:
-      'Retired: deleting a team. Answers 410 teams_moved with manageAt; teams are managed on liveworkspace.app.',
-    auth: 'clerk',
-    statuses: [410],
-  },
-  {
-    method: 'POST',
-    path: '/teams/{id}/invite-link',
-    segment: 'teams',
-    tag: 'Teams',
-    summary:
-      "Retired: making a team's invite link. Answers 410 teams_moved with manageAt; teams are managed on liveworkspace.app.",
-    auth: 'clerk',
-    statuses: [410],
-  },
-  {
-    method: 'DELETE',
-    path: '/teams/{id}/invite-link',
-    segment: 'teams',
-    tag: 'Teams',
-    summary:
-      "Retired: turning a team's invite link off. Answers 410 teams_moved with manageAt; teams are managed on liveworkspace.app.",
-    auth: 'clerk',
-    statuses: [410],
-  },
-  {
-    method: 'POST',
     path: '/teams/{id}/members',
     segment: 'teams',
     tag: 'Teams',
     summary:
-      'Retired: inviting someone by email. Answers 410 teams_moved with manageAt; teams are managed on liveworkspace.app.',
+      "A team's joined and invited people (joined member), for the assignee picker and @-mentions. Not for API tokens.",
     auth: 'clerk',
-    statuses: [410],
+    responseSchema: listOf('members', 'TeamMember'),
+    statuses: [200, 401, 404],
   },
   {
     method: 'GET',
@@ -1787,36 +1382,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       required: ['documentId', 'commentText', 'mentions'],
     },
     statuses: [202, 400, 401, 403, 404],
-  },
-  {
-    method: 'POST',
-    path: '/teams/{id}/members/{memberId}/accept',
-    segment: 'teams',
-    tag: 'Teams',
-    summary:
-      'Retired: accepting an invitation. Answers 410 teams_moved with manageAt; invitations are answered on liveworkspace.app.',
-    auth: 'clerk',
-    statuses: [410],
-  },
-  {
-    method: 'PUT',
-    path: '/teams/{id}/members/{memberId}',
-    segment: 'teams',
-    tag: 'Teams',
-    summary:
-      "Retired: changing a member's role. Answers 410 teams_moved with manageAt; teams are managed on liveworkspace.app.",
-    auth: 'clerk',
-    statuses: [410],
-  },
-  {
-    method: 'DELETE',
-    path: '/teams/{id}/members/{memberId}',
-    segment: 'teams',
-    tag: 'Teams',
-    summary:
-      'Retired: removing a member or leaving. Answers 410 teams_moved with manageAt; teams are managed on liveworkspace.app.',
-    auth: 'clerk',
-    statuses: [410],
   },
   {
     method: 'GET',

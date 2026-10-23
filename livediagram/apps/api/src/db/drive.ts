@@ -9,6 +9,8 @@ import type {
   DriveItemKind,
   DriveLease,
 } from '@livediagram/api-schema';
+import { FOLDER_PREVIEW_IDS_MAX, IndexError } from '@liveworkspace/index-client';
+import { INDEX_APP, indexFor } from '../index-service';
 import { personStore } from '../person-client';
 import type { Env } from '../types';
 
@@ -80,38 +82,55 @@ export async function deleteDriveConnection(env: Env, ownerId: string): Promise<
 
 // The owner's mirrored items. An item whose canvas or folder was removed for good is no longer mirrored: it is
 // dropped here, the first time the list is read after the removal, and the browser finishes the Drive side from its
-// own memory of the rows it saw. One indexed read per kind present, of ids the mirror already holds.
+// own memory of the rows it saw. The index is asked about the ids the mirror already holds (removedItems).
 export async function listDriveItems(env: Env, ownerId: string): Promise<DriveItem[]> {
   const store = personStore(env, ownerId);
   const items = await store.driveItems();
   if (items.length === 0) return items;
-  const gone = await removedItems(env, items);
+  const gone = await removedItems(env, ownerId, items);
   if (gone.length === 0) return items;
   await store.driveDeleteItems(gone);
   const dropped = new Set(gone.map((g) => `${g.kind}:${g.ldId}`));
   return items.filter((i) => !dropped.has(`${i.kind}:${i.ldId}`));
 }
 
-// Which of these items name a canvas or folder that no longer exists (the Trash keeps a canvas, so a trashed one is
-// still mirrored).
+// Which of these items name a canvas or folder that no longer exists, as the index answers the owner (the Trash keeps
+// a canvas, so a trashed one is still mirrored). A canvas is asked for by id, DRIVE_LOOKUPS_IN_FLIGHT at a time, and
+// only a 404 counts as gone; folders go DRIVE_FOLDERS_PER_LOOKUP to a request, and one the owner can no longer reach
+// counts as gone. Any other failure keeps the item: an index that can't answer never unmirrors anything.
+export const DRIVE_LOOKUPS_IN_FLIGHT = 10;
+const DRIVE_FOLDERS_PER_LOOKUP = FOLDER_PREVIEW_IDS_MAX;
+
 async function removedItems(
   env: Env,
+  ownerId: string,
   items: readonly DriveItem[],
 ): Promise<{ kind: DriveItemKind; ldId: string }[]> {
+  const client = indexFor(env, { kind: 'delegate', personId: ownerId, teams: [] });
+  if (!client) return [];
   const gone: { kind: DriveItemKind; ldId: string }[] = [];
-  for (const [kind, table] of [
-    ['document', 'documents'],
-    ['folder', 'folders'],
-  ] as const) {
-    const ids = items.filter((i) => i.kind === kind).map((i) => i.ldId);
-    if (ids.length === 0) continue;
-    const found = await env.DB.prepare(
-      `SELECT id FROM ${table} WHERE id IN (SELECT value FROM json_each(?))`,
-    )
-      .bind(JSON.stringify(ids))
-      .all<{ id: string }>();
-    const live = new Set((found.results ?? []).map((r) => r.id));
-    for (const ldId of ids) if (!live.has(ldId)) gone.push({ kind, ldId });
+  const documents = items.filter((i) => i.kind === 'document').map((i) => i.ldId);
+  for (let i = 0; i < documents.length; i += DRIVE_LOOKUPS_IN_FLIGHT) {
+    await Promise.all(
+      documents.slice(i, i + DRIVE_LOOKUPS_IN_FLIGHT).map(async (ldId) => {
+        try {
+          await client.getItem(ldId);
+        } catch (err) {
+          if (err instanceof IndexError && err.status === 404) gone.push({ kind: 'document', ldId });
+        }
+      }),
+    );
+  }
+  const folders = items.filter((i) => i.kind === 'folder').map((i) => i.ldId);
+  for (let i = 0; i < folders.length; i += DRIVE_FOLDERS_PER_LOOKUP) {
+    const ids = folders.slice(i, i + DRIVE_FOLDERS_PER_LOOKUP);
+    try {
+      const { previews } = await client.folderPreviews(ids, { app: INDEX_APP });
+      const live = new Set(previews.map((p) => p.folderId));
+      for (const ldId of ids) if (!live.has(ldId)) gone.push({ kind: 'folder', ldId });
+    } catch (err) {
+      console.warn('[drive] folder lookup failed', { error: String(err) });
+    }
   }
   return gone;
 }

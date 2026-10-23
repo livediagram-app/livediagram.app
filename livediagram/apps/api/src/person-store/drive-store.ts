@@ -11,7 +11,7 @@ import {
   type DriveItemKind,
   type DriveLease,
 } from '@livediagram/api-schema';
-import type { DocumentSql } from '../document-room/document-db';
+import type { ItemSql as DocumentSql } from '@liveworkspace/index-app';
 
 type ConnectionRow = {
   refresh_token_enc: string | null;

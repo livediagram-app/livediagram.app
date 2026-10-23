@@ -36,8 +36,8 @@ function roomThat(relay: 'ok' | 'throws') {
 
 async function setUp(relay: 'ok' | 'throws' = 'ok'): Promise<SqliteD1> {
   const db = sqliteD1({ DOCUMENT_ROOM: roomThat(relay) } as unknown as Partial<Env>);
-  db.sql.exec(`INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
-               VALUES ('D', 'user_o', 'Doc', 0, 1, 1)`);
+  db.sql.exec(`INSERT INTO test_documents (id, owner_id, name, saved_at, created_at)
+               VALUES ('D', 'user_o', 'Doc', 1, 1)`);
   await seedTabs(db.env, 'D', [{ id: 't1', name: 'T', elements: [box('a'), box('b')] }]);
   return db;
 }

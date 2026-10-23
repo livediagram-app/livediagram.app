@@ -15,7 +15,7 @@ import type {
   ShapeLibrary,
   ShapeLibraryItem,
 } from '@livediagram/api-schema';
-import type { DocumentSql } from '../document-room/document-db';
+import type { ItemSql as DocumentSql } from '@liveworkspace/index-app';
 import type { Env } from '../types';
 import * as drive from './drive-store';
 import { hasPersonSchema, migratePersonSchema } from './person-schema';

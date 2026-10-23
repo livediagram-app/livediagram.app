@@ -19,8 +19,13 @@ import {
   rows,
   storeSql,
   tokenOf,
+  USER_1_TEAMS,
   workbenchDb,
 } from './workbench-test-fixtures';
+
+vi.mock('../index-service', async (original) =>
+  (await import('./workbench-test-fixtures')).indexServiceWithTestIndex(original as never),
+);
 
 const SESSION_CONTEXT: WorkbenchContext = {
   sessionId: 'sess1',
@@ -46,6 +51,7 @@ async function mintTicket(
       env: db.env,
       owner: 'user_1',
       verifiedUserId: 'user_1',
+      teams: USER_1_TEAMS,
       token,
       body,
     }),
@@ -180,7 +186,7 @@ describe('POST /api/workbench/sessions', () => {
     const db = await workbenchDb();
     await pairToken(db);
     const ticket = await mintTicket(db);
-    db.sql.exec(`UPDATE documents SET owner_id = 'user_2' WHERE id = 'doc1'`);
+    db.sql.exec(`UPDATE document SET owner_id = 'user_2' WHERE id = 'doc1'`);
 
     const res = await redeem(db, { ticket });
 

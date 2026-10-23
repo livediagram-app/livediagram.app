@@ -1,50 +1,72 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Env } from '../types';
+import {
+  JOIN_NOTIFY_THROTTLE_MS,
+  NOTIFY_EMAIL_DEDUPE_MS,
+  NOTIFY_EMAILS_PER_SENDER_PER_HOUR,
+  type TeamPerson,
+} from '@liveworkspace/auth-client';
+import type { DocumentEnv } from '../types';
 
-vi.mock('../db', () => ({
-  claimCommentNotify: vi.fn(),
-  claimJoinNotify: vi.fn(),
-  claimNotifyEmail: vi.fn(),
-  claimFormEmail: vi.fn(),
+// Who gets an email (a verified address with the switch not off) and how many canvases someone has made are
+// liveworkspace's (liveworkspace/notify.ts, tested on its own); the once-only claims are the canvas's own
+// (@liveworkspace/index-app notify-claims.ts) or accounts' (the milestones).
+vi.mock('../liveworkspace/notify', () => ({ notifyRecipients: vi.fn(), canvasesMadeBy: vi.fn() }));
+vi.mock('../liveworkspace/emails', () => ({ claimMilestone: vi.fn() }));
+vi.mock('../liveworkspace/profiles', () => ({ getParticipant: vi.fn() }));
+vi.mock('../document-room/document-content', () => ({ claimCommentNotify: vi.fn() }));
+vi.mock('@liveworkspace/index-app', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@liveworkspace/index-app')>()),
+  claimNotice: vi.fn(),
+  claimNotices: vi.fn(),
+  workbenchAllowance: () => null,
 }));
-vi.mock('../liveworkspace/emails', () => ({
-  getOwnerEmail: vi.fn(),
-  getOwnerEmails: vi.fn(),
-  claimMilestone: vi.fn(),
-}));
-vi.mock('../liveworkspace/notification-prefs', () => ({ getNotificationPrefs: vi.fn() }));
 vi.mock('./client', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./client')>()),
   sendEmail: vi.fn(),
 }));
 
-import { claimCommentNotify, claimJoinNotify, claimNotifyEmail } from '../db';
-import { claimMilestone, getOwnerEmail } from '../liveworkspace/emails';
-import { getNotificationPrefs } from '../liveworkspace/notification-prefs';
+import { claimNotice, claimNotices } from '@liveworkspace/index-app';
+import { claimCommentNotify } from '../document-room/document-content';
+import { claimMilestone } from '../liveworkspace/emails';
+import { canvasesMadeBy, notifyRecipients } from '../liveworkspace/notify';
+import { getParticipant } from '../liveworkspace/profiles';
 import { sendEmail } from './client';
 import { actionAssignedEmail, commentNotificationEmail } from './templates';
 import {
   notifyActionAssigned,
   notifyDocumentJoin,
-  notifyMentioned,
   notifyFirstShare,
+  notifyMentioned,
   notifyMilestone,
   notifyNewComment,
-  NOTIFY_EMAIL_DEDUPE_MS,
-  NOTIFY_EMAILS_PER_SENDER_PER_HOUR,
 } from './notifications';
 
-const env = { RESEND_API_KEY: 're', APP_BASE_URL: 'https://app.test' } as unknown as Env;
-const liveDoc = { id: 'd1', ownerId: 'u1', name: 'Roadmap' };
-const allowAll = {
-  notifyDocumentJoin: true,
-  notifyComments: true,
-  notifyMilestones: true,
-  notifyActionAssigned: true,
-  notifyMentions: true,
-};
+const env = { RESEND_API_KEY: 're', APP_BASE_URL: 'https://app.test' } as unknown as DocumentEnv;
+const liveDoc = { id: 'd1', ownerId: 'user_u1', name: 'Roadmap' };
 
-afterEach(() => vi.clearAllMocks());
+// These accounts have a verified address and the switch on; anyone else gets nothing (opted out, or no address).
+function reachable(addresses: Record<string, string>) {
+  vi.mocked(notifyRecipients).mockImplementation(
+    async (_env, ids) =>
+      new Map(ids.flatMap((id) => (addresses[id] ? [[id, addresses[id]] as const] : []))),
+  );
+}
+
+type Claim = {
+  key: string;
+  sender: string;
+  now: number;
+  dedupeSince: number;
+  rate?: { max: number };
+};
+const claimed = () => vi.mocked(claimNotices).mock.calls.flatMap((c) => c[1] as Claim[]);
+
+beforeEach(() => {
+  vi.mocked(sendEmail).mockResolvedValue({ sent: true });
+  vi.mocked(notifyRecipients).mockResolvedValue(new Map());
+  vi.mocked(claimNotices).mockImplementation(async (_db, claims) => claims.map(() => true));
+});
+afterEach(() => vi.resetAllMocks());
 
 describe('commentNotificationEmail', () => {
   it('names the commenter + document, links to the document, omits comment text', () => {
@@ -65,70 +87,76 @@ describe('commentNotificationEmail', () => {
 });
 
 describe('notifyDocumentJoin (docs/specs/014-identity/profile-and-email-notifications.md)', () => {
-  it('emails the owner when the per-document claim is won', async () => {
-    vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.test');
-    vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
-    vi.mocked(claimJoinNotify).mockResolvedValue(true);
-    vi.mocked(sendEmail).mockResolvedValue({ sent: true });
-    await notifyDocumentJoin(env, liveDoc, 'Anna');
-    expect(claimJoinNotify).toHaveBeenCalledWith(env, 'd1', expect.any(Number), expect.any(Number));
-    const [, now, cutoff] = vi.mocked(claimJoinNotify).mock.calls[0]!.slice(1);
-    expect((now as number) - (cutoff as number)).toBe(15 * 60 * 1000);
+  it('emails the owner when the per-canvas claim is won, naming the joiner', async () => {
+    reachable({ user_u1: 'owner@x.test' });
+    vi.mocked(claimNotice).mockResolvedValue(true);
+    vi.mocked(getParticipant).mockResolvedValue({ name: 'Anna' } as never);
+    await notifyDocumentJoin(env, liveDoc, 'user_anna');
+    expect(notifyRecipients).toHaveBeenCalledWith(env, ['user_u1'], 'notifyDocumentJoin');
+    const [, claim] = vi.mocked(claimNotice).mock.calls[0]!;
+    expect(claim).toMatchObject({ key: 'join', sender: 'user_u1' });
+    expect(claim.now - claim.dedupeSince).toBe(JOIN_NOTIFY_THROTTLE_MS);
     expect(sendEmail).toHaveBeenCalledOnce();
+    expect(vi.mocked(sendEmail).mock.calls[0]![1].to).toBe('owner@x.test');
+    expect(vi.mocked(sendEmail).mock.calls[0]![1].html).toContain('Anna');
   });
 
   it('stays quiet inside the throttle window', async () => {
-    vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.test');
-    vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
-    vi.mocked(claimJoinNotify).mockResolvedValue(false);
-    await notifyDocumentJoin(env, liveDoc, 'Anna');
+    reachable({ user_u1: 'owner@x.test' });
+    vi.mocked(claimNotice).mockResolvedValue(false);
+    await notifyDocumentJoin(env, liveDoc, 'user_anna');
     expect(sendEmail).not.toHaveBeenCalled();
   });
 
   it('spends no claim when the owner opted out', async () => {
-    vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.test');
-    vi.mocked(getNotificationPrefs).mockResolvedValue({ ...allowAll, notifyDocumentJoin: false });
-    await notifyDocumentJoin(env, liveDoc, 'Anna');
-    expect(claimJoinNotify).not.toHaveBeenCalled();
+    await notifyDocumentJoin(env, liveDoc, 'user_anna');
+    expect(claimNotice).not.toHaveBeenCalled();
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+
+  it('never writes for a guest joiner, or for the owner opening their own canvas', async () => {
+    reachable({ user_u1: 'owner@x.test' });
+    vi.mocked(claimNotice).mockResolvedValue(true);
+    await notifyDocumentJoin(env, liveDoc, '0f5ca4af-9a8a-4a60-be5e-1179e5555880');
+    await notifyDocumentJoin(env, liveDoc, 'user_u1');
+    expect(notifyRecipients).not.toHaveBeenCalled();
     expect(sendEmail).not.toHaveBeenCalled();
   });
 });
 
 describe('notifyNewComment', () => {
   it('does nothing when email is off', async () => {
-    await notifyNewComment({} as Env, liveDoc, 'Anna');
-    expect(getOwnerEmail).not.toHaveBeenCalled();
+    await notifyNewComment({} as DocumentEnv, liveDoc, 'Anna');
+    expect(notifyRecipients).not.toHaveBeenCalled();
   });
 
   it('sends to the owner when they have an address and have not opted out', async () => {
-    vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.com');
-    vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
+    reachable({ user_u1: 'owner@x.com' });
     vi.mocked(claimCommentNotify).mockResolvedValue(true);
-    vi.mocked(sendEmail).mockResolvedValue({ sent: true });
     await notifyNewComment(env, liveDoc, 'Anna');
+    expect(notifyRecipients).toHaveBeenCalledWith(env, ['user_u1'], 'notifyComments');
     expect(sendEmail).toHaveBeenCalledOnce();
+    const [, documentId, now, cutoff] = vi.mocked(claimCommentNotify).mock.calls[0]!;
+    expect(documentId).toBe('d1');
+    expect(now - cutoff).toBe(15 * 60 * 1000);
   });
 
   it('throttles: no send when a comment email went out recently', async () => {
-    vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.com');
-    vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
+    reachable({ user_u1: 'owner@x.com' });
     vi.mocked(claimCommentNotify).mockResolvedValue(false);
     await notifyNewComment(env, liveDoc, 'Anna');
     expect(sendEmail).not.toHaveBeenCalled();
   });
 
-  it('skips when the owner opted out of comment notifications', async () => {
-    vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.com');
-    vi.mocked(getNotificationPrefs).mockResolvedValue({ ...allowAll, notifyComments: false });
+  it('skips, spending no claim, when the owner opted out or has no address', async () => {
     await notifyNewComment(env, liveDoc, 'Anna');
+    expect(claimCommentNotify).not.toHaveBeenCalled();
     expect(sendEmail).not.toHaveBeenCalled();
   });
 
-  it('skips when the owner has no stored address (e.g. a guest)', async () => {
-    vi.mocked(getOwnerEmail).mockResolvedValue(null);
-    await notifyNewComment(env, liveDoc, 'Anna');
-    expect(getNotificationPrefs).not.toHaveBeenCalled();
-    expect(sendEmail).not.toHaveBeenCalled();
+  it('skips a guest-owned canvas without asking', async () => {
+    await notifyNewComment(env, { ...liveDoc, ownerId: 'guest-1' }, 'Anna');
+    expect(notifyRecipients).not.toHaveBeenCalled();
   });
 });
 
@@ -180,86 +208,79 @@ describe('actionAssignedEmail (docs/specs/012-collaboration/assigned-actions.md)
 });
 
 describe('notifyActionAssigned (docs/specs/012-collaboration/assigned-actions.md)', () => {
+  const assignee: TeamPerson = {
+    id: 'm-2',
+    userId: 'user_u2',
+    email: 'invited@x.com',
+    name: null,
+    role: 'member',
+    status: 'joined',
+  };
   const input = {
-    assigneeUserId: 'u2',
-    assigneeFallbackEmail: 'invited@x.com',
-    assignerUserId: 'u1',
+    assignee,
+    assignerUserId: 'user_u1',
     assignerName: 'Sam',
     document: { id: 'd1', name: 'Roadmap' },
     assigneeCanOpen: true,
     actionName: 'Review the copy',
     description: null,
   };
-  beforeEach(() => vi.mocked(claimNotifyEmail).mockResolvedValue(true));
 
   it('does nothing when email is off', async () => {
-    await notifyActionAssigned({} as Env, input);
-    expect(getOwnerEmail).not.toHaveBeenCalled();
+    await notifyActionAssigned({} as DocumentEnv, input);
+    expect(notifyRecipients).not.toHaveBeenCalled();
     expect(sendEmail).not.toHaveBeenCalled();
   });
 
   it('sends to the assignee’s verified address when opted in', async () => {
-    vi.mocked(getOwnerEmail).mockResolvedValue('assignee@x.com');
-    vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
-    vi.mocked(sendEmail).mockResolvedValue({ sent: true });
+    reachable({ user_u2: 'assignee@x.com' });
     await notifyActionAssigned(env, input);
+    expect(notifyRecipients).toHaveBeenCalledWith(env, ['user_u2'], 'notifyActionAssigned');
     expect(sendEmail).toHaveBeenCalledOnce();
     expect(vi.mocked(sendEmail).mock.calls[0]![1].to).toBe('assignee@x.com');
   });
 
-  it('falls back to the team-member invite address when no lifecycle row exists', async () => {
-    vi.mocked(getOwnerEmail).mockResolvedValue(null);
-    vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
-    vi.mocked(sendEmail).mockResolvedValue({ sent: true });
-    await notifyActionAssigned(env, input);
+  it('writes to an invited person at their invite address, with no switch to read', async () => {
+    await notifyActionAssigned(env, {
+      ...input,
+      assignee: { ...assignee, userId: null, status: 'invited' },
+    });
+    expect(notifyRecipients).not.toHaveBeenCalled();
     expect(vi.mocked(sendEmail).mock.calls[0]![1].to).toBe('invited@x.com');
   });
 
-  it('skips when the assignee opted out', async () => {
-    vi.mocked(getOwnerEmail).mockResolvedValue('assignee@x.com');
-    vi.mocked(getNotificationPrefs).mockResolvedValue({
-      ...allowAll,
-      notifyActionAssigned: false,
-    });
+  it('skips an account that opted out (or has no verified address): never its invite address', async () => {
     await notifyActionAssigned(env, input);
-    expect(sendEmail).not.toHaveBeenCalled();
-  });
-
-  it('skips when no address is resolvable at all', async () => {
-    vi.mocked(getOwnerEmail).mockResolvedValue(null);
-    await notifyActionAssigned(env, { ...input, assigneeFallbackEmail: null });
-    expect(getNotificationPrefs).not.toHaveBeenCalled();
+    expect(claimNotices).not.toHaveBeenCalled();
     expect(sendEmail).not.toHaveBeenCalled();
   });
 
   it('claims each email against the assigner, keyed on what it says and to whom', async () => {
-    vi.mocked(getOwnerEmail).mockResolvedValue('assignee@x.com');
-    vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
-    vi.mocked(sendEmail).mockResolvedValue({ sent: true });
+    reachable({ user_u2: 'assignee@x.com' });
     await notifyActionAssigned(env, input);
     await notifyActionAssigned(env, input);
     await notifyActionAssigned(env, { ...input, actionName: 'Something else' });
-    const claims = vi.mocked(claimNotifyEmail).mock.calls.map((c) => c[1]);
-    expect(claims.map((c) => c.senderId)).toEqual(['u1', 'u1', 'u1']);
+    const claims = claimed();
+    expect(claims.map((c) => c.sender)).toEqual(['user_u1', 'user_u1', 'user_u1']);
     expect(claims[0]!.key).toMatch(/^[0-9a-f]{64}$/);
     expect(claims[1]!.key).toBe(claims[0]!.key);
     expect(claims[2]!.key).not.toBe(claims[0]!.key);
-    expect(claims[0]!.rateMax).toBe(NOTIFY_EMAILS_PER_SENDER_PER_HOUR);
+    expect(claims[0]!.rate?.max).toBe(NOTIFY_EMAILS_PER_SENDER_PER_HOUR);
     expect(claims[0]!.now - claims[0]!.dedupeSince).toBe(NOTIFY_EMAIL_DEDUPE_MS);
+    // In the canvas's own store.
+    expect(vi.mocked(claimNotices).mock.calls[0]![0]).toBe(env.DOCUMENT_DB);
   });
 
   it('sends nothing when the claim is refused (a duplicate, or the assigner is over the cap)', async () => {
-    vi.mocked(getOwnerEmail).mockResolvedValue('assignee@x.com');
-    vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
-    vi.mocked(claimNotifyEmail).mockResolvedValue(false);
+    reachable({ user_u2: 'assignee@x.com' });
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.mocked(claimNotices).mockResolvedValue([false]);
     await notifyActionAssigned(env, input);
     expect(sendEmail).not.toHaveBeenCalled();
   });
 
   it('leaves the document out for an assignee who cannot open it', async () => {
-    vi.mocked(getOwnerEmail).mockResolvedValue('assignee@x.com');
-    vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
-    vi.mocked(sendEmail).mockResolvedValue({ sent: true });
+    reachable({ user_u2: 'assignee@x.com' });
     await notifyActionAssigned(env, { ...input, assigneeCanOpen: false });
     const html = vi.mocked(sendEmail).mock.calls[0]![1].html;
     expect(html).not.toContain('Roadmap');
@@ -268,115 +289,140 @@ describe('notifyActionAssigned (docs/specs/012-collaboration/assigned-actions.md
 });
 
 describe('notifyMentioned (docs/specs/012-collaboration/comment-mentions.md)', () => {
+  const priya: TeamPerson = {
+    id: 'm-2',
+    userId: 'user_priya',
+    email: 'priya-invite@x.com',
+    name: null,
+    role: 'member',
+    status: 'joined',
+  };
+  const invited: TeamPerson = {
+    id: 'm-3',
+    userId: null,
+    email: 'invited@x.com',
+    name: null,
+    role: 'member',
+    status: 'invited',
+  };
   const input = {
-    recipientUserId: 'u2',
-    recipientFallbackEmail: 'invited@x.com',
-    authorUserId: 'u1',
+    recipients: [priya],
+    authorUserId: 'user_u1',
     authorName: 'Sam',
     document: { id: 'd1', name: 'Roadmap' },
     commentText: 'Can you check this, @priya?',
   };
-  beforeEach(() => vi.mocked(claimNotifyEmail).mockResolvedValue(true));
 
-  it('does nothing when email is off', async () => {
-    await notifyMentioned({} as Env, input);
+  it('does nothing when email is off, or for no one', async () => {
+    await notifyMentioned({} as DocumentEnv, input);
+    await notifyMentioned(env, { ...input, recipients: [] });
+    expect(notifyRecipients).not.toHaveBeenCalled();
     expect(sendEmail).not.toHaveBeenCalled();
   });
 
   it('sends the quote to the recipient’s verified address when opted in', async () => {
-    vi.mocked(getOwnerEmail).mockResolvedValue('priya@x.com');
-    vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
-    vi.mocked(sendEmail).mockResolvedValue({ sent: true });
+    reachable({ user_priya: 'priya@x.com' });
     await notifyMentioned(env, input);
+    expect(notifyRecipients).toHaveBeenCalledWith(env, ['user_priya'], 'notifyMentions');
     const sent = vi.mocked(sendEmail).mock.calls[0]![1];
     expect(sent.to).toBe('priya@x.com');
     expect(sent.subject).toBe('Sam mentioned you in Roadmap');
     expect(sent.html).toContain('Can you check this, @priya?');
   });
 
-  it('writes to an invited member at their invite address, with no prefs to read', async () => {
-    vi.mocked(sendEmail).mockResolvedValue({ sent: true });
-    await notifyMentioned(env, { ...input, recipientUserId: null });
-    expect(getNotificationPrefs).not.toHaveBeenCalled();
+  it('writes to an invited member at their invite address, with no switch to read', async () => {
+    await notifyMentioned(env, { ...input, recipients: [invited] });
+    expect(notifyRecipients).not.toHaveBeenCalled();
     expect(vi.mocked(sendEmail).mock.calls[0]![1].to).toBe('invited@x.com');
   });
 
   it('skips when the recipient opted out of mention emails', async () => {
-    vi.mocked(getOwnerEmail).mockResolvedValue('priya@x.com');
-    vi.mocked(getNotificationPrefs).mockResolvedValue({ ...allowAll, notifyMentions: false });
     await notifyMentioned(env, input);
     expect(sendEmail).not.toHaveBeenCalled();
   });
 
+  it('asks once and claims once for everyone mentioned, sending only what was allowed', async () => {
+    reachable({ user_priya: 'priya@x.com' });
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.mocked(claimNotices).mockResolvedValue([true, false]);
+    await notifyMentioned(env, { ...input, recipients: [priya, invited] });
+    expect(notifyRecipients).toHaveBeenCalledOnce();
+    expect(claimNotices).toHaveBeenCalledOnce();
+    expect(vi.mocked(sendEmail).mock.calls.map((c) => c[1].to)).toEqual(['priya@x.com']);
+  });
+
   it('sends a replayed mention once: the second claim is refused', async () => {
-    vi.mocked(getOwnerEmail).mockResolvedValue('priya@x.com');
-    vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
-    vi.mocked(sendEmail).mockResolvedValue({ sent: true });
-    vi.mocked(claimNotifyEmail).mockResolvedValueOnce(true).mockResolvedValueOnce(false);
+    reachable({ user_priya: 'priya@x.com' });
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.mocked(claimNotices).mockResolvedValueOnce([true]).mockResolvedValueOnce([false]);
     await notifyMentioned(env, input);
     await notifyMentioned(env, input);
     expect(sendEmail).toHaveBeenCalledOnce();
-    const [first, second] = vi.mocked(claimNotifyEmail).mock.calls.map((c) => c[1]);
+    const [first, second] = claimed();
     expect(second!.key).toBe(first!.key);
-    expect(first!.senderId).toBe('u1');
+    expect(first!.sender).toBe('user_u1');
   });
 });
 
 describe('notifyMilestone (docs/specs/014-identity/transactional-email.md #6)', () => {
   it('sends + claims at a milestone count when opted in', async () => {
-    vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.com');
-    vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
+    vi.mocked(canvasesMadeBy).mockResolvedValue(10);
+    reachable({ user_u1: 'owner@x.com' });
     vi.mocked(claimMilestone).mockResolvedValue(true);
-    vi.mocked(sendEmail).mockResolvedValue({ sent: true });
-    await notifyMilestone(env, 'u1', 10);
-    expect(claimMilestone).toHaveBeenCalledWith(env, 'u1', 'milestone');
+    await notifyMilestone(env, 'user_u1');
+    expect(notifyRecipients).toHaveBeenCalledWith(env, ['user_u1'], 'notifyMilestones');
+    expect(claimMilestone).toHaveBeenCalledWith(env, 'user_u1', 'milestone');
     expect(sendEmail).toHaveBeenCalledOnce();
   });
 
-  it('does nothing at a non-milestone count', async () => {
-    await notifyMilestone(env, 'u1', 7);
-    expect(getOwnerEmail).not.toHaveBeenCalled();
-  });
-
-  it('does not send when the claim is lost (a concurrent save already sent)', async () => {
-    vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.com');
-    vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
-    vi.mocked(claimMilestone).mockResolvedValue(false);
-    await notifyMilestone(env, 'u1', 10);
+  it('does nothing at a non-milestone count, or when the index cannot be asked', async () => {
+    vi.mocked(canvasesMadeBy).mockResolvedValueOnce(7).mockResolvedValueOnce(null);
+    await notifyMilestone(env, 'user_u1');
+    await notifyMilestone(env, 'user_u1');
+    expect(notifyRecipients).not.toHaveBeenCalled();
     expect(sendEmail).not.toHaveBeenCalled();
   });
 
-  it('skips when the owner opted out of milestones', async () => {
-    vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.com');
-    vi.mocked(getNotificationPrefs).mockResolvedValue({ ...allowAll, notifyMilestones: false });
-    await notifyMilestone(env, 'u1', 10);
+  it('never counts for a guest', async () => {
+    await notifyMilestone(env, 'guest-1');
+    expect(canvasesMadeBy).not.toHaveBeenCalled();
+  });
+
+  it('does not send when the claim is lost (a concurrent create already sent)', async () => {
+    vi.mocked(canvasesMadeBy).mockResolvedValue(10);
+    reachable({ user_u1: 'owner@x.com' });
+    vi.mocked(claimMilestone).mockResolvedValue(false);
+    await notifyMilestone(env, 'user_u1');
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+
+  it('skips, spending no claim, when the owner opted out of milestones', async () => {
+    vi.mocked(canvasesMadeBy).mockResolvedValue(10);
+    await notifyMilestone(env, 'user_u1');
+    expect(claimMilestone).not.toHaveBeenCalled();
     expect(sendEmail).not.toHaveBeenCalled();
   });
 });
 
 describe('notifyFirstShare (docs/specs/014-identity/transactional-email.md #6)', () => {
   it('sends + claims on a first share when opted in', async () => {
-    vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.com');
-    vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
+    reachable({ user_u1: 'owner@x.com' });
     vi.mocked(claimMilestone).mockResolvedValue(true);
-    vi.mocked(sendEmail).mockResolvedValue({ sent: true });
-    await notifyFirstShare(env, 'u1');
-    expect(claimMilestone).toHaveBeenCalledWith(env, 'u1', 'firstShare');
+    await notifyFirstShare(env, 'user_u1');
+    expect(claimMilestone).toHaveBeenCalledWith(env, 'user_u1', 'firstShare');
     expect(sendEmail).toHaveBeenCalledOnce();
   });
 
   it('does not send when already claimed (not actually the first share)', async () => {
-    vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.com');
-    vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
+    reachable({ user_u1: 'owner@x.com' });
     vi.mocked(claimMilestone).mockResolvedValue(false);
-    await notifyFirstShare(env, 'u1');
+    await notifyFirstShare(env, 'user_u1');
     expect(sendEmail).not.toHaveBeenCalled();
   });
 
   it('skips when the owner opted out of milestones', async () => {
-    vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.com');
-    vi.mocked(getNotificationPrefs).mockResolvedValue({ ...allowAll, notifyMilestones: false });
-    await notifyFirstShare(env, 'u1');
+    await notifyFirstShare(env, 'user_u1');
+    expect(claimMilestone).not.toHaveBeenCalled();
     expect(sendEmail).not.toHaveBeenCalled();
   });
 });

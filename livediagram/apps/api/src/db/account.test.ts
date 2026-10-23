@@ -1,97 +1,27 @@
 import { describe, expect, it, vi } from 'vitest';
-import { deleteAccount } from './account';
-import { memoryWorkbenchNamespace } from '@liveworkspace/index-app/testing';
-import { testPersonStores } from '../test-person-store';
 import type { Env } from '../types';
+import { purgeDocumentRows } from './documents';
 
-// deleteAccount wipes an owner's D1 rows AND the R2 objects the cascade
-// can't reach: image bytes (keyed by image id) and document SVG snapshots
-// (docs/specs/006-document/document-snapshots.md, keyed thumb/<documentId>). A bulk `DELETE FROM documents` drops
-// the ids, so the snapshot keys must be enumerated + deleted first or
-// they orphan in R2. These pin that cleanup with a fake D1 + R2.
+// When the index purges a canvas (an account closing, the Trash emptying; routes/internal-items.ts), the canvas's
+// SVG snapshots in R2 (docs/specs/006-document/document-snapshots.md, keyed thumb/<documentId>) are out of reach of
+// its Durable Object, so they must be deleted by key or they orphan in R2. Its images are the media service's.
 
-function fakeEnv(opts: {
-  documentIds?: string[];
-  imageIds?: string[];
-  images?: { delete: (keys: string[]) => Promise<void> };
-  sqlLog?: string[];
-}): Env {
-  const prepare = (sql: string) => {
-    opts.sqlLog?.push(sql);
-    return {
-      bind: () => ({
-        all: async () => {
-          if (sql.includes('FROM images')) {
-            return { results: (opts.imageIds ?? []).map((id) => ({ id })) };
-          }
-          if (sql.includes('FROM documents')) {
-            return { results: (opts.documentIds ?? []).map((id) => ({ id })) };
-          }
-          return { results: [] };
-        },
-        first: async () => null,
-        run: async () => ({ meta: { changes: 1 } }),
-      }),
-    };
-  };
-  const batch = (stmts: { run: () => Promise<unknown> }[]) =>
-    Promise.all(stmts.map((s) => s.run()));
-  return {
-    DB: { prepare, batch },
-    IMAGES: opts.images,
-    PERSON_STORE: testPersonStores(),
-    WORKBENCH: memoryWorkbenchNamespace<'document'>({
-      credentials: () => null,
-      closeRoom: async () => false,
-    }),
-  } as unknown as Env;
-}
-
-describe('deleteAccount snapshot cleanup (docs/specs/006-document/document-snapshots.md)', () => {
-  it("bulk-deletes each document's snapshots (its own and the Community's) from R2", async () => {
+describe('purgeDocumentRows snapshot cleanup (docs/specs/006-document/document-snapshots.md)', () => {
+  it("bulk-deletes the canvas's snapshots (its own and the Community's) from R2 in one call", async () => {
     const del = vi.fn().mockResolvedValue(undefined);
-    const env = fakeEnv({ documentIds: ['d1', 'd2'], imageIds: ['i1'], images: { delete: del } });
 
-    await deleteAccount(env, 'owner-1');
+    await purgeDocumentRows({ IMAGES: { delete: del } } as unknown as Env, 'd1');
 
-    // Document snapshots leave R2 (images are the media service's).
+    expect(del).toHaveBeenCalledTimes(1);
     expect(del).toHaveBeenCalledWith([
       'thumb/d1',
       'thumb-community/d1',
       'og/d1',
       'og-community/d1',
-      'thumb/d2',
-      'thumb-community/d2',
-      'og/d2',
-      'og-community/d2',
     ]);
   });
 
   it('skips R2 cleanup when no bucket is bound (self-host) without throwing', async () => {
-    const env = fakeEnv({ documentIds: ['d1'], imageIds: ['i1'], images: undefined });
-    await expect(deleteAccount(env, 'owner-1')).resolves.toMatchObject({
-      documents: expect.any(Number),
-    });
-  });
-
-  it('makes no snapshot delete when the owner has no documents', async () => {
-    const del = vi.fn().mockResolvedValue(undefined);
-    const env = fakeEnv({ documentIds: [], imageIds: [], images: { delete: del } });
-
-    await deleteAccount(env, 'owner-1');
-
-    expect(del).not.toHaveBeenCalled();
-  });
-});
-
-describe('deleteAccount leaves team folders to the team (docs/specs/013-workspace/team-shared-documents.md)', () => {
-  it('deletes only personal folders', async () => {
-    // A team folder carries its creator's owner_id, but teammates' documents
-    // live in it; wiping it on the creator's account delete dropped them out
-    // of the team library.
-    const sqlLog: string[] = [];
-    await deleteAccount(fakeEnv({ sqlLog }), 'owner-1');
-    const folderDeletes = sqlLog.filter((q) => /DELETE FROM folders/.test(q));
-    expect(folderDeletes).toEqual(['DELETE FROM folders WHERE owner_id = ? AND team_id IS NULL']);
+    await expect(purgeDocumentRows({} as Env, 'd1')).resolves.toBeUndefined();
   });
 });

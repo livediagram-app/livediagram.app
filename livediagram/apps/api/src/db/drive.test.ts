@@ -1,7 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { DRIVE_LEASE_MS, type DriveItem } from '@livediagram/api-schema';
 import { setPendingAccountSwitch } from './drive-account';
-import { sqliteD1 } from '../test-sqlite-d1';
+import { IndexError } from '@liveworkspace/index-client';
+import { sqliteD1, testDocument, testIndexFor } from '../test-sqlite-d1';
 import {
   acquireDriveLease,
   createBrowserConnection,
@@ -18,6 +19,15 @@ import {
   upsertBrokerConnection,
 } from './drive';
 
+// The index the mirror asks which canvases and folders still exist (removedItems): the test harness's, unless a
+// case swaps in its own.
+const index = vi.hoisted(() => ({ override: null as null | ((...args: never[]) => unknown) }));
+vi.mock('../index-service', async (original) => ({
+  ...(await original<typeof import('../index-service')>()),
+  indexFor: (env: never, caller: never) =>
+    index.override ? index.override(env, caller) : testIndexFor(env, caller),
+}));
+
 // Every read and write of the Drive mirror, in each person's own store
 // (docs/specs/022-drive-mirror/blueprints/drive-mirror.md, "Data and persistence").
 
@@ -27,18 +37,13 @@ const T0 = 1_700_000_000_000;
 // when the list is read.
 function seeded() {
   const db = sqliteD1();
-  for (const id of ['d1', 'd2']) {
-    db.sql
-      .prepare(
-        'INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, ?, ?)',
-      )
-      .run(id, 'user_a', id, T0, T0);
-  }
+  for (const id of ['d1', 'd2'])
+    testDocument(db, id, 'user_a', { name: id, savedAt: T0, createdAt: T0 });
   db.sql
     .prepare(
-      'INSERT INTO folders (id, owner_id, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
+      "INSERT INTO test_folders (id, owner_id, team_id, parent_id, name) VALUES ('fo1', 'user_a', NULL, NULL, 'F')",
     )
-    .run('fo1', 'user_a', 'F', T0, T0);
+    .run();
   return db;
 }
 
@@ -134,11 +139,13 @@ describe('connections', () => {
   });
 
   it('delete removes the connection and every item of that owner only', async () => {
-    const { env } = seeded();
+    const db = seeded();
+    const { env } = db;
+    testDocument(db, 'd3', 'user_b');
     await createBrowserConnection(env, 'user_a', T0);
     await createBrowserConnection(env, 'user_b', T0);
     await putDriveItems(env, 'user_a', [item()]);
-    await putDriveItems(env, 'user_b', [item()]);
+    await putDriveItems(env, 'user_b', [item({ ldId: 'd3' })]);
     await deleteDriveConnection(env, 'user_a');
     expect(await getDriveConnection(env, 'user_a')).toBeNull();
     expect(await listDriveItems(env, 'user_a')).toEqual([]);
@@ -193,9 +200,12 @@ describe('items', () => {
   });
 
   it('lets two owners hold the same Drive file id', async () => {
-    const { env } = seeded();
+    // Each mirrors a canvas of their own (a mirror item of a canvas its owner cannot reach is dropped).
+    const db = seeded();
+    const { env } = db;
+    testDocument(db, 'd3', 'user_b');
     await putDriveItems(env, 'user_a', [item()]);
-    await putDriveItems(env, 'user_b', [item()]);
+    await putDriveItems(env, 'user_b', [item({ ldId: 'd3' })]);
     expect(await listDriveItems(env, 'user_b')).toHaveLength(1);
   });
 
@@ -208,22 +218,48 @@ describe('items', () => {
     ]);
     expect((await listDriveItems(db.env, 'user_a')).map((i) => i.ldId)).toEqual(['d1']);
     // Gone from the store too, not only from the answer.
-    db.sql
-      .prepare(
-        "INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES ('gone', 'user_a', 'g', 0, 1, 1)",
-      )
-      .run();
+    testDocument(db, 'gone', 'user_a');
     expect((await listDriveItems(db.env, 'user_a')).map((i) => i.ldId)).toEqual(['d1']);
   });
 
-  // A large mirror reads in one store call and one indexed read of the canvases it names, whatever its size.
+  // An index that cannot answer never unmirrors anything: only a 404 for a canvas counts as gone, and a folder lookup
+  // that fails keeps its folders. A canvas in the Trash is still the index's (it answers it), so stays mirrored.
+  it('keeps every item the index cannot answer for', async () => {
+    const db = seeded();
+    await putDriveItems(db.env, 'user_a', [
+      item(),
+      item({ ldId: 'd2', driveFileId: 'f2' }),
+      item({ kind: 'folder', ldId: 'fo-gone', driveFileId: 'ff-gone' }),
+    ]);
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    index.override = () => ({
+      getItem: async (id: string) => {
+        if (id === 'd1') throw new IndexError(503, 'unavailable');
+        return { item: { id, trashedAt: 1 } };
+      },
+      folderPreviews: async () => {
+        throw new IndexError(500, 'boom');
+      },
+    });
+    try {
+      expect((await listDriveItems(db.env, 'user_a')).map((i) => i.ldId).sort()).toEqual([
+        'd1',
+        'd2',
+        'fo-gone',
+      ]);
+      index.override = () => null;
+      expect(await listDriveItems(db.env, 'user_a')).toHaveLength(3);
+    } finally {
+      index.override = null;
+      vi.restoreAllMocks();
+    }
+  });
+
+  // A large mirror reads in one store call and asks the index per canvas, DRIVE_LOOKUPS_IN_FLIGHT at a time.
   it('lists a mirror of 2,000 canvases, a tenth of them removed, within budget', async () => {
     const db = seeded();
     const ids = Array.from({ length: 2000 }, (_, i) => `doc-${i}`);
-    const insert = db.sql.prepare(
-      "INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, 'user_a', 'n', 0, 1, 1)",
-    );
-    for (const id of ids.slice(200)) insert.run(id);
+    for (const id of ids.slice(200)) testDocument(db, id, 'user_a', { name: 'n' });
     for (let i = 0; i < ids.length; i += 100) {
       await putDriveItems(
         db.env,
