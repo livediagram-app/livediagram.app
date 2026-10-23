@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
-import { ManagedOnLiveworkspace } from '@/components/panels/ManagedOnLiveworkspace';
-import { manageTeamsUrl } from '@/lib/auth-config';
+import { InvitationsOnLiveworkspace } from '@/components/panels/ManagedOnLiveworkspace';
 import { viewDocumentTitle } from '../view-titles';
 
 // /explorer/invites — team invitations are answered on liveworkspace.app now
@@ -10,12 +9,5 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return (
-    <ManagedOnLiveworkspace
-      title="Invitations are on liveworkspace.app"
-      body="Team invitations are answered on liveworkspace.app. Once you join, the team's work shows up here."
-      href={manageTeamsUrl}
-      cta="Open your invitations"
-    />
-  );
+  return <InvitationsOnLiveworkspace />;
 }

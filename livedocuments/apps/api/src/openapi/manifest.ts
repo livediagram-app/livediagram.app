@@ -1581,20 +1581,20 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/teams/invite-decline/{token}',
     segment: 'teams',
     tag: 'Teams',
-    summary: "Read the invite an email's decline token names: its team name and status.",
+    summary:
+      "Retired: an old invitation email's Decline link. Answers 410 teams_moved with manageAt, since invitations are answered on liveworkspace.app.",
     auth: 'public',
-    responseSchema: 'TeamInviteDecline',
-    statuses: [200, 404, 429],
+    statuses: [410],
   },
   {
     method: 'POST',
     path: '/teams/invite-decline/{token}',
     segment: 'teams',
     tag: 'Teams',
-    summary: "Decline the invite an email's decline token names. No sign-in; idempotent.",
+    summary:
+      "Retired: an old invitation email's Decline link. Answers 410 teams_moved with manageAt, since invitations are answered on liveworkspace.app.",
     auth: 'public',
-    responseSchema: 'TeamInviteDecline',
-    statuses: [200, 404, 409, 429],
+    statuses: [410],
   },
   {
     method: 'POST',

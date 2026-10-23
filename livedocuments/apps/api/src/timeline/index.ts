@@ -5,7 +5,6 @@
 export * from './audience';
 export * from './record';
 export * from './document-events';
-export * from './team-events';
 export * from './account-events';
 export * from './tab-diff';
 export * from './tab-save';

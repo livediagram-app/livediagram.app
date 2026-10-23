@@ -141,10 +141,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Tab·Unlocked',
   'Team·Added',
   'Team·Created',
-  // The recipient turned an invitation down — the counterpart to Team·Joined,
-  // and distinct from Team·Removed·Invite (an Admin withdrawing one). docs/specs/013-workspace/teams.md.
-  'Team·Declined',
-  'Team·Joined',
   'Team·Moved',
   'Team·Removed',
   'Template·Used',

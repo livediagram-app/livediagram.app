@@ -55,13 +55,6 @@ export async function audienceForDocument(
   return liveDoc.teamId ? [...scopes, teamScope(liveDoc.teamId)] : scopes;
 }
 
-// Everyone in a team, for team-level events (a member joined, a role
-// changed). Same joined-only rule, plus the team's own scope.
-export async function audienceForTeam(env: Env, teamId: string): Promise<TimelineScopeRef[]> {
-  const members = (await joinedMemberIds(env, teamId)).map(userScope);
-  return [...members, teamScope(teamId)];
-}
-
 // Never throws.
 //
 // Unlike the emit itself — which every call site wraps in waitUntil and
@@ -82,26 +75,6 @@ async function joinedMemberIds(env: Env, teamId: string): Promise<string[]> {
     return (res.results ?? []).map((r) => r.user_id);
   } catch (err) {
     console.error('timeline audience lookup failed', teamId, err);
-    return [];
-  }
-}
-
-// Just the team's joined admins. Declining an invite is an outcome of
-// something an admin did, and the rest of the team never saw the invite
-// go out, so telling everyone would be noise about a stranger.
-//
-// Never throws, for the same reason as joinedMemberIds.
-export async function adminsForTeam(env: Env, teamId: string): Promise<TimelineScopeRef[]> {
-  try {
-    const res = await env.DB.prepare(
-      `SELECT user_id FROM team_members
-        WHERE team_id = ?1 AND status = 'joined' AND role = 'admin' AND user_id IS NOT NULL`,
-    )
-      .bind(teamId)
-      .all<{ user_id: string }>();
-    return (res.results ?? []).map((r) => userScope(r.user_id));
-  } catch (err) {
-    console.error('timeline admin lookup failed', teamId, err);
     return [];
   }
 }

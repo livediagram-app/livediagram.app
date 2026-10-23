@@ -35,7 +35,7 @@ import { DocumentRoom } from './document-room/document-room';
 import { handleInternalItems } from './routes/internal-items';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
 import { deleteOldDocumentOpens } from './db/document-opens';
-import { clientIp, clientNetwork, clientRateKey } from './client-ip';
+import { clientRateKey } from './client-ip';
 import { MAX_BODY_BYTES, MAX_IMAGE_BYTES } from './limits';
 import { handleAccount } from './routes/account';
 import { handleCatalogues } from './routes/catalogues';
@@ -314,16 +314,7 @@ async function routeApiRequest(
     if (await isWriteRateLimited(env, `room-ticket:${clientRateKey(request)}`))
       return rateLimited();
   }
-  // An invite email's Decline link (docs/specs/013-workspace/teams.md "Declining from the email"): open, so
-  // limited per network, reads and declines on one key, apart from everyone's document writes.
-  const isInviteDecline = segments[1] === 'teams' && segments[2] === 'invite-decline';
-  if (isInviteDecline && env.TEAM_INVITE_RATE_LIMITER) {
-    const ok = await env.TEAM_INVITE_RATE_LIMITER.limit({
-      key: `invite-decline:${clientNetwork(clientIp(request))}`,
-    });
-    if (!ok.success) return rateLimited();
-  }
-  if (isWrite && url.pathname !== '/api/events' && !isRoomTicketMint && !isInviteDecline) {
+  if (isWrite && url.pathname !== '/api/events' && !isRoomTicketMint) {
     // A token request rate-limits on the TOKEN id (docs/specs/015-api/public-api-and-tokens.md §3.5), so a
     // runaway integration is throttled independently of the owner's
     // interactive app use; everything else keys on the resolved owner.
