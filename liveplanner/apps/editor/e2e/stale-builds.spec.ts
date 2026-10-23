@@ -22,7 +22,7 @@ async function openExplorer(page: Page, path = '/explorer/inbox') {
 function pageLoads(page: Page): string[] {
   const loads: string[] = [];
   page.on('request', (r) => {
-    if (r.resourceType() === 'project') loads.push(new URL(r.url()).pathname.replace(/\/$/, ''));
+    if (r.resourceType() === 'document') loads.push(new URL(r.url()).pathname.replace(/\/$/, ''));
   });
   return loads;
 }
@@ -35,7 +35,7 @@ async function removeUnseenChunks(page: Page, ledger: Set<string>, destination: 
   const seen = new Set(ledger);
   let stale = true;
   page.on('request', (r) => {
-    if (r.resourceType() === 'project' && destination.test(new URL(r.url()).pathname)) {
+    if (r.resourceType() === 'document' && destination.test(new URL(r.url()).pathname)) {
       stale = false;
     }
   });

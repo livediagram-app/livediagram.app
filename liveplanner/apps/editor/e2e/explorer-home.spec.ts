@@ -63,9 +63,9 @@ test('the Explorer lands on Home: Jump Back In, then What Happened, no Timeline'
   await expect(hero.getByRole('heading', { level: 1 })).toHaveText(
     /^Good (morning|afternoon|evening), what are you planning today\?$/,
   );
-  await expect(hero.getByRole('combobox', { name: 'Filter projects' })).toBeVisible();
-  await expect(page.getByRole('combobox', { name: 'Filter projects' })).toHaveCount(1);
-  await expect(hero.getByRole('button', { name: 'New Project' })).toBeVisible();
+  await expect(hero.getByRole('combobox', { name: 'Filter plans' })).toBeVisible();
+  await expect(page.getByRole('combobox', { name: 'Filter plans' })).toHaveCount(1);
+  await expect(hero.getByRole('button', { name: 'New Plan' })).toBeVisible();
   await expect(page).toHaveTitle('Home | liveplanner');
 
   const jump = page.getByRole('region', { name: 'Jump Back In' });

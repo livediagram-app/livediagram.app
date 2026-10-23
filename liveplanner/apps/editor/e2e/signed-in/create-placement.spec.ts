@@ -75,11 +75,9 @@ test('a refused placement says why and offers another place', async ({ page, bas
 
   await page.goto(`/new?blank=1&folder=${crypto.randomUUID()}`);
 
-  await expect(page.getByRole('heading', { name: 'Couldn’t file the project there' })).toBeVisible(
-    {
-      timeout: 20_000,
-    },
-  );
+  await expect(page.getByRole('heading', { name: 'Couldn’t file the plan there' })).toBeVisible({
+    timeout: 20_000,
+  });
   await expect(page.getByText('That folder no longer exists, or isn’t yours.')).toBeVisible();
   await page.getByRole('button', { name: 'Choose another place' }).click();
   await expect(page).toHaveURL(/\/new$/);

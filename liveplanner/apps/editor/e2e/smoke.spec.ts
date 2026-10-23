@@ -15,7 +15,7 @@ import {
 
 test('the new-project wizard renders', async ({ page, pageErrors }) => {
   await page.goto('/new');
-  await expect(page.getByText('New Project', { exact: false })).toBeVisible();
+  await expect(page.getByText('New Plan', { exact: false })).toBeVisible();
   // The Mode step is the client-rendered heart of the wizard (docs/specs/007-editor/new-project-route.md
   // "Choosing a mode"); its five mode cards prove the picker mounted, not just the shell.
   const modes = page.getByRole('group', { name: 'What are you making?' });

@@ -90,7 +90,7 @@ test.describe('default folders', () => {
 
     await row.locator('[data-tree-row]').first().click({ button: 'right' });
     await page.getByRole('menuitem', { name: 'Use as Default for' }).click();
-    await expect(page.getByText('New projects that open as')).toBeVisible();
+    await expect(page.getByText('New plans that open as')).toBeVisible();
     await page.getByRole('menuitemcheckbox', { name: 'Retrospectives' }).click();
     await expect(page.getByRole('menuitemcheckbox', { name: 'Retrospectives' })).toHaveAttribute(
       'aria-checked',
@@ -157,7 +157,7 @@ test.describe('default folders', () => {
     await menu.click();
     await page.getByRole('menuitem', { name: 'Delete', exact: true }).click();
     const confirm = page.getByRole('dialog').filter({ hasText: 'Delete "Workshops"?' });
-    await expect(confirm).toContainText('Its projects and subfolders move to "Projects".');
+    await expect(confirm).toContainText('Its plans and subfolders move to "Projects".');
     await expect(confirm).toContainText('New whiteboards are saved here by default.');
     await confirm.getByRole('button', { name: 'Delete folder' }).click();
 

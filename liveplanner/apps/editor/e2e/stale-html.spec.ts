@@ -81,7 +81,7 @@ test('back after a deploy brings the Explorer back, never a white screen', async
 
   // Open the project: a full page load (a project route is never a client transition here).
   const opened = page.waitForRequest(
-    (r) => r.resourceType() === 'project' && new URL(r.url()).pathname === `/project/${id}`,
+    (r) => r.resourceType() === 'document' && new URL(r.url()).pathname === `/project/${id}`,
   );
   await row.click();
   await opened;

@@ -47,7 +47,7 @@ async function seedTeam(page: Page, userId: string) {
   return { team };
 }
 
-const field = (page: Page) => page.getByRole('combobox', { name: 'Filter projects' });
+const field = (page: Page) => page.getByRole('combobox', { name: 'Filter plans' });
 const filters = (page: Page) => page.getByRole('group', { name: 'Filters' });
 const docLink = (page: Page, name: string) =>
   page.locator('main section').getByRole('link', { name, exact: true });

@@ -42,7 +42,7 @@ test.describe('Contrast audit, dark mode', () => {
   test('the New Project wizard', async ({ page, pageErrors }) => {
     await darkVisitor(page);
     await page.goto('/new');
-    await page.getByText('New Project', { exact: false }).first().waitFor();
+    await page.getByText('New Plan', { exact: false }).first().waitFor();
     await untilHydrated(page.getByRole('button', { name: /^create$/i }));
     await expect(page.locator('html')).toHaveClass(/dark/);
     expectAA(await auditContrast(page), 'wizard');
@@ -73,7 +73,7 @@ test.describe('Contrast audit, dark mode', () => {
     await page.keyboard.press('Escape');
 
     await page.getByRole('button', { name: /^Share$/ }).click();
-    await page.getByRole('dialog', { name: 'Share This Project' }).waitFor();
+    await page.getByRole('dialog', { name: 'Share This Plan' }).waitFor();
     expectAA(await auditContrast(page), 'Share dialog');
     await page.keyboard.press('Escape');
     expectNoPageErrors(pageErrors);

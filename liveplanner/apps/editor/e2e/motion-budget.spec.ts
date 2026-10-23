@@ -106,7 +106,7 @@ async function tourTheChrome(page: Page): Promise<void> {
   const explorer = page.getByRole('button', { name: 'Explorer', exact: true });
   await explorer.click();
   await page.waitForTimeout(400);
-  await openAndClose(page, () => page.getByRole('button', { name: 'Project menu' }).click());
+  await openAndClose(page, () => page.getByRole('button', { name: 'Plan menu' }).click());
   await explorer.click();
   await page.waitForTimeout(300);
   await openAndClose(page, () => page.getByRole('button', { name: 'Tab menu' }).click());

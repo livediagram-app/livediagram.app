@@ -95,7 +95,7 @@ test.describe('tags', () => {
     void baseURL;
     await darkVisitor(page, owner);
     await page.goto('/explorer/tags');
-    await expect(page.getByText('Group related projects with tags')).toBeVisible({
+    await expect(page.getByText('Group related plans with tags')).toBeVisible({
       timeout: 30_000,
     });
     await page.getByRole('button', { name: 'New Tag' }).last().click();

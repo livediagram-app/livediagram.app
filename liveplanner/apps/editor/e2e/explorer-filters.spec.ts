@@ -39,7 +39,7 @@ async function seed(page: Page, owner: string, origin: string): Promise<Seeded> 
   return { projects };
 }
 
-const field = (page: Page) => page.getByRole('combobox', { name: 'Filter projects' });
+const field = (page: Page) => page.getByRole('combobox', { name: 'Filter plans' });
 const pane = (page: Page) => page.locator('main section');
 const docLink = (page: Page, name: string) => pane(page).getByRole('link', { name, exact: true });
 const filters = (page: Page) => page.getByRole('group', { name: 'Filters' });
@@ -102,9 +102,7 @@ test.describe('explorer filters', () => {
     await expect(docLink(page, 'Roadmap')).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Remove filter Made by AI' })).toBeVisible();
     // The live region counts what is left once the lens settles.
-    await expect(page.getByRole('status').filter({ hasText: 'projects' })).toHaveText(
-      '2 of 5 projects',
-    );
+    await expect(page.getByRole('status').filter({ hasText: 'plans' })).toHaveText('2 of 5 plans');
 
     // A multi-select chip: Template, Kanban, from the listbox.
     await filters(page).getByRole('button', { name: 'Template, any' }).click();
@@ -115,7 +113,7 @@ test.describe('explorer filters', () => {
     await page.keyboard.press('Escape');
     // A chip adds its token after the ones already written.
     await expect(page).toHaveURL(/q=made-by%3Aai\+template%3Akanban$/);
-    await expect(pane(page).getByText('No projects match these filters')).toBeVisible();
+    await expect(pane(page).getByText('No plans match these filters')).toBeVisible();
     await page.screenshot({ path: test.info().outputPath('filtered-empty.png') });
 
     await filters(page).getByRole('button', { name: 'Clear', exact: true }).click();

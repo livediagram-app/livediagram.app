@@ -100,7 +100,7 @@ test.describe('menus by keyboard', () => {
 
     // Right opens the submenu on its first entry; Left comes back to its trigger.
     await page.keyboard.press('ArrowRight');
-    const sub = page.getByRole('menu', { name: 'New projects that open as' });
+    const sub = page.getByRole('menu', { name: 'New plans that open as' });
     await expect(sub).toBeVisible();
     await expect(useAs).toHaveAttribute('aria-expanded', 'true');
     await expect(useAs).toHaveAttribute('aria-controls', (await sub.getAttribute('id'))!);
@@ -242,7 +242,7 @@ test.describe('menus by keyboard', () => {
     await expect(menu.getByRole('menuitem', { name: 'Rename' })).toBeFocused();
     await page.keyboard.press('u');
     await page.keyboard.press('Enter');
-    const sub = page.getByRole('menu', { name: 'New projects that open as' });
+    const sub = page.getByRole('menu', { name: 'New plans that open as' });
     await expect(sub.getByRole('menuitemcheckbox', { name: 'Diagrams' })).toBeFocused();
     // The drill-down's header draws first but reads last, so focus opened on the first entry.
     const items = await sub.getByRole('menuitem').or(sub.getByRole('menuitemcheckbox')).all();

@@ -57,7 +57,7 @@ test('a workspace frame is its own approval, browses the Explorer, and opens pro
   await page.goto(widening.body.pairingUrl!);
   await expect(page.getByRole('heading', { name: 'Allow this workbench?' })).toBeVisible();
   await expect(
-    page.getByText(/and to create, move, share and trash projects and folders in it/),
+    page.getByText(/and to create, move, share and trash plans and folders in it/),
   ).toBeVisible();
   await page.getByRole('button', { name: 'Allow', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Workbench allowed' })).toBeVisible();
@@ -115,7 +115,7 @@ test('a workspace frame is its own approval, browses the Explorer, and opens pro
     .toMatchObject({ view: 'folder', folderId, folderName: 'Minigames', projectCount: 0 });
 
   // New project makes the project in place, in the folder shown, and opens it in the frame.
-  await frame.getByRole('link', { name: 'New Project' }).first().click();
+  await frame.getByRole('link', { name: 'New Plan' }).first().click();
   await frame.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   await expect.poll(async () => (await places(page)).at(-1)?.view).toBe('project');
   const made = (await places(page)).at(-1)!.projectId as string;
@@ -159,6 +159,6 @@ test('a workspace ticket on a folder starts the frame there', async ({
     .poll(async () => (await places(page)).at(-1), { timeout: 30_000 })
     .toMatchObject({ view: 'folder', folderId, folderName: 'Minigames', projectCount: 0 });
   await expect(
-    page.frameLocator('#frame').getByRole('link', { name: 'New Project' }).first(),
+    page.frameLocator('#frame').getByRole('link', { name: 'New Plan' }).first(),
   ).toBeVisible();
 });

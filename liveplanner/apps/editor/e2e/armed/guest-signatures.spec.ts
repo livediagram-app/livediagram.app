@@ -36,7 +36,7 @@ test.describe('a first-time guest with signatures enforced', () => {
     const api = recordApi(page);
     await page.goto('/');
     await page.waitForURL(/\/new/);
-    await page.getByText('New Project', { exact: false }).waitFor();
+    await page.getByText('New Plan', { exact: false }).waitFor();
     // Landing signs the guest before anything else; the wizard then starts from that page's identity.
     await expect
       .poll(() => page.evaluate(() => localStorage.getItem('liveplanner:v2:self-sig')))
@@ -79,7 +79,7 @@ test.describe('a first-time guest with signatures enforced', () => {
     expect(await page.evaluate(() => localStorage.getItem('liveplanner:v2:self-sig'))).toBeNull();
     // That page is unsigned under enforcement, so its create is refused; it settles on the failure
     // card before the next load, so none of its answers land in the next load's record.
-    await page.getByText('Couldn’t create the project').waitFor();
+    await page.getByText('Couldn’t create the plan').waitFor();
 
     const api = recordApi(page);
     await page.goto('/new?blank=1');

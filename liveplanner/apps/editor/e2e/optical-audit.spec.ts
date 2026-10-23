@@ -60,7 +60,7 @@ test.describe('Optical alignment audit', () => {
   test('the New Project wizard', async ({ page, pageErrors }) => {
     await darkVisitor(page);
     await page.goto('/new');
-    await page.getByText('New Project', { exact: false }).first().waitFor();
+    await page.getByText('New Plan', { exact: false }).first().waitFor();
     await untilHydrated(page.getByRole('button', { name: /^create$/i }));
     await expectCentred(page, 'wizard');
     expectNoPageErrors(pageErrors);
@@ -92,7 +92,7 @@ test.describe('Optical alignment audit', () => {
   test('the Share dialog', async ({ page, pageErrors, baseURL }) => {
     await openSeededEditor(page, baseURL!);
     await page.getByRole('button', { name: /^Share$/ }).click();
-    await page.getByRole('dialog', { name: 'Share This Project' }).waitFor();
+    await page.getByRole('dialog', { name: 'Share This Plan' }).waitFor();
     await expectCentred(page, 'Share dialog');
     expectNoPageErrors(pageErrors);
   });
@@ -132,7 +132,7 @@ test.describe('Optical alignment audit', () => {
 // rather than left to the day a "Q" comes up.
 test('initials with a tailed capital centre on their cap band', async ({ page }) => {
   await page.goto('/new');
-  await page.getByText('New Project', { exact: false }).first().waitFor();
+  await page.getByText('New Plan', { exact: false }).first().waitFor();
   await page.evaluate(() => {
     const disc = document.createElement('span');
     disc.setAttribute('aria-label', 'Tailed initials');

@@ -128,7 +128,7 @@ export async function untilHydrated(locator: Locator): Promise<void> {
 // Resolves to the new project's id; `url` carries a `/new?folder=` / `?team=` context.
 export async function createInMode(page: Page, mode: string, url = '/new'): Promise<string> {
   await page.goto(url);
-  await page.getByText('New Project', { exact: false }).waitFor();
+  await page.getByText('New Plan', { exact: false }).waitFor();
   const card = page.locator(`[data-new-mode="${mode}"]`);
   await untilHydrated(card);
   await card.click();
