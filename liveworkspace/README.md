@@ -43,7 +43,9 @@ cookie. Each app sends the browser to the accounts site and gets it back with a 
 
 1. The app redirects to `liveworkspace.app/api/auth/oauth2/authorize` (PKCE, `state`).
 2. Not signed in there yet? The person continues with Google, or types their email, gets a
-   6-digit code, and enters it. liveworkspace.app now has its own first-party cookie.
+   6-digit code, and enters it, on the app's own address (`livediagram.app/sign-in`, served by the
+   app's router). One quick hop to liveworkspace.app then gives it its own first-party cookie
+   ([docs/accounts.md](docs/accounts.md#signing-in-on-the-apps-own-address)).
 3. The browser lands on the app's `/auth/callback?code=…`. The app's Worker swaps the code for
    an access token, a refresh token and an ID token.
 4. The app's API checks access tokens locally against the published keys
@@ -138,13 +140,15 @@ Other checks, from the repo root: `corepack pnpm test`, `corepack pnpm typecheck
    `wrangler d1 create liveworkspace-accounts` (and `liveworkspace-accounts-staging`).
 2. Verify `liveworkspace.app` as a sending domain in Resend, the provider every app emails
    through, and create an API key with sending access for it.
-3. Create a Turnstile widget for `liveworkspace.app` and put its site key in
+3. Create a Turnstile widget for `liveworkspace.app` and every app's hostnames
+   ([docs/accounts.md](docs/accounts.md#before-deploy)), and put its site key in
    `TURNSTILE_SITE_KEY`.
 4. Set the secrets: `BETTER_AUTH_SECRET` (`openssl rand -base64 32`), `TURNSTILE_SECRET_KEY`,
    `ADMIN_TOKEN` (`openssl rand -hex 32`) and `RESEND_API_KEY`.
 5. For Google: create an OAuth client (Web application) in Google Cloud with
    `https://liveworkspace.app/api/auth/callback/google` as its redirect URI (and the staging one
-   for staging), then set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`.
+   for staging), then set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`. For Google on the apps'
+   own addresses, add theirs too ([docs/accounts.md](docs/accounts.md#before-deploy)).
 6. `corepack pnpm db:migrate:remote`, then `corepack pnpm deploy`.
 7. Register each app (below).
 
@@ -187,6 +191,13 @@ Other checks, from the repo root: `corepack pnpm test`, `corepack pnpm typecheck
   Clerk id, and livediagram's guard against an account id sent as a guest id keeps working.
 - **Closing an account** needs an app's client secret and an access token issued to that app.
 - **Names** are trimmed and cut to 80 characters whenever an account is created or updated.
+- **Signing in on an app's address:** the hand-off that brings the session to liveworkspace.app is
+  single-use, lasts 60 seconds, is stored hashed, is bound to the browser that started the sign-in
+  (a nonce cookie) and returns only to the app's own registered redirect URIs. The sign-in's
+  cookies on the app's address are renamed, scoped to `/api/workspace/auth` and gone within 15
+  minutes. The code limit per IP counts the address the app's router names
+  (`X-Liveworkspace-Client-IP`): a caller going straight to the Worker could name any address
+  there, but sending a code still needs Turnstile and the per-email limit holds.
 - **The sign-in pages** can't be framed, send no Referer (the URL carries the signed OAuth
   request), and load scripts only from this origin and Turnstile (the site's Trusted Types policy).
 

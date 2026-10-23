@@ -277,10 +277,23 @@ set up, and the name length), so one build serves production and staging. Turnst
 script from another origin; the Trusted Types boot allows it. The pages are kept out of search
 and send no Referer, since the address carries the signed request.
 
+**Under an app's own address.** For an app's sign-in the same pages are served at
+`livediagram.app/sign-in` (and `/sign-up`, `/consent`) by the app's router
+([accounts.md](accounts.md#signing-in-on-the-apps-own-address)). There they call the accounts API at
+`/api/workspace/auth` on that address (`lib/accounts.ts` `accountsApi`), and once signed in make the
+one-time hand-off to liveworkspace.app before going back to the app (`afterSignIn`). A sign-in link
+on an app's address (`signInHref`) starts at the app's own `/api/auth/sign-in`. "Continue with
+Google" goes to liveworkspace.app's own page with the same signed request until the accounts Worker
+says Google can come back to the app's address (`googleOnApps`). The build's assets live under
+`/_liveworkspace` (`assetPrefix`; `scripts/asset-prefix.mjs` moves the export's `_next` there) so
+they never meet an app's own `/_next`, and one build serves both addresses.
+
 ## Behaviour
 
 - No analytics. The one cookie is the accounts session, set by the accounts API when someone
-  signs in. Every page asks the accounts API whether someone is signed in; the dashboard and the
+  signs in. Served under an app's address, the sign-in pages leave only short-lived `lw_flow.`
+  cookies there, on `/api/workspace/auth`, which the hand-off clears. Every page asks the
+  accounts API whether someone is signed in; the dashboard and the
   account pages also call their APIs. All of it is on this origin.
 - Light and dark, following the device (the shared appearance boot script).
 - Works at phone width with a 16px gutter. Tap targets are 44px on touch screens.

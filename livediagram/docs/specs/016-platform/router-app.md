@@ -37,6 +37,26 @@ engines drop it. The editor answers an unknown address with its own card instead
 
 Two properties keep it safe. It sits **after** the live-route check, so `/explorer/*` (a segment the help centre and the editor app both use) still reaches the editor — which is why `explorer` is absent from the set. And `index.test.ts` walks the registry's own categories and asserts each one redirects, so a new help category cannot silently stop working.
 
+## Signing in on livediagram.app
+
+Signing in and creating an account stay on livediagram.app's address: the router serves liveworkspace's
+sign-in pages ahead of everything above, through the shared helper
+(`routeToWorkspace` and `workspaceRoutes` in `@liveworkspace/sites/workspace-proxy`;
+[liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md#signing-in-on-the-apps-own-address)):
+
+| Path                                                                   | Forwards to                                                                    |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `/sign-in`, `/sign-up`, `/consent` with a signed OAuth request (`sig`) | liveworkspace.app's page, no cookies either way                                |
+| `/api/workspace/auth/*`                                                | liveworkspace's accounts API at `/api/auth/*`, with the sign-in's cookies only |
+| `/_liveworkspace/*`                                                    | liveworkspace.app's build assets                                               |
+
+Without a signed request, `/sign-in` stays the app's own page (its sign-in hand-off). On the
+accounts route the app's own cookies never leave; liveworkspace's cookies land here renamed
+`lw_flow.<name>`, on `/api/workspace/auth` alone, for at most 15 minutes, and the hand-off to
+liveworkspace.app clears them. The router names the visitor's address in
+`X-Liveworkspace-Client-IP`. Once signed in, one top-level hop to liveworkspace.app sets its
+session (so the other apps sign in without a click) and comes straight back to `/auth/callback`.
+
 ## Implementation
 
 In production the Worker has five **service bindings**, one to each downstream app (MARKETING / LIVE / API / HELP / COMMUNITY). A shared `forward()` helper resolves each target as _binding if present, else local-dev origin_ (see Local development below) and strips the prefix for the basePath/assetPrefix paths (live assets + telemetry + help + community) when forwarding to a binding:

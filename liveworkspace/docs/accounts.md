@@ -302,6 +302,101 @@ a round trip to the edge, so it costs more. Later loads in the same tab add noth
 already signed in to the app never bounces. FedCM and the Storage Access API could make this a
 background request one day, but neither works in every browser, so the bounce stays.
 
+## Signing in on the app's own address
+
+Someone signing in to livediagram, liveplanner, livedocuments or livedesign stays on that app's
+address the whole way: `livediagram.app/sign-in`, `/sign-up` and `/consent`, never a
+liveworkspace.app page. The pages are the accounts site's own ([site.md](site.md#accounts-sign-in-sign-up-consent)),
+served by the app's router (`@liveworkspace/sites/workspace-proxy`, `workspaceRoutes`), and the
+liveworkspace session still ends up on liveworkspace.app, so every other app
+[signs in without a click](#signing-in-without-a-click) as before. On liveworkspace.app itself
+nothing changes.
+
+1. **The app** sends the browser to `/api/auth/oauth2/authorize` as always (its own sign-in link,
+   the header's button, the Explorer's prompts, the guest banner, `/join`: every sign-in link on an
+   app's address starts at the app's `/api/auth/sign-in`).
+2. **The accounts Worker**, finding no session, would answer with its sign-in page. Instead
+   (`src/handoff.ts` `signInOnAppAddress`) it answers with the same page on the app's address,
+   when the client is one of the apps (`oauth_client_app`), its `redirect_uri` is one of its
+   registered URIs and that URI's origin is one of the app's ([`appOrigins`](../../packages/sites/src/app-origins.ts):
+   bare and `www.` in production, `staging.` on staging, the router's port locally). It adds
+   `handoff=<sha256(nonce)>` to the page's query and sets the nonce in `lw_handoff` (HttpOnly,
+   SameSite=Lax, Secure outside development, path `/api/auth/handoff`, 15 minutes), binding the
+   sign-in to this browser.
+3. **The app's router** serves `/sign-in`, `/sign-up` and `/consent` from liveworkspace.app when
+   the query carries a signed OAuth request (`sig`), its build assets under `/_liveworkspace`, and
+   the accounts API under `/api/workspace/auth` (beside the app's own `/api/auth`). On that route
+   the app's own cookies never leave: only the sign-in's cookies go to the Worker, and the
+   Worker's cookies land on the app's address renamed `lw_flow.<name>`, on that path alone,
+   HttpOnly, Secure, SameSite=Lax and for at most 15 minutes (`flowCookieOut`). The router names
+   the visitor's address in `X-Liveworkspace-Client-IP`, which the code limits count
+   ([Limits](#limits)) instead of the router's.
+4. **The page** signs in exactly as on liveworkspace.app (email code, name for a new account,
+   Turnstile). Then it asks `POST /api/auth/handoff/start` `{ returnUrl, bind }` for a hand-off. The
+   Worker refuses unless the request's `Origin` is one of the app origins (403), there is a
+   session (401), `bind` is a nonce hash, and `returnUrl` is one of that same app's registered
+   redirect URIs (400 `invalid_return`). It stores only the SHA-256 of a fresh 32-byte token, with
+   the session, the bind and the address, for 60 seconds, clears the session cookie on the app's
+   address in the same answer, and gives back `{ url }`: `https://liveworkspace.app/api/auth/handoff?token=…`.
+5. **The hop.** One top-level visit to that URL (`GET /api/auth/handoff`) spends the token
+   (single use, by one `UPDATE … WHERE usedAt IS NULL`), checks it hasn't expired, that the
+   browser's `lw_handoff` nonce hashes to the stored bind, and the return address again; then sets
+   the liveworkspace session cookie for that same session (access tokens already given out stay
+   valid), clears the nonce, takes a guest's things over ([Guests](#guests)) and redirects to the
+   app's callback with the authorize answer (a code). It sends no Referer and is never cached.
+   Anything wrong answers a short page with a 400 and a link back to the app, never a redirect.
+
+What this leaves on the app's address is the app's own cookies: the sign-in's `lw_flow.` cookies are
+cleared by the hand-off and expire within 15 minutes in any case. A sign-in started on
+liveworkspace.app, by an app that isn't one of the four, or with `SIGN_IN_ON_APP_ORIGINS` anything
+but `"true"`, uses liveworkspace.app's pages as before.
+
+**Google.** Google sends the browser back to a registered redirect URI, so on an app's address it
+needs each app origin's `/api/workspace/auth/callback/google` registered with the Google client.
+With `GOOGLE_ON_APP_ORIGINS="true"` the Worker uses that address for a request that came through an
+app's router (a Better Auth instance per app origin, built on first use). Until then "Continue
+with Google" on an app's address goes to liveworkspace.app's own sign-in page with the same signed
+request and starts Google there; the person comes back to the app signed in, as everywhere else.
+
+**Tests.** `src/handoff.test.ts` runs the real Better Auth over D1: the rewrite and when it doesn't
+happen, a successful hop (same session, nonce cleared, only the hash stored, a guest merged), a
+replayed token, an expired one, the wrong browser (which also burns the token), a made-up token,
+eleven foreign or open-redirect return addresses, and each refusal of `/handoff/start`.
+
+**The cost.** One extra top-level hop per sign-in, never per page. Measured locally against the dev
+stacks (seven runs), the hop from the page to the app's callback took 19 to 33 ms, median 22 ms; on
+the deployed apps it is one round trip to the edge plus two D1 writes (one at start, one spent),
+roughly 100 to 300 ms once per sign-in. The sign-in page's own calls go through the app's router,
+one subrequest each. `sign_in_handoff` rows older than a minute are deleted whenever a new one is
+made, so the table stays small.
+
+### Before deploy
+
+In this order, the first time:
+
+1. Deploy all four apps' routers (they serve the sign-in routes) and the site (its assets under
+   `/_liveworkspace`), then apply `migrations/0010_sign_in_handoff.sql` to the remote database,
+   then deploy the accounts Worker, whose `SIGN_IN_ON_APP_ORIGINS` is `"true"` in `wrangler.toml`.
+2. Add the app hostnames to the Turnstile widget: `livediagram.app`, `www.livediagram.app`,
+   `liveplanner.app`, `www.liveplanner.app`, `livedocuments.app`, `www.livedocuments.app`,
+   `livedesign.app`, `www.livedesign.app`, and their `staging.` hosts for staging.
+3. For Google on the app's address, add these authorised redirect URIs to the Google OAuth client,
+   then set `GOOGLE_ON_APP_ORIGINS = "true"` and deploy the accounts Worker again:
+   - `https://livediagram.app/api/workspace/auth/callback/google`
+   - `https://www.livediagram.app/api/workspace/auth/callback/google`
+   - `https://liveplanner.app/api/workspace/auth/callback/google`
+   - `https://www.liveplanner.app/api/workspace/auth/callback/google`
+   - `https://livedocuments.app/api/workspace/auth/callback/google`
+   - `https://www.livedocuments.app/api/workspace/auth/callback/google`
+   - `https://livedesign.app/api/workspace/auth/callback/google`
+   - `https://www.livedesign.app/api/workspace/auth/callback/google`
+   - staging: `https://staging.<app>/api/workspace/auth/callback/google` for each app
+   - local: `http://localhost:3100`, `3200`, `3300` and `3400`, each with
+     `/api/workspace/auth/callback/google`
+
+Locally, an app client registered before the guest hand-off also needs its `/auth/guest` redirect
+URI to sign a guest in.
+
 ## Settings
 
 A person's settings live with the account, in the accounts Worker's D1
