@@ -18,22 +18,18 @@ import {
   type Element,
 } from '@liveplanner/project';
 import {
-  APP_EVENTS_MAX,
-  COLLAB_MAX_ACTIONS,
-  COLLAB_MAX_THREADS,
-  IndexError,
-  type AppTimelineEvent,
-  type CollabPush,
-  type IndexAppClient,
-  type ItemSummary,
-} from '@liveworkspace/index-client';
+  capCollabPush,
+  drainIndexOutbox,
+  editKeyOf,
+  editKeyRange,
+  type OutboxRow,
+} from '@liveworkspace/index-app';
+import type { CollabPush, IndexAppClient, ItemSummary } from '@liveworkspace/index-client';
 import { projectStatsSql } from '../db/tab-stats';
 import { isEmptyCount, type ContentSummary } from '../db/content-summary';
 import { indexAppClient } from '../index-service';
 import { reportOwnerActivity } from '../person/account-app';
 import type { PlanEnv } from '../types';
-
-type OutboxRow = { id: number; kind: string; key: string };
 
 type TabRow = {
   id: string;
@@ -50,38 +46,32 @@ export function collabPushOf(
   threads: readonly CollabThreadRow[],
   actions: readonly CollabActionRow[],
 ): CollabPush {
-  return {
-    threads: [...threads]
-      .sort((a, b) => b.latestAt - a.latestAt)
-      .slice(0, COLLAB_MAX_THREADS)
-      .map((t) => ({
-        elementId: t.elementId,
-        elementLabel: t.elementLabel,
-        resolved: t.resolved,
-        commentCount: t.commentCount,
-        participantIds: t.participantIds,
-        mentionedIds: t.mentionedIds,
-        latestText: t.latestText,
-        latestAuthorName: t.latestAuthorName ?? '',
-        firstAt: t.firstAt,
-        latestAt: t.latestAt,
-      })),
-    actions: [...actions]
-      .sort((a, b) => b.updatedAt - a.updatedAt)
-      .slice(0, COLLAB_MAX_ACTIONS)
-      .map((a) => ({
-        elementId: a.elementId,
-        actionId: a.actionId,
-        elementLabel: a.elementLabel,
-        name: a.name,
-        status: a.status,
-        assigneeId: a.assigneeUserId ?? a.assigneeMemberId ?? null,
-        assignerId: a.assignerId,
-        teamId: a.teamId,
-        createdAt: a.createdAt,
-        updatedAt: a.updatedAt,
-      })),
-  };
+  return capCollabPush({
+    threads: threads.map((t) => ({
+      elementId: t.elementId,
+      elementLabel: t.elementLabel,
+      resolved: t.resolved,
+      commentCount: t.commentCount,
+      participantIds: t.participantIds,
+      mentionedIds: t.mentionedIds,
+      latestText: t.latestText,
+      latestAuthorName: t.latestAuthorName ?? '',
+      firstAt: t.firstAt,
+      latestAt: t.latestAt,
+    })),
+    actions: actions.map((a) => ({
+      elementId: a.elementId,
+      actionId: a.actionId,
+      elementLabel: a.elementLabel,
+      name: a.name,
+      status: a.status,
+      assigneeId: a.assigneeUserId ?? a.assigneeMemberId ?? null,
+      assignerId: a.assignerId,
+      teamId: a.teamId,
+      createdAt: a.createdAt,
+      updatedAt: a.updatedAt,
+    })),
+  });
 }
 
 // A Form tab's name and heading on its link (the form's public page reads them without waking the plan).
@@ -163,8 +153,8 @@ export async function readContentSummary(
       stats: rawStats ? (JSON.parse(rawStats) as ContentSummary['stats']) : null,
       hasContent,
     },
-    savedAt: ((plan?.results?.[0] as { saved_at?: number } | undefined)?.saved_at ?? 0),
-    ownerId: ((plan?.results?.[0] as { owner_id?: string | null } | undefined)?.owner_id ?? null),
+    savedAt: (plan?.results?.[0] as { saved_at?: number } | undefined)?.saved_at ?? 0,
+    ownerId: (plan?.results?.[0] as { owner_id?: string | null } | undefined)?.owner_id ?? null,
   };
 }
 
@@ -182,14 +172,11 @@ export function itemSummaryOf(summary: ContentSummary): ItemSummary {
 
 // ---------- Who edited -----------------------------------------------------------------------------------------
 
-// An `edit` key is `<person>@<time>`: one per person, the time of their latest write, so a morning of saves is
-// one key and the drain reports it as one `edited` event (the index keeps one per person, item and day).
-const EDITOR_SEP = '@';
-
 /**
- * A person's write to the plan, for the Timeline and their Most Used: replaces their key with one at `at`. The
- * room calls it after a request that wrote (plan-room.ts route()), so the edit is the person's who asked, never a
- * guess from the content. Two plain statements on the room's storage, outside the save's transaction.
+ * A person's write to the plan, for the Timeline and their Most Used: replaces their key with one at `at`
+ * (@liveworkspace/index-app's edit keys, one per person). The room calls it after a request that wrote
+ * (plan-room.ts route()), so the edit is the person's who asked, never a guess from the content. Two plain
+ * statements on the room's storage, outside the save's transaction.
  */
 export function recordEditor(
   exec: (query: string, ...bindings: (string | number)[]) => unknown,
@@ -197,23 +184,18 @@ export function recordEditor(
   personId: string,
   at: number,
 ): void {
-  const prefix = `${personId}${EDITOR_SEP}`;
-  // The key range of this person's keys: '@' + 1 is 'A'.
+  const [from, to] = editKeyRange(personId);
   exec(
     `DELETE FROM outbox WHERE plan_id = ? AND kind = 'edit' AND key >= ? AND key < ?`,
     planId,
-    prefix,
-    `${personId}A`,
+    from,
+    to,
   );
-  exec(`INSERT INTO outbox (plan_id, kind, key) VALUES (?, 'edit', ?)`, planId, `${prefix}${at}`);
-}
-
-function editedOf(key: string): AppTimelineEvent | null {
-  const at = key.lastIndexOf(EDITOR_SEP);
-  const actorId = key.slice(0, at);
-  const time = Number(key.slice(at + 1));
-  if (at <= 0 || !Number.isFinite(time)) return null;
-  return { type: 'edited', actorId, at: time };
+  exec(
+    `INSERT INTO outbox (plan_id, kind, key) VALUES (?, 'edit', ?)`,
+    planId,
+    editKeyOf(personId, at),
+  );
 }
 
 // ---------- The drain ----------------------------------------------------------------------------------------
@@ -221,117 +203,48 @@ function editedOf(key: string): AppTimelineEvent | null {
 // `more`: keys were left for the next drain (a drain takes at most DRAIN_TABS tabs).
 export type DrainResult = { keys: number; pushes: number; more: boolean };
 
-// Tabs one drain pushes: one request each, so a drain after a 200-tab import stays well inside a Durable Object's
-// subrequest budget; the rest go in the next drain, which the room runs straight after.
-export const DRAIN_TABS = 50;
-// Pushes in flight at once.
-const PUSH_CONCURRENCY = 6;
+export { DRAIN_TABS } from '@liveworkspace/index-app';
 
-// An item the index does not hold (never made there, or purged) takes no push: the key is done.
-function pushed(err: unknown): boolean {
-  return err instanceof IndexError && err.status === 404;
-}
-
-async function inBatches(tasks: (() => Promise<void>)[]): Promise<void> {
-  for (let i = 0; i < tasks.length; i += PUSH_CONCURRENCY) {
-    await Promise.all(tasks.slice(i, i + PUSH_CONCURRENCY).map((t) => t()));
-  }
-}
-
-// One drain: the outbox's keys (up to DRAIN_TABS tabs), pushed to the index. Answers what it pushed; throws when
-// a push fails (keeping its keys), so the alarm retries. Without an index configured the keys are dropped.
+// One drain: the outbox's keys, pushed to the index by @liveworkspace/index-app's drainIndexOutbox. Answers what
+// it pushed; throws when a push fails (keeping its keys), so the alarm retries. Without an index configured the
+// keys are dropped. Beside the pushes, a Form tab's name and heading go on its form link.
 export async function drainOutbox(
   env: PlanEnv,
   planId: string,
   client: IndexAppClient | null = indexAppClient(env),
 ): Promise<DrainResult> {
-  const all = (
+  const rows = (
     await env.PLAN_DB.prepare('SELECT id, kind, key FROM outbox WHERE plan_id = ? ORDER BY id')
       .bind(planId)
       .all<OutboxRow>()
   ).results;
-  if (all.length === 0) return { keys: 0, pushes: 0, more: false };
-  const taken = new Set(all.filter((r) => r.kind === 'tab').map((r) => r.key).slice(0, DRAIN_TABS));
-  const editors = new Set(all.filter((r) => r.kind === 'edit').slice(0, APP_EVENTS_MAX).map((r) => r.id));
-  const pending = all.filter(
-    (r) => (r.kind !== 'tab' || taken.has(r.key)) && (r.kind !== 'edit' || editors.has(r.id)),
-  );
-  const more = pending.length < all.length;
-  // Every editor in one report.
-  const edits: { id: number; event: AppTimelineEvent }[] = [];
-  const done: number[] = [];
-  const failures: unknown[] = [];
   const formStmts: D1PreparedStatement[] = [];
-  const tasks: (() => Promise<void>)[] = [];
-  // The owner's newest save, reported beside the index pushes (person/account-app.ts); never throws.
-  let activity: Promise<void> | null = null;
-
-  for (const row of pending) {
-    if (row.kind === 'tab') {
-      // One body at a time: a drain after a 200-tab import holds one tab in memory, never the plan.
+  const outcome = await drainIndexOutbox(planId, rows, client, {
+    collab: async (tabId) => {
       const tab = await env.PLAN_DB.prepare(
         `SELECT t.id, t.name, t.data, dt.order_index FROM tabs t JOIN plan_tabs dt ON dt.tab_id = t.id
           WHERE dt.plan_id = ? AND t.id = ?`,
       )
-        .bind(planId, row.key)
+        .bind(planId, tabId)
         .first<TabRow>();
       const parsed = tab ? parseTab(tab.data) : { elements: [], form: null };
-      if (tab && parsed.form) formStmts.push(formLinkStatement(env, planId, row.key, tab, parsed.form));
-      const rows = collabIndexRowsFromElements(parsed.elements);
-      const push = collabPushOf(rows.threads, rows.actions);
-      tasks.push(async () => {
-        try {
-          await client?.pushCollab(planId, row.key, push);
-          done.push(row.id);
-        } catch (err) {
-          if (pushed(err)) done.push(row.id);
-          else failures.push(err);
-        }
-      });
-    } else if (row.kind === 'summary') {
+      if (tab && parsed.form)
+        formStmts.push(formLinkStatement(env, planId, tabId, tab, parsed.form));
+      const found = collabIndexRowsFromElements(parsed.elements);
+      return collabPushOf(found.threads, found.actions);
+    },
+    summary: async () => {
       const { summary, savedAt, ownerId } = await readContentSummary(env, planId);
-      // The owner's newest activity, for liveworkspace's onboarding emails: at most once a minute a plan, with
-      // the summary. Best effort, never failing the drain; a guest's is not sent.
-      if (ownerId && savedAt > 0) activity = reportOwnerActivity(env, ownerId, savedAt);
-      tasks.push(async () => {
-        try {
-          await client?.pushSummary(planId, itemSummaryOf(summary), savedAt);
-          done.push(row.id);
-        } catch (err) {
-          if (pushed(err)) done.push(row.id);
-          else failures.push(err);
-        }
-      });
-    } else if (row.kind === 'edit') {
-      const event = editedOf(row.key);
-      if (event) edits.push({ id: row.id, event });
-      else done.push(row.id);
-    } else {
-      // A kind no longer pushed.
-      done.push(row.id);
-    }
-  }
-  if (edits.length > 0) {
-    tasks.push(async () => {
-      try {
-        await client?.pushEvents(
-          planId,
-          edits.map((e) => e.event),
-        );
-        done.push(...edits.map((e) => e.id));
-      } catch (err) {
-        if (pushed(err)) done.push(...edits.map((e) => e.id));
-        else failures.push(err);
-      }
-    });
-  }
-
-  await Promise.all([inBatches(tasks), activity]);
+      return { summary: itemSummaryOf(summary), updatedAt: savedAt, ownerId };
+    },
+    // The owner's newest activity, for liveworkspace's onboarding emails; a guest's is not sent.
+    onSummary: (ownerId, at) => reportOwnerActivity(env, ownerId, at),
+  });
   if (formStmts.length > 0) await env.DB.batch(formStmts);
-  if (done.length > 0)
+  if (outcome.done.length > 0)
     await env.PLAN_DB.prepare('DELETE FROM outbox WHERE id IN (SELECT value FROM json_each(?))')
-      .bind(JSON.stringify(done))
+      .bind(JSON.stringify(outcome.done))
       .run();
-  if (failures.length > 0) throw failures[0];
-  return { keys: done.length, pushes: tasks.length, more };
+  if (outcome.failures.length > 0) throw outcome.failures[0];
+  return { keys: outcome.done.length, pushes: outcome.pushes, more: outcome.more };
 }

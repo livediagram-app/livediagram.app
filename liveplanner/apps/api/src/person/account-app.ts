@@ -5,7 +5,8 @@
 // sign-up. None of these throw: without the accounts Worker, or when it can't be reached, each answers
 // as though there were nothing (and logs).
 
-import { accountEmails, recordSighting, reportActivity } from '@liveworkspace/auth-client';
+import { accountEmails, recordSighting } from '@liveworkspace/auth-client';
+import { reportOwnerActivity as reportActivityOf } from '@liveworkspace/index-app';
 import { accountCredentials } from '../auth/accounts';
 import type { Env } from '../types';
 import { isAccountOwner } from './owner';
@@ -44,15 +45,8 @@ export async function recordOwnerSighting(env: Env, ownerId: string): Promise<bo
   }
 }
 
-// The owner saved something they own at `at`, for liveworkspace's onboarding series (whether they have
-// made anything yet, and when they were last active, in any app). Sent at most once a minute a plan,
-// with its summary push (plan-room/plan-outbox.ts).
-export async function reportOwnerActivity(env: Env, ownerId: string, at: number): Promise<void> {
-  const credentials = accountCredentials(env);
-  if (!credentials || !isAccountOwner(ownerId)) return;
-  try {
-    await reportActivity(credentials, { userId: ownerId, at });
-  } catch (error) {
-    console.warn('[account-app] activity_failed', { error: String(error) });
-  }
+// The owner saved something they own at `at`, for liveworkspace's onboarding series: @liveworkspace/index-app's
+// reportOwnerActivity, sent with a plan's summary push (plan-room/plan-outbox.ts), so at most once a minute a plan.
+export function reportOwnerActivity(env: Env, ownerId: string, at: number): Promise<void> {
+  return reportActivityOf(accountCredentials(env), ownerId, at);
 }

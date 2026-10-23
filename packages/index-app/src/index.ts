@@ -6,3 +6,5 @@ export * from './lists';
 export * from './timing-safe';
 export * from './purge';
 export * from './internal';
+export * from './outbox';
+export * from './activity';

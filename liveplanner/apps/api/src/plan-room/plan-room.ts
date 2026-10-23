@@ -1,3 +1,4 @@
+import { FLUSH_IDLE_MS, FLUSH_RETRY_MS, nextFlushAt } from '@liveworkspace/index-app';
 import { DurableObject } from 'cloudflare:workers';
 import {
   ACCESS_CHANGED_CLOSE,
@@ -140,11 +141,9 @@ const SHARE_LINK_OPS = new Set(['share-revoked', 'share-rescoped']);
 // 4000-4999 application range; the client reloads or leaves on the op itself.
 const SHARE_LINK_CHANGED_CLOSE = 4003;
 
-// How long the outbox waits after a write before it pushes (the contract's "on idle"), and the least gap between
-// two pushes (its "at most once a minute"). A failed push retries after FLUSH_RETRY_MS.
-export const FLUSH_IDLE_MS = 2_000;
-export const FLUSH_MIN_GAP_MS = 60_000;
-const FLUSH_RETRY_MS = 60_000;
+// How long the outbox waits after a write before it pushes, the least gap between two pushes, and the retry after a
+// failed one: @liveworkspace/index-app's (outbox.ts), the same for every app's items.
+export { FLUSH_IDLE_MS, FLUSH_MIN_GAP_MS } from '@liveworkspace/index-app';
 // The plan's own daily upkeep: unreferenced sheets expire, old changesets go (both were D1 crons).
 export const MAINTENANCE_EVERY_MS = 24 * 60 * 60 * 1000;
 const MAINTENANCE_KEY = 'maintenance-at';
@@ -341,7 +340,7 @@ export class PlanRoom extends DurableObject<Env> {
     if (this.flushAt !== null) return;
     if (this.state.storage.sql.exec('SELECT 1 FROM outbox LIMIT 1').toArray().length === 0) return;
     const now = Date.now();
-    this.flushAt = Math.max(now + FLUSH_IDLE_MS, this.lastFlushAt + FLUSH_MIN_GAP_MS);
+    this.flushAt = nextFlushAt(now, this.lastFlushAt);
     this.armAlarm();
   }
 
@@ -369,7 +368,7 @@ export class PlanRoom extends DurableObject<Env> {
       this.flushAt === null &&
       this.state.storage.sql.exec('SELECT 1 FROM outbox LIMIT 1').toArray().length > 0
     ) {
-      this.flushAt = Math.max(Date.now() + FLUSH_IDLE_MS, this.lastFlushAt + FLUSH_MIN_GAP_MS);
+      this.flushAt = nextFlushAt(Date.now(), this.lastFlushAt);
     }
   }
 
@@ -403,7 +402,9 @@ export class PlanRoom extends DurableObject<Env> {
             id.equals(this.state.id) ? this : target.get(id, opts);
         }
         const value: unknown = Reflect.get(target, prop, receiver);
-        return typeof value === 'function' ? (value as (...a: unknown[]) => unknown).bind(target) : value;
+        return typeof value === 'function'
+          ? (value as (...a: unknown[]) => unknown).bind(target)
+          : value;
       },
     });
   }
@@ -419,7 +420,9 @@ export class PlanRoom extends DurableObject<Env> {
     this.bindPlan(planId);
     const env = this.requireEnv();
     const writesBefore = this.writes;
-    const response = await answerPlanRequest(env, request, identity, (p) => this.state.waitUntil(p));
+    const response = await answerPlanRequest(env, request, identity, (p) =>
+      this.state.waitUntil(p),
+    );
     // A request that wrote is an edit by whoever asked: their Timeline entry and a Most Used day
     // (plan-outbox.ts recordEditor). Reads, refusals and requests that changed nothing are not.
     if (response.ok && identity.owner && this.writes > writesBefore) {
@@ -1011,9 +1014,7 @@ export class PlanRoom extends DurableObject<Env> {
       this.flushAt,
       this.maintenanceAt,
       this.nextGrantDue(),
-    ].filter(
-      (t): t is number => t !== null,
-    );
+    ].filter((t): t is number => t !== null);
     if (due.length === 0) void this.state.storage.deleteAlarm();
     else void this.state.storage.setAlarm(Math.min(...due));
   }
