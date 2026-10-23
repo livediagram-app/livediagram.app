@@ -52,7 +52,6 @@ import { syncCommunity } from './community-service';
 import { MAX_BODY_BYTES, MAX_IMAGE_BYTES } from './limits';
 import { handleAccount } from './routes/account';
 import { handleAiReadNotes } from './routes/ai-read-notes';
-import { handleAi } from './routes/ai';
 import { handleCatalogues } from './routes/catalogues';
 import { handleCommunity } from './routes/community';
 import { handleCapabilities } from './routes/capabilities';
@@ -436,9 +435,7 @@ async function routeApiRequest(
       case 'unfurl':
         return await handleUnfurl(ctx);
       case 'ai':
-        // Two model routes, one gate (docs/specs/007-editor/ai-assistance.md + docs/specs/021-event-storming/event-storming.md Phase 8): the
-        // assistant at /api/ai, and the crop reader one segment deeper.
-        if (segments[2] === undefined) return await handleAi(ctx);
+        // The one model route, the sticky-note crop reader (docs/specs/021-event-storming/note-reader.md).
         if (segments[2] === 'read-notes' && segments.length === 3)
           return await handleAiReadNotes(ctx);
         return notFound();

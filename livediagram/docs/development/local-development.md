@@ -176,23 +176,19 @@ apps/cli/dist/livediagram.mjs document ls
 `$XDG_CONFIG_HOME/livediagram` and `$XDG_CACHE_HOME/livediagram` (`~/.config` and `~/.cache` by default); point
 both at a scratch directory to keep a test run apart from your own sign-in.
 
-## Enabling AI assistance locally (optional)
+## Enabling the photo reader locally (optional)
 
-The AI panel ([AI Assistance](../specs/007-editor/ai-assistance.md)) is hidden entirely unless the api worker has a model key. To turn it on locally:
+The event-storming photo import reads the handwriting on each sticky in the browser unless the api worker has a model key, in which case a hosted model reads it instead, markedly better ([Note reader](../specs/021-event-storming/note-reader.md)). To turn the server reader on locally:
 
 ```sh
-# apps/api/.dev.vars (gitignored). One key serves every AI feature.
-OPENAI_API_KEY=...             # or GOOGLE_AI_STUDIO_API_KEY=..., or both:
-#                              # the assistant then runs on OpenAI, the reader on Google
-# AI_API_KEY=...               # any other OpenAI-compatible provider, used only when
-# AI_BASE_URL=http://127.0.0.1:8080/v1  # neither named key is set; needs both of these
-# AI_MODEL=gpt-4o              # the assistant's model; optional for the named keys
-# AI_VISION_MODEL=...          # optional; reads sticky crops (docs/specs/021-event-storming/event-storming.md).
-#                              # On Google this defaults to gemini-2.5-flash-lite,
-#                              # which reads handwriting better than the big model.
+# apps/api/.dev.vars (gitignored).
+GOOGLE_AI_STUDIO_API_KEY=...   # the reader defaults to gemini-2.5-flash-lite
+# AI_API_KEY=...               # or any other OpenAI-compatible provider, used only when
+# AI_BASE_URL=http://127.0.0.1:8080/v1  # the Google key is not set; needs both of these
+# AI_VISION_MODEL=...          # the reader's model; required for AI_API_KEY, optional on Google
 ```
 
-Restart `pnpm dev`. `GET /api/capabilities` will start reporting `{ aiEnabled: true }`, the Settings dialog grows an "AI Assistant" toggle, and the editor surfaces the panel once the user opts in. The two spend-DoS knobs `AI_ALLOWED_ORIGINS` and `AI_REQUIRE_SIGN_IN` are hosted-only; leave them unset locally so the guest path keeps working. Production declares `AI_ALLOWED_ORIGINS` in `apps/api/wrangler.toml` `[vars]`, which `wrangler dev` also reads, so the api's `dev` script (and the e2e stack) blank it with `--var AI_ALLOWED_ORIGINS:`; without that, every AI request from a localhost editor answers 403 `origin_not_allowed`. See `apps/api/.env.example` for the full set of vars the worker reads.
+Restart `pnpm dev`. `GET /api/capabilities` will start reporting `{ aiEnabled: true }` and the photo import sends its crops to the server reader. The two spend-DoS knobs `AI_ALLOWED_ORIGINS` and `AI_REQUIRE_SIGN_IN` are hosted-only; leave them unset locally so the guest path keeps working. Production declares `AI_ALLOWED_ORIGINS` in `apps/api/wrangler.toml` `[vars]`, which `wrangler dev` also reads, so the api's `dev` script (and the e2e stack) blank it with `--var AI_ALLOWED_ORIGINS:`; without that, every reader request from a localhost editor answers 403 `origin_not_allowed`. See `apps/api/.env.example` for the full set of vars the worker reads.
 
 ## Running tests
 

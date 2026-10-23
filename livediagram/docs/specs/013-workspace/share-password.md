@@ -159,7 +159,7 @@ wrong password doesn't accumulate noise: the participant fetch (`apiLoadParticip
 skips its retry while the gate is showing, so refreshing the input doesn't replay
 a 401 on every keystroke; and the `useCapabilities` hook plus the
 server-preferences sync take an `enabled` flag that stays false until the gate
-passes, so the AI capability check and the user's preferences PUT only fire
+passes, so the capabilities check and the user's preferences PUT only fire
 once the password is right. Without these defers the visitor would burn a
 handful of failing requests per wrong attempt; with them the gate is the only
 moving piece while it is up.

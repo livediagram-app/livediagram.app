@@ -74,7 +74,7 @@ general diagram tab's environment.
 | Opens in  | `opens-in` | Opens in    | `diagram` Diagram, `draw` Draw, `workshop` Workshop: the editor mode the document was created to open in        |
 | Kind      | `kind`     | Kind        | `event-storming` Event Storming: the first tab's kind when the document was created                             |
 | Template  | `template` | Template    | `retrospective` Retrospective, `kanban` Kanban: the template family the document was made from                  |
-| Made by   | `made-by`  | Made by AI  | `ai` Made by AI: the document's `source` is the AI assistant or an AI tool through the MCP server (not the CLI) |
+| Made by   | `made-by`  | Made by AI  | `ai` Made by AI: the document's `source` is an AI tool through the MCP server (not the CLI)                    |
 | Edited    | `edited`   | Edited      | `today` Today, `7d` Last 7 days, `30d` Last 30 days, `12m` Last 12 months, `this-year` This year                |
 | People    | `people`   | People      | `me` Me, `others` Others: the owner of a document; the actor of a Timeline event                                |
 | Space     | `space`    | Space       | `mine` My Work, `shared` Shared With Me, `team:<id>` the team's name. Aggregate views only                      |

@@ -296,27 +296,21 @@ describe('settings catalogue', () => {
     }
   });
 
-  it('hides the AI category until the worker advertises the capability', () => {
-    const ctx = { emailEnabled: true, signedIn: true };
-    expect(visibleCategories(false, ctx).map((c) => c.id)).not.toContain('ai');
-    expect(visibleCategories(true, ctx).map((c) => c.id)).toContain('ai');
-  });
-
   // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
-  it('leaves the account, documents, AI and tokens, and the Appearance choice, out of a workbench', () => {
+  it('leaves the account, documents and tokens, and the Appearance choice, out of a workbench', () => {
     const ctx = { emailEnabled: true, signedIn: true, authEnabled: true, workbench: true };
-    const categories = visibleCategories(true, ctx);
+    const categories = visibleCategories(ctx);
     const ids = categories.map((c) => c.id);
 
-    for (const hidden of ['ai', 'documents', 'account', 'notifications', 'tokens']) {
+    for (const hidden of ['documents', 'account', 'notifications', 'tokens']) {
       expect(ids).not.toContain(hidden);
     }
     expect(ids).toContain('editor');
     const appearance = categories.find((c) => c.id === 'appearance')!;
     expect(appearance.rows.some((r) => r.kind === 'appearance')).toBe(false);
     expect(appearance.rows.length).toBeGreaterThan(0);
-    const app = visibleCategories(true, { ...ctx, workbench: false }).map((c) => c.id);
-    expect(app).toEqual(expect.arrayContaining(['ai', 'documents', 'account', 'tokens']));
+    const app = visibleCategories({ ...ctx, workbench: false }).map((c) => c.id);
+    expect(app).toEqual(expect.arrayContaining(['documents', 'account', 'tokens']));
   });
 
   it('nests Notifications and API Tokens under Account, directly after it', () => {
@@ -329,21 +323,13 @@ describe('settings catalogue', () => {
     expect(topLevel.slice(-2)).toEqual(['account', 'privacy']);
   });
 
-  it('offers API Tokens, and the AI link to it, only where sign-in exists', () => {
+  it('offers API Tokens only where sign-in exists', () => {
     const ids = (authEnabled: boolean) =>
-      visibleCategories(true, { emailEnabled: false, signedIn: false, authEnabled }).map(
-        (c) => c.id,
-      );
-    const aiRows = (authEnabled: boolean) =>
-      visibleCategories(true, { emailEnabled: false, signedIn: true, authEnabled })
-        .find((c) => c.id === 'ai')!
-        .rows.map((r) => r.key);
+      visibleCategories({ emailEnabled: false, signedIn: false, authEnabled }).map((c) => c.id);
     // A guest on a deployment WITH sign-in still sees the category: its row
     // says why it is empty and links to sign in.
     expect(ids(true)).toContain('tokens');
     expect(ids(false)).not.toContain('tokens');
-    expect(aiRows(true)).toContain('apiTokensLink');
-    expect(aiRows(false)).not.toContain('apiTokensLink');
   });
 
   it('points every link row at a category that exists', () => {
@@ -354,9 +340,9 @@ describe('settings catalogue', () => {
   });
 
   it('drops the email rows unless mail can be sent AND someone is signed in', () => {
-    const withEmail = visibleCategories(true, { emailEnabled: true, signedIn: true });
-    const without = visibleCategories(true, { emailEnabled: false, signedIn: true });
-    const guest = visibleCategories(true, { emailEnabled: true, signedIn: false });
+    const withEmail = visibleCategories({ emailEnabled: true, signedIn: true });
+    const without = visibleCategories({ emailEnabled: false, signedIn: true });
+    const guest = visibleCategories({ emailEnabled: true, signedIn: false });
     const guestRows = guest.find((c) => c.id === 'notifications')!.rows;
     expect(guestRows.map((r) => r.key)).not.toContain('notifyComments');
     // ...but the section still says the settings exist, the same way the API
@@ -364,7 +350,7 @@ describe('settings catalogue', () => {
     expect(guestRows.map((r) => r.key)).toContain('emailSignIn');
     expect(withEmailRows()).not.toContain('emailSignIn');
     function withEmailRows() {
-      return visibleCategories(true, { emailEnabled: true, signedIn: true })
+      return visibleCategories({ emailEnabled: true, signedIn: true })
         .find((c) => c.id === 'notifications')!
         .rows.map((r) => r.key);
     }
@@ -379,7 +365,7 @@ describe('settings catalogue', () => {
 
   it('offers Minimal chrome only while power user mode is on', () => {
     const editorRows = (powerUserMode: boolean) =>
-      visibleCategories(true, { emailEnabled: false, signedIn: false, powerUserMode })
+      visibleCategories({ emailEnabled: false, signedIn: false, powerUserMode })
         .find((c) => c.id === 'editor')!
         .rows.map((r) => r.key);
     expect(editorRows(false)).toContain('powerUserMode');
@@ -406,10 +392,8 @@ describe('settings catalogue', () => {
   it('never offers a category with no rows', () => {
     // An empty category is a dead end: a row that pushes a blank pane.
     for (const ctx of BOTH_CONTEXTS) {
-      for (const aiCapable of [true, false]) {
-        for (const category of visibleCategories(aiCapable, ctx)) {
-          expect(category.rows.length, category.id).toBeGreaterThan(0);
-        }
+      for (const category of visibleCategories(ctx)) {
+        expect(category.rows.length, category.id).toBeGreaterThan(0);
       }
     }
   });
@@ -473,7 +457,7 @@ describe('settings sub-categories', () => {
 
   it("offers a panel's other rows only while its Enable switch is on", () => {
     const rows = (id: string, preferences: UserPreferences) =>
-      visibleCategories(false, { emailEnabled: false, signedIn: false, preferences })
+      visibleCategories({ emailEnabled: false, signedIn: false, preferences })
         .find((c) => c.id === id)!
         .rows.map((r) => r.key);
     expect(rows('layers', {})).toEqual([

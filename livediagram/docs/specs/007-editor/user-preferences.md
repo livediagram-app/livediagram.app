@@ -158,17 +158,6 @@ type UserPreferences = {
   // stored preference fail to parse rather than be ignored.
   recogniseShapes?: boolean;
 
-  // When true, the AI Assistant panel renders in the editor.
-  // Defaults to false (opt-in). Only surfaced in the Settings
-  // dialog when the api worker reports aiEnabled:true (an
-  // a model key is configured). See docs/specs/007-editor/ai-assistance.md.
-  aiAssistanceEnabled?: boolean;
-
-  // Show the AI panel's quick suggested-prompt chips (docs/specs/007-editor/ai-assistance.md).
-  // Toggled from the Settings dialog's AI category; they take vertical
-  // space, so it can hide them. Undefined / true === shown.
-  aiSuggestedPrompts?: boolean;
-
   // Opacity (0..1) of EVERY panel at rest, so the canvas shows through
   // them; they snap back to fully opaque while hovered or focused so they
   // stay readable in use. Applied via the `--lvd-panel-opacity` custom
@@ -355,9 +344,6 @@ Missing key === undefined === default behaviour. Concretely:
 - `recogniseShapes` is ignored whatever its value ([Two pens instead of a pen and a mode](../008-canvas/two-pens.md)): the
   Shape Pen recognises, Freehand does not, and no stored flag
   changes either.
-- `aiAssistanceEnabled` undefined → AI panel hidden (the default).
-  Setting it to `true` shows the panel; the toggle only appears in
-  Settings when the api worker advertises AI capability.
 - `panelLayout` and `minimalPanels`, which older blobs still carry, are
   ignored: there is one panel layout ([Toolbar layout](toolbar-layout.md#one-layout)).
 - `whiteboardDockPosition` undefined → a whiteboard's dock at the top (the
@@ -420,6 +406,9 @@ Missing key === undefined === default behaviour. Concretely:
   Document wizard's Location step ([New document route](new-document-route.md#one-step-wizard)): the wizard
   never asks where a document goes, so a stored place is dropped the same way and new documents follow the
   [default folders](../013-workspace/default-folders.md).
+  `aiAssistanceEnabled` and `aiSuggestedPrompts` went with the in-editor AI assistant (removed 2026-10-23;
+  connected AI tools work through the [MCP server](../015-api/mcp-server.md)): a value still stored under
+  either is ignored.
 - `quickAddOnHover` undefined / false → click to open an element's quick-add
   `+` menu (the default; hover-open can feel twitchy, so it's opt-in). `true`
   opens it on hover instead, closing a beat after the pointer leaves both the
@@ -587,9 +576,7 @@ and the dialog stays as the one complete, browsable index of them.
   **Quick Style**, one per panel),
   **Accessibility** (reduce motion, and a **UI Scale** link row that opens
   Appearance), **Tours** (one switch per guided tour, see **Tours** below),
-  **AI Tools** (assistant, with suggested prompts nested under it, and a
-  **Manage API Tokens** link row that opens the API
-  Tokens sub-category), **Documents** (a **Default Folders** section with one row per
+  **Documents** (a **Default Folders** section with one row per
   [default folder](../013-workspace/default-folders.md#settings) entry, with Change and Clear; those are not a
   preference, they read and write `/api/placement-defaults`), and an **Explorer** section with **Show Home Banner**
   (`homeBanner`, missing means shown; [Explorer Home](../013-workspace/explorer-home.md#hiding-the-banner))), **Account** (identity, Trash, **Cloud Sync** (the cloud providers the

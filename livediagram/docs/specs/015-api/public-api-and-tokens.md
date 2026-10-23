@@ -303,9 +303,7 @@ or scope change; a token is replaced by creating a new one and revoking the old.
 
 **Links to it open the dialog, never navigate.** Everything in the app that
 points at tokens opens Settings on the API Tokens category in place: the
-AI Tools category's **Manage API Tokens** link row (which replaced the old
-read-only token list there), and the timeline's token cards and their
-**Open API Tokens** menu verb ([Timeline](../013-workspace/timeline.md)).
+timeline's token cards and their **Open API Tokens** menu verb ([Timeline](../013-workspace/timeline.md)).
 Mail, which cannot open a dialog, links at the `?settings=tokens` deep link
 (`/explorer?settings=tokens`), which opens the Explorer with Settings on the
 category.
@@ -360,8 +358,7 @@ self-host that hasn't configured sign-in runs in pure-guest mode, and in that
 mode the feature is **absent end to end** — there is no API Tokens category to
 open and no way to mint one:
 
-- **Frontend** — the Settings API Tokens category (and the AI Tools link row to
-  it) renders only when `signInEnabled` (`apps/editor/lib/auth-config.ts`, from
+- **Frontend** — the Settings API Tokens category renders only when `signInEnabled` (`apps/editor/lib/auth-config.ts`, from
   `NEXT_PUBLIC_SIGN_IN_ENABLED`). This is the **same
   flag** that already hides the teams / sign-in sections of the sidebar, so when
   auth is off the category simply isn't in the list.

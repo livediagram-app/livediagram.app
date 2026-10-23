@@ -213,8 +213,8 @@ export const categories: Category[] = [
     slug: 'tools',
     title: 'Tools',
     description:
-      'Do more with less effort using the editor helpers: AI, zen mode, light and dark mode, Markdown import, and cleanup.',
-    articleCount: 5,
+      'Do more with less effort using the editor helpers: zen mode, light and dark mode, Markdown import, and cleanup.',
+    articleCount: 4,
     kind: 'feature',
   },
   {
@@ -1898,15 +1898,6 @@ export const articles: Article[] = [
     categorySlug: 'tools',
   },
   {
-    slug: 'ai',
-    title: 'AI Assistance',
-    description: 'Optional Ask and Clean helpers on the canvas.',
-    keywords:
-      'assistant ask clean generate artificial intelligence helper suggest question summarise summarize typo llm',
-    category: 'Tools',
-    categorySlug: 'tools',
-  },
-  {
     slug: 'markdown-import',
     title: 'Markdown Import',
     description: 'Turn a Markdown outline into a themed tree diagram.',
@@ -2638,18 +2629,6 @@ export const articles: Article[] = [
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',
-  },
-
-  // ---- Sub-articles: AI ----
-  {
-    slug: 'ai-tools',
-    title: 'Ask and Clean',
-    description: 'What each AI helper does and when to reach for it.',
-    keywords:
-      'ai assistant helpers question tidy generate review ask clean summarise summarize typo prompt',
-    category: 'Tools',
-    categorySlug: 'tools/ai',
-    parentSlug: 'ai',
   },
 
   // ---- Sub-articles: Session Tools ----

@@ -27,6 +27,10 @@ const RETIRED: ReadonlySet<string> = new Set([
   // "Always save new documents in <place> and skip this step": the New Document wizard has no Location step to skip
   // (docs/specs/007-editor/new-document-route.md "One-step wizard").
   'skipLocationStep',
+  // The in-editor AI assistant and its suggested prompts (docs/specs/021-event-storming/note-reader.md): removed, along
+  // with the AI Tools Settings category.
+  'aiAssistanceEnabled',
+  'aiSuggestedPrompts',
 ]);
 
 export function upgradeLegacyPreferences<T extends Record<string, unknown>>(prefs: T): T {

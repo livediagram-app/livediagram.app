@@ -293,70 +293,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "AiConversationTurn": {
-    "additionalProperties": false,
-    "properties": {
-      "content": {
-        "type": "string"
-      },
-      "role": {
-        "enum": [
-          "user",
-          "assistant"
-        ],
-        "type": "string"
-      }
-    },
-    "required": [
-      "role",
-      "content"
-    ],
-    "type": "object"
-  },
-  "AiMode": {
-    "enum": [
-      "clean",
-      "ask"
-    ],
-    "type": "string"
-  },
-  "AiRequest": {
-    "additionalProperties": false,
-    "properties": {
-      "elements": {
-        "items": {},
-        "type": "array"
-      },
-      "focusIds": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "history": {
-        "items": {
-          "$ref": "#/components/schemas/AiConversationTurn"
-        },
-        "type": "array"
-      },
-      "mode": {
-        "$ref": "#/components/schemas/AiMode"
-      },
-      "prompt": {
-        "type": "string"
-      },
-      "tabName": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "mode",
-      "prompt",
-      "elements",
-      "tabName"
-    ],
-    "type": "object"
-  },
   "Anchor": {
     "enum": [
       "n",
@@ -2406,7 +2342,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "DocumentSource": {
     "enum": [
-      "ai",
       "mcp",
       "cli"
     ],

@@ -141,28 +141,24 @@ export type Env = {
   // Public origin used to build links in emails (optional). Defaults to
   // "https://livediagram.app".
   APP_BASE_URL?: string;
-  // WHOSE model, and where (docs/specs/007-editor/ai-assistance.md). The PROVIDER is inferred from which of
-  // these keys is set, because a key is provider-specific and its name should
-  // say so — see ai-provider.ts. Each feature takes its own provider from them
-  // (the assistant prefers OpenAI, the crop reader Google); one key serves
-  // both. None = the whole AI surface is hidden (capabilities reports aiEnabled:false and the AI routes
-  // answer 503), which is the self-host default.
+  // WHOSE model reads sticky notes from a photo, and where
+  // (docs/specs/021-event-storming/note-reader.md). The PROVIDER is inferred
+  // from which of these keys is set, because a key is provider-specific and its
+  // name should say so — see ai-provider.ts. None = the photo reader is hidden
+  // (capabilities reports aiEnabled:false and /api/ai/read-notes answers 503),
+  // which is the self-host default.
   //
   // Set via `wrangler secret put <NAME>` in production; drop into
   // `apps/api/.dev.vars` for local dev (gitignored, never commit).
   GOOGLE_AI_STUDIO_API_KEY?: string;
-  OPENAI_API_KEY?: string;
   // Any other OpenAI-compatible endpoint (Mistral, OpenRouter, a local
-  // llama.cpp or Ollama). Needs AI_BASE_URL and AI_MODEL with it.
+  // llama.cpp or Ollama). Needs AI_BASE_URL and AI_VISION_MODEL with it.
   AI_API_KEY?: string;
   AI_BASE_URL?: string;
-  // The assistant's model, overriding its provider's default. Reaches the
-  // reader only when the reader runs on the same provider.
-  AI_MODEL?: string;
-  // The crop reader's model (docs/specs/021-event-storming/event-storming.md Phase 8), beating every default.
+  // The reader's model, beating the Google default.
   AI_VISION_MODEL?: string;
-  // Per-IP rate limiter for POST /api/ai. Caps AI requests at 20/60s
-  // per IP so a single client can't exhaust the operator's model budget.
+  // Per-IP rate limiter for POST /api/ai/read-notes. Caps AI requests at
+  // 20/60s per IP so a single client can't exhaust the operator's model budget.
   // Optional: absent (self-host) falls through to "allow".
   AI_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Explorer Home's reads (docs/specs/013-workspace/explorer-home.md), per owner. Absent binding
@@ -180,7 +176,8 @@ export type Env = {
   API_TOKEN_READ_RATE_LIMITER?: {
     limit: (input: { key: string }) => Promise<{ success: boolean }>;
   };
-  // Comma-separated Origin allow-list for POST /api/ai (docs/specs/007-editor/ai-assistance.md).
+  // Comma-separated Origin allow-list for POST /api/ai/read-notes
+  // (docs/specs/021-event-storming/note-reader.md).
   // When set, the worker rejects 403 unless the request's Origin
   // header exactly matches one of the entries (trimmed for
   // whitespace). Unset = no check, matching the historical
@@ -192,9 +189,9 @@ export type Env = {
   // This comment previously named the apex alone, which as an actual
   // value would 403 every request the editor makes.
   AI_ALLOWED_ORIGINS?: string;
-  // When the literal string "true", POST /api/ai requires a verified
+  // When the literal string "true", POST /api/ai/read-notes requires a verified
   // access token and rejects the X-Owner-Id guest path with 401
-  // (docs/specs/007-editor/ai-assistance.md). Anything else (unset, "false", any other value) keeps
+  // (docs/specs/021-event-storming/note-reader.md). Anything else (unset, "false", any other value) keeps
   // the guest path open. Hosted livediagram.app leaves it unset;
   // OSS self-hosters who run without sign-in stay on the open path by
   // default.

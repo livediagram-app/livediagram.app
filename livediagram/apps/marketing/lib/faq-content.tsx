@@ -373,9 +373,9 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'How do I keep up with what changed?',
         a: (
           <>
-            Your Inbox gathers the actions and comment threads waiting on you across
-            every document, and Home shows what other people did while you were away. Once you sign
-            in, emails can tell you too, and you choose which in Settings. See{' '}
+            Your Inbox gathers the actions and comment threads waiting on you across every document,
+            and Home shows what other people did while you were away. Once you sign in, emails can
+            tell you too, and you choose which in Settings. See{' '}
             <a href="/help/explorer/activity/">the Inbox</a>.
           </>
         ),
@@ -474,10 +474,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         ),
         aText:
           'Yes. livediagram runs an MCP server at mcp.livediagram.app. Connect a compatible AI tool and, after a one-time authorisation, it can find, read, create and edit the documents in your account. Its changes appear live for anyone on the tab, outlined so you can see them and undo them. Build with AI walks you through connecting Claude, ChatGPT, Cursor and more.',
-      },
-      {
-        q: 'Is there AI built into the editor?',
-        a: 'Optionally. Turn on AI assistance in Settings for an in-editor panel with two modes: Ask answers questions about the tab in front of you, and Clean fixes typos and tidies sizes, positions and styles. It is off by default.',
       },
       {
         q: 'Is there an API?',
@@ -627,7 +623,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Do I need sign-in or an AI key to self-host?',
-        a: 'No. Without sign-in configured, your copy runs in guest mode with persistence, sharing and real-time collaboration all working. AI assistance switches on when you add an AI key (photo import works without one, reading the notes in the browser), and email and the Google Drive mirror once sign-in and their own keys are set up.',
+        a: 'No. Without sign-in configured, your copy runs in guest mode with persistence, sharing and real-time collaboration all working. Photo import reads sticky notes in the browser, or with a hosted model once you add an AI key, and email and the Google Drive mirror switch on once sign-in and their own keys are set up.',
       },
     ],
   },

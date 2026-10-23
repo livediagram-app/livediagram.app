@@ -9,7 +9,7 @@ import {
 import { GOOGLE_BASE_URL } from './ai-provider';
 import type { Env } from './types';
 
-// The one place the worker talks to a model (docs/specs/007-editor/ai-assistance.md). Whose model that is
+// The one place the worker talks to a model (docs/specs/021-event-storming/note-reader.md). Whose model that is
 // comes from ai-provider.ts; what is pinned here is the joining, the header,
 // and that the body goes through untouched.
 
@@ -96,11 +96,9 @@ describe('chatCompletions timeout', () => {
 });
 
 describe('providerOf', () => {
-  it('is the resolver, for a route that has an Env and a feature', () => {
-    const both = { GOOGLE_AI_STUDIO_API_KEY: 'g', OPENAI_API_KEY: 'o' } as Env;
-    expect(providerOf(both, 'assistant')?.provider).toBe('openai');
-    expect(providerOf(both, 'reader')?.provider).toBe('google');
-    expect(providerOf({} as Env, 'reader')).toBeNull();
+  it('is the resolver, for a route that has an Env', () => {
+    expect(providerOf({ GOOGLE_AI_STUDIO_API_KEY: 'g' } as Env)?.provider).toBe('google');
+    expect(providerOf({} as Env)).toBeNull();
   });
 });
 

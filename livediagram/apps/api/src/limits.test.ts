@@ -35,24 +35,19 @@ describe('image cap', () => {
   });
 });
 
-// docs/specs/007-editor/ai-assistance.md tabulates the AI route's error envelope. It had drifted badly: it
-// listed `ai_parse_error`, a token that exists in that sentence and nowhere
-// else in the repo, and `off_topic`, which is not an envelope at all — an
-// off-topic prompt returns 200 with `"offTopic": true` in the body and the
-// EDITOR raises the error. Both tokens the route really emits for auth
-// failures were missing. Someone building a client from the spec would have
-// handled two errors that never arrive and none of the two that do.
-describe('docs/specs/007-editor/ai-assistance.md lists the AI route error tokens the route emits', () => {
+// docs/specs/021-event-storming/note-reader.md tabulates the reader route's
+// error envelope. An earlier AI spec drifted badly here (it listed a token that
+// existed nowhere in the repo and missed two the route really emitted), so the
+// table is pinned to the code both ways.
+describe('docs/specs/021-event-storming/note-reader.md lists the error tokens the reader route emits', () => {
   it('names each one, and invents none', () => {
-    // Every file a caller of a model route can receive an envelope from: the
-    // shared admission gate and both handlers. The gate was lifted out of
-    // ai.ts when the second route arrived (docs/specs/021-event-storming/event-storming.md Phase 8) and took three of
-    // the tokens with it — reading one file would have quietly stopped
+    // Every file a caller of the reader can receive an envelope from: the
+    // admission gate and the handler. Reading one file would quietly stop
     // checking most of them.
-    const route = ['ai.ts', 'ai-gate.ts', 'ai-read-notes.ts']
+    const route = ['ai-gate.ts', 'ai-read-notes.ts']
       .map((f) => readFileSync(`${ROOT}/apps/api/src/routes/${f}`, 'utf8'))
       .join('\n');
-    const spec = readFileSync(`${ROOT}/docs/specs/007-editor/ai-assistance.md`, 'utf8');
+    const spec = readFileSync(`${ROOT}/docs/specs/021-event-storming/note-reader.md`, 'utf8');
     // Tokens come from inline envelopes AND the shared helpers in
     // responses.ts: a no-arg helper (`aiError()`) stands for the fixed token
     // its body returns, and `forbidden('x')` / `conflict('x')` carry theirs as
@@ -74,7 +69,7 @@ describe('docs/specs/007-editor/ai-assistance.md lists the AI route error tokens
     expect(new Set(emitted).size).toBeGreaterThan(3);
 
     for (const token of new Set(emitted)) {
-      expect(spec, `docs/specs/007-editor/ai-assistance.md omits ${token}`).toContain(
+      expect(spec, `docs/specs/021-event-storming/note-reader.md omits ${token}`).toContain(
         `\`${token}\``,
       );
     }
@@ -89,10 +84,9 @@ describe('docs/specs/007-editor/ai-assistance.md lists the AI route error tokens
       .join('\n');
     for (const m of rows.matchAll(/`([a-z]+_[a-z_]+)`/g)) {
       const claimed = m[1]!;
-      if (claimed === 'off_topic') continue; // called out as NOT an envelope
       expect(
         emitted,
-        `docs/specs/007-editor/ai-assistance.md claims ${claimed}, which the route never emits`,
+        `docs/specs/021-event-storming/note-reader.md claims ${claimed}, which the route never emits`,
       ).toContain(claimed);
     }
   });

@@ -1961,16 +1961,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   // ---- AI ----
   {
     method: 'POST',
-    path: '/ai',
-    segment: 'ai',
-    tag: 'AI',
-    summary: 'Generate or review a diagram with the optional AI assistant (streamed).',
-    auth: 'guest-or-clerk',
-    requestSchema: 'AiRequest',
-    statuses: [200, 401, 403, 500, 502, 503],
-  },
-  {
-    method: 'POST',
     path: '/ai/read-notes',
     segment: 'ai',
     tag: 'AI',

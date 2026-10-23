@@ -7,29 +7,26 @@ import {
   signInRequired,
 } from '../responses';
 import { clientRateKey } from '../client-ip';
-import { resolveAiProvider, type AiFeature } from '../ai-provider';
+import { resolveAiProvider } from '../ai-provider';
 import type { RouteContext } from './context';
 
-// May this caller use the model at all? (docs/specs/007-editor/ai-assistance.md.)
+// May this caller use the model at all? (docs/specs/021-event-storming/note-reader.md.)
 //
-// Lifted out of `handleAi` verbatim when a SECOND model route arrived (the
-// event-storming photo reader, docs/specs/021-event-storming/event-storming.md Phase 8). One answer to "who may spend
-// the operator's model budget", not two that drift — and the order matters as
-// much as the checks: the origin allow-list runs BEFORE auth so a third-party
+// The one answer to "who may spend the operator's model budget" for the
+// sticky-note photo reader — and the order matters as much as the checks: the origin allow-list runs BEFORE auth so a third-party
 // site cannot even probe the endpoint for state, and the rate limiter runs
 // last so a refused caller never consumes anyone's budget.
 //
 // Returns the Response to send, or null when the caller is admitted.
-export async function aiGate(ctx: RouteContext, feature: AiFeature): Promise<Response | null> {
+export async function aiGate(ctx: RouteContext): Promise<Response | null> {
   const { request, env } = ctx;
 
-  // No usable provider for this feature: no key, or a half-configured generic
+  // No usable provider: no key, or a half-configured generic
   // (ai-provider.ts logs which). Same answer either way: this deployment does
   // not do AI.
-  if (!resolveAiProvider(env, feature))
-    return json({ error: 'ai_not_configured' }, { status: 503 });
+  if (!resolveAiProvider(env)) return json({ error: 'ai_not_configured' }, { status: 503 });
 
-  // Origin allow-list (docs/specs/007-editor/ai-assistance.md). Optional: unset accepts any Origin, matching
+  // Origin allow-list. Optional: unset accepts any Origin, matching
   // the historical OSS self-host story. When set, the request's Origin must
   // match one of the comma-separated entries exactly — case-sensitive against
   // the raw header, because every modern browser sends a canonical lower-case
@@ -44,7 +41,7 @@ export async function aiGate(ctx: RouteContext, feature: AiFeature): Promise<Res
     }
   }
 
-  // Sign-in-only gate (docs/specs/007-editor/ai-assistance.md). When AI_REQUIRE_SIGN_IN="true", reject the legacy
+  // Sign-in-only gate. When AI_REQUIRE_SIGN_IN="true", reject the legacy
   // X-Owner-Id guest path so an attacker can't mint fresh per-request UUIDs to
   // drain the operator's model budget. Opt-in, so an OSS self-host that runs no
   // sign-in at all keeps the feature usable.

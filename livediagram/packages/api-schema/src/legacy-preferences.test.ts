@@ -69,6 +69,17 @@ describe('upgradeLegacyPreferences', () => {
     expect(upgradeLegacyPreferences({ skipLocationStep: null })).toEqual({});
   });
 
+  // The in-editor AI assistant is gone, and its two switches with it.
+  it('drops the retired AI assistant switches', () => {
+    expect(
+      upgradeLegacyPreferences({
+        aiAssistanceEnabled: true,
+        aiSuggestedPrompts: false,
+        theme: 'dark',
+      }),
+    ).toEqual({ theme: 'dark' });
+  });
+
   it('returns the same object when there is nothing to upgrade', () => {
     const prefs = { notifyDocumentJoin: false };
     expect(upgradeLegacyPreferences(prefs)).toBe(prefs);

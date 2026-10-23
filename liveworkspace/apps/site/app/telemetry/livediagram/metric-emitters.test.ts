@@ -111,7 +111,7 @@ describe('the emitter scan', () => {
     expect(
       has('Document', 'Exported', COMPUTED as never) || has('Document', 'Exported', 'PNG'),
     ).toBe(true);
-    expect(has('AI', 'Toggled', 'AiOn')).toBe(true); // Settings catalogue row
+    expect(has('UI', 'Toggled', 'MinimalChromeOn')).toBe(true); // Settings catalogue row
     expect(has('Tab', 'Moved', 'Folder')).toBe(true); // ternary action
     expect(has('Tab', 'Removed', 'Folder')).toBe(true);
     expect(has('Document', 'Created', 'Offline')).toBe(true); // ternary type

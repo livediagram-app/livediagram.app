@@ -143,8 +143,8 @@ open would still have its element moves refused by `applyParticipantOp`.
   (`lib/tidy-engine.ts`): the popover loads them as it opens and judges once they are here; a palette command loads
   them at the press; a hover before they arrive shows nothing. The document page's initial JS, measured as the
   gzip sum of the scripts `out/document/placeholder.html` loads: 1,334.8 KiB before this work, 1,343.9 KiB with
-  the tidiers static, 1,337.1 KiB loaded on demand. The remaining 2.3 KiB is Auto-align's line logic, which the AI
-  apply path runs at first load.
+  the tidiers static, 1,337.1 KiB loaded on demand. The remaining 2.3 KiB is Auto-align's line logic (measured while the
+  retired AI assistant's apply path still ran it at first load).
 - Judging the six tidiers costs six cleanups plus the overlap sweep: 2.9 ms on the checkout, 21 ms at 50 nodes,
   58 ms at 100, about 450 ms at 300 in all. It runs one tidier per task after the popover paints (D101), so the
   longest single task at 300 nodes is one layout (about 130 ms when it settles), never the six together.

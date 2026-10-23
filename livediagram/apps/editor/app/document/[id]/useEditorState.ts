@@ -150,7 +150,6 @@ import {
   autosaveReadOnly,
   createTab,
   deriveTabLoadState,
-  mergeAiElements,
   patchTab,
 } from './editor-page-helpers';
 import { useSyncInPlace } from './useSyncInPlace';
@@ -588,7 +587,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   } = useEditorPreferences({
     ownerId: selfParticipant.id,
     passwordGated: sharePasswordGate !== null,
-    setAiPanelVisible: panelLayout.setAiPanelVisible,
   });
 
   // Hide / show a document in the Explorer panel's Recent list (docs/specs/013-workspace/hide-from-recent.md).
@@ -1570,11 +1568,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     ((from: string, tabId: string, at: { x: number; y: number }) => void) | null
   >(focusInvite.receiveFocusHere);
 
-  // Server capabilities (docs/specs/007-editor/ai-assistance.md). Fetched once at mount; determines
-  // whether the AI panel option is shown in Settings and rendered.
+  // Server capabilities. Fetched once at mount; `aiEnabled` decides whether the sticky-note photo
+  // import reads on the server or in the browser (docs/specs/021-event-storming/note-reader.md).
   const capabilities = useCapabilities(sharePasswordGate === null);
   const { emailEnabled } = capabilities;
-  // A workbench offers no AI: the person's agent sits beside it.
+  // A workbench offers no photo reading: the person's agent sits beside it.
   const aiCapable = capabilities.aiEnabled && !workbenchMode;
 
   // Pinch-to-zoom on touch screens + trackpad pinch (Ctrl+wheel).
@@ -1959,17 +1957,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
 
   // A layer turning hidden or locked drops its elements from the live selection (layers.md).
   usePruneInertSelection(layerInertIds, selectionStore);
-
-  // Apply AI-returned elements as a single undo block (docs/specs/007-editor/ai-assistance.md).
-  // Generate handles both modifications and additions in one pass:
-  //   - Elements whose ID matches an existing element → replace in place
-  //   - Elements with a new ID → append; deduplicate if the AI reused a
-  //     short ID (e.g. "ai-001") from a previous generation, remapping
-  //     arrow endpoints to keep connections intact.
-  // Clean always gets the full element list back so it replaces everything.
-  const applyAiElements = (elements: Element[], mode: 'generate' | 'clean') => {
-    commit((existingEls) => mergeAiElements(existingEls, elements, mode));
-  };
 
   const tourSquare = useTourSquare({ activeId, tickTabs });
 
@@ -3400,9 +3387,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     getViewportCenter,
     addTab,
     addText,
-    aiCapable,
     anyWelcomeOpen,
-    applyAiElements,
     applyImageToElement,
     autoAlignTab,
     autoLayoutTab,

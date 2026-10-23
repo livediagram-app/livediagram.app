@@ -6,7 +6,7 @@ import { searchSettings } from './settings-search';
 // Settings > Account > Cloud Sync (docs/specs/022-drive-mirror/drive-mirror.md, "Connecting").
 
 const account = (cloudProviders: 'googleDrive'[]) =>
-  visibleCategories(false, { emailEnabled: false, signedIn: true, cloudProviders }).find(
+  visibleCategories({ emailEnabled: false, signedIn: true, cloudProviders }).find(
     (c) => c.id === 'account',
   )!;
 

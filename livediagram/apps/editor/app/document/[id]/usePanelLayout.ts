@@ -2,8 +2,7 @@ import { useState } from 'react';
 
 type Pos = { x: number; y: number };
 
-// Panel layout: where each draggable panel sits and whether the AI panel
-// is open. A self-contained slice of the editor's UI
+// Panel layout: where each draggable panel sits. A self-contained slice of the editor's UI
 // state (no document-data coupling), lifted out of useEditorState so the
 // view-model is composed from domain slices rather than one flat bag of
 // useState calls.
@@ -15,8 +14,6 @@ export function usePanelLayout() {
   const [explorerPosition, setExplorerPosition] = useState<Pos | null>(null);
   const [mapPosition, setMapPosition] = useState<Pos | null>(null);
   const [commentsPanelPosition, setCommentsPanelPosition] = useState<Pos | null>(null);
-  const [aiPanelPosition, setAiPanelPosition] = useState<Pos | null>(null);
-  const [aiPanelVisible, setAiPanelVisible] = useState(false);
   // Laser Panel (docs/specs/008-canvas/laser-panel.md): present only while the Laser tool is active, so
   // position only — there is nothing to minimise when leaving the tool dismisses the panel outright. (Poll and
   // Vote open over the Session strip's buttons, and the Avatar panel over its own, so they keep no position:
@@ -41,10 +38,6 @@ export function usePanelLayout() {
     setMapPosition,
     commentsPanelPosition,
     setCommentsPanelPosition,
-    aiPanelPosition,
-    setAiPanelPosition,
-    aiPanelVisible,
-    setAiPanelVisible,
     laserPanelPosition,
     setLaserPanelPosition,
     spotlightPanelPosition,

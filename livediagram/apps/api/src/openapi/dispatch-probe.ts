@@ -178,7 +178,7 @@ export async function probeDispatch(
     IMAGES: trap('IMAGES'),
     DOCUMENT_ROOM: trap('DOCUMENT_ROOM'),
     TELEMETRY_ENABLED: 'true',
-    OPENAI_API_KEY: 'probe-key',
+    GOOGLE_AI_STUDIO_API_KEY: 'probe-key',
     // The Community, which lives in liveworkspace's service (liveworkspace/docs/community.md); never reached.
     COMMUNITY_URL: 'http://community.invalid/api/community',
     COMMUNITY_KEY: 'probe-key',

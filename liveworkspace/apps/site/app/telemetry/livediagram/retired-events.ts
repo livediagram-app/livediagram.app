@@ -152,7 +152,8 @@ function isPlanModeEvent(category: string, action: string, type: string | null):
   if (category === 'Tab') return PLAN_MODE_TAB_TYPES.has(t);
   if (category === 'Action') return action === 'Linked' && t === 'Board';
   if (category === 'Help') return PLAN_MODE_HELP_IDS.has(t);
-  if (category === 'Mcp' || category === 'Cli') return PLAN_MODE_AGENT_TYPE.test(`${category}|${t}`);
+  if (category === 'Mcp' || category === 'Cli')
+    return PLAN_MODE_AGENT_TYPE.test(`${category}|${t}`);
   if (category === 'UI') {
     if (action === 'Opened' && PLAN_MODE_HELP_IDS.has(t)) return true;
     return PLAN_MODE_UI_TYPE.test(t);
@@ -160,8 +161,24 @@ function isPlanModeEvent(category: string, action: string, type: string | null):
   return false;
 }
 
+// The in-editor AI assistant (removed 2026-10-23, docs/specs/021-event-storming/note-reader.md): its Ask and Clean
+// requests, its Settings switches (the assistant and its suggested prompts), the AI Tools Settings category, and its
+// help article. The sticky-note photo import still sends AI·Used under its Photo* types, and carries on.
+const AI_ASSISTANT_USED_TYPES = new Set(['Ask', 'Clean']);
+const AI_ASSISTANT_HELP_ID = 'ai-tools';
+
+function isAiAssistantEvent(category: string, action: string, type: string | null): boolean {
+  const t = type ?? '';
+  if (category === 'AI') return action === 'Toggled' || AI_ASSISTANT_USED_TYPES.has(t);
+  if (category === 'Help') return t === AI_ASSISTANT_HELP_ID;
+  if (category === 'UI' && action === 'Opened')
+    return t === 'SettingsAi' || t === AI_ASSISTANT_HELP_ID;
+  return false;
+}
+
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
   if (category === 'Document' && action === 'Reverted') return true;
+  if (isAiAssistantEvent(category, action, type)) return true;
   if (isPagesModeEvent(category, action, type)) return true;
   if (isPlanModeEvent(category, action, type)) return true;
   if (category === 'UI' && PALETTE_FAVOURITES_UI.has(`${action}|${type ?? ''}`)) return true;

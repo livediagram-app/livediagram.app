@@ -93,7 +93,6 @@ _require the server_, which are hidden or gated (not broken) for an offline docu
 | Live presence / realtime                                                  | N/A — a private document never opens the room anyway ([Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)).                                                                                                                                        |
 | Teams / shared library                                                    | Hidden — a team library is server-side ([Teams](../013-workspace/teams.md), /35).                                                                                                                                                                                                   |
 | Comments                                                                  | Local-only (just you), stored in the document; no cross-user.                                                                                                                                                                                                                       |
-| AI assistance                                                             | Works online — it reads the current canvas, not the stored document ([AI Assistance](../007-editor/ai-assistance.md)); only a lost connection stops it.                                                                                                                             |
 | Duplicate                                                                 | Makes **another offline document** — a copy never uploads what the user chose to keep local.                                                                                                                                                                                        |
 | Folders                                                                   | Personal-tree placement stored in the record; team moves are impossible (the shared library is server-side).                                                                                                                                                                        |
 | Tab linking ([Tab ↔ document many-to-many](tab-document-many-to-many.md)) | Unavailable in either direction — linked tabs are one shared server row.                                                                                                                                                                                                            |
@@ -320,7 +319,7 @@ Share dialog gate, and the move prompt after signing in).
   of a document while one runs (a second menu, or the Share gate) does nothing; the
   guard lives with the conversion, not with the menu that started it, which closes.
 - On success the **local copy is removed** from IndexedDB so there's one source
-  of truth; the document is now a cloud document (Share / AI / Teams reappear). The
+  of truth; the document is now a cloud document (Share / Teams reappear). The
   id is unchanged, so the route stays the same: from the Share dialog the editor
   turns into the cloud document in place ([Syncing in place](#syncing-in-place));
   from the Explorer it reloads.
@@ -449,7 +448,7 @@ covers:
   you clear site data — the durability warning, stated plainly.
 - **Converting**: "Sync Document" (Offline → Cloud) and "Take Offline"
   (Cloud → Offline, which deletes the server copy).
-- What's unavailable offline: sharing, live collaboration, teams, and AI.
+- What's unavailable offline: sharing, live collaboration and teams.
 
 Also add the standard contextual help link ([Contextual help links](../018-help/contextual-help-links.md)) from the New Document
 wizard's data-loss warning to this article.

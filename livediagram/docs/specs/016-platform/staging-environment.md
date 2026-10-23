@@ -150,7 +150,7 @@ first deploy it returns `{"aiEnabled":false,"emailEnabled":false}` on staging ag
 | **Sign-in** — ON   | Staging is its **own OAuth client** of the liveworkspace accounts Worker (`ACCOUNTS_CLIENT_ID_STAGING` / `ACCOUNTS_CLIENT_SECRET_STAGING`) with its **own resource** (`API_RESOURCE_STAGING`), so its access tokens carry an audience production's api refuses: a staging session cannot reach production data. The client's registered redirect URI is `https://staging.livediagram.app/api/auth/callback`. |
 | **Telemetry** — ON | Events land in staging's own D1, so the **public** `/telemetry` dashboard on production is unaffected; staging's dashboard shows staging's own traffic, which is how you verify a new event actually lands.                                                                                                                                                                                                                                                                                                                            |
 | **Resend** — OFF   | Wired but keyless. `APP_BASE_URL` and `RESEND_FROM` are set, so setting `RESEND_API_KEY --env staging` turns it on and every link points back at staging. Left unset on purpose: staging runs the same daily lifecycle cron as production, from the same verified domain, so switching it on mails **real people** (see the warning below). Turn it on for a specific test, then take the key off again.                                                                                                                               |
-| **AI models** — ON | Keyed by hand, as production is: `wrangler secret put OPENAI_API_KEY --env staging` and/or `GOOGLE_AI_STUDIO_API_KEY`; one key serves both AI features, two split them ([AI Assistance](../007-editor/ai-assistance.md)). `AI_ALLOWED_ORIGINS` restricts the endpoint to the staging origin. It spends real money per request; `GET /api/capabilities` reports whether it is on.                                                                                                                                                       |
+| **AI models** — ON | Keyed by hand, as production is: `wrangler secret put GOOGLE_AI_STUDIO_API_KEY --env staging`, which turns on the server reader for the event-storming photo import ([Note reader](../021-event-storming/note-reader.md)). `AI_ALLOWED_ORIGINS` restricts the endpoint to the staging origin. It spends real money per request; `GET /api/capabilities` reports whether it is on.                                                                                                                                                      |
 
 > **Email warning.** Staging runs the same daily lifecycle-email cron as production
 > (welcome / week-1 / week-2, token-expiry warnings). With `RESEND_API_KEY` set, any
@@ -176,7 +176,7 @@ value the deploy workflow syncs:
 
 `CF_API_TOKEN` and `CF_ACCOUNT_ID` are shared — same account.
 
-`RESEND_API_KEY` and the model keys (`OPENAI_API_KEY`, `GOOGLE_AI_STUDIO_API_KEY`) are **not** in the workflow for either
+`RESEND_API_KEY` and the model key (`GOOGLE_AI_STUDIO_API_KEY`) are **not** in the workflow for either
 environment; they are provisioned once by hand with `wrangler secret put ... --env
 staging`, exactly as production provisions them. Keeping the workflow's secret list
 identical across the two environments is deliberate: a secret that exists in one
@@ -238,8 +238,7 @@ Still outstanding:
 ```bash
 # 1. Worker secrets not carried by the workflow
 cd apps/api && wrangler secret put RESEND_API_KEY --env staging
-cd apps/api && wrangler secret put OPENAI_API_KEY --env staging            # the assistant
-cd apps/api && wrangler secret put GOOGLE_AI_STUDIO_API_KEY --env staging  # the crop reader
+cd apps/api && wrangler secret put GOOGLE_AI_STUDIO_API_KEY --env staging  # the note reader
 
 # 2. GitHub secrets — Settings → Secrets and variables → Actions
 #    the four _STAGING entries in the table above

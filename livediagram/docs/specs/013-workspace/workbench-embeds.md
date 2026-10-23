@@ -113,7 +113,7 @@ second, explicit approval, never an existing pairing widened in silence.
   cannot probe the owner's gallery, [Images](../009-elements/images.md) "Size cap") and reading its images; reading the person's display identity, preferences
   and shape libraries; the catalogues. Everything else is refused `403 workbench_confined`: ownership powers
   (share links, password, move, delete, publish, copy), other documents, the person's library and folders,
-  writing preferences or the profile, the guest migration, tokens, teams, the account and the AI assistant. The
+  writing preferences or the profile, the guest migration, tokens, teams, the account and the photo reader. The
   editor offers none of them in a workbench embed: the person's agent sits beside it.
 - **Revocable.** Revoking the minting token ends its sessions; the page learns it on its next request or the room's
   close and turns read-only.
@@ -131,7 +131,7 @@ The bullets above are the document scope. A **workspace** session is confined di
   is one click away for it.
 - **Never the account.** Refused `403 workbench_confined`, as in the document scope: the profile, preferences'
   writes, the guest migration, API tokens and pairings, team administration (invites, members, roles, plans,
-  billing), the account itself, and the AI assistant (the person's agent sits beside the frame).
+  billing), the account itself, and the photo reader (the person's agent sits beside the frame).
 - **Never more than the token.** Each request is capped by the minting token's level and by the person's own access
   now, as in the document scope: a view token gives a frame that browses and reads.
 

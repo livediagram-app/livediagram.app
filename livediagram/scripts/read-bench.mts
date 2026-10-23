@@ -355,8 +355,8 @@ async function readViaEndpoint(
         // The worker's own budget. A thinking model spends part of it on
         // reasoning, so a tight one truncates the answer (finish_reason=length).
         max_tokens: 2000,
-        // The worker's own choice per provider (docs/specs/007-editor/ai-assistance.md): a strict schema for
-        // the known ones, JSON mode for a generic endpoint.
+        // The worker's own choice per provider (docs/specs/021-event-storming/note-reader.md): a strict schema for
+        // Google, JSON mode for a generic endpoint.
         response_format: opts.strict
           ? { type: 'json_schema', json_schema: READ_NOTES_SCHEMA }
           : { type: 'json_object' },

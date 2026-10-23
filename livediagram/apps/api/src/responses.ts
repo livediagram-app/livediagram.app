@@ -135,7 +135,7 @@ export function payloadTooLarge(): Response {
 }
 
 // 502 when the upstream AI provider fails or returns something unusable
-// (docs/specs/007-editor/ai-assistance.md). One token for every failure mode so the client shows a single
+// (docs/specs/021-event-storming/note-reader.md). One token for every failure mode so the client shows a single
 // "try again" state; the specific cause goes to the worker log instead.
 export function aiError(): Response {
   return json({ error: 'ai_error' }, { status: 502 });

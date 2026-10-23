@@ -28,7 +28,6 @@ Scope, by file:
 | `apps/editor/hooks/canvas/useDataShapeSetters.ts`              | `setCodeSelected`, `setCodeWrapSelected`                                                      |
 | `apps/editor/hooks/canvas/useStylePreview.ts`                  | `previewCodeTheme`, `commitCodeTheme`                                                         |
 | `apps/editor/components/palette/palette-tile-defs.tsx`         | Tile `tools:code-block`, section `components`                                                 |
-| `apps/api/src/ai-prompt.ts`                                  | The AI vocabulary, which omits `code-block`                                                   |
 
 ## Domain and naming
 

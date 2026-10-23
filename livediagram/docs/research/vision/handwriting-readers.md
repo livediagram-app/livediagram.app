@@ -253,8 +253,8 @@ walls, same crops:
 The strict schema removed the failures (0 of 123 batches against 5 of 41).
 Accuracy is the same within the noise of five runs; a small cost in character
 error is possible and not established. A failed batch loses six notes outright,
-so the worker now asks google and openai for the strict schema, and keeps JSON
-mode only for a generic endpoint whose support is unknown ([AI Assistance](../../specs/007-editor/ai-assistance.md)).
+so the worker now asks google for the strict schema, and keeps JSON
+mode only for a generic endpoint whose support is unknown ([Note reader](../../specs/021-event-storming/note-reader.md)).
 
 ## Browser feasibility, honestly
 

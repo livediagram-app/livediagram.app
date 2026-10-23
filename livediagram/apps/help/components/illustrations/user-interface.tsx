@@ -221,14 +221,14 @@ function CornerCluster({ x, y, level = '100%' }: { x: number; y: number; level?:
 // --- Scenes ------------------------------------------------------------------
 
 /** The whole frame at a glance: the menu button card top-left, the palette strip across the
- *  top, a Vote panel docked top-right under it, the Map bottom-left, the corner cluster
+ *  top, a tool panel (Laser) docked top-right under it, the Map bottom-left, the corner cluster
  *  bottom-right, and the bottom bar. */
 export function PanelLayout() {
   return (
     <Scene w={420} h={250}>
       <MenuCard x={12} y={12} />
       <Strip x={82} y={12} />
-      <Panel x={318} y={56} w={90} h={66} title="AI ASSISTANT">
+      <Panel x={318} y={56} w={90} h={66} title="LASER">
         {[0, 1].map((i) => (
           <rect
             key={i}

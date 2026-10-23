@@ -30,18 +30,13 @@ describe('driveMode (docs/specs/022-drive-mirror/drive-mirror.md)', () => {
   });
 });
 
-describe('aiEnabled (docs/specs/007-editor/ai-assistance.md)', () => {
+describe('aiEnabled (docs/specs/021-event-storming/note-reader.md)', () => {
   it('is off with no model key', async () => {
     expect((await capabilities({})).aiEnabled).toBe(false);
   });
 
   it('is on with one key', async () => {
     expect((await capabilities({ GOOGLE_AI_STUDIO_API_KEY: 'g' })).aiEnabled).toBe(true);
-  });
-
-  it('stays on with both named keys: they split the features, they do not cancel out', async () => {
-    const both = { GOOGLE_AI_STUDIO_API_KEY: 'g', OPENAI_API_KEY: 'o' };
-    expect((await capabilities(both)).aiEnabled).toBe(true);
   });
 });
 

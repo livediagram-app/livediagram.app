@@ -43,17 +43,15 @@ export function handleCapabilities(ctx: RouteContext): Response {
     return methodNotAllowed();
   }
   return json({
-    // A usable provider for the AI features (docs/specs/007-editor/ai-assistance.md); both features
-    // resolve from the same keys, so one flag answers for both.
+    // A usable provider for the sticky-note photo reader
+    // (docs/specs/021-event-storming/note-reader.md).
     // Reports whether a provider is CONFIGURED, and deliberately says nothing
     // about whether THIS caller may use the endpoint. That asymmetry matters if
-    // `AI_REQUIRE_SIGN_IN` is ever turned on: the editor shows the AI panel on
-    // `aiEnabled` alone (useEditorState -> EditorCanvasHost), so a guest would
-    // get a panel that 401s on first use rather than no panel. Whoever flips
-    // that flag has to make this line auth-aware in the same change — which is
-    // also why production locks the endpoint down with `AI_ALLOWED_ORIGINS`
-    // instead (see apps/api/wrangler.toml). Staging has the flag on today and
-    // has exactly that broken panel for guests.
+    // `AI_REQUIRE_SIGN_IN` is turned on: the editor picks the server reader on
+    // `aiEnabled` alone, so a guest's read is refused 401 rather than read in
+    // the browser. Whoever relies on that flag should make this line
+    // auth-aware in the same change — which is also why production locks the
+    // endpoint down with `AI_ALLOWED_ORIGINS` instead (see apps/api/wrangler.toml).
     aiEnabled: aiConfigured(env),
     // docs/specs/014-identity/profile-and-email-notifications.md: the editor app hides the email-notification toggles when
     // Resend isn't configured (they'd do nothing). Same gate docs/specs/014-identity/transactional-email.md uses.

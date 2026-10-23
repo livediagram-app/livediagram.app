@@ -197,12 +197,6 @@ const SECTIONS: LegalSection[] = [
         <p>The AI features run only when you use them, and only where an AI provider is set up.</p>
         <ul>
           <li>
-            <strong>The AI assistant</strong>, in livediagram and livedesign. When you ask it
-            something, your prompt, the tab&rsquo;s name, what is on the current tab and your last
-            few messages in that conversation are sent through our API to <strong>OpenAI</strong>,
-            which writes the answer. The assistant is off until you turn it on in Settings.
-          </li>
-          <li>
             <strong>Connected AI tools</strong>, such as Claude, read and change your documents
             through our API with the token you approved. What the tool does with what it reads is
             governed by its own terms and privacy policy.
@@ -327,9 +321,6 @@ const SECTIONS: LegalSection[] = [
           </li>
           <li>
             <strong>Google</strong>: sign-in with Google, if you choose it.
-          </li>
-          <li>
-            <strong>OpenAI</strong>: livediagram&rsquo;s and livedesign&rsquo;s AI assistant, when you use it.
           </li>
         </ul>
         <p>

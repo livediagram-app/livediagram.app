@@ -19,9 +19,8 @@ desktop/web, Claude Code, any MCP client) and, from inside that tool:
 3. **Edit** an existing document — full rework of a tab, or a small adjustment.
 
 **The calling LLM does the thinking; the MCP is only the bridge.** This is the
-load-bearing decision. We are **not** proxying to the first-party `/api/ai`
-endpoint (`apps/api/src/routes/ai.ts`, OpenAI/`gpt-4o`) — that endpoint is weak
-and may be removed. The user already has a capable model in front of them; the
+load-bearing decision. livediagram has no model of its own to proxy to (the
+in-editor AI assistant was removed). The user already has a capable model in front of them; the
 MCP's job is to (a) hand that model the diagram **schema** so it can emit
 well-formed elements, (b) **validate + lay out** what it produces, and (c)
 **persist** it through the same REST API the web app uses. The MCP carries no

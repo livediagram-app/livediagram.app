@@ -65,6 +65,8 @@ export const TELEMETRY_CATEGORIES = [
   // facilitator frees an element somebody was holding (docs/specs/007-editor/editor-app.md lock) — never a
   // name: the question is whether rooms use the role at all, not who held it.
   'Facilitator',
+  // The sticky-note photo reader (docs/specs/021-event-storming/note-reader.md): 'Used' with `type`
+  // 'PhotoNotes' per committed import, or the detector that found the notes.
   'AI',
   'Team',
   // Participant lifecycle (docs/specs/017-telemetry/telemetry.md): 'Participant'/'Created' fires
@@ -85,7 +87,7 @@ export const TELEMETRY_CATEGORIES = [
   // MCP server tool calls (apps/mcp, docs/specs/015-api/mcp-server.md): 'Used' with `type` the tool
   // name (CreateDocument, ReadDocument, ...). Emitted by the MCP worker, the
   // third app that reports telemetry, so usage shows up distinctly from the
-  // in-editor AI panel.
+  // editor's own events.
   'Mcp',
   // CLI commands (apps/cli, docs/specs/015-api/cli.md "Telemetry"): 'Used' with `type` the verb (TabView, ElementSet), sent
   // to the active profile's api after a command succeeds, never for help; the CLI's counterpart of `Mcp`.
@@ -330,14 +332,6 @@ export function isValidTelemetryEvent(value: unknown): value is TelemetryEvent {
   if (e.type === undefined || e.type === null) return true;
   return typeof e.type === 'string' && TELEMETRY_TYPE_PATTERN.test(e.type);
 }
-
-// ---------------------------------------------------------------------
-// AI Assistance (docs/specs/007-editor/ai-assistance.md)
-// ---------------------------------------------------------------------
-
-// Two modes (docs/specs/007-editor/ai-assistance.md): 'ask' is read-only Q&A; 'clean' tidies the existing tab.
-// The old 'generate' (Build) + 'review' modes were removed — the calling model
-// in an external AI tool (docs/specs/015-api/mcp-server.md) does generation far better.
 
 // The `Element·Added` type tokens that correspond to a PALETTE item, in
 // the buckets the public dashboard ranks them by (docs/specs/017-telemetry/telemetry.md).

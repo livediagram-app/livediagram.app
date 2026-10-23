@@ -29,12 +29,12 @@ globs = ["**/*.ttf", "**/*.otf"]
 # TELEMETRY_URL=http://localhost:8790/api/telemetry in .dev.vars.
 [vars]
 
-# Origin allow-list for POST /api/ai (docs/specs/007-editor/ai-assistance.md). Stated HERE, not in the
+# Origin allow-list for POST /api/ai/read-notes (docs/specs/021-event-storming/note-reader.md). Stated HERE, not in the
 # Cloudflare dashboard, for the reason docs/specs/016-platform/staging-environment.md calls a known sharp edge: a
 # dashboard-only value is invisible to code review, so the repo read as though
 # this endpoint were locked down while production served it wide open. A probe
-# of production (POST /api/ai with no Origin) answered `400 invalid mode`
-# rather than `403 origin_not_allowed`, which is only possible with this unset —
+# of production (an AI request with no Origin) got past the gate rather than
+# answering `403 origin_not_allowed`, which is only possible with this unset —
 # so the key behind `aiEnabled: true` was spendable from any page.
 #
 # BOTH hosts, and `www` is the one that matters: livediagram.app 301-redirects
@@ -183,10 +183,10 @@ renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
 [triggers]
 crons = ["0 3 * * *", "*/5 * * * *", "* * * * *"]
 
-# Per-IP rate limiter for the AI assistance endpoint (POST /api/ai,
-# docs/specs/007-editor/ai-assistance.md). Separate namespace so AI abuse never eats into document-write
+# Per-IP rate limiter for the sticky-note reader (POST /api/ai/read-notes,
+# docs/specs/021-event-storming/note-reader.md). Separate namespace so AI abuse never eats into document-write
 # or telemetry budgets. 20 requests / 60s per IP is generous for a
-# real user session while bounding runaway OpenAI spend. Absent binding
+# real user session while bounding runaway model spend. Absent binding
 # → helper allows, so self-host still works without this feature.
 [[unsafe.bindings]]
 name = "AI_RATE_LIMITER"
@@ -266,27 +266,24 @@ type = "ratelimit"
 namespace_id = "1012"
 simple = { limit = 20, period = 60 }
 
-# The AI features (docs/specs/007-editor/ai-assistance.md) talk to ANY OpenAI-compatible chat-completions
-# endpoint, and WHICH provider is inferred from which key is set — a key is
-# provider-specific, so its name says whose it is (see src/ai-provider.ts):
+# The sticky-note photo reader (docs/specs/021-event-storming/note-reader.md) talks to ANY
+# OpenAI-compatible chat-completions endpoint, and WHICH provider is inferred
+# from which key is set — a key is provider-specific, so its name says whose it
+# is (see src/ai-provider.ts):
 #
 #   GOOGLE_AI_STUDIO_API_KEY -> Google, at its OpenAI-compatible endpoint
-#   OPENAI_API_KEY           -> OpenAI
-#   AI_API_KEY               -> anything else, with AI_BASE_URL + AI_MODEL
+#   AI_API_KEY               -> anything else, with AI_BASE_URL + AI_VISION_MODEL
 #
-# All three are SECRETS, provisioned out-of-band:
+# Both are SECRETS, provisioned out-of-band:
 #   Local dev: drop one into `apps/api/.dev.vars` (gitignored).
 #   Production: `wrangler secret put <NAME>`.
 #
-# Each feature takes its own provider from the keys that are set: the assistant
-# (/api/ai) prefers OpenAI, the crop reader (/api/ai/read-notes) prefers Google,
-# and one key serves both. Production sets both named keys to split them.
-# AI_BASE_URL / AI_MODEL / AI_VISION_MODEL are plain [vars]; AI_MODEL is the
-# assistant's model and AI_VISION_MODEL the reader's (docs/specs/007-editor/ai-assistance.md).
+# Google outranks the generic key. AI_BASE_URL / AI_VISION_MODEL are plain
+# [vars]; AI_VISION_MODEL overrides the Google default (docs/specs/021-event-storming/note-reader.md).
 #
-# With no key the whole surface is hidden: GET /api/capabilities answers
-# { aiEnabled: false }, the editor shows no AI panel and no photo import, and
-# the AI routes answer 503. That is the self-host default.
+# With no key the reader is hidden: GET /api/capabilities answers
+# { aiEnabled: false }, the editor shows no photo import, and the route
+# answers 503. That is the self-host default.
 
 # The image gallery's caps (100 images and 100 MB per person, across every app) are the media service's
 # (liveworkspace/docs/media.md "Uploads"), not this worker's.
@@ -408,8 +405,8 @@ name = "livediagram-api-staging"
 # back at staging (docs/specs/014-identity/transactional-email.md, docs/specs/013-workspace/workbench-embeds.md).
 RESEND_FROM = "livediagram staging <hello@livediagram.app>"
 
-# Lock the AI endpoint to the staging origin so the OpenAI key behind it
-# can't be spent from a third-party page (docs/specs/007-editor/ai-assistance.md). Production states the
+# Lock the AI endpoint to the staging origin so the model key behind it
+# can't be spent from a third-party page (docs/specs/021-event-storming/note-reader.md). Production states the
 # equivalent in the top-level [vars] above, for the same reason: the
 # environment is reproducible from the repo alone — see docs/specs/016-platform/staging-environment.md "Known sharp
 # edge".
@@ -530,7 +527,7 @@ crons = ["0 3 * * *", "*/5 * * * *", "* * * * *"]
 # The four ACCOUNTS_* / API_RESOURCE values, GUEST_ID_HMAC_SECRET and
 # TELEMETRY_KEY come from the
 # `_STAGING` GitHub secrets via the deploy workflow. RESEND_API_KEY and the
-# model keys (OPENAI_API_KEY and/or GOOGLE_AI_STUDIO_API_KEY) are provisioned by
+# model key (GOOGLE_AI_STUDIO_API_KEY) are provisioned by
 # hand exactly as they are for production:
 #   cd apps/api && wrangler secret put RESEND_API_KEY --env staging
 # The Drive mirror's GOOGLE_CLIENT_SECRET and DRIVE_TOKEN_KEY likewise:

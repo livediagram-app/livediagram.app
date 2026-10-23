@@ -75,7 +75,7 @@ people's documents they visited) are wiped too.
 ## 2. Capabilities gains `emailEnabled`
 
 `GET /api/capabilities` (the fail-closed feature probe the client already
-uses for AI) gains `emailEnabled: boolean`, true only when
+uses for the photo reader) gains `emailEnabled: boolean`, true only when
 `emailEnabled(env)` (i.e. `RESEND_API_KEY` is set). `CapabilitiesResponse`
 and `useCapabilities()` carry it through. The profile page hides the Email
 notifications section entirely when it's false: with no email backend the

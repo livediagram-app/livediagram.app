@@ -148,10 +148,9 @@ baton (`runBlocked`); the room enforces the baton only for `poll-start` / `poll-
 | Delete a tab                                       | Y   | Y   | Y   | N   | N   | N   | Y    | N    | Y   | Y   | N   | N   | tab DELETE: `grant?.tabScope !== null` refused                                                          |
 | Rename document, reorder tabs, slide deck          | Y   | Y   | Y   | N   | N   | N   | Y    | N    | Y   | Y   | N   | Y   | `documents.ts` PUT `/:id`, `gateEdit` without a tab; MCP `rename_document`                              |
 | Upload and place images                            | Y   | Y   | Y   | N   | T   | N   | N    | N    | Y   | Y   | N   | N   | `images.ts` POST is per-uploader, not document-gated; embed blocks it (`useEditorImages.ts`)            |
-| AI assistant                                       | Y   | Y   | Y   | S   | T   | S   | Y    | S    | Y¹  | Y¹  | N   | n/a | `ai-gate.ts` is not document-gated; panel hidden when `isReadOnly`                                      |
 | Link an existing tab from another document         | Y   | N²  | N   | N   | N   | N   | N    | N    | Y   | Y   | N   | N   | `document-subresource-routes.ts` `/link`: `ownsDocument`                                                |
 
-¹ Unless `AI_REQUIRE_SIGN_IN=true`, which refuses guests and tokens. ² Except the row owner.
+² Except the row owner.
 
 ### Sharing
 

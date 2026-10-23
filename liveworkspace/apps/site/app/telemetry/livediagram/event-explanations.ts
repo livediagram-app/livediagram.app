@@ -2425,9 +2425,10 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'Someone followed a call to action on a public page (the landing page, a feature or comparison page, the help centre) and reached the New Document page.',
   'Cta|Created':
     'Someone who arrived from a call to action on a public page went on to create a document. Counted once per arrival.',
-  'AI|Toggled': 'Someone turned an AI setting on or off in Settings under AI Tools.',
+  'AI|Toggled':
+    'Someone turned an AI setting on or off in Settings under AI Tools, before the in-editor AI assistant was removed.',
   'AI|Used':
-    'Someone used a feature of the AI Assistant panel, or another AI-powered tool in the editor.',
+    'Someone used an AI-powered tool in the editor: the sticky-note photo import, or (before it was removed) the AI Assistant panel.',
   'Action|Changed': 'Someone changed something about an action assigned to an element.',
   'Action|Created': 'Someone assigned an action to a teammate, or to themselves, on an element.',
   'Action|Deleted': 'Someone removed an assigned action from an element.',

@@ -34,7 +34,7 @@ exhaustive — each file lands in the bucket that owns its concern):
 - `dialogs/` — modal surfaces (`Dialog`, `ConfirmDialog`, `ShareDialog`,
   `ImportTabDialog`, `ExportTabDialog`, `SettingsDialog`, `TeamFormModal`).
 - `panels/` — side/floating panels (`CollaboratePanel`,
-  `AiPanel`, `GalleryPane`, Explorer surfaces).
+  `GalleryPane`, Explorer surfaces).
 - `palette/` — palette + context-menu tiles/rows.
 - `chrome/` — header, toolbars, docks, tab bar.
 - `toast/`: the toast stack, card, queue, timer and floor ([Toasts](../004-interface-design/toasts.md)); `useToast` stays in `hooks/ui/`.

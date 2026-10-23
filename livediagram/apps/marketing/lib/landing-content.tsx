@@ -1,6 +1,5 @@
 import type { HeroSceneKey } from '@/components/hero-scenes';
 import {
-  AiAssistArt,
   AlignmentGuidesArt,
   AnimatedIconsArt,
   AnimatedShapesArt,
@@ -745,14 +744,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Build diagrams with AI',
         description:
           'Hook livediagram up to Claude or any MCP client at mcp.livediagram.app and let it find, read, create, edit, and share your documents for you. Point it at a system and ask for the diagram; it lands in your account. Signed in, and it runs on the same revocable token (read-only if you prefer), so you can disconnect any time.',
-      },
-      {
-        art: <AiAssistArt />,
-        href: '/help/tools/ai/',
-        group: 'AI & your tools',
-        title: 'An optional AI assistant',
-        description:
-          'Switch it on for a hand on the active tab: Ask answers questions about the diagram without changing it, and Clean tidies sizes, labels, and layout. It works from your selection or the whole tab, and one undo takes it all back. Off by default, and self-hosters bring their own key.',
       },
       {
         art: <MermaidArt />,

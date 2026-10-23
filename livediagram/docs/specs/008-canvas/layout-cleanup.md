@@ -62,7 +62,7 @@ import) to place nodes they never drew.
 - **Scope:** the whole active tab. Boxed elements that aren't wired to anything
   (loose stickies / text / images) pass through with their positions untouched;
   spacing respects element sizes.
-- **Graph input** (importers, the MCP, AI output) gets the layout described in the sections up to
+- **Graph input** (importers, the MCP) gets the layout described in the sections up to
   "Two-way edges bow apart", pinned to the origin the caller gives.
 - **The editor's Tidy Up** runs the **tidy profile** instead (`tidyLayoutElements`,
   [below](#tidy-up-keeps-a-flowchart-a-flowchart)): an author's drawing carries intent a generated
@@ -377,6 +377,4 @@ Opening the popover sends `UI` / `Opened` / `TidyUp`. A press sends the tidier's
 Force-directed ("organic") layouts, laying shapes out inside their lanes (a lane moves only as a
 rigid block, so lane diagrams are offered Auto-align), routing graph input's arrows around
 obstacles (the editor's Tidy Up does), and any LLM
-involvement (the AI "Clean" in [AI Assistance](../007-editor/ai-assistance.md) is the separate,
-key-gated path; Auto Layout is the deterministic, offline-safe one every deployment
-gets). See issue #12 for the fuller rationale and open questions.
+involvement (Auto Layout is deterministic and offline-safe, and every deployment gets it). See issue #12 for the fuller rationale and open questions.

@@ -933,13 +933,12 @@ low-threshold capture surface can least afford.
   crops leave the machine, to `POST /api/ai/read-notes`, which forwards them to
   the model and discards them. Whoever is standing in front of the wall, and
   whatever else is in the room, stays in the browser.
-- **Gated on the model key exactly as [AI Assistance](../007-editor/ai-assistance.md) is.** No model key = no photo
-  UI anywhere, and a self-host without one loses nothing else. It is NOT gated
-  on the AI-panel preference: this is not the assistant. The reader resolves
-  its own provider, preferring `GOOGLE_AI_STUDIO_API_KEY` and falling back to
-  whichever key is set ([AI Assistance](../007-editor/ai-assistance.md), "Each feature has its own
-  provider") — any OpenAI-compatible endpoint, which is
-  Gemini on the hosted site and can be a local llama.cpp on a laptop.
+- **Gated on the model key ([Note reader](note-reader.md)).** No model key = no photo
+  UI anywhere, and a self-host without one loses nothing else. The reader resolves
+  its provider from the key that is set, `GOOGLE_AI_STUDIO_API_KEY` or the generic
+  `AI_API_KEY` ([Note reader](note-reader.md), "Whose model? The key says.") — any
+  OpenAI-compatible endpoint, which is Gemini on the hosted site and can be a local
+  llama.cpp on a laptop.
 
   _(Phase 9 makes the READER pluggable and adds an in-browser OCR reader, so
   this gating is re-ruled there: detection is always in-browser and needs no

@@ -43,7 +43,6 @@ type SettingsDialogProps = {
   settings: UserPreferences;
   onChange: (next: UserPreferences) => void;
   onClose: () => void;
-  aiCapable?: boolean;
   // Where to land. Set when Settings is opened from a search result: the
   // setting IS the destination, so we open its category and ring the row
   // rather than dropping the reader at the dialog's front door.
@@ -74,7 +73,6 @@ export function SettingsDialog({
   settings,
   onChange,
   onClose,
-  aiCapable,
   focus,
   initialCategoryId,
   initialSectionId = null,
@@ -109,7 +107,7 @@ export function SettingsDialog({
   );
   const categories = useMemo(
     () =>
-      visibleCategories(aiCapable === true, {
+      visibleCategories({
         emailEnabled,
         signedIn,
         authEnabled: signInEnabled,
@@ -118,7 +116,7 @@ export function SettingsDialog({
         cloudProviders,
         workbench,
       }),
-    [aiCapable, emailEnabled, signedIn, powerUserMode, settings, cloudProviders, workbench],
+    [emailEnabled, signedIn, powerUserMode, settings, cloudProviders, workbench],
   );
 
   // The category the reader chose; null is the phone's root list. Desktop

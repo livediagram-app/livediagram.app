@@ -18,7 +18,7 @@ This guide is the practical path: provision Cloudflare resources, configure secr
 What you do NOT need:
 
 - Sign-in: it is optional. Without it, every user is a guest (a per-browser id stored in `localStorage`, carried as `X-Owner-Id`). With sign-in configured, the api worker fetches the accounts Worker's public keys (`${ACCOUNTS_URL}/api/auth/jwks`) to check access tokens, and calls it when someone signs in or a session refreshes.
-- No _required_ SaaS: no Stripe (no paid tier) and no analytics vendor. The other integrations are all optional and stay off until you add a key: Resend for transactional email ([Transactional & lifecycle email (Resend)](../specs/014-identity/transactional-email.md)), a model key for the AI features ([AI Assistance](../specs/007-editor/ai-assistance.md)), and a Google OAuth client for the Google Drive mirror ([Google Drive mirror](../specs/022-drive-mirror/drive-mirror.md)), each covered in its own section below. The telemetry endpoint is first-party only and off by default.
+- No _required_ SaaS: no Stripe (no paid tier) and no analytics vendor. The other integrations are all optional and stay off until you add a key: Resend for transactional email ([Transactional & lifecycle email (Resend)](../specs/014-identity/transactional-email.md)), a model key for the event-storming photo reader ([Note reader](../specs/021-event-storming/note-reader.md)), and a Google OAuth client for the Google Drive mirror ([Google Drive mirror](../specs/022-drive-mirror/drive-mirror.md)), each covered in its own section below. The telemetry endpoint is first-party only and off by default.
 - A separate database host: D1 covers everything.
 
 ## One-time Cloudflare setup
@@ -187,42 +187,31 @@ Telemetry is off unless you set `TELEMETRY_ENABLED = "true"` under `[vars]` in `
 
 livediagram.app's events go to liveworkspace's telemetry service, which stores them and serves the public dashboard; this repository no longer holds an ingest or a dashboard of its own. That service only takes livediagram.app's own pages and key, so turning telemetry on for a fork also means running a service of your own that takes the same batches, and pointing the fork at it: `TELEMETRY_URL` and the `TELEMETRY_KEY` secret on the api and mcp workers, and `NEXT_PUBLIC_TELEMETRY_URL` plus `NEXT_PUBLIC_TELEMETRY_ENABLED=true` on every frontend build. Without that, nothing is stored anywhere. Per-user opt-out via the Settings dialog ([User preferences](../specs/007-editor/user-preferences.md)) still overrides every app's emission when off, since they share one origin and one preferences key.
 
-## AI assistance: off by default, needs a model key
+## Photo reader: optional, needs a model key
 
-The in-editor AI panel ([AI Assistance](../specs/007-editor/ai-assistance.md)) is hidden entirely unless the api worker has a model key. Forks that don't want it provision nothing and get zero AI surface: `GET /api/capabilities` reports `{ aiEnabled: false }`, `POST /api/ai` returns 503, and the editor never renders the toggle or panel.
+The event-storming photo import ([Event storming](../specs/021-event-storming/event-storming.md)) finds the sticky notes in a wall photograph in the browser, then reads the handwriting on each one. Without a model key the browser reads it too, so a fork that provisions nothing still has the import and sends nothing anywhere: `GET /api/capabilities` reports `{ aiEnabled: false }` and `POST /api/ai/read-notes` returns 503. With a key, the api worker sends the crops of individual notes (never the photograph) to a hosted model, which reads handwriting markedly better ([Note reader](../specs/021-event-storming/note-reader.md)). livediagram has no in-editor AI assistant; AI tools connect through the MCP server instead.
 
-To turn it on, set the key as a worker secret:
+To turn the server reader on, set the key as a worker secret:
 
 ```bash
-# One key serves every AI feature:
 pnpm --filter @livediagram/api exec wrangler secret put GOOGLE_AI_STUDIO_API_KEY
-# or OPENAI_API_KEY, or AI_API_KEY (with AI_BASE_URL + AI_MODEL as [vars]).
-# Set both named keys to split them: the assistant on OpenAI, the reader on Google.
+# or AI_API_KEY, with AI_BASE_URL + AI_VISION_MODEL as [vars].
 ```
+
+The provider is inferred from WHICH key you set ([Note reader](../specs/021-event-storming/note-reader.md)): a Google AI Studio
+key means Google, and `AI_API_KEY` means "anything else that speaks the OpenAI wire", which needs
+`AI_BASE_URL` and `AI_VISION_MODEL` too (a local llama.cpp is `http://127.0.0.1:8080/v1`). The Google
+key outranks the generic one.
 
 Optional knobs (all plain `[vars]` in `apps/api/wrangler.toml`, the dashboard, or `.dev.vars`):
 
-The provider is inferred from WHICH key you set ([AI Assistance](../specs/007-editor/ai-assistance.md)): a Google AI Studio
-key means Google, an OpenAI key means OpenAI, and `AI_API_KEY` means "anything
-else that speaks the OpenAI wire" — which needs `AI_BASE_URL` too (a local
-llama.cpp is `http://127.0.0.1:8080/v1`). Each AI feature picks its own
-provider from the keys you set: the assistant prefers OpenAI, the sticky-note
-reader prefers Google, each falling back to whichever key exists, and
-`AI_API_KEY` is used only when neither named key is set.
+- `AI_VISION_MODEL`: the reader's model id. On Google this defaults to `gemini-2.5-flash-lite`, which reads
+  handwriting better AND costs less than a bigger model (docs/research/vision/handwriting-readers.md).
+  Required when using `AI_API_KEY`.
+- `AI_ALLOWED_ORIGINS`: comma-separated `Origin` allow-list for `POST /api/ai/read-notes` (e.g. `https://your-host,http://localhost:3102`). Unset = no origin check. Matched verbatim, case-sensitive. `apps/api/wrangler.toml` commits livediagram.app's origins here, so a fork sets its own or deletes the line, or every reader request answers 403.
+- `AI_REQUIRE_SIGN_IN`: set to `"true"` to reject the guest (`X-Owner-Id`) path on the reader only, requiring a verified access token. Unset = guests can use the server reader (so a fork without sign-in still works).
 
-- `AI_MODEL`: the assistant's model, overriding its preset default
-  (`gemini-3.6-flash` for Google, `gpt-4o` for OpenAI). The reader uses it
-  too when both features run on the same provider. Required when using
-  `AI_API_KEY`.
-- `AI_VISION_MODEL`: model id for reading sticky-note crops
-  (`POST /api/ai/read-notes`, [Event storming](../specs/021-event-storming/event-storming.md)). On Google this defaults to
-  `gemini-2.5-flash-lite` rather than the assistant's model — it reads
-  handwriting better AND costs less (docs/research/vision/handwriting-readers.md). On a
-  single provider, setting `AI_MODEL` moves the reader too unless you set this.
-- `AI_ALLOWED_ORIGINS`: comma-separated `Origin` allow-list for `POST /api/ai` (e.g. `https://your-host,http://localhost:3102`). Unset = no origin check. Matched verbatim, case-sensitive. `apps/api/wrangler.toml` commits livediagram.app's origins here, so a fork sets its own or deletes the line, or every AI request answers 403.
-- `AI_REQUIRE_SIGN_IN`: set to `"true"` to reject the guest (`X-Owner-Id`) path on `/api/ai` only, requiring a verified access token. Unset = guests can use AI (so a fork without sign-in still works).
-
-The last two are the spend-DoS defence: on a public deployment they stop a third-party site from minting fresh owner ids to drain your model budget. The hosted livediagram.app sets `AI_ALLOWED_ORIGINS` and deliberately leaves `AI_REQUIRE_SIGN_IN` unset so guests keep AI; a private fork, or one without sign-in, can leave both unset. Two further defences live alongside them: the `AI_RATE_LIMITER` binding (declared in `apps/api/wrangler.toml` as a Cloudflare rate-limit binding, 20 requests / 60 s per IP) caps how fast one client can drive the endpoint; absent binding falls through to "allow" so a self-host without the paid Cloudflare feature still works. AI is also per-user opt-in via the Settings dialog even once the key is present.
+The last two are the spend-DoS defence: on a public deployment they stop a third-party site from minting fresh owner ids to drain your model budget. The hosted livediagram.app sets `AI_ALLOWED_ORIGINS` and deliberately leaves `AI_REQUIRE_SIGN_IN` unset so guests keep the server reader; a private fork, or one without sign-in, can leave both unset. A further defence lives alongside them: the `AI_RATE_LIMITER` binding (declared in `apps/api/wrangler.toml` as a Cloudflare rate-limit binding, 20 requests / 60 s per IP) caps how fast one client can drive the endpoint; absent binding falls through to "allow" so a self-host without the paid Cloudflare feature still works.
 
 ## Email (optional, Resend)
 

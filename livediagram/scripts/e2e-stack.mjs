@@ -862,7 +862,7 @@ async function main() {
       String(API_PORT),
       // Production's origin allow-list lives in wrangler.toml [vars], which
       // `wrangler dev` reads too; it would 403 every AI call from this
-      // localhost editor. Blank it, as `pnpm dev` does (docs/specs/007-editor/ai-assistance.md).
+      // localhost editor. Blank it, as `pnpm dev` does (docs/specs/021-event-storming/note-reader.md).
       '--var',
       'AI_ALLOWED_ORIGINS:',
       ...(DRIVE ? Object.entries(DRIVE_E2E_VARS).flatMap(([k, v]) => ['--var', `${k}:${v}`]) : []),

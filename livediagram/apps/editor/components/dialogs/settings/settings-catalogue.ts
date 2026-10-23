@@ -96,7 +96,7 @@ function emailSwitch(
 // round-trip) in exactly one place per setting.
 //
 // EVERY preference has a row here, and for most this is now the ONLY control:
-// the Palette / Layers / AI / Map gear popovers that used to carry
+// the Palette / Layers / Map gear popovers that used to carry
 // them are gone (docs/specs/007-editor/user-preferences.md). One setting, one place. The panels kept their
 // reset-position button, which was the only non-preference thing those
 // popovers held, and the Slide Deck popover stays because its contents are
@@ -299,8 +299,6 @@ export type SettingsCategorySpec = {
   // parent; it is still its own pane. A parent's sub-categories follow it
   // directly, like a section's rows.
   parent?: SettingsIconId;
-  // Only rendered when the api worker advertises AI capability (docs/specs/007-editor/ai-assistance.md).
-  requiresAi?: boolean;
   // A line under a section's heading, for what every row in it shares (Documents' Default Folders,
   // the Tours' "offer again"), said once rather than under each row.
   sectionNotes?: Record<string, { note: string; helpArticle?: HelpArticleKey }>;
@@ -1195,49 +1193,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
   {
-    id: 'ai',
-    label: 'AI Tools',
-    requiresAi: true,
-    rows: [
-      {
-        kind: 'toggle',
-        key: 'aiAssistanceEnabled',
-        keywords: 'assistant chat ask clean llm',
-        section: 'Assistant',
-        label: 'AI Assistant',
-        description:
-          'An AI panel to Ask about the active tab, or Clean up its labels, sizes and styles. Off by default.',
-        helpArticle: 'aiTools',
-        read: (p) => p.aiAssistanceEnabled === true,
-        write: (p, v) => ({ ...p, aiAssistanceEnabled: v }),
-        event: { category: 'AI', on: 'AiOn', off: 'AiOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'aiSuggestedPrompts',
-        keywords: 'starter questions prompts suggestions ai',
-        section: 'Assistant',
-        parent: 'aiAssistanceEnabled',
-        label: 'Suggested Prompts',
-        description: 'One-click starter prompts under the panel’s mode buttons.',
-        read: (p) => p.aiSuggestedPrompts !== false,
-        write: (p, v) => ({ ...p, aiSuggestedPrompts: v }),
-        event: { category: 'AI', on: 'AiSuggestedPromptsOn', off: 'AiSuggestedPromptsOff' },
-      },
-      {
-        kind: 'link',
-        key: 'apiTokensLink',
-        keywords: 'api token key mcp integration script developer access',
-        section: 'API Access',
-        label: 'API Tokens',
-        cta: 'Manage API Tokens',
-        target: 'tokens',
-        description: 'Let your scripts, and AI tools connected over MCP, use livediagram as you.',
-        available: (ctx) => ctx.authEnabled === true,
-      },
-    ],
-  },
-  {
     id: 'documents',
     label: 'Documents',
     sectionNotes: {
@@ -1442,16 +1397,10 @@ export function settingsSectionId(section: string): string {
 }
 
 // The categories actually offered right now, with each one's rows filtered to
-// those that apply. AI only appears when the api worker advertises the
-// capability, so a self-hosted deploy without it never shows an empty group ,
-// and a category left with no applicable rows drops out entirely rather than
+// those that apply. A category left with no applicable rows drops out entirely rather than
 // becoming a row that pushes a blank pane.
-export function visibleCategories(
-  aiCapable: boolean,
-  ctx: SettingsRowContext,
-): SettingsCategorySpec[] {
-  return SETTINGS_CATEGORIES.filter((c) => !c.requiresAi || aiCapable)
-    .filter((c) => !ctx.workbench || !hiddenInWorkbench(c))
+export function visibleCategories(ctx: SettingsRowContext): SettingsCategorySpec[] {
+  return SETTINGS_CATEGORIES.filter((c) => !ctx.workbench || !hiddenInWorkbench(c))
     .map((c) => ({
       ...c,
       rows: c.rows.filter(
@@ -1468,7 +1417,7 @@ export function visibleCategories(
 // What a workbench's Settings leave out (docs/specs/013-workspace/blueprints/workbench-embeds.md,
 // Surface table): the account and everything beyond the one document. A category nested under one
 // goes with it, so nothing is left without its parent.
-const WORKBENCH_HIDDEN_CATEGORIES = new Set(['ai', 'documents', 'account', 'tokens']);
+const WORKBENCH_HIDDEN_CATEGORIES = new Set(['documents', 'account', 'tokens']);
 
 function hiddenInWorkbench(category: SettingsCategorySpec): boolean {
   return (

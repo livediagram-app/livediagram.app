@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { SETTINGS_CATEGORIES, visibleCategories } from './settings-catalogue';
 import { firstMatchingCategory, searchSettings } from './settings-search';
 
-const ALL = visibleCategories(true, { emailEnabled: true, signedIn: true });
+const ALL = visibleCategories({ emailEnabled: true, signedIn: true });
 
 function keysFor(query: string): string[] {
   return searchSettings(ALL, query).categories.flatMap((c) => c.rows.map((r) => r.key));

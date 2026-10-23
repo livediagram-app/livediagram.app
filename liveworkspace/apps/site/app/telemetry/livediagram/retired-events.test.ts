@@ -56,7 +56,18 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Toggled', 'PlanModeOn')).toBe(true);
     expect(isRetiredEvent('UI', 'Toggled', 'PlanModeOff')).toBe(true);
     expect(isRetiredEvent('Editor', 'Changed', 'ModeDraw')).toBe(false);
-    expect(isRetiredEvent('UI', 'Opened', 'SettingsAi')).toBe(false);
+  });
+
+  it('retires the in-editor AI assistant, not the photo import', () => {
+    expect(isRetiredEvent('AI', 'Used', 'Ask')).toBe(true);
+    expect(isRetiredEvent('AI', 'Used', 'Clean')).toBe(true);
+    expect(isRetiredEvent('AI', 'Toggled', 'AiOn')).toBe(true);
+    expect(isRetiredEvent('AI', 'Toggled', 'AiSuggestedPromptsOff')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'SettingsAi')).toBe(true);
+    expect(isRetiredEvent('Help', 'View', 'ai-tools')).toBe(true);
+    expect(isRetiredEvent('AI', 'Used', 'PhotoNotes')).toBe(false);
+    expect(isRetiredEvent('AI', 'Used', 'PhotoDetectClassicalNoWorker')).toBe(false);
+    expect(isRetiredEvent('Help', 'View', 'connect-ai-mcp')).toBe(false);
   });
 
   it('keeps everything that still exists', () => {

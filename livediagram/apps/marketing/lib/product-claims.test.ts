@@ -50,6 +50,10 @@ const FALSE_CLAIMS: { pattern: RegExp; why: string }[] = [
     pattern: /nothing is sent to a server/i,
     why: 'imported images go through the image upload pipeline',
   },
+  {
+    pattern: /AI assistance|AI panel|ask and clean|clean mode|assistant in the editor/i,
+    why: 'the editor has no AI assistant of its own; AI tools connect over MCP (docs/specs/019-marketing/build-with-ai.md)',
+  },
 ];
 
 const copy: { where: string; text: string }[] = [
