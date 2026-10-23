@@ -1,4 +1,4 @@
-import { FLUSH_IDLE_MS, FLUSH_RETRY_MS, nextFlushAt } from '@liveworkspace/index-app';
+import { FLUSH_IDLE_MS, FLUSH_RETRY_MS, ItemDb, nextFlushAt } from '@liveworkspace/index-app';
 import { DurableObject } from 'cloudflare:workers';
 import { levelAtLeast } from '@liveworkspace/index-client';
 import { designServesImage, noteEntitled } from '../db/image-grants';
@@ -63,7 +63,6 @@ import {
 } from '../db/photo-blobs';
 import { forgetDesignMediaRefs } from '../media';
 import { renderDesignImage, type ThumbnailSubject } from '../thumbnail';
-import { DesignDb } from './design-db';
 import { hasDesignSchema, migrateDesignSchema } from './design-schema';
 import {
   exportDesignCopy,
@@ -83,8 +82,8 @@ import { answerDesignRequest, type RouteIdentity } from './design-route';
 //
 //   - The design's content: tabs (with their stats), its slide deck, image references and grants, photo blob
 //     refs and the changeset log, in its own SQLite (design-schema.ts), which the content modules reach as
-//     `env.DESIGN_DB` (design-db.ts). Every API request about the design runs here (`route`, design-route.ts), so
-//     a save is one call to this object and one SQLite transaction. What the index's cross-design reads need (the
+//     `env.DESIGN_DB` (index-app item-db.ts). Every API request about the design runs here (`route`,
+//     design-route.ts), so a save is one call to this object and one SQLite transaction. What the index's cross-design reads need (the
 //     Inbox, the listing summary, the Timeline) and the media service's references are pushed from the outbox on
 //     idle (design-outbox.ts).
 //   - The realtime room: connected WebSockets and their identity, presence, and the ordered op stream. It
@@ -211,8 +210,8 @@ export class DesignRoom extends DurableObject<Env> {
   // DESIGN_ROOM that answers this design's own id with this object (no hop). Undefined only for a unit test that
   // builds a room from a fake state alone; then the content and telemetry paths are skipped.
   roomEnv: DesignEnv | undefined;
-  // The design's SQLite behind the D1 surface (design-db.ts).
-  readonly db: DesignDb;
+  // The design's SQLite behind the D1 surface (@liveworkspace/index-app item-db.ts).
+  readonly db: ItemDb;
   // The design this object is, from the first call that names it (every RPC and room join does).
   private designId: string | null = null;
   private schemaReady = false;
@@ -243,7 +242,7 @@ export class DesignRoom extends DurableObject<Env> {
   constructor(state: DurableObjectState, env?: Env) {
     super(state, env as Env);
     this.state = state;
-    this.db = new DesignDb(state.storage.sql, {
+    this.db = new ItemDb(state.storage.sql, {
       transaction: (fn) => state.storage.transactionSync(fn),
       ensureSchema: () => this.ensureSchema(),
       onWrite: () => this.noteWrite(),
@@ -432,11 +431,12 @@ export class DesignRoom extends DurableObject<Env> {
   async route(designId: string, request: Request, identity: RouteIdentity): Promise<Response> {
     this.bindDesign(designId);
     const env = this.requireEnv();
-    const writesBefore = this.writes;
     // Who may add content now: an image they own placed here earns a placement grant (db/image-grants.ts).
+    // Bookkeeping about the caller, not an edit by them, so it is counted before the request's own writes.
     const grant = identity.grant;
     if (grant && levelAtLeast(grant.level, 'participate') && !grant.sub.startsWith('link:'))
       await noteEntitled(env, grant.sub, grant.exp * 1000);
+    const writesBefore = this.writes;
     const response = await answerDesignRequest(env, request, identity, (p) =>
       this.state.waitUntil(p),
     );

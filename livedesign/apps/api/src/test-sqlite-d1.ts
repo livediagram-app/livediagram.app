@@ -1,5 +1,5 @@
 import { DatabaseSync } from 'node:sqlite';
-import { DesignDb } from './design-room/design-db';
+import { ItemDb } from '@liveworkspace/index-app';
 import { migrateDesignSchema } from './design-room/design-schema';
 import { nodeDesignSql, nodeTransaction } from './test-design-sql';
 import type { AccessLevel } from '@livedesign/api-schema';
@@ -71,7 +71,7 @@ export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
     }
   };
 
-  const designDb = new DesignDb(designSql, {
+  const designDb = new ItemDb(designSql, {
     transaction: nodeTransaction(sql),
     ensureSchema: () => {},
     onWrite: () => {},

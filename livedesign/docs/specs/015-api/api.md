@@ -347,8 +347,9 @@ workbench confinement, body caps), settles the index's grant and hands every req
 (and a create) to the design's object, `designRoom(env, id).route(request, identity)` (typed RPC,
 `design-client.ts`). The design list and the index's doors (delete, copy, share) are answered from the index, and the
 room ticket and upgrade in the worker. The object rebuilds the route context from that identity and the grant and
-runs the handlers against its own SQLite as `env.DESIGN_DB` (`design-db.ts`, a D1-shaped surface over
-`ctx.storage.sql`, so the content modules' SQL runs unchanged). Other RPCs: `outline` (a design read's tab list),
+runs the handlers against its own SQLite as `env.DESIGN_DB` (`@liveworkspace/index-app` `item-db.ts`, a D1-shaped
+surface over `ctx.storage.sql`, so the content modules' SQL runs unchanged; it tells the room only of calls that
+changed a row, so a read never counts as an edit). Other RPCs: `outline` (a design read's tab list),
 `image` (thumbnails and share images, drawn where the content is), `hasTab`, `servesImage`, `heldBlobs`,
 `exportCopy` / `importCopy` (a design copy), `revokeCodes`, `joined`, `anonymise` and `purge`.
 

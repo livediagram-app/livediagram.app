@@ -22,11 +22,12 @@ const SERVES = `(i.owner_id = d.owner_id
 
 // Someone whose index grant lets them add content (edit, or participate: a Participant places images too,
 // docs/specs/013-workspace/share-roles.md) reached the design: they stay entitled until that grant lapses. A
-// later grant only moves it on. Called before the request it came with runs, so its save finds it.
+// later grant only moves it on, and the same grant again writes nothing. Called before the request it came with
+// runs, so its save finds it.
 export async function noteEntitled(env: DesignEnv, personId: string, until: number): Promise<void> {
   await env.DESIGN_DB.prepare(
     `INSERT INTO entitled (person_id, until) VALUES (?, ?)
-     ON CONFLICT (person_id) DO UPDATE SET until = MAX(until, excluded.until)`,
+     ON CONFLICT (person_id) DO UPDATE SET until = excluded.until WHERE excluded.until > entitled.until`,
   )
     .bind(personId, until)
     .run();
