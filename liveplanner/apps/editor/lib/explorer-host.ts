@@ -4,6 +4,7 @@
 // its own app, a share link's, where New goes, and the person's teams from their token
 // (liveworkspace/docs/one-explorer.md). The Explorer page and the editor's panel both use these.
 
+import { teamsOfToken } from '@liveworkspace/index-client/browser';
 import { useEffect, useState } from 'react';
 import type { App } from '@liveworkspace/index-client';
 import type {
@@ -51,25 +52,8 @@ export function newPlanHref(placement: Placement | null): string {
   return query ? `/new?${query}` : '/new';
 }
 
-// The teams an access token names (its `teams` claim, liveworkspace/docs/accounts.md "Teams"); none for a guest.
-export function teamsOfToken(token: string | null): TeamRef[] {
-  const part = token?.split('.')[1];
-  if (!part) return [];
-  try {
-    const claims = JSON.parse(atob(part.replace(/-/g, '+').replace(/_/g, '/'))) as {
-      teams?: unknown;
-    };
-    if (!Array.isArray(claims.teams)) return [];
-    return claims.teams.flatMap((team: unknown) => {
-      const t = team as { id?: unknown; name?: unknown };
-      return typeof t?.id === 'string' && typeof t.name === 'string'
-        ? [{ id: t.id, name: t.name }]
-        : [];
-    });
-  } catch {
-    return [];
-  }
-}
+// The teams an access token names (its `teams` claim): @liveworkspace/index-client/browser's.
+export { teamsOfToken };
 
 // The person's teams, read from the token the page sends once it is known.
 export function useTokenTeams(signedIn: boolean | undefined): TeamRef[] {
