@@ -11,7 +11,15 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from 'react';
 import {
   createExplorerAccounts,
   Explorer,
@@ -76,54 +84,83 @@ function retiredView(pathname: string): keyof typeof RETIRED_TARGETS | 'offline'
   return section in RETIRED_TARGETS ? (section as keyof typeof RETIRED_TARGETS) : null;
 }
 
+type Trashed = { id: string; title: string | null };
+
+/** What the address says on arrival: somewhere else to go, or where the person came from and what it hands over. */
+type Landing =
+  | { leave: string }
+  | {
+      leave: null;
+      arrived: Arrival;
+      notice: string | null;
+      trashed: Trashed | null;
+      strip: boolean;
+    };
+
+function readLanding(): Landing {
+  const search = window.location.search;
+  const found = arrival(search, document.referrer, readLastApp());
+  // A retired address gives way to its successor.
+  const retired = retiredView(window.location.pathname);
+  if (retired === 'offline')
+    return { leave: offlineHref(found.app ?? FALLBACK_APP) ?? '/explorer' };
+  if (retired) return { leave: retiredTarget(retired, search) };
+  // The apps' Settings deep link (every notification email's unsubscribe link carries one).
+  const settings = settingsTarget(search, found.app);
+  if (settings) return { leave: settings };
+  const params = new URLSearchParams(search);
+  const trashedId = params.get(TRASHED_PARAM);
+  return {
+    leave: null,
+    arrived: found,
+    notice: arrivalNotice(search, found.app),
+    trashed: trashedId ? { id: trashedId, title: params.get(TITLE_PARAM) } : null,
+    strip: params.has(ENDED_PARAM) || trashedId !== null,
+  };
+}
+
+// Read once per visit (a stable snapshot), and forgotten when the Explorer unmounts, so a later visit reads afresh.
+let landing: Landing | null = null;
+const landingNow = () => (landing ??= readLanding());
+const noSubscribe = () => () => {};
+
 export function ExplorerShell() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
   const session = useSession();
 
-  // Decided once per visit: later moves inside the Explorer carry no `?from=`.
-  const [arrived, setArrived] = useState<Arrival>(NO_ARRIVAL);
-  const [ready, setReady] = useState(false);
-  const [notice, setNotice] = useState<string | null>(null);
-  const [trashed, setTrashed] = useState<{ id: string; title: string | null } | null>(null);
+  // Decided once per visit: later moves inside the Explorer carry no `?from=`. Null while prerendered.
+  const landed = useSyncExternalStore(noSubscribe, landingNow, () => null);
+  const stay = landed && landed.leave === null ? landed : null;
+  const ready = stay !== null;
+  const arrived = stay?.arrived ?? NO_ARRIVAL;
+  const notice = stay?.notice ?? null;
+  const trashed = stay?.trashed ?? null;
   const [identity, setIdentity] = useState<WorkspaceIdentity | null>(null);
   const [failed, setFailed] = useState(false);
 
-  // Arrival: where from, and what the address hands over (settings, a revoked link's note, a trashed plan).
+  // Arrival's effects: going on elsewhere, remembering the app, and dropping what the address handed over.
   useEffect(() => {
-    const search = window.location.search;
-    const found = arrival(search, document.referrer, readLastApp());
-    // A retired address replaces itself with its successor.
-    const retired = retiredView(window.location.pathname);
-    if (retired === 'offline') {
-      window.location.replace(offlineHref(found.app ?? FALLBACK_APP) ?? '/explorer');
+    if (!landed) return;
+    if (landed.leave !== null) {
+      window.location.replace(landed.leave);
       return;
     }
-    if (retired) {
-      window.location.replace(retiredTarget(retired, search));
-      return;
-    }
-    // The apps' Settings deep link (every notification email's unsubscribe link carries one).
-    const settings = settingsTarget(search, found.app);
-    if (settings) {
-      window.location.replace(settings);
-      return;
-    }
-    if (found.app) rememberApp(found.app);
-    setArrived(found);
-    setNotice(arrivalNotice(search, found.app));
-    const params = new URLSearchParams(search);
-    const trashedId = params.get(TRASHED_PARAM);
-    if (trashedId) setTrashed({ id: trashedId, title: params.get(TITLE_PARAM) });
+    if (landed.arrived.app) rememberApp(landed.arrived.app);
     // Taken once: a reload doesn't say it again.
-    if (params.has(ENDED_PARAM) || trashedId) {
+    if (landed.strip) {
       const url = new URL(window.location.href);
       for (const key of [ENDED_PARAM, TRASHED_PARAM, TITLE_PARAM]) url.searchParams.delete(key);
       window.history.replaceState(window.history.state, '', url);
     }
-    setReady(true);
-  }, []);
+  }, [landed]);
+  useEffect(
+    () => () => {
+      landing = null;
+    },
+    [],
+  );
 
   // The person: asked once, before the Explorer asks the index anything, and again after signing out here.
   const lastSession = useRef(session.state);
@@ -142,8 +179,7 @@ export function ExplorerShell() {
     return () => {
       live = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- asked when ready, and again on signing out
-  }, [ready, session.state]);
+  }, [ready, session.state, identity]);
 
   const app: AppName = arrived.app ?? FALLBACK_APP;
   const [filter, setFilter] = useState<AppFilter | null>(null);

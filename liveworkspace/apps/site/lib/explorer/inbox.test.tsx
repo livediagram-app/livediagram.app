@@ -5,7 +5,7 @@ import { inboxHost } from './inbox';
 
 describe('the Inbox on liveworkspace.app', () => {
   it('draws a Plan card type by its own glyph', () => {
-    const type = ITEM_TYPES[0]!;
+    const type = ITEM_TYPES[0];
     const html = renderToStaticMarkup(<>{inboxHost.cardGlyph!(type.id)}</>);
     expect(html).toContain(`d="${planGlyphPath(type.glyph)}"`);
   });

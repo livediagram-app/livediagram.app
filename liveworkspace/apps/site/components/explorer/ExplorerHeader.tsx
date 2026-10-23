@@ -34,7 +34,6 @@ export function ExplorerHeader({ app, search }: { app: AppName | null; search: R
                 href={listed.url}
                 data-explorer-from={app}
                 aria-label={`Back to ${listed.name}`}
-                title={`Back to ${listed.name}`}
                 className="relative touch-target-y inline-flex items-center rounded-md transition-opacity hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-500"
               >
                 <AppLogo app={listed} size="md" />

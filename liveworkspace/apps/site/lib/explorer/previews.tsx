@@ -104,7 +104,7 @@ export function loadPreview(item: Item): Promise<Entry> | null {
       // A failed request isn't kept: the next box to ask tries again.
       () => {
         inflight.delete(key);
-        return { status: 'none' } as Entry;
+        return { status: 'none' };
       },
     );
     inflight.set(key, pending);

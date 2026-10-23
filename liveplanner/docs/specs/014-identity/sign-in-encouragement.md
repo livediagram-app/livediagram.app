@@ -31,10 +31,8 @@ Common gate (all must hold):
   doesn't count).
 - The visitor hasn't dismissed it (see Dismissal).
 
-**Explorer** (`app/explorer/ExplorerShell.tsx`): rides every
-`/explorer/<section>` route, shown immediately when the gate holds.
-The pane reserves extra bottom padding while it's up so the last row
-never hides behind it.
+**Explorer**: the Explorer lives on liveworkspace.app, which has no
+banner; its sidebar asks a guest to sign in for Teams instead.
 
 **Toasts stand on it.** While the banner shows, in the Explorer or the editor, its card is part of the bottom chrome
 the toast stack clears ([Toasts](../004-interface-design/toasts.md) "Placement"): the stack sits 8px above the card's
