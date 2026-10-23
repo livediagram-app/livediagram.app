@@ -335,6 +335,9 @@ importers:
       '@livedesign/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@liveworkspace/settings':
+        specifier: workspace:*
+        version: link:../../../packages/settings
       next:
         specifier: ^16.4.1
         version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)

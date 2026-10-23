@@ -5,7 +5,7 @@ import { randomColor, randomName, type Participant } from '@/lib/identity';
 // Who is opening the editor (docs/specs/014-identity/auth-and-guest-access.md), resolved once auth has
 // settled: the account id when signed in, else the guest's SERVER-SIGNED id (minting one on a first
 // visit, upgrading a legacy unsigned id) so the eventual sign-up migrate can prove possession; then
-// the stored participant row, seeded or re-synced as needed. Lifted out of useIdentityBootstrap so a
+// the stored profile, seeded on a first visit. Lifted out of useIdentityBootstrap so a
 // design in This Browser can open first and resolve this in the background
 // (docs/specs/006-design/offline-mode.md "Instant open").
 export async function resolveParticipant(opts: {
@@ -17,30 +17,21 @@ export async function resolveParticipant(opts: {
   const { accountUserId, accountDisplayName } = opts;
   const selfId = accountUserId ?? (await ensureSignedGuestIdentity()).id;
   opts.onParticipantStep?.();
-  const storedSelf = await apiLoadSelf(selfId).catch(() => null);
-  // Signed-in users always use their account name on the
-  // participant record. For a brand-new participant (no storedSelf)
-  // this seeds the row; for an existing one we overwrite so it stays
-  // in sync with the account. Guests keep the existing
-  // random placeholder so their chosen identity isn't blown away.
-  const baseSelf: Participant = storedSelf ?? {
-    id: selfId,
-    name: randomName(),
-    color: randomColor(),
+  // `undefined` when the profile could not be read (the api or the accounts Worker unreachable):
+  // the session goes on under a stand-in, and nothing is saved over a profile that may well exist.
+  const storedSelf = await apiLoadSelf(selfId).catch(() => undefined);
+  // The profile is kept with the liveworkspace account (docs/specs/014-identity/auth-and-guest-access.md
+  // "Display name"), so a name set in any app is the one shown here. A first visit seeds it: a
+  // signed-in person's account name (which the api reads as the account's own and does not pin) and
+  // a colour; a guest's random placeholder.
+  const self: Participant = {
+    ...(storedSelf ?? {
+      id: selfId,
+      name: (accountUserId && accountDisplayName) || randomName(),
+      color: randomColor(),
+    }),
     status: 'online',
   };
-  const self: Participant =
-    accountUserId && accountDisplayName
-      ? { ...baseSelf, name: accountDisplayName, status: 'online' }
-      : { ...baseSelf, status: 'online' };
-  // Persist on first load, or when a signed-in user's account display
-  // name has drifted from what we have on the server.
-  const nameDrifted = !!(
-    storedSelf &&
-    accountUserId &&
-    accountDisplayName &&
-    storedSelf.name !== accountDisplayName
-  );
-  if (!storedSelf || nameDrifted) await apiSaveSelf(self).catch(() => {});
+  if (storedSelf === null) await apiSaveSelf(self).catch(() => {});
   return self;
 }

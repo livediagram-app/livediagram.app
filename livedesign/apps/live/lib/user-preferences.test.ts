@@ -12,7 +12,9 @@ vi.mock('./api-client', () => ({
 
 import { apiGetPreferences, apiPutPreferences } from './api-client';
 import { setWorkbenchConfinement } from './api/workbench-confinement';
+import { __resetPreferencesSync, PREFERENCES_SAVE_DEBOUNCE_MS } from './preferences-sync';
 import {
+  __forgetFetchedPreferences,
   autoRebindArrowsEnabled,
   fetchUserPreferences,
   RECENT_EXCLUDED_LIMIT,
@@ -99,6 +101,7 @@ function mockBrowser(): { storage: Storage; events: string[]; cleanup: () => voi
 }
 
 afterEach(() => {
+  vi.useRealTimers();
   delete (globalThis as { window?: Window }).window;
   vi.unstubAllGlobals();
 });
@@ -106,6 +109,9 @@ afterEach(() => {
 beforeEach(() => {
   mockedGet.mockReset();
   mockedPut.mockReset();
+  mockedPut.mockResolvedValue('saved');
+  __resetPreferencesSync();
+  __forgetFetchedPreferences();
 });
 
 describe('readUserPreferences (no window)', () => {
@@ -195,16 +201,18 @@ describe('readUserPreferences (with localStorage)', () => {
   });
 });
 
-// Network-sync helpers introduced in docs/specs/007-editor/user-preferences.md's "preferences live in D1"
-// rewrite. These cover the two interfaces the editor relies on:
-// writeUserPreferences(prefs, ownerId) firing a PUT when an owner is
-// known (and staying purely local when one isn't), and
-// fetchUserPreferences merging the server response over the cache.
+// The two interfaces the editor relies on (docs/specs/007-editor/user-preferences.md "Saving to the
+// server"): writeUserPreferences(prefs, ownerId) sending a save when an owner is known (and staying
+// purely local when one isn't), and fetchUserPreferences merging the server's set over the cache.
 
 describe('writeUserPreferences (server sync)', () => {
-  it('fires a PUT to /api/preferences when an owner id is supplied', () => {
+  beforeEach(() => vi.useFakeTimers());
+
+  it('sends a PUT to /api/preferences after the pause when an owner id is supplied', async () => {
     mockBrowser();
     writeUserPreferences({ telemetryEnabled: false }, 'guest-abc');
+    expect(mockedPut).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(PREFERENCES_SAVE_DEBOUNCE_MS);
     expect(mockedPut).toHaveBeenCalledTimes(1);
     expect(mockedPut).toHaveBeenCalledWith('guest-abc', { telemetryEnabled: false });
   });
@@ -212,6 +220,7 @@ describe('writeUserPreferences (server sync)', () => {
   it('skips the PUT when no owner id is supplied (legacy / pre-identity callers)', () => {
     mockBrowser();
     writeUserPreferences({ telemetryEnabled: false });
+    vi.runAllTimers();
     expect(mockedPut).not.toHaveBeenCalled();
   });
 
@@ -220,6 +229,7 @@ describe('writeUserPreferences (server sync)', () => {
     // gets hit before identity resolves on a slow network.
     mockBrowser();
     writeUserPreferences({ autoRebindArrows: false }, null);
+    vi.runAllTimers();
     expect(mockedPut).not.toHaveBeenCalled();
   });
 
@@ -228,6 +238,7 @@ describe('writeUserPreferences (server sync)', () => {
   it("keeps the write local under the 'self' placeholder", () => {
     mockBrowser();
     writeUserPreferences({ autoRebindArrows: false }, 'self');
+    vi.runAllTimers();
     expect(mockedPut).not.toHaveBeenCalled();
   });
 
@@ -241,6 +252,7 @@ describe('writeUserPreferences (server sync)', () => {
     } finally {
       setWorkbenchConfinement(null);
     }
+    vi.runAllTimers();
     expect(mockedPut).not.toHaveBeenCalled();
     expect(JSON.parse(storage.getItem(STORAGE_KEY) ?? '{}')).toEqual({ showMinimap: false });
     expect(events).toEqual([PREFERENCES_CHANGED_EVENT]);

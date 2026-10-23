@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { isAllSetting } from '@liveworkspace/settings';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { SettingsIllustration } from './settings-illustrations';
 import type { SettingsRowSpec } from './settings-catalogue';
@@ -66,7 +67,8 @@ export function SettingsRowShell({
   dimmed?: boolean;
 }) {
   const inGroup = useInSettingsGroup();
-  const described = Boolean(descriptionContent ?? row.description) || !!row.helpArticle;
+  const shared = isAllSetting(settingKeyOf(row.key));
+  const described = Boolean(descriptionContent ?? row.description) || !!row.helpArticle || shared;
 
   const cell = (
     <div
@@ -104,6 +106,16 @@ export function SettingsRowShell({
                   Also in {row.alsoIn}.
                 </span>
               ) : null}
+              {/* A setting every app shares (liveworkspace/docs/accounts.md "Settings"): changing
+                  it here changes it in the other apps too, so it says so, quietly. */}
+              {shared ? (
+                <span
+                  data-settings-all-apps
+                  className="mt-0.5 block text-slate-500 dark:text-slate-400"
+                >
+                  All apps
+                </span>
+              ) : null}
             </p>
           ) : null}
         </div>
@@ -135,6 +147,13 @@ export function SettingsRowShell({
   );
 
   return inGroup ? cell : <div className={SETTINGS_CARD}>{cell}</div>;
+}
+
+// The preference a row stands for. A row's key is its preference's, except a UI scale part's
+// (`uiScale-panels`), which writes `uiScalePanels`.
+export function settingKeyOf(rowKey: string): string {
+  const part = /^uiScale-(\w)(\w*)$/.exec(rowKey);
+  return part ? `uiScale${part[1]!.toUpperCase()}${part[2]}` : rowKey;
 }
 
 function InfoGlyph() {

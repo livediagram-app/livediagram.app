@@ -3,29 +3,41 @@ export type MapSize = 'short' | 'medium' | 'tall';
 // Per-user editor preference flags. See docs/specs/007-editor/user-preferences.md.
 //
 // Storage:
-//   - D1 (`user_preferences` table) is the authoritative store, fetched
-//     once at editor mount via fetchUserPreferences() so a signed-in
-//     user's flags follow them across devices.
+//   - The person's liveworkspace account is the authoritative store
+//     (liveworkspace/docs/accounts.md "Settings"), reached through the
+//     api's /api/preferences: the keys every app shares (ALL_SETTING_KEYS
+//     in @liveworkspace/settings) in its `all` scope, the rest in
+//     livedesign's own. Fetched once per page load via
+//     fetchUserPreferences() so a signed-in user's flags follow them
+//     across devices, and the shared ones across apps.
 //   - `localStorage` under `livedesign:user-preferences:v1` is a warm
 //     cache so the editor never blocks on the network at boot. Reads
 //     are synchronous; writes go to BOTH localStorage and the api
-//     (one PUT at a time, latest wins, lib/preferences-sync). Last-write-wins per device.
+//     (only the keys that changed, debounced, one PUT at a time,
+//     lib/preferences-sync). Without liveworkspace accounts (a self-host
+//     with no sign-in) the cache is the only store.
 //
 // Cross-tab consistency: callers can listen for the native `storage`
 // event on STORAGE_KEY. Same-tab writes also fire a window event
 // `livedesign:preferences-changed` so listeners that can't observe
 // their own `localStorage.setItem` (like `lib/telemetry.ts`'s
-// in-memory gate cache) still refresh promptly. Every write sends the
-// WHOLE blob, so a change is built on the cache, never on a render's
-// snapshot (see rebaseUserPreferences): another tab's write since that
-// render would otherwise be undone.
+// in-memory gate cache) still refresh promptly. A change is built on
+// the cache, never on a render's snapshot (see
+// rebaseUserPreferences): another tab's write since that render
+// would otherwise be undone.
 
 import type { PageKind } from '@livedesign/design';
 import type { ElementTourKind } from './element-tours';
 import type { SwatchOverrideStore } from './swatch-overrides';
 import { USER_PREFERENCES_STORAGE_KEY } from '@livedesign/telemetry-client';
 import { apiGetPreferences } from './api-client';
-import { fitPreferences, preferencesUnsynced, savePreferences } from './preferences-sync';
+import {
+  fitPreferences,
+  markPreferencesNotStored,
+  markPreferencesSynced,
+  preferencesUnsynced,
+  savePreferences,
+} from './preferences-sync';
 import { getWorkbenchConfinement } from './api/workbench-confinement';
 import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-safe';
 import { debugLog } from './debug-log';
@@ -44,9 +56,9 @@ export type UserPreferences = {
   telemetryEnabled?: boolean;
   // DEAD as of docs/specs/008-canvas/two-pens.md: shape recognition is now which pen you picked
   // (Freehand or Shape Pen), not a persisted mode. Nothing reads this any
-  // more. It stays in the type because it is already stored in D1 for
-  // existing users, and removing it would make a stored preference fail to
-  // parse rather than simply be ignored.
+  // more. It stays in the type because it may already be stored, and
+  // removing it would make a stored preference fail to parse rather than
+  // simply be ignored.
   recogniseShapes?: boolean;
   // Map panel options (docs/specs/008-canvas/minimap.md). Both default ON / medium via `!== false`
   // and `?? 'medium'`, so an existing user's map is unchanged.
@@ -163,7 +175,9 @@ export type UserPreferences = {
   dockButtonNames?: boolean;
   // Email notifications (docs/specs/014-identity/profile-and-email-notifications.md). Account-level settings flipped from the
   // Settings dialog; the api worker reads them server-side before
-  // sending the matching transactional email (docs/specs/014-identity/transactional-email.md). Distinct from
+  // sending the matching transactional email, and liveworkspace's
+  // accounts Worker reads `notifyTips` before each onboarding email
+  // (docs/specs/014-identity/transactional-email.md). Distinct from
   // `notificationsEnabled`, which is about in-editor toasts, not email.
   // Missing / undefined / true === notify (opt-out); an explicit false
   // suppresses that email.
@@ -196,8 +210,8 @@ export type UserPreferences = {
   // is your view of your own work, and on a shared design one
   // collaborator hiding it must not hide it from everyone else.
   //
-  // Ids only, so the list stays small; the whole preferences blob has a
-  // 4 KB server-side cap, which `toggleRecentExcluded` below budgets for.
+  // Ids only, so the list stays small; the whole preferences set is kept
+  // under 4 KB (lib/preferences-sync), which `toggleRecentExcluded` below budgets for.
   // Missing / undefined === nothing excluded.
   // DEAD as of docs/specs/004-interface-design/colour-picker.md: Custom colours are the colours
   // picked with + in the design, kept with its tabs, not a per-user list. Nothing reads or writes this any
@@ -233,10 +247,9 @@ export type UserPreferences = {
 };
 
 // How many excluded ids we keep. A design id is a 36-char UUID, so 200
-// of them is ~7.4 KB of JSON on its own — well past the api's 4 KB cap on
-// the serialised preferences blob, which would start rejecting EVERY
-// preference write, not just this one. 60 is far more than anyone will
-// hide by hand and leaves plenty of room for the other flags.
+// of them is ~7.4 KB of JSON on its own, well past the 4 KB the whole
+// preferences set is kept under (lib/preferences-sync). 60 is far more
+// than anyone will hide by hand and leaves plenty of room for the other flags.
 export const RECENT_EXCLUDED_LIMIT = 60;
 
 // Flip a design's Recent exclusion, returning the NEXT id list. Newest
@@ -286,7 +299,7 @@ export function readUserPreferences(): UserPreferences {
 // Write preferences back. Best-effort: a quota / private-window
 // failure is swallowed (the dialog state still applies in-memory
 // for the session; the user just loses the persistence). The
-// network sync to D1 runs in the background when `ownerId` is supplied
+// network sync runs in the background when `ownerId` is supplied
 // (lib/preferences-sync): the cache write happens synchronously so the
 // UI updates without waiting. Callers without an ownerId (e.g. unit
 // tests, the editor before identity resolves) skip the network step.
@@ -341,25 +354,48 @@ export function commitUserPreferences(
   return rebased;
 }
 
-// Fetch preferences from D1, merge over the localStorage cache, and
+// Fetch the stored preferences, merge over the localStorage cache, and
 // dispatch `livedesign:preferences-changed` so in-process listeners
 // pick up the merged value. Returns the merged preferences (or null
-// when the fetch failed; the caller can treat that as "stick with
-// the cache"). Called once at editor mount per docs/specs/007-editor/user-preferences.md's sync flow.
+// when the fetch failed or this deployment keeps none; the caller can
+// treat that as "stick with the cache"). Once per page load and owner
+// (docs/specs/007-editor/user-preferences.md's sync flow): the Explorer
+// and the editor both ask, and the second shares the first's answer, so
+// a session costs one accounts read.
 //
 // Server-wins on conflict: the server holds the most-recently-saved
-// state across all of this owner's devices, so any key present on
-// both sides takes the server's value. Keys only in the cache (a
-// PUT that hasn't reached the server yet, or a write made offline)
-// are preserved by the spread order below. The exception is a device
-// whose last save was never confirmed (lib/preferences-sync): the
-// server's blob is older than the cache there, so the cache wins and
+// state across all of this owner's devices and apps, so any key
+// present on both sides takes the server's value. Keys only in the
+// cache (a save that hasn't reached the server yet, or a write made
+// offline) are preserved by the spread order below. The exception is a
+// device whose last save was never confirmed (lib/preferences-sync):
+// the server's set is older than the cache there, so the cache wins and
 // is sent again.
-export async function fetchUserPreferences(ownerId: string): Promise<UserPreferences | null> {
+const fetched = new Map<string, Promise<UserPreferences | null>>();
+
+export function fetchUserPreferences(ownerId: string): Promise<UserPreferences | null> {
+  let pending = fetched.get(ownerId);
+  if (!pending) {
+    pending = loadUserPreferences(ownerId);
+    fetched.set(ownerId, pending);
+    // A failed read is asked again next time; a good one stands for the page.
+    void pending.then((merged) => {
+      if (merged === null) fetched.delete(ownerId);
+    });
+  }
+  return pending;
+}
+
+async function loadUserPreferences(ownerId: string): Promise<UserPreferences | null> {
   const remote = await apiGetPreferences(ownerId);
+  if (remote === 'not_stored') {
+    markPreferencesNotStored(ownerId);
+    return null;
+  }
   if (remote === null) return null;
   const local = readUserPreferences();
   const server = remote as UserPreferences;
+  markPreferencesSynced(ownerId, server);
   const unsynced = preferencesUnsynced(ownerId);
   const merged = fitPreferences(unsynced ? { ...server, ...local } : { ...local, ...server });
   writeLocalStorageSafe(STORAGE_KEY, JSON.stringify(merged));
@@ -371,6 +407,11 @@ export async function fetchUserPreferences(ownerId: string): Promise<UserPrefere
     if (!getWorkbenchConfinement()) savePreferences(ownerId, merged);
   }
   return merged;
+}
+
+// Test seam: forget the page's fetches.
+export function __forgetFetchedPreferences(): void {
+  fetched.clear();
 }
 
 // Whether a panel switch is on (docs/specs/007-editor/user-preferences.md):

@@ -69,7 +69,7 @@ export default function NewDesignPage() {
   // real participant lands once the identity has resolved.
   // Sign-in wiring (token provider + guest to authed migration), the same
   // hook as the editor route; see hooks/useAccountBootstrap.ts.
-  const { authLoaded, accountUserId } = useAccountBootstrap();
+  const { authLoaded, accountUserId, accountDisplayName } = useAccountBootstrap();
 
   // Who is creating (docs/specs/003-system-architecture/react-state-and-effects.md): derived during render.
   // The base is the account id once auth has settled, else the guest id read from its store, with a name and
@@ -150,21 +150,26 @@ export default function NewDesignPage() {
   const selfId = authLoaded ? (accountUserId ?? guestId) : null;
   useEffect(() => {
     if (!selfId) return;
-    const local: Participant = { id: selfId, name: seed.name, color: seed.color, status: 'online' };
+    // A first visit seeds the profile: a signed-in person's account name (which the api reads as the
+    // account's own and does not pin), else the random placeholder.
+    const name = (accountUserId && accountDisplayName) || seed.name;
+    const local: Participant = { id: selfId, name, color: seed.color, status: 'online' };
     let cancelled = false;
     void (async () => {
-      const stored = await apiLoadSelf(selfId).catch(() => null);
+      // undefined: the profile could not be read, so the seed stands in and is not saved over it.
+      const stored = await apiLoadSelf(selfId).catch(() => undefined);
       if (cancelled) return;
       if (stored) {
         setSelf({ ...stored, status: 'online' });
-      } else {
+      } else if (stored === null) {
+        setSelf(local);
         await apiSaveSelf(local).catch(() => {});
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [selfId, seed]);
+  }, [selfId, seed, accountUserId, accountDisplayName]);
   // Identity for the commit path. The session's chunk loads deferred, so a fast
   // click-through (or an e2e robot) can reach Create while `self` is still
   // the 'pending' placeholder — the identity bootstrap above hasn't run.
