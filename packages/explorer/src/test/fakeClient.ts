@@ -291,11 +291,16 @@ export function createFakeIndex(
         return { item: { ...copy } };
       }),
     removeShared: (id: string) => answer('removeShared', [id], undefined, () => undefined),
-    emptyTrash: () =>
-      answer('emptyTrash', [], undefined, () => {
+    emptyTrash: (query: { team?: string; app?: App } = {}) =>
+      answer('emptyTrash', [query], undefined, () => {
         const before = items.length;
-        for (let i = items.length - 1; i >= 0; i--)
-          if (items[i]!.trashedAt !== null) items.splice(i, 1);
+        for (let i = items.length - 1; i >= 0; i--) {
+          const it = items[i]!;
+          if (it.trashedAt === null) continue;
+          if ((it.teamId ?? undefined) !== query.team) continue;
+          if (query.app && it.app !== query.app) continue;
+          items.splice(i, 1);
+        }
         return { purged: before - items.length };
       }),
     createFolder: (input: {

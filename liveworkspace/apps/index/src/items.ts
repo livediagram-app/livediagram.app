@@ -111,15 +111,19 @@ export async function handleTrash(ctx: PersonContext): Promise<Response> {
   const { request, env, url, person } = ctx;
   if (request.method === 'GET') return handleList(ctx, 'trash');
   if (request.method !== 'DELETE') return notFound();
-  // Emptying the Trash purges every app's items: not for an app acting for a person.
-  if (person.app) return forbidden('wrong_app');
+  // `app` empties that app's items only, as an Explorer filtered to one app shows them; without it, every app's.
+  const appParam = url.searchParams.get('app');
+  if (appParam !== null && !isApp(appParam)) return badRequest('invalid_app');
+  // An app acting for a person may empty its own items, never every app's.
+  if (person.app && appParam !== person.app) return forbidden('wrong_app');
   const team = url.searchParams.get('team');
   if (team && !person.teams.includes(team)) return forbidden('not_team_member');
   const scope = team ? teamScope(team) : personalScope(person.id);
   const { results } = await env.INDEX_DB.prepare(
-    'SELECT id, app FROM items WHERE scope = ? AND trashed_at IS NOT NULL ORDER BY updated_at DESC LIMIT ?',
+    `SELECT id, app FROM items WHERE scope = ? AND trashed_at IS NOT NULL${appParam ? ' AND app = ?' : ''}
+     ORDER BY updated_at DESC LIMIT ?`,
   )
-    .bind(scope, EMPTY_TRASH_MAX)
+    .bind(...(appParam ? [scope, appParam, EMPTY_TRASH_MAX] : [scope, EMPTY_TRASH_MAX]))
     .all<Pick<ItemRow, 'id' | 'app'>>();
   await purgeRows(env, results);
   if (results.length > 0) {
@@ -128,6 +132,7 @@ export async function handleTrash(ctx: PersonContext): Promise<Response> {
   }
   console.log('[index] emptied trash', {
     scope: team ? 'team' : 'personal',
+    app: appParam ?? 'all',
     purged: results.length,
   });
   return json({ purged: results.length });

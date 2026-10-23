@@ -38,7 +38,8 @@ export type DialogTarget =
   | { kind: 'move-folder'; folderId: string }
   | { kind: 'share'; item: Item }
   | { kind: 'delete-folder'; folderId: string }
-  | { kind: 'empty-trash' }
+  // A Trash group's: the person's own (teamId null) or a team's, named for the confirmation.
+  | { kind: 'empty-trash'; teamId: string | null; title: string }
   | null;
 
 export type ExplorerContextValue = {

@@ -162,7 +162,8 @@ export function createIndexClient({
       query: { app?: App; team?: string; limit?: number; cursor?: string } = {},
       options: RequestOptions = {},
     ) => call<Page<Item, 'items'>>('/trash', { query, signal: options.signal }),
-    emptyTrash: (query: { team?: string } = {}) =>
+    // `app` empties that app's items only; without it, every app's.
+    emptyTrash: (query: { team?: string; app?: App } = {}) =>
       call<{ purged: number }>('/trash', { method: 'DELETE', query }),
 
     // Folders

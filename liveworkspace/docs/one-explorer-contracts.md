@@ -36,8 +36,9 @@ Two kinds of caller:
   hand (an API token `lwt_…` from the CLI or an AI tool, which the app resolves with accounts): the app's key
   and `X-Index-App` as above, plus `X-Index-Person: <account id>` and `X-Index-Teams: <team ids,
 comma-separated, ≤ 50>`. Every person route then answers as that account, but only for the app's own items:
-  its lists are filtered to the app, `POST /items` makes only the app's kind, any other app's item answers 404,
-  and `DELETE /trash` is refused (403 `wrong_app`). A guest id, a link or a malformed person is refused (401).
+  its lists are filtered to the app (the Trash among them, so `DELETE /trash` empties the app's items only),
+  `POST /items` makes only the app's kind, and any other app's item answers 404. A guest id, a link or a
+  malformed person is refused (401).
   `createIndexDelegateClient` in `@liveworkspace/index-client` makes these calls.
 
 Errors are `{ "error": "<code>" }` with a 4xx status. Lists are paged with `limit` (≤ 200) and an opaque
@@ -123,7 +124,7 @@ type ItemSummary = {
 |                                |                     | per person and item.                                                         |
 | `POST /items/:id/grant`        | person or link      | `→ {grant, level, tabId, expiresAt}`. A link visitor sends                   |
 |                                |                     | `X-Share-Code` (and `X-Share-Password` when set).                            |
-| `GET /trash` / `DELETE /trash` | person              | List, empty (`?team=`).                                                      |
+| `GET /trash` / `DELETE /trash` | person              | List, empty (`?team=`; `?app=` empties that app's items only).               |
 
 **Purging.** A permanent delete, the daily sweep of items in the Trash for 30 days, or closing an account
 (below) removes the index rows and asks the app to drop the content (`DELETE <app>/api/internal/items/:id`,

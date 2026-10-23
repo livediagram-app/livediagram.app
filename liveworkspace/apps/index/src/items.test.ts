@@ -307,6 +307,19 @@ describe('the Trash', () => {
     await settle();
     expect(h.db.sql.prepare('SELECT id FROM items').all()).toEqual([{ id: keep.id }]);
   });
+
+  it('empties one app’s Trash only, when asked for that app', async () => {
+    const ada = await person('user_a');
+    const plan = await makeItem(ada.auth);
+    const canvas = await makeItem(ada.auth, { app: 'livediagram' });
+    for (const id of [plan.id, canvas.id])
+      await call(`/items/${id}`, { method: 'DELETE', auth: ada.auth });
+    const res = await call('/trash?app=liveplanner', { method: 'DELETE', auth: ada.auth });
+    expect(await body(res)).toEqual({ purged: 1 });
+    await settle();
+    expect(h.db.sql.prepare('SELECT id FROM items').all()).toEqual([{ id: canvas.id }]);
+    expect((await call('/trash?app=nope', { method: 'DELETE', auth: ada.auth })).status).toBe(400);
+  });
 });
 
 describe('copies', () => {

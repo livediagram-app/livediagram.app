@@ -101,15 +101,16 @@ export function TrashPane({
             >
               {group.title}
             </h2>
-            {group.teamId === null ? (
-              <button
-                type="button"
-                onClick={() => openDialog({ kind: 'empty-trash' })}
-                className="shrink-0 rounded-md px-2.5 py-1 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-              >
-                Empty Trash
-              </button>
-            ) : null}
+            <button
+              type="button"
+              aria-label={`Empty Trash: ${group.title}`}
+              onClick={() =>
+                openDialog({ kind: 'empty-trash', teamId: group.teamId, title: group.title })
+              }
+              className="shrink-0 rounded-md px-2.5 py-1 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            >
+              Empty Trash
+            </button>
           </header>
           <ul className="divide-y divide-slate-100 dark:divide-slate-700/60">
             {group.rows.map((item) => {

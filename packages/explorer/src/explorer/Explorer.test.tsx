@@ -198,6 +198,41 @@ describe('<Explorer>', () => {
     await waitFor(() => expect(index.count('restoreItem')).toBe(1));
   });
 
+  it('empties one Trash group of this app’s items only, the team’s too', async () => {
+    const at = Date.now();
+    const index = createFakeIndex({
+      items: [
+        makeItem(1, { trashedAt: at, trashReason: 'deleted' }),
+        makeItem(2, { trashedAt: at, trashReason: 'deleted', teamId: 'team_1' }),
+      ],
+    });
+    renderExplorer(
+      index,
+      { kind: 'trash' },
+      { teams: [{ id: 'team_1', name: 'Design' }], filter: 'app' },
+    );
+    await screen.findByRole('heading', { name: 'Design' });
+    fireEvent.click(screen.getByRole('button', { name: 'Empty Trash: Your plans' }));
+    const confirm = screen.getByRole('dialog');
+    expect(within(confirm).getByText(/Every plan in your Trash is deleted for good/)).toBeTruthy();
+    await act(async () => {
+      fireEvent.click(within(confirm).getByRole('button', { name: 'Empty Trash' }));
+    });
+    expect(index.calls.find((c) => c.method === 'emptyTrash')?.args).toEqual([
+      { app: 'liveplanner' },
+    ]);
+    fireEvent.click(await screen.findByRole('button', { name: 'Empty Trash: Design' }));
+    expect(screen.getByText(/Design’s Trash is deleted for good, for the whole team/)).toBeTruthy();
+    await act(async () => {
+      fireEvent.click(
+        within(screen.getByRole('dialog')).getByRole('button', { name: 'Empty Trash' }),
+      );
+    });
+    expect(index.calls.filter((c) => c.method === 'emptyTrash')[1]?.args).toEqual([
+      { team: 'team_1', app: 'liveplanner' },
+    ]);
+  });
+
   it('shows a Help button where the host has an article for the view', async () => {
     renderExplorer(createFakeIndex(), { kind: 'all' }, { helpHref: (v) => `/help/${v.kind}` });
     const help = await screen.findByRole('link', { name: 'Help' });

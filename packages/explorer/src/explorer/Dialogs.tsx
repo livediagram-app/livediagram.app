@@ -111,14 +111,30 @@ export function ExplorerDialogs() {
       return (
         <ConfirmDialog
           title="Empty the Trash?"
-          message="Everything in the Trash is deleted for good. This can’t be undone."
+          message={emptyTrashMessage(dialog, ctx.filter === 'app' ? ctx.words.lowerOne : null)}
           confirmLabel="Empty Trash"
           onCancel={close}
           onConfirm={() => {
             close();
-            void actions.emptyTrash();
+            void actions.emptyTrash({
+              teamId: dialog.teamId,
+              app: ctx.filter === 'app' ? ctx.app : null,
+            });
           }}
         />
       );
   }
+}
+
+/** What emptying this Trash deletes: whose, and of which kind when the Explorer shows one app's. */
+export function emptyTrashMessage(
+  target: { teamId: string | null; title: string },
+  // The one app's kind ("plan") while the Explorer shows one app's items; null for every app's.
+  kind: string | null,
+): string {
+  const what = kind ? `Every ${kind} in` : 'Everything in';
+  if (target.teamId) {
+    return `${what} ${target.title}’s Trash is deleted for good, for the whole team. This can’t be undone.`;
+  }
+  return `${what} your Trash is deleted for good. This can’t be undone.`;
 }

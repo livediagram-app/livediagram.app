@@ -6,7 +6,7 @@
 // a stable function, so memoised rows keep their props.
 
 import { useMemo } from 'react';
-import type { IndexClient, Item } from '@liveworkspace/index-client';
+import type { App, IndexClient, Item } from '@liveworkspace/index-client';
 import type { ItemOverlay, ItemPatch } from './overlay';
 import { failureText } from './errors';
 import type { ToastApi } from '../ui/Toasts';
@@ -20,7 +20,8 @@ export type ItemActions = {
   purge: (item: Item) => Promise<boolean>;
   duplicate: (item: Item, title: string) => Promise<Item | null>;
   dismissShared: (item: Item) => Promise<boolean>;
-  emptyTrash: () => Promise<boolean>;
+  /** Empties one Trash: the person's own or a team's, of one app or (`app` null) every app's. */
+  emptyTrash: (where: { teamId: string | null; app: App | null }) => Promise<boolean>;
 };
 
 // The host's own Trash for an item it handles itself (the plan open in the editor, which must stop saving before it
@@ -150,9 +151,12 @@ export function createItemActions({
         () => client.removeShared(item.id),
         'Couldn’t remove it from Shared With Me.',
       ),
-    emptyTrash: async () => {
+    emptyTrash: async ({ teamId, app }) => {
       try {
-        const { purged } = await client.emptyTrash();
+        const query: { team?: string; app?: App } = {};
+        if (teamId) query.team = teamId;
+        if (app) query.app = app;
+        const { purged } = await client.emptyTrash(query);
         reloadLists();
         toast.show(purged === 1 ? 'Deleted 1 item for good.' : `Deleted ${purged} items for good.`);
         return true;

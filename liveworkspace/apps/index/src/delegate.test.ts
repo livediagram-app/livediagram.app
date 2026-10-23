@@ -62,14 +62,24 @@ describe('an app acting for a person', () => {
     expect(trash.items.map((i) => i.id)).toEqual([plan.id]);
   });
 
-  it('makes only its own kind, and may not empty a Trash that holds every app’s items', async () => {
+  it('makes only its own kind, and empties only its own kind from the Trash', async () => {
     const made = await asDelegate('/items', { method: 'POST', body: { app: 'liveplanner' } });
     expect(made.status).toBe(201);
-    expect((await body<{ item: Item }>(made)).item.ownerId).toBe('user_a');
+    const madeItem = (await body<{ item: Item }>(made)).item;
+    expect(madeItem.ownerId).toBe('user_a');
     const other = await asDelegate('/items', { method: 'POST', body: { app: 'livediagram' } });
     expect(other.status).toBe(403);
     expect(await body(other)).toEqual({ error: 'wrong_app' });
-    expect((await asDelegate('/trash', { method: 'DELETE' })).status).toBe(403);
+    // Its lists, the Trash among them, are its own app's: emptying it leaves every other app's items.
+    const ada = await person('user_a');
+    const canvas = await makeItem(ada.auth, { app: 'livediagram' });
+    await call(`/items/${canvas.id}`, { method: 'DELETE', auth: ada.auth });
+    await asDelegate(`/items/${madeItem.id}`, { method: 'DELETE' });
+    const emptied = await asDelegate('/trash?app=livediagram', { method: 'DELETE' });
+    expect(await body(emptied)).toEqual({ purged: 1 });
+    expect(h.db.sql.prepare('SELECT id FROM items WHERE app = ?').all('livediagram')).toEqual([
+      { id: canvas.id },
+    ]);
   });
 
   it('carries the teams it names, and only those', async () => {
