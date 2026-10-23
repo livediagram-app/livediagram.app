@@ -27,7 +27,7 @@ socket, the answers route, a look-only Viewer) are not derived here; their earli
 | `packages/project/src/participant-content.ts` (new)                                                           | The participant content rule: `applyParticipantOp`, `PARTICIPANT_ADDABLE_TYPES`, field sets    |
 | `packages/project/src/element-types.ts`, `validate.ts`                                                        | `addedBy?: string` on `StickyElement` and `TextElement`; validated                             |
 | `packages/project/src/collab-ledger.ts`                                                                       | `mergeLedgerAnswersIntoTab`: votes and responses only                                          |
-| `apps/api/migrations/0001_liveplanner_baseline.sql`                                                           | A `level` column on `share_links` and `shared_with`; `ws_tickets.adder_key`                    |
+| `apps/api/src/plan-room/plan-schema.ts`                                                                       | A `level` column on `share_links` and `shared_with`; `ws_tickets.adder_key`                    |
 | apps/api/src/share-link-row.ts (removed), db/ws-tickets.ts (removed), db/shared.ts (removed)                  | Readers through `parseStoredLevel`; the ticket's `adderKey`                                    |
 | apps/api/src/auth/project-access.ts (removed)                                                                 | Gates compare levels; `canParticipateProject`                                                  |
 | `apps/api/src/routes/context.ts`                                                                              | `gateParticipate` is the Participant check                                                     |

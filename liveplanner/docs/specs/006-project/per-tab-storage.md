@@ -41,7 +41,7 @@ CREATE TABLE tabs (
 
 A `tabs` row is the tab's body and nothing else. Which projects contain it, and its order and folder in each, live on the `project_tabs` link ([Tab ↔ project many-to-many](tab-project-many-to-many.md)). Nothing on the row points at a project, so nothing cascades from `projects` into `tabs`: removing a tab from a project, deleting a project and deleting an account each drop a tab explicitly once no project links it. `collab_actions` and `collab_threads` cascade from `tabs(id)`, so a dropped tab takes its index rows with it.
 
-The table is created by the baseline migration, `apps/api/migrations/0001_liveplanner_baseline.sql`.
+The table is created by the plan's schema, `apps/api/src/plan-room/plan-schema.ts`.
 
 `projects` keeps `id`, `owner_id`, `name`, `shareable`, `folder_id`, `saved_at`, `created_at`; the tab bodies live only in `tabs`.
 

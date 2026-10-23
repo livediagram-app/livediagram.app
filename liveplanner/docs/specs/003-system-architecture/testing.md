@@ -96,15 +96,13 @@ export default defineProject({ test: { environment: 'jsdom' } });
   with a base64 value decodes it, flips a bit, and re-encodes: the last
   base64 character carries padding bits, so editing the text can decode to the
   very same bytes.
-- **Two D1 doubles in `apps/api`.** `src/test-d1.ts` records which SQL ran
-  with which bindings, and has no schema. `src/test-sqlite-d1.ts` is a real
-  in-memory SQLite (`node:sqlite`) with every migration applied and foreign
-  keys on, as D1 has them. Use the second wherever the behaviour lives in the
-  schema: cascades, primary-key collisions, `INSERT OR IGNORE` outcomes. It also
-  carries the plans' schema (`plan-room/plan-schema.ts`) in the same database,
-  behind `env.PLAN_DB`, answers the `PLAN_ROOM` RPCs from it, and pushes each
-  plan's outbox before every D1 call, so a handler test reads D1 as it would be
-  once the push landed.
+- **The plans' storage in `apps/api` tests.** `src/test-sqlite-d1.ts` is a real
+  in-memory SQLite (`node:sqlite`) with the plans' schema (`plan-room/plan-schema.ts`)
+  and foreign keys on, as in a plan's Durable Object, behind `env.PLAN_DB`. Use it
+  wherever the behaviour lives in the schema: cascades, primary-key collisions,
+  `INSERT OR IGNORE` outcomes. It answers the `PLAN_ROOM` RPCs from the same tables,
+  keeps each person's workbench store in memory as `env.WORKBENCH`, and `flush` drains
+  what the plans owe the index.
 - **A plan's own Durable Object in tests.** `src/test-plan-sql.ts` puts
   `ctx.storage.sql` (`exec`) and `transactionSync` over `node:sqlite`, and
   `vitest.config.ts` aliases `cloudflare:workers` to a stub base class, so

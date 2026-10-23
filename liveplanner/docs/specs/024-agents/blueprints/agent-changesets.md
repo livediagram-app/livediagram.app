@@ -21,7 +21,7 @@ Scope, by file:
 | `packages/project/src/element-fingerprint.ts`                                     | `canonicalElementJson`, `elementFingerprint`                                                                                    |
 | `packages/project/src/comments.ts`                                                | Exports `LIVE_ELEMENT_FIELDS`; `opForTheWire` strips comment author ids from a `changeset` op                                   |
 | `packages/project/src/element-ops.ts`                                             | `invertElementOps(before, ops)`, shared by the engine and the revert                                                            |
-| `apps/api/migrations/0001_liveplanner_baseline.sql`                               | `tabs.rev`, the `tabs_rev_advances` trigger, `agent_changesets`, `agent_changeset_parts`                                        |
+| `apps/api/src/plan-room/plan-schema.ts`                                           | `tabs.rev`, the `tabs_rev_advances` trigger, `agent_changesets`, `agent_changeset_parts`                                        |
 | `apps/api/src/tab-row.ts`                                                         | `TabRow.rev`; `rowToTab` returns it                                                                                             |
 | `apps/api/src/db/tabs.ts`                                                         | `getTab` reads `rev`; `upsertTab`, `seedTabs`, `swapTabData` advance it; new `upsertTabAtRev`, `renameTab`                      |
 | `apps/api/src/db/projects.ts`                                                     | The copy's tab insert starts at `rev` 1                                                                                         |

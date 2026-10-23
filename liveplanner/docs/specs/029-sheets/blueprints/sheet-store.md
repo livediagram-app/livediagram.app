@@ -17,7 +17,7 @@ writes are the engine's ([sheets-engine](sheets-engine.md#writes-storets)); this
 
 ## Data and persistence: D1
 
-The baseline migration, `apps/api/migrations/0001_liveplanner_baseline.sql`:
+The plan's schema, `apps/api/src/plan-room/plan-schema.ts`:
 
 ```sql
 CREATE TABLE sheets (
