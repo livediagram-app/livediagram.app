@@ -18,6 +18,7 @@ import { runLifecycle, sendWelcomes, takeWelcomes, type SendEmail } from './life
 import { sweepInvitations } from './teams.ts';
 import { sweepExpiringTokens } from './token-expiry.ts';
 import { flushServerEvents, flushServerEventsAfter } from './telemetry.ts';
+import { WORKSPACE_TOKEN_PATH, workspaceToken } from './workspace-token.ts';
 
 // The accounts API. Only the paths routed to this Worker reach it (wrangler.toml): /api/auth/*,
 // /api/account/* (teams and API tokens, account-api.ts) and the two discovery documents. Every page, the sign-in pages included, is the static site's
@@ -35,6 +36,10 @@ export default {
           return Response.json({ error: 'rate_limited' }, { status: 429 });
         }
         return guestHandoff(request, env, getAuth(env));
+      }
+      // liveworkspace.app's own Explorer: a short-lived token for the session's account or the browser's guest.
+      if (pathname === `${AUTH_BASE_PATH}${WORKSPACE_TOKEN_PATH}`) {
+        return workspaceToken(request, env, getAuth(env));
       }
       // Discovery at the root as well as under the issuer path, for clients that only look
       // at the origin (RFC 8414 §3 and OIDC Discovery §4 disagree on where it lives).
