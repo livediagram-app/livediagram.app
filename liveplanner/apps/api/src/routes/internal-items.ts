@@ -6,12 +6,13 @@
 // Each is a call to the plan's Durable Object (plan-client.ts). Where the plan is filed, its sharing and its
 // Trash are the index's; a purge also drops what the api keeps about the plan beside it (db/projects.ts
 // `purgePlanRows`). A notice is worked out off the index's path: a share link made (the first-share milestone),
-// or someone's first time in through a link (the owner's "someone joined" email).
-import { handleInternalItems as handle } from '@liveworkspace/index-app';
+// or someone's first time in through a link (the owner's "someone joined" email, and Project·Joined).
+import { JOINED_TELEMETRY_TYPE, handleInternalItems as handle } from '@liveworkspace/index-app';
 import { notifyFirstShare } from '../email/notifications';
 import { deleteAccount } from '../db/account';
 import { purgePlanRows } from '../db/projects';
 import { planRoom } from '../plan-client';
+import { reportServerEvent } from '../server-telemetry';
 import type { Env } from '../types';
 
 export function handleInternalItems(
@@ -30,10 +31,14 @@ export function handleInternalItems(
       // A rescoped link (another level or tab) reloads its visitors into what it now opens; a revoked one sends
       // them away.
       revoke: (id, codes, reason) => planRoom(env, id).revokeCodes(codes, reason),
+      // Someone's first time in through a link: the owner's email, and Project·Joined by the link's level.
       notice: (id, notice) =>
         notice.type === 'shared'
           ? notifyFirstShare(env, notice.actorId)
-          : planRoom(env, id).joined(notice.personId),
+          : Promise.all([
+              planRoom(env, id).joined(notice.personId),
+              reportServerEvent(env, 'Project', 'Joined', JOINED_TELEMETRY_TYPE[notice.level]),
+            ]),
       // A closed account, wherever it was closed: what liveplanner keeps for them beside their plans (their
       // workbench, what they had seen of forms), and their name off each plan of someone else's that names them.
       personClosed: (personId) => deleteAccount(env, personId),

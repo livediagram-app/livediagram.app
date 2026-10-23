@@ -13,6 +13,7 @@ import {
   ELEMENTS_ADDED,
   EMAILS_SENT,
   EMBEDS_AND_WORKBENCH,
+  JOINING,
   EXCEPTIONS,
   FAILED_REQUESTS,
   FORMS,
@@ -92,7 +93,7 @@ export const GROUPS: MetricGroup[] = [
   // session tools, so read them against it.
   {
     title: 'Collaboration',
-    metrics: [LIVE_TOGETHER, EMBEDS_AND_WORKBENCH, VOTING],
+    metrics: [LIVE_TOGETHER, JOINING, EMBEDS_AND_WORKBENCH, VOTING],
   },
   {
     title: 'Connections',

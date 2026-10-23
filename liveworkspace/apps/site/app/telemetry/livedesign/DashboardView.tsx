@@ -4,6 +4,7 @@ import type { TelemetrySummary, TelemetryWindowKey } from '@livedesign/api-schem
 import {
   ACCOUNT_ACTIVITY,
   AGENT_VIEWED,
+  JOINING,
   ALL_VISITORS,
   CANVAS_MODES,
   CLI_COMMANDS_STACK,
@@ -83,7 +84,7 @@ export const GROUPS: MetricGroup[] = [
   // so read them against it.
   {
     title: 'Collaboration',
-    metrics: [LIVE_TOGETHER, SHARING_AND_JOINING, TIMELINE_AND_ACTIVITY, PRESENTATIONS],
+    metrics: [LIVE_TOGETHER, JOINING, SHARING_AND_JOINING, TIMELINE_AND_ACTIVITY, PRESENTATIONS],
   },
   {
     title: 'Connections',

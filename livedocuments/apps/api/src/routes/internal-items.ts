@@ -7,13 +7,14 @@
 // Trash are the index's; a purge also drops what the api keeps about the document beside it (db/documents.ts
 // `purgeDocumentRows`). A notice is worked out off the index's path: a share link made (the first-share milestone),
 // or someone's first time in through a link (the owner's "someone joined" email).
-import { handleInternalItems as handle } from '@liveworkspace/index-app';
+import { JOINED_TELEMETRY_TYPE, handleInternalItems as handle } from '@liveworkspace/index-app';
 import { notifyFirstShare } from '../email/notifications';
 import { deleteAccount } from '../db/account';
 import { purgeDocumentRows } from '../db/documents';
 import { forgetImageRefs } from '../document-room/document-outbox';
 import { mediaClient, mediaOwner } from '../media';
 import { documentRoom } from '../document-client';
+import { reportServerEvent } from '../server-telemetry';
 import type { Env } from '../types';
 
 export function handleInternalItems(
@@ -36,7 +37,11 @@ export function handleInternalItems(
       notice: (id, notice) =>
         notice.type === 'shared'
           ? notifyFirstShare(env, notice.actorId)
-          : documentRoom(env, id).joined(notice.personId),
+          : // Someone's first time in through a link: the owner's email, and Document·Joined by the link's level.
+            Promise.all([
+              documentRoom(env, id).joined(notice.personId),
+              reportServerEvent(env, 'Document', 'Joined', JOINED_TELEMETRY_TYPE[notice.level]),
+            ]),
       // A closed account, wherever it was closed: what livedocuments keeps for them beside their documents (their
       // images and their workbench), and their name off each document of someone else's that names them.
       personClosed: async (personId) => void (await deleteAccount(env, personId)),

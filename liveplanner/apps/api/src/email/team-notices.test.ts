@@ -203,6 +203,17 @@ describe('someone joined my plan', () => {
     expect(sent()[0]!.html).toContain('Roadmap');
   });
 
+  it('counts each first visit as Project·Joined by the link level', async () => {
+    db.env.TELEMETRY_ENABLED = 'true';
+    db.env.TELEMETRY_KEY = 'k';
+    await notice('d1', { type: 'joined', personId: BOB, level: 'edit' });
+    await notice('d1', { type: 'joined', personId: 'guest_x', level: 'participate' });
+    expect(fake.telemetry).toEqual([
+      { category: 'Project', action: 'Joined', type: 'Edit' },
+      { category: 'Project', action: 'Joined', type: 'Participate' },
+    ]);
+  });
+
   it("respects the owner's switch, kept for liveplanner", async () => {
     fake.settings.set(OWNER, { all: {}, app: { notifyProjectJoin: false } });
     await notice('d1', { type: 'joined', personId: BOB, level: 'edit' });

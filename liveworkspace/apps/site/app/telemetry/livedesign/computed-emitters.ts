@@ -16,6 +16,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { platformComputedEmitters } from '../platform-emitters';
 import {
+  LEVEL_TELEMETRY_TYPE,
   ALL_CTA_SOURCES,
   ALL_TIMING_TYPES,
   pascalToken,
@@ -250,6 +251,11 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   ...platformComputedEmitters(isValidTelemetryEvent),
   // The api worker.
   'apps/api/src/email/client.ts Email·Sent': { values: EMAIL_KINDS },
+  // Someone's first time in through a link, by its level (@liveworkspace/index-app JOINED_TELEMETRY_TYPE, the
+  // same table as the api schema's).
+  'apps/api/src/routes/internal-items.ts Document·Joined': {
+    values: Object.values(LEVEL_TELEMETRY_TYPE),
+  },
   'apps/api/src/email/client.ts Error·Api': {
     values: ['Http500.SendEmail', 'Http429.SendEmail'],
     open: 'Http<status>.SendEmail, any status Resend answers',

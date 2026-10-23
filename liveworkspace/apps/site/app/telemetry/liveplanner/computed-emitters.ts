@@ -18,6 +18,7 @@ import { platformComputedEmitters } from '../platform-emitters';
 import {
   ALL_CTA_SOURCES,
   ALL_TIMING_TYPES,
+  LEVEL_TELEMETRY_TYPE,
   SHEET_CHANGE_KINDS,
   pascalToken,
   isValidTelemetryEvent,
@@ -165,6 +166,11 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   ...platformComputedEmitters(isValidTelemetryEvent),
   // The api worker.
   'apps/api/src/email/client.ts Email·Sent': { values: EMAIL_KINDS },
+  // Someone's first time in through a link, by its level (@liveworkspace/index-app JOINED_TELEMETRY_TYPE, the
+  // same table as the api schema's).
+  'apps/api/src/routes/internal-items.ts Project·Joined': {
+    values: Object.values(LEVEL_TELEMETRY_TYPE),
+  },
   'apps/api/src/email/client.ts Error·Api': {
     values: ['Http500.SendEmail', 'Http429.SendEmail'],
     open: 'Http<status>.SendEmail, any status Resend answers',

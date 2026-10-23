@@ -188,6 +188,42 @@ export const LIVE_TOGETHER: MetricStack = {
   headline: MULTIPLAYER_SESSIONS,
 };
 
+export const COLLABORATORS_JOINED: Metric = {
+  category: 'Document',
+  action: 'Joined',
+  type: 'Edit',
+  title: 'Collaborators Joined',
+  blurb:
+    'People who came into a design through an edit link. Counted once per person per design, not on every revisit.',
+};
+
+export const PARTICIPANTS_JOINED: Metric = {
+  category: 'Document',
+  action: 'Joined',
+  type: 'Participate',
+  title: 'Participants Joined',
+  blurb:
+    'People who came into a design through a Participant link. Counted once per person per design, not on every revisit.',
+};
+
+export const VIEWERS_JOINED: Metric = {
+  category: 'Document',
+  action: 'Joined',
+  type: 'View',
+  title: 'Viewers Joined',
+  blurb:
+    'People who came into a design through a view-only link. Counted once per person per design, not on every revisit.',
+};
+
+export const JOINING: MetricStack = {
+  stack: true,
+  title: 'Joining',
+  blurb:
+    'The people who came into a design through an edit, Participant or view link, the first time each.',
+  members: [COLLABORATORS_JOINED, PARTICIPANTS_JOINED, VIEWERS_JOINED],
+  headline: [COLLABORATORS_JOINED, PARTICIPANTS_JOINED, VIEWERS_JOINED],
+};
+
 export const SHARING_AND_JOINING: MetricStack = {
   stack: true,
   title: 'Sharing & Embeds',
@@ -222,8 +258,7 @@ export const DISCUSSION: MetricStack = {
 export const TEAM_ACTIVITY: MetricStack = {
   stack: true,
   title: 'Team Activity',
-  blurb:
-    'Designs shared to a team. Teams, members and invitations are run on liveworkspace.app.',
+  blurb: 'Designs shared to a team. Teams, members and invitations are run on liveworkspace.app.',
   members: [DESIGNS_SHARED_TO_A_TEAM],
   headline: DESIGNS_SHARED_TO_A_TEAM,
 };

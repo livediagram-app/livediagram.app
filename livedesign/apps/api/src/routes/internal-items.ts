@@ -7,12 +7,13 @@
 // Trash are the index's; a purge also drops what the api keeps about the design beside it (db/designs.ts
 // `purgeDesignRows`). A notice is worked out off the index's path: a share link made (the first-share milestone),
 // or someone's first time in through a link (the owner's "someone joined" email).
-import { handleInternalItems as handle } from '@liveworkspace/index-app';
+import { JOINED_TELEMETRY_TYPE, handleInternalItems as handle } from '@liveworkspace/index-app';
 import { notifyFirstShare } from '../email/notifications';
 import { deleteAccount } from '../db/account';
 import { mergeMediaOwner } from '../media';
 import { purgeDesignRows } from '../db/designs';
 import { designRoom } from '../design-client';
+import { reportServerEvent } from '../server-telemetry';
 import type { Env } from '../types';
 
 export function handleInternalItems(
@@ -34,7 +35,11 @@ export function handleInternalItems(
       notice: (id, notice) =>
         notice.type === 'shared'
           ? notifyFirstShare(env, notice.actorId)
-          : designRoom(env, id).joined(notice.personId),
+          : // Someone's first time in through a link: the owner's email, and Document·Joined by the link's level.
+            Promise.all([
+              designRoom(env, id).joined(notice.personId),
+              reportServerEvent(env, 'Document', 'Joined', JOINED_TELEMETRY_TYPE[notice.level]),
+            ]),
       // A closed account, wherever it was closed: what livedesign keeps for them beside their designs (their images
       // and their workbench), and their name off each design of someone else's that names them.
       personClosed: (personId) => deleteAccount(env, personId),

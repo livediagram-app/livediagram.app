@@ -190,6 +190,42 @@ export const LIVE_TOGETHER: MetricStack = {
   headline: MULTIPLAYER_SESSIONS,
 };
 
+export const COLLABORATORS_JOINED: Metric = {
+  category: 'Document',
+  action: 'Joined',
+  type: 'Edit',
+  title: 'Collaborators Joined',
+  blurb:
+    'People who came into a document through an edit link. Counted once per person per document, not on every revisit.',
+};
+
+export const PARTICIPANTS_JOINED: Metric = {
+  category: 'Document',
+  action: 'Joined',
+  type: 'Participate',
+  title: 'Participants Joined',
+  blurb:
+    'People who came into a document through a Participant link. Counted once per person per document, not on every revisit.',
+};
+
+export const VIEWERS_JOINED: Metric = {
+  category: 'Document',
+  action: 'Joined',
+  type: 'View',
+  title: 'Viewers Joined',
+  blurb:
+    'People who came into a document through a view-only link. Counted once per person per document, not on every revisit.',
+};
+
+export const JOINING: MetricStack = {
+  stack: true,
+  title: 'Joining',
+  blurb:
+    'The people who came into a document through an edit, Participant or view link, the first time each.',
+  members: [COLLABORATORS_JOINED, PARTICIPANTS_JOINED, VIEWERS_JOINED],
+  headline: [COLLABORATORS_JOINED, PARTICIPANTS_JOINED, VIEWERS_JOINED],
+};
+
 export const SHARING_AND_EMBEDS: MetricStack = {
   stack: true,
   title: 'Sharing & Embeds',

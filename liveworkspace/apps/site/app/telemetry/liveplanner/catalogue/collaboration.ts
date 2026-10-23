@@ -37,6 +37,33 @@ export const COMMENTS_REOPENED = chart(
   { rising: 'neutral' },
 );
 
+export const PARTICIPANTS_JOINED: Metric = {
+  category: 'Project',
+  action: 'Joined',
+  type: 'Participate',
+  title: 'Participants Joined',
+  blurb:
+    'People who came into a project through a Participant link. Counted once per person per project, not on every revisit.',
+};
+
+export const COLLABORATORS_JOINED: Metric = {
+  category: 'Project',
+  action: 'Joined',
+  type: 'Edit',
+  title: 'Collaborators Joined',
+  blurb:
+    'People who came into a project through an edit link. Counted once per person per project, not on every revisit.',
+};
+
+export const VIEWERS_JOINED: Metric = {
+  category: 'Project',
+  action: 'Joined',
+  type: 'View',
+  title: 'Viewers Joined',
+  blurb:
+    'People who came into a project through a view-only link. Counted once per person per project, not on every revisit.',
+};
+
 export const EMBEDS_VIEWED = chart(
   'Session',
   'Opened',
@@ -459,6 +486,15 @@ export const LIVE_TOGETHER: MetricStack = {
   blurb: 'Two or more people on one canvas at the same moment.',
   members: [MULTIPLAYER_SESSIONS],
   headline: MULTIPLAYER_SESSIONS,
+};
+
+export const JOINING: MetricStack = {
+  stack: true,
+  title: 'Joining',
+  blurb:
+    'The people who came into a project through an edit, Participant or view link, the first time each.',
+  members: [COLLABORATORS_JOINED, PARTICIPANTS_JOINED, VIEWERS_JOINED],
+  headline: [COLLABORATORS_JOINED, PARTICIPANTS_JOINED, VIEWERS_JOINED],
 };
 
 export const EMBEDS_AND_WORKBENCH: MetricStack = {

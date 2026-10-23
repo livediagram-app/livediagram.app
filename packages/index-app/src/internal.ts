@@ -14,9 +14,18 @@
 //
 // The app supplies what each does to its own content (`InternalItemHandlers`); a door with no handler is a 404.
 
-import { parseItemNotice, type ItemNotice } from '@liveworkspace/index-client';
+import { parseItemNotice, type ItemNotice, type Level } from '@liveworkspace/index-client';
 import { BULK_PURGE_MAX, purgeEach } from './purge';
 import { bearerMatches } from './timing-safe';
+
+// The telemetry type a `joined` notice is counted under: `<Noun>·Joined·Edit|Participate|View`, once per person and
+// item (the index sends the notice the first time someone comes in through a link). Every app reports it from its
+// `notice` handler with its own noun (Project, Document, Design).
+export const JOINED_TELEMETRY_TYPE: Record<Level, 'View' | 'Participate' | 'Edit'> = {
+  view: 'View',
+  participate: 'Participate',
+  edit: 'Edit',
+};
 
 const MAX_ID = 200;
 const MAX_CODES = 500;

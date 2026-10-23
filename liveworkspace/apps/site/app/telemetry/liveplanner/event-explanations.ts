@@ -115,6 +115,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Project|Created|Offline': 'A brand-new project was created.',
   'Project|Deleted|': 'A project was deleted.',
   'Project|Duplicated|Copy': 'A project was duplicated into a new one.',
+  'Project|Joined|Edit':
+    'Someone came into a project through an edit-role share link. Counted once per person per project, not on every revisit.',
+  'Project|Joined|Participate':
+    'Someone came into a project through a Participant share link. Counted once per person per project, not on every revisit.',
   'Project|Loaded|':
     'A project was opened, counted on every open (including a page refresh and the first open of a project just created).',
   'Project|Moved|SavedToCloud':
@@ -2179,6 +2183,8 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Project|Deleted': 'A project was deleted.',
   'Project|Exported': 'Someone exported a tab, a selection or a page to a file or the clipboard.',
   'Project|Duplicated': 'A project was duplicated into a new one.',
+  'Project|Joined':
+    'Someone came into a project through a share link. Counted once per person per project, not on every revisit.',
   'Project|Loaded':
     'A project was opened, counted on every open (including a page refresh and the first open of a project just created).',
   'Project|Moved': 'A project was moved into (or out of) a folder.',

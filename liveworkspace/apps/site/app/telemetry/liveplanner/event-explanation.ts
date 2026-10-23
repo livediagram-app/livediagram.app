@@ -47,6 +47,8 @@ function pattern(category: string, action: string, type: string): string | null 
       return `Someone added ${withArticle(words(type))} to the canvas.`;
     case 'Project|Exported':
       return `Someone exported a tab as ${type}.`;
+    case 'Project|Joined':
+      return `Someone came into a project through ${withArticle(`${words(type)}-role`)} share link. Counted once per person per project, not on every revisit.`;
     case 'Tab|Imported':
       return `Someone imported a tab from ${withArticle(type)} file.`;
     case 'Theme|Changed':
