@@ -15,7 +15,7 @@ function assertTabDataFits(tabId: string, data: string, write: string): void {
   throw new TabTooLargeError(tabId, bytes, write);
 }
 import type { PlanEnv, TabDTO } from '../types';
-import { tabStatsOf, tabStatsStatement, type TabStats } from './tab-stats';
+import { storedTabStatsOf, tabStatsStatement, type StoredTabStats } from './tab-stats';
 import { sheetRefIds, sheetRefReplaceStatements, sheetSettleStatements } from './sheet-refs';
 
 export async function getTab(env: PlanEnv, projectId: string, tabId: string): Promise<TabDTO | null> {
@@ -228,7 +228,7 @@ export function tabWriteStatements(
     ).bind(projectId, id, orderIndex, now),
     // The Details view's numbers (docs/specs/013-workspace/explorer-details-view.md), from the body
     // just stored, after the tabs upsert, which the row's FK needs.
-    tabStatsStatement(env, id, tabStatsOf(rest, data), now),
+    tabStatsStatement(env, id, storedTabStatsOf(rest, data), now),
     // The Explorer's "Updated X ago" line. Pure metadata write — no element JSON. The collaboration
     // index (docs/specs/013-workspace/inbox.md §2.1) and the listing summary follow from the outbox the
     // triggers fill in this same transaction (plan-room/plan-outbox.ts).
@@ -333,7 +333,7 @@ export async function seedTabs(
          VALUES (?, ?, ?, ?)
          ON CONFLICT (plan_id, tab_id) DO UPDATE SET order_index = excluded.order_index`,
       ).bind(projectId, id, idx, now),
-      tabStatsStatement(env, id, tabStatsOf(rest, data), now),
+      tabStatsStatement(env, id, storedTabStatsOf(rest, data), now),
     ];
   });
   stmts.push(
@@ -442,9 +442,9 @@ export async function swapTabData(
   tabId: string,
   expectedData: string,
   nextData: string,
-  // `nextData`'s stats (tabStatsOf), from the tab the caller parsed to build it; its element count
+  // `nextData`'s stats (storedTabStatsOf), from the tab the caller parsed to build it; its element count
   // is also the tab's element_count.
-  nextStats: TabStats,
+  nextStats: StoredTabStats,
 ): Promise<boolean> {
   assertTabDataFits(tabId, nextData, 'swapTabData');
   const now = Date.now();

@@ -260,6 +260,15 @@ How an app takes the grant is its own business; liveplanner's is the first, and 
   on; one with another level or tab closes the socket (4005) so it reconnects as what it now is; none in
   time closes it (4007). Revoking a link closes the sockets that link admitted.
 
+### An item's tabs
+
+`GET /api/<items>/:id/tabs` on the app (`@liveworkspace/index-app` `tabs.ts`) answers `{tabs: [{id, name, kind}]}`
+in the item's order, gated like a read of the item (a miss is 404, a grant confined to one tab sees that tab
+alone), private and never cached. The Share dialog on liveworkspace.app reads it once per open for its tab picker,
+from the address the sites registry gives (`itemTabsPath`), rather than the whole item. The app answers it from its
+tab rows alone, never a tab's content: liveplanner keeps each tab's kind beside its stats at every write
+(`tab_stats.kind`). An app that does not serve it yet is read whole, as before.
+
 ## What an item pushes
 
 Items push only what is derived from their content, from their Durable Object, on idle, at most once a

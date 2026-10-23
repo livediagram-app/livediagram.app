@@ -144,7 +144,8 @@ lives here once, rather than at each app's `/explorer`. The apps' Explorer links
   browser's guest cookie, rate limited ([accounts.md](accounts.md)).
 - **Sharing.** The Share dialog makes and revokes passes through the index, and its extras come from the item's
   app's registry entry (`share` in `APP_ITEMS`): the tab picker (the item's tabs, read once per open from the
-  app's `tabsPath` with the workspace token), the embed code and the live image. Its help links go to the app's
+  app's `tabsPath` with the workspace token: the tabs alone, id, name and kind, where the app serves them, as
+  liveplanner does), the embed code and the live image. Its help links go to the app's
   help on sharing.
 - **Guests.** A guest sees a sign-in banner at the foot of the page, with Sign In, Learn More (why an account
   helps, loaded on first press) and a close this browser remembers, one for every app.

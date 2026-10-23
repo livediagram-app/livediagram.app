@@ -43,7 +43,13 @@ function arrange() {
     tabStatsStatement(
       db.env,
       tabId,
-      { mode: mode as 'plan', elementCount: elements, commentCount: comments, dataBytes: bytes },
+      {
+        mode: mode as 'plan',
+        elementCount: elements,
+        commentCount: comments,
+        dataBytes: bytes,
+        kind: 'diagram',
+      },
       at,
     ).run();
   return { db, doc, tab, stats };
@@ -112,16 +118,22 @@ describe('readProjectStats', () => {
 
 describe('tabStatsOfData', () => {
   it('counts a stored body', () => {
-    const data = JSON.stringify({ elements: [{ id: 'a' }] });
+    const data = JSON.stringify({ kind: 'board', elements: [{ id: 'a' }] });
     expect(tabStatsOfData(data)).toEqual({
-      stats: { mode: 'plan', elementCount: 1, commentCount: 0, dataBytes: data.length },
+      stats: {
+        mode: 'plan',
+        kind: 'board',
+        elementCount: 1,
+        commentCount: 0,
+        dataBytes: data.length,
+      },
       corrupt: false,
     });
   });
 
   it('counts a corrupt body as an empty tab, its bytes measured', () => {
     expect(tabStatsOfData('{not json')).toEqual({
-      stats: { mode: 'plan', elementCount: 0, commentCount: 0, dataBytes: 9 },
+      stats: { mode: 'plan', kind: 'diagram', elementCount: 0, commentCount: 0, dataBytes: 9 },
       corrupt: true,
     });
     expect(tabStatsOfData('null').corrupt).toBe(true);

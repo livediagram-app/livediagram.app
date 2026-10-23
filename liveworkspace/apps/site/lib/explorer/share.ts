@@ -4,7 +4,7 @@
 // any of the apps' code: each app says in the sites registry (`APP_ITEMS[app].share`) where it serves a pass's embed
 // and live image, where an item's tabs are read (so a pass can open one), and its help articles on sharing. The tabs
 // are read once, when the dialog opens, with the person's workspace token (and the item's share code when it was
-// reached through a link), as the previews are.
+// reached through a link), as the previews are: the tabs alone where the app serves them, never the whole item.
 
 import type { ShareHandOver, ShareHelpHref, ShareHost } from '@liveworkspace/explorer';
 import type { Item } from '@liveworkspace/index-client';
@@ -34,8 +34,9 @@ export function handOverFor(app: AppName): ShareHandOver | undefined {
   };
 }
 
-/** An item's tabs, as its app's API answers the workspace token; none when the app keeps them to itself or the read
- *  fails (a pass then opens every tab). */
+/** An item's tabs, as its app's API answers the workspace token: the tabs alone where the app serves them (an app on
+ *  the index kit, `{ tabs }`), else its item read (`{ [tabsKey]: { tabs } }`). None when the app keeps them to itself
+ *  or the read fails (a pass then opens every tab). */
 export async function loadTabsOf(
   item: Pick<Item, 'app' | 'id' | 'sharedVia'>,
   doFetch: typeof fetch = fetch,
@@ -53,8 +54,9 @@ export async function loadTabsOf(
       credentials: 'omit',
     });
     if (!res.ok) return [];
-    const body = (await res.json()) as Record<string, { tabs?: unknown } | undefined>;
-    const tabs = body[tabsKey]?.tabs;
+    const body = (await res.json()) as { tabs?: unknown } & Record<string, unknown>;
+    const tabs =
+      tabsKey === null ? body.tabs : (body[tabsKey] as { tabs?: unknown } | undefined)?.tabs;
     if (!Array.isArray(tabs)) return [];
     return tabs.flatMap((tab: unknown) => {
       const t = tab as { id?: unknown; name?: unknown };

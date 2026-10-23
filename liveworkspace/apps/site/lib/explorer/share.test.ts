@@ -23,10 +23,10 @@ describe('the Share dialog’s extras on liveworkspace.app', () => {
     );
   });
 
-  it('reads an item’s tabs once from its app, with the token and its share code', async () => {
+  it('reads an item’s tabs alone, once, from its app, with the token and its share code', async () => {
     const fetch = vi.fn(async () =>
       Response.json({
-        project: { tabs: [{ id: 't1', name: 'Board' }, { id: 't2' }, { name: 'x' }] },
+        tabs: [{ id: 't1', name: 'Board', kind: 'board' }, { id: 't2', kind: null }, { name: 'x' }],
       }),
     );
     const tabs = await loadTabsOf({ app: 'liveplanner', id: 'p 1', sharedVia: 'code' }, fetch);
@@ -36,10 +36,20 @@ describe('the Share dialog’s extras on liveworkspace.app', () => {
     ]);
     expect(fetch).toHaveBeenCalledTimes(1);
     const [url, init] = fetch.mock.calls[0] as unknown as [string, RequestInit];
-    expect(url).toBe('https://www.liveplanner.app/api/projects/p%201');
+    // The tabs read (@liveworkspace/index-app tabs.ts), never the whole plan.
+    expect(url).toBe('https://www.liveplanner.app/api/projects/p%201/tabs');
     const headers = new Headers(init.headers);
     expect(headers.get('Authorization')).toBe('Bearer tok');
     expect(headers.get('X-Share-Code')).toBe('code');
+  });
+
+  it('reads the whole item from an app not yet serving its tabs alone', async () => {
+    const fetch = vi.fn(async () =>
+      Response.json({ document: { tabs: [{ id: 't1', name: 'Canvas' }] } }),
+    );
+    const tabs = await loadTabsOf({ app: 'livediagram', id: 'd1', sharedVia: null }, fetch);
+    expect(tabs).toEqual([{ id: 't1', name: 'Canvas' }]);
+    expect((fetch.mock.calls[0] as unknown as [string])[0]).toMatch(/\/api\/documents\/d1$/);
   });
 
   it('offers no tabs when the read fails, so a pass opens every tab', async () => {

@@ -15,7 +15,7 @@ import {
   type TabLedger,
 } from '@liveplanner/project';
 import { getTabData, swapTabData } from './db';
-import { tabStatsOf } from './db/tab-stats';
+import { storedTabStatsOf } from './db/tab-stats';
 import { TabTooLargeError } from './limits';
 import type { PlanEnv } from './types';
 
@@ -59,7 +59,7 @@ async function swapTab<T>(
         tabId,
         raw,
         nextData,
-        tabStatsOf(rest, nextData),
+        storedTabStatsOf(rest, nextData),
       );
     } catch (error) {
       if (error instanceof TabTooLargeError) return { ok: false, status: 413 };

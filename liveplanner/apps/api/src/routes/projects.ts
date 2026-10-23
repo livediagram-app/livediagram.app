@@ -12,8 +12,9 @@ import {
   type ItemTypeCatalogue,
 } from '@liveplanner/items';
 import type { Tab } from '@liveplanner/project';
-import { isValidTab, migrateIncomingTab } from '@liveplanner/project';
+import { isValidTab, migrateIncomingTab, tabKindOf } from '@liveplanner/project';
 import { IndexError, type ItemSource } from '@liveworkspace/index-client';
+import { itemTabsOf, itemTabsRequest, itemTabsResponse } from '@liveworkspace/index-app';
 import { capStoredName } from '../names';
 import { MAX_TAB_BYTES, TabTooLargeError, logTabRefused, tabDataBytes } from '../limits';
 import {
@@ -25,7 +26,15 @@ import {
   type CreationIntent,
 } from '@liveplanner/api-schema';
 import { getProject, readReorderEntries, reorderTabs, seedTabs } from '../db';
-import { badRequest, forbidden, json, notFound, payloadTooLarge, svgImage } from '../responses';
+import {
+  badRequest,
+  CORS_HEADERS,
+  forbidden,
+  json,
+  notFound,
+  payloadTooLarge,
+  svgImage,
+} from '../responses';
 import { projectDates, isProjectSource } from '@liveplanner/api-schema';
 import { projectImageSvg } from '../project-image';
 import { redactProjectForReader, redactProjectForScope } from '../redact-project';
@@ -39,7 +48,7 @@ import { hasTemplateSheets } from '@liveplanner/templates';
 import { materialiseTemplateSheets } from '@liveplanner/templates/template-sheets';
 import type { ProjectDTO } from '../types';
 import { notifyMilestone } from '../email/notifications';
-import { initPlan, readPlanMeta, renamePlan } from '../plan-room/plan-content';
+import { initPlan, readPlanMeta, readPlanTabs, renamePlan } from '../plan-room/plan-content';
 import { identityOf } from '../plan-room/plan-route';
 import { planRoom } from '../plan-client';
 import { INDEX_APP, indexFor, linkCodeOf, planGrantOf, verifyPlanGrant } from '../index-service';
@@ -212,6 +221,23 @@ async function projectThumbnail(ctx: PlanRouteContext, id: string): Promise<Resp
   }
   // The client cache-busts via a `?v=<savedAt>` query param, so a long private max-age is safe.
   return svgImage(svg, 'private, max-age=86400');
+}
+
+// /api/projects/<id>/tabs: the plan's tabs alone, `{ tabs: [{ id, name, kind }] }` (@liveworkspace/index-app
+// tabs.ts), for the Share dialog's tab picker on liveworkspace.app, which would otherwise read the whole plan. Gated
+// like a read: a miss is 404; a tab's share link sees its own tab alone. The kind is the plan's word for the tab
+// (board, sheet, dashboard, form, or diagram for an ordinary tab).
+async function projectTabs(ctx: PlanRouteContext, id: string): Promise<Response> {
+  const grant = await gateGrant(ctx, id);
+  if (!grant) return notFound();
+  const rows = await readPlanTabs(ctx.env, id);
+  if (rows.length === 0 && !(await readPlanMeta(ctx.env, id))) return notFound();
+  const tabs = rows.map((r) => ({
+    id: r.id,
+    name: r.name,
+    kind: tabKindOf({ kind: r.kind ?? undefined }),
+  }));
+  return itemTabsResponse(itemTabsOf(tabs, grant.tabScope), CORS_HEADERS);
 }
 
 // Everything about one plan, inside its Durable Object (plan-room/plan-route.ts).
@@ -414,6 +440,10 @@ export async function handlePlanRequest(ctx: PlanRouteContext): Promise<Response
   if (segments.length === 4 && segments[3] === 'thumbnail' && request.method === 'GET') {
     return projectThumbnail(ctx, segments[2]!);
   }
+
+  // /api/projects/<id>/tabs
+  const tabsOf = itemTabsRequest(request.method, segments, 'projects');
+  if (tabsOf) return projectTabs(ctx, tabsOf);
 
   // /api/projects/<id>
   if (segments.length === 3) {

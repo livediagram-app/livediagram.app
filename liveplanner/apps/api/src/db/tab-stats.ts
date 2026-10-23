@@ -2,22 +2,37 @@
 // from"): per tab, what the Explorer's Details view sums over a project, kept in `tab_stats`
 // beside each tab so a project list reads them without reading any tab body.
 import type { ProjectStats } from '@liveplanner/api-schema';
-import { parseEditorMode, tabStatsOf, type TabStats } from '@liveplanner/project';
+import {
+  parseEditorMode,
+  tabKindOf,
+  tabStatsOf,
+  type TabKind,
+  type TabStats,
+} from '@liveplanner/project';
 import type { PlanEnv } from '../types';
 
 // The counting itself is the project model's, shared with the browser's own projects.
 export { tabStatsOf, type TabStats };
 
+// What a tab write keeps beside its body: the Details view's numbers, and the tab's kind, so the tab picker's read
+// (`GET /api/projects/:id/tabs`) names each tab's kind without parsing any body.
+export type StoredTabStats = TabStats & { kind: TabKind };
+
+export function storedTabStatsOf(body: object, data: string): StoredTabStats {
+  return { ...tabStatsOf(body, data), kind: tabKindOf(body) };
+}
+
 // A stored body's stats, parsing it. A body that is not a JSON object counts as an empty Diagram
 // tab, its bytes still measured, and says so (`corrupt`), so a caller can log it and never retry.
-export function tabStatsOfData(data: string): { stats: TabStats; corrupt: boolean } {
+export function tabStatsOfData(data: string): { stats: StoredTabStats; corrupt: boolean } {
   try {
     const body: unknown = JSON.parse(data);
-    if (body && typeof body === 'object') return { stats: tabStatsOf(body, data), corrupt: false };
+    if (body && typeof body === 'object')
+      return { stats: storedTabStatsOf(body, data), corrupt: false };
   } catch {
     // Counted empty below.
   }
-  return { stats: tabStatsOf({}, data), corrupt: true };
+  return { stats: storedTabStatsOf({}, data), corrupt: true };
 }
 
 // The upsert every tab write batches after its `tabs` statement (the foreign key needs the row).
@@ -26,19 +41,20 @@ export function tabStatsOfData(data: string): { stats: TabStats; corrupt: boolea
 export function tabStatsStatement(
   env: PlanEnv,
   tabId: string,
-  stats: TabStats,
+  stats: StoredTabStats,
   writtenAt: number,
   ifStoredData?: string,
 ): D1PreparedStatement {
   const guard =
     ifStoredData === undefined
       ? 'WHERE true'
-      : 'WHERE EXISTS (SELECT 1 FROM tabs WHERE id = ?1 AND data = ?7)';
+      : 'WHERE EXISTS (SELECT 1 FROM tabs WHERE id = ?1 AND data = ?8)';
   return env.PLAN_DB.prepare(
-    `INSERT INTO tab_stats (tab_id, mode, element_count, comment_count, data_bytes, written_at)
-     SELECT ?1, ?2, ?3, ?4, ?5, ?6 ${guard}
+    `INSERT INTO tab_stats (tab_id, mode, element_count, comment_count, data_bytes, written_at, kind)
+     SELECT ?1, ?2, ?3, ?4, ?5, ?6, ?7 ${guard}
      ON CONFLICT(tab_id) DO UPDATE SET
        mode = excluded.mode,
+       kind = excluded.kind,
        element_count = excluded.element_count,
        comment_count = excluded.comment_count,
        data_bytes = excluded.data_bytes,
@@ -50,6 +66,7 @@ export function tabStatsStatement(
     stats.commentCount,
     stats.dataBytes,
     writtenAt,
+    stats.kind,
     ...(ifStoredData === undefined ? [] : [ifStoredData]),
   );
 }

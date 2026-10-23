@@ -68,6 +68,7 @@ CREATE INDEX IF NOT EXISTS plan_tabs_by_tab ON plan_tabs (tab_id);
 CREATE TABLE IF NOT EXISTS tab_stats (
   tab_id        TEXT    PRIMARY KEY REFERENCES tabs (id) ON DELETE CASCADE,
   mode          TEXT    NOT NULL,
+  kind          TEXT,
   element_count INTEGER NOT NULL,
   comment_count INTEGER NOT NULL,
   data_bytes    INTEGER NOT NULL,

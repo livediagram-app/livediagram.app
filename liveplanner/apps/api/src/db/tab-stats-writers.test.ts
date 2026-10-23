@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
 import type { Tab } from '@liveplanner/project';
 import { sqliteD1, type SqliteD1, testCopyPlan } from '../test-sqlite-d1';
-import { tabStatsOf } from './tab-stats';
+import { storedTabStatsOf } from './tab-stats';
 import { seedTabs, swapTabData, upsertTab, upsertTabAtRev } from './tabs';
 
 // Every writer of a tab body keeps its `tab_stats` row in step
@@ -51,12 +51,18 @@ const tab = (id: string, ...comments: number[]): Tab =>
     elements: comments.map((c, i) => shape(`${id}-e${i}`, c)),
   }) as unknown as Tab;
 
-type Row = { mode: string; element_count: number; comment_count: number; data_bytes: number };
+type Row = {
+  mode: string;
+  kind: string | null;
+  element_count: number;
+  comment_count: number;
+  data_bytes: number;
+};
 
 function statsRow(sql: DatabaseSync, tabId: string): Row | undefined {
   return sql
     .prepare(
-      'SELECT mode, element_count, comment_count, data_bytes FROM tab_stats WHERE tab_id = ?',
+      'SELECT mode, kind, element_count, comment_count, data_bytes FROM tab_stats WHERE tab_id = ?',
     )
     .get(tabId) as Row | undefined;
 }
@@ -64,9 +70,10 @@ function statsRow(sql: DatabaseSync, tabId: string): Row | undefined {
 // What the row must say: the stats of the body actually stored.
 function expected(sql: DatabaseSync, tabId: string): Row {
   const data = sql.prepare('SELECT data FROM tabs WHERE id = ?').get(tabId)!.data as string;
-  const s = tabStatsOf(JSON.parse(data) as object, data);
+  const s = storedTabStatsOf(JSON.parse(data) as object, data);
   return {
     mode: s.mode,
+    kind: s.kind,
     element_count: s.elementCount,
     comment_count: s.commentCount,
     data_bytes: s.dataBytes,
@@ -103,6 +110,19 @@ describe('seedTabs', () => {
   });
 });
 
+describe('the kind kept beside each tab', () => {
+  it('follows the stored body, so the tabs read never parses one', async () => {
+    const db = withProject();
+    await upsertTab(db.env, 'A', { ...tab('t1'), kind: 'board' }, 0);
+    await upsertTab(db.env, 'A', tab('t2'), 1);
+    expect(statsRow(db.sql, 't1')?.kind).toBe('board');
+    expect(statsRow(db.sql, 't2')?.kind).toBe('diagram');
+    await upsertTab(db.env, 'A', { ...tab('t1'), kind: 'sheet' }, 0);
+    expect(statsRow(db.sql, 't1')).toEqual(expected(db.sql, 't1'));
+    expect(statsRow(db.sql, 't1')?.kind).toBe('sheet');
+  });
+});
+
 describe('swapTabData (participant and Q&A writes)', () => {
   it('writes the next body stats on a won swap, and nothing on a lost one', async () => {
     const db = withProject();
@@ -112,12 +132,12 @@ describe('swapTabData (participant and Q&A writes)', () => {
     const next = { elements: [shape('x', 4)] };
     const nextData = JSON.stringify(next);
     expect(
-      await swapTabData(db.env, 'A', 't1', 'stale', nextData, tabStatsOf(next, nextData)),
+      await swapTabData(db.env, 'A', 't1', 'stale', nextData, storedTabStatsOf(next, nextData)),
     ).toBe(false);
     expect(statsRow(db.sql, 't1')).toEqual(before);
-    expect(await swapTabData(db.env, 'A', 't1', stored, nextData, tabStatsOf(next, nextData))).toBe(
-      true,
-    );
+    expect(
+      await swapTabData(db.env, 'A', 't1', stored, nextData, storedTabStatsOf(next, nextData)),
+    ).toBe(true);
     expect(statsRow(db.sql, 't1')).toEqual(expected(db.sql, 't1'));
     expect(statsRow(db.sql, 't1')).toMatchObject({ element_count: 1, comment_count: 4 });
   });

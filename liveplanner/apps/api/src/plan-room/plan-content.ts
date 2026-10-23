@@ -91,6 +91,25 @@ export async function readPlanOutline(env: PlanEnv, planId: string): Promise<Pla
   };
 }
 
+// The plan's tabs alone, in order: id, name and the kind each tab's last write kept beside it (tab_stats), so no
+// tab's body is read, parsed or sent. For the tab picker's read (routes/projects.ts, `GET /api/projects/:id/tabs`).
+export async function readPlanTabs(
+  env: PlanEnv,
+  planId: string,
+): Promise<{ id: string; name: string; kind: string | null }[]> {
+  const { results } = await env.PLAN_DB.prepare(
+    `SELECT t.id, t.name, s.kind
+       FROM plan_tabs dt
+       JOIN tabs t ON t.id = dt.tab_id
+       LEFT JOIN tab_stats s ON s.tab_id = dt.tab_id
+      WHERE dt.plan_id = ?
+      ORDER BY dt.order_index ASC`,
+  )
+    .bind(planId)
+    .all<{ id: string; name: string; kind: string | null }>();
+  return results ?? [];
+}
+
 // What the plan knows of itself, alone (no tabs): for the doors that only need its owner or name.
 export async function readPlanMeta(env: PlanEnv, planId: string): Promise<PlanMeta | null> {
   const head = await env.PLAN_DB.prepare(`SELECT ${PLAN_HEAD_COLS} FROM plan WHERE id = ?`)

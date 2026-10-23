@@ -1049,6 +1049,35 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 404],
   },
   {
+    method: 'GET',
+    path: '/projects/{id}/tabs',
+    segment: 'projects',
+    tag: 'Plans',
+    summary:
+      "The plan's tabs alone, in order: id, name and kind (board, sheet, dashboard, form, or diagram for an ordinary tab), without their content. Read-gated like GET /projects/{id}; a tab's share link sees its own tab alone. What the Share dialog's tab picker reads.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    responseSchema: {
+      type: 'object',
+      properties: {
+        tabs: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              name: { type: 'string' },
+              kind: { type: ['string', 'null'] },
+            },
+            required: ['id', 'name', 'kind'],
+          },
+        },
+      },
+      required: ['tabs'],
+    },
+    statuses: [200, 404],
+  },
+  {
     method: 'POST',
     path: '/projects/{id}/room-ticket',
     segment: 'projects',

@@ -129,10 +129,12 @@ export type AppShare = {
   liveImagePath: string | null;
   // The live image's alt text in its Markdown and HTML snippets.
   liveImageAlt: string;
-  // An item's tabs, so a pass can open one: the item read the app's API answers the workspace token with, and the
-  // key its answer keeps the item under (`{ [tabsKey]: { tabs: [{ id, name }] } }`). Null: passes open every tab.
+  // An item's tabs, so a pass can open one, read with the workspace token. An app on the index kit serves them alone
+  // (`itemTabsPath`, answering `{ tabs: [{ id, name, kind }] }`, tabsKey null); until it does, the item read its API
+  // answers, which keeps the item under `tabsKey` (`{ [tabsKey]: { tabs: [{ id, name }] } }`). Null: passes open
+  // every tab.
   tabsPath: string | null;
-  tabsKey: string;
+  tabsKey: string | null;
   // The app's help articles on sharing, under `${url}/help/`.
   help: { sharing: string; shareLinkExpiry: string; sharePasswords: string };
 };
@@ -144,8 +146,11 @@ const SHARE_HELP = {
   sharePasswords: 'collaboration/sharing/share-passwords',
 };
 
+/** Where an app on the index kit serves an item's tabs alone (@liveworkspace/index-app tabs.ts). */
+export const itemTabsPath = (itemsSegment: string) => `/api/${itemsSegment}/:id/tabs`;
+
 // Every app serves its embeds and live images at the same addresses.
-const shareOf = (tabsPath: string, tabsKey: string, alt: string): AppShare => ({
+const shareOf = (tabsPath: string, tabsKey: string | null, alt: string): AppShare => ({
   embedPath: '/embed?s=:code',
   liveImagePath: '/api/share/:code/image.svg',
   liveImageAlt: alt,
@@ -177,7 +182,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     onIndex: true,
     sharePath: '/project/shared?s=',
     previewPath: '/api/projects/:id/thumbnail',
-    share: shareOf('/api/projects/:id', 'project', 'liveplanner tab'),
+    share: shareOf(itemTabsPath('projects'), null, 'liveplanner tab'),
   },
   livedocuments: {
     site: 'livedocuments.app',
