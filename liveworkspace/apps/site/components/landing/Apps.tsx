@@ -49,16 +49,19 @@ export function Apps() {
                     background: `radial-gradient(60% 80% at ${i % 2 ? '0% 100%' : '100% 0%'}, ${app.accent}26, transparent 70%)`,
                   }}
                 />
-                <div className="relative grid items-center gap-10 p-6 sm:p-10 lg:grid-cols-[5fr_6fr] lg:gap-14 lg:p-14">
-                  <div className={i % 2 ? 'lg:order-2' : ''}>
-                    <AppLogo app={app} />
-                    <h3 className="mt-6 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl dark:text-white">
-                      {app.tagline}
-                    </h3>
-                    <p className="mt-3 text-base leading-relaxed text-slate-600 sm:text-lg dark:text-slate-300">
-                      {app.summary}
-                    </p>
-                    <ul className="mt-6 flex flex-col gap-2.5">
+                <div className="relative flex flex-col p-6 sm:p-10 lg:grid lg:grid-cols-[5fr_6fr] lg:items-center lg:gap-14 lg:p-14">
+                  {/* Below lg the column dissolves so the window can sit between the summary and the highlights. */}
+                  <div className={`contents lg:block ${i % 2 ? 'lg:order-2' : ''}`}>
+                    <div className="order-1">
+                      <AppLogo app={app} />
+                      <h3 className="mt-6 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl dark:text-white">
+                        {app.tagline}
+                      </h3>
+                      <p className="mt-3 text-base leading-relaxed text-slate-600 sm:text-lg dark:text-slate-300">
+                        {app.summary}
+                      </p>
+                    </div>
+                    <ul className="order-3 mt-6 flex flex-col gap-2.5">
                       {app.highlights.map((h) => (
                         <li
                           key={h}
@@ -74,7 +77,7 @@ export function Apps() {
                         </li>
                       ))}
                     </ul>
-                    <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
+                    <div className="order-4 mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
                       <a
                         href={app.url}
                         className="relative touch-target-y inline-flex min-h-12 items-center gap-2 rounded-full px-6 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2"
@@ -89,7 +92,7 @@ export function Apps() {
                       </span>
                     </div>
                   </div>
-                  <div className={i % 2 ? 'lg:order-1' : ''}>
+                  <div className={`order-2 mt-8 lg:mt-0 ${i % 2 ? 'lg:order-1' : 'lg:order-none'}`}>
                     <AppWindow address={scene.address}>{scene.scene}</AppWindow>
                   </div>
                 </div>

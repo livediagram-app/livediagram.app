@@ -16,7 +16,7 @@ export function HeroActions() {
   if (session.state === 'in') return null;
 
   return (
-    <div className="mt-9 flex flex-wrap gap-3">
+    <div className="mt-9 flex flex-wrap justify-center gap-3 sm:justify-start">
       <a href="/sign-up?return=%2F" className={PRIMARY}>
         Create your free account
       </a>

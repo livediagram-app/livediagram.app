@@ -53,12 +53,14 @@ moves between them, and the one account that joins them.
    Signed in, they are hidden. Beside it, the platform's prism
    with each app's logo at a corner, joined to it by a line in its accent, read clockwise in the
    order work moves through them, and a collaborator's cursor at each. Each app there is a link to its
-   site that lifts and rings in its accent on hover, and holds still while pointed at.
+   site that lifts and rings in its accent on hover, and holds still while pointed at. On phones (below
+   `sm`) it is left out, and the hero's words, calls to action and promises are centred.
 2. **The apps** (`#apps`): one section per app in `@liveworkspace/sites`, in that order, each with
    its own logo, a tagline, its summary, three things it does, a window onto its work with someone in
    it (a flowchart; a board with a card on the move; an article with its slides; a logo, a wireframe
    and a photo being cropped), **Open <app>** in its deep accent, and "Signs in with your
-   liveworkspace account". livedocuments' and livedesign's logos are their own prisms with the wordmark
+   liveworkspace account". Below `lg` the window sits between the summary and the three things it does.
+   livedocuments' and livedesign's logos are their own prisms with the wordmark
    drawn here (`components/landing/AppLogo.tsx`), since their Brand colours "live" with a brand scale
    this site doesn't have. The copy is
    `lib/apps.ts`; tests require it for every app and that white text on each deep accent passes
