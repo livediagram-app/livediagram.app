@@ -29,7 +29,7 @@ export async function handleEvents(ctx: RouteContext): Promise<Response> {
   //       drive-by posting; spoofable by curl, which (2) then
   //       catches.
   //   (2) Per-IP rate limit keyed on CF-Connecting-IP (which the
-  //       client can't forge, unlike X-Owner-Id). A SEPARATE
+  //       client can't forge, unlike a guest token). A SEPARATE
   //       limiter from the document write limiter, so it never
   //       touches real users; the IP is a transient key, never
   //       stored or passed on. Both degrade to "allow" when unconfigured, so

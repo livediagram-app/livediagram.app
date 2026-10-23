@@ -11,7 +11,7 @@ import type { RouteContext } from './context';
 
 // Deleting the person's account: their livediagram data, then their liveworkspace account, which
 // closes it in every liveworkspace app (docs/specs/014-identity/auth-and-guest-access.md
-// "Deleting an account"). Signed-in only, with no X-Owner-Id fallback, because the whole point is
+// "Deleting an account"). Signed-in only, never a guest token, because the whole point is
 // to wipe what belongs to a verified account.
 //
 // The data goes first. Were the account closed first and the data delete then to fail, nobody

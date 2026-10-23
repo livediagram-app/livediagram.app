@@ -19,7 +19,7 @@ import { requireOwner, type RouteContext, readBody } from './context';
 // caller who knew (or guessed) another participant's id could
 // rewrite their display name + colour, and that vandalism would
 // propagate across every document they'd collaborated on. The guard requires the caller's resolved
-// owner (account Bearer OR X-Owner-Id, docs/specs/014-identity/auth-and-guest-access.md) to match the
+// owner (account or guest Bearer, docs/specs/014-identity/auth-and-guest-access.md) to match the
 // participant id being mutated.
 export async function handleParticipants(ctx: RouteContext): Promise<Response> {
   const { request, env, segments } = ctx;

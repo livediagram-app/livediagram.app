@@ -37,7 +37,7 @@ export async function handleTabLink(ctx: DocumentRouteContext): Promise<Response
   const target = await getDocumentMeta(env, id);
   if (!target) return missingDocument(ctx, id);
   // `ownsDocument`, not a bare id compare: a team document's owner id is one every teammate can read, so it is
-  // proven with a verified account id, never the X-Owner-Id header (routes/context.ts).
+  // proven by the caller's grant on each canvas, never a bare id compare (routes/context.ts).
   if (!(await ownsDocument(ctx, target))) return forbidden();
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
