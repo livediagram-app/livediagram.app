@@ -35,7 +35,8 @@ takes a signed-in account whose **verified** address is the one invited (signing
 with Google, verifies it). The invitation email links to `/account/teams`, where it waits with the
 team's name, organisation and member count. Accepting or declining tells the team's admins by
 email, unless an admin has turned that off (the `notifyInviteResponse` setting, `false`, in the
-`all` scope; [Settings](#settings)).
+`all` scope; [Settings](#settings)). That email links to the account's settings on liveworkspace.app,
+where it is turned off, and sends it as `List-Unsubscribe`.
 
 An invitation turned down is `declined`. It grants nothing and counts toward nothing, but stays on
 the team's list so the admins can see the answer, until an admin clears it or invites the address
@@ -204,7 +205,8 @@ the settings as they now are.
   scope and `all`, and no other app's: naming another app is `403 wrong_app`
   ([Which app a client is](#which-app-a-client-is)).
 - **liveworkspace.app** reads and patches the signed-in person's `all` scope with their session
-  cookie: `GET` and `PATCH /api/account/settings`.
+  cookie: `GET` and `PATCH /api/account/settings`, from its settings page
+  ([Your account](site.md#your-account-account)), where the profile is set too.
 
 Reading is one query on the primary key; writing is one upsert per scope plus that read, in one
 batch.
@@ -293,9 +295,10 @@ it sends, with the same timings and tips each app's own series had:
   the series.
 - **Turning tips off** is the `notifyTips` setting, `false`, in the `all` scope
   ([Settings](#settings)), so it holds in every app. A stage someone has turned off is stamped and
-  not sent. Each email that can be turned off links (and sends `List-Unsubscribe`) to the
-  notification settings of the app they first used (`<app>/explorer?settings=notifications`), as do
-  its other links; someone who has used no app yet is sent to livediagram.
+  not sent. Each email that can be turned off links (and sends `List-Unsubscribe`) to the account's
+  settings on liveworkspace.app (`<BASE_URL>/account/settings`), where someone signed out signs in
+  and comes back. Its other links go to the app they first used; someone who has used no app yet is
+  sent to livediagram.
 - **Activity.** The apps report when someone saves something they own
   (`POST /api/account/internal/activity` `{ userId, at? }`, at most once a minute an item, as the
   item's summary push does). It only moves forward, never past now, and writes nothing when it
@@ -309,6 +312,14 @@ it sends, with the same timings and tips each app's own series had:
   address). A success resets the count. Only a verified address is ever sent to.
 - **Each due list** is one query on a partial index holding only the accounts still owed that stage,
   joined by primary key to the account, its `all` settings and its first app.
+- **Telemetry.** Each email sent is counted as `Email·Sent·<kind>` (`Welcome`, `Activation`,
+  `Week1`, `Week2`, `WinBack`, the kinds the apps' own series used) on the telemetry service
+  ([telemetry.md](telemetry.md)), under the app the email speaks for (its links' app) with that app's
+  Worker key, so each app's dashboard keeps its Emails Sent charts (`src/telemetry.ts`). The kind and
+  the app only, never a recipient. The events wait until the run that sent them ends and go as one
+  batch per app, through the `TELEMETRY` service binding, each request given two seconds. A failure, a
+  missing key or a slow service is logged at most: it never holds up or fails a send. An app with no
+  `TELEMETRY_KEY_<APP>` secret set isn't counted.
 
 An app's own one-time milestones (its tenth item, its first share link) stay that app's to send:
 [Sign-ups and milestones per app](#sign-ups-and-milestones-per-app).

@@ -45,7 +45,7 @@ shareable as it is, and the device's own setting applies through System.
   is followed, so the link can't send anyone elsewhere.
 - **Signed in**: an avatar of the account's initials (accounts keep no pictures) and its first
   name (or full name, or email; the name hides on a phone), opening a menu
-  (`components/AccountControl.tsx`): the name again, **Teams** and **API tokens** (the
+  (`components/AccountControl.tsx`): the name again, **Teams**, **API tokens** and **Settings** (the
   [Your account](#your-account-account) pages), and **Sign out**, which ends
   the liveworkspace session here. It doesn't sign anyone out of an app: each app holds its own
   tokens.
@@ -117,11 +117,33 @@ their own stylesheet, `app/telemetry/telemetry.css`, so the other pages don't ca
 ### Your account (`/account/…`)
 
 Where a signed-in person runs what belongs to their account rather than to an app
-([accounts.md](accounts.md)): `/account/teams` and `/account/tokens` (making an API token, seeing it
-once, and revoking it, the AI tools connected in an app among them). `/account` opens the teams.
+([accounts.md](accounts.md)): `/account/teams`, `/account/tokens` (making an API token, seeing it
+once, and revoking it, the AI tools connected in an app among them) and `/account/settings`. Each is
+a tab of the same frame (`components/settings/AccountShell.tsx`). `/account` opens the teams.
 Signed out, the pages ask them to sign in and come back. They read and write
 `/api/account/*` on this origin with the session cookie (`lib/account-api.ts`), and are kept out of
 search.
+
+**Settings**, `/account/settings` (`components/settings/SettingsPanel.tsx` and `ProfileCard.tsx`,
+the catalogue in `lib/account-settings.ts`): what belongs to the person in every app, the `all` scope
+of their settings and their profile ([accounts.md](accounts.md#settings)). Every email that can be
+turned off links here, so someone signed out signs in and comes back.
+
+- **Profile**: the display name and presence colour collaborators see in every app, with a preview
+  of their cursor and avatar. The colours are the apps' own ten presence colours, plus Automatic (no
+  colour of their own, so each app picks); dark mode paints each in its deeper shade, as the apps do.
+  Leaving the name empty shows the name they signed up with.
+- **Notifications**: each email that can be turned off (comments, mentions, actions assigned,
+  invitation answers, tips and check-ins, milestones) and the apps' in-editor notes, worded as in the
+  apps' own Settings.
+- **Privacy and accessibility**: anonymous usage events, and Reduce Motion.
+- **Your apps**: a link to each app's own Settings (`<app>/explorer?settings=editor`), where
+  everything that only means something in an editor lives (its scale, panels and the rest).
+
+The page reads the settings and the profile once each as it opens. Each switch and colour is shown
+changed at once and written alone (one `PATCH`), and put back with a note if the write fails. The
+name is saved once typing pauses (800 ms), when the field is left, or as the page closes, never per
+keystroke.
 
 **Teams** (`components/teams/`, the logic in `lib/teams.ts`):
 
