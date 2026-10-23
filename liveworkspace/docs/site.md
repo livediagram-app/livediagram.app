@@ -123,9 +123,10 @@ their own stylesheet, `app/telemetry/telemetry.css`, so the other pages don't ca
 
 ### The Explorer (`/explorer/…`)
 
-Every app's work, in one place: the shared Explorer (`@liveworkspace/explorer`, [one-explorer.md](one-explorer.md))
-lives here once, rather than at each app's `/explorer`. The apps' Explorer links come here with `?from=<app>`
-(`explorerUrl` in `@liveworkspace/sites`). Its parts are `components/explorer/` and `lib/explorer/`.
+Every app's work, in one place: the shared Explorer (`@liveworkspace/explorer`, [one-explorer.md](one-explorer.md)),
+built once here. It is shown here and, through each switched-on app's router, at that app's own `/explorer`
+([below](#on-an-apps-own-address)). A link from elsewhere comes here with `?from=<app>` (`explorerUrl` in
+`@liveworkspace/sites`). Its parts are `components/explorer/` and `lib/explorer/`.
 
 - **Who it reads as.** The index is asked with a short-lived token from `GET /api/auth/workspace-token`: the
   signed-in account's, or this browser's guest's ([accounts.md](accounts.md)). Signing out here asks again.
@@ -168,8 +169,8 @@ lives here once, rather than at each app's `/explorer`. The apps' Explorer links
 - **Telemetry.** What people use here counts for the app the page shows, or `liveworkspace.app` on All Apps,
   batched and only with the person's consent ([telemetry.md](telemetry.md#the-explorer-on-liveworkspaceapp)).
 - **The Inbox.** Plan cards wear their type's glyph, and its empty state points at liveplanner's help on actions.
-- **This Browser.** A row in the sidebar opens the app's own offline view (`offlinePath`), since what a browser
-  keeps belongs to that app's origin.
+- **This Browser.** Here, a row in the sidebar opens the app's own offline view (`offlinePath`), since what a
+  browser keeps belongs to that app's origin. On the app's address the Explorer lists it itself (below).
 - **Addresses handed over.** `?settings=<category>` (every notification email's unsubscribe link) goes to the
   matching account page: notifications to `/account/settings#notifications`, an app's own settings to
   `/account/settings?app=<app>`. `?ended=revoked` says, once, that the link a plan was open through was revoked.
@@ -177,7 +178,41 @@ lives here once, rather than at each app's `/explorer`. The apps' Explorer links
   read.
 - **Retired addresses.** `/explorer/profile` goes to notification settings, `/explorer/activity` to the Inbox,
   `/explorer/generated` to a search for items made by AI, `/explorer/dynamic` to All, `/explorer/invites` to
-  `/account/teams`, `/explorer/tags` to Home, and `/explorer/offline` to the app's offline view.
+  `/account/teams`, `/explorer/tags` to Home, and `/explorer/offline` to the app's offline view (on an app's
+  address, This Browser's own view).
+
+#### On an app's own address
+
+The same page, served by the app's router at `<app>.app/explorer/…` with the address unchanged
+(`@liveworkspace/sites/workspace-proxy`, [one-explorer.md](one-explorer.md#the-explorer-on-each-apps-address)).
+`lib/explorer/page-app.ts` reads the app from the page's own host (a static page sees no request), and with it:
+
+- **Who it reads as** (`lib/explorer/app-session.ts`, `lib/explorer/token.ts`): the app's access token from the
+  app's `POST /api/auth/token`, one request in flight at a time (it rotates the refresh cookie), else the app's
+  guest token under `<app>:v2:guest-token`. The site's own session is not asked on these pages.
+- **Account reads** go to `/api/workspace/account/…` with that token (`accountFetch`); the accounts Worker
+  checks it against its own keys (`apps/accounts/src/bearer.ts`): names for anyone, teams, members and settings
+  for an account, nothing else.
+- **Signing in.** The app's silent sign-in script is inlined in the Explorer's layout, one per switched-on app
+  behind a check of the host (`lib/explorer/silent.ts`); Sign In and Sign Out are the app's
+  (`components/explorer/AppAccountControl.tsx`). New Team waits for liveworkspace.app's Teams page.
+- **Links** to the app's items, New, previews, the Library and Import from use the page's own origin
+  (`appOrigin`); account, teams and settings pages go to liveworkspace.app (`workspaceHref`); share links are
+  always the app's public site.
+- **This Browser** comes from the app's list in localStorage (`@liveworkspace/explorer/this-browser`), heard as it
+  changes.
+- **Telemetry** goes to liveworkspace.app's `/api/telemetry`, always for the app (the service takes a page's
+  events only for its own origin).
+- **Assets** load from `/_liveworkspace/…` on the same origin, which the router also forwards.
+
+**The hop's cost.** Measured locally against the dev servers (liveplanner's router at :3200, the site at :3000,
+medians of 30 interleaved requests and 12 warm page loads): the HTML's time to first byte is 22 ms through the
+router against 19 ms direct, and a full load 140 ms against 109 ms, the difference being the dev server's
+uncached chunks each taking the extra hop (about 3.5 ms each). In production the hop is one request from the app's
+router to liveworkspace.app inside Cloudflare's network, on the HTML and RSC payloads only: the assets are
+content-hashed, cached by the browser for a year after the first visit and at the edge before it. If that hop shows
+up in the timings, the routers can reach the site through a service binding instead (`routeToWorkspace`'s `fetch`
+option), which removes the public round trip.
 
 Its styles are in their own stylesheet, `app/explorer/explorer.css`, so the other pages don't carry them. The
 pages are `noindex`. Cmd/Ctrl+K moves to the search field.

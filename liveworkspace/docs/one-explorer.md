@@ -81,12 +81,12 @@ account.
 That first visit costs one redirect, once per browser per app. Opening an item without any identity
 (a share link, an embed) needs no redirect: the link grants view access on its own.
 
-### 4. The Explorer is built once and lives on liveworkspace.app
+### 4. The Explorer is built once, by liveworkspace.app, and shown at every app's address
 
 `@liveworkspace/explorer` is a package in liveworkspace holding the whole Explorer UI and its client
-for the index API. It is shown once, at liveworkspace.app/explorer, for every app. Each app's Explorer
-link goes there with `?from=<app>`, and an app's old `/explorer/*` addresses redirect there with the rest of
-the address kept. The page wears the colours of the app the person came from, its header shows the
+for the index API. The page is built once, by liveworkspace.app, and shown at liveworkspace.app/explorer and
+at each app's own `/explorer` (see [The Explorer on each app's address](#the-explorer-on-each-apps-address)).
+The page wears the colours of the app the person came from, its header shows the
 liveworkspace logo and then that app's logo (which leads back), and a filter shows "this app's items" or
 "All Apps". Opening an item goes to its app. The page is described in [site.md](site.md#the-explorer-explorer).
 
@@ -94,8 +94,43 @@ Creating is aware of where the person came from: New from liveplanner makes a Pl
 Canvas, and so on. It goes to the app's new-item route, where the app creates the Durable Object and
 registers it in the index in one step, then opens it.
 
-What a browser keeps offline belongs to its app's origin, so This Browser stays in each app (liveplanner's
-`/offline` and its editor panel); the Explorer's sidebar links to it.
+What a browser keeps offline belongs to its app's origin. On the app's address the Explorer lists it
+(This Browser); on liveworkspace.app, which can't read it, the sidebar links to the app's own offline view.
+
+#### The Explorer on each app's address
+
+Each app's router answers `/explorer/*` by fetching the same page from liveworkspace.app, so the address bar
+keeps the app's name (`liveplanner.app/explorer/recent`): path, query and hash unchanged, no redirect. The
+routing is one shared helper, `@liveworkspace/sites/workspace-proxy`, with a switch per app
+(`EXPLORER_ON_APP_ORIGIN`); it is on for liveplanner, livedocuments and livedesign, and livediagram's router has
+the route ready for when its switch is turned on. What it forwards:
+
+- `/explorer`, `/explorer/…` and the page's payloads (`/explorer.txt`, `/explorer/….txt`) to the same place on
+  liveworkspace.app, the app's cookies left behind and liveworkspace's never set on the app's origin. The page is
+  never cached (`no-store`, as every page).
+- The site's build assets under `/_liveworkspace/…` (the site's `assetPrefix`), a path that never meets the app's
+  own `/_next` or `/live`. They are content-hashed and cached for a year.
+- `/api/workspace/account/…` to liveworkspace's `/api/account/…`: the few account reads the page makes (people's
+  names, the person's teams and a team's members, their settings), with the page's bearer token.
+
+The page reads where it is from its own address and there is that app's page:
+
+- **Who it reads as.** The app's own session: the app's access token (`POST /api/auth/token`, from the app's
+  refresh cookie, asked only while the app's signed-in hint says there is one, and never twice at once), else the
+  app's guest token, both of which the index takes. The accounts Worker takes the same token on its account reads.
+  The app's silent sign-in runs on the page, as in the app's editor.
+- **The header.** The liveworkspace logo leads to liveworkspace.app, the app's logo to the app's home, and the
+  account menu is the app's: Sign In and Sign Out are the app's, its account pages are on liveworkspace.app.
+- **Links.** Items of that app open on the same origin; other apps' items open on their own sites. Account,
+  team and settings pages (and the addresses that retired to them) go to liveworkspace.app.
+- **This Browser.** The app keeps a small list of its offline items (id, title and dates, never content) in
+  localStorage under `liveworkspace:this-browser:<app>` (`@liveworkspace/explorer/this-browser`), written by its
+  offline store as it writes. The Explorer reads it: a sidebar row with the count, `/explorer/offline`, a This
+  Browser group in the Trash, and the opened ones in Home's Jump Back In. Each opens in the app's editor.
+- **Telemetry.** Every event counts for the app, sent to liveworkspace.app's telemetry service.
+
+The extra hop costs one Worker-to-Worker fetch on the HTML and payloads (assets are cached at the edge); see
+[site.md](site.md#on-an-apps-own-address) for the measurements.
 
 The editors' floating Explorer panel and move-to-folder picker use the same package, inside each app.
 

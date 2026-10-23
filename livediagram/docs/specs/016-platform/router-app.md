@@ -57,6 +57,14 @@ liveworkspace.app clears them. The router names the visitor's address in
 `X-Liveworkspace-Client-IP`. Once signed in, one top-level hop to liveworkspace.app sets its
 session (so the other apps sign in without a click) and comes straight back to `/auth/callback`.
 
+## The Explorer on livediagram.app
+
+The router asks liveworkspace's shared helper first (`routeToWorkspace`,
+[liveworkspace/docs/one-explorer.md](../../../../liveworkspace/docs/one-explorer.md#the-explorer-on-each-apps-address)).
+livediagram's switch (`EXPLORER_ON_APP_ORIGIN`) is off, so `/explorer/*` reaches the editor's own Explorer as above.
+Turned on, `/explorer/*` and `/api/workspace/account/*` are liveworkspace's, served at this address with
+`WORKSPACE_ORIGIN` naming liveworkspace.app (already set for staging and local development).
+
 ## Implementation
 
 In production the Worker has five **service bindings**, one to each downstream app (MARKETING / LIVE / API / HELP / COMMUNITY). A shared `forward()` helper resolves each target as _binding if present, else local-dev origin_ (see Local development below) and strips the prefix for the basePath/assetPrefix paths (live assets + telemetry + help + community) when forwarding to a binding:
