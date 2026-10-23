@@ -9,7 +9,7 @@ this package holds what the pages share, and the app hands over only its list an
 packages/comparisons/src
 ├─ types.ts                     the shape of a comparison, and of an app's list (Comparisons)
 ├─ catalogue.ts                 lookups, the neighbours, JSON-LD, sitemap entries, social-card words
-├─ check.ts                     comparisonProblems: what every app's list must hold
+├─ check.ts                     what every app's list must hold, and what its redirects must not catch
 ├─ looks.ts                     each competitor's glyph and tone, for every app (COMPETITOR_LOOK)
 ├─ icons.tsx                    the glyphs, so the package needs no app's icon package
 └─ components/                  the hub, the article, the card, the table, the vs tiles, the FAQ
@@ -105,7 +105,7 @@ dashboard on liveworkspace.app shows them under its own app.
 - **Free and open source**: Excalidraw and draw.io are themselves free and open source; Miro and XMind are the ones where "open-source, free, no sign-up" is the genuine contrast. Against Excalidraw, presenting is compared with Excalidraw+ (its hosted plan), never with the free editor, and the hand-drawn look is a shared strength: livediagram's Sketch and Marker [finishes](../../livediagram/docs/specs/008-canvas/finish.md) are named, while Excalidraw's own style and typeface stay its signature in the fairness section.
 - **CTA** reads "Start drawing".
 
-**Initial set**: Miro, XMind, Excalidraw and draw.io (diagrams.net), since joined by Microsoft Whiteboard, FigJam and Lucidchart. Google Slides (compared as a presentation tool) went with Pages mode on 2026-10-22, and is livedocuments' now; livediagram.app's old `/alternatives/google-slides` redirects there.
+**Initial set**: Miro, XMind, Excalidraw and draw.io (diagrams.net), since joined by Microsoft Whiteboard, FigJam and Lucidchart. Google Slides (compared as a presentation tool) went with Pages mode on 2026-10-22, and is livedocuments' now; livediagram.app's old `/alternatives/google-slides` redirects there (`lib/comparison-redirects.test.ts`).
 
 **Second set (October 2026)**:
 
@@ -124,7 +124,7 @@ dashboard on liveworkspace.app shows them under its own app.
 
 **The set**: Trello, Asana, Monday.com (`/alternatives/monday`), Notion, Jira, ClickUp, Airtable and Smartsheet, each compared against Plan: Board, Sheet, Dashboard and Form tabs, card types, plan views (Gantt chart, calendars, charts by field), forms whose answers become cards or rows, live collaboration and agent access.
 
-**Retired comparisons**: the diagram-tool comparisons (Microsoft Whiteboard, Miro, XMind, Excalidraw, draw.io, FigJam and Lucidchart, and Google Slides) left liveplanner when it narrowed to planning. Their old liveplanner.app addresses redirect permanently to the same comparison on livediagram.app (Google Slides on livedocuments.app), pinned by liveplanner's `lib/retired-comparisons.test.ts`.
+**Retired comparisons**: the diagram-tool comparisons (Microsoft Whiteboard, Miro, XMind, Excalidraw, draw.io, FigJam and Lucidchart, and Google Slides) left liveplanner when it narrowed to planning. Their old liveplanner.app addresses redirect permanently to the same comparison on livediagram.app (Google Slides on livedocuments.app), pinned by liveplanner's `lib/comparison-redirects.test.ts` (`redirectProblems`).
 
 **Candidates** for later, by search value: Linear, Basecamp, Wrike and Google Sheets (against Sheet tabs), each needing an honest angle first.
 

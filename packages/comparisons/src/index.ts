@@ -14,7 +14,7 @@ export {
   otherComparisons,
   reviewedOn,
 } from './catalogue';
-export { comparisonProblems } from './check';
+export { comparisonProblems, redirectProblems } from './check';
 export { COMPETITOR_LOOK, type CompetitorLook, lookOf } from './looks';
 export type { Mark } from './components/mark';
 export { AlternativeCard } from './components/AlternativeCard';

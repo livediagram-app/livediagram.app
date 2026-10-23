@@ -78,3 +78,28 @@ export function comparisonProblems(c: Comparisons): string[] {
   }
   return problems;
 }
+
+// What an app's public/_redirects must not do to its comparisons: catch the hub or a live page (a
+// rule for a retired comparison is fine, and must be permanent). Each app with redirects under
+// /alternatives runs it from a test.
+export function redirectProblems(redirects: string, c: Comparisons): string[] {
+  const live = new Set([
+    '/alternatives',
+    ...c.alternatives.map((alt) => `/alternatives/${alt.slug}`),
+  ]);
+  const problems: string[] = [];
+  for (const line of redirects.split('\n')) {
+    const [from, , status] = line.trim().split(/\s+/);
+    if (!from || from.startsWith('#') || !from.startsWith('/alternatives')) continue;
+    const path = from.replace(/\/$/, '');
+    const pattern = new RegExp(
+      `^${path
+        .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
+        .replace(/\*/g, '.*')
+        .replace(/:\w+/g, '[^/]+')}$`,
+    );
+    for (const page of live) if (pattern.test(page)) problems.push(`${from} catches ${page}`);
+    if (status !== '301') problems.push(`${from} is not a permanent (301) redirect`);
+  }
+  return problems;
+}

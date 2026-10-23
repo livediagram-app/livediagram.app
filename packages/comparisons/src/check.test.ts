@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { comparisonProblems } from './check';
+import { comparisonProblems, redirectProblems } from './check';
 import { alternative, comparisons } from './test/fixture';
 
 describe('comparisonProblems', () => {
@@ -58,6 +58,37 @@ describe('comparisonProblems', () => {
       'miro: row "Price" is missing a cell',
       'miro: no reasons to pick them',
       'miro: FAQ "Why?" is unanswered',
+    ]);
+  });
+});
+
+describe('redirectProblems', () => {
+  const c = comparisons();
+
+  it('lets a retired comparison redirect permanently', () => {
+    const rules = '# Retired\n/alternatives/notion https://other.example/alternatives/notion 301\n';
+    expect(redirectProblems(rules, c)).toEqual([]);
+  });
+
+  it('finds a rule that catches the hub or a live page, however it is written', () => {
+    const rules = [
+      '/alternatives/ https://elsewhere.example/ 301',
+      '/alternatives/miro https://elsewhere.example/ 301',
+      '/alternatives/* https://elsewhere.example/:splat 301',
+    ].join('\n');
+    expect(redirectProblems(rules, c)).toEqual([
+      '/alternatives/ catches /alternatives',
+      '/alternatives/miro catches /alternatives/miro',
+      '/alternatives/* catches /alternatives/miro',
+      '/alternatives/* catches /alternatives/trello',
+      '/alternatives/* catches /alternatives/figma',
+      '/alternatives/* catches /alternatives/jira',
+    ]);
+  });
+
+  it('finds a temporary redirect', () => {
+    expect(redirectProblems('/alternatives/notion /x 302', c)).toEqual([
+      '/alternatives/notion is not a permanent (301) redirect',
     ]);
   });
 });
