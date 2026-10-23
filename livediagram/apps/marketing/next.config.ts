@@ -5,7 +5,7 @@ import { livediagramNextConfig } from '@livediagram/next-config';
 // @livediagram/next-config (docs/specs/016-platform/nextjs.md).
 const nextConfig: NextConfig = {
   ...livediagramNextConfig(),
-  transpilePackages: ['@livediagram/ui'],
+  transpilePackages: ['@livediagram/ui', '@liveworkspace/comparisons'],
 };
 
 export default nextConfig;

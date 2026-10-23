@@ -36,8 +36,8 @@ const COLUMNS: { title: string; links: (FooterLink | typeof COMMUNITY | typeof G
         label: 'AI & MCP',
         icon: lucideGlyph(lucideSparkles, ICON_SIZE),
       },
-      // Every app's comparisons live on liveworkspace.app (liveworkspace/docs/comparison-pages.md).
-      { href: `${PLATFORM_SITE.url}/alternatives`, label: 'Product Comparison' },
+      // This app's own comparisons (packages/comparisons/README.md).
+      { href: '/alternatives', label: 'Product Comparison' },
       // The public gallery of shared documents (docs/specs/025-community/community.md), unless switched off.
       COMMUNITY,
       { href: '/faq', label: 'FAQ' },
