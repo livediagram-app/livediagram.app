@@ -197,6 +197,12 @@ describe('the account API, for the apps', () => {
     expect(await written.json()).toMatchObject({ all: { theme: 'dark' }, app: { snap: true } });
     const read = await internal('/settings/read', { owner, app: 'liveplanner.app' });
     expect(await read.json()).toMatchObject({ all: { theme: 'dark' }, app: {} });
+    // Reaching a guest's settings through an app counts as the guest being seen, for the idle sweep.
+    expect(
+      await env.AUTH_DB.prepare('SELECT guest_id FROM guest_seen WHERE guest_id = ?')
+        .bind(owner)
+        .first('guest_id'),
+    ).toBe(owner);
 
     expect(
       (await internal('/settings/read', { owner: 'nobody', app: 'liveplanner.app' })).status,

@@ -6,6 +6,7 @@
 //     work, the teams change feed, a team made in an app, reading and writing someone's settings, and
 //     reading profiles and setting one's own, an app's sign-ups and milestones, and accounts' emails.
 import { AUTH_BASE_PATH } from './auth-options.ts';
+import { noteGuestSeen } from './guest-sweep.ts';
 import type { Auth } from './auth.ts';
 import type { Env } from './env.ts';
 import { sendInviteResponseEmails, sendTeamInviteEmail } from './email.ts';
@@ -523,6 +524,11 @@ async function handleInternal(
     if (!isSettingsApp(body.app)) return error(400, 'invalid_app');
     if (!client.app) return error(403, 'client_has_no_app');
     if (body.app !== client.app) return error(403, 'wrong_app');
+    // An app reading a guest's settings is that guest coming back to it, which keeps the guest's
+    // rows from the idle sweep (guest-sweep.ts) however the app was handed the id.
+    await noteGuestSeen(db, body.owner).catch((cause: unknown) =>
+      console.error('[settings] guest seen failed', cause),
+    );
     if (route === 'POST settings/read') return json(await readSettings(db, body.owner, body.app));
     const patch = body.patch ?? {};
     if (typeof patch !== 'object' || Array.isArray(patch)) return error(400, 'invalid_patch');
@@ -545,6 +551,9 @@ async function handleInternal(
     if (!isProfileOwner(body.owner)) return error(400, 'invalid_owner');
     const checked = checkProfilePatch(body);
     if (!checked.ok) return error(400, checked.error);
+    await noteGuestSeen(db, body.owner).catch((cause: unknown) =>
+      console.error('[profiles] guest seen failed', cause),
+    );
     const result = await writeProfile(db, body.owner, checked.patch);
     return result.ok ? json({ profile: result.value }) : answer(result);
   }

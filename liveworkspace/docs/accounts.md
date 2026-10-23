@@ -259,8 +259,9 @@ has no name at all); then the guest's profile goes. Both run beside the settings
 
 ### Guests who never come back
 
-Every guest hand-off stamps when that guest id was last handed out (`guest_seen`, at most one write a
-day per guest). A guest still using an app gets a fresh token before its year is up, so it is never
+Every guest hand-off stamps when that guest id was last seen (`guest_seen`, at most one write a day
+per guest), and so does an app reading the guest's settings or writing its profile, so a guest an app
+already knows is kept alive however it came by the id. A guest still using an app gets a fresh token before its year is up, so it is never
 more than a year unseen. Once a guest id has gone 400 days unseen its token has lapsed and browsers have
 dropped its cookie (Chrome keeps one at most 400 days), so no app can be handed it again, and the
 daily cron (`17 9 * * *`, `src/guest-sweep.ts`) deletes its settings and profile: up to 500 guests a
