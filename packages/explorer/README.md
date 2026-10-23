@@ -62,40 +62,46 @@ Dark mode follows the host's `.dark` variant. The empty-state art animates only 
 
 ### `<Explorer>`
 
-| Prop                       | Type                                   | What                                                                                                                                                           |
-| -------------------------- | -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `app`                      | `App`                                  | The host app. Its kind is what New makes and what the "this app" filter shows.                                                                                 |
-| `client`                   | `IndexClient`                          | From `createIndexClient`.                                                                                                                                      |
-| `view`                     | `ExplorerView`                         | What to show, usually `viewFromLocation(pathname, search)`.                                                                                                    |
-| `onNavigate`               | `(view, href, options?) => void`       | Go to another view. `href` is `explorerPath(view, basePath)`. `options.replace` asks for the current history entry to be replaced (the lens's writes).         |
-| `itemHref`                 | `(item, at?) => string`                | An item's address in its own app. `at` (`ItemPlace`) holds the tab and element when opened from the Inbox, the popover to open (`open`) and a card (`cardId`). |
-| `onCreate`                 | `(placement) => void`                  | New: make this app's kind at `{ folderId, teamId }`, then open it.                                                                                             |
-| `renderThumbnail?`         | `(item, 'row' \| 'card') => ReactNode` | A preview. Without it, rows show the kind's icon.                                                                                                              |
-| `Link?`                    | `ComponentType<LinkProps>`             | The host's link. Defaults to `<a>`.                                                                                                                            |
-| `onOpenItem?`              | `(href, item) => void`                 | Open an item from a menu. Defaults to a page load.                                                                                                             |
-| `basePath?`                | `string`                               | Where the Explorer lives. Defaults to `/explorer`.                                                                                                             |
-| `teams?`                   | `{ id, name }[]`                       | The person's joined teams, from the token's `teams` claim. The index keeps no teams.                                                                           |
-| `viewerId?`                | `string`                               | The person's id, for the Inbox's "Assigned to You".                                                                                                            |
-| `shareUrl?`                | `(link, item) => string`               | A share link's address. Defaults to `${origin}/s/<code>`.                                                                                                      |
-| `share?`                   | `ShareHost`                            | The Share dialog's extras per item: `loadTabs`, `handOver` (embed, live image), `helpHref` and `onTelemetry`.                                                  |
-| `inbox?`                   | `InboxHost`                            | The Inbox's extras: `localRows` (rows the index never sees, shown with This Browser), `cardGlyph`, `actionsHelpHref` and `onTelemetry`.                        |
-| `manageTeamsUrl?`          | `string`                               | Shows a Manage Teams row that links here.                                                                                                                      |
-| `filter?`/`onFilterChange` | `'app' \| 'all'`                       | Controls the filter from outside. Without them the Explorer keeps it, remembered per app.                                                                      |
-| `toolbar?`                 | `ReactNode`                            | The host's own controls, beside the search field.                                                                                                              |
-| `header?`                  | `({ search }) => ReactNode`            | The host's header, drawn above the hero and given the search field to place (null on Home with the hero). Without it the Explorer draws a plain bar.           |
-| `heroArt?`                 | `ReactNode`                            | A picture for the right of Home's hero, from `lg` up: `<HeroSheets>` from an app's own components, or `<HeroArt art={hero.json}>` from its manifest.           |
-| `heroWords?`               | `{ question, lead }`                   | The hero's words after the greeting. Defaults to the app kind's.                                                                                               |
-| `heroHidden?`/`onHideHero` | `boolean` / `() => void`               | Controls the hero from the host's setting. Without them the close is remembered per app in this browser.                                                       |
-| `signInBanner?`            | `SignInBannerHost`                     | A guest's sign-in banner (`signedIn === false`, a `signInHref`): `helpHref`, `onTelemetry`. Toasts stand above it.                                             |
-| `helpHref?`                | `(view) => string \| undefined`        | A Help article for a view. Shows a Help button in that view's header and the hero's corner.                                                                    |
-| `onTimeline?`              | `(action, type) => void`               | The Timeline's reports for telemetry: `Changed`, `Selected`, `Loaded`, `Opened` or `Removed`, by a fixed token.                                                |
-| `onHome?`                  | `(action, type) => void`               | Home's What Happened reports for telemetry: `Selected` (`WhatHappened`, `SeeTimeline`) or `Opened` (`Group`).                                                  |
-| `welcome?`                 | `WelcomeOptions`                       | Home's first run: the app's welcome manifest (loaded lazily on `onFirstRun`) in place of empty lists, and the hero's welcome.                                  |
-| `sidebarLinks?`            | `SidebarLink[]`                        | The host's own rows in the sidebar's More group, before the Trash (This Browser, linking to the app's offline view).                                           |
-| `allLabel?`                | `string`                               | The filter's every-app choice. "All" by default; "All Apps" on liveworkspace.app.                                                                              |
-| `arrivalNotice?`           | `string \| null`                       | A sentence said once on arrival, as a toast (a revoked link, say).                                                                                             |
-| `lensTemplates?`           | `{ value, label }[]`                   | The template families the lens's Template chip offers, matched to the last word of an item's intent. Without them there is no Template chip.                   |
-| `onLensSelected?`          | `(type) => void`                       | The lens's report for telemetry: a facet (`Text`, `OpensIn`, `Template`, `MadeBy`, `Edited`, `People`, `Space`) gained a value.                                |
+| Prop                       | Type                                      | What                                                                                                                                                           |
+| -------------------------- | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app`                      | `App`                                     | The host app. Its kind is what New makes and what the "this app" filter shows.                                                                                 |
+| `client`                   | `IndexClient`                             | From `createIndexClient`.                                                                                                                                      |
+| `view`                     | `ExplorerView`                            | What to show, usually `viewFromLocation(pathname, search)`.                                                                                                    |
+| `onNavigate`               | `(view, href, options?) => void`          | Go to another view. `href` is `explorerPath(view, basePath)`. `options.replace` asks for the current history entry to be replaced (the lens's writes).         |
+| `itemHref`                 | `(item, at?) => string`                   | An item's address in its own app. `at` (`ItemPlace`) holds the tab and element when opened from the Inbox, the popover to open (`open`) and a card (`cardId`). |
+| `onCreate`                 | `(placement) => void`                     | New: make this app's kind at `{ folderId, teamId }`, then open it.                                                                                             |
+| `renderThumbnail?`         | `(item, 'row' \| 'card') => ReactNode`    | A preview. Without it, rows show the kind's icon.                                                                                                              |
+| `Link?`                    | `ComponentType<LinkProps>`                | The host's link. Defaults to `<a>`.                                                                                                                            |
+| `onOpenItem?`              | `(href, item) => void`                    | Open an item from a menu. Defaults to a page load.                                                                                                             |
+| `basePath?`                | `string`                                  | Where the Explorer lives. Defaults to `/explorer`.                                                                                                             |
+| `teams?`                   | `{ id, name }[]`                          | The person's joined teams, from the token's `teams` claim. The index keeps no teams.                                                                           |
+| `viewerId?`                | `string`                                  | The person's id, for the Inbox's "Assigned to You".                                                                                                            |
+| `shareUrl?`                | `(link, item) => string`                  | A share link's address. Defaults to `${origin}/s/<code>`.                                                                                                      |
+| `share?`                   | `ShareHost`                               | The Share dialog's extras per item: `loadTabs`, `handOver` (embed, live image), `helpHref` and `onTelemetry`.                                                  |
+| `inbox?`                   | `InboxHost`                               | The Inbox's extras: `localRows` (rows the index never sees, shown with This Browser), `cardGlyph`, `actionsHelpHref` and `onTelemetry`.                        |
+| `manageTeamsUrl?`          | `string`                                  | Shows a Manage Teams row that links here.                                                                                                                      |
+| `filter?`/`onFilterChange` | `'app' \| 'all'`                          | Controls the filter from outside. Without them the Explorer keeps it, remembered per app.                                                                      |
+| `toolbar?`                 | `ReactNode`                               | The host's own controls, beside the search field.                                                                                                              |
+| `header?`                  | `({ search }) => ReactNode`               | The host's header, drawn above the hero and given the search field to place (null on Home with the hero). Without it the Explorer draws a plain bar.           |
+| `heroArt?`                 | `ReactNode`                               | A picture for the right of Home's hero, from `lg` up: `<HeroSheets>` from an app's own components, or `<HeroArt art={hero.json}>` from its manifest.           |
+| `heroWords?`               | `{ question, lead }`                      | The hero's words after the greeting. Defaults to the app kind's.                                                                                               |
+| `heroHidden?`/`onHideHero` | `boolean` / `() => void`                  | Controls the hero from the host's setting. Without them the close is remembered per app in this browser.                                                       |
+| `signInBanner?`            | `SignInBannerHost`                        | A guest's sign-in banner (`signedIn === false`, a `signInHref`): `helpHref`, `onTelemetry`. Toasts stand above it.                                             |
+| `helpHref?`                | `(view) => string \| undefined`           | A Help article for a view. Shows a Help button in that view's header and the hero's corner.                                                                    |
+| `onTimeline?`              | `(action, type) => void`                  | The Timeline's reports for telemetry: `Changed`, `Selected`, `Loaded`, `Opened` or `Removed`, by a fixed token.                                                |
+| `onHome?`                  | `(action, type) => void`                  | Home's What Happened reports for telemetry: `Selected` (`WhatHappened`, `SeeTimeline`) or `Opened` (`Group`).                                                  |
+| `welcome?`                 | `WelcomeOptions`                          | Home's first run: the app's welcome manifest (loaded lazily on `onFirstRun`) in place of empty lists, and the hero's welcome.                                  |
+| `sidebarLinks?`            | `SidebarLink[]`                           | The host's own rows in the sidebar's More group, before the Trash (This Browser, linking to the app's offline view).                                           |
+| `allLabel?`                | `string`                                  | The filter's every-app choice. "All" by default; "All Apps" on liveworkspace.app.                                                                              |
+| `arrivalNotice?`           | `string \| null`                          | A sentence said once on arrival, as a toast (a revoked link, say).                                                                                             |
+| `lensTemplates?`           | `{ value, label }[]`                      | The template families the lens's Template chip offers, matched to the last word of an item's intent. Without them there is no Template chip.                   |
+| `onLensSelected?`          | `(type) => void`                          | The lens's report for telemetry: a facet (`Text`, `OpensIn`, `Template`, `MadeBy`, `Edited`, `People`, `Space`) gained a value.                                |
+| `gallery?`                 | `GalleryHost`                             | The Image Gallery: a Library row and its page, `/explorer/images` (list, usage, upload, delete). `appLibraryHosts` builds it over an app's API.                |
+| `shapeLibraries?`          | `ShapeLibrariesHost`                      | Shape Libraries: a Library row and its page (rename, delete, show and delete shapes). `renderShape?` draws a shape; without it shapes are plain tiles.         |
+| `imports?`                 | `ImportHost`                              | Import from: a toolbar beside New in My Work and its folders, on Home's first run, and on Shape Libraries for sources that bring libraries.                    |
+| `itemMenu?`                | `(item) => ItemMenuVerb[]`                | The host's own verbs on an item's menu, before the destructive ones (an editor's Take Offline and Sync).                                                       |
+| `history?`                 | `boolean`                                 | History on an item's menu: the item's own Timeline (`GET /timeline?item=`), paged. On by default.                                                              |
+| `onCreateTeam?`            | `(name) => Promise<{ id, name } \| null>` | New Team in an item's Move dialog: made on the spot, opened, and the item filed into it. Omit for a guest.                                                     |
 
 Views (`ExplorerView`) and their addresses under `basePath`. A list view's `q` is its filter lens, written as `?q=`:
 
@@ -110,6 +116,9 @@ Views (`ExplorerView`) and their addresses under `basePath`. A list view's `q` i
 | `{ kind: 'trash' }`                   | `/explorer/trash`               | The Trash, grouped by owner: Restore, Delete permanently, Empty Trash    |
 | `{ kind: 'inbox' }`                   | `/explorer/inbox`               | `GET /inbox`: actions, cards, forms and threads, each linking to its app |
 | `{ kind: 'timeline' }`                | `/explorer/timeline`            | `GET /timeline`: what happened, by day, as cards; filters and a calendar |
+| `{ kind: 'invites' }`                 | `/explorer/invites`             | The team invitations waiting for you, each answered on Manage Teams      |
+| `{ kind: 'gallery' }`                 | `/explorer/images`              | The Image Gallery, from the host's `gallery`                             |
+| `{ kind: 'shape-libraries' }`         | `/explorer/shape-libraries`     | Shape Libraries, from the host's `shapeLibraries`                        |
 | `{ kind: 'search', q }`               | `/explorer/search?q=`           | Everything you can open, narrowed by the lens (`view=search`)            |
 | `{ kind: 'folder', id, q? }`          | `/explorer/folder?id=`          | A folder                                                                 |
 | `{ kind: 'team', id, folderId?, q? }` | `/explorer/team?id=[&folder=]`  | A team's library, or one of its folders                                  |
@@ -118,7 +127,15 @@ Views (`ExplorerView`) and their addresses under `basePath`. A list view's `q` i
 
 liveplanner's move dialog. It takes plain data, so a host can open it without the Explorer:
 `subjectName`, `subjectKind` (`'item' | 'folder'`), `personalFolders?`, `teams?` (each with its folders),
-`currentTeamId?`, `currentFolderId?`, `onCreateFolder?`, `onPick({ teamId, folderId })` and `onClose`.
+`currentTeamId?`, `currentFolderId?`, `onCreateFolder?`, `onCreateTeam?` (New Team among the spaces, which are
+then shown even before the person has a team), `onPick({ teamId, folderId })` and `onClose`.
+
+### `appLibraryHosts(app, { token, origin? })`
+
+The `gallery` and `shapeLibraries` hosts over an app's API, from the sites registry's `imagesPath` and
+`shapeLibrariesPath`, with `token()` as the bearer. `origin` defaults to the app's site (liveworkspace.app reads
+cross-origin with the workspace token); an app's editor passes its own. One set per app, origin and token reader, so
+the Explorer's reads key on stable objects.
 
 ### `<ShareDialog>`
 
@@ -147,8 +164,9 @@ every app's; the item lets a host count a dialog's events for that item's app.
 The content of the editor's floating Explorer panel. The host wraps it in its own movable panel. It shows:
 
 - the current item, which can be renamed and has the item menu;
-- a rail with Home, Inbox, Shared With Me, My Work, each team, Favourites and Trash, plus New and Open
-  Explorer;
+- a rail with Home, Inbox, Timeline, Shared With Me, My Work, each team, Favourites, Library (where the host has
+  a `gallery` or `shapeLibraries`) and Trash, plus New and Open Explorer;
+- the Timeline as rows under their days, and the Library's pages as tabs, Open Page going to the tab shown;
 - the chosen section as compact rows, paged.
 
 My Work carries the sidebar's own menu (`MyWorkMenu`): from the ⋯ in its pane's header, or a right-click on its
