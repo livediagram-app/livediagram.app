@@ -1,8 +1,9 @@
 # @liveworkspace/explorer
 
-The One Explorer UI, built once. Each app renders it at its own `/explorer`. It lists that app's items or
-every app's, and its New button makes that app's kind (Canvas, Plan, Document or Design). It looks and
-behaves like livediagram's Explorer, in the host's accent and words; its components were ported from
+The One Explorer UI, built once. liveworkspace.app renders it at `/explorer` for every app
+(`liveworkspace/apps/site/components/explorer/ExplorerShell.tsx`), and each app's editor panel uses its
+parts. It lists one app's items or every app's, and its New button makes that app's kind (Canvas, Plan,
+Document or Design). It looks and behaves like livediagram's Explorer, in the host's accent and words; its components were ported from
 liveplanner's. Its data comes from the index
 through `@liveworkspace/index-client`.
 
@@ -88,6 +89,10 @@ Dark mode follows the host's `.dark` variant. The empty-state art animates only 
 | `helpHref?`                | `(view) => string \| undefined`        | A Help article for a view. Shows a Help button in that view's header and the hero's corner.                                                                    |
 | `onTimeline?`              | `(action, type) => void`               | The Timeline's reports for telemetry: `Changed`, `Selected`, `Loaded`, `Opened` or `Removed`, by a fixed token.                                                |
 | `onHome?`                  | `(action, type) => void`               | Home's What Happened reports for telemetry: `Selected` (`WhatHappened`, `SeeTimeline`) or `Opened` (`Group`).                                                  |
+| `welcome?`                 | `WelcomeOptions`                       | Home's first run: the app's welcome manifest (loaded lazily on `onFirstRun`) in place of empty lists, and the hero's welcome.                                  |
+| `sidebarLinks?`            | `SidebarLink[]`                        | The host's own rows in the sidebar's More group, before the Trash (This Browser, linking to the app's offline view).                                           |
+| `allLabel?`                | `string`                               | The filter's every-app choice. "All" by default; "All Apps" on liveworkspace.app.                                                                              |
+| `arrivalNotice?`           | `string \| null`                       | A sentence said once on arrival, as a toast (a revoked link, say).                                                                                             |
 | `lensTemplates?`           | `{ value, label }[]`                   | The template families the lens's Template chip offers, matched to the last word of an item's intent. Without them there is no Template chip.                   |
 | `onLensSelected?`          | `(type) => void`                       | The lens's report for telemetry: a facet (`Text`, `OpensIn`, `Template`, `MadeBy`, `Edited`, `People`, `Space`) gained a value.                                |
 

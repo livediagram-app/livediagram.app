@@ -35,12 +35,13 @@ is renamed twice. Until each app moves, only what people see is renamed.
    │            sharing, opens, Trash,           │
    │            comments, actions, Inbox         │
    │ grants     short-lived "may open item X"    │
-   │ explorer   the UI, as a package             │
+   │ explorer   the UI, as a package, and the    │
+   │            one Explorer page, /explorer     │
    └─────────────────────────────────────────────┘
         ▲ register / rename / move     │ grant
         │                              ▼
    livediagram.app   liveplanner.app   livedocuments.app   livedesign.app
-   /explorer renders @liveworkspace/explorer, filtered to this app or All
+   the Explorer link opens liveworkspace.app/explorer?from=<app>, filtered to this app or All
    one Durable Object per item: tabs, elements, change log, presence
 ```
 
@@ -80,18 +81,23 @@ account.
 That first visit costs one redirect, once per browser per app. Opening an item without any identity
 (a share link, an embed) needs no redirect: the link grants view access on its own.
 
-### 4. The Explorer is built once and shown inside each app
+### 4. The Explorer is built once and lives on liveworkspace.app
 
 `@liveworkspace/explorer` is a package in liveworkspace holding the whole Explorer UI and its client
-for the index API. Each app renders it at its own `/explorer`, in its own colours and chrome, so
-people stay on livediagram.app/explorer or liveplanner.app/explorer. A filter shows "this app's
-items" or "All". Opening an item from another app goes to that app.
+for the index API. It is shown once, at liveworkspace.app/explorer, for every app. Each app's Explorer
+link goes there with `?from=<app>`, and an app's old `/explorer/*` addresses redirect there with the rest of
+the address kept. The page wears the colours of the app the person came from, its header shows the
+liveworkspace logo and then that app's logo (which leads back), and a filter shows "this app's items" or
+"All Apps". Opening an item goes to its app. The page is described in [site.md](site.md#the-explorer-explorer).
 
-Creating is aware of where it is: New on livediagram.app/explorer makes a Canvas, on
-liveplanner.app a Plan, and so on. The app creates the Durable Object and registers it in the index
-in one step, then opens it.
+Creating is aware of where the person came from: New from liveplanner makes a Plan, from livediagram a
+Canvas, and so on. It goes to the app's new-item route, where the app creates the Durable Object and
+registers it in the index in one step, then opens it.
 
-The editors' floating Explorer panel and move-to-folder picker use the same package.
+What a browser keeps offline belongs to its app's origin, so This Browser stays in each app (liveplanner's
+`/offline` and its editor panel); the Explorer's sidebar links to it.
+
+The editors' floating Explorer panel and move-to-folder picker use the same package, inside each app.
 
 ### 5. Comments, actions and the Inbox live in liveworkspace
 
@@ -132,7 +138,7 @@ walks the index, asks each item's app for an export of its content, and keeps Dr
    Trash, comments, actions, the Inbox query, and grants. Starts empty.
 4. **`@liveworkspace/explorer`**, built against the index service and tried on liveworkspace.app.
 5. **liveplanner first** (it holds no data): `PlanRoom` holds content, creation registers in the
-   index, `/explorer` renders the shared package, comments, actions and the Timeline go to liveworkspace,
+   index, its Explorer opens on liveworkspace.app, comments, actions and the Timeline go to liveworkspace,
    and its own folders, tags, sharing, Timeline, Inbox, teams mirror and content tables are removed.
 6. **livedocuments, then livedesign**, the same way.
 7. **livediagram last.** It has real documents, so it needs a migration; that is planned separately.
@@ -157,8 +163,8 @@ walks the index, asks each item's app for an export of its content, and keeps Dr
 - The index is the source of truth for everything but content.
 - Access is checked offline with short-lived grants signed by liveworkspace.
 - Guests have one identity across every app.
-- The Explorer UI is one package rendered inside each app, filterable to that app or All, and New
-  creates that app's kind.
+- The Explorer UI is one package, shown once on liveworkspace.app/explorer, filtered to the app the
+  person came from or All, and New creates that app's kind. Each app keeps the floating panel.
 - Search covers the index only. The Timeline, comments, actions and the Inbox are centralised.
 - The Drive mirror covers every app.
 - Item names: Canvas, Plan, Document, Design, applied as each app moves.

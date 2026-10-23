@@ -4,7 +4,7 @@
 
 ## The hero
 
-The shared Explorer draws Home's hero ([`@liveworkspace/explorer`'s `HomeHero`](../../../../packages/explorer/src/explorer/HomeHero.tsx)); liveplanner gives it its words, its art, its Help article and its setting ([`apps/editor/app/explorer/ExplorerShell.tsx`](../../../apps/editor/app/explorer/ExplorerShell.tsx)). It is a band the page's full width, under the Explorer header and above the sidebar and Home's sections, on Home only. Its ground is a soft wash of the app's accent under a dotted grid, a hairline under it; in dark mode, the dark ground with a soft glow from the top. Its content sits in the Explorer's content width.
+The shared Explorer draws Home's hero ([`@liveworkspace/explorer`'s `HomeHero`](../../../../packages/explorer/src/explorer/HomeHero.tsx)); liveworkspace.app's Explorer gives it liveplanner's welcome (its words and starts, from `@liveplanner/templates/welcome.json`) and liveplanner's Help article when the person came from liveplanner ([`liveworkspace/apps/site/components/explorer/ExplorerShell.tsx`](../../../../liveworkspace/apps/site/components/explorer/ExplorerShell.tsx)). Closing it is remembered per app in that browser. It is a band the page's full width, under the Explorer header and above the sidebar and Home's sections, on Home only. Its ground is a soft wash of the app's accent under a dotted grid, a hairline under it; in dark mode, the dark ground with a soft glow from the top. Its content sits in the Explorer's content width.
 
 Top to bottom, left column:
 

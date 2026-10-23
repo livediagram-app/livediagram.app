@@ -32,19 +32,19 @@ retired and its three parts redistributed:
 
 ### `/explorer/profile` still resolves, deliberately
 
-The route survives as a client-side redirect to
-`/explorer?settings=notifications`, and **must keep doing so**: every
-notification email ever sent carries that URL both as its "Manage your
-notifications" link and as its `List-Unsubscribe` header ([Transactional email (Resend)](transactional-email.md)). Those
-messages sit in inboxes indefinitely, and an unsubscribe link that 404s is
-the one dead link a product cannot ship. New mail links at the deep link
-directly.
+`/explorer/profile` and `/explorer?settings=notifications` **must keep resolving**: every notification email
+ever sent carries one of them as its "Manage your notifications" link and as its `List-Unsubscribe` header
+([Transactional email (Resend)](transactional-email.md)). Those messages sit in inboxes indefinitely, and an
+unsubscribe link that 404s is the one dead link a product cannot ship. Both now redirect to the Explorer on
+liveworkspace.app (every `/explorer` address does, [Explorer structure](../013-workspace/explorer-structure.md)),
+which sends them on to the account's notification settings, `/account/settings#notifications` on
+liveworkspace.app, where the same toggles live. `?settings=account` lands on the account's profile there, and
+any other category on liveplanner's own settings there (`/account/settings?app=liveplanner`).
 
 ### Reaching it
 
 - **Header account menu** - `AuthControls`' dropdown has an **Account** item
-  deep-linking `/explorer?settings=account`, so it is reachable from anywhere
-  the header chrome renders (editor + explorer).
+  deep-linking `/explorer?settings=account`, which lands on the account's profile on liveworkspace.app.
 - **Search** - every row is findable from the app-wide search panel, which
   opens Settings on the matching row ([User preferences](../007-editor/user-preferences.md)).
 

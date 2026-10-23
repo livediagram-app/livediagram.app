@@ -72,7 +72,7 @@ which the accounts Worker reads for onboarding and team invites. Most are settin
 every liveworkspace app shares (the `all` scope, marked "All apps" in Settings),
 so turning one off here turns it off in every app; `notifyFormResponses` and
 `notifyProjectJoin` are liveplanner's own. Every opt-out email's footer links to
-`/explorer?settings=notifications` (also emitted as a `List-Unsubscribe` header; the old `/explorer/profile` URL in already-sent mail redirects there, see [Account settings & email notifications](profile-and-email-notifications.md)) so the
+`/explorer?settings=notifications` (also emitted as a `List-Unsubscribe` header), which, like the old `/explorer/profile` URL in already-sent mail, lands on the account's notification settings on liveworkspace.app ([Account settings & email notifications](profile-and-email-notifications.md)), so the
 recipient can turn it off in one click. The opt-out toggles are
 documented for users in the [Email Notifications](../../../apps/help/app/account-and-data/email-notifications/page.mdx)
 help article.

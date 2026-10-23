@@ -114,6 +114,48 @@ as its own header does, the prism and the wordmark in the app's accent. It reads
 `/api/telemetry/summary`. Its styles (and each sending app's shared UI, which its views render) are in
 their own stylesheet, `app/telemetry/telemetry.css`, so the other pages don't carry them.
 
+### The Explorer (`/explorer/…`)
+
+Every app's work, in one place: the shared Explorer (`@liveworkspace/explorer`, [one-explorer.md](one-explorer.md))
+lives here once, rather than at each app's `/explorer`. The apps' Explorer links come here with `?from=<app>`
+(`explorerUrl` in `@liveworkspace/sites`). Its parts are `components/explorer/` and `lib/explorer/`.
+
+- **Who it reads as.** The index is asked with a short-lived token from `GET /api/auth/workspace-token`: the
+  signed-in account's, or this browser's guest's ([accounts.md](accounts.md)). Signing out here asks again.
+- **Which app.** The app the person came from: `?from=`, then the referrer, then the last app used here
+  (kept in this browser). The page wears that app's colours (its brand ramp, light and dark) and opens filtered
+  to its items, with **All Apps** one click away. Someone who came straight here sees every app's items in
+  liveworkspace's own colours.
+- **The header.** The liveworkspace logo (with the site switcher), a hairline, then the app's logo, which leads
+  back to the app. The search field sits in the middle (on Home the hero holds it), the account control on
+  the right. Someone who came straight here sees no app logo.
+- **Links.** Each item opens in its own app, at the address the sites registry (`APP_ITEMS`) gives: its base
+  URL, item path and share path. **New** goes to the app's new-item route, with the folder or team it was made
+  from. Help links go to the app's help centre.
+- **First run.** An empty Home shows the app's welcome and starts, from that app's templates manifest
+  (`@<app>/templates/welcome.json`, loaded only when Home is empty).
+- **Previews.** Real previews where the app serves one (`previewPath` in the registry; liveplanner's plan
+  snapshot), asked with the person's workspace token and the item's share code. They are asked for only as a
+  card nears the screen or a row is pointed at, at most 4 at a time, once per item version, and kept as up to
+  200 blob URLs, least recently used out. The app's answer is cached by the browser for a day per version.
+  Other apps' items show their kind's icon, with no request.
+- **Names.** Owners and who did what are named through `/api/account/people`, gathered into one request per
+  beat (at most 100 ids) and kept in one bounded cache. Guests see no names: that route needs a session.
+- **The Inbox.** Plan cards wear their type's glyph, and its empty state points at liveplanner's help on actions.
+- **This Browser.** A row in the sidebar opens the app's own offline view (`offlinePath`), since what a browser
+  keeps belongs to that app's origin.
+- **Addresses handed over.** `?settings=<category>` (every notification email's unsubscribe link) goes to the
+  matching account page: notifications to `/account/settings#notifications`, an app's own settings to
+  `/account/settings?app=<app>`. `?ended=revoked` says, once, that the link a plan was open through was revoked.
+  `?trashed=<id>&title=` offers Undo for an item just moved to the Trash. Each is dropped from the address once
+  read.
+- **Retired addresses.** `/explorer/profile` goes to notification settings, `/explorer/activity` to the Inbox,
+  `/explorer/generated` to a search for items made by AI, `/explorer/dynamic` to All, `/explorer/invites` to
+  `/account/teams`, `/explorer/tags` to Home, and `/explorer/offline` to the app's offline view.
+
+Its styles are in their own stylesheet, `app/explorer/explorer.css`, so the other pages don't carry them. The
+pages are `noindex`. Cmd/Ctrl+K moves to the search field.
+
 ### Your account (`/account/…`)
 
 Where a signed-in person runs what belongs to their account rather than to an app
@@ -235,7 +277,7 @@ corepack pnpm dev:workspace           # from the repo root: http://localhost:300
 That runs the site's dev server on 3000 and both APIs behind it (accounts on 8787, telemetry on
 8790; first-time setup for each is in [the README](../README.md#local-development) and
 [telemetry.md](telemetry.md#running-it-locally)). The dev server forwards `/api/auth/*`,
-`/.well-known/*` and `/api/telemetry/*` to them (`next.config.ts`), so the whole site works from
+`/.well-known/*`, `/api/index/*` (the index, 8793) and `/api/telemetry/*` to them (`next.config.ts`), so the whole site works from
 one origin, as it does in production. Run `corepack pnpm dev:site` for the pages alone.
 
 ## Not done yet

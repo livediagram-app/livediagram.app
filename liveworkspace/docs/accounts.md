@@ -46,9 +46,9 @@ email, unless an admin has turned that off (the `notifyInviteResponse` setting, 
 `all` scope; [Settings](#settings)). That email links to the account's settings on liveworkspace.app,
 where it is turned off, and sends it as `List-Unsubscribe`.
 
-The apps show the invitations waiting for someone too, in their Explorer's Invites view with a count
-on its sidebar row, each linking here to answer it: `POST /api/account/internal/invitations`
-`{ userId }` answers the same list `/account/teams` shows (team name, organisation, member count, role,
+The Explorer on liveworkspace.app shows the invitations waiting on its sidebar, read from
+`GET /api/account/teams`, each linking to `/account/teams` to answer it. An app's editor can ask too:
+`POST /api/account/internal/invitations` `{ userId }` answers the same list `/account/teams` shows (team name, organisation, member count, role,
 who invited them and when), for the account's verified address, in two indexed reads
 (`src/internal-invitations.ts`). The app vouches for the account, as it does for settings, and
 remembers the answer for 30 seconds (`pendingInvitationsFor` in `@liveworkspace/auth-client`).
@@ -204,6 +204,16 @@ An app's sign-in that finds a liveworkspace session already there, by a click or
 authorize step instead (`mergeGuestOnAuthorize`): when the authorize answer carries a code and the
 request a valid `lw_guest` cookie, the session's account takes the guest's settings, profile and
 index items, and the cookie is cleared. Without a guest cookie it costs nothing.
+
+### liveworkspace.app's own token
+
+The Explorer lives on liveworkspace.app itself ([site.md](site.md#the-explorer-explorer)), which has the session
+cookie rather than an OAuth client. It asks `GET /api/auth/workspace-token` (`src/workspace-token.ts`) for
+`{ token, kind, sub, expiresAt }`: an access token for the signed-in account, with its teams, or else a guest
+token for the browser's `lw_guest` guest (made here on a first visit), the same guest every app's hand-off names.
+Its audiences are every app's API, so the index takes it, and so does an app's API when the Explorer asks it for
+an item's preview. It lasts 15 minutes; the page asks again a minute before it runs out. It answers only this
+origin: there is no CORS, and a cross-site request (by `Sec-Fetch-Site`) is refused.
 
 ## Signing in without a click
 
