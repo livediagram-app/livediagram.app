@@ -5,7 +5,7 @@
 // in the chosen layout. As livediagram's: cards by default; Shared With Me is a fixed list and the Trash its
 // own grouped page, neither with the layout toggle; New Folder only where folders live.
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import type { Folder } from '@liveworkspace/index-client';
 import { folderPath, type FolderStore } from '../data/useFolders';
 import { useItemList } from '../data/useItemList';
@@ -28,31 +28,11 @@ import { FilteredEmpty, LensAnnouncer, LensBar } from './Lens';
 import { useLensContext } from './SearchField';
 import { TrashNote, TrashPane } from './TrashPane';
 import { ListView } from './ListView';
-import { PaneHeader, type Crumb, type ViewMode } from './PaneHeader';
+import { SharedList } from './SharedList';
+import { TeamPage } from './TeamPane';
+import { PaneHeader, type Crumb } from './PaneHeader';
+import { useViewMode } from './useViewMode';
 import type { RowOptions } from './rows';
-
-const VIEW_MODE_KEY = 'liveworkspace:explorer-view-mode';
-
-export function useViewMode(): [ViewMode, (mode: ViewMode) => void] {
-  const [mode, setMode] = useState<ViewMode>(() => {
-    try {
-      const saved =
-        typeof localStorage === 'undefined' ? null : localStorage.getItem(VIEW_MODE_KEY);
-      return saved === 'list' || saved === 'details' ? saved : 'card';
-    } catch {
-      return 'card';
-    }
-  });
-  const set = useCallback((next: ViewMode) => {
-    setMode(next);
-    try {
-      localStorage.setItem(VIEW_MODE_KEY, next);
-    } catch {
-      // A convenience only.
-    }
-  }, []);
-  return [mode, set];
-}
 
 export function ItemsPane({
   view,
@@ -147,6 +127,47 @@ export function ItemsPane({
     onLoadMore: state.loadMore,
   };
 
+  const body = state.error ? (
+    <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200">
+      Couldn’t load this list.{' '}
+      <button type="button" className="font-semibold underline" onClick={state.retry}>
+        Try again
+      </button>
+    </div>
+  ) : state.loading && folderRows.length === 0 ? (
+    <SkeletonRows />
+  ) : view.kind === 'trash' ? (
+    <TrashPane
+      items={state.items}
+      hasMore={state.hasMore}
+      loadingMore={state.loadingMore}
+      onLoadMore={state.loadMore}
+    />
+  ) : empty && lensOn ? (
+    <FilteredEmpty
+      issues={parsed.issues}
+      words={words}
+      onClear={() => ctx.navigate(withLens(view, ''), { replace: true })}
+    />
+  ) : empty ? (
+    <EmptyPane
+      view={view}
+      words={words}
+      onCreate={createItem}
+      createLabel={`New ${ctx.kind.one}`}
+    />
+  ) : view.kind === 'shared' ? (
+    <SharedList {...sharedProps} resetKey={list?.key ?? ''} />
+  ) : !layouts ? (
+    <ListView {...sharedProps} resetKey={list?.key ?? ''} />
+  ) : mode === 'card' ? (
+    <CardView {...sharedProps} resetKey={list?.key ?? ''} />
+  ) : mode === 'details' ? (
+    <DetailsView {...sharedProps} resetKey={list?.key ?? ''} />
+  ) : (
+    <ListView {...sharedProps} resetKey={list?.key ?? ''} />
+  );
+
   return (
     <div data-explorer-view={view.kind}>
       <PaneHeader
@@ -174,44 +195,7 @@ export function ItemsPane({
         />
       ) : null}
       {view.kind === 'trash' ? <TrashNote words={words} /> : null}
-      {state.error ? (
-        <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200">
-          Couldn’t load this list.{' '}
-          <button type="button" className="font-semibold underline" onClick={state.retry}>
-            Try again
-          </button>
-        </div>
-      ) : state.loading && folderRows.length === 0 ? (
-        <SkeletonRows />
-      ) : view.kind === 'trash' ? (
-        <TrashPane
-          items={state.items}
-          hasMore={state.hasMore}
-          loadingMore={state.loadingMore}
-          onLoadMore={state.loadMore}
-        />
-      ) : empty && lensOn ? (
-        <FilteredEmpty
-          issues={parsed.issues}
-          words={words}
-          onClear={() => ctx.navigate(withLens(view, ''), { replace: true })}
-        />
-      ) : empty ? (
-        <EmptyPane
-          view={view}
-          words={words}
-          onCreate={createItem}
-          createLabel={`New ${ctx.kind.one}`}
-        />
-      ) : !layouts ? (
-        <ListView {...sharedProps} />
-      ) : mode === 'card' ? (
-        <CardView {...sharedProps} resetKey={list?.key ?? ''} />
-      ) : mode === 'details' ? (
-        <DetailsView {...sharedProps} />
-      ) : (
-        <ListView {...sharedProps} />
-      )}
+      {view.kind === 'team' && !view.folderId ? <TeamPage teamId={view.id}>{body}</TeamPage> : body}
     </div>
   );
 }

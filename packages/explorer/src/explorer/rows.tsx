@@ -18,6 +18,8 @@ import { AppMark, FavouriteMarker, FolderChip, MadeByAiBadge, VisibilityBadge } 
 import { useExplorer } from './context';
 import { FolderMosaic } from './FolderMosaic';
 import { FolderMenu, ItemMenu } from './menus';
+import { useExtras } from './extras';
+import { usePersonName } from '../data/usePeople';
 import { DefaultFolderMarker } from '../defaults/DefaultFolderMarker';
 import { folderCountLabel } from '../words';
 import { SIDEBAR_LABELS } from '../views';
@@ -50,10 +52,23 @@ export function ownerLabel(
   item: Pick<ShownItem, 'teamId' | 'ownerId' | 'sharedVia'>,
   viewerId: string | null,
   teamName: (id: string | null) => string | null,
+  // The owner's display name, from accounts, when someone else owns it.
+  ownerName?: string | null,
 ): string {
   if (item.teamId) return teamName(item.teamId) ?? 'Team';
-  if (item.sharedVia || (viewerId && item.ownerId !== viewerId)) return 'Shared with you';
+  if (item.sharedVia || (viewerId && item.ownerId !== viewerId))
+    return ownerName || 'Shared with you';
   return 'You';
+}
+
+/** The Owner cell's words for a row, the owner's name asked for once the row is on screen. */
+export function useOwnerLabel(item: ShownItem, enabled: boolean): string {
+  const { viewerId, teamName } = useExplorer();
+  const { people } = useExtras();
+  const someoneElse =
+    enabled && !item.teamId && (item.sharedVia || (viewerId && item.ownerId !== viewerId));
+  const name = usePersonName(people, someoneElse ? item.ownerId : null);
+  return ownerLabel(item, viewerId, teamName, name);
 }
 
 export function useItemBits(item: ShownItem) {
@@ -106,16 +121,18 @@ export const ItemRow = memo(function ItemRow({
   renaming: boolean;
   options: RowOptions;
 }) {
-  const { Link, viewerId, teamName } = useExplorer();
+  const { Link } = useExplorer();
+  const { leaving } = useExtras();
   const bits = useItemBits(item);
   const menu = useRowMenu({ disabled: renaming });
   const drag = useItemDrag(item, renaming);
   const title = item.title || 'Untitled';
   const showOwner = options.showOwner === true;
+  const owner = useOwnerLabel(item, showOwner);
   return (
     <li
       data-item-row={item.id}
-      className={`${rowGrid(showOwner)} ${ROW}`}
+      className={`${rowGrid(showOwner)} ${ROW} ${leaving.has(item.id) ? 'lw-row-out' : ''}`}
       style={{ height: ROW_HEIGHT }}
       onContextMenu={menu.onContextMenu}
       {...drag}
@@ -149,7 +166,7 @@ export const ItemRow = memo(function ItemRow({
       </span>
       {showOwner ? (
         <span className="hidden truncate text-xs text-slate-500 sm:block dark:text-slate-400">
-          {ownerLabel(item, viewerId, teamName)}
+          {owner}
         </span>
       ) : null}
       <span className="hidden sm:flex sm:items-center">
@@ -170,7 +187,7 @@ export const ItemRow = memo(function ItemRow({
   );
 });
 
-function useFolderBits(folder: Folder) {
+export function useFolderBits(folder: Folder) {
   const { navigate, folders, setRenamingId } = useExplorer();
   const open = useCallback(
     () =>
@@ -277,6 +294,7 @@ export const FolderRow = memo(function FolderRow({
         <button
           type="button"
           onClick={bits.open}
+          onDoubleClick={bits.open}
           className="flex min-w-0 items-center gap-2 text-left"
         >
           {label}
@@ -306,7 +324,9 @@ export const ItemCard = memo(function ItemCard({
   renaming: boolean;
   options: RowOptions;
 }) {
-  const { Link, renderThumbnail, viewerId, teamName } = useExplorer();
+  const { Link, renderThumbnail } = useExplorer();
+  const { leaving } = useExtras();
+  const owner = useOwnerLabel(item, options.showOwner === true);
   const bits = useItemBits(item);
   const menu = useRowMenu({ disabled: renaming });
   const drag = useItemDrag(item, renaming);
@@ -319,7 +339,7 @@ export const ItemCard = memo(function ItemCard({
   return (
     <div
       data-item-card={item.id}
-      className={CARD_SHELL}
+      className={`${CARD_SHELL} ${leaving.has(item.id) ? 'lw-row-out' : ''}`}
       onContextMenu={menu.onContextMenu}
       {...drag}
     >
@@ -369,9 +389,7 @@ export const ItemCard = memo(function ItemCard({
           </span>
         </div>
         {options.showOwner ? (
-          <span className="truncate text-xs text-slate-500 dark:text-slate-400">
-            {ownerLabel(item, viewerId, teamName)}
-          </span>
+          <span className="truncate text-xs text-slate-500 dark:text-slate-400">{owner}</span>
         ) : null}
       </div>
       {menu.open ? (
@@ -425,6 +443,7 @@ export const FolderCard = memo(function FolderCard({
       <button
         type="button"
         onClick={renaming ? undefined : bits.open}
+        onDoubleClick={renaming ? undefined : bits.open}
         className={CARD_PREVIEW}
         aria-label={`Open ${folder.name}`}
       >

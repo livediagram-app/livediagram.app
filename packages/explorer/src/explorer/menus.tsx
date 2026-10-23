@@ -28,6 +28,7 @@ import {
 import { useExplorer } from './context';
 import { rowsAbove } from './sidebar/expansion';
 import { VisibilityBadge } from './badges';
+import { useExtras } from './extras';
 
 export function canManage(item: ShownItem): boolean {
   return item.access === 'edit' && !item.sharedVia;
@@ -46,6 +47,7 @@ export function ItemMenu({
   extra?: ReactNode;
 }) {
   const { actions, openItem, setRenamingId, openDialog, navigate, kind } = useExplorer();
+  const { slideOut } = useExtras();
   const run = (fn: () => void) => () => {
     onClose();
     fn();
@@ -121,7 +123,14 @@ export function ItemMenu({
         <MenuActionRow
           label="Open Team"
           icon={<TeamIcon />}
-          onClick={run(() => navigate({ kind: 'team', id: item.teamId! }))}
+          // Its own folder in the team's library, where it sits among its neighbours.
+          onClick={run(() =>
+            navigate(
+              item.folderId
+                ? { kind: 'team', id: item.teamId!, folderId: item.folderId }
+                : { kind: 'team', id: item.teamId! },
+            ),
+          )}
         />
       ) : null}
       {extra}
@@ -136,7 +145,8 @@ export function ItemMenu({
         <MenuActionRow
           label={`Delete ${kind.one}`}
           icon={<TrashIcon />}
-          onClick={run(() => void actions.trash(item))}
+          // The row slides out, then goes to the Trash.
+          onClick={run(() => slideOut(item.id, () => void actions.trash(item)))}
         />
       ) : null}
     </PortalMenu>

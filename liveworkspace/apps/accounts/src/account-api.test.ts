@@ -155,6 +155,15 @@ describe('the account API, signed in', () => {
     expect((await call('/profile', { method: 'PATCH', body: {} })).status).toBe(400);
   });
 
+  it('reads other people’s display names by id, names only', async () => {
+    const res = await call('/people?ids=user_bea,user_nobody,not-an-id');
+    expect(await res.json()).toEqual({ people: [{ id: 'user_bea', name: 'Bea' }] });
+    const many = Array.from({ length: 101 }, (_, i) => `user_${i}`).join(',');
+    expect((await call(`/people?ids=${many}`)).status).toBe(400);
+    signedIn = null;
+    expect((await call('/people?ids=user_bea')).status).toBe(401);
+  });
+
   it('reads and patches the settings every app shows', async () => {
     expect(await (await call('/settings')).json()).toEqual({ all: {}, updatedAt: null });
     const patched = await call('/settings', {

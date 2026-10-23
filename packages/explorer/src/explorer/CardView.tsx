@@ -4,6 +4,7 @@
 // Cards are revealed a batch at a time as the end of the grid scrolls into view, and the next page of the
 // list loads once every loaded card is shown, so a 2,000-item list never mounts 2,000 previews at once.
 
+import { useCascade } from '../ui/useCascade';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Folder } from '@liveworkspace/index-client';
 import type { ShownItem } from '../data/overlay';
@@ -34,6 +35,7 @@ export function CardView({
   resetKey: string;
 }) {
   const { renamingId, client, app, filter, epoch, placedEpoch } = useExplorer();
+  const cascade = useCascade(resetKey);
   const [shown, setShown] = useState({ key: resetKey, count: CARD_BATCH });
   const limit = shown.key === resetKey ? shown.count : CARD_BATCH;
   const count = folders.length + items.length;
@@ -96,7 +98,7 @@ export function CardView({
 
   return (
     <>
-      <div className={CARD_GRID}>{cards}</div>
+      <div className={`${CARD_GRID} ${cascade ? 'lw-cascade' : ''}`}>{cards}</div>
       {more ? (
         <div ref={sentinel} className="mt-4 flex justify-center">
           <Button variant="secondary" size="sm" onClick={showMore} disabled={loadingMore}>

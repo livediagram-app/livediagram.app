@@ -10,6 +10,7 @@
 
 import {
   useId,
+  useMemo,
   useLayoutEffect,
   useRef,
   useState,
@@ -55,6 +56,8 @@ import { DefaultFolderMarker } from '../defaults/DefaultFolderMarker';
 import { LIBRARY, MY_WORK, teamKey } from './sidebar/expansion';
 import { useFolderRowMenu, useMyWorkMenu } from './sidebar/rowMenus';
 import { useTreeNavigation } from './sidebar/useTreeNavigation';
+import { useExtras } from './extras';
+import { SidebarSignInNudge, teamMemberBadge } from './SidebarSignInNudge';
 
 type Tone = 'sky' | 'violet' | 'amber' | 'emerald' | 'indigo' | 'rose';
 
@@ -427,6 +430,12 @@ export function Sidebar() {
   const myWorkMenu = useMyWorkMenu({ onRename: setRenamingId });
   const navRef = useRef<HTMLElement>(null);
   const tree = useTreeNavigation(navRef);
+  const { sharedCount, myTeams, signedIn, signInHref } = useExtras();
+  const memberCounts = useMemo(
+    () => new Map(myTeams?.teams.map((t) => [t.id, t.memberCount])),
+    [myTeams],
+  );
+  const invites = myTeams?.invitations.length ?? 0;
   const is = (v: ExplorerView) => sameView(view, v);
   const myRoots = folders.childrenOf(null, null);
   return (
@@ -472,6 +481,8 @@ export function Sidebar() {
           selected={view.kind === 'shared'}
           onActivate={() => navigate({ kind: 'shared' })}
           depth={0}
+          badge={sharedCount}
+          badgeLabel={sharedCount === undefined ? undefined : `${sharedCount} shared with you`}
         />
       </SidebarGroup>
       <SidebarGroup title="Spaces">
@@ -516,6 +527,7 @@ export function Sidebar() {
               expandable={roots.length > 0}
               expanded={expanded.has(key)}
               onToggleExpand={() => toggle(key)}
+              {...teamMemberBadge(memberCounts.get(t.id))}
             >
               {roots.map((f) => (
                 <FolderSubtree
@@ -530,7 +542,22 @@ export function Sidebar() {
             </SidebarRow>
           );
         })}
-        {manageTeamsUrl ? (
+        {signedIn && invites > 0 && manageTeamsUrl ? (
+          <SidebarRow
+            icon={<InboxIcon />}
+            tone="violet"
+            label={SIDEBAR_LABELS.invites}
+            selected={false}
+            onActivate={() => window.location.assign(manageTeamsUrl)}
+            depth={0}
+            badge={invites}
+            badgeLabel={`${invites} waiting`}
+            badgeTone="brand"
+          />
+        ) : null}
+        {!signedIn && signInHref ? (
+          <SidebarSignInNudge href={signInHref} />
+        ) : manageTeamsUrl ? (
           <SidebarRow
             icon={<PlusIcon />}
             label={SIDEBAR_LABELS.manageTeams}

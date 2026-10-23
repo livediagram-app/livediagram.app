@@ -138,13 +138,15 @@ describe('<Explorer>', () => {
     expect(await screen.findByRole('alert')).toBeTruthy();
   });
 
-  it('moves a trashed item out of the list at once, with Undo', async () => {
+  it('slides a trashed item out of the list, then offers Undo', async () => {
     const index = createFakeIndex({ items: [makeItem(1), makeItem(2)] });
     renderExplorer(index, { kind: 'all' });
     await waitFor(() => expect(rows()).toHaveLength(2));
     fireEvent.click(screen.getByRole('button', { name: 'Menu for Item 1' }));
     fireEvent.click(await screen.findByRole('menuitem', { name: 'Delete Plan' }));
-    expect(rows()).toHaveLength(1);
+    // Its exit plays first (160 ms), then it leaves the list.
+    expect(document.querySelector('.lw-row-out')).toBeTruthy();
+    await waitFor(() => expect(rows()).toHaveLength(1));
     fireEvent.click(await screen.findByRole('button', { name: 'Undo' }));
     await waitFor(() => expect(rows()).toHaveLength(2));
     expect(index.count('restoreItem')).toBe(1);

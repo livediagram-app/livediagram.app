@@ -93,3 +93,69 @@
     animation-duration: 1ms;
   }
 }
+/* A list's rows arriving (liveplanner's lvd-cascade): each rises in a beat after the one above, capped so the
+   whole list settles within 250ms. Only on a list's first paint (useCascade), never on rows scrolled into view. */
+@keyframes lw-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.lw-cascade > * {
+  animation: lw-row-in 120ms ease-out both;
+}
+.lw-cascade > *:nth-child(2) {
+  animation-delay: 10ms;
+}
+.lw-cascade > *:nth-child(3) {
+  animation-delay: 20ms;
+}
+.lw-cascade > *:nth-child(4) {
+  animation-delay: 30ms;
+}
+.lw-cascade > *:nth-child(5) {
+  animation-delay: 40ms;
+}
+.lw-cascade > *:nth-child(6) {
+  animation-delay: 50ms;
+}
+.lw-cascade > *:nth-child(7) {
+  animation-delay: 60ms;
+}
+.lw-cascade > *:nth-child(8) {
+  animation-delay: 70ms;
+}
+.lw-cascade > *:nth-child(9) {
+  animation-delay: 80ms;
+}
+.lw-cascade > *:nth-child(10) {
+  animation-delay: 90ms;
+}
+.lw-cascade > *:nth-child(n + 11) {
+  animation-delay: 100ms;
+}
+/* A deleted row plays out rather than vanishing: it slides aside and fades as the rows below close the gap. */
+@keyframes lw-row-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+}
+.lw-row-out {
+  animation: lw-row-out 160ms cubic-bezier(0.4, 0, 1, 1) both;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lw-cascade > *,
+  .lw-row-out {
+    animation: none;
+  }
+}

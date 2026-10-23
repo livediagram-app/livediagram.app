@@ -173,6 +173,23 @@ describe('share links', () => {
     );
   });
 
+  it("marks the owner's items that have a live link, in lists", async () => {
+    const ada = await person('user_a');
+    const shared = await makeItem(ada.auth);
+    const plain = await makeItem(ada.auth);
+    await share(ada.auth, shared.id);
+    const listed = await body<{ items: Item[] }>(await call('/items', { auth: ada.auth }));
+    const byId = new Map(listed.items.map((i) => [i.id, i]));
+    expect(byId.get(shared.id)!.hasLinks).toBe(true);
+    expect(byId.get(plain.id)!.hasLinks).toBe(false);
+    // An expired link no longer counts.
+    const expired = await makeItem(ada.auth);
+    const link = await share(ada.auth, expired.id, { expiry: 'day' });
+    h.db.sql.prepare('UPDATE share_links SET expires_at = 1 WHERE code = ?').run(link.code);
+    const again = await body<{ items: Item[] }>(await call('/items', { auth: ada.auth }));
+    expect(again.items.find((i) => i.id === expired.id)!.hasLinks).toBe(false);
+  });
+
   it('caps the links on one item', async () => {
     const ada = await person('user_a');
     const item = await makeItem(ada.auth);

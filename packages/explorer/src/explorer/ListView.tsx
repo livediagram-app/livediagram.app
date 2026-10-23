@@ -12,6 +12,7 @@ import { LIST_CARD, LIST_HEADER } from '../ui/classes';
 import { useExplorer } from './context';
 import { FolderRow, ItemRow, ROW_HEIGHT, rowGrid, type RowOptions } from './rows';
 import { useWindowedRange } from './useWindow';
+import { useCascade } from '../ui/useCascade';
 
 // Ask for the next page this many rows before the end.
 const LOAD_AHEAD = 40;
@@ -23,7 +24,10 @@ export function ListView({
   hasMore,
   loadingMore,
   onLoadMore,
+  resetKey = '',
 }: {
+  // The list's identity: a new one cascades in.
+  resetKey?: string;
   folders: Folder[];
   items: ShownItem[];
   options: RowOptions;
@@ -33,6 +37,7 @@ export function ListView({
 }) {
   const { renamingId, client, app, filter, epoch, placedEpoch } = useExplorer();
   const body = useRef<HTMLUListElement>(null);
+  const cascade = useCascade(resetKey);
   const count = folders.length + items.length;
   const range = useWindowedRange(body, count, ROW_HEIGHT);
   // The range trails a shrinking list by one render (an item trashed): clamp it to what is there.
@@ -93,7 +98,7 @@ export function ListView({
       <ul
         ref={body}
         aria-rowcount={count}
-        className="divide-y divide-slate-100 dark:divide-slate-700/60"
+        className={`divide-y divide-slate-100 dark:divide-slate-700/60 ${cascade ? 'lw-cascade' : ''}`}
       >
         {start > 0 ? <li aria-hidden style={{ height: start * ROW_HEIGHT }} /> : null}
         {rows}

@@ -46,6 +46,8 @@ import { createNameStore, NamesProvider, type NameLookup } from '../data/names';
 import { WelcomeProvider, useFirstRun } from '../welcome/context';
 import { WelcomeFan } from '../welcome/HomeWelcome';
 import type { WelcomeOptions } from '../welcome/types';
+import { ExtrasProvider, type ViewModeTelemetry } from './extras';
+import type { ExplorerAccounts } from '../data/accounts';
 
 export type ExplorerProps = {
   /** The host app: its kind is what New makes and what "this app" shows. */
@@ -121,6 +123,20 @@ export type ExplorerProps = {
   lookupNames?: NameLookup;
   /** A sentence said once on arrival, as a toast (why the person was sent here: a revoked link, say). */
   arrivalNotice?: string | null;
+  /** liveworkspace accounts, for people's names (the Owner column), a team's page and member count, and the
+   *  invitations waiting. On liveworkspace.app: `createExplorerAccounts()`. Without it those go unsaid. */
+  accounts?: ExplorerAccounts | null;
+  /** Whether the person is signed in; a guest is nudged to sign in for Teams. Signed in when omitted. */
+  signedIn?: boolean;
+  /** Where a guest signs in (the Teams nudge). */
+  signInHref?: string;
+  /** Where a team is run, for its page's Manage link; `manageTeamsUrl` when omitted. */
+  teamManageUrl?: (teamId: string) => string;
+  /** Loads an item's preview ahead, as its Details row comes near the screen (the hover preview then paints at
+   *  once). */
+  prefetchThumbnail?: (item: Item) => void;
+  /** The List / Card / Details toggle switched (`UI / Toggled / <type>`), for the host's telemetry. */
+  onViewToggled?: (type: ViewModeTelemetry) => void;
 };
 
 const FILTER_KEY = (app: App) => `liveworkspace:explorer-filter:${app}`;
@@ -222,6 +238,12 @@ function ExplorerInner({
   allLabel,
   lookupNames,
   arrivalNotice,
+  accounts,
+  signedIn,
+  signInHref,
+  teamManageUrl,
+  prefetchThumbnail,
+  onViewToggled,
 }: ExplorerProps) {
   const [filter, setFilter] = useFilter(app, controlledFilter, onFilterChange);
   const [heroHidden, hideHero] = useHeroHidden(app, controlledHeroHidden, onHideHero);
@@ -269,52 +291,61 @@ function ExplorerInner({
       lensTemplates={lensTemplates}
       onLensSelected={onLensSelected}
     >
-      <HostExtrasProvider value={extras}>
-        <NamesProvider value={names}>
-          <WelcomeProvider welcome={welcome} active={view.kind === 'home'}>
-            <div data-explorer="" className="flex min-w-0 flex-1 flex-col">
-              {header ? (
-                header({ search: heroOnHome ? null : <BarSearch toolbar={toolbar} /> })
-              ) : heroOnHome ? null : (
-                <div className="sticky top-0 z-30 flex h-12 shrink-0 items-center border-b border-slate-200 bg-white/85 px-4 backdrop-blur dark:border-slate-700 dark:bg-slate-900/85">
-                  <div className="w-full sm:mx-auto sm:max-w-md">
-                    <BarSearch toolbar={toolbar} />
+      <ExtrasProvider
+        accounts={accounts}
+        signedIn={signedIn}
+        signInHref={signInHref}
+        teamManageUrl={teamManageUrl}
+        prefetchThumbnail={prefetchThumbnail}
+        onViewToggled={onViewToggled}
+      >
+        <HostExtrasProvider value={extras}>
+          <NamesProvider value={names}>
+            <WelcomeProvider welcome={welcome} active={view.kind === 'home'}>
+              <div data-explorer="" className="flex min-w-0 flex-1 flex-col">
+                {header ? (
+                  header({ search: heroOnHome ? null : <BarSearch toolbar={toolbar} /> })
+                ) : heroOnHome ? null : (
+                  <div className="sticky top-0 z-30 flex h-12 shrink-0 items-center border-b border-slate-200 bg-white/85 px-4 backdrop-blur dark:border-slate-700 dark:bg-slate-900/85">
+                    <div className="w-full sm:mx-auto sm:max-w-md">
+                      <BarSearch toolbar={toolbar} />
+                    </div>
                   </div>
-                </div>
-              )}
-              {hero.mounted ? (
-                <div
-                  data-home-hero-fold={hero.open ? 'open' : 'closed'}
-                  inert={!hero.open}
-                  aria-hidden={!hero.open || undefined}
-                  className={`grid transition-[grid-template-rows,opacity] duration-long ease-out motion-reduce:transition-none ${
-                    hero.open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
-                  }`}
-                >
-                  <div className="min-h-0 overflow-hidden">
-                    <HeroWithCount art={heroArt} onHide={hideHero} />
+                )}
+                {hero.mounted ? (
+                  <div
+                    data-home-hero-fold={hero.open ? 'open' : 'closed'}
+                    inert={!hero.open}
+                    aria-hidden={!hero.open || undefined}
+                    className={`grid transition-[grid-template-rows,opacity] duration-long ease-out motion-reduce:transition-none ${
+                      hero.open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                    }`}
+                  >
+                    <div className="min-h-0 overflow-hidden">
+                      <HeroWithCount art={heroArt} onHide={hideHero} />
+                    </div>
                   </div>
-                </div>
-              ) : null}
-              <main className="mx-auto flex w-full max-w-7xl flex-1 gap-8 px-4 pb-16 pt-8 sm:px-6">
-                {/* No box: the tree sits on the page. Hidden on a phone, where the drawer holds it. */}
-                <aside className="hidden w-64 shrink-0 self-start sm:block" aria-label="Sections">
-                  <div className="sticky top-20 px-1 py-1">
-                    <Sidebar />
-                  </div>
-                </aside>
-                {navOpen ? <SectionsDrawer onClose={() => setNavOpen(false)} /> : null}
-                <section className="min-w-0 flex-1">
-                  <Pane view={view} onOpenNav={openNav} hero={heroOnHome} />
-                </section>
-              </main>
-            </div>
-          </WelcomeProvider>
-        </NamesProvider>
-      </HostExtrasProvider>
-      <ExplorerDialogs />
-      {trashedOnArrival ? <ArrivalUndo trashed={trashedOnArrival} /> : null}
-      {arrivalNotice ? <ArrivalNotice text={arrivalNotice} /> : null}
+                ) : null}
+                <main className="mx-auto flex w-full max-w-7xl flex-1 gap-8 px-4 pb-16 pt-8 sm:px-6">
+                  {/* No box: the tree sits on the page. Hidden on a phone, where the drawer holds it. */}
+                  <aside className="hidden w-64 shrink-0 self-start sm:block" aria-label="Sections">
+                    <div className="sticky top-20 px-1 py-1">
+                      <Sidebar />
+                    </div>
+                  </aside>
+                  {navOpen ? <SectionsDrawer onClose={() => setNavOpen(false)} /> : null}
+                  <section className="min-w-0 flex-1">
+                    <Pane view={view} onOpenNav={openNav} hero={heroOnHome} />
+                  </section>
+                </main>
+              </div>
+            </WelcomeProvider>
+          </NamesProvider>
+        </HostExtrasProvider>
+        <ExplorerDialogs />
+        {trashedOnArrival ? <ArrivalUndo trashed={trashedOnArrival} /> : null}
+        {arrivalNotice ? <ArrivalNotice text={arrivalNotice} /> : null}
+      </ExtrasProvider>
     </ExplorerProvider>
   );
 }

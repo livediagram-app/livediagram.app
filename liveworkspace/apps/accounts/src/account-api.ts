@@ -325,6 +325,17 @@ async function handleSignedIn(
     }
   }
 
+  // Other people's display names, by id (the Explorer's Owner column): what collaborators see on a cursor or a
+  // comment anyway. Names only, up to MAX_PROFILE_IDS a read; ids not found are left out.
+  if (section === 'people' && !id && method === 'GET') {
+    const ids = (new URL(request.url).searchParams.get('ids') ?? '')
+      .split(',')
+      .filter((v) => USER_ID.test(v) || GUEST_ID.test(v));
+    if (ids.length > MAX_PROFILE_IDS) return error(400, 'too_many_ids');
+    const profiles = await readProfiles(db, ids);
+    return json({ people: profiles.map((p) => ({ id: p.id, name: p.name })) });
+  }
+
   // Their display name and colour, the ones collaborators see in every app.
   if (section === 'profile' && !id) {
     if (method === 'GET') {

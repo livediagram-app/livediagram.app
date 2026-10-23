@@ -19,11 +19,19 @@ import { kindWords, siteOf } from '../words';
 const BADGE =
   'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ring-1';
 
-export function VisibilityBadge({ item }: { item: Pick<Item, 'sharedVia' | 'teamId'> }) {
-  if (item.sharedVia) {
+export function VisibilityBadge({
+  item,
+}: {
+  item: Pick<Item, 'sharedVia' | 'teamId'> & { hasLinks?: boolean };
+}) {
+  if (item.sharedVia || item.hasLinks) {
     return (
       <span
-        title="Shared: you reach it through a link."
+        title={
+          item.sharedVia
+            ? 'Shared: you reach it through a link.'
+            : 'Shared: anyone with one of its links can open it.'
+        }
         className={`${BADGE} bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30`}
       >
         <SharedDotGlyph />

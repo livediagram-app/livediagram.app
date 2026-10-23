@@ -77,6 +77,8 @@ type Extras = {
   tagIds: string[];
   lastOpenedAt: number | null;
   hiddenFromRecent: boolean;
+  // Whether it has a live share link (the owner's or a team member's Shared badge).
+  hasLinks?: boolean;
 };
 
 export function toItem(row: ItemRow, access: Access, extras: Extras): Item {
@@ -100,6 +102,7 @@ export function toItem(row: ItemRow, access: Access, extras: Extras): Item {
     tagIds: extras.tagIds,
     lastOpenedAt: extras.lastOpenedAt,
     hiddenFromRecent: extras.hiddenFromRecent,
+    hasLinks: extras.hasLinks === true,
     sharedVia: access.via === 'link' ? access.code : null,
   };
 }
@@ -138,8 +141,13 @@ export async function decorate(
 
   const ids = JSON.stringify(rows.map((r) => r.id));
   const viaLink = JSON.stringify(rows.filter((r) => !access.has(r.id)).map((r) => r.id));
+  // Items the person manages (owner or team): whether each has a live link, for its Shared badge.
+  const managed = JSON.stringify(
+    rows.filter((r) => access.get(r.id)?.via !== 'link' && access.has(r.id)).map((r) => r.id),
+  );
   const db = env.INDEX_DB;
-  const [favourites, tags, opens, links] = (await db.batch([
+  const now = Date.now();
+  const [favourites, tags, opens, links, shared] = (await db.batch([
     db
       .prepare(
         'SELECT item_id FROM favourites WHERE person_id = ? AND item_id IN (SELECT value FROM json_each(?))',
@@ -162,8 +170,15 @@ export async function decorate(
          JOIN share_links sl ON sl.code = sw.share_code AND sl.item_id = sw.item_id
          WHERE sw.person_id = ? AND sw.item_id IN (SELECT value FROM json_each(?)) AND ${LIVE_LINK('sl')}`,
       )
-      .bind(person.id, viaLink, Date.now()),
+      .bind(person.id, viaLink, now),
+    db
+      .prepare(
+        `SELECT DISTINCT sl.item_id FROM share_links sl
+         WHERE sl.item_id IN (SELECT value FROM json_each(?)) AND ${LIVE_LINK('sl')}`,
+      )
+      .bind(managed, now),
   ])) as D1Result<Record<string, unknown>>[];
+  const withLinks = new Set(shared!.results.map((r) => r.item_id as string));
 
   const favourite = new Set(favourites!.results.map((r) => r.item_id as string));
   const tagIds = new Map<string, string[]>();
@@ -197,6 +212,7 @@ export async function decorate(
         tagIds: tagIds.get(row.id) ?? [],
         lastOpenedAt: opened.get(row.id) ?? null,
         hiddenFromRecent: hidden.has(row.id),
+        hasLinks: withLinks.has(row.id),
       }),
     ];
   });

@@ -62,3 +62,15 @@ export type {
 } from './welcome/types';
 export type { SidebarLink } from './explorer/host';
 export { NAME_BATCH, type NameLookup } from './data/names';
+export {
+  createExplorerAccounts,
+  AccountsError,
+  PEOPLE_MAX,
+  type ExplorerAccounts,
+  type MyTeams,
+  type PendingInvitation,
+  type TeamDetails,
+  type TeamMember,
+  type TeamRole,
+} from './data/accounts';
+export type { ViewModeTelemetry } from './explorer/extras';

@@ -54,6 +54,8 @@ export type Item = {
   hiddenFromRecent?: boolean;
   // The share code, when they reach it only through a link.
   sharedVia: string | null;
+  // For an item the person manages (owner or team): it has a live share link. Always sent by the index.
+  hasLinks?: boolean;
   // Most Used only: the distinct days in the window the person opened it.
   useDays?: number;
 };

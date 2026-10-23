@@ -146,6 +146,7 @@ export const SIDEBAR_LABELS = {
   library: 'Library',
   trash: 'Trash',
   manageTeams: 'Manage Teams',
+  invites: 'Invites',
 } as const;
 
 export const VIEW_TITLES: Record<Exclude<ExplorerViewKind, 'folder' | 'team'>, string> = {

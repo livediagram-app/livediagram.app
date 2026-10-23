@@ -22,6 +22,8 @@ import { siteOf, type AppFilter } from '../words';
 import { useExplorer } from './context';
 import { HelpButton } from './HomeHero';
 import { useHostExtras } from './host';
+import { useExtras, type ViewModeTelemetry } from './extras';
+import { HoverCard } from '../ui/HoverCard';
 
 export type ViewMode = 'list' | 'card' | 'details';
 
@@ -237,6 +239,13 @@ export function FilterToggle() {
   );
 }
 
+// The telemetry name of a real switch to each layout (`UI / Toggled / <type>`).
+export const VIEW_TOGGLE_TELEMETRY = {
+  list: 'ExplorerViewList',
+  card: 'ExplorerViewCard',
+  details: 'ExplorerViewDetails',
+} as const satisfies Record<ViewMode, ViewModeTelemetry>;
+
 export function ViewToggle({
   mode,
   onChange,
@@ -244,23 +253,41 @@ export function ViewToggle({
   mode: ViewMode;
   onChange: (mode: ViewMode) => void;
 }) {
-  const button = (m: ViewMode, label: string, icon: ReactNode) => (
-    <button
-      type="button"
-      onClick={() => onChange(m)}
-      aria-label={label}
-      title={label}
-      aria-pressed={mode === m}
-      className={`${segment(mode === m)} w-7 px-0`}
-    >
-      {icon}
-    </button>
+  const { words } = useExplorer();
+  const { onViewToggled } = useExtras();
+  // Only a real switch is counted: pressing the side already on changes nothing.
+  const choose = (next: ViewMode) => {
+    if (next !== mode) onViewToggled?.(VIEW_TOGGLE_TELEMETRY[next]);
+    onChange(next);
+  };
+  const button = (m: ViewMode, label: string, description: string, icon: ReactNode) => (
+    <HoverCard title={label} description={description}>
+      <button
+        type="button"
+        onClick={() => choose(m)}
+        aria-label={label}
+        aria-pressed={mode === m}
+        className={`${segment(mode === m)} w-7 px-0`}
+      >
+        {icon}
+      </button>
+    </HoverCard>
   );
   return (
     <div role="group" aria-label="View mode" className={`${SEGMENTS} max-sm:hidden`}>
-      {button('list', 'List view', <ListViewIcon />)}
-      {button('card', 'Card view', <GridViewIcon />)}
-      {button('details', 'Details view', <DetailsViewIcon />)}
+      {button('list', 'List view', 'Compact rows.', <ListViewIcon />)}
+      {button(
+        'card',
+        'Card view',
+        `Cards with a large preview of each ${words.lowerOne}.`,
+        <GridViewIcon />,
+      )}
+      {button(
+        'details',
+        'Details view',
+        'A sortable table: type, comments, access, size and dates.',
+        <DetailsViewIcon />,
+      )}
     </div>
   );
 }
