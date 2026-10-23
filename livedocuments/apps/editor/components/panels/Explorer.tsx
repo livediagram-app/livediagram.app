@@ -51,11 +51,14 @@ function ExplorerImpl({
   const sheet = isMobile && !!asPopover;
   const router = useAppNavigation();
   const { isSignedIn, authLoaded, accountUserId } = useAccountBootstrap();
-  // Take Offline and Sync Document on a document's menu, as the person (an account, or this browser's guest).
+  // The person: an account, or this browser's guest, as the Explorer page has them, so the Timeline, History and
+  // the Inbox name their own doings as theirs.
   const guestId = useSignedGuestId(authLoaded, accountUserId);
-  const itemMenu = useOfflineItemMenu(accountUserId ?? guestId);
-  const shareHost = useMemo(() => explorerShareHost(accountUserId ?? null), [accountUserId]);
-  const inboxHost = useMemo(() => explorerInboxHost(accountUserId ?? null), [accountUserId]);
+  const viewerId = accountUserId ?? guestId;
+  // Take Offline and Sync Document on a document's menu.
+  const itemMenu = useOfflineItemMenu(viewerId);
+  const shareHost = useMemo(() => explorerShareHost(viewerId), [viewerId]);
+  const inboxHost = useMemo(() => explorerInboxHost(viewerId), [viewerId]);
   // The person's teams, with New Team in the Move dialog making one on the spot.
   const tokenTeams = useTokenTeams(isSignedIn);
   const { teams, onCreateTeam } = useExplorerNewTeam(!!isSignedIn, tokenTeams);
@@ -142,7 +145,7 @@ function ExplorerImpl({
         renderThumbnail={renderDocumentThumbnail}
         Link={Link}
         teams={teams}
-        viewerId={accountUserId ?? null}
+        viewerId={viewerId}
         shareUrl={shareUrl}
         share={shareHost}
         inbox={inboxHost}
