@@ -272,6 +272,49 @@ describe('the Inbox', () => {
     );
   });
 
+  it('reports Opened once per visit, through the host hook it has then: not per read, filter or new host', async () => {
+    const first = vi.fn();
+    const index = createFakeIndex();
+    const reads = () => index.calls.filter((c) => c.method === 'inbox').length;
+    const now = vi.spyOn(Date, 'now');
+    now.mockReturnValue(1_000_000);
+    const props = { inbox: { onTelemetry: first } };
+    const view = renderInbox(index, props);
+    await screen.findByText('Nothing waiting on you');
+    const opened = (fn: ReturnType<typeof vi.fn>) => fn.mock.calls.filter((c) => c[0] === 'Opened');
+    expect(opened(first)).toEqual([['Opened']]);
+    // Returning to the tab re-reads the Inbox: not a visit.
+    const before = reads();
+    now.mockReturnValue(1_000_000 + 60_000);
+    act(() => {
+      window.dispatchEvent(new Event('focus'));
+    });
+    await waitFor(() => expect(reads()).toBe(before + 1));
+    // Another filter, and a host that hands a new hook: still the same visit.
+    const second = vi.fn();
+    const at = (over: Partial<ExplorerProps>) => (
+      <Explorer
+        app="liveplanner"
+        client={index.client}
+        view={{ kind: 'inbox' }}
+        onNavigate={vi.fn()}
+        itemHref={itemHref}
+        onCreate={vi.fn()}
+        viewerId="user_me"
+        {...over}
+      />
+    );
+    view.rerender(at({ inbox: { onTelemetry: second }, filter: 'all', onFilterChange: vi.fn() }));
+    expect(opened(first)).toHaveLength(1);
+    expect(opened(second)).toHaveLength(0);
+    // Away and back: a second visit, reported through the hook the host hands now.
+    view.rerender(at({ inbox: { onTelemetry: second }, view: { kind: 'trash' } }));
+    view.rerender(at({ inbox: { onTelemetry: second } }));
+    expect(opened(first)).toHaveLength(1);
+    expect(opened(second)).toEqual([['Opened']]);
+    now.mockRestore();
+  });
+
   it('reports the row a person follows', async () => {
     const onTelemetry = vi.fn();
     const index = createFakeIndex();

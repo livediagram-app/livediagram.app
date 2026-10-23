@@ -77,6 +77,17 @@ describe("the Explorer's telemetry on liveworkspace.app", () => {
     ]);
   });
 
+  it('sends the Inbox’s visit as Activity·Opened, even when it opens before the setting is read', () => {
+    t.setExplorerSender('liveplanner', 'app');
+    // Landing on /explorer/inbox: the Inbox reports its visit before the person's setting comes back.
+    t.trackInbox('Opened');
+    t.setExplorerConsent(true);
+    vi.advanceTimersByTime(TELEMETRY_FLUSH_DELAY_MS);
+    expect(batches().map((b) => [b.app, b.events])).toEqual([
+      ['liveplanner.app', [{ category: 'Activity', action: 'Opened', type: null }]],
+    ]);
+  });
+
   it('sends nothing but the Explorer’s own tokens', () => {
     t.setExplorerConsent(true);
     t.trackTimeline('Selected', 'Someone typed this');

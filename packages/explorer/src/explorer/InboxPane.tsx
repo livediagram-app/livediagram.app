@@ -5,7 +5,7 @@
 // Threads, each hidden when empty, one empty state when all are. Rows are in ./inbox/InboxRows; the split in
 // ./inbox/sections.
 
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { CountBadge } from '../ui/CountBadge';
 import { LIST_CARD } from '../ui/classes';
 import { EMPTY_CTA, EmptyPane, SkeletonRows } from './EmptyPane';
@@ -23,11 +23,13 @@ export function InboxPane({
   compact?: boolean;
 }) {
   const { inbox, inboxHost, viewerId, words, filter } = useExplorer();
-  // Once per visit, not per read: returning to the tab re-reads, which is not a visit.
   const onTelemetry = inboxHost?.onTelemetry;
+  // `Activity / Opened` once per visit, through the host's hook as it is when the Inbox opens: not per read
+  // (returning to the tab re-reads, which is not a visit), nor when the filter or the host's props change.
+  const telemetry = useRef(onTelemetry);
+  telemetry.current = onTelemetry;
   useEffect(() => {
-    onTelemetry?.('Opened');
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per visit
+    telemetry.current?.('Opened');
   }, []);
   const { forMe, byMe, forms, threads } = inboxSections(inbox.data, viewerId);
   const showApp = filter === 'all';
