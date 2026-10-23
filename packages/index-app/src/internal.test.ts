@@ -103,16 +103,34 @@ describe('handleInternalItems', () => {
 
   it('copies, answering a missing source and a conflict', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
+    let seen: unknown = null;
     const ok = await send(
       'POST',
       '/api/internal/items/A/copy-to/B',
       { tabId: 't' },
       {
-        copy: async (_f, _t, tab) => ({ tabs: tab ? 1 : 2, items: 0 }),
+        copy: async (_f, _t, tab, copier) => {
+          seen = copier;
+          return { tabs: tab ? 1 : 2, items: 0 };
+        },
       },
     );
     expect(ok.status).toBe(201);
     expect(await ok.json()).toEqual({ ok: true, tabs: 1, items: 0 });
+    // An index that does not say who copies leaves both null.
+    expect(seen).toEqual({ by: null, code: null });
+    await send(
+      'POST',
+      '/api/internal/items/A/copy-to/B',
+      { by: 'user_b', code: 'abc123', tabId: null },
+      {
+        copy: async (_f, _t, _tab, copier) => {
+          seen = copier;
+          return { tabs: 1, items: 0 };
+        },
+      },
+    );
+    expect(seen).toEqual({ by: 'user_b', code: 'abc123' });
     expect(
       (await send('POST', '/api/internal/items/A/copy-to/B', {}, { copy: async () => 'not_found' }))
         .status,

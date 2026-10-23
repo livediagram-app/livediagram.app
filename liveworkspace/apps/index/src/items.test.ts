@@ -333,7 +333,7 @@ describe('copies', () => {
     expect(h.appCalls[0]).toMatchObject({
       method: 'POST',
       url: `https://liveplanner.app/api/internal/items/${item.id}/copy-to/${copy.id}`,
-      body: { tabId: null },
+      body: { tabId: null, by: 'user_a', code: null },
     });
   });
 

@@ -598,13 +598,14 @@ async function copyItem(ctx: RouteContext, id: string): Promise<Response> {
     trash_reason: null,
   };
   await insertItem(env, row, { copiedFrom: from.title });
-  // A link scoped to one tab copies only that tab.
+  // A link scoped to one tab copies only that tab. The app hears who copies and the link they came in by, so the
+  // copy carries only what they may read.
   const copied = await callApp(
     env,
     from.app,
     'POST',
     `/items/${encodeURIComponent(from.id)}/copy-to/${encodeURIComponent(row.id)}`,
-    { tabId: access.tabId },
+    { tabId: access.tabId, by: person.id, code: access.code },
   );
   if (!copied.ok) {
     await env.INDEX_DB.prepare('DELETE FROM items WHERE id = ?').bind(row.id).run();

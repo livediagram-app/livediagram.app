@@ -6,7 +6,8 @@
 //   POST   /api/internal/items/purge          {ids}          the same for up to BULK_PURGE_MAX items (a closed account)
 //   POST   /api/internal/items/:id/revoke     {codes, reason?}  end the sessions of revoked or rescoped links
 //   POST   /api/internal/items/:id/notices    {type, ...}    what happened, for an email (index-client notices.ts)
-//   POST   /api/internal/items/:from/copy-to/:to  {tabId?}   copy an item's content (or one tab) into a new item
+//   POST   /api/internal/items/:from/copy-to/:to  {tabId?, by?, code?}  copy an item's content (or one tab) into a new
+//                                                            item, for `by` (who copies) through link `code` (if any)
 //   POST   /api/internal/people/:id/purge     {items}        a closed account: drop what the app keeps for the
 //                                                            person, and anonymise them in up to 100 items
 //   POST   /api/internal/people/:guest/merge  {into}         a guest became an account: move what the app keeps
@@ -30,6 +31,9 @@ export const JOINED_TELEMETRY_TYPE: Record<Level, 'View' | 'Participate' | 'Edit
 const MAX_ID = 200;
 const MAX_CODES = 500;
 
+// Who copies an item, and the link they came in by.
+export type Copier = { by: string | null; code: string | null };
+
 export type CopyOutcome = { tabs: number; items: number } | 'not_found' | 'conflict';
 
 export type InternalItemHandlers = {
@@ -37,8 +41,10 @@ export type InternalItemHandlers = {
   purge: (itemId: string) => Promise<unknown>;
   // End the sessions of these share codes; answers how many closed. `rescoped`: reload into what the link opens.
   revoke?: (itemId: string, codes: string[], reason: 'revoked' | 'rescoped') => Promise<number>;
-  // Copy the content (or one tab of it) into a new item.
-  copy?: (from: string, to: string, tabId: string | null) => Promise<CopyOutcome>;
+  // Copy the content (or one tab of it) into a new item. `copier` says who copies (`by`, null from an index that
+  // does not say) and the share link they came in by (`code`, null for their own or their team's item), so the
+  // app can copy only what that person may read (another's comment authors, a published post's redactions).
+  copy?: (from: string, to: string, tabId: string | null, copier: Copier) => Promise<CopyOutcome>;
   // A notice for the app's emails, run off the index's path (waitUntil).
   notice?: (itemId: string, notice: ItemNotice) => Promise<unknown>;
   // A closed account (the index's person purge): what the app keeps for the person beside their items (images,
@@ -185,12 +191,17 @@ export async function handleInternalItems(
   if (rest.length === 3 && rest[1] === 'copy-to' && request.method === 'POST' && handlers.copy) {
     const to = rest[2];
     if (!validId(to) || to === id) return badRequest('invalid copy target');
-    const tabId = ((await bodyOf(request)) ?? {})['tabId'];
+    const body = (await bodyOf(request)) ?? {};
+    const tabId = body['tabId'];
     if (tabId !== undefined && tabId !== null && !validId(tabId))
       return badRequest('invalid tabId');
+    const copier: Copier = {
+      by: validId(body['by']) ? body['by'] : null,
+      code: validId(body['code']) ? body['code'] : null,
+    };
     let outcome: CopyOutcome;
     try {
-      outcome = await handlers.copy(id, to, validId(tabId) ? tabId : null);
+      outcome = await handlers.copy(id, to, validId(tabId) ? tabId : null, copier);
     } catch (err) {
       console.error('[internal] copy-to failed', err);
       outcome = 'conflict';
