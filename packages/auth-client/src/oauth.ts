@@ -80,6 +80,36 @@ export function authorizeUrl(options: AuthorizeUrlOptions): string {
   return url.toString();
 }
 
+// A guest's identity is liveworkspace's (liveworkspace/docs/accounts.md "Guests"): the browser goes to the accounts
+// site with the app's client and comes back to `redirectUri` with a year-long guest token in the fragment
+// (`#guest_token=…&state=…`). The editor makes and checks `state` itself (@liveworkspace/index-client/browser
+// createGuestTokens); the app's Worker only names its client, so a state it forwards must look like one.
+export const GUEST_STATE_PATTERN = /^[A-Za-z0-9_-]{8,200}$/;
+
+export interface GuestHandoffOptions {
+  accountsUrl: string;
+  clientId: string;
+  redirectUri: string;
+  state: string;
+  // The app's API resource; it becomes the guest token's audience.
+  resource: string;
+}
+
+export function isGuestHandoffState(state: string | null | undefined): state is string {
+  return typeof state === 'string' && GUEST_STATE_PATTERN.test(state);
+}
+
+export function guestHandoffUrl(options: GuestHandoffOptions): string {
+  const url = new URL('/api/auth/guest', options.accountsUrl);
+  url.search = new URLSearchParams({
+    client_id: options.clientId,
+    redirect_uri: options.redirectUri,
+    state: options.state,
+    resource: options.resource,
+  }).toString();
+  return url.toString();
+}
+
 function basicAuthorization(credentials: ClientCredentials): string {
   return `Basic ${btoa(`${encodeURIComponent(credentials.clientId)}:${encodeURIComponent(credentials.clientSecret)}`)}`;
 }
