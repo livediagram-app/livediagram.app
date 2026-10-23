@@ -53,6 +53,7 @@ const db = vi.hoisted(() => ({
   seedTabs: vi.fn(async () => {}),
 }));
 vi.mock('../db', () => db);
+vi.mock('../person/profiles', () => ({ getParticipant: db.getParticipant }));
 vi.mock('../db/timeline', () => ({ markTimelineEventsDeletedBySource: vi.fn(async () => {}) }));
 vi.mock('../auth/document-access', () => ({
   canReadDocument: vi.fn(async () => true),

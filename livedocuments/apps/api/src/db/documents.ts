@@ -3,7 +3,7 @@
 // the read DTO joins owner display info from participants.
 
 import type { DocumentDTO, DocumentSummary, Env } from '../types';
-import { getParticipant } from './participants';
+import { getParticipant } from '../person/profiles';
 import { imageGrantCopyStatements, imageGrantOwnerChangeStatement } from './image-grants';
 import { documentRemovalStatements } from './document-removal';
 import { purgeRooms } from '../room-purge-client';

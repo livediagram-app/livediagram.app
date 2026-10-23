@@ -30,9 +30,9 @@ vi.mock('../db', () => ({
   // The first correct entry of a legacy plain-text password stores its hash.
   upgradeDocumentSharePassword: vi.fn(async () => {}),
   getShareLink: vi.fn(),
-  getParticipant: vi.fn(),
   recordSharedAccess: vi.fn(),
 }));
+vi.mock('../person/profiles', () => ({ getParticipant: vi.fn() }));
 
 // The live-image endpoint (docs/specs/013-workspace/live-image-share.md + docs/specs/006-document/document-snapshots.md) delegates the actual
 // render-cache to ./thumbnail; stub it so this suite pins the route's
@@ -65,7 +65,8 @@ vi.mock('../thumbnail', () => ({
 // db helpers. passwordGate is module-private to share.ts, exported
 // only for this suite (see the comment on the export).
 import { handleShare, passwordGate } from './share';
-import { getDocument, getParticipant, getShareLink, recordSharedAccess } from '../db';
+import { getDocument, getShareLink, recordSharedAccess } from '../db';
+import { getParticipant } from '../person/profiles';
 import { notifyDocumentJoin } from '../email/notifications';
 import { reportServerEvent } from '../server-telemetry';
 import { getDocumentTabImageSvg, getDocumentThumbnailSvg } from '../thumbnail';
@@ -564,7 +565,7 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
 
   it('still emails when the joiner has no participant record', async () => {
     recordSharedAccessMock.mockResolvedValue(true);
-    getParticipantMock.mockRejectedValue(new Error('D1 down'));
+    getParticipantMock.mockRejectedValue(new Error('accounts down'));
     const { ctx, settled } = resolveCtx({ visitor: 'visitor-1', signedIn: true });
     await handleShare(ctx);
     await settled();
@@ -574,7 +575,7 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
   it('resolves the code even when the tracking write fails', async () => {
     // Opening the link is the user-visible thing; the shared_with row is a
     // nice-to-have and must never turn a working link into an error.
-    recordSharedAccessMock.mockRejectedValue(new Error('D1 down'));
+    recordSharedAccessMock.mockRejectedValue(new Error('accounts down'));
     const { ctx, settled } = resolveCtx({ visitor: 'visitor-1' });
     expect((await handleShare(ctx)).status).toBe(200);
     await settled();

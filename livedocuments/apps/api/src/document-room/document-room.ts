@@ -60,6 +60,7 @@ import {
   type DocumentOutline,
 } from './document-content';
 import { drainOutbox } from './document-outbox';
+import { reportOwnerActivity } from '../person/account-app';
 import { answerDocumentRequest, type RouteIdentity } from './document-route';
 
 // One SQLite-backed Durable Object per document id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It
@@ -352,8 +353,12 @@ export class DocumentRoom extends DurableObject<Env> {
     if (!env || !documentId || !this.schemaReady) return;
     this.draining = true;
     try {
-      const { keys, statements, more } = await drainOutbox(env, documentId);
+      const { keys, statements, more, saved } = await drainOutbox(env, documentId);
       this.lastFlushAt = Date.now();
+      // The owner saved something: liveworkspace's onboarding series counts it as activity
+      // (liveworkspace/docs/accounts.md "Onboarding emails"), at most once a minute a document, with
+      // this push. Never holds up the drain.
+      if (saved) this.state.waitUntil(reportOwnerActivity(env, saved.ownerId, saved.savedAt));
       if (keys > 0) console.debug('[document-outbox] pushed', { documentId, keys, statements });
       // A big import's tabs go a batch at a time, back to back, not a minute apart.
       if (more) this.flushAt = Date.now() + FLUSH_IDLE_MS;

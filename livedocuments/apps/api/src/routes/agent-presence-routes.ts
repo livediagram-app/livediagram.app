@@ -10,7 +10,8 @@ import {
 import { resolveRef } from '@livedocuments/document';
 import { buildViewModel } from '@livedocuments/document-views';
 import { frontDoorOf } from '../changesets/front-door';
-import { getDocument, getParticipant, getTab } from '../db';
+import { getDocument, getTab } from '../db';
+import { getParticipant } from '../person/profiles';
 import { personTagFor } from '../person-tag';
 import { json, noContent, notFound } from '../responses';
 import { deleteAgentPresence, putAgentPresence, RoomUnavailableError } from '../room-client';

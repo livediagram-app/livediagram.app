@@ -1,4 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+vi.mock('../person/profiles', () => import('../test-profiles'));
+import { clearTestProfiles, setTestProfile } from '../test-profiles';
 import {
   isWorkbenchSessionFormat,
   WORKBENCH_SESSION_TTL_MS,
@@ -55,6 +57,7 @@ const redeem = (db: SqliteD1, body: unknown) =>
 
 describe('POST /api/workbench/sessions', () => {
   beforeEach(() => {
+    clearTestProfiles();
     vi.useFakeTimers();
     vi.setSystemTime(NOW);
     vi.spyOn(console, 'log').mockImplementation(() => {});
@@ -68,8 +71,7 @@ describe('POST /api/workbench/sessions', () => {
   it('opens a session as the person, with their display identity', async () => {
     const db = await workbenchDb();
     pairToken(db);
-    db.sql.exec(`INSERT INTO participants (id, name, color, created_at)
-                 VALUES ('user_1', 'Webber', '#ff8800', 1)`);
+    setTestProfile('user_1', 'Webber', '#ff8800');
     const ticket = await mintTicket(db);
 
     const res = await redeem(db, { ticket });
@@ -265,6 +267,7 @@ describe('DELETE /api/workbench/sessions/current', () => {
 
 describe('POST /api/workbench/sessions, workspace scope', () => {
   beforeEach(() => {
+    clearTestProfiles();
     vi.useFakeTimers();
     vi.setSystemTime(NOW);
     vi.spyOn(console, 'log').mockImplementation(() => {});

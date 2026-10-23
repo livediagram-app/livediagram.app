@@ -12,7 +12,8 @@ import {
 import { isValidTab, migrateIncomingTab, type Tab } from '@livedocuments/document';
 import { mergeChangesetsIntoSave } from '../changesets/merge-on-save';
 import { hasNewComments, rewriteCommentAuthors } from '../comments';
-import { changesetMergePages, getParticipant, getTab, isTabRevStale, upsertTabAtRev } from '../db';
+import { changesetMergePages, getTab, isTabRevStale, upsertTabAtRev } from '../db';
+import { getParticipant } from '../person/profiles';
 import { emailEnabled } from '../email/client';
 import { notifyNewComment } from '../email/notifications';
 import { MAX_TAB_BYTES, bodyExceedsCap, storeTab } from '../limits';
@@ -99,29 +100,20 @@ export async function handleTabPut(
       return conflict('empty_tab_overwrite_blocked');
     }
     const orderIndex = existingTab?.orderIndex ?? existing.tabCount;
-    // Newly added comments carry the resolved owner's participant record, never the client's claim
-    // (docs/specs/014-identity/auth-and-guest-access.md). getDocument already joined the owner's
-    // row: reused when the writer IS the owner, the common autosave case.
-    const writerParticipant =
-      owner === existing.ownerId && existing.ownerName !== null
-        ? {
-            id: owner,
-            name: existing.ownerName,
-            color: existing.ownerColor ?? '#0ea5e9',
-            createdAt: existing.createdAt,
-          }
-        : await getParticipant(env, owner);
-    const sanitised: Tab = writerParticipant
-      ? {
-          ...body,
-          elements: rewriteCommentAuthors(
-            body.elements,
-            existingTab?.elements ?? [],
-            writerParticipant,
-            commentAuthors,
-          ),
-        }
-      : body;
+    // Newly added comments carry the resolved owner's profile, never the client's claim
+    // (docs/specs/014-identity/auth-and-guest-access.md). Read from the accounts Worker and remembered
+    // per isolate for a minute (person/profiles.ts), so a run of autosaves asks once.
+    // With no profile the writer is still the owner: the comments already stored stay locked.
+    const writerParticipant = await getParticipant(env, owner);
+    const sanitised: Tab = {
+      ...body,
+      elements: rewriteCommentAuthors(
+        body.elements,
+        existingTab?.elements ?? [],
+        writerParticipant ?? { id: owner, name: '', color: '', createdAt: 0 },
+        commentAuthors,
+      ),
+    };
     let rev = 0;
     try {
       // The merged tab may outgrow the request: the storage layer measures what it stores

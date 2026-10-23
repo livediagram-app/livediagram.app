@@ -139,11 +139,14 @@ export function rewriteCommentAuthors(
           };
         }
         // New comment: server-authoritative author (name, colour, and the
-        // stable id that later authorises delete-own).
+        // stable id that later authorises delete-own). A writer with no profile
+        // (a deployment with no accounts Worker keeps none) comes with an empty
+        // name and colour: the comment keeps the ones its own client put on it,
+        // and the id is still the server's.
         return {
           ...fresh,
-          authorName: writer.name,
-          authorColor: writer.color,
+          authorName: writer.name || fresh.authorName,
+          authorColor: writer.color || fresh.authorColor,
           authorId: writer.id,
           ...withMentions,
         };

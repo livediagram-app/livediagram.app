@@ -1,4 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+vi.mock('../person/profiles', () => import('../test-profiles'));
+import { clearTestProfiles, setTestProfile } from '../test-profiles';
 import type { DocumentCommentsResponse } from '@livedocuments/api-schema';
 import type { Comment, Element } from '@livedocuments/document';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
@@ -75,12 +77,13 @@ const threadOf = async (elementId: string, tabId = 't1') =>
   ).commentThread;
 
 beforeEach(() => {
+  clearTestProfiles();
+  setTestProfile('owner', 'Webber', '#3b82f6');
   sql = sqliteD1();
   pending = [];
   sql.sql.exec(`
     INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
       VALUES ('d1', 'owner', 'Payments', 1, 1, 1);
-    INSERT INTO participants (id, name, color, created_at) VALUES ('owner', 'Webber', '#3b82f6', 1);
     INSERT INTO tabs (id, name, data, updated_at, element_count) VALUES ('t1', 'Main', '{"elements":[]}', 1, 0);
     INSERT INTO tabs (id, name, data, updated_at, element_count) VALUES ('t2', 'Detail', '{"elements":[]}', 1, 0);
     INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);

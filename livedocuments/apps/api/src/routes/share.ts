@@ -5,11 +5,11 @@ import { documentImageSvg } from '../document-image';
 import {
   getDocument,
   getDocumentSharePassword,
-  getParticipant,
   getShareLink,
   getTrashedDocumentMeta,
   recordSharedAccess,
 } from '../db';
+import { getParticipant } from '../person/profiles';
 import { notifyDocumentJoin } from '../email/notifications';
 import { documentTrashed, forbidden, json, notFound, svgImage } from '../responses';
 import { reportServerEvent } from '../server-telemetry';

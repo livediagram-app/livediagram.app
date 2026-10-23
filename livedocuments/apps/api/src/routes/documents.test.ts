@@ -81,6 +81,7 @@ const { db, canReadDocument, canEditDocument, resolveDocumentGrant } = vi.hoiste
   resolveDocumentGrant: vi.fn(),
 }));
 vi.mock('../db', () => db);
+vi.mock('../person/profiles', () => ({ getParticipant: db.getParticipant }));
 vi.mock('../auth/document-access', () => ({
   canReadDocument,
   canEditDocument,

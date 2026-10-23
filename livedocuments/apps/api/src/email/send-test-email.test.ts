@@ -23,7 +23,6 @@ import { sendEmail } from './client';
 import {
   type RenderedEmail,
   accountDeletedEmail,
-  activationEmail,
   commentNotificationEmail,
   documentJoinedEmail,
   firstShareEmail,
@@ -31,10 +30,6 @@ import {
   milestoneEmail,
   teamInviteEmail,
   tokenExpiringEmail,
-  week1Email,
-  week2Email,
-  welcomeEmail,
-  winBackEmail,
 } from './templates';
 
 function devVars(): Record<string, string> {
@@ -70,12 +65,7 @@ const env = {
 
 describe.skipIf(!ENABLED)('live email send (manual harness)', () => {
   const cases: Record<string, RenderedEmail> = {
-    // Onboarding series
-    welcome: welcomeEmail(env),
-    'week1-explorer': week1Email(env),
-    'week2-teams': week2Email(env),
-    activation: activationEmail(env),
-    'win-back': winBackEmail(env),
+    // Milestones (the onboarding series is liveworkspace's)
     milestone: milestoneEmail(env, 10),
     'first-share': firstShareEmail(env),
     // Transactional

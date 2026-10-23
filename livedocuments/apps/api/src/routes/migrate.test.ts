@@ -9,7 +9,12 @@ const { migrateOwnerId, getParticipant } = vi.hoisted(() => ({
   migrateOwnerId: vi.fn(),
   getParticipant: vi.fn(),
 }));
-vi.mock('../db', () => ({ migrateOwnerId, getParticipant }));
+vi.mock('../db', () => ({ migrateOwnerId }));
+// The legacy check reads when the guest's profile was first written (person/profiles.ts).
+vi.mock('../person/profiles', () => ({
+  profileCreatedAt: async (env: unknown, id: string) =>
+    ((await getParticipant(env, id)) as { createdAt?: number } | null)?.createdAt ?? null,
+}));
 
 import { signOwnerId } from '../auth/owner-signature';
 import type { Env } from '../types';

@@ -15,7 +15,10 @@ import { MAINTENANCE_EVERY_MS, DocumentRoom } from './document-room';
 // object's `ctx.storage.sql`, node:sqlite behind the SqlStorage surface), so nothing is shared between documents but
 // D1, as in production.
 
-vi.mock('../auth/accounts', () => ({ getAccountIdentity: async () => null }));
+vi.mock('../auth/accounts', () => ({
+  getAccountIdentity: async () => null,
+  accountCredentials: () => null,
+}));
 
 const box = (id: string, label = id): Element => ({
   id,

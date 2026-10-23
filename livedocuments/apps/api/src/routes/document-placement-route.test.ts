@@ -33,6 +33,7 @@ const db = vi.hoisted(() => ({
   setDocumentFolder: vi.fn(async () => true),
 }));
 vi.mock('../db', () => db);
+vi.mock('../person/profiles', () => ({ getParticipant: db.getParticipant }));
 
 import { handleDocumentPlacement } from './document-placement-route';
 

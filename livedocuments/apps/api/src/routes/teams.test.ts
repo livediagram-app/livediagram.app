@@ -19,6 +19,7 @@ const { db } = vi.hoisted(() => ({
   },
 }));
 vi.mock('../db', () => db);
+vi.mock('../person/profiles', () => ({ getParticipant: db.getParticipant }));
 // Observe the docs/specs/012-collaboration/assigned-actions.md notify dispatch without exercising the email stack.
 vi.mock('../email/notifications', () => ({
   notifyActionAssigned: vi.fn().mockResolvedValue(undefined),

@@ -8,12 +8,8 @@
 import { bearerTokenOf, type CurrentTokenResponse } from '@livedocuments/api-schema';
 import { forbidden, json, methodNotAllowed, noContent, notFound } from '../responses';
 import type { RouteContext } from './context';
-import {
-  getParticipant,
-  listApiTokensByOwner,
-  retractTimelineWarning,
-  revokePresentedToken,
-} from '../db';
+import { listApiTokensByOwner, retractTimelineWarning, revokePresentedToken } from '../db';
+import { getParticipant } from '../person/profiles';
 import { recordTokenRevoked } from '../timeline';
 import { endWorkbenchAccess } from '../workbench-end';
 

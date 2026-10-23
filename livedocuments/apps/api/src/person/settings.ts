@@ -1,0 +1,145 @@
+// A person's settings (docs/specs/007-editor/user-preferences.md), kept by the liveworkspace accounts
+// Worker in two scopes (liveworkspace/docs/accounts.md "Settings"): `all`, which every app shows, and
+// livedocuments.app's own. Which key goes where is one list, ALL_SETTING_KEYS in
+// @liveworkspace/settings. The editor still sees one flat set of preferences: a read joins the
+// scopes, a write splits them. livedocuments keeps no copy.
+//
+// Without the accounts Worker (a self-host with sign-in off) nothing is stored server-side, and the
+// editor keeps its preferences in the browser.
+
+import { upgradeLegacyPreferences } from '@livedocuments/api-schema';
+import {
+  readSettings,
+  writeSettings,
+  type ClientCredentials,
+  type SettingsPrefs,
+} from '@liveworkspace/auth-client';
+import { joinSettings, splitSettings } from '@liveworkspace/settings';
+import { accountCredentials } from '../auth/accounts';
+import type { Env } from '../types';
+import { accountsOwnerOf } from './owner';
+
+// This app's scope at the accounts Worker.
+export const SETTINGS_APP = 'livedocuments.app';
+
+type Stored = { credentials: ClientCredentials; owner: string };
+
+// Where this owner's settings are kept, or null when they can't be (no accounts Worker, or an id it
+// has no place for).
+function storedFor(env: Env, ownerId: string): Stored | null {
+  const credentials = accountCredentials(env);
+  const owner = accountsOwnerOf(ownerId);
+  return credentials && owner ? { credentials, owner } : null;
+}
+
+// Whether this deployment keeps preferences server-side at all.
+export function preferencesStored(env: Env): boolean {
+  return accountCredentials(env) !== null;
+}
+
+// The owner's preferences as one flat set, `all` and this app's joined. Null when they can't be
+// stored for this owner; throws when the accounts Worker can't be reached.
+export async function readPreferences(env: Env, ownerId: string): Promise<SettingsPrefs | null> {
+  const stored = storedFor(env, ownerId);
+  if (!stored) return null;
+  const settings = await readSettings(stored.credentials, {
+    owner: stored.owner,
+    app: SETTINGS_APP,
+  });
+  return joinSettings(settings.all, settings.app);
+}
+
+// Applies a patch of preferences: each key named takes its value whole (an object replaces the one
+// stored rather than merging into it), a key set to null is deleted, and keys not named stay as they
+// are, so another app's change to a shared key is never undone by this one. Answers the preferences
+// as they now are, or null when they can't be stored for this owner. A refusal (a scope past its
+// 16 KB) throws the accounts Worker's SettingsError.
+export async function writePreferences(
+  env: Env,
+  ownerId: string,
+  patch: SettingsPrefs,
+): Promise<SettingsPrefs | null> {
+  const stored = storedFor(env, ownerId);
+  if (!stored) return null;
+  const { all, app } = splitSettings(patch);
+  const settings = await writeSettings(stored.credentials, {
+    owner: stored.owner,
+    app: SETTINGS_APP,
+    patch: {
+      ...(Object.keys(all).length > 0 ? { all } : {}),
+      ...(Object.keys(app).length > 0 ? { app } : {}),
+    },
+  });
+  return joinSettings(settings.all, settings.app);
+}
+
+// The email-notification switches (docs/specs/014-identity/profile-and-email-notifications.md), read
+// on someone else's request before an email goes to the owner. Each is on unless stored `false`.
+export type NotificationPrefs = {
+  notifyDocumentJoin: boolean;
+  notifyInviteResponse: boolean;
+  notifyComments: boolean;
+  notifyTips: boolean;
+  notifyMilestones: boolean;
+  notifyActionAssigned: boolean;
+  notifyMentions: boolean;
+};
+
+const NOTIFY_KEYS: (keyof NotificationPrefs)[] = [
+  'notifyDocumentJoin',
+  'notifyInviteResponse',
+  'notifyComments',
+  'notifyTips',
+  'notifyMilestones',
+  'notifyActionAssigned',
+  'notifyMentions',
+];
+
+// One read of the owner's settings. Missing settings, an owner with none, and a read that fails all
+// answer "notify": the switches are opt-out.
+export async function getNotificationPrefs(env: Env, ownerId: string): Promise<NotificationPrefs> {
+  let prefs: SettingsPrefs = {};
+  try {
+    prefs = upgradeLegacyPreferences((await readPreferences(env, ownerId)) ?? {});
+  } catch (error) {
+    console.warn('[settings] notification_prefs_read_failed', { error: String(error) });
+  }
+  return Object.fromEntries(
+    NOTIFY_KEYS.map((key) => [key, prefs[key] !== false]),
+  ) as NotificationPrefs;
+}
+
+// A guest becoming someone else (routes/migrate.ts): their settings go with them, the way the accounts
+// Worker merges its own guests on sign-in. A key the new owner already has keeps its value; the guest's
+// other keys fill the gaps. Then the guest's keys are deleted. Best effort: a failure (one past the
+// size limit included) leaves the guest's settings where they were, for the next migrate.
+export async function moveGuestSettings(
+  env: Env,
+  fromOwnerId: string,
+  toOwnerId: string,
+): Promise<void> {
+  const from = storedFor(env, fromOwnerId);
+  const to = storedFor(env, toOwnerId);
+  if (!from || !to || from.owner === to.owner) return;
+  try {
+    const guest = await readSettings(from.credentials, { owner: from.owner, app: SETTINGS_APP });
+    const guestKeys = [...Object.keys(guest.all), ...Object.keys(guest.app)];
+    if (guestKeys.length === 0) return;
+    const target = await readSettings(to.credentials, { owner: to.owner, app: SETTINGS_APP });
+    const missing = (mine: SettingsPrefs, theirs: SettingsPrefs) =>
+      Object.fromEntries(Object.entries(mine).filter(([key]) => !(key in theirs)));
+    const fill = { all: missing(guest.all, target.all), app: missing(guest.app, target.app) };
+    if (Object.keys(fill.all).length + Object.keys(fill.app).length > 0) {
+      await writeSettings(to.credentials, { owner: to.owner, app: SETTINGS_APP, patch: fill });
+    }
+    const clear = (prefs: SettingsPrefs) =>
+      Object.fromEntries(Object.keys(prefs).map((key) => [key, null]));
+    await writeSettings(from.credentials, {
+      owner: from.owner,
+      app: SETTINGS_APP,
+      patch: { all: clear(guest.all), app: clear(guest.app) },
+    });
+  } catch (error) {
+    console.warn('[settings] guest_move_failed', { error: String(error) });
+  }
+}

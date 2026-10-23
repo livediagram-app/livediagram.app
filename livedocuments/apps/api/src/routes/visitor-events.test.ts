@@ -39,6 +39,7 @@ const db = vi.hoisted(() => ({
   getShareLink: vi.fn(async () => null),
 }));
 vi.mock('../db', () => db);
+vi.mock('../person/profiles', () => ({ getParticipant: db.getParticipant }));
 vi.mock('../db/timeline', () => ({ markTimelineEventsDeletedBySource: vi.fn(async () => {}) }));
 
 const access = vi.hoisted(() => ({

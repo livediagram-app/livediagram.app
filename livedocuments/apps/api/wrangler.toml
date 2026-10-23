@@ -58,7 +58,8 @@ GUEST_SIG_ENFORCE_AFTER = ""
 # from an older CLI.
 OAUTH_ISSUER = "https://mcp.livedocuments.app"
 
-# D1 database holding documents + participants. The local binding name
+# D1 database holding documents and their index tables (a person's settings and
+# profile are the liveworkspace accounts Worker's). The local binding name
 # (`DB`) is what `src/db.ts` reads via the Env type. The `database_name`
 # is the Cloudflare-side name (must be created via `wrangler d1 create
 # livedocuments` or the dashboard). `database_id` is filled in after the
@@ -121,9 +122,8 @@ new_sqlite_classes = ["DocumentRoom"]
 #
 # `0 3 * * *`: daily at 03:00 UTC. Fires independent retention sweeps
 # on this trigger (telemetry's retention is liveworkspace's, liveworkspace/docs/telemetry.md; unused
-# images are swept by liveworkspace's media service). Plus the
-# docs/specs/014-identity/transactional-email.md lifecycle onboarding emails, a no-op when
-# RESEND_API_KEY is unset.
+# images are swept by liveworkspace's media service; the onboarding emails are liveworkspace's,
+# liveworkspace/docs/accounts.md "Onboarding emails").
 #
 # `*/5 * * * *`: every five minutes, follow liveworkspace's teams change feed into this app's copy
 # and mark tokens revoked on liveworkspace.app (liveworkspace/docs/accounts.md "How an app keeps up").
@@ -196,10 +196,10 @@ simple = { limit = 20, period = 60 }
 # The image gallery's caps (100 images and 100 MB per person, across every app) are the media service's
 # (liveworkspace/docs/media.md "Uploads"), not this worker's.
 
-# RESEND_API_KEY + RESEND_FROM + APP_BASE_URL drive transactional &
-# lifecycle email (docs/specs/014-identity/transactional-email.md). All optional; an absent RESEND_API_KEY makes
-# the whole email feature inert — no sends, and the email_lifecycle table
-# is never touched, so a deployment with email off does zero extra work:
+# RESEND_API_KEY + RESEND_FROM + APP_BASE_URL drive transactional email
+# (docs/specs/014-identity/transactional-email.md); the onboarding series is liveworkspace's. All
+# optional; an absent RESEND_API_KEY makes the whole email feature inert — no sends, so a deployment
+# with email off does zero extra work:
 #
 #   - RESEND_API_KEY: worker secret. Local dev: drop
 #     `RESEND_API_KEY=re_...` into `apps/api/.dev.vars` (gitignored).
@@ -387,7 +387,7 @@ class_name = "DocumentRoom"
 tag = "v1"
 new_sqlite_classes = ["DocumentRoom"]
 
-# The daily 03:00 UTC sweeps (retention + the docs/specs/014-identity/transactional-email.md email crons) run on
+# The daily 03:00 UTC sweeps (retention, token expiry warnings) run on
 # staging too, against staging's own data. Restated rather than inherited so
 # that reading this block tells you what the staging worker actually does.
 [env.staging.triggers]

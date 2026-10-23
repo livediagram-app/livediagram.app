@@ -26,7 +26,7 @@ export function guestSignatureEnforced(env: SigEnv, now: number): boolean {
   return Number.isFinite(cutoff) && now >= cutoff;
 }
 
-// Whether `participantCreatedAt` predates this deployment's signing, so the id
+// Whether `participantCreatedAt` (when the profile was first written at the accounts Worker) predates this deployment's signing, so the id
 // can only be a legacy unsigned one. Server-stamped on first write and never
 // updated, so a client cannot backdate it. False when GUEST_SIGNING_LIVE_AT is
 // unset or unreadable: no exception unless the operator states the date.

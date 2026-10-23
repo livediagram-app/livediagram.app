@@ -31,7 +31,6 @@ import {
   getDocumentThumbMeta,
   getTrashedDocumentMeta,
   countDocumentsByOwner,
-  getParticipant,
   listDocumentsByOwner,
   listRecentTeamDocuments,
   listSharedWith,
@@ -40,6 +39,8 @@ import {
   seedTabs,
   upsertDocumentMeta,
 } from '../db';
+import { getParticipant } from '../person/profiles';
+import { reportOwnerActivity } from '../person/account-app';
 import {
   badRequest,
   documentTrashed,
@@ -388,6 +389,9 @@ export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<
           countDocumentsByOwner(env, owner).then((count) => notifyMilestone(env, owner, count)),
         );
       }
+      // Making a document is activity for liveworkspace's onboarding series (it has made something),
+      // even before any content reaches its summary push. A guest's is not sent.
+      if (!clash) ctx.waitUntil?.(reportOwnerActivity(env, owner, Date.now()));
       return json({ document: liveDoc }, { status: 201 });
     }
   }

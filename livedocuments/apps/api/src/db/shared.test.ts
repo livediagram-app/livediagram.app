@@ -1,4 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+vi.mock('../person/profiles', () => import('../test-profiles'));
+import { setTestProfile } from '../test-profiles';
 import { fakeD1 } from '../test-d1';
 import {
   dropSharedAccess,
@@ -20,8 +22,7 @@ const sharedRow = (over: Record<string, unknown> = {}) => ({
   saved_at: 42,
   role: 'edit',
   share_code: 'code-1',
-  owner_name: 'Ada',
-  owner_color: '#ff0000',
+  owner_id: 'user_ada',
   tab_id: null,
   first_tab_count: 3,
   ...over,
@@ -103,6 +104,8 @@ describe('hasSharedAccess (docs/specs/012-collaboration/assigned-actions.md acce
 });
 
 describe('listSharedWith (docs/specs/008-canvas/canvas-and-palette.md Shared with you)', () => {
+  // The owner's name and colour come from their profile at the accounts Worker, one read per list.
+  setTestProfile('user_ada', 'Ada', '#ff0000');
   it('maps a row to the DTO the Explorer renders', async () => {
     const db = fakeD1(() => ({ all: [sharedRow()] }));
     expect(await listSharedWith(db.env, 'visitor-1')).toEqual([

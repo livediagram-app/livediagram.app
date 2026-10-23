@@ -1,65 +1,71 @@
-// /api/preferences — per-user editor preference flags (docs/specs/007-editor/user-preferences.md).
+// /api/preferences — a person's settings (docs/specs/007-editor/user-preferences.md), kept by the
+// liveworkspace accounts Worker (person/settings.ts). Hybrid identity: the account id when signed in,
+// X-Owner-Id otherwise, matching the rest of the api.
+//
+//   GET → { prefs }: `all` and this app's scope as one flat set. `prefs: null` says they aren't kept
+//         here (no accounts Worker on this deployment, or an owner id it has no place for): the
+//         editor keeps them in the browser.
+//   PUT { prefs } → 204: a patch. Each key named takes its value whole, a key set to null is
+//         deleted, keys not named stay. 404 `preferences_not_stored` where GET answers null.
+//
+// The values are opaque beyond the size limit: a malformed client reflects malformed prefs back to
+// itself.
 
+import { SettingsError } from '@liveworkspace/auth-client';
+import { readPreferences, writePreferences } from '../person/settings';
+import { accountsOwnerOf } from '../person/owner';
+import { accountCredentials } from '../auth/accounts';
 import { badRequest, json, missingAuth, noContent, notFound } from '../responses';
 import type { RouteContext } from './context';
 
-// Per-user editor preference flags (docs/specs/007-editor/user-preferences.md). Stored as a single
-// JSON blob per owner so adding a flag never needs a migration.
-// Hybrid identity: account id when signed in, X-Owner-Id
-// otherwise, matching the rest of the api. The blob is opaque
-// to the worker beyond a small size cap, so a malformed client
-// reflects malformed prefs back to itself; no per-field
-// validation here.
+// The accounts Worker's own limit on one scope (16 KB of JSON); a patch is never more than both.
+export const PREFERENCES_PATCH_MAX = 16 * 1024;
+
 export async function handlePreferences(ctx: RouteContext): Promise<Response> {
   const { request, env, segments, resolveOwner } = ctx;
   if (!(segments[1] === 'preferences' && segments.length === 2)) return notFound();
   const ownerId = resolveOwner();
   if (!ownerId) return missingAuth();
+  const stored = accountCredentials(env) !== null && accountsOwnerOf(ownerId) !== null;
   if (request.method === 'GET') {
-    const row = await env.DB.prepare(
-      'SELECT prefs FROM user_preferences WHERE owner_id = ?1 LIMIT 1',
-    )
-      .bind(ownerId)
-      .first<{ prefs: string }>();
-    let prefs: Record<string, unknown> = {};
-    if (row?.prefs) {
-      try {
-        const parsed: unknown = JSON.parse(row.prefs);
-        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-          prefs = parsed as Record<string, unknown>;
-        }
-      } catch {
-        // Corrupt row: treat as empty, the client will overwrite
-        // on its next toggle.
-      }
+    if (!stored) return json({ prefs: null });
+    try {
+      return json({ prefs: await readPreferences(env, ownerId) });
+    } catch (error) {
+      console.warn('[preferences] read_failed', { error: String(error) });
+      return json({ error: 'preferences_unavailable' }, { status: 503 });
     }
-    return json({ prefs });
   }
   if (request.method === 'PUT') {
+    if (!stored) return json({ error: 'preferences_not_stored' }, { status: 404 });
     const text = await request.text();
-    if (text.length > 4096) {
-      return badRequest('preferences payload too large (4 KB max)');
+    if (text.length > PREFERENCES_PATCH_MAX) {
+      return badRequest('preferences payload too large (16 KB max)');
     }
-    // No initialiser: the catch returns, so control only reaches past the block
-    // when the assignment succeeded. The `| null` stays because JSON.parse
-    // legitimately yields null for the body "null", which the check below
-    // rejects.
+    // The `| null` stays because JSON.parse yields null for the body "null", refused below.
     let body: { prefs?: unknown } | null;
     try {
       body = JSON.parse(text) as { prefs?: unknown } | null;
     } catch {
       return badRequest('invalid JSON');
     }
-    if (!body || typeof body.prefs !== 'object' || body.prefs === null) {
+    if (
+      !body ||
+      typeof body.prefs !== 'object' ||
+      body.prefs === null ||
+      Array.isArray(body.prefs)
+    ) {
       return badRequest('prefs must be an object');
     }
-    const serialised = JSON.stringify(body.prefs);
-    const now = Date.now();
-    await env.DB.prepare(
-      'INSERT INTO user_preferences (owner_id, prefs, updated_at) VALUES (?1, ?2, ?3) ON CONFLICT (owner_id) DO UPDATE SET prefs = excluded.prefs, updated_at = excluded.updated_at',
-    )
-      .bind(ownerId, serialised, now)
-      .run();
+    try {
+      await writePreferences(env, ownerId, body.prefs as Record<string, unknown>);
+    } catch (error) {
+      if (error instanceof SettingsError) {
+        return json({ error: error.code }, { status: error.status === 413 ? 413 : 400 });
+      }
+      console.warn('[preferences] write_failed', { error: String(error) });
+      return json({ error: 'preferences_unavailable' }, { status: 503 });
+    }
     return noContent();
   }
   return notFound();

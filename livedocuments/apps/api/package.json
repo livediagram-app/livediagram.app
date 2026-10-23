@@ -28,6 +28,7 @@
     "@livedocuments/templates": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/media": "workspace:*",
+    "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*",
     "jose": "^6.2.12"
   },

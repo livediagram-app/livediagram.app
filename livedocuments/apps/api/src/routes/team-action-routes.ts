@@ -7,7 +7,8 @@
 import { isOpenTeamMember } from '@livedocuments/api-schema';
 import { legacyDocumentIdOf } from '../legacy-request-forms';
 import type { TeamMember } from '@livedocuments/api-schema';
-import { getDocumentMeta, getMembership, getParticipant, hasSharedAccess } from '../db';
+import { getDocumentMeta, getMembership, hasSharedAccess } from '../db';
+import { getParticipant } from '../person/profiles';
 import { listTeamMembers } from '../db';
 import { badRequest, forbidden, json, notFound } from '../responses';
 import { notifyActionAssigned } from '../email/notifications';

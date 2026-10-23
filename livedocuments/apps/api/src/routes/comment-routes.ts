@@ -18,14 +18,8 @@ import {
   type ElementDelta,
 } from '@livedocuments/document';
 import { commentThreadOf, findCommentHost, removeComment, threadsOfTab } from '../comments';
-import {
-  getDocument,
-  getParticipant,
-  getTab,
-  isTabRevStale,
-  tabIdsWithComments,
-  upsertTabAtRev,
-} from '../db';
+import { getDocument, getTab, isTabRevStale, tabIdsWithComments, upsertTabAtRev } from '../db';
+import { getParticipant } from '../person/profiles';
 import { emailEnabled } from '../email/client';
 import { notifyNewComment } from '../email/notifications';
 import { storeTab } from '../limits';

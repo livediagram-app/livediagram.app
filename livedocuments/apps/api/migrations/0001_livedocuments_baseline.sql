@@ -9,14 +9,6 @@
 -- Identity
 -- ---------------------------------------------------------------------------------------------------------------
 
--- A person's display name and presence colour, by owner id.
-CREATE TABLE participants (
-  id         TEXT    PRIMARY KEY,
-  name       TEXT    NOT NULL,
-  color      TEXT    NOT NULL,
-  created_at INTEGER NOT NULL
-);
-
 -- The guest ids a signed-in account was migrated from (POST /api/migrate), so their history still reads as theirs.
 CREATE TABLE owner_aliases (
   owner_id   TEXT    NOT NULL,
@@ -25,20 +17,6 @@ CREATE TABLE owner_aliases (
   PRIMARY KEY (owner_id, alias_id)
 );
 CREATE INDEX owner_aliases_alias_idx ON owner_aliases (alias_id);
-
--- First sighting of an account: a sign-in from an account never seen before counts as a sign-up.
-CREATE TABLE auth_accounts (
-  owner_id      TEXT    PRIMARY KEY NOT NULL,
-  first_seen_at INTEGER NOT NULL
-);
-
-
--- Settings that follow a person between browsers: one JSON blob each.
-CREATE TABLE user_preferences (
-  owner_id   TEXT    PRIMARY KEY NOT NULL,
-  prefs      TEXT    NOT NULL,
-  updated_at INTEGER NOT NULL
-);
 
 -- The liveworkspace account tokens this app has seen (src/db/api-tokens.ts): its mirror, which workbench
 -- pairings and sessions hang off. Only the hash is kept.
@@ -55,23 +33,6 @@ CREATE TABLE api_tokens (
   read_only        INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX api_tokens_owner_idx ON api_tokens (owner_id);
-
--- The lifecycle emails each account has been sent (docs/specs/014-identity/transactional-email.md).
-CREATE TABLE email_lifecycle (
-  owner_id            TEXT    PRIMARY KEY,
-  email               TEXT    NOT NULL,
-  created_at          INTEGER NOT NULL,
-  welcome_sent_at     INTEGER,
-  week1_sent_at       INTEGER,
-  week2_sent_at       INTEGER,
-  activation_sent_at  INTEGER,
-  winback_sent_at     INTEGER,
-  milestone_sent_at   INTEGER,
-  first_share_sent_at INTEGER,
-  send_attempts       INTEGER NOT NULL DEFAULT 0,
-  last_attempt_at     INTEGER
-);
-CREATE INDEX idx_email_lifecycle_due ON email_lifecycle (created_at);
 
 -- One claim per notification email, so a retried request never sends it twice; the sender's rows bound its rate.
 CREATE TABLE notify_email_claims (

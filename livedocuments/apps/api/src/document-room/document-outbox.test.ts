@@ -63,6 +63,8 @@ describe('the outbox', () => {
     const pushed = await drainOutbox(db.env, 'P');
 
     expect(pushed).toMatchObject({ more: false });
+    // The summary push names the owner and the save, for their activity at the accounts Worker.
+    expect(pushed.saved).toEqual({ ownerId: 'owner', savedAt: expect.any(Number) });
     expect(keys(db)).toEqual([]);
     expect(rows(db, 'SELECT document_id, tab_id, tab_name, action_id FROM collab_actions')).toEqual(
       [{ document_id: 'P', tab_id: 't1', tab_name: 'Board', action_id: 'act-a' }],

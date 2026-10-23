@@ -10,9 +10,9 @@ import {
   deleteTabRow,
   getDocument,
   getDocumentForSave,
-  getParticipant,
   getTab,
 } from '../db';
+import { getParticipant } from '../person/profiles';
 import { conflict, forbidden, json, noContent, notFound } from '../responses';
 import { recordVisitorOpened, retractTabComments } from '../timeline';
 import { DOCUMENT_OPEN_HEADER, readDocumentOpen, tabEtag } from '@livedocuments/api-schema';

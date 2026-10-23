@@ -200,8 +200,15 @@ export async function readContentSummary(
 
 // ---------- The drain ----------------------------------------------------------------------------------------
 
-// `more`: keys were left for the next drain (a drain takes at most DRAIN_TABS tabs).
-export type DrainResult = { keys: number; statements: number; more: boolean };
+// `more`: keys were left for the next drain (a drain takes at most DRAIN_TABS tabs). `saved`: the
+// document's owner and when it was last saved, when this drain pushed its summary, for the owner's
+// activity at the accounts Worker (document-room.ts).
+export type DrainResult = {
+  keys: number;
+  statements: number;
+  more: boolean;
+  saved?: { ownerId: string; savedAt: number };
+};
 
 // Tabs one drain pushes. Each costs D1 about three statements plus one per 1 MB of rows, so a drain after a 200-tab
 // import or copy stays a batch of a few hundred statements, well inside D1's per-invocation limits; the rest go
@@ -257,18 +264,28 @@ export async function drainOutbox(env: DocumentEnv, documentId: string): Promise
     stmts.push(...imageStatements(env, documentId, await documentImageIds(env, documentId), now));
   }
 
+  let summaryAt = -1;
+  let savedAt = 0;
   if (byKind('summary').length > 0) {
-    const { summary, savedAt } = await readContentSummary(env, documentId);
+    const read = await readContentSummary(env, documentId);
+    savedAt = read.savedAt;
+    summaryAt = stmts.length;
     stmts.push(
       env.DB.prepare(
-        'UPDATE documents SET content_summary = ?2, saved_at = MAX(saved_at, ?3) WHERE id = ?1',
-      ).bind(documentId, JSON.stringify(summary), savedAt),
+        'UPDATE documents SET content_summary = ?2, saved_at = MAX(saved_at, ?3) WHERE id = ?1 RETURNING owner_id',
+      ).bind(documentId, JSON.stringify(read.summary), savedAt),
     );
   }
 
-  if (stmts.length > 0) await env.DB.batch(stmts);
+  const results = stmts.length > 0 ? await env.DB.batch(stmts) : [];
+  const owner = (results[summaryAt]?.results?.[0] as { owner_id?: unknown } | undefined)?.owner_id;
   await env.DOCUMENT_DB.prepare('DELETE FROM outbox WHERE id IN (SELECT value FROM json_each(?))')
     .bind(JSON.stringify(pending.map((r) => r.id)))
     .run();
-  return { keys: pending.length, statements: stmts.length, more };
+  return {
+    keys: pending.length,
+    statements: stmts.length,
+    more,
+    ...(typeof owner === 'string' && savedAt > 0 ? { saved: { ownerId: owner, savedAt } } : {}),
+  };
 }
