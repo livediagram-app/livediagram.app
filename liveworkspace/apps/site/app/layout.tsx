@@ -17,7 +17,7 @@ const TRUSTED_TYPES_BOOT = trustedTypesBootScript('', [TURNSTILE_ORIGIN]);
 
 const TITLE = 'liveworkspace: Live apps for every kind of work';
 const DESCRIPTION =
-  'liveworkspace is a set of real-time apps, each built for one kind of work: livediagram for diagrams and whiteboards, liveplanner for boards, sheets and forms. Completely free, shared by link, no trackers.';
+  'liveworkspace is a set of real-time apps, each built for one kind of work: livediagram for diagrams and whiteboards, liveplanner for boards, sheets and forms, livedocuments for articles, slides and infographics, and livedesign for logos, wireframes and photos. Completely free, shared by link, no trackers.';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://liveworkspace.app'),
