@@ -7,10 +7,13 @@ import {
   type ExplorerView,
   type HelpHref,
   type ItemHref,
+  type LensOption,
   type Placement,
   type ShareUrl,
 } from '@liveworkspace/explorer';
 import type { App } from '@liveworkspace/index-client';
+import { TEMPLATE_FAMILIES as DIAGRAM_FAMILIES } from '@livediagram/api-schema';
+import { TEMPLATE_FAMILIES as PLAN_FAMILIES } from '@liveplanner/api-schema';
 import {
   APP_ITEMS,
   APP_NAMES,
@@ -131,6 +134,23 @@ export function helpHrefFor(app: App): HelpHref {
       view.kind === 'home' ? (HOME_ARTICLE[app] ?? 'explorer/explorer-page') : VIEW_HELP[view.kind];
     return `${appUrl(app)}/help/${slug}/`;
   };
+}
+
+// ---------- The filter lens's Template chip ----------------------------------------------------------------------
+
+const FAMILY_LABELS: Record<string, string> = { retrospective: 'Retrospective', kanban: 'Kanban' };
+const familiesOf = (families: readonly string[]): LensOption[] =>
+  families.map((value) => ({ value, label: FAMILY_LABELS[value] ?? value }));
+
+// The template families each app files its items' intents under (its api-schema's TEMPLATE_FAMILIES), for the
+// lens's Template chip. An app with none has no chip.
+const LENS_TEMPLATES: Partial<Record<App, readonly LensOption[]>> = {
+  livediagram: familiesOf(DIAGRAM_FAMILIES),
+  liveplanner: familiesOf(PLAN_FAMILIES),
+};
+
+export function lensTemplatesFor(app: App): readonly LensOption[] | undefined {
+  return LENS_TEMPLATES[app];
 }
 
 // ---------- Settings, asked for on the Explorer's address ------------------------------------------------------

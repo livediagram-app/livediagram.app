@@ -151,6 +151,8 @@ lives here once, rather than at each app's `/explorer`. The apps' Explorer links
 - **Home's banner.** Closing it is the person's `homeBanner` setting in the app's own scope
   (`/api/account/settings/:app`), so it stays closed in that app's editor too, and the other way round.
   A guest's close is kept in this browser.
+- **Appearance.** Light, dark or the system's, from the header beside the account control (the site's one
+  switch, `SiteAppearanceToggle`).
 - **Telemetry.** What people use here counts for the app the page shows, or `liveworkspace.app` on All Apps,
   batched and only with the person's consent ([telemetry.md](telemetry.md#the-explorer-on-liveworkspaceapp)).
 - **The Inbox.** Plan cards wear their type's glyph, and its empty state points at liveplanner's help on actions.

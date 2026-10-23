@@ -3,10 +3,12 @@
 // The Explorer's header on liveworkspace.app (liveworkspace/docs/site.md "The Explorer"): the liveworkspace logo,
 // then, for a person who came from an app, a hairline and that app's logo, which leads back to it. The search field
 // sits in the middle (on Home the hero holds it instead) and the account control on the right, as the site's own
-// header has them: the same height, border and frosted bar.
+// header has them: the same height, border and frosted bar. The Explorer runs the page's full width, so the rail the
+// site's other pages keep Appearance on (SiteRail) would sit over it; its Light / Dark / System control is here,
+// beside the account, at every width.
 
 import type { ReactNode } from 'react';
-import { SiteSwitcher } from '@livediagram/ui';
+import { SiteAppearanceToggle, SiteSwitcher } from '@livediagram/ui';
 import { siteOfApp, type AppName } from '@liveworkspace/sites';
 import { AccountControl } from '@/components/AccountControl';
 import { Wordmark } from '@/components/Wordmark';
@@ -44,7 +46,8 @@ export function ExplorerHeader({ app, search }: { app: AppName | null; search: R
         <div className="flex min-w-0 flex-1 justify-center">
           {search ? <div className="w-full max-w-md">{search}</div> : null}
         </div>
-        <div className="flex shrink-0 items-center">
+        <div className="flex shrink-0 items-center gap-1">
+          <SiteAppearanceToggle />
           <AccountControl />
         </div>
       </div>

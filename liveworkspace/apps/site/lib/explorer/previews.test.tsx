@@ -34,7 +34,7 @@ describe('previews on liveworkspace.app', () => {
   it("asks the item's own app, cache-busted by its version, and only apps that serve one", () => {
     expect(previewUrl(item())).toBe('https://www.liveplanner.app/api/projects/p1/thumbnail?v=5');
     expect(previewUrl(item({ app: 'livediagram' }))).toBeNull();
-    expect(renderPreview(item({ app: 'livedesign' }), 'card')).toBeNull();
+    expect(renderPreview(item({ app: 'livedocuments' }), 'card')).toBeNull();
     expect(renderPreview(item({ summary: { empty: true } }), 'card')).toBeNull();
     expect(loadPreview(item({ summary: { empty: true } }))).toBeNull();
   });

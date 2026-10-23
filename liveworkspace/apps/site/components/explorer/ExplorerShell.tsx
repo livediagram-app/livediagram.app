@@ -42,6 +42,7 @@ import {
   ENDED_PARAM,
   helpHrefFor,
   itemHref,
+  lensTemplatesFor,
   newItemHref,
   offlineHref,
   readLastApp,
@@ -326,6 +327,7 @@ export function ExplorerShell() {
           onHideHero={settings.onHideHero}
           onTimeline={trackTimeline}
           onHome={trackHome}
+          lensTemplates={lensTemplatesFor(app)}
           onLensSelected={trackLens}
           onViewToggled={trackViewToggled}
         />
