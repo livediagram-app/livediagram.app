@@ -5,7 +5,20 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { SettingsIllustration } from './settings-illustrations';
 import type { SettingsRowSpec } from './settings-catalogue';
 import { Glyph } from '@livediagram/ui';
+import { isAllSetting } from '@liveworkspace/settings';
+import { signInEnabled } from '@/lib/auth-config';
 import { SETTINGS_CARD, useInSettingsGroup } from './SettingsGroup';
+
+// Whether a row's setting is one every liveworkspace app shares (ALL_SETTING_KEYS): changed here,
+// it changes in each of them (docs/specs/007-editor/user-preferences.md "Shared with every app").
+// A row's key is its preference's key, except a UI Scale part's (`uiScale-panels` is
+// `uiScalePanels`). Only where liveworkspace keeps the preferences: without sign-in they stay in
+// this browser.
+export function rowSharedByAllApps(rowKey: string, synced = signInEnabled): boolean {
+  if (!synced) return false;
+  const key = rowKey.replace(/^uiScale-(\w)/, (_, c: string) => `uiScale${c.toUpperCase()}`);
+  return isAllSetting(key);
+}
 
 // Everything a settings row has in common, whatever its control is: one CELL holding the label
 // with a short description under it, the control beside them, and below them whatever the row
@@ -67,6 +80,7 @@ export function SettingsRowShell({
 }) {
   const inGroup = useInSettingsGroup();
   const described = Boolean(descriptionContent ?? row.description) || !!row.helpArticle;
+  const allApps = rowSharedByAllApps(row.key);
 
   const cell = (
     <div
@@ -102,6 +116,16 @@ export function SettingsRowShell({
               {row.alsoIn ? (
                 <span className="mt-0.5 block text-slate-500 dark:text-slate-400">
                   Also in {row.alsoIn}.
+                </span>
+              ) : null}
+              {/* A shared setting says so, quietly, so changing it here is not a surprise in
+                  another app. */}
+              {allApps ? (
+                <span
+                  data-settings-all-apps
+                  className="mt-0.5 block text-slate-500 dark:text-slate-400"
+                >
+                  All apps: the same in every liveworkspace app.
                 </span>
               ) : null}
             </p>

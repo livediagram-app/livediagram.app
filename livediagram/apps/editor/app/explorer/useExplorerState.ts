@@ -83,7 +83,7 @@ export function useExplorerState() {
   // ExplorerShell because the pane needs them too (Recent honours the
   // hidden-from-Recent list, docs/specs/013-workspace/hide-from-recent.md). Followed live from the
   // localStorage cache, which every write lands in (this tab's, another tab's, and the
-  // authoritative D1 copy merged in on mount), so a change made in another tab shows here and the
+  // authoritative server copy merged in on mount), so a change made in another tab shows here and the
   // next write builds on it. The hydrating render sees no preferences: a build without sign-in
   // prerenders this shell, and that render must match the HTML (the sidebar's Minimal chrome, the
   // appearance control's power-user wording).
@@ -126,6 +126,7 @@ export function useExplorerState() {
   const {
     teams,
     invites,
+    createTeam: hookCreateTeam,
     acceptInvite,
     declineInvite,
     refresh: refreshTeams,
@@ -486,13 +487,13 @@ export function useExplorerState() {
     now: lens.now,
   });
 
-  // Merge the authoritative D1 preferences in once the owner is known; the merge lands in the cache.
+  // Merge the authoritative server preferences in once the owner is known; the merge lands in the cache.
   useEffect(() => {
     if (ownerId) void fetchUserPreferences(ownerId);
   }, [ownerId]);
 
   // Hide / show a document in Recent (docs/specs/013-workspace/hide-from-recent.md). Read-modify-writes from the
-  // CACHE rather than the React snapshot: the PUT sends the whole blob, so
+  // CACHE rather than the React snapshot: the cache holds the whole blob, so
   // a stale snapshot would clobber sibling flags written by another tab.
   const toggleRecentExclusion = useCallback(
     (documentId: string) => {
@@ -623,6 +624,7 @@ export function useExplorerState() {
     moveTeamDests,
     dismissShared,
     // Teams
+    hookCreateTeam,
     acceptInvite,
     declineInvite,
     refreshTeams,

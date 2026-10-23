@@ -106,7 +106,7 @@ export function useEditorPreferences(deps: EditorPreferencesDeps) {
   const alignmentGuidesRef = useLatest<boolean>(userPreferences.alignmentGuides !== false);
 
   // Server-side preferences sync (docs/specs/007-editor/user-preferences.md). Once the owner id
-  // resolves, fetch the row from D1 and merge it over the
+  // resolves, fetch the server's copy and merge it over the
   // localStorage cache. Server wins for any key present on both
   // sides. The cache read above still lands first so the UI
   // never blocks on this network step; this just reconciles toggles

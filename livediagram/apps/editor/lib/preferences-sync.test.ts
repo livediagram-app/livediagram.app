@@ -4,18 +4,22 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('./api-client', () => ({
   apiGetPreferences: vi.fn(),
   apiPutPreferences: vi.fn(),
+  PREFERENCES_LOCAL_ONLY: 'local-only',
 }));
 
 import { apiGetPreferences, apiPutPreferences } from './api-client';
 import {
   __resetPreferencesSync,
   fitPreferences,
+  preferencesLocalOnly,
+  preferencesPatch,
   PREFERENCES_BODY_MAX,
   PREFERENCES_UNSYNCED_KEY,
   preferencesBodyLength,
   savePreferences,
 } from './preferences-sync';
 import {
+  __resetFetchedPreferences,
   fetchUserPreferences,
   RECENT_EXCLUDED_LIMIT,
   rebaseUserPreferences,
@@ -86,6 +90,7 @@ beforeEach(() => {
   mockedGet.mockReset();
   mockedPut.mockReset();
   __resetPreferencesSync();
+  __resetFetchedPreferences();
   vi.spyOn(console, 'warn').mockImplementation(() => {});
   vi.spyOn(console, 'info').mockImplementation(() => {});
 });
@@ -189,7 +194,8 @@ describe('fetchUserPreferences after a save that did not land', () => {
     mockedPut.mockResolvedValue(true);
     const merged = await fetchUserPreferences('owner-1');
     expect(merged).toEqual({ showMinimap: false, uiScale: 1.2, tourSeen: true });
-    expect(mockedPut).toHaveBeenCalledWith('owner-1', merged);
+    // Only what differs from the server's copy goes.
+    expect(mockedPut).toHaveBeenCalledWith('owner-1', { showMinimap: false, uiScale: 1.2 });
   });
 
   it("lets the server win when the mark is another owner's", async () => {
@@ -198,6 +204,76 @@ describe('fetchUserPreferences after a save that did not land', () => {
     mockedGet.mockResolvedValue({ showMinimap: true });
     expect(await fetchUserPreferences('owner-1')).toEqual({ showMinimap: true });
     expect(mockedPut).not.toHaveBeenCalled();
+  });
+});
+
+describe('only what changed goes to the server', () => {
+  it('builds a patch: changed keys whole, null for a dropped key, nothing for the same', () => {
+    const base = { a: 1, picks: { x: [1, 2] }, gone: true, same: 'x' };
+    const next = { a: 2, picks: { x: [1, 3] }, same: 'x', added: false };
+    expect(preferencesPatch(base, next)).toEqual({
+      a: 2,
+      picks: { x: [1, 3] },
+      gone: null,
+      added: false,
+    });
+  });
+
+  it('sends a change against the server copy, never undoing a key another app changed', async () => {
+    mockedGet.mockResolvedValue({ reduceMotion: true, uiScale: 1 });
+    mockedPut.mockResolvedValue(true);
+    await fetchUserPreferences('owner-1');
+    // Another app turns reduce motion off now; this tab still holds `true` and changes uiScale.
+    savePreferences('owner-1', { reduceMotion: true, uiScale: 1.2 });
+    await vi.waitFor(() => expect(mockedPut).toHaveBeenCalledTimes(1));
+    expect(mockedPut).toHaveBeenCalledWith('owner-1', { uiScale: 1.2 });
+    // The next change builds on what that save confirmed.
+    savePreferences('owner-1', { reduceMotion: true });
+    await vi.waitFor(() => expect(mockedPut).toHaveBeenCalledTimes(2));
+    expect(mockedPut.mock.calls[1]).toEqual(['owner-1', { uiScale: null }]);
+    // Nothing changed: nothing sent, and the device copy counts as synced.
+    savePreferences('owner-1', { reduceMotion: true });
+    await vi.waitFor(() =>
+      expect(window.localStorage.getItem(PREFERENCES_UNSYNCED_KEY)).toBeNull(),
+    );
+    expect(mockedPut).toHaveBeenCalledTimes(2);
+  });
+
+  it('reads the server once per page load, however many surfaces ask', async () => {
+    mockedGet.mockResolvedValue({ uiScale: 1 });
+    await fetchUserPreferences('owner-1');
+    await fetchUserPreferences('owner-1');
+    expect(mockedGet).toHaveBeenCalledTimes(1);
+  });
+
+  it('asks again on the next load when the read failed', async () => {
+    mockedGet.mockResolvedValueOnce(null).mockResolvedValueOnce({ uiScale: 1 });
+    expect(await fetchUserPreferences('owner-1')).toBeNull();
+    expect(await fetchUserPreferences('owner-1')).toEqual({ uiScale: 1 });
+  });
+});
+
+describe('a deployment that keeps no preferences (guest-only self-host)', () => {
+  it('keeps them in this browser alone when the api answers prefs: null', async () => {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ uiScale: 1.2 }));
+    window.localStorage.setItem(PREFERENCES_UNSYNCED_KEY, 'owner-1');
+    mockedGet.mockResolvedValue('local-only');
+    expect(await fetchUserPreferences('owner-1')).toBeNull();
+    expect(preferencesLocalOnly('owner-1')).toBe(true);
+    expect(window.localStorage.getItem(PREFERENCES_UNSYNCED_KEY)).toBeNull();
+    writeUserPreferences({ uiScale: 1.3 }, 'owner-1');
+    expect(mockedPut).not.toHaveBeenCalled();
+    expect(window.localStorage.getItem(PREFERENCES_UNSYNCED_KEY)).toBeNull();
+    expect(JSON.parse(window.localStorage.getItem(STORAGE_KEY)!)).toEqual({ uiScale: 1.3 });
+  });
+
+  it('stops sending once a save answers that nothing is kept', async () => {
+    mockedPut.mockResolvedValue('local-only');
+    savePreferences('owner-1', { uiScale: 1 });
+    await vi.waitFor(() => expect(preferencesLocalOnly('owner-1')).toBe(true));
+    savePreferences('owner-1', { uiScale: 2 });
+    expect(mockedPut).toHaveBeenCalledTimes(1);
+    expect(window.localStorage.getItem(PREFERENCES_UNSYNCED_KEY)).toBeNull();
   });
 });
 

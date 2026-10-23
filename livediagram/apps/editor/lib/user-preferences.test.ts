@@ -8,11 +8,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('./api-client', () => ({
   apiGetPreferences: vi.fn(),
   apiPutPreferences: vi.fn(),
+  PREFERENCES_LOCAL_ONLY: 'local-only',
 }));
 
 import { apiGetPreferences, apiPutPreferences } from './api-client';
 import { setWorkbenchConfinement } from './api/workbench-confinement';
+import { __resetPreferencesSync } from './preferences-sync';
 import {
+  __resetFetchedPreferences,
   autoRebindArrowsEnabled,
   fetchUserPreferences,
   RECENT_EXCLUDED_LIMIT,
@@ -106,6 +109,8 @@ afterEach(() => {
 beforeEach(() => {
   mockedGet.mockReset();
   mockedPut.mockReset();
+  __resetFetchedPreferences();
+  __resetPreferencesSync();
 });
 
 describe('readUserPreferences (no window)', () => {

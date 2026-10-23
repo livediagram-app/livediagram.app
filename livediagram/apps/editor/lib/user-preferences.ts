@@ -3,9 +3,10 @@ export type MapSize = 'short' | 'medium' | 'tall';
 // Per-user editor preference flags. See docs/specs/007-editor/user-preferences.md.
 //
 // Storage:
-//   - D1 (`user_preferences` table) is the authoritative store, fetched
-//     once at editor mount via fetchUserPreferences() so a signed-in
-//     user's flags follow them across devices.
+//   - liveworkspace keeps the authoritative copy (the api's /api/preferences), fetched
+//     once per page load via fetchUserPreferences() so a person's flags follow them
+//     across devices, and the shared ones (ALL_SETTING_KEYS) across apps. A deployment
+//     without liveworkspace keeps none: the cache below is then the only copy.
 //   - `localStorage` under `livediagram:user-preferences:v1` is a warm
 //     cache so the editor never blocks on the network at boot. Reads
 //     are synchronous; writes go to BOTH localStorage and the api
@@ -15,10 +16,10 @@ export type MapSize = 'short' | 'medium' | 'tall';
 // event on STORAGE_KEY. Same-tab writes also fire a window event
 // `livediagram:preferences-changed` so listeners that can't observe
 // their own `localStorage.setItem` (like `lib/telemetry.ts`'s
-// in-memory gate cache) still refresh promptly. Every write sends the
-// WHOLE blob, so a change is built on the cache, never on a render's
-// snapshot (see rebaseUserPreferences): another tab's write since that
-// render would otherwise be undone.
+// in-memory gate cache) still refresh promptly. Every write stores the
+// WHOLE blob in the cache, so a change is built on the cache, never on a
+// render's snapshot (see rebaseUserPreferences): another tab's write since
+// that render would otherwise be undone.
 
 import { upgradeLegacyPreferences } from '@livediagram/api-schema';
 import type { ElementTourKind } from './element-tours';
@@ -26,8 +27,14 @@ import type { SwatchOverrideStore } from './swatch-overrides';
 import type { WhiteboardShapeKey } from './whiteboard-shape-catalogue';
 import type { ShapePicks } from './whiteboard-shape-slots';
 import { USER_PREFERENCES_STORAGE_KEY } from '@livediagram/telemetry-client';
-import { apiGetPreferences } from './api-client';
-import { fitPreferences, preferencesUnsynced, savePreferences } from './preferences-sync';
+import { apiGetPreferences, PREFERENCES_LOCAL_ONLY } from './api-client';
+import {
+  fitPreferences,
+  markPreferencesLocalOnly,
+  preferencesUnsynced,
+  rememberServerPreferences,
+  savePreferences,
+} from './preferences-sync';
 import { getWorkbenchConfinement } from './api/workbench-confinement';
 import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-safe';
 import { debugLog } from './debug-log';
@@ -46,7 +53,7 @@ export type UserPreferences = {
   telemetryEnabled?: boolean;
   // DEAD as of docs/specs/008-canvas/two-pens.md: shape recognition is now which pen you picked
   // (Freehand or Shape Pen), not a persisted mode. Nothing reads this any
-  // more. It stays in the type because it is already stored in D1 for
+  // more. It stays in the type because it is already stored for
   // existing users, and removing it would make a stored preference fail to
   // parse rather than simply be ignored.
   recogniseShapes?: boolean;
@@ -301,7 +308,7 @@ export function readUserPreferences(): UserPreferences {
 // Write preferences back. Best-effort: a quota / private-window
 // failure is swallowed (the dialog state still applies in-memory
 // for the session; the user just loses the persistence). The
-// network sync to D1 runs in the background when `ownerId` is supplied
+// network sync to the api runs in the background when `ownerId` is supplied
 // (lib/preferences-sync): the cache write happens synchronously so the
 // UI updates without waiting. Callers without an ownerId (e.g. unit
 // tests, the editor before identity resolves) skip the network step.
@@ -356,11 +363,22 @@ export function commitUserPreferences(
   return rebased;
 }
 
-// Fetch preferences from D1, merge over the localStorage cache, and
+// Owners whose server preferences this page has already merged: a second caller (the explorer,
+// then the editor it opens) reads the cache rather than asking again, so a page load costs one
+// accounts read, and a later change made here is never reverted by an older server copy.
+const fetched = new Set<string>();
+
+// Test seam.
+export function __resetFetchedPreferences(): void {
+  fetched.clear();
+}
+
+// Fetch preferences from the api, merge over the localStorage cache, and
 // dispatch `livediagram:preferences-changed` so in-process listeners
 // pick up the merged value. Returns the merged preferences (or null
-// when the fetch failed; the caller can treat that as "stick with
-// the cache"). Called once at editor mount per docs/specs/007-editor/user-preferences.md's sync flow.
+// when the fetch failed, or this deployment keeps none; the caller treats
+// that as "stick with the cache"). Called at editor mount per
+// docs/specs/007-editor/user-preferences.md's sync flow, once per page load.
 //
 // Server-wins on conflict: the server holds the most-recently-saved
 // state across all of this owner's devices, so any key present on
@@ -369,10 +387,21 @@ export function commitUserPreferences(
 // are preserved by the spread order below. The exception is a device
 // whose last save was never confirmed (lib/preferences-sync): the
 // server's blob is older than the cache there, so the cache wins and
-// is sent again.
+// what differs is sent again.
 export async function fetchUserPreferences(ownerId: string): Promise<UserPreferences | null> {
+  if (fetched.has(ownerId)) return readUserPreferences();
+  fetched.add(ownerId);
   const remote = await apiGetPreferences(ownerId);
-  if (remote === null) return null;
+  if (remote === PREFERENCES_LOCAL_ONLY) {
+    debugLog('[preferences] kept in this browser only');
+    markPreferencesLocalOnly(ownerId);
+    return null;
+  }
+  if (remote === null) {
+    fetched.delete(ownerId);
+    return null;
+  }
+  rememberServerPreferences(ownerId, remote);
   const local = readUserPreferences();
   const server = upgradeLegacyPreferences(remote) as UserPreferences;
   const unsynced = preferencesUnsynced(ownerId);
