@@ -193,10 +193,10 @@ describe('EditorHeader Present button', () => {
     expect(button).toHaveProperty('disabled', true);
   });
 
-  it('links the logo to the Explorer home, not the homepage', () => {
+  it('links the logo to the Explorer on this address, not the homepage', () => {
     renderHeader();
     expect(screen.getByRole('link', { name: 'livediagram' }).getAttribute('href')).toBe(
-      '/explorer/home',
+      '/explorer',
     );
   });
 });

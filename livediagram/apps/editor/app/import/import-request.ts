@@ -1,7 +1,7 @@
-// What the liveworkspace Explorer's "Import from" asks the /import page for, and where it returns
+// What the Explorer's "Import from" asks the /import page for, and where it returns
 // (docs/specs/013-workspace/folders.md "Import from").
-import { explorerUrl } from '@liveworkspace/sites';
-import { IMPORT_SOURCES, type ImportSourceId } from '../explorer/import-sources';
+import { explorerHref } from '@/lib/explorer-href';
+import { IMPORT_SOURCES, type ImportSourceId } from './import-sources';
 
 export type ImportRequest = {
   source: ImportSourceId;
@@ -25,7 +25,8 @@ export function importRequestOf(params: URLSearchParams): ImportRequest | null {
 
 /** The Explorer page the imports landed on: Shape Libraries, the folder, or All. */
 export function importReturnUrl(request: ImportRequest): string {
-  if (request.what === 'libraries') return explorerUrl('livediagram', 'shape-libraries');
-  if (request.folderId) return explorerUrl('livediagram', 'folder', `id=${request.folderId}`);
-  return explorerUrl('livediagram', 'all');
+  if (request.what === 'libraries') return explorerHref('shape-libraries');
+  if (request.folderId)
+    return explorerHref('folder', `?id=${encodeURIComponent(request.folderId)}`);
+  return explorerHref('all');
 }

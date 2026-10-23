@@ -21,7 +21,6 @@ import {
 import {
   __resetFetchedPreferences,
   fetchUserPreferences,
-  RECENT_EXCLUDED_LIMIT,
   rebaseUserPreferences,
   STORAGE_KEY,
   writeUserPreferences,
@@ -36,8 +35,10 @@ const mockedPut = vi.mocked(apiPutPreferences);
 
 const uuid = (i: number) => `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`;
 
-// A full account, as measured: 60 hidden documents, a busy shape history and the usual flags
-// came to 4,967 characters, past the api's cap, after which every save was refused.
+// A full account, as measured: 60 hidden documents (an old blob's list, kept on the server from before Hide from
+// Recent was the index's), a busy shape history and the usual flags came to 4,967 characters, past the api's cap,
+// after which every save was refused.
+const RECENT_EXCLUDED_LIMIT = 60;
 function fullAccount(): UserPreferences {
   const kinds = [
     'rectangle',
@@ -61,7 +62,9 @@ function fullAccount(): UserPreferences {
     kinds.map((k, i) => [k, [i + 1, 1_760_000_000_000 + i * 1000]]),
   ) as ShapePicks;
   return {
-    recentExcludedIds: Array.from({ length: RECENT_EXCLUDED_LIMIT }, (_, i) => uuid(i)),
+    ...({
+      recentExcludedIds: Array.from({ length: RECENT_EXCLUDED_LIMIT }, (_, i) => uuid(i)),
+    } as UserPreferences),
     whiteboardShapePicks: picks,
     whiteboardPinnedShapes: ['arrow', 'rectangle'],
     quickSwatchOverrides: { brand: { fill: ['#112233', null, '#445566'] } } as never,
@@ -105,14 +108,14 @@ describe('fitPreferences', () => {
     expect(fitPreferences(prefs)).toBe(prefs);
   });
 
-  it('trims the oldest hidden ids, then the oldest shape picks, until it fits', () => {
+  it('drops an old hidden-from-Recent list, then the oldest shape picks, until it fits', () => {
     const full = fullAccount();
     // Pad the rest so the hidden list alone cannot make room.
     const prefs = { ...full, customSwatches: Array.from({ length: 280 }, () => '#abcdef') };
     expect(preferencesBodyLength(prefs)).toBeGreaterThan(PREFERENCES_BODY_MAX);
     const fitted = fitPreferences(prefs);
     expect(preferencesBodyLength(fitted)).toBeLessThanOrEqual(PREFERENCES_BODY_MAX);
-    expect(fitted.recentExcludedIds).toEqual([]);
+    expect('recentExcludedIds' in fitted).toBe(false);
     // The newest picks stay: what went was the least recently used.
     const left = Object.values(fitted.whiteboardShapePicks ?? {}).map((p) => p![1]);
     const all = Object.values(full.whiteboardShapePicks ?? {}).map((p) => p![1]);
@@ -121,15 +124,13 @@ describe('fitPreferences', () => {
     expect(fitted.customSwatches).toHaveLength(280);
   });
 
-  it('fits the measured full account by dropping only its oldest hidden ids', () => {
+  it('fits the measured full account by dropping only its old hidden-from-Recent list', () => {
     const prefs = fullAccount();
     // Within a few characters of the 4,967 measured.
     expect(preferencesBodyLength(prefs)).toBeGreaterThan(4900);
     const fitted = fitPreferences(prefs);
     expect(preferencesBodyLength(fitted)).toBeLessThanOrEqual(PREFERENCES_BODY_MAX);
-    const kept = fitted.recentExcludedIds ?? [];
-    expect(kept.length).toBeGreaterThan(0);
-    expect(kept).toEqual(prefs.recentExcludedIds!.slice(0, kept.length));
+    expect('recentExcludedIds' in fitted).toBe(false);
     expect(fitted.whiteboardShapePicks).toEqual(prefs.whiteboardShapePicks);
   });
 

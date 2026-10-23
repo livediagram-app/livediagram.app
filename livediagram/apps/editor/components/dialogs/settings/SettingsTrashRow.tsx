@@ -3,6 +3,7 @@
 import { SETTINGS_ROW_BUTTON, SettingsRowShell } from './SettingsRowShell';
 import type { SettingsTrashRowSpec } from './settings-catalogue';
 import { track } from '@/lib/telemetry';
+import { explorerHref } from '@/lib/explorer-href';
 
 // The way into the Trash (docs/specs/013-workspace/trash.md). A link rather
 // than a list: the Trash view has the room for its groups and confirmations,
@@ -13,7 +14,7 @@ export function SettingsTrashRow({ row }: { row: SettingsTrashRowSpec }) {
       row={row}
       control={
         <a
-          href="/explorer/trash"
+          href={explorerHref('trash')}
           onClick={() => track('Trash', 'Opened', 'Settings')}
           aria-describedby={`${row.key}-description`}
           className={SETTINGS_ROW_BUTTON}

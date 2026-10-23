@@ -10,6 +10,7 @@
 import { reportApiWarning } from '../api/error-report';
 import { debugLog } from '../debug-log';
 import { OfflineStoreUnavailableError, offlineBackend } from './offline-backend';
+import { publishThisBrowser } from './this-browser';
 
 // The channel the tabs of one browser tell each other about offline ids on.
 export const OFFLINE_IDS_CHANNEL = 'livediagram-offline';
@@ -45,6 +46,8 @@ async function loadIds(): Promise<Set<string>> {
         for (const id of removedIds) ids.delete(id);
         removedIds.clear();
         idCache = ids;
+        // Read anyway: This Browser's list rebuilt from it, once per page load (this-browser.ts).
+        publishThisBrowser(recs);
         return ids;
       })
       .catch((err: unknown) => {

@@ -2,7 +2,7 @@
 
 import { useCloseVanishedDialogs } from '@/components/dialogs/useCloseVanishedDialogs';
 import dynamic from 'next/dynamic';
-import { apiSetDocumentFolder } from '@/lib/api-client';
+import { indexClient } from '@/lib/index-client';
 import { elementActions, isBoxed } from '@livediagram/document';
 
 import { track } from '@/lib/telemetry';
@@ -196,7 +196,7 @@ export function EditorAnchoredPopovers() {
                 onMoveToTeam={async (teamId) => {
                   if (!accountUserId || !documentId) return false;
                   try {
-                    await apiSetDocumentFolder(accountUserId, documentId, null, teamId);
+                    await indexClient.updateItem(documentId, { teamId, folderId: null });
                   } catch {
                     return false;
                   }

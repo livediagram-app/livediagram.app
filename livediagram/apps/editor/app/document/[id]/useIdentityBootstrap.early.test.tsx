@@ -12,7 +12,6 @@ const { api, guest, offline, seed } = vi.hoisted(() => ({
     apiSaveSelf: vi.fn(),
     apiLoadDocument: vi.fn(),
     apiLoadShared: vi.fn(),
-    apiListShareLinks: vi.fn(),
   },
   guest: { ensureGuestIdentity: vi.fn() },
   offline: { isOfflineId: vi.fn() },
@@ -46,7 +45,6 @@ function render(initial: Props) {
   const set = new Proxy({} as Record<string, ReturnType<typeof vi.fn>>, {
     get: (t, k: string) => (t[k] ??= vi.fn()),
   });
-  const lists = { documents: vi.fn(), shared: vi.fn() };
   const hook = renderHook(
     ({ authLoaded }: Props) =>
       useIdentityBootstrap({
@@ -59,8 +57,6 @@ function render(initial: Props) {
         workbench: null,
         activeId: 't1',
         selfParticipant: { id: 'self', name: 'x', color: '#000', status: 'online' },
-        refreshDocumentList: lists.documents,
-        refreshSharedList: lists.shared,
         resetTabs: () => {},
         refs: {
           lastPersistedSelfRef: { current: null },
@@ -73,7 +69,7 @@ function render(initial: Props) {
       }),
     { initialProps: initial },
   );
-  return { hook, set, lists };
+  return { hook, set };
 }
 const flush = () => new Promise((r) => setTimeout(r, 0));
 
@@ -90,7 +86,7 @@ afterEach(() => vi.clearAllMocks());
 
 describe('useIdentityBootstrap early open', () => {
   it('opens a document in This Browser before auth settles, without the server', async () => {
-    const { set, lists } = render({ authLoaded: false });
+    const { set } = render({ authLoaded: false });
     await flush();
     expect(api.apiLoadDocument).toHaveBeenCalledExactlyOnceWith('self', 'doc-1');
     expect(set.setHydrated).toHaveBeenCalledWith(true);
@@ -98,13 +94,12 @@ describe('useIdentityBootstrap early open', () => {
     expect(set.setDocumentServerStored).toHaveBeenCalledWith(false);
     expect(guest.ensureGuestIdentity).not.toHaveBeenCalled();
     expect(api.apiLoadSelf).not.toHaveBeenCalled();
-    expect(lists.documents).not.toHaveBeenCalled();
     // The naming nudge waits for the real participant.
     expect(set.setIdentityPromptOpen).not.toHaveBeenCalled();
   });
 
   it('resolves the reader once auth answers, without loading the document again', async () => {
-    const { hook, set, lists } = render({ authLoaded: false });
+    const { hook, set } = render({ authLoaded: false });
     await flush();
     hook.rerender({ authLoaded: true });
     await flush();
@@ -112,8 +107,6 @@ describe('useIdentityBootstrap early open', () => {
     expect(set.setSelfParticipant).toHaveBeenCalledWith(
       expect.objectContaining({ id: 'guest-1', key: 'collab' }),
     );
-    expect(lists.documents).toHaveBeenCalledWith('guest-1');
-    expect(lists.shared).toHaveBeenCalledWith('guest-1');
     expect(set.setIdentityPromptOpen).toHaveBeenCalledWith(true);
   });
 

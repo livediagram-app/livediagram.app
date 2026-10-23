@@ -16,7 +16,7 @@ import {
 } from '@livediagram/document';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { isBoxed, isVoteHost } from '@livediagram/document';
 import { commentPersisters } from '@/lib/comment-persistence';
 import { pollHostFor } from '@/hooks/collab/useLivePoll';
@@ -26,7 +26,6 @@ import { answeringKeys, participantKey, selfInRoom } from '@/lib/identity';
 import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
 import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
 import { track } from '@/lib/telemetry';
-import { useTeamFolderActions } from '@/hooks/ui/useTeamFolderActions';
 import { getTheme, themeChartPalette, themeViewMap, type ThemeId } from '@/lib/themes';
 import { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { readDrawPattern } from '@/lib/whiteboard-dock-prefs';
@@ -81,9 +80,6 @@ export function EditorCanvasHost() {
     laserConfig,
     onChangeLaserField,
     setLaserPanelPosition,
-    toggleRecentExclusion,
-    favouriteIds,
-    toggleFavourite,
     voteResults,
     jumpToVoteResult,
     livePoll,
@@ -188,21 +184,14 @@ export function EditorCanvasHost() {
     commitLabel,
     commitTable,
     commitHeaderSize,
-    createFolder,
     deleteCurvePoint,
-    deleteDocument,
-    refreshOwnDocuments,
-    deleteFolder,
     deleteMultiSelected,
     deleteSelected,
     documentId,
-    documentList,
-    documentListLoading,
     documentName,
-    dismissSharedDocument,
+    nameDocument,
     dropIconOnElement,
     dropPaletteItem,
-    duplicateDocument,
     duplicateMultiSelected,
     contextMenu,
     duplicateSelected,
@@ -215,7 +204,6 @@ export function EditorCanvasHost() {
     endVote,
     exitFormatTool,
     fitToScreen,
-    folders,
     followLink,
     formatSourceId,
     handleCanvasDoubleClick,
@@ -237,8 +225,6 @@ export function EditorCanvasHost() {
     livePresence,
     lockedByOther,
     mapPosition,
-    moveDocumentToFolder,
-    moveDocumentTo,
     narrowMultiSelection,
     newDocument,
     openActionPopover,
@@ -247,7 +233,6 @@ export function EditorCanvasHost() {
     reopenAction,
     openCellLinkPicker,
     openComments,
-    openDocument,
     openNote,
     pauseTimer,
     pendingDraw,
@@ -255,7 +240,6 @@ export function EditorCanvasHost() {
     remoteAvatarRows,
     remoteCursorRows,
     remoteSelectionsByElement,
-    renameFolder,
     resetTimer,
     resumeTimer,
     retractVote,
@@ -268,7 +252,6 @@ export function EditorCanvasHost() {
     readSelection,
     selectElement,
     selectMarquee,
-    confirm,
     selfParticipant,
     sessionShareCode,
     exitAvatarTool,
@@ -293,8 +276,6 @@ export function EditorCanvasHost() {
     setCanvasThemeTab,
     setCommentsPanelPosition,
     setContextMenu,
-    setDocumentList,
-    setDocumentName,
     setEditingId,
     setExportOpen,
     setExportScope,
@@ -320,17 +301,12 @@ export function EditorCanvasHost() {
     setTextAlignSelected,
     setViewportOffset,
     setViewportZoom,
-    sharedDocuments,
     shiftDupGhostIds,
     snapGuideStore,
     spawnConnectSelected,
     startTimer,
     startVote,
     tabSummaries,
-    teamDocuments,
-    teamFolders,
-    teams,
-    refreshTeamLibraries,
     toggleAspectLockSelected,
     toggleInMultiSelect,
     toggleLockMultiSelected,
@@ -400,20 +376,6 @@ export function EditorCanvasHost() {
     at: { x: number; y: number };
     holders: LockHolder[];
   } | null>(null);
-  // A stable reference for the list-shaped prop the Explorer takes, so the
-  // (React.memo'd) panel doesn't re-render on every drag frame just because
-  // the editor re-rendered. It recomputes only when its real input changes.
-  const explorerTeams = useMemo(() => teams.map((t) => ({ id: t.id, name: t.name })), [teams]);
-  // Team-library folder mutations for the Explorer panel's team tree
-  // (docs/specs/013-workspace/team-shared-documents.md) - see useTeamFolderActions.
-  const viewerId = selfParticipant?.id ?? null;
-  const onTeamFolders = useTeamFolderActions({
-    accountUserId,
-    viewerId,
-    teamFolders,
-    refreshTeamLibraries,
-    confirm,
-  });
   // The canvas paints the backdrop the VIEWER resolves, not blindly the one
   // the tab stores: a tab on the Default theme follows this browser's
   // appearance (docs/specs/007-editor/editor-app.md). Subscribing to the appearance here is what makes the
@@ -802,14 +764,6 @@ export function EditorCanvasHost() {
             onCancelDraw={cancelDrawShape}
             onUndo={undo}
             onRedo={redo}
-            documentList={documentList}
-            folders={folders}
-            sharedDocuments={sharedDocuments}
-            teams={explorerTeams}
-            teamFolders={teamFolders}
-            teamDocuments={teamDocuments}
-            onDismissShared={(id) => void dismissSharedDocument(id)}
-            documentListLoading={documentListLoading}
             mapPosition={mapPosition}
             onMoveMap={(x, y) =>
               // Equality-guarded so a drag tick that resolves to the same spot
@@ -840,9 +794,6 @@ export function EditorCanvasHost() {
                 : null
             }
             userPreferences={userPreferences}
-            onToggleRecentExclusion={toggleRecentExclusion}
-            favouriteIds={favouriteIds}
-            onToggleFavourite={toggleFavourite}
             laserPanelPosition={laserPanelPosition}
             spotlightPanelPosition={spotlightPanelPosition}
             eraserPanelPosition={eraserPanelPosition}
@@ -951,7 +902,8 @@ export function EditorCanvasHost() {
                     done ? completeAction(id, actionId) : reopenAction(id, actionId)
             }
             currentDocumentId={documentId}
-            onOpenDocument={openDocument}
+            currentShareCode={sessionShareCode}
+            onRenameCurrentDocument={nameDocument}
             onNewDocument={newDocument}
             explorerMenuActions={{
               // The header's Share gate: the owner, or a joined member of the document's team
@@ -973,25 +925,6 @@ export function EditorCanvasHost() {
                 track('UI', 'Opened', 'Settings');
               },
             }}
-            onRenameCurrent={(next) => {
-              const prev = documentName.trim();
-              const nextTrim = next.trim();
-              setDocumentName(next);
-              if (nextTrim && documentId)
-                setDocumentList((prev) =>
-                  prev.map((d) => (d.id === documentId ? { ...d, name: nextTrim } : d)),
-                );
-              if (nextTrim && nextTrim !== prev) track('Document', 'Renamed');
-            }}
-            onDeleteDocument={(id) => void deleteDocument(id)}
-            onLibraryChanged={refreshOwnDocuments}
-            onDuplicateDocument={(id) => void duplicateDocument(id)}
-            onCreateFolder={createFolder}
-            onRenameFolder={renameFolder}
-            onDeleteFolder={(id) => void deleteFolder(id)}
-            onTeamFolders={onTeamFolders}
-            onMoveDocumentToFolder={moveDocumentToFolder}
-            onMoveDocumentTo={moveDocumentTo}
             onDeselect={() => {
               // Clicking empty canvas also cancels an armed arrow-connect, and
               // wraps up the Format tool — restoring the pre-Format tool — so a
@@ -1146,10 +1079,10 @@ export function EditorCanvasHost() {
             showIdentityPrompt={identityOnlyScreenOpen}
             hydrated={hydrated}
             // Visitor on someone else's document + signed in → lock the
-              // identity input to their account name. Owner branch never
+            // identity input to their account name. Owner branch never
             // shows the identity prompt so `lockedName` is moot there;
             // pure guests pass null and keep the editable name field.
-              identityLockedName={!isOwner && accountUserId ? accountDisplayName : null}
+            identityLockedName={!isOwner && accountUserId ? accountDisplayName : null}
             welcomeOpen={anyWelcomeOpen}
             selfParticipant={selfParticipant}
             onConfirmIdentity={confirmIdentity}

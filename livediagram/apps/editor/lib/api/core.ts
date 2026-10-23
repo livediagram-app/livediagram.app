@@ -24,6 +24,7 @@ import { readGuestToken } from '../guest-token';
 import { notifyApiWrite } from './write-signal';
 import { API_BASE } from './base';
 import { confinementRefusal, noteWorkbenchResponse } from './workbench-confinement';
+import { withDocumentGrant } from './document-grants';
 // A workbench session's confinement (workbench-confinement.ts), part of this module's surface.
 export {
   getWorkbenchConfinement,
@@ -106,14 +107,24 @@ export function wsUrl(path: string): string {
 //
 // Transparent otherwise: same arguments, same Response, and a network
 // failure still throws to the caller before any signal is raised.
-export async function apiFetch(input: string, init?: RequestInit): Promise<Response> {
+// `documentGrant: false` sends the request as it is, at once: the unload flush, which adds the grant it holds itself and
+// cannot wait for one (a beforeunload handler runs to its end before anything it awaits).
+export async function apiFetch(
+  input: string,
+  init?: RequestInit,
+  opts: { documentGrant?: boolean } = {},
+): Promise<Response> {
   const method = (init?.method ?? 'GET').toUpperCase();
   // A workbench session's request outside its allow-list is refused unsent, and is no network error.
   const refusal = confinementRefusal(input, init);
   if (refusal) throw refusal;
   let res: Response;
   try {
-    res = await fetch(input, init);
+    // A request about one canvas carries the index's grant on it (document-grants.ts), fetched once per ten minutes.
+    res = await fetch(
+      input,
+      opts.documentGrant === false ? init : await withDocumentGrant(API_BASE, input, init),
+    );
   } catch (err) {
     // The one place that sees a request fail before any response exists.
     reportNetworkError(method, input, err);
@@ -281,7 +292,7 @@ export function getSessionSharePassword(): string | null {
 // protection of user data; storing plain text mirrors what the api
 // worker already does in D1. The owner cleartext-reads it on the
 // Share dialog anyway.
-const SHARE_PASSWORD_CACHE_PREFIX = 'livediagram:share-password:';
+export const SHARE_PASSWORD_CACHE_PREFIX = 'livediagram:share-password:';
 export function readCachedSharePassword(shareCode: string): string | null {
   const raw = readLocalStorageSafe(`${SHARE_PASSWORD_CACHE_PREFIX}${shareCode}`);
   return raw && raw.length > 0 ? raw : null;

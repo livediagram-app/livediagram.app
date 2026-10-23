@@ -16,7 +16,6 @@ import {
   apiSaveTab,
   connectRoom,
   reportSaveFailure,
-  type DocumentListItem,
 } from '@/lib/api-client';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
 import { saveFailureStatus } from './save-failure';
@@ -34,7 +33,6 @@ import {
   tabsChangedByPeersSince,
   type RemoteOpJournal,
 } from './save-baseline';
-import { emptyAfterSave } from '@/lib/list-row-empty';
 import { createTabSaveQueue, type TabSaveQueue } from './tab-save-queue';
 import { useUnloadFlush } from './useUnloadFlush';
 import { sampleSaveTiming, startEditorTiming } from '@/lib/timing';
@@ -74,7 +72,6 @@ export function useAutosave(opts: {
   roomRef: RefObject<ReturnType<typeof connectRoom> | null>;
   setSaveStatus: Dispatch<SetStateAction<SaveStatus>>;
   setSavedAt: Dispatch<SetStateAction<number | null>>;
-  setDocumentList: Dispatch<SetStateAction<DocumentListItem[]>>;
   // A save refused because the document is in the Trash
   // (docs/specs/013-workspace/trash.md): writes stop, the editor shows why.
   onDocumentTrashed: () => void;
@@ -105,7 +102,6 @@ export function useAutosave(opts: {
     roomRef,
     setSaveStatus,
     setSavedAt,
-    setDocumentList,
     onDocumentTrashed,
     changesetSeen,
     noteTabRevision,
@@ -160,7 +156,7 @@ export function useAutosave(opts: {
   // effect, which re-sends whatever still differs from the last saved state.
   const [retryTick, setRetryTick] = useState(0);
   const retryAttemptsRef = useRef(0);
-  // Tabs to write again, content only: a peer changed them while (or just after) our save wrote them, so what D1
+  // Tabs to write again, content only: a peer changed them while (or just after) our save wrote them, so what the canvas
   // kept may be our older copy (docs/specs/012-collaboration/collab-race-hardening.md "A save that wrote over a
   // peer's change writes again"). The tick re-runs the save effect for them.
   const resaveTabIdsRef = useRef(new Set<string>());
@@ -404,7 +400,7 @@ export function useAutosave(opts: {
             lastSavedNameRef.current = next.name;
           }
           // Peers' element changes to what we just wrote, from the snapshot to a moment after the write: ours may
-          // have landed over theirs in D1, so those tabs are written again with what is on screen.
+          // have landed over theirs in the stored tab, so those tabs are written again with what is on screen.
           windowHeld = true;
           const timer = window.setTimeout(() => {
             resaveTimersRef.current.delete(timer);
@@ -423,21 +419,6 @@ export function useAutosave(opts: {
           retryAttemptsRef.current = 0;
           const now = Date.now();
           setSavedAt(now);
-          // Bump the current document's row locally so the Explorer's
-          // "Updated X ago" stays fresh — used to refetch the whole
-          // list here, which hit /api/documents on every autosave.
-          setDocumentList((prev) =>
-            prev.map((d) =>
-              d.id === documentId
-                ? {
-                    ...d,
-                    savedAt: now,
-                    name: documentName,
-                    empty: emptyAfterSave(tabs, loadedTabIdsRef.current, d.empty),
-                  }
-                : d,
-            ),
-          );
         })
         .catch((err: unknown) => {
           timing.cancel();
@@ -491,7 +472,6 @@ export function useAutosave(opts: {
     remoteOpJournalRef,
     ownWrites,
     roomRef,
-    setDocumentList,
     setSaveStatus,
     setSavedAt,
   ]);

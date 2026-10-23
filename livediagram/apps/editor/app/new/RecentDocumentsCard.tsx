@@ -1,18 +1,21 @@
 'use client';
 
 import { useEffect, useEffectEvent, useState } from 'react';
-import { apiListDocumentsWithTeamRecent } from '@/lib/api-client';
+import { LIST_LIMIT_MAX, type Item } from '@liveworkspace/index-client';
+import { teamsOfToken } from '@liveworkspace/index-client/browser';
+import { currentBearer } from '@/lib/api/core';
+import { indexClient } from '@/lib/index-client';
 import { useAfterDriveChange } from '@/hooks/persistence/useAfterDriveChange';
 import { relativeSince, useRelativeNow } from '@/lib/relative-time';
 import { Glyph, TeamIcon } from '@livediagram/ui';
-import type { DocumentSummary } from '@livediagram/api-schema';
 
 // teamName: the team whose library holds it, for its team mark; null for your own.
 type RecentItem = { id: string; name: string; savedAt: number | null; teamName: string | null };
 
 // A small "jump back in" card that pops out to the RIGHT of the new-document
-// wizard (docs/specs/007-editor/new-document-route.md), listing the 5 most recently-saved documents the user
-// owns or that sit in a team they have joined (docs/specs/019-marketing/returning-visitor.md). Deliberately separate from the create flow: it's a side affordance
+// wizard (docs/specs/007-editor/new-document-route.md), listing the 5 most recently-saved canvases the person
+// owns or that sit in a team they have joined (docs/specs/019-marketing/returning-visitor.md), as the index lists
+// them (one page of livediagram's items, newest first). Deliberately separate from the create flow: it's a side affordance
 // for returning users, hidden entirely for someone with no documents yet
 // (and on narrow viewports where the wizard already fills the width). Each
 // row opens that document directly.
@@ -40,21 +43,26 @@ export function RecentDocumentsCard({
   useEffect(() => {
     if (!ownerId) return;
     let cancelled = false;
-    void apiListDocumentsWithTeamRecent(ownerId)
-      .then(({ documents, teamRecent }) => {
+    void Promise.all([
+      indexClient.listItems({ app: 'livediagram', limit: LIST_LIMIT_MAX }),
+      currentBearer().catch(() => null),
+    ])
+      .then(([page, token]) => {
         if (cancelled) return;
-        // A team member with nothing of their own is not new: their team's documents count.
-        reportCount(documents.length + teamRecent.length);
-        const item = (d: DocumentSummary, teamName: string | null): RecentItem => ({
-          id: d.id,
-          name: d.name,
-          savedAt: d.savedAt ?? null,
-          teamName,
+        const teamNames = new Map(teamsOfToken(token).map((t) => [t.id, t.name]));
+        // Their own and their teams' live canvases; one reached only through a link is not theirs to jump back to.
+        const live = page.items.filter((i) => i.trashedAt === null && i.sharedVia === null);
+        // A team member with nothing of their own is not new: their team's canvases count.
+        reportCount(live.length);
+        const item = (i: Item): RecentItem => ({
+          id: i.id,
+          name: i.title,
+          savedAt: i.updatedAt,
+          teamName: i.teamId ? (teamNames.get(i.teamId) ?? 'Team') : null,
         });
-        const top = [
-          ...documents.map((d) => item(d, null)),
-          ...teamRecent.map((d) => item(d, d.teamName)),
-        ]
+        const top = live
+          .filter((i) => !i.hiddenFromRecent)
+          .map(item)
           .sort((a, b) => (b.savedAt ?? 0) - (a.savedAt ?? 0))
           .slice(0, 5);
         setRecent(top);

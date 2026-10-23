@@ -99,19 +99,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     sharePasswordGate,
     loadingDocument,
     explorerPosition,
-    documentList,
-    folders,
-    documentListLoading,
-    sharedDocuments,
-    dismissSharedDocument,
-    openDocument,
     newDocument,
-    deleteDocument,
-    duplicateDocument,
-    createFolder,
-    renameFolder,
-    deleteFolder,
-    moveDocumentToFolder,
     setExplorerPosition,
     documentOwnerName,
     setSharePasswordGate,
@@ -127,28 +115,11 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   // free when no status screen shows.
   const fullExplorer = (
     <LazyExplorer
-      recentExcludedIds={state.userPreferences?.recentExcludedIds ?? []}
-      onToggleRecentExclusion={state.toggleRecentExclusion}
-      favouriteIds={state.favouriteIds ?? new Set()}
-      onToggleFavourite={state.toggleFavourite}
       position={explorerPosition}
-      documents={documentList}
-      ownerId={ownerId}
-      folders={folders}
-      loading={documentListLoading}
-      shared={sharedDocuments}
-      onDismissShared={(id) => void dismissSharedDocument(id)}
       currentDocumentId={null}
       onMoveTo={(x, y) => setExplorerPosition({ x, y })}
       onReset={() => setExplorerPosition(null)}
-      onOpenDocument={openDocument}
       onNewDocument={newDocument}
-      onDeleteDocument={(id) => void deleteDocument(id)}
-      onDuplicateDocument={(id) => void duplicateDocument(id)}
-      onCreateFolder={createFolder}
-      onRenameFolder={renameFolder}
-      onDeleteFolder={(id) => void deleteFolder(id)}
-      onMoveDocumentToFolder={moveDocumentToFolder}
     />
   );
 

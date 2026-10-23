@@ -3,6 +3,7 @@ import { Button } from '@livediagram/ui';
 import { describeImportImageReport, type ImportImageReport as Report } from '@/lib/import-images';
 import type { BoardSceneReport } from '@/lib/board-scene/report';
 import { BoardSceneReportList } from './BoardSceneReportList';
+import { explorerHref } from '@/lib/explorer-href';
 
 // How an import came across (docs/specs/020-import-export/import-image-pipeline.md "The report",
 // docs/specs/020-import-export/board-scene.md "The report"): shown in the Import dialog in place
@@ -63,7 +64,7 @@ export function ImportImageReport({
           links={libraries.map((l) => ({
             key: l.id,
             name: l.name,
-            href: '/explorer/shape-libraries/',
+            href: explorerHref('shape-libraries'),
           }))}
         />
       ) : null}

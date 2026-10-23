@@ -11,6 +11,7 @@ import {
   SearchGlyph,
 } from '@/components/chrome/tab-bar-icons';
 import { REPO_URL, Glyph } from '@livediagram/ui';
+import { explorerHref } from '@/lib/explorer-href';
 import type { ExplorerMenuActions } from './Explorer.types';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { HelpMarkIcon, openHelpArticle } from '@/components/primitives/HelpArticleLink';
@@ -62,7 +63,7 @@ export function ExplorerHeaderMenu({
           icon={<OpenIcon />}
           label="Open Explorer"
           onClick={run(() => {
-            assignAppLocation('/explorer');
+            assignAppLocation(explorerHref());
           })}
         />,
       ],

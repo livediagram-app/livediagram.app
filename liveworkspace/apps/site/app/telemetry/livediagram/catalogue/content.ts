@@ -296,8 +296,9 @@ export const DOCUMENT_ACTIONS: MetricStack = {
 
 // The Trash (docs/specs/013-workspace/trash.md): the backstop behind every
 // document delete. Whether anyone comes back for a deleted document is the
-// question, so restores lead; each chart counts every Trash (Personal, Team,
-// Local).
+// question, so restores lead. The Trash itself is the shared Explorer's now; the
+// editor only opens it from Settings and restores the open document from its
+// deleted page (Personal or Team).
 export const TRASH_OPENED = chart(
   'Trash',
   'Opened',
@@ -312,29 +313,13 @@ export const DOCUMENTS_RESTORED = chart(
   'A deleted document brought back from the Trash, from the Trash itself or from its deleted page.',
 );
 
-export const DOCUMENTS_DELETED_FOR_GOOD = chart(
-  'Trash',
-  'Deleted',
-  'Deleted for Good',
-  'A document in the Trash deleted permanently, ahead of its 30 days.',
-  { rising: 'neutral' },
-);
-
-export const TRASH_EMPTIED = chart(
-  'Trash',
-  'Cleared',
-  'Trash Emptied',
-  'Empty Trash on one group: your documents, a team, or this browser.',
-  { rising: 'neutral' },
-);
-
 export const TRASH: MetricStack = {
   rising: 'neutral',
   stack: true,
   title: 'Trash',
   blurb:
-    'Deleted documents wait 30 days in the Trash. Opening it, restoring from it, deleting for good, and emptying it.',
-  members: [DOCUMENTS_RESTORED, TRASH_OPENED, DOCUMENTS_DELETED_FOR_GOOD, TRASH_EMPTIED],
+    'Deleted documents wait 30 days in the Trash. Opening it from Settings, and restoring a document from its deleted page.',
+  members: [DOCUMENTS_RESTORED, TRASH_OPENED],
 };
 
 const TAB_CHANGES = [

@@ -17,7 +17,13 @@ import {
   type LivePoll,
 } from '@livediagram/api-schema';
 import { nextFreeColor, type Participant } from '@/lib/identity';
-import { apiCreateRoomTicket, connectRoom, type RoomHandlers } from '@/lib/api-client';
+import {
+  apiCreateRoomTicket,
+  connectRoom,
+  getSessionSharePassword,
+  type RoomHandlers,
+} from '@/lib/api-client';
+import { keepDocumentGrantFresh, documentGrant } from '@/lib/api/document-grants';
 import { parseLaserConfig } from '@/lib/laser-config';
 import {
   createPresenceCoalescer,
@@ -153,7 +159,7 @@ export function useRoomConnection(opts: {
   // worker's document-trashed op, or the room closing the socket with 4004.
   // Stable, like the others, so it can't reopen the socket.
   receiveDocumentTrashed: () => void;
-  // Re-hydrate tab content from D1 when the room can't replay our gap
+  // Re-hydrate tab content from the canvas when the room can't replay our gap
   // (docs/specs/012-collaboration/resync-without-reload.md). Stable, like the poll handlers, so it can't reopen the
   // socket — the effect's dep list stays [hydrated, documentId, shareable].
   resyncFromServer: () => Promise<void>;
@@ -620,12 +626,16 @@ export function useRoomConnection(opts: {
       onResync: () => roomResync(),
     };
     // Every session joins through a one-time room ticket (docs/specs/015-api/api.md "Realtime model"),
-    // minted over REST, where the access gates already read the guest signature, the share code and its
-    // password, and team membership as headers. The WS upgrade can't carry headers, so before tickets
+    // minted over REST, where the access gates already read the index's grant (and through it the share code,
+    // its password and team membership) as headers. The WS upgrade can't carry headers, so before tickets
     // those rode the upgrade URL, which is logged; now only the spent-on-use ticket does. The connector
     // mints its first ticket itself, so it exists while that request runs and keeps what the editor
     // says meanwhile (its selection, its tab) for the room.
     const { self, shareCode } = connectAs();
+    const share = shareCode ? { code: shareCode, password: getSessionSharePassword() } : null;
+    // The grant every request and the room's ticket carry, fetched again a minute before it lapses while the
+    // canvas is open (document-grants.ts), so neither a save nor a renewal waits on the index.
+    const stopGrant = keepDocumentGrantFresh(documentId, share);
     let firstMint = true;
     const openedRoom = connectRoom(
       documentId,
@@ -645,11 +655,13 @@ export function useRoomConnection(opts: {
           return minted?.ticket ?? null;
         },
         readFollowing: roomReadFollowing,
+        renewGrant: async () => (await documentGrant(documentId, share))?.grant ?? null,
       },
       roomReadFacilitatorToken,
     );
     roomRef.current = openedRoom;
     return () => {
+      stopGrant();
       presence.cancel();
       // Nobody's words outlive the room they were said in.
       resetSpeechBubbles();

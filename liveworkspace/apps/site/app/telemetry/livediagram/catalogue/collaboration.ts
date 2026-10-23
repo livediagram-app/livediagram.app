@@ -26,13 +26,6 @@ export const VOTE_REVIEWS_ENDED = chart(
   { types: ['VoteReview'] },
 );
 
-export const TEAM_DOCUMENTS_MOVED = chart(
-  'Team',
-  'Moved',
-  'Team Documents Moved',
-  'A document moved within a team library.',
-);
-
 export const SHARE_LINKS_COPIED = chart(
   'UI',
   'Copied',
@@ -41,14 +34,6 @@ export const SHARE_LINKS_COPIED = chart(
   {
     typeIn: (t) => t !== 'TeamInviteLink' && t !== 'Diagnostics' && t !== 'Diagnostics.Help',
   },
-);
-
-export const SHARE_SETTINGS = chart(
-  'Document',
-  'Shared',
-  'Share Link Settings',
-  'A password or an expiry set on a share link.',
-  { typeIn: (t) => t !== 'Edit' && t !== 'View' && t !== 'Participate' },
 );
 
 export const SHARE_LINKS_REMOVED = chart(
@@ -367,7 +352,7 @@ export const DOCUMENTS_SHARED_TO_A_TEAM: Metric = {
   action: 'Added',
   type: 'Document',
   title: 'Documents Shared to a Team',
-  blurb: "A document was moved into a team's shared library for everyone on the team.",
+  blurb: "A document was created straight into a team's shared library, for everyone on the team.",
 };
 
 export const VOTES_STARTED: Metric = {
@@ -536,7 +521,6 @@ export const SHARING_AND_JOINING: MetricStack = {
     PARTICIPANTS_JOINED,
     VIEWERS_JOINED,
     SHARE_LINKS_COPIED,
-    SHARE_SETTINGS,
     SHARE_LINKS_REMOVED,
     EMBEDS_VIEWED,
     WORKBENCH_SESSIONS,
@@ -648,22 +632,6 @@ export const STOPWATCHES: MetricStack = {
 // feed (Landing, the Explorer's default page, and Nav, a deliberate visit),
 // which is how the landing-page change is measured, and two things done in it
 // (a card or stack menu opened, a stacked run expanded).
-export const TIMELINE_LANDINGS = chart(
-  'Timeline',
-  'Opened',
-  'Timeline Landings',
-  'A page load that started on the Timeline.',
-  { types: ['Landing'] },
-);
-
-export const TIMELINE_VISITS = chart(
-  'Timeline',
-  'Opened',
-  'Timeline Visits',
-  "The Timeline opened after starting elsewhere: its sidebar row, or Home's See Timeline.",
-  { types: ['Nav'] },
-);
-
 export const TIMELINE_MENUS = chart(
   'Timeline',
   'Opened',
@@ -712,22 +680,6 @@ export const ACTIVITY_THREADS = chart(
 
 // Explorer Home (docs/specs/013-workspace/explorer-home.md): arrivals by type, documents opened
 // from each part of Home, summaries expanded, and failed reads retried.
-export const HOME_LANDINGS = chart(
-  'Home',
-  'Opened',
-  'Home Landings',
-  'The Explorer opened straight onto Home, its default page.',
-  { types: ['Landing'] },
-);
-
-export const HOME_VISITS = chart(
-  'Home',
-  'Opened',
-  'Home Visits',
-  'Home opened after starting elsewhere in the Explorer.',
-  { types: ['Nav'] },
-);
-
 export const HOME_WELCOMES = chart(
   'Home',
   'Opened',
@@ -740,7 +692,7 @@ export const HOME_DOCUMENTS_OPENED = chart(
   'Home',
   'Selected',
   'Documents Opened from Home',
-  'A document opened from Jump Back In (most used or recent) or What Happened, See More followed, or a start taken from the first-run Home.',
+  'A document opened from What Happened, See Timeline followed, or a start taken from the first-run Home.',
 );
 
 export const HOME_GROUPS_EXPANDED = chart(
@@ -751,22 +703,15 @@ export const HOME_GROUPS_EXPANDED = chart(
   { types: ['Group'] },
 );
 
-export const HOME_LOADS = chart('Home', 'Loaded', 'Home Retries', 'A failed read of Home retried.');
-
 export const TIMELINE_AND_ACTIVITY: MetricStack = {
   stack: true,
   title: 'Timeline & Activity',
   blurb:
     "Keeping up with what changed: Explorer Home, the Explorer Timeline and the Explorer's Inbox.",
   members: [
-    HOME_LANDINGS,
-    HOME_VISITS,
     HOME_WELCOMES,
     HOME_DOCUMENTS_OPENED,
     HOME_GROUPS_EXPANDED,
-    HOME_LOADS,
-    TIMELINE_LANDINGS,
-    TIMELINE_VISITS,
     TIMELINE_MENUS,
     TIMELINE_STACKS_EXPANDED,
     TIMELINE_CARDS_OPENED,

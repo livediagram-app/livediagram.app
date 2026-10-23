@@ -29,6 +29,7 @@ import {
   resetOfflineIds,
 } from './offline-ids';
 import { offlineDocumentStats } from './offline-stats';
+import { noteThisBrowser } from './this-browser';
 
 // Sentinel owner id stamped on offline documents. They have no server owner;
 // this keeps the wire shape valid and is never sent anywhere.
@@ -47,13 +48,11 @@ export type OfflineDocumentRecord = {
   // whole product minus the server, not a reduced one. Optional so records
   // written before the field existed stay valid.
   presentation?: string | null;
-  // Starred in the Explorer (docs/specs/013-workspace/favourites.md). Cloud stars live in a D1 table whose
-  // document_id is a foreign key into `documents`, which an offline document has
-  // no row in, so its star has to live here instead. Optional so records
+  // Starred in the Explorer (docs/specs/013-workspace/favourites.md). A canvas's star is the index's, on its item,
+  // which an offline canvas has none of, so its star has to live here instead. Optional so records
   // written before the field existed stay valid.
   favourite?: boolean;
-  // When the document was moved to this browser's local Trash
-  // (docs/specs/013-workspace/trash.md, see ./offline-trash.ts). Absent = live.
+  // When the canvas was moved to this browser's local Trash (docs/specs/013-workspace/trash.md). Absent = live.
   // A trashed record keeps everything else so a restore is exact.
   trashedAt?: number;
   // This Browser's opens of the document (docs/specs/013-workspace/explorer-home.md "Opens"),
@@ -254,7 +253,11 @@ export function serializeOfflineWrite<T>(op: () => Promise<T>): Promise<T> {
 // Read-modify-write one record in a single transaction (see OfflineRecordChange). Callers run it
 // inside serializeOfflineWrite.
 export function offlineUpdateRecord(id: string, change: OfflineRecordChange): Promise<void> {
-  return offlineBackend().update(id, change);
+  // What the change left, for This Browser's list (this-browser.ts).
+  let after: ReturnType<OfflineRecordChange>;
+  return offlineBackend()
+    .update(id, (rec) => (after = change(rec)))
+    .then(() => noteThisBrowser(id, after));
 }
 
 // The editor's writes to a live record: `change` runs on it when it is writable. A missing record
@@ -325,6 +328,7 @@ export async function offlineCreateDocument(
   };
   await offlineBackend().put(rec);
   rememberOfflineId(rec.id);
+  noteThisBrowser(rec.id, rec);
   return recordToDocument(rec);
 }
 
@@ -382,6 +386,7 @@ export async function offlineDeleteDocument(id: string): Promise<void> {
   await serializeOfflineWrite(async () => {
     await offlineBackend().delete(id);
     forgetOfflineId(id);
+    noteThisBrowser(id, 'delete');
   });
 }
 
@@ -418,4 +423,5 @@ export async function offlineGetRecord(id: string): Promise<OfflineDocumentRecor
 export async function offlinePutRecord(rec: OfflineDocumentRecord): Promise<void> {
   await offlineBackend().put(rec);
   rememberOfflineId(rec.id);
+  noteThisBrowser(rec.id, rec);
 }

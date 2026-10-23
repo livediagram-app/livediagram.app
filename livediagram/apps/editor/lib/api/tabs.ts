@@ -17,6 +17,8 @@ import {
   offlineSaveTab,
 } from '../offline/offline-store';
 import { offlineRecordOpen } from '../offline/offline-opens';
+import { ITEM_GRANT_HEADER } from '@liveworkspace/index-client/browser';
+import { heldDocumentGrant } from './document-grants';
 import {
   API_BASE,
   apiDelete,
@@ -182,6 +184,9 @@ async function savedRevOf(res: Response): Promise<number | null> {
 // headroom for another keepalive request in flight. Safe range: 32 KB to 63 KB.
 const KEEPALIVE_BUDGET_BYTES = 60 * 1024;
 
+// The unload flush's requests go at once, with the grant it holds (apiFetch `documentGrant: false`).
+const NO_GRANT_WAIT = { documentGrant: false } as const;
+
 export function flushDocumentSavesBeacon(args: {
   ownerId: string;
   documentId: string;
@@ -221,9 +226,10 @@ export function flushDocumentSavesBeacon(args: {
   // signed-in sessions ride the token apiHeaders cached on its last
   // fetch — the autosave loop refreshes it every ~600ms while editing,
   // so it's seconds old at teardown. Guests ride their guest token (a
-  // sync localStorage read); without it these writes 401, silently
-  // losing the final debounce window's edits — the exact loss this
-  // flush exists to prevent. The rule is apiHeaders' own
+  // sync localStorage read), and the canvas's grant is the one held
+  // (document-grants.ts), so nothing here waits on the network; without
+  // them these writes are refused, silently losing the final debounce
+  // window's edits — the exact loss this flush exists to prevent. The rule is apiHeaders' own
   // (identityHeaders). A signed-in owner with no cached token has nothing the worker accepts, so
   // skip the flush rather than fire writes that are certain to 401.
   let base: Record<string, string>;
@@ -234,6 +240,11 @@ export function flushDocumentSavesBeacon(args: {
     return;
   }
   if (args.shareCode) base['X-Share-Code'] = args.shareCode;
+  const grant = heldDocumentGrant(
+    args.documentId,
+    args.shareCode ? { code: args.shareCode } : null,
+  );
+  if (grant) base[ITEM_GRANT_HEADER] = grant;
   // The share password (docs/specs/013-workspace/share-password.md) is a synchronous session read too —
   // without it an edit-role visitor's flush 403s on a protected
   // document, losing the final debounce window's edits.
@@ -258,31 +269,43 @@ export function flushDocumentSavesBeacon(args: {
       ...(seen !== undefined ? { [CHANGESET_SEEN_HEADER]: String(seen) } : {}),
     };
     const body = JSON.stringify(tabForWire(t));
-    void apiFetch(`${API_BASE}/documents/${args.documentId}/tabs/${t.id}`, {
-      method: 'PUT',
-      headers,
-      body,
-      keepalive: keepaliveFor(body),
-    }).catch(() => {});
+    void apiFetch(
+      `${API_BASE}/documents/${args.documentId}/tabs/${t.id}`,
+      {
+        method: 'PUT',
+        headers,
+        body,
+        keepalive: keepaliveFor(body),
+      },
+      NO_GRANT_WAIT,
+    ).catch(() => {});
   }
   for (const tabId of args.deletedIds) {
-    void apiFetch(`${API_BASE}/documents/${args.documentId}/tabs/${tabId}`, {
-      method: 'DELETE',
-      headers: base,
-      keepalive: keepaliveFor(undefined),
-    }).catch(() => {});
+    void apiFetch(
+      `${API_BASE}/documents/${args.documentId}/tabs/${tabId}`,
+      {
+        method: 'DELETE',
+        headers: base,
+        keepalive: keepaliveFor(undefined),
+      },
+      NO_GRANT_WAIT,
+    ).catch(() => {});
   }
   if (args.orderChanged || args.nameChanged) {
     const body = JSON.stringify({
       name: args.name,
       tabs: args.tabs.map((t) => ({ id: t.id, folder: t.folder })),
     });
-    void apiFetch(`${API_BASE}/documents/${args.documentId}`, {
-      method: 'PUT',
-      headers: jsonHeaders,
-      body,
-      keepalive: keepaliveFor(body),
-    }).catch(() => {});
+    void apiFetch(
+      `${API_BASE}/documents/${args.documentId}`,
+      {
+        method: 'PUT',
+        headers: jsonHeaders,
+        body,
+        keepalive: keepaliveFor(body),
+      },
+      NO_GRANT_WAIT,
+    ).catch(() => {});
   }
 }
 

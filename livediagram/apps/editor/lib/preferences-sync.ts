@@ -37,6 +37,9 @@ export function preferencesBodyLength(prefs: UserPreferences): number {
 
 type PickEntry = [WhiteboardShapeKey, readonly [number, number]];
 
+// An old blob's list of canvases hidden from Recent: nothing reads it, so it is the first to go.
+const DEAD_HIDDEN_KEY = 'recentExcludedIds';
+
 // The shape picks, least recently used first.
 function picksOldestFirst(picks: UserPreferences['whiteboardShapePicks']): PickEntry[] {
   return (Object.entries(picks ?? {}) as PickEntry[]).sort((x, y) => x[1][1] - y[1][1]);
@@ -52,8 +55,8 @@ function entriesFreeing(sizes: readonly number[], excess: number): number {
   return n;
 }
 
-// The blob, trimmed to fit the api's cap: the oldest hidden-from-Recent ids go first (newest are
-// kept at the front, docs/specs/013-workspace/hide-from-recent.md), then the least recently used
+// The blob, trimmed to fit the api's cap: an old blob's hidden-from-Recent list goes first, whole (nothing reads it:
+// Hide from Recent is the index's, docs/specs/013-workspace/hide-from-recent.md), then the least recently used
 // shape picks (docs/specs/023-draw-mode/draw-mode.md "Shape slots"). Every other key is a choice
 // the person made once and stays whole. Unchanged (the same object) when it already fits; when
 // trimming both lists cannot make it fit, the save is refused and the device copy is kept (see
@@ -66,13 +69,12 @@ export function fitPreferences(prefs: UserPreferences): UserPreferences {
   let dropped = 0;
   while (length > PREFERENCES_BODY_MAX) {
     const excess = length - PREFERENCES_BODY_MAX;
-    const hidden = next.recentExcludedIds ?? [];
     const picks = picksOldestFirst(next.whiteboardShapePicks);
-    if (hidden.length > 0) {
-      const oldestFirst = [...hidden].reverse().map((id) => JSON.stringify(id).length);
-      const n = entriesFreeing(oldestFirst, excess);
-      next = { ...next, recentExcludedIds: hidden.slice(0, hidden.length - n) };
-      dropped += n;
+    if (DEAD_HIDDEN_KEY in next) {
+      const { [DEAD_HIDDEN_KEY]: gone, ...rest } = next as UserPreferences &
+        Record<string, unknown>;
+      next = rest;
+      dropped += Array.isArray(gone) ? gone.length : 1;
     } else if (picks.length > 0) {
       const sizes = picks.map(([k, v]) => JSON.stringify(k).length + 1 + JSON.stringify(v).length);
       const n = entriesFreeing(sizes, excess);

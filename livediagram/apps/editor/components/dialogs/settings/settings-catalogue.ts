@@ -9,7 +9,7 @@ import {
   type PresentationConfig,
 } from '@/lib/presentation-config';
 import type { SettingsCategoryId, SettingsIconId } from './settings-icons';
-import { titleCase, type TelemetryCategory } from '@livediagram/api-schema';
+import type { TelemetryCategory } from '@livediagram/api-schema';
 import {
   autoRebindArrowsEnabled,
   panelEnabled,
@@ -49,8 +49,6 @@ import {
   type WhiteboardDockPosition,
 } from '@/lib/whiteboard-dock-prefs';
 import type { SettingsIllustrationId } from './settings-illustrations';
-import type { PlacementDefaultKey } from '@livediagram/api-schema';
-import { DEFAULT_KEY_ENTRIES } from '@/lib/placement-defaults/default-key-entries';
 import {
   CLOUD_SYNC_PROVIDERS,
   CLOUD_SYNC_SECTION,
@@ -253,6 +251,10 @@ export type SettingsDeleteAccountRowSpec = RowBase & { kind: 'deleteAccount' };
 // Settings is the one menu every deployment has.
 export type SettingsTrashRowSpec = RowBase & { kind: 'trash' };
 
+// Default Folders (docs/specs/013-workspace/default-folders.md "Settings"): where new canvases go when made without
+// a place. Not a preference: the shared Explorer reads and writes them on the index.
+export type SettingsDefaultFoldersRowSpec = RowBase & { kind: 'defaultFolders' };
+
 // What power user mode's preset set, as a live readout: each line's value is
 // its own row's, changed in that row (docs/specs/007-editor/power-user-mode.md#in-settings).
 export type SettingsPresetSummaryRowSpec = RowBase & { kind: 'presetSummary' };
@@ -263,14 +265,6 @@ export type SettingsPresetSummaryRowSpec = RowBase & { kind: 'presetSummary' };
 export type SettingsCloudSyncRowSpec = RowBase & {
   kind: 'cloudSync';
   provider: CloudSyncProviderId;
-};
-
-// One default folder entry (docs/specs/013-workspace/default-folders.md "Settings"): where new
-// documents of that key go, with Change and Clear. Not a preference: it reads and writes
-// `/api/placement-defaults` through the page's store, so it carries no read/write pair.
-export type SettingsPlacementDefaultRowSpec = RowBase & {
-  kind: 'placementDefault';
-  placementKey: PlacementDefaultKey;
 };
 
 export type SettingsRowSpec =
@@ -286,9 +280,9 @@ export type SettingsRowSpec =
   | SettingsIdentityRowSpec
   | SettingsDeleteAccountRowSpec
   | SettingsTrashRowSpec
+  | SettingsDefaultFoldersRowSpec
   | SettingsPresetSummaryRowSpec
-  | SettingsCloudSyncRowSpec
-  | SettingsPlacementDefaultRowSpec;
+  | SettingsCloudSyncRowSpec;
 
 export type SettingsCategorySpec = {
   id: SettingsCategoryId;
@@ -1202,21 +1196,9 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       },
     },
     rows: [
-      // One row per default folder entry, in list order: guests have defaults too.
-      ...DEFAULT_KEY_ENTRIES.map((entry): SettingsPlacementDefaultRowSpec => ({
-        kind: 'placementDefault',
-        key: `placementDefault-${entry.key}`,
-        placementKey: entry.key,
-        section: 'Default Folders',
-        // Settings labels are title case ("Kanban Boards"); the entries' own labels are sentence case.
-        label: titleCase(entry.label),
-        keywords:
-          'default folder where new documents go save location place file automatically always save placement',
-        description: `Where new ${entry.noun} go when you create one without choosing a place.`,
-      })),
       {
         // Home's banner (docs/specs/013-workspace/explorer-home.md "Hiding the banner"): its own close writes `false`,
-        // and this switch brings it back.
+        // and this switch brings it back. The shared Explorer draws it (@liveworkspace/explorer's HomeHero).
         kind: 'toggle',
         key: 'homeBanner',
         section: 'Explorer',
@@ -1227,6 +1209,16 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: (p) => p.homeBanner !== false,
         write: (p, v) => ({ ...p, homeBanner: v }),
         event: { category: 'UI', on: 'HomeBannerOn', off: 'HomeBannerOff' },
+      },
+      {
+        kind: 'defaultFolders',
+        key: 'defaultFolders',
+        section: 'Default Folders',
+        label: 'Where New Canvases Go',
+        keywords:
+          'default folder where new canvases documents go save location place file automatically always save placement template retrospective kanban',
+        description:
+          'New canvases you make without choosing a place are saved in these folders: one for every canvas, and one for each template family.',
       },
     ],
   },

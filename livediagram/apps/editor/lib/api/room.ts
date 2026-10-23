@@ -8,6 +8,7 @@
 import {
   ACCESS_CHANGED_CLOSE,
   DOCUMENT_TRASHED_CLOSE,
+  GRANT_LAPSED_CLOSE,
   isMutationOpKind,
   ROOM_PING,
   ROOM_PONG,
@@ -80,6 +81,10 @@ type RoomConnectOptions = {
   mintTicket?: () => Promise<string | null>;
   // Who we follow, read at every (re)connect: the room keeps a follow on the socket, so a new socket says it again.
   readFollowing?: () => string | null;
+  // A fresh grant for the room when it asks (GrantRenewMessage, liveworkspace/docs/one-explorer-contracts.md
+  // "Carrying a grant to the app"): without one before the old lapses, the room drops the socket
+  // (GRANT_LAPSED_CLOSE) and the reconnect mints anew.
+  renewGrant?: () => Promise<string | null>;
 };
 
 // The room WebSocket's query string. Browsers can't set headers on a WebSocket upgrade, so whatever
@@ -107,7 +112,7 @@ const MAX_RECONNECT_ATTEMPTS = 6;
 // room's ledger at all. Only what changes the document or a poll is held: a
 // cursor or a selection from a minute ago means nothing. Bounded, so a long
 // outage can't grow it without end; past the bound, newer ops are dropped
-// and the next save still carries the state to D1.
+// and the next save still carries the state to the canvas.
 const OUTBOX_MAX = 500;
 function isOutboxOp(msg: RoomOutgoing): boolean {
   if (msg.kind !== 'op') return false;
@@ -317,7 +322,14 @@ export function connectRoom(
           noteServerDocumentFormat(msg.format);
           noteServerBuild(msg.build);
         } else if (msg.kind === 'op') applyOp(msg.from, msg.op, msg.seq, msg.epoch);
-        else if (msg.kind === 'cursor') {
+        else if (msg.kind === 'grant-renew') {
+          const asking = socket;
+          void options.renewGrant?.().then((grant) => {
+            if (grant && asking.readyState === WebSocket.OPEN) {
+              asking.send(JSON.stringify({ kind: 'grant', grant } satisfies RoomOutgoing));
+            }
+          });
+        } else if (msg.kind === 'cursor') {
           // Our own op's seq, or where the stream stood when we joined. A
           // different epoch is a restarted room: leave the cursor for the
           // sync / catchup exchange to reconcile.
@@ -369,6 +381,13 @@ export function connectRoom(
         closed = true;
         settleTimings(false);
         handlers.onWorkbenchEnded?.();
+        return;
+      }
+      // The grant lapsed with no fresh one in time (a sleeping tab, the index out of reach): reconnect at once with a
+      // fresh ticket, which asks for a fresh grant; it spends no reconnect attempt.
+      if (event?.code === GRANT_LAPSED_CLOSE && socketOpened) {
+        reconnectTiming ??= startEditorTiming('RoomReconnect');
+        void reopen();
         return;
       }
       if (!socketOpened) handlers.onRefused?.();

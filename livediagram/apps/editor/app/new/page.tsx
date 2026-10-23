@@ -40,6 +40,7 @@ import { trackDailyReturn } from '@/lib/daily-return';
 import { markNameConfirmed } from '@/lib/local-identity';
 import { ensureGuestIdentity } from '@/lib/guest-identity';
 import { useGuestId } from '@/hooks/persistence/useGuestId';
+import { handTemplatePick } from '@liveworkspace/explorer';
 import {
   templateFamilyOf,
   untitledNameForTemplate,
@@ -61,7 +62,6 @@ import { useLatest } from '@/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
 import { handStartQuery } from '@/components/start/start-query';
 import { closeStartForBlank } from '@/components/start/close-start-for-blank';
-import { handTemplatePick } from '@/lib/placement-defaults/template-pick-handoff';
 import { isBlankTemplate } from '@livediagram/templates';
 import { NEW_DOCUMENT_THEME_ID, newDocumentTab } from '@/lib/new-document-content';
 
@@ -166,7 +166,7 @@ export default function NewDocumentPage() {
   const bypassKind = useSyncExternalStore(subscribeNever, bypassKindFromUrl, noBypass);
   // Where a new document is stored: This Browser for a guest (docs/specs/006-document/save-locations.md), decided at
   // commit.
-  const { resolveSaveLocation } = useNewDocumentLocation({ authLoaded, accountUserId });
+  const { resolveSaveLocation } = useNewDocumentLocation();
   useLayoutEffect(() => {
     if (!bypassKindFromUrl()) document.documentElement.removeAttribute('data-just-draw');
   }, []);
@@ -298,7 +298,7 @@ export default function NewDocumentPage() {
     // default folder (docs/specs/013-workspace/default-folders.md "A template picked after creation").
     handTemplatePick(
       !offline && templateKind && isBlankTemplate(templateKind)
-        ? { documentId, tabId, placementChosen: settings.placementChosen === true }
+        ? { itemId: documentId, tabId, placementChosen: settings.placementChosen === true }
         : null,
     );
     // A Retry re-runs the create, not the preference write below.
@@ -389,10 +389,10 @@ export default function NewDocumentPage() {
   };
 
   // Every create from /new goes where new documents go by default (docs/specs/007-editor/new-document-route.md
-  // "One-step wizard"): the store for who is creating, decided now (a guest at once, a signed-in browser once identity
-  // settles), and the /new?folder= / ?team= context when there is one; without one it carries no placement, so a
-  // default folder may answer (docs/specs/013-workspace/default-folders.md "Precedence"). `blank` opens it with its
-  // start closed (Skip, Start Blank, a blank's link). The ref holds a second choice off while the store resolves.
+  // "One-step wizard"): livediagram, whoever is creating, and the /new?folder= / ?team= context when there is one;
+  // without one it carries no placement, so a default folder may answer (docs/specs/013-workspace/default-folders.md
+  // "Precedence"). `blank` opens it with its start closed (Skip, Start Blank, a blank's link). The ref holds a second
+  // choice off while the create runs.
   const [preparing, setPreparing] = useState(false);
   const creating = useRef(false);
   const createByDefault = async (kind: TemplateKind, blank: boolean) => {
@@ -402,7 +402,7 @@ export default function NewDocumentPage() {
     const placement = placementParamsFromSearch(window.location.search);
     const placed = !!(placement.folderId || placement.teamId);
     try {
-      const saveLocation = await resolveSaveLocation(placed, resolveSelf);
+      const saveLocation = await resolveSaveLocation();
       explicitBlank.current = blank;
       await commitNewDocument(kind, { saveLocation, ...placement, placementChosen: placed });
     } finally {

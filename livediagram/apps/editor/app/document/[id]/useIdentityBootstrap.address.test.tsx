@@ -12,7 +12,6 @@ const { api, identity, seed } = vi.hoisted(() => ({
     apiSaveSelf: vi.fn(),
     apiLoadDocument: vi.fn(),
     apiLoadShared: vi.fn(),
-    apiListShareLinks: vi.fn(),
   },
   identity: { ensureCollabKey: vi.fn(() => 'collab'), hasConfirmedName: vi.fn(() => true) },
   seed: vi.fn(async () => {}),
@@ -66,8 +65,6 @@ function render(passwordRetry = 0) {
       workbench: null,
       activeId: 't1',
       selfParticipant: { id: 'self', name: 'x', color: '#000', status: 'online' },
-      refreshDocumentList: () => {},
-      refreshSharedList: () => {},
       resetTabs: () => {},
       refs: {
         lastPersistedSelfRef: { current: null },

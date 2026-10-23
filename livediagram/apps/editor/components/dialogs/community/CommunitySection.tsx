@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useId, useRef, useState } from 'react';
+import { SHARE_SECTION_LABEL as SECTION_LABEL } from '@liveworkspace/explorer';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import {
   communityCategoryLabel,
@@ -12,7 +13,6 @@ import { lucideExternalLink, lucideGlobe } from '@livediagram/icons/lucide';
 import { communityCodeMessage, communityErrorMessage } from '@/lib/community-errors';
 import { track } from '@/lib/telemetry';
 import { useToast } from '@/hooks/ui/useToast';
-import { SECTION_LABEL } from '../share-dialog-parts';
 import { communitySectionState } from './community-section-state';
 
 const GlobeIcon = lucideGlyph(lucideGlobe, 16);

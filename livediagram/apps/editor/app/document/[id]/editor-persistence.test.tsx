@@ -7,12 +7,6 @@ import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
 
-vi.mock('@/lib/api-client', () => ({
-  apiListDocuments: vi.fn(),
-  apiListSharedWith: vi.fn(),
-  DOCUMENT_LIST_LOAD_SAFETY_MS: 10_000,
-}));
-
 import { useEditorPersistence } from './editor-persistence';
 
 function toastAfter(status: SaveStatus): string[] {

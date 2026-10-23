@@ -63,7 +63,7 @@ type EditorActionsDeps = {
   // identity for a signed-out self-assignment. Null only before the
   // identity has hydrated.
   self: { userId: string | null; name: string | null };
-  // Fire-and-forget notify request (POST /api/teams/<id>/notify-action).
+  // Fire-and-forget notify request (POST /api/documents/<id>/notify-action).
   // Injected so the hook stays free of fetch plumbing; failures must never
   // block or roll back the assignment.
   notify: (input: {

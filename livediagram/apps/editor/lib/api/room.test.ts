@@ -256,6 +256,40 @@ describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening
     expect(FakeSocket.all[1]!.url).toContain('t=second');
   });
 
+  // The room asks for a fresh grant before the one it holds lapses (GrantRenewMessage); the answer goes back on
+  // the socket that asked, and nothing goes when no grant can be had.
+  it('answers a grant-renew with a fresh grant on the asking socket', async () => {
+    const renewGrant = vi.fn(async () => 'fresh-grant');
+    connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {} },
+      { ticket: 'first', renewGrant },
+    );
+    const socket = FakeSocket.all[0]!;
+    socket.fire('open');
+    socket.receive(JSON.stringify({ kind: 'grant-renew', expiresAt: Date.now() + 60_000 }));
+    await vi.waitFor(() => expect(renewGrant).toHaveBeenCalledOnce());
+    await Promise.resolve();
+    expect(socket.sent).toContainEqual({ kind: 'grant', grant: 'fresh-grant' });
+  });
+
+  it('sends nothing for a grant-renew when no fresh grant can be had', async () => {
+    const renewGrant = vi.fn(async () => null);
+    connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {} },
+      { ticket: 'first', renewGrant },
+    );
+    const socket = FakeSocket.all[0]!;
+    socket.fire('open');
+    socket.receive(JSON.stringify({ kind: 'grant-renew', expiresAt: Date.now() + 60_000 }));
+    await vi.waitFor(() => expect(renewGrant).toHaveBeenCalledOnce());
+    await Promise.resolve();
+    expect(socket.sent.some((f) => f.kind === 'grant')).toBe(false);
+  });
+
   it('mints its first ticket itself when it starts without one', async () => {
     const mintTicket = vi.fn(async () => 'first');
     connectRoom(
@@ -593,6 +627,24 @@ describe('connectRoom when the document is trashed', () => {
     expect(onWorkbenchEnded).toHaveBeenCalledTimes(1);
     expect(onAccessChanged).not.toHaveBeenCalled();
     expect(ClosingSocket.all).toHaveLength(1);
+  });
+
+  // A grant that lapsed with no fresh one (close 4007): reconnect at once, minting a fresh ticket (which asks for a
+  // fresh grant), with no backoff wait.
+  it('reconnects at once with a fresh ticket when the grant lapsed', async () => {
+    const mintTicket = vi.fn(async () => 'fresh');
+    const onAccessChanged = vi.fn();
+    connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {}, onAccessChanged },
+      { ticket: 'first', mintTicket },
+    );
+    ClosingSocket.all[0]!.fire('open');
+    ClosingSocket.all[0]!.fire('close', { code: 4007 });
+    await vi.waitFor(() => expect(ClosingSocket.all).toHaveLength(2));
+    expect(mintTicket).toHaveBeenCalledOnce();
+    expect(onAccessChanged).not.toHaveBeenCalled();
   });
 
   it('still reconnects after an ordinary drop', () => {

@@ -24,6 +24,7 @@ import {
   type OpenWithOutcome,
   type OpenWithState,
 } from '@/lib/drive/open-with';
+import { explorerHref } from '@/lib/explorer-href';
 import { track } from '@/lib/telemetry';
 import { Body, Heading, LandingCard, PrimaryLink } from '@/components/chrome/LandingCard';
 import { useDriveMirror } from './drive-mirror-context';
@@ -200,7 +201,7 @@ export function DriveOpen() {
       <LandingCard>
         <Heading>The copy couldn&apos;t be made</Heading>
         <Body>The file isn&apos;t a readable livediagram document.</Body>
-        <PrimaryLink href="/explorer">Go to Explorer</PrimaryLink>
+        <PrimaryLink href={explorerHref()}>Go to Explorer</PrimaryLink>
       </LandingCard>
     );
   }
@@ -216,7 +217,7 @@ function CannotOpen() {
     <LandingCard>
       <Heading>This file can&apos;t be opened in livediagram</Heading>
       <Body>It isn&apos;t a livediagram file, or livediagram can&apos;t read it.</Body>
-      <PrimaryLink href="/explorer">Go to Explorer</PrimaryLink>
+      <PrimaryLink href={explorerHref()}>Go to Explorer</PrimaryLink>
     </LandingCard>
   );
 }

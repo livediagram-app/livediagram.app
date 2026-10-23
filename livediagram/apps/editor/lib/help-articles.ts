@@ -64,8 +64,6 @@ export const HELP_ARTICLES = {
   drawioImport: 'explorer/drawio-import',
   shapeLibraries: 'explorer/shape-libraries',
   linkingTabs: 'tabs/linking-tabs',
-  // Teams
-  teamRolesAndInvites: 'collaboration/teams/roles-and-invites',
   // Canvas / themes
   changingTheBackground: 'canvas/the-canvas/changing-the-background',
   changingTheme: 'canvas/themes/changing-theme',
@@ -95,11 +93,18 @@ export const HELP_ARTICLES = {
   timeline: 'explorer/timeline',
   // The Inbox's article keeps the slug it had as Activity, so links already out there keep working.
   inbox: 'explorer/activity',
-  recentDocuments: 'explorer/recent',
   sharedWithYou: 'explorer/shared-with-you',
   folders: 'explorer/folders',
   defaultFolders: 'explorer/folders/default-folders',
   explorerFilters: 'explorer/filters',
+  // Home and the Timeline share an article.
+  home: 'explorer/timeline',
+  // The shared Explorer's other views, each its page header's Help (lib/explorer-host.ts explorerHelpHref).
+  myWork: 'explorer/my-work',
+  recent: 'explorer/recent',
+  unsorted: 'explorer/unsorted',
+  teamSpaces: 'explorer/team-spaces',
+  explorerPage: 'explorer/explorer-page',
   dataElements: 'palette/tools/data-elements',
   sankeyDiagram: 'palette/build/sankey-diagram',
   // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md).
@@ -260,10 +265,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about linking tabs',
     description: 'How linking to another tab works.',
   },
-  teamRolesAndInvites: {
-    title: 'Learn about teams',
-    description: 'Admin and Member roles, and how invites work.',
-  },
   changingTheBackground: {
     title: 'Learn about the canvas',
     description: 'Tips for the background, patterns and the canvas behind what you draw.',
@@ -349,10 +350,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the Inbox',
     description: 'Open actions assigned to you or by you, and comment threads you are in.',
   },
-  recentDocuments: {
-    title: 'Learn about Recent',
-    description: 'Your most recently opened documents, personal and team, in one list.',
-  },
   sharedWithYou: {
     title: 'Learn about Shared With Me',
     description: 'Documents other people have shared with you, collected here.',
@@ -368,6 +365,30 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   explorerFilters: {
     title: 'Learn about search and filters',
     description: 'Narrow any list with words, chips or typed filters like made-by:ai.',
+  },
+  home: {
+    title: 'Learn about Home and the Timeline',
+    description: 'Jump Back In, what others did while you were away, and your own Timeline.',
+  },
+  myWork: {
+    title: 'Learn about My Work',
+    description: 'Your own canvases and folders, in one place.',
+  },
+  recent: {
+    title: 'Learn about Recent',
+    description: 'Your most recently opened canvases, personal and team, in one list.',
+  },
+  unsorted: {
+    title: 'Learn about Unsorted',
+    description: 'Every canvas that is in no folder, yours and your teams’.',
+  },
+  teamSpaces: {
+    title: 'Learn about team spaces',
+    description: 'A team’s shared library of canvases and folders.',
+  },
+  explorerPage: {
+    title: 'Learn about the Explorer',
+    description: 'The library every liveworkspace app shares: sections, views and search.',
   },
   dataElements: {
     title: 'Learn about data elements',

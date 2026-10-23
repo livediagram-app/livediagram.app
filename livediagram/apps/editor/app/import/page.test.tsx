@@ -3,7 +3,6 @@
 import { act, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { explorerUrl } from '@liveworkspace/sites';
 
 let search = 'source=drawio&folder=f1';
 const replace = vi.fn();
@@ -23,12 +22,11 @@ vi.mock('@/hooks/persistence/useGuestId', () => ({ useGuestId: () => null }));
 vi.mock('@/components/primitives/ShapeLibraryProvider', () => ({
   ShapeLibraryProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
-vi.mock('../explorer/useExplorerImport', () => ({
-  useExplorerImport: () => {
+vi.mock('./useImportDialogs', () => ({
+  useImportDialogs: () => {
     const [open, setOpen] = useState(false);
     closeDialog = () => setOpen(false);
     return {
-      toolbar: null,
       dialogs: open ? <div role="dialog" aria-label="Import" /> : null,
       open: (id: string) => {
         opened(id);
@@ -56,16 +54,16 @@ describe('/import', () => {
     expect(opened).toHaveBeenCalledWith('drawio');
     expect(replace).not.toHaveBeenCalled();
     act(() => closeDialog());
-    expect(replace).toHaveBeenCalledWith(explorerUrl('livediagram', 'folder', 'id=f1'));
+    expect(replace).toHaveBeenCalledWith('/explorer/folder?id=f1');
   });
 
   it('goes back at once when the source cannot open, or is unknown', () => {
     search = 'source=excalidraw';
     render(<ImportPage />);
-    expect(replace).toHaveBeenCalledWith(explorerUrl('livediagram', 'all'));
+    expect(replace).toHaveBeenCalledWith('/explorer/all');
     replace.mockClear();
     search = 'source=figma';
     render(<ImportPage />);
-    expect(replace).toHaveBeenCalledWith(explorerUrl('livediagram'));
+    expect(replace).toHaveBeenCalledWith('/explorer');
   });
 });

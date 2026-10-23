@@ -40,6 +40,7 @@
     "@livediagram/templates": "workspace:*",
     "@livediagram/ui": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
+    "@liveworkspace/explorer": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/sites": "workspace:*",

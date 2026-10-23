@@ -17,6 +17,7 @@ import {
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { markConnectCancelled, markConnectConnected, takeConsent } from '@/lib/drive/consent';
 import { driveLog, driveWarn } from '@/lib/drive/log';
+import { explorerHref } from '@/lib/explorer-href';
 import { track } from '@/lib/telemetry';
 import { Body, Heading, LandingCard, PrimaryLink } from '@/components/chrome/LandingCard';
 import { DriveAccountSwitchDialog } from './DriveAccountSwitchDialog';
@@ -39,7 +40,7 @@ const beforeHydration = (): Query => undefined;
 // A code redeems once; React may run an effect twice in development.
 const redeemed = new Set<string>();
 
-const CLOUD_SYNC_HREF = '/explorer?settings=account&section=cloud-sync';
+const CLOUD_SYNC_HREF = explorerHref('', '?settings=account&section=cloud-sync');
 
 // `switch`: the consent came from another Google account; `returnPath` is
 // where to go once the owner answers.

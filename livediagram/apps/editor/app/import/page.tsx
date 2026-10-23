@@ -2,15 +2,15 @@
 
 import { Suspense, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { explorerUrl } from '@liveworkspace/sites';
 import { ShapeLibraryProvider } from '@/components/primitives/ShapeLibraryProvider';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useGuestId } from '@/hooks/persistence/useGuestId';
 import { replaceAppLocation } from '@/lib/app-location';
-import { useExplorerImport } from '../explorer/useExplorerImport';
+import { explorerHref } from '@/lib/explorer-href';
+import { useImportDialogs } from './useImportDialogs';
 import { importReturnUrl, importRequestOf, type ImportRequest } from './import-request';
 
-// The liveworkspace Explorer's "Import from" (docs/specs/013-workspace/folders.md "Import from"): reading another
+// The Explorer's "Import from" (docs/specs/013-workspace/folders.md "Import from"): reading another
 // tool's files takes the editor's importers, so the Explorer sends people here with `?source=&what=&folder=`.
 // The page opens that source's import at once and, when its dialog closes, returns to the Explorer where the
 // imports landed: the folder for documents, Shape Libraries for libraries.
@@ -29,7 +29,7 @@ function ImportFromSearch() {
   const guestId = useGuestId(authLoaded, accountUserId);
   const ownerId = authLoaded ? (accountUserId ?? guestId) : null;
   useEffect(() => {
-    if (!request) replaceAppLocation(explorerUrl('livediagram'));
+    if (!request) replaceAppLocation(explorerHref());
   }, [request]);
   if (!request || !ownerId) return null;
   return (
@@ -40,7 +40,7 @@ function ImportFromSearch() {
 }
 
 function OpenImport({ ownerId, request }: { ownerId: string; request: ImportRequest }) {
-  const { open, dialogs } = useExplorerImport({
+  const { open, dialogs } = useImportDialogs({
     ownerId,
     folderId: request.folderId,
     onDocumentsCreated: () => {},

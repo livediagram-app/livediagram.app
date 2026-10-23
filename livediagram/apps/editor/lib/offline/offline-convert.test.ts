@@ -18,10 +18,16 @@ vi.mock('@/lib/api-client', () => ({
   }),
   apiLoadDocument: vi.fn(async () => ({ id: 'd1', name: 'Roadmap', tabs: [{ id: 't1' }] })),
   apiLoadTab: vi.fn(async () => ({ id: 't1', name: 'Tab 1', elements: [] })),
-  fetchCloudFavouriteIds: vi.fn(async () => [] as string[]),
-  apiSetFavourite: vi.fn(async () => {
-    calls.push('apiSetFavourite');
-  }),
+}));
+
+// The person's star on a canvas is the index's (liveworkspace/docs/one-explorer-contracts.md).
+vi.mock('@/lib/index-client', () => ({
+  indexClient: {
+    getItem: vi.fn(async () => ({ item: { id: 'd1', favourite: false } })),
+    favourite: vi.fn(async () => {
+      calls.push('favourite');
+    }),
+  },
 }));
 
 vi.mock('@/lib/api/core', () => ({
@@ -81,6 +87,7 @@ vi.mock('./offline-store', () => ({
 
 const apiClient = await import('@/lib/api-client');
 const core = await import('@/lib/api/core');
+const { indexClient } = await import('@/lib/index-client');
 const images = await import('./offline-images');
 const store = await import('./offline-store');
 const {
@@ -121,8 +128,8 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
       favourite: true,
     } as never);
     await saveOfflineToCloud('d1', 'owner');
-    expect(calls).toEqual(['apiCreateDocument', 'offlineDeleteDocument', 'apiSetFavourite']);
-    expect(apiClient.apiSetFavourite).toHaveBeenCalledWith('owner', 'd1', true);
+    expect(calls).toEqual(['apiCreateDocument', 'offlineDeleteDocument', 'favourite']);
+    expect(indexClient.favourite).toHaveBeenCalledWith('d1');
   });
 
   // Tags were removed (docs/specs/013-workspace/tags.md): a record written while they existed still syncs, its tag
@@ -200,7 +207,7 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
 
   it('stars nothing for an unstarred document', async () => {
     await saveOfflineToCloud('d1', 'owner');
-    expect(apiClient.apiSetFavourite).not.toHaveBeenCalled();
+    expect(indexClient.favourite).not.toHaveBeenCalled();
   });
 
   it('uploads again when the document changed during the upload, removing the local copy only then', async () => {
@@ -265,14 +272,16 @@ describe('takeCloudOffline (cloud -> offline)', () => {
   });
 
   it('keeps a starred document starred on the offline record', async () => {
-    vi.mocked(apiClient.fetchCloudFavouriteIds).mockResolvedValueOnce(['d1']);
+    vi.mocked(indexClient.getItem).mockResolvedValueOnce({
+      item: { id: 'd1', favourite: true },
+    } as never);
     await takeCloudOffline('d1', 'owner');
     expect(vi.mocked(store.offlinePutRecord).mock.calls[0]![0]).toMatchObject({ favourite: true });
   });
 
   it('aborts before writing anything when the stars could not be read', async () => {
     // Taken as "not starred", the star would go with the server row.
-    vi.mocked(apiClient.fetchCloudFavouriteIds).mockRejectedValueOnce(new Error('offline'));
+    vi.mocked(indexClient.getItem).mockRejectedValueOnce(new Error('offline'));
     await expect(takeCloudOffline('d1', 'owner')).rejects.toThrow('offline');
     expect(calls).toEqual([]);
   });

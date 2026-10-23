@@ -1,6 +1,6 @@
 // Barrel for the livediagram HTTP/WS client. The implementation is split
 // by domain under lib/api/* (core plumbing + documents / tabs / share /
-// folders / self / room / images / preferences / ai); this
+// self / room / images / preferences / ai); this
 // file re-exports the public surface so existing `@/lib/api-client`
 // imports keep working unchanged.
 
@@ -9,16 +9,11 @@
 // `@livediagram/api-schema`; see that package's index.ts for the shapes
 // and per-type rationale.
 export type {
-  Folder,
   ImageSummary,
   ShareLink,
   ShareLinkExpiry,
   ShareRole,
-  TeamInvite,
-  TeamListItem,
-  TeamMember,
   TeamMemberStatus,
-  TeamRole,
 } from '@livediagram/api-schema';
 
 // Core plumbing the app uses directly (base URL, identity headers,
@@ -46,24 +41,17 @@ export * from './api/tabs';
 export * from './api/changesets';
 export * from './api/qa-board';
 export * from './api/share';
-export * from './api/folders';
 export * from './api/shape-libraries';
-export * from './api/teams';
 export * from './api/tokens';
 export * from './api/oauth';
 export * from './api/self';
 export * from './api/room';
 export * from './api/images';
-export * from './api/favourites';
-export * from './api/placement-defaults';
-export * from './api/timeline';
-export * from './api/activity';
-export * from './api/home';
 export * from './api/preferences';
 export * from './api/ai';
 export * from './api/unfurl';
-export * from './api/trash';
 export * from './api/drive';
 export * from './api/community';
 // Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).
 export * from './api/workbench';
+export * from './api/team-people';

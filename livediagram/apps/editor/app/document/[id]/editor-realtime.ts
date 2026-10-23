@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 
 import type { CommunityShareInfo } from '@livediagram/api-schema';
-import { connectRoom, type ShareLink, type ShareRole } from '@/lib/api-client';
+import { connectRoom, type ShareRole } from '@/lib/api-client';
 import { mayShareDocument } from './editor-page-helpers';
 import { useChangesetSeen } from './useChangesetSeen';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -43,10 +43,7 @@ export function useEditorRealtime() {
   // in a team's shared library. Drives the header badge's "Team"
   // state (shareable still wins with "Shared").
   const [documentTeamId, setDocumentTeamId] = useState<string | null>(null);
-  // The legacy single share code (back-compat fallback for older
-  // documents that haven't been migrated to share_links yet, and for
-  // visitor arrivals that came in via the legacy URL flow). Modern
-  // documents populate shareLinks instead.
+  // The share code a visitor's link came in on, for the requests and the room that go through it.
   const [documentShareCode, setDocumentShareCode] = useState<string | null>(null);
   // True for the owner of the loaded document; false for visitors who
   // arrived via /live/document/shared?s=<code>. Drives whether the
@@ -69,14 +66,6 @@ export function useEditorRealtime() {
   // itself while the api round-trips so a frantic double-click can't
   // produce two copies under the user's account.
   const [copying, setCopying] = useState(false);
-  // Every active share link for the current document (owner-only). The
-  // ShareDialog list renders straight off this array. shareable is
-  // derived: shareLinks.length > 0 OR documentShareable from a freshly
-  // loaded row.
-  const [shareLinks, setShareLinks] = useState<ShareLink[]>([]);
-  // The document's optional share password (docs/specs/013-workspace/share-password.md), owner-only. Null
-  // when unset. The ShareDialog shows + edits this in the clear.
-  const [sharePasswordSet, setSharePasswordSet] = useState(false);
   // `passwordRetry` bumps to re-run the bootstrap once the visitor
   // submits a password (see the bootstrap effect deps).
   const [passwordRetry, setPasswordRetry] = useState(0);
@@ -140,10 +129,6 @@ export function useEditorRealtime() {
     setDocumentOwnerColor,
     copying,
     setCopying,
-    shareLinks,
-    setShareLinks,
-    sharePasswordSet,
-    setSharePasswordSet,
     passwordRetry,
     setPasswordRetry,
     sharePasswordGate,

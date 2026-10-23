@@ -1,10 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { explorerUrl } from '@liveworkspace/sites';
 import { importRequestOf, importReturnUrl } from './import-request';
 
 const req = (q: string) => importRequestOf(new URLSearchParams(q));
 
-describe('/import from the liveworkspace Explorer', () => {
+describe('/import from the Explorer', () => {
   it('reads the source, what and folder', () => {
     expect(req('source=drawio&what=libraries')).toEqual({
       source: 'drawio',
@@ -25,12 +24,8 @@ describe('/import from the liveworkspace Explorer', () => {
   });
 
   it('returns to where the imports landed', () => {
-    expect(importReturnUrl(req('source=drawio&what=libraries')!)).toBe(
-      explorerUrl('livediagram', 'shape-libraries'),
-    );
-    expect(importReturnUrl(req('source=drawio&folder=f1')!)).toBe(
-      explorerUrl('livediagram', 'folder', 'id=f1'),
-    );
-    expect(importReturnUrl(req('source=drawio')!)).toBe(explorerUrl('livediagram', 'all'));
+    expect(importReturnUrl(req('source=drawio&what=libraries')!)).toBe('/explorer/shape-libraries');
+    expect(importReturnUrl(req('source=drawio&folder=f1')!)).toBe('/explorer/folder?id=f1');
+    expect(importReturnUrl(req('source=drawio')!)).toBe('/explorer/all');
   });
 });
