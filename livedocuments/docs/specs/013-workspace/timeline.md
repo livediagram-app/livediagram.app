@@ -471,12 +471,11 @@ the mode buttons in §2.2.
 it** — a reader wondering why the page looks short needs one signal, not
 one per filter.
 
-**There is no Refresh button.** The feed loads on mount, and the worker
-seeds a first-time scope off that same read (§5), so a manual refresh
-had nothing to do that reopening the page doesn't already do. The
-`POST /api/timeline/refresh` endpoint stays part of the documented
-public API for an external caller that wants to force a seed; the app
-simply doesn't need it.
+**There is no Refresh button.** The feed loads on mount, so a manual
+refresh had nothing to do that reopening the page doesn't already do.
+The `POST /api/timeline/refresh` endpoint stays part of the documented
+public API for an external caller that wants to mark the feed seen; the
+app simply doesn't need it.
 
 The popover renders into a `document.body` portal at fixed coordinates
 anchored to its trigger, re-anchored on scroll and resize. The Explorer
@@ -490,10 +489,11 @@ popover is clipped no matter its z-index.
   jump.
 - **Empty (new user)**: the shared `EmptyState` from `@livedocuments/ui`,
   copy "No activity yet" ("Create a document, comment on one, or join a
-  team, and it will show up here."), with a New Document action. In practice a signed-up user is
-  rarely empty because of the backfill (§5) — which is exactly why this
-  CTA can't be the page's only route to a new document, and why the
-  header carries one too (§2.3).
+  team, and it will show up here."), with a New Document action. A feed
+  is only empty until its owner's first document, team or comment
+  (there is no backfill, §5), which is why this CTA can't be the page's
+  only route to a new document, and why the header carries one too
+  (§2.3).
 - **Empty (all filtered out)**: the shared empty state
   ([Empty states](../004-interface-design/empty-states.md)), "No events match these filters", with a
   **Clear Filters** action. Distinct copy from the new-user case, so the
@@ -853,8 +853,7 @@ CREATE INDEX timeline_events_occurred_idx ON timeline_events(occurred_at);
 ```
 
 The `UNIQUE` constraint is what makes emission idempotent. Emitting the
-same event twice — because a client retried, or because the backfill
-covers ground a live emit already covered — updates the existing row
+same event twice — because a client retried — updates the existing row
 rather than duplicating it.
 
 `dedupe_key` is empty for events that happen **once per source** (a
@@ -871,9 +870,9 @@ a bug: they carried the empty key, so the UNIQUE index took the second
 rename of a document for a retry of the first and **upserted** it. Three
 renames in a day showed one "Document Renamed" card instead of a stack
 of three, and a rename this month silently moved last month's card to
-today. The idempotency the empty key buys — a retry or a backfill
-overlap landing on the existing row — only matters for events the
-backfill writes, and it writes none of these.
+today. The idempotency the empty key buys — a retry landing on the
+existing row — only matters for events that genuinely happen once per
+source, and none of these do.
 
 `occurred_at` is epoch ms rather than the ISO
 strings Manager Toolkit uses. Manager Toolkit has a whole normalisation
@@ -915,14 +914,12 @@ measurement, not a hunch.
 CREATE TABLE timeline_scope_state (
   scope_type       TEXT NOT NULL,
   scope_id         TEXT NOT NULL,
-  backfilled_at    INTEGER,               -- NULL until the one-shot backfill has run
   last_refreshed_at INTEGER,
   PRIMARY KEY (scope_type, scope_id)
 );
 ```
 
-One row per scope. `backfilled_at` gates the one-shot seeding in §5;
-`last_refreshed_at` backs the "Last refreshed …" line and the
+One row per scope. `last_refreshed_at` backs the "Last refreshed …" line and the
 stale-read threshold.
 
 ### 3.4 What the scope model bought
@@ -1347,36 +1344,13 @@ Today with a distinct tint. They are the feed's only forward-looking
 content and they are the reason a user opens it before something
 breaks rather than after.
 
-## 5. Backfill
+## 5. No backfill
 
-A brand-new Timeline that is empty for an existing user with 60
-documents is a broken-looking feature. On the first read of a scope
-(`timeline_scope_state.backfilled_at IS NULL`), the worker seeds it:
-
-- For the caller's 200 most recently updated documents: a
-  `document_created` event at `documents.created_at`, which never
-  overwrites a creation already recorded (whose snapshot may say the
-  making counts as a use, [Explorer Home](explorer-home.md#making-a-document)), and a
-  `document_edited` event at `updated_at` with the matching
-  `<actorId>:<date>` dedupe key. The worker cannot know who made that
-  last save, so the edit is a reconstruction: its snapshot carries
-  `backfilled: true`, and it never overwrites a real edit already
-  recorded for that day. A real edit landing on it later replaces the
-  snapshot and so the mark. [Explorer Home](explorer-home.md) counts
-  only real edits.
-- For each team the caller has joined: a `team_member_joined` event at
-  their `team_members.created_at`.
-- Nothing else. Comments and actions are inside tab JSON and
-  backfilling them would mean parsing every tab of every document in a
-  request — a cost with no ceiling. The feed's older reaches are
-  thinner than its recent ones; that is the honest trade and it is
-  invisible within a week of use.
-
-The backfill is idempotent by construction (every insert hits the
-`UNIQUE` key), runs inside `ctx.waitUntil` after the response is
-served, and stamps `backfilled_at` so it never runs twice. The 200 cap
-is logged rather than silent — a user with 400 documents should not be
-told their history starts in March when it doesn't.
+There is none. Every event the feed shows is emitted live by the write
+that caused it (§4), and livedocuments has had the Timeline since its
+first deploy, so there is no history from before the feed to seed. A new
+scope starts empty and fills as its owner works. Comments and actions
+are never read back out of tab JSON.
 
 ## 6. API
 
@@ -1428,8 +1402,7 @@ more.
 
 ### 6.2 `POST /api/timeline/refresh`
 
-Stamps `last_refreshed_at`, runs the backfill if it hasn't run, and
-returns `{ lastRefreshedAt }`. Throttled to one call per scope per 5
+Stamps `last_refreshed_at` and returns `{ lastRefreshedAt }`. Throttled to one call per scope per 5
 seconds server-side to absorb spam-clicks on the Refresh button.
 
 ### 6.2a `DELETE /api/timeline/events/:id`
@@ -1453,9 +1426,8 @@ on this feed; the dismissal removes, it never adds.
 
 ### 6.3 Stale-read refresh
 
-`GET /api/timeline` triggers the backfill (and only the backfill) when
-`backfilled_at` is null. It does **not** rescan anything else — there
-is nothing to rescan, since all emission is inline. The 30-second
+`GET /api/timeline` does **not** rescan anything — there is nothing to
+rescan, since all emission is inline. The 30-second
 stale threshold Manager Toolkit uses exists to amortise scanner cost;
 here it has nothing to amortise. The Refresh button re-reads, and that
 is the whole story.
@@ -1612,8 +1584,8 @@ UPDATE timeline_event_scopes SET scope_id = ?1 WHERE scope_type = 'user' AND sco
 UPDATE timeline_events       SET actor_id = ?1 WHERE actor_id = ?2;
 ```
 
-Plus a move of the `timeline_scope_state` row, so the backfill doesn't
-re-run against the new id and duplicate what already migrated. A user
+Plus a move of the `timeline_scope_state` row, so the unread watermark
+follows them. A user
 who drew for a week as a guest keeps that week when they sign up —
 which is the point of the guest path existing at all.
 
@@ -1670,7 +1642,7 @@ Per [Testing](../003-system-architecture/testing.md):
 - **Coalescing**: three saves in one UTC day produce one row whose
   `occurred_at` advances; a save the next day produces a second row.
 - **Migration**: guest → account id moves scopes, events, and scope
-  state, and the backfill does not re-run afterwards.
+  state.
 - **Round-trip**: `/explorer/timeline` added to `STATIC_NODES` in
   `routes.test.ts`.
 - **Failed reads never read as empty** (§2.4): `apiListTimeline`

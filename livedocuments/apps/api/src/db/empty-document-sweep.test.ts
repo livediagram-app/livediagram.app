@@ -24,6 +24,8 @@ function tab(sql: DatabaseSync, id: string, data: unknown, ...documentIds: strin
     name: id,
     data: typeof data === 'string' ? data : JSON.stringify(data),
     updated_at: 0,
+    // The sweep reads the body, never the count.
+    element_count: 0,
   });
   documentIds.forEach((documentId, i) =>
     insert(sql, 'document_tabs', {

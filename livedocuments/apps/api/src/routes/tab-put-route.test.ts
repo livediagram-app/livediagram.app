@@ -274,7 +274,9 @@ describe("someone else's tab id", () => {
     // A tab from before revisions (the baseline migration), at rev 0 as most stored tabs are: the revision trigger alone
     // would let an overwrite through.
     db.sql
-      .prepare("INSERT INTO tabs (id, name, data, updated_at, rev) VALUES ('old', 'Old', ?, 1, 0)")
+      .prepare(
+        "INSERT INTO tabs (id, name, data, updated_at, element_count, rev) VALUES ('old', 'Old', ?, 1, 1, 0)",
+      )
       .run(JSON.stringify({ elements: [box('v', 'Original')] }));
     db.sql
       .prepare(

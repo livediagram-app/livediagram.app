@@ -4,11 +4,11 @@
 // update to wrap; the one write is the per-card dismissal (§2.9). There
 // is no refresh wrapper either — the feed loads on mount, re-reads this
 // same GET when the reader returns to the tab (docs/specs/013-workspace/timeline.md §2.4a) or after
-// one of their own writes lands (§2.4b), and the worker seeds a
-// first-time scope off it, so a manual refresh button had nothing to
-// do that reopening the page doesn't. (The `POST /api/timeline/refresh`
-// endpoint stays part of the documented public API for external
-// callers who want to force a seed; the app just doesn't need it.)
+// one of their own writes lands (§2.4b), so a manual refresh button had
+// nothing to do that reopening the page doesn't. (The
+// `POST /api/timeline/refresh` endpoint stays part of the documented
+// public API for external callers who want to mark the feed seen; the
+// app just doesn't need it.)
 //
 // Offline Mode (docs/specs/006-document/offline-mode.md) is a deliberate no-op here rather than a
 // dispatch. `isOfflineId` keys on a DOCUMENT id, and this endpoint is
@@ -17,7 +17,11 @@
 // events to show. An offline-only user sees an empty feed, which is
 // the truth.
 
-import type { TimelineEvent, TimelineReadResult, TimelineScopeRef } from '@livedocuments/api-schema';
+import type {
+  TimelineEvent,
+  TimelineReadResult,
+  TimelineScopeRef,
+} from '@livedocuments/api-schema';
 import { TIMELINE_PAGE_SIZE, formatScope } from '@livedocuments/api-schema';
 import { API_BASE, apiDelete, apiHeaders, apiFetch, expectOkVoid } from './core';
 

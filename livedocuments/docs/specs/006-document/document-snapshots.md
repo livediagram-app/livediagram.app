@@ -133,15 +133,12 @@ renders it lazily.
   drawn count (`tabs.element_count`: its elements), and a list reads the first tab's
   count (a tab-scoped share reads its own tab's). Every tab write binds the
   count in the same statement, from the tab the api already holds parsed;
-  a copy carries its source's. A count not known (`null`) reads as not
-  empty, so the row asks as before. The editor's own row follows its saves:
+  a copy carries its source's, so the column is `NOT NULL` and no count is
+  ever unknown. The editor's own row follows its saves:
   after an autosave it says `empty` from the first tab when that tab is
   loaded, and keeps what the list said when it is not.
-- **The count is written with the body, never by a trigger.** A count
-  still unknown is stamped by the thumbnail route: having parsed the body
-  to render it, the route stamps it (in the request's `waitUntil`, best
-  effort, never overwriting a known count). A deploy without the R2
-  binding renders no snapshot, so there counts come from writes only.
+- **The count is written with the body, never by a trigger.** Nothing
+  fills a count later: there is no tab from before the column to fill.
 - **Why no trigger** (measured with SQLite, D1's engine, sync off to
   isolate the work itself):
 

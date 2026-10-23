@@ -59,7 +59,6 @@ const OWNER_COLUMNS: OwnerColumn[] = [
     scope: "scope_type = 'user'",
     migrate: { kind: 'moves' },
   },
-  { table: 'collab_index_state', column: 'owner_id', migrate: { kind: 'moves' } },
   { table: 'owner_aliases', column: 'owner_id', migrate: { kind: 'moves' } },
   {
     table: 'owner_aliases',
@@ -190,11 +189,16 @@ function seedGuestHoldable(sql: DatabaseSync, id: string, peerDocument: string) 
     scope_id: id,
     added_at: T0,
   });
-  insert(sql, 'timeline_scope_state', { scope_type: 'user', scope_id: id, backfilled_at: T0 });
-  insert(sql, 'collab_index_state', { owner_id: id, backfilled_at: T0 });
+  insert(sql, 'timeline_scope_state', { scope_type: 'user', scope_id: id, last_seen_at: T0 });
   insert(sql, 'owner_aliases', { owner_id: id, alias_id: `legacy-${id}`, created_at: T0 });
   // A changeset they wrote on the peer's document, which outlives their own documents.
-  insert(sql, 'tabs', { id: `tab-${id}`, name: 'Board', data: '{"elements":[]}', updated_at: T0 });
+  insert(sql, 'tabs', {
+    id: `tab-${id}`,
+    name: 'Board',
+    data: '{"elements":[]}',
+    updated_at: T0,
+    element_count: 0,
+  });
   insert(sql, 'agent_changesets', {
     id: `cs-${id}`,
     document_id: peerDocument,

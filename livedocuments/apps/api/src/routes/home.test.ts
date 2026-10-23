@@ -9,7 +9,6 @@ import {
   recordDocumentDuplicated,
   recordDocumentEdited,
   recordTeamDocumentAdded,
-  backfillUserScope,
 } from '../timeline';
 import type { Env } from '../types';
 import { makeTestRouteContext } from './test-route-context';
@@ -133,10 +132,8 @@ beforeEach(() => {
   vi.spyOn(console, 'warn').mockImplementation(capture);
   vi.spyOn(console, 'error').mockImplementation(capture);
   seed();
-  // The Timeline user scope counts as seeded unless a test says otherwise.
-  db.sql.exec(
-    `INSERT INTO timeline_scope_state (scope_type, scope_id, backfilled_at) VALUES ('user', '${ME}', 1)`,
-  );
+  // The Timeline user scope has a state row (no watermark yet) unless a test says otherwise.
+  db.sql.exec(`INSERT INTO timeline_scope_state (scope_type, scope_id) VALUES ('user', '${ME}')`);
 });
 
 afterEach(() => {
@@ -262,11 +259,6 @@ describe('Jump back in', () => {
 
   it("never counts someone else's making", async () => {
     await recordDocumentCreated(db.env, docs.team1!, 'user_priya', { markUsed: true });
-    expect((await home()).jumpBackIn).toEqual([]);
-  });
-
-  it("leaves out the backfill's reconstructed edits: only real uses count", async () => {
-    await backfillUserScope(db.env, ME);
     expect((await home()).jumpBackIn).toEqual([]);
   });
 });
@@ -407,16 +399,6 @@ describe('the read', () => {
       lastSeenAt: null,
     });
     expect(logs).toContain('home: read jump=0 used=0 recent=0 groups=0 actions=0');
-  });
-
-  it("seeds nothing: the Timeline backfill is the feed's business", async () => {
-    db.sql.exec('DELETE FROM timeline_scope_state');
-    await home();
-    await Promise.all(pending);
-    const created = db.sql
-      .prepare(`SELECT COUNT(*) AS n FROM timeline_events WHERE event_type = 'document_created'`)
-      .get() as { n: number };
-    expect(created.n).toBe(0);
   });
 
   it('moves the unread mark once per visit and says where it stood', async () => {

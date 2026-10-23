@@ -24,7 +24,9 @@ function arrange() {
       .run(id, 'owner', id, T0, T0);
   const tab = (docId: string, tabId: string, order: number) => {
     db.sql
-      .prepare('INSERT INTO tabs (id, name, data, updated_at) VALUES (?, ?, ?, ?)')
+      .prepare(
+        'INSERT INTO tabs (id, name, data, updated_at, element_count) VALUES (?, ?, ?, ?, 0)',
+      )
       .run(tabId, tabId, '{}', T0);
     db.sql
       .prepare(

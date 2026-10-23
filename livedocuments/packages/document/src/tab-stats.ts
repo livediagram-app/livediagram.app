@@ -1,6 +1,6 @@
 // Tab stats (docs/specs/013-workspace/explorer-details-view.md "Where the numbers come from"): what
 // the Explorer's Details view sums over a document, counted the same way by the api (every tab
-// write, the backfill) and by the browser (documents saved only in this browser).
+// write) and by the browser (documents saved only in this browser).
 export type TabStats = {
   elementCount: number;
   commentCount: number;

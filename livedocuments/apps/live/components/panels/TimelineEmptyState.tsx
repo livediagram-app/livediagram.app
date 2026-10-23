@@ -7,9 +7,8 @@
 // with nothing in it is a different sentence: nothing has HAPPENED
 // yet, which is a statement about time rather than about a container.
 //
-// Rare in practice. The backfill seeds an existing account's feed from
-// its documents and team memberships on first read (docs/specs/013-workspace/timeline.md §5), so
-// this is mostly what a genuinely new visitor sees.
+// What a new visitor sees until their first document, team or comment
+// lands on the feed.
 
 import Link from 'next/link';
 import { EmptyState, SOLID_BRAND_DARK_CONTROL, Glyph } from '@livedocuments/ui';

@@ -31,7 +31,13 @@ function liveDoc(sql: DatabaseSync, id: string, ownerId = 'owner', teamId: strin
 }
 
 function tabIn(sql: DatabaseSync, tabId: string, ...documentIds: string[]) {
-  row(sql, 'tabs', { id: tabId, name: tabId, data: '{"elements":[]}', updated_at: T0 });
+  row(sql, 'tabs', {
+    id: tabId,
+    name: tabId,
+    data: '{"elements":[]}',
+    updated_at: T0,
+    element_count: 0,
+  });
   documentIds.forEach((d, i) =>
     row(sql, 'document_tabs', { document_id: d, tab_id: tabId, order_index: i, added_at: T0 }),
   );

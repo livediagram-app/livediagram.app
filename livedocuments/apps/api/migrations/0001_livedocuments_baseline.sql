@@ -183,7 +183,7 @@ CREATE TABLE tabs (
   name          TEXT    NOT NULL,
   data          TEXT    NOT NULL,
   updated_at    INTEGER NOT NULL,
-  element_count INTEGER NULL,
+  element_count INTEGER NOT NULL,
   rev           INTEGER NOT NULL DEFAULT 0
 );
 CREATE TRIGGER tabs_rev_advances BEFORE UPDATE OF data ON tabs
@@ -370,12 +370,6 @@ CREATE INDEX collab_actions_assignee_idx ON collab_actions (assignee_user_id, st
 CREATE INDEX collab_actions_assigner_idx ON collab_actions (assigner_id, status);
 CREATE INDEX collab_actions_member_idx ON collab_actions (assignee_member_id);
 
--- When each owner's comment index was last rebuilt from their tab bodies.
-CREATE TABLE collab_index_state (
-  owner_id      TEXT    PRIMARY KEY,
-  backfilled_at INTEGER NOT NULL
-);
-
 -- The timeline event store (docs/specs/013-workspace/timeline.md): History, Team Activity and Home's What Happened.
 CREATE TABLE timeline_events (
   id          TEXT    PRIMARY KEY,
@@ -412,11 +406,10 @@ CREATE TABLE timeline_event_scopes (
 );
 CREATE INDEX timeline_event_scopes_event_idx ON timeline_event_scopes (event_id);
 
--- How far each scope has read its feed (the unread count), and when its one-shot backfill ran.
+-- How far each scope has read its feed (the unread count).
 CREATE TABLE timeline_scope_state (
   scope_type    TEXT    NOT NULL,
   scope_id      TEXT    NOT NULL,
-  backfilled_at INTEGER,
   last_seen_at  INTEGER,
   PRIMARY KEY (scope_type, scope_id)
 );

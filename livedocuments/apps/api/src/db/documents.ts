@@ -480,7 +480,7 @@ export async function copyDocument(
       name: string;
       order_index: number;
       data: string;
-      element_count: number | null;
+      element_count: number;
     }>();
   // Mint every fresh tab id up front so a tab / element link on one tab
   // can be re-pointed at its sibling's copy (the Explorer duplicate does
@@ -500,7 +500,7 @@ export async function copyDocument(
       // Link remapping rewrites ids inside elements, never their number, so the count carries over.
       env.DB.prepare(
         `INSERT INTO tabs (id, name, data, updated_at, element_count, rev) VALUES (?, ?, ?, ?, ?, 1)`,
-      ).bind(freshTabId, row.name, data, now, row.element_count ?? null),
+      ).bind(freshTabId, row.name, data, now, row.element_count),
       env.DB.prepare(
         `INSERT INTO document_tabs (document_id, tab_id, order_index, added_at)
          VALUES (?, ?, ?, ?)`,

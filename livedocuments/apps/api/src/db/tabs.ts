@@ -103,10 +103,10 @@ export async function tabBodiesInOrder(
 // reads the single `data` column rather than going through getTab.
 // The `empty` column of a document list (docs/specs/006-document/document-snapshots.md): the element
 // count of the document's first tab, or of `scopeTabSql`'s tab when that is not null. Reads the
-// count each tab write binds (the baseline migration), never a tab body. NULL = no tab, -1 = not yet known.
+// count each tab write binds (the baseline migration), never a tab body. NULL = no tab.
 export function firstTabCountSql(documentIdSql: string, scopeTabSql: string | null = null): string {
   const scope = scopeTabSql ? ` AND (${scopeTabSql} IS NULL OR dt.tab_id = ${scopeTabSql})` : '';
-  return `(SELECT COALESCE(t.element_count, -1)
+  return `(SELECT t.element_count
              FROM document_tabs dt
              JOIN tabs t ON t.id = dt.tab_id
             WHERE dt.document_id = ${documentIdSql}${scope}
@@ -114,13 +114,13 @@ export function firstTabCountSql(documentIdSql: string, scopeTabSql: string | nu
             LIMIT 1) AS first_tab_count`;
 }
 
-// No tab, or a counted tab with no elements. A count not yet known is not empty: its thumbnail is asked for.
+// No tab, or a tab with no elements.
 export function isEmptyCount(firstTabCount: number | null | undefined): boolean {
   return firstTabCount == null || firstTabCount === 0;
 }
 
-// A stored tab body with its id and its element count (null until known, the baseline migration).
-export type StoredTabBody = { id: string; data: string; elementCount: number | null };
+// A stored tab body with its id.
+export type StoredTabBody = { id: string; data: string };
 
 // The document's first tab, or `tabId`'s tab when given, as the snapshot renderer reads it.
 export async function getTabBody(
@@ -129,7 +129,7 @@ export async function getTabBody(
   tabId: string | null = null,
 ): Promise<StoredTabBody | null> {
   const row = await env.DB.prepare(
-    `SELECT t.id, t.data, t.element_count
+    `SELECT t.id, t.data
        FROM document_tabs dt
        JOIN tabs t ON t.id = dt.tab_id
       WHERE dt.document_id = ?${tabId === null ? '' : ' AND dt.tab_id = ?'}
@@ -137,16 +137,8 @@ export async function getTabBody(
       LIMIT 1`,
   )
     .bind(...(tabId === null ? [documentId] : [documentId, tabId]))
-    .first<{ id: string; data: string; element_count: number | null }>();
-  return row ? { id: row.id, data: row.data, elementCount: row.element_count ?? null } : null;
-}
-
-// The lazy backfill (the baseline migration): a reader that has parsed a body whose count is still unknown
-// records it. Only ever fills a null, so it can never undo a write's own count.
-export async function stampTabElementCount(env: Env, tabId: string, count: number): Promise<void> {
-  await env.DB.prepare('UPDATE tabs SET element_count = ? WHERE id = ? AND element_count IS NULL')
-    .bind(count, tabId)
-    .run();
+    .first<{ id: string; data: string }>();
+  return row ? { id: row.id, data: row.data } : null;
 }
 
 // The raw `tabs.data` JSON for a SPECIFIC tab in a document, or null when

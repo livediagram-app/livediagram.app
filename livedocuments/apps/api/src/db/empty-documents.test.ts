@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { sqliteD1 } from '../test-sqlite-d1';
 import { copyDocument, listDocumentsByOwner, listDocumentsByTeam } from './documents';
 import { listSharedWith } from './shared';
-import { seedTabs, stampTabElementCount, swapTabData, upsertTab } from './tabs';
+import { seedTabs, swapTabData, upsertTab } from './tabs';
 import { tabStatsOfData } from './tab-stats';
 
 const OWNER = 'owner-1';
@@ -123,43 +123,5 @@ describe('a document list says which documents are empty', () => {
       whole: true,
       scoped: false,
     });
-  });
-});
-
-describe('a tab stored without its count', () => {
-  it('reads as not empty until it is stamped', async () => {
-    const { env, sql } = sqliteD1();
-    sql.exec(`INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
-              VALUES ('old-blank', '${OWNER}', 'a', 0, 1, 1), ('old-drawn', '${OWNER}', 'b', 0, 1, 1),
-                     ('old-odd', '${OWNER}', 'c', 0, 1, 1)`);
-    sql.exec(`INSERT INTO tabs (id, name, data, updated_at)
-              VALUES ('ob', 'x', '{"elements":[]}', 1), ('od', 'x', '{"elements":[{"id":"a"},{"id":"b"}]}', 1),
-                     ('oo', 'x', 'not json', 1)`);
-    sql.exec(`INSERT INTO document_tabs (document_id, tab_id, order_index, added_at)
-              VALUES ('old-blank', 'ob', 0, 1), ('old-drawn', 'od', 0, 1), ('old-odd', 'oo', 0, 1)`);
-    const counts = sql.prepare('SELECT id, element_count FROM tabs ORDER BY id').all();
-    expect(counts.map((c) => ({ ...c }))).toEqual([
-      { id: 'ob', element_count: null },
-      { id: 'od', element_count: null },
-      { id: 'oo', element_count: null },
-    ]);
-    expect(await emptiness(env)).toEqual({
-      'old-blank': false,
-      'old-drawn': false,
-      'old-odd': false,
-    });
-    // The thumbnail route, having parsed the first tab, stamps what it found.
-    await stampTabElementCount(env, 'ob', 0);
-    expect((await emptiness(env))['old-blank']).toBe(true);
-  });
-});
-
-describe('stampTabElementCount', () => {
-  it('fills an unknown count, and never overwrites a known one', async () => {
-    const { env, addDocument, sql } = setUp();
-    addDocument('doc');
-    await seedTabs(env, 'doc', [tab('t1', [rect('a')])]);
-    await stampTabElementCount(env, 't1', 0);
-    expect(sql.prepare("SELECT element_count c FROM tabs WHERE id = 't1'").get()).toEqual({ c: 1 });
   });
 });

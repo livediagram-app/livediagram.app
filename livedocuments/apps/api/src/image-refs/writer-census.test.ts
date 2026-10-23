@@ -19,9 +19,8 @@ const WRITES_TABS =
 // db/image-refs-writers.test.ts.
 const KNOWN_WRITERS: Record<string, number> = {
   // tabWriteStatements (upsertTab, upsertTabAtRev), seedTabs, deleteTabRow, swapTabData; and
-  // stampTabElementCount and renameTab, which write element_count or the name, never `data`, so
-  // they have no image reference to keep.
-  'api/src/db/tabs.ts': 6,
+  // renameTab, which writes the name, never `data`, so it has no image reference to keep.
+  'api/src/db/tabs.ts': 5,
   // copyDocument
   'api/src/db/documents.ts': 1,
   // documentRemovalStatements

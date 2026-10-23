@@ -138,7 +138,7 @@ export async function deleteAccount(
   // and the scope-state row. Hard, not soft — soft delete is a
   // user-facing affordance in this product, never a retention strategy.
   await deleteTimelineForOwner(env, ownerId);
-  // Activity (docs/specs/013-workspace/inbox.md): the alias rows + the backfill stamp. The index
+  // Activity (docs/specs/013-workspace/inbox.md): the alias rows. The index
   // rows themselves went with the tabs documentRemovalStatements dropped above.
   await deleteCollabIndexForOwner(env, ownerId);
   // Explorer Home (docs/specs/013-workspace/explorer-home.md "Opens"): this owner's opens. Other
@@ -324,10 +324,8 @@ export async function migrateOwnerId(
   const changes = (key: keyof typeof statements) => results[keys.indexOf(key)]?.meta.changes ?? 0;
   // timeline (docs/specs/013-workspace/timeline.md §9): a week of drawing as a guest is history
   // worth keeping, so the feed, the authored events, and the
-  // scope-state row all follow the user to their new account. The
-  // scope-state row matters as much as the events: without it the
-  // backfill would run again against the account id and re-seed what
-  // just migrated.
+  // scope-state row (the unread watermark) all follow the user to their
+  // new account.
   await migrateTimelineOwner(env, fromOwnerId, toOwnerId);
   // Activity (docs/specs/013-workspace/inbox.md §2.2): the ids INSIDE the tab blobs (comment
   // authors, self-assigned actions) are not rewritten, so the old

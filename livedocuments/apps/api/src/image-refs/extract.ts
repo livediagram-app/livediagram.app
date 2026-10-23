@@ -34,7 +34,7 @@ function pageImageId(page: unknown): unknown {
 }
 
 // Distinct, in document order: the elements' images, then the pages' pictures. Takes `unknown`
-// because the backfill and the copy path hand it whatever a stored body parsed to.
+// because the copy path hands it whatever a stored body parsed to.
 export function imageRefIds(elements: unknown, pages?: unknown): string[] {
   const ids = new Set<string>();
   if (Array.isArray(elements)) {

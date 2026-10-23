@@ -14,7 +14,6 @@
 
 import { embedTabImages } from '@livedocuments/api-schema';
 import {
-  drawnCount,
   elementsOnPage,
   laidOutPagesOf,
   migrateStoredTab,
@@ -32,7 +31,6 @@ import {
   getTabBody,
   getThumbRenderedAt,
   markThumbRendered,
-  stampTabElementCount,
   thumbnailKey,
   type StoredTabBody,
   servableImageIds,
@@ -99,7 +97,7 @@ export async function getDocumentThumbnailSvg(
     if (cached) return await cached.text();
   }
 
-  const svg = await renderTabBodyToSvg(env, liveDoc, await getTabBody(env, liveDoc.id), opts);
+  const svg = await renderTabBodyToSvg(env, liveDoc, await getTabBody(env, liveDoc.id));
   if (svg == null) return null;
 
   // Best effort: a write failure (R2 hiccup) must not fail the read —
@@ -166,26 +164,6 @@ export async function renderTabSvg(
   });
 }
 
-// The lazy backfill of tabs.element_count (the baseline migration): a tab stored before the count existed gets it
-// from the parse a render does anyway, so the lists know an old empty document after one ask. Best effort:
-// a failed stamp leaves the count unknown, which only means the row asks again.
-function stampUnknownCount(
-  env: Env,
-  body: StoredTabBody,
-  count: number,
-  opts: ThumbnailOptions,
-): Promise<void> | undefined {
-  if (body.elementCount !== null) return undefined;
-  const stamp = stampTabElementCount(env, body.id, count).catch((error: unknown) => {
-    console.warn('[thumbnail] count stamp failed', { tabId: body.id, error: String(error) });
-  });
-  if (opts.defer) {
-    opts.defer(stamp);
-    return undefined;
-  }
-  return stamp;
-}
-
 // Turn a stored tab body into an SVG, shared by the first-tab snapshot and
 // the per-tab live image. Null when the body is
 // absent, unparseable, or has nothing to draw (an empty canvas has no
@@ -194,7 +172,6 @@ async function renderTabBodyToSvg(
   env: Env,
   liveDoc: ThumbnailSubject,
   body: StoredTabBody | null,
-  opts: ThumbnailOptions = {},
 ): Promise<string | null> {
   if (!body) return null;
   let parsed: Partial<Tab>;
@@ -204,7 +181,6 @@ async function renderTabBodyToSvg(
     return null;
   }
   if (!Array.isArray(parsed.elements)) return null;
-  await stampUnknownCount(env, body, drawnCount(parsed), opts);
   if (parsed.elements.length === 0) return null;
   // `tabs.data` is the tab body minus id + name (see db/tabs.ts
   // upsertTab); re-attach them so the value is a complete Tab. The

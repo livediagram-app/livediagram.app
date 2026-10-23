@@ -3,7 +3,6 @@ import { DOCUMENT_CONVERSION_HEADER, type HomeResponse } from '@livedocuments/ap
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { recordDocumentOpen } from '../home/record-open';
 import { getDocument } from '../db';
-import { backfillUserScope } from '../timeline';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
 import { handleHome } from './home';
@@ -186,12 +185,5 @@ describe('making a document', () => {
     await create('d1', { markUsed: false });
     await create('d1', { markUsed: true });
     expect(await jumpBackIn()).toEqual([]);
-  });
-
-  it('keeps the mark when the Timeline backfill reconstructs the creation', async () => {
-    await create('d1');
-    await backfillUserScope(db.env, ME);
-    expect(createdEvents('d1').n).toBe(1);
-    expect(await jumpBackIn()).toEqual([['d1', 1, NOW]]);
   });
 });

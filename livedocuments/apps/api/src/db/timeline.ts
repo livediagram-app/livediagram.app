@@ -26,9 +26,6 @@ export type TimelineEventDraft = {
   description?: string | null;
   occurredAt?: number;
   snapshot?: Record<string, unknown>;
-  // Leave an existing row for the same key untouched rather than updating it. For a
-  // reconstruction (the backfill's edit) that must never overwrite what really happened.
-  keepExisting?: boolean;
 };
 
 // The dedupe key for an event that should collapse to one row per
@@ -47,8 +44,8 @@ export function dedupeKeyForDay(actorId: string | null, at: number): string {
 // so a document renamed three times in a day showed one card, not a
 // stack of three, and a rename this month silently moved last month's
 // card to today. '' stays right for events that genuinely happen once
-// per source (created, a tombstone, an invite), where a retry or a
-// backfill overlap SHOULD land on the existing row.
+// per source (created, a tombstone, an invite), where a retry SHOULD
+// land on the existing row.
 export function dedupeKeyOnce(): string {
   return crypto.randomUUID();
 }
@@ -56,8 +53,8 @@ export function dedupeKeyOnce(): string {
 // Write one event and attach it to every scope that should see it.
 //
 // Idempotent twice over: the UNIQUE key on
-// (source_type, source_id, event_type, dedupe_key) means a retry or a
-// backfill that overlaps a live emit updates the existing row, and the
+// (source_type, source_id, event_type, dedupe_key) means a retry
+// updates the existing row, and the
 // scope rows are INSERT OR IGNORE against their composite primary key.
 //
 // The UPDATE on conflict is what makes the coalesced editing event
@@ -89,16 +86,12 @@ export async function emitTimelineEvent(
        (id, actor_id, source_type, source_id, event_type, dedupe_key,
         title, description, occurred_at, snapshot, created_at)
      VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
-     ON CONFLICT (source_type, source_id, event_type, dedupe_key) ${
-       draft.keepExisting
-         ? 'DO NOTHING'
-         : `DO UPDATE SET
+     ON CONFLICT (source_type, source_id, event_type, dedupe_key) DO UPDATE SET
        actor_id = COALESCE(timeline_events.actor_id, excluded.actor_id),
        title = excluded.title,
        description = excluded.description,
        snapshot = excluded.snapshot,
-       occurred_at = MAX(timeline_events.occurred_at, excluded.occurred_at)`
-     }`,
+       occurred_at = MAX(timeline_events.occurred_at, excluded.occurred_at)`,
   ).bind(
     id,
     draft.actorId,
@@ -312,7 +305,6 @@ function parseCursor(raw: string): { occurredAt: number; id: string } | null {
 // ---------------------------------------------------------------------
 
 type TimelineScopeState = {
-  backfilledAt: number | null;
   /** When this scope was last READ by its owner — the unread watermark. */
   lastSeenAt: number | null;
 };
@@ -322,18 +314,12 @@ export async function getScopeState(
   scope: TimelineScopeRef,
 ): Promise<TimelineScopeState | null> {
   const row = await env.DB.prepare(
-    'SELECT backfilled_at, last_seen_at FROM timeline_scope_state WHERE scope_type = ?1 AND scope_id = ?2',
+    'SELECT last_seen_at FROM timeline_scope_state WHERE scope_type = ?1 AND scope_id = ?2',
   )
     .bind(scope.scopeType, scope.scopeId)
-    .first<{
-      backfilled_at: number | null;
-      last_seen_at: number | null;
-    }>();
+    .first<{ last_seen_at: number | null }>();
   if (!row) return null;
-  return {
-    backfilledAt: row.backfilled_at,
-    lastSeenAt: row.last_seen_at,
-  };
+  return { lastSeenAt: row.last_seen_at };
 }
 
 // Move the unread watermark to now. Called AFTER the read has captured
@@ -396,16 +382,6 @@ export async function countUnseen(
     .bind(scope.scopeType, scope.scopeId, since, cap + 1, now)
     .first<{ n: number }>();
   return row?.n ?? 0;
-}
-
-export async function markScopeBackfilled(env: Env, scope: TimelineScopeRef): Promise<void> {
-  await env.DB.prepare(
-    `INSERT INTO timeline_scope_state (scope_type, scope_id, backfilled_at)
-     VALUES (?1, ?2, ?3)
-     ON CONFLICT (scope_type, scope_id) DO UPDATE SET backfilled_at = excluded.backfilled_at`,
-  )
-    .bind(scope.scopeType, scope.scopeId, Date.now())
-    .run();
 }
 
 // ---------------------------------------------------------------------
@@ -592,9 +568,8 @@ export async function deleteTimelineForOwner(env: Env, ownerId: string): Promise
 }
 
 // Guest -> account migration on sign-up (docs/specs/013-workspace/timeline.md §9). Moves the guest's
-// feed, the events they authored, and the scope-state row — the last so
-// the backfill doesn't run a second time against the new id and
-// duplicate what just migrated.
+// feed, the events they authored, and the scope-state row (the unread
+// watermark).
 export async function migrateTimelineOwner(
   env: Env,
   fromOwnerId: string,

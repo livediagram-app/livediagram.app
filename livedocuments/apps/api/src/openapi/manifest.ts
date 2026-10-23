@@ -1488,7 +1488,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/timeline/refresh',
     segment: 'timeline',
     tag: 'Account',
-    summary: 'Seed the feed on first use and mark it seen. Throttled to once every 5s.',
+    summary: 'Mark the feed seen. Throttled to once every 5s.',
     auth: 'guest-or-clerk',
     responseSchema: { type: 'object', properties: { lastSeenAt: { type: 'number' } } },
     statuses: [200, 400, 401],

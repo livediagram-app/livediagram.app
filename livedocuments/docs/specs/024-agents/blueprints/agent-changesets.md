@@ -486,8 +486,7 @@ Writers of the tab and their `rev`: `upsertTab` (`ON CONFLICT ... rev = tabs.rev
 the comment routes), `upsertTabAtRev` (`rev = expected + 1` on both the insert and the conflict update),
 `renameTab` (`rev = rev + 1`), `seedTabs` and the document copy (insert at 1), `swapTabData` (`rev = rev + 1`).
 The trigger is the compare-and-swap: a batch whose tab statement does not advance `rev` by exactly one aborts whole,
-so the record, its parts and the index rows never land without their tab write (CS3). `stampTabElementCount`
-writes no `data` and does not advance `rev`.
+so the record, its parts and the index rows never land without their tab write (CS3).
 
 Snapshot and restore: the record and its parts are the snapshot of its change; nothing else is copied. Trash: the
 rows wait with their document and go with its purge (cascade). A tab unlinked from every document takes its records

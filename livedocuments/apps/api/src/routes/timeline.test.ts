@@ -22,9 +22,6 @@ const { store } = vi.hoisted(() => ({
 }));
 vi.mock('../db/timeline', () => store);
 
-const { emit } = vi.hoisted(() => ({ emit: { backfillUserScope: vi.fn() } }));
-vi.mock('../timeline', () => emit);
-
 const { db } = vi.hoisted(() => ({ db: { getMembership: vi.fn(), getDocument: vi.fn() } }));
 vi.mock('../db', () => db);
 
@@ -51,7 +48,6 @@ const makeCtx = (
 
 beforeEach(() => {
   for (const fn of Object.values(store)) if (typeof fn === 'function') fn.mockReset();
-  emit.backfillUserScope.mockReset();
   db.getMembership.mockReset();
   db.getMembership.mockResolvedValue(null);
   db.getDocument.mockReset();
@@ -59,10 +55,9 @@ beforeEach(() => {
   gate.gateRead.mockReset();
   gate.gateRead.mockResolvedValue(false);
   store.readTimeline.mockResolvedValue({ items: [] });
-  store.getScopeState.mockResolvedValue({ backfilledAt: 1, lastSeenAt: 2 });
+  store.getScopeState.mockResolvedValue({ lastSeenAt: 2 });
   store.markScopeSeen.mockResolvedValue(undefined);
   store.countUnseen.mockResolvedValue(0);
-  emit.backfillUserScope.mockResolvedValue(undefined);
 });
 
 describe('handleTimeline read', () => {
@@ -186,8 +181,8 @@ describe('handleTimeline read', () => {
     expect(db.getMembership).not.toHaveBeenCalled();
   });
 
-  // The seed walks the CALLER's library, which is meaningless for a team.
-  it('does not seed a team scope', async () => {
+  // "Since I was last here" is a question about one reader, not a shared team feed.
+  it('does not move a watermark on a team scope', async () => {
     db.getMembership.mockResolvedValue({ status: 'joined', role: 'member' });
     store.getScopeState.mockResolvedValue(null);
     const ctx = makeCtx('GET', '/api/timeline?scope=team:t-1', { verifiedUserId: 'owner-1' });
@@ -195,7 +190,6 @@ describe('handleTimeline read', () => {
     ctx.waitUntil = (p) => scheduled.push(p);
     await handleTimeline(ctx);
     await Promise.all(scheduled);
-    expect(emit.backfillUserScope).not.toHaveBeenCalled();
     expect(store.markScopeSeen).not.toHaveBeenCalled();
   });
 
@@ -270,7 +264,7 @@ describe('handleTimeline read', () => {
   // Inside the visit window the watermark holds still, so the New
   // markers survive a client that fetches twice on mount.
   it('does not move the watermark twice inside one visit', async () => {
-    store.getScopeState.mockResolvedValue({ backfilledAt: 1, lastSeenAt: Date.now() - 1000 });
+    store.getScopeState.mockResolvedValue({ lastSeenAt: Date.now() - 1000 });
     const ctx = makeCtx('GET', '/api/timeline');
     const scheduled: Promise<unknown>[] = [];
     ctx.waitUntil = (p) => scheduled.push(p);
@@ -286,28 +280,6 @@ describe('handleTimeline read', () => {
     await handleTimeline(ctx);
     await Promise.all(scheduled);
     expect(store.markScopeSeen).not.toHaveBeenCalled();
-  });
-
-  // Seeding walks the caller's whole library, so it runs after the
-  // response rather than holding it.
-  it('seeds a never-backfilled scope off the response path', async () => {
-    store.getScopeState.mockResolvedValue(null);
-    const ctx = makeCtx('GET', '/api/timeline');
-    const scheduled: Promise<unknown>[] = [];
-    ctx.waitUntil = (p) => scheduled.push(p);
-    const res = await handleTimeline(ctx);
-    expect(res.status).toBe(200);
-    await Promise.all(scheduled);
-    expect(emit.backfillUserScope).toHaveBeenCalledWith({}, 'owner-1');
-  });
-
-  it('does not re-seed a scope that has already been backfilled', async () => {
-    const ctx = makeCtx('GET', '/api/timeline');
-    const scheduled: Promise<unknown>[] = [];
-    ctx.waitUntil = (p) => scheduled.push(p);
-    await handleTimeline(ctx);
-    await Promise.all(scheduled);
-    expect(emit.backfillUserScope).not.toHaveBeenCalled();
   });
 
   // Nothing user-authored lives on this feed, so there is nothing to
@@ -330,7 +302,7 @@ describe('handleTimeline unread', () => {
   // Greeting a long-time user with "99+" on a feature they have never
   // opened would be a lie about what they missed.
   it('reports nothing when the reader has never opened the feed', async () => {
-    store.getScopeState.mockResolvedValue({ backfilledAt: 1, lastSeenAt: null });
+    store.getScopeState.mockResolvedValue({ lastSeenAt: null });
     const res = await handleTimeline(makeCtx('GET', '/api/timeline/unread'));
     expect(await res.json()).toEqual({ count: 0 });
     expect(store.countUnseen).not.toHaveBeenCalled();
@@ -343,17 +315,16 @@ describe('handleTimeline unread', () => {
 });
 
 describe('handleTimeline refresh', () => {
-  it('seeds and marks seen on a first-ever call', async () => {
+  it('marks seen on a first-ever call', async () => {
     store.getScopeState.mockResolvedValue(null);
     const res = await handleTimeline(makeCtx('POST', '/api/timeline/refresh'));
     expect(res.status).toBe(200);
-    expect(emit.backfillUserScope).toHaveBeenCalledWith({}, 'owner-1');
     expect(store.markScopeSeen).toHaveBeenCalled();
   });
 
   // A scripted caller must not be able to turn this into a write storm.
   it('throttles a repeat call inside the window', async () => {
-    store.getScopeState.mockResolvedValue({ backfilledAt: 1, lastSeenAt: Date.now() });
+    store.getScopeState.mockResolvedValue({ lastSeenAt: Date.now() });
     const res = await handleTimeline(makeCtx('POST', '/api/timeline/refresh'));
     expect(res.status).toBe(200);
     expect(store.markScopeSeen).not.toHaveBeenCalled();

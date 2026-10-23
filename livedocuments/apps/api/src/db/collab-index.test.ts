@@ -291,7 +291,7 @@ describe('readActivity', () => {
 });
 
 describe('recordOwnerAlias', () => {
-  it('carries the old id’s aliases and backfill stamp onto the new id, then records the old id', async () => {
+  it('carries the old id’s aliases onto the new id, then records the old id', async () => {
     const { env, batches } = fakeEnv();
     await recordOwnerAlias(env, 'user_1', 'guest-1');
     const sqls = batches[0]!.map((s) => s.sql.replace(/\s+/g, ' '));
@@ -299,7 +299,6 @@ describe('recordOwnerAlias', () => {
     expect(sqls[1]).toBe('DELETE FROM owner_aliases WHERE owner_id = ?');
     expect(sqls[2]).toMatch(/INSERT OR IGNORE INTO owner_aliases .*VALUES/);
     expect(batches[0]![2]!.args.slice(0, 2)).toEqual(['user_1', 'guest-1']);
-    expect(sqls[3]).toMatch(/INSERT OR IGNORE INTO collab_index_state/);
-    expect(sqls[4]).toBe('DELETE FROM collab_index_state WHERE owner_id = ?');
+    expect(sqls).toHaveLength(3);
   });
 });

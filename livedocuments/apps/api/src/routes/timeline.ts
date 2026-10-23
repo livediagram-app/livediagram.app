@@ -32,14 +32,12 @@ import {
   readTimeline,
 } from '../db/timeline';
 import { getDocument, getMembership } from '../db';
-import { backfillUserScope } from '../timeline';
 import { isNewVisit } from '../timeline/seen';
 import { badRequest, forbidden, json, missingAuth, noContent, notFound } from '../responses';
 import { gateRead, type RouteContext } from './context';
 
-// The seed endpoint costs a scope-state write and, on a first call, a
-// walk of the caller's library. Throttled so a scripted caller can't
-// turn it into a write storm. Reads are unthrottled — they're the
+// The refresh endpoint costs a scope-state write. Throttled so a
+// scripted caller can't turn it into a write storm. Reads are unthrottled — they're the
 // common path and they only touch two indexes.
 const REFRESH_THROTTLE_MS = 5_000;
 
@@ -73,16 +71,6 @@ export async function handleTimeline(ctx: RouteContext): Promise<Response> {
     });
 
     const state = await getScopeState(env, scope);
-    // Seed on first sight, off the response path. The reader gets an
-    // empty (or partial) first page and a populated one the moment they
-    // reopen — better than holding the response while we walk their
-    // whole library.
-    // Seeding walks the caller's own library, so it only applies to
-    // their personal scope; a team's history is whatever its members
-    // have actually done since the team existed.
-    if (scope.scopeType === 'user' && !state?.backfilledAt) {
-      ctx.waitUntil?.(backfillUserScope(env, ownerId).catch(() => {}));
-    }
 
     // The unread watermark (docs/specs/013-workspace/timeline.md §2.5). The response carries the
     // value from BEFORE this read, so the client can mark what was new
@@ -137,12 +125,9 @@ export async function handleTimeline(ctx: RouteContext): Promise<Response> {
     const state = await getScopeState(env, scope);
     const now = Date.now();
     if (state?.lastSeenAt && now - state.lastSeenAt < REFRESH_THROTTLE_MS) {
-      // Not an error: the caller asked for a seed and the scope was
-      // touched moments ago, so there is nothing to do.
+      // Not an error: the scope was touched moments ago, so there is
+      // nothing to do.
       return json({ lastSeenAt: state.lastSeenAt });
-    }
-    if (!state?.backfilledAt) {
-      await backfillUserScope(env, ownerId).catch(() => {});
     }
     await markScopeSeen(env, scope);
     return json({ lastSeenAt: now });

@@ -244,21 +244,11 @@ This is deliberately the only consumer in v1. The editor's own
 "mine" highlight and delete-own check keep comparing against the
 current id; extending them is a separate change.
 
-### 2.3 Backfill
+### 2.3 No backfill
 
-Existing tabs have no index rows until they are saved again. On the
-first `GET /api/activity` for an owner (no `collab_index_state` row),
-the worker seeds the index off the response path (`waitUntil`) from
-the tabs of every document the reader can see (owned, joined-team,
-shared-with), cheaply pre-filtered in SQL to tabs whose JSON contains
-a `commentThread` or `action` key, capped at 300 tabs (logged when
-hit), and stamps `backfilled_at`. The write is the same full-replace
-per tab as a save, guarded on the tab's `rev` still being the one the
-backfill read: a save landing between the read and the write has already
-indexed the newer blob in its own batch, so that tab's older rows are
-skipped rather than written over it. The
-same state row moves with the owner on migration so the seed does not
-run twice against the new id.
+There is none. Every tab write path indexes the tab in its own batch
+(§2.1), and livedocuments has had the index since its first deploy, so
+no tab exists without its rows.
 
 ### 2.4 documents in This Browser
 
@@ -390,7 +380,7 @@ Never an action name, comment text, document name, or any identity.
 - `collab-index-rows.test.ts` (`packages/document`): the pure derivation (labels, statuses,
   participant sets, latest-comment selection, tables' first-cell rule).
 - `activity.test.ts` (routes): owner gate, the db call is scoped to the
-  resolved owner, backfill is dispatched only when unseeded, the
+  resolved owner, the
   `assignedToMe` / `createdByMe` / `youCommented` flags.
 - `collab-index.test.ts` (db): the SQL statements a save contributes,
   including the two deletes on a tab with nothing, and the copy path.

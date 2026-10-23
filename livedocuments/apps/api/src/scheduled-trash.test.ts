@@ -120,7 +120,7 @@ describe('the 03:00 cron and agent changesets', () => {
     sql.exec(`INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
               VALUES ('D', 'owner', 'D', 0, 0, 0)`);
     sql.exec(
-      `INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 'T', '{"elements":[]}', 0)`,
+      `INSERT INTO tabs (id, name, data, updated_at, element_count) VALUES ('t1', 'T', '{"elements":[]}', 0, 0)`,
     );
     for (const [id, rev, createdAt] of [
       ['cs_old', 1, now - CHANGESET_RETENTION_MS - 1000],

@@ -66,13 +66,9 @@ function placeOf(row: PlaceRow): HomeDocument {
   };
 }
 
-/** An event a real actor made: not the Timeline backfill's reconstructed edit, which may credit a
- *  teammate's save to the owner (docs/specs/013-workspace/timeline.md §5). On `e`. */
-const REAL_EDIT = `json_extract(e.snapshot, '$.backfilled') IS NOT 1`;
-
 /** A making that counts as a use of the document for its maker: a creation or a copy whose event
- *  says `markUsed` (docs/specs/013-workspace/explorer-home.md "Making a document"). Makings recorded
- *  before the mark, and every bulk import, carry none. On `e`. */
+ *  says `markUsed` (docs/specs/013-workspace/explorer-home.md "Making a document"). Every bulk import
+ *  carries none. On `e`. */
 const MARKED_MAKING = `(e.event_type IN ('document_created', 'document_duplicated')
   AND json_extract(e.snapshot, '$.markUsed') IS 1)`;
 
@@ -91,7 +87,7 @@ export const JUMP_BACK_IN_SQL = `WITH ${VISIBLE_DOCUMENTS_CTES},
           AND e.source_type = 'document'
           AND e.occurred_at >= ?3 AND e.occurred_at <= ?2
           AND (e.event_type = '${HOME_OPENED_EVENT_TYPE}'
-               OR (e.event_type = 'document_edited' AND ${REAL_EDIT})
+               OR e.event_type = 'document_edited'
                OR ${MARKED_MAKING})
         GROUP BY e.source_id
      ),

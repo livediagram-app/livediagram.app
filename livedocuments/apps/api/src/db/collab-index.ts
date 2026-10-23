@@ -1,8 +1,7 @@
 // collab_actions + collab_threads — the collaboration index (docs/specs/013-workspace/inbox.md
 // §2): a SQL-filterable projection of the actions and comment threads
 // that live inside element JSON on `tabs`. Plus `owner_aliases` (the
-// identities an owner used to be, §2.2) and `collab_index_state` (which
-// owners have been backfilled, §2.3).
+// identities an owner used to be, §2.2).
 //
 // Writes are STATEMENTS, not calls: every tab write path already runs a
 // D1 batch, and appending the index statements to that batch is what
@@ -12,7 +11,6 @@
 import { collabIndexRowsFromElements, type Element } from '@livedocuments/document';
 import type { ActivityAction, ActivityReadResult, ActivityThread } from '@livedocuments/api-schema';
 import { VISIBLE_DOCUMENTS_CTES } from './document-visibility';
-import { revGuardAnd, revGuardBinds, revGuardValues, type TabRevGuard } from './tab-rev-guard';
 import type { Env } from '../types';
 
 // ---------- Writes ----------------------------------------------------
@@ -24,15 +22,11 @@ export function collabIndexStatements(
   env: Env,
   tabId: string,
   elements: Element[],
-  // The revision `elements` was read at, for a writer outside the save's own batch (the backfill).
-  guard: TabRevGuard = null,
 ): D1PreparedStatement[] {
   const rows = collabIndexRowsFromElements(elements);
-  const and = revGuardAnd(guard);
-  const g = revGuardBinds(guard);
   const stmts: D1PreparedStatement[] = [
-    env.DB.prepare(`DELETE FROM collab_actions WHERE tab_id = ?${and}`).bind(tabId, ...g),
-    env.DB.prepare(`DELETE FROM collab_threads WHERE tab_id = ?${and}`).bind(tabId, ...g),
+    env.DB.prepare('DELETE FROM collab_actions WHERE tab_id = ?').bind(tabId),
+    env.DB.prepare('DELETE FROM collab_threads WHERE tab_id = ?').bind(tabId),
   ];
   for (const a of rows.actions) {
     stmts.push(
@@ -41,7 +35,7 @@ export function collabIndexStatements(
            (tab_id, element_id, action_id, element_label, name, description, status,
             assignee_user_id, assignee_member_id, assignee_name, assigner_id, assigner_name,
             team_id, created_at, updated_at)
-         ${revGuardValues(15, guard)}`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       ).bind(
         tabId,
         a.elementId,
@@ -58,7 +52,6 @@ export function collabIndexStatements(
         a.teamId,
         a.createdAt,
         a.updatedAt,
-        ...g,
       ),
     );
   }
@@ -69,7 +62,7 @@ export function collabIndexStatements(
            (tab_id, element_id, element_label, resolved, comment_count, participant_ids,
             mentioned_ids, latest_text, latest_author_name, latest_author_color, first_at,
             latest_at)
-         ${revGuardValues(12, guard)}`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       ).bind(
         tabId,
         t.elementId,
@@ -83,7 +76,6 @@ export function collabIndexStatements(
         t.latestAuthorColor,
         t.firstAt,
         t.latestAt,
-        ...g,
       ),
     );
   }
@@ -311,55 +303,7 @@ export async function readActivity(
   return { actions, threads };
 }
 
-// ---------- Backfill state + aliases ----------------------------------
-
-export async function getCollabIndexState(
-  env: Env,
-  ownerId: string,
-): Promise<{ backfilledAt: number } | null> {
-  const row = await env.DB.prepare(
-    'SELECT backfilled_at FROM collab_index_state WHERE owner_id = ?',
-  )
-    .bind(ownerId)
-    .first<{ backfilled_at: number }>();
-  return row ? { backfilledAt: row.backfilled_at } : null;
-}
-
-export async function markCollabIndexBackfilled(env: Env, ownerId: string): Promise<void> {
-  await env.DB.prepare(
-    `INSERT INTO collab_index_state (owner_id, backfilled_at) VALUES (?, ?)
-     ON CONFLICT (owner_id) DO UPDATE SET backfilled_at = excluded.backfilled_at`,
-  )
-    .bind(ownerId, Date.now())
-    .run();
-}
-
-// The tabs the backfill has to parse: every tab of every document the
-// reader can see whose JSON even mentions a thread or an action. The
-// LIKE pre-filter runs in SQLite so the (usually large) majority of tabs
-// with neither never leave the database. Newest first, capped.
-export async function listCollabTabsToBackfill(
-  env: Env,
-  ownerId: string,
-  limit: number,
-): Promise<{ id: string; data: string; rev: number }[]> {
-  const res = await env.DB.prepare(
-    `SELECT DISTINCT t.id, t.data, t.rev, t.updated_at
-       FROM tabs t
-       JOIN document_tabs dt ON dt.tab_id = t.id
-       JOIN documents d ON d.id = dt.document_id
-       LEFT JOIN shared_with s ON s.document_id = d.id AND s.owner_id = ?1
-      WHERE (d.owner_id = ?1
-             OR d.team_id IN (SELECT team_id FROM team_members WHERE user_id = ?1 AND status = 'joined')
-             OR s.owner_id IS NOT NULL)
-        AND (t.data LIKE '%"commentThread":%' OR t.data LIKE '%"action":%')
-      ORDER BY t.updated_at DESC
-      LIMIT ?2`,
-  )
-    .bind(ownerId, limit)
-    .all<{ id: string; data: string; rev: number }>();
-  return (res.results ?? []).map((r) => ({ id: r.id, data: r.data, rev: r.rev }));
-}
+// ---------- Aliases ---------------------------------------------------
 
 // Record that `ownerId` used to be `aliasId`, carrying over anything
 // `aliasId` had itself been so a chain of migrations collapses onto the
@@ -375,25 +319,13 @@ export async function recordOwnerAlias(env: Env, ownerId: string, aliasId: strin
     env.DB.prepare(
       'INSERT OR IGNORE INTO owner_aliases (owner_id, alias_id, created_at) VALUES (?, ?, ?)',
     ).bind(ownerId, aliasId, now),
-    // The backfill stamp follows the owner too, so the seed does not run
-    // a second time against the new id (INSERT OR IGNORE keeps an
-    // existing stamp on the target, then the source row goes).
-    env.DB.prepare(
-      `INSERT OR IGNORE INTO collab_index_state (owner_id, backfilled_at)
-       SELECT ?1, backfilled_at FROM collab_index_state WHERE owner_id = ?2`,
-    ).bind(ownerId, aliasId),
-    env.DB.prepare('DELETE FROM collab_index_state WHERE owner_id = ?').bind(aliasId),
   ]);
 }
 
 // Account deletion: no identity row outlives the account. The index rows
 // themselves cascade with the documents' tabs.
 export async function deleteCollabIndexForOwner(env: Env, ownerId: string): Promise<void> {
-  // Sequential like the rest of deleteAccount's sweep (each statement
-  // is independently idempotent, so there is nothing a batch would
-  // protect).
   await env.DB.prepare('DELETE FROM owner_aliases WHERE owner_id = ? OR alias_id = ?')
     .bind(ownerId, ownerId)
     .run();
-  await env.DB.prepare('DELETE FROM collab_index_state WHERE owner_id = ?').bind(ownerId).run();
 }
