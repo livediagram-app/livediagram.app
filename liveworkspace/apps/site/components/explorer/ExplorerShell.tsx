@@ -61,6 +61,7 @@ import {
 } from '@/lib/explorer/token';
 import { inboxHost } from '@/lib/explorer/inbox';
 import { useExplorerSettings } from '@/lib/explorer/settings';
+import { shareHostFor } from '@/lib/explorer/share';
 import {
   setExplorerSender,
   trackHome,
@@ -237,6 +238,7 @@ export function ExplorerShell() {
     }),
     [loaded, app, onFirstRun, signedIn, pathname],
   );
+  const share = useMemo(() => shareHostFor(app), [app]);
   const inbox = useMemo(() => ({ ...inboxHost, onTelemetry: trackInbox }), []);
   const signInBanner = useMemo(
     () => ({
@@ -303,6 +305,7 @@ export function ExplorerShell() {
           teams={teams}
           viewerId={identity.sub}
           shareUrl={shareUrl}
+          share={share}
           manageTeamsUrl="/account/teams"
           filter={shownFilter}
           onFilterChange={setFilter}

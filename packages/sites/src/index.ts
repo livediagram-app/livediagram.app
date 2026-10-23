@@ -116,7 +116,43 @@ export type AppItems = {
   // for the item's id; `?v=<updatedAt>` keeps a cached one fresh. Null while the app serves none to other sites, and
   // the Explorer on liveworkspace.app draws the kind's icon instead.
   previewPath: string | null;
+  // What the Share dialog offers beyond a link's address, as the app serves it (address patterns on its site).
+  share: AppShare;
 };
+
+/** The Share dialog's extras an app serves, so the Explorer on liveworkspace.app offers them for its items without
+ *  any of the app's code. Each is a pattern on the app's site: `:code` is a share link's code, `:id` an item's. */
+export type AppShare = {
+  // A pass's embed (an <iframe> at the link's level), or null when the app has none.
+  embedPath: string | null;
+  // A pass's live image, an SVG that redraws as the item changes; `?tab=<tab id>` picks a tab. Null when none.
+  liveImagePath: string | null;
+  // The live image's alt text in its Markdown and HTML snippets.
+  liveImageAlt: string;
+  // An item's tabs, so a pass can open one: the item read the app's API answers the workspace token with, and the
+  // key its answer keeps the item under (`{ [tabsKey]: { tabs: [{ id, name }] } }`). Null: passes open every tab.
+  tabsPath: string | null;
+  tabsKey: string;
+  // The app's help articles on sharing, under `${url}/help/`.
+  help: { sharing: string; shareLinkExpiry: string; sharePasswords: string };
+};
+
+// Every app's help centre keeps sharing under the same three addresses.
+const SHARE_HELP = {
+  sharing: 'collaboration/sharing',
+  shareLinkExpiry: 'collaboration/sharing/share-link-expiry',
+  sharePasswords: 'collaboration/sharing/share-passwords',
+};
+
+// Every app serves its embeds and live images at the same addresses.
+const shareOf = (tabsPath: string, tabsKey: string, alt: string): AppShare => ({
+  embedPath: '/embed?s=:code',
+  liveImagePath: '/api/share/:code/image.svg',
+  liveImageAlt: alt,
+  tabsPath,
+  tabsKey,
+  help: SHARE_HELP,
+});
 
 export const APP_ITEMS: Record<AppName, AppItems> = {
   livediagram: {
@@ -129,6 +165,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     onIndex: false,
     sharePath: '/document/shared?s=',
     previewPath: null,
+    share: shareOf('/api/documents/:id', 'document', 'livediagram tab'),
   },
   liveplanner: {
     site: 'liveplanner.app',
@@ -140,6 +177,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     onIndex: true,
     sharePath: '/project/shared?s=',
     previewPath: '/api/projects/:id/thumbnail',
+    share: shareOf('/api/projects/:id', 'project', 'liveplanner tab'),
   },
   livedocuments: {
     site: 'livedocuments.app',
@@ -151,6 +189,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     onIndex: false,
     sharePath: '/document/shared?s=',
     previewPath: null,
+    share: shareOf('/api/documents/:id', 'document', 'livedocuments tab'),
   },
   livedesign: {
     site: 'livedesign.app',
@@ -162,6 +201,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     onIndex: true,
     sharePath: '/design/shared?s=',
     previewPath: '/api/designs/:id/thumbnail',
+    share: shareOf('/api/designs/:id', 'design', 'livedesign tab'),
   },
 };
 
