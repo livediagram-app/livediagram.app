@@ -210,7 +210,6 @@ packages/
   templates/      # template catalogue + pure element builders (editor template starts + MCP)
   template-previews/ # per-template preview SVGs (editor template starts + marketing template gallery)
   help-registry/  # help-centre article/category registry + keywords (help app + editor search)
-  explorer-lens/  # the former Explorer filter lens: parse, match and autocomplete filter tokens (pure; unused by the shared Explorer)
   page-background/ # a page background's colours, patterns and motions + their parser (form covers, pure)
   forms/          # Form tabs: form model, answer checks, answer-to-card mapping, starters (pure)
   plan-art/       # Plan tab images (Board, Sheet, Dashboard as laid out) for editor exports + MCP previews (pure)

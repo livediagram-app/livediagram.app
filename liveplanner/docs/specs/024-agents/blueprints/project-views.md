@@ -20,7 +20,7 @@ Scope, by file:
 | `packages/api-schema/src/ref-errors.ts`                                         | `TARGET_NOT_FOUND_ERROR`, `TARGET_AMBIGUOUS_ERROR`, `RefCandidate`, `RefErrorBody`                                          |
 | `packages/api-schema/src/telemetry-schema.ts`                                   | `TELEMETRY_ACTIONS` gains `Viewed`                                                                                          |
 | `packages/api-schema/src/index.ts`                                              | Re-exports both new files                                                                                                   |
-| `packages/project-views/{package.json,tsconfig.json,oxlint.config.ts}`          | The new package `@liveplanner/project-views` (depends on `project`, `api-schema`), shaped like `explorer-lens`              |
+| `packages/project-views/{package.json,tsconfig.json,oxlint.config.ts}`          | The new package `@liveplanner/project-views` (depends on `project`, `api-schema`), shaped like `items`                      |
 | `packages/project-views/vitest.config.ts`                                       | 100% line, branch, function and statement thresholds                                                                        |
 | `packages/project-views/src/index.ts`                                           | The public surface: `renderView`, every view function, the budget                                                           |
 | `packages/project-views/src/constants.ts`                                       | The view constants in [Constants and configuration](#constants-and-configuration)                                           |

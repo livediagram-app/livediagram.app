@@ -27,7 +27,6 @@
     "@liveplanner/api-schema": "workspace:*",
     "@liveplanner/project": "workspace:*",
     "@liveplanner/project-views": "workspace:*",
-    "@liveplanner/explorer-lens": "workspace:*",
     "@liveplanner/forms": "workspace:*",
     "@liveplanner/help-registry": "workspace:*",
     "@liveplanner/icons": "workspace:*",
