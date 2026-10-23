@@ -106,6 +106,10 @@ describe('hosted-vars script', () => {
     expect(buildEnv({ TELEMETRY_ENABLED: 'true', IMAGE_MAX_PER_OWNER: '1' })).toEqual([
       'NEXT_PUBLIC_TELEMETRY_ENABLED=true',
     ]);
+    expect(buildEnv({ TELEMETRY_ENABLED: 'true', TELEMETRY_URL: 'https://t.test' })).toEqual([
+      'NEXT_PUBLIC_TELEMETRY_ENABLED=true',
+      'NEXT_PUBLIC_TELEMETRY_URL=https://t.test',
+    ]);
     expect(buildEnv({ IMAGE_MAX_PER_OWNER: '1' })).toEqual([]);
   });
 

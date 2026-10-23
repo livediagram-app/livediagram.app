@@ -148,7 +148,7 @@ describe('rate-limited operations declare 429', () => {
     // Paths are keyed unprefixed; `/api` lives on the servers entry.
     doc.paths[route.path]?.[route.method.toLowerCase()]?.responses ?? {};
 
-  it('covers every write except the telemetry ingest and the room-ticket mint', () => {
+  it('covers every write except the telemetry relay and the room-ticket mint', () => {
     const writes = ROUTE_MANIFEST.filter((r) => r.method !== 'GET');
     expect(writes.length).toBeGreaterThan(40);
     for (const route of writes) {

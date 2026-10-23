@@ -1957,28 +1957,27 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/events',
     segment: 'events',
     tag: 'Telemetry',
-    summary: 'Ingest a batch of anonymous first-party telemetry events.',
-    // The route also honours an `X-Internal-Events-Key` header that exempts
-    // our own workers from the per-IP rate limiter (docs/specs/017-telemetry/telemetry.md). Deliberately
-    // NOT documented here: the public spec describes what a public caller
-    // can use, and advertising the bypass header would only invite guessing
-    // at the secret. Its absence is a choice, not an oversight.
+    summary:
+      'Pass a batch of anonymous first-party telemetry events on to the liveworkspace telemetry service, for clients that cannot post there themselves (the CLI).',
     auth: 'public',
     requestSchema: {
       type: 'object',
-      properties: { events: { type: 'array', items: ref('TelemetryEvent') } },
+      properties: {
+        events: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              category: { type: 'string' },
+              action: { type: 'string' },
+              type: { type: ['string', 'null'] },
+            },
+            required: ['category', 'action'],
+          },
+        },
+      },
     },
     statuses: [204],
-  },
-  {
-    method: 'GET',
-    path: '/telemetry/summary',
-    segment: 'telemetry',
-    tag: 'Telemetry',
-    summary: 'Public usage summary that powers the /telemetry dashboard.',
-    auth: 'public',
-    responseSchema: 'TelemetrySummary',
-    statuses: [200],
   },
 
   // ---- Workbench (docs/specs/013-workspace/workbench-embeds.md) ----

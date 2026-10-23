@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { BreadcrumbTrail } from './Breadcrumb';
 import { DialogCloseButton } from './dialog/DialogCloseButton';
-import { ProductNav } from './ProductNav';
+import { SiteSwitcher } from './SiteSwitcher';
 import { SiteFooter } from './SiteFooter';
 import { SiteHeader } from './SiteHeader';
 
@@ -17,18 +17,20 @@ const classOf = (html: string, marker: RegExp): string => {
 };
 
 describe('touch targets on the public sites', () => {
-  it('pads the header brand, apps menu and primary CTA vertically', () => {
-    const html = renderToStaticMarkup(
-      <SiteHeader ctaSurface="Home" productNav="home" shareRail={false} />,
-    );
+  it('pads the header brand and primary CTA vertically', () => {
+    const html = renderToStaticMarkup(<SiteHeader ctaSurface="Home" shareRail={false} />);
     expect(classOf(html, /<a [^>]*href="\/"[^>]*>/)).toMatch(/\btouch-target-y\b/);
     expect(classOf(html, /<a [^>]*aria-label="Choose Template"[^>]*>/)).toMatch(
       /\btouch-target-y\b/,
     );
   });
 
-  it('pads the apps menu trigger vertically', () => {
-    const html = renderToStaticMarkup(<ProductNav current="home" showOnMobile />);
+  it('pads the site switcher trigger vertically', () => {
+    const html = renderToStaticMarkup(
+      <SiteSwitcher current="livedesign.app">
+        <a href="/">logo</a>
+      </SiteSwitcher>,
+    );
     expect(classOf(html, /<button [^>]*aria-haspopup[^>]*>/)).toMatch(/\btouch-target-y\b/);
   });
 

@@ -582,19 +582,6 @@ CREATE TABLE workbench_session_rooms (
 );
 CREATE INDEX workbench_session_rooms_design_idx ON workbench_session_rooms (design_id);
 
--- ---------------------------------------------------------------------------------------------------------------
--- Telemetry (docs/specs/017-telemetry/telemetry.md): anonymous events, never user content.
--- ---------------------------------------------------------------------------------------------------------------
-
-CREATE TABLE events (
-  id       INTEGER PRIMARY KEY AUTOINCREMENT,
-  category TEXT    NOT NULL,
-  action   TEXT    NOT NULL,
-  type     TEXT,
-  ts       INTEGER NOT NULL
-);
-CREATE INDEX events_ts_idx ON events (ts);
-
 -- The photo blob store (docs/specs/031-photo/photo-store.md): a photo page's tiles, sources and
 -- previews, stored once by content (R2 key photo/<id> in PHOTO_BLOBS), and the tabs that may read each.
 CREATE TABLE photo_blobs (

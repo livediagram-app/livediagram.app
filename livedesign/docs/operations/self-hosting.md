@@ -9,10 +9,10 @@ This guide is the practical path: provision Cloudflare resources, configure secr
 | Resource                             | Used by           | Why                                                                                                                                                                                                                                                                                                                |
 | ------------------------------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Workers paid plan**                | All seven workers | Durable Objects (per-design realtime room) need the paid plan.                                                                                                                                                                                                                                                     |
-| **D1 database**                      | `apps/api`        | Designs, tabs, comments, folders, share links, shared-with index, image metadata, user preferences, teams + membership + team library, custom themes, telemetry rows.                                                                                                                                              |
+| **D1 database**                      | `apps/api`        | Designs, tabs, comments, folders, share links, shared-with index, image metadata, user preferences, teams + membership + team library, custom themes.                                                                                                                                                              |
 | **Durable Object namespace**         | `apps/api`        | One stateful room per design for realtime presence + ops.                                                                                                                                                                                                                                                          |
 | **R2 bucket** (optional)             | `apps/api`        | Design SVG snapshots ([Design SVG snapshots](../specs/006-design/design-snapshots.md): Explorer thumbnails + the live image share) and the images uploaded before images moved to liveworkspace's media service ([Images](#images)). Without it, snapshot endpoints `404` (the Explorer row shows a generic icon). |
-| **Rate Limiter bindings** (optional) | `apps/api`        | Abuse throttles: per-owner writes, plus telemetry ingest, share-code lookups, link unfurls, AI calls and API-token reads. Any binding you don't provision falls through to "allow", so none are required.                                                                                                          |
+| **Rate Limiter bindings** (optional) | `apps/api`        | Abuse throttles: per-owner writes, plus the CLI's telemetry relay, share-code lookups, link unfurls, AI calls and API-token reads. Any binding you don't provision falls through to "allow", so none are required.                                                                                                 |
 | **Custom domain**                    | `apps/router`     | The router worker serves your hostname; downstream workers don't need their own domain.                                                                                                                                                                                                                            |
 
 What you do NOT need:
@@ -61,7 +61,7 @@ If you're deploying via GitHub Actions (the default workflow), set two repo secr
 - `CF_API_TOKEN`: the token from the step above.
 - `CF_ACCOUNT_ID`: your Cloudflare account id.
 
-Those two are the only **required** ones — the deploy workflow uses raw `pnpm exec wrangler deploy` against them. Optionally, it also syncs four worker secrets from repo secrets of the same name, each skipped when unset: the four sign-in values (`ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`), `GUEST_ID_HMAC_SECRET`, `MEDIA_KEY` ([Images](#images)), and `INTERNAL_EVENTS_KEY`. Setting them here rather than by hand means they rotate by editing the GitHub secret — and, for `INTERNAL_EVENTS_KEY`, that the api and mcp workers can't drift apart. See [Secrets policy](../specs/002-project-scope/secrets-policy.md) for the full table.
+Those two are the only **required** ones — the deploy workflow uses raw `pnpm exec wrangler deploy` against them. Optionally, it also syncs four worker secrets from repo secrets of the same name, each skipped when unset: the four sign-in values (`ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`), `GUEST_ID_HMAC_SECRET`, `MEDIA_KEY` ([Images](#images)), and `TELEMETRY_KEY`. Setting them here rather than by hand means they rotate by editing the GitHub secret — and, for `TELEMETRY_KEY`, that the api and mcp workers can't drift apart. See [Secrets policy](../specs/002-project-scope/secrets-policy.md) for the full table.
 
 ## Optional sign-in
 
@@ -114,15 +114,14 @@ After the one-time Cloudflare setup:
 git clone https://github.com/livedesign-app/livedesign.app livedesign
 cd livedesign
 pnpm install
-pnpm build           # static export for marketing + live + telemetry + help,
+pnpm build           # static export for marketing + live + help,
                      # plus the generated /licences page (no network needed)
 # Then deploy each worker (run from the repo root):
 pnpm --filter @livedesign/marketing exec wrangler deploy
 pnpm --filter @livedesign/live exec wrangler deploy
-pnpm --filter @livedesign/telemetry exec wrangler deploy
 pnpm --filter @livedesign/help exec wrangler deploy
 pnpm --filter @livedesign/api exec wrangler deploy
-pnpm --filter @livedesign/router exec wrangler deploy   # last, depends on the five above
+pnpm --filter @livedesign/router exec wrangler deploy   # last, depends on the four above
 ```
 
 Deploying by hand, give the editor build and the api the same build id so an open tab knows when a newer build is live ([Stale builds](../specs/016-platform/stale-builds.md)): `NEXT_PUBLIC_BUILD_ID=$(git rev-parse HEAD) pnpm build`, then `--var "BUILD_ID:$(git rev-parse HEAD)"` on the api's `wrangler deploy`. The workflow does this for you; leaving both unset only turns that detection off.
@@ -134,7 +133,7 @@ Or just push to `main` and use the bundled GitHub Actions workflows:
 - `.github/workflows/ci.yml` runs lint / format / typecheck / test / build on every PR and every push to `main`.
 - `.github/workflows/codeql.yml` runs CodeQL security scanning in one job; a fork needs CodeQL default setup off.
 - `.github/workflows/canvas-perf.yml` runs the canvas performance probe nightly and reports through one issue; optional, disable it in a fork that does not want it.
-- `.github/workflows/deploy-reusable.yml` holds the deploy itself — build, then all seven workers (marketing, live, telemetry, help, api, mcp, router) in the right order. The `deploy-mcp` job always runs, so a fork without the MCP server removes it or provisions its KV namespace first. It is a reusable workflow, not directly triggerable.
+- `.github/workflows/deploy-reusable.yml` holds the deploy itself — build, then all six workers (marketing, live, help, api, mcp, router) in the right order. The `deploy-mcp` job always runs, so a fork without the MCP server removes it or provisions its KV namespace first. It is a reusable workflow, not directly triggerable.
 - `.github/workflows/deploy.yml` calls it for **production**, **manually** from the Actions tab.
 - `.github/workflows/deploy-staging.yml` calls it for **staging**, automatically, whenever CI goes green on `main`.
 
@@ -173,7 +172,7 @@ nothing. To run it:
    are ordinary `lvd_` API tokens — they appear in the API Tokens category of
    Settings and are revocable there.
 
-4. **Only if you've turned telemetry on:** set the same `INTERNAL_EVENTS_KEY` on
+4. **Only if you've turned telemetry on:** set the same `TELEMETRY_KEY` on
    both workers — see [Telemetry](#telemetry-off-by-default-for-self-hosters)
    below. Skip it otherwise; it affects nothing else.
 
@@ -182,11 +181,9 @@ tool does the thinking. See [MCP server](../specs/015-api/mcp-server.md).
 
 ## Telemetry: off by default for self-hosters
 
-The api worker's telemetry ingest (`/api/events`) is off unless you set `TELEMETRY_ENABLED = "true"` under `[vars]` in `apps/api/wrangler.toml`. OSS forks ingest nothing by default: the committed config leaves it unset, and the deploy workflow only adds it (with the rest of the hosted profile in `apps/api/hosted-vars.json`) when it runs in livedesign.app's own repository ([Deployment](../specs/016-platform/deployment.md) "Hosted profile"). If you DO turn it on, the public `/telemetry` dashboard renders aggregate counts from your own D1; there's no third-party analytics involved. See [Telemetry + public transparency dashboard](../specs/017-telemetry/telemetry.md).
+Telemetry is off unless you set `TELEMETRY_ENABLED = "true"` under `[vars]` in `apps/api/wrangler.toml`. OSS forks send nothing by default: the committed config leaves it unset, and the deploy workflow only adds it (with the rest of the hosted profile in `apps/api/hosted-vars.json`) when it runs in livedesign.app's own repository ([Deployment](../specs/016-platform/deployment.md) "Hosted profile"). See [Telemetry + public transparency dashboard](../specs/017-telemetry/telemetry.md).
 
-Turning telemetry on end-to-end takes BOTH the server gate above AND a build-time gate on the frontends. The api flag is the authoritative gate (ingest + summary refuse to serve without it), but every emitting frontend (the editor, the help centre, and the page-view counters on marketing and the dashboard, [Page view telemetry](../specs/017-telemetry/page-view-telemetry.md)) also reads `NEXT_PUBLIC_TELEMETRY_ENABLED` at build time and skips emission entirely when it isn't `"true"`. So a fork that only flips the api flag will see "ingest on" but no events flow. To turn it fully on, set `NEXT_PUBLIC_TELEMETRY_ENABLED=true` in your CI build env (or each frontend's `.env.production`) alongside the api flag. The `/telemetry` dashboard's data has no client-side gate of its own: it just reads `/api/telemetry/summary`, and the api worker returns an empty `enabled: false` payload until you flip `TELEMETRY_ENABLED` (the build flag only governs its own page-view count). Per-user opt-out via the Settings dialog ([User preferences](../specs/007-editor/user-preferences.md)) still overrides every app's emission when off, since they share one origin and one preferences key.
-
-If you also deploy the MCP worker, set the **same** `INTERNAL_EVENTS_KEY` secret on both `apps/api` and `apps/mcp` (`wrangler secret put INTERNAL_EVENTS_KEY` in each). The MCP worker reaches the api over a service binding, which carries no `CF-Connecting-IP`, so without a matching key its telemetry lands in the anonymous per-IP rate-limit bucket and throttles itself. Leaving it unset is safe and needs no configuration — you just get the shared-bucket behaviour.
+livedesign.app's events go to liveworkspace's telemetry service, which stores them and serves the public dashboard; this repository no longer holds an ingest or a dashboard of its own. That service only takes livedesign.app's own pages and key, so turning telemetry on for a fork also means running a service of your own that takes the same batches, and pointing the fork at it: `TELEMETRY_URL` and the `TELEMETRY_KEY` secret on the api and mcp workers, and `NEXT_PUBLIC_TELEMETRY_URL` plus `NEXT_PUBLIC_TELEMETRY_ENABLED=true` on every frontend build. Without that, nothing is stored anywhere. Per-user opt-out via the Settings dialog ([User preferences](../specs/007-editor/user-preferences.md)) still overrides every app's emission when off, since they share one origin and one preferences key.
 
 ## AI assistance: off by default, needs a model key
 
@@ -268,7 +265,7 @@ Add a custom-domain route to the router worker (`apps/router/wrangler.toml`) and
 
 - `/` → marketing
 - `/design/*`, `/explorer/*`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed`, `/oauth/*` → live editor (clean routes; `/live/*` carries only its `_next` assets)
-- `/telemetry` → telemetry dashboard
+- `/telemetry` → a redirect to liveworkspace's telemetry dashboard (set `TELEMETRY_DASHBOARD_URL` on the router to point it elsewhere)
 - `/help` → help centre
 - `/api/*` → api worker
 

@@ -11,9 +11,9 @@ export const dynamic = 'force-static';
 // Next.js convention: app/sitemap.ts → /sitemap.xml at build time.
 // See docs/specs/019-marketing/marketing-site.md "SEO and metadata".
 //
-// Lists the indexable pages on the marketing origin, plus the two
-// public operational surfaces (/telemetry, /status) that hang off the
-// footer. The editor (/live/*) and API (/api/*) live on the same
+// Lists the indexable pages on the marketing origin, plus the public
+// operational surface (/status) that hangs off the footer. (/telemetry is a
+// redirect to liveworkspace's central dashboard now, so it isn't listed.) The editor (/live/*) and API (/api/*) live on the same
 // domain but aren't public-content surfaces, so they don't belong in
 // the sitemap (robots.ts Disallows them too).
 //
@@ -72,15 +72,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // pages, not landing destinations, but they're public + indexable
     // (each sets robots index:true and a self-canonical), so listing
     // them lets crawlers find them without relying on footer links
-    // alone. Build-time `now`: /telemetry reflects live event data and
-    // /status reflects the latest deployed state, so both are "fresh as
-    // of this build" rather than carrying a tracked revision constant.
-    {
-      url: `${base}/telemetry`,
-      lastModified: now,
-      changeFrequency: 'daily',
-      priority: 0.4,
-    },
+    // alone. Build-time `now`: /status reflects the latest deployed state,
+    // so it is "fresh as of this build" rather than carrying a tracked
+    // revision constant.
     {
       url: `${base}/status`,
       lastModified: now,

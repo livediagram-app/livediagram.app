@@ -110,7 +110,6 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   'unfurl',
   'ai',
   'events',
-  'telemetry',
   'share',
   'shared',
   'images',

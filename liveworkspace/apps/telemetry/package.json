@@ -14,6 +14,7 @@
     "db:migrate:remote": "wrangler d1 migrations apply liveworkspace-telemetry --remote"
   },
   "dependencies": {
+    "@livedesign/api-schema": "workspace:*",
     "@livediagram/api-schema": "workspace:*",
     "@livedocuments/api-schema": "workspace:*",
     "@liveplanner/api-schema": "workspace:*",

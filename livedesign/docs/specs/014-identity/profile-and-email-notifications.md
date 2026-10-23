@@ -56,8 +56,8 @@ to hang off the header dropdown; now that there is a dedicated account home,
 the **Delete account** trigger lives on the profile page's Danger zone and is
 **removed from the header menu** (one home for destructive account actions,
 no drift). The dialog component itself is unchanged and simply reused — the
-confirmation flow (type your email, then wipe livedesign's data, then end the
-session; the liveworkspace account itself stays) is exactly as [Transactional & lifecycle email (Resend)](transactional-email.md) describes.
+confirmation flow (type your email, then wipe livedesign's data and close the
+liveworkspace account, then end the session) is exactly as [Transactional & lifecycle email (Resend)](transactional-email.md) describes.
 Account deletion is immediate and total within livedesign: it removes the account's designs
 **including every one in its [Trash](../013-workspace/trash.md)**, which the
 dialog and the Danger Zone row both say.

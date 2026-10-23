@@ -28,8 +28,8 @@ Five messages, two kinds:
    `/join/decline?token=<token>` that turns it down with no account and no
    sign-in ([Teams → Declining from the email](../013-workspace/teams.md#declining-from-the-email)).
 5. **Account deleted** — after a user deletes their account (spec: account
-   self-deletion), a confirmation that their livedesign data is gone (their
-   liveworkspace account stays, for the other apps that use it).
+   self-deletion), a confirmation that their livedesign data and their
+   liveworkspace account are gone.
 
 [Account settings & email notifications](profile-and-email-notifications.md) adds two further opt-out
 notifications — **someone joined my design** and **someone responded to my team
@@ -195,7 +195,7 @@ All sends use `ctx.waitUntil` (or are already in the cron) — email is never on
 the request's critical path.
 
 **Counting sends ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).** `sendEmail` writes one
-anonymous `Email·Sent·<kind>` row straight to the events table, and a failure
+anonymous `Email·Sent·<kind>` event (`reportServerEvent`), and a failure
 writes `Error·Api·Http<status>.SendEmail` (or `Network.SendEmail` when the
 request never completed). Server-side rather than through `POST /api/events`
 because nothing about an email reaches a browser: the send happens in a cron or

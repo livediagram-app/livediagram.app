@@ -11,17 +11,15 @@ export function StackOverview() {
   return (
     <Scene w={420} h={250}>
       {/* The static frontend apps, in a row */}
-      <Shape x={40} y={24} w={72} h={36} kind="rect" label="marketing" labelTone="strong" />
-      <Shape x={136} y={24} w={72} h={36} kind="rect" label="live" labelTone="strong" />
-      <Shape x={232} y={24} w={72} h={36} kind="rect" label="telemetry" labelTone="strong" />
-      <Shape x={328} y={24} w={72} h={36} kind="rect" label="help" labelTone="strong" />
+      <Shape x={48} y={24} w={84} h={36} kind="rect" label="marketing" labelTone="strong" />
+      <Shape x={168} y={24} w={84} h={36} kind="rect" label="live" labelTone="strong" />
+      <Shape x={288} y={24} w={84} h={36} kind="rect" label="help" labelTone="strong" />
 
       {/* Router stitches them under one hostname */}
       <Shape x={114} y={100} w={192} h={40} kind="rect" accent label="router" />
-      <Arrow from={[76, 60]} to={[150, 100]} tone="muted" head={false} />
-      <Arrow from={[172, 60]} to={[190, 100]} tone="muted" head={false} />
-      <Arrow from={[268, 60]} to={[230, 100]} tone="muted" head={false} />
-      <Arrow from={[364, 60]} to={[270, 100]} tone="muted" head={false} />
+      <Arrow from={[90, 60]} to={[160, 100]} tone="muted" head={false} />
+      <Arrow from={[210, 60]} to={[210, 100]} tone="muted" head={false} />
+      <Arrow from={[330, 60]} to={[260, 100]} tone="muted" head={false} />
 
       {/* The api Worker */}
       <Shape x={134} y={176} w={152} h={40} kind="rect" label="api Worker" labelTone="strong" />
@@ -47,19 +45,18 @@ export function StackOverview() {
 export function RequestRouting() {
   const routes: [string, string][] = [
     ['/api/*', 'api'],
-    ['/telemetry', 'telemetry'],
     ['/help', 'help'],
     ['/new, /explorer', 'live'],
     ['everything else', 'marketing'],
   ];
   return (
-    <Scene w={420} h={264}>
-      <Shape x={24} y={116} w={96} h={44} kind="rect" accent label="router" />
+    <Scene w={420} h={232}>
+      <Shape x={24} y={94} w={96} h={44} kind="rect" accent label="router" />
       {routes.map(([path, app], i) => {
         const y = 32 + i * 44;
         return (
           <g key={i}>
-            <Arrow from={[120, 138]} to={[268, y + 18]} kind="elbow" tone="muted" />
+            <Arrow from={[120, 116]} to={[268, y + 18]} kind="elbow" tone="muted" />
             <rect
               x={268}
               y={y}
@@ -83,13 +80,13 @@ export function RequestRouting() {
 }
 
 /** The deploy flow, as three stages left to right: GitHub Actions deploys
- *  marketing, telemetry, help and api in parallel; live and mcp
- *  follow the api; the router goes last because its bindings need the five
- *  path-routed apps to exist. Elbow connectors only, so no line crosses a box. */
+ *  marketing, help and api in parallel; live and mcp follow the api; the
+ *  router goes last because its bindings need the four path-routed apps to
+ *  exist. Elbow connectors only, so no line crosses a box. */
 export function DeployFlow() {
-  const first = ['marketing', 'telemetry', 'help', 'api'];
+  const first = ['marketing', 'help', 'api'];
   const rowY = (i: number) => 44 + i * 38;
-  const apiY = rowY(3) + 14;
+  const apiY = rowY(2) + 14;
   return (
     <Scene w={420} h={260}>
       {/* The trigger */}

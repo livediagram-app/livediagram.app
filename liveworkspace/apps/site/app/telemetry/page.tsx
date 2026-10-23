@@ -35,6 +35,9 @@ const LiveplannerBody = dynamic(() => import('./liveplanner/Body').then((m) => m
 const LivedocumentsBody = dynamic(() => import('./livedocuments/Body').then((m) => m.Body), {
   ssr: false,
 });
+const LivedesignBody = dynamic(() => import('./livedesign/Body').then((m) => m.Body), {
+  ssr: false,
+});
 
 type Loaded = TelemetrySummary | TelemetryDisabled;
 
@@ -156,13 +159,7 @@ export default function TelemetryDashboard() {
           ) : app === 'livedocuments.app' ? (
             <LivedocumentsBody summary={loaded} />
           ) : app === 'livedesign.app' ? (
-            <div className="mt-12">
-              <EmptyState
-                icon={<ActivityGlyph />}
-                title={`No events from ${app} yet`}
-                description="Its dashboard arrives with the app. Until then, there’s nothing to count."
-              />
-            </div>
+            <LivedesignBody summary={loaded} />
           ) : (
             <AllApps summary={loaded} onPickApp={pick} />
           )}

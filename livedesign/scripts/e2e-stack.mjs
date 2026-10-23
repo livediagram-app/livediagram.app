@@ -93,12 +93,10 @@ function assetsOutOfCacheFor(req) {
 const LIVE_PORT = Number(process.env.E2E_LIVE_PORT ?? 3402);
 const API_PORT = Number(process.env.E2E_API_PORT ?? 8989);
 // The other sites, for the audits that open them (docs/specs/004-interface-design/blueprints/
-// optical-alignment.md, "Ink audit"). Help and telemetry sit under their basePath on the
-// live origin, as the router mounts them; marketing owns "/" in production, so it gets its own port.
-const SITES = [
-  { prefix: '/help', dir: path.join(ROOT, 'apps', 'help', 'out') },
-  { prefix: '/telemetry', dir: path.join(ROOT, 'apps', 'telemetry', 'out') },
-];
+// optical-alignment.md, "Ink audit"). Help sits under its basePath on the live origin, as the
+// router mounts it; marketing owns "/" in production, so it gets its own port. (The telemetry
+// dashboard is liveworkspace's now, liveworkspace/docs/telemetry.md.)
+const SITES = [{ prefix: '/help', dir: path.join(ROOT, 'apps', 'help', 'out') }];
 const MARKETING_DIR = path.join(ROOT, 'apps', 'marketing', 'out');
 const MARKETING_PORT = Number(process.env.E2E_MARKETING_PORT ?? 3413);
 // Two switches for trying the editor as a DIFFERENT deployment would run it,

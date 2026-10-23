@@ -50,7 +50,7 @@ People then add a connector in their AI tool pointing at `https://<your MCP host
 
 If you do not run the MCP server, remove `OAUTH_ISSUER` from the api Worker's `wrangler.toml` too. The CLI then offers no browser or device sign-in on your instance, and people sign it in with an API token instead.
 
-If telemetry is on, also set the same `INTERNAL_EVENTS_KEY` secret on both the api and mcp Workers, so the MCP server's anonymous usage counts are not throttled as one busy visitor. Without telemetry, skip it.
+The MCP server sends its anonymous usage counts only when it holds a `TELEMETRY_KEY` secret for a telemetry service (see [Configuration](/help/self-hosting/configuration/)). Without one, skip it.
 
 ## Deploying With GitHub Actions
 

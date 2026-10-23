@@ -13,6 +13,8 @@
     "clean": "rm -rf .next out node_modules .turbo"
   },
   "dependencies": {
+    "@livedesign/api-schema": "workspace:*",
+    "@livedesign/icons": "workspace:*",
     "@livedesign/ui": "workspace:^",
     "@livediagram/api-schema": "workspace:*",
     "@livediagram/icons": "workspace:*",
@@ -31,7 +33,11 @@
     "react-dom": "^19.3.1"
   },
   "devDependencies": {
+    "@livedesign/agent-verbs": "workspace:*",
     "@livedesign/design": "workspace:*",
+    "@livedesign/photo-engine": "workspace:*",
+    "@livedesign/source-ast": "workspace:*",
+    "@livedesign/tailwind-config": "workspace:*",
     "@livedesign/templates": "workspace:*",
     "@livediagram/agent-verbs": "workspace:*",
     "@livediagram/document": "workspace:*",

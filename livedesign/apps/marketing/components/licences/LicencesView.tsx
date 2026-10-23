@@ -9,8 +9,7 @@ import { LicenceTexts } from './LicenceTexts';
 const SECTION_COPY: Record<LicencesSection['side'], { title: string; intro: string }> = {
   browser: {
     title: 'In your browser',
-    intro:
-      'Sent to your browser by the editor, this website, the help centre and the telemetry dashboard.',
+    intro: 'Sent to your browser by the editor, this website and the help centre.',
   },
   server: {
     title: 'On our servers',
@@ -26,8 +25,8 @@ export function LicencesView({ manifest }: { manifest: LicencesManifest }) {
         Open-source licences
       </h1>
       <p className="mt-3 text-lg text-slate-600 dark:text-slate-300">
-        livedesign is MIT licensed and built on the work of many open-source projects. These are
-        the ones our apps ship, generated from what each app actually bundles every time the site is
+        livedesign is MIT licensed and built on the work of many open-source projects. These are the
+        ones our apps ship, generated from what each app actually bundles every time the site is
         built.
       </p>
       {manifest.sections.map((section) => (

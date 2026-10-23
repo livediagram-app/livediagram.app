@@ -21,7 +21,7 @@ import { Glyph } from '@livedesign/ui';
 // z-overlay, NOT z-modal: everything this must cover inside <main>
 // (panels / toolbars / chrome) sits at 40 or below, while the
 // EditorHeader is z-modal — an equal z-modal here let this later-DOM
-// overlay paint over the header's ProductNav dropdown, so the one menu
+// overlay paint over the header's site switcher, so the one menu
 // that navigates away from a failed load opened invisibly behind it.
 export function TabLoadOverlay({
   state,

@@ -2,6 +2,7 @@ import { flushMediaRefs } from './media';
 import { runTabStatsBackfill } from './tab-stats-backfill';
 import { getAccountIdentity } from './auth/accounts';
 import { handleAuth } from './routes/auth';
+import { reportServerEvent, telemetryEnabled } from './server-telemetry';
 import { emailEnabled } from './email/client';
 import { runLifecycleSweep, welcomeOnSighting } from './email/lifecycle';
 import { runTokenExpirySweep } from './email/token-expiry';
@@ -11,7 +12,6 @@ import { runTimelineExpirySweep } from './timeline';
 import { runImageRetention } from './image-refs/retention';
 import { runPhotoSweep } from './photo-sweep';
 import {
-  deleteOldEvents,
   deleteOldChangesets,
   deleteOldNotifyEmailClaims,
   deleteOldTimelineEvents,
@@ -39,7 +39,6 @@ import { handleTokens } from './routes/tokens';
 import { handleOauthExchange } from './routes/oauth';
 import { DesignRoom } from './design-room';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
-import { insertTelemetryEvents } from './db/telemetry';
 import { deleteOldDesignOpens } from './db/design-opens';
 import { clientIp, clientNetwork, clientRateKey } from './client-ip';
 import { MAX_BODY_BYTES, MAX_IMAGE_BYTES } from './limits';
@@ -70,7 +69,6 @@ import { handleShare } from './routes/share';
 import { isSharePreviewPath } from './routes/share-preview';
 import { handleTeams } from './routes/teams';
 import { handleShared } from './routes/shared';
-import { handleTelemetry } from './routes/telemetry';
 import { handleTrash } from './routes/trash';
 import { handleWorkbench } from './routes/workbench';
 import { resolveWorkbenchSession } from './auth/workbench-session';
@@ -262,7 +260,7 @@ async function routeApiRequest(
   // exhaustion. Reads pass through untouched. When neither a
   // account token nor X-Owner-Id resolves the caller, fall back to
   // a literal 'anonymous' key so one unauthenticated client still
-  // can't burn the global quota. Telemetry ingest (/api/events)
+  // can't burn the global quota. The telemetry relay (/api/events)
   // is deliberately exempt: it's anonymous, high-frequency, and
   // must never compete with a user's real design writes for the
   // per-owner write budget (docs/specs/017-telemetry/telemetry.md). Client-side batching keeps
@@ -406,8 +404,6 @@ async function routeApiRequest(
         return notFound();
       case 'events':
         return await handleEvents(ctx);
-      case 'telemetry':
-        return await handleTelemetry(ctx);
       case 'share':
         return await handleShare(ctx);
       case 'shared':
@@ -459,21 +455,14 @@ async function routeApiRequest(
     // client — internal error text can leak implementation details (table
     // names, stack hints). Return a generic body instead.
     console.error('api error', err);
-    // Self-report the crash to the events table (docs/specs/017-telemetry/telemetry.md 'Error'
-    // category): the worker owns the D1 binding, so a server-side
-    // exception counts even when no client survives to report it.
-    // Same TELEMETRY_ENABLED gate as the ingest; off the response's
-    // critical path (waitUntil), and its own failure is swallowed —
-    // the 500 must still go out. The type names the endpoint by its
+    // Self-report the crash (docs/specs/017-telemetry/telemetry.md 'Error' category), so a
+    // server-side exception counts even when no client survives to report it.
+    // Off the response's critical path (waitUntil), and its own failure is
+    // swallowed — the 500 must still go out. The type names the endpoint by its
     // route words only (`Internal.Put.Designs.Tabs`), never an id.
-    if (env.TELEMETRY_ENABLED === 'true') {
+    if (telemetryEnabled(env)) {
       const type = errorTypeToken('Internal', apiRouteLabel(request.method, url.pathname));
-      const report = insertTelemetryEvents(
-        env,
-        [{ category: 'Error', action: 'Api', type }],
-        Date.now(),
-      ).catch(() => {});
-      executionCtx?.waitUntil?.(report);
+      executionCtx?.waitUntil?.(reportServerEvent(env, 'Error', 'Api', type));
     }
     return json({ error: 'internal_error' }, { status: 500 });
   }
@@ -490,8 +479,7 @@ const worker = {
   // Scheduled handler. Wired to the cron schedule in wrangler.toml.
   // One worker invocation per `triggers.crons` entry; dispatch on
   // `event.cron` for each pattern. Today's daily 03:00 UTC trigger
-  // fires independent retention sweeps:
-  //   - events,     60-day floor (docs/specs/017-telemetry/telemetry.md "Retention").
+  // fires independent retention sweeps (telemetry's 60 days are kept centrally, liveworkspace/docs/telemetry.md):
   //   - images,     30-day floor, unused only, after the reference-index backfill
   //                 (docs/specs/009-elements/images.md "Retention").
   //   - trash,      30 days after deletion (docs/specs/013-workspace/trash.md).
@@ -503,7 +491,6 @@ const worker = {
   async scheduled(event: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
     if (event.cron === '0 3 * * *') {
       const now = Date.now();
-      scheduleSweep(ctx, env, 'events', 'rows', now - EVENTS_RETENTION_MS, deleteOldEvents);
       // docs/specs/013-workspace/timeline.md §3.5: the Timeline feed keeps a year.
       scheduleSweep(
         ctx,
@@ -639,9 +626,3 @@ function scheduleSweep(
       }),
   );
 }
-
-// 60 days in ms. The /telemetry dashboard's longest window is
-// "Last 30 days", so anything past 60 days is dead storage (twice
-// the surfaced window, leaving headroom for a future "Last 60
-// days" view to populate). See docs/specs/017-telemetry/telemetry.md "Retention".
-const EVENTS_RETENTION_MS = 60 * 24 * 60 * 60 * 1000;

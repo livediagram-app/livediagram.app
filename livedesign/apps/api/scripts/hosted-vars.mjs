@@ -105,10 +105,12 @@ export function wranglerVarFlags(vars) {
 }
 
 /** The build-time twins of hosted worker vars: each frontend reads
- *  NEXT_PUBLIC_TELEMETRY_ENABLED to skip emitting when the api would drop it. */
+ *  NEXT_PUBLIC_TELEMETRY_ENABLED to skip emitting when telemetry is off, and
+ *  NEXT_PUBLIC_TELEMETRY_URL for which central telemetry service to send to. */
 export function buildEnv(vars) {
   const out = [];
   if (vars.TELEMETRY_ENABLED) out.push(`NEXT_PUBLIC_TELEMETRY_ENABLED=${vars.TELEMETRY_ENABLED}`);
+  if (vars.TELEMETRY_URL) out.push(`NEXT_PUBLIC_TELEMETRY_URL=${vars.TELEMETRY_URL}`);
   return out;
 }
 
@@ -193,9 +195,7 @@ function main([command, ...rest]) {
     case 'verify':
       return verify(rest);
     default:
-      console.error(
-        'usage: hosted-vars.mjs flags | build-env | verify  [--env staging]',
-      );
+      console.error('usage: hosted-vars.mjs flags | build-env | verify  [--env staging]');
       return 2;
   }
 }

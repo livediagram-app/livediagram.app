@@ -42,4 +42,4 @@ jobs:
       ACCOUNTS_CLIENT_SECRET: ${{ secrets.ACCOUNTS_CLIENT_SECRET }}
       GUEST_ID_HMAC_SECRET: ${{ secrets.GUEST_ID_HMAC_SECRET }}
       MEDIA_KEY: ${{ secrets.MEDIA_KEY }}
-      INTERNAL_EVENTS_KEY: ${{ secrets.INTERNAL_EVENTS_KEY }}
+      TELEMETRY_KEY: ${{ secrets.TELEMETRY_KEY }}

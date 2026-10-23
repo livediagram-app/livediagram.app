@@ -1,7 +1,7 @@
 // The public telemetry dashboard (docs/specs/017-telemetry/telemetry.md), for the help article
 // privacy-and-security/what-we-collect/telemetry-dashboard: the three window cards over the 30-day
 // trend line, the view tabs (Dashboard and Search apart, the rest in the Detail carousel), and the
-// first Dashboard group's cards. Labels are the dashboard's own (apps/telemetry/app).
+// first Dashboard group's cards. Labels are the dashboard's own (its livedesign catalogue, liveworkspace/apps/site/app/telemetry/livedesign).
 // Composed only from the shared primitives and plain SVG, so the house style holds.
 
 import { Scene, Panel, Label } from './primitives';

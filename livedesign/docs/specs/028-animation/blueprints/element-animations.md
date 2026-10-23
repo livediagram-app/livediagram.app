@@ -39,9 +39,9 @@ EA1 onwards in [DEFAULTS.md](DEFAULTS.md).
 
 | Module                                                    | Holds                                                                                                                                      |
 | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `packages/design/src/animation-sets.ts`                 | the six catalogues, reveals, titles, labels, telemetry types, kept values; a leaf                                                          |
-| `packages/design/src/animation.ts`                      | speed, `animLoops`, icon and progress sets; re-exports `animation-sets`                                                                    |
-| `packages/design/src/animation-membership.ts`           | `bodyAnimationSetOf`, `takesShapeMotions`, `shapeAnimationsFor`, `animationSectionOf`, `carriesWords`, `inAnimationSet`, `animationSetsOf` |
+| `packages/design/src/animation-sets.ts`                   | the six catalogues, reveals, titles, labels, telemetry types, kept values; a leaf                                                          |
+| `packages/design/src/animation.ts`                        | speed, `animLoops`, icon and progress sets; re-exports `animation-sets`                                                                    |
+| `packages/design/src/animation-membership.ts`             | `bodyAnimationSetOf`, `takesShapeMotions`, `shapeAnimationsFor`, `animationSectionOf`, `carriesWords`, `inAnimationSet`, `animationSetsOf` |
 | `apps/live/lib/animation-set-writes.ts`                   | `withSetAnimation`, `withSetAnimationSpeed`, `withSetAnimationRepeat`, `withoutAnimations`, `setAnimationState`                            |
 | `apps/live/lib/animation-classes.ts`                      | `ANIMATION_CLASS_PREFIX`, `setAnimationClass`, `bodySetClass`                                                                              |
 | `apps/live/components/palette/AnimationSections.tsx`      | every animation category for a selection, `animationCategoriesOf` (single and multi menus)                                                 |
@@ -302,13 +302,13 @@ shows a Shape miniature and the old label. The old static glyphs (`AnimationKind
 ## Observability
 
 `track('Element', 'Changed', type)` on commit with `ANIMATION_SET_TELEMETRY_TYPE[set]`; each new type is explained
-in `apps/telemetry/app/event-explanations.ts`.
+in `../liveworkspace/apps/site/app/telemetry/livedesign/event-explanations.ts`.
 
 ## Testing
 
 | Rule                                                                | Test                                                      |
 | ------------------------------------------------------------------- | --------------------------------------------------------- |
-| Membership, Shape motions, carries words, set order, kept values    | `packages/design/src/animation-membership.test.ts`      |
+| Membership, Shape motions, carries words, set order, kept values    | `packages/design/src/animation-membership.test.ts`        |
 | Every option has a rule in its sheet, none orphaned, reduced motion | `apps/live/app/animation-classes.test.ts`                 |
 | One category per set present                                        | `apps/live/components/palette/AnimationSections.test.tsx` |
 | Tiles, labels, kept tile                                            | `apps/live/components/palette/AnimationSetTiles.test.tsx` |

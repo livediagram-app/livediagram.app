@@ -26,6 +26,7 @@ const nextConfig: NextConfig = {
     '@livedocuments/ui',
     '@livedocuments/api-schema',
     '@livedesign/ui',
+    '@livedesign/api-schema',
     '@liveworkspace/sites',
     '@liveworkspace/telemetry',
   ],

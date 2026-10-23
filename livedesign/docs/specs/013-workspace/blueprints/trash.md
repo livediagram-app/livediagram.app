@@ -9,53 +9,53 @@ in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
 Scope, by file:
 
-| File                                                                             | Role                                                                                        |
-| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `packages/api-schema/src/trash.ts`                                               | The clock and the wire: retention, days left, error code, close code, `TrashedDesign`     |
-| `apps/api/migrations/0001_livedesign_baseline.sql`                               | `designs.trashed_at` + the partial index                                                  |
-| `apps/api/src/db/trash.ts`                                                       | `trashDesign`, `restoreDesign`, `purgeDesigns`, `purgeExpiredTrash`, `listTrash`, ... |
-| `apps/api/src/db/design-removal.ts`                                            | `designRemovalStatements` takes `{ ids }` besides one id / one owner                      |
-| `apps/api/src/db/designs.ts`                                                   | `getDesign`, `getDesignMeta`, both lists: live rows only                                |
-| `apps/api/src/db/{shared,favourites,collab-index,tabs,timeline}.ts`              | The reads that leave trashed designs out; `designsTimelineSweepStatement`               |
-| `apps/api/src/timeline/expiry-sweep.ts`                                          | No expiry warning for a trashed design's links                                            |
-| `apps/api/src/routes/context.ts`                                                 | `missingDesign`: 410 or 404 on a miss; the guards use it                                  |
-| `apps/api/src/routes/design-delete-route.ts`                                   | `DELETE /api/designs/:id`: trash, `?permanent=true`, Take Offline                         |
-| `apps/api/src/routes/trash.ts`                                                   | `/api/trash` list, restore, purge one, empty                                                |
-| `apps/api/src/routes/{designs,share,design-room-routes,...}.ts`              | The doors: 410 through `missingDesign`; the ws upgrade refuses                            |
-| `apps/api/src/room-client.ts`, `design-room.ts`, `room-scope.ts`               | `broadcastDesignTrashed`; the room closes every socket with 4004                          |
-| `apps/api/src/index.ts`, `auth/guest-rest.ts`                                    | `trash` dispatch + guest-signature scope; the cron's `purgeExpiredTrash`                    |
-| `apps/api/src/openapi/manifest.ts`, `design.ts`, `scripts/gen-openapi-...`     | The Trash tag and routes; 410 on the design doors; `TrashedDesign` schema               |
-| `apps/mcp/src/{tools,schema}.ts`                                                 | `delete_design` to the Trash only; `list_trash`, `restore_design`                       |
-| `apps/live/lib/api/trash.ts`                                                     | `apiListTrash`, `apiRestoreDesign`, `apiPurgeDesign`, `apiEmptyTrash`                   |
-| `apps/live/lib/offline/offline-trash.ts`, `offline-store.ts`                     | The local Trash on the IndexedDB record                                                     |
-| `apps/live/lib/design-trashed.ts`, `design-tombstones.ts`                    | `DesignTrashedError`, `isDesignTrashedError`; `unmarkDesignDeleted`                   |
-| `apps/live/lib/trash-groups.ts`, `trash-copy.ts`                                 | Grouping and days-left copy; the confirmation line                                          |
-| `apps/live/hooks/persistence/useTrash.ts`, `components/panels/TrashPane.tsx`     | The Trash view                                                                              |
-| `apps/live/app/explorer/{TrashSection.tsx,trash/page.tsx,routes.ts,views.tsx}`   | The `/explorer/trash` route, no sidebar row                                                 |
-| `apps/live/components/dialogs/settings/{settings-catalogue.ts,SettingsTrashRow}` | Settings › Account › Trash, the one way in                                                  |
-| `apps/live/app/design/[id]/{useDesignTrashed,useIdentityBootstrap,...}.ts`   | The deleted state: load, room, autosave                                                     |
-| `apps/live/components/chrome/DesignTrashedCard.tsx`, `editor-page.tsx`         | The deleted card, Restore when allowed                                                      |
-| `apps/help/app/account-and-data/trash/page.mdx`, help registry, article icon     | The help article                                                                            |
-| `apps/telemetry/app/catalogue/{content,connections}.ts`, explanations, vocab     | The Trash stack; the two MCP tool charts                                                    |
+| File                                                                                                          | Role                                                                                  |
+| ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `packages/api-schema/src/trash.ts`                                                                            | The clock and the wire: retention, days left, error code, close code, `TrashedDesign` |
+| `apps/api/migrations/0001_livedesign_baseline.sql`                                                            | `designs.trashed_at` + the partial index                                              |
+| `apps/api/src/db/trash.ts`                                                                                    | `trashDesign`, `restoreDesign`, `purgeDesigns`, `purgeExpiredTrash`, `listTrash`, ... |
+| `apps/api/src/db/design-removal.ts`                                                                           | `designRemovalStatements` takes `{ ids }` besides one id / one owner                  |
+| `apps/api/src/db/designs.ts`                                                                                  | `getDesign`, `getDesignMeta`, both lists: live rows only                              |
+| `apps/api/src/db/{shared,favourites,collab-index,tabs,timeline}.ts`                                           | The reads that leave trashed designs out; `designsTimelineSweepStatement`             |
+| `apps/api/src/timeline/expiry-sweep.ts`                                                                       | No expiry warning for a trashed design's links                                        |
+| `apps/api/src/routes/context.ts`                                                                              | `missingDesign`: 410 or 404 on a miss; the guards use it                              |
+| `apps/api/src/routes/design-delete-route.ts`                                                                  | `DELETE /api/designs/:id`: trash, `?permanent=true`, Take Offline                     |
+| `apps/api/src/routes/trash.ts`                                                                                | `/api/trash` list, restore, purge one, empty                                          |
+| `apps/api/src/routes/{designs,share,design-room-routes,...}.ts`                                               | The doors: 410 through `missingDesign`; the ws upgrade refuses                        |
+| `apps/api/src/room-client.ts`, `design-room.ts`, `room-scope.ts`                                              | `broadcastDesignTrashed`; the room closes every socket with 4004                      |
+| `apps/api/src/index.ts`, `auth/guest-rest.ts`                                                                 | `trash` dispatch + guest-signature scope; the cron's `purgeExpiredTrash`              |
+| `apps/api/src/openapi/manifest.ts`, `design.ts`, `scripts/gen-openapi-...`                                    | The Trash tag and routes; 410 on the design doors; `TrashedDesign` schema             |
+| `apps/mcp/src/{tools,schema}.ts`                                                                              | `delete_design` to the Trash only; `list_trash`, `restore_design`                     |
+| `apps/live/lib/api/trash.ts`                                                                                  | `apiListTrash`, `apiRestoreDesign`, `apiPurgeDesign`, `apiEmptyTrash`                 |
+| `apps/live/lib/offline/offline-trash.ts`, `offline-store.ts`                                                  | The local Trash on the IndexedDB record                                               |
+| `apps/live/lib/design-trashed.ts`, `design-tombstones.ts`                                                     | `DesignTrashedError`, `isDesignTrashedError`; `unmarkDesignDeleted`                   |
+| `apps/live/lib/trash-groups.ts`, `trash-copy.ts`                                                              | Grouping and days-left copy; the confirmation line                                    |
+| `apps/live/hooks/persistence/useTrash.ts`, `components/panels/TrashPane.tsx`                                  | The Trash view                                                                        |
+| `apps/live/app/explorer/{TrashSection.tsx,trash/page.tsx,routes.ts,views.tsx}`                                | The `/explorer/trash` route, no sidebar row                                           |
+| `apps/live/components/dialogs/settings/{settings-catalogue.ts,SettingsTrashRow}`                              | Settings › Account › Trash, the one way in                                            |
+| `apps/live/app/design/[id]/{useDesignTrashed,useIdentityBootstrap,...}.ts`                                    | The deleted state: load, room, autosave                                               |
+| `apps/live/components/chrome/DesignTrashedCard.tsx`, `editor-page.tsx`                                        | The deleted card, Restore when allowed                                                |
+| `apps/help/app/account-and-data/trash/page.mdx`, help registry, article icon                                  | The help article                                                                      |
+| `../liveworkspace/apps/site/app/telemetry/livedesign/catalogue/{content,connections}.ts`, explanations, vocab | The Trash stack; the two MCP tool charts                                              |
 
 ## Domain and naming
 
-| Term               | Identifier                                                    | Meaning                                              |
-| ------------------ | ------------------------------------------------------------- | ---------------------------------------------------- |
-| Trash              | `trash` (route segment, telemetry category `Trash`)           | Where a deleted design waits                       |
-| Trashed            | `designs.trashed_at` (epoch ms), `trashedAt`                | In the Trash since that time; NULL / absent = live   |
+| Term               | Identifier                                                | Meaning                                            |
+| ------------------ | --------------------------------------------------------- | -------------------------------------------------- |
+| Trash              | `trash` (route segment, telemetry category `Trash`)       | Where a deleted design waits                       |
+| Trashed            | `designs.trashed_at` (epoch ms), `trashedAt`              | In the Trash since that time; NULL / absent = live |
 | Trash (verb)       | `trashDesign`, `offlineTrashDesign`                       | Move a live design in                              |
-| Restore            | `restoreDesign`, `apiRestoreDesign`, `restore_design`   | Bring it back to its place                           |
-| Purge              | `purgeDesigns`, `apiPurgeDesign`, `offlinePurgeDesign`  | Remove for good, through `designRemovalStatements` |
-| Empty Trash        | `apiEmptyTrash(scope)`, `DELETE /api/trash[?team=]`           | Purge one group                                      |
-| Group / scope      | `TrashGroup`, `TrashScope` (`personal`, `team`, `local`)      | One Trash in the view; one Empty Trash               |
-| Local Trash        | `offline-trash.ts`                                            | This Browser's, for Offline Mode records             |
-| Retention          | `TRASH_RETENTION_DAYS` / `TRASH_RETENTION_MS`                 | 30 days                                              |
-| Days left          | `trashDaysLeft`, `daysLeftLabel`                              | Whole days to the purge, rounded up, floor 0         |
-| Deleted state      | `DESIGN_TRASHED_ERROR` (`design_trashed`), 410            | What a door answers an authorised caller             |
-| Deleted card       | `DesignTrashedCard`                                         | The editor's surface for it                          |
-| Trashed op / close | `design-trashed` (system op), `DESIGN_TRASHED_CLOSE` 4004 | The room telling open sessions                       |
-| Permanent          | `?permanent=true`                                             | REST only: trash + purge in one call                 |
+| Restore            | `restoreDesign`, `apiRestoreDesign`, `restore_design`     | Bring it back to its place                         |
+| Purge              | `purgeDesigns`, `apiPurgeDesign`, `offlinePurgeDesign`    | Remove for good, through `designRemovalStatements` |
+| Empty Trash        | `apiEmptyTrash(scope)`, `DELETE /api/trash[?team=]`       | Purge one group                                    |
+| Group / scope      | `TrashGroup`, `TrashScope` (`personal`, `team`, `local`)  | One Trash in the view; one Empty Trash             |
+| Local Trash        | `offline-trash.ts`                                        | This Browser's, for Offline Mode records           |
+| Retention          | `TRASH_RETENTION_DAYS` / `TRASH_RETENTION_MS`             | 30 days                                            |
+| Days left          | `trashDaysLeft`, `daysLeftLabel`                          | Whole days to the purge, rounded up, floor 0       |
+| Deleted state      | `DESIGN_TRASHED_ERROR` (`design_trashed`), 410            | What a door answers an authorised caller           |
+| Deleted card       | `DesignTrashedCard`                                       | The editor's surface for it                        |
+| Trashed op / close | `design-trashed` (system op), `DESIGN_TRASHED_CLOSE` 4004 | The room telling open sessions                     |
+| Permanent          | `?permanent=true`                                         | REST only: trash + purge in one call               |
 
 Banned: "recycle bin", "bin" (except in the help article's keywords), "soft delete" in copy, "undelete",
 "archive".
@@ -65,17 +65,17 @@ Banned: "recycle bin", "bin" (except in the help article's keywords), "soft dele
 A design is in exactly one of three states: **live** (`trashed_at IS NULL`), **trashed** (`trashed_at`
 set), **gone** (no row). Offline records mirror it with `trashedAt` absent / set / record deleted.
 
-| From    | Event                                                  | To      | Guard                                                  |
-| ------- | ------------------------------------------------------ | ------- | ------------------------------------------------------ |
-| live    | `DELETE /api/designs/:id`                            | trashed | `mayDeleteDesign`                                    |
-| live    | `DELETE ...?permanent=true`                            | gone    | `mayDeleteDesign`; trash then purge                  |
-| live    | owner's `DELETE` with `X-Design-Conversion: offline` | gone    | caller is the owner; `deleteDesign` (hard)           |
-| live    | teammate's `DELETE` with the offline conversion        | trashed | the conversion is ignored for a non-owner              |
-| live    | account deletion                                       | gone    | `deleteAccount`, owner selector, trashed rows included |
-| trashed | `POST /api/trash/:id/restore`, `restore_design`      | live    | `mayDeleteDesign` on the trashed row                 |
-| trashed | `DELETE /api/trash/:id`, `DELETE ...?permanent=true`   | gone    | `mayDeleteDesign`                                    |
-| trashed | `DELETE /api/trash[?team=]`                            | gone    | personal: owner; team: joined member (verified id)     |
-| trashed | daily cron, `trashed_at <= now - TRASH_RETENTION_MS`   | gone    | none                                                   |
+| From    | Event                                                | To      | Guard                                                  |
+| ------- | ---------------------------------------------------- | ------- | ------------------------------------------------------ |
+| live    | `DELETE /api/designs/:id`                            | trashed | `mayDeleteDesign`                                      |
+| live    | `DELETE ...?permanent=true`                          | gone    | `mayDeleteDesign`; trash then purge                    |
+| live    | owner's `DELETE` with `X-Design-Conversion: offline` | gone    | caller is the owner; `deleteDesign` (hard)             |
+| live    | teammate's `DELETE` with the offline conversion      | trashed | the conversion is ignored for a non-owner              |
+| live    | account deletion                                     | gone    | `deleteAccount`, owner selector, trashed rows included |
+| trashed | `POST /api/trash/:id/restore`, `restore_design`      | live    | `mayDeleteDesign` on the trashed row                   |
+| trashed | `DELETE /api/trash/:id`, `DELETE ...?permanent=true` | gone    | `mayDeleteDesign`                                      |
+| trashed | `DELETE /api/trash[?team=]`                          | gone    | personal: owner; team: joined member (verified id)     |
+| trashed | daily cron, `trashed_at <= now - TRASH_RETENTION_MS` | gone    | none                                                   |
 | trashed | `DELETE /api/designs/:id` (plain)                    | trashed | answers 410; the first `trashed_at` stands             |
 
 Invariants:
@@ -101,14 +101,14 @@ the deleted card ahead of every other status while `trashed` is true.
 
 REST (all `guest-or-clerk`, token-usable; a read-only token may only `GET`):
 
-| Method | Path                                | Success                                       | Failures                                                                        |
-| ------ | ----------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------- |
-| DELETE | `/api/designs/:id`                | 204                                           | 400 no caller; 404 missing / stranger; 403 no delete claim; 410 already trashed |
-| DELETE | `/api/designs/:id?permanent=true` | 204                                           | 400; 404; 403                                                                   |
-| GET    | `/api/trash`                        | 200 `{ trash: TrashedDesign[] }`            | 400                                                                             |
-| POST   | `/api/trash/:id/restore`            | 200 `{ design }` (redacted for a non-owner) | 400; 404 (missing, live, or no claim)                                           |
-| DELETE | `/api/trash/:id`                    | 204                                           | 400; 404                                                                        |
-| DELETE | `/api/trash[?team=<id>]`            | 200 `{ purged: number }`                      | 400; 404 team not joined                                                        |
+| Method | Path                              | Success                                     | Failures                                                                        |
+| ------ | --------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------- |
+| DELETE | `/api/designs/:id`                | 204                                         | 400 no caller; 404 missing / stranger; 403 no delete claim; 410 already trashed |
+| DELETE | `/api/designs/:id?permanent=true` | 204                                         | 400; 404; 403                                                                   |
+| GET    | `/api/trash`                      | 200 `{ trash: TrashedDesign[] }`            | 400                                                                             |
+| POST   | `/api/trash/:id/restore`          | 200 `{ design }` (redacted for a non-owner) | 400; 404 (missing, live, or no claim)                                           |
+| DELETE | `/api/trash/:id`                  | 204                                         | 400; 404                                                                        |
+| DELETE | `/api/trash[?team=<id>]`          | 200 `{ purged: number }`                    | 400; 404 team not joined                                                        |
 
 Every `/api/designs/:id/*` door and `/api/share/:code` (+ `image.svg`): 410 `{ error: 'design_trashed' }`
 when the id is trashed and the caller has a grant (`gateGrant`), else 404. `/api/share/:code` answers 410 to
@@ -133,10 +133,10 @@ stops reconnecting.
 
 ## Data and persistence
 
-| Field                             | Class | Notes                                                         |
-| --------------------------------- | ----- | ------------------------------------------------------------- |
+| Field                           | Class | Notes                                                       |
+| ------------------------------- | ----- | ----------------------------------------------------------- |
 | `designs.trashed_at`            | state | INTEGER NULL, epoch ms; partial index `designs_trashed_idx` |
-| `OfflineDesignRecord.trashedAt` | state | optional number; absent on every record written before it     |
+| `OfflineDesignRecord.trashedAt` | state | optional number; absent on every record written before it   |
 
 The baseline migration adds the column and index; every existing row is live (NULL). No backfill. Snapshot and restore are the row itself: nothing
 is copied. Account deletion and guest-to-account migration act on `owner_id` and so carry trashed rows with
@@ -213,42 +213,42 @@ room`; open sessions still stop at their next save (I5).
 
 ## Observability
 
-| Fingerprint                                                | Where                     |
-| ---------------------------------------------------------- | ------------------------- |
-| `[trash] trashed <id>`                                     | api, DELETE               |
-| `[trash] deleted permanently <id>`                         | api, `?permanent=true`    |
-| `[trash] bypassed for take offline <id>`                   | api, owner's Take Offline |
-| `[trash] purged from the Trash <id>`                       | api, purge one            |
-| `[trash] emptied <personal / team:id> <n>`                 | api, Empty Trash          |
-| `[trash] restored <id>`                                    | api, restore              |
-| `[trash] snapshot delete failed <n> <err>`                 | api, purge, warn          |
+| Fingerprint                                              | Where                     |
+| -------------------------------------------------------- | ------------------------- |
+| `[trash] trashed <id>`                                   | api, DELETE               |
+| `[trash] deleted permanently <id>`                       | api, `?permanent=true`    |
+| `[trash] bypassed for take offline <id>`                 | api, owner's Take Offline |
+| `[trash] purged from the Trash <id>`                     | api, purge one            |
+| `[trash] emptied <personal / team:id> <n>`               | api, Empty Trash          |
+| `[trash] restored <id>`                                  | api, restore              |
+| `[trash] snapshot delete failed <n> <err>`               | api, purge, warn          |
 | `trash sweep: purged <n> designs` / `trash sweep failed` | api, cron                 |
 | `[room-broadcast] design-trashed did not reach the room` | api, warn                 |
-| `[trash] purged local <n>`                                 | editor, local sweep       |
-| `[trash] cloud list failed`                                | editor, warn              |
+| `[trash] purged local <n>`                               | editor, local sweep       |
+| `[trash] cloud list failed`                              | editor, warn              |
 | `[trash] open design is in the Trash`                    | editor                    |
 | `Http410.<Action>.DesignTrashed`                         | editor error telemetry    |
 
 ## Testing
 
-| Rule                                                    | Test                                                       |
-| ------------------------------------------------------- | ---------------------------------------------------------- |
-| Clock, days left, expiry                                | `packages/api-schema/src/trash.test.ts`                    |
-| Migration, trash / restore / purge / list / cron sweep  | `apps/api/src/db/trash.test.ts` (real SQLite)              |
-| Timeline hidden and back, Activity, tab link, expiry    | `apps/api/src/db/trash-surfaces.test.ts`                   |
-| Every door: 410 / 404 / lists / DELETE semantics / room | `apps/api/src/routes/trash-doors.test.ts`                  |
-| `/api/trash` authority                                  | `apps/api/src/routes/trash.test.ts`                        |
-| Cron wiring and log                                     | `apps/api/src/scheduled-trash.test.ts`                     |
-| Room closes with 4004; never relays a client's op       | `apps/api/src/design-room.test.ts`, `room-scope.test.ts` |
-| Permanent removal keeps shared tabs                     | `apps/api/src/db/design-delete.test.ts`                  |
-| OpenAPI parity                                          | `apps/api/src/openapi/*.test.ts`                           |
-| MCP tools                                               | `apps/mcp/src/tools.test.ts`                               |
-| Local Trash                                             | `apps/live/lib/offline/offline-trash.test.ts`              |
-| Client calls, dispatch, 410                             | `apps/live/lib/api/trash.test.ts`                          |
-| Room client stops on 4004                               | `apps/live/lib/api/room.test.ts`                           |
-| Grouping and copy                                       | `apps/live/lib/trash-groups.test.ts`                       |
-| End to end                                              | `apps/live/e2e/trash.spec.ts`                              |
-| Telemetry coverage and charts                           | `apps/live` telemetry tests, `apps/telemetry` suites       |
+| Rule                                                    | Test                                                                                      |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Clock, days left, expiry                                | `packages/api-schema/src/trash.test.ts`                                                   |
+| Migration, trash / restore / purge / list / cron sweep  | `apps/api/src/db/trash.test.ts` (real SQLite)                                             |
+| Timeline hidden and back, Activity, tab link, expiry    | `apps/api/src/db/trash-surfaces.test.ts`                                                  |
+| Every door: 410 / 404 / lists / DELETE semantics / room | `apps/api/src/routes/trash-doors.test.ts`                                                 |
+| `/api/trash` authority                                  | `apps/api/src/routes/trash.test.ts`                                                       |
+| Cron wiring and log                                     | `apps/api/src/scheduled-trash.test.ts`                                                    |
+| Room closes with 4004; never relays a client's op       | `apps/api/src/design-room.test.ts`, `room-scope.test.ts`                                  |
+| Permanent removal keeps shared tabs                     | `apps/api/src/db/design-delete.test.ts`                                                   |
+| OpenAPI parity                                          | `apps/api/src/openapi/*.test.ts`                                                          |
+| MCP tools                                               | `apps/mcp/src/tools.test.ts`                                                              |
+| Local Trash                                             | `apps/live/lib/offline/offline-trash.test.ts`                                             |
+| Client calls, dispatch, 410                             | `apps/live/lib/api/trash.test.ts`                                                         |
+| Room client stops on 4004                               | `apps/live/lib/api/room.test.ts`                                                          |
+| Grouping and copy                                       | `apps/live/lib/trash-groups.test.ts`                                                      |
+| End to end                                              | `apps/live/e2e/trash.spec.ts`                                                             |
+| Telemetry coverage and charts                           | `apps/live` telemetry tests, `../liveworkspace/apps/site/app/telemetry/livedesign` suites |
 
 ## Constants and configuration
 
@@ -257,7 +257,7 @@ room`; open sessions still stop at their next save (I5).
 | `TRASH_RETENTION_DAYS`    | 30    | Operator decision                         | 7 to 90      |
 | `TRASH_PURGE_BATCH`       | 100   | ~4 KB bound per `json_each` list (D3)     | 10 to 500    |
 | `TRASH_PURGE_MAX_BATCHES` | 20    | Well inside one invocation's query budget | 1 to 200     |
-| `DESIGN_TRASHED_CLOSE`  | 4004  | Next free code beside 4003                | 4000 to 4999 |
+| `DESIGN_TRASHED_CLOSE`    | 4004  | Next free code beside 4003                | 4000 to 4999 |
 
 No new environment variable or binding; self-hosting needs only the migration.
 

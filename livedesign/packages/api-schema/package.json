@@ -17,7 +17,8 @@
   },
   "dependencies": {
     "@livedesign/design": "workspace:*",
-    "@livedesign/photo-engine": "workspace:*"
+    "@livedesign/photo-engine": "workspace:*",
+    "@liveworkspace/telemetry": "workspace:*"
   },
   "devDependencies": {
     "@livedesign/oxlint-config": "workspace:*",

@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 
 // Every app's header switches between liveworkspace's sites with the same switcher
 // (liveworkspace/docs/site-switcher.md). Each app's UI package holds its own copy, so the copies must not drift:
-// change one, change them all. livedesign joins this list when its switcher lands.
-const APPS = ['livediagram', 'liveplanner', 'livedocuments'];
+// change one, change them all.
+const APPS = ['livediagram', 'liveplanner', 'livedocuments', 'livedesign'];
 const copy = (app: string) =>
   readFileSync(
     new URL(`../../../${app}/packages/ui/src/SiteSwitcher.tsx`, import.meta.url),

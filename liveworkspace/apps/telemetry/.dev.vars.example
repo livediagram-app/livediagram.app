@@ -3,3 +3,4 @@ ENVIRONMENT=development
 TELEMETRY_KEY_LIVEDIAGRAM=dev-livediagram-key
 TELEMETRY_KEY_LIVEPLANNER=dev-liveplanner-key
 TELEMETRY_KEY_LIVEDOCUMENTS=dev-livedocuments-key
+TELEMETRY_KEY_LIVEDESIGN=dev-livedesign-key

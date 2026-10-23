@@ -4,15 +4,14 @@ The frontend-only prototype phase ended once the API app landed. This spec captu
 
 ## Where we are now
 
-Eight apps: seven deployable to Cloudflare Workers (with Static Assets for the four Next.js apps), and the CLI:
+Seven apps: six deployable to Cloudflare Workers (with Static Assets for the three Next.js apps), and the CLI:
 
 - **marketing**: static landing site at `/`.
 - **live**: the page editor (clean routes, no `/live` prefix). Statically exported Next.js.
-- **telemetry**: public anonymous-events dashboard at `/telemetry`. Statically exported Next.js. Reads aggregate counts from the api worker's D1 events table. See [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md).
 - **help**: the help centre at `/help`. Statically exported Next.js with MDX articles.
 - **api**: Cloudflare Worker holding the REST endpoints + Durable Object realtime room. D1 is the durable store.
 - **mcp**: Cloudflare Worker at its own host, `mcp.livedesign.app`, that connects the editor to AI tools ([MCP server](../015-api/mcp-server.md)).
-- **router**: Worker that stitches marketing, live, telemetry, help and api under one hostname.
+- **router**: Worker that stitches marketing, live, help and api under one hostname, and redirects `/telemetry` to liveworkspace's dashboard ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 - **cli**: the `livedesign` command line ([CLI](../015-api/cli.md)), published to npm.
 
 The editor is real. Every tab is Pages ([Pages mode](../007-editor/pages-mode.md)):

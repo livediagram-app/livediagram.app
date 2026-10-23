@@ -29,6 +29,7 @@
     "@livedesign/templates": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/media": "workspace:*",
+    "@liveworkspace/telemetry": "workspace:*",
     "jose": "^6.2.12"
   },
   "devDependencies": {

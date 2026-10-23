@@ -28,7 +28,7 @@ A timing is an ordinary telemetry event: **`Timing` · `Measured` · `<Metric>.<
 
 The duration is **bucketed in the browser**; the raw number never leaves it. Carrying it in the `type`
 rather than a new numeric column means it rides the whole existing pipeline unchanged (the buffered
-emitter, the opt-out, the ingest's abuse controls, the events table, the 60-day retention, the summary's
+emitter, the opt-out, the central ingest's abuse controls, liveworkspace's events table, the 60-day retention, the summary's
 per-window counts and per-metric 30-day series), and a bucket is a closed token, so nothing about a
 timing can identify a person or a device.
 

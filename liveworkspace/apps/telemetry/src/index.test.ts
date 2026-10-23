@@ -35,17 +35,18 @@ describe('telemetry worker', () => {
     await send('liveplanner.app');
     await send('liveplanner.app');
     await send('livedocuments.app');
+    await send('livedesign.app');
 
     const all = (await (
       await worker.fetch(get('/api/telemetry/summary'), env, ctx)
     ).json()) as TelemetrySummary;
     expect(all.app).toBe('all');
-    expect(all.windows.today.total).toBe(4);
+    expect(all.windows.today.total).toBe(5);
     expect(all.windows.today.byApp).toEqual({
       'livediagram.app': 1,
       'liveplanner.app': 2,
       'livedocuments.app': 1,
-      'livedesign.app': 0,
+      'livedesign.app': 1,
     });
 
     const one = (await (

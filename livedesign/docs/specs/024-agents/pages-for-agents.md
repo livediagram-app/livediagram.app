@@ -129,7 +129,7 @@ Every decision logs with the `[pages-agent]` fingerprint: `applied` (design, tab
   `Cli`, `Api`), as a changeset does; a refusal sends nothing.
 - Reading the `pages` view sends `Agent · Viewed · Pages`, as every view does.
 - Each tool call and CLI verb counts as every one does: `Mcp · Used · ChangePages` and
-  `Cli · Used · PageLs|PageSet`, charted on the telemetry dashboard (`apps/telemetry`).
+  `Cli · Used · PageLs|PageSet`, charted on the telemetry dashboard (`liveworkspace/apps/site/app/telemetry/livedesign`).
 
 ## Non-goals
 

@@ -193,7 +193,6 @@
         "^build",
         "@livedesign/live#build",
         "@livedesign/help#build",
-        "@livedesign/telemetry#build",
         "@livedesign/api#build",
         "@livedesign/mcp#build",
         "@livedesign/router#build"

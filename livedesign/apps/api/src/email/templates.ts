@@ -337,7 +337,7 @@ export function accountDeletedEmail(env: Env): RenderedEmail {
     html: shell(env, {
       heading: 'Your account has been deleted',
       intro:
-        'This confirms that your livedesign account and the designs stored under it have been permanently removed, as you requested. There’s nothing left for you to do.',
+        'This confirms that your livedesign designs and your liveworkspace account have been permanently removed, as you requested. The account is closed for every liveworkspace app. There’s nothing left for you to do.',
       outro:
         'If this wasn’t you, or you change your mind, you’re always welcome back. The canvas is free and needs no account to start.',
       ctaText: 'Start a new design',
@@ -360,8 +360,7 @@ export function designJoinedEmail(
 ): RenderedEmail {
   const base = appBaseUrl(env);
   const who = joinerName && joinerName.trim() ? escapeHtml(joinerName.trim()) : 'Someone';
-  const named =
-    designName && designName.trim() ? escapeHtml(designName.trim()) : 'your design';
+  const named = designName && designName.trim() ? escapeHtml(designName.trim()) : 'your design';
   const whoText = joinerName && joinerName.trim() ? escapeText(joinerName.trim()) : 'Someone';
   return {
     kind: 'DesignJoined',
@@ -437,8 +436,7 @@ export function actionAssignedEmail(
   const who = assignerName && assignerName.trim() ? escapeHtml(assignerName.trim()) : 'A teammate';
   const whoText =
     assignerName && assignerName.trim() ? escapeText(assignerName.trim()) : 'A teammate';
-  const liveDoc =
-    design && design.name.trim() ? escapeHtml(design.name.trim()) : 'a shared design';
+  const liveDoc = design && design.name.trim() ? escapeHtml(design.name.trim()) : 'a shared design';
   const action = escapeHtml(actionName.trim());
   const detail = description?.trim()
     ? escapeHtml(
@@ -498,8 +496,7 @@ export function mentionedEmail(
   const whoText = authorName && authorName.trim() ? escapeText(authorName.trim()) : 'A teammate';
   const liveDoc =
     designName && designName.trim() ? escapeHtml(designName.trim()) : 'a shared design';
-  const designText =
-    designName && designName.trim() ? escapeText(designName.trim()) : 'a design';
+  const designText = designName && designName.trim() ? escapeText(designName.trim()) : 'a design';
   return {
     kind: 'Mentioned',
     subject: `${whoText} mentioned you in ${designText}`,
@@ -610,11 +607,9 @@ export function commentNotificationEmail(
   const base = appBaseUrl(env);
   const whoText =
     commenterName && commenterName.trim() ? escapeText(commenterName.trim()) : 'Someone';
-  const nameText =
-    designName && designName.trim() ? escapeText(designName.trim()) : 'your design';
+  const nameText = designName && designName.trim() ? escapeText(designName.trim()) : 'your design';
   const who = commenterName && commenterName.trim() ? escapeHtml(commenterName.trim()) : 'Someone';
-  const name =
-    designName && designName.trim() ? escapeHtml(designName.trim()) : 'your design';
+  const name = designName && designName.trim() ? escapeHtml(designName.trim()) : 'your design';
   return {
     kind: 'CommentNotification',
     subject: `${whoText} commented on ${nameText}`,

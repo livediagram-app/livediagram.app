@@ -11,6 +11,7 @@ routes = [{ pattern = "liveworkspace.app/api/telemetry*", zone_name = "liveworks
 #   TELEMETRY_KEY_LIVEDIAGRAM   shared with livediagram's api and mcp Workers as TELEMETRY_KEY
 #   TELEMETRY_KEY_LIVEPLANNER   shared with liveplanner's api and mcp Workers as TELEMETRY_KEY
 #   TELEMETRY_KEY_LIVEDOCUMENTS shared with livedocuments' api and mcp Workers as TELEMETRY_KEY
+#   TELEMETRY_KEY_LIVEDESIGN    shared with livedesign's api and mcp Workers as TELEMETRY_KEY
 [vars]
 ENVIRONMENT = "production"
 TELEMETRY_ENABLED = "true"

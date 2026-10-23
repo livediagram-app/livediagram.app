@@ -3,7 +3,7 @@ import { createVerifier } from '@liveworkspace/auth-client';
 import type { Env } from '../types';
 
 // Checks the access token a signed-in browser sends, minted by the liveworkspace accounts Worker
-// (accounts.liveworkspace.app, docs/specs/014-identity/auth-and-guest-access.md). The check is local:
+// (liveworkspace.app, docs/specs/014-identity/auth-and-guest-access.md). The check is local:
 // a signature against the accounts Worker's published key set, plus its issuer and this API's own
 // audience, so a token minted for livediagram is refused here. No call to the accounts Worker per
 // request.

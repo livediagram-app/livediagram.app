@@ -316,6 +316,8 @@ export function TabBar({
       <div
         data-editor-tabbar
         data-region="tabs"
+        // The app's own colours, whatever the tab's style (docs/specs/011-theme/canvas-and-theme-dialog.md).
+        data-app-chrome
         // Clear of the home indicator and a landscape notch (lib/safe-area): the 48px row sits
         // above the bottom inset (the height grows by it), its sides past the side insets.
         style={{

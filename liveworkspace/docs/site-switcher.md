@@ -35,5 +35,4 @@ app. It lists livediagram, liveplanner, livedocuments and livedesign.
 
 Every app shows **the same switcher**. Each app's UI package holds its own copy of `SiteSwitcher.tsx`
 (the packages are forks), and `packages/sites/src/switcher-copies.test.ts` fails if the copies differ,
-so a change to one is a change to all. livediagram, liveplanner and livedocuments have it;
-livedesign gets it with its platform move, and joins that test then.
+so a change to one is a change to all. All four apps have it.

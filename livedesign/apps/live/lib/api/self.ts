@@ -64,15 +64,14 @@ export async function apiLoadSelf(id: string): Promise<Participant | null> {
 }
 
 // Account self-deletion (signed-in only). Wipes the caller's designs,
-// folders, and participant row server-side; the caller then ends
-// the session. The liveworkspace account itself stays, since it
-// signs the person in to the other liveworkspace apps too. Returns
-// the change counts on success or null on any non-2xx so the caller
-// can decide whether to proceed.
-export async function apiDeleteAccount(): Promise<{
-  designs: number;
-  folders: number;
-} | null> {
+// folders, and participant row server-side, and closes the liveworkspace
+// account; the caller then ends the session.
+// Deletes the person's livedesign data, then closes their liveworkspace account. Resolves to what
+// was deleted, `'account_not_closed'` when the data went but closing the account failed (asking
+// again finishes it), or null when nothing was deleted.
+export async function apiDeleteAccount(): Promise<
+  { designs: number; folders: number } | 'account_not_closed' | null
+> {
   // ownerId arg is unused server-side for this endpoint (the
   // resolved account id wins), but apiHeaders' signature wants
   // something — pass an empty string. The registered token
@@ -81,6 +80,10 @@ export async function apiDeleteAccount(): Promise<{
     method: 'DELETE',
     headers: await apiHeaders(''),
   });
+  if (res.status === 502) {
+    const failed = (await res.json().catch(() => null)) as { error?: string } | null;
+    if (failed?.error === 'account_not_closed') return 'account_not_closed';
+  }
   if (!res.ok) return null;
   const body = (await res.json()) as { deleted: { designs: number; folders: number } };
   return body.deleted;

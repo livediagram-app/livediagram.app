@@ -238,7 +238,7 @@ No environment variable or binding is added.
 
 ## Telemetry
 
-`placementDefaultTelemetryType(key)` derives one closed value per key, `Default` + each part in PascalCase, so a new editor mode gains its value with its key. The surfaces that set and clear defaults fire `Folder·Changed·<value>` and `Folder·Cleared·<value>` before the write; the one emitter is the store (`placement-defaults-store.ts`), which every surface writes through. The dashboard charts them as Default Folders Set and Default Folders Cleared in its Organisation stack (`apps/telemetry/app/catalogue/features.ts`), their values read from `PLACEMENT_DEFAULT_KEYS` (`apps/telemetry/app/computed-emitters.ts`).
+`placementDefaultTelemetryType(key)` derives one closed value per key, `Default` + each part in PascalCase, so a new editor mode gains its value with its key. The surfaces that set and clear defaults fire `Folder·Changed·<value>` and `Folder·Cleared·<value>` before the write; the one emitter is the store (`placement-defaults-store.ts`), which every surface writes through. The dashboard charts them as Default Folders Set and Default Folders Cleared in its Organisation stack (`../liveworkspace/apps/site/app/telemetry/livedesign/catalogue/features.ts`), their values read from `PLACEMENT_DEFAULT_KEYS` (`../liveworkspace/apps/site/app/telemetry/livedesign/computed-emitters.ts`).
 
 ## Defaults ledger
 

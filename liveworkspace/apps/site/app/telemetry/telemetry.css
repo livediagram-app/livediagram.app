@@ -13,6 +13,7 @@
 @source '../../../../../livediagram/packages/ui/src';
 @source '../../../../../liveplanner/packages/ui/src';
 @source '../../../../../livedocuments/packages/ui/src';
+@source '../../../../../livedesign/packages/ui/src';
 
 /* The telemetry dashboard shows the apps' own numbers in the apps' own accents: livediagram's sky
  * (its tailwind-config's brand scale, which the platform's slate replaced above) for every app and

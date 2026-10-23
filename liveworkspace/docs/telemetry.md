@@ -111,17 +111,11 @@ the repo root runs the site with this Worker behind it, at http://localhost:3000
 
 ## Which apps send
 
-livediagram, liveplanner and livedocuments send events, and each has its own dashboard under
-`apps/site/app/telemetry/<app>/` (`livediagram/`, `liveplanner/`, `livedocuments/`). Each folder's
-tests read that app's source: every event an emitter can send must be in its vocabulary and have a
-chart (`metric-emitters.test.ts`, `computed-emitters.ts`), and every event has an explanation
-(`event-explanation.test.ts`).
-
-livedesign is in `TELEMETRY_APPS`, so the dashboard lists it in its own colour, but it doesn't send
-yet: the service stores nothing from it (`NOTHING_YET` in `apps/telemetry/src/vocabularies.ts`),
-and picking it on the dashboard says there are no events yet. When it does: import its vocabulary
-in `vocabularies.ts`, add its dashboard under `apps/site/app/telemetry/livedesign/`, and set its
-key.
+livediagram, liveplanner, livedocuments and livedesign send events, and each has its own dashboard
+under `apps/site/app/telemetry/<app>/` (`livediagram/`, `liveplanner/`, `livedocuments/`,
+`livedesign/`). Each folder's tests read that app's source: every event an emitter can send must be
+in its vocabulary and have a chart (`metric-emitters.test.ts`, `computed-emitters.ts`), and every
+event has an explanation (`event-explanation.test.ts`).
 
 ## First deploy
 
@@ -130,8 +124,7 @@ key.
    `liveworkspace-telemetry-staging`).
 2. Set one key per app, and give each app's api and mcp Workers the same value as `TELEMETRY_KEY`:
    `openssl rand -hex 32`, then `wrangler secret put TELEMETRY_KEY_LIVEDIAGRAM`,
-   `TELEMETRY_KEY_LIVEPLANNER` and `TELEMETRY_KEY_LIVEDOCUMENTS` (and `TELEMETRY_KEY_LIVEDESIGN`
-   once livedesign sends events).
+   `TELEMETRY_KEY_LIVEPLANNER`, `TELEMETRY_KEY_LIVEDOCUMENTS` and `TELEMETRY_KEY_LIVEDESIGN`.
 3. `corepack pnpm db:migrate:remote`, then `corepack pnpm deploy`. The dashboard ships with the
    site ([site.md](site.md)).
 4. The Worker takes the route `liveworkspace.app/api/telemetry*` only, so the rest of the zone is

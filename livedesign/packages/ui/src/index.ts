@@ -8,7 +8,8 @@ export {
 } from './social-card';
 export { brandLogoSvg } from './brand-logo-svg';
 export { PRISM_PALETTES, prismPalette, type PrismPalette, type PrismScheme } from './brand-prism';
-export { ProductNav, ProductNavLinks, type ProductNavKey } from './ProductNav';
+export { ProductNavLinks, type ProductNavKey } from './ProductNav';
+export { SiteSwitcher } from './SiteSwitcher';
 export { START_BLANK_HREF, StartBlankLink } from './StartBlankLink';
 export { SiteHeader } from './SiteHeader';
 export { RAIL_CLEAR_PADDING } from './share-rail-clearance';
@@ -81,6 +82,7 @@ export {
 } from './trusted-types';
 export { IDENTITY_FILL, identityDeep, identityVars } from './identity-fill';
 export {
+  SITE_ID,
   SITE_URL,
   SITE_NAME,
   REPO_URL,

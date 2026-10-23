@@ -38,7 +38,10 @@ describe('chart stacks', () => {
 describe('the Emails Sent stack', () => {
   // The head's total is the sum of its members, so a template with no chart
   // would silently drop out of it. Read the api's EmailKind union as source.
-  const source = readFileSync(resolve(__dirname, '../../api/src/email/templates.ts'), 'utf8');
+  const source = readFileSync(
+    resolve(__dirname, '../../../../../../livedesign/apps/api/src/email/templates.ts'),
+    'utf8',
+  );
   const union = /export type EmailKind =([^;]+);/.exec(source)?.[1] ?? '';
   const kinds = [...union.matchAll(/'([A-Za-z0-9]+)'/g)].map((m) => m[1]);
 

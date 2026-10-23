@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // by scope"): every route class the Explorer uses reaches its route as the person, and every account class is
 // refused before any route runs. Each route module is a stub that answers 204, so reaching it is the proof.
 vi.mock('./auth/accounts', () => ({ getAccountIdentity: async () => null }));
-vi.mock('./db', () => ({ resolveApiToken: vi.fn(), deleteOldEvents: async () => {} }));
+vi.mock('./db', () => ({ resolveApiToken: vi.fn() }));
 
 // One stub per route module the dispatch names: it records the context it was handed and answers 204.
 const { resolveWorkbenchSessionMock, reached, stub } = vi.hoisted(() => {
@@ -47,7 +47,6 @@ vi.mock('./routes/preferences', () => stub('handlePreferences'));
 vi.mock('./routes/share', () => stub('handleShare'));
 vi.mock('./routes/teams', () => stub('handleTeams'));
 vi.mock('./routes/shared', () => stub('handleShared'));
-vi.mock('./routes/telemetry', () => stub('handleTelemetry'));
 vi.mock('./routes/trash', () => stub('handleTrash'));
 vi.mock('./routes/tokens', () => stub('handleTokens'));
 vi.mock('./routes/oauth', () => stub('handleOauthExchange'));

@@ -8,15 +8,12 @@
 // Delete sequence:
 //
 //   1. DELETE /api/account — wipes the caller's designs + folders +
-//      participant row on the backend. Returns the change counts on
-//      success.
+//      participant row on the backend, then closes their liveworkspace
+//      account, which signs them in to every liveworkspace app. Returns
+//      the change counts on success.
 //   2. `deleteAccount()` — ends the livedesign session.
 //   3. Sign out + redirect — by the time the page reloads the editor
 //      lands as a fresh guest.
-//
-// What goes is the person's livedesign, not their liveworkspace
-// account: that one account also signs them in to the other
-// liveworkspace apps, so it is not livedesign's to delete.
 
 import { Button, useEscape, useFocusTrap, Portal } from '@livedesign/ui';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
@@ -94,6 +91,14 @@ export function DeleteAccountDialog({
       return;
     }
     const result = await apiDeleteAccount();
+    if (result === 'account_not_closed') {
+      // The data went; the account didn't. The session still works, so asking again finishes it.
+      setPhase('error');
+      setErrorMsg(
+        'Your livedesign data was deleted, but closing your liveworkspace account failed. Try again.',
+      );
+      return;
+    }
     if (!result) {
       setPhase('error');
       setErrorMsg('Could not delete server-side data. Try again.');
@@ -139,8 +144,8 @@ export function DeleteAccountDialog({
             </h2>
             <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
               This permanently removes your designs (including any in the Trash), folders, and
-              participant record from the livedesign server, then signs you out. This cannot be
-              undone. Your liveworkspace sign-in stays, for the other apps that use it.
+              participant record from the livedesign server, and closes your liveworkspace account,
+              which also signs you in to the other liveworkspace apps. This cannot be undone.
             </p>
           </div>
 

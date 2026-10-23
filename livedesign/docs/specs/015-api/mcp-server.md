@@ -600,21 +600,17 @@ Every post (these reports and `Mcp·Used`) is handed to the request's
 The MCP worker reads three bindings and two out-of-band values. Bindings
 (`API` service binding, `OAUTH_KV`) are declared in `wrangler.toml`; the rest:
 
-| Name                  | Where                          | Absent means                                                                                                                                                                    |
-| --------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CONSENT_BASE_URL`    | `[vars]` (not secret)          | Defaults to `https://livedesign.app`, so a self-host's OAuth callers land on the hosted consent screen instead of their own. Also the host of every tool's `url` and share link |
-| `INTERNAL_EVENTS_KEY` | worker secret, **also on api** | This worker's telemetry shares the anonymous per-IP rate-limit bucket and throttles itself ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))         |
+| Name               | Where                          | Absent means                                                                                                                                                                    |
+| ------------------ | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONSENT_BASE_URL` | `[vars]` (not secret)          | Defaults to `https://livedesign.app`, so a self-host's OAuth callers land on the hosted consent screen instead of their own. Also the host of every tool's `url` and share link |
+| `TELEMETRY_KEY`    | worker secret, **also on api** | This worker sends no telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))                                                                     |
 
-`INTERNAL_EVENTS_KEY` exists because §4.12's telemetry posts travel over the
-**service binding**, which carries no `CF-Connecting-IP` — so the api's
-`clientIp` fell back to a literal `'anonymous'` and every internal caller in
-the world contended for one 120/min key, the overflow dropped as a 204 this
-worker can't distinguish from success. Since we post one request per tool
-call, that ceiling was roughly two tool calls per second globally: enough to
-make a growing integration read as flat in the very dashboard meant to show
-it growing. The value **must match** the api worker's, and a mismatch is
-silent — the deploy workflow drives both from one GitHub secret for exactly
-that reason. See [Secrets policy](../002-project-scope/secrets-policy.md) for the secrets table.
+`TELEMETRY_KEY` is livedesign's Worker key for liveworkspace's central telemetry service
+(liveworkspace/docs/telemetry.md): §4.12's posts go there directly, with no Origin, and the key is what
+lets them speak for livedesign.app. It **must match** the api worker's and the service's
+`TELEMETRY_KEY_LIVEDESIGN`; a mismatch is silent (the posts are simply not stored), so the deploy workflow
+drives both workers from one GitHub secret. `TELEMETRY_URL` names the service (unset is production's).
+See [Secrets policy](../002-project-scope/secrets-policy.md) for the secrets table.
 
 ### 4.14 Tool annotations (behaviour hints)
 

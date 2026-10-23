@@ -3,6 +3,10 @@
 // emit them and the vocabulary have to change together; the service only reads them.
 
 import {
+  isServerEmittedEvent as isLivedesignServerEvent,
+  isValidTelemetryEvent as isLivedesignEvent,
+} from '@livedesign/api-schema';
+import {
   isServerEmittedEvent as isLivediagramServerEvent,
   isValidTelemetryEvent as isLivediagramEvent,
 } from '@livediagram/api-schema';
@@ -23,11 +27,6 @@ type Vocabulary = {
   isServerOnly: (event: TelemetryWireEvent) => boolean;
 };
 
-const NOTHING_YET: Vocabulary = {
-  isValid: (_value: unknown): _value is TelemetryWireEvent => false,
-  isServerOnly: () => false,
-};
-
 export const VOCABULARIES: Record<TelemetryApp, Vocabulary> = {
   'livediagram.app': {
     isValid: isLivediagramEvent as Vocabulary['isValid'],
@@ -41,6 +40,8 @@ export const VOCABULARIES: Record<TelemetryApp, Vocabulary> = {
     isValid: isLivedocumentsEvent as Vocabulary['isValid'],
     isServerOnly: isLivedocumentsServerEvent,
   },
-  // livedesign doesn't send to this service yet, so the service stores nothing from it.
-  'livedesign.app': NOTHING_YET,
+  'livedesign.app': {
+    isValid: isLivedesignEvent as Vocabulary['isValid'],
+    isServerOnly: isLivedesignServerEvent,
+  },
 };

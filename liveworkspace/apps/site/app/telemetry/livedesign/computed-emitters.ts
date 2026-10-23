@@ -33,7 +33,7 @@ type ComputedValues = {
   open?: string;
 };
 
-const APPS = resolve(__dirname, '../..');
+const APPS = resolve(__dirname, '../../../../../../livedesign/apps');
 const read = (path: string) => readFileSync(resolve(APPS, path), 'utf8');
 
 function tokensAfterBlock(path: string, marker: string, close: string): string[] {
