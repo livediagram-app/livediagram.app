@@ -111,6 +111,12 @@ describe('mintApiToken', () => {
     expect(asked).toEqual({ path: '/tokens', accessToken: 'jwt', name: 'Claude', readOnly: false });
   });
 
+  it('is null on a deployment without sign-in', async () => {
+    expect(
+      await mintApiToken(sqliteD1().env, { accessToken: 'jwt', name: 'x', readOnly: false }),
+    ).toBeNull();
+  });
+
   it('is null at the account’s token cap', async () => {
     handle = () => new Response(null, { status: 409 });
     expect(

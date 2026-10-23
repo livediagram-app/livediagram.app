@@ -11,6 +11,7 @@ import { liveDoc, mediaImages, tabWith } from './test-image-fixtures';
 import {
   clearImageGrantCachesForTests,
   documentMayServeImage,
+  grantImages,
   grantPlacedImages,
   imageOwners,
   servableImageIds,
@@ -152,5 +153,36 @@ describe('placement grants', () => {
       .run();
     expect(grants()).toEqual(['adas']);
     expect([...(await servableImageIds(db.env, 'C', ['adas', 'pasted']))]).toEqual(['adas']);
+  });
+});
+
+describe('edges', () => {
+  it('answers nothing for no images, or for a document it does not hold', async () => {
+    liveDoc(db.sql, 'D', 'user_ada');
+    expect(await servableImageIds(db.env, 'D', [])).toEqual(new Set());
+    expect(await servableImageIds(db.env, 'missing', ['a'])).toEqual(new Set());
+    expect(await grantPlacedImages(db.env, 'D', [], [], 1)).toBe(0);
+    expect(await grantPlacedImages(db.env, 'missing', ['a'], [], 1)).toBe(0);
+    expect(media.calls).toEqual([]);
+  });
+
+  it('serves no image when the media service is not set up', async () => {
+    liveDoc(db.sql, 'D', 'user_ada');
+    mediaImages(media, 'user_ada', ['mine']);
+    const env = { ...db.env, MEDIA_KEY: undefined };
+    expect(await documentMayServeImage(env, 'D', 'mine')).toBe(false);
+  });
+
+  it('serves an ownerless document no one else’s images, and a team accounts does not know only its own', async () => {
+    liveDoc(db.sql, 'O', '');
+    liveDoc(db.sql, 'T', 'user_ada', 'T', 'team_gone');
+    mediaImages(media, 'user_bob', ['bobs']);
+    expect(await documentMayServeImage(db.env, 'O', 'bobs')).toBe(false);
+    expect(await documentMayServeImage(db.env, 'T', 'bobs')).toBe(false);
+  });
+
+  it('grants images outright', async () => {
+    await grantImages(db.env, ['x', 'y'], 1);
+    expect(grants()).toEqual(['x', 'y']);
   });
 });
