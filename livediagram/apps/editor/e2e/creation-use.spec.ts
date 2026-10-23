@@ -1,25 +1,22 @@
 import type { Page } from '@playwright/test';
-import { expect, expectNoPageErrors, mintGuest, test } from './fixtures';
-import { asGuest } from './home-seed';
+import { adoptGuest, expect, expectNoPageErrors, mintGuest, test } from './fixtures';
 import { syntheticExportZip } from './ms-whiteboard-board';
 
 // Making a document is a use, a bulk import is not (docs/specs/013-workspace/explorer-home.md
 // "Making a document"), end to end against the real build and api worker, as a guest, in dark
 // mode: a board imported on its own is in Home's Jump Back In without being opened; a two-board
-// import puts neither there, though both are on the Recent page.
+// import puts neither there, though both are on the Recent page. Home and Recent are the shared Explorer's
+// (liveworkspace's page at /explorer, from its site build); the import is this site's /import page.
 
 test.use({ colorScheme: 'dark' });
 
 const SINGLE_BOARD = 'Sprint board';
 const UNTITLED_BOARD = 'Whiteboard, 1 Jan 2026';
 
-/** The Explorer's Microsoft Whiteboard import of a synthesised export of `boards` boards. */
+/** The Explorer's Microsoft Whiteboard import (the /import page its Import from opens) of a synthesised
+ *  export of `boards` boards. */
 async function importBoards(page: Page, boards: 1 | 2): Promise<void> {
-  await page.goto('/explorer/recent');
-  await page
-    .getByRole('toolbar', { name: 'Import from' })
-    .getByRole('button', { name: 'Import from Microsoft Whiteboard' })
-    .click();
+  await page.goto('/import?source=microsoft-whiteboard');
   const chooser = page.waitForEvent('filechooser');
   await page.getByRole('button', { name: 'Choose a .zip' }).click();
   await (
@@ -39,7 +36,11 @@ const jumpBackIn = (page: Page) =>
   page.getByRole('region', { name: 'Jump Back In' }).getByRole('listitem');
 
 async function freshGuest(page: Page): Promise<void> {
-  await asGuest(page, await mintGuest(page.request));
+  await adoptGuest(page, await mintGuest(page.request));
+  await page.addInitScript(() => {
+    localStorage.setItem('livediagram:v2:name-confirmed', '1');
+    localStorage.setItem('livediagram:v2:ui-mode', 'dark');
+  });
 }
 
 test('a board imported on its own is in Jump Back In without being opened', async ({
@@ -73,7 +74,7 @@ test('a two-board import marks neither used: Jump Back In stays empty, Recent ha
 
   await page.goto('/explorer/home');
   const jump = page.getByRole('region', { name: 'Jump Back In' });
-  await expect(jump).toContainText('The documents you use most and last will gather here.');
+  await expect(jump).toContainText(/will gather here\./);
   await expect(jumpBackIn(page).getByRole('link')).toHaveCount(0);
   await page.screenshot({ path: test.info().outputPath('bulk-import-home-desktop.png') });
 

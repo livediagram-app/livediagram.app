@@ -7,6 +7,7 @@ import {
   guestTokenFor,
   mintGuest,
   ownerHeaders,
+  seedDocumentItem,
   test,
 } from '../fixtures';
 import {
@@ -36,7 +37,6 @@ import { mainThreadTasks, type TraceEvent } from './trace-tasks';
 
 const OUT = 'test-results/perf';
 const CATEGORIES = 'devtools.timeline,disabled-by-default-devtools.timeline';
-const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 const VIEW = { width: 1440, height: 900 };
 const SHAPE_IDS = buildReferenceBoard()
   .filter((el) => el.type === 'shape')
@@ -48,9 +48,10 @@ type Point = { x: number; y: number };
 async function seed(page: Page, baseURL: string, owner: string, tab: Tab): Promise<string> {
   const id = crypto.randomUUID();
   const elements = buildReferenceBoard();
-  const res = await page.request.post(`${apiBase}/documents`, {
-    headers: ownerHeaders(owner, { Origin: new URL(baseURL).origin }),
-    data: {
+  const res = await seedDocumentItem(
+    page.request,
+    ownerHeaders(owner, { Origin: new URL(baseURL).origin }),
+    {
       id,
       name: `Reference board (${tab})`,
       // The whiteboard series is a general tab opening in Draw mode (docs/specs/007-editor/editor-modes.md).
@@ -63,7 +64,7 @@ async function seed(page: Page, baseURL: string, owner: string, tab: Tab): Promi
         },
       ],
     },
-  });
+  );
   expect(res.ok(), `seeding the ${tab} board`).toBe(true);
   return id;
 }

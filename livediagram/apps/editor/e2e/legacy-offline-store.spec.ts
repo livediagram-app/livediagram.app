@@ -38,7 +38,8 @@ test('offline documents saved before the rename survive the store upgrade', asyn
         };
       }),
   );
-  await page.goto('/explorer/offline');
+  // This Browser, the page that lists what this browser keeps.
+  await page.goto('/offline');
   await expect(page.getByText('Kept through the rename').first()).toBeVisible();
   const stores = await page.evaluate(
     () =>

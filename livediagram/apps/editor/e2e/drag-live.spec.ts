@@ -1,5 +1,13 @@
 import type { Browser, Page } from '@playwright/test';
-import { dismissQuickTour, expect, guestTokenFor, mintGuest, ownerHeaders, test } from './fixtures';
+import {
+  dismissQuickTour,
+  expect,
+  adoptGuest,
+  mintGuest,
+  documentHeaders,
+  seedDocumentItem,
+  test,
+} from './fixtures';
 
 // docs/specs/008-canvas/drag-preview.md "Live movement for collaborators": while the owner drags a box,
 // a collaborator on an edit link sees it move (and the arrow on it follow) before anything is saved,
@@ -45,14 +53,14 @@ async function openAs(browser: Browser, baseURL: string, url: string, owner: str
     viewport: { width: 1440, height: 900 },
     colorScheme: 'dark',
   });
+  if (owner) await adoptGuest(ctx, owner);
   await ctx.addInitScript(
-    ({ o, token }) => {
+    ({ o }) => {
       if (o) {
         localStorage.setItem('livediagram:v2:name-confirmed', '1');
-        if (token) localStorage.setItem('livediagram:v2:guest-token', token);
       }
     },
-    { o: owner, token: owner ? guestTokenFor(owner) : null },
+    { o: owner },
   );
   const page = await ctx.newPage();
   await page.goto(url);
@@ -69,12 +77,15 @@ test('a collaborator sees a drag live, and where it lands', async ({ page, brows
   const owner = await mintGuest(page.request);
   const id = crypto.randomUUID();
   const tabId = crypto.randomUUID();
-  const headers = ownerHeaders(owner, { Origin: new URL(baseURL!).origin });
-  const seeded = await page.request.post(`${apiBase}/documents`, {
-    headers,
-    data: { id, name: 'Board', tabs: [{ id: tabId, name: 'Board', elements: BOARD }] },
+  const seeded = await seedDocumentItem(page.request, owner, {
+    id,
+    name: 'Board',
+    tabs: [{ id: tabId, name: 'Board', elements: BOARD }],
   });
   expect(seeded.ok()).toBe(true);
+  const headers = await documentHeaders(page.request, owner, id, {
+    Origin: new URL(baseURL!).origin,
+  });
   const share = await page.request.post(`${apiBase}/documents/${id}/share`, {
     headers,
     data: { role: 'edit' },

@@ -65,6 +65,11 @@ jobs:
           NEXT_PUBLIC_BUILD_ID: e2e-build
         run: bash scripts/next-build-cold-retry.sh pnpm --filter @livediagram/editor build
 
+      # The Explorer is liveworkspace's page at livediagram's own /explorer: the stack serves its static
+      # export, so the specs that open it need it built.
+      - name: Build liveworkspace's site (the Explorer)
+        run: bash scripts/next-build-cold-retry.sh pnpm --filter @liveworkspace/site build
+
       # Playwright's webServer boots scripts/e2e-stack.mjs (api worker on local D1 + the static
       # serve). CI=1 makes it always start fresh.
       - name: Run smoke shard

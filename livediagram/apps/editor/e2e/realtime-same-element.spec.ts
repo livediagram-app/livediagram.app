@@ -1,5 +1,13 @@
 import type { Browser, Page } from '@playwright/test';
-import { dismissQuickTour, expect, test, guestTokenFor, mintGuest, ownerHeaders } from './fixtures';
+import {
+  dismissQuickTour,
+  expect,
+  test,
+  adoptGuest,
+  mintGuest,
+  documentHeaders,
+  seedDocumentItem,
+} from './fixtures';
 
 // Two people dragging ONE element at the same moment (docs/specs/012-collaboration/realtime-conflict-resolution.md
 // "Same-element edits converge"): the room orders the two moves, and both screens end on the later one. Each used
@@ -10,14 +18,14 @@ const CANVAS = '[data-canvas-a11y-root]';
 
 async function openAs(browser: Browser, baseURL: string, url: string, owner: string | null) {
   const ctx = await browser.newContext({ baseURL, viewport: { width: 1440, height: 860 } });
+  if (owner) await adoptGuest(ctx, owner);
   await ctx.addInitScript(
-    ({ o, token }) => {
+    ({ o }) => {
       if (o) {
-        if (token) localStorage.setItem('livediagram:v2:guest-token', token);
         localStorage.setItem('livediagram:v2:name-confirmed', '1');
       }
     },
-    { o: owner, token: owner ? guestTokenFor(owner) : null },
+    { o: owner },
   );
   const page = await ctx.newPage();
   await page.goto(url);
@@ -50,7 +58,6 @@ test('two peers dragging the same element at once end on the same position', asy
 }) => {
   const owner = await mintGuest(page.request);
   const id = crypto.randomUUID();
-  const headers = ownerHeaders(owner, { Origin: new URL(baseURL!).origin });
   const square = (elId: string, x: number) => ({
     id: elId,
     type: 'shape',
@@ -60,21 +67,21 @@ test('two peers dragging the same element at once end on the same position', asy
     width: 160,
     height: 100,
   });
-  const seeded = await page.request.post(`${apiBase}/documents`, {
-    headers,
-    data: {
-      id,
-      name: 'Room',
-      tabs: [
-        {
-          id: crypto.randomUUID(),
-          name: 'Board',
-          elements: [square('a', 500), square('still', 1000)],
-        },
-      ],
-    },
+  const seeded = await seedDocumentItem(page.request, owner, {
+    id,
+    name: 'Room',
+    tabs: [
+      {
+        id: crypto.randomUUID(),
+        name: 'Board',
+        elements: [square('a', 500), square('still', 1000)],
+      },
+    ],
   });
   expect(seeded.ok()).toBe(true);
+  const headers = await documentHeaders(page.request, owner, id, {
+    Origin: new URL(baseURL!).origin,
+  });
   const share = await page.request.post(`${apiBase}/documents/${id}/share`, {
     headers,
     data: { role: 'edit' },

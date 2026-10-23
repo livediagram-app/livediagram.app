@@ -195,13 +195,8 @@ test.describe('importing Excalidraw files from the Explorer', () => {
   test('each file becomes its own document, named after the file', async ({ page, pageErrors }) => {
     await startBlankDocument(page);
     await dismissQuickTour(page);
-    await page.goto('/explorer/recent');
-    const button = page
-      .getByRole('toolbar', { name: 'Import from' })
-      .getByRole('button', { name: 'Import from Excalidraw' });
-    await expect(button).toBeVisible();
-    await page.screenshot({ path: test.info().outputPath('explorer-import-from.png') });
-    await button.click();
+    // The Explorer's Import from opens the /import page for its source.
+    await page.goto('/import?source=excalidraw');
     const chooser = page.waitForEvent('filechooser');
     await page.getByRole('button', { name: 'Choose files', exact: true }).click();
     const sample = sampleCopy();

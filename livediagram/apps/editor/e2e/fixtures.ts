@@ -200,7 +200,8 @@ export async function startEventStormingRow(page: Page): Promise<void> {
   const notes = page.locator('[data-canvas-a11y-root]').getByRole('img', { name: /^Sticky note/ });
   await notes.first().waitFor();
   const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
-  const headers = await pageOwnerHeaders(page, { 'Content-Type': 'application/json' });
+  const documentId = new URL(page.url()).pathname.split('/').filter(Boolean).pop()!;
+  const headers = await pageOwnerHeaders(page, { 'Content-Type': 'application/json' }, documentId);
   await page.evaluate(
     async ({ base, headers }) => {
       const id = location.pathname.split('/').filter(Boolean).pop()!;
@@ -315,7 +316,8 @@ export type Seed = Record<string, unknown>[];
 // Write the seed into the new document's first tab through the api, reload.
 export async function seedTab(page: Page, elements: Seed): Promise<void> {
   const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
-  const headers = await pageOwnerHeaders(page, { 'Content-Type': 'application/json' });
+  const documentId = new URL(page.url()).pathname.split('/').filter(Boolean).pop()!;
+  const headers = await pageOwnerHeaders(page, { 'Content-Type': 'application/json' }, documentId);
   await page.evaluate(
     async ({ base, elements, headers }) => {
       const id = location.pathname.split('/').filter(Boolean).pop()!;
@@ -372,6 +374,19 @@ export function guestTokenFor(owner: string): string | null {
   return guestTokens.get(owner) ?? null;
 }
 
+// The page (or every page of a context) opens as this guest: its token is where the app keeps it.
+export async function adoptGuest(target: Page | BrowserContext, owner: string): Promise<void> {
+  const token = guestTokens.get(owner);
+  if (!token) throw new Error(`no guest token for ${owner}: mint it with mintGuest`);
+  await target.addInitScript((t) => {
+    try {
+      localStorage.setItem('livediagram:v2:guest-token', t);
+    } catch {
+      // A page with no storage keeps none.
+    }
+  }, token);
+}
+
 // A guest's request headers: their guest token as the Bearer.
 export function ownerHeaders(
   owner: string,
@@ -381,15 +396,68 @@ export function ownerHeaders(
   return { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...extra };
 }
 
+// The index's grant on a document for whoever `headers` names (liveworkspace/docs/one-explorer-contracts.md "Grants"):
+// every api request about one document carries it as X-Index-Grant.
+export async function documentGrant(
+  request: import('@playwright/test').APIRequestContext,
+  headers: Record<string, string>,
+  documentId: string,
+): Promise<string> {
+  const res = await request.post(`/api/index/items/${encodeURIComponent(documentId)}/grant`, {
+    headers,
+  });
+  expect(res.ok(), `grant on ${documentId}: ${res.status()}`).toBe(true);
+  return ((await res.json()) as { grant: string }).grant;
+}
+
+// ownerHeaders plus the grant on one document.
+export async function documentHeaders(
+  request: import('@playwright/test').APIRequestContext,
+  owner: string,
+  documentId: string,
+  extra: Record<string, string> = {},
+): Promise<Record<string, string>> {
+  const headers = ownerHeaders(owner);
+  return {
+    ...headers,
+    'X-Index-Grant': await documentGrant(request, headers, documentId),
+    ...extra,
+  };
+}
+
+// A document made as the app makes one: the item at the index first, then its content with the grant the create
+// answers (liveworkspace/docs/one-explorer-contracts.md "Items"). `data` is the api's create body ({ id, name,
+// tabs, ... }). Answers the content create's response.
+export async function seedDocumentItem(
+  request: import('@playwright/test').APIRequestContext,
+  owner: string | Record<string, string>,
+  data: { id: string; name: string } & Record<string, unknown>,
+): Promise<import('@playwright/test').APIResponse> {
+  const headers = typeof owner === 'string' ? ownerHeaders(owner) : owner;
+  const made = await request.post('/api/index/items', {
+    headers,
+    data: { id: data.id, app: 'livediagram', title: data.name },
+  });
+  expect(made.ok(), `index create: ${made.status()}`).toBe(true);
+  const { grant } = (await made.json()) as { grant: { grant: string } };
+  return request.post('/api/documents', {
+    headers: { ...headers, 'X-Index-Grant': grant.grant, 'Content-Type': 'application/json' },
+    data,
+  });
+}
+
 // The page's OWN guest identity as request headers, for api calls a spec makes from inside the page
-// (`page.evaluate`, which cannot import this module): the guest token the app keeps. Read once, before
-// the evaluate, and passed in as an argument.
+// (`page.evaluate`, which cannot import this module): the guest token the app keeps, and with `documentId` the grant
+// on that document. Read once, before the evaluate, and passed in as an argument.
 export async function pageOwnerHeaders(
   page: Page,
   extra: Record<string, string> = {},
+  documentId?: string,
 ): Promise<Record<string, string>> {
   const token = await page.evaluate(() => localStorage.getItem('livediagram:v2:guest-token'));
-  return { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...extra };
+  const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+  if (documentId) headers['X-Index-Grant'] = await documentGrant(page.request, headers, documentId);
+  return { ...headers, ...extra };
 }
 
 // A box once it has stopped moving: a surface that pops in (the `pop-in` scale animation) reports a

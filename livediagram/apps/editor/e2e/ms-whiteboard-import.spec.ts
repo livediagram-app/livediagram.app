@@ -4,13 +4,9 @@ import type { Page } from '@playwright/test';
 import { test, expect, dismissQuickTour, expectNoPageErrors, startBlankDocument } from './fixtures';
 import { syntheticExportZip } from './ms-whiteboard-board';
 
-// The Explorer page header's "Import from" toolbar opens the import.
+// The Explorer's "Import from" opens the /import page for its source, which opens the import.
 async function openMsWhiteboardImport(page: Page): Promise<void> {
-  await page.goto('/explorer/recent');
-  await page
-    .getByRole('toolbar', { name: 'Import from' })
-    .getByRole('button', { name: 'Import from Microsoft Whiteboard' })
-    .click();
+  await page.goto('/import?source=microsoft-whiteboard');
 }
 
 test('Microsoft Whiteboard boards open as their own documents with a report', async ({

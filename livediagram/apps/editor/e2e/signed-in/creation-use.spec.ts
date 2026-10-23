@@ -44,11 +44,8 @@ async function apiCreate(
 }
 
 async function importBoards(page: Page, boards: 1 | 2): Promise<void> {
-  await page.goto('/explorer/recent');
-  await page
-    .getByRole('toolbar', { name: 'Import from' })
-    .getByRole('button', { name: 'Import from Microsoft Whiteboard' })
-    .click();
+  // The Explorer's Import from opens the /import page for its source.
+  await page.goto('/import?source=microsoft-whiteboard');
   const chooser = page.waitForEvent('filechooser');
   await page.getByRole('button', { name: 'Choose a .zip' }).click();
   await (
@@ -91,7 +88,7 @@ test('signed in, a single imported board is in Jump Back In; a two-board import 
   await importBoards(page, 2);
   await page.goto('/explorer/home');
   await expect(page.getByRole('region', { name: 'Jump Back In' })).toContainText(
-    'The documents you use most and last will gather here.',
+    /will gather here\./,
     { timeout: 30_000 },
   );
 

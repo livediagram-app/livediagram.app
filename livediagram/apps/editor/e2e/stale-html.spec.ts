@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, test, pageOwnerHeaders } from './fixtures';
+import { expect, test, pageOwnerHeaders, seedDocumentItem } from './fixtures';
 
 // Stale HTML after a deploy (docs/specs/016-platform/stale-builds.md), the way people meet it: open
 // the Explorer, open a document (a full page load), a deploy lands, press back. Back is a history
@@ -19,24 +19,14 @@ async function seedDocument(page: Page, name: string): Promise<string> {
   await expect
     .poll(() => page.evaluate(() => localStorage.getItem('livediagram:v2:guest-token')))
     .toBeTruthy();
-  const headers = await pageOwnerHeaders(page, { 'Content-Type': 'application/json' });
-  return page.evaluate(
-    async ({ docName, headers }) => {
-      const id = crypto.randomUUID();
-      const res = await fetch('/api/documents', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          id,
-          name: docName,
-          tabs: [{ id: crypto.randomUUID(), name: 'Tab 1', elements: [] }],
-        }),
-      });
-      if (!res.ok) throw new Error(`seeding failed: ${res.status}`);
-      return id;
-    },
-    { docName: name, headers },
-  );
+  const id = crypto.randomUUID();
+  const res = await seedDocumentItem(page.request, await pageOwnerHeaders(page), {
+    id,
+    name,
+    tabs: [{ id: crypto.randomUUID(), name: 'Tab 1', elements: [] }],
+  });
+  expect(res.ok(), `seeding failed: ${res.status()}`).toBe(true);
+  return id;
 }
 
 // The suite runs in parallel: a simulated deploy is this context's alone, never the stack's.
@@ -45,13 +35,14 @@ test('a simulated deploy leaves every other browser context on its build', async
   request,
 }) => {
   const chunkOf = (html: string) => /_next\/static\/chunks\/([\w-]+)\.js/.exec(html)?.[1];
-  const before = chunkOf(await (await request.get('/explorer/recent')).text());
+  // An editor page: the simulated deploy renames this build's chunks (the Explorer is liveworkspace's own build).
+  const before = chunkOf(await (await request.get('/new')).text());
   expect(before).toBeTruthy();
 
   expect((await page.request.post('/__e2e/deploy')).ok()).toBe(true);
 
-  expect(chunkOf(await (await page.request.get('/explorer/recent')).text())).toMatch(/-d\d+$/);
-  expect(chunkOf(await (await request.get('/explorer/recent')).text())).toBe(before);
+  expect(chunkOf(await (await page.request.get('/new')).text())).toMatch(/-d\d+$/);
+  expect(chunkOf(await (await request.get('/new')).text())).toBe(before);
 });
 
 test('back after a deploy brings the Explorer back, never a white screen', async ({ page }) => {
@@ -67,7 +58,7 @@ test('back after a deploy brings the Explorer back, never a white screen', async
   await page.goto('/explorer/all');
   // The Explorer drawn: its sidebar's Home row.
   const home = page
-    .getByRole('navigation', { name: 'Explorer' })
+    .getByRole('navigation', { name: 'Sections' })
     .first()
     .getByRole('treeitem', { name: /^Home/ });
   await expect(home).toBeVisible({ timeout: 30_000 });

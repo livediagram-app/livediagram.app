@@ -2,9 +2,10 @@ import {
   dismissQuickTour,
   expect,
   expectNoPageErrors,
-  guestTokenFor,
+  adoptGuest,
   mintGuest,
   ownerHeaders,
+  seedDocumentItem,
   test,
 } from './fixtures';
 
@@ -13,7 +14,6 @@ import {
 // was (docs/specs/003-system-architecture/react-state-and-effects.md: captured and restored on the
 // transition, in the same commit).
 
-const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 const CANVAS = '[data-canvas-a11y-root]';
 
 test('a deck presents slide by slide and leaves the view as it was', async ({
@@ -44,23 +44,19 @@ test('a deck presents slide by slide and leaves the view as it was', async ({
       },
     ],
   };
-  const seeded = await page.request.post(`${apiBase}/documents`, {
-    headers: ownerHeaders(owner, { Origin: new URL(baseURL!).origin }),
-    data: {
+  const seeded = await seedDocumentItem(
+    page.request,
+    ownerHeaders(owner, { Origin: new URL(baseURL!).origin }),
+    {
       id,
       name: 'Deck',
       tabs: [{ id: tabId, name: 'Slides', elements: [box('a', 0, 0), box('b', 2000, 1500)] }],
       presentation: JSON.stringify(deck),
     },
-  });
-  expect(seeded.ok()).toBe(true);
-  await page.addInitScript(
-    ({ token }) => {
-      if (token) localStorage.setItem('livediagram:v2:guest-token', token);
-      localStorage.setItem('livediagram:v2:name-confirmed', '1');
-    },
-    { token: guestTokenFor(owner) },
   );
+  expect(seeded.ok()).toBe(true);
+  await adoptGuest(page, owner);
+  await page.addInitScript(() => localStorage.setItem('livediagram:v2:name-confirmed', '1'));
   await page.goto(`/document/${id}`);
   await page.locator(CANVAS).waitFor();
   await dismissQuickTour(page);

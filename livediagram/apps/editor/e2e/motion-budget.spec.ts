@@ -102,11 +102,11 @@ async function tourTheChrome(page: Page): Promise<void> {
     page.locator('[data-category-bar-button][aria-label="Layout"]').click(),
   );
   await toggle(page, 'Fit to screen');
-  // The Explorer popover, and the Document menu on its Current Document card.
+  // The Explorer popover, and the Canvas menu on its Current canvas card.
   const explorer = page.getByRole('button', { name: 'Explorer', exact: true });
   await explorer.click();
   await page.waitForTimeout(400);
-  await openAndClose(page, () => page.getByRole('button', { name: 'Document menu' }).click());
+  await openAndClose(page, () => page.getByRole('button', { name: 'Canvas menu' }).click());
   await explorer.click();
   await page.waitForTimeout(300);
   await openAndClose(page, () => page.getByRole('button', { name: 'Tab menu' }).click());

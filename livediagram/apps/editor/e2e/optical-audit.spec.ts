@@ -4,9 +4,7 @@ import {
   darkVisitor,
   documentRow,
   freshDarkPage,
-  jumpBackIn,
   seedDocument,
-  seedOpenedDocument,
   shareLink,
 } from './audit-screens';
 import {
@@ -92,7 +90,7 @@ test.describe('Optical alignment audit', () => {
   test('the Share dialog', async ({ page, pageErrors, baseURL }) => {
     await openSeededEditor(page, baseURL!);
     await page.getByRole('button', { name: /^Share$/ }).click();
-    await page.getByRole('dialog', { name: 'Share This Document' }).waitFor();
+    await page.getByRole('dialog', { name: /^Share / }).waitFor();
     await expectCentred(page, 'Share dialog');
     expectNoPageErrors(pageErrors);
   });
@@ -109,17 +107,11 @@ test.describe('Optical alignment audit', () => {
     await visitor.context().close();
   });
 
-  // Home as a returning owner meets it (the document they opened in Jump Back In), then My
-  // documents, which lists it as a row.
+  // My Work, which lists the seeded document as a row.
   test('the Explorer', async ({ page, pageErrors, baseURL }) => {
-    // Signed, so the identity holds across the two page loads.
     const owner = await mintGuest(page.request);
-    await seedOpenedDocument(page, owner, new URL(baseURL!).origin);
+    await seedDocument(page, owner, new URL(baseURL!).origin);
     await darkVisitor(page, owner);
-    await page.goto('/explorer');
-    await jumpBackIn(page, 'Contrast').waitFor();
-    await expectCentred(page, 'Explorer Home');
-
     await page.goto('/explorer/all');
     await documentRow(page, 'Contrast').waitFor();
     await expectCentred(page, 'Explorer, My Work');

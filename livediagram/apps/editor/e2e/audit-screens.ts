@@ -1,6 +1,12 @@
 import type { Browser, Page } from '@playwright/test';
-import { expect, guestTokenFor, ownerHeaders, test } from './fixtures';
-import { openDocument } from './home-seed';
+import {
+  adoptGuest,
+  documentHeaders,
+  expect,
+  ownerHeaders,
+  seedDocumentItem,
+  test,
+} from './fixtures';
 
 // Screens the dark-mode audits (contrast, optical alignment) open: a seeded diagram shaped like a real one,
 // a dark visitor, a share link, and a fresh identity-less visitor.
@@ -8,17 +14,13 @@ import { openDocument } from './home-seed';
 export const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 export const CANVAS = '[data-canvas-a11y-root]';
 
-// A minted guest (mintGuest) brings its guest token, so the browser keeps the identity across
-// page loads instead of fetching a new one through the guest handoff.
+// A minted guest (mintGuest) brings its guest token, so the browser is that guest on every page load.
 export async function darkVisitor(page: Page, owner?: string): Promise<void> {
-  await page.addInitScript(
-    ({ token }) => {
-      localStorage.setItem('livediagram:v2:ui-mode', 'dark');
-      localStorage.setItem('livediagram:v2:name-confirmed', '1');
-      if (token) localStorage.setItem('livediagram:v2:guest-token', token);
-    },
-    { token: owner ? guestTokenFor(owner) : null },
-  );
+  if (owner) await adoptGuest(page, owner);
+  await page.addInitScript(() => {
+    localStorage.setItem('livediagram:v2:ui-mode', 'dark');
+    localStorage.setItem('livediagram:v2:name-confirmed', '1');
+  });
 }
 
 // A diagram shaped like a real one: an actor, boxes, and solid and dashed labelled arrows, on the
@@ -27,22 +29,7 @@ export async function seedDocument(page: Page, owner: string, origin: string): P
   return (await seedDrawnDocument(page, owner, origin)).id;
 }
 
-// The seeded diagram as a returning owner left it: opened once, as the editor opens it, so it is
-// in Home's Jump Back In (docs/specs/013-workspace/explorer-home.md: a document made but never
-// opened is not, D133).
-export async function seedOpenedDocument(
-  page: Page,
-  owner: string,
-  origin: string,
-): Promise<string> {
-  const doc = await seedDrawnDocument(page, owner, origin);
-  await openDocument(page.request, owner, doc);
-  return doc.id;
-}
-
-// The opened document's thumbnail in Home's Jump Back In, and its row on a listing view.
-export const jumpBackIn = (page: Page, name: string) =>
-  page.getByRole('region', { name: 'Jump Back In' }).getByRole('link', { name });
+// The seeded document's row on an Explorer listing.
 export const documentRow = (page: Page, name: string) =>
   page.locator('main section').getByRole('link', { name, exact: true });
 
@@ -89,9 +76,10 @@ async function seedDrawnDocument(
     arrow('x2', 'actor', 's', 'UI'),
     arrow('x3', 'a', 'r', 'Use personal assistant', true),
   ];
-  const res = await page.request.post(`${apiBase}/documents`, {
-    headers: ownerHeaders(owner, { Origin: origin }),
-    data: { id, name: 'Contrast', tabs: [{ id: tabId, name: 'Runa', elements }] },
+  const res = await seedDocumentItem(page.request, ownerHeaders(owner, { Origin: origin }), {
+    id,
+    name: 'Contrast',
+    tabs: [{ id: tabId, name: 'Runa', elements }],
   });
   expect(res.ok(), `seeding failed: ${res.status()}`).toBe(true);
   return { id, tabId };
@@ -104,7 +92,10 @@ export async function shareLink(
   id: string,
 ): Promise<string> {
   const res = await page.request.post(`${apiBase}/documents/${id}/share`, {
-    headers: ownerHeaders(owner, { Origin: origin, 'Content-Type': 'application/json' }),
+    headers: await documentHeaders(page.request, owner, id, {
+      Origin: origin,
+      'Content-Type': 'application/json',
+    }),
     data: {},
   });
   expect(res.ok()).toBe(true);

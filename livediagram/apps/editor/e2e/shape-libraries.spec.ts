@@ -12,9 +12,10 @@ import {
 } from './fixtures';
 
 // Shape libraries end to end (docs/specs/013-workspace/shape-libraries.md): a synthesised draw.io
-// library imported from the Explorer becomes a named library, its shapes are placed from the
-// palette's My shapes, and the Explorer page renames and deletes it. SHAPE_LIBRARY_SHOTS=<dir> also
-// saves screenshots of each step.
+// library imported through the /import page the Explorer's Import from opens becomes a named library, its
+// shapes are placed from the palette's My shapes, and the Explorer's Shape Libraries (liveworkspace's page at
+// /explorer, from its site build) renames and deletes it. SHAPE_LIBRARY_SHOTS=<dir> also saves screenshots
+// of each step.
 
 const SHOTS = process.env.SHAPE_LIBRARY_SHOTS;
 async function shot(page: Page, name: string) {
@@ -91,11 +92,7 @@ test('a draw.io library becomes a shape library, placed from My shapes', async (
   await dismissQuickTour(page);
 
   // Import: one library file imports straight away and is named in the report.
-  await page.goto('/explorer/recent');
-  await page
-    .getByRole('toolbar', { name: 'Import from' })
-    .getByRole('button', { name: 'Import from draw.io' })
-    .click();
+  await page.goto('/import?source=drawio&what=libraries');
   const chooser = page.waitForEvent('filechooser');
   await page.getByRole('button', { name: 'Choose files', exact: true }).click();
   await (
@@ -103,10 +100,9 @@ test('a draw.io library becomes a shape library, placed from My shapes', async (
   ).setFiles([{ name: 'Team shapes.xml', mimeType: 'text/xml', buffer: Buffer.from(library) }]);
   await expect(page.getByTestId('import-libraries')).toContainText('Team shapes');
   await shot(page, '1-report');
+  // Done returns to the Explorer's Shape Libraries, which lists it; rename it in place.
   await page.getByRole('button', { name: 'Done' }).click();
-
-  // The Explorer page lists it; rename it in place.
-  await page.goto('/explorer/shape-libraries');
+  await page.waitForURL(/\/explorer\/shape-libraries/);
   const card = page.getByRole('article', { name: 'Team shapes' });
   await expect(card).toContainText('2 shapes');
   await card.getByRole('button', { name: 'Rename Team shapes' }).click();
