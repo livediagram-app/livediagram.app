@@ -4,7 +4,8 @@ import {
 } from '@better-auth/oauth-provider';
 import { ACCOUNT_API_PATH, handleAccountApi } from './account-api.ts';
 import { AUTH_BASE_PATH, SEND_CODE_PATH, SIGN_IN_CODE_PATH } from './auth-options.ts';
-import { getAuth } from './auth.ts';
+import { getAuth, getGoogleAuthFor } from './auth.ts';
+import { appOriginOfProxy, signInOnAppAddress } from './handoff.ts';
 import { BENCH_ACCOUNTS_PATH, benchAccounts } from './bench-accounts.ts';
 import { CLIENTS_PATH, registerClient } from './clients.ts';
 import { DELETE_ACCOUNT_PATH, deleteAccount } from './delete-account.ts';
@@ -92,8 +93,23 @@ export default {
           { status: 429 },
         );
       }
-      const auth = getAuth(env);
+      // Google on an app's own address (GOOGLE_ON_APP_ORIGINS): Google sends the browser back to the app's address.
+      const googleOrigin =
+        env.GOOGLE_ON_APP_ORIGINS === 'true' &&
+        (route === '/sign-in/social' || route.startsWith('/callback/google'))
+          ? appOriginOfProxy(request, env.ENVIRONMENT)
+          : null;
+      const auth = googleOrigin ? getGoogleAuthFor(env, googleOrigin) : getAuth(env);
       let response = await auth.handler(request);
+      // Someone not signed in here yet signs in on the app's own address (handoff.ts).
+      if (request.method === 'GET' && route === AUTHORIZE_PATH) {
+        response = await signInOnAppAddress(request, response, {
+          environment: env.ENVIRONMENT,
+          baseUrl: env.BASE_URL,
+          enabled: env.SIGN_IN_ON_APP_ORIGINS === 'true',
+          db: env.AUTH_DB,
+        });
+      }
       // A sign-in that found a session already here still takes a guest's things (guests.ts).
       if (request.method === 'GET' && route === AUTHORIZE_PATH) {
         response = await mergeGuestOnAuthorize(

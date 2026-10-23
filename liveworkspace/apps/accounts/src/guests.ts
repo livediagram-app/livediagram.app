@@ -288,6 +288,21 @@ export async function mergeGuestOnSignIn(
   });
 }
 
+// A sign-in finished on an app's own address makes its session there, where this browser's guest cookie isn't, so
+// the hook above finds no guest. The hop that brings the session here (handoff.ts) hands the guest's things over
+// instead: true when it did, and the caller clears the cookie.
+export async function mergeGuestOfRequest(
+  config: MergeConfig,
+  request: Request,
+  userId: string,
+): Promise<boolean> {
+  const guestId = await readGuestCookie(
+    cookieValue(request.headers.get('cookie'), GUEST_COOKIE),
+    config.secret,
+  );
+  return guestId ? mergeGuestInto(config, guestId, userId) : false;
+}
+
 export const AUTHORIZE_PATH = '/oauth2/authorize';
 
 // An app's sign-in that found a liveworkspace session already there, a click or a silent one

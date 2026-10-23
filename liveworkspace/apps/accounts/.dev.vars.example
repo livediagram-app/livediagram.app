@@ -15,6 +15,11 @@ RESEND_API_KEY=
 # an authorised redirect URI. Without both, the pages offer email codes only.
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
+# Signing in on each app's own address (http://localhost:3100/sign-in, …), as in production. Google stays on
+# localhost:3000 until http://localhost:3100/api/workspace/auth/callback/google (and 3200, 3300, 3400) are authorised
+# redirect URIs of the Google client and this is "true".
+SIGN_IN_ON_APP_ORIGINS=true
+GOOGLE_ON_APP_ORIGINS=false
 # The index service (liveworkspace/apps/index), told when a guest signs in. Optional: without both,
 # signing in leaves the guest's things where they are.
 INDEX_URL=http://localhost:8793/api/index

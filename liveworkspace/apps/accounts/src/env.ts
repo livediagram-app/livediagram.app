@@ -14,6 +14,13 @@ export interface Env {
   // Both set turns on "Continue with Google"; either missing leaves email codes only.
   GOOGLE_CLIENT_ID?: string;
   GOOGLE_CLIENT_SECRET?: string;
+  // Signing in on each app's own address (handoff.ts): "true" sends the sign-in pages to the app's address, which
+  // needs every app's router to serve them first. Anything else keeps them on this site.
+  SIGN_IN_ON_APP_ORIGINS?: string;
+  // "true" once every app origin's /api/workspace/auth/callback/google is an authorised redirect URI of the Google
+  // client: Google then runs on the app's address too. Until then the Google button on an app's address goes to this
+  // site's sign-in page and signs in there, as before.
+  GOOGLE_ON_APP_ORIGINS?: string;
   // The index service (one-explorer-contracts.md), told when a guest signs in (either unset skips it)
   // and when an account closes (either unset leaves the purge waiting in pending_purges).
   INDEX_URL?: string;

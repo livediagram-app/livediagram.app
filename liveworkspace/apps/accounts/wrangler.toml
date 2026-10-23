@@ -40,6 +40,12 @@ EMAIL_FROM = "sign-in@liveworkspace.app"
 TURNSTILE_SITE_KEY = ""
 # The telemetry service (src/telemetry.ts), reached through the TELEMETRY service binding below.
 TELEMETRY_URL = "https://liveworkspace.app/api/telemetry"
+# Signing in on each app's own address (src/handoff.ts): the sign-in pages are served under the app's address, and
+# a one-time hop brings the session here. Every app's router must serve them before this is "true".
+SIGN_IN_ON_APP_ORIGINS = "true"
+# "true" once each app origin's /api/workspace/auth/callback/google is an authorised redirect URI of the Google client
+# (liveworkspace/docs/accounts.md "Before deploy"). Until then Google signs in on this site's own page, as before.
+GOOGLE_ON_APP_ORIGINS = "false"
 
 [[services]]
 binding = "INDEX"
@@ -102,6 +108,8 @@ INDEX_URL = "https://staging.liveworkspace.app/api/index"
 EMAIL_FROM = "sign-in@liveworkspace.app"
 TURNSTILE_SITE_KEY = ""
 TELEMETRY_URL = "https://staging.liveworkspace.app/api/telemetry"
+SIGN_IN_ON_APP_ORIGINS = "true"
+GOOGLE_ON_APP_ORIGINS = "false"
 
 [[env.staging.services]]
 binding = "INDEX"

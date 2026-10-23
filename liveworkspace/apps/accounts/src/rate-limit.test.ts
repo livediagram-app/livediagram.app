@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { Env } from './env.ts';
-import { overCodeLimit } from './rate-limit.ts';
+import { networkOf, overCodeLimit } from './rate-limit.ts';
 
 function limiter(success: boolean) {
   return { limit: vi.fn(async () => ({ success })) };
@@ -57,5 +57,26 @@ describe('overCodeLimit', () => {
     const req = request({ email: 'a@example.com' });
     await overCodeLimit(req, env(true, true), true);
     await expect(req.json()).resolves.toEqual({ email: 'a@example.com' });
+  });
+});
+
+describe('the network a code request comes from', () => {
+  const at = (headers: Record<string, string>) =>
+    networkOf(new Request('https://liveworkspace.app/api/auth/x', { headers }));
+
+  it('is the visitor’s, named by an app’s router, apart from direct visitors', () => {
+    expect(
+      at({
+        'cf-connecting-ip': '2a06:98c0::1',
+        'x-liveworkspace-proxy': 'livediagram',
+        'x-liveworkspace-client-ip': '203.0.113.9',
+      }),
+    ).toBe('via:203.0.113.9');
+    expect(at({ 'cf-connecting-ip': '203.0.113.9' })).toBe('203.0.113.9');
+    // A visitor's own address claim, without a router's, counts for nothing.
+    expect(
+      at({ 'cf-connecting-ip': '203.0.113.9', 'x-liveworkspace-client-ip': '198.51.100.1' }),
+    ).toBe('203.0.113.9');
+    expect(at({})).toBe('unknown');
   });
 });

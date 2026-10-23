@@ -6,6 +6,7 @@ import type { BetterAuthOptions } from 'better-auth';
 import { getOAuthState } from 'better-auth/api';
 import { captcha, emailOTP, jwt } from 'better-auth/plugins';
 import { type MergeConfig, mergeGuestOnSignIn } from './guests.ts';
+import { handoffPlugin, type HandoffPluginConfig } from './handoff.ts';
 import { newUserId } from './ids.ts';
 import { ADMIN_HEADER, sameSecret } from './secrets.ts';
 
@@ -22,8 +23,14 @@ export interface AuthConfig {
   resources: string[];
   turnstileSecretKey: string;
   adminToken: string;
-  // "Continue with Google", when the Worker has a Google OAuth client.
-  google: { clientId: string; clientSecret: string } | null;
+  // "Continue with Google", when the Worker has a Google OAuth client. `redirectURI` is where Google sends the browser
+  // back: this Worker's own callback unless it names one on an app's address (index.ts googleAuthFor).
+  google: { clientId: string; clientSecret: string; redirectURI?: string } | null;
+  // The apps' own origins, whose sign-in pages call this Worker through their routers (handoff.ts). Left out where
+  // there are none, as when generating the schema.
+  appOrigins?: string[];
+  // The hand-off that brings a session made on an app's address here (handoff.ts).
+  handoff?: HandoffPluginConfig;
   sendCode: (email: string, code: string) => Promise<void>;
   // The teams an account is in, for its access tokens (teams.ts teamsClaim). Left out where there is
   // no database to ask, as when generating the schema.
@@ -50,6 +57,8 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
     // The jwt plugin's own /token hands a session JWT to any signed-in browser. Apps get
     // their tokens from /oauth2/token instead, so this one stays off.
     disabledPaths: ['/token'],
+    // The sign-in pages on each app's own address (handoff.ts) post here through the app's router.
+    trustedOrigins: config.appOrigins ?? [],
     // The Worker's CODE_*_LIMITER bindings do this job (src/index.ts). Better Auth's
     // limiter keeps its counts in isolate memory here, which an attacker spreads across.
     rateLimit: { enabled: false },
@@ -66,6 +75,7 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
         google: {
           clientId: config.google.clientId,
           clientSecret: config.google.clientSecret,
+          ...(config.google.redirectURI && { redirectURI: config.google.redirectURI }),
           // Someone signed in to several Google accounts picks one rather than getting whichever
           // the browser last used.
           prompt: 'select_account' as const,
@@ -135,6 +145,7 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
         endpoints: [SEND_CODE_PATH],
       }),
       jwt(),
+      ...(config.handoff ? [handoffPlugin(config.handoff)] : []),
       oauthProvider({
         loginPage: '/sign-in',
         // An app sends `prompt=create` from its "Create account" button.
