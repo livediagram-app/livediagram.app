@@ -19,6 +19,13 @@ const SECTION_LINK =
 const CARD_SURFACE =
   'border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition hover:border-brand-300 hover:shadow-[0_0_0_4px_color-mix(in_oklab,var(--color-brand-300)_25%,transparent),0_18px_36px_-16px_color-mix(in_oklab,var(--color-brand-600)_45%,transparent)] motion-safe:hover:-translate-y-0.5 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-400/60';
 
+// An SVG drawn as an image needs its namespace, which markup rendered by React leaves out.
+const SVG_NS = 'xmlns="http://www.w3.org/2000/svg"';
+export const svgDataUri = (svg: string) =>
+  `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
+    svg.includes('xmlns=') ? svg : svg.replace(/^<svg\b/, `<svg ${SVG_NS}`),
+  )}`;
+
 /** A start's picture: the host's, or the manifest's SVG as an image (an image runs no script). */
 export function StartPicture({ start }: { start: WelcomeStart }) {
   const { welcome } = useFirstRun();
@@ -29,7 +36,7 @@ export function StartPicture({ start }: { start: WelcomeStart }) {
       {start.svg ? (
         <img
           alt=""
-          src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(start.svg)}`}
+          src={svgDataUri(start.svg)}
           className="h-full w-auto max-w-full object-contain"
           draggable={false}
         />

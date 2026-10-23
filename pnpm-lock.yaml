@@ -5331,6 +5331,12 @@ importers:
       '@liveplanner/ui':
         specifier: workspace:*
         version: link:../../../liveplanner/packages/ui
+      '@liveworkspace/explorer':
+        specifier: workspace:*
+        version: link:../../../packages/explorer
+      '@liveworkspace/index-client':
+        specifier: workspace:*
+        version: link:../../../packages/index-client
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings

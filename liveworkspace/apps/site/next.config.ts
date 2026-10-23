@@ -3,8 +3,9 @@ import { livediagramNextConfig } from '@livediagram/next-config';
 
 // liveworkspace.app: one static export, served as Cloudflare static assets (liveworkspace/docs/site.md).
 // Every page is here: the home page, the telemetry dashboard, the sign-in pages and the account
-// pages. The APIs are Workers on more specific routes of the same origin: accounts on /api/auth/*
-// and /api/account/* (and the two .well-known documents), telemetry on /api/telemetry/*, the
+// pages, and the Explorer. The APIs are Workers on more specific routes of the same origin: accounts on
+// /api/auth/* and /api/account/* (and the two .well-known documents), the index on /api/index/* (the
+// Explorer's lists), telemetry on /api/telemetry/*, the
 // Community on /api/community/* (whose pages each app hosts itself; liveworkspace.app has none).
 // The shared settings are livediagram's,
 // whose UI package the site's switcher and the dashboard come from.
@@ -15,6 +16,7 @@ import { livediagramNextConfig } from '@livediagram/next-config';
 const ACCOUNTS_DEV = process.env.ACCOUNTS_DEV_ORIGIN ?? 'http://localhost:8787';
 const TELEMETRY_DEV = process.env.TELEMETRY_DEV_ORIGIN ?? 'http://localhost:8790';
 const COMMUNITY_DEV = process.env.COMMUNITY_DEV_ORIGIN ?? 'http://localhost:8791';
+const INDEX_DEV = process.env.INDEX_DEV_ORIGIN ?? 'http://localhost:8793';
 
 const nextConfig: NextConfig = {
   ...livediagramNextConfig({ exportInDev: false }),
@@ -27,6 +29,8 @@ const nextConfig: NextConfig = {
     '@livedocuments/api-schema',
     '@livedesign/ui',
     '@livedesign/api-schema',
+    '@liveworkspace/explorer',
+    '@liveworkspace/index-client',
     '@liveworkspace/sites',
     '@liveworkspace/telemetry',
   ],
@@ -42,6 +46,7 @@ const nextConfig: NextConfig = {
               source: '/api/telemetry/:path*',
               destination: `${TELEMETRY_DEV}/api/telemetry/:path*`,
             },
+            { source: '/api/index/:path*', destination: `${INDEX_DEV}/api/index/:path*` },
             {
               source: '/api/community/:path*',
               destination: `${COMMUNITY_DEV}/api/community/:path*`,

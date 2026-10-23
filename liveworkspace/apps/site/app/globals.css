@@ -1,9 +1,11 @@
 @import 'tailwindcss';
 @import '@livediagram/tailwind-config';
 
-/* Every page but the telemetry dashboard, whose classes (and both apps' UI) are in its own
- * stylesheet, telemetry/telemetry.css, loaded only there. */
+/* Every page but the telemetry dashboard and the Explorer, whose classes (and the apps' UI) are in
+ * their own stylesheets, telemetry/telemetry.css and explorer/explorer.css, each loaded only there. */
 @source not './telemetry';
+@source not './explorer';
+@source not '../components/explorer';
 
 /* The header's site switcher and the shared icon primitive come from livediagram's UI package: scan
  * them so their classes are generated. Tailwind v4 skips node_modules, where the workspace package

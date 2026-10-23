@@ -70,6 +70,9 @@ describe('Home’s first run', () => {
     const start = document.querySelector('[data-welcome-start="blank-plan"]') as HTMLAnchorElement;
     expect(start.href).toBe('https://lp/new?template=blank-plan');
     expect(start.querySelector('img')?.getAttribute('src')).toMatch(/^data:image\/svg\+xml/);
+    expect(decodeURIComponent(start.querySelector('img')!.getAttribute('src')!)).toContain(
+      'xmlns="http://www.w3.org/2000/svg"',
+    );
     expect(screen.getByRole('link', { name: 'Browse All Templates' }).getAttribute('href')).toBe(
       'https://lp/new',
     );
