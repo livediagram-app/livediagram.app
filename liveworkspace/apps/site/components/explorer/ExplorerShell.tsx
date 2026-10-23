@@ -23,9 +23,11 @@ import {
 import {
   createExplorerAccounts,
   Explorer,
+  HeroArt,
   viewFromLocation,
   type AppFilter,
   type ExplorerView,
+  type HeroArtManifest,
   type NavigateOptions,
   type Placement,
   type SidebarLink,
@@ -75,6 +77,7 @@ import {
   trackWelcomeOpened,
 } from '@/lib/explorer/telemetry';
 import { prefetchPreview, renderPreview } from '@/lib/explorer/previews';
+import { heroHasRoom, loadHeroArt } from '@/lib/explorer/hero';
 import { loadWelcome } from '@/lib/explorer/welcome';
 import { ExplorerHeader } from './ExplorerHeader';
 
@@ -239,6 +242,21 @@ export function ExplorerShell() {
     }),
     [loaded, app, onFirstRun, signedIn, pathname],
   );
+  // Home's hero art: the app's pictures, loaded once Home shows its hero with room for them.
+  const [art, setArt] = useState<{ app: AppName; art: HeroArtManifest } | null>(null);
+  const wantsArt = view.kind === 'home' && !settings.heroHidden;
+  useEffect(() => {
+    if (!wantsArt || !heroHasRoom()) return;
+    let live = true;
+    void loadHeroArt(app).then((loadedArt) => live && loadedArt && setArt({ app, art: loadedArt }));
+    return () => {
+      live = false;
+    };
+  }, [app, wantsArt]);
+  const heroArt = useMemo(
+    () => (art?.app === app ? <HeroArt art={art.art} /> : undefined),
+    [art, app],
+  );
   const share = useMemo(() => shareHostFor(app), [app]);
   const inbox = useMemo(() => ({ ...inboxHost, onTelemetry: trackInbox }), []);
   const signInBanner = useMemo(
@@ -323,6 +341,7 @@ export function ExplorerShell() {
           helpHref={helpHref}
           trashedOnArrival={trashed}
           welcome={welcome}
+          heroArt={heroArt}
           sidebarLinks={sidebarLinks}
           allLabel="All Apps"
           // A guest is named people too: accounts answers this browser's guest for names alone.

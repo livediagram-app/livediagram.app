@@ -33,6 +33,13 @@ fetched** to draw them. They are not links: Jump Back In is the way in. For assi
 "What a plan can hold", of four images named Board, Sheet, Dashboard and Form. Their one motion is a short fade as
 they land, and none under reduced motion. On a phone or a tablet the column is not drawn.
 
+The Explorer lays the sheets out (`HeroSheets` in `@liveworkspace/explorer`); the editor hands it the pictures. For
+liveworkspace.app, which carries none of the editor's code, the same pictures ship as data in
+`@liveplanner/templates/hero.json`, written from these components by
+[`hero-manifest.test.tsx`](../../../apps/editor/components/panels/home/hero-manifest.test.tsx)
+(`HERO_WRITE=1 pnpm vitest run components/panels/home/hero-manifest.test.tsx` in `apps/editor`; without it the test
+fails when the file has drifted), and drawn there by the Explorer's `HeroArt`, loaded only on a wide screen.
+
 **It comes and goes with Home.** Leaving Home for another Explorer page folds the hero away (its height to nothing as
 it fades), and the page under it slides up; returning to Home unfolds it again, over the `long` motion token
 (250 ms). Landing on Home from outside the Explorer shows it at once. Under reduced motion it appears and goes at

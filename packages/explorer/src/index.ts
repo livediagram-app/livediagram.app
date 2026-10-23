@@ -69,6 +69,14 @@ export type {
 } from './welcome/types';
 export type { SidebarLink } from './explorer/host';
 export {
+  HeroArt,
+  HeroSheets,
+  renderHeroArtNode,
+  type HeroArtManifest,
+  type HeroArtNode,
+  type HeroSheet,
+} from './hero/HeroSheets';
+export {
   createExplorerAccounts,
   AccountsError,
   PEOPLE_MAX,
