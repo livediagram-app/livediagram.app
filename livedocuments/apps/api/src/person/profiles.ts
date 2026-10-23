@@ -16,13 +16,14 @@ import {
   type ClientCredentials,
   type Profile,
 } from '@liveworkspace/auth-client';
+import { PRESENCE_COLOUR_VALUES } from '@liveworkspace/settings';
 import { accountCredentials } from '../auth/accounts';
 import type { Env, ParticipantDTO } from '../types';
 import { accountsOwnerOf, ownerFromAccounts } from './owner';
 
-// The colour shown for someone whose profile has a name but no colour of its own: brand-500, the
-// accent every fallback author already used.
-export const DEFAULT_PARTICIPANT_COLOR = '#0ea5e9';
+// The colour shown for someone whose profile has a name but no colour of its own: the shared
+// presence palette's first (sky), the accent every fallback author already used.
+export const DEFAULT_PARTICIPANT_COLOR = PRESENCE_COLOUR_VALUES[0]!;
 
 // How long a profile read is trusted in one isolate. Safe range 0..300_000.
 export const PROFILE_CACHE_MS = 60_000;

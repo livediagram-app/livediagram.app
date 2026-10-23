@@ -43,6 +43,7 @@
     "@livedocuments/icons": "workspace:^",
     "@livedocuments/tailwind-config": "workspace:*",
     "@livedocuments/telemetry-client": "workspace:*",
+    "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/sites": "workspace:*"
   }
 }

@@ -4,27 +4,15 @@
 // hue and keeps the white text. Light mode keeps the colour exactly.
 import type { CSSProperties } from 'react';
 import { contrastRatio, shade } from '@livedocuments/document';
-
-// Each participant colour's own Tailwind 700 step: the operator-chosen dark treatment.
-const PARTICIPANT_DEEP: Record<string, string> = {
-  '#0ea5e9': '#0369a1', // sky
-  '#10b981': '#047857', // emerald
-  '#f59e0b': '#b45309', // amber
-  '#ef4444': '#b91c1c', // red
-  '#8b5cf6': '#6d28d9', // violet
-  '#ec4899': '#be185d', // pink
-  '#14b8a6': '#0f766e', // teal
-  '#f97316': '#c2410c', // orange
-  '#6366f1': '#4338ca', // indigo
-  '#84cc16': '#4d7c0f', // lime
-};
+import { presenceColour } from '@liveworkspace/settings';
 
 const AA = 4.5;
 const SHADE_STEP = 0.05;
 
 /** The dark-mode shade of an identity colour: deep enough for white text at AA. */
 export function identityDeep(color: string): string {
-  const known = PARTICIPANT_DEEP[color.toLowerCase()];
+  // A presence palette colour has its own deep shade, the operator-chosen dark treatment.
+  const known = presenceColour(color)?.deep;
   if (known) return known;
   if (!/^#[0-9a-f]{6}$/i.test(color)) return color;
   // Any other colour (a custom one, a team's): darken in small steps until white reads.
