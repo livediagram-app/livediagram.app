@@ -12,7 +12,7 @@
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { lazy, Suspense, useCallback, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useCallback, useMemo, useState, type ReactNode } from 'react';
 import {
   Explorer,
   viewFromLocation,
@@ -36,6 +36,7 @@ import { manageTeamsUrl, signInEnabled } from '@/lib/auth-config';
 import { indexClient } from '@/lib/index-client';
 import { isPowerUserMode } from '@/lib/power-user-mode';
 import { dropSettingsLink, readSettingsLink } from '@/lib/settings-link';
+import { explorerShareHost } from '@/lib/explorer-share-host';
 import { renderPlanThumbnail } from '@/lib/explorer-thumbnail';
 import { arrivedTrashed } from '@/lib/project-delete-undo';
 import { track } from '@/lib/telemetry';
@@ -116,6 +117,7 @@ export function ExplorerHost({
   const guestId = useSignedGuestId(authLoaded, accountUserId);
   const teams = useTokenTeams(isSignedIn);
   const viewerId = accountUserId ?? guestId;
+  const shareHost = useMemo(() => explorerShareHost(viewerId ?? null), [viewerId]);
   // The synced preferences (docs/specs/007-editor/user-preferences.md): the device cache at once, the server's
   // copy merged in once the person is known.
   const { userPreferences: prefs } = useEditorPreferences({
@@ -162,6 +164,7 @@ export function ExplorerHost({
         teams={teams}
         viewerId={viewerId}
         shareUrl={shareUrl}
+        share={shareHost}
         manageTeamsUrl={isSignedIn ? manageTeamsUrl : undefined}
         helpHref={explorerHelpHref}
         heroArt={HERO_ART}

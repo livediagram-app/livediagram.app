@@ -11,6 +11,9 @@ import { tabAsSeen } from '@/lib/export-as-seen';
 import { panelEnabled } from '@/lib/user-preferences';
 import { indexClient } from '@/lib/index-client';
 import { shareUrl } from '@/lib/explorer-host';
+import { planHandOver, shareHelpHref, trackShare } from '@/lib/explorer-share-host';
+import { randomName } from '@/lib/identity';
+import { useToast } from '@/hooks/ui/useToast';
 
 const ExportTabDialog = dynamic(
   () => import('@/components/dialogs/ExportTabDialog').then((m) => m.ExportTabDialog),
@@ -21,10 +24,9 @@ const ImportTabDialog = dynamic(
   { ssr: false },
 );
 // The shared Explorer's Share dialog (@liveworkspace/explorer): links are the index's, managed there.
-const ShareDialog = dynamic(
-  () => import('@liveworkspace/explorer').then((m) => m.ShareDialog),
-  { ssr: false },
-);
+const ShareDialog = dynamic(() => import('@liveworkspace/explorer').then((m) => m.ShareDialog), {
+  ssr: false,
+});
 const ShareOfflineGate = dynamic(
   () => import('@/components/dialogs/ShareOfflineGate').then((m) => m.ShareOfflineGate),
   { ssr: false },
@@ -53,7 +55,11 @@ export function EditorTabDialogs() {
     projectId,
     setShareDialogOpen,
     syncToCloud,
+    accountUserId,
+    projectTeamId,
+    setSelfParticipant,
   } = useEditorContext();
+  const toast = useToast();
   // The selection the export covers, read from the store while a selection export is open
   // (docs/specs/008-canvas/blueprints/selection-store.md).
   const exportingSelection = exportOpen && exportScope === 'selection';
@@ -112,9 +118,31 @@ export function EditorTabDialogs() {
       ) : shareDialogOpen && projectId ? (
         <ShareDialog
           client={indexClient}
-          item={{ id: projectId, app: 'liveplanner', kind: 'plan', sharedVia: null, title: projectName }}
+          item={{
+            id: projectId,
+            app: 'liveplanner',
+            kind: 'plan',
+            sharedVia: null,
+            title: projectName,
+            teamId: projectTeamId,
+          }}
           tabs={tabs.map((t) => ({ id: t.id, name: t.name }))}
           shareUrl={shareUrl}
+          handOver={planHandOver}
+          helpHref={shareHelpHref}
+          onTelemetry={trackShare}
+          notify={(text, tone) => toast[tone](text)}
+          // A guest's name is theirs to change here; an account's is the account's (auth-and-guest-access.md).
+          identity={
+            accountUserId
+              ? undefined
+              : {
+                  name: selfParticipant.name,
+                  color: selfParticipant.color,
+                  randomName,
+                  onSave: (name) => setSelfParticipant((p) => ({ ...p, name })),
+                }
+          }
           onClose={() => setShareDialogOpen(false)}
         />
       ) : null}

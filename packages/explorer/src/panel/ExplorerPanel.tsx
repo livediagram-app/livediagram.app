@@ -78,6 +78,7 @@ import type {
   LinkComponent,
   Placement,
   RenderThumbnail,
+  ShareHost,
   ShareUrl,
   TeamRef,
 } from '../types';
@@ -138,6 +139,8 @@ export type ExplorerPanelProps = {
   teams?: TeamRef[];
   viewerId?: string | null;
   shareUrl?: ShareUrl;
+  // The Share dialog's tabs, embed, live image, help and telemetry.
+  share?: ShareHost;
   filter?: AppFilter;
   layout?: PanelLayout;
   // The panel is showing (a popover opened): a phone's sheet starts on Home each time.
@@ -175,6 +178,7 @@ function PanelInner({
   teams = [],
   viewerId,
   shareUrl,
+  share,
   filter: initialFilter = 'app',
   layout = 'side',
   open = false,
@@ -249,6 +253,7 @@ function PanelInner({
       viewerId={viewerId}
       renderThumbnail={renderThumbnail}
       shareUrl={shareUrl}
+      shareHost={share}
     >
       <div data-explorer-panel="" className={`flex min-h-0 flex-col ${sheet ? 'flex-1' : ''}`}>
         {/* On a phone's sheet the card and the rail and pane scroll as one, over the pinned footer. Elsewhere this

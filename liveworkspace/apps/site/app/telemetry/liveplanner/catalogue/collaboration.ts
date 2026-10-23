@@ -319,6 +319,89 @@ export const EXPLORER_FILTERS_PICKED = chart(
   { rising: 'good' },
 );
 
+// The Share dialog's passes (@liveworkspace/explorer ShareDialog), reported through its onTelemetry prop.
+export const SHARE_LINKS_COPIED = chart(
+  'UI',
+  'Copied',
+  'Share Links Copied',
+  'A pass’s link copied, by hand or as the pass was made.',
+  { types: ['ShareLink'] },
+);
+
+export const SHARE_EMBEDS_COPIED = chart(
+  'UI',
+  'Copied',
+  'Embeds Copied',
+  'A pass’s embed copied, as its address or an iframe.',
+  { types: ['EmbedCode'] },
+);
+
+export const SHARE_LIVE_IMAGES_COPIED = chart(
+  'UI',
+  'Copied',
+  'Live Images Copied',
+  'A pass’s live image copied, as its address, Markdown or HTML.',
+  { types: ['LiveImage'] },
+);
+
+export const SHARE_LIVE_IMAGE_TABS = chart(
+  'UI',
+  'Selected',
+  'Live Image Tabs Picked',
+  'Another tab picked for a live image to draw.',
+  { types: ['LiveImageTab'] },
+);
+
+export const SHARE_LINKS_REVOKED = chart(
+  'Project',
+  'Removed',
+  'Share Links Revoked',
+  'A pass revoked from the Share dialog, after its confirmation.',
+  { types: ['ShareLink'], rising: 'neutral' },
+);
+
+export const SHARE_TOURS_STARTED = chart(
+  'UI',
+  'Started',
+  'Share Tours Started',
+  'The Share dialog’s Show Me tour started.',
+  { types: ['ShareTour'] },
+);
+
+export const SHARE_TOURS_COMPLETED = chart(
+  'UI',
+  'Ended',
+  'Share Tours Completed',
+  'The Share dialog’s Show Me tour run to its last step.',
+  { types: ['ShareTourCompleted'] },
+);
+
+export const SHARE_TOURS_SKIPPED = chart(
+  'UI',
+  'Ended',
+  'Share Tours Skipped',
+  'The Share dialog’s Show Me tour closed before its end.',
+  { types: ['ShareTourSkipped'], rising: 'neutral' },
+);
+
+export const SHARE_PASSES: MetricStack = {
+  stack: true,
+  title: 'Share Passes',
+  blurb:
+    'Links handed over from the Share dialog: copied, as embeds or live images, revoked, and its Show Me tour.',
+  members: [
+    SHARE_LINKS_COPIED,
+    SHARE_EMBEDS_COPIED,
+    SHARE_LIVE_IMAGES_COPIED,
+    SHARE_LIVE_IMAGE_TABS,
+    SHARE_LINKS_REVOKED,
+    SHARE_TOURS_STARTED,
+    SHARE_TOURS_COMPLETED,
+    SHARE_TOURS_SKIPPED,
+  ],
+  headline: SHARE_LINKS_COPIED,
+};
+
 export const TIMELINE: MetricStack = {
   stack: true,
   title: 'Timeline',

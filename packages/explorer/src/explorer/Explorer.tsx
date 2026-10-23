@@ -19,6 +19,7 @@ import type {
   LinkComponent,
   Placement,
   RenderThumbnail,
+  ShareHost,
   ShareUrl,
   TeamRef,
   TimelineTelemetry,
@@ -71,6 +72,9 @@ export type ExplorerProps = {
   viewerId?: string | null;
   /** A share link's address; `${origin}/s/<code>` by default. */
   shareUrl?: ShareUrl;
+  /** The Share dialog's extras, per item: its tabs (a link can open one), its embed and live image, help articles and
+   *  telemetry. */
+  share?: ShareHost;
   /** The Manage Teams row's address; the row is hidden without it. */
   manageTeamsUrl?: string;
   /** Controlled filter; uncontrolled (remembered per app in this browser) when omitted. */
@@ -191,6 +195,7 @@ function ExplorerInner({
   teams,
   viewerId,
   shareUrl,
+  share,
   manageTeamsUrl,
   filter: controlledFilter,
   onFilterChange,
@@ -245,6 +250,7 @@ function ExplorerInner({
       viewerId={viewerId}
       renderThumbnail={renderThumbnail}
       shareUrl={shareUrl}
+      shareHost={share}
       manageTeamsUrl={manageTeamsUrl}
       openNav={openNav}
       helpHref={helpHref}

@@ -76,6 +76,7 @@ Dark mode follows the host's `.dark` variant. The empty-state art animates only 
 | `teams?`                   | `{ id, name }[]`                       | The person's joined teams, from the token's `teams` claim. The index keeps no teams.                                                                   |
 | `viewerId?`                | `string`                               | The person's id, for the Inbox's "Assigned to You".                                                                                                    |
 | `shareUrl?`                | `(link, item) => string`               | A share link's address. Defaults to `${origin}/s/<code>`.                                                                                              |
+| `share?`                   | `ShareHost`                            | The Share dialog's extras per item: `loadTabs`, `handOver` (embed, live image), `helpHref` and `onTelemetry`.                                          |
 | `manageTeamsUrl?`          | `string`                               | Shows a Manage Teams row that links here.                                                                                                              |
 | `filter?`/`onFilterChange` | `'app' \| 'all'`                       | Controls the filter from outside. Without them the Explorer keeps it, remembered per app.                                                              |
 | `toolbar?`                 | `ReactNode`                            | The host's own controls, beside the search field.                                                                                                      |
@@ -114,13 +115,24 @@ liveplanner's move dialog. It takes plain data, so a host can open it without th
 
 ### `<ShareDialog>`
 
-An item's share links: `client`, `item`, `tabs?`, `shareUrl`, `onClose` and `onError?`.
+An item's share links, each drawn as a pass: `client`, `item` (with `teamId?`), `tabs?` or `loadTabs?`, `shareUrl`,
+`onClose`, and the host's extras: `handOver?` (`embedUrl`, `liveImageUrl`, `liveImageAlt`), `helpHref?` (`sharing`,
+`shareLinkExpiry`, `sharePasswords`), `onTelemetry?`, `notify?` (its toasts) and, for a guest, `identity?`.
 
-- Each link has a level: Viewer, Participant or Editor.
-- A link can open every tab or only one.
-- A link lasts forever, a week, a month or six months, and can be extended.
-- Each link can be copied or turned off.
-- One password can guard every link at once.
+- A status line says who can open the item now: only you, the team, or anyone holding a pass, with the password.
+- A new pass starts as an Editor's. It can be a Participant's or a Viewer's instead, open every tab or one, and last
+  forever, a week, a month or six months. Create Pass copies it at once, says so, and rings the new pass for a moment.
+- The Passes list carries a count. Each pass can be copied, moved to another tab, or revoked after a confirmation.
+  An expiring pass counts down as the dialog stays open.
+- Where the host serves them, a pass offers Embed (its address or an iframe) and Live image (its address, Markdown or
+  HTML, of any tab). The live image is hidden while a password is set, since an image can't send one.
+- Expired passes sit apart, with Extend and Delete.
+- Password Protection guards every link at once. Spaces around it are trimmed. Passes show a Password tag.
+- Show Me runs a short tour over the dialog. A guest sees "Sharing as" with their name in the footer.
+- A copy the browser refuses says so. Every refusal from the index is a note.
+
+The Explorer opens it from an item's menu with the host's `share` prop (`ShareHost`): `loadTabs(item)`,
+`handOver(item)`, `helpHref` and `onTelemetry`, asked per item since the Explorer may list every app's.
 
 ### `<ExplorerPanel>`
 

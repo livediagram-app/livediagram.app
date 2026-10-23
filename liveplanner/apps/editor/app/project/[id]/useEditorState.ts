@@ -2989,6 +2989,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     selectElement,
     selectMarquee,
     selfParticipant,
+    // The Share dialog's "Sharing as" renames a guest.
+    setSelfParticipant,
     sendSelectedToBack,
     setArrowEndsSelected,
     setArrowStrokeStyleSelected,

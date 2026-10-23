@@ -45,6 +45,8 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Project·Loaded',
   'Project·Moved',
   'Project·Redone',
+  // A share link revoked in the Share dialog (type ShareLink).
+  'Project·Removed',
   'Project·Renamed',
   'Project·Undone',
   'Element·Added',

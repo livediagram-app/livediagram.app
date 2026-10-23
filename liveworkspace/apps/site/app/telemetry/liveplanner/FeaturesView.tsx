@@ -12,6 +12,7 @@ import {
   STOPWATCHES,
   TEAM_ACTIVITY,
   TIMELINE,
+  SHARE_PASSES,
 } from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';
 import { ModesView } from './ModesView';
@@ -29,7 +30,7 @@ export const FACILITATION_GROUPS: MetricGroup[] = [
     title: 'Facilitation tools',
     metrics: [DISCUSSION, TEAM_ACTIVITY, COUNTDOWNS, STOPWATCHES],
   },
-  { title: 'Explorer', metrics: [TIMELINE, EXPLORER_FILTERS_PICKED] },
+  { title: 'Explorer', metrics: [TIMELINE, EXPLORER_FILTERS_PICKED, SHARE_PASSES] },
 ];
 
 export const CONNECTIONS_GROUPS: MetricGroup[] = [

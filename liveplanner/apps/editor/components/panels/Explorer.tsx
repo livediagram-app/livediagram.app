@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useCallback, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { ExplorerPanel, explorerPath } from '@liveworkspace/explorer';
 import type { Item } from '@liveworkspace/index-client';
 import Link from 'next/link';
@@ -15,6 +15,7 @@ import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
 import { getSessionSharePassword } from '@/lib/api-client';
 import { indexClient } from '@/lib/index-client';
 import { itemHref, newPlanHref, shareUrl, useTokenTeams } from '@/lib/explorer-host';
+import { explorerShareHost } from '@/lib/explorer-share-host';
 import { renderPlanThumbnail } from '@/lib/explorer-thumbnail';
 import { trashOpenPlan } from '@/lib/project-delete-undo';
 import type { ExplorerProps } from './Explorer.types';
@@ -44,6 +45,7 @@ function ExplorerImpl({
   const sheet = isMobile && !!asPopover;
   const router = useAppNavigation();
   const { isSignedIn, accountUserId } = useAccountBootstrap();
+  const shareHost = useMemo(() => explorerShareHost(accountUserId ?? null), [accountUserId]);
   const teams = useTokenTeams(isSignedIn);
 
   // The open plan as the index has it (its title, place and star), for the card on top.
@@ -130,6 +132,7 @@ function ExplorerImpl({
         teams={teams}
         viewerId={accountUserId ?? null}
         shareUrl={shareUrl}
+        share={shareHost}
         // Side by side in a desktop popover; chips over the pane on a phone and in the corner panel that stands
         // beside the new-plan wizard and the status screens, which must stay narrow or it covers their card.
         layout={sheet ? 'sheet' : isMobile || !asPopover ? 'stacked' : 'side'}

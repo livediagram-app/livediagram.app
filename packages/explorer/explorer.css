@@ -58,3 +58,38 @@
     animation: none;
   }
 }
+
+/* A share pass opening into its list, or closing its space as it leaves (the Share dialog): the row eases between
+   0fr and 1fr, so the passes around it glide rather than jump. Gone under reduced motion. */
+@keyframes lw-pass-open {
+  from {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+  to {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+}
+@keyframes lw-pass-close {
+  from {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+  to {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+}
+.lw-pass-open {
+  animation: lw-pass-open 200ms ease-out both;
+}
+.lw-pass-close {
+  animation: lw-pass-close 200ms ease-in both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lw-pass-open,
+  .lw-pass-close {
+    animation-duration: 1ms;
+  }
+}

@@ -6,7 +6,17 @@ export { Explorer, type ExplorerProps } from './explorer/Explorer';
 export { ExplorerPanel, type ExplorerPanelProps, type PanelLayout } from './panel/ExplorerPanel';
 export { MoveToFolderDialog, type MoveToFolderDialogProps } from './dialogs/MoveToFolderDialog';
 export type { PickerFolder, PickerTeam, Destination } from './dialogs/PlacementBrowser';
-export { ShareDialog, type ShareDialogProps, type ShareTab } from './dialogs/ShareDialog';
+export {
+  ShareDialog,
+  type ShareDialogProps,
+  type ShareTab,
+  type ShareHandOver,
+  type ShareHelpArticle,
+  type ShareHelpHref,
+  type ShareIdentity,
+  type ShareNotify,
+  type ShareTelemetry,
+} from './dialogs/ShareDialog';
 export {
   explorerPath,
   viewFromLocation,
@@ -26,6 +36,7 @@ export type {
   LinkComponent,
   Placement,
   RenderThumbnail,
+  ShareHost,
   ShareUrl,
   TeamRef,
   TimelineTelemetry,

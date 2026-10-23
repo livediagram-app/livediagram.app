@@ -414,6 +414,17 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: 'elementTelemetryType of the web component a row was added to',
   },
   'apps/editor/hooks/ui/useAppearance.ts UI·Toggled': { values: APPEARANCE_LABELS },
+  // The Share dialog's reports, through its onTelemetry prop (@liveworkspace/explorer ShareDialog.tsx): each a fixed
+  // token from the package.
+  'apps/editor/lib/explorer-share-host.ts UI·Copied': {
+    values: ['ShareLink', 'EmbedCode', 'LiveImage'],
+  },
+  'apps/editor/lib/explorer-share-host.ts Project·Removed': { values: ['ShareLink'] },
+  'apps/editor/lib/explorer-share-host.ts UI·Selected': { values: ['LiveImageTab'] },
+  'apps/editor/lib/explorer-share-host.ts UI·Started': { values: ['ShareTour'] },
+  'apps/editor/lib/explorer-share-host.ts UI·Ended': {
+    values: ['ShareTourCompleted', 'ShareTourSkipped'],
+  },
   'apps/editor/lib/element-telemetry.ts Element·Duplicated': { values: [null, 'ShiftDrag'] },
   'apps/editor/lib/element-telemetry.ts Element·Added': {
     values: ELEMENT_KINDS,

@@ -23,8 +23,19 @@ const pick = (f: Folder): PickerFolder => ({ id: f.id, name: f.name, parentId: f
 
 export function ExplorerDialogs() {
   const ctx = useExplorer();
-  const { dialog, openDialog, folders, teams, actions, client, shareUrl, toast, view, navigate } =
-    ctx;
+  const {
+    dialog,
+    openDialog,
+    folders,
+    teams,
+    actions,
+    client,
+    shareUrl,
+    shareHost,
+    toast,
+    view,
+    navigate,
+  } = ctx;
   const close = () => openDialog(null);
 
   const personal = useMemo(
@@ -86,16 +97,23 @@ export function ExplorerDialogs() {
         />
       );
     }
-    case 'share':
+    case 'share': {
+      const item = dialog.item;
+      const loadTabs = shareHost?.loadTabs;
       return (
         <ShareDialog
           client={client}
-          item={dialog.item}
+          item={item}
+          loadTabs={loadTabs ? () => loadTabs(item) : undefined}
           shareUrl={shareUrl ?? defaultShareUrl}
-          onError={toast.error}
+          handOver={shareHost?.handOver?.(item)}
+          helpHref={shareHost?.helpHref}
+          onTelemetry={shareHost?.onTelemetry}
+          notify={(text, tone) => toast.show(text, { tone })}
           onClose={close}
         />
       );
+    }
     case 'delete-folder': {
       const folder = folders.byId.get(dialog.folderId);
       if (!folder) return null;

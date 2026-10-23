@@ -20,6 +20,7 @@ export const HELP_ARTICLES = {
   // Sharing
   sharing: 'collaboration/sharing',
   shareLinkExpiry: 'collaboration/sharing/share-link-expiry',
+  sharePasswords: 'collaboration/sharing/share-passwords',
   // Palette behaviour
   // Of the elements added in docs/specs/009-elements/youtube-video.md and docs/specs/009-elements/mind-node.md, docs/specs/009-elements/lane.md, docs/specs/009-elements/entity.md, docs/specs/009-elements/embed-providers.md, only the embed has a
   // surface that links its article (the link picker, when it is restricted to
@@ -145,6 +146,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   shareLinkExpiry: {
     title: 'Learn about link expiry',
     description: 'How long a share link lasts and where expired links go.',
+  },
+  sharePasswords: {
+    title: 'Learn about share passwords',
+    description: 'One password that guards every link to a plan, embeds included.',
   },
   embedElements: {
     title: 'Learn about embeds',

@@ -108,6 +108,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Project|Moved|TakenOffline':
     'Someone took a project offline, moving it out of their account into this browser only.',
   'Project|Redone|': 'Someone hit Redo on a project edit.',
+  'Project|Removed|ShareLink': 'Someone revoked a share link from its pass in the Share dialog.',
   'Project|Renamed|': 'A project was renamed.',
   'Project|Reverted|':
     "Someone reverted a single change from a tab's activity log, in the since-removed Activity panel.",
@@ -1017,6 +1018,13 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone used Repair This Browser on a failed project load: liveplanner's settings and caches in that browser were cleared and the page reloaded.",
   'UI|Cleared|BrowserRepair.Help':
     "Someone used Repair This Browser from the help centre's Repair page, clearing liveplanner's settings and caches in that browser.",
+  'UI|Copied|ShareLink': 'Someone copied a share link, by hand or as the new pass was made.',
+  'UI|Copied|EmbedCode': "Someone copied a pass's embed, as its address or an iframe.",
+  'UI|Copied|LiveImage': "Someone copied a pass's live image, as its address, Markdown or HTML.",
+  'UI|Selected|LiveImageTab': 'Someone picked which tab a live image draws.',
+  'UI|Started|ShareTour': "Someone started the Share dialog's Show Me tour.",
+  'UI|Ended|ShareTourCompleted': "Someone reached the end of the Share dialog's Show Me tour.",
+  'UI|Ended|ShareTourSkipped': "Someone left the Share dialog's Show Me tour before its end.",
   'UI|Copied|Diagnostics':
     'Someone copied the diagnostics report from a failed project load, to send to support.',
   'UI|Copied|Diagnostics.Help':
@@ -2151,6 +2159,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'A project was opened, counted on every open (including a page refresh and the first open of a project just created).',
   'Project|Moved': 'A project was moved into (or out of) a folder.',
   'Project|Redone': 'Someone hit Redo on a project edit.',
+  'Project|Removed': 'Something was taken off a project, such as a share link revoked.',
   'Project|Renamed': 'A project was renamed.',
   'Project|Reverted':
     "Someone reverted a single change from a tab's activity log, in the since-removed Activity panel.",

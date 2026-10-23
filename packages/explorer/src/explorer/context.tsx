@@ -48,6 +48,7 @@ import type {
   LinkProps,
   Placement,
   RenderThumbnail,
+  ShareHost,
   ShareUrl,
   TeamRef,
   TimelineTelemetry,
@@ -103,6 +104,7 @@ export type ExplorerContextValue = {
   Link: LinkComponent;
   renderThumbnail?: RenderThumbnail;
   shareUrl?: ShareUrl;
+  shareHost?: ShareHost;
   manageTeamsUrl?: string;
   onCreate: (placement: Placement) => void;
   // Inline rename: one row at a time, by id (item or folder).
@@ -184,6 +186,7 @@ export type ExplorerProviderProps = {
   viewerId?: string | null;
   renderThumbnail?: RenderThumbnail;
   shareUrl?: ShareUrl;
+  shareHost?: ShareHost;
   manageTeamsUrl?: string;
   openNav?: () => void;
   helpHref?: HelpHref;
@@ -220,6 +223,7 @@ export function ExplorerProvider({
   viewerId = null,
   renderThumbnail,
   shareUrl,
+  shareHost,
   manageTeamsUrl,
   openNav = NO_NAV,
   helpHref,
@@ -325,6 +329,7 @@ export function ExplorerProvider({
       Link,
       renderThumbnail,
       shareUrl,
+      shareHost,
       manageTeamsUrl,
       onCreate,
       renamingId,
@@ -366,6 +371,7 @@ export function ExplorerProvider({
       Link,
       renderThumbnail,
       shareUrl,
+      shareHost,
       manageTeamsUrl,
       onCreate,
       renamingId,

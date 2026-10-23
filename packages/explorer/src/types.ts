@@ -3,6 +3,8 @@
 
 import type { ComponentType, MouseEventHandler, ReactNode } from 'react';
 import type { Item, ShareLink } from '@liveworkspace/index-client';
+import type { ShareHandOver } from './dialogs/share/handover';
+import type { ShareHelpHref, ShareTelemetry } from './dialogs/share/types';
 
 export type LinkProps = {
   href: string;
@@ -43,3 +45,12 @@ export type TimelineTelemetry = (
 /** What Home's What Happened reports: an entry opened its item (`Selected`, `WhatHappened`), a summary dealt out
  *  (`Opened`, `Group`), See Timeline followed (`Selected`, `SeeTimeline`). */
 export type HomeTelemetry = (action: 'Selected' | 'Opened', type: string) => void;
+
+/** What the Share dialog needs from the host beyond a link's address, per item, since the Explorer may list every
+ *  app's items: the item's tabs (a link can open one), its embed and live image, help articles, and telemetry. */
+export type ShareHost = {
+  loadTabs?: (item: Item) => Promise<{ id: string; name: string }[]>;
+  handOver?: (item: Item) => ShareHandOver | undefined;
+  helpHref?: ShareHelpHref;
+  onTelemetry?: ShareTelemetry;
+};
