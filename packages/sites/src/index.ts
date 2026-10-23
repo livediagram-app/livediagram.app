@@ -217,7 +217,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     itemPath: '/document/',
     newPath: '/new',
     offlinePath: '/offline',
-    onIndex: false,
+    onIndex: true,
     sharePath: '/document/shared?s=',
     previewPath: null,
     imagesPath: '/api/images',
