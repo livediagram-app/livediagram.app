@@ -402,9 +402,15 @@ export function ExplorerShell() {
     return () => window.removeEventListener('keydown', onKey);
   }, [router]);
 
+  // The app's own settings, on liveworkspace.app (where they are kept for the account): the Settings button the app's
+  // bottom bar had.
+  const settingsHref =
+    host && signedIn ? workspaceHref(`/account/settings?app=${host}`) : null;
   const header = useCallback(
-    ({ search }: { search: ReactNode }) => <ExplorerHeader app={arrived.app} search={search} />,
-    [arrived.app],
+    ({ search }: { search: ReactNode }) => (
+      <ExplorerHeader app={arrived.app} search={search} settingsHref={settingsHref} />
+    ),
+    [arrived.app, settingsHref],
   );
 
   // Dialogs and menus render into <body>, outside the page's wrapper: they wear the app's colours from there too.

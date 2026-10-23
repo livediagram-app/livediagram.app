@@ -9,9 +9,12 @@
 //
 // On an app's own address (lib/explorer/page-app.ts) the page is the app's: the liveworkspace logo leads to
 // liveworkspace.app, the app's logo to the app's home on this address, and the account control is the app's session.
+// Signed in there, a Settings button beside Appearance opens the app's own settings on liveworkspace.app, where they
+// are kept for the account (`settingsHref`), as the app's own Explorer had them on its bottom bar.
 
 import { useSyncExternalStore, type ReactNode } from 'react';
-import { SiteAppearanceToggle, SiteSwitcher } from '@livediagram/ui';
+import { lucideGlyph, SiteAppearanceToggle, SiteSwitcher } from '@livediagram/ui';
+import { lucideSettings } from '@livediagram/icons/lucide';
 import { siteOfApp, type AppName } from '@liveworkspace/sites';
 import { AccountControl } from '@/components/AccountControl';
 import { AppAccountControl } from '@/components/explorer/AppAccountControl';
@@ -21,8 +24,18 @@ import { AppLogo } from '@/components/landing/AppLogo';
 import { listedApps } from '@/lib/apps';
 
 const noChange = () => () => {};
+const SettingsIcon = lucideGlyph(lucideSettings, 18);
 
-export function ExplorerHeader({ app, search }: { app: AppName | null; search: ReactNode }) {
+export function ExplorerHeader({
+  app,
+  search,
+  settingsHref = null,
+}: {
+  app: AppName | null;
+  search: ReactNode;
+  // The app's settings, on an app's address for a person signed in; none elsewhere.
+  settingsHref?: string | null;
+}) {
   // Null while prerendered and on liveworkspace.app.
   const host = useSyncExternalStore(noChange, pageApp, () => null);
   const listed = app ? listedApps().find((a) => a.id === siteOfApp(app).id) : undefined;
@@ -60,6 +73,16 @@ export function ExplorerHeader({ app, search }: { app: AppName | null; search: R
           {search ? <div className="w-full max-w-md">{search}</div> : null}
         </div>
         <div className="flex shrink-0 items-center gap-1">
+          {settingsHref ? (
+            <a
+              href={settingsHref}
+              aria-label={`${listed?.name ?? 'App'} Settings`}
+              title="Settings"
+              className="relative touch-target inline-flex size-9 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+            >
+              <SettingsIcon />
+            </a>
+          ) : null}
           <SiteAppearanceToggle />
           {host ? <AppAccountControl /> : <AccountControl />}
         </div>
