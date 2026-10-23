@@ -109,7 +109,7 @@ function withArticle(noun: string): string {
 }
 
 /** The sentence that explains an issue to the reader. */
-export function issueMessage(issue: LensIssue, words: Words): string {
+export function issueMessage(issue: LensIssue, _words: Words): string {
   switch (issue.reason) {
     case 'unknown_dimension':
       return `“${issue.raw}” isn’t a filter, so it’s searched as text.`;
@@ -123,8 +123,6 @@ export function issueMessage(issue: LensIssue, words: Words): string {
       return 'That team isn’t one of yours, so it’s searched as text.';
     case 'space_not_here':
       return 'The breadcrumb sets the space here, so Space filters don’t apply.';
-    case 'retired':
-      return `“${issue.raw}” no longer filters: the ${words.many} / All switch says which ${words.lowerMany} show.`;
   }
 }
 

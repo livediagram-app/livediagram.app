@@ -129,7 +129,8 @@ type ItemSummary = {
 | `GET /trash` / `DELETE /trash` | person              | List, empty (`?team=`; `?app=` empties that app's items only).               |
 
 **The lens's filters**, on `GET /items` and `GET /shared` (the Explorer's filter field and chips): `q`, words
-(at most 16), each in the title or the item's folder's name, taken literally; `source` (`ai`: made by an AI tool
+(at most 16), each in the title or the item's folder's name, taken literally; `apps`, the apps the items open in
+(with `app` as well, both must hold); `source` (`ai`: made by an AI tool
 through MCP); `since`, changed at or after (epoch ms); `owner`, `me` or `others`; `intent`, the creation intent's
 last word (`plan:board:kanban` is `kanban`); and `space`, `mine`, `shared` (reached through a link) or
 `team:<id>` of a joined team (403 otherwise). A filter's values are a comma list of at most 8, combined with or;

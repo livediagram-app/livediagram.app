@@ -167,6 +167,20 @@ describe('filters', () => {
     expect((await call('/items?space=team:team9', { auth: ada.auth })).status).toBe(403);
   });
 
+  it('narrows by the apps items open in (Opens in), with app as well', async () => {
+    const ada = await person('user_a');
+    await makeItem(ada.auth, { title: 'Plan' });
+    await makeItem(ada.auth, { title: 'Canvas', app: 'livediagram' });
+    await makeItem(ada.auth, { title: 'Doc', app: 'livedocuments' });
+    expect(titles(await list(ada.auth, 'apps=livediagram')).sort()).toEqual(['Canvas']);
+    expect(titles(await list(ada.auth, 'apps=livediagram,liveplanner')).sort()).toEqual([
+      'Canvas',
+      'Plan',
+    ]);
+    expect(titles(await list(ada.auth, 'app=liveplanner&apps=livediagram'))).toEqual([]);
+    expect((await call('/items?apps=paint', { auth: ada.auth })).status).toBe(400);
+  });
+
   it('reaches a folder’s subfolders with deep', async () => {
     const ada = await person('user_a');
     const folder = async (name: string, parentId?: string) =>
@@ -329,6 +343,7 @@ describe('query plans', () => {
         since: 1,
         owner: 'me',
         intent: ['kanban'],
+        apps: ['liveplanner', 'livediagram'],
         space: { mine: true, shared: true, teams: ['team1'] },
         limit: 50,
       },

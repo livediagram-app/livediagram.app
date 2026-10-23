@@ -189,6 +189,8 @@ export type Page<T, K extends string> = { [key in K]: T[] } & { nextCursor: stri
 // The Explorer's filters (its lens), on GET /items and GET /shared. Values of one filter combine with or;
 // filters combine with and.
 export type ItemFilters = {
+  // Only these apps' items (or-ed); with `app` as well, both must hold.
+  apps?: readonly App[];
   // Words, each found in the title or the item's folder's name, taken literally.
   q?: string;
   // Only items made this way (`ai`: by an AI tool through MCP).

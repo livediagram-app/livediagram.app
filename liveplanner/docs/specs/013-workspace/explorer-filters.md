@@ -54,7 +54,7 @@ Which apps' items a list holds is the **Plans / All** switch in the page header,
 
 Every list view shows one row of chips under its page header and breadcrumb:
 
-- One chip per dimension, in dimension order (Template, Made by AI, Edited, People), then **Space** on aggregate views
+- One chip per dimension, in dimension order (Opens in while every app shows, Template, Made by AI, Edited, People), then **Space** on aggregate views
   only. Template shows only when the host names template families (`lensTemplates`).
 - **Clear** ends the row while the lens is set and empties `q`. It keeps its place when hidden, so nothing moves.
 - A chip opens a listbox of its values under it. Choosing a value toggles it and leaves the listbox open; Escape, Tab,
@@ -68,6 +68,7 @@ Every list view shows one row of chips under its page header and breadcrumb:
 | Dimension | Key        | Chip label  | Values and their labels                                                                          | Index filter |
 | --------- | ---------- | ----------- | ------------------------------------------------------------------------------------------------ | ------------ |
 | Text      | (none)     | (the field) | Free words                                                                                       | `q`          |
+| Opens in  | `opens-in` | Opens in    | `canvas` livediagram, `plan` liveplanner, `document` livedocuments, `design` livedesign: its app | `apps`       |
 | Template  | `template` | Template    | `retrospective` Retrospective, `kanban` Kanban: the template family the plan was made from       | `intent`     |
 | Made by   | `made-by`  | Made by AI  | `ai` Made by AI: the item's `source` is `ai`, an AI tool through the MCP server (not the CLI)    | `source=ai`  |
 | Edited    | `edited`   | Edited      | `today` Today, `7d` Last 7 days, `30d` Last 30 days, `12m` Last 12 months, `this-year` This year | `since`      |
@@ -88,8 +89,11 @@ Every list view shows one row of chips under its page header and breadcrumb:
   everyone and send nothing.
 - **Space** is `mine` for an item in My Work, `team:<id>` for one in a team, `shared` for one reached through a link.
   A token names a team by id; every label shows the team's **name**.
-- **Opens in** is retired: the Plans / All switch says which items show. An old link's `opens-in:` token is read as no
-  filter and reported (`retired`). **Kind** was not carried over: a plan's tabs are not in the index.
+- **Opens in** is the app an item opens in, named by its kind (`opens-in:plan`) and labelled with the app's name from
+  `@liveworkspace/sites`. Its chip and suggestions show while a list holds every app's items (All, and
+  liveworkspace.app's Explorer); on a list held to the host's own app there is no chip, and a typed `opens-in:` token
+  still reads and narrows within that app (another app's leaves the list empty). **Kind** was not carried over: a
+  plan's tabs are not in the index.
 
 ## Matching
 
@@ -123,11 +127,10 @@ The string is words separated by whitespace.
 
 - A valid token that cannot apply is kept in the string, not applied, and reported:
 
-| Reason           | When                                              | Message                                                                          |
-| ---------------- | ------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `space_not_here` | A `space:` token on a scoped view                 | The breadcrumb sets the space here, so Space filters don’t apply.                |
-| `retired`        | An `opens-in:` token from an old link             | “opens-in:plan” no longer filters: the Plans / All switch says which plans show. |
-| `too_long`       | The string passes 512 characters; the rest is cut | The search is cut to 512 characters.                                             |
+| Reason           | When                                              | Message                                                           |
+| ---------------- | ------------------------------------------------- | ----------------------------------------------------------------- |
+| `space_not_here` | A `space:` token on a scoped view                 | The breadcrumb sets the space here, so Space filters don’t apply. |
+| `too_long`       | The string passes 512 characters; the rest is cut | The search is cut to 512 characters.                              |
 
 - A word **being typed** (the caret is in it or at its end, in the field) that starts with a dimension key and a colon
   is **pending**: neither applied nor text, and not reported until the caret leaves it.
@@ -202,9 +205,10 @@ or filter plans" (the host's word for its items).
 
 Each time a dimension gains a value it did not hold, from a chip, an accepted suggestion or a typed token, the
 Explorer calls the host's `onLensSelected(<Facet>)` once, and liveplanner emits `Explorer / Selected / <Facet>`, with
-`<Facet>` from the closed set `Text`, `Template`, `MadeBy`, `Edited`, `People`, `Space` (`LENS_TELEMETRY_TYPES`).
+`<Facet>` from the closed set `Text`, `OpensIn`, `Template`, `MadeBy`, `Edited`, `People`, `Space`
+(`LENS_TELEMETRY_TYPES`).
 Text counts when it goes from empty to non-empty. Never a value, a word or an id. A lens arriving with a link, or
-restored by Back, counts for nothing. `OpensIn` and `Kind` are retired types.
+restored by Back, counts for nothing. `Kind` is a retired type.
 
 ## Help
 

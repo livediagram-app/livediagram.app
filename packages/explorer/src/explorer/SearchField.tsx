@@ -36,6 +36,7 @@ import {
   type LensContext,
   type LensSuggestion,
 } from '../lens';
+import { APP_KINDS } from '@liveworkspace/index-client';
 import { CloseIcon, SearchIcon } from '../ui/icons';
 import { lensViewOf, viewLens, withLens } from '../views';
 import { useExplorer } from './context';
@@ -66,15 +67,18 @@ let barFocusRequested = false;
 
 /** The lens's parsing context for the view on screen. */
 export function useLensContext(): LensContext {
-  const { view, teams, lensTemplates } = useExplorer();
+  const { view, teams, lensTemplates, app, filter } = useExplorer();
   const kind = lensViewOf(view.kind) ?? 'aggregate';
+  // Held to the host's own app, a list offers no Opens in chip.
+  const oneApp = filter === 'app' ? APP_KINDS[app] : null;
   return useMemo(
     () => ({
       view: kind,
       teams: teams.map((t) => ({ id: t.id, name: t.name })),
       templates: lensTemplates,
+      oneApp,
     }),
-    [kind, teams, lensTemplates],
+    [kind, teams, lensTemplates, oneApp],
   );
 }
 

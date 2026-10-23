@@ -1,15 +1,38 @@
 // The lens's catalogue (liveplanner/docs/specs/013-workspace/explorer-filters.md "Dimensions"): every dimension,
 // its values, their labels and the closed telemetry types. Brought over from liveplanner's explorer-lens for the
-// index's lists: Template's values are the host app's own (its template families), and Opens in is retired, since
-// the Plans / All switch says which app's items a list shows.
+// index's lists: Opens in names the app an item opens in, by its kind (`opens-in:plan`), from every app the index
+// knows; Template's values are the host app's own (its template families).
+
+import { APP_KINDS, APPS, type App, type Kind } from '@liveworkspace/index-client';
+import { APP_SITES } from '@liveworkspace/sites';
 
 /** The dimensions in canonical order: the order tokens are written in and chips are shown in. */
-export const LENS_DIMENSIONS = ['template', 'made-by', 'edited', 'people', 'space'] as const;
+export const LENS_DIMENSIONS = [
+  'opens-in',
+  'template',
+  'made-by',
+  'edited',
+  'people',
+  'space',
+] as const;
 export type LensDimension = (typeof LENS_DIMENSIONS)[number];
 
-/** Keys an older link may carry that no longer filter: kept in the string, not applied, and said why. */
-export const RETIRED_KEYS = ['opens-in'] as const;
-export type RetiredKey = (typeof RETIRED_KEYS)[number];
+/** Opens in's values: each app's kind, in the apps' order (`canvas`, `plan`, `document`, `design`). */
+export const OPENS_IN_VALUES: readonly Kind[] = APPS.map((app) => APP_KINDS[app]);
+export type OpensInValue = Kind;
+
+/** The app an Opens in value names. */
+export function appOfKind(kind: OpensInValue): App {
+  return APPS.find((app) => APP_KINDS[app] === kind)!;
+}
+
+/** Opens in's labels: the app's wordmark from @liveworkspace/sites ("liveplanner"). */
+const OPENS_IN_LABELS: Record<string, string> = Object.fromEntries(
+  APPS.map((app) => [
+    APP_KINDS[app],
+    APP_SITES.find((site) => site.id === `${app}.app`)?.name ?? app,
+  ]),
+);
 
 export const MADE_BY_VALUES = ['ai'] as const;
 export type MadeByValue = (typeof MADE_BY_VALUES)[number];
@@ -27,6 +50,7 @@ export const SPACE_TEAM_PREFIX = 'team:';
 /** The dimensions whose values are a fixed list, with that list. Template's come from the host; Space's teams
  *  from the person. */
 export const FIXED_VALUES = {
+  'opens-in': OPENS_IN_VALUES,
   'made-by': MADE_BY_VALUES,
   edited: EDITED_VALUES,
   people: PEOPLE_VALUES,
@@ -37,6 +61,7 @@ export const isFixedDimension = (d: LensDimension): d is FixedDimension => d in 
 
 /** The chip label of each dimension; also how messages name it. */
 export const DIMENSION_LABELS: Record<LensDimension, string> = {
+  'opens-in': 'Opens in',
   template: 'Template',
   'made-by': 'Made by AI',
   edited: 'Edited',
@@ -46,6 +71,7 @@ export const DIMENSION_LABELS: Record<LensDimension, string> = {
 
 /** The label of every fixed value. A team's label is its name; a template's is the host's. */
 export const VALUE_LABELS = {
+  'opens-in': OPENS_IN_LABELS,
   'made-by': { ai: 'Made by AI' },
   edited: {
     today: 'Today',
@@ -64,6 +90,7 @@ export type LensFacet = 'text' | LensDimension;
 /** The closed telemetry type of each facet; never a value, a word or an id. */
 export const LENS_TELEMETRY_TYPES = {
   text: 'Text',
+  'opens-in': 'OpensIn',
   template: 'Template',
   'made-by': 'MadeBy',
   edited: 'Edited',
@@ -89,8 +116,4 @@ export const LENS_QUERY_PARAM = 'q';
 
 export function isLensDimension(value: string): value is LensDimension {
   return (LENS_DIMENSIONS as readonly string[]).includes(value);
-}
-
-export function isRetiredKey(value: string): value is RetiredKey {
-  return (RETIRED_KEYS as readonly string[]).includes(value);
 }

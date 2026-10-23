@@ -30,10 +30,12 @@ function wordAround(input: string, caret: number): Range {
   return { start, end: after === -1 ? input.length : caret + after };
 }
 
-/** The dimensions this view offers: Space on aggregate views only, Template when the host has families. */
+/** The dimensions this view offers: Opens in while the list shows every app, Space on aggregate views only,
+ *  Template when the host has families. */
 export function availableDimensions(context: LensContext): LensDimension[] {
   return LENS_DIMENSIONS.filter(
     (dimension) =>
+      (dimension !== 'opens-in' || !context.oneApp) &&
       (dimension !== 'space' || context.view === 'aggregate') &&
       dimensionAvailable(dimension, context),
   );

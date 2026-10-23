@@ -6,15 +6,14 @@ import {
   FIXED_VALUES,
   isFixedDimension,
   isLensDimension,
-  isRetiredKey,
   LENS_MAX_INPUT_LENGTH,
   LENS_VALUE_SEPARATOR,
   MADE_BY_VALUES,
   PEOPLE_VALUES,
   SPACE_FIXED_VALUES,
   SPACE_TEAM_PREFIX,
+  OPENS_IN_VALUES,
   type LensDimension,
-  type RetiredKey,
 } from './dimensions';
 import type {
   Lens,
@@ -32,16 +31,16 @@ const TOKEN_SHAPED = /^([A-Za-z][A-Za-z-]*):(.*)$/s;
 const WORD = /\S+/g;
 const WHITESPACE = /\s/;
 
-/** How one word reads: a token and its values, a retired key, or text with the problem that kept it from being
- *  a token (null for a plain word). */
+/** How one word reads: a token and its values, or text with the problem that kept it from being a token (null for
+ *  a plain word). */
 type WordReading =
   | { kind: 'token'; dimension: LensDimension; values: readonly string[] }
-  | { kind: 'retired'; key: RetiredKey }
   | { kind: 'text'; problem: WordProblem | null };
 
 type ValueReading = { ok: true; value: string } | { ok: false; problem: WordProblem };
 
 const NO_FILTERS: LensFilters = {
+  'opens-in': [],
   template: [],
   'made-by': [],
   edited: [],
@@ -138,7 +137,6 @@ export function readWord(word: string, context: LensContext): WordReading {
   const [, rawKey, rawValues = ''] = TOKEN_SHAPED.exec(word) ?? [];
   if (rawKey === undefined) return PLAIN;
   const key = rawKey.toLowerCase();
-  if (isRetiredKey(key)) return { kind: 'retired', key };
   if (!isLensDimension(key) || !dimensionAvailable(key, context)) {
     return { kind: 'text', problem: { reason: 'unknown_dimension', dimension: null, value: null } };
   }
@@ -158,6 +156,7 @@ function filtersOf(
 ): LensFilters {
   const of = (dimension: LensDimension) => applied.get(dimension) ?? [];
   return {
+    'opens-in': inOrder(OPENS_IN_VALUES, of('opens-in')),
     template: orderValues('template', of('template'), context),
     'made-by': inOrder(MADE_BY_VALUES, of('made-by')),
     edited: inOrder(EDITED_VALUES, of('edited')),
@@ -196,11 +195,6 @@ export function parseLens(input: string, context: LensContext, caret?: number): 
       continue;
     }
     const reading = readWord(raw, context);
-    if (reading.kind === 'retired') {
-      terms.push({ kind: 'retired', raw, start, end, key: reading.key });
-      issues.push({ reason: 'retired', raw, start, end, dimension: null, value: null });
-      continue;
-    }
     if (reading.kind === 'text') {
       terms.push({ kind: 'text', raw, start, end });
       if (reading.problem) issues.push({ ...reading.problem, raw, start, end });

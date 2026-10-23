@@ -194,6 +194,32 @@ describe('the filter lens', () => {
     expect(screen.getByRole('button', { name: 'Template, any' })).toBeTruthy();
   });
 
+  it('offers Opens in while every app shows, narrowing by the app an item opens in', async () => {
+    const index = createFakeIndex({
+      items: [
+        makeItem(1, { title: 'A plan', app: 'liveplanner' }),
+        makeItem(2, { title: 'A canvas', app: 'livediagram' }),
+      ],
+    });
+    const { onLensSelected, unmount } = renderRouted(
+      index,
+      { kind: 'all' },
+      { filter: 'all', onFilterChange: () => {} },
+    );
+    await waitFor(() => expect(titles()).toHaveLength(2));
+    fireEvent.click(screen.getByRole('button', { name: 'Opens in, any' }));
+    const listbox = await screen.findByRole('listbox', { name: 'Opens in' });
+    fireEvent.click(within(listbox).getByRole('option', { name: /livediagram/ }));
+    expect(onLensSelected).toHaveBeenCalledWith('OpensIn');
+    await waitFor(() => expect(titles()).toEqual(['A canvas']));
+    expect(lastList(index)).toMatchObject({ apps: ['livediagram'] });
+    unmount();
+    // Held to the host's own app, there is no Opens in chip.
+    renderRouted(index, { kind: 'all' }, { filter: 'app', onFilterChange: () => {} });
+    await screen.findByRole('button', { name: 'Edited, any' });
+    expect(screen.queryByRole('button', { name: 'Opens in, any' })).toBeNull();
+  });
+
   it('announces how many are left once a changed lens has loaded', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     try {

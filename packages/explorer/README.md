@@ -87,7 +87,7 @@ Dark mode follows the host's `.dark` variant. The empty-state art animates only 
 | `onTimeline?`              | `(action, type) => void`               | The Timeline's reports for telemetry: `Changed`, `Selected`, `Loaded`, `Opened` or `Removed`, by a fixed token.                                        |
 | `onHome?`                  | `(action, type) => void`               | Home's What Happened reports for telemetry: `Selected` (`WhatHappened`, `SeeTimeline`) or `Opened` (`Group`).                                          |
 | `lensTemplates?`           | `{ value, label }[]`                   | The template families the lens's Template chip offers, matched to the last word of an item's intent. Without them there is no Template chip.           |
-| `onLensSelected?`          | `(type) => void`                       | The lens's report for telemetry: a facet (`Text`, `Template`, `MadeBy`, `Edited`, `People`, `Space`) gained a value.                                   |
+| `onLensSelected?`          | `(type) => void`                       | The lens's report for telemetry: a facet (`Text`, `OpensIn`, `Template`, `MadeBy`, `Edited`, `People`, `Space`) gained a value.                        |
 
 Views (`ExplorerView`) and their addresses under `basePath`. A list view's `q` is its filter lens, written as `?q=`:
 
@@ -200,7 +200,7 @@ Long lists stay small in the DOM:
 - **Cards** are revealed 60 at a time.
 
 The filter lens (`q` on a list view; liveplanner/docs/specs/013-workspace/explorer-filters.md) is parsed on the
-reader's side (`src/lens/`) and sent to the index as filters (`q`, `source`, `since`, `owner`, `intent`, `space`;
+reader's side (`src/lens/`) and sent to the index as filters (`q`, `apps`, `source`, `since`, `owner`, `intent`, `space`;
 `deep=1` on a folder), so the index narrows each page. The address follows the field at most every 250 ms, replacing
 the history entry, and a newer list read cancels the older one.
 

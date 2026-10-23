@@ -521,6 +521,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Home|Selected|SeeTimeline': "Someone followed See Timeline from Explorer Home's What Happened.",
   'Explorer|Selected|Text':
     'Someone typed words into the Explorer’s search to narrow a list of plans.',
+  'Explorer|Selected|OpensIn':
+    'Someone filtered an Explorer list by the app its items open in (liveplanner, livediagram, …).',
   'Explorer|Selected|Template':
     'Someone filtered an Explorer list by the template family plans were made from (Retrospective, Kanban).',
   'Explorer|Selected|MadeBy': 'Someone filtered an Explorer list to the plans an AI made.',

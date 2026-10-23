@@ -2,7 +2,7 @@
 // (query.ts); this keeps a row the person just changed honest (renamed, moved, shared) until the list is read
 // again, and tells the suggestions which values match nothing in a list loaded whole.
 
-import type { Item } from '@liveworkspace/index-client';
+import { APP_KINDS, type Item } from '@liveworkspace/index-client';
 import type { EditedValue } from './dimensions';
 import type { Lens, LensSubject } from './types';
 
@@ -19,12 +19,13 @@ export function intentWord(intent: string | null): string | null {
 export function itemSubject(
   item: Pick<
     Item,
-    'title' | 'updatedAt' | 'ownerId' | 'teamId' | 'source' | 'intent' | 'sharedVia'
+    'app' | 'title' | 'updatedAt' | 'ownerId' | 'teamId' | 'source' | 'intent' | 'sharedVia'
   >,
   viewerId: string | null,
 ): LensSubject {
   return {
     name: item.title,
+    opensIn: APP_KINDS[item.app],
     savedAt: item.updatedAt,
     space: item.sharedVia ? 'shared' : item.teamId ? `team:${item.teamId}` : 'mine',
     people: viewerId !== null && item.ownerId === viewerId ? 'me' : 'others',
@@ -80,6 +81,7 @@ export function compileLens(
   const words = text ? lens.text.map(foldText) : [];
   const cutoff = editedSince(filters.edited, now);
   return (subject) =>
+    admits(filters['opens-in'], subject.opensIn) &&
     admits(filters.template, subject.template) &&
     (filters['made-by'].length === 0 || subject.madeByAi === true) &&
     (cutoff === null || subject.savedAt >= cutoff) &&

@@ -3,12 +3,14 @@
 // and pages what is left, so a lens reaches every item however long the list.
 
 import type { ItemFilters } from '@liveworkspace/index-client';
+import { appOfKind } from './dimensions';
 import { editedSince } from './match';
 import type { Lens, LensView } from './types';
 
 export function lensFilters(lens: Lens, view: LensView, now: number): ItemFilters {
   const { filters } = lens;
   const out: ItemFilters = {};
+  if (filters['opens-in'].length > 0) out.apps = filters['opens-in'].map(appOfKind);
   if (lens.text.length > 0) out.q = lens.text.join(' ');
   if (filters['made-by'].length > 0) out.source = ['ai'];
   const since = editedSince(filters.edited, now);
@@ -25,6 +27,7 @@ export function lensFilters(lens: Lens, view: LensView, now: number): ItemFilter
 export function filtersKey(filters: ItemFilters): string {
   const since = filters.since === undefined ? '' : String(Math.floor(filters.since / 60_000));
   return JSON.stringify([
+    filters.apps ?? [],
     filters.q ?? '',
     filters.source ?? [],
     since,

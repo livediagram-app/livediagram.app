@@ -42,6 +42,7 @@ describe('parsing', () => {
     expect(issues).toEqual([]);
     expect(lens.text).toEqual(['road', 'map']);
     expect(lens.filters).toEqual({
+      'opens-in': [],
       template: ['retrospective', 'kanban'],
       'made-by': ['ai'],
       edited: ['7d'],
@@ -75,17 +76,41 @@ describe('parsing', () => {
     expect(issueMessage(issues[0]!, words)).toMatch(/breadcrumb sets the space/);
   });
 
-  it('reads an old link’s Opens in as no filter at all, and says so', () => {
-    const { lens, issues } = parseLens('opens-in:plan roadmap', aggregate);
+  it('reads Opens in by each app’s kind, labelled with the app’s name, and sends the apps to the index', () => {
+    const { lens, issues } = parseLens('opens-in:plan,canvas roadmap', aggregate);
+    expect(issues).toEqual([]);
     expect(lens.text).toEqual(['roadmap']);
-    expect(issues[0]!.reason).toBe('retired');
-    expect(issueMessage(issues[0]!, words)).toMatch(/Plans \/ All switch/);
+    expect(lens.filters['opens-in']).toEqual(['canvas', 'plan']);
+    expect(serialiseLens(lens)).toBe('opens-in:canvas,plan roadmap');
+    expect(lensFilters(lens, 'aggregate', 0).apps).toEqual(['livediagram', 'liveplanner']);
+    const chip = lensChips(parseLens('opens-in:plan', aggregate), aggregate)[0]!;
+    expect(chip.dimension).toBe('opens-in');
+    expect(chip.name).toBe('Opens in: liveplanner');
+    expect(chip.options.map((o) => o.label)).toEqual([
+      'Any',
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+    ]);
+    const match = compileLens(lens, 0, { text: false });
+    expect(match(itemSubject(makeItem(1, { app: 'livediagram' }), null))).toBe(true);
+    expect(match(itemSubject(makeItem(2, { app: 'livedocuments' }), null))).toBe(false);
+    expect(parseLens('opens-in:paint', aggregate).issues[0]!.reason).toBe('unknown_value');
+  });
+
+  it('offers no Opens in chip on a list held to one app, yet still reads a typed one', () => {
+    const one: LensContext = { ...aggregate, oneApp: 'plan' };
+    expect(lensChips(parseLens('', one), one).map((c) => c.dimension)).not.toContain('opens-in');
+    expect(suggestTokens('ope', 3, { ...one, subjects: null, now: 0 })).toEqual([]);
+    expect(parseLens('opens-in:plan', one).lens.filters['opens-in']).toEqual(['plan']);
   });
 
   it('has no Template filter when the host names no families', () => {
     const none = { ...aggregate, templates: [] };
     expect(parseLens('template:kanban', none).issues[0]!.reason).toBe('unknown_dimension');
     expect(lensChips(parseLens('', none), none).map((c) => c.dimension)).toEqual([
+      'opens-in',
       'made-by',
       'edited',
       'people',

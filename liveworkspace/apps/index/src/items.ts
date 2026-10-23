@@ -15,6 +15,7 @@ import {
   SEARCH_WORDS_MAX,
   USE_WINDOW_DAYS,
   TITLE_MAX,
+  type App,
   type ItemOwner,
   type ItemSource,
   type ItemView,
@@ -65,6 +66,12 @@ export function parseListFilters(person: Person, params: URLSearchParams): ListF
     const words = [...new Set(q.split(/\s+/))];
     if (words.length > SEARCH_WORDS_MAX) return badRequest('invalid_query');
     filters.words = words;
+  }
+  const apps = params.get('apps');
+  if (apps !== null) {
+    const values = readList(apps, isApp);
+    if (!values) return badRequest('invalid_query');
+    filters.apps = values as App[];
   }
   const source = params.get('source');
   if (source !== null) {

@@ -4,8 +4,8 @@ import type {
   EditedValue,
   LensDimension,
   MadeByValue,
+  OpensInValue,
   PeopleValue,
-  RetiredKey,
 } from './dimensions';
 
 /** A space as the lens names it: My Work, Shared With Me, or one team by id. */
@@ -13,6 +13,7 @@ export type SpaceValue = 'mine' | 'shared' | `team:${string}`;
 
 /** The value type of each dimension. A template is one of the host's families. */
 export type LensValueOf = {
+  'opens-in': OpensInValue;
   template: string;
   'made-by': MadeByValue;
   edited: EditedValue;
@@ -30,11 +31,13 @@ export type LensTeam = { id: string; name: string };
 export type LensOption = { value: string; label: string };
 
 /** What parsing needs to know: where the reader is, their teams, and the host's template families (none: no
- *  Template dimension). */
+ *  Template dimension). `oneApp`: the kind the list is held to (the host's own-app filter), so Opens in offers no
+ *  chip or suggestion; a typed `opens-in:` token still reads, and narrows within it. */
 export type LensContext = {
   view: LensView;
   teams: readonly LensTeam[];
   templates: readonly LensOption[];
+  oneApp?: OpensInValue | null;
 };
 
 /** The applied values of each dimension, deduplicated, in the dimension's value order; empty when unset. */
@@ -50,8 +53,6 @@ export type TokenState = 'applied' | 'inert';
 export type LensTerm =
   | { kind: 'text'; raw: string; start: number; end: number }
   | { kind: 'pending'; raw: string; start: number; end: number; dimension: LensDimension }
-  // A key an older link carried (`opens-in:plan`): neither searched nor applied.
-  | { kind: 'retired'; raw: string; start: number; end: number; key: RetiredKey }
   | {
       kind: 'token';
       raw: string;
@@ -70,15 +71,11 @@ export const LENS_ISSUE_REASONS = [
   'unknown_team',
   'space_not_here',
   'too_long',
-  'retired',
 ] as const;
 type LensIssueReason = (typeof LENS_ISSUE_REASONS)[number];
 
 /** The reasons that concern one dimension, and so name it. */
-export type DimensionIssueReason = Exclude<
-  LensIssueReason,
-  'unknown_dimension' | 'too_long' | 'retired'
->;
+export type DimensionIssueReason = Exclude<LensIssueReason, 'unknown_dimension' | 'too_long'>;
 
 /** Why a word reads as text instead of a token, when it looked like one. */
 export type WordProblem =
@@ -93,7 +90,7 @@ type Span = { raw: string; start: number; end: number };
 
 /** A named report about one stretch of the input; never silent, never dropped. */
 export type LensIssue =
-  | (Span & { reason: 'unknown_dimension' | 'too_long' | 'retired'; dimension: null; value: null })
+  | (Span & { reason: 'unknown_dimension' | 'too_long'; dimension: null; value: null })
   | (Span & { reason: DimensionIssueReason; dimension: LensDimension; value: string | null });
 
 export type ParsedLens = {
@@ -105,6 +102,8 @@ export type ParsedLens = {
 /** One listed row, reduced to what the lens reads. `null` means the row cannot say. */
 export type LensSubject = {
   name: string;
+  // The kind of the app it opens in.
+  opensIn: OpensInValue;
   savedAt: number;
   space: SpaceValue;
   people: PeopleValue;

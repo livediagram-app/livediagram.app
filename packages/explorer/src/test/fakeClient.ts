@@ -141,6 +141,7 @@ export function createFakeIndex(
     return out.filter(
       (i) =>
         words.every((w) => i.title.toLowerCase().includes(w)) &&
+        (!q.apps?.length || q.apps.includes(i.app)) &&
         (!q.source?.length || (i.source !== null && q.source.includes(i.source))) &&
         (q.since === undefined || i.updatedAt >= q.since) &&
         (!q.owner || (q.owner === 'me') === (i.ownerId === 'user_me')) &&

@@ -18,6 +18,8 @@ import { decorate, ITEM_COLUMNS, LIVE_LINK, type ItemRow } from './rows';
 
 // The Explorer's filters (its lens), checked by the route. Values of one combine with or.
 export type ListFilters = {
+  // The apps the items open in (the lens's Opens in).
+  apps?: App[];
   // Search words: each in the title or the folder's name.
   words?: string[];
   source?: ItemSource[];
@@ -115,6 +117,10 @@ export function filterClauses(
         OR i.folder_id IN (SELECT f.id FROM folders f WHERE f.scope ${IN_JSON} AND f.name LIKE ? ESCAPE '\\'))`,
     );
     args.push(pattern, allScopes, pattern);
+  }
+  if (filters.apps?.length) {
+    where.push(`i.app ${IN_JSON}`);
+    args.push(JSON.stringify(filters.apps));
   }
   if (filters.source?.length) {
     where.push(`i.source ${IN_JSON}`);

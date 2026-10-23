@@ -315,7 +315,7 @@ export const EXPLORER_FILTERS_PICKED = chart(
   'Explorer',
   'Selected',
   'Explorer Filters Used',
-  'A filter reached for on an Explorer list, by kind: words, Template, Made by AI, Edited, People or Space, from a chip, a suggestion or a typed token.',
+  'A filter reached for on an Explorer list, by kind: words, Opens in, Template, Made by AI, Edited, People or Space, from a chip, a suggestion or a typed token.',
   { rising: 'good' },
 );
 
