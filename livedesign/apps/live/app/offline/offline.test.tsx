@@ -1,15 +1,28 @@
 // @vitest-environment jsdom
 import { explorerHref } from '@/lib/explorer-redirect';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const store = vi.hoisted(() => ({
   designs: [] as { id: string; name: string; savedAt: number }[],
+  accountUserId: null as string | null,
+  sync: vi.fn(),
 }));
 vi.mock('@/lib/offline/offline-store', () => ({
   offlineListDesigns: async () => store.designs,
   offlineIdCount: async () => store.designs.length,
   subscribeOfflineIds: () => () => {},
+}));
+vi.mock('@/hooks/persistence/useAccountBootstrap', () => ({
+  useAccountBootstrap: () => ({ accountUserId: store.accountUserId }),
+}));
+vi.mock('@/hooks/persistence/useOfflineConversion', () => ({
+  useOfflineConversion: (design: { id: string }) => ({
+    syncToCloud: async () => {
+      store.sync(design.id);
+    },
+    takeOffline: async () => {},
+  }),
 }));
 
 import { ThisBrowserRow } from '@/components/panels/ThisBrowserRow';
@@ -17,6 +30,8 @@ import { OfflineDesigns } from './OfflineDesigns';
 
 beforeEach(() => {
   store.designs = [];
+  store.accountUserId = null;
+  store.sync.mockClear();
 });
 
 describe('This Browser', () => {
@@ -32,6 +47,16 @@ describe('This Browser', () => {
     expect(screen.getByRole('link', { name: 'Open the Explorer' }).getAttribute('href')).toBe(
       explorerHref(),
     );
+    // A guest has no account to sync to.
+    expect(screen.queryByRole('button', { name: 'Sync Design' })).toBeNull();
+  });
+
+  it('offers Sync Design to a signed-in person', async () => {
+    store.designs = [{ id: 'a', name: 'A', savedAt: 1 }];
+    store.accountUserId = 'user_ada';
+    render(<OfflineDesigns />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Sync Design' }));
+    expect(store.sync).toHaveBeenCalledWith('a');
   });
 
   it('shows the panel row with the count only while there are some', async () => {

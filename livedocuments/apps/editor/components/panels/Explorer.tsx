@@ -12,6 +12,8 @@ import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 import { SignInPrompt } from '@/components/chrome/SignInPrompt';
 import { ExplorerHeaderMenu } from '@/components/panels/ExplorerHeaderMenu';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
+import { useOfflineItemMenu } from '@/hooks/persistence/useOfflineItemMenu';
+import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
 import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
 import { getSessionSharePassword } from '@/lib/api-client';
 import { indexClient } from '@/lib/index-client';
@@ -46,7 +48,10 @@ function ExplorerImpl({
   const isMobile = useIsMobileViewport();
   const sheet = isMobile && !!asPopover;
   const router = useAppNavigation();
-  const { isSignedIn, accountUserId } = useAccountBootstrap();
+  const { isSignedIn, authLoaded, accountUserId } = useAccountBootstrap();
+  // Take Offline and Sync Document on a document's menu, as the person (an account, or this browser's guest).
+  const guestId = useSignedGuestId(authLoaded, accountUserId);
+  const itemMenu = useOfflineItemMenu(accountUserId ?? guestId);
   const shareHost = useMemo(() => explorerShareHost(accountUserId ?? null), [accountUserId]);
   const inboxHost = useMemo(() => explorerInboxHost(accountUserId ?? null), [accountUserId]);
   const teams = useTokenTeams(isSignedIn);
@@ -137,6 +142,7 @@ function ExplorerImpl({
         shareUrl={shareUrl}
         share={shareHost}
         inbox={inboxHost}
+        itemMenu={itemMenu}
         // Side by side in a desktop popover; chips over the pane on a phone and in the corner panel that stands
         // beside the new-plan wizard and the status screens, which must stay narrow or it covers their card.
         layout={sheet ? 'sheet' : isMobile || !asPopover ? 'stacked' : 'side'}

@@ -12,22 +12,18 @@ import {
   takeCloudOffline,
 } from '@/lib/offline/offline-convert';
 
-// Shared Offline Mode conversion handlers (docs/specs/006-design/offline-mode.md) for the Explorer's row and
-// card menus, which otherwise duplicated this logic. `syncToCloud` uploads an
-// offline design to the account; `takeOffline` pulls a cloud design down and
-// deletes the server copy (gated by a confirm). Both reload afterwards so the
-// list reflects the move. A second conversion of the same design while one
-// runs does nothing: the guard is the conversion's own (offline-convert), not
-// this hook's state, which went with the menu the moment it closed.
-// `close` runs first to dismiss the caller's menu.
-export function useOfflineConversion(
-  liveDoc: { id: string; name: string; shareCode?: string | null },
-  ownerId: string | null,
-  close: () => void,
-) {
+// Offline Mode conversions (docs/specs/006-design/offline-mode.md) for the menus that offer them: the editor's
+// Explorer panel's item menu (Take Offline, useOfflineItemMenu) and This Browser's rows (Sync Design).
+// `syncToCloud` uploads an offline design to the account; `takeOffline` pulls a cloud design down and deletes
+// the server copy (gated by a confirm). Both reload afterwards so every list reflects the move. A second conversion
+// of the same design while one runs does nothing: the guard is the conversion's own (offline-convert), not this
+// hook's state, which goes with the menu the moment it closes. `close` runs first to dismiss the caller's menu.
+type ConvertedDesign = { id: string; name: string; shareCode?: string | null };
+
+export function useOfflineConversions(ownerId: string | null) {
   const confirm = useConfirm();
   const toast = useToast();
-  const syncToCloud = async () => {
+  const syncToCloud = async (liveDoc: ConvertedDesign, close: () => void = () => {}) => {
     if (!ownerId || conversionInProgress(liveDoc.id)) return;
     close();
     try {
@@ -42,7 +38,7 @@ export function useOfflineConversion(
     }
   };
 
-  const takeOffline = async () => {
+  const takeOffline = async (liveDoc: ConvertedDesign, close: () => void = () => {}) => {
     if (!ownerId || conversionInProgress(liveDoc.id)) return;
     close();
     // A shared tab stays in its other designs and forks here (docs/specs/006-design/offline-mode.md).
@@ -71,4 +67,17 @@ export function useOfflineConversion(
   };
 
   return { syncToCloud, takeOffline };
+}
+
+// The same, for one design's row.
+export function useOfflineConversion(
+  liveDoc: ConvertedDesign,
+  ownerId: string | null,
+  close: () => void,
+) {
+  const { syncToCloud, takeOffline } = useOfflineConversions(ownerId);
+  return {
+    syncToCloud: () => syncToCloud(liveDoc, close),
+    takeOffline: () => takeOffline(liveDoc, close),
+  };
 }

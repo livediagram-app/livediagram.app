@@ -278,8 +278,8 @@ sync: the design there is not the one on screen, or several move at once.
 
 ### Save to server (Offline → Cloud)
 
-Action: **"Sync Design"** (one name everywhere: the Explorer row menu, the
-Share dialog gate and the move prompt after signing in).
+Action: **"Sync Design"** (one name everywhere: the design menu in the editor's Explorer panel, This Browser's
+page (`/offline`), the Share dialog gate and the move prompt after signing in).
 
 - Uploads the design's meta + tabs to the API ([API app](../015-api/api.md)), creating a normal
   cloud design owned by the current identity (signed-in account, or the liveworkspace
@@ -324,7 +324,10 @@ Share dialog gate and the move prompt after signing in).
 
 ### Take offline (Cloud → Offline)
 
-Action: **"Take Offline"**. This is **destructive on the server** and gated by a
+Action: **"Take Offline"**, on a design's menu in the editor's Explorer panel (the shared Explorer's
+`itemMenu`, `hooks/persistence/useOfflineItemMenu.ts`: only a page on this app's origin reaches the browser's
+store). It is offered on a design the person can edit in their library or a team's, never on one reached
+through a link. This is **destructive on the server** and gated by a
 confirmation:
 
 - **Confirmation** warns clearly: _"This removes it from your account and every

@@ -4,14 +4,18 @@ import { useEffect, useState } from 'react';
 import type { DesignSummary } from '@livedesign/api-schema';
 import { Brand, SITE_ID, SiteSwitcher } from '@livedesign/ui';
 import { ThisBrowserIcon } from '@/components/primitives/explorer-icons';
+import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
+import { useOfflineConversion } from '@/hooks/persistence/useOfflineConversion';
 import { explorerHref } from '@/lib/explorer-redirect';
 import { offlineListDesigns, subscribeOfflineIds } from '@/lib/offline/offline-store';
 
 // This Browser: the designs kept only in this browser (Take Offline, or made with no connection). The index never
 // sees them, so the Explorer on liveworkspace.app can't list them; its This Browser row opens this page, as does the
-// editor's Explorer panel. Newest first, each opening in the editor.
+// editor's Explorer panel. Newest first, each opening in the editor; signed in, each can be synced to the account
+// (Sync Design, docs/specs/006-design/offline-mode.md).
 export function OfflineDesigns() {
   const [designs, setDesigns] = useState<DesignSummary[] | null>(null);
+  const { accountUserId } = useAccountBootstrap();
   useEffect(() => {
     let live = true;
     const read = () =>
@@ -60,26 +64,42 @@ export function OfflineDesigns() {
         ) : (
           <ul className="mt-6 divide-y divide-slate-200 rounded-xl border border-slate-200 bg-white dark:divide-slate-700 dark:border-slate-700 dark:bg-slate-800">
             {designs.map((p) => (
-              <li key={p.id}>
-                <a
-                  href={`/design/${encodeURIComponent(p.id)}`}
-                  className="flex items-center justify-between gap-4 px-4 py-3 text-sm hover:bg-slate-50 dark:hover:bg-slate-700/50"
-                >
-                  <span className="truncate font-medium text-slate-900 dark:text-slate-100">
-                    {p.name || 'Untitled'}
-                  </span>
-                  <time
-                    dateTime={new Date(p.savedAt).toISOString()}
-                    className="shrink-0 text-xs text-slate-500 dark:text-slate-400"
-                  >
-                    {new Date(p.savedAt).toLocaleDateString()}
-                  </time>
-                </a>
-              </li>
+              <OfflineRow key={p.id} design={p} ownerId={accountUserId ?? null} />
             ))}
           </ul>
         )}
       </main>
     </div>
+  );
+}
+
+function OfflineRow({ design: p, ownerId }: { design: DesignSummary; ownerId: string | null }) {
+  const { syncToCloud } = useOfflineConversion({ id: p.id, name: p.name }, ownerId, () => {});
+  return (
+    <li className="flex items-center gap-2 pr-3">
+      <a
+        href={`/design/${encodeURIComponent(p.id)}`}
+        className="flex min-w-0 flex-1 items-center justify-between gap-4 px-4 py-3 text-sm hover:bg-slate-50 dark:hover:bg-slate-700/50"
+      >
+        <span className="truncate font-medium text-slate-900 dark:text-slate-100">
+          {p.name || 'Untitled'}
+        </span>
+        <time
+          dateTime={new Date(p.savedAt).toISOString()}
+          className="shrink-0 text-xs text-slate-500 dark:text-slate-400"
+        >
+          {new Date(p.savedAt).toLocaleDateString()}
+        </time>
+      </a>
+      {ownerId && (
+        <button
+          type="button"
+          onClick={() => void syncToCloud()}
+          className="shrink-0 rounded-md px-2 py-1 text-xs font-medium text-brand-700 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-slate-700"
+        >
+          Sync Design
+        </button>
+      )}
+    </li>
   );
 }

@@ -188,6 +188,8 @@ export async function apiCreateDocument(
   try {
     created = await indexClient.createItem({
       id: d.id,
+      // Synced to the cloud from this browser (Offline Mode): the Timeline says so, not "Created".
+      ...(opts.conversion === 'sync' ? { synced: true } : {}),
       app: 'livedocuments',
       title: d.name,
       ...(d.teamId ? { teamId: d.teamId } : {}),
