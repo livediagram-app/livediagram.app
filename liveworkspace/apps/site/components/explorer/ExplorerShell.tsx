@@ -33,7 +33,7 @@ import {
   type WelcomeOptions,
 } from '@liveworkspace/explorer';
 import { createIndexClient } from '@liveworkspace/index-client';
-import { APP_ITEMS, type AppName } from '@liveworkspace/sites';
+import { APP_ITEMS, siteOfApp, type AppName } from '@liveworkspace/sites';
 import { signInHref } from '@/lib/accounts';
 import { useSession } from '@/lib/session';
 import {
@@ -218,6 +218,12 @@ export function ExplorerShell() {
     }),
     [loaded, app, onFirstRun, signedIn, pathname],
   );
+  const signInBanner = useMemo(
+    () => ({
+      helpHref: `${siteOfApp(app).url}/help/getting-started/guest-vs-account/`,
+    }),
+    [app],
+  );
 
   // This Browser: what the app keeps only in this browser, in its own offline view.
   const sidebarLinks: SidebarLink[] = useMemo(() => {
@@ -288,6 +294,7 @@ export function ExplorerShell() {
           accounts={signedIn ? accounts : null}
           signedIn={signedIn}
           signInHref={signInHref(pathname || '/explorer')}
+          signInBanner={signInBanner}
           arrivalNotice={notice}
           inbox={inboxHost}
         />

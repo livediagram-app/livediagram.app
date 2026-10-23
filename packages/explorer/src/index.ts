@@ -42,6 +42,8 @@ export type {
   Located,
   ShareHost,
   ShareUrl,
+  SignInBannerHost,
+  SignInBannerTelemetry,
   TeamRef,
   TimelineTelemetry,
   HomeTelemetry,

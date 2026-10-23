@@ -21,6 +21,7 @@ import type {
   RenderThumbnail,
   InboxHost,
   ShareHost,
+  SignInBannerHost,
   ShareUrl,
   TeamRef,
   TimelineTelemetry,
@@ -43,6 +44,7 @@ import { Sidebar } from './Sidebar';
 import { TimelinePane } from './TimelinePane';
 import { useHeroPresence } from './useHeroPresence';
 import { HostExtrasProvider, type SidebarLink } from './host';
+import { SignInBanner } from './SignInBanner';
 import { WelcomeProvider, useFirstRun } from '../welcome/context';
 import { WelcomeFan } from '../welcome/HomeWelcome';
 import type { WelcomeOptions } from '../welcome/types';
@@ -128,8 +130,11 @@ export type ExplorerProps = {
   accounts?: ExplorerAccounts | null;
   /** Whether the person is signed in; a guest is nudged to sign in for Teams. Signed in when omitted. */
   signedIn?: boolean;
-  /** Where a guest signs in (the Teams nudge). */
+  /** Where a guest signs in (the Teams nudge, and the banner). */
   signInHref?: string;
+  /** A guest's sign-in banner at the foot of the page (Sign In, the reasons, a close this browser remembers), shown
+   *  while `signedIn` is false and there is a `signInHref`. Without it there is no banner. */
+  signInBanner?: SignInBannerHost;
   /** Where a team is run, for its page's Manage link; `manageTeamsUrl` when omitted. */
   teamManageUrl?: (teamId: string) => string;
   /** Loads an item's preview ahead, as its Details row comes near the screen (the hover preview then paints at
@@ -241,6 +246,7 @@ function ExplorerInner({
   accounts,
   signedIn,
   signInHref,
+  signInBanner,
   teamManageUrl,
   prefetchThumbnail,
   onViewToggled,
@@ -337,6 +343,9 @@ function ExplorerInner({
                   <Pane view={view} onOpenNav={openNav} hero={heroOnHome} />
                 </section>
               </main>
+              {signInBanner && signedIn === false && signInHref ? (
+                <SignInBanner href={signInHref} host={signInBanner} />
+              ) : null}
             </div>
           </WelcomeProvider>
         </HostExtrasProvider>

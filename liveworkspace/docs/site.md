@@ -141,6 +141,8 @@ lives here once, rather than at each app's `/explorer`. The apps' Explorer links
   Other apps' items show their kind's icon, with no request.
 - **Names.** Owners and who did what are named through `/api/account/people`, gathered into one request per
   beat (at most 100 ids) and kept in one bounded cache. Guests see no names: that route needs a session.
+- **Guests.** A guest sees a sign-in banner at the foot of the page, with Sign In, Learn More (why an account
+  helps, loaded on first press) and a close this browser remembers, one for every app.
 - **The Inbox.** Plan cards wear their type's glyph, and its empty state points at liveplanner's help on actions.
 - **This Browser.** A row in the sidebar opens the app's own offline view (`offlinePath`), since what a browser
   keeps belongs to that app's origin.

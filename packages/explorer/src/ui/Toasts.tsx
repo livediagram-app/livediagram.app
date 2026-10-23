@@ -112,7 +112,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
       <div
         aria-live="polite"
-        className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex flex-col items-center gap-2 px-4"
+        // A guest's sign-in banner stands at the foot of the page; the toasts stand above it.
+        className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex flex-col items-center gap-2 px-4 [body:has([data-sign-in-banner])_&]:bottom-40 sm:[body:has([data-sign-in-banner])_&]:bottom-28"
       >
         {toasts.map((t) => (
           <div

@@ -83,3 +83,18 @@ export type ShareHost = {
   helpHref?: ShareHelpHref;
   onTelemetry?: ShareTelemetry;
 };
+
+/** What a guest's sign-in banner reports, for the host's telemetry: Sign In followed (`Selected`), its reasons
+ *  opened (`Opened`), the banner closed (`Closed`). `type` is a fixed token. */
+export type SignInBannerTelemetry = (
+  action: 'Selected' | 'Opened' | 'Closed',
+  type: string,
+) => void;
+
+/** A guest's sign-in banner at the foot of the page: where its reasons' help article is, and telemetry. Signing in
+ *  goes to the Explorer's `signInHref`. */
+export type SignInBannerHost = {
+  /** The help article on guests and accounts, linked from the reasons. */
+  helpHref?: string;
+  onTelemetry?: SignInBannerTelemetry;
+};
