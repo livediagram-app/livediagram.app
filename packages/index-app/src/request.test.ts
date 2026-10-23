@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { GrantClaims } from '@liveworkspace/index-client';
-import { ITEM_GRANT_HEADER, resolveItemGrant } from './request';
+import { createItemGrant, ITEM_GRANT_HEADER, itemSourceOf, resolveItemGrant } from './request';
 import { createIndexService, GRANT_CACHE_MAX } from './service';
 
 const NOW_S = Math.floor(Date.now() / 1000);
@@ -113,5 +113,79 @@ describe('resolveItemGrant', () => {
       error: 'index_unavailable',
     });
     expect(service.appClient({ INDEX_ORIGIN: 'https://x' })).toBeNull();
+  });
+});
+
+describe('createItemGrant', () => {
+  const caller = { kind: 'delegate', personId: 'user_a', teams: [] } as const;
+  const created = (req: Request) =>
+    new URL(req.url).pathname.endsWith('/items')
+      ? Response.json(
+          {
+            item: { id: 'N' },
+            grant: { grant: grantOf({ item: 'N' }), level: 'edit', tabId: null, expiresAt: 0 },
+          },
+          { status: 201 },
+        )
+      : answer(req);
+
+  it('makes the item under the minted id and answers its grant', async () => {
+    const before = answer;
+    answer = created;
+    const grant = await createItemGrant(service, ENV, req(), caller, 'N', {
+      title: 'Plan',
+      intent: 'kanban',
+      source: itemSourceOf('mcp'),
+    });
+    answer = before;
+    expect(grant).toMatchObject({ item: 'N', level: 'edit', shareCode: null });
+    expect(calls).toHaveLength(1);
+    expect(await calls[0]!.json()).toEqual({
+      title: 'Plan',
+      intent: 'kanban',
+      source: 'ai',
+      id: 'N',
+      app: 'livedocuments',
+    });
+  });
+
+  it("re-committing the caller's own id reads its grant; another refusal is answered", async () => {
+    answer = (r) =>
+      new URL(r.url).pathname.endsWith('/items')
+        ? Response.json({ error: 'item_exists' }, { status: 409 })
+        : Response.json({
+            grant: grantOf({ item: 'N', level: 'edit' }),
+            level: 'edit',
+            tabId: null,
+            expiresAt: (NOW_S + 600) * 1000,
+          });
+    expect(await createItemGrant(service, ENV, req(), caller, 'N', {})).toMatchObject({
+      item: 'N',
+      level: 'edit',
+    });
+    answer = () => Response.json({ error: 'not_team_member' }, { status: 403 });
+    const res = await createItemGrant(service, ENV, req(), caller, 'M', { teamId: 't' });
+    expect((res as Response).status).toBe(403);
+    expect(await (res as Response).json()).toEqual({ error: 'not_team_member' });
+  });
+
+  it('answers 503 without an index, and when it cannot be reached', async () => {
+    expect(((await createItemGrant(service, {}, req(), caller, 'N', {})) as Response).status).toBe(
+      503,
+    );
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    answer = () => {
+      throw new TypeError('network');
+    };
+    expect(((await createItemGrant(service, ENV, req(), caller, 'N', {})) as Response).status).toBe(
+      503,
+    );
+  });
+
+  it('maps provenance', () => {
+    expect(itemSourceOf('mcp')).toBe('ai');
+    expect(itemSourceOf('cli')).toBe('import');
+    expect(itemSourceOf('drive')).toBeNull();
+    expect(itemSourceOf(undefined)).toBeNull();
   });
 });
