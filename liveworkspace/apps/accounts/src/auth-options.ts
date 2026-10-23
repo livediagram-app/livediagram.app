@@ -1,8 +1,9 @@
 // Everything Better Auth is configured with, apart from where the database lives. Kept
 // free of Worker bindings so scripts/generate-migration.ts can build the same schema
 // against an in-memory SQLite.
-import { oauthProvider } from '@better-auth/oauth-provider';
+import { getOAuthProviderState, oauthProvider } from '@better-auth/oauth-provider';
 import type { BetterAuthOptions } from 'better-auth';
+import { getOAuthState } from 'better-auth/api';
 import { captcha, emailOTP, jwt } from 'better-auth/plugins';
 import { type MergeConfig, mergeGuestOnSignIn } from './guests.ts';
 import { newUserId } from './ids.ts';
@@ -30,9 +31,13 @@ export interface AuthConfig {
   // Telling the index when a guest signs in (guests.ts). Left out where there is no index, as when
   // generating the schema.
   guestMerge?: Omit<MergeConfig, 'secret'>;
-  // A new account starts its onboarding series (lifecycle.ts). Left out where there is no database, as
-  // when generating the schema. A failure is logged and never fails the sign-up.
-  onUserCreated?: (user: { id: string; email: string }) => Promise<void>;
+  // A new account starts its onboarding series (lifecycle.ts), told which OAuth client the sign-up came
+  // through (null for one on liveworkspace.app itself). Left out where there is no database, as when
+  // generating the schema. A failure is logged and never fails the sign-up.
+  onUserCreated?: (
+    user: { id: string; email: string },
+    via: { clientId: string | null },
+  ) => Promise<void>;
 }
 
 export function authOptions(config: AuthConfig, database: BetterAuthOptions['database']) {
@@ -82,8 +87,9 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
         create: {
           before: async (user) => ({ data: withNames(user) }),
           after: async (user) => {
-            await config
-              .onUserCreated?.(user)
+            if (!config.onUserCreated) return;
+            await signUpClientId()
+              .then((clientId) => config.onUserCreated?.(user, { clientId }))
               .catch((error: unknown) =>
                 console.error('Starting the onboarding series failed:', error),
               );
@@ -168,6 +174,18 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
       }),
     ],
   } satisfies BetterAuthOptions;
+}
+
+// The OAuth client a sign-up came through: the `client_id` of the app's authorize request, which the
+// sign-in page sends back as the signed `oauth_query` (the provider checks its signature before the
+// endpoint runs). An email code sign-up carries it in its own request; a Google one carries it across
+// the trip to Google in the provider's server context. Null for a sign-up on liveworkspace.app itself.
+export async function signUpClientId(): Promise<string | null> {
+  const query =
+    (await getOAuthProviderState().catch(() => null))?.query ??
+    (await getOAuthState().catch(() => null))?.serverContext?.query;
+  if (typeof query !== 'string') return null;
+  return new URLSearchParams(query).get('client_id') || null;
 }
 
 async function isAdmin(headers: Headers, adminToken: string): Promise<boolean> {

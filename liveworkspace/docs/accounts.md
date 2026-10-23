@@ -297,8 +297,15 @@ it sends, with the same timings and tips each app's own series had:
   ([Settings](#settings)), so it holds in every app. A stage someone has turned off is stamped and
   not sent. Each email that can be turned off links (and sends `List-Unsubscribe`) to the account's
   settings on liveworkspace.app (`<BASE_URL>/account/settings`), where someone signed out signs in
-  and comes back. Its other links go to the app they first used; someone who has used no app yet is
-  sent to livediagram.
+  and comes back. Its other links go to the app the email speaks for (below).
+- **The app a sign-up came through** is kept on the row (`signup_app`,
+  `migrations/0009_signup_app.sql`) when the account is made: the app of the OAuth client whose
+  authorize request it was made in ([Which app a client is](#which-app-a-client-is)), read from the
+  signed `oauth_query` the sign-in page sends back (carried across the trip to Google in the
+  provider's server context), or `liveworkspace.app` for a sign-up on the site itself. A client with
+  no app, and an account made before this was recorded, leave it empty. Each email speaks for that
+  app, else the first app they used; someone who signed up on liveworkspace.app and hasn't opened an
+  app yet is sent to the apps on liveworkspace.app (`/#apps`) to pick one.
 - **Activity.** The apps report when someone saves something they own
   (`POST /api/account/internal/activity` `{ userId, at? }`, at most once a minute an item, as the
   item's summary push does). It only moves forward, never past now, and writes nothing when it
@@ -315,7 +322,9 @@ it sends, with the same timings and tips each app's own series had:
 - **Telemetry.** Each email sent is counted as `Email·Sent·<kind>` (`Welcome`, `Activation`,
   `Week1`, `Week2`, `WinBack`, the kinds the apps' own series used) on the telemetry service
   ([telemetry.md](telemetry.md)), under the app the email speaks for (its links' app) with that app's
-  Worker key, so each app's dashboard keeps its Emails Sent charts (`src/telemetry.ts`). The kind and
+  Worker key, so each app's dashboard keeps its Emails Sent charts (`src/telemetry.ts`). An email that
+  speaks for liveworkspace itself isn't counted: the service and its dashboards chart the four apps,
+  and counting it under one of them would credit that app with a sign-up it never had. The kind and
   the app only, never a recipient. The events wait until the run that sent them ends and go as one
   batch per app, through the `TELEMETRY` service binding, each request given two seconds. A failure, a
   missing key or a slow service is logged at most: it never holds up or fails a send. An app with no

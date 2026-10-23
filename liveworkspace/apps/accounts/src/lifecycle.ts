@@ -11,14 +11,10 @@
 // "tips" stages respect the notifyTips setting in the `all` scope: turned off, the stage is stamped and
 // nothing is sent. Each stage is claimed (stamped) before it is sent, so two runs can't both send it;
 // a failed send takes the stamp back and counts against the row, which leaves every due list at three.
-import {
-  DEFAULT_HOME,
-  lifecycleEmail,
-  type LifecycleEmail,
-  type LifecycleStage,
-} from './lifecycle-email.ts';
+import type { SiteId } from '@liveworkspace/sites';
+import { lifecycleEmail, type LifecycleEmail, type LifecycleStage } from './lifecycle-email.ts';
 import type { Env } from './env.ts';
-import { isSettingsApp } from './settings.ts';
+import { isSettingsApp, type SettingsApp } from './settings.ts';
 import { flushServerEvents, reportServerEvent, type TelemetryEnv } from './telemetry.ts';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -94,12 +90,13 @@ type Due = {
   attempts: number;
   // notifyTips in the `all` scope: 0 when turned off, else 1 or null.
   tips: number | null;
-  // The app they first used, for the email's links.
+  // The app the email speaks for: the one they signed up through, else the first they used; null for
+  // neither (a sign-up on liveworkspace.app that hasn't opened an app yet).
   app: string | null;
 };
 
 // One query a stage: the owed rows by their partial index, each joined by primary key to the account
-// (a verified address), its `all` settings and its first app.
+// (a verified address), its `all` settings and, when it didn't sign up through an app, its first app.
 function dueStatement(
   db: D1Database,
   stage: LifecycleStage,
@@ -113,8 +110,9 @@ function dueStatement(
     .prepare(
       `SELECT l.user_id, u.email, l.send_attempts AS attempts,
               json_extract(s.prefs, '$.notifyTips') AS tips,
-              (SELECT a.app FROM account_app a WHERE a.user_id = l.user_id
-               ORDER BY a.first_seen_at LIMIT 1) AS app
+              COALESCE(NULLIF(l.signup_app, 'liveworkspace.app'),
+                (SELECT a.app FROM account_app a WHERE a.user_id = l.user_id
+                 ORDER BY a.first_seen_at LIMIT 1)) AS app
        FROM email_lifecycle l
        JOIN "user" u ON u.id = l.user_id
        LEFT JOIN settings s ON s.owner_id = l.user_id AND s.scope = 'all'
@@ -172,8 +170,10 @@ async function deliver(ctx: Ctx, stage: LifecycleStage, row: Due, now: number): 
     }
     return 'failed';
   }
-  // Counted under the app the email speaks for (its links' app), sent when the run ends.
-  reportServerEvent(env, 'Email', 'Sent', EMAIL_SENT_TYPE[stage], home ?? DEFAULT_HOME);
+  // Counted under the app the email speaks for (its links' app), sent when the run ends. One that speaks
+  // for liveworkspace itself isn't counted: the dashboards chart the four apps, and counting it under
+  // one of them would claim a sign-up that app never had.
+  if (home) reportServerEvent(env, 'Email', 'Sent', EMAIL_SENT_TYPE[stage], home);
   if (row.attempts > 0) {
     await db
       .prepare('UPDATE email_lifecycle SET send_attempts = 0 WHERE user_id = ?')
@@ -231,19 +231,33 @@ export async function sendWelcomes(
   }
 }
 
-// A new account starts its series. Not for the client registrar, whose `.invalid` address can never
+// A new account starts its series, with the app it signed up through (liveworkspace.app for the site
+// itself; null when not known). Not for the client registrar, whose `.invalid` address can never
 // receive mail. True when the row is new.
 export async function startLifecycle(
   db: D1Database,
   user: { id: string; email: string },
   now = Date.now(),
+  signupApp: SiteId | null = null,
 ): Promise<boolean> {
   if (user.email.endsWith('.invalid')) return false;
   const result = await db
-    .prepare('INSERT OR IGNORE INTO email_lifecycle (user_id, created_at) VALUES (?, ?)')
-    .bind(user.id, now)
+    .prepare(
+      'INSERT OR IGNORE INTO email_lifecycle (user_id, created_at, signup_app) VALUES (?, ?, ?)',
+    )
+    .bind(user.id, now, signupApp)
     .run();
   return result.meta.changes === 1;
+}
+
+// The app an account signed up through, for the team emails it sends: null for liveworkspace.app, an
+// account made before this was recorded, or one with no series (the client registrar, Clerk imports).
+export async function signupAppOf(db: D1Database, userId: string): Promise<SettingsApp | null> {
+  const app = await db
+    .prepare('SELECT signup_app FROM email_lifecycle WHERE user_id = ?')
+    .bind(userId)
+    .first<string | null>('signup_app');
+  return isSettingsApp(app) ? app : null;
 }
 
 // Accounts made in this isolate whose welcome hasn't gone yet: the Better Auth hook adds to it while

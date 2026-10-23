@@ -32,20 +32,28 @@ export function appUrl(env: Pick<Env, 'ENVIRONMENT'>, app: SiteId): string {
   return `https://www.${app}`;
 }
 
-// Who the email is for: the app they first used, where its links go. Someone who has used none yet
-// is sent to livediagram, the first app. Tips are turned off on liveworkspace.app, whichever app.
+// Who the email is for: the app it speaks for (the one they signed up through, else the first they
+// used), where its links go. Null speaks for liveworkspace itself: someone who signed up on
+// liveworkspace.app and hasn't opened an app yet is sent to the apps, to pick one. Tips are turned
+// off on liveworkspace.app, whichever app.
 export interface Recipient {
   home: SettingsApp | null;
 }
 
-// Where someone who has used no app yet is sent.
-export const DEFAULT_HOME: SettingsApp = 'livediagram.app';
-
 const appName = (app: SiteId) => APP_SITES.find((site) => site.id === app)?.name ?? app;
 
-function homeOf(env: Pick<Env, 'ENVIRONMENT'>, recipient: Recipient) {
-  const app = recipient.home ?? DEFAULT_HOME;
-  return { app, url: appUrl(env, app), name: appName(app) };
+// The calls to action that go to an app: starting something, the Explorer, and their work in it.
+function homeOf(env: Pick<Env, 'ENVIRONMENT' | 'BASE_URL'>, recipient: Recipient) {
+  if (!recipient.home) {
+    const apps = { text: 'Pick an app', href: `${origin(env.BASE_URL)}/#apps` };
+    return { start: apps, explorer: apps, work: apps };
+  }
+  const url = appUrl(env, recipient.home);
+  return {
+    start: { text: `Start in ${appName(recipient.home)}`, href: `${url}/new` },
+    explorer: { text: 'Open your Explorer', href: `${url}/explorer` },
+    work: { text: 'Open your work', href: `${url}/explorer` },
+  };
 }
 
 // The four apps, each a line with a link: what one account opens.
@@ -164,7 +172,7 @@ export function lifecycleEmail(
         points: appLines(env),
         outro:
           'Each starts from a blank page or a template, and saves as you go, so you can just start and come back later.',
-        cta: { text: `Start in ${home.name}`, href: `${home.url}/new` },
+        cta: home.start,
       });
     case 'week1':
       return render(env, {
@@ -177,7 +185,7 @@ export function lifecycleEmail(
           '<strong>Search, Recent and Favourites</strong> take you straight back to what you were working on.',
           '<strong>Share</strong> right from the grid with a view-only or editor link.',
         ]),
-        cta: { text: 'Open your Explorer', href: `${home.url}/explorer` },
+        cta: home.explorer,
         unsubscribeUrl,
       });
     case 'week2':
@@ -204,7 +212,7 @@ export function lifecycleEmail(
         points: appLines(env),
         outro:
           'Start blank or from a template, share it with one link, and work on it together in real time. No pressure: it’s all free and always here.',
-        cta: { text: `Start in ${home.name}`, href: `${home.url}/new` },
+        cta: home.start,
         unsubscribeUrl,
       });
     case 'winback':
@@ -219,7 +227,7 @@ export function lifecycleEmail(
           'Find everything from every app in the Explorer.',
         ]),
         outro: 'No rush: it’s all still here whenever you want it.',
-        cta: { text: 'Open your work', href: `${home.url}/explorer` },
+        cta: home.work,
         unsubscribeUrl,
       });
   }

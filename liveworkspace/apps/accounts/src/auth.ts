@@ -1,5 +1,6 @@
 import { betterAuth } from 'better-auth';
 import { authOptions } from './auth-options.ts';
+import { clientApp } from './clients.ts';
 import { sendCodeEmail } from './email.ts';
 import type { Env } from './env.ts';
 import { queueWelcome, startLifecycle } from './lifecycle.ts';
@@ -28,9 +29,11 @@ function build(env: Env) {
           indexMergeKey: env.INDEX_MERGE_KEY,
           db: env.AUTH_DB,
         },
-        // The welcome goes once the sign-up's response has (index.ts takeWelcomes).
-        onUserCreated: async (user) => {
-          if (await startLifecycle(env.AUTH_DB, user)) queueWelcome(user.id);
+        // The welcome goes once the sign-up's response has (index.ts takeWelcomes), speaking for the app
+        // the sign-up came through: its OAuth client's, or liveworkspace.app's for the site's own.
+        onUserCreated: async (user, { clientId }) => {
+          const app = clientId ? await clientApp(env.AUTH_DB, clientId) : 'liveworkspace.app';
+          if (await startLifecycle(env.AUTH_DB, user, Date.now(), app)) queueWelcome(user.id);
         },
       },
       env.AUTH_DB,

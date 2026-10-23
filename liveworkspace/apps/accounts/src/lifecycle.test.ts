@@ -28,7 +28,7 @@ const env = { ENVIRONMENT: 'production', BASE_URL: 'https://liveworkspace.app' }
 
 let db: D1Database;
 let sql: DatabaseSync;
-let sent: { to: string; subject: string; unsubscribeUrl?: string; html: string }[];
+let sent: { to: string; subject: string; unsubscribeUrl?: string; html: string; text: string }[];
 let failing: boolean;
 
 const send: SendEmail = async (email) => {
@@ -46,9 +46,14 @@ beforeEach(() => {
 
 afterEach(() => vi.restoreAllMocks());
 
-async function account(id: string, at = T0, verified = true) {
+async function account(
+  id: string,
+  at = T0,
+  verified = true,
+  signupApp: Parameters<typeof startLifecycle>[3] = null,
+) {
   addUser(sql, { id, email: `${id}@example.com`, verified });
-  await startLifecycle(db, { id, email: `${id}@example.com` }, at);
+  await startLifecycle(db, { id, email: `${id}@example.com` }, at, signupApp);
 }
 
 const stamp = (id: string, column: string) =>
@@ -96,6 +101,38 @@ describe('the welcome', () => {
     // The catch-up run sends Bea's, and not Ada's again.
     await run(T0 + 1, ['welcome']);
     expect(sent.map((e) => e.to)).toEqual(['user_ada@example.com', 'user_bea@example.com']);
+  });
+
+  it('speaks for the app the sign-up came through, before any app has seen them', async () => {
+    await account('user_ada', T0, true, 'livedocuments.app');
+    await sendWelcomes(db, env, send, ['user_ada'], T0);
+    expect(sent[0]!.html).toContain('https://www.livedocuments.app/new');
+    expect(sent[0]!.text).toContain('Start in livedocuments');
+  });
+
+  it('sends a sign-up on liveworkspace.app to the apps, until they open one', async () => {
+    await account('user_ada', T0, true, 'liveworkspace.app');
+    await account('user_bea', T0, true, 'liveworkspace.app');
+    await sendWelcomes(db, env, send, ['user_ada'], T0);
+    expect(sent[0]!.html).toContain('href="https://liveworkspace.app/#apps"');
+    expect(sent[0]!.text).toContain('Pick an app: https://liveworkspace.app/#apps');
+    expect(sent[0]!.html).not.toContain('livediagram.app/new');
+    // Later in the series, the first app they opened.
+    await recordSighting(db, 'user_bea', 'liveplanner.app', T0 + 1);
+    await run(T0 + 7 * DAY, ['week1']);
+    const bea = sent.find((e) => e.to === 'user_bea@example.com')!;
+    expect(bea.html).toContain('https://www.liveplanner.app/explorer');
+    const ada = sent.find(
+      (e) => e.to === 'user_ada@example.com' && e.subject !== 'Welcome to liveworkspace',
+    )!;
+    expect(ada.html).toContain('https://liveworkspace.app/#apps');
+  });
+
+  it('keeps the app signed up through over the first one opened', async () => {
+    await account('user_ada', T0, true, 'livedesign.app');
+    await recordSighting(db, 'user_ada', 'livediagram.app', T0);
+    await run(T0 + 7 * DAY, ['week1']);
+    expect(sent[0]!.html).toContain('https://www.livedesign.app/explorer');
   });
 
   it('waits for a verified address', async () => {
@@ -215,11 +252,13 @@ describe('telemetry', () => {
   });
 
   it('counts each email sent under the app it speaks for, once the run ends', async () => {
-    await account('user_ada');
-    await account('user_bo');
+    await account('user_ada', T0, true, 'livediagram.app');
+    await account('user_bo', T0, true, 'liveworkspace.app');
     await recordSighting(db, 'user_bo', 'livedesign.app', T0);
+    // Signed up on liveworkspace.app and opened no app: speaks for liveworkspace, counted nowhere.
+    await account('user_cy', T0, true, 'liveworkspace.app');
     await runLifecycle(db, { ...env, ...telemetry }, send, ['welcome', 'week1'], T0 + 7 * DAY);
-    expect(sent).toHaveLength(4);
+    expect(sent).toHaveLength(6);
     const types = (app: string) =>
       posted
         .filter((b) => b.app === app)
@@ -231,7 +270,7 @@ describe('telemetry', () => {
   });
 
   it('counts nothing that wasn’t sent, and never holds up a send', async () => {
-    await account('user_ada');
+    await account('user_ada', T0, true, 'livediagram.app');
     await writeSettings(db, 'user_ada', null, { all: { notifyTips: false } });
     const down = {
       ...telemetry,
