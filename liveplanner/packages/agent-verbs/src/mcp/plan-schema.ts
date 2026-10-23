@@ -9,8 +9,8 @@ import {
   PLAN_TYPE_COLOURS,
 } from '@liveplanner/items';
 
-const url = z.string().describe('Link that opens the project in the liveplanner editor.');
-const projectId = z.string().describe('The project (from find_projects).');
+const url = z.string().describe('Link that opens the plan in the liveplanner editor.');
+const projectId = z.string().describe('The plan (from find_projects).');
 const itemRef = z.string().describe('The item, by its number ("#12") or an id prefix.');
 const statusArg = z
   .string()
@@ -19,9 +19,7 @@ const statusArg = z
   );
 const typeArg = z
   .string()
-  .describe(
-    'A card type, by name or id ("Task", "bug"). list_items lists the project’s card types.',
-  );
+  .describe('A card type, by name or id ("Task", "bug"). list_items lists the plan’s card types.');
 
 const fieldsArg = z
   .record(z.string(), z.unknown())
@@ -109,7 +107,7 @@ export const addBoardShape = {
     .max(12)
     .optional()
     .describe(
-      'Column names, left to right, replacing the preset’s. A name the project’s boards already use shares ' +
+      'Column names, left to right, replacing the preset’s. A name the plan’s boards already use shares ' +
         'their column, so its cards show here too.',
     ),
   types: z
@@ -118,7 +116,7 @@ export const addBoardShape = {
     .describe(
       'The card types it shows and takes, by name or id; an empty list takes none. Absent: the preset’s (todo ' +
         'takes Actions, roadmap Projects, sprint Stories, Tasks and Bugs...; the answer says), or every type ' +
-        'for columns by name. A preset’s Bug or Story the project lacks is added to its card types.',
+        'for columns by name. A preset’s Bug or Story the plan lacks is added to its card types.',
     ),
 };
 
@@ -344,7 +342,7 @@ export const cardTypeChangeSchema = z.discriminatedUnion('op', [
     op: z
       .literal('add_default_types')
       .describe(
-        'Adds any of Project, Task, Note, Idea and Action the project lacks; changes none it has.',
+        'Adds any of Project, Task, Note, Idea and Action the plan lacks; changes none it has.',
       ),
   }),
   z.object({
@@ -446,8 +444,8 @@ export const listItemsOutput = {
   notOnBoard: z.array(z.string()).describe('Cards no board column shows.'),
   count: z.number().describe('How many items are listed.'),
   items: z.array(listedItem).describe('The items, by number.'),
-  types: z.array(listedType).describe('The project’s card types.'),
-  hint: z.string().optional().describe('What to do when the project has no board.'),
+  types: z.array(listedType).describe('The plan’s card types.'),
+  hint: z.string().optional().describe('What to do when the plan has no board.'),
   url,
 };
 
@@ -476,8 +474,8 @@ export const addBoardOutput = {
   brought: z
     .array(z.string())
     .describe(
-      'Card types the board brought into the project, by name (a bug-triage board brings Bug when the ' +
-        'project lacks it); empty when it had them all.',
+      'Card types the board brought into the plan, by name (a bug-triage board brings Bug when the ' +
+        'plan lacks it); empty when it had them all.',
     ),
   changesetId: z.string().nullable().describe('The changeset that added it (revertible).'),
   rev: z.number().nullable().describe('The tab revision after it.'),

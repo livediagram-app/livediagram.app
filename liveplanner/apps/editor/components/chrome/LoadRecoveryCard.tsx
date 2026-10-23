@@ -14,8 +14,8 @@ export function LoadRecoveryCard({ ownerId }: { ownerId: string | null }) {
     <div className="mt-6 w-full border-t border-slate-200 pt-5 text-left dark:border-slate-800">
       <p className="text-sm font-medium text-slate-800 dark:text-slate-100">Still not loading?</p>
       <p className="mt-1 mb-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-        Copy the diagnostics to send to support, or repair this browser. A repair keeps your
-        projects and identity.
+        Copy the diagnostics to send to support, or repair this browser. A repair keeps your plans
+        and identity.
       </p>
       <BrowserRepairPanel
         buildReport={() => buildLoadDiagnostics(ownerId)}

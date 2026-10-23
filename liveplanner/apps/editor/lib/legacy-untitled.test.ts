@@ -8,13 +8,14 @@ import {
 // Projects created before the rename are stored as "Untitled diagram"
 // (docs/specs/006-project/project-structure.md); they still count as untitled.
 describe('untitled project names', () => {
-  it('names a new blank project "Untitled project"', () => {
-    expect(UNTITLED_PROJECT_NAME).toBe('Untitled project');
-    expect(untitledNameForTemplate('blank')).toBe('Untitled project');
-    expect(untitledNameForTemplate(null)).toBe('Untitled project');
+  it('names a new blank project "Untitled plan"', () => {
+    expect(UNTITLED_PROJECT_NAME).toBe('Untitled plan');
+    expect(untitledNameForTemplate('blank')).toBe('Untitled plan');
+    expect(untitledNameForTemplate(null)).toBe('Untitled plan');
   });
 
-  it('treats both the current and the pre-rename default as untitled', () => {
+  it('treats the current and the earlier defaults as untitled', () => {
+    expect(isUntitledProjectName('Untitled plan')).toBe(true);
     expect(isUntitledProjectName('Untitled project')).toBe(true);
     expect(isUntitledProjectName('Untitled diagram')).toBe(true);
     expect(isUntitledProjectName('Roadmap')).toBe(false);

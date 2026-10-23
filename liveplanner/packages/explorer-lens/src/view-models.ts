@@ -130,7 +130,7 @@ export function issueMessage(issue: LensIssue): string {
 
 /** What the live region says once typing settles. */
 export function announceResults(shown: number, total: number): string {
-  if (shown === 0) return 'No projects match';
-  const noun = total === 1 ? 'project' : 'projects';
+  if (shown === 0) return 'No plans match';
+  const noun = total === 1 ? 'plan' : 'plans';
   return shown === total ? `${total} ${noun}` : `${shown} of ${total} ${noun}`;
 }

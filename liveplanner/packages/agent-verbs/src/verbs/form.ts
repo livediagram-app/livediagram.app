@@ -120,10 +120,10 @@ export const formAdd = defineVerb({
   id: 'form.add',
   summary: 'Add a form',
   description:
-    'Adds a Form tab from a starter (bug-report, feedback, feature-request, rsvp, job-application, contact) or from add_form input in a JSON file (or stdin); without a project, makes one of its own.',
+    'Adds a Form tab from a starter (bug-report, feedback, feature-request, rsvp, job-application, contact) or from add_form input in a JSON file (or stdin); without a plan, makes one of its own.',
   behaviour: 'write',
   input: z.object({
-    project: z.string().optional().describe('The project; a new one when omitted'),
+    project: z.string().optional().describe('The plan; a new one when omitted'),
     starter: z
       .enum(STARTER_IDS.filter((s) => s !== 'blank') as [StarterId, ...StarterId[]])
       .optional()

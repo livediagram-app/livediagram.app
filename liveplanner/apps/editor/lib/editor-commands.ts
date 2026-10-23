@@ -128,15 +128,15 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   });
   out.push({
     id: 'rename-project',
-    name: 'Rename Project',
-    keywords: 'rename project project title name relabel',
+    name: 'Rename Plan',
+    keywords: 'rename project project title name relabel plan',
     run: h.renameProject,
   });
   if (!ctx.workbench) {
     out.push({
       id: 'delete-project',
-      name: 'Delete Project',
-      keywords: 'delete project project remove trash destroy',
+      name: 'Delete Plan',
+      keywords: 'delete project project remove trash destroy plan',
       run: h.deleteProject,
     });
   }
@@ -149,8 +149,8 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   if (ctx.canShare && !ctx.isOffline && !ctx.workbench) {
     out.push({
       id: 'share',
-      name: 'Share Project',
-      keywords: 'share project project link invite collaborate publish embed export',
+      name: 'Share Plan',
+      keywords: 'share project project link invite collaborate publish embed export plan',
       run: h.openShare,
     });
   }

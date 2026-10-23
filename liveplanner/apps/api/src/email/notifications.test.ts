@@ -70,7 +70,7 @@ describe('commentNotificationEmail', () => {
   it('falls back to "Someone" / "your project" when unknown', () => {
     const e = commentNotificationEmail(env, '', 'd1', null);
     expect(e.subject).toMatch(/Someone/);
-    expect(e.html).toContain('your project');
+    expect(e.html).toContain('your plan');
   });
 });
 
@@ -177,7 +177,7 @@ describe('actionAssignedEmail (docs/specs/012-collaboration/assigned-actions.md)
   it('falls back when the assigner or project name is unknown', () => {
     const e = actionAssignedEmail(env, null, { id: 'd1', name: '' }, 'Do it', null);
     expect(e.subject).toMatch(/A teammate/);
-    expect(e.html).toContain('a shared project');
+    expect(e.html).toContain('a shared plan');
   });
 
   it('names no project, and links to none, for an assignee who cannot open it', () => {

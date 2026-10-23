@@ -111,7 +111,7 @@ describe('HomeHero', () => {
 
   it('counts the projects and the Inbox in pills that open their views', () => {
     renderHero();
-    const docs = screen.getByRole('link', { name: '4 projects' });
+    const docs = screen.getByRole('link', { name: '4 plans' });
     expect(docs.getAttribute('href')).toBe('/explorer/all');
     fireEvent.click(docs);
     expect(go).toHaveBeenLastCalledWith({ kind: 'all' });
@@ -126,7 +126,7 @@ describe('HomeHero', () => {
       loading: true,
       activity: { assignedToMe: [], loading: true, error: false },
     } as unknown as Partial<ExplorerStateValue>);
-    expect(screen.queryByRole('link', { name: /projects?$/ })).toBeNull();
+    expect(screen.queryByRole('link', { name: /plans?$/ })).toBeNull();
     expect(screen.queryByRole('link', { name: /Inbox/ })).toBeNull();
   });
 
@@ -135,14 +135,14 @@ describe('HomeHero', () => {
       projects: [],
       failedReads: { projects: true, shared: false },
     });
-    expect(screen.queryByRole('link', { name: /projects?$/ })).toBeNull();
+    expect(screen.queryByRole('link', { name: /plans?$/ })).toBeNull();
   });
 
   it('draws the lens field large with New Project inside it', () => {
     renderHero();
     const lens = screen.getByTestId('lens');
     expect(lens.dataset.size).toBe('hero');
-    fireEvent.click(within(lens).getByRole('button', { name: 'New Project' }));
+    fireEvent.click(within(lens).getByRole('button', { name: 'New Plan' }));
     expect(assign).toHaveBeenCalledWith('/new');
     expect(track).toHaveBeenLastCalledWith('Home', 'Selected', 'Hero.NewProject');
   });
@@ -158,7 +158,7 @@ describe('HomeHero', () => {
   it('fans a Board, a Sheet, a Dashboard and a Form, labelled, whatever the projects', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch');
     renderHero();
-    const group = await screen.findByRole('group', { name: 'What a project can hold' });
+    const group = await screen.findByRole('group', { name: 'What a plan can hold' });
     expect(
       within(group)
         .getAllByRole('img')
@@ -173,12 +173,12 @@ describe('HomeHero', () => {
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(
       'Welcome to liveplanner. What are you making first?',
     );
-    expect(screen.queryByRole('link', { name: /projects?$/ })).toBeNull();
+    expect(screen.queryByRole('link', { name: /plans?$/ })).toBeNull();
     expect(screen.getByText('Free, no trackers')).toBeTruthy();
     expect(screen.getByText('No sign-up to start')).toBeTruthy();
     expect(screen.getByRole('searchbox', { name: 'Search templates' })).toBeTruthy();
     expect(screen.queryByTestId('lens')).toBeNull();
-    expect(await screen.findByRole('group', { name: 'What a project can hold' })).toBeTruthy();
+    expect(await screen.findByRole('group', { name: 'What a plan can hold' })).toBeTruthy();
   });
 
   it('tells a signed-in newcomer their work is saved to their account', () => {

@@ -3,38 +3,38 @@ import { helpMetadata } from '@/lib/seo';
 import { FilterSearchResults } from '@/components/illustrations/explorer-structure';
 
 export const metadata = helpMetadata({
-  title: 'Search and Filter Projects',
+  title: 'Search and Filter Plans',
   description:
     'Filter Explorer lists with search and chips (Opens in, Template, Made by AI, Edited, People, Space) or type filters like made-by:ai into the search.',
   path: '/help/explorer/filters/',
 });
 
 <ArticleLayout
-  title="Search and Filter Projects"
-  description="Narrow any list of projects with a few words, a chip, or a typed filter, and share the result as a link."
+  title="Search and Filter Plans"
+  description="Narrow any list of plans with a few words, a chip, or a typed filter, and share the result as a link."
   categoryTitle="Explorer"
   categorySlug="explorer"
 >
 
-Every list of projects in the [Explorer](/explorer) can be narrowed. Type a few words of a project's name into the **Search or filter projects** field in the top bar, or pick a **filter chip** under the page title. Both edit the same search, so a chip you pick shows up in the field, and a filter you type lights its chip. On a phone the field sits on its own row under the logo.
+Every list of plans in the [Explorer](/explorer) can be narrowed. Type a few words of a plan's name into the **Search or filter plans** field in the top bar, or pick a **filter chip** under the page title. Both edit the same search, so a chip you pick shows up in the field, and a filter you type lights its chip. On a phone the field sits on its own row under the logo.
 
-Words match the project's name, ignoring capitals and accents ("cafe" finds "Café"). With several words, a project has to contain all of them.
+Words match the plan's name, ignoring capitals and accents ("cafe" finds "Café"). With several words, a plan has to contain all of them.
 
-<Figure caption="Search results narrowed by a typed Made by AI filter and a word: the pill sits in the field, its chip is lit, and only matching projects remain.">
+<Figure caption="Search results narrowed by a typed Made by AI filter and a word: the pill sits in the field, its chip is lit, and only matching plans remain.">
   <FilterSearchResults />
 </Figure>
 
 ## Where it works
 
-- **My Work, a folder, a team, and This Browser.** The search stays inside the place you are in, and reaches into every folder below it: the list shows each matching project once, with the folder it lives in beside its name. Folders step aside while a search is set and come back when you clear it.
-- **Recent, Favourites, Shared With Me and Search results** gather projects from everywhere, so they add a **Space** chip: My Work, Shared With Me, or one of your teams.
-- **Home, Inbox, Invites, the Library pages and Trash** have no list of projects to narrow. Typing in the field there opens **Search results**, every project you can open, narrowed by what you typed.
+- **My Work, a folder, a team, and This Browser.** The search stays inside the place you are in, and reaches into every folder below it: the list shows each matching plan once, with the folder it lives in beside its name. Folders step aside while a search is set and come back when you clear it.
+- **Recent, Favourites, Shared With Me and Search results** gather plans from everywhere, so they add a **Space** chip: My Work, Shared With Me, or one of your teams.
+- **Home, Inbox, Invites, the Library pages and Trash** have no list of plans to narrow. Typing in the field there opens **Search results**, every plan you can open, narrowed by what you typed.
 
 ## The chips
 
-| Chip       | Keeps projects that                                                                      |
+| Chip       | Keeps plans that                                                                      |
 | ---------- | ---------------------------------------------------------------------------------------- |
-| Opens in   | Were created to open in Plan, which every project made in liveplanner does               |
+| Opens in   | Were created to open in Plan, which every plan made in liveplanner does               |
 | Template   | Were made from a Retrospective or Kanban template                                        |
 | Made by AI | An AI tool made for you; they also carry a **Made by AI** badge wherever they are listed |
 | Edited     | Were last edited today, in the last 7, 30 days or 12 months, or this year                |
@@ -43,7 +43,7 @@ Words match the project's name, ignoring capitals and accents ("cafe" finds "Caf
 
 Click a chip to open its list and tick values; **Any** at the top unsets it. **Made by AI** has only one value, so it is a simple on/off toggle. A chip can hold several values: picking Retrospective and Kanban keeps both. Different chips narrow together: Template and Edited keeps the retrospectives you edited in the last 7 days. **Clear** at the end of the row empties the search.
 
-A project made before liveplanner recorded how it was created has no Opens in or Template, so setting one of those chips hides it; it shows again once they are back on Any. Projects in **Shared With Me** don't carry that information either, so the Opens in, Template and Made by AI chips leave them out of a gathered list.
+A plan made before liveplanner recorded how it was created has no Opens in or Template, so setting one of those chips hides it; it shows again once they are back on Any. Plans in **Shared With Me** don't carry that information either, so the Opens in, Template and Made by AI chips leave them out of a gathered list.
 
 ## Typing filters
 
@@ -56,7 +56,7 @@ The field takes filters as words too, the way the chips write them:
 
 As you type, suggestions appear under the field: use **Down** and **Up** to move through them, **Enter** or **Tab** to take one, and **Esc** to close the list. A suggestion marked **No matches** would leave nothing in the list on its own. A finished filter becomes a pill in the field, with a **×** to remove it; **Backspace** at the start of the words selects the last pill, and a second **Backspace** removes it.
 
-A word that looks like a filter but isn't one, such as `colour:red` or `edited:yesterday`, is searched as plain text, and the Explorer says so under the chips, so a typo never hides projects silently. A **Space** filter typed on My Work, a folder, a team or This Browser does nothing there, because the place you are in already sets the space; the note under the chips says so. The search reads at most 512 characters.
+A word that looks like a filter but isn't one, such as `colour:red` or `edited:yesterday`, is searched as plain text, and the Explorer says so under the chips, so a typo never hides plans silently. A **Space** filter typed on My Work, a folder, a team or This Browser does nothing there, because the place you are in already sets the space; the note under the chips says so. The search reads at most 512 characters.
 
 ## Share a search
 

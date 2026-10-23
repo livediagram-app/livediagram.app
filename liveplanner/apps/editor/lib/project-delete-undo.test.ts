@@ -28,11 +28,11 @@ describe('offerDeleteUndo', () => {
       message: string;
       actions: { onSelect: () => void; ariaLabel: string }[];
     };
-    expect(spec.message).toBe('Project deleted');
-    expect(spec.actions[0]!.ariaLabel).toBe('Undo: restore the project');
+    expect(spec.message).toBe('Plan deleted');
+    expect(spec.actions[0]!.ariaLabel).toBe('Undo: restore the plan');
     spec.actions[0]!.onSelect();
     expect(t.dismissAction).toHaveBeenCalledWith(spec.key);
-    await vi.waitFor(() => expect(t.success).toHaveBeenCalledWith('Project restored'));
+    await vi.waitFor(() => expect(t.success).toHaveBeenCalledWith('Plan restored'));
     expect(onRestored).toHaveBeenCalled();
     expect(track).toHaveBeenCalledWith('Trash', 'Restored', 'Team');
   });

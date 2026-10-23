@@ -270,7 +270,7 @@ export function usePlanItems(opts: {
         if (!silent)
           callbacks.current.onError(
             code === 'items_full'
-              ? 'This project already holds the most items it can'
+              ? 'This plan already holds the most items it can'
               : code
                 ? refusalMessage(code)
                 : "Couldn't save that change",

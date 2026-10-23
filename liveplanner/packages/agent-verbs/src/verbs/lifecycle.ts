@@ -76,16 +76,16 @@ const quietId = ({ id }: { id: string }) => [id];
 
 export const projectCreate = defineVerb({
   id: 'project.create',
-  summary: 'Create a project, empty or from a template or elements',
+  summary: 'Create a plan, empty or from a template or elements',
   description:
-    'Creates a project with one tab, compiled by the api from --template or -f (elements); empty without either. Prints its ref, name and link.',
+    'Creates a plan with one tab, compiled by the api from --template or -f (elements); empty without either. Prints its ref, name and link.',
   behaviour: 'write',
   input: z.object({
-    name: z.string().min(1).describe('The new project\u2019s name'),
+    name: z.string().min(1).describe('The new plan\u2019s name'),
     tab: z
       .string()
       .optional()
-      .describe('The first tab\u2019s name; the project\u2019s name by default'),
+      .describe('The first tab\u2019s name; the plan\u2019s name by default'),
     ...sourceFlags,
   }),
   output: lineOutput,
@@ -123,8 +123,8 @@ export const projectCreate = defineVerb({
 
 export const projectRename = defineVerb({
   id: 'project.rename',
-  summary: 'Rename a project',
-  description: 'Gives a project a new name.',
+  summary: 'Rename a plan',
+  description: 'Gives a plan a new name.',
   behaviour: 'write',
   input: z.object({ project: projectArg, name: z.string().min(1).describe('The new name') }),
   output: lineOutput,
@@ -155,7 +155,7 @@ export const projectShare = defineVerb({
   id: 'project.share',
   summary: 'Make a share link',
   description:
-    'Creates a share link to a project: view (default) lets people open and read it, participate also lets them comment, vote and work cards and Sheet cells without reshaping a board, edit lets them change anything; none needs sign-in. Expires never (default), in a week, a month or six months.',
+    'Creates a share link to a plan: view (default) lets people open and read it, participate also lets them comment, vote and work cards and Sheet cells without reshaping a board, edit lets them change anything; none needs sign-in. Expires never (default), in a week, a month or six months.',
   behaviour: 'write',
   input: z.object({
     project: projectArg,
@@ -197,8 +197,8 @@ export const projectShare = defineVerb({
 
 export const projectRm = defineVerb({
   id: 'project.rm',
-  summary: `Move a project to the Trash for ${TRASH_RETENTION_DAYS} days`,
-  description: `Moves a project to the Trash, where it can be restored for ${TRASH_RETENTION_DAYS} days.`,
+  summary: `Move a plan to the Trash for ${TRASH_RETENTION_DAYS} days`,
+  description: `Moves a plan to the Trash, where it can be restored for ${TRASH_RETENTION_DAYS} days.`,
   behaviour: 'destructive',
   input: z.object({ project: projectArg }),
   output: lineOutput,
@@ -221,12 +221,12 @@ export const projectRm = defineVerb({
 
 export const projectRestore = defineVerb({
   id: 'project.restore',
-  summary: 'Bring a project back from the Trash',
+  summary: 'Bring a plan back from the Trash',
   description:
-    'Restores a project from the Trash to its folder, or the root of its space when that folder is gone.',
+    'Restores a plan from the Trash to its folder, or the root of its space when that folder is gone.',
   behaviour: 'write',
   input: z.object({
-    project: z.string().describe('A name or id prefix of a project in the Trash'),
+    project: z.string().describe('A name or id prefix of a plan in the Trash'),
   }),
   output: lineOutput,
   run: async (ctx, input) => {
@@ -244,7 +244,7 @@ export const projectRestore = defineVerb({
         status: 404,
         code: matches.length ? 'ambiguous' : 'not_found',
         message: matches.length
-          ? `"${input.project}" matches ${matches.length} projects in the Trash`
+          ? `"${input.project}" matches ${matches.length} plans in the Trash`
           : `nothing in the Trash matches "${input.project}"`,
         lines: (matches.length ? matches : trash.slice(0, 5)).map(
           (d) => `${refs.get(d.id)}  ${JSON.stringify(d.name)}  ${d.teamName ?? 'personal'}`,
@@ -271,7 +271,7 @@ export const tabAdd = defineVerb({
   id: 'tab.add',
   summary: 'Add a tab, empty or from a template or elements',
   description:
-    'Adds a tab to a project as one changeset on a new tab, filled from --template or -f (elements); empty without either. Prints the tab, the result lines and the tab rm that undoes it.',
+    'Adds a tab to a plan as one changeset on a new tab, filled from --template or -f (elements); empty without either. Prints the tab, the result lines and the tab rm that undoes it.',
   behaviour: 'write',
   input: z.object({
     project: projectArg,
@@ -371,7 +371,7 @@ export const tabRename = defineVerb({
 export const tabRm = defineVerb({
   id: 'tab.rm',
   summary: 'Delete a tab',
-  description: 'Deletes one tab of a project; the other tabs stay.',
+  description: 'Deletes one tab of a plan; the other tabs stay.',
   behaviour: 'destructive',
   input: z.object({
     project: projectArg,

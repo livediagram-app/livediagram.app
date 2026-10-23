@@ -28,14 +28,14 @@ const CONTENT: Record<
 > = {
   recent: {
     icon: <ClockIcon />,
-    title: 'No recent projects',
-    description: 'Projects show up here as they change, newest first. Make your first one.',
-    cta: 'New Project',
+    title: 'No recent plans',
+    description: 'Plans show up here as they change, newest first. Make your first one.',
+    cta: 'New Plan',
   },
   shared: {
     icon: <ShareIcon />,
     title: 'Nothing shared with you yet',
-    description: 'Open a share link someone sends you and the project lands here.',
+    description: 'Open a share link someone sends you and the plan lands here.',
   },
   favourites: {
     icon: <StarIcon />,
@@ -43,25 +43,25 @@ const CONTENT: Record<
     // No CTA: a new project doesn't land here, starring an existing one
     // does — so the generic "New Project" button would be a dead end
     // (docs/specs/013-workspace/favourites.md). Same reason Shared With Me carries none.
-    description: 'Mark a project as a favourite to show it here.',
+    description: 'Mark a plan as a favourite to show it here.',
   },
   offline: {
     icon: <ThisBrowserIcon />,
     title: 'Nothing in this browser',
-    description: 'Take Offline on any of your projects to keep it here instead.',
-    cta: 'New Project',
+    description: 'Take Offline on any of your plans to keep it here instead.',
+    cta: 'New Plan',
   },
   folder: {
     icon: <FolderSolidIcon open />,
     title: 'This folder is empty',
-    description: 'Add a project or a subfolder to organise your work.',
-    cta: 'New Project',
+    description: 'Add a plan or a subfolder to organise your work.',
+    cta: 'New Plan',
   },
   default: {
     icon: <ProjectIcon />,
-    title: 'No projects yet',
-    description: 'Create your first project and it will appear here.',
-    cta: 'New Project',
+    title: 'No plans yet',
+    description: 'Create your first plan and it will appear here.',
+    cta: 'New Plan',
   },
 };
 

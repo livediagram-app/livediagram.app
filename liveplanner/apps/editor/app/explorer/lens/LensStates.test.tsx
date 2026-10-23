@@ -36,7 +36,7 @@ describe('LensAnnouncer', () => {
     act(() => {
       vi.advanceTimersByTime(1);
     });
-    expect(screen.getByRole('status').textContent).toBe('2 of 9 projects');
+    expect(screen.getByRole('status').textContent).toBe('2 of 9 plans');
   });
 
   it('says when nothing matches', () => {
@@ -45,7 +45,7 @@ describe('LensAnnouncer', () => {
     act(() => {
       vi.advanceTimersByTime(LENS_SETTLE_MS);
     });
-    expect(screen.getByRole('status').textContent).toBe('No projects match');
+    expect(screen.getByRole('status').textContent).toBe('No plans match');
   });
 });
 

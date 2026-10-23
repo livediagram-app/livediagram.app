@@ -42,7 +42,7 @@ export function isSharePagePath(pathname: string): boolean {
 type ShareHead = { title: string; description: string; image: string; imageAlt: string };
 
 export function shareHead(name: string, code: string, origin: string): ShareHead {
-  const title = name.replace(/\s+/g, ' ').trim().slice(0, NAME_MAX) || 'Untitled project';
+  const title = name.replace(/\s+/g, ' ').trim().slice(0, NAME_MAX) || 'Untitled plan';
   return {
     title,
     description: SHARE_PITCH,

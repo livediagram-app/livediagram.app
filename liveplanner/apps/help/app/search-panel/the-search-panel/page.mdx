@@ -6,23 +6,23 @@ import { SearchSettings } from '@/components/illustrations/search-panel';
 export const metadata = helpMetadata({
   title: 'The Search Panel',
   description:
-    'Search everything in liveplanner from one box: projects, folders, teams, tabs, settings and help, and run commands such as creating a tab.',
+    'Search everything in liveplanner from one box: plans, folders, teams, tabs, settings and help, and run commands such as creating a tab.',
   path: '/help/search-panel/the-search-panel/',
 });
 
 <ArticleLayout
   title="The Search Panel"
-  description="One box to jump anywhere: projects, folders, teams, tabs, settings and help, plus actions like creating a tab or exporting it."
+  description="One box to jump anywhere: plans, folders, teams, tabs, settings and help, plus actions like creating a tab or exporting it."
   categoryTitle="Search Panel"
   categorySlug="search-panel"
   subArticles={getSubArticles('the-search-panel')}
 >
 
-The **search panel** is the fastest way to get anywhere in liveplanner. It is one box that searches across everything you can reach and, when you are in a project, runs commands too. The scope adapts to where you are, so the same panel finds a project from the Explorer and a tab inside the project you have open.
+The **search panel** is the fastest way to get anywhere in liveplanner. It is one box that searches across everything you can reach and, when you are in a plan, runs commands too. The scope adapts to where you are, so the same panel finds a plan from the Explorer and a tab inside the plan you have open.
 
 ## Opening and closing search
 
-- **Keyboard:** press `Cmd` / `Ctrl` + `K`, or `Cmd` / `Ctrl` + `.`. Both open the same panel. (`K` is the usual command-palette shortcut; `.` is the original binding, kept because browsers reserve `Cmd` + `T` for a new browser tab.) They work in the editor and on the Explorer page alike, including in [zen mode](/help/tools/zen-mode/) and in view-only projects. While you are typing in a text box (such as the Explorer's filter box) they are left to that box, and they are off when you turn off keyboard shortcuts in Settings.
+- **Keyboard:** press `Cmd` / `Ctrl` + `K`, or `Cmd` / `Ctrl` + `.`. Both open the same panel. (`K` is the usual command-palette shortcut; `.` is the original binding, kept because browsers reserve `Cmd` + `T` for a new browser tab.) They work in the editor and on the Explorer page alike, including in [zen mode](/help/tools/zen-mode/) and in view-only plans. While you are typing in a text box (such as the Explorer's filter box) they are left to that box, and they are off when you turn off keyboard shortcuts in Settings.
 - **Button:** click **Search** near the right-hand end of the bottom bar, just before Settings. In the editor it sits to the right of the tabs; on the Explorer page it is the magnifier in the bottom bar. On a phone, and with Minimal Chrome on, the button is the magnifier alone.
 - **Explorer panel menu:** inside the editor, the Explorer panel's **⋯** menu also has a **Search** row.
 
@@ -32,13 +32,13 @@ The panel pops up near the top of the screen and blurs what is behind it so you 
 
 Type a few letters and matches appear, grouped by what they are. Matching is a simple, case-insensitive "contains" match on the name, so `plan` finds "Sprint plan" and "Planning". What is in scope depends on where you open it:
 
-- **Always:** your **[projects and folders](/help/search-panel/the-search-panel/search-projects/)**, and the **projects shared with you**.
-- **When signed in:** your **[teams](/help/search-panel/the-search-panel/search-teams/)** and their shared folders and projects.
-- **Inside a project:** also the current project's **[tabs, boards and cards](/help/search-panel/the-search-panel/search-tabs-and-elements/)**: a card by its number (`12` or `#12`) or the words of its title.
+- **Always:** your **[plans and folders](/help/search-panel/the-search-panel/search-projects/)**, and the **plans shared with you**.
+- **When signed in:** your **[teams](/help/search-panel/the-search-panel/search-teams/)** and their shared folders and plans.
+- **Inside a plan:** also the current plan's **[tabs, boards and cards](/help/search-panel/the-search-panel/search-tabs-and-elements/)**: a card by its number (`12` or `#12`) or the words of its title.
 
-With an empty box, the panel lists what it can browse (your projects, folders, teams and, in the editor, the project's tabs), so you can open it and arrow straight to something. Most groups show at most 8 results (10 for Actions, 6 for Settings and Help; Teams shows up to 8 each of teams, team folders and team projects), so keep typing to narrow a long list.
+With an empty box, the panel lists what it can browse (your plans, folders, teams and, in the editor, the plan's tabs), so you can open it and arrow straight to something. Most groups show at most 8 results (10 for Actions, 6 for Settings and Help; Teams shows up to 8 each of teams, team folders and team plans), so keep typing to narrow a long list.
 
-The results come in this order: **Projects**, **Shared with You**, **My Work** (your folders), **Teams**, **Tabs**, **Boards**, **Cards**, then **Actions**, **Settings** and **Help**.
+The results come in this order: **Plans**, **Shared with You**, **My Work** (your folders), **Teams**, **Tabs**, **Boards**, **Cards**, then **Actions**, **Settings** and **Help**.
 
 ## Beyond navigation
 
@@ -47,7 +47,7 @@ In the editor the panel does more than jump around:
 - **[Create a new tab](/help/search-panel/the-search-panel/search-create-tab/):** an action result that adds a fresh tab and opens Start Planning on it.
 - **[Run a command](/help/search-panel/the-search-panel/command-palette/):** type an action's name (undo, rename, export, settings) and run it. The panel doubles as a command palette on `⌘K`.
 
-These only appear once you have typed something, and only inside a project. Two more groups work everywhere, in the editor and on the Explorer page:
+These only appear once you have typed something, and only inside a plan. Two more groups work everywhere, in the editor and on the Explorer page:
 
 - **Jump to a setting:** a **Settings** group matches the rows of the [Settings](/help/user-interface/settings/) dialog, by name and by the words people use for them, so "dark mode" finds **Theme**. Each result says which category it lives in ("in Appearance"), and picking it opens Settings on that row with the row highlighted.
 - **Find the help for it:** a **Help** group lists matching articles from this help centre, so the explanation of a feature is reachable from the same box as the feature. Articles match on their search synonyms too, so "kanban" finds Boards. Picking one opens the article in a new browser tab, so you do not lose your place.
@@ -60,14 +60,14 @@ The Help group always sits last, so a help article never steals the `Enter` from
 
 ## Picking a result
 
-Results are ordered by group, and the very first match is preselected, so for the common case you can just type and press `Enter`. Otherwise click a row, or press the `↑` and `↓` arrow keys to move the highlight and `Enter` to pick it. Picking a result takes you exactly where it points: opening a project or folder, switching to a tab, or jumping to a team. The panel closes as it goes.
+Results are ordered by group, and the very first match is preselected, so for the common case you can just type and press `Enter`. Otherwise click a row, or press the `↑` and `↓` arrow keys to move the highlight and `Enter` to pick it. Picking a result takes you exactly where it points: opening a plan or folder, switching to a tab, or jumping to a team. The panel closes as it goes.
 
 ## Read-only views
 
-Search only navigates, so it works in a view-only project too: you can still find and jump to tabs. The command palette keeps only the actions that do not change the project. See [The Command Palette](/help/search-panel/the-search-panel/command-palette/#on-view-only-links).
+Search only navigates, so it works in a view-only plan too: you can still find and jump to tabs. The command palette keeps only the actions that do not change the plan. See [The Command Palette](/help/search-panel/the-search-panel/command-palette/#on-view-only-links).
 
 <Tip>
-  A project with lots of tabs? Press `⌘K`, type part of a tab's name and press `Enter` to switch to
+  A plan with lots of tabs? Press `⌘K`, type part of a tab's name and press `Enter` to switch to
   it, quicker than scanning the tab bar.
 </Tip>
 

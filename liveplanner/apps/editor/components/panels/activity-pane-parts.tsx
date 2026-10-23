@@ -105,7 +105,7 @@ type ThreadFacts = Pick<
 
 function threadHint(t: ThreadFacts): string | null {
   if (t.mentionsYou) return 'Mentioned You';
-  return t.onYourProject && !t.youCommented ? 'Your project' : null;
+  return t.onYourProject && !t.youCommented ? 'Your plan' : null;
 }
 
 function threadAvatar(t: ThreadFacts) {
@@ -343,7 +343,7 @@ export function ActivityEmptyState({ compact = false }: { compact?: boolean } = 
       compact={compact}
       icon={<InboxIcon />}
       title="Nothing waiting on you"
-      description="Open actions and Plan cards assigned to you, actions you assigned, and comment threads you're in, collect here across every project."
+      description="Open actions and Plan cards assigned to you, actions you assigned, and comment threads you're in, collect here across every plan."
     >
       <a
         href={helpArticleHref('assignedActions')}

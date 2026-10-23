@@ -76,7 +76,7 @@ export function TagChip({
   return (
     <HoverCard
       title={tag.name}
-      description="Show every project with this tag."
+      description="Show every plan with this tag."
       className={shrinks ? SHRINKS : FIXED}
     >
       <button

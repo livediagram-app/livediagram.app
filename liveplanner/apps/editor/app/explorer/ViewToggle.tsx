@@ -49,7 +49,7 @@ export function ViewToggle({
         active={mode === 'card'}
         onClick={() => choose('card')}
         label="Card view"
-        description="Cards with a large preview of each project."
+        description="Cards with a large preview of each plan."
       >
         <GridIcon />
       </ToggleButton>

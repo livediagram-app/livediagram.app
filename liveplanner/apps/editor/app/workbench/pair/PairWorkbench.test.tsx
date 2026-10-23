@@ -152,9 +152,9 @@ describe('PairWorkbench', () => {
     api.apiReadPairingRequest.mockResolvedValue(REQUEST);
     render(<PairWorkbench />);
     expect(await screen.findByRole('heading', { name: 'Allow this workbench?' })).toBeTruthy();
-    const question = screen.getByText(/to open your projects with the token/);
+    const question = screen.getByText(/to open your plans with the token/);
     expect(question.textContent).toBe(
-      'Allow Acme Editor at https://127.0.0.1:5175 to open your projects with the token liveplanner CLI?',
+      'Allow Acme Editor at https://127.0.0.1:5175 to open your plans with the token liveplanner CLI?',
     );
     expect(question.querySelector('code')?.textContent).toBe('https://127.0.0.1:5175');
     expect([...question.querySelectorAll('strong')].map((s) => s.textContent)).toEqual([
@@ -163,7 +163,7 @@ describe('PairWorkbench', () => {
     ]);
     expect(
       screen.getByText(
-        'It opens one project at a time, as you, inside that tool. You can unpair it any time in Settings, under API Tokens.',
+        'It opens one plan at a time, as you, inside that tool. You can unpair it any time in Settings, under API Tokens.',
       ),
     ).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Allow' })).toBeTruthy();
@@ -174,8 +174,8 @@ describe('PairWorkbench', () => {
     api.apiReadPairingRequest.mockResolvedValue({ ...REQUEST, name: null, tokenName: null });
     render(<PairWorkbench />);
     await screen.findByRole('heading', { name: 'Allow this workbench?' });
-    expect(screen.getByText(/to open your projects with/).textContent).toBe(
-      'Allow a workbench at https://127.0.0.1:5175 to open your projects with an unnamed token?',
+    expect(screen.getByText(/to open your plans with/).textContent).toBe(
+      'Allow a workbench at https://127.0.0.1:5175 to open your plans with an unnamed token?',
     );
   });
 
@@ -184,10 +184,10 @@ describe('PairWorkbench', () => {
     render(<PairWorkbench />);
     await screen.findByRole('heading', { name: 'Allow this workbench?' });
     const question = screen.getByText(
-      /and to create, move, share and trash projects and folders in it/,
+      /and to create, move, share and trash plans and folders in it/,
     );
     expect(question.textContent).toBe(
-      'Allow Acme Editor at https://127.0.0.1:5175 to open your whole workspace, and to create, move, share and trash projects and folders in it, with the token liveplanner CLI?',
+      'Allow Acme Editor at https://127.0.0.1:5175 to open your whole workspace, and to create, move, share and trash plans and folders in it, with the token liveplanner CLI?',
     );
     expect([...question.querySelectorAll('strong')].map((s) => s.textContent)).toEqual([
       'Acme Editor',
@@ -197,10 +197,10 @@ describe('PairWorkbench', () => {
     expect(question.querySelector('code')?.textContent).toBe('https://127.0.0.1:5175');
     expect(
       screen.getByText(
-        'It works in your Explorer and your projects, as you, inside that tool. You can unpair it any time in Settings, under API Tokens.',
+        'It works in your Explorer and your plans, as you, inside that tool. You can unpair it any time in Settings, under API Tokens.',
       ),
     ).toBeTruthy();
-    expect(screen.queryByText(/It opens one project at a time/)).toBeNull();
+    expect(screen.queryByText(/It opens one plan at a time/)).toBeNull();
   });
 
   it('asks about the whole workspace for an unnamed workbench and an unnamed token', async () => {
@@ -213,10 +213,9 @@ describe('PairWorkbench', () => {
     render(<PairWorkbench />);
     await screen.findByRole('heading', { name: 'Allow this workbench?' });
     expect(
-      screen.getByText(/and to create, move, share and trash projects and folders in it/)
-        .textContent,
+      screen.getByText(/and to create, move, share and trash plans and folders in it/).textContent,
     ).toBe(
-      'Allow a workbench at https://127.0.0.1:5175 to open your whole workspace, and to create, move, share and trash projects and folders in it, with an unnamed token?',
+      'Allow a workbench at https://127.0.0.1:5175 to open your whole workspace, and to create, move, share and trash plans and folders in it, with an unnamed token?',
     );
   });
 

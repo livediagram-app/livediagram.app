@@ -15,9 +15,9 @@ import { projectCountLabel } from '@/components/tags/tag-copy';
 import { LoadFailed } from '../lens/LensStates';
 import { SkeletonRows, type PaneProject } from '../views';
 
-const TAGS_EMPTY_TITLE = 'Group related projects with tags';
+const TAGS_EMPTY_TITLE = 'Group related plans with tags';
 const TAGS_EMPTY_DESCRIPTION =
-  "Make a tag here, or choose Tags in any project's menu. Your tags are yours alone: nobody else sees them.";
+  "Make a tag here, or choose Tags in any plan's menu. Your tags are yours alone: nobody else sees them.";
 
 type Props = {
   // Every project the reader's tags can sit on (their own and their teams'), newest first.
@@ -54,7 +54,7 @@ export function TagsPane({ projects, tagId, onOpenTag, onNewTag, renderProjects 
       <EmptyState
         icon={<TagIcon />}
         title={`Nothing tagged ${tag.name} yet`}
-        description="Choose Tags in a project's menu to add this tag to it."
+        description="Choose Tags in a plan's menu to add this tag to it."
       />
     );
   }
@@ -113,7 +113,7 @@ function TagSection({
         renderProjects(projects)
       ) : (
         <p className="rounded-xl border border-dashed border-slate-200 px-4 py-3 text-[13px] text-slate-500 dark:border-slate-700 dark:text-slate-400">
-          Nothing tagged yet. Choose Tags in a project&rsquo;s menu to add some.
+          Nothing tagged yet. Choose Tags in a plan&rsquo;s menu to add some.
         </p>
       )}
     </section>

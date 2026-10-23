@@ -62,7 +62,7 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
     if (!stored) {
       if (request.body.kind !== 'replace') return { status: 404, body: { error: 'not_found' } };
       if ((await tabIdsHeldElsewhere(env, project.id, [tabId])).size > 0) {
-        return refusal(409, 'tab_id_taken', 'another project holds a tab with this id');
+        return refusal(409, 'tab_id_taken', 'another plan holds a tab with this id');
       }
     }
     const compiled = compile(args, stored, selections);

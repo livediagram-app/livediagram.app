@@ -99,7 +99,7 @@ export async function createMany(
     const head = await getItemStoreHead(ctx.env, caller.projectId);
     if (head.count + creates.length > ITEMS_MAX) {
       return json(
-        { error: 'items_full', message: `a project holds ${ITEMS_MAX} items` },
+        { error: 'items_full', message: `a plan holds ${ITEMS_MAX} items` },
         { status: 413 },
       );
     }

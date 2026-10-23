@@ -23,7 +23,7 @@ export function PanelTagsSection({ projects }: { projects: readonly PaneProject[
       <PaneEmpty
         icon={<TagIcon />}
         title="No tags yet"
-        description="Choose Tags in a project's menu to group related projects."
+        description="Choose Tags in a plan's menu to group related plans."
       />
     );
   }

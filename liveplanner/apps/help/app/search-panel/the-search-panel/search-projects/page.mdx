@@ -4,38 +4,38 @@ import { helpMetadata } from '@/lib/seo';
 import { SearchProjects } from '@/components/illustrations/search-panel';
 
 export const metadata = helpMetadata({
-  title: 'Finding Projects and Folders',
+  title: 'Finding Plans and Folders',
   description:
-    'Search across all your projects and folders, and the projects shared with you, from one box in the editor or the Explorer.',
+    'Search across all your plans and folders, and the plans shared with you, from one box in the editor or the Explorer.',
   path: '/help/search-panel/the-search-panel/search-projects/',
 });
 
 <ArticleLayout
-  title="Finding Projects and Folders"
-  description="The always-on scope of search: your projects, your folders, and anything shared with you."
+  title="Finding Plans and Folders"
+  description="The always-on scope of search: your plans, your folders, and anything shared with you."
   categoryTitle="Search Panel"
   categorySlug="search-panel"
   parentArticle={{ title: 'The Search Panel', slug: 'the-search-panel' }}
   subArticles={getSubArticles('the-search-panel').filter((a) => a.slug !== 'search-projects')}
 >
 
-Wherever you open the [search panel](/help/search-panel/the-search-panel/), it always covers your own library, so you never have to remember which folder a project is in. Matching is on the name only, and any part of it will do: `board` finds "Sprint board" and "Onboarding".
+Wherever you open the [search panel](/help/search-panel/the-search-panel/), it always covers your own library, so you never have to remember which folder a plan is in. Matching is on the name only, and any part of it will do: `board` finds "Sprint board" and "Onboarding".
 
-<Figure caption="The always-on scope: your projects, projects shared with you, and your folders.">
+<Figure caption="The always-on scope: your plans, plans shared with you, and your folders.">
   <SearchProjects />
 </Figure>
 
-## Projects
+## Plans
 
-The **Projects** group matches your own projects by name (a project you never named is listed as "Untitled project"). Pick one and it opens, the quickest way back into a project without scrolling the [Explorer](/help/explorer/explorer-page/). This group is in scope from anywhere: the editor and the Explorer page alike.
+The **Plans** group matches your own plans by name (a plan you never named is listed as "Untitled plan"). Pick one and it opens, the quickest way back into a plan without scrolling the [Explorer](/help/explorer/explorer-page/). This group is in scope from anywhere: the editor and the Explorer page alike.
 
-A project saved only in this browser (see [Offline Mode](/help/privacy-and-security/offline-mode/)) carries a **This Browser** label in the results, so you can tell it apart from one saved to your account.
+A plan saved only in this browser (see [Offline Mode](/help/privacy-and-security/offline-mode/)) carries a **This Browser** label in the results, so you can tell it apart from one saved to your account.
 
-Projects in a team's library are not in this group: they are listed under **Teams**, tagged with their team. See [Searching Teams](/help/search-panel/the-search-panel/search-teams/).
+Plans in a team's library are not in this group: they are listed under **Teams**, tagged with their team. See [Searching Teams](/help/search-panel/the-search-panel/search-teams/).
 
 ## Shared with You
 
-Once you have opened someone else's project through a share link, a **Shared with You** group matches it too, marked with a share icon. (It is the same list as [Shared With Me](/help/explorer/shared-with-you/) in the Explorer, so a link you were sent but never opened is not in it yet.) Picking one opens it on its share link, with whatever access the owner granted. This keeps shared work findable alongside your own, without it cluttering your folders. If the owner turns sharing off, the link expires, or the project goes to the Trash, it drops out of the results.
+Once you have opened someone else's plan through a share link, a **Shared with You** group matches it too, marked with a share icon. (It is the same list as [Shared With Me](/help/explorer/shared-with-you/) in the Explorer, so a link you were sent but never opened is not in it yet.) Picking one opens it on its share link, with whatever access the owner granted. This keeps shared work findable alongside your own, without it cluttering your folders. If the owner turns sharing off, the link expires, or the plan goes to the Trash, it drops out of the results.
 
 ## My Work (your folders)
 
@@ -43,12 +43,12 @@ The **My Work** group matches the folders in your personal [folder tree](/help/e
 
 ## Limits
 
-Each group lists up to 8 matches. If what you want is not among them, type a little more of its name. With an empty box the panel lists your projects, shared projects, folders and teams (and, in a project, its tabs), so you can open it and arrow straight down to one.
+Each group lists up to 8 matches. If what you want is not among them, type a little more of its name. With an empty box the panel lists your plans, shared plans, folders and teams (and, in a plan, its tabs), so you can open it and arrow straight down to one.
 
 <Tip>
-  Search is owner-scoped: a guest finds the projects their own browser owns, and the ones it has
-  opened through share links; signing in brings your account's projects into scope. Search only
-  looks at names: it does not look inside other projects, so to find a card, open that project and
+  Search is owner-scoped: a guest finds the plans their own browser owns, and the ones it has
+  opened through share links; signing in brings your account's plans into scope. Search only
+  looks at names: it does not look inside other plans, so to find a card, open that plan and
   use **Find**.
 </Tip>
 

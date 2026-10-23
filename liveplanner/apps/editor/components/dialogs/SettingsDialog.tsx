@@ -311,8 +311,8 @@ export function SettingsDialog({
         <p className="text-[10px] text-slate-500 dark:text-slate-400">
           {/* A guest has no account to sync to: their settings follow them in this browser only. */}
           {signedIn
-            ? 'Settings sync to your account and apply to every project you open, on every device you sign in from.'
-            : 'Settings are kept in this browser and apply to every project you open. Sign in to have them on your other devices too.'}
+            ? 'Settings sync to your account and apply to every plan you open, on every device you sign in from.'
+            : 'Settings are kept in this browser and apply to every plan you open. Sign in to have them on your other devices too.'}
         </p>
       </footer>
     </Dialog>

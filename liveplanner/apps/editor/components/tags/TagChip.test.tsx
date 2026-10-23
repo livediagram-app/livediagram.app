@@ -93,19 +93,19 @@ describe('ProjectTagDots', () => {
 describe('deleteTagMessage', () => {
   it('names how many projects the tag comes off', () => {
     expect(deleteTagMessage('Design', 4)).toBe(
-      'Delete the tag Design? It comes off its 4 projects. The projects stay.',
+      'Delete the tag Design? It comes off its 4 plans. The plans stay.',
     );
     expect(deleteTagMessage('Design', 1)).toBe(
-      'Delete the tag Design? It comes off its one project. The projects stay.',
+      'Delete the tag Design? It comes off its one plan. The plans stay.',
     );
-    expect(deleteTagMessage('Design', 0)).toBe("Delete the tag Design? It isn't on any projects.");
+    expect(deleteTagMessage('Design', 0)).toBe("Delete the tag Design? It isn't on any plans.");
   });
 });
 
 describe('projectCountLabel', () => {
   it('counts one and many', async () => {
     const { projectCountLabel } = await import('./tag-copy');
-    expect(projectCountLabel(1)).toBe('1 project');
-    expect(projectCountLabel(3)).toBe('3 projects');
+    expect(projectCountLabel(1)).toBe('1 plan');
+    expect(projectCountLabel(3)).toBe('3 plans');
   });
 });

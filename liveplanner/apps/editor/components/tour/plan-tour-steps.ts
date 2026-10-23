@@ -180,7 +180,7 @@ const SHEET_STEPS: PlanTourStep[] = [
   {
     id: 'sheet',
     title: 'Your Sheet',
-    body: 'A spreadsheet in your project, worked on together.',
+    body: 'A spreadsheet in your plan, worked on together.',
     // A card on its own, no ring: one round the whole sheet would light most of the screen. It still brings the
     // sheet on screen for the steps after it.
     prepare: (api) => api.reveal('sheets'),

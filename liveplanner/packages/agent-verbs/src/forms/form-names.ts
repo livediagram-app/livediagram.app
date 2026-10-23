@@ -35,7 +35,7 @@ export function resolveFormTab(
     : forms[0];
   if (!tab) {
     if (!forms.length)
-      return refuse('form_tab_none', 'That project has no Form tab. Make one with add_form.');
+      return refuse('form_tab_none', 'That plan has no Form tab. Make one with add_form.');
     return refuse(
       'form_tab_unknown',
       `No tab "${ref}". Form tabs: ${quoted(forms.map((t) => `${t.name} (${t.id})`))}.`,

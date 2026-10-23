@@ -20,7 +20,7 @@ const typeOut = z.object({
 
 export const typeLs = defineVerb({
   id: 'type.ls',
-  summary: 'The card types of a project',
+  summary: 'The card types of a plan',
   description:
     'Lists the card types its boards hold: id, name, built-in fields and custom fields with their ids.',
   behaviour: 'read',

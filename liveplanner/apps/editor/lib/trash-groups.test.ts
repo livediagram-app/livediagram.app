@@ -37,7 +37,7 @@ describe('trashGroups', () => {
       local: [row('l1')],
     });
     expect(groups.map((g) => [g.title, g.scope, g.rows.map((r) => r.id)])).toEqual([
-      ['Your projects', { kind: 'personal' }, ['p1']],
+      ['Your plans', { kind: 'personal' }, ['p1']],
       ['Alpha', { kind: 'team', teamId: 'a' }, ['t1']],
       ['Beta', { kind: 'team', teamId: 'b' }, ['t2', 't3']],
       ['This Browser only', { kind: 'local' }, ['l1']],
@@ -95,12 +95,12 @@ describe('trashedCardHeading', () => {
   it('says a swept project is in the Trash, since no one deleted it', () => {
     expect(trashedCardHeading({ reason: 'empty' })).toEqual({
       label: 'In the Trash',
-      title: 'This project is in the Trash',
+      title: 'This plan is in the Trash',
     });
   });
 
   it('says deleted for a deleted project, and to anyone who learns no reason', () => {
-    expect(trashedCardHeading({ reason: 'deleted' }).title).toBe('This project was deleted');
-    expect(trashedCardHeading(null).title).toBe('This project was deleted');
+    expect(trashedCardHeading({ reason: 'deleted' }).title).toBe('This plan was deleted');
+    expect(trashedCardHeading(null).title).toBe('This plan was deleted');
   });
 });

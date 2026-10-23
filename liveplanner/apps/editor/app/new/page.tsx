@@ -121,7 +121,7 @@ export default function NewProjectPage() {
   const { resolveSaveLocation } = useNewProjectLocation({ authLoaded, accountUserId });
 
   useEffect(() => {
-    document.title = 'New Project | liveplanner';
+    document.title = 'New Plan | liveplanner';
     // Fetch the editor's chunk while identity + the create run. Fire-and-forget: a failure here
     // just leaves `dynamic` to retry the import at handoff.
     loadEditor().catch(() => {});
@@ -344,7 +344,7 @@ export default function NewProjectPage() {
     return (
       <div className="flex h-dvh flex-col">
         <EditorHeader
-          projectName="New project"
+          projectName="New plan"
           hideTitle
           showShare={false}
           shareable={false}

@@ -242,17 +242,17 @@ function PendingRequest({
         {request.scope === 'workspace' ? (
           <>
             <strong className={STRONG}>your whole workspace</strong>, and to create, move, share and
-            trash projects and folders in it,
+            trash plans and folders in it,
           </>
         ) : (
-          'your projects'
+          'your plans'
         )}{' '}
         with {token}?
       </p>
       <p className={BODY}>
         {request.scope === 'workspace'
-          ? 'It works in your Explorer and your projects, as you, inside that tool.'
-          : 'It opens one project at a time, as you, inside that tool.'}{' '}
+          ? 'It works in your Explorer and your plans, as you, inside that tool.'
+          : 'It opens one plan at a time, as you, inside that tool.'}{' '}
         You can unpair it any time in Settings, under API Tokens.
       </p>
       {failed ? (

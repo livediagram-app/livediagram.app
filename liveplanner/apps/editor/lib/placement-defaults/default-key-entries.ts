@@ -14,7 +14,7 @@ type Words = { label: string; noun: string };
 
 // Plan's key holds every new Project no more specific key does.
 const MODE_WORDS: Record<EditorMode, Words> = {
-  plan: { label: 'Projects', noun: 'Projects' },
+  plan: { label: 'Plans', noun: 'Plans' },
 };
 
 const FAMILY_WORDS: Record<TemplateFamily, Words> = {

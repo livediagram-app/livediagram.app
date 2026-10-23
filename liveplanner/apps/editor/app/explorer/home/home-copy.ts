@@ -16,11 +16,11 @@ export const HOME_COPY = {
   jumpBackIn: 'Jump Back In',
   whatHappened: 'What Happened',
   seeMore: 'See More',
-  jumpBackInEmptyTitle: 'No projects yet',
-  jumpBackInEmpty: 'The projects you use most and last will gather here.',
+  jumpBackInEmptyTitle: 'No plans yet',
+  jumpBackInEmpty: 'The plans you use most and last will gather here.',
   // The editor pane leaves out the open project; when it was the only one, there is a project, just no other.
   jumpBackInOnlyOpenTitle: 'Nothing else yet',
-  jumpBackInOnlyOpen: 'The other projects you use most and last will gather here.',
+  jumpBackInOnlyOpen: 'The other plans you use most and last will gather here.',
   readFailed: 'Home could not load. Check your connection and try again.',
   tryAgain: 'Try again',
 } as const;

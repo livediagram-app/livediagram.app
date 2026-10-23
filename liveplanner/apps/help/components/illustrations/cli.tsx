@@ -134,7 +134,7 @@ export function CliConsent() {
       title="Connect liveplanner CLI"
       intro={[
         'liveplanner CLI wants to access your liveplanner',
-        'projects on your behalf. Approving creates an API token.',
+        'plans on your behalf. Approving creates an API token.',
       ]}
       sentTo="127.0.0.1:53124"
     />

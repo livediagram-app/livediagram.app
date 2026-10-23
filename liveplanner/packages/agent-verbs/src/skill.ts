@@ -11,7 +11,7 @@ export const SKILL_FRONTMATTER_MAX_TOKENS = 80;
 export const SKILL_BODY_MAX_TOKENS = 1500;
 
 export const SKILL_DESCRIPTION =
-  'Read, build and edit liveplanner projects with the liveplanner CLI. Use when asked to read or change a liveplanner.app board, sheet, dashboard or form, or when a message carries a [liveplanner] line.';
+  'Read, build and edit liveplanner plans with the liveplanner CLI. Use when asked to read or change a liveplanner.app board, sheet, dashboard or form, or when a message carries a [liveplanner] line.';
 
 export const SKILL_DIRECTORIES: readonly { path: string; agent: string }[] = [
   { path: '~/.claude/skills', agent: 'Claude Code, every project' },
@@ -32,7 +32,7 @@ export function renderSkill(): string {
     '',
     'Start:',
     '',
-    '- `liveplanner project ls <query>`: find a project',
+    '- `liveplanner project ls <query>`: find a plan',
     '- `liveplanner tab view <project>`: its first tab, as an outline',
     '- `liveplanner edit <project> -f -`: edit operations from stdin, as one changeset',
     '',

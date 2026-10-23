@@ -5,20 +5,20 @@ import { TitleBarParts, VisibilityLegendFigure } from '@/components/illustration
 export const metadata = helpMetadata({
   title: 'The Title Bar',
   description:
-    'The strip across the top of the editor: the project name, who can see it, whether you are editing or viewing, and Share or Copy at the right.',
+    'The strip across the top of the editor: the plan name, who can see it, whether you are editing or viewing, and Share or Copy at the right.',
   path: '/help/user-interface/title-bar/',
 });
 
 <ArticleLayout
   title="The Title Bar"
-  description="The project's name, who can see it, your role in it, and Share or Copy, in the strip across the top of the editor."
+  description="The plan's name, who can see it, your role in it, and Share or Copy, in the strip across the top of the editor."
   categoryTitle="User Interface"
   categorySlug="user-interface"
 >
 
-The **title bar** is the strip across the top of the editor, above the tab you are working on. Reading from left to right, it holds the logo, the project's name, a pill saying who can see the project, a pill saying whether you are editing or viewing it, and at the right edge the button that matters most for this project: **Share** if it is yours, **Copy** if it is someone else's. Your account button sits at the very end.
+The **title bar** is the strip across the top of the editor, above the tab you are working on. Reading from left to right, it holds the logo, the plan's name, a pill saying who can see the plan, a pill saying whether you are editing or viewing it, and at the right edge the button that matters most for this plan: **Share** if it is yours, **Copy** if it is someone else's. Your account button sits at the very end.
 
-<Figure caption="The title bar of a shared project, as its owner sees it: the name, the Shared visibility pill, the Editing role pill, a solid Share button and the account button.">
+<Figure caption="The title bar of a shared plan, as its owner sees it: the name, the Shared visibility pill, the Editing role pill, a solid Share button and the account button.">
   <TitleBarParts />
 </Figure>
 
@@ -26,28 +26,28 @@ The **title bar** is the strip across the top of the editor, above the tab you a
 
 The logo on the left takes you to the liveplanner home page. On a phone it shows without its wordmark. Hover over it (or tap the small arrow beside it on a touch screen) to see every liveworkspace site: **liveworkspace.app** at the top, then each app, such as **livediagram.app**. One click switches to any of them. The other parts of liveplanner (the **Explorer**, **Help** and more) are links along the foot of the [Explorer panel](/help/explorer/explorer-panel/).
 
-## The project name
+## The plan name
 
-The name sits in the middle of the bar. To rename the project, click the name, type the new one, and press `Enter` (or click away) to keep it. `Escape` leaves the old name in place, and clearing the box and confirming keeps the old name too. Names are capped at 60 characters, the same limit the Explorer uses. You can also start a rename from the [command palette](/help/tips-and-tricks/command-palette/) with **Rename Project**.
+The name sits in the middle of the bar. To rename the plan, click the name, type the new one, and press `Enter` (or click away) to keep it. `Escape` leaves the old name in place, and clearing the box and confirming keeps the old name too. Names are capped at 60 characters, the same limit the Explorer uses. You can also start a rename from the [command palette](/help/tips-and-tricks/command-palette/) with **Rename Plan**.
 
-Only people who can change the project's structure can rename it: its owner and anyone on an Editor link. On a Participant or Viewer link, or a [link to a single tab](/help/collaboration/sharing/one-tab/), the name is plain text and clicking it does nothing.
+Only people who can change the plan's structure can rename it: its owner and anyone on an Editor link. On a Participant or Viewer link, or a [link to a single tab](/help/collaboration/sharing/one-tab/), the name is plain text and clicking it does nothing.
 
 ## The visibility pill
 
-Right after the name, a small pill says who can see this project. It reads one of four words:
+Right after the name, a small pill says who can see this plan. It reads one of four words:
 
 - **Private**: only you can see it.
 - **Shared**: anyone with one of its [share links](/help/collaboration/sharing/) can open it.
-- **Team**: it lives in a [team library](/help/collaboration/teams/team-shared-projects/) and every member of the team can open it. A team project with a live share link reads **Shared** instead.
+- **Team**: it lives in a [team library](/help/collaboration/teams/team-shared-projects/) and every member of the team can open it. A team plan with a live share link reads **Shared** instead.
 - **This Browser**: it is saved only in this browser, never on our servers (see [Offline Mode](/help/privacy-and-security/offline-mode/)). This wins over all the others.
 
-Hover the pill, or tab to it with the keyboard, and a legend opens beneath it. At the top it shows **Who Can See This** for the current state, with rings around a figure of you lit out as far as the project reaches. Under that the three audiences sit on one scale: Just you (Private), Link (Shared) and Team, filled up to where the project is now. Hover any other stop to see what it would mean (the heading changes to **If It Were**). This Browser sits apart below the scale, since it is the opposite of sharing: the project never leaves this browser.
+Hover the pill, or tab to it with the keyboard, and a legend opens beneath it. At the top it shows **Who Can See This** for the current state, with rings around a figure of you lit out as far as the plan reaches. Under that the three audiences sit on one scale: Just you (Private), Link (Shared) and Team, filled up to where the plan is now. Hover any other stop to see what it would mean (the heading changes to **If It Were**). This Browser sits apart below the scale, since it is the opposite of sharing: the plan never leaves this browser.
 
-<Figure caption="The legend under the visibility pill of a Shared project: who can see it, the four audiences from Just you to Everyone, This Browser apart, and the owner's Change Who Can See This button.">
+<Figure caption="The legend under the visibility pill of a Shared plan: who can see it, the four audiences from Just you to Everyone, This Browser apart, and the owner's Change Who Can See This button.">
   <VisibilityLegendFigure />
 </Figure>
 
-If the project is yours, the pill is also a button: clicking it opens the Share dialog, and the legend ends with a **Change Who Can See This** button that does the same. Everyone else gets the legend to read but no button, since only the owner decides who can see a project.
+If the plan is yours, the pill is also a button: clicking it opens the Share dialog, and the legend ends with a **Change Who Can See This** button that does the same. Everyone else gets the legend to read but no button, since only the owner decides who can see a plan.
 
 The pill does not show on a phone (the bar has no room for it), in [Zen mode](/help/tools/zen-mode/), or inside an [embed](/help/collaboration/sharing/embeds/), which hides the whole title bar.
 
@@ -55,15 +55,15 @@ The pill does not show on a phone (the bar has no room for it), in [Zen mode](/h
 
 After the visibility pill comes a second pill saying what you can do here right now: **Editing**, **Participating** or **Viewing**. It follows your [share role](/help/collaboration/sharing/): the owner and anyone on an Editor link see **Editing**, a Participant link shows **Participating**, and a Viewer link shows **Viewing**.
 
-Hover the pill to see who owns the project: **Owned by you** on your own projects, or **Owned by** and the owner's name on someone else's. When the owner's name is not known, the pill has no hover text.
+Hover the pill to see who owns the plan: **Owned by you** on your own plans, or **Owned by** and the owner's name on someone else's. When the owner's name is not known, the pill has no hover text.
 
 If your role lets you edit, the pill is a switch that steps through all three, so you can check what each kind of link will get before you send it:
 
-- Click **Editing** and it turns to **Participating**: you work the project as someone on a Participant link does, with their limits. You can comment, take part in a vote or a timer, add and work with cards and type into Sheet cells, but not change how a board, sheet, dashboard or form is set up.
-- Click **Participating** and it turns to **Viewing**: the project becomes read-only, exactly as someone on a Viewer link sees it.
+- Click **Editing** and it turns to **Participating**: you work the plan as someone on a Participant link does, with their limits. You can comment, take part in a vote or a timer, add and work with cards and type into Sheet cells, but not change how a board, sheet, dashboard or form is set up.
+- Click **Participating** and it turns to **Viewing**: the plan becomes read-only, exactly as someone on a Viewer link sees it.
 - Click **Viewing** to go back to editing.
 
-The preview only changes what you can do, in this browser tab: nobody else sees your role change, and reloading the page brings you back to **Editing**. Anything you add while participating stays in the project.
+The preview only changes what you can do, in this browser tab: nobody else sees your role change, and reloading the page brings you back to **Editing**. Anything you add while participating stays in the plan.
 
 For a Participant or a Viewer the pill is just a label. Clicking it does nothing, because their link does not allow editing.
 
@@ -71,11 +71,11 @@ Like the visibility pill, the role pill is hidden on a phone, in Zen mode and in
 
 ## Share or Copy
 
-The right edge of the bar holds one main action, and which one you get depends on whose project it is.
+The right edge of the bar holds one main action, and which one you get depends on whose plan it is.
 
-**Share** is for the owner. It opens the [Share dialog](/help/collaboration/sharing/), where you create and manage links. The button turns solid blue once the project has a live link, so you can tell at a glance that it is shared. On a [This Browser](/help/privacy-and-security/offline-mode/) project it asks you to save the project to your account first, since there is nothing on a server to share yet.
+**Share** is for the owner. It opens the [Share dialog](/help/collaboration/sharing/), where you create and manage links. The button turns solid blue once the plan has a live link, so you can tell at a glance that it is shared. On a [This Browser](/help/privacy-and-security/offline-mode/) plan it asks you to save the plan to your account first, since there is nothing on a server to share yet.
 
-**Copy** is for everyone else who has the project open: someone on a share link of any role, or a team member opening a project a teammate owns. It makes a copy of the project that belongs to you:
+**Copy** is for everyone else who has the plan open: someone on a share link of any role, or a team member opening a plan a teammate owns. It makes a copy of the plan that belongs to you:
 
 <Step n={1}>Click **Copy**. It reads **Copying** while the copy is made.</Step>
 <Step n={2}>The editor opens your copy, named "Copy of" and the original name.</Step>
@@ -83,10 +83,10 @@ The right edge of the bar holds one main action, and which one you get depends o
   Find it again later at the top level of My Work in the [Explorer](/help/explorer/explorer-page/).
 </Step>
 
-Your copy starts **Private**: no share links come with it, and nothing you do to it touches the original. If you opened the project through a link to a single tab, the copy holds just that tab. You do not need an account to copy; as a guest the copy is saved under your [guest identity](/help/account-and-data/guest-identity/).
+Your copy starts **Private**: no share links come with it, and nothing you do to it touches the original. If you opened the plan through a link to a single tab, the copy holds just that tab. You do not need an account to copy; as a guest the copy is saved under your [guest identity](/help/account-and-data/guest-identity/).
 
 ## Your account
 
-At the far right is your account. Signed in, it shows your initial; click it for a menu with your name and email, **Account** (which opens [Settings](/help/user-interface/settings/) on your account details, without leaving the project) and **Sign out**. Not signed in, it shows **Sign in** instead (see [Signing In](/help/account-and-data/signing-in/)). Where sign-in is not available this space is empty.
+At the far right is your account. Signed in, it shows your initial; click it for a menu with your name and email, **Account** (which opens [Settings](/help/user-interface/settings/) on your account details, without leaving the plan) and **Sign out**. Not signed in, it shows **Sign in** instead (see [Signing In](/help/account-and-data/signing-in/)). Where sign-in is not available this space is empty.
 
 </ArticleLayout>

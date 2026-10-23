@@ -40,7 +40,7 @@ export function ExplorerCurrentProject({
   const menu = useRowMenu({ disabled: !hasMenu || editing });
   const visibility = useProjectVisibility();
   const relative = relativeSince(item.savedAt, useRelativeNow());
-  const name = item.name || 'Untitled project';
+  const name = item.name || 'Untitled plan';
   const commit = (next: string) => {
     const trimmed = next.trim();
     if (trimmed && trimmed !== item.name) onRename?.(trimmed);
@@ -48,7 +48,7 @@ export function ExplorerCurrentProject({
   };
   return (
     <section
-      aria-label="Current project"
+      aria-label="Current plan"
       onContextMenu={menu.onContextMenu}
       className="flex items-center gap-3 rounded-xl bg-slate-50 p-2.5 ring-1 ring-slate-200/70 dark:bg-slate-800/50 dark:ring-slate-700/60"
     >
@@ -67,7 +67,7 @@ export function ExplorerCurrentProject({
             phone's banner left it a dozen characters beside a column of both). */}
         <span className="flex min-h-5 items-center justify-between gap-2">
           <span className="truncate text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            Current Project
+            Current Plan
           </span>
           {visibility ? (
             <SharedBadge
@@ -124,7 +124,7 @@ export function ExplorerCurrentProject({
               {...menu.triggerProps}
               size="md"
               className="-my-1 shrink-0"
-              label="Project menu"
+              label="Plan menu"
             />
           ) : null}
         </span>

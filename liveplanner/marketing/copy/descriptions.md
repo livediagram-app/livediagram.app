@@ -52,10 +52,10 @@ For Product Hunt, app store short descriptions, README intros.
 
 > liveplanner is a shared planner in the browser. There is no sign-up wall in
 > front of it, so getting started is as simple as opening a link and adding a
-> card. Teams work on the same project in real time, with live presence,
+> card. Teams work on the same plan in real time, with live presence,
 > comments and @mentions.
 >
-> Each project holds tabs: kanban boards with swimlanes and WIP limits, Sheets
+> Each plan holds tabs: kanban boards with swimlanes and WIP limits, Sheets
 > with over 150 functions and charts, dashboards of live slots, and forms whose
 > answers land as cards or rows. Start from a template such as a Project
 > Planner, Bug Triage or Budget Planner, and let your AI tools move cards over
@@ -74,11 +74,11 @@ For longer listing bodies and "about this project" sections.
 > browser. Its defining choice: it always works without signing up. A visitor
 > can open a link and plan real work before being asked to create anything.
 >
-> Collaboration is built in, not bolted on. Everyone in a project sees who else
+> Collaboration is built in, not bolted on. Everyone in a plan sees who else
 > is there, edits land for everyone the moment they are made, and each card,
 > cell and response can carry its own comment thread with @mentions.
 >
-> A project holds tabs that work from one set of cards. Boards move cards
+> A plan holds tabs that work from one set of cards. Boards move cards
 > through columns, with WIP limits, swimlanes and header widgets such as Due
 > Soon and WIP Alerts. A card is one item, so the same card can sit on the
 > sprint board and the roadmap. Card types carry fields of your own. Plan views
@@ -114,7 +114,7 @@ detailed Product Hunt write-up.
 >
 > #### Real-time, built in
 >
-> Collaboration is the product, not a feature. Everyone in a project sees who
+> Collaboration is the product, not a feature. Everyone in a plan sees who
 > else is there and watches edits land as they happen, with each person's
 > selection outlined in their own colour. Cards, cells and form responses carry
 > comment threads; @mention a teammate and they get an email that opens the
@@ -147,7 +147,7 @@ detailed Product Hunt write-up.
 > Board, Task Tracker), a spreadsheet (Budget Planner, Timesheet, Invoice,
 > Expense Report, Sales Pipeline, Inventory), a form (Bug Report, Feedback,
 > Feature Request, RSVP, Job Application, Contact), or start blank. File
-> projects into folders, share a folder with a team, and catch up on what
+> plans into folders, share a folder with a team, and catch up on what
 > changed from Home and the Inbox.
 >
 > #### Agents welcome

@@ -45,7 +45,7 @@ describe('parseProjectUrl', () => {
     });
     expect(await failureOf(() => parseProjectUrl(`${HOST}/help`, HOST))).toMatchObject({
       kind: 'usage',
-      message: `${HOST}/help is not a project link`,
+      message: `${HOST}/help is not a plan link`,
     });
     expect(await failureOf(() => parseProjectUrl(`${HOST}/project/shared`, HOST))).toMatchObject({
       kind: 'usage',
@@ -105,7 +105,7 @@ describe('resolveProject', () => {
     const api = fakeApi(library);
     expect(await failureOf(resolveProject(api, 'Auth', HOST))).toMatchObject({
       kind: 'not-found',
-      message: 'no project matches "Auth"',
+      message: 'no plan matches "Auth"',
       candidates: [
         { ref: 'aaaa2', name: 'Auth flow v2', detail: 'personal' },
         { ref: 'aaaa1', name: 'Auth flow', detail: 'personal' },
@@ -113,7 +113,7 @@ describe('resolveProject', () => {
     });
     expect(await failureOf(resolveProject(api, 'aaaa', HOST))).toMatchObject({
       kind: 'ambiguous',
-      message: '"aaaa" matches 2 projects',
+      message: '"aaaa" matches 2 plans',
       hint: 'aaaa2',
     });
   });

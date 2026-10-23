@@ -60,9 +60,9 @@ const EMPTY: Record<CommentListStatus, string> = {
 
 export const commentLs = defineVerb({
   id: 'comment.ls',
-  summary: 'The comment threads of a project, open by default',
+  summary: 'The comment threads of a plan, open by default',
   description:
-    'Lists the comment threads of a project, or of one tab, in the outline\u2019s order: each element\u2019s ref, label, state and comments in full.',
+    'Lists the comment threads of a plan, or of one tab, in the outline\u2019s order: each element\u2019s ref, label, state and comments in full.',
   behaviour: 'read',
   input: z.object({
     project: projectArg,

@@ -59,7 +59,7 @@ export function PlanCardsClusterStrip({
             divided={trashInStrip || showsNewCard}
             label="Find a Card"
             hoverTitle="Cards"
-            hoverDescription="Every card in this project: search them, find the ones on no board, and open any of them."
+            hoverDescription="Every card in this plan: search them, find the ones on no board, and open any of them."
             icon={<SearchIcon size={18} />}
             name="Find"
             popoverOpen={finderOpen}
@@ -70,7 +70,7 @@ export function PlanCardsClusterStrip({
           divided={hasTypes || trashInStrip}
           label="Open Card Types"
           hoverTitle="Card Types"
-          hoverDescription="The kinds of card this project's boards hold, and the fields each one has."
+          hoverDescription="The kinds of card this plan's boards hold, and the fields each one has."
           icon={<PlanCardsIcon size={18} />}
           name="Types"
           dataTourId="card-types"

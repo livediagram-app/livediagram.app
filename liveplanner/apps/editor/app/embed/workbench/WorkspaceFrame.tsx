@@ -41,8 +41,8 @@ const EditorPage = dynamic(() => import('../../project/[id]/editor-page'), {
   loading: () => <WorkbenchStatus phase={{ phase: 'reading' }} scope="workspace" />,
 });
 
-const CREATE_FAILED = 'Couldn’t create the project. Try again.';
-const PROJECT_TRASHED = 'That project is in the Trash.';
+const CREATE_FAILED = 'Couldn’t create the plan. Try again.';
+const PROJECT_TRASHED = 'That plan is in the Trash.';
 
 // The place `liveplanner:open` asks for.
 function placeOfOpen(to: WorkbenchOpenTarget): WorkspacePlace {

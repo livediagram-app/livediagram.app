@@ -12,7 +12,7 @@ const UNNAMED = 'Unnamed workbench';
 
 // What each pairing may reach, in the row's words.
 const SCOPE_LABELS: Record<WorkbenchScope, string> = {
-  project: 'One project at a time',
+  project: 'One plan at a time',
   workspace: 'Whole workspace',
 };
 
@@ -74,7 +74,7 @@ export function SettingsTokenPairings({
       {confirm ? (
         <ConfirmPopover
           anchor={confirm.anchor}
-          message={`Unpair ${confirm.pairing.name ?? UNNAMED}? Its open projects stop editing until you allow it again.`}
+          message={`Unpair ${confirm.pairing.name ?? UNNAMED}? Its open plans stop editing until you allow it again.`}
           confirmLabel="Unpair"
           onConfirm={() => {
             onUnpair(confirm.pairing.id);

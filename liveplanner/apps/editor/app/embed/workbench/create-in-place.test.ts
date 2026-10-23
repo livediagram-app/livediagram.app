@@ -56,7 +56,7 @@ describe('createProjectInPlace', () => {
 
     const [owner, made] = api.apiCreateProject.mock.calls[0]!;
     expect(owner).toBe('user_1');
-    expect(made).toMatchObject({ id, name: 'Untitled project', folderId: 'f1', teamId: null });
+    expect(made).toMatchObject({ id, name: 'Untitled plan', folderId: 'f1', teamId: null });
     expect(made.tabs).toHaveLength(1);
     expect(made.tabs?.[0]?.templateChosen).toBeUndefined();
     expect(made.tabs?.[0]?.elements).toEqual([]);
@@ -70,7 +70,7 @@ describe('createProjectInPlace', () => {
     });
 
     const [, made] = api.apiCreateProject.mock.calls[0]!;
-    expect(made.name).not.toBe('Untitled project');
+    expect(made.name).not.toBe('Untitled plan');
     expect(made.tabs?.[0]?.templateChosen).toBe(true);
     expect(made.intent).toBeDefined();
   });

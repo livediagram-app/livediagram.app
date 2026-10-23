@@ -15,19 +15,17 @@ export type CreateFailure = {
 };
 
 const PLACEMENT_MESSAGES: Record<PlacementRejection, string> = {
-  team_forbidden:
-    'You’re not a member of that team, so the project can’t be filed in its library.',
+  team_forbidden: 'You’re not a member of that team, so the plan can’t be filed in its library.',
   folder_not_found: 'That folder no longer exists, or isn’t yours.',
   folder_scope_mismatch: 'That folder belongs to a different space from the one you chose.',
-  placement_invalid: 'That isn’t a place a project can be filed.',
+  placement_invalid: 'That isn’t a place a plan can be filed.',
 };
 
 const CONNECTION_FAILURE: CreateFailure = {
   action: 'retry',
   eyebrow: 'Connection error',
-  title: 'Couldn’t create the project',
-  message:
-    'We couldn’t reach the server to create your project. Check your connection and try again.',
+  title: 'Couldn’t create the plan',
+  message: 'We couldn’t reach the server to create your plan. Check your connection and try again.',
   actionLabel: 'Try again',
 };
 
@@ -37,7 +35,7 @@ export function createFailureCopy(error: unknown): CreateFailure {
   return {
     action: 'choose',
     eyebrow: 'Placement refused',
-    title: 'Couldn’t file the project there',
+    title: 'Couldn’t file the plan there',
     message: PLACEMENT_MESSAGES[code],
     actionLabel: 'Use the default place',
   };

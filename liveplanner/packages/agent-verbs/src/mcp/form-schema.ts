@@ -26,12 +26,12 @@ import {
 import { PAGE_MOTIONS } from '@liveplanner/page-background';
 import { FORM_CHANGES_MAX } from '../forms/form-calls';
 
-const url = z.string().describe('Link that opens the project in the liveplanner editor.');
-const projectId = z.string().describe('The project (from find_projects).');
+const url = z.string().describe('Link that opens the plan in the liveplanner editor.');
+const projectId = z.string().describe('The plan (from find_projects).');
 const tab = z
   .string()
   .optional()
-  .describe('The Form tab, by id or name. Absent: the project’s first Form tab.');
+  .describe('The Form tab, by id or name. Absent: the plan’s first Form tab.');
 
 const typeIds = QUESTION_TYPES.map((t) => `${t} (${QUESTION_TYPE_NAMES[t]})`).join(', ');
 const questionFields = {
@@ -144,7 +144,7 @@ const respondsTo = z
       .string()
       .optional()
       .describe(
-        'The card type each response becomes, by name. A name the project lacks brings in the ready-made type of ' +
+        'The card type each response becomes, by name. A name the plan lacks brings in the ready-made type of ' +
           'that name (Bug, Idea, Candidate, Request...) or makes a new one. Absent: the form’s own, the board’s ' +
           'first, or a new type named after the form.',
       ),
@@ -258,7 +258,7 @@ const readQuestion = z
   .passthrough();
 
 export const readFormOutput = {
-  projectId: z.string().describe('The project.'),
+  projectId: z.string().describe('The plan.'),
   tabId: z.string().describe('The Form tab.'),
   heading: z.string().describe('The form’s heading, which is its tab’s name.'),
   description: z.string().optional().describe('The line under the heading.'),
@@ -318,7 +318,7 @@ export const readFormOutput = {
     .array(z.string())
     .describe('What stops it being published, in Share Form’s words; empty when ready.'),
   lines: z.array(z.string()).optional().describe('What the call did.'),
-  made: z.array(z.string()).optional().describe('The projects and tabs the call made.'),
+  made: z.array(z.string()).optional().describe('The plans and tabs the call made.'),
   url,
 };
 
@@ -328,7 +328,7 @@ export const addFormShape = {
   projectId: projectId
     .optional()
     .describe(
-      'The project to add the Form tab to. Absent: a new project named after the form, holding it.',
+      'The plan to add the Form tab to. Absent: a new plan named after the form, holding it.',
     ),
   name: z
     .string()
@@ -365,7 +365,7 @@ export const addFormShape = {
   theme: z
     .string()
     .optional()
-    .describe('The Form tab’s theme; the project’s when left out. A form wears its tab’s look.'),
+    .describe('The Form tab’s theme; the plan’s when left out. A form wears its tab’s look.'),
   settings: z
     .object(settings)
     .optional()
@@ -483,7 +483,7 @@ export const tryFormShape = {
 };
 
 export const tryFormOutput = {
-  projectId: z.string().describe('The project.'),
+  projectId: z.string().describe('The plan.'),
   tabId: z.string().describe('The Form tab.'),
   made: z.enum(['card', 'row']).describe('A card on a board, or a row in a sheet.'),
   number: z
@@ -499,7 +499,7 @@ export const tryFormOutput = {
     .nullable()
     .describe('The card’s id when this call made it (an unpublished form); else null.'),
   lines: z.array(z.string()).describe('Answers left out because their section did not show.'),
-  url: z.string().describe('The project in the editor.'),
+  url: z.string().describe('The plan in the editor.'),
 };
 
 export const addFormOutput = readFormOutput;

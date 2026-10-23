@@ -228,7 +228,7 @@ describe('pull', () => {
   it('refuses a host that stores a newer project format', async () => {
     const { code, err } = await cli(['pull', DOC], host({ format: 99 }).route);
     expect(code).toBe(1);
-    expect(err).toContain('stores projects in format 99; this liveplanner reads format 2');
+    expect(err).toContain('stores plans in format 99; this liveplanner reads format 2');
     expect(err).toContain('npm install -g @liveplanner/cli@latest, or npx @liveplanner/cli@latest');
   });
 });

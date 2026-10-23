@@ -23,7 +23,7 @@ export const SITE_NAME = 'liveplanner';
 // and the share rail build on. It names every kind of thing a project holds: boards, sheets, dashboards and forms.
 export const SITE_TITLE = 'liveplanner: Plan the work together, live';
 export const SITE_DESCRIPTION =
-  'Free planning in real time, with no trackers: boards of cards, spreadsheets, dashboards and forms in one project, shared with one link.';
+  'Free planning in real time, with no trackers: boards of cards, spreadsheets, dashboards and forms in one plan, shared with one link.';
 // Lower case: it follows "liveplanner: " or starts a sentence through sentencePitch.
 export const SITE_PITCH = 'boards, sheets, dashboards and forms, planned together in real time';
 export const sentencePitch = () => `${SITE_PITCH[0]!.toUpperCase()}${SITE_PITCH.slice(1)}.`;

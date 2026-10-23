@@ -630,7 +630,7 @@ describe('the sheet store client, edges', () => {
     s.write('sheet0001', cellAt(0, 0, 4));
     await s.settle();
     await flush();
-    expect(toast).toHaveBeenCalledWith('This sheet is no longer in this project');
+    expect(toast).toHaveBeenCalledWith('This sheet is no longer in this plan');
     expect(s.sheet('sheet0001')).toBeUndefined();
   });
 
@@ -638,7 +638,7 @@ describe('the sheet store client, edges', () => {
     srv.api.createSheet.mockRejectedValueOnce(new ApiError('sheet create', 404, 'sheet_not_found'));
     s.create({ id: 'sheet0005', tabId: 't1', title: 'Copy', copyOf: 'gone00001' });
     await s.settle();
-    expect(toast).toHaveBeenCalledWith('This sheet is no longer in this project');
+    expect(toast).toHaveBeenCalledWith('This sheet is no longer in this plan');
     expect(s.sheet('sheet0005')).toBeUndefined();
   });
 

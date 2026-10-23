@@ -308,7 +308,7 @@ export function useProjectListActions(deps: ProjectListActionsDeps) {
     if (!ownerId || !setSharedProjects) return;
     const target = sharedProjects.find((d) => d.id === projectId);
     const ok = await confirm({
-      title: `Remove "${target?.name || 'this project'}" from Shared With Me?`,
+      title: `Remove "${target?.name || 'this plan'}" from Shared With Me?`,
       message:
         "It'll vanish from your Shared with you list. You can still open it again from the share link the owner gave you, and that re-adds it here.",
       confirmLabel: 'Remove',

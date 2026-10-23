@@ -13,16 +13,16 @@ const where = (dest: MoveDestination): string => {
 };
 
 export const projectMovedMessage = (name: string | null | undefined, dest: MoveDestination) =>
-  `${toastName(name) ?? 'Project'} moved to ${where(dest)}`;
+  `${toastName(name) ?? 'Plan'} moved to ${where(dest)}`;
 
 export const projectDuplicatedMessage = (name: string | null | undefined) =>
-  `${toastName(name) ?? 'Project'} duplicated`;
+  `${toastName(name) ?? 'Plan'} duplicated`;
 
 export const projectDeletedMessage = (name?: string | null) =>
-  `${toastName(name) ?? 'Project'} deleted`;
+  `${toastName(name) ?? 'Plan'} deleted`;
 
 export const projectRestoredMessage = (name?: string | null) =>
-  `${toastName(name) ?? 'Project'} restored`;
+  `${toastName(name) ?? 'Plan'} restored`;
 
 export const projectRestoreFailedMessage = (name?: string | null) =>
-  `Could not restore ${toastName(name) ?? 'the project'}. It is in the Trash, in Settings.`;
+  `Could not restore ${toastName(name) ?? 'the plan'}. It is in the Trash, in Settings.`;

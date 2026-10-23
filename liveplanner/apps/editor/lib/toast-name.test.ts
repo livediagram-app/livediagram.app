@@ -43,13 +43,13 @@ describe('the toasts that name a project or folder', () => {
   const longest = 'W'.repeat(200);
 
   it('fall back to a generic word when the name is unknown', () => {
-    expect(projectDeletedMessage(undefined)).toBe('Project deleted');
-    expect(projectDuplicatedMessage('')).toBe('Project duplicated');
-    expect(projectMovedMessage(null, 'my-projects')).toBe('Project moved to My Work');
+    expect(projectDeletedMessage(undefined)).toBe('Plan deleted');
+    expect(projectDuplicatedMessage('')).toBe('Plan duplicated');
+    expect(projectMovedMessage(null, 'my-projects')).toBe('Plan moved to My Work');
     expect(projectMovedMessage('Roadmap', { team: '' })).toBe(
       '“Roadmap” moved to the team library',
     );
-    expect(PROJECT_FAILURE.move()).toBe('Could not move the project. Try again.');
+    expect(PROJECT_FAILURE.move()).toBe('Could not move the plan. Try again.');
     expect(FOLDER_FAILURE.delete(null)).toBe('Could not delete the folder. Try again.');
   });
 

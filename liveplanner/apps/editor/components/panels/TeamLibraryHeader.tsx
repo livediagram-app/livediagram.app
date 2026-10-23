@@ -118,7 +118,7 @@ export function TeamLibraryHeader({
                       <ProjectIcon />
                     </span>
                   }
-                  label="New Project"
+                  label="New Plan"
                   onClick={() => {
                     setCreateOpen(false);
                     assignAppLocation(

@@ -400,7 +400,7 @@ describe('changeCardTypes', () => {
       [`/projects/${D}/item-types`]: () => new Response('{"error":"forbidden"}', { status: 403 }),
     });
     const r = await changeCardTypes(a, D, [{ op: 'add', name: 'Risk' }]);
-    expect(r.refusal!.message).toContain('view this project but not change it');
+    expect(r.refusal!.message).toContain('view this plan but not change it');
   });
 
   // docs/specs/026-plan/item-types.md "Storage and sync": a save names the revision it read; when an editor's change
@@ -591,7 +591,7 @@ describe('change lines', () => {
       await readPlanState(a, D),
     );
     expect(r.applied[0]).toContain('; set priority = "high", assignee = Robin; cleared due');
-    expect(r.applied[0]).toContain('Robin is a new name on this project');
+    expect(r.applied[0]).toContain('Robin is a new name on this plan');
   });
 
   it('warns when no board with the column takes the card type', async () => {

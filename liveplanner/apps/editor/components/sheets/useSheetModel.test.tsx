@@ -405,7 +405,7 @@ describe('a copied sheet', () => {
     b.elements = [el];
     model(el, b);
     await waitFor(() =>
-      expect(b.toast).toHaveBeenCalledWith('This project holds the most sheets it can'),
+      expect(b.toast).toHaveBeenCalledWith('This plan holds the most sheets it can'),
     );
     expect(b.toast).not.toHaveBeenCalledWith(SHEET_TOO_BIG_TO_PASTE);
     expect(b.elements.map((e) => e.id)).toEqual(['el1']);

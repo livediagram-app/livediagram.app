@@ -110,14 +110,12 @@ export function CardTypesPanel({
         )}
         {canEdit ? (
           <Tooltip
-            label={
-              full ? 'The project has the most card types it can hold' : `Duplicate ${t.label}`
-            }
+            label={full ? 'The plan has the most card types it can hold' : `Duplicate ${t.label}`}
           >
             <button
               type="button"
               aria-label={
-                full ? 'The project has the most card types it can hold' : `Duplicate ${t.label}`
+                full ? 'The plan has the most card types it can hold' : `Duplicate ${t.label}`
               }
               aria-disabled={full || undefined}
               className={`relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-slate-400 transition ${
@@ -170,7 +168,7 @@ export function CardTypesPanel({
             description={
               canEdit
                 ? 'Add a card type of your own, or add the default types: Project, Task, Note, Idea and Action.'
-                : 'This project has no card types yet.'
+                : 'This plan has no card types yet.'
             }
           />
         ) : (
@@ -225,5 +223,5 @@ export function addDefaultTypesMessage(labels: readonly string[]): string {
     labels.length > 1
       ? `${labels.slice(0, -1).join(', ')} and ${labels.at(-1)}`
       : (labels[0] ?? '');
-  return `Add ${list} to this project’s card types? They go after the ones you have, and nothing you have changes.`;
+  return `Add ${list} to this plan’s card types? They go after the ones you have, and nothing you have changes.`;
 }

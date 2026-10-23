@@ -64,7 +64,7 @@ export function pullFileView(
       exit: EXIT.usage,
       code: 'usage',
       message: `${path} is a pull file: only project view, tab ls and tab view read it`,
-      hint: `name the project instead of the file: ${file.project.id}`,
+      hint: `name the plan instead of the file: ${file.project.id}`,
     });
   log(`address project file ${path}`);
   const { project, liveplannerSync: sync } = file;

@@ -10,7 +10,7 @@ function event(overrides: Partial<TimelineEvent> = {}): TimelineEvent {
     sourceType: 'project',
     sourceId: `s${seq}`,
     eventType: 'project_edited',
-    title: 'Project Updated',
+    title: 'Plan Updated',
     description: null,
     occurredAt: 1_754_380_800_000,
     actorId: 'owner-1',
@@ -90,7 +90,7 @@ describe('bucketFor', () => {
 describe('stackLabel', () => {
   it('uses a generic headline that is true of every member', () => {
     const stacks = buildStacks([event(), event()]);
-    expect(stackLabel(stacks[0]!)).toBe('Projects Updated');
+    expect(stackLabel(stacks[0]!)).toBe('Plans Updated');
   });
 
   // A source type a newer worker invents still has to read correctly.

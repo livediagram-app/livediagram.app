@@ -151,7 +151,7 @@ export function EditorHeader({
               </span>
             ) : (
               <HoverCard
-                title="Rename project"
+                title="Rename plan"
                 description="Click to edit the name."
                 className="min-w-0"
               >
@@ -181,7 +181,7 @@ export function EditorHeader({
           the bar (the -mr-4 cancels the header's right padding). */}
       <div className="-mr-4 flex shrink-0 items-stretch self-stretch">
         {onMakeCopy ? (
-          <HoverCard title="Make a copy" description="Duplicate this project into your own files.">
+          <HoverCard title="Make a copy" description="Duplicate this plan into your own files.">
             <button
               type="button"
               onClick={onMakeCopy}

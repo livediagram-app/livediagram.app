@@ -157,14 +157,14 @@ export function ShareDialog({
     <Dialog
       open
       onClose={close}
-      ariaLabel="Share This Project"
+      ariaLabel="Share This Plan"
       // While Show Me runs, Escape is the tour's, never the dialog's.
       closeOnEscape={!tour.active}
       size="lg"
       className="max-h-[calc(100%-2rem)]"
     >
       <DialogHeader
-        title="Share This Project"
+        title="Share This Plan"
         subtitle={
           <ShareStatus passes={activeLinks.length} password={sharePasswordSet} team={teamProject} />
         }
@@ -193,7 +193,7 @@ export function ShareDialog({
           {activeLinks.length === 0 ? (
             <p className="rounded-xl border-2 border-dashed border-slate-200 px-4 py-5 text-center text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
               {links.length === 0
-                ? 'No passes yet. Only you can open this project.'
+                ? 'No passes yet. Only you can open this plan.'
                 : 'Every pass has expired. Extend one below or issue a new one.'}
             </p>
           ) : (

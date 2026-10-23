@@ -51,7 +51,7 @@ describe('SearchPanel', () => {
       <SearchPanel projects={[]} folders={[]} onSelectProject={vi.fn()} onClose={vi.fn()} />,
     );
     expect(screen.getByRole('dialog', { name: 'Search' }).getAttribute('aria-modal')).toBe('true');
-    expect(document.activeElement).toBe(screen.getByPlaceholderText(/Search projects/));
+    expect(document.activeElement).toBe(screen.getByPlaceholderText(/Search plans/));
     unmount();
     expect(document.activeElement).toBe(opener);
     opener.remove();

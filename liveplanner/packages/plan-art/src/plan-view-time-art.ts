@@ -33,7 +33,7 @@ export function ganttArt({ rect, p, items, data, settings, title }: ViewArtInput
   );
   const frame = viewFrame(rect, p, titled('Gantt Chart', title), model.rows.length);
   if (model.rows.length === 0)
-    return frame.markup + emptyBody(frame.body, p, 'No projects with dates yet.');
+    return frame.markup + emptyBody(frame.body, p, 'No plans with dates yet.');
   const body = frame.body;
   const namesW = Math.min(220, Math.floor(body.width / 3));
   const trackX = body.x + namesW;

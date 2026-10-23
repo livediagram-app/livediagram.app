@@ -90,7 +90,7 @@ describe('Explorer', () => {
     const scroll = document.querySelector<HTMLElement>('[data-explorer-sheet-scroll]');
     expect(scroll).toBeTruthy();
     expect(scroll!.className).toContain('overflow-y-auto');
-    expect(scroll!.contains(screen.getByRole('region', { name: 'Current project' }))).toBe(true);
+    expect(scroll!.contains(screen.getByRole('region', { name: 'Current plan' }))).toBe(true);
     expect(scroll!.querySelector('.min-h-\\[18rem\\]')).toBeTruthy();
     // The product links stay pinned under it.
     expect(scroll!.contains(screen.getByRole('navigation', { name: 'Go to' }))).toBe(false);
@@ -103,7 +103,7 @@ describe('Explorer', () => {
 
   it('opens on Home under its Current Project card, and lists My Work when picked', async () => {
     show();
-    expect(screen.getByRole('region', { name: 'Current project' })).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'Current plan' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Rename Roadmap' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Home' })).toBeTruthy();
     expect(await screen.findByText('home view')).toBeTruthy();

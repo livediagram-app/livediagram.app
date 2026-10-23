@@ -181,7 +181,7 @@ describe('wait endings', () => {
     op(second.io, changed());
     second.io.sockets[0]!.drop(PROJECT_TRASHED_CLOSE);
     expect(await second.exit).toBe(3);
-    expect(second.io.err()).toContain('the project was moved to the Trash');
+    expect(second.io.err()).toContain('the plan was moved to the Trash');
   });
 
   it('says how to see what was missed after a reconnect', async () => {

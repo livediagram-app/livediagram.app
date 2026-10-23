@@ -103,12 +103,12 @@ describe('run', () => {
     expect(missing).toMatchObject({
       code: 3,
       out: '',
-      err: 'error: no project matches "nope"\nhint: liveplanner project ls\n',
+      err: 'error: no plan matches "nope"\nhint: liveplanner project ls\n',
     });
     const json = await cli(['tab', 'ls', 'nope', '--json']);
     expect(JSON.parse(json.err)).toEqual({
       error: 'not_found',
-      message: 'no project matches "nope"',
+      message: 'no plan matches "nope"',
       hint: 'liveplanner project ls',
     });
   });

@@ -142,8 +142,8 @@ describe('untitledNameForTemplate', () => {
     expect(untitledNameForTemplate('bug-triage')).toBe('Untitled Bug Tracker');
   });
   it('keeps "Untitled project" for blank or no template', () => {
-    expect(untitledNameForTemplate('blank')).toBe('Untitled project');
-    expect(untitledNameForTemplate(null)).toBe('Untitled project');
+    expect(untitledNameForTemplate('blank')).toBe('Untitled plan');
+    expect(untitledNameForTemplate(null)).toBe('Untitled plan');
   });
 });
 

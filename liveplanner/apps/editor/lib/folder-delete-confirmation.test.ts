@@ -9,7 +9,7 @@ describe('folderDeleteConfirmation', () => {
       folderDeleteConfirmation({ name: 'Sprints', parentName: 'Projects', scope: 'personal' }),
     ).toEqual({
       title: 'Delete "Sprints"?',
-      message: 'Its projects and subfolders move to "Projects".',
+      message: 'Its plans and subfolders move to "Projects".',
       confirmLabel: 'Delete folder',
     });
   });
@@ -17,9 +17,9 @@ describe('folderDeleteConfirmation', () => {
   it('names the space root for a top-level folder', () => {
     expect(
       folderDeleteConfirmation({ name: 'A', parentName: null, scope: 'personal' }).message,
-    ).toBe('Its projects and subfolders move to My Work.');
+    ).toBe('Its plans and subfolders move to My Work.');
     expect(folderDeleteConfirmation({ name: 'A', parentName: null, scope: 'team' }).message).toBe(
-      "Its projects and subfolders move to the team's root.",
+      "Its plans and subfolders move to the team's root.",
     );
   });
 
@@ -32,7 +32,7 @@ describe('folderDeleteConfirmation', () => {
         defaultKeys: ['template:retrospective', 'mode:plan'],
       }).message,
     ).toBe(
-      'Its projects and subfolders move to My Work.\nNew Projects and retrospectives are saved here by default. Choose another default folder in Settings.',
+      'Its plans and subfolders move to My Work.\nNew Plans and retrospectives are saved here by default. Choose another default folder in Settings.',
     );
   });
 

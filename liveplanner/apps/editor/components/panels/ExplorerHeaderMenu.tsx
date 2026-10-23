@@ -47,7 +47,7 @@ export function ExplorerHeaderMenu({
             key="new"
             plain
             icon={<PlusIcon />}
-            label="New Project"
+            label="New Plan"
             onClick={run(onNewProject)}
           />
         ) : null,

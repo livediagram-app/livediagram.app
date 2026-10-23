@@ -212,7 +212,7 @@ export async function apiDeleteProject(ownerId: string, id: string): Promise<voi
   // the account Bearer when a token provider is registered, falls
   // through to X-Owner-Id otherwise (docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/api.md).
   return apiDelete(`${API_BASE}/projects/${id}`, ownerId, {
-    action: 'delete project',
+    action: 'delete plan',
     purge: { sourceType: 'project', sourceId: id },
   });
 }

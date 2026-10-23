@@ -21,7 +21,7 @@ describe('SignInPrompt', () => {
   it('says the bar form is about who can open the projects, never Browser only', () => {
     render(<SignInPrompt bar />);
     expect(screen.getByText(/^No sign-in here\.$/)).toBeTruthy();
-    expect(screen.getByText('Only this browser can open your projects.')).toBeTruthy();
+    expect(screen.getByText('Only this browser can open your plans.')).toBeTruthy();
     expect(screen.queryByText(/Browser only/)).toBeNull();
   });
 

@@ -92,10 +92,10 @@ export function buildStacks(events: readonly TimelineEvent[]): TimelineStack[] {
 // back to the shared title, which is already a generic category by the
 // copy rules (docs/specs/013-workspace/timeline.md §2).
 const STACK_LABELS: Record<string, string> = {
-  'project::project_edited': 'Projects Updated',
-  'project::project_created': 'Projects Created',
-  'project::project_renamed': 'Projects Renamed',
-  'project::project_duplicated': 'Projects Duplicated',
+  'project::project_edited': 'Plans Updated',
+  'project::project_created': 'Plans Created',
+  'project::project_renamed': 'Plans Renamed',
+  'project::project_duplicated': 'Plans Duplicated',
   'project::comment_resolved': 'Comments Resolved',
   'project::action_assigned': 'Actions Assigned',
   'project::action_completed': 'Actions Completed',
@@ -111,7 +111,7 @@ const STACK_LABELS: Record<string, string> = {
   'account::token_revoked': 'API Tokens Revoked',
   team_membership: 'Members Changed',
   sharing: 'Sharing Changed',
-  filing: 'Projects Filed',
+  filing: 'Plans Filed',
 };
 
 export function stackLabel(stack: TimelineStack): string {

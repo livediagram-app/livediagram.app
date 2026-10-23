@@ -22,8 +22,8 @@ import { useOnline } from '@/hooks/ui/useOnline';
 type ProjectLoadingStage = 'creating' | 'opening';
 
 const COPY: Record<ProjectLoadingStage, { title: string; detail: string }> = {
-  creating: { title: 'Creating your project', detail: 'Setting up a fresh project' },
-  opening: { title: 'Opening your project', detail: 'Getting everything in place' },
+  creating: { title: 'Creating your plan', detail: 'Setting up a fresh plan' },
+  opening: { title: 'Opening your plan', detail: 'Getting everything in place' },
 };
 
 const SLOW_AFTER_MS = 10_000;

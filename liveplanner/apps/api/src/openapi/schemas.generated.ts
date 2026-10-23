@@ -4573,7 +4573,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   HomeGroup: {
     additionalProperties: false,
-    description: "One project's actions on one of the reader's days.",
+    description: "One plan's actions on one of the reader's days.",
     properties: {
       actions: {
         description: 'Every action, newest first.',
@@ -4591,7 +4591,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         type: 'boolean',
       },
       folderId: {
-        description: "Null for `shared`, and for a project at its space's root.",
+        description: "Null for `shared`, and for a plan at its space's root.",
         type: ['string', 'null'],
       },
       folderName: {
@@ -4605,7 +4605,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         type: 'number',
       },
       name: {
-        description: "The project's current name.",
+        description: "The plan's current name.",
         type: 'string',
       },
       ownerName: {
@@ -4687,14 +4687,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   HomeJumpBackInItem: {
     additionalProperties: false,
-    description: 'One project of Jump back in, with the two measures Within reach places it by.',
+    description: 'One plan of Jump back in, with the two measures Within reach places it by.',
     properties: {
       empty: {
         description: 'Nothing drawn: ask for no thumbnail.',
         type: 'boolean',
       },
       folderId: {
-        description: "Null for `shared`, and for a project at its space's root.",
+        description: "Null for `shared`, and for a plan at its space's root.",
         type: ['string', 'null'],
       },
       folderName: {
@@ -4705,7 +4705,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         type: 'number',
       },
       name: {
-        description: "The project's current name.",
+        description: "The plan's current name.",
         type: 'string',
       },
       ownerName: {

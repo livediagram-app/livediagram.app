@@ -67,7 +67,7 @@ export function isHomeRejection(code: string | null): code is HomeRejection {
  *  where it lives. */
 export type HomeProject = {
   projectId: string;
-  /** The project's current name. */
+  /** The plan's current name. */
   name: string;
   /** How the person reaches it: their own, a joined team's, or shared with them by a link. */
   via: 'own' | 'team' | 'shared';
@@ -78,7 +78,7 @@ export type HomeProject = {
   /** Null for `shared`: the owner's filing is theirs. */
   teamId: string | null;
   teamName: string | null;
-  /** Null for `shared`, and for a project at its space's root. */
+  /** Null for `shared`, and for a plan at its space's root. */
   folderId: string | null;
   folderName: string | null;
   ownerName: string | null;
@@ -88,7 +88,7 @@ export type HomeProject = {
   empty: boolean;
 };
 
-/** One project of Jump back in, with the two measures Within reach places it by. */
+/** One plan of Jump back in, with the two measures Within reach places it by. */
 export type HomeJumpBackInItem = HomeProject & {
   /** UTC days in the use window on which the person opened or edited it: most used. */
   useDays: number;
@@ -116,7 +116,7 @@ export type HomeAction = {
 
 export type HomeVerbCount = { verb: HomeVerb; count: number };
 
-/** One project's actions on one of the reader's days. */
+/** One plan's actions on one of the reader's days. */
 export type HomeGroup = HomeProject & {
   /** `<projectId>:<day>`. */
   id: string;

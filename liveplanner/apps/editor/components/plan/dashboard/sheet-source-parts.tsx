@@ -46,12 +46,10 @@ export function SheetList({
     <section className="flex flex-col gap-1">
       <h3 className={SECTION}>Sheet</h3>
       {sheets.length === 0 && tabsState === 'failed' && retryTabs ? (
-        <TabWaiting name="this project’s sheets" status="failed" onRetry={retryTabs} />
+        <TabWaiting name="this plan’s sheets" status="failed" onRetry={retryTabs} />
       ) : sheets.length === 0 ? (
         <p className={MUTED_LINE}>
-          {tabsState === 'loading'
-            ? 'Finding this project’s sheets…'
-            : 'No sheets in this project yet.'}
+          {tabsState === 'loading' ? 'Finding this plan’s sheets…' : 'No sheets in this plan yet.'}
         </p>
       ) : (
         sheets.map((s) => (

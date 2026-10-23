@@ -201,8 +201,8 @@ export function TeamMembers() {
  *  row, a pending invite, and the invite-by-email row at the foot of the list. */
 export function TeamSharedTree() {
   const rows: { label: string; folder: boolean; meta: string }[] = [
-    { label: 'Architecture', folder: true, meta: '4 projects' },
-    { label: 'Onboarding', folder: true, meta: '2 projects' },
+    { label: 'Architecture', folder: true, meta: '4 plans' },
+    { label: 'Onboarding', folder: true, meta: '2 plans' },
     { label: 'System overview', folder: false, meta: 'Edited 2h ago' },
     { label: 'Retro notes', folder: false, meta: 'Edited yesterday' },
   ];
@@ -212,7 +212,7 @@ export function TeamSharedTree() {
         <rect x={51} y={17} width={318} height={32} rx={9} className="fill-slate-50" />
         <line x1={51} y1={49} x2={369} y2={49} className="stroke-slate-200" strokeWidth={1} />
         <Label x={66} y={34} size={9.5} weight={700} tone="muted">
-          TEAM PROJECTS
+          TEAM PLANS
         </Label>
         {/* View toggle: list and grid. */}
         <rect

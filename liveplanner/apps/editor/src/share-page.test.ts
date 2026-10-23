@@ -100,7 +100,7 @@ describe('shareHead', () => {
   it('keeps a preview to one tidy line, and never blank', () => {
     expect(shareHead('  Q3\n\n  plan  ', 'c', 'https://x').title).toBe('Q3 plan');
     expect(shareHead('x'.repeat(500), 'c', 'https://x').title).toHaveLength(200);
-    expect(shareHead('   ', 'c', 'https://x').title).toBe('Untitled project');
+    expect(shareHead('   ', 'c', 'https://x').title).toBe('Untitled plan');
   });
 });
 

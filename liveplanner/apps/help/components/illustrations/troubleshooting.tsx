@@ -34,7 +34,7 @@ export function StuckCanvas() {
         strokeDasharray="4 3"
       />
       <Label x={210} y={78} anchor="middle" size={12} weight={600} tone="strong">
-        Opening your project
+        Opening your plan
       </Label>
       <Label x={210} y={96} anchor="middle" size={10} tone="muted">
         Getting everything in place

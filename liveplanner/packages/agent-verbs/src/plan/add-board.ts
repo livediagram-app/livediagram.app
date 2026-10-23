@@ -55,7 +55,7 @@ export async function addBoard(
     ]);
     const first = [...project.tabs].sort((a, b) => a.orderIndex - b.orderIndex)[0];
     const tabId = input.tabId ?? state.plan.boards[0]?.tabId ?? first?.id;
-    if (!tabId) return { ok: false, code: 'tab_unknown', message: 'That project has no tabs.' };
+    if (!tabId) return { ok: false, code: 'tab_unknown', message: 'That plan has no tabs.' };
     if (!project.tabs.some((t) => t.id === tabId))
       return {
         ok: false,

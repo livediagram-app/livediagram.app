@@ -232,7 +232,7 @@ export function emptyCopy(
       title: 'No cards yet',
       description: canAdd
         ? 'Add one from a board, or drag one in from the palette.'
-        : 'Cards added to this project will show here.',
+        : 'Cards added to this plan will show here.',
     };
   if (query.trim())
     return {

@@ -109,9 +109,7 @@ export function useExplorerMoves({
       .catch((err: unknown) => {
         logMoveFailure('project-to-team', ` project=${id}`, err);
         if (row) setProjects((prev) => (prev.some((d) => d.id === id) ? prev : [row, ...prev]));
-        toast.error(
-          `Couldn’t move ${toastName(row?.name) ?? 'the project'} to the team. Try again.`,
-        );
+        toast.error(`Couldn’t move ${toastName(row?.name) ?? 'the plan'} to the team. Try again.`);
       });
     setProjects((prev) => prev.filter((d) => d.id !== id));
   };
@@ -151,7 +149,7 @@ export function useExplorerMoves({
       .catch((err: unknown) => {
         logMoveFailure('team-project-out', ` project=${id}`, err);
         const name = toastName(teamProjects.find((d) => d.id === id)?.name);
-        toast.error(`Couldn’t move ${name ?? 'the project'} out of the team. Try again.`);
+        toast.error(`Couldn’t move ${name ?? 'the plan'} out of the team. Try again.`);
       });
   };
 

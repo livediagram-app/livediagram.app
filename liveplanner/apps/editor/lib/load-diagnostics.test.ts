@@ -55,7 +55,7 @@ describe('formatDiagnostics', () => {
   it('names a signed-in account, and flags guest projects not yet moved to it', () => {
     const text = formatDiagnostics({ ...base, ownerId: 'user_2abcDEF' });
     expect(text).toContain('Signed in: yes (user_2abcDEF)');
-    expect(text).toContain('Guest projects moved to the account: NOT YET');
+    expect(text).toContain('Guest plans moved to the account: NOT YET');
   });
 
   it('never carries a share code', () => {

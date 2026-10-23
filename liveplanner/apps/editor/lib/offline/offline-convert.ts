@@ -160,7 +160,7 @@ async function downloadAndRemoveCloudCopy(
 // SYNC_SAVE_WAIT_MS (app/project/[id]/useSyncInPlace.ts): refused rather than racing it.
 export class SyncStillSavingError extends Error {
   constructor() {
-    super('Still saving this project. Try again in a moment.');
+    super('Still saving this plan. Try again in a moment.');
     this.name = 'SyncStillSavingError';
   }
 }
@@ -171,11 +171,11 @@ export function syncFailureMessage(e: unknown): string {
   if (e instanceof SyncStillSavingError) return e.message;
   if (e instanceof OfflineSyncIncompleteError)
     return e.reason === 'kept_changing'
-      ? 'This project kept changing while syncing. Your copy is safe: try again soon.'
+      ? 'This plan kept changing while syncing. Your copy is safe: try again soon.'
       : 'The cloud copy was missing cards or sheets, so yours was kept. Try again.';
   return e instanceof ApiError && e.status === 413
     ? 'Too large to sync, usually a big image on a tab. Shrink it and try again.'
-    : 'Could not sync this project. Check your connection and try again.';
+    : 'Could not sync this plan. Check your connection and try again.';
 }
 
 // Re-exported for callers that only need to create an offline project from

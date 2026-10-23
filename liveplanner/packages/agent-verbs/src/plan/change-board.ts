@@ -99,7 +99,7 @@ export function resolveBoard(
     code: 'board_unknown',
     message: boards.length
       ? `No board "${input}". Boards: ${boards.map(describe).join('; ')}.`
-      : 'The project has no Plan board yet: add one with add_board.',
+      : 'The plan has no board yet: add one with add_board.',
   };
 }
 

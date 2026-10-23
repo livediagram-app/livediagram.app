@@ -94,7 +94,7 @@ const lineOut = z.object({ item: itemOut, text: z.string() });
 
 export const itemLs = defineVerb({
   id: 'item.ls',
-  summary: 'The items of a project',
+  summary: 'The items of a plan',
   description:
     'Lists the items Plan boards show: number, type, status and title, narrowed by type or status.',
   behaviour: 'read',
@@ -152,7 +152,7 @@ export const itemAdd = defineVerb({
   id: 'item.add',
   summary: 'Add an item',
   description:
-    'Makes an item in a project, at the end of its status column: a title, a type and any fields as key=value.',
+    'Makes an item in a plan, at the end of its status column: a title, a type and any fields as key=value.',
   behaviour: 'write',
   input: z.object({
     project: projectArg,
@@ -160,7 +160,7 @@ export const itemAdd = defineVerb({
     type: z
       .string()
       .default('task')
-      .describe('project, task, note, idea, action, or a type the project adds'),
+      .describe('project, task, note, idea, action, or a type the plan adds'),
     status: z.string().optional().describe('The column it starts in'),
     fields: z.array(z.string()).default([]).describe('More fields, as key=value'),
   }),
@@ -259,7 +259,7 @@ export const itemMove = defineVerb({
 export const itemRm = defineVerb({
   id: 'item.rm',
   summary: 'Delete an item',
-  description: 'Deletes an item from the project; its number is not used again.',
+  description: 'Deletes an item from the plan; its number is not used again.',
   behaviour: 'destructive',
   input: z.object({ project: projectArg, item: itemArg }),
   output: z.object({ id: z.string(), text: z.string() }),

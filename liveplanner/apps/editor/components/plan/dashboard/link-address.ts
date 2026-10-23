@@ -39,7 +39,7 @@ export function matchingTabs<T extends TabLike>(tabs: readonly T[], query: strin
 
 // The muted line under a link's label: a site's host (an email's address), or where a tab link goes.
 export function linkDetail(link: DashboardLink): string {
-  if (link.tabId) return 'Tab in this project';
+  if (link.tabId) return 'Tab in this plan';
   const url = link.url ?? '';
   // An email: its address, unless that is already the label (an unlabelled one shows it), then just "Email".
   if (url.startsWith('mailto:')) return link.label ? url.slice(7) : 'Email';

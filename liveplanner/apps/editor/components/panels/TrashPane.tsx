@@ -30,7 +30,7 @@ export function TrashPane({ trash }: { trash: TrashController }) {
   return (
     <div className="flex flex-col gap-5">
       <InfoNote>
-        Deleted projects wait here for {TRASH_RETENTION_DAYS} days, then they are removed for good.
+        Deleted plans wait here for {TRASH_RETENTION_DAYS} days, then they are removed for good.
         Restoring one puts it back where it was.
       </InfoNote>
 
@@ -42,7 +42,7 @@ export function TrashPane({ trash }: { trash: TrashController }) {
         <EmptyState
           icon={<TrashIcon size={18} />}
           title="Nothing in the Trash right now"
-          description={`Delete a project and it is kept here for ${TRASH_RETENTION_DAYS} days, so you can restore it.`}
+          description={`Delete a plan and it is kept here for ${TRASH_RETENTION_DAYS} days, so you can restore it.`}
         />
       ) : (
         groups.map((group) => (
@@ -57,7 +57,7 @@ export function TrashPane({ trash }: { trash: TrashController }) {
                 </h2>
                 {group.scope.kind === 'local' ? (
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Projects in This Browser, kept only here.
+                    Plans in This Browser, kept only here.
                   </p>
                 ) : null}
               </div>
@@ -78,7 +78,7 @@ export function TrashPane({ trash }: { trash: TrashController }) {
                   <div className="min-w-0 flex-1">
                     <p className="flex min-w-0 items-center gap-2">
                       <span className="truncate text-sm font-medium text-slate-800 dark:text-slate-100">
-                        {row.name || 'Untitled project'}
+                        {row.name || 'Untitled plan'}
                       </span>
                       {/* This Browser's Trash (docs/specs/006-project/offline-mode.md#this-browser-pill). */}
                       {group.scope.kind === 'local' ? <ThisBrowserPill /> : null}
@@ -91,19 +91,19 @@ export function TrashPane({ trash }: { trash: TrashController }) {
                     <Button
                       variant="secondary"
                       size="xs"
-                      aria-label={`Restore ${row.name || 'Untitled project'}`}
+                      aria-label={`Restore ${row.name || 'Untitled plan'}`}
                       onClick={() => void trash.restore(row.id, group)}
                     >
                       Restore
                     </Button>
                     <button
                       type="button"
-                      aria-label={`Delete ${row.name || 'Untitled project'} permanently`}
+                      aria-label={`Delete ${row.name || 'Untitled plan'} permanently`}
                       onClick={(e) =>
                         setConfirming({
                           kind: 'purge',
                           id: row.id,
-                          name: row.name || 'Untitled project',
+                          name: row.name || 'Untitled plan',
                           group,
                           anchor: e.currentTarget,
                         })
@@ -146,7 +146,7 @@ export function TrashPane({ trash }: { trash: TrashController }) {
 
 function emptyMessage(group: TrashGroup): string {
   const n = group.rows.length;
-  const what = n === 1 ? '1 project' : `${n} projects`;
+  const what = n === 1 ? '1 plan' : `${n} plans`;
   if (group.scope.kind === 'team') {
     return `Delete ${what} in ${group.title}'s Trash for good, for the whole team? This cannot be undone.`;
   }

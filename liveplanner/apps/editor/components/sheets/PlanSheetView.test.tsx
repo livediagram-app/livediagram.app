@@ -168,7 +168,7 @@ describe('the faces', () => {
   it('offers an editor Remove for a sheet no longer in the project', async () => {
     const b = bridge();
     draw(element({ sheetId: 'goneAAAA1' }), b);
-    await screen.findByText('This sheet is no longer in this project');
+    await screen.findByText('This sheet is no longer in this plan');
     fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
     const map = vi.mocked(b.commitElements).mock.calls[0]![0] as (els: Element[]) => Element[];
     const els = [{ id: 'el1' }, { id: 'el2' }] as Element[];
@@ -177,7 +177,7 @@ describe('the faces', () => {
 
   it('offers no Remove to someone who cannot edit', async () => {
     draw(element({ sheetId: 'goneAAAA1' }), bridge({ canEdit: false }));
-    await screen.findByText('This sheet is no longer in this project');
+    await screen.findByText('This sheet is no longer in this plan');
     expect(screen.queryByRole('button', { name: 'Remove' })).toBeNull();
   });
 

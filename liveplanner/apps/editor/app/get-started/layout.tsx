@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 
 export const metadata: Metadata = {
   title: 'Create your account | liveplanner',
-  description: 'Sign up for a liveplanner account to keep your projects across devices.',
+  description: 'Sign up for a liveplanner account to keep your plans across devices.',
 };
 
 export default function GetStartedLayout({ children }: { children: ReactNode }) {

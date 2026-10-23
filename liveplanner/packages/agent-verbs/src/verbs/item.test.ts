@@ -320,7 +320,7 @@ describe('item edges after names', () => {
       [`/projects/${DOC_A}/plan`]: { boards: [], statuses: [], types: ITEM_TYPES },
     }).ctx;
     const ls = await itemLs.run!(bare, { project: DOC_A, type: undefined, status: undefined });
-    expect(itemLs.text!(ls)[0]).toContain('no Plan board yet');
+    expect(itemLs.text!(ls)[0]).toContain('no board yet');
     const refusing = api({
       [`${path}/itembbb111`]: () => Response.json({ error: 'forbidden' }, { status: 403 }),
     }).ctx;

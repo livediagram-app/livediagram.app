@@ -32,7 +32,7 @@ export type FormLinkState = {
 const PUBLISH_ERRORS: Record<string, string> = {
   form_destination_missing: 'Choose where responses go before publishing.',
   form_suspensions:
-    'This project can’t publish more forms: its form links were suspended after reports.',
+    'This plan can’t publish more forms: its form links were suspended after reports.',
   form_already_published: 'This form is already published.',
   form_not_ready: 'Finish the form before publishing: Share Form lists what it needs.',
 };

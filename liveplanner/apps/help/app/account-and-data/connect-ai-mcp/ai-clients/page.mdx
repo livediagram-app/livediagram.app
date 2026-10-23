@@ -35,7 +35,7 @@ The first time your tool connects, it opens a liveplanner page in your browser:
   access will be sent to. Only continue if you recognise that site.
 </Step>
 <Step n={3}>
-  Switch on **Read-only access** if the tool should only find and read your projects, never change
+  Switch on **Read-only access** if the tool should only find and read your plans, never change
   them.
 </Step>
 <Step n={4}>
@@ -62,7 +62,7 @@ Add the server from your terminal:
 claude mcp add --transport http liveplanner https://mcp.liveplanner.app/mcp
 ```
 
-Then, in a Claude Code session, run `/mcp`, choose `liveplanner`, and authenticate: your browser opens the liveplanner approval page. Add `--scope user` to the `claude mcp add` command to make liveplanner available in every project rather than only the current one.
+Then, in a Claude Code session, run `/mcp`, choose `liveplanner`, and authenticate: your browser opens the liveplanner approval page. Add `--scope user` to the `claude mcp add` command to make liveplanner available in every plan rather than only the current one.
 
 If you'd rather use an API token than sign in through the browser, pass it as a header instead:
 
@@ -75,7 +75,7 @@ For coding agents working in a repository, the [liveplanner CLI](/help/developer
 
 ## Cursor
 
-Add liveplanner to Cursor's MCP configuration: `~/.cursor/mcp.json` for every project, or `.cursor/mcp.json` inside one project.
+Add liveplanner to Cursor's MCP configuration: `~/.cursor/mcp.json` for every plan, or `.cursor/mcp.json` inside one plan.
 
 ```json
 {

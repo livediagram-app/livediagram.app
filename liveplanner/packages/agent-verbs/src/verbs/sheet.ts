@@ -45,9 +45,9 @@ const changeText = ({ title, applied }: z.infer<typeof changeOutput>) =>
 
 export const sheetLs = defineVerb({
   id: 'sheet.ls',
-  summary: "List a project's sheets",
+  summary: "List a plan's sheets",
   description:
-    'Lists the sheets on the tabs of a project: title, tab, the range in use and the id, one a line.',
+    'Lists the sheets on the tabs of a plan: title, tab, the range in use and the id, one a line.',
   behaviour: 'read',
   input: z.object({ project: projectArg, tab: z.string().optional().describe('Only this tab id') }),
   output: z.object({

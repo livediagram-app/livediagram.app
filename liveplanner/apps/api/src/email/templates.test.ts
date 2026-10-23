@@ -137,7 +137,7 @@ describe('email templates', () => {
   it('project-joined falls back to "Someone" / "your project" when unknown', () => {
     const e = projectJoinedEmail(env, '', null);
     expect(e.subject).toMatch(/Someone/);
-    expect(e.html).toContain('your project');
+    expect(e.html).toContain('your plan');
   });
 
   it('project-joined escapes a malicious project name', () => {
@@ -181,7 +181,7 @@ describe('mentionedEmail (docs/specs/012-collaboration/comment-mentions.md)', ()
     expect(card.html).toContain('Open the card');
     const doc = mentionedEmail(env, 'Sam', 'Roadmap', 'd1', 'hi');
     expect(doc.html).not.toContain('#item=');
-    expect(doc.html).toContain('Open the project');
+    expect(doc.html).toContain('Open the plan');
   });
 
   it('falls back to "A teammate" without an author name', () => {

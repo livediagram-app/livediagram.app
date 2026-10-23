@@ -36,22 +36,22 @@ const CAPABILITIES = [
   {
     icon: lucideGlyph(lucideLayoutGrid, 20),
     title: 'Templates and tabs',
-    body: 'Starts a project from a plan template, such as Kanban, OKRs or a Budget Planner, and adds the tabs it needs.',
+    body: 'Starts a plan from a plan template, such as Kanban, OKRs or a Budget Planner, and adds the tabs it needs.',
   },
   {
     icon: lucideGlyph(lucideSearch, 20),
     title: 'Find and read',
-    body: 'Searches your projects and your teams’, and reads back the boards, cards, sheets and forms inside them.',
+    body: 'Searches your plans and your teams’, and reads back the boards, cards, sheets and forms inside them.',
   },
   {
     icon: lucideGlyph(lucideShare2, 20),
     title: 'Share links',
-    body: 'Turns a project or a form into a link for your team, as a Participant link unless you ask for another role.',
+    body: 'Turns a plan or a form into a link for your team, as a Participant link unless you ask for another role.',
   },
   {
     icon: lucideGlyph(lucideUndo2, 20),
     title: 'Live, and undoable',
-    body: 'Changes land in an open project as they happen, for everyone on it, with Undo one click away.',
+    body: 'Changes land in an open plan as they happen, for everyone on it, with Undo one click away.',
   },
 ];
 

@@ -19,7 +19,7 @@ export function sharedTabsNotice(
   if (tabs === 0) return null;
   const one = tabs === 1;
   // A non-breaking space keeps the count on the line with its noun.
-  const where = `${tabs}\u00a0of its tabs ${one ? 'is' : 'are'} also used in ${liveDocs} other project${liveDocs === 1 ? '' : 's'}`;
+  const where = `${tabs}\u00a0of its tabs ${one ? 'is' : 'are'} also used in ${liveDocs} other plan${liveDocs === 1 ? '' : 's'}`;
   const stays = one ? 'it stays there' : 'they stay there';
   if (action === 'delete') return `${where}; ${stays}.`;
   const parting = one

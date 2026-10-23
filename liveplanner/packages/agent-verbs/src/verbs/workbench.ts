@@ -77,11 +77,11 @@ function checkScope(input: {
   const workspace = input.workspace === true;
   if (workspace === (input.project !== undefined))
     throw usageRefusal(
-      'name a project, or --workspace',
+      'name a plan, or --workspace',
       `liveplanner workbench open --workspace --origin ${EXAMPLE_ORIGIN}`,
     );
   if (workspace && input.tab !== undefined)
-    throw usageRefusal('--tab opens a tab of a project, not of the workspace', 'drop --tab');
+    throw usageRefusal('--tab opens a tab of a plan, not of the workspace', 'drop --tab');
   if (!workspace && input.folder !== undefined)
     throw usageRefusal(
       '--folder takes --workspace',
@@ -109,15 +109,15 @@ const originFlag = z
 
 export const workbenchOpen = defineVerb({
   id: 'workbench.open',
-  summary: 'A link that opens a project live inside a workbench',
+  summary: 'A link that opens a plan live inside a workbench',
   description:
-    'Mints a link that opens your project in the editor, or with --workspace your whole workspace in the Explorer (on Home, or the --folder), signed in as you, inside the workbench at --origin. The link works once, within a minute. A workbench the token is not paired with for that scope exits 4, naming workbench pair.',
+    'Mints a link that opens your plan in the editor, or with --workspace your whole workspace in the Explorer (on Home, or the --folder), signed in as you, inside the workbench at --origin. The link works once, within a minute. A workbench the token is not paired with for that scope exits 4, naming workbench pair.',
   behaviour: 'write',
   input: z.object({
     project: z
       .string()
       .optional()
-      .describe('A name, id prefix or liveplanner URL of your own project; or --workspace'),
+      .describe('A name, id prefix or liveplanner URL of your own plan; or --workspace'),
     workspace: z.boolean().optional().describe('The whole workspace, in the Explorer'),
     folder: z
       .string()
@@ -126,7 +126,7 @@ export const workbenchOpen = defineVerb({
     tab: z
       .string()
       .optional()
-      .describe("A tab name or id prefix; the project's first tab when omitted"),
+      .describe("A tab name or id prefix; the plan's first tab when omitted"),
     origin: originFlag,
   }),
   output: z.union([
@@ -156,7 +156,7 @@ export const workbenchOpen = defineVerb({
         what: 'project',
         input: input.project,
         candidates: [],
-        message: 'a workbench opens your own projects, not a share link',
+        message: 'a workbench opens your own plans, not a share link',
         hint: 'liveplanner project ls',
       });
     }
@@ -239,7 +239,7 @@ export const workbenchPair = defineVerb({
     workspace: z
       .boolean()
       .optional()
-      .describe('Ask for the whole workspace, not one project at a time'),
+      .describe('Ask for the whole workspace, not one plan at a time'),
   }),
   output: z.object({
     status: z.literal('paired'),

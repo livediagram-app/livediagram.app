@@ -281,23 +281,23 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
   const groups: SearchGroup[] = [];
 
   const projectMatches = liveDocs
-    .filter((d) => matches(q, d.name || 'Untitled project'))
+    .filter((d) => matches(q, d.name || 'Untitled plan'))
     .slice(0, PROJECT_LIMIT);
   if (projectMatches.length > 0) {
     groups.push({
       key: 'projects',
-      label: 'Projects',
+      label: 'Plans',
       items: projectMatches.map((d) => ({
         kind: 'project',
         id: d.id,
-        name: d.name || 'Untitled project',
+        name: d.name || 'Untitled plan',
         ...(d.localOnly ? { localOnly: true } : {}),
       })),
     });
   }
 
   const sharedMatches = (shared ?? [])
-    .filter((s) => matches(q, s.name || 'Untitled project'))
+    .filter((s) => matches(q, s.name || 'Untitled plan'))
     .slice(0, SHARED_LIMIT);
   if (sharedMatches.length > 0) {
     groups.push({
@@ -306,7 +306,7 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
       items: sharedMatches.map((s) => ({
         kind: 'shared',
         id: s.id,
-        name: s.name || 'Untitled project',
+        name: s.name || 'Untitled plan',
         shareCode: s.shareCode,
       })),
     });
@@ -335,7 +335,7 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
     .filter((f) => matches(q, f.path) || matches(q, f.teamName))
     .slice(0, FOLDER_LIMIT);
   const teamProjectMatches = (teamProjects ?? [])
-    .filter((d) => matches(q, d.name || 'Untitled project') || matches(q, d.teamName))
+    .filter((d) => matches(q, d.name || 'Untitled plan') || matches(q, d.teamName))
     .slice(0, PROJECT_LIMIT);
   if (teamMatches.length + teamFolderMatches.length + teamProjectMatches.length > 0) {
     groups.push({
@@ -352,7 +352,7 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
         ...teamProjectMatches.map((d): ProjectItem => ({
           kind: 'project',
           id: d.id,
-          name: d.name || 'Untitled project',
+          name: d.name || 'Untitled plan',
           team: { id: d.teamId, name: d.teamName },
         })),
       ],

@@ -6,17 +6,17 @@
 import { EMPTY_PROJECT_STALE_DAYS, TRASH_REASONS } from '@liveplanner/api-schema';
 import { z } from 'zod';
 
-const url = z.string().describe('Link that opens the project in the liveplanner editor.');
-const projectId = z.string().describe('The project id.');
+const url = z.string().describe('Link that opens the plan in the liveplanner editor.');
+const projectId = z.string().describe('The plan id.');
 const tabId = z.string().describe('The tab id.');
 
 export const findProjectsOutput = {
-  count: z.number().int().describe('How many projects matched.'),
+  count: z.number().int().describe('How many plans matched.'),
   projects: z
     .array(
       z.object({
         id: projectId,
-        name: z.string().describe('The project name.'),
+        name: z.string().describe('The plan name.'),
         updatedAt: z.number().describe('When it was last saved, as a ms epoch.'),
         library: z
           .string()
@@ -29,7 +29,7 @@ export const findProjectsOutput = {
 
 export const readProjectOutput = {
   id: projectId,
-  name: z.string().describe('The project name.'),
+  name: z.string().describe('The plan name.'),
   tab: z
     .object({
       id: tabId,
@@ -47,7 +47,7 @@ export const readProjectOutput = {
     .describe('The tab that was read.'),
   tabs: z
     .array(z.object({ id: tabId, name: z.string().describe('The tab name.') }))
-    .describe('Every tab of the project, in order: pass one as tabId to read it.'),
+    .describe('Every tab of the plan, in order: pass one as tabId to read it.'),
   url,
 };
 
@@ -75,7 +75,7 @@ export const listTemplatesOutput = {
 
 export const createProjectOutput = {
   id: projectId,
-  projectId: projectId.describe('The project id again, under the name the other tools take it by.'),
+  projectId: projectId.describe('The plan id again, under the name the other tools take it by.'),
   name: z.string().describe('The stored name (shortened if it was over the cap).'),
   tabCount: z.number().int().describe('How many tabs were created.'),
   tabIds: z.array(z.string()).describe('The new tab ids, in order.'),
@@ -107,7 +107,7 @@ export const addTabOutput = {
 
 export const updateProjectOutput = {
   id: projectId,
-  projectId: projectId.describe('The project id again, under the name the other tools take it by.'),
+  projectId: projectId.describe('The plan id again, under the name the other tools take it by.'),
   tabId: tabId.describe('The tab that was edited.'),
   url,
   ...changesetAnswer,
@@ -124,27 +124,23 @@ export const shareProjectOutput = {
 };
 
 export const renameProjectOutput = {
-  renamed: z
-    .enum(['project', 'tab'])
-    .describe('Whether the project or one of its tabs was renamed.'),
+  renamed: z.enum(['project', 'tab']).describe('Whether the plan or one of its tabs was renamed.'),
   name: z.string().describe('The stored name (shortened if it was over the cap).'),
-  id: projectId.optional().describe('The renamed project id (project renames).'),
+  id: projectId.optional().describe('The renamed plan id (plan renames).'),
   tabId: tabId.optional().describe('The renamed tab id (tab renames).'),
-  url: url.optional().describe('Link that opens the project (project renames).'),
+  url: url.optional().describe('Link that opens the plan (plan renames).'),
 };
 
 export const deleteProjectOutput = {
-  deleted: z
-    .enum(['project', 'tab'])
-    .describe('Whether the project or one of its tabs was deleted.'),
+  deleted: z.enum(['project', 'tab']).describe('Whether the plan or one of its tabs was deleted.'),
   projectId,
   tabId: tabId.optional().describe('The deleted tab id (tab deletes).'),
-  trashed: z.boolean().optional().describe('True when the project went to the Trash.'),
+  trashed: z.boolean().optional().describe('True when the plan went to the Trash.'),
   restorableForDays: z
     .number()
     .int()
     .optional()
-    .describe('Days the project can be restored with restore_project before it is purged.'),
+    .describe('Days the plan can be restored with restore_project before it is purged.'),
 };
 
 export const listTrashOutput = {
@@ -152,7 +148,7 @@ export const listTrashOutput = {
     .array(
       z.object({
         id: projectId,
-        name: z.string().describe('The project name.'),
+        name: z.string().describe('The plan name.'),
         library: z
           .string()
           .describe('Whose Trash: "personal", or the name of the team (or "team").'),
@@ -165,12 +161,12 @@ export const listTrashOutput = {
         purgeAt: z.string().describe('When it is purged for good, as an ISO timestamp.'),
       }),
     )
-    .describe('The projects that can still be restored.'),
+    .describe('The plans that can still be restored.'),
 };
 
 export const restoreProjectOutput = {
   restored: z.literal('project').describe('Always "project": tabs have no Trash.'),
   id: projectId,
-  name: z.string().nullable().describe('The restored project name, or null if unknown.'),
+  name: z.string().nullable().describe('The restored plan name, or null if unknown.'),
   url,
 };

@@ -88,7 +88,7 @@ export async function apiSetProjectTag(
     method: on ? 'PUT' : 'DELETE',
     headers: await apiHeaders(ownerId),
   });
-  await expectOkVoid(res, on ? 'tag project' : 'untag project');
+  await expectOkVoid(res, on ? 'tag plan' : 'untag plan');
 }
 
 const TAG_SAVE_FAILED = "Couldn't save that tag change. Try again.";

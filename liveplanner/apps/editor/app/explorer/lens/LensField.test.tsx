@@ -62,7 +62,7 @@ function Harness({
   );
 }
 
-const field = () => screen.getByRole('combobox', { name: 'Filter projects' });
+const field = () => screen.getByRole('combobox', { name: 'Filter plans' });
 const lensString = () => screen.getByTestId('lens').textContent;
 const type = (value: string) => {
   fireEvent.focus(field());
@@ -77,7 +77,7 @@ describe('LensField', () => {
     expect(input.getAttribute('aria-expanded')).toBe('false');
     const list = document.getElementById(input.getAttribute('aria-controls')!);
     expect(list?.getAttribute('role')).toBe('listbox');
-    expect(input.getAttribute('placeholder')).toBe('Search or filter projects');
+    expect(input.getAttribute('placeholder')).toBe('Search or filter plans');
   });
 
   it('offers the dimensions a word starts, and accepts one with Down and Enter', () => {
@@ -217,7 +217,7 @@ describe('LensFieldStill', () => {
     expect(screen.queryByRole('combobox')).toBeNull();
     const still = container.querySelector('[data-lens-still]')!;
     expect(still.getAttribute('aria-hidden')).toBe('true');
-    expect(still.textContent).toContain('Search or filter projects');
+    expect(still.textContent).toContain('Search or filter plans');
     expect(still.firstElementChild!.className).toContain('h-[60px]');
   });
 });

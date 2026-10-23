@@ -27,7 +27,7 @@ export function ProjectHistoryDialog({
   projectName: string | null;
 }) {
   return (
-    <Dialog open={open} onClose={onClose} size="2xl" ariaLabel="Project history">
+    <Dialog open={open} onClose={onClose} size="2xl" ariaLabel="Plan history">
       <DialogHeader title="History" subtitle={projectName ?? undefined} />
       <div className="max-h-[60vh] overflow-y-auto px-6 py-4">
         {/* Keyed on the id so switching rows remounts rather than

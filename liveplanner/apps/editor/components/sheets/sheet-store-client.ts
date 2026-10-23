@@ -90,11 +90,11 @@ export const SHEET_REFETCH_DEBOUNCE_MS = 400;
 
 const REFUSALS: Partial<Record<string, string>> = {
   sheet_full: 'This sheet holds the most cells it can',
-  sheets_full: 'This project holds the most sheets it can',
+  sheets_full: 'This plan holds the most sheets it can',
   sheet_too_large: 'A sheet holds up to 10,000 rows and 200 columns',
   sheet_title_taken: 'Another sheet on this tab is called that',
   input_too_long: 'A cell holds up to 10,000 characters',
-  sheet_not_found: 'This sheet is no longer in this project',
+  sheet_not_found: 'This sheet is no longer in this plan',
   rules_full: 'This sheet holds the most rules it can',
 };
 

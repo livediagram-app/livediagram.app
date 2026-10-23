@@ -64,7 +64,7 @@ export function HeroFanMine({ diagrams }: { diagrams: readonly RecentDiagram[] }
         <div key={d.id} className={slot(i, i < PHONE_RECENT ? PHONE[i]! : null)}>
           <a href={`/project/${encodeURIComponent(d.id)}`} className={CARD} style={dealt(i)}>
             <span className="truncate text-xs font-semibold sm:text-sm">
-              {d.name || 'Untitled project'}
+              {d.name || 'Untitled plan'}
             </span>
             <RecentPreview diagram={d} className="h-20 rounded-lg sm:h-32 sm:rounded-xl" />
             {/* How long since it was saved, at the card's foot, right-aligned: off the band at rest, and
@@ -86,7 +86,7 @@ export function HeroFanMine({ diagrams }: { diagrams: readonly RecentDiagram[] }
           </span>
           <span className="flex h-20 flex-col items-center justify-center gap-2 rounded-lg bg-brand-50 text-brand-700 sm:h-32 sm:rounded-xl">
             <ExplorerGlyph size={28} aria-hidden />
-            <span className="hidden text-xs font-medium sm:block">All your projects</span>
+            <span className="hidden text-xs font-medium sm:block">All your plans</span>
           </span>
         </a>
       </div>

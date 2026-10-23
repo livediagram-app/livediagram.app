@@ -28,7 +28,7 @@ export function trashGroups(listing: TrashListing): TrashGroup[] {
   if (personal.length > 0) {
     groups.push({
       key: 'personal',
-      title: 'Your projects',
+      title: 'Your plans',
       scope: { kind: 'personal' },
       telemetryType: 'Personal',
       rows: personal,
@@ -78,8 +78,8 @@ export function trashedCardHeading(row: Pick<TrashedProject, 'reason'> | null): 
   title: string;
 } {
   return row?.reason === 'empty'
-    ? { label: 'In the Trash', title: 'This project is in the Trash' }
-    : { label: 'Deleted', title: 'This project was deleted' };
+    ? { label: 'In the Trash', title: 'This plan is in the Trash' }
+    : { label: 'Deleted', title: 'This plan was deleted' };
 }
 
 // The deleted card's lead for someone who may restore it, with the days left.

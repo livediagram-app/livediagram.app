@@ -193,7 +193,7 @@ export function ActiveSharePass({
           <ShareCopyMenu
             label="Embed"
             hoverCardTitle="Embed"
-            hoverCardDescription={`Copy an embed of this project as a URL or an <iframe> snippet for wikis, Notion, and docs. ${
+            hoverCardDescription={`Copy an embed of this plan as a URL or an <iframe> snippet for wikis, Notion, and docs. ${
               link.role === 'edit'
                 ? 'This edit pass embeds an editable canvas.'
                 : 'This pass embeds a look-only canvas.'
@@ -222,7 +222,7 @@ export function ActiveSharePass({
             <ShareCopyMenu
               label="Live image"
               hoverCardTitle="Live image"
-              hoverCardDescription="An <img>-able SVG URL that re-renders this project, so an embed in a README, wiki, or doc stays up to date."
+              hoverCardDescription="An <img>-able SVG URL that re-renders this plan, so an embed in a README, wiki, or doc stays up to date."
               trackType="LiveImage"
               header={
                 // Per-tab picker (docs/specs/013-workspace/live-image-share.md): only worth showing

@@ -20,7 +20,7 @@ export function SectionTemplates({ sectionId, label }: { sectionId: string; labe
             Start from a template
           </h2>
           <p className={BAND_LEAD}>
-            Pick one and your new project opens with it already set up, ready to make your own.
+            Pick one and your new plan opens with it already set up, ready to make your own.
           </p>
         </div>
         <ul className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

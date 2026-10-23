@@ -75,7 +75,7 @@ export const PLAN_BOARD_TILES: {
   {
     preset: 'all-cards',
     caption: 'All Cards',
-    description: 'Every card in the project, a row per status: nothing lost between boards.',
+    description: 'Every card in the plan, a row per status: nothing lost between boards.',
   },
 ];
 

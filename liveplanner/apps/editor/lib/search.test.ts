@@ -92,7 +92,7 @@ describe('buildSearchResults', () => {
     expect(projectGroup.items[0]).toMatchObject({
       kind: 'project',
       id: 'd3',
-      name: 'Untitled project',
+      name: 'Untitled plan',
     });
   });
 

@@ -125,7 +125,7 @@ describe('ActivityPane', () => {
     );
     expect(screen.queryByText('You Assigned')).toBeNull();
     expect(screen.getByText('Open Comment Threads')).toBeTruthy();
-    expect(screen.getByText('Your project')).toBeTruthy();
+    expect(screen.getByText('Your plan')).toBeTruthy();
     expect(screen.getByText('Mentioned You')).toBeTruthy();
     fireEvent.click(linkTo('Pay'));
     expect(track).toHaveBeenCalledWith('Activity', 'Selected', 'Thread');

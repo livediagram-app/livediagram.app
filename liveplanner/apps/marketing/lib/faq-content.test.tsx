@@ -71,10 +71,10 @@ describe('filterFaq', () => {
 describe('domain language', () => {
   const copy = items.map((i) => `${i.q} ${faqAnswerText(i)}`).join(' ');
 
-  // A person reads "project"; "document" is only the code's word for one.
-  it('calls a project a project, never a document', () => {
+  // A person reads "plan"; "document" is only the code's word for one.
+  it('calls a plan a plan, never a document', () => {
     expect(copy).not.toMatch(/\bdocuments?\b/i);
-    expect(copy).toMatch(/\bprojects?\b/);
+    expect(copy).toMatch(/\bplans?\b/);
   });
 
   // liveplanner plans work; the diagramming modes are not part of it.

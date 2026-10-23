@@ -137,7 +137,7 @@ export async function handleProjects(ctx: RouteContext): Promise<Response> {
       // The project's own dates (docs/specs/015-api/api.md "Project dates"), refused whole when
       // invalid, before anything is written.
       const dates = projectDates(body, Date.now());
-      if (!dates.ok) return badRequest('invalid project dates');
+      if (!dates.ok) return badRequest('invalid plan dates');
       // Placement (docs/specs/013-workspace/folders.md "Placement on create"): read up front so a
       // malformed one is refused before anything else is looked at.
       const requested = parsePlacement(body);

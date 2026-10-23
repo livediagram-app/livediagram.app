@@ -344,7 +344,7 @@ export function registerTools(server: McpServer, env: Env): void {
     const imageIssue = imageIdIssue(args);
     if (imageIssue) return errorResult(imageIssue);
     const loaded = await loadTab(env, token, args.projectId, args.tabId);
-    if (!loaded) return errorResult('That project has no tabs.');
+    if (!loaded) return errorResult('That plan has no tabs.');
     const { tab } = loaded;
     const tabId = tab.id;
     // Both modes are one changeset (docs/specs/015-api/mcp-server.md §4.4): applied, laid out and
@@ -515,7 +515,7 @@ export function registerTools(server: McpServer, env: Env): void {
       // Not in the Trash, or not the user's to restore: model-correctable.
       if (err instanceof ApiError && err.status === 404) {
         return errorResult(
-          'That project is not in the Trash, or is not yours to restore. Check the id with list_trash.',
+          'That plan is not in the Trash, or is not yours to restore. Check the id with list_trash.',
         );
       }
       throw err;
@@ -526,16 +526,16 @@ export function registerTools(server: McpServer, env: Env): void {
 // Why a delete was refused, by what was deleted and the status.
 export function deleteRefusal(status: number, tab: boolean): string {
   if (status === 410) return 'It is already in the Trash (see list_trash).';
-  if (status === 403) return 'You may view this project but not change it.';
+  if (status === 403) return 'You may view this plan but not change it.';
   if (status === 404)
     return tab
-      ? 'No such tab in this project: read_project lists its tabs.'
-      : 'No such project, or it is not yours: find_projects lists them.';
+      ? 'No such tab in this plan: read_project lists its tabs.'
+      : 'No such plan, or it is not yours: find_projects lists them.';
   if (tab && status === 409)
-    return 'A project must keep at least one tab: you cannot delete the last one.';
+    return 'A plan must keep at least one tab: you cannot delete the last one.';
   return tab
-    ? `The api refused it (${status}): check the project and tab ids.`
-    : 'Check the project id and that you own it.';
+    ? `The api refused it (${status}): check the plan and tab ids.`
+    : 'Check the plan id and that you own it.';
 }
 
 // add_tab takes a template's first tab only (docs/specs/015-api/mcp-server.md §4.5): said in the answer when the

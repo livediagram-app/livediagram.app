@@ -35,7 +35,7 @@ export function offerDeleteUndo(
     actions: [
       {
         label: 'Undo',
-        ariaLabel: `Undo: restore ${toastName(at.name) ?? 'the project'}`,
+        ariaLabel: `Undo: restore ${toastName(at.name) ?? 'the plan'}`,
         onSelect: () => {
           toast.dismissAction(key);
           void apiRestoreProject(at.ownerId, at.id).then(

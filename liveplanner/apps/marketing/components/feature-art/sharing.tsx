@@ -135,7 +135,7 @@ export function TeamsArt() {
         Design
       </text>
       <text className={MUTED} x="226" y="49" fontSize="6.5">
-        12 projects
+        12 plans
       </text>
       <Avatar cx={198} cy={64} r={4.5} color={YOU} initials="TM" />
       <Avatar cx={206} cy={64} r={4.5} color={JORDAN} initials="JR" />

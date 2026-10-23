@@ -43,14 +43,14 @@ describe('HomeSection Jump Back In', () => {
     home.current = { mostUsed: [item('d1', 'Roadmap')], recent: [] };
     show('d1');
     expect(screen.getByText('Nothing else yet')).toBeTruthy();
-    expect(screen.queryByText('No projects yet')).toBeNull();
+    expect(screen.queryByText('No plans yet')).toBeNull();
     expect(screen.queryByText('Roadmap')).toBeNull();
   });
 
   it('says there are no projects when there are none', () => {
     home.current = { mostUsed: [], recent: [] };
     show('d1');
-    expect(screen.getByText('No projects yet')).toBeTruthy();
+    expect(screen.getByText('No plans yet')).toBeTruthy();
   });
 
   it('lists the other projects', () => {

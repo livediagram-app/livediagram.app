@@ -21,7 +21,7 @@ const GROUPED_ROWS = [
   {
     words: ['pull', 'push'],
     after: 'workbench',
-    summary: 'one project to a file and back; export --all',
+    summary: 'one plan to a file and back; export --all',
   },
 ] as const;
 const NAMED_ONLY = [
@@ -56,7 +56,7 @@ export function topHelp(): string {
   );
   const pad = (s: string) => s.padEnd(width + 2);
   return [
-    'liveplanner: read, build, edit and discuss projects.',
+    'liveplanner: read, build, edit and discuss plans.',
     'Usage: liveplanner <resource> <verb> [args] [flags]',
     '',
     ...rows.flatMap((r) => [
@@ -72,7 +72,7 @@ export function topHelp(): string {
     'Exit 0 done, 1 refused, 2 usage, 3 not found, 4 auth, 5 conflict, 6 rate limit, 7 network.',
     '',
     'Start',
-    '  liveplanner project ls auth        find a project',
+    '  liveplanner project ls auth        find a plan',
     '  liveplanner tab view "Auth flow"    its first tab, as an outline',
     '  liveplanner guide edit              change a tab with edit operations',
     '',

@@ -75,7 +75,7 @@ export function ExplorerRail({
       }`}
     >
       <PlusIcon size={13} />
-      <span className={phone ? 'text-optical-centre' : ''}>{phone ? 'New' : 'New Project'}</span>
+      <span className={phone ? 'text-optical-centre' : ''}>{phone ? 'New' : 'New Plan'}</span>
     </button>
   ) : null;
   const navRef = useRef<HTMLElement>(null);

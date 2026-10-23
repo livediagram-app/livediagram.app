@@ -655,7 +655,7 @@ export function ExplorerPanelLayout() {
         />
         <Thumb x={px + 18} y={56} w={62} h={42} kind={1} />
         <GroupTitle x={px + 92} y={66}>
-          CURRENT PROJECT
+          CURRENT PLAN
         </GroupTitle>
         <rect
           x={px + 88}
@@ -957,7 +957,7 @@ export function UseAsDefaultScene() {
   const my = 16;
   const mw = 156;
   const items = ['Rename', 'New Subfolder', 'Change Folder', 'Use as Default for'];
-  const kinds = ['Projects', 'Retrospectives', 'Kanban boards'];
+  const kinds = ['Plans', 'Retrospectives', 'Kanban boards'];
   const ticked = new Set(['Retrospectives']);
   const fx = 180;
   const fy = 72;
@@ -1033,7 +1033,7 @@ export function UseAsDefaultScene() {
         strokeWidth={1.5}
       />
       <Label x={fx + 12} y={fy + 15} size={10} weight={700} tone="muted">
-        New projects that open as
+        New plans that open as
       </Label>
       {kinds.map((k, i) => {
         const ry = fy + 26 + i * 20;

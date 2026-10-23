@@ -54,7 +54,7 @@ describe('DefaultFolderMarker', () => {
     expect(icons(container)).toBe(2);
     expect(container.textContent).toContain('+1');
     expect(
-      screen.getByText('Default folder for new Projects, retrospectives and Kanban boards'),
+      screen.getByText('Default folder for new Plans, retrospectives and Kanban boards'),
     ).toBeTruthy();
   });
 

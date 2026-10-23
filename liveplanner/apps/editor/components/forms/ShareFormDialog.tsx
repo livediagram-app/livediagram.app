@@ -60,7 +60,7 @@ export function ShareFormDialog({
       </div>
       <DialogHeader
         title="Share Form"
-        subtitle="Anyone with the link can fill in this form. They won’t see your project."
+        subtitle="Anyone with the link can fill in this form. They won’t see your plan."
       >
         <DialogCloseButton onClick={onClose} />
       </DialogHeader>
@@ -77,8 +77,8 @@ export function ShareFormDialog({
         <div className="flex flex-col gap-4 px-6 pb-6 pt-4">
           {link.status === 'offline' ? (
             <p className="text-[14px] text-slate-600 dark:text-slate-300">
-              Forms are published from projects saved to liveplanner. This one is kept on this
-              device only.
+              Forms are published from plans saved to liveplanner. This one is kept on this device
+              only.
             </p>
           ) : live && url ? (
             <>
@@ -153,8 +153,7 @@ export function ShareFormDialog({
               ) : null}
               {!canPublish ? (
                 <p className="rounded-lg bg-red-50 px-3 py-2 text-[13px] text-red-900 dark:bg-red-500/10 dark:text-red-100">
-                  This project can’t publish more forms: its form links were suspended after
-                  reports.
+                  This plan can’t publish more forms: its form links were suspended after reports.
                 </p>
               ) : formProblemCount(problem, notReady) ? (
                 <FormProblems

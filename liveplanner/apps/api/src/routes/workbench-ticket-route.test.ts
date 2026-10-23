@@ -143,11 +143,7 @@ describe('POST /api/workbench/tickets', () => {
   });
 
   it.each([
-    [
-      'an overlong project id',
-      { projectId: 'x'.repeat(65), origin: ORIGIN },
-      'invalid projectId',
-    ],
+    ['an overlong project id', { projectId: 'x'.repeat(65), origin: ORIGIN }, 'invalid projectId'],
     ['a bad tab id', { projectId: 'doc1', tabId: 5, origin: ORIGIN }, 'invalid tabId'],
   ])('refuses %s', async (_why, body, message) => {
     const db = await workbenchDb();
@@ -364,12 +360,12 @@ describe('POST /api/workbench/tickets, workspace scope', () => {
     [
       'a workspace ticket naming a project',
       workspaceBody({ projectId: 'doc1' }),
-      'a workspace ticket names no project',
+      'a workspace ticket names no plan',
     ],
     [
       'a workspace ticket naming a tab',
       workspaceBody({ tabId: 't1' }),
-      'a workspace ticket names no project',
+      'a workspace ticket names no plan',
     ],
     ['a bad folder id', workspaceBody({ folderId: 7 }), 'invalid folderId'],
     ['a project ticket without a project', { origin: ORIGIN }, 'invalid projectId'],

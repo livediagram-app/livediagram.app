@@ -92,7 +92,7 @@ export function eventCategory(eventType: string): TimelineCategory {
 
 export const CATEGORY_LABELS: Record<TimelineCategory, string> = {
   comments: 'Comments',
-  new: 'New projects',
+  new: 'New plans',
   edits: 'Edits',
   renames: 'Renames',
   deletions: 'Deletions',

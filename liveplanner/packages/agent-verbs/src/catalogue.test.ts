@@ -218,12 +218,12 @@ describe('the verbs the CLI handles', () => {
     expect(tabRender.text!({ lines: ['p'] })).toEqual(['p']);
     expect(exportAll.text!({ paths: ['a'], projects: 1, exit: 0 })).toEqual([
       'a',
-      '1 project · 1 file',
+      '1 plan · 1 file',
     ]);
     expect(exportAll.text!({ paths: ['a', 'b'], projects: 2, exit: 0 })).toEqual([
       'a',
       'b',
-      '2 projects · 2 files',
+      '2 plans · 2 files',
     ]);
     expect([
       exportAll.quiet!({ paths: ['a'], projects: 1, exit: 0 }),

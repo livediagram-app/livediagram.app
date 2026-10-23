@@ -28,8 +28,8 @@ import {
 import type { PlanState } from './plan-state';
 
 export const NO_BOARD_HINT =
-  'This project has no Plan board yet. Add one with add_board (a preset such as kanban, or columns by name), ' +
-  'or start a project from a Plan template (kanban, project-planner, bug-triage...).';
+  'This plan has no board yet. Add one with add_board (a preset such as kanban, or columns by name), ' +
+  'or start a plan from a template (kanban, project-planner, bug-triage...).';
 
 interface ListedColumn {
   name: string;
@@ -125,7 +125,7 @@ export function resolveListingFilter(
       return {
         ok: false,
         code: 'status_unknown',
-        message: `No column "${filter.status}": the project has no Plan board yet, so no card is in a column.`,
+        message: `No column "${filter.status}": the plan has no board yet, so no card is in a column.`,
       };
     else {
       const s = resolveStatus(filter.status, state.plan.statuses);

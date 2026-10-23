@@ -40,7 +40,7 @@ export function resolveSheet(
     return {
       ok: false,
       code: 'sheet_not_found',
-      message: 'This project has no sheets. Put one on a tab with add_sheet.',
+      message: 'This plan has no sheets. Put one on a tab with add_sheet.',
     };
   const byId = sheets.find((s) => s.id === wanted);
   if (byId) return { ok: true, sheet: byId };

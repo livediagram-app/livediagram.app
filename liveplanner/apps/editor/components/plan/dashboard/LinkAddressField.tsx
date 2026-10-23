@@ -126,7 +126,7 @@ export function LinkAddressField({
           <ul
             id={listId}
             role="listbox"
-            aria-label="Tabs in this project"
+            aria-label="Tabs in this plan"
             className="fixed z-[calc(var(--z-popover)+1)] overflow-y-auto overscroll-contain rounded-lg border border-slate-200 bg-white p-1 shadow-lg dark:border-slate-700 dark:bg-slate-900"
             style={{
               left: place.left,

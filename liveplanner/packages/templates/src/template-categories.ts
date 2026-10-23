@@ -24,7 +24,7 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
     id: 'planning',
     label: 'Planning',
     searchWords: 'plan track',
-    description: 'Boards and trackers for projects and teams.',
+    description: 'Boards and trackers for plans and teams.',
   },
   {
     id: 'finance',

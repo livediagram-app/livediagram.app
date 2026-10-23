@@ -96,7 +96,7 @@ export function CustomThemePicker({
     if (
       await confirm({
         title: `Delete "${theme?.name ?? 'theme'}"?`,
-        message: 'Projects using it fall back to the Default theme. This cannot be undone.',
+        message: 'Plans using it fall back to the Default theme. This cannot be undone.',
         confirmLabel: 'Delete',
       })
     ) {

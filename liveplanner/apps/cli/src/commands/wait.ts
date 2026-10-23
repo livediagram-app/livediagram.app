@@ -14,14 +14,19 @@ import { oneLine } from '../output/one-line';
 
 export const WAIT_SETTLE_MS = 2_000;
 
-export type WaitInput = { project: string; for: 'comment' | 'change'; tab?: string; timeout?: number };
+export type WaitInput = {
+  project: string;
+  for: 'comment' | 'change';
+  tab?: string;
+  timeout?: number;
+};
 export type StreamResult = { lines: string[]; exit: number };
 
 export const trashedError = () =>
   new CliError({
     exit: EXIT.notFound,
     code: 'trashed',
-    message: 'the project was moved to the Trash',
+    message: 'the plan was moved to the Trash',
     hint: 'liveplanner project restore <project>',
   });
 

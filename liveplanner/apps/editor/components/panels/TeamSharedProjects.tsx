@@ -128,8 +128,7 @@ export function TeamSharedProjects({
   const folderChipFor = (d: { folderId: string | null }) => {
     if (!lensed || d.folderId === currentFolderId) return null;
     const folderId = d.folderId;
-    if (folderId === null)
-      return { label: 'Team projects', onOpen: () => setSpot({ kind: 'root' }) };
+    if (folderId === null) return { label: 'Team plans', onOpen: () => setSpot({ kind: 'root' }) };
     const folder = lib.folders.find((f) => f.id === folderId);
     return folder
       ? { label: folder.name, onOpen: () => setSpot({ kind: 'folder', id: folder.id }) }
@@ -137,8 +136,8 @@ export function TeamSharedProjects({
   };
 
   const crumbs: { label: string; onClick?: () => void }[] = (() => {
-    const root = { label: 'Team projects', onClick: () => setSpot({ kind: 'root' }) };
-    if (spot.kind === 'root') return [{ label: 'Team projects' }];
+    const root = { label: 'Team plans', onClick: () => setSpot({ kind: 'root' }) };
+    if (spot.kind === 'root') return [{ label: 'Team plans' }];
     const chain = lib.breadcrumb(spot.id);
     return [
       root,
@@ -279,13 +278,13 @@ export function TeamSharedProjects({
             <EmptyState
               icon={<TeamIcon />}
               title="Nothing Shared Yet"
-              description="Move a project here from My Work, or create a folder to organise ahead."
+              description="Move a plan here from My Work, or create a folder to organise ahead."
             />
           ) : (
             <EmptyState
               icon={<FolderSolidIcon open />}
               title="This Folder Is Empty"
-              description="Move a project here, or add a subfolder to organise your team's work."
+              description="Move a plan here, or add a subfolder to organise your team's work."
             />
           )}
         </div>

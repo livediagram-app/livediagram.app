@@ -46,7 +46,7 @@ const KIND_LINES = PLAN_ELEMENT_KINDS.map(
 );
 
 const CHART_SOURCE =
-  'A chart\'s "chartSource" is { "sheetId", "range": { "r1", "c1", "r2", "c2" } }: a sheet of the project ' +
+  'A chart\'s "chartSource" is { "sheetId", "range": { "r1", "c1", "r2", "c2" } }: a sheet of the plan ' +
   '(list_sheets) and the row and column ids of its first and last cells (read_sheet).';
 
 // Self-contained element schema, attached to each tool's element argument so the
@@ -66,10 +66,10 @@ const ELEMENT_SCHEMA_HINT =
 export function elementSchemaDoc(): string {
   return `# liveplanner element schema
 
-A project holds tabs: Board, Sheet, Dashboard and Form tabs. A tab is
+A plan holds tabs: Board, Sheet, Dashboard and Form tabs. A tab is
 { name, elements: Element[] }; a Form tab holds its form, not elements.
-create_project makes a project with one or more tabs at once; add_tab appends
-another tab to an existing project.
+create_project makes a plan with one or more tabs at once; add_tab appends
+another tab to an existing plan.
 
 ## Elements
 Every element is { "id", "type": "shape", "shape", "x", "y", "width", "height" }
@@ -101,27 +101,27 @@ list_templates lists the Plan scaffolds (kanban, project planner, bug triage,
 // resources (docs/specs/015-api/mcp-server.md §4.5). Phrased as facts about the server (what it does
 // with what you send, and where the format is written down), not as rules for
 // the calling model (docs/specs/015-api/mcp-server.md §4.15).
-export const SERVER_INSTRUCTIONS = `Tools to find, read, create, add tabs to, change, share, rename, delete (to the Trash) and restore the user's liveplanner projects. A project holds tabs: Board tabs of cards, Sheet tabs (spreadsheets), Dashboard tabs and Form tabs.
+export const SERVER_INSTRUCTIONS = `Tools to find, read, create, add tabs to, change, share, rename, delete (to the Trash) and restore the user's liveplanner plans. A plan holds tabs: Board tabs of cards, Sheet tabs (spreadsheets), Dashboard tabs and Form tabs.
 list_templates lists the Plan templates (kanban, project-planner, bug-triage, budget-planner, ...):
-pass a kind as "template" on create_project or add_tab to start a project or a tab from it. A "dashboard" on
-create_project or add_tab makes a Dashboard tab over the project's Board and Sheet tabs by name: metrics, Gantts,
+pass a kind as "template" on create_project or add_tab to start a plan or a tab from it. A "dashboard" on
+create_project or add_tab makes a Dashboard tab over the plan's Board and Sheet tabs by name: metrics, Gantts,
 calendars, workload charts and notes, drawn live from the cards. update_project changes a tab's elements, or rebuilds
 a Dashboard tab whole; the element format is documented inline on each tool's element argument.
 Plan boards hold cards (items), which have their own tools:
-list_items reads a project's boards, their columns by name, its cards and its
+list_items reads a plan's boards, their columns by name, its cards and its
 card types; change_items adds, edits and moves cards, naming columns, card
 types, fields and people as the board shows them; add_board puts a board on a
 tab (a preset or columns by name) and change_board changes one (title, columns,
 the card types it shows); change_card_types adds and edits card types and their
 custom fields. A board shows only the card types it takes. Sheets (spreadsheets on a tab) have
-theirs: list_sheets lists a project's sheets, read_sheet reads one's cells by A1
+theirs: list_sheets lists a plan's sheets, read_sheet reads one's cells by A1
 (inputs, worked-out values and what they show), change_sheet sets, clears and
 formats cells, inserts and deletes rows and columns, sorts, freezes and renames,
 and sets dropdowns, checkboxes and other validation rules and conditional formats,
 and add_sheet puts a new Sheet on a tab, blank or from rows or CSV text.
 Form tabs hold forms (like Google Forms): questions anyone fills in from a link,
 without an account, each response a card on a Board tab or a row in a sheet.
-add_form makes one (from a starter or questions, in a project of its own when
+add_form makes one (from a starter or questions, in a plan of its own when
 no projectId is given), change_form changes it, read_form reads it with its
 link, state and anything stopping it being published, share_form publishes,
 closes or deletes its link, and try_form fills it in as a test response. Asked for a form, survey, sign-up or RSVP, make a
@@ -215,7 +215,7 @@ const finishField = z
   );
 
 export const findProjectsShape = {
-  query: z.string().optional().describe('Only projects whose name contains this text.'),
+  query: z.string().optional().describe('Only plans whose name contains this text.'),
   limit: z.number().int().min(1).max(50).optional().describe('Max results (default 20).'),
 };
 
@@ -227,7 +227,7 @@ export const READ_PROJECT_DEFAULT_BUDGET = 8000;
 const EDITS_MAX_CHARS = 40_000;
 
 export const readProjectShape = {
-  projectId: z.string().describe('The project id (from find_projects).'),
+  projectId: z.string().describe('The plan id (from find_projects).'),
   tabId: z.string().optional().describe('Which tab to read; defaults to the first.'),
   view: z
     .enum(TAB_VIEW_NAMES)
@@ -296,11 +296,11 @@ export const createProjectTab = z.object({
   theme: z
     .string()
     .optional()
-    .describe('This tab’s theme, one of the theme ids above; the project’s theme when left out.'),
+    .describe('This tab’s theme, one of the theme ids above; the plan’s theme when left out.'),
 });
 
 export const createProjectShape = {
-  name: nameField('Name for the new project.'),
+  name: nameField('Name for the new plan.'),
   // `tabs` is preferred; `tab` is accepted as an alias for a single tab so a
   // client with a stale cached schema (or one that just sends `tab`) still works
   // — provide one or the other.
@@ -310,7 +310,7 @@ export const createProjectShape = {
     .max(20)
     .optional()
     .describe(
-      'One or more tabs. Preferred: pass several to create a multi-tab project in one call (e.g. a Board tab ' +
+      'One or more tabs. Preferred: pass several to create a multi-tab plan in one call (e.g. a Board tab ' +
         'and a Dashboard tab over it).',
     ),
   // The alias is checked against the tab shape by the tool, not listed here a second time: the shape carries the
@@ -326,16 +326,14 @@ export const createProjectShape = {
     .boolean()
     .optional()
     .describe(
-      "Whether this project joins the user's Jump back in (their most used and recent projects) " +
-        'at once. Default true. Pass false when making many projects in one go, so a batch ' +
+      "Whether this plan joins the user's Jump back in (their most used and recent plans) " +
+        'at once. Default true. Pass false when making many plans in one go, so a batch ' +
         "never pushes the user's own work out of reach.",
     ),
 };
 
 export const addTabShape = {
-  projectId: z
-    .string()
-    .describe('The project to add a tab to (from find_projects / read_project).'),
+  projectId: z.string().describe('The plan to add a tab to (from find_projects / read_project).'),
   name: nameField('Name of the new tab.'),
   elements: elementArray.optional(),
   template: templateField,
@@ -345,7 +343,7 @@ export const addTabShape = {
 };
 
 export const updateProjectShape = {
-  projectId: z.string().describe('The project to edit (from find_projects / read_project).'),
+  projectId: z.string().describe('The plan to edit (from find_projects / read_project).'),
   tabId: z.string().optional().describe('Which tab to edit; defaults to the first.'),
   mode: z
     .enum(['replace', 'ops', 'edits'])
@@ -408,7 +406,7 @@ export const updateProjectShape = {
 };
 
 export const shareProjectShape = {
-  projectId: z.string().describe('The project to share (from find_projects / read_project).'),
+  projectId: z.string().describe('The plan to share (from find_projects / read_project).'),
   role: z
     .enum(['view', 'participate', 'edit'])
     .optional()
@@ -424,12 +422,12 @@ export const shareProjectShape = {
 };
 
 export const deleteProjectShape = {
-  projectId: z.string().describe('The project to delete (from find_projects / read_project).'),
+  projectId: z.string().describe('The plan to delete (from find_projects / read_project).'),
   tabId: z
     .string()
     .optional()
     .describe(
-      'Delete only this ONE tab instead of the whole project. A project must keep at ' +
+      'Delete only this ONE tab instead of the whole plan. A plan must keep at ' +
         'least one tab, so deleting the last remaining tab is refused. A tab is deleted ' +
         'outright; it does not go to the Trash.',
     ),
@@ -437,17 +435,17 @@ export const deleteProjectShape = {
 
 // The Trash (docs/specs/013-workspace/trash.md): restore one project by id.
 export const restoreProjectShape = {
-  projectId: z.string().describe('The project to restore (from list_trash).'),
+  projectId: z.string().describe('The plan to restore (from list_trash).'),
 };
 
 // Listing the Trash takes no arguments: it is everything the user may restore.
 export const listTrashShape = {};
 
 export const renameProjectShape = {
-  projectId: z.string().describe('The project to rename (from find_projects / read_project).'),
+  projectId: z.string().describe('The plan to rename (from find_projects / read_project).'),
   name: nameField('The new name.', z.string().min(1)),
   tabId: z
     .string()
     .optional()
-    .describe('Rename this tab within the project instead of the project itself.'),
+    .describe('Rename this tab within the plan instead of the plan itself.'),
 };

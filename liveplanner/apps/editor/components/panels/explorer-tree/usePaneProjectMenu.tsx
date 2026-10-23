@@ -18,7 +18,7 @@ export function usePaneProjectMenu(doc: PaneProject | undefined): {
   const tree = usePanelTree();
   const menu = useRowMenu({ disabled: !doc });
   if (!doc) return { trailing: null };
-  const name = doc.name || 'Untitled project';
+  const name = doc.name || 'Untitled plan';
   const team = doc.team;
   const shareCode = doc.shared?.shareCode;
   const shared = shareCode !== undefined;

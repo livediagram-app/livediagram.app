@@ -113,7 +113,7 @@ await writeFile(
       // Published under the workspace's own name, @liveplanner/cli (CLI1); the command it installs is `liveplanner`.
       name: source.name,
       version: source.version,
-      description: 'Read, build, edit and discuss liveplanner projects from the terminal.',
+      description: 'Read, build, edit and discuss liveplanner plans from the terminal.',
       license: 'UNLICENSED',
       type: 'module',
       bin: { liveplanner: 'liveplanner.mjs' },

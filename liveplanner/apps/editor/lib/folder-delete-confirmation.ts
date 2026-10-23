@@ -20,7 +20,7 @@ function destination({ parentName, scope }: FolderDeleteInput): string {
 }
 
 function folderDeleteMessage(input: FolderDeleteInput): string {
-  const lines = [`Its projects and subfolders move to ${destination(input)}.`];
+  const lines = [`Its plans and subfolders move to ${destination(input)}.`];
   const keys = inListOrder(input.defaultKeys ?? []);
   if (keys.length > 0) {
     const nouns = joinNouns(keys.map((k) => defaultKeyEntry(k).noun));

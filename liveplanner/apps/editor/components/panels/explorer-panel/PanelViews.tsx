@@ -77,7 +77,7 @@ function JumpBackInCard({
           className={PANE_PREVIEW_BOX}
         />
       }
-      title={item.name || 'Untitled project'}
+      title={item.name || 'Untitled plan'}
       meta={
         <span className="flex items-center gap-1.5">
           {/* Inside the row's button: a label, not a link (a link in a button is a control nested in a control). */}
@@ -235,13 +235,13 @@ export function TrashSection({
       <PaneEmpty
         icon={<TrashIcon />}
         title="Nothing in the Trash right now"
-        description="Delete a project and it is kept here for 30 days, so you can restore it."
+        description="Delete a plan and it is kept here for 30 days, so you can restore it."
       />
     );
   return (
     <div className="flex flex-col gap-5">
       <p className="px-2 text-[11px] leading-4 text-slate-500 dark:text-slate-400">
-        Deleted projects wait here for 30 days. Restoring one puts it back where it was.
+        Deleted plans wait here for 30 days. Restoring one puts it back where it was.
       </p>
       {groups.map((group) =>
         group.rows.length ? (
@@ -255,7 +255,7 @@ export function TrashSection({
                       <ProjectIcon />
                     </PaneTile>
                   }
-                  title={row.name || 'Untitled project'}
+                  title={row.name || 'Untitled plan'}
                   meta={`${trashedOnLabel(row)} · ${daysLeftLabel(row.trashedAt, now)}`}
                   trailing={
                     <>

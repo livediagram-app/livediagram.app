@@ -132,7 +132,7 @@ function SignInPromptEnabled({ fallback, bar = false }: SignInPromptProps) {
       body={
         bar
           ? 'A free account saves it across devices.'
-          : 'A free account keeps your projects and content across sessions and devices.'
+          : 'A free account keeps your plans and content across sessions and devices.'
       }
       onDismiss={dismiss}
       action={
@@ -163,8 +163,8 @@ function SignInPromptDisabled({ fallback, bar = false }: SignInPromptProps) {
       title={bar ? 'No sign-in here' : 'No sign-in on this deployment'}
       body={
         bar
-          ? 'Only this browser can open your projects.'
-          : 'Your projects are saved, but only this browser can open them. Clear its site data and you lose them.'
+          ? 'Only this browser can open your plans.'
+          : 'Your plans are saved, but only this browser can open them. Clear its site data and you lose them.'
       }
       onDismiss={dismiss}
     />

@@ -35,7 +35,7 @@ describe('SiteFooter', () => {
     const withIcon = [...footerNav.matchAll(/<a [^>]*><svg[\s\S]*?<\/svg>([^<]+)<\/a>/g)].map(
       (m) => m[1],
     );
-    expect(withIcon).toEqual(['New Project', 'AI &amp; MCP', 'Help Centre']);
+    expect(withIcon).toEqual(['New Plan', 'AI &amp; MCP', 'Help Centre']);
   });
 });
 

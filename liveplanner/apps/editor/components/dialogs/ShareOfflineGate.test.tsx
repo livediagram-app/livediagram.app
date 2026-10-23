@@ -20,7 +20,7 @@ describe('ShareOfflineGate', () => {
     const sync = vi.fn(async () => {});
     render(<ShareOfflineGate onSyncToCloud={sync} onClose={vi.fn()} />);
     await act(async () => {});
-    expect(screen.getByText('This Project Is in This Browser')).toBeTruthy();
+    expect(screen.getByText('This Plan Is in This Browser')).toBeTruthy();
     expect(sync).not.toHaveBeenCalled();
   });
 
@@ -28,7 +28,7 @@ describe('ShareOfflineGate', () => {
     let finish!: () => void;
     const sync = vi.fn(() => new Promise<void>((r) => (finish = r)));
     render(<ShareOfflineGate onSyncToCloud={sync} onClose={vi.fn()} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Sync Project' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sync Plan' }));
     expect(sync).toHaveBeenCalledOnce();
     expect(screen.getByRole('button', { name: /Syncing/ }).getAttribute('aria-busy')).toBe('true');
     // Cancel waits on the sync too.
@@ -42,7 +42,7 @@ describe('ShareOfflineGate', () => {
   it('keeps the button shut until the reader is known', () => {
     const sync = vi.fn();
     render(<ShareOfflineGate onSyncToCloud={sync} ready={false} onClose={vi.fn()} />);
-    const button = screen.getByRole('button', { name: 'Sync Project' }) as HTMLButtonElement;
+    const button = screen.getByRole('button', { name: 'Sync Plan' }) as HTMLButtonElement;
     expect(button.disabled).toBe(true);
     fireEvent.click(button);
     expect(sync).not.toHaveBeenCalled();
@@ -53,10 +53,10 @@ describe('ShareOfflineGate', () => {
       throw new Error('offline');
     });
     render(<ShareOfflineGate onSyncToCloud={sync} onClose={vi.fn()} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Sync Project' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sync Plan' }));
     await act(async () => {});
     expect(toast.error).toHaveBeenCalledOnce();
-    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Sync Project' }).disabled).toBe(
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Sync Plan' }).disabled).toBe(
       false,
     );
   });

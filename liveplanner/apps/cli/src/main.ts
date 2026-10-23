@@ -82,7 +82,7 @@ async function runOnline(
     throw new CliError({
       exit: EXIT.rejected,
       code: 'version',
-      message: `${profile.host} stores projects in format ${caps.projectFormat}; this liveplanner reads format ${PROJECT_FORMAT}`,
+      message: `${profile.host} stores plans in format ${caps.projectFormat}; this liveplanner reads format ${PROJECT_FORMAT}`,
       hint: UPGRADE_HINT,
     });
   }
@@ -135,7 +135,11 @@ async function runOnline(
   };
   if (verb.id === 'tab.render') {
     const { renderTab } = await import('./commands/render');
-    return renderTab(io, ctx, input as { project: string; tab?: string; png?: string; svg?: string });
+    return renderTab(
+      io,
+      ctx,
+      input as { project: string; tab?: string; png?: string; svg?: string },
+    );
   }
   if (verb.id === 'export') return exportAll(io, ctx, profile.host, input as ExportInput);
   if (verb.id === 'pull') return pullProject(io, ctx, input as PullInput);

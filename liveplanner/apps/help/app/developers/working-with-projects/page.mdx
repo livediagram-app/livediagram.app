@@ -3,14 +3,14 @@ import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 
 export const metadata = helpMetadata({
-  title: 'Working with Projects',
+  title: 'Working with Plans',
   description:
-    'Worked liveplanner API examples: list, read, create and update projects and tabs, organise folders, use the Trash and create a share link, all with curl.',
+    'Worked liveplanner API examples: list, read, create and update plans and tabs, organise folders, use the Trash and create a share link, all with curl.',
   path: '/help/developers/working-with-projects/',
 });
 
 <ArticleLayout
-  title="Working with Projects"
+  title="Working with Plans"
   description="Copy-pasteable examples for the calls you will reach for most."
   categoryTitle="Developers"
   categorySlug="developers"
@@ -25,9 +25,9 @@ export TOKEN=lwt_your_token_here
 
 Paths are relative to `https://liveplanner.app/api`. For the exact request and response shapes of every field, see the [OpenAPI reference](/help/developers/api-overview/) at `/api/openapi.json`.
 
-## List your projects
+## List your plans
 
-A project **list** returns the projects in your personal library (projects in a team library are not included), as metadata only, not the tab contents:
+A plan **list** returns the plans in your personal library (plans in a team library are not included), as metadata only, not the tab contents:
 
 ```bash
 curl https://liveplanner.app/api/projects \
@@ -40,16 +40,16 @@ curl https://liveplanner.app/api/projects \
 }
 ```
 
-## Read a project and a tab
+## Read a plan and a tab
 
-Fetching one project returns its metadata and a list of **tab summaries**, but not what each tab holds:
+Fetching one plan returns its metadata and a list of **tab summaries**, but not what each tab holds:
 
 ```bash
 curl https://liveplanner.app/api/projects/$DOC \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-To see every tab of a project at a glance, ask for its overview:
+To see every tab of a plan at a glance, ask for its overview:
 
 ```bash
 curl "https://liveplanner.app/api/projects/$DOC?view=overview" \
@@ -63,7 +63,7 @@ doc 4cd7082b-… "Sprint 14" · 3 tabs · edited just now
   tab e1b2 "Flow" · 7 elements: 7 boxes · kind=dashboard · rev 1
 ```
 
-To get the contents of one tab, request it by id. This keeps listing a big project cheap:
+To get the contents of one tab, request it by id. This keeps listing a big plan cheap:
 
 ```bash
 curl https://liveplanner.app/api/projects/$DOC/tabs/$TAB \
@@ -108,9 +108,9 @@ Other views answer other questions:
 
 Add `budget=2000` to fit any view to about 2,000 tokens. The view then leaves out detail in a fixed order, and its last line says what it left out and how to see it. Add `json=1` for the same view as JSON.
 
-## Create a project
+## Create a plan
 
-`POST /projects` creates a project. You supply the `id`, a `name`, and optionally the `tabs` to seed it with. The simplest way to fill a tab is a **template**, by its kind from `GET /templates` (such as `kanban`, `project-planner`, `bug-triage` or `budget-planner`). Ids are shared across all of liveplanner, not just your account, so use a fresh UUID for the project, each tab and each folder; an id someone else already holds is refused or swapped for a new one:
+`POST /projects` creates a plan. You supply the `id`, a `name`, and optionally the `tabs` to seed it with. The simplest way to fill a tab is a **template**, by its kind from `GET /templates` (such as `kanban`, `project-planner`, `bug-triage` or `budget-planner`). Ids are shared across all of liveplanner, not just your account, so use a fresh UUID for the plan, each tab and each folder; an id someone else already holds is refused or swapped for a new one:
 
 ```bash
 DOC=$(uuidgen) TAB=$(uuidgen) FOLDER=$(uuidgen)
@@ -129,7 +129,7 @@ A template that builds several tabs (the Kanban template makes a Board, a Reques
 
 ## Update a tab
 
-Scripts and agents change a tab with a **changeset**: a short list of edit operations, applied together or not at all. Anyone with the project open sees the change arrive straight away, it is credited to you, and it can be undone as one unit for 30 days. Changes people make in the editor at the same time are kept. This one changes the Kanban template's **Flow** dashboard (its tab id in `$FLOW`), using the refs its outline printed:
+Scripts and agents change a tab with a **changeset**: a short list of edit operations, applied together or not at all. Anyone with the plan open sees the change arrive straight away, it is credited to you, and it can be undone as one unit for 30 days. Changes people make in the editor at the same time are kept. This one changes the Kanban template's **Flow** dashboard (its tab id in `$FLOW`), using the refs its outline printed:
 
 ```bash
 curl -X POST https://liveplanner.app/api/projects/$DOC/tabs/$FLOW/changesets \
@@ -165,7 +165,7 @@ curl -X POST https://liveplanner.app/api/projects/$DOC/tabs/$FLOW/changesets \
 
 [Edit Operations Reference](/help/developers/working-with-projects/edit-operations/) lists every operation and selector, and how to rebuild a whole tab.
 
-To rebuild a whole tab, send `"replace"` instead of `"operations"`, with a `template`, a `dashboard`, a new Form tab's `form`, or `elements`. A replace on a tab id the project doesn't have yet creates that tab.
+To rebuild a whole tab, send `"replace"` instead of `"operations"`, with a `template`, a `dashboard`, a new Form tab's `form`, or `elements`. A replace on a tab id the plan doesn't have yet creates that tab.
 
 <Note>
   Every tab read returns the tab's `rev`. Send it back as `"base": { "rev": 7 }` and the changeset is
@@ -182,7 +182,7 @@ Cards, Sheet cells and forms have endpoints of their own: see [Plan Items, Sheet
 
 ## Organise into folders
 
-Create a folder, then move a project into it:
+Create a folder, then move a plan into it:
 
 ```bash
 curl -X POST https://liveplanner.app/api/folders \
@@ -196,7 +196,7 @@ curl -X PUT https://liveplanner.app/api/projects/$DOC/folder \
 
 ## Delete and restore
 
-`DELETE /projects/$DOC` moves the project to the [Trash](/help/account-and-data/trash/), where it waits for 30 days, and answers `204`. While it is there, reading or changing it answers `410 project_trashed`. Add `?permanent=true` to delete it for good straight away.
+`DELETE /projects/$DOC` moves the plan to the [Trash](/help/account-and-data/trash/), where it waits for 30 days, and answers `204`. While it is there, reading or changing it answers `410 project_trashed`. Add `?permanent=true` to delete it for good straight away.
 
 ```bash
 curl -X DELETE https://liveplanner.app/api/projects/$DOC \
@@ -210,9 +210,9 @@ curl -X POST https://liveplanner.app/api/trash/$DOC/restore \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-`DELETE /trash/$DOC` deletes one trashed project for good, and `DELETE /trash` empties your personal Trash (`?team=<id>` empties a team's). A read-only token can list the Trash but not restore or purge.
+`DELETE /trash/$DOC` deletes one trashed plan for good, and `DELETE /trash` empties your personal Trash (`?team=<id>` empties a team's). A read-only token can list the Trash but not restore or purge.
 
-## Share a project
+## Share a plan
 
 Create a share link with a role of `view`, `participate` or `edit`:
 

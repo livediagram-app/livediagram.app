@@ -70,7 +70,7 @@ describe('SettingsTokenPairings', () => {
     );
     const { first, second } = rows(screen.getByRole('list', { name: 'Paired workbenches' }));
 
-    expect(within(first).getByText('One project at a time')).toBeTruthy();
+    expect(within(first).getByText('One plan at a time')).toBeTruthy();
     expect(within(second).getByText('Whole workspace')).toBeTruthy();
   });
 
@@ -92,13 +92,13 @@ describe('SettingsTokenPairings', () => {
     expect(onUnpair).not.toHaveBeenCalled();
     expect(
       screen.getByRole('dialog', {
-        name: 'Unpair Acme Editor? Its open projects stop editing until you allow it again.',
+        name: 'Unpair Acme Editor? Its open plans stop editing until you allow it again.',
       }),
     ).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: 'Unpair' }));
     expect(onUnpair).toHaveBeenCalledWith('p1');
-    expect(screen.queryByText(/Its open projects stop editing/)).toBeNull();
+    expect(screen.queryByText(/Its open plans stop editing/)).toBeNull();
   });
 
   it('asks about an unnamed workbench by its display name', () => {
@@ -106,7 +106,7 @@ describe('SettingsTokenPairings', () => {
     fireEvent.click(screen.getByRole('button', { name: /^Unpair Unnamed workbench at/ }));
     expect(
       screen.getByRole('dialog', {
-        name: 'Unpair Unnamed workbench? Its open projects stop editing until you allow it again.',
+        name: 'Unpair Unnamed workbench? Its open plans stop editing until you allow it again.',
       }),
     ).toBeTruthy();
   });
@@ -117,6 +117,6 @@ describe('SettingsTokenPairings', () => {
     fireEvent.click(screen.getByRole('button', { name: /^Unpair Acme Editor at/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(onUnpair).not.toHaveBeenCalled();
-    expect(screen.queryByText(/Its open projects stop editing/)).toBeNull();
+    expect(screen.queryByText(/Its open plans stop editing/)).toBeNull();
   });
 });

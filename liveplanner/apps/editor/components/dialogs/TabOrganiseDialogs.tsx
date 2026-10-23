@@ -157,7 +157,7 @@ function ProjectPickCard({
         className="h-16 w-full rounded border border-slate-100 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/40"
       />
       <span className="w-full truncate text-xs font-medium text-slate-700 dark:text-slate-200">
-        {liveDoc.name || 'Untitled project'}
+        {liveDoc.name || 'Untitled plan'}
       </span>
     </button>
   );
@@ -180,20 +180,20 @@ export function AddTabToProjectDialog({
 }) {
   const [query, setQuery] = useState('');
   const visible = otherProjects.filter(
-    (d) => !query.trim() || matches(query, d.name || 'Untitled project'),
+    (d) => !query.trim() || matches(query, d.name || 'Untitled plan'),
   );
   return (
     <OrganiseDialogFrame
-      title="Add to Project"
-      sub="Link this tab into another project. It stays one live tab: edits show in both places."
+      title="Add to Plan"
+      sub="Link this tab into another plan. It stays one live tab: edits show in both places."
       onClose={onClose}
     >
       <input
         autoFocus
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Filter projects…"
-        aria-label="Filter projects"
+        placeholder="Filter plans…"
+        aria-label="Filter plans"
         className="mb-3 w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400"
       />
       {visible.length === 0 ? (
@@ -209,8 +209,8 @@ export function AddTabToProjectDialog({
           <CompactEmptyState
             className="py-8"
             icon={<ProjectIcon />}
-            title="No other projects yet"
-            description="Make another project to add this tab to it."
+            title="No other plans yet"
+            description="Make another plan to add this tab to it."
           />
         )
       ) : (

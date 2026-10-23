@@ -78,7 +78,7 @@ export function TagPicker({ target, onClose }: { target: TagPickerTarget; onClos
   return (
     <AnchoredPopover
       anchor={target.anchor}
-      name={`Tags for ${projectName || 'Untitled project'}`}
+      name={`Tags for ${projectName || 'Untitled plan'}`}
       width={TAG_PICKER_WIDTH}
       onClose={onClose}
     >
@@ -92,7 +92,7 @@ export function TagPicker({ target, onClose }: { target: TagPickerTarget; onClos
             Tags
             <span className="font-normal text-slate-500 dark:text-slate-400">
               {' '}
-              · {projectName || 'Untitled project'}
+              · {projectName || 'Untitled plan'}
             </span>
           </p>
           <input

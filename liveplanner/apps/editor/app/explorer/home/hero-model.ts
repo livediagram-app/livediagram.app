@@ -23,13 +23,13 @@ export function heroGreeting(hour: number): string {
 export const HERO_COPY = {
   question: 'what are you planning today?',
   lead: 'Jump back into what you use most, or see what changed while you were away.',
-  newProject: 'New Project',
+  newProject: 'New Plan',
   // The page header's words for the same drawer button.
   openNav: 'Browse sections',
   // The banner's close (explorer-home.md "Hiding the banner"), and its Settings switch.
   hideBanner: 'Hide Home Banner',
   // The fanned previews' group, for assistive technology.
-  featuresLabel: 'What a project can hold',
+  featuresLabel: 'What a plan can hold',
 } as const;
 
 export type HeroPill = { id: 'projects' | 'inbox'; label: string; tone: 'emerald' | 'sky' };
@@ -44,7 +44,7 @@ export function heroPills(input: {
   if (input.projects !== undefined) {
     pills.push({
       id: 'projects',
-      label: input.projects === 1 ? '1 project' : `${input.projects} projects`,
+      label: input.projects === 1 ? '1 plan' : `${input.projects} plans`,
       tone: 'emerald',
     });
   }

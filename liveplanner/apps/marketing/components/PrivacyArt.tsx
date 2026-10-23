@@ -97,7 +97,7 @@ export function DataIsYoursArt() {
         <g className="fa-fade" style={{ animationDuration: '4s' }}>
           <rect x="100" y="14" width="40" height="14" rx="3" fill={SKY} />
           <text x="120" y="24" textAnchor="middle" fontSize="9" fontWeight="600" fill={ON_SKY}>
-            project
+            plan
           </text>
         </g>
         {/* User avatar on the right */}

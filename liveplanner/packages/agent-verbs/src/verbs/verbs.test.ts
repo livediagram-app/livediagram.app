@@ -42,11 +42,11 @@ describe('project ls', () => {
   it('says when nothing is there, or nothing matches', async () => {
     const ctx = contextOf(fakeApi({ '/projects': { projects: [] }, '/teams': { teams: [] } }));
     expect(projectLs.text!(await projectLs.run!(ctx, projectLs.input.parse({})))).toEqual([
-      'no projects',
+      'no plans',
     ]);
     expect(
       projectLs.text!(await projectLs.run!(ctx, projectLs.input.parse({ query: 'x' }))),
-    ).toEqual(['no projects match "x"']);
+    ).toEqual(['no plans match "x"']);
   });
 
   it('refuses a limit out of range', () => {

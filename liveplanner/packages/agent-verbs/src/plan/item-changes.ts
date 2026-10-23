@@ -93,7 +93,7 @@ function personNote(fields: Readonly<Record<string, unknown>>, items: readonly I
   const p = fields['assignee'];
   if (!isItemPerson(p) || !p.id.startsWith('n-')) return [];
   if (assignedPeople(items).some((x) => x.id === p.id)) return [];
-  return [`${p.name} is a new name on this project, not linked to anyone's account`];
+  return [`${p.name} is a new name on this plan, not linked to anyone's account`];
 }
 
 // The most of a value a set line repeats.

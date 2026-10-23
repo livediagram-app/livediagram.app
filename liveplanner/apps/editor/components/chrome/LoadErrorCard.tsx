@@ -20,7 +20,7 @@ const LoadRecoveryCard = dynamic(
 // a card first shown online never reloads itself, since nothing tells it the cause has passed.
 
 const LOAD_ERROR_MESSAGE =
-  'We couldn’t load this project: it didn’t finish loading. Check your connection and try again.';
+  'We couldn’t load this plan: it didn’t finish loading. Check your connection and try again.';
 
 const reloadPage = () => window.location.reload();
 
@@ -55,7 +55,7 @@ export function LoadErrorCard({
         : {
             eyebrow: 'Offline',
             title: 'You’re offline',
-            message: 'This project will open as soon as you reconnect.',
+            message: 'This plan will open as soon as you reconnect.',
           })}
     >
       {/* The recovery card is for the full app only (an embed's visitor is on someone else's page,

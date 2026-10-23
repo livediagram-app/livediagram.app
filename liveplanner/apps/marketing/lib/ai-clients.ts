@@ -107,7 +107,7 @@ export const AI_CLIENTS: readonly AiClient[] = [
     blurb: 'One command in your terminal',
     steps: [
       {
-        text: 'Add liveplanner for every project:',
+        text: 'Add liveplanner for every plan:',
         code: {
           lang: 'bash',
           code: `claude mcp add --transport http --scope user ${MCP_NAME} ${MCP_URL}`,
@@ -266,11 +266,11 @@ export const STARTER_PROMPTS: readonly StarterPrompt[] = [
   {
     title: 'Shape the card types',
     prompt:
-      'Add a Bug card type to my liveplanner project with fields for severity, area and steps to reproduce, and move the bug cards on the board to use it.',
+      'Add a Bug card type to my liveplanner plan with fields for severity, area and steps to reproduce, and move the bug cards on the board to use it.',
   },
   {
     title: 'Catch up on a plan',
     prompt:
-      'Find my liveplanner project about onboarding, tell me which cards are overdue or stuck, and suggest what to move next. Make the changes once I agree.',
+      'Find my liveplanner plan about onboarding, tell me which cards are overdue or stuck, and suggest what to move next. Make the changes once I agree.',
   },
 ];

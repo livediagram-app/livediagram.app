@@ -35,7 +35,7 @@ export function ChromeControls({
   return (
     <>
       {onOpenSearch ? (
-        <HoverCard title="Search" description="Find projects, folders, tabs and elements.">
+        <HoverCard title="Search" description="Find plans, folders, tabs and elements.">
           <button type="button" onClick={onOpenSearch} aria-label="Search" className={BTN}>
             <SearchGlyph />
             <ChromeLabel show={labelled}>Search</ChromeLabel>

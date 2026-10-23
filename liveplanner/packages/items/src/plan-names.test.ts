@@ -43,7 +43,7 @@ describe('resolveStatus', () => {
   });
   it('says when the project has no board', () => {
     const r = resolveStatus('Done', []);
-    expect(!r.ok && r.message).toContain('no Plan board yet');
+    expect(!r.ok && r.message).toContain('no board yet');
   });
 });
 

@@ -68,7 +68,7 @@ export function parseProjectUrl(input: string, host: string): ProjectUrl | null 
       what: 'project',
       input,
       candidates: [],
-      message: `${input} is not a project link`,
+      message: `${input} is not a plan link`,
       hint: 'liveplanner project ls',
     });
   if (parts[1] === 'shared') {
@@ -140,7 +140,7 @@ export async function resolveProject(
       what: 'project',
       input,
       candidates: nearest(all, input).map(candidate),
-      message: `no project matches "${input}"`,
+      message: `no plan matches "${input}"`,
       hint: 'liveplanner project ls',
     });
   const listed = matches.map(candidate);
@@ -149,7 +149,7 @@ export async function resolveProject(
     what: 'project',
     input,
     candidates: listed,
-    message: `"${input}" matches ${matches.length} projects`,
+    message: `"${input}" matches ${matches.length} plans`,
     hint: listed[0]!.ref,
   });
 }

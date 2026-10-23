@@ -169,7 +169,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   connectAiTool: {
     title: 'Learn about connecting AI tools',
-    description: 'Drive your projects from Claude, Cursor, and other AI tools over MCP.',
+    description: 'Drive your plans from Claude, Cursor, and other AI tools over MCP.',
   },
   exportingDiagrams: {
     title: 'Learn about exporting',
@@ -181,7 +181,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   trash: {
     title: 'Learn about the Trash',
-    description: 'How long deleted projects wait, and how to restore one.',
+    description: 'How long deleted plans wait, and how to restore one.',
   },
   importTabs: {
     title: 'Learn about importing tabs',
@@ -206,7 +206,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   customThemes: {
     title: 'Learn about custom themes',
-    description: 'Build your own palette and reuse it across projects.',
+    description: 'Build your own palette and reuse it across plans.',
   },
   choosingAFinish: {
     title: 'Learn about finishes',
@@ -218,11 +218,11 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   links: {
     title: 'Learn about links',
-    description: 'Linking elements to tabs, projects, and web addresses.',
+    description: 'Linking elements to tabs, plans, and web addresses.',
   },
   comments: {
     title: 'Learn about comments',
-    description: 'Tips and tricks for discussing a project right on the canvas.',
+    description: 'Tips and tricks for discussing a plan right on the canvas.',
   },
   assignedActions: {
     title: 'Learn about assigned actions',
@@ -262,23 +262,23 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   recentProjects: {
     title: 'Learn about Recent',
-    description: 'Your most recently opened projects, personal and team, in one list.',
+    description: 'Your most recently opened plans, personal and team, in one list.',
   },
   tags: {
     title: 'Learn about tags',
-    description: 'Coloured labels that group related projects across folders and teams.',
+    description: 'Coloured labels that group related plans across folders and teams.',
   },
   sharedWithYou: {
     title: 'Learn about Shared With Me',
-    description: 'Projects other people have shared with you, collected here.',
+    description: 'Plans other people have shared with you, collected here.',
   },
   folders: {
     title: 'Learn about folders',
-    description: 'Tips for organising projects into a nestable tree of folders.',
+    description: 'Tips for organising plans into a nestable tree of folders.',
   },
   defaultFolders: {
     title: 'Learn about default folders',
-    description: 'Where new projects land when you pick no place.',
+    description: 'Where new plans land when you pick no place.',
   },
   explorerFilters: {
     title: 'Learn about search and filters',
@@ -314,11 +314,11 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   offlineMode: {
     title: 'Learn about Offline Mode',
-    description: 'Projects saved only in this browser, and how to sync them.',
+    description: 'Plans saved only in this browser, and how to sync them.',
   },
   livePresence: {
     title: 'Learn about live presence',
-    description: 'Who is in the project, where they are, and following them.',
+    description: 'Who is in the plan, where they are, and following them.',
   },
   keyboardShortcuts: {
     title: 'Learn about keyboard shortcuts',
@@ -330,7 +330,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   projectNotLoading: {
     title: 'Learn about loading problems',
-    description: 'Steps to try when a project will not open.',
+    description: 'Steps to try when a plan will not open.',
   },
 };
 

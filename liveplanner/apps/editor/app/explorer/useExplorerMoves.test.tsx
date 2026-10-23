@@ -119,7 +119,7 @@ describe('moving a team project within its team', () => {
     const { moves, toast, refreshTeamLibraries } = setup();
     moves.moveProjectTo('t1', { teamId: 'team-1', folderId: 'tf1' });
     await vi.waitFor(() =>
-      expect(toast.error).toHaveBeenCalledWith('Could not move the project. Try again.'),
+      expect(toast.error).toHaveBeenCalledWith('Could not move the plan. Try again.'),
     );
     expect(refreshTeamLibraries).not.toHaveBeenCalled();
     expect(track).not.toHaveBeenCalled();
@@ -146,7 +146,7 @@ describe('moving a team project out of its team', () => {
     moves.moveProjectTo('t1', { teamId, folderId: null });
     await vi.waitFor(() =>
       expect(toast.error).toHaveBeenCalledWith(
-        'Couldn’t move the project out of the team. Try again.',
+        'Couldn’t move the plan out of the team. Try again.',
       ),
     );
     expect(refreshPersonal).not.toHaveBeenCalled();

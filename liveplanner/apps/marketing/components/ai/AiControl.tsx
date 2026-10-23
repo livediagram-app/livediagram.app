@@ -12,7 +12,7 @@ const FACTS = [
   {
     icon: lucideGlyph(lucideEye, 18),
     title: 'Read-only, if you prefer',
-    body: 'Switch on Read-only access and the AI can find and read your projects, but never change them. Our server enforces it.',
+    body: 'Switch on Read-only access and the AI can find and read your plans, but never change them. Our server enforces it.',
   },
   {
     icon: lucideGlyph(lucideKey, 18),

@@ -671,7 +671,7 @@ describe('adding a sheet', () => {
     expect(await addSheet(api, DOC_A, {}, 'mcp')).toEqual({
       ok: false,
       code: 'tab_not_found',
-      message: 'That project has no tabs.',
+      message: 'That plan has no tabs.',
     });
     server.routes[`/projects/${DOC_A}`] = () => Response.json({ error: 'boom' }, { status: 500 });
     await expect(addSheet(api, DOC_A, {}, 'mcp')).rejects.toThrow();

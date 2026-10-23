@@ -86,7 +86,7 @@ describe('pullFileText and parsePullFile', () => {
     expect(parsePullFile('{')).toEqual({ ok: false, message: 'not JSON' });
     expect(parsePullFile('{"kind":"liveplanner.tab"}')).toEqual({
       ok: false,
-      message: 'not a liveplanner project',
+      message: 'not a liveplanner plan',
     });
     expect(parsePullFile(JSON.stringify({ ...file(), schemaVersion: 9 }))).toEqual({
       ok: false,
@@ -94,7 +94,7 @@ describe('pullFileText and parsePullFile', () => {
     });
     expect(parsePullFile(JSON.stringify({ ...file(), project: { id: 'd1' } }))).toEqual({
       ok: false,
-      message: 'its project is malformed',
+      message: 'its plan is malformed',
     });
     const { liveplannerSync: _s, ...exported } = file();
     expect(parsePullFile(JSON.stringify(exported))).toEqual({

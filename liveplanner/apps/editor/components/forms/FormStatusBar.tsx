@@ -162,7 +162,7 @@ export function FormStatusBar({
           role="status"
           className="rounded-xl bg-amber-50 px-4 py-2.5 text-[13px] text-amber-900 dark:bg-amber-500/10 dark:text-amber-100"
         >
-          Responses are paused: this project holds as many cards as it can.
+          Responses are paused: this plan holds as many cards as it can.
         </div>
       ) : null}
       {data?.suspendedAt && !live ? (

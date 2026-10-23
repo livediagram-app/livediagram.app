@@ -111,7 +111,7 @@ describe('export --all', () => {
       'backup/shop-aaaa0001.liveplanner.json',
       'backup/shop-bbbb0002.liveplanner.json',
       'backup/notes.liveplanner.json',
-      '3 projects · 3 files',
+      '3 plans · 3 files',
     ]);
     const envelope = JSON.parse(
       io.fileMap.get('backup/shop-aaaa0001.liveplanner.json')!.data,
@@ -132,7 +132,7 @@ describe('export --all', () => {
       'out/shop/flow-flow-0001.md',
       'out/shop/flow-flow-0002.svg',
       'out/shop/flow-flow-0002.md',
-      '1 project · 4 files',
+      '1 plan · 4 files',
     ]);
     expect(io.fileMap.get('out/shop/flow-flow-0001.md')!.data).toContain('Web app');
   });
@@ -157,7 +157,7 @@ describe('export --all', () => {
       }),
     );
     expect(code).toBe(4);
-    expect(out).toContain('3 projects · 3 files');
+    expect(out).toContain('3 plans · 3 files');
     expect(err).toContain('"Locked":');
   });
 

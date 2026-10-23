@@ -179,7 +179,7 @@ function operationFor(route: RouteSpec): Record<string, unknown> {
 }
 
 const TAGS = [
-  { name: 'Projects', description: 'Create, read, update, and delete projects and their tabs.' },
+  { name: 'Plans', description: 'Create, read, update, and delete plans and their tabs.' },
   {
     name: 'Changesets',
     description:
@@ -188,25 +188,25 @@ const TAGS = [
   {
     name: 'Items',
     description:
-      'The work Plan boards frame: typed items with an open bag of fields, live for everyone with the project open.',
+      'The work Plan boards frame: typed items with an open bag of fields, live for everyone with the plan open.',
   },
   {
     name: 'Sheets',
     description:
-      'Spreadsheet tabs on the canvas: cells, formulas and formatting by row and column id, live for everyone with the project open.',
+      'Spreadsheet tabs on the canvas: cells, formulas and formatting by row and column id, live for everyone with the plan open.',
   },
-  { name: 'Sharing', description: 'Share links, passwords, and the projects shared with you.' },
-  { name: 'Folders', description: 'Organise projects into a personal or team folder tree.' },
+  { name: 'Sharing', description: 'Share links, passwords, and the plans shared with you.' },
+  { name: 'Folders', description: 'Organise plans into a personal or team folder tree.' },
   {
     name: 'Trash',
-    description: 'Deleted projects, restorable for 30 days before they are purged.',
+    description: 'Deleted plans, restorable for 30 days before they are purged.',
   },
   { name: 'Themes', description: 'Saved custom themes.' },
   { name: 'API tokens', description: 'Mint and revoke the credentials external callers use.' },
   {
     name: 'Workbench',
     description:
-      'Open a project signed in inside a paired developer tool: pairing, tickets and workbench sessions.',
+      'Open a plan signed in inside a paired developer tool: pairing, tickets and workbench sessions.',
   },
   { name: 'Teams', description: 'Teams, members, invites, and shared libraries.' },
   { name: 'Participants', description: 'Display name and colour for a collaborator.' },

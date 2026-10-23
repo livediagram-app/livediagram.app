@@ -14,7 +14,7 @@ import { isNetworkFailure } from './output/failure-of';
 const TELEMETRY_FLUSH_TIMEOUT_MS = 300;
 
 export const telemetryNotice = (host: string) =>
-  `liveplanner counts which commands succeed (the command's name only: never arguments, projects or hosts) and sends the count to ${host}. Turn it off: liveplanner telemetry off, or LIVEPLANNER_TELEMETRY=0.`;
+  `liveplanner counts which commands succeed (the command's name only: never arguments, plans or hosts) and sends the count to ${host}. Turn it off: liveplanner telemetry off, or LIVEPLANNER_TELEMETRY=0.`;
 
 export type TelemetrySink = { io: CliIo; apiBase: string; log: DebugLog };
 

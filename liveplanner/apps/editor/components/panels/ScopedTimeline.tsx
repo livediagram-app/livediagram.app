@@ -93,7 +93,7 @@ export function DocumentTimeline({ ownerId, projectId }: { ownerId: string; proj
       ownerId={ownerId}
       scope={{ scopeType: 'project', scopeId: projectId }}
       title="History"
-      emptyMessage="What happens to this project will show here."
+      emptyMessage="What happens to this plan will show here."
     />
   );
 }

@@ -40,7 +40,7 @@ export function projectListText({
   query?: string;
 }): string[] {
   return [
-    ...(projects.length === 0 ? [query ? `no projects match "${query}"` : 'no projects'] : []),
+    ...(projects.length === 0 ? [query ? `no plans match "${query}"` : 'no plans'] : []),
     ...columns(projects.map((d) => [d.ref, JSON.stringify(d.name), d.library, d.updated])),
     ...(more > 0
       ? [`… ${more} more; --limit ${projects.length + more}, or narrow with a query`]
@@ -50,12 +50,12 @@ export function projectListText({
 
 export const projectLs = defineVerb({
   id: 'project.ls',
-  summary: 'Projects in the personal library and joined teams, newest first',
+  summary: 'Plans in the personal library and joined teams, newest first',
   description:
-    'Lists the projects the token can reach: the personal library and every joined team, newest saved first. A query keeps the projects whose name contains it.',
+    'Lists the plans the token can reach: the personal library and every joined team, newest saved first. A query keeps the plans whose name contains it.',
   behaviour: 'read',
   input: z.object({
-    query: z.string().optional().describe('Keep projects whose name contains this'),
+    query: z.string().optional().describe('Keep plans whose name contains this'),
     limit: z.coerce
       .number()
       .int()
@@ -86,15 +86,14 @@ export const projectLs = defineVerb({
   cli: {
     positionals: ['query'],
     examples: ['liveplanner project ls', 'liveplanner project ls auth --limit 5'],
-    prints: 'one project a line: ref, name, library, last saved',
+    prints: 'one plan a line: ref, name, library, last saved',
   },
 });
 
 export const projectView = defineVerb({
   id: 'project.view',
   summary: 'The overview: one line per tab',
-  description:
-    'Prints the overview view of a project: one line per tab with its counts and revision.',
+  description: 'Prints the overview view of a plan: one line per tab with its counts and revision.',
   behaviour: 'read',
   input: z.object({ project: z.string().describe('A name, id prefix or liveplanner URL') }),
   output: z.object({ text: z.string() }),

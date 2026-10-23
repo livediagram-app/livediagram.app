@@ -60,7 +60,7 @@ describe('BrowserRepairPanel', () => {
     const toggle = screen.getByRole('button', { name: /repair this browser/i });
     fireEvent.click(toggle);
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
-    expect(screen.getByText(/guest identity, Offline Mode projects/)).toBeTruthy();
+    expect(screen.getByText(/guest identity, Offline Mode plans/)).toBeTruthy();
     // Nothing cleared until the confirm.
     expect(window.localStorage.getItem('liveplanner:v2:ui-mode')).toBe('x');
 

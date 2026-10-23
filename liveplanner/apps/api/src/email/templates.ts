@@ -180,10 +180,10 @@ export function welcomeEmail(env: Env): RenderedEmail {
     html: shell(env, {
       heading: 'Welcome, let’s plan something',
       intro:
-        'liveplanner is a free, real-time planner for teams. Here’s how to get your first project going:',
+        'liveplanner is a free, real-time planner for teams. Here’s how to get your first plan going:',
       points: [
         '<strong>Start a board</strong> of cards, add columns for each stage, and drag cards along as the work moves.',
-        '<strong>Add a sheet, a dashboard or a form</strong> as another tab, so the numbers, the charts and the requests live in the same project.',
+        '<strong>Add a sheet, a dashboard or a form</strong> as another tab, so the numbers, the charts and the requests live in the same plan.',
         '<strong>Start from a template</strong> (kanban, project planner, bug triage and more) to have the columns and card types ready to fill.',
       ],
       outro: 'Everything saves as you go, so you can just start and come back later.',
@@ -199,12 +199,12 @@ export function week1Email(env: Env): RenderedEmail {
     kind: 'Week1',
     subject: 'Find your way around the Explorer',
     html: shell(env, {
-      heading: 'Your projects, organised',
-      intro: 'Now that you’ve made a few projects, the Explorer is where you keep them tidy:',
+      heading: 'Your plans, organised',
+      intro: 'Now that you’ve made a few plans, the Explorer is where you keep them tidy:',
       points: [
-        '<strong>Folders</strong> group related projects; drag to sort, and collapse folders you’re not using.',
+        '<strong>Folders</strong> group related plans; drag to sort, and collapse folders you’re not using.',
         '<strong>Search and Recents</strong> jump you straight back to what you were working on.',
-        '<strong>Share</strong> right from the grid with a view-only or editor link, and open a project to export a PDF / PNG / SVG / Markdown copy.',
+        '<strong>Share</strong> right from the grid with a view-only or editor link, and open a plan to export a PDF / PNG / SVG / Markdown copy.',
       ],
       ctaText: 'Open your Explorer',
       ctaHref: `${base}/explorer`,
@@ -218,17 +218,16 @@ export function week2Email(env: Env): RenderedEmail {
   const base = appBaseUrl(env);
   return {
     kind: 'Week2',
-    subject: 'Bring your team into your projects',
+    subject: 'Bring your team into your plans',
     html: shell(env, {
       heading: 'Plans are better together',
-      intro:
-        'If you’re working with other people, a team gives everyone a shared home for projects:',
+      intro: 'If you’re working with other people, a team gives everyone a shared home for plans:',
       points: [
         '<strong>Create a team</strong> from the Explorer and invite people by email.',
         '<strong>A shared folder</strong> every member can open and edit (no more passing links around).',
         '<strong>Admin and Member roles</strong>: admins manage who’s in the team, everyone else just gets to work.',
       ],
-      outro: 'A project still needs no account. Teams just add a shared home on top.',
+      outro: 'A plan still needs no account. Teams just add a shared home on top.',
       ctaText: 'Create a team',
       ctaHref: `${base}/explorer/team`,
       footer: tipsFooter(env),
@@ -287,7 +286,7 @@ export function teamInviteEmail(
         env,
         {
           heading: `You’re invited to ${name.html}`,
-          intro: `Someone invited you to join <strong>${name.html}</strong> on liveplanner, a shared space for projects you and your teammates can open and edit together.`,
+          intro: `Someone invited you to join <strong>${name.html}</strong> on liveplanner, a shared space for plans you and your teammates can open and edit together.`,
         },
         declineToken,
       ),
@@ -301,7 +300,7 @@ const REMINDER_COPY: Record<1 | 2 | 3, (team: { html: string; text: string }) =>
   1: (team) => ({
     subject: `Reminder: you’re invited to ${team.text} on liveplanner`,
     heading: `Your invite to ${team.html} is waiting`,
-    intro: `Yesterday someone invited you to join <strong>${team.html}</strong> on liveplanner, a shared space for projects you and your teammates can open and edit together.`,
+    intro: `Yesterday someone invited you to join <strong>${team.html}</strong> on liveplanner, a shared space for plans you and your teammates can open and edit together.`,
   }),
   2: (team) => ({
     subject: `Your invite to ${team.text} is still waiting`,
@@ -337,10 +336,10 @@ export function accountDeletedEmail(env: Env): RenderedEmail {
     html: shell(env, {
       heading: 'Your account has been deleted',
       intro:
-        'This confirms that your liveplanner projects and your liveworkspace account have been permanently removed, as you requested. The account is closed for every liveworkspace app. There’s nothing left for you to do.',
+        'This confirms that your liveplanner plans and your liveworkspace account have been permanently removed, as you requested. The account is closed for every liveworkspace app. There’s nothing left for you to do.',
       outro:
         'If this wasn’t you, or you change your mind, you’re always welcome back. liveplanner is free and needs no account to start.',
-      ctaText: 'Start a new project',
+      ctaText: 'Start a new plan',
       ctaHref: `${base}/new`,
       footer:
         'This is a one-time confirmation of your account deletion. We won’t send any further email to this address.',
@@ -360,21 +359,21 @@ export function projectJoinedEmail(
 ): RenderedEmail {
   const base = appBaseUrl(env);
   const who = joinerName && joinerName.trim() ? escapeHtml(joinerName.trim()) : 'Someone';
-  const named = projectName && projectName.trim() ? escapeHtml(projectName.trim()) : 'your project';
+  const named = projectName && projectName.trim() ? escapeHtml(projectName.trim()) : 'your plan';
   const whoText = joinerName && joinerName.trim() ? escapeText(joinerName.trim()) : 'Someone';
   return {
     kind: 'ProjectJoined',
-    subject: `${whoText} opened one of your projects`,
+    subject: `${whoText} opened one of your plans`,
     html: shell(env, {
-      heading: 'Someone joined your project',
-      intro: `<strong>${who}</strong> just opened <strong>${named}</strong>, a project you shared. They can collaborate on it with the access you granted.`,
+      heading: 'Someone joined your plan',
+      intro: `<strong>${who}</strong> just opened <strong>${named}</strong>, a plan you shared. They can collaborate on it with the access you granted.`,
       outro:
-        'Join notifications are on by default for projects you share. You can turn them off any time in your notification settings.',
-      ctaText: 'Open the project',
+        'Join notifications are on by default for plans you share. You can turn them off any time in your notification settings.',
+      ctaText: 'Open the plan',
       ctaHref: `${base}/explorer`,
       footer: manageNotificationsFooter(
         env,
-        'You’re receiving this because someone opened a project you shared.',
+        'You’re receiving this because someone opened a plan you shared.',
       ),
     }),
     unsubscribeUrl: profilePath(env),
@@ -437,7 +436,7 @@ export function actionAssignedEmail(
   const whoText =
     assignerName && assignerName.trim() ? escapeText(assignerName.trim()) : 'A teammate';
   const liveDoc =
-    project && project.name.trim() ? escapeHtml(project.name.trim()) : 'a shared project';
+    project && project.name.trim() ? escapeHtml(project.name.trim()) : 'a shared plan';
   const action = escapeHtml(actionName.trim());
   const detail = description?.trim()
     ? escapeHtml(
@@ -448,7 +447,7 @@ export function actionAssignedEmail(
     : null;
   const intro = project
     ? `<strong>${who}</strong> assigned you an action on <strong>${liveDoc}</strong>: <strong>${action}</strong>.`
-    : `<strong>${who}</strong> assigned you an action: <strong>${action}</strong>. You can’t open its project yet, so ask them to share it with you.`;
+    : `<strong>${who}</strong> assigned you an action: <strong>${action}</strong>. You can’t open its plan yet, so ask them to share it with you.`;
   return {
     kind: 'ActionAssigned',
     subject: `${whoText} assigned you an action`,
@@ -458,7 +457,7 @@ export function actionAssignedEmail(
       ...(detail ? { outro: detail } : {}),
       ...(project
         ? {
-            ctaText: 'Open the project',
+            ctaText: 'Open the plan',
             ctaHref: `${base}/project/${encodeURIComponent(project.id)}`,
           }
         : { ctaText: 'Open liveplanner', ctaHref: `${base}/explorer` }),
@@ -498,9 +497,8 @@ export function mentionedEmail(
   const who = authorName && authorName.trim() ? escapeHtml(authorName.trim()) : 'A teammate';
   const whoText = authorName && authorName.trim() ? escapeText(authorName.trim()) : 'A teammate';
   const liveDoc =
-    projectName && projectName.trim() ? escapeHtml(projectName.trim()) : 'a shared project';
-  const projectText =
-    projectName && projectName.trim() ? escapeText(projectName.trim()) : 'a project';
+    projectName && projectName.trim() ? escapeHtml(projectName.trim()) : 'a shared plan';
+  const projectText = projectName && projectName.trim() ? escapeText(projectName.trim()) : 'a plan';
   return {
     kind: 'Mentioned',
     subject: `${whoText} mentioned you in ${projectText}`,
@@ -508,7 +506,7 @@ export function mentionedEmail(
       heading: 'You were mentioned',
       intro: `<strong>${who}</strong> mentioned you in a comment on <strong>${liveDoc}</strong>:`,
       outro: `“${escapeHtml(mentionQuote(commentText))}”`,
-      ctaText: itemId ? 'Open the card' : 'Open the project',
+      ctaText: itemId ? 'Open the card' : 'Open the plan',
       ctaHref: itemId ? `${docHref}#item=${encodeURIComponent(itemId)}` : docHref,
       footer: manageNotificationsFooter(
         env,
@@ -559,7 +557,7 @@ export function tokenExpiringEmail(
     subject: 'Your liveplanner API token expires soon',
     html: shell(env, {
       heading: 'An API token is about to expire',
-      intro: `Your API token <strong>${name}</strong> expires on ${when}. Once it lapses, any script or connected tool using it will stop being able to reach your projects.`,
+      intro: `Your API token <strong>${name}</strong> expires on ${when}. Once it lapses, any script or connected tool using it will stop being able to reach your plans.`,
       points: [
         'Create a fresh token in Settings, API Tokens before this one expires.',
         'Update whatever uses it (your scripts, or a connected AI tool) with the new token.',
@@ -580,18 +578,18 @@ export function activationEmail(env: Env): RenderedEmail {
   const base = appBaseUrl(env);
   return {
     kind: 'Activation',
-    subject: 'Your first project is waiting',
+    subject: 'Your first plan is waiting',
     html: shell(env, {
       heading: 'Ready when you are',
       intro:
-        'You signed up for liveplanner but haven’t made a project yet. It takes about thirty seconds to get going:',
+        'You signed up for liveplanner but haven’t made a plan yet. It takes about thirty seconds to get going:',
       points: [
         'Start a blank board and add a few cards, or start from a template (kanban, project planner, bug triage and more).',
         'Add a sheet, a dashboard or a form beside it, and it all saves as you go.',
         'Share it with one link and plan it together in real time.',
       ],
       outro: 'No pressure: liveplanner is free and always here.',
-      ctaText: 'Make your first project',
+      ctaText: 'Make your first plan',
       ctaHref: `${base}/new`,
       footer: tipsFooter(env),
     }),
@@ -611,21 +609,20 @@ export function commentNotificationEmail(
   const base = appBaseUrl(env);
   const whoText =
     commenterName && commenterName.trim() ? escapeText(commenterName.trim()) : 'Someone';
-  const nameText =
-    projectName && projectName.trim() ? escapeText(projectName.trim()) : 'your project';
+  const nameText = projectName && projectName.trim() ? escapeText(projectName.trim()) : 'your plan';
   const who = commenterName && commenterName.trim() ? escapeHtml(commenterName.trim()) : 'Someone';
-  const name = projectName && projectName.trim() ? escapeHtml(projectName.trim()) : 'your project';
+  const name = projectName && projectName.trim() ? escapeHtml(projectName.trim()) : 'your plan';
   return {
     kind: 'CommentNotification',
     subject: `${whoText} commented on ${nameText}`,
     html: shell(env, {
-      heading: 'New comment on your project',
-      intro: `<strong>${who}</strong> left a comment on <strong>${name}</strong>. Open the project to read it and reply.`,
-      ctaText: 'Open the project',
+      heading: 'New comment on your plan',
+      intro: `<strong>${who}</strong> left a comment on <strong>${name}</strong>. Open the plan to read it and reply.`,
+      ctaText: 'Open the plan',
       ctaHref: `${base}/project/${encodeURIComponent(projectId)}`,
       footer: manageNotificationsFooter(
         env,
-        'You’re receiving this because someone commented on a project you own.',
+        'You’re receiving this because someone commented on a plan you own.',
       ),
     }),
     unsubscribeUrl: profilePath(env),
@@ -644,7 +641,7 @@ export function formResponseEmail(
   const headingText = escapeText(form.heading.trim() || 'your form');
   const heading = escapeHtml(form.heading.trim() || 'your form');
   const title = escapeHtml(cardTitle.trim() || 'A new response');
-  const docName = escapeHtml(form.projectName.trim() || 'your project');
+  const docName = escapeHtml(form.projectName.trim() || 'your plan');
   const since =
     more > 0
       ? ` And ${more} more ${more === 1 ? 'response has' : 'responses have'} arrived since the last email.`
@@ -659,7 +656,7 @@ export function formResponseEmail(
       ctaHref: `${base}/project/${encodeURIComponent(form.projectId)}`,
       footer: manageNotificationsFooter(
         env,
-        'You’re receiving this because someone filled in a form in a project you own.',
+        'You’re receiving this because someone filled in a form in a plan you own.',
       ),
     }),
     unsubscribeUrl: profilePath(env),
@@ -675,14 +672,14 @@ export function formSuspendedEmail(
   const base = appBaseUrl(env);
   const headingText = escapeText(form.heading.trim() || 'your form');
   const heading = escapeHtml(form.heading.trim() || 'your form');
-  const docName = escapeHtml(form.projectName.trim() || 'your project');
+  const docName = escapeHtml(form.projectName.trim() || 'your plan');
   return {
     kind: 'FormSuspended',
     subject: `The link to ${headingText} was suspended`,
     html: shell(env, {
       heading: 'Your form’s link was suspended',
       intro: `People who were sent the link to <strong>${heading}</strong> in <strong>${docName}</strong> reported it, so the link has stopped working. Its responses stay on your board. You can publish the form again, which makes a new link.`,
-      ctaText: 'Open the project',
+      ctaText: 'Open the plan',
       ctaHref: `${base}/project/${encodeURIComponent(form.projectId)}`,
       footer: manageNotificationsFooter(
         env,
@@ -698,18 +695,18 @@ export function winBackEmail(env: Env): RenderedEmail {
   const base = appBaseUrl(env);
   return {
     kind: 'WinBack',
-    subject: 'Your projects are waiting',
+    subject: 'Your plans are waiting',
     html: shell(env, {
       heading: 'It’s been a while',
       intro:
-        'You haven’t opened liveplanner in a few weeks, and your projects are right where you left them. A few things you can pick back up:',
+        'You haven’t opened liveplanner in a few weeks, and your plans are right where you left them. A few things you can pick back up:',
       points: [
         'Start something new in seconds from a template or theme.',
-        'Share a project with a live link, or bring a team into it.',
+        'Share a plan with a live link, or bring a team into it.',
         'Export to PDF / PNG / SVG / Markdown whenever you need a copy.',
       ],
       outro: 'No rush: it’s all still here whenever you want it.',
-      ctaText: 'Open your projects',
+      ctaText: 'Open your plans',
       ctaHref: `${base}/explorer`,
       footer: tipsFooter(env),
     }),
@@ -723,10 +720,10 @@ export function milestoneEmail(env: Env, count: number): RenderedEmail {
   const base = appBaseUrl(env);
   return {
     kind: 'Milestone',
-    subject: `You’ve made ${count} projects on liveplanner`,
+    subject: `You’ve made ${count} plans on liveplanner`,
     html: shell(env, {
-      heading: `That’s ${count} projects`,
-      intro: `Nice work, you’ve created <strong>${count}</strong> projects on liveplanner. Thanks for building with us.`,
+      heading: `That’s ${count} plans`,
+      intro: `Nice work, you’ve created <strong>${count}</strong> plans on liveplanner. Thanks for building with us.`,
       outro: 'Here’s to the next one.',
       ctaText: 'Open your Explorer',
       ctaHref: `${base}/explorer`,
@@ -745,12 +742,12 @@ export function firstShareEmail(env: Env): RenderedEmail {
   const base = appBaseUrl(env);
   return {
     kind: 'FirstShare',
-    subject: 'You shared your first project',
+    subject: 'You shared your first plan',
     html: shell(env, {
-      heading: 'Your first shared project',
+      heading: 'Your first shared plan',
       preheader: 'Anyone with the link can open it now, and you stay in control.',
       intro:
-        'Nice work, you just shared a project for the first time. Anyone with the link can open it, and you stay in control:',
+        'Nice work, you just shared a plan for the first time. Anyone with the link can open it, and you stay in control:',
       points: [
         'Hand out a <strong>view-only</strong> or an <strong>editor</strong> link, whichever fits.',
         'Set a link to <strong>expire</strong> after a week, a month, or six months.',

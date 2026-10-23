@@ -157,6 +157,6 @@ describe('TagPicker with no tags', () => {
       </ProjectTagsProvider>,
     );
     expect(await screen.findByText('No tags yet')).toBeTruthy();
-    expect(screen.getByRole('dialog', { name: 'Tags for Untitled project' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Tags for Untitled plan' })).toBeTruthy();
   });
 });

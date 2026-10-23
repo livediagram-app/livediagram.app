@@ -321,14 +321,14 @@ export function AssignActionDialog({
                 // invite acceptance, no owner action needed.
                 <>
                   {assignee?.name} hasn&apos;t accepted the team invite yet; they&apos;ll get access
-                  to this project when they join.
+                  to this plan when they join.
                 </>
               ) : (
                 <>
                   {assignee?.name}{' '}
                   {assigneeAccess === 'no'
-                    ? "can't open this project yet"
-                    : 'may not be able to open this project'}
+                    ? "can't open this plan yet"
+                    : 'may not be able to open this plan'}
                   : share it or move it to the team library.
                 </>
               )}

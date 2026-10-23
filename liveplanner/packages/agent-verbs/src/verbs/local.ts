@@ -188,7 +188,7 @@ export const waitFor = defineVerb({
   id: 'wait',
   summary: 'Block until a comment or a change arrives, then print it',
   description:
-    'Listens on the project\u2019s room until a comment is added, or until something changes and settles (a burst of edits is one change); prints it and exits 0. --timeout exits 0 with a line saying nothing came; Ctrl-C exits 1.',
+    'Listens on the plan\u2019s room until a comment is added, or until something changes and settles (a burst of edits is one change); prints it and exits 0. --timeout exits 0 with a line saying nothing came; Ctrl-C exits 1.',
   behaviour: 'read',
   local: true,
   input: z.object({
@@ -215,7 +215,7 @@ export const watch = defineVerb({
   id: 'watch',
   summary: 'Stream comments and changes as they happen',
   description:
-    'Listens on the project\u2019s room and prints a line for each changeset, element change, comment and tab or project change, until Ctrl-C (exit 0).',
+    'Listens on the plan\u2019s room and prints a line for each changeset, element change, comment and tab or plan change, until Ctrl-C (exit 0).',
   behaviour: 'read',
   local: true,
   input: z.object({
@@ -238,9 +238,9 @@ export const watch = defineVerb({
 export const pull = defineVerb({
   id: 'pull',
   files: true,
-  summary: 'Write a project to a file, to edit and push back',
+  summary: 'Write a plan to a file, to edit and push back',
   description:
-    'Writes <slug>.liveplanner.json: the project, every tab and each tab\u2019s revision, in the format the editor imports. --svg adds a drawing per tab. Prints the paths written.',
+    'Writes <slug>.liveplanner.json: the plan, every tab and each tab\u2019s revision, in the format the editor imports. --svg adds a drawing per tab. Prints the paths written.',
   behaviour: 'read',
   local: true,
   input: z.object({
@@ -296,13 +296,13 @@ export const EXPORT_FORMATS = ['json', 'svg', 'png', 'md'] as const;
 export const exportAll = defineVerb({
   id: 'export',
   files: true,
-  summary: 'Every project to files, for backups and docs',
+  summary: 'Every plan to files, for backups and docs',
   description:
-    'Writes every project the token can read: <slug>.liveplanner.json (json, the default), and per tab <slug>/<tab-slug>.svg, .png or .md. Prints the paths written, then the totals.',
+    'Writes every plan the token can read: <slug>.liveplanner.json (json, the default), and per tab <slug>/<tab-slug>.svg, .png or .md. Prints the paths written, then the totals.',
   behaviour: 'read',
   local: true,
   input: z.object({
-    all: z.boolean().optional().describe('Every project; required'),
+    all: z.boolean().optional().describe('Every plan; required'),
     to: z.string().describe('The directory to write to'),
     format: z
       .string()
@@ -312,7 +312,7 @@ export const exportAll = defineVerb({
   output: z.object({ paths: z.array(z.string()), projects: z.number(), exit: z.number() }),
   text: ({ paths, projects }) => [
     ...paths,
-    `${projects} project${projects === 1 ? '' : 's'} · ${paths.length} file${paths.length === 1 ? '' : 's'}`,
+    `${projects} plan${projects === 1 ? '' : 's'} · ${paths.length} file${paths.length === 1 ? '' : 's'}`,
   ],
   quiet: ({ paths }) => paths,
   exitCode: ({ exit }) => exit,
@@ -322,7 +322,7 @@ export const exportAll = defineVerb({
       'liveplanner export --all --to backup',
       'liveplanner export --all --to docs --format svg,md',
     ],
-    prints: 'the paths written, then <n> projects · <m> files',
+    prints: 'the paths written, then <n> plans · <m> files',
   },
 });
 

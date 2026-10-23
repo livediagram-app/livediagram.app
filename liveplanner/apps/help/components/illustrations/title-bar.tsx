@@ -212,7 +212,7 @@ export function TitleBarParts() {
       <Avatar cx={407} cy={y + 20} r={9} initial="S" />
 
       <Callout x={40} row={2} text="Logo and menu" />
-      <Callout x={157} row={1} text="Project name" />
+      <Callout x={157} row={1} text="Plan name" />
       <Callout x={230} row={2} text="Visibility pill" />
       <Callout x={291} row={1} text="Role pill" />
       <Callout x={365} row={2} text="Share" />

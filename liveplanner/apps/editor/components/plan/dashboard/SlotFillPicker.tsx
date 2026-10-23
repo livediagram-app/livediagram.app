@@ -63,7 +63,7 @@ export function slotFillSections(
 ): { sections: Section[]; tooBig: SlotFitKind[] } {
   const sticky = tileById('tools:sticky');
   const all: Section[] = [
-    { title: 'This Project’s Tabs', tiles: tabTiles },
+    { title: 'This Plan’s Tabs', tiles: tabTiles },
     { title: 'New Board', tiles: tilesForCategory('plan-boards') },
     { title: 'New Sheet', tiles: tilesForCategory('plan-sheets') },
     { title: 'Card Metrics', tiles: tilesForCategory('plan-metrics') },

@@ -89,7 +89,7 @@ type TabImportDeps = {
 export function planCardsFailure(failed: number): { title: string; message: string } {
   return {
     title: 'Plan Cards',
-    message: `${failed === 1 ? '1 card' : `${failed} cards`} couldn't be added to this project. The tab was imported without them.`,
+    message: `${failed === 1 ? '1 card' : `${failed} cards`} couldn't be added to this plan. The tab was imported without them.`,
   };
 }
 

@@ -141,13 +141,13 @@ describe('readProject', () => {
     const named = await readProject(env, 'tok', { projectId: 'd1', tabId: 'elsewhere' });
     expect(named).toEqual({
       content: [
-        { type: 'text', text: 'No tab "elsewhere" in this project. Tabs: Plan (t1), Risks (t2).' },
+        { type: 'text', text: 'No tab "elsewhere" in this plan. Tabs: Plan (t1), Risks (t2).' },
       ],
       isError: true,
     });
     const empty = api({ doc: { ...LIVE_DOC, tabs: [] } });
     expect(await readProject(empty.env, 'tok', { projectId: 'd1' })).toEqual({
-      content: [{ type: 'text', text: 'That project has no tabs.' }],
+      content: [{ type: 'text', text: 'That plan has no tabs.' }],
       isError: true,
     });
   });

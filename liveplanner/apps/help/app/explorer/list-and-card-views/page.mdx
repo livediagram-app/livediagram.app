@@ -5,7 +5,7 @@ import { CardViewGrid } from '@/components/illustrations/explorer-structure';
 export const metadata = helpMetadata({
   title: 'List, Card and Details Views',
   description:
-    'Browse the Explorer as compact list rows, a card grid with live project previews or a sortable details table, and learn how snapshot thumbnails behave.',
+    'Browse the Explorer as compact list rows, a card grid with live plan previews or a sortable details table, and learn how snapshot thumbnails behave.',
   path: '/help/explorer/list-and-card-views/',
 });
 
@@ -16,56 +16,56 @@ export const metadata = helpMetadata({
   categorySlug="explorer"
 >
 
-The Explorer's browse views can render the same folders and projects three ways: a compact **list** of rows, a grid of **cards**, each with a large live preview of the project's first tab, or a **details** table you can sort by any column. Recognising a project by its picture is often faster than reading near-identical names, so the card view shines in folders full of variations on a theme; the list packs more onto the screen when you know exactly what you're looking for.
+The Explorer's browse views can render the same folders and plans three ways: a compact **list** of rows, a grid of **cards**, each with a large live preview of the plan's first tab, or a **details** table you can sort by any column. Recognising a plan by its picture is often faster than reading near-identical names, so the card view shines in folders full of variations on a theme; the list packs more onto the screen when you know exactly what you're looking for.
 
 ## Switching views
 
 Look for the three-button toggle at the right of the header on the [Explorer page](/help/explorer/explorer-page/)'s browse views (Recent, Favourites, Search results, My Work, folders, and This Browser). Click **List view** (the rows icon) for the list, **Card view** (the grid icon) for cards, or **Details view** (the table icon) for the table. The choice applies immediately and to all of those views at once.
 
-<Figure caption="Card view inside a folder: the toggle set to cards, a subfolder previewing what it holds, and a starred project.">
+<Figure caption="Card view inside a folder: the toggle set to cards, a subfolder previewing what it holds, and a starred plan.">
   <CardViewGrid />
 </Figure>
 
 The same toggle appears on a [team's shared library](/help/explorer/team-spaces/), and it shares the same preference, so a card-view person gets cards there too.
 
-Cards are what you get until you choose otherwise: a project is easiest to recognise by its picture, and the grid is the view that shows you one. Your choice is then remembered **per device** (it's a layout preference, not account data), so your phone and your desktop can each keep the view that suits their screen.
+Cards are what you get until you choose otherwise: a plan is easiest to recognise by its picture, and the grid is the view that shows you one. Your choice is then remembered **per device** (it's a layout preference, not account data), so your phone and your desktop can each keep the view that suits their screen.
 
 ## What a card shows
 
 Each card carries everything its list row does, arranged around the preview:
 
-- A **live snapshot** of the project's first tab, drawn from its board, Sheet, Dashboard or form and refreshed when the project changes. The preview keeps the tab's own background colour, so the card reads like a window onto the tab.
+- A **live snapshot** of the plan's first tab, drawn from its board, Sheet, Dashboard or form and refreshed when the plan changes. The preview keeps the tab's own background colour, so the card reads like a window onto the tab.
 - The **name**, the **last-updated** time, the owner where relevant, the **Made by AI** or **This Browser** pill where one applies, and the same visibility badge and **⋯** menu as the list row: **Rename**, **Duplicate**, **Change Folder**, **Favourite**, **Hide from Recent** and **Delete**, among others.
-- A **star** on anything you have favourited: before the name in the list view, so a column of rows lines its stars up in one scannable vertical, and in the meta row on a card. It is amber rather than brand-coloured because it is a personal mark sitting beside badges that describe the project itself.
-- Folders appear as folder cards in the same grid, so navigation doesn't change between views, and a folder card **previews what is inside it**: a small mosaic of up to four tiles, the project snapshots it holds first, then its subfolders. When there are more than four, the last tile becomes a muted **+N** counting the rest. An empty folder keeps the plain folder glyph. This is the card grid only; the list view keeps its count badge, and the editor's [Explorer panel](/help/explorer/explorer-panel/) is unchanged.
+- A **star** on anything you have favourited: before the name in the list view, so a column of rows lines its stars up in one scannable vertical, and in the meta row on a card. It is amber rather than brand-coloured because it is a personal mark sitting beside badges that describe the plan itself.
+- Folders appear as folder cards in the same grid, so navigation doesn't change between views, and a folder card **previews what is inside it**: a small mosaic of up to four tiles, the plan snapshots it holds first, then its subfolders. When there are more than four, the last tile becomes a muted **+N** counting the rest. An empty folder keeps the plain folder glyph. This is the card grid only; the list view keeps its count badge, and the editor's [Explorer panel](/help/explorer/explorer-panel/) is unchanged.
 
 The grid is responsive: one column on a phone, two on a tablet, three on a wide screen.
 
 ## The details view
 
-The details view is a table, one row per folder or project, much like the details pane of a desktop file manager:
+The details view is a table, one row per folder or plan, much like the details pane of a desktop file manager:
 
-- **Name**: open a project or folder from it. Rest the pointer on a project's row for a moment (or tab to its name) and a **preview** of its first tab appears beside it; move down the rows and each next preview appears at once.
-- **Type**: the kind of thing it is, with its icon: a project reads **Plan**, and a folder reads **Folder**.
-- **Comments**: how many comments the project holds, resolved ones included. Empty when there are none.
-- **Access**: what you may do with it, as the Share dialog's role icon: **Editor** for your own, team and this-browser projects, or the role a shared link gives you.
-- **Size**: how many objects the project holds across its tabs, and how much space it takes, for example **12 objects (34 KB)**. A folder shows how many items it holds.
+- **Name**: open a plan or folder from it. Rest the pointer on a plan's row for a moment (or tab to its name) and a **preview** of its first tab appears beside it; move down the rows and each next preview appears at once.
+- **Type**: the kind of thing it is, with its icon: a plan reads **Plan**, and a folder reads **Folder**.
+- **Comments**: how many comments the plan holds, resolved ones included. Empty when there are none.
+- **Access**: what you may do with it, as the Share dialog's role icon: **Editor** for your own, team and this-browser plans, or the role a shared link gives you.
+- **Size**: how many objects the plan holds across its tabs, and how much space it takes, for example **12 objects (34 KB)**. A folder shows how many items it holds.
 - **Created** and **Updated**: the date and time.
 
-Press any column heading to sort by it; press it again to reverse. Folders always stay above projects. The sort is remembered on this device, like the view.
+Press any column heading to sort by it; press it again to reverse. Folders always stay above plans. The sort is remembered on this device, like the view.
 
-A project's numbers can show **–** for a short while after an update to liveplanner, while older projects are counted; they fill in on their own. Projects shared with you always show **–** for Type, Comments, Size and Created, since they sit in someone else's library. On a phone the table keeps just the name and the last update.
+A plan's numbers can show **–** for a short while after an update to liveplanner, while older plans are counted; they fill in on their own. Plans shared with you always show **–** for Type, Comments, Size and Created, since they sit in someone else's library. On a phone the table keeps just the name and the last update.
 
-You can drag any of your own or your team's project rows onto a folder, here or in the sidebar, to move it there.
+You can drag any of your own or your team's plan rows onto a folder, here or in the sidebar, to move it there.
 
 ## About the previews
 
 Snapshot thumbnails also appear in list rows and other Explorer surfaces; the card view just shows them large. A few behaviours worth knowing:
 
 - Previews load **lazily** as you scroll, so a long library doesn't fetch dozens of images up front.
-- A project whose **first tab is still empty** (on **Start Planning**) shows a dashed sketch captioned "Nothing drawn yet" instead of a snapshot, and while a snapshot loads a placeholder fades into it, so the card never jumps in size.
-- Previews are rendered fresh after the project is edited, so what you see stays current without you doing anything.
-- A preview is **vector, not a screenshot**, which is why it is crisp at any size. It is also the very same picture a [live image link](/help/collaboration/sharing/live-image/) serves: one snapshot per project, drawn once and used as a 36px row thumbnail, as this card, and in your README.
+- A plan whose **first tab is still empty** (on **Start Planning**) shows a dashed sketch captioned "Nothing drawn yet" instead of a snapshot, and while a snapshot loads a placeholder fades into it, so the card never jumps in size.
+- Previews are rendered fresh after the plan is edited, so what you see stays current without you doing anything.
+- A preview is **vector, not a screenshot**, which is why it is crisp at any size. It is also the very same picture a [live image link](/help/collaboration/sharing/live-image/) serves: one snapshot per plan, drawn once and used as a 36px row thumbnail, as this card, and in your README.
 
 <Tip>
   The [Shared With Me](/help/explorer/shared-with-you/) page keeps its own fixed layout, previews

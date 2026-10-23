@@ -13,7 +13,7 @@ describe('Add to Slot', () => {
       dashboardTabTiles([{ id: 't', name: 'Launch', of: 'board' }]),
     );
     expect(sections.map((s) => s.title)).toEqual([
-      'This Project’s Tabs',
+      'This Plan’s Tabs',
       'New Board',
       'New Sheet',
       'Card Metrics',

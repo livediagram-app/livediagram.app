@@ -40,14 +40,14 @@ function open(menu: Parameters<typeof UseAsDefaultMenu>[0]['menu']) {
 describe('UseAsDefaultMenu', () => {
   it('is a submenu named by its header, reached and left by the arrow keys', () => {
     open({ isChecked: () => false, isDisabled: () => false, toggle: () => {} });
-    const sub = screen.getByRole('menu', { name: 'New projects that open as' });
+    const sub = screen.getByRole('menu', { name: 'New plans that open as' });
     const trigger = screen.getByRole('menuitem', { name: /use as default for/i });
     expect(trigger.getAttribute('aria-controls')).toBe(sub.id);
-    expect(document.activeElement?.textContent).toBe('Projects');
+    expect(document.activeElement?.textContent).toBe('Plans');
     fireEvent.keyDown(document.activeElement!, { key: 'ArrowDown' });
     expect(document.activeElement?.textContent).toBe('Retrospectives');
     fireEvent.keyDown(document.activeElement!, { key: 'ArrowLeft' });
-    expect(screen.queryByRole('menu', { name: 'New projects that open as' })).toBeNull();
+    expect(screen.queryByRole('menu', { name: 'New plans that open as' })).toBeNull();
     expect(document.activeElement).toBe(trigger);
   });
 
@@ -57,11 +57,11 @@ describe('UseAsDefaultMenu', () => {
       isDisabled: () => false,
       toggle: () => {},
     });
-    expect(screen.getByText('New projects that open as')).toBeTruthy();
+    expect(screen.getByText('New plans that open as')).toBeTruthy();
     const items = screen.getAllByRole('menuitemcheckbox');
     expect(items.map((i) => i.textContent)).toEqual([
       // Plan's mode, then the template families.
-      'Projects',
+      'Plans',
       'Retrospectives',
       'Kanban boards',
     ]);
@@ -79,7 +79,7 @@ describe('UseAsDefaultMenu', () => {
   it('keeps a disabled entry in place and inert', () => {
     const toggle = vi.fn();
     open({ isChecked: () => true, isDisabled: (key) => key === 'mode:plan', toggle });
-    const projects = screen.getByRole('menuitemcheckbox', { name: 'Projects' });
+    const projects = screen.getByRole('menuitemcheckbox', { name: 'Plans' });
     expect(projects.getAttribute('aria-disabled')).toBe('true');
     fireEvent.click(projects);
     expect(toggle).not.toHaveBeenCalled();

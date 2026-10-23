@@ -83,7 +83,7 @@ describe('formatBrowserIdentity', () => {
       'Signed in: yes (user_2abc)',
       'Guest id in this browser: 6f1c2d3e… (signed: yes)',
       'Identity upgrade pending: no',
-      'Guest projects moved to the account: NOT YET (guest id still present)',
+      'Guest plans moved to the account: NOT YET (guest id still present)',
     ]);
   });
 

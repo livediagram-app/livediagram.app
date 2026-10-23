@@ -169,7 +169,7 @@ const CARD_TILE_INFO: Record<DashboardCardKind, { description: string; icon: Rea
   },
   links: {
     description:
-      'A short list of labelled links: the repo, the spec, the design, or this project’s tabs.',
+      'A short list of labelled links: the repo, the spec, the design, or this plan’s tabs.',
     icon: <LinksGlyph />,
   },
 };

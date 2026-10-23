@@ -108,7 +108,7 @@ export const VERBS: readonly Verb[] = [
 export const RESOURCES: readonly { name: string; alias?: string; summary: string }[] = [
   {
     name: 'project',
-    summary: 'Projects: find, read, create, rename, share and remove them',
+    summary: 'Plans: find, read, create, rename, share and remove them',
   },
   { name: 'folder', summary: 'Folders: their paths and ids, and a new one' },
   { name: 'tab', summary: 'Tabs: their views and what changed' },
@@ -123,7 +123,7 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   { name: 'presence', summary: 'What the agent is doing, shown on a tab' },
   {
     name: 'workbench',
-    summary: 'Workbenches: open a project in a developer tool, pair one',
+    summary: 'Workbenches: open a plan in a developer tool, pair one',
   },
   { name: 'template', summary: 'Templates: the library, and one as an outline' },
   { name: 'skill', summary: 'The agent skill file' },

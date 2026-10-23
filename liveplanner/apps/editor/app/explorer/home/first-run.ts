@@ -50,6 +50,6 @@ export const WELCOME_COPY = {
   allTemplates: 'Browse All Templates',
   haveWorkTitle: 'Already Have Work?',
   signInTitle: 'Nothing here yet? Sign in',
-  signInLine: 'If you have used liveplanner before, sign in and your projects come back with you.',
+  signInLine: 'If you have used liveplanner before, sign in and your plans come back with you.',
   signIn: 'Sign In',
 } as const;

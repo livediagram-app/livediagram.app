@@ -87,9 +87,9 @@ function syncOf(value: unknown): PullSync | null {
 
 const FAILURES = {
   not_json: 'not JSON',
-  wrong_kind: 'not a liveplanner project',
+  wrong_kind: 'not a liveplanner plan',
   unsupported_version: 'written by a newer liveplanner',
-  malformed: 'its project is malformed',
+  malformed: 'its plan is malformed',
 } as const;
 
 // A pull file read back, or why it is not one; a tab edited into something the editor would refuse is named (E20).

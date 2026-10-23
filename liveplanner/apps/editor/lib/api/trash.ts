@@ -60,7 +60,7 @@ export async function apiPurgeProject(ownerId: string, id: string): Promise<void
     return;
   }
   await apiDelete(`${API_BASE}/trash/${encodeURIComponent(id)}`, ownerId, {
-    action: 'purge project',
+    action: 'purge plan',
     allow404: false,
   });
 }

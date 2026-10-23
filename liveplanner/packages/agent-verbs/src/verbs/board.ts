@@ -17,7 +17,7 @@ export const boardAdd = defineVerb({
   id: 'board.add',
   summary: 'Add a Plan board',
   description:
-    'Puts a Plan board on a tab, beside what it holds: a preset, or columns by name. A column named like one the project already has shares it.',
+    'Puts a Plan board on a tab, beside what it holds: a preset, or columns by name. A column named like one the plan already has shares it.',
   behaviour: 'write',
   input: z.object({
     project: z.string().describe('A name, id prefix or liveplanner URL'),

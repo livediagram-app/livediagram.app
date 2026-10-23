@@ -8,7 +8,7 @@ export const SHEET_REFUSAL_WORDS: Readonly<Record<SheetError, string>> = {
   sheet_busy: 'the sheet is busy with other writes: try again.',
   sheet_title_taken: 'another sheet on that tab has that title: pick another.',
   sheet_full: 'this sheet holds the most cells it can (50,000 cells or 4 MB).',
-  sheets_full: 'the project holds the most sheets or cells it can (200 sheets, 200,000 cells).',
+  sheets_full: 'the plan holds the most sheets or cells it can (200 sheets, 200,000 cells).',
   sheet_too_large: 'a sheet has up to 10,000 rows and 200 columns (A to GR).',
   input_too_long: 'an input is up to 10,000 characters, a formula up to 8,000.',
   formula_invalid: 'a formula cannot be read.',
@@ -22,5 +22,5 @@ export const SHEET_REFUSAL_WORDS: Readonly<Record<SheetError, string>> = {
   value_invalid:
     "a value is not one its cell's validation rule allows: read_sheet lists the rules and what each allows.",
   rules_full: 'a sheet holds up to 200 validation rules and 100 format rules.',
-  tab_not_found: 'no such tab in this project.',
+  tab_not_found: 'no such tab in this plan.',
 };

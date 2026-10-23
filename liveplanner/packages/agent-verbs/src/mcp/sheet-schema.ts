@@ -23,8 +23,8 @@ import { BORDER_COLOUR_DEFAULT } from '../sheets/sheet-shape-change';
 import { DESIGN_ACCENT_DEFAULT } from '../sheets/sheet-design';
 import { SHEET_CHART_SIZE } from '../sheets/sheet-charts';
 
-const url = z.string().describe('Link that opens the project in the liveplanner editor.');
-const projectId = z.string().describe('The project (from find_projects).');
+const url = z.string().describe('Link that opens the plan in the liveplanner editor.');
+const projectId = z.string().describe('The plan (from find_projects).');
 const sheetArg = z
   .string()
   .describe('The sheet, by its title ("Budget") or id. list_sheets lists them.');

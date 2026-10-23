@@ -47,7 +47,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'What is liveplanner?',
-        a: 'A free planner you work on together in real time, with no ads and no trackers. Every project is a stack of tabs: Board tabs hold kanban-style boards of cards, Sheet tabs hold spreadsheets with real formulas and charts, Dashboard tabs bring boards, sheets, charts and notes onto one page, and Form tabs collect answers that turn into cards or rows. Share a link and your team works on it with you, live.',
+        a: 'A free planner you work on together in real time, with no ads and no trackers. Every plan is a stack of tabs: Board tabs hold kanban-style boards of cards, Sheet tabs hold spreadsheets with real formulas and charts, Dashboard tabs bring boards, sheets, charts and notes onto one page, and Form tabs collect answers that turn into cards or rows. Share a link and your team works on it with you, live.',
       },
       {
         q: 'Do I need an account to use liveplanner?',
@@ -55,16 +55,16 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           <>
             No. Open liveplanner and start planning straight away, with no sign-up. Your work saves
             in your browser as you go, and pressing Share puts it online for others to join. Signing
-            in (also free) keeps your projects with you across devices and unlocks teams, API tokens
+            in (also free) keeps your plans with you across devices and unlocks teams, API tokens
             and the AI connection. See <a href="/help/account-and-data/signing-in/">signing in</a>.
           </>
         ),
         aText:
-          'No. Open liveplanner and start planning straight away, with no sign-up. Your work saves in your browser as you go, and pressing Share puts it online for others to join. Signing in (also free) keeps your projects with you across devices and unlocks teams, API tokens and the AI connection. See signing in.',
+          'No. Open liveplanner and start planning straight away, with no sign-up. Your work saves in your browser as you go, and pressing Share puts it online for others to join. Signing in (also free) keeps your plans with you across devices and unlocks teams, API tokens and the AI connection. See signing in.',
       },
       {
-        q: 'How do I start my first project?',
-        a: `Press New Project and Start Planning opens: begin from a blank board, sheet or form, or from one of ${TEMPLATE_COUNT} ready-made templates, from a Kanban Board and a Project Planner to a Budget Planner and an Event RSVP Form. The project opens straight away, and a short tour offers to show you round.`,
+        q: 'How do I start my first plan?',
+        a: `Press New Plan and Start Planning opens: begin from a blank board, sheet or form, or from one of ${TEMPLATE_COUNT} ready-made templates, from a Kanban Board and a Project Planner to a Budget Planner and an Event RSVP Form. The plan opens straight away, and a short tour offers to show you round.`,
       },
       {
         q: 'Does it work on my phone or tablet?',
@@ -160,8 +160,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: (
           <>
             Yes. A card is one item, not a copy, so it can sit on the sprint board and the roadmap
-            at once. Move it on one and it moves on both. See{' '}
-            <a href="/help/plan/items/">items</a>.
+            at once. Move it on one and it moves on both. See <a href="/help/plan/items/">items</a>.
           </>
         ),
         aText:
@@ -182,7 +181,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'How do I find a card again?',
-        a: 'The Cards list searches every card in the project by number, title or description, newest change first. Add filters such as Type: Bug or Assignee: No assignee, or show only the cards no board is showing.',
+        a: 'The Cards list searches every card in the plan by number, title or description, newest change first. Add filters such as Type: Bug or Assignee: No assignee, or show only the cards no board is showing.',
       },
       {
         q: 'Is it good for retros?',
@@ -261,14 +260,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Can I work with my team in real time?',
         a: (
           <>
-            Yes, that is the point. Share a link and teammates join the same project in real time,
-            with live cursors, presence on each tab and every change landing as it is made. If you
-            have not signed in, a new project starts in your browser, and the first Share syncs it
-            in one step. See <a href="/help/collaboration/live-presence/">live presence</a>.
+            Yes, that is the point. Share a link and teammates join the same plan in real time, with
+            live cursors, presence on each tab and every change landing as it is made. If you have
+            not signed in, a new plan starts in your browser, and the first Share syncs it in one
+            step. See <a href="/help/collaboration/live-presence/">live presence</a>.
           </>
         ),
         aText:
-          'Yes, that is the point. Share a link and teammates join the same project in real time, with live cursors, presence on each tab and every change landing as it is made. If you have not signed in, a new project starts in your browser, and the first Share syncs it in one step. See live presence.',
+          'Yes, that is the point. Share a link and teammates join the same plan in real time, with live cursors, presence on each tab and every change landing as it is made. If you have not signed in, a new plan starts in your browser, and the first Share syncs it in one step. See live presence.',
       },
       {
         q: 'What happens if two people edit the same thing at once?',
@@ -287,42 +286,42 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           'Yes. Every card has its own thread, and so can a single cell in a sheet. @mention a teammate and they get an email that opens the card, then resolve the thread when it is settled. See comments.',
       },
       {
-        q: 'Can I set up a team with shared projects?',
+        q: 'Can I set up a team with shared plans?',
         a: (
           <>
             Yes, once you sign in. Create a team from the Explorer, invite people by email, and
-            everyone gets a shared space of projects. Teams have Admin and Member roles: admins
-            manage membership, everyone else just gets to work. See{' '}
+            everyone gets a shared space of plans. Teams have Admin and Member roles: admins manage
+            membership, everyone else just gets to work. See{' '}
             <a href="/help/collaboration/teams/">teams</a>.
           </>
         ),
         aText:
-          'Yes, once you sign in. Create a team from the Explorer, invite people by email, and everyone gets a shared space of projects. Teams have Admin and Member roles: admins manage membership, everyone else just gets to work. See teams.',
+          'Yes, once you sign in. Create a team from the Explorer, invite people by email, and everyone gets a shared space of plans. Teams have Admin and Member roles: admins manage membership, everyone else just gets to work. See teams.',
       },
       {
-        q: 'How do I keep my projects organised?',
+        q: 'How do I keep my plans organised?',
         a: (
           <>
-            Your projects live in nested folders in the Explorer, shown as a list, as cards or as a
-            sortable table. Drag a project onto a folder to file it, and tag projects to find them
-            again. See <a href="/help/explorer/folders/">folders</a>.
+            Your plans live in nested folders in the Explorer, shown as a list, as cards or as a
+            sortable table. Drag a plan onto a folder to file it, and tag plans to find them again.
+            See <a href="/help/explorer/folders/">folders</a>.
           </>
         ),
         aText:
-          'Your projects live in nested folders in the Explorer, shown as a list, as cards or as a sortable table. Drag a project onto a folder to file it, and tag projects to find them again. See folders.',
+          'Your plans live in nested folders in the Explorer, shown as a list, as cards or as a sortable table. Drag a plan onto a folder to file it, and tag plans to find them again. See folders.',
       },
       {
         q: 'How do I keep up with what changed?',
         a: (
           <>
-            Your Inbox gathers the cards and comment threads waiting on you across every project,
-            and Home shows what other people did while you were away. Once you sign in, emails can
-            tell you too, and you choose which in Settings. See{' '}
+            Your Inbox gathers the cards and comment threads waiting on you across every plan, and
+            Home shows what other people did while you were away. Once you sign in, emails can tell
+            you too, and you choose which in Settings. See{' '}
             <a href="/help/explorer/activity/">the Inbox</a>.
           </>
         ),
         aText:
-          'Your Inbox gathers the cards and comment threads waiting on you across every project, and Home shows what other people did while you were away. Once you sign in, emails can tell you too, and you choose which in Settings. See the Inbox.',
+          'Your Inbox gathers the cards and comment threads waiting on you across every plan, and Home shows what other people did while you were away. Once you sign in, emails can tell you too, and you choose which in Settings. See the Inbox.',
       },
     ],
   },
@@ -336,31 +335,31 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'How do share links work?',
         a: (
           <>
-            From a project you own, create an editor link (full edit access), a participant link
-            (add and work on cards and fill in cells, without reshaping the boards) or a view-only
-            link. Anyone with the link can join. Give a link an expiry of a week, a month or six
-            months so it stops working on its own, or revoke it at any time and it stops working
-            immediately. See <a href="/help/collaboration/sharing/">sharing</a>.
+            From a plan you own, create an editor link (full edit access), a participant link (add
+            and work on cards and fill in cells, without reshaping the boards) or a view-only link.
+            Anyone with the link can join. Give a link an expiry of a week, a month or six months so
+            it stops working on its own, or revoke it at any time and it stops working immediately.
+            See <a href="/help/collaboration/sharing/">sharing</a>.
           </>
         ),
         aText:
-          'From a project you own, create an editor link (full edit access), a participant link (add and work on cards and fill in cells, without reshaping the boards) or a view-only link. Anyone with the link can join. Give a link an expiry of a week, a month or six months so it stops working on its own, or revoke it at any time and it stops working immediately. See sharing.',
+          'From a plan you own, create an editor link (full edit access), a participant link (add and work on cards and fill in cells, without reshaping the boards) or a view-only link. Anyone with the link can join. Give a link an expiry of a week, a month or six months so it stops working on its own, or revoke it at any time and it stops working immediately. See sharing.',
       },
       {
-        q: 'Can I password-protect a project?',
-        a: 'Yes. Add a password in the Share dialog and every link to that project asks for it before opening.',
+        q: 'Can I password-protect a plan?',
+        a: 'Yes. Add a password in the Share dialog and every link to that plan asks for it before opening.',
       },
       {
         q: 'Can I share just one tab?',
         a: (
           <>
-            Yes. When a project has more than one tab, the Share dialog lets a link open a single
-            tab, as an editor, participant or view-only link, and the rest of the project stays
-            private. See <a href="/help/collaboration/sharing/one-tab/">sharing one tab</a>.
+            Yes. When a plan has more than one tab, the Share dialog lets a link open a single tab,
+            as an editor, participant or view-only link, and the rest of the plan stays private. See{' '}
+            <a href="/help/collaboration/sharing/one-tab/">sharing one tab</a>.
           </>
         ),
         aText:
-          'Yes. When a project has more than one tab, the Share dialog lets a link open a single tab, as an editor, participant or view-only link, and the rest of the project stays private. See sharing one tab.',
+          'Yes. When a plan has more than one tab, the Share dialog lets a link open a single tab, as an editor, participant or view-only link, and the rest of the plan stays private. See sharing one tab.',
       },
       {
         q: 'Can I embed a board in my wiki?',
@@ -368,12 +367,12 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           <>
             Yes. Any share link can be embedded as a live iframe: copy the snippet from the Share
             dialog and paste it into Notion, Confluence, a wiki or any page that allows iframes, and
-            it always shows the project as it is now. See{' '}
+            it always shows the plan as it is now. See{' '}
             <a href="/help/collaboration/sharing/embeds/">embeds</a>.
           </>
         ),
         aText:
-          'Yes. Any share link can be embedded as a live iframe: copy the snippet from the Share dialog and paste it into Notion, Confluence, a wiki or any page that allows iframes, and it always shows the project as it is now. See embeds.',
+          'Yes. Any share link can be embedded as a live iframe: copy the snippet from the Share dialog and paste it into Notion, Confluence, a wiki or any page that allows iframes, and it always shows the plan as it is now. See embeds.',
       },
     ],
   },
@@ -388,44 +387,44 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: (
           <>
             Yes. liveplanner runs an MCP server at mcp.liveplanner.app. Connect a compatible AI tool
-            and, after a one-time authorisation, it can find and read your projects, put boards,
-            sheets and forms on their tabs, and add, edit and move cards, naming columns and fields
-            the way the board shows them. Its changes appear live for anyone on the tab.{' '}
+            and, after a one-time authorisation, it can find and read your plans, put boards, sheets
+            and forms on their tabs, and add, edit and move cards, naming columns and fields the way
+            the board shows them. Its changes appear live for anyone on the tab.{' '}
             <a href="/ai">Build with AI</a> walks you through connecting Claude, ChatGPT, Cursor and
             more.
           </>
         ),
         aText:
-          'Yes. liveplanner runs an MCP server at mcp.liveplanner.app. Connect a compatible AI tool and, after a one-time authorisation, it can find and read your projects, put boards, sheets and forms on their tabs, and add, edit and move cards, naming columns and fields the way the board shows them. Its changes appear live for anyone on the tab. Build with AI walks you through connecting Claude, ChatGPT, Cursor and more.',
+          'Yes. liveplanner runs an MCP server at mcp.liveplanner.app. Connect a compatible AI tool and, after a one-time authorisation, it can find and read your plans, put boards, sheets and forms on their tabs, and add, edit and move cards, naming columns and fields the way the board shows them. Its changes appear live for anyone on the tab. Build with AI walks you through connecting Claude, ChatGPT, Cursor and more.',
       },
       {
-        q: 'Can an AI only read my projects, and not change them?',
-        a: 'Yes. Switch on Read-only access when you approve the connection, and the AI can find and read your projects but never change them. Each connection is an API token you can revoke at any time.',
+        q: 'Can an AI only read my plans, and not change them?',
+        a: 'Yes. Switch on Read-only access when you approve the connection, and the AI can find and read your plans but never change them. Each connection is an API token you can revoke at any time.',
       },
       {
         q: 'Is there an API?',
         a: (
           <>
             Yes. Once you sign in, create an API token and call the REST API to read and manage your
-            projects, cards and sheets from scripts, CI or anything that can send a header. See the{' '}
+            plans, cards and sheets from scripts, CI or anything that can send a header. See the{' '}
             <a href="/help/developers/api-overview/">API overview</a>.
           </>
         ),
         aText:
-          'Yes. Once you sign in, create an API token and call the REST API to read and manage your projects, cards and sheets from scripts, CI or anything that can send a header. See the API overview.',
+          'Yes. Once you sign in, create an API token and call the REST API to read and manage your plans, cards and sheets from scripts, CI or anything that can send a header. See the API overview.',
       },
       {
         q: 'Is there a command-line tool?',
         a: (
           <>
             Yes. Install it from npm as @liveplanner/cli (or run it with npx). It signs in through
-            your browser and can read, edit, create and share projects from your terminal, which
-            makes it handy for scripts and coding agents. See the{' '}
+            your browser and can read, edit, create and share plans from your terminal, which makes
+            it handy for scripts and coding agents. See the{' '}
             <a href="/help/developers/cli/">CLI guide</a>.
           </>
         ),
         aText:
-          'Yes. Install it from npm as @liveplanner/cli (or run it with npx). It signs in through your browser and can read, edit, create and share projects from your terminal, which makes it handy for scripts and coding agents. See the CLI guide.',
+          'Yes. Install it from npm as @liveplanner/cli (or run it with npx). It signs in through your browser and can read, edit, create and share plans from your terminal, which makes it handy for scripts and coding agents. See the CLI guide.',
       },
     ],
   },
@@ -455,8 +454,8 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Where is my data stored, and do you track me?',
         a: (
           <>
-            Projects saved to your account are stored in our database on Cloudflare, and projects in
-            This Browser stay in your browser. There are no tracking pixels, no advertising and no
+            Plans saved to your account are stored in our database on Cloudflare, and plans in This
+            Browser stay in your browser. There are no tracking pixels, no advertising and no
             third-party analytics. We do record anonymous, first-party usage (which features get
             used, never your content or name) and show it openly on our{' '}
             <a href="/telemetry">telemetry page</a>. See the{' '}
@@ -464,44 +463,44 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           </>
         ),
         aText:
-          'Projects saved to your account are stored in our database on Cloudflare, and projects in This Browser stay in your browser. There are no tracking pixels, no advertising and no third-party analytics. We do record anonymous, first-party usage (which features get used, never your content or name) and show it openly on our telemetry page. See the privacy policy for the details.',
+          'Plans saved to your account are stored in our database on Cloudflare, and plans in This Browser stay in your browser. There are no tracking pixels, no advertising and no third-party analytics. We do record anonymous, first-party usage (which features get used, never your content or name) and show it openly on our telemetry page. See the privacy policy for the details.',
       },
       {
-        q: 'Can I keep a project off your servers entirely?',
-        a: 'Yes. Offline Mode saves a project only in your browser, never on our servers. Until you sign in, new projects start that way; after, you can choose it when you create one. Either way you can switch later.',
+        q: 'Can I keep a plan off your servers entirely?',
+        a: 'Yes. Offline Mode saves a plan only in your browser, never on our servers. Until you sign in, new plans start that way; after, you can choose it when you create one. Either way you can switch later.',
       },
       {
-        q: 'What happens to my projects if I clear my browser data?',
-        a: 'A project kept only in your browser goes with it, so share it or sign in first. Share syncs a project online in one step, and after you sign in liveplanner offers to move every browser-only project into your account. Projects saved to your account are never touched.',
+        q: 'What happens to my plans if I clear my browser data?',
+        a: 'A plan kept only in your browser goes with it, so share it or sign in first. Share syncs a plan online in one step, and after you sign in liveplanner offers to move every browser-only plan into your account. Plans saved to your account are never touched.',
       },
       {
         q: 'Is my work saved automatically?',
-        a: 'Yes. Every change saves on its own, with a status that shows saving, saved or a problem. Close the tab and reload, and your project comes back exactly as you left it.',
+        a: 'Yes. Every change saves on its own, with a status that shows saving, saved or a problem. Close the tab and reload, and your plan comes back exactly as you left it.',
       },
       {
         q: 'What if I delete something by accident?',
         a: (
           <>
             Press Cmd-Z (or Ctrl-Z) to step back your recent edits; undo rewinds your own changes,
-            not a teammate’s. Deleted projects wait in the Trash for 30 days before they are removed
+            not a teammate’s. Deleted plans wait in the Trash for 30 days before they are removed
             for good, so you can restore them. See{' '}
             <a href="/help/account-and-data/trash/">the Trash</a>.
           </>
         ),
         aText:
-          'Press Cmd-Z (or Ctrl-Z) to step back your recent edits; undo rewinds your own changes, not a teammate’s. Deleted projects wait in the Trash for 30 days before they are removed for good, so you can restore them. See the Trash.',
+          'Press Cmd-Z (or Ctrl-Z) to step back your recent edits; undo rewinds your own changes, not a teammate’s. Deleted plans wait in the Trash for 30 days before they are removed for good, so you can restore them. See the Trash.',
       },
       {
         q: 'How do I delete my data or account?',
         a: (
           <>
-            Delete any project you own at any time, and delete your account and everything in it
+            Delete any plan you own at any time, and delete your account and everything in it
             yourself from your account settings. See{' '}
             <a href="/help/account-and-data/deleting-your-data/">deleting your data</a>.
           </>
         ),
         aText:
-          'Delete any project you own at any time, and delete your account and everything in it yourself from your account settings. See deleting your data.',
+          'Delete any plan you own at any time, and delete your account and everything in it yourself from your account settings. See deleting your data.',
       },
     ],
   },
@@ -512,8 +511,8 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     icon: lucideGlyph(lucideMessagesSquare, ICON),
     items: [
       {
-        q: 'A project will not load. What can I do?',
-        a: 'Try reloading first. If it still will not open, liveplanner offers to repair this browser’s saved state without touching your projects.',
+        q: 'A plan will not load. What can I do?',
+        a: 'Try reloading first. If it still will not open, liveplanner offers to repair this browser’s saved state without touching your plans.',
       },
       {
         q: 'Is liveplanner up right now?',

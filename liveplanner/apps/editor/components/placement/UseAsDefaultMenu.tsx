@@ -14,7 +14,7 @@ import { DefaultKeyIcon, UseAsDefaultIcon } from './default-key-icons';
 export function UseAsDefaultMenu({ menu }: { menu: DefaultFolderMenu }) {
   return (
     <MenuFlyoutSection plain flush title="Use as Default for" icon={<UseAsDefaultIcon />}>
-      <MenuHeader title="New projects that open as" />
+      <MenuHeader title="New plans that open as" />
       {DEFAULT_KEY_ENTRIES.map((entry) => (
         <MenuCheckRow
           key={entry.key}

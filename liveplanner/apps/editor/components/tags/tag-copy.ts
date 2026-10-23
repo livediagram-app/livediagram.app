@@ -2,5 +2,5 @@
 
 /** A tag's project count, as its heading and panel section show it. */
 export function projectCountLabel(n: number): string {
-  return n === 1 ? '1 project' : `${n} projects`;
+  return n === 1 ? '1 plan' : `${n} plans`;
 }

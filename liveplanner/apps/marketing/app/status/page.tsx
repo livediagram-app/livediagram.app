@@ -56,17 +56,17 @@ const COMPONENTS: Component[] = [
   {
     name: 'Realtime room',
     description:
-      'Per-project Durable Object that brokers cursor / selection / log ops. Lives inside the API Worker.',
+      'Per-plan Durable Object that brokers cursor / selection / log ops. Lives inside the API Worker.',
   },
   {
     name: 'Database',
     description:
-      'Cloudflare D1 (SQLite at the edge). Holds projects, tabs, change logs, share links, telemetry events.',
+      'Cloudflare D1 (SQLite at the edge). Holds plans, tabs, change logs, share links, telemetry events.',
   },
   {
     name: 'Snapshot cache',
     description:
-      "Cloudflare R2. Caches each project's rendered snapshot and share-link card. liveplanner takes no image uploads.",
+      "Cloudflare R2. Caches each plan's rendered snapshot and share-link card. liveplanner takes no image uploads.",
   },
   {
     name: 'Edge router',

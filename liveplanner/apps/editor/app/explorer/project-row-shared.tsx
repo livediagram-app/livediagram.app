@@ -264,7 +264,7 @@ export function ProjectActionsMenu({
           <MenuActionRow
             plain
             icon={<SyncIcon />}
-            label="Sync Project"
+            label="Sync Plan"
             onClick={() => void syncToCloud()}
           />
         ) : (

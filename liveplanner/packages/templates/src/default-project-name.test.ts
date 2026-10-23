@@ -7,7 +7,7 @@ describe('untitledNameForTemplate', () => {
   it('names a project after its template', () => {
     expect(untitledNameForTemplate('kanban')).toBe('Untitled Kanban Board');
     expect(untitledNameForTemplate('blank-spreadsheet')).toBe('Untitled Spreadsheet');
-    expect(untitledNameForTemplate('blank')).toBe('Untitled project');
+    expect(untitledNameForTemplate('blank')).toBe('Untitled plan');
   });
 });
 

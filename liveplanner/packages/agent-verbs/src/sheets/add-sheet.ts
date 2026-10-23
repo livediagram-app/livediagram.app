@@ -169,7 +169,7 @@ export async function addSheet(
     const all = input.tabId ? null : await readSheets(api, projectId);
     const tabId =
       input.tabId ?? tabs.find((t) => all?.some((s) => s.tabId === t.id))?.id ?? tabs[0]?.id;
-    if (!tabId) return { ok: false, code: 'tab_not_found', message: 'That project has no tabs.' };
+    if (!tabId) return { ok: false, code: 'tab_not_found', message: 'That plan has no tabs.' };
     if (!tabs.some((t) => t.id === tabId))
       return {
         ok: false,

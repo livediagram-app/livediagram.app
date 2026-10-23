@@ -23,8 +23,8 @@ export function tabListOf(tabs: readonly { id: string; name: string; orderIndex:
 
 export const tabLs = defineVerb({
   id: 'tab.ls',
-  summary: "The project's tabs",
-  description: 'Lists the tabs of a project in order: position, ref and name.',
+  summary: "The plan's tabs",
+  description: 'Lists the tabs of a plan in order: position, ref and name.',
   behaviour: 'read',
   input: z.object({ project: z.string().describe('A name, id prefix or liveplanner URL') }),
   output: z.object({

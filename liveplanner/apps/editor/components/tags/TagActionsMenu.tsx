@@ -23,8 +23,8 @@ import { LazyTagColourPopover, LazyTagDialog } from './tag-lazy';
 export function deleteTagMessage(name: string, projects: number): string {
   const off =
     projects === 0
-      ? "It isn't on any projects."
-      : `It comes off its ${projects === 1 ? 'one project' : `${projects} projects`}. The projects stay.`;
+      ? "It isn't on any plans."
+      : `It comes off its ${projects === 1 ? 'one plan' : `${projects} plans`}. The plans stay.`;
   return `Delete the tag ${name}? ${off}`;
 }
 

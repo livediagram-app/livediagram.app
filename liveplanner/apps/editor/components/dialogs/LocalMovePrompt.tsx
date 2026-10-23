@@ -18,7 +18,7 @@ export function LocalMovePrompt({ enabled = true }: { enabled?: boolean }) {
   const { phase } = prompt;
   if (phase.kind === 'idle') return null;
 
-  const title = 'Move Projects in This Browser to Your Account?';
+  const title = 'Move Plans in This Browser to Your Account?';
   if (phase.kind === 'moving') {
     return (
       <Dialog open onClose={() => {}} ariaLabel={title} size="md">
@@ -39,7 +39,7 @@ export function LocalMovePrompt({ enabled = true }: { enabled?: boolean }) {
   if (phase.kind === 'partial') {
     return (
       <Dialog open onClose={prompt.finish} ariaLabel={title} size="md">
-        <DialogHeader title="Some Projects Stayed in This Browser">
+        <DialogHeader title="Some Plans Stayed in This Browser">
           <DialogCloseButton onClick={prompt.finish} />
         </DialogHeader>
         <div className="px-6 py-5 text-sm text-slate-700 dark:text-slate-200">
@@ -54,7 +54,7 @@ export function LocalMovePrompt({ enabled = true }: { enabled?: boolean }) {
             ))}
           </ul>
           <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
-            Try Sync Project on it later from the Explorer.
+            Try Sync Plan on it later from the Explorer.
           </p>
         </div>
         <DialogFooter>
@@ -77,7 +77,7 @@ export function LocalMovePrompt({ enabled = true }: { enabled?: boolean }) {
       </DialogHeader>
       <div className="px-6 py-5">
         <ImportChecklist
-          legend="Projects in This Browser"
+          legend="Plans in This Browser"
           rows={prompt.rows}
           checked={prompt.checked}
           onToggle={prompt.toggle}

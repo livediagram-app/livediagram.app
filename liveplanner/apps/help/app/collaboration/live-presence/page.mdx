@@ -5,19 +5,19 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Live Presence',
   description:
-    'See who is in a project with you in real time: who is on which tab, the card each person has open, their cell on a Sheet, and agents at work.',
+    'See who is in a plan with you in real time: who is on which tab, the card each person has open, their cell on a Sheet, and agents at work.',
   path: '/help/collaboration/live-presence/',
 });
 
 <ArticleLayout
   title="Live Presence"
-  description="When more than one person opens the same project, you see each other live: who is here, which tab they are on, and what they are working on."
+  description="When more than one person opens the same plan, you see each other live: who is here, which tab they are on, and what they are working on."
   categoryTitle="Collaboration"
   categorySlug="collaboration"
   subArticles={getSubArticles("live-presence")}
 >
 
-Open a project with other people and it comes alive. Everyone sees each other's changes as they happen, and can tell at a glance who is around and what they are working on. Nothing needs setting up: as soon as two or more people are in a shared project, presence just appears.
+Open a plan with other people and it comes alive. Everyone sees each other's changes as they happen, and can tell at a glance who is around and what they are working on. Nothing needs setting up: as soon as two or more people are in a shared plan, presence just appears.
 
 ## Who is here, and where
 
@@ -28,7 +28,7 @@ Each person is given a colour and a name. Signed-in people show their account na
 
 ## Collaborators
 
-Click any avatar on a tab, or the **+N** badge when a tab is busy, to open **Collaborators**. It lists everyone in the project grouped by the tab they are on, so you can see where the whole room is at once rather than hovering tab by tab. The person you clicked is highlighted.
+Click any avatar on a tab, or the **+N** badge when a tab is busy, to open **Collaborators**. It lists everyone in the plan grouped by the tab they are on, so you can see where the whole room is at once rather than hovering tab by tab. The person you clicked is highlighted.
 
 - Your own tab is marked **You're Here**. Every other tab has a **Go to Tab** button that takes you straight there.
 - Each person shows their name, their role when it is known, whether they are online, away or offline, and how long ago they were last active.
@@ -45,7 +45,7 @@ Someone who joins late sees what is already held: the cards others have open and
 
 ## Agents at work
 
-An AI agent or a script working on a project with an [API token](/help/account-and-data/api-tokens/) can show itself while it works. It appears under its owner's name and colour, never as a new person:
+An AI agent or a script working on a plan with an [API token](/help/account-and-data/api-tokens/) can show itself while it works. It appears under its owner's name and colour, never as a new person:
 
 - **What it is doing** shows beside its owner: in the hover card on their avatar, on their row in Collaborators, and in what a screen reader announces. When the owner is not on that tab, the agent gets an avatar of its own there.
 - **It leaves on its own** a little while after it stops working, so a finished or stopped agent never lingers.
@@ -54,7 +54,7 @@ Agents are listed in Collaborators, but they are not counted as people.
 
 ## Who can see presence
 
-Live presence works for everyone in a shared project, including guests and people opening a [share link](/help/collaboration/sharing/) to view, not just signed-in editors. A private project you have not shared has no presence, since it is just you, except for your own agent while it works on it.
+Live presence works for everyone in a shared plan, including guests and people opening a [share link](/help/collaboration/sharing/) to view, not just signed-in editors. A private plan you have not shared has no presence, since it is just you, except for your own agent while it works on it.
 
 <Tip>
   Names and colours are chosen automatically, and a colour is nudged if two people happen to get the

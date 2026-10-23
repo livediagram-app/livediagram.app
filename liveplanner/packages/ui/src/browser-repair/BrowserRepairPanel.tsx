@@ -139,8 +139,8 @@ export function BrowserRepairPanel({
             This clears liveplanner&rsquo;s saved settings and caches in this browser.
           </p>
           <p className="mt-1 text-slate-600 dark:text-slate-300">
-            Your projects, your guest identity, Offline Mode projects and your sign-in are kept.
-            Settings such as panel layout and dismissed tips go back to their defaults.
+            Your plans, your guest identity, Offline Mode plans and your sign-in are kept. Settings
+            such as panel layout and dismissed tips go back to their defaults.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             <Button ref={goRef} variant="primary" size="sm" onClick={onRepair}>

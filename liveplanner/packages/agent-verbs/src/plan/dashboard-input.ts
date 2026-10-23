@@ -39,7 +39,7 @@ export function resolveDashboardInput(
             `No Board or Sheet tab "${name}". ` +
             (shown.length
               ? `Tabs it can show: ${shown.map((t) => t.name).join(', ')}.`
-              : 'The project has none.'),
+              : 'The plan has none.'),
         };
       picked.push({ tabId: tab.id, of: tab.of });
     }

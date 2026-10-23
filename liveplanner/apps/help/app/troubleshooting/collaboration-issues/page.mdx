@@ -10,12 +10,12 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Real-Time Collaboration Problems" description="What to try when cursors, presence, or live edits are not coming through during collaboration." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
 
-Real-time collaboration in liveplanner works through a per-project room: everyone editing the same project connects to it over a live connection, and that room relays cursors, who is selecting what, which tab people are on, and edits as they happen. When something is not coming through, it is almost always the connection to that room rather than your data. Work through the checks below.
+Real-time collaboration in liveplanner works through a per-plan room: everyone editing the same plan connects to it over a live connection, and that room relays cursors, who is selecting what, which tab people are on, and edits as they happen. When something is not coming through, it is almost always the connection to that room rather than your data. Work through the checks below.
 
 ## When you see no one else
 
-1. **Confirm everyone is in the same project.** Live presence is per project. Two people on different projects, or on different copies, will not see each other.
-2. **Make sure others actually have access.** Collaborators need a valid [share link](/help/collaboration/sharing/) (or to be the owner, or a member of the team the project belongs to). If their link expired, was revoked, or needs a password, they may not be connected at all. See [share link security](/help/privacy-and-security/share-link-security/).
+1. **Confirm everyone is in the same plan.** Live presence is per plan. Two people on different plans, or on different copies, will not see each other.
+2. **Make sure others actually have access.** Collaborators need a valid [share link](/help/collaboration/sharing/) (or to be the owner, or a member of the team the plan belongs to). If their link expired, was revoked, or needs a password, they may not be connected at all. See [share link security](/help/privacy-and-security/share-link-security/).
 3. **Reload the page.** A refresh re-establishes the live connection and re-sends presence. This clears most transient glitches.
 4. **Check your network.** Real-time relies on a live connection that some corporate networks, VPNs, or firewalls block. Try a different network or a mobile hotspot to confirm.
 
@@ -25,14 +25,14 @@ Real-time collaboration in liveplanner works through a per-project room: everyon
 2. **Remember not every link can edit.** A Viewer link only looks. A Participant link can add and move cards, edit their fields, write in Sheet cells, comment and vote, but cannot change a board's columns or settings, format a Sheet, or add or delete tabs. If someone's changes are not landing, check whether they need an Editor link.
 3. **Avoid editing the exact same thing at once.** Edits to different cards or cells, even on the same tab, merge cleanly. Two people changing the same thing is the one case where the last change to arrive wins, which is why something someone else has selected (an Editor or a Participant) shows as locked for you until they let go (a Viewer's selection never locks anything).
 4. **If something stays locked,** the person holding it has probably left it selected and walked away. Ask them to click away; it also frees itself when they switch tab or leave.
-5. **Watch for a dropped link mid-session.** If a share link is revoked, or the password changes, visitors using it are disconnected (or sent back to the password prompt). If the project is moved to the [Trash](/help/account-and-data/trash/), everyone in it is told it was deleted. An expired link lets people already inside carry on until their next load, save or reconnect. Ask the owner for a fresh link.
+5. **Watch for a dropped link mid-session.** If a share link is revoked, or the password changes, visitors using it are disconnected (or sent back to the password prompt). If the plan is moved to the [Trash](/help/account-and-data/trash/), everyone in it is told it was deleted. An expired link lets people already inside carry on until their next load, save or reconnect. Ask the owner for a fresh link.
 
 ## If it still will not connect
 
-1. **Try a different browser or device** to separate a local issue from a project one. See [browser compatibility](/help/troubleshooting/browser-compatibility/).
+1. **Try a different browser or device** to separate a local issue from a plan one. See [browser compatibility](/help/troubleshooting/browser-compatibility/).
 2. **Disable extensions** that might interfere with live connections, then retry in an incognito window.
-3. **Confirm the project loads at all.** If it will not even open, start with [a project will not load](/help/troubleshooting/project-not-loading/).
+3. **Confirm the plan loads at all.** If it will not even open, start with [a plan will not load](/help/troubleshooting/project-not-loading/).
 
-Your changes are saved independently of the live room, so a presence hiccup does not lose work. If a save does fail, a message at the bottom of the screen says so; see [My Changes Are Missing](/help/troubleshooting/missing-changes/). If collaboration still will not come through, [contact us](/help/contact/) with the project URL and what each person sees.
+Your changes are saved independently of the live room, so a presence hiccup does not lose work. If a save does fail, a message at the bottom of the screen says so; see [My Changes Are Missing](/help/troubleshooting/missing-changes/). If collaboration still will not come through, [contact us](/help/contact/) with the plan URL and what each person sees.
 
 </ArticleLayout>

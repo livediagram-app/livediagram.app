@@ -23,7 +23,7 @@ const BackGlyph = lucideGlyph(lucideArrowLeft, 14);
 export function WorkbenchOpenLink({
   href,
   labelled,
-  description = 'Opens this project in a full tab.',
+  description = 'Opens this plan in a full tab.',
 }: {
   href: string;
   labelled: boolean;

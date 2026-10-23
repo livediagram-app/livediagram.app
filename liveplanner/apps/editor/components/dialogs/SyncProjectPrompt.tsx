@@ -38,7 +38,7 @@ export function SyncProjectPrompt({
       await onSyncToCloud();
       // The project is a cloud project now: the dialog shows what it was opened for in place of this prompt.
       // The spinner stays until it does, so the button never flashes back.
-      toast.success('Synced. Your project is on liveplanner now.');
+      toast.success('Synced. Your plan is on liveplanner now.');
     } catch (e) {
       setBusy(false);
       toast.error(syncFailureMessage(e));
@@ -55,7 +55,7 @@ export function SyncProjectPrompt({
       </span>
       <div className="flex flex-col gap-1.5">
         <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
-          This Project Is in This Browser
+          This Plan Is in This Browser
         </p>
         <p className="mx-auto max-w-sm text-xs leading-relaxed text-slate-500 dark:text-slate-400">
           {message}
@@ -73,7 +73,7 @@ export function SyncProjectPrompt({
             Syncing…
           </span>
         ) : (
-          'Sync Project'
+          'Sync Plan'
         )}
       </Button>
     </div>

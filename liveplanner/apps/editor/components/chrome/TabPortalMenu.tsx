@@ -284,7 +284,7 @@ export function PortalMenu({
             <MenuToolButton
               icon={<DuplicateIcon />}
               label="Duplicate"
-              description="Create a copy of this tab in this project."
+              description="Create a copy of this tab in this plan."
               onClick={onDuplicate}
             />
             {/* Paste in the tab ⋯ menu: one tab verb among several, so an
@@ -387,7 +387,7 @@ export function PortalMenu({
           <MenuActionRow
             plain
             icon={<MoveIcon />}
-            label="Add to Project"
+            label="Add to Plan"
             onClick={() => setView('copyTo')}
             disabled={otherProjects.length === 0 || planTab}
           />

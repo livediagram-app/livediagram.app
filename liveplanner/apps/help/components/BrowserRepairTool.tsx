@@ -64,12 +64,12 @@ export function BrowserRepairTool() {
         />
       ) : (
         <p role="status" className="text-sm text-slate-700 dark:text-slate-200">
-          Done. Open your project again.{' '}
+          Done. Open your plan again.{' '}
           <a
             href="/explorer/recent"
             className="font-medium text-brand-700 underline dark:text-brand-400"
           >
-            Go to your projects
+            Go to your plans
           </a>
         </p>
       )}

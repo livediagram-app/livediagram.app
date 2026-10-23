@@ -99,7 +99,7 @@ export function PaneHeader({
   const singleCreate =
     createMode.kind === 'single'
       ? createMode.action === 'project'
-        ? { label: 'New Project', onClick: onCreateProject! }
+        ? { label: 'New Plan', onClick: onCreateProject! }
         : { label: folderLabel ?? 'New Folder', onClick: onCreateFolder! }
       : null;
   const [createOpen, setCreateOpen] = useState(false);
@@ -186,7 +186,7 @@ export function PaneHeader({
                           <ProjectIcon />
                         </span>
                       }
-                      label="New Project"
+                      label="New Plan"
                       onClick={() => {
                         onCreateProject();
                         setCreateOpen(false);

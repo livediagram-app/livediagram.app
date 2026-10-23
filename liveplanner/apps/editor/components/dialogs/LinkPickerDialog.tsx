@@ -67,7 +67,7 @@ type Mode = 'tab' | 'project' | 'url';
 const MODES: { id: Mode; label: string }[] = [
   { id: 'url', label: 'External URL' },
   { id: 'tab', label: 'Tab' },
-  { id: 'project', label: 'Project' },
+  { id: 'project', label: 'Plan' },
 ];
 
 export function LinkPickerDialog({
@@ -121,9 +121,7 @@ export function LinkPickerDialog({
       <DialogHeader
         title={title}
         subtitle={
-          urlOnly
-            ? urlOnly.subtitle
-            : 'Jump to a tab, open another project, or go to a web address.'
+          urlOnly ? urlOnly.subtitle : 'Jump to a tab, open another plan, or go to a web address.'
         }
       >
         {/* A URL-restricted picker is an embed's link dialog (docs/specs/009-elements/embed-providers.md), so
@@ -185,8 +183,8 @@ export function LinkPickerDialog({
             <CompactEmptyState
               className="py-10"
               icon={<ProjectGlyph />}
-              title="No other projects yet"
-              description="Make another project to link to it."
+              title="No other plans yet"
+              description="Make another plan to link to it."
             />
           ) : (
             <ul className="flex flex-col gap-1">

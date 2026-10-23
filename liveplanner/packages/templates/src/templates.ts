@@ -253,7 +253,7 @@ export function templateCreateHref(kind: TemplateKind): string {
 // Default name for a freshly-created project: "Untitled <Template Title>" in
 // title case so a templated project is recognisable in the Explorer (e.g.
 // "Untitled Kanban Board"), while a blank one (or no template) keeps the plain
-// "Untitled project" (UNTITLED_PROJECT_NAME, legacy-untitled.ts).
+// "Untitled plan" (UNTITLED_PROJECT_NAME, legacy-untitled.ts).
 
 export function untitledNameForTemplate(kind: TemplateKind | null): string {
   if (!kind || kind === 'blank') return UNTITLED_PROJECT_NAME;
@@ -262,7 +262,7 @@ export function untitledNameForTemplate(kind: TemplateKind | null): string {
   return title ? `Untitled ${titleCase(title)}` : UNTITLED_PROJECT_NAME;
 }
 
-// Every name a project is given before anyone names it: each template's untitled name, plus "Untitled project" and
+// Every name a project is given before anyone names it: each template's untitled name, plus "Untitled plan" and
 // its legacy spelling. Built once, at first use.
 let DEFAULT_NAMES: ReadonlySet<string> | null = null;
 

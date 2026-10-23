@@ -30,7 +30,7 @@ export function PanelProjectItem({
 }) {
   const tree = usePanelTree();
   const menu = usePaneProjectMenu(doc);
-  const name = doc.name || 'Untitled project';
+  const name = doc.name || 'Untitled plan';
   const local = isInThisBrowser(doc);
   const shareCode = doc.shared?.shareCode;
   const favourite = tree.favouriteIds?.has(doc.id) === true;

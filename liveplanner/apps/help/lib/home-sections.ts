@@ -59,7 +59,7 @@ export const STILL_STUCK = { category: 'troubleshooting', contact: 'contact' } a
 
 /** The chips under the hero's search: the articles most readers come for, by `categorySlug/slug`. */
 export const POPULAR_TOPICS: { label: string; path: string }[] = [
-  { label: 'Your first project', path: 'getting-started/your-first-project' },
+  { label: 'Your first plan', path: 'getting-started/your-first-project' },
   { label: 'Boards', path: 'plan/boards' },
   { label: 'Sheets', path: 'plan/sheets' },
   { label: 'Sharing', path: 'getting-started/sharing-your-project' },

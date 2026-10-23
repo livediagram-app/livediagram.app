@@ -77,7 +77,7 @@ export function useTrash(
         toast.success(projectRestoredMessage(name));
         onChanged();
       } catch {
-        toast.error(`Could not restore ${toastName(name) ?? 'that project'}. Try again.`);
+        toast.error(`Could not restore ${toastName(name) ?? 'that plan'}. Try again.`);
         load();
       }
     },
@@ -93,7 +93,7 @@ export function useTrash(
         drop([id]);
         track('Trash', 'Deleted', group.telemetryType);
       } catch {
-        toast.error(`Could not delete ${toastName(name) ?? 'that project'}. Try again.`);
+        toast.error(`Could not delete ${toastName(name) ?? 'that plan'}. Try again.`);
         load();
       }
     },

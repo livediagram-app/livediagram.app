@@ -38,13 +38,13 @@ type Reason = {
 const REASONS: Reason[] = [
   {
     icon: <ShieldIcon />,
-    title: 'Keep your projects safe',
-    body: 'Guest projects are tied to this browser, so a cache clear (or a browser that wipes data on close) can lose access to them. Signing in attaches them to your account so they survive a cache clear or browser restart.',
+    title: 'Keep your plans safe',
+    body: 'Guest plans are tied to this browser, so a cache clear (or a browser that wipes data on close) can lose access to them. Signing in attaches them to your account so they survive a cache clear or browser restart.',
   },
   {
     icon: <DevicesIcon />,
     title: 'Open them anywhere',
-    body: 'Your work syncs to your account, so the same projects are waiting on your laptop, desktop, and phone.',
+    body: 'Your work syncs to your account, so the same plans are waiting on your laptop, desktop, and phone.',
   },
   {
     icon: <TeamIcon />,
@@ -54,12 +54,12 @@ const REASONS: Reason[] = [
   {
     icon: <PlugIcon />,
     title: 'Connect AI tools',
-    body: 'Mint API tokens and connect external AI assistants over MCP, so tools like Claude can read and build your projects for you.',
+    body: 'Mint API tokens and connect external AI assistants over MCP, so tools like Claude can read and build your plans for you.',
   },
   {
     icon: <BadgeIcon />,
     title: 'Use your real name',
-    body: 'Shared projects and live cursors show your name instead of a random guest id, so collaborators know who did what.',
+    body: 'Shared plans and live cursors show your name instead of a random guest id, so collaborators know who did what.',
   },
   {
     icon: <LinkIcon />,

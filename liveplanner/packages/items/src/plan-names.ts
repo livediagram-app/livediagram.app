@@ -54,7 +54,7 @@ export function resolveStatus(
   if (statuses.length === 0)
     return refuse(
       'status_unknown',
-      `No column "${input}": the project has no Plan board yet. Add one with add_board, or leave status out ` +
+      `No column "${input}": the plan has no board yet. Add one with add_board, or leave status out ` +
         'to make the card off every board.',
     );
   return refuse(

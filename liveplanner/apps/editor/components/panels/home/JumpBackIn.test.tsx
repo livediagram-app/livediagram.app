@@ -150,13 +150,13 @@ describe('JumpBackIn, desktop and tablet', () => {
 
   it('says what will gather here when there is nothing yet', () => {
     renderIt(set([], []));
-    expect(screen.getByText('No projects yet')).toBeTruthy();
-    expect(screen.getByText('The projects you use most and last will gather here.')).toBeTruthy();
+    expect(screen.getByText('No plans yet')).toBeTruthy();
+    expect(screen.getByText('The plans you use most and last will gather here.')).toBeTruthy();
     expect(screen.queryByRole('list')).toBeNull();
     // Nothing to see more of.
     expect(screen.queryByRole('link', { name: 'See More' })).toBeNull();
     // In place of one most used card: its size, in the first column, no group labels.
-    const slot = screen.getByText('No projects yet').closest('[data-empty-state]')!.parentElement!;
+    const slot = screen.getByText('No plans yet').closest('[data-empty-state]')!.parentElement!;
     expect(slot.className).toContain('h-[12.5rem]');
     expect(slot.className).toContain('border-dashed');
     expect(slot.parentElement!.className).toContain('lg:grid-cols-4');
@@ -212,7 +212,7 @@ describe('JumpBackIn, phone', () => {
 
   it('shows no See More tile beside the empty state', () => {
     renderIt(set([], []));
-    expect(screen.getByText('No projects yet')).toBeTruthy();
+    expect(screen.getByText('No plans yet')).toBeTruthy();
     expect(screen.queryByRole('link', { name: 'See More' })).toBeNull();
   });
 });

@@ -5,13 +5,13 @@ import { TabFolderStates, AddToFolderMenu } from '@/components/illustrations/tab
 export const metadata = helpMetadata({
   title: 'Tab Folders',
   description:
-    'Group related tabs in a project under a named folder chip that fans its tabs out on a click, so a long tab bar stays organised and readable.',
+    'Group related tabs in a plan under a named folder chip that fans its tabs out on a click, so a long tab bar stays organised and readable.',
   path: '/help/tabs/tab-folders/',
 });
 
-<ArticleLayout title="Tab Folders" description="Once a project grows past a handful of tabs, group the related ones under a named folder that takes up a single chip on the tab bar." categoryTitle="Tabs" categorySlug="tabs">
+<ArticleLayout title="Tab Folders" description="Once a plan grows past a handful of tabs, group the related ones under a named folder that takes up a single chip on the tab bar." categoryTitle="Tabs" categorySlug="tabs">
 
-When a project's tab bar fills up, a flat list of tabs gets hard to scan. A **tab folder** gathers related tabs under one named chip that takes the room of a single tab. Put three tabs under "Organisation" and two under "Plans", and the bar stays calm however many tabs each folder holds.
+When a plan's tab bar fills up, a flat list of tabs gets hard to scan. A **tab folder** gathers related tabs under one named chip that takes the room of a single tab. Put three tabs under "Organisation" and two under "Plans", and the bar stays calm however many tabs each folder holds.
 
 ## How folders work
 
@@ -19,9 +19,9 @@ A few things are worth knowing about how tab folders behave:
 
 - **One level.** A folder holds tabs. Folders never contain other folders.
 - **A folder is just a name.** There is no separate folder object to create or delete. A folder exists as long as at least one tab carries its name, and it disappears when the last tab leaves it.
-- **Per-project.** If a tab is [shared into more than one project](/help/tabs/add-to-project/), it can sit in a folder in one project and be loose in another. The folder belongs to the project, not to the tab's content.
+- **Per-project.** If a tab is [shared into more than one plan](/help/tabs/add-to-project/), it can sit in a folder in one plan and be loose in another. The folder belongs to the plan, not to the tab's content.
 - **Folders are contiguous.** A folder's tabs always sit together in the tab order, behind a single chip with a dashed outline, the folder's name in capitals, and a count of its tabs.
-- **Shared with collaborators.** Folder names and membership are part of the project, so everyone sees the same folders.
+- **Shared with collaborators.** Folder names and membership are part of the plan, so everyone sees the same folders.
 
 ## Opening a folder
 

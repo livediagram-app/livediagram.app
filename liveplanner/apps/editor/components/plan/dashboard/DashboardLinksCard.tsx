@@ -142,9 +142,7 @@ export function DashboardLinksCard({
           <CompactEmptyState
             icon={<LinkGlyph />}
             title="No links yet"
-            description={
-              canEdit ? 'Add Link puts a site or a tab of this project here.' : undefined
-            }
+            description={canEdit ? 'Add Link puts a site or a tab of this plan here.' : undefined}
           />
         ) : null}
         {canEdit && adding ? (

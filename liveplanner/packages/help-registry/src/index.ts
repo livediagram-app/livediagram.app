@@ -75,7 +75,7 @@ export const categories: Category[] = [
     slug: 'getting-started',
     title: 'Getting Started',
     description:
-      'Go from an empty project to a shared plan in minutes, with the basics every new user needs.',
+      'Go from an empty plan to a shared plan in minutes, with the basics every new user needs.',
     articleCount: 5,
   },
   {
@@ -96,7 +96,7 @@ export const categories: Category[] = [
     slug: 'privacy-and-security',
     title: 'Privacy and Security',
     description:
-      'Know exactly how your projects are stored, what we collect, and how to keep shared links safe.',
+      'Know exactly how your plans are stored, what we collect, and how to keep shared links safe.',
     articleCount: 4,
   },
   {
@@ -158,7 +158,7 @@ export const categories: Category[] = [
     slug: 'explorer',
     title: 'Explorer',
     description:
-      'Organise everything you build: how the Explorer keeps your projects, folders, teams, and assets easy to find and manage.',
+      'Organise everything you build: how the Explorer keeps your plans, folders, teams, and assets easy to find and manage.',
     articleCount: 14,
     kind: 'feature',
     groups: ['Your Library', 'Activity', 'Assets and Imports'],
@@ -167,7 +167,7 @@ export const categories: Category[] = [
     slug: 'tabs',
     title: 'Tabs',
     description:
-      'Keep a whole plan in one project: its boards, sheets, forms and dashboards each on a tab, organised and moved between.',
+      'Keep a piece of work in one plan: its boards, sheets, forms and dashboards each on a tab, organised and moved between.',
     articleCount: 7,
     kind: 'feature',
   },
@@ -190,7 +190,7 @@ export const categories: Category[] = [
     slug: 'search-panel',
     title: 'Search Panel',
     description:
-      'Find anything in seconds: jump to any project, folder, team, tab or card, and run commands.',
+      'Find anything in seconds: jump to any plan, folder, team, tab or card, and run commands.',
     articleCount: 1,
     kind: 'feature',
   },
@@ -222,8 +222,9 @@ export const articles: Article[] = [
   {
     slug: 'tab-bar',
     title: 'The Tab Bar',
-    description: 'Switch between the tabs of a project, add new ones, and group them into folders.',
-    keywords: 'tabs switch bottom bar boards sheets dashboards forms add rename reorder menu',
+    description: 'Switch between the tabs of a plan, add new ones, and group them into folders.',
+    keywords:
+      'tabs switch bottom bar boards sheets dashboards forms add rename reorder menu project',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -241,7 +242,7 @@ export const articles: Article[] = [
     title: 'Settings',
     description: 'Every preference toggle, what it does, and which device it follows you to.',
     keywords:
-      'settings preferences options config configure gear cog toggles panel opacity toolbar minimap welcome tour notifications toasts reduce motion animation accessibility ai assistant telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings ui scale element indicators badges dock position draw default folders where new projects go plan email api tokens trash delete',
+      'settings preferences options config configure gear cog toggles panel opacity toolbar minimap welcome tour notifications toasts reduce motion animation accessibility ai assistant telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings ui scale element indicators badges dock position draw default folders where new projects go plan email api tokens trash delete plans',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -257,9 +258,9 @@ export const articles: Article[] = [
   {
     slug: 'title-bar',
     title: 'The Title Bar',
-    description: 'Rename the project, see who can see it, preview as a viewer, and Share or Copy.',
+    description: 'Rename the plan, see who can see it, preview as a viewer, and Share or Copy.',
     keywords:
-      'header top bar project name rename visibility private shared team public local only role pill editing viewing participating owner preview read only share copy make a copy account',
+      'header top bar project name rename visibility private shared team public local only role pill editing viewing participating owner preview read only share copy make a copy account plan',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -267,9 +268,9 @@ export const articles: Article[] = [
     slug: 'what-is-liveplanner',
     title: 'What is liveplanner?',
     description:
-      'An overview of the free, real-time planner: boards, sheets, forms and dashboards in one project.',
+      'An overview of the free, real-time planner: boards, sheets, forms and dashboards in one plan.',
     keywords:
-      'overview intro introduction about product planner planning boards kanban sheets forms dashboards app',
+      'overview intro introduction about product planner planning boards kanban sheets forms dashboards app project',
     category: 'About liveplanner',
     categorySlug: 'about',
     parentSlug: 'about',
@@ -278,7 +279,8 @@ export const articles: Article[] = [
     slug: 'who-is-it-for',
     title: 'Who is liveplanner For?',
     description: 'The teams and use cases that get the most out of liveplanner.',
-    keywords: 'audience use cases teams software product project managers retros hiring planning',
+    keywords:
+      'audience use cases teams software product project managers retros hiring planning plan',
     category: 'About liveplanner',
     categorySlug: 'about',
     parentSlug: 'about',
@@ -295,19 +297,19 @@ export const articles: Article[] = [
   },
   {
     slug: 'your-first-project',
-    title: 'Your First Project',
+    title: 'Your First Plan',
     description:
-      'Start a project, pick a board, sheet, form or dashboard, add your first cards, and share it.',
+      'Start a plan, pick a board, sheet, form or dashboard, add your first cards, and share it.',
     keywords:
-      'start begin new project first board kanban sheet form dashboard start planning template card cards tutorial walkthrough beginner quick start',
+      'start begin new project first board kanban sheet form dashboard start planning template card cards tutorial walkthrough beginner quick start plan',
     category: 'Getting Started',
     categorySlug: 'getting-started',
   },
   {
     slug: 'sharing-your-project',
-    title: 'Sharing Your Project',
+    title: 'Sharing Your Plan',
     description: 'Hand a link to anyone and edit together in real time.',
-    keywords: 'share link collaborate invite send url realtime together project',
+    keywords: 'share link collaborate invite send url realtime together project plan',
     category: 'Getting Started',
     categorySlug: 'getting-started',
   },
@@ -357,34 +359,34 @@ export const articles: Article[] = [
   {
     slug: 'guest-identity',
     title: 'How Guest Identity Works',
-    description: 'The per-browser id that owns your projects when you are not signed in.',
-    keywords: 'anonymous browser id localstorage owner identity without account',
+    description: 'The per-browser id that owns your plans when you are not signed in.',
+    keywords: 'anonymous browser id localstorage owner identity without account project',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
   {
     slug: 'signing-in',
     title: 'Signing In',
-    description: 'Create an account, sign in, and migrate your guest projects.',
+    description: 'Create an account, sign in, and migrate your guest plans.',
     keywords:
-      'login log in sign up register email code google oauth account create migrate avatar initials',
+      'login log in sign up register email code google oauth account create migrate avatar initials project',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
   {
     slug: 'deleting-your-data',
     title: 'Deleting Your Data',
-    description: 'How to delete a project or your whole account, and what each removes.',
-    keywords: 'delete remove erase gdpr clear account wipe forget close trash',
+    description: 'How to delete a plan or your whole account, and what each removes.',
+    keywords: 'delete remove erase gdpr clear account wipe forget close trash project',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
   {
     slug: 'trash',
     title: 'Trash',
-    description: 'Deleted projects wait 30 days: restore one, or delete it for good.',
+    description: 'Deleted plans wait 30 days: restore one, or delete it for good.',
     keywords:
-      'trash bin recycle deleted undo undelete restore recover get back permanently empty blank unused automatic automatically clean up cleanup thirty days',
+      'trash bin recycle deleted undo undelete restore recover get back permanently empty blank unused automatic automatically clean up cleanup thirty days project',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -399,9 +401,9 @@ export const articles: Article[] = [
   {
     slug: 'connect-ai-mcp',
     title: 'Connect an AI Tool (MCP)',
-    description: 'Connect Claude or any MCP client to find, view, create, and edit your projects.',
+    description: 'Connect Claude or any MCP client to find, view, create, and edit your plans.',
     keywords:
-      'claude chatgpt cursor model context protocol ai integration assistant llm connector trash restore plan items read-only',
+      'claude chatgpt cursor model context protocol ai integration assistant llm connector trash restore plan items read-only project',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -442,10 +444,10 @@ export const articles: Article[] = [
   },
   {
     slug: 'working-with-projects',
-    title: 'Working with Projects',
-    description: 'Worked examples: list, read, create, and update projects, tabs, and folders.',
+    title: 'Working with Plans',
+    description: 'Worked examples: list, read, create, and update plans, tabs, and folders.',
     keywords:
-      'examples curl crud create update list read api requests templates boards outline view text agent',
+      'examples curl crud create update list read api requests templates boards outline view text agent project',
     category: 'Developers',
     categorySlug: 'developers',
   },
@@ -482,9 +484,9 @@ export const articles: Article[] = [
     slug: 'cli',
     title: 'The liveplanner CLI',
     description:
-      'Read, build, edit and discuss projects from a terminal: install, sign in, the commands, and profiles.',
+      'Read, build, edit and discuss plans from a terminal: install, sign in, the commands, and profiles.',
     keywords:
-      'cli command line terminal shell npm npx install agent coding agent script automation device code login sign in token keychain export pull push profile',
+      'cli command line terminal shell npm npx install agent coding agent script automation device code login sign in token keychain export pull push profile project',
     category: 'Developers',
     categorySlug: 'developers',
   },
@@ -492,9 +494,9 @@ export const articles: Article[] = [
     slug: 'workbenches',
     title: 'liveplanner in Your Developer Tools',
     description:
-      'Work in a project inside a developer tool beside your agent, and talk about what you select.',
+      'Work in a plan inside a developer tool beside your agent, and talk about what you select.',
     keywords:
-      'workbench spinner vs code vscode ide editor embed frame iframe pair pairing selection select agent coding agent live view developer tool workspace explorer folder whole workspace',
+      'workbench spinner vs code vscode ide editor embed frame iframe pair pairing selection select agent coding agent live view developer tool workspace explorer folder whole workspace project',
     category: 'Developers',
     categorySlug: 'developers',
   },
@@ -558,8 +560,8 @@ export const articles: Article[] = [
   {
     slug: 'data-privacy',
     title: 'Data Privacy',
-    description: 'Where your projects live and how they are handled.',
-    keywords: 'storage stored cloudflare security where data location safe',
+    description: 'Where your plans live and how they are handled.',
+    keywords: 'storage stored cloudflare security where data location safe project',
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',
@@ -567,9 +569,9 @@ export const articles: Article[] = [
   {
     slug: 'offline-mode',
     title: 'Offline Mode',
-    description: 'Save a project only in this browser, and move it to or from your account.',
+    description: 'Save a plan only in this browser, and move it to or from your account.',
     keywords:
-      'local only pill this browser private no sync device localstorage disconnect save location clear site data lost guest default start move to account after sign in share upload',
+      'local only pill this browser private no sync device localstorage disconnect save location clear site data lost guest default start move to account after sign in share upload project',
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',
@@ -606,19 +608,19 @@ export const articles: Article[] = [
   },
   {
     slug: 'project-not-loading',
-    title: 'A Project Will Not Load',
-    description: 'What to check when a project is blank or stuck loading.',
+    title: 'A Plan Will Not Load',
+    description: 'What to check when a plan is blank or stuck loading.',
     keywords:
-      'blank stuck loading error broken empty spinner wont open 404 diagram opening taking longer than usual colleague works for others',
+      'blank stuck loading error broken empty spinner wont open 404 diagram opening taking longer than usual colleague works for others project',
     category: 'Troubleshooting',
     categorySlug: 'troubleshooting',
   },
   {
     slug: 'repair-this-browser',
     title: 'Repair This Browser',
-    description: 'Clear stuck settings and caches, keeping your projects.',
+    description: 'Clear stuck settings and caches, keeping your plans.',
     keywords:
-      'reset clear cache cookies local storage stuck loading fix diagnostics support repair browser data',
+      'reset clear cache cookies local storage stuck loading fix diagnostics support repair browser data project',
     category: 'Troubleshooting',
     categorySlug: 'troubleshooting',
   },
@@ -694,7 +696,7 @@ export const articles: Article[] = [
     slug: 'planning-basics',
     title: 'Planning Basics',
     description:
-      'How planning works: a project of Board, Sheet, Dashboard and Form tabs, Start Planning, cards you move together, and Plan templates.',
+      'How planning works: a plan of Board, Sheet, Dashboard and Form tabs, Start Planning, cards you move together, and Plan templates.',
     keywords:
       'planning board boards kanban scrum sprint agile retro retrospective roadmap now next later bug triage weekly planner jira trello asana linear backlog to do in progress done column columns swimlane swimlanes rows wip limit work in progress card cards ticket tickets task tasks story stories issue issues drag drop move card assign label priority estimate story points vote voting dot vote hide writing private reveal facilitator set up board settings plan card keyboard shift arrow undo templates project planner gantt daily standup bug tracker okrs key results product launch feedback board budget planner timesheet contact list task tracker spreadsheet templates hiring onboarding tabs dashboard trash archive flag finder types view only phone',
     category: 'Plan',
@@ -811,9 +813,9 @@ export const articles: Article[] = [
   {
     slug: 'using-tabs',
     title: 'Tabs',
-    description: 'Multiple boards in one project: add, name, reorder, and switch between them.',
+    description: 'Multiple boards in one plan: add, name, reorder, and switch between them.',
     keywords:
-      'boards pages multiple sheets add rename reorder switch delete duplicate tab menu new tab quick start',
+      'boards pages multiple sheets add rename reorder switch delete duplicate tab menu new tab quick start project',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -845,9 +847,9 @@ export const articles: Article[] = [
   },
   {
     slug: 'add-to-project',
-    title: 'Add a Tab to Another Project',
-    description: 'Add the active tab to another project you own; both share the same live tab.',
-    keywords: 'reuse share tab sync across projects diagrams move copy live',
+    title: 'Add a Tab to Another Plan',
+    description: 'Add the active tab to another plan you own; both share the same live tab.',
+    keywords: 'reuse share tab sync across projects diagrams move copy live plans',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -894,7 +896,7 @@ export const articles: Article[] = [
     description:
       "The full-page library: the sidebar's Overview, Spaces and More, views, and folders.",
     keywords:
-      'library home dashboard files my projects my diagrams list manage browse sidebar overview spaces more keyboard navigation tree',
+      'library home dashboard files my projects my diagrams list manage browse sidebar overview spaces more keyboard navigation tree plans',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -903,9 +905,9 @@ export const articles: Article[] = [
     slug: 'tags',
     title: 'Tags',
     description:
-      'Coloured labels you put on your projects to group related ones together, across folders and teams.',
+      'Coloured labels you put on your plans to group related ones together, across folders and teams.',
     keywords:
-      'tag tags label labels labelling categorise categorize group grouping colour color code coded organise organize project client status filter chip chips rename delete',
+      'tag tags label labels labelling categorise categorize group grouping colour color code coded organise organize project client status filter chip chips rename delete plan',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -914,9 +916,9 @@ export const articles: Article[] = [
     slug: 'explorer-panel',
     title: 'Explorer Panel',
     description:
-      'The compact in-editor Explorer: the same Overview, Spaces and More, opening projects in place.',
+      'The compact in-editor Explorer: the same Overview, Spaces and More, opening plans in place.',
     keywords:
-      'sidebar overview spaces more tree keyboard switch projects library in editor menu button hamburger popover open more menu new share export',
+      'sidebar overview spaces more tree keyboard switch projects library in editor menu button hamburger popover open more menu new share export plans',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -938,7 +940,7 @@ export const articles: Article[] = [
     description:
       'The Explorer\u2019s landing view: what you use most and last, what happened, and every history.',
     keywords:
-      'home jump back in within reach most used last used recent see more grid strip return often what happened others teammates summary expand landing start banner greeting activity history project history team activity whats new latest events log notifications updates recent changes calendar month view stacked grouped collapse day colour color red amber green unread unseen new badge since last visit who did what other people filter local time board sheet dashboard form',
+      'home jump back in within reach most used last used recent see more grid strip return often what happened others teammates summary expand landing start banner greeting activity history project history team activity whats new latest events log notifications updates recent changes calendar month view stacked grouped collapse day colour color red amber green unread unseen new badge since last visit who did what other people filter local time board sheet dashboard form plan',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',
@@ -947,19 +949,19 @@ export const articles: Article[] = [
     slug: 'activity',
     title: 'Inbox',
     description:
-      'What is outstanding for you across every project: your cards, new form responses and open comment threads.',
+      'What is outstanding for you across every plan: your cards, new form responses and open comment threads.',
     keywords:
-      'activity inbox to do todo tasks my actions assigned to me assigned by me outstanding waiting open threads unresolved comments replies pending work queue what needs me badge count cross project all projects cross diagram all diagrams local only offline this browser',
+      'activity inbox to do todo tasks my actions assigned to me assigned by me outstanding waiting open threads unresolved comments replies pending work queue what needs me badge count cross project all projects cross diagram all diagrams local only offline this browser plan plans',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',
   },
   {
     slug: 'recent',
-    title: 'Recent Projects',
-    description: 'The projects that changed most recently, across every folder, team and share.',
+    title: 'Recent Plans',
+    description: 'The plans that changed most recently, across every folder, team and share.',
     keywords:
-      'history last opened latest edited previously hide exclude remove clutter show restore visible folder location where filed root breadcrumb diagrams filter newest twelve',
+      'history last opened latest edited previously hide exclude remove clutter show restore visible folder location where filed root breadcrumb diagrams filter newest twelve project',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',
@@ -967,9 +969,9 @@ export const articles: Article[] = [
   {
     slug: 'shared-with-you',
     title: 'Shared With Me',
-    description: 'Projects other people have shared with you, collected in one place.',
+    description: 'Plans other people have shared with you, collected in one place.',
     keywords:
-      'shared with me received from others incoming shares collaborations dismiss role owner',
+      'shared with me received from others incoming shares collaborations dismiss role owner project',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',
@@ -977,8 +979,8 @@ export const articles: Article[] = [
   {
     slug: 'folders',
     title: 'Folders',
-    description: 'Group projects into a nestable tree, and move them between folders.',
-    keywords: 'organise organize directory nest move tree group files',
+    description: 'Group plans into a nestable tree, and move them between folders.',
+    keywords: 'organise organize directory nest move tree group files project',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -987,20 +989,20 @@ export const articles: Article[] = [
     slug: 'default-folders',
     title: 'Default Folders',
     description:
-      'Choose the folder new projects, retrospectives and Kanban boards land in automatically.',
+      'Choose the folder new plans, retrospectives and Kanban boards land in automatically.',
     keywords:
-      'default folder where new projects go automatic placement retrospectives kanban use as default settings projects new project plan',
+      'default folder where new projects go automatic placement retrospectives kanban use as default settings projects new project plan plans',
     category: 'Explorer',
     categorySlug: 'explorer/folders',
     parentSlug: 'folders',
   },
   {
     slug: 'filters',
-    title: 'Search and Filter Projects',
+    title: 'Search and Filter Plans',
     description:
-      'Narrow any project list with words, chips or typed filters like made-by:ai, and share it as a link.',
+      'Narrow any plan list with words, chips or typed filters like made-by:ai, and share it as a link.',
     keywords:
-      'search find filter filters chips narrow refine query token tokens made by ai generated opens in mode diagram draw template retrospective kanban edited date last week recent people me others owner space team shared unsorted unfiled root lens results pages plan',
+      'search find filter filters chips narrow refine query token tokens made by ai generated opens in mode diagram draw template retrospective kanban edited date last week recent people me others owner space team shared unsorted unfiled root lens results pages plan project',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -1008,9 +1010,9 @@ export const articles: Article[] = [
   {
     slug: 'personal-space',
     title: 'My Work and Folders',
-    description: 'Your own library: the folders you create, and your unfiled projects at its root.',
+    description: 'Your own library: the folders you create, and your unfiled plans at its root.',
     keywords:
-      'my projects personal space library my work your projects your diagrams own files root folder organise organize unsorted unfiled made by ai generated favourite favorite star starred bookmark pin quick access',
+      'my projects personal space library my work your projects your diagrams own files root folder organise organize unsorted unfiled made by ai generated favourite favorite star starred bookmark pin quick access plans',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -1047,8 +1049,8 @@ export const articles: Article[] = [
   {
     slug: 'teams',
     title: 'Teams',
-    description: 'Invite members, assign roles, and share projects across a team.',
-    keywords: 'workspace organisation organization members invite group company',
+    description: 'Invite members, assign roles, and share plans across a team.',
+    keywords: 'workspace organisation organization members invite group company project',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
@@ -1136,9 +1138,9 @@ export const articles: Article[] = [
   },
   {
     slug: 'team-shared-projects',
-    title: 'Team Shared Projects',
+    title: 'Team Shared Plans',
     description: 'A per-team folder tree every member can manage.',
-    keywords: 'shared library folder team files workspace common diagrams',
+    keywords: 'shared library folder team files workspace common diagrams project',
     category: 'Collaboration',
     categorySlug: 'collaboration/teams',
     parentSlug: 'teams',
@@ -1174,8 +1176,8 @@ export const articles: Article[] = [
   {
     slug: 'embeds',
     title: 'Embeds',
-    description: 'Drop a live project into another page, read-only or editable by link role.',
-    keywords: 'iframe embed website notion confluence wiki blog integrate',
+    description: 'Drop a live plan into another page, read-only or editable by link role.',
+    keywords: 'iframe embed website notion confluence wiki blog integrate project',
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',
@@ -1183,8 +1185,8 @@ export const articles: Article[] = [
   {
     slug: 'live-image',
     title: 'Live Image',
-    description: 'Copy an always-current image of a project for READMEs and docs.',
-    keywords: 'readme badge always current screenshot png url auto updating',
+    description: 'Copy an always-current image of a plan for READMEs and docs.',
+    keywords: 'readme badge always current screenshot png url auto updating project',
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',
@@ -1259,9 +1261,9 @@ export const articles: Article[] = [
   },
   {
     slug: 'search-projects',
-    title: 'Finding Projects and Folders',
-    description: 'Search across your projects, folders, and the projects shared with you.',
-    keywords: 'find lookup locate files library open diagrams',
+    title: 'Finding Plans and Folders',
+    description: 'Search across your plans, folders, and the plans shared with you.',
+    keywords: 'find lookup locate files library open diagrams project',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',
     parentSlug: 'the-search-panel',
@@ -1269,8 +1271,8 @@ export const articles: Article[] = [
   {
     slug: 'search-teams',
     title: 'Searching Teams',
-    description: 'Find teams and their shared folders and projects from the search panel.',
-    keywords: 'find team shared folders lookup locate',
+    description: 'Find teams and their shared folders and plans from the search panel.',
+    keywords: 'find team shared folders lookup locate project',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',
     parentSlug: 'the-search-panel',
@@ -1279,8 +1281,8 @@ export const articles: Article[] = [
     slug: 'search-tabs-and-elements',
     title: 'Finding Tabs and Cards',
     description:
-      'Inside a project, jump to any tab or board by name, and open a card by its number or title.',
-    keywords: 'find jump locate tab name card number board title lookup open card',
+      'Inside a plan, jump to any tab or board by name, and open a card by its number or title.',
+    keywords: 'find jump locate tab name card number board title lookup open card project',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',
     parentSlug: 'the-search-panel',

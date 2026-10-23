@@ -286,7 +286,7 @@ export function SearchProjects() {
       query="onboarding"
       groups={[
         {
-          title: 'Projects',
+          title: 'Plans',
           rows: [{ icon: <ProjectIcon />, label: 'Onboarding flow', active: true }],
         },
         {

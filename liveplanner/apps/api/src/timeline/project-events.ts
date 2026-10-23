@@ -45,7 +45,7 @@ export async function recordProjectCreated(
       sourceType: 'project',
       sourceId: liveDoc.id,
       eventType: 'project_created',
-      title: 'Project Created',
+      title: 'Plan Created',
       description: liveDoc.name,
       snapshot: { ...projectSnapshot(liveDoc), ...makingSnapshot(making) },
     },
@@ -67,7 +67,7 @@ export async function recordProjectDuplicated(
       sourceType: 'project',
       sourceId: copy.id,
       eventType: 'project_duplicated',
-      title: 'Project Duplicated',
+      title: 'Plan Duplicated',
       description: `${sourceName} → ${copy.name}`,
       snapshot: { ...projectSnapshot(copy), sourceName, ...makingSnapshot(making) },
     },
@@ -184,7 +184,7 @@ export async function recordProjectEdited(
       sourceId: liveDoc.id,
       eventType: 'project_edited',
       dedupeKey: dedupeKeyForDay(actorId, now),
-      title: 'Project Updated',
+      title: 'Plan Updated',
       // Actor-relative copy is resolved by the renderer ("You worked
       // on X" vs "Priya edited X"), so the stored description stays
       // viewer-agnostic and one row serves the whole audience.
@@ -442,7 +442,7 @@ export async function recordProjectOpened(
       sourceId: liveDoc.id,
       eventType: HOME_OPENED_EVENT_TYPE,
       dedupeKey: dedupeKeyForDay(personId, at),
-      title: 'Project Opened',
+      title: 'Plan Opened',
       description: liveDoc.name,
       occurredAt: at,
       snapshot: projectSnapshot(liveDoc),

@@ -16,9 +16,9 @@ const COPY: Record<
   { opening: string; refusedHeading: string; refusedBody: string }
 > = {
   project: {
-    opening: 'Opening your project…',
-    refusedHeading: 'Open this project from your workbench',
-    refusedBody: 'This link works once, for a minute. Open the project again from your workbench.',
+    opening: 'Opening your plan…',
+    refusedHeading: 'Open this plan from your workbench',
+    refusedBody: 'This link works once, for a minute. Open the plan again from your workbench.',
   },
   workspace: {
     opening: 'Opening your workspace…',

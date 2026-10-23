@@ -120,7 +120,7 @@ function SheetBody({
             ? "Couldn't load this sheet"
             : loading || pending
               ? 'Opening Sheet'
-              : 'This sheet is no longer in this project'
+              : 'This sheet is no longer in this plan'
         }
         action={
           model.status === 'error'

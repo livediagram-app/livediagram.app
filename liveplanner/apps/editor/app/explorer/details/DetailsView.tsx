@@ -37,7 +37,7 @@ export function DetailsView(props: ExplorerViewProps) {
   );
   return (
     <div className={`${LIST_CARD} overflow-x-auto`}>
-      <table className="w-full table-fixed border-collapse" aria-label="Folders and projects">
+      <table className="w-full table-fixed border-collapse" aria-label="Folders and plans">
         <DetailsHeader sort={sort} onSort={sortBy} />
         <tbody className="lvd-cascade divide-y divide-slate-100 dark:divide-slate-700/60">
           {sorted.folders.map((f) => (

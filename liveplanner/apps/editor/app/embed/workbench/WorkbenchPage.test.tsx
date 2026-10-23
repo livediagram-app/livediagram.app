@@ -107,17 +107,17 @@ describe('WorkbenchPage', () => {
   ] as WorkbenchPhase[])('says it is opening while $phase', (phase) => {
     harness.initial = phase;
     render(<WorkbenchPage />);
-    expect(screen.getByRole('status').textContent).toBe('Opening your project…');
+    expect(screen.getByRole('status').textContent).toBe('Opening your plan…');
   });
 
   it('refuses with its heading and the way back', () => {
     harness.initial = { phase: 'refused', cause: 'no-ticket' };
     render(<WorkbenchPage />);
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(
-      'Open this project from your workbench',
+      'Open this plan from your workbench',
     );
     expect(screen.getByRole('status').textContent).toContain(
-      'This link works once, for a minute. Open the project again from your workbench.',
+      'This link works once, for a minute. Open the plan again from your workbench.',
     );
   });
 
@@ -138,7 +138,7 @@ describe('WorkbenchPage', () => {
   it('is still opening in the moment between the ack and its port', () => {
     harness.initial = { phase: 'mounted', session: SESSION, name: 'Acme Editor' };
     render(<WorkbenchPage />);
-    expect(screen.getByRole('status').textContent).toBe('Opening your project…');
+    expect(screen.getByRole('status').textContent).toBe('Opening your plan…');
   });
 
   it('mounts the editor on the workbench surface, signed in as the person', () => {
@@ -150,13 +150,13 @@ describe('WorkbenchPage', () => {
 
   it('shows the opening copy while the editor chunk loads', () => {
     render(<>{harness.loadings.editor() as never}</>);
-    expect(screen.getByRole('status').textContent).toBe('Opening your project…');
+    expect(screen.getByRole('status').textContent).toBe('Opening your plan…');
   });
 
   it('is the static route, unindexed, titled for a workbench', () => {
     harness.initial = { phase: 'reading' };
     render(<Page />);
-    expect(screen.getByRole('status').textContent).toBe('Opening your project…');
+    expect(screen.getByRole('status').textContent).toBe('Opening your plan…');
     expect(metadata).toEqual({ title: 'Workbench | liveplanner', robots: { index: false } });
   });
 
@@ -217,7 +217,7 @@ describe('WorkbenchPage', () => {
       });
     });
 
-    expect(screen.getByRole('status').textContent).toBe('Opening your project…');
+    expect(screen.getByRole('status').textContent).toBe('Opening your plan…');
     vi.unstubAllGlobals();
   });
 });

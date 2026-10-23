@@ -54,7 +54,7 @@ const show = async (enabled?: boolean) => {
 describe('LocalMovePrompt', () => {
   it('offers every project in This Browser, newest first, all ticked', async () => {
     await show();
-    expect(screen.getByText('Move Projects in This Browser to Your Account?')).toBeTruthy();
+    expect(screen.getByText('Move Plans in This Browser to Your Account?')).toBeTruthy();
     const names = screen.getAllByRole('checkbox').slice(1);
     expect(names.map((c) => (c as HTMLInputElement).checked)).toEqual([true, true]);
     expect(screen.getAllByRole('listitem').map((li) => li.textContent)).toEqual([
@@ -77,7 +77,7 @@ describe('LocalMovePrompt', () => {
     await show();
     // Nothing held here: the records are never read.
     expect(store.offlineListProjects).not.toHaveBeenCalled();
-    expect(screen.queryByText('Move Projects in This Browser to Your Account?')).toBeNull();
+    expect(screen.queryByText('Move Plans in This Browser to Your Account?')).toBeNull();
   });
 
   it('moves the ticked projects into the account, then reloads', async () => {
@@ -111,10 +111,10 @@ describe('LocalMovePrompt', () => {
     await show();
     fireEvent.click(screen.getByRole('button', { name: 'Not Now' }));
     expect(track).toHaveBeenCalledWith('UI', 'Closed', 'LocalMovePrompt');
-    expect(screen.queryByText('Move Projects in This Browser to Your Account?')).toBeNull();
+    expect(screen.queryByText('Move Plans in This Browser to Your Account?')).toBeNull();
     cleanup();
     await show();
-    expect(screen.queryByText('Move Projects in This Browser to Your Account?')).toBeNull();
+    expect(screen.queryByText('Move Plans in This Browser to Your Account?')).toBeNull();
     // Not even listed while the count is no more than what was put off.
     expect(store.offlineListProjects).toHaveBeenCalledOnce();
     store.offlineIdCount.mockResolvedValue(3);
@@ -124,6 +124,6 @@ describe('LocalMovePrompt', () => {
     ]);
     cleanup();
     await show();
-    expect(screen.getByText('Move Projects in This Browser to Your Account?')).toBeTruthy();
+    expect(screen.getByText('Move Plans in This Browser to Your Account?')).toBeTruthy();
   });
 });

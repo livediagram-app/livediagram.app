@@ -10,11 +10,11 @@ export function describeLink(link: ElementLink, tabs?: { id: string; name: strin
     case 'url':
       return link.url;
     case 'project':
-      return `Project: ${link.name}`;
+      return `Plan: ${link.name}`;
     case 'tab':
     case 'element': {
       const name = tabs?.find((t) => t.id === link.tabId)?.name?.trim();
-      const where = name ? `tab "${name}"` : 'a tab in this project';
+      const where = name ? `tab "${name}"` : 'a tab in this plan';
       return link.kind === 'element' ? `An element on ${where}` : `Goes to ${where}`;
     }
   }

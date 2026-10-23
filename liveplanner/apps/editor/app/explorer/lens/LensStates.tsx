@@ -13,8 +13,8 @@ import { ProjectIcon } from '@/components/primitives/explorer-icons';
 // What a lensed list says when it has nothing to show, or could not load, and what it tells a
 // screen reader once typing settles (docs/specs/013-workspace/explorer-filters.md "States").
 
-export const FILTERED_EMPTY_TITLE = 'No projects match these filters';
-export const LOAD_FAILED_TITLE = 'Couldn’t load projects';
+export const FILTERED_EMPTY_TITLE = 'No plans match these filters';
+export const LOAD_FAILED_TITLE = 'Couldn’t load plans';
 
 /**
  * The polite live region that says how many projects the lens left, once the lens has stopped

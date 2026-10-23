@@ -9,7 +9,7 @@ const GROUPS: {
   rows: { glyph: ReactNode; title: string; where: string; active?: boolean }[];
 }[] = [
   {
-    heading: 'PROJECTS',
+    heading: 'PLANS',
     rows: [
       {
         glyph: (

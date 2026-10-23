@@ -28,7 +28,7 @@ import { requestBarFocus, takeBarFocus } from './lens-focus-handoff';
 // with a listbox of suggestions. One line high; pills and text scroll sideways inside it. On Home it is drawn large in
 // the hero (`size="hero"`, explorer-home.md "The hero"), with New project as its `trailing` button.
 
-const FIELD_PLACEHOLDER = 'Search or filter projects';
+const FIELD_PLACEHOLDER = 'Search or filter plans';
 
 const SIZES = {
   bar: {
@@ -272,7 +272,7 @@ export function LensField({
           ref={field}
           type="text"
           role="combobox"
-          aria-label="Filter projects"
+          aria-label="Filter plans"
           aria-autocomplete="list"
           aria-expanded={listOpen}
           aria-controls={listId}

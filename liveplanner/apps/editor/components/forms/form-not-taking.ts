@@ -40,7 +40,7 @@ export const FORM_NOT_TAKING: Record<
     telemetry: 'NotTakingLimit',
   },
   full: {
-    text: 'This project holds as many cards as it can. Remove some to take responses again.',
+    text: 'This plan holds as many cards as it can. Remove some to take responses again.',
     fix: 'responses',
     telemetry: 'NotTakingFull',
   },

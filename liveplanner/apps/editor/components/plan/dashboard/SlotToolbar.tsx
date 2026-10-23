@@ -101,7 +101,7 @@ export function SlotToolbar({
         }
       : sheetId && releaseSheets
         ? {
-            question: 'Delete this sheet’s cells too? Kept, they stay in this project.',
+            question: 'Delete this sheet’s cells too? Kept, they stay in this plan.',
             keep: 'Keep Its Cells',
             remove: 'Delete the Sheet Too',
           }

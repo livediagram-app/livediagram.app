@@ -156,7 +156,7 @@ export async function exportAll(
       exit: EXIT.usage,
       code: 'usage',
       message: 'export writes every project: add --all',
-      hint: 'one project: liveplanner pull <project>',
+      hint: 'one plan: liveplanner pull <project>',
     });
   const formats = formatsOf(input.format);
   const projects = await patiently(ctx, () => listAllProjects(ctx.api));

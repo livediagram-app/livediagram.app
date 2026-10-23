@@ -444,7 +444,7 @@ export async function addForm(
           }),
         });
         const made = [
-          `project "${d.form.heading}" (${projectId})`,
+          `plan "${d.form.heading}" (${projectId})`,
           ...(await writeAround(api, d, client, true)),
         ];
         return doneFrom(d, tabId, null, made);

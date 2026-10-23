@@ -90,14 +90,14 @@ export async function readProject(
   const summary =
     args.tabId === undefined ? project.tabs[0] : project.tabs.find((t) => t.id === args.tabId);
   const tabId = args.tabId ?? summary?.id;
-  if (tabId === undefined) return errorResult('That project has no tabs.');
+  if (tabId === undefined) return errorResult('That plan has no tabs.');
   // Every tab, in order, so a caller can read the others (a Plan template's Board, Requests and Flow).
   const tabs = [...project.tabs]
     .sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0))
     .map((t) => ({ id: t.id, name: t.name }));
   if (!summary)
     return errorResult(
-      `No tab "${tabId}" in this project. Tabs: ${tabs.map((t) => `${t.name} (${t.id})`).join(', ')}.`,
+      `No tab "${tabId}" in this plan. Tabs: ${tabs.map((t) => `${t.name} (${t.id})`).join(', ')}.`,
     );
   const tabPath = `/projects/${encodeURIComponent(project.id)}/tabs/${encodeURIComponent(tabId)}`;
   const auth = { env, token, projectId: project.id };

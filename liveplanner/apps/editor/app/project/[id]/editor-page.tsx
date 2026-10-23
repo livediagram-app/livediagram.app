@@ -85,7 +85,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   // Untitled when the project has no name yet). Updates as the user renames.
   useEffect(() => {
     const name = state.projectName?.trim();
-    document.title = `${name || 'Untitled project'} | liveplanner`;
+    document.title = `${name || 'Untitled plan'} | liveplanner`;
   }, [state.projectName]);
   const {
     projectNotFound,
@@ -160,7 +160,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     return !appChrome ? (
       <EmbedShell frame={workspaceFrame}>{card}</EmbedShell>
     ) : (
-      <StatusShell title="Project deleted" explorer={fullExplorer}>
+      <StatusShell title="Plan deleted" explorer={fullExplorer}>
         {card}
       </StatusShell>
     );
@@ -176,7 +176,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     return !appChrome ? (
       <EmbedShell frame={workspaceFrame}>{card}</EmbedShell>
     ) : (
-      <StatusShell title="Couldn’t load project" explorer={fullExplorer}>
+      <StatusShell title="Couldn’t load plan" explorer={fullExplorer}>
         {card}
       </StatusShell>
     );
@@ -206,7 +206,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
             ? 'Page not found'
             : accessEnded !== null
               ? 'No Longer Shared With You'
-              : 'Project not found'
+              : 'Plan not found'
         }
       >
         <NotFound

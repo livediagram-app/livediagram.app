@@ -6,7 +6,7 @@
 export const MARKETING_TITLE = 'liveplanner: Plan the work together, live';
 
 export const MARKETING_DESCRIPTION =
-  'Free planning in real time, with no trackers: boards of cards, spreadsheets, dashboards and forms in one project, shared with one link. No sign-up to start.';
+  'Free planning in real time, with no trackers: boards of cards, spreadsheets, dashboards and forms in one plan, shared with one link. No sign-up to start.';
 
 // Lower case: it follows "liveplanner: " in the share images' alt text.
 export const MARKETING_PITCH =

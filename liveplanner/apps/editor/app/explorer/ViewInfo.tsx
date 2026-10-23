@@ -7,7 +7,7 @@ import type { SelectedNode } from './views';
 // that is This Browser (docs/specs/006-project/offline-mode.md).
 const VIEW_INFO: Partial<Record<SelectedNode['kind'], string>> = {
   offline:
-    'Projects saved only in this browser collect here automatically. They are not synced or backed up; use Sync Project on a row to move one to your account.',
+    'Plans saved only in this browser collect here automatically. They are not synced or backed up; use Sync Plan on a row to move one to your account.',
 };
 
 export function ViewInfo({ selected }: { selected: SelectedNode }) {

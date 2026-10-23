@@ -45,18 +45,14 @@ export function NotFound({
         <h1
           className={`${accessEnded ? 'mt-4' : 'mt-1'} text-xl font-semibold text-slate-900 dark:text-slate-100`}
         >
-          {page
-            ? 'Page not found'
-            : accessEnded
-              ? 'No Longer Shared With You'
-              : 'Project not found'}
+          {page ? 'Page not found' : accessEnded ? 'No Longer Shared With You' : 'Plan not found'}
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
           {page
-            ? 'There is no page at this address. Open a project from the Explorer or start fresh.'
+            ? 'There is no page at this address. Open a plan from the Explorer or start fresh.'
             : accessEnded
-              ? 'Your access to this project was removed while you had it open. Ask its owner to share it with you again.'
-              : 'This project doesn’t exist or isn’t yours. Open one from the Explorer or start fresh.'}
+              ? 'Your access to this plan was removed while you had it open. Ask its owner to share it with you again.'
+              : 'This plan doesn’t exist or isn’t yours. Open one from the Explorer or start fresh.'}
         </p>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
           {onOpenExplorer ? (
@@ -67,7 +63,7 @@ export function NotFound({
           ) : null}
           <Button size="md" onClick={onCreateNew} className="shadow-sm">
             <SparkleIcon />
-            New Project
+            New Plan
           </Button>
         </div>
       </div>

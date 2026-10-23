@@ -82,7 +82,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore boards',
     title: 'Plan the work, then watch it move',
     description:
-      'A project holds the work on boards of cards: columns with WIP limits, swimlanes, card types with fields of your own, and one card that can sit on every board it belongs to.',
+      'A plan holds the work on boards of cards: columns with WIP limits, swimlanes, card types with fields of your own, and one card that can sit on every board it belongs to.',
     metaDescription:
       'Boards of cards with WIP limits, swimlanes, your own card types and fields, comments on every card, and one card that sits on every board it belongs to.',
     highlights: [
@@ -139,7 +139,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/plan/cards/',
         title: 'Find any card',
         description:
-          'The Cards list searches every card in the project by number, title or description, newest change first. Add up to eight filters, such as Type: Bug or Assignee: No assignee, or show only the cards no board is showing.',
+          'The Cards list searches every card in the plan by number, title or description, newest change first. Add up to eight filters, such as Type: Bug or Assignee: No assignee, or show only the cards no board is showing.',
       },
       {
         art: <BoardCsvArt />,
@@ -160,7 +160,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/plan/planning-basics/',
         title: 'Ten plans, twelve spreadsheets',
         description:
-          'Project Planner, Kanban Board, Bug Tracker, Team Retro, Weekly Planner, Content Calendar, Hiring Pipeline, OKRs, Product Launch and Feedback Board, each set up with its boards; twelve spreadsheets, from a Budget Planner and an Invoice to a Sales Pipeline, a Grade Book and a Loan Calculator, many with charts already in; or a blank plan. New Project lays them out by kind, with search.',
+          'Project Planner, Kanban Board, Bug Tracker, Team Retro, Weekly Planner, Content Calendar, Hiring Pipeline, OKRs, Product Launch and Feedback Board, each set up with its boards; twelve spreadsheets, from a Budget Planner and an Invoice to a Sales Pipeline, a Grade Book and a Loan Calculator, many with charts already in; or a blank plan. New Plan lays them out by kind, with search.',
       },
       {
         art: <McpArt />,
@@ -176,7 +176,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
     label: 'Dashboards',
     scene: 'dashboard',
     cta: 'Explore dashboards',
-    title: 'See the whole project on one page',
+    title: 'See the whole plan on one page',
     description:
       'Bring your boards, sheets, charts and notes side by side on a Dashboard tab, every slot live, so the picture is never out of date.',
     metaDescription:
@@ -207,14 +207,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/plan/dashboards/',
         title: 'Dashboards made from your work',
         description:
-          'Once a project has boards, Start Planning offers dashboards built around them, badged For You: a Timeline for a board with dates, Sprint Health for one with estimates, Triage, a Team Overview of several boards, or a board beside a Sheet. Pick one and every slot arrives filled.',
+          'Once a plan has boards, Start Planning offers dashboards built around them, badged For You: a Timeline for a board with dates, Sprint Health for one with estimates, Triage, a Team Overview of several boards, or a board beside a Sheet. Pick one and every slot arrives filled.',
       },
       {
         art: <SheetFigureArt />,
         href: '/help/plan/dashboards/',
         title: 'Figures and charts from a Sheet',
         description:
-          'Show one cell against a target, a column’s total or average, a trend, or a chart of any range as columns, bars, lines, a pie or a doughnut, read live from a Sheet in the project. A form lends its figures too: its responses, the new ones, and when it closes.',
+          'Show one cell against a target, a column’s total or average, a trend, or a chart of any range as columns, bars, lines, a pie or a doughnut, read live from a Sheet in the plan. A form lends its figures too: its responses, the new ones, and when it closes.',
       },
       {
         art: <DashboardUtilitiesArt />,
@@ -239,7 +239,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore sheets',
     title: 'Spreadsheets that sit beside the work',
     description:
-      'Add a Sheet tab to any project: real formulas, number formats, sort and filter, live for everyone. Read the cards on a board, or list them as rows that stay linked both ways, and chart any cells in a click.',
+      'Add a Sheet tab to any plan: real formulas, number formats, sort and filter, live for everyone. Read the cards on a board, or list them as rows that stay linked both ways, and chart any cells in a click.',
     metaDescription:
       'Sheet tabs with real formulas, live for everyone, reading the board’s cards or listing them as linked rows, with charts from any cells.',
     highlights: [
@@ -254,7 +254,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/plan/sheets/',
         title: 'Sheets with real formulas',
         description:
-          'Cells, over 150 functions, number formats, sort, filter and freeze, live for everyone on the project. Formulas fill down, and a cell can read a card on the board.',
+          'Cells, over 150 functions, number formats, sort, filter and freeze, live for everyone on the plan. Formulas fill down, and a cell can read a card on the board.',
       },
       {
         art: <SharedItemsArt />,
@@ -289,7 +289,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/plan/sheets/',
         title: 'Named ranges and cell comments',
         description:
-          'Name a cell TaxRate and write =B2*TaxRate in any row. Leave a comment on a single cell: it carries an amber corner, opens as a thread, and is listed with every other open thread in the project.',
+          'Name a cell TaxRate and write =B2*TaxRate in any row. Leave a comment on a single cell: it carries an amber corner, opens as a thread, and is listed with every other open thread in the plan.',
       },
       {
         art: <SheetTogetherArt />,
@@ -382,7 +382,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore collaboration',
     title: 'Plan it together, live',
     description:
-      'Share a link and your team is in the project with you: live cursors on every board, sheet and dashboard, comments on cards and cells, links with the access each person needs, and agents that can lend a hand.',
+      'Share a link and your team is in the plan with you: live cursors on every board, sheet and dashboard, comments on cards and cells, links with the access each person needs, and agents that can lend a hand.',
     metaDescription:
       'Share a link and your team plans with you live: presence on every tab, comments on cards and cells, share links with the right access, and agent access.',
     highlights: [
@@ -398,7 +398,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Work together live',
         title: 'Live presence',
         description:
-          'See who is in the project from the avatars on each tab. Status rings show online, away, or stale.',
+          'See who is in the plan from the avatars on each tab. Status rings show online, away, or stale.',
       },
       {
         art: <RealtimeArt />,
@@ -430,7 +430,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Work together live',
         title: 'See what happened while you were away',
         description:
-          'The Explorer opens on Home: the projects you return to most, and what your teammates commented and changed while you were away. Every project and team keeps its own history, and the Inbox gathers the threads and form answers still waiting on you, with a count in the sidebar so you can tell without looking.',
+          'The Explorer opens on Home: the plans you return to most, and what your teammates commented and changed while you were away. Every plan and team keeps its own history, and the Inbox gathers the threads and form answers still waiting on you, with a count in the sidebar so you can tell without looking.',
       },
       {
         art: <ShareLinksArt />,
@@ -438,7 +438,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Share & access',
         title: 'Editor, participant or view-only links',
         description:
-          'Create an editor link for collaborators, a participant link for people who should add cards and fill in cells without changing the setup, or a view-only link for stakeholders who should watch, not touch. Run as many links as you like, side by side, and point one at a single tab to keep the rest of the project private.',
+          'Create an editor link for collaborators, a participant link for people who should add cards and fill in cells without changing the setup, or a view-only link for stakeholders who should watch, not touch. Run as many links as you like, side by side, and point one at a single tab to keep the rest of the plan private.',
       },
       {
         art: <TeamsArt />,
@@ -446,7 +446,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Share & access',
         title: 'Teams with a shared library',
         description:
-          'Create a team, invite people by email, and everyone gets a shared folder of projects they can all open and edit. Admins manage membership and roles; members just get to work. Sign in to set one up, a project itself never needs an account.',
+          'Create a team, invite people by email, and everyone gets a shared folder of plans they can all open and edit. Admins manage membership and roles; members just get to work. Sign in to set one up, a plan itself never needs an account.',
       },
       {
         art: <ExpiryArt />,
@@ -462,7 +462,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Share & access',
         title: 'Stop sharing on demand',
         description:
-          'Sharing is a toggle, not a state of being. Revoke a link and the URL stops working. The project is yours again.',
+          'Sharing is a toggle, not a state of being. Revoke a link and the URL stops working. The plan is yours again.',
       },
       {
         art: <McpArt />,
@@ -478,7 +478,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Agents & your tools',
         title: 'An API and a CLI',
         description:
-          'The same project, cards and sheets over a plain HTTP API with personal tokens, and a command-line tool for scripts and agents that live in a terminal.',
+          'The same plan, cards and sheets over a plain HTTP API with personal tokens, and a command-line tool for scripts and agents that live in a terminal.',
       },
     ],
   },

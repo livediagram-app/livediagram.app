@@ -121,7 +121,7 @@ describe('workbench open', () => {
     expect(err).toBeInstanceOf(AddressError);
     expect((err as AddressError).failure).toMatchObject({
       kind: 'usage',
-      message: 'a workbench opens your own projects, not a share link',
+      message: 'a workbench opens your own plans, not a share link',
     });
     expect(api.calls).toEqual([]);
     expect(logs).toContain('workbench open refused share-link');

@@ -23,8 +23,8 @@ export function ShareOfflineGate({
 }) {
   const [busy, setBusy] = useState(false);
   return (
-    <Dialog open onClose={onClose} ariaLabel="Share This Project" size="md">
-      <DialogHeader title="Share This Project" subtitle="Saved only in this browser.">
+    <Dialog open onClose={onClose} ariaLabel="Share This Plan" size="md">
+      <DialogHeader title="Share This Plan" subtitle="Saved only in this browser.">
         <HelpArticleLink article="offlineMode" size="md" />
         <DialogCloseButton onClick={onClose} />
       </DialogHeader>

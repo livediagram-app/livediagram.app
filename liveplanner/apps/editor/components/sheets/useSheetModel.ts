@@ -95,7 +95,7 @@ function setUpNow(
 }
 
 export const SHEET_TOO_BIG_TO_PASTE =
-  'Too big to paste into another project. Download it as CSV instead.';
+  'Too big to paste into another plan. Download it as CSV instead.';
 
 export function useSheetModel(
   element: ShapeElement,

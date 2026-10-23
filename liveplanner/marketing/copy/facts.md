@@ -12,7 +12,7 @@ the work, share it.
 
 ## What it is
 
-A shared place in the browser to plan work together, live. Each project holds
+A shared place in the browser to plan work together, live. Each plan holds
 tabs: boards of cards, spreadsheets, dashboards and forms, all working from the
 same set of cards. There is no sign-up wall in front of it, so the friction to
 start is "open the link, add a card."
@@ -27,7 +27,7 @@ team, not the individual.
 
 ## Shipped today
 
-- Projects with tabs: Board, Sheet, Dashboard and Form tabs, side by side.
+- Plans with tabs: Board, Sheet, Dashboard and Form tabs, side by side.
 - Boards: kanban columns of cards with WIP limits, swimlanes by assignee, type,
   priority or any field, header widgets (Completion, Due Soon, WIP Alerts and
   more), hidden cards for retros, and CSV import and export.
@@ -59,8 +59,8 @@ team, not the individual.
   personal to each editor.
 - Sharing: editor, participant or view-only links, optionally for one tab,
   with expiry, revocable any time.
-- Teams with a shared folder of projects; folders, Home (what happened) and an
-  Inbox in the Explorer; a history for every project and team.
+- Teams with a shared folder of plans; folders, Home (what happened) and an
+  Inbox in the Explorer; a history for every plan and team.
 - Agents: AI tools can read and change boards, cards, sheets and forms over
   MCP, the API or the CLI.
 - Hybrid auth: guests get the full feature set keyed to a per-browser id;
@@ -89,4 +89,4 @@ Node-hosted backend, no SSR.
 ## Links
 
 - Hosted: https://liveplanner.app
-- Start a project: https://liveplanner.app/new
+- Start a plan: https://liveplanner.app/new

@@ -123,7 +123,7 @@ describe('a Sheet Chart from Add to Slot', () => {
     fireEvent.click(screen.getByRole('button', { name: /^From a Sheet/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Add Sheet Chart' }));
     expect(screen.getByRole('heading', { name: 'Sheet' })).toBeTruthy();
-    expect(screen.getByText('No sheets in this project yet.')).toBeTruthy();
+    expect(screen.getByText('No sheets in this plan yet.')).toBeTruthy();
     expect(v.actions.placeItem).not.toHaveBeenCalled();
     vi.restoreAllMocks();
   });

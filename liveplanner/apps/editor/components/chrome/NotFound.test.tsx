@@ -12,10 +12,10 @@ describe('NotFound', () => {
     const onCreateNew = vi.fn();
     const onOpenExplorer = vi.fn();
     render(<NotFound onCreateNew={onCreateNew} onOpenExplorer={onOpenExplorer} />);
-    expect(screen.getByRole('heading', { name: 'Project not found' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Plan not found' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Open Explorer' }));
     expect(onOpenExplorer).toHaveBeenCalledOnce();
-    fireEvent.click(screen.getByRole('button', { name: 'New Project' }));
+    fireEvent.click(screen.getByRole('button', { name: 'New Plan' }));
     expect(onCreateNew).toHaveBeenCalledOnce();
   });
 
@@ -27,6 +27,6 @@ describe('NotFound', () => {
   it('leaves Open Explorer out where there is nowhere to open it (an embed)', () => {
     render(<NotFound onCreateNew={() => {}} />);
     expect(screen.queryByRole('button', { name: 'Open Explorer' })).toBeNull();
-    expect(screen.getByRole('button', { name: 'New Project' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'New Plan' })).toBeTruthy();
   });
 });

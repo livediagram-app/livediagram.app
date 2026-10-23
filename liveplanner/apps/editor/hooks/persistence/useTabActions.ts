@@ -201,7 +201,7 @@ export function useTabActions(deps: TabActionsDeps) {
     const source = tabs.find((t) => t.id === activeId);
     if (!source) return;
     const target =
-      toastName(projectList.find((d) => d.id === targetProjectId)?.name) ?? 'that project';
+      toastName(projectList.find((d) => d.id === targetProjectId)?.name) ?? 'that plan';
     try {
       await apiLinkTab(ownerId, targetProjectId, source.id);
       toast.success(`${toastName(source.name) ?? 'Tab'} added to ${target}`);

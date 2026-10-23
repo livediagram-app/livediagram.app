@@ -645,10 +645,10 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   },
   {
     id: 'projects',
-    label: 'Projects',
+    label: 'Plans',
     sectionNotes: {
       'Default Folders': {
-        note: 'Where each kind of new project is saved when you create it without choosing a place.',
+        note: 'Where each kind of new plan is saved when you create it without choosing a place.',
         helpArticle: 'defaultFolders',
       },
     },
@@ -662,7 +662,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         // Settings labels are title case ("Kanban Boards"); the entries' own labels are sentence case.
         label: titleCase(entry.label),
         keywords:
-          'default folder where new projects go save location place file automatically always save placement',
+          'default folder where new projects go save location place file automatically always save placement plans',
         description: `Where new ${entry.noun} go when you create one without choosing a place.`,
       })),
       {
@@ -692,7 +692,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Guest',
         keywords: 'account profile identity name email signed in sign in avatar joined',
         description:
-          'Your name and email come from your account. Signed out, your projects belong to this browser.',
+          'Your name and email come from your account. Signed out, your plans belong to this browser.',
         helpArticle: 'guestVsAccount',
       },
       {
@@ -701,8 +701,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Your Data',
         label: 'Trash',
         keywords:
-          'trash bin recycle deleted undo undelete restore recover get back project diagram permanently empty',
-        description: 'Deleted projects wait here for 30 days, ready to restore.',
+          'trash bin recycle deleted undo undelete restore recover get back project diagram permanently empty plan',
+        description: 'Deleted plans wait here for 30 days, ready to restore.',
         helpArticle: 'trash',
       },
       {
@@ -712,7 +712,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Delete Account',
         keywords: 'delete account remove wipe erase close cancel data gdpr',
         description:
-          'Removes your liveplanner projects, folders and settings, then signs you out. There is no undo.',
+          'Removes your liveplanner plans, folders and settings, then signs you out. There is no undo.',
       },
     ],
   },
@@ -728,7 +728,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'In the Editor',
         label: 'In-Editor Notifications',
         description:
-          'A brief note when something happens off screen, like moving a project to a folder. Errors and warnings always show.',
+          'A brief note when something happens off screen, like moving a plan to a folder. Errors and warnings always show.',
         read: (p) => p.notificationsEnabled !== false,
         write: (p, v) => ({ ...p, notificationsEnabled: v }),
         event: { category: 'UI', on: 'NotificationsOn', off: 'NotificationsOff' },
@@ -745,20 +745,20 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         note: 'Sign in to choose which emails you get.',
         signIn: true,
         description:
-          'We can email you when someone joins one of your projects, comments on it, fills in one of your forms, and for a few other moments. Which ones is an account setting.',
+          'We can email you when someone joins one of your plans, comments on it, fills in one of your forms, and for a few other moments. Which ones is an account setting.',
         available: (ctx) => ctx.emailEnabled && !ctx.signedIn,
       },
       emailSwitch('notifyProjectJoin', {
         event: { category: 'UI', on: 'NotifyProjectJoinOn', off: 'NotifyProjectJoinOff' },
         keywords: 'email join collaborator opened',
-        label: 'Someone Joins My Project',
-        description: 'A new person opens one of your shared projects.',
+        label: 'Someone Joins My Plan',
+        description: 'A new person opens one of your shared plans.',
       }),
       emailSwitch('notifyComments', {
         event: { category: 'UI', on: 'NotifyCommentsOn', off: 'NotifyCommentsOff' },
         keywords: 'email comment reply feedback',
-        label: 'Someone Comments on My Project',
-        description: 'Someone leaves a comment on a project you own.',
+        label: 'Someone Comments on My Plan',
+        description: 'Someone leaves a comment on a plan you own.',
       }),
       emailSwitch('notifyMentions', {
         event: { category: 'UI', on: 'NotifyMentionsOn', off: 'NotifyMentionsOff' },
@@ -771,7 +771,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'email form response survey submission answer',
         label: 'Someone Fills In My Form',
         description:
-          'Someone responds to a form in a project you own (at most one email every 15 minutes per form).',
+          'Someone responds to a form in a plan you own (at most one email every 15 minutes per form).',
       }),
       emailSwitch('notifyInviteResponse', {
         event: { category: 'UI', on: 'NotifyInviteResponseOn', off: 'NotifyInviteResponseOff' },
@@ -789,7 +789,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'NotifyMilestonesOn', off: 'NotifyMilestonesOff' },
         keywords: 'email milestone achievement celebrate',
         label: 'Milestones',
-        description: 'A note when you hit one, like sharing your first project.',
+        description: 'A note when you hit one, like sharing your first plan.',
       }),
     ],
   },

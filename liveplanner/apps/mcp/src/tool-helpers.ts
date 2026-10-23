@@ -105,7 +105,7 @@ export async function loadTab(
   if (!id) return null;
   if (!liveDoc.tabs.some((t) => t.id === id))
     throw new ToolInputError(
-      `No tab "${id}" in this project. Tabs: ${liveDoc.tabs.map((t) => `${t.name} (${t.id})`).join(', ')}.`,
+      `No tab "${id}" in this plan. Tabs: ${liveDoc.tabs.map((t) => `${t.name} (${t.id})`).join(', ')}.`,
     );
   const { tab } = await apiJson<TabResponse>(
     env,

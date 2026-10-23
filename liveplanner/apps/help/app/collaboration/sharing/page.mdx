@@ -6,21 +6,21 @@ import { SharePassesDialog } from '@/components/illustrations/sharing';
 export const metadata = helpMetadata({
   title: 'Sharing and Embeds',
   description:
-    'Share a project with a link for real-time collaboration, protect it with a password, set an expiry, or embed it in another page.',
+    'Share a plan with a link for real-time collaboration, protect it with a password, set an expiry, or embed it in another page.',
   path: '/help/collaboration/sharing/',
 });
 
 <ArticleLayout title="Sharing and Embeds" description="Share links for live collaboration, optional passwords and expiry, and embeds." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("sharing")}>
 
-Sharing turns a project into something other people can open. A share link lets anyone with the URL join your project in real time, with live cursors and edits flowing between everyone. You can protect a link with a password, give it an expiry date, or embed the project in another page. None of this needs the other person to sign in: a share link can be handed to a guest who edits without an account, and you can create links as a guest too.
+Sharing turns a plan into something other people can open. A share link lets anyone with the URL join your plan in real time, with live cursors and edits flowing between everyone. You can protect a link with a password, give it an expiry date, or embed the plan in another page. None of this needs the other person to sign in: a share link can be handed to a guest who edits without an account, and you can create links as a guest too.
 
 ## Opening the Share dialog
 
-Press **Share** at the top right of the editor. It turns solid blue once the project has a live link, so you can tell at a glance that it is shared. You can also reach it from the [command palette](/help/tips-and-tricks/command-palette/) (search "Share Project") or from a project's menu in the Explorer.
+Press **Share** at the top right of the editor. It turns solid blue once the plan has a live link, so you can tell at a glance that it is shared. You can also reach it from the [command palette](/help/tips-and-tricks/command-palette/) (search "Share Plan") or from a plan's menu in the Explorer.
 
 New to passes? **Show Me**, at the dialog's top right beside **Help**, walks you through issuing one: choosing what it lets people do, how long it lasts, creating it, managing your passes and adding a password. Every control stays live while it runs, so you can make a real pass as you go.
 
-Only the project's owner manages its links. Someone who opened your project through a link doesn't see **Share**; they get a **Copy** button instead, which makes their own copy (see [The Title Bar](/help/user-interface/title-bar/#share-or-copy)).
+Only the plan's owner manages its links. Someone who opened your plan through a link doesn't see **Share**; they get a **Copy** button instead, which makes their own copy (see [The Title Bar](/help/user-interface/title-bar/#share-or-copy)).
 
 ## Share links
 
@@ -28,19 +28,19 @@ The dialog draws every link as a **pass**, a ticket that lets whoever holds it i
 
 Under **Issue a pass**, press the role card and pick what the pass lets people do from the three roles it unfolds, then press **Create Pass**. The link is created and copied in one go, ready to paste. Each pass carries a role, printed on the coloured band across its top:
 
-- An **Editor** pass lets the visitor change the project with you, live.
-- A **Participant** pass lets them take part without reshaping the project. They add cards and edit their fields, move cards between columns, write in Sheet cells (picking from dropdowns and ticking checkboxes too), [comment](/help/collaboration/comments/), cast dots in a [vote](/help/collaboration/session-tools/voting/), and undo and redo their own changes. They cannot change a board's columns, card types or settings, archive or delete cards, format a Sheet or change its rows and columns, or add, rename, reorder or delete tabs. It is the pass to hand a team for a retrospective or a planning session.
+- An **Editor** pass lets the visitor change the plan with you, live.
+- A **Participant** pass lets them take part without reshaping the plan. They add cards and edit their fields, move cards between columns, write in Sheet cells (picking from dropdowns and ticking checkboxes too), [comment](/help/collaboration/comments/), cast dots in a [vote](/help/collaboration/session-tools/voting/), and undo and redo their own changes. They cannot change a board's columns, card types or settings, archive or delete cards, format a Sheet or change its rows and columns, or add, rename, reorder or delete tabs. It is the pass to hand a team for a retrospective or a planning session.
 - A **Viewer** pass lets them look and open cards to read them, and nothing else: no [comments](/help/collaboration/comments/), votes or changes. Hand out a Participant pass to anyone who should chime in.
 
 <Figure caption="The Share dialog: choose Editor, Participant or Viewer, set how long the pass is valid, then Create Pass. Live passes are listed below.">
   <SharePassesDialog />
 </Figure>
 
-A project can have several links at once, so you can hand out an edit link to a co-facilitator, a Participant link to your team and a view link to everyone else. Newest passes sit at the top. Whoever opens a link joins the same realtime room, so cursors and changes appear as they happen, and the project lands in their [Shared With Me](/help/explorer/shared-with-you/) list for next time.
+A plan can have several links at once, so you can hand out an edit link to a co-facilitator, a Participant link to your team and a view link to everyone else. Newest passes sit at the top. Whoever opens a link joins the same realtime room, so cursors and changes appear as they happen, and the plan lands in their [Shared With Me](/help/explorer/shared-with-you/) list for next time.
 
-Each pass shows its link with a copy button inside it. Beneath that, one row shows which tabs it **Opens** (on a project with more than one tab) and how long it is **Valid**, with its **Embed** and **Live image** menus and the bin to revoke it at the right. On a phone the menus drop to a line of their own.
+Each pass shows its link with a copy button inside it. Beneath that, one row shows which tabs it **Opens** (on a plan with more than one tab) and how long it is **Valid**, with its **Embed** and **Live image** menus and the bin to revoke it at the right. On a phone the menus drop to a line of their own.
 
-A link opens every tab unless you [scope it to one tab](/help/collaboration/sharing/one-tab/). The person you send a one-tab link to sees that tab, and the rest of the project never reaches their browser.
+A link opens every tab unless you [scope it to one tab](/help/collaboration/sharing/one-tab/). The person you send a one-tab link to sees that tab, and the rest of the plan never reaches their browser.
 
 ## Your name when sharing
 
@@ -50,30 +50,30 @@ As a guest, the **Sharing as** field at the bottom of the dialog is the name oth
 
 Two self-serve controls let you bound who gets in and for how long:
 
-- A [share password](/help/collaboration/sharing/share-passwords/) makes every link prompt for a password before it opens. The project's owner always bypasses it.
+- A [share password](/help/collaboration/sharing/share-passwords/) makes every link prompt for a password before it opens. The plan's owner always bypasses it.
 - A [share link expiry](/help/collaboration/sharing/share-link-expiry/) gives a link a lifetime (a week, a month, or six months). When it runs out the link stops working, but stays in your dialog so you can extend or delete it.
 
 These are independent: you can use either, both, or neither. They are layered on top of the link role, not a replacement for it. [Share Link Security](/help/privacy-and-security/share-link-security/) explains what a link does and does not protect.
 
-## Embedding a project
+## Embedding a plan
 
-An [embed](/help/collaboration/sharing/embeds/) puts a live copy of a project inside another page, like a wiki, a doc, or Notion. The embed honours the link's role: an Editor pass embeds an editable project, while a Participant or Viewer pass embeds a read-only one. Either way it hides the editor chrome and updates as the project is edited. Each pass's **Embed** menu offers **Copy embed URL** for the bare URL and **Copy iframe** for a ready-made snippet to paste.
+An [embed](/help/collaboration/sharing/embeds/) puts a live copy of a plan inside another page, like a wiki, a doc, or Notion. The embed honours the link's role: an Editor pass embeds an editable plan, while a Participant or Viewer pass embeds a read-only one. Either way it hides the editor chrome and updates as the plan is edited. Each pass's **Embed** menu offers **Copy embed URL** for the bare URL and **Copy iframe** for a ready-made snippet to paste.
 
 Where an `<iframe>` isn't allowed, like a GitHub README, use a [live image](/help/collaboration/sharing/live-image/) from the pass's **Live image** menu instead.
 
 ## Stopping sharing
 
-To stop a link working, press the bin (**Revoke link**) on its pass and confirm with **Revoke**. Anyone viewing through it is sent out of the project straight away, and the URL stops resolving. A revoked link can't be brought back: create a new pass if you change your mind, which gives a new URL.
+To stop a link working, press the bin (**Revoke link**) on its pass and confirm with **Revoke**. Anyone viewing through it is sent out of the plan straight away, and the URL stops resolving. A revoked link can't be brought back: create a new pass if you change your mind, which gives a new URL.
 
 <Note>
-  A [project in This Browser](/help/privacy-and-security/offline-mode/) lives only in your browser,
+  A [plan in This Browser](/help/privacy-and-security/offline-mode/) lives only in your browser,
   so there is nothing on the server to share yet. Opening **Share** on one shows a gate instead of
-  the link controls, with a **Sync Project** button that uploads it to your account first.
+  the link controls, with a **Sync Plan** button that uploads it to your account first.
 </Note>
 
 <FeatureGrid>
   <Feature slug="embeds" title="Embeds">
-    Drop a live project into another page, read-only or editable depending on the link.
+    Drop a live plan into another page, read-only or editable depending on the link.
   </Feature>
   <Feature slug="teams" title="Teams">
     Share a whole library with teammates instead of one link at a time.

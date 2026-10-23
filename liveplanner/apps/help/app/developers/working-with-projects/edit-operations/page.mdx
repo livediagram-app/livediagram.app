@@ -9,9 +9,9 @@ export const metadata = helpMetadata({
   path: '/help/developers/working-with-projects/edit-operations/',
 });
 
-<ArticleLayout title="Edit Operations Reference" description="The changeset vocabulary: operations, selectors, replaces, results and refusals." categoryTitle="Developers" categorySlug="developers/working-with-projects" parentArticle={{ title: "Working with Projects", slug: "working-with-projects" }} subArticles={getSubArticles("working-with-projects").filter((a) => a.slug !== "edit-operations")}>
+<ArticleLayout title="Edit Operations Reference" description="The changeset vocabulary: operations, selectors, replaces, results and refusals." categoryTitle="Developers" categorySlug="developers/working-with-projects" parentArticle={{ title: "Working with Plans", slug: "working-with-projects" }} subArticles={getSubArticles("working-with-projects").filter((a) => a.slug !== "edit-operations")}>
 
-A **changeset** changes one tab with a short list of edit operations, applied together or not at all. This page lists the vocabulary: the operations, how to pick what they act on, how to rebuild a whole tab, and what the answer tells you. [Working with Projects](/help/developers/working-with-projects/#update-a-tab) shows how to send one.
+A **changeset** changes one tab with a short list of edit operations, applied together or not at all. This page lists the vocabulary: the operations, how to pick what they act on, how to rebuild a whole tab, and what the answer tells you. [Working with Plans](/help/developers/working-with-projects/#update-a-tab) shows how to send one.
 
 ## What a Changeset Changes
 
@@ -19,7 +19,7 @@ A tab holds a few **elements**, and they are what fill it: a Board tab holds a `
 
 The things inside them have endpoints of their own, which are usually what you want:
 
-- **Cards** live in the project's item store, not on a tab. Add, change and move them with the [item endpoints](/help/developers/working-with-projects/plan-sheets-images/#plan-items).
+- **Cards** live in the plan's item store, not on a tab. Add, change and move them with the [item endpoints](/help/developers/working-with-projects/plan-sheets-images/#plan-items).
 - **Sheet cells** are changed with [sheet writes](/help/developers/working-with-projects/plan-sheets-images/#sheets).
 - **A form's questions** are changed with the form endpoints, or the CLI's `form change` and the MCP server's `change_form`.
 - **Comments** have their own [endpoints](/help/developers/agent-comments-presence/). Edit operations never change them.
@@ -151,11 +151,11 @@ To rebuild a tab rather than change it, send `"replace"` instead of `"operations
 | Source      | Builds                                                                                            |
 | ----------- | ------------------------------------------------------------------------------------------------- |
 | `template`  | The tab a template makes, by its kind from `GET /templates` (such as `kanban`)                    |
-| `dashboard` | A Dashboard tab over the project's Board and Sheet tabs: its `tabs`, `metrics`, `charts`, `notes` |
+| `dashboard` | A Dashboard tab over the plan's Board and Sheet tabs: its `tabs`, `metrics`, `charts`, `notes` |
 | `form`      | A Form tab's form                                                                                 |
 | `elements`  | The tab's elements, as the tab JSON gives them, kept at the `x` and `y` given                     |
 
-A replace may also carry a `name` for the tab. Nothing is laid out for you, so a replace carrying `layout` is refused. A replace on a tab id the project does not have yet creates that tab, which is how a new tab is added in one write:
+A replace may also carry a `name` for the tab. Nothing is laid out for you, so a replace carrying `layout` is refused. A replace on a tab id the plan does not have yet creates that tab, which is how a new tab is added in one write:
 
 ```bash
 curl -X POST https://liveplanner.app/api/projects/$DOC/tabs/$(uuidgen)/changesets \

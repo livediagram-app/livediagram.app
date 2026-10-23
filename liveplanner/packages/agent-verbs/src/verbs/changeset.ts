@@ -25,7 +25,7 @@ export const changesetLs = defineVerb({
   id: 'changeset.ls',
   summary: 'Recent changesets, newest first',
   description:
-    'Lists the recent changesets of a project, or of one tab with --tab: who, what, when, and its counts.',
+    'Lists the recent changesets of a plan, or of one tab with --tab: who, what, when, and its counts.',
   behaviour: 'read',
   input: z.object({
     project: z.string().describe('A name, id prefix or liveplanner URL'),

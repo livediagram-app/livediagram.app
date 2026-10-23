@@ -150,7 +150,7 @@ describe('Share Form on a project in This Browser (forms.md "Publishing and the 
         onSyncToCloud={sync}
       />,
     );
-    expect(screen.getByText('This Project Is in This Browser')).toBeTruthy();
+    expect(screen.getByText('This Plan Is in This Browser')).toBeTruthy();
     expect(screen.getByText(/this form can’t be published yet/)).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Publish Form' })).toBeNull();
     expect(sync).not.toHaveBeenCalled();
@@ -166,7 +166,7 @@ describe('Share Form on a project in This Browser (forms.md "Publishing and the 
       onSyncToCloud: sync,
     };
     const { rerender } = render(<ShareFormDialog {...props} link={offline()} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Sync Project' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sync Plan' }));
     await act(async () => {});
     expect(sync).toHaveBeenCalledOnce();
     expect(track).toHaveBeenCalledWith('Form', 'Moved', 'SyncedToShare');
@@ -193,7 +193,7 @@ describe('Share Form on a project in This Browser (forms.md "Publishing and the 
         syncReady={false}
       />,
     );
-    const button = screen.getByRole<HTMLButtonElement>('button', { name: 'Sync Project' });
+    const button = screen.getByRole<HTMLButtonElement>('button', { name: 'Sync Plan' });
     expect(button.disabled).toBe(true);
   });
 
@@ -208,6 +208,6 @@ describe('Share Form on a project in This Browser (forms.md "Publishing and the 
       />,
     );
     expect(screen.getByText(/kept on this device/)).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Sync Project' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Sync Plan' })).toBeNull();
   });
 });

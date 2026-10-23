@@ -435,7 +435,7 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   {
     field: 'chartSource',
     valid: (v: unknown) => isChartSource(v),
-    rule: 'an object { sheetId, range: { r1, c1, r2, c2 } } naming a sheet of the project and row and column ids',
+    rule: 'an object { sheetId, range: { r1, c1, r2, c2 } } naming a sheet of the plan and row and column ids',
   },
   {
     field: 'sheetAnchor',
@@ -445,7 +445,7 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   {
     field: 'planSheet',
     valid: (v: unknown) => isPlanSheetRef(v),
-    rule: 'an object { sheetId } naming a sheet of the project',
+    rule: 'an object { sheetId } naming a sheet of the plan',
   },
   {
     field: 'cellComments',

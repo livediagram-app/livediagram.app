@@ -133,10 +133,10 @@ export function TeamPane({
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
             This team doesn&apos;t exist, or you&apos;re not a member of it. Ask an admin for an
-            invite, or head back to your own projects.
+            invite, or head back to your own plans.
           </p>
           <Button size="md" onClick={onLeftTeam} className="mt-6 shadow-sm">
-            Back to your projects
+            Back to your plans
           </Button>
         </div>
       </div>

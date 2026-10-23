@@ -141,7 +141,7 @@ export function AssigneePicker({
         <div className="flex flex-col gap-1.5 rounded-lg border border-dashed border-slate-300 px-3 py-2.5 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
           {teams.length > 0 && onMoveToTeam ? (
             <>
-              <p>Move this project into a team library to assign teammates:</p>
+              <p>Move this plan into a team library to assign teammates:</p>
               <div className="flex flex-wrap gap-1.5">
                 {teams.map((t) => (
                   <button
@@ -157,13 +157,13 @@ export function AssigneePicker({
               </div>
               {moveFailed ? (
                 <p className="text-rose-600 dark:text-rose-400">
-                  Couldn&apos;t move the project. Check your connection and try again.
+                  Couldn&apos;t move the plan. Check your connection and try again.
                 </p>
               ) : null}
             </>
           ) : (
             <p>
-              Actions assign to the project&apos;s team.{' '}
+              Actions assign to the plan&apos;s team.{' '}
               <a
                 href="/explorer/team"
                 className="font-medium text-brand-700 underline dark:text-brand-400"
@@ -178,7 +178,7 @@ export function AssigneePicker({
         // Share-link editor on someone else's team project: they can
         // edit, but only the team's members are assignable.
         <p className="px-1 text-xs text-slate-500 dark:text-slate-400">
-          Only members of this project&apos;s team can be assigned actions.
+          Only members of this plan&apos;s team can be assigned actions.
         </p>
       ) : signedIn && members !== null && members.length === 0 ? (
         <p className="px-1 text-xs text-slate-500 dark:text-slate-400">

@@ -60,7 +60,7 @@ function readMintRequest(body: Record<string, unknown>): MintRequest | Response 
   const scope = body.scope ?? 'project';
   if (scope === 'workspace') {
     if (body.projectId !== undefined || body.tabId !== undefined)
-      return invalidValue('a workspace ticket names no project');
+      return invalidValue('a workspace ticket names no plan');
     if (body.folderId !== undefined && !isId(body.folderId))
       return invalidValue('invalid folderId');
     return { scope, folderId: body.folderId ?? null };

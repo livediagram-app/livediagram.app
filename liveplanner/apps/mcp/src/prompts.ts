@@ -12,9 +12,9 @@ export function registerPrompts(server: McpServer): void {
     'plan_this',
     {
       title: 'Plan this',
-      description: 'Turn a goal or a piece of work into a new liveplanner project.',
+      description: 'Turn a goal or a piece of work into a new liveplanner plan.',
       argsSchema: {
-        description: z.string().describe('What to plan: a project, a launch, a piece of work.'),
+        description: z.string().describe('What to plan: a plan, a launch, a piece of work.'),
       },
     },
     ({ description }) => ({
@@ -24,9 +24,9 @@ export function registerPrompts(server: McpServer): void {
           content: {
             type: 'text',
             text:
-              `Plan the following as a liveplanner project, then give me a link to open it:\n\n` +
+              `Plan the following as a liveplanner plan, then give me a link to open it:\n\n` +
               `${description}\n\n` +
-              `Pick a fitting template from list_templates and make the project with create_project, then ` +
+              `Pick a fitting template from list_templates and make the plan with create_project, then ` +
               `add the real tasks as cards with change_items, in the columns they belong in.`,
           },
         },
@@ -52,7 +52,7 @@ export function registerPrompts(server: McpServer): void {
             text:
               `Put these tasks on a liveplanner board and give me a link:\n\n` +
               `${tasks}\n\n` +
-              `Make a project from the "kanban" template with create_project, then add one card per ` +
+              `Make a plan from the "kanban" template with create_project, then add one card per ` +
               `task with change_items, setting the column, assignee and due date the list gives.`,
           },
         },
@@ -63,10 +63,10 @@ export function registerPrompts(server: McpServer): void {
   server.registerPrompt(
     'show_my_project',
     {
-      title: 'Show my project',
-      description: 'Find one of your projects by name and display it inline.',
+      title: 'Show my plan',
+      description: 'Find one of your plans by name and display it inline.',
       argsSchema: {
-        name: z.string().describe('Part of the project’s name.'),
+        name: z.string().describe('Part of the plan’s name.'),
       },
     },
     ({ name }) => ({
@@ -76,7 +76,7 @@ export function registerPrompts(server: McpServer): void {
           content: {
             type: 'text',
             text:
-              `Find my liveplanner project matching "${name}" with find_projects, then ` +
+              `Find my liveplanner plan matching "${name}" with find_projects, then ` +
               `read_project it to show me the image and a link. If several match, list them ` +
               `and ask which one.`,
           },

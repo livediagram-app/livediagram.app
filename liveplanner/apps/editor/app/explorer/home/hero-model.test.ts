@@ -19,14 +19,14 @@ describe('heroGreeting', () => {
 describe('heroPills', () => {
   it('counts the projects and says how the Inbox stands', () => {
     expect(heroPills({ projects: 1, inbox: 0 })).toEqual([
-      { id: 'projects', label: '1 project', tone: 'emerald' },
+      { id: 'projects', label: '1 plan', tone: 'emerald' },
       { id: 'inbox', label: 'Inbox is clear', tone: 'sky' },
     ]);
     expect(heroPills({ projects: 9, inbox: 3 }).map((p) => p.label)).toEqual([
-      '9 projects',
+      '9 plans',
       '3 open in your Inbox',
     ]);
-    expect(heroPills({ projects: 0, inbox: 1 })[0]!.label).toBe('0 projects');
+    expect(heroPills({ projects: 0, inbox: 1 })[0]!.label).toBe('0 plans');
   });
 
   it('draws a pill only once its count is known', () => {
