@@ -8,28 +8,28 @@ Scope, by file:
 
 | File                                                 | Role                                                                    |
 | ---------------------------------------------------- | ----------------------------------------------------------------------- |
-| `packages/design/src/element-types.ts`             | `ImageElement`                                                          |
-| `packages/design/src/factories.ts`                 | `createImage`: the 200×150 placeholder, `aspectLocked: true`            |
-| `packages/design/src/validate.ts`                  | Structural check of an image element in a tab body                      |
-| `packages/design/src/svg-render-describe.ts`       | `describeBoxedExport`: image `ExportShape` with `href` / fit / radius   |
-| `packages/design/src/svg-render.ts`                | Image branch: `svgImageShape`, else the dashed placeholder rect         |
-| `packages/design/src/svg-render-image-icon.ts`     | `svgImageShape`: clipped `<image>` over a white backing rect            |
+| `packages/design/src/element-types.ts`               | `ImageElement`                                                          |
+| `packages/design/src/factories.ts`                   | `createImage`: the 200×150 placeholder, `aspectLocked: true`            |
+| `packages/design/src/validate.ts`                    | Structural check of an image element in a tab body                      |
+| `packages/design/src/svg-render-describe.ts`         | `describeBoxedExport`: image `ExportShape` with `href` / fit / radius   |
+| `packages/design/src/svg-render.ts`                  | Image branch: `svgImageShape`, else the dashed placeholder rect         |
+| `packages/design/src/svg-render-image-icon.ts`       | `svgImageShape`: clipped `<image>` over a white backing rect            |
 | `packages/api-schema/src/image-limits.ts`            | `MAX_IMAGE_BYTES`, `ACCEPTED_IMAGE_TYPES` and their derived copy        |
 | `packages/api-schema/src/image-sniff.ts`             | `sniffImageType`: magic-number table                                    |
 | `packages/api-schema/src/embed-images.ts`            | `embedTabImages`, `tabImageIds`: server-side data-URL inlining          |
 | `packages/api-schema/src/sha256.ts`                  | `sha256Hex`, shared by editor and worker                                |
 | `packages/api-schema/src/index.ts`                   | `ImageSummary`                                                          |
-| `apps/api/migrations/0001_livedesign_baseline.sql`   | `images` table and its two indexes                                      |
-| `apps/api/src/routes/images.ts`                      | `handleImages`: the five `/api/images*` routes; `parsePositiveCap`      |
-| `apps/api/src/db/images.ts`                          | D1 access; `insertImage` with atomic caps; usage and share read         |
-| `apps/api/src/image-row.ts`                          | `imageRowToSummary`                                                     |
-| `apps/api/src/image-sniff.ts`, `image-strip.ts`      | Upload boundary: sniff re-export, `stripJpegMetadata`                   |
-| `apps/api/src/index.ts`                              | Pre-dispatch size gate, write limiter, `scheduled()` retention hand-off |
+| `apps/api/migrations/0001_livedesign_baseline.sql`   | `media_images`, `media_ref_outbox`; the old, unserved `images` table    |
+| `apps/api/src/routes/images.ts`                      | `handleImages`: the five `/api/images*` routes; `originalNameOf`        |
+| `apps/api/src/media.ts`                              | The media service client, `media_images`, the reference outbox          |
+| `apps/api/src/db/images.ts`                          | `imageUsageByOwner`: the usage map from the reference index             |
+| `apps/api/src/db/image-grants.ts`                    | `designServesImage`, `servableImageIds`: the share read's gate          |
+| `apps/api/src/index.ts`                              | Size gate, write limiter, `scheduled()`: retention and `flushMediaRefs` |
 | `apps/api/src/thumbnail.ts`                          | `loadEmbeddedImages` for the preview and live image                     |
-| `apps/api/wrangler.toml`                             | `IMAGES` bucket (production and `[env.staging]`), caps comment          |
-| `apps/api/hosted-vars.json`                          | Hosted livedesign.app's per-owner caps                                  |
+| `apps/api/wrangler.toml`                             | `IMAGES` bucket (old images), the `* * * * *` cron, `MEDIA_KEY` comment |
+| `apps/api/hosted-vars.json`                          | Hosted livedesign.app's `MEDIA_URL`, per environment                    |
 | `apps/live/lib/api/images.ts`                        | `apiListImages`, `apiUploadImage`, `apiDeleteImage`, `apiImageUsage`, … |
-| `apps/live/lib/upload-image.ts`                      | `uploadImageFile`, `addImageFileForDesign`, `ImageUploadError`        |
+| `apps/live/lib/upload-image.ts`                      | `uploadImageFile`, `addImageFileForDesign`, `ImageUploadError`          |
 | `apps/live/hooks/canvas/useEditorImages.ts`          | Picker state, attach, detach, place-from-gallery                        |
 | `apps/live/hooks/canvas/useClipboard.ts`             | `pasteImageFile`: Cmd/Ctrl+V image paste                                |
 | `apps/live/hooks/persistence/useImageBlobUrl.ts`     | Authenticated fetch to a revocable blob URL                             |
@@ -39,7 +39,7 @@ Scope, by file:
 | `apps/live/components/canvas/ImageDropZone.tsx`      | Drop, paste, file-input zone shared with the Explorer gallery           |
 | `apps/live/lib/export-tab-images.ts`                 | `loadTabImages`: client export prefetch                                 |
 | `apps/live/components/palette/palette-tile-defs.tsx` | `tools:image` tile (`needsImage: true`, shortcut `9`)                   |
-| `apps/live/app/design/[id]/useElementCreation.ts`  | `addImage`: arms the draw gesture                                       |
+| `apps/live/app/design/[id]/useElementCreation.ts`    | `addImage`: arms the draw gesture                                       |
 | `apps/live/hooks/canvas/useShapeDrawing.ts`          | Commit of the draw: telemetry, selects the placeholder (no picker)      |
 
 Out of this blueprint, cited where they touch images: the reference index and the retention sweep
@@ -48,28 +48,30 @@ Out of this blueprint, cited where they touch images: the reference index and th
 import pipeline (`apps/live/lib/import-images/`,
 [Import image pipeline](../../020-import-export/import-image-pipeline.md)), the Explorer gallery
 (`apps/live/components/panels/GalleryPane.tsx`, [Folders](../../013-workspace/folders.md)),
-account deletion and guest migration (`apps/api/src/db/account.ts`,
+the media service itself ([liveworkspace/docs/media.md](../../../../../liveworkspace/docs/media.md): the gallery, dedupe, caps, sniff, JPEG strip and its own sweep), account deletion and guest migration (`apps/api/src/db/account.ts`,
 [Owner-keyed data](../../015-api/api.md#owner-keyed-data)), the Trash
 ([Trash](../../013-workspace/trash.md)), and the mcp embedder (`apps/mcp/src/image-result.ts`).
 
 ## Domain and naming
 
-| Term             | Identifier                                 | Meaning                                                    |
-| ---------------- | ------------------------------------------ | ---------------------------------------------------------- |
-| Image element    | `ImageElement` (`type: 'image'`)           | Boxed element that shows one bitmap                        |
-| Image id         | `ImageElement.imageId: string \| null`     | `images.id` = R2 key; a `data:` URI offline; null = empty  |
-| Placeholder      | `imageId === null`                         | The empty, dashed state awaiting a pick                    |
-| Gallery          | rows of `images` for one `owner_id`        | Every image one owner has uploaded                         |
-| Image summary    | `ImageSummary`                             | Wire DTO of one gallery row                                |
-| Dedupe key       | `(owner_id, sha256)`                       | SHA-256 of the uploaded (pre-strip) bytes, per owner       |
-| Soft cap         | `IMAGE_MAX_PER_OWNER`, `IMAGE_MAX_BYTES_…` | Optional per-owner count and byte ceilings                 |
-| Caps             | `ImageCaps`                                | The two parsed soft caps; `null` = no cap                  |
-| Metadata strip   | `stripJpegMetadata`                        | Byte-level removal of APPn and COM segments from a JPEG    |
-| Reference        | row of `image_refs` naming the id          | A tab places the image; see the index blueprint            |
-| Retention sweep  | `runImageRetention`                        | Daily reaping of unreferenced images; index blueprint      |
-| Embed budget     | `IMAGE_EMBED_BUDGET_BYTES`                 | Raw bytes one server-side snapshot may inline              |
-| Export image map | `ExportImageMap`                           | `imageId → { href, image }` prefetched for a client export |
-| Images available | `env.IMAGES !== undefined`                 | The deployment has an R2 binding                           |
+| Term             | Identifier                             | Meaning                                                        |
+| ---------------- | -------------------------------------- | -------------------------------------------------------------- |
+| Image element    | `ImageElement` (`type: 'image'`)       | Boxed element that shows one bitmap                            |
+| Image id         | `ImageElement.imageId: string \| null` | The media service's id; a `data:` URI offline; null = empty    |
+| Placeholder      | `imageId === null`                     | The empty, dashed state awaiting a pick                        |
+| Gallery          | `media.list(owner)`                    | Every image one person has uploaded, from every app            |
+| Image summary    | `ImageSummary`                         | Wire DTO of one gallery image (the service's, minus `app`)     |
+| Image owner      | `media_images.owner_id`                | Whose an image is, as this api names owners                    |
+| Media owner      | `mediaOwner(owner)`                    | The owner as the service knows them; a guest id is hashed      |
+| Dedupe key       | person and `sha256`, in the service    | SHA-256 of the uploaded (pre-strip) bytes, per person          |
+| Gallery cap      | the service's, 100 images and 100 MB   | Per-person count and byte ceilings, across every app           |
+| Metadata strip   | the service's JPEG strip               | Byte-level removal of APPn and COM segments from a JPEG        |
+| Reference        | row of `image_refs` naming the id      | A tab places the image; see the index blueprint                |
+| Reference outbox | `media_ref_outbox`                     | Designs whose images changed since the service last heard      |
+| Retention sweep  | `runImageRetention`                    | Daily reaping of the old, unreferenced images; index blueprint |
+| Embed budget     | `IMAGE_EMBED_BUDGET_BYTES`             | Raw bytes one server-side snapshot may inline                  |
+| Export image map | `ExportImageMap`                       | `imageId → { href, image }` prefetched for a client export     |
+| Images available | `mediaClient(env) !== null`            | The deployment has `MEDIA_KEY` for the media service           |
 
 Banned synonyms: "asset", "upload" as a noun for the stored row (say image), "photo" in code, "GC"
 (say retention sweep), "thumbnail" for a gallery tile (thumbnail is the design snapshot).
@@ -106,65 +108,64 @@ change (D46).
 
 Guards run in this order; the first failure answers.
 
-1. `env.IMAGES` absent → 503 `images_unavailable`.
+1. `MEDIA_KEY` unset (`mediaClient(env)` null) → 503 `images_unavailable`.
 2. Pre-dispatch in `index.ts`: read-only token → 403; `Content-Length > MAX_IMAGE_BYTES` →
    413 `payload_too_large`; `WRITE_RATE_LIMITER` exhausted → 429 `rate_limited`.
 3. No resolved owner → 400 (`requireOwner`, D33).
 4. `Content-Type` (lower-cased) not in `ACCEPTED_IMAGE_TYPES` → 415 `unsupported_type`.
 5. `Content-Length` missing, non-finite or `<= 0` → 400; `> MAX_IMAGE_BYTES` → 413
-   `file_too_large` (unreachable behind step 2 while both caps are equal).
-6. Not a workbench session (`ctx.workbench`) and not an API token (`ctx.token`), `X-Image-Sha256`
-   matches `/^[0-9a-f]{64}$/` and a row exists at `(owner, sha)` → 200 `{ image, deduped: true }`,
-   body unread. A workbench or token caller skips this step and dedupes at step 11 (E4a).
-7. Soft caps, only when at least one is set: one `imageTotalsByOwner` query; `count >= maxImages`
-   → 403 `gallery_full` `reason: 'count'`; `bytes + Content-Length > maxBytes` → 403
-   `gallery_full` `reason: 'bytes'` (D35).
-8. `X-Image-Width` / `X-Image-Height` not finite and positive → 400 (D38: trusted, not decoded).
-9. Body read; `byteLength > MAX_IMAGE_BYTES` → 413 `file_too_large`.
-10. `sniffImageType(first 16 bytes)` null or not equal to the declared type → 415
-    `unsupported_type`.
-11. `sha256Hex(body)`; a row at `(owner, sha)` → 200 `{ image, deduped: true }` (D37).
-12. JPEG only: `stripJpegMetadata`; a throw → 415 `malformed_jpeg`, nothing stored (D36).
-13. `id = crypto.randomUUID()`; `IMAGES.put(id, stored, { httpMetadata: { contentType },
-customMetadata: { ownerId, originalName } })`. `[QB10]`
-14. `insertImage(env, row, caps)`: one `INSERT … SELECT … WHERE` that repeats both cap checks
-    against the stored size, so racing uploads cannot together pass a cap (D35). Refused (null):
-    `IMAGES.delete(id)`, log `[images] cap refused a racing upload`, re-read the totals, then 403
-    `gallery_full` when a cap still holds, else 409 `upload_conflict` (room again; the client may
-    retry). A unique conflict on `(owner, sha)` from a concurrent identical upload deletes the
-    object and answers the existing row `deduped: true` (GB4).
-15. `waitUntil(recordImageUploaded(env, owner))` ([Timeline](../../013-workspace/timeline.md));
-    200 `{ image, deduped: false }`.
+   `file_too_large` (unreachable behind step 2 while both caps are equal). Steps 4 and 5 run here,
+   so a refused file never leaves the worker.
+6. The hash shortcut: only when the caller is not a workbench session (`ctx.workbench`) or an
+   API token (`ctx.token`) and `X-Image-Sha256` matches `/^[0-9a-f]{64}$/` is it sent on as
+   `sha256`; a workbench or token caller's header is dropped, so the service dedupes on the body's
+   real hash (E4a).
+7. Body read; `byteLength > MAX_IMAGE_BYTES` → 413 `file_too_large`.
+8. `media.upload({ owner: mediaOwner(owner), bytes, contentType, byteSize, width, height,
+originalName: originalNameOf(X-Image-Original-Name), sha256 })`. The service answers the hash
+   dedupe, checks the caps, sniffs the bytes against the declared type, strips a JPEG's metadata,
+   hashes, dedupes and stores, with the caps inside the row's insert so racing uploads cannot
+   together pass one ([media.md](../../../../../liveworkspace/docs/media.md) "Uploads"). Its
+   refusals pass on as sent (403 `gallery_full` `{ reason, limit, current }`, 409
+   `upload_conflict`, 415 `unsupported_type` / `malformed_jpeg`, 400), except a 401 (this api's key
+   refused) or a 5xx, which log `[images] media service answered` and answer 503
+   `images_unavailable`.
+9. `rememberMediaImages(env, owner, [image.id])`: the image is recorded as the uploader's, under
+   the owner id this api uses (a guest's own id, never its hash).
+10. Unless deduped, `waitUntil(recordImageUploaded(env, owner))`
+    ([Timeline](../../013-workspace/timeline.md)); 200 `{ image, deduped }`.
 
 Invariants:
 
-- **I1:** every stored object's bytes sniff as its row's `content_type`, which is in
-  `ACCEPTED_IMAGE_TYPES`.
-- **I2:** no stored JPEG carries an APP0 to APP15 or COM segment.
-- **I3:** at most one row per `(owner_id, sha256)` (unique index).
-- **I4:** a row's R2 key equals `images.id`.
-- **I5:** after any committed insert, an owner's row count and summed `byte_size` are within
-  every set cap.
+- **I1 to I3** (sniffed type in `ACCEPTED_IMAGE_TYPES`, no JPEG APPn or COM segment, one image per
+  person and bytes) and the caps are the media service's.
+- **I4:** a guest id never reaches the service; it sees `mediaOwner(guestId)`, a one-way hash.
+- **I5:** a `media_images` row names the owner as this api does (account id or guest id), or `''`
+  for an id the service does not know.
 
 ### Read (`GET /api/images/:id`)
 
-1. No row → 404. The caller's resolved owner equals the row's `owner_id` → allowed.
-2. Otherwise, with `?d=<designId>`: `getDesign` finds the design outside the Trash,
-   `gateGrant` returns a grant, and `designReferencesImage(d, id, grant.tabScope)` is true →
-   allowed. The reference is read from the index
+1. `mediaImageOwner(env, media, id, caller)`: the `media_images` row, else asked of the service
+   once and remembered (`''` when it has no such image) → no owner → 404. The caller's resolved
+   owner equals it, and the caller is not a design-scope workbench session → allowed.
+2. Otherwise, with `?d=<designId>`: `getDesignMeta` finds the design outside the Trash,
+   `gateGrant` returns a grant, and `designServesImage(d, id, grant.tabScope)` is true → allowed:
+   the design places the image and may serve it (its owner owns `d`, or `d` holds a placement
+   grant). The reference is read from the index
    ([Image reference index](image-reference-index.md#readers)). A tab-scoped visitor counts only
    their tab ([Tab-scoped share links](../../013-workspace/tab-scoped-share-links.md)). `[QB8]`
-3. Not allowed, or no R2 object → 404. Allowed → the bytes, `Content-Type` from the object,
-   `Cache-Control: private, max-age=86400`.
+3. Not allowed, or no bytes at the service → 404. Allowed → `media.bytes(id)`, `Content-Type`
+   the service's stored (sniffed) type, `Cache-Control: private, max-age=86400`,
+   `X-Content-Type-Options: nosniff`.
 
 ### Delete, list, usage
 
-- `DELETE /api/images/:id`: owner only; no row → 200 `{ ok: true }`; another owner → 403
-  (D34); else `deleteImage` then `IMAGES.delete(id)`, 200 `{ ok: true }`. Row first, so a row
-  never outlives its bytes: a D1 throw leaves both (500, retryable); an R2 throw after it is
-  caught and logged `[images] R2 delete failed after the row was removed` with the id, and the
-  answer is still 200 (orphaned bytes, never a row that dedupe hands back with nothing behind it).
-- `GET /api/images`: owner only; `listImagesByOwner`, newest first.
+- `DELETE /api/images/:id`: owner only; `media.remove(mediaOwner(owner), id)`. The service checks
+  the image is theirs (another owner's → 403, D34) and answers ok for one already gone; then the
+  `media_images` row goes, and 200 `{ ok: true }`.
+- `GET /api/images`: owner only; `media.list(mediaOwner(owner))`, the gallery from every app,
+  newest first, each id remembered as the owner's (`rememberMediaImages`), so a design of theirs
+  placing an image uploaded in another app serves it.
 - `GET /api/images/usage`: owner only; `imageUsageByOwner` reads the owner's `designs →
 design_tabs → image_refs` ([Image reference index](image-reference-index.md#readers)), no tab
   body read, each design once per image. A design in the Trash still counts
@@ -172,6 +173,15 @@ design_tabs → image_refs` ([Image reference index](image-reference-index.md#re
 
 ### Retention
 
+Images in the media service are swept by the service once every app has told it which images
+its designs place ([media.md](../../../../../liveworkspace/docs/media.md) "Retention"). The
+reference index's writers queue each design whose images changed in `media_ref_outbox`, in the
+same batch (`mediaRefQueueTabStatement`; a tab linked in or out and a removed design through
+`mediaRefQueueDesignsStatement`), and `scheduled()` on `* * * * *` sends each queued design's
+whole set (`flushMediaRefs`), saying `complete` once the queue drains; the daily `0 3 * * *` run
+says `complete` even when nothing is queued. Without `MEDIA_KEY` the queue is dropped.
+
+For the images from before the move, still in the old `images` table and `IMAGES` bucket,
 `scheduled()` on `0 3 * * *` hands the day's run to `runImageRetention`, which the
 [Image reference index](image-reference-index.md) blueprint owns end to end: the backfill, the
 completeness gate, the tripwire and the sweep. This blueprint owns only what the sweep reads from
@@ -186,15 +196,16 @@ null or `data:` id references nothing.
 - `describeBoxedExport`: `radius = BORDER_RADIUS_PX[borderRadius]` or 4, `objectFit ??
 'contain'`, `href = resolveImageHref?.(imageId)`; the alt-text label only when `href` is
   absent. SVG: `svgImageShape`; PNG / PDF: `drawImageElement` in `export-tab-canvas-draw.ts`.
-- Server: `loadEmbeddedImages` reads each id from `IMAGES` through `embedTabImages` with
+- Server: `loadEmbeddedImages` reads each id with `media.bytes(id)` through `embedTabImages` with
   `totalBudgetBytes: IMAGE_EMBED_BUDGET_BYTES`, in document order, one at a time; an image that
-  does not fit is skipped and later smaller ones may still fit (D44). Only ids with a row in
-  `images` are read. `[QB7]`
+  does not fit is skipped and later smaller ones may still fit (D44). Only ids the design may
+  serve (`servableImageIds`, one query for the tab) are read; none without `MEDIA_KEY`. `[QB7]`
 
 ### Availability
 
-- `env.IMAGES` absent: every `/api/images*` route answers 503 `images_unavailable`; the sweep and
-  the snapshot embed are no-ops.
+- `MEDIA_KEY` unset: every `/api/images*` route answers 503 `images_unavailable` (as when the
+  service refuses the key or is down), the snapshot embed reads nothing, and `flushMediaRefs`
+  drops the queue. The old sweep is a no-op without the `IMAGES` binding.
 - The editor withholds `onAddImage` when the deployment has no images, which hides every
   `needsImage` tile (`tools:image`, avatar, hero) and the `9` shortcut. It learns this from
   `GET /api/capabilities` through the proposed field `imagesEnabled` `[QB1]`; the endpoint
@@ -244,35 +255,35 @@ export function embedTabImages(
   limits?: EmbedImageLimits,
 ): Promise<Map<string, string>>;
 
-// apps/api/src/db/images.ts
-export type ImageCaps = { maxImages: number | null; maxBytes: number | null };
-export function insertImage(
+// apps/api/src/media.ts
+export function mediaClient(env: Pick<Env, 'MEDIA_KEY' | 'MEDIA_URL'>): MediaClient | null;
+export function mediaOwner(owner: string): Promise<string>; // a guest id → a one-way hash
+export function imageSummary(image: MediaImage): ImageSummary; // drops `app`
+export function rememberMediaImages(env: Env, owner: string, ids: string[]): Promise<void>;
+export function mediaImageOwner(
   env: Env,
-  row: {
-    id: string;
-    ownerId: string;
-    contentType: string;
-    byteSize: number;
-    width: number;
-    height: number;
-    sha256: string;
-    originalName: string | null;
-  },
-  caps?: ImageCaps,
-): Promise<ImageSummary | null>; // null: the caps refused it
+  client: MediaClient,
+  id: string,
+  caller: string | null,
+): Promise<string | null>;
+export function flushMediaRefs(env: Env, announce?: boolean): Promise<number>;
+
+// apps/api/src/db/images.ts
 export function imageUsageByOwner(
   env: Env,
   ownerId: string,
 ): Promise<Record<string, { id: string; name: string }[]>>;
-export function designReferencesImage(
+
+// apps/api/src/db/image-grants.ts
+export function designServesImage(
   env: Env,
   designId: string,
   imageId: string,
   onlyTabId?: string | null,
 ): Promise<boolean>;
 
-// apps/api/src/routes/images.ts: null for unset, blank, non-numeric or <= 0
-export function parsePositiveCap(raw: string | undefined): number | null;
+// apps/api/src/routes/images.ts: the file's own name, decoded, cut to ORIGINAL_NAME_MAX
+export function originalNameOf(header: string | null): string | null;
 
 // apps/live/lib/upload-image.ts
 export function uploadImageFile(ownerId: string, file: File): Promise<UploadResult>;
@@ -304,81 +315,96 @@ read a 503 as `null` and `{}`.
 
 ## Data and persistence
 
-- **D1 `images`** (`0014_images.sql`): `id` TEXT PK (uuid v4), `owner_id`, `content_type`,
-  `byte_size` (stored, post-strip), `width`, `height` (client-declared), `sha256` (pre-strip hex),
-  `original_name` (nullable), `created_at` (ms). `images_owner_sha_idx` unique on
-  `(owner_id, sha256)`; `images_owner_created_idx` on `(owner_id, created_at DESC)`.
-- **R2 `IMAGES`**: key `images.id`; `httpMetadata.contentType` the sniffed type;
-  `customMetadata` `{ ownerId, originalName }`. The same bucket holds design snapshots under
-  `thumb/<designId>` ([Design SVG snapshots](../../006-design/design-snapshots.md)).
+- **The media service** keeps each image (bytes, type, size, dimensions, `sha256`, original name,
+  owner, app) and the gallery, across every app
+  ([media.md](../../../../../liveworkspace/docs/media.md)).
+- **D1 `media_images`** (`0001_livedesign_baseline.sql`): `id` TEXT PK, `owner_id` TEXT (account
+  id, guest id, or `''` for an id the service does not know), `WITHOUT ROWID`;
+  `media_images_owner_idx` on `owner_id`. Written on upload, on a gallery list and on the first
+  read of an id; read by the placement grants.
+- **D1 `media_ref_outbox`** (same migration): `design_id` TEXT PK, `queued_at` INTEGER,
+  `WITHOUT ROWID`. `queued_at` moves on each change, so `flushMediaRefs` deletes only the rows it
+  sent.
+- **Before the move**: the D1 `images` table and the R2 `IMAGES` bucket (`livedesign-images`)
+  keep the images uploaded before, unserved, until they are migrated. The bucket also holds
+  design snapshots under `thumb/<designId>`
+  ([Design SVG snapshots](../../006-design/design-snapshots.md)).
 - **Tab body**: the element fields above, validated by `validate.ts` (`imageId` string or null).
-- **Never on the wire**: `owner_id`, `sha256` (`imageRowToSummary`).
+- **Never on the wire**: the owner and the service's `app` (`imageSummary`).
 - **Snapshot / restore**: a tab snapshot carries only `imageId`; restoring an element whose image
   was deleted renders **broken**. Undo restores the prior `imageId`.
-- **Account deletion** ([Owner-keyed data](../../015-api/api.md#owner-keyed-data)): one
-  `IMAGES.delete(ids)` for every owned id (GB17), then `DELETE FROM images WHERE owner_id = ?`.
-  An image a surviving shared tab still places in another owner's design goes too; that
-  element renders **broken** (D142).
-  **Guest to account migration**: `UPDATE OR IGNORE images SET owner_id`; rows that collide on
-  the dedupe key stay with the guest id. The designs move in one batch after
-  `imageGrantOwnerChangeStatement(env, 'd.owner_id = ?2', [guestId], now)`, so every guest image
-  they place, a dedupe loser included, keeps serving in them by grant.
+- **Account deletion** ([Owner-keyed data](../../015-api/api.md#owner-keyed-data)): first
+  `media.forgetOwner(mediaOwner(owner))`, which deletes the person's images from every app (a
+  failure throws, leaving the account whole to delete again), then their `media_images` rows; the
+  old `images` rows and R2 objects go as before (GB17). An image a surviving shared tab still
+  places in another owner's design goes too; that element renders **broken** (D142).
+  **Guest to account migration**: first `media.mergeOwner(guest, account)` at the service
+  (idempotent; a failure leaves the guest whole). The designs move in one batch after
+  `imageGrantOwnerChangeStatement(env, 'd.owner_id = ?2', [guestId], now)`, then every guest
+  `media_images` row moves to the account, so every guest image they place keeps serving in them.
 - **Trash**: a trashed design keeps its tabs, so its images stay referenced until the purge
   ([Trash](../../013-workspace/trash.md)); its share link grants no image read meanwhile.
 - **Reference index**: `image_refs` is derived from tab bodies and owned by the
   [Image reference index](image-reference-index.md) blueprint.
 - **Offline designs** hold `data:` URIs in `imageId`; Take Offline and Sync Design convert
   ([Offline Mode](../../006-design/offline-mode.md)).
-- **Migration**: `0014` for `images`; `0050_image_refs.sql` belongs to the index blueprint.
+- **Migration**: the baseline, `0001_livedesign_baseline.sql`, creates `media_images` and
+  `media_ref_outbox`; `image_refs` belongs to the index blueprint.
 
 ## Errors and edge cases
 
-| #   | Case                                                | Handling                                                                                             |
-| --- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| E1  | SVG, HTML or other bytes declared as PNG            | Sniff mismatch, 415 `unsupported_type`                                                               |
-| E2  | Truncated or malformed JPEG                         | 415 `malformed_jpeg`; nothing written                                                                |
-| E3  | Lying `Content-Length`                              | Body re-checked after read, 413                                                                      |
-| E4  | Forged `X-Image-Sha256`                             | Early dedupe is owner-scoped; body hash re-verified before insert                                    |
-| E4a | Workbench or token probing the gallery by hash      | Header ignored for them; the body is read and hashed, so a hash alone never names a gallery row      |
-| E5  | Same bytes uploaded concurrently                    | Unique index rejects the second insert; its R2 object is deleted and the existing row returned (GB4) |
-| E5a | Racing uploads that together pass a cap             | The later insert is refused; its R2 object deleted; 403 `gallery_full`, or 409 when room returned    |
-| E6  | Upload without a valid sha header at a full gallery | Cap check precedes body dedupe: 403 even when the bytes are already stored                           |
-| E7  | Cap var `"100abc"`                                  | `parseInt` reads 100; blank, `0`, negative or non-numeric read as no cap                             |
-| E8  | Delete of a referenced image                        | 200; references render **broken**                                                                    |
-| E9  | Referenced id with no R2 object                     | Read 404; canvas **broken**; export and snapshot keep the placeholder                                |
-| E10 | Snapshot images over the budget                     | Placeholder for each that does not fit                                                               |
-| E11 | Offline `data:` id sent to the api                  | R2 miss, placeholder in snapshots; canvas and client export use it directly                          |
-| E12 | Retention and reference edge cases                  | [Image reference index](image-reference-index.md#errors-and-edge-cases)                              |
+| #   | Case                                              | Handling                                                                                           |
+| --- | ------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| E1  | SVG, HTML or other bytes declared as PNG          | Sniff mismatch, 415 `unsupported_type`                                                             |
+| E2  | Truncated or malformed JPEG                       | The service answers 415 `malformed_jpeg`; nothing stored                                           |
+| E3  | Lying `Content-Length`                            | Body re-checked after read, 413                                                                    |
+| E4  | Forged `X-Image-Sha256`                           | The service's early dedupe is per person; a stored body's hash is its own                          |
+| E4a | Workbench or token probing the gallery by hash    | Header ignored for them; the body is read and hashed, so a hash alone never names a gallery row    |
+| E5  | Same bytes uploaded concurrently                  | The service answers the existing image, `deduped: true`                                            |
+| E5a | Racing uploads that together pass a cap           | The service refuses the later insert: 403 `gallery_full`, or 409 when room returned                |
+| E6  | Service refuses the key or is down                | 401 or 5xx logged `[images] media service answered`; 503 `images_unavailable`                      |
+| E7  | Image uploaded in another app, placed here        | First read asks the service whose it is and remembers it; served by the owner's designs and grants |
+| E8  | Delete of a referenced image                      | 200; references render **broken**                                                                  |
+| E9  | Referenced id the service does not have           | Read 404 (remembered as `''`); canvas **broken**; export and snapshot keep the placeholder         |
+| E10 | Snapshot images over the budget                   | Placeholder for each that does not fit                                                             |
+| E11 | Offline `data:` id sent to the api                | Not servable, placeholder in snapshots; canvas and client export use it directly                   |
+| E12 | Retention and reference edge cases                | [Image reference index](image-reference-index.md#errors-and-edge-cases)                            |
 | E13 | Share read of a design in the Trash               | `getDesign` misses it; 404                                                                         |
-| E14 | Account deletion of an owner past 1000 images       | One R2 call over the key limit throws; nothing is deleted (GB17)                                     |
-| E15 | Picker opened while the tab is locked / view role   | `openImagePickerFor` no-ops; placeholder shows "No image"                                            |
-| E16 | Image with zero natural height                      | `readImageDimensions` fails, "Could not read image dimensions."                                      |
+| E14 | Account deletion of an owner past 1000 old images | One R2 call over the key limit throws; the service's images are already gone (GB17)                |
+| E15 | Picker opened while the tab is locked / view role | `openImagePickerFor` no-ops; placeholder shows "No image"                                          |
+| E16 | Image with zero natural height                    | `readImageDimensions` fails, "Could not read image dimensions."                                    |
 
 ## Security and trust
 
-- **Trust boundary.** Every upload header is untrusted. Type is sniffed, size re-checked, hash
-  recomputed; width and height are trusted after a positivity check (D38) and affect only layout.
+- **Trust boundary.** Every upload header is untrusted. Type and size are checked here, then the
+  service sniffs the type and recomputes the hash; width and height are trusted after a positivity check (D38) and affect only layout.
 - **Stored XSS.** SVG is never accepted (`ACCEPTED_IMAGE_TYPES`); served bytes carry their sniffed
   type. An `imageId` is written into export SVG as `href` and must be XML-escaped; `validate.ts`
   admits only a uuid or a `data:image/(png|jpeg|gif|webp);base64,` URI (GB1).
 - **Read authorisation.** Owner, or a reader of a design that references the id. Knowing an id
   is therefore a read capability: ids travel in tab JSON to every reader of that tab. `[QB8]`
-- **Server-side embed.** Only ids with an `images` row are read from R2, so a tab cannot pull a
-  `thumb/<designId>` snapshot or any other key into its public live image. `[QB7]`
-- **Privacy.** JPEG APPn and COM segments are stripped before storage (I2). PNG, WebP and GIF
+- **Server-side embed.** Only ids the design may serve are read, and only from the media
+  service, so a tab cannot pull a `thumb/<designId>` snapshot, another person's image or any other
+  key into its public live image. `[QB7]`
+- **Guest ids.** A guest id is a credential and never leaves this api: the service holds a guest's
+  images under `mediaOwner(guestId)`, a one-way hash.
+- **Privacy.** The service strips JPEG APPn and COM segments before storage (I2). PNG, WebP and GIF
   pass through (spec, Out of scope).
 - **Abuse.** `WRITE_RATE_LIMITER` (300 per 60 s per owner or token) on POST and DELETE; per-file
-  cap; optional per-owner caps, enforced atomically at insert (I5) and set on hosted
-  livedesign.app by `hosted-vars.json`; guest signature enforcement covers the `images` segment
+  cap; the media service's per-person caps (100 images, 100 MB, across every app), enforced
+  atomically at its insert; guest signature enforcement covers the `images` segment
   (`OWNER_SCOPED_SEGMENTS`); read-only tokens cannot write. Uploads are off in embeds (D42).
 - **Caching.** `private` only, so no shared cache holds a share-gated image.
 
 ## Performance and limits
 
-- Upload: one D1 read for the header dedupe, one grouped totals query when capped, one body hash,
-  one linear JPEG walk (`O(n)`, one output buffer of input size), one R2 put, one D1 insert
-  carrying two cap sub-selects. Worst case 10 MiB in memory twice (input plus stripped copy).
-- Read by reference: one D1 row plus one indexed lookup on `image_refs`; no tab body is read.
+- Upload: the body read whole (at most 10 MiB) and one request to the service, which does the
+  dedupe, caps, sniff, strip and store; then one `media_images` upsert.
+- Read by reference: one `media_images` row (or one service lookup, once per id), one indexed
+  lookup on `image_refs`, then the bytes streamed from the service; no tab body is read.
+- Reference sync: one outbox insert in the batch that changes a design's images; the every-minute
+  cron sends at most `MEDIA_REFS_SYNC_MAX` designs a run, each with at most the
+  service's per-design limit of ids, in one request.
 - Usage: one join over the owner's designs and `image_refs`, no tab body read; deduped in
   flight on the client (`dedupeInFlight`).
 - Retention: budgets in [Image reference index](image-reference-index.md#performance-and-limits).
@@ -429,14 +455,14 @@ read a 503 as `null` and `{}`.
 
 ## Observability
 
-| #   | Where                          | Level           | Fingerprint                                                                        |
-| --- | ------------------------------ | --------------- | ---------------------------------------------------------------------------------- |
-| O1  | Insert refused by the caps     | `console.info`  | `[images] cap refused a racing upload` + `{ owner }`                               |
-| O2  | Upload rejection (GB5)         | `console.warn`  | `[images] rejected reason=<token> owner=<id> type=<ct> bytes=<n>`                  |
-| O3  | Upload stored / deduped (GB5)  | `console.info`  | `[images] stored id=<id> bytes=<n> stripped=<bool>` / `deduped via=<header\|body>` |
-| O4  | Delete (GB5)                   | `console.info`  | `[images] deleted id=<id>`                                                         |
-| O5  | R2 delete failed after the row | `console.error` | `[images] R2 delete failed after the row was removed` + `{ imageId }`              |
-| O5  | Client upload failure (GB5)    | `console.warn`  | `[image-upload] failed code=<token>`                                               |
+| #   | Where                         | Level           | Fingerprint                                                                        |
+| --- | ----------------------------- | --------------- | ---------------------------------------------------------------------------------- |
+| O1  | Service refused key or failed | `console.error` | `[images] media service answered` + status, body                                   |
+| O2  | Upload rejection (GB5)        | `console.warn`  | `[images] rejected reason=<token> owner=<id> type=<ct> bytes=<n>`                  |
+| O3  | Upload stored / deduped (GB5) | `console.info`  | `[images] stored id=<id> bytes=<n> stripped=<bool>` / `deduped via=<header\|body>` |
+| O4  | Delete (GB5)                  | `console.info`  | `[images] deleted id=<id>`                                                         |
+| O5  | Reference sync failed         | `console.error` | `[media] refs sync failed` + status, body                                          |
+| O5  | Client upload failure (GB5)   | `console.warn`  | `[image-upload] failed code=<token>`                                               |
 
 O1 exists. O2 to O5 do not; Observability stays unchecked until GB5 lands. The retention and
 backfill fingerprints live in [Image reference index](image-reference-index.md#observability).
@@ -445,31 +471,28 @@ backfill fingerprints live in [Image reference index](image-reference-index.md#o
 
 | Rule                                                 | Test                                                      | File                                           |
 | ---------------------------------------------------- | --------------------------------------------------------- | ---------------------------------------------- |
-| 503 without R2                                       | `503 when the R2 binding is absent`                       | `apps/api/src/routes/images.test.ts`           |
+| 503 without the media service                        | `503 without the media service (self-host without …)`     | `apps/api/src/routes/images.test.ts`           |
 | Owner required                                       | `400 listing the gallery with no owner`, usage            | `apps/api/src/routes/images.test.ts`           |
 | Gallery is owner-scoped                              | `200 lists the owner-scoped gallery`                      | `apps/api/src/routes/images.test.ts`           |
-| Read: owner, share + reference, 404 otherwise        | four byte-read tests                                      | `apps/api/src/routes/images.test.ts`           |
+| Upload, dedupe, guest hash, refusals passed on       | upload tests and `the hash-only dedupe shortcut`          | `apps/api/src/routes/images.test.ts`           |
+| Read: owner, share + grant, other app, 404 otherwise | `the byte read` suite                                     | `apps/api/src/routes/images.test.ts`           |
 | Tab-scoped read                                      | `asks whether the scoped tab…`                            | `apps/api/src/routes/images.test.ts`           |
 | Delete: owner, idempotent, 403                       | three DELETE tests                                        | `apps/api/src/routes/images.test.ts`           |
-| Caps passed to the insert; racing upload refused     | `POST /api/images under a per-owner cap` suite            | `apps/api/src/routes/images.test.ts`           |
-| Atomic caps, owner-scoped, uncapped default          | `insertImage with caps` suite                             | `apps/api/src/db/image-cap.test.ts`            |
-| Hosted profile caps every gallery                    | `turns telemetry on and caps every owner…`                | `apps/api/src/hosted-vars.test.ts`             |
-| Upload guard order, dedupes, strip, 415s, 409        | none (GB2)                                                | `apps/api/src/routes/images.test.ts`           |
-| Magic-number sniff, SVG rejected                     | `sniffImageType` suite                                    | `apps/api/src/image-sniff.test.ts`             |
-| JPEG strip (APPn, COM, SOS verbatim, throws)         | `stripJpegMetadata` suite                                 | `apps/api/src/image-strip.test.ts`             |
-| Summary hides `owner_id` / `sha256`                  | `imageRowToSummary` suite                                 | `apps/api/src/image-row.test.ts`               |
+| Outbox, its flush, account delete and merge          | `the reference queue`, `flushMediaRefs`, `the account`    | `apps/api/src/media.test.ts`                   |
+| Hosted profile points at each media service          | `turns telemetry on and points each environment…`         | `apps/api/src/hosted-vars.test.ts`             |
+| Caps, sniff, strip, dedupe                           | the media service's own tests                             |                                                |
 | Whitelist, cap, no SVG                               | `MAX_IMAGE_BYTES`, `ACCEPTED_IMAGE_TYPES`                 | `packages/api-schema/src/image-limits.test.ts` |
-| Usage and share read from the index                  | `imageUsageByOwner`, `designReferencesImage`            | `apps/api/src/db/images.test.ts`               |
+| Usage and share read from the index                  | `imageUsageByOwner`, `designServesImage`                  | `apps/api/src/db/images.test.ts`               |
 | Retention, backfill, tripwire                        | [Image reference index](image-reference-index.md#testing) |                                                |
-| Snapshot embeds, missing keeps placeholder           | two `getDesignThumbnailSvg` tests                       | `apps/api/src/thumbnail.test.ts`               |
+| Snapshot embeds, missing keeps placeholder           | two `getDesignThumbnailSvg` tests                         | `apps/api/src/thumbnail.test.ts`               |
 | Embed budget in document order                       | `spends a total budget in document order…`                | `packages/api-schema/src/embed-images.test.ts` |
-| Export embeds `<image>`, placeholder without href    | `image elements` suite                                    | `packages/design/src/svg-render.test.ts`     |
+| Export embeds `<image>`, placeholder without href    | `image elements` suite                                    | `packages/design/src/svg-render.test.ts`       |
 | Client gate: type, size, empty, error mapping        | `uploadImageFile` suites                                  | `apps/live/lib/upload-image.test.ts`           |
 | Upload headers, 503 → null                           | `apiUploadImage`, `apiListImages` suites                  | `apps/live/lib/api-client.test.ts`             |
-| Placeholder factory, aspect lock on                  | `createImage drops a 200x150 placeholder…`                | `packages/design/src/factories.test.ts`      |
-| No colour controls                                   | `supportsColours covers … freehand; not image`            | `packages/design/src/geometry.test.ts`       |
+| Placeholder factory, aspect lock on                  | `createImage drops a 200x150 placeholder…`                | `packages/design/src/factories.test.ts`        |
+| No colour controls                                   | `supportsColours covers … freehand; not image`            | `packages/design/src/geometry.test.ts`         |
 | Offline data-URI rewrite                             | `offline-images` suites                                   | `apps/live/lib/offline/offline-images.test.ts` |
-| Palette hides without R2 `[QB1]`                     | none                                                      |                                                |
+| Palette hides without the media service `[QB1]`      | none                                                      |                                                |
 | Set / Cleared image log `[QB4]` (retired)            | n/a                                                       |                                                |
 | Picker, placeholder states, paste, export in browser | none (GB8)                                                |                                                |
 | Escaped `href`, validated `imageId` (GB1)            | none                                                      |                                                |
@@ -477,18 +500,20 @@ backfill fingerprints live in [Image reference index](image-reference-index.md#o
 
 ## Constants and configuration
 
-| Name                        | Value                                   | Provenance / safe range                                    |
-| --------------------------- | --------------------------------------- | ---------------------------------------------------------- |
-| `MAX_IMAGE_BYTES`           | `10 * 1024 * 1024`                      | Spec per-file cap; below the 100 MB Workers body limit     |
-| `MAX_IMAGE_MB`              | `10`                                    | Derived, for copy                                          |
-| `ACCEPTED_IMAGE_TYPES`      | png, jpeg, webp, gif                    | Spec whitelist; SVG must never join                        |
-| `MAX_BODY_BYTES`            | `8 * 1024 * 1024`                       | Non-image write cap in `limits.ts`                         |
-| `IMAGE_MAX_PER_OWNER`       | unset; hosted `"100"`                   | `hosted-vars.json`; positive integer or unset              |
-| `IMAGE_MAX_BYTES_PER_OWNER` | unset; hosted `"104857600"`             | `hosted-vars.json`; positive integer or unset              |
-| `IMAGE_EMBED_BUDGET_BYTES`  | `3 * 1024 * 1024`                       | Spec; 1 to 8 MiB keeps snapshots streamable                |
-| Read `Cache-Control`        | `private, max-age=86400`                | Spec; `private` is load-bearing                            |
-| Sniff window                | first 16 bytes, minimum 12              | Longest signature (WebP) needs 12                          |
-| Gallery placement size      | `240` px on the longer side             | D40; literal `max` in `addImageFromGallery`                |
-| `createImage` size          | 200 × 150                               | D49                                                        |
-| `WRITE_RATE_LIMITER`        | 300 per 60 s                            | `wrangler.toml`, namespace `1001`                          |
-| Buckets                     | `livedesign-images`, `…-images-staging` | Separate so the staging sweep cannot reap production bytes |
+| Name                       | Value                                         | Provenance / safe range                                                                                |
+| -------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `MAX_IMAGE_BYTES`          | `10 * 1024 * 1024`                            | Spec per-file cap; below the 100 MB Workers body limit                                                 |
+| `MAX_IMAGE_MB`             | `10`                                          | Derived, for copy                                                                                      |
+| `ACCEPTED_IMAGE_TYPES`     | png, jpeg, webp, gif                          | Spec whitelist; SVG must never join                                                                    |
+| `MAX_BODY_BYTES`           | `8 * 1024 * 1024`                             | Non-image write cap in `limits.ts`                                                                     |
+| `MEDIA_KEY`                | secret; unset = no images                     | `wrangler secret put`; the service's `MEDIA_KEY_LIVEDESIGN`                                            |
+| `MEDIA_URL`                | unset = `https://liveworkspace.app/api/media` | `hosted-vars.json` per environment                                                                     |
+| Gallery caps               | 100 images, 100 MB per person                 | The media service's, across every app                                                                  |
+| Reference sync cron        | `* * * * *`                                   | `wrangler.toml`, production and staging                                                                |
+| `IMAGE_EMBED_BUDGET_BYTES` | `3 * 1024 * 1024`                             | Spec; 1 to 8 MiB keeps snapshots streamable                                                            |
+| Read `Cache-Control`       | `private, max-age=86400`                      | Spec; `private` is load-bearing                                                                        |
+| Sniff window               | first 16 bytes, minimum 12                    | Longest signature (WebP) needs 12                                                                      |
+| Gallery placement size     | `240` px on the longer side                   | D40; literal `max` in `addImageFromGallery`                                                            |
+| `createImage` size         | 200 × 150                                     | D49                                                                                                    |
+| `WRITE_RATE_LIMITER`       | 300 per 60 s                                  | `wrangler.toml`, namespace `1001`                                                                      |
+| Old image buckets          | `livedesign-images`, `…-images-staging`       | Images from before the move, and snapshots; separate so the staging sweep cannot reap production bytes |

@@ -89,7 +89,7 @@ database_name = "livedesign"
 database_id = "00000000-0000-4000-8000-000000000001"
 migrations_dir = "migrations"
 
-# R2 bucket holding design snapshots (thumb/<designId>, docs/specs/006-design/document-snapshots.md), and
+# R2 bucket holding design snapshots (thumb/<designId>, docs/specs/006-design/design-snapshots.md), and
 # the image bytes uploaded before images moved to liveworkspace's media service (MEDIA_KEY below), kept until
 # they are migrated. Created out of band via `wrangler r2 bucket create livedesign-images`.
 [[r2_buckets]]

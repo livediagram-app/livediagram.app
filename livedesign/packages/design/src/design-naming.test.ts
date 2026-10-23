@@ -34,6 +34,10 @@ const ALLOWED = new Set([
   'createDocumentFragment',
 ]);
 const LOOKALIKE = /documentation|documented|livedocument/i;
+// The shared media contract (@liveworkspace/media) says documents for every app's own word.
+const CONTRACT: Record<string, ReadonlySet<string>> = {
+  'apps/api/src/media.ts': new Set(['documents', 'MEDIA_REFS_PER_DOCUMENT_MAX']),
+};
 // Other sites' addresses keep their own paths (a Google Docs link, an API reference).
 const FOREIGN_URL =
   /https?:\/\/(?!(?:www\.|staging\.)?livedesign\.app|[a-z]+\.test|localhost)[^\s'"`)<>\]]+/g;
@@ -57,7 +61,7 @@ describe('a design is never called a document', () => {
         for (const word of line.match(
           /[A-Za-z0-9_$]*[Dd][Oo][Cc][Uu][Mm][Ee][Nn][Tt][A-Za-z0-9_$]*/g,
         ) ?? []) {
-          if (ALLOWED.has(word) || LOOKALIKE.test(word)) continue;
+          if (ALLOWED.has(word) || LOOKALIKE.test(word) || CONTRACT[file]?.has(word)) continue;
           found.push(`${file}:${i + 1} ${word}`);
         }
       });
