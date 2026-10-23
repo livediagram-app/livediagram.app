@@ -10,6 +10,7 @@ import {
   readGuestCookie,
   signGuestCookie,
 } from './guests.ts';
+import { readSettings, writeSettings } from './settings.ts';
 import { testD1 } from './test-d1.ts';
 
 const BASE = 'https://liveworkspace.app';
@@ -88,7 +89,7 @@ function buildAuth(guestMerge: { secure: boolean; indexUrl?: string; indexMergeK
         adminToken: 'admin',
         google: null,
         sendCode: async (email, code) => void codes.set(email, code),
-        guestMerge,
+        guestMerge: { ...guestMerge, db: env.AUTH_DB },
       },
       env.AUTH_DB,
     ),
@@ -281,6 +282,25 @@ describe('signing in as a guest', () => {
     expect(cleared).toMatch(new RegExp(`^${GUEST_COOKIE}=;`));
     expect(cleared).toMatch(/Max-Age=0/);
     expect(response.headers.getSetCookie().some((c) => c.includes('session_token='))).toBe(true);
+  });
+
+  it("moves the guest's settings to the account, even with no index to tell", async () => {
+    const cookie = cookieValueOf(setGuestCookie(await handoff()));
+    const guestId = (await readGuestCookie(cookie, SECRET))!;
+    await writeSettings(env.AUTH_DB, guestId, 'liveplanner.app', {
+      all: { theme: 'dark' },
+      app: { density: 'compact' },
+    });
+    auth = buildAuth({ secure: true });
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { user } = (await (await signIn(cookie)).json()) as { user: { id: string } };
+    expect(await readSettings(env.AUTH_DB, user.id, 'liveplanner.app')).toMatchObject({
+      all: { theme: 'dark' },
+      app: { density: 'compact' },
+    });
+    expect(await readSettings(env.AUTH_DB, guestId, 'liveplanner.app')).toMatchObject({
+      updatedAt: null,
+    });
   });
 
   it('leaves the index alone without a guest cookie, or with a forged one', async () => {

@@ -1,11 +1,14 @@
 // Guests: one identity across every app (liveworkspace/docs/one-explorer-contracts.md "Guests").
 // An app sends the browser to GET /api/auth/guest; this Worker keeps the guest's id in its own
 // long-lived `lw_guest` cookie and hands the app a guest token in the redirect's fragment. When
-// someone signs in with that cookie, the index is told to move the guest's things to the account.
+// someone signs in with that cookie, the guest's settings move to the account and the index is told
+// to move the guest's things too.
 import type { GenericEndpointContext } from 'better-auth';
 import { AUTH_BASE_PATH } from './auth-options.ts';
 import type { Auth } from './auth.ts';
 import type { Env } from './env.ts';
+import { GUEST_ID } from './ids.ts';
+import { mergeGuestSettings } from './settings.ts';
 
 export const GUEST_PATH = '/guest';
 export const GUEST_COOKIE = 'lw_guest';
@@ -15,8 +18,6 @@ export const GUEST_TOKEN_TTL_SECONDS = 365 * 24 * 60 * 60;
 const COOKIE_MAX_AGE_SECONDS = 10 * 365 * 24 * 60 * 60;
 const STATE_MAX_LENGTH = 200;
 const MERGE_TIMEOUT_MS = 5_000;
-
-const GUEST_ID = /^guest_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 const encoder = new TextEncoder();
 
@@ -182,6 +183,8 @@ export interface MergeConfig {
   // The index Worker's service binding; plain fetch to indexUrl without one (tests, other hosts).
   indexService?: Fetcher;
   indexMergeKey?: string;
+  // The accounts database, where the guest's settings move to the account (settings.ts).
+  db?: D1Database;
 }
 
 let warnedUnconfigured = false;
@@ -197,6 +200,13 @@ export async function mergeGuestOnSignIn(
   const header = ctx?.request?.headers.get('cookie') ?? ctx?.headers?.get('cookie') ?? null;
   const guestId = await readGuestCookie(cookieValue(header, GUEST_COOKIE), config.secret);
   if (!ctx || !guestId) return;
+  // Settings live here, not in the index, so they move whatever the index says. Idempotent, and a
+  // failure is only logged: the guest's rows stay for the next sign-in to try again.
+  if (config.db) {
+    await mergeGuestSettings(config.db, guestId, userId).catch((error: unknown) =>
+      console.error('Guest settings merge failed:', error),
+    );
+  }
   if (!config.indexUrl || !config.indexMergeKey) {
     // Without an index to tell, the cookie stays, so the guest isn't lost before it is set up.
     if (!warnedUnconfigured)
@@ -208,9 +218,7 @@ export async function mergeGuestOnSignIn(
   // Awaited, so the cookie is cleared only once the index has the guest's things: a merge that
   // fails keeps the cookie, and the next sign-in tries again (the merge is idempotent). It adds one
   // request to signing in, capped at MERGE_TIMEOUT_MS.
-  const send = config.indexService
-    ? config.indexService.fetch.bind(config.indexService)
-    : fetch;
+  const send = config.indexService ? config.indexService.fetch.bind(config.indexService) : fetch;
   const merged = await send(`${config.indexUrl}/internal/merge`, {
     method: 'POST',
     headers: {

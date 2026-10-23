@@ -129,6 +129,24 @@ describe('the account API, signed in', () => {
     expect((await call(`/tokens/${token.id}`, { method: 'DELETE' })).status).toBe(200);
     expect(((await (await call('/tokens')).json()) as { tokens: unknown[] }).tokens).toEqual([]);
   });
+
+  it('reads and patches the settings every app shows', async () => {
+    expect(await (await call('/settings')).json()).toEqual({ all: {}, updatedAt: null });
+    const patched = await call('/settings', {
+      method: 'PATCH',
+      body: { all: { theme: 'dark', locale: 'en' } },
+    });
+    expect(await patched.json()).toMatchObject({ all: { theme: 'dark', locale: 'en' } });
+    await call('/settings', { method: 'PATCH', body: { all: { locale: null } } });
+    expect(await (await call('/settings')).json()).toMatchObject({ all: { theme: 'dark' } });
+    expect((await call('/settings', { method: 'PATCH', body: { all: [1] } })).status).toBe(400);
+    const crossOrigin = await call('/settings', {
+      method: 'PATCH',
+      body: { all: { theme: 'light' } },
+      headers: { origin: 'https://evil.example' },
+    });
+    expect(crossOrigin.status).toBe(403);
+  });
 });
 
 describe('the account API, for the apps', () => {
@@ -142,6 +160,38 @@ describe('the account API, for the apps', () => {
       env,
       auth,
     );
+
+  it("reads and writes someone's settings for one app", async () => {
+    const owner = 'guest_0b0e8c9a-6d7e-4f3b-9a51-2c1d0e9f8a7b';
+    const written = await internal('/settings/write', {
+      owner,
+      app: 'livediagram.app',
+      patch: { all: { theme: 'dark' }, app: { snap: true } },
+    });
+    expect(written.status).toBe(200);
+    expect(await written.json()).toMatchObject({ all: { theme: 'dark' }, app: { snap: true } });
+    const read = await internal('/settings/read', { owner, app: 'liveplanner.app' });
+    expect(await read.json()).toMatchObject({ all: { theme: 'dark' }, app: {} });
+
+    expect(
+      (await internal('/settings/read', { owner: 'nobody', app: 'livediagram.app' })).status,
+    ).toBe(400);
+    expect((await internal('/settings/read', { owner, app: 'livediagram' })).status).toBe(400);
+    expect(
+      (await internal('/settings/write', { owner, app: 'livediagram.app', patch: [] })).status,
+    ).toBe(400);
+    const tooBig = await internal('/settings/write', {
+      owner,
+      app: 'livediagram.app',
+      patch: { app: { big: 'x'.repeat(20_000) } },
+    });
+    expect(tooBig.status).toBe(400);
+    expect(await tooBig.json()).toEqual({ error: 'settings_too_large' });
+    expect(
+      (await internal('/settings/read', { owner, app: 'livediagram.app' }, `Basic ${btoa('x:y')}`))
+        .status,
+    ).toBe(401);
+  });
 
   it('refuses wrong client credentials', async () => {
     const response = await internal(

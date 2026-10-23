@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { createTokenChecker, fetchTeamChanges, mintAccountToken } from './account';
+import {
+  createTokenChecker,
+  fetchTeamChanges,
+  mintAccountToken,
+  readSettings,
+  SettingsError,
+  writeSettings,
+} from './account';
 
 const CREDENTIALS = {
   accountsUrl: 'https://liveworkspace.app/',
@@ -110,5 +117,50 @@ describe('fetchTeamChanges', () => {
     expect(calls[0]!.url).toBe(
       'https://liveworkspace.app/api/account/internal/teams/changes?cursor=1%3Aa%2C2%3Ab',
     );
+  });
+});
+
+describe('settings', () => {
+  const SETTINGS = { all: { theme: 'dark' }, app: { snap: true }, updatedAt: 1_000 };
+  const owner = 'user_1';
+
+  it("reads one app's settings for an owner", async () => {
+    const { fetcher, calls } = fakeFetch(() => Response.json(SETTINGS));
+    await expect(
+      readSettings(CREDENTIALS, { owner, app: 'livediagram.app' }, fetcher),
+    ).resolves.toEqual(SETTINGS);
+    expect(calls[0]!.url).toBe('https://liveworkspace.app/api/account/internal/settings/read');
+    expect(JSON.parse(calls[0]!.init.body as string)).toEqual({ owner, app: 'livediagram.app' });
+  });
+
+  it('sends a patch and answers the merged settings', async () => {
+    const { fetcher, calls } = fakeFetch(() => Response.json(SETTINGS));
+    const patch = { all: { theme: 'dark', locale: null }, app: { snap: true } };
+    await expect(
+      writeSettings(CREDENTIALS, { owner, app: 'livediagram.app', patch }, fetcher),
+    ).resolves.toEqual(SETTINGS);
+    expect(calls[0]!.url).toBe('https://liveworkspace.app/api/account/internal/settings/write');
+    expect(JSON.parse(calls[0]!.init.body as string)).toEqual({
+      owner,
+      app: 'livediagram.app',
+      patch,
+    });
+  });
+
+  it("throws the refusal's code, and plain errors otherwise", async () => {
+    const tooLarge = fakeFetch(() =>
+      Response.json({ error: 'settings_too_large' }, { status: 413 }),
+    );
+    const refused = writeSettings(
+      CREDENTIALS,
+      { owner, app: 'liveplanner.app', patch: { app: { big: 'x' } } },
+      tooLarge.fetcher,
+    );
+    await expect(refused).rejects.toBeInstanceOf(SettingsError);
+    await expect(refused).rejects.toMatchObject({ status: 413, code: 'settings_too_large' });
+    const down = fakeFetch(() => new Response(null, { status: 503 }));
+    await expect(
+      readSettings(CREDENTIALS, { owner, app: 'liveplanner.app' }, down.fetcher),
+    ).rejects.toThrow('settings read failed: 503');
   });
 });

@@ -4,10 +4,12 @@
 // from a page, say) closes nothing, and an app can only close the account of someone signed in to it.
 //
 // Deleting the user takes everything else with it: sessions and linked Google accounts through
-// Better Auth, and the OAuth tokens and consents through their foreign keys. Every app's refresh
-// token stops working at once; an access token already issued runs out on its own (minutes).
+// Better Auth, and the OAuth tokens and consents through their foreign keys; teams and settings
+// are cleared first, explicitly. Every app's refresh token stops working at once; an access token
+// already issued runs out on its own (minutes).
 import { AUTH_BASE_PATH } from './auth-options.ts';
 import type { Auth } from './auth.ts';
+import { deleteSettings } from './settings.ts';
 import { leaveAllTeams } from './teams.ts';
 
 export const DELETE_ACCOUNT_PATH = '/delete-account';
@@ -71,6 +73,8 @@ export async function deleteAccount(
 
   // Teams first, so the apps hear that the account left each one and a team it ran passes on.
   await leaveAllTeams(db, result.sub);
+  // Settings have no foreign key to the account (a guest's rows have no account), so they go here.
+  await deleteSettings(db, result.sub);
   const ctx = await auth.$context;
   await ctx.internalAdapter.deleteUser(result.sub);
   return Response.json({ deleted: true });

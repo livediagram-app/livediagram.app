@@ -1,13 +1,14 @@
 // The account API under /api/account (liveworkspace/docs/accounts.md "Teams" and "API tokens"):
 //   - for the signed-in person on liveworkspace.app, by their session cookie: their teams, members and
-//     invitations, and their API tokens;
+//     invitations, their API tokens, and their settings shared by every app;
 //   - for the apps' servers, by their OAuth client credentials (/api/account/internal/*): checking an
 //     API token, making one for a connecting AI tool, a token revoking itself, which tokens still
-//     work, and the teams change feed.
+//     work, the teams change feed, and reading and writing someone's settings.
 import { AUTH_BASE_PATH } from './auth-options.ts';
 import type { Auth } from './auth.ts';
 import type { Env } from './env.ts';
 import { sendTeamInviteEmail } from './email.ts';
+import { isSettingsApp, isSettingsOwner, readSettings, writeSettings } from './settings.ts';
 import {
   answerInvitation,
   createTeam,
@@ -164,6 +165,22 @@ async function handleSignedIn(
     }
   }
 
+  // The settings every app shows; each app's own are its server's to read and write.
+  if (section === 'settings' && !id) {
+    if (method === 'GET') {
+      const { all, updatedAt } = await readSettings(db, actor.id, null);
+      return json({ all, updatedAt });
+    }
+    if (method === 'PATCH') {
+      const result = await writeSettings(db, actor.id, null, {
+        all: (await readBody(request)).all,
+      });
+      return result.ok
+        ? json({ all: result.value.all, updatedAt: result.value.updatedAt })
+        : answer(result);
+    }
+  }
+
   return error(404, 'not_found');
 }
 
@@ -297,6 +314,19 @@ async function handleInternal(
     }
     if (ids.length > MAX_LIVE_TOKEN_IDS) return error(400, 'too_many_ids');
     return json({ live: await liveApiTokenIds(db, ids as string[]) });
+  }
+
+  // Someone's settings for one app. The app vouches for the owner, as it does for the teams it
+  // applies from the feed: an id it has already verified (an access token's sub, or a guest token's).
+  if (route === 'POST settings/read' || route === 'POST settings/write') {
+    const body = await readBody(request);
+    if (!isSettingsOwner(body.owner)) return error(400, 'invalid_owner');
+    if (!isSettingsApp(body.app)) return error(400, 'invalid_app');
+    if (route === 'POST settings/read') return json(await readSettings(db, body.owner, body.app));
+    const patch = body.patch ?? {};
+    if (typeof patch !== 'object' || Array.isArray(patch)) return error(400, 'invalid_patch');
+    const { all, app } = patch as { all?: unknown; app?: unknown };
+    return answer(await writeSettings(db, body.owner, body.app, { all, app }));
   }
 
   if (route === 'GET teams/changes') {

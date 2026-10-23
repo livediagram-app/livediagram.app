@@ -1,6 +1,6 @@
-# Teams, API tokens and guests
+# Teams, API tokens, guests and settings
 
-Both belong to the liveworkspace account, not to an app. A team made once is the same team in
+Teams and tokens belong to the liveworkspace account, not to an app, and so do a person's settings. A team made once is the same team in
 livediagram, liveplanner and every app after them; one API token, or one AI tool connected over
 MCP, works on every app. They are run on liveworkspace.app ([Your account](site.md#your-account-account))
 and kept by the accounts Worker (`apps/accounts`), in its own D1 beside the accounts
@@ -82,6 +82,68 @@ background with a 5 second timeout, and clears the cookie, so the next guest vis
 guest. A failed merge never fails the sign-in. Without `INDEX_URL` and `INDEX_MERGE_KEY` it does
 nothing and the cookie stays.
 
+## Settings
+
+A person's settings live with the account, in the accounts Worker's D1
+(`migrations/0003_settings.sql`, `src/settings.ts`), not in any app. A guest has settings too, under
+their guest id. An app keeps no settings table of its own.
+
+### Scopes
+
+Each setting is stored in one scope:
+
+- **`all`**: shown by every app (a theme, say). Changing it in one app changes it everywhere.
+- **an app's site id** (`livediagram.app`, `liveplanner.app`, `livedocuments.app`, `livedesign.app`,
+  as `APP_SITES` in `@liveworkspace/sites` spells them): shown by that app only.
+
+An app reads its own scope and `all`, and shows only the settings that mean something to it. It
+decides which scope a setting belongs in. liveworkspace.app shows and changes `all`.
+
+A scope is one row, keyed by owner and scope, holding a JSON object of setting names to values.
+
+### Writing is per key
+
+A write is a patch per scope: each key it names takes the new value, whole (an object value
+replaces the stored one rather than merging into it), and a key set to `null` is deleted. Keys it
+doesn't name stay as they are. The merge runs inside SQLite (`json_remove` then `json_patch`, one
+upsert per scope), against the row as it stands, so two apps writing different keys at once both
+land. A write covering both scopes is one batch, so it applies whole or not at all, and it answers
+the settings as they now are.
+
+### Limits
+
+- A setting's name is 1 to 64 letters, digits, `_`, `.` or `-`.
+- A patch must be a plain JSON object; anything else is refused (`settings_not_object`,
+  `invalid_setting_key`).
+- A scope holds at most 16 KB of JSON. A patch over that is refused at once with a 400; one that
+  would take the stored row over it fails the whole write with a 413 (`settings_too_large`), enforced
+  by a check on the table, so concurrent writes can't slip past it.
+
+### Who calls what
+
+- **An app's server** reads and writes someone's settings for itself with its client credentials:
+  `POST /api/account/internal/settings/read` and `.../settings/write` (`readSettings` and
+  `writeSettings` in `@liveworkspace/auth-client`). It names the owner: an id it has already verified,
+  an access token's `sub` or a guest token's, the same trust as the teams feed. The owner must look
+  like an account id (`user_…`) or a guest id (`guest_<uuid>`). Any app may read or write any app's
+  scope, and `all`.
+- **liveworkspace.app** reads and patches the signed-in person's `all` scope with their session
+  cookie: `GET` and `PATCH /api/account/settings`.
+
+Reading is one query on the primary key; writing is one upsert per scope plus that read, in one
+batch.
+
+### Closing an account, and a guest signing in
+
+Closing an account deletes its settings rows with it. Settings have no foreign key to the account
+(a guest isn't a user row), so this is done explicitly, beside leaving its teams.
+
+When a guest signs in (the same hook that tells the index, above), their settings move to the
+account, scope by scope. A key the account already has keeps the account's value; the guest's
+other keys fill the gaps, as many as fit under the limit. Then the guest's rows are deleted. This
+runs whether or not the index is set up, is safe to run twice, and a failure is logged without
+failing the sign-in: the guest's rows stay for the next sign-in.
+
 ## The API
 
 On liveworkspace.app, routed to the accounts Worker (`/api/account/*`).
@@ -101,16 +163,20 @@ For the signed-in person, by their session cookie. Writes must come from the sit
 | `POST /api/account/invitations/:member/decline`         | declines                                      |
 | `GET` / `POST /api/account/tokens`                      | lists / makes a token (the secret once)       |
 | `DELETE /api/account/tokens/:id`                        | revokes one                                   |
+| `GET /api/account/settings`                             | their `all` settings: `{ all, updatedAt }`    |
+| `PATCH /api/account/settings` `{ all }`                 | patches `all`; answers `{ all, updatedAt }`   |
 
 For an app's server, by its OAuth client credentials (`Authorization: Basic`, checked by the OAuth
 provider's own introspection and remembered per isolate for five minutes):
 
-| Route                                      | Does                                                                                     |
-| ------------------------------------------ | ---------------------------------------------------------------------------------------- |
-| `POST /api/account/internal/tokens/verify` | `{ token }` → the account and its teams, or 404                                          |
-| `POST /api/account/internal/tokens`        | `{ accessToken, name, readOnly }` → a token, shown once                                  |
-| `GET /api/account/internal/teams/changes`  | `?cursor=` → the next page of the change feed                                            |
-| `POST /api/account/internal/tokens/revoke` | `{ token }` → revokes it (a CLI signing out), or 404                                     |
-| `POST /api/account/internal/tokens/live`   | `{ ids }` (up to 100) → which still work, so an app can end what hangs off a revoked one |
+| Route                                       | Does                                                                                     |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `POST /api/account/internal/tokens/verify`  | `{ token }` → the account and its teams, or 404                                          |
+| `POST /api/account/internal/tokens`         | `{ accessToken, name, readOnly }` → a token, shown once                                  |
+| `GET /api/account/internal/teams/changes`   | `?cursor=` → the next page of the change feed                                            |
+| `POST /api/account/internal/tokens/revoke`  | `{ token }` → revokes it (a CLI signing out), or 404                                     |
+| `POST /api/account/internal/tokens/live`    | `{ ids }` (up to 100) → which still work, so an app can end what hangs off a revoked one |
+| `POST /api/account/internal/settings/read`  | `{ owner, app }` → `{ all, app, updatedAt }`                                             |
+| `POST /api/account/internal/settings/write` | `{ owner, app, patch: { all?, app? } }` → `{ all, app, updatedAt }`                      |
 
 The app side of these is in `@liveworkspace/auth-client` (`src/account.ts`).

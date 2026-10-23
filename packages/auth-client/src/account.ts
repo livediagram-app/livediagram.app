@@ -1,7 +1,9 @@
-// An app's server talking to the liveworkspace account API (liveworkspace/docs/accounts.md "Teams"
-// and "API tokens"), with its OAuth client credentials: checking an API token, making one for an AI
-// tool someone connects, and reading the teams change feed. These send the client secret, so they run
+// An app's server talking to the liveworkspace account API (liveworkspace/docs/accounts.md "Teams",
+// "API tokens" and "Settings"), with its OAuth client credentials: checking an API token, making one
+// for an AI tool someone connects, reading the teams change feed, and reading and writing someone's
+// settings. These send the client secret, so they run
 // in the app's Worker only.
+import type { SiteId } from '@liveworkspace/sites';
 import type { ClientCredentials } from './oauth';
 
 const ACCOUNT_PATH = '/api/account/internal';
@@ -224,4 +226,73 @@ export async function fetchTeamChanges(
   const response = await call(credentials, `/teams/changes${query}`, { method: 'GET' }, fetcher);
   if (!response.ok) throw new Error(`team changes failed: ${response.status}`);
   return (await response.json()) as TeamChanges;
+}
+
+// --- Settings ---
+
+// An app's site id, as @liveworkspace/sites spells it: the scope of that app's own settings.
+export type SettingsApp = Exclude<SiteId, 'liveworkspace.app'>;
+export type SettingsPrefs = Record<string, unknown>;
+
+// Someone's settings as one app sees them: those every app shows, and the app's own.
+export interface AccountSettings {
+  all: SettingsPrefs;
+  app: SettingsPrefs;
+  // The later of the two scopes' last writes; null when neither has been written.
+  updatedAt: number | null;
+}
+
+// Each key set to its new value, replacing it whole, or to null to delete it. Keys left out stay.
+export interface SettingsPatch {
+  all?: SettingsPrefs;
+  app?: SettingsPrefs;
+}
+
+// Why a settings write was refused, from the account API's error code.
+export class SettingsError extends Error {
+  readonly status: number;
+  readonly code: string;
+  constructor(status: number, code: string) {
+    super(`settings write refused: ${status} ${code}`);
+    this.name = 'SettingsError';
+    this.status = status;
+    this.code = code;
+  }
+}
+
+// `owner` is an id the app has already verified: an access token's sub, or a guest token's.
+export async function readSettings(
+  credentials: ClientCredentials,
+  request: { owner: string; app: SettingsApp },
+  fetcher: typeof fetch = fetch,
+): Promise<AccountSettings> {
+  const response = await call(
+    credentials,
+    '/settings/read',
+    { method: 'POST', body: request },
+    fetcher,
+  );
+  if (!response.ok) throw new Error(`settings read failed: ${response.status}`);
+  return (await response.json()) as AccountSettings;
+}
+
+// Applies the patch and answers the settings as they now are. A refusal (a patch that isn't an
+// object of named keys, or a scope past its 16 KB) throws a SettingsError with the code.
+export async function writeSettings(
+  credentials: ClientCredentials,
+  request: { owner: string; app: SettingsApp; patch: SettingsPatch },
+  fetcher: typeof fetch = fetch,
+): Promise<AccountSettings> {
+  const response = await call(
+    credentials,
+    '/settings/write',
+    { method: 'POST', body: request },
+    fetcher,
+  );
+  if (response.status === 400 || response.status === 413) {
+    const { error } = (await response.json().catch(() => ({}))) as { error?: string };
+    throw new SettingsError(response.status, error ?? 'invalid_request');
+  }
+  if (!response.ok) throw new Error(`settings write failed: ${response.status}`);
+  return (await response.json()) as AccountSettings;
 }

@@ -25,6 +25,7 @@ function build(env: Env) {
           indexUrl: env.INDEX_URL,
           indexService: env.INDEX,
           indexMergeKey: env.INDEX_MERGE_KEY,
+          db: env.AUTH_DB,
         },
       },
       env.AUTH_DB,
