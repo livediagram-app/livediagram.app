@@ -5,7 +5,7 @@
 // changed, and the context's callbacks are stable, so a rename or a star re-renders one row, not the list.
 
 import { memo, useCallback } from 'react';
-import type { Folder } from '@liveworkspace/index-client';
+import type { Folder, FolderPreview } from '@liveworkspace/index-client';
 import type { ShownItem } from '../data/overlay';
 import { CountBadge } from '../ui/CountBadge';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
@@ -15,6 +15,7 @@ import { CARD_PREVIEW, CARD_SHELL, RENAME_INPUT } from '../ui/classes';
 import { FolderSolidIcon, ItemIcon } from '../ui/icons';
 import { AppMark, FavouriteMarker, FolderChip, VisibilityBadge } from './badges';
 import { useExplorer } from './context';
+import { FolderMosaic } from './FolderMosaic';
 import { FolderMenu, ItemMenu } from './menus';
 
 // Every list row is this tall, so a long list can be windowed by arithmetic.
@@ -62,7 +63,7 @@ export const ItemRow = memo(function ItemRow({
   renaming: boolean;
   options: RowOptions;
 }) {
-  const { Link, renderThumbnail } = useExplorer();
+  const { Link } = useExplorer();
   const bits = useItemBits(item);
   const menu = useRowMenu({ disabled: renaming });
   const title = item.title || 'Untitled';
@@ -75,9 +76,7 @@ export const ItemRow = memo(function ItemRow({
     >
       <span className="flex min-w-0 items-center gap-2">
         {options.showApp ? <AppMark app={item.app} /> : null}
-        <span className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded text-slate-400">
-          {renderThumbnail ? renderThumbnail(item, 'row') : <ItemIcon />}
-        </span>
+        <RowThumb item={item} />
         {item.favourite ? <FavouriteMarker /> : null}
         {renaming ? (
           <InlineRenameInput
@@ -219,9 +218,7 @@ export const ItemCard = memo(function ItemCard({
   const bits = useItemBits(item);
   const menu = useRowMenu({ disabled: renaming });
   const title = item.title || 'Untitled';
-  const preview = renderThumbnail ? (
-    renderThumbnail(item, 'card')
-  ) : (
+  const preview = renderThumbnail?.(item, 'card') ?? (
     <span className="text-slate-300 dark:text-slate-600 [&_svg]:h-10 [&_svg]:w-10">
       <ItemIcon />
     </span>
@@ -280,15 +277,38 @@ export const ItemCard = memo(function ItemCard({
   );
 });
 
+// A row's snapshot in the box the list always drew (ProjectThumbnail's compact box), or the kind's icon when the host
+// draws none for this item (another app's, say).
+const ROW_THUMB_BOX =
+  'h-7 w-9 shrink-0 overflow-hidden rounded border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/40';
+
+function RowThumb({ item }: { item: ShownItem }) {
+  const { renderThumbnail } = useExplorer();
+  const thumb = renderThumbnail?.(item, 'row');
+  return thumb ? (
+    <span className={ROW_THUMB_BOX}>{thumb}</span>
+  ) : (
+    <span className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded text-slate-400">
+      <ItemIcon />
+    </span>
+  );
+}
+
 export const FolderCard = memo(function FolderCard({
   folder,
   renaming,
+  preview,
 }: {
   folder: Folder;
   renaming: boolean;
+  // What is inside, once the index has said (useFolderPreviews); the plain glyph until then.
+  preview?: FolderPreview;
 }) {
   const bits = useFolderBits(folder);
+  const { folders } = useExplorer();
   const menu = useRowMenu({ disabled: renaming });
+  // Subfolders and items, as the card's badge always counted them.
+  const count = bits.childCount + (preview?.itemCount ?? 0);
   return (
     <div data-folder-card={folder.id} className={CARD_SHELL} onContextMenu={menu.onContextMenu}>
       <button
@@ -297,9 +317,16 @@ export const FolderCard = memo(function FolderCard({
         className={CARD_PREVIEW}
         aria-label={`Open ${folder.name}`}
       >
-        <span className="text-amber-400 [&_svg]:h-14 [&_svg]:w-14">
-          <FolderSolidIcon size={56} />
-        </span>
+        {preview ? (
+          <FolderMosaic
+            preview={preview}
+            subfolders={folders.childrenOf(folder.id, folder.teamId)}
+          />
+        ) : (
+          <span className="text-amber-400 [&_svg]:h-14 [&_svg]:w-14">
+            <FolderSolidIcon size={56} />
+          </span>
+        )}
       </button>
       <div className="flex items-center gap-1 p-2.5">
         {renaming ? (
@@ -319,7 +346,7 @@ export const FolderCard = memo(function FolderCard({
             {folder.name}
           </button>
         )}
-        {bits.childCount > 0 ? <CountBadge count={bits.childCount} /> : null}
+        {count > 0 ? <CountBadge count={count} /> : null}
         {renaming ? null : (
           <EllipsisTriggerButton {...menu.triggerProps} tuck label={`Menu for ${folder.name}`} />
         )}

@@ -130,6 +130,9 @@ Folders are not per app: one tree per person, and one per team, holding items fr
 
 - `GET/POST /folders`, `PATCH/DELETE /folders/:id` — `{id, name, parentId, teamId, ownerId, createdAt,
 updatedAt}`; 409 `folder_exists`, `cycle`. Deleting moves children (folders and items) up a level.
+- `GET /folders/previews?ids=a,b,…&app=` — what folder cards show of their insides: for each of up to 60 folders
+the person reaches, `{folderId, itemCount, items}` with its 4 newest live items (of `app`, when given) and a count
+that stops at 1000. One batch however many folders; folders out of reach are left out.
 - `GET/POST /tags`, `PATCH/DELETE /tags/:id`, `PUT/DELETE /tags/:id/items/:itemId` — personal; `{id, name,
 colour}`; 409 `tag_name_taken`, `tag_limit`.
 - `GET /favourites`, `PUT/DELETE /favourites/:itemId`.

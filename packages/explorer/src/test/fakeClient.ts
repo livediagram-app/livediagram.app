@@ -54,9 +54,7 @@ export type FakeIndex = {
 
 const abortError = () => new DOMException('The operation was aborted.', 'AbortError');
 
-export function createFakeIndex(
-  seed: { items?: Item[]; folders?: Folder[] } = {},
-): FakeIndex {
+export function createFakeIndex(seed: { items?: Item[]; folders?: Folder[] } = {}): FakeIndex {
   const items = seed.items ?? [];
   const folders = seed.folders ?? [];
   const calls: Call[] = [];
@@ -160,6 +158,30 @@ export function createFakeIndex(
         const { slice, next } = page(folders, query.limit, query.cursor);
         return { folders: slice.map((f) => ({ ...f })), nextCursor: next };
       }),
+    folderPreviews: (
+      ids: readonly string[],
+      query: { app?: App } = {},
+      options: { signal?: AbortSignal } = {},
+    ) =>
+      answer('folderPreviews', [ids, query], options.signal, () => ({
+        previews: ids
+          .filter((id) => folders.some((f) => f.id === id))
+          .map((folderId) => {
+            const inside = items
+              .filter(
+                (i) =>
+                  i.folderId === folderId &&
+                  i.trashedAt === null &&
+                  (!query.app || i.app === query.app),
+              )
+              .sort((a, b) => b.updatedAt - a.updatedAt);
+            return {
+              folderId,
+              itemCount: inside.length,
+              items: inside.slice(0, 4).map((i) => ({ ...i })),
+            };
+          }),
+      })),
     inbox: (query: { app?: App } = {}, options: { signal?: AbortSignal } = {}) =>
       answer('inbox', [query], options.signal, () => ({
         threads: inbox.threads.filter((t) => !query.app || t.app === query.app),

@@ -26,6 +26,7 @@ import { manageTeamsUrl } from '@/lib/auth-config';
 import { indexClient } from '@/lib/index-client';
 import { isPowerUserMode } from '@/lib/power-user-mode';
 import { dropSettingsLink, readSettingsLink } from '@/lib/settings-link';
+import { renderPlanThumbnail } from '@/lib/explorer-thumbnail';
 import { arrivedTrashed } from '@/lib/project-delete-undo';
 import { track } from '@/lib/telemetry';
 import { commitUserPreferences, type UserPreferences } from '@/lib/user-preferences';
@@ -119,6 +120,7 @@ export function ExplorerHost({
         manageTeamsUrl={isSignedIn ? manageTeamsUrl : undefined}
         helpHref={explorerHelpHref}
         heroArt={HERO_ART}
+        renderThumbnail={renderPlanThumbnail}
         trashedOnArrival={trashedOnArrival}
         heroHidden={prefs.homeBanner === false}
         onHideHero={hideHero}

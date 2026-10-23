@@ -22,6 +22,7 @@ import type {
   CreateShareLinkInput,
   CreateTagInput,
   Folder,
+  FolderPreview,
   GrantResponse,
   InboxResponse,
   Item,
@@ -164,6 +165,17 @@ export function createIndexClient({
       query: { team?: string; limit?: number; cursor?: string } = {},
       options: RequestOptions = {},
     ) => call<Page<Folder, 'folders'>>('/folders', { query, signal: options.signal }),
+    // What each folder card shows of its insides: up to FOLDER_PREVIEW_IDS_MAX folders in one request; folders the
+    // person cannot reach are left out.
+    folderPreviews: (
+      ids: readonly string[],
+      query: { app?: App } = {},
+      options: RequestOptions = {},
+    ) =>
+      call<{ previews: FolderPreview[] }>('/folders/previews', {
+        query: { ids: ids.join(','), app: query.app },
+        signal: options.signal,
+      }),
     createFolder: (input: CreateFolderInput) =>
       call<{ folder: Folder }>('/folders', { method: 'POST', body: input }),
     updateFolder: (id: string, input: UpdateFolderInput) =>

@@ -255,9 +255,7 @@ function Thumb({ item, className }: { item: ShownItem; className: string }) {
   const { renderThumbnail } = useExplorer();
   return (
     <span className={`${className} ${THUMB_EDGE}`}>
-      {renderThumbnail ? (
-        renderThumbnail(item, 'card')
-      ) : (
+      {renderThumbnail?.(item, 'card') ?? (
         <span className="text-slate-300 dark:text-slate-600 [&_svg]:h-7 [&_svg]:w-7">
           <ItemIcon />
         </span>
@@ -308,7 +306,10 @@ const JumpBackInCard = memo(function JumpBackInCard({
             : 'h-[3.875rem] items-center gap-3 rounded-[14px] p-2 pr-11'
         } ${CARD_SURFACE} ${FOCUS_RING}`}
       >
-        <Thumb item={item} className={large ? 'h-32 w-full rounded-xl' : 'h-11 w-16 shrink-0 rounded-lg'} />
+        <Thumb
+          item={item}
+          className={large ? 'h-32 w-full rounded-xl' : 'h-11 w-16 shrink-0 rounded-lg'}
+        />
         <span className={`flex min-w-0 flex-col gap-0.5 ${large ? 'px-1' : ''}`}>
           <span className="flex min-w-0 items-center gap-1.5">
             {showApp ? <AppMark app={item.app} size={14} /> : null}

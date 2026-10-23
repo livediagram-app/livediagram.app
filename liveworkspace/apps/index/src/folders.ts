@@ -7,6 +7,7 @@ import { personalScope, scopeOf, scopesOf, teamScope, type Person } from './auth
 import { decodeCursor, encodeCursor, isId, parseLimit } from './codec';
 import type { PersonContext } from './context';
 import type { Env } from './env';
+import { handleFolderPreviews } from './folder-previews';
 import { badRequest, conflict, forbidden, json, noContent, notFound, readObject } from './http';
 
 export type FolderRow = {
@@ -90,6 +91,10 @@ export async function handleFolders(ctx: PersonContext): Promise<Response> {
       });
     }
     if (method === 'POST') return createFolder(ctx);
+  }
+
+  if (segments.length === 2 && segments[1] === 'previews' && method === 'GET') {
+    return handleFolderPreviews(ctx);
   }
 
   if (segments.length === 2 && isId(segments[1])) {

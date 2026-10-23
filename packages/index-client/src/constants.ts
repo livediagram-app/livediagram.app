@@ -29,6 +29,12 @@ export const isLevel = (value: unknown): value is Level =>
 export const levelAtLeast = (have: Level, need: Level): boolean =>
   LEVELS.indexOf(have) >= LEVELS.indexOf(need);
 
+// A folder card's look inside (`GET /folders/previews`): this many folders a request, this many of each one's
+// newest items, and its count stops here (the card says "1000+").
+export const FOLDER_PREVIEW_IDS_MAX = 60;
+export const FOLDER_PREVIEW_ITEMS = 4;
+export const FOLDER_PREVIEW_COUNT_CAP = 1000;
+
 // Where the index lives. Each app's router forwards `/api/index/*` on its own origin here, so a browser
 // calls its own origin.
 export const INDEX_API_PATH = '/api/index';

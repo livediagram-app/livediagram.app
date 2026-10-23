@@ -18,7 +18,14 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from 'react';
-import type { App, Folder, IndexClient, Item } from '@liveworkspace/index-client';
+import {
+  FOLDER_PREVIEW_COUNT_CAP,
+  type App,
+  type Folder,
+  type IndexClient,
+  type Item,
+} from '@liveworkspace/index-client';
+import { useFolderPreviews } from '../data/useFolderPreviews';
 import { useItemList } from '../data/useItemList';
 import { recentLoader, viewList } from '../data/viewLists';
 import type { ShownItem } from '../data/overlay';
@@ -301,6 +308,23 @@ function sectionOfView(v: ExplorerView): { section: PanelSection; folderId: stri
   }
 }
 
+/** "2 folders · 5 plans", as the panel's folder cards always read; just "Folder" until anything is known. */
+export function folderCountLabel(
+  subfolders: number,
+  items: number | undefined,
+  words: { lowerOne: string; lowerMany: string },
+): string {
+  const parts = [
+    subfolders ? `${subfolders} ${subfolders === 1 ? 'folder' : 'folders'}` : '',
+    items === undefined
+      ? ''
+      : `${items >= FOLDER_PREVIEW_COUNT_CAP ? `${FOLDER_PREVIEW_COUNT_CAP}+` : items} ${
+          items === 1 ? words.lowerOne : words.lowerMany
+        }`,
+  ].filter(Boolean);
+  return parts.length ? parts.join(' · ') : 'Folder';
+}
+
 // ---- The current item's card ----------------------------------------------------------------------------
 
 function CurrentItem({ item: base }: { item: Item }) {
@@ -492,9 +516,7 @@ function Rail({
           <span aria-hidden className="flex shrink-0 items-center opacity-80">
             <SectionIcon kind={s.kind} />
           </span>
-          <span className={phone ? 'text-optical-centre' : 'min-w-0 flex-1 truncate'}>
-            {label}
-          </span>
+          <span className={phone ? 'text-optical-centre' : 'min-w-0 flex-1 truncate'}>{label}</span>
           {badge ? (
             <span
               aria-hidden
@@ -762,7 +784,12 @@ function HomeSection({
 function Preview({ item, size }: { item: ShownItem; size: 'row' | 'card' }) {
   const { renderThumbnail } = useExplorer();
   const thumb = renderThumbnail?.(item, size);
-  if (thumb) return <>{thumb}</>;
+  if (thumb)
+    return (
+      <span className={`block ${size === 'card' ? PANE_PREVIEW_BOX : PANE_THUMB_BOX}`}>
+        {thumb}
+      </span>
+    );
   return (
     <span
       className={`flex items-center justify-center text-slate-300 dark:text-slate-600 ${
@@ -857,6 +884,13 @@ function PlaceSection({
   const teamId = section.kind === 'team' ? section.id : null;
   const space = section.kind === 'mine' || section.kind === 'team';
   const folderRows = space ? folders.childrenOf(folderId, teamId) : [];
+  // What is inside each folder card, for its count: one request for the cards shown.
+  const previews = useFolderPreviews({
+    client,
+    folderIds: folderRows.map((f) => f.id),
+    app: filter === 'all' ? null : app,
+    epoch,
+  });
   const trail: Folder[] = [];
   for (
     let f = folderId ? folders.byId.get(folderId) : undefined;
@@ -881,7 +915,12 @@ function PlaceSection({
         {folderRows.length ? (
           <PaneGrid label={`Folders in ${here}`}>
             {folderRows.map((f) => (
-              <FolderCard key={f.id} folder={f} onOpen={() => onOpenFolder(f.id)} />
+              <FolderCard
+                key={f.id}
+                folder={f}
+                itemCount={previews.get(f.id)?.itemCount}
+                onOpen={() => onOpenFolder(f.id)}
+              />
             ))}
           </PaneGrid>
         ) : null}
@@ -922,18 +961,22 @@ function PlaceSection({
 
 const FolderCard = memo(function FolderCard({
   folder,
+  itemCount,
   onOpen,
 }: {
   folder: Folder;
+  // How many items it holds, once the index has said.
+  itemCount?: number;
   onOpen: () => void;
 }) {
-  const { folders, renamingId, setRenamingId } = useExplorer();
+  const { folders, renamingId, setRenamingId, words } = useExplorer();
   const editing = renamingId === folder.id;
   const menu = useRowMenu({ disabled: editing });
-  const subfolders = folders.childrenOf(folder.id, folder.teamId).length;
-  const count = subfolders
-    ? `${subfolders} ${subfolders === 1 ? 'folder' : 'folders'}`
-    : 'Folder';
+  const count = folderCountLabel(
+    folders.childrenOf(folder.id, folder.teamId).length,
+    itemCount,
+    words,
+  );
   const commit = (name: string) => {
     const next = name.trim();
     if (next && next !== folder.name) void folders.rename(folder.id, next);

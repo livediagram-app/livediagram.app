@@ -26,6 +26,35 @@ export function EmptyState({
           : 'rounded-2xl border border-slate-200 bg-gradient-to-b from-white to-slate-50/70 px-6 py-16 dark:border-slate-700 dark:from-slate-900 dark:to-slate-900/60'
       }`}
     >
+      <EmptyStateArt icon={icon} compact={compact} spaced />
+      <h2
+        className={`relative font-semibold text-slate-900 dark:text-slate-100 ${compact ? 'text-sm' : 'text-base'}`}
+      >
+        {title}
+      </h2>
+      <p
+        className={`relative mt-1.5 max-w-sm leading-relaxed text-slate-500 dark:text-slate-400 ${compact ? 'text-xs' : 'text-sm'}`}
+      >
+        {description}
+      </p>
+      {children ? <div className={`relative ${compact ? 'mt-4' : 'mt-5'}`}>{children}</div> : null}
+    </div>
+  );
+}
+
+/** The art alone: the faint motif and the floating badge over its rings (an empty folder card's preview). */
+export function EmptyStateArt({
+  icon,
+  compact = false,
+  spaced = false,
+}: {
+  icon: ReactNode;
+  compact?: boolean;
+  // Room under the badge for a heading that follows; the art alone sits centred with none.
+  spaced?: boolean;
+}) {
+  return (
+    <>
       <svg
         aria-hidden
         width="240"
@@ -39,7 +68,9 @@ export function EmptyState({
         <path d="M94 51 H122 V81 H150" stroke="currentColor" strokeWidth="3" />
       </svg>
       <div
-        className={`relative flex items-center justify-center ${compact ? 'mb-4 h-14 w-14' : 'mb-5 h-20 w-20'}`}
+        className={`relative flex items-center justify-center ${compact ? 'h-14 w-14' : 'h-20 w-20'} ${
+          spaced ? (compact ? 'mb-4' : 'mb-5') : ''
+        }`}
       >
         <span
           aria-hidden
@@ -59,17 +90,6 @@ export function EmptyState({
           {icon}
         </span>
       </div>
-      <h2
-        className={`relative font-semibold text-slate-900 dark:text-slate-100 ${compact ? 'text-sm' : 'text-base'}`}
-      >
-        {title}
-      </h2>
-      <p
-        className={`relative mt-1.5 max-w-sm leading-relaxed text-slate-500 dark:text-slate-400 ${compact ? 'text-xs' : 'text-sm'}`}
-      >
-        {description}
-      </p>
-      {children ? <div className={`relative ${compact ? 'mt-4' : 'mt-5'}`}>{children}</div> : null}
-    </div>
+    </>
   );
 }

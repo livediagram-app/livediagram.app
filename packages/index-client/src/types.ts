@@ -123,6 +123,10 @@ type InboxPlace = { app: App; itemId: string; itemTitle: string; tabId: string }
 export type InboxThread = InboxPlace & Omit<CollabThreadInput, 'participantIds' | 'mentionedIds'>;
 export type InboxAction = InboxPlace & CollabActionInput;
 
+// A folder's newest items (at most FOLDER_PREVIEW_ITEMS) and how many live items it holds directly, counted up to
+// FOLDER_PREVIEW_COUNT_CAP.
+export type FolderPreview = { folderId: string; itemCount: number; items: Item[] };
+
 export type InboxResponse = { threads: InboxThread[]; actions: InboxAction[] };
 
 // The grant: an ES256 JWT signed by the index.
