@@ -5,7 +5,7 @@
 // at the liveworkspace accounts Worker, never the caller's headers, and their opt-out is read from their settings
 // there (accounts/notify.ts, accounts/settings.ts, docs/specs/007-editor/user-preferences.md). The rules every app
 // shares (the milestone counts, the windows, the hourly cap) are @liveworkspace/auth-client's notify.ts; the
-// once-only state is accounts' (the milestones) or the design's own (design-room/notify-claims.ts).
+// once-only state is accounts' (the milestones) or the design's own (@liveworkspace/index-app notify-claims.ts).
 //
 // Like every docs/specs/014-identity/transactional-email.md send these never throw — sendEmail swallows failures — so
 // a notification problem can't break the request that triggered it.
@@ -18,6 +18,7 @@ import {
   NOTIFY_EMAILS_PER_SENDER_PER_HOUR,
   NOTIFY_RATE_WINDOW_MS,
   notifyClaimKey,
+  reachedMilestone,
   teamTargets,
   type TeamPerson,
 } from '@liveworkspace/auth-client';
@@ -71,15 +72,6 @@ export async function notifyNewComment(
 }
 
 // ---------- Milestones (docs/specs/014-identity/transactional-email.md #6) ----------------------------------------
-
-// The highest milestone `count` has reached, or null for none.
-function reachedMilestone(count: number | null): number | null {
-  if (count === null) return null;
-  let reached: number | null = null;
-  for (const m of MILESTONE_ITEM_COUNTS)
-    if (count >= m && (reached === null || m > reached)) reached = m;
-  return reached;
-}
 
 // The owner just made a design: when it brings them to a design-count milestone (the tenth), celebrate it once.
 // Opt-out (notifyMilestones). The count is the index's (every design they have made, the Trash's included), asked

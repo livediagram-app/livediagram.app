@@ -128,7 +128,7 @@ keys of the last two are SHA-256 hashes).
 - `apps/api/src/person/notify.ts` — what the notification emails ask of
   liveworkspace: recipients with a switch on (`notifyRecipients`), a team's
   people (`teamPeople`), the milestone claim and the index's count of documents made.
-- `apps/api/src/document-room/notify-claims.ts` — the document's once-only claims.
+- `@liveworkspace/index-app` `notify-claims.ts` — the document's once-only claims, and the sender's hourly cap in their own store.
 - `apps/api/src/email/notifications.ts` — the notification sends.
 
 All sends use `ctx.waitUntil` — email is never on the request's critical path.

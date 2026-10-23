@@ -16,7 +16,7 @@ import { getProjectMeta } from '../db';
 import { notifyActionAssigned } from '../email/notifications';
 import { requestGrant } from '../index-service';
 import { teamPeople } from '../person/notify';
-import { isAccountOwner } from '../person/owner';
+import { isAccountId } from '@liveworkspace/auth-client';
 import { getParticipant } from '../person/profiles';
 import { badRequest, forbidden, json, notFound } from '../responses';
 import { gateRead, readBody, requireOwner, type PlanRouteContext } from './context';
@@ -66,7 +66,7 @@ export async function handleNotifyAction(ctx: PlanRouteContext, id: string): Pro
   if (owner instanceof Response) return owner;
   const userId = ctx.verifiedUserId;
   // A signed-in person's assignment: never a guest's, an API token's or a link visitor's.
-  if (ctx.token || !userId || userId !== owner || !isAccountOwner(userId)) return forbidden();
+  if (ctx.token || !userId || userId !== owner || !isAccountId(userId)) return forbidden();
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
   const teamId = optionalId(body.teamId);

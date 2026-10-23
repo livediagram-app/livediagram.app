@@ -85,6 +85,7 @@ export {
   NOTIFY_RATE_WINDOW_MS,
   notificationRecipients,
   notifyClaimKey,
+  reachedMilestone,
   teamTargets,
   type NotifyTarget,
 } from './notify';

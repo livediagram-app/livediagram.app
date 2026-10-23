@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readTeamPeople, type TeamPerson } from './account';
-import { notificationRecipients, notifyClaimKey, teamTargets } from './notify';
+import { notificationRecipients, notifyClaimKey, reachedMilestone, teamTargets } from './notify';
 
 const CREDENTIALS = {
   accountsUrl: 'https://liveworkspace.app/',
@@ -124,6 +124,15 @@ describe('teamTargets', () => {
       'user_ada',
     );
     expect(out.map((p) => p.id)).toEqual(['m2', 'm3']);
+  });
+});
+
+describe('reachedMilestone', () => {
+  it('names the highest milestone a count has reached, or none', () => {
+    expect(reachedMilestone(null)).toBeNull();
+    expect(reachedMilestone(9)).toBeNull();
+    expect(reachedMilestone(10)).toBe(10);
+    expect(reachedMilestone(500)).toBe(10);
   });
 });
 

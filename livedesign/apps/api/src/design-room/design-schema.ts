@@ -227,9 +227,9 @@ BEGIN
   INSERT INTO outbox (design_id, kind, key) SELECT OLD.design_id, 'media', '';
 END;
 
--- The once-only state of the design's notification emails (design-room/notify-claims.ts): one row per email
--- claimed, keyed by what makes two the same (a hash, never text or an address), with its sender for the
--- hourly cap. Rows past the longest window are dropped as new ones are claimed.
+-- The once-only state of the design's notification emails (@liveworkspace/index-app notify-claims.ts): one row per
+-- email claimed, keyed by what makes two the same (a hash, never text or an address), with its sender. The hourly
+-- cap is the sender's own store's. Rows past the longest window are dropped as new ones are claimed.
 CREATE TABLE IF NOT EXISTS notify_claims (
   key    TEXT    PRIMARY KEY,
   sender TEXT    NOT NULL,

@@ -18,7 +18,7 @@ import { accountCredentials } from '../auth/accounts';
 import { indexApiUrl, INDEX_APP } from '../index-service';
 import type { Env } from '../types';
 import { SETTINGS_APP } from './settings';
-import { isAccountOwner } from './owner';
+import { isAccountId } from '@liveworkspace/auth-client';
 
 // The email switches liveplanner reads at accounts (docs/specs/014-identity/profile-and-email-notifications.md).
 export type NotifySetting =
@@ -31,7 +31,7 @@ export async function notifyRecipients(
   setting: NotifySetting,
 ): Promise<Map<string, string>> {
   const credentials = accountCredentials(env);
-  const accounts = ids.filter(isAccountOwner);
+  const accounts = ids.filter(isAccountId);
   if (!credentials || accounts.length === 0) return new Map();
   try {
     return await notificationRecipients(credentials, {
@@ -65,7 +65,7 @@ export async function claimOwnerMilestone(
   milestone: Milestone,
 ): Promise<boolean> {
   const credentials = accountCredentials(env);
-  if (!credentials || !isAccountOwner(ownerId)) return false;
+  if (!credentials || !isAccountId(ownerId)) return false;
   try {
     return await claimMilestone(credentials, { userId: ownerId, milestone });
   } catch (error) {

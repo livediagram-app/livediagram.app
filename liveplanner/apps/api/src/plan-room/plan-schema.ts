@@ -241,9 +241,9 @@ BEGIN
 END;
 `;
 
-// The once-only state of the plan's notification emails (plan-room/notify-claims.ts): one row per email
-// claimed, keyed by what makes two the same (a hash, never text or an address), with its sender for the
-// hourly cap. Rows past the longest window are dropped as new ones are claimed.
+// The once-only state of the plan's notification emails (@liveworkspace/index-app notify-claims.ts): one row per
+// email claimed, keyed by what makes two the same (a hash, never text or an address), with its sender. The hourly
+// cap is the sender's own store's. Rows past the longest window are dropped as new ones are claimed.
 const V2 = `
 CREATE TABLE IF NOT EXISTS notify_claims (
   key    TEXT    PRIMARY KEY,

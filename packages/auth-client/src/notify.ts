@@ -17,6 +17,15 @@ import type { ClientCredentials } from './oauth';
 
 // The item counts that earn a milestone email: the tenth, once per account and app.
 export const MILESTONE_ITEM_COUNTS: readonly number[] = [10];
+
+// The highest milestone an account's item count has reached, or null for none (or no count).
+export function reachedMilestone(count: number | null): number | null {
+  if (count === null) return null;
+  let reached: number | null = null;
+  for (const m of MILESTONE_ITEM_COUNTS)
+    if (count >= m && (reached === null || m > reached)) reached = m;
+  return reached;
+}
 // At most one "someone joined" email per item in this window.
 export const JOIN_NOTIFY_THROTTLE_MS = 15 * 60 * 1000;
 // The same assignment or mention emails once in this window: a replayed request or a retried save

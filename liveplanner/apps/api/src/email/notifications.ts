@@ -6,19 +6,21 @@
 // at the liveworkspace accounts Worker, never the caller's headers, and their opt-out is read from their settings
 // there (person/notify.ts, person/settings.ts, docs/specs/007-editor/user-preferences.md). The rules every app
 // shares (the milestone counts, the windows, the hourly cap) are @liveworkspace/auth-client's notify.ts; the
-// once-only state is accounts' (the milestones) or the plan's own (plan-room/notify-claims.ts).
+// once-only state is accounts' (the milestones) or the plan's own (@liveworkspace/index-app notify-claims.ts).
 //
 // Like every docs/specs/014-identity/transactional-email.md send these never throw — sendEmail swallows failures — so
 // a notification problem can't break the request that triggered it.
 
 import { claimNotice, claimNotices, workbenchAllowance } from '@liveworkspace/index-app';
 import {
+  isAccountId,
   JOIN_NOTIFY_THROTTLE_MS,
   MILESTONE_ITEM_COUNTS,
   NOTIFY_EMAIL_DEDUPE_MS,
   NOTIFY_EMAILS_PER_SENDER_PER_HOUR,
   NOTIFY_RATE_WINDOW_MS,
   notifyClaimKey,
+  reachedMilestone,
   teamTargets,
   type TeamPerson,
 } from '@liveworkspace/auth-client';
@@ -26,7 +28,6 @@ import { MENTIONS_MAX, type Comment } from '@liveplanner/project';
 import { claimFormEmail } from '../db';
 import { ownerEmail } from '../person/account-app';
 import { claimOwnerMilestone, notifyRecipients, plansMadeBy, teamPeople } from '../person/notify';
-import { isAccountOwner } from '../person/owner';
 import { getParticipant } from '../person/profiles';
 import { getNotificationPrefs } from '../person/settings';
 import { claimCommentNotify } from '../plan-room/plan-content';
@@ -120,21 +121,12 @@ export async function notifyFormSuspended(
 
 // ---------- Milestones (docs/specs/014-identity/transactional-email.md #6) ----------------------------------------
 
-// The highest milestone `count` has reached, or null for none.
-function reachedMilestone(count: number | null): number | null {
-  if (count === null) return null;
-  let reached: number | null = null;
-  for (const m of MILESTONE_ITEM_COUNTS)
-    if (count >= m && (reached === null || m > reached)) reached = m;
-  return reached;
-}
-
 // The owner just made a plan: when it brings them to a plan-count milestone (the tenth), celebrate it once.
 // Opt-out (notifyMilestones). The count is the index's (every plan they have made, the Trash's included), asked
 // only up to the milestone, so it costs the same however many plans they have; the claim at accounts means a
 // burst of creates sends exactly one email. Best-effort; never blocks the write.
 export async function notifyMilestone(env: Env, ownerId: string): Promise<void> {
-  if (!emailEnabled(env) || !isAccountOwner(ownerId)) return;
+  if (!emailEnabled(env) || !isAccountId(ownerId)) return;
   const reached = reachedMilestone(
     await plansMadeBy(env, ownerId, Math.max(...MILESTONE_ITEM_COUNTS)),
   );
@@ -148,7 +140,7 @@ export async function notifyMilestone(env: Env, ownerId: string): Promise<void> 
 // Someone made a share link for the first time (the index's `shared` notice, routes/internal-items.ts). Opt-out
 // (notifyMilestones), the same category as the plan-count milestone; claimed once per account at accounts.
 export async function notifyFirstShare(env: Env, actorId: string): Promise<void> {
-  if (!emailEnabled(env) || !isAccountOwner(actorId)) return;
+  if (!emailEnabled(env) || !isAccountId(actorId)) return;
   const to = (await notifyRecipients(env, [actorId], 'notifyMilestones')).get(actorId);
   if (!to) return;
   if (!(await claimOwnerMilestone(env, actorId, 'firstShare'))) return;
@@ -165,7 +157,7 @@ export async function notifyProjectJoin(
   plan: { id: string; ownerId: string; name: string },
   joinerId: string,
 ): Promise<void> {
-  if (!emailEnabled(env) || !isAccountOwner(joinerId) || joinerId === plan.ownerId) return;
+  if (!emailEnabled(env) || !isAccountId(joinerId) || joinerId === plan.ownerId) return;
   const to = (await notifyRecipients(env, [plan.ownerId], 'notifyProjectJoin')).get(plan.ownerId);
   if (!to) return;
   const now = Date.now();
@@ -300,7 +292,7 @@ export async function notifyMentions(
   },
 ): Promise<void> {
   const { plan, authorId } = input;
-  if (!emailEnabled(env) || !plan.teamId || !isAccountOwner(authorId)) return;
+  if (!emailEnabled(env) || !plan.teamId || !isAccountId(authorId)) return;
   const mentioning = input.comments.filter((c) => (c.mentions?.length ?? 0) > 0);
   if (mentioning.length === 0) return;
   const people = await teamPeople(env, plan.teamId);

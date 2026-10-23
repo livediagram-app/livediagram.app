@@ -9,7 +9,7 @@ import { accountEmails, recordSighting } from '@liveworkspace/auth-client';
 import { reportOwnerActivity as reportActivityOf } from '@liveworkspace/index-app';
 import { accountCredentials } from '../auth/accounts';
 import type { Env } from '../types';
-import { isAccountOwner } from './owner';
+import { isAccountId } from '@liveworkspace/auth-client';
 
 // The verified addresses of these owners, by id: where a notification email goes. Guests and accounts
 // with no verified address are left out. One request per 100 accounts, sent together.
@@ -18,7 +18,7 @@ export async function ownerEmails(
   ownerIds: readonly string[],
 ): Promise<Map<string, string>> {
   const credentials = accountCredentials(env);
-  const ids = [...new Set(ownerIds.filter(isAccountOwner))];
+  const ids = [...new Set(ownerIds.filter(isAccountId))];
   if (!credentials || ids.length === 0) return new Map();
   try {
     return new Map(Object.entries(await accountEmails(credentials, ids)));
@@ -36,7 +36,7 @@ export async function ownerEmail(env: Env, ownerId: string): Promise<string | nu
 // liveplanner sign-up. Null when it couldn't be recorded (no accounts Worker, or a failure).
 export async function recordOwnerSighting(env: Env, ownerId: string): Promise<boolean | null> {
   const credentials = accountCredentials(env);
-  if (!credentials || !isAccountOwner(ownerId)) return null;
+  if (!credentials || !isAccountId(ownerId)) return null;
   try {
     return await recordSighting(credentials, ownerId);
   } catch (error) {
