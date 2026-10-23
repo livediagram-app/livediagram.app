@@ -10,7 +10,7 @@ import { LANDING_SECTIONS } from './landing-content';
 
 // Claims marketing once made that the product has since outgrown or never matched. Each phrasing
 // here was live copy, found false against the product; the test keeps it from coming back on any
-// page (docs/specs/019-marketing/comparison-pages.md "Honesty rules").
+// page (liveworkspace/docs/comparison-pages.md "Honesty rules").
 const FALSE_CLAIMS: { pattern: RegExp; why: string }[] = [
   {
     pattern: /read-only,? (?:live-updating )?iframe|read-only iframe embed for any share link/i,

@@ -25,7 +25,7 @@ export const MAX_SEND_ATTEMPTS = 3;
 // First authenticated sighting. INSERT OR IGNORE keyed on the owner id; returns
 // true only when a NEW row was created, which the caller treats as sign-up
 // (send the welcome immediately). A returning owner's row then takes the
-// address from this verified token, so a changed Clerk primary email is where
+// address from this verified token, so a changed account email is where
 // the next notification goes. The empty-string suppression rows (the backfill
 // in docs/specs/014-identity/transactional-email.md §4) keep their sentinel, and an unchanged address writes
 // nothing. A new address starts with a clean failure count (MAX_SEND_ATTEMPTS).
@@ -80,7 +80,7 @@ export async function markStageSent(
 }
 
 // The verified address stored for an authenticated owner at first sighting.
-// The only server-trusted way to reach a Clerk owner by email outside the
+// The only server-trusted way to reach a signed-in owner by email outside the
 // request that carried their token (docs/specs/014-identity/profile-and-email-notifications.md notifications fire on someone
 // else's request). Returns null for a guest owner, an owner with no
 // lifecycle row (email off when they signed in), or a backfilled

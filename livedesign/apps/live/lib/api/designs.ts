@@ -208,7 +208,7 @@ export async function apiDeleteDesign(ownerId: string, id: string): Promise<void
   if (await isOfflineId(id)) return offlineTrashDesign(id, Date.now());
   // Owner-gated server-side as of the security fix — without the
   // identity headers the worker would 400 / 403. apiHeaders prefers
-  // the Clerk Bearer when a token provider is registered, falls
+  // the account Bearer when a token provider is registered, falls
   // through to X-Owner-Id otherwise (docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/api.md).
   return apiDelete(`${API_BASE}/designs/${id}`, ownerId, {
     action: 'delete design',

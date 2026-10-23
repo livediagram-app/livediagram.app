@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from '../fixtures';
 import { arrange, open, type Setup, WEBBER } from './agent-session';
-import { freshUserId, installClerkStub } from './clerk-stub';
+import { freshUserId, installSession } from './session';
 
 // Agent presence end to end (docs/specs/024-agents/agent-presence.md): Webber has his own unshared design open
 // while his agent works on it with an API token. The agent shows itself with a status line and a focus; his stack
@@ -33,7 +33,7 @@ test('an agent shows its status and focus to its owner, expires on its ttl, and 
 }) => {
   test.setTimeout(90_000);
   const userId = freshUserId('webber');
-  await installClerkStub(page, { ...WEBBER, id: userId });
+  await installSession(page, { ...WEBBER, id: userId });
   const s = await arrange(page, baseURL!, userId);
   await open(page, s);
 

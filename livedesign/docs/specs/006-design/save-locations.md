@@ -13,7 +13,7 @@ anything on the canvas. A design in This Browser still says what it is on the de
 
 | Location         | What it means                                                                                                |
 | ---------------- | ------------------------------------------------------------------------------------------------------------ |
-| **livedesign**   | A normal cloud design, saved to the api (D1), reachable from any device.                                   |
+| **livedesign**   | A normal cloud design, saved to the api (D1), reachable from any device.                                     |
 | **This Browser** | Offline Mode ([Offline Mode](offline-mode.md)): saved only in this browser's IndexedDB, never to the server. |
 
 ## The default depends on who is creating
@@ -26,14 +26,14 @@ anything on the canvas. A design in This Browser still says what it is on the de
 
 Why a guest starts local: [Auth + guest access → Guest designs start local](../014-identity/auth-and-guest-access.md#guest-designs-start-local).
 
-- One function answers it: `defaultSaveLocationFor({ signedIn, clerkEnabled })` in
+- One function answers it: `defaultSaveLocationFor({ signedIn, signInEnabled })` in
   `apps/live/lib/save-locations.ts`. Every create from `/new` asks it at commit, through
   `resolveSaveLocation` in `useNewDesignLocation` (`apps/live/app/new/useNewDesignLocation.ts`): a mode chosen
   in the wizard, its **Create** and **Skip**, and the wizard-less links (`/new?template=`, `/new?blank=1`).
 - A `/new?folder=` / `?team=` context names a server place, so it is
   livedesign whoever is creating.
-- Before Clerk has answered, `signedIn` is the `__client_uat` hint
-  ([Who is a guest, before Clerk answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-clerk-answers)).
+- Before sign-in has answered, `signedIn` is the `lp_signed_in` hint cookie
+  ([Who is a guest, before sign-in answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-sign-in-answers)).
   A browser that looks signed in waits for the settled answer before creating, so a signed-in person is never handed
   a design in This Browser; a guest never waits.
 - There is no per-person override: no setting chooses the store. Where a design is **filed** on livedesign is the
@@ -91,8 +91,8 @@ team cards: the same dashed inline-name tile as New Folder (one
 name and the team is created (`POST /api/teams`, [Teams](../013-workspace/teams.md)), joins the
 overview, and the browser enters it with its root selected, because the
 point of making a team here is to file this design in it. **Signed-in
-only**: teams are Clerk-only, so the host (the Explorer's
-move dialog) passes the create handler only when there is a Clerk user, and
+only**: teams are for accounts only, so the host (the Explorer's
+move dialog) passes the create handler only when someone is signed in, and
 a guest never sees a tile that would lead to a 401. Folder moves pass no
 handler either, since a folder can't move into a team.
 So the bar never appears and disappears under the rows as you move about,

@@ -39,9 +39,9 @@ describe('errorTypeToken', () => {
   });
 
   it('caps at 40 characters without leaving a trailing dot', () => {
-    const t = errorTypeToken('UnhandledRejection', 'SsoCallback', 'QuotaExceededError');
+    const t = errorTypeToken('UnhandledRejection', 'SignIn', 'QuotaExceededError');
     expect(t.length).toBeLessThanOrEqual(40);
-    expect(t.startsWith('UnhandledRejection.SsoCallback')).toBe(true);
+    expect(t.startsWith('UnhandledRejection.SignIn')).toBe(true);
     expect(t.endsWith('.')).toBe(false);
   });
 
@@ -81,7 +81,7 @@ describe('errorPageToken', () => {
   it('names the page by its first segment', () => {
     expect(errorPageToken('/design')).toBe('Design');
     expect(errorPageToken('/explorer/team')).toBe('Explorer');
-    expect(errorPageToken('/sso-callback')).toBe('SsoCallback');
+    expect(errorPageToken('/get-started')).toBe('GetStarted');
     expect(errorPageToken('/help/canvas/the-canvas')).toBe('Help');
     expect(errorPageToken('/')).toBe('Home');
   });

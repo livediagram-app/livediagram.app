@@ -1,6 +1,6 @@
 import { expect, test } from '../fixtures';
 import { WEBBER } from './agent-session';
-import { freshUserId, installClerkStub } from './clerk-stub';
+import { freshUserId, installSession } from './session';
 
 // The device sign-in page (docs/specs/015-api/blueprints/cli.md "The device grant", "Presentation and UX"): a person
 // signed in enters the code their terminal shows, sees which client asks, and approves; the page mints a token
@@ -15,7 +15,7 @@ test('a signed-in person connects the CLI with the code their terminal shows', a
   page,
   pageErrors,
 }) => {
-  await installClerkStub(page, { ...WEBBER, id: freshUserId('webber') });
+  await installSession(page, { ...WEBBER, id: freshUserId('webber') });
   const completed: unknown[] = [];
   await page.route(`${MCP}/oauth/device/session/*`, (route) =>
     route.request().url().endsWith('/BCDF-GHJK')
@@ -47,7 +47,7 @@ test('a signed-in person connects the CLI with the code their terminal shows', a
 });
 
 test('cancelling refuses the code, so the terminal stops waiting', async ({ page }) => {
-  await installClerkStub(page, { ...WEBBER, id: freshUserId('webber') });
+  await installSession(page, { ...WEBBER, id: freshUserId('webber') });
   const denied: unknown[] = [];
   await page.route(`${MCP}/oauth/device/session/*`, (route) =>
     route.fulfill({ json: { clientName: 'livedesign CLI' } }),

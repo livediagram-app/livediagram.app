@@ -19,7 +19,7 @@ Preferences live in **D1** as the source of truth, with
 a network round-trip at boot.
 
 - **D1 table** `user_preferences` (migration `0016_user_preferences.sql`),
-  one row per owner (Clerk userId for signed-in users, the per-
+  one row per owner (account user id for signed-in users, the per-
   browser participant id for guests). Columns: `owner_id TEXT
 PRIMARY KEY`, `prefs TEXT NOT NULL` (serialised JSON blob),
   `updated_at INTEGER NOT NULL` (Unix ms). The JSON blob shape
@@ -559,7 +559,7 @@ and the dialog stays as the one complete, browsable index of them.
   something needs an account (the guest identity card, Delete Account, the
   email stand-in card, the API Tokens manager), the message ends with a
   **Sign In** link to `/sign-in/` that returns to the current page. On a
-  deployment without sign-in (`clerkEnabled` false) there is nowhere to sign
+  deployment without sign-in (`signInEnabled` false) there is nowhere to sign
   in, so the link is absent. Preferences whose
   day-to-day home used to be a panel's own gear popover live here now, and
   only here - see **UI placement** below.
@@ -796,7 +796,7 @@ event on the preferences key.
 
 - **`GET /api/preferences`** — returns `{ prefs: UserPreferences }`
   for the resolved owner. Empty object when no row exists. Auth:
-  the standard hybrid identity (Clerk Bearer OR `X-Owner-Id`).
+  the standard hybrid identity (account Bearer OR `X-Owner-Id`).
 - **`PUT /api/preferences`** — body `{ prefs: UserPreferences }`,
   upserts the row for the resolved owner. Returns 204. The blob
   is opaque to the api worker beyond a size cap (4 KB; defends

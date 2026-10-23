@@ -116,7 +116,7 @@ version is the easy default. See
 [Open source + distribution](../002-project-scope/open-source-and-business-model.md).
 
 The editor is **always available without signing in**: a visitor can make a
-real design before being asked to create an account. Auth (Clerk) unlocks sync,
+real design before being asked to create an account. Signing in (a liveworkspace account) unlocks sync,
 teams and per-account history on top of that. See
 [Auth + guest access](../014-identity/auth-and-guest-access.md).
 

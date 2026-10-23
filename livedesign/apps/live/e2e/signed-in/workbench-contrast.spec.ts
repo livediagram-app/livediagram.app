@@ -2,13 +2,13 @@ import type { Page } from '@playwright/test';
 import { auditContrast, type ContrastReport } from '../contrast';
 import { expect, expectNoPageErrors, test } from '../fixtures';
 import { WEBBER } from './agent-session';
-import { freshUserId, installClerkStub } from './clerk-stub';
+import { freshUserId, installSession } from './session';
 
 // Contrast of the workbench pairing surfaces and the OAuth shell they share (docs/specs/013-workspace/blueprints/
 // workbench-embeds.md "Accessibility"), to WCAG 2.2 AA in both colour schemes: the pairing page in its pending
 // state, the device page (docs/specs/015-api/blueprints/cli.md "The device grant") at its code entry and its
 // consent, both drawn by OauthShell and its primary fill, and a paired-workbench row in Settings > API tokens.
-// All need a signed-in person, so they run against the Clerk-enabled export here rather than in the guest-mode
+// All need a signed-in person, so they run against the signed-in export here rather than in the guest-mode
 // audit. The api's and the MCP worker's answers are stubbed, so each surface renders exactly the state under
 // audit.
 
@@ -45,7 +45,7 @@ function expectAA(report: ContrastReport, screen: string): void {
 }
 
 async function signedIn(page: Page, scheme: 'dark' | 'light'): Promise<void> {
-  await installClerkStub(page, { ...WEBBER, id: freshUserId('webber') });
+  await installSession(page, { ...WEBBER, id: freshUserId('webber') });
   await page.addInitScript((mode) => localStorage.setItem('livedesign:v2:ui-mode', mode), scheme);
 }
 

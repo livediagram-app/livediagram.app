@@ -15,8 +15,8 @@ Scope, by file:
 | `packages/api-schema/src/within-reach.ts`                               | `withinReach`, `utcDay`: the allocation shared with the api and the Shapes flyout       |
 | `packages/api-schema/src/home.ts`                                       | `HOME_WITHIN_REACH_PER_ROW`, `WITHIN_REACH_USE_WINDOW_DAYS`, `windowStartOf`            |
 | `apps/live/lib/offline/offline-opens.ts`                                | `LocalOpens`, `nextLocalOpens`, `localOpensOf`, `offlineRecordOpen`, `offlineListOpens` |
-| `apps/live/lib/offline/offline-store.ts`                                | `OfflineDesignRecord.opens`; `offlineCreateDesign(..., { markUsed })` starts them   |
-| `apps/live/lib/api/tabs.ts`                                             | A marked load of a local design records a local open                                  |
+| `apps/live/lib/offline/offline-store.ts`                                | `OfflineDesignRecord.opens`; `offlineCreateDesign(..., { markUsed })` starts them       |
+| `apps/live/lib/api/tabs.ts`                                             | A marked load of a local design records a local open                                    |
 | `apps/live/app/explorer/home/page.tsx`                                  | The `/explorer/home` route stub and its title                                           |
 | `apps/live/app/explorer/home/home-model.ts`                             | Pure: Jump Back In's set, the phone order, hrefs, What Happened's days, the fade        |
 | `apps/live/app/explorer/home/home-copy.ts`                              | Pure: every sentence, label and state copy                                              |
@@ -32,14 +32,14 @@ Scope, by file:
 | `apps/live/components/panels/home/HomeWelcome.tsx`                      | The first run's sections: Start Blank, Popular Templates, Already Have Work? (lazy)     |
 | `apps/live/components/panels/home/WelcomeSearch.tsx`                    | The first run's hero field: search templates in the wizard, Start Blank                 |
 | `apps/live/components/panels/home/HeroTemplateFan.tsx`                  | The first run's fanned template previews (lazy)                                         |
-| `apps/live/app/explorer/home/hero-model.ts`                             | Pure: the greeting by hour, the pills' copy, the fanned sheets' designs               |
+| `apps/live/app/explorer/home/hero-model.ts`                             | Pure: the greeting by hour, the pills' copy, the fanned sheets' designs                 |
 | `apps/live/app/explorer/lens/lens-focus-handoff.ts`                     | The hero field asks the header field to take the focus on Search results                |
 | `apps/live/components/panels/home/JumpBackIn.tsx`                       | The section: heading row, See More, the grid or the strip, the empty state              |
 | `apps/live/components/panels/home/JumpBackInStrip.tsx`                  | The phone's strip, its fade and its See More tile                                       |
-| `apps/live/components/panels/home/JumpBackInTile.tsx`                   | One design's tile (the strip) and the See More tile                                   |
-| `apps/live/components/panels/home/JumpBackInCard.tsx`                   | One design's card on a desktop or tablet: large (most used) or compact (recent)       |
-| `apps/live/components/panels/home/JumpBackInMenu.tsx`                   | A card's or tile's ⋯: the Explorer's DesignEntryMenu, right-click, in-place rename    |
-| `apps/live/app/explorer/useDesignEntryFor.ts`                         | A design id to its Explorer menu props, and whether it has left the Explorer's lists  |
+| `apps/live/components/panels/home/JumpBackInTile.tsx`                   | One design's tile (the strip) and the See More tile                                     |
+| `apps/live/components/panels/home/JumpBackInCard.tsx`                   | One design's card on a desktop or tablet: large (most used) or compact (recent)         |
+| `apps/live/components/panels/home/JumpBackInMenu.tsx`                   | A card's or tile's ⋯: the Explorer's DesignEntryMenu, right-click, in-place rename      |
+| `apps/live/app/explorer/useDesignEntryFor.ts`                           | A design id to its Explorer menu props, and whether it has left the Explorer's lists    |
 | `apps/live/components/panels/home/HomeSection.tsx`                      | `HomeSection` (wrapper, display heading row, quiet link) and `InAppLink`                |
 | `apps/live/components/panels/home/WhatHappened.tsx`                     | The section: day headings, See Timeline, the entries                                    |
 | `apps/live/components/panels/home/WhatHappenedEntry.tsx`                | `ActionEntry` (one person) and `SummaryEntry` (the disclosure)                          |
@@ -47,7 +47,7 @@ Scope, by file:
 | `apps/live/components/panels/home/home-icons.tsx`                       | The verb icons and the empty states' glyphs                                             |
 | `apps/live/components/panels/home/HomeSkeletons.tsx`                    | The skeletons, sized as what replaces them                                              |
 | `apps/live/components/panels/home/home-styles.ts`                       | The shared classes                                                                      |
-| `apps/live/components/panels/home/home-test-utils.ts`                   | Test fixtures: a design, a person, an action, a group, a Jump Back In item            |
+| `apps/live/components/panels/home/home-test-utils.ts`                   | Test fixtures: a design, a person, an action, a group, a Jump Back In item              |
 | `apps/live/app/explorer/{views.tsx,routes.ts,view-titles.ts}`           | `{ kind: 'home' }`, `/explorer/home`, the default, the titles                           |
 | `apps/live/app/explorer/{useExplorerPane.ts,ExplorerPane.tsx}`          | Crumbs (`Home › Recent`), the dispatch, the header                                      |
 | `apps/live/app/explorer/page.tsx`, `apps/live/src/worker.ts`            | The landing goes to `EXPLORER_LANDING_PATH`                                             |
@@ -61,30 +61,30 @@ Scope, by file:
 | `apps/telemetry/app/{catalogue/collaboration.ts,event-explanations.ts}` | Home's charts and sentences                                                             |
 | `apps/telemetry/app/event-vocab.ts`                                     | The `Home` category's description and colour                                            |
 | `apps/help/app/explorer/timeline/page.mdx`, `packages/help-registry`    | The Home article: Home, then the Timeline                                               |
-| `apps/live/e2e/home-seed.ts`                                            | e2e seeding through the api: drawn designs, opens, edits through a link               |
+| `apps/live/e2e/home-seed.ts`                                            | e2e seeding through the api: drawn designs, opens, edits through a link                 |
 
 ## Domain and naming
 
-| Term          | Identifier                                       | Meaning                                                       |
-| ------------- | ------------------------------------------------ | ------------------------------------------------------------- |
-| Home          | `{ kind: 'home' }`, `/explorer/home`, `HomePane` | The landing view                                              |
-| Timeline      | `{ kind: 'timeline' }`, `/explorer/timeline`     | The Timeline feed, its sidebar row and its page title         |
-| Jump Back In  | `JumpBackIn`, `JumpBackInSet`, `JumpBackInItem`  | The section and its within-reach set of designs             |
-| Group         | `JumpBackInGroup = 'mostUsed' \| 'recent'`       | Which half of the set an item belongs to; labelled when wide  |
-| Grid          | `JumpBackIn` wide branch                         | Desktop and tablet: Most Used cards, then Recent cards        |
-| Card          | `JumpBackInCard`                                 | A wide-screen design: large (most used) or compact (recent) |
-| Quiet line    | `jumpBackInLine(item, group, now)`               | "Used on N days" / "Used 2 hours ago" under a card's name     |
-| Hero          | `HomeHero`                                       | Home's full-width header band                                 |
-| Greeting      | `heroGreeting(hour)`                             | Good morning / afternoon / evening, the `h1`                  |
-| Pill          | `heroPills(...)`                                 | The designs and Inbox status links                          |
-| Sheets        | `heroSheets(designs)`                          | The three most recently saved designs, fanned               |
-| Strip         | `JumpBackInStrip`                                | The phone's sideways row, alternating, ending in See More     |
-| Phone order   | `phoneOrder(set)`                                | Most Used, recent, alternating, then the rest                 |
-| Tile          | `JumpBackInTile`, `SeeMoreTile`                  | One design's thumbnail and name; the strip's last tile      |
-| See More      | `HOME_COPY.seeMore`, `recentHref`, `onSeeMore`   | The way to the Recent page                                    |
-| Local open    | `LocalOpens`, `OfflineDesignRecord.opens`      | This Browser's record of opens of a design stored only here |
-| Action entry  | `ActionEntry`                                    | One action of a one-person group, a link                      |
-| Summary entry | `SummaryEntry`                                   | A group of several people, a disclosure                       |
+| Term          | Identifier                                       | Meaning                                                      |
+| ------------- | ------------------------------------------------ | ------------------------------------------------------------ |
+| Home          | `{ kind: 'home' }`, `/explorer/home`, `HomePane` | The landing view                                             |
+| Timeline      | `{ kind: 'timeline' }`, `/explorer/timeline`     | The Timeline feed, its sidebar row and its page title        |
+| Jump Back In  | `JumpBackIn`, `JumpBackInSet`, `JumpBackInItem`  | The section and its within-reach set of designs              |
+| Group         | `JumpBackInGroup = 'mostUsed' \| 'recent'`       | Which half of the set an item belongs to; labelled when wide |
+| Grid          | `JumpBackIn` wide branch                         | Desktop and tablet: Most Used cards, then Recent cards       |
+| Card          | `JumpBackInCard`                                 | A wide-screen design: large (most used) or compact (recent)  |
+| Quiet line    | `jumpBackInLine(item, group, now)`               | "Used on N days" / "Used 2 hours ago" under a card's name    |
+| Hero          | `HomeHero`                                       | Home's full-width header band                                |
+| Greeting      | `heroGreeting(hour)`                             | Good morning / afternoon / evening, the `h1`                 |
+| Pill          | `heroPills(...)`                                 | The designs and Inbox status links                           |
+| Sheets        | `heroSheets(designs)`                            | The three most recently saved designs, fanned                |
+| Strip         | `JumpBackInStrip`                                | The phone's sideways row, alternating, ending in See More    |
+| Phone order   | `phoneOrder(set)`                                | Most Used, recent, alternating, then the rest                |
+| Tile          | `JumpBackInTile`, `SeeMoreTile`                  | One design's thumbnail and name; the strip's last tile       |
+| See More      | `HOME_COPY.seeMore`, `recentHref`, `onSeeMore`   | The way to the Recent page                                   |
+| Local open    | `LocalOpens`, `OfflineDesignRecord.opens`        | This Browser's record of opens of a design stored only here  |
+| Action entry  | `ActionEntry`                                    | One action of a one-person group, a link                     |
+| Summary entry | `SummaryEntry`                                   | A group of several people, a disclosure                      |
 
 Banned: "Most Used" and "Recent" anywhere on Home but the two group labels, "frecency",
 "timeline" for anything on Home but the See Timeline link that leaves for it, "notification" for an action.
@@ -239,9 +239,7 @@ export type JumpBackInItem = {
   localOnly: boolean;
 };
 export type JumpBackInSet = WithinReach<JumpBackInItem>;
-export function homeDesignHref(
-  doc: Pick<HomeDesign, 'designId' | 'via' | 'shareCode'>,
-): string;
+export function homeDesignHref(doc: Pick<HomeDesign, 'designId' | 'via' | 'shareCode'>): string;
 export function jumpBackInSet(
   server: readonly HomeJumpBackInItem[],
   local: readonly LocalOpenDesign[],
@@ -301,25 +299,25 @@ Component props:
 
 ## Errors and edge cases
 
-| Case                                           | Handling                                                                                          |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| Home read fails                                | The error state with Try again in place of the body                                               |
-| No IndexedDB                                   | No local items; logged; Home renders the server's                                                 |
+| Case                                         | Handling                                                                                          |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Home read fails                              | The error state with Try again in place of the body                                               |
+| No IndexedDB                                 | No local items; logged; Home renders the server's                                                 |
 | Local design trashed or synced to the cloud  | Not listed (trashed skipped; the record is gone after Sync)                                       |
-| Local record in the earlier `opens` shape      | Read as its last open day; rewritten in the new shape on its next open                            |
-| Owner id changes mid-read (a guest signs in)   | The request id drops the stale answer; the read re-runs for the new id                            |
+| Local record in the earlier `opens` shape    | Read as its last open day; rewritten in the new shape on its next open                            |
+| Owner id changes mid-read (a guest signs in) | The request id drops the stale answer; the read re-runs for the new id                            |
 | A design in both groups                      | Most Used only (`withinReach`)                                                                    |
 | No most used design, some recent             | The recent take the grid's top row; the phone's strip is the recent alone                         |
 | Fewer than 8 designs                         | Only what exists; the grid's minimum height keeps two rows                                        |
 | No design at all                             | The empty state; on a phone the strip still ends in See More                                      |
-| Group whose actor has no name                  | "Someone"                                                                                         |
-| Group of more than three people                | "Priya, Sam, Lee and 2 others"                                                                    |
+| Group whose actor has no name                | "Someone"                                                                                         |
+| Group of more than three people              | "Priya, Sam, Lee and 2 others"                                                                    |
 | Shared design                                | Opens through `?s=<code>`; location "Shared by <owner>" ("Shared with you" without an owner name) |
 | Design name longer than the tile             | Truncated with an ellipsis; the full name is the accessible name and a `Tooltip`                  |
 | A team design the person owns (`via: 'own'`) | Its location is the team: `locationLabel` reads `teamName` whatever the via                       |
-| Nothing drawn (`empty`)                        | The thumbnail shows the undrawn sketch and sends no request                                       |
-| Viewport crosses 768 px                        | Grid ↔ strip                                                                                      |
-| Strip narrower than its items / wider          | Fade only while more lies to the right                                                            |
+| Nothing drawn (`empty`)                      | The thumbnail shows the undrawn sketch and sends no request                                       |
+| Viewport crosses 768 px                      | Grid ↔ strip                                                                                      |
+| Strip narrower than its items / wider        | Fade only while more lies to the right                                                            |
 
 ## Security and trust
 
@@ -458,29 +456,29 @@ tracking-[0.08em] text-slate-500 pt-3`), entries in a `ul` with 4 px between.
 
 ## Testing
 
-| Rule                                                                                | Test                                                                                    |
-| ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| The allocation                                                                      | `packages/api-schema/src/within-reach.test.ts`                                          |
-| The use window                                                                      | `packages/api-schema/src/home.test.ts`                                                  |
-| Local opens: first, same day, next day, window, legacy shape, trashed, failure      | `apps/live/lib/offline/offline-opens.test.ts`                                           |
-| A local making starts the record; one with `markUsed: false` has none               | `apps/live/lib/offline/offline-store.test.ts`                                           |
-| A marked local load records; an unmarked one does not                               | `apps/live/lib/api/tabs-local-open.test.ts`                                             |
-| Set: merge, dedupe, local measures, ties; phone order; hrefs; days; fade            | `apps/live/app/explorer/home/home-model.test.ts`                                        |
-| Sentences, people, verbs, updates, location                                         | `apps/live/app/explorer/home/home-copy.test.ts`                                         |
-| Read, error, retry, stale owner, unread clear, mark kept                            | `apps/live/app/explorer/home/useHome.test.tsx`                                          |
-| A clear outlives an unread count still in flight                                    | `apps/live/app/explorer/useTimelineUnread.test.tsx`                                     |
-| Grid and strip: group labels, quiet lines, cards, pill, fade, See More, telemetry   | `apps/live/components/panels/home/JumpBackIn.test.tsx`                                  |
-| ⋯ menu: button beside the link, right-click, rename in place, gone, unloaded, strip | `apps/live/components/panels/home/JumpBackInMenu.test.tsx`                              |
-| Menu props by id: lists, bound actions, shared dismiss, history, gone               | `apps/live/app/explorer/useDesignEntryFor.test.tsx`                                   |
-| Display headings: the heading row and its link, per section, no rule                | `apps/live/components/panels/home/HomePane.test.tsx`                                    |
-| Greeting by hour, pills' copy, the sheets' designs                                | `apps/live/app/explorer/home/hero-model.test.ts`                                        |
-| Hero: pills open their views, New Design, Help, sheets hidden, one lens field     | `apps/live/components/panels/home/HomeHero.test.tsx`                                    |
-| The hero field hands the focus to the header field on Search results                | `apps/live/app/explorer/lens/lens-focus-handoff.test.ts`                                |
-| Entries: one-person links, summary disclosure, telemetry, See Timeline              | `apps/live/components/panels/home/WhatHappened.test.tsx`                                |
-| One column, two sections, no Timeline, the error state                              | `apps/live/components/panels/home/HomePane.test.tsx`                                    |
-| Routes, titles, crumbs (Recent under Home), the landing 302                         | `routes.test.ts`, `view-titles.test.ts`, `apps/live/src/worker.test.ts`                 |
-| Telemetry charted and explained                                                     | `apps/telemetry` `metric-emitters.test.ts`, `event-explanation.test.ts`                 |
-| Real browser: guest and signed in, desktop and phone, dark                          | `apps/live/e2e/explorer-home.spec.ts`, `apps/live/e2e/clerk-stub/explorer-home.spec.ts` |
+| Rule                                                                                | Test                                                                                   |
+| ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| The allocation                                                                      | `packages/api-schema/src/within-reach.test.ts`                                         |
+| The use window                                                                      | `packages/api-schema/src/home.test.ts`                                                 |
+| Local opens: first, same day, next day, window, legacy shape, trashed, failure      | `apps/live/lib/offline/offline-opens.test.ts`                                          |
+| A local making starts the record; one with `markUsed: false` has none               | `apps/live/lib/offline/offline-store.test.ts`                                          |
+| A marked local load records; an unmarked one does not                               | `apps/live/lib/api/tabs-local-open.test.ts`                                            |
+| Set: merge, dedupe, local measures, ties; phone order; hrefs; days; fade            | `apps/live/app/explorer/home/home-model.test.ts`                                       |
+| Sentences, people, verbs, updates, location                                         | `apps/live/app/explorer/home/home-copy.test.ts`                                        |
+| Read, error, retry, stale owner, unread clear, mark kept                            | `apps/live/app/explorer/home/useHome.test.tsx`                                         |
+| A clear outlives an unread count still in flight                                    | `apps/live/app/explorer/useTimelineUnread.test.tsx`                                    |
+| Grid and strip: group labels, quiet lines, cards, pill, fade, See More, telemetry   | `apps/live/components/panels/home/JumpBackIn.test.tsx`                                 |
+| ⋯ menu: button beside the link, right-click, rename in place, gone, unloaded, strip | `apps/live/components/panels/home/JumpBackInMenu.test.tsx`                             |
+| Menu props by id: lists, bound actions, shared dismiss, history, gone               | `apps/live/app/explorer/useDesignEntryFor.test.tsx`                                    |
+| Display headings: the heading row and its link, per section, no rule                | `apps/live/components/panels/home/HomePane.test.tsx`                                   |
+| Greeting by hour, pills' copy, the sheets' designs                                  | `apps/live/app/explorer/home/hero-model.test.ts`                                       |
+| Hero: pills open their views, New Design, Help, sheets hidden, one lens field       | `apps/live/components/panels/home/HomeHero.test.tsx`                                   |
+| The hero field hands the focus to the header field on Search results                | `apps/live/app/explorer/lens/lens-focus-handoff.test.ts`                               |
+| Entries: one-person links, summary disclosure, telemetry, See Timeline              | `apps/live/components/panels/home/WhatHappened.test.tsx`                               |
+| One column, two sections, no Timeline, the error state                              | `apps/live/components/panels/home/HomePane.test.tsx`                                   |
+| Routes, titles, crumbs (Recent under Home), the landing 302                         | `routes.test.ts`, `view-titles.test.ts`, `apps/live/src/worker.test.ts`                |
+| Telemetry charted and explained                                                     | `apps/telemetry` `metric-emitters.test.ts`, `event-explanation.test.ts`                |
+| Real browser: guest and signed in, desktop and phone, dark                          | `apps/live/e2e/explorer-home.spec.ts`, `apps/live/e2e/signed-in/explorer-home.spec.ts` |
 
 ## Constants and configuration
 

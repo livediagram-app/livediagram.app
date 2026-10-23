@@ -8,8 +8,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // this browser last saw until they land; a newcomer is taken as new.
 
 const { clerk } = vi.hoisted(() => ({ clerk: { enabled: true } }));
-vi.mock('@/lib/clerk-config', () => ({
-  get clerkEnabled() {
+vi.mock('@/lib/auth-config', () => ({
+  get signInEnabled() {
     return clerk.enabled;
   },
 }));
@@ -28,7 +28,7 @@ function wrap(over: Partial<Record<string, unknown>> = {}) {
     shared: [],
     teamDesigns: [],
     offlineDesigns: [],
-    clerkUserId: null,
+    accountUserId: null,
     failedReads: { designs: false, shared: false },
     ...over,
   } as unknown as ExplorerStateValue;
@@ -61,7 +61,8 @@ describe('useFirstRun', () => {
 
   it('offers no sign-in to someone signed in, or where sign-in is off', () => {
     expect(
-      renderHook(() => useFirstRun(), { wrapper: wrap({ clerkUserId: 'user_1' }) }).result.current,
+      renderHook(() => useFirstRun(), { wrapper: wrap({ accountUserId: 'user_1' }) }).result
+        .current,
     ).toMatchObject({ signedIn: true, offerSignIn: false });
     clerk.enabled = false;
     expect(renderHook(() => useFirstRun(), { wrapper: wrap() }).result.current.offerSignIn).toBe(

@@ -222,7 +222,7 @@ export async function handleDesignSubresources(ctx: RouteContext): Promise<Respo
     const existing = await getDesign(env, id);
     if (!existing) return missingDesign(ctx, id);
     // `ownsDesign`, not a bare id compare: on a TEAM design the owner id is
-    // a Clerk id every teammate can read, so it must be proven with a verified
+    // an account id every teammate can read, so it must be proven with a verified
     // account id rather than the X-Owner-Id header (see routes/context.ts).
     // The second half of this route's auth doesn't help here — it re-uses the
     // SAME resolved owner, so a forged identity satisfies it with the victim's

@@ -25,7 +25,7 @@ import { requireOwner, type RouteContext, readBody } from './context';
 // caller who knew (or guessed) another participant's id could
 // rewrite their display name + colour, and that vandalism would
 // propagate across every design they'd collaborated on. The guard requires the caller's resolved
-// owner (Clerk Bearer OR X-Owner-Id, docs/specs/014-identity/auth-and-guest-access.md) to match the
+// owner (account Bearer OR X-Owner-Id, docs/specs/014-identity/auth-and-guest-access.md) to match the
 // participant id being mutated.
 export async function handleParticipants(ctx: RouteContext): Promise<Response> {
   const { request, env, segments } = ctx;
@@ -85,15 +85,15 @@ export async function handleParticipants(ctx: RouteContext): Promise<Response> {
   return notFound();
 }
 
-// Only the participant's own verified Clerk session may publish a picture: a guest header proves
+// Only the participant's own verified session may publish a picture: a guest header proves
 // nothing about a Clerk picture, and an API token must not be able to change how its owner looks
 // to other people. The URL must be on Clerk's image host (docs/specs/014-identity/profile-picture.md §6).
 async function putPicture(ctx: RouteContext, id: string): Promise<Response> {
-  if (!ctx.clerkUserId) {
+  if (!ctx.accountUserId) {
     console.info('[profile-picture] rejected', 'not_account');
     return signInRequired();
   }
-  if (ctx.clerkUserId !== id) {
+  if (ctx.accountUserId !== id) {
     console.info('[profile-picture] rejected', 'not_account');
     return forbidden();
   }

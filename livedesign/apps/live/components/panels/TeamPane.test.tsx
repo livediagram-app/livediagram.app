@@ -29,8 +29,8 @@ const pane = (over: Partial<Props> = {}) => (
   <TeamPane
     ownerId="me"
     teamId="t1"
-    clerkUserId="me"
-    clerkDisplayName="Ada"
+    accountUserId="me"
+    accountDisplayName="Ada"
     onTeamsChanged={() => {}}
     onLeftTeam={() => {}}
     onLoadResult={() => {}}

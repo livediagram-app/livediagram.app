@@ -127,15 +127,20 @@ Set in the repo under **Settings → Secrets and variables → Actions**:
 
 **Optional**, each synced into `wrangler secret put` by the deploy workflow and skipped when unset, so a fork that sets none still deploys:
 
-| Secret                 | Synced to       | See                                                                                      |
-| ---------------------- | --------------- | ---------------------------------------------------------------------------------------- |
-| `CLERK_JWKS_URL`       | api             | [04](../014-identity/auth-and-guest-access.md)                                           |
-| `GUEST_ID_HMAC_SECRET` | api             | [04](../014-identity/auth-and-guest-access.md)                                           |
-| `INTERNAL_EVENTS_KEY`  | api **and** mcp | [22](../017-telemetry/telemetry.md) — one GitHub secret drives both, so they can't drift |
+| Secret                   | Synced to       | See                                                                                      |
+| ------------------------ | --------------- | ---------------------------------------------------------------------------------------- |
+| `ACCOUNTS_URL`           | api             | [04](../014-identity/auth-and-guest-access.md)                                           |
+| `API_RESOURCE`           | api             | [04](../014-identity/auth-and-guest-access.md)                                           |
+| `ACCOUNTS_CLIENT_ID`     | api             | [04](../014-identity/auth-and-guest-access.md) — also turns sign-in on in the live build |
+| `ACCOUNTS_CLIENT_SECRET` | api             | [04](../014-identity/auth-and-guest-access.md)                                           |
+| `GUEST_ID_HMAC_SECRET`   | api             | [04](../014-identity/auth-and-guest-access.md)                                           |
+| `INTERNAL_EVENTS_KEY`    | api **and** mcp | [22](../017-telemetry/telemetry.md) — one GitHub secret drives both, so they can't drift |
+
+The live build sets `NEXT_PUBLIC_SIGN_IN_ENABLED=true` exactly when `ACCOUNTS_CLIENT_ID` is set, so the editor offers sign-in only when the api can complete it.
 
 Syncing on every deploy means these rotate by editing the GitHub secret rather than by running `wrangler` against production. [Secrets policy](../002-project-scope/secrets-policy.md) holds the full worker-secret table.
 
-Staging has a `_STAGING`-suffixed twin of each optional secret plus its own Clerk publishable key, listed in [Staging environment](staging-environment.md). `CF_API_TOKEN` and `CF_ACCOUNT_ID` are shared: both environments live in the same Cloudflare account.
+Staging has a `_STAGING`-suffixed twin of each optional secret (its own accounts client registration among them), listed in [Staging environment](staging-environment.md). `CF_API_TOKEN` and `CF_ACCOUNT_ID` are shared: both environments live in the same Cloudflare account.
 
 ### Creating the API token
 

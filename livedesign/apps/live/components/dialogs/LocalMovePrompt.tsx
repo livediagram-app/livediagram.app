@@ -6,15 +6,15 @@ import { DialogFooter } from '@/components/dialogs/DialogFooter';
 import { ImportChecklist } from '@/components/dialogs/ImportChecklist';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { Spinner } from '@/components/palette/template-picker-icons';
-import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
+import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useLocalMovePrompt } from '@/hooks/persistence/useLocalMovePrompt';
 
 // The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving designs in This Browser
 // after signing in"), mounted by the Explorer and the editor. Renders nothing until there is
 // something to offer.
 export function LocalMovePrompt({ enabled = true }: { enabled?: boolean }) {
-  const { authLoaded, clerkUserId } = useClerkApiBootstrap();
-  const prompt = useLocalMovePrompt({ enabled, authLoaded, clerkUserId });
+  const { authLoaded, accountUserId } = useAccountBootstrap();
+  const prompt = useLocalMovePrompt({ enabled, authLoaded, accountUserId });
   const { phase } = prompt;
   if (phase.kind === 'idle') return null;
 

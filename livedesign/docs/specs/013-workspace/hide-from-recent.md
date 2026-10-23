@@ -17,7 +17,7 @@ Recent is **your view of your own work**, so the choice belongs to the viewer,
 not the design. On a shared or team design, one collaborator tidying their
 Recent must not tidy everyone else's. Preferences already do exactly the right
 thing here: the same blob syncs to D1 for **guests** (via the per-browser
-`X-Owner-Id`) and for **signed-in users** (via the Clerk `sub`), so the choice
+`X-Owner-Id`) and for **signed-in users** (via the account `sub`), so the choice
 follows the account across devices with no migration and no api-schema change.
 
 `recentExcludedIds` is **capped at 60** (`RECENT_EXCLUDED_LIMIT`), newest

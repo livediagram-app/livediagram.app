@@ -22,9 +22,9 @@ import { readFolderName, readParentId } from './folder-body';
 import { markTimelineEventsDeletedBySource } from '../db/timeline';
 
 // Joined-member check for team-scoped folder verbs. Membership is
-// keyed by Clerk user id — carried by a session JWT or an API token
+// keyed by account id — carried by a session JWT or an API token
 // (both server-verified, docs/specs/015-api/public-api-and-tokens.md §3.4) — so the guest path can never
-// manage team folders (consistent with docs/specs/013-workspace/teams.md's Clerk-only teams).
+// manage team folders (consistent with docs/specs/013-workspace/teams.md's signed-in only teams).
 async function canManageTeamFolder(ctx: RouteContext, teamId: string): Promise<boolean> {
   if (!ctx.verifiedUserId) return false;
   const membership = await getMembership(ctx.env, teamId, ctx.verifiedUserId);

@@ -25,7 +25,7 @@ Required by the CI/CD pipeline (see [10-deployment.md](../016-platform/deploymen
 | `CF_API_TOKEN`  | Cloudflare API token scoped to the account that owns the workers. Required permissions: Workers Scripts:Edit, D1:Edit, Workers Routes:Edit, Account Settings:Read, User Details:Read. Full list in [10-deployment.md](../016-platform/deployment.md). |
 | `CF_ACCOUNT_ID` | Cloudflare account ID (not a secret per se, but kept in the same store).                                                                                                                                                                              |
 
-The deploy workflow also **syncs** four of the worker secrets below from GitHub repo secrets into `wrangler secret put` on every deploy, so they rotate by editing the GitHub secret: `CLERK_JWKS_URL`, `GUEST_ID_HMAC_SECRET`, `MEDIA_KEY` and `INTERNAL_EVENTS_KEY`. Each sync step is guarded on the GitHub secret being non-empty, so a fork that sets neither still deploys.
+The deploy workflow also **syncs** the sign-in values, `GUEST_ID_HMAC_SECRET`, `MEDIA_KEY` and `INTERNAL_EVENTS_KEY` below from GitHub repo secrets into `wrangler secret put` on every deploy, so they rotate by editing the GitHub secret: `ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`, `GUEST_ID_HMAC_SECRET`, `MEDIA_KEY` and `INTERNAL_EVENTS_KEY`. Each sync is guarded on the GitHub secret being non-empty, so a fork that sets none still deploys.
 
 ## Worker secrets in use today
 
@@ -33,7 +33,8 @@ Provisioned with `wrangler secret put` (production), `wrangler secret put --env 
 
 | Secret                                                       | Worker          | Absent means                                                                                                           |
 | ------------------------------------------------------------ | --------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `CLERK_JWKS_URL`                                             | api             | Pure-guest mode: `X-Owner-Id` is trusted exclusively ([04](../014-identity/auth-and-guest-access.md))                  |
+| `ACCOUNTS_URL` / `API_RESOURCE`                              | api             | Pure-guest mode: `X-Owner-Id` is trusted exclusively ([04](../014-identity/auth-and-guest-access.md))                  |
+| `ACCOUNTS_CLIENT_ID` / `ACCOUNTS_CLIENT_SECRET`              | api             | Nobody can complete sign-in (`/api/auth/*` cannot swap a code or refresh a token)                                      |
 | `GUEST_ID_HMAC_SECRET`                                       | api             | Legacy unsigned guest ids; `/api/migrate` accepts any id ([04](../014-identity/auth-and-guest-access.md))              |
 | `GOOGLE_AI_STUDIO_API_KEY` / `OPENAI_API_KEY` / `AI_API_KEY` | api             | The AI surface hides entirely ([25](../007-editor/ai-assistance.md))                                                   |
 | `RESEND_API_KEY`                                             | api             | All transactional + lifecycle email is inert ([64](../014-identity/transactional-email.md))                            |
@@ -44,13 +45,13 @@ Provisioned with `wrangler secret put` (production), `wrangler secret put --env 
 
 Non-secret configuration (`TELEMETRY_ENABLED`, `AI_BASE_URL`, `AI_MODEL`, `AI_*`, `RESEND_FROM`, `APP_BASE_URL`, `CONSENT_BASE_URL`) lives in `[vars]` in the relevant `wrangler.toml`, in the open, documented alongside each entry there and in the per-app `.env.example`. What only livedesign.app runs with (`TELEMETRY_ENABLED`, the photo store cap `PHOTO_MAX_BYTES_PER_TAB`, the media service's `MEDIA_URL`) is equally public but lives in the hosted profile, `apps/api/hosted-vars.json`, so it is not every fork's default ([Deployment](../016-platform/deployment.md) "Hosted profile").
 
-`CLERK_SECRET_KEY` is **not** used: the api verifies session JWTs against the public JWKS and makes no Clerk Admin API calls.
+`ACCOUNTS_CLIENT_SECRET` is the only real secret of the four: the api sends it to the accounts Worker when it swaps a sign-in code or a refresh token. `ACCOUNTS_URL`, `API_RESOURCE` and the client id are not sensitive, but are synced the same way so each environment sets its own. Access tokens are verified locally against the accounts Worker's public JWKS; the api holds no admin credential for it.
 
 ## What is "safe to publish" client-side
 
 Some keys are designed to be public; they go in `NEXT_PUBLIC_*` vars and end up in the bundle:
 
-- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` — Clerk publishable key.
+- `NEXT_PUBLIC_SIGN_IN_ENABLED` — whether the editor offers sign-in (a flag, not a key).
 - Public URLs (`NEXT_PUBLIC_API_BASE`, etc.).
 
 If a value's documentation calls it "public", "publishable", or "client", it's fine for client bundles.
@@ -71,7 +72,7 @@ Each app or worker that needs env vars ships a `.env.example` designing **which 
 
 ```
 # Required for production builds
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+NEXT_PUBLIC_SIGN_IN_ENABLED=
 # (no secret keys here — those go in the Cloudflare dashboard)
 ```
 
@@ -79,7 +80,7 @@ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
 
 ## If a secret leaks
 
-1. **Rotate immediately** in the relevant provider (Clerk, Cloudflare, etc.).
+1. **Rotate immediately** in the relevant provider (the accounts Worker's client secret, Cloudflare, etc.).
 2. Update the secret in the env-var store (`wrangler secret put`, Pages dashboard).
 3. Force-push and `git filter-repo` are **not** sufficient — rotation comes first because Git history is forever public.
 4. Open a tracking note in specs (or wherever incidents live, TBD) to design what leaked, when, and what was rotated.

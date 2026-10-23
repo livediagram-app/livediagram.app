@@ -53,7 +53,7 @@ async function world(): Promise<SqliteD1> {
   return db;
 }
 
-const me = { owner: 'user_me', clerkUserId: 'user_me' };
+const me = { owner: 'user_me', accountUserId: 'user_me' };
 
 function call(
   db: SqliteD1,
@@ -162,7 +162,7 @@ describe('DELETE /api/trash', () => {
 
   it('refuses a team Trash to anyone not joined', async () => {
     const db = await world();
-    const stranger = { owner: 'user_x', clerkUserId: 'user_x' };
+    const stranger = { owner: 'user_x', accountUserId: 'user_x' };
     expect((await call(db, 'DELETE', '/api/trash?team=crew', stranger)).status).toBe(404);
     expect((await call(db, 'DELETE', '/api/trash?team=crew', { owner: 'user_me' })).status).toBe(
       404,

@@ -35,7 +35,7 @@ const call = (
     makeTestRouteContext(method, path, {
       env: db.env,
       owner,
-      clerkUserId: token ? null : owner,
+      accountUserId: token ? null : owner,
       verifiedUserId: owner,
       body,
       token: token ? { id: 'tok_1' } : null,

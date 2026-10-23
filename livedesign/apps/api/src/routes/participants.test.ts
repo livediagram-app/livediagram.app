@@ -28,14 +28,14 @@ const makeCtx = (
   opts: {
     owner?: string | null;
     body?: unknown;
-    clerkUserId?: string | null;
+    accountUserId?: string | null;
     verifiedUserId?: string | null;
   } = {},
 ): RouteContext =>
   makeTestRouteContext(method, path, {
     body: opts.body,
     owner: opts.owner === undefined ? 'owner-1' : opts.owner,
-    clerkUserId: opts.clerkUserId ?? null,
+    accountUserId: opts.accountUserId ?? null,
     ...(opts.verifiedUserId !== undefined ? { verifiedUserId: opts.verifiedUserId } : {}),
   });
 
@@ -149,17 +149,17 @@ describe('participant pictures', () => {
   it('GET shows the picture to a signed-in caller', async () => {
     db.getParticipant.mockResolvedValue(row);
     const res = await handleParticipants(
-      makeCtx('GET', '/api/participants/user_ann', { clerkUserId: 'user_bob' }),
+      makeCtx('GET', '/api/participants/user_ann', { accountUserId: 'user_bob' }),
     );
     const body = (await res.json()) as { participant: { pictureUrl: string | null } };
     expect(body.participant.pictureUrl).toBe(PICTURE);
   });
 
-  it('PUT picture sets it for the participant own Clerk session', async () => {
+  it('PUT picture sets it for the participant own signed-in session', async () => {
     db.setParticipantPicture.mockResolvedValue(true);
     const res = await handleParticipants(
       makeCtx('PUT', '/api/participants/user_ann/picture', {
-        clerkUserId: 'user_ann',
+        accountUserId: 'user_ann',
         body: { pictureUrl: PICTURE },
       }),
     );
@@ -171,7 +171,7 @@ describe('participant pictures', () => {
     db.setParticipantPicture.mockResolvedValue(true);
     const res = await handleParticipants(
       makeCtx('PUT', '/api/participants/user_ann/picture', {
-        clerkUserId: 'user_ann',
+        accountUserId: 'user_ann',
         body: { pictureUrl: null },
       }),
     );
@@ -185,7 +185,7 @@ describe('participant pictures', () => {
     const put = (pictureUrl: string | null) =>
       handleParticipants(
         makeCtx('PUT', '/api/participants/user_ann/picture', {
-          clerkUserId: 'user_ann',
+          accountUserId: 'user_ann',
           body: { pictureUrl },
         }),
       );
@@ -210,7 +210,7 @@ describe('participant pictures', () => {
     expect(token.status).toBe(401);
     const other = await handleParticipants(
       makeCtx('PUT', '/api/participants/user_ann/picture', {
-        clerkUserId: 'user_eve',
+        accountUserId: 'user_eve',
         body: { pictureUrl: PICTURE },
       }),
     );
@@ -224,7 +224,7 @@ describe('participant pictures', () => {
     for (const pictureUrl of ['https://evil.example/x.png', 'http://img.clerk.com/x', 42]) {
       const res = await handleParticipants(
         makeCtx('PUT', '/api/participants/user_ann/picture', {
-          clerkUserId: 'user_ann',
+          accountUserId: 'user_ann',
           body: { pictureUrl },
         }),
       );
@@ -237,7 +237,7 @@ describe('participant pictures', () => {
     db.setParticipantPicture.mockResolvedValue(false);
     const res = await handleParticipants(
       makeCtx('PUT', '/api/participants/user_ann/picture', {
-        clerkUserId: 'user_ann',
+        accountUserId: 'user_ann',
         body: { pictureUrl: PICTURE },
       }),
     );

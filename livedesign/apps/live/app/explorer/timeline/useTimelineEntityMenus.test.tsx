@@ -40,7 +40,7 @@ const declineInvite = vi.fn(async () => {});
 function explorer(over: Partial<ExplorerStateValue> = {}): ExplorerStateValue {
   return {
     ownerId: 'me',
-    clerkUserId: 'me',
+    accountUserId: 'me',
     go,
     tokens: { list: [{ id: 'tok1', name: 'CI' }], revoke },
     teams: [

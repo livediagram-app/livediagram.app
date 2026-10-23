@@ -15,7 +15,7 @@ Five mechanisms, layered. Every cell below comes from one of them.
 | Grant resolution      | `apps/api/src/auth/design-access.ts` `resolveDesignGrant`, wrapped by `routes/context.ts` `gateRead` / `gateEdit` / `gateGrant` | Personal owner, then joined team member (both `FULL_EDIT`), then a share link for this design plus the share password. Returns `{ role: 'edit' \| 'view', tabScope, shareCode }`. A tab-scoped grant passes only when the door names its tab. |
 | Owner-only guards     | `routes/context.ts` `ownsDesign`, `requireOwnedDesign`, `mayDeleteDesign`                                                       | Ownership is separate from the edit grant already: share family and tab linking need the owner; delete, trash and moves need the owner or a joined member.                                                                                    |
 | Read-only token choke | `apps/api/src/index.ts` `routeApiRequest`, `if (tokenAuth?.readOnly && isWrite) return forbidden('read_only_token')`            | A read-only token may only `GET` / `HEAD`, on every route.                                                                                                                                                                                    |
-| Session-only routes   | `routes/tokens.ts`, `routes/oauth.ts`, `routes/account.ts`, `routes/migrate.ts`, `routes/teams.ts` (non-GET)                    | Need `ctx.clerkUserId` (a Clerk session), so neither a guest nor any API token can reach them.                                                                                                                                                |
+| Session-only routes   | `routes/tokens.ts`, `routes/oauth.ts`, `routes/account.ts`, `routes/migrate.ts`, `routes/teams.ts` (non-GET)                    | Need `ctx.accountUserId` (a Clerk session), so neither a guest nor any API token can reach them.                                                                                                                                              |
 | Room op gate          | `apps/api/src/design-room.ts` `webSocketMessage`; op classes in `packages/api-schema/src/room-messages.ts`                      | `if (sender.role !== 'edit' && !isPresenceOp) return;` A view session may send only `PRESENCE_OP_KINDS`; `MUTATION_OP_KINDS` need edit; `SYSTEM_OP_KINDS` never come from a socket.                                                           |
 
 The editor mirrors this with two flags: `sessionRole` (`apps/live/app/design/[id]/editor-page-helpers.ts`
@@ -153,7 +153,7 @@ baton (`runBlocked`); the room enforces the baton only for `poll-start` / `poll-
 | AI assistant                                       | Y   | Y   | Y   | S   | T   | S   | Y    | S    | Y¹  | Y¹  | N   | n/a | `ai-gate.ts` is not design-gated; panel hidden when `isReadOnly`                                      |
 | Link an existing tab from another design           | Y   | N²  | N   | N   | N   | N   | N    | N    | Y   | Y   | N   | N   | `design-subresource-routes.ts` `/link`: `ownsDesign`                                                  |
 
-¹ Unless `AI_REQUIRE_CLERK=true`, which refuses guests and tokens. ² Except the row owner.
+¹ Unless `AI_REQUIRE_SIGN_IN=true`, which refuses guests and tokens. ² Except the row owner.
 
 ### Sharing
 
@@ -187,12 +187,12 @@ matches the server for members who are not the row owner.
 
 | Ability                                         | Clerk session                  | Guest        | Full token | Read-only token | MCP | Granted or refused by                                      |
 | ----------------------------------------------- | ------------------------------ | ------------ | ---------- | --------------- | --- | ---------------------------------------------------------- |
-| Create a team                                   | Y                              | N            | N          | N               | N   | `teams.ts`: non-GET needs `clerkUserId`                    |
+| Create a team                                   | Y                              | N            | N          | N               | N   | `teams.ts`: non-GET needs `accountUserId`                  |
 | Read team, members, library                     | members (library: joined only) | N            | Y          | Y               | Y   | `teams.ts` uses `verifiedUserId` for reads                 |
 | See the team invite-link token                  | admins                         | N            | admins     | admins          | N   | `teams.ts` GET `/:id`, `isAdmin ? getTeamInviteLink`       |
 | Rename, delete team; invite; roles; invite link | joined admin                   | N            | N          | N               | N   | `teams.ts` `isAdmin` plus session                          |
 | Leave or decline                                | self                           | N            | N          | N               | N   | `teams.ts` DELETE member, `isSelf`                         |
-| List, mint, revoke API tokens                   | Y (Settings mints full only)   | N            | N          | N               | N   | `tokens.ts` `if (!clerkUserId) return forbidden()`         |
+| List, mint, revoke API tokens                   | Y (Settings mints full only)   | N            | N          | N               | N   | `tokens.ts` `if (!accountUserId) return forbidden()`       |
 | Mint through MCP consent (full or read-only)    | Y                              | N            | N          | N               | n/a | `oauth.ts` `handleOauthExchange`, `readOnly` from the body |
 | Delete account, migrate guest work, Drive       | Y                              | migrate only | N          | N               | N   | `account.ts`, `migrate.ts`, `drive.ts`                     |
 

@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { expect } from '../fixtures';
-import type { StubUser } from './clerk-stub';
+import type { StubUser } from './session';
 
 // What the agent specs share (docs/specs/024-agents/): Webber, signed in, with his own unshared design holding one
 // square, his participant row, and an API token for his agent; and opening that design until its room greets the
@@ -11,9 +11,6 @@ export const WEBBER: StubUser = {
   firstName: 'Webber',
   lastName: 'Takken',
   email: 'webber@example.com',
-  hasImage: false,
-  imageUrl: 'https://img.clerk.com/stub/default',
-  externalAccounts: [],
 };
 
 export type Setup = { id: string; tabId: string; token: string; session: Record<string, string> };

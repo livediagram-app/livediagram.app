@@ -1,5 +1,5 @@
 // Team calls (docs/specs/013-workspace/teams.md): list / create / read / update / delete, plus
-// member invite / role change / remove. Clerk-only on the server: every
+// member invite / role change / remove. signed-in only on the server: every
 // endpoint 401s without a verified Bearer token, so callers gate on
 // `isSignedIn` before reaching for these. The mutations that have
 // legitimate business-rule rejections (duplicate invite, last-admin

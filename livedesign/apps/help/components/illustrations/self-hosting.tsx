@@ -1,5 +1,5 @@
 // Self-Hosting-category illustrations (docs/specs/018-help/help-app.md): the stack at a glance, the
-// deploy flow, and how optional configuration (Clerk auth) degrades to a
+// deploy flow, and how optional configuration (sign-in) degrades to a
 // pure-guest fallback. Composed only from the shared primitives so the house
 // style holds.
 
@@ -162,13 +162,13 @@ export function ConfigSources() {
   );
 }
 
-/** Optional Clerk auth with a guest-only fallback: a config switch picks the
+/** Optional sign-in with a guest-only fallback: a config switch picks the
  *  identity path, but the editor works either way. */
 export function GuestFallback() {
   return (
     <Scene w={420} h={244}>
       {/* The config toggle */}
-      <Shape x={148} y={20} w={124} h={40} kind="diamond" label="Clerk set?" labelTone="strong" />
+      <Shape x={148} y={20} w={124} h={40} kind="diamond" label="Sign-in on?" labelTone="strong" />
 
       {/* Configured path */}
       <Shape x={28} y={104} w={132} h={40} kind="rect" label="Signed-in" labelTone="strong" />

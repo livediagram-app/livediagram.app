@@ -75,7 +75,7 @@ describe('apiErrorType', () => {
   // snake_case token is vocabulary; prose is left out.
   it('ignores an error body that is prose, not a token', () => {
     expect(
-      apiErrorType(400, 'save tab', 'authentication required: send a valid Clerk Bearer token'),
+      apiErrorType(400, 'save tab', 'authentication required: send a valid account access token'),
     ).toBe('Http400.SaveTab');
     expect(apiErrorType(400, 'save tab', null)).toBe('Http400.SaveTab');
   });

@@ -1,9 +1,9 @@
 import type { Page } from '@playwright/test';
 import { test, expect, expectNoPageErrors } from '../fixtures';
-import { freshUserId, installClerkStub, type StubUser } from './clerk-stub';
+import { freshUserId, installSession, type StubUser } from './session';
 
 // The Explorer's filters for a signed-in member (docs/specs/013-workspace/explorer-filters.md),
-// against the Clerk-enabled export: a team's root lists its designs directly, the team's lens
+// against the signed-in export: a team's root lists its designs directly, the team's lens
 // reaches its subfolders, and the Space chip names teams by name, never by id.
 
 test.use({ colorScheme: 'dark', viewport: { width: 1280, height: 800 } });
@@ -14,9 +14,6 @@ function member(id: string): StubUser {
     firstName: 'Webber',
     lastName: 'Takken',
     email: `${id}@example.com`,
-    hasImage: false,
-    imageUrl: '',
-    externalAccounts: [],
   };
 }
 
@@ -61,7 +58,7 @@ test('a team root lists its designs, and its lens reaches its folders', async ({
 }) => {
   const userId = freshUserId('filters');
   const { team } = await seedTeam(page, userId);
-  await installClerkStub(page, member(userId));
+  await installSession(page, member(userId));
   await page.goto(`/explorer/team?id=${team}`);
   await expect(docLink(page, 'Team charter')).toBeVisible({ timeout: 30_000 });
   // No Unsorted bucket at the team's root; the folder sits beside the design.
@@ -89,7 +86,7 @@ test('Search results names a team in the Space chip, its pill by name', async ({
 }) => {
   const userId = freshUserId('filters');
   const { team } = await seedTeam(page, userId);
-  await installClerkStub(page, member(userId));
+  await installSession(page, member(userId));
   await page.goto('/explorer/search');
   await expect(docLink(page, 'My own notes')).toBeVisible({ timeout: 30_000 });
   await expect(docLink(page, 'Team charter')).toBeVisible({ timeout: 30_000 });

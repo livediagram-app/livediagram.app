@@ -17,8 +17,8 @@
 //
 // When `GUEST_ID_HMAC_SECRET` is unset (an OSS self-host that hasn't
 // configured it), signing degrades to disabled — `signOwnerId` returns
-// null and migrate skips the check — mirroring how `CLERK_JWKS_URL` makes
-// auth optional. Production sets the secret and is protected.
+// null and migrate skips the check — mirroring how an unset `ACCOUNTS_URL`
+// makes sign-in optional. Production sets the secret and is protected.
 
 import { bytesToBase64Url } from '@livedesign/api-schema';
 import { timingSafeEqual } from './timing-safe';

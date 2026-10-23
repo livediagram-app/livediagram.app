@@ -56,9 +56,11 @@ file to this.
 | Next.js and Turbopack's chunk loading            | Script URLs under `/_next/` (`/live/_next/` in the editor)                      | `default`                                        |
 | Next.js's own script helper                      | Its pass-through policy                                                         | The `nextjs` policy name                         |
 | Our web workers                                  | Their script URLs under `/_next/`                                               | `default`                                        |
-| Clerk (editor sign-in)                           | Script URLs on the Clerk frontend API origin                                    | `default`, origin from the publishable key       |
-| Clerk's sign-up bot protection                   | Cloudflare Turnstile's script on `https://challenges.cloudflare.com`            | `default`, beside Clerk's origin                 |
-| Clerk's session timers                           | A `Worker` from the page's own `blob:` URL (its fixed timer source)             | `default`, for the Worker constructor sink alone |
+| Nothing today (Clerk's session timers did)       | A `Worker` from the page's own `blob:` URL; the rule is kept                    | `default`, for the Worker constructor sink alone |
+
+Sign-in loads no third-party script: it is a full-page hand-off to the liveworkspace accounts site, so no third-party
+origin is allowed. When the editor signed in through Clerk, its script origin and Cloudflare Turnstile's (for sign-up
+bot protection) were allowed here.
 
 A worker's own scope is not the page's: its script is served from `/_next/` with no policy header, so the libraries
 it runs are outside this boundary.

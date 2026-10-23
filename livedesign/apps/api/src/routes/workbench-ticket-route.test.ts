@@ -132,7 +132,7 @@ describe('POST /api/workbench/tickets', () => {
     expect(rows(db, 'SELECT * FROM workbench_tickets')).toEqual([]);
   });
 
-  it('requires a token: a Clerk session or a guest is refused', async () => {
+  it('requires a token: a signed-in session or a guest is refused', async () => {
     const db = await workbenchDb();
     pairToken(db);
 

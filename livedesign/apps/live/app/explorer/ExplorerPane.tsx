@@ -125,8 +125,8 @@ export function ExplorerPane() {
     loading,
     ownerId,
     refreshPersonal,
-    clerkUserId,
-    clerkDisplayName,
+    accountUserId,
+    accountDisplayName,
     activity,
     paneTitle,
     paneCrumbs,
@@ -350,8 +350,8 @@ export function ExplorerPane() {
           <TeamPane
             ownerId={ownerId}
             teamId={selected.id}
-            clerkUserId={clerkUserId ?? null}
-            clerkDisplayName={clerkDisplayName}
+            accountUserId={accountUserId ?? null}
+            accountDisplayName={accountDisplayName}
             onTeamsChanged={() => void refreshTeams()}
             onLeftTeam={() => go({ kind: 'home' })}
             onLoadResult={(found) => setNotFoundIn(found ? null : selected)}

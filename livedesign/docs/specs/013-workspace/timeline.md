@@ -78,7 +78,7 @@ One thing that happened. Carries:
 - `snapshot` — JSON extras the renderer needs (the design's thumbnail
   key, the commenter's colour, the team's member count) captured at
   emit time so rendering the feed never fans out into other tables.
-- `actorId` — who did it, as an owner id (Clerk `sub` or guest
+- `actorId` — who did it, as an owner id (account `sub` or guest
   participant id). `NULL` for system events like a token expiry
   warning. An owner id is a credential, so a `design:` scope (which a
   share-link visitor can read) returns only the reader's own id; every
@@ -753,7 +753,7 @@ the Explorer's own handlers (`useTimelineEntityMenus`):
 | Invite received                        | Open Invites · **Accept Invite** · **Decline Invite**                                                    |
 | Theme saved                            | Open Themes · Edit Theme (the same builder modal the Themes pane opens) · Delete Theme                   |
 | Images uploaded                        | Open Images                                                                                              |
-| Design the Explorer can't resolve    | Open Design                                                                                            |
+| Design the Explorer can't resolve      | Open Design                                                                                              |
 
 Plus **Remove from Timeline** on all of them (§2.9), and the destructive
 verbs last, under their own separator (never red), the way the design menu
@@ -1082,16 +1082,16 @@ leaks a later rename. A design feed passed that design's own read gate, so
 its live name always shows there. Team renames are still events: a team's
 name is not re-read onto older entries.
 
-| `eventType`                            | Fires when                                                                                                                                       | Title / description                                             |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------- |
-| `design_created`                     | `POST /api/designs`                                                                                                                            | "Design Created" / "Payments architecture"                    |
-| `design_duplicated`                  | duplicate route                                                                                                                                  | "Design Duplicated" / "Copy of Payments architecture"         |
-| `design_moved`                       | folder change                                                                                                                                    | "Moved to a Folder" / "Payments architecture → Architecture"    |
-| `design_edited`                      | tab save (coalesced)                                                                                                                             | "Design Updated" / "You worked on Payments architecture"      |
-| `design_opened_by_visitor`           | a share-code visitor reads a tab (`GET /api/designs/:id/tabs/:tabId`); owner only, coalesced per visitor per day ("Opened by a visitor" below) | "Opened by a Visitor" / "Payments architecture"                 |
-| `design_copied_by_visitor`           | a share-code visitor copies it (`POST /api/designs/:id/copy`); owner only                                                                      | "Copied by a Visitor" / "Payments architecture"                 |
-| `design_offline` / `design_synced` | Take Offline / Sync Design ([Offline Mode](../006-design/offline-mode.md))                                                                   | "Taken Offline" / "Synced to the Cloud"                         |
-| `design_renamed`                     | never: retired, no longer emitted (see above)                                                                                                    | Legacy rows are filtered out of every feed and the unread count |
+| `eventType`                        | Fires when                                                                                                                                     | Title / description                                             |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `design_created`                   | `POST /api/designs`                                                                                                                            | "Design Created" / "Payments architecture"                      |
+| `design_duplicated`                | duplicate route                                                                                                                                | "Design Duplicated" / "Copy of Payments architecture"           |
+| `design_moved`                     | folder change                                                                                                                                  | "Moved to a Folder" / "Payments architecture → Architecture"    |
+| `design_edited`                    | tab save (coalesced)                                                                                                                           | "Design Updated" / "You worked on Payments architecture"        |
+| `design_opened_by_visitor`         | a share-code visitor reads a tab (`GET /api/designs/:id/tabs/:tabId`); owner only, coalesced per visitor per day ("Opened by a visitor" below) | "Opened by a Visitor" / "Payments architecture"                 |
+| `design_copied_by_visitor`         | a share-code visitor copies it (`POST /api/designs/:id/copy`); owner only                                                                      | "Copied by a Visitor" / "Payments architecture"                 |
+| `design_offline` / `design_synced` | Take Offline / Sync Design ([Offline Mode](../006-design/offline-mode.md))                                                                     | "Taken Offline" / "Synced to the Cloud"                         |
+| `design_renamed`                   | never: retired, no longer emitted (see above)                                                                                                  | Legacy rows are filtered out of every feed and the unread count |
 
 **The two Offline Mode conversions declare themselves**, because they reuse
 ordinary endpoints and are otherwise indistinguishable from them: "Take
@@ -1159,7 +1159,7 @@ correct and matches the rest of the product's server-side surfaces.
 | -------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | `comment_added`      | both comment paths                                          | See below                                                                                            |
 | `comment_resolved`   | thread flips to `resolved` on tab save                      | Diffed the same way; description is the thread's opening comment, so the card says what was resolved |
-| `action_assigned`    | an `ElementAction` appears on save, or via `/notify-action` | Audience is the assignee plus the design audience                                                  |
+| `action_assigned`    | an `ElementAction` appears on save, or via `/notify-action` | Audience is the assignee plus the design audience                                                    |
 | `action_completed`   | an action's `status` flips to `done`                        |                                                                                                      |
 | `share_link_created` | share link minted                                           | Audience is the owner only                                                                           |
 
@@ -1226,22 +1226,22 @@ calls it.
 
 ### 4.4 Teams and invites
 
-| `eventType`                 | Fires when                                                                               | Audience                                   |
-| --------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------ |
-| `team_created`              | `POST /api/teams`                                                                        | Creator                                    |
-| `team_invite_received`      | admin invites an address                                                                 | The invitee, once their id is known        |
-| `team_invite_accepted`      | `.../accept`                                                                             | The team                                   |
-| `team_invite_declined`      | invite row deleted by invitee                                                            | Team admins                                |
-| `team_member_joined`        | accept, or invite-link join                                                              | The team                                   |
-| `team_member_left`          | member deletes own row                                                                   | The team                                   |
-| `team_member_removed`       | admin removes someone                                                                    | The team, and the removed person           |
-| `team_role_changed`         | `PUT .../members/:id`                                                                    | The team                                   |
-| `team_design_added`       | design published to a team library ([Team shared designs](team-shared-designs.md)) | The team                                   |
-| `team_design_removed`     | design pulled back out of a team library                                               | The team it left, resolved BEFORE the move |
-| `team_renamed`              | `PUT /api/teams/:id` with a new name: "Team Renamed" / "Design → Product design"         | The team                                   |
-| `team_deleted`              | `DELETE /api/teams/:id`: "Team Deleted" / the team's name, no team link                  | The team, resolved BEFORE the delete       |
-| `team_invite_link_enabled`  | `POST /api/teams/:id/invite-link` (generate or rotate): "Invite Link Turned On"          | Team admins                                |
-| `team_invite_link_disabled` | `DELETE /api/teams/:id/invite-link`: "Invite Link Turned Off"                            | Team admins                                |
+| `eventType`                 | Fires when                                                                         | Audience                                   |
+| --------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------ |
+| `team_created`              | `POST /api/teams`                                                                  | Creator                                    |
+| `team_invite_received`      | admin invites an address                                                           | The invitee, once their id is known        |
+| `team_invite_accepted`      | `.../accept`                                                                       | The team                                   |
+| `team_invite_declined`      | invite row deleted by invitee                                                      | Team admins                                |
+| `team_member_joined`        | accept, or invite-link join                                                        | The team                                   |
+| `team_member_left`          | member deletes own row                                                             | The team                                   |
+| `team_member_removed`       | admin removes someone                                                              | The team, and the removed person           |
+| `team_role_changed`         | `PUT .../members/:id`                                                              | The team                                   |
+| `team_design_added`         | design published to a team library ([Team shared designs](team-shared-designs.md)) | The team                                   |
+| `team_design_removed`       | design pulled back out of a team library                                           | The team it left, resolved BEFORE the move |
+| `team_renamed`              | `PUT /api/teams/:id` with a new name: "Team Renamed" / "Design → Product design"   | The team                                   |
+| `team_deleted`              | `DELETE /api/teams/:id`: "Team Deleted" / the team's name, no team link            | The team, resolved BEFORE the delete       |
+| `team_invite_link_enabled`  | `POST /api/teams/:id/invite-link` (generate or rotate): "Invite Link Turned On"    | Team admins                                |
+| `team_invite_link_disabled` | `DELETE /api/teams/:id/invite-link`: "Invite Link Turned Off"                      | Team admins                                |
 
 **`team_invite_received` has an ordering problem worth naming.** An
 invite is created against an _email address_; the invitee's owner id is
@@ -1252,7 +1252,7 @@ scope in the same lazy-claim step that fills in `user_id`, using the
 invite's original `created_at` as `occurred_at`. The invite then
 appears on the new member's Timeline dated when it was actually sent.
 
-Teams are Clerk-only, so none of these events ever reach a guest scope.
+Teams are for accounts only, so none of these events ever reach a guest scope.
 
 ### 4.5 Account and housekeeping
 
@@ -1421,7 +1421,7 @@ Response:
 ```
 
 **Authorisation.** A caller may only read a `user` scope whose
-`scopeId` is their own resolved owner id — the Clerk `sub` for a signed
+`scopeId` is their own resolved owner id — the account `sub` for a signed
 -in caller, the signed guest participant id otherwise. Any other scope
 is `403`. This is the only gate the endpoint needs in v1, and it is
 worth stating plainly because the scope parameter looks like it invites
@@ -1601,11 +1601,11 @@ users who never switch modes.
 Guests get the Timeline, keyed to their signed participant id
 ([Auth + guest access](../014-identity/auth-and-guest-access.md)). They see design lifecycle, editing, comments on their own
 designs, and share-link events. Team, invite, and token events never
-reach them because those features are Clerk-only — the feed is simply
+reach them because those features are signed-in only — the feed is simply
 thinner, with no sign-in wall and no empty-section prompt.
 
 **On sign-up, timeline history migrates.** `POST /api/migrate` already
-moves designs from the guest participant id to the Clerk user id; it
+moves designs from the guest participant id to the account user id; it
 gains two statements in the same transaction:
 
 ```sql
@@ -1670,7 +1670,7 @@ Per [Testing](../003-system-architecture/testing.md):
   every joined member and to nobody who is merely `invited`.
 - **Coalescing**: three saves in one UTC day produce one row whose
   `occurred_at` advances; a save the next day produces a second row.
-- **Migration**: guest → Clerk id moves scopes, events, and scope
+- **Migration**: guest → account id moves scopes, events, and scope
   state, and the backfill does not re-run afterwards.
 - **Round-trip**: `/explorer/timeline` added to `STATIC_NODES` in
   `routes.test.ts`.

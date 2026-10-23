@@ -1,9 +1,9 @@
 // Single source of truth for the comparison / "alternative" pages
-// (see docs/specs/019-marketing/comparison-pages.md). The dynamic route, its metadata,
+// (see liveworkspace/docs/comparison-pages.md). The dynamic route, its metadata,
 // the index page, and the sitemap all derive from this list, so adding
 // a competitor is a one-place change.
 //
-// Honesty rules (docs/specs/019-marketing/comparison-pages.md): every livedesign claim maps to a shipped
+// Honesty rules (liveworkspace/docs/comparison-pages.md): every livedesign claim maps to a shipped
 // feature; every competitor gets a real "where they're the better pick"
 // section; competitor facts are qualitative (positioning, not volatile
 // pricing/numbers); free + open-source competitors are never implied to
@@ -64,7 +64,7 @@ export type Alternative = {
   // interop). This is where the page earns its depth.
   sections: DeepDiveSection[];
   // Competitor-specific questions, rendered on-page and emitted as
-  // FAQPage JSON-LD (docs/specs/019-marketing/comparison-pages.md "Metadata").
+  // FAQPage JSON-LD (liveworkspace/docs/comparison-pages.md "Metadata").
   faqs: Faq[];
 };
 

@@ -64,12 +64,12 @@ each one own a clean state model without conditional gates.
 
 ## Route map
 
-| Route                   | Purpose                               | State                                                                                                                   |
-| ----------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `/live`                 | Bare entry point                      | Redirect → `/new` (or `/design/shared?s=<code>` if a legacy visitor query is present). Renders nothing else.          |
+| Route                 | Purpose                             | State                                                                                                                   |
+| --------------------- | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `/live`               | Bare entry point                    | Redirect → `/new` (or `/design/shared?s=<code>` if a legacy visitor query is present). Renders nothing else.            |
 | `/design/<id>`        | Editor for an existing owned design | Static placeholder file fronts every id (see "Path scheme" below). Client reads the id from `window.location.pathname`. |
 | `/design/shared?s=<>` | Visitor view of a shared design     | Same placeholder file. Client reads the share code from the `s` query param.                                            |
-| `/new`                  | Welcome / create-new flow             | Identity, template, theme picker. POSTs the design + navigates to `/design/<id>`.                                   |
+| `/new`                | Welcome / create-new flow           | Identity, template, theme picker. POSTs the design + navigates to `/design/<id>`.                                       |
 
 ## Path scheme
 
@@ -320,9 +320,9 @@ place. The editor reads the id from `window.location.pathname` on mount, so
 it cannot tell the difference from a direct visit.
 
 - **Why:** a hard navigation paid for a second full page load: the editor's
-  design, a second Clerk settle, a second identity round trip, and a
+  design, a second sign-in settle, a second identity round trip, and a
   second, visually different loading screen after "Creating…". The in-place
-  swap keeps the one Clerk session, the one design, and one continuous
+  swap keeps the one signed-in session, the one design, and one continuous
   opening screen.
 - **The editor code is fetched ahead.** `/new` starts loading the editor's
   chunk as soon as it mounts (the create needs it within a second), so the chunk downloads in
@@ -372,8 +372,8 @@ design"**; everything else stays put.
 - **Reduced motion:** the drawing sits finished, the cursor, pulses, glows
   and bar are still.
 - `DesignBuildAnimation` stays a bare illustration (no surface of its own),
-  so the sso-callback and OAuth consent cards keep composing it inside their
-  own card.
+  so a card can compose it inside its own (the Clerk-era sso-callback card
+  did).
 - The bar is the shared `LoadingSweep`.
 
 Every create from `/new` honours the URL placement context (the `?folder` /

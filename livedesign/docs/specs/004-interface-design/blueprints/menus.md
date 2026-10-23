@@ -5,40 +5,40 @@ the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
 Scope, by file:
 
-| File                                                        | Role                                                                                        |
-| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `packages/ui/src/menu/menu-constants.ts`                    | Every selector, attribute and timing, named                                                 |
-| `packages/ui/src/menu/menu-keys.ts`                         | Pure keyboard model: key to intent, index stepping, typeahead, initial index                |
+| File                                                        | Role                                                                                      |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `packages/ui/src/menu/menu-constants.ts`                    | Every selector, attribute and timing, named                                               |
+| `packages/ui/src/menu/menu-keys.ts`                         | Pure keyboard model: key to intent, index stepping, typeahead, initial index              |
 | `packages/ui/src/menu/input-modality.ts`                    | The last interaction (key or pointer) and the last focused element, tracked on the design |
-| `packages/ui/src/menu/menu-dom.ts`                          | DOM reads: a menu's own items, focusables, tabbable neighbour, focus ownership              |
-| `packages/ui/src/menu/menu-tree.ts`                         | `MenuTreeContext`: the kind and id of the menu a component renders inside                   |
-| `packages/ui/src/menu/useMenu.ts`                           | Command menu hook: roles, label, initial focus, keys, Tab, focus return                     |
-| `packages/ui/src/menu/useMenuButton.ts`                     | Trigger state and props: `aria-haspopup`, `aria-expanded`, Down / Up Arrow to open          |
-| `packages/ui/src/menu/useControlMenu.ts`                    | Control menu hook: dialog role, keyboard-only initial focus, Escape, focus return           |
-| `packages/ui/src/menu/index.ts`                             | Public surface, re-exported from `packages/ui/src/index.ts`                                 |
-| `packages/tailwind-config/theme.css`                        | The inset menu focus ring; the app-wide ring at brand 600 in light                          |
-| `apps/live/components/primitives/PortalMenu.tsx`            | Anchored menu (command or control) and its list rows, each role-aware                       |
-| `apps/live/components/primitives/MenuTiles.tsx`             | The tile family: `MenuToolbar`, `MenuToolButton`, `MenuTile`, `MenuTileGrid`, role-aware    |
-| `apps/live/components/primitives/menu-item-props.ts`        | `useMenuItemProps`: a row's role, `tabIndex` and states from the menu it sits in            |
-| `apps/live/components/primitives/usePortalMenuPlacement.ts` | An anchored menu's position, viewport clamp and outside-press dismissal                     |
-| `apps/live/components/primitives/MenuFlyoutSection.tsx`     | Submenu (in a command menu) or sub-panel (in a control menu)                                |
-| `apps/live/components/primitives/MenuFlyoutPanel.tsx`       | The flyout's surface: `menu` or `dialog`                                                    |
-| `apps/live/components/primitives/MenuCheckRow.tsx`          | `menuitemcheckbox`, roving                                                                  |
-| `apps/live/components/primitives/useRowMenu.ts`             | Built on `useMenuButton`                                                                    |
-| `apps/live/components/primitives/EllipsisTriggerButton.tsx` | Accepts `onKeyDown` for Down / Up Arrow                                                     |
-| `apps/live/components/palette/ContextMenu.tsx`              | Control menu at a point (element, selection, cell)                                          |
-| `apps/live/components/chrome/TabPortalMenu.tsx`             | Tab and Canvas control menu                                                                 |
-| `apps/live/components/panels/LayerRowMenu.tsx`              | Layer control menu                                                                          |
-| `apps/live/components/canvas/LockedElementMenu.tsx`         | Command menu, no trigger                                                                    |
-| `apps/live/components/chrome/ZoomMenu.tsx`                  | Hover-open command menu with a button of its own                                            |
-| `apps/live/components/chrome/AuthControls.tsx`              | Account command menu                                                                        |
-| `apps/live/components/chrome/EmbedChrome.tsx`               | Embed tab command menu                                                                      |
-| `apps/live/components/dialogs/ShareCopyMenu.tsx`            | Command menu, or control menu when it carries a header control                              |
-| `apps/live/hooks/canvas/useEditorKeyboardShortcuts.ts`      | Canvas shortcuts stand down inside a menu surface                                           |
-| `apps/live/components/canvas/SelectionPopover.tsx`          | More actions: `aria-haspopup="dialog"` and the stable id `selection-more-actions`           |
-| `apps/live/lib/element-names.ts`                            | `shapeKindLabel`: names the Shape tiles of the element and selection menus                  |
-| `packages/ui/src/ProductNav.tsx`                            | Product switcher command menu                                                               |
-| `apps/telemetry/app/StickyWindowBar.tsx`                    | View picker command menu                                                                    |
+| `packages/ui/src/menu/menu-dom.ts`                          | DOM reads: a menu's own items, focusables, tabbable neighbour, focus ownership            |
+| `packages/ui/src/menu/menu-tree.ts`                         | `MenuTreeContext`: the kind and id of the menu a component renders inside                 |
+| `packages/ui/src/menu/useMenu.ts`                           | Command menu hook: roles, label, initial focus, keys, Tab, focus return                   |
+| `packages/ui/src/menu/useMenuButton.ts`                     | Trigger state and props: `aria-haspopup`, `aria-expanded`, Down / Up Arrow to open        |
+| `packages/ui/src/menu/useControlMenu.ts`                    | Control menu hook: dialog role, keyboard-only initial focus, Escape, focus return         |
+| `packages/ui/src/menu/index.ts`                             | Public surface, re-exported from `packages/ui/src/index.ts`                               |
+| `packages/tailwind-config/theme.css`                        | The inset menu focus ring; the app-wide ring at brand 600 in light                        |
+| `apps/live/components/primitives/PortalMenu.tsx`            | Anchored menu (command or control) and its list rows, each role-aware                     |
+| `apps/live/components/primitives/MenuTiles.tsx`             | The tile family: `MenuToolbar`, `MenuToolButton`, `MenuTile`, `MenuTileGrid`, role-aware  |
+| `apps/live/components/primitives/menu-item-props.ts`        | `useMenuItemProps`: a row's role, `tabIndex` and states from the menu it sits in          |
+| `apps/live/components/primitives/usePortalMenuPlacement.ts` | An anchored menu's position, viewport clamp and outside-press dismissal                   |
+| `apps/live/components/primitives/MenuFlyoutSection.tsx`     | Submenu (in a command menu) or sub-panel (in a control menu)                              |
+| `apps/live/components/primitives/MenuFlyoutPanel.tsx`       | The flyout's surface: `menu` or `dialog`                                                  |
+| `apps/live/components/primitives/MenuCheckRow.tsx`          | `menuitemcheckbox`, roving                                                                |
+| `apps/live/components/primitives/useRowMenu.ts`             | Built on `useMenuButton`                                                                  |
+| `apps/live/components/primitives/EllipsisTriggerButton.tsx` | Accepts `onKeyDown` for Down / Up Arrow                                                   |
+| `apps/live/components/palette/ContextMenu.tsx`              | Control menu at a point (element, selection, cell)                                        |
+| `apps/live/components/chrome/TabPortalMenu.tsx`             | Tab and Canvas control menu                                                               |
+| `apps/live/components/panels/LayerRowMenu.tsx`              | Layer control menu                                                                        |
+| `apps/live/components/canvas/LockedElementMenu.tsx`         | Command menu, no trigger                                                                  |
+| `apps/live/components/chrome/ZoomMenu.tsx`                  | Hover-open command menu with a button of its own                                          |
+| `apps/live/components/chrome/AuthControls.tsx`              | Account command menu                                                                      |
+| `apps/live/components/chrome/EmbedChrome.tsx`               | Embed tab command menu                                                                    |
+| `apps/live/components/dialogs/ShareCopyMenu.tsx`            | Command menu, or control menu when it carries a header control                            |
+| `apps/live/hooks/canvas/useEditorKeyboardShortcuts.ts`      | Canvas shortcuts stand down inside a menu surface                                         |
+| `apps/live/components/canvas/SelectionPopover.tsx`          | More actions: `aria-haspopup="dialog"` and the stable id `selection-more-actions`         |
+| `apps/live/lib/element-names.ts`                            | `shapeKindLabel`: names the Shape tiles of the element and selection menus                |
+| `packages/ui/src/ProductNav.tsx`                            | Product switcher command menu                                                             |
+| `apps/telemetry/app/StickyWindowBar.tsx`                    | View picker command menu                                                                  |
 
 ## Domain and naming
 
@@ -128,11 +128,11 @@ Options: `onClose()`, `onEscape?()` (default `onClose`), `trigger?`, `label: str
 `openedFromKeyboard()`). Returns `{ attach, element, tree, surfaceProps }` with `{ id, role: 'dialog', tabIndex: -1,
 'aria-label', 'data-menu-surface': 'control', 'data-menu-parent'? }` (no `aria-modal`: false is the default).
 
-| #   | When              | Does                                                                                                                                                  |
-| --- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| C1  | Element appears   | Records `returnTarget`; with `focusOnOpen` and no text edit, focuses the first focusable with `preventScroll`                                         |
+| #   | When              | Does                                                                                                                                                |
+| --- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C1  | Element appears   | Records `returnTarget`; with `focusOnOpen` and no text edit, focuses the first focusable with `preventScroll`                                       |
 | C2  | Escape            | Root: a `design` listener that skips a `defaultPrevented` event. Sub-panel: a listener on its element that `preventDefault`s. Both call `onClose()` |
-| C3  | Element goes away | As M10                                                                                                                                                |
+| C3  | Element goes away | As M10                                                                                                                                              |
 
 `openedFromKeyboard()` is true when the last interaction was a key press rather than a pointer press, tracked by
 `input-modality.ts` on the design (D51).
@@ -208,7 +208,7 @@ export function isInMenuSurface(target: EventTarget | null): boolean;
 | Safari does not focus a clicked button                  | `returnTarget` is `body`, so the trigger is used                                                 |
 | Trigger in a composite widget (tree row, `tabIndex -1`) | Return target is the tree row that held focus, so the tree keeps its one tab stop                |
 | Hover-opened menu                                       | `initialFocus: 'none'`; keys still work once focus is inside                                     |
-| Pointer-opened control menu                             | No focus moves; Escape on the design still closes it                                           |
+| Pointer-opened control menu                             | No focus moves; Escape on the design still closes it                                             |
 | Disabled item                                           | Focusable, announced, never activated                                                            |
 | Typeahead finds nothing                                 | Focus stays; the query keeps building until the reset                                            |
 
@@ -264,7 +264,7 @@ spec. No layout shift: roles and `tabIndex` add no box, and `inert` changes no s
 | Locked element menu focus and Escape                                                       | `apps/live/components/canvas/LockedElementMenu.test.tsx`                                  |
 | Row ⋯ opens on Down / Up Arrow                                                             | `apps/live/components/primitives/useRowMenu.test.tsx`                                     |
 | Shape tiles are named                                                                      | `apps/live/lib/element-names.test.ts`                                                     |
-| Signed-in account menu by keyboard; a team folder's submenu                                | e2e `apps/live/e2e/clerk-stub/menu-keyboard.spec.ts`, `default-folders-team.spec.ts`      |
+| Signed-in account menu by keyboard; a team folder's submenu                                | e2e `apps/live/e2e/signed-in/menu-keyboard.spec.ts`, `default-folders-team.spec.ts`       |
 | Contrast and optical audits still pass                                                     | e2e `contrast-audit.spec.ts`, `optical-audit.spec.ts`                                     |
 
 ## Constants and configuration

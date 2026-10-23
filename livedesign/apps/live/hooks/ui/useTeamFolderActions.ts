@@ -13,19 +13,19 @@ import { FOLDER_FAILURE } from '@/lib/write-failure-copy';
 // Team-library folder mutations for the Explorer panel's team tree
 // (docs/specs/013-workspace/team-shared-designs.md), lifted out of EditorCanvasHost. Straight api calls plus a
 // sweep refresh: the swept team libraries are the panel's source, so a
-// mutation re-reads them rather than patching a copy. Teams are Clerk-only,
+// mutation re-reads them rather than patching a copy. Teams are signed-in only,
 // so signed out = no handlers at all, which is what hides the verbs.
 // Every emit carries the `Team` type (docs/specs/017-telemetry/telemetry.md Folder), the same as the
 // team library's own folder verbs, so a team folder never reads as a
 // personal Explorer one.
 export function useTeamFolderActions({
-  clerkUserId,
+  accountUserId,
   viewerId,
   teamFolders,
   refreshTeamLibraries,
   confirm,
 }: {
-  clerkUserId: string | null | undefined;
+  accountUserId: string | null | undefined;
   viewerId: string | null;
   teamFolders: TeamFolderRow[];
   refreshTeamLibraries: () => void;
@@ -41,7 +41,7 @@ export function useTeamFolderActions({
     [toast],
   );
   return useMemo<TeamFolderHandlers | undefined>(() => {
-    if (!clerkUserId || !viewerId) return undefined;
+    if (!accountUserId || !viewerId) return undefined;
     return {
       create: async (teamId, parentId) => {
         try {
@@ -93,5 +93,5 @@ export function useTeamFolderActions({
         });
       },
     };
-  }, [clerkUserId, viewerId, refreshTeamLibraries, confirm, teamFolders, failed]);
+  }, [accountUserId, viewerId, refreshTeamLibraries, confirm, teamFolders, failed]);
 }

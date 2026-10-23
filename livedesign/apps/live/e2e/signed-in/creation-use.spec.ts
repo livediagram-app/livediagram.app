@@ -1,9 +1,9 @@
 import type { Page } from '@playwright/test';
 import { expect, expectNoPageErrors, test } from '../fixtures';
-import { freshUserId, installClerkStub, type StubUser } from './clerk-stub';
+import { freshUserId, installSession, type StubUser } from './session';
 
 // Making a design is a use (docs/specs/013-workspace/explorer-home.md "Making a design";
-// docs/specs/015-api/api.md "Marking a design used"), signed in, against the Clerk-enabled export:
+// docs/specs/015-api/api.md "Marking a design used"), signed in, against the signed-in export:
 // a design an API client makes is in Jump Back In unopened; one it makes with markUsed: false is not.
 
 test.use({ colorScheme: 'dark', viewport: { width: 1280, height: 800 } });
@@ -14,9 +14,6 @@ function stubUser(id: string): StubUser {
     firstName: 'Ida',
     lastName: 'Maker',
     email: `${id}@example.com`,
-    hasImage: false,
-    imageUrl: '',
-    externalAccounts: [],
   };
 }
 
@@ -25,7 +22,7 @@ async function signedIn(page: Page, userId: string): Promise<Record<string, stri
     localStorage.setItem('livedesign:v2:name-confirmed', '1');
     localStorage.setItem('livedesign:user-preferences:v1', JSON.stringify({ pagesTourSeen: true }));
   });
-  await installClerkStub(page, stubUser(userId));
+  await installSession(page, stubUser(userId));
   const token = await (await page.request.get(`/e2e/token?sub=${userId}`)).text();
   return { Authorization: `Bearer ${token}` };
 }

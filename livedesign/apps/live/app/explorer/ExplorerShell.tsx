@@ -13,7 +13,7 @@ import { ChromeControls } from '@/components/chrome/ChromeControls';
 import { TeamFormModal } from '@/components/dialogs/TeamFormModal';
 import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
 import { useAccessEndedToast } from './useAccessEndedToast';
-import { clerkEnabled } from '@/lib/clerk-config';
+import { signInEnabled } from '@/lib/auth-config';
 import { HELP_SEARCH_ITEMS } from '@/lib/help-search';
 import { SETTINGS_SEARCH_ITEMS } from '@/lib/settings-search-items';
 import { commitUserPreferences } from '@/lib/user-preferences';
@@ -73,9 +73,9 @@ export function ExplorerShell({ children }: { children: ReactNode }) {
   const surface = explorerSurfaceFlags(useExplorerSurface());
   // Dark mode's Midnight palette, before the first paint (docs/specs/004-interface-design/color-scheme.md).
   useMidnightPalette();
-  // Wait for Clerk to settle so a signed-in user never momentarily
+  // Wait for auth to settle so a signed-in user never momentarily
   // reads the localStorage guest id and refreshes against the wrong
-  // owner. After this gate, `ownerId` is either the Clerk userId or
+  // owner. After this gate, `ownerId` is either the account id or
   // the guest UUID (never null in practice).
   if (!state.authLoaded) return null;
   return (
@@ -130,7 +130,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
     teamModalOpen,
     setTeamModalOpen,
     hookCreateTeam,
-    clerkUserId,
+    accountUserId,
     ownerId,
     prefs,
     lens,
@@ -154,14 +154,15 @@ function ShellChrome({ children }: { children: ReactNode }) {
   // hidden-from-Recent list, docs/specs/013-workspace/hide-from-recent.md), and a second useState here would
   // drift the moment either wrote.
 
-  // Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md): only when Clerk is actually wired
+  // Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md): only when sign-in is actually wired
   // up for this deployment, the visitor isn't signed in (a guest owner
   // id doesn't count), and they haven't dismissed it. When shown, the
   // pane reserves extra bottom space so the last row clears the
   // floating card.
   const { dismissed: bannerDismissed, dismiss: dismissBanner } =
     useDismissibleBanner(SIGNIN_BANNER_DISMISS_KEY);
-  const showSignInBanner = surface.guestPrompts && clerkEnabled && !clerkUserId && !bannerDismissed;
+  const showSignInBanner =
+    surface.guestPrompts && signInEnabled && !accountUserId && !bannerDismissed;
   // Arrived here because a pass was revoked under an open design: say so (lib/access-notice.ts).
   useAccessEndedToast();
 

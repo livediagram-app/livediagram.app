@@ -61,17 +61,17 @@ export function EditorAnchoredPopovers() {
     wontDoAction,
     deleteAction,
     teams,
-    clerkUserId,
+    accountUserId,
     setDesignTeamId,
-    clerkDisplayName,
+    accountDisplayName,
     designTeamId,
     emailEnabled,
   } = useEditorContext();
 
-  // The assigner/viewer identity for actions (docs/specs/012-collaboration/assigned-actions.md): the Clerk
+  // The assigner/viewer identity for actions (docs/specs/012-collaboration/assigned-actions.md): the
   // account, or the guest participant identity — guests can self-assign.
-  const actionSelfId = clerkUserId ?? selfParticipant.id;
-  const actionSelfName = clerkDisplayName ?? selfParticipant.name;
+  const actionSelfId = accountUserId ?? selfParticipant.id;
+  const actionSelfName = accountDisplayName ?? selfParticipant.name;
   // A read-only session has no autosave, so its comment changes go through the comment endpoints; an editor's ride
   // the room and its save (lib/comment-persistence.ts, shared with the Comment panel).
   const persist = commentPersisters({
@@ -173,7 +173,7 @@ export function EditorAnchoredPopovers() {
                 existing={target.action ?? null}
                 elementLabel={targetLabel || null}
                 teams={teams}
-                ownerId={clerkUserId ?? null}
+                ownerId={accountUserId ?? null}
                 selfUserId={actionSelfId}
                 selfName={actionSelfName}
                 designId={designId}
@@ -185,9 +185,9 @@ export function EditorAnchoredPopovers() {
                 // server enforces the docs/specs/013-workspace/team-shared-designs.md placement rules; on success the
                 // local team id flips and the member fetch re-runs.
                 onMoveToTeam={async (teamId) => {
-                  if (!clerkUserId || !designId) return false;
+                  if (!accountUserId || !designId) return false;
                   try {
-                    await apiSetDesignFolder(clerkUserId, designId, null, teamId);
+                    await apiSetDesignFolder(accountUserId, designId, null, teamId);
                   } catch {
                     return false;
                   }

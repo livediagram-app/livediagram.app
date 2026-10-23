@@ -11,8 +11,8 @@ import {
   PrimaryLink,
   SecondaryLink,
 } from '@/components/chrome/LandingCard';
-import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
-import { clerkEnabled } from '@/lib/clerk-config';
+import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
+import { signInEnabled } from '@/lib/auth-config';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
 import { useUrlToken } from '@/hooks/ui/useUrlToken';
 import { track } from '@/lib/telemetry';
@@ -30,13 +30,13 @@ type Resolved = 'loading' | 'invalid' | TeamInviteLinkInfo;
 const teamHref = (teamId: string) => `/explorer/team?id=${encodeURIComponent(teamId)}`;
 
 export function TeamInviteJoin() {
-  const { authLoaded, isSignedIn, clerkUserId } = useClerkApiBootstrap();
+  const { authLoaded, isSignedIn, accountUserId } = useAccountBootstrap();
   const token = useUrlToken();
 
   // A guest's id is the SIGNED one, resolved before the invite is looked up
   // (docs/specs/014-identity/auth-and-guest-access.md "Signed guest ids").
-  const guestId = useSignedGuestId(authLoaded, clerkUserId);
-  const ownerId = clerkUserId ?? guestId;
+  const guestId = useSignedGuestId(authLoaded, accountUserId);
+  const ownerId = accountUserId ?? guestId;
   // What the api said about the token; a link without one is invalid without asking.
   const [lookup, setLookup] = useState<Resolved>('loading');
   const resolved: Resolved = authLoaded && token !== undefined && !token ? 'invalid' : lookup;
@@ -83,7 +83,7 @@ export function TeamInviteJoin() {
 
   // --- Render states ---------------------------------------------------
 
-  if (!clerkEnabled) {
+  if (!signInEnabled) {
     return (
       <Card>
         <Heading>Teams aren&apos;t enabled here</Heading>

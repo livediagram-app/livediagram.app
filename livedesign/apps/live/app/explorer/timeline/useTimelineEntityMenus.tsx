@@ -91,7 +91,7 @@ export function useTimelineEntityMenus(): {
 } {
   const {
     ownerId,
-    clerkUserId,
+    accountUserId,
     go,
     tokens,
     teams,
@@ -130,7 +130,7 @@ export function useTimelineEntityMenus(): {
       // The member list isn't in the Explorer's team list; fetch it for
       // the reader's own row and the last-admin rule (docs/specs/013-workspace/teams.md).
       const detail = await apiGetTeam(ownerId, team.id).catch(() => null);
-      const self = detail?.members.find((m) => m.userId !== null && m.userId === clerkUserId);
+      const self = detail?.members.find((m) => m.userId !== null && m.userId === accountUserId);
       if (!detail || !self) {
         toast.error('Could not leave the team. Try again.');
         return;
@@ -157,7 +157,7 @@ export function useTimelineEntityMenus(): {
       track('Team', 'Removed', 'Self');
       void refreshTeams();
     },
-    [ownerId, clerkUserId, confirm, toast, refreshTeams],
+    [ownerId, accountUserId, confirm, toast, refreshTeams],
   );
 
   const deleteTeam = useCallback(

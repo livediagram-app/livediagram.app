@@ -10,19 +10,19 @@ import { createListeners } from '@/lib/listeners';
 
 // Guest → account migration (docs/specs/014-identity/auth-and-guest-access.md).
 // Owner data waits for it: until it settles, the guest's designs still
-// belong to the guest id, and a read as the Clerk userId 404s. One run per
-// page load, shared by every component that mounts useClerkApiBootstrap.
+// belong to the guest id, and a read as the account id 404s. One run per
+// page load, shared by every component that mounts useAccountBootstrap.
 
 // How long a pending migration may hold the page before it lets go.
 // Above a slow D1 write (~1-2 s); below the point a blank editor reads as broken.
 export const GUEST_MIGRATION_WAIT_MS = 10_000;
 
-let inFlight: { clerkUserId: string; settled: Promise<void> } | null = null;
+let inFlight: { accountUserId: string; settled: Promise<void> } | null = null;
 const settledFor = new Set<string>();
 
 // The pending state as an external store (docs/specs/003-system-architecture/react-state-and-effects.md):
 // components read it with useSyncExternalStore, and settling notifies them. A forced re-render
-// is not enough: the React Compiler memoises `guestMigrationPending(clerkUserId)` on its
+// is not enough: the React Compiler memoises `guestMigrationPending(accountUserId)` on its
 // argument, so a re-render with the same user kept the stale "pending" and the editor never
 // loaded the design. The guest id is part of the state, so its changes notify too.
 const listeners = createListeners();
@@ -35,18 +35,18 @@ export function subscribeGuestMigration(onChange: () => void): () => void {
   };
 }
 
-function needsMigration(clerkUserId: string): boolean {
+function needsMigration(accountUserId: string): boolean {
   const guestId = getGuestSelfId();
-  return !!guestId && guestId !== clerkUserId;
+  return !!guestId && guestId !== accountUserId;
 }
 
-export function guestMigrationPending(clerkUserId: string): boolean {
-  return !settledFor.has(clerkUserId) && needsMigration(clerkUserId);
+export function guestMigrationPending(accountUserId: string): boolean {
+  return !settledFor.has(accountUserId) && needsMigration(accountUserId);
 }
 
-export function settleGuestMigration(clerkUserId: string): Promise<void> {
-  if (!guestMigrationPending(clerkUserId)) return Promise.resolve();
-  if (inFlight?.clerkUserId === clerkUserId) return inFlight.settled;
+export function settleGuestMigration(accountUserId: string): Promise<void> {
+  if (!guestMigrationPending(accountUserId)) return Promise.resolve();
+  if (inFlight?.accountUserId === accountUserId) return inFlight.settled;
 
   const guestId = getGuestSelfId()!;
   const migrated = apiMigrateGuestData(guestId, getGuestSelfSig()).then(
@@ -73,11 +73,11 @@ export function settleGuestMigration(clerkUserId: string): Promise<void> {
   });
   const settled = Promise.race([migrated, budget]).then(() => {
     clearTimeout(timer);
-    settledFor.add(clerkUserId);
+    settledFor.add(accountUserId);
     inFlight = null;
     listeners.notify();
   });
-  inFlight = { clerkUserId, settled };
+  inFlight = { accountUserId, settled };
   return settled;
 }
 

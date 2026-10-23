@@ -58,7 +58,8 @@ describe('the CLI fields (docs/specs/015-api/blueprints/cli.md "Capabilities")',
 
   it('reports sign-in, an https issuer as its origin, and a well-formed version floor', async () => {
     const caps = await capabilities({
-      CLERK_JWKS_URL: 'https://clerk/jwks',
+      ACCOUNTS_URL: 'https://accounts.example',
+      API_RESOURCE: 'https://livedesign.example/api',
       OAUTH_ISSUER: 'https://mcp.livedesign.app/',
       CLI_MIN_VERSION: ' 1.2.3 ',
     });

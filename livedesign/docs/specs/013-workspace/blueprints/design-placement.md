@@ -9,28 +9,28 @@ as `Dn`.
 
 Scope, by file:
 
-| File                                                    | Role                                                                     |
-| ------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `packages/api-schema/src/placement.ts`                  | `DesignPlacement`, `PLACEMENT_REJECTIONS`, `isPlacementRejection`      |
-| `apps/api/src/placement/resolve-placement.ts`           | `parsePlacement`, `judgeTeam`, `judgeFolder`, `resolvePlacement`, steps  |
-| `apps/api/src/placement/placement-log.ts`               | The `placement:` fingerprints                                            |
-| `apps/api/src/placement/placement-lookups.ts`           | `placementLookups(env)`: membership and folder reads behind the resolver |
-| `apps/api/src/placement/placement-response.ts`          | `placementRejected(rejection)`: the 4xx envelope                         |
-| `apps/api/src/routes/designs.ts`                      | `POST /api/designs` parses, resolves, writes                           |
-| `apps/api/src/db/designs.ts`                          | `upsertDesignMeta` inserts `team_id` beside `folder_id`                |
-| `apps/api/src/openapi/manifest.ts`                      | The create body's placement fields, 404 status                           |
-| `apps/live/lib/api/designs.ts`                        | `apiCreateDesign` sends `teamId` / `folderId`                          |
-| `apps/live/app/new/page.tsx`, `create-failure.ts`       | One create; the failure card's copy and action                           |
-| `apps/live/components/chrome/ApiErrorPage.tsx`          | `eyebrow` prop                                                           |
+| File                                                  | Role                                                                     |
+| ----------------------------------------------------- | ------------------------------------------------------------------------ |
+| `packages/api-schema/src/placement.ts`                | `DesignPlacement`, `PLACEMENT_REJECTIONS`, `isPlacementRejection`        |
+| `apps/api/src/placement/resolve-placement.ts`         | `parsePlacement`, `judgeTeam`, `judgeFolder`, `resolvePlacement`, steps  |
+| `apps/api/src/placement/placement-log.ts`             | The `placement:` fingerprints                                            |
+| `apps/api/src/placement/placement-lookups.ts`         | `placementLookups(env)`: membership and folder reads behind the resolver |
+| `apps/api/src/placement/placement-response.ts`        | `placementRejected(rejection)`: the 4xx envelope                         |
+| `apps/api/src/routes/designs.ts`                      | `POST /api/designs` parses, resolves, writes                             |
+| `apps/api/src/db/designs.ts`                          | `upsertDesignMeta` inserts `team_id` beside `folder_id`                  |
+| `apps/api/src/openapi/manifest.ts`                    | The create body's placement fields, 404 status                           |
+| `apps/live/lib/api/designs.ts`                        | `apiCreateDesign` sends `teamId` / `folderId`                            |
+| `apps/live/app/new/page.tsx`, `create-failure.ts`     | One create; the failure card's copy and action                           |
+| `apps/live/components/chrome/ApiErrorPage.tsx`        | `eyebrow` prop                                                           |
 | `apps/live/lib/new-design-params.ts`                  | `choosePlacementAgainUrl`                                                |
 | `apps/live/lib/duplicate-design.ts`, `useTeamLibrary` | A team Duplicate is one create into the team                             |
-| `apps/live/lib/offline/offline-convert.ts`              | The sync's explicit refile at the root on a refused folder               |
+| `apps/live/lib/offline/offline-convert.ts`            | The sync's explicit refile at the root on a refused folder               |
 
 ## Domain and naming
 
 | Term        | Identifier                                       | Meaning                                                  |
 | ----------- | ------------------------------------------------ | -------------------------------------------------------- |
-| Placement   | `DesignPlacement` `{ teamId, folderId }`       | Where a design is filed; null team = My Work           |
+| Placement   | `DesignPlacement` `{ teamId, folderId }`         | Where a design is filed; null team = My Work             |
 | Space       | `scope` in logs: `personal` / `team`             | My Work or one team's library                            |
 | Root        | `folderId: null`, log `folder=root`              | The space's root, listed beside its root folders         |
 | Rejection   | `PlacementRejection`, the response `error` token | A named refusal of the whole create                      |
@@ -96,7 +96,7 @@ Invariant: no write happens before resolution has succeeded.
 
 ## Security and trust
 
-- Team membership is read against `ctx.verifiedUserId` only (Clerk session or API token); `X-Owner-Id`
+- Team membership is read against `ctx.verifiedUserId` only (signed-in session or API token); `X-Owner-Id`
   never reaches `judgeTeam`.
 - `folder_not_found` covers every folder the caller cannot see, so the 404/400 split leaks nothing about
   other people's folders or teams the caller has not joined.
@@ -124,29 +124,29 @@ No new request on the happy path (one fewer: the follow-up PUT is gone); no layo
 
 ## Observability
 
-| Fingerprint                                                                        | Where             |
-| ---------------------------------------------------------------------------------- | ----------------- |
-| `placement: resolved scope=<personal/team> folder=<set/root> via=<step>`           | api, info         |
-| `placement: rejected reason=<code> scope=<personal/team>`                          | api, warn         |
-| `placement: skipped reason=existing`                                               | api, info         |
-| `[offline-sync] placement refused reason=<code>, filed at root`                    | editor, warn      |
-| `[new] create failed action=<retry/choose>`                                        | editor, debug log |
+| Fingerprint                                                                    | Where             |
+| ------------------------------------------------------------------------------ | ----------------- |
+| `placement: resolved scope=<personal/team> folder=<set/root> via=<step>`       | api, info         |
+| `placement: rejected reason=<code> scope=<personal/team>`                      | api, warn         |
+| `placement: skipped reason=existing`                                           | api, info         |
+| `[offline-sync] placement refused reason=<code>, filed at root`                | editor, warn      |
+| `[new] create failed action=<retry/choose>`                                    | editor, debug log |
 | `Http<status>.CreateDesign.<Code>`, e.g. `Http404.CreateDesign.FolderNotFound` | editor telemetry  |
 
 ## Testing
 
-| Rule                                                            | Test                                                                  |
-| --------------------------------------------------------------- | --------------------------------------------------------------------- |
-| Parse, team and folder judgements, step order                   | `apps/api/src/placement/resolve-placement.test.ts`                    |
+| Rule                                                            | Test                                                                |
+| --------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Parse, team and folder judgements, step order                   | `apps/api/src/placement/resolve-placement.test.ts`                  |
 | Every path end to end in the route, one insert, no write on 4xx | `apps/api/src/routes/design-create-placement.test.ts` (real SQLite) |
-| Rejection tokens                                                | `packages/api-schema/src/placement.test.ts`                           |
-| Body carries placement                                          | `apps/live/lib/api-client.test.ts`                                    |
-| Card copy and action                                            | `apps/live/app/new/create-failure.test.ts`                            |
+| Rejection tokens                                                | `packages/api-schema/src/placement.test.ts`                         |
+| Body carries placement                                          | `apps/live/lib/api-client.test.ts`                                  |
+| Card copy and action                                            | `apps/live/app/new/create-failure.test.ts`                          |
 | Choose-again URL                                                | `apps/live/lib/new-design-params.test.ts`                           |
 | Team duplicate is one create                                    | `apps/live/lib/duplicate-design.test.ts`                            |
-| Sync refile                                                     | `apps/live/lib/offline/offline-convert.test.ts`                       |
-| OpenAPI parity                                                  | `apps/api/src/openapi/*.test.ts`                                      |
-| Signed-in /new into a team folder; the refusal card             | `apps/live/e2e/clerk-stub/create-placement.spec.ts`                   |
+| Sync refile                                                     | `apps/live/lib/offline/offline-convert.test.ts`                     |
+| OpenAPI parity                                                  | `apps/api/src/openapi/*.test.ts`                                    |
+| Signed-in /new into a team folder; the refusal card             | `apps/live/e2e/signed-in/create-placement.spec.ts`                  |
 
 ## Constants and configuration
 

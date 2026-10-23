@@ -51,7 +51,7 @@ export function ShareDialog({
   teamDesign = false,
   onClose,
 }: ShareDialogProps) {
-  // When a Clerk display name is supplied, the name is the account's and the
+  // When an account display name is supplied, the name is the account's and the
   // guest identity row hides (docs/specs/007-editor/live-app.md).
   const [name, setName] = useState(lockedName ?? participant.name);
   const nameLocked = !!lockedName;

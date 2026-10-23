@@ -194,15 +194,15 @@ its own batch, all via one helper (`collabIndexStatements` in
 `apps/api/src/db/collab-index.ts`), so a fifth write path cannot forget
 by accident without also forgetting to write the tab:
 
-| Path                                                                                                         | Where                      | How                                          |
-| ------------------------------------------------------------------------------------------------------------ | -------------------------- | -------------------------------------------- |
-| tab autosave `PUT …/tabs/:tabId`                                                                             | `upsertTab`                | statements appended to the tab's batch       |
-| view-role comment `POST …/comments`                                                                          | `upsertTab`                | same                                         |
-| delete-own comment `DELETE …/comments/:id`                                                                   | `upsertTab`                | same                                         |
-| create (`POST /designs`, templates, import)                                                                | `seedTabs`                 | same, per tab                                |
-| duplicate / copy from a share link                                                                           | `copyDesign`             | `INSERT … SELECT` from the source tab's rows |
-| MCP `update_design` / `add_tab` ([MCP server](../015-api/mcp-server.md))                                   | goes through the tab `PUT` | covered                                      |
-| tab / design delete, account delete                                                                        | FK cascade from `tabs`     | nothing to do                                |
+| Path                                                                                                 | Where                      | How                                          |
+| ---------------------------------------------------------------------------------------------------- | -------------------------- | -------------------------------------------- |
+| tab autosave `PUT …/tabs/:tabId`                                                                     | `upsertTab`                | statements appended to the tab's batch       |
+| view-role comment `POST …/comments`                                                                  | `upsertTab`                | same                                         |
+| delete-own comment `DELETE …/comments/:id`                                                           | `upsertTab`                | same                                         |
+| create (`POST /designs`, templates, import)                                                          | `seedTabs`                 | same, per tab                                |
+| duplicate / copy from a share link                                                                   | `copyDesign`               | `INSERT … SELECT` from the source tab's rows |
+| MCP `update_design` / `add_tab` ([MCP server](../015-api/mcp-server.md))                             | goes through the tab `PUT` | covered                                      |
+| tab / design delete, account delete                                                                  | FK cascade from `tabs`     | nothing to do                                |
 | tab link into another design ([Tab ↔ design many-to-many](../006-design/tab-design-many-to-many.md)) | rows are per tab           | nothing to do                                |
 
 The rows are derived by a pure function over the tab's elements
@@ -216,7 +216,7 @@ what a row is called).
 Comment `authorId`s and self-assigned `assignee.userId`s are written
 with whatever identity the writer had at the time, a guest participant
 id for anyone signed out ([Auth + guest access](../014-identity/auth-and-guest-access.md)). When that guest signs up, their
-designs migrate to the Clerk id (`POST /api/migrate`) but the ids
+designs migrate to the account id (`POST /api/migrate`) but the ids
 inside the blobs do not, and a later re-index of an untouched tab
 would faithfully re-write the guest id. Rewriting blobs on migration
 is the wrong fix (every tab of every design, on the sign-up path).
@@ -286,7 +286,7 @@ the server's rows (`readOfflineActivity`, `apps/live/lib/offline/offline-activit
 GET /api/activity   -> { actions: ActivityAction[], threads: ActivityThread[] }
 ```
 
-Hybrid identity (Clerk user or `X-Owner-Id`); guests get their own
+Hybrid identity (account user or `X-Owner-Id`); guests get their own
 page, keyed to their participant id. Read-only: nothing on the page is
 mutated from the page in v1, so there is no other verb.
 

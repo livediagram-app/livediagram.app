@@ -164,7 +164,7 @@ describe("a non-owner cannot convert someone else's design", () => {
   it('treats a joined teammates declared conversion as a plain delete, to the team Trash', async () => {
     const { ctx, settle } = ctxWith('DELETE', '/api/designs/d1', {
       owner: 'bob',
-      clerkUserId: 'bob',
+      accountUserId: 'bob',
       ...conversion('offline'),
     });
     expect((await handleDesigns(ctx)).status).toBe(204);
@@ -178,7 +178,7 @@ describe("a non-owner cannot convert someone else's design", () => {
     // Ownership is what gates it, not the absence of a team.
     const { ctx, settle } = ctxWith('DELETE', '/api/designs/d1', {
       owner: 'alice',
-      clerkUserId: 'alice',
+      accountUserId: 'alice',
       ...conversion('offline'),
     });
     await handleDesigns(ctx);

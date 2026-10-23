@@ -48,7 +48,7 @@ function call(
   const base = makeTestRouteContext(method, path, {
     env: db.env,
     owner: OWNER,
-    clerkUserId: who === 'person' ? OWNER : null,
+    accountUserId: who === 'person' ? OWNER : null,
     verifiedUserId: OWNER,
     body,
     headers,

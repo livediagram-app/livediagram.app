@@ -156,7 +156,7 @@ describe('useTimelineFeed failure handling', () => {
   });
 
   it('does not leave the previous owner’s events up when their read fails', async () => {
-    // A guest signing in mid-session re-reads under the Clerk id. If
+    // A guest signing in mid-session re-reads under the account id. If
     // that read fails there is nothing legitimate to show: the events
     // on screen belong to the feed we just left.
     apiListTimeline.mockResolvedValue({ events: [event('guest-era', 10)] });

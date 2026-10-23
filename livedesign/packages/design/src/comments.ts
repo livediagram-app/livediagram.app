@@ -21,7 +21,7 @@ export type Comment = {
   createdAt: number; // unix ms
   authorName: string;
   authorColor: string;
-  // Stable id of the participant who wrote it (their Clerk sub or guest
+  // Stable id of the participant who wrote it (their account id or guest
   // owner id). Server-stamped and server-trusted, never read from the
   // client. Lets a view-role visitor delete their OWN comments without
   // being able to touch anyone else's. When serving a design to a
