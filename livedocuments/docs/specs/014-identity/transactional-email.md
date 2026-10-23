@@ -1,4 +1,4 @@
-# Transactional & lifecycle email (Resend)
+# Transactional email (Resend)
 
 **Status: in progress.** Optional, off by default. Wires [Resend](https://resend.com)
 into the api worker so the product can send a small set of account emails. Like
@@ -9,76 +9,70 @@ account-free and never receive email.
 
 ## 1. What we send
 
-Five messages, two kinds:
-
-**Lifecycle (onboarding) — signed-in users only:**
-
-1. **Welcome** — sent the first time we see an authenticated user. Tips on
-   making a first document (pages, layouts, templates).
-2. **Week 1** — ~7 days after the welcome. Tips on the Explorer (folders,
-   search, recents, sharing from the grid).
-3. **Week 2** — ~14 days after the welcome. Introduces Teams (shared documents,
-   inviting people, Admin/Member roles — [Teams](../013-workspace/teams.md)).
+**Onboarding — sent by liveworkspace, not here.** The welcome, activation nudge,
+week 1, week 2 and win-back series is one per liveworkspace account, sent by the
+accounts Worker for every app ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)
+"Onboarding emails"). livedocuments keeps no lifecycle table and runs no sweep; it
+reports when someone saves a document they own (`reportActivity`: a genuine
+create, and each summary push from a document's room) so the series knows who
+is active.
 
 **Transactional — always send (when the feature is on):**
 
-4. **Team invite** — no longer sent by livedocuments: teams, their invitations
-   and those emails belong to the liveworkspace account and come from
-   liveworkspace ([Teams](../013-workspace/teams.md)).
-5. **Account deleted** — after a user deletes their account (spec: account
+1. **Team invite** — no longer sent by livedocuments: teams, their invitations
+   and those emails (the invite, its reminders and the answer to the admins)
+   belong to the liveworkspace account and come from liveworkspace, which also
+   counts them ([Teams](../013-workspace/teams.md)).
+2. **Account deleted** — after a user deletes their account (spec: account
    self-deletion), a confirmation that their livedocuments data and their
    liveworkspace account are gone.
 
-[Account settings & email notifications](profile-and-email-notifications.md) adds two further opt-out
-notifications — **someone joined my document** and **someone responded to my team
-invite** — read from the [User preferences](../007-editor/user-preferences.md) preference blob, set in the Settings dialog.
+[Account settings & email notifications](profile-and-email-notifications.md) adds a further opt-out
+notification — **someone joined my document** — and the **someone responded to
+my team invite** switch the accounts Worker honours, read from the [User preferences](../007-editor/user-preferences.md) preference blob, set in the Settings dialog.
 
 **Later additions (same gate + best-effort `ctx.waitUntil` contract):**
 
-6. **Activation nudge** (#4, onboarding) — ~3 days after sign-up, to anyone who
-   still has zero documents (`dueForActivation`'s `NOT EXISTS` check). Daily cron,
-   opt-out `notifyTips`. `activation_sent_at`, the baseline migration.
-7. **Win-back** (#5, opt-out `notifyTips`) — one-shot for owners quiet ~4 weeks
-   (last document activity via the newest `documents.saved_at`; zero-document owners are excluded,
-   that's #4's job). Daily cron. `winback_sent_at`, the baseline migration.
-8. **Milestone** (#6, opt-out `notifyMilestones`) — a celebration when an owner's
-   document count reaches 10, fired on a genuine create. Atomic `claimMilestone`
-   dedups a burst of saves. `milestone_sent_at`, the baseline migration.
-9. **API-token expiry** — no longer sent by livedocuments: API tokens belong to the
+3. **Milestone** (opt-out `notifyMilestones`) — a celebration when an owner's
+   document count reaches 10, fired on a genuine create, and one on the owner's
+   first share link. Each is claimed at the accounts Worker before it is sent
+   (`claimMilestone`, `milestone` or `firstShare`, for `livedocuments.app`), so
+   a burst of saves sends one; a claim needs a recorded sign-in sighting.
+4. **API-token expiry** — no longer sent by livedocuments: API tokens belong to the
    liveworkspace account ([Public API + tokens](../015-api/public-api-and-tokens.md)),
    and liveworkspace does not send an expiry reminder yet.
-10. **New comment** (#1, opt-out `notifyComments`) — when someone other than the
-    owner comments on a document (either comment path), the owner is emailed
-    **immediately** (no cron). Never includes the comment text. On the tab save
-    it counts only the saver's own new comments: a save can carry a peer's
-    comment that reached the saver live first, and that is not the saver
-    commenting.
-11. **Action assigned** (opt-out `notifyActionAssigned`) — a teammate assigned
-    the recipient an action ([Assigned actions](../012-collaboration/assigned-actions.md)).
-12. **Mentioned** (opt-out `notifyMentions`) — a teammate @-mentioned the
-    recipient in a comment ([Comment mentions](../012-collaboration/comment-mentions.md)). Unlike the owner's new-comment email it
-    quotes the comment (the first 280 characters): the recipient was named in
-    it, and the document is in their own team's library.
-13. **Team invite reminders** — gone with the invitations themselves (item 4).
+5. **New comment** ( opt-out `notifyComments`) — when someone other than the
+   owner comments on a document (either comment path), the owner is emailed
+   **immediately** (no cron). Never includes the comment text. On the tab save
+   it counts only the saver's own new comments: a save can carry a peer's
+   comment that reached the saver live first, and that is not the saver
+   commenting.
+6. **Action assigned** (opt-out `notifyActionAssigned`) — a teammate assigned
+   the recipient an action ([Assigned actions](../012-collaboration/assigned-actions.md)).
+7. **Mentioned** (opt-out `notifyMentions`) — a teammate @-mentioned the
+   recipient in a comment ([Comment mentions](../012-collaboration/comment-mentions.md)). Unlike the owner's new-comment email it
+   quotes the comment (the first 280 characters): the recipient was named in
+   it, and the document is in their own team's library.
+8. **Team invite reminders** — gone with the invitations themselves (item 1).
 
-The three opt-out lifecycle/notification categories (`notifyComments`,
-`notifyTips`, `notifyMilestones`) join the [Account settings & email notifications](profile-and-email-notifications.md) pair in `getNotificationPrefs`
-and as switches in Settings > Notifications; every opt-out email's footer links to
+The opt-out categories (`notifyComments`, `notifyMilestones`, and `notifyTips`,
+which the accounts Worker's onboarding series reads) join the [Account settings & email notifications](profile-and-email-notifications.md)
+pair in `getNotificationPrefs` and as switches in Settings > Notifications. They
+are settings every liveworkspace app shares (the `all` scope), so turning one off
+here turns it off in every app. Every opt-out email's footer links to
 `/explorer?settings=notifications` (also emitted as a `List-Unsubscribe` header; the old `/explorer/profile` URL in already-sent mail redirects there, see [Account settings & email notifications](profile-and-email-notifications.md)) so the
-recipient can turn it off in one click. `notifyTips` governs **every** tip /
-check-in after the immediate welcome, i.e. week 1, week 2, the activation nudge,
-and win-back all respect it, and so all four carry that footer and header; only
-the welcome (the first authenticated sighting, before any toggle could exist) is
-unconditional and carries neither. The opt-out toggles are
+recipient can turn it off in one click. The opt-out toggles are
 documented for users in the [Email Notifications](../../../apps/help/app/account-and-data/email-notifications/page.mdx)
 help article.
 
 ## 2. Gating — the secret is the switch
 
 - `RESEND_API_KEY` (secret) — when **unset**, `emailEnabled(env)` is false and
-  every send is a no-op. No `email_lifecycle` writes happen either (the
-  first-sighting upsert is itself guarded), so a deployment with email off does
-  zero extra work. This mirrors the model-key-absent → AI-hidden pattern.
+  every send is a no-op, so a deployment with email off does no extra work for
+  email. This mirrors the model-key-absent → AI-hidden pattern.
+- Addresses, milestone claims and the notification settings come from the
+  liveworkspace accounts Worker (`ACCOUNTS_URL` and the client credentials). A
+  deployment without it sends no email: it has no address to send to.
 - `RESEND_FROM` (plain var, optional) — the From identity. Default
   `livedocuments <hello@livedocuments.app>`. Requires a domain verified in Resend.
 - `APP_BASE_URL` (plain var, optional) — public origin for links in emails.
@@ -89,70 +83,14 @@ Production: `wrangler secret put RESEND_API_KEY`.
 
 ## 3. Data model
 
-One table, keyed by the owner id (the account `sub` — lifecycle email is
-authenticated-only). The baseline migration, `0001_livedocuments_baseline.sql`:
+None in livedocuments. An owner's address is looked up when an email is sent
+(`accountEmails` from `@liveworkspace/auth-client`, up to 100 ids in one call,
+verified addresses only, accounts only), milestone claims are kept per account
+and app by the accounts Worker, and so is the sign-in sighting a claim needs
+(recorded at `GET /api/auth/callback`, [Telemetry](../017-telemetry/telemetry.md)).
+A guest is never emailed.
 
-```sql
-CREATE TABLE IF NOT EXISTS email_lifecycle (
-  owner_id        TEXT PRIMARY KEY,   -- account user id (verified)
-  email           TEXT NOT NULL,      -- from the verified access token only
-  created_at      INTEGER NOT NULL,   -- first authenticated sighting (ms)
-  welcome_sent_at INTEGER,
-  week1_sent_at   INTEGER,
-  week2_sent_at   INTEGER
-);
-CREATE INDEX IF NOT EXISTS idx_email_lifecycle_due ON email_lifecycle (created_at);
-```
-
-The `email` is only ever the **verified** `email` claim from the account access
-token ([Teams](../013-workspace/teams.md)) — never a client-supplied value, never a guest. Rows exist only
-for authenticated owners.
-
-## 4. Sign-up detection — first authenticated sighting
-
-On any request carrying a verified account identity (userId + email), and only
-when `emailEnabled`, the worker does an `INSERT … ON CONFLICT DO NOTHING` into
-`email_lifecycle`. If a **new** row was created (`meta.changes === 1`), that
-first sighting is treated as sign-up: send the welcome and stamp
-`welcome_sent_at`. On a returning owner's sighting the row instead takes the
-token's address when it differs (an `UPDATE` guarded on `email <> ''` and on the
-address actually changing), so a changed account email is where the next
-email goes; a backfilled suppression row (below) keeps its empty sentinel, and
-"is new" stays the insert's answer alone. All of this runs in `ctx.waitUntil(...)` so it never delays
-the response, and is wrapped so an email/D1 hiccup can't fail the user's request.
-
-**Existing-deployment caveat:** first-sighting means that turning Resend on for a
-deployment that already has users would welcome each of them on their next
-sign-in. Before enabling on such a deployment, backfill the table so existing
-owners are marked as already-sent (no email fires for them):
-
-```sql
-INSERT OR IGNORE INTO email_lifecycle
-  (owner_id, email, created_at, welcome_sent_at, week1_sent_at, week2_sent_at)
-SELECT DISTINCT owner_id, '', 0, 0, 0, 0 FROM documents WHERE owner_id LIKE 'user_%';
-```
-
-(The `'user_%'` prefix targets account ids, skipping guest UUID owners.)
-
-## 5. Scheduling the series — the existing daily cron
-
-The api worker already runs `crons = ["0 3 * * *"]`. Its `scheduled()` handler
-gains a step (guarded by `emailEnabled`): select a bounded batch of rows where
-`created_at <= now - 7d AND week1_sent_at IS NULL`, send the Explorer email and
-stamp `week1_sent_at`; same for `14d` / `week2_sent_at` (Teams). Daily cadence
-means "after 1 week" resolves to the first daily run on/after day 7 — close
-enough for onboarding; no per-user timers.
-
-A failed send (the welcome inline, or any stage in the sweep) leaves its stamp
-unset for the next run to retry, and counts against the row: `send_attempts`
-goes up by one and `last_attempt_at` records when (the baseline migration). Once a row
-reaches `MAX_SEND_ATTEMPTS` (3, in `db/email-lifecycle.ts`) every due-query
-skips it, so an address that always fails (a deleted mailbox, a hard bounce)
-cannot hold a place in the oldest-first batch for good; the sweep logs
-`[email-lifecycle] giving up` once, when it does. A successful send, or a
-sighting with a changed address (§4), resets the count to zero.
-
-## 6. Code shape
+## 4. Code shape
 
 - `apps/api/src/email/client.ts` — `emailEnabled(env)` + `sendEmail(env, msg)`
   (POST `https://api.resend.com/emails`, `Bearer RESEND_API_KEY`). Never throws:
@@ -176,14 +114,13 @@ sighting with a changed address (§4), resets the count to zero.
   Its `alt` is empty, since the wordmark beside it names the product when
   images are blocked. The path is permanent: every email already sent points
   at it.
-- `apps/api/src/db/email-lifecycle.ts` — sighting upsert (returns "is new", and
-  refreshes a returning owner's address), the
-  two due-queries + mark-sent, and row deletion (called from `deleteAccount`).
-- Hooks: welcome in the request path (`index.ts`), week1/week2 in `scheduled()`,
-  deletion in `routes/account.ts`.
+- `apps/api/src/person/account-app.ts` — what the accounts Worker keeps of an
+  account for livedocuments: `ownerEmails` / `ownerEmail`, `claimOwnerMilestone`,
+  `recordOwnerSighting`, `reportOwnerActivity`. None throws; a failure reads as
+  "no address" or "not claimed".
+- `apps/api/src/email/notifications.ts` — the notification sends.
 
-All sends use `ctx.waitUntil` (or are already in the cron) — email is never on
-the request's critical path.
+All sends use `ctx.waitUntil` — email is never on the request's critical path.
 
 **Counting sends ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).** `sendEmail` writes one
 anonymous `Email·Sent·<kind>` event (`reportServerEvent`), and a failure
@@ -191,14 +128,14 @@ writes `Error·Api·Http<status>.SendEmail` (or `Network.SendEmail` when the
 request never completed). Server-side rather than through `POST /api/events`
 because nothing about an email reaches a browser: the send happens in a cron or
 a `waitUntil` after the response has gone, so this is the only place that can
-count it. Before this, the whole lifecycle series was unmeasurable and a dead
+count it. Before this, every email was unmeasurable and a dead
 `RESEND_API_KEY` was invisible — every failure went to `console.error` and
 nowhere else. Gated on `TELEMETRY_ENABLED` like every other emit, and its own
 failure is swallowed: telemetry must never turn a delivered email into a thrown
 send. The template kind and nothing else goes on the wire — never an address, a
 name, or a recipient count.
 
-## 7. Privacy / security
+## 5. Privacy / security
 
 - Authenticated-only; the address is the verified token claim, never input.
 - No document content, names, or anything the user typed is ever in an email
@@ -206,10 +143,10 @@ name, or a recipient count.
 - Off by default; self-hosters opt in by providing their own Resend key + domain
   (keeps [Open source + distribution](../002-project-scope/open-source-and-business-model.md) self-hosting intact — no required SaaS call).
 
-## 8. Out of scope (for now)
+## 6. Out of scope (for now)
 
-Unsubscribe endpoint for the lifecycle series, dark-mode email variants, bounce handling beyond the attempt cap in §5 (Resend handles
-delivery; sends are best-effort and idempotent via the `*_sent_at` stamps). Per-notification
+Dark-mode email variants, bounce handling (Resend handles delivery; sends are
+best-effort, and milestones idempotent via their claims). Per-notification
 **email preferences** are no longer out of scope — [Account settings & email notifications](profile-and-email-notifications.md)
 adds an opt-out toggle for each of its two transactional notifications, stored
 in the [User preferences](../007-editor/user-preferences.md) preference blob.

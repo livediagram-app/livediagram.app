@@ -175,7 +175,7 @@ DESC`, limit `HOME_WHAT_HAPPENED_ACTION_MAX` (`D68`).
 
 - Key `<documentId>:<localDay(occurredAt, tz)>`. Groups ordered by their newest action, descending.
 - `actions`: every row, newest first, `{ id, verb, personId, occurredAt, detail }`.
-- `people`: distinct actors, newest action first (`D78`), each `{ id, name, color }` from `participants`.
+- `people`: distinct actors, newest action first (`D78`), each `{ id, name, color }` from their profiles (one batched read).
 - `verbs`: distinct verbs with counts, in `HOME_VERBS` order. `total` = number of actions; `latestAt` = newest.
 - `summary` = `people.length > 1`.
 

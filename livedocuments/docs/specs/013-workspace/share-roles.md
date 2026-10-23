@@ -149,5 +149,5 @@ Specified in the research and not built yet:
 
 ## Domain language
 
-**Participant** is this access level. The `participants` table and its records are a person's **display identity**
+**Participant** is this access level. A person's name and colour (their profile at the liveworkspace accounts Worker, `GET /api/participants`) are their **display identity**
 (name, colour); prose calls them that, never "participant" ([Domain language](../003-system-architecture/domain-language.md)).

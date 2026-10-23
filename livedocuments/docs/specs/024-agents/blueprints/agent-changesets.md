@@ -471,7 +471,7 @@ CREATE TABLE agent_changeset_parts (
 | `document_id`, `tab_id`, `rev` | reference          | `(tab_id, rev)` unique: one changeset per revision                       |
 | `base_rev`                     | audit              | Null without a base                                                      |
 | `author_id`                    | personal           | Owner-keyed; deleted with the account, moved by guest migration (CS27)   |
-| `author_name`, `author_color`  | personal, snapshot | From `participants` at write; fallback CS16                              |
+| `author_name`, `author_color`  | personal, snapshot | From the profile at write; fallback CS16                                 |
 | `token_id`                     | audit              | Null for a person; never on the wire except to the author                |
 | `summary`                      | content            | At most 80 characters                                                    |
 | `fingerprints`                 | derived            | JSON `{ before, after, beforeOrder? }`: fingerprints by id, order (CS17) |

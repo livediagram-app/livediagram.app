@@ -106,12 +106,13 @@ Turbo caches results, so re-running with no changes is a no-op.
 The editor works without sign-in. To exercise the signed-in code paths, run liveworkspace beside it and register livedocuments with its accounts API:
 
 1. Start liveworkspace (first-time setup is in `liveworkspace/README.md`, "Local development"): `pnpm dev:workspace` from the repo root runs the site, with the sign-in pages, on `http://localhost:3000`, and the accounts and telemetry Workers behind it, as liveworkspace.app has them. Locally the accounts Worker prints each sign-in code in its own output instead of emailing it.
-2. Register livedocuments once against it. `http://localhost/api` is the one resource a development accounts Worker issues tokens for (`RESOURCES` in liveworkspace/apps/accounts/src/resources.ts). The secret is printed once:
+2. Register livedocuments once against it. `http://localhost/api` is the one resource a development accounts Worker issues tokens for (`RESOURCES` in liveworkspace/apps/accounts/src/resources.ts), and `--app livedocuments.app` is the app the client speaks for: the accounts Worker keeps livedocuments' own settings, sign-ups and milestones under it. The secret is printed once:
 
    ```sh
    ADMIN_TOKEN=local-admin-token node liveworkspace/apps/accounts/scripts/register-client.ts \
      --accounts http://localhost:3000 \
      --name livedocuments-dev \
+     --app livedocuments.app \
      --redirect http://localhost:3300/api/auth/callback \
      --resource http://localhost/api
    ```
@@ -132,7 +133,7 @@ The editor works without sign-in. To exercise the signed-in code paths, run live
 
 4. Restart `pnpm dev` and open the app through the router (`http://localhost:3300`), so the sign-in cookies and the callback share one origin.
 
-With these set, `/sign-in` hands off to the accounts site and comes back signed in. The api worker verifies the access token and derives the owner id from the `sub` claim instead of falling back to the `X-Owner-Id` header.
+With these set, `/sign-in` hands off to the accounts site and comes back signed in. The api worker verifies the access token and derives the owner id from the `sub` claim instead of falling back to the `X-Owner-Id` header. The same client id and secret let the api keep settings, names and colours in the accounts database (guests' too); without them, preferences stay in the browser and names and colours are not kept.
 
 Without these set: the api worker silently treats every request as a guest (the `X-Owner-Id` header path), and the live frontend mounts no session bridge, so it renders the editor without any auth UI. This is the self-host default. See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for the full hybrid model.
 

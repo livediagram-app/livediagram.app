@@ -118,7 +118,7 @@ The server decides everything that matters:
 
 The email reads **"{author} mentioned you in {document}"**, quotes the
 comment, and has one button, **Open the document**. It is sent only when email is
-configured (`RESEND_API_KEY`, [Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md)).
+configured (`RESEND_API_KEY`, [Transactional email (Resend)](../014-identity/transactional-email.md)).
 
 ## Setting
 

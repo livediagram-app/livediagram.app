@@ -16,7 +16,7 @@ by `updated_at`. It answers exactly one question — "what did I touch
 last?" — and it is the only answer the Explorer gives. Everything else
 that happens to a user is invisible until they go looking for it:
 
-- Someone commented on a document you own. You find out by email ([Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md)
+- Someone commented on a document you own. You find out by email ([Transactional email (Resend)](../014-identity/transactional-email.md)
   #1), or you don't.
 - Someone assigned you an action ([Assigned actions](../012-collaboration/assigned-actions.md)). Same.
 - A team invite arrived. It sits behind a badge in a sidebar section
@@ -1176,7 +1176,7 @@ characters with an ellipsis. A comment feed you can't read the comment
 in is a notification list, not a timeline. This is the same trust
 boundary as the document's own content: everyone in the audience already
 has read access to that thread. (Note that this is _narrower_ than the
-email notification in [Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md) #1, which deliberately never includes
+email notification in [Transactional email (Resend)](../014-identity/transactional-email.md) item 5, which deliberately never includes
 comment text — an email leaves the product's authorisation boundary
 and can sit in an inbox forever; the Timeline is behind the same auth
 as the document itself.)

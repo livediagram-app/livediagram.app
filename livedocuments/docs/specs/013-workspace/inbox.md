@@ -67,7 +67,7 @@ count, and each hidden entirely when empty:
    "In" means one of two things, and the row says which:
    - the reader wrote at least one comment in the thread, or
    - the thread is on a document the reader **owns** (owners are
-     already treated as included: [Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md) emails them every new
+     already treated as included: [Transactional email (Resend)](../014-identity/transactional-email.md) emails them every new
      comment). The row carries a quiet **Your document** hint.
 
 Rows share one anatomy with the Collaborate Panel's ([Assigned actions](../012-collaboration/assigned-actions.md) §5) so a

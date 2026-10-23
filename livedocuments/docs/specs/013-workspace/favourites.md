@@ -19,8 +19,8 @@ it for the rest of the team, so a star is a row keyed by
 `(owner_id, document_id)` rather than a flag on the document.
 
 It gets a **D1 table** (the baseline migration, `0001_livedocuments_baseline.sql`) rather than a key in
-the `user_preferences` blob, which is how [Hide a document from Recent](hide-from-recent.md) stores hidden-from-Recent
-ids. That blob is capped at **4 KB** server-side — roughly 100 36-char UUIDs —
+the synced preferences ([User preferences](../007-editor/user-preferences.md)), which is how [Hide a document from Recent](hide-from-recent.md) stores hidden-from-Recent
+ids. Those are capped at **4,096 characters** — roughly 100 36-char UUIDs —
 and favourites are meant to be unlimited. Overflowing it wouldn't just lose a
 star: the PUT would start rejecting **every** preference write. A table has no
 such ceiling, which is what lets the answer to "any limit?" be _no_.

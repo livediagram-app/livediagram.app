@@ -8,7 +8,7 @@ assigned action to the element, optionally emailing the assignee. It sits on the
 [Panel corner docking](../007-editor/panel-docking.md) docking) lists the tab's actions and comment threads and jumps
 to them. Builds on teams ([Teams](../013-workspace/teams.md)) for the assignee picker, the
 comment-thread element-data pattern (see `commentThread`), transactional
-email ([Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md)), and the profile notification toggles ([Account settings & email notifications](../014-identity/profile-and-email-notifications.md)).
+email ([Transactional email (Resend)](../014-identity/transactional-email.md)), and the profile notification toggles ([Account settings & email notifications](../014-identity/profile-and-email-notifications.md)).
 
 An action is collaboration metadata on an element, exactly like a comment
 thread: it lives in the element, persists through the normal tab autosave,
@@ -213,8 +213,8 @@ The server, not the client, establishes every fact that matters:
 - verifies the caller can access `documentId` (owner, team library, or
   shared-with), and reads the **document name from D1**, not the body;
 - resolves the assignee's address from trusted server state
-  (`team_members.email` / `email_lifecycle`), never a client header
-  ([Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md) §7, [Account settings & email notifications](../014-identity/profile-and-email-notifications.md) §5);
+  (`team_members.email` / the account's verified address at the accounts Worker), never a client header
+  ([Transactional email (Resend)](../014-identity/transactional-email.md) §5, [Account settings & email notifications](../014-identity/profile-and-email-notifications.md) §5);
 - resolves the assigner's display name from the caller's own identity, so a
   spoofed `assignerName` in a tab blob can never sign an email;
 - no-ops silently unless `emailEnabled(env)` and the assignee's
@@ -240,7 +240,7 @@ assigned you an action on _{document name}_", the action name, the first
 ~200 characters of the description, and a CTA linking to the document (when
 the assignee can open it, see above). All
 user-influenced strings (action name, description, document name, assigner
-name) are HTML-escaped. The content stays within [Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md) §7: everything in
+name) are HTML-escaped. The content stays within [Transactional email (Resend)](../014-identity/transactional-email.md) §7: everything in
 the mail is either the assigner's own words being delivered on their behalf
 or a document/team fact the two already share.
 
@@ -352,7 +352,7 @@ notifyActionAssigned?: boolean; // someone assigns me an action
 ```
 
 - Server-side it joins `NotificationPrefs`
-  (`apps/api/src/db/notification-prefs.ts`), read by the notify dispatcher.
+  (`apps/api/src/person/settings.ts`), read by the notify dispatcher.
 - Client-side the profile page (`ProfilePane.tsx`, [Account settings & email notifications](../014-identity/profile-and-email-notifications.md)) gains a
   `NotificationRow`: "Someone assigns me an action", gated with the others
   on `emailEnabled`, flipping through the same `setFlag` round-trip.

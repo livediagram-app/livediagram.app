@@ -9,7 +9,7 @@ This guide is the practical path: provision Cloudflare resources, configure secr
 | Resource                             | Used by           | Why                                                                                                                                                                                                                                                                                                  |
 | ------------------------------------ | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Workers paid plan**                | All seven workers | Durable Objects (per-document realtime room) need the paid plan.                                                                                                                                                                                                                                     |
-| **D1 database**                      | `apps/api`        | Documents, folders, share links, shared-with index, image metadata, the Inbox index, user preferences, teams + membership + team library.                                                                                                                                                            |
+| **D1 database**                      | `apps/api`        | Documents, folders, share links, shared-with index, image metadata, the Inbox index, teams + membership + team library.                                                                                                                                                                              |
 | **Durable Object namespace**         | `apps/api`        | One SQLite-backed object per document: its content (tabs, comments, changesets) and its realtime room.                                                                                                                                                                                               |
 | **R2 bucket** (optional)             | `apps/api`        | Document SVG snapshots ([Document SVG snapshots](../specs/006-document/document-snapshots.md): Explorer thumbnails + the live image share). Uploaded images live in liveworkspace's media service ([Images](#images)). Without it, snapshot endpoints `404` (the Explorer row shows a generic icon). |
 | **Rate Limiter bindings** (optional) | `apps/api`        | Abuse throttles: per-owner writes, plus the CLI's telemetry relay, share-code lookups, link unfurls, AI calls and API-token reads. Any binding you don't provision falls through to "allow", so none are required.                                                                                   |
@@ -18,7 +18,7 @@ This guide is the practical path: provision Cloudflare resources, configure secr
 What you do NOT need:
 
 - Sign-in: it is optional. Without it, every user is a guest (a per-browser id stored in `localStorage`, carried as `X-Owner-Id`). With sign-in configured, the api worker fetches the accounts Worker's public keys (`${ACCOUNTS_URL}/api/auth/jwks`) to check access tokens, and calls it when someone signs in or a session refreshes.
-- No _required_ SaaS: no Stripe (no paid tier) and no analytics vendor. The other integration is optional and stays off until you add a key: Resend for transactional email ([Transactional & lifecycle email (Resend)](../specs/014-identity/transactional-email.md)), covered in its own section below. The telemetry endpoint is first-party only and off by default.
+- No _required_ SaaS: no Stripe (no paid tier) and no analytics vendor. The other integration is optional and stays off until you add a key: Resend for transactional email ([Transactional email (Resend)](../specs/014-identity/transactional-email.md)), covered in its own section below. The telemetry endpoint is first-party only and off by default.
 - A separate database host: D1 covers everything.
 
 ## One-time Cloudflare setup
@@ -187,7 +187,7 @@ livedocuments.app's events go to liveworkspace's telemetry service, which stores
 
 ## Email (optional, Resend)
 
-The api worker can send a small set of account emails via [Resend](https://resend.com) ([Transactional & lifecycle email (Resend)](../specs/014-identity/transactional-email.md)): a welcome on first sign-in; week-1 (Explorer) and week-2 (Teams) onboarding tips, an activation nudge and a win-back note off the daily cron; a warning before an API token expires; notifications (someone opened, commented on or mentioned you in a document, assigned you an action, or answered your team invite) plus first-share and document-count milestone notes; and transactional team-invite (with a Decline link that needs no account), team-invite reminder (1, 7 and 21 days after an unanswered invite) and account-deleted messages. The whole feature is **off until you provide a key** — no key, no sends, and the `email_lifecycle` table is never touched. Guests never receive email (it's authenticated-only).
+The api worker can send a small set of account emails via [Resend](https://resend.com) ([Transactional email (Resend)](../specs/014-identity/transactional-email.md)): notifications (someone opened, commented on or mentioned you in a document, assigned you an action, or answered your team invite) plus first-share and document-count milestone notes; and transactional team-invite (with a Decline link that needs no account), team-invite reminder (1, 7 and 21 days after an unanswered invite) and account-deleted messages. The whole feature is **off until you provide a key** — no key, no sends. It also needs liveworkspace accounts (sign-in configured with client credentials): addresses, milestone claims and notification settings live there, so without it there is no address to send to. Guests never receive email (it's authenticated-only). The onboarding series (welcome, tips, win-back) is sent by liveworkspace's accounts Worker, not by livedocuments.
 
 To turn it on, verify a sending domain in Resend, then:
 
@@ -199,8 +199,6 @@ Optional knobs (plain `[vars]`):
 
 - `RESEND_FROM`: the From identity, e.g. `livedocuments <hello@livedocuments.app>` (the default). Must be on your verified domain.
 - `APP_BASE_URL`: public origin for links in emails, defaults to `https://livedocuments.app`.
-
-If you enable this on a deployment that already has signed-in users, run the one-time backfill in [Transactional & lifecycle email (Resend) §4](../specs/014-identity/transactional-email.md) first, so existing users aren't "welcomed" on their next sign-in.
 
 ## Teams
 
