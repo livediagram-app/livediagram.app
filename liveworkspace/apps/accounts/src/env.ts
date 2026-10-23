@@ -14,8 +14,12 @@ export interface Env {
   // Both set turns on "Continue with Google"; either missing leaves email codes only.
   GOOGLE_CLIENT_ID?: string;
   GOOGLE_CLIENT_SECRET?: string;
+  // The index service (one-explorer-contracts.md), told when a guest signs in. Either unset skips it.
+  INDEX_URL?: string;
+  INDEX_MERGE_KEY?: string;
 
   AUTH_DB: D1Database;
   CODE_IP_LIMITER: RateLimit;
   CODE_EMAIL_LIMITER: RateLimit;
+  GUEST_LIMITER: RateLimit;
 }

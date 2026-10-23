@@ -15,3 +15,7 @@ RESEND_API_KEY=
 # an authorised redirect URI. Without both, the pages offer email codes only.
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
+# The index service (liveworkspace/apps/index), told when a guest signs in. Optional: without both,
+# signing in leaves the guest's things where they are.
+INDEX_URL=http://localhost:8793/api/index
+INDEX_MERGE_KEY=dev-index-merge-key

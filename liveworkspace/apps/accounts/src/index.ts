@@ -8,6 +8,7 @@ import { getAuth } from './auth.ts';
 import { CLIENTS_PATH, registerClient } from './clients.ts';
 import { DELETE_ACCOUNT_PATH, deleteAccount } from './delete-account.ts';
 import type { Env } from './env.ts';
+import { GUEST_PATH, guestHandoff } from './guests.ts';
 import { overCodeLimit } from './rate-limit.ts';
 import { SIGN_IN_OPTIONS_PATH, signInOptions } from './sign-in-options.ts';
 
@@ -21,6 +22,13 @@ export default {
 
     if (request.method === 'GET') {
       if (pathname === `${AUTH_BASE_PATH}${SIGN_IN_OPTIONS_PATH}`) return signInOptions(env);
+      if (pathname === `${AUTH_BASE_PATH}${GUEST_PATH}`) {
+        const ip = request.headers.get('cf-connecting-ip') ?? 'unknown';
+        if (!(await env.GUEST_LIMITER.limit({ key: `ip:${ip}` })).success) {
+          return Response.json({ error: 'rate_limited' }, { status: 429 });
+        }
+        return guestHandoff(request, env, getAuth(env));
+      }
       // Discovery at the root as well as under the issuer path, for clients that only look
       // at the origin (RFC 8414 §3 and OIDC Discovery §4 disagree on where it lives).
       if (pathname === '/.well-known/openid-configuration') {

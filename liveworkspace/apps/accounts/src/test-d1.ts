@@ -46,6 +46,8 @@ export function testD1(): { db: D1Database; sql: DatabaseSync } {
 
   const db = {
     prepare: (query: string) => statement(query),
+    // Never called here, but Better Auth recognises a D1 by it.
+    exec: async (query: string) => sql.exec(query),
     batch: async (statements: { exec: () => unknown }[]) => {
       sql.exec('BEGIN');
       try {

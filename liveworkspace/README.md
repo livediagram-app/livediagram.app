@@ -148,8 +148,13 @@ Other checks, from the repo root: `corepack pnpm test`, `corepack pnpm typecheck
      --name livediagram \
      --redirect https://www.livediagram.app/auth/callback \
      --redirect https://livediagram.app/auth/callback \
+     --redirect https://livediagram.app/auth/guest \
      --resource https://livediagram.app/api
    ```
+
+   `https://<app>/auth/guest` is where the guest hand-off returns
+   ([docs/accounts.md](docs/accounts.md#guests)); an app registered before it needs it added to its
+   client's `redirectUris`.
 
 3. Wire the app up: [docs/integrating-an-app.md](docs/integrating-an-app.md).
 

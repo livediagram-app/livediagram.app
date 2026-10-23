@@ -1,4 +1,4 @@
-# Teams and API tokens
+# Teams, API tokens and guests
 
 Both belong to the liveworkspace account, not to an app. A team made once is the same team in
 livediagram, liveplanner and every app after them; one API token, or one AI tool connected over
@@ -56,6 +56,31 @@ the account, its verified email, read-only and the account's teams. `createToken
 `@liveworkspace/auth-client` remembers each answer per isolate for a minute (an unknown token for
 ten seconds), so a burst of MCP calls costs one check; it is also how long a revoked token can go on
 working in an isolate that had just checked it.
+
+## Guests
+
+Someone using an app without an account is a guest, and the guest is the same person in every app
+([one-explorer-contracts.md](one-explorer-contracts.md#guests)). The first time an app needs an
+identity it sends the browser to `GET /api/auth/guest?client_id=&redirect_uri=&state=` (and
+`resource=` when its client has more than one API). The Worker (`src/guests.ts`):
+
+- refuses with a 400 `{ error }`, never a redirect, unless the client is registered and
+  `redirect_uri` is exactly one of its registered URIs; `state` must be there, up to 200 characters;
+- reads its `lw_guest` cookie, or makes one: `guest_<uuid>` with an HMAC under
+  `BETTER_AUTH_SECRET`, so a guest id can't be made up. It is HttpOnly, SameSite=Lax, Secure outside
+  development, and set again on every visit (browsers cap a cookie at about 400 days);
+- redirects to `<redirect_uri>#guest_token=<jwt>&state=<state>`. The token is signed by the jwt
+  plugin with the same keys as access tokens (`/api/auth/jwks`): `iss` the issuer, `aud` the client's
+  API, `sub` the guest id, `kind: "guest"`, for a year.
+
+It is limited to 60 a minute per IP (`GUEST_LIMITER`).
+
+**Signing in keeps a guest's things.** When a session is made for a request carrying a valid
+`lw_guest` cookie (Better Auth's `session.create.after` hook), the Worker sends
+`POST ${INDEX_URL}/internal/merge` `{ guestId, userId }` with `Bearer ${INDEX_MERGE_KEY}`, in the
+background with a 5 second timeout, and clears the cookie, so the next guest visit starts a fresh
+guest. A failed merge never fails the sign-in. Without `INDEX_URL` and `INDEX_MERGE_KEY` it does
+nothing and the cookie stays.
 
 ## The API
 

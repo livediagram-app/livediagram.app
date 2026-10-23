@@ -4,6 +4,7 @@
 import { oauthProvider } from '@better-auth/oauth-provider';
 import type { BetterAuthOptions } from 'better-auth';
 import { captcha, emailOTP, jwt } from 'better-auth/plugins';
+import { type MergeConfig, mergeGuestOnSignIn } from './guests.ts';
 import { newUserId } from './ids.ts';
 import { ADMIN_HEADER, sameSecret } from './secrets.ts';
 
@@ -26,6 +27,9 @@ export interface AuthConfig {
   // The teams an account is in, for its access tokens (teams.ts teamsClaim). Left out where there is
   // no database to ask, as when generating the schema.
   teamsFor?: (userId: string) => Promise<{ id: string; name: string; role: string }[]>;
+  // Telling the index when a guest signs in (guests.ts). Left out where there is no index, as when
+  // generating the schema.
+  guestMerge?: Omit<MergeConfig, 'secret'>;
 }
 
 export function authOptions(config: AuthConfig, database: BetterAuthOptions['database']) {
@@ -74,6 +78,18 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
       user: {
         create: { before: async (user) => ({ data: withNames(user) }) },
         update: { before: async (user) => ({ data: withNames(user) }) },
+      },
+      session: {
+        create: {
+          after: async (session, ctx) => {
+            if (!config.guestMerge) return;
+            await mergeGuestOnSignIn(
+              { ...config.guestMerge, secret: config.secret },
+              session.userId,
+              ctx,
+            );
+          },
+        },
       },
     },
     advanced: {

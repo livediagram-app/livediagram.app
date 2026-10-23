@@ -20,6 +20,11 @@ function build(env: Env) {
             : null,
         sendCode: (email, code) => sendCodeEmail(env, email, code),
         teamsFor: (userId) => teamsClaim(env.AUTH_DB, userId),
+        guestMerge: {
+          secure: env.ENVIRONMENT !== 'development',
+          indexUrl: env.INDEX_URL,
+          indexMergeKey: env.INDEX_MERGE_KEY,
+        },
       },
       env.AUTH_DB,
     ),

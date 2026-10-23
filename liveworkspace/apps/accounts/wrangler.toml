@@ -21,9 +21,13 @@ routes = [
 #   ADMIN_TOKEN           guards POST /api/auth/internal/clients (registering an app)
 #   GOOGLE_CLIENT_ID      "Continue with Google"; optional, the button only shows with both
 #   GOOGLE_CLIENT_SECRET
+#   INDEX_MERGE_KEY       accounts' key on the index, for POST /internal/merge when a guest signs in
 [vars]
 ENVIRONMENT = "production"
 BASE_URL = "https://liveworkspace.app"
+# The index service, told when a guest signs in (src/guests.ts). Unset, or without INDEX_MERGE_KEY,
+# the merge is skipped.
+INDEX_URL = "https://liveworkspace.app/api/index"
 EMAIL_FROM = "sign-in@liveworkspace.app"
 TURNSTILE_SITE_KEY = ""
 
@@ -45,6 +49,12 @@ name = "CODE_EMAIL_LIMITER"
 namespace_id = "1002"
 simple = { limit = 3, period = 60 }
 
+# GET /api/auth/guest: once per browser per app, so generous enough for an office behind one IP.
+[[ratelimits]]
+name = "GUEST_LIMITER"
+namespace_id = "1003"
+simple = { limit = 60, period = 60 }
+
 [env.staging]
 name = "liveworkspace-accounts-staging"
 routes = [
@@ -57,6 +67,7 @@ routes = [
 [env.staging.vars]
 ENVIRONMENT = "staging"
 BASE_URL = "https://staging.liveworkspace.app"
+INDEX_URL = "https://staging.liveworkspace.app/api/index"
 EMAIL_FROM = "sign-in@liveworkspace.app"
 TURNSTILE_SITE_KEY = ""
 
@@ -75,3 +86,8 @@ simple = { limit = 10, period = 60 }
 name = "CODE_EMAIL_LIMITER"
 namespace_id = "2002"
 simple = { limit = 3, period = 60 }
+
+[[env.staging.ratelimits]]
+name = "GUEST_LIMITER"
+namespace_id = "2003"
+simple = { limit = 60, period = 60 }
