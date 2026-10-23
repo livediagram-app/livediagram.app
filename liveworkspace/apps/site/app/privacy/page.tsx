@@ -123,12 +123,14 @@ const SECTIONS: LegalSection[] = [
         <li>
           <strong>A guest id.</strong> If you use an app without an account, liveworkspace.app gives
           your browser a random guest id, the same in every app, to link your documents to your
-          browser. It is not tied to your name or email. If you later sign in or create an account,
-          what you made as a guest becomes your account&rsquo;s.
+          browser. It is not tied to your name or email. We note the day it was last handed to an
+          app. If you later sign in or create an account, what you made as a guest becomes your
+          account&rsquo;s.
         </li>
         <li>
           <strong>Your display name and colour</strong>, the ones collaborators see, against your
-          guest id or account.
+          guest id or account. liveworkspace.app keeps them, so they are the same in every app; an
+          account shows its own name until you choose a display name.
         </li>
         <li>
           <strong>Connected AI tools, if you connect one.</strong> If you connect a tool through an
@@ -365,6 +367,8 @@ const SECTIONS: LegalSection[] = [
           Other things are kept only as long as they are useful: anonymous product events for 60
           days, and changes made by connected AI tools for 30 days, so they can be undone. A
           guest&rsquo;s documents have no account to delete: remove them in the Explorer, or ask us.
+          A guest id that no app has been handed for 400 days can&rsquo;t be used again, so its
+          preferences, display name and colour are then deleted; its documents stay.
         </p>
       </>
     ),

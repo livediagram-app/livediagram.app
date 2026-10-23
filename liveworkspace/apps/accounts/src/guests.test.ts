@@ -10,6 +10,7 @@ import {
   readGuestCookie,
   signGuestCookie,
 } from './guests.ts';
+import { readProfiles, writeProfile } from './profiles.ts';
 import { readSettings, writeSettings } from './settings.ts';
 import { testD1 } from './test-d1.ts';
 
@@ -177,6 +178,14 @@ describe('the guest hand-off', () => {
     expect((claims.exp as number) - (claims.iat as number)).toBe(GUEST_TOKEN_TTL_SECONDS);
   });
 
+  it('notes when the guest id was handed out', async () => {
+    const guestId = await readGuestCookie(cookieValueOf(setGuestCookie(await handoff())), SECRET);
+    const row = await env.AUTH_DB.prepare('SELECT seen_at FROM guest_seen WHERE guest_id = ?')
+      .bind(guestId)
+      .first<{ seen_at: number }>();
+    expect(row?.seen_at).toBeGreaterThan(Date.now() - 60_000);
+  });
+
   it('keeps the same guest for a browser that already has the cookie', async () => {
     const first = cookieValueOf(setGuestCookie(await handoff()));
     const again = await handoff(undefined, first);
@@ -301,6 +310,19 @@ describe('signing in as a guest', () => {
     expect(await readSettings(env.AUTH_DB, guestId, 'liveplanner.app')).toMatchObject({
       updatedAt: null,
     });
+  });
+
+  it("moves the guest's colour to the account and forgets the guest", async () => {
+    const cookie = cookieValueOf(setGuestCookie(await handoff()));
+    const guestId = (await readGuestCookie(cookie, SECRET))!;
+    await writeProfile(env.AUTH_DB, guestId, { name: 'Guesty', color: '#22c55e' });
+    const { user } = (await (await signIn(cookie)).json()) as { user: { id: string } };
+    expect((await readProfiles(env.AUTH_DB, [user.id]))[0]).toMatchObject({ color: '#22c55e' });
+    expect(await readProfiles(env.AUTH_DB, [guestId])).toEqual([]);
+    const seen = await env.AUTH_DB.prepare('SELECT count(*) AS n FROM guest_seen').first<number>(
+      'n',
+    );
+    expect(seen).toBe(0);
   });
 
   it('leaves the index alone without a guest cookie, or with a forged one', async () => {

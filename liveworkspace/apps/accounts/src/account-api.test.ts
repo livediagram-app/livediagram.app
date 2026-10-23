@@ -143,6 +143,18 @@ describe('the account API, signed in', () => {
     expect(((await (await call('/tokens')).json()) as { tokens: unknown[] }).tokens).toEqual([]);
   });
 
+  it('reads and sets their own display name and colour', async () => {
+    expect(await (await call('/profile')).json()).toEqual({
+      profile: { id: 'user_ada', name: 'Ada', color: null, createdAt: null, updatedAt: null },
+    });
+    const patched = await call('/profile', {
+      method: 'PATCH',
+      body: { name: 'Ada L', color: '#f97316' },
+    });
+    expect(await patched.json()).toMatchObject({ profile: { name: 'Ada L', color: '#f97316' } });
+    expect((await call('/profile', { method: 'PATCH', body: {} })).status).toBe(400);
+  });
+
   it('reads and patches the settings every app shows', async () => {
     expect(await (await call('/settings')).json()).toEqual({ all: {}, updatedAt: null });
     const patched = await call('/settings', {
@@ -226,6 +238,31 @@ describe('the account API, for the apps', () => {
     expect(lonely.status).toBe(403);
     expect(await lonely.json()).toEqual({ error: 'client_has_no_app' });
     expect((await internal('/tokens/verify', { token: 'lwt_nope' }, NO_APP)).status).toBe(404);
+  });
+
+  it('reads profiles in a batch, and sets your own name or colour', async () => {
+    const guest = 'guest_0b0e8c9a-6d7e-4f3b-9a51-2c1d0e9f8a7b';
+    const set = await internal('/profiles/write', { owner: guest, name: 'Bea', color: '#0ea5e9' });
+    expect(set.status).toBe(200);
+    expect(await set.json()).toMatchObject({
+      profile: { id: guest, name: 'Bea', color: '#0ea5e9' },
+    });
+    const read = await internal(
+      '/profiles/read',
+      { ids: [guest, 'user_ada', 'user_nobody'] },
+      DIAGRAM,
+    );
+    const { profiles } = (await read.json()) as { profiles: { id: string; name: string }[] };
+    expect(profiles.map((p) => [p.id, p.name]).sort()).toEqual([
+      [guest, 'Bea'],
+      ['user_ada', 'Ada'],
+    ]);
+
+    const tooMany = Array.from({ length: 101 }, () => guest);
+    expect((await internal('/profiles/read', { ids: tooMany })).status).toBe(400);
+    expect((await internal('/profiles/read', { ids: ['nobody'] })).status).toBe(400);
+    expect((await internal('/profiles/write', { owner: guest, color: 'url(x)' })).status).toBe(400);
+    expect((await internal('/profiles/write', { owner: 'user_gone', name: 'x' })).status).toBe(404);
   });
 
   it('refuses wrong client credentials', async () => {

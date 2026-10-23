@@ -1,13 +1,15 @@
 // Guests: one identity across every app (liveworkspace/docs/one-explorer-contracts.md "Guests").
 // An app sends the browser to GET /api/auth/guest; this Worker keeps the guest's id in its own
 // long-lived `lw_guest` cookie and hands the app a guest token in the redirect's fragment. When
-// someone signs in with that cookie, the guest's settings move to the account and the index is told
-// to move the guest's things too.
+// someone signs in with that cookie, the guest's settings and profile move to the account and the
+// index is told to move the guest's things too.
 import type { GenericEndpointContext } from 'better-auth';
 import { AUTH_BASE_PATH } from './auth-options.ts';
 import type { Auth } from './auth.ts';
 import type { Env } from './env.ts';
 import { GUEST_ID } from './ids.ts';
+import { noteGuestSeen } from './guest-sweep.ts';
+import { mergeGuestProfile } from './profiles.ts';
 import { mergeGuestSettings } from './settings.ts';
 
 export const GUEST_PATH = '/guest';
@@ -143,6 +145,12 @@ export async function guestHandoff(request: Request, env: Env, auth: Auth): Prom
     (await readGuestCookie(cookieValue(request.headers.get('cookie'), GUEST_COOKIE), secret)) ??
     `guest_${crypto.randomUUID()}`;
 
+  // When the id was last handed out, so one that can never be used again is swept (guest-sweep.ts).
+  // At most a write a day per guest; a failure never stops the hand-off.
+  await noteGuestSeen(env.AUTH_DB, guestId).catch((error: unknown) =>
+    console.error('Guest seen stamp failed:', error),
+  );
+
   const now = Math.floor(Date.now() / 1000);
   // The jwt plugin's own signer, so the token is signed with the keys at /api/auth/jwks and
   // apps check it exactly as they check access tokens.
@@ -183,7 +191,8 @@ export interface MergeConfig {
   // The index Worker's service binding; plain fetch to indexUrl without one (tests, other hosts).
   indexService?: Fetcher;
   indexMergeKey?: string;
-  // The accounts database, where the guest's settings move to the account (settings.ts).
+  // The accounts database, where the guest's settings and profile move to the account (settings.ts,
+  // profiles.ts).
   db?: D1Database;
 }
 
@@ -200,11 +209,14 @@ export async function mergeGuestOnSignIn(
   const header = ctx?.request?.headers.get('cookie') ?? ctx?.headers?.get('cookie') ?? null;
   const guestId = await readGuestCookie(cookieValue(header, GUEST_COOKIE), config.secret);
   if (!ctx || !guestId) return;
-  // Settings live here, not in the index, so they move whatever the index says. Idempotent, and a
+  // Settings and profiles live here, not in the index, so they move whatever the index says. Idempotent, and a
   // failure is only logged: the guest's rows stay for the next sign-in to try again.
   if (config.db) {
     await mergeGuestSettings(config.db, guestId, userId).catch((error: unknown) =>
       console.error('Guest settings merge failed:', error),
+    );
+    await mergeGuestProfile(config.db, guestId, userId).catch((error: unknown) =>
+      console.error('Guest profile merge failed:', error),
     );
   }
   if (!config.indexUrl || !config.indexMergeKey) {

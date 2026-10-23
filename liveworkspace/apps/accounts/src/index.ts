@@ -8,6 +8,7 @@ import { getAuth } from './auth.ts';
 import { CLIENTS_PATH, registerClient } from './clients.ts';
 import { DELETE_ACCOUNT_PATH, deleteAccount } from './delete-account.ts';
 import type { Env } from './env.ts';
+import { sweepIdleGuests } from './guest-sweep.ts';
 import { GUEST_PATH, guestHandoff } from './guests.ts';
 import { indexPurgeConfig, PURGE_RETRY_CRON, retryPendingPurges } from './index-purge.ts';
 import { overCodeLimit } from './rate-limit.ts';
@@ -74,7 +75,8 @@ export default {
 
   // Every 15 minutes (wrangler.toml): closed accounts' purges the index hasn't taken yet are sent
   // again. Once a day as well: team invitations nobody answered expire, and the rest hear their
-  // reminders (liveworkspace/docs/accounts.md "Reminders and expiry").
+  // reminders (liveworkspace/docs/accounts.md "Reminders and expiry"); and the settings and profiles
+  // of guests who can never come back are deleted ("Guests who never come back").
   async scheduled(controller: ScheduledController, env: Env): Promise<void> {
     const purges = await retryPendingPurges(env.AUTH_DB, indexPurgeConfig(env));
     if (purges.sent + purges.failed > 0)
@@ -90,5 +92,8 @@ export default {
       }),
     );
     console.log('[teams] invitation sweep', JSON.stringify(result));
+    // Guests who can never come back: what is kept against their ids goes (src/guest-sweep.ts).
+    const guests = await sweepIdleGuests(env.AUTH_DB);
+    if (guests > 0) console.log('[guests] idle guests swept', guests);
   },
 } satisfies ExportedHandler<Env>;

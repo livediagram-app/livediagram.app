@@ -1,6 +1,7 @@
-# Teams, API tokens, guests and settings
+# Teams, API tokens, guests, settings and profiles
 
-Teams and tokens belong to the liveworkspace account, not to an app, and so do a person's settings. A team made once is the same team in
+Teams and tokens belong to the liveworkspace account, not to an app, and so do a person's settings and
+profile. A team made once is the same team in
 livediagram, liveplanner and every app after them; one API token, or one AI tool connected over
 MCP, works on every app. They are run on liveworkspace.app ([Your account](site.md#your-account-account))
 and kept by the accounts Worker (`apps/accounts`), in its own D1 beside the accounts
@@ -215,6 +216,41 @@ other keys fill the gaps, as many as fit under the limit. Then the guest's rows 
 runs whether or not the index is set up, is safe to run twice, and a failure is logged without
 failing the sign-in: the guest's rows stay for the next sign-in.
 
+## Profiles
+
+A person's display name and presence colour, what collaborators see on their cursor, their comments
+and the presence list, kept with the account (`migrations/0006_profiles.sql`, `src/profiles.ts`), one
+for every app. An app keeps no participants table of its own.
+
+- **An account** shows its account name (the first and last name it registered with) until it sets a
+  display name of its own; clearing that shows the account name again. Its colour is its own to set.
+- **A guest** has whatever it sets, under its guest id.
+- A name is trimmed, 1 to 120 characters, with no control characters; a colour at most 64, and refused
+  when it could load something or break out of a CSS value (the apps' `isSafeColourValue`), since it is
+  painted into every peer's page. Either may be null: no name of its own, or the app's own pick of colour.
+
+An app reads up to 100 ids at once (a presence list, a page of comments): one query, each id found by
+primary key in the profiles and the accounts, so an account that never set anything still answers with
+its name. Ids that are neither are left out. Setting one's own name or colour is one upsert of the
+fields named. An account id with no account behind it is refused (`404 unknown_owner`), so a closed
+account can't be written back.
+
+Closing an account deletes its profile. When a guest signs in, the account keeps its own colour and
+display name and takes the guest's colour when it has none (and the guest's name only when the account
+has no name at all); then the guest's profile goes. Both run beside the settings, in the same hook.
+
+### Guests who never come back
+
+Every guest hand-off stamps when that guest id was last handed out (`guest_seen`, at most one write a
+day per guest). A guest still using an app gets a fresh token before its year is up, so it is never
+more than a year unseen. Once a guest id has gone 400 days unseen its token has lapsed and browsers have
+dropped its cookie (Chrome keeps one at most 400 days), so no app can be handed it again, and the
+daily cron (`17 9 * * *`, `src/guest-sweep.ts`) deletes its settings and profile: up to 500 guests a
+run, the longest unseen first, checked again in the deletes so a guest seen meanwhile keeps everything.
+Its items stay in the index, as every guest's do, until someone deletes them
+([one-explorer-contracts.md](one-explorer-contracts.md#guests)). Signing in removes the guest's stamp
+with the rest of the guest.
+
 ## Closing an account
 
 An app's server asks (`POST /api/auth/delete-account`, with its client credentials and the person's
@@ -222,7 +258,7 @@ access token, `src/delete-account.ts`), and the account closes for every app at 
 
 1. It leaves every team: a team it ran alone is deleted, and one where it was the only admin passes to
    the longest-standing member.
-2. Its settings rows are deleted.
+2. Its settings rows and its profile are deleted.
 3. A purge request for the index is written to `pending_purges` (`migrations/0004_pending_purges.sql`),
    naming the teams deleted in step 1.
 4. The user is deleted, and with it its sessions, linked sign-ins, OAuth tokens and consents, and API
@@ -284,6 +320,8 @@ For the signed-in person, by their session cookie. Writes must come from the sit
 | `POST /api/account/invitations/:member/decline`         | declines                                                                                |
 | `GET` / `POST /api/account/tokens`                      | lists / makes a token (the secret once)                                                 |
 | `DELETE /api/account/tokens/:id`                        | revokes one                                                                             |
+| `GET /api/account/profile`                              | their profile: `{ profile }`                                                            |
+| `PATCH /api/account/profile` `{ name?, color? }`        | sets their display name or colour (null clears); answers `{ profile }`                  |
 | `GET /api/account/settings`                             | their `all` settings: `{ all, updatedAt }`                                              |
 | `PATCH /api/account/settings` `{ all }`                 | patches `all`; answers `{ all, updatedAt }`                                             |
 
@@ -300,5 +338,10 @@ provider's own introspection and remembered per isolate for five minutes):
 | `POST /api/account/internal/tokens/live`    | `{ ids }` (up to 100) → which still work, so an app can end what hangs off a revoked one |
 | `POST /api/account/internal/settings/read`  | `{ owner, app }` → `{ all, app, updatedAt }`                                             |
 | `POST /api/account/internal/settings/write` | `{ owner, app, patch: { all?, app? } }` → `{ all, app, updatedAt }`                      |
+| `POST /api/account/internal/profiles/read`  | `{ ids }` (up to 100) → `{ profiles: Profile[] }`, the ids found                         |
+| `POST /api/account/internal/profiles/write` | `{ owner, name?, color? }` → `{ profile }`; null clears a field                          |
+
+`Profile` is `{ id, name, color, createdAt, updatedAt }`: `name` and `color` may be null, and the two
+times are null for an account that has never set either.
 
 The app side of these is in `@liveworkspace/auth-client` (`src/account.ts`).

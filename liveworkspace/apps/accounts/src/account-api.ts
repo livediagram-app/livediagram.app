@@ -1,14 +1,22 @@
 // The account API under /api/account (liveworkspace/docs/accounts.md "Teams" and "API tokens"):
 //   - for the signed-in person on liveworkspace.app, by their session cookie: their teams, members and
-//     invitations, their API tokens, and their settings shared by every app;
+//     invitations, their API tokens, their settings shared by every app, and their profile;
 //   - for the apps' servers, by their OAuth client credentials (/api/account/internal/*): checking an
 //     API token, making one for a connecting AI tool, a token revoking itself, which tokens still
-//     work, the teams change feed, a team made in an app, and reading and writing someone's settings.
+//     work, the teams change feed, a team made in an app, reading and writing someone's settings, and
+//     reading profiles and setting one's own.
 import { AUTH_BASE_PATH } from './auth-options.ts';
 import type { Auth } from './auth.ts';
 import type { Env } from './env.ts';
 import { sendInviteResponseEmails, sendTeamInviteEmail } from './email.ts';
 import { clientApp } from './clients.ts';
+import {
+  checkProfilePatch,
+  isProfileOwner,
+  MAX_PROFILE_IDS,
+  readProfiles,
+  writeProfile,
+} from './profiles.ts';
 import {
   isSettingsApp,
   isSettingsOwner,
@@ -295,6 +303,20 @@ async function handleSignedIn(
     }
   }
 
+  // Their display name and colour, the ones collaborators see in every app.
+  if (section === 'profile' && !id) {
+    if (method === 'GET') {
+      const [profile] = await readProfiles(db, [actor.id]);
+      return json({ profile: profile ?? null });
+    }
+    if (method === 'PATCH') {
+      const checked = checkProfilePatch(await readBody(request));
+      if (!checked.ok) return error(400, checked.error);
+      const result = await writeProfile(db, actor.id, checked.patch);
+      return result.ok ? json({ profile: result.value }) : answer(result);
+    }
+  }
+
   // The settings every app shows; each app's own are its server's to read and write.
   if (section === 'settings' && !id) {
     if (method === 'GET') {
@@ -494,6 +516,25 @@ async function handleInternal(
     if (typeof patch !== 'object' || Array.isArray(patch)) return error(400, 'invalid_patch');
     const { all, app } = patch as { all?: unknown; app?: unknown };
     return answer(await writeSettings(db, body.owner, body.app, { all, app }));
+  }
+
+  // Display names and colours, for a presence list or a page of comments: up to MAX_PROFILE_IDS in
+  // one query. Ids with neither a profile nor an account are left out.
+  if (route === 'POST profiles/read') {
+    const { ids } = await readBody(request);
+    if (!Array.isArray(ids) || !ids.every(isProfileOwner)) return error(400, 'ids_required');
+    if (ids.length > MAX_PROFILE_IDS) return error(400, 'too_many_ids');
+    return json({ profiles: await readProfiles(db, ids) });
+  }
+
+  // Someone setting their own name or colour in an app. The app vouches for the owner, as for settings.
+  if (route === 'POST profiles/write') {
+    const body = await readBody(request);
+    if (!isProfileOwner(body.owner)) return error(400, 'invalid_owner');
+    const checked = checkProfilePatch(body);
+    if (!checked.ok) return error(400, checked.error);
+    const result = await writeProfile(db, body.owner, checked.patch);
+    return result.ok ? json({ profile: result.value }) : answer(result);
   }
 
   if (route === 'GET teams/changes') {

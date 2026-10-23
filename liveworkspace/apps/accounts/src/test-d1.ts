@@ -38,9 +38,11 @@ export function testD1(): { db: D1Database; sql: DatabaseSync } {
       },
       all: async () => ({ success: true, results: rows(), meta: {} }),
       run: async () => run(),
-      // What a batch runs: a read answers its rows, a write its change count.
+      // What a batch runs: a read (or a write with RETURNING) answers its rows, a write its change count.
       exec: () =>
-        /^\s*select/i.test(query) ? { success: true, results: rows(), meta: {} } : run(),
+        /^\s*select/i.test(query) || /\breturning\b/i.test(query)
+          ? { success: true, results: rows(), meta: {} }
+          : run(),
     };
   };
 

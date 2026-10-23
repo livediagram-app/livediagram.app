@@ -1,7 +1,7 @@
 // An app's server talking to the liveworkspace account API (liveworkspace/docs/accounts.md "Teams",
 // "API tokens" and "Settings"), with its OAuth client credentials: checking an API token, making one
-// for an AI tool someone connects, making a team for someone, reading the teams change feed, and
-// reading and writing someone's settings. These send the client secret, so they run
+// for an AI tool someone connects, making a team for someone, reading the teams change feed,
+// reading and writing someone's settings, and reading profiles and setting one's own. These send the client secret, so they run
 // in the app's Worker only.
 import type { SiteId } from '@liveworkspace/sites';
 import type { ClientCredentials } from './oauth';
@@ -336,4 +336,88 @@ export async function writeSettings(
   }
   if (!response.ok) throw new Error(`settings write failed: ${response.status}`);
   return (await response.json()) as AccountSettings;
+}
+
+// --- Profiles ---
+
+// A person's display name and presence colour, the same in every app. An account shows its account
+// name until it sets a display name; `name` and `color` may be null (no name, or the app's own pick of
+// colour), and the times are null for an account that never set either.
+export interface Profile {
+  id: string;
+  name: string | null;
+  color: string | null;
+  createdAt: number | null;
+  updatedAt: number | null;
+}
+
+// A string sets the field, null clears it, and a field left out stays.
+export interface ProfilePatch {
+  name?: string | null;
+  color?: string | null;
+}
+
+// The most ids the account API takes in one read; readProfiles splits a longer list.
+export const MAX_PROFILE_IDS = 100;
+
+// Why a profile write was refused, from the account API's error code: `invalid_name`,
+// `invalid_color`, `nothing_to_change` or `invalid_owner` (400), or `unknown_owner` (404).
+export class ProfileError extends Error {
+  readonly status: number;
+  readonly code: string;
+  constructor(status: number, code: string) {
+    super(`profile write refused: ${status} ${code}`);
+    this.name = 'ProfileError';
+    this.status = status;
+    this.code = code;
+  }
+}
+
+// The profiles of these owners (account or guest ids the app has seen), for a presence list or a
+// page of comments. Repeated ids are asked once, and a list over MAX_PROFILE_IDS goes in batches of
+// that many, at once. An id with neither a profile nor an account is left out of the answer.
+export async function readProfiles(
+  credentials: ClientCredentials,
+  ids: string[],
+  fetcher: typeof fetch = fetch,
+): Promise<Profile[]> {
+  const unique = [...new Set(ids)];
+  const batches: string[][] = [];
+  for (let at = 0; at < unique.length; at += MAX_PROFILE_IDS) {
+    batches.push(unique.slice(at, at + MAX_PROFILE_IDS));
+  }
+  const pages = await Promise.all(
+    batches.map(async (batch) => {
+      const response = await call(
+        credentials,
+        '/profiles/read',
+        { method: 'POST', body: { ids: batch } },
+        fetcher,
+      );
+      if (!response.ok) throw new Error(`profiles read failed: ${response.status}`);
+      return ((await response.json()) as { profiles: Profile[] }).profiles;
+    }),
+  );
+  return pages.flat();
+}
+
+// Sets someone's own name or colour. `owner` is an id the app has already verified as the person
+// asking (an access token's sub, or a guest token's). Answers the profile as it now is.
+export async function writeProfile(
+  credentials: ClientCredentials,
+  request: { owner: string } & ProfilePatch,
+  fetcher: typeof fetch = fetch,
+): Promise<Profile> {
+  const response = await call(
+    credentials,
+    '/profiles/write',
+    { method: 'POST', body: request },
+    fetcher,
+  );
+  if (response.status === 400 || response.status === 404) {
+    const { error } = (await response.json().catch(() => ({}))) as { error?: string };
+    throw new ProfileError(response.status, error ?? 'invalid_request');
+  }
+  if (!response.ok) throw new Error(`profile write failed: ${response.status}`);
+  return ((await response.json()) as { profile: Profile }).profile;
 }

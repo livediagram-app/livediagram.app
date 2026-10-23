@@ -4,9 +4,12 @@ import {
   createTokenChecker,
   fetchTeamChanges,
   mintAccountToken,
+  ProfileError,
+  readProfiles,
   readSettings,
   SettingsError,
   TeamError,
+  writeProfile,
   writeSettings,
 } from './account';
 
@@ -200,5 +203,46 @@ describe('createTeamFor', () => {
     await expect(
       createTeamFor(CREDENTIALS, { accessToken: 'jwt', name: 'x' }, fetcher),
     ).rejects.toThrow('team create failed: 502');
+  });
+});
+
+describe('readProfiles', () => {
+  it('asks once per id, in batches of at most 100, and joins the answers', async () => {
+    const { fetcher, calls } = fakeFetch((_url, init) => {
+      const { ids } = JSON.parse(String(init.body)) as { ids: string[] };
+      return Response.json({ profiles: ids.map((id) => ({ id, name: id, color: null })) });
+    });
+    const ids = Array.from({ length: 250 }, (_, i) => `user_${i}`);
+    const profiles = await readProfiles(CREDENTIALS, [...ids, 'user_0'], fetcher);
+    expect(profiles).toHaveLength(250);
+    expect(
+      calls.map((c) => (JSON.parse(String(c.init.body)) as { ids: string[] }).ids.length),
+    ).toEqual([100, 100, 50]);
+    expect(calls[0]!.url).toBe('https://liveworkspace.app/api/account/internal/profiles/read');
+  });
+
+  it('makes no call for no ids', async () => {
+    const { fetcher, calls } = fakeFetch(() => Response.json({ profiles: [] }));
+    expect(await readProfiles(CREDENTIALS, [], fetcher)).toEqual([]);
+    expect(calls).toHaveLength(0);
+  });
+});
+
+describe('writeProfile', () => {
+  it('answers the profile as it now is', async () => {
+    const { fetcher, calls } = fakeFetch(() =>
+      Response.json({ profile: { id: 'user_1', name: 'Ada', color: '#fff' } }),
+    );
+    const profile = await writeProfile(CREDENTIALS, { owner: 'user_1', color: '#fff' }, fetcher);
+    expect(profile).toMatchObject({ name: 'Ada' });
+    expect(JSON.parse(String(calls[0]!.init.body))).toEqual({ owner: 'user_1', color: '#fff' });
+  });
+
+  it('throws a ProfileError with the code when refused', async () => {
+    const { fetcher } = fakeFetch(() => Response.json({ error: 'invalid_color' }, { status: 400 }));
+    await expect(
+      writeProfile(CREDENTIALS, { owner: 'user_1', color: 'url(x)' }, fetcher),
+    ).rejects.toMatchObject({ name: 'ProfileError', code: 'invalid_color' });
+    expect(ProfileError).toBeTypeOf('function');
   });
 });
