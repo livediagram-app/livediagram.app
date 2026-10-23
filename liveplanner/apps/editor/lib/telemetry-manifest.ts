@@ -38,6 +38,11 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   // CTA's source from the closed CTA_SOURCES table.
   'Cta·Created',
   'Cta·Opened',
+  // The Explorer's Inbox (lib/explorer-inbox-host.tsx): 'Opened' once a visit, 'Selected' a row followed (by its
+  // kind), 'Loaded' a failed read retried.
+  'Activity·Loaded',
+  'Activity·Opened',
+  'Activity·Selected',
   'Project·Created',
   'Project·Deleted',
   'Project·Duplicated',

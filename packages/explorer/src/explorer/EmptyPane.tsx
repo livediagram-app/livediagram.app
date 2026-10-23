@@ -73,7 +73,7 @@ export function emptyCopy(
       return {
         icon: <InboxIcon />,
         title: 'Nothing waiting on you',
-        description: `Open actions assigned to you, actions you assigned, and comment threads you’re in, collect here across every ${w.lowerOne}.`,
+        description: `Open actions and cards assigned to you, actions you assigned, new form responses and comment threads you’re in collect here, across every ${w.lowerOne}.`,
         cta: false,
       };
     case 'timeline':

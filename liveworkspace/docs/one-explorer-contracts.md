@@ -262,10 +262,22 @@ minute, with retries:
 
 - `PUT /app/items/:id/summary` — `{summary, updatedAt}`.
 - `PUT /app/items/:id/collab/:tabId` — the tab's comment threads and actions, replacing that tab's rows:
-  `{threads: [{elementId, elementLabel, resolved, commentCount, participantIds, mentionedIds, latestText,
-latestAuthorName, firstAt, latestAt}], actions: [{elementId, actionId, elementLabel, name, status,
-assigneeId, assignerId, teamId, createdAt, updatedAt}]}`. The comment text itself stays in the
-  content, beside what it is about; the index keeps what the Inbox needs.
+  `{tabName?, threads: [{elementId, elementLabel, resolved, commentCount, participantIds, mentionedIds,
+latestText, latestAuthorName, latestAuthorColor?, card?, firstAt, latestAt}], actions: [{elementId, actionId,
+elementLabel, name, description?, status, assigneeId, assigneeName?, assignerId, assignerName?, teamId, card?,
+createdAt, updatedAt}]}`. The comment text itself stays in the content, beside what it is about; the index
+  keeps what the Inbox needs: the latest comment's opening, the action's note, and the names on it. Shown text
+  is cut to length rather than refused.
+- Cards and their threads go under the tab id `~cards` (`COLLAB_CARDS_TAB`): each card assigned to someone is an
+  action whose `elementId` is the card's id, and each card's thread a thread, both with `card: {key, type,
+typeLabel, title, board: {tabId, elementId, title, tabName} | null}` (`board` is where the row opens it; null
+  when no board shows it).
+- `PUT /app/items/:id/forms/:tabId` — `{form: {heading, boardTabId, responses, latestAt} | null}`: a form's
+  heading, the tab its responses land on, how many it has taken and when the last came; `null` takes it off the
+  Inbox (deleted, or the tab gone). Pushed by the app's server when a response lands, the form is published,
+  deleted or renamed. `PUT /app/items/:id/forms/:tabId/seen` — `{personId, seen}`: that person has seen the
+  first `seen` responses (a count only grows). Opening the form marks every response so far seen; publishing
+  marks them seen for the publisher.
 
 - `PUT /app/items/:id/events` — `{events: [{type: 'edited', actorId, actorName?, at}]}`, up to 100: who
   wrote to the item and when, for the Timeline and Most Used. Each person's `edited` lands on one event per
@@ -321,12 +333,25 @@ name an app reported, or as a teammate.
 
 ## Inbox
 
-`GET /inbox?app=` — `{threads, actions, timelineNew}` across every app: open actions assigned to or by
-me, and unresolved threads on my items, where I commented, or where I am mentioned, limited to items I
-can reach. Each row carries `app`, `itemId`, `tabId` and `elementId`, so opening it goes to that app.
-`timelineNew` is the sidebar's Timeline count, read in the same batch: events by someone else since my
-last look, up to now (never one still to come), not removed, counted to at most `TIMELINE_NEW_CAP + 1`
-(100, shown as "99+"); 0 before my first look.
+`GET /inbox?app=` — `{threads, actions, forms, timelineNew}` across every app: open actions and cards assigned
+to or by me; unresolved threads (an element's or a card's) on my items, where I commented, or where I am
+mentioned; and forms with responses I haven't seen on items I own or reach through a team (not through a
+link); all limited to items I can reach. Each row carries `app`, `itemId`, `itemTitle`, `itemTeamId`, `tabId`
+and `tabName`, so opening it goes to that app; a thread says why it is there (`mentionsYou`, `youCommented`,
+`onYourItem`). `timelineNew` is the sidebar's Timeline count, read in the same batch: events by someone else
+since my last look, up to now (never one still to come), not removed, counted to at most
+`TIMELINE_NEW_CAP + 1` (100, shown as "99+"); 0 before my first look. One read is three indexed queries and the
+count: about 18 ms with 2,000 of my items among 22,000, each with a form, a thread and an action.
+
+The Explorer shows it in four sections, each hidden when empty: **Assigned to You** (actions and cards, a
+self-assignment only here), **Assigned by You**, **Form Responses** ("3 new responses to Bug Report", opening the
+board they land on) and **Open Comment Threads** (with **Mentioned You**, or **Your plan** when the item is mine
+and I haven't commented). It follows the header's filter: this app's rows, or every app's with each row's app
+mark. The sidebar's badge counts Assigned to You, 0 included once read. Coming back to the browser tab reads it
+again (at most every 30 seconds), keeping the list if that read fails. An app may add rows the index never sees
+(liveplanner's plans in This Browser) through the Explorer's `inbox` prop; they carry the This Browser pill. A
+row opens through the host's `itemHref` with an `ItemPlace`: the tab and element, `open: 'action' | 'comments'`
+for the popover, and `cardId` for a card.
 
 ## What goes away in each app, as it moves
 

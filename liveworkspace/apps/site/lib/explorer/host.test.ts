@@ -47,6 +47,11 @@ describe("every app's addresses", () => {
       'https://www.livediagram.app/document/d1?s=abc',
     );
     expect(itemHref(item({}), { tabId: 't1', elementId: 'e1' })).toMatch(/#t=t1&el=e1$/);
+    // An Inbox row's popover and a card ride in the same deep link.
+    expect(itemHref(item({}), { tabId: 't1', elementId: 'e1', open: 'action' })).toMatch(
+      /#t=t1&el=e1&open=action$/,
+    );
+    expect(itemHref(item({}), { cardId: 'c1' })).toMatch(/\/project\/p1#item=c1$/);
   });
 
   it("makes New, share links, Help and This Browser the app's own", () => {

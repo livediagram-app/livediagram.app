@@ -1,16 +1,32 @@
 'use client';
 
-// The Inbox (GET /inbox): open actions assigned to or by the person and unresolved threads they are in,
-// across every app. One request per filter, shared by the sidebar's counts (the Inbox's, and the Timeline's
-// events since the person last looked) and the Inbox view.
+// The Inbox (GET /inbox): open actions and cards assigned to or by the person, unresolved threads they are in, and
+// forms with responses they haven't seen, across every app. One request per filter, shared by the sidebar's counts
+// (the Inbox's, and the Timeline's events since the person last looked) and the Inbox view. Beside it, the host's
+// own rows (items only this browser holds), marked `local`. Coming back to the browser tab reads it again, keeping
+// what it had if that read fails: a slightly stale list beats an alarm.
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { App, InboxResponse, IndexClient } from '@liveworkspace/index-client';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type {
+  App,
+  InboxAction,
+  InboxResponse,
+  InboxThread,
+  IndexClient,
+} from '@liveworkspace/index-client';
+import type { InboxHost, InboxLocalRows, Located } from '../types';
 import type { AppFilter } from '../words';
 import { isAbort } from './errors';
+import { useReturnToTab } from './useReturnToTab';
+
+/** The Inbox as the Explorer holds it: the index's rows and the host's, the host's marked `local`. */
+export type InboxData = Omit<InboxResponse, 'actions' | 'threads'> & {
+  actions: Located<InboxAction>[];
+  threads: Located<InboxThread>[];
+};
 
 export type InboxState = {
-  data: InboxResponse | null;
+  data: InboxData | null;
   loading: boolean;
   error: boolean;
   reload: () => void;
@@ -18,24 +34,81 @@ export type InboxState = {
   clearTimelineNew: () => void;
 };
 
-export function useInbox(client: IndexClient, app: App, filter: AppFilter): InboxState {
-  const [state, setState] = useState<{ key: string; data: InboxResponse | null; error: boolean }>({
+const NO_LOCAL: InboxLocalRows = { actions: [], threads: [] };
+
+// The host's rows, in the filter. Its store failing lists nothing local; it never fails the Inbox.
+function readLocal(
+  host: InboxHost | undefined,
+  app: App,
+  filter: AppFilter,
+): Promise<InboxLocalRows> {
+  if (!host?.localRows) return Promise.resolve(NO_LOCAL);
+  return host.localRows().then(
+    (rows) =>
+      filter === 'app'
+        ? {
+            actions: rows.actions.filter((r) => r.app === app),
+            threads: rows.threads.filter((r) => r.app === app),
+          }
+        : rows,
+    (e: unknown) => {
+      console.warn('[explorer] inbox-local-read-failed', e);
+      return NO_LOCAL;
+    },
+  );
+}
+
+const byNewest =
+  <T>(at: (row: T) => number) =>
+  (a: T, b: T) =>
+    at(b) - at(a);
+
+function merged(data: InboxResponse, local: InboxLocalRows): InboxData {
+  if (local.actions.length + local.threads.length === 0) return data;
+  const mark = <T extends object>(rows: T[]): Located<T>[] =>
+    rows.map((r) => ({ ...r, local: true as const }));
+  return {
+    ...data,
+    actions: [...data.actions, ...mark(local.actions)].sort(byNewest((a) => a.updatedAt)),
+    threads: [...data.threads, ...mark(local.threads)].sort(byNewest((t) => t.latestAt)),
+  };
+}
+
+export function useInbox(
+  client: IndexClient,
+  app: App,
+  filter: AppFilter,
+  host?: InboxHost,
+): InboxState {
+  const [state, setState] = useState<{ key: string; data: InboxData | null; error: boolean }>({
     key: '',
     data: null,
     error: false,
   });
   const [attempt, setAttempt] = useState(0);
+  // A re-read on returning to the tab: the same key, so the list stays on screen while it reads.
+  const [refresh, setRefresh] = useState(0);
+  const hostRef = useRef(host);
+  hostRef.current = host;
   const key = `${filter}:${attempt}`;
   useEffect(() => {
     const controller = new AbortController();
-    client
-      .inbox(filter === 'app' ? { app } : {}, { signal: controller.signal })
-      .then((data) => setState({ key, data, error: false }))
+    Promise.all([
+      client.inbox(filter === 'app' ? { app } : {}, { signal: controller.signal }),
+      readLocal(hostRef.current, app, filter),
+    ])
+      .then(([data, local]) => {
+        if (!controller.signal.aborted) setState({ key, data: merged(data, local), error: false });
+      })
       .catch((e: unknown) => {
-        if (!isAbort(e)) setState({ key, data: null, error: true });
+        if (isAbort(e) || controller.signal.aborted) return;
+        setState((prev) =>
+          prev.key === key && prev.data ? prev : { key, data: null, error: true },
+        );
       });
     return () => controller.abort();
-  }, [client, app, filter, key]);
+  }, [client, app, filter, key, refresh]);
+  useReturnToTab(() => setRefresh((n) => n + 1));
   const reload = useCallback(() => setAttempt((n) => n + 1), []);
   const clearTimelineNew = useCallback(
     () =>
@@ -56,14 +129,4 @@ export function useInbox(client: IndexClient, app: App, filter: AppFilter): Inbo
   );
 }
 
-/** The sidebar's Inbox count: actions waiting on the person (assigned to them) and open threads. */
-export function inboxCount(
-  data: InboxResponse | null,
-  viewerId: string | null,
-): number | undefined {
-  if (!data) return undefined;
-  const actions = viewerId
-    ? data.actions.filter((a) => a.assigneeId === viewerId && a.status === 'open').length
-    : data.actions.filter((a) => a.status === 'open').length;
-  return actions + data.threads.filter((t) => !t.resolved).length;
-}
+export { inboxCount } from '../explorer/inbox/sections';

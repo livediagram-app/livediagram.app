@@ -16,6 +16,8 @@ import {
   type IndexErrorCode,
 } from './constants';
 import type {
+  CollabFormInput,
+  CollabFormSeen,
   CollabPush,
   CreateFolderInput,
   CreateItemInput,
@@ -347,6 +349,12 @@ export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: Inde
       put(`/items/${enc(itemId)}/summary`, { summary, updatedAt }),
     pushCollab: (itemId: string, tabId: string, push: CollabPush) =>
       put(`/items/${enc(itemId)}/collab/${enc(tabId)}`, push),
+    // A form's response count for the Inbox's Form Responses, or null to take it off.
+    pushForm: (itemId: string, tabId: string, form: CollabFormInput | null) =>
+      put(`/items/${enc(itemId)}/forms/${enc(tabId)}`, { form }),
+    // A person has seen a form's first `seen` responses.
+    pushFormSeen: (itemId: string, tabId: string, seen: CollabFormSeen) =>
+      put(`/items/${enc(itemId)}/forms/${enc(tabId)}/seen`, seen),
     // Up to APP_EVENTS_MAX Timeline events about one item. Safe to send again: an `edited` is one event per
     // person and day whatever the count.
     pushEvents: (itemId: string, events: readonly AppTimelineEvent[]) =>

@@ -19,6 +19,7 @@ import type {
   LinkComponent,
   Placement,
   RenderThumbnail,
+  InboxHost,
   ShareHost,
   ShareUrl,
   TeamRef,
@@ -77,6 +78,8 @@ export type ExplorerProps = {
   /** The Share dialog's extras, per item: its tabs (a link can open one), its embed and live image, help articles and
    *  telemetry. */
   share?: ShareHost;
+  /** The Inbox's extras: rows from items only this browser holds, card glyphs, a help article and telemetry. */
+  inbox?: InboxHost;
   /** The Manage Teams row's address; the row is hidden without it. */
   manageTeamsUrl?: string;
   /** Controlled filter; uncontrolled (remembered per app in this browser) when omitted. */
@@ -215,6 +218,7 @@ function ExplorerInner({
   viewerId,
   shareUrl,
   share,
+  inbox: inboxHost,
   manageTeamsUrl,
   filter: controlledFilter,
   onFilterChange,
@@ -277,6 +281,7 @@ function ExplorerInner({
       renderThumbnail={renderThumbnail}
       shareUrl={shareUrl}
       shareHost={share}
+      inboxHost={inboxHost}
       manageTeamsUrl={manageTeamsUrl}
       openNav={openNav}
       helpHref={helpHref}

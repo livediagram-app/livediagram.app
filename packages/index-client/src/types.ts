@@ -112,8 +112,23 @@ export type CollabThreadInput = {
   mentionedIds: string[];
   latestText: string;
   latestAuthorName: string;
+  // The latest author's colour (a CSS colour), for their avatar; '' for none.
+  latestAuthorColor?: string;
   firstAt: number;
   latestAt: number;
+  // A card's thread rather than an element's (pushed under COLLAB_CARDS_TAB, `elementId` the card's id).
+  card?: CollabCard | null;
+};
+
+/** A card in an item (a Plan card), as the Inbox lists it: its number, type and title, and the board that shows
+ *  it, where its row opens it (null: no board shows it, and the row opens the item at the card). */
+export type CollabCard = {
+  key: number | null;
+  // The card type's id, and its name as the app shows it ("Task").
+  type: string;
+  typeLabel: string;
+  title: string;
+  board: { tabId: string; elementId: string; title: string; tabName: string } | null;
 };
 
 export type ActionStatus = 'open' | 'done' | 'wont-do';
@@ -123,21 +138,81 @@ export type CollabActionInput = {
   actionId: string;
   elementLabel: string;
   name: string;
+  // The action's notes, one line of which the Inbox shows; '' for none.
+  description?: string;
   status: ActionStatus;
   assigneeId: string | null;
+  // The names shown on the row ("Assigned by Ada"); null when unknown.
+  assigneeName?: string | null;
   assignerId: string;
+  assignerName?: string | null;
   teamId: string | null;
   createdAt: number;
   updatedAt: number;
+  // An open card assigned to someone rather than an element's action (pushed under COLLAB_CARDS_TAB, `elementId`
+  // and `actionId` the card's id).
+  card?: CollabCard | null;
 };
 
-export type CollabPush = { threads: CollabThreadInput[]; actions: CollabActionInput[] };
+// `tabName`: the tab's name, shown on its rows ("Board · Sprint 4"); omitted under COLLAB_CARDS_TAB.
+export type CollabPush = {
+  tabName?: string;
+  threads: CollabThreadInput[];
+  actions: CollabActionInput[];
+};
 
-// An Inbox row: where it is, so opening it goes to that app.
-type InboxPlace = { app: App; itemId: string; itemTitle: string; tabId: string };
+/** A form on one tab of an item and how many responses it has taken (`PUT /app/items/:id/forms/:tabId`); `form:
+ *  null` takes it off the Inbox (unpublished, or the tab gone). */
+export type CollabFormInput = {
+  heading: string;
+  // The tab of the board its responses land on, where its row opens; null opens the form's own tab.
+  boardTabId: string | null;
+  responses: number;
+  latestAt: number;
+};
 
-export type InboxThread = InboxPlace & Omit<CollabThreadInput, 'participantIds' | 'mentionedIds'>;
-export type InboxAction = InboxPlace & CollabActionInput;
+/** A person has seen a form's first `seen` responses (`PUT /app/items/:id/forms/:tabId/seen`). */
+export type CollabFormSeen = { personId: string; seen: number };
+
+// An Inbox row: where it is, so opening it goes to that app; `itemTeamId` is the team whose library holds the item.
+type InboxPlace = {
+  app: App;
+  itemId: string;
+  itemTitle: string;
+  itemTeamId: string | null;
+  tabId: string;
+  tabName: string;
+};
+
+export type InboxThread = InboxPlace &
+  Omit<CollabThreadInput, 'participantIds' | 'mentionedIds' | 'latestAuthorColor' | 'card'> & {
+    latestAuthorColor: string;
+    card: CollabCard | null;
+    // Why the person sees it: they are @-mentioned in it, they commented in it, the item is theirs.
+    mentionsYou: boolean;
+    youCommented: boolean;
+    onYourItem: boolean;
+  };
+export type InboxAction = InboxPlace &
+  Omit<CollabActionInput, 'description' | 'assigneeName' | 'assignerName' | 'card'> & {
+    description: string;
+    assigneeName: string | null;
+    assignerName: string | null;
+    card: CollabCard | null;
+  };
+
+/** A form with responses the person hasn't seen, on an item they own or reach through a team. */
+export type InboxForm = {
+  app: App;
+  itemId: string;
+  itemTitle: string;
+  itemTeamId: string | null;
+  tabId: string;
+  heading: string;
+  boardTabId: string | null;
+  unseen: number;
+  latestAt: number;
+};
 
 // A folder's newest items (at most FOLDER_PREVIEW_ITEMS) and how many live items it holds directly, counted up to
 // FOLDER_PREVIEW_COUNT_CAP.
@@ -146,6 +221,7 @@ export type FolderPreview = { folderId: string; itemCount: number; items: Item[]
 export type InboxResponse = {
   threads: InboxThread[];
   actions: InboxAction[];
+  forms: InboxForm[];
   // Timeline events by someone else since the person last looked, at most TIMELINE_NEW_CAP + 1 (read as
   // "99+"); 0 before their first look. In the same filter as the rest.
   timelineNew: number;

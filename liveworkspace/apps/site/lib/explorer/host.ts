@@ -2,7 +2,14 @@
 // (liveworkspace/docs/site.md "The Explorer"): which app the person came from, and every app's addresses (an item,
 // a share link, New, Help, the offline view), all from the sites registry (@liveworkspace/sites).
 
-import type { ExplorerView, HelpHref, ItemHref, Placement, ShareUrl } from '@liveworkspace/explorer';
+import {
+  placeHash,
+  type ExplorerView,
+  type HelpHref,
+  type ItemHref,
+  type Placement,
+  type ShareUrl,
+} from '@liveworkspace/explorer';
 import type { App } from '@liveworkspace/index-client';
 import {
   APP_ITEMS,
@@ -73,16 +80,11 @@ export function rememberApp(app: AppName) {
 
 const appUrl = (app: App) => siteOfApp(app).url;
 
-/** An item, in its own app: its share code when the person reaches it through a link, and the tab and element an
- *  Inbox row points at (`#t=<tab>&el=<element>`, the editors' deep link). */
+/** An item, in its own app: its share code when the person reaches it through a link, and the place an Inbox row
+ *  points at (`#t=<tab>&el=<element>&open=…`, or a card's `&item=`: the editors' deep link, `placeHash`). */
 export const itemHref: ItemHref = (item, at) => {
   const query = item.sharedVia ? `?s=${encodeURIComponent(item.sharedVia)}` : '';
-  const pin =
-    at?.tabId && at.elementId
-      ? `#t=${encodeURIComponent(at.tabId)}&el=${encodeURIComponent(at.elementId)}`
-      : at?.tabId
-        ? `#t=${encodeURIComponent(at.tabId)}`
-        : '';
+  const pin = placeHash(at);
   return `${appUrl(item.app)}${APP_ITEMS[item.app].itemPath}${encodeURIComponent(item.id)}${query}${pin}`;
 };
 

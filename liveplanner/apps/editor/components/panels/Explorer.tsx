@@ -17,6 +17,7 @@ import { getSessionSharePassword } from '@/lib/api-client';
 import { indexClient } from '@/lib/index-client';
 import { itemHref, newPlanHref, shareUrl, useTokenTeams } from '@/lib/explorer-host';
 import { explorerShareHost } from '@/lib/explorer-share-host';
+import { explorerInboxHost } from '@/lib/explorer-inbox-host';
 import { renderPlanThumbnail } from '@/lib/explorer-thumbnail';
 import { trashOpenPlan } from '@/lib/project-delete-undo';
 import type { ExplorerProps } from './Explorer.types';
@@ -47,6 +48,7 @@ function ExplorerImpl({
   const router = useAppNavigation();
   const { isSignedIn, accountUserId } = useAccountBootstrap();
   const shareHost = useMemo(() => explorerShareHost(accountUserId ?? null), [accountUserId]);
+  const inboxHost = useMemo(() => explorerInboxHost(accountUserId ?? null), [accountUserId]);
   const teams = useTokenTeams(isSignedIn);
 
   // The open plan as the index has it (its title, place and star), for the card on top.
@@ -138,6 +140,7 @@ function ExplorerImpl({
         viewerId={accountUserId ?? null}
         shareUrl={shareUrl}
         share={shareHost}
+        inbox={inboxHost}
         // Side by side in a desktop popover; chips over the pane on a phone and in the corner panel that stands
         // beside the new-plan wizard and the status screens, which must stay narrow or it covers their card.
         layout={sheet ? 'sheet' : isMobile || !asPopover ? 'stacked' : 'side'}

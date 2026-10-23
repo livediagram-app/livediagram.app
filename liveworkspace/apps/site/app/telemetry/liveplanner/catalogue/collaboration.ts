@@ -402,6 +402,38 @@ export const SHARE_PASSES: MetricStack = {
   headline: SHARE_LINKS_COPIED,
 };
 
+// The Explorer's Inbox (one-explorer-contracts.md "Inbox"): visits, the rows people follow, and failed reads retried.
+export const INBOX_OPENED = chart(
+  'Activity',
+  'Opened',
+  'Inbox Opened',
+  "The Explorer's Inbox opened, once per visit.",
+);
+
+export const INBOX_ROWS_OPENED = chart(
+  'Activity',
+  'Selected',
+  'Inbox Items Opened',
+  "An action, a Plan card, a comment thread or a form's new responses opened from the Explorer's Inbox.",
+);
+
+export const INBOX_RETRIES = chart(
+  'Activity',
+  'Loaded',
+  'Inbox Retries',
+  "A failed read of the Explorer's Inbox tried again.",
+  { types: ['Retry'], rising: 'bad' },
+);
+
+export const INBOX: MetricStack = {
+  stack: true,
+  title: 'Inbox',
+  blurb:
+    "What waits on people, read in the Explorer's Inbox: visits, the rows they follow, and failed reads retried.",
+  members: [INBOX_OPENED, INBOX_ROWS_OPENED, INBOX_RETRIES],
+  headline: INBOX_ROWS_OPENED,
+};
+
 export const TIMELINE: MetricStack = {
   stack: true,
   title: 'Timeline',

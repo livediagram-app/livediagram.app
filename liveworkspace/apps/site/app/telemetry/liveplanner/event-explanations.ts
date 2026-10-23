@@ -60,6 +60,20 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Action|Resolved|WontDo':
     "Someone closed an assigned action as Won't Do: decided against, closed without being done.",
   'Action|Unresolved|': 'Someone reopened an assigned action that had been marked done.',
+  'Activity|Loaded|Retry':
+    'Someone clicked "Try again" after the Explorer\'s Inbox failed to load, retrying the read.',
+  'Activity|Opened|':
+    "Someone opened the Explorer's Inbox, which lists open actions and Plan cards assigned to them, actions they assigned to others, forms with new responses, and comment threads they're in. Counted once per visit, not on every re-read.",
+  'Activity|Selected|Action':
+    "Someone clicked an action row in the Explorer's Inbox, jumping to the element it's assigned on.",
+  'Activity|Selected|Card':
+    "Someone clicked a Plan card row in the Explorer's Inbox, jumping to the card on its board.",
+  'Activity|Selected|CardThread':
+    "Someone clicked a Plan card's comment-thread row in the Explorer's Inbox, jumping to the card.",
+  'Activity|Selected|FormResponses':
+    "Someone clicked a form's row in the Explorer's Inbox (its new responses), jumping to the board they land on.",
+  'Activity|Selected|Thread':
+    "Someone clicked a comment-thread row in the Explorer's Inbox, jumping to the element it's on.",
   'Canvas|Used|WaterCooler':
     'Someone walked their Avatar-mode character up to a water cooler and took a cup of water.',
   'Canvas|Used|CoffeeMachine':
@@ -2132,6 +2146,10 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Action|Opened': 'Someone opened the popover for an action already assigned to an element.',
   'Action|Resolved': 'Someone marked an assigned action as done.',
   'Action|Unresolved': 'Someone reopened an assigned action that had been marked done.',
+  'Activity|Loaded':
+    "Something happened while loading the Explorer's Inbox (the list of what is waiting on someone).",
+  'Activity|Opened': "Someone opened the Explorer's Inbox.",
+  'Activity|Selected': "Someone clicked a row in the Explorer's Inbox, jumping to what it's about.",
   'Form|Created': 'Someone started a form from Start Planning.',
   'Form|Added': 'Someone added a question to a form.',
   'Form|Linked':

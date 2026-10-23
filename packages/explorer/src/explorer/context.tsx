@@ -49,6 +49,7 @@ import type {
   LinkProps,
   Placement,
   RenderThumbnail,
+  InboxHost,
   ShareHost,
   ShareUrl,
   TeamRef,
@@ -107,6 +108,7 @@ export type ExplorerContextValue = {
   renderThumbnail?: RenderThumbnail;
   shareUrl?: ShareUrl;
   shareHost?: ShareHost;
+  inboxHost?: InboxHost;
   manageTeamsUrl?: string;
   onCreate: (placement: Placement) => void;
   // Inline rename: one row at a time, by id (item or folder).
@@ -191,6 +193,7 @@ export type ExplorerProviderProps = {
   renderThumbnail?: RenderThumbnail;
   shareUrl?: ShareUrl;
   shareHost?: ShareHost;
+  inboxHost?: InboxHost;
   manageTeamsUrl?: string;
   openNav?: () => void;
   helpHref?: HelpHref;
@@ -228,6 +231,7 @@ export function ExplorerProvider({
   renderThumbnail,
   shareUrl,
   shareHost,
+  inboxHost,
   manageTeamsUrl,
   openNav = NO_NAV,
   helpHref,
@@ -272,7 +276,7 @@ export function ExplorerProvider({
     onRenamed: onItemRenamed,
     placeName,
   });
-  const inbox = useInbox(client, app, filter);
+  const inbox = useInbox(client, app, filter, inboxHost);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [dialog, openDialog] = useState<DialogTarget>(null);
   const [expansion] = useState(createExpansion);
@@ -335,6 +339,7 @@ export function ExplorerProvider({
       renderThumbnail,
       shareUrl,
       shareHost,
+      inboxHost,
       manageTeamsUrl,
       onCreate,
       renamingId,
@@ -378,6 +383,7 @@ export function ExplorerProvider({
       renderThumbnail,
       shareUrl,
       shareHost,
+      inboxHost,
       manageTeamsUrl,
       onCreate,
       renamingId,

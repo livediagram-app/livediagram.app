@@ -68,6 +68,8 @@ export const SUMMARY_MAX_BYTES = 2048;
 // What one tab may push to the Inbox at once.
 export const COLLAB_MAX_THREADS = 500;
 export const COLLAB_MAX_ACTIONS = 500;
+// The tab an item pushes its cards and their threads under (a card isn't on one tab): `PUT /app/items/:id/collab/~cards`.
+export const COLLAB_CARDS_TAB = '~cards';
 
 export const TITLE_MAX = 500;
 export const FOLDER_NAME_MAX = 500;
@@ -185,6 +187,8 @@ export const INDEX_ERRORS = [
   'invalid_key',
   'invalid_summary',
   'invalid_collab',
+  'invalid_form',
+  'invalid_form_seen',
   'invalid_events',
   'invalid_password',
   'not_team_member',

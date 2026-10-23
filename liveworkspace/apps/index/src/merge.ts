@@ -125,6 +125,15 @@ export async function handleMerge(request: Request, env: Env): Promise<Response>
       )
       .bind(user, guest),
     db.prepare('DELETE FROM collab_thread_people WHERE person_id = ?').bind(guest),
+    // How far they have read each form's responses: the further of the two.
+    db
+      .prepare(
+        `INSERT INTO collab_form_reads (person_id, item_id, tab_id, seen)
+         SELECT ?, item_id, tab_id, seen FROM collab_form_reads WHERE person_id = ?
+         ON CONFLICT (person_id, item_id, tab_id) DO UPDATE SET seen = MAX(seen, excluded.seen)`,
+      )
+      .bind(user, guest),
+    db.prepare('DELETE FROM collab_form_reads WHERE person_id = ?').bind(guest),
   ]);
   const items = (results[0] as D1Result).meta.changes ?? 0;
   console.log('[index] merged a guest into an account', { items });

@@ -102,7 +102,7 @@ export function createFakeIndex(
   const fail = new Map<string, IndexError>();
   const hold = new Set<string>();
   let waiting: (() => void)[] = [];
-  const inbox: InboxResponse = { threads: [], actions: [], timelineNew: 0 };
+  const inbox: InboxResponse = { threads: [], actions: [], forms: [], timelineNew: 0 };
 
   function answer<T>(
     method: string,
@@ -284,6 +284,7 @@ export function createFakeIndex(
       answer('inbox', [query], options.signal, () => ({
         threads: inbox.threads.filter((t) => !query.app || t.app === query.app),
         actions: inbox.actions.filter((a) => !query.app || a.app === query.app),
+        forms: inbox.forms.filter((f) => !query.app || f.app === query.app),
         timelineNew: inbox.timelineNew,
       })),
     timeline: (query: TimelineQuery = {}, options: { signal?: AbortSignal } = {}) =>

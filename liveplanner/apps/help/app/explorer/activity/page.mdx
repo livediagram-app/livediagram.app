@@ -4,13 +4,13 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Inbox',
   description:
-    'The Explorer Inbox lists what is outstanding for you in every liveworkspace app: actions assigned to you or by you, and open comment threads.',
+    'The Explorer Inbox lists what is outstanding for you in every liveworkspace app: actions and Plan cards assigned to you or by you, new form responses, and open comment threads.',
   path: '/help/explorer/activity/',
 });
 
 <ArticleLayout
   title="Inbox"
-  description="What is waiting on you right now: actions assigned to you or by you, and the comment threads you are part of."
+  description="What is waiting on you right now: actions and cards assigned to you or by you, new form responses, and the comment threads you are part of."
   categoryTitle="Explorer"
   categorySlug="explorer"
 >
@@ -19,23 +19,28 @@ The **Inbox** sits under [Home](/help/explorer/home/) in the Explorer sidebar's 
 
 ## What lands here
 
-The page has three sections:
+The page has four sections, each left out when it is empty:
 
-- **Assigned to You:** every open action assigned to you, until it is done.
+- **Assigned to You:** every open action assigned to you, and every open Plan card whose Assignee is you, until it is done. A card shows its number, title and type, and the board it sits on.
 - **Assigned by You:** open actions you gave to someone else, so you can follow them up.
-- **Threads:** unresolved [comment](/help/collaboration/comments/) threads you are part of: on your own items, threads you wrote in, and threads where someone mentioned you.
+- **Form Responses:** forms in plans you own or reach through a team that have responses you haven't seen yet, such as **3 new responses to Bug Report**. Opening the form marks them seen.
+- **Open Comment Threads:** unresolved [comment](/help/collaboration/comments/) threads you are part of, on elements and on Plan cards: on your own plans, threads you wrote in, and threads where someone mentioned you. A thread where someone mentioned you says **Mentioned You**; one on your plan that you haven't joined yet says **Your plan**.
 
-Done actions and resolved threads are not listed. The Inbox is a list of what is outstanding, not a history. When nothing is waiting, the page says **You’re all caught up**.
+Done actions and cards, and resolved threads, are not listed. The Inbox is a list of what is outstanding, not a history. When nothing is waiting, the page says **Nothing waiting on you**, with a link to how actions work.
 
 With **Plans** chosen at the top of the page, the Inbox lists only what comes from your plans; with **All**, it lists every app's, and each row names its app.
 
 ## Reading and opening a row
 
-Each row names the item it is from and the thing it is about, with the latest change. Click a row and the item opens at that spot, with the action or thread ready, so you can reply, resolve or finish it there. A row from another app opens in that app.
+Each row names the plan it is from and where in it, with the latest change and when: the action's note, or the latest comment with its writer's initials. Click a row and the plan opens at that spot: an action opens with its popover, a thread with its comments, a card on its board with the card open, and a form's responses on the board they land on. A row from another app opens in that app.
+
+Plans kept only in this browser have their rows here too, marked **This Browser**.
+
+Come back to a page that has been open a while and the Inbox reads itself again, so it is never a day out of date.
 
 ## The badge
 
-The Inbox row in the sidebar shows a count of the open actions **assigned to you**, so you can tell from any other page whether something needs you.
+The Inbox row in the sidebar shows a count of the open actions and Plan cards **assigned to you**, so you can tell from any other page whether something needs you. It shows **0** when nothing does, and nothing while the Inbox is still loading.
 
 ## Guests and signing in
 

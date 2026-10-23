@@ -128,6 +128,11 @@ describe('the outbox', () => {
     expect(index.collab).toHaveLength(1);
     expect(index.collab[0]!.tab).toBe('t1');
     expect(index.collab[0]!.push.actions.map((a) => a.actionId)).toEqual(['act-a']);
+    // The tab's name and each action's note and names ride along, for the Inbox's rows.
+    expect(index.collab[0]!.push.tabName).toBe('Board');
+    expect(Object.keys(index.collab[0]!.push.actions[0]!)).toEqual(
+      expect.arrayContaining(['description', 'assigneeName', 'assignerName']),
+    );
     expect(index.summaries[0]!.summary).toMatchObject({ elements: 1, empty: false });
   });
 

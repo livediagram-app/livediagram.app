@@ -26,6 +26,7 @@ import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
 import { manageTeamsUrl } from '@/lib/auth-config';
 import { indexClient } from '@/lib/index-client';
 import { explorerShareHost } from '@/lib/explorer-share-host';
+import { explorerInboxHost } from '@/lib/explorer-inbox-host';
 import { renderPlanThumbnail } from '@/lib/explorer-thumbnail';
 import { arrivedTrashed } from '@/lib/project-delete-undo';
 import { track } from '@/lib/telemetry';
@@ -99,6 +100,7 @@ export function ExplorerHost({
   const teams = useTokenTeams(isSignedIn);
   const viewerId = accountUserId ?? guestId;
   const shareHost = useMemo(() => explorerShareHost(viewerId ?? null), [viewerId]);
+  const inboxHost = useMemo(() => explorerInboxHost(viewerId ?? null), [viewerId]);
   // The synced preferences (docs/specs/007-editor/user-preferences.md): the device cache at once, the server's
   // copy merged in once the person is known.
   const { userPreferences: prefs } = useEditorPreferences({
@@ -146,6 +148,7 @@ export function ExplorerHost({
         viewerId={viewerId}
         shareUrl={shareUrl}
         share={shareHost}
+        inbox={inboxHost}
         manageTeamsUrl={isSignedIn ? manageTeamsUrl : undefined}
         helpHref={explorerHelpHref}
         heroArt={HERO_ART}

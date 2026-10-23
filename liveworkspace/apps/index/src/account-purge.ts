@@ -203,6 +203,7 @@ function personalStatements(db: Db, person: string): (() => D1PreparedStatement)
     byPerson('timeline_dismissals'),
     byPerson('shared_with'),
     byPerson('placement_defaults'),
+    byPerson('collab_form_reads'),
     anonymiseAction('assignee_id'),
     anonymiseAction('assigner_id'),
   ];

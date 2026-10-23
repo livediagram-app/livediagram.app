@@ -14,6 +14,7 @@ import type {
   ShareUrl,
   TeamRef,
 } from '@liveworkspace/explorer';
+import { placeHash } from '@liveworkspace/explorer';
 import { helpArticleHref, type HelpArticleKey } from './help-articles';
 import { APP_SITES } from '@liveworkspace/sites';
 import { currentBearer } from './api/core';
@@ -31,13 +32,8 @@ const siteOf = (app: App) => APP_SITES.find((site) => site.id === `${app}.app`)?
 export const itemHref: ItemHref = (item, at) => {
   const origin = item.app === 'liveplanner' ? '' : siteOf(item.app);
   const query = item.sharedVia ? `?s=${encodeURIComponent(item.sharedVia)}` : '';
-  // The editor's element deep link (lib/collab-deep-link.ts): `#t=<tab>&el=<element>`.
-  const pin =
-    at?.tabId && at.elementId
-      ? `#t=${encodeURIComponent(at.tabId)}&el=${encodeURIComponent(at.elementId)}`
-      : at?.tabId
-        ? `#t=${encodeURIComponent(at.tabId)}`
-        : '';
+  // The editor's deep link (lib/collab-deep-link.ts), built by the Explorer.
+  const pin = placeHash(at);
   return `${origin}${ITEM_PATHS[item.app]}${encodeURIComponent(item.id)}${query}${pin}`;
 };
 

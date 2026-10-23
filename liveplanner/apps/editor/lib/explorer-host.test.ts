@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
+import { parseCollabDeepLink } from './collab-deep-link';
 import { itemHref, newPlanHref, shareUrl, teamsOfToken } from './explorer-host';
 
 describe('explorer host', () => {
@@ -15,6 +16,27 @@ describe('explorer host', () => {
     const elsewhere = itemHref({ id: 'd1', app: 'livediagram', sharedVia: 'CODE' } as never);
     expect(elsewhere).toMatch(/^https?:\/\//);
     expect(elsewhere.endsWith('/d1?s=CODE')).toBe(true);
+  });
+
+  it('links an Inbox row the way the editor reads it back', () => {
+    const plan = { id: 'p1', app: 'liveplanner', sharedVia: null } as never;
+    const hashOf = (href: string) => href.slice(href.indexOf('#'));
+    const action = itemHref(plan, { tabId: 't 1', elementId: 'e1', open: 'action' });
+    expect(action).toBe('/project/p1#t=t+1&el=e1&open=action');
+    expect(parseCollabDeepLink(hashOf(action))).toEqual({
+      at: { tabId: 't 1', elementId: 'e1' },
+      open: 'action',
+      itemId: null,
+    });
+    const card = itemHref(plan, { tabId: 't1', elementId: 'board', cardId: 'c9' });
+    expect(parseCollabDeepLink(hashOf(card))).toEqual({
+      at: { tabId: 't1', elementId: 'board' },
+      open: null,
+      itemId: 'c9',
+    });
+    expect(itemHref(plan, { cardId: 'c9' })).toBe('/project/p1#item=c9');
+    // A form's board: a plain tab pin.
+    expect(itemHref(plan, { tabId: 'b1' })).toBe('/project/p1#t=b1');
   });
 
   it('files New where it was pressed', () => {

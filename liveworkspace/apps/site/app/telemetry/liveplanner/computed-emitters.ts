@@ -425,6 +425,12 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/editor/lib/explorer-share-host.ts UI·Ended': {
     values: ['ShareTourCompleted', 'ShareTourSkipped'],
   },
+  // The Inbox's reports, through its onTelemetry prop (@liveworkspace/explorer InboxPane.tsx, inbox/InboxRows.tsx).
+  'apps/editor/lib/explorer-inbox-host.tsx Activity·Opened': { values: [null] },
+  'apps/editor/lib/explorer-inbox-host.tsx Activity·Selected': {
+    values: ['Action', 'Card', 'Thread', 'CardThread', 'FormResponses'],
+  },
+  'apps/editor/lib/explorer-inbox-host.tsx Activity·Loaded': { values: ['Retry'] },
   'apps/editor/lib/element-telemetry.ts Element·Duplicated': { values: [null, 'ShiftDrag'] },
   'apps/editor/lib/element-telemetry.ts Element·Added': {
     values: ELEMENT_KINDS,

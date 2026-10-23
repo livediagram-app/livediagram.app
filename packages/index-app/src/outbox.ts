@@ -66,6 +66,7 @@ export function editedOf(key: string): AppTimelineEvent | null {
 // A tab's threads and actions capped as the index caps one push: a tab past it keeps its newest.
 export function capCollabPush(push: CollabPush): CollabPush {
   return {
+    ...push,
     threads: [...push.threads].sort((a, b) => b.latestAt - a.latestAt).slice(0, COLLAB_MAX_THREADS),
     actions: [...push.actions]
       .sort((a, b) => b.updatedAt - a.updatedAt)

@@ -2,7 +2,7 @@
 // importing the app's router.
 
 import type { ComponentType, MouseEventHandler, ReactNode } from 'react';
-import type { Item, ShareLink } from '@liveworkspace/index-client';
+import type { InboxAction, InboxThread, Item, ShareLink } from '@liveworkspace/index-client';
 import type { ShareHandOver } from './dialogs/share/handover';
 import type { ShareHelpHref, ShareTelemetry } from './dialogs/share/types';
 
@@ -21,8 +21,15 @@ export type LinkComponent = ComponentType<LinkProps>;
 /** What `itemHref` needs: the item, and how the person reaches it (`sharedVia` is its share code). */
 export type ItemRef = Pick<Item, 'id' | 'app' | 'kind' | 'sharedVia'>;
 
-/** A place inside an item, from an Inbox row: its tab and the element the comment or action is on. */
-export type ItemPlace = { tabId?: string | null; elementId?: string | null };
+/** A place inside an item, from an Inbox row: its tab and the element the comment or action is on, the popover to
+ *  open there (the action's, or the comments'), and a card to open in the item's card panel (a card's row: the card
+ *  sits on the board `elementId` names, or on no board when there is no tab). */
+export type ItemPlace = {
+  tabId?: string | null;
+  elementId?: string | null;
+  open?: 'action' | 'comments' | null;
+  cardId?: string | null;
+};
 
 /** Where New should file the item, from the view it was pressed in. */
 export type Placement = { folderId: string | null; teamId: string | null };
@@ -45,6 +52,28 @@ export type TimelineTelemetry = (
 /** What Home's What Happened reports: an entry opened its item (`Selected`, `WhatHappened`), a summary dealt out
  *  (`Opened`, `Group`), See Timeline followed (`Selected`, `SeeTimeline`). */
 export type HomeTelemetry = (action: 'Selected' | 'Opened', type: string) => void;
+
+/** An Inbox row the host read itself, marked `local`: from an item kept only in this browser, which the index never
+ *  sees. Shown with the This Browser pill. */
+export type Located<T> = T & { local?: true };
+
+/** The host's own Inbox rows, read beside the index's each time the Inbox is read. */
+export type InboxLocalRows = { actions: InboxAction[]; threads: InboxThread[] };
+
+/** What the Inbox reports, for the host's telemetry: the Inbox opened (`Opened`, once a visit), a row followed
+ *  (`Selected`: Action, Card, Thread, CardThread or FormResponses), a failed read retried (`Loaded`, `Retry`). */
+export type InboxTelemetry = (action: 'Opened' | 'Selected' | 'Loaded', type?: string) => void;
+
+/** What the Inbox needs from the host beyond the index: its own items' rows, a card type's glyph, the help article
+ *  on actions its empty state offers, and telemetry. Every member is optional. */
+export type InboxHost = {
+  /** Rows from items only this browser holds. A failure lists none; it never fails the Inbox. */
+  localRows?: () => Promise<InboxLocalRows>;
+  /** A card's type glyph, by its type id; a plain card glyph otherwise. */
+  cardGlyph?: (type: string) => ReactNode;
+  actionsHelpHref?: string;
+  onTelemetry?: InboxTelemetry;
+};
 
 /** What the Share dialog needs from the host beyond a link's address, per item, since the Explorer may list every
  *  app's items: the item's tabs (a link can open one), its embed and live image, help articles, and telemetry. */

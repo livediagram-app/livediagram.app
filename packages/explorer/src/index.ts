@@ -36,6 +36,10 @@ export type {
   LinkComponent,
   Placement,
   RenderThumbnail,
+  InboxHost,
+  InboxLocalRows,
+  InboxTelemetry,
+  Located,
   ShareHost,
   ShareUrl,
   TeamRef,
@@ -73,3 +77,4 @@ export {
   type TeamRole,
 } from './data/accounts';
 export type { ViewModeTelemetry } from './explorer/extras';
+export { placeHash } from './place';

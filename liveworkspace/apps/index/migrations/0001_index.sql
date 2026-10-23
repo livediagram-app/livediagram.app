@@ -209,20 +209,24 @@ CREATE TABLE placement_defaults (
 CREATE INDEX placement_defaults_folder ON placement_defaults (folder_id);
 
 -- What the Inbox needs about each comment thread, pushed by the item per tab. The comments themselves stay
--- in the item's content.
+-- in the item's content. A card's thread (a Plan card's) comes under the tab '~cards', `card` saying which card
+-- and the board that shows it (JSON).
 CREATE TABLE collab_threads (
-  app                TEXT    NOT NULL,
-  item_id            TEXT    NOT NULL REFERENCES items (id) ON DELETE CASCADE,
-  tab_id             TEXT    NOT NULL,
-  element_id         TEXT    NOT NULL,
-  element_label      TEXT    NOT NULL,
-  resolved           INTEGER NOT NULL,
-  comment_count      INTEGER NOT NULL,
-  participant_ids    TEXT    NOT NULL DEFAULT '[]',
-  mentioned_ids      TEXT    NOT NULL DEFAULT '[]',
-  latest_text        TEXT    NOT NULL,
-  latest_author_name TEXT    NOT NULL,
-  first_at           INTEGER NOT NULL,
+  app                 TEXT    NOT NULL,
+  item_id             TEXT    NOT NULL REFERENCES items (id) ON DELETE CASCADE,
+  tab_id              TEXT    NOT NULL,
+  tab_name            TEXT    NOT NULL DEFAULT '',
+  element_id          TEXT    NOT NULL,
+  element_label       TEXT    NOT NULL,
+  resolved            INTEGER NOT NULL,
+  comment_count       INTEGER NOT NULL,
+  participant_ids     TEXT    NOT NULL DEFAULT '[]',
+  mentioned_ids       TEXT    NOT NULL DEFAULT '[]',
+  latest_text         TEXT    NOT NULL,
+  latest_author_name  TEXT    NOT NULL,
+  latest_author_color TEXT    NOT NULL DEFAULT '',
+  card                TEXT    NULL,
+  first_at            INTEGER NOT NULL,
   latest_at          INTEGER NOT NULL,
   PRIMARY KEY (app, item_id, tab_id, element_id)
 );
@@ -240,18 +244,24 @@ CREATE TABLE collab_thread_people (
 );
 CREATE INDEX collab_thread_people_item ON collab_thread_people (item_id, tab_id);
 
+-- An element's action, or an open card assigned to someone (under the tab '~cards', with `card`).
 CREATE TABLE collab_actions (
   app           TEXT    NOT NULL,
   item_id       TEXT    NOT NULL REFERENCES items (id) ON DELETE CASCADE,
   tab_id        TEXT    NOT NULL,
+  tab_name      TEXT    NOT NULL DEFAULT '',
   element_id    TEXT    NOT NULL,
   action_id     TEXT    NOT NULL,
   element_label TEXT    NOT NULL,
   name          TEXT    NOT NULL,
+  description   TEXT    NOT NULL DEFAULT '',
   status        TEXT    NOT NULL CHECK (status IN ('open', 'done', 'wont-do')),
   assignee_id   TEXT    NULL,
+  assignee_name TEXT    NULL,
   assigner_id   TEXT    NOT NULL,
+  assigner_name TEXT    NULL,
   team_id       TEXT    NULL,
+  card          TEXT    NULL,
   created_at    INTEGER NOT NULL,
   updated_at    INTEGER NOT NULL,
   PRIMARY KEY (app, item_id, tab_id, element_id, action_id)
@@ -259,6 +269,28 @@ CREATE TABLE collab_actions (
 CREATE INDEX collab_actions_item ON collab_actions (item_id, tab_id);
 CREATE INDEX collab_actions_assignee ON collab_actions (assignee_id, status, updated_at DESC);
 CREATE INDEX collab_actions_assigner ON collab_actions (assigner_id, status, updated_at DESC);
+
+-- A form on an item's tab and how many responses it has taken, pushed by the item's app on each response; and how
+-- many of them each person has seen. The Inbox's Form Responses lists those with more than the person has seen.
+CREATE TABLE collab_forms (
+  app          TEXT    NOT NULL,
+  item_id      TEXT    NOT NULL REFERENCES items (id) ON DELETE CASCADE,
+  tab_id       TEXT    NOT NULL,
+  heading      TEXT    NOT NULL,
+  board_tab_id TEXT    NULL,
+  responses    INTEGER NOT NULL,
+  latest_at    INTEGER NOT NULL,
+  PRIMARY KEY (item_id, tab_id)
+);
+
+CREATE TABLE collab_form_reads (
+  person_id TEXT    NOT NULL,
+  item_id   TEXT    NOT NULL REFERENCES items (id) ON DELETE CASCADE,
+  tab_id    TEXT    NOT NULL,
+  seen      INTEGER NOT NULL,
+  PRIMARY KEY (person_id, item_id, tab_id)
+);
+CREATE INDEX collab_form_reads_item ON collab_form_reads (item_id);
 
 -- An item purged from the index whose app has not yet confirmed dropping its content. The cron tells
 -- the app within 15 minutes and retries each (at most hourly) until the app answers.

@@ -1,6 +1,7 @@
 // A response (docs/specs/030-forms/forms.md "What a response makes", blueprint §11 "The response write"): checked
 // against the form as its tab holds it now, numbered, and made into one card in the form's destination, which the
 // room relays to everyone with the board open.
+import { pushFormInboxByCode } from './form-inbox';
 import type { FormResponseAccepted, FormResponseRefusal } from '@liveplanner/api-schema';
 import {
   RESPONSE_BODY_MAX,
@@ -266,6 +267,8 @@ function accepted(
   const { env } = ctx;
   console.info('[forms] form.response.accepted', { projectId: doc.id, number, preview });
   ctx.waitUntil?.(reportServerEvent(env, 'Form', 'Sent', preview ? 'Preview' : 'Response'));
+  // The Inbox's Form Responses: one more for every reader who hasn't seen it.
+  ctx.waitUntil?.(pushFormInboxByCode(env, code));
   if (!preview)
     ctx.waitUntil?.(
       notifyFormResponse(

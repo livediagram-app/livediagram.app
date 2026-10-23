@@ -9,7 +9,7 @@
 
 import { useEffect, useState, type ReactNode } from 'react';
 import type { ItemCount } from '../data/useItemCount';
-import { inboxCount } from '../data/useInbox';
+import { inboxTotal } from './inbox/sections';
 import { CloseIcon, HamburgerIcon, HelpMarkIcon, PlusIcon } from '../ui/icons';
 import { FOCUS_RING } from '../ui/classes';
 import type { ExplorerView } from '../views';
@@ -115,7 +115,7 @@ export function HomeHero({
             tone: 'sky' as const,
           },
         ].filter((p) => p.label)
-      : heroPills({ items, inbox: inboxCount(inbox.data, viewerId) }, kind);
+      : heroPills({ items, inbox: inboxTotal(inbox.data, viewerId) }, kind);
   const greeting = firstRun
     ? `Welcome to ${firstRun.manifest?.name ?? ''}.`
     : hour === null

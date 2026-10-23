@@ -1,6 +1,7 @@
 // /api/projects/:id/tabs/:tabId/form-link and .../form-seen (docs/specs/030-forms/forms.md "Publishing and the form
 // link", "Who may do what"): a Form tab's link, as its project's people see and change it. Anyone who may read the
 // tab sees the response count; only an Editor sees the code and publishes, opens, closes or deletes the link.
+import { pushFormInbox, pushFormSeenInbox } from '../forms/form-inbox';
 import { resendPlanTab } from '../plan-room/plan-content';
 import type { FormLinkResponse } from '@liveplanner/api-schema';
 import { FORM_SUSPENSIONS_MAX, destinationType, publishProblems } from '@liveplanner/forms';
@@ -92,11 +93,16 @@ export async function handleFormLinkRoutes(ctx: PlanRouteContext): Promise<Respo
   if (!doc) return missingProject(ctx, projectId);
   if (!(await gateRead(ctx, projectId, doc.ownerId, doc.teamId, tabId))) return forbidden();
   const editor = await gateEdit(ctx, projectId, doc.ownerId, doc.teamId, tabId);
+  // The Inbox's Form Responses (forms/form-inbox.ts), told after the answer.
+  const later = (work: Promise<void>) => (ctx.waitUntil ? ctx.waitUntil(work) : void work);
 
   if (segments[5] === 'form-seen') {
     if (request.method !== 'POST') return methodNotAllowed();
     const live = await getLiveFormLink(env, projectId, tabId);
-    if (live) await markFormSeen(env, live.code, owner);
+    if (live) {
+      await markFormSeen(env, live.code, owner);
+      later(pushFormSeenInbox(env, projectId, tabId, owner));
+    }
     return answer(ctx, projectId, tabId, owner, editor);
   }
 
@@ -116,7 +122,10 @@ export async function handleFormLinkRoutes(ctx: PlanRouteContext): Promise<Respo
     }
     const upToDate = (await unseenResponses(env, live.code, owner)) === 0;
     const sent = await respond(ctx, live.code, { preview: true });
-    if (sent.status === 201 && upToDate) await markFormSeen(env, live.code, owner);
+    if (sent.status === 201 && upToDate) {
+      await markFormSeen(env, live.code, owner);
+      later(pushFormSeenInbox(env, projectId, tabId, owner));
+    }
     return sent;
   }
 
@@ -134,6 +143,11 @@ export async function handleFormLinkRoutes(ctx: PlanRouteContext): Promise<Respo
     if (!made) return conflict('form_already_published');
     // The publisher has seen every response so far (none, or the suspended link's).
     await markFormSeen(env, made.code, owner);
+    later(
+      pushFormInbox(env, projectId, tabId).then(() =>
+        pushFormSeenInbox(env, projectId, tabId, owner),
+      ),
+    );
     // The link's tab name and heading (the Inbox's Form Responses) come with the plan's next push.
     await resendPlanTab(env, tabId);
     console.info('[forms] form.published', { projectId });
@@ -156,6 +170,7 @@ export async function handleFormLinkRoutes(ctx: PlanRouteContext): Promise<Respo
   }
   if (request.method === 'DELETE') {
     await deleteFormLink(env, live.code, Date.now());
+    later(pushFormInbox(env, projectId, tabId));
     console.info('[forms] form.deleted', { projectId });
     return answer(ctx, projectId, tabId, owner, editor);
   }

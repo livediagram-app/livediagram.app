@@ -27,6 +27,7 @@ import {
 import type { CollabPush, IndexAppClient, ItemSummary } from '@liveworkspace/index-client';
 import { projectStatsSql } from '../db/tab-stats';
 import { isEmptyCount, type ContentSummary } from '../db/content-summary';
+import { pushFormInbox } from '../forms/form-inbox';
 import { indexAppClient } from '../index-service';
 import { reportOwnerActivity } from '../person/account-app';
 import type { PlanEnv } from '../types';
@@ -45,8 +46,10 @@ type TabRow = {
 export function collabPushOf(
   threads: readonly CollabThreadRow[],
   actions: readonly CollabActionRow[],
+  tabName?: string,
 ): CollabPush {
   return capCollabPush({
+    ...(tabName === undefined ? {} : { tabName }),
     threads: threads.map((t) => ({
       elementId: t.elementId,
       elementLabel: t.elementLabel,
@@ -56,6 +59,7 @@ export function collabPushOf(
       mentionedIds: t.mentionedIds,
       latestText: t.latestText,
       latestAuthorName: t.latestAuthorName ?? '',
+      latestAuthorColor: t.latestAuthorColor ?? '',
       firstAt: t.firstAt,
       latestAt: t.latestAt,
     })),
@@ -64,9 +68,12 @@ export function collabPushOf(
       actionId: a.actionId,
       elementLabel: a.elementLabel,
       name: a.name,
+      description: a.description,
       status: a.status,
       assigneeId: a.assigneeUserId ?? a.assigneeMemberId ?? null,
+      assigneeName: a.assigneeName,
       assignerId: a.assignerId,
+      assignerName: a.assignerName,
       teamId: a.teamId,
       createdAt: a.createdAt,
       updatedAt: a.updatedAt,
@@ -219,6 +226,7 @@ export async function drainOutbox(
       .all<OutboxRow>()
   ).results;
   const formStmts: D1PreparedStatement[] = [];
+  const formTabs: string[] = [];
   const outcome = await drainIndexOutbox(planId, rows, client, {
     collab: async (tabId) => {
       const tab = await env.PLAN_DB.prepare(
@@ -228,10 +236,12 @@ export async function drainOutbox(
         .bind(planId, tabId)
         .first<TabRow>();
       const parsed = tab ? parseTab(tab.data) : { elements: [], form: null };
-      if (tab && parsed.form)
+      if (tab && parsed.form) {
         formStmts.push(formLinkStatement(env, planId, tabId, tab, parsed.form));
+        formTabs.push(tabId);
+      }
       const found = collabIndexRowsFromElements(parsed.elements);
-      return collabPushOf(found.threads, found.actions);
+      return collabPushOf(found.threads, found.actions, tab?.name);
     },
     summary: async () => {
       const { summary, savedAt, ownerId } = await readContentSummary(env, planId);
@@ -240,7 +250,11 @@ export async function drainOutbox(
     // The owner's newest activity, for liveworkspace's onboarding emails; a guest's is not sent.
     onSummary: (ownerId, at) => reportOwnerActivity(env, ownerId, at),
   });
-  if (formStmts.length > 0) await env.DB.batch(formStmts);
+  if (formStmts.length > 0) {
+    await env.DB.batch(formStmts);
+    // A form's heading and board as the Inbox shows them (forms/form-inbox.ts).
+    await Promise.all(formTabs.map((tabId) => pushFormInbox(env, planId, tabId)));
+  }
   if (outcome.done.length > 0)
     await env.PLAN_DB.prepare('DELETE FROM outbox WHERE id IN (SELECT value FROM json_each(?))')
       .bind(JSON.stringify(outcome.done))
