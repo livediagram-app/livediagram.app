@@ -1,24 +1,16 @@
 // The forward-looking half of the feed (docs/specs/013-workspace/timeline.md §4.5).
 //
-// Everything else on the Timeline is emitted by the write that caused
-// it. These two can't be: nothing HAPPENS when a credential drifts
-// within a week of expiring, so a daily pass has to notice. It rides
-// the 03:00 cron that already sweeps retention.
+// Everything else on the Timeline is emitted by the write that caused it. A share link drifting within a week of
+// expiring can't be: nothing HAPPENS, so a daily pass has to notice. It rides the 03:00 cron that already sweeps
+// retention. An API token about to expire is liveworkspace's to warn about (liveworkspace/docs/accounts.md "API
+// tokens"), since the tokens are its own.
 //
-// Deliberately NOT folded into the existing token-expiry email sweep
-// (email/token-expiry.ts), which returns early when RESEND_API_KEY is
-// unset. A self-hosted deployment with no email provider still deserves
-// to be told its integration is about to break — that is exactly the
-// kind of silent change this feed exists to surface (docs/specs/002-project-scope/open-source-and-business-model.md: never
-// degrade the core product on a missing SaaS key).
-//
-// Idempotent by construction: both emits hit the timeline UNIQUE key on
+// Idempotent by construction: each emit hits the timeline UNIQUE key on
 // (source_type, source_id, event_type), so re-running every day for the
-// seven days a credential sits in the window updates one row rather
+// seven days a link sits in the window updates one row rather
 // than writing seven.
 
 import type { Env } from '../types';
-import { recordTokenExpiring } from './account-events';
 import { recordShareLinkExpiring } from './document-events';
 
 const WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
@@ -30,23 +22,6 @@ const SWEEP_LIMIT = 200;
 
 export async function runTimelineExpirySweep(env: Env, now = Date.now()): Promise<number> {
   let emitted = 0;
-
-  const tokens = await env.DB.prepare(
-    `SELECT id, owner_id, name, expires_at FROM api_tokens
-      WHERE revoked = 0 AND expires_at > ?1 AND expires_at <= ?2
-      ORDER BY expires_at ASC LIMIT ?3`,
-  )
-    .bind(now, now + WINDOW_MS, SWEEP_LIMIT)
-    .all<{ id: string; owner_id: string; name: string | null; expires_at: number }>();
-
-  for (const token of tokens.results ?? []) {
-    await recordTokenExpiring(
-      env,
-      { id: token.id, name: token.name ?? 'API token', expiresAt: token.expires_at },
-      token.owner_id,
-    );
-    emitted += 1;
-  }
 
   // Share links carry their expiry on the link, not the document, so the
   // join is what turns "this code lapses Friday" into "your Payments

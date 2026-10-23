@@ -1,23 +1,14 @@
-// The expiry sweep writes `token_expiring` and `share_link_expiring`
-// FUTURE-dated, so they land in the timeline band above Today whose whole
-// purpose is telling the owner about breakage BEFORE it happens (docs/specs/013-workspace/timeline.md
-// §4.5). Nothing ever took those rows back, so the two actions that make the
-// warning untrue — revoking the credential, or extending the link's deadline —
-// left it standing: the feed counted down to a token expiry directly above its
-// own "API Token Revoked" row.
-//
-// These cases pin the retraction at each of the four sites, and pin that it is
-// NARROW: the token's own `token_created` row shares its source id, so a
-// retraction keyed on source alone would erase real history to withdraw a
-// warning. Every assertion below on the eventType argument is load-bearing for
-// that reason, not incidental.
+// The expiry sweep writes `share_link_expiring` FUTURE-dated, so it lands in the timeline band above Today whose
+// whole purpose is telling the owner about breakage BEFORE it happens (docs/specs/013-workspace/timeline.md §4.5).
+// The actions that make the warning untrue (revoking the link, or extending its deadline) take it back. These cases
+// pin the retraction at each site, and pin that it is NARROW: every assertion on the eventType argument is
+// load-bearing, since a retraction keyed on source alone would erase real history to withdraw a warning.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Env } from '../types';
 
 const { db } = vi.hoisted(() => ({
   db: {
     // tokens.ts
-    listApiTokensByOwner: vi.fn(),
     mintApiToken: vi.fn(),
     revokePresentedToken: vi.fn(),
     // document-share-routes.ts
@@ -43,8 +34,10 @@ vi.mock('../timeline', () => ({
 }));
 vi.mock('../email/client', () => ({ emailEnabled: () => false }));
 vi.mock('../email/notifications', () => ({ notifyFirstShare: vi.fn(async () => {}) }));
-// Revoking also ends the token's workbench access (routes/tokens.ts); that path is tested in workbench-end.test.ts.
-vi.mock('../workbench-end', () => ({ endWorkbenchAccess: vi.fn(async () => {}) }));
+// Revoking also ends the token's workbench access (routes/tokens.ts), in its owner's workbench store.
+vi.mock('../workbench-store', () => ({
+  workbenchStore: () => ({ endAccess: vi.fn(async () => {}) }),
+}));
 
 import { makeTestRouteContext } from './test-route-context';
 import { handleTokens } from './tokens';
@@ -66,7 +59,6 @@ beforeEach(() => {
   for (const fn of Object.values(db)) if (typeof fn === 'function') fn.mockReset();
   db.retractTimelineWarning.mockResolvedValue(undefined);
   db.revokePresentedToken.mockResolvedValue(undefined);
-  db.listApiTokensByOwner.mockResolvedValue([{ id: 'tok_1', name: 'CI' }]);
   db.getDocument.mockResolvedValue({ id: 'd_1', ownerId: 'user_1', tabs: [] });
   db.listShareLinks.mockResolvedValue([{ code: 'c1' }, { code: 'c2' }]);
   db.setDocumentShare.mockResolvedValue(undefined);
@@ -75,34 +67,21 @@ beforeEach(() => {
   db.extendShareLink.mockResolvedValue({ code: 'c1', expiresAt: 9_999 });
 });
 
-describe('a token revoking itself retracts its expiry warning', () => {
-  const selfRevoke = (waitUntil: (p: Promise<unknown>) => void) =>
-    makeTestRouteContext('DELETE', '/api/tokens/current', {
-      accountUserId: null,
-      owner: 'user_1',
-      token: { id: 'tok_1', readOnly: false },
-      headers: { Authorization: 'Bearer lwt_secret' },
-      waitUntil,
-    });
-
-  it('retracts token_expiring for the revoked token id', async () => {
+describe('a token revoking itself', () => {
+  // An API token's expiry warning is liveworkspace's (it keeps the tokens), so this feed holds no token_expiring
+  // row to retract: the revoke records only its own event.
+  it('records the revoke and retracts nothing', async () => {
     const { waitUntil, settle } = deferred();
-    const res = await handleTokens(selfRevoke(waitUntil));
-    expect(res.status).toBe(204);
-    await settle();
-    expect(db.retractTimelineWarning).toHaveBeenCalledWith(
-      expect.anything(),
-      'account',
-      'tok_1',
-      'token_expiring',
+    const res = await handleTokens(
+      makeTestRouteContext('DELETE', '/api/tokens/current', {
+        accountUserId: null,
+        owner: 'user_1',
+        token: { id: 'tok_1', name: 'CI', readOnly: false, expiresAt: 99 },
+        headers: { Authorization: 'Bearer lwt_secret' },
+        waitUntil,
+      }),
     );
-  });
-
-  it('leaves the timeline alone when the token was already gone', async () => {
-    db.listApiTokensByOwner.mockResolvedValue([]);
-    const { waitUntil, settle } = deferred();
-    const res = await handleTokens(selfRevoke(waitUntil));
-    expect(res.status).toBe(404);
+    expect(res.status).toBe(204);
     await settle();
     expect(db.retractTimelineWarning).not.toHaveBeenCalled();
   });

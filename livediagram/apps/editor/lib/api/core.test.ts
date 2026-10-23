@@ -380,7 +380,7 @@ describe('apiFetch under a workbench session', () => {
 
     await expect(
       apiFetch(`${API_BASE}/folders`, {
-        headers: { Authorization: `Bearer lvw_${'s'.repeat(43)}` },
+        headers: { Authorization: `Bearer lvw_${'s'.repeat(43)}.${'0f'.repeat(32)}` },
       }),
     ).rejects.toBeInstanceOf(WorkbenchConfinedError);
     expect(fetchMock).not.toHaveBeenCalled();

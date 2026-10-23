@@ -51,9 +51,10 @@ describe('the timeline event catalogue in the spec', () => {
     expect([...catalogueTypes()].filter((t) => !known.has(t))).toEqual([]);
   });
 
-  // Retired here: document_renamed, and the team administration types. Teams are run on liveworkspace.app, so
-  // this worker writes none of those; the types stay in the vocabulary so rows already stored still render.
-  it('only retires document_renamed and the team administration types: every other type is still emitted', () => {
+  // Retired here: document_renamed, the team administration types and token_expiring. Teams and API tokens are run
+  // on liveworkspace.app, so this worker writes none of those; the types stay in the vocabulary so rows already
+  // stored still render.
+  it('only retires document_renamed, the team administration types and token_expiring: every other type is still emitted', () => {
     const emitted = emittedTypes();
     expect(TIMELINE_EVENT_TYPES.filter((t) => !emitted.has(t))).toEqual([
       'document_renamed',
@@ -68,6 +69,7 @@ describe('the timeline event catalogue in the spec', () => {
       'team_deleted',
       'team_invite_link_enabled',
       'team_invite_link_disabled',
+      'token_expiring',
     ]);
   });
 });

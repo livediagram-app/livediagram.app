@@ -108,7 +108,7 @@ let end: Mock<WorkbenchSession['end']>;
 function sessionOf(): WorkbenchSession {
   return {
     scope: 'workspace',
-    secret: `lvw_${'a'.repeat(43)}`,
+    secret: `lvw_${'a'.repeat(43)}.${'0f'.repeat(32)}`,
     documentId: null,
     tabId: null,
     shareCode: null,
@@ -208,9 +208,7 @@ describe('WorkspaceFrame', () => {
     mount();
 
     act(() =>
-      listeners.forEach((l) =>
-        l({ type: 'livediagram:open', v: 1, to: { documentId: 'doc-1' } }),
-      ),
+      listeners.forEach((l) => l({ type: 'livediagram:open', v: 1, to: { documentId: 'doc-1' } })),
     );
 
     expect(window.location.pathname).toBe('/embed/workbench/document/doc-1');
@@ -266,8 +264,6 @@ describe('WorkspaceFrame', () => {
     expect(`${window.location.pathname}${window.location.search}`).toBe(
       '/embed/workbench/explorer/team?id=team1&folder=tf1',
     );
-    expect(sent('livediagram:place').filter((m) => 'view' in m && m.view === 'folder')).toEqual(
-      [],
-    );
+    expect(sent('livediagram:place').filter((m) => 'view' in m && m.view === 'folder')).toEqual([]);
   });
 });

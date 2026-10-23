@@ -1,4 +1,4 @@
-import type { DocumentRouteContext, WorkbenchContext } from './context';
+import type { DocumentRouteContext, RouteContext, WorkbenchContext } from './context';
 import type { Env, DocumentEnv } from '../types';
 
 // Shared test builder for RouteContext (docs/specs/003-system-architecture/testing.md). Eight route test
@@ -26,7 +26,7 @@ export function makeTestRouteContext(
     verifiedUserId?: string | null;
     accountEmail?: string | null;
     // The API token the request presented (docs/specs/024-agents/agent-changesets.md).
-    token?: { id: string; readOnly?: boolean } | null;
+    token?: RouteContext['token'];
     // The workbench session the request presented (docs/specs/013-workspace/workbench-embeds.md).
     workbench?: WorkbenchContext | null;
     // JSON-encoded into the request body when present.

@@ -1250,25 +1250,24 @@ Teams are for accounts only, so none of these events ever reach a guest scope.
 
 ### 4.5 Account and housekeeping
 
-| `eventType`           | Fires when                                                                            | Notes                                                                      |
-| --------------------- | ------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `token_created`       | `POST /api/tokens` ([Public API and API tokens](../015-api/public-api-and-tokens.md)) |                                                                            |
-| `token_revoked`       | `DELETE /api/tokens/:id`: "API Token Revoked" / the token's name                      | Withdraws the token's `token_expiring` warning first                       |
-| `token_expiring`      | the existing daily expiry-warning cron                                                | **Future-dated**: `occurred_at` is the expiry, not now                     |
-| `share_link_expiring` | the share-expiry cron ([Share-link expiry](share-link-expiry.md))                     | Future-dated                                                               |
-| `folder_created`      | `POST /api/folders`, personal or team: "Folder Created" / the folder's name           | The person who made it only                                                |
-| `folder_deleted`      | `DELETE /api/folders/:id`: "Folder Deleted" / the folder's name                       | The person who deleted it only; a tombstone ("reads its name first" below) |
-| `image_uploaded`      | image upload ([Image element + per-owner gallery](../009-elements/images.md))         | Coalesced per day like editing                                             |
+| `eventType`           | Fires when                                                                                                                           | Notes                                                                      |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| `token_created`       | `POST /api/tokens` ([Public API and API tokens](../015-api/public-api-and-tokens.md))                                                |                                                                            |
+| `token_revoked`       | `DELETE /api/tokens/current`: "API Token Revoked" / the token's name                                                                 |                                                                            |
+| `token_expiring`      | Retired here: an API token's expiry warning is liveworkspace's, which keeps the tokens (liveworkspace/docs/accounts.md "API tokens") | Future-dated; the type stays so stored rows render                         |
+| `share_link_expiring` | the share-expiry cron ([Share-link expiry](share-link-expiry.md))                                                                    | Future-dated                                                               |
+| `folder_created`      | `POST /api/folders`, personal or team: "Folder Created" / the folder's name                                                          | The person who made it only                                                |
+| `folder_deleted`      | `DELETE /api/folders/:id`: "Folder Deleted" / the folder's name                                                                      | The person who deleted it only; a tombstone ("reads its name first" below) |
+| `image_uploaded`      | image upload ([Image element + per-owner gallery](../009-elements/images.md))                                                        | Coalesced per day like editing                                             |
 
-**A warning that stops being true is withdrawn, not corrected.** The two
-future-dated rows above are the only events the feed states before they
-happen, which makes them the only ones the owner can act on to stop them
-happening. Revoking a token, revoking a share link, or extending a link's
-deadline all leave a standing warning quoting a date that will never
-arrive: the feed counted down to a token expiry sitting directly above its
-own past-tense "API Token Revoked" row, which reads as the product not
-knowing what the owner just did. So each of those four routes retracts the
-matching warning — `retractTimelineWarning(sourceType, sourceId, eventType)`.
+**A warning that stops being true is withdrawn, not corrected.** The
+future-dated row above is the only event the feed states before it
+happens, which makes it the only one the owner can act on to stop it
+happening. Revoking a share link or extending a link's deadline would
+leave a standing warning quoting a date that will never arrive, which
+reads as the product not knowing what the owner just did. So each of
+those routes retracts the matching warning —
+`retractTimelineWarning(sourceType, sourceId, eventType)`.
 
 Three constraints shaped it:
 
@@ -1277,11 +1276,11 @@ Three constraints shaped it:
   move a warning later, never nearer and never away. And an extended link
   may fall outside the sweep's window entirely, where the right answer is
   no warning rather than a different one.
-- **Keyed on `eventType`, not just the source.** `token_expiring` and
-  `token_created` share a source id, and the existing
-  `markTimelineEventsDeletedBySource` cascade matches on source alone.
-  Erasing the record that a token was ever created, in order to withdraw a
-  warning about it, would be a worse lie than the warning.
+- **Keyed on `eventType`, not just the source.** The existing
+  `markTimelineEventsDeletedBySource` cascade matches on source alone, and
+  a document's other rows share its source id. Erasing the record of what
+  happened to a document, in order to withdraw a warning about it, would be
+  a worse lie than the warning.
 - **Self-healing rather than exhaustive.** `share_link_expiring` is keyed
   on the document, one warning however many links are expiring, so revoking
   one of two retracts a warning the other still justifies. The daily sweep

@@ -7,6 +7,9 @@ import { migrateDocumentSchema } from './document-room/document-schema';
 import { nodeDocumentSql, nodeTransaction } from './test-document-sql';
 import { testPersonStores } from './test-person-store';
 import type { Env, DocumentEnv } from './types';
+import { memoryWorkbenchNamespace } from '@liveworkspace/index-app/testing';
+import { accountCredentials } from './auth/accounts';
+import { closeWorkbenchSessions } from './room-access-client';
 
 // A REAL D1 for tests: an in-memory SQLite database with every migration in
 // apps/api/migrations applied, behind the D1 prepare/bind/first/all/run/batch
@@ -192,6 +195,13 @@ export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
       rooms = testDocumentRooms(env, sql, next);
     },
   });
+  // Each person's workbench store, in memory (@liveworkspace/index-app/testing), closing rooms as the real one does.
+  if (!base.WORKBENCH) {
+    env.WORKBENCH = memoryWorkbenchNamespace<'document'>({
+      credentials: () => accountCredentials(env),
+      closeRoom: (documentId, pairingId) => closeWorkbenchSessions(env, documentId, pairingId),
+    }) as unknown as DurableObjectNamespace;
+  }
   return { env, sql, flush: push };
 }
 

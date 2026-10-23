@@ -1,10 +1,8 @@
 // Account + housekeeping events (docs/specs/013-workspace/timeline.md §4.5).
 //
-// The quiet end of the catalogue, and the only place the feed looks
-// FORWARD: the two `*_expiring` events carry the expiry as their
-// occurredAt, so they render in the band above Today. That band is why
-// someone opens the Timeline before an integration breaks rather than
-// after.
+// The quiet end of the catalogue. An API token about to expire is liveworkspace's to warn about
+// (liveworkspace/docs/accounts.md "API tokens"); the feed's forward-looking warning is a share link's
+// (document-events.ts recordShareLinkExpiring).
 
 import { dedupeKeyForDay } from '../db/timeline';
 import type { Env } from '../types';
@@ -26,30 +24,6 @@ export async function recordTokenCreated(
       title: 'API Token Created',
       description: token.name,
       snapshot: { tokenName: token.name },
-    },
-    [userScope(ownerId)],
-  );
-}
-
-// Future-dated. Emitted by the daily expiry-warning cron that already
-// computes which tokens are inside the 7-day window (docs/specs/015-api/public-api-and-tokens.md), so this
-// costs one extra write on a pass that was happening anyway.
-export async function recordTokenExpiring(
-  env: Env,
-  token: { id: string; name: string; expiresAt: number },
-  ownerId: string,
-): Promise<void> {
-  await record(
-    env,
-    {
-      actorId: null,
-      sourceType: 'account',
-      sourceId: token.id,
-      eventType: 'token_expiring',
-      title: 'API Token Expiring',
-      description: token.name,
-      occurredAt: token.expiresAt,
-      snapshot: { tokenName: token.name, expiresAt: token.expiresAt },
     },
     [userScope(ownerId)],
   );

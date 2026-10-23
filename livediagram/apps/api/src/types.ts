@@ -12,7 +12,6 @@ export type {
   TabSummary as TabSummaryDTO,
   TabRecord as TabDTO,
   Folder as FolderDTO,
-  ApiToken as ApiTokenDTO,
   ImageSummary,
   ParticipantRecord as ParticipantDTO,
   ParticipantPresence,
@@ -37,6 +36,9 @@ export type Env = {
   // Each person's Durable Object (src/person-store/person-store.ts): what livediagram keeps for one person rather
   // than for one canvas (their shape libraries). Reached through person-client.ts `personStore(env, personId)`.
   PERSON_STORE: DurableObjectNamespace<PersonStore>;
+  // Each person's workbench (src/workbench-store.ts, @liveworkspace/index-app workbench.ts): their pairing
+  // requests, pairings, tickets and sessions, in its own SQLite.
+  WORKBENCH: DurableObjectNamespace;
   // The key liveworkspace's index presents on this app's internal endpoints (`/api/internal/items/*`,
   // liveworkspace/docs/one-explorer-contracts.md). A secret; unset, those endpoints answer 404.
   INDEX_KEY?: string;

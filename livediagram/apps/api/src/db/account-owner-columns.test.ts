@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
 import { sqliteD1 } from '../test-sqlite-d1';
 import { personStore } from '../person-client';
+import { workbenchStore } from '../workbench-store';
 import { deleteAccount, migrateOwnerId } from './account';
 
 // Every column that holds an owner id, and what account deletion and the
@@ -83,7 +84,6 @@ const OWNER_COLUMNS: OwnerColumn[] = [
     },
     migrate: { kind: 'account-only' },
   },
-  { table: 'api_tokens', column: 'owner_id', migrate: { kind: 'account-only' } },
   // Mention and action-assigned email claims (docs/specs/012-collaboration/comment-mentions.md "The email"):
   // only a joined team member sends them.
   { table: 'notify_email_claims', column: 'sender_id', migrate: { kind: 'account-only' } },
@@ -91,11 +91,6 @@ const OWNER_COLUMNS: OwnerColumn[] = [
   // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): signed-in only.
   { table: 'drive_connections', column: 'owner_id', migrate: { kind: 'account-only' } },
   { table: 'drive_items', column: 'owner_id', migrate: { kind: 'account-only' } },
-  // Workbench embeds (docs/specs/013-workspace/workbench-embeds.md): minted from a token, so account-only.
-  { table: 'workbench_pairing_requests', column: 'owner_id', migrate: { kind: 'account-only' } },
-  { table: 'workbench_pairings', column: 'owner_id', migrate: { kind: 'account-only' } },
-  { table: 'workbench_tickets', column: 'owner_id', migrate: { kind: 'account-only' } },
-  { table: 'workbench_sessions', column: 'owner_id', migrate: { kind: 'account-only' } },
 ];
 
 // Column names that mark an owner-keyed column wherever they appear.
@@ -223,20 +218,10 @@ function seedGuestHoldable(sql: DatabaseSync, id: string, peerDocument: string) 
   });
 }
 
-// The account-only rows: an API token, the lifecycle-email and first-seen
-// rows, and a membership of a team `peer` has joined too.
+// The account-only rows: the email claims, the Drive mirror, and a membership of a team `peer` has joined too.
 function seedAccountOnly(sql: DatabaseSync, id: string, peer: string) {
   // A Community post of their own document.
   communityPost(sql, `d-${id}`, id);
-  insert(sql, 'api_tokens', {
-    id: `tok-${id}`,
-    owner_id: id,
-    token_hash: `hash-${id}`,
-    created_at: T0,
-    expires_at: T0 * 2,
-    revoked: 0,
-    read_only: 0,
-  });
   insert(sql, 'notify_email_claims', { claim_key: `claim-${id}`, sender_id: id, created_at: T0 });
   insert(sql, 'drive_connections', { owner_id: id, status: 'connected', connected_at: T0 });
   insert(sql, 'drive_items', {
@@ -260,27 +245,6 @@ function seedAccountOnly(sql: DatabaseSync, id: string, peer: string) {
     });
   }
   liveDoc(sql, `d-team-${id}`, id, 'team-1');
-  // A workbench pairing of their token, its pending request, a ticket and an open session.
-  const workbenchRow = { owner_id: id, token_id: `tok-${id}`, origin: 'https://w.example' };
-  insert(sql, 'workbench_pairing_requests', {
-    ...workbenchRow,
-    id: `wr-${id}`,
-    code: `code-${id}`,
-    status: 'pending',
-    created_at: T0,
-    expires_at: T0 * 2,
-  });
-  insert(sql, 'workbench_pairings', { ...workbenchRow, id: `wp-${id}`, created_at: T0 });
-  const opened = {
-    ...workbenchRow,
-    pairing_id: `wp-${id}`,
-    document_id: `d-team-${id}`,
-    role: 'edit',
-    created_at: T0,
-    expires_at: T0 * 2,
-  };
-  insert(sql, 'workbench_tickets', { ...opened, ticket_hash: `th-${id}` });
-  insert(sql, 'workbench_sessions', { ...opened, id: `ws-${id}`, secret_hash: `sh-${id}` });
   // A folder in a team this user already left: it stays with the team.
   insert(sql, 'teams', { id: 'team-left', name: 'Old team', created_at: T0, updated_at: T0 });
   insert(sql, 'folders', {
@@ -491,5 +455,27 @@ describe('migrateOwnerId moves every guest-holdable row (docs/specs/015-api/api.
       images: 0,
     });
     expect(sql.prepare('SELECT * FROM favourites ORDER BY document_id').all()).toEqual(before);
+  });
+
+  it("closes the person's workbench store and no one else's", async () => {
+    const { env } = arrange();
+    const ask = (personId: string) =>
+      workbenchStore(env, personId).openPairingRequest({
+        personId,
+        token: { id: `tok-${personId}`, name: null, readOnly: false, expiresAt: T0 * 2 },
+        origin: 'https://w.example',
+        scope: 'document',
+        name: null,
+        now: T0,
+      });
+    const mine = await ask(ACCOUNT);
+    const theirs = await ask(OTHER);
+
+    await deleteAccount(env, ACCOUNT);
+
+    const status = (personId: string, code: string) =>
+      workbenchStore(env, personId).pairingRequestStatus(code, `tok-${personId}`, T0);
+    expect(await status(ACCOUNT, mine.code)).toBeNull();
+    expect(await status(OTHER, theirs.code)).toMatchObject({ status: 'pending' });
   });
 });

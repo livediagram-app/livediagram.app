@@ -5,9 +5,8 @@ import {
 } from './legacy-documents-alias';
 import { flushMediaRefs } from './media';
 import { accountCredentials, getAccountIdentity } from './auth/accounts';
-import { AccountsUnavailable, sweepRevokedTokens, type ResolvedApiToken } from './db/api-tokens';
+import { AccountsUnavailable, type ResolvedApiToken } from './db/api-tokens';
 import { catchUpTeams, syncTeams } from './db/team-sync';
-import { endWorkbenchAccess } from './workbench-end';
 import { handleAuth } from './routes/auth';
 import { NOTIFY_EMAIL_DEDUPE_MS } from './email/notifications';
 import { runTimelineExpirySweep } from './timeline';
@@ -37,6 +36,7 @@ import { handleTokens } from './routes/tokens';
 import { handleOauthExchange } from './routes/oauth';
 import { DocumentRoom } from './document-room/document-room';
 import { PersonStore } from './person-store/person-store';
+import { WorkbenchStore } from './workbench-store-do';
 import { handleInternalItems } from './routes/internal-items';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
 import { deleteOldDocumentOpens } from './db/document-opens';
@@ -75,11 +75,10 @@ import { handleDrive } from './routes/drive';
 import { handleWorkbench } from './routes/workbench';
 import { resolveWorkbenchSession } from './auth/workbench-session';
 import { workbenchRefusal } from './auth/workbench-confinement';
-import { sweepWorkbench } from './db/workbench';
 import { withServerRelease } from './server-release-header';
 import type { Env } from './types';
 
-export { DocumentRoom, PersonStore };
+export { DocumentRoom, PersonStore, WorkbenchStore };
 
 // Per-owner write rate limit (security audit item). Returns true
 // when the caller is over the configured cap (wrangler.toml's
@@ -381,7 +380,14 @@ async function routeApiRequest(
     verifiedUserId,
     accountEmail,
     resolveOwner,
-    token: tokenAuth ? { id: tokenAuth.tokenId, readOnly: tokenAuth.readOnly } : null,
+    token: tokenAuth
+      ? {
+          id: tokenAuth.tokenId,
+          readOnly: tokenAuth.readOnly,
+          name: tokenAuth.name,
+          expiresAt: tokenAuth.expiresAt,
+        }
+      : null,
     workbench,
     waitUntil: (promise) => executionCtx?.waitUntil(promise),
   };
@@ -490,8 +496,9 @@ const worker = {
   // `ctx.waitUntil` so they run concurrently and the worker can
   // exit as soon as the schedule callback returns.
   async scheduled(event: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
-    // liveworkspace/docs/accounts.md "How an app keeps up": follow the teams change feed, and end the
-    // workbench access of any token revoked on liveworkspace.app.
+    // liveworkspace/docs/accounts.md "How an app keeps up": follow the teams change feed. A token revoked on
+    // liveworkspace.app ends its workbench access from its owner's workbench store (workbench-store.ts), whose
+    // alarm checks the tokens behind live sessions.
     if (event.cron === '*/5 * * * *') {
       const credentials = accountCredentials(env);
       if (!credentials) return;
@@ -499,14 +506,6 @@ const worker = {
         syncTeams(env, credentials, ctx)
           .then((count) => console.log(`team sync: applied ${count} changes`))
           .catch((err) => console.error('team sync failed', err)),
-      );
-      ctx.waitUntil(
-        sweepRevokedTokens(env)
-          .then(async (gone) => {
-            for (const tokenId of gone) await endWorkbenchAccess(env, { tokenId }, 'revoked');
-            if (gone.length > 0) console.log(`token sweep: ${gone.length} revoked`);
-          })
-          .catch((err) => console.error('token sweep failed', err)),
       );
       return;
     }
@@ -565,13 +564,8 @@ const worker = {
           .then((count) => console.log(`empty sweep: moved ${count} documents to the Trash`))
           .catch((err) => console.error('empty sweep failed', err)),
       );
-      // docs/specs/013-workspace/blueprints/workbench-embeds.md "Retention": spent tickets and requests,
-      // sessions past their grace, pairings of tokens no longer live.
-      ctx.waitUntil(
-        sweepWorkbench(env, now)
-          .then((count) => console.log(`workbench sweep: deleted ${count} rows`))
-          .catch((err) => console.error('workbench sweep failed', err)),
-      );
+      // Spent workbench tickets, requests and sessions are swept by each person's workbench store's own alarm
+      // (docs/specs/013-workspace/blueprints/workbench-embeds.md "Retention"), not from here.
     }
     // docs/specs/025-community/community.md "Keeping in step": every minute, what changed about published documents
     // goes to the liveworkspace Community service, and the posts it hid after reports close their links here.

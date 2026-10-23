@@ -1,14 +1,12 @@
 // Statements by document id or author id seek an index (migration 0091), against the real migrations: each of
 // these tables is keyed by owner first, and these statements used to read the whole table. A document delete
-// cascades into the first four; the guest-to-account migration and account deletion run the last two.
+// cascades into the first two; the guest-to-account migration and account deletion run the last two.
 import { describe, expect, it } from 'vitest';
 import { sqliteD1 } from '../test-sqlite-d1';
 
 const STATEMENTS = [
   'DELETE FROM favourites WHERE document_id = ?',
   'DELETE FROM document_opens WHERE document_id = ?',
-  'DELETE FROM workbench_tickets WHERE document_id = ?',
-  'DELETE FROM workbench_sessions WHERE document_id = ?',
   'UPDATE agent_changesets SET author_id = ? WHERE author_id = ?',
   'DELETE FROM agent_changesets WHERE author_id = ?',
 ];

@@ -124,7 +124,7 @@ type World = {
 
 function world(extra: Partial<Env> = {}): World {
   const d1 = sqliteD1();
-  const env = { DB: d1.env.DB, ...extra } as unknown as Env;
+  const env = { DB: d1.env.DB, WORKBENCH: d1.env.WORKBENCH, ...extra } as unknown as Env;
   const { ns, documents, calls } = documentNamespace(() => env);
   Reflect.set(env, 'DOCUMENT_ROOM', ns);
   const executionCtx = {

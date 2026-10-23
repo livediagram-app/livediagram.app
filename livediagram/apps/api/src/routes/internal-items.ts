@@ -1,12 +1,14 @@
 // /api/internal/items/**: the liveworkspace index's doors into a canvas's content (docs/specs/015-api/api.md
 // "Internal"), answered by the shared kit (@liveworkspace/index-app handleInternalItems): the bearer check against
 // INDEX_KEY, the paths and their bodies. This file only says what each door does to a canvas: each is one call to
-// the canvas's Durable Object (document-client.ts), and a copy also carries the image grants the source held
+// the canvas's Durable Object (document-client.ts) or the person's own stores, and a copy also carries the image grants the source held
 // (docs/specs/009-elements/images.md "Placement grants").
 import { handleInternalItems as handle } from '@liveworkspace/index-app';
 import { imageGrantCopyStatements } from '../db/image-grants';
 import { documentRoom } from '../document-client';
 import { copyImageIds } from '../document-room/document-content';
+import { personStore } from '../person-client';
+import { workbenchStore } from '../workbench-store';
 import type { Env } from '../types';
 
 export function handleInternalItems(
@@ -30,6 +32,12 @@ export function handleInternalItems(
         const grants = imageGrantCopyStatements(env, from, to, copyImageIds(copy), Date.now());
         if (grants.length > 0) await env.DB.batch(grants);
         return { tabs: copy.tabs.length, items: 0 };
+      },
+      // A closed account, wherever it was closed: what livediagram keeps for them in their own stores. Their
+      // workbench (pairings, tickets and sessions, whose rooms it closes) and their shape libraries.
+      personClosed: async (personId) => {
+        await workbenchStore(env, personId).close();
+        await personStore(env, personId).purge();
       },
     },
   });

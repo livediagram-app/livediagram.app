@@ -313,7 +313,7 @@ describe('worker room-ticket throttle', () => {
 // docs/specs/013-workspace/workbench-embeds.md: a `Bearer lvw_` is a person's editor on one document, confined at
 // the front door before any route runs.
 describe('workbench sessions at the front door', () => {
-  const LVW = `lvw_${'w'.repeat(43)}`;
+  const LVW = `lvw_${'w'.repeat(43)}.${'0f'.repeat(32)}`;
   const SESSION: WorkbenchContext = {
     sessionId: 'abcdef12-0000-4000-8000-000000000000',
     ownerId: 'user_1',

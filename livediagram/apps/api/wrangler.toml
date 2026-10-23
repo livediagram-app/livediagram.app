@@ -157,10 +157,17 @@ class_name = "DocumentRoom"
 name = "PERSON_STORE"
 class_name = "PersonStore"
 
-# livediagram ships fresh on new infrastructure, so both classes start SQLite-backed with no history.
+# Each person's workbench (src/workbench-store.ts, docs/specs/013-workspace/blueprints/workbench-embeds.md "Data
+# and persistence"): one SQLite-backed instance per person, holding their pairing requests, pairings, tickets and
+# sessions. Its alarm checks the tokens behind live sessions and sweeps spent rows.
+[[durable_objects.bindings]]
+name = "WORKBENCH"
+class_name = "WorkbenchStore"
+
+# livediagram ships fresh on new infrastructure, so the classes start SQLite-backed with no history.
 [[migrations]]
 tag = "v1"
-new_sqlite_classes = ["DocumentRoom", "PersonStore"]
+new_sqlite_classes = ["DocumentRoom", "PersonStore", "WorkbenchStore"]
 
 # Scheduled jobs the worker handles via the `scheduled` export. One
 # entry per cron; each fires the same handler with `event.cron` set
@@ -176,7 +183,8 @@ new_sqlite_classes = ["DocumentRoom", "PersonStore"]
 # RESEND_API_KEY is unset.
 #
 # `*/5 * * * *`: every five minutes, follow liveworkspace's teams change feed into this app's copy
-# and mark tokens revoked on liveworkspace.app (liveworkspace/docs/accounts.md "How an app keeps up").
+# (liveworkspace/docs/accounts.md "How an app keeps up"). Tokens revoked on liveworkspace.app end their workbench
+# access from each person's workbench store's own alarm.
 #
 # `* * * * *`: every minute, the Community sync (docs/specs/025-community/community.md "Keeping in step"): what
 # changed about published documents goes to the liveworkspace Community service, and the posts it hid after reports
@@ -499,9 +507,12 @@ class_name = "DocumentRoom"
 name = "PERSON_STORE"
 class_name = "PersonStore"
 
+[[env.staging.durable_objects.bindings]]
+name = "WORKBENCH"
+class_name = "WorkbenchStore"
 [[env.staging.migrations]]
 tag = "v1"
-new_sqlite_classes = ["DocumentRoom", "PersonStore"]
+new_sqlite_classes = ["DocumentRoom", "PersonStore", "WorkbenchStore"]
 
 # The daily 03:00 UTC sweeps (retention + the docs/specs/014-identity/transactional-email.md email crons) run on
 # staging too, against staging's own data. Restated rather than inherited so

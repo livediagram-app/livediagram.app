@@ -24,9 +24,9 @@ vi.mock('@/lib/api/workbench', () => ({
 const { runWorkbenchHandshake, useWorkbenchHandshake } = await import('./useWorkbenchHandshake');
 
 const ORIGIN = 'https://127.0.0.1:5175';
-const TICKET = 'Ab3_-xYz0123456789abcd';
+const TICKET = `Ab3_-xYz0123456789abcd.${'0f'.repeat(32)}`;
 const SESSION: WorkbenchDocumentSessionResponse = {
-  session: `lvw_${'a'.repeat(43)}`,
+  session: `lvw_${'a'.repeat(43)}.${'0f'.repeat(32)}`,
   scope: 'document',
   documentId: 'doc-1',
   folderId: null,

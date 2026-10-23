@@ -66,7 +66,7 @@ const { default: Page, metadata } = await import('./page');
 const core = await import('@/lib/api/core');
 
 const SESSION: WorkbenchDocumentSessionResponse = {
-  session: `lvw_${'a'.repeat(43)}`,
+  session: `lvw_${'a'.repeat(43)}.${'0f'.repeat(32)}`,
   scope: 'document',
   documentId: 'doc-1',
   folderId: null,

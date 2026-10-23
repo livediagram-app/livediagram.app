@@ -77,17 +77,6 @@ CREATE TABLE team_members (
   FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE
 );
 
-CREATE TABLE api_tokens (
-  id           TEXT PRIMARY KEY,
-  owner_id     TEXT NOT NULL,
-  token_hash   TEXT NOT NULL UNIQUE,
-  name         TEXT,
-  created_at   INTEGER NOT NULL,
-  last_used_at INTEGER,
-  expires_at   INTEGER NOT NULL,
-  revoked      INTEGER NOT NULL DEFAULT 0
-, expiry_warned_at INTEGER, read_only INTEGER NOT NULL DEFAULT 0);
-
 CREATE TABLE ws_tickets (
   ticket TEXT PRIMARY KEY,
   document_id TEXT NOT NULL,
@@ -263,77 +252,10 @@ CREATE TABLE image_grants (
   PRIMARY KEY (document_id, image_id)
 ) WITHOUT ROWID;
 
-CREATE TABLE workbench_pairing_requests (
-  id TEXT PRIMARY KEY,
-  code TEXT NOT NULL UNIQUE,
-  owner_id TEXT NOT NULL,
-  token_id TEXT NOT NULL REFERENCES api_tokens(id) ON DELETE CASCADE,
-  origin TEXT NOT NULL,
-  name TEXT NULL,
-  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'declined')),
-  created_at INTEGER NOT NULL,
-  expires_at INTEGER NOT NULL,
-  answered_at INTEGER NULL
-, scope TEXT NOT NULL DEFAULT 'document'
-  CHECK (scope IN ('document', 'workspace')));
-
-CREATE TABLE workbench_pairings (
-  id TEXT PRIMARY KEY,
-  owner_id TEXT NOT NULL,
-  token_id TEXT NOT NULL REFERENCES api_tokens(id) ON DELETE CASCADE,
-  origin TEXT NOT NULL,
-  name TEXT NULL,
-  created_at INTEGER NOT NULL, scope TEXT NOT NULL DEFAULT 'document'
-  CHECK (scope IN ('document', 'workspace')),
-  UNIQUE (token_id, origin)
-);
-
 CREATE TABLE notify_email_claims (
   claim_key  TEXT PRIMARY KEY,
   sender_id  TEXT NOT NULL,
   created_at INTEGER NOT NULL
-);
-
-CREATE TABLE workbench_tickets (
-  ticket_hash TEXT PRIMARY KEY,
-  owner_id TEXT NOT NULL,
-  token_id TEXT NOT NULL REFERENCES api_tokens(id) ON DELETE CASCADE,
-  pairing_id TEXT NOT NULL REFERENCES workbench_pairings(id) ON DELETE CASCADE,
-  scope TEXT NOT NULL DEFAULT 'document' CHECK (scope IN ('document', 'workspace')),
-  document_id TEXT NULL REFERENCES documents(id) ON DELETE CASCADE,
-  folder_id TEXT NULL,
-  tab_id TEXT NULL,
-  origin TEXT NOT NULL,
-  role TEXT NOT NULL CHECK (role IN ('view', 'participate', 'edit')),
-  created_at INTEGER NOT NULL,
-  expires_at INTEGER NOT NULL,
-  used_at INTEGER NULL,
-  CHECK ((scope = 'document') = (document_id IS NOT NULL)),
-  CHECK (scope = 'workspace' OR folder_id IS NULL)
-);
-
-CREATE TABLE workbench_sessions (
-  id TEXT PRIMARY KEY,
-  secret_hash TEXT NOT NULL UNIQUE,
-  owner_id TEXT NOT NULL,
-  token_id TEXT NOT NULL REFERENCES api_tokens(id) ON DELETE CASCADE,
-  pairing_id TEXT NOT NULL REFERENCES workbench_pairings(id) ON DELETE CASCADE,
-  scope TEXT NOT NULL DEFAULT 'document' CHECK (scope IN ('document', 'workspace')),
-  document_id TEXT NULL REFERENCES documents(id) ON DELETE CASCADE,
-  folder_id TEXT NULL,
-  tab_id TEXT NULL,
-  origin TEXT NOT NULL,
-  role TEXT NOT NULL CHECK (role IN ('view', 'participate', 'edit')),
-  created_at INTEGER NOT NULL,
-  expires_at INTEGER NOT NULL,
-  CHECK ((scope = 'document') = (document_id IS NOT NULL)),
-  CHECK (scope = 'workspace' OR folder_id IS NULL)
-);
-
-CREATE TABLE workbench_session_rooms (
-  session_id TEXT NOT NULL REFERENCES workbench_sessions(id) ON DELETE CASCADE,
-  document_id TEXT NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
-  PRIMARY KEY (session_id, document_id)
 );
 
 CREATE TABLE community_links (
@@ -386,8 +308,6 @@ CREATE INDEX team_members_team_user_idx ON team_members (team_id, user_id);
 
 CREATE INDEX teams_invite_link_token_idx ON teams(invite_link_token);
 
-CREATE INDEX api_tokens_owner_idx ON api_tokens (owner_id);
-
 CREATE INDEX timeline_events_occurred_idx ON timeline_events (occurred_at);
 
 CREATE INDEX timeline_event_scopes_event_idx ON timeline_event_scopes (event_id);
@@ -425,10 +345,6 @@ CREATE INDEX timeline_events_actor_idx ON timeline_events (actor_id, occurred_at
 
 CREATE INDEX ws_tickets_expires_at ON ws_tickets(expires_at);
 
-CREATE INDEX workbench_pairing_requests_expiry ON workbench_pairing_requests (expires_at);
-
-CREATE INDEX workbench_pairings_owner ON workbench_pairings (owner_id);
-
 CREATE INDEX shared_with_document_code_idx ON shared_with(document_id, share_code);
 
 CREATE UNIQUE INDEX team_members_team_user_unique
@@ -444,21 +360,6 @@ CREATE INDEX document_opens_document_idx ON document_opens (document_id);
 
 CREATE INDEX team_members_pending_idx ON team_members (clock_started_at)
   WHERE status = 'invited';
-
-CREATE UNIQUE INDEX workbench_pairing_requests_live
-  ON workbench_pairing_requests (token_id, origin, scope) WHERE status = 'pending';
-
-CREATE INDEX workbench_tickets_expiry ON workbench_tickets (expires_at);
-
-CREATE INDEX workbench_tickets_document_idx ON workbench_tickets (document_id);
-
-CREATE INDEX workbench_sessions_pairing ON workbench_sessions (pairing_id);
-
-CREATE INDEX workbench_sessions_expiry ON workbench_sessions (expires_at);
-
-CREATE INDEX workbench_sessions_document_idx ON workbench_sessions (document_id);
-
-CREATE INDEX workbench_session_rooms_document_idx ON workbench_session_rooms (document_id);
 
 CREATE INDEX media_images_owner_idx ON media_images (owner_id);
 

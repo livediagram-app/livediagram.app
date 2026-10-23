@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { deleteAccount } from './account';
+import { memoryWorkbenchNamespace } from '@liveworkspace/index-app/testing';
 import { testPersonStores } from '../test-person-store';
 import type { Env } from '../types';
 
@@ -39,6 +40,10 @@ function fakeEnv(opts: {
     DB: { prepare, batch },
     IMAGES: opts.images,
     PERSON_STORE: testPersonStores(),
+    WORKBENCH: memoryWorkbenchNamespace<'document'>({
+      credentials: () => null,
+      closeRoom: async () => {},
+    }),
   } as unknown as Env;
 }
 
