@@ -7,7 +7,7 @@ import type { Env } from '../types';
 import { getNotificationPrefs } from './notification-prefs';
 import { readPreferences, writePreferences } from './settings';
 
-const GUEST = '0f5ca4af-9a8a-4a60-be5e-1179e5555880';
+const GUEST = 'guest_0f5ca4af-9a8a-4a60-be5e-1179e5555880';
 
 let env: Env;
 let accounts: TestAccountsService;
@@ -48,9 +48,9 @@ describe('readPreferences / writePreferences (liveworkspace settings)', () => {
     expect(accounts.settings.get('user_a livediagram.app')).toEqual({ gridSnap: false });
   });
 
-  it('writes a guest under guest_<uuid>, and sends nothing for an empty patch', async () => {
+  it('writes a guest under its guest_<uuid> id, and sends nothing for an empty patch', async () => {
     await writePreferences(env, GUEST, { gridSnap: true });
-    expect(accounts.settings.get(`guest_${GUEST} livediagram.app`)).toEqual({ gridSnap: true });
+    expect(accounts.settings.get(`${GUEST} livediagram.app`)).toEqual({ gridSnap: true });
     accounts.calls.length = 0;
     expect(await writePreferences(env, GUEST, {})).toBe(true);
     expect(accounts.calls).toEqual([]);

@@ -15,9 +15,9 @@ import { expect, test, pageOwnerHeaders } from './fixtures';
 
 // A document of this guest's, listed at the root of the Explorer's My Work.
 async function seedDocument(page: Page, name: string): Promise<string> {
-  // The guest's signed id is minted asynchronously; seed under the final one.
+  // The guest token arrives through the guest handoff; seed under it.
   await expect
-    .poll(() => page.evaluate(() => localStorage.getItem('livediagram:v2:self-sig')))
+    .poll(() => page.evaluate(() => localStorage.getItem('livediagram:v2:guest-token')))
     .toBeTruthy();
   const headers = await pageOwnerHeaders(page, { 'Content-Type': 'application/json' });
   return page.evaluate(

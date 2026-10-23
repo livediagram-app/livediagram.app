@@ -1,10 +1,10 @@
 import { apiLoadSelf, apiSaveSelf } from '@/lib/api-client';
-import { ensureSignedGuestIdentity } from '@/lib/guest-identity';
+import { ensureGuestIdentity } from '@/lib/guest-identity';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
 
 // Who is opening the editor (docs/specs/014-identity/auth-and-guest-access.md), resolved once auth has
-// settled: the account id when signed in, else the guest's SERVER-SIGNED id (minting one on a first
-// visit, upgrading a legacy unsigned id) so the eventual sign-up migrate can prove possession; then
+// settled: the account id when signed in, else the guest token's id (fetching one from the accounts site on a first
+// visit); then
 // the stored profile, seeded on a first visit. Lifted out of useIdentityBootstrap so a
 // document in This Browser can open first and resolve this in the background
 // (docs/specs/006-document/offline-mode.md "Instant open").
@@ -15,7 +15,7 @@ export async function resolveParticipant(opts: {
   onParticipantStep?: () => void;
 }): Promise<Participant> {
   const { accountUserId, accountDisplayName } = opts;
-  const selfId = accountUserId ?? (await ensureSignedGuestIdentity()).id;
+  const selfId = accountUserId ?? (await ensureGuestIdentity()).id;
   opts.onParticipantStep?.();
   const storedSelf = await apiLoadSelf(selfId).catch(() => null);
   // The profile is liveworkspace's, one per person across every app: an account with no name of

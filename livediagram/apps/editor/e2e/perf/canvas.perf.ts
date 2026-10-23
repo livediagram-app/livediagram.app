@@ -4,8 +4,8 @@ import type { Browser, CDPSession, Page } from '@playwright/test';
 import {
   dismissQuickTour,
   expect,
-  guestSigFor,
-  mintSignedGuest,
+  guestTokenFor,
+  mintGuest,
   ownerHeaders,
   test,
 } from '../fixtures';
@@ -92,9 +92,8 @@ const OPEN_SETTLE_TIMEOUT_MS = 60_000;
 async function openBoard(browser: Browser, owner: string, id: string, throttle: number) {
   const ctx = await browser.newContext({ viewport: VIEW, colorScheme: 'dark' });
   await ctx.addInitScript(
-    ({ o, sig }) => {
-      localStorage.setItem('livediagram:v2:self-id', o);
-      if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
+    ({ token }) => {
+      if (token) localStorage.setItem('livediagram:v2:guest-token', token);
       localStorage.setItem('livediagram:v2:name-confirmed', '1');
       // The gesture rows read long tasks (`timed`); the open row reads long tasks and long animation
       // frames together, from the very start, since long tasks alone miss a frame that only renders.
@@ -116,7 +115,7 @@ async function openBoard(browser: Browser, owner: string, id: string, throttle: 
           w.__busy.push({ start: e.startTime, end: e.startTime + e.duration });
       }).observe({ type: 'long-animation-frame', buffered: true });
     },
-    { o: owner, sig: guestSigFor(owner) },
+    { token: guestTokenFor(owner) },
   );
   const page = await ctx.newPage();
   const cdp = await ctx.newCDPSession(page);
@@ -482,7 +481,7 @@ test('canvas performance budget', async ({ browser, baseURL, page }) => {
       ? ': this machine is slower than the reference speed, so these numbers read harsher than the budget.'
       : '.');
   process.stdout.write(`[canvas-perf] ${speed}\n`);
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   const measurements: Measurement[] = [];
   for (const tab of ['whiteboard', 'diagram'] as const) {
     const id = await seed(page, baseURL!, owner, tab);

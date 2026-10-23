@@ -17,7 +17,7 @@ Every path uses the strongest identity the server holds for the caller, in this 
 
 1. **A verified account** (a signed-in session or an API token over REST; a room session whose ticket carried a person
    tag). One account is one voter, whatever browser or device it votes from.
-2. **A guest.** A guest id costs nothing to make (`POST /api/guest-id`), so it is never trusted to be one person.
+2. **A guest.** A guest identity costs nothing to make (a fresh browser gets a new guest token), so it is never trusted to be one person.
    Guests are counted against their **network**: the caller's IPv4 address, or IPv6 /64 (`clientRateKey`). At most
    `GUEST_VOTERS_PER_NETWORK` (100) distinct guest voters per network take part in one target (below). The 101st is
    refused; one who has already taken part can always change or withdraw their vote.

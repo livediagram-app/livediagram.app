@@ -20,7 +20,7 @@ import {
 import { noteServerBuild, noteServerDocumentFormat } from '../server-release';
 import { stampTabKind, type Tab } from '@livediagram/document';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '../local-storage-safe';
-import { getGuestSelfSig } from '../local-identity';
+import { readGuestToken } from '../guest-token';
 import { notifyApiWrite } from './write-signal';
 import { API_BASE } from './base';
 import { confinementRefusal, noteWorkbenchResponse } from './workbench-confinement';
@@ -51,10 +51,9 @@ import {
 //      production (router stitches the api worker onto the same
 //      hostname). This is what the deployed editor app uses.
 //
-// All requests carry an `X-Owner-Id` header set to the current
-// participant's id — the API uses it as the document-owner filter and
-// for create-time `owner_id` — unless an account token provider is wired
-// up (see below), in which case a Bearer token replaces it.
+// Every request carries a Bearer: the account's access token when an
+// account token provider is wired up (see below), else the guest's guest
+// token (lib/guest-token.ts). The api resolves the owner from it.
 // Where the api lives (lib/api/base.ts).
 export { API_BASE };
 
@@ -181,14 +180,10 @@ export type SharedDocumentResolution =
     }
   | { passwordRequired: true; invalid: boolean };
 
-// Hybrid identity (docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/api.md). When a token provider has been
-// registered via `setTokenProvider` and resolves to a non-null account
-// access token, every request goes out with
-// `Authorization: Bearer <jwt>` and NO `X-Owner-Id` — the api worker
-// verifies the token, derives the owner from the `sub` claim, and
-// ignores the legacy header. Without a provider (or when the provider
-// resolves to null — guest, or signed out), requests go out with
-// `X-Owner-Id: <participant-id>` as before.
+// Identity (docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/api.md): every request carries the
+// person's Bearer. When a token provider has been registered via `setTokenProvider` and resolves to a non-null
+// account access token, that is it; without one (a guest, or signed out) it is the guest token liveworkspace
+// issued (lib/guest-token.ts). A link visitor with neither sends no Bearer at all.
 //
 // Module-level state (rather than threading a tokenProvider through
 // 22 function signatures) because livediagram ships only as a static
@@ -197,7 +192,7 @@ export type SharedDocumentResolution =
 // (`setTokenProvider((opts) => getToken(opts))`) and clears on unmount.
 // Tests reset between cases via the same setter.
 //
-// Visitors on a share URL include their own participant id PLUS the
+// Visitors on a share URL include their own Bearer PLUS the
 // share code that admitted them in `X-Share-Code` — the api checks
 // the code's role before allowing the write. Share-code visitors who
 // happen to also be signed in send Bearer + X-Share-Code; the
@@ -297,18 +292,11 @@ export function writeCachedSharePassword(shareCode: string, password: string | n
   else writeLocalStorageSafe(key, '');
 }
 
-// Exported for direct testing of the hybrid identity gate (docs/specs/014-identity/auth-and-guest-access.md):
-// Bearer token wins when present, X-Owner-Id is the fallback, and the
-// two MUST NOT coexist on a single request (an api worker that sees
-// both would derive owner from the JWT and silently ignore the header
-// , which is fine for happy paths but leaves a confusing footprint in
-// audit logs). Internal callers still get the same return type, so
-// the export is additive.
 // Thrown instead of sending a request that is certain to be refused: a
 // signed-in client (its owner id is an account id) that has no session
-// token to prove it. The worker rejects an account id in the guest header
-// (401 account_id_not_a_guest_credential), so sending it only turns an auth
-// problem into what looks like a network one.
+// token to prove it. Sending the guest's token in its place would act as
+// someone else, so an auth problem is not turned into what looks like a
+// network one.
 export class SessionTokenUnavailableError extends Error {
   constructor() {
     super('no session token for a signed-in owner');
@@ -316,18 +304,21 @@ export class SessionTokenUnavailableError extends Error {
   }
 }
 
-// The identity half of every request, shared by apiHeaders (async) and the
-// unload beacon (sync, off the cached token). Bearer and X-Owner-Id are
-// mutually exclusive, and an account id never rides as the guest header.
+// The identity half of every request, shared by apiHeaders (async) and the unload beacon (sync, off the cached
+// token): the account's token, else the guest's, else nothing (a link visitor). An account id with no account
+// token is refused here rather than sent as a guest.
 export function identityHeaders(ownerId: string, token: string | null): Record<string, string> {
   if (token) return { Authorization: `Bearer ${token}` };
   if (isAccountIdShape(ownerId)) throw new SessionTokenUnavailableError();
-  // Proof of possession for the guest id (docs/specs/015-api/public-api-and-tokens.md
-  // section 4): the api worker can require a valid signature on owner-scoped
-  // routes, which a harvested id wouldn't have. Absent for legacy unsigned
-  // guests and self-hosts with signing disabled.
-  const sig = getGuestSelfSig();
-  return sig ? { 'X-Owner-Id': ownerId, 'X-Owner-Sig': sig } : { 'X-Owner-Id': ownerId };
+  const guest = readGuestToken();
+  return guest ? { Authorization: `Bearer ${guest.token}` } : {};
+}
+
+// The Bearer this page sends, for a request that goes outside apiHeaders: the account's, else the guest's.
+export async function currentBearer(): Promise<string | null> {
+  const token = await resolveToken();
+  lastKnownToken = token;
+  return token ?? readGuestToken()?.token ?? null;
 }
 
 // How long one token request may take (docs/specs/007-editor/load-recovery.md "The load always ends").

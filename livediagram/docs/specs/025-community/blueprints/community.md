@@ -400,7 +400,7 @@ Community app (`apps/community`):
 - A hidden post's link: `resolveDocumentGrant` and the live image route answer nothing to anyone.
 - `?copy=1` (`useAutoCopyParam`) copies only when the session came in through a community link.
 
-- Trust boundary: the Community app is a public, unauthenticated surface. It never sends `X-Owner-Id`; the community
+- Trust boundary: the Community app is a public, unauthenticated surface. It never sends an owner's credential; the community
   key grants nothing but a like and a report.
 - Publishing requires a verified account identity (G1), so every public post is tied to an account.
 - No owner id leaves the worker in any Community DTO; authors are participant display identities only.

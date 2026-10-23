@@ -263,12 +263,12 @@ See [Secrets policy](docs/specs/002-project-scope/secrets-policy.md). **Repo is 
 See [Auth + guest access](docs/specs/014-identity/auth-and-guest-access.md).
 
 - **The canvas always works without signing in.** Friction-free engagement is the acquisition strategy. Never put a sign-in wall in front of the editor.
-- **Hybrid identity** — the api accepts two equivalent ways of identifying the owner of a request:
-  - **Guest path**: a per-browser participant id (`livediagram:v2:self-id` in `localStorage`) carried as `X-Owner-Id`. Default for unsigned visitors. Full feature set (persistence, share links, real-time collab).
-  - **Authed path**: an account access token in `Authorization: Bearer <token>`, verified against the accounts Worker's published keys (`ACCOUNTS_URL`) and this API's audience (`API_RESOURCE`).
-  - The api worker uses the `sub` claim as the owner id.
+- **Hybrid identity**: every owner is a liveworkspace identity, sent as `Authorization: Bearer <token>` and verified with `createPersonVerifier` against the accounts Worker's published keys (`ACCOUNTS_URL`) and this API's audience (`API_RESOURCE`):
+  - **Guest**: liveworkspace's year-long guest token (`livediagram:v2:guest-token` in `localStorage`, from the accounts site's guest handoff via `/api/auth/guest`). Its id, `guest_<uuid>`, is the owner id, the same in every liveworkspace app. Full feature set (persistence, share links, real-time collab).
+  - **Account**: an account access token. Its `sub` claim (`user_…`) is the owner id.
+  - An owner id is never a credential; only a verified token says who is asking. Without the accounts site configured there are no guests either.
 - The two paths coexist forever — a signed-in user can still hand a share link to a guest who edits without auth.
-- Sign-in lives at `/sign-in/` and sign-up at `/get-started/` (both hand off to the liveworkspace accounts site; email code). On sign-up, guest documents migrate from the localStorage id to the account id via `POST /api/migrate`.
+- Sign-in lives at `/sign-in/` and sign-up at `/get-started/` (both hand off to the liveworkspace accounts site; email code). On sign-in or sign-up the accounts site merges the guest into the account, and the index's `personMerged(guestId, userId)` hook moves the guest's documents onto it.
 
 ## Core principle: reuse over duplication
 

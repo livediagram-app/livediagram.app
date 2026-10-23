@@ -1,5 +1,5 @@
 import type { Browser, Page } from '@playwright/test';
-import { expect, guestSigFor, ownerHeaders, test } from './fixtures';
+import { expect, guestTokenFor, ownerHeaders, test } from './fixtures';
 import { openDocument } from './home-seed';
 
 // Screens the dark-mode audits (contrast, optical alignment) open: a seeded diagram shaped like a real one,
@@ -8,17 +8,16 @@ import { openDocument } from './home-seed';
 export const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 export const CANVAS = '[data-canvas-a11y-root]';
 
-// A minted guest (mintSignedGuest) brings its signature, so the browser keeps the identity across
-// page loads; a hand-made id is upgraded to a new one on each.
+// A minted guest (mintGuest) brings its guest token, so the browser keeps the identity across
+// page loads instead of fetching a new one through the guest handoff.
 export async function darkVisitor(page: Page, owner?: string): Promise<void> {
   await page.addInitScript(
-    ({ id, sig }) => {
+    ({ token }) => {
       localStorage.setItem('livediagram:v2:ui-mode', 'dark');
       localStorage.setItem('livediagram:v2:name-confirmed', '1');
-      if (id) localStorage.setItem('livediagram:v2:self-id', id);
-      if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
+      if (token) localStorage.setItem('livediagram:v2:guest-token', token);
     },
-    { id: owner ?? null, sig: owner ? guestSigFor(owner) : null },
+    { token: owner ? guestTokenFor(owner) : null },
   );
 }
 

@@ -3,8 +3,8 @@ import {
   dismissQuickTour,
   expect,
   test,
-  guestSigFor,
-  mintSignedGuest,
+  guestTokenFor,
+  mintGuest,
   ownerHeaders,
   paletteTile,
 } from './fixtures';
@@ -25,10 +25,9 @@ async function openAs(
 ): Promise<Page> {
   const ctx = await browser.newContext({ baseURL, viewport: { width: 1440, height: 860 } });
   await ctx.addInitScript(
-    ({ o, sig }) => {
+    ({ o, token }) => {
       if (o) {
-        localStorage.setItem('livediagram:v2:self-id', o);
-        if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
+        if (token) localStorage.setItem('livediagram:v2:guest-token', token);
         localStorage.setItem('livediagram:v2:name-confirmed', '1');
       }
       // The Workshop tour offers itself over the board (fixtures openBlankSession); its overlay would take the presses.
@@ -37,7 +36,7 @@ async function openAs(
         JSON.stringify({ workshopTourSeen: true }),
       );
     },
-    { o: owner, sig: owner ? guestSigFor(owner) : null },
+    { o: owner, token: owner ? guestTokenFor(owner) : null },
   );
   const page = await ctx.newPage();
   await page.goto(url);
@@ -51,7 +50,7 @@ test('two peers see each other, edit live, and every edit is kept', async ({
   browser,
   baseURL,
 }) => {
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   const id = crypto.randomUUID();
   const tabId = crypto.randomUUID();
   const headers = ownerHeaders(owner, { Origin: new URL(baseURL!).origin });

@@ -9,7 +9,7 @@ There is a second environment, **staging**, which does deploy on its own: every 
 | App              | Cloudflare Worker       | Type                                                                                                                                |
 | ---------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | `apps/marketing` | `livediagram-marketing` | Static assets only (Next.js `output: 'export'`).                                                                                    |
-| `apps/editor`      | `livediagram-editor`      | Static assets + a tiny path-rewrite worker.                                                                                         |
+| `apps/editor`    | `livediagram-editor`    | Static assets + a tiny path-rewrite worker.                                                                                         |
 | `apps/help`      | `livediagram-help`      | Static assets only (help centre, [Help app](../018-help/help-app.md)).                                                              |
 | `apps/community` | `livediagram-community` | Static assets plus a small worker for post metadata and the sitemap, bound to the api ([Community](../025-community/community.md)). |
 | `apps/api`       | `livediagram-api`       | Worker (D1 binding + Durable Object).                                                                                               |
@@ -127,11 +127,10 @@ Set in the repo under **Settings → Secrets and variables → Actions**:
 
 **Optional**, each synced into `wrangler secret put` by the deploy workflow and skipped when unset, so a fork that sets none still deploys:
 
-| Secret                 | Synced to       | See                                                                                                                                                       |
-| ---------------------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET` | api | [04](../014-identity/auth-and-guest-access.md); `ACCOUNTS_CLIENT_ID` also turns sign-in on in the build |
-| `GUEST_ID_HMAC_SECRET` | api             | [04](../014-identity/auth-and-guest-access.md)                                                                                                            |
-| `TELEMETRY_KEY`        | api **and** mcp | [Telemetry](../017-telemetry/telemetry.md) — livediagram's key on the liveworkspace telemetry service; one GitHub secret drives both, so they can't drift |
+| Secret                                                                         | Synced to       | See                                                                                                                                                       |
+| ------------------------------------------------------------------------------ | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET` | api             | [04](../014-identity/auth-and-guest-access.md); `ACCOUNTS_CLIENT_ID` also turns sign-in on in the build                                                   |
+| `TELEMETRY_KEY`                                                                | api **and** mcp | [Telemetry](../017-telemetry/telemetry.md) — livediagram's key on the liveworkspace telemetry service; one GitHub secret drives both, so they can't drift |
 
 Syncing on every deploy means these rotate by editing the GitHub secret rather than by running `wrangler` against production. [Secrets policy](../002-project-scope/secrets-policy.md) holds the full worker-secret table.
 

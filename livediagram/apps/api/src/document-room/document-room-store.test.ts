@@ -15,10 +15,18 @@ import { MAINTENANCE_EVERY_MS, DocumentRoom } from './document-room';
 // object's `ctx.storage.sql`, node:sqlite behind the SqlStorage surface), so nothing is shared between documents but
 // D1, as in production.
 
+// `Bearer guest:<id>` stands in for a verified guest token.
 vi.mock('../auth/accounts', () => ({
-  getAccountIdentity: async () => null,
+  getPersonIdentity: async (_env: unknown, request: Request) => {
+    const bearer = request.headers.get('Authorization') ?? '';
+    return bearer.startsWith('Bearer guest:')
+      ? { kind: 'guest', guestId: bearer.slice('Bearer guest:'.length) }
+      : null;
+  },
   accountCredentials: () => null,
 }));
+
+const as = (person: string) => ({ Authorization: `Bearer guest:${person}` });
 
 const box = (id: string, label = id): Element => ({
   id,
@@ -141,7 +149,7 @@ function world(extra: Partial<Env> = {}): World {
     worker.fetch(
       new Request(`https://api.test${path}`, {
         method,
-        headers: { 'X-Owner-Id': 'owner', 'Content-Type': 'application/json', ...headers },
+        headers: { ...as('owner'), 'Content-Type': 'application/json', ...headers },
         ...(body === undefined ? {} : { body: JSON.stringify(body) }),
       }),
       env,
@@ -299,12 +307,7 @@ describe("a document's content lives in its own Durable Object", () => {
 // under the same tab id, and a write in one reaches the others when its room drains (document-room/tab-shares.ts).
 describe('a tab shared between documents', () => {
   const link = (w: World, target: string, tabId: string, from: string, owner = 'owner') =>
-    w.send(
-      'POST',
-      `/api/documents/${target}/tabs/${tabId}/link`,
-      { from },
-      { 'X-Owner-Id': owner },
-    );
+    w.send('POST', `/api/documents/${target}/tabs/${tabId}/link`, { from }, as(owner));
   const labels = (w: World, documentId: string, tabId = 't1') => {
     const row = w.documents
       .get(documentId)!
@@ -469,7 +472,7 @@ describe('a tab shared between documents', () => {
       'POST',
       '/api/documents',
       { id: 'S', name: 'S', tabs: [{ id: 's1', name: 'S', elements: [] }] },
-      { 'X-Owner-Id': 'stranger' },
+      as('stranger'),
     );
     expect((await link(w, 'B', 's1', 'S')).status).toBe(403);
     expect((await link(w, 'B', 'nope', 'A')).status).toBe(404);

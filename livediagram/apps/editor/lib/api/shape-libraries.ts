@@ -1,6 +1,6 @@
 // Shape library calls (docs/specs/013-workspace/shape-libraries.md "API"): list / create / update /
 // delete. Owner-scoped like folders; guests included (apiHeaders attaches the access token when
-// signed in, else the X-Owner-Id header).
+// signed in, else the guest token).
 import {
   MAX_SHAPE_LIBRARIES_PER_OWNER,
   type ShapeLibrary,

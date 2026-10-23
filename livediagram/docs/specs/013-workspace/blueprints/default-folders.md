@@ -27,7 +27,7 @@ Scope, by file:
 | `apps/api/src/placement/placement-response.ts`                                          | `intentRejected()`                                                                                             |
 | `apps/api/src/routes/placement-defaults.ts`                                             | `GET` / `PUT` / `DELETE /api/placement-defaults[/:key]`                                                        |
 | `apps/api/src/routes/documents.ts`                                                      | `POST /api/documents` reads `intent`, resolves, records                                                        |
-| `apps/api/src/index.ts`, `auth/guest-rest.ts`                                           | Dispatch case; owner-scoped segment                                                                            |
+| `apps/api/src/index.ts`                                                                 | Dispatch case; owner-scoped segment                                                                            |
 | `packages/api-schema/src/error-telemetry.ts`                                            | `placement-defaults` in `API_ROUTE_RESOURCES`                                                                  |
 | `apps/api/src/openapi/manifest.ts`                                                      | The three routes; the create body's `folderId` semantics and `intent`                                          |
 | `apps/editor/lib/api/placement-defaults.ts`                                             | `apiListPlacementDefaults`, `apiSetPlacementDefault`, `apiClearPlacementDefault`                               |
@@ -226,7 +226,7 @@ owner_id = ?` then `DELETE … WHERE owner_id = <guest>`: the account's row for 
 - Team membership on PUT and on use is read against `ctx.verifiedUserId` only; a guest default is
   personal-only.
 - `folder_not_found` covers every invisible folder: setting a default leaks no other person's folder.
-- `placement-defaults` is in `OWNER_SCOPED_SEGMENTS`.
+- `placement-defaults` is owner-scoped (`requireOwner`).
 - A read-only API token is refused on PUT and DELETE by the global gate (403 `read_only_token`).
 - Writes ride `WRITE_RATE_LIMITER` (300 per 60 s per owner, or per token): 429 `rate_limited`.
 - A default grants nothing; a recorded intent grants nothing: it is a label on the caller's own row.

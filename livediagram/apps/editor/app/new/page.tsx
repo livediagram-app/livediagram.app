@@ -38,8 +38,8 @@ import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { titleCaseType, track } from '@/lib/telemetry';
 import { trackDailyReturn } from '@/lib/daily-return';
 import { markNameConfirmed } from '@/lib/local-identity';
-import { ensureSignedGuestIdentity } from '@/lib/guest-identity';
-import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
+import { ensureGuestIdentity } from '@/lib/guest-identity';
+import { useGuestId } from '@/hooks/persistence/useGuestId';
 import {
   templateFamilyOf,
   untitledNameForTemplate,
@@ -101,7 +101,7 @@ const PENDING_SELF: Participant = {
 export default function NewDocumentPage() {
   // Stable placeholder so the first paint matches the SSG render; the
   // real participant lands once the identity has resolved.
-  // Sign-in wiring (token provider + guest to authed migration), the same
+  // Sign-in wiring (the token provider), the same
   // hook as the editor route; see hooks/useAccountBootstrap.ts.
   const { authLoaded, accountUserId } = useAccountBootstrap();
 
@@ -109,10 +109,10 @@ export default function NewDocumentPage() {
   // The base is the account id once auth has settled, else the guest id read from its store, with a name and
   // colour seeded once per visit. `selfOverride` holds what replaces it: the stored profile, the name
   // chosen in the wizard, or the commit's fallback. Until auth settles it is the 'pending' placeholder.
-  // A guest's id is the SIGNED one, resolved before any owner-scoped call
-  // (docs/specs/014-identity/auth-and-guest-access.md "Signed guest ids"): until then `self` stays
+  // A guest's id is their guest token's, resolved before any owner-scoped call
+  // (docs/specs/014-identity/auth-and-guest-access.md): until then `self` stays
   // 'pending', which gates every owner-scoped read below.
-  const guestId = useSignedGuestId(authLoaded, accountUserId);
+  const guestId = useGuestId(authLoaded, accountUserId);
   const [seed] = useState(() => ({ name: randomName(), color: randomColor() }));
   const [selfOverride, setSelf] = useState<Participant | null>(null);
   const baseId = authLoaded ? (accountUserId ?? guestId) : null;
@@ -270,8 +270,8 @@ export default function NewDocumentPage() {
       await new Promise((r) => setTimeout(r, 100));
     }
     if (selfRef.current.id !== 'pending') return selfRef.current;
-    // Still pending (auth never settled): resolve the guest's signed id here.
-    const fallback = { ...selfRef.current, id: (await ensureSignedGuestIdentity()).id };
+    // Still pending (auth never settled): resolve the guest's id here.
+    const fallback = { ...selfRef.current, id: (await ensureGuestIdentity()).id };
     setSelf(fallback);
     return fallback;
   };

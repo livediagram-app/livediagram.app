@@ -1,12 +1,5 @@
 import type { Browser, Page } from '@playwright/test';
-import {
-  dismissQuickTour,
-  expect,
-  test,
-  guestSigFor,
-  mintSignedGuest,
-  ownerHeaders,
-} from './fixtures';
+import { dismissQuickTour, expect, test, guestTokenFor, mintGuest, ownerHeaders } from './fixtures';
 
 // Two people dragging ONE element at the same moment (docs/specs/012-collaboration/realtime-conflict-resolution.md
 // "Same-element edits converge"): the room orders the two moves, and both screens end on the later one. Each used
@@ -18,14 +11,13 @@ const CANVAS = '[data-canvas-a11y-root]';
 async function openAs(browser: Browser, baseURL: string, url: string, owner: string | null) {
   const ctx = await browser.newContext({ baseURL, viewport: { width: 1440, height: 860 } });
   await ctx.addInitScript(
-    ({ o, sig }) => {
+    ({ o, token }) => {
       if (o) {
-        localStorage.setItem('livediagram:v2:self-id', o);
-        if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
+        if (token) localStorage.setItem('livediagram:v2:guest-token', token);
         localStorage.setItem('livediagram:v2:name-confirmed', '1');
       }
     },
-    { o: owner, sig: owner ? guestSigFor(owner) : null },
+    { o: owner, token: owner ? guestTokenFor(owner) : null },
   );
   const page = await ctx.newPage();
   await page.goto(url);
@@ -56,7 +48,7 @@ test('two peers dragging the same element at once end on the same position', asy
   browser,
   baseURL,
 }) => {
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   const id = crypto.randomUUID();
   const headers = ownerHeaders(owner, { Origin: new URL(baseURL!).origin });
   const square = (elId: string, x: number) => ({

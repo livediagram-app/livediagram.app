@@ -9,6 +9,10 @@ import {
 import { readCommunityShareInfo } from './share';
 import { communityCodeMessage, communityErrorMessage } from '../community-errors';
 
+vi.mock('../guest-token', () => ({
+  readGuestToken: () => ({ token: 'guest-jwt', id: 'guest_1', expiresAt: 1 }),
+}));
+
 // The editor's Community calls (docs/specs/025-community/blueprints/community.md §4) and how their
 // refusals are worded.
 
@@ -49,7 +53,7 @@ describe('community api client', () => {
     const seen = stubFetch(() => Response.json({ post: null }));
     expect(await apiGetCommunityPost('guest-1', 'doc 1')).toBeNull();
     expect(seen[0]!.url).toBe('/api/documents/doc%201/community');
-    expect(seen[0]!.headers.get('X-Owner-Id')).toBe('guest-1');
+    expect(seen[0]!.headers.get('Authorization')).toBe('Bearer guest-jwt');
   });
 
   it('publishes with a PUT carrying the input', async () => {
@@ -81,7 +85,7 @@ describe('community api client', () => {
       Response.json({ tags: [{ tag: 'aws', count: 3 }], anonymous: true }),
     );
     expect(await apiCommunityPopularTags()).toEqual(['aws']);
-    expect(seen[0]!.headers.get('X-Owner-Id')).toBeNull();
+    expect(seen[0]!.headers.get('Authorization')).toBeNull();
     stubFetch(() => new Response('nope', { status: 500 }));
     expect(await apiCommunityPopularTags()).toEqual([]);
   });

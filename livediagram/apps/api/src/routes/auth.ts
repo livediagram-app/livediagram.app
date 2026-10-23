@@ -16,6 +16,9 @@ import { SIGNED_IN_HINT_COOKIE } from '@livediagram/api-schema';
 //   GET  /api/auth/silent?return=/path       → the accounts site with prompt=none, and straight back:
 //                                              signed in, or a guest (liveworkspace/docs/accounts.md
 //                                              "Signing in without a click")
+//   GET  /api/auth/guest?state=              → the accounts site's guest handoff, which comes back to
+//                                              /auth/guest#guest_token=…&state=… (liveworkspace/docs/
+//                                              accounts.md "Guests")
 //   POST /api/auth/sign-out                  → drops the refresh cookie, and remembers the sign-out
 //
 // Handled before the caller's identity is resolved (src/index.ts): none of
@@ -26,6 +29,8 @@ import {
   authorizeUrl,
   createPkcePair,
   exchangeCode,
+  guestHandoffUrl,
+  isGuestHandoffState,
   randomState,
   refreshTokens,
   type TokenSet,
@@ -339,6 +344,30 @@ async function silent(request: Request, env: Env, config: Configured | null): Pr
   });
 }
 
+// A guest's identity is liveworkspace's (liveworkspace/docs/accounts.md "Guests"): the browser goes to the accounts
+// site with this app's client, which answers with a year-long guest token in the fragment of /auth/guest. Routed
+// through here so the client id and resource live in one place; the editor makes and checks `state` itself.
+function guest(request: Request, env: Env, config: Configured | null): Response {
+  const state = new URL(request.url).searchParams.get('state');
+  if (!isGuestHandoffState(state)) return json({ error: 'invalid_state' }, { status: 400 });
+  const back = `${appOrigin(env, request)}/auth/guest`;
+  // No accounts site to ask: straight back, saying so, and the page carries on without a guest identity.
+  if (!config) {
+    const fragment = new URLSearchParams({ error: 'guest_not_configured', state }).toString();
+    return redirect(`${back}#${fragment}`, []);
+  }
+  return redirect(
+    guestHandoffUrl({
+      accountsUrl: config.accountsUrl,
+      clientId: config.clientId,
+      redirectUri: back,
+      state,
+      resource: config.resource,
+    }),
+    [],
+  );
+}
+
 export async function handleAuth(
   request: Request,
   env: Env,
@@ -350,7 +379,8 @@ export async function handleAuth(
   const route = `${request.method} ${segments[2]}`;
   // Never a page: with no sign-in configured, it goes straight back (startSilentSignIn).
   if (route === 'GET silent') return silent(request, env, config);
-  // A guest-only deployment: nothing to sign in to.
+  if (route === 'GET guest') return guest(request, env, config);
+  // A deployment without accounts: nothing to sign in to.
   if (!config) return json({ error: 'sign_in_not_configured' }, { status: 404 });
   // Each step is one network's worth of requests, apart from everyone's document writes.
   if (env.WRITE_RATE_LIMITER) {

@@ -29,18 +29,15 @@ describe('isLoopbackHostname', () => {
 });
 
 describe('isAccountIdShape', () => {
-  // An account `sub` in the GUEST header is always a replay of a harvested
-  // account id: the real guest credential is a server-minted UUID, and a
-  // signed-in client sends Authorization instead. Unlike the signature gate
-  // this needs no rollout, so the worker refuses the shape outright.
+  // An account is `user_…`, a guest `guest_<uuid>`: a signed-in client with no
+  // session token never falls back to the guest token for its account id.
   it('is true for an account id', () => {
     expect(isAccountIdShape('user_2abcDEF456')).toBe(true);
   });
 
-  it('is false for the guest UUIDs the server actually mints', () => {
-    // Exactly what POST /api/guest-id returns (crypto.randomUUID()).
-    expect(isAccountIdShape(crypto.randomUUID())).toBe(false);
-    expect(isAccountIdShape('7f3c1a8e-2b4d-4f6a-9c1e-5d8b0a2f4c6d')).toBe(false);
+  it("is false for a guest's id", () => {
+    expect(isAccountIdShape(`guest_${crypto.randomUUID()}`)).toBe(false);
+    expect(isAccountIdShape('guest_7f3c1a8e-2b4d-4f6a-9c1e-5d8b0a2f4c6d')).toBe(false);
   });
 
   it('does not over-match ids that merely mention a user', () => {

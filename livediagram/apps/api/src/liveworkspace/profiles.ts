@@ -12,7 +12,7 @@ import { colorForKey } from '@livediagram/api-schema';
 import { readProfiles, writeProfile, type Profile } from '@liveworkspace/auth-client';
 import { accountCredentials } from '../auth/accounts';
 import type { Env, ParticipantDTO } from '../types';
-import { appOwnerOf, liveworkspaceOwnerOf, liveworkspaceTarget } from './owner';
+import { liveworkspaceOwnerOf, liveworkspaceTarget } from './owner';
 
 // How long a profile read is trusted in one isolate: also how long a rename takes to reach another
 // isolate. A minute, as liveworkspace's own token checks are remembered. Safe range 10 s .. 5 min.
@@ -85,7 +85,7 @@ export async function getParticipants(
     console.warn('[profiles] read_failed', { ids: ask.length, error: String(err) });
     return found;
   }
-  const answered = new Map(profiles.map((p) => [appOwnerOf(p.id), p]));
+  const answered = new Map(profiles.map((p) => [p.id, p]));
   for (const id of ask) {
     const profile = answered.get(id);
     const participant = profile ? toParticipant(id, profile) : null;

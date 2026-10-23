@@ -346,7 +346,7 @@ Resolved where `lwt_` is, only when no account access token verified:
 Everything else is `confined`, among it: `documents/:doc` `DELETE`, `copy`, `folder`, `shared-tabs`, `share*`,
 `community`, `thumbnail`, `tabs/:tabId/presence` (an agent's door), `documents` (the library),
 `folders`, `shared`, `favourites`, `home`, `timeline`, `activity`, `trash`, `placement-defaults`, `tokens`, `teams`,
-`account`, `migrate`, `guest-id`, `ai`, `drive`, `oauth`, every write to `preferences`, `participants`,
+`account`, `ai`, `drive`, `oauth`, every write to `preferences`, `participants`,
 `shape-libraries`, `images/:id` `DELETE`, `images/usage`, `GET images`, and every
 `workbench/*` route but the one above. `/ws` carries no bearer and is decided by its ticket. `events`, `unfurl` and
 `share/:code` are called without credentials by the editor and never see `lvw_`.
@@ -620,7 +620,7 @@ is a person's editor and every route re-gates it with the owner's identity at th
 | GET                    | `teams`, `teams/:p`, `teams/:p/library`, `teams/:p/members`                                                                 |
 | DELETE                 | `workbench/sessions/current`                                                                                                |
 
-Everything else is `confined`, among it (Never the account): `account`, `migrate`, `guest-id`, `tokens/**`,
+Everything else is `confined`, among it (Never the account): `account`, `tokens/**`,
 `workbench/**` but the one above, every write to `participants` and `preferences`, `ai/**`, `oauth/**`, `drive/**`,
 `teams` writes and `teams/invites`, `teams/invite-link/**`, `teams/invite-decline/**`, `teams/:p/invite-link`
 (team administration), `community/**` and `documents/:p/community/**` (Community publishing needs a signed-in session,

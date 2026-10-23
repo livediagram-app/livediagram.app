@@ -95,13 +95,9 @@ holding identifiers and states only, never document content:
     help page, which has no session loaded, reads the api's readable
     `ld_signed_in` hint cookie (`0` signed out, `1` signed in), which says
     whether but not who; with no such cookie it reports "unknown".
-  - **Guest id in this browser:** only its first 8 characters (a full guest id
-    is an `X-Owner-Id` credential) and whether it is signed, or "none".
-  - **Identity upgrade pending:** yes or no.
-  - When signed in with a guest id still present: "Guest documents moved to
-    the account: NOT YET". Signing in moves a guest's documents and then
-    clears the guest id, so one still there means the move has not happened,
-    the usual cause of "my documents went missing after I signed in";
+  - **Guest in this browser:** the first 8 characters of the guest token's id
+    and whether the token is current or expired, or "none". The token itself
+    is never reported;
 - the load: the step it reached (`identity`, `participant`, `document`,
   `share`, `first-tab`, `done`), how long it has run, and whether it timed out;
 - the browser: the user agent, online state, and the results of the browser
@@ -123,9 +119,9 @@ cache, cached share passwords, and the stale-build reload guards.
 
 **Kept, always:**
 
-- the guest identity: `self-id`, `self-sig`, `pending-signed-id`,
-  `name-confirmed` (all under `livediagram:v2:`). Losing the guest id loses
-  every document a guest owns;
+- the guest identity: `guest-token` and `name-confirmed` (under
+  `livediagram:v2:`). Losing the guest token loses every document a guest
+  owns;
 - `collab-key`, its secret half `collab-secret`, and `community-key`, the
   per-browser keys that past answers, votes and
   likes are matched against;

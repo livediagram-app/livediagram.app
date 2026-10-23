@@ -3,7 +3,7 @@
 // through the api, as the product writes them.
 
 import type { APIRequestContext, Page } from '@playwright/test';
-import { expect, guestSigFor, mintSignedGuest, ownerHeaders } from './fixtures';
+import { expect, guestTokenFor, mintGuest, ownerHeaders } from './fixtures';
 
 export const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 
@@ -101,7 +101,7 @@ export async function person(
   name: string,
   color: string,
 ): Promise<string> {
-  const id = await mintSignedGuest(request);
+  const id = await mintGuest(request);
   await nameParticipant(request, id, name, color);
   return id;
 }
@@ -109,13 +109,12 @@ export async function person(
 /** The browser as this guest, in dark mode. */
 export async function asGuest(page: Page, owner: string): Promise<void> {
   await page.addInitScript(
-    ({ id, sig }) => {
-      localStorage.setItem('livediagram:v2:self-id', id);
-      if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
+    ({ token }) => {
+      if (token) localStorage.setItem('livediagram:v2:guest-token', token);
       localStorage.setItem('livediagram:v2:name-confirmed', '1');
       localStorage.setItem('livediagram:v2:ui-mode', 'dark');
     },
-    { id: owner, sig: guestSigFor(owner) },
+    { token: guestTokenFor(owner) },
   );
 }
 
@@ -127,7 +126,7 @@ export async function seedBusyHome(
   request: APIRequestContext,
   origin: string,
 ): Promise<{ owner: string; payments: string; onboarding: string; roadmap: string }> {
-  const owner = await mintSignedGuest(request);
+  const owner = await mintGuest(request);
   const payments = await seedHomeDocument(request, owner, origin, 'Payments architecture');
   const onboarding = await seedHomeDocument(request, owner, origin, 'Onboarding flow');
   const roadmap = await seedHomeDocument(request, owner, origin, 'Roadmap 2027');

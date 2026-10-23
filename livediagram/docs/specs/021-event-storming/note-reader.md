@@ -73,7 +73,7 @@ but unused`) rather than left as a dead secret nobody notices.
 
 ## Security
 
-- Auth required: access token or `X-Owner-Id`.
+- Auth required: an account access token or a guest token.
 - Per-IP rate limiter (`AI_RATE_LIMITER` binding, 20 req/60 s). Optional: absent on
   self-host deployments falls through to "allow".
 - Optional `Origin` allow-list (`AI_ALLOWED_ORIGINS`). When set, the request's `Origin`
@@ -83,8 +83,8 @@ but unused`) rather than left as a dead secret nobody notices.
   `https://www.livediagram.app,https://livediagram.app`. The `www` entry is the load-bearing
   one, because the apex 301-redirects to it.
 - Optional sign-in-only gate (`AI_REQUIRE_SIGN_IN`). When `"true"`, the route rejects any
-  request without a verified access token with `401 sign_in_required`, so a third-party
-  site cannot drain the operator's model budget by minting fresh `X-Owner-Id` UUIDs.
+  request without a verified account access token with `401 sign_in_required`, so a third-party
+  site cannot drain the operator's model budget with fresh guest identities.
 
 Error responses follow the standard worker envelope, `{ "error": "<token>" }`:
 

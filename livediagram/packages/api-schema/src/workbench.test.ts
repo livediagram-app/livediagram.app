@@ -152,8 +152,6 @@ describe('workbenchRouteVerdict', () => {
     ['GET', 'tokens'],
     ['GET', 'teams'],
     ['DELETE', 'account'],
-    ['POST', 'migrate'],
-    ['POST', 'guest-id'],
     ['POST', 'ai'],
     ['GET', 'drive'],
     ['POST', 'oauth'],
@@ -271,8 +269,6 @@ describe('workbenchRouteVerdict, workspace scope', () => {
   it.each([
     ['DELETE', 'account'],
     ['GET', 'account'],
-    ['POST', 'migrate'],
-    ['POST', 'guest-id'],
     ['GET', 'tokens'],
     ['DELETE', 'tokens/current'],
     ['GET', 'workbench/pairings'],

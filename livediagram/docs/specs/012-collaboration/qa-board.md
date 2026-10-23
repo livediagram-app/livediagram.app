@@ -78,7 +78,7 @@ the room, not against someone reading the api's logs.
 
 A voter id is `sha256("livediagram:qa-vote:v1:" + ownerId + ":" + elementId)`,
 truncated to 16 hex characters and computed **by the server** from the
-authenticated caller (`X-Owner-Id` or the account's `sub`). So:
+authenticated caller (the guest token's id or the account's `sub`). So:
 
 - **It can't be forged.** A client never says who it is voting as; claiming a
   second vote means holding a second owner id.

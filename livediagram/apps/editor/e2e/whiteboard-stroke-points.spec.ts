@@ -4,8 +4,8 @@ import {
   dismissQuickTour,
   expect,
   expectNoPageErrors,
-  guestSigFor,
-  mintSignedGuest,
+  guestTokenFor,
+  mintGuest,
   ownerHeaders,
   seedTab,
   test,
@@ -186,14 +186,13 @@ async function openAs(browser: Browser, baseURL: string, url: string, owner: str
     colorScheme: 'dark',
   });
   await ctx.addInitScript(
-    ({ o, sig }) => {
+    ({ o, token }) => {
       if (o) {
-        localStorage.setItem('livediagram:v2:self-id', o);
-        if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
+        if (token) localStorage.setItem('livediagram:v2:guest-token', token);
         localStorage.setItem('livediagram:v2:name-confirmed', '1');
       }
     },
-    { o: owner, sig: owner ? guestSigFor(owner) : null },
+    { o: owner, token: owner ? guestTokenFor(owner) : null },
   );
   const page = await ctx.newPage();
   await page.goto(url);
@@ -201,7 +200,7 @@ async function openAs(browser: Browser, baseURL: string, url: string, owner: str
 }
 
 test('a peer’s pen stroke reaches the owner live, packed', async ({ page, browser, baseURL }) => {
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   const id = crypto.randomUUID();
   const tabId = crypto.randomUUID();
   const headers = ownerHeaders(owner, { Origin: new URL(baseURL!).origin });

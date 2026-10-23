@@ -3,12 +3,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BUILD_ID_HEADER, DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER } from '@livediagram/api-schema';
 import { resetServerReleaseForTests, serverBuild, serverDocumentFormat } from '../server-release';
 
-// getGuestSelfSig is the only ../local-identity symbol core.ts uses; mock
-// it so the guest-signature header is deterministic per case.
-const { identity } = vi.hoisted(() => ({
-  identity: { getGuestSelfSig: vi.fn((): string | null => null) },
+// readGuestToken is the only ../guest-token symbol core.ts uses; mock it so
+// the guest's Bearer is deterministic per case.
+type GuestToken = { token: string; id: string; expiresAt: number };
+const { guest } = vi.hoisted(() => ({
+  guest: { readGuestToken: vi.fn((): GuestToken | null => null) },
 }));
-vi.mock('../local-identity', () => identity);
+vi.mock('../guest-token', () => guest);
+const GUEST: GuestToken = { token: 'guest-jwt', id: 'guest_1', expiresAt: 1 };
 
 import {
   API_BASE,
@@ -38,40 +40,36 @@ const H = (h: HeadersInit) => h as Record<string, string>;
 beforeEach(() => {
   setTokenProvider(null);
   setSessionSharePassword(null);
-  identity.getGuestSelfSig.mockReturnValue(null);
+  guest.readGuestToken.mockReturnValue(GUEST);
 });
 
 describe('apiHeaders (hybrid identity gate, docs/specs/014-identity/auth-and-guest-access.md)', () => {
-  it('sends X-Owner-Id for a guest, no Authorization', async () => {
-    const h = H(await apiHeaders('guest-1'));
-    expect(h['X-Owner-Id']).toBe('guest-1');
-    expect(h['Authorization']).toBeUndefined();
-  });
-
-  it('attaches the guest signature when one is held', async () => {
-    identity.getGuestSelfSig.mockReturnValue('sig-abc');
-    expect(H(await apiHeaders('guest-1'))['X-Owner-Sig']).toBe('sig-abc');
-  });
-
-  it('sends Bearer and NOT X-Owner-Id when a token resolves (never both)', async () => {
-    setTokenProvider(() => Promise.resolve('jwt-xyz'));
-    const h = H(await apiHeaders('guest-1'));
-    expect(h['Authorization']).toBe('Bearer jwt-xyz');
+  it("sends the guest token's Bearer for a guest", async () => {
+    const h = H(await apiHeaders('guest_1'));
+    expect(h['Authorization']).toBe('Bearer guest-jwt');
     expect(h['X-Owner-Id']).toBeUndefined();
-    expect(h['X-Owner-Sig']).toBeUndefined();
   });
 
-  it('falls back to X-Owner-Id when the provider resolves null', async () => {
+  it('sends no identity for a guest with no token (a link visitor)', async () => {
+    guest.readGuestToken.mockReturnValue(null);
+    expect(H(await apiHeaders('guest_1'))['Authorization']).toBeUndefined();
+  });
+
+  it("sends the account's Bearer, not the guest's, when a token resolves", async () => {
+    setTokenProvider(() => Promise.resolve('jwt-xyz'));
+    const h = H(await apiHeaders('guest_1'));
+    expect(h['Authorization']).toBe('Bearer jwt-xyz');
+  });
+
+  it("falls back to the guest's Bearer when the provider resolves null", async () => {
     setTokenProvider(() => Promise.resolve(null));
-    const h = H(await apiHeaders('guest-1'));
-    expect(h['X-Owner-Id']).toBe('guest-1');
-    expect(h['Authorization']).toBeUndefined();
+    expect(H(await apiHeaders('guest_1'))['Authorization']).toBe('Bearer guest-jwt');
   });
 
   // The session's getToken() can resolve null for a moment on a live session. A
-  // null used to fall back to `X-Owner-Id: <account id>`, which the worker
-  // refuses (401 account_id_not_a_guest_credential), surfacing as "Couldn't
-  // save your changes. Check your connection." on a perfectly good network.
+  // signed-in request must not go out without the account's Bearer, which
+  // surfaced as "Couldn't save your changes. Check your connection." on a
+  // perfectly good network.
   it('asks for a fresh token, bypassing the cache, when the provider resolves null', async () => {
     const provider = vi.fn((opts?: { skipCache?: boolean }) =>
       Promise.resolve(opts?.skipCache ? 'jwt-fresh' : null),
@@ -80,7 +78,6 @@ describe('apiHeaders (hybrid identity gate, docs/specs/014-identity/auth-and-gue
     const h = H(await apiHeaders('user_abc'));
     expect(provider).toHaveBeenNthCalledWith(2, { skipCache: true });
     expect(h['Authorization']).toBe('Bearer jwt-fresh');
-    expect(h['X-Owner-Id']).toBeUndefined();
     expect(getLastKnownToken()).toBe('jwt-fresh');
   });
 
@@ -91,7 +88,7 @@ describe('apiHeaders (hybrid identity gate, docs/specs/014-identity/auth-and-gue
     expect(provider).toHaveBeenCalledTimes(1);
   });
 
-  it('refuses to send an account id as the guest header when no token comes back', async () => {
+  it('refuses a signed-in request when no account token comes back', async () => {
     setTokenProvider(() => Promise.resolve(null));
     await expect(apiHeaders('user_abc')).rejects.toBeInstanceOf(SessionTokenUnavailableError);
   });
@@ -151,15 +148,11 @@ describe('identityHeaders', () => {
     expect(identityHeaders('user_abc', 'jwt')).toEqual({ Authorization: 'Bearer jwt' });
   });
 
-  it('sends the guest id and its signature without a token', () => {
-    identity.getGuestSelfSig.mockReturnValue('sig-abc');
-    expect(identityHeaders('guest-1', null)).toEqual({
-      'X-Owner-Id': 'guest-1',
-      'X-Owner-Sig': 'sig-abc',
-    });
+  it("sends the guest token's Bearer without an account token", () => {
+    expect(identityHeaders('guest_1', null)).toEqual({ Authorization: 'Bearer guest-jwt' });
   });
 
-  it('throws rather than present an account id as a guest credential', () => {
+  it('throws rather than send a signed-in request without its account token', () => {
     expect(() => identityHeaders('user_abc', null)).toThrow(SessionTokenUnavailableError);
   });
 });

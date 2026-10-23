@@ -2,8 +2,8 @@ import {
   test,
   expect,
   expectNoPageErrors,
-  guestSigFor,
-  mintSignedGuest,
+  guestTokenFor,
+  mintGuest,
   ownerHeaders,
 } from './fixtures';
 
@@ -16,7 +16,7 @@ const SECRET = 'TOP SECRET PRICING';
 const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 
 test('a tab-scoped link opens its tab and nothing else', async ({ page, browser, baseURL }) => {
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   const liveDoc = crypto.randomUUID();
   const [pricing, roadmap, hiring] = [
     crypto.randomUUID(),
@@ -49,12 +49,11 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser,
 
   // The owner scopes a new link to Roadmap.
   await page.addInitScript(
-    ({ id, sig }) => {
-      localStorage.setItem('livediagram:v2:self-id', id);
-      if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
+    ({ token }) => {
+      if (token) localStorage.setItem('livediagram:v2:guest-token', token);
       localStorage.setItem('livediagram:v2:name-confirmed', '1');
     },
-    { id: owner, sig: guestSigFor(owner) },
+    { token: guestTokenFor(owner) },
   );
   await page.goto(`/document/${liveDoc}`);
   await page.getByRole('button', { name: /^Share$/ }).click();

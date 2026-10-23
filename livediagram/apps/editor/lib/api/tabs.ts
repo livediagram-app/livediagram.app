@@ -174,7 +174,7 @@ async function savedRevOf(res: Response): Promise<number | null> {
 // path builds headers synchronously and uses `keepalive: true` to let
 // each request outlive the teardown. Identity comes from the sync
 // sources: the Bearer token apiHeaders cached on its last fetch for
-// signed-in sessions, else X-Owner-Id + guest signature. The debounced
+// signed-in sessions, else the guest token (a sync localStorage read). The debounced
 // save carries the freshly-fetched hybrid identity for the common
 // (non-unload) case. Callers pass an already-diffed change set
 // (computeTabSaveDiff); empty sets fire nothing.
@@ -220,11 +220,10 @@ export function flushDocumentSavesBeacon(args: {
   // Identity, synchronously (a beforeunload handler can't await):
   // signed-in sessions ride the token apiHeaders cached on its last
   // fetch — the autosave loop refreshes it every ~600ms while editing,
-  // so it's seconds old at teardown. Guests ride X-Owner-Id plus the
-  // guest signature (a sync localStorage read); without the sig these
-  // writes 401 (signature_required) once guest-sig enforcement is on,
-  // silently losing the final debounce window's edits — the exact loss
-  // this flush exists to prevent. The rule is apiHeaders' own
+  // so it's seconds old at teardown. Guests ride their guest token (a
+  // sync localStorage read); without it these writes 401, silently
+  // losing the final debounce window's edits — the exact loss this
+  // flush exists to prevent. The rule is apiHeaders' own
   // (identityHeaders). A signed-in owner with no cached token has nothing the worker accepts, so
   // skip the flush rather than fire writes that are certain to 401.
   let base: Record<string, string>;

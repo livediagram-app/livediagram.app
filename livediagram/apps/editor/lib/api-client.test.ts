@@ -25,6 +25,11 @@ import {
 import { apiHeaders, setWorkbenchConfinement } from './api/core';
 import { resetDisplayCacheForTests } from './image-display';
 
+// A guest holds liveworkspace's guest token (lib/guest-token.ts), sent as the Bearer.
+vi.mock('./guest-token', () => ({
+  readGuestToken: () => ({ token: 'guest-jwt', id: 'guest_1', expiresAt: 1 }),
+}));
+
 // Reset the module-level token provider between tests so the order of
 // the cases below doesn't leak. The Bearer-path tests register a
 // provider, the guest-path tests assume none. Without this teardown a
@@ -46,38 +51,30 @@ async function call(...args: Parameters<typeof apiHeaders>): Promise<Record<stri
 }
 
 describe('apiHeaders (hybrid identity gate, docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md)', () => {
-  it('guest path: no provider, no token, emits X-Owner-Id', async () => {
+  it("guest path: no provider, sends the guest token's Bearer", async () => {
     const h = await call('guest-uuid-1');
-    expect(h['X-Owner-Id']).toBe('guest-uuid-1');
-    expect(h.Authorization).toBeUndefined();
+    expect(h.Authorization).toBe('Bearer guest-jwt');
   });
 
-  it('guest path: provider returning null falls back to X-Owner-Id', async () => {
-    // Signed-out signed-in session: useAuth().getToken() resolves to
-    // null, so the provider is registered but currently inert. The
-    // request must still carry the X-Owner-Id header (the editor
-    // stays usable for signed-out visitors).
+  it("guest path: provider returning null falls back to the guest token's Bearer", async () => {
+    // Signed-out session: useAuth().getToken() resolves to null, so the
+    // provider is registered but currently inert. The request still
+    // carries the guest token (the editor stays usable for signed-out
+    // visitors).
     setTokenProvider(async () => null);
     const h = await call('guest-uuid-2');
-    expect(h['X-Owner-Id']).toBe('guest-uuid-2');
-    expect(h.Authorization).toBeUndefined();
+    expect(h.Authorization).toBe('Bearer guest-jwt');
   });
 
-  it('bearer path: provider returning a token emits Authorization and drops X-Owner-Id', async () => {
-    // The invariant that matters: a request must NOT carry both
-    // headers simultaneously. The api worker would prefer the JWT
-    // (verifies it, derives the owner from sub) but the duplicate
-    // owner signal would leave a confusing trail in any per-request
-    // audit. Bearer-only is the only correct shape.
+  it("bearer path: provider returning a token sends the account's Bearer, not the guest's", async () => {
     setTokenProvider(async () => 'jwt-token-abc');
     const h = await call('client-passed-id-ignored');
     expect(h.Authorization).toBe('Bearer jwt-token-abc');
-    expect(h['X-Owner-Id']).toBeUndefined();
   });
 
   it('body opt adds Content-Type: application/json on guest path', async () => {
     const h = await call('guest-uuid-3', { body: true });
-    expect(h['X-Owner-Id']).toBe('guest-uuid-3');
+    expect(h.Authorization).toBe('Bearer guest-jwt');
     expect(h['Content-Type']).toBe('application/json');
   });
 
@@ -86,18 +83,17 @@ describe('apiHeaders (hybrid identity gate, docs/specs/014-identity/auth-and-gue
     const h = await call('ignored', { body: true });
     expect(h.Authorization).toBe('Bearer jwt-token-def');
     expect(h['Content-Type']).toBe('application/json');
-    expect(h['X-Owner-Id']).toBeUndefined();
   });
 
   it('share opt adds X-Share-Code', async () => {
     const h = await call('guest-uuid-4', { share: 'ABCD2345' });
-    expect(h['X-Owner-Id']).toBe('guest-uuid-4');
+    expect(h.Authorization).toBe('Bearer guest-jwt');
     expect(h['X-Share-Code']).toBe('ABCD2345');
   });
 
   it('share + body together emit all three headers', async () => {
     const h = await call('guest-uuid-5', { share: 'EFGH6789', body: true });
-    expect(h['X-Owner-Id']).toBe('guest-uuid-5');
+    expect(h.Authorization).toBe('Bearer guest-jwt');
     expect(h['X-Share-Code']).toBe('EFGH6789');
     expect(h['Content-Type']).toBe('application/json');
   });
@@ -112,7 +108,6 @@ describe('apiHeaders (hybrid identity gate, docs/specs/014-identity/auth-and-gue
     const h = await call('ignored', { share: 'IJKL0123' });
     expect(h.Authorization).toBe('Bearer jwt-token-xyz');
     expect(h['X-Share-Code']).toBe('IJKL0123');
-    expect(h['X-Owner-Id']).toBeUndefined();
   });
 
   it('share: null is treated as absent (no X-Share-Code header)', async () => {
@@ -122,7 +117,7 @@ describe('apiHeaders (hybrid identity gate, docs/specs/014-identity/auth-and-gue
     // mis-parse as a share visit. Verifies the truthy guard.
     const h = await call('guest-uuid-6', { share: null });
     expect(h['X-Share-Code']).toBeUndefined();
-    expect(h['X-Owner-Id']).toBe('guest-uuid-6');
+    expect(h.Authorization).toBe('Bearer guest-jwt');
   });
 
   it('attaches X-Share-Password once a session password is set (docs/specs/013-workspace/share-password.md)', async () => {

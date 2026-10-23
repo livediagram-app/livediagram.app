@@ -53,29 +53,6 @@ globs = ["**/*.ttf", "**/*.otf"]
 # per IP) remains the only other control.
 AI_ALLOWED_ORIGINS = "https://www.livediagram.app,https://livediagram.app"
 
-# Guest signature enforcement (docs/specs/015-api/public-api-and-tokens.md §4). Stated here,
-# never only in the dashboard: every `wrangler deploy` replaces the worker's
-# plain vars with the ones this file declares, so a dashboard-only value is
-# silently wiped by the next deploy.
-#
-# GUEST_SIGNING_LIVE_AT: when production started signing guest ids. The
-# GUEST_ID_HMAC_SECRET sync shipped with the deploy that started
-# 2026-09-25T12:00:41Z, and the first signed upgrade landed at 12:03:44Z, so
-# 12:00:00Z is the latest instant at which every existing id was unsigned. An id
-# whose participant row is older may still run its one-time upgrade unsigned.
-#
-# GUEST_SIG_ENFORCE_AFTER: from this instant, owner-scoped routes, the room's
-# owner leg and the legacy upgrade require a valid guest signature. Blank: not
-# armed. Every entry path now resolves a signed id before its first api call,
-# and every e2e stack runs with enforcement on (scripts/e2e-stack.mjs), so a
-# regression fails the suite; re-arming production is Tom's or Webber's call
-# (docs/specs/015-api/public-api-and-tokens.md §6).
-# `pnpm dev` keeps it blank (apps/api/package.json): a developer's local guests
-# can predate their local signing secret and would be locked out of their own
-# test data.
-GUEST_SIGNING_LIVE_AT = "1790337600000"
-GUEST_SIG_ENFORCE_AFTER = ""
-
 # The CLI signs in through the MCP worker's OAuth server (docs/specs/015-api/cli.md "Authentication"); the
 # api names it in /api/capabilities. CLI_MIN_VERSION (unset until a release needs a floor) refuses writes
 # from an older CLI.
@@ -321,19 +298,13 @@ simple = { limit = 30, period = 60 }
 #     editing the GitHub secret. Secrets persist across deploys
 #     independently of this file.
 #
-# With ACCOUNTS_URL or API_RESOURCE unset the api worker stays in
-# pure-guest mode and trusts `X-Owner-Id` exclusively
+# Guests are liveworkspace's too: the accounts Worker hands each browser a
+# guest token for this API (liveworkspace/docs/accounts.md "Guests"), checked
+# with the same keys. With ACCOUNTS_URL or API_RESOURCE unset no caller has an
+# identity and only share-link visitors are served
 # (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md).
 # The client id and secret come from registering livediagram with the
 # accounts Worker (liveworkspace/docs/integrating-an-app.md).
-#
-# GUEST_ID_HMAC_SECRET is provisioned the same way (`.dev.vars` locally,
-# `wrangler secret put GUEST_ID_HMAC_SECRET` + a matching GitHub repo
-# secret in prod; never in [vars] — it's secret material). When set, the
-# worker mints signed guest ids and /api/migrate requires a valid
-# signature, closing the "observe a guest id, claim its data" hole
-# (docs/specs/014-identity/auth-and-guest-access.md). Generate with `openssl rand -hex 32`. Unset = legacy unsigned
-# migrate (pure-guest / single-user self-host).
 
 # TELEMETRY_KEY is livediagram's secret on the liveworkspace telemetry service
 # (liveworkspace/docs/telemetry.md): sent as X-Telemetry-Key, it proves a batch with
@@ -410,12 +381,6 @@ RESEND_FROM = "livediagram staging <hello@livediagram.app>"
 # environment is reproducible from the repo alone — see docs/specs/016-platform/staging-environment.md "Known sharp
 # edge".
 AI_ALLOWED_ORIGINS = "https://staging.livediagram.app"
-
-# Guest signature enforcement, matching production (see the top-level [vars]).
-# Staging's own database dates from 2026-09-17 and signs with its own secret;
-# its test guests take the same dates rather than drift from production.
-GUEST_SIGNING_LIVE_AT = "1790337600000"
-GUEST_SIG_ENFORCE_AFTER = ""
 
 # The staging MCP worker's OAuth server, for the CLI against staging.
 OAUTH_ISSUER = "https://mcp-staging.livediagram.app"
@@ -520,7 +485,7 @@ new_sqlite_classes = ["DocumentRoom", "PersonStore", "WorkbenchStore"]
 [env.staging.triggers]
 crons = ["0 3 * * *", "*/5 * * * *", "* * * * *"]
 
-# The four ACCOUNTS_* / API_RESOURCE values, GUEST_ID_HMAC_SECRET and
+# The four ACCOUNTS_* / API_RESOURCE values and
 # TELEMETRY_KEY come from the
 # `_STAGING` GitHub secrets via the deploy workflow. RESEND_API_KEY and the
 # model key (GOOGLE_AI_STUDIO_API_KEY) are provisioned by

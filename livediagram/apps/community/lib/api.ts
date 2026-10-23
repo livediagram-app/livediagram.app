@@ -19,7 +19,7 @@ import { API_BASE, COMMUNITY_API } from './config';
 // api-schema DTOs. The gallery, posts, likes and reports are the liveworkspace Community service's
 // (liveworkspace/docs/community.md), asked for this app's posts only; My Shares is this app's api, which
 // alone knows who is signed in. Every request carries the community key so lists and posts come back
-// with `liked` filled in. Nothing here ever sends `X-Owner-Id`, and only My Shares sends a session token
+// with `liked` filled in. Only My Shares sends a session token
 // (blueprint §7).
 
 export class CommunityApiError extends Error {

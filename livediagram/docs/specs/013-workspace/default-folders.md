@@ -157,7 +157,7 @@ A create's place is decided in this order; the first that answers wins:
 
 - **A personal folder of the person**, or **a team folder of a team the person has joined**. Team
   membership is checked against the verified account id (a signed-in session or an API token) only,
-  never the guest `X-Owner-Id`, as for [Placement on create](folders.md#placement-on-create).
+  never a guest's token, as for [Placement on create](folders.md#placement-on-create).
 - Not a space's root: the root of My Work is where a document lands with no default, and a
   team's root is reached by creating inside the team.
 - Setting a default checks the folder then: a folder that is missing, someone else's, or in a team
@@ -178,7 +178,7 @@ A create's place is decided in this order; the first that answers wins:
 
 - **Guests have defaults too**, keyed on their owner id, limited to their personal folders (a team
   needs a verified account).
-- **Signing up carries them into the account** with the guest's folders (`POST /api/migrate`). When
+- **Signing up carries them into the account** with the guest's folders (the guest-to-account merge, [Auth + guest access](../014-identity/auth-and-guest-access.md)). When
   the account already has a default for the same key, the account's stays and the guest's goes.
 - **Account deletion removes them** ([Owner-keyed data](../015-api/api.md#owner-keyed-data)).
 
@@ -198,7 +198,7 @@ A create's place is decided in this order; the first that answers wins:
 | PUT    | `/api/placement-defaults/:key` | `{ folderId }` | 204, the default set                |
 | DELETE | `/api/placement-defaults/:key` |                | 204, the default cleared            |
 
-- Owner-scoped: the signed-in account, an API token's owner, or a guest's `X-Owner-Id`.
+- Owner-scoped: the signed-in account, an API token's owner, or a guest's guest token.
 - `GET` answers every stored default whose key is in the list, in list order, dangling ones
   included: a surface shows a dangling default as such.
 - `DELETE` of a key with no default is a 204 as well.

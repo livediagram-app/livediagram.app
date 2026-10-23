@@ -35,7 +35,7 @@ Scope, by file:
 | `apps/api/src/timeline/tab-diff.ts`                                            | `newComments` says whether each new comment is a reply                                         |
 | `apps/api/src/routes/document-subresource-routes.ts`                           | The tab read records a marked open; the comment POST stamps `reply`                            |
 | `apps/api/src/routes/home.ts`                                                  | `GET /api/home`                                                                                |
-| `apps/api/src/index.ts`, `auth/guest-rest.ts`, `types.ts`                      | Dispatch, `HOME_RATE_LIMITER`, the `home_opens` sweep, `home` owner-scoped                     |
+| `apps/api/src/index.ts`, `types.ts`                                            | Dispatch, `HOME_RATE_LIMITER`, the `home_opens` sweep, `home` owner-scoped                     |
 | `apps/api/src/responses.ts`                                                    | CORS allows `X-Document-Open`                                                                  |
 | `apps/api/wrangler.toml`                                                       | `HOME_RATE_LIMITER` in the default and `[env.staging]` blocks                                  |
 | `apps/api/src/openapi/manifest.ts`, `apps/api/scripts/gen-openapi-schemas.mjs` | The route; the `HomeResponse` schema; the create body's `markUsed`                             |
@@ -392,8 +392,8 @@ from` moves every row the account does not already hold; each leftover (opened u
 
 ## Security and trust
 
-- `home` is in `OWNER_SCOPED_SEGMENTS`: an account-shaped `X-Owner-Id` is refused and, when armed, the guest signature
-  is required.
+- `home` is owner-scoped: the caller is the verified account or guest token, and one is
+  required.
 - `visible` is the boundary: an event, an open or an entry about a document the person cannot open is never read.
   Team membership is matched on the resolved owner id, as the Inbox does; teams are for accounts only and an account-shaped
   guest header never reaches a route.

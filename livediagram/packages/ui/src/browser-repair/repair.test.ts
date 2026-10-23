@@ -63,7 +63,7 @@ describe('repairBrowserStorage', () => {
   it('removes clearable keys from both storages and keeps the rest', () => {
     const localStorage = new MemoryStorage();
     const sessionStorage = new MemoryStorage();
-    localStorage.setItem('livediagram:v2:self-id', 'guest');
+    localStorage.setItem('livediagram:v2:guest-token', 'guest-token');
     localStorage.setItem('livediagram:user-preferences:v2', '{}');
     localStorage.setItem('livediagram:panel-layout:v1', '{}');
     localStorage.setItem('__clerk_x', '1');
@@ -76,7 +76,7 @@ describe('repairBrowserStorage', () => {
       'livediagram:stale-chunk-reloads',
       'livediagram:user-preferences:v2',
     ]);
-    expect(localStorage.getItem('livediagram:v2:self-id')).toBe('guest');
+    expect(localStorage.getItem('livediagram:v2:guest-token')).toBe('guest-token');
     expect(localStorage.getItem('__clerk_x')).toBe('1');
     expect(sessionStorage.length).toBe(0);
   });

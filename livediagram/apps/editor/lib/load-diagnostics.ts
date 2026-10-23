@@ -1,7 +1,7 @@
 // The diagnostics report a person copies from the load-error screen (docs/specs/007-editor/load-recovery.md
 // "Diagnostics"). Identifiers and states only, never document content. Two credentials are kept out on
-// purpose: a share code (the path's `?s=` is reported as "share link: yes") and a full guest id (an
-// `X-Owner-Id` credential; @livediagram/ui's identity lines carry only its first 8 characters).
+// purpose: a share code (the path's `?s=` is reported as "share link: yes") and the guest token
+// (@livediagram/ui's identity lines carry only the first 8 characters of the guest's id).
 
 import { isAccountIdShape } from '@livediagram/api-schema';
 import {

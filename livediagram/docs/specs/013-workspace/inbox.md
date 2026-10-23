@@ -222,7 +222,7 @@ what a row is called).
 Comment `authorId`s and self-assigned `assignee.userId`s are written
 with whatever identity the writer had at the time, a guest participant
 id for anyone signed out ([Auth + guest access](../014-identity/auth-and-guest-access.md)). When that guest signs up, their
-documents migrate to the account id (`POST /api/migrate`) but the ids
+documents move to the account id (the guest merge, `personMerged`) but the ids
 inside the blobs do not, and a later re-index of an untouched tab
 would faithfully re-write the guest id. Rewriting blobs on migration
 is the wrong fix (every tab of every document, on the sign-up path).
@@ -238,8 +238,7 @@ CREATE TABLE owner_aliases (
 );
 ```
 
-Both `/api/migrate` flows write a row (guest → account, and the legacy
-unsigned-guest → signed-guest upgrade), carrying any aliases the source
+The guest merge (`migrateOwnerId`) writes a row (guest → account), carrying any aliases the source
 id had already accumulated so a chain collapses onto the final id. The
 Activity read matches `me = {ownerId} ∪ aliases(ownerId)` everywhere it
 compares an identity, so a week of guest to-dos is still on the page
@@ -283,7 +282,7 @@ the server's rows (`readOfflineActivity`, `apps/editor/lib/offline/offline-activ
 GET /api/activity   -> { actions: ActivityAction[], threads: ActivityThread[] }
 ```
 
-Hybrid identity (account user or `X-Owner-Id`); guests get their own
+Hybrid identity (account user or guest token); guests get their own
 page, keyed to their participant id. Read-only: nothing on the page is
 mutated from the page in v1, so there is no other verb.
 

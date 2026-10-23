@@ -5,8 +5,8 @@ import {
   dismissQuickTour,
   expect,
   expectNoPageErrors,
-  guestSigFor,
-  mintSignedGuest,
+  guestTokenFor,
+  mintGuest,
   ownerHeaders,
   startBlankDocument,
   test,
@@ -28,15 +28,14 @@ const shot = async (page: Page, name: string) => {
 };
 
 async function guestWithFolder(page: Page, baseURL: string, name: string) {
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   await page.addInitScript(
-    ({ id, sig }) => {
+    ({ token }) => {
       localStorage.setItem('livediagram:v2:ui-mode', 'dark');
       localStorage.setItem('livediagram:v2:name-confirmed', '1');
-      localStorage.setItem('livediagram:v2:self-id', id);
-      if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
+      if (token) localStorage.setItem('livediagram:v2:guest-token', token);
     },
-    { id: owner, sig: guestSigFor(owner) },
+    { token: guestTokenFor(owner) },
   );
   const headers = ownerHeaders(owner, {
     Origin: new URL(baseURL).origin,

@@ -66,16 +66,15 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
 - **Parallel everywhere** (`fullyParallel`): 4 workers in CI, one per vCPU of the GitHub runner,
   and Playwright's default locally. Tests stay independent because each opens a fresh browser
   context, so a fresh guest owner whose documents no other test sees.
-- **Guest signatures enforced** by default (`E2E_GUEST_SIG_ENFORCE`, unless `0`, sets
-  `GUEST_SIG_ENFORCE_AFTER=1` in `scripts/e2e-stack.mjs`), as
-  production runs once armed ([Public API and API tokens](../015-api/public-api-and-tokens.md) §4).
-  A spec seeds through a signed guest: `mintSignedGuest` + `ownerHeaders` for Playwright
-  requests, `pageOwnerHeaders` for calls made inside the page (`apps/editor/e2e/fixtures.ts`). A
-  hand-made `crypto.randomUUID()` owner is refused (401), and so is any entry path that sends an
-  unsigned id. The api cannot make a legacy guest under enforcement, so the stack writes one:
-  `POST /__e2e/legacy-guest` gives the accounts stand-in a profile dated before
-  `GUEST_SIGNING_LIVE_AT` (1000 on the stack) and puts one folder straight into the local D1, for
-  `guest-upgrade.spec.ts`.
+- **Guests as production makes them.** Every visitor is a liveworkspace guest with a guest
+  token ([Auth + guest access](../014-identity/auth-and-guest-access.md#guest-identity)). The
+  stack's accounts stand-in (below) answers the guest handoff
+  (`/e2e/accounts/api/auth/guest`) with a fresh guest token for each visitor, so each browser
+  context is its own guest. A spec that seeds through the api mints its own guest:
+  `mintGuest(request)` (from `/e2e/guest-token`) returns the guest id, `guestTokenFor(owner)` its
+  token and `ownerHeaders(owner)` the Bearer for Playwright requests; `pageOwnerHeaders(page)`
+  reads the page's own guest token for calls made inside the page (`apps/editor/e2e/fixtures.ts`).
+  A hand-made owner id is no identity: the api resolves owners only from verified tokens.
 - **Sharded** (`--shard=i/6`, the matrix in `e2e.yml`): Playwright splits the `chromium` project's
   tests evenly by count across six jobs; each boots its own stack, so shards share nothing.
 - **Shards sized to the floor, not beyond.** Every shard pays about two minutes before its first
@@ -185,13 +184,16 @@ page loads, so a chosen user (name, email) is signed in with no accounts Worker,
 `signed-in` project and boots the stack with `E2E_EDITOR_OUT=.next/out-signed-in` on its own ports
 (live `:3115`, api `:8115`, marketing `:3116`), so a guest stack already up on `:3102` is never
 reused for it. The stack also stands in for the accounts Worker (on in every run but the Drive one,
-`E2E_ACCOUNTS_STUB=0` turns it off; the api keeps no settings or profiles of its own, so guest runs
-need it too, and it answers the settings, profile, sighting, milestone, email, activity and
-team-making routes from memory): it makes a
+`E2E_ACCOUNTS_STUB=0` turns it off; guests get their identity from it and the api keeps no settings
+or profiles of its own, so guest runs need it too, and it answers the settings, profile, sighting,
+milestone, email, activity and team-making routes from memory): it makes a
 signing key at boot, serves its JWKS on the issuer's own path (`/e2e/accounts/api/auth/jwks`),
 starts the api worker with `ACCOUNTS_URL` and `API_RESOURCE` pointing at it, and mints an access
 token with that issuer and audience for any test account on `/e2e/token?sub=user_…`, which
-`installSession` hands the bridge. So a stub account is a real verified account to the api and the
+`installSession` hands the bridge. It mints guest tokens with the same key: one per visitor on the
+guest handoff (`/e2e/accounts/api/auth/guest`, which redirects back to `/auth/guest` with the token
+in the fragment, refusing any `redirect_uri` that is not this stack's), and one per call on
+`/e2e/guest-token` for specs. So a stub account is a real verified account to the api and the
 realtime room, and two or three stub browsers can collaborate in one document. A test that changes an
 account's synced settings takes a fresh id (`freshUserId`), since the stack's D1 outlives a test. `e2e.yml` builds and runs them in their own job, beside the smoke shards.
 
@@ -218,17 +220,6 @@ link to liveworkspace.app), so no spec covers them here.
 
 The sign-in round trip itself (`/api/auth/*` against the accounts Worker) is covered by the api's unit
 tests (`apps/api/src/routes/auth.test.ts`), not here.
-
-## Armed guest signatures
-
-Every stack enforces guest signatures (above), so every spec runs as production does once armed.
-The specs in `apps/editor/e2e/armed/` focus on the entry paths: a first-time guest who arrives on `/` or `/new`, or opens the
-Explorer first, gets a signed id before any owner-scoped call, creates a document (`201`) and sees
-the canvas, and no api response is `401`. `pnpm --filter @livediagram/editor test:e2e:armed` sets
-`E2E_GUEST_SIG_ENFORCE=1`, which adds the `armed` project and boots the stack on its own ports
-(live `:3117`, api `:8117`, marketing `:3118`). It
-reuses the guest-mode export, so `e2e.yml` runs it as a second step of the Sites audit job, which
-has built it already.
 
 ## No uncaught errors
 

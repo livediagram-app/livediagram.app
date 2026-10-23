@@ -11,7 +11,7 @@ import {
   setParticipant,
 } from './profiles';
 
-const GUEST = '0f5ca4af-9a8a-4a60-be5e-1179e5555880';
+const GUEST = 'guest_0f5ca4af-9a8a-4a60-be5e-1179e5555880';
 
 let env: Env;
 let accounts: TestAccountsService;
@@ -28,9 +28,9 @@ afterEach(() => {
 });
 
 describe('getParticipants (liveworkspace profiles)', () => {
-  it('reads every id in one call, mapping a guest to guest_<uuid> and back', async () => {
+  it('reads every id in one call, a guest by its own guest_<uuid> id', async () => {
     accounts.profiles.set('user_a', { name: 'Ann', color: '#111111', createdAt: 5 });
-    accounts.profiles.set(`guest_${GUEST}`, { name: 'Gus', color: null, createdAt: 7 });
+    accounts.profiles.set(GUEST, { name: 'Gus', color: null, createdAt: 7 });
     const found = await getParticipants(env, ['user_a', GUEST, 'user_a', 'user_gone']);
     expect(accounts.calls).toEqual(['POST /profiles/read']);
     expect(found.get('user_a')).toEqual({
@@ -90,7 +90,7 @@ describe('setParticipant', () => {
   it('writes the caller’s own profile and remembers it at once', async () => {
     const made = await setParticipant(env, GUEST, { name: 'Gus', color: '#333333' });
     expect(made).toMatchObject({ id: GUEST, name: 'Gus', color: '#333333' });
-    expect(accounts.profiles.get(`guest_${GUEST}`)?.name).toBe('Gus');
+    expect(accounts.profiles.get(GUEST)?.name).toBe('Gus');
     expect(await getParticipant(env, GUEST)).toEqual(made);
     expect(accounts.calls).toEqual(['POST /profiles/write']);
   });

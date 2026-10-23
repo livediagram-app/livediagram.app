@@ -17,7 +17,7 @@ This guide is the practical path: provision Cloudflare resources, configure secr
 
 What you do NOT need:
 
-- Sign-in: it is optional. Without it, every user is a guest (a per-browser id stored in `localStorage`, carried as `X-Owner-Id`). With sign-in configured, the api worker fetches the accounts Worker's public keys (`${ACCOUNTS_URL}/api/auth/jwks`) to check access tokens, and calls it when someone signs in or a session refreshes.
+- Sign-in: it is optional. Without it, every user is a guest. **Guests still need a liveworkspace accounts site**, though: a guest's identity is a guest token the accounts site mints ([The accounts site](#the-accounts-site-guests-and-sign-in)). The api worker fetches the accounts Worker's public keys (`${ACCOUNTS_URL}/api/auth/jwks`) to check access tokens and guest tokens, and calls it when someone signs in or a session refreshes.
 - No _required_ SaaS: no Stripe (no paid tier) and no analytics vendor. The other integrations are all optional and stay off until you add a key: Resend for transactional email ([Transactional & lifecycle email (Resend)](../specs/014-identity/transactional-email.md)), a model key for the event-storming photo reader ([Note reader](../specs/021-event-storming/note-reader.md)), and a Google OAuth client for the Google Drive mirror ([Google Drive mirror](../specs/022-drive-mirror/drive-mirror.md)), each covered in its own section below. The telemetry endpoint is first-party only and off by default.
 - A separate database host: D1 covers everything.
 
@@ -61,11 +61,13 @@ If you're deploying via GitHub Actions (the default workflow), set two repo secr
 - `CF_API_TOKEN`: the token from the step above.
 - `CF_ACCOUNT_ID`: your Cloudflare account id.
 
-Those two are the only **required** ones — the deploy workflow uses raw `pnpm exec wrangler deploy` against them. Optionally, it also syncs worker secrets from repo secrets of the same name, each skipped when unset: the four sign-in values (`ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`), `GUEST_ID_HMAC_SECRET`, and `TELEMETRY_KEY`. Setting them here rather than by hand means they rotate by editing the GitHub secret — and, for `TELEMETRY_KEY`, that the api and mcp workers can't drift apart. See [Secrets policy](../specs/002-project-scope/secrets-policy.md) for the full table.
+Those two are the only **required** ones — the deploy workflow uses raw `pnpm exec wrangler deploy` against them. Optionally, it also syncs worker secrets from repo secrets of the same name, each skipped when unset: the four accounts values (`ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`) and `TELEMETRY_KEY`. Setting them here rather than by hand means they rotate by editing the GitHub secret — and, for `TELEMETRY_KEY`, that the api and mcp workers can't drift apart. See [Secrets policy](../specs/002-project-scope/secrets-policy.md) for the full table.
 
-## Optional sign-in
+## The accounts site: guests and sign-in
 
-The hosted version signs people in with their liveworkspace account, through the liveworkspace accounts Worker. To enable sign-in on your self-host:
+The hosted version signs people in with their liveworkspace account, through the liveworkspace accounts Worker, and the same Worker gives every guest their identity: a year-long guest token (`guest_<uuid>`), fetched once per browser through `/api/auth/guest` and sent as a Bearer like an access token ([Auth + guest access](../specs/014-identity/auth-and-guest-access.md#guest-identity)). So a deployment needs an accounts Worker even if nobody will sign in. Without one, `/api/auth/guest` returns straight to `/auth/guest#error=guest_not_configured`: visitors have no guest identity and cannot own documents on the server. They can still draw in documents in This Browser.
+
+To connect your deployment (steps 1 and 2 are needed for guests; the frontend flag in step 2 turns sign-in on):
 
 1. Register your deployment as an OAuth client of an accounts Worker. Its redirect URI is `https://<your-host>/api/auth/callback`, and it needs its own resource (the audience its access tokens carry). Register it for the app `livediagram.app` (`register-client.ts --app livediagram.app`), under which the accounts Worker keeps its settings, sign-ups and milestone emails. You get a client id and a client secret.
 2. Set the values on the apps:
@@ -83,26 +85,9 @@ The hosted version signs people in with their liveworkspace account, through the
 
 3. **Teams ([Teams](../specs/013-workspace/teams.md)) need nothing extra.** Invite auto-connection matches pending invites against the verified `email` claim on the access token, which the accounts Worker always includes. The worker never trusts a client-supplied email.
 
-4. **Recommended when sign-in is on — sign guest ids.** Set a random HMAC secret so the worker mints signed guest ids and `POST /api/migrate` requires a valid signature before moving a guest's data into an account. Without it, anyone who observed a guest's id (it appears in shared-document DTOs / presence) could claim that guest's data at sign-up. Generate and set:
+4. **API tokens ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md)) come with sign-in.** They're a signed-in-only feature: tokens are liveworkspace account tokens (`lwt_`), made and revoked on liveworkspace.app, and the api worker checks each one with liveworkspace. A guest-only self-host has no accounts and therefore no tokens (nothing to configure).
 
-   ```sh
-   openssl rand -hex 32 | pnpm --filter @livediagram/api exec wrangler secret put GUEST_ID_HMAC_SECRET
-   ```
-
-   Leaving it unset keeps the legacy unsigned migrate, which is fine for a single-user self-host (no one else to claim from). See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md).
-
-   With the secret set, you can also require a valid signature on the guest `X-Owner-Id` REST path ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md) §4), which closes the "observe a guest id, use it as a credential" hole for shared documents. Two plain vars in `apps/api/wrangler.toml` `[vars]` control it, and **the file ships the hosted values, so edit both for your deployment** (or delete both lines to leave enforcement off):
-
-   - `GUEST_SIGNING_LIVE_AT`: epoch ms when your deployment first had `GUEST_ID_HMAC_SECRET`. A guest id created before it can still make its one-time upgrade onto a signed id after enforcement starts, so returning pre-signing guests keep their documents.
-   - `GUEST_SIG_ENFORCE_AFTER`: epoch ms from which owner-scoped routes, the realtime room's owner leg and the upgrade itself require a valid signature.
-
-   Arm it only on a build where every entry path signs first: before that, `/new` minted a local unsigned id, and with enforcement armed a first-time visitor who opened it could not create a document ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md) §6). Every entry path now signs first, and every e2e stack runs with enforcement on, so a regression of that kind fails the suite.
-
-   Set them in the file rather than the Cloudflare dashboard: every `wrangler deploy` replaces plain vars with the ones the file declares. Both are no-ops without `GUEST_ID_HMAC_SECRET`. `pnpm dev` blanks `GUEST_SIG_ENFORCE_AFTER`, so local guests made before your local secret keep working; every e2e stack enforces it.
-
-5. **API tokens ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md)) come with sign-in.** They're a signed-in-only feature: tokens are liveworkspace account tokens (`lwt_`), made and revoked on liveworkspace.app, and the api worker checks each one with liveworkspace. A guest-only self-host has no accounts and therefore no tokens (nothing to configure).
-
-Without the sign-in values set, the api worker treats every request as a guest (resolves owner from `X-Owner-Id`), and the live frontend mounts no session bridge, so it renders the editor without any auth UI. Self-host without sign-in is a fully-supported path; the canvas works identically (and guest-id signing is moot, since there's no migrate without accounts). Preferences and display names are the accounts Worker's to keep, so without it they stay in each browser: Settings work and persist there, and a person's name shows to others live in the room, but a name is not stored on the server, so places that read it later (a document's owner, comment authors in the api, team members) show their placeholder instead (a team member's email address, "Anonymous" for a comment author).
+With the api's accounts values set and `NEXT_PUBLIC_SIGN_IN_ENABLED` unset, the deployment is guest-only: every visitor is a guest with a guest token, and the frontend mounts no session bridge, so it renders the editor without any sign-in UI. That is a fully supported path. With the accounts values unset too, the api worker resolves no owner for any request, so only documents in This Browser work. Preferences and display names are the accounts Worker's to keep, so without it they stay in each browser: Settings work and persist there, and a person's name shows to others live in the room, but a name is not stored on the server, so places that read it later (a document's owner, comment authors in the api, team members) show their placeholder instead (a team member's email address, "Anonymous" for a comment author).
 
 See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for the hybrid auth model.
 
@@ -209,9 +194,9 @@ Optional knobs (all plain `[vars]` in `apps/api/wrangler.toml`, the dashboard, o
   handwriting better AND costs less than a bigger model (docs/research/vision/handwriting-readers.md).
   Required when using `AI_API_KEY`.
 - `AI_ALLOWED_ORIGINS`: comma-separated `Origin` allow-list for `POST /api/ai/read-notes` (e.g. `https://your-host,http://localhost:3102`). Unset = no origin check. Matched verbatim, case-sensitive. `apps/api/wrangler.toml` commits livediagram.app's origins here, so a fork sets its own or deletes the line, or every reader request answers 403.
-- `AI_REQUIRE_SIGN_IN`: set to `"true"` to reject the guest (`X-Owner-Id`) path on the reader only, requiring a verified access token. Unset = guests can use the server reader (so a fork without sign-in still works).
+- `AI_REQUIRE_SIGN_IN`: set to `"true"` to refuse guests on the reader only, requiring a verified account access token. Unset = guests can use the server reader (so a fork without sign-in still works).
 
-The last two are the spend-DoS defence: on a public deployment they stop a third-party site from minting fresh owner ids to drain your model budget. The hosted livediagram.app sets `AI_ALLOWED_ORIGINS` and deliberately leaves `AI_REQUIRE_SIGN_IN` unset so guests keep the server reader; a private fork, or one without sign-in, can leave both unset. A further defence lives alongside them: the `AI_RATE_LIMITER` binding (declared in `apps/api/wrangler.toml` as a Cloudflare rate-limit binding, 20 requests / 60 s per IP) caps how fast one client can drive the endpoint; absent binding falls through to "allow" so a self-host without the paid Cloudflare feature still works.
+The last two are the spend-DoS defence: on a public deployment they stop a third-party site from using fresh guest identities to drain your model budget. The hosted livediagram.app sets `AI_ALLOWED_ORIGINS` and deliberately leaves `AI_REQUIRE_SIGN_IN` unset so guests keep the server reader; a private fork, or one without sign-in, can leave both unset. A further defence lives alongside them: the `AI_RATE_LIMITER` binding (declared in `apps/api/wrangler.toml` as a Cloudflare rate-limit binding, 20 requests / 60 s per IP) caps how fast one client can drive the endpoint; absent binding falls through to "allow" so a self-host without the paid Cloudflare feature still works.
 
 ## Email (optional, Resend)
 
@@ -300,4 +285,5 @@ The six downstream workers don't need their own domain; the router fans out via 
 
 - **`account not authorized` from wrangler**: the API token is missing a scope. See the token list above; most often it's missing **Account → Account Settings: Read**, which wrangler uses to look up your account.
 - **`Durable Object class is not exported`**: the api worker's `wrangler.toml` references `DocumentRoom` as the DO class. It IS exported from `apps/api/src/index.ts`; if you've forked + renamed, keep the export name in step with the binding.
-- **Editor loads but every request 403s**: the resolved owner doesn't match the document's stored owner. If you migrated from one auth setup to another (added sign-in after running guest-only), the old guest documents still belong to the old guest id. The `/api/migrate` endpoint moves rows from a guest id to an account id after sign-up; see [Auth + guest access](../specs/014-identity/auth-and-guest-access.md).
+- **Editor loads but every request 403s**: the resolved owner doesn't match the document's stored owner. A guest's documents belong to the guest token held in that browser: a cleared browser, or a different one, is a different guest. When a guest signs in, the accounts site merges them into the account and the liveworkspace index moves their documents (the `personMerged` hook), so check that the index can reach the api's internal routes; see [Auth + guest access](../specs/014-identity/auth-and-guest-access.md#guest--account-merge).
+- **Visitors can't keep documents on the server**: the accounts site isn't configured. `/api/auth/guest` then answers `/auth/guest#error=guest_not_configured` and no visitor has a guest identity. Set the api's `ACCOUNTS_*` values and `API_RESOURCE` ([The accounts site](#the-accounts-site-guests-and-sign-in)).

@@ -96,7 +96,7 @@ Invariant: no write happens before resolution has succeeded.
 
 ## Security and trust
 
-- Team membership is read against `ctx.verifiedUserId` only (signed-in session or API token); `X-Owner-Id`
+- Team membership is read against `ctx.verifiedUserId` only (signed-in session or API token); a guest token
   never reaches `judgeTeam`.
 - `folder_not_found` covers every folder the caller cannot see, so the 404/400 split leaks nothing about
   other people's folders or teams the caller has not joined.

@@ -7,7 +7,7 @@ import { apiFetchImageBlobUrl, releaseImageBlobUrl } from '@/lib/api-client';
 // hang on an `<img src>`. Encapsulates the lifecycle dance that both
 // ImageElementView (the canvas renderer) and ImagePicker's gallery
 // tiles need to do: fetch via the api client (which threads
-// Authorization / X-Owner-Id / X-Share-Code), build a blob URL, and
+// Authorization / X-Share-Code), build a blob URL, and
 // revoke it on unmount or when the input changes so the browser
 // doesn't leak the underlying Blob.
 //

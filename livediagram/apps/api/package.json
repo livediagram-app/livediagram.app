@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev --inspector-port 9232 --var AI_ALLOWED_ORIGINS: --var GUEST_SIG_ENFORCE_AFTER:",
+    "dev": "wrangler dev --inspector-port 9232 --var AI_ALLOWED_ORIGINS:",
     "build": "wrangler deploy --dry-run --outdir dist",
     "deploy": "wrangler deploy",
     "staging:check": "wrangler deploy --dry-run --env staging",
@@ -28,6 +28,7 @@
     "@livediagram/templates": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/index-app": "workspace:*",
+    "@liveworkspace/index-client": "workspace:*",
     "@liveworkspace/media": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*",

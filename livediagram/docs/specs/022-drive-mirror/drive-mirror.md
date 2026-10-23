@@ -18,7 +18,7 @@ this spec does not restate it.
 
 - **Signed-in users only.** A guest has no lasting identity to attach a Google
   account to. The verified account id owns the connection; the unsigned
-  `X-Owner-Id` header never reaches any Drive route.
+  guest token never reaches any Drive route.
 - **My Work only.** Team libraries are not mirrored (whose Drive would
   hold a team's copy is unresolved). Documents shared with the user, and Offline
   Mode documents, are not mirrored either.

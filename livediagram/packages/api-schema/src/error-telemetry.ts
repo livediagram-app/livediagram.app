@@ -128,8 +128,6 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   'activity',
   'home',
   'preferences',
-  'migrate',
-  'guest-id',
   'participants',
   'drive',
   'workbench',

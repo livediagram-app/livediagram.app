@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, expectNoPageErrors, mintSignedGuest, test } from './fixtures';
+import { expect, expectNoPageErrors, mintGuest, test } from './fixtures';
 import {
   asGuest,
   box,
@@ -163,7 +163,7 @@ test('Jump Back In is 4 most used cards, then 4 recent, none twice', async ({
   pageErrors,
 }) => {
   const origin = new URL(baseURL!).origin;
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   await asGuest(page, owner);
   await page.setViewportSize({ width: 1280, height: 800 });
   await seedWithinReach(page, origin, owner);
@@ -213,7 +213,7 @@ test('on a phone the strip alternates, holds eight and ends in See More', async 
   pageErrors,
 }) => {
   const origin = new URL(baseURL!).origin;
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   await asGuest(page, owner);
   await page.setViewportSize({ width: 390, height: 844 });
   await seedWithinReach(page, origin, owner);
@@ -255,7 +255,7 @@ test('a document opened from Jump Back In opens in the editor', async ({
   pageErrors,
 }) => {
   const origin = new URL(baseURL!).origin;
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   const doc = await seedHomeDocument(page.request, owner, origin, 'Service map');
   await asGuest(page, owner);
 
@@ -276,7 +276,7 @@ test('with fewer than eight, only what exists shows, and nothing shifts', async 
   pageErrors,
 }) => {
   const origin = new URL(baseURL!).origin;
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   const doc = await seedHomeDocument(page.request, owner, origin, 'Only one');
   await openDocument(page.request, owner, doc);
   await asGuest(page, owner);
@@ -296,7 +296,7 @@ test('a document stored only in this browser joins Jump Back In with its pill', 
   page,
   pageErrors,
 }) => {
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   await asGuest(page, owner);
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/explorer/home');
@@ -319,7 +319,7 @@ test('a document stored only in this browser joins Jump Back In with its pill', 
 });
 
 test('a failed read says so, and Try again reads again', async ({ page, pageErrors }) => {
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   await asGuest(page, owner);
   await page.route('**/api/home?*', (route) => route.fulfill({ status: 503, body: '{}' }));
   await page.goto('/explorer/home');
@@ -336,7 +336,7 @@ test('a failed read says so, and Try again reads again', async ({ page, pageErro
 
 test('what others did since the last look is marked New', async ({ page, baseURL, pageErrors }) => {
   const origin = new URL(baseURL!).origin;
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   const doc = await seedHomeDocument(page.request, owner, origin, 'Launch plan');
   const code = await editLink(page.request, owner, origin, doc.id);
   await asGuest(page, owner);

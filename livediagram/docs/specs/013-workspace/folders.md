@@ -193,7 +193,7 @@ the `folder_id` column.
 
 ## API
 
-All endpoints continue the existing `X-Owner-Id` convention.
+All endpoints are owner-scoped: the caller's account, API token owner or guest token.
 
 | Method | Path                        | Body                                 | Returns                 |
 | ------ | --------------------------- | ------------------------------------ | ----------------------- |
@@ -231,8 +231,8 @@ for.
   the defaults. A dangling default is skipped, never a rejection
   ([Default folders](default-folders.md#dangling-defaults)).
 - **Team space.** Only a **verified account id** (a signed-in session or an API token) may place
-  into a team, and only when it is a **joined** member of that team. The guest `X-Owner-Id`
-  header never counts. A guest, an invited-but-not-joined member, or an unknown team is
+  into a team, and only when it is a **joined** member of that team. A guest token
+  never counts. A guest, an invited-but-not-joined member, or an unknown team is
   refused with `team_forbidden`.
 - **Folder.** The folder must exist and belong to the resolved space: in My Work the
   caller's own personal folder, in a team a folder of that team.

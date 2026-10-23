@@ -8,6 +8,8 @@
 // (`/document`, `/explorer`, ...), and the router forwards them to the live
 // worker (docs/specs/016-platform/router-app.md). Marketing owns every other first segment.
 export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
+  // The guest handoff's way back, /auth/guest (docs/specs/014-identity/auth-and-guest-access.md).
+  'auth',
   'document',
   // The Google Drive mirror's /drive/connected and /drive/open
   // (docs/specs/022-drive-mirror/drive-mirror.md).

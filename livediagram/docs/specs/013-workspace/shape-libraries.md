@@ -16,9 +16,9 @@ week stay two libraries.
 
 - **A library**: an id, its owner, a **name**, an ordered list of **items**, created and updated
   times. It is owner-scoped exactly like documents and [folders](folders.md):
-  keyed by the request owner id, the account's `sub` when signed in or the `X-Owner-Id` guest id otherwise
+  keyed by the request owner id, the account's `sub` when signed in or the guest token's id otherwise
   ([Auth + guest access](../014-identity/auth-and-guest-access.md)). **Guests have libraries too**, and
-  a guest who signs up carries them over with the existing `POST /api/migrate` owner-id remap.
+  a guest who signs up carries them over in the guest-to-account merge (the `personMerged` hook).
 - **An item**: an id, a **title** (may be empty), a **width** and **height** (the size of its
   elements), and its **elements**:
   ordinary livediagram elements positioned from the item's top-left corner at (0, 0), as the draw.io
@@ -125,8 +125,8 @@ element migration), and stored as JSON in one column. 400 for a missing or inval
 that fails validation, more than `MAX_SHAPE_LIBRARY_ITEMS` items, or a name over 120 characters;
 409 `shape_library_name_taken` for a rename onto a name the owner already uses.
 
-The route is owner-scoped in the guest-id guard (`OWNER_SCOPED_SEGMENTS`). Deleting an account deletes
-its libraries; `POST /api/migrate` moves a guest's libraries to the signed-in
+The route is owner-scoped (`requireOwner`). Deleting an account deletes
+its libraries; the guest-to-account merge moves a guest's libraries to the signed-in
 owner, renaming any that clash with a name the account already uses by the same " (2)" rule.
 
 ## Storage

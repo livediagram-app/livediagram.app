@@ -6,19 +6,19 @@ cited as `Dn`.
 
 Scope, by file:
 
-| File                                                     | Role                                                                       |
-| -------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `packages/document/src/element-types.ts`                 | `LinkCardElement`, `LinkCardMeta`                                          |
-| `packages/document/src/factories.ts`                     | `createLinkCard`: 280×120, no link, no meta                                |
-| `packages/document/src/index.ts`                         | `isBoxed` includes `link-card`; `elementSupportsText` excludes it          |
-| `packages/document/src/colors.ts`                        | Default fill, stroke, text; `supportsColours` true                         |
-| `packages/document/src/themes.ts`                        | `THEME_COLOUR_FIELDS['link-card'] = []`                                    |
-| `packages/document/src/validate.ts`                      | Link card carries no extra required fields                                 |
-| `packages/document/src/svg-render.ts`                    | Export: generic `rect` branch                                              |
-| `packages/api-schema/src/index.ts`                       | `UnfurlResult`                                                             |
-| `apps/api/src/routes/unfurl.ts`                          | `handleUnfurl`, `isBlockedHost`, `parsePublicHttpUrl`, `buildUnfurlResult` |
-| `apps/api/src/index.ts`                                  | Dispatch of `unfurl`                                                       |
-| `apps/api/wrangler.toml`                                 | `UNFURL_RATE_LIMITER` (production and `[env.staging]`)                     |
+| File                                                       | Role                                                                       |
+| ---------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `packages/document/src/element-types.ts`                   | `LinkCardElement`, `LinkCardMeta`                                          |
+| `packages/document/src/factories.ts`                       | `createLinkCard`: 280×120, no link, no meta                                |
+| `packages/document/src/index.ts`                           | `isBoxed` includes `link-card`; `elementSupportsText` excludes it          |
+| `packages/document/src/colors.ts`                          | Default fill, stroke, text; `supportsColours` true                         |
+| `packages/document/src/themes.ts`                          | `THEME_COLOUR_FIELDS['link-card'] = []`                                    |
+| `packages/document/src/validate.ts`                        | Link card carries no extra required fields                                 |
+| `packages/document/src/svg-render.ts`                      | Export: generic `rect` branch                                              |
+| `packages/api-schema/src/index.ts`                         | `UnfurlResult`                                                             |
+| `apps/api/src/routes/unfurl.ts`                            | `handleUnfurl`, `isBlockedHost`, `parsePublicHttpUrl`, `buildUnfurlResult` |
+| `apps/api/src/index.ts`                                    | Dispatch of `unfurl`                                                       |
+| `apps/api/wrangler.toml`                                   | `UNFURL_RATE_LIMITER` (production and `[env.staging]`)                     |
 | `apps/editor/lib/api/unfurl.ts`                            | `apiUnfurl`: fail-soft client                                              |
 | `apps/editor/hooks/canvas/useElementLinks.ts`              | `applyElementLink`: sets the link, then fetches and commits `meta`         |
 | `apps/editor/lib/url-safety.ts`                            | `normaliseUrl`, `isSafeFollowUrl`                                          |
@@ -201,7 +201,7 @@ export function apiUnfurl(url: string): Promise<UnfurlResult | null>;
 ## Security and trust
 
 - **Unauthenticated outbound fetch.** The endpoint needs no owner, so it is throttled per IP
-  (`UNFURL_RATE_LIMITER`) and exempt from guest signatures (`OWNER_SCOPED_SEGMENTS` excludes it).
+  (`UNFURL_RATE_LIMITER`).
 - **SSRF.** Scheme and host validated before the fetch and again on the final URL. DNS names that
   resolve to private addresses are not resolved here; Workers `fetch` cannot reach a private
   network, which is the residual control. Hostnames are never matched by IPv6 prefix `[QB12]`.
@@ -266,9 +266,9 @@ LinkUnfurled` exist.
 | og:\* precedence, relative resolution, favicon fallback | `buildUnfurlResult` suite                                   | `apps/api/src/routes/unfurl.test.ts`             |
 | Rate limit, redirect re-check, non-HTML, timeout, cap   | none (GB16)                                                 |                                                  |
 | 280×120 factory, no link or meta                        | `createLinkCard is a 280x120 boxed bookmark…`               | `packages/document/src/factories.test.ts`        |
-| Drawn to size                                           | `draws a link card to the dragged box`                      | `apps/editor/lib/draw-commit.test.ts`              |
-| Draw banner copy                                        | `drawBannerMessage` case                                    | `apps/editor/lib/draw-mode.test.ts`                |
-| Telemetry token `LinkCard`                              | `elementTelemetryType` case                                 | `apps/editor/lib/element-telemetry.test.ts`        |
+| Drawn to size                                           | `draws a link card to the dragged box`                      | `apps/editor/lib/draw-commit.test.ts`            |
+| Draw banner copy                                        | `drawBannerMessage` case                                    | `apps/editor/lib/draw-mode.test.ts`              |
+| Telemetry token `LinkCard`                              | `elementTelemetryType` case                                 | `apps/editor/lib/element-telemetry.test.ts`      |
 | Boxed                                                   | `isBoxed is true for every boxed-element kind…`             | `packages/document/src/geometry.test.ts`         |
 | No inline text                                          | `is false for label-less kinds…`                            | `packages/document/src/element-has-text.test.ts` |
 | Shadow supported                                        | `supportsShadow` suite                                      | `packages/document/src/shadow.test.ts`           |

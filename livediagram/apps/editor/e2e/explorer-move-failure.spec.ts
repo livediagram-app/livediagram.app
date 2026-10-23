@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { apiBase, darkVisitor } from './audit-screens';
-import { expect, expectNoPageErrors, mintSignedGuest, ownerHeaders, test } from './fixtures';
+import { expect, expectNoPageErrors, mintGuest, ownerHeaders, test } from './fixtures';
 
 // A move that fails says so (docs/specs/013-workspace/folders.md "A move that fails says so"): the api
 // refuses a folder move, and the Explorer shows the error toast and leaves the folder where it was.
@@ -15,7 +15,7 @@ async function seedFolder(page: Page, owner: string, origin: string, name: strin
 
 test('a folder move the api refuses says so', async ({ page, pageErrors, baseURL }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   await darkVisitor(page, owner);
   const origin = new URL(baseURL!).origin;
   await seedFolder(page, owner, origin, 'Archive');

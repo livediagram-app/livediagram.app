@@ -15,7 +15,7 @@ const { api, guest, seed } = vi.hoisted(() => ({
     apiLoadShared: vi.fn(),
     apiListShareLinks: vi.fn(),
   },
-  guest: { ensureSignedGuestIdentity: vi.fn() },
+  guest: { ensureGuestIdentity: vi.fn() },
   seed: vi.fn(async () => {}),
 }));
 vi.mock('@/lib/api-client', () => ({
@@ -120,7 +120,7 @@ describe('useIdentityBootstrap in a workbench', () => {
     expect(api.apiSaveSelf).not.toHaveBeenCalled();
     expect(api.apiLoadShared).not.toHaveBeenCalled();
     expect(api.apiListShareLinks).not.toHaveBeenCalled();
-    expect(guest.ensureSignedGuestIdentity).not.toHaveBeenCalled();
+    expect(guest.ensureGuestIdentity).not.toHaveBeenCalled();
     expect(lists.documents).not.toHaveBeenCalled();
     expect(lists.shared).not.toHaveBeenCalled();
     expect(set.setSelfParticipant).toHaveBeenCalledWith(

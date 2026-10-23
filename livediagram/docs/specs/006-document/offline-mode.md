@@ -126,7 +126,7 @@ auth has settled, the path names a document registered in the local index
   Document from the Share dialog waits too (the gate's `ready`).
 - **The reader resolves in the background** once auth answers, exactly as a
   cloud open resolves it (`resolveParticipant` in
-  `app/document/[id]/resolve-participant.ts`: the account id or signed guest id,
+  `app/document/[id]/resolve-participant.ts`: the account id or the guest token's id,
   then the participant row), followed by the Explorer lists and the guest naming
   nudge. The document is not reloaded: an offline document is the reader's own
   whoever they turn out to be.
@@ -285,7 +285,7 @@ Share dialog gate, and the move prompt after signing in).
 
 - Uploads the document's meta + tabs to the API ([API app](../015-api/api.md)), creating a normal
   cloud document owned by the current identity (signed-in account, or the guest
-  `X-Owner-Id` if not signed in — [Auth + guest access](../014-identity/auth-and-guest-access.md)).
+  token's guest if not signed in, [Auth + guest access](../014-identity/auth-and-guest-access.md)).
 - **Images re-home:** each embedded `data:` URI is uploaded to the gallery
   (SHA-256 dedupe server-side, [Image element + per-owner gallery](../009-elements/images.md)) and the element's reference swaps to
   the returned R2 id, so the cloud copy carries real gallery images instead of

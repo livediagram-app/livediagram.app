@@ -417,8 +417,8 @@ read a 503 as `null` and `{}`.
 - **Privacy.** JPEG APPn and COM segments are stripped by the service before storage. PNG, WebP and GIF
   pass through (spec, Out of scope).
 - **Abuse.** `WRITE_RATE_LIMITER` (300 per 60 s per owner or token) on POST and DELETE; per-file
-  cap; the service's per-person caps across apps, enforced atomically at insert; guest signature enforcement covers the `images` segment
-  (`OWNER_SCOPED_SEGMENTS`); read-only tokens cannot write. Uploads are off in embeds (D42).
+  cap; the service's per-person caps across apps, enforced atomically at insert; the owner comes only from a verified token, a guest's included;
+  read-only tokens cannot write. Uploads are off in embeds (D42).
 - **Caching.** `private` only, so no shared cache holds a share-gated image.
 
 ## Performance and limits

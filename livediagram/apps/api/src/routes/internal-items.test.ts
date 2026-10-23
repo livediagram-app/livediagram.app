@@ -12,7 +12,7 @@ const USER = 'user_ada';
 const OTHER = 'user_bob';
 
 function arrange() {
-  const { env } = sqliteD1({ INDEX_KEY: KEY });
+  const { env, sql } = sqliteD1({ INDEX_KEY: KEY });
   const call = (path: string, body: unknown) =>
     handleInternalItems(
       new Request(`https://api.test/api/internal/people/${path}`, {
@@ -24,7 +24,7 @@ function arrange() {
     );
   const library = (owner: string, id: string, name: string) =>
     personStore(env, owner).createShapeLibrary({ id, name, source: 'drawio', items: [] }, 50);
-  return { env, call, library };
+  return { env, sql, call, library };
 }
 
 describe('POST /api/internal/people/:id/purge', () => {
@@ -58,14 +58,22 @@ describe('POST /api/internal/people/:id/purge', () => {
 });
 
 describe('POST /api/internal/people/:guest/merge', () => {
-  it("moves the guest's shape libraries to the account, once however often it is asked", async () => {
-    const { env, call, library } = arrange();
+  it("moves the guest's canvases and shape libraries to the account, once however often it is asked", async () => {
+    const { env, sql, call, library } = arrange();
     await library(GUEST, 'lib-g', 'Sketches');
     await library(USER, 'lib-u', 'Sketches');
+    sql
+      .prepare(
+        `INSERT INTO documents (id, owner_id, name, saved_at, created_at) VALUES ('d1', ?, 'Mine', 1, 1)`,
+      )
+      .run(GUEST);
 
     expect((await call(`${GUEST}/merge`, { into: USER })).status).toBe(200);
     expect((await call(`${GUEST}/merge`, { into: USER })).status).toBe(200);
 
+    expect(sql.prepare(`SELECT owner_id FROM documents WHERE id = 'd1'`).get()).toEqual({
+      owner_id: USER,
+    });
     const names = (await personStore(env, USER).shapeLibraries()).map((l) => l.name).sort();
     expect(names).toEqual(['Sketches', 'Sketches (2)']);
     expect(await personStore(env, GUEST).shapeLibraries()).toEqual([]);

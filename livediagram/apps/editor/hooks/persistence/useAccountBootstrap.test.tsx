@@ -4,17 +4,14 @@
 // ShapeLibraryProvider in the same render that makes the signed-in user's
 // account id the owner, and React runs that child's effect (its fetch)
 // before the parent's. When the token provider was registered in a passive
-// effect, the fetch went out without a Bearer and put the account id in
-// `X-Owner-Id`, which the worker refuses. The provider must be in place
-// before any child's first fetch.
+// effect, the fetch went out with no Bearer for the account. The provider must
+// be in place before any child's first fetch.
 
-import { act, render } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { useEffect, type ReactNode } from 'react';
 import { renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { apiHeaders, setTokenProvider } from '@/lib/api/core';
-import { resetGuestMigrationForTests } from '@/lib/guest-migration';
-import { setGuestIdentity } from '@/lib/local-identity';
 
 vi.mock('@/lib/auth-config', () => ({ signInEnabled: true, sessionsEnabled: true }));
 const { getToken } = vi.hoisted(() => ({
@@ -36,13 +33,6 @@ vi.mock('@/components/providers/deferred-auth', () => {
     }),
   };
 });
-
-const MIGRATED = { documents: 1, folders: 0, shared: 0, images: 0 };
-const { apiMigrateGuestData } = vi.hoisted(() => ({ apiMigrateGuestData: vi.fn() }));
-vi.mock('@/lib/api-client', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/lib/api-client')>()),
-  apiMigrateGuestData,
-}));
 
 const { useAccountBootstrap } = await import('./useAccountBootstrap');
 
@@ -68,7 +58,6 @@ describe('useAccountBootstrap token provider', () => {
     );
     const sent = (await headers!) as Record<string, string>;
     expect(sent['Authorization']).toBe('Bearer jwt-1');
-    expect(sent['X-Owner-Id']).toBeUndefined();
   });
 
   // The session's getToken() can resolve null for a moment on a live session; the
@@ -86,59 +75,14 @@ describe('useAccountBootstrap token provider', () => {
   });
 });
 
-// Issue #67: signing in with a guest document open showed "diagram does not
-// exist", because the editor loaded it as the account before
-// POST /api/migrate had moved it. Owner data waits for the migration.
-describe('useAccountBootstrap guest migration', () => {
-  it('holds authLoaded until the guest data has migrated', async () => {
-    resetGuestMigrationForTests();
-    setGuestIdentity('guest-1', 'sig-1');
-    let finish: (v: typeof MIGRATED) => void = () => {};
-    apiMigrateGuestData.mockReturnValue(new Promise((r) => (finish = r)));
-    const seen: boolean[] = [];
-    function Probe() {
-      seen.push(useAccountBootstrap().authLoaded);
-      return null;
-    }
-
-    render(<Probe />);
-    expect(seen.at(-1)).toBe(false);
-    expect(apiMigrateGuestData).toHaveBeenCalledWith('guest-1', 'sig-1');
-
-    await act(async () => finish(MIGRATED));
-    expect(seen.at(-1)).toBe(true);
-    expect(seen.indexOf(true)).toBeGreaterThan(0);
-  });
-
-  // The static export prerenders without storage: the server snapshot reads
-  // "not migrating", and the client's first render takes over from there.
-  it('prerenders without a pending migration', () => {
-    resetGuestMigrationForTests();
-    setGuestIdentity('guest-1', 'sig-1');
+// A guest who signs in carries straight on: the accounts site has already moved
+// the guest's work onto the account, so nothing holds the page.
+describe('useAccountBootstrap after a guest signs in', () => {
+  it('settles at once, with nothing to wait for', () => {
     function Probe() {
       return <>{String(useAccountBootstrap().authLoaded)}</>;
     }
     expect(renderToString(<Probe />)).toBe('true');
-  });
-
-  it('migrates once however many components mount the hook', async () => {
-    resetGuestMigrationForTests();
-    setGuestIdentity('guest-1', 'sig-1');
-    apiMigrateGuestData.mockResolvedValue(MIGRATED);
-    function Probe() {
-      useAccountBootstrap();
-      return null;
-    }
-
-    await act(async () => {
-      render(
-        <>
-          <Probe />
-          <Probe />
-        </>,
-      );
-    });
-    expect(apiMigrateGuestData).toHaveBeenCalledTimes(1);
   });
 });
 

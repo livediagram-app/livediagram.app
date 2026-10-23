@@ -1,12 +1,5 @@
 import type { Browser, Page } from '@playwright/test';
-import {
-  dismissQuickTour,
-  expect,
-  guestSigFor,
-  mintSignedGuest,
-  ownerHeaders,
-  test,
-} from './fixtures';
+import { dismissQuickTour, expect, guestTokenFor, mintGuest, ownerHeaders, test } from './fixtures';
 
 // docs/specs/008-canvas/drag-preview.md "Live movement for collaborators": while the owner drags a box,
 // a collaborator on an edit link sees it move (and the arrow on it follow) before anything is saved,
@@ -53,14 +46,13 @@ async function openAs(browser: Browser, baseURL: string, url: string, owner: str
     colorScheme: 'dark',
   });
   await ctx.addInitScript(
-    ({ o, sig }) => {
+    ({ o, token }) => {
       if (o) {
         localStorage.setItem('livediagram:v2:name-confirmed', '1');
-        localStorage.setItem('livediagram:v2:self-id', o);
-        if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
+        if (token) localStorage.setItem('livediagram:v2:guest-token', token);
       }
     },
-    { o: owner, sig: owner ? guestSigFor(owner) : null },
+    { o: owner, token: owner ? guestTokenFor(owner) : null },
   );
   const page = await ctx.newPage();
   await page.goto(url);
@@ -74,7 +66,7 @@ const leftOf = async (page: Page, id: string) =>
   parseFloat((await box(page, id).evaluate((el) => (el as HTMLElement).style.left)) || 'NaN');
 
 test('a collaborator sees a drag live, and where it lands', async ({ page, browser, baseURL }) => {
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   const id = crypto.randomUUID();
   const tabId = crypto.randomUUID();
   const headers = ownerHeaders(owner, { Origin: new URL(baseURL!).origin });

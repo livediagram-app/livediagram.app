@@ -2,8 +2,8 @@ import {
   dismissQuickTour,
   expect,
   expectNoPageErrors,
-  guestSigFor,
-  mintSignedGuest,
+  guestTokenFor,
+  mintGuest,
   ownerHeaders,
   test,
 } from './fixtures';
@@ -21,7 +21,7 @@ test('a deck presents slide by slide and leaves the view as it was', async ({
   pageErrors,
   baseURL,
 }) => {
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   const id = crypto.randomUUID();
   const tabId = crypto.randomUUID();
   const box = (bid: string, x: number, y: number) => ({
@@ -55,12 +55,11 @@ test('a deck presents slide by slide and leaves the view as it was', async ({
   });
   expect(seeded.ok()).toBe(true);
   await page.addInitScript(
-    ({ o, sig }) => {
-      localStorage.setItem('livediagram:v2:self-id', o);
-      if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
+    ({ token }) => {
+      if (token) localStorage.setItem('livediagram:v2:guest-token', token);
       localStorage.setItem('livediagram:v2:name-confirmed', '1');
     },
-    { o: owner, sig: guestSigFor(owner) },
+    { token: guestTokenFor(owner) },
   );
   await page.goto(`/document/${id}`);
   await page.locator(CANVAS).waitFor();

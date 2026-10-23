@@ -113,15 +113,14 @@ lives in its own **device-local** `localStorage` store
 (`livediagram:panel-layout:v1`) and is **not** part of this synced
 blob. Don't fold panel placement into `UserPreferences`.
 
-### Sign-up migration
+### Sign-up merge
 
-`POST /api/migrate` ([Auth + guest access](../014-identity/auth-and-guest-access.md)) moves a guest's
-preferences along with the documents + folders + shared-with rows
-(`apps/api/src/liveworkspace/guest-merge.ts`), so a guest who signs up
-keeps the settings they'd already chosen: each key the account has no
-value for takes the guest's, the account's own values stay, and the
-guest's copy is then cleared. Idempotent: a second call finds nothing
-left to move.
+The guest-to-account merge ([Auth + guest access](../014-identity/auth-and-guest-access.md)) carries a guest's
+preferences along with their documents: the liveworkspace accounts site keeps
+preferences, and it merges them as it signs the guest in, so a guest who signs
+up keeps the settings they'd already chosen: each key the account has no
+value for takes the guest's, and the account's own values stay. Idempotent: a
+second merge finds nothing left to move.
 
 <!-- legacy-names -->
 
@@ -874,7 +873,7 @@ event on the preferences key.
   `{ prefs: null }` where the deployment keeps none (no accounts Worker, or
   an owner id it can't hold). 503 `preferences_unavailable` when the
   accounts Worker can't be reached. Auth: the standard hybrid identity
-  (account Bearer OR `X-Owner-Id`).
+  (an account's or a guest's Bearer).
 - **`PUT /api/preferences`** — body `{ prefs }`, a patch: each key it names
   takes its new value whole, `null` deletes the key, and keys it leaves out
   stay. Shared keys go to the `all` scope, the rest to `livediagram.app`.

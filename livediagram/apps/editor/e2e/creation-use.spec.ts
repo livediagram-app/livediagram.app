@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, expectNoPageErrors, mintSignedGuest, test } from './fixtures';
+import { expect, expectNoPageErrors, mintGuest, test } from './fixtures';
 import { asGuest } from './home-seed';
 import { syntheticExportZip } from './ms-whiteboard-board';
 
@@ -39,7 +39,7 @@ const jumpBackIn = (page: Page) =>
   page.getByRole('region', { name: 'Jump Back In' }).getByRole('listitem');
 
 async function freshGuest(page: Page): Promise<void> {
-  await asGuest(page, await mintSignedGuest(page.request));
+  await asGuest(page, await mintGuest(page.request));
 }
 
 test('a board imported on its own is in Jump Back In without being opened', async ({

@@ -4,8 +4,8 @@ import {
   createInMode,
   expect,
   expectNoPageErrors,
-  guestSigFor,
-  mintSignedGuest,
+  guestTokenFor,
+  mintGuest,
   ownerHeaders,
   test,
 } from './fixtures';
@@ -20,15 +20,14 @@ type Seeded = { owner: string; headers: Record<string, string> };
 // A signed guest, as production mints one: the stack signs guest ids, and the app would upgrade a
 // hand-made unsigned id (moving its data) the moment it opens.
 async function guest(page: Page, baseURL: string): Promise<Seeded> {
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   await page.addInitScript(
-    ({ id, sig }) => {
+    ({ token }) => {
       localStorage.setItem('livediagram:v2:ui-mode', 'dark');
       localStorage.setItem('livediagram:v2:name-confirmed', '1');
-      localStorage.setItem('livediagram:v2:self-id', id);
-      if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
+      if (token) localStorage.setItem('livediagram:v2:guest-token', token);
     },
-    { id: owner, sig: guestSigFor(owner) },
+    { token: guestTokenFor(owner) },
   );
   return {
     owner,

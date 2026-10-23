@@ -23,22 +23,13 @@ const ERROR_SCHEMA: JsonSchema = {
 };
 
 const SECURITY_SCHEMES: Record<string, JsonSchema> = {
-  // An account access token OR an API token (`lwt_…`), both presented as
+  // An account access token, a guest token, or an API token (`lwt_…`), all presented as
   // `Authorization: Bearer <credential>` (docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/public-api-and-tokens.md).
   Bearer: {
     type: 'http',
     scheme: 'bearer',
     description:
-      'An account access token or an API token (`lwt_…`). API tokens are the credential for external callers; create one in the Explorer (see the API tokens help article).',
-  },
-  // The guest path: an unsigned per-browser owner id (docs/specs/014-identity/auth-and-guest-access.md). First-party
-  // app use; an `X-Owner-Sig` HMAC is also required once enforcement is on.
-  GuestId: {
-    type: 'apiKey',
-    in: 'header',
-    name: 'X-Owner-Id',
-    description:
-      'Per-browser guest owner id. First-party app path; external callers use a Bearer token.',
+      'An account access token, a guest token, or an API token (`lwt_…`). API tokens are the credential for external callers; create one in the Explorer (see the API tokens help article).',
   },
 };
 
@@ -49,9 +40,8 @@ function securityFor(auth: AuthMode): Record<string, string[]>[] {
       // that wants every operation's security stated).
       return [];
     case 'clerk':
-      return [{ Bearer: [] }];
     case 'guest-or-clerk':
-      return [{ Bearer: [] }, { GuestId: [] }];
+      return [{ Bearer: [] }];
   }
 }
 

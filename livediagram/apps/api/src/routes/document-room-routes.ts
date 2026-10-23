@@ -6,14 +6,11 @@
 
 import {
   capWorkbenchRole,
-  isAccountIdShape,
   type AccessLevel,
   type RoomTicketResponse,
 } from '@livediagram/api-schema';
 import { adderKeyFor } from '../adder-key';
-import { guestSignatureEnforced } from '../auth/guest-rest';
-import { verifyOwnerId } from '../auth/owner-signature';
-import { isPersonalOwner, shareLinkForDocument, sharePasswordOk } from '../auth/share-access';
+import { shareLinkForDocument, sharePasswordOk } from '../auth/share-access';
 import { clientRateKey } from '../client-ip';
 import { consumeWsTicket, createWsTicket, getDocumentMeta } from '../db';
 import { workbenchStore } from '../workbench-store';
@@ -98,8 +95,8 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     const id = segments[2]!;
     const stub = env.DOCUMENT_ROOM.get(env.DOCUMENT_ROOM.idFromName(id));
     // Browsers can't put custom headers on a WebSocket upgrade,
-    // so the client passes a one-time ticket / share code / owner id
-    // as query params (`?t=...&s=...&o=...`). We resolve role here and
+    // so the client passes a one-time ticket or a share code
+    // as query params (`?t=...` or `?s=...`). We resolve role here and
     // forward it to the Durable Object via X-Verified-Role; the DO
     // ignores any role the client might set in its own hello
     // payload, so this header is the trust boundary.
@@ -114,9 +111,8 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     let workbenchPairing: string | null = null;
     // Only a Participant's ticket carries an adder key; every other leg has none.
     let adderKey: string | null = null;
-    // Only a ticket minted for the owner, or the legacy bare-`o` owner leg, seats the owner.
+    // Only a ticket minted for the owner seats the owner.
     let ownerSession = false;
-    const claimedOwnerId = url.searchParams.get('o');
     // Gate-only projection — the upgrade uses only ownerId/teamId. A document
     // in the Trash (docs/specs/013-workspace/trash.md) reads as missing, so no
     // leg below can admit anyone: not a ticket minted before the delete, not
@@ -132,45 +128,9 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     const ticket = url.searchParams.get('t');
     const admission = ticket ? await consumeWsTicket(env, ticket, id) : null;
     const ticketRole = admission?.role ?? null;
-    // The bare-`o` owner match is PERSONAL documents only, mirroring the
-    // REST access rule (auth/document-access.ts): a TEAM document's owner
-    // id is an account id deliberately visible to every teammate, so a
-    // removed member could present it here — the exact hole the ticket
-    // closed for the membership leg. Team owners come in via the ticket
-    // (its mint admits them through the verified callerId === ownerId
-    // leg); a personal guest owner's id stays an unguessable UUID. An ACCOUNT id is
-    // refused here outright for the same reason REST refuses it as `X-Owner-Id`
-    // (docs/specs/015-api/public-api-and-tokens.md §4.1): teammates can read it, so
-    // it proves nothing. A signed-in owner of a personal document comes in through
-    // the ticket like a team owner.
-    const accountIdClaimed = !!claimedOwnerId && isAccountIdShape(claimedOwnerId);
-    if (accountIdClaimed)
-      console.warn('[room-upgrade] account id refused as ?o=', { documentId: id });
-    // The guest owner id is the same bearer value REST carries as X-Owner-Id,
-    // so once the guest signature gate is armed (auth/guest-rest.ts) this leg
-    // needs the same proof, on `os`; otherwise a harvested guest id would
-    // still seat its holder as the owner, password gate bypassed.
-    const ownerSigOk =
-      !guestSignatureEnforced(env, Date.now()) ||
-      (!!claimedOwnerId &&
-        (await verifyOwnerId(
-          env.GUEST_ID_HMAC_SECRET,
-          claimedOwnerId,
-          url.searchParams.get('os'),
-        )));
-    const isOwnerUpgrade =
-      !accountIdClaimed &&
-      ownerSigOk &&
-      isPersonalOwner(claimedOwnerId, liveDoc.ownerId, liveDoc.teamId);
     if (admission) {
       ({ role, tabScope, shareCode, personTag, workbenchPairing, adderKey } = admission);
       ownerSession = admission.owner;
-    } else if (isOwnerUpgrade) {
-      role = 'edit';
-      ownerSession = true;
-      // The legacy legs put credentials in the URL (docs/specs/015-api/api.md "Realtime model"); every editor
-      // now rides a ticket, so this counts what is left before they are retired.
-      console.info('[room-upgrade] legacy leg admitted', { leg: 'owner', documentId: id });
     } else {
       const link = await shareLinkForDocument(env, url.searchParams.get('s'), id);
       if (link?.purpose === 'community') return forbidden('community_link');
@@ -181,7 +141,7 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
         console.info('[room-upgrade] legacy leg admitted', { leg: 'share', documentId: id });
       }
     }
-    // Refuse the upgrade unless the caller is the owner or holds a valid
+    // Refuse the upgrade unless the caller holds a ticket or a valid
     // share code for THIS document. Without this, a document with no share
     // password forwarded every upgrade (role === null) to the room, so
     // anyone who learned the document id could read live ops; and the DO
@@ -189,13 +149,13 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     if (!role) return forbidden();
     // Password gate (docs/specs/013-workspace/share-password.md): a non-owner joining the realtime room of
     // a password-protected document must carry the matching password on
-    // the `p` query param (WS upgrades can't set headers). Owners
-    // bypass, and so do ticket holders — the mint already ran the full
+    // the `p` query param (WS upgrades can't set headers). Ticket
+    // holders bypass — the mint already ran the full
     // REST access policy, including this same password gate for
     // share-code visitors (owners / team members read without it over
     // REST, so the room matches). A bad / missing password refuses the
     // upgrade outright so the room never even sees the peer.
-    if (!isOwnerUpgrade && !ticketRole) {
+    if (!ticketRole) {
       const p = url.searchParams.get('p');
       const attempt = p === null ? null : { value: p, rateKey: clientRateKey(request) };
       if (!(await sharePasswordOk(env, id, attempt))) return forbidden();

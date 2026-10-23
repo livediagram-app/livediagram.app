@@ -86,7 +86,10 @@ async function _apiLoadDocument(ownerId: string, id: string): Promise<LiveDoc | 
   const body = await expectOkOrNull<DocumentResponse>(res, 'load');
   return body?.document ?? null;
 }
-export const apiLoadDocument = dedupeInFlight(_apiLoadDocument, (ownerId, id) => `${ownerId}|${id}`);
+export const apiLoadDocument = dedupeInFlight(
+  _apiLoadDocument,
+  (ownerId, id) => `${ownerId}|${id}`,
+);
 
 // How many of the document's tabs are also in other documents, and how many
 // documents (docs/specs/006-document/tab-document-many-to-many.md, "Shared-tab
@@ -212,10 +215,9 @@ export async function apiCreateDocument(
 // api's for a cloud document, this browser's for an Offline Mode one.
 export async function apiDeleteDocument(ownerId: string, id: string): Promise<void> {
   if (await isOfflineId(id)) return offlineTrashDocument(id, Date.now());
-  // Owner-gated server-side as of the security fix — without the
-  // identity headers the worker would 400 / 403. apiHeaders prefers
-  // the account Bearer when a token provider is registered, falls
-  // through to X-Owner-Id otherwise (docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/api.md).
+  // Owner-gated server-side: without the identity headers the worker
+  // would 401 / 403. apiHeaders sends the account Bearer when a token
+  // provider is registered, else the guest token (docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/api.md).
   return apiDelete(`${API_BASE}/documents/${id}`, ownerId, {
     action: 'delete document',
     purge: { sourceType: 'document', sourceId: id },
@@ -279,7 +281,7 @@ export async function apiListDocuments(ownerId: string): Promise<DocumentSummary
 // Fetch a document's cached SVG snapshot (docs/specs/006-document/document-snapshots.md) and return a blob URL
 // for an `<img src>` plus the document's background colour. Native `<img>`
 // can't send auth headers, so — like apiFetchImageBlobUrl — the bytes
-// come through the authenticated client (Authorization / X-Owner-Id, plus
+// come through the authenticated client (Authorization, plus
 // X-Share-Code for a shared row) and get wrapped in a blob URL the caller
 // revokes on unmount. `version` (the document's savedAt) rides as `?v=`
 // purely to bust the browser/edge cache when the document changes; the
@@ -351,7 +353,7 @@ export async function apiDismissSharedWith(ownerId: string, documentId: string):
 
 // Mint a one-time WebSocket room ticket (docs/specs/015-api/api.md "Realtime model"). The WS upgrade
 // can't carry headers, so every session proves access here over normal REST (the Bearer token, the
-// signed guest id, the share code and its password) and rides the returned ticket on the upgrade URL as
+// share code and its password) and rides the returned ticket on the upgrade URL as
 // `?t=`, the only thing that URL carries. Returns null on any failure: that upgrade is refused and the
 // connector mints again on its next reconnect.
 export async function apiCreateRoomTicket(

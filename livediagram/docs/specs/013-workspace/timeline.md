@@ -1415,7 +1415,7 @@ Response:
 
 **Authorisation.** A caller may only read a `user` scope whose
 `scopeId` is their own resolved owner id — the account `sub` for a signed
--in caller, the signed guest participant id otherwise. Any other scope
+-in caller, the guest token's id otherwise. Any other scope
 is `403`. This is the only gate the endpoint needs in v1, and it is
 worth stating plainly because the scope parameter looks like it invites
 more.
@@ -1597,7 +1597,7 @@ documents, and share-link events. Team, invite, and token events never
 reach them because those features are signed-in only — the feed is simply
 thinner, with no sign-in wall and no empty-section prompt.
 
-**On sign-up, timeline history migrates.** `POST /api/migrate` already
+**On sign-up, timeline history moves.** The guest-to-account merge (`personMerged`) already
 moves documents from the guest participant id to the account user id; it
 gains two statements in the same transaction:
 

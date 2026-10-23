@@ -171,7 +171,6 @@ value the deploy workflow syncs:
 | `API_RESOURCE_STAGING`           | staging api                     | Staging's own resource (the access-token audience). Never production's.                                                                                                                                            |
 | `ACCOUNTS_CLIENT_ID_STAGING`     | staging api, build step         | Staging's own OAuth client; set, it also turns sign-in on in the staging build.                                                                                                                                    |
 | `ACCOUNTS_CLIENT_SECRET_STAGING` | staging api                     | That client's secret.                                                                                                                                                                                              |
-| `GUEST_ID_HMAC_SECRET_STAGING`   | staging api                     | Own value — `openssl rand -hex 32`. Never production's.                                                                                                                                                            |
 | `TELEMETRY_KEY_STAGING`          | staging api **and** staging mcp | livediagram's key on the staging telemetry service; same value on both and on the service, or server-side counts silently go missing ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)). |
 
 `CF_API_TOKEN` and `CF_ACCOUNT_ID` are shared — same account.

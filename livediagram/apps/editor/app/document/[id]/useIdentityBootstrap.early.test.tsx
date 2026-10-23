@@ -14,7 +14,7 @@ const { api, guest, offline, seed } = vi.hoisted(() => ({
     apiLoadShared: vi.fn(),
     apiListShareLinks: vi.fn(),
   },
-  guest: { ensureSignedGuestIdentity: vi.fn() },
+  guest: { ensureGuestIdentity: vi.fn() },
   offline: { isOfflineId: vi.fn() },
   seed: vi.fn(async () => {}),
 }));
@@ -83,7 +83,7 @@ beforeEach(() => {
   api.apiLoadDocument.mockResolvedValue(LOCAL_DOC);
   api.apiLoadSelf.mockResolvedValue(GUEST);
   api.apiSaveSelf.mockResolvedValue(undefined);
-  guest.ensureSignedGuestIdentity.mockResolvedValue({ id: 'guest-1', sig: 's' });
+  guest.ensureGuestIdentity.mockResolvedValue({ id: 'guest-1' });
   offline.isOfflineId.mockResolvedValue(true);
 });
 afterEach(() => vi.clearAllMocks());
@@ -96,7 +96,7 @@ describe('useIdentityBootstrap early open', () => {
     expect(set.setHydrated).toHaveBeenCalledWith(true);
     expect(set.setIsOwner).toHaveBeenCalledWith(true);
     expect(set.setDocumentServerStored).toHaveBeenCalledWith(false);
-    expect(guest.ensureSignedGuestIdentity).not.toHaveBeenCalled();
+    expect(guest.ensureGuestIdentity).not.toHaveBeenCalled();
     expect(api.apiLoadSelf).not.toHaveBeenCalled();
     expect(lists.documents).not.toHaveBeenCalled();
     // The naming nudge waits for the real participant.
@@ -139,7 +139,7 @@ describe('useIdentityBootstrap early open', () => {
   it('runs the ordinary load when auth has already answered', async () => {
     render({ authLoaded: true });
     await flush();
-    expect(guest.ensureSignedGuestIdentity).toHaveBeenCalled();
+    expect(guest.ensureGuestIdentity).toHaveBeenCalled();
     expect(api.apiLoadDocument).toHaveBeenCalledExactlyOnceWith('guest-1', 'doc-1');
   });
 });

@@ -30,19 +30,19 @@ Each app that needs configuration ships an example file documenting which variab
 
 ## Optional sign-in
 
-Sign-in is optional. It goes through a liveworkspace accounts Worker, and the app supports three modes depending on what you configure.
+Sign-in is optional, but a liveworkspace accounts Worker is not: it signs people in, and it also gives every guest their identity, a guest token kept in their browser. The app supports three modes depending on what you configure.
 
 1. **Hybrid**, the production setup: the editor and community builds have `NEXT_PUBLIC_SIGN_IN_ENABLED=true`, and the API has the accounts Worker's address and your client's details (`ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`), so guests and signed-in users coexist.
-2. **Guest-only**, the typical self-host: leave the auth variables unset. The app runs without an account system, sign-in routes say sign-in isn't enabled and offer **Continue as guest**, and the editor is unchanged.
-3. A partial misconfiguration (frontend configured, API not) exists only for debugging and is not meant for production: nobody can finish signing in, and the API treats everyone as a guest.
+2. **Guest-only**, the typical self-host: set the API's accounts values but leave `NEXT_PUBLIC_SIGN_IN_ENABLED` unset. Everyone is a guest with a guest token, sign-in routes say sign-in isn't enabled and offer **Continue as guest**, and the editor is unchanged.
+3. **No accounts Worker at all**: nobody gets a guest identity, so nothing can be kept on the server. Only documents in This Browser work. It exists for trying the editor out, not for production.
 
-With sign-in on, also set `GUEST_ID_HMAC_SECRET` so guest ids are signed and nobody can claim another guest's documents when they sign up. Accounts unlock the features that need one: [teams](/help/collaboration/teams/), [API tokens](/help/account-and-data/api-tokens/), and, if you set them up, email, the Google Drive mirror and the MCP server.
+Signing in unlocks the features that need one: [teams](/help/collaboration/teams/), [API tokens](/help/account-and-data/api-tokens/), and, if you set them up, email, the Google Drive mirror and the MCP server.
 
-Guest-only is what lets a self-hoster run with zero outbound runtime traffic beyond their own hosting if they want to.
+The accounts Worker can be your own deployment of liveworkspace's, so a self-hoster can still run with no outbound runtime traffic beyond their own hosting if they want to.
 
 ## Guest-only fallback
 
-The API identifies the owner of a request in one of two equivalent ways: a verified sign-in token, or a per-browser guest id sent as a header. When sign-in is not configured, every request simply uses the guest path, and the editor stays fully usable, with persistence, sharing, and real-time collaboration all working.
+The API identifies the owner of a request in one of two equivalent ways, both sent as a bearer token and both checked against the accounts Worker's keys: a signed-in person's access token, or a guest's guest token. When sign-in is not turned on, every request simply uses the guest token, and the editor stays fully usable, with persistence, sharing, and real-time collaboration all working.
 
 <Figure caption="Whether sign-in is configured or not, requests resolve to a working editor.">
   <GuestFallback />

@@ -51,7 +51,7 @@ here:
 
 | Id                                                                                    | Stable across reconnects? | Safe to publish? |
 | ------------------------------------------------------------------------------------- | ------------------------- | ---------------- |
-| **Owner id** (`X-Owner-Id`)                                                           | yes                       | **no**           |
+| **Owner id** (account or guest token id)                                              | yes                       | **no**           |
 | **Presence id** ([Public API and API tokens](../015-api/public-api-and-tokens.md) §6) | **no** — per socket       | yes              |
 | **Collab key**                                                                        | yes                       | yes              |
 

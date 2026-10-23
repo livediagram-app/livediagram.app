@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { apiBase, darkVisitor } from './audit-screens';
-import { expect, expectNoPageErrors, mintSignedGuest, ownerHeaders, test } from './fixtures';
+import { expect, expectNoPageErrors, mintGuest, ownerHeaders, test } from './fixtures';
 
 // The Explorer's filters for a guest (docs/specs/013-workspace/explorer-filters.md), in dark mode:
 // the My Work root lists its documents directly, the chips and the field write one lens into
@@ -59,7 +59,7 @@ test.describe('explorer filters', () => {
     pageErrors,
     baseURL,
   }) => {
-    const owner = await mintSignedGuest(page.request);
+    const owner = await mintGuest(page.request);
     await darkVisitor(page, owner);
     await seed(page, owner, new URL(baseURL!).origin);
     await arrive(page, '/explorer/all');
@@ -84,7 +84,7 @@ test.describe('explorer filters', () => {
     pageErrors,
     baseURL,
   }) => {
-    const owner = await mintSignedGuest(page.request);
+    const owner = await mintGuest(page.request);
     await darkVisitor(page, owner);
     await seed(page, owner, new URL(baseURL!).origin);
     await arrive(page, '/explorer/all');
@@ -129,7 +129,7 @@ test.describe('explorer filters', () => {
     pageErrors,
     baseURL,
   }) => {
-    const owner = await mintSignedGuest(page.request);
+    const owner = await mintGuest(page.request);
     await darkVisitor(page, owner);
     await seed(page, owner, new URL(baseURL!).origin);
     await arrive(page, '/explorer/all');
@@ -180,7 +180,7 @@ test.describe('explorer filters', () => {
     pageErrors,
     baseURL,
   }) => {
-    const owner = await mintSignedGuest(page.request);
+    const owner = await mintGuest(page.request);
     await darkVisitor(page, owner);
     await seed(page, owner, new URL(baseURL!).origin);
     await arrive(page, '/explorer/home');
@@ -208,7 +208,7 @@ test.describe('explorer filters', () => {
   // Each retired address is its own test: two full page loads and a seeded library share one
   // test's time budget badly on a busy runner.
   test('the retired Unsorted address opens the My Work root', async ({ page, pageErrors }) => {
-    await darkVisitor(page, await mintSignedGuest(page.request));
+    await darkVisitor(page, await mintGuest(page.request));
     await page.goto('/explorer/unsorted');
     await expect(page).toHaveURL(/\/explorer\/all$/);
     await expect(page.getByRole('heading', { name: 'My Work', level: 1 })).toBeVisible();
@@ -216,7 +216,7 @@ test.describe('explorer filters', () => {
   });
 
   test('the retired Generated address opens Made by AI', async ({ page, pageErrors, baseURL }) => {
-    const owner = await mintSignedGuest(page.request);
+    const owner = await mintGuest(page.request);
     await darkVisitor(page, owner);
     await seed(page, owner, new URL(baseURL!).origin);
     await page.goto('/explorer/generated');
@@ -232,7 +232,7 @@ test.describe('explorer filters', () => {
     pageErrors,
     baseURL,
   }) => {
-    const owner = await mintSignedGuest(page.request);
+    const owner = await mintGuest(page.request);
     await darkVisitor(page, owner);
     await seed(page, owner, new URL(baseURL!).origin);
     await page.setViewportSize({ width: 390, height: 844 });

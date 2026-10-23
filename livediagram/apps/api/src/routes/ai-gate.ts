@@ -41,10 +41,9 @@ export async function aiGate(ctx: RouteContext): Promise<Response | null> {
     }
   }
 
-  // Sign-in-only gate. When AI_REQUIRE_SIGN_IN="true", reject the legacy
-  // X-Owner-Id guest path so an attacker can't mint fresh per-request UUIDs to
-  // drain the operator's model budget. Opt-in, so an OSS self-host that runs no
-  // sign-in at all keeps the feature usable.
+  // Sign-in-only gate. When AI_REQUIRE_SIGN_IN="true", reject guests, whose
+  // identities cost a visitor nothing to make, so they can't be used to
+  // drain the operator's model budget. Opt-in.
   if (env.AI_REQUIRE_SIGN_IN === 'true' && ctx.accountUserId == null) {
     return signInRequired();
   }

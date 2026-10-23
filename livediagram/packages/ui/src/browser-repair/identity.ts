@@ -1,25 +1,26 @@
 import { signedInHintOf } from '@livediagram/api-schema';
+import { parseGuestToken } from '@liveworkspace/index-client/browser';
 import { GUEST_IDENTITY_KEYS } from './kept-keys';
 
 // Who this browser is, for the diagnostics report (docs/specs/007-editor/load-recovery.md "Diagnostics").
 // Readable from any app on the origin, so the help centre's Repair page reports it too, without the
-// session loaded: the guest identity is plain localStorage, and the api keeps a readable
+// session loaded: the guest token is plain localStorage, and the api keeps a readable
 // `ld_signed_in` hint cookie that is `0` signed out and `1` signed in. That cookie says whether, not
 // who; the editor adds the account id it resolved.
 //
-// A full guest id is an `X-Owner-Id` credential, so only its first GUEST_ID_PREFIX_LENGTH characters
-// ever leave this module.
+// Only the first GUEST_ID_PREFIX_LENGTH characters of the guest's id ever leave this module, and the
+// token itself never does.
 
-/** How many characters of a guest id a report carries. */
+/** How many characters of a guest id (after its `guest_` prefix) a report carries. */
 export const GUEST_ID_PREFIX_LENGTH = 8;
 
 export type BrowserIdentity = {
   /** From the sign-in cookie: true / false, or null when there is none (sign-in not set up, never visited). */
   signedIn: boolean | null;
-  /** The guest id's first characters, or null when this browser has none. */
+  /** The guest id's first characters, or null when this browser has no guest token. */
   guestIdPrefix: string | null;
-  guestSigned: boolean;
-  pendingUpgrade: boolean;
+  /** When the guest token runs out (ms since the epoch), or null with none. */
+  guestExpiresAt: number | null;
 };
 
 function read(storage: () => Storage, key: string): string | null {
@@ -36,8 +37,8 @@ export const signedInFromCookie = signedInHintOf;
 export function readBrowserIdentity(
   win: Pick<Window, 'localStorage'> & { document: Pick<Document, 'cookie'> } = window,
 ): BrowserIdentity {
-  const ls = () => win.localStorage;
-  const guestId = read(ls, GUEST_IDENTITY_KEYS.selfId);
+  const raw = read(() => win.localStorage, GUEST_IDENTITY_KEYS.guestToken);
+  const guest = raw ? parseGuestToken(raw) : null;
   let cookie: string;
   try {
     cookie = win.document.cookie;
@@ -46,9 +47,8 @@ export function readBrowserIdentity(
   }
   return {
     signedIn: signedInFromCookie(cookie),
-    guestIdPrefix: guestId ? guestId.slice(0, GUEST_ID_PREFIX_LENGTH) : null,
-    guestSigned: read(ls, GUEST_IDENTITY_KEYS.selfSig) !== null,
-    pendingUpgrade: read(ls, GUEST_IDENTITY_KEYS.pendingUpgrade) !== null,
+    guestIdPrefix: guest ? guest.id.replace(/^guest_/, '').slice(0, GUEST_ID_PREFIX_LENGTH) : null,
+    guestExpiresAt: guest?.expiresAt ?? null,
   };
 }
 
@@ -56,24 +56,24 @@ const yesNo = (b: boolean) => (b ? 'yes' : 'no');
 
 /**
  * The identity as report lines. `account` is the signed-in account id when the caller knows it (the
- * editor); it also settles "signed in" over the cookie's hint.
+ * editor); it also settles "signed in" over the cookie's hint. `now` dates the guest token.
  */
 export function formatBrowserIdentity(
   id: BrowserIdentity,
   account: string | null = null,
+  now: number = Date.now(),
 ): string[] {
   const signedIn = account !== null ? true : id.signedIn;
   const lines = [
     `Signed in: ${signedIn === null ? 'unknown' : yesNo(signedIn)}${account ? ` (${account})` : ''}`,
-    id.guestIdPrefix
-      ? `Guest id in this browser: ${id.guestIdPrefix}… (signed: ${yesNo(id.guestSigned)})`
-      : 'Guest id in this browser: none',
-    `Identity upgrade pending: ${yesNo(id.pendingUpgrade)}`,
   ];
-  // Signing in moves a guest's documents to the account and then clears the guest id, so one still
-  // here while signed in means that move has not happened: the classic "my documents went missing".
-  if (signedIn && id.guestIdPrefix) {
-    lines.push('Guest documents moved to the account: NOT YET (guest id still present)');
+  if (!id.guestIdPrefix) {
+    lines.push('Guest in this browser: none');
+  } else {
+    const expired = id.guestExpiresAt !== null && id.guestExpiresAt <= now;
+    lines.push(
+      `Guest in this browser: guest_${id.guestIdPrefix}… (${expired ? 'expired' : 'current'})`,
+    );
   }
   return lines;
 }

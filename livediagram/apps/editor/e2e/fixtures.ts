@@ -353,48 +353,43 @@ export async function seedTab(page: Page, elements: Seed): Promise<void> {
   if (first) await settledBox(page.locator(`[data-element-id="${String(first.id)}"]`).first());
 }
 
-// A guest as production makes one: minted and signed by the api worker
-// (docs/specs/014-identity/auth-and-guest-access.md). The e2e stack signs guest ids, so a hand-made
-// unsigned id would be upgraded (and its data moved) the moment the app opens.
-const guestSigs = new Map<string, string>();
+// A guest as production makes one: liveworkspace's guest token (docs/specs/014-identity/auth-and-guest-access.md),
+// here from the e2e stack's accounts stand-in, which signs it with the key the api verifies against. The id is
+// the token's own `guest_<uuid>`.
+const guestTokens = new Map<string, string>();
 
-export async function mintSignedGuest(
+export async function mintGuest(
   request: import('@playwright/test').APIRequestContext,
 ): Promise<string> {
-  const res = await request.post(`${process.env.NEXT_PUBLIC_API_BASE ?? '/api'}/guest-id`, {
-    data: {},
-  });
+  const res = await request.get('/e2e/guest-token');
   expect(res.ok()).toBe(true);
-  const { ownerId, ownerSig } = (await res.json()) as { ownerId: string; ownerSig: string | null };
-  if (ownerSig) guestSigs.set(ownerId, ownerSig);
-  return ownerId;
+  const { token, guestId } = (await res.json()) as { token: string; guestId: string };
+  guestTokens.set(guestId, token);
+  return guestId;
 }
 
-export function guestSigFor(owner: string): string | null {
-  return guestSigs.get(owner) ?? null;
+export function guestTokenFor(owner: string): string | null {
+  return guestTokens.get(owner) ?? null;
 }
 
+// A guest's request headers: their guest token as the Bearer.
 export function ownerHeaders(
   owner: string,
   extra: Record<string, string> = {},
 ): Record<string, string> {
-  const sig = guestSigs.get(owner);
-  return { 'X-Owner-Id': owner, ...(sig ? { 'X-Owner-Sig': sig } : {}), ...extra };
+  const token = guestTokens.get(owner);
+  return { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...extra };
 }
 
 // The page's OWN guest identity as request headers, for api calls a spec makes from inside the page
-// (`page.evaluate`, which cannot import this module). The stack enforces guest signatures as
-// production does, so the id travels with the signature the app stored beside it. Read once, before
+// (`page.evaluate`, which cannot import this module): the guest token the app keeps. Read once, before
 // the evaluate, and passed in as an argument.
 export async function pageOwnerHeaders(
   page: Page,
   extra: Record<string, string> = {},
 ): Promise<Record<string, string>> {
-  const { id, sig } = await page.evaluate(() => ({
-    id: localStorage.getItem('livediagram:v2:self-id') ?? '',
-    sig: localStorage.getItem('livediagram:v2:self-sig'),
-  }));
-  return { 'X-Owner-Id': id, ...(sig ? { 'X-Owner-Sig': sig } : {}), ...extra };
+  const token = await page.evaluate(() => localStorage.getItem('livediagram:v2:guest-token'));
+  return { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...extra };
 }
 
 // A box once it has stopped moving: a surface that pops in (the `pop-in` scale animation) reports a

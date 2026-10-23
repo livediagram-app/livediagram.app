@@ -15,7 +15,7 @@ import {
   expectNoPageErrors,
   test,
   untilHydrated,
-  mintSignedGuest,
+  mintGuest,
 } from './fixtures';
 import { auditOptical, OPTICAL_TOLERANCE_PX } from './optical';
 
@@ -45,7 +45,7 @@ async function expectCentred(page: Page, screen: string): Promise<void> {
 
 // A seeded document open in the editor, its quick tour dismissed; returns the seeded Spinner shape.
 async function openSeededEditor(page: Page, baseURL: string): Promise<Locator> {
-  const owner = await mintSignedGuest(page.request);
+  const owner = await mintGuest(page.request);
   const id = await seedDocument(page, owner, new URL(baseURL).origin);
   await darkVisitor(page, owner);
   await page.goto(`/document/${id}`);
@@ -98,7 +98,7 @@ test.describe('Optical alignment audit', () => {
   });
 
   test('the Join dialog a share link opens', async ({ page, browser, baseURL }) => {
-    const owner = await mintSignedGuest(page.request);
+    const owner = await mintGuest(page.request);
     const origin = new URL(baseURL!).origin;
     const id = await seedDocument(page, owner, origin);
     const code = await shareLink(page, owner, origin, id);
@@ -113,7 +113,7 @@ test.describe('Optical alignment audit', () => {
   // documents, which lists it as a row.
   test('the Explorer', async ({ page, pageErrors, baseURL }) => {
     // Signed, so the identity holds across the two page loads.
-    const owner = await mintSignedGuest(page.request);
+    const owner = await mintGuest(page.request);
     await seedOpenedDocument(page, owner, new URL(baseURL!).origin);
     await darkVisitor(page, owner);
     await page.goto('/explorer');

@@ -23,7 +23,7 @@ Scope, by file:
 | `apps/api/src/routes/trash.ts`                                                     | `/api/trash` list, restore, purge one, empty                                                |
 | `apps/api/src/routes/{documents,share,document-room-routes,...}.ts`                | The doors: 410 through `missingDocument`; the ws upgrade refuses                            |
 | `apps/api/src/room-client.ts`, `document-room/document-room.ts`, `room-scope.ts`   | `broadcastDocumentTrashed`; the room closes every socket with 4004                          |
-| `apps/api/src/index.ts`, `auth/guest-rest.ts`                                      | `trash` dispatch + guest-signature scope; the cron's `purgeExpiredTrash`                    |
+| `apps/api/src/index.ts`                                                            | `trash` dispatch; the cron's `purgeExpiredTrash`                                            |
 | `apps/api/src/openapi/manifest.ts`, `document.ts`, `scripts/gen-openapi-...`       | The Trash tag and routes; 410 on the document doors; `TrashedDocument` schema               |
 | `apps/mcp/src/{tools,schema}.ts`                                                   | `delete_document` to the Trash only; `list_trash`, `restore_document`                       |
 | `apps/editor/lib/api/trash.ts`                                                     | `apiListTrash`, `apiRestoreDocument`, `apiPurgeDocument`, `apiEmptyTrash`                   |
@@ -164,7 +164,7 @@ room`; open sessions still stop at their next save (I5).
 ## Security and trust
 
 - The restore / purge / list authority is exactly `mayDeleteDocument`; team membership is read against the
-  verified account id only (never `X-Owner-Id`). A share-link visitor never restores, purges or lists.
+  verified account id only (never a guest token). A share-link visitor never restores, purges or lists.
 - The deleted state leaks nothing: 410 only to a caller with a grant; strangers get the 404 of a missing id.
 - `POST /api/documents` over a trashed id cannot transfer ownership (the upsert would rewrite `owner_id`).
 - `trash` is an owner-scoped segment for the guest signature gate.

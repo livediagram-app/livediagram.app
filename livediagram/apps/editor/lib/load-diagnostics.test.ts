@@ -28,8 +28,8 @@ const base: DiagnosticsInput = {
   identity: {
     signedIn: false,
     guestIdPrefix: '6f1c2d3e',
-    guestSigned: true,
-    pendingUpgrade: false,
+    // 2100: a token still current.
+    guestExpiresAt: 4_102_444_800_000,
   },
 };
 
@@ -48,14 +48,13 @@ describe('formatDiagnostics', () => {
   it('describes a guest by id prefix, never the whole credential', () => {
     const text = formatDiagnostics(base);
     expect(text).toContain('Signed in: no');
-    expect(text).toContain('Guest id in this browser: 6f1c2d3e… (signed: yes)');
+    expect(text).toContain('Guest in this browser: guest_6f1c2d3e… (current)');
     expect(text).not.toContain('123456789abc');
   });
 
-  it('names a signed-in account, and flags guest documents not yet moved to it', () => {
+  it('names a signed-in account', () => {
     const text = formatDiagnostics({ ...base, ownerId: 'user_2abcDEF' });
     expect(text).toContain('Signed in: yes (user_2abcDEF)');
-    expect(text).toContain('Guest documents moved to the account: NOT YET');
   });
 
   it('never carries a share code', () => {
@@ -67,18 +66,17 @@ describe('formatDiagnostics', () => {
     expect(text).not.toContain('SECRETCODE');
   });
 
-  it('copes with a load that has not started and no guest id', () => {
+  it('copes with a load that has not started and no guest', () => {
     const text = formatDiagnostics({
       ...base,
       ownerId: null,
       buildId: null,
       progress: { step: null, startedAt: null, timedOut: false, healing: false },
-      identity: { signedIn: null, guestIdPrefix: null, guestSigned: false, pendingUpgrade: true },
+      identity: { signedIn: null, guestIdPrefix: null, guestExpiresAt: null },
     });
     expect(text).toContain('Load step: not started');
     expect(text).toContain('Build: unknown');
     expect(text).toContain('Signed in: unknown');
-    expect(text).toContain('Guest id in this browser: none');
-    expect(text).toContain('Identity upgrade pending: yes');
+    expect(text).toContain('Guest in this browser: none');
   });
 });

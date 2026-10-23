@@ -25,10 +25,8 @@ import type { BodySchema } from './types';
 
 /** How a caller authenticates (docs/specs/014-identity/auth-and-guest-access.md):
  *  - `public`: no identity required.
- *  - `guest-or-clerk`: the guest `X-Owner-Id` header OR a Bearer credential
- *    (an account access token or an API token).
- *  - `clerk`: a Bearer credential only (account access token or API token); guests are
- *    rejected. */
+ *  - `guest-or-clerk`: a Bearer credential: an account access token, a guest token or an API token.
+ *  - `clerk`: an account access token or an API token; guests are rejected. */
 export type AuthMode = 'public' | 'guest-or-clerk' | 'clerk';
 
 interface QueryParam {
@@ -577,6 +575,22 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'guest-or-clerk',
     tokenUsable: true,
     statuses: [204, 401, 403, 404, 410],
+  },
+  {
+    method: 'POST',
+    path: '/documents/{id}/tabs/{tabId}/link',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      'Add to Document: share a tab another of your documents holds (`from`) with this one. Both keep the tab, and an edit in either reaches the other.',
+    auth: 'guest-or-clerk',
+    requestSchema: {
+      type: 'object',
+      properties: { from: { type: 'string' } },
+      required: ['from'],
+    },
+    responseSchema: wrap('tab', 'TabRecord'),
+    statuses: [200, 400, 401, 403, 404],
   },
   {
     method: 'POST',
@@ -1568,29 +1582,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'clerk',
     responseSchema: { type: 'object', properties: { deleted: { type: 'number' } } },
     statuses: [204, 401],
-  },
-  {
-    method: 'POST',
-    path: '/migrate',
-    segment: 'migrate',
-    tag: 'Account',
-    summary: 'Migrate a guest owner id onto the signed-in account (used at sign-up).',
-    auth: 'guest-or-clerk',
-    statuses: [200, 400, 401, 403],
-  },
-  {
-    method: 'POST',
-    path: '/guest-id',
-    segment: 'guest-id',
-    tag: 'Account',
-    summary: 'Mint a signed guest owner id (first-party app).',
-    auth: 'public',
-    responseSchema: {
-      type: 'object',
-      properties: { ownerId: { type: 'string' }, ownerSig: { type: ['string', 'null'] } },
-      required: ['ownerId'],
-    },
-    statuses: [200],
   },
 
   // ---- Teams ----

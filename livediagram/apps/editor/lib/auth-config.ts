@@ -3,9 +3,9 @@
 // Signing in goes through the liveworkspace accounts Worker, by way of this
 // app's own api (/api/auth/*, apps/api/src/routes/auth.ts). Other deployments
 // (per docs/specs/002-project-scope/open-source-and-business-model.md + docs/specs/014-identity/auth-and-guest-access.md)
-// can ship livediagram without it: the canvas runs in pure guest mode using
-// the X-Owner-Id header, which is also how a signed-in deployment handles
-// signed-out visitors.
+// can ship livediagram without sign-in: everyone is a guest, with a guest
+// token from the same accounts Worker, which is also how a signed-in
+// deployment handles signed-out visitors.
 //
 // `NEXT_PUBLIC_*` env vars are baked into the static export at build time, so
 // the flag is effectively a compile-time constant: no per-render cost, no

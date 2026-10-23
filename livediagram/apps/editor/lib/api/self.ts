@@ -1,5 +1,5 @@
 // Participant / account calls: load self, save self, account self-
-// deletion, and guest -> authed data migration.
+// deletion.
 import { dedupeInFlight } from '../dedupe';
 import type { Participant } from '../identity';
 import {
@@ -89,98 +89,12 @@ export async function apiDeleteAccount(): Promise<
   return body.deleted;
 }
 
-// Guest → authed ownership migration. Called once on first sign-in
-// from editor-page.tsx + new/page.tsx when both conditions hold:
-//   - the signed-in session is active (a Bearer token will be sent)
-//   - `livediagram:v2:self-id` is still in localStorage
-// On success the caller clears the localStorage id so subsequent
-// loads use only the account id.
-//
-// The api worker (`POST /api/migrate` in `apps/api/src/index.ts`)
-// requires a verified Bearer token: there is no `X-Owner-Id`
-// fallback, because the whole point is to bind orphan guest data
-// to an account. Returns
-// `{ migrated: { documents, folders, shared, images } }`.
-export async function apiMigrateGuestData(
-  guestOwnerId: string,
-  guestSignature: string | null,
-): Promise<{ documents: number; folders: number; shared: number; images: number } | null> {
-  const res = await apiFetch(`${API_BASE}/migrate`, {
-    method: 'POST',
-    // `apiHeaders` reads the registered token provider; the
-    // Bearer will be on every call from the editor / new-document
-    // pages after they've set the provider. ownerId is unused
-    // server-side for this endpoint but the helper still expects
-    // it; pass the guest id to keep signatures uniform.
-    headers: await apiHeaders(guestOwnerId, { body: true }),
-    // The signature proves the caller owns this guest id (docs/specs/014-identity/auth-and-guest-access.md). It's
-    // null for a legacy guest that never got signed — the worker then
-    // rejects when signing is enforced, which is why the bootstrap
-    // upgrades legacy ids to signed ones before sign-up.
-    body: JSON.stringify({ guestOwnerId, guestSignature }),
-  });
-  if (!res.ok) return null;
-  const body = (await res.json()) as {
-    migrated: { documents: number; folders: number; shared: number; images: number };
-  };
-  return body.migrated;
-}
-
-// Mint a SERVER-signed guest identity (docs/specs/014-identity/auth-and-guest-access.md). The worker generates the
-// id — so a caller can only ever hold a signature for an id it was handed,
-// never for one observed in someone else's DTO / presence — and returns
-// its HMAC signature (`ownerSig` is null when the worker has no
-// GUEST_ID_HMAC_SECRET configured). Returns null on a network failure so
-// the caller can fall back to a local unsigned id.
-export async function apiMintGuestId(): Promise<{
-  ownerId: string;
-  ownerSig: string | null;
-} | null> {
-  try {
-    const res = await apiFetch(`${API_BASE}/guest-id`, {
-      method: 'POST',
-      headers: await apiHeaders('', { body: true }),
-      body: '{}',
-    });
-    if (!res.ok) return null;
-    return (await res.json()) as { ownerId: string; ownerSig: string | null };
-  } catch {
-    return null;
-  }
-}
-
-// Legacy upgrade: move an existing unsigned guest's data onto a freshly
-// minted signed id (docs/specs/014-identity/auth-and-guest-access.md migrate flow 2). Authenticated by the OLD id
-// as X-Owner-Id (the guest bearer credential, present because no account
-// token is registered for a guest); the NEW id is proven by its
-// signature. 'moved' on success; 'refused' when the worker says no for good (403: under enforcement
-// only a pre-signing id may upgrade unsigned); 'failed' for anything worth trying again (network, 5xx).
-type GuestUpgradeResult = 'moved' | 'refused' | 'failed';
-export async function apiUpgradeGuestId(
-  fromOwnerId: string,
-  toOwnerId: string,
-  toSignature: string,
-): Promise<GuestUpgradeResult> {
-  try {
-    const res = await apiFetch(`${API_BASE}/migrate`, {
-      method: 'POST',
-      headers: await apiHeaders(fromOwnerId, { body: true }),
-      body: JSON.stringify({ toOwnerId, toSignature }),
-    });
-    if (res.ok) return 'moved';
-    return res.status === 403 ? 'refused' : 'failed';
-  } catch {
-    return 'failed';
-  }
-}
-
 export async function apiSaveSelf(p: Participant): Promise<void> {
   // Owner-gated server-side as of the participants-PUT security fix.
   // The api worker requires the caller's resolved owner to match the
   // participant id being mutated — for both modes that's the same
-  // value as `p.id` (a guest's localStorage UUID is also their
-  // X-Owner-Id; a signed-in user's account id is also their
-  // participant id, see editor-page.tsx identity bootstrap).
+  // value as `p.id` (a guest's guest-token id, a signed-in person's
+  // account id; see editor-page.tsx identity bootstrap).
   const res = await apiFetch(`${API_BASE}/participants/${p.id}`, {
     method: 'PUT',
     headers: await apiHeaders(p.id, { body: true }),

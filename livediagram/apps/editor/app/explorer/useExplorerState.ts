@@ -12,7 +12,7 @@ import {
   type Folder,
   type SharedWithItem,
 } from '@/lib/api-client';
-import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
+import { useGuestId } from '@/hooks/persistence/useGuestId';
 import {
   fetchUserPreferences,
   readUserPreferences,
@@ -93,13 +93,12 @@ export function useExplorerState() {
   // device's state are read from the first render on.
   use(browser());
   // Owner id resolution mirrors new/page.tsx + editor-page.tsx: a
-  // signed-in user is keyed by account id, a guest is keyed by the
-  // localStorage UUID (minted on first visit). Null until auth has
+  // signed-in user is keyed by account id, a guest by their guest
+  // token's id. Null until auth has
   // settled so a signed-in user never momentarily reads a guest id.
-  // For a guest, the SIGNED id (useSignedGuestId; docs/specs/014-identity/auth-and-guest-access.md
-  // "Signed guest ids"), so the lists' first calls carry the `X-Owner-Sig` the api may require. Null
-  // until it resolves (the lists are autoLoad:false off ownerId).
-  const guestId = useSignedGuestId(authLoaded, accountUserId);
+  // For a guest, the guest token's id (useGuestId; docs/specs/014-identity/auth-and-guest-access.md),
+  // so the lists' first calls carry its Bearer. Null until it resolves (the lists are autoLoad:false off ownerId).
+  const guestId = useGuestId(authLoaded, accountUserId);
   const ownerId: string | null = !authLoaded ? null : (accountUserId ?? guestId);
   // Daily-active-returns signal (docs/specs/017-telemetry/telemetry.md): the Explorer is an app-open
   // surface too, so count a returning visitor here. Gated once per
@@ -274,10 +273,10 @@ export function useExplorerState() {
     [load],
   );
 
-  // A guest's ownerId resolves asynchronously now (ensureSignedGuestIdentity
+  // A guest's ownerId resolves asynchronously now (ensureGuestIdentity
   // above), so it lags `authLoaded` by a tick. Keep the skeleton rather than
   // flashing an empty state — ownerId always resolves (signed-in → account id;
-  // guest → minted id), so this never stalls. A new owner is loading from its
+  // guest → the guest token's id), so this never stalls. A new owner is loading from its
   // first render.
   const loadOwner = authLoaded ? ownerId : null;
   const [loadingFor, setLoadingFor] = useState(loadOwner);

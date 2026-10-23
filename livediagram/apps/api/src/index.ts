@@ -4,7 +4,7 @@ import {
   toLegacyResponse,
 } from './legacy-documents-alias';
 import { flushMediaRefs } from './media';
-import { accountCredentials, getAccountIdentity } from './auth/accounts';
+import { accountCredentials, getPersonIdentity } from './auth/accounts';
 import { AccountsUnavailable, type ResolvedApiToken } from './db/api-tokens';
 import { catchUpTeams, syncTeams } from './db/team-sync';
 import { handleAuth } from './routes/auth';
@@ -21,7 +21,6 @@ import {
   apiRouteLabel,
   bearerTokenOf,
   errorTypeToken,
-  isAccountIdShape,
   TIMELINE_RETENTION_MS,
 } from '@livediagram/api-schema';
 import {
@@ -30,8 +29,6 @@ import {
   isWorkbenchSessionFormat,
   WORKBENCH_SESSION_PREFIX,
 } from '@livediagram/api-schema';
-import { verifyOwnerId } from './auth/owner-signature';
-import { guestSignatureEnforced, OWNER_SCOPED_SEGMENTS } from './auth/guest-rest';
 import { handleTokens } from './routes/tokens';
 import { handleOauthExchange } from './routes/oauth';
 import { DocumentRoom } from './document-room/document-room';
@@ -57,8 +54,6 @@ import { handleDocuments } from './routes/documents';
 import { handleEvents } from './routes/events';
 import { handleFolders } from './routes/folders';
 import { handleImages } from './routes/images';
-import { handleMigrate } from './routes/migrate';
-import { handleGuestId } from './routes/guest-id';
 import { handleParticipants } from './routes/participants';
 import { handleFavourites } from './routes/favourites';
 import { handlePlacementDefaults } from './routes/placement-defaults';
@@ -123,25 +118,22 @@ async function routeApiRequest(
   if (segments[1] === 'internal')
     return handleInternalItems(request, env, (p) => executionCtx?.waitUntil(p));
 
-  // Hybrid identity (docs/specs/014-identity/auth-and-guest-access.md). Verify the accounts
-  // access token once at the top of the handler: null when sign-in isn't configured, no Bearer
-  // was sent, or the token failed verification. Every dispatch site below uses `resolveOwner()`
-  // instead of the legacy `ownerOf(request)`, so a signed-in user's documents come back under
-  // their account id and guests keep working via the legacy `X-Owner-Id` header.
-  const accountIdentity = await getAccountIdentity(env, request);
-  const accountUserId = accountIdentity?.userId ?? null;
+  // Who is calling (docs/specs/014-identity/auth-and-guest-access.md): a liveworkspace access token or guest token,
+  // verified once here against the accounts Worker's keys. Null when sign-in isn't configured, no Bearer was sent
+  // (a link visitor with no identity yet), or the token failed verification.
+  const person = await getPersonIdentity(env, request);
+  const account = person?.kind === 'account' ? person : null;
+  const accountUserId = account?.userId ?? null;
   // Email used for team-invite matching (docs/specs/013-workspace/teams.md). ONLY the verified
-  // `email` claim from the checked access token is trusted, never a client-supplied header: a
-  // `X-Owner-Email` fallback used to exist here, and it let a signed-in caller forge another
-  // address and claim that address's pending team invites. See auth/accounts.ts.
-  const accountEmail = accountIdentity?.email ?? null;
+  // `email` claim from the checked access token is trusted, never a client-supplied header.
+  const accountEmail = account?.email ?? null;
   // API token (docs/specs/015-api/public-api-and-tokens.md): a `Bearer lwt_…` resolves to its owner — always a
   // account — via the hashed-token lookup. Only consulted when no account
   // access token verified (a token and a JWT can't both be the bearer). The resolved
   // owner is the token's account id, so a token request flows through the
   // exact same ownership / gate checks as a signed-in one.
   let tokenAuth: ResolvedApiToken | null = null;
-  if (!accountUserId) {
+  if (!person) {
     const bearer = bearerTokenOf(request.headers.get('Authorization'));
     // A bearer that carries the token prefix claims to be a token even when it is cut short or mistyped (a
     // copy-paste slip): it is refused as one below, never read as a guest or handed to the account path.
@@ -175,7 +167,7 @@ async function routeApiRequest(
   // is confined at once (auth/workbench-confinement.ts): another document reads as absent, any route outside
   // the allow-list is refused, and a view session writes nothing.
   let workbench: WorkbenchContext | null = null;
-  if (!accountUserId && !tokenAuth) {
+  if (!person && !tokenAuth) {
     const bearer = bearerTokenOf(request.headers.get('Authorization'));
     if (bearer?.startsWith(WORKBENCH_SESSION_PREFIX)) {
       // Cut short or mistyped, a session-shaped bearer is refused as a session too (as a token is, above).
@@ -197,80 +189,30 @@ async function routeApiRequest(
       if (refusal) return refusal;
     }
   }
-  // An empty guest header is no identity at all: as '' it would be one shared,
-  // writable owner namespace (and one shared rate-limit bucket) for everyone.
+  const guestId = person?.kind === 'guest' ? person.guestId : null;
+  // The caller's id: an account (signed in, or behind an API token or a workbench session), else a guest.
   const resolveOwner = (): string | null =>
-    accountUserId ??
-    tokenAuth?.ownerId ??
-    workbench?.ownerId ??
-    (request.headers.get('X-Owner-Id') || null);
+    accountUserId ?? tokenAuth?.ownerId ?? workbench?.ownerId ?? guestId;
   // Server-verified account id from either credential (session JWT
   // or API token). Feeds the team-membership content gates + teams-surface
   // reads (see RouteContext.verifiedUserId); administration surfaces keep
-  // reading `accountUserId` directly.
+  // reading `accountUserId` directly. A guest is never one.
   const verifiedUserId = accountUserId ?? tokenAuth?.ownerId ?? workbench?.ownerId ?? null;
   // Teams are run on liveworkspace.app; the caller's token carries the teams they're in. When that
   // differs from this app's copy, catch the copy up before anything below reads it (db/team-sync.ts).
   // Remembered per isolate, so this is a Map lookup unless their teams just changed.
-  const teamsClaim = accountIdentity?.teams ?? tokenAuth?.teams ?? null;
+  const teamsClaim = account?.teams ?? tokenAuth?.teams ?? null;
   if (verifiedUserId && teamsClaim) {
     await catchUpTeams(env, accountCredentials(env), verifiedUserId, teamsClaim, executionCtx);
-  }
-
-  // An account id presented as the GUEST header is always a replay of
-  // a harvested id, never a real client (see auth/guest-rest.ts): the guest
-  // credential is a server-minted UUID, and a signed-in caller sends
-  // `Authorization` instead. Refused unconditionally, BEFORE the signature
-  // gate below, because that gate is off until an operator arms it — and
-  // this shape needs no grace window, having never been legitimate.
-  // `share` is included even though it is not owner-scoped: its resolver
-  // compares the header with the document's owner to decide redaction.
-  if (
-    !accountUserId &&
-    !tokenAuth &&
-    !workbench &&
-    (OWNER_SCOPED_SEGMENTS.has(segments[1] ?? '') || segments[1] === 'share')
-  ) {
-    const headerOwner = request.headers.get('X-Owner-Id');
-    if (headerOwner && isAccountIdShape(headerOwner)) {
-      return json({ error: 'account_id_not_a_guest_credential' }, { status: 401 });
-    }
-  }
-
-  // Guest REST signature gate (docs/specs/015-api/public-api-and-tokens.md §4). On owner-scoped routes, a
-  // presented `X-Owner-Id` must carry a valid HMAC signature once
-  // enforcement is on — so a harvested owner id (a guest UUID, or a
-  // signed-up user's account `sub` slipped into the header) can't be used as a
-  // credential. Skipped for signed-in / token callers (they aren't on the guest
-  // path) and during the grace window. A request with NO `X-Owner-Id` is
-  // untouched (it just resolves to no owner), so public reads still work.
-  if (
-    !accountUserId &&
-    !tokenAuth &&
-    !workbench &&
-    OWNER_SCOPED_SEGMENTS.has(segments[1] ?? '') &&
-    guestSignatureEnforced(env, Date.now())
-  ) {
-    const headerOwner = request.headers.get('X-Owner-Id');
-    if (
-      headerOwner &&
-      !(await verifyOwnerId(
-        env.GUEST_ID_HMAC_SECRET,
-        headerOwner,
-        request.headers.get('X-Owner-Sig'),
-      ))
-    ) {
-      return json({ error: 'signature_required' }, { status: 401 });
-    }
   }
 
   // Per-owner write rate limit. Gates POST / PUT / DELETE at a
   // generous ceiling (wrangler.toml WRITE_RATE_LIMITER) so a bot
   // pacing under Cloudflare's DDoS threshold still can't spam
   // document / image creation through to D1 / R2 quota
-  // exhaustion. Reads pass through untouched. When neither a
-  // account token nor X-Owner-Id resolves the caller, fall back to
-  // a literal 'anonymous' key so one unauthenticated client still
+  // exhaustion. Reads pass through untouched. When no token
+  // resolves the caller (a link visitor), fall back to a per-network
+  // 'anonymous' key so one unauthenticated client still
   // can't burn the global quota. The telemetry relay (/api/events)
   // is deliberately exempt: it's anonymous, high-frequency, and
   // must never compete with a user's real document writes for the
@@ -282,7 +224,7 @@ async function routeApiRequest(
   // only GET/HEAD. Reject every write it presents at this single choke point
   // — so no write route can be reached, present or future, with no per-route
   // changes. signed-in sessions and full tokens are unaffected (tokenAuth is null
-  // or readOnly false). Guest header requests carry no tokenAuth either.
+  // or readOnly false). A guest's requests carry no tokenAuth either.
   // A token revoking itself escalates nothing, so any token may (docs/specs/015-api/blueprints/cli.md).
   const isSelfRevoke =
     request.method === 'DELETE' && segments[1] === 'tokens' && segments[2] === 'current';
@@ -326,8 +268,7 @@ async function routeApiRequest(
   // unbounded work, so it isn't a quota-exhaustion vector.
   const isRoomTicketMint = segments[1] === 'documents' && segments[3] === 'room-ticket';
   // ...but not unthrottled: each mint is a D1 write. Its own bucket per
-  // caller network (the owner id is caller-chosen for a guest), so a flood is
-  // bounded without touching anyone's autosave budget.
+  // caller network, so a flood is bounded without touching anyone's autosave budget.
   if (isRoomTicketMint && isWrite && env.WRITE_RATE_LIMITER) {
     if (await isWriteRateLimited(env, `room-ticket:${clientRateKey(request)}`))
       return rateLimited();
@@ -336,7 +277,7 @@ async function routeApiRequest(
     // A token request rate-limits on the TOKEN id (docs/specs/015-api/public-api-and-tokens.md §3.5), so a
     // runaway integration is throttled independently of the owner's
     // interactive app use; everything else keys on the resolved owner.
-    // A caller with no identity yet (minting a guest id) is keyed on its
+    // A caller with no identity (a link visitor) is keyed on its
     // network, not one global 'anonymous' bucket every new visitor shares.
     // A workbench session's writes key on the session (WB10), apart from its owner's own app use.
     const key = tokenAuth
@@ -446,10 +387,6 @@ async function routeApiRequest(
         return await handleHome(ctx);
       case 'preferences':
         return await handlePreferences(ctx);
-      case 'migrate':
-        return await handleMigrate(ctx);
-      case 'guest-id':
-        return await handleGuestId(ctx);
       case 'participants':
         return await handleParticipants(ctx);
       case 'drive':

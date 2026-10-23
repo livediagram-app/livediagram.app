@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { apiLoadSelf, apiSaveSelf } from './self';
 
+// A guest's Bearer is their guest token (lib/guest-token.ts).
+vi.mock('../guest-token', () => ({
+  readGuestToken: () => ({ token: 'guest-jwt', id: 'guest_1', expiresAt: 1 }),
+}));
+
 // /new hands the new document to the editor in place (docs/specs/007-editor/new-document-route.md), and
 // both load the participant: the editor must reuse the one /new just read and saved rather than
 // asking the server again on every new document.
@@ -68,7 +73,7 @@ describe('loading your own profile before you have saved one', () => {
   it('asks as yourself and reads no profile as null', async () => {
     expect(await apiLoadSelf('p-fresh')).toBeNull();
     expect(requests).toHaveLength(1);
-    expect(requests[0]!.headers.get('X-Owner-Id')).toBe('p-fresh');
+    expect(requests[0]!.headers.get('Authorization')).toBe('Bearer guest-jwt');
   });
 
   it('still loads a signed-in profile, anonymously, while the session token is unavailable', async () => {
@@ -83,7 +88,6 @@ describe('loading your own profile before you have saved one', () => {
       }),
     );
     expect((await apiLoadSelf('user_ann'))?.name).toBe('Ann');
-    expect(requests[0]!.headers.get('X-Owner-Id')).toBeNull();
     expect(requests[0]!.headers.get('Authorization')).toBeNull();
   });
 });

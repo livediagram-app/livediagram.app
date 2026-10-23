@@ -13,7 +13,7 @@ Derived from [Shape libraries](../shape-libraries.md). Modelled like folders: on
 | `apps/api/src/routes/shape-libraries.ts`                        | `handleShapeLibraries`: the four routes                                                                                                                             |
 | `apps/api/src/person-store/person-store.ts`, `person-client.ts` | The `PersonStore` Durable Object and the worker's typed way in                                                                                                      |
 | `apps/api/src/db/account.ts`                                    | Account deletion purges the person's store; `migrateOwnerId` moves the guest's libraries into the account's, renaming clashes                                       |
-| `apps/api/src/auth/guest-rest.ts`                               | `shape-libraries` in `OWNER_SCOPED_SEGMENTS`                                                                                                                        |
+| `apps/api/src/index.ts`                                         | `shape-libraries` dispatch, owner-scoped                                                                                                                            |
 | `apps/api/src/openapi/manifest.ts`                              | The four operations, tag `Shape Libraries`                                                                                                                          |
 | `apps/editor/lib/api/shape-libraries.ts`                        | `apiListShapeLibraries` (deduped), `apiCreateShapeLibrary`, `apiUpdateShapeLibrary`, `apiDeleteShapeLibrary`                                                        |
 | `apps/editor/components/primitives/ShapeLibraryProvider.tsx`    | `ShapeLibraryProvider`, `useShapeLibraries`: the owner's list and its changes                                                                                       |
@@ -140,7 +140,7 @@ CREATE TABLE shape_libraries (
 
 ## Security and trust
 
-- Owner-scoped: `requireOwner`, and the route only ever reaches the caller's own store, so another person's library is a 404; the segment in `OWNER_SCOPED_SEGMENTS` so a guest id must be proven when enforcement is on.
+- Owner-scoped: `requireOwner`, and the route only ever reaches the caller's own store, so another person's library is a 404; a guest is proven by their guest token.
 - Items are untrusted client JSON: validated structurally and per element (`isValidElement`), capped in count and bytes. Element links stay as `isValidElement` allows them.
 - Thumbnails are SVG strings from the editor's own exporter, shown through `<img>` (a data URL), so nothing in them runs.
 - The library name is text everywhere (React escapes it); it never reaches markup unescaped.

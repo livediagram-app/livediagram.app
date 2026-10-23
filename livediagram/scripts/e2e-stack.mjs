@@ -137,8 +137,11 @@ const DRIVE_E2E_VARS = {
 //                    own, so every spec needs one. For the signed-in specs
 //                    (docs/specs/003-system-architecture/e2e-smoke.md): a key made at boot, its JWKS
 //                    on the issuer's own path (/e2e/accounts/api/auth/jwks) for the api worker to
-//                    verify against, and /e2e/token?sub=<id> minting an access token for any test
-//                    account, with the issuer and audience the api expects, and its teams claim.
+//                    verify against, the guest handoff (/e2e/accounts/api/auth/guest) answering every
+//                    visitor a guest token (docs/specs/014-identity/auth-and-guest-access.md),
+//                    /e2e/token?sub=<id> minting an access token for any test account, with its teams
+//                    claim, and /e2e/guest-token minting a guest token, all with the issuer and audience
+//                    the api expects.
 //                    It also answers the account API the api calls with its client credentials
 //                    (/api/account/internal: settings, profiles, sightings, milestones, emails,
 //                    activity, making a team, the teams change feed and the API token routes) from
@@ -152,11 +155,6 @@ const DRIVE_E2E_VARS = {
 //                    live build must carry NEXT_PUBLIC_E2E_AUTH=1, as under E2E_DRIVE.
 const WORKBENCH = process.env.E2E_WORKBENCH === '1';
 const ACCOUNTS_STUB = WORKBENCH || (!DRIVE && process.env.E2E_ACCOUNTS_STUB !== '0');
-//   E2E_GUEST_SIG_ENFORCE  guest signature enforcement, as production runs once armed
-//                    (docs/specs/003-system-architecture/e2e-smoke.md "Armed guest signatures").
-//                    On unless set to 0: every spec seeds through signed guests. `=1` also selects
-//                    the armed project and its own ports (playwright.config.ts).
-const GUEST_SIG_ENFORCE = process.env.E2E_GUEST_SIG_ENFORCE !== '0';
 const accountsKey = ACCOUNTS_STUB ? generateKeyPairSync('rsa', { modulusLength: 2048 }) : null;
 const ACCOUNTS_KID = 'e2e-accounts-stub';
 // What the api worker is started with (below): its issuer is `${ACCOUNTS_URL}/api/auth`, and the
@@ -458,6 +456,26 @@ function mintAccessToken(sub, email) {
   return `${header}.${payload}.${b64url(signature)}`;
 }
 
+// A guest token shaped like the accounts Worker's (liveworkspace/apps/accounts/src/guests.ts): a year long,
+// told apart from an access token by `kind: "guest"`.
+const GUEST_TOKEN_TTL_SECONDS = 365 * 24 * 60 * 60;
+function mintGuestToken(guestId = `guest_${randomUUID()}`) {
+  const now = Math.floor(Date.now() / 1000);
+  const header = b64url(JSON.stringify({ alg: 'RS256', kid: ACCOUNTS_KID, typ: 'JWT' }));
+  const payload = b64url(
+    JSON.stringify({
+      sub: guestId,
+      kind: 'guest',
+      iss: `http://127.0.0.1:${EDITOR_PORT}${ACCOUNTS_PATH}/api/auth`,
+      aud: API_RESOURCE,
+      iat: now,
+      exp: now + GUEST_TOKEN_TTL_SECONDS,
+    }),
+  );
+  const signature = sign('sha256', Buffer.from(`${header}.${payload}`), accountsKey.privateKey);
+  return { token: `${header}.${payload}.${b64url(signature)}`, guestId };
+}
+
 // Answers the accounts stand-in's routes, or returns false for anything else.
 function serveAccountsStandIn(req, pathname, url, res) {
   if (!ACCOUNTS_STUB) return false;
@@ -471,6 +489,25 @@ function serveAccountsStandIn(req, pathname, url, res) {
       console.error('[e2e] accounts stand-in failed', err);
       if (!res.headersSent) sendJson(res, 500, { error: 'stand_in_failed' });
     });
+    return true;
+  }
+  if (pathname === `${ACCOUNTS_PATH}/api/auth/guest`) {
+    // A new guest for every handoff: each browser context is its own visitor, and the app keeps the token.
+    const redirectUri = url.searchParams.get('redirect_uri') ?? '';
+    const state = url.searchParams.get('state') ?? '';
+    if (!/^http:\/\/(localhost|127\.0\.0\.1):\d+\/auth\/guest$/.test(redirectUri)) {
+      res.writeHead(400, { 'Content-Type': 'text/plain' });
+      res.end('redirect_uri must be this stack');
+      return true;
+    }
+    const fragment = new URLSearchParams({ guest_token: mintGuestToken().token, state });
+    res.writeHead(302, { Location: `${redirectUri}#${fragment}`, 'Cache-Control': 'no-store' });
+    res.end();
+    return true;
+  }
+  if (pathname === '/e2e/guest-token') {
+    res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+    res.end(JSON.stringify(mintGuestToken()));
     return true;
   }
   if (pathname === `${ACCOUNTS_PATH}/api/auth/jwks`) {
@@ -518,62 +555,6 @@ function waitForExit(child) {
     child.on('exit', (code) => (code === 0 ? resolve() : reject(new Error(`exit ${code}`))));
     child.on('error', reject);
   });
-}
-
-// A legacy guest (docs/specs/015-api/public-api-and-tokens.md §6): an unsigned id whose profile
-// predates GUEST_SIGNING_LIVE_AT (kept by the accounts stand-in), owning one folder, written straight
-// into the stack's local D1. With signatures enforced the api cannot make one (an unsigned id writes nothing), and only
-// such a guest still runs the one-time upgrade onto a signed id, which e2e/guest-upgrade.spec.ts
-// exercises. Ids are server-made UUIDs, so the statement carries no outside input.
-async function seedLegacyGuest() {
-  const ownerId = randomUUID();
-  const folderId = randomUUID();
-  accountsRecords.profiles.set(`guest_${ownerId}`, {
-    name: 'Legacy guest',
-    color: '#336699',
-    createdAt: 1,
-  });
-  const sql =
-    `INSERT INTO folders (id, owner_id, name, created_at, updated_at) VALUES ('${folderId}', '${ownerId}', 'Legacy folder', 1, 1);`;
-  await waitForExit(
-    spawn(
-      'pnpm',
-      [
-        '--filter',
-        '@livediagram/api',
-        'exec',
-        'wrangler',
-        'd1',
-        'execute',
-        'livediagram',
-        '--local',
-        '--command',
-        sql,
-      ],
-      { cwd: ROOT, stdio: 'ignore' },
-    ),
-  );
-  return { ownerId, folderId, folderName: 'Legacy folder' };
-}
-
-// One seed at a time, each retried briefly: parallel workers asking at once would run several
-// `wrangler d1 execute` processes against the one local database file, and SQLite refuses the
-// writers that lose the lock.
-let legacySeedQueue = Promise.resolve();
-function queueLegacyGuestSeed() {
-  const attempt = async () => {
-    for (let tries = 1; ; tries += 1) {
-      try {
-        return await seedLegacyGuest();
-      } catch (err) {
-        if (tries >= 3) throw err;
-        await new Promise((r) => setTimeout(r, 250 * tries));
-      }
-    }
-  };
-  const next = legacySeedQueue.then(attempt, attempt);
-  legacySeedQueue = next.catch(() => {});
-  return next;
 }
 
 async function waitForPort(port, label, timeoutMs = 60_000) {
@@ -836,20 +817,6 @@ function startLiveServer() {
       res.end();
       return;
     }
-    if (pathname === '/__e2e/legacy-guest' && req.method === 'POST') {
-      queueLegacyGuestSeed().then(
-        (body) => {
-          res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
-          res.end(JSON.stringify(body));
-        },
-        (err) => {
-          console.error('[e2e] seeding a legacy guest failed', err);
-          res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
-          res.end('seeding a legacy guest failed');
-        },
-      );
-      return;
-    }
     if (pathname === '/__e2e/deploy' && req.method === 'POST') {
       const deploy = simulateDeploy(liveOut);
       res.writeHead(200, {
@@ -954,23 +921,9 @@ async function main() {
       '--var',
       'AI_ALLOWED_ORIGINS:',
       ...(DRIVE ? Object.entries(DRIVE_E2E_VARS).flatMap(([k, v]) => ['--var', `${k}:${v}`]) : []),
-      // Guest ids are signed as in production (docs/specs/014-identity/auth-and-guest-access.md), so
-      // the signed-id upgrade a fresh guest goes through runs here too. A test-only secret.
-      '--var',
-      'GUEST_ID_HMAC_SECRET:e2e-guest-signing-secret',
-      // Enforced by default (E2E_GUEST_SIG_ENFORCE above), as production runs once armed
-      // (docs/specs/015-api/public-api-and-tokens.md §4): every entry path must mint a signed id
-      // before its first api call, and the specs seed through signed ids (fixtures.ts
-      // mintSignedGuest / ownerHeaders / pageOwnerHeaders). Explicit, because production's
-      // [vars] value can be blank while it is not armed.
-      '--var',
-      `GUEST_SIG_ENFORCE_AFTER:${GUEST_SIG_ENFORCE ? '1' : ''}`,
-      // Only a profile older than this counts as a legacy guest: the one
-      // /__e2e/legacy-guest writes (created_at 1), never one the app makes during a run.
-      '--var',
-      'GUEST_SIGNING_LIVE_AT:1000',
-      // Verify access tokens against the stack's own key (E2E_ACCOUNTS_STUB above), never a real
-      // accounts Worker a developer's .dev.vars may name.
+      // Verify access and guest tokens against the stack's own key (E2E_ACCOUNTS_STUB above), never a
+      // real accounts Worker a developer's .dev.vars may name. The client id and secret also turn the
+      // guest handoff (/api/auth/guest) on, to the stand-in's.
       ...(ACCOUNTS_STUB
         ? [
             '--var',

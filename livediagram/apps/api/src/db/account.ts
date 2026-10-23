@@ -150,12 +150,11 @@ export async function deleteAccount(
 
 // Owner-id migration. Reassigns every guest-holdable owner-keyed row
 // (docs/specs/015-api/api.md "Owner-keyed data") from `fromOwnerId` to
-// `toOwnerId`. Called
-// from POST /api/migrate when a guest signs up: their localStorage
-// participant id moves to their account id so the new account sees
-// the documents, folders, shared-with-them list AND uploaded images they
-// built as a guest. Their name, colour and preferences are liveworkspace's;
-// the route moves those (liveworkspace/guest-merge.ts).
+// `toOwnerId`. Called when a guest becomes an account: accounts merges
+// them, and the index tells this app (routes/internal-items.ts
+// `personMerged`), so the new account sees the documents, folders,
+// shared-with-them list AND uploaded images they built as a guest. Their
+// name, colour and preferences are liveworkspace's, which moves those itself.
 //
 // shared_with's primary key is (owner_id, document_id), so a naive
 // UPDATE could PK-collide if the visitor accepted the same share
