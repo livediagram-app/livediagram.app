@@ -182,7 +182,12 @@ colour}`; 409 `tag_name_taken`, `tag_limit`.
 - `GET /favourites`, `PUT/DELETE /favourites/:itemId`.
 - `PUT/DELETE /recent-hidden/:itemId` — Hide from Recent and Show in Recent: the person's own; a hidden item
   leaves their `view=recent` and Most Used, and says `hiddenFromRecent: true` everywhere else.
-- `GET /placement-defaults`, `PUT/DELETE /placement-defaults/:key` — where New files an item, per key.
+- `GET /placement-defaults`, `PUT/DELETE /placement-defaults/:key` — default folders: where a person's new items
+  land when made without a place, per app. The key is the app (`liveplanner`) for every new item of its kind, or
+  `<app>:template:<family>` for one made from a template family (the last word of its intent). `POST /items` with
+  no `folderId` key, no team and an `intent` files the item in the first working default of the template's key,
+  then the app's (`placementDefaultKeysFor`); a default in a gone folder or a left team is skipped. An explicit
+  `folderId: null` is the root chosen on purpose and wins over any default.
 
 ## Sharing and access
 

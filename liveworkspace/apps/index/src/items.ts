@@ -24,6 +24,7 @@ import { loadItem } from './access';
 import { callApp } from './app-calls';
 import { personalScope, scopeOf, teamScope, type Person } from './auth';
 import { decodeCursor, isId, parseLimit } from './codec';
+import { defaultPlacement } from './default-placement';
 import { INTENT_MAX, OPEN_MEMORY_MAX, PURGE_NOW_MAX } from './config';
 
 const DAY_MS = 86_400_000;
@@ -235,13 +236,18 @@ export async function createItem(ctx: PersonContext): Promise<Response> {
   const source = body.source ?? null;
   if (source !== null && !(ITEM_SOURCES as readonly unknown[]).includes(source))
     return badRequest();
-  const teamId = body.teamId ?? null;
+  let teamId = body.teamId ?? null;
   if (teamId && !person.teams.includes(teamId)) return forbidden('not_team_member');
-  const scope = scopeOf(person.id, teamId);
-  const folderId = body.folderId ?? null;
+  let scope = scopeOf(person.id, teamId);
+  let folderId = body.folderId ?? null;
   if (folderId) {
     const folder = await getFolderRow(env, folderId);
     if (!folder || folder.scope !== scope) return notFound('folder_not_found');
+  }
+  // No place named (no `folderId` key, no team) and an intent: the person's default folder for it, if any.
+  if (!('folderId' in body) && teamId === null && intent !== null) {
+    const placed = await defaultPlacement(env, person, body.app, intent as string);
+    if (placed) ({ folderId, teamId, scope } = placed);
   }
   // Without a key there would be no grant to open it with: refuse before making the row.
   if (!(await signingKey(env))) return fail(503, 'grants_unavailable');
@@ -283,7 +289,11 @@ export async function createItem(ctx: PersonContext): Promise<Response> {
     tabId: null,
     teamId,
   });
-  console.log('[index] created', { app: row.app, team: teamId !== null });
+  console.log('[index] created', {
+    app: row.app,
+    team: teamId !== null,
+    filed: !('folderId' in body) && folderId !== null ? 'default' : 'given',
+  });
   return json({ item: await itemFor(env, person, row, access), grant }, { status: 201 });
 }
 

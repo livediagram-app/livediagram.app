@@ -19,6 +19,11 @@ import { useFolderStore, type FolderStore } from '../data/useFolders';
 import { DragProvider } from '../drag/store';
 import { useItemActions, type HostTrash, type ItemActions } from '../data/useItemActions';
 import { useInbox, type InboxState } from '../data/useInbox';
+import { defaultEntries, type DefaultEntry } from '../defaults/entries';
+import {
+  usePlacementDefaults,
+  type PlacementDefaultsStore,
+} from '../defaults/usePlacementDefaults';
 import { useToast, type ToastApi } from '../ui/Toasts';
 import type { LensOption, LensSubject, LensTelemetryType } from '../lens';
 import {
@@ -56,6 +61,10 @@ export type DialogTarget =
   | { kind: 'delete-folder'; folderId: string }
   // Delete Forever from an item's menu in the Trash: always confirmed.
   | { kind: 'purge-item'; item: Item }
+  // Use as Default for…: the entries this folder is the reader's default for, each a checkbox.
+  | { kind: 'use-as-default'; folderId: string }
+  // Default Folders: every entry, where its new items go, Change and Clear.
+  | { kind: 'default-folders' }
   // A Trash group's: the person's own (teamId null) or a team's, named for the confirmation.
   | { kind: 'empty-trash'; teamId: string | null; title: string }
   | null;
@@ -74,6 +83,9 @@ export type ExplorerContextValue = {
   placedEpoch: number;
   reloadLists: () => void;
   folders: FolderStore;
+  // The reader's default folders (where New files an item made without a place), and the entries they key.
+  defaults: PlacementDefaultsStore;
+  defaultEntries: readonly DefaultEntry[];
   actions: ItemActions;
   inbox: InboxState;
   toast: ToastApi;
@@ -225,6 +237,11 @@ export function ExplorerProvider({
   const [epoch, setEpoch] = useState(0);
   const reloadLists = useCallback(() => setEpoch((n) => n + 1), []);
   const folders = useFolderStore(client, toast.error, reloadLists);
+  const defaults = usePlacementDefaults(client, toast.error);
+  const entries = useMemo(
+    () => defaultEntries(app, kindWords(app), lensTemplates),
+    [app, lensTemplates],
+  );
   const [placedEpoch, setPlacedEpoch] = useState(0);
   const onPlaced = useCallback(() => setPlacedEpoch((n) => n + 1), []);
   // Where a move went, in words: a folder's name, a team's, or My Work.
@@ -292,6 +309,8 @@ export function ExplorerProvider({
       placedEpoch,
       reloadLists,
       folders,
+      defaults,
+      defaultEntries: entries,
       actions,
       inbox,
       toast,
@@ -331,6 +350,8 @@ export function ExplorerProvider({
       placedEpoch,
       reloadLists,
       folders,
+      defaults,
+      entries,
       actions,
       inbox,
       toast,

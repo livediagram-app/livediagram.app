@@ -18,6 +18,7 @@ import { AppMark, FavouriteMarker, FolderChip, MadeByAiBadge, VisibilityBadge } 
 import { useExplorer } from './context';
 import { FolderMosaic } from './FolderMosaic';
 import { FolderMenu, ItemMenu } from './menus';
+import { DefaultFolderMarker } from '../defaults/DefaultFolderMarker';
 import { folderCountLabel } from '../words';
 import { SIDEBAR_LABELS } from '../views';
 
@@ -256,6 +257,7 @@ export const FolderRow = memo(function FolderRow({
           {folder.name}
         </span>
       )}
+      <DefaultFolderMarker folderId={folder.id} />
       <FolderCount subfolders={bits.childCount} items={itemCount} className="ml-1" />
     </>
   );
@@ -455,6 +457,7 @@ export const FolderCard = memo(function FolderCard({
             {folder.name}
           </button>
         )}
+        <DefaultFolderMarker folderId={folder.id} />
         <FolderCount subfolders={bits.childCount} items={preview?.itemCount} />
         {renaming ? null : (
           <EllipsisTriggerButton {...menu.triggerProps} tuck label={`Menu for ${folder.name}`} />

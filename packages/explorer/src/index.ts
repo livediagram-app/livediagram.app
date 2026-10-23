@@ -3,11 +3,7 @@
 // panel, and the view helpers a host's router needs.
 
 export { Explorer, type ExplorerProps } from './explorer/Explorer';
-export {
-  ExplorerPanel,
-  type ExplorerPanelProps,
-  type PanelLayout,
-} from './panel/ExplorerPanel';
+export { ExplorerPanel, type ExplorerPanelProps, type PanelLayout } from './panel/ExplorerPanel';
 export { MoveToFolderDialog, type MoveToFolderDialogProps } from './dialogs/MoveToFolderDialog';
 export type { PickerFolder, PickerTeam, Destination } from './dialogs/PlacementBrowser';
 export { ShareDialog, type ShareDialogProps, type ShareTab } from './dialogs/ShareDialog';
@@ -35,3 +31,15 @@ export type {
   TimelineTelemetry,
   HomeTelemetry,
 } from './types';
+export {
+  DefaultFoldersSettings,
+  type DefaultFoldersSettingsProps,
+} from './defaults/DefaultFolders';
+export { defaultEntries, type DefaultEntry } from './defaults/entries';
+export {
+  handTemplatePick,
+  readTemplatePick,
+  takeTemplatePick,
+  moveOnTemplatePick,
+  type TemplatePickHandoff,
+} from './defaults/template-pick';

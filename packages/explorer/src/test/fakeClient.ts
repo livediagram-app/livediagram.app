@@ -67,6 +67,8 @@ export type FakeIndex = {
   client: IndexClient;
   items: Item[];
   folders: Folder[];
+  // The reader's default folders: key to folder id.
+  placementDefaults: Map<string, string>;
   inbox: InboxResponse;
   // The Timeline, newest first or not (the fake sorts), and when the person last marked it seen.
   events: TimelineEvent[];
@@ -88,12 +90,14 @@ export function createFakeIndex(
     folders?: Folder[];
     events?: TimelineEvent[];
     seenAt?: number | null;
+    defaults?: Record<string, string>;
   } = {},
 ): FakeIndex {
   const items = seed.items ?? [];
   const events = seed.events ?? [];
   const timelineSeen = { at: seed.seenAt ?? null };
   const folders = seed.folders ?? [];
+  const placementDefaults = new Map(Object.entries(seed.defaults ?? {}));
   const calls: Call[] = [];
   const fail = new Map<string, IndexError>();
   const hold = new Set<string>();
@@ -302,6 +306,7 @@ export function createFakeIndex(
         timelineSeen.at = Date.now();
         return { seenAt: timelineSeen.at };
       }),
+    getItem: (id: string) => answer('getItem', [id], undefined, () => ({ item: { ...find(id) } })),
     updateItem: (id: string, input: Partial<Item>) =>
       answer('updateItem', [id, input], undefined, () => {
         const item = find(id);
@@ -387,6 +392,18 @@ export function createFakeIndex(
           1,
         );
       }),
+    listPlacementDefaults: () =>
+      answer('listPlacementDefaults', [], undefined, () => ({
+        defaults: [...placementDefaults].map(([key, folderId]) => ({ key, folderId })),
+      })),
+    setPlacementDefault: (key: string, folderId: string) =>
+      answer('setPlacementDefault', [key, folderId], undefined, () => {
+        placementDefaults.set(key, folderId);
+      }),
+    clearPlacementDefault: (key: string) =>
+      answer('clearPlacementDefault', [key], undefined, () => {
+        placementDefaults.delete(key);
+      }),
     listShareLinks: (id: string) =>
       answer('listShareLinks', [id], undefined, () => ({ links: [], passwordSet: false })),
   } as unknown as IndexClient;
@@ -395,6 +412,7 @@ export function createFakeIndex(
     client,
     items,
     folders,
+    placementDefaults,
     inbox,
     events,
     timelineSeen,

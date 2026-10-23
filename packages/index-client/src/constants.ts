@@ -203,3 +203,19 @@ export const INDEX_ERRORS = [
   'grants_unavailable',
 ] as const;
 export type IndexErrorCode = (typeof INDEX_ERRORS)[number];
+
+// Default folders: where a person's new items land when they are made without a place
+// (`/placement-defaults`). Per person and per app: an app's key holds every new item of its kind, and a template
+// family's key (the last word of the creation intent, "plan:board:kanban" → "kanban") the items made from it. A
+// create tries the template's key first, then the app's.
+export const placementDefaultKey = (app: App, family?: string | null): string =>
+  family ? `${app}:template:${family}` : app;
+
+/** The keys a create of this app with this creation intent tries, most specific first. */
+export function placementDefaultKeysFor(app: App, intent: string | null | undefined): string[] {
+  const at = intent ? intent.lastIndexOf(':') : -1;
+  const family = intent ? (at === -1 ? intent : intent.slice(at + 1)) : '';
+  return family && /^[A-Za-z0-9_.-]+$/.test(family)
+    ? [placementDefaultKey(app, family), placementDefaultKey(app)]
+    : [placementDefaultKey(app)];
+}

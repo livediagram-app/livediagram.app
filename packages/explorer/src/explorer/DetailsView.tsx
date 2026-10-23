@@ -15,6 +15,7 @@ import { kindWords } from '../words';
 import { AppMark, FavouriteMarker, MadeByAiBadge } from './badges';
 import { DROP_ROW, useDropTarget, useFolderDrag, useItemDrag } from '../drag/drag';
 import { useExplorer } from './context';
+import { DefaultFolderMarker } from '../defaults/DefaultFolderMarker';
 import { useItemBits } from './rows';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { ItemMenu } from './menus';
@@ -173,6 +174,7 @@ const DetailsFolderRow = memo(function DetailsFolderRow({ folder: f }: { folder:
           <FolderSolidIcon />
         </span>
         <span className="truncate">{f.name}</span>
+        <DefaultFolderMarker folderId={f.id} />
       </button>
     </li>
   );

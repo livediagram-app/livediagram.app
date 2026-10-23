@@ -80,7 +80,9 @@ describe('<Explorer>', () => {
     });
     renderExplorer(index, { kind: 'all' });
     await waitFor(() => expect(rows()).toHaveLength(1));
-    expect(index.calls.at(-1)!.args[0]).toMatchObject({ app: 'liveplanner' });
+    expect(index.calls.filter((c) => c.method === 'listItems').at(-1)!.args[0]).toMatchObject({
+      app: 'liveplanner',
+    });
     fireEvent.click(screen.getByRole('button', { name: 'All' }));
     await waitFor(() => expect(rows()).toHaveLength(2));
     expect(index.calls.filter((c) => c.method === 'listItems').at(-1)!.args[0]).not.toHaveProperty(

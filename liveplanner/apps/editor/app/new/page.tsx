@@ -28,7 +28,9 @@ import { trackDailyReturn } from '@/lib/daily-return';
 import { markNameConfirmed } from '@/lib/local-identity';
 import { ensureGuestIdentity } from '@/lib/guest-identity';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
+import { handTemplatePick } from '@liveworkspace/explorer';
 import {
+  isBlankTemplate,
   templateFamilyOf,
   untitledNameForTemplate,
   type TemplateKind,
@@ -206,6 +208,13 @@ export default function NewProjectPage() {
     // Save location (docs/specs/006-project/save-locations.md): only This Browser takes the offline branch.
     const offline = isOfflineLocation(settings.saveLocation);
     const { projectId, tabId } = createIdsFor(retrying);
+    // A blank in the cloud: the template picked later on Start Planning may move it to that template's default
+    // folder (docs/specs/013-workspace/default-folders.md "A template picked after creation").
+    handTemplatePick(
+      !offline && (!templateKind || isBlankTemplate(templateKind))
+        ? { itemId: projectId, tabId, placementChosen: settings.placementChosen === true }
+        : null,
+    );
     // A Retry re-runs the create, not the preference write below.
     lastCreateArgs.current = { kind: templateKind, settings, ids: { projectId, tabId } };
     // Named after its template ("Untitled Diagram"); renamed in the editor.

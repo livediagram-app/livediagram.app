@@ -9,6 +9,9 @@ import { MoveToFolderDialog } from '../dialogs/MoveToFolderDialog';
 import type { PickerFolder, PickerTeam } from '../dialogs/PlacementBrowser';
 import { ShareDialog } from '../dialogs/ShareDialog';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
+import { DefaultFoldersDialog } from '../defaults/DefaultFolders';
+import { folderDefaultEntries, folderDeleteConfirmation } from '../defaults/entries';
+import { UseAsDefaultDialog } from '../defaults/UseAsDefaultDialog';
 import type { ShareUrl } from '../types';
 import type { ExplorerView } from '../views';
 import { useExplorer } from './context';
@@ -96,17 +99,28 @@ export function ExplorerDialogs() {
     case 'delete-folder': {
       const folder = folders.byId.get(dialog.folderId);
       if (!folder) return null;
+      const parent = folder.parentId ? folders.byId.get(folder.parentId) : undefined;
+      const confirm = folderDeleteConfirmation({
+        name: folder.name,
+        parentName: parent?.name ?? null,
+        teamName: ctx.teamName(folder.teamId),
+        kind: ctx.kind,
+        held: folderDefaultEntries(folder.id, ctx.defaults.defaults, ctx.defaultEntries),
+      });
       return (
         <ConfirmDialog
-          title={`Delete “${folder.name}”?`}
-          message="What’s inside moves up a level. Nothing in it is deleted."
-          confirmLabel="Delete Folder"
+          title={confirm.title}
+          message={confirm.message}
+          confirmLabel={confirm.confirmLabel}
           onCancel={close}
           onConfirm={() => {
             close();
             const leaveTo = afterFolderDelete(view, folders.byId, folder);
             void folders.remove(folder.id).then((removed) => {
-              if (removed && leaveTo) navigate(leaveTo);
+              if (!removed) return;
+              // The index drops the folder's defaults with it.
+              ctx.defaults.forgetFolder(folder.id);
+              if (leaveTo) navigate(leaveTo);
             });
           }}
         />
@@ -127,6 +141,10 @@ export function ExplorerDialogs() {
         />
       );
     }
+    case 'use-as-default':
+      return <UseAsDefaultDialog folderId={dialog.folderId} onClose={close} />;
+    case 'default-folders':
+      return <DefaultFoldersDialog onClose={close} />;
     case 'empty-trash':
       return (
         <ConfirmDialog

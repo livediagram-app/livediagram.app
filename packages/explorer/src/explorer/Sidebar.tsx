@@ -37,6 +37,7 @@ import {
 import { inboxCount } from '../data/useInbox';
 import { sameView, SIDEBAR_LABELS, type ExplorerView } from '../views';
 import { useExplorer } from './context';
+import { DefaultFolderMarker } from '../defaults/DefaultFolderMarker';
 
 type Tone = 'sky' | 'violet' | 'amber' | 'emerald' | 'indigo' | 'rose';
 
@@ -114,6 +115,7 @@ export function SidebarRow({
   dropTo = null,
   dragFolder = null,
   shownLabel,
+  marker,
   rowClassName = '',
   rowHandlers,
   children,
@@ -139,6 +141,8 @@ export function SidebarRow({
   dragFolder?: Folder | null;
   // What the row says, when it says more than its name (the Trash mid-drag); the name stays its accessible name.
   shownLabel?: ReactNode;
+  // Drawn after the name (a default folder's marker).
+  marker?: ReactNode;
   rowClassName?: string;
   rowHandlers?: Partial<
     Record<'onDragEnter' | 'onDragOver' | 'onDragLeave' | 'onDrop', (e: DragEvent) => void>
@@ -203,6 +207,7 @@ export function SidebarRow({
             </span>
           )}
           <span className="min-w-0 flex-1 truncate">{shownLabel ?? label}</span>
+          {marker}
           {badge !== undefined ? (
             <CountBadge count={badge} tone={badgeTone} className="ml-1" />
           ) : null}
@@ -265,6 +270,7 @@ function FolderSubtree({
       depth={depth}
       dropTo={{ teamId: folder.teamId, folderId: folder.id }}
       dragFolder={folder}
+      marker={<DefaultFolderMarker folderId={folder.id} />}
       expandable={kids.length > 0}
       expanded={expanded.has(folder.id)}
       onToggleExpand={() => toggle(folder.id)}

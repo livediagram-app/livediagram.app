@@ -208,6 +208,10 @@ export type SettingsDeleteAccountRowSpec = RowBase & { kind: 'deleteAccount' };
 // Settings is the one menu every deployment has.
 export type SettingsTrashRowSpec = RowBase & { kind: 'trash' };
 
+// Default Folders (docs/specs/013-workspace/default-folders.md "Settings"): where new plans go when made without
+// a place. Not a preference: the shared Explorer reads and writes them on the index.
+export type SettingsDefaultFoldersRowSpec = RowBase & { kind: 'defaultFolders' };
+
 // What power user mode's preset set, as a live readout: each line's value is
 // its own row's, changed in that row (docs/specs/007-editor/power-user-mode.md#in-settings).
 export type SettingsPresetSummaryRowSpec = RowBase & { kind: 'presetSummary' };
@@ -225,6 +229,7 @@ export type SettingsRowSpec =
   | SettingsIdentityRowSpec
   | SettingsDeleteAccountRowSpec
   | SettingsTrashRowSpec
+  | SettingsDefaultFoldersRowSpec
   | SettingsPresetSummaryRowSpec;
 
 export type SettingsCategorySpec = {
@@ -649,6 +654,16 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: (p) => p.homeBanner !== false,
         write: (p, v) => ({ ...p, homeBanner: v }),
         event: { category: 'UI', on: 'HomeBannerOn', off: 'HomeBannerOff' },
+      },
+      {
+        kind: 'defaultFolders',
+        key: 'defaultFolders',
+        section: 'Default Folders',
+        label: 'Where New Plans Go',
+        keywords:
+          'default folder where new projects go save location place file automatically always save placement plans kanban retrospective template',
+        description:
+          'New plans you make without choosing a place are saved in these folders. Kanban and Retrospective plans can have their own.',
       },
     ],
   },

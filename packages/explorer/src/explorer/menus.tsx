@@ -21,6 +21,7 @@ import {
   StarIcon,
   ClockIcon,
   ClockOffIcon,
+  DefaultPinIcon,
   TeamIcon,
   TrashIcon,
 } from '../ui/icons';
@@ -183,6 +184,11 @@ export function FolderMenu({
         label="Move Folder"
         icon={<FolderOutlineIcon />}
         onClick={run(() => openDialog({ kind: 'move-folder', folderId: folder.id }))}
+      />
+      <MenuActionRow
+        label="Use as Default for…"
+        icon={<DefaultPinIcon />}
+        onClick={run(() => openDialog({ kind: 'use-as-default', folderId: folder.id }))}
       />
       <MenuGroupSeparator />
       <MenuActionRow
