@@ -33,7 +33,8 @@ const COLUMNS: { title: string; links: (FooterLink | typeof GITHUB)[] }[] = [
         label: 'AI & MCP',
         icon: lucideGlyph(lucideSparkles, ICON_SIZE),
       },
-      { href: '/alternatives', label: 'Product Comparison' },
+      // Every app's comparisons live on liveworkspace.app (liveworkspace/docs/comparison-pages.md).
+      { href: 'https://liveworkspace.app/alternatives', label: 'Product Comparison' },
       { href: '/faq', label: 'FAQ' },
     ],
   },

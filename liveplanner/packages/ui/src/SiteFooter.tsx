@@ -22,13 +22,14 @@ const COLUMNS: { title: string; links: FooterLink[] }[] = [
   {
     title: 'Product',
     links: [
-      { href: '/new', label: 'New Project', icon: lucideGlyph(lucideSquareKanban, ICON_SIZE) },
+      { href: '/new', label: 'New Plan', icon: lucideGlyph(lucideSquareKanban, ICON_SIZE) },
       {
         href: '/ai',
         label: 'AI & MCP',
         icon: lucideGlyph(lucideSparkles, ICON_SIZE),
       },
-      { href: '/alternatives', label: 'Product Comparison' },
+      // Every app's comparisons live on liveworkspace.app (liveworkspace/docs/comparison-pages.md).
+      { href: 'https://liveworkspace.app/alternatives', label: 'Product Comparison' },
       { href: '/faq', label: 'FAQ' },
     ],
   },

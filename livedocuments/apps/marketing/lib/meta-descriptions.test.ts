@@ -3,7 +3,6 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
-import { ALTERNATIVES } from './alternatives';
 import { LANDING_SECTIONS } from './landing-content';
 
 // A search result shows about 160 characters of a meta description and cuts the rest; under about 50 it
@@ -17,13 +16,6 @@ describe('meta descriptions', () => {
   it.each(LANDING_SECTIONS.map((s) => [s.id, s.metaDescription]))(
     'feature page %s fits a search result',
     (_id, text) => {
-      expect(fits(text), `${text.length} chars`).toBe(true);
-    },
-  );
-
-  it.each(ALTERNATIVES.map((a) => [a.slug, a.description]))(
-    'comparison page %s fits a search result',
-    (_slug, text) => {
       expect(fits(text), `${text.length} chars`).toBe(true);
     },
   );

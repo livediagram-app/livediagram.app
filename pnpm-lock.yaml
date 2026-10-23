@@ -5516,9 +5516,18 @@ importers:
         specifier: ^19.3.1
         version: 19.3.1(react@19.3.1)
     devDependencies:
+      '@livedesign/design':
+        specifier: workspace:*
+        version: link:../../../livedesign/packages/design
+      '@livedesign/templates':
+        specifier: workspace:*
+        version: link:../../../livedesign/packages/templates
       '@livediagram/agent-verbs':
         specifier: workspace:*
         version: link:../../../livediagram/packages/agent-verbs
+      '@livediagram/document':
+        specifier: workspace:*
+        version: link:../../../livediagram/packages/document
       '@livediagram/next-config':
         specifier: workspace:*
         version: link:../../../livediagram/packages/next-config
@@ -5531,18 +5540,27 @@ importers:
       '@livediagram/tailwind-config':
         specifier: workspace:*
         version: link:../../../livediagram/packages/tailwind-config
+      '@livediagram/templates':
+        specifier: workspace:*
+        version: link:../../../livediagram/packages/templates
       '@livediagram/vitest-config':
         specifier: workspace:*
         version: link:../../../livediagram/packages/vitest-config
       '@livedocuments/agent-verbs':
         specifier: workspace:*
         version: link:../../../livedocuments/packages/agent-verbs
+      '@livedocuments/document':
+        specifier: workspace:*
+        version: link:../../../livedocuments/packages/document
       '@livedocuments/source-ast':
         specifier: workspace:*
         version: link:../../../livedocuments/packages/source-ast
       '@livedocuments/tailwind-config':
         specifier: workspace:*
         version: link:../../../livedocuments/packages/tailwind-config
+      '@livedocuments/templates':
+        specifier: workspace:*
+        version: link:../../../livedocuments/packages/templates
       '@liveplanner/agent-verbs':
         specifier: workspace:*
         version: link:../../../liveplanner/packages/agent-verbs
@@ -5552,6 +5570,9 @@ importers:
       '@liveplanner/tailwind-config':
         specifier: workspace:*
         version: link:../../../liveplanner/packages/tailwind-config
+      '@liveplanner/templates':
+        specifier: workspace:*
+        version: link:../../../liveplanner/packages/templates
       '@tailwindcss/postcss':
         specifier: ^4.3.3
         version: 4.3.3

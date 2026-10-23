@@ -6,9 +6,6 @@ import { describe, expect, it } from 'vitest';
 import { THEMES } from '@livediagram/document';
 import { TEMPLATE_CATEGORIES, TEMPLATES } from '@livediagram/templates';
 
-import { COMPETITOR_LOOK } from '@/components/compare/competitor-look';
-
-import { ALTERNATIVES } from './alternatives';
 import { LANDING_SECTIONS } from './landing-content';
 import {
   FAQ_CATEGORIES,
@@ -55,26 +52,15 @@ describe('template counts in marketing copy', () => {
     expect(TEMPLATE_COUNT).toBe(TEMPLATES.length);
     expect(TEMPLATE_CATEGORY_COUNT).toBe(TEMPLATE_CATEGORIES.length);
   });
-
-  it('matches the catalogue on every comparison page and card', () => {
-    const copy = JSON.stringify([
-      ALTERNATIVES,
-      Object.values(COMPETITOR_LOOK).map((l) => l.highlights),
-    ]);
-    const counts = [...copy.matchAll(/(\d+) (?:starter )?templates/g)].map((m) => Number(m[1]));
-    expect(counts.length).toBeGreaterThan(0);
-    for (const n of counts) expect(n).toBe(TEMPLATES.length);
-  });
 });
 
 // Theme counts are written out as digits or words; each must match the theme catalogue.
 describe('theme counts in marketing copy', () => {
   const WORDS: Record<string, number> = { 'twenty-four': 24 };
-  it('matches the catalogue in the FAQ, the landing page and every comparison page', () => {
+  it('matches the catalogue in the FAQ and the landing page', () => {
     const copy = JSON.stringify([
       FAQ_CATEGORIES.map((c) => c.items.map((i) => faqAnswerText(i))),
       LANDING_SECTIONS.map((s) => s.items.map((i) => i.description)),
-      ALTERNATIVES,
     ]);
     const counts = [
       ...copy.matchAll(/\b(\d+|twenty-[a-z]+) (?:one-click )?(?:whole-canvas )?themes\b/gi),

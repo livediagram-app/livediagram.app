@@ -1,0 +1,6 @@
+# The comparison pages moved to liveworkspace.app (liveworkspace/docs/comparison-pages.md), which
+# compares every app in one place. Each address here, the hub and every comparison, moves there
+# permanently under the same slug; lib/comparisons-moved.test.ts pins it.
+/alternatives https://liveworkspace.app/alternatives 301
+/alternatives/ https://liveworkspace.app/alternatives 301
+/alternatives/* https://liveworkspace.app/alternatives/:splat 301

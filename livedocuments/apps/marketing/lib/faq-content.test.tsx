@@ -11,9 +11,6 @@ import {
   TEMPLATES,
 } from '@livedocuments/templates';
 
-import { COMPETITOR_LOOK } from '@/components/compare/competitor-look';
-
-import { ALTERNATIVES } from './alternatives';
 import { LANDING_SECTIONS } from './landing-content';
 import {
   FAQ_CATEGORIES,
@@ -62,26 +59,15 @@ describe('template counts in marketing copy', () => {
     expect(TEMPLATE_COUNT).toBe(TEMPLATES.length);
     expect(TEMPLATE_CATEGORY_COUNT).toBe(TEMPLATE_CATEGORIES.length);
   });
-
-  it('matches the catalogue on every comparison page and card', () => {
-    const copy = JSON.stringify([
-      ALTERNATIVES,
-      Object.values(COMPETITOR_LOOK).map((l) => l.highlights),
-    ]);
-    const counts = [...copy.matchAll(/(\d+) (?:starter )?templates/g)].map((m) => Number(m[1]));
-    expect(counts.length).toBeGreaterThan(0);
-    for (const n of counts) expect(n).toBe(TEMPLATES.length);
-  });
 });
 
 // Theme counts are written out as digits or words; each must match the theme catalogue.
 describe('theme counts in marketing copy', () => {
   const WORDS: Record<string, number> = { 'twenty-four': 24 };
-  it('matches the catalogue in the FAQ, the landing page and every comparison page', () => {
+  it('matches the catalogue in the FAQ and the landing page', () => {
     const copy = JSON.stringify([
       FAQ_CATEGORIES.map((c) => c.items.map((i) => faqAnswerText(i))),
       LANDING_SECTIONS.map((s) => s.items.map((i) => i.description)),
-      ALTERNATIVES,
     ]);
     const counts = [
       ...copy.matchAll(/\b(\d+|twenty-[a-z]+) (?:one-click )?(?:whole-canvas )?themes\b/gi),
@@ -95,12 +81,6 @@ describe('theme counts in marketing copy', () => {
 
 // Slide layout counts are written out too, as digits or a word; each must match Pages mode's catalogue.
 describe('slide layout counts in marketing copy', () => {
-  const WORDS: Record<string, number> = { seventeen: 17 };
-  const countsIn = (copy: string) =>
-    [...copy.matchAll(/\b(\d+|[a-z]+teen) (?:ready-made )?layouts\b/gi)].map((m) =>
-      /^\d+$/.test(m[1]!) ? Number(m[1]) : WORDS[m[1]!.toLowerCase()],
-    );
-
   it('matches the catalogue in the FAQ', () => {
     expect(SLIDE_LAYOUT_COUNT).toBe(SLIDE_LAYOUTS.length);
   });
@@ -114,12 +94,6 @@ describe('slide layout counts in marketing copy', () => {
     const WORD: Record<number, string> = { 92: 'Ninety-two' };
     const copy = JSON.stringify(LANDING_SECTIONS.map((s) => s.items.map((i) => i.description)));
     expect(copy).toContain(`${WORD[PAGE_LAYOUTS.length]} ready-made pages`);
-  });
-
-  it('matches the catalogue on every comparison page', () => {
-    const counts = countsIn(JSON.stringify(ALTERNATIVES));
-    expect(counts.length).toBeGreaterThan(0);
-    for (const n of counts) expect(n).toBe(SLIDE_LAYOUTS.length);
   });
 });
 

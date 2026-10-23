@@ -1,6 +1,5 @@
 import type { MetadataRoute } from 'next';
 
-import { ALTERNATIVE_SLUGS, ALTERNATIVES_LAST_UPDATED } from '@/lib/alternatives';
 import { LANDING_SECTION_IDS } from '@/lib/landing-content';
 import { SITE_URL } from '@liveplanner/ui';
 
@@ -27,11 +26,6 @@ export const dynamic = 'force-static';
 // product releases, so they use the build-time `now`. The Terms and
 // Privacy Policy moved into the help centre (its own sitemap lists the
 // canonical articles), so they are not listed here.
-//
-// ALTERNATIVES_LAST_UPDATED lives alongside the ALTERNATIVES array
-// in lib/alternatives.ts so the sitemap, the per-competitor pages'
-// article:modified_time OG meta, and the data revision all share
-// one constant. See docs/specs/019-marketing/comparison-pages.md "Metadata".
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
@@ -95,20 +89,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.2,
     },
-    // Comparison / "alternative" pages (docs/specs/019-marketing/comparison-pages.md). Derived from the same
-    // ALTERNATIVES list the route + metadata use, so adding a competitor
-    // updates the sitemap automatically.
-    {
-      url: `${base}/alternatives`,
-      lastModified: ALTERNATIVES_LAST_UPDATED,
-      changeFrequency: 'monthly',
-      priority: 0.7,
-    },
-    ...ALTERNATIVE_SLUGS.map((slug) => ({
-      url: `${base}/alternatives/${slug}`,
-      lastModified: ALTERNATIVES_LAST_UPDATED,
-      changeFrequency: 'monthly' as const,
-      priority: 0.8,
-    })),
   ];
 }
