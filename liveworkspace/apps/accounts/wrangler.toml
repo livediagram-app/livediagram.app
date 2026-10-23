@@ -23,6 +23,11 @@ routes = [
 #   GOOGLE_CLIENT_SECRET
 #   INDEX_MERGE_KEY       accounts' key on the index: POST /internal/merge when a guest signs in, and
 #                         POST /internal/purge-person when an account closes
+#   TELEMETRY_KEY_LIVEDIAGRAM, TELEMETRY_KEY_LIVEPLANNER, TELEMETRY_KEY_LIVEDOCUMENTS,
+#   TELEMETRY_KEY_LIVEDESIGN
+#                         each app's key on the telemetry service (the telemetry Worker's values), to
+#                         count Email·Sent for the onboarding emails under the app each speaks for;
+#                         optional, an app without one isn't counted
 [vars]
 ENVIRONMENT = "production"
 BASE_URL = "https://liveworkspace.app"
@@ -33,10 +38,16 @@ BASE_URL = "https://liveworkspace.app"
 INDEX_URL = "https://liveworkspace.app/api/index"
 EMAIL_FROM = "sign-in@liveworkspace.app"
 TURNSTILE_SITE_KEY = ""
+# The telemetry service (src/telemetry.ts), reached through the TELEMETRY service binding below.
+TELEMETRY_URL = "https://liveworkspace.app/api/telemetry"
 
 [[services]]
 binding = "INDEX"
 service = "liveworkspace-index"
+
+[[services]]
+binding = "TELEMETRY"
+service = "liveworkspace-telemetry"
 
 [[d1_databases]]
 binding = "AUTH_DB"
@@ -90,10 +101,15 @@ BASE_URL = "https://staging.liveworkspace.app"
 INDEX_URL = "https://staging.liveworkspace.app/api/index"
 EMAIL_FROM = "sign-in@liveworkspace.app"
 TURNSTILE_SITE_KEY = ""
+TELEMETRY_URL = "https://staging.liveworkspace.app/api/telemetry"
 
 [[env.staging.services]]
 binding = "INDEX"
 service = "liveworkspace-index-staging"
+
+[[env.staging.services]]
+binding = "TELEMETRY"
+service = "liveworkspace-telemetry-staging"
 
 [[env.staging.d1_databases]]
 binding = "AUTH_DB"

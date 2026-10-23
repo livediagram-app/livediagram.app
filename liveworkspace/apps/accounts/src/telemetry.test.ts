@@ -1,0 +1,108 @@
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import {
+  flushServerEvents,
+  reportServerEvent,
+  TELEMETRY_TIMEOUT_MS,
+  waitingServerEvents,
+} from './telemetry.ts';
+
+const env = {
+  TELEMETRY_URL: 'https://liveworkspace.app/api/telemetry/',
+  TELEMETRY_KEY_LIVEDIAGRAM: 'ld-key',
+  TELEMETRY_KEY_LIVEPLANNER: 'lp-key',
+};
+
+type Sent = { url: string; key: string | null; body: { app: string; events: unknown[] } };
+
+function service(
+  answer: (request: Request) => Promise<Response> = async () => new Response(null, { status: 204 }),
+) {
+  const sent: Sent[] = [];
+  const fetcher = {
+    fetch: async (request: Request) => {
+      sent.push({
+        url: request.url,
+        key: request.headers.get('X-Telemetry-Key'),
+        body: (await request.clone().json()) as Sent['body'],
+      });
+      return answer(request);
+    },
+  } as unknown as Fetcher;
+  return { sent, fetcher };
+}
+
+afterEach(async () => {
+  await flushServerEvents({});
+  vi.restoreAllMocks();
+});
+
+describe('server events', () => {
+  it('sends what waited as one batch per app, with that app’s key', async () => {
+    const { sent, fetcher } = service();
+    for (let i = 0; i < 3; i++)
+      reportServerEvent(env, 'Email', 'Sent', 'Welcome', 'livediagram.app');
+    reportServerEvent(env, 'Email', 'Sent', 'Week1', 'liveplanner.app');
+    await flushServerEvents({ ...env, TELEMETRY: fetcher });
+    expect(sent).toHaveLength(2);
+    const diagram = sent.find((s) => s.body.app === 'livediagram.app')!;
+    expect(diagram.url).toBe('https://liveworkspace.app/api/telemetry/events');
+    expect(diagram.key).toBe('ld-key');
+    expect(diagram.body.events).toEqual([
+      { category: 'Email', action: 'Sent', type: 'Welcome' },
+      { category: 'Email', action: 'Sent', type: 'Welcome' },
+      { category: 'Email', action: 'Sent', type: 'Welcome' },
+    ]);
+    expect(sent.find((s) => s.body.app === 'liveplanner.app')!.key).toBe('lp-key');
+    expect(waitingServerEvents()).toHaveLength(0);
+  });
+
+  it('splits a long run into the service’s batch size', async () => {
+    const { sent, fetcher } = service();
+    for (let i = 0; i < 250; i++)
+      reportServerEvent(env, 'Email', 'Sent', 'Week2', 'livediagram.app');
+    await flushServerEvents({ ...env, TELEMETRY: fetcher });
+    expect(sent.map((s) => s.body.events.length)).toEqual([100, 100, 50]);
+  });
+
+  it('skips an app with no key, and holds nothing with no service configured', async () => {
+    const { sent, fetcher } = service();
+    reportServerEvent(env, 'Email', 'Sent', 'Welcome', 'livedesign.app');
+    await flushServerEvents({ ...env, TELEMETRY: fetcher });
+    expect(sent).toHaveLength(0);
+    reportServerEvent({}, 'Email', 'Sent', 'Welcome', 'livediagram.app');
+    expect(waitingServerEvents()).toHaveLength(0);
+  });
+
+  it('never throws, and gives up on a service that doesn’t answer', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const failing = service(async () => {
+      throw new Error('down');
+    });
+    reportServerEvent(env, 'Email', 'Sent', 'Welcome', 'livediagram.app');
+    await expect(
+      flushServerEvents({ ...env, TELEMETRY: failing.fetcher }),
+    ).resolves.toBeUndefined();
+
+    vi.useFakeTimers();
+    try {
+      const hung = {
+        fetch: (request: Request) =>
+          new Promise<Response>((_, reject) =>
+            request.signal.addEventListener('abort', () => reject(request.signal.reason)),
+          ),
+      } as unknown as Fetcher;
+      reportServerEvent(env, 'Email', 'Sent', 'Welcome', 'livediagram.app');
+      const flushing = flushServerEvents({ ...env, TELEMETRY: hung });
+      await vi.advanceTimersByTimeAsync(TELEMETRY_TIMEOUT_MS + 1);
+      await expect(flushing).resolves.toBeUndefined();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('holds a bounded number between flushes', () => {
+    for (let i = 0; i < 5_000; i++)
+      reportServerEvent(env, 'Email', 'Sent', 'Welcome', 'livediagram.app');
+    expect(waitingServerEvents()).toHaveLength(1_000);
+  });
+});

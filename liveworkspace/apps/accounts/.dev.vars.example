@@ -19,3 +19,10 @@ GOOGLE_CLIENT_SECRET=
 # signing in leaves the guest's things where they are.
 INDEX_URL=http://localhost:8793/api/index
 INDEX_MERGE_KEY=dev-index-merge-key
+# The telemetry service (liveworkspace/apps/telemetry), told when an onboarding email goes. Optional:
+# the keys are the telemetry Worker's dev keys; an app without one isn't counted.
+TELEMETRY_URL=http://localhost:8790/api/telemetry
+TELEMETRY_KEY_LIVEDIAGRAM=dev-livediagram-key
+TELEMETRY_KEY_LIVEPLANNER=dev-liveplanner-key
+TELEMETRY_KEY_LIVEDOCUMENTS=dev-livedocuments-key
+TELEMETRY_KEY_LIVEDESIGN=dev-livedesign-key

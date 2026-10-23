@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { sendCodeEmail } from './email.ts';
+import { inviteResponseEmail, sendCodeEmail } from './email.ts';
 import type { Env } from './env.ts';
 
 const env = (over: Partial<Env>) =>
@@ -47,5 +47,14 @@ describe('sendCodeEmail', () => {
     await expect(sendCodeEmail(env({}), 'ada@example.com', '123456')).rejects.toThrow(
       'RESEND_API_KEY is not set',
     );
+  });
+});
+
+describe('inviteResponseEmail', () => {
+  it('links to the account’s settings, where admins turn these off', () => {
+    const email = inviteResponseEmail('https://liveworkspace.app/', 'Design', 'Ada', true);
+    expect(email.unsubscribeUrl).toBe('https://liveworkspace.app/account/settings');
+    expect(email.html).toContain('href="https://liveworkspace.app/account/settings"');
+    expect(email.text).toContain('https://liveworkspace.app/account/settings');
   });
 });

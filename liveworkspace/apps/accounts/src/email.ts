@@ -67,6 +67,12 @@ const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (c) => `&#${c.ch
 
 const origin = (baseUrl: string) => baseUrl.replace(/\/+$/, '');
 
+// The account's settings page on liveworkspace.app (this deployment's BASE_URL), where every email
+// that can be turned off is turned off, for every app. Signed out, it signs them in and comes back.
+export function settingsUrl(baseUrl: string): string {
+  return `${origin(baseUrl)}/account/settings`;
+}
+
 // The page an invitation email's Decline link opens: it reads the token and declines only when its
 // button is pressed, so a mail scanner opening the link changes nothing.
 export const declineUrl = (baseUrl: string, token: string) =>
@@ -139,18 +145,21 @@ export function inviteResponseEmail(
 ) {
   const verb = accepted ? 'accepted' : 'declined';
   const link = `${origin(baseUrl)}/account/teams`;
+  const unsubscribeUrl = settingsUrl(baseUrl);
   const subject = `${responder} ${verb} your invitation to ${teamName}`;
   const text = [
     `${responder} ${verb} the invitation to join ${teamName} on liveworkspace.`,
     '',
     `See the team at ${link}.`,
+    '',
+    `You get this as one of the team's admins. Manage your notifications: ${unsubscribeUrl}`,
   ].join('\n');
   const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;color:#111;padding:24px">
 <p><strong>${escapeHtml(responder)}</strong> ${verb} the invitation to join <strong>${escapeHtml(teamName)}</strong> on liveworkspace.</p>
 <p style="margin:24px 0"><a href="${link}" style="background:#0f172a;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none">See the team</a></p>
-<p style="color:#555">You get this as one of the team's admins.</p>
+<p style="color:#555">You get this as one of the team's admins. <a href="${unsubscribeUrl}" style="color:#555">Manage your notifications</a> to turn these off.</p>
 </body></html>`;
-  return { subject, text, html };
+  return { subject, text, html, unsubscribeUrl };
 }
 
 export async function sendInviteResponseEmails(

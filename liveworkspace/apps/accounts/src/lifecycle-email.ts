@@ -4,6 +4,7 @@
 // uses. The same timings and the same tips as each app's series had, worded for all four apps. Plain,
 // inline-styled HTML that email clients keep; nothing a person wrote is ever in one.
 import { APP_SITES, LOCAL_PORTS, type SiteId } from '@liveworkspace/sites';
+import { settingsUrl } from './email.ts';
 import type { Env } from './env.ts';
 import type { SettingsApp } from './settings.ts';
 
@@ -31,17 +32,19 @@ export function appUrl(env: Pick<Env, 'ENVIRONMENT'>, app: SiteId): string {
   return `https://www.${app}`;
 }
 
-// Who the email is for: the app they first used, where its links go and where tips are turned off
-// (every app's Settings has the switch, and it holds for all of them). Someone who has used none yet
-// is sent to livediagram, the first app.
+// Who the email is for: the app they first used, where its links go. Someone who has used none yet
+// is sent to livediagram, the first app. Tips are turned off on liveworkspace.app, whichever app.
 export interface Recipient {
   home: SettingsApp | null;
 }
 
+// Where someone who has used no app yet is sent.
+export const DEFAULT_HOME: SettingsApp = 'livediagram.app';
+
 const appName = (app: SiteId) => APP_SITES.find((site) => site.id === app)?.name ?? app;
 
 function homeOf(env: Pick<Env, 'ENVIRONMENT'>, recipient: Recipient) {
-  const app = recipient.home ?? 'livediagram.app';
+  const app = recipient.home ?? DEFAULT_HOME;
   return { app, url: appUrl(env, app), name: appName(app) };
 }
 
@@ -148,8 +151,9 @@ export function lifecycleEmail(
 ): LifecycleEmail {
   const home = homeOf(env, recipient);
   const site = origin(env.BASE_URL);
-  // Every app's Settings has the switch for tips, and it holds for all of them.
-  const unsubscribeUrl = `${home.url}/explorer?settings=notifications`;
+  // The account's own settings page on liveworkspace.app, where tips are turned off for every app.
+  // Signed out, it signs them in and comes back.
+  const unsubscribeUrl = settingsUrl(env.BASE_URL);
   switch (stage) {
     case 'welcome':
       return render(env, {

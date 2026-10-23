@@ -162,14 +162,13 @@ describe('the series', () => {
     expect(stamp('user_ada', 'week2_sent_at')).toBe(T0 + 14 * DAY);
   });
 
-  it('carries where to turn tips off, in the app they first used', async () => {
+  it('carries where to turn tips off, on liveworkspace.app, and links to the app they first used', async () => {
     await account('user_ada');
     await recordSighting(db, 'user_ada', 'livedesign.app', T0);
     await recordSighting(db, 'user_ada', 'livediagram.app', T0 + 1);
     await run(T0 + 7 * DAY);
-    expect(sent.at(-1)!.unsubscribeUrl).toBe(
-      'https://www.livedesign.app/explorer?settings=notifications',
-    );
+    expect(sent.at(-1)!.unsubscribeUrl).toBe('https://liveworkspace.app/account/settings');
+    expect(sent.at(-1)!.html).toContain('https://www.livedesign.app/explorer');
   });
 
   it('only moves activity forward', async () => {
@@ -198,6 +197,57 @@ describe('the series', () => {
   });
 });
 
+describe('telemetry', () => {
+  const posted: { app: string; events: { type: string }[] }[] = [];
+  const telemetry = {
+    TELEMETRY_URL: 'https://liveworkspace.app/api/telemetry',
+    TELEMETRY_KEY_LIVEDIAGRAM: 'ld',
+    TELEMETRY_KEY_LIVEDESIGN: 'lds',
+    TELEMETRY: {
+      fetch: async (request: Request) => {
+        posted.push((await request.json()) as (typeof posted)[number]);
+        return new Response(null, { status: 204 });
+      },
+    } as unknown as Fetcher,
+  };
+  beforeEach(() => {
+    posted.length = 0;
+  });
+
+  it('counts each email sent under the app it speaks for, once the run ends', async () => {
+    await account('user_ada');
+    await account('user_bo');
+    await recordSighting(db, 'user_bo', 'livedesign.app', T0);
+    await runLifecycle(db, { ...env, ...telemetry }, send, ['welcome', 'week1'], T0 + 7 * DAY);
+    expect(sent).toHaveLength(4);
+    const types = (app: string) =>
+      posted
+        .filter((b) => b.app === app)
+        .flatMap((b) => b.events.map((e) => e.type))
+        .sort();
+    expect(types('livediagram.app')).toEqual(['Week1', 'Welcome']);
+    expect(types('livedesign.app')).toEqual(['Week1', 'Welcome']);
+    expect(posted).toHaveLength(2);
+  });
+
+  it('counts nothing that wasn’t sent, and never holds up a send', async () => {
+    await account('user_ada');
+    await writeSettings(db, 'user_ada', null, { all: { notifyTips: false } });
+    const down = {
+      ...telemetry,
+      TELEMETRY: {
+        fetch: async () => {
+          throw new Error('telemetry is down');
+        },
+      } as unknown as Fetcher,
+    };
+    await runLifecycle(db, { ...env, ...down }, send, undefined, T0 + 7 * DAY);
+    expect(sent.map((e) => e.subject)).toEqual(['Welcome to liveworkspace']);
+    await sendWelcomes(db, { ...env, ...telemetry }, send, ['user_ada'], T0 + 8 * DAY);
+    expect(posted).toEqual([]);
+  });
+});
+
 describe('the emails', () => {
   it('link to each app in its environment', () => {
     expect(appUrl({ ENVIRONMENT: 'development' }, 'liveplanner.app')).toBe('http://localhost:3200');
@@ -207,9 +257,16 @@ describe('the emails', () => {
     const email = lifecycleEmail(env, 'week2', { home: null });
     expect(email.html).toContain('https://liveworkspace.app/account/teams');
     expect(email.text).toContain('Manage your notifications');
-    expect(email.unsubscribeUrl).toBe(
-      'https://www.livediagram.app/explorer?settings=notifications',
+    expect(email.unsubscribeUrl).toBe('https://liveworkspace.app/account/settings');
+    expect(email.html).toContain(
+      'href="https://liveworkspace.app/account/settings" style="color:#334155;text-decoration:underline">Manage your notifications',
     );
+    // A deployment's own origin.
+    expect(
+      lifecycleEmail({ ...env, BASE_URL: 'https://staging.liveworkspace.app/' }, 'winback', {
+        home: null,
+      }).unsubscribeUrl,
+    ).toBe('https://staging.liveworkspace.app/account/settings');
     for (const name of ['livediagram', 'liveplanner', 'livedocuments', 'livedesign']) {
       expect(lifecycleEmail(env, 'welcome', { home: null }).text).toContain(name);
     }

@@ -21,6 +21,16 @@ export interface Env {
   // The index Worker itself, so the merge reaches it rather than going out and back (wrangler.toml).
   INDEX?: Fetcher;
 
+  // The telemetry service (liveworkspace/docs/telemetry.md), told when an onboarding email goes
+  // (src/telemetry.ts): its URL, reached through the TELEMETRY service binding when there is one, and
+  // each app's Worker key, the same values the telemetry Worker holds. Unset, nothing is reported.
+  TELEMETRY_URL?: string;
+  TELEMETRY?: Fetcher;
+  TELEMETRY_KEY_LIVEDIAGRAM?: string;
+  TELEMETRY_KEY_LIVEPLANNER?: string;
+  TELEMETRY_KEY_LIVEDOCUMENTS?: string;
+  TELEMETRY_KEY_LIVEDESIGN?: string;
+
   AUTH_DB: D1Database;
   CODE_IP_LIMITER: RateLimit;
   CODE_EMAIL_LIMITER: RateLimit;

@@ -11,9 +11,15 @@
 // "tips" stages respect the notifyTips setting in the `all` scope: turned off, the stage is stamped and
 // nothing is sent. Each stage is claimed (stamped) before it is sent, so two runs can't both send it;
 // a failed send takes the stamp back and counts against the row, which leaves every due list at three.
-import { lifecycleEmail, type LifecycleEmail, type LifecycleStage } from './lifecycle-email.ts';
+import {
+  DEFAULT_HOME,
+  lifecycleEmail,
+  type LifecycleEmail,
+  type LifecycleStage,
+} from './lifecycle-email.ts';
 import type { Env } from './env.ts';
 import { isSettingsApp } from './settings.ts';
+import { flushServerEvents, reportServerEvent, type TelemetryEnv } from './telemetry.ts';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const WEEK_MS = 7 * DAY_MS;
@@ -122,10 +128,23 @@ export type SendEmail = (email: LifecycleEmail & { to: string }) => Promise<void
 export type Outcome = 'sent' | 'skipped' | 'failed' | 'taken';
 export type StageCounts = Record<Outcome, number>;
 
-type Ctx = { db: D1Database; env: Pick<Env, 'ENVIRONMENT' | 'BASE_URL'>; send: SendEmail };
+// What a run needs of the Env: the emails' links, and where to report what went.
+export type LifecycleEnv = Pick<Env, 'ENVIRONMENT' | 'BASE_URL'> & Partial<TelemetryEnv>;
+
+type Ctx = { db: D1Database; env: LifecycleEnv; send: SendEmail };
+
+// Each stage's kind on `Email·Sent`, as the apps' own series named them, so each app's dashboard
+// keeps counting it in the same chart.
+const EMAIL_SENT_TYPE: Record<LifecycleStage, string> = {
+  welcome: 'Welcome',
+  activation: 'Activation',
+  week1: 'Week1',
+  week2: 'Week2',
+  winback: 'WinBack',
+};
 
 async function deliver(ctx: Ctx, stage: LifecycleStage, row: Due, now: number): Promise<Outcome> {
-  const { db } = ctx;
+  const { db, env } = ctx;
   const { column, tips } = STAGES[stage];
   // Claimed before sending: a second run, or the inline welcome racing the cron, finds it taken.
   const claim = await db
@@ -135,9 +154,9 @@ async function deliver(ctx: Ctx, stage: LifecycleStage, row: Due, now: number): 
   if (claim.meta.changes !== 1) return 'taken';
   // Turned off: the stamp stays, so they aren't asked about again, and nothing is sent.
   if (tips && row.tips === 0) return 'skipped';
+  const home = isSettingsApp(row.app) ? row.app : null;
   try {
-    const home = isSettingsApp(row.app) ? row.app : null;
-    await ctx.send({ to: row.email, ...lifecycleEmail(ctx.env, stage, { home }) });
+    await ctx.send({ to: row.email, ...lifecycleEmail(env, stage, { home }) });
   } catch (error) {
     const failed = await db
       .prepare(
@@ -153,6 +172,8 @@ async function deliver(ctx: Ctx, stage: LifecycleStage, row: Due, now: number): 
     }
     return 'failed';
   }
+  // Counted under the app the email speaks for (its links' app), sent when the run ends.
+  reportServerEvent(env, 'Email', 'Sent', EMAIL_SENT_TYPE[stage], home ?? DEFAULT_HOME);
   if (row.attempts > 0) {
     await db
       .prepare('UPDATE email_lifecycle SET send_attempts = 0 WHERE user_id = ?')
@@ -180,25 +201,34 @@ async function runStage(
 // just the welcome, catching up a sign-up whose welcome failed.
 export async function runLifecycle(
   db: D1Database,
-  env: Pick<Env, 'ENVIRONMENT' | 'BASE_URL'>,
+  env: LifecycleEnv,
   send: SendEmail,
   stages: LifecycleStage[] = STAGE_ORDER,
   now = Date.now(),
 ): Promise<Partial<Record<LifecycleStage, StageCounts>>> {
   const result: Partial<Record<LifecycleStage, StageCounts>> = {};
-  for (const stage of stages) result[stage] = await runStage({ db, env, send }, stage, now);
+  try {
+    for (const stage of stages) result[stage] = await runStage({ db, env, send }, stage, now);
+  } finally {
+    // What went is reported once the sending is done, one batch per app.
+    await flushServerEvents(env);
+  }
   return result;
 }
 
 // The welcome for accounts just made, sent after the sign-up's response (index.ts).
 export async function sendWelcomes(
   db: D1Database,
-  env: Pick<Env, 'ENVIRONMENT' | 'BASE_URL'>,
+  env: LifecycleEnv,
   send: SendEmail,
   ids: string[],
   now = Date.now(),
 ): Promise<StageCounts> {
-  return runStage({ db, env, send }, 'welcome', now, [...new Set(ids)]);
+  try {
+    return await runStage({ db, env, send }, 'welcome', now, [...new Set(ids)]);
+  } finally {
+    await flushServerEvents(env);
+  }
 }
 
 // A new account starts its series. Not for the client registrar, whose `.invalid` address can never
