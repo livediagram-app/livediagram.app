@@ -1,4 +1,3 @@
-import { runTabStatsBackfill } from './tab-stats-backfill';
 import { accountCredentials, getAccountIdentity } from './auth/accounts';
 import { AccountsUnavailable, sweepRevokedTokens, type ResolvedApiToken } from './db/api-tokens';
 import { catchUpTeams, syncTeams } from './db/team-sync';
@@ -10,7 +9,6 @@ import { runLifecycleSweep, welcomeOnSighting } from './email/lifecycle';
 import { NOTIFY_EMAIL_DEDUPE_MS } from './email/notifications';
 import { runTimelineExpirySweep } from './timeline';
 import {
-  deleteOldChangesets,
   deleteOldNotifyEmailClaims,
   deleteOldTimelineEvents,
   purgeExpiredTrash,
@@ -19,7 +17,6 @@ import {
 } from './db';
 import {
   apiRouteLabel,
-  CHANGESET_RETENTION_MS,
   bearerTokenOf,
   errorTypeToken,
   isAccountIdShape,
@@ -35,7 +32,8 @@ import { verifyOwnerId } from './auth/owner-signature';
 import { guestSignatureEnforced, OWNER_SCOPED_SEGMENTS } from './auth/guest-rest';
 import { handleTokens } from './routes/tokens';
 import { handleOauthExchange } from './routes/oauth';
-import { ProjectRoom } from './project-room';
+import { PlanRoom } from './plan-room/plan-room';
+import { handleInternalItems } from './routes/internal-items';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
 import { deleteOldProjectOpens } from './db/project-opens';
 import { clientIp, clientNetwork, clientRateKey } from './client-ip';
@@ -72,9 +70,8 @@ import { workbenchRefusal } from './auth/workbench-confinement';
 import { sweepWorkbench } from './db/workbench';
 import { withServerRelease } from './server-release-header';
 import type { Env } from './types';
-import { runSheetExpiry } from './sheet-sweep';
 
-export { ProjectRoom };
+export { PlanRoom };
 
 // Per-owner write rate limit (security audit item). Returns true
 // when the caller is over the configured cap (wrangler.toml's
@@ -109,6 +106,10 @@ async function routeApiRequest(
   if (segments[1] === 'auth') {
     return handleAuth(request, env, segments, (p) => executionCtx?.waitUntil(p));
   }
+
+  // The One Explorer index's server-to-server doors into a plan's content (routes/internal-items.ts): their own
+  // key, never a person's identity, so answered before identity and the per-owner limits.
+  if (segments[1] === 'internal') return handleInternalItems(request, env);
 
   // Hybrid identity (docs/specs/014-identity/auth-and-guest-access.md). Verify the accounts
   // access token once at the top of the handler: null when sign-in isn't configured, no Bearer
@@ -547,16 +548,8 @@ const worker = {
         now - TIMELINE_RETENTION_MS,
         deleteOldProjectOpens,
       );
-      // docs/specs/024-agents/agent-changesets.md "Revert": a changeset can be reverted while its
-      // record exists, as long as the Trash keeps a project (CS28).
-      scheduleSweep(
-        ctx,
-        env,
-        'changesets',
-        'rows',
-        now - CHANGESET_RETENTION_MS,
-        deleteOldChangesets,
-      );
+      // A plan's changesets and unreferenced sheets are kept by the plan's own Durable Object, swept by its daily
+      // upkeep alarm (plan-room.ts `maintain`), not from here.
       // docs/specs/012-collaboration/assigned-actions.md §4: a notify-email claim past its dedupe window
       // decides nothing any more.
       scheduleSweep(
@@ -566,10 +559,6 @@ const worker = {
         'rows',
         now - NOTIFY_EMAIL_DEDUPE_MS,
         deleteOldNotifyEmailClaims,
-      );
-      // docs/specs/029-sheets/sheet-store.md "Deleting a sheet": delete sheets unreferenced for 30 days.
-      ctx.waitUntil(
-        runSheetExpiry(env).catch((err) => console.error('[sheets] sheets.expired failed', err)),
       );
       // docs/specs/014-identity/transactional-email.md: send any due onboarding emails (welcome catch-up + week 1 / 2).
       // No-op when RESEND_API_KEY is unset.
@@ -595,13 +584,6 @@ const worker = {
         trashEmptyProjects(env, now)
           .then((count) => console.log(`empty sweep: moved ${count} projects to the Trash`))
           .catch((err) => console.error('empty sweep failed', err)),
-      );
-      // docs/specs/013-workspace/explorer-details-view.md "Counting the existing tabs": count the
-      // tabs written before tab stats existed, a bounded number a run. Logs its own outcome.
-      ctx.waitUntil(
-        runTabStatsBackfill(env)
-          .then(() => undefined)
-          .catch((err) => console.error('tab-stats: backfill failed', err)),
       );
       // docs/specs/013-workspace/blueprints/workbench-embeds.md "Retention": spent tickets and requests,
       // sessions past their grace, pairings of tokens no longer live.

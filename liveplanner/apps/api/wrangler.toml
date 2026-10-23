@@ -109,17 +109,17 @@ type = "ratelimit"
 namespace_id = "1002"
 simple = { limit = 120, period = 60 }
 
-# Durable Object for per-project realtime (presence + broadcast). One
-# instance per project id; clients connect via WebSocket through the
-# `/api/projects/<id>/ws` endpoint.
+# The plan's Durable Object (docs/specs/015-api/api.md "Storage"): one SQLite-backed instance per plan id,
+# holding the plan's content (tabs, items, sheets, changesets) in its own SQLite and running its realtime
+# room (presence + ordered ops over hibernating WebSockets).
 [[durable_objects.bindings]]
-name = "PROJECT_ROOM"
-class_name = "ProjectRoom"
+name = "PLAN_ROOM"
+class_name = "PlanRoom"
 
-# liveplanner has never been deployed, so the room starts as ProjectRoom with no rename history.
+# liveplanner has never been deployed, so the class starts SQLite-backed with no rename history.
 [[migrations]]
 tag = "v1"
-new_classes = ["ProjectRoom"]
+new_sqlite_classes = ["PlanRoom"]
 
 # Scheduled jobs the worker handles via the `scheduled` export. One
 # entry per cron; each fires the same handler with `event.cron` set
@@ -381,15 +381,15 @@ namespace_id = "1012"
 simple = { limit = 20, period = 60 }
 
 # A different script is a different Durable Object namespace, so staging's
-# PROJECT_ROOM instances are separate from production's for free. The class
+# PLAN_ROOM instances are separate from production's for free. The class
 # still needs its own migration tag in this environment.
 [[env.staging.durable_objects.bindings]]
-name = "PROJECT_ROOM"
-class_name = "ProjectRoom"
+name = "PLAN_ROOM"
+class_name = "PlanRoom"
 
 [[env.staging.migrations]]
 tag = "v1"
-new_classes = ["ProjectRoom"]
+new_sqlite_classes = ["PlanRoom"]
 
 # The daily 03:00 UTC sweeps (retention + the docs/specs/014-identity/transactional-email.md email crons) run on
 # staging too, against staging's own data. Restated rather than inherited so

@@ -51,7 +51,7 @@ const post = (text: string, who: { owner?: string; code?: string } = {}) =>
 beforeEach(async () => {
   sql = sqliteD1();
   relayed = [];
-  (sql.env as unknown as { PROJECT_ROOM: unknown }).PROJECT_ROOM = {
+  (sql.env as unknown as { PLAN_ROOM: unknown }).PLAN_ROOM = {
     idFromName: (n: string) => n,
     get: () => ({
       fetch: async (_url: string, init: RequestInit) => {

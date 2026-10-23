@@ -1,3 +1,4 @@
+import { resendPlanTab } from '../plan-room/plan-content';
 import { describe, expect, it } from 'vitest';
 import { sqliteD1 } from '../test-sqlite-d1';
 import {
@@ -56,7 +57,7 @@ describe('the Inbox read (docs/specs/030-forms/forms.md "Hearing about responses
       );
       sql
         .prepare(
-          'INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES (?, ?, 0, 1)',
+          'INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES (?, ?, 0, 1)',
         )
         .run(doc, id);
     };
@@ -68,6 +69,9 @@ describe('the Inbox read (docs/specs/030-forms/forms.md "Hearing about responses
     tab('t2', 'theirs');
     const mine = (await createFormLink(env, 'mine', 't1', 1))!;
     const theirs = (await createFormLink(env, 'theirs', 't2', 1))!;
+    // Publishing asks the plan for the tab's name and heading on the link (form-link-routes.ts).
+    await resendPlanTab(env, 't1');
+    await resendPlanTab(env, 't2');
     for (const code of [mine.code, mine.code, mine.code, theirs.code])
       await claimResponseNumber(env, code, 5000, 500);
     let read = await readActivity(env, 'me', { limit: 10 });

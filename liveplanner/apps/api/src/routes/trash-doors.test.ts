@@ -31,7 +31,7 @@ type Room = { broadcasts: unknown[] };
 function world(): SqliteD1 & Room {
   const room: Room = { broadcasts: [] };
   const db = sqliteD1({
-    PROJECT_ROOM: {
+    PLAN_ROOM: {
       idFromName: (name: string) => `id:${name}`,
       get: () => ({
         fetch: async (url: string, init?: RequestInit) => {

@@ -20,7 +20,7 @@ import {
   writeParticipantOp,
   type ParticipantWriteResult,
 } from './participant-write';
-import type { Env } from './types';
+import type { PlanEnv } from './types';
 
 // How soon a Participant's answers reach D1 (blueprint SR9).
 export const ANSWERS_FLUSH_MS = 1500;
@@ -29,7 +29,7 @@ export const ANSWERS_FLUSH_MS = 1500;
 export const PARTICIPANT_PENDING_MAX = 64;
 
 type ParticipantRoomHooks = {
-  env: Env | undefined;
+  env: PlanEnv | undefined;
   // Run one step on the room's tab write queue, after every step before it.
   enqueue: <T>(step: () => Promise<T>) => Promise<T>;
   // Sequence one mutation into the ordered stream; answers its seq.

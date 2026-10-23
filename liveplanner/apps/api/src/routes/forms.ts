@@ -11,13 +11,15 @@ import { formLook } from '@liveplanner/project';
 import { FORM_CODE_PATTERN, closedMessageOf, closedReason, publicForm } from '@liveplanner/forms';
 import { typesOf } from '@liveplanner/items';
 import { clientIp, clientNetwork } from '../client-ip';
-import { addFormReport, countSuspendedFormLinks, suspendFormLink } from '../db';
+import { addFormReport, countSuspendedFormLinks, getFormLink, suspendFormLink } from '../db';
+import { planRoom } from '../plan-client';
+import { identityOf } from '../plan-room/plan-route';
 import { notifyFormSuspended } from '../email/notifications';
 import { responsesProblem } from '../forms/form-tab';
 import { reportServerEvent } from '../server-telemetry';
 import { openFormLink, respond } from '../forms/respond';
 import { json, methodNotAllowed, notFound } from '../responses';
-import { readOptionalBody, type RouteContext } from './context';
+import { readOptionalBody, type PlanRouteContext, type RouteContext } from './context';
 
 const REASON_TYPES: Record<FormReportReason, string> = {
   spam: 'Spam',
@@ -32,7 +34,7 @@ const BROWSER_ID = /^[A-Za-z0-9-]{8,64}$/;
 
 const formNotFound = () => json({ error: 'form_not_found' }, { status: 404 });
 
-async function read(ctx: RouteContext, code: string): Promise<Response> {
+async function read(ctx: PlanRouteContext, code: string): Promise<Response> {
   const opened = await openFormLink(ctx, code);
   if (!opened) return formNotFound();
   const { link, doc, form, tab } = opened;
@@ -57,7 +59,7 @@ async function read(ctx: RouteContext, code: string): Promise<Response> {
   return json(body, { headers: { 'Cache-Control': 'no-store' } });
 }
 
-async function fileReport(ctx: RouteContext, code: string): Promise<Response> {
+async function fileReport(ctx: PlanRouteContext, code: string): Promise<Response> {
   const opened = await openFormLink(ctx, code);
   if (!opened) return formNotFound();
   const body = await readOptionalBody(ctx.request);
@@ -106,23 +108,37 @@ async function fileReport(ctx: RouteContext, code: string): Promise<Response> {
   return json({ ok: true }, { status: 201 });
 }
 
+type FormAction = 'read' | 'respond' | 'report';
+
+// Which door a request is, or the answer for one that is none.
+function formAction(segments: string[], method: string): FormAction | Response {
+  if (segments.length === 3) return method === 'GET' ? 'read' : methodNotAllowed();
+  if (segments.length === 4 && segments[3] === 'responses') {
+    return method === 'POST' ? 'respond' : methodNotAllowed();
+  }
+  if (segments.length === 4 && segments[3] === 'reports') {
+    return method === 'POST' ? 'report' : methodNotAllowed();
+  }
+  return notFound();
+}
+
 export async function handleForms(ctx: RouteContext): Promise<Response> {
   const { segments, request } = ctx;
   const code = segments[2] ?? '';
   if (!code) return notFound();
+  const action = formAction(segments, request.method);
+  if (action instanceof Response) return action;
   // A code that cannot be one is answered as any missing form is.
-  const known = FORM_CODE_PATTERN.test(code);
-  if (segments.length === 3) {
-    if (request.method !== 'GET') return methodNotAllowed();
-    return known ? read(ctx, code) : formNotFound();
+  if (!FORM_CODE_PATTERN.test(code)) return formNotFound();
+  // In the worker: the form's plan is found from its link (D1), and the request is answered inside that plan's
+  // Durable Object, where its tab and destinations are (docs/specs/015-api/api.md "Storage").
+  if (!('PLAN_DB' in ctx.env)) {
+    const link = await getFormLink(ctx.env, code);
+    if (!link || link.suspended_at !== null || link.deleted_at !== null) return formNotFound();
+    return planRoom(ctx.env, link.project_id).route(request, identityOf(ctx));
   }
-  if (segments.length === 4 && segments[3] === 'responses') {
-    if (request.method !== 'POST') return methodNotAllowed();
-    return known ? respond(ctx, code) : formNotFound();
-  }
-  if (segments.length === 4 && segments[3] === 'reports') {
-    if (request.method !== 'POST') return methodNotAllowed();
-    return known ? fileReport(ctx, code) : formNotFound();
-  }
-  return notFound();
+  const inPlan = ctx as PlanRouteContext;
+  if (action === 'read') return read(inPlan, code);
+  if (action === 'respond') return respond(inPlan, code);
+  return fileReport(inPlan, code);
 }

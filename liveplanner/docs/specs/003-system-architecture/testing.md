@@ -100,7 +100,16 @@ export default defineProject({ test: { environment: 'jsdom' } });
   with which bindings, and has no schema. `src/test-sqlite-d1.ts` is a real
   in-memory SQLite (`node:sqlite`) with every migration applied and foreign
   keys on, as D1 has them. Use the second wherever the behaviour lives in the
-  schema: cascades, primary-key collisions, `INSERT OR IGNORE` outcomes.
+  schema: cascades, primary-key collisions, `INSERT OR IGNORE` outcomes. It also
+  carries the plans' schema (`plan-room/plan-schema.ts`) in the same database,
+  behind `env.PLAN_DB`, answers the `PLAN_ROOM` RPCs from it, and pushes each
+  plan's outbox before every D1 call, so a handler test reads D1 as it would be
+  once the push landed.
+- **A plan's own Durable Object in tests.** `src/test-plan-sql.ts` puts
+  `ctx.storage.sql` (`exec`) and `transactionSync` over `node:sqlite`, and
+  `vitest.config.ts` aliases `cloudflare:workers` to a stub base class, so
+  `plan-room/plan-room-store.test.ts` runs the real worker against one real
+  `PlanRoom` per plan, each on its own database.
 
 ## Scripts
 
@@ -266,7 +275,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     UI workspace's `motion-budget.test.ts` ([Motion](../004-interface-design/motion.md)).
   - `apps/api`: auth guards (account access tokens, guest signatures, project access, tokens),
     every defensive D1 row mapper, the D1 modules against real SQLite
-    (cascades, migrations), the `ProjectRoom` Durable Object's rules, ledger
+    (cascades, migrations), the `PlanRoom` Durable Object's rules, ledger
     and multiplayer paths, every route family (projects, tabs, share, images,
     thumbnails, folders, teams, trash, timeline, activity, tokens, OAuth, unfurl,
     events), the Timeline's writers and its catalogue

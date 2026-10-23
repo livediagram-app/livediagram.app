@@ -19,8 +19,31 @@ const db = vi.hoisted(() => ({
   thumbnailKey: (id: string) => `thumb/${id}`,
 }));
 vi.mock('./db', () => db);
+vi.mock('./plan-room/plan-content', () => ({ getPlanItemTypes: db.getProjectItemTypes }));
 
-import { getProjectThumbnailSvg } from './thumbnail';
+import {
+  getProjectThumbnailSvg as workerThumbnail,
+  renderPlanImage,
+  type ThumbnailOptions,
+  type ThumbnailSubject,
+} from './thumbnail';
+
+// The worker's read, with the plan's Durable Object answered in place: a stale snapshot is drawn by the plan
+// (renderPlanImage), with the options its room would give it.
+function getProjectThumbnailSvg(
+  env: Env,
+  liveDoc: ThumbnailSubject,
+  opts: ThumbnailOptions = {},
+): Promise<string | null> {
+  const room = {
+    image: (_planId: string, subject: ThumbnailSubject, tabId: string | null) =>
+      renderPlanImage(env as never, subject, tabId, opts),
+  };
+  const withRoom = Object.assign(env, {
+    PLAN_ROOM: { idFromName: (n: string) => n, get: () => room },
+  }) as unknown as Env;
+  return workerThumbnail(withRoom, liveDoc);
+}
 
 function r2() {
   return { get: vi.fn(), put: vi.fn().mockResolvedValue(undefined), delete: vi.fn() };

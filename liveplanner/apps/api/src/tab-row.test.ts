@@ -20,7 +20,7 @@ function bodyJson(extra: Record<string, unknown> = {}): string {
 
 const baseRow = (override: Partial<TabRow> = {}): TabRow => ({
   id: 'tab-1',
-  project_id: 'diag-1',
+  plan_id: 'diag-1',
   name: 'Untitled',
   order_index: 0,
   data: bodyJson(),
@@ -184,7 +184,7 @@ describe('rowToTab', () => {
   });
 
   it('takes folder from the row column and lets it override a forged data-blob folder (docs/specs/006-project/tab-folders.md)', () => {
-    // folder is per-project link metadata read from the project_tabs
+    // folder is per-project link metadata read from the plan_tabs
     // JOIN, never from tabs.data (the client strips it before saving).
     // A folder stuffed into the blob must not win.
     const dto = rowToTab(baseRow({ folder: 'Org', data: bodyJson({ folder: 'Forged' }) }));

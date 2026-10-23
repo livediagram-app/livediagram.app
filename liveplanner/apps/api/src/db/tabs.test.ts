@@ -16,7 +16,7 @@ import { tabStatsOfData } from './tab-stats';
 
 // normalizeReorderEntry is the pure decision the reorder batch leans
 // on (docs/specs/006-project/tab-folders.md): it decides what folder value lands on each
-// project_tabs row. The D1 batch itself needs a live binding to test,
+// plan_tabs row. The D1 batch itself needs a live binding to test,
 // but this normalisation — legacy-string vs object, and the
 // empty-name-to-NULL guard — is where the folder correctness lives.
 
@@ -113,7 +113,7 @@ describe('tab revisions', () => {
     await copyProject(db.env, 'D', 'D2', 'o', 'Copy');
     const copied = db.sql
       .prepare(
-        "SELECT t.rev FROM tabs t JOIN project_tabs dt ON dt.tab_id = t.id WHERE dt.project_id = 'D2'",
+        "SELECT t.rev FROM tabs t JOIN plan_tabs dt ON dt.tab_id = t.id WHERE dt.plan_id = 'D2'",
       )
       .get()!;
     expect(copied.rev).toBe(1);

@@ -35,7 +35,7 @@ function roomThat(relay: 'ok' | 'throws') {
 }
 
 async function setUp(relay: 'ok' | 'throws' = 'ok'): Promise<SqliteD1> {
-  const db = sqliteD1({ PROJECT_ROOM: roomThat(relay) } as unknown as Partial<Env>);
+  const db = sqliteD1({ PLAN_ROOM: roomThat(relay) } as unknown as Partial<Env>);
   db.sql.exec(`INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at)
                VALUES ('D', 'user_o', 'Doc', 0, 1, 1)`);
   await seedTabs(db.env, 'D', [{ id: 't1', name: 'T', elements: [box('a'), box('b')] }]);
@@ -66,10 +66,12 @@ const labels = (db: SqliteD1) =>
 
 // Every batch the pipeline sends meets a person's save first, `times` times.
 function interleave(db: SqliteD1, times: number) {
-  const batch = db.env.DB.batch.bind(db.env.DB);
+  const batch = db.env.PLAN_DB.batch.bind(db.env.PLAN_DB);
   let left = times;
-  db.env.DB.batch = async (statements: D1PreparedStatement[]) => {
-    if (left > 0) {
+  db.env.PLAN_DB.batch = async (statements: D1PreparedStatement[]) => {
+    // Only a tab write meets the race: the plan's reads (its outline, the outbox drain) batch too.
+    const writesTab = statements.some((st) => /INSERT INTO tabs\b/.test((st as unknown as { query: string }).query));
+    if (writesTab && left > 0) {
       left -= 1;
       const row = db.sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get()!;
       const data = JSON.parse(row.data as string) as { elements: Element[] };
@@ -148,7 +150,7 @@ describe('a template’s Sheets', () => {
     });
     expect(res.status).toBeLessThan(300);
     const sheets = db.sql
-      .prepare("SELECT id, tab_id, title FROM sheets WHERE project_id = 'D'")
+      .prepare("SELECT id, tab_id, title FROM sheets WHERE plan_id = 'D'")
       .all() as {
       id: string;
       tab_id: string;

@@ -35,7 +35,7 @@ import {
   type SheetHead,
 } from '../db';
 import { forbidden, json } from '../responses';
-import { readBody, type RouteContext } from './context';
+import { readBody, type PlanRouteContext } from './context';
 import { writer } from './item-route-kit';
 import {
   SHEET_WRITE_RETRIES,
@@ -84,7 +84,7 @@ function growth(cells: readonly CellChange[]): { count: number; bytes: number; k
 }
 
 async function capsProblem(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   projectId: string,
   head: SheetHead,
   cells: readonly CellChange[],
@@ -112,7 +112,7 @@ async function capsProblem(
 }
 
 export async function writeSheet(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   projectId: string,
   sheetId: string,
 ): Promise<Response> {
@@ -139,7 +139,7 @@ export async function writeSheet(
 // capped, stored in one batch guarded by the sheet's rev (retried on a lost race), answered with the cells it touched
 // and relayed. The sheet route's, after its gates, and a form's response row's (forms/sheet-response.ts).
 export async function storeSheetWrite(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   projectId: string,
   sheetId: string,
   body: SheetWriteRequest,
@@ -216,7 +216,7 @@ export async function storeSheetWrite(
     statements.push(...cellWriteStatements(ctx.env, projectId, sheetId, nonce, cells));
     statements.push(recountStatement(ctx.env, projectId, sheetId));
     statements.push(projectSavedStatement(ctx.env, projectId, sheetId, nonce, now));
-    const results = await ctx.env.DB.batch(statements);
+    const results = await ctx.env.PLAN_DB.batch(statements);
     const raised = (results[0]?.results ?? []) as { rev: number }[];
     if (raised.length === 0) {
       console.info('[sheets] sheets.write.retry', { attempt });

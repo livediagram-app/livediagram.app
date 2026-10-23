@@ -7,7 +7,7 @@ import type { ItemsResponse } from '@liveplanner/api-schema';
 import { ITEM_WRITE_RETRIES, type Item } from '@liveplanner/items';
 import { readItems, updateItemsAtRev } from '../db';
 import { json } from '../responses';
-import type { RouteContext } from './context';
+import type { PlanRouteContext } from './context';
 import { forCaller, itemBusy, itemRetryPause, relay, type ItemCaller } from './item-route-kit';
 
 // One attempt's next states by id, or a refusal. `missing`: how many wanted ids were not found on this read.
@@ -33,7 +33,7 @@ async function withLanded(
 
 // The written items, or a refusal (carrying any that landed). An id gone since is left out of the retry.
 export async function writeItemsWithRetry<T extends { id: string }>(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   caller: ItemCaller,
   projectId: string,
   wanted: T[],

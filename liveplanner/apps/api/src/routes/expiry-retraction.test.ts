@@ -113,7 +113,7 @@ describe('share-link changes retract the project expiry warning', () => {
   // Durable Object room so hydrated visitors hard-redirect; that is UX, not the
   // subject here, so the binding is a no-op stub.
   const roomEnv = {
-    PROJECT_ROOM: {
+    PLAN_ROOM: {
       idFromName: () => 'id',
       get: () => ({ fetch: async () => new Response(null, { status: 204 }) }),
     },

@@ -19,7 +19,7 @@ import type { WorkbenchReach } from '../db/workbench';
 import { clientRateKey } from '../client-ip';
 import { getProject, getMembership, getTrashedProjectMeta } from '../db';
 import { badRequest, projectTrashed, forbidden, missingAuth, notFound } from '../responses';
-import type { ProjectDTO, Env } from '../types';
+import type { ProjectDTO, Env, PlanEnv } from '../types';
 
 // A workbench session as the choke point resolved it (blueprint "A request bearing lvw_", "The choke point by
 // scope"): one project in the project scope, the workspace (from an optional folder) in the workspace scope.
@@ -77,6 +77,9 @@ export type RouteContext = {
   // guard with `ctx.waitUntil?.(...)`.
   waitUntil?: (promise: Promise<unknown>) => void;
 };
+
+// A RouteContext inside a plan's Durable Object (plan-room/plan-route.ts): its env reaches the plan's content.
+export type PlanRouteContext = RouteContext & { env: PlanEnv };
 
 // Visitor share code carried on edit/view-link requests so a non-owner
 // can authorise against a project they don't own.

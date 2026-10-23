@@ -15,11 +15,6 @@ import type { Env, ShareLinkDTO, ShareRole } from '../types';
 
 const SHARE_LINK_COLS = 'code, project_id, role, level, created_at, expiry, expires_at, tab_id';
 
-// A tab-scoped link (docs/specs/013-workspace/tab-scoped-share-links.md) is only a link while its tab is
-// still in the project. Part of the access lookup itself, so a race between a
-// tab delete and a request can't open anything.
-const SCOPE_STILL_VALID =
-  '(tab_id IS NULL OR EXISTS (SELECT 1 FROM project_tabs dt WHERE dt.project_id = share_links.project_id AND dt.tab_id = share_links.tab_id))';
 
 // The deadline a non-'never' choice arms, measured from now.
 function expiresAtFor(expiry: ShareLinkExpiry, from: number): number | null {
@@ -66,7 +61,7 @@ export async function listShareLinks(env: Env, projectId: string): Promise<Share
 // paths that need expired rows use getShareLinkIncludingExpired.
 export async function getShareLink(env: Env, code: string): Promise<ShareLinkDTO | null> {
   const row = await env.DB.prepare(
-    `SELECT ${SHARE_LINK_COLS} FROM share_links WHERE code = ? AND (expires_at IS NULL OR expires_at > ?) AND ${SCOPE_STILL_VALID}`,
+    `SELECT ${SHARE_LINK_COLS} FROM share_links WHERE code = ? AND (expires_at IS NULL OR expires_at > ?)`,
   )
     .bind(code, Date.now())
     .first<ShareLinkRow>();

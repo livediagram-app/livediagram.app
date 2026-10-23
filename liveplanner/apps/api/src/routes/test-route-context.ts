@@ -1,5 +1,5 @@
-import type { RouteContext, WorkbenchContext } from './context';
-import type { Env } from '../types';
+import type { PlanRouteContext, WorkbenchContext } from './context';
+import type { Env, PlanEnv } from '../types';
 
 // Shared test builder for RouteContext (docs/specs/003-system-architecture/testing.md). Eight route test
 // files used to hand-roll the same URL → segments → JSON Request →
@@ -36,12 +36,12 @@ export function makeTestRouteContext(
     headers?: Record<string, string>;
     // Per-test bindings (e.g. a SNAPSHOTS stub); an empty
     // Env otherwise.
-    env?: Env;
+    env?: Env | PlanEnv;
     // Provide to observe background dispatches; absent = the unit-test
     // default where `ctx.waitUntil?.(...)` skips its argument.
     waitUntil?: (promise: Promise<unknown>) => void;
   } = {},
-): RouteContext {
+): PlanRouteContext {
   const url = new URL(`https://api.test${path}`);
   const segments = url.pathname.replace(/^\//, '').split('/');
   const request = new Request(url, {
@@ -53,7 +53,7 @@ export function makeTestRouteContext(
   const verifiedUserId = opts.verifiedUserId === undefined ? accountUserId : opts.verifiedUserId;
   return {
     request,
-    env: opts.env ?? ({} as Env),
+    env: planEnvFor(segments, opts.env),
     url,
     segments,
     accountUserId,
@@ -64,4 +64,35 @@ export function makeTestRouteContext(
     workbench: opts.workbench ?? null,
     ...(opts.waitUntil ? { waitUntil: opts.waitUntil } : {}),
   };
+}
+
+// A request about a plan (/api/projects/<id>/…, /api/forms/<code>/…) runs inside the plan's Durable Object
+// (routes/projects.ts, routes/forms.ts), whose env carries the plan's store: an env without one gets a stand-in,
+// so the handler under test takes the in-plan path. Any other path keeps the env it was given.
+//
+// The stand-in answers nothing (no rows, no changes) and is not enumerable, so a test asserting the env a
+// mocked module was handed (`toHaveBeenCalledWith({}, …)`) still sees the bindings it gave.
+function planEnvFor(segments: string[], env: Env | PlanEnv | undefined): PlanEnv {
+  const base = env ?? ({} as Env);
+  if ('PLAN_DB' in base) return base as PlanEnv;
+  if (segments[1] !== 'projects' && segments[1] !== 'forms') return base as PlanEnv;
+  return Object.defineProperty({ ...base }, 'PLAN_DB', {
+    value: emptyPlanDb(),
+    enumerable: false,
+  }) as PlanEnv;
+}
+
+function emptyPlanDb(): D1Database {
+  const statement = {
+    bind: () => statement,
+    first: async () => null,
+    all: async () => ({ results: [], success: true, meta: {} }),
+    run: async () => ({ results: [], success: true, meta: { changes: 0 } }),
+    raw: async () => [],
+  };
+  return {
+    prepare: () => statement,
+    batch: async (statements: unknown[]) =>
+      statements.map(() => ({ results: [], success: true, meta: { changes: 0 } })),
+  } as unknown as D1Database;
 }

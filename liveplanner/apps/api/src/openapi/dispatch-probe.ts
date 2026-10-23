@@ -28,7 +28,8 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import worker from '../index';
-import type { Env } from '../types';
+import { answerPlanRequest, type RouteIdentity } from '../plan-room/plan-route';
+import type { Env, PlanEnv } from '../types';
 
 const PROBE_METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'] as const;
 export type ProbeMethod = (typeof PROBE_METHODS)[number];
@@ -176,9 +177,28 @@ export async function probeDispatch(
   const env = {
     DB: trap('DB'),
     SNAPSHOTS: trap('SNAPSHOTS'),
-    PROJECT_ROOM: trap('PROJECT_ROOM'),
     TELEMETRY_ENABLED: 'true',
   } as unknown as Env;
+  // The worker hands every request about one plan to the plan's Durable Object (`route`), which answers it with
+  // the same handlers against its own store. The probe runs that answer in process, the plan's store a trap too,
+  // so a path the plan does not serve is still a clean 404; any other use of the room is storage.
+  const planEnv = { ...env, PLAN_DB: trap('PLAN_DB') } as unknown as PlanEnv;
+  const room = new Proxy(
+    {},
+    {
+      get(_, method) {
+        if (method === 'route') {
+          return (_planId: string, request: Request, identity: RouteIdentity) =>
+            answerPlanRequest(planEnv, request, identity, (p) => {
+              pending.push(p.catch(() => undefined));
+            });
+        }
+        state.touched = true;
+        throw new StorageTrap(`probe touched PLAN_ROOM.${String(method)}`);
+      },
+    },
+  );
+  Reflect.set(env, 'PLAN_ROOM', { idFromName: (name: string) => name, get: () => room });
   const pending: Promise<unknown>[] = [];
   const executionCtx = {
     waitUntil: (p: Promise<unknown>) => pending.push(p.catch(() => undefined)),

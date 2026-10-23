@@ -76,7 +76,7 @@ type VerifiedSession = {
 
 /**
  * Read the upgrade's verified headers. The room trusts them because only the worker can set them:
- * clients reach the DO via env.PROJECT_ROOM.get(...).fetch, never directly. The role is pinned into
+ * clients reach the DO via env.PLAN_ROOM.get(...).fetch, never directly. The role is pinned into
  * the attachment so the hello handler can re-stamp it onto the broadcast presence even after a
  * hibernation cycle, defeating a crafted client that lies in its own hello payload.
  */

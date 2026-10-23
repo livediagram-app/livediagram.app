@@ -72,7 +72,7 @@ function storedIds(db: SqliteD1, tabId: string): string[] {
 }
 
 async function personalProject(room: ReturnType<typeof roomRecorder>) {
-  const db = sqliteD1({ PROJECT_ROOM: room.binding } as unknown as Partial<Env>);
+  const db = sqliteD1({ PLAN_ROOM: room.binding } as unknown as Partial<Env>);
   const created = await call(db, 'person', 'POST', '/api/projects', {
     id: 'D',
     name: 'Board',

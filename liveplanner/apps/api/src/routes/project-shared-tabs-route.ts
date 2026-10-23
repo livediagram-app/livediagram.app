@@ -2,8 +2,12 @@
 // read (docs/specs/006-project/tab-project-many-to-many.md, "Shared-tab
 // notice"): how many of the project's tabs are also in other projects, and how
 // many projects, so the user hears that those tabs stay before they act.
+//
+// A tab is held by exactly one plan now (each plan's content is its own Durable Object, docs/specs/015-api/api.md
+// "Storage"), so the answer is always none; the route stays for the editors that still ask.
 
-import { getProject, sharedTabsSummary } from '../db';
+import type { SharedTabsSummary } from '@liveplanner/api-schema';
+import { getProject } from '../db';
 import { forbidden, json } from '../responses';
 import { mayDeleteProject, missingProject, requireOwner, type RouteContext } from './context';
 
@@ -20,5 +24,6 @@ export async function handleProjectSharedTabs(ctx: RouteContext): Promise<Respon
   const existing = await getProject(env, segments[2]!);
   if (!existing) return missingProject(ctx, segments[2]!);
   if (!(await mayDeleteProject(ctx, existing))) return forbidden();
-  return json({ sharedTabs: await sharedTabsSummary(env, existing.id) });
+  const sharedTabs: SharedTabsSummary = { tabs: 0, projects: 0 };
+  return json({ sharedTabs });
 }

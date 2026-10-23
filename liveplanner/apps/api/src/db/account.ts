@@ -121,15 +121,15 @@ export async function deleteAccount(
   await env.DB.prepare('DELETE FROM form_reads WHERE owner_id = ?').bind(ownerId).run();
   // placement_defaults (docs/specs/013-workspace/default-folders.md): no foreign key reaches them.
   await env.DB.prepare('DELETE FROM placement_defaults WHERE owner_id = ?').bind(ownerId).run();
-  // agent_changesets (docs/specs/024-agents/agent-changesets.md, CS27): the ones they wrote on other
-  // people's projects; those on their own went with the projects. Parts follow by cascade.
-  await env.DB.prepare('DELETE FROM agent_changesets WHERE author_id = ?').bind(ownerId).run();
+  // agent_changesets (docs/specs/024-agents/agent-changesets.md, CS27): those on their own projects went with
+  // the projects. The ones they wrote on other people's are in those plans' own stores now (each plan's Durable
+  // Object), out of reach of one D1 statement; they age out with the 30-day changeset retention there.
   // timeline (docs/specs/013-workspace/timeline.md §3.5): the feed, the events this owner authored,
   // and the scope-state row. Hard, not soft — soft delete is a
   // user-facing affordance in this product, never a retention strategy.
   await deleteTimelineForOwner(env, ownerId);
-  // Activity (docs/specs/013-workspace/inbox.md): the alias rows + the backfill stamp. The index
-  // rows themselves went with the tabs projectRemovalStatements dropped above.
+  // Activity (docs/specs/013-workspace/inbox.md): the alias rows. The index rows themselves went with the
+  // projects projectRemovalStatements dropped above.
   await deleteCollabIndexForOwner(env, ownerId);
   // Explorer Home (docs/specs/013-workspace/explorer-home.md "Opens"): this owner's opens. Other
   // people's opens of this owner's projects went with the projects (foreign key cascade);
@@ -279,13 +279,8 @@ export async function migrateOwnerId(
       toOwnerId,
       fromOwnerId,
     ),
-    // agent_changesets (docs/specs/024-agents/agent-changesets.md, CS27): what they wrote and reverted
-    // as a guest stays theirs.
-    changesets: move(
-      'UPDATE agent_changesets SET author_id = ? WHERE author_id = ?',
-      toOwnerId,
-      fromOwnerId,
-    ),
+    // agent_changesets (docs/specs/024-agents/agent-changesets.md, CS27) are each plan's own now (its Durable
+    // Object): a guest's stay under the guest id there until they age out (30 days).
   };
   const keys = Object.keys(statements) as (keyof typeof statements)[];
   const results = await env.DB.batch(keys.map((key) => statements[key]));

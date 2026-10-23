@@ -87,7 +87,7 @@ function recordAdd(db: SqliteD1, n: Element, createdAt = Date.now()): number {
   const ops: ElementOp[] = [{ kind: 'add', element: n, at: elements.length - 1 }];
   db.sql
     .prepare(
-      `INSERT INTO agent_changesets (id, project_id, tab_id, rev, author_id, author_name,
+      `INSERT INTO agent_changesets (id, plan_id, tab_id, rev, author_id, author_name,
          author_color, token_id, fingerprints, added, changed, removed, created_at)
        VALUES (?, 'D', 't1', ?, ?, 'Webber', '#0ea5e9', 'tok_1', ?, 1, 0, 0, ?)`,
     )
@@ -238,10 +238,12 @@ describe('the tab PUT', () => {
     const db = await projectWith([box('a')]);
     const seen = String(revOf(db));
     // A changeset lands between the save's read and its write, once.
-    const batch = db.env.DB.batch.bind(db.env.DB);
+    const batch = db.env.PLAN_DB.batch.bind(db.env.PLAN_DB);
     let interleave = 1;
-    db.env.DB.batch = async (statements: D1PreparedStatement[]) => {
-      if (interleave > 0) {
+    db.env.PLAN_DB.batch = async (statements: D1PreparedStatement[]) => {
+      // Only a tab write meets the race: the plan's reads (its outline, the outbox drain) batch too.
+    const writesTab = statements.some((st) => /INSERT INTO tabs\b/.test((st as unknown as { query: string }).query));
+    if (writesTab && interleave > 0) {
         interleave -= 1;
         recordAdd(db, box(`raced${interleave}`));
       }
@@ -266,53 +268,9 @@ describe('the tab read', () => {
   });
 });
 
-// A save upserts by tab id: an id that names another project's tab is refused, never overwritten or adopted.
-// A share link makes tab ids visible (its project lists them), so this is what keeps a shared board safe.
-describe("someone else's tab id", () => {
-  it('is refused, leaving the tab and its project as they were', async () => {
-    const db = await projectWith([box('a', 'Original')]);
-    // A tab at rev 0, as a tab never revised is: the revision trigger alone
-    // would let an overwrite through.
-    db.sql
-      .prepare("INSERT INTO tabs (id, name, data, updated_at, rev) VALUES ('old', 'Old', ?, 1, 0)")
-      .run(JSON.stringify({ elements: [box('v', 'Original')] }));
-    db.sql
-      .prepare(
-        "INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('D', 'old', 1, 1)",
-      )
-      .run();
-    const attacker = (method: string, path: string, body?: unknown) =>
-      handleProjects(
-        makeTestRouteContext(method, path, {
-          env: db.env,
-          owner: 'user_attacker',
-          accountUserId: 'user_attacker',
-          verifiedUserId: 'user_attacker',
-          body,
-        }),
-      );
-    const own = await attacker('POST', '/api/projects', {
-      id: 'E',
-      name: 'Mine',
-      tabs: [{ id: 'e1', name: 'Mine', elements: [] }],
-    });
-    expect(own.status).toBe(201);
-    const res = await attacker('PUT', '/api/projects/E/tabs/old', {
-      id: 'old',
-      name: 'Taken',
-      elements: [box('x', 'Overwritten')],
-    });
-    expect(res.status).toBe(409);
-    expect(await res.json()).toEqual({ error: 'tab_id_taken' });
-    const oldData = JSON.parse(
-      db.sql.prepare("SELECT data FROM tabs WHERE id = 'old'").get()!.data as string,
-    ) as { elements: { label?: string }[] };
-    expect(oldData.elements.map((e) => e.label)).toEqual(['Original']);
-    expect(
-      db.sql.prepare("SELECT project_id FROM project_tabs WHERE tab_id = 'old'").all(),
-    ).toEqual([{ project_id: 'D' }]);
-  });
-
+// Each plan stores its own tabs (its Durable Object), so a tab id is the plan's own: a save makes a new tab or
+// revises one of this plan's.
+describe('a tab id', () => {
   it('still saves a brand new tab, and the owner keeps saving their own', async () => {
     const db = await projectWith([box('a')]);
     const fresh = await call(db, 'PUT', '/api/projects/D/tabs/t2', {

@@ -20,6 +20,12 @@ const { db } = vi.hoisted(() => ({
   },
 }));
 vi.mock('../db', () => db);
+// A card is read from its plan's Durable Object (plan-client.ts), answered here by the db mock.
+vi.mock('../plan-client', () => ({
+  planRoom: (_env: unknown, planId: string) => ({
+    item: (itemId: string): unknown => db.readItem({}, planId, itemId),
+  }),
+}));
 // Observe the docs/specs/012-collaboration/assigned-actions.md notify dispatch without exercising the email stack.
 vi.mock('../email/notifications', () => ({
   notifyActionAssigned: vi.fn().mockResolvedValue(undefined),

@@ -23,11 +23,20 @@ export type {
   ClientMessage,
 } from '@liveplanner/api-schema';
 
+import type { PlanRoom } from './plan-room/plan-room';
+
 // Worker bindings injected by Cloudflare at runtime. Not part of the
 // wire format (purely a server-side capability handle).
 export type Env = {
+  // Everything about a plan that is not its content (docs/specs/015-api/api.md "Storage"): the projects
+  // row, folders, sharing, people, the timeline and the Inbox's index tables.
   DB: D1Database;
-  PROJECT_ROOM: DurableObjectNamespace;
+  // Each plan's Durable Object (src/plan-room/plan-room.ts): its content, in its own SQLite, and its
+  // realtime room. Reached through plan-client.ts `planRoom(env, planId)`.
+  PLAN_ROOM: DurableObjectNamespace<PlanRoom>;
+  // The key liveworkspace's index presents on this app's internal endpoints (`/api/internal/items/*`,
+  // liveworkspace/docs/one-explorer-contracts.md). A secret; unset, those endpoints answer 404.
+  INDEX_KEY?: string;
   // The live build id: the deploy's commit, the same one baked into the editor build as
   // NEXT_PUBLIC_BUILD_ID (docs/specs/016-platform/stale-builds.md). Unset (local dev, a deployment that
   // sets neither) leaves it off the server release signal.
@@ -139,3 +148,9 @@ export type Env = {
     limit: (input: { key: string }) => Promise<{ success: boolean }>;
   };
 };
+
+// The env a plan's own code runs with, inside its Durable Object (src/plan-room/plan-room.ts): the
+// worker's bindings plus `PLAN_DB`, the plan's own SQLite behind the D1 surface (plan-room/plan-db.ts).
+// Only the Durable Object can make one, so a content read or write the worker attempts is a type error:
+// the worker reaches content through the plan's Durable Object instead.
+export type PlanEnv = Env & { PLAN_DB: D1Database };

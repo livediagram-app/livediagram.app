@@ -1,64 +1,14 @@
 // plan_board_statuses and the Inbox's Plan cards (docs/specs/013-workspace/inbox.md §2.4).
 //
-// The table is a per-tab projection of each Plan board's column statuses, written by collabIndexStatements in
-// the tab save's own batch (so every write path in §2.1 keeps it) and copied with a duplicated tab. The read
-// finds the reader's open cards straight from the item store through the `items_assignee` expression index,
-// using the table only to drop cards a board marks Done and to pick a board to open each one on.
+// Both tables are pushed by each plan's Durable Object (plan-room/plan-outbox.ts): `plan_board_statuses` a
+// per-tab projection of each Plan board's column statuses (with the tab's name and order), `plan_cards` the cards
+// the Inbox can list (assigned to someone, or holding comments), with only the fields it reads. The read finds
+// the reader's open cards through the `plan_cards_assignee` expression index, using the board table only to drop
+// cards a board marks Done and to pick a board to open each one on.
 
-import { planBoardRowsFromElements, type Element } from '@liveplanner/project';
 import type { ActivityCard } from '@liveplanner/api-schema';
 import { itemPersonId } from '@liveplanner/items';
-import { revGuardAnd, revGuardBinds, revGuardValues, type TabRevGuard } from './tab-rev-guard';
 import type { Env } from '../types';
-
-// ---------- Writes ----------------------------------------------------
-
-// A full replace of the tab's board rows. A tab with no board costs one DELETE that touches nothing (a
-// primary-key prefix lookup).
-export function planBoardIndexStatements(
-  env: Env,
-  tabId: string,
-  elements: readonly Element[],
-  guard: TabRevGuard = null,
-): D1PreparedStatement[] {
-  const and = revGuardAnd(guard);
-  const g = revGuardBinds(guard);
-  const stmts: D1PreparedStatement[] = [
-    env.DB.prepare(`DELETE FROM plan_board_statuses WHERE tab_id = ?${and}`).bind(tabId, ...g),
-  ];
-  for (const r of planBoardRowsFromElements(elements)) {
-    stmts.push(
-      env.DB.prepare(
-        `INSERT INTO plan_board_statuses
-           (tab_id, element_id, board_title, status, done, board_order, position)
-         ${revGuardValues(7, guard)}`,
-      ).bind(
-        tabId,
-        r.elementId,
-        r.boardTitle,
-        r.status,
-        r.done ? 1 : 0,
-        r.boardOrder,
-        r.position,
-        ...g,
-      ),
-    );
-  }
-  return stmts;
-}
-
-export function planBoardIndexCopyStatement(
-  env: Env,
-  fromTabId: string,
-  toTabId: string,
-): D1PreparedStatement {
-  return env.DB.prepare(
-    `INSERT INTO plan_board_statuses
-       (tab_id, element_id, board_title, status, done, board_order, position)
-     SELECT ?1, element_id, board_title, status, done, board_order, position
-       FROM plan_board_statuses WHERE tab_id = ?2`,
-  ).bind(toTabId, fromTabId);
-}
 
 // ---------- Read ------------------------------------------------------
 
@@ -97,13 +47,13 @@ export function itemPlacementCtes(spec: {
            ${spec.cols}`
                : ''
            }
-      FROM items i
+      FROM plan_cards i
       JOIN visible v ON v.id = i.project_id
      WHERE ${spec.match}
        AND (v.scope_tab_id IS NULL
             OR EXISTS (
               SELECT 1 FROM plan_board_statuses pb
-               WHERE pb.tab_id = v.scope_tab_id
+               WHERE pb.project_id = i.project_id AND pb.tab_id = v.scope_tab_id
                  AND pb.status IN (json_extract(i.fields, '$.status'), '*')))
   ),
   top AS (SELECT * FROM cards${spec.keep ? ` WHERE ${spec.keep}` : ''} ORDER BY ${spec.order} DESC LIMIT ?3),
@@ -111,14 +61,12 @@ export function itemPlacementCtes(spec: {
     SELECT c.*,
            (SELECT json_object('tabId', p.tab_id, 'tabName', p.tab_name,
                                'elementId', p.element_id, 'title', p.board_title)
-              FROM (SELECT pb.tab_id, t.name AS tab_name, pb.element_id, pb.board_title,
+              FROM (SELECT pb.tab_id, pb.tab_name, pb.element_id, pb.board_title,
                            CASE WHEN pb.status = c.status THEN 0 WHEN pb.status = '*' THEN 1 ELSE 2 END
                              AS fit,
-                           dt.order_index, pb.board_order, pb.position
-                      FROM project_tabs dt
-                      JOIN plan_board_statuses pb ON pb.tab_id = dt.tab_id
-                      JOIN tabs t ON t.id = pb.tab_id
-                     WHERE dt.project_id = c.project_id
+                           pb.tab_order AS order_index, pb.board_order, pb.position
+                      FROM plan_board_statuses pb
+                     WHERE pb.project_id = c.project_id
                        AND (c.scope_tab_id IS NULL
                             OR (pb.tab_id = c.scope_tab_id
                                 AND (pb.status = c.status OR pb.status = '*')))) p
@@ -141,10 +89,9 @@ export const CARDS_CTES = `,
        -- A linked card's action is listed already (docs/specs/026-plan/linked-boards.md "The Inbox").
        AND json_extract(i.fields, '$.linked') IS NULL
        AND NOT EXISTS (
-         SELECT 1 FROM project_tabs dt
-           JOIN plan_board_statuses pb
-             ON pb.tab_id = dt.tab_id AND pb.status = json_extract(i.fields, '$.status')
-          WHERE dt.project_id = i.project_id AND pb.done = 1)`,
+         SELECT 1 FROM plan_board_statuses pb
+          WHERE pb.project_id = i.project_id AND pb.status = json_extract(i.fields, '$.status')
+            AND pb.done = 1)`,
     order: 'updated_at',
   })}`;
 

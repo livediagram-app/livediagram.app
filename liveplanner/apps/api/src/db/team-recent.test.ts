@@ -47,7 +47,8 @@ function setUp() {
         opts.trashed ? 1 : null,
       );
     await seedTabs(db.env, id, [tab(`t-${id}`, opts.empty ? [] : [rect])]);
-    // Seeding counts as a save; set the one each test means.
+    // Seeding counts as a save; set the one each test means, on the plan too (its push carries it to D1).
+    db.sql.prepare('UPDATE plan SET saved_at = ? WHERE id = ?').run(savedAt, id);
     db.sql.prepare('UPDATE projects SET saved_at = ? WHERE id = ?').run(savedAt, id);
   };
   return { ...db, team, member, doc };
@@ -120,13 +121,15 @@ describe('listRecentTeamProjects', () => {
       `INSERT INTO tabs (id, name, data, updated_at, element_count) VALUES (?, 't', '{}', 0, 1)`,
     );
     const link = sql.prepare(
-      `INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES (?, ?, 0, 0)`,
+      `INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES (?, ?, 0, 0)`,
     );
     for (let i = 0; i < 5000; i++) {
       insertDoc.run(`d${i}`, `Doc ${i}`, i);
       insertTab.run(`t${i}`);
       link.run(`d${i}`, `t${i}`);
     }
+    // The plans' pushes land first (test-sqlite-d1.ts): the read alone is timed.
+    await env.DB.prepare('SELECT 1').first();
     const t = performance.now();
     const list = await listRecentTeamProjects(env, ME, 12);
     const ms = performance.now() - t;

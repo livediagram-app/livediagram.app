@@ -163,7 +163,7 @@ export type TabSummary = {
   name: string;
   orderIndex: number;
   updatedAt: number;
-  // Per-project folder name (docs/specs/006-project/tab-folders.md), read from the project_tabs
+  // Per-project folder name (docs/specs/006-project/tab-folders.md), read from the plan_tabs
   // link row. Optional / omitted = the tab is loose (no folder). The
   // TabBar groups contiguous same-folder tabs under one chip.
   folder?: string;
@@ -175,7 +175,7 @@ export type TabSummary = {
 // Full tab payload returned by `GET /api/projects/:id/tabs/:tabId`:
 // the editor's `Tab` (elements + comments + theme + canvas) plus the
 // row's audit metadata. `folder` here is the per-project membership
-// from the project_tabs link (docs/specs/006-project/tab-folders.md), distinct from anything in the
+// from the plan_tabs link (docs/specs/006-project/tab-folders.md), distinct from anything in the
 // tab body — it is never stored in the `tabs.data` blob.
 //
 // `rev` (docs/specs/024-agents/agent-changesets.md "The tab revision") advances with every write

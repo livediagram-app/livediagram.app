@@ -94,7 +94,7 @@ async function shareCardImage(ctx: RouteContext, code: string): Promise<Response
   }
   // Stamped before the drawing is read, so a save landing mid-render leaves the stored card stale, never fresh.
   const drawnAt = Date.now();
-  const svg = await projectImageSvg(env, doc, tabId, { defer: ctx.waitUntil });
+  const svg = await projectImageSvg(env, doc, tabId);
   if (svg == null) return brandCard(url);
   let png: Uint8Array | null;
   try {

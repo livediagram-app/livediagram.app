@@ -2,6 +2,7 @@
 
 Follow the references below only as needed; never upfront.
 
+- ../015-api/api.md#storage - when touching where a plan's content is stored or read: one SQLite-backed Durable Object per plan (`PlanRoom`) holds tabs, cards, sheets and changesets; the worker routes every content request to it by RPC; D1 keeps only non-content data and the cross-plan index the plan's outbox pushes
 - ./domain-language.md - when naming or adding anything that distinguishes projects or tabs: mode (how a tab is worked on), kind (what a tab is: the general tab or a Plan tab) and template (what a project was made from); design decisions, never interchangeable; and This Browser, the one name for a project saved only in this browser
 - ./testing.md - when working on Testing: Vitest across the monorepo; shared config; co-located unit tests plus jsdom hook and component tests; per-workspace coverage shape
 - ./source-layout.md - when working on Source layout: group `apps/editor` components + hooks by domain: `apps/editor` components + hooks grouped into domain subdirectories (canvas/dialogs/panels/…)

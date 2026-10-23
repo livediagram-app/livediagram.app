@@ -33,7 +33,7 @@ function liveDoc(sql: DatabaseSync, id: string, ownerId = 'owner', teamId: strin
 function tabIn(sql: DatabaseSync, tabId: string, ...projectIds: string[]) {
   row(sql, 'tabs', { id: tabId, name: tabId, data: '{"elements":[]}', updated_at: T0 });
   projectIds.forEach((d, i) =>
-    row(sql, 'project_tabs', { project_id: d, tab_id: tabId, order_index: i, added_at: T0 }),
+    row(sql, 'plan_tabs', { plan_id: d, tab_id: tabId, order_index: i, added_at: T0 }),
   );
 }
 
@@ -44,20 +44,8 @@ function get(db: SqliteD1, opts: Parameters<typeof makeTestRouteContext>[2] = {}
 }
 
 describe('GET /api/projects/:id/shared-tabs', () => {
-  it('counts the tabs also in other projects, and those projects', async () => {
-    const db = sqliteD1();
-    for (const id of ['A', 'B', 'C']) liveDoc(db.sql, id);
-    tabIn(db.sql, 'glossary', 'A', 'B');
-    tabIn(db.sql, 'timeline', 'A', 'B', 'C');
-    tabIn(db.sql, 'solo', 'A');
-    tabIn(db.sql, 'elsewhere', 'B', 'C');
-
-    const res = await get(db, { owner: 'owner' });
-
-    expect(res?.status).toBe(200);
-    expect(await res.json()).toEqual({ sharedTabs: { tabs: 2, projects: 2 } });
-  });
-
+  // Each plan holds its own tabs (docs/specs/015-api/api.md "Storage"): nothing is ever shared, so the answer is
+  // always none.
   it('answers zero for a project that shares nothing', async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'A');

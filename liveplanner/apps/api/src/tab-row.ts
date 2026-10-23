@@ -9,14 +9,14 @@ import type { TabDTO, TabSummaryDTO } from './types';
 
 export type TabRow = {
   id: string;
-  project_id: string;
+  plan_id: string;
   name: string;
   order_index: number;
   data: string;
   updated_at: number;
   // The tab revision (docs/specs/024-agents/agent-changesets.md "The tab revision").
   rev: number;
-  // Per-project folder name from the project_tabs link (docs/specs/006-project/tab-folders.md).
+  // Per-project folder name from the plan_tabs link (docs/specs/006-project/tab-folders.md).
   // NULL when the tab is loose. Read sites that don't join the link
   // for folder (none today) leave it undefined, which maps the same
   // as NULL.
@@ -48,7 +48,7 @@ export function rowToTab(row: TabRow): TabDTO {
     ...data,
     id: row.id,
     name: row.name,
-    projectId: row.project_id,
+    projectId: row.plan_id,
     orderIndex: row.order_index,
     updatedAt: row.updated_at,
     rev: row.rev,
@@ -65,7 +65,7 @@ export function rowToTab(row: TabRow): TabDTO {
 export function rowToTabSummary(row: TabRow): TabSummaryDTO {
   return {
     id: row.id,
-    projectId: row.project_id,
+    projectId: row.plan_id,
     name: row.name,
     orderIndex: row.order_index,
     updatedAt: row.updated_at,

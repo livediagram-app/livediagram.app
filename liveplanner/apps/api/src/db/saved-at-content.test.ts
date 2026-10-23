@@ -25,8 +25,10 @@ const item = (id: string, key: number, rev = 1): Item => ({
   updatedBy: PERSON,
 });
 
+// The plan's own saved time, in the same transaction as the write; D1's follows with the plan's push
+// (plan-room/plan-outbox.ts).
 const savedAt = (db: ReturnType<typeof sqliteD1>) =>
-  (db.sql.prepare("SELECT saved_at FROM projects WHERE id = 'd1'").get() as { saved_at: number })
+  (db.sql.prepare("SELECT saved_at FROM plan WHERE id = 'd1'").get() as { saved_at: number })
     .saved_at;
 
 beforeEach(() => {
@@ -74,7 +76,7 @@ describe('sheet writes', () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'd1');
     insert(db.sql, 'sheets', {
-      project_id: 'd1',
+      plan_id: 'd1',
       id: 's1',
       tab_id: 't1',
       title: 'Sheet',
@@ -85,7 +87,7 @@ describe('sheet writes', () => {
       updated_by: JSON.stringify(PERSON),
     });
     const write = (fromRev: number, nonce: string, now: number) =>
-      db.env.DB.batch([
+      db.env.PLAN_DB.batch([
         headWriteStatement(db.env, 'd1', 's1', fromRev, nonce, now, PERSON, {}),
         projectSavedStatement(db.env, 'd1', 's1', nonce, now),
       ]);

@@ -518,7 +518,7 @@ export async function apiDelete(
 //   - `templateChosen` — UI-only (have we dismissed the per-tab
 //     template picker yet?); a pure frontend concern.
 //   - `folder` — per-project membership (docs/specs/006-project/tab-folders.md) that lives on the
-//     project_tabs link, carried via the meta/reorder path. Leaking it
+//     plan_tabs link, carried via the meta/reorder path. Leaking it
 //     into the shared body would make a folder follow the tab into
 //     every project it's shared into, breaking per-project scope.
 // Shared by apiCreateProject + apiSaveTab.

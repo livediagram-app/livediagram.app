@@ -18,7 +18,7 @@ const old = now - SHEET_UNREFERENCED_DAYS * DAY - 1;
 const sheetRow = (id: string, since: number | null, cells = 0) =>
   sql.sql
     .prepare(
-      `INSERT INTO sheets (project_id, id, tab_id, title, layout, rev, cell_count, unreferenced_since, created_at, updated_at, updated_by)
+      `INSERT INTO sheets (plan_id, id, tab_id, title, layout, rev, cell_count, unreferenced_since, created_at, updated_at, updated_by)
        VALUES ('d1', ?, 't1', ?, '{"rows":[],"cols":[]}', 0, ?, ?, 1, 1, '{}')`,
     )
     .run(id, id, cells, since);
@@ -38,9 +38,9 @@ describe('the sheet expiry', () => {
     sheetRow('recent00', now - DAY);
     sheetRow('expired0', old, 1);
     sql.sql.exec(
-      `INSERT INTO sheet_cells (project_id, sheet_id, row_id, col_id, input) VALUES ('d1', 'expired0', 'r', 'c', '1')`,
+      `INSERT INTO sheet_cells (plan_id, sheet_id, row_id, col_id, input) VALUES ('d1', 'expired0', 'r', 'c', '1')`,
     );
-    expect(await runSheetExpiry(sql.env, now)).toEqual({ sheets: 1, cells: 1, more: false });
+    expect(await runSheetExpiry(sql.env, 'd1', now)).toEqual({ sheets: 1, cells: 1, more: false });
     expect(ids()).toEqual(['kept0000', 'recent00']);
     expect(sql.sql.prepare('SELECT COUNT(*) AS n FROM sheet_cells').get()).toEqual({ n: 0 });
   });
@@ -50,7 +50,7 @@ describe('the sheet expiry', () => {
     const count = SHEET_EXPIRY_CELLS_MAX / full + 2;
     for (let i = 0; i < count; i++)
       sheetRow(`s${String(i).padStart(7, '0')}`, old - count + i, full);
-    const first = await runSheetExpiry(sql.env, now);
+    const first = await runSheetExpiry(sql.env, 'd1', now);
     expect(first).toEqual({
       sheets: SHEET_EXPIRY_CELLS_MAX / full,
       cells: SHEET_EXPIRY_CELLS_MAX,
@@ -60,14 +60,14 @@ describe('the sheet expiry', () => {
       `s${String(count - 2).padStart(7, '0')}`,
       `s${String(count - 1).padStart(7, '0')}`,
     ]);
-    expect(await runSheetExpiry(sql.env, now)).toEqual({ sheets: 2, cells: 2 * full, more: false });
+    expect(await runSheetExpiry(sql.env, 'd1', now)).toEqual({ sheets: 2, cells: 2 * full, more: false });
     expect(ids()).toEqual([]);
   });
 
   it('deletes a sheet bigger than a batch on its own', async () => {
     sheetRow('huge0000', old - 1, SHEET_EXPIRY_BATCH_CELLS + 1);
     sheetRow('small000', old, 1);
-    expect(await runSheetExpiry(sql.env, now)).toEqual({
+    expect(await runSheetExpiry(sql.env, 'd1', now)).toEqual({
       sheets: 2,
       cells: SHEET_EXPIRY_BATCH_CELLS + 2,
       more: false,

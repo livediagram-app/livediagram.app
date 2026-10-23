@@ -83,8 +83,8 @@ beforeEach(() => {
     INSERT INTO participants (id, name, color, created_at) VALUES ('owner', 'Webber', '#3b82f6', 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 'Main', '{"elements":[]}', 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t2', 'Detail', '{"elements":[]}', 1);
-    INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
-    INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', 't2', 1, 1);
+    INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
+    INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d1', 't2', 1, 1);
     INSERT INTO share_links (code, project_id, role, level, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', 'participate', NULL, 1);
     INSERT INTO share_links (code, project_id, role, level, tab_id, created_at) VALUES ('TAB2', 'd1', 'view', 'participate', 't2', 1);
     INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('LOOK', 'd1', 'view', NULL, 1);
@@ -277,7 +277,7 @@ describe('deleting the tab', () => {
     sql.sql.exec(`
       INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at)
         VALUES ('d2', 'owner', 'Linked', 1, 1, 1);
-      INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d2', 't1', 0, 1);
+      INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d2', 't1', 0, 1);
     `);
     const insert = sql.sql.prepare(
       `INSERT INTO timeline_events (id, actor_id, source_type, source_id, event_type, title,

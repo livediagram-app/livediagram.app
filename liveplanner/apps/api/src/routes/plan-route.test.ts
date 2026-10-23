@@ -39,7 +39,7 @@ function addTab(id: string, order: number, elements: unknown[]) {
     .run(id, `Tab ${id}`, JSON.stringify({ elements }));
   sql.sql
     .prepare(
-      `INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', ?, ?, 1)`,
+      `INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d1', ?, ?, 1)`,
     )
     .run(id, order);
 }
@@ -111,7 +111,7 @@ describe('the plan’s tabs (docs/specs/026-plan/plan-agents.md "Reading the pla
       .run(id, `Tab ${id}`, JSON.stringify({ kind, elements, ...(theme ? { theme } : {}) }));
     sql.sql
       .prepare(
-        `INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', ?, ?, 1)`,
+        `INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d1', ?, ?, 1)`,
       )
       .run(id, order);
   }

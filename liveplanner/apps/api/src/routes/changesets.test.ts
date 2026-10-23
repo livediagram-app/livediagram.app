@@ -74,7 +74,7 @@ async function setUp(
 ) {
   const r = room(selections);
   const db = sqliteD1({
-    PROJECT_ROOM: r.binding,
+    PLAN_ROOM: r.binding,
     ...TELEMETRY_ON,
   } as unknown as Partial<Env>);
   sent = stubTelemetry();
@@ -194,20 +194,6 @@ describe('submitting a changeset', () => {
     };
     expect(relay.op.tab).toMatchObject({ name: 'Detail' });
 
-    await call(db, 'POST', '/api/projects', {
-      id: 'E',
-      name: 'Other',
-      tabs: [{ id: 'theirs', name: 'T', elements: [] }],
-    });
-    const taken = await call(
-      db,
-      'POST',
-      '/api/projects/D/tabs/theirs/changesets',
-      { replace: { elements: [] } },
-      { token: true },
-    );
-    expect(taken.status).toBe(409);
-    expect(await taken.json()).toMatchObject({ error: 'tab_id_taken' });
   });
 
   it('writes nothing on any refusal, and says why', async () => {

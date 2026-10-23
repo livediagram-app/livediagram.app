@@ -4,7 +4,7 @@ import { formatResultLines } from '@liveplanner/edit-operations';
 import { getChangesetPart, lastChangesetRev, type ChangesetRecord } from '../db';
 import { readRoomSelections } from '../room-client';
 import { personTagFor } from '../person-tag';
-import type { ProjectDTO, Env } from '../types';
+import type { ProjectDTO, PlanEnv } from '../types';
 import { afterChangeset } from './after';
 import type { FrontDoor } from './front-door';
 import { heldTargets } from './held-check';
@@ -19,7 +19,7 @@ import { writeChangeset, type Author } from './write';
 // Anyone with edit access to the tab may revert; a person's revert is never held, a token's is.
 
 type RevertArgs = {
-  env: Env;
+  env: PlanEnv;
   project: ProjectDTO;
   record: ChangesetRecord;
   author: Author;

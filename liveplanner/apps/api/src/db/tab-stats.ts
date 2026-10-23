@@ -3,7 +3,7 @@
 // beside each tab so a project list reads them without reading any tab body.
 import type { ProjectStats } from '@liveplanner/api-schema';
 import { parseEditorMode, tabStatsOf, type TabStats } from '@liveplanner/project';
-import type { Env } from '../types';
+import type { PlanEnv } from '../types';
 
 // The counting itself is the project model's, shared with the browser's own projects.
 export { tabStatsOf, type TabStats };
@@ -24,7 +24,7 @@ export function tabStatsOfData(data: string): { stats: TabStats; corrupt: boolea
 // `ifStoredData`: only when the tab now stores exactly that body, for a conditional write (a swap)
 // whose stats must land only if the write did.
 export function tabStatsStatement(
-  env: Env,
+  env: PlanEnv,
   tabId: string,
   stats: TabStats,
   writtenAt: number,
@@ -34,7 +34,7 @@ export function tabStatsStatement(
     ifStoredData === undefined
       ? 'WHERE true'
       : 'WHERE EXISTS (SELECT 1 FROM tabs WHERE id = ?1 AND data = ?7)';
-  return env.DB.prepare(
+  return env.PLAN_DB.prepare(
     `INSERT INTO tab_stats (tab_id, mode, element_count, comment_count, data_bytes, written_at)
      SELECT ?1, ?2, ?3, ?4, ?5, ?6 ${guard}
      ON CONFLICT(tab_id) DO UPDATE SET
@@ -55,25 +55,25 @@ export function tabStatsStatement(
 }
 
 // A project's stats as a `doc_stats` column: JSON text, or NULL when the project links no tab or
-// a tab without stats. Reads `project_tabs` and `tab_stats` only, never a tab body. The mode is
+// a tab without stats. Reads `plan_tabs` and `tab_stats` only, never a tab body. The mode is
 // the tab written last, ties to the earlier tab in the project's order.
 export function projectStatsSql(projectIdSql: string): string {
   return `(SELECT CASE
              WHEN COUNT(*) = 0 OR COUNT(s.tab_id) < COUNT(*) THEN NULL
              ELSE json_object(
                'mode', (SELECT s2.mode
-                          FROM project_tabs dt2
+                          FROM plan_tabs dt2
                           JOIN tab_stats s2 ON s2.tab_id = dt2.tab_id
-                         WHERE dt2.project_id = ${projectIdSql}
+                         WHERE dt2.plan_id = ${projectIdSql}
                          ORDER BY s2.written_at DESC, dt2.order_index ASC
                          LIMIT 1),
                'elements', SUM(s.element_count),
                'comments', SUM(s.comment_count),
                'bytes', SUM(s.data_bytes))
            END
-           FROM project_tabs dt
+           FROM plan_tabs dt
            LEFT JOIN tab_stats s ON s.tab_id = dt.tab_id
-          WHERE dt.project_id = ${projectIdSql}) AS doc_stats`;
+          WHERE dt.plan_id = ${projectIdSql}) AS doc_stats`;
 }
 
 const isCount = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v) && v >= 0;

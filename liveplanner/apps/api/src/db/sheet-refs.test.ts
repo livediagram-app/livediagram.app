@@ -27,14 +27,14 @@ const tab = (id: string, elements: Element[]): Tab => ({ id, name: id, elements 
 
 const sheetRow = (doc: string, id: string, tabId: string, extra = '') =>
   sql.sql.exec(
-    `INSERT INTO sheets (project_id, id, tab_id, title, layout, rev, created_at, updated_at, updated_by${extra ? ', delete_when_unreferenced' : ''})
+    `INSERT INTO sheets (plan_id, id, tab_id, title, layout, rev, created_at, updated_at, updated_by${extra ? ', delete_when_unreferenced' : ''})
      VALUES ('${doc}', '${id}', '${tabId}', '${id}', '{"rows":[],"cols":[]}', 0, 1, 1, '{}'${extra ? `, ${extra}` : ''})`,
   );
 
 const state = (doc: string, id: string) =>
   sql.sql
     .prepare(
-      'SELECT unreferenced_since AS since, delete_when_unreferenced AS del FROM sheets WHERE project_id = ? AND id = ?',
+      'SELECT unreferenced_since AS since, delete_when_unreferenced AS del FROM sheets WHERE plan_id = ? AND id = ?',
     )
     .get(doc, id) as { since: number | null; del: number | null } | undefined;
 
@@ -100,7 +100,7 @@ describe('the reference index on tab writes', () => {
   it('deletes a sheet deleted with its element once its last reference goes, and only then', async () => {
     sheetRow('d1', 'sheetA00', 't1', '1');
     sql.sql.exec(
-      `INSERT INTO sheet_cells (project_id, sheet_id, row_id, col_id, input) VALUES ('d1', 'sheetA00', 'r', 'c', '1')`,
+      `INSERT INTO sheet_cells (plan_id, sheet_id, row_id, col_id, input) VALUES ('d1', 'sheetA00', 'r', 'c', '1')`,
     );
     await upsertTab(sql.env, 'd1', tab('t1', [sheetEl('e1', 'sheetA00')]), 0);
     await upsertTab(sql.env, 'd1', tab('t2', [sheetEl('e2', 'sheetA00')]), 1);
@@ -134,7 +134,7 @@ describe('the reference index on tab writes', () => {
     await upsertTab(sql.env, 'd1', tab('t1', [sheetEl('e1', 'sheetA00')]), 0);
     await copyProject(sql.env, 'd1', 'd3', 'o', 'Copy');
     const copied = sql.sql
-      .prepare(`SELECT tab_id FROM project_tabs WHERE project_id = 'd3'`)
+      .prepare(`SELECT tab_id FROM plan_tabs WHERE plan_id = 'd3'`)
       .get() as { tab_id: string };
     expect(refs(copied.tab_id)).toEqual(['sheetA00']);
     expect(state('d3', 'sheetA00')!.since).toBeNull();

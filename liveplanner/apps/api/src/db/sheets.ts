@@ -11,7 +11,7 @@ import {
   type SheetLayout,
   type SheetPerson,
 } from '@liveplanner/sheets';
-import type { Env } from '../types';
+import type { PlanEnv } from '../types';
 import { sheetNoteUnreferencedStatement } from './sheet-refs';
 
 type SheetRow = {
@@ -85,12 +85,12 @@ function headToJson(head: SheetHead, cells: CellRow[]): SheetJson {
 }
 
 export async function readSheetHead(
-  env: Env,
+  env: PlanEnv,
   projectId: string,
   sheetId: string,
 ): Promise<SheetHead | null> {
-  const row = await env.DB.prepare(
-    `SELECT ${HEAD_COLUMNS} FROM sheets WHERE project_id = ? AND id = ?`,
+  const row = await env.PLAN_DB.prepare(
+    `SELECT ${HEAD_COLUMNS} FROM sheets WHERE plan_id = ? AND id = ?`,
   )
     .bind(projectId, sheetId)
     .first<SheetRow>();
@@ -99,12 +99,12 @@ export async function readSheetHead(
 
 // The heads of a tab's sheets (titles, for uniqueness and references), or of the whole project.
 export async function listSheetHeads(
-  env: Env,
+  env: PlanEnv,
   projectId: string,
   tabId?: string,
 ): Promise<SheetHead[]> {
-  const rows = await env.DB.prepare(
-    `SELECT ${HEAD_COLUMNS} FROM sheets WHERE project_id = ?${tabId ? ' AND tab_id = ?' : ''} ORDER BY created_at, id`,
+  const rows = await env.PLAN_DB.prepare(
+    `SELECT ${HEAD_COLUMNS} FROM sheets WHERE plan_id = ?${tabId ? ' AND tab_id = ?' : ''} ORDER BY created_at, id`,
   )
     .bind(...(tabId ? [projectId, tabId] : [projectId]))
     .all<SheetRow>();
@@ -113,14 +113,14 @@ export async function listSheetHeads(
 
 // Whole sheets, cells included: a tab's, named ones, or the project's.
 export async function listSheets(
-  env: Env,
+  env: PlanEnv,
   projectId: string,
   scope: { tabId?: string; ids?: readonly string[] } = {},
 ): Promise<SheetJson[]> {
   let heads: SheetHead[];
   if (scope.ids) {
-    const rows = await env.DB.prepare(
-      `SELECT ${HEAD_COLUMNS} FROM sheets WHERE project_id = ? AND id IN (SELECT value FROM json_each(?)) ORDER BY created_at, id`,
+    const rows = await env.PLAN_DB.prepare(
+      `SELECT ${HEAD_COLUMNS} FROM sheets WHERE plan_id = ? AND id IN (SELECT value FROM json_each(?)) ORDER BY created_at, id`,
     )
       .bind(projectId, JSON.stringify(scope.ids))
       .all<SheetRow>();
@@ -129,9 +129,9 @@ export async function listSheets(
     heads = await listSheetHeads(env, projectId, scope.tabId);
   }
   if (heads.length === 0) return [];
-  const cells = await env.DB.prepare(
+  const cells = await env.PLAN_DB.prepare(
     `SELECT sheet_id, row_id, col_id, input, format FROM sheet_cells
-      WHERE project_id = ? AND sheet_id IN (SELECT value FROM json_each(?))`,
+      WHERE plan_id = ? AND sheet_id IN (SELECT value FROM json_each(?))`,
   )
     .bind(projectId, JSON.stringify(heads.map((h) => h.id)))
     .all<CellRow>();
@@ -143,13 +143,13 @@ export async function listSheets(
 
 // A sheet's formula cells only: what a deletion needs to shrink ranges (store.ts "shrinkFormulas").
 export async function readFormulaCells(
-  env: Env,
+  env: PlanEnv,
   projectId: string,
   sheetId: string,
 ): Promise<SheetJson['cells']> {
-  const rows = await env.DB.prepare(
+  const rows = await env.PLAN_DB.prepare(
     `SELECT sheet_id, row_id, col_id, input, format FROM sheet_cells
-      WHERE project_id = ? AND sheet_id = ? AND input LIKE '{"f":%'`,
+      WHERE plan_id = ? AND sheet_id = ? AND input LIKE '{"f":%'`,
   )
     .bind(projectId, sheetId)
     .all<CellRow>();
@@ -170,15 +170,15 @@ export function cellsNamedBy(param: string): string {
 
 // The stored state of named cells (missing ones come back as just their ids), for a write's answer.
 export async function readCells(
-  env: Env,
+  env: PlanEnv,
   projectId: string,
   sheetId: string,
   keys: readonly string[],
 ): Promise<SheetJson['cells']> {
   if (keys.length === 0) return [];
-  const rows = await env.DB.prepare(
+  const rows = await env.PLAN_DB.prepare(
     `SELECT sheet_id, row_id, col_id, input, format FROM sheet_cells
-      WHERE project_id = ? AND sheet_id = ? AND ${cellsNamedBy('?')}`,
+      WHERE plan_id = ? AND sheet_id = ? AND ${cellsNamedBy('?')}`,
   )
     .bind(projectId, sheetId, JSON.stringify(keys))
     .all<CellRow>();
@@ -197,12 +197,12 @@ export async function readCells(
 
 // The rows of a sheet holding any cell (a form's response goes under the last of them).
 export async function usedSheetRows(
-  env: Env,
+  env: PlanEnv,
   projectId: string,
   sheetId: string,
 ): Promise<Set<string>> {
-  const rows = await env.DB.prepare(
-    `SELECT DISTINCT row_id FROM sheet_cells WHERE project_id = ? AND sheet_id = ?`,
+  const rows = await env.PLAN_DB.prepare(
+    `SELECT DISTINCT row_id FROM sheet_cells WHERE plan_id = ? AND sheet_id = ?`,
   )
     .bind(projectId, sheetId)
     .all<{ row_id: string }>();
@@ -211,15 +211,15 @@ export async function usedSheetRows(
 
 // How many of `keys` exist, and their stored bytes, for an exact cap check near the limit.
 export async function existingCells(
-  env: Env,
+  env: PlanEnv,
   projectId: string,
   sheetId: string,
   keys: readonly string[],
 ): Promise<{ count: number; bytes: number }> {
-  const row = await env.DB.prepare(
+  const row = await env.PLAN_DB.prepare(
     `SELECT COUNT(*) AS n, COALESCE(SUM(COALESCE(length(input), 0) + COALESCE(length(format), 0)), 0) AS b
        FROM sheet_cells
-      WHERE project_id = ? AND sheet_id = ? AND ${cellsNamedBy('?')}`,
+      WHERE plan_id = ? AND sheet_id = ? AND ${cellsNamedBy('?')}`,
   )
     .bind(projectId, sheetId, JSON.stringify(keys))
     .first<{ n: number; b: number }>();
@@ -227,11 +227,11 @@ export async function existingCells(
 }
 
 export async function projectSheetTotals(
-  env: Env,
+  env: PlanEnv,
   projectId: string,
 ): Promise<{ sheets: number; cells: number }> {
-  const row = await env.DB.prepare(
-    `SELECT COUNT(*) AS n, COALESCE(SUM(cell_count), 0) AS c FROM sheets WHERE project_id = ?`,
+  const row = await env.PLAN_DB.prepare(
+    `SELECT COUNT(*) AS n, COALESCE(SUM(cell_count), 0) AS c FROM sheets WHERE plan_id = ?`,
   )
     .bind(projectId)
     .first<{ n: number; c: number }>();
@@ -241,12 +241,12 @@ export async function projectSheetTotals(
 // Every statement after the head's rev raise runs only when that raise landed: D1 runs a batch's statements in
 // one transaction, but a guarded UPDATE that matched nothing does not stop the rest. The raise stamps the write's
 // own nonce, which a stale write's rev + 1 could never fake.
-const LANDED = `EXISTS (SELECT 1 FROM sheets WHERE project_id = ?1 AND id = ?2 AND write_nonce = ?4)`;
+const LANDED = `EXISTS (SELECT 1 FROM sheets WHERE plan_id = ?1 AND id = ?2 AND write_nonce = ?4)`;
 
 // The statements that store `cells` (the landed write's cell changes) under the rev guard: inputs set, format
 // patches (a null key clears it, RFC 7396), inputs cleared, then cells left with nothing removed.
 export function cellWriteStatements(
-  env: Env,
+  env: PlanEnv,
   projectId: string,
   sheetId: string,
   nonce: string,
@@ -264,27 +264,27 @@ export function cellWriteStatements(
   const out: D1PreparedStatement[] = [];
   if (sets.length)
     out.push(
-      env.DB.prepare(
-        `INSERT INTO sheet_cells (project_id, sheet_id, row_id, col_id, input)
+      env.PLAN_DB.prepare(
+        `INSERT INTO sheet_cells (plan_id, sheet_id, row_id, col_id, input)
          SELECT ?1, ?2, j.value ->> 'r', j.value ->> 'c', j.value ->> 'i' FROM json_each(?3) j WHERE ${LANDED}
-         ON CONFLICT (project_id, sheet_id, row_id, col_id) DO UPDATE SET input = excluded.input`,
+         ON CONFLICT (plan_id, sheet_id, row_id, col_id) DO UPDATE SET input = excluded.input`,
       ).bind(projectId, sheetId, JSON.stringify(sets), nonce),
     );
   if (fmts.length) {
     // Rows first (a format may land on an empty cell), then the patch on the stored format, so a null key in the
     // patch clears that key on a cell that has it.
     out.push(
-      env.DB.prepare(
-        `INSERT OR IGNORE INTO sheet_cells (project_id, sheet_id, row_id, col_id)
+      env.PLAN_DB.prepare(
+        `INSERT OR IGNORE INTO sheet_cells (plan_id, sheet_id, row_id, col_id)
          SELECT ?1, ?2, j.value ->> 'r', j.value ->> 'c' FROM json_each(?3) j WHERE ${LANDED}`,
       ).bind(projectId, sheetId, JSON.stringify(fmts), nonce),
-      env.DB.prepare(
+      env.PLAN_DB.prepare(
         `UPDATE sheet_cells SET format = (
            SELECT CASE WHEN j.value ->> 'fp' IS NULL THEN NULL
                        ELSE json_patch(COALESCE(sheet_cells.format, '{}'), j.value ->> 'fp') END
              FROM json_each(?3) j
             WHERE j.value ->> 'r' = sheet_cells.row_id AND j.value ->> 'c' = sheet_cells.col_id)
-          WHERE project_id = ?1 AND sheet_id = ?2
+          WHERE plan_id = ?1 AND sheet_id = ?2
             AND (row_id, col_id) IN (SELECT value ->> 'r', value ->> 'c' FROM json_each(?3))
             AND ${LANDED}`,
       ).bind(projectId, sheetId, JSON.stringify(fmts), nonce),
@@ -292,18 +292,18 @@ export function cellWriteStatements(
   }
   if (clears.length)
     out.push(
-      env.DB.prepare(
+      env.PLAN_DB.prepare(
         `UPDATE sheet_cells SET input = NULL
-          WHERE project_id = ?1 AND sheet_id = ?2 AND ${cellsNamedBy('?3')}
+          WHERE plan_id = ?1 AND sheet_id = ?2 AND ${cellsNamedBy('?3')}
             AND ${LANDED}`,
       ).bind(projectId, sheetId, JSON.stringify(clears), nonce),
     );
   const touched = cells.map((ch) => cellKey(ch.r, ch.c));
   if (touched.length)
     out.push(
-      env.DB.prepare(
+      env.PLAN_DB.prepare(
         `DELETE FROM sheet_cells
-          WHERE project_id = ?1 AND sheet_id = ?2 AND input IS NULL AND (format IS NULL OR format = '{}')
+          WHERE plan_id = ?1 AND sheet_id = ?2 AND input IS NULL AND (format IS NULL OR format = '{}')
             AND ${cellsNamedBy('?3')} AND ${LANDED}`,
       ).bind(projectId, sheetId, JSON.stringify(touched), nonce),
     );
@@ -312,7 +312,7 @@ export function cellWriteStatements(
 
 // Deleted rows' or columns' cells.
 export function axisDeleteStatement(
-  env: Env,
+  env: PlanEnv,
   projectId: string,
   sheetId: string,
   nonce: string,
@@ -320,15 +320,15 @@ export function axisDeleteStatement(
   ids: readonly string[],
 ): D1PreparedStatement {
   const col = axis === 'r' ? 'row_id' : 'col_id';
-  return env.DB.prepare(
-    `DELETE FROM sheet_cells WHERE project_id = ?1 AND sheet_id = ?2 AND ${col} IN (SELECT value FROM json_each(?3))
+  return env.PLAN_DB.prepare(
+    `DELETE FROM sheet_cells WHERE plan_id = ?1 AND sheet_id = ?2 AND ${col} IN (SELECT value FROM json_each(?3))
        AND ${LANDED}`,
   ).bind(projectId, sheetId, JSON.stringify(ids), nonce);
 }
 
 // The head's rev raise (and new layout or title), guarded by the rev the write was made against.
 export function headWriteStatement(
-  env: Env,
+  env: PlanEnv,
   projectId: string,
   sheetId: string,
   fromRev: number,
@@ -337,11 +337,11 @@ export function headWriteStatement(
   by: SheetPerson,
   change: { layout?: SheetLayout; title?: string },
 ): D1PreparedStatement {
-  return env.DB.prepare(
+  return env.PLAN_DB.prepare(
     `UPDATE sheets SET rev = rev + 1, write_nonce = ?, updated_at = ?, updated_by = ?${change.layout ? ', layout = ?' : ''}${
       change.title !== undefined ? ', title = ?' : ''
     }
-      WHERE project_id = ? AND id = ? AND rev = ? RETURNING rev`,
+      WHERE plan_id = ? AND id = ? AND rev = ? RETURNING rev`,
   ).bind(
     nonce,
     now,
@@ -358,29 +358,29 @@ export function headWriteStatement(
 // project, so the Explorer's "Updated" line and its snapshot (docs/specs/006-project/project-snapshots.md: a Sheet
 // draws its cells) follow them.
 export function projectSavedStatement(
-  env: Env,
+  env: PlanEnv,
   projectId: string,
   sheetId: string,
   nonce: string,
   now: number,
 ): D1PreparedStatement {
-  return env.DB.prepare(
-    `UPDATE projects SET saved_at = MAX(saved_at, ?3) WHERE id = ?1 AND ${LANDED}`,
+  return env.PLAN_DB.prepare(
+    `UPDATE plan SET saved_at = MAX(saved_at, ?3) WHERE id = ?1 AND ${LANDED}`,
   ).bind(projectId, sheetId, now, nonce);
 }
 
 // Keep cell_count and cell_bytes exact after a write.
 export function recountStatement(
-  env: Env,
+  env: PlanEnv,
   projectId: string,
   sheetId: string,
 ): D1PreparedStatement {
-  return env.DB.prepare(
+  return env.PLAN_DB.prepare(
     `UPDATE sheets SET
-       cell_count = (SELECT COUNT(*) FROM sheet_cells WHERE project_id = ?1 AND sheet_id = ?2),
+       cell_count = (SELECT COUNT(*) FROM sheet_cells WHERE plan_id = ?1 AND sheet_id = ?2),
        cell_bytes = (SELECT COALESCE(SUM(COALESCE(length(input), 0) + COALESCE(length(format), 0)), 0)
-                       FROM sheet_cells WHERE project_id = ?1 AND sheet_id = ?2)
-     WHERE project_id = ?1 AND id = ?2`,
+                       FROM sheet_cells WHERE plan_id = ?1 AND sheet_id = ?2)
+     WHERE plan_id = ?1 AND id = ?2`,
   ).bind(projectId, sheetId);
 }
 
@@ -404,13 +404,13 @@ function byteChunks<T>(items: readonly T[], max: number): string[] {
 }
 
 export function insertSheetStatements(
-  env: Env,
+  env: PlanEnv,
   projectId: string,
   sheet: SheetJson,
   now: number,
 ): D1PreparedStatement[] {
-  const head = env.DB.prepare(
-    `INSERT INTO sheets (project_id, id, tab_id, title, layout, rev, created_at, updated_at, updated_by)
+  const head = env.PLAN_DB.prepare(
+    `INSERT INTO sheets (plan_id, id, tab_id, title, layout, rev, created_at, updated_at, updated_by)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   ).bind(
     projectId,
@@ -430,8 +430,8 @@ export function insertSheetStatements(
     1_000_000,
   ))
     out.push(
-      env.DB.prepare(
-        `INSERT INTO sheet_cells (project_id, sheet_id, row_id, col_id, input, format)
+      env.PLAN_DB.prepare(
+        `INSERT INTO sheet_cells (plan_id, sheet_id, row_id, col_id, input, format)
          SELECT ?1, ?2, j.value ->> 'r', j.value ->> 'c', j.value -> 'i', j.value -> 'f' FROM json_each(?3) j`,
       ).bind(projectId, sheet.id, chunk),
     );
@@ -442,31 +442,31 @@ export function insertSheetStatements(
 
 // A copy of one of the project's sheets, cells and all, under a new id and title.
 export function copySheetStatements(
-  env: Env,
+  env: PlanEnv,
   projectId: string,
   fromId: string,
   to: { id: string; tabId: string; title: string; by: SheetPerson },
   now: number,
 ): D1PreparedStatement[] {
   return [
-    env.DB.prepare(
-      `INSERT INTO sheets (project_id, id, tab_id, title, layout, rev, cell_count, cell_bytes, created_at, updated_at, updated_by)
-       SELECT project_id, ?, ?, ?, layout, 0, cell_count, cell_bytes, ?, ?, ? FROM sheets WHERE project_id = ? AND id = ?`,
+    env.PLAN_DB.prepare(
+      `INSERT INTO sheets (plan_id, id, tab_id, title, layout, rev, cell_count, cell_bytes, created_at, updated_at, updated_by)
+       SELECT plan_id, ?, ?, ?, layout, 0, cell_count, cell_bytes, ?, ?, ? FROM sheets WHERE plan_id = ? AND id = ?`,
     ).bind(to.id, to.tabId, to.title, now, now, JSON.stringify(to.by), projectId, fromId),
-    env.DB.prepare(
-      `INSERT INTO sheet_cells (project_id, sheet_id, row_id, col_id, input, format)
-       SELECT project_id, ?, row_id, col_id, input, format FROM sheet_cells WHERE project_id = ? AND sheet_id = ?`,
+    env.PLAN_DB.prepare(
+      `INSERT INTO sheet_cells (plan_id, sheet_id, row_id, col_id, input, format)
+       SELECT plan_id, ?, row_id, col_id, input, format FROM sheet_cells WHERE plan_id = ? AND sheet_id = ?`,
     ).bind(to.id, projectId, fromId),
     sheetNoteUnreferencedStatement(env, projectId, to.id, now),
   ];
 }
 
 export function deleteSheetStatement(
-  env: Env,
+  env: PlanEnv,
   projectId: string,
   sheetId: string,
 ): D1PreparedStatement {
-  return env.DB.prepare(`DELETE FROM sheets WHERE project_id = ? AND id = ?`).bind(
+  return env.PLAN_DB.prepare(`DELETE FROM sheets WHERE plan_id = ? AND id = ?`).bind(
     projectId,
     sheetId,
   );
@@ -475,23 +475,23 @@ export function deleteSheetStatement(
 // A project copy's sheets (copyProject): each source tab's sheets under the copy's id for that tab; the sheet
 // ids stay, so the copy's Sheet elements still frame them.
 export function copySheetsStatements(
-  env: Env,
+  env: PlanEnv,
   sourceId: string,
   newId: string,
   tabIdMap: ReadonlyMap<string, string>,
   now: number,
 ): D1PreparedStatement[] {
   return [...tabIdMap].flatMap(([oldTab, newTab]) => [
-    env.DB.prepare(
-      `INSERT INTO sheets (project_id, id, tab_id, title, layout, rev, cell_count, cell_bytes, created_at, updated_at, updated_by)
+    env.PLAN_DB.prepare(
+      `INSERT INTO sheets (plan_id, id, tab_id, title, layout, rev, cell_count, cell_bytes, created_at, updated_at, updated_by)
        SELECT ?, id, ?, title, layout, 0, cell_count, cell_bytes, created_at, ?, updated_by
-         FROM sheets WHERE project_id = ? AND tab_id = ?`,
+         FROM sheets WHERE plan_id = ? AND tab_id = ?`,
     ).bind(newId, newTab, now, sourceId, oldTab),
-    env.DB.prepare(
-      `INSERT INTO sheet_cells (project_id, sheet_id, row_id, col_id, input, format)
+    env.PLAN_DB.prepare(
+      `INSERT INTO sheet_cells (plan_id, sheet_id, row_id, col_id, input, format)
        SELECT ?, c.sheet_id, c.row_id, c.col_id, c.input, c.format
-         FROM sheet_cells c JOIN sheets s ON s.project_id = c.project_id AND s.id = c.sheet_id
-        WHERE c.project_id = ? AND s.tab_id = ?`,
+         FROM sheet_cells c JOIN sheets s ON s.plan_id = c.plan_id AND s.id = c.sheet_id
+        WHERE c.plan_id = ? AND s.tab_id = ?`,
     ).bind(newId, sourceId, oldTab),
   ]);
 }

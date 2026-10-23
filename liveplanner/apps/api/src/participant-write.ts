@@ -17,7 +17,7 @@ import {
 import { getTabData, swapTabData } from './db';
 import { tabStatsOf } from './db/tab-stats';
 import { TabTooLargeError } from './limits';
-import type { Env } from './types';
+import type { PlanEnv } from './types';
 
 // Only an autosave or a linked tab's room can beat us to the row, so a handful of re-reads is plenty.
 export const TAB_CAS_MAX_ATTEMPTS = 8;
@@ -38,7 +38,7 @@ type StoredTab = Omit<Tab, 'id' | 'name'>;
 // Read, change and swap one tab row, retrying while somebody else wrote it between our read and our write.
 // `change` answers the new tab, or null to write nothing.
 async function swapTab<T>(
-  env: Env,
+  env: PlanEnv,
   projectId: string,
   tabId: string,
   change: (tab: Tab) => { next: Tab | null; answer: T },
@@ -71,7 +71,7 @@ async function swapTab<T>(
 }
 
 export async function writeParticipantOp(
-  env: Env,
+  env: PlanEnv,
   req: ParticipantOpRequest,
 ): Promise<ParticipantWriteResult> {
   const result = await swapTab(env, req.projectId, req.tabId, (tab) => {
@@ -85,7 +85,7 @@ export async function writeParticipantOp(
 
 // The room's recorded answers for a tab into its stored row; `changed` is false when the row already held them.
 export async function writeParticipantAnswers(
-  env: Env,
+  env: PlanEnv,
   req: { projectId: string; tabId: string; ledger: TabLedger },
 ): Promise<{ ok: true; changed: boolean } | ParticipantWriteFailure> {
   const result = await swapTab(env, req.projectId, req.tabId, (tab) => {

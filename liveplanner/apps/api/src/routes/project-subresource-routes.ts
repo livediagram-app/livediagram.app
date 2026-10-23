@@ -9,13 +9,10 @@ import {
   deleteFormLinksForTab,
   deleteShareLinksForTab,
   deleteTabRow,
-  projectsContainingTab,
   getProject,
   getProjectForSave,
   getParticipant,
   getTab,
-  linkTabToProject,
-  tabLinkedToOwnedProject,
 } from '../db';
 import { conflict, forbidden, json, noContent, notFound } from '../responses';
 import { recordVisitorOpened, retractTabComments } from '../timeline';
@@ -39,10 +36,9 @@ import {
   gateEdit,
   gateGrant,
   missingProject,
-  ownsProject,
   requireOwner,
   shareCodeOf,
-  type RouteContext,
+  type PlanRouteContext,
 } from './context';
 import { answerTabView, parseViewQuery } from './project-views-route';
 import { pauseFormsFeeding } from '../forms/form-tab';
@@ -50,7 +46,7 @@ import { pauseFormsFeeding } from '../forms/form-tab';
 // Tab-content sub-resource routes for /api/projects/<id>/...,
 // split out of projects.ts. Returns a Response when it handles the path, or
 // null to let the main dispatcher fall through to the remaining routes.
-export async function handleProjectSubresources(ctx: RouteContext): Promise<Response | null> {
+export async function handleProjectSubresources(ctx: PlanRouteContext): Promise<Response | null> {
   const { request, env, segments } = ctx;
   // Agent changesets (docs/specs/024-agents/agent-changesets.md).
   const changesets = await handleChangesetRoutes(ctx);
@@ -222,49 +218,8 @@ export async function handleProjectSubresources(ctx: RouteContext): Promise<Resp
   if (plan) return plan;
 
   // /api/projects/<id>/tabs/<tabId>/link — owner only.
-  //   POST — add an existing tab to this project (docs/specs/006-project/tab-project-many-to-many.md).
-  // Auth: the caller must own this project AND own at least
-  // one project that already contains the tab. The second
-  // half stops a stranger from grafting a tab they have no
-  // read access to. The `existing.ownerId !== owner` guard
-  // above the dispatch (canEditProject on this project) only
-  // covers the destination side.
-  if (
-    segments.length === 6 &&
-    segments[3] === 'tabs' &&
-    segments[5] === 'link' &&
-    request.method === 'POST'
-  ) {
-    const id = segments[2]!;
-    const tabId = segments[4]!;
-    const owner = requireOwner(ctx);
-    if (owner instanceof Response) return owner;
-    const existing = await getProject(env, id);
-    if (!existing) return missingProject(ctx, id);
-    // `ownsProject`, not a bare id compare: on a TEAM project the owner id is
-    // an account id every teammate can read, so it must be proven with a verified
-    // account id rather than the X-Owner-Id header (see routes/context.ts).
-    // The second half of this route's auth doesn't help here — it re-uses the
-    // SAME resolved owner, so a forged identity satisfies it with the victim's
-    // own projects.
-    if (!(await ownsProject(ctx, existing))) return forbidden();
-    // The tab must already live in at least one of the caller's
-    // owned projects. One JOIN answers that (LIMIT 1 on the first
-    // owned match). On the failure path we fall back to listing the
-    // containing projects once, purely to tell "tab doesn't exist
-    // anywhere" (404) apart from "exists but you don't own it" (403).
-    if (!(await tabLinkedToOwnedProject(env, tabId, owner))) {
-      const sourceIds = await projectsContainingTab(env, tabId);
-      return sourceIds.length === 0 ? notFound() : forbidden();
-    }
-    await linkTabToProject(env, id, tabId);
-    // Return the tab summary the client uses to render the
-    // new pill in its TabBar without re-fetching the whole
-    // project. Pulled fresh so the order_index reflects the
-    // append we just performed.
-    const tab = await getTab(env, id, tabId);
-    return tab ? json({ tab }) : notFound();
-  }
+  // A tab belongs to exactly one plan (its Durable Object holds it), so there is no linking an existing tab into
+  // another project any more: POST …/tabs/<tabId>/link is gone (docs/specs/015-api/api.md "Storage").
 
   // /api/projects/<id>/share* — the share-link family lives in
   // project-share-routes.ts.

@@ -1,10 +1,10 @@
-// The daily expiry of unreferenced sheets (docs/specs/029-sheets/sheet-store.md "Deleting a sheet", blueprint
+// The daily expiry of one plan's unreferenced sheets, run by its Durable Object's upkeep alarm (plan-room.ts) (docs/specs/029-sheets/sheet-store.md "Deleting a sheet", blueprint
 // sheet-store.md "Deleting a sheet"). Every tab write notes when a sheet stops being referenced
 // (db/sheet-refs.ts), so this only reads the sheets past SHEET_UNREFERENCED_DAYS, oldest first, by a partial index:
 // its cost follows what expired, never how many tabs or sheets there are. Deleting a sheet deletes its cells (the
 // cascade), so a run is bounded by cells: a batch holds at most SHEET_EXPIRY_BATCH_CELLS (always at least one
 // sheet), a run at most SHEET_EXPIRY_CELLS_MAX, and what is left waits a day.
-import type { Env } from './types';
+import type { PlanEnv } from './types';
 import { DAY_MS } from '@liveplanner/items';
 
 export const SHEET_UNREFERENCED_DAYS = 30;
@@ -12,10 +12,11 @@ const SHEET_EXPIRY_BATCH = 25;
 export const SHEET_EXPIRY_BATCH_CELLS = 100_000;
 export const SHEET_EXPIRY_CELLS_MAX = 500_000;
 
-type Expired = { project_id: string; id: string; cell_count: number };
+type Expired = { id: string; cell_count: number };
 
 export async function runSheetExpiry(
-  env: Env,
+  env: PlanEnv,
+  planId: string,
   now = Date.now(),
 ): Promise<{ sheets: number; cells: number; more: boolean }> {
   const cutoff = now - SHEET_UNREFERENCED_DAYS * DAY_MS;
@@ -23,16 +24,16 @@ export async function runSheetExpiry(
   let cells = 0;
   for (;;) {
     if (cells >= SHEET_EXPIRY_CELLS_MAX) {
-      console.info('[sheets] sheets.expired', { sheets, cells, more: true });
+      console.info('[sheets] sheets.expired', { planId, sheets, cells, more: true });
       return { sheets, cells, more: true };
     }
     const rows =
       (
-        await env.DB.prepare(
-          `SELECT project_id, id, cell_count FROM sheets
-            WHERE unreferenced_since < ? ORDER BY unreferenced_since LIMIT ?`,
+        await env.PLAN_DB.prepare(
+          `SELECT id, cell_count FROM sheets
+            WHERE plan_id = ? AND unreferenced_since < ? ORDER BY unreferenced_since LIMIT ?`,
         )
-          .bind(cutoff, SHEET_EXPIRY_BATCH)
+          .bind(planId, cutoff, SHEET_EXPIRY_BATCH)
           .all<Expired>()
       ).results ?? [];
     if (rows.length === 0) break;
@@ -43,17 +44,14 @@ export async function runSheetExpiry(
       batch.push(row);
       batchCells += row.cell_count;
     }
-    await env.DB.batch(
+    await env.PLAN_DB.batch(
       batch.map((s) =>
-        env.DB.prepare('DELETE FROM sheets WHERE project_id = ? AND id = ?').bind(
-          s.project_id,
-          s.id,
-        ),
+        env.PLAN_DB.prepare('DELETE FROM sheets WHERE plan_id = ? AND id = ?').bind(planId, s.id),
       ),
     );
     sheets += batch.length;
     cells += batchCells;
   }
-  console.info('[sheets] sheets.expired', { sheets, cells, more: false });
+  console.info('[sheets] sheets.expired', { planId, sheets, cells, more: false });
   return { sheets, cells, more: false };
 }

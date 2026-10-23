@@ -27,7 +27,7 @@ import {
   type Element,
   type Tab,
 } from '@liveplanner/project';
-import { apiLinkTab } from '@/lib/api-client';
+import { apiCopyTabTo } from '@/lib/api-client';
 import { newTabSeed } from '@/lib/new-tab-seed';
 import { track } from '@/lib/telemetry';
 import { remintTabElements, useTabImport } from './useTabImport';
@@ -189,21 +189,25 @@ export function useTabActions(deps: TabActionsDeps) {
     track('Tab', 'Renamed');
   };
 
-  // Link the active tab into another of the user's projects (docs/specs/006-project/tab-project-many-to-many.md).
-  // Goes through POST /api/projects/<target>/tabs/<tabId>/link so the
-  // server inserts one `project_tabs` row pointing at the existing
-  // tab body. The previous implementation cloned the tab into a fresh
-  // row with a new id; that duplicated the content (edits on either
-  // side stayed siloed) and the menu label promised the linking
-  // behaviour the user actually wanted. After this call, edits to
-  // the tab from either project write to the same `tabs.data` row.
+  // Copy the active tab into another of the user's plans. Each plan holds its own content (its Durable Object,
+  // docs/specs/015-api/api.md "Storage"), so this is a copy under fresh ids, not a tab shared by both: edits on
+  // either side stay on that side.
   const linkActiveTabTo = async (targetProjectId: string) => {
     const source = tabs.find((t) => t.id === activeId);
     if (!source) return;
     const target =
       toastName(projectList.find((d) => d.id === targetProjectId)?.name) ?? 'that plan';
+    // A still-loading source is an empty placeholder: copying it would save an empty tab there.
+    if (!isTabLoaded(source.id)) {
+      toast.error('That tab is still loading. Try again in a moment.');
+      return;
+    }
     try {
-      await apiLinkTab(ownerId, targetProjectId, source.id);
+      await apiCopyTabTo(
+        ownerId,
+        targetProjectId,
+        remintTabElements({ ...source, elements: source.elements.map((el) => ({ ...el })) }),
+      );
       toast.success(`${toastName(source.name) ?? 'Tab'} added to ${target}`);
       track('Tab', 'Linked');
     } catch {

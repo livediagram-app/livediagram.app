@@ -17,7 +17,7 @@ import { notifyFormResponse } from '../email/notifications';
 import { json } from '../responses';
 import { createMany } from '../routes/item-routes';
 import { relay } from '../routes/item-route-kit';
-import type { RouteContext } from '../routes/context';
+import type { PlanRouteContext } from '../routes/context';
 import { reportServerEvent } from '../server-telemetry';
 import { boardsOnTab, readFormTab } from './form-tab';
 import { sheetThere, writeResponseRow } from './sheet-response';
@@ -42,7 +42,7 @@ function formPerson(code: string, form: Pick<FormDefinition, 'heading'>): ItemPe
 
 // The live link a public request names, with its project and form; null for anything that is not there now (an
 // unknown, suspended or deleted code, a trashed project, a tab gone or no longer a Form tab), all answered alike.
-export async function openFormLink(ctx: RouteContext, code: string) {
+export async function openFormLink(ctx: PlanRouteContext, code: string) {
   const link = await getFormLink(ctx.env, code);
   if (!link || link.suspended_at !== null || link.deleted_at !== null) return null;
   const doc = await getProject(ctx.env, link.project_id);
@@ -62,7 +62,7 @@ function isClosed(form: FormDefinition, link: FormLinkRow, now: number): boolean
 type ResponseBodyRaw = { answers: object; other?: unknown; website?: unknown };
 
 // The request's body: within RESPONSE_BODY_MAX, JSON with `answers`.
-async function readResponseBody(ctx: RouteContext): Promise<ResponseBodyRaw | Response> {
+async function readResponseBody(ctx: PlanRouteContext): Promise<ResponseBodyRaw | Response> {
   const text = await ctx.request.text();
   if (text.length > RESPONSE_BODY_MAX) return refuse({ error: 'form_busy' }, 413);
   let body: { answers?: unknown; other?: unknown; website?: unknown };
@@ -79,7 +79,7 @@ async function readResponseBody(ctx: RouteContext): Promise<ResponseBodyRaw | Re
 // An Editor's Preview of a form with no live link that sends its responses to a Sheet (docs/specs/030-forms/forms.md
 // "Preview"): nothing counts it, so its row reads Preview; the editor makes a board's preview card itself.
 export async function previewToSheet(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   doc: { id: string },
   form: FormDefinition,
   by: ItemPerson,
@@ -113,7 +113,7 @@ export async function previewToSheet(
 }
 
 export async function respond(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   code: string,
   { preview = false }: { preview?: boolean } = {},
 ): Promise<Response> {
@@ -232,7 +232,7 @@ export async function respond(
 // place since the form was read: closed, as the form now is), else the hourly cap (busy). A preview passes the limit,
 // as it is taken while the form is closed.
 async function claimNumber(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   code: string,
   form: Pick<FormDefinition, 'limit'>,
   now: number,
@@ -252,7 +252,7 @@ async function claimNumber(
 
 // A response taken (a card or a sheet row): logged, counted, the owner emailed (not for a preview), and answered.
 function accepted(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   r: {
     doc: { id: string; ownerId: string; name: string };
     form: Pick<FormDefinition, 'heading'>;

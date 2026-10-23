@@ -22,7 +22,7 @@ function roomsEnv(
   let inFlight = 0;
   let maxInFlight = 0;
   const env = {
-    PROJECT_ROOM: {
+    PLAN_ROOM: {
       idFromName: (name: string) => name,
       get: (projectId: string) => ({
         fetch: async (url: string, init: RequestInit) => {

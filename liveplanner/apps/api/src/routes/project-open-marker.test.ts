@@ -16,7 +16,7 @@ function seed() {
     INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at)
       VALUES ('d1', 'owner', 'Payments', 1, 1, 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 'Tab 1', '{"elements":[]}', 1);
-    INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
+    INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
     INSERT INTO share_links (code, project_id, role, tab_id, created_at)
       VALUES ('CODE', 'd1', 'view', NULL, 1);
   `);

@@ -54,7 +54,7 @@ import {
   missingProject,
   readBody,
   requireOwner,
-  type RouteContext,
+  type PlanRouteContext,
 } from './context';
 
 type ThreadVerb = 'reply' | 'resolve' | 'reopen';
@@ -69,7 +69,7 @@ const threadKeyOf = (elementId: string, cell: string | undefined) =>
 
 // The caller and the project, when the caller may take part on the tab.
 async function participant(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   id: string,
   tabId: string,
 ): Promise<Caller | Response> {
@@ -90,7 +90,7 @@ type Mutation = Change | 'unchanged' | Response;
 // Reads the tab, applies `mutate` and writes at the revision read; a lost race re-reads and repeats once, then
 // answers 409 `tab_busy` (PR22). The delta is relayed after the write lands.
 async function writeTab(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   id: string,
   tabId: string,
   mutate: (tab: TabDTO) => Mutation,
@@ -119,7 +119,7 @@ async function writeTab(
 // A new comment from the caller, its author fields server-stamped (and the token id, for an agent: PR23). A
 // Plan card's comment writes (item-routes.ts) post through it too (docs/specs/026-plan/items.md "Comments").
 export async function newComment(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   owner: string,
   body: Record<string, unknown>,
 ): Promise<Comment | Response> {
@@ -163,7 +163,7 @@ function appended(tab: TabDTO, elementId: string, comment: Comment, cell?: strin
 
 // The timeline and the owner's email for a posted comment (add and reply alike, on the canvas or on a card).
 export function afterCommentPosted(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   caller: Caller,
   comment: Comment,
   reply: boolean,
@@ -193,7 +193,7 @@ export function afterCommentPosted(
     );
 }
 
-async function addComment(ctx: RouteContext, id: string, tabId: string): Promise<Response> {
+async function addComment(ctx: PlanRouteContext, id: string, tabId: string): Promise<Response> {
   const caller = await participant(ctx, id, tabId);
   if (caller instanceof Response) return caller;
   const body = await readBody(ctx);
@@ -224,7 +224,7 @@ async function addComment(ctx: RouteContext, id: string, tabId: string): Promise
 
 // Delete-own only: removing someone else's comment goes through the edit-gated tab save.
 async function deleteOwn(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   id: string,
   tabId: string,
   commentId: string,
@@ -255,7 +255,7 @@ async function deleteOwn(
 }
 
 async function threadVerb(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   id: string,
   tabId: string,
   commentId: string,
@@ -320,7 +320,7 @@ async function threadVerb(
 // read only when a Sheet on the tab carries cell threads, one query for the tab's sheets. A cell whose row or
 // column is gone has none.
 async function cellRefsOf(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   projectId: string,
   tab: TabDTO,
 ): Promise<(el: Element, cell: string) => string | null> {
@@ -341,7 +341,7 @@ async function cellRefsOf(
 
 // GET /api/projects/:id/comments?status=: the threads across the project, one tab read at a time (PR21). A
 // grant confined to one tab lists that tab only.
-async function listThreads(ctx: RouteContext, id: string): Promise<Response> {
+async function listThreads(ctx: PlanRouteContext, id: string): Promise<Response> {
   const status = ctx.url.searchParams.get('status') ?? 'open';
   if (!isCommentListStatus(status)) return json({ error: 'invalid_status' }, { status: 400 });
   const doc = await getProject(ctx.env, id);
@@ -370,7 +370,7 @@ async function listThreads(ctx: RouteContext, id: string): Promise<Response> {
 }
 
 // The comment routes, or null for a path that is not theirs. Every refusal is logged here, once, with its code.
-export async function handleCommentRoutes(ctx: RouteContext): Promise<Response | null> {
+export async function handleCommentRoutes(ctx: PlanRouteContext): Promise<Response | null> {
   const res = await commentRoute(ctx);
   if (res && res.status >= 400)
     await logRefusal('[comments] refused', res, {
@@ -382,7 +382,7 @@ export async function handleCommentRoutes(ctx: RouteContext): Promise<Response |
   return res;
 }
 
-async function commentRoute(ctx: RouteContext): Promise<Response | null> {
+async function commentRoute(ctx: PlanRouteContext): Promise<Response | null> {
   const { segments, request } = ctx;
   const id = segments[2]!;
   if (segments.length === 4 && segments[3] === 'comments')

@@ -15,7 +15,7 @@ import {
   type ItemRejection,
 } from '@liveplanner/items';
 import { badRequest, forbidden, json } from '../responses';
-import { readBody, type RouteContext } from './context';
+import { readBody, type PlanRouteContext } from './context';
 import {
   excludedStatus,
   forCaller,
@@ -48,7 +48,7 @@ function readPatches(raw: unknown): ItemPatchOf[] | Response {
   return out;
 }
 
-export async function patches(ctx: RouteContext, projectId: string): Promise<Response> {
+export async function patches(ctx: PlanRouteContext, projectId: string): Promise<Response> {
   const caller = await itemCaller(ctx, projectId, 'participate');
   if (caller instanceof Response) return caller;
   const body = await readBody(ctx);

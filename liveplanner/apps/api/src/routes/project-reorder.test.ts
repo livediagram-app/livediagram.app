@@ -29,7 +29,7 @@ async function board(): Promise<SqliteD1> {
 const order = (db: SqliteD1) =>
   db.sql
     .prepare(
-      "SELECT tab_id, folder FROM project_tabs WHERE project_id = 'D' ORDER BY order_index",
+      "SELECT tab_id, folder FROM plan_tabs WHERE plan_id = 'D' ORDER BY order_index",
     )
     .all()
     .map((r) => [r.tab_id, r.folder]);

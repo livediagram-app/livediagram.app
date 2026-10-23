@@ -1,10 +1,9 @@
 // Per-tab calls: lazy load, upsert (the autosave path), comment append,
-// cross-project link, and delete.
+// a copy into another project, and delete.
 import {
   CHANGESET_SEEN_HEADER,
   PROJECT_OPEN_HEADER,
   type TabResponse,
-  type TabSummary,
 } from '@liveplanner/api-schema';
 import { normalizeTable, type CommentMention, type Tab } from '@liveplanner/project';
 import { dedupeInFlight } from '../dedupe';
@@ -378,25 +377,13 @@ export async function apiSetThreadResolved(
   await expectOkVoid(res, `${verb} thread`);
 }
 
-// Link an existing tab into another of the caller's projects
-// (docs/specs/006-project/tab-project-many-to-many.md). After this returns, the tab body is shared: edits
-// from either project write to the same `tabs.data` row. Returns
-// the target project's summary view of the now-attached tab so
-// the caller can update its TabBar without a full project
-// refetch.
-export async function apiLinkTab(
-  ownerId: string,
-  projectId: string,
-  tabId: string,
-): Promise<TabSummary> {
-  const res = await apiFetch(
-    `${API_BASE}/projects/${encodeURIComponent(projectId)}/tabs/${encodeURIComponent(tabId)}/link`,
-    {
-      method: 'POST',
-      headers: await apiHeaders(ownerId),
-    },
-  );
-  return expectOk<{ tab: TabSummary }>(res, 'link tab').then((b) => b.tab);
+// Copy a tab into another of the caller's plans, as a new tab there (appended last). Each plan keeps its own
+// content (docs/specs/015-api/api.md "Storage"), so a tab cannot be shared between two plans: the copy is the
+// caller's loaded tab under fresh ids, saved like any new tab. Answers the copy's id.
+export async function apiCopyTabTo(ownerId: string, projectId: string, tab: Tab): Promise<string> {
+  const copy: Tab = { ...tab, id: crypto.randomUUID() };
+  await apiSaveTab(ownerId, projectId, copy);
+  return copy.id;
 }
 
 export async function apiDeleteTab(

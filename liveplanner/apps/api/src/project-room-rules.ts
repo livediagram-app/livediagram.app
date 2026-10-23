@@ -2,7 +2,7 @@
 // inputs: what a hello frame is allowed to put in the presence roster, and
 // what a reconnecting client gets back when it asks what it missed.
 //
-// Both were inline in ProjectRoom.webSocketMessage / sendCatchup, wrapped in
+// Both were inline in PlanRoom.webSocketMessage / sendCatchup, wrapped in
 // the socket plumbing that sends the result. Both are also the parts most
 // worth being able to test directly: the first is a trust boundary (docs/specs/015-api/public-api-and-tokens.md
 // §6), the second is a five-case ladder (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1) whose branches are
@@ -117,7 +117,7 @@ type RateWindow = { count: number; windowStart: number };
 // for a flood defence and much cheaper than keeping timestamps per frame.
 //
 // The three branches are the whole behaviour, and the room's own test has to
-// build a second ProjectRoom to reach the third, so they are worth being able
+// build a second PlanRoom to reach the third, so they are worth being able
 // to state directly.
 export function admitFrame(
   rate: RateWindow | undefined,

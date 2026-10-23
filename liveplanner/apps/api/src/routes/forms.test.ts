@@ -92,7 +92,7 @@ const items = () => listItems(sql.env, 'd1');
 beforeEach(() => {
   sql = sqliteD1();
   relayed = [];
-  (sql.env as unknown as { PROJECT_ROOM: unknown }).PROJECT_ROOM = {
+  (sql.env as unknown as { PLAN_ROOM: unknown }).PLAN_ROOM = {
     idFromName: (n: string) => n,
     get: () => ({
       fetch: async (_url: string, init: RequestInit) => {
@@ -117,9 +117,11 @@ beforeEach(() => {
   };
   sql.sql
     .prepare(
-      `INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at, item_types) VALUES ('d1', 'owner', 'Ops', 1, 1, 1, ?)`,
+      `INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d1', 'owner', 'Ops', 1, 1, 1)`,
     )
-    .run(JSON.stringify(catalogue));
+    .run();
+  // The type catalogue is the plan's own (plan-room/plan-content.ts).
+  sql.sql.prepare(`UPDATE plan SET item_types = ? WHERE id = 'd1'`).run(JSON.stringify(catalogue));
   const board = {
     id: 'b1',
     type: 'shape',
@@ -135,8 +137,8 @@ beforeEach(() => {
     .run(JSON.stringify({ kind: 'board', elements: [board] }));
   sql.sql.exec(`
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('ftab', 'Bug Report', '{}', 1);
-    INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', 'board', 0, 1);
-    INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', 'ftab', 1, 1);
+    INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d1', 'board', 0, 1);
+    INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d1', 'ftab', 1, 1);
     INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', NULL, 1);
     INSERT INTO share_links (code, project_id, role, level, tab_id, created_at) VALUES ('PART', 'd1', 'view', 'participate', NULL, 1);
     INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('EDIT', 'd1', 'edit', NULL, 1);
@@ -404,7 +406,7 @@ describe('responses (docs/specs/030-forms/forms.md "What a response makes")', ()
   it('says the form is full when the project holds as many cards as it can', async () => {
     const code = await publish();
     const insert = sql.sql.prepare(
-      `INSERT INTO items (project_id, id, type, item_key, rank, fields, rev, created_at, updated_at, created_by, updated_by)
+      `INSERT INTO items (plan_id, id, type, item_key, rank, fields, rev, created_at, updated_at, created_by, updated_by)
        VALUES ('d1', ?, 'bug', ?, 'a', '{}', 1, 1, 1, '{}', '{}')`,
     );
     for (let i = 1; i <= ITEMS_MAX; i += 1) insert.run(`i${i}`, i);
@@ -436,12 +438,12 @@ describe('responses to a Sheet (docs/specs/030-forms/forms.md "Responses to a Sh
       .run();
     sql.sql
       .prepare(
-        `INSERT OR IGNORE INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', 'stab', 1, 1)`,
+        `INSERT OR IGNORE INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d1', 'stab', 1, 1)`,
       )
       .run();
     sql.sql
       .prepare(
-        `INSERT INTO sheets (project_id, id, tab_id, title, layout, rev, created_at, updated_at, updated_by)
+        `INSERT INTO sheets (plan_id, id, tab_id, title, layout, rev, created_at, updated_at, updated_by)
          VALUES ('d1', ?, 'stab', 'Responses', '{"rows":["ra01","ra02","ra03"],"cols":["ca01","ca02"]}', 0, 1, 1, '{}')`,
       )
       .run(SHEET);
@@ -508,7 +510,7 @@ describe('responses to a Sheet (docs/specs/030-forms/forms.md "Responses to a Sh
     seedSheet();
     writeForm(form({ sheet: { tabId: 'stab', sheetId: SHEET } }));
     const code = await publish();
-    sql.sql.prepare(`DELETE FROM project_tabs WHERE tab_id = 'stab'`).run();
+    sql.sql.prepare(`DELETE FROM plan_tabs WHERE tab_id = 'stab'`).run();
     expect(
       (await owner('POST', 'form-preview', { body: { answers: { 'q-sum': 'Try' } } })).status,
     ).toBe(409);

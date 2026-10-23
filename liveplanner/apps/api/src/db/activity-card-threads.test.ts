@@ -91,7 +91,7 @@ async function setUp(opts: { team?: string | null; owner?: string } = {}) {
   let key = 1;
   const card = (id: string, fields: Record<string, unknown>) =>
     insert(db.sql, 'items', {
-      project_id: 'D',
+      plan_id: 'D',
       id,
       type: 'task',
       item_key: key++,
@@ -212,6 +212,6 @@ describe('Activity: Plan card comment threads', () => {
       .all('reader', 1, 100)
       .map((p) => String(p['detail']));
     expect(plan.filter((d) => /^SCAN (i|items)\b/.test(d))).toEqual([]);
-    expect(plan.join('\n')).toContain('USING INDEX items_open_threads');
+    expect(plan.join('\n')).toContain('USING INDEX plan_cards_open_threads');
   });
 });

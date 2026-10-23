@@ -22,7 +22,7 @@ import type { Env } from './types';
 // Every server-stored project has a room (docs/specs/024-agents/agent-changesets.md "Rooms for
 // personal projects"): an agent is a second writer even on a project nobody else can open.
 function roomStubFor(env: Env, projectId: string): DurableObjectStub {
-  return env.PROJECT_ROOM.get(env.PROJECT_ROOM.idFromName(projectId));
+  return env.PLAN_ROOM.get(env.PLAN_ROOM.idFromName(projectId));
 }
 
 // A room call that gives up after `ms`: the api never waits on a room longer than that.

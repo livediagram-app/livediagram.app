@@ -43,7 +43,7 @@ function call(db: SqliteD1, method: string, path: string, body: unknown, token: 
 async function setUp(status?: number) {
   pending = [];
   const room = roomRecorder(status);
-  const db = sqliteD1({ PROJECT_ROOM: room.binding } as unknown as Partial<Env>);
+  const db = sqliteD1({ PLAN_ROOM: room.binding } as unknown as Partial<Env>);
   await call(
     db,
     'POST',

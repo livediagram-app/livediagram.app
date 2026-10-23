@@ -148,8 +148,9 @@ CREATE INDEX folders_owner_idx ON folders (owner_id);
 CREATE INDEX folders_parent_idx ON folders (parent_id);
 CREATE INDEX folders_team_idx ON folders (team_id);
 
--- A project (docs/specs/006-project/project.md): its name, owner, place, Trash state and Plan counters. Its tabs
--- are rows of `tabs`, joined through `project_tabs`.
+-- A project (docs/specs/006-project/project.md): its name, owner, place and Trash state. Its content (tabs,
+-- items, sheets, changesets) is not here: it lives in the plan's own Durable Object (docs/specs/015-api/api.md
+-- "Storage"), which pushes `content_summary` and `saved_at` back for the listings.
 CREATE TABLE projects (
   id                  TEXT    PRIMARY KEY,
   owner_id            TEXT    NOT NULL,
@@ -170,56 +171,16 @@ CREATE TABLE projects (
   opens_in            TEXT,
   tab_kind            TEXT,
   template_family     TEXT,
-  -- Plan items (docs/specs/026-plan/items.md): the items' revision, the next card number, the card types.
-  items_rev           INTEGER NOT NULL DEFAULT 0,
-  items_next_key      INTEGER NOT NULL DEFAULT 1,
-  item_types          TEXT    NULL,
-  item_types_rev      INTEGER NOT NULL DEFAULT 0,
-  join_notified_at    INTEGER
+  join_notified_at    INTEGER,
+  -- What the listings show of the content, pushed by the plan's Durable Object (src/plan-room/plan-outbox.ts):
+  -- JSON {firstTabCount, tabCounts, stats, hasContent}. NULL until its first push.
+  content_summary     TEXT    NULL
 );
 CREATE INDEX idx_projects_owner_recent ON projects (owner_id, saved_at DESC);
 CREATE INDEX projects_folder_idx ON projects (folder_id);
 CREATE INDEX projects_team_idx ON projects (team_id);
 CREATE INDEX projects_source_idx ON projects (source);
 CREATE INDEX projects_trashed_idx ON projects (trashed_at) WHERE trashed_at IS NOT NULL;
-
--- One tab's body (docs/specs/006-project/per-tab-storage.md): the live app's Tab minus { id, name }, elements and
--- per-tab settings, as JSON. `rev` advances by exactly one on every body write (the trigger below).
-CREATE TABLE tabs (
-  id            TEXT    PRIMARY KEY,
-  name          TEXT    NOT NULL,
-  data          TEXT    NOT NULL,
-  updated_at    INTEGER NOT NULL,
-  element_count INTEGER NULL,
-  rev           INTEGER NOT NULL DEFAULT 0
-);
-CREATE TRIGGER tabs_rev_advances BEFORE UPDATE OF data ON tabs
-  WHEN NEW.rev IS NOT OLD.rev + 1
-  BEGIN SELECT RAISE(ABORT, 'tab_rev_stale'); END;
-
--- Which tabs a project holds, in order, with each tab's folder in the tab bar.
-CREATE TABLE project_tabs (
-  project_id TEXT    NOT NULL,
-  tab_id      TEXT    NOT NULL,
-  order_index INTEGER NOT NULL,
-  added_at    INTEGER NOT NULL,
-  folder      TEXT,
-  PRIMARY KEY (project_id, tab_id),
-  FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE,
-  FOREIGN KEY (tab_id) REFERENCES tabs (id) ON DELETE CASCADE
-);
-CREATE INDEX project_tabs_by_project ON project_tabs (project_id, order_index);
-CREATE INDEX project_tabs_by_tab ON project_tabs (tab_id);
-
--- Counts written with each tab body, so listings never read a body.
-CREATE TABLE tab_stats (
-  tab_id        TEXT    PRIMARY KEY REFERENCES tabs (id) ON DELETE CASCADE,
-  mode          TEXT    NOT NULL,
-  element_count INTEGER NOT NULL,
-  comment_count INTEGER NOT NULL,
-  data_bytes    INTEGER NOT NULL,
-  written_at    INTEGER NOT NULL
-);
 
 -- When each person last opened each project (Home's recents, the Explorer's Opened column).
 CREATE TABLE project_opens (
@@ -335,9 +296,13 @@ CREATE INDEX ws_tickets_expires_at ON ws_tickets (expires_at);
 -- Comments, actions and the timeline
 -- ---------------------------------------------------------------------------------------------------------------
 
--- One row per comment thread, kept from the tab bodies for the Inbox (docs/specs/012-collaboration/assigned-actions.md).
+-- The Inbox's index of the comment threads and assigned actions inside each plan's tabs
+-- (docs/specs/013-workspace/inbox.md §2), one tab's rows replaced at a time by the plan's Durable Object
+-- (src/plan-room/plan-outbox.ts `onTabCollabChanged`). It carries the tab's name, as the tab itself is not here.
 CREATE TABLE collab_threads (
+  project_id          TEXT    NOT NULL REFERENCES projects (id) ON DELETE CASCADE,
   tab_id              TEXT    NOT NULL,
+  tab_name            TEXT    NOT NULL,
   element_id          TEXT    NOT NULL,
   element_label       TEXT    NOT NULL,
   resolved            INTEGER NOT NULL,
@@ -351,14 +316,15 @@ CREATE TABLE collab_threads (
   first_at            INTEGER NOT NULL,
   latest_at           INTEGER NOT NULL,
   mentioned_ids       TEXT    NOT NULL DEFAULT '[]',
-  PRIMARY KEY (tab_id, element_id),
-  FOREIGN KEY (tab_id) REFERENCES tabs (id) ON DELETE CASCADE
+  PRIMARY KEY (project_id, tab_id, element_id)
 );
 CREATE INDEX collab_threads_open_idx ON collab_threads (resolved, latest_at);
 
 -- One row per assigned action.
 CREATE TABLE collab_actions (
+  project_id         TEXT    NOT NULL REFERENCES projects (id) ON DELETE CASCADE,
   tab_id             TEXT    NOT NULL,
+  tab_name           TEXT    NOT NULL,
   element_id         TEXT    NOT NULL,
   action_id          TEXT    NOT NULL,
   element_label      TEXT    NOT NULL,
@@ -373,18 +339,11 @@ CREATE TABLE collab_actions (
   team_id            TEXT,
   created_at         INTEGER NOT NULL,
   updated_at         INTEGER NOT NULL,
-  PRIMARY KEY (tab_id, element_id, action_id),
-  FOREIGN KEY (tab_id) REFERENCES tabs (id) ON DELETE CASCADE
+  PRIMARY KEY (project_id, tab_id, element_id, action_id)
 );
 CREATE INDEX collab_actions_assignee_idx ON collab_actions (assignee_user_id, status);
 CREATE INDEX collab_actions_assigner_idx ON collab_actions (assigner_id, status);
 CREATE INDEX collab_actions_member_idx ON collab_actions (assignee_member_id);
-
--- When each owner's comment index was last rebuilt from their tab bodies.
-CREATE TABLE collab_index_state (
-  owner_id      TEXT    PRIMARY KEY,
-  backfilled_at INTEGER NOT NULL
-);
 
 -- The timeline event store (docs/specs/013-workspace/timeline.md): History, Team Activity and Home's What Happened.
 CREATE TABLE timeline_events (
@@ -431,151 +390,41 @@ CREATE TABLE timeline_scope_state (
 );
 
 -- ---------------------------------------------------------------------------------------------------------------
--- Agent changesets (docs/specs/024-agents/agent-changesets.md)
+-- Plan: the Inbox's view of cards and boards (docs/specs/026-plan/items.md, docs/specs/013-workspace/inbox.md §2.4)
 -- ---------------------------------------------------------------------------------------------------------------
 
-CREATE TABLE agent_changesets (
-  id           TEXT    PRIMARY KEY,
-  project_id  TEXT    NOT NULL REFERENCES projects (id) ON DELETE CASCADE,
-  tab_id       TEXT    NOT NULL REFERENCES tabs (id) ON DELETE CASCADE,
-  rev          INTEGER NOT NULL,
-  base_rev     INTEGER,
-  author_id    TEXT    NOT NULL,
-  author_name  TEXT    NOT NULL,
-  author_color TEXT    NOT NULL,
-  token_id     TEXT,
-  summary      TEXT,
-  fingerprints TEXT    NOT NULL,
-  added        INTEGER NOT NULL,
-  changed      INTEGER NOT NULL,
-  removed      INTEGER NOT NULL,
-  created_tab  INTEGER NOT NULL DEFAULT 0,
-  revert_of    TEXT,
-  created_at   INTEGER NOT NULL
-);
-CREATE UNIQUE INDEX agent_changesets_tab_rev ON agent_changesets (tab_id, rev);
-CREATE INDEX agent_changesets_project_created ON agent_changesets (project_id, created_at);
-CREATE INDEX agent_changesets_created ON agent_changesets (created_at);
-CREATE INDEX agent_changesets_author_idx ON agent_changesets (author_id);
-
--- A changeset's operations, inverse and results, kept apart from its row so listings stay small.
-CREATE TABLE agent_changeset_parts (
-  changeset_id TEXT NOT NULL REFERENCES agent_changesets (id) ON DELETE CASCADE,
-  part         TEXT NOT NULL CHECK (part IN ('ops', 'inverse', 'results')),
-  data         TEXT NOT NULL,
-  PRIMARY KEY (changeset_id, part)
-);
-
--- ---------------------------------------------------------------------------------------------------------------
--- Plan: items and boards (docs/specs/026-plan/items.md)
--- ---------------------------------------------------------------------------------------------------------------
-
-CREATE TABLE items (
-  project_id TEXT    NOT NULL REFERENCES projects (id) ON DELETE CASCADE,
-  id          TEXT    NOT NULL,
-  type        TEXT    NOT NULL,
-  -- The card's number in its project (#12), never reused.
-  item_key    INTEGER NOT NULL,
-  rank        TEXT    NOT NULL,
-  fields      TEXT    NOT NULL,
-  rev         INTEGER NOT NULL,
-  created_at  INTEGER NOT NULL,
-  updated_at  INTEGER NOT NULL,
-  created_by  TEXT    NOT NULL,
-  updated_by  TEXT    NOT NULL,
-  PRIMARY KEY (project_id, id)
-);
-CREATE UNIQUE INDEX items_project_key ON items (project_id, item_key);
-CREATE INDEX items_assignee ON items (json_extract(fields, '$.assignee.id'));
-CREATE INDEX items_open_threads ON items (project_id) WHERE json_extract(fields, '$.comments.resolved') = 0;
-
--- Each board's columns, kept from the tab bodies for the cross-project reads (Home's plans, a card's Done check).
+-- Each board's columns, kept from the tab bodies for the cross-project reads (Home's plans, a card's Done check),
+-- pushed by the plan's Durable Object with the tab's name and place.
 CREATE TABLE plan_board_statuses (
+  project_id  TEXT    NOT NULL REFERENCES projects (id) ON DELETE CASCADE,
   tab_id      TEXT    NOT NULL,
+  tab_name    TEXT    NOT NULL,
+  tab_order   INTEGER NOT NULL,
   element_id  TEXT    NOT NULL,
   board_title TEXT    NOT NULL,
   status      TEXT    NOT NULL,
   done        INTEGER NOT NULL,
   board_order INTEGER NOT NULL,
   position    INTEGER NOT NULL,
-  -- Status before element: the Done check seeks (tab_id, status) for every candidate card.
-  PRIMARY KEY (tab_id, status, element_id),
-  FOREIGN KEY (tab_id) REFERENCES tabs (id) ON DELETE CASCADE
+  -- Status before element: the Done check seeks (project_id, status) for every candidate card.
+  PRIMARY KEY (project_id, tab_id, status, element_id)
 );
+CREATE INDEX plan_board_statuses_status ON plan_board_statuses (project_id, status);
 
--- ---------------------------------------------------------------------------------------------------------------
--- Sheets (docs/specs/029-sheets/sheet-store.md)
--- ---------------------------------------------------------------------------------------------------------------
-
-CREATE TABLE sheets (
-  project_id              TEXT    NOT NULL REFERENCES projects (id) ON DELETE CASCADE,
-  id                       TEXT    NOT NULL,
-  -- The tab the sheet was made on, for life: tab-scoped links and references between sheets are by tab.
-  tab_id                   TEXT    NOT NULL,
-  title                    TEXT    NOT NULL,
-  -- JSON SheetLayout: the row and column ids in order, sizes, hidden, freeze, merges, filter.
-  layout                   TEXT    NOT NULL,
-  rev                      INTEGER NOT NULL,
-  -- Kept in step with sheet_cells by every write, for the caps without a scan.
-  cell_count               INTEGER NOT NULL DEFAULT 0,
-  cell_bytes               INTEGER NOT NULL DEFAULT 0,
-  -- Set when no element frames the sheet any more; cleared when one does again.
-  unreferenced_since       INTEGER,
-  -- The last write's own token: every statement of a write's batch checks it, so a write that lost the rev race
-  -- writes no cells even when a stale rev + 1 equals the current one.
-  write_nonce              TEXT,
-  created_at               INTEGER NOT NULL,
-  updated_at               INTEGER NOT NULL,
-  updated_by               TEXT    NOT NULL,
-  -- A sheet made with its frame goes when its last frame does, rather than waiting for the sweep.
-  delete_when_unreferenced INTEGER,
+-- The cards the Inbox lists (assigned to someone, or holding a comment thread), pushed by the plan's Durable
+-- Object from its item store. `fields` keeps only what the Inbox reads: title, status, assignee, archived,
+-- linked and the comment thread.
+CREATE TABLE plan_cards (
+  project_id TEXT    NOT NULL REFERENCES projects (id) ON DELETE CASCADE,
+  id         TEXT    NOT NULL,
+  item_key   INTEGER NOT NULL,
+  type       TEXT    NOT NULL,
+  fields     TEXT    NOT NULL,
+  updated_at INTEGER NOT NULL,
   PRIMARY KEY (project_id, id)
 );
-CREATE INDEX sheets_tab ON sheets (project_id, tab_id);
-CREATE INDEX sheets_unreferenced ON sheets (unreferenced_since) WHERE unreferenced_since IS NOT NULL;
-
-CREATE TABLE sheet_cells (
-  project_id TEXT NOT NULL,
-  sheet_id    TEXT NOT NULL,
-  row_id      TEXT NOT NULL,
-  col_id      TEXT NOT NULL,
-  input       TEXT,
-  format      TEXT,
-  PRIMARY KEY (project_id, sheet_id, row_id, col_id),
-  FOREIGN KEY (project_id, sheet_id) REFERENCES sheets (project_id, id) ON DELETE CASCADE
-);
-
--- Which tabs frame which sheets; the triggers keep each sheet's unreferenced state in step.
-CREATE TABLE sheet_refs (
-  tab_id   TEXT NOT NULL REFERENCES tabs (id) ON DELETE CASCADE,
-  sheet_id TEXT NOT NULL,
-  PRIMARY KEY (tab_id, sheet_id)
-);
-CREATE INDEX sheet_refs_sheet ON sheet_refs (sheet_id);
-
-CREATE TRIGGER sheet_refs_added AFTER INSERT ON sheet_refs
-BEGIN
-  UPDATE sheets SET unreferenced_since = NULL
-   WHERE id = NEW.sheet_id
-     AND project_id IN (SELECT project_id FROM project_tabs WHERE tab_id = NEW.tab_id)
-     AND unreferenced_since IS NOT NULL;
-END;
-
-CREATE TRIGGER sheet_refs_removed AFTER DELETE ON sheet_refs
-BEGIN
-  DELETE FROM sheets
-   WHERE id = OLD.sheet_id
-     AND project_id IN (SELECT project_id FROM project_tabs WHERE tab_id = OLD.tab_id)
-     AND delete_when_unreferenced = 1
-     AND NOT EXISTS (SELECT 1 FROM sheet_refs r JOIN project_tabs dt ON dt.tab_id = r.tab_id
-                      WHERE r.sheet_id = sheets.id AND dt.project_id = sheets.project_id);
-  UPDATE sheets SET unreferenced_since = CAST((julianday('now') - 2440587.5) * 86400000 AS INTEGER)
-   WHERE id = OLD.sheet_id
-     AND project_id IN (SELECT project_id FROM project_tabs WHERE tab_id = OLD.tab_id)
-     AND unreferenced_since IS NULL
-     AND NOT EXISTS (SELECT 1 FROM sheet_refs r JOIN project_tabs dt ON dt.tab_id = r.tab_id
-                      WHERE r.sheet_id = sheets.id AND dt.project_id = sheets.project_id);
-END;
+CREATE INDEX plan_cards_assignee ON plan_cards (json_extract(fields, '$.assignee.id'));
+CREATE INDEX plan_cards_open_threads ON plan_cards (project_id) WHERE json_extract(fields, '$.comments.resolved') = 0;
 
 -- ---------------------------------------------------------------------------------------------------------------
 -- Forms (docs/specs/030-forms/forms.md)
@@ -599,7 +448,11 @@ CREATE TABLE form_links (
   -- The new-response email's throttle: when one last went, and how many arrived since.
   last_email_at    INTEGER,
   held_emails      INTEGER NOT NULL DEFAULT 0,
-  deleted_at       INTEGER
+  deleted_at       INTEGER,
+  -- The form tab's name, heading and response board, for the Inbox, kept by the plan's Durable Object.
+  tab_name         TEXT,
+  heading          TEXT,
+  board_tab_id     TEXT
 );
 CREATE INDEX form_links_project ON form_links (project_id);
 CREATE UNIQUE INDEX form_links_live_tab ON form_links (project_id, tab_id)

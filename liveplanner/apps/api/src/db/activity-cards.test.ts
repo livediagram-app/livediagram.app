@@ -92,7 +92,7 @@ async function setUp(opts: { team?: string | null; owner?: string } = {}) {
             },
           };
     insert(db.sql, 'items', {
-      project_id: 'D',
+      plan_id: 'D',
       id,
       type: 'task',
       item_key: key++,
@@ -243,8 +243,7 @@ describe('Activity: Plan cards assigned to the reader', () => {
     await copyProject(env, 'D', 'D2', 'reader', 'Copy');
     const boards = sql
       .prepare(
-        `SELECT dt.project_id, pb.element_id FROM plan_board_statuses pb
-           JOIN project_tabs dt ON dt.tab_id = pb.tab_id WHERE pb.status = 'todo'`,
+        `SELECT pb.project_id, pb.element_id FROM plan_board_statuses pb WHERE pb.status = 'todo'`,
       )
       .all();
     expect(boards).toHaveLength(2);
@@ -253,16 +252,16 @@ describe('Activity: Plan cards assigned to the reader', () => {
   });
 
   // docs/specs/013-workspace/inbox.md §2.4: the read seeks the reader's cards by the assignee
-  // index and each card's Done check by (tab, status), never scanning the item store or a tab's boards.
+  // index and each card's Done check by (project, status), never scanning the cards or a plan's boards.
   // Measured: 100,000 cards, 2,000 on the reader, read in ~25ms; the Done check without the seek took ~270ms.
-  it('seeks cards by assignee and the Done check by tab and status', async () => {
+  it('seeks cards by assignee and the Done check by project and status', async () => {
     const { sql } = await setUp();
     const plan = sql
       .prepare(`EXPLAIN QUERY PLAN ${CARDS_SQL}`)
       .all('reader', 1, 100, '["x"]')
       .map((p) => String(p['detail']));
-    expect(plan.join('\n')).toContain('SEARCH i USING INDEX items_assignee');
-    expect(plan.some((d) => /plan_board_statuses.*\(tab_id=\? AND status=\?\)/.test(d))).toBe(true);
-    expect(plan.filter((d) => /^SCAN (i|items|pb)\b/.test(d))).toEqual([]);
+    expect(plan.join('\n')).toContain('SEARCH i USING INDEX plan_cards_assignee');
+    expect(plan.some((d) => /plan_board_statuses.*\(project_id=\? AND status=\?\)/.test(d))).toBe(true);
+    expect(plan.filter((d) => /^SCAN (i|plan_cards|pb)\b/.test(d))).toEqual([]);
   });
 });

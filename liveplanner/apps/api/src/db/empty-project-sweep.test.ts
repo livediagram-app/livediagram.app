@@ -17,17 +17,20 @@ const STALE = NOW - EMPTY_PROJECT_STALE_MS;
 const SHAPE = { id: 'e1', kind: 'shape', x: 0, y: 0, w: 10, h: 10 };
 
 // A tab row linked into each of `projectIds`, inserted directly so no write
-// path stamps the project's saved_at. `data` is the stored JSON as given.
+// path stamps the project's saved_at. `data` is the stored JSON as given, with the element count a write
+// stores beside it (unknown for a body that does not parse).
 function tab(sql: DatabaseSync, id: string, data: unknown, ...projectIds: string[]) {
+  const elements = (data as { elements?: unknown } | null)?.elements;
   insert(sql, 'tabs', {
     id,
     name: id,
     data: typeof data === 'string' ? data : JSON.stringify(data),
     updated_at: 0,
+    element_count: typeof data === 'string' ? null : Array.isArray(elements) ? elements.length : 0,
   });
   projectIds.forEach((projectId, i) =>
-    insert(sql, 'project_tabs', {
-      project_id: projectId,
+    insert(sql, 'plan_tabs', {
+      plan_id: projectId,
       tab_id: id,
       order_index: i,
       added_at: 0,

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ProjectRoom } from './project-room';
+import { PlanRoom } from './plan-room/plan-room';
 import { rescopeShareLink, deleteShareLink } from './db/share';
 import { recheckAdmittedLink, shareLinkChange } from './room-link-recheck';
 import { sqliteD1 } from './test-sqlite-d1';
@@ -15,8 +15,8 @@ function arrange() {
       VALUES ('d1', 'owner', 'Plan', 1, 1, 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 'Roadmap', '{"elements":[]}', 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t2', 'Pricing', '{"elements":[]}', 1);
-    INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
-    INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', 't2', 1, 1);
+    INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
+    INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d1', 't2', 1, 1);
     INSERT INTO share_links (code, project_id, role, created_at, tab_id)
       VALUES ('SCOPED2345', 'd1', 'view', 1, 't2');
   `);
@@ -74,7 +74,7 @@ describe('recheckAdmittedLink', () => {
 
   it('counts a link whose tab was deleted as revoked', async () => {
     const db = arrange();
-    db.sql.exec(`DELETE FROM project_tabs WHERE tab_id = 't2'`);
+    db.sql.exec(`DELETE FROM plan_tabs WHERE tab_id = 't2'`);
     expect((await recheckAdmittedLink(db.env, admitted))?.kind).toBe('share-revoked');
   });
 });
@@ -122,13 +122,13 @@ function room(env: ReturnType<typeof arrange>['env'] | undefined) {
     blockConcurrencyWhile: (fn: () => Promise<void>) => fn(),
     waitUntil: () => {},
   };
-  return new ProjectRoom(state as unknown as DurableObjectState, env);
+  return new PlanRoom(state as unknown as DurableObjectState, env);
 }
 
-const join = (r: ProjectRoom, ws: Socket, tabScope: string | null, code: string | null) =>
+const join = (r: PlanRoom, ws: Socket, tabScope: string | null, code: string | null) =>
   r.acceptSession(ws as unknown as WebSocket, 'view', tabScope, code, null, null, null, 'd1');
 
-describe('ProjectRoom.recheckJoinedLink', () => {
+describe('PlanRoom.recheckJoinedLink', () => {
   it('tells a session that joined on a since-widened link, then closes it', async () => {
     const { env } = arrange();
     const r = room(env);

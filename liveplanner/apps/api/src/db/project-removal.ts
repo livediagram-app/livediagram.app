@@ -1,12 +1,6 @@
-// Removing projects without taking shared tabs with them
-// (docs/specs/006-project/tab-project-many-to-many.md, "Delete a diagram").
-//
-// A tab can sit in several projects, so deleting a container is the
-// project-scoped form of deleteTabRow: the doomed projects' links go, a tab
-// with no link left goes with its history and index rows (their FKs cascade
-// from `tabs`), and a tab still linked elsewhere stays exactly as it is there.
-// Nothing cascades from `projects` into `tabs`, so a tab this
-// doesn't drop would be stranded with no project to reach it from.
+// Removing projects' D1 rows (the Trash purge, account deletion, a delete for good). Everything keyed by a
+// project cascades from its row: share and form links, the Inbox's index rows. The content is each plan's own
+// Durable Object's, which the caller purges after (room-purge-client.ts `purgeRooms`).
 
 import type { Env } from '../types';
 
@@ -29,15 +23,7 @@ export function projectRemovalStatements(
   selector: ProjectSelector,
 ): D1PreparedStatement[] {
   const { where, value } = selectorWhere(selector);
-  const doomed = `SELECT id FROM projects WHERE ${where}`;
   return [
-    // Before the projects DELETE: its cascade takes the links this reads.
-    env.DB.prepare(
-      `DELETE FROM tabs
-        WHERE id IN (SELECT tab_id FROM project_tabs WHERE project_id IN (${doomed}))
-          AND NOT EXISTS (SELECT 1 FROM project_tabs o
-                           WHERE o.tab_id = tabs.id AND o.project_id NOT IN (${doomed}))`,
-    ).bind(value, value),
     env.DB.prepare(`DELETE FROM projects WHERE ${where}`).bind(value),
   ];
 }

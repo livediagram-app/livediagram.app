@@ -28,7 +28,7 @@ function arrange() {
       .run(tabId, tabId, '{}', T0);
     db.sql
       .prepare(
-        'INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES (?, ?, ?, ?)',
+        'INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES (?, ?, ?, ?)',
       )
       .run(docId, tabId, order, T0);
   };

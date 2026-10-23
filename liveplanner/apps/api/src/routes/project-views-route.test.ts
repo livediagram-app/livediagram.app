@@ -80,7 +80,7 @@ function call(db: SqliteD1, method: string, path: string, body?: unknown, who: W
 async function setUp(extraTabs = 0, room?: unknown) {
   const db = sqliteD1({
     ...TELEMETRY_ON,
-    ...(room ? { PROJECT_ROOM: room } : {}),
+    ...(room ? { PLAN_ROOM: room } : {}),
   } as unknown as Partial<Env>);
   sent = stubTelemetry();
   const tabs = [

@@ -2,7 +2,7 @@
 
 import type { SharedWithItem } from '@liveplanner/api-schema';
 import type { Env, ShareRole } from '../types';
-import { firstTabCountSql, isEmptyCount } from './tabs';
+import { firstTabCountSql, isEmptyCount } from './content-summary';
 import { legacyRoleColumn, levelColumn, storedLevelOf } from '../share-link-row';
 import { visitLinkSql } from './visit-link';
 

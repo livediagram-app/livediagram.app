@@ -18,7 +18,7 @@ import {
   listProjectsByTeam,
 } from './projects';
 import { deleteFolder } from './folders';
-import { linkTabToProject, upsertTab } from './tabs';
+import { upsertTab } from './tabs';
 import {
   getTrashedProjectMeta,
   listTrash,
@@ -123,7 +123,7 @@ describe('trashProject', () => {
     await trashProject(db.env, 'A', T0);
 
     expect(count(db.sql, 'tabs', 'id = ?', 't1')).toBe(1);
-    expect(count(db.sql, 'project_tabs', 'project_id = ?', 'A')).toBe(1);
+    expect(count(db.sql, 'plan_tabs', 'plan_id = ?', 'A')).toBe(1);
     expect(count(db.sql, 'share_links', 'project_id = ?', 'A')).toBe(1);
     expect(count(db.sql, 'favourites', 'project_id = ?', 'A')).toBe(1);
   });
@@ -309,24 +309,10 @@ describe('purgeProjects', () => {
     expect(await purgeProjects(db.env, ['A'])).toBe(1);
 
     expect(count(db.sql, 'projects', 'id = ?', 'A')).toBe(0);
-    expect(count(db.sql, 'tabs', 'id = ?', 't1')).toBe(0);
     expect(del).toHaveBeenCalledWith(['thumb/A', 'og/A']);
-    // Its room's storage, where the ledger keeps comment and idea text (docs/specs/015-api/api.md "Purging a room").
+    // Its plan's storage: the content, and the ledger's comment and idea text (docs/specs/015-api/api.md
+    // "Purging a room").
     expect(vi.mocked(purgeRooms)).toHaveBeenCalledWith(db.env, ['A']);
-  });
-
-  it('keeps a tab another project still holds', async () => {
-    const db = sqliteD1();
-    liveDoc(db.sql, 'A');
-    liveDoc(db.sql, 'B');
-    await tab(db, 'A', 'shared');
-    await linkTabToProject(db.env, 'B', 'shared');
-    await trashProject(db.env, 'A', T0);
-
-    await purgeProjects(db.env, ['A']);
-
-    expect(count(db.sql, 'tabs', 'id = ?', 'shared')).toBe(1);
-    expect(count(db.sql, 'project_tabs', 'tab_id = ?', 'shared')).toBe(1);
   });
 
   it('never purges a live project', async () => {

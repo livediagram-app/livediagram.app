@@ -16,7 +16,8 @@ import { isOpenTeamMember } from '@liveplanner/api-schema';
 import type { TeamMember } from '@liveplanner/api-schema';
 import { MENTIONS_MAX, itemThread, type Comment } from '@liveplanner/project';
 import { ITEM_ID_PATTERN } from '@liveplanner/items';
-import { getProjectMeta, getParticipant, listTeamMembers, readItem } from '../db';
+import { getProjectMeta, getParticipant, listTeamMembers } from '../db';
+import { planRoom } from '../plan-client';
 import { NOTIFY_EMAIL_DEDUPE_MS, notifyMentioned } from '../email/notifications';
 import { badRequest, forbidden, json, notFound } from '../responses';
 import type { RouteContext } from './context';
@@ -78,7 +79,7 @@ export async function handleTeamMentionRoutes(
     // The card must be one of this project's, and the comment the caller's own on it, posted inside the
     // dedupe window (an older one could be emailed again once its claim lapsed). 404 for each, so the route
     // cannot probe cards or comments.
-    const item = await readItem(env, liveDoc.id, itemId);
+    const item = await planRoom(env, liveDoc.id).item(itemId);
     const comment: Comment | undefined = item
       ? itemThread(item)?.comments.find((c) => c.id === commentId)
       : undefined;

@@ -83,7 +83,7 @@ export async function handleProjectRoomRoutes(ctx: RouteContext): Promise<Respon
 
   if (segments.length === 4 && segments[3] === 'ws') {
     const id = segments[2]!;
-    const stub = env.PROJECT_ROOM.get(env.PROJECT_ROOM.idFromName(id));
+    const stub = env.PLAN_ROOM.get(env.PLAN_ROOM.idFromName(id));
     // Browsers can't put custom headers on a WebSocket upgrade,
     // so the client passes a one-time ticket / share code / owner id
     // as query params (`?t=...&s=...&o=...`). We resolve role here and

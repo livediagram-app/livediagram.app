@@ -8,7 +8,7 @@ import {
   ROOM_OP_KINDS,
   SYSTEM_OP_KINDS,
 } from '@liveplanner/api-schema';
-import { ProjectRoom } from './project-room';
+import { PlanRoom } from './plan-room/plan-room';
 import type { Env } from './types';
 
 // PRESENCE_OP_KINDS is a readonly array (it has to be, to derive the type), so
@@ -16,7 +16,7 @@ import type { Env } from './types';
 const isPresenceKind = (kind: string): boolean =>
   (PRESENCE_OP_KINDS as readonly string[]).includes(kind);
 
-// The ProjectRoom Durable Object is the realtime hub for one project.
+// The PlanRoom Durable Object is the realtime hub for one project.
 // Most of its surface is straightforward fan-out, but two pieces carry
 // real security weight:
 //
@@ -73,7 +73,7 @@ type FakeState = {
   sockets: WebSocket[];
   acceptWebSocket: (ws: WebSocket) => void;
   getWebSockets: () => WebSocket[];
-  // Backs the persisted epoch/seq (docs/specs/012-collaboration/resync-without-reload.md). Shared across ProjectRoom
+  // Backs the persisted epoch/seq (docs/specs/012-collaboration/resync-without-reload.md). Shared across PlanRoom
   // instances built from the same FakeState, which is exactly what a
   // hibernation wake looks like: same storage, fresh instance.
   store: Map<string, unknown>;
@@ -154,11 +154,11 @@ function makeState(store: Map<string, unknown> = new Map()): FakeState {
   return state;
 }
 
-function newRoom(): { room: ProjectRoom; state: FakeState } {
+function newRoom(): { room: PlanRoom; state: FakeState } {
   const state = makeState();
   // Only acceptWebSocket / getWebSockets are read off the state, so the
   // fake above suffices for unit coverage.
-  const room = new ProjectRoom(state as unknown as DurableObjectState);
+  const room = new PlanRoom(state as unknown as DurableObjectState);
   // The input gate: as the runtime does, a request waits for the constructor's restore, which would
   // otherwise race it (an agent's presence written, then cleared by the restore's reload).
   const fetch = room.fetch.bind(room);
@@ -185,7 +185,7 @@ function storedPresence(ws: FakeSocket): ParticipantPresence | null {
   return (ws.attachment as { presence: ParticipantPresence | null }).presence;
 }
 
-function sendFrame(room: ProjectRoom, ws: FakeSocket, frame: unknown): void {
+function sendFrame(room: PlanRoom, ws: FakeSocket, frame: unknown): void {
   room.webSocketMessage(asWs(ws), JSON.stringify(frame));
 }
 
@@ -193,7 +193,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('ProjectRoom /broadcast endpoint', () => {
+describe('PlanRoom /broadcast endpoint', () => {
   it('fans the op out to every connected session with from: "system"', async () => {
     const { room, state } = newRoom();
     const a = makeSocket();
@@ -288,7 +288,7 @@ describe('ProjectRoom /broadcast endpoint', () => {
   });
 });
 
-describe('ProjectRoom presence broadcast', () => {
+describe('PlanRoom presence broadcast', () => {
   // Each client must NOT receive its own entry: the broadcast presence id is a
   // fresh server-random (docs/specs/015-api/public-api-and-tokens.md §6), so a client can't recognise its own entry
   // by id to filter it — including it makes the user show up as a participant
@@ -346,7 +346,7 @@ describe('ProjectRoom presence broadcast', () => {
   });
 });
 
-describe('ProjectRoom non-WebSocket upgrades', () => {
+describe('PlanRoom non-WebSocket upgrades', () => {
   it('rejects plain HTTP requests on the WS path with 426', async () => {
     const { room } = newRoom();
     const res = await room.fetch(new Request('https://room/ws'));
@@ -354,7 +354,7 @@ describe('ProjectRoom non-WebSocket upgrades', () => {
   });
 });
 
-describe('ProjectRoom hello frame role forcing', () => {
+describe('PlanRoom hello frame role forcing', () => {
   it('overrides whatever role the client claims with the server-resolved role', () => {
     const { room } = newRoom();
     const ws = makeSocket();
@@ -392,7 +392,7 @@ describe('ProjectRoom hello frame role forcing', () => {
 
   it('adds the live build id when the deploy set one', () => {
     // docs/specs/016-platform/stale-builds.md "Knowing which build is live".
-    const room = new ProjectRoom(
+    const room = new PlanRoom(
       makeState() as unknown as DurableObjectState,
       { BUILD_ID: 'abc123' } as unknown as Env,
     );
@@ -512,10 +512,10 @@ describe('ProjectRoom hello frame role forcing', () => {
   });
 });
 
-describe('ProjectRoom op-role enforcement', () => {
+describe('PlanRoom op-role enforcement', () => {
   // Drive a fully-connected session (hello sent) at a given verified
   // role, returning a `sendOp` that pushes an op frame from it.
-  function connect(room: ProjectRoom, id: string, role?: 'edit' | 'participate' | 'view') {
+  function connect(room: PlanRoom, id: string, role?: 'edit' | 'participate' | 'view') {
     const ws = makeSocket();
     room.acceptSession(asWs(ws), role);
     sendFrame(room, ws, { kind: 'hello', participant: { id, name: id, color: '#000' } });
@@ -764,7 +764,7 @@ describe('ProjectRoom op-role enforcement', () => {
   });
 });
 
-describe('ProjectRoom tab-focus presence echo', () => {
+describe('PlanRoom tab-focus presence echo', () => {
   // A late joiner only gets the presence list, never the tab-focus ops
   // that fired before they connected. So the room must remember each
   // session's current tab and echo it in presence, or joiners default
@@ -827,17 +827,17 @@ describe('ProjectRoom tab-focus presence echo', () => {
   });
 });
 
-describe('ProjectRoom hibernation survival', () => {
+describe('PlanRoom hibernation survival', () => {
   // The whole point of the hibernation migration: the runtime may evict
   // the DO between messages and re-construct it on the next frame. All
   // per-session state (ephemeral id, verified role, presence incl. the
   // remembered tab) must come back off the socket attachments; only the
-  // rate window resets. Simulated here by building a SECOND ProjectRoom
+  // rate window resets. Simulated here by building a SECOND PlanRoom
   // over the same state + sockets — exactly what a wake-from-hibernation
   // does — and asserting behaviour is unchanged.
   it('keeps identity, role, and tab across a simulated eviction', () => {
     const state = makeState();
-    const before = new ProjectRoom(state as unknown as DurableObjectState);
+    const before = new PlanRoom(state as unknown as DurableObjectState);
     const viewer = makeSocket();
     const editor = makeSocket();
     before.acceptSession(asWs(viewer), 'view');
@@ -854,7 +854,7 @@ describe('ProjectRoom hibernation survival', () => {
     const editorId = storedPresence(editor)?.id;
 
     // --- hibernation: in-memory state is gone, attachments survive ---
-    const after = new ProjectRoom(state as unknown as DurableObjectState);
+    const after = new PlanRoom(state as unknown as DurableObjectState);
     viewer.sent.length = 0;
     editor.sent.length = 0;
 
@@ -877,10 +877,10 @@ describe('ProjectRoom hibernation survival', () => {
   });
 });
 
-describe('ProjectRoom op ordering + reconnect catch-up (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1)', () => {
+describe('PlanRoom op ordering + reconnect catch-up (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1)', () => {
   // Drive an established edit-role session and expose helpers to push ops
   // and read the frames a peer receives.
-  function editorAndPeer(room: ProjectRoom) {
+  function editorAndPeer(room: PlanRoom) {
     const editor = makeSocket();
     const peer = makeSocket();
     room.acceptSession(asWs(editor), 'edit');
@@ -1071,7 +1071,7 @@ describe('ProjectRoom op ordering + reconnect catch-up (docs/specs/012-collabora
   // which cost it a full page reload. Both values now survive the wake.
   it('keeps its epoch and seq across a simulated hibernation wake', async () => {
     const store = new Map<string, unknown>();
-    const before = new ProjectRoom(makeState(store) as unknown as DurableObjectState);
+    const before = new PlanRoom(makeState(store) as unknown as DurableObjectState);
     await Promise.resolve();
     const { editor } = editorAndPeer(before);
     sendFrame(before, editor, {
@@ -1080,7 +1080,7 @@ describe('ProjectRoom op ordering + reconnect catch-up (docs/specs/012-collabora
     });
     expect(before.seq).toBe(1);
 
-    const after = new ProjectRoom(makeState(store) as unknown as DurableObjectState);
+    const after = new PlanRoom(makeState(store) as unknown as DurableObjectState);
     await Promise.resolve();
     expect(after.epoch).toBe(before.epoch);
     expect(after.seq).toBe(before.seq);
@@ -1091,7 +1091,7 @@ describe('ProjectRoom op ordering + reconnect catch-up (docs/specs/012-collabora
 
   it('sends a caught-up client an empty delta after a wake, not a resync', async () => {
     const store = new Map<string, unknown>();
-    const before = new ProjectRoom(makeState(store) as unknown as DurableObjectState);
+    const before = new PlanRoom(makeState(store) as unknown as DurableObjectState);
     await Promise.resolve();
     const seeded = editorAndPeer(before);
     sendFrame(before, seeded.editor, {
@@ -1099,7 +1099,7 @@ describe('ProjectRoom op ordering + reconnect catch-up (docs/specs/012-collabora
       op: { kind: 'el', tabId: 't', op: { kind: 'remove', id: 'a' } },
     });
 
-    const after = new ProjectRoom(makeState(store) as unknown as DurableObjectState);
+    const after = new PlanRoom(makeState(store) as unknown as DurableObjectState);
     await Promise.resolve();
     const { editor } = editorAndPeer(after);
     editor.sent.length = 0;
@@ -1111,7 +1111,7 @@ describe('ProjectRoom op ordering + reconnect catch-up (docs/specs/012-collabora
     expect(catchup.ops).toEqual([]);
   });
 });
-describe('ProjectRoom multiplayer telemetry (docs/specs/017-telemetry/telemetry.md)', () => {
+describe('PlanRoom multiplayer telemetry (docs/specs/017-telemetry/telemetry.md)', () => {
   // A fake central telemetry service that records every event the room sends, as [category, action, type].
   function envWithRows(): { env: Env; rows: unknown[][] } {
     const rows: unknown[][] = [];
@@ -1126,7 +1126,7 @@ describe('ProjectRoom multiplayer telemetry (docs/specs/017-telemetry/telemetry.
   }
   afterEach(() => vi.unstubAllGlobals());
 
-  function join(room: ProjectRoom, name: string): FakeSocket {
+  function join(room: PlanRoom, name: string): FakeSocket {
     const ws = makeSocket();
     room.acceptSession(asWs(ws), 'edit');
     sendFrame(room, ws, { kind: 'hello', participant: { id: name, name, color: '#000' } });
@@ -1138,7 +1138,7 @@ describe('ProjectRoom multiplayer telemetry (docs/specs/017-telemetry/telemetry.
 
   it('counts a five-person session once, not once per participant', async () => {
     const { env, rows } = envWithRows();
-    const room = new ProjectRoom(makeState() as unknown as DurableObjectState, env);
+    const room = new PlanRoom(makeState() as unknown as DurableObjectState, env);
     join(room, 'a');
     await Promise.resolve();
     expect(multiplayerRows(rows)).toHaveLength(0);
@@ -1150,7 +1150,7 @@ describe('ProjectRoom multiplayer telemetry (docs/specs/017-telemetry/telemetry.
   it('counts a new session once the room has emptied and filled again', async () => {
     const { env, rows } = envWithRows();
     const state = makeState();
-    const room = new ProjectRoom(state as unknown as DurableObjectState, env);
+    const room = new PlanRoom(state as unknown as DurableObjectState, env);
     join(room, 'a');
     join(room, 'b');
     // Everybody leaves: the runtime drops closed sockets from the set.
@@ -1163,7 +1163,7 @@ describe('ProjectRoom multiplayer telemetry (docs/specs/017-telemetry/telemetry.
 
   it('writes nothing when telemetry is off', async () => {
     const { env, rows } = envWithRows();
-    const room = new ProjectRoom(makeState() as unknown as DurableObjectState, {
+    const room = new PlanRoom(makeState() as unknown as DurableObjectState, {
       ...env,
       TELEMETRY_ENABLED: undefined,
     });
@@ -1174,8 +1174,8 @@ describe('ProjectRoom multiplayer telemetry (docs/specs/017-telemetry/telemetry.
   });
 });
 
-describe('ProjectRoom collaboration ledger (docs/specs/012-collaboration/collab-race-hardening.md phase 3)', () => {
-  function editor(room: ProjectRoom) {
+describe('PlanRoom collaboration ledger (docs/specs/012-collaboration/collab-race-hardening.md phase 3)', () => {
+  function editor(room: PlanRoom) {
     const ws = makeSocket();
     room.acceptSession(asWs(ws), 'edit');
     sendFrame(room, ws, { kind: 'hello', participant: { id: 'e', name: 'E', color: '#000' } });
@@ -1190,7 +1190,7 @@ describe('ProjectRoom collaboration ledger (docs/specs/012-collaboration/collab-
       delta: { kind: 'response', participantId, value: 'done', at: 1 },
     },
   });
-  const ledger = async (room: ProjectRoom, epoch = room.epoch) =>
+  const ledger = async (room: PlanRoom, epoch = room.epoch) =>
     (await room.fetch(new Request(`https://room/ledger?tab=t1&epoch=${epoch}`))).json();
 
   it('records each answer with the seq it took, and serves the tab ledger', async () => {
@@ -1221,7 +1221,7 @@ describe('ProjectRoom collaboration ledger (docs/specs/012-collaboration/collab-
   });
 });
 
-describe('ProjectRoom worker mutations (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
+describe('PlanRoom worker mutations (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
   it('sequences a worker-made comment into the stream for everybody', async () => {
     const { room } = newRoom();
     const peer = makeSocket();
@@ -1259,7 +1259,7 @@ describe('ProjectRoom worker mutations (docs/specs/012-collaboration/collab-race
   });
 });
 
-describe('ProjectRoom comment author ids (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
+describe('PlanRoom comment author ids (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
   it('strips them from every op it relays, whatever a client sent', () => {
     const { room } = newRoom();
     const editor = makeSocket();
@@ -1315,7 +1315,7 @@ describe('ProjectRoom comment author ids (docs/specs/012-collaboration/collab-ra
 // docs/specs/013-workspace/tab-scoped-share-links.md, Realtime. A session admitted on a link scoped to tab
 // t2 receives nothing about t1, can't change t1, and is shut out when its
 // link is revoked or rescoped.
-describe('ProjectRoom tab-scoped sessions', () => {
+describe('PlanRoom tab-scoped sessions', () => {
   function scopedSession(
     state: FakeState,
     ws: FakeSocket & { closed?: [number, string] },
@@ -1444,7 +1444,7 @@ describe('ProjectRoom tab-scoped sessions', () => {
   // /close-sessions ends only the matched sessions, with 4005, and broadcasts nothing.
   describe('POST /close-sessions', () => {
     const TAG = 'a'.repeat(64);
-    const closeSessions = (room: ProjectRoom, body: unknown) =>
+    const closeSessions = (room: PlanRoom, body: unknown) =>
       room.fetch(
         new Request('https://room/close-sessions', {
           method: 'POST',
@@ -1541,7 +1541,7 @@ describe('ProjectRoom tab-scoped sessions', () => {
 });
 
 // Agent changesets (docs/specs/024-agents/agent-changesets.md "What the room does").
-describe('ProjectRoom and agent changesets', () => {
+describe('PlanRoom and agent changesets', () => {
   const changeset = {
     kind: 'changeset',
     tabId: 't1',
@@ -1559,7 +1559,7 @@ describe('ProjectRoom and agent changesets', () => {
     ],
   };
   function join(
-    room: ProjectRoom,
+    room: PlanRoom,
     id: string,
     personTag: string | null = null,
     role: 'edit' | 'view' = 'edit',
@@ -1573,7 +1573,7 @@ describe('ProjectRoom and agent changesets', () => {
   const presenceIdOf = (ws: FakeSocket) => (ws.attachment as { presenceId: string }).presenceId;
   const mutation = (op: unknown) =>
     new Request('https://room/mutation', { method: 'POST', body: JSON.stringify({ op }) });
-  const selections = async (room: ProjectRoom, query: string) =>
+  const selections = async (room: PlanRoom, query: string) =>
     await (
       await room.fetch(new Request(`https://room/selections?${query}`))
     ).json<{
@@ -1672,7 +1672,7 @@ describe('ProjectRoom and agent changesets', () => {
   });
 });
 
-describe('ProjectRoom agent presence (docs/specs/024-agents/agent-presence.md)', () => {
+describe('PlanRoom agent presence (docs/specs/024-agents/agent-presence.md)', () => {
   const body = (over: Record<string, unknown> = {}) => ({
     tokenId: 'tok_1',
     tabId: 't1',
@@ -1687,9 +1687,9 @@ describe('ProjectRoom agent presence (docs/specs/024-agents/agent-presence.md)',
     mode: 'set',
     ...over,
   });
-  const put = (room: ProjectRoom, b: unknown) =>
+  const put = (room: PlanRoom, b: unknown) =>
     room.fetch(new Request('https://room/presence', { method: 'PUT', body: JSON.stringify(b) }));
-  const del = (room: ProjectRoom, query: string) =>
+  const del = (room: PlanRoom, query: string) =>
     room.fetch(new Request(`https://room/presence${query}`, { method: 'DELETE' }));
   const lastAgents = (ws: FakeSocket) => {
     const frames = ws.sent
@@ -1794,9 +1794,9 @@ describe('ProjectRoom agent presence (docs/specs/024-agents/agent-presence.md)',
 
   it('restores entries after a wake', async () => {
     const state = makeState();
-    const room = new ProjectRoom(state as unknown as DurableObjectState);
+    const room = new PlanRoom(state as unknown as DurableObjectState);
     await put(room, body());
-    const woken = new ProjectRoom(state as unknown as DurableObjectState);
+    const woken = new PlanRoom(state as unknown as DurableObjectState);
     await Promise.resolve();
     await new Promise((r) => setTimeout(r, 0));
     expect(woken.agents.live().map((r) => r.tokenId)).toEqual(['tok_1']);
@@ -1805,7 +1805,7 @@ describe('ProjectRoom agent presence (docs/specs/024-agents/agent-presence.md)',
 
 // docs/specs/012-collaboration/realtime-conflict-resolution.md "Keepalive": the runtime answers the client's ping
 // itself, so a keepalive never wakes the room.
-describe('ProjectRoom keepalive', () => {
+describe('PlanRoom keepalive', () => {
   afterEach(() => vi.unstubAllGlobals());
 
   it('asks the runtime to answer ping with pong', () => {
@@ -1820,13 +1820,13 @@ describe('ProjectRoom keepalive', () => {
     vi.stubGlobal('WebSocketRequestResponsePair', Pair);
     const state = makeState();
     const setWebSocketAutoResponse = vi.fn();
-    new ProjectRoom({ ...state, setWebSocketAutoResponse } as unknown as DurableObjectState);
+    new PlanRoom({ ...state, setWebSocketAutoResponse } as unknown as DurableObjectState);
     expect(setWebSocketAutoResponse).toHaveBeenCalledWith(new Pair('ping', 'pong'));
   });
 });
 
 // docs/specs/015-api/api.md "Purging a room": a project removed for good leaves nothing in its room.
-describe('ProjectRoom /purge', () => {
+describe('PlanRoom /purge', () => {
   it('ends every session and drops everything stored, the ledger included', async () => {
     const { room, state } = newRoom();
     const ws = makeSocket() as FakeSocket & { closed?: [number, string] };

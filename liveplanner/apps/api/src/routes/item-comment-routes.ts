@@ -10,7 +10,7 @@ import type { Item, ItemPerson } from '@liveplanner/items';
 import { forbidden, json, methodNotAllowed, noContent } from '../responses';
 import { recordCommentResolved, retractComments } from '../timeline';
 import { afterCommentPosted, newComment } from './comment-routes';
-import { gateEdit, readBody, type RouteContext } from './context';
+import { gateEdit, readBody, type PlanRouteContext } from './context';
 import { itemCaller, type ItemCaller } from './item-route-kit';
 import { writeItem } from './item-routes';
 
@@ -38,7 +38,7 @@ function commentWrite(change: ItemCommentChange): (item: Item, by: ItemPerson) =
 // The caller as the canvas's comment helpers know them (the project and their owner id).
 const asCommenter = (caller: ItemCaller) => ({ doc: caller.doc!, owner: caller.owner });
 
-async function add(ctx: RouteContext, projectId: string, itemId: string): Promise<Response> {
+async function add(ctx: PlanRouteContext, projectId: string, itemId: string): Promise<Response> {
   const caller = await itemCaller(ctx, projectId, 'participate');
   if (caller instanceof Response) return caller;
   const body = await readBody(ctx);
@@ -64,7 +64,7 @@ async function add(ctx: RouteContext, projectId: string, itemId: string): Promis
 
 // Delete-own for anyone who may comment; any comment for an editor (on the canvas, through the tab save).
 async function remove(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   projectId: string,
   itemId: string,
   commentId: string,
@@ -96,7 +96,7 @@ async function remove(
 }
 
 async function setResolved(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   projectId: string,
   itemId: string,
   verb: Verb,
@@ -131,7 +131,7 @@ async function setResolved(
 
 // POST .../comments (add), DELETE .../comments/:commentId, POST .../comments/resolve and .../comments/reopen.
 export async function handleItemCommentRoutes(
-  ctx: RouteContext,
+  ctx: PlanRouteContext,
   projectId: string,
   itemId: string,
 ): Promise<Response | null> {

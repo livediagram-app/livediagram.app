@@ -18,7 +18,7 @@ function arrange(roomOk = true): {
   const db = sqliteD1();
   const env = {
     ...db.env,
-    PROJECT_ROOM: {
+    PLAN_ROOM: {
       idFromName: (name: string) => name,
       get: (doc: string) => ({
         fetch: async (_url: string, init: RequestInit) => {

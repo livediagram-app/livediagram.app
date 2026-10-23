@@ -44,7 +44,7 @@ const call = (
 
 async function setUp() {
   const room = roomRecorder();
-  const db = sqliteD1({ PROJECT_ROOM: room.binding } as unknown as Partial<Env>);
+  const db = sqliteD1({ PLAN_ROOM: room.binding } as unknown as Partial<Env>);
   await call(db, 'POST', '/api/projects', {
     id: 'D',
     name: 'Doc',

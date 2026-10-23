@@ -40,7 +40,6 @@ import {
   readReorderEntries,
   reorderTabs,
   seedTabs,
-  tabIdsHeldElsewhere,
   upsertProjectMeta,
 } from '../db';
 import {
@@ -67,7 +66,6 @@ import {
 import { handleProjectDelete } from './project-delete-route';
 import { handleProjectPlacement } from './project-placement-route';
 import { handleProjectSharedTabs } from './project-shared-tabs-route';
-import { forkTakenTabIds } from '../tab-id-fork';
 import { relayProjectRename } from '../room-client';
 import { handleProjectRoomRoutes } from './project-room-routes';
 import { handleProjectSubresources } from './project-subresource-routes';
@@ -85,6 +83,9 @@ import {
 } from '../placement/placement-log';
 import { intentRejected, placementRejected } from '../placement/placement-response';
 import type { ProjectDTO } from '../types';
+import { initPlan } from '../plan-room/plan-content';
+import { identityOf } from '../plan-room/plan-route';
+import { planRoom } from '../plan-client';
 import {
   gateEdit,
   gateGrant,
@@ -92,33 +93,118 @@ import {
   requireOwner,
   shareCodeOf,
   sharePasswordOf,
+  type PlanRouteContext,
   type RouteContext,
   readBody,
 } from './context';
 import { sharePasswordOk } from '../auth/share-access';
 
+function isPlanContext(ctx: RouteContext): ctx is PlanRouteContext {
+  return 'PLAN_DB' in ctx.env;
+}
+
+// The longest plan id the worker names a Durable Object by. Ids are UUIDs; this only stops a hostile create from
+// naming objects with megabyte ids.
+const MAX_PLAN_ID = 200;
+
+// /api/projects in the worker. What reads no content is answered here: the project list (D1), a project's
+// thumbnail (a fresh cache from R2; a stale one is drawn by the plan) and the realtime room's ticket and upgrade.
+// Everything else about one plan, a create included, runs inside that plan's Durable Object
+// (docs/specs/015-api/api.md "Storage"), with the caller's identity as resolved here.
 export async function handleProjects(ctx: RouteContext): Promise<Response> {
+  const { request, segments } = ctx;
+  if (segments[1] !== 'projects') return notFound();
+  if (segments.length === 2 && request.method === 'GET') return listProjects(ctx);
+  if (segments.length === 4 && segments[3] === 'thumbnail') return projectThumbnail(ctx);
+  // Realtime-room admission (docs/specs/015-api/api.md): the one-time WS ticket mint +
+  // the Durable Object upgrade — see project-room-routes.ts.
+  const roomResp = await handleProjectRoomRoutes(ctx);
+  if (roomResp) return roomResp;
+  if (isPlanContext(ctx)) return handlePlanRequest(ctx);
+  return forwardToPlan(ctx);
+}
+
+// Hand a request about one plan to its Durable Object. A create names its plan in the body, read here from a copy
+// so the request goes on whole; the answers for a body that names none are the create's own.
+async function forwardToPlan(ctx: RouteContext): Promise<Response> {
+  const { request, segments } = ctx;
+  let planId = segments[2] ?? '';
+  if (segments.length === 2) {
+    if (request.method !== 'POST') return notFound();
+    const read = await readBody({ ...ctx, request: request.clone() });
+    if (read instanceof Response) return read;
+    const owner = requireOwner(ctx);
+    if (owner instanceof Response) return owner;
+    const { id: named, name } = read;
+    if (typeof named !== 'string' || !named || typeof name !== 'string') {
+      return badRequest('missing id/name');
+    }
+    planId = named;
+  }
+  if (!planId || planId.length > MAX_PLAN_ID) return notFound();
+  return planRoom(ctx.env, planId).route(request, identityOf(ctx));
+}
+
+async function listProjects(ctx: RouteContext): Promise<Response> {
+  const { env } = ctx;
+  const owner = requireOwner(ctx);
+  if (owner instanceof Response) return owner;
+  // `?include=team-recent` (docs/specs/019-marketing/returning-visitor.md): the newest projects of
+  // the teams the caller has joined, for their recent diagrams. Membership is read from the
+  // verified account only, never the guest header, which anyone can set to any id.
+  if (ctx.url.searchParams.get('include') === TEAM_RECENT_INCLUDE) {
+    const [liveDocs, teamRecent] = await Promise.all([
+      listProjectsByOwner(env, owner),
+      ctx.verifiedUserId
+        ? listRecentTeamProjects(env, ctx.verifiedUserId, TEAM_RECENT_LIMIT)
+        : [],
+    ]);
+    return json({ projects: liveDocs, teamRecent });
+  }
+  const liveDocs = await listProjectsByOwner(env, owner);
+  return json({ projects: liveDocs });
+}
+
+// /api/projects/<id>/thumbnail — cached SVG snapshot (docs/specs/006-project/project-snapshots.md). Read-
+// gated exactly like GET /api/projects/<id>: the owner, a joined team
+// member, or a valid share-code visitor. A native <img> can't send
+// auth headers, so the editor app fetches this with headers and wraps
+// the bytes in a blob URL; a miss (no project, no read access, no R2
+// binding, empty project) is a 404 the row turns into its icon.
+async function projectThumbnail(ctx: RouteContext): Promise<Response> {
+  const { request, env, segments } = ctx;
+  const id = segments[2]!;
+  if (request.method !== 'GET') return notFound();
+  // One query for the gate AND the cache-freshness check: this runs for
+  // every preview in the Explorer grid, so its D1 round trips are the
+  // floor on how fast a card can paint.
+  const d = await getProjectThumbMeta(env, id);
+  if (!d) return notFound();
+  const grant = await gateGrant(ctx, id, d.ownerId, d.teamId);
+  if (!grant) return notFound();
+  // A tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md) gets their tab, never the
+  // first-tab snapshot.
+  const svg = await projectImageSvg(env, d, grant.tabScope);
+  // Nothing drawn (or no snapshot store). Past the gate, so this says
+  // nothing about access, and the URL carries `?v=<savedAt>`: the answer
+  // cannot change until the project does, so let the browser keep it
+  // instead of re-asking on every Explorer visit.
+  if (svg == null) {
+    return json(
+      { error: 'not_found' },
+      { status: 404, headers: { 'Cache-Control': 'private, max-age=86400' } },
+    );
+  }
+  // The client cache-busts via a `?v=<savedAt>` query param, so a
+  // long private max-age is safe: a changed project changes the URL.
+  return svgImage(svg, 'private, max-age=86400');
+}
+
+// Everything about one plan, inside its Durable Object (plan-room/plan-route.ts).
+export async function handlePlanRequest(ctx: PlanRouteContext): Promise<Response> {
   const { request, env, segments } = ctx;
   if (segments[1] !== 'projects') return notFound();
   if (segments.length === 2) {
-    if (request.method === 'GET') {
-      const owner = requireOwner(ctx);
-      if (owner instanceof Response) return owner;
-      // `?include=team-recent` (docs/specs/019-marketing/returning-visitor.md): the newest projects of
-      // the teams the caller has joined, for their recent diagrams. Membership is read from the
-      // verified account only, never the guest header, which anyone can set to any id.
-      if (ctx.url.searchParams.get('include') === TEAM_RECENT_INCLUDE) {
-        const [liveDocs, teamRecent] = await Promise.all([
-          listProjectsByOwner(env, owner),
-          ctx.verifiedUserId
-            ? listRecentTeamProjects(env, ctx.verifiedUserId, TEAM_RECENT_LIMIT)
-            : [],
-        ]);
-        return json({ projects: liveDocs, teamRecent });
-      }
-      const liveDocs = await listProjectsByOwner(env, owner);
-      return json({ projects: liveDocs });
-    }
     if (request.method === 'POST') {
       const read = await readBody(ctx);
       if (read instanceof Response) return read;
@@ -293,20 +379,9 @@ export async function handleProjects(ctx: RouteContext): Promise<Response> {
         logPlacementResolved(outcome.placement, outcome);
         placement = outcome.placement;
       }
-      // A seeded tab whose id another project holds is created under a fresh
-      // id, never upserted over it: that is how a synced-back offline copy of a
-      // shared tab forks (docs/specs/006-project/offline-mode.md), and why a
-      // create can't rewrite someone else's tab by naming its id.
-      const seeded = incomingTabs
-        ? forkTakenTabIds(
-            incomingTabs,
-            await tabIdsHeldElsewhere(
-              env,
-              body.id,
-              incomingTabs.map((t) => t.id),
-            ),
-          )
-        : null;
+      // Tabs are the plan's own (each plan has its own store), so a seeded tab id can never name another
+      // project's tab: a synced-back offline copy keeps its ids.
+      const seeded = incomingTabs;
       // Only a genuine create takes the body's dates: a re-commit keeps the stored created date
       // (the upsert never rewrites it) and is modified now.
       const savedAt = clash ? Date.now() : dates.savedAt;
@@ -319,7 +394,6 @@ export async function handleProjects(ctx: RouteContext): Promise<Response> {
         shareCode: body.shareCode ?? null,
         folderId: placement.folderId,
         teamId: placement.teamId,
-        itemTypes,
         // Provenance (docs/specs/013-workspace/folders.md): only the closed set of generated sources
         // is accepted; anything else (or absent) is a user-made project.
         source: isProjectSource(body.source) ? body.source : null,
@@ -330,6 +404,13 @@ export async function handleProjects(ctx: RouteContext): Promise<Response> {
         opensIn: intent.intent?.mode ?? null,
         tabKind: intent.intent?.tabKind ?? null,
         templateFamily: intent.intent?.templateFamily ?? null,
+      });
+      // The plan's own row: its dates, and on a genuine create the type catalogue
+      // (docs/specs/026-plan/item-types.md); a re-commit keeps the one it has.
+      await initPlan(env, body.id, {
+        savedAt,
+        createdAt: dates.createdAt,
+        itemTypes: clash ? null : itemTypes,
       });
       // Seed tabs if the caller provided them. The editor app's
       // welcome flow uses this when it commits a fresh project
@@ -583,48 +664,8 @@ export async function handleProjects(ctx: RouteContext): Promise<Response> {
     if (sharedTabsResp) return sharedTabsResp;
   }
 
-  // /api/projects/<id>/thumbnail — cached SVG snapshot (docs/specs/006-project/project-snapshots.md). Read-
-  // gated exactly like GET /api/projects/<id>: the owner, a joined team
-  // member, or a valid share-code visitor. A native <img> can't send
-  // auth headers, so the editor app fetches this with headers and wraps
-  // the bytes in a blob URL; a miss (no project, no read access, no R2
-  // binding, empty project) is a 404 the row turns into its icon.
-  if (segments.length === 4 && segments[3] === 'thumbnail') {
-    const id = segments[2]!;
-    if (request.method === 'GET') {
-      // One query for the gate AND the cache-freshness check: this runs for
-      // every preview in the Explorer grid, so its D1 round trips are the
-      // floor on how fast a card can paint.
-      const d = await getProjectThumbMeta(env, id);
-      if (!d) return notFound();
-      const grant = await gateGrant(ctx, id, d.ownerId, d.teamId);
-      if (!grant) return notFound();
-      // A tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md) gets their tab, never the
-      // first-tab snapshot.
-      const svg = await projectImageSvg(env, d, grant.tabScope, { defer: ctx.waitUntil });
-      // Nothing drawn (or no snapshot store). Past the gate, so this says
-      // nothing about access, and the URL carries `?v=<savedAt>`: the answer
-      // cannot change until the project does, so let the browser keep it
-      // instead of re-asking on every Explorer visit.
-      if (svg == null) {
-        return json(
-          { error: 'not_found' },
-          { status: 404, headers: { 'Cache-Control': 'private, max-age=86400' } },
-        );
-      }
-      // The client cache-busts via a `?v=<savedAt>` query param, so a
-      // long private max-age is safe: a changed project changes the URL.
-      return svgImage(svg, 'private, max-age=86400');
-    }
-  }
-
   const subResp = await handleProjectSubresources(ctx);
   if (subResp) return subResp;
-
-  // Realtime-room admission (docs/specs/015-api/api.md): the one-time WS ticket mint +
-  // the Durable Object upgrade — see project-room-routes.ts.
-  const roomResp = await handleProjectRoomRoutes(ctx);
-  if (roomResp) return roomResp;
 
   return notFound();
 }

@@ -21,7 +21,7 @@ const db = vi.hoisted(() => ({
 }));
 vi.mock('./db', () => db);
 
-import { getProjectThumbnailSvg } from './thumbnail';
+import { renderPlanImage } from './thumbnail';
 
 let ids = 0;
 const tabs = buildTemplateTabs({ id: 't0', name: 'Roadmap' }, 'project-planner', () => `t${++ids}`);
@@ -77,13 +77,13 @@ async function timed(n: number) {
   const env = {
     SNAPSHOTS: { get: vi.fn(), put: vi.fn().mockResolvedValue(undefined) },
   } as unknown as Env;
-  // Warm once (module-level caches, the first JIT pass), then time the median of a few renders.
-  await getProjectThumbnailSvg(env, project);
+  // The plan's side of a stale snapshot (its Durable Object draws it). Warm once (module-level caches, the first JIT pass), then time the median of a few renders.
+  await renderPlanImage(env as never, project, null);
   const runs: number[] = [];
   let svg = '';
   for (let i = 0; i < 5; i++) {
     const t = performance.now();
-    svg = (await getProjectThumbnailSvg(env, project)) ?? '';
+    svg = (await renderPlanImage(env as never, project, null)) ?? '';
     runs.push(performance.now() - t);
   }
   runs.sort((a, b) => a - b);

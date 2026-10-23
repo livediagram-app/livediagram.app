@@ -20,7 +20,7 @@ import {
   generateWorkbenchTicket,
   hashWorkbenchSecret,
 } from '../auth/workbench-session';
-import { projectLinksTab } from '../db/tabs';
+import { planRoom } from '../plan-client';
 import {
   findWorkbenchPairing,
   insertWorkbenchTicket,
@@ -148,7 +148,7 @@ export async function mintWorkbenchTicket(ctx: RouteContext): Promise<Response> 
   const { projectId, tabId } = asked;
   const access = await ownerProjectAccess(ctx.env, projectId, ownerId);
   if (access instanceof Response) return refused('not_found', asked.scope, access);
-  if (tabId !== null && !(await projectLinksTab(ctx.env, projectId, tabId)))
+  if (tabId !== null && !(await planRoom(ctx.env, projectId).hasTab(tabId)))
     return refused('not_found', asked.scope, notFound());
 
   const minted = await insertTicket(ctx, pairing, ownerId, {

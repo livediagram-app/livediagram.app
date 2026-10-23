@@ -50,7 +50,7 @@ import { MAX_PASSWORD_LEN } from '../limits';
 function roomEnv() {
   const broadcasts: unknown[] = [];
   const env = {
-    PROJECT_ROOM: {
+    PLAN_ROOM: {
       idFromName: (name: string) => `id:${name}`,
       get: () => ({
         fetch: async (_url: string, init: { body: string }) => {
@@ -459,7 +459,7 @@ describe('DELETE /api/projects/:id/share/:code — revoking one link', () => {
 
   it('still revokes when the room broadcast fails — persistence is the truth', async () => {
     const env = {
-      PROJECT_ROOM: {
+      PLAN_ROOM: {
         idFromName: () => 'id',
         get: () => ({ fetch: async () => Promise.reject(new Error('room down')) }),
       },

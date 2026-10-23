@@ -6,7 +6,7 @@
 import type { TeamRecentProject } from '@liveplanner/api-schema';
 import type { Env } from '../types';
 import { PROJECT_SUMMARY_COLS, rowToSummary, type SummaryRow } from './projects';
-import { firstTabCountSql } from './tabs';
+import { firstTabCountSql } from './content-summary';
 
 // Binds: ?1 = the person's owner id, ?2 = how many. `picked` finds the ids from the person's joined
 // teams by team_members_user_idx and projects_team_idx, reading only each one's first-tab count;

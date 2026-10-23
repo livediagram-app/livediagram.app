@@ -13,7 +13,7 @@ import {
   type ItemTally,
 } from '@liveplanner/items';
 import { badRequest, json } from '../responses';
-import { readBody, type RouteContext } from './context';
+import { readBody, type PlanRouteContext } from './context';
 import { forCaller, itemCaller, itemNotFound, writer } from './item-route-kit';
 import { writeItemsWithRetry } from './item-write-loop';
 
@@ -43,7 +43,7 @@ function readTallies(raw: unknown): ItemTally[] | Response {
   return out;
 }
 
-export async function tally(ctx: RouteContext, projectId: string): Promise<Response> {
+export async function tally(ctx: PlanRouteContext, projectId: string): Promise<Response> {
   const caller = await itemCaller(ctx, projectId, 'edit');
   if (caller instanceof Response) return caller;
   const body = await readBody(ctx);
