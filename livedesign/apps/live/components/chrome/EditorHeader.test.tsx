@@ -192,15 +192,12 @@ describe('EditorHeader Present button', () => {
     const button = screen.getByRole('button', { name: 'Starting' });
     expect(button).toHaveProperty('disabled', true);
   });
-
 });
 
 describe('EditorHeader logo', () => {
-  it('links the logo to the Explorer on liveworkspace.app, not the homepage', () => {
+  it('links the logo to the Explorer, not the homepage', () => {
     renderHeader();
-    expect(screen.getByRole('link', { name: 'livedesign' }).getAttribute('href')).toBe(
-      'https://liveworkspace.app/explorer?from=livedesign',
-    );
+    expect(screen.getByRole('link', { name: 'livedesign' }).getAttribute('href')).toBe('/explorer');
   });
 });
 

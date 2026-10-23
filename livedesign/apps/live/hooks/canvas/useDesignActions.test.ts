@@ -63,10 +63,8 @@ describe('useDesignActions', () => {
     await actions().deleteDesign('p1');
     expect(tombstonedAtDelete).toBe(true);
     expect(isDesignDeleted('p1')).toBe(true);
-    // To the Explorer on liveworkspace.app, the design in the address for its Undo.
-    expect(assign).toHaveBeenCalledWith(
-      expect.stringMatching(/\/explorer\?trashed=p1.*&from=livedesign$/),
-    );
+    // To the Explorer, the design in the address for its Undo.
+    expect(assign).toHaveBeenCalledWith(expect.stringMatching(/^\/explorer\?trashed=p1/));
     expect(takeDeleteUndo()).toEqual({ id: 'p1', title: 'Roadmap' });
   });
 

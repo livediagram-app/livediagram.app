@@ -30,14 +30,6 @@ export const LAYERS_REORDERED = chart(
   'Layers dragged into a new order.',
 );
 
-export const FOLDERS_DELETED = chart(
-  'Folder',
-  'Deleted',
-  'Folders Deleted',
-  'A folder removed, in your Explorer or a team library.',
-  { rising: 'neutral' },
-);
-
 export const FOLDERS_RENAMED = chart(
   'Folder',
   'Renamed',
@@ -556,14 +548,6 @@ export const FOLDERS_CREATED: Metric = {
   blurb: 'Folders of designs, in your own Explorer or a team library.',
 };
 
-export const FOLDERS_RE_PARENTED: Metric = {
-  category: 'Folder',
-  action: 'Moved',
-  allTypes: true,
-  title: 'Folders Re-parented',
-  blurb: 'A folder nested under another, or promoted back to the root.',
-};
-
 export const TAB_FOLDERS_CREATED: Metric = {
   category: 'Folder',
   action: 'Created',
@@ -641,48 +625,6 @@ export const EXPLORER_FILTERS_PICKED = chart(
   { rising: 'good' },
 );
 
-// Tags (docs/specs/013-workspace/tags.md "Telemetry"): coloured labels people put on their designs. Never a name.
-export const TAGS_CREATED = chart(
-  'Explorer',
-  'Created',
-  'Tags Made',
-  'A tag made, from the tag picker on a design or New Tag on the Tags page.',
-  { types: ['Tag'], rising: 'good' },
-);
-
-export const TAGS_APPLIED = chart(
-  'Explorer',
-  'Added',
-  'Tags Put On or Taken Off',
-  'A tag ticked on or off a design in the tag picker.',
-  { actionIn: ['Added', 'Removed'], types: ['Tag'], rising: 'good' },
-);
-
-export const TAGS_EDITED = chart(
-  'Explorer',
-  'Renamed',
-  'Tags Renamed, Recoloured or Deleted',
-  'A tag renamed or recoloured, or deleted (which takes it off every design).',
-  { actionIn: ['Renamed', 'Changed', 'Deleted'], types: ['Tag', 'TagColour'], rising: 'neutral' },
-);
-
-// Default folders (docs/specs/013-workspace/default-folders.md "Telemetry"): one type per key.
-export const DEFAULT_FOLDERS_SET = chart(
-  'Folder',
-  'Changed',
-  'Default Folders Set',
-  'A folder chosen as where new designs of one kind land: from a folder menu, the New Design wizard or Settings.',
-  { rising: 'good' },
-);
-
-export const DEFAULT_FOLDERS_CLEARED = chart(
-  'Folder',
-  'Cleared',
-  'Default Folders Cleared',
-  'A default folder cleared, so new designs of that kind land in My Work again.',
-  { rising: 'neutral' },
-);
-
 export const ORGANISATION: MetricStack = {
   stack: true,
   title: 'Organisation',
@@ -690,20 +632,13 @@ export const ORGANISATION: MetricStack = {
     'Folders made and nested, tab folders, tabs and designs filed, tags, default folders, the Explorer sidebar and its filters.',
   members: [
     FOLDERS_CREATED,
-    FOLDERS_RE_PARENTED,
     TAB_FOLDERS_CREATED,
     TABS_FILED,
     DESIGNS_FILED,
-    FOLDERS_DELETED,
     FOLDERS_RENAMED,
     TABS_UNFILED,
     EXPLORER_SIDEBAR_PICKS,
     EXPLORER_FILTERS_PICKED,
-    TAGS_CREATED,
-    TAGS_APPLIED,
-    TAGS_EDITED,
-    DEFAULT_FOLDERS_SET,
-    DEFAULT_FOLDERS_CLEARED,
   ],
 };
 
