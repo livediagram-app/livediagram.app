@@ -73,3 +73,81 @@ export async function openRoomTicket(
   const claims = await service.verifyGrant(env, grant, itemId);
   return claims ? { claims, grant, workbench } : null;
 }
+
+// ---------- A session's grant in the room ---------------------------------------------------------------------
+//
+// Every session joins with the index's grant, which lapses after ten minutes. Shortly before it does, the room asks
+// the session for a fresh one (`grant-renew`); the session answers with a `grant` frame (its editor renews a minute
+// early anyway, and sends each new grant unasked). A session still holding a lapsed grant is closed, and its editor
+// rejoins with a fresh one, or not at all. The room keeps `grantExp` (epoch ms) and `renewAsked` on each socket's
+// attachment; these are the decisions, the same in every app's room.
+
+export type RoomGrantHold = { grantExp?: number | null; renewAsked?: boolean };
+
+// The level a ticket admits at: the grant's, held to a workbench session's cap.
+export function roomTicketLevel(opened: Pick<RoomTicket, 'claims' | 'workbench'>): Level {
+  const { level } = opened.claims;
+  const cap = opened.workbench?.cap;
+  if (!cap) return level;
+  const order: Level[] = ['view', 'participate', 'edit'];
+  return order[Math.min(order.indexOf(level), order.indexOf(cap))]!;
+}
+
+// When a session's grant next needs the room: its ask, or its lapse once asked. Null for a session with no grant.
+export function roomGrantDueAt(hold: RoomGrantHold | null, askBeforeMs: number): number | null {
+  if (!hold?.grantExp) return null;
+  return hold.renewAsked ? hold.grantExp : hold.grantExp - askBeforeMs;
+}
+
+// The earliest of many sessions' due moments.
+export function earliestRoomGrantDue(
+  holds: Iterable<RoomGrantHold | null>,
+  askBeforeMs: number,
+): number | null {
+  let due: number | null = null;
+  for (const hold of holds) {
+    const at = roomGrantDueAt(hold, askBeforeMs);
+    if (at !== null && (due === null || at < due)) due = at;
+  }
+  return due;
+}
+
+// What a session's grant needs now: close it (`lapsed`), ask for a fresh one (`ask`), or nothing.
+export function roomGrantStep(
+  hold: RoomGrantHold | null,
+  now: number,
+  askBeforeMs: number,
+): 'lapsed' | 'ask' | null {
+  if (!hold?.grantExp) return null;
+  if (hold.grantExp <= now) return 'lapsed';
+  if (!hold.renewAsked && hold.grantExp - askBeforeMs <= now) return 'ask';
+  return null;
+}
+
+// The longest renewal a room reads off a `grant` frame.
+export const ROOM_GRANT_MAX_LENGTH = 8192;
+
+export type RoomGrantRenewal =
+  | { kind: 'renewed'; grantExp: number; claims: GrantClaims }
+  // The fresh grant says a different level or tab: the session ends, and its editor rejoins with what it holds.
+  | { kind: 'changed'; level: Level; tab: string | null }
+  // Forged, lapsed, for another item, or not a ticket at all: ignored, and the old grant still lapses.
+  | { kind: 'invalid' };
+
+// A session's `grant` frame, checked against the access the session holds now.
+export async function renewRoomGrant(
+  service: Pick<IndexService, 'verifyGrant'>,
+  env: IndexEnv,
+  ticket: unknown,
+  itemId: string,
+  held: { level: Level | null | undefined; tab: string | null | undefined },
+): Promise<RoomGrantRenewal> {
+  if (typeof ticket !== 'string' || ticket.length > ROOM_GRANT_MAX_LENGTH)
+    return { kind: 'invalid' };
+  const opened = await openRoomTicket(service, env, ticket, itemId);
+  if (!opened) return { kind: 'invalid' };
+  const level = roomTicketLevel(opened);
+  const tab = opened.claims.tab ?? null;
+  if (level !== held.level || tab !== (held.tab ?? null)) return { kind: 'changed', level, tab };
+  return { kind: 'renewed', grantExp: opened.claims.exp * 1000, claims: opened.claims };
+}
