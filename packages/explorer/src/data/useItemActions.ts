@@ -33,12 +33,15 @@ export function createItemActions({
   toast,
   reloadLists,
   hostTrash,
+  onPlaced,
 }: {
   client: IndexClient;
   overlay: ItemOverlay;
   toast: ToastApi;
   reloadLists: () => void;
   hostTrash?: HostTrash;
+  // After an item changed place (moved, to the Trash, back, gone): what folders hold has changed.
+  onPlaced?: () => void;
 }): ItemActions {
   // Patch, call, and on a refusal take the patch back and say why.
   async function optimistic(
@@ -50,6 +53,7 @@ export function createItemActions({
     const undo = overlay.patch(item.id, patch);
     try {
       await call();
+      if ('folderId' in patch || 'trashedAt' in patch || 'gone' in patch) onPlaced?.();
       return true;
     } catch (e) {
       undo();
@@ -161,9 +165,9 @@ function sharedAccess(item: Item) {
 }
 
 export function useItemActions(deps: Parameters<typeof createItemActions>[0]): ItemActions {
-  const { client, overlay, toast, reloadLists, hostTrash } = deps;
+  const { client, overlay, toast, reloadLists, hostTrash, onPlaced } = deps;
   return useMemo(
-    () => createItemActions({ client, overlay, toast, reloadLists, hostTrash }),
-    [client, overlay, toast, reloadLists, hostTrash],
+    () => createItemActions({ client, overlay, toast, reloadLists, hostTrash, onPlaced }),
+    [client, overlay, toast, reloadLists, hostTrash, onPlaced],
   );
 }

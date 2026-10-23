@@ -126,8 +126,31 @@ The content of the editor's floating Explorer panel. The host wraps it in its ow
   Explorer;
 - the chosen section as compact rows, paged.
 
-Props: `app`, `client`, `itemHref`, `onCreate`, `current?`, `onOpenExplorer?(view)`, and the same optional
-props as `<Explorer>`.
+Props: `app`, `client`, `itemHref`, `onCreate`, `current?`, `onOpenExplorer?(view)`, `onTrashCurrent?(item)` (the
+host trashes the item open in its editor itself, from any of the panel's menus or a drop on its Trash), and the
+same optional props as `<Explorer>`.
+
+## Drag and drop
+
+On the page and in the panel, an item the person manages (their own or a team's; never one reached through a
+link, nor one being renamed) drags from its row, card or Details row.
+
+- **Onto a place.** It drops on a folder (in the sidebar, as a row or card in the pane, or a card in the panel),
+  on My Work (the root) or on a team, in the sidebar or the panel's rail. The drop takes Change Folder's path (the
+  same optimistic move and rollback), then says "Moved “X” to Y." with an Undo. Dropping where it already is does
+  nothing. The place wears a brand ring while the drag is over it, and a closed sidebar row (or a rail entry) opens
+  once a drag rests on it for 800 ms.
+- **Onto the Trash.** While anything drags, the Trash wakes as a target: dashed, reading "Drop to Trash"; filled
+  with the brand colour, its bin's lid tipped and reading "Let go to trash it" while the drag is over it; one short
+  bounce as it swallows an item. An item goes through its own Delete (with the Trash's Undo); one of the person's
+  own folders, which also drags, goes through Delete Folder and its confirmation. Never red: the Trash is undoable.
+  A live region reads the Trash's words as they change.
+- **From the keyboard.** Every drop has a menu twin: Change Folder and Delete on the row's menu (`⋯`,
+  right-click or Shift+F10).
+
+Drags carry their own types (`application/x-liveworkspace-item`, `-folder`), so a drop outside any target does
+nothing and a drag from another tab is never taken. Rows and cards do not re-render as a drag starts or ends;
+only the targets do (`drag.test.tsx` holds a 2,000-row page to two commits).
 
 Also exported: `explorerPath`, `viewFromLocation`, `kindWords`, and the types above.
 
@@ -141,6 +164,7 @@ the list scrolls near.
 | Folders       | Once, paging if needed. The sidebar, breadcrumbs, folder rows and Move all read this copy. |
 | Inbox         | Once per filter. The sidebar's count and the Inbox view share it.                          |
 | Home          | Two small requests: Recent (8) and Shared (4).                                             |
+| Folder cards  | One `GET /folders/previews` per batch of up to 60 cards shown, for their mosaics and counts; again after an item changes place. |
 | Home's hero   | One count request while it shows (My Work, one page of up to 200; "200+" past that). The Inbox pill reuses the sidebar's Inbox. None when the hero is hidden. |
 
 Nothing is fetched per row, or per folder.

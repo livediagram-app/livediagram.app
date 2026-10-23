@@ -11,7 +11,8 @@ import { CountBadge } from '../ui/CountBadge';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { RelativeTimeChip } from '../ui/RelativeTimeChip';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
-import { CARD_PREVIEW, CARD_SHELL, RENAME_INPUT } from '../ui/classes';
+import { CARD_PREVIEW, CARD_SHELL, DROP_TARGET_RING, RENAME_INPUT } from '../ui/classes';
+import { DROP_ROW, useDropTarget, useFolderDrag, useItemDrag } from '../drag/drag';
 import { FolderSolidIcon, ItemIcon } from '../ui/icons';
 import { AppMark, FavouriteMarker, FolderChip, VisibilityBadge } from './badges';
 import { useExplorer } from './context';
@@ -66,6 +67,7 @@ export const ItemRow = memo(function ItemRow({
   const { Link } = useExplorer();
   const bits = useItemBits(item);
   const menu = useRowMenu({ disabled: renaming });
+  const drag = useItemDrag(item, renaming);
   const title = item.title || 'Untitled';
   return (
     <li
@@ -73,6 +75,7 @@ export const ItemRow = memo(function ItemRow({
       className={`${ROW_GRID} ${ROW}`}
       style={{ height: ROW_HEIGHT }}
       onContextMenu={menu.onContextMenu}
+      {...drag}
     >
       <span className="flex min-w-0 items-center gap-2">
         {options.showApp ? <AppMark app={item.app} /> : null}
@@ -152,6 +155,8 @@ export const FolderRow = memo(function FolderRow({
 }) {
   const bits = useFolderBits(folder);
   const menu = useRowMenu({ disabled: renaming });
+  const drop = useDropTarget({ teamId: folder.teamId, folderId: folder.id });
+  const drag = useFolderDrag(folder, renaming);
   const label = (
     <>
       <span className="shrink-0 text-amber-500">
@@ -176,9 +181,12 @@ export const FolderRow = memo(function FolderRow({
   return (
     <li
       data-folder-row={folder.id}
-      className={`${ROW_GRID} ${ROW}`}
+      data-drop-over={drop.over || undefined}
+      className={`${ROW_GRID} ${ROW} ${drop.over ? DROP_ROW : ''}`}
       style={{ height: ROW_HEIGHT }}
       onContextMenu={menu.onContextMenu}
+      {...drop.handlers}
+      {...drag}
     >
       {renaming ? (
         <div className="flex min-w-0 items-center gap-2">{label}</div>
@@ -217,6 +225,7 @@ export const ItemCard = memo(function ItemCard({
   const { Link, renderThumbnail } = useExplorer();
   const bits = useItemBits(item);
   const menu = useRowMenu({ disabled: renaming });
+  const drag = useItemDrag(item, renaming);
   const title = item.title || 'Untitled';
   const preview = renderThumbnail?.(item, 'card') ?? (
     <span className="text-slate-300 dark:text-slate-600 [&_svg]:h-10 [&_svg]:w-10">
@@ -224,7 +233,12 @@ export const ItemCard = memo(function ItemCard({
     </span>
   );
   return (
-    <div data-item-card={item.id} className={CARD_SHELL} onContextMenu={menu.onContextMenu}>
+    <div
+      data-item-card={item.id}
+      className={CARD_SHELL}
+      onContextMenu={menu.onContextMenu}
+      {...drag}
+    >
       {renaming ? (
         <span className={CARD_PREVIEW}>{preview}</span>
       ) : (
@@ -307,10 +321,19 @@ export const FolderCard = memo(function FolderCard({
   const bits = useFolderBits(folder);
   const { folders } = useExplorer();
   const menu = useRowMenu({ disabled: renaming });
+  const drop = useDropTarget({ teamId: folder.teamId, folderId: folder.id });
+  const drag = useFolderDrag(folder, renaming);
   // Subfolders and items, as the card's badge always counted them.
   const count = bits.childCount + (preview?.itemCount ?? 0);
   return (
-    <div data-folder-card={folder.id} className={CARD_SHELL} onContextMenu={menu.onContextMenu}>
+    <div
+      data-folder-card={folder.id}
+      data-drop-over={drop.over || undefined}
+      className={`${CARD_SHELL} ${drop.over ? DROP_TARGET_RING : ''}`}
+      onContextMenu={menu.onContextMenu}
+      {...drop.handlers}
+      {...drag}
+    >
       <button
         type="button"
         onClick={renaming ? undefined : bits.open}

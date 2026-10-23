@@ -37,6 +37,16 @@ import { FolderMenu, ItemMenu } from '../explorer/menus';
 import { emptyCopy } from '../explorer/EmptyPane';
 import { InboxPane } from '../explorer/InboxPane';
 import { daysLeftLabel, trashedOnLabel, trashGroups } from '../explorer/TrashPane';
+import {
+  TRASH_BIN,
+  TRASH_OVER,
+  TRASH_WAITING,
+  useDropTarget,
+  useFolderDrag,
+  useItemDrag,
+  useTrashTarget,
+  type DropPlace,
+} from '../drag/drag';
 import { BackBar } from '../ui/BackBar';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
@@ -490,43 +500,16 @@ function Rail({
   );
   const entry = (s: PanelSection) => {
     const key = sectionKey(s);
-    const on = key === selectedKey;
-    const label = sectionLabel(s, name);
-    const badge = badges[key];
     return (
-      <li key={key} className={phone ? 'shrink-0' : ''}>
-        <button
-          type="button"
-          data-rail-entry=""
-          aria-current={on ? 'true' : undefined}
-          aria-label={badge ? `${label} (${badge})` : label}
-          onClick={() => onPick(s)}
-          className={`flex cursor-pointer items-center gap-2 text-left text-xs transition focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-500 ${
-            phone
-              ? 'relative h-9 touch-target-y whitespace-nowrap rounded-lg px-2.5 text-[13px]'
-              : 'h-8 w-full rounded-md px-2'
-          } ${
-            on
-              ? 'bg-brand-100 font-semibold text-brand-800 dark:bg-brand-500/20 dark:text-brand-100'
-              : phone
-                ? 'text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-800'
-                : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
-          }`}
-        >
-          <span aria-hidden className="flex shrink-0 items-center opacity-80">
-            <SectionIcon kind={s.kind} />
-          </span>
-          <span className={phone ? 'text-optical-centre' : 'min-w-0 flex-1 truncate'}>{label}</span>
-          {badge ? (
-            <span
-              aria-hidden
-              className="rounded-full bg-slate-200/70 px-1.5 text-[10px] font-semibold leading-4 text-slate-600 dark:bg-slate-700 dark:text-slate-200"
-            >
-              {badge}
-            </span>
-          ) : null}
-        </button>
-      </li>
+      <RailEntry
+        key={key}
+        section={s}
+        on={key === selectedKey}
+        label={sectionLabel(s, name)}
+        badge={badges[key]}
+        phone={phone}
+        onPick={onPick}
+      />
     );
   };
   return (
@@ -570,6 +553,89 @@ function Rail({
         </>
       )}
     </nav>
+  );
+}
+
+// Where an item dropped on a rail entry lands: My Work's root, or a team's.
+function railDropPlace(s: PanelSection): DropPlace | null {
+  if (s.kind === 'mine') return { teamId: null, folderId: null };
+  if (s.kind === 'team') return { teamId: s.id, folderId: null };
+  return null;
+}
+
+/**
+ * One rail entry. My Work and each team take a dragged item (a resting drag opens the section under it), and the
+ * Trash wakes while anything drags, as the Explorer page's sidebar does.
+ */
+function RailEntry({
+  section: s,
+  on,
+  label,
+  badge,
+  phone,
+  onPick,
+}: {
+  section: PanelSection;
+  on: boolean;
+  label: string;
+  badge: number | undefined;
+  phone: boolean;
+  onPick: (s: PanelSection) => void;
+}) {
+  const drop = useDropTarget(railDropPlace(s), { onLongHover: on ? undefined : () => onPick(s) });
+  const trash = useTrashTarget();
+  const isTrash = s.kind === 'trash';
+  const trashState = isTrash ? trash.state : 'rest';
+  const shown = isTrash && trash.words ? trash.words : label;
+  return (
+    <li className={phone ? 'shrink-0' : ''}>
+      <button
+        type="button"
+        data-rail-entry=""
+        data-drop-over={drop.over || undefined}
+        aria-current={on ? 'true' : undefined}
+        aria-label={badge ? `${label} (${badge})` : label}
+        onClick={() => onPick(s)}
+        {...(isTrash ? trash.handlers : drop.handlers)}
+        className={`flex cursor-pointer items-center gap-2 border border-transparent text-left text-xs transition focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-500 ${
+          phone
+            ? 'relative h-9 touch-target-y whitespace-nowrap rounded-lg px-2.5 text-[13px]'
+            : 'h-8 w-full rounded-md px-2'
+        } ${
+          trashState === 'over'
+            ? `${TRASH_OVER} font-semibold text-white`
+            : trashState === 'waiting'
+              ? `${TRASH_WAITING} text-brand-800 dark:text-brand-200`
+              : on
+                ? 'bg-brand-100 font-semibold text-brand-800 dark:bg-brand-500/20 dark:text-brand-100'
+                : phone
+                  ? 'text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-800'
+                  : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
+        } ${drop.over ? 'ring-2 ring-brand-400' : ''}`}
+      >
+        <span
+          aria-hidden
+          data-trash-bin={isTrash ? trashState : undefined}
+          className={`flex shrink-0 items-center opacity-80 transition-transform duration-short ease-out ${TRASH_BIN[trashState]}`}
+        >
+          <SectionIcon kind={s.kind} />
+        </span>
+        <span className={phone ? 'text-optical-centre' : 'min-w-0 flex-1 truncate'}>{shown}</span>
+        {isTrash ? (
+          <span role="status" aria-live="polite" className="sr-only">
+            {trash.words ?? ''}
+          </span>
+        ) : null}
+        {badge ? (
+          <span
+            aria-hidden
+            className="rounded-full bg-slate-200/70 px-1.5 text-[10px] font-semibold leading-4 text-slate-600 dark:bg-slate-700 dark:text-slate-200"
+          >
+            {badge}
+          </span>
+        ) : null}
+      </button>
+    </li>
   );
 }
 
@@ -820,6 +886,7 @@ function usePaneItemMenu(item: ShownItem) {
 const JumpBackInCard = memo(function JumpBackInCard({ item }: { item: ShownItem }) {
   const { openItem, filter, kind } = useExplorer();
   const menu = usePaneItemMenu(item);
+  const drag = useItemDrag(item);
   const now = useNow();
   return (
     <PaneCard
@@ -834,7 +901,7 @@ const JumpBackInCard = memo(function JumpBackInCard({ item }: { item: ShownItem 
         </span>
       }
       onActivate={() => openItem(item)}
-      rowProps={{ onContextMenu: menu.onContextMenu }}
+      rowProps={{ onContextMenu: menu.onContextMenu, ...drag }}
       trailing={menu.trailing}
     />
   );
@@ -857,7 +924,8 @@ function PlaceSection({
   rootLabel: string;
   pendingRename: React.MutableRefObject<((id: string) => void) | null>;
 }) {
-  const { client, app, filter, overlay, epoch, folders, words, setRenamingId } = useExplorer();
+  const { client, app, filter, overlay, epoch, placedEpoch, folders, words, setRenamingId } =
+    useExplorer();
   const sharedMeta = useRef(new Map());
   const view = paneView(section, folderId);
   const list = useMemo(
@@ -890,6 +958,7 @@ function PlaceSection({
     folderIds: folderRows.map((f) => f.id),
     app: filter === 'all' ? null : app,
     epoch,
+    placedEpoch,
   });
   const trail: Folder[] = [];
   for (
@@ -972,6 +1041,8 @@ const FolderCard = memo(function FolderCard({
   const { folders, renamingId, setRenamingId, words } = useExplorer();
   const editing = renamingId === folder.id;
   const menu = useRowMenu({ disabled: editing });
+  const drop = useDropTarget({ teamId: folder.teamId, folderId: folder.id });
+  const drag = useFolderDrag(folder, editing);
   const count = folderCountLabel(
     folders.childrenOf(folder.id, folder.teamId).length,
     itemCount,
@@ -1000,7 +1071,8 @@ const FolderCard = memo(function FolderCard({
       }
       label={folder.name}
       onActivate={editing ? undefined : onOpen}
-      rowProps={{ onContextMenu: menu.onContextMenu }}
+      rowProps={{ onContextMenu: menu.onContextMenu, ...drop.handlers, ...drag }}
+      highlighted={drop.over}
       trailing={
         editing ? null : (
           <>
@@ -1026,6 +1098,7 @@ const ItemRow = memo(function ItemRow({ item, current }: { item: ShownItem; curr
   const now = useNow();
   const name = item.title || `Untitled ${kind.lowerOne}`;
   const editing = renamingId === item.id;
+  const drag = useItemDrag(item, editing);
   const commit = (next: string) => {
     const trimmed = next.trim();
     if (trimmed && trimmed !== item.title) void actions.rename(item, trimmed);
@@ -1055,7 +1128,7 @@ const ItemRow = memo(function ItemRow({ item, current }: { item: ShownItem; curr
       meta={`Updated ${relativeSince(item.updatedAt, now || Date.now())}`}
       current={current}
       onActivate={editing ? undefined : () => openItem(item)}
-      rowProps={{ onContextMenu: menu.onContextMenu }}
+      rowProps={{ onContextMenu: menu.onContextMenu, ...drag }}
       trailing={editing ? null : menu.trailing}
     />
   );

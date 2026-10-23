@@ -33,7 +33,7 @@ export function CardView({
   // A new list starts again from the first batch.
   resetKey: string;
 }) {
-  const { renamingId, client, app, filter, epoch } = useExplorer();
+  const { renamingId, client, app, filter, epoch, placedEpoch } = useExplorer();
   const [shown, setShown] = useState({ key: resetKey, count: CARD_BATCH });
   const limit = shown.key === resetKey ? shown.count : CARD_BATCH;
   const count = folders.length + items.length;
@@ -71,6 +71,7 @@ export function CardView({
     folderIds: shownFolderIds,
     app: filter === 'all' ? null : app,
     epoch,
+    placedEpoch,
   });
 
   const cards = [];

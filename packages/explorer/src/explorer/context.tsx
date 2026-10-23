@@ -8,6 +8,7 @@ import { createContext, useCallback, useContext, useMemo, useState, type ReactNo
 import type { App, IndexClient, Item } from '@liveworkspace/index-client';
 import { createItemOverlay, type ItemOverlay } from '../data/overlay';
 import { useFolderStore, type FolderStore } from '../data/useFolders';
+import { DragProvider } from '../drag/store';
 import { useItemActions, type HostTrash, type ItemActions } from '../data/useItemActions';
 import { useInbox, type InboxState } from '../data/useInbox';
 import { useToast, type ToastApi } from '../ui/Toasts';
@@ -48,6 +49,8 @@ export type ExplorerContextValue = {
   words: Words;
   overlay: ItemOverlay;
   epoch: number;
+  // Bumped when an item changes place, so what folder cards show of their insides is read again.
+  placedEpoch: number;
   reloadLists: () => void;
   folders: FolderStore;
   actions: ItemActions;
@@ -166,7 +169,9 @@ export function ExplorerProvider({
   const [epoch, setEpoch] = useState(0);
   const reloadLists = useCallback(() => setEpoch((n) => n + 1), []);
   const folders = useFolderStore(client, toast.error, reloadLists);
-  const actions = useItemActions({ client, overlay, toast, reloadLists, hostTrash });
+  const [placedEpoch, setPlacedEpoch] = useState(0);
+  const onPlaced = useCallback(() => setPlacedEpoch((n) => n + 1), []);
+  const actions = useItemActions({ client, overlay, toast, reloadLists, hostTrash, onPlaced });
   const inbox = useInbox(client, app, filter);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [dialog, openDialog] = useState<DialogTarget>(null);
@@ -200,6 +205,7 @@ export function ExplorerProvider({
       words: listWords(app, filter),
       overlay,
       epoch,
+      placedEpoch,
       reloadLists,
       folders,
       actions,
@@ -233,6 +239,7 @@ export function ExplorerProvider({
       setFilter,
       overlay,
       epoch,
+      placedEpoch,
       reloadLists,
       folders,
       actions,
@@ -258,5 +265,9 @@ export function ExplorerProvider({
       heroWords,
     ],
   );
-  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
+  return (
+    <Ctx.Provider value={value}>
+      <DragProvider>{children}</DragProvider>
+    </Ctx.Provider>
+  );
 }

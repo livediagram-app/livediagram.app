@@ -13,6 +13,7 @@ import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
 import { FolderSolidIcon } from '../ui/icons';
 import { kindWords } from '../words';
 import { AppMark, FavouriteMarker } from './badges';
+import { DROP_ROW, useDropTarget, useFolderDrag, useItemDrag } from '../drag/drag';
 import { useExplorer } from './context';
 import { ItemMenu } from './menus';
 import { ROW_HEIGHT, type RowOptions } from './rows';
@@ -76,7 +77,6 @@ export function DetailsView({
   loadingMore: boolean;
   onLoadMore: () => void;
 }) {
-  const { navigate } = useExplorer();
   const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({ key: 'updatedAt', dir: -1 });
   const sorted = useMemo(() => {
     if (sort.key === 'updatedAt' && sort.dir === -1) return items;
@@ -98,30 +98,7 @@ export function DetailsView({
   for (let i = start; i < end; i++) {
     if (i < folders.length) {
       const f = folders[i]!;
-      rows.push(
-        <li
-          key={`f:${f.id}`}
-          className={`${GRID} items-center gap-2 px-4 hover:bg-slate-50 dark:hover:bg-slate-700`}
-          style={{ height: ROW_HEIGHT }}
-        >
-          <button
-            type="button"
-            onClick={() =>
-              navigate(
-                f.teamId
-                  ? { kind: 'team', id: f.teamId, folderId: f.id }
-                  : { kind: 'folder', id: f.id },
-              )
-            }
-            className="flex min-w-0 items-center gap-2 text-left text-sm font-medium text-slate-900 dark:text-slate-100"
-          >
-            <span className="shrink-0 text-amber-500">
-              <FolderSolidIcon />
-            </span>
-            <span className="truncate">{f.name}</span>
-          </button>
-        </li>,
-      );
+      rows.push(<DetailsFolderRow key={`f:${f.id}`} folder={f} />);
     } else {
       const item = sorted[i - folders.length]!;
       rows.push(<DetailsRow key={item.id} item={item} options={options} />);
@@ -166,6 +143,39 @@ export function DetailsView({
   );
 }
 
+const DetailsFolderRow = memo(function DetailsFolderRow({ folder: f }: { folder: Folder }) {
+  const { navigate } = useExplorer();
+  const drop = useDropTarget({ teamId: f.teamId, folderId: f.id });
+  const drag = useFolderDrag(f);
+  return (
+    <li
+      data-folder-row={f.id}
+      data-drop-over={drop.over || undefined}
+      className={`${GRID} items-center gap-2 px-4 hover:bg-slate-50 dark:hover:bg-slate-700 ${drop.over ? DROP_ROW : ''}`}
+      style={{ height: ROW_HEIGHT }}
+      {...drop.handlers}
+      {...drag}
+    >
+      <button
+        type="button"
+        onClick={() =>
+          navigate(
+            f.teamId
+              ? { kind: 'team', id: f.teamId, folderId: f.id }
+              : { kind: 'folder', id: f.id },
+          )
+        }
+        className="flex min-w-0 items-center gap-2 text-left text-sm font-medium text-slate-900 dark:text-slate-100"
+      >
+        <span className="shrink-0 text-amber-500">
+          <FolderSolidIcon />
+        </span>
+        <span className="truncate">{f.name}</span>
+      </button>
+    </li>
+  );
+});
+
 const DetailsRow = memo(function DetailsRow({
   item,
   options,
@@ -175,6 +185,7 @@ const DetailsRow = memo(function DetailsRow({
 }) {
   const { Link, itemHref } = useExplorer();
   const menu = useRowMenu();
+  const drag = useItemDrag(item);
   const title = item.title || 'Untitled';
   return (
     <li
@@ -182,6 +193,7 @@ const DetailsRow = memo(function DetailsRow({
       className={`${GRID} group items-center gap-2 px-4 transition hover:bg-slate-50 dark:hover:bg-slate-700`}
       style={{ height: ROW_HEIGHT }}
       onContextMenu={menu.onContextMenu}
+      {...drag}
     >
       <span className="flex min-w-0 items-center gap-2">
         {options.showApp ? <AppMark app={item.app} /> : null}

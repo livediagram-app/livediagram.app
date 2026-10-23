@@ -5,9 +5,19 @@
 // Unsorted, then the Trash). Rows carry toned tiles and the current row is a raised pill, in the
 // host app's brand colour. The tree reads the folder store, so it costs no request of its own.
 
-import { useCallback, useEffect, useId, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useId, useState, type DragEvent, type ReactNode } from 'react';
 import type { Folder } from '@liveworkspace/index-client';
+import {
+  TRASH_BIN,
+  TRASH_OVER,
+  TRASH_WAITING,
+  useDropTarget,
+  useFolderDrag,
+  useTrashTarget,
+  type DropPlace,
+} from '../drag/drag';
 import { CountBadge } from '../ui/CountBadge';
+import { DROP_TARGET_RING } from '../ui/classes';
 import {
   ClockIcon,
   FolderSolidIcon,
@@ -50,7 +60,11 @@ const MY_WORK = 'my-work';
 const LIBRARY = 'library';
 
 // The Library's pages: opening one unfolds the Library, so the current row is never hidden.
-const LIBRARY_VIEWS: ReadonlySet<ExplorerView['kind']> = new Set(['recent', 'favourites', 'unsorted']);
+const LIBRARY_VIEWS: ReadonlySet<ExplorerView['kind']> = new Set([
+  'recent',
+  'favourites',
+  'unsorted',
+]);
 
 function useExpanded(view: ExplorerView) {
   // As livediagram's tree starts: My Work unfolded, the Library folded unless one of its pages is open.
@@ -94,6 +108,11 @@ export function SidebarRow({
   expandable = false,
   expanded = false,
   onToggleExpand,
+  dropTo = null,
+  dragFolder = null,
+  shownLabel,
+  rowClassName = '',
+  rowHandlers,
   children,
 }: {
   icon: ReactNode;
@@ -106,8 +125,23 @@ export function SidebarRow({
   expandable?: boolean;
   expanded?: boolean;
   onToggleExpand?: () => void;
+  // The place a dragged item dropped here lands in (a folder, My Work, a team); a closed row opens under a resting
+  // drag.
+  dropTo?: DropPlace | null;
+  // The folder this row is, which drags to the Trash.
+  dragFolder?: Folder | null;
+  // What the row says, when it says more than its name (the Trash mid-drag); the name stays its accessible name.
+  shownLabel?: ReactNode;
+  rowClassName?: string;
+  rowHandlers?: Partial<
+    Record<'onDragEnter' | 'onDragOver' | 'onDragLeave' | 'onDrop', (e: DragEvent) => void>
+  >;
   children?: ReactNode;
 }) {
+  const drop = useDropTarget(dropTo, {
+    onLongHover: expandable && !expanded ? onToggleExpand : undefined,
+  });
+  const drag = useFolderDrag(dragFolder);
   return (
     <li
       role="treeitem"
@@ -117,8 +151,14 @@ export function SidebarRow({
       aria-expanded={expandable ? expanded : undefined}
     >
       <div
-        className={`group flex items-center gap-1 rounded-xl border px-1 transition-colors ${selected ? CURRENT : RESTING}`}
+        data-drop-over={drop.over || undefined}
+        className={`group flex items-center gap-1 rounded-xl border px-1 transition ${selected ? CURRENT : RESTING} ${
+          drop.over ? DROP_TARGET_RING : ''
+        } ${rowClassName}`}
         style={{ paddingLeft: depth * INDENT_STEP + 4 }}
+        {...drop.handlers}
+        {...rowHandlers}
+        {...drag}
       >
         <button
           type="button"
@@ -155,7 +195,7 @@ export function SidebarRow({
               {icon}
             </span>
           )}
-          <span className="min-w-0 flex-1 truncate">{label}</span>
+          <span className="min-w-0 flex-1 truncate">{shownLabel ?? label}</span>
           {badge !== undefined ? <CountBadge count={badge} className="ml-1" /> : null}
         </button>
       </div>
@@ -214,6 +254,8 @@ function FolderSubtree({
       selected={sameView(view, target)}
       onActivate={() => navigate(target)}
       depth={depth}
+      dropTo={{ teamId: folder.teamId, folderId: folder.id }}
+      dragFolder={folder}
       expandable={kids.length > 0}
       expanded={expanded.has(folder.id)}
       onToggleExpand={() => toggle(folder.id)}
@@ -228,6 +270,57 @@ function FolderSubtree({
         />
       ))}
     </SidebarRow>
+  );
+}
+
+const MY_WORK_ROOT: DropPlace = { teamId: null, folderId: null };
+
+/**
+ * The Trash row: it opens the Trash, and while anything drags in the Explorer it wakes as a target (dashed, "Drop to
+ * Trash"), fills with the brand colour with its bin's lid tipped while the drag is over it ("Let go to trash it"),
+ * and bounces once as it swallows an item. Under reduced motion only the colours and words change.
+ */
+function TrashRow() {
+  const { view, navigate } = useExplorer();
+  const trash = useTrashTarget();
+  return (
+    <SidebarRow
+      icon={
+        <span
+          data-trash-bin={trash.state}
+          className={`flex transition-transform duration-short ease-out ${TRASH_BIN[trash.state]}`}
+        >
+          <TrashIcon />
+        </span>
+      }
+      label={SIDEBAR_LABELS.trash}
+      shownLabel={
+        <>
+          <span
+            className={
+              trash.state === 'over'
+                ? 'font-semibold text-white'
+                : trash.state === 'waiting'
+                  ? 'text-brand-800 dark:text-brand-200'
+                  : ''
+            }
+          >
+            {trash.words ?? SIDEBAR_LABELS.trash}
+          </span>
+          {/* The target's words for assistive technology, as they change; the row keeps its name, Trash. */}
+          <span role="status" aria-live="polite" className="sr-only">
+            {trash.words ?? ''}
+          </span>
+        </>
+      }
+      selected={view.kind === 'trash'}
+      onActivate={() => navigate({ kind: 'trash' })}
+      depth={0}
+      rowClassName={
+        trash.state === 'over' ? TRASH_OVER : trash.state === 'waiting' ? TRASH_WAITING : ''
+      }
+      rowHandlers={trash.handlers}
+    />
   );
 }
 
@@ -273,6 +366,7 @@ export function Sidebar() {
           selected={view.kind === 'all'}
           onActivate={() => navigate({ kind: 'all' })}
           depth={0}
+          dropTo={MY_WORK_ROOT}
           expandable={myRoots.length > 0}
           expanded={expanded.has(MY_WORK)}
           onToggleExpand={() => toggle(MY_WORK)}
@@ -293,6 +387,7 @@ export function Sidebar() {
               selected={view.kind === 'team' && view.id === t.id && !view.folderId}
               onActivate={() => navigate({ kind: 'team', id: t.id })}
               depth={0}
+              dropTo={{ teamId: t.id, folderId: null }}
               expandable={roots.length > 0}
               expanded={expanded.has(key)}
               onToggleExpand={() => toggle(key)}
@@ -352,13 +447,7 @@ export function Sidebar() {
             depth={1}
           />
         </SidebarRow>
-        <SidebarRow
-          icon={<TrashIcon />}
-          label={SIDEBAR_LABELS.trash}
-          selected={view.kind === 'trash'}
-          onActivate={() => navigate({ kind: 'trash' })}
-          depth={0}
-        />
+        <TrashRow />
       </SidebarGroup>
     </nav>
   );
