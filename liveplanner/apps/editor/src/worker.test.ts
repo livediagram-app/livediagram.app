@@ -34,15 +34,28 @@ describe('editor worker editor route', () => {
 
   it('leaves other paths to the static assets', async () => {
     const { env: e, seen } = env();
-    await worker.fetch(new Request('https://liveplanner.app/explorer/recent'), e);
-    expect(seen).toEqual(['/explorer/recent']);
+    await worker.fetch(new Request('https://liveplanner.app/pricing'), e);
+    expect(seen).toEqual(['/pricing']);
   });
 
-  it('lands /explorer on Home', async () => {
-    for (const path of ['/explorer', '/explorer/']) {
+  it('sends every /explorer address to the Explorer on liveworkspace.app, keeping path and query', async () => {
+    const cases: [string, string][] = [
+      ['/explorer', 'https://liveworkspace.app/explorer?from=liveplanner'],
+      ['/explorer/', 'https://liveworkspace.app/explorer?from=liveplanner'],
+      [
+        '/explorer/folder?id=f1',
+        'https://liveworkspace.app/explorer/folder?id=f1&from=liveplanner',
+      ],
+      [
+        '/explorer?settings=notifications',
+        'https://liveworkspace.app/explorer?settings=notifications&from=liveplanner',
+      ],
+      ['/explorer/profile', 'https://liveworkspace.app/explorer/profile?from=liveplanner'],
+    ];
+    for (const [path, to] of cases) {
       const res = await worker.fetch(new Request(`https://liveplanner.app${path}`), env().env);
-      expect(res.status).toBe(302);
-      expect(res.headers.get('Location')).toBe('https://liveplanner.app/explorer/home');
+      expect(res.status, path).toBe(302);
+      expect(res.headers.get('Location'), path).toBe(to);
     }
   });
 });
@@ -51,7 +64,7 @@ describe('editor worker security headers', () => {
   // docs/specs/016-platform/trusted-types.md: every page enforces Trusted Types, the embed included.
   it('enforces Trusted Types on every page', async () => {
     const { env: e } = env();
-    for (const path of ['/project/abc', '/embed', '/explorer/home', '/oauth/consent']) {
+    for (const path of ['/project/abc', '/embed', '/oauth/consent']) {
       const res = await worker.fetch(new Request(`https://liveplanner.app${path}`), e);
       expect(res.headers.get('Content-Security-Policy'), path).toBe(TRUSTED_TYPES_CSP);
     }
@@ -104,7 +117,6 @@ describe('editor worker security headers', () => {
       '/workbench/pair?code=x',
       '/project/doc-1',
       '/embedded',
-      '/explorer/home',
     ]) {
       const res = await worker.fetch(new Request(`https://liveplanner.app${path}`), e);
       expect(res.headers.get('X-Frame-Options')).toBe('DENY');

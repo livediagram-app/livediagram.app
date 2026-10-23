@@ -40,7 +40,7 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(useAddress().split('?')[1] ?? ''),
 }));
 
-vi.mock('../../explorer/ExplorerShell', () => ({
+vi.mock('./ExplorerHost', () => ({
   ExplorerHost: ({ view }: { view: { kind: string; id?: string } }) => (
     <p>
       explorer {view.kind} {view.id ?? ''}

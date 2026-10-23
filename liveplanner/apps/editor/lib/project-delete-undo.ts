@@ -3,6 +3,7 @@
 // debounce nor the unload flush can write it back while it goes to the Trash; then the editor leaves for the
 // Explorer, which offers the Undo on arrival. The handoff lives in sessionStorage for one page load and only for a
 // moment, so a later visit offers nothing.
+import { liveworkspaceExplorer } from './explorer-redirect';
 import { indexClient } from '@/lib/index-client';
 import { markProjectDeleted, unmarkProjectDeleted } from '@/lib/project-tombstones';
 import { track } from '@/lib/telemetry';
@@ -32,7 +33,10 @@ export async function trashOpenPlan(
   }
   track('Project', 'Deleted');
   handOffDeleteUndo(id, name);
-  leave('/explorer');
+  // The Explorer is on liveworkspace.app: the plan rides in its address there, for the Undo.
+  const params = new URLSearchParams({ trashed: id });
+  if (name) params.set('title', name);
+  leave(liveworkspaceExplorer('', `?${params}`));
   return true;
 }
 

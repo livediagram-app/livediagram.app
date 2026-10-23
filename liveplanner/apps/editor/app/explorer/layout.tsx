@@ -1,20 +1,19 @@
 import type { Metadata } from 'next';
-import { Suspense, type ReactNode } from 'react';
-import { ExplorerShell } from './ExplorerShell';
+import type { ReactNode } from 'react';
+import { ExplorerRedirect } from './ExplorerRedirect';
 
-// The /explorer layout: every view of the shared Explorer (@liveworkspace/explorer,
-// liveworkspace/docs/one-explorer.md) is its own route page under /explorer, and this layout keeps the one Explorer
-// mounted across them, so a list already loaded stays loaded. Suspense: the view is read from the URL with
-// useSearchParams, which `output: 'export'` requires to sit under a boundary at prerender time.
+// The Explorer moved to liveworkspace.app (lib/explorer-redirect.ts): each old /explorer address replaces itself
+// with its place there. The pages stay so the dev server has something to serve at each address.
 export const metadata: Metadata = {
   title: 'Explorer | liveplanner',
+  robots: { index: false, follow: false },
 };
 
 export default function ExplorerLayout({ children }: { children: ReactNode }) {
   return (
-    <Suspense fallback={null}>
-      <ExplorerShell />
+    <>
+      <ExplorerRedirect />
       {children}
-    </Suspense>
+    </>
   );
 }

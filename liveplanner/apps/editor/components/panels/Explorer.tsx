@@ -1,5 +1,6 @@
 'use client';
 
+import { explorerRedirectUrl } from '@/lib/explorer-redirect';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { ExplorerPanel, explorerPath } from '@liveworkspace/explorer';
 import type { Item } from '@liveworkspace/index-client';
@@ -125,7 +126,11 @@ function ExplorerImpl({
             ? onNewProject()
             : go(newPlanHref(placement))
         }
-        onOpenExplorer={(view) => go(explorerPath(view))}
+        // The whole Explorer is on liveworkspace.app, opened from liveplanner on the same view.
+        onOpenExplorer={(view) => {
+          const [path, query = ''] = explorerPath(view).split('?');
+          window.location.assign(explorerRedirectUrl(path!, query));
+        }}
         onOpenItem={(href) => go(href)}
         renderThumbnail={renderPlanThumbnail}
         Link={Link}

@@ -1,12 +1,5 @@
-import type { Metadata } from 'next';
-import { RetiredViewRedirect } from '../RetiredViewRedirect';
-
-// /explorer/generated is retired: it replaces itself with its successor (RetiredViewRedirect), so links to it keep working.
-export const metadata: Metadata = {
-  title: 'Explorer | liveplanner',
-  robots: { index: false, follow: false },
-};
-
+// /explorer/generated, an address the Explorer retired: the layout sends it to liveworkspace.app, whose Explorer replaces
+// it with its successor, so links already out there keep working.
 export default function Page() {
-  return <RetiredViewRedirect from="generated" />;
+  return null;
 }
