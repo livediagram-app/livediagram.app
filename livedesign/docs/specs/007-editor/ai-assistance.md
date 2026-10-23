@@ -61,7 +61,7 @@ Each AI request optionally includes a `history` array of prior `{ role, content 
   real browser sends. The apex-only value this spec used to recommend would have returned
   403 for every genuine request from the editor. Self-hosters set their own hostname —
   whichever one the browser actually lands on after redirects — plus dev origins like
-  `http://localhost:3302`.
+  `http://localhost:3402`.
 - Optional Clerk-only gate (`AI_REQUIRE_CLERK`). When set to `"true"`, `/api/ai` rejects
   any request without a verified Clerk Bearer JWT with `401 { error: 'sign_in_required' }`;
   the legacy `X-Owner-Id` guest path still works for every OTHER endpoint, just not for
@@ -239,7 +239,7 @@ validate every field regardless.
 | `GOOGLE_AI_STUDIO_API_KEY` / `OPENAI_API_KEY` / `AI_API_KEY` | Worker secret             | The model keys; any one enables AI (see "Which key wins"). None = every AI surface hidden.                                                                                                                             |
 | `AI_BASE_URL`                                                | Worker var (generic only) | The OpenAI-COMPATIBLE chat-completions base for `AI_API_KEY`: a laptop points it at llama.cpp or Ollama. The google and openai keys bring their own.                                                                   |
 | `AI_MODEL`                                                   | Worker var (optional)     | Model id for the assistant. Defaults per provider (table above); required for the generic key.                                                                                                                         |
-| `AI_ALLOWED_ORIGINS`                                         | Worker var (optional)     | Comma-separated `Origin` values that may call `/api/ai`. Unset = no check. Example: `https://livedesign.app,http://localhost:3302`. Entries are matched case-sensitive against the request's `Origin` header verbatim. |
+| `AI_ALLOWED_ORIGINS`                                         | Worker var (optional)     | Comma-separated `Origin` values that may call `/api/ai`. Unset = no check. Example: `https://livedesign.app,http://localhost:3402`. Entries are matched case-sensitive against the request's `Origin` header verbatim. |
 | `AI_REQUIRE_CLERK`                                           | Worker var (optional)     | Set to `"true"` to require a verified Clerk JWT on `/api/ai` (rejects the `X-Owner-Id` guest path with 401). Unset / any other value = guests allowed.                                                                 |
 
 Set via `wrangler secret put <the key var>` for production; drop into `apps/api/.dev.vars`

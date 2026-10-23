@@ -18,7 +18,7 @@ import { isLocalhostPair } from './origin-check';
 describe('isLocalhostPair', () => {
   describe('returns true for', () => {
     it('localhost on both sides, different ports', () => {
-      expect(isLocalhostPair('http://localhost:3302', 'http://localhost:8989')).toBe(true);
+      expect(isLocalhostPair('http://localhost:3402', 'http://localhost:8989')).toBe(true);
     });
 
     it('localhost vs 127.0.0.1 (treats the textual + IPv4 loopback aliases as equivalent)', () => {
@@ -26,8 +26,8 @@ describe('isLocalhostPair', () => {
       // when navigating; users land on either spelling depending on
       // how they typed the URL. The helper must treat them the same
       // or local dev breaks on a coin flip.
-      expect(isLocalhostPair('http://localhost:3302', 'http://127.0.0.1:8989')).toBe(true);
-      expect(isLocalhostPair('http://127.0.0.1:3302', 'http://localhost:8989')).toBe(true);
+      expect(isLocalhostPair('http://localhost:3402', 'http://127.0.0.1:8989')).toBe(true);
+      expect(isLocalhostPair('http://127.0.0.1:3402', 'http://localhost:8989')).toBe(true);
     });
 
     it('IPv6 loopback `[::1]` on either side', () => {
@@ -35,9 +35,9 @@ describe('isLocalhostPair', () => {
       // IPv6 literals, and URL.hostname round-trips the brackets, so
       // the helper compares the bracketed form. Without this branch a
       // dev machine that resolved localhost to ::1 would lose telemetry.
-      expect(isLocalhostPair('http://[::1]:3302', 'http://localhost:8989')).toBe(true);
-      expect(isLocalhostPair('http://localhost:3302', 'http://[::1]:8989')).toBe(true);
-      expect(isLocalhostPair('http://[::1]:3302', 'http://[::1]:8989')).toBe(true);
+      expect(isLocalhostPair('http://[::1]:3402', 'http://localhost:8989')).toBe(true);
+      expect(isLocalhostPair('http://localhost:3402', 'http://[::1]:8989')).toBe(true);
+      expect(isLocalhostPair('http://[::1]:3402', 'http://[::1]:8989')).toBe(true);
     });
 
     it('https loopback URLs (scheme is irrelevant)', () => {
@@ -54,7 +54,7 @@ describe('isLocalhostPair', () => {
       // to a victim's local server, or from a malicious site to
       // livedesign.app, must not be granted dev-only escape.
       expect(isLocalhostPair('https://livedesign.app', 'http://localhost:8989')).toBe(false);
-      expect(isLocalhostPair('http://localhost:3302', 'https://livedesign.app')).toBe(false);
+      expect(isLocalhostPair('http://localhost:3402', 'https://livedesign.app')).toBe(false);
       expect(isLocalhostPair('https://example.com', 'https://livedesign.app')).toBe(false);
     });
 
@@ -70,14 +70,14 @@ describe('isLocalhostPair', () => {
       // false rather than letting the error propagate or accidentally
       // returning true for an absent Origin.
       expect(isLocalhostPair('', 'http://localhost:8989')).toBe(false);
-      expect(isLocalhostPair('http://localhost:3302', '')).toBe(false);
+      expect(isLocalhostPair('http://localhost:3402', '')).toBe(false);
     });
 
     it('a malformed URL on either side', () => {
       // Same catch path: a `null` header that becomes the literal
       // string "null", or a garbage value, must not slip through.
       expect(isLocalhostPair('not a url', 'http://localhost:8989')).toBe(false);
-      expect(isLocalhostPair('http://localhost:3302', 'also not a url')).toBe(false);
+      expect(isLocalhostPair('http://localhost:3402', 'also not a url')).toBe(false);
       expect(isLocalhostPair('null', 'null')).toBe(false);
     });
 

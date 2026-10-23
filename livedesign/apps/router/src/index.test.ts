@@ -130,10 +130,10 @@ describe('local-dev dispatch (origin proxy)', () => {
     const fetchMock = vi.fn((_req: Request) => Promise.resolve(new Response('ok')));
     vi.stubGlobal('fetch', fetchMock);
     try {
-      await dispatch('/telemetry/data', { TELEMETRY_ORIGIN: 'http://localhost:3303' });
+      await dispatch('/telemetry/data', { TELEMETRY_ORIGIN: 'http://localhost:3403' });
       const req = fetchMock.mock.calls[0]![0];
       // Dev servers serve their own basePath, so no strip on this path.
-      expect(req.url).toBe('http://localhost:3303/telemetry/data');
+      expect(req.url).toBe('http://localhost:3403/telemetry/data');
     } finally {
       vi.unstubAllGlobals();
     }

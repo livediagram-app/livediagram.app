@@ -16,7 +16,7 @@ const nextConfig: NextConfig = {
   // worker serves them from `out/_next`. The prefix applies in dev too
   // (Next's dev server serves the prefixed asset paths itself) so the
   // local router (docs/specs/016-platform/router-app.md) can disambiguate `/_next` the same way prod
-  // does; standalone `localhost:3302` keeps working either way.
+  // does; standalone `localhost:3402` keeps working either way.
   assetPrefix: '/live',
   transpilePackages: ['@livedesign/ui', '@livedesign/design', '@livedesign/api-schema'],
 };

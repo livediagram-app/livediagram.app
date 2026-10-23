@@ -163,7 +163,7 @@ key (`E2E_NO_AI`) or with its AI budget spent (`E2E_AI_BUDGET_SPENT`); see
 [Local development](../../development/local-development.md).
 
 Locally the same `playwright.config.ts` sets `reuseExistingServer`, so a
-developer with `pnpm dev` already running (live :3302 + api :8989) runs
+developer with `pnpm dev` already running (live :3402 + api :8989) runs
 `pnpm --filter @livedesign/live test:e2e` against that stack with no
 extra boot.
 
@@ -180,7 +180,7 @@ Clerk account, secret or network.
 
 `pnpm --filter @livedesign/live test:e2e:clerk-stub` sets `E2E_CLERK_STUB=1`, which adds the
 `clerk-stub` project and boots the stack with `E2E_LIVE_OUT=.next/out-clerk-stub` on its own ports
-(live `:3315`, api `:8999`, marketing `:3316`), so a guest stack already up on `:3302` is never
+(live `:3315`, api `:8999`, marketing `:3316`), so a guest stack already up on `:3402` is never
 reused for it. The stack also stands in for Clerk (`E2E_CLERK_JWKS=1`): it makes a signing key at
 boot, serves its JWKS on `/e2e/jwks.json`, starts the api worker with `CLERK_JWKS_URL` pointing at
 it, and mints a session token for any test account on `/e2e/token?sub=user_…`, which the fake

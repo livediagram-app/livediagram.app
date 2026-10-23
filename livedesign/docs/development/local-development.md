@@ -39,17 +39,17 @@ Turbo spins up all seven dev servers in parallel:
 
 | App              | Dev URL                                                                                            |
 | ---------------- | -------------------------------------------------------------------------------------------------- |
-| `apps/router`    | `http://localhost:3300` — **everything on one port**, stitched like production                     |
-| `apps/marketing` | `http://localhost:3301`                                                                            |
-| `apps/live`      | `http://localhost:3302` (clean routes: /new, /explorer, ...)                                       |
-| `apps/telemetry` | `http://localhost:3303/telemetry`                                                                  |
-| `apps/help`      | `http://localhost:3304/help`                                                                       |
+| `apps/router`    | `http://localhost:3400` — **everything on one port**, stitched like production                     |
+| `apps/marketing` | `http://localhost:3401`                                                                            |
+| `apps/live`      | `http://localhost:3402` (clean routes: /new, /explorer, ...)                                       |
+| `apps/telemetry` | `http://localhost:3403/telemetry`                                                                  |
+| `apps/help`      | `http://localhost:3404/help`                                                                       |
 | `apps/api`       | `http://localhost:8989/api`                                                                        |
 | `apps/mcp`       | `http://localhost:8990` (MCP server, [MCP server](../specs/015-api/mcp-server.md); signed-in only) |
 
 The `router` dev server (`wrangler dev --env local`, port 3200) gives you the production URL shape locally: `/` is marketing, `/new` and `/design/*` are the editor, plus `/telemetry`, `/help` and `/api` — no per-app port to remember. It has no service bindings in dev; the `[env.local]` environment in `apps/router/wrangler.toml` points it at the localhost origins above and it proxies plain HTTP (see [Router app](../specs/016-platform/router-app.md)).
 
-**Use port 3200 unless you have a reason not to.** Each app's own port still serves its pages, but only the router puts the API on the same origin. The frontends call `NEXT_PUBLIC_API_BASE`, defaulting to the relative `/api` — correct in production and behind the router, and a dead end on an app's own port, where nothing serves `/api` (these are static exports; there are no Next API routes, see [Architecture](architecture.md)). So the editor on `http://localhost:3302` cannot reach the api worker until you tell it where the worker is:
+**Use port 3200 unless you have a reason not to.** Each app's own port still serves its pages, but only the router puts the API on the same origin. The frontends call `NEXT_PUBLIC_API_BASE`, defaulting to the relative `/api` — correct in production and behind the router, and a dead end on an app's own port, where nothing serves `/api` (these are static exports; there are no Next API routes, see [Architecture](architecture.md)). So the editor on `http://localhost:3402` cannot reach the api worker until you tell it where the worker is:
 
 ```sh
 # apps/live/.env.local  (gitignored; see apps/live/.env.example)
@@ -62,7 +62,7 @@ the one to reach for; the production api reads and writes real people's designs.
 
 Without it the editor loads, the canvas works, and the first save fails with **“Couldn’t create the design”** — which reads like a broken api worker rather than a missing variable, so it is worth setting up front. `apps/telemetry` and `apps/help` read the same variable: the dashboard needs it to show anything on `:3003`, and the help centre only loses its telemetry posts without it. To work on the dashboard against real numbers without seeding a local database, point it at production's summary instead: `NEXT_PUBLIC_API_BASE=https://www.livedesign.app/api` in `apps/telemetry/.env.local`. `GET /api/telemetry/summary` is public, read-only and allows any origin, and the dashboard only sends events itself when `NEXT_PUBLIC_TELEMETRY_ENABLED=true`, which local builds leave unset.
 
-The editor works in pure-guest mode without any auth setup: `pnpm dev` and open `http://localhost:3300/new`. Designs persist to the local D1 file the api worker creates on first start. (On `http://localhost:3302/new` instead, set `NEXT_PUBLIC_API_BASE` first — see the note above.)
+The editor works in pure-guest mode without any auth setup: `pnpm dev` and open `http://localhost:3400/new`. Designs persist to the local D1 file the api worker creates on first start. (On `http://localhost:3402/new` instead, set `NEXT_PUBLIC_API_BASE` first — see the note above.)
 
 ## Scoping commands to one workspace
 

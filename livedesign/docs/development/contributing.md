@@ -100,7 +100,7 @@ The bar isn't 100% line coverage; it's "the next regression on this code path fa
 
 A [Playwright](https://playwright.dev) suite (`apps/live/e2e`, [`docs/specs/003-system-architecture/e2e-smoke.md`](../specs/003-system-architecture/e2e-smoke.md)) drives the real editor build + api worker in a headless Chromium — the layer the Vitest unit tests can't reach. It runs on **every pull request** as required checks (the `E2E Smoke` workflow's jobs, `.github/workflows/e2e.yml`: six **Smoke shard** jobs, **Sites audit** and **Signed-in specs**), on push to `main`, and on demand: `gh workflow run e2e.yml --ref <branch>`.
 
-Run it locally against a running `pnpm dev` stack (it reuses the servers on `:3302` / `:8989`):
+Run it locally against a running `pnpm dev` stack (it reuses the servers on `:3402` / `:8989`):
 
 ```sh
 pnpm --filter @livedesign/live test:e2e
@@ -121,12 +121,12 @@ The armed guest-signature specs (`apps/live/e2e/armed/`) run against the usual b
 pnpm --filter @livedesign/live test:e2e:armed
 ```
 
-Those ports are defaults, not fixtures. Three environment variables move them, which is what you want when `:3302` is already taken (a second checkout, a worktree):
+Those ports are defaults, not fixtures. Three environment variables move them, which is what you want when `:3402` is already taken (a second checkout, a worktree):
 
 | Variable             | Default                 | What it moves                                                         |
 | -------------------- | ----------------------- | --------------------------------------------------------------------- |
-| `E2E_BASE_URL`       | `http://localhost:3302` | Where Playwright points, and the URL it waits on before starting      |
-| `E2E_LIVE_PORT`      | `3302`                  | The port `e2e-stack.mjs` serves the built live app on                 |
+| `E2E_BASE_URL`       | `http://localhost:3402` | Where Playwright points, and the URL it waits on before starting      |
+| `E2E_LIVE_PORT`      | `3402`                  | The port `e2e-stack.mjs` serves the built live app on                 |
 | `E2E_API_PORT`       | `8989`                  | The api worker's port, and the target its `/api/*` proxy forwards to  |
 | `E2E_MARKETING_PORT` | `3013`                  | The port the stack serves the built marketing site on (optical audit) |
 

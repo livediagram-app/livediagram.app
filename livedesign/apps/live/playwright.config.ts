@@ -30,7 +30,7 @@ const BASE_URL =
       ? `http://localhost:${ARMED_PORTS.live}`
       : workbench
         ? `http://localhost:${WORKBENCH_PORTS.live}`
-        : 'http://localhost:3302');
+        : 'http://localhost:3402');
 const runName = clerkStub ? '-clerk-stub' : armed ? '-armed' : workbench ? '-workbench' : '';
 
 export default defineConfig({
