@@ -1,11 +1,10 @@
-// /api/migrate — guest -> authed (and legacy guest -> signed-guest)
+// /api/migrate — guest -> authed (and unsigned guest -> signed-guest)
 // ownership migration.
 
 import { isAccountIdShape } from '@livedesign/api-schema';
-import { guestSignatureEnforced, isLegacyGuestEra } from '../auth/guest-rest';
+import { guestSignatureEnforced } from '../auth/guest-rest';
 import { verifyOwnerId } from '../auth/owner-signature';
 import { migrateOwnerId } from '../db';
-import { getStoredProfile } from '../accounts/profiles';
 import { badRequest, forbidden, json, missingAuth, notFound } from '../responses';
 import { readOptionalBody, type RouteContext } from './context';
 
@@ -22,16 +21,16 @@ const ZERO = { designs: 0, folders: 0, shared: 0, images: 0 };
 //     merely observed a guest's id (it leaks via DTOs / presence) could
 //     claim that guest's entire data set. See auth/owner-signature.ts.
 //
-//  2. Legacy upgrade (unsigned guest → freshly-minted signed guest): an
-//     existing guest created before signing shipped has an unsigned id and
-//     so can't satisfy flow 1. The live app mints a signed id (POST
+//  2. Signing upgrade (unsigned guest → freshly-minted signed guest): a guest
+//     made before the deployment set GUEST_ID_HMAC_SECRET has an unsigned id
+//     and so can't satisfy flow 1. The live app mints a signed id (POST
 //     /api/guest-id) and calls this with no account token to move the old
 //     data onto the new id. The SOURCE here is the caller's current
 //     `X-Owner-Id` (the same bearer credential every guest request uses);
-//     the TARGET is the new signed id, proven by `toSignature`. NOTE: the
-//     source is only bearer-authenticated, so this path carries the same
-//     residual exposure as the pre-signing guest model for legacy ids
-//     during the transition window (docs/specs/014-identity/auth-and-guest-access.md). New guests never use it.
+//     the TARGET is the new signed id, proven by `toSignature`. Once
+//     enforcement is armed the source must carry its own signature too, so
+//     an unsigned id can only upgrade during the grace window before
+//     GUEST_SIG_ENFORCE_AFTER (docs/specs/014-identity/auth-and-guest-access.md).
 //
 // Idempotent: a no-op (source == target) moves zero rows.
 export async function handleMigrate(ctx: RouteContext): Promise<Response> {
@@ -65,7 +64,7 @@ export async function handleMigrate(ctx: RouteContext): Promise<Response> {
     return json({ migrated });
   }
 
-  // Flow 2 — legacy upgrade (guest -> signed guest). Only meaningful when
+  // Flow 2 — signing upgrade (guest -> signed guest). Only meaningful when
   // signing is on; with no secret there are no signed ids to upgrade to.
   if (!secret) return missingAuth();
   const fromOwnerId = resolveOwner();
@@ -77,24 +76,13 @@ export async function handleMigrate(ctx: RouteContext): Promise<Response> {
   // names it. The global account-id-shape refusal in index.ts only covers
   // OWNER_SCOPED_SEGMENTS, which deliberately leaves `migrate` out.
   if (isAccountIdShape(fromOwnerId)) return forbidden();
-  // Once enforcement is armed an unsigned source must prove possession, with
-  // one exception: an id that existed before this deployment signed anything
-  // (its participant row predates GUEST_SIGNING_LIVE_AT) can still move onto a
-  // signed id, so a legacy guest who returns keeps their designs. Such an id
-  // is no more exposed than it was before enforcement; every id minted signed
-  // is refused here without its signature.
+  // Once enforcement is armed the source must prove possession: every id this
+  // deployment minted since signing began carries its signature.
   if (
     guestSignatureEnforced(env, Date.now()) &&
     !(await verifyOwnerId(secret, fromOwnerId, request.headers.get('X-Owner-Sig')))
   ) {
-    // When the id's profile was first stored, by the accounts Worker's clock: an id it cannot vouch for
-    // right now is refused, never waved through.
-    const createdAt = await getStoredProfile(env, fromOwnerId).then(
-      (profile) => profile.createdAt,
-      () => null,
-    );
-    if (!isLegacyGuestEra(env, createdAt)) return forbidden();
-    console.warn('[migrate] legacy unsigned guest upgraded under enforcement');
+    return forbidden();
   }
   if (!toOwnerId) return badRequest('toOwnerId is required');
   if (fromOwnerId === toOwnerId) return json({ migrated: ZERO });

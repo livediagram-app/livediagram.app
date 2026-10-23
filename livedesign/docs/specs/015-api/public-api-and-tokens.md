@@ -527,21 +527,14 @@ hardening landed first:
    (`scripts/e2e-stack.mjs`), so a regression of that kind fails the suite. **Re-arming
    production is Tom's or Webber's call**, made by setting
    `GUEST_SIG_ENFORCE_AFTER` in `apps/api/wrangler.toml` again. What follows
-   holds from then. Production only
-   started signing on 2026-09-25 (`GUEST_SIGNING_LIVE_AT`), so most guest ids
-   were still unsigned when it was armed: about 219, holding 274 designs. An
-   id whose profile (dated by the accounts Worker) predates `GUEST_SIGNING_LIVE_AT` keeps the legacy
-   upgrade (migrate flow 2) without a signature, so those guests self-heal
-   whenever they return. Every id minted signed must prove possession, which
-   includes the id a legacy guest moves onto: its profile is stamped
-   with the time of the move, never the legacy date (`migrateOwnerId`,
-   `apps/api/src/db/account.ts`). Retire
-   the exception (unset `GUEST_SIGNING_LIVE_AT`) once the remaining legacy ids
-   are judged gone.
+   holds from then. livedesign signed every guest id from its first deploy,
+   so there are no unsigned guest ids to grandfather: once armed, every source
+   of the signing upgrade (migrate flow 2) must prove possession like any other
+   owner-scoped call.
    Pulled to the FRONT: it closed the cross-object escalation in
    [§2](#2-why-the-api-wasnt-safe-to-expose-as-is-history) and
-   is independent of the token work, so it ships first (with the legacy-guest
-   grace). **Stop emitting the raw owner id where a collaborator can read it**
+   is independent of the token work, so it ships first (with the
+   `GUEST_SIG_ENFORCE_AFTER` grace window). **Stop emitting the raw owner id where a collaborator can read it**
    (do this, not just "consider" — shrinking the attack surface is worth it
    even though §4 already neutralises a leaked id, because people WILL probe
    for it):

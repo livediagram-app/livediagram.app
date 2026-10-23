@@ -1,18 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Flow 2 of /api/migrate (legacy unsigned guest -> signed guest) takes its
+// Flow 2 of /api/migrate (unsigned guest -> signed guest) takes its
 // SOURCE from the unsigned X-Owner-Id header. These cases pin that the
 // header can't name an account (a harvestable account id) and that, once
 // signature enforcement is armed, the source must prove possession too.
 
-const { migrateOwnerId, getStoredProfile } = vi.hoisted(() => ({
-  migrateOwnerId: vi.fn(),
-  getStoredProfile: vi.fn(),
-}));
+const { migrateOwnerId } = vi.hoisted(() => ({ migrateOwnerId: vi.fn() }));
 vi.mock('../db', () => ({ migrateOwnerId }));
-// When the id's profile was first stored, by the liveworkspace accounts Worker's clock.
-vi.mock('../accounts/profiles', () => ({ getStoredProfile }));
-const profileFrom = (createdAt: number | null) => ({ participant: null, ownSet: true, createdAt });
 
 import { signOwnerId } from '../auth/owner-signature';
 import type { Env } from '../types';
@@ -20,7 +14,7 @@ import { handleMigrate } from './migrate';
 import { makeTestRouteContext } from './test-route-context';
 
 const SECRET = 'test-secret';
-const LEGACY = '0f5ca4af-9a8a-4a60-be5e-1179e5555880';
+const UNSIGNED = '0f5ca4af-9a8a-4a60-be5e-1179e5555880';
 const TARGET = '7d2c1b8e-3f4a-4c5d-9e6f-0a1b2c3d4e5f';
 
 async function flow2(
@@ -39,17 +33,15 @@ async function flow2(
 }
 
 beforeEach(() => {
-  getStoredProfile.mockReset();
-  getStoredProfile.mockResolvedValue(profileFrom(null));
   migrateOwnerId.mockReset();
   migrateOwnerId.mockResolvedValue({ designs: 1, folders: 0, shared: 0, images: 0 });
 });
 
-describe('POST /api/migrate flow 2 (legacy guest upgrade)', () => {
-  it('moves a legacy guest onto a freshly-signed id', async () => {
-    const res = await flow2(LEGACY, {});
+describe('POST /api/migrate flow 2 (signing upgrade)', () => {
+  it('moves an unsigned guest onto a freshly-signed id during the grace window', async () => {
+    const res = await flow2(UNSIGNED, {});
     expect(res.status).toBe(200);
-    expect(migrateOwnerId).toHaveBeenCalledWith(expect.anything(), LEGACY, TARGET);
+    expect(migrateOwnerId).toHaveBeenCalledWith(expect.anything(), UNSIGNED, TARGET);
   });
 
   it('refuses an account id as the source', async () => {
@@ -59,58 +51,16 @@ describe('POST /api/migrate flow 2 (legacy guest upgrade)', () => {
   });
 
   it('refuses an unsigned source once enforcement is armed', async () => {
-    const res = await flow2(LEGACY, { GUEST_SIG_ENFORCE_AFTER: '0' });
+    const res = await flow2(UNSIGNED, { GUEST_SIG_ENFORCE_AFTER: '0' });
     expect(res.status).toBe(403);
     expect(migrateOwnerId).not.toHaveBeenCalled();
   });
 
-  // Enforcement armed with a stated signing date: an id that existed before the
-  // deployment signed anything can still make its one-time upgrade unsigned.
-  describe('the legacy exception', () => {
-    const LIVE_AT = 1_000_000;
-    const armed = { GUEST_SIG_ENFORCE_AFTER: '0', GUEST_SIGNING_LIVE_AT: String(LIVE_AT) };
-
-    it('lets a pre-signing guest upgrade unsigned', async () => {
-      getStoredProfile.mockResolvedValue(profileFrom(LIVE_AT - 1));
-      const res = await flow2(LEGACY, armed);
-      expect(res.status).toBe(200);
-      expect(migrateOwnerId).toHaveBeenCalledWith(expect.anything(), LEGACY, TARGET);
-    });
-
-    it('refuses an unsigned id minted after signing went live', async () => {
-      getStoredProfile.mockResolvedValue(profileFrom(LIVE_AT));
-      expect((await flow2(LEGACY, armed)).status).toBe(403);
-      expect(migrateOwnerId).not.toHaveBeenCalled();
-    });
-
-    it('refuses an unsigned id with no profile', async () => {
-      expect((await flow2(LEGACY, armed)).status).toBe(403);
-      expect(migrateOwnerId).not.toHaveBeenCalled();
-    });
-
-    it('refuses an unsigned id when the accounts Worker cannot vouch for its age', async () => {
-      getStoredProfile.mockRejectedValue(new Error('accounts down'));
-      expect((await flow2(LEGACY, armed)).status).toBe(403);
-      expect(migrateOwnerId).not.toHaveBeenCalled();
-    });
-
-    it('grants no exception when the signing date is not stated', async () => {
-      getStoredProfile.mockResolvedValue(profileFrom(1));
-      expect((await flow2(LEGACY, { GUEST_SIG_ENFORCE_AFTER: '0' })).status).toBe(403);
-    });
-
-    it('still refuses an account id, whatever its age', async () => {
-      getStoredProfile.mockResolvedValue(profileFrom(1));
-      expect((await flow2('user_victim', armed)).status).toBe(403);
-      expect(migrateOwnerId).not.toHaveBeenCalled();
-    });
-  });
-
   it('accepts a signed source once enforcement is armed', async () => {
     const res = await flow2(
-      LEGACY,
+      UNSIGNED,
       { GUEST_SIG_ENFORCE_AFTER: '0' },
-      { 'X-Owner-Sig': (await signOwnerId(SECRET, LEGACY))! },
+      { 'X-Owner-Sig': (await signOwnerId(SECRET, UNSIGNED))! },
     );
     expect(res.status).toBe(200);
   });
@@ -134,12 +84,12 @@ describe('POST /api/migrate flow 1 (sign-up claim)', () => {
   it('still claims a guest UUID with no secret configured', async () => {
     const ctx = makeTestRouteContext('POST', '/api/migrate', {
       env: {} as Env,
-      body: { guestOwnerId: LEGACY },
+      body: { guestOwnerId: UNSIGNED },
     });
     ctx.accountUserId = 'user_me';
     const res = await handleMigrate(ctx);
     expect(res.status).toBe(200);
-    expect(migrateOwnerId).toHaveBeenCalledWith(expect.anything(), LEGACY, 'user_me');
+    expect(migrateOwnerId).toHaveBeenCalledWith(expect.anything(), UNSIGNED, 'user_me');
   });
 });
 
@@ -148,7 +98,7 @@ describe('POST /api/migrate with a malformed body', () => {
   const send = (body: unknown) =>
     handleMigrate(
       makeTestRouteContext('POST', '/api/migrate', {
-        owner: LEGACY,
+        owner: UNSIGNED,
         env: { GUEST_ID_HMAC_SECRET: SECRET } as Env,
         body,
       }),
