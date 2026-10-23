@@ -300,7 +300,7 @@ sharing, teams, the Trash, the Timeline or the Inbox is kept here.
 workbench confinement, body caps) and hands every request under `/api/documents/:id/...` to the document's object,
 `documentRoom(env, id).route(request, identity)` (typed RPC, `document-client.ts`). The object rebuilds the route
 context from that identity and the grant and runs the handlers against its own SQLite as `env.DOCUMENT_DB`
-(`document-db.ts`, the D1 surface over `ctx.storage.sql`). The editor's wire protocol is unchanged. Other RPCs:
+(`@liveworkspace/index-app` `item-db.ts`, the D1 surface over `ctx.storage.sql`, which tells the room only of calls that changed a row, so a read never counts as an edit). The editor's wire protocol is unchanged. Other RPCs:
 `outline` (a document read's tab list and deck), `image` (thumbnails and live images, drawn where the content is),
 `hasTab`, `servesImage` (the image byte endpoint's share check), `exportCopy` / `importCopy` (a document copy),
 `joined`, `anonymise`, `purge` and `revokeCodes`.

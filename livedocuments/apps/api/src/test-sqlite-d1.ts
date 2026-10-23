@@ -1,6 +1,6 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { DatabaseSync } from 'node:sqlite';
-import { DocumentDb } from './document-room/document-db';
+import { ItemDb } from '@liveworkspace/index-app';
 import { migrateDocumentSchema } from './document-room/document-schema';
 import { nodeDocumentSql, nodeTransaction } from './test-document-sql';
 import type { AccessLevel } from '@livedocuments/api-schema';
@@ -82,7 +82,7 @@ export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
     }
   };
 
-  const documentDb = new DocumentDb(documentSql, {
+  const documentDb = new ItemDb(documentSql, {
     transaction: nodeTransaction(sql),
     ensureSchema: () => {},
     onWrite: () => {},

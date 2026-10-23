@@ -244,6 +244,31 @@ describe("a document's content lives in its own Durable Object", () => {
     expect(tab.tab.elements.map((e) => e.label)).toEqual(['Edited', 'c']);
   });
 
+  it('records nothing for a read: no edit key, no outbox row, no push scheduled', async () => {
+    const w = world({ INDEX_KEY: 'index-key' });
+    await createDocument(w, 'A');
+    const item = w.documents.get('A')!;
+    await item.room.drain();
+    expect(count(item.db, 'outbox')).toBe(0);
+    indexCalls.length = 0;
+
+    for (const path of [
+      '/api/documents/A',
+      '/api/documents/A/tabs',
+      '/api/documents/A/tabs/t1',
+      '/api/documents/A/thumbnail',
+    ]) {
+      const res = await w.send('GET', path);
+      expect(res.status, path).toBeLessThan(500);
+      expect(
+        item.db.prepare('SELECT kind, key FROM outbox').all(),
+        `${path} queued an outbox row`,
+      ).toEqual([]);
+    }
+    await item.room.drain();
+    expect(indexCalls).toEqual([]);
+  });
+
   it('pushes its summary and Inbox rows to the index from its outbox, never on the save itself', async () => {
     const w = world({ INDEX_KEY: 'index-key' });
     await createDocument(w, 'A', [{ id: 't1', name: 'Board', elements: [] }]);

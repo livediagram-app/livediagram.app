@@ -1,6 +1,7 @@
 import {
   FLUSH_IDLE_MS,
   FLUSH_RETRY_MS,
+  ItemDb,
   nextFlushAt,
   openRoomTicket,
 } from '@liveworkspace/index-app';
@@ -60,7 +61,6 @@ import { documentHasTab } from '../db/tabs';
 import { documentMayServeImage } from '../db/image-grants';
 import { documentPlacesImage } from '../db/image-refs';
 import { renderDocumentImage, type ThumbnailSubject } from '../thumbnail';
-import { DocumentDb } from './document-db';
 import { hasDocumentSchema, migrateDocumentSchema } from './document-schema';
 import {
   exportDocumentCopy,
@@ -79,7 +79,7 @@ import { answerDocumentRequest, type RouteIdentity } from './document-route';
 // is two things at once:
 //
 //   - The document's content: tabs (with their stats) and the changeset log, in its own SQLite
-//     (document-schema.ts), which the content modules reach as `env.DOCUMENT_DB` (document-db.ts). Every API
+//     (document-schema.ts), which the content modules reach as `env.DOCUMENT_DB` (index-app item-db.ts). Every API
 //     request about the document runs here (`route`, document-route.ts), so a save is one call to this object and
 //     one SQLite transaction, with no round trip on its path. What other services need (the index's summary, the
 //     Inbox's comments and actions, who edited it, the media service's image references) is pushed from the
@@ -208,8 +208,8 @@ export class DocumentRoom extends DurableObject<Env> {
   // DOCUMENT_ROOM that answers this document's own id with this object (no hop). Undefined only for a unit test that
   // builds a room from a fake state alone; then the content and telemetry paths are skipped.
   roomEnv: DocumentEnv | undefined;
-  // The document's SQLite behind the D1-shaped surface the content modules use (document-db.ts).
-  readonly db: DocumentDb;
+  // The document's SQLite behind the D1-shaped surface the content modules use (@liveworkspace/index-app item-db.ts).
+  readonly db: ItemDb;
   // The document this object is, from the first call that names it (every RPC and room join does).
   private documentId: string | null = null;
   private schemaReady = false;
@@ -240,7 +240,7 @@ export class DocumentRoom extends DurableObject<Env> {
   constructor(state: DurableObjectState, env?: Env) {
     super(state, env as Env);
     this.state = state;
-    this.db = new DocumentDb(state.storage.sql, {
+    this.db = new ItemDb(state.storage.sql, {
       transaction: (fn) => state.storage.transactionSync(fn),
       ensureSchema: () => this.ensureSchema(),
       onWrite: () => this.noteWrite(),
