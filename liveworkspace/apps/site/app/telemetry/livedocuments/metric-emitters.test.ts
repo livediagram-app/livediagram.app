@@ -5,6 +5,7 @@ import { SETTINGS_CHANGED, SETTINGS_STACKS } from './metric-catalogue';
 import { GROUPS as SETTINGS } from './SettingsView';
 import { COMPUTED_EMITTERS } from './computed-emitters';
 import { COMPUTED, scanEmitters, type Emit } from './emitter-scan';
+import { platformEmitters } from '../platform-emitters';
 import { GROUPS as EXCEPTIONS, RECOVERY_GROUPS, RECOVERY_TYPES } from './ExceptionsView';
 import { GROUPS as HELP } from './HelpView';
 import { GROUPS as DASHBOARD } from './DashboardView';
@@ -45,7 +46,11 @@ import { SELECTION_MODES } from './PaletteView';
 
 const REPO = resolve(__dirname, '../../../../../../livedocuments');
 // The dashboard reads events, it never emits them.
-const EMITS = scanEmitters(REPO, ['apps', 'packages'], join(REPO, 'apps', 'telemetry'));
+// Plus what liveworkspace's own Workers send in this app's name (the onboarding emails).
+const EMITS = [
+  ...scanEmitters(REPO, ['apps', 'packages'], join(REPO, 'apps', 'telemetry')),
+  ...platformEmitters(),
+];
 
 type Known = Emit & { category: string; action: string };
 const KNOWN = EMITS.filter(

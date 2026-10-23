@@ -4,6 +4,7 @@ import { countedVerbs } from '@livedesign/agent-verbs';
 import { pascalToken } from '@livedesign/api-schema';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { platformEmailKinds } from '../platform-emitters';
 import { GROUPS as DASHBOARD } from './DashboardView';
 import {
   CLI_COMMAND_METRICS,
@@ -37,7 +38,8 @@ describe('chart stacks', () => {
 
 describe('the Emails Sent stack', () => {
   // The head's total is the sum of its members, so a template with no chart
-  // would silently drop out of it. Read the api's EmailKind union as source.
+  // would silently drop out of it. Read the api's EmailKind union as source,
+  // and the kinds the accounts Worker counts in this app's name.
   const source = readFileSync(
     resolve(__dirname, '../../../../../../livedesign/apps/api/src/email/templates.ts'),
     'utf8',
@@ -49,9 +51,10 @@ describe('the Emails Sent stack', () => {
     expect(kinds.length).toBeGreaterThan(10);
   });
 
-  it('has one chart per email template', () => {
+  it('has one chart per email template, the onboarding series the accounts Worker sends among them', () => {
     const charted = EMAIL_KIND_METRICS.map((m) => m.type);
-    expect([...charted].sort()).toEqual([...kinds].sort());
+    const sent = new Set([...kinds, ...platformEmailKinds()]);
+    expect([...charted].sort()).toEqual([...sent].sort());
   });
 
   it('is what Dashboard stacks', () => {
