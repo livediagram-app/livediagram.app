@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { handleAccountApi } from './account-api.ts';
 import type { Auth } from './auth.ts';
 import type { Env } from './env.ts';
@@ -8,7 +8,7 @@ const BASE = 'https://liveworkspace.app';
 const CLIENT = `Basic ${btoa('liveplanner:secret')}`;
 
 let env: Env;
-let sent: { to: string; subject: string }[];
+let sent: { to: string[]; subject: string }[];
 // Who the stub session belongs to, or null for signed out.
 let signedIn: { id: string; name: string; email: string; emailVerified: boolean } | null;
 
@@ -32,18 +32,21 @@ beforeEach(() => {
   addUser(d1.sql, { id: 'user_ada', email: 'ada@example.com', name: 'Ada' });
   addUser(d1.sql, { id: 'user_bea', email: 'bea@example.com', name: 'Bea' });
   sent = [];
+  vi.stubGlobal('fetch', async (_url: string, init: RequestInit) => {
+    sent.push(JSON.parse(String(init.body)) as { to: string[]; subject: string });
+    return new Response('{}');
+  });
   env = {
     BASE_URL: BASE,
     EMAIL_FROM: 'sign-in@liveworkspace.app',
     AUTH_DB: d1.db,
-    EMAIL: {
-      send: async (message: { to: string; subject: string }) => {
-        sent.push(message);
-      },
-    },
+    ENVIRONMENT: 'production',
+    RESEND_API_KEY: 're_test',
   } as unknown as Env;
   signedIn = { id: 'user_ada', name: 'Ada', email: 'ada@example.com', emailVerified: true };
 });
+
+afterEach(() => vi.unstubAllGlobals());
 
 function call(
   path: string,
@@ -92,7 +95,7 @@ describe('the account API, signed in', () => {
     expect(invited.status).toBe(201);
     expect(sent).toEqual([
       expect.objectContaining({
-        to: 'bea@example.com',
+        to: ['bea@example.com'],
         subject: 'Ada invited you to Design on liveworkspace',
       }),
     ]);

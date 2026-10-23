@@ -2,19 +2,20 @@ export interface Env {
   ENVIRONMENT: 'production' | 'staging' | 'development';
   // The origin this Worker answers on, e.g. https://liveworkspace.app (it owns only its own paths there)
   BASE_URL: string;
-  // An address on a domain onboarded to Cloudflare Email Sending.
+  // The From address, on a domain verified in Resend.
   EMAIL_FROM: string;
   TURNSTILE_SITE_KEY: string;
 
   BETTER_AUTH_SECRET: string;
   TURNSTILE_SECRET_KEY: string;
   ADMIN_TOKEN: string;
+  // Resend's API key. Required in staging and production; without it, development logs each email.
+  RESEND_API_KEY?: string;
   // Both set turns on "Continue with Google"; either missing leaves email codes only.
   GOOGLE_CLIENT_ID?: string;
   GOOGLE_CLIENT_SECRET?: string;
 
   AUTH_DB: D1Database;
-  EMAIL: SendEmail;
   CODE_IP_LIMITER: RateLimit;
   CODE_EMAIL_LIMITER: RateLimit;
 }
