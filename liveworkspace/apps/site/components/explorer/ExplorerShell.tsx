@@ -33,6 +33,7 @@ import {
   type AppFilter,
   type ExplorerView,
   type HeroArtManifest,
+  type LinkComponent,
   type NavigateOptions,
   type Placement,
   type SidebarLink,
@@ -112,6 +113,19 @@ const client = createIndexClient({ getToken: workspaceToken });
 const accounts = createExplorerAccounts({ fetch: accountFetch });
 
 const NO_ARRIVAL: Arrival = { app: null, via: null };
+
+// The Explorer's own addresses move inside the page; anything else (an item in its app, which on an app's address is
+// this same origin) is a full page load, never this site's client router, which has no such page.
+const isExplorerHref = (href: string) => {
+  const path = href.startsWith('/') ? href : href.replace(/^https?:\/\/[^/]+/, '');
+  return (
+    (href.startsWith('/') || href.startsWith(window.location.origin)) &&
+    /^\/explorer(?:[/?#]|$)/.test(path)
+  );
+};
+const ExplorerLink: LinkComponent = (props) => {
+  return isExplorerHref(props.href) ? <Link {...props} /> : <a {...props} />;
+};
 
 /** The retired view an address names (`/explorer/profile`, …), if any. */
 function retiredView(pathname: string): keyof typeof RETIRED_TARGETS | 'offline' | null {
@@ -411,7 +425,7 @@ export function ExplorerShell() {
           onCreate={onCreate}
           renderThumbnail={renderPreview}
           prefetchThumbnail={prefetchPreview}
-          Link={Link}
+          Link={ExplorerLink}
           teams={teams}
           viewerId={identity.sub}
           shareUrl={shareUrl}

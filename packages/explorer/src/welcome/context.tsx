@@ -12,6 +12,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import { isAbort } from '../data/errors';
 import { readAnyItem } from '../data/homeReads';
 import { useExplorer } from '../explorer/context';
+import { useThisBrowserItems } from '../explorer/ThisBrowser';
 import type { WelcomeOptions } from './types';
 
 const SEEN_KEY = 'liveworkspace:explorer-has-items';
@@ -84,9 +85,12 @@ export function WelcomeProvider({
     return () => controller.abort();
   }, [enabled, client, app, filter, viewerId, scope, key]);
 
+  // Something kept only in this browser (the host's This Browser) is not a first run either.
+  const { live: local } = useThisBrowserItems();
+  const keptHere = local.length > 0;
   const known = answer?.key === key ? answer.empty : undefined;
-  const firstRun = enabled && known === true;
-  const heroFirstRun = enabled && (known ?? remembered(viewerId, scope) !== true);
+  const firstRun = enabled && !keptHere && known === true;
+  const heroFirstRun = enabled && !keptHere && (known ?? remembered(viewerId, scope) !== true);
 
   const onFirstRun = welcome?.onFirstRun;
   useEffect(() => {

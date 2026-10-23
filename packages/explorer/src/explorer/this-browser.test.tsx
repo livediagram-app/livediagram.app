@@ -149,6 +149,28 @@ describe('This Browser in the Explorer', () => {
     expect(group.textContent).toContain('30 days left');
   });
 
+  it('is no first run while something is kept in this browser', async () => {
+    const onFirstRun = vi.fn();
+    render(
+      <Explorer
+        app="liveplanner"
+        client={createFakeIndex().client}
+        view={{ kind: 'home' }}
+        onNavigate={() => {}}
+        itemHref={(item) => `/project/${item.id}`}
+        onCreate={() => {}}
+        viewerId="user_me"
+        heroHidden
+        welcome={{ manifest: null, onFirstRun, signedIn: false, signInHref: '/sign-in' }}
+        thisBrowser={host([local(1, { lastOpenedAt: 900 })])}
+      />,
+    );
+    await waitFor(() =>
+      expect(document.querySelectorAll('[data-this-browser-card]').length).toBeGreaterThan(0),
+    );
+    expect(onFirstRun).not.toHaveBeenCalled();
+  });
+
   it('merges the opened ones into Jump Back In by last open', async () => {
     const index = createFakeIndex({ items: [makeItem(1, { lastOpenedAt: 500 })] });
     page(
