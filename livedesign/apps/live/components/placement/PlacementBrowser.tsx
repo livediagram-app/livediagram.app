@@ -19,16 +19,16 @@ import {
 } from './placement-view';
 import { usePlacementView } from './usePlacementView';
 
-// The standardised folder-placement browser (docs/specs/006-document/offline-mode.md, extended by docs/specs/013-workspace/folders.md):
+// The standardised folder-placement browser (docs/specs/006-design/offline-mode.md, extended by docs/specs/013-workspace/folders.md):
 // a two-level tile-grid browse. Pick a SPACE first (My Work, or one of your
 // teams), then drill into its folder tree; every level shows a "here" card
 // (Unsorted / Team Library / the open folder itself) plus the folders
 // directly inside it, with an optional inline New Folder tile. One space
 // collapses the overview away and the browser opens straight inside it.
 //
-// Shared by the New Document wizard's folder step (docs/specs/006-document/offline-mode.md, docs/specs/006-document/save-locations.md) and the
-// Move-to-folder dialog on every move surface (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-documents.md), so the
-// product has exactly ONE way to choose where a document lives. Two layouts
+// Shared by the New Design wizard's folder step (docs/specs/006-design/offline-mode.md, docs/specs/006-design/save-locations.md) and the
+// Move-to-folder dialog on every move surface (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-designs.md), so the
+// product has exactly ONE way to choose where a design lives. Two layouts
 // of the same browse: `tiles` (icon over label, a grid) for the move dialog,
 // `list` (icon beside label, stacked rows, the file-explorer idiom) for the
 // wizard, where a tile grid would read as a twin of the Save location row
@@ -96,7 +96,7 @@ export function PlacementBrowser({
   placement: string;
   onPlacement: (v: string) => void;
   // Double-click on a destination card: select it AND commit the host flow
-  // in one gesture (create the document / perform the move). Absent =
+  // in one gesture (create the design / perform the move). Absent =
   // double-click ignored.
   onCommitPlacement?: (v: string) => void;
   folders: PickerFolder[];
@@ -130,7 +130,7 @@ export function PlacementBrowser({
   // only mounts its own row.
   const spaceCount = (showPersonal ? 1 : 0) + teams.length;
   // The space overview is shown wherever the personal space is on offer,
-  // even when it is the only space: choosing where a document lives starts
+  // even when it is the only space: choosing where a design lives starts
   // with choosing the space, deliberately, and the overview is where a
   // "create a team" option belongs for someone who has none yet. Only a
   // team-scoped surface (one team, no personal space) skips it and opens
@@ -212,7 +212,7 @@ export function PlacementBrowser({
                 const created = await onCreateTeam(name);
                 if (!created) return false;
                 // Straight into the new team, its root selected: the point
-                // of making a team here is to file this document in it.
+                // of making a team here is to file this design in it.
                 enterSpace(created.id);
                 return true;
               }}

@@ -1,10 +1,10 @@
 // @vitest-environment node
 import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { offlineListDocuments, offlineLoadTab } from './offline-store';
+import { offlineListDesigns, offlineLoadTab } from './offline-store';
 
-// A browser that stored offline documents before the rename holds them in version 1 of the
-// database, in the `diagrams` object store (docs/specs/006-document/offline-mode.md).
+// A browser that stored offline designs before the rename holds them in version 1 of the
+// database, in the `diagrams` object store (docs/specs/006-design/offline-mode.md).
 function seedVersionOne(records: object[]): Promise<void> {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open('livedesign-offline', 1);
@@ -61,11 +61,11 @@ describe('offline store upgrade from the diagrams store', () => {
       }),
   );
 
-  it('moves every record into the documents store and drops the old one', async () => {
+  it('moves every record into the designs store and drops the old one', async () => {
     await seedVersionOne([record('a'), record('b')]);
-    const list = await offlineListDocuments();
+    const list = await offlineListDesigns();
     expect(list.map((d) => d.id).sort()).toEqual(['a', 'b']);
-    expect(await storeNames()).toEqual(['documents']);
+    expect(await storeNames()).toEqual(['designs']);
   });
 
   it('keeps the tab kind and upgrades the legacy link on load', async () => {
@@ -75,11 +75,11 @@ describe('offline store upgrade from the diagrams store', () => {
       elements: { link: unknown }[];
     };
     expect(tab.kind).toBe('diagram');
-    expect(tab.elements[0]!.link).toEqual({ kind: 'document', documentId: 'other', name: 'Other' });
+    expect(tab.elements[0]!.link).toEqual({ kind: 'design', designId: 'other', name: 'Other' });
   });
 
   it('starts empty on a browser that never stored anything', async () => {
-    expect(await offlineListDocuments()).toEqual([]);
-    expect(await storeNames()).toEqual(['documents']);
+    expect(await offlineListDesigns()).toEqual([]);
+    expect(await storeNames()).toEqual(['designs']);
   });
 });

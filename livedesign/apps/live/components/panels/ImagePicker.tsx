@@ -5,7 +5,7 @@ import { TrashIcon } from '@/components/primitives/explorer-icons';
 import { useEffect, useEffectEvent, useState } from 'react';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { apiDeleteImage, type ImageSummary } from '@/lib/api-client';
-import { addImageFileForDocument, ImageUploadError, type PickedImage } from '@/lib/upload-image';
+import { addImageFileForDesign, ImageUploadError, type PickedImage } from '@/lib/upload-image';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { useImageGallery } from '@/hooks/ui/useImageGallery';
 import { GalleryEmpty } from '@/components/panels/GalleryEmpty';
@@ -28,7 +28,7 @@ import { ImageSearchPane } from '@/components/panels/ImageSearchPane';
 
 type ImagePickerProps = {
   ownerId: string;
-  documentId: string;
+  designId: string;
   // When set, the picker is selecting an image for this specific
   // element id: the parent applies the chosen imageId + dimensions
   // to that element. When null, the picker is opening for a fresh
@@ -44,13 +44,13 @@ type ImagePickerProps = {
   onSelect: (image: PickedImage) => void;
   onClose: () => void;
   // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table)
-  // uploads into its one document and never reads the person's gallery: no Gallery, no Search.
+  // uploads into its one design and never reads the person's gallery: no Gallery, no Search.
   uploadOnly?: boolean;
 };
 
 export function ImagePicker({
   ownerId,
-  documentId,
+  designId,
   forElementId: _forElementId,
   currentImageId,
   onRemove,
@@ -65,7 +65,7 @@ export function ImagePicker({
     error: galleryError,
     setError: setGalleryError,
     pick,
-  } = useImageGallery(ownerId, documentId, !uploadOnly);
+  } = useImageGallery(ownerId, designId, !uploadOnly);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const confirm = useConfirm();
@@ -74,9 +74,9 @@ export function ImagePicker({
     setUploadError(null);
     setUploading(true);
     try {
-      // Cloud documents upload to the gallery; offline documents embed the
-      // file locally as a data URI (docs/specs/006-document/offline-mode.md) so no server copy is created.
-      const { image } = await addImageFileForDocument(ownerId, documentId, file);
+      // Cloud designs upload to the gallery; offline designs embed the
+      // file locally as a data URI (docs/specs/006-design/offline-mode.md) so no server copy is created.
+      const { image } = await addImageFileForDesign(ownerId, designId, file);
       onSelect(image);
     } catch (e) {
       setUploadError(e instanceof ImageUploadError ? e.message : 'Upload failed.');
@@ -92,11 +92,11 @@ export function ImagePicker({
   // screenshot is the most common image source after drag-drop,
   // so handling it natively saves the user a "save to disk → drag
   // in" detour. Only attaches the listener while the picker is
-  // mounted; the keydown handler above lives on the document so
+  // mounted; the keydown handler above lives on the design so
   // the paste one does too (a focused button inside the dialog
   // doesn't bubble the paste event to the dialog otherwise).
   // The pasted file goes through handleFile as an effect event, so the listener attaches once and
-  // still uploads with the newest owner / document / onSelect.
+  // still uploads with the newest owner / design / onSelect.
   const pasteFile = useEffectEvent((file: File) => void handleFile(file));
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
@@ -175,11 +175,11 @@ export function ImagePicker({
             gapClass="gap-2"
           />
         ) : tab === 'search' ? (
-          <ImageSearchPane ownerId={ownerId} documentId={documentId} onPicked={onSelect} />
+          <ImageSearchPane ownerId={ownerId} designId={designId} onPicked={onSelect} />
         ) : (
           <GalleryGrid
             ownerId={ownerId}
-            documentId={documentId}
+            designId={designId}
             gallery={gallery}
             error={galleryError}
             onSelect={(image) => void selectFromGallery(image)}
@@ -207,14 +207,14 @@ export function ImagePicker({
 
 function GalleryGrid({
   ownerId,
-  documentId,
+  designId,
   gallery,
   error,
   onSelect,
   onDelete,
 }: {
   ownerId: string;
-  documentId: string;
+  designId: string;
   gallery: ImageSummary[] | null;
   error: string | null;
   onSelect: (image: ImageSummary) => void;
@@ -239,7 +239,7 @@ function GalleryGrid({
         <GalleryTile
           key={image.id}
           ownerId={ownerId}
-          documentId={documentId}
+          designId={designId}
           image={image}
           onSelect={() => onSelect(image)}
           onDelete={() => onDelete(image)}
@@ -251,13 +251,13 @@ function GalleryGrid({
 
 function GalleryTile({
   ownerId,
-  documentId,
+  designId,
   image,
   onSelect,
   onDelete,
 }: {
   ownerId: string;
-  documentId: string;
+  designId: string;
   image: ImageSummary;
   onSelect: () => void;
   onDelete: () => void;
@@ -267,7 +267,7 @@ function GalleryTile({
       <GalleryImageButton
         image={image}
         ownerId={ownerId}
-        documentId={documentId}
+        designId={designId}
         onClick={onSelect}
         ariaLabel={`Use ${image.originalName ?? 'image'}`}
       />

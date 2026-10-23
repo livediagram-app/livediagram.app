@@ -23,8 +23,8 @@ const verb = (id: string): Verb => verbById(id)!;
 describe('didYouMean', () => {
   it('names the nearest word within two edits, or nothing', () => {
     expect(didYouMean('vew', ['ls', 'view', 'lint'])).toBe('view');
-    expect(didYouMean('documnet', ['document', 'tab'])).toBe('document');
-    expect(didYouMean('zzzzzz', ['document', 'tab'])).toBeNull();
+    expect(didYouMean('desgin', ['design', 'tab'])).toBe('design');
+    expect(didYouMean('zzzzzz', ['design', 'tab'])).toBeNull();
   });
 });
 
@@ -36,7 +36,7 @@ describe('route', () => {
       verb: { id: 'guide' },
       rest: ['edit'],
     });
-    expect(route(['doc'])).toEqual({ kind: 'resource', resource: 'document' });
+    expect(route(['doc'])).toEqual({ kind: 'resource', resource: 'design' });
     expect(route(['tab', 'lint', 'x'])).toMatchObject({
       kind: 'verb',
       verb: { id: 'tab.lint' },
@@ -150,14 +150,14 @@ describe('parseVerbArgs', () => {
       coarse: true,
     });
     expect(parseVerbArgs(verb('auth.login'), ['--with-token'])).toEqual({ withToken: true });
-    expect(parseVerbArgs(verb('document.ls'), [])).toEqual({ limit: 20 });
+    expect(parseVerbArgs(verb('design.ls'), [])).toEqual({ limit: 20 });
   });
 
   it('refuses an unknown flag, an extra word, a missing argument and a bad value', () => {
-    expect(failureOf(() => parseVerbArgs(verb('document.ls'), ['--token', 'x']))).toMatchObject({
+    expect(failureOf(() => parseVerbArgs(verb('design.ls'), ['--token', 'x']))).toMatchObject({
       exit: 2,
-      message: 'unknown flag --token for "document ls"',
-      hint: 'livedesign document ls --help',
+      message: 'unknown flag --token for "design ls"',
+      hint: 'livedesign design ls --help',
     });
     expect(failureOf(() => parseVerbArgs(verb('tab.ls'), ['a', 'b']))).toMatchObject({
       message: 'unexpected "b"',
@@ -171,7 +171,7 @@ describe('parseVerbArgs', () => {
     expect(
       failureOf(() => parseVerbArgs(verb('tab.view'), ['d', '--view', 'nope'])).message,
     ).toMatch(/^--view: /);
-    expect(failureOf(() => parseVerbArgs(verb('document.ls'), ['--limit', '0'])).message).toMatch(
+    expect(failureOf(() => parseVerbArgs(verb('design.ls'), ['--limit', '0'])).message).toMatch(
       /^--limit: /,
     );
   });
@@ -198,7 +198,7 @@ describe('a verb without a CLI projection', () => {
 
 describe('flag problems', () => {
   it('name a valued flag without its value, a switch given one, and a short flag the verb lacks', () => {
-    expect(failureOf(() => parseVerbArgs(verb('document.ls'), ['--limit']))).toMatchObject({
+    expect(failureOf(() => parseVerbArgs(verb('design.ls'), ['--limit']))).toMatchObject({
       message: '--limit needs a value',
     });
     expect(failureOf(() => parseVerbArgs(verb('tab.view'), ['d', '--coarse=1']))).toMatchObject({

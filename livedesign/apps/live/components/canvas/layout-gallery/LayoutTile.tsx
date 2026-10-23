@@ -6,7 +6,7 @@
 // view, a soft placeholder of the page's shape until then, so a gallery of ninety layouts opens
 // without drawing them all.
 import { memo, useEffect, useRef, useState, type RefObject } from 'react';
-import type { LaidOutPage } from '@livedesign/document';
+import type { LaidOutPage } from '@livedesign/design';
 import type { PageLayoutId } from '@livedesign/templates';
 import { LayoutThumb } from '../layout-thumb';
 import type { GalleryLayout } from './layout-gallery-filter';

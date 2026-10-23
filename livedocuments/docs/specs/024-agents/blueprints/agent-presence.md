@@ -60,7 +60,7 @@ Scope, by file:
 | `apps/live/components/primitives/ParticipantAvatar.tsx`                                                                   | The status line in the hover card and the accessible name                                                                                               |
 | `apps/live/components/dialogs/CollaboratorsDialog.tsx`                                                                    | The status line on a row; no Follow on an agent row                                                                                                     |
 | `apps/live/components/canvas/AgentFocusOverlay.tsx` (+ test), `CanvasElementsLayer.tsx`, `EditorView.tsx`                 | `AgentFocusOverlay` beneath the remote cursors, fed by `AgentFocusContext`                                                                              |
-| `apps/telemetry/app/catalogue/`                                                                                           | The `Present` series on the Agent stack the agent-changesets blueprint adds                                                                             |
+| `../liveworkspace/apps/site/app/telemetry/livedocuments/catalogue/`                                                       | The `Present` series on the Agent stack the agent-changesets blueprint adds                                                                             |
 | `packages/api-schema/src/index.ts`                                                                                        | `MAX_PARTICIPANT_NAME_LEN`, `MAX_COLOR_LEN`, moved from `apps/api/src/limits.ts` so the editor clamps to them                                           |
 
 ## Domain and naming
@@ -414,7 +414,7 @@ the tab pill.
 - A folded agent adds nothing to the stack: the owner's avatar stays, and its hover card description reads
   "{status line} · {status} · Active {when}". Without a status line the card is unchanged. The owner sees their own
   agent's status this way on their own avatar when both are on the tab.
-- A standalone agent row is an avatar in the owner's name and colour (initials, no picture, as the spec says),
+- A standalone agent row is an avatar in the owner's name and colour (initials, as the spec says),
   always online (PR32); its hover card title carries the badge `participantBadges` gives the entry's level, and its
   description reads "{status line}", or "Online" without one.
 - Two tokens of one owner on one tab are one row, showing the status set last.
@@ -466,29 +466,29 @@ client's copy.
 
 ## Testing
 
-| Spec rule                                                        | Test                                                                                                                                                                           |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Presence and comments carry the owner's name and colour          | `apps/api/src/routes/agent-presence-routes.test.ts`, `comment-routes.test.ts`                                                                                                  |
-| The token id is recorded on every comment, never shown as a name | `comment-routes.test.ts`, `apps/api/src/comments.test.ts`, `packages/document/src/comments.test.ts`                                                                            |
-| Appears in the stack as its owner, with a status line            | `apps/live/lib/agent-presence-rows.test.ts` (also a personal document, two tokens of one owner, the owner's own agent)                                                         |
-| Owner with the tab open: shown once, status beside them          | `agent-presence-rows.test.ts`, `apps/api/src/room-agent-presence.test.ts` (`agentRosterFor`)                                                                                   |
-| Every changeset refreshes for `AGENT_PRESENCE_TTL_MS`            | `room-agent-presence.test.ts`; the changeset route test (agent-changesets)                                                                                                     |
-| PUT `status` (80), `focus` (20), `ttl` (max); DELETE clears      | `packages/api-schema/src/agent-presence.test.ts`, `agent-presence-routes.test.ts`                                                                                              |
-| The agent holds no socket                                        | `apps/api/src/document-room.test.ts` (agent presence) (entries with no socket, restored on wake)                                                                               |
-| The room expires entries on their ttl                            | `document-room.test.ts` (alarm, sweep)                                                                                                                                         |
-| Never holds an element                                           | `document-room.test.ts` (`/selections`), `agent-presence-rows.test.ts` (lock map)                                                                                              |
-| Never in a head count                                            | `agent-presence-rows.test.ts` (`splitPresenceFrame`), `collaborator-roster.test.ts`, `document-room.test.ts` (multiplayer)                                                     |
-| An agent comments through the comment endpoints                  | `comment-routes.test.ts` (token caller)                                                                                                                                        |
-| Reply, resolve, reopen, each relayed as an `el-delta`            | `comment-routes.test.ts` (fake room stub records the deltas)                                                                                                                   |
-| Agents and people use the same endpoints                         | `comment-routes.test.ts` (session, guest Participant link, token); `apps/live/lib/api/tabs.test.ts`                                                                            |
-| The cross-tab list, status filter, ref and label                 | `comment-routes.test.ts`; `apps/api/src/db/tabs.test.ts` (`tabIdsWithComments`)                                                                                                |
-| Agents cannot be mentioned                                       | `packages/document/src/comment-mentions.test.ts` (closed mention shape)                                                                                                        |
-| Levels: reading, participation (comments, presence), changesets  | `apps/api/src/index.test.ts` (choke point), `comment-routes.test.ts`, `agent-presence-routes.test.ts`                                                                          |
-| The two constants                                                | `packages/api-schema/src/agent-presence.test.ts` pins values and order                                                                                                         |
-| Logs and telemetry                                               | the route and room tests assert each fingerprint; `server-emitted-events.test.ts`                                                                                              |
-| Person tag through the ticket                                    | `apps/api/src/db/ws-tickets.test.ts`, `routes/document-room-routes.test.ts`                                                                                                    |
-| OpenAPI parity                                                   | `apps/api/src/openapi/route-parity.test.ts`, `manifest.test.ts`                                                                                                                |
-| End to end, dark mode                                            | `apps/live/e2e/clerk-stub/agent-presence.spec.ts`: a token sets presence, the avatar and status show, a ring draws, a short ttl expires it, a REST reply and resolve land live |
+| Spec rule                                                        | Test                                                                                                                                                                          |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Presence and comments carry the owner's name and colour          | `apps/api/src/routes/agent-presence-routes.test.ts`, `comment-routes.test.ts`                                                                                                 |
+| The token id is recorded on every comment, never shown as a name | `comment-routes.test.ts`, `apps/api/src/comments.test.ts`, `packages/document/src/comments.test.ts`                                                                           |
+| Appears in the stack as its owner, with a status line            | `apps/live/lib/agent-presence-rows.test.ts` (also a personal document, two tokens of one owner, the owner's own agent)                                                        |
+| Owner with the tab open: shown once, status beside them          | `agent-presence-rows.test.ts`, `apps/api/src/room-agent-presence.test.ts` (`agentRosterFor`)                                                                                  |
+| Every changeset refreshes for `AGENT_PRESENCE_TTL_MS`            | `room-agent-presence.test.ts`; the changeset route test (agent-changesets)                                                                                                    |
+| PUT `status` (80), `focus` (20), `ttl` (max); DELETE clears      | `packages/api-schema/src/agent-presence.test.ts`, `agent-presence-routes.test.ts`                                                                                             |
+| The agent holds no socket                                        | `apps/api/src/document-room.test.ts` (agent presence) (entries with no socket, restored on wake)                                                                              |
+| The room expires entries on their ttl                            | `document-room.test.ts` (alarm, sweep)                                                                                                                                        |
+| Never holds an element                                           | `document-room.test.ts` (`/selections`), `agent-presence-rows.test.ts` (lock map)                                                                                             |
+| Never in a head count                                            | `agent-presence-rows.test.ts` (`splitPresenceFrame`), `collaborator-roster.test.ts`, `document-room.test.ts` (multiplayer)                                                    |
+| An agent comments through the comment endpoints                  | `comment-routes.test.ts` (token caller)                                                                                                                                       |
+| Reply, resolve, reopen, each relayed as an `el-delta`            | `comment-routes.test.ts` (fake room stub records the deltas)                                                                                                                  |
+| Agents and people use the same endpoints                         | `comment-routes.test.ts` (session, guest Participant link, token); `apps/live/lib/api/tabs.test.ts`                                                                           |
+| The cross-tab list, status filter, ref and label                 | `comment-routes.test.ts`; `apps/api/src/db/tabs.test.ts` (`tabIdsWithComments`)                                                                                               |
+| Agents cannot be mentioned                                       | `packages/document/src/comment-mentions.test.ts` (closed mention shape)                                                                                                       |
+| Levels: reading, participation (comments, presence), changesets  | `apps/api/src/index.test.ts` (choke point), `comment-routes.test.ts`, `agent-presence-routes.test.ts`                                                                         |
+| The two constants                                                | `packages/api-schema/src/agent-presence.test.ts` pins values and order                                                                                                        |
+| Logs and telemetry                                               | the route and room tests assert each fingerprint; `server-emitted-events.test.ts`                                                                                             |
+| Person tag through the ticket                                    | `apps/api/src/db/ws-tickets.test.ts`, `routes/document-room-routes.test.ts`                                                                                                   |
+| OpenAPI parity                                                   | `apps/api/src/openapi/route-parity.test.ts`, `manifest.test.ts`                                                                                                               |
+| End to end, dark mode                                            | `apps/live/e2e/signed-in/agent-presence.spec.ts`: a token sets presence, the avatar and status show, a ring draws, a short ttl expires it, a REST reply and resolve land live |
 
 Room and route tests run on the in-memory storage and SQLite fakes with a fixed clock; none waits on a real timer.
 

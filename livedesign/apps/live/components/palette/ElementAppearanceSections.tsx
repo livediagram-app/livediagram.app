@@ -37,7 +37,7 @@ import {
   type TextAlignX,
   type TextAlignY,
   type TextSize,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { ContextMenuDivider } from '@/components/palette/ContextMenu';
 import {
   IconCategoryGlyph,

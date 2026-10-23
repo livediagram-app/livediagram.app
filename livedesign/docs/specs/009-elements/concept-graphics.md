@@ -78,7 +78,7 @@ same section.
 
 ## Layout
 
-Each kind has one pure layout in `@livedesign/document` that the canvas and the headless renderer both call, so an
+Each kind has one pure layout in `@livedesign/design` that the canvas and the headless renderer both call, so an
 export matches the editor. Text re-wraps and re-sizes with the element; it never zooms.
 
 - **Layer stack.** Bands share the height with a 6px gap. When any row has a note, the bands take the left 62% of the
@@ -103,7 +103,7 @@ export matches the editor. Text re-wraps and re-sizes with the element; it never
 
 ### Timeline
 
-`timelineLayout(w, h, n)` (`packages/document/src/concept-timeline.ts`), shared by the face and the export:
+`timelineLayout(w, h, n)` (`packages/design/src/concept-timeline.ts`), shared by the face and the export:
 
 - **The spine** runs across the middle (`y = h / 2`) to an arrowhead at the right edge, `clamp(h * 0.06, 6, 12)` long:
   time runs that way. It is drawn in the accent at 55%, 3 px, round-capped.

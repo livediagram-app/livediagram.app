@@ -16,9 +16,9 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `apps/live/components/canvas/arrow-view-frame.ts`         | `ArrowViewFrame` and `sameArrowViewFrame`                                                                       |
 | `apps/live/components/canvas/ArrowView.tsx`               | Takes `frame` + `holes`, no `elementIndex` / `occluders`                                                        |
 | `apps/live/components/canvas/BoxedElementView.tsx`        | No `zoom` prop; counter-scaled children read `useCanvasZoom()`                                                  |
-| `packages/document/src/element-grid.ts`                   | `ElementGrid`: build, update, query, `elementGridFor`, `createElementGridTracker`                               |
-| `packages/document/src/arrow-behind.ts`                   | `routeBehindHoles` unchanged in contract; callers pass grid candidates                                          |
-| `packages/document/src/svg-render-arrows.ts`              | The export builds one grid per render and queries it                                                            |
+| `packages/design/src/element-grid.ts`                     | `ElementGrid`: build, update, query, `elementGridFor`, `createElementGridTracker`                               |
+| `packages/design/src/arrow-behind.ts`                     | `routeBehindHoles` unchanged in contract; callers pass grid candidates                                          |
+| `packages/design/src/svg-render-arrows.ts`                | The export builds one grid per render and queries it                                                            |
 | `apps/live/hooks/canvas/useArrowLabelLayouts.ts`          | `draftLayout` identity-stable across passes                                                                     |
 | `apps/live/lib/stock-colour-projector.ts`                 | Same board in, same array out (`lastIn` / `lastOut`)                                                            |
 | `apps/live/hooks/canvas/useSettledElements.ts`            | What the Map draws: frozen during element gestures, throttled otherwise                                         |
@@ -151,10 +151,10 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   element that takes a press already sets its own cursor (`BoxedElementView`'s `cursor-*` class,
   `ArrowView`'s hit line), so what shows does not change.
 - `[data-pen-in-hand] *` and `[data-path-cursor] *` (`cursor: inherit !important`) match the plane
-  too, so a whiteboard pen or a path in its edit mode still shows its cursor over the elements.
+  too, so a marker or a path in its edit mode still shows its cursor over the elements.
 - Invariant: a change of the canvas world's cursor class (a switch between the class-cursor tools, a pan's start
-  and end, a diagram stroke landing) restyles no element view. It does not cover:
-  - a whiteboard pen or a path in its edit mode, whose cursor passes through the plane on purpose (above), so a
+  and end, a pencil stroke landing) restyles no element view. It does not cover:
+  - a marker or a path in its edit mode, whose cursor passes through the plane on purpose (above), so a
     zoom (the pen's cursor follows its width on screen) or a path hover still restyles the board;
   - the eraser and the spotlight, whose own rules match every `[data-element-id]`, so switching to or from them
     restyles each element once;
@@ -230,13 +230,12 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 - `useBoxedElementAnimation`: `entered` starts as `still || arrivesWithBoard`. Only an element
   that starts not entered arms the 400 ms timer that drops `animate-element-pop-in`; an element
   that starts entered arms nothing, so opening a board sets no timers and re-renders no view
-  afterwards. An element mounted on a still canvas stays entered if the tab switches to Diagram
-  mode.
+  afterwards.
 
 ### The Map is one image
 
 - `Minimap`'s memo builds the board's markup (`svgBoxed` / `svgArrow`, frames first, arrows on
-  top) and wraps it in a standalone document over the padded content box (`PAD_FRACTION`,
+  top) and wraps it in a standalone design over the padded content box (`PAD_FRACTION`,
   `PAD_MIN`): `<svg xmlns viewBox width height>` + `svgShadowDefs(elements)` + the markup. Arrowheads
   are inline polygons and masks travel with their arrows, so nothing references the page's defs.
 - It is shown as one SVG `<image>` at that box in the map's world-space `viewBox`, from a
@@ -266,7 +265,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 ### The reference board
 
 - `buildReferenceBoard(seed = REFERENCE_SEED, count = REFERENCE_COUNT)`: a `mulberry32` PRNG;
-  elements by the spec's mix, made with the `@livedesign/document` factories, placed over
+  elements by the spec's mix, made with the `@livedesign/design` factories, placed over
   `REFERENCE_AREA`; every element but the arrows is placed first, then each arrow is a
   `createPinnedArrow` from a random shape to one of its `ARROW_NEIGHBOURS` (3) nearest shapes by
   centre, as real diagrams join neighbours; paths are closed
@@ -279,7 +278,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   ignored by `chromium`; `pnpm perf:canvas` runs it against the e2e stack. Its pure parts
   (`reference-board.ts`, `budget.ts`, `trace-tasks.ts`) have unit tests beside them, which the
   live app's Vitest runs: it excludes only `e2e/**/*.spec.ts`.
-- It seeds one document per series (`whiteboard`: a tab opening in Draw mode; `diagram`), each the reference board, through
+- It seeds one design per series (`whiteboard`: a tab storing livediagram's `opensIn: 'draw'`, which opens in Pages like any tab; `diagram`), each the reference board, through
   the api, and opens it as its owner at 1440 × 900, dark, the CPU throttled 4× before load.
 - **Open** (`openBoard`): `REPEATS` (5) opens per tab, each in a fresh browser context; the row is
   `medianOfRuns` of the five. The gesture rows run on the last one. Before load, an init script
@@ -315,8 +314,8 @@ OPEN_QUIET_MS`), up to `OPEN_SETTLE_TIMEOUT_MS` (60,000; a harness error past it
 - For each tab and each zoom (fit, 100%), with `Emulation.setCPUThrottlingRate` at the calibrated
   rate, it runs:
   open, idle (2 s), pan (30 wheel ticks), zoom (16 Ctrl-wheel ticks), select, drag (30 moves),
-  deselect, marquee (25 moves), stroke (30 moves; the pen on the whiteboard, the pencil on the
-  diagram), hover (40 moves).
+  deselect, marquee (25 moves), stroke (30 moves; Marker 1 on the whiteboard series, the pencil on the
+  diagram series), hover (40 moves).
 - The probe never sends `Profiler.start`: the trace categories are `devtools.timeline` and
   `disabled-by-default-devtools.timeline` only. Starting V8's profiler makes source positions
   available for every compiled function in one main-thread task (about 1.1 s at 4× on a
@@ -367,7 +366,7 @@ export function resetCanvasGesturesForTests(): void;
 export function gestureOfDrag(drag: DragState): CanvasGesture;
 export function dragWaitsToEngage(drag: DragState): boolean;
 
-// packages/document/src/element-grid.ts
+// packages/design/src/element-grid.ts
 export const ELEMENT_GRID_CELL = 256;
 export const ELEMENT_GRID_MAX_CELLS = 64;
 export type ElementGrid;
@@ -377,7 +376,7 @@ export function queryElementGrid(grid: ElementGrid, rect: Rect): Element[];
 export function elementGridFor(elements: readonly Element[]): ElementGrid;
 export function createElementGridTracker(): { gridFor(elements: readonly Element[]): ElementGrid };
 
-// packages/document/src/arrow-behind.ts
+// packages/design/src/arrow-behind.ts
 export function routeBehindQueryRect(from: Point, to: Point): Rect;
 
 // apps/live/components/canvas/arrow-view-frame.ts

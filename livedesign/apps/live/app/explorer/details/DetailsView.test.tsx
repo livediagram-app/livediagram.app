@@ -6,9 +6,9 @@ import { act, cleanup, fireEvent, render, screen, within } from '@testing-librar
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Folder } from '@/lib/api-client';
 import { writeLocalStorageValue } from '@/hooks/ui/useLocalStorageValue';
-import { DOCUMENT_DRAG_MIME } from '@/components/panels/explorer-drag-mime';
+import { DESIGN_DRAG_MIME } from '@/components/panels/explorer-drag-mime';
 import type { ExplorerViewProps } from '../explorer-view-props';
-import type { PaneDocument } from '../views';
+import type { PaneDesign } from '../views';
 import { DetailsView } from './DetailsView';
 import { ExplorerProvider } from '../ExplorerContext';
 import type { ExplorerStateValue } from '../useExplorerState';
@@ -30,7 +30,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-const doc = (id: string, over: Partial<PaneDocument> = {}): PaneDocument => ({
+const doc = (id: string, over: Partial<PaneDesign> = {}): PaneDesign => ({
   id,
   name: id,
   folderId: null,
@@ -51,30 +51,30 @@ const folder: Folder = {
   teamId: null,
 } as Folder;
 
-function view(documents: PaneDocument[], folders: Folder[] = []): ExplorerViewProps {
+function view(designs: PaneDesign[], folders: Folder[] = []): ExplorerViewProps {
   return {
     folders,
-    documents,
+    designs,
     ownerId: 'me',
     onOpenFolder: vi.fn(),
     onCommitRenameFolder: vi.fn(),
     onCancelRenameFolder: vi.fn(),
     renamingFolderId: null,
-    renamingDocumentId: null,
-    onCommitRenameDocument: vi.fn(),
-    onCancelRenameDocument: vi.fn(),
+    renamingDesignId: null,
+    onCommitRenameDesign: vi.fn(),
+    onCancelRenameDesign: vi.fn(),
     folderActions: () => ({
       rename: vi.fn(),
       newSubfolder: vi.fn(),
       move: vi.fn(),
       delete: vi.fn(),
     }),
-    onStartRenameDocument: vi.fn(),
-    onDuplicateDocument: vi.fn(),
-    onDeleteDocument: vi.fn(),
-    onMoveDocument: vi.fn(),
+    onStartRenameDesign: vi.fn(),
+    onDuplicateDesign: vi.fn(),
+    onDeleteDesign: vi.fn(),
+    onMoveDesign: vi.fn(),
     childrenCount: () => 1,
-    documentsCount: () => 2,
+    designsCount: () => 2,
   };
 }
 
@@ -101,7 +101,7 @@ describe('DetailsView', () => {
     expect(sorted.map((h) => h.getAttribute('aria-sort'))).toEqual(['descending']);
   });
 
-  it('shows a counted document: mode, comments, access and size', () => {
+  it('shows a counted design: mode, comments, access and size', () => {
     render(
       <DetailsView
         {...view([
@@ -165,7 +165,7 @@ describe('DetailsView', () => {
     for (const i of [1, 2, 4]) expect(cells[i]!.textContent).toBe('–Not counted yet');
   });
 
-  it('shows the role a shared document grants', () => {
+  it('shows the role a shared design grants', () => {
     render(
       <DetailsView
         {...view([doc('Theirs', { shared: { role: 'view', ownerName: 'Ann', shareCode: 's' } })])}
@@ -192,7 +192,7 @@ describe('DetailsView', () => {
     expect(rowNames()).toEqual(['c', 'b', 'a']);
   });
 
-  it('drags a document row, but not one shared with the reader', () => {
+  it('drags a design row, but not one shared with the reader', () => {
     render(
       <DetailsView
         {...view([
@@ -206,7 +206,7 @@ describe('DetailsView', () => {
     expect(theirs!.hasAttribute('draggable')).toBe(false);
     const setData = vi.fn();
     fireEvent.dragStart(mine!, { dataTransfer: { setData, effectAllowed: '' } });
-    expect(setData).toHaveBeenCalledWith(DOCUMENT_DRAG_MIME, 'Mine');
+    expect(setData).toHaveBeenCalledWith(DESIGN_DRAG_MIME, 'Mine');
   });
 
   it('hides each menu until hover', () => {

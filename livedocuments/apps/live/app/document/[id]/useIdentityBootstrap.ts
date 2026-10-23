@@ -50,7 +50,7 @@ function guardRun<T extends object>(fns: T, live: () => boolean): T {
   });
 }
 
-// One-shot identity + document hydration (Clerk gate -> guest id ->
+// One-shot identity + document hydration (auth gate -> guest id ->
 // participant -> document/share/password resolution -> tab seeding),
 // lifted out of editor-page.tsx verbatim. The most entangled effect in
 // the page: it reads/writes ~25 state slices, so the setters + the
@@ -61,8 +61,8 @@ export function useIdentityBootstrap(opts: {
   authLoaded: boolean;
   passwordRetry: number;
   hydrated: boolean;
-  clerkUserId: string | null | undefined;
-  clerkDisplayName: string | null | undefined;
+  accountUserId: string | null | undefined;
+  accountDisplayName: string | null | undefined;
   // The read-only embed view (docs/specs/013-workspace/embeds.md): its reads are not opens.
   embed: boolean;
   // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md): the session
@@ -118,8 +118,8 @@ export function useIdentityBootstrap(opts: {
     authLoaded,
     passwordRetry,
     hydrated,
-    clerkUserId,
-    clerkDisplayName,
+    accountUserId,
+    accountDisplayName,
     embed,
     workbench,
     activeId,
@@ -143,13 +143,13 @@ export function useIdentityBootstrap(opts: {
   // participant and settleEarlyIdentity resolves who is reading once auth answers.
   const bootstrap = useEffectEvent((early = false) => {
     if (hydrated) return;
-    // Wait for Clerk to determine the auth state before bootstrapping.
-    // Otherwise a signed-in user lands here with `clerkUserId === null`
+    // Wait for the session to determine the auth state before bootstrapping.
+    // Otherwise a signed-in user lands here with `accountUserId === null`
     // briefly, we mint a guest id, and the participant record + every
     // subsequent document load uses the wrong owner. With this gate
     // the effect re-runs once `authLoaded` flips true.
     if (!authLoaded && !early) return;
-    // A later run (auth settling twice: Clerk answering after the guest timeout, then a guest migration) supersedes
+    // A later run (auth settling twice: sign-in answering after the guest timeout, then a guest migration) supersedes
     // this one: a superseded run's writes are dropped, so a stale guest-identity load never overwrites the newer one.
     const generation = ++runRef.current;
     const live = () => runRef.current === generation;
@@ -221,7 +221,7 @@ export function useIdentityBootstrap(opts: {
     // know whether this open is a guest or a signed-in user. Fire-and-
     // forget, gated to once per browser per UTC day inside the helper,
     // so it's safe to run on every editor mount.
-    if (!early) trackDailyReturn(!!clerkUserId);
+    if (!early) trackDailyReturn(!!accountUserId);
     // The watchdog (docs/specs/007-editor/load-recovery.md): a load that has not ended in time shows
     // the load-error screen (after one self-healing reload per tab), and a load that lands after it
     // replaces that screen with the editor.
@@ -336,8 +336,8 @@ export function useIdentityBootstrap(opts: {
       } else {
         // Two ways in (docs/specs/014-identity/auth-and-guest-access.md): see resolve-participant.ts.
         self = await resolveParticipant({
-          clerkUserId,
-          clerkDisplayName,
+          accountUserId,
+          accountDisplayName,
           onParticipantStep: () => setLoadStep('participant'),
         });
         // The browser key (lib/local-identity.ts) is stamped onto the LOCAL participant only, never onto `self` as it
@@ -482,7 +482,7 @@ export function useIdentityBootstrap(opts: {
           // already has a confirmed identity — never prompt. Visitors
           // (signed in or not) still see the welcome card so they get
           // the "you're joining X's document" context; the name input
-          // is locked downstream when they have a Clerk identity so
+          // is locked downstream when they have an account identity so
           // they can't pretend to be someone else.
           const isOwnerVisit = session.isOwner;
           if (!isOwnerVisit && !hasConfirmedName()) {
@@ -587,7 +587,7 @@ export function useIdentityBootstrap(opts: {
         // settled — skip the identity prompt entirely. Guests fall
         // back to the legacy localStorage gate so they still get the
         // one-time naming nudge.
-        if (!early && !clerkUserId && !hasConfirmedName()) {
+        if (!early && !accountUserId && !hasConfirmedName()) {
           setIdentityPromptOpen(true);
         }
         setDocumentId(id);
@@ -624,11 +624,11 @@ export function useIdentityBootstrap(opts: {
   // all in the background of a document already on screen.
   const settleEarlyIdentity = useEffectEvent(() => {
     void (async () => {
-      const self = await resolveParticipant({ clerkUserId, clerkDisplayName });
+      const self = await resolveParticipant({ accountUserId, accountDisplayName });
       opts.set.setSelfParticipant({ ...self, key: ensureCollabKey(), status: 'online' });
       lastPersistedSelfRef.current = { name: self.name, color: self.color };
-      trackDailyReturn(!!clerkUserId);
-      if (!clerkUserId && !hasConfirmedName()) opts.set.setIdentityPromptOpen(true);
+      trackDailyReturn(!!accountUserId);
+      if (!accountUserId && !hasConfirmedName()) opts.set.setIdentityPromptOpen(true);
       opts.set.setNameConfirmed(hasConfirmedName());
       opts.refreshDocumentList(self.id);
       opts.refreshSharedList(self.id);

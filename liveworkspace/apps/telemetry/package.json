@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@livediagram/api-schema": "workspace:*",
+    "@livedocuments/api-schema": "workspace:*",
     "@liveplanner/api-schema": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*"
   },

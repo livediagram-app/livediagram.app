@@ -20,7 +20,7 @@ export type MapSize = 'short' | 'medium' | 'tall';
 // snapshot (see rebaseUserPreferences): another tab's write since that
 // render would otherwise be undone.
 
-import type { PageKind } from '@livedesign/document';
+import type { PageKind } from '@livedesign/design';
 import type { ElementTourKind } from './element-tours';
 import type { SwatchOverrideStore } from './swatch-overrides';
 import { USER_PREFERENCES_STORAGE_KEY } from '@livedesign/telemetry-client';
@@ -33,7 +33,7 @@ import { debugLog } from './debug-log';
 export type UserPreferences = {
   // When `false`, the editor skips the auto-rebind on move
   // (docs/specs/008-canvas/arrow-anchors.md, `rebindArrowAnchorsAfterMove`
-  // in packages/document). Missing / undefined / true === on.
+  // in packages/design). Missing / undefined / true === on.
   // Consumers derive the effective value via
   // `autoRebindArrowsEnabled` below so the default lives here once.
   autoRebindArrows?: boolean;
@@ -58,11 +58,11 @@ export type UserPreferences = {
   // How tall the map is. A big canvas is unreadable in a 144px strip; a
   // small one doesn't need more.
   mapSize?: MapSize;
-  // Layers panel options (docs/specs/006-document/layers.md). Both default ON via `!== false`.
+  // Layers panel options (docs/specs/006-design/layers.md). Both default ON via `!== false`.
   //
   // The row thumbnail is the quickest way to tell two similarly-named layers
   // apart, but it is also the tallest thing in a row — turning it off gives a
-  // compact list on a document with many layers.
+  // compact list on a design with many layers.
   layersShowPreview?: boolean;
   // The per-layer element count, beside the name.
   layersShowCount?: boolean;
@@ -142,7 +142,7 @@ export type UserPreferences = {
   reduceMotion?: boolean;
   // Toast notifications (docs/specs/007-editor/user-preferences.md). When `false`, the editor suppresses
   // the confirmation / status toasts (success + info tones) it shows
-  // for consequential, otherwise-silent actions (a document moved to a
+  // for consequential, otherwise-silent actions (a design moved to a
   // folder, a tab linked, etc.). ERROR toasts are NOT gated by this:
   // a failure the user would otherwise never see still surfaces, so
   // turning notifications off quiets the chatter without hiding
@@ -163,7 +163,7 @@ export type UserPreferences = {
   // Home opens on its ordinary page header and the header's search field instead. Missing / undefined / true ===
   // shown, the default. The banner's own close button writes an explicit `false`; Settings turns it back on.
   homeBanner?: boolean;
-  // Layers panel hover-solo (docs/specs/006-document/layers.md). When `false`, resting the pointer
+  // Layers panel hover-solo (docs/specs/006-design/layers.md). When `false`, resting the pointer
   // on a Layers-panel row no longer solos that layer on the canvas.
   // Missing / undefined / true === on, the default. Flipped from the
   // panel's settings gear (desktop-only chrome, like the hover itself).
@@ -179,14 +179,14 @@ export type UserPreferences = {
   // Missing / undefined / true === notify (opt-out); an explicit false
   // suppresses that email.
   //
-  // "Someone first opened one of my shared documents."
-  notifyDocumentJoin?: boolean;
+  // "Someone first opened one of my shared designs."
+  notifyDesignJoin?: boolean;
   // "Someone accepted / declined a team invite I sent" (to the team's admins).
   notifyInviteResponse?: boolean;
   notifyComments?: boolean;
   notifyTips?: boolean;
   notifyMilestones?: boolean;
-  // "A teammate assigned me an action on an element in a document" (docs/specs/012-collaboration/assigned-actions.md).
+  // "A teammate assigned me an action on an element in a design" (docs/specs/012-collaboration/assigned-actions.md).
   notifyActionAssigned?: boolean;
   // "A teammate @-mentioned me in a comment" (docs/specs/012-collaboration/comment-mentions.md).
   notifyMentions?: boolean;
@@ -206,16 +206,16 @@ export type UserPreferences = {
   elementTourKinds?: ElementTourKind[];
   // Counts every element tour as answered while Power user mode is on (lib/tour-tracks.ts); written by its preset.
   elementToursSeen?: boolean;
-  // Documents this user has hidden from the Explorer's Recent list
-  // (docs/specs/013-workspace/hide-from-recent.md). PER-USER rather than a field on the document: your Recent
-  // is your view of your own work, and on a shared document one
+  // Designs this user has hidden from the Explorer's Recent list
+  // (docs/specs/013-workspace/hide-from-recent.md). PER-USER rather than a field on the design: your Recent
+  // is your view of your own work, and on a shared design one
   // collaborator hiding it must not hide it from everyone else.
   //
   // Ids only, so the list stays small; the whole preferences blob has a
   // 4 KB server-side cap, which `toggleRecentExcluded` below budgets for.
   // Missing / undefined === nothing excluded.
   // DEAD as of docs/specs/004-interface-design/colour-picker.md: Custom colours are the colours
-  // picked with + in the document, kept with its tabs, not a per-user list. Nothing reads or writes this any
+  // picked with + in the design, kept with its tabs, not a per-user list. Nothing reads or writes this any
   // more; it stays in the type because it is already stored for existing users.
   customSwatches?: string[];
   // The quick style panel's custom swatches (docs/specs/008-canvas/quick-style-panel.md "Custom
@@ -247,20 +247,20 @@ export type UserPreferences = {
   presentation?: Record<string, unknown>;
 };
 
-// How many excluded ids we keep. A document id is a 36-char UUID, so 200
+// How many excluded ids we keep. A design id is a 36-char UUID, so 200
 // of them is ~7.4 KB of JSON on its own — well past the api's 4 KB cap on
 // the serialised preferences blob, which would start rejecting EVERY
 // preference write, not just this one. 60 is far more than anyone will
 // hide by hand and leaves plenty of room for the other flags.
 export const RECENT_EXCLUDED_LIMIT = 60;
 
-// Flip a document's Recent exclusion, returning the NEXT id list. Newest
+// Flip a design's Recent exclusion, returning the NEXT id list. Newest
 // exclusions are kept at the front so the cap drops the oldest choice
 // rather than the one just made.
-export function toggleRecentExcluded(prefs: UserPreferences, documentId: string): string[] {
+export function toggleRecentExcluded(prefs: UserPreferences, designId: string): string[] {
   const current = prefs.recentExcludedIds ?? [];
-  if (current.includes(documentId)) return current.filter((id) => id !== documentId);
-  return [documentId, ...current].slice(0, RECENT_EXCLUDED_LIMIT);
+  if (current.includes(designId)) return current.filter((id) => id !== designId);
+  return [designId, ...current].slice(0, RECENT_EXCLUDED_LIMIT);
 }
 
 // Re-exported under this module's own name because everything here reads it
@@ -326,8 +326,8 @@ export function writeUserPreferences(prefs: UserPreferences, ownerId?: string | 
   }
   // The editor in a workbench never writes preferences to the api (docs/specs/013-workspace/
   // blueprints/workbench-embeds.md, I9): the frame's choices stay in the frame. Nor under the 'self'
-  // placeholder a document in This Browser opens with before the reader is known
-  // (docs/specs/006-document/offline-mode.md "Instant open"): that row would be everybody's.
+  // placeholder a design in This Browser opens with before the reader is known
+  // (docs/specs/006-design/offline-mode.md "Instant open"): that row would be everybody's.
   if (ownerId && ownerId !== 'self' && !getWorkbenchConfinement()) savePreferences(ownerId, fitted);
 }
 

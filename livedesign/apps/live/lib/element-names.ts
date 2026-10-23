@@ -9,7 +9,7 @@ import {
   type BoxedElement,
   type Element,
   type ShapeKind,
-} from '@livedesign/document';
+} from '@livedesign/design';
 
 // Display kind for an element — capitalised, no article. Shapes
 // surface their concrete sub-kind ('Square', 'Diamond'…) so a name

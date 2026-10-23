@@ -3,7 +3,6 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { parsePositiveCap } from './routes/images';
 
 // The hosted profile (docs/specs/016-platform/deployment.md "Hosted profile"):
 // the vars livediagram.app's deploys add, and a fork's do not. Two promises
@@ -61,13 +60,11 @@ function tomlTableKeys(toml: string, header: string): string[] {
 }
 
 describe('hosted profile', () => {
-  it('turns telemetry on and caps every owner gallery', async () => {
-    const vars = (await load()).readHostedProfile().shared;
-    expect(vars.TELEMETRY_ENABLED).toBe('true');
-    // The worker's own parser: a value it reads as "no cap" would leave R2
-    // unguarded while this file looked right.
-    expect(parsePositiveCap(vars.IMAGE_MAX_PER_OWNER)).toBe(100);
-    expect(parsePositiveCap(vars.IMAGE_MAX_BYTES_PER_OWNER)).toBe(100 * 1024 * 1024);
+  it('turns telemetry on and points each environment at its media service', async () => {
+    const { shared, environments } = (await load()).readHostedProfile();
+    expect(shared.TELEMETRY_ENABLED).toBe('true');
+    expect(environments.production.MEDIA_URL).toBe('https://liveworkspace.app/api/media');
+    expect(environments.staging.MEDIA_URL).toBe('https://staging.liveworkspace.app/api/media');
   });
 
   it('names only vars the worker reads', async () => {

@@ -8,7 +8,7 @@ import { useCallback, useState, type ReactNode } from 'react';
 import { Button } from '@livedesign/ui';
 import type { Tag } from '@livedesign/api-schema';
 import { PlusIcon } from '@/components/primitives/explorer-icons';
-import { useDocumentTags } from '@/components/tags/DocumentTagsProvider';
+import { useDesignTags } from '@/components/tags/DesignTagsProvider';
 import { useTagActionsMenu } from '@/components/tags/TagActionsMenu';
 import { LazyTagDialog } from '@/components/tags/tag-lazy';
 import { VIEW_TITLES } from '../view-titles';
@@ -17,7 +17,7 @@ import type { SelectedNode } from '../views';
 type Crumb = { name: string; onClick?: () => void };
 
 export function useTagsPage(selected: SelectedNode, go: (node: SelectedNode) => void) {
-  const { tagById } = useDocumentTags();
+  const { tagById } = useDesignTags();
   const [creating, setCreating] = useState(false);
   const onTags = selected.kind === 'tags';
   const tag = onTags && selected.id ? tagById.get(selected.id) : undefined;
@@ -34,7 +34,7 @@ export function useTagsPage(selected: SelectedNode, go: (node: SelectedNode) => 
   const headerActions: ReactNode = onTags ? (
     <>
       {tag ? <OneTagMenu key={tag.id} tag={tag} onDeleted={() => openTag(null)} /> : null}
-      {/* Like the pane's own New Document: the label folds to the icon on a phone. */}
+      {/* Like the pane's own New Design: the label folds to the icon on a phone. */}
       <Button size="xs" onClick={newTag} aria-label="New Tag" className="shadow-sm">
         <PlusIcon />
         <span className="hidden sm:inline">New Tag</span>

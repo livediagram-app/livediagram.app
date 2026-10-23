@@ -2,6 +2,8 @@
 # (mcp.liveplanner.app), separate from the api worker — distinct dependency
 # surface (MCP SDK, OAuth/KV, the resvg WASM rasteriser) and public origin.
 name = "liveplanner-mcp"
+# The liveworkspace Cloudflare account, which also hosts liveplanner.app, so a deploy can never land on another one.
+account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 main = "src/index.ts"
 compatibility_date = "2026-05-29"
 # nodejs_compat for the MCP SDK's transport internals; WASM modules (resvg) are
@@ -55,7 +57,7 @@ service = "liveplanner-api"
 # and paste the id here (the api worker needs no KV; token storage stays in D1).
 [[kv_namespaces]]
 binding = "OAUTH_KV"
-id = "00000000000040008000000000000001"
+id = "e791bf14dbe2418c9447c9c1813e0f8b"
 
 # ---------------------------------------------------------------------------
 # Staging (docs/specs/016-platform/staging-environment.md). Deploys as `liveplanner-mcp-staging` on its own host,
@@ -86,4 +88,4 @@ service = "liveplanner-api-staging"
 # migrate across.
 [[env.staging.kv_namespaces]]
 binding = "OAUTH_KV"
-id = "00000000000040008000000000000002"
+id = "d055b4cb11a843129706265667a43928"

@@ -1,9 +1,9 @@
 'use client';
 
-import { InviteIcon, MyDocumentsIcon, PlusIcon } from '@/components/primitives/explorer-icons';
+import { InviteIcon, MyDesignsIcon, PlusIcon } from '@/components/primitives/explorer-icons';
 import { useExplorer } from '../ExplorerContext';
 import {
-  MY_DOCUMENTS_EXPAND_KEY,
+  MY_DESIGNS_EXPAND_KEY,
   SIDEBAR_LABELS,
   type SidebarDivider,
   type SidebarRowKind,
@@ -14,7 +14,7 @@ import { SidebarGroup } from './SidebarGroup';
 import { SidebarRow } from './SidebarRow';
 import { SidebarSignInNudge } from './SidebarSignInNudge';
 import { TeamRows } from './TeamRows';
-import { useMyDocumentsMenu } from './useMyDocumentsMenu';
+import { useMyDesignsMenu } from './useMyDesignsMenu';
 import { useExplorerDropTarget } from '../useExplorerDropTarget';
 
 // Spaces (docs/specs/013-workspace/explorer-structure.md): My Work and each team as
@@ -45,13 +45,13 @@ export function SpacesGroup({
     setMobileNavOpen,
     rootDefaults,
   } = useExplorer();
-  const myDocumentsMenu = useMyDocumentsMenu(rootDefaults, { reveal: true });
+  const myDesignsMenu = useMyDesignsMenu(rootDefaults, { reveal: true });
   const has = (row: SidebarRowKind) => rows.includes(row);
-  // A document dropped here files at the root; resting on it opens or closes the root folders.
+  // A design dropped here files at the root; resting on it opens or closes the root folders.
   const drop = useExplorerDropTarget(
     { teamId: null, folderId: null },
     {
-      onLongHover: rootFolders.length > 0 ? () => toggleExpand(MY_DOCUMENTS_EXPAND_KEY) : undefined,
+      onLongHover: rootFolders.length > 0 ? () => toggleExpand(MY_DESIGNS_EXPAND_KEY) : undefined,
     },
   );
   return (
@@ -62,21 +62,21 @@ export function SpacesGroup({
       after={has('signInNudge') ? <SidebarSignInNudge /> : null}
     >
       <SidebarRow
-        icon={<MyDocumentsIcon />}
+        icon={<MyDesignsIcon />}
         tone="sky"
-        label={SIDEBAR_LABELS.myDocuments}
-        textLabel={SIDEBAR_LABELS.myDocuments}
+        label={SIDEBAR_LABELS.myDesigns}
+        textLabel={SIDEBAR_LABELS.myDesigns}
         selected={selected.kind === 'all'}
         onActivate={() => {
-          trackSidebar('MyDocuments');
+          trackSidebar('MyDesigns');
           go({ kind: 'all' });
         }}
         depth={0}
         expandable={rootFolders.length > 0}
-        expanded={expanded.has(MY_DOCUMENTS_EXPAND_KEY)}
-        onToggleExpand={() => toggleExpand(MY_DOCUMENTS_EXPAND_KEY)}
-        onContextMenu={myDocumentsMenu.onContextMenu}
-        trailing={myDocumentsMenu.trailing}
+        expanded={expanded.has(MY_DESIGNS_EXPAND_KEY)}
+        onToggleExpand={() => toggleExpand(MY_DESIGNS_EXPAND_KEY)}
+        onContextMenu={myDesignsMenu.onContextMenu}
+        trailing={myDesignsMenu.trailing}
         rowProps={drop.handlers}
         highlighted={drop.isDragOver}
       >

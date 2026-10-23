@@ -10,7 +10,7 @@ import {
   type ElementId,
   type RefTable,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { finiteRect, isLintBox } from './boxes';
 
 export type LintContext = {

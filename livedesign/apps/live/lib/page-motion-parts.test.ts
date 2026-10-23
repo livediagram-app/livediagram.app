@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { PAGE_MOTIONS } from '@livedesign/document';
+import { PAGE_MOTIONS } from '@livedesign/design';
 import { motionPaint } from './page-motion';
 import { motionParts, waveLine, wavePath, type MotionNode } from './page-motion-parts';
 

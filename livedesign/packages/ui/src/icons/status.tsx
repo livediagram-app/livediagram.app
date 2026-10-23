@@ -3,7 +3,7 @@ import { lucideCircleX, lucideFolder, lucideUsers } from '@livedesign/icons/luci
 import { Glyph, type IconProps } from './Glyph';
 import { lucideGlyph } from './lucide-glyph';
 
-// Status + label glyphs: the share-state badge dots (docs/specs/013-workspace/share-password.md / docs/specs/013-workspace/team-shared-documents.md), the
+// Status + label glyphs: the share-state badge dots (docs/specs/013-workspace/share-password.md / docs/specs/013-workspace/team-shared-designs.md), the
 // Tabs label, the sign-in sparkle and the error-state crossed circle. The
 // marketing hero illustration draws the editor's chrome with these same
 // components, so the two can't drift apart.
@@ -47,6 +47,6 @@ export function SparkleIcon({ size = 14, ...rest }: IconProps) {
 // A crossed-out circle: the "not found" / "no access" error cards.
 export const CircleXIcon = lucideGlyph(lucideCircleX, 28);
 
-// Two people: a team (docs/specs/013-workspace/teams.md), its spaces in the Explorer and its documents
+// Two people: a team (docs/specs/013-workspace/teams.md), its spaces in the Explorer and its designs
 // wherever they are listed beside your own, such as the landing page's Welcome back.
 export const TeamIcon = lucideGlyph(lucideUsers, 13);

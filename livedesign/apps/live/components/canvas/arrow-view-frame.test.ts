@@ -4,7 +4,7 @@ import {
   buildElementIndex,
   createPinnedArrow,
   createShape,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import {
   arrowViewGeometry,
   deriveArrowViewFrame,

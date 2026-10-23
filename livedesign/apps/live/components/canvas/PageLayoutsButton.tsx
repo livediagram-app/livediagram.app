@@ -9,7 +9,7 @@
 // X that closes it.
 import { useEffect, useRef } from 'react';
 import { lucidePanelsTopLeft } from '@livedesign/icons/lucide';
-import type { LaidOutPage } from '@livedesign/document';
+import type { LaidOutPage } from '@livedesign/design';
 import type { PageLayoutId } from '@livedesign/templates';
 import { CloseIcon, lucideGlyph, Tooltip } from '@livedesign/ui';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';

@@ -3,7 +3,7 @@
 A tab keeps running the editor build it loaded. Every deploy renames the editor's code chunks
 (their names are content hashes) and the old files are gone, so a tab from an earlier build that
 navigates within the app asks for chunks that no longer exist. Without care, that navigation ends
-on the framework's crash page ("This page couldn't load"), as going back from a document to the
+on the framework's crash page ("This page couldn't load"), as going back from a design to the
 Explorer did after a deploy.
 
 Two layers handle it: the app **learns when a newer build is live** and stops navigating in-app
@@ -26,7 +26,7 @@ sets them.
 
 | Response                                                       | `Cache-Control`                       |
 | -------------------------------------------------------------- | ------------------------------------- |
-| An HTML document (`Content-Type: text/html`)                   | `no-store`                            |
+| An HTML design (`Content-Type: text/html`)                   | `no-store`                            |
 | A hashed build asset (a path containing `/_next/static/`), 2xx | `public, max-age=31536000, immutable` |
 | A hashed build asset that is missing                           | `no-store`, and the body below        |
 | Anything else (icons, fonts at fixed names, the api)           | unchanged                             |
@@ -58,7 +58,7 @@ sets them.
 A small inline script, the first script the editor's layout puts in its `<head>`, for stale HTML
 that still slips through (a bfcache restore, a proxy that ignores `no-store`). The framework hoists
 its own stylesheet and async chunk tags above every inline script, so a build asset can fail before
-the guard runs; it therefore both listens and, once the document is parsed, looks back:
+the guard runs; it therefore both listens and, once the design is parsed, looks back:
 
 - **A build asset that fails to load:** a capture-phase `error` listener on the window sees a
   `<script>` or `<link rel="stylesheet">` under `/_next/static/` fail; at `DOMContentLoaded` it
@@ -91,10 +91,10 @@ two paths cannot drift apart. Storage that cannot be read refuses the reload.
   without one (local development, a self-host that sets neither) disables this layer; the safety
   net still works.
 - **The running app learns the live one** from the server release signal it already hears for the
-  document format number ([New version prompt](./new-version-prompt.md)): every api response
+  design format number ([New version prompt](./new-version-prompt.md)): every api response
   carries `X-Livedesign-Build: <id>` beside `X-Livedesign-Format`, and the realtime room's
   `format` message carries `build`. No request is made for it and nothing polls.
-- **Stale** means both ids are known and differ. One mechanism, two responses: a newer document
+- **Stale** means both ids are known and differ. One mechanism, two responses: a newer design
   format offers a reload (the prompt); a newer build changes how the app navigates (below), and
   shows nothing.
 - An id is a short token (letters, digits, `.`, `_`, `-`, at most 64 characters); anything else is

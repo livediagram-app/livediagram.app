@@ -4,7 +4,7 @@ import {
   recordInLedger,
   tabLedgerFrom,
   type TabLedger,
-} from '@livedesign/document';
+} from '@livedesign/design';
 
 // Whatever one ledger key holds, as the pure module records it.
 type LedgerEntry = Parameters<typeof recordInLedger>[0];

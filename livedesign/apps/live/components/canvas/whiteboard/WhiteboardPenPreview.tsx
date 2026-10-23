@@ -1,6 +1,6 @@
 'use client';
 
-import { penColourCss } from '@livedesign/document';
+import { penColourCss } from '@livedesign/design';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import type { LiveStroke } from '@/lib/live-stroke';

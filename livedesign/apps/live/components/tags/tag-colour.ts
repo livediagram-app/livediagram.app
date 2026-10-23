@@ -6,7 +6,7 @@ import {
   penColourHex,
   type Appearance,
   type StandardColourName,
-} from '@livedesign/document';
+} from '@livedesign/design';
 
 const isStandard = (v: string): v is StandardColourName =>
   (STANDARD_COLOUR_NAMES as readonly string[]).includes(v);

@@ -16,8 +16,8 @@ type HostCapabilities = {
   authEnabled: boolean;
   oauthIssuer?: string;
   minVersion?: string;
-  // The document format the host stores; absent from an older worker.
-  documentFormat?: number;
+  // The design format the host stores; absent from an older worker.
+  designFormat?: number;
 };
 
 type CacheEntry = { fetchedAt: number; host: string; capabilities: CapabilitiesResponse };
@@ -42,7 +42,7 @@ function of(host: string, caps: CapabilitiesResponse): HostCapabilities {
     authEnabled: caps.authEnabled ?? false,
     ...(caps.oauthIssuer ? { oauthIssuer: caps.oauthIssuer } : {}),
     ...(caps.cli?.minVersion ? { minVersion: caps.cli.minVersion } : {}),
-    ...(typeof caps.documentFormat === 'number' ? { documentFormat: caps.documentFormat } : {}),
+    ...(typeof caps.designFormat === 'number' ? { designFormat: caps.designFormat } : {}),
   };
 }
 

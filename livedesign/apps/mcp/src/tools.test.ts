@@ -10,7 +10,7 @@ vi.mock('./image-result', () => ({
 }));
 
 import { registerTools } from './tools';
-import { deleteDocumentShape } from '@livedesign/agent-verbs/mcp';
+import { deleteDesignShape } from '@livedesign/agent-verbs/mcp';
 import { TOOL_ANNOTATIONS, type ToolBehaviour } from './tool-annotations';
 import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
 
@@ -68,10 +68,10 @@ function okResponse(request: Request): Response {
   }
   if (request.method === 'DELETE') return new Response(null, { status: 204 });
   const json = (body: unknown) => Response.json(body);
-  if (path === '/documents' && request.method === 'GET') return json({ documents: [] });
+  if (path === '/designs' && request.method === 'GET') return json({ designs: [] });
   if (path === '/teams') return json({ teams: [] });
   if (path === '/trash') return json({ trash: [] });
-  if (path.endsWith('/restore')) return json({ document: LIVE_DOC });
+  if (path.endsWith('/restore')) return json({ design: LIVE_DOC });
   if (path.endsWith('/share')) {
     return json({ link: { code: 'abc', role: 'view', expiresAt: null } });
   }
@@ -97,7 +97,7 @@ function okResponse(request: Request): Response {
   }
   if (path.endsWith('/name')) return json({ tab: { id: 't_1', name: 'A design', orderIndex: 0 } });
   if (/\/tabs\/[^/]+$/.test(path)) return json({ tab: TAB });
-  if (/^\/documents\/[^/]+$/.test(path)) return json({ document: LIVE_DOC });
+  if (/^\/designs\/[^/]+$/.test(path)) return json({ design: LIVE_DOC });
   return json({});
 }
 
@@ -129,7 +129,7 @@ function harness(api: 'ok' | 'down' = 'down') {
   return { registered, emitted };
 }
 
-// find_documents -> FindDocuments. The tool name is snake_case on the wire (MCP
+// find_designs -> FindDesigns. The tool name is snake_case on the wire (MCP
 // convention) and the telemetry token is PascalCase (docs/specs/017-telemetry/telemetry.md bounds `type` to a
 // short token), so the two spellings have to be derived from each other rather
 // than typed twice.
@@ -145,7 +145,7 @@ function expectedToken(toolName: string): string {
 // enough for each tool to run to its success result against the 'ok' api.
 const ARGS = {
   query: 'anything',
-  documentId: 'd_1',
+  designId: 'd_1',
   tabId: 't_1',
   name: 'A design',
   elements: [],
@@ -171,18 +171,18 @@ describe('registerTools', () => {
     expect(registered.map((r) => r.name).sort()).toEqual([
       'add_tab',
       'change_pages',
-      'create_document',
-      'delete_document',
-      'find_documents',
+      'create_design',
+      'delete_design',
+      'find_designs',
       'list_images',
       'list_templates',
       'list_trash',
-      'read_document',
-      'rename_document',
-      'restore_document',
+      'read_design',
+      'rename_design',
+      'restore_design',
       'search_icons',
-      'share_document',
-      'update_document',
+      'share_design',
+      'update_design',
     ]);
     // The description is what the calling model reads to pick a tool, so an
     // undescribed tool is effectively unreachable.
@@ -230,13 +230,13 @@ describe('registerTools', () => {
     expect(emitted).toContainEqual({
       category: 'Error',
       action: 'Api',
-      type: 'Internal.ReadDocument',
+      type: 'Internal.ReadDesign',
     });
   });
 
   it('counts no use for an isError result (input the model has to correct)', async () => {
     const { registered, emitted } = harness('ok');
-    const create = registered.find((r) => r.name === 'create_document')!;
+    const create = registered.find((r) => r.name === 'create_design')!;
     const result = (await create.handler({ name: 'x', tabs: [] }, AUTHED)) as {
       isError?: boolean;
     };
@@ -263,7 +263,7 @@ describe('registerTools', () => {
 // Same shape of promise as the telemetry suite above, and the same absence of a
 // runtime signal: a tool with no annotations still works, it just asks the user
 // for permission it shouldn't need (or, worse, doesn't ask before overwriting
-// their document), and connector directories reject the whole server over it.
+// their design), and connector directories reject the whole server over it.
 // That is invisible from inside the worker, which is exactly how all nine then
 // shipped unannotated until a listing review caught it.
 //
@@ -273,20 +273,20 @@ describe('registerTools', () => {
 // an annotations block, which types can't catch.
 describe('tool annotations', () => {
   const BEHAVIOURS: Record<string, ToolBehaviour> = {
-    find_documents: 'read',
-    read_document: 'read',
+    find_designs: 'read',
+    read_design: 'read',
     list_templates: 'read',
     search_icons: 'read',
-    create_document: 'write',
+    create_design: 'write',
     add_tab: 'write',
-    share_document: 'write',
-    rename_document: 'write',
+    share_design: 'write',
+    rename_design: 'write',
     list_trash: 'read',
-    restore_document: 'write',
+    restore_design: 'write',
     // docs/specs/015-api/mcp-server.md §4.5b: the gallery is read, never written.
     list_images: 'read',
-    update_document: 'destructive',
-    delete_document: 'destructive',
+    update_design: 'destructive',
+    delete_design: 'destructive',
     // docs/specs/024-agents/pages-for-agents.md: change_pages deletes pages and replaces their
     // content.
     change_pages: 'destructive',
@@ -328,11 +328,11 @@ describe('tool annotations', () => {
       .map((r) => r.name)
       .sort();
     expect(readOnly).toEqual([
-      'find_documents',
+      'find_designs',
       'list_images',
       'list_templates',
       'list_trash',
-      'read_document',
+      'read_design',
       'search_icons',
     ]);
 
@@ -350,11 +350,11 @@ describe('tool annotations', () => {
       .filter((r) => r.config.annotations?.destructiveHint === true)
       .map((r) => r.name)
       .sort();
-    expect(destructive).toEqual(['change_pages', 'delete_document', 'update_document']);
+    expect(destructive).toEqual(['change_pages', 'delete_design', 'update_design']);
   });
 });
 
-// delete_document only ever moves a document to the Trash; restore_document and
+// delete_design only ever moves a design to the Trash; restore_design and
 // list_trash are the way back (docs/specs/015-api/mcp-server.md §4.9,
 // docs/specs/013-workspace/trash.md). A permanent delete is the REST API's.
 describe('the Trash tools', () => {
@@ -389,42 +389,42 @@ describe('the Trash tools', () => {
   const text = (result: unknown) =>
     JSON.parse((result as { content: { text: string }[] }).content[0]!.text) as unknown;
 
-  it('delete_document moves the document to the Trash', async () => {
+  it('delete_design moves the design to the Trash', async () => {
     const { calls, tool } = trashHarness();
-    const result = await tool('delete_document').handler({ documentId: 'd_1' }, AUTHED);
-    expect(calls).toEqual(['DELETE /api/documents/d_1']);
+    const result = await tool('delete_design').handler({ designId: 'd_1' }, AUTHED);
+    expect(calls).toEqual(['DELETE /api/designs/d_1']);
     expect(text(result)).toEqual({
-      deleted: 'document',
-      documentId: 'd_1',
+      deleted: 'design',
+      designId: 'd_1',
       trashed: true,
       restorableForDays: 30,
     });
   });
 
-  // A document id can be steered by injected content the model has read, so
+  // A design id can be steered by injected content the model has read, so
   // it must stay one path segment: no query string, no `..` to another route.
-  it('delete_document keeps a hostile id inside its own path segment', async () => {
+  it('delete_design keeps a hostile id inside its own path segment', async () => {
     const { calls, tool } = trashHarness();
-    await tool('delete_document').handler({ documentId: 'd_1?permanent=true' }, AUTHED);
-    await tool('delete_document').handler({ documentId: '../folders/f_1' }, AUTHED);
+    await tool('delete_design').handler({ designId: 'd_1?permanent=true' }, AUTHED);
+    await tool('delete_design').handler({ designId: '../folders/f_1' }, AUTHED);
     expect(calls).toEqual([
-      'DELETE /api/documents/d_1%3Fpermanent%3Dtrue',
-      'DELETE /api/documents/..%2Ffolders%2Ff_1',
+      'DELETE /api/designs/d_1%3Fpermanent%3Dtrue',
+      'DELETE /api/designs/..%2Ffolders%2Ff_1',
     ]);
   });
 
-  it('delete_document has no permanent option, and ignores one sent anyway', async () => {
+  it('delete_design has no permanent option, and ignores one sent anyway', async () => {
     const { calls, tool } = trashHarness();
-    expect(Object.keys(deleteDocumentShape)).toEqual(['documentId', 'tabId']);
-    await tool('delete_document').handler({ documentId: 'd_1', permanent: true }, AUTHED);
-    expect(calls).toEqual(['DELETE /api/documents/d_1']);
-    expect(tool('delete_document').config.description).toContain('restore_document');
+    expect(Object.keys(deleteDesignShape)).toEqual(['designId', 'tabId']);
+    await tool('delete_design').handler({ designId: 'd_1', permanent: true }, AUTHED);
+    expect(calls).toEqual(['DELETE /api/designs/d_1']);
+    expect(tool('delete_design').config.description).toContain('restore_design');
   });
 
-  it('delete_document still deletes one tab outright', async () => {
+  it('delete_design still deletes one tab outright', async () => {
     const { calls, tool } = trashHarness();
-    await tool('delete_document').handler({ documentId: 'd_1', tabId: 't_1' }, AUTHED);
-    expect(calls).toEqual(['DELETE /api/documents/d_1/tabs/t_1']);
+    await tool('delete_design').handler({ designId: 'd_1', tabId: 't_1' }, AUTHED);
+    expect(calls).toEqual(['DELETE /api/designs/d_1/tabs/t_1']);
   });
 
   it('list_trash lists what the user may restore', async () => {
@@ -477,23 +477,23 @@ describe('the Trash tools', () => {
     });
   });
 
-  it('restore_document restores through the api and links to it', async () => {
+  it('restore_design restores through the api and links to it', async () => {
     const { calls, tool } = trashHarness(() =>
-      Response.json({ document: { id: 'd_1', name: 'Plan' } }),
+      Response.json({ design: { id: 'd_1', name: 'Plan' } }),
     );
-    const result = await tool('restore_document').handler({ documentId: 'd_1' }, AUTHED);
+    const result = await tool('restore_design').handler({ designId: 'd_1' }, AUTHED);
     expect(calls).toEqual(['POST /api/trash/d_1/restore']);
     expect(text(result)).toEqual({
-      restored: 'document',
+      restored: 'design',
       id: 'd_1',
       name: 'Plan',
-      url: 'https://livedesign.app/document/d_1',
+      url: 'https://livedesign.app/design/d_1',
     });
   });
 
-  it('restore_document explains a document that is not in the Trash', async () => {
+  it('restore_design explains a design that is not in the Trash', async () => {
     const { tool } = trashHarness(() => Response.json({ error: 'not_found' }, { status: 404 }));
-    const result = (await tool('restore_document').handler({ documentId: 'x' }, AUTHED)) as {
+    const result = (await tool('restore_design').handler({ designId: 'x' }, AUTHED)) as {
       isError: boolean;
       content: { text: string }[];
     };
@@ -502,7 +502,7 @@ describe('the Trash tools', () => {
   });
 });
 
-describe('delete_document on a document already in the Trash', () => {
+describe('delete_design on a design already in the Trash', () => {
   it('says so, and how to delete it for good', async () => {
     const registered: Registered[] = [];
     const server = {
@@ -519,12 +519,12 @@ describe('delete_document on a document already in the Trash', () => {
         fetch: async (request: Request) =>
           new URL(request.url).pathname.endsWith('/events')
             ? new Response(null, { status: 204 })
-            : Response.json({ error: 'document_trashed' }, { status: 410 }),
+            : Response.json({ error: 'design_trashed' }, { status: 410 }),
       },
     } as unknown as Env;
     registerTools(server, env);
-    const tool = registered.find((r) => r.name === 'delete_document')!;
-    const result = (await tool.handler({ documentId: 'd_1' }, AUTHED)) as {
+    const tool = registered.find((r) => r.name === 'delete_design')!;
+    const result = (await tool.handler({ designId: 'd_1' }, AUTHED)) as {
       isError: boolean;
       content: { text: string }[];
     };

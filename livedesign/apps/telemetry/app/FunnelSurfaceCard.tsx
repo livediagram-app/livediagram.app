@@ -6,7 +6,7 @@ import { LeaderTag } from './LeaderTag';
 
 // One public surface's landing funnel (docs/specs/019-marketing/landing-funnel.md): its three counts as a
 // shrinking bar, the step rate between each, then every CTA slot on it with
-// its arrivals, documents and conversion, so the buttons on one page can be
+// its arrivals, designs and conversion, so the buttons on one page can be
 // compared directly.
 
 // Rows in a card besides its slots (title, three steps, the table head), for
@@ -36,7 +36,7 @@ export function FunnelSurfaceCard({
           {surface.label}
         </h3>
         <span className="text-xs text-slate-500 dark:text-slate-400">
-          {formatRate(rate(surface.created, surface.views))} of views became a document
+          {formatRate(rate(surface.created, surface.views))} of views became a design
         </span>
       </div>
 
@@ -55,9 +55,9 @@ export function FunnelSurfaceCard({
           color={ctaColor}
           faded
         />
-        <StepRate value={rate(surface.created, surface.arrived)} verb="created a document" />
+        <StepRate value={rate(surface.created, surface.arrived)} verb="created a design" />
         <FunnelStep
-          label="Created a document"
+          label="Created a design"
           count={surface.created}
           width={pct(surface.created, widest)}
           color={ctaColor}
@@ -94,7 +94,7 @@ export function FunnelSurfaceCard({
                     <Tooltip label={slot.label}>
                       <span className="min-w-0 sm:truncate">{slot.label}</span>
                     </Tooltip>
-                    {slot.source === best ? <LeaderTag>Most documents</LeaderTag> : null}
+                    {slot.source === best ? <LeaderTag>Most designs</LeaderTag> : null}
                   </span>
                   <span
                     aria-hidden

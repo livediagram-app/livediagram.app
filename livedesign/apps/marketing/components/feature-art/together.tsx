@@ -53,12 +53,12 @@ function Flow({ steps, y = 36 }: { steps: [number, number, string][]; y?: number
   );
 }
 
-// The four-step flow the presenting cards talk through.
+// The four screens the presenting cards talk through.
 const TALK: [number, number, string][] = [
-  [14, 50, 'Collect'],
-  [86, 52, 'Score'],
-  [160, 52, 'Decide'],
-  [234, 52, 'Ship'],
+  [14, 50, 'Logo'],
+  [86, 52, 'Sign in'],
+  [160, 52, 'Home'],
+  [234, 52, 'Checkout'],
 ];
 
 /* ───────────────────────── Working together live ───────────────────────── */
@@ -97,11 +97,11 @@ export function PresenceArt() {
   return (
     <Scene>
       <Panel x={12} y={22} w={276} h={38} />
-      {/* Overview: Sam. */}
-      <Tab x={16} w={58} name="Overview" color={SAM} y={33} />
+      {/* Photos: Sam. */}
+      <Tab x={16} w={58} name="Photos" color={SAM} y={33} />
       <Avatar cx={69} cy={41} r={5.5} color={SAM} initials="S" />
       <Status cx={73.2} cy={45} color={SAM} />
-      {/* Backend, the active tab: you, and Jordan arriving. */}
+      {/* Screens, the active tab: you, and Jordan arriving. */}
       <rect
         className="fill-sky-50 dark:fill-sky-500/15"
         x="82"
@@ -110,19 +110,19 @@ export function PresenceArt() {
         height="24"
         rx="5"
       />
-      <Tab x={84} w={40} name="Backend" color={YOU} y={33} />
+      <Tab x={84} w={40} name="Screens" color={YOU} y={33} />
       <Avatar cx={133} cy={41} r={5.5} color={YOU} initials="TM" />
       <g className="fa-a-pop" style={at(0.8)}>
         <Avatar cx={147} cy={41} r={5.5} color={JORDAN} initials="JR" />
         <Status cx={151.2} cy={45} color={SAM} />
       </g>
       {/* Data: Alex, stepping away. */}
-      <Tab x={168} w={30} name="Data" color={ALEX} y={33} />
+      <Tab x={168} w={30} name="Logo" color={ALEX} y={33} />
       <Avatar cx={208} cy={41} r={5.5} color={ALEX} initials="A" />
       <Status cx={212.2} cy={45} color={SAM} className="fa-a-out" style={at(0.6)} />
       <Status cx={212.2} cy={45} color={AWAY} className="fa-a-late" style={at(0.6)} />
       {/* Docs: someone who left it open and wandered off. */}
-      <Tab x={222} w={34} name="Docs" color={JORDAN} y={33} />
+      <Tab x={222} w={34} name="Brand" color={JORDAN} y={33} />
       <Avatar cx={268} cy={41} r={5.5} color="#64748b" initials="R" />
       <Status cx={272.2} cy={45} color={IDLE} />
       {/* The legend. */}
@@ -325,7 +325,7 @@ export function CommentsArt() {
 export function AssignedActionsArt() {
   return (
     <Scene>
-      <Box x={30} y={36} w={68} h={28} label="API spec" />
+      <Box x={30} y={36} w={68} h={28} label="Sign in" />
       <circle className={ON_CANVAS} cx="98" cy="36" r="5.5" fill={YOU} strokeWidth="1.5" />
       <Glyph x={94.5} y={32.5} className="stroke-white" scale={0.7}>
         {CHECK_PATHS}
@@ -349,7 +349,7 @@ export function AssignedActionsArt() {
           ACTION
         </text>
         <text className={TEXT} x="137" y="35" fontSize="8.5" fontWeight="700">
-          Write the API spec
+          Finish the sign-in screen
         </text>
         <Avatar cx={143} cy={50} r={5.5} color={ALEX} initials="A" />
         <text className={TEXT} x="152" y="52.4" fontSize="7" fontWeight="600">
@@ -432,11 +432,11 @@ export function LaserArt() {
     ({ '--dash': dash, '--len': '275px' }) as CSSProperties;
   return (
     <Scene>
-      <Box x={20} y={16} w={56} h={24} label="Client" />
+      <Box x={20} y={16} w={56} h={24} label="Logo" />
       <Connector d="M76 28 C 104 28, 100 72, 122 72" head="M118 69 l4 3 l-4 3" />
-      <Box x={124} y={60} w={52} h={24} label="API" />
+      <Box x={124} y={60} w={52} h={24} label="Screens" />
       <Connector d="M176 72 C 200 72, 196 28, 222 28" head="M218 25 l4 3 l-4 3" />
-      <Box x={224} y={16} w={56} h={24} label="Store" />
+      <Box x={224} y={16} w={56} h={24} label="Photo" />
       <path
         className="fa-a-streak stroke-rose-500/45 blur-[1.5px]"
         style={streak('90px')}

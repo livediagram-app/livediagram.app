@@ -7,7 +7,7 @@ import type { ExplorerProps } from './Explorer.types';
 
 // The Explorer panel, loaded the first time it is drawn (docs/specs/016-platform/web-performance.md): in the editor
 // it is a popover under the menu button that most visits never open, and the error and deleted screens that
-// show it are rare, so its code stays out of the document page's first load. The editor fetches it once idle
+// show it are rare, so its code stays out of the design page's first load. The editor fetches it once idle
 // (EDITOR_SURFACE_CODE), so a first open does not wait.
 //
 // A load that fails (offline behind the load-error card, docs/specs/007-editor/load-recovery.md "Offline")

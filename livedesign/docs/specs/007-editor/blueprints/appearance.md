@@ -21,8 +21,8 @@ Scope, by file:
 | `apps/live/hooks/ui/useAppearance.ts`                      | The shared hook plus the editor's telemetry                                                                                                 |
 | `apps/live/components/chrome/AppearanceToggle.tsx`         | The three-state control on the TabBar                                                                                                       |
 | `apps/live/components/canvas/CanvasSurfaceContext.tsx`     | Carries the `CanvasSurface` past `React.memo` element views                                                                                 |
-| `packages/document/src/colors.ts`                          | `CanvasSurface`, `canvasSurface`, `isLightColor`, the `default*Color` inks                                                                  |
-| `packages/document/src/canvas-colors.ts`                   | The Default scheme's light and dark canvas colours                                                                                          |
+| `packages/design/src/colors.ts`                          | `CanvasSurface`, `canvasSurface`, `isLightColor`, the `default*Color` inks                                                                  |
+| `packages/design/src/canvas-colors.ts`                   | The Default scheme's light and dark canvas colours                                                                                          |
 | `packages/tailwind-config/theme.css`                       | The `dark:` class variant, the brand / slate tokens, `color-scheme`                                                                         |
 | `packages/template-previews/src/preview-art-tile.css`      | Re-lights light-canvas preview art onto the dark canvas colour under `.dark`                                                                |
 
@@ -42,7 +42,7 @@ One term, one identifier. The left column is the only spelling used in code, tes
 | Dark Reader lock   | `<meta name="darkreader-lock">`                       | The extension's opt-out, declared through `metadata.other`     |
 
 Banned synonyms: "UI mode" and "dark mode toggle" in code and copy (the stored key `livedesign:v2:ui-mode` keeps its
-name as data on the wire); "theme" for the appearance, since a theme is the document's.
+name as data on the wire); "theme" for the appearance, since a theme is the design's.
 
 ## Behaviour and state
 
@@ -70,7 +70,7 @@ The setting is a three-state cycle driven by `nextAppearanceSetting`: `light →
 - **I1:** the boot script and `resolveAppearance` agree on every stored value: `'dark'` is dark, `'light'` is light, and
   anything else (including `'system'`, missing and unknown) follows the device.
 - **I2:** an explicit `light` / `dark` never reads the media query.
-- **I3:** changing the appearance never writes to the document; the Default scheme resolves per viewer at render time.
+- **I3:** changing the appearance never writes to the design; the Default scheme resolves per viewer at render time.
 - **I4:** the dark class is the only DOM state; nothing else in the chrome decides light or dark on its own.
 - **I5:** Dark Reader never recolours the editor while the lock meta is in the served `<head>`.
 
@@ -104,7 +104,7 @@ editor.
 | ----------------------- | --------------------------------- | ----------------- | ---------------------------------------- |
 | `livedesign:v2:ui-mode` | `localStorage`, this browser only | Device preference | Values `'light'` / `'dark'` / `'system'` |
 
-Nothing is synced to the api or written into a document. Migration: none; older builds wrote `'light'` / `'dark'`, which
+Nothing is synced to the api or written into a design. Migration: none; older builds wrote `'light'` / `'dark'`, which
 read back unchanged, and anything older reads as the default.
 
 ## Errors and edge cases
@@ -113,7 +113,7 @@ read back unchanged, and anything older reads as the default.
 | ----------------------------------------- | ----------------------------------------------------------------------- |
 | `localStorage` throws (private mode)      | Boot script: `try/catch`, page stays light. Store: guarded read / write |
 | No `matchMedia`                           | `system` resolves light; the boot script checks `typeof matchMedia`     |
-| Server render                             | `applyAppearance` is a no-op without `document`                         |
+| Server render                             | `applyAppearance` is a no-op without `design`                         |
 | Unknown stored value                      | Reads as `system` (I1)                                                  |
 | Route that never mounts the hook (`/new`) | The boot script alone paints it                                         |
 | Dark Reader installed                     | Lock meta; the extension leaves the page untouched (I5)                 |
@@ -136,7 +136,7 @@ layout inlines the real string rather than a client-reference stub.
 ## Presentation and UX
 
 - The control shows the CURRENT setting (sun / moon / monitor); its tooltip and `aria-label` name where the next click goes.
-- Surfaces covered: body backdrop, TabBar, EditorHeader, TemplatePicker, the `/new` backdrop, `DocumentLoading`, and the
+- Surfaces covered: body backdrop, TabBar, EditorHeader, TemplatePicker, the `/new` backdrop, `DesignLoading`, and the
   `MovablePanel` frame. Panel contents gain `dark:` variants one panel at a time.
 - Preview tiles re-light through `.preview-art-tile`; colour-scheme swatches are excluded.
 - The match nudge sits bottom-centre, yields to the sign-in banner, hides in zen and embed, and never shows for Default.
@@ -179,7 +179,7 @@ layout inlines the real string rather than a client-reference stub.
 | No light full-screen surface without a dark variant | `dark-mode-coverage.test.ts`                                           |
 | Preview tiles re-lit by one rule                    | `dark-mode-coverage.test.ts`, "tiles of light-canvas illustration art" |
 | Cycle, canvas and element ink follow (I3)           | `e2e/appearance.spec.ts`, "opens on the device setting, then cycles"   |
-| Appearance never writes to the document (I3)        | `e2e/appearance.spec.ts`, "changing the appearance never writes"       |
+| Appearance never writes to the design (I3)        | `e2e/appearance.spec.ts`, "changing the appearance never writes"       |
 | Setting survives reload before first paint          | `e2e/appearance.spec.ts`, "remembers the setting across a reload"      |
 | Lock meta declared (I5)                             | `dark-reader-lock.test.ts`                                             |
 | Lock meta reaches the served head (I5)              | `e2e/appearance.spec.ts`, "tells Dark Reader to stand down"            |

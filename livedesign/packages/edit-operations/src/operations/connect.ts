@@ -15,7 +15,7 @@ import {
   type BoxedElement,
   type Element,
   type Endpoint,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { describeElement } from '../element-text';
 import { writeFieldsOnto } from '../fields';
 import { newElementId } from '../ids';

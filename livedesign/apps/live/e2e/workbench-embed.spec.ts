@@ -4,7 +4,7 @@ import {
   mintTicket,
   newPerson,
   received,
-  seedDocumentAndToken,
+  seedDesignAndToken,
   serveFakeWorkbench,
   signIn,
   ticketOf,
@@ -38,7 +38,7 @@ test('a paired workbench frames the editor, hears the selection, renews, and end
   test.setTimeout(120_000);
   const person = await newPerson(request, 'Webber');
   await signIn(context, person, new URL(baseURL!).origin);
-  const seeded = await seedDocumentAndToken(request, person);
+  const seeded = await seedDesignAndToken(request, person);
 
   // Unpaired: the mint asks for a pairing, and the person allows it in their own browser.
   const unpaired = await mintTicket(request, seeded, workbench.origin);
@@ -73,8 +73,8 @@ test('a paired workbench frames the editor, hears the selection, renews, and end
     .toEqual(expect.arrayContaining(['livedesign:hello', 'livedesign:ready']));
   const ready = (await received(page)).find((m) => m.type === 'livedesign:ready');
   expect(ready).toMatchObject({
-    documentId: seeded.documentId,
-    documentName: 'Home screen',
+    designId: seeded.designId,
+    designName: 'Home screen',
     role: 'edit',
   });
 
@@ -94,7 +94,7 @@ test('a paired workbench frames the editor, hears the selection, renews, and end
         const tab = await apiJson<{ tab: { elements: unknown[] } }>(
           request,
           'GET',
-          `/documents/${seeded.documentId}/tabs/${seeded.tabId}`,
+          `/designs/${seeded.designId}/tabs/${seeded.tabId}`,
           person.jwt,
         );
         return tab.body.tab.elements.length;
@@ -117,7 +117,7 @@ test('a paired workbench frames the editor, hears the selection, renews, and end
   const selection = (await selectionOf('Play'))!;
   expect(selection.reference).toMatch(/^\[livedesign\] "Home screen" › tab "Wireframe" \(doc /);
   expect(selection.reference).toContain('"Play"');
-  expect(selection.reference).toContain(`read: livedesign tab view ${seeded.documentId}`);
+  expect(selection.reference).toContain(`read: livedesign tab view ${seeded.designId}`);
 
   // Reveal outlines the element; the theme follows the workbench.
   await page.evaluate(() =>
@@ -187,7 +187,7 @@ test('a page of another origin framing the URL mounts nothing', async ({
   test.setTimeout(60_000);
   const person = await newPerson(request, 'Webber');
   await signIn(context, person, new URL(baseURL!).origin);
-  const seeded = await seedDocumentAndToken(request, person);
+  const seeded = await seedDesignAndToken(request, person);
   const unpaired = await mintTicket(request, seeded, workbench.origin);
   await page.goto(unpaired.body.pairingUrl!);
   await page.getByRole('button', { name: 'Allow', exact: true }).click();

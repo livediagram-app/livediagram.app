@@ -25,7 +25,7 @@ import {
   accountDeletedEmail,
   activationEmail,
   commentNotificationEmail,
-  documentJoinedEmail,
+  designJoinedEmail,
   firstShareEmail,
   inviteResponseEmail,
   milestoneEmail,
@@ -84,7 +84,7 @@ describe.skipIf(!ENABLED)('live email send (manual harness)', () => {
     'token-expiry': tokenExpiringEmail(env, 'CI deploy token', Date.UTC(2026, 0, 5)),
     // Opt-out notifications
     'comment-notification': commentNotificationEmail(env, 'Q3 Roadmap', 'diagram-id-123', 'Anna'),
-    'document-joined': documentJoinedEmail(env, 'Q3 Roadmap', 'Anna'),
+    'design-joined': designJoinedEmail(env, 'Q3 Roadmap', 'Anna'),
     'invite-accepted': inviteResponseEmail(env, 'Acme Inc', 'sam@example.com', true),
     'invite-declined': inviteResponseEmail(env, 'Acme Inc', 'sam@example.com', false),
   };

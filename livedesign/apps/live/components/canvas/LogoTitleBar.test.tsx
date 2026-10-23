@@ -4,9 +4,9 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
-import { EditorContext } from '@/app/document/[id]/EditorContext';
+import { EditorContext } from '@/app/design/[id]/EditorContext';
 import { SelectionStoreProvider } from '@/hooks/canvas/useSelectionStore';
-import { DEFAULT_MIRROR } from '@livedesign/document';
+import { DEFAULT_MIRROR } from '@livedesign/design';
 import type { LogoToolsView } from '@/hooks/editor/useLogoTools';
 import { createSelectionStore } from '@/lib/selection-store';
 import { LogoTitleBar, logoTitleBarRoom } from './LogoTitleBar';

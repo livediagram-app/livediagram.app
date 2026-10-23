@@ -9,7 +9,7 @@ import {
   type Element,
   type ElementId,
   type Endpoint,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { resolveSome } from '../selectors';
 import {
   type EditState,

@@ -7,8 +7,12 @@
 // opt-out. See the package for the privacy rules — `type` is always a
 // closed-vocabulary token, never user content.
 
-import { createTelemetryEmitter, type TelemetryEmitter } from '@livedocuments/telemetry-client';
-import { API_BASE } from './api-client';
+import {
+  createTelemetryEmitter,
+  TELEMETRY_APP,
+  telemetryServiceUrl,
+  type TelemetryEmitter,
+} from '@livedocuments/telemetry-client';
 import {
   PREFERENCES_CHANGED_EVENT,
   readUserPreferences,
@@ -48,15 +52,14 @@ function ensurePreferenceListeners(): void {
   });
 }
 
-// Constructed lazily on the first track(): this module sits inside an
-// import cycle (user-preferences -> api-client barrel), so reading
-// API_BASE at module scope hit the TDZ during Next's build. Deferring
-// to first use restores the old read-at-flush-time semantics.
+// Constructed lazily on the first track(), so a page that never tracks never
+// builds one. Events go to liveworkspace's central service (liveworkspace/docs/telemetry.md).
 let emitter: TelemetryEmitter | null = null;
 
 export const track: TelemetryEmitter['track'] = (category, action, type) => {
   emitter ??= createTelemetryEmitter({
-    apiBase: API_BASE,
+    url: telemetryServiceUrl(),
+    app: TELEMETRY_APP,
     enabled: ENABLED,
     isOptedIn: () => {
       if (cachedOptIn === null) {

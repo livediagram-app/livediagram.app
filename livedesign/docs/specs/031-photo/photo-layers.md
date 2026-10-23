@@ -118,7 +118,7 @@ The Photo panel's **Layers** tab ([Photo pages](photo-pages.md) "The Photo panel
 - **Selecting**: a press makes the layer active; Shift and Ctrl/Cmd extend to several (for Group, Merge, Delete,
   Duplicate, Link-free moves together); Alt+[ and Alt+] step the active layer down and up.
 - **Reordering**: dragging a row moves the layer (a line shows where it lands; onto the middle of a group's row puts
-  it in the group), by the same pointer drag as the canvas's [Layers](../006-document/layers.md) panel, so it works by
+  it in the group), by the same pointer drag as the canvas's [Layers](../006-design/layers.md) panel, so it works by
   touch too; Ctrl/Cmd+[ and Ctrl/Cmd+] move it down and up one; with Shift, to the bottom and top.
 - **Under the list**: **New Layer** (a labelled button, Ctrl/Cmd+Shift+N), then icon buttons with tooltips: **New
   Group**, **Add Mask** (from the selection when there is one: reveal it; otherwise reveal all; Alt for hide all),
@@ -126,7 +126,7 @@ The Photo panel's **Layers** tab ([Photo pages](photo-pages.md) "The Photo panel
   **Effects** (a menu of the four), and, apart at the end, **Delete** (Delete/Backspace while the list has focus).
   Both menus are the app's verb menus: a header, a row per verb with its icon on the left, groups between
   separators, opening beside the panel.
-- **A row's context menu** (its ⋯ or a right-click), as the canvas's [Layers](../006-document/layers.md) row menu
+- **A row's context menu** (its ⋯ or a right-click), as the canvas's [Layers](../006-design/layers.md) row menu
   reads: a header with the layer's thumbnail, name and line, then a row per verb with its icon on the left, in groups
   (arrange, merge, mask and clipping, pixels) between separators, Delete Layer last on its own, opening beside the
   panel; only the verbs that fit the layer are listed: Duplicate (Ctrl/Cmd+J), Delete, Rename, Group (Ctrl/Cmd+G), Ungroup

@@ -25,7 +25,7 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Searched', 'PaletteSearch')).toBe(true);
     expect(isRetiredEvent('Help', 'View', 'favourites')).toBe(true);
     expect(isRetiredEvent('UI', 'Opened', 'favourites')).toBe(true);
-    // The palette's other searches, and the Explorer's document favourites, carry on.
+    // The palette's other searches, and the Explorer's design favourites, carry on.
     expect(isRetiredEvent('UI', 'Searched', 'IconSearch')).toBe(false);
     expect(isRetiredEvent('Help', 'View', 'popular')).toBe(false);
   });
@@ -45,7 +45,7 @@ describe('isRetiredEvent', () => {
     ])
       expect(isRetiredEvent('UI', 'Toggled', type)).toBe(true);
     expect(isRetiredEvent('UI', 'Used', 'StartOtherMode')).toBe(false);
-    expect(isRetiredEvent('UI', 'Closed', 'NewDocument')).toBe(false);
+    expect(isRetiredEvent('UI', 'Closed', 'NewDesign')).toBe(false);
     expect(isRetiredEvent('Template', 'Used', 'Kanban')).toBe(false);
   });
 

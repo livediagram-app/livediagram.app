@@ -34,7 +34,7 @@ elements) and **Draw** (the gesture tools plus Frame). The **User / actor** tile
 
 | Band          | Categories                                                                                                                     |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| **Common**    | Shapes, Write, and Draw on a logo page ([logo pages](../007-editor/logo-pages.md#the-logo-palette)); Media on a slide          |
+| **Common**    | Shapes, Write, and Draw on a logo page ([logo pages](../007-editor/logo-pages.md#the-logo-palette))                            |
 | **Structure** | Concepts ([Concept graphics](../009-elements/concept-graphics.md)), Components, Devices                                        |
 | **Decorate**  | Icons, Stickers, Media                                                                                                         |
 | **Dynamic**   | Data                                                                                                                           |
@@ -76,7 +76,7 @@ The actor / stick-figure tile is gone from the palette and from the "Add to canv
 prompt no longer offers `actor` as a shape to emit. Nothing can create one any more.
 
 The `actor` **shape kind** has since been removed from the model, the renderer and the wire schema as well, with
-the other flowchart-only kinds: livedesign has no stored documents that could hold one.
+the other flowchart-only kinds: livedesign has no stored designs that could hold one.
 
 ## The body scrolls when it has to
 

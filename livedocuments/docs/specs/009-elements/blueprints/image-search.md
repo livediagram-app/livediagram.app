@@ -24,8 +24,8 @@ Scope, by file:
 | `apps/live/hooks/canvas/useEditorImages.ts`       | `applyImageToElement` sets / drops `credit`; detach drops it            |
 | `apps/live/components/palette/ImageCreditRow.tsx` | Credit line, mounted in `ElementContentSections`' Image section         |
 | `apps/live/lib/telemetry-manifest.ts`             | `Element·Searched` in the emitted-pairs manifest                        |
-| `apps/telemetry/app/catalogue/content.ts`         | `IMAGE_SEARCHES`, `IMAGE_SEARCH_PICKS` in Element Editing               |
-| `apps/telemetry/app/event-explanations.ts`        | Sentences for the two events                                            |
+| `../liveworkspace/apps/site/app/telemetry/livedocuments/catalogue/content.ts`         | `IMAGE_SEARCHES`, `IMAGE_SEARCH_PICKS` in Element Editing               |
+| `../liveworkspace/apps/site/app/telemetry/livedocuments/event-explanations.ts`        | Sentences for the two events                                            |
 | `apps/help/app/palette/tools/images/page.mdx`     | "Searching for an image" section                                        |
 | `apps/help/app/policies/privacy-policy/page.mdx`  | Openverse named under Service providers                                 |
 

@@ -21,15 +21,15 @@ The product is split into focused apps, each deployed as a named Cloudflare Work
 - **live** is the editor itself, served at clean routes such as `/new` and `/explorer`.
 - **telemetry** is the public, read-only analytics dashboard at `/telemetry`.
 - **help** is the help centre you are reading now, at `/help`.
-- **api** is the Worker that holds the REST and WebSocket layer, backed by the D1 database and the per-document Durable Object.
+- **api** is the Worker that holds the REST and WebSocket layer, backed by the D1 database and the per-design Durable Object.
 - **router** sits in front and forwards each request to the right app by URL path. It holds no business logic, only routing.
-- **mcp** (optional) is the MCP server that lets people connect AI tools to their documents. It has its own hostname (`mcp.livedesign.app` on the hosted service), needs sign-in configured, and talks to the api Worker directly.
+- **mcp** (optional) is the MCP server that lets people connect AI tools to their designs. It has its own hostname (`mcp.livedesign.app` on the hosted service), needs sign-in configured, and talks to the api Worker directly.
 
 The router is what makes the first five appear under one domain.
 
 ## How a request is routed
 
-The router Worker inspects the path and forwards accordingly: `/api/*` to the api Worker, `/telemetry` to the dashboard, `/help` to the help centre, the editor's routes (`/document`, `/explorer`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed` and the like) to the live app, and everything else to marketing. Because the router has service bindings to the five path-routed apps, they must exist before the router can be deployed.
+The router Worker inspects the path and forwards accordingly: `/api/*` to the api Worker, `/telemetry` to the dashboard, `/help` to the help centre, the editor's routes (`/design`, `/explorer`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed` and the like) to the live app, and everything else to marketing. Because the router has service bindings to the five path-routed apps, they must exist before the router can be deployed.
 
 <Figure caption="The router forwards each request to an app by matching the URL path.">
   <RequestRouting />

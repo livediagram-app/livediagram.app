@@ -7,22 +7,22 @@ import {
   windowStartOf,
   utcDay,
   withinReach,
-  type HomeDocument,
+  type HomeDesign,
   type HomeGroup,
   type HomeJumpBackInItem,
   type WithinReach,
 } from '@livedesign/api-schema';
 import { dateKey, formatDay, relativeSince } from '@livedesign/ui';
-import type { LocalOpenDocument } from '@/lib/offline/offline-opens';
+import type { LocalOpenDesign } from '@/lib/offline/offline-opens';
 
-/** One document of Jump Back In: a server document or one stored only in this browser. */
+/** One design of Jump Back In: a server design or one stored only in this browser. */
 export type JumpBackInItem = {
-  documentId: string;
+  designId: string;
   name: string;
   href: string;
   savedAt: number;
   empty: boolean;
-  /** Authorises a shared document's thumbnail. */
+  /** Authorises a shared design's thumbnail. */
   shareCode: string | null;
   /** Use days in the window: the most-used measure. */
   useDays: number;
@@ -37,28 +37,28 @@ export type JumpBackInGroup = 'mostUsed' | 'recent';
 
 export type JumpBackInSet = WithinReach<JumpBackInItem>;
 
-/** Where activating a document goes: a shared one through its link, the rest on their path. */
-export function homeDocumentHref(doc: Pick<HomeDocument, 'documentId' | 'via' | 'shareCode'>) {
-  const path = `/document/${encodeURIComponent(doc.documentId)}`;
+/** Where activating a design goes: a shared one through its link, the rest on their path. */
+export function homeDesignHref(doc: Pick<HomeDesign, 'designId' | 'via' | 'shareCode'>) {
+  const path = `/design/${encodeURIComponent(doc.designId)}`;
   return doc.via === 'shared' && doc.shareCode
     ? `${path}?s=${encodeURIComponent(doc.shareCode)}`
     : path;
 }
 
-/** Jump Back In: the server's set and this browser's opened local documents, allocated as one
+/** Jump Back In: the server's set and this browser's opened local designs, allocated as one
  *  Within reach set. Sorted by id first: the stable order the merge property needs. */
 export function jumpBackInSet(
   server: readonly HomeJumpBackInItem[],
-  local: readonly LocalOpenDocument[],
+  local: readonly LocalOpenDesign[],
   now: number,
   n = HOME_WITHIN_REACH_PER_ROW,
 ): JumpBackInSet {
   const from = utcDay(windowStartOf(now));
   const items: JumpBackInItem[] = [
     ...server.map((d) => ({
-      documentId: d.documentId,
+      designId: d.designId,
       name: d.name,
-      href: homeDocumentHref(d),
+      href: homeDesignHref(d),
       savedAt: d.savedAt,
       empty: d.empty,
       shareCode: d.via === 'shared' ? d.shareCode : null,
@@ -66,24 +66,24 @@ export function jumpBackInSet(
       lastUsedAt: d.lastUsedAt,
       localOnly: false,
     })),
-    ...local.map(({ document, opens }) => ({
-      documentId: document.id,
-      name: document.name,
-      href: `/document/${encodeURIComponent(document.id)}`,
-      savedAt: document.savedAt,
-      empty: document.empty,
+    ...local.map(({ design, opens }) => ({
+      designId: design.id,
+      name: design.name,
+      href: `/design/${encodeURIComponent(design.id)}`,
+      savedAt: design.savedAt,
+      empty: design.empty,
       shareCode: null,
       useDays: opens.days.filter((d) => d >= from).length,
-      // Only the person edits a document stored here, so its save is their last edit.
-      lastUsedAt: Math.max(opens.lastOpenedAt, document.savedAt),
+      // Only the person edits a design stored here, so its save is their last edit.
+      lastUsedAt: Math.max(opens.lastOpenedAt, design.savedAt),
       localOnly: true,
     })),
   ];
-  items.sort((a, b) => (a.documentId < b.documentId ? -1 : a.documentId > b.documentId ? 1 : 0));
+  items.sort((a, b) => (a.designId < b.designId ? -1 : a.designId > b.designId ? 1 : 0));
   return withinReach(items, n, (d) => ({ uses: d.useDays, lastUsedAt: d.lastUsedAt }));
 }
 
-/** The quiet line under a card's name (explorer-home.md "Jump Back In"): why the document is there. A most used one
+/** The quiet line under a card's name (explorer-home.md "Jump Back In"): why the design is there. A most used one
  *  counts its use days; a recent one says when the person last used it. */
 export function jumpBackInLine(item: JumpBackInItem, group: JumpBackInGroup, now: number): string {
   if (group === 'mostUsed')
@@ -91,16 +91,16 @@ export function jumpBackInLine(item: JumpBackInItem, group: JumpBackInGroup, now
   return `Used ${relativeSince(item.lastUsedAt, now)}`;
 }
 
-/** The editor pane's Jump Back In: the set as one list, most used then recent, each document once, less the
- *  document already open (it is on screen, so offering it again is noise), cut to `n`. */
+/** The editor pane's Jump Back In: the set as one list, most used then recent, each design once, less the
+ *  design already open (it is on screen, so offering it again is noise), cut to `n`. */
 export function paneJumpBackIn(
   set: JumpBackInSet,
-  openDocumentId: string | null,
+  openDesignId: string | null,
   n: number,
 ): JumpBackInItem[] {
-  const seen = new Set<string>(openDocumentId ? [openDocumentId] : []);
+  const seen = new Set<string>(openDesignId ? [openDesignId] : []);
   return [...set.mostUsed, ...set.recent]
-    .filter((d) => (seen.has(d.documentId) ? false : (seen.add(d.documentId), true)))
+    .filter((d) => (seen.has(d.designId) ? false : (seen.add(d.designId), true)))
     .slice(0, n);
 }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { layOutPages } from '@livedesign/document';
+import { layOutPages } from '@livedesign/design';
 import { reorderSlot } from './usePageReorderDrag';
 
 // docs/specs/007-editor/pages-mode.md "Getting around the pages": a dragged label's page

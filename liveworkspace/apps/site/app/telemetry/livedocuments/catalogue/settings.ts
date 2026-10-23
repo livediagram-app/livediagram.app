@@ -1,0 +1,379 @@
+// The editor Settings dialog, one stack per category, one chart per row (docs/specs/017-telemetry/telemetry.md).
+// Part of the metric catalogue: import from ../metric-catalogue.
+
+import type { Metric, MetricStack } from '../metric-series';
+
+// ---- Settings tab ------------------------------------------------------------
+// One chart per row of the editor's Settings dialog, one stack per Settings
+// category (apps/live settings-catalogue.ts, in its order). Every row emits
+// generically from SettingsCategoryPane: a toggle `Toggled·<X>On` / `<X>Off`,
+// a choice `Changed·<X><Option>`, a slider `Changed·<X>`. Each chart counts
+// every change to its setting, both directions, so whether a setting is
+// flipped at all reads at a glance; which way it went is in Search. Neutral:
+// a changed setting is neither good nor bad. `metric-emitters.test` fails if a
+// Settings row has no chart here.
+const toggle = (
+  category: string,
+  on: string,
+  off: string,
+  title: string,
+  blurb: string,
+): Metric => ({
+  category,
+  action: 'Toggled',
+  typeIn: (type) => type === on || type === off,
+  title,
+  blurb,
+  rising: 'neutral',
+});
+
+const changed = (prefix: string, title: string, blurb: string, exact = false): Metric => ({
+  category: 'UI',
+  action: 'Changed',
+  typeIn: (type) => (exact ? type === prefix : (type ?? '').startsWith(prefix)),
+  title,
+  blurb,
+  rising: 'neutral',
+});
+
+const settingsStack = (title: string, blurb: string, members: Metric[]): MetricStack => ({
+  stack: true,
+  title,
+  blurb,
+  members,
+  rising: 'neutral',
+});
+
+export const EDITOR_SETTINGS = settingsStack(
+  'Editor Settings',
+  'How the canvas behaves while you draw.',
+  [
+    toggle(
+      'UI',
+      'QuickAddHoverOn',
+      'QuickAddHoverOff',
+      'Quick-Add on Hover',
+      'Hover handles that add a connected shape.',
+    ),
+    changed('ElementIndicators', 'Element Indicators', 'Top icons, a Footer row, or Off.'),
+    toggle(
+      'UI',
+      'AlignmentGuidesOn',
+      'AlignmentGuidesOff',
+      'Alignment Guides',
+      'Snap guides while dragging.',
+    ),
+    toggle(
+      'UI',
+      'AutoRebindOn',
+      'AutoRebindOff',
+      'Auto-Attach Arrows',
+      'Arrows re-attaching to the nearest shape.',
+    ),
+    changed(
+      'ContentsPlacement',
+      'Contents Placement',
+      "Pages mode's Contents docked as a sidebar or minimised to its button.",
+    ),
+    changed(
+      'ContentsSide',
+      'Contents Side',
+      "Pages mode's Contents sidebar dragged to the canvas's left or right edge.",
+    ),
+    toggle(
+      'UI',
+      'LogoGuidesOn',
+      'LogoGuidesOff',
+      'Logo Guides',
+      "A logo page's construction guides.",
+    ),
+    changed('LogoGuideStrength', 'Logo Guide Strength', 'Logo guides set Faint, Medium or Strong.'),
+    {
+      category: 'UI',
+      action: 'Toggled',
+      typeIn: (type) =>
+        /^LogoGuide(CentreLines|Diagonals|SafeArea|Circles|Square|Grid)(On|Off)$/.test(type ?? ''),
+      title: 'Logo Guide Parts',
+      blurb:
+        'One of the logo guides (centre lines, diagonals, safe area, circles, square, grid) shown or hidden.',
+      rising: 'neutral',
+    },
+    toggle(
+      'UI',
+      'PowerUserModeOn',
+      'PowerUserModeOff',
+      'Power User Mode',
+      'The recommended-settings preset, from Settings or the offer.',
+    ),
+    toggle(
+      'UI',
+      'MinimalChromeOn',
+      'MinimalChromeOff',
+      'Minimal Chrome',
+      'Labels and hints hidden, for power users.',
+    ),
+  ],
+);
+
+export const APPEARANCE_SETTINGS = settingsStack('Appearance Settings', 'How the editor looks.', [
+  {
+    category: 'UI',
+    action: 'Toggled',
+    typeIn: (type) => type === 'Light' || type === 'Dark' || type === 'System',
+    title: 'Theme',
+    blurb: 'Light, Dark or System picked, from the header toggle or Settings.',
+    rising: 'neutral',
+  },
+  changed('PanelLayout', 'Panel Layout', 'Floating or Toolbar chrome. No longer recorded.'),
+  toggle('UI', 'MinimapOn', 'MinimapOff', 'Show Minimap', 'The minimap in the corner.'),
+  toggle(
+    'UI',
+    'HomeBannerOn',
+    'HomeBannerOff',
+    'Home Banner',
+    'The greeting and large search at the top of Explorer Home, closed from its corner or switched in Settings.',
+  ),
+  toggle(
+    'UI',
+    'DockButtonNamesOn',
+    'DockButtonNamesOff',
+    'Button Labels',
+    'Names beside the bottom-right buttons\u2019 icons on a wide desktop.',
+  ),
+  changed('PanelOpacity', 'Panel Opacity', 'The panels\u2019 transparency slider.', true),
+  changed('UiScale', 'UI Scale', 'The panels, toolbar and corner buttons\u2019 size slider.', true),
+  changed('UiScalePanels', 'Panel Scale', 'The panels\u2019 own size slider.', true),
+  changed('UiScaleToolbar', 'Toolbar Scale', 'The toolbar\u2019s own size slider.', true),
+  changed(
+    'UiScaleCornerButtons',
+    'Corner Buttons Scale',
+    'The bottom-right buttons\u2019 own size slider.',
+    true,
+  ),
+]);
+
+export const CONTROLS_SETTINGS = settingsStack(
+  'Controls Settings',
+  'Mouse and trackpad behaviour.',
+  [
+    toggle(
+      'UI',
+      'MiddleMousePanOn',
+      'MiddleMousePanOff',
+      'Middle-Mouse Pan',
+      'Panning with the middle mouse button.',
+    ),
+  ],
+);
+
+export const KEYBOARD_SETTINGS = settingsStack(
+  'Keyboard Settings',
+  'Keyboard shortcuts on or off.',
+  [
+    toggle(
+      'UI',
+      'ShortcutsOn',
+      'ShortcutsOff',
+      'Keyboard Shortcuts',
+      'Single-key shortcuts switched on or off, for this device.',
+    ),
+  ],
+);
+
+export const PANELS_SETTINGS = settingsStack(
+  'Panels Settings',
+  'What the Layers and minimap panels show.',
+  [
+    toggle(
+      'UI',
+      'LayerPreviewOn',
+      'LayerPreviewOff',
+      'Layer Thumbnails',
+      'Thumbnails in the Layers panel.',
+    ),
+    toggle(
+      'UI',
+      'LayerCountOn',
+      'LayerCountOff',
+      'Layer Element Counts',
+      'Element counts on each layer.',
+    ),
+    toggle(
+      'UI',
+      'LayerHoverPreviewOn',
+      'LayerHoverPreviewOff',
+      'Preview Layer on Hover',
+      'Highlighting a layer\u2019s elements on hover.',
+    ),
+    toggle(
+      'UI',
+      'MapDimOn',
+      'MapDimOff',
+      'Dim Outside the View',
+      'The minimap dimming what is off screen.',
+    ),
+    changed('MapSize', 'Minimap Size', 'Short, Medium or Tall.'),
+  ],
+);
+
+export const NOTIFICATION_SETTINGS = settingsStack(
+  'Notification Settings',
+  'In-editor notifications and each email opt-out.',
+  [
+    toggle(
+      'UI',
+      'NotificationsOn',
+      'NotificationsOff',
+      'In-Editor Notifications',
+      'Toasts and the notification bell.',
+    ),
+    toggle(
+      'UI',
+      'NotifyDocumentJoinOn',
+      'NotifyDocumentJoinOff',
+      'Someone Joins My Document',
+      'The document-joined email.',
+    ),
+    toggle(
+      'UI',
+      'NotifyInviteResponseOn',
+      'NotifyInviteResponseOff',
+      'Someone Responds to a Team Invite',
+      'The invite-response email.',
+    ),
+    toggle(
+      'UI',
+      'NotifyCommentsOn',
+      'NotifyCommentsOff',
+      'Someone Comments on My Document',
+      'The new-comment email.',
+    ),
+    toggle(
+      'UI',
+      'NotifyActionAssignedOn',
+      'NotifyActionAssignedOff',
+      'Someone Assigns Me an Action',
+      'The action-assigned email.',
+    ),
+    toggle(
+      'UI',
+      'NotifyMentionsOn',
+      'NotifyMentionsOff',
+      'Someone Mentions Me in a Comment',
+      'The comment-mention email.',
+    ),
+    toggle(
+      'UI',
+      'NotifyTipsOn',
+      'NotifyTipsOff',
+      'Tips and Check-Ins',
+      'The onboarding and win-back emails.',
+    ),
+    toggle(
+      'UI',
+      'NotifyMilestonesOn',
+      'NotifyMilestonesOff',
+      'Milestones',
+      'The milestone and first-share emails.',
+    ),
+  ],
+);
+
+export const ACCESSIBILITY_SETTINGS = settingsStack('Accessibility Settings', 'Motion.', [
+  toggle('UI', 'ReduceMotionOn', 'ReduceMotionOff', 'Reduce Motion', 'Turning animation down.'),
+]);
+
+// The tours, a Settings category of their own since October 2026 (Accessibility's Onboarding
+// Tutorials before). Each switch's tokens track its PREFERENCE, so switching a tour on is `…SeenOff`.
+export const TOURS_SETTINGS = settingsStack(
+  'Tours Settings',
+  'The Pages and element tours switched back on or off.',
+  [
+    toggle(
+      'UI',
+      'PagesTourSeenOff',
+      'PagesTourSeenOn',
+      'Pages Tours',
+      'Every Pages tour (slides, infographics, articles and logos) switched back on or off at once.',
+    ),
+    toggle(
+      'UI',
+      'SlidesTourSeenOff',
+      'SlidesTourSeenOn',
+      'Slides Tour',
+      "The Pages tour's slides track switched back on or off.",
+    ),
+    toggle(
+      'UI',
+      'InfographicTourSeenOff',
+      'InfographicTourSeenOn',
+      'Infographic Tour',
+      "The Pages tour's infographic track switched back on or off.",
+    ),
+    toggle(
+      'UI',
+      'ArticleTourSeenOff',
+      'ArticleTourSeenOn',
+      'Article Tour',
+      "The Pages tour's article track switched back on or off.",
+    ),
+    toggle(
+      'UI',
+      'LogoTourSeenOff',
+      'LogoTourSeenOn',
+      'Logo Tour',
+      "The Pages tour's logo track switched back on or off.",
+    ),
+  ],
+);
+
+export const PRIVACY_SETTINGS = settingsStack(
+  'Privacy Settings',
+  'Anonymous usage events, the thing this dashboard counts.',
+  [
+    toggle(
+      'UI',
+      'TelemetryOn',
+      'TelemetryOff',
+      'Send Anonymous Usage Events',
+      'The opt-out, fired before it takes effect so the change still arrives.',
+    ),
+  ],
+);
+
+export const SETTINGS_STACKS: readonly MetricStack[] = [
+  EDITOR_SETTINGS,
+  APPEARANCE_SETTINGS,
+  CONTROLS_SETTINGS,
+  KEYBOARD_SETTINGS,
+  PANELS_SETTINGS,
+  NOTIFICATION_SETTINGS,
+  ACCESSIBILITY_SETTINGS,
+  TOURS_SETTINGS,
+  PRIVACY_SETTINGS,
+];
+
+// Settings changed, one chart per Settings category, for the Dashboard.
+const categoryChart = (stack: MetricStack): Metric => {
+  const first = stack.members[0]!;
+  const actions = [...new Set(stack.members.map((m) => m.action))];
+  return {
+    category: first.category,
+    action: actions[0]!,
+    ...(actions.length > 1 ? { actionIn: actions.slice(1) } : {}),
+    typeIn: (type) => stack.members.some((m) => m.typeIn?.(type)),
+    title: stack.title.replace(/ Settings$/, ''),
+    blurb: stack.blurb,
+    rising: 'neutral',
+  };
+};
+
+export const SETTINGS_CHANGED: MetricStack = {
+  stack: true,
+  title: 'Settings Changed',
+  blurb:
+    'Settings changed, by Settings category. The theme counts the header toggle as well as the dialog.',
+  members: SETTINGS_STACKS.map(categoryChart),
+  rising: 'neutral',
+  seeAlso: { section: 'settings', label: 'See Each Setting in Features › Settings' },
+};

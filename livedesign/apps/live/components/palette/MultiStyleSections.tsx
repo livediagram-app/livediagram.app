@@ -19,7 +19,7 @@ import {
   type ElementShadow,
   type ShapeElement,
   supportsFinish,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { isTechIconId } from '@/lib/tech-icons';
 import {
   BorderGlyph,

@@ -7,7 +7,7 @@ import {
   type ArrowElement,
   type BoxedElement,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { applied } from '../fixtures/outcomes';
 import { laidOutTab } from '../fixtures/laid-out-tabs';
 import { run } from '../fixtures/run';

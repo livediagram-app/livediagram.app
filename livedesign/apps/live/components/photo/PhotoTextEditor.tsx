@@ -5,7 +5,7 @@
 // caret and the selection over it. Escape, Ctrl/Cmd+Enter or a press outside ends the edit (one edit
 // for the whole typing); an empty text layer is removed as it ends.
 import { useEffect, useRef, useState } from 'react';
-import { resolveFontStack } from '@livedesign/document';
+import { resolveFontStack } from '@livedesign/design';
 import type { PhotoTextEdit } from '@/hooks/editor/usePhotoEditor';
 import type { PhotoSession } from '@/lib/photo-editor/session';
 import { textBox } from '@/lib/photo-editor/text-raster';

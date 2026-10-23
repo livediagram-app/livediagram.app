@@ -1,5 +1,7 @@
 # Authoring from scratch, and the visual feedback loop
 
+> **History.** Written for livediagram, before livedesign was cut down to logo, wireframe and photo pages. Its diagrams, flowcharts, Markdown outlines and whiteboard examples describe that product; what livedesign's agents read and write is in [Agents](../../specs/024-agents/README.md) and [CLI](../../specs/015-api/cli.md).
+
 Research for the agent-facing `livedesign` CLI, dated 2026-10-03. It asks how an AI agent
 builds a good diagram from nothing, how it then sees what it built, and how it corrects it,
 and ends with a recommended authoring flow, a `lint` design and a mock session.
@@ -38,9 +40,9 @@ was found and measured at the time; it is not a spec.
 
 To ground the rest, a 15-node, 16-edge e-commerce architecture was run through the MCP's own
 `layoutGraph` (`graph-input.ts`), rendered with `renderElementsToSvg`
-(`packages/document`) and rasterised with `@resvg/resvg-wasm` and the embedded Inter, exactly
+(`packages/design`) and rasterised with `@resvg/resvg-wasm` and the embedded Inter, exactly
 as the MCP does. Crossings and box hits were counted with the existing `arrowPolyline`,
-`pathsCross` and `pathPassesThrough` (`packages/document/src/arrow-path-hits.ts`).
+`pathsCross` and `pathPassesThrough` (`packages/design/src/arrow-path-hits.ts`).
 
 Nodes: web app, mobile app, CDN, API gateway, auth, orders, payments, inventory,
 notifications, event bus, orders DB, inventory DB, Redis cache, Stripe, email provider.
@@ -132,16 +134,16 @@ What livedesign has, by file:
 
 - `graph-authoring.ts`: `graphToElements`; node id becomes element id;
   boxes sized to labels (`labelBoxSize`); entity nodes from `fields`.
-- `packages/document/src/auto-layout*.ts`: layered flow with barycentre crossing reduction
+- `packages/design/src/auto-layout*.ts`: layered flow with barycentre crossing reduction
   (`reduceCrossings`, `countCrossings`), long-edge lanes, tree, mindmap; `nodesLookUnplaced`
   to respect a placement the model made on purpose.
 - `auto-layout-clusters.ts`: `layoutClusteredGraph`, groups as frames.
 - `graph-input.ts`: label cap of 40 with overflow into the note, layout choice,
   line style, Mermaid via the editor's own `parseMermaid`.
 - `packages/templates`: 68 hand-tuned templates materialised server-side.
-- `packages/document/src/svg-render*.ts` and `apps/mcp/src/render.ts`: one SVG renderer for
+- `packages/design/src/svg-render*.ts` and `apps/mcp/src/render.ts`: one SVG renderer for
   editor export, MCP preview and api snapshots; resvg rasterisation.
-- `packages/document/src/arrow-path-hits.ts`: path-through-shape and path-crossing geometry,
+- `packages/design/src/arrow-path-hits.ts`: path-through-shape and path-crossing geometry,
   written for arrow rebinding, directly reusable for a lint.
 
 What is missing for the CLI: layout hints (same rank, order within a rank, an edge that does
@@ -160,7 +162,7 @@ for human-arranged tabs, where the global layout must not run.
 
 Templates are the right start for anything that is not a node graph: retrospectives, kanban,
 story maps, personas, swimlane journeys. The MCP already does `list_templates` → create with
-`template` → `update_document` ops. The CLI should mirror it, with two additions:
+`template` → `update_design` ops. The CLI should mirror it, with two additions:
 
 - `template list` stays metadata only (kind, title, one line), grouped by category; about 15
   tokens a row, so all 68 cost about 1,000 tokens. A `--category` filter keeps it smaller.
@@ -464,12 +466,12 @@ $ livedesign graph render arch.yaml -o /tmp/arch.png
 
 A multimodal agent opens the PNG and sees clients on the left, the gateway fanning out to
 auth, orders and inventory, each database beside its service, and the `OrderPlaced` label on
-its own edge. It creates the document:
+its own edge. It creates the design:
 
 ```bash
 $ livedesign doc create "Shop architecture" --tab Overview -f arch.yaml
 created shop-architecture (d_7Kq2) · tab Overview (t_1) · 15 nodes · lint clean
-https://livedesign.app/document/d_7Kq2
+https://livedesign.app/design/d_7Kq2
 ```
 
 Total feedback cost of the loop: two lint reports and a comparison (about 300 tokens) plus one

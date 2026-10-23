@@ -1,14 +1,14 @@
 {
   "TELEMETRY_ENABLED": "true",
-  "IMAGE_MAX_PER_OWNER": "100",
-  "IMAGE_MAX_BYTES_PER_OWNER": "104857600",
   "PHOTO_MAX_BYTES_PER_TAB": "536870912",
   "environments": {
     "production": {
-      "APP_BASE_URL": "https://www.livedesign.app"
+      "APP_BASE_URL": "https://www.livedesign.app",
+      "MEDIA_URL": "https://liveworkspace.app/api/media"
     },
     "staging": {
-      "APP_BASE_URL": "https://staging.livedesign.app"
+      "APP_BASE_URL": "https://staging.livedesign.app",
+      "MEDIA_URL": "https://staging.liveworkspace.app/api/media"
     }
   }
 }

@@ -20,8 +20,8 @@ const NO_LOCAL = { actions: [], threads: [] };
 import { useActivityFeed } from './useActivityFeed';
 
 const place = {
-  documentId: 'd1',
-  documentName: 'Payments',
+  designId: 'd1',
+  designName: 'Payments',
   teamId: null,
   via: 'own' as const,
   shareCode: null,
@@ -55,7 +55,7 @@ const thread: ActivityThread = {
   latest: { text: 'hi', authorName: 'A', authorColor: '#a', at: 3 },
   firstAt: 3,
   youCommented: true,
-  onYourDocument: false,
+  onYourDesign: false,
   mentionsYou: false,
 };
 
@@ -82,7 +82,7 @@ describe('useActivityFeed', () => {
     expect(result.current.error).toBe(false);
   });
 
-  // docs/specs/013-workspace/inbox.md §2.6: this browser's documents in This Browser list among the server's rows,
+  // docs/specs/013-workspace/inbox.md §2.6: this browser's designs in This Browser list among the server's rows,
   // in the same order, marked local, and count toward the badge's list.
   it('merges rows in This Browser in among the server rows, marked local', async () => {
     apiListActivity.mockResolvedValue({

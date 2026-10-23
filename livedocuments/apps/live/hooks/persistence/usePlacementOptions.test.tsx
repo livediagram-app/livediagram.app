@@ -19,17 +19,12 @@ const apiCreateFolder = vi.fn(
     input: { id: string; name: string; parentId: string | null; teamId: string | null },
   ) => ({ ...input }),
 );
-const apiCreateTeam = vi.fn(async (_owner: string, input: { id: string; name: string }) => ({
-  id: input.id,
-  name: input.name,
-}));
 
 vi.mock('@/lib/api-client', () => ({
   apiListFolders: (...a: unknown[]) => apiListFolders(...(a as [])),
   apiListTeams: (...a: unknown[]) => apiListTeams(...(a as [])),
   apiGetTeamLibrary: (...a: unknown[]) => apiGetTeamLibrary(...(a as [])),
   apiCreateFolder: (...a: unknown[]) => apiCreateFolder(...(a as [string, never])),
-  apiCreateTeam: (...a: unknown[]) => apiCreateTeam(...(a as [string, never])),
 }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
@@ -37,48 +32,20 @@ import { usePlacementOptions } from './usePlacementOptions';
 
 describe('usePlacementOptions', () => {
   it('loads folders for everyone and teams only once signed in', async () => {
-    const guest = renderHook(() => usePlacementOptions({ selfId: 'g1', clerkUserId: null }));
+    const guest = renderHook(() => usePlacementOptions({ selfId: 'g1', accountUserId: null }));
     await waitFor(() => expect(guest.result.current.folders).toHaveLength(1));
     expect(apiListTeams).not.toHaveBeenCalled();
 
-    const user = renderHook(() => usePlacementOptions({ selfId: 'u1', clerkUserId: 'clerk_1' }));
+    const user = renderHook(() => usePlacementOptions({ selfId: 'u1', accountUserId: 'clerk_1' }));
     await waitFor(() =>
       expect(user.result.current.teams).toEqual([{ id: 't1', name: 'Zeta Team' }]),
     );
     await waitFor(() => expect(user.result.current.teamFolders).toEqual({ t1: [] }));
   });
 
-  it('adds a created team to the overview, sorted, with an empty library', async () => {
-    const { result } = renderHook(() =>
-      usePlacementOptions({ selfId: 'u1', clerkUserId: 'clerk_1' }),
-    );
-    await waitFor(() => expect(result.current.teams).toHaveLength(1));
-    let created: { id: string; name: string } | null = null;
-    await act(async () => {
-      created = await result.current.createPickerTeam('Design');
-    });
-    expect(created).toMatchObject({ name: 'Design' });
-    expect(result.current.teams.map((t) => t.name)).toEqual(['Design', 'Zeta Team']);
-    expect(result.current.teamFolders[created!.id]).toEqual([]);
-  });
-
-  it('returns null when the api refuses, leaving the lists as they were', async () => {
-    apiCreateTeam.mockRejectedValueOnce(new Error('401'));
-    const { result } = renderHook(() =>
-      usePlacementOptions({ selfId: 'u1', clerkUserId: 'clerk_1' }),
-    );
-    await waitFor(() => expect(result.current.teams).toHaveLength(1));
-    let created: unknown = 'unset';
-    await act(async () => {
-      created = await result.current.createPickerTeam('Design');
-    });
-    expect(created).toBeNull();
-    expect(result.current.teams).toHaveLength(1);
-  });
-
   it('files a created folder into the list it was made in', async () => {
     const { result } = renderHook(() =>
-      usePlacementOptions({ selfId: 'u1', clerkUserId: 'clerk_1' }),
+      usePlacementOptions({ selfId: 'u1', accountUserId: 'clerk_1' }),
     );
     await waitFor(() => expect(result.current.teamFolders).toEqual({ t1: [] }));
     await act(async () => {
@@ -93,10 +60,10 @@ describe('usePlacementOptions', () => {
 // Settings' default folders tell "gone" from "not loaded" (docs/specs/013-workspace/default-folders.md).
 describe('usePlacementOptions, ready and failed', () => {
   it('is ready once folders, and for an account its teams, have loaded', async () => {
-    const guest = renderHook(() => usePlacementOptions({ selfId: 'g2', clerkUserId: null }));
+    const guest = renderHook(() => usePlacementOptions({ selfId: 'g2', accountUserId: null }));
     expect(guest.result.current.ready).toBe(false);
     await waitFor(() => expect(guest.result.current.ready).toBe(true));
-    const user = renderHook(() => usePlacementOptions({ selfId: 'u2', clerkUserId: 'clerk_2' }));
+    const user = renderHook(() => usePlacementOptions({ selfId: 'u2', accountUserId: 'clerk_2' }));
     await waitFor(() => expect(user.result.current.ready).toBe(true));
     expect(user.result.current.teamFolders).toEqual({ t1: [] });
     expect(user.result.current.failed).toBe(false);
@@ -104,7 +71,7 @@ describe('usePlacementOptions, ready and failed', () => {
 
   it('says it failed, and is never ready, when a list cannot be read', async () => {
     apiListFolders.mockRejectedValueOnce(new Error('503'));
-    const { result } = renderHook(() => usePlacementOptions({ selfId: 'g3', clerkUserId: null }));
+    const { result } = renderHook(() => usePlacementOptions({ selfId: 'g3', accountUserId: null }));
     await waitFor(() => expect(result.current.failed).toBe(true));
     expect(result.current.ready).toBe(false);
   });

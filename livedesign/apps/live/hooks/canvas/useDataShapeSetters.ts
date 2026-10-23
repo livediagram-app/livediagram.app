@@ -14,7 +14,7 @@ import {
   type CodeLanguage,
   type Element,
   type ProgressAnim,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { track } from '@/lib/telemetry';
 import { useChartSetters } from '@/hooks/canvas/useChartSetters';
 import { useWebComponentSetters } from '@/hooks/canvas/useWebComponentSetters';

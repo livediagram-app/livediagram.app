@@ -1,11 +1,11 @@
 'use client';
 
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
-import { themeChartPalette, type CanvasSurface, type ThemeDefinition } from '@livedesign/document';
+import { themeChartPalette, type CanvasSurface, type ThemeDefinition } from '@livedesign/design';
 
 // Which paper the active tab's canvas is: light or dark. Every element that
 // carries no colour of its own is drawn in that paper's ink
-// (`defaultStrokeColor` and friends in @livedesign/document), and the Default
+// (`defaultStrokeColor` and friends in @livedesign/design), and the Default
 // theme deliberately leaves elements uncoloured — so on a Default tab
 // this context IS the element colour (docs/specs/007-editor/live-app.md, docs/specs/008-canvas/canvas-and-palette.md).
 //

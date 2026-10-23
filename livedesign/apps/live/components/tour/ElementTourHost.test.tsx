@@ -6,7 +6,7 @@
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { anyModalOpen, modalClosed, modalOpened } from '@/lib/modal-guard';
-import { createShape, type Element } from '@livedesign/document';
+import { createShape, type Element } from '@livedesign/design';
 import { SelectionStoreProvider } from '@/hooks/canvas/useSelectionStore';
 import { elementTourOffer } from '@/lib/element-tour-offer';
 import { registerSankeyFlowsDialog } from '@/lib/sankey-flows-dialog-handle';
@@ -34,7 +34,7 @@ vi.mock('./tour-dom', () => ({
 const viewport = vi.hoisted(() => ({ phone: false }));
 vi.mock('@/hooks/ui/useIsMobileViewport', () => ({ useIsMobileViewport: () => viewport.phone }));
 const ctx = vi.hoisted(() => ({ current: {} as Record<string, unknown> }));
-vi.mock('@/app/document/[id]/EditorContext', () => ({ useEditorContext: () => ctx.current }));
+vi.mock('@/app/design/[id]/EditorContext', () => ({ useEditorContext: () => ctx.current }));
 
 const setUserPreferences = vi.fn();
 const writeUserPreferences = vi.fn();

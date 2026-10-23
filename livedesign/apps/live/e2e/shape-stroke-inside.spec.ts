@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test, expectNoPageErrors, seedTab, startBlankDocument } from './fixtures';
+import { expect, test, expectNoPageErrors, seedTab, startBlankDesign } from './fixtures';
 
 // A shape drawn to its box edge keeps its stroke inside the box, as a square's CSS border does
 // (docs/specs/008-canvas/canvas-and-palette.md, Shape primitives). The proof is pixels: the ring
@@ -72,7 +72,7 @@ async function inkOutsideBox(page: Page, element: Locator): Promise<number> {
 test('a shape drawn to its box edge paints no stroke outside it', async ({ page, pageErrors }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.setViewportSize({ width: 1280, height: 720 });
-  await startBlankDocument(page);
+  await startBlankDesign(page);
   // Three to a row, 60px apart: wider than both margins, so no neighbour is in the ring.
   await seedTab(
     page,

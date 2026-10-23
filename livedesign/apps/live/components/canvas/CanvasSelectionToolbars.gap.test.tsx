@@ -2,7 +2,7 @@
 import { render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { setElementTourOffer } from '@/lib/element-tour-offer';
-import { createShape, type Element } from '@livedesign/document';
+import { createShape, type Element } from '@livedesign/design';
 import { CanvasSelectionToolbars } from './CanvasSelectionToolbars';
 import type { CanvasProps } from './Canvas.types';
 import { createSelectionStore } from '@/lib/selection-store';

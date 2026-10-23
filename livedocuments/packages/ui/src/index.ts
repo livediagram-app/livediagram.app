@@ -64,13 +64,10 @@ export {
 } from './brand-classes';
 export * from './timeline';
 export * from './icons';
-export { PictureDisc } from './PictureDisc';
-export { clerkPublishableKeyOrNull } from './clerk-key';
 export {
   TRUSTED_TYPES_CSP,
   isAllowedScriptUrl,
   trustedHtml,
-  trustedScriptOrigins,
   trustedTypesBootScript,
 } from './trusted-types';
 export { IDENTITY_FILL, identityDeep, identityVars } from './identity-fill';

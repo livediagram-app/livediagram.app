@@ -64,7 +64,7 @@ export function LockedElementMenu({
           aria-describedby={noteId}
           // The canvas reads a press as select-and-maybe-drag, and a portal's
           // events still bubble up the REACT tree to the canvas that rendered
-          // this — the same trap ElementEllipsisMenu documents.
+          // this — the same trap ElementEllipsisMenu designs.
           onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => e.stopPropagation()}
           onDoubleClick={(e) => e.stopPropagation()}

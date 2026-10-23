@@ -8,7 +8,7 @@ import { trustedHtml } from '@livedesign/ui';
 // paints them for that tab (useTabBackdropPaint). Inline rather than an image so the page's typefaces apply, its ids prefixed so
 // its gradients and markers never meet the canvas's. Loaded only once a window is on screen (the renderer is heavy).
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from 'react';
-import { prefixSvgIds, type Tab } from '@livedesign/document';
+import { prefixSvgIds, type Tab } from '@livedesign/design';
 import { useTabSvg } from '@/components/split/useTabSvg';
 import { useTabBackdropPaint } from '@/components/split/useTabBackdropPaint';
 import { windowMotion } from './tab-window-motion';
@@ -29,7 +29,7 @@ export function TabWindowDrawing({ tab, elementId }: { tab: Tab; elementId: stri
   // The frame mounts with the first drawing, so the watch starts then.
   useHoldOffscreen(frameRef, inner != null);
   // Each redraw (an edit on the shown tab) replaces the markup, which would restart every loop mid-beat. Pin the
-  // loops to the document's clock, as arrow flows are on the canvas, so they run on through a redraw and stay in
+  // loops to the design's clock, as arrow flows are on the canvas, so they run on through a redraw and stay in
   // step with each other. A play-once is left to start as it is drawn.
   useEffect(() => {
     const node = svgRef.current;

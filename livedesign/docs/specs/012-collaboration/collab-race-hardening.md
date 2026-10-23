@@ -60,7 +60,7 @@ For every field many people write at once, a room
 op, `{ kind: 'el-delta', tabId, elementId, delta }` (a MUTATION: sequenced,
 logged for catch-up, refused from a view-role sender), carries ONE change,
 applied by the sender and every receiver through the same pure
-`applyElementDelta` (`packages/document/src/element-deltas.ts`):
+`applyElementDelta` (`packages/design/src/element-deltas.ts`):
 
 - `check`: one checklist row ticked or unticked. Rows have no ids, so the
   row is named by index AND text; a peer who moved or retitled rows gets the
@@ -96,7 +96,7 @@ reload showed fewer marks than the room had seen.
 
 **The room keeps a ledger.** For every `el-delta` op it
 sequences, the Durable Object records the change in a small per-element
-ledger in its own storage (`packages/document/src/collab-ledger.ts`, pure;
+ledger in its own storage (`packages/design/src/collab-ledger.ts`, pure;
 the DO only stores it):
 
 - checklist ticks: each row's latest state, by index and text;
@@ -106,7 +106,7 @@ One storage key per element, and
 a ledger that would outgrow the storage value limit stops recording rather
 than failing.
 
-**A save is merged with it.** When a tab PUT arrives for a document with a
+**A save is merged with it.** When a tab PUT arrives for a design with a
 room carrying the room cursor its snapshot was taken at
 (`X-Room-Cursor: <epoch>:<seq>`), the api reads the room's ledger for that tab
 (`GET /ledger` on the DO stub, internal only) and merges into the incoming tab
@@ -118,8 +118,8 @@ the merge is exactly what a peer receiving those deltas would do: ticks are re-s
 comments the snapshot is missing are added.
 
 If the room can't be reached, the save goes through unmerged, as before.
-Every server-stored document has a room, since an agent is a second writer
-even on a personal one ([Agent changesets](../024-agents/agent-changesets.md#rooms-for-personal-documents));
+Every server-stored design has a room, since an agent is a second writer
+even on a personal one ([Agent changesets](../024-agents/agent-changesets.md#rooms-for-personal-designs));
 an agent's changesets merge into a save by their own rule, not through this ledger.
 
 **Comments joined the ledger in phase 5**, once the room stamped their
@@ -172,7 +172,7 @@ and the next save from anybody repairs it.
   lets the author's own save (the only copy carrying their id) claim it. A
   comment that already has an author id is never re-claimed.
 - **Ops sent while the socket is down are held, not dropped.** The room
-  client keeps an outbox of document ops (bounded at 500)
+  client keeps an outbox of design ops (bounded at 500)
   and flushes it, in order, right after the reconnect's hello and sync.
   Cursors, selections and other presence ops are not held.
 
@@ -210,7 +210,7 @@ a write again sends nothing, so it starts no further one, and only a peer still 
 
 ## Tab lists
 
-A peer's `document-meta` op carries the tab list as of their last save. On screen it keeps what this editor has not
+A peer's `design-meta` op carries the tab list as of their last save. On screen it keeps what this editor has not
 saved yet (`keepUnsavedTabChanges`, judged against the save baseline as it was before the op): a tab added here and
 not yet saved stays, after the tab it followed, and a tab deleted here and not yet saved stays deleted. Replacing the
 screen with the list dropped a new tab before its first save, and brought a deleted one back as an empty placeholder

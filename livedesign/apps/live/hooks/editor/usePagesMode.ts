@@ -26,7 +26,7 @@ import {
   type Element,
   type LaidOutPage,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { besideSideInsets, computeFitBelow } from '@/lib/viewport';
 
 // The most a wireframe page's fit zooms in (a watch's face fills the screen at about this).
@@ -51,7 +51,7 @@ export type { PageEdits };
 
 export type PagesModeView = {
   pages: LaidOutPage[];
-  // The whole row, when `pages` shows only some of it (a page slide presenting): a document's
+  // The whole row, when `pages` shows only some of it (a page slide presenting): a design's
   // writing is laid out across all of its pages whichever of them are shown.
   rowPages?: LaidOutPage[];
   // Frames one page in the view (its label's press).
@@ -62,7 +62,7 @@ export type PagesModeView = {
   fitPageInView: () => void;
   // Backgrounds drawn from the tab's theme, offered first in the page panel.
   themeBackgrounds: ThemeBackgroundPreset[];
-  // The tab theme's accent: a document's accent unless it picked one of its own.
+  // The tab theme's accent: a design's accent unless it picked one of its own.
   themeAccent: string;
   // The tab theme's colours a wireframe page's frame is drawn in (docs/specs/007-editor/
   // wireframe-pages.md "Choosing the device").
@@ -118,9 +118,9 @@ export function usePagesMode(deps: {
   // on a tab (useTabEntryEffects) frames the page you were last on (else the first), not the
   // whole row of pages.
   frameFirstPageRef?: RefObject<(() => void) | null>;
-  // The document's id and the view's store, so the page you were last on is remembered per tab
+  // The design's id and the view's store, so the page you were last on is remembered per tab
   // in this browser (useLastPage); without either, landing frames the first page.
-  documentId?: string;
+  designId?: string;
   viewport?: { get: () => View; subscribe: (listener: () => void) => () => void };
   // The view is not this person's to snap onto a page: following someone, or presenting.
   snapSuspended?: () => boolean;
@@ -229,7 +229,7 @@ export function usePagesMode(deps: {
   // pages-mode.md "Back to the page you were on").
   const last = useLastPage({
     on: true,
-    storeKey: deps.documentId ? lastPageKey(deps.documentId, tabId) : undefined,
+    storeKey: deps.designId ? lastPageKey(deps.designId, tabId) : undefined,
     pages,
     canvasMainRef: deps.canvasMainRef,
     viewport: deps.viewport,

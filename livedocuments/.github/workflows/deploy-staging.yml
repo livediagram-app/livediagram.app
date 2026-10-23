@@ -89,11 +89,14 @@ jobs:
       # resource (own D1 / R2 / KV), not the account (docs/specs/016-platform/staging-environment.md).
       CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
       CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-      # Every value below is staging's OWN. The Clerk pair is a separate test
-      # tenant, so a staging sign-in cannot touch a production user, and the
+      # Every value below is staging's OWN. The ACCOUNTS_* client is staging's
+      # own registration with its own resource (an audience production refuses),
+      # so a staging token cannot reach production, and the
       # HMAC secret must differ or a guest id minted on staging would be
       # claimable on production.
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_STAGING }}
-      CLERK_JWKS_URL: ${{ secrets.CLERK_JWKS_URL_STAGING }}
+      ACCOUNTS_URL: ${{ secrets.ACCOUNTS_URL_STAGING }}
+      API_RESOURCE: ${{ secrets.API_RESOURCE_STAGING }}
+      ACCOUNTS_CLIENT_ID: ${{ secrets.ACCOUNTS_CLIENT_ID_STAGING }}
+      ACCOUNTS_CLIENT_SECRET: ${{ secrets.ACCOUNTS_CLIENT_SECRET_STAGING }}
       GUEST_ID_HMAC_SECRET: ${{ secrets.GUEST_ID_HMAC_SECRET_STAGING }}
-      INTERNAL_EVENTS_KEY: ${{ secrets.INTERNAL_EVENTS_KEY_STAGING }}
+      TELEMETRY_KEY: ${{ secrets.TELEMETRY_KEY_STAGING }}

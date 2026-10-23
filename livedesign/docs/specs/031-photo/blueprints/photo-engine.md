@@ -56,7 +56,7 @@ not design: where a spec is silent the default is in [DEFAULTS.md](DEFAULTS.md).
   - `encode/`: `png-stream.ts` (a streaming PNG encoder over `CompressionStream`, for exports past a canvas's
     size), `png-decode.ts`.
   - `histogram.ts`.
-- **`packages/document`**: `Tab.photos?: Record<string, Photo>` (the type re-exported from the engine), `PageKind`
+- **`packages/design`**: `Tab.photos?: Record<string, Photo>` (the type re-exported from the engine), `PageKind`
   gains `'photo'`, `PageSizeId` gains `'photo'`; `parsePageFields`, `pageKindOf`, `pageDimensions` (the `fit`
   sides), `pageLabel`, `pageMargin` (0), `withPages` (a removed photo page's photo is dropped), `newPhotoPage`,
   `photoSheetSides(width, height)`.
@@ -64,12 +64,12 @@ not design: where a spec is silent the default is in [DEFAULTS.md](DEFAULTS.md).
   (`tabPhotoOps(before, after)`), the blob-batch framing (`photo-blob-batch.ts`: `encodeBlobBatch`,
   `decodeBlobBatch`), and the route DTOs.
 - **`apps/api`**: the `photo_blobs` and `photo_blob_refs` tables in the baseline migration; `src/db/photo-blobs.ts`; `src/routes/photo-blob-routes.ts`
-  (dispatched from `document-subresource-routes.ts`); `src/photo-sweep.ts` (from `scheduled()`); copy support in
-  the document copy path; `PHOTO_MAX_BYTES_PER_TAB` in `types.ts`, `.env.example`, `hosted-vars.json`; the
+  (dispatched from `design-subresource-routes.ts`); `src/photo-sweep.ts` (from `scheduled()`); copy support in
+  the design copy path; `PHOTO_MAX_BYTES_PER_TAB` in `types.ts`, `.env.example`, `hosted-vars.json`; the
   thumbnail renderer's photo preview embed.
 - **`apps/live`**:
   - `lib/photo-editor/`, loaded only once a photo page is laid out (`runtime.ts`, exposed as
-    `PhotoEditorView.runtime`; `app/document/[id]/photo-lazy-load.test.ts` keeps it out of first-load JS):
+    `PhotoEditorView.runtime`; `app/design/[id]/photo-lazy-load.test.ts` keeps it out of first-load JS):
     - The session and its pixels: `session.ts` (`PhotoSession`), `pixels-store.ts` (decoded tiles by blob id,
       the memory budget), `blob-client.ts`, `offline-blobs.ts`, `upload-queue.ts`, `content-cache.ts` (fills,
       text and effects drawn for the compositor), `text-raster.ts`, `thumbnails.ts`, `preview.ts`.
@@ -360,7 +360,7 @@ Every spec rule maps to a test file:
   `select.test.ts`, `paint.test.ts`, `transform.test.ts`, `box.test.ts`, `psd.test.ts` (write then read round
   trip; no fixture from another editor yet), `png-decode.test.ts` (the streaming encoder decodes back), and
   `engine.perf.test.ts` for the budget table.
-- Document: `page.test.ts` photo kind parsing and label; `withPages` dropping a removed page's photo.
+- Design: `page.test.ts` photo kind parsing and label; `withPages` dropping a removed page's photo.
 - Api: `photo-blob-routes.test.ts` (each refusal, dedupe, cap, adopt, read gate, tab-scoped visitor),
   `photo-sweep.test.ts` against real SQLite, copy carries refs, `room` refuses a Participant's `photo` op.
 - Live: `upload-queue.test.ts`, `session-active.test.ts` (the active layer), `session-remote.test.ts` (a peer's

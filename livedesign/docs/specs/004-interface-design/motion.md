@@ -93,7 +93,7 @@ A state change that swaps a whole surface animates as a React View Transition
 
 - **Its pace follows its surface.** A chrome surface (the start's mode switch) runs within the ceiling on a motion
   token; a canvas surface (a slide move) follows its own spec.
-- **Only the named surface moves.** The document root takes no part (`view-transition-name: none` on `<html>`), so
+- **Only the named surface moves.** The design root takes no part (`view-transition-name: none` on `<html>`), so
   the rest of the page neither cross-fades nor freezes into a picture.
 - **Its animation classes** live beside the surface's other motion: the canvas's in `canvas-motion.css`, chrome's in
   `globals.css`, each on the `::view-transition-old(.<class>)` and `::view-transition-new(.<class>)` pseudo-elements.
@@ -118,7 +118,7 @@ so focus returns at once.
 ## Editor arrival
 
 The editor's floating chrome (the corner panels such as the Map, the tab bar, the zoom cluster)
-**fades in** as it mounts, `fade-in` at the short token (200ms), opacity only, so a document opens
+**fades in** as it mounts, `fade-in` at the short token (200ms), opacity only, so a design opens
 softly rather than its parts popping into place. It is one rule in `apps/live/app/globals.css`
 keyed on the surfaces' existing markers (`data-floating-panel`, `data-editor-tabbar`,
 `data-zoom-cluster`), in the components layer so a surface's own entrance utility still wins.
@@ -153,7 +153,7 @@ Three kinds of content motion were compared against the 250ms budget, and the op
 
 - **The marketing page entrance** runs at half its original length. At 250ms it read as too fast
   for a page that's there to be read. The hero's pieces take 310ms each and start 35ms apart, the
-  last at 130ms, so the hero settles in about 440ms. The cross-document crossfade stays at
+  last at 130ms, so the hero settles in about 440ms. The cross-design crossfade stays at
   260ms. The scroll-driven section reveal follows the scroll, not a clock, so it isn't timed
   motion.
 - **The account and connect pages' entrance** follows the marketing hero's pace: the header, eyebrow and heading

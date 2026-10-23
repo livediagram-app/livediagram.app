@@ -2,7 +2,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import { createPath, type Element } from '@livedesign/document';
+import { createPath, type Element } from '@livedesign/design';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { usePathDrawGesture, type PathCommit } from './usePathDrawGesture';
 

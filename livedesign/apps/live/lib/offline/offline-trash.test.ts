@@ -3,27 +3,27 @@ import { TRASH_RETENTION_MS } from '@livedesign/api-schema';
 import {
   __setOfflineBackend,
   isOfflineId,
-  offlineListDocuments,
+  offlineListDesigns,
   offlineListFavouriteIds,
-  offlineLoadDocument,
+  offlineLoadDesign,
   offlinePutRecord,
-  offlineSaveDocumentMeta,
+  offlineSaveDesignMeta,
   offlineSaveTab,
   offlineGetRecord,
 } from './offline-store';
 import {
   offlineListTrash,
-  offlinePurgeDocument,
+  offlinePurgeDesign,
   offlinePurgeExpiredTrash,
-  offlineRestoreDocument,
-  offlineTrashDocument,
+  offlineRestoreDesign,
+  offlineTrashDesign,
 } from './offline-trash';
-import { DocumentTrashedError } from '../document-trashed';
+import { DesignTrashedError } from '../design-trashed';
 import { memBackend, testRecord as rec, testTab as tab } from './offline-test-utils';
 
 // The local Trash (docs/specs/013-workspace/trash.md, "The local Trash"): an
-// offline document's delete marks its IndexedDB record trashed; the same 30-day
-// rule applies, run whenever the app lists documents.
+// offline design's delete marks its IndexedDB record trashed; the same 30-day
+// rule applies, run whenever the app lists designs.
 
 const T0 = 1_700_000_000_000;
 
@@ -34,33 +34,33 @@ async function seeded(...recs: Parameters<typeof rec>[0][]) {
   for (const r of recs) await offlinePutRecord(rec(r));
 }
 
-describe('offlineTrashDocument', () => {
+describe('offlineTrashDesign', () => {
   it('keeps the record but leaves it out of the list, the stars and loading', async () => {
     await seeded({ id: 'd1', favourite: true }, { id: 'd2' });
 
-    await offlineTrashDocument('d1', T0);
+    await offlineTrashDesign('d1', T0);
 
-    expect((await offlineListDocuments()).map((d) => d.id)).toEqual(['d2']);
+    expect((await offlineListDesigns()).map((d) => d.id)).toEqual(['d2']);
     expect(await offlineListFavouriteIds()).toEqual([]);
-    await expect(offlineLoadDocument('d1')).rejects.toBeInstanceOf(DocumentTrashedError);
+    await expect(offlineLoadDesign('d1')).rejects.toBeInstanceOf(DesignTrashedError);
     expect((await offlineGetRecord('d1'))?.trashedAt).toBe(T0);
-    // Still this browser's document: the dispatch keeps routing it locally.
+    // Still this browser's design: the dispatch keeps routing it locally.
     expect(await isOfflineId('d1')).toBe(true);
   });
 
   it('keeps the first deletion time', async () => {
     await seeded({ id: 'd1' });
-    await offlineTrashDocument('d1', T0);
-    await offlineTrashDocument('d1', T0 + 5);
+    await offlineTrashDesign('d1', T0);
+    await offlineTrashDesign('d1', T0 + 5);
     expect((await offlineGetRecord('d1'))?.trashedAt).toBe(T0);
   });
 
   it('refuses saves while trashed', async () => {
     await seeded({ id: 'd1' });
-    await offlineTrashDocument('d1', T0);
+    await offlineTrashDesign('d1', T0);
 
     await offlineSaveTab('d1', tab('t9'), T0 + 1);
-    await offlineSaveDocumentMeta('d1', { name: 'Renamed' }, T0 + 1);
+    await offlineSaveDesignMeta('d1', { name: 'Renamed' }, T0 + 1);
 
     const stored = await offlineGetRecord('d1');
     expect(stored?.tabs.map((t) => t.id)).toEqual(['t1', 't2']);
@@ -71,8 +71,8 @@ describe('offlineTrashDocument', () => {
 describe('offlineListTrash', () => {
   it('lists the trashed records, newest first, as this-browser rows', async () => {
     await seeded({ id: 'd1', name: 'One' }, { id: 'd2', name: 'Two' }, { id: 'd3' });
-    await offlineTrashDocument('d1', T0);
-    await offlineTrashDocument('d2', T0 + 1);
+    await offlineTrashDesign('d1', T0);
+    await offlineTrashDesign('d2', T0 + 1);
 
     expect(await offlineListTrash()).toEqual([
       {
@@ -97,31 +97,31 @@ describe('offlineListTrash', () => {
   });
 });
 
-describe('offlineRestoreDocument', () => {
+describe('offlineRestoreDesign', () => {
   it('brings the record back into the list, star and all', async () => {
     await seeded({ id: 'd1', favourite: true, folderId: 'F' });
-    await offlineTrashDocument('d1', T0);
+    await offlineTrashDesign('d1', T0);
 
-    expect(await offlineRestoreDocument('d1')).toBe(true);
+    expect(await offlineRestoreDesign('d1')).toBe(true);
 
-    expect((await offlineListDocuments()).map((d) => [d.id, d.folderId])).toEqual([['d1', 'F']]);
+    expect((await offlineListDesigns()).map((d) => [d.id, d.folderId])).toEqual([['d1', 'F']]);
     expect(await offlineListFavouriteIds()).toEqual(['d1']);
     expect(await offlineListTrash()).toEqual([]);
   });
 
   it('does nothing for a live or missing record', async () => {
     await seeded({ id: 'd1' });
-    expect(await offlineRestoreDocument('d1')).toBe(false);
-    expect(await offlineRestoreDocument('nope')).toBe(false);
+    expect(await offlineRestoreDesign('d1')).toBe(false);
+    expect(await offlineRestoreDesign('nope')).toBe(false);
   });
 });
 
-describe('offlinePurgeDocument', () => {
+describe('offlinePurgeDesign', () => {
   it('removes a trashed record for good', async () => {
     await seeded({ id: 'd1' });
-    await offlineTrashDocument('d1', T0);
+    await offlineTrashDesign('d1', T0);
 
-    expect(await offlinePurgeDocument('d1')).toBe(true);
+    expect(await offlinePurgeDesign('d1')).toBe(true);
 
     expect(await offlineGetRecord('d1')).toBeNull();
     expect(await isOfflineId('d1')).toBe(false);
@@ -129,7 +129,7 @@ describe('offlinePurgeDocument', () => {
 
   it('never purges a live record', async () => {
     await seeded({ id: 'd1' });
-    expect(await offlinePurgeDocument('d1')).toBe(false);
+    expect(await offlinePurgeDesign('d1')).toBe(false);
     expect(await offlineGetRecord('d1')).not.toBeNull();
   });
 });
@@ -138,8 +138,8 @@ describe('offlinePurgeExpiredTrash', () => {
   it('purges records 30 days in the Trash, and nothing younger', async () => {
     await seeded({ id: 'old' }, { id: 'young' }, { id: 'live' });
     const now = T0 + TRASH_RETENTION_MS;
-    await offlineTrashDocument('old', T0);
-    await offlineTrashDocument('young', T0 + 1);
+    await offlineTrashDesign('old', T0);
+    await offlineTrashDesign('young', T0 + 1);
 
     expect(await offlinePurgeExpiredTrash(now)).toBe(1);
 

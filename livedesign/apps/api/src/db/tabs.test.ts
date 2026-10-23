@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@livedesign/document';
+import type { Tab } from '@livedesign/design';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { copyDocument } from './documents';
+import { copyDesign } from './designs';
 import {
   getTab,
   isTabRevStale,
@@ -15,8 +15,8 @@ import {
 import { tabStatsOfData } from './tab-stats';
 
 // normalizeReorderEntry is the pure decision the reorder batch leans
-// on (docs/specs/006-document/tab-folders.md): it decides what folder value lands on each
-// document_tabs row. The D1 batch itself needs a live binding to test,
+// on (docs/specs/006-design/tab-folders.md): it decides what folder value lands on each
+// design_tabs row. The D1 batch itself needs a live binding to test,
 // but this normalisation — legacy-string vs object, and the
 // empty-name-to-NULL guard — is where the folder correctness lives.
 
@@ -55,9 +55,9 @@ describe('tab revisions', () => {
     ],
   });
 
-  function documentWith(): SqliteD1 {
+  function designWith(): SqliteD1 {
     const db = sqliteD1();
-    db.sql.exec(`INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
+    db.sql.exec(`INSERT INTO designs (id, owner_id, name, shareable, saved_at, created_at)
                  VALUES ('D', 'o', 'Doc', 0, 1, 1)`);
     return db;
   }
@@ -65,7 +65,7 @@ describe('tab revisions', () => {
     db.sql.prepare('SELECT rev FROM tabs WHERE id = ?').get(id)!.rev as number;
 
   it('seeds at 1, and a retried seed advances', async () => {
-    const db = documentWith();
+    const db = designWith();
     await seedTabs(db.env, 'D', [tab('t1')]);
     expect(revOf(db, 't1')).toBe(1);
     await seedTabs(db.env, 'D', [tab('t1', 'y')]);
@@ -73,14 +73,14 @@ describe('tab revisions', () => {
   });
 
   it('upserts at 1 and advances on every save, answering the new revision', async () => {
-    const db = documentWith();
+    const db = designWith();
     expect(await upsertTab(db.env, 'D', tab('t1'), 0)).toBe(1);
     expect(await upsertTab(db.env, 'D', tab('t1', 'y'), 0)).toBe(2);
     expect(revOf(db, 't1')).toBe(2);
   });
 
   it('writes at an expected revision and refuses a stale one, writing nothing', async () => {
-    const db = documentWith();
+    const db = designWith();
     expect(await upsertTabAtRev(db.env, 'D', tab('t1'), 0, 0)).toBe(1);
     expect(await upsertTabAtRev(db.env, 'D', tab('t1', 'y'), 0, 1)).toBe(2);
     await expect(upsertTabAtRev(db.env, 'D', tab('t1', 'z'), 0, 1)).rejects.toThrow(
@@ -94,7 +94,7 @@ describe('tab revisions', () => {
   });
 
   it('advances on a rename, a board swap and a copy starts at 1', async () => {
-    const db = documentWith();
+    const db = designWith();
     await upsertTab(db.env, 'D', tab('t1'), 0);
     await renameTab(db.env, 't1', 'Renamed');
     expect(revOf(db, 't1')).toBe(2);
@@ -110,24 +110,24 @@ describe('tab revisions', () => {
       ),
     ).toBe(true);
     expect(revOf(db, 't1')).toBe(3);
-    await copyDocument(db.env, 'D', 'D2', 'o', 'Copy');
+    await copyDesign(db.env, 'D', 'D2', 'o', 'Copy');
     const copied = db.sql
       .prepare(
-        "SELECT t.rev FROM tabs t JOIN document_tabs dt ON dt.tab_id = t.id WHERE dt.document_id = 'D2'",
+        "SELECT t.rev FROM tabs t JOIN design_tabs dt ON dt.tab_id = t.id WHERE dt.design_id = 'D2'",
       )
       .get()!;
     expect(copied.rev).toBe(1);
   });
 
   it('reads the revision with the tab', async () => {
-    const db = documentWith();
+    const db = designWith();
     await upsertTab(db.env, 'D', tab('t1'), 0);
     await upsertTab(db.env, 'D', tab('t1', 'y'), 0);
     expect((await getTab(db.env, 'D', 't1'))?.rev).toBe(2);
   });
 
   it('aborts a data write that does not advance the revision', async () => {
-    const db = documentWith();
+    const db = designWith();
     await upsertTab(db.env, 'D', tab('t1'), 0);
     expect(() => db.sql.exec("UPDATE tabs SET data = '{}' WHERE id = 't1'")).toThrow(
       'tab_rev_stale',

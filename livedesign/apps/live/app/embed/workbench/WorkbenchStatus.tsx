@@ -3,7 +3,7 @@
 // The workbench page's status screens and their copy (docs/specs/013-workspace/blueprints/
 // workbench-embeds.md "Presentation and UX", WB33, WB65): bare like an embed's (no header, no Explorer), the
 // copy in a `role="status"` region, `refused` and `unbound` headed by an `h1`. A workspace frame speaks of the
-// workspace, a document frame of the diagram.
+// workspace, a design frame of the diagram.
 import type { ReactNode } from 'react';
 import type { WorkbenchScope } from '@livedesign/api-schema';
 import { LoadErrorCard } from '@/components/chrome/LoadErrorCard';
@@ -15,7 +15,7 @@ const COPY: Record<
   WorkbenchScope,
   { opening: string; refusedHeading: string; refusedBody: string }
 > = {
-  document: {
+  design: {
     opening: 'Opening your diagram…',
     refusedHeading: 'Open this diagram from your workbench',
     refusedBody: 'This link works once, for a minute. Open the diagram again from your workbench.',
@@ -39,7 +39,7 @@ function StatusShell({ children }: { children: ReactNode }) {
 
 export function WorkbenchStatus({
   phase,
-  scope = 'document',
+  scope = 'design',
 }: {
   phase: WorkbenchStatusPhase;
   scope?: WorkbenchScope;

@@ -9,7 +9,7 @@ import {
   resolveRef,
   type Element,
   type ElementId,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { describeElement, kindOf, labelOf } from './element-text';
 import { reachableFrom } from './graph-walk';
 import { nearestElements } from './nearest';

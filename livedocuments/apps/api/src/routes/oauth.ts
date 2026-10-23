@@ -1,27 +1,26 @@
 // /api/oauth/exchange — the single api change for the MCP OAuth flow
-// (docs/specs/015-api/mcp-server.md §3.4). The apps/live consent page (Clerk-authed) calls this when a
-// user approves an MCP client. It mints an ordinary lvd_ API token (docs/specs/015-api/public-api-and-tokens.md)
-// owned by that Clerk user, named for the connecting client, and returns the
-// secret ONCE. The MCP worker binds it to the PKCE flow in its own KV; the
-// token then shows up in the Explorer "API tokens" page and is revocable like
-// any other — no parallel credential model.
+// (docs/specs/015-api/mcp-server.md §3.4). The apps/live consent page (signed-in) calls this when a
+// user approves an MCP client. It asks liveworkspace for an account token (liveworkspace/docs/
+// accounts.md "API tokens"), named for the connecting client, vouching for the person with the
+// access token they signed in with, and returns the secret ONCE. The MCP worker binds it to the
+// PKCE flow in its own KV; the token works on every liveworkspace app and is listed and revoked on
+// liveworkspace.app like any other.
 //
-// Gated exactly like /api/tokens: a guest (X-Owner-Id only) or a no-auth
-// self-host has no verified Clerk identity, so nothing can be minted.
+// A guest (X-Owner-Id only) or a no-auth deployment has no verified account identity, so nothing
+// can be minted.
+import { bearerTokenOf } from '@livedocuments/api-schema';
 import { badRequest, conflict, forbidden, json, notFound } from '../responses';
 import { readOptionalBody, type RouteContext } from './context';
 import { mintApiToken } from '../db';
 import { MAX_NAME_LEN } from '../limits';
 
 export async function handleOauthExchange(ctx: RouteContext): Promise<Response> {
-  const { request, env, segments, clerkUserId } = ctx;
+  const { request, env, segments, accountUserId } = ctx;
   if (segments[1] !== 'oauth') return notFound();
-  if (!clerkUserId) return forbidden();
+  if (!accountUserId) return forbidden();
   if (segments[2] !== 'exchange' || segments.length !== 3 || request.method !== 'POST') {
     return notFound();
   }
-  const owner = clerkUserId;
-
   const body = (await readOptionalBody(request)) as {
     clientName?: string;
     readOnly?: boolean;
@@ -33,12 +32,13 @@ export async function handleOauthExchange(ctx: RouteContext): Promise<Response> 
   const name = raw || 'MCP client';
 
   const readOnly = body.readOnly === true;
-  // Same mint as the user-facing route, so the cap (docs/specs/015-api/public-api-and-tokens.md §3.6), the expiry
-  // and the hash-only storage cannot differ between the two ways in.
-  const minted = await mintApiToken(env, { ownerId: owner, name, readOnly });
+  // liveworkspace keeps the cap, the expiry and the hash-only storage, as for a token made on
+  // liveworkspace.app. accountUserId is set only when the bearer verified as an access token, so the bearer is one.
+  const accessToken = bearerTokenOf(request.headers.get('Authorization'));
+  if (!accessToken) return forbidden();
+  const minted = await mintApiToken(env, { accessToken, name, readOnly });
   if (!minted) return conflict('token_limit_reached');
-  // The plaintext is returned ONCE; the MCP hands it to the client and never
-  // stores it server-side (only the hash is persisted).
+  // The plaintext is returned ONCE; the MCP hands it to the client and never stores it.
   return json(
     { token: minted.secret, id: minted.id, name, expiresAt: minted.expiresAt, readOnly },
     { status: 201 },

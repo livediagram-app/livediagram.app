@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { contrastRatio } from '@livedesign/document';
+import { contrastRatio } from '@livedesign/design';
 import { toneColor } from '@livedesign/ui';
 
 // docs/specs/013-workspace/timeline.md "Colour": a tone's bold value labels a card's reason in 12 px text on the white

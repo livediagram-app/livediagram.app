@@ -10,12 +10,12 @@ import {
 import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { normaliseUrl } from '@/lib/url-safety';
-import type { ElementLink } from '@livedesign/document';
+import type { ElementLink } from '@livedesign/design';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 
 // Shared link picker, styled like the import / export dialogs (centred
 // modal, brand chrome). Used for BOTH element links and per-cell table
-// links (docs/specs/008-canvas/canvas-and-palette.md). Three modes — link to a Tab, another Document, or an
+// links (docs/specs/008-canvas/canvas-and-palette.md). Three modes — link to a Tab, another Design, or an
 // external URL — plus a Remove action when a link already exists.
 //
 // Generic by design: the dialog builds the chosen `ElementLink` and
@@ -30,19 +30,19 @@ type LinkPickerDialogProps = {
   // The link currently on the target, or null. Seeds the active mode +
   // the URL field, and reveals the Remove button.
   currentLink: ElementLink | null;
-  // Tabs in this document. The current tab is marked but still selectable
+  // Tabs in this design. The current tab is marked but still selectable
   // (a cell may legitimately link back to its own tab's start).
   tabs: LinkTarget[];
   currentTabId: string;
-  // The caller's other documents (newest first), for the Document mode.
-  recentDocuments: LinkTarget[];
+  // The caller's other designs (newest first), for the Design mode.
+  recentDesigns: LinkTarget[];
   // Pre-select a mode (the context menu's split Link entries open the modal
-  // straight onto webpage / tab / document). Falls back to the current link's
+  // straight onto webpage / tab / design). Falls back to the current link's
   // kind, then 'url', when unset.
-  initialMode?: 'tab' | 'document' | 'url';
+  initialMode?: 'tab' | 'design' | 'url';
   // Restricts the dialog to the URL mode, with caller-supplied copy and
   // validation. For an element whose link IS its content — a video's YouTube
-  // URL (docs/specs/009-elements/youtube-video.md) — the tab and document modes are not a narrower choice, they
+  // URL (docs/specs/009-elements/youtube-video.md) — the tab and design modes are not a narrower choice, they
   // are a meaningless one: a video pointed at a tab has nothing to play.
   urlOnly?: UrlOnlyConfig;
   onCommit: (link: ElementLink | null) => void;
@@ -50,7 +50,7 @@ type LinkPickerDialogProps = {
 };
 
 type UrlOnlyConfig = {
-  // Replaces the header's "Jump to a tab, open another document, ..." line.
+  // Replaces the header's "Jump to a tab, open another design, ..." line.
   subtitle: string;
   fieldLabel: string;
   placeholder: string;
@@ -62,12 +62,12 @@ type UrlOnlyConfig = {
   validate: (url: string) => string | null;
 };
 
-type Mode = 'tab' | 'document' | 'url';
+type Mode = 'tab' | 'design' | 'url';
 
 const MODES: { id: Mode; label: string }[] = [
   { id: 'url', label: 'External URL' },
   { id: 'tab', label: 'Tab' },
-  { id: 'document', label: 'Document' },
+  { id: 'design', label: 'Design' },
 ];
 
 export function LinkPickerDialog({
@@ -75,7 +75,7 @@ export function LinkPickerDialog({
   currentLink,
   tabs,
   currentTabId,
-  recentDocuments,
+  recentDesigns,
   initialMode,
   urlOnly,
   onCommit,
@@ -86,8 +86,8 @@ export function LinkPickerDialog({
   const [mode, setMode] = useState<Mode>(
     (urlOnly ? 'url' : undefined) ??
       initialMode ??
-      (currentLink?.kind === 'document'
-        ? 'document'
+      (currentLink?.kind === 'design'
+        ? 'design'
         : currentLink?.kind === 'tab' || currentLink?.kind === 'element'
           ? 'tab'
           : 'url'),
@@ -114,16 +114,14 @@ export function LinkPickerDialog({
 
   const linkedTabId =
     currentLink?.kind === 'tab' || currentLink?.kind === 'element' ? currentLink.tabId : null;
-  const linkedDocumentId = currentLink?.kind === 'document' ? currentLink.documentId : null;
+  const linkedDesignId = currentLink?.kind === 'design' ? currentLink.designId : null;
 
   return (
     <Dialog open onClose={onClose} ariaLabel={title} size="lg" className="max-h-[90vh]">
       <DialogHeader
         title={title}
         subtitle={
-          urlOnly
-            ? urlOnly.subtitle
-            : 'Jump to a tab, open another document, or go to a web address.'
+          urlOnly ? urlOnly.subtitle : 'Jump to a tab, open another design, or go to a web address.'
         }
       >
         {/* A URL-restricted picker is an embed's link dialog (docs/specs/009-elements/embed-providers.md), so
@@ -180,22 +178,22 @@ export function LinkPickerDialog({
               </li>
             ))}
           </ul>
-        ) : mode === 'document' ? (
-          recentDocuments.length === 0 ? (
+        ) : mode === 'design' ? (
+          recentDesigns.length === 0 ? (
             <CompactEmptyState
               className="py-10"
-              icon={<DocumentGlyph />}
-              title="No other documents yet"
-              description="Make another document to link to it."
+              icon={<DesignGlyph />}
+              title="No other designs yet"
+              description="Make another design to link to it."
             />
           ) : (
             <ul className="flex flex-col gap-1">
-              {recentDocuments.map((d) => (
+              {recentDesigns.map((d) => (
                 <li key={d.id}>
                   <RowButton
-                    active={linkedDocumentId === d.id}
-                    icon={<DocumentGlyph />}
-                    onClick={() => commit({ kind: 'document', documentId: d.id, name: d.name })}
+                    active={linkedDesignId === d.id}
+                    icon={<DesignGlyph />}
+                    onClick={() => commit({ kind: 'design', designId: d.id, name: d.name })}
                   >
                     <span className="truncate">{d.name}</span>
                   </RowButton>
@@ -310,7 +308,7 @@ function TabGlyph() {
   );
 }
 
-function DocumentGlyph() {
+function DesignGlyph() {
   return (
     <Glyph size={14} units={16} strokeLinecap="butt">
       <rect x="2" y="2.5" width="5" height="4" rx="1" />

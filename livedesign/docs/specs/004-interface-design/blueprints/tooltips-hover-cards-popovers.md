@@ -77,7 +77,7 @@ pointer events from bubbling, and the hint must still see them.
 | T10 | `pointermove`, touch, `pressTimer` pending | moved > `HINT_LONG_PRESS_SLOP_PX`     | cancel `pressTimer`                                                                        |
 | T11 | `pointerup` / `pointercancel`, touch       |                                       | cancel `pressTimer`; if open from touch, `lingerTimer` closes after `HINT_TOUCH_LINGER_MS` |
 | T12 | `click` (capture)                          | `suppressClick`                       | `preventDefault`, `stopPropagation`, clear `suppressClick`                                 |
-| T13 | document `keydown` `Escape` while open     |                                       | close; `dismissed`; the event keeps propagating (spec)                                     |
+| T13 | design `keydown` `Escape` while open     |                                       | close; `dismissed`; the event keeps propagating (spec)                                     |
 | T14 | another hint opens (registry)              |                                       | close at once                                                                              |
 | T15 | unmount                                    |                                       | clear every timer; release the registry                                                    |
 
@@ -93,7 +93,7 @@ which, for a tooltip or a preview, stamps that kind's warm-up clock.
 
 ### Invariants
 
-- **I1:** at most one hint is open in a document.
+- **I1:** at most one hint is open in a design.
 - **I2:** a tooltip (a preview) never opens from pointer hover sooner than `TOOLTIP_OPEN_DELAY_MS`
   (`PREVIEW_OPEN_DELAY_MS`) unless warm.
 - **I3:** keyboard-visible focus opens either hint in the same task; mouse focus opens nothing.
@@ -164,7 +164,7 @@ None. Hints persist nothing; the registry and warm-up clock are per page and res
 
 | Case                                               | Handling                                                                                                                                                                                                                                                                                                                 |
 | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Rendered on the server (no `document`)             | Surface renders `null`; wrapper renders; nothing to hydrate differently                                                                                                                                                                                                                                                  |
+| Rendered on the server (no `design`)             | Surface renders `null`; wrapper renders; nothing to hydrate differently                                                                                                                                                                                                                                                  |
 | `:focus-visible` unsupported (`matches` throws)    | Treated as visible, so keyboard users still get the hint                                                                                                                                                                                                                                                                 |
 | Trigger disabled                                   | Browser may send no pointer events; the hint simply does not open. Palette tiles skip it (as today); a disabled control whose reason matters says it in visible text instead                                                                                                                                             |
 | Trigger stops its pointer events from bubbling     | Presses are heard in the capture phase, so T7 to T11 still run                                                                                                                                                                                                                                                           |
@@ -183,14 +183,14 @@ None. Hints persist nothing; the registry and warm-up clock are per page and res
 ## Security and trust
 
 Hints render text through React only: no `dangerouslySetInnerHTML`, no HTML from props. A label built from user data
-(a document name, a participant name) is escaped like any other text node. There is no network, storage or cross-origin
+(a design name, a participant name) is escaped like any other text node. There is no network, storage or cross-origin
 surface.
 
 ## Performance and limits
 
 - Pointer traffic touches refs only; React re-renders a hint twice per open (open, then measured layout).
-- A palette shows up to ~60 tiles; each carries one wrapper and no listeners on `document` until it opens. The
-  document `keydown`, `scroll` and `resize` listeners exist only while a hint is open, which is at most one (I1).
+- A palette shows up to ~60 tiles; each carries one wrapper and no listeners on `design` until it opens. The
+  design `keydown`, `scroll` and `resize` listeners exist only while a hint is open, which is at most one (I1).
 - The accessible-name check runs once per open, not per render or mount.
 - Layout reads two rects per open or scroll event, and one trigger rect per frame while a hint is open (at most one):
   well inside a frame.

@@ -1,10 +1,10 @@
 import { trustedHtml } from '@livedesign/ui';
-import type { Element, Layer } from '@livedesign/document';
+import type { Element, Layer } from '@livedesign/design';
 import { LayersGlyph } from '@/components/palette/context-menu-icons';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { useLayerThumbnails } from '@/hooks/ui/useLayerThumbnails';
 
-// The context menu's "move selection to layer" control (docs/specs/006-document/layers.md), shared
+// The context menu's "move selection to layer" control (docs/specs/006-design/layers.md), shared
 // by the single-element and multi-selection Layer sections. One MenuTile
 // per layer (top of the stack first, matching the panel) under a small
 // section label — each tile's icon is that layer's mini preview (the

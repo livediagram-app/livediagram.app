@@ -45,12 +45,12 @@ describe('the route', () => {
 });
 
 describe('the CLI fields (docs/specs/015-api/blueprints/cli.md "Capabilities")', () => {
-  it('names the api base, sign-in, the document format, and no issuer or floor by default', async () => {
+  it('names the api base, sign-in, the design format, and no issuer or floor by default', async () => {
     const caps = await capabilities({});
     expect(caps).toMatchObject({
       apiBase: expect.stringMatching(/\/api$/),
       authEnabled: false,
-      documentFormat: 2,
+      designFormat: 2,
     });
     expect(caps).not.toHaveProperty('oauthIssuer');
     expect(caps).not.toHaveProperty('cli');

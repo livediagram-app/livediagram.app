@@ -1,4 +1,4 @@
-import { migrateStoredTab, type Tab } from '@livedesign/document';
+import { migrateStoredTab, type Tab } from '@livedesign/design';
 
 // How an imported tab lands on top of the tab receiving it (docs/specs/020-import-export/README.md).
 //
@@ -31,7 +31,7 @@ function mergeFields(receiving: Tab, imported: Tab): Tab {
     backgroundOpacity: imported.backgroundOpacity ?? receiving.backgroundOpacity,
     patternColor: imported.patternColor ?? receiving.patternColor,
     backgroundPatternScale: imported.backgroundPatternScale ?? receiving.backgroundPatternScale,
-    // Tab-level typography rides the export too (docs/specs/006-document/per-tab-storage.md): without these an
+    // Tab-level typography rides the export too (docs/specs/006-design/per-tab-storage.md): without these an
     // exported tab using a tab font came back rendering in the default face.
     font: imported.font ?? receiving.font,
     defaultTextSize: imported.defaultTextSize ?? receiving.defaultTextSize,

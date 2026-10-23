@@ -3,11 +3,11 @@
 // place or name.
 import { z } from 'zod';
 import { PAGE_CHANGES_MAX, type PageChange } from '@livedesign/api-schema';
-import { PAGE_SIZE_IDS, type PageSizeId } from '@livedesign/document';
+import { PAGE_SIZE_IDS, type PageSizeId } from '@livedesign/design';
 import { defineVerb, VerbRefusal, type Verb, type VerbContext } from '../define';
 import { changePages, pagesTabOf, type PagesDone, type PagesRefused } from '../pages/pages-calls';
 import { resolveTab } from '../addressing';
-import { documentOf, tabPath } from './shared';
+import { designOf, tabPath } from './shared';
 
 const docArg = z.string().describe('A name, id prefix or livedesign URL');
 const tabFlag = z
@@ -25,11 +25,11 @@ const refusal = (r: PagesRefused) =>
     hint: LS_HINT,
   });
 
-// The document, and the tab named (by name or id prefix) when one is.
+// The design, and the tab named (by name or id prefix) when one is.
 async function where(ctx: VerbContext, doc: string, tab: string | undefined) {
-  const document = await documentOf(ctx, doc);
-  const tabId = tab ? resolveTab(document.tabs, tab, doc, ctx.log).id : undefined;
-  return { documentId: document.id, tabId };
+  const design = await designOf(ctx, doc);
+  const tabId = tab ? resolveTab(design.tabs, tab, doc, ctx.log).id : undefined;
+  return { designId: design.id, tabId };
 }
 
 const pageOutput = z.object({
@@ -73,11 +73,11 @@ export const pageLs = defineVerb({
   output: z.object({ text: z.string() }),
   run: async (ctx, input) => {
     const at = await where(ctx, input.doc, input.tab);
-    const found = await pagesTabOf(ctx.api, at.documentId, at.tabId);
+    const found = await pagesTabOf(ctx.api, at.designId, at.tabId);
     if ('ok' in found) throw refusal(found);
     const query = new URLSearchParams({ view: 'pages', door: 'cli' });
     if (input.budget) query.set('budget', String(input.budget));
-    const view = await ctx.api.text(`${tabPath(at.documentId, found.tabId)}?${query}`);
+    const view = await ctx.api.text(`${tabPath(at.designId, found.tabId)}?${query}`);
     return { text: view.body };
   },
   text: ({ text }) => [text],
@@ -121,7 +121,7 @@ export const pageSet = defineVerb({
     const at = await where(ctx, input.doc, input.tab);
     const done = await changePages(
       ctx.api,
-      at.documentId,
+      at.designId,
       { ...(at.tabId ? { tabId: at.tabId } : {}), changes },
       'cli',
     );

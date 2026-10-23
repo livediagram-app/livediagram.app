@@ -5,7 +5,7 @@
 // pressed again while held, it opens its flyout (colour and width). A change re-arms the held
 // marker, so the next stroke is in it.
 import { useContext, useState } from 'react';
-import { EditorContext } from '@/app/document/[id]/EditorContext';
+import { EditorContext } from '@/app/design/[id]/EditorContext';
 import { PenFlyoutBody, penFlyoutLabel } from '@/components/canvas/whiteboard/dock-flyouts';
 import { WhiteboardFlyout } from '@/components/canvas/whiteboard/WhiteboardFlyout';
 import type { MarkerPensModel } from '@/hooks/canvas/useMarkerPens';

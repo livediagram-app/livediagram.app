@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element } from '@livedesign/document';
+import { createShape, type Element } from '@livedesign/design';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { computeDrawGuides } from './canvas-draw-guides';
 

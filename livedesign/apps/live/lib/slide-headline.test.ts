@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@livedesign/vitest-config/cpu-time';
-import type { Tab } from '@livedesign/document';
+import type { Tab } from '@livedesign/design';
 import { presentedSlideName, slideHeadline, SLIDE_HEADLINE_MAX } from './slide-headline';
 
 // docs/specs/012-collaboration/presentation-mode.md "The Slide Deck panel": a slide nobody named

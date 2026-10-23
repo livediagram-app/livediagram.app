@@ -17,7 +17,7 @@ import {
   type Element,
   type PathAnchor,
   type PathElement,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { simplifyLine } from './simplify-line';
 import type { TidyGuides } from './logo-guide-snapping';
 

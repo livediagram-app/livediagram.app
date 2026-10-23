@@ -1,7 +1,7 @@
 // Search-result computation for the global SearchPanel (docs/specs/008-canvas/canvas-and-palette.md
 // "Search panel"). Pure function so the matcher (case-insensitive
 // substring), the cap rules (8 per section, 12 elements total), the
-// section ordering (documents, shared, folders, teams, tabs,
+// section ordering (designs, shared, folders, teams, tabs,
 // elements), and the label-extraction fallbacks (blank labels,
 // table cells) can be reasoned about without rendering React or
 // mocking a DOM.
@@ -12,7 +12,7 @@
 
 // The palette ranking lives with the icon catalogues, so the api's icon search ranks alike.
 import { matches, paletteRank } from '@livedesign/icons';
-import type { ShapeKind, Tab } from '@livedesign/document';
+import type { ShapeKind, Tab } from '@livedesign/design';
 
 // Every word typed is found somewhere in the fields, case ignored: "export png" finds Export… (named Export, its
 // keywords saying png), as a start's template search does (docs/specs/008-canvas/canvas-and-palette.md "Search
@@ -24,7 +24,7 @@ function matchesEveryWord(q: string, ...fields: string[]): boolean {
   return words.every((w) => hay.includes(w));
 }
 
-const DOCUMENT_LIMIT = 8;
+const DESIGN_LIMIT = 8;
 const SHARED_LIMIT = 8;
 const FOLDER_LIMIT = 8;
 const TEAM_LIMIT = 8;
@@ -39,26 +39,26 @@ const SETTINGS_LIMIT = 6;
 // share the same {id, name} shape but stay distinct so a future
 // schema change to one doesn't silently propagate to the others.
 // `localOnly`: saved only in this browser (Offline Mode); the result carries the This Browser pill
-// (docs/specs/006-document/offline-mode.md#this-browser-pill).
-type SearchInputDocument = { id: string; name: string; localOnly?: boolean };
+// (docs/specs/006-design/offline-mode.md#this-browser-pill).
+type SearchInputDesign = { id: string; name: string; localOnly?: boolean };
 type SearchInputFolder = { id: string; name: string };
 // "Shared with You" rows carry their still-live share code so picking
 // one can navigate to the visitor URL (the only path a non-owner can
-// open the document on).
+// open the design on).
 type SearchInputShared = { id: string; name: string; shareCode: string };
 type SearchInputTeam = { id: string; name: string };
 
-// `team` set = a document in a team's library (docs/specs/013-workspace/team-shared-documents.md): the panel
-// renders an "in <team>" suffix, like team folders. Personal documents
-// leave it unset. Either way picking it opens the document by id.
-type DocumentItem = {
-  kind: 'document';
+// `team` set = a design in a team's library (docs/specs/013-workspace/team-shared-designs.md): the panel
+// renders an "in <team>" suffix, like team folders. Personal designs
+// leave it unset. Either way picking it opens the design by id.
+type DesignItem = {
+  kind: 'design';
   id: string;
   name: string;
   team?: { id: string; name: string };
   localOnly?: boolean;
 };
-// `team` set = a team-library folder (docs/specs/013-workspace/team-shared-documents.md): the panel renders an
+// `team` set = a team-library folder (docs/specs/013-workspace/team-shared-designs.md): the panel renders an
 // "in <team>" suffix and picking it lands on the team page with that
 // folder open. Personal folders leave it unset.
 type FolderItem = {
@@ -82,7 +82,7 @@ type ElementItem = {
   label: string;
   // Element.type literal so callers can show a per-type icon.
   // 'shape' / 'text' / 'sticky' / 'image' / 'freehand' / 'arrow'
-  // line up with the boxed + arrow unions in packages/document.
+  // line up with the boxed + arrow unions in packages/design.
   type:
     | 'shape'
     | 'text'
@@ -119,12 +119,12 @@ export type PaletteAdd =
   // handler (tileHandler), so a search add behaves exactly like the tile.
   | { type: 'tile'; tileId: string };
 type PaletteItem = { kind: 'palette'; id: string; name: string; add: PaletteAdd };
-// A synthetic command result — performing it changes the document / a
+// A synthetic command result — performing it changes the design / a
 // selection rather than navigating somewhere. Modelled like a palette item
 // (an intent the panel hands back to the editor): the panel returns the
 // `id` and the editor's `useEditorCommands` dispatcher runs the matching
 // handler. The catalogue (which commands apply to the current selection /
-// document) is the editor's concern — this lib only matches + caps + groups
+// design) is the editor's concern — this lib only matches + caps + groups
 // what it's handed. Replaces the old single-purpose create-tab "action",
 // which is now just one command among many.
 type CommandItem = { kind: 'command'; id: string; name: string };
@@ -149,7 +149,7 @@ type SettingItem = {
 };
 
 export type SearchResultItem =
-  | DocumentItem
+  | DesignItem
   | SharedItem
   | FolderItem
   | TeamItem
@@ -162,7 +162,7 @@ export type SearchResultItem =
 
 export type SearchGroup = {
   key:
-    | 'documents'
+    | 'designs'
     | 'shared'
     | 'folders'
     | 'teams'
@@ -217,24 +217,24 @@ export type HelpSearchItem = {
 // from the function signature without needing the named type.
 type SearchInput = {
   query: string;
-  documents: SearchInputDocument[];
+  designs: SearchInputDesign[];
   folders: SearchInputFolder[];
-  // Documents shared with the current owner ("Shared with You").
+  // Designs shared with the current owner ("Shared with You").
   // Optional: surfaces without the list omit it.
   shared?: SearchInputShared[];
-  // Team-library folders (docs/specs/013-workspace/team-shared-documents.md), breadcrumb-pathed + tagged with
+  // Team-library folders (docs/specs/013-workspace/team-shared-designs.md), breadcrumb-pathed + tagged with
   // their team. Surfaced in the Teams group (not "My Work", which is
   // personal-only), with their own cap. Optional: guests have none.
   teamFolders?: { id: string; path: string; teamId: string; teamName: string }[];
-  // Team-library documents (docs/specs/013-workspace/team-shared-documents.md), tagged with their team. Also
+  // Team-library designs (docs/specs/013-workspace/team-shared-designs.md), tagged with their team. Also
   // surfaced in the Teams group. Optional: guests have none.
-  teamDocuments?: { id: string; name: string; teamId: string; teamName: string }[];
+  teamDesigns?: { id: string; name: string; teamId: string; teamName: string }[];
   // Teams the signed-in user belongs to (docs/specs/013-workspace/teams.md). Optional: guests
   // have none and surfaces fetch the list lazily.
   teams?: SearchInputTeam[];
   // Tabs scope is optional: the standalone Explorer page passes
-  // nothing (no active document), the editor passes the current
-  // document's tabs.
+  // nothing (no active design), the editor passes the current
+  // design's tabs.
   tabs?: Tab[];
   currentTabId?: string;
   // Palette catalogue (shapes / icons / tech icons) the editor offers as
@@ -258,11 +258,11 @@ type SearchInput = {
 export function buildSearchResults(input: SearchInput): SearchGroup[] {
   const {
     query,
-    documents: liveDocs,
+    designs: liveDocs,
     folders,
     shared,
     teamFolders,
-    teamDocuments,
+    teamDesigns,
     teams,
     tabs,
     currentTabId,
@@ -270,24 +270,24 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
   const q = query.trim();
   const groups: SearchGroup[] = [];
 
-  const documentMatches = liveDocs
-    .filter((d) => matches(q, d.name || 'Untitled document'))
-    .slice(0, DOCUMENT_LIMIT);
-  if (documentMatches.length > 0) {
+  const designMatches = liveDocs
+    .filter((d) => matches(q, d.name || 'Untitled design'))
+    .slice(0, DESIGN_LIMIT);
+  if (designMatches.length > 0) {
     groups.push({
-      key: 'documents',
-      label: 'Documents',
-      items: documentMatches.map((d) => ({
-        kind: 'document',
+      key: 'designs',
+      label: 'Designs',
+      items: designMatches.map((d) => ({
+        kind: 'design',
         id: d.id,
-        name: d.name || 'Untitled document',
+        name: d.name || 'Untitled design',
         ...(d.localOnly ? { localOnly: true } : {}),
       })),
     });
   }
 
   const sharedMatches = (shared ?? [])
-    .filter((s) => matches(q, s.name || 'Untitled document'))
+    .filter((s) => matches(q, s.name || 'Untitled design'))
     .slice(0, SHARED_LIMIT);
   if (sharedMatches.length > 0) {
     groups.push({
@@ -296,7 +296,7 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
       items: sharedMatches.map((s) => ({
         kind: 'shared',
         id: s.id,
-        name: s.name || 'Untitled document',
+        name: s.name || 'Untitled design',
         shareCode: s.shareCode,
       })),
     });
@@ -317,17 +317,17 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
     });
   }
 
-  // "Teams": the teams themselves, then their folders + documents
-  // (docs/specs/013-workspace/team-shared-documents.md) — everything team-scoped in one place, each list capped
+  // "Teams": the teams themselves, then their folders + designs
+  // (docs/specs/013-workspace/team-shared-designs.md) — everything team-scoped in one place, each list capped
   // separately so one kind can't crowd out the others.
   const teamMatches = (teams ?? []).filter((t) => matches(q, t.name)).slice(0, TEAM_LIMIT);
   const teamFolderMatches = (teamFolders ?? [])
     .filter((f) => matches(q, f.path) || matches(q, f.teamName))
     .slice(0, FOLDER_LIMIT);
-  const teamDocumentMatches = (teamDocuments ?? [])
-    .filter((d) => matches(q, d.name || 'Untitled document') || matches(q, d.teamName))
-    .slice(0, DOCUMENT_LIMIT);
-  if (teamMatches.length + teamFolderMatches.length + teamDocumentMatches.length > 0) {
+  const teamDesignMatches = (teamDesigns ?? [])
+    .filter((d) => matches(q, d.name || 'Untitled design') || matches(q, d.teamName))
+    .slice(0, DESIGN_LIMIT);
+  if (teamMatches.length + teamFolderMatches.length + teamDesignMatches.length > 0) {
     groups.push({
       key: 'teams',
       label: 'Teams',
@@ -339,10 +339,10 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
           name: f.path,
           team: { id: f.teamId, name: f.teamName },
         })),
-        ...teamDocumentMatches.map((d): DocumentItem => ({
-          kind: 'document',
+        ...teamDesignMatches.map((d): DesignItem => ({
+          kind: 'design',
           id: d.id,
-          name: d.name || 'Untitled document',
+          name: d.name || 'Untitled design',
           team: { id: d.teamId, name: d.teamName },
         })),
       ],

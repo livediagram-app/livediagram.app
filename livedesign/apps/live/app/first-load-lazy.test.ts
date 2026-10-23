@@ -16,7 +16,7 @@ describe('every route’s first load', () => {
   it('loads the editor from the not-found slot only when the slot renders', () => {
     const src = read('app/not-found.tsx');
     expect(staticImports(src).some((p) => p.includes('editor-page'))).toBe(false);
-    expect(src).toContain("import('./document/[id]/editor-page')");
+    expect(src).toContain("import('./design/[id]/editor-page')");
   });
 });
 

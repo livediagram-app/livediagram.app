@@ -24,22 +24,22 @@ type LocalMovePhase =
 export function useLocalMovePrompt(opts: {
   enabled: boolean;
   authLoaded: boolean;
-  clerkUserId: string | null | undefined;
+  accountUserId: string | null | undefined;
 }) {
-  const { enabled, authLoaded, clerkUserId } = opts;
+  const { enabled, authLoaded, accountUserId } = opts;
   const [phase, setPhase] = useState<LocalMovePhase>({ kind: 'idle' });
   const [rows, setRows] = useState<ImportChecklistRow[]>([]);
   const [checked, setChecked] = useState<ReadonlySet<string>>(new Set());
 
   useEffect(() => {
-    if (!enabled || !authLoaded || !clerkUserId) return;
+    if (!enabled || !authLoaded || !accountUserId) return;
     let live = true;
     // The cached id count first (an upper bound, the local Trash included): most people hold no
     // documents in This Browser, and they never pay for reading every record.
     void offlineIdCount()
-      .then((upTo) => (shouldOfferLocalMove(clerkUserId, upTo) ? offlineListDocuments() : []))
+      .then((upTo) => (shouldOfferLocalMove(accountUserId, upTo) ? offlineListDocuments() : []))
       .then((docs) => {
-        if (!live || !shouldOfferLocalMove(clerkUserId, docs.length)) return;
+        if (!live || !shouldOfferLocalMove(accountUserId, docs.length)) return;
         const now = Date.now();
         const sorted = [...docs].sort((a, b) => b.savedAt - a.savedAt);
         setRows(
@@ -58,7 +58,7 @@ export function useLocalMovePrompt(opts: {
     return () => {
       live = false;
     };
-  }, [enabled, authLoaded, clerkUserId]);
+  }, [enabled, authLoaded, accountUserId]);
 
   const toggle = (key: string) =>
     setChecked((prev) => {
@@ -71,14 +71,14 @@ export function useLocalMovePrompt(opts: {
     setChecked((prev) => (prev.size === rows.length ? new Set() : new Set(rows.map((r) => r.key))));
 
   const notNow = () => {
-    if (!clerkUserId) return;
-    dismissLocalMove(clerkUserId, rows.length);
+    if (!accountUserId) return;
+    dismissLocalMove(accountUserId, rows.length);
     track('UI', 'Closed', 'LocalMovePrompt');
     setPhase({ kind: 'idle' });
   };
 
   const move = async () => {
-    if (!clerkUserId || phase.kind !== 'offer') return;
+    if (!accountUserId || phase.kind !== 'offer') return;
     const picked = rows.filter((r) => checked.has(r.key));
     if (picked.length === 0) return;
     track('UI', 'Selected', 'LocalMovePrompt');
@@ -86,7 +86,7 @@ export function useLocalMovePrompt(opts: {
     for (const [i, row] of picked.entries()) {
       setPhase({ kind: 'moving', done: i, total: picked.length });
       try {
-        await saveOfflineToCloud(row.key, clerkUserId);
+        await saveOfflineToCloud(row.key, accountUserId);
         track('Document', 'Moved', 'SavedToCloud');
       } catch (err) {
         console.warn('[local-move] a document stayed This Browser', err);
@@ -97,7 +97,7 @@ export function useLocalMovePrompt(opts: {
     debugLog(`[local-move] moved=${moved} failed=${failed.length}`);
     // What is left local was offered and not taken, or could not move: not asked about again
     // until there is more.
-    dismissLocalMove(clerkUserId, rows.length - moved);
+    dismissLocalMove(accountUserId, rows.length - moved);
     if (failed.length === 0) window.location.reload();
     else setPhase({ kind: 'partial', failed, moved });
   };

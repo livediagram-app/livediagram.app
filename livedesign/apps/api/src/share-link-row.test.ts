@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { rowToShareLink, type ShareLinkRow } from './share-link-row';
 
 // rowToShareLink is read-side: every list / lookup of share links
-// for a document passes through it. The role and level columns on D1 are
+// for a design passes through it. The role and level columns on D1 are
 // typed as free-form strings, but the wire DTO + the client + the api
 // worker's own permission checks all branch on the AccessLevel union
 // (docs/specs/013-workspace/share-roles.md). A regression in the mapper
@@ -11,7 +11,7 @@ import { rowToShareLink, type ShareLinkRow } from './share-link-row';
 function row(over: Partial<ShareLinkRow> = {}): ShareLinkRow {
   return {
     code: 'ABCD2345',
-    document_id: 'diag-1',
+    design_id: 'diag-1',
     role: 'edit',
     created_at: 1717000000000,
     expiry: null,
@@ -26,7 +26,7 @@ describe('rowToShareLink', () => {
   it('maps every column to its DTO field shape', () => {
     const dto = rowToShareLink(row());
     expect(dto.code).toBe('ABCD2345');
-    expect(dto.documentId).toBe('diag-1');
+    expect(dto.designId).toBe('diag-1');
     expect(dto.role).toBe('edit');
     expect(dto.createdAt).toBe(1717000000000);
     expect(dto.expiry).toBe('never');

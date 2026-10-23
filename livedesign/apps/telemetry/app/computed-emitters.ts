@@ -247,7 +247,7 @@ const ELEMENT_WHY = 'an element kind, as the palette catalogue spells it';
 const API_ERRORS = [
   'Http403.LoadTab.Forbidden',
   'Http500.SaveTab',
-  'Network.Put.Documents.Tabs',
+  'Network.Put.Designs.Tabs',
   'Auth.NoSessionToken',
   'SaveFailed.TypeError',
 ];
@@ -280,21 +280,21 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   // Agent presence (docs/specs/024-agents/agent-presence.md), typed by the same front door.
   'apps/api/src/routes/agent-presence-routes.ts Agent·Present': { values: AGENT_FRONT_DOORS },
   'apps/api/src/index.ts Error·Api': {
-    values: ['Internal.Put.Documents.Tabs', 'Internal.Get.Documents'],
+    values: ['Internal.Put.Designs.Tabs', 'Internal.Get.Designs'],
     open: 'Internal.<Method>.<Route>, the route the worker was serving',
   },
 
   // The CLI (apps/cli).
   'apps/cli/src/telemetry.ts Cli·Used': { values: CLI_VERBS },
   'apps/cli/src/telemetry.ts Error·Api': {
-    values: ['Http503.TabView', 'Internal.DocumentLs'],
+    values: ['Http503.TabView', 'Internal.DesignLs'],
     open: 'a status or Internal, plus the command that failed',
   },
 
   // The MCP worker.
   'apps/mcp/src/tool-annotations.ts Mcp·Used': { values: MCP_TOOLS },
   'apps/mcp/src/api.ts Error·Api': {
-    values: ['Http503.CreateDocument', 'Internal.ReadDocument'],
+    values: ['Http503.CreateDesign', 'Internal.ReadDesign'],
     open: 'a status or Internal, plus the tool that failed',
   },
 
@@ -305,27 +305,27 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
 
   // Shared packages.
   'packages/telemetry-client/src/index.ts Error·Client': {
-    values: ['Uncaught.Document.TypeError', 'UnhandledRejection.Explorer.Error'],
+    values: ['Uncaught.Design.TypeError', 'UnhandledRejection.Explorer.Error'],
     open: 'a kind, the page it happened on, and the error name',
   },
   'packages/ui/src/PageViewTracker.tsx Page·View': {
-    values: ['/', '/document', '/explorer/timeline', '/help/canvas/links', '/telemetry'],
+    values: ['/', '/design', '/explorer/timeline', '/help/canvas/links', '/telemetry'],
     open: 'the page path, ids and query strings stripped',
   },
 
   // The editor.
-  'apps/live/app/document/[id]/useElementCreation.ts Element·Added': {
+  'apps/live/app/design/[id]/useElementCreation.ts Element·Added': {
     values: ELEMENT_KINDS,
     open: ELEMENT_WHY,
   },
-  'apps/live/app/document/[id]/useSlideDeck.ts UI·Changed': { values: PRESENTATION_FIELDS },
+  'apps/live/app/design/[id]/useSlideDeck.ts UI·Changed': { values: PRESENTATION_FIELDS },
   'apps/live/components/dialogs/settings/settings-catalogue.ts UI·Toggled': {
     values: PRESENTATION_SETTINGS.toggled,
   },
   'apps/live/components/dialogs/settings/settings-catalogue.ts UI·Changed': {
     values: PRESENTATION_SETTINGS.changed,
   },
-  'apps/live/app/document/[id]/useTemplateFlow.ts Template·Used': {
+  'apps/live/app/design/[id]/useTemplateFlow.ts Template·Used': {
     values: TEMPLATES,
     open: TEMPLATE_WHY,
   },
@@ -349,9 +349,9 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/hooks/persistence/useTrash.ts Trash·Restored': { values: TRASH_TYPES },
   'apps/live/hooks/persistence/useTrash.ts Trash·Deleted': { values: TRASH_TYPES },
   'apps/live/hooks/persistence/useTrash.ts Trash·Cleared': { values: TRASH_TYPES },
-  'apps/live/app/document/[id]/useDocumentTrashed.ts Trash·Restored': { values: TRASH_TYPES },
-  // A delete toast's Undo (lib/document-delete-undo.ts DeletedTrash, the same three).
-  'apps/live/lib/document-delete-undo.ts Trash·Restored': { values: TRASH_TYPES },
+  'apps/live/app/design/[id]/useDesignTrashed.ts Trash·Restored': { values: TRASH_TYPES },
+  // A delete toast's Undo (lib/design-delete-undo.ts DeletedTrash, the same three).
+  'apps/live/lib/design-delete-undo.ts Trash·Restored': { values: TRASH_TYPES },
   'apps/live/app/explorer/sidebar/sidebar-telemetry.ts UI·Selected': { values: SIDEBAR_ROWS },
   // Default folders (docs/specs/013-workspace/default-folders.md "Telemetry"): one value per key.
   'apps/live/lib/placement-defaults/placement-defaults-store.ts Folder·Changed': {
@@ -385,7 +385,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   'apps/live/components/panels/SearchPanel.tsx UI·Opened': { values: SLUGS, open: SLUG_WHY },
   'apps/live/components/panels/SearchPanel.tsx Search·Selected': {
-    values: ['Document', 'Shared', 'Folder', 'Team', 'Tab', 'Element', 'Palette', 'Command'],
+    values: ['Design', 'Shared', 'Folder', 'Team', 'Tab', 'Element', 'Palette', 'Command'],
   },
   'apps/live/components/panels/useTeamPaneActions.ts Team·Removed': {
     values: ['Invite', 'Member', 'Self'],
@@ -403,20 +403,20 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   // Load recovery (docs/specs/007-editor/load-recovery.md): the watchdog's warnings, and a throw in
   // the load named by its error.
-  'apps/live/app/document/[id]/useIdentityBootstrap.ts Error·Warning': {
+  'apps/live/app/design/[id]/useIdentityBootstrap.ts Error·Warning': {
     values: [
-      'DocumentLoad.TimedOut.Identity',
-      'DocumentLoad.TimedOut.Participant',
-      'DocumentLoad.TimedOut.Document',
-      'DocumentLoad.TimedOut.Share',
-      'DocumentLoad.TimedOut.FirstTab',
-      'DocumentLoad.AutoReload',
-      'DocumentLoad.Late',
+      'DesignLoad.TimedOut.Identity',
+      'DesignLoad.TimedOut.Participant',
+      'DesignLoad.TimedOut.Design',
+      'DesignLoad.TimedOut.Share',
+      'DesignLoad.TimedOut.FirstTab',
+      'DesignLoad.AutoReload',
+      'DesignLoad.Late',
     ],
   },
-  'apps/live/app/document/[id]/useIdentityBootstrap.ts Error·Client': {
-    values: ['DocumentLoad.TypeError', 'DocumentLoad.Error'],
-    open: 'DocumentLoad.<ErrorName>',
+  'apps/live/app/design/[id]/useIdentityBootstrap.ts Error·Client': {
+    values: ['DesignLoad.TypeError', 'DesignLoad.Error'],
+    open: 'DesignLoad.<ErrorName>',
   },
   'apps/live/components/providers/ErrorTelemetryBoot.tsx Error·Warning': {
     values: ['OfflineStore.Unavailable', 'SessionToken.TimedOut'],

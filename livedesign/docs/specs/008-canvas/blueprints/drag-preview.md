@@ -12,7 +12,7 @@ drags for collaborators.
 | `apps/live/components/canvas/CanvasElementsLayer.tsx` | Lists the elements; renders for a preview only when it adds or removes some    |
 | `apps/live/hooks/canvas/useLayerDragPreview.ts`       | The layer's preview store: one entry per previewed element and affected arrow  |
 | `apps/live/components/canvas/CanvasElementList.tsx`   | Lists a `PreviewedElement` per element, in paint order                         |
-| `apps/live/components/canvas/PreviewedElement.tsx`    | One element, drawn from its preview entry or the document                      |
+| `apps/live/components/canvas/PreviewedElement.tsx`    | One element, drawn from its preview entry or the design                      |
 | `apps/live/components/canvas/drag-affected-arrows.ts` | `affectedArrows`: arrows pinned to, or crossing, a previewed box               |
 | `apps/live/hooks/canvas/useCanvasSelectionView.ts`    | Derives the selection from the previewed elements while a preview lasts        |
 | `apps/live/hooks/canvas/useArrowLabelLayouts.ts`      | `draftLayout(arrow, text, elements?)`: lays out a previewed arrow's label      |
@@ -44,7 +44,7 @@ drags for collaborators.
 - `setLocalPreview(tabId, next, base)` derives the overlay (`overlayBetween`) by identity against
   `base`, the board as the gesture found it (so a collaborator's change to another element mid-gesture
   is never part of the overlay, and is never undone by it): an element of `next` not
-  identical to the document's element of that id is `changed`; an id of `doc` missing from `next`
+  identical to the design's element of that id is `changed`; an id of `doc` missing from `next`
   is `removed`; an id of `next` missing from `doc` is `added`, `after` the id before it in `next`.
   One linear pass per tick.
 - `applyOverlay(elements, overlay)`: the elements with `changed` replaced, `removed` dropped and
@@ -54,13 +54,13 @@ drags for collaborators.
 ### The drag hook
 
 - The move effect's local `tick` is `previewTick` (a `useEffectEvent`): at the first tick it records
-  `{ tabId, base, virtual }` from the document, then sets `virtual = mapper(virtual)` and calls
+  `{ tabId, base, virtual }` from the design, then sets `virtual = mapper(virtual)` and calls
   `setLocalPreview(tabId, virtual, base)`. No checkpoint is taken while the gesture lasts. The
   preview lives in a hook-level ref, so it survives the effect re-running within one gesture (a
   quick-connect arrow turning to follow the pointer).
 - Every read of `depsRef.current.activeTab` inside the drag effect and the release path goes through
   `virtualTab()`, so snapping and Shift-duplicate see the gesture's own
-  result as they saw the written document before.
+  result as they saw the written design before.
 - The Shift-duplicate swap at the gesture's start writes through the same `tick`.
 - On release: a click-to-place arrow turning to follow, or follow mode riding through a release,
   keeps the preview. Every other release reads `virtualTab()` into a snapshot, then
@@ -91,21 +91,21 @@ drags for collaborators.
   never the layer.
 - The layer reads the store's `structure` (`{ removed, added }`, null while the overlay only changes
   elements), which holds while the same ids are added and removed; it renders only when that
-  changes. Paint order comes from the document (`ordered`); with a structure, `shownWithOverlay`
+  changes. Paint order comes from the design (`ordered`); with a structure, `shownWithOverlay`
   skips removed ids and puts added elements after their `after` (at the end when it is not drawn).
-- Arrow geometry: the memoised per-change map stays as built from the document. For the affected
-  arrows only, the frame is `deriveArrowViewFrame(arrow, index)` with `index` the document's index
+- Arrow geometry: the memoised per-change map stays as built from the design. For the affected
+  arrows only, the frame is `deriveArrowViewFrame(arrow, index)` with `index` the design's index
   overlaid with the changed elements, and the holes are `routeBehindHoles` over the grid's
   candidates minus changed ids plus the changed boxes that meet the arrow's query rect.
 - `affectedArrows(overlay, doc)`: previewed arrows, plus arrows pinned to a changed id (a reverse
-  map built once per document change), plus arrows whose bounds meet a changed box's old or new box
-  (a linear pass over the arrows' bounds, built once per document change).
+  map built once per design change), plus arrows whose bounds meet a changed box's old or new box
+  (a linear pass over the arrows' bounds, built once per design change).
 - Labels of affected arrows are laid out with `draftLayout(arrow, label, virtualElements)`; others
-  keep the document's label pass.
+  keep the design's label pass.
 - The selection chrome derives the selection (bounds, union resize, quick-connect pluses) from
   `applyOverlay(elements, overlay)` while a preview lasts, so the union handles follow a
   multi-resize: `useCanvasSelectionView(input, tabId)` reads `usePreviewedElements` itself, so
-  `Canvas` does not render for a preview frame. `Canvas`'s `plusBlocked` reads the document's
+  `Canvas` does not render for a preview frame. `Canvas`'s `plusBlocked` reads the design's
   elements; the pluses are hidden while a selection moves.
 
 ### Live drags (part two)
@@ -171,7 +171,7 @@ type DragPreviewOp =
 ## Data and persistence
 
 - Nothing new is persisted. The preview is session state; `drag-preview` is presence: never
-  logged, ordered or replayed. The document's shape does not change.
+  logged, ordered or replayed. The design's shape does not change.
 
 ## Errors and edge cases
 
@@ -191,7 +191,7 @@ type DragPreviewOp =
 
 - `drag-preview` is a presence kind, relayed from any role, so receivers trust only editors' previews
   (participant `role` from the room's presence list). Patches carry geometry only, validated before
-  use; a preview never writes the document.
+  use; a preview never writes the design.
 
 ## Performance and limits
 
@@ -223,9 +223,9 @@ type DragPreviewOp =
 
 | Spec rule                                             | Test                                                                                                                                                                                |
 | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A gesture draws from a preview, not the document      | `useEditorDrag.preview.test.tsx`: no `deps.tick` during a move; overlay set                                                                                                         |
+| A gesture draws from a preview, not the design      | `useEditorDrag.preview.test.tsx`: no `deps.tick` during a move; overlay set                                                                                                         |
 | One change on release                                 | Same: one `markCheckpoint`, one `deps.tick`, one log schedule; result equals today's                                                                                                |
-| A cancel writes nothing                               | Same: Escape and pointercancel leave the document untouched, overlay cleared                                                                                                        |
+| A cancel writes nothing                               | Same: Escape and pointercancel leave the design untouched, overlay cleared                                                                                                        |
 | Drag logic reads the gesture's own result             | Existing `useEditorDrag.*` suites reading the board as drawn; the drag e2e specs                                                                                                    |
 | In a real browser                                     | `e2e/drag-preview.spec.ts`: drawn mid-drag, nothing saved, saved on release; Escape; one undo                                                                                       |
 | Overlay derivation and application                    | `drag-preview.test.ts`                                                                                                                                                              |

@@ -12,7 +12,6 @@ import type { SettingsCategoryId, SettingsIconId } from './settings-icons';
 import { titleCase, type TelemetryCategory } from '@livedocuments/api-schema';
 import {
   autoRebindArrowsEnabled,
-  showProfilePictureEnabled,
   panelEnabled,
   type MapSize,
   type PanelSwitch,
@@ -135,7 +134,7 @@ function emailSwitch(
 // `preferences` (the live values) lets a nested row follow its parent switch
 // for the same reason: a setting for a panel that is off has nothing to act on.
 // `authEnabled` is whether this deployment offers sign-in at all
-// (`clerkEnabled`): API tokens are Clerk-only, so on a no-auth self-host they
+// (`signInEnabled`): API tokens are signed-in only, so on a no-auth self-host they
 // are absent end to end rather than a sign-in prompt with nowhere to go
 // (docs/specs/015-api/public-api-and-tokens.md#37-self-hosting).
 type SettingsRowContext = {
@@ -281,7 +280,7 @@ export type SettingsShortcutsRowSpec = RowBase & { kind: 'shortcuts' };
 // window. Read-only, so no read/write pair either.
 export type SettingsShortcutListRowSpec = RowBase & { kind: 'shortcutList' };
 
-// Account identity, read from Clerk, and account deletion. Neither is a
+// Account identity, read from the account, and account deletion. Neither is a
 // preference: they moved here from /explorer/profile (docs/specs/014-identity/profile-and-email-notifications.md) when that page
 // was retired, because everything else it held was already in this dialog.
 export type SettingsIdentityRowSpec = RowBase & { kind: 'identity' };
@@ -1319,24 +1318,10 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         key: 'identity',
         section: 'You',
         label: 'Guest',
-        keywords:
-          'account profile identity name email signed in sign in avatar picture photo google joined',
+        keywords: 'account profile identity name email signed in sign in avatar joined',
         description:
-          'Your name, email and picture come from your account. Signed out, your documents belong to this browser.',
+          'Your name and email come from your account. Signed out, your documents belong to this browser.',
         helpArticle: 'guestVsAccount',
-      },
-      {
-        kind: 'toggle',
-        key: 'showProfilePicture',
-        keywords: 'profile picture photo avatar google show hide privacy collaborators',
-        section: 'You',
-        label: 'Show My Profile Picture',
-        description:
-          'To signed-in collaborators, on presence, cursors and comments. Others always see your initials.',
-        available: (ctx) => ctx.signedIn,
-        read: (p) => showProfilePictureEnabled(p),
-        write: (p, v) => ({ ...p, showProfilePicture: v }),
-        event: { category: 'UI', on: 'ShowProfilePictureOn', off: 'ShowProfilePictureOff' },
       },
       {
         kind: 'trash',
@@ -1355,7 +1340,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Delete Account',
         keywords: 'delete account remove wipe erase close cancel data gdpr',
         description:
-          'Removes your documents, folders, and the account itself, everywhere. There is no undo.',
+          'Removes your livedocuments documents, folders and settings, then signs you out. There is no undo.',
       },
     ],
   },

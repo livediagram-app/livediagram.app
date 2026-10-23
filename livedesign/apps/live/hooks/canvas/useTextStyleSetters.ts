@@ -5,7 +5,7 @@ import {
   type TextAlignX,
   type TextAlignY,
   type TextSize,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { track } from '@/lib/telemetry';
 import { hugsText, hugTextSize } from '@/lib/text-hug';
 import { measureDrawnText } from '@/components/canvas/text-hug-measure';
@@ -15,7 +15,7 @@ type TextStyleSetterDeps = {
   selectionPrimary: () => Element | null;
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   // The tab being edited, for its font. A text box that fits or wraps hugs its text through every
-  // change to how it is drawn (docs/specs/006-document/document-structure.md).
+  // change to how it is drawn (docs/specs/006-design/design-structure.md).
   activeTab: Pick<Tab, 'font' | 'finish'>;
 };
 

@@ -108,11 +108,11 @@ pnpm --filter @livedocuments/live test:e2e
 
 Without a dev stack, it boots its own (`scripts/e2e-stack.mjs`) over the existing `apps/live/out`, which it never rebuilds: run `pnpm --filter @livedocuments/live build` first, or it exits naming the missing build.
 
-The signed-in specs (`apps/live/e2e/clerk-stub/`) need Clerk switched on, so they have their own build and run, on their own ports:
+The signed-in specs (`apps/live/e2e/signed-in/`) need sign-in switched on, so they have their own build and run, on their own ports:
 
 ```sh
-pnpm --filter @livedocuments/live build:clerk-stub
-pnpm --filter @livedocuments/live test:e2e:clerk-stub
+pnpm --filter @livedocuments/live build:signed-in
+pnpm --filter @livedocuments/live test:e2e:signed-in
 ```
 
 The armed guest-signature specs (`apps/live/e2e/armed/`) run against the usual build, on their own stack with guest signature enforcement on (`:3017`):
@@ -132,7 +132,7 @@ Those ports are defaults, not fixtures. Three environment variables move them, w
 
 `E2E_API_PORT` is self-contained: it sets the worker's port and the proxy that reaches it together. The other two are **not**. Playwright waits on `E2E_BASE_URL` while the stack binds `E2E_LIVE_PORT`, so moving the live app means setting both. Set only one and the run hangs until the 180-second `webServer` timeout, with nothing said about why.
 
-The optical audit also opens the help centre, the telemetry dashboard and the marketing site: build them (`pnpm --filter @livedocuments/help --filter @livedocuments/telemetry --filter @livedocuments/marketing build`), or point `E2E_HELP_URL`, `E2E_TELEMETRY_URL` and `E2E_MARKETING_URL` at their dev servers.
+The optical audit also opens the help centre and the marketing site: build them (`pnpm --filter @livedocuments/help --filter @livedocuments/marketing build`), or point `E2E_HELP_URL` and `E2E_MARKETING_URL` at their dev servers. (The telemetry dashboard is liveworkspace's now, liveworkspace/docs/telemetry.md.)
 
 Keep the suite tiny — add a focused smoke for a browser-risky change, not a broad suite; depth belongs in unit tests where it's cheap.
 

@@ -18,7 +18,7 @@ import {
   type IconSize,
   type TextAlignX,
   type TextAlignY,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { techGlyphStrokeUnits } from '@livedesign/icons';
 
 import { iconAnimationClass, iconAnimationStyle } from '@/lib/icons';

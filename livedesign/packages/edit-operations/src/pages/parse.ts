@@ -18,7 +18,7 @@ import {
   PAGE_SIZE_IDS,
   WIREFRAME_DEVICE_IDS,
   WIREFRAME_FRAME_LOOKS,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { PHOTO_MAX_AREA, PHOTO_PIXEL_CAP } from '@livedesign/photo-engine';
 
 const PAGE_KINDS = ['logo', 'wireframe', 'photo'] as const;

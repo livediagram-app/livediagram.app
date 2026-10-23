@@ -21,7 +21,7 @@ const deck = {
   exitPresentation: vi.fn(),
   updateConfig: vi.fn(),
 };
-vi.mock('@/app/document/[id]/EditorContext', () => ({
+vi.mock('@/app/design/[id]/EditorContext', () => ({
   useEditorContext: () => ({ slideDeck: deck, canvasTool: 'select', setCanvasTool: vi.fn() }),
 }));
 vi.mock('@/components/plan/PlanContext', () => ({ usePlan: () => null }));

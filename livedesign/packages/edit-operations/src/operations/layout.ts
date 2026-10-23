@@ -12,7 +12,7 @@ import {
   type BoxedElement,
   type Element,
   type ElementId,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { shifted } from '../placement';
 import { resolveMembers } from '../selectors';
 import {

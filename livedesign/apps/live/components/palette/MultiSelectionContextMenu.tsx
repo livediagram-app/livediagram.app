@@ -21,7 +21,7 @@ import {
   type TextAlignX,
   type TextAlignY,
   type TextSize,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { isTechIconId } from '@/lib/tech-icons';
 import { AlignIcon as AlignLinesIcon } from '@/components/canvas/table-icons';
 import { AlignmentGrid } from '@/components/palette/palette-controls';

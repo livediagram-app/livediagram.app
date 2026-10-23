@@ -5,7 +5,7 @@ import {
   newLogoPage,
   pageMargin,
   type Element,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import {
   layoutCatalogueFor,
   LOGO_LAYOUT_CATEGORIES,

@@ -1,8 +1,8 @@
 // The person's folders as paths (docs/specs/015-api/cli.md `folder ls`, `workbench open --folder`; blueprint CLI86, CLI87): the personal tree, then each joined team's in name order, each depth first,
-// siblings by name. A folder is named by its full id, an id prefix, or its name ignoring case, as a document is.
+// siblings by name. A folder is named by its full id, an id prefix, or its name ignoring case, as a design is.
 
 import type { Folder } from '@livedesign/api-schema';
-import type { Libraries } from './find-documents';
+import type { Libraries } from './find-designs';
 import { VerbRefusal } from './define';
 import { REF_MIN_PREFIX, shortestUniquePrefixes } from './refs';
 

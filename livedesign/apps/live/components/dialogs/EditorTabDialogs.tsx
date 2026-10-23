@@ -5,8 +5,8 @@ import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { EMPTY_SELECTION, type Selection } from '@/lib/selection-store';
 import dynamic from 'next/dynamic';
 
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
-import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
+import { useEditorContext } from '@/app/design/[id]/EditorContext';
+import { useIsOfflineDesign } from '@/hooks/persistence/useIsOfflineDesign';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { panelEnabled } from '@/lib/user-preferences';
 
@@ -23,10 +23,10 @@ const ShareDialog = dynamic(
   { ssr: false },
 );
 
-// Tab-scoped export / import dialogs + the document share dialog. Each is
+// Tab-scoped export / import dialogs + the design share dialog. Each is
 // gated on its own open flag and reads everything from EditorContext, so
 // EditorView just renders <EditorTabDialogs />. Grouped because all three
-// are "act on this tab / document as a whole" modals launched from the
+// are "act on this tab / design as a whole" modals launched from the
 // header, distinct from the global editor modals in EditorModals.
 export function EditorTabDialogs() {
   const {
@@ -37,7 +37,7 @@ export function EditorTabDialogs() {
     activeTab,
     tabs,
     loadAllTabs,
-    documentName,
+    designName,
     imageContext,
     setExportOpen,
     importOpen,
@@ -51,14 +51,14 @@ export function EditorTabDialogs() {
     shareUrlFor,
     clerkUserId,
     clerkDisplayName,
-    documentId,
-    documentTeamId,
+    designId,
+    designTeamId,
     updateParticipantName,
     createShareLink,
     revokeShareLink,
     extendShareLink,
     rescopeShareLink,
-    setDocumentSharePassword,
+    setDesignSharePassword,
     setShareDialogOpen,
     syncToCloud,
   } = useEditorContext();
@@ -73,11 +73,11 @@ export function EditorTabDialogs() {
     ),
   );
 
-  // Offline documents (docs/specs/006-document/offline-mode.md) can't be shared until they're synced to the
-  // owner's account; the Share dialog says so and offers Sync Document, which converts the open document
+  // Offline designs (docs/specs/006-design/offline-mode.md) can't be shared until they're synced to the
+  // owner's account; the Share dialog says so and offers Sync Design, which converts the open design
   // in place ("Syncing in place"), and then shows the share options. Never as the 'self' placeholder an
   // early open runs under: the gate waits for the reader (`syncReady`).
-  const isOffline = useIsOfflineDocument(documentId);
+  const isOffline = useIsOfflineDesign(designId);
   const readerKnown = selfParticipant.id !== 'self';
 
   return (
@@ -99,9 +99,9 @@ export function EditorTabDialogs() {
           // In Pages mode the whole tab exports as its pages
           // (docs/specs/007-editor/pages-mode.md "Export").
           pages={exportScope === 'tab' ? pagesMode?.pages : undefined}
-          documentName={documentName}
+          designName={designName}
           // A tab window draws the tab it shows (docs/specs/009-elements/tab-window.md "Exports").
-          documentTabs={tabs}
+          designTabs={tabs}
           loadTabs={loadAllTabs}
           imageContext={imageContext}
           offerHiddenLayers={panelEnabled(userPreferences, 'layersPanelEnabled')}
@@ -132,11 +132,11 @@ export function EditorTabDialogs() {
           onRevokeLink={revokeShareLink}
           onRescopeLink={rescopeShareLink}
           onExtendLink={extendShareLink}
-          onSetPassword={setDocumentSharePassword}
+          onSetPassword={setDesignSharePassword}
           offline={isOffline}
           onSyncToCloud={syncToCloud}
           syncReady={readerKnown}
-          teamDocument={!!documentTeamId}
+          teamDesign={!!designTeamId}
           onClose={() => setShareDialogOpen(false)}
         />
       ) : null}

@@ -13,7 +13,7 @@ import {
   type ShapeElement,
   type ShapeKind,
   type TextElement,
-} from '@livedesign/document';
+} from '@livedesign/design';
 
 // `bleed`: how far the page runs past the box on every side (its margin), for a picture or a
 // panel set to the page's edges (a full-bleed slide layout); none where the box is all there is.

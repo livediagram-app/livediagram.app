@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { backOutTarget } from './back-out';
 
-// docs/specs/007-editor/new-document-route.md "Escape backs out".
+// docs/specs/007-editor/new-design-route.md "Escape backs out".
 describe('backOutTarget', () => {
   const origin = 'https://livedesign.app';
 

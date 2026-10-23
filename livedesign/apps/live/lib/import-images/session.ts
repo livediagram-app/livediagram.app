@@ -22,7 +22,7 @@ import { debugLog } from '@/lib/debug-log';
 export type ImportImageLog = (fingerprint: string, outcome: string, detail?: unknown) => void;
 
 export type ImportImageSessionDeps = {
-  // An Offline Mode document embeds instead of uploading.
+  // An Offline Mode design embeds instead of uploading.
   offline: boolean;
   codec: ImageCodec;
   // Stores the bytes in the gallery; throws an ApiError on refusal.

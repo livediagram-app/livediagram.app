@@ -22,7 +22,7 @@ export type {
 
 // The toast surface (docs/specs/004-interface-design/toasts.md). Two jobs: (1) make otherwise-silent
 // failures visible (a background save, a copy, an upload), and (2) confirm consequential, otherwise
-// silent actions (a document moved, duplicated, deleted with an Undo). Never for autosave (its own
+// silent actions (a design moved, duplicated, deleted with an Undo). Never for autosave (its own
 // header pill) nor for what is already on screen (an element appearing, a copy button turning into
 // "Copied"): toasting those is noise.
 //

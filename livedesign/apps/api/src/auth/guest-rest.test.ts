@@ -30,7 +30,7 @@ describe('guestSignatureEnforced', () => {
 describe('OWNER_SCOPED_SEGMENTS', () => {
   it('includes the owner-keyed resources', () => {
     for (const s of [
-      'documents',
+      'designs',
       'folders',
       'images',
       'custom-themes',

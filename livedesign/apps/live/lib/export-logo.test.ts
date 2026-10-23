@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { layOutPages, newLogoPage } from '@livedesign/document';
+import { layOutPages, newLogoPage } from '@livedesign/design';
 import { pageExportFrame } from './export-page';
 import {
   LOGO_ICO_SIZES,
@@ -41,6 +41,6 @@ describe('logo page export', () => {
       'Acme - Mark - Logo Kit.zip',
     );
     expect(logoKitFileName('Acme', plain!, 3)).toBe('Acme - Page 1 - Logo Kit.zip');
-    expect(logoKitFileName('', plain!, 1)).toBe('document - Logo Kit.zip');
+    expect(logoKitFileName('', plain!, 1)).toBe('design - Logo Kit.zip');
   });
 });

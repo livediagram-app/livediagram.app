@@ -22,7 +22,7 @@ import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { sameMembers, selectionIds, type Selection } from '@/lib/selection-store';
 import { useMemo, useRef, useState } from 'react';
 
-import { slideName } from '@livedesign/document';
+import { slideName } from '@livedesign/design';
 
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
 import { PageSlidePicker } from '@/components/panels/PageSlidePicker';
@@ -31,7 +31,7 @@ import { SlideDeckSettingsPopover } from '@/components/panels/SlideDeckSettingsP
 import { SlideDeckRow } from '@/components/panels/SlideDeckRow';
 import { PlayIcon } from '@/components/primitives/PlayIcon';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
-import type { SlideDeckState } from '@/app/document/[id]/useSlideDeck';
+import type { SlideDeckState } from '@/app/design/[id]/useSlideDeck';
 import { track } from '@/lib/telemetry';
 import { rowDropIndex, useRowReorderDrag } from '@/hooks/ui/useRowReorderDrag';
 import { DropCaret } from '@/components/primitives/DropCaret';

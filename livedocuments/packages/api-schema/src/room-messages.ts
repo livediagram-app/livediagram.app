@@ -210,11 +210,7 @@ export type ClientMessage =
   // Sent right after re-connecting (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1): "here's the last
   // epoch+seq I applied — tell me what I missed, or that I must re-hydrate".
   // `epoch` is null on a client that hasn't seen an ordered op yet.
-  | { kind: 'sync'; epoch: string | null; lastSeq: number }
-  // An identity update over an open socket (docs/specs/014-identity/profile-picture.md §4): the
-  // same participant fields as `hello`, re-read by the same rules, without re-joining. Today it
-  // carries a profile picture switched on or off. Ignored before the session's hello.
-  | { kind: 'identity'; participant: ParticipantPresence };
+  | { kind: 'sync'; epoch: string | null; lastSeq: number };
 
 // ---------------------------------------------------------------------
 // Realtime room — op vocabulary (client view)
@@ -400,7 +396,6 @@ export type RoomOutgoing =
   | { kind: 'hello'; participant: ParticipantPresence }
   | { kind: 'op'; op: RoomOp; ref?: number }
   | { kind: 'sync'; epoch: string | null; lastSeq: number }
-  | { kind: 'identity'; participant: ParticipantPresence }
   | ({ kind: 'facilitator' } & FacilitatorAction);
 
 export type RoomIncoming =

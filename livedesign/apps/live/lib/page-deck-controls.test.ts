@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { Deck } from '@livedesign/document';
+import type { Deck } from '@livedesign/design';
 import { slideFitOptions } from './presentation-config';
 import { pageDeckControls } from './page-deck-controls';
 

@@ -107,6 +107,10 @@ describe('hosted-vars script', () => {
     expect(buildEnv({ TELEMETRY_ENABLED: 'true', IMAGE_MAX_PER_OWNER: '1' })).toEqual([
       'NEXT_PUBLIC_TELEMETRY_ENABLED=true',
     ]);
+    expect(buildEnv({ TELEMETRY_ENABLED: 'true', TELEMETRY_URL: 'https://t.test' })).toEqual([
+      'NEXT_PUBLIC_TELEMETRY_ENABLED=true',
+      'NEXT_PUBLIC_TELEMETRY_URL=https://t.test',
+    ]);
     expect(buildEnv({ IMAGE_MAX_PER_OWNER: '1' })).toEqual([]);
   });
 
@@ -155,7 +159,7 @@ describe('hosted-vars script', () => {
       bindings: [
         { type: 'plain_text', name: 'TELEMETRY_ENABLED', text: 'true' },
         { type: 'plain_text', name: 'IMAGE_MAX_PER_OWNER', text: '50' },
-        { type: 'secret_text', name: 'CLERK_JWKS_URL' },
+        { type: 'secret_text', name: 'ACCOUNTS_CLIENT_SECRET' },
         { type: 'd1', name: 'DB' },
       ],
     },

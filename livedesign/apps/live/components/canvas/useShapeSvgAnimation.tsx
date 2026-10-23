@@ -1,5 +1,5 @@
 import { useId, type SVGAttributes } from 'react';
-import type { ShapePartRole } from '@livedesign/document';
+import type { ShapePartRole } from '@livedesign/design';
 
 // The SVG-geometry animation adapter (docs/specs/028-animation/element-animations.md "Shape"), lifted
 // out of ShapeSvgOverlay. On an SVG-rendered shape the Shape set's Pulse, Glow, Trace and Gradient

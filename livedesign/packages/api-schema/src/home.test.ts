@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
-  DOCUMENT_OPEN_HEADER,
+  DESIGN_OPEN_HEADER,
   HOME_REJECTIONS,
   HOME_VERBS,
   isHomeRejection,
-  readDocumentOpen,
+  readDesignOpen,
   windowStartOf,
   WITHIN_REACH_USE_WINDOW_DAYS,
 } from './home';
@@ -41,14 +41,14 @@ describe('home verbs', () => {
 
 describe('the open marker', () => {
   it('is one header with one value', () => {
-    expect(DOCUMENT_OPEN_HEADER).toBe('X-Document-Open');
-    expect(readDocumentOpen('1')).toBe(true);
+    expect(DESIGN_OPEN_HEADER).toBe('X-Design-Open');
+    expect(readDesignOpen('1')).toBe(true);
   });
 
   it('reads anything else as not an open', () => {
-    expect(readDocumentOpen(null)).toBe(false);
-    expect(readDocumentOpen('true')).toBe(false);
-    expect(readDocumentOpen('')).toBe(false);
+    expect(readDesignOpen(null)).toBe(false);
+    expect(readDesignOpen('true')).toBe(false);
+    expect(readDesignOpen('')).toBe(false);
   });
 });
 

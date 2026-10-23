@@ -1,4 +1,4 @@
-import type { ArrowElement, Endpoint } from '@livedesign/document';
+import type { ArrowElement, Endpoint } from '@livedesign/design';
 
 /**
  * An arrow with one end moved by hand. Its `to` end leaves an import's exact end behind, so it fans

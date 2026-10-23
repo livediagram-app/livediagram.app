@@ -82,7 +82,7 @@ export function useAssigneeOptions({
   }
 
   // The pinned Myself row: every session has one once identity has
-  // hydrated (Clerk account or guest participant id).
+  // hydrated (account or guest participant id).
   const selfRow = useMemo<PickableMember | null>(
     () =>
       selfUserId
@@ -170,8 +170,7 @@ export function useAssigneeOptions({
   // Ask the server whether the picked teammate can open this document,
   // unless the answer is knowable without it (localAccess). Stale responses
   // are ignored via the cancelled flag.
-  const local =
-    open && assignee ? localAccess(assignee, { ownerId, selfUserId, documentId }) : null;
+  const local = open && assignee ? localAccess(assignee, { ownerId, selfUserId, documentId }) : null;
   const askServer = open && assignee !== null && local === null;
   useEffect(() => {
     if (!askServer || !assignee?.teamId || !assignee.userId || !ownerId || !documentId) return;

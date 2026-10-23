@@ -385,7 +385,7 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
     id: 'mongodb',
     label: 'MongoDB',
     provider: 'generic',
-    keywords: 'database nosql document leaf',
+    keywords: 'database nosql design leaf',
     color: '#47A248',
     glyph:
       '<path d="M12 5c2.6 3 4 5.6 4 8 0 3-2 5.1-4 6-2-.9-4-3-4-6 0-2.4 1.4-5 4-8Z" fill="#fff" stroke="none"/>',
@@ -643,7 +643,7 @@ export const TECH_ICON_CATALOG: TechIconDef[] = [
     id: 'fb-firestore',
     label: 'Firestore',
     provider: 'firebase',
-    keywords: 'firebase google document database nosql collection',
+    keywords: 'firebase google design database nosql collection',
     color: '#F57C00',
     glyph:
       '<rect x="7.5" y="6" width="9" height="5" rx="1"/><rect x="7.5" y="13" width="9" height="5" rx="1"/><path d="M9.5 8.5h5M9.5 15.5h5"/>',

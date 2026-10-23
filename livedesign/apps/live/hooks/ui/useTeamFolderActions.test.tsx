@@ -19,7 +19,7 @@ vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
 
 import { useTeamFolderActions } from './useTeamFolderActions';
 
-// Team-library folder verbs from the Explorer panel (docs/specs/013-workspace/team-shared-documents.md). docs/specs/017-telemetry/telemetry.md's Folder
+// Team-library folder verbs from the Explorer panel (docs/specs/013-workspace/team-shared-designs.md). docs/specs/017-telemetry/telemetry.md's Folder
 // entry types a team folder `Team`; without it these three read as personal
 // Explorer folders on the dashboard.
 function handlers() {

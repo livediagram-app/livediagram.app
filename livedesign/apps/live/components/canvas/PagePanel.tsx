@@ -14,7 +14,7 @@ import {
   pageSizeChoices,
   type LaidOutPage,
   type PageBackground,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import {
   ACTIVE_SEGMENT,
   SEGMENT_TRACK,

@@ -1,6 +1,6 @@
 // The Path tool's drawing state (docs/specs/023-draw-mode/path-tool.md "Drawing"): pure steps over
 // the path being drawn. The gesture (components/canvas/path/usePathDrawGesture) turns pointer and
-// key events into these steps; nothing here touches the DOM or the document.
+// key events into these steps; nothing here touches the DOM or the design.
 import {
   constrain45,
   isCompoundPath,
@@ -9,7 +9,7 @@ import {
   type Element,
   type PathAnchor,
   type PathElement,
-} from '@livedesign/document';
+} from '@livedesign/design';
 
 type Point = { x: number; y: number };
 

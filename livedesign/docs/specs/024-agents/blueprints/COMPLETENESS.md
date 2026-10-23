@@ -34,7 +34,7 @@
 - [x] Constants and configuration
 - [x] Defaults ledger
 
-## document-views
+## design-views
 
 - [x] Domain and naming
 - [x] Behaviour and state

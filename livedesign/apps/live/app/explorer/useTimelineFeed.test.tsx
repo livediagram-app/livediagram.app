@@ -7,7 +7,7 @@
 //
 // Per-file environment rather than flipping the workspace: the other ~1,645
 // tests are pure logic that runs fine (and faster) under `node`, so jsdom is
-// opted into by the handful of files that need a document.
+// opted into by the handful of files that need a design.
 
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -48,9 +48,9 @@ function periodCallsFor(scopeId: string) {
 function event(id: string, occurredAt: number, over: Partial<TimelineEvent> = {}): TimelineEvent {
   return {
     id,
-    sourceType: 'document',
+    sourceType: 'design',
     sourceId: `d-${id}`,
-    eventType: 'document_updated',
+    eventType: 'design_updated',
     title: id,
     occurredAt,
     ...over,
@@ -245,8 +245,8 @@ describe('useTimelineFeed on return to the tab', () => {
 });
 
 // The reader's own actions (docs/specs/013-workspace/timeline.md §2.4b). The bug this was reported
-// for: delete a document from a card's menu and the feed sat unchanged —
-// no tombstone, the deleted document's cards still up — until a browser
+// for: delete a design from a card's menu and the feed sat unchanged —
+// no tombstone, the deleted design's cards still up — until a browser
 // refresh.
 describe('useTimelineFeed after the readers own write', () => {
   afterEach(() => {
@@ -283,7 +283,7 @@ describe('useTimelineFeed after the readers own write', () => {
     const { result } = renderHook(() => useTimelineFeed('me', true));
     await waitFor(() => expect(result.current.events).toHaveLength(3));
 
-    act(() => notifyApiWrite({ purge: { sourceType: 'document', sourceId: 'd-b' } }));
+    act(() => notifyApiWrite({ purge: { sourceType: 'design', sourceId: 'd-b' } }));
     expect(result.current.events.map((e) => e.id)).toEqual(['a']);
 
     apiListTimeline.mockResolvedValue({

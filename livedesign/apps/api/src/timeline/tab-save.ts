@@ -1,14 +1,14 @@
 // Everything one tab save contributes to the Timeline (docs/specs/013-workspace/timeline.md §4.2,
 // §4.3), behind a single call so the hot autosave path in
-// document-subresource-routes.ts stays readable.
+// design-subresource-routes.ts stays readable.
 //
 // Runs entirely inside waitUntil. The autosave fires roughly every
 // 600ms per editor, so this must never be on the response path — and
 // because `record` swallows its own failures, a bad diff can't take a
 // save down with it.
 
-import type { Element } from '@livedesign/document';
-import type { DocumentDTO, Env } from '../types';
+import type { Element } from '@livedesign/design';
+import type { DesignDTO, Env } from '../types';
 import {
   recordActionAssigned,
   recordActionCompleted,
@@ -16,7 +16,7 @@ import {
   recordCommentResolved,
   recordDocumentEdited,
   retractComments,
-} from './document-events';
+} from './design-events';
 import {
   claimedComments,
   completedActions,
@@ -26,11 +26,11 @@ import {
   removedComments,
 } from './tab-diff';
 
-type DocumentRef = Pick<DocumentDTO, 'id' | 'name' | 'ownerId' | 'teamId'>;
+type DesignRef = Pick<DesignDTO, 'id' | 'name' | 'ownerId' | 'teamId'>;
 
 export async function recordTabSave(
   env: Env,
-  liveDoc: DocumentRef,
+  liveDoc: DesignRef,
   actorId: string,
   next: Element[],
   prev: Element[],
@@ -72,7 +72,7 @@ export async function recordTabSave(
   for (const { elementId, text } of newlyResolvedThreads(next, prev)) {
     // The element id doubles as the thread's identity — a thread has no
     // id of its own, it hangs off its element. Namespaced with the
-    // document id so the same element id in two documents (a duplicate)
+    // design id so the same element id in two designs (a duplicate)
     // can't collide on the timeline UNIQUE key.
     await recordCommentResolved(env, liveDoc, `${liveDoc.id}:${elementId}`, text, actorId);
   }

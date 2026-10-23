@@ -6,7 +6,7 @@
 // brush's ring and the text being typed sit over the sheet. A press on any photo page takes it into
 // focus. Mounted in the canvas's transformed layer, so it pans and zooms with the page.
 import { useEffect, useMemo, useRef, type PointerEvent as ReactPointerEvent } from 'react';
-import type { LaidOutPage } from '@livedesign/document';
+import type { LaidOutPage } from '@livedesign/design';
 import { hexToBytes } from '@livedesign/photo-engine';
 import { takeNeutral, useNeutralPicking } from '@/lib/photo-editor/neutral-pick';
 import { pickColour } from '@/lib/photo-editor/tools/fill-tools';

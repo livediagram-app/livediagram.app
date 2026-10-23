@@ -37,7 +37,7 @@ Derived from [Element indicators](../element-indicators.md). Defaults in [DEFAUL
 | `apps/live/components/canvas/BoxedElementView.tsx`                                     | calls `useElementIndicators`, renders `ElementIndicators`; root gains the `group/el` name                                                             |
 | `apps/live/lib/user-preferences.ts`                                                    | `elementIndicatorStyle?: 'top' \| 'footer' \| 'off'`                                                                                                  |
 | `apps/live/components/dialogs/settings/settings-catalogue.ts`                          | the Editor › Element Indicators choice row (Top / Footer / Off)                                                                                       |
-| `apps/telemetry/app/event-explanations.ts`, `apps/telemetry/app/catalogue/settings.ts` | the three `UI\|Changed\|ElementIndicators*` explanations and the chart                                                                                |
+| `../liveworkspace/apps/site/app/telemetry/livedocuments/event-explanations.ts`, `../liveworkspace/apps/site/app/telemetry/livedocuments/catalogue/settings.ts` | the three `UI\|Changed\|ElementIndicators*` explanations and the chart                                                                                |
 
 ## Interfaces and contracts
 

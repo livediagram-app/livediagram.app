@@ -3,14 +3,14 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { RECENT_DIAGRAMS_KEY, RECENT_FAN_MIN } from '@livedesign/api-schema';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { seededRandom } from '@livedesign/document';
+import { seededRandom } from '@livedesign/design';
 import { HERO_FAN_OPENING, HERO_FAN_SLOTS, heroTemplate, shuffleFan } from '@/lib/hero-starts';
 import { Hero } from './Hero';
 import { HERO_FAN_SWAP_MS } from './HeroFan';
 import { PHONE_RECENT } from './HeroFanMine';
 
 // docs/specs/019-marketing/marketing-site.md "Hero": the badge and the question, the template search
-// with Start Blank in its bar, a returning visitor's recent documents, and the dealing fan.
+// with Start Blank in its bar, a returning visitor's recent designs, and the dealing fan.
 
 let reduceMotion = false;
 // Whether the window is wider than a phone (the fan's outer pair shows).
@@ -162,13 +162,13 @@ describe('the hero', () => {
     );
   });
 
-  it('keeps the template fan below RECENT_FAN_MIN recent documents, then deals theirs and Explorer Home', () => {
+  it('keeps the template fan below RECENT_FAN_MIN recent designs, then deals theirs and Explorer Home', () => {
     const note = (n: number) =>
       JSON.stringify({
         v: 1,
         diagrams: Array.from({ length: n }, (_, i) => ({
           id: `d${i + 1}`,
-          name: `Document ${i + 1}`,
+          name: `Design ${i + 1}`,
           savedAt: Date.now() - (i + 1) * 3600e3,
           mode: 'pages',
         })),
@@ -185,24 +185,24 @@ describe('the hero', () => {
     const docs = screen
       .getAllByRole('link')
       .map((a) => a.getAttribute('href'))
-      .filter((h) => h?.startsWith('/document/'));
-    expect(docs).toEqual(['/document/d1', '/document/d2', '/document/d3', '/document/d4']);
+      .filter((h) => h?.startsWith('/design/'));
+    expect(docs).toEqual(['/design/d1', '/design/d2', '/design/d3', '/design/d4']);
     // The save time sits at the card's foot, after its preview (out of sight until the card lifts).
     const card = screen
       .getAllByRole('link')
-      .find((l) => l.getAttribute('href') === '/document/d1')!;
+      .find((l) => l.getAttribute('href') === '/design/d1')!;
     expect(card.lastElementChild?.textContent).toMatch(/ago$/);
-    expect(card.firstElementChild?.textContent).toBe('Document 1');
+    expect(card.firstElementChild?.textContent).toBe('Design 1');
     expect(screen.getByRole('link', { name: /Explorer Home/ }).getAttribute('href')).toBe(
       '/explorer/home',
     );
-    // A phone shows the PHONE_RECENT most recent documents and leaves Explorer Home off.
+    // A phone shows the PHONE_RECENT most recent designs and leaves Explorer Home off.
     const onPhone = screen
       .getAllByRole('link')
-      .filter((a) => /^\/(document|explorer)\//.test(a.getAttribute('href') ?? ''))
+      .filter((a) => /^\/(design|explorer)\//.test(a.getAttribute('href') ?? ''))
       .filter((a) => !a.parentElement!.className.split(' ').includes('max-sm:hidden'))
       .map((a) => a.getAttribute('href'));
-    expect(onPhone).toEqual(['/document/d1', '/document/d2', '/document/d3']);
+    expect(onPhone).toEqual(['/design/d1', '/design/d2', '/design/d3']);
     expect(onPhone).toHaveLength(PHONE_RECENT);
   });
 });

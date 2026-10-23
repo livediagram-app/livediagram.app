@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import type { PlacementView } from './placement-view';
 
-// The placement browser's view (docs/specs/006-document/save-locations.md, "It opens where its
+// The placement browser's view (docs/specs/006-design/save-locations.md, "It opens where its
 // selection is"; blueprint default-folders.md "Browser view"). Until the reader moves about in it,
 // the view is derived from the selection on every render, so a selection that arrives or changes
 // from outside (a late default, Change default, folders still loading) is opened to. Each reader

@@ -11,13 +11,13 @@ import { Switch } from './settings-dialog';
 export function TrashView() {
   const rows: [string, string][] = [
     ['Service map', 'Deleted 2 Oct · 25 days left'],
-    ['Untitled document', 'Moved here 1 Oct because it was empty · 24 days left'],
+    ['Untitled design', 'Moved here 1 Oct because it was empty · 24 days left'],
   ];
   return (
     <Scene w={420} h={230} bg="plain">
       <Panel x={14} y={14} w={392} h={128}>
         <Label x={30} y={36} size={11} weight={700} tone="strong">
-          Your documents
+          Your designs
         </Label>
         <Label x={392} y={36} anchor="end" size={10} weight={600} tone="muted">
           Empty Trash
@@ -190,7 +190,7 @@ export function McpConsent() {
     <ConsentCard
       title="Connect Claude"
       intro={[
-        'Claude wants to access your livedesign documents',
+        'Claude wants to access your livedesign designs',
         'on your behalf. Approving creates an API token.',
       ]}
       sentTo="claude.ai"
@@ -202,8 +202,8 @@ export function McpConsent() {
  *  switches a signed-in account gets, one whole-row toggle each. */
 export function NotificationSettings() {
   const rows: [string, boolean][] = [
-    ['Someone Joins My Document', true],
-    ['Someone Comments on My Document', true],
+    ['Someone Joins My Design', true],
+    ['Someone Comments on My Design', true],
     ['Someone Mentions Me in a Comment', true],
     ['Tips and Check-Ins', false],
   ];

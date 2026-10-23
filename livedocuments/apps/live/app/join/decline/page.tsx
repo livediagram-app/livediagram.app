@@ -1,13 +1,21 @@
 import type { Metadata } from 'next';
-import { TeamInviteDecline } from '@/components/panels/TeamInviteDecline';
+import { ManagedOnLiveworkspace } from '@/components/panels/ManagedOnLiveworkspace';
+import { manageTeamsUrl } from '@/lib/auth-config';
 
-// /join/decline?token=<token>: where a team invite email's Decline link lands (docs/specs/013-workspace/teams.md
-// "Declining from the email"). Beside /join, outside the Explorer chrome, so it works signed out. The token is
-// read client-side, so this stays a thin shell; `index: false` is inherited from the root layout.
+// /join/decline — where a team invite email's Decline link used to land (docs/specs/013-workspace/
+// teams.md). Invitations are answered on liveworkspace.app now (liveworkspace/docs/accounts.md), so
+// this points there. `index: false` is inherited from the root layout.
 export const metadata: Metadata = {
   title: 'Decline a team invite | livedocuments',
 };
 
 export default function DeclineInvitePage() {
-  return <TeamInviteDecline />;
+  return (
+    <ManagedOnLiveworkspace
+      title="Invitations are on liveworkspace.app"
+      body="Team invitations are answered on liveworkspace.app, where you can join a team or decline."
+      href={manageTeamsUrl}
+      cta="Open your invitations"
+    />
+  );
 }

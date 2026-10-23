@@ -17,7 +17,7 @@ export type ExplorerSurfaceFlags = {
   appearance: boolean;
   // The GitHub and licence links of the app's bottom bar.
   appLinks: boolean;
-  // The sign-in nudge and the move of this browser's documents after signing in.
+  // The sign-in nudge and the move of this browser's designs after signing in.
   guestPrompts: boolean;
   // API tokens (the timeline's token cards' Revoke) and Teams administration (New team, Invites, team settings).
   administration: boolean;

@@ -9,7 +9,7 @@ graph. Both are editor-only (they mutate) and run a single undoable operation.
 ## Locked elements stay put
 
 Neither tidier moves or resizes a **locked element** or anything on a **locked layer**
-([Layers](../006-document/layers.md)): a lock means "protected from moves and resizes",
+([Layers](../006-design/layers.md)): a lock means "protected from moves and resizes",
 and a cleanup is a bulk move. `cleanupElements` (`lib/tab-cleanup.ts`) collects those ids
 (`lockedElementIds`) and hands them to both passes. Auto-align leaves them unsnapped.
 Auto Layout treats a locked box as scenery rather than a graph node, so arrows to it are
@@ -48,7 +48,7 @@ off", not "this diagram has no layout".
 
 ## Auto Layout (Tidy up)
 
-`autoLayoutElements` (`packages/document/src/auto-layout.ts`, a pure transform over the
+`autoLayoutElements` (`packages/design/src/auto-layout.ts`, a pure transform over the
 element model so importers and the editor share it — see GitHub issue #12). A
 **structural layout**: it reads the arrow graph, splits it into connected components,
 and computes brand-new positions — a layered (Sugiyama-style) layout for DAG-ish

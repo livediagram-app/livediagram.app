@@ -6,7 +6,7 @@
 // full palette, connectors, frames, layers, templates) stays shut without a change; these flags open the few
 // content gestures a Participant has.
 
-import { addedByAdder, isParticipantPlaceable, type Element } from '@livedesign/document';
+import { addedByAdder, isParticipantPlaceable, type Element } from '@livedesign/design';
 import type { AccessLevel } from '@livedesign/api-schema';
 
 export type EditorCapabilities = {

@@ -20,13 +20,15 @@ import { heroSceneData, type HeroSceneKey } from './hero-scene-data';
 // whole set put every board in its JavaScript. The board is drawn only once the window plays
 // (below), and its code is fetched as the window mounts, well before that.
 const BOARD_LOADERS: Record<HeroSceneKey, () => Promise<ComponentType>> = {
-  slides: () => import('./hero-slides-board').then((m) => m.SlidesBoard),
   logo: () => import('./hero-logo-board').then((m) => m.LogoBoard),
+  photo: () => import('./hero-photo-board').then((m) => m.PhotoBoard),
+  present: () => import('./hero-present-board').then((m) => m.PresentBoard),
   together: () => import('./hero-together-board').then((m) => m.TogetherBoard),
 };
 const BOARDS: Record<HeroSceneKey, ComponentType> = {
-  slides: dynamic(BOARD_LOADERS.slides, { ssr: false }),
   logo: dynamic(BOARD_LOADERS.logo, { ssr: false }),
+  photo: dynamic(BOARD_LOADERS.photo, { ssr: false }),
+  present: dynamic(BOARD_LOADERS.present, { ssr: false }),
   together: dynamic(BOARD_LOADERS.together, { ssr: false }),
 };
 
@@ -103,7 +105,7 @@ export function FeatureScene({ scene: key }: { scene: HeroSceneKey }) {
         viewBox={scene.landscapeViewBox}
         playing={playing}
         veil={veil}
-        document={drawn ? <Board /> : null}
+        design={drawn ? <Board /> : null}
         canvasClassName={CANVAS_ASPECT}
       />
     </div>

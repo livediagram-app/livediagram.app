@@ -22,7 +22,7 @@ interface SeoInput {
 
 /** Per-page metadata with a complete Open Graph block, so each help page
  *  carries its own canonical + OG title/url rather than inheriting the
- *  layout's. The document <title> still reads "<Title> | livedesign": the
+ *  layout's. The design <title> still reads "<Title> | livedesign": the
  *  root layout's title template adds the suffix, so link previews get the
  *  bare title and the siteName beside it. */
 export function helpMetadata({ title, description, path }: SeoInput): Metadata {

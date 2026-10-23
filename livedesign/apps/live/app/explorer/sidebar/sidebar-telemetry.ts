@@ -1,14 +1,14 @@
 import { track } from '@/lib/telemetry';
 
 // Which sidebar row was activated (docs/specs/013-workspace/explorer-structure.md#telemetry): a
-// closed set of row kinds, never a team, folder or document name. The editor's floating
+// closed set of row kinds, never a team, folder or design name. The editor's floating
 // Explorer panel builds the same rows and reports them under its own prefix.
 export type SidebarTelemetryRow =
   | 'Home'
   | 'Inbox'
   | 'Timeline'
   | 'SharedWithMe'
-  | 'MyDocuments'
+  | 'MyDesigns'
   | 'Folder'
   | 'Team'
   | 'TeamFolder'
@@ -21,8 +21,8 @@ export type SidebarTelemetryRow =
   | 'Tags'
   | 'Tag'
   | 'Trash'
-  // A document or folder dropped on the Trash row (explorer-structure.md "Dragging to the Trash").
-  | 'TrashDropDocument'
+  // A design or folder dropped on the Trash row (explorer-structure.md "Dragging to the Trash").
+  | 'TrashDropDesign'
   | 'TrashDropFolder';
 
 const SIDEBAR_TELEMETRY_PREFIX = { page: 'Sidebar', panel: 'ExplorerPanel' } as const;

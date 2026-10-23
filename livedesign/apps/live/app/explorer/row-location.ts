@@ -2,14 +2,14 @@
 // chip on Recent, Favourites, Search results and Tags rows, and on a lens that reaches into subfolders. A pure
 // reading of the row, so the rule is tested on its own; the pane supplies where each place opens.
 import type { Folder } from '@/lib/api-client';
-import type { PaneDocument, SelectedNode } from './views';
+import type { PaneDesign, SelectedNode } from './views';
 import { VIEW_TITLES } from './view-titles';
-import { isInThisBrowser } from '@/lib/document-space';
+import { isInThisBrowser } from '@/lib/design-space';
 
 export type RowLocation = { label: string; opens: SelectedNode };
 
 export function rowLocation(
-  d: PaneDocument,
+  d: PaneDesign,
   {
     selected,
     lensActive,
@@ -33,11 +33,11 @@ export function rowLocation(
   // A row in the folder the reader is in needs no chip.
   const here = selected.kind === 'folder' ? selected.id : null;
   if (reaching && d.folderId === here) return null;
-  // A team document's folder belongs to the team's library, which `folderById` (your
+  // A team design's folder belongs to the team's library, which `folderById` (your
   // personal folders) doesn't index: the chip names the TEAM and opens its library.
   if (d.team) return { label: d.team.name, opens: { kind: 'team', id: d.team.id } };
-  // A document in this browser lives there (docs/specs/013-workspace/explorer-structure.md "Places"), not in My
-  // documents, which does not list it: its chip said My Work and opened a list it was not in.
+  // A design in this browser lives there (docs/specs/013-workspace/explorer-structure.md "Places"), not in My
+  // designs, which does not list it: its chip said My Work and opened a list it was not in.
   if (isInThisBrowser(d)) return { label: VIEW_TITLES.offline, opens: { kind: 'offline' } };
   // The root is a location too: My Work.
   if (!d.folderId) return { label: VIEW_TITLES.all, opens: { kind: 'all' } };

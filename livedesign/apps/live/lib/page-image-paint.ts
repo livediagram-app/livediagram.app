@@ -6,7 +6,7 @@ import {
   type PageImageFill,
   type PageImageOverlay,
   type PageImagePosition,
-} from '@livedesign/document';
+} from '@livedesign/design';
 
 const r2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -35,7 +35,7 @@ export function pageImageCssUrl(src: string): string | null {
   return CSS_SAFE.test(src) ? `url("${src}")` : null;
 }
 
-/** The source a page's picture paints from now: a hovered result's thumbnail, an offline document's
+/** The source a page's picture paints from now: a hovered result's thumbnail, an offline design's
  *  inline bytes, or the gallery picture's fetched blob URL (`resolve`), once it has one. */
 export function pageImageSrc(
   fill: PageImageFill,
@@ -46,5 +46,5 @@ export function pageImageSrc(
   return resolve?.(fill.imageId);
 }
 
-// The picture as SVG for the exports and previews (@livedesign/document's page-frame.ts).
-export { pageImageSvg } from '@livedesign/document';
+// The picture as SVG for the exports and previews (@livedesign/design's page-frame.ts).
+export { pageImageSvg } from '@livedesign/design';

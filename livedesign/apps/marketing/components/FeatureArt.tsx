@@ -16,13 +16,15 @@ export * from './feature-art/features';
 export * from './feature-art/embeds-timeline';
 export * from './feature-art/reach';
 export * from './feature-art/versatility-more';
-// Presentation mode (docs/specs/012-collaboration/presentation-mode.md): decks, the full-screen slide, notes, and the
-// fact that presenting is yours alone.
+// Presenting (docs/specs/012-collaboration/presentation-mode.md): the pages in order, a page full screen, notes,
+// and the fact that presenting is yours alone.
 export * from './feature-art/present';
 // Pages (docs/specs/007-editor/pages-mode.md): pages, backgrounds, export.
-export * from './feature-art/infographics';
-export * from './feature-art/infographics-export';
+export * from './feature-art/pages';
+export * from './feature-art/pages-export';
 export * from './feature-art/pages-more';
 // Logo and wireframe pages.
 export * from './feature-art/logo';
 export * from './feature-art/logo-more';
+// Photo pages (docs/specs/031-photo/photo-pages.md).
+export * from './feature-art/photo';

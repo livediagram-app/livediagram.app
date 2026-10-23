@@ -1,16 +1,21 @@
 import type { Metadata } from 'next';
-import { TeamInviteJoin } from '@/components/panels/TeamInviteJoin';
+import { ManagedOnLiveworkspace } from '@/components/panels/ManagedOnLiveworkspace';
+import { manageTeamsUrl } from '@/lib/auth-config';
 
-// /join?token=<token> — landing for a shareable team invite link
-// (docs/specs/013-workspace/teams.md). A top-level route (outside the Explorer chrome) so the
-// signed-out flow can show its own "sign in to join" card instead of
-// being bounced by the explorer's auth gate. `index: false` is
-// inherited from the root layout (docs/specs/007-editor/live-app.md keeps the live app out of the
-// index). The token is read client-side, so this stays a thin shell.
+// /join — where a shareable team invite link used to land (docs/specs/013-workspace/teams.md). Teams
+// are run on liveworkspace.app now (liveworkspace/docs/accounts.md), where people are invited by
+// email, so this points there. `index: false` is inherited from the root layout.
 export const metadata: Metadata = {
   title: 'Join a team | livedocuments',
 };
 
 export default function JoinPage() {
-  return <TeamInviteJoin />;
+  return (
+    <ManagedOnLiveworkspace
+      title="Teams are on liveworkspace.app"
+      body="Your teams work in every liveworkspace app. Invitations wait for you on liveworkspace.app, where you can join and see the teams you're in."
+      href={manageTeamsUrl}
+      cta="Open your teams"
+    />
+  );
 }

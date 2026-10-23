@@ -12,10 +12,10 @@ import {
   labelFontPx,
   type Element,
   type LaidOutPage,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import type { PageLayoutId } from '@livedesign/templates';
 import { buildPageLayout } from '@livedesign/templates';
-import { EditorContext } from '@/app/document/[id]/EditorContext';
+import { EditorContext } from '@/app/design/[id]/EditorContext';
 import { LayoutRenderThumb } from './layout-render-thumb';
 
 // Wide enough to read a layout's parts: two tiles to a row in the panel and the in-page card.

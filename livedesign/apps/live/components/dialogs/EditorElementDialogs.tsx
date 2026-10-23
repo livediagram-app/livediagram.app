@@ -9,12 +9,12 @@ import {
   EMBED_PROVIDER_HINT,
   EMBED_PROVIDER_LABEL,
   embedTargetFor,
-} from '@livedesign/document';
+} from '@livedesign/design';
 
 import { track } from '@/lib/telemetry';
 import { canEditSankey } from '@/lib/sankey-edit';
 import { getTheme, themeChartPalette } from '@/lib/themes';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import { useCloseVanishedDialogs } from '@/components/dialogs/useCloseVanishedDialogs';
 
 const LinkPickerDialog = dynamic(
@@ -51,8 +51,8 @@ export function EditorElementDialogs() {
     tabs,
     activeId,
     linkPickerInitialMode,
-    documentList,
-    documentId,
+    designList,
+    designId,
     applyElementLink,
     setLinkPickerOpenForId,
     cellLinkPickerOpenFor,
@@ -115,7 +115,7 @@ export function EditorElementDialogs() {
 
   // A video's link IS its content (docs/specs/009-elements/youtube-video.md), so its picker is the URL mode
   // only, validated as a YouTube link. Every other element keeps the full
-  // tab / document / URL choice.
+  // tab / design / URL choice.
   const linkTarget = activeTab.elements.find((e) => e.id === linkPickerOpenForId);
   // The provider the embed was created for, when it came from one of the
   // provider tiles (docs/specs/009-elements/embed-providers.md). Names the dialog; the validator still accepts
@@ -164,8 +164,8 @@ export function EditorElementDialogs() {
           tabs={tabs.map((t) => ({ id: t.id, name: t.name }))}
           currentTabId={activeId}
           initialMode={linkPickerInitialMode ?? undefined}
-          recentDocuments={documentList
-            .filter((d) => d.id !== documentId)
+          recentDesigns={designList
+            .filter((d) => d.id !== designId)
             .slice(0, 8)
             .map((d) => ({ id: d.id, name: d.name }))}
           onCommit={(link) => {
@@ -175,7 +175,7 @@ export function EditorElementDialogs() {
               track(
                 'Element',
                 'Linked',
-                link.kind === 'url' ? 'Url' : link.kind === 'document' ? 'Document' : 'Tab',
+                link.kind === 'url' ? 'Url' : link.kind === 'design' ? 'Design' : 'Tab',
               );
           }}
           onClose={() => setLinkPickerOpenForId(null)}
@@ -194,8 +194,8 @@ export function EditorElementDialogs() {
           })()}
           tabs={tabs.map((t) => ({ id: t.id, name: t.name }))}
           currentTabId={activeId}
-          recentDocuments={documentList
-            .filter((d) => d.id !== documentId)
+          recentDesigns={designList
+            .filter((d) => d.id !== designId)
             .slice(0, 8)
             .map((d) => ({ id: d.id, name: d.name }))}
           onCommit={(link) => {
@@ -205,7 +205,7 @@ export function EditorElementDialogs() {
               track(
                 'Element',
                 'Linked',
-                link.kind === 'url' ? 'Url' : link.kind === 'document' ? 'Document' : 'Tab',
+                link.kind === 'url' ? 'Url' : link.kind === 'design' ? 'Design' : 'Tab',
               );
           }}
           onClose={() => setCellLinkPickerOpenFor(null)}
@@ -262,10 +262,10 @@ export function EditorElementDialogs() {
           })()
         : null}
       {/* A Participant places images and swaps their pictures (docs/specs/013-workspace/share-roles.md). */}
-      {imagePickerOpenFor && documentId && (!isReadOnly || can.addContent) ? (
+      {imagePickerOpenFor && designId && (!isReadOnly || can.addContent) ? (
         <ImagePicker
           ownerId={selfParticipant.id}
-          documentId={documentId}
+          designId={designId}
           uploadOnly={workbenchMode}
           forElementId={imagePickerOpenFor.forElementId}
           currentImageId={(() => {
@@ -286,7 +286,7 @@ export function EditorElementDialogs() {
               closeImagePicker();
             }
             // Refresh the Current Tab → Images accordion so the
-            // just-uploaded image surfaces without a document reload.
+            // just-uploaded image surfaces without a design reload.
             refreshRecentImages(selfParticipant.id);
           }}
           onClose={closeImagePicker}

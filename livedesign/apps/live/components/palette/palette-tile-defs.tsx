@@ -1,10 +1,10 @@
 import { BADGE_PRESET_TILES, CARD_PRESET_TILES } from './palette-element-presets';
 import { BadgePresetGlyph } from './BadgePresetGlyph';
-import { badgePresetFace, type PenColour } from '@livedesign/document';
+import { badgePresetFace, type PenColour } from '@livedesign/design';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
-import type { EmbedProvider } from '@livedesign/document';
+import type { EmbedProvider } from '@livedesign/design';
 
-import type { ComponentKind, ShapeKind } from '@livedesign/document';
+import type { ComponentKind, ShapeKind } from '@livedesign/design';
 import { HighlighterIcon, ShapePenIcon } from '@/components/palette/palette-icons';
 import {
   lucideCircle,
@@ -85,7 +85,7 @@ type PaletteTileAction =
   | {
       type: 'shape';
       kind: ShapeKind;
-      // A creation-time variant of the kind (packages/document shape-variants.ts): the Callout card, a Funnel.
+      // A creation-time variant of the kind (packages/design shape-variants.ts): the Callout card, a Funnel.
       variant?: string;
     }
   | { type: 'text' }
@@ -103,7 +103,7 @@ type PaletteTileAction =
   // The Path tool (docs/specs/023-draw-mode/path-tool.md): a logo page's Pen (logo-pages.md).
   | { type: 'path' }
   // `ends`: the Line tile's `'none'`; the Arrow tile leaves it to the tool's pointer at its end.
-  | { type: 'arrow'; ends?: import('@livedesign/document').ArrowEnds }
+  | { type: 'arrow'; ends?: import('@livedesign/design').ArrowEnds }
   | { type: 'sticky' }
   | { type: 'table' }
   | { type: 'image' }
@@ -383,7 +383,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     // Page (docs/specs/009-elements/page-element.md). Sits first in Write: it is the largest writing
     // surface, and the group reads shortest-to-longest from there. Called
-    // Page, not Document, so the palette and the selection toolbar agree —
+    // Page, not Design, so the palette and the selection toolbar agree —
     // and so it never collides with the Shapes tab's flowchart "document".
     id: 'tools:page',
     blurb: 'A paper-shaped page for prose',
@@ -612,14 +612,14 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    // The tab window (docs/specs/009-elements/tab-window.md): another tab of the document, live, fitted inside it.
+    // The tab window (docs/specs/009-elements/tab-window.md): another tab of the design, live, fitted inside it.
     id: 'media:tab-window',
     blurb: 'Another tab, live',
     caption: 'Tab Window',
     section: 'media',
     label: 'Add Tab Window',
     description:
-      'Tab Window. Shows another tab of this document, live and fitted inside it, so a slide stays up to date with the diagram it shows.',
+      'Tab Window. Shows another tab of this design, live and fitted inside it, so a slide stays up to date with the diagram it shows.',
     dividerAfter: true,
     action: { type: 'shape', kind: 'tab-window' },
     icon: (

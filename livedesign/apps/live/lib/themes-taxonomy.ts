@@ -5,7 +5,7 @@
 import type { ThemeId } from './themes';
 
 // Short, user-facing blurb per built-in theme, shown under the label on
-// the picker's theme cards (docs/specs/007-editor/new-document-route.md). A `Record<ThemeId, string>` so the
+// the picker's theme cards (docs/specs/007-editor/new-design-route.md). A `Record<ThemeId, string>` so the
 // compiler forces every theme to carry one: add a ThemeId without a line
 // here and the build fails, which is how this can't drift from THEMES.
 // Custom themes have no entry (their card shows just the saved name).

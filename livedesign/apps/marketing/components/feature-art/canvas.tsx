@@ -1,5 +1,4 @@
-// Feature illustrations: templates and themes and tidy editing (the Diagrams category's canvas
-// cards; tab links and folders are in ./tabs; the Collaborate cards live in ./together). Each is a small mock of the editor
+// Feature illustrations: templates and themes and tidy editing (the canvas cards; tab links and folders are in ./tabs; the Collaborate cards live in ./together). Each is a small mock of the editor
 // surface its card describes, plain SVG on the card's 300 by 96 stage (Scene in ./canvas-parts),
 // composed across the full width. Motion runs on one shared 6s timeline
 // (app/feature-art/canvas.css, the canvas and collaboration block): pieces are drawn where they end up and staggered
@@ -50,15 +49,15 @@ const THEMES = [
 ];
 // Each theme's turn in the 6s cycle (.fa-a-cycle): a third each.
 const TURN = [0, -4, -2];
-// The themed diagram: [x, y, width, label].
+// The themed screen flow: [x, y, width, label].
 const THEMED: [number, number, number, string][] = [
-  [30, 37, 40, 'Idea'],
-  [86, 37, 40, 'Plan'],
-  [142, 24, 40, 'Build'],
-  [142, 50, 40, 'Test'],
+  [30, 37, 40, 'Sign in'],
+  [86, 37, 40, 'Home'],
+  [142, 24, 40, 'Cart'],
+  [142, 50, 40, 'Profile'],
 ];
 
-/** One click recolours everything: the same diagram in Default, Forest and Sunset in turn. */
+/** One click recolours everything: the same screen flow in Default, Forest and Sunset in turn. */
 export function ThemesArt() {
   return (
     <Scene>

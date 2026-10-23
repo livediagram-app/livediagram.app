@@ -19,7 +19,7 @@ livedocuments --help
 Create an API token in livedocuments (Settings › API Tokens), then either set it for a command:
 
 ```bash
-export LIVEDOCUMENTS_TOKEN=lvd_...
+export LIVEDOCUMENTS_TOKEN=lwt_...
 ```
 
 or store it for this machine:

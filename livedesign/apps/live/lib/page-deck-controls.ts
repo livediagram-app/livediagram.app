@@ -1,7 +1,7 @@
 // A page's controls over the slide deck (docs/specs/012-collaboration/presentation-mode.md
 // "The deck follows the pages"): find the deck's slide of a page on the tab, add one, hide or show it, write its notes.
 // Absent for a person who cannot change the deck.
-import type { Deck } from '@livedesign/document';
+import type { Deck } from '@livedesign/design';
 import type { PageDeckControls } from '@/hooks/editor/usePagesMode';
 
 export function pageDeckControls(

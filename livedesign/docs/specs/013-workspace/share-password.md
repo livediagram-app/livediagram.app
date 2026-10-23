@@ -1,7 +1,7 @@
 # Share password
 
-An optional **password on a document** that gates share-link access. When set,
-anyone opening any share link for that document must enter the password before
+An optional **password on a design** that gates share-link access. When set,
+anyone opening any share link for that design must enter the password before
 they can view it, and the password rides on every subsequent API call so writes
 stay gated too. The point is to stop people guessing share URLs, not to provide
 cryptographic protection, though the stored value is hashed so a database
@@ -12,9 +12,9 @@ identity, share-code path) and [11-api](../015-api/api.md) (share links).
 
 ## Model
 
-- The password is a property of the **document**, not of individual links. One
-  password covers every share link the owner mints (`docs/specs/015-api/api.md` lets a document
-  have many). Column: `documents.share_password TEXT` (nullable; null / empty =
+- The password is a property of the **design**, not of individual links. One
+  password covers every share link the owner mints (`docs/specs/015-api/api.md` lets a design
+  have many). Column: `designs.share_password TEXT` (nullable; null / empty =
   no password). The baseline migration, `0001_livedesign_baseline.sql`.
 - **Stored hashed.** The column holds
   `pbkdf2-sha256$<iterations>$<salt>$<hash>` (base64url salt of 16 bytes, 32-byte
@@ -43,51 +43,51 @@ identity, share-code path) and [11-api](../015-api/api.md) (share links).
   key `share-pw:<network>`, where the network is the caller's IPv4 address or
   IPv6 /64 (`clientRateKey`). Over the limit, the attempt is treated as wrong
   without being checked, so the answer never reveals whether a guess was right.
-  This covers every share-code door (the resolve, `canReadDocument` /
-  `canEditDocument`, images, the room's `p`), not just the resolve. A correct
+  This covers every share-code door (the resolve, `canReadDesign` /
+  `canEditDesign`, images, the room's `p`), not just the resolve. A correct
   visitor is answered from the cache after their first check in an isolate, so
   they spend almost nothing. The resolve read (`GET /api/share/:code`) keeps its
   own per-network request throttle on the same binding.
-- It is **never** returned anywhere: not in the document DTO, and not to the
+- It is **never** returned anywhere: not in the design DTO, and not to the
   owner either.
 - The **owner always bypasses** the password (identified by `ownerId` / Clerk
   `sub`). The gate only applies to non-owner, share-code access.
 
 ## API (apps/api)
 
-- `GET /api/documents/:id/share` (owner, or a joined team member on a team document; existing): response carries
+- `GET /api/designs/:id/share` (owner, or a joined team member on a team design; existing): response carries
   `passwordSet: boolean` alongside `links`. This is how the Share dialog knows
   whether a password is in force.
-- `PUT /api/documents/:id/share-password` (owner, or a joined team member on a team document). Body
+- `PUT /api/designs/:id/share-password` (owner, or a joined team member on a team design). Body
   `{ password: string | null }`. A null / empty / whitespace-only value clears
   the password; anything else is trimmed, then hashed and stored. The visitor's
   gate trims what is typed too, so a password saved with a stray leading or
   trailing space is still the one a visitor can enter. Returns
   `{ passwordSet: boolean }`.
-- `GET /api/share/:code` (viewer resolve): if the document has a password, return
+- `GET /api/share/:code` (viewer resolve): if the design has a password, return
   **401 `{ error: 'password_required' }`** when the request carries no
   `X-Share-Password`, **403 `{ error: 'password_invalid' }`** when it carries
-  the wrong one, and only record the visit + return the document on a match.
+  the wrong one, and only record the visit + return the design on a match.
 - Every other share-code-authorised route is gated through
-  `canReadDocument` / `canEditDocument` (`src/auth/document-access.ts`). Both gain a
-  `sharePassword` argument: after the link + role check, if the document has a
+  `canReadDesign` / `canEditDesign` (`src/auth/design-access.ts`). Both gain a
+  `sharePassword` argument: after the link + role check, if the design has a
   password and the provided one doesn't match, access is denied. The header is
   `X-Share-Password`, read via `sharePasswordOf(request)` (`routes/context.ts`),
-  threaded at every call site (the document read/write/log routes + the image
+  threaded at every call site (the design read/write/log routes + the image
   route). Owner-id and Clerk paths short-circuit before the password check.
-- `GET /api/documents/:id/ws` (realtime upgrade): browsers can't set headers on a
+- `GET /api/designs/:id/ws` (realtime upgrade): browsers can't set headers on a
   WS upgrade, so the editor never sends the password there. It sends the password
-  as `X-Share-Password` to `POST /api/documents/:id/room-ticket`, whose gate checks
+  as `X-Share-Password` to `POST /api/designs/:id/room-ticket`, whose gate checks
   it like any other door, and joins with the ticket alone (`?t=`;
   [API](../015-api/api.md) "Realtime model"), so the password never rides a URL.
   The upgrade still accepts the legacy `p` query param beside `s` / `o` from an
   editor older than 2026-10-17, until those legs are retired: a password-protected
-  document refuses that upgrade (403) unless `p` matches; the owner (`o` matches)
+  design refuses that upgrade (403) unless `p` matches; the owner (`o` matches)
   bypasses.
 
-Helpers in `src/db/documents.ts` (the db.ts split moved them out of the
-old monolithic module): `getDocumentSharePassword(env, id)` returns the stored
-value (a hash, or a legacy plain-text value), `setDocumentSharePassword(env, id,
+Helpers in `src/db/designs.ts` (the db.ts split moved them out of the
+old monolithic module): `getDesignSharePassword(env, id)` returns the stored
+value (a hash, or a legacy plain-text value), `setDesignSharePassword(env, id,
 stored | null)` writes one. The password a request carries travels as a
 `SharePasswordAttempt` (`{ value, rateKey }`, from `sharePasswordOf(request)`),
 so the check can spend the caller's guessing budget.
@@ -100,7 +100,7 @@ so the check can spend the caller's guessing budget.
   `connectRoom` appends `&p=`. This keeps the password plumbing in one place
   instead of threading it through every call site.
 - `apiLoadShared(code, ownerId)` returns a discriminated result:
-  `{ document, role }` on success, `{ passwordRequired: true, invalid: boolean }`
+  `{ design, role }` on success, `{ passwordRequired: true, invalid: boolean }`
   on 401/403, or `null` on 404 (not found / revoked). `invalid` is true only
   when a wrong password was submitted (403), so the gate can show an error.
 - `apiSetSharePassword(ownerId, id, password | null)` → the PUT above,
@@ -115,7 +115,7 @@ accepted password is kept in `localStorage` under
 text (`readCachedSharePassword` / `writeCachedSharePassword` in
 `lib/api/core.ts`).
 
-- **Keyed by share code**, not document id: the document id only resolves after
+- **Keyed by share code**, not design id: the design id only resolves after
   the gate is passed, and the code is what the URL carries on arrival.
 - **Read** at the start of a share-link bootstrap and set as the session share
   password, so the first `GET /api/share/:code` already carries it.
@@ -129,13 +129,13 @@ text (`readCachedSharePassword` / `writeCachedSharePassword` in
   the visitor clears their site data. A revoked link never reaches the cache
   read (the resolve answers `404` first), so its entry is inert.
 - **Plain text** in the visitor's own browser matches the threat model above:
-  anyone able to read this browser's storage can already open the document in it.
+  anyone able to read this browser's storage can already open the design in it.
 - In an **embed**, browsers partition third-party iframe storage, so the cache
   is per embedding site ([Read-only embeds (`/embed`)](embeds.md)).
 
 ## Editor flow (apps/live, viewer)
 
-When a visitor opens `/document/shared?s=<code>` and `apiLoadShared` reports
+When a visitor opens `/design/shared?s=<code>` and `apiLoadShared` reports
 `passwordRequired`, the editor shows a **password gate** (`SharePasswordGate`, a
 full-screen card with a lock, a single password input, and an error line) rather
 than the canvas. On submit it calls `setSessionSharePassword(pw)` and re-runs
@@ -166,7 +166,7 @@ moving piece while it is up.
 
 ## Share dialog (owner)
 
-The "Share This Document" dialog carries a **Password Protection** switch
+The "Share This Design" dialog carries a **Password Protection** switch
 beneath the passes (see [Live app → Share dialog](../007-editor/live-app.md#share-dialog);
 it applies to all links), hinting that everyone opening a pass must enter it,
 embeds included ([Read-only embeds (`/embed`)](embeds.md)). Switched on with no
@@ -183,9 +183,9 @@ Each pass shows a Password tag while one is set. Setting / clearing calls
 
 Owner sets a password: `track('Document', 'Shared', 'PasswordSet')`. Owner clears
 it: `track('Document', 'Shared', 'PasswordCleared')`. Both reuse the existing
-`Document` / `Shared` pair; the `type` is a preset string, never the password.
-The visitor-join event is unchanged (`Document` / `Joined` / `Edit|View`).
+`Design` / `Shared` pair; the `type` is a preset string, never the password.
+The visitor-join event is unchanged (`Design` / `Joined` / `Edit|View`).
 
 ## Out of scope (for now)
 
-- Per-link passwords (one document-level password is the requirement).
+- Per-link passwords (one design-level password is the requirement).

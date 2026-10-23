@@ -3,12 +3,12 @@ import {
   __setOfflineBackend,
   isOfflineId,
   OFFLINE_STORE_OPEN_TIMEOUT_MS,
-  offlineListDocuments,
+  offlineListDesigns,
 } from './offline-store';
 import { setApiWarningReporter } from '../api/error-report';
 
 // docs/specs/007-editor/load-recovery.md "The load always ends": a browser whose IndexedDB never
-// answers `open` must not hold the document load (which asks isOfflineId first) open forever.
+// answers `open` must not hold the design load (which asks isOfflineId first) open forever.
 
 type Req = {
   onsuccess: (() => void) | null;
@@ -80,7 +80,7 @@ describe('offline store open limit', () => {
   });
 
   it('rejects other operations rather than hanging', async () => {
-    const list = offlineListDocuments().catch((e: unknown) => e);
+    const list = offlineListDesigns().catch((e: unknown) => e);
     await vi.advanceTimersByTimeAsync(OFFLINE_STORE_OPEN_TIMEOUT_MS);
     expect(await list).toMatchObject({ name: 'OfflineStoreUnavailableError' });
   });

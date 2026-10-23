@@ -3,13 +3,13 @@
 // Home's hero (docs/specs/013-workspace/explorer-home.md "The hero"; blueprint
 // docs/specs/013-workspace/blueprints/explorer-home-view.md "Presentation and UX"): the full-width band under the
 // Explorer header on Home, its page header. Status pills, the greeting, the lead, the lens field drawn large with
-// New Document inside it, and the fanned sheets of the newest documents. Reads only what the shell already holds.
+// New Design inside it, and the fanned sheets of the newest designs. Reads only what the shell already holds.
 
 import { lazy, Suspense, useMemo } from 'react';
 import { PlusIcon } from '@/components/primitives/explorer-icons';
 import { HeroCorner } from './HeroCorner';
-import { isInThisBrowser } from '@/lib/document-space';
-import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
+import { isInThisBrowser } from '@/lib/design-space';
+import { DesignThumbnail } from '@/components/panels/DesignThumbnail';
 import { track } from '@/lib/telemetry';
 import { useNow } from '@/hooks/ui/useNow';
 import { useExplorer } from '@/app/explorer/ExplorerContext';
@@ -43,7 +43,7 @@ const HeroTemplateFan = lazy(() =>
 export function HomeHero({ active = true }: { active?: boolean }) {
   const {
     ownerId,
-    documents,
+    designs,
     loading,
     failedReads,
     activity,
@@ -52,29 +52,29 @@ export function HomeHero({ active = true }: { active?: boolean }) {
     lens,
     lensResult,
   } = useExplorer();
-  const sheets = useMemo(() => heroSheets(documents), [documents]);
+  const sheets = useMemo(() => heroSheets(designs), [designs]);
   const pills = heroPills({
     // A list that failed to load has no count to tell.
-    documents: loading || failedReads.documents ? undefined : documents.length,
+    designs: loading || failedReads.designs ? undefined : designs.length,
     inbox: inboxBadge(activity),
   });
   const { heroFirstRun: firstRun, signedIn } = useFirstRun();
   const now = useNow(false);
   const greeting = heroGreeting(new Date(now).getHours());
 
-  const newDocument = (
+  const newDesign = (
     <button
       type="button"
-      aria-label={HERO_COPY.newDocument}
+      aria-label={HERO_COPY.newDesign}
       onClick={() => {
-        track('Home', 'Selected', 'Hero.NewDocument');
+        track('Home', 'Selected', 'Hero.NewDesign');
         assignAppLocation('/new');
       }}
       className={`optical-edges flex h-11 shrink-0 items-center gap-2 rounded-xl bg-brand-700 px-[18px] text-[15px] font-semibold text-white transition hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-700 ${FOCUS_RING}`}
     >
       <PlusIcon />
       {/* The label folds to the plus on a phone; the button keeps its name. */}
-      <span className="hidden sm:text-optical-line">{HERO_COPY.newDocument}</span>
+      <span className="hidden sm:text-optical-line">{HERO_COPY.newDesign}</span>
     </button>
   );
 
@@ -122,7 +122,7 @@ export function HomeHero({ active = true }: { active?: boolean }) {
             ) : null}
             {(firstRun ? [] : pills).map((pill) => {
               const view =
-                pill.id === 'documents' ? ({ kind: 'all' } as const) : ({ kind: 'inbox' } as const);
+                pill.id === 'designs' ? ({ kind: 'all' } as const) : ({ kind: 'inbox' } as const);
               return (
                 <InAppLink
                   key={pill.id}
@@ -132,7 +132,7 @@ export function HomeHero({ active = true }: { active?: boolean }) {
                     track(
                       'Home',
                       'Selected',
-                      pill.id === 'documents' ? 'Hero.Documents' : 'Hero.Inbox',
+                      pill.id === 'designs' ? 'Hero.Designs' : 'Hero.Inbox',
                     )
                   }
                   className={`${PILL} transition hover:border-slate-300 dark:hover:border-slate-600 ${FOCUS_RING}`}
@@ -164,7 +164,7 @@ export function HomeHero({ active = true }: { active?: boolean }) {
           </p>
           <div className="max-w-2xl">
             {!active ? (
-              <LensFieldStill size="hero" trailing={newDocument} />
+              <LensFieldStill size="hero" trailing={newDesign} />
             ) : firstRun ? (
               <WelcomeSearch />
             ) : (
@@ -172,7 +172,7 @@ export function HomeHero({ active = true }: { active?: boolean }) {
                 lens={lens}
                 subjects={lensResult.subjects}
                 size="hero"
-                trailing={newDocument}
+                trailing={newDesign}
               />
             )}
           </div>
@@ -188,12 +188,12 @@ export function HomeHero({ active = true }: { active?: boolean }) {
           ) : null}
           {(firstRun ? [] : sheets).map((doc, i) => (
             <span key={doc.id} data-hero-sheet="" className={`${SHEET_FRAME} ${SHEET_PLACES[i]}`}>
-              <DocumentThumbnail
+              <DesignThumbnail
                 ownerId={ownerId}
-                documentId={doc.id}
+                designId={doc.id}
                 version={doc.savedAt}
                 empty={doc.empty}
-                // A document in This Browser has no server snapshot: asking for one only 404s.
+                // A design in This Browser has no server snapshot: asking for one only 404s.
                 offline={isInThisBrowser(doc)}
                 className="block h-full w-full"
               />

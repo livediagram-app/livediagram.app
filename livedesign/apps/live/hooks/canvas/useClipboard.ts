@@ -9,11 +9,11 @@
 // clipboard got a sentinel string, written purely to displace a lingering
 // image. That works within one editor instance and nowhere else — component
 // state cannot cross a browser tab, a second window, or a reload, which is
-// where "copy this and put it in that document" actually happens. The real
+// where "copy this and put it in that design" actually happens. The real
 // elements go on the clipboard now.
 //
 // The in-app buffer is KEPT as a fallback rather than deleted. Clipboard
-// writes are best-effort (writeText rejects when the document isn't focused,
+// writes are best-effort (writeText rejects when the design isn't focused,
 // and permission can be denied outright), and a copy that silently did
 // nothing would be much worse than one that still pastes in the tab you are
 // in. So copy writes both, and paste prefers what is actually on the
@@ -31,7 +31,7 @@
 
 import type { Selection } from '@/lib/selection-store';
 import { useEffect, useRef, useState } from 'react';
-import { duplicateElements, withAttached, type Element, type Tab } from '@livedesign/document';
+import { duplicateElements, withAttached, type Element, type Tab } from '@livedesign/design';
 import { anyModalOpen } from '@/lib/modal-guard';
 import { watchPrimarySelectionPaste } from '@/lib/primary-selection-paste';
 import {
@@ -43,7 +43,7 @@ import {
   stripIdentity,
 } from '@/lib/clipboard-payload';
 import { pasteTranslation } from '@/lib/paste-placement';
-import { addImageFileForDocument } from '@/lib/upload-image';
+import { addImageFileForDesign } from '@/lib/upload-image';
 import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import type { useToast } from '@/hooks/ui/useToast';
@@ -71,7 +71,7 @@ type ImageDescriptor = {
 type ClipboardDeps = {
   isReadOnly: boolean;
   // True while new elements can't land: edits are blocked, or the active layer
-  // is hidden or locked (docs/specs/006-document/layers.md). A paste adds
+  // is hidden or locked (docs/specs/006-design/layers.md). A paste adds
   // elements, so it obeys the same guard as every other creation path.
   createBlocked?: boolean;
   // Says why a paste was refused (the layers slice's blocked-creation notice).
@@ -93,13 +93,13 @@ type ClipboardDeps = {
   setMultiSelectedIds: (ids: Set<string>) => void;
   // Drops a new image element pre-filled with an uploaded image. From
   // useEditorImages; undefined when image support is unavailable (no
-  // document id / read-only), in which case image paste is a no-op.
+  // design id / read-only), in which case image paste is a no-op.
   addImageFromGallery?: (image: ImageDescriptor, at?: { x: number; y: number }) => void;
   // The local participant id — owner of uploaded paste images.
   ownerId: string;
-  // The current document id (null before hydration). Offline documents embed
-  // pasted images locally instead of uploading (docs/specs/006-document/offline-mode.md).
-  documentId: string | null;
+  // The current design id (null before hydration). Offline designs embed
+  // pasted images locally instead of uploading (docs/specs/006-design/offline-mode.md).
+  designId: string | null;
   toast: ReturnType<typeof useToast>;
   // The canvas-coord rectangle on screen; a paste whose usual spot is outside
   // it lands in its middle (docs/specs/008-canvas/canvas-and-palette.md Clipboard).
@@ -121,7 +121,7 @@ export function useClipboard(deps: ClipboardDeps) {
     setMultiSelectedIds,
     addImageFromGallery,
     ownerId,
-    documentId,
+    designId,
     toast,
     getViewportCanvasRect,
   } = deps;
@@ -177,7 +177,7 @@ export function useClipboard(deps: ClipboardDeps) {
     // prefers an image, and the in-app copy never used to touch the system
     // clipboard, so a stale screenshot re-dropped itself forever).
     //
-    // Best-effort by necessity: writeText rejects when the document isn't
+    // Best-effort by necessity: writeText rejects when the design isn't
     // focused or permission is denied, and there is nothing useful to say to
     // the user about it — the in-app buffer above still pastes in this
     // window, which is what they were about to do anyway.
@@ -253,9 +253,9 @@ export function useClipboard(deps: ClipboardDeps) {
             type: file.type,
           });
     try {
-      // Cloud documents upload; offline documents embed the paste locally
-      // as a data URI (docs/specs/006-document/offline-mode.md) so no server copy is created.
-      const { image } = await addImageFileForDocument(ownerId, documentId, named);
+      // Cloud designs upload; offline designs embed the paste locally
+      // as a data URI (docs/specs/006-design/offline-mode.md) so no server copy is created.
+      const { image } = await addImageFileForDesign(ownerId, designId, named);
       addImageFromGallery(
         {
           id: image.id,

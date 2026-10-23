@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Element, StickyElement } from '@livedesign/document';
+import type { Element, StickyElement } from '@livedesign/design';
 import { serialiseElements } from '@/lib/clipboard-payload';
 import { useClipboard } from './useClipboard';
 
@@ -38,7 +38,7 @@ function harness(editingId: string | null) {
       setSelectedId: () => {},
       setMultiSelectedIds: () => {},
       ownerId: 'me',
-      documentId: 'd',
+      designId: 'd',
       toast: { error: vi.fn() } as never,
     }),
   );

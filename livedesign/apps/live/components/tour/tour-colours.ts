@@ -2,7 +2,7 @@
 // panels' palette (useStartPalette) as the CSS variables TourPopover and TourStage paint from, so every tour (the Pages tour, the
 // element tours, Show Me) reads as part of the tab it runs on. Pure.
 import type { CSSProperties } from 'react';
-import { contrastRatio, isLightColor, toneToContrast } from '@livedesign/document';
+import { contrastRatio, isLightColor, toneToContrast } from '@livedesign/design';
 
 // The palette colours a tour's card is painted in: its surface, border, ink, muted ink and accent.
 export type TourPalette = {

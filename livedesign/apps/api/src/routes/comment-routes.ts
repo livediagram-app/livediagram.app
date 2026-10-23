@@ -1,5 +1,5 @@
 // The comment endpoints (docs/specs/024-agents/agent-presence.md "Comments", blueprint "REST"): add, delete-own,
-// reply, resolve and reopen on a tab, and the thread listing across a document. People and agents use the same
+// reply, resolve and reopen on a tab, and the thread listing across a design. People and agents use the same
 // endpoints, gated by participation; every write goes through the tab's revision (I8), retried once on a lost
 // race, and reaches the room as an `el-delta` without author or token ids.
 
@@ -7,8 +7,8 @@ import { logRefusal } from './refusal-log';
 import {
   COMMENT_TEXT_MAX,
   isCommentListStatus,
-  type DocumentCommentThread,
-  type DocumentCommentsResponse,
+  type DesignCommentThread,
+  type DesignCommentsResponse,
 } from '@livedesign/api-schema';
 import {
   applyElementDelta,
@@ -16,10 +16,10 @@ import {
   type Comment,
   type Element,
   type ElementDelta,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { commentThreadOf, findCommentHost, removeComment, threadsOfTab } from '../comments';
 import {
-  getDocument,
+  getDesign,
   getParticipant,
   getTab,
   isTabRevStale,
@@ -46,7 +46,7 @@ import {
   deniedParticipate,
   gateParticipate,
   gateRead,
-  missingDocument,
+  missingDesign,
   readBody,
   requireOwner,
   type RouteContext,
@@ -54,11 +54,11 @@ import {
 
 type ThreadVerb = 'reply' | 'resolve' | 'reopen';
 
-type Doc = NonNullable<Awaited<ReturnType<typeof getDocument>>>;
+type Doc = NonNullable<Awaited<ReturnType<typeof getDesign>>>;
 type CommentCaller = { doc: Doc; owner: string };
 type Caller = CommentCaller;
 
-// The caller and the document, when the caller may take part on the tab.
+// The caller and the design, when the caller may take part on the tab.
 async function participant(
   ctx: RouteContext,
   id: string,
@@ -66,8 +66,8 @@ async function participant(
 ): Promise<Caller | Response> {
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
-  const doc = await getDocument(ctx.env, id);
-  if (!doc) return missingDocument(ctx, id);
+  const doc = await getDesign(ctx.env, id);
+  if (!doc) return missingDesign(ctx, id);
   // Commenting is a Participant's (docs/specs/013-workspace/share-roles.md): a Viewer only looks.
   if (!(await gateParticipate(ctx, id, doc.ownerId, doc.teamId, tabId)))
     return deniedParticipate(ctx, doc, tabId);
@@ -98,7 +98,7 @@ async function writeTab(
       if (!(await storeTab(write))) return payloadTooLarge();
     } catch (err) {
       if (!isTabRevStale(err)) throw err;
-      console.info('[comments] lost race', { documentId: id, tabId, attempt });
+      console.info('[comments] lost race', { designId: id, tabId, attempt });
       continue;
     }
     ctx.waitUntil?.(relayElementDelta(ctx.env, id, tabId, change.elementId, change.delta));
@@ -196,7 +196,7 @@ async function addComment(ctx: RouteContext, id: string, tabId: string): Promise
   if (written instanceof Response) return written;
   afterCommentPosted(ctx, caller, comment, reply);
   console.info('[comments] added', {
-    documentId: id,
+    designId: id,
     tabId,
     agent: ctx.token !== null,
   });
@@ -229,7 +229,7 @@ async function deleteOwn(
   });
   if (written instanceof Response) return written;
   ctx.waitUntil?.(retractComments(ctx.env, id, [{ id: commentId, threadKey }]));
-  console.info('[comments] deleted', { documentId: id, tabId, agent: ctx.token !== null });
+  console.info('[comments] deleted', { designId: id, tabId, agent: ctx.token !== null });
   return noContent();
 }
 
@@ -253,7 +253,7 @@ async function threadVerb(
     });
     if (written instanceof Response) return written;
     afterCommentPosted(ctx, caller, comment, true);
-    console.info('[comments] replied', { documentId: id, tabId, agent: ctx.token !== null });
+    console.info('[comments] replied', { designId: id, tabId, agent: ctx.token !== null });
     return json({ comment }, { status: 201 });
   }
   const resolved = verb === 'resolve';
@@ -283,7 +283,7 @@ async function threadVerb(
   console.info(
     `[comments] ${written.change ? (resolved ? 'resolved' : 'reopened') : `${verb} unchanged`}`,
     {
-      documentId: id,
+      designId: id,
       tabId,
       agent: ctx.token !== null,
     },
@@ -291,16 +291,16 @@ async function threadVerb(
   return noContent();
 }
 
-// GET /api/documents/:id/comments?status=: the threads across the document, one tab read at a time (PR21). A
+// GET /api/designs/:id/comments?status=: the threads across the design, one tab read at a time (PR21). A
 // grant confined to one tab lists that tab only.
 async function listThreads(ctx: RouteContext, id: string): Promise<Response> {
   const status = ctx.url.searchParams.get('status') ?? 'open';
   if (!isCommentListStatus(status)) return json({ error: 'invalid_status' }, { status: 400 });
-  const doc = await getDocument(ctx.env, id);
-  if (!doc) return missingDocument(ctx, id);
+  const doc = await getDesign(ctx.env, id);
+  if (!doc) return missingDesign(ctx, id);
   const whole = await gateRead(ctx, id, doc.ownerId, doc.teamId);
   const viewer = ctx.resolveOwner();
-  const threads: DocumentCommentThread[] = [];
+  const threads: DesignCommentThread[] = [];
   let readable = whole;
   let tabsRead = 0;
   for (const tabId of await tabIdsWithComments(ctx.env, id)) {
@@ -312,12 +312,12 @@ async function listThreads(ctx: RouteContext, id: string): Promise<Response> {
       if (tab) threads.push(...threadsOfTab(tab, status, viewer));
       tabsRead++;
     } catch (err) {
-      console.warn('[comments] list skipped tab', { documentId: id, tabId, error: String(err) });
+      console.warn('[comments] list skipped tab', { designId: id, tabId, error: String(err) });
     }
   }
   if (!readable) return deniedOnTab(ctx, doc);
-  console.info('[comments] listed', { documentId: id, status, tabsRead, threads: threads.length });
-  const body: DocumentCommentsResponse = { threads };
+  console.info('[comments] listed', { designId: id, status, tabsRead, threads: threads.length });
+  const body: DesignCommentsResponse = { threads };
   return json(body);
 }
 
@@ -326,7 +326,7 @@ export async function handleCommentRoutes(ctx: RouteContext): Promise<Response |
   const res = await commentRoute(ctx);
   if (res && res.status >= 400)
     await logRefusal('[comments] refused', res, {
-      documentId: ctx.segments[2],
+      designId: ctx.segments[2],
       tabId: ctx.segments[4] ?? null,
       route: COMMENT_ROUTE_NAMES[ctx.segments.length] ?? ctx.segments[7] ?? 'comments',
       agent: ctx.token !== null,

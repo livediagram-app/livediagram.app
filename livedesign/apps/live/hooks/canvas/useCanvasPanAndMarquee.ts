@@ -7,7 +7,7 @@ import {
   endpointPosition,
   isBoxed,
   type Element,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { pointerToCanvas } from '@/lib/canvas';
 import { beginCanvasGesture } from '@/lib/canvas-gesture';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -33,7 +33,7 @@ import { isTypingTarget } from '@/lib/typing-target';
 //     deselect (matches the user's expectation that a tiny stray
 //     drag isn't a selection gesture).
 //
-//   - Space-held modifier. Document-level keydown / keyup listener
+//   - Space-held modifier. Design-level keydown / keyup listener
 //     flips a ref that the Canvas's pointerdown handler reads to
 //     decide pan vs marquee when the canvas tool is otherwise
 //     "select" (mirrors Figma / Excalidraw's hold-space-to-pan).
@@ -80,7 +80,7 @@ type Api = {
   marquee: MarqueeState | null;
   setMarquee: React.Dispatch<React.SetStateAction<MarqueeState | null>>;
   // `spaceHeldRef.current === true` while the user holds Space and
-  // the document focus isn't in an input. Canvas's pointerdown
+  // the design focus isn't in an input. Canvas's pointerdown
   // reads this to decide pan vs marquee.
   spaceHeldRef: RefObject<boolean>;
   // The same, as state, for what render shows (the canvas cursor).

@@ -92,8 +92,8 @@ describe('handleAi origin allow-list (AI_ALLOWED_ORIGINS)', () => {
 
   it('accepts when Origin matches one of multiple comma-separated entries (whitespace tolerant)', async () => {
     const ctx = makeCtx({
-      env: { AI_ALLOWED_ORIGINS: 'https://livedesign.app , http://localhost:3302' },
-      origin: 'http://localhost:3302',
+      env: { AI_ALLOWED_ORIGINS: 'https://livedesign.app , http://localhost:3402' },
+      origin: 'http://localhost:3402',
     });
     const res = await handleAi(ctx);
     expect(res.status).not.toBe(403);

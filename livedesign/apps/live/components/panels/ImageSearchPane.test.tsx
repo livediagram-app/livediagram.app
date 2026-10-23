@@ -70,7 +70,7 @@ async function searchFor(q: string) {
 
 describe('ImageSearchPane loading', () => {
   it('fills the grid with placeholder photos and names the query while it searches', async () => {
-    render(<ImageSearchPane ownerId="o" documentId="d" onPicked={vi.fn()} />);
+    render(<ImageSearchPane ownerId="o" designId="d" onPicked={vi.fn()} />);
     await searchFor('mountains');
     expect(screen.getByText(/Searching Openverse for/).textContent).toContain('“mountains”');
     expect(document.querySelectorAll('[data-image-search-skeleton]')).toHaveLength(8);
@@ -84,7 +84,7 @@ describe('ImageSearchPane loading', () => {
   });
 
   it('shows each tile as a placeholder until its thumbnail loads', async () => {
-    render(<ImageSearchPane ownerId="o" documentId="d" onPicked={vi.fn()} />);
+    render(<ImageSearchPane ownerId="o" designId="d" onPicked={vi.fn()} />);
     await searchFor('cats');
     await act(async () => {
       search.resolve!({ results: [result('a')], page: 1, pageCount: 1 });
@@ -98,7 +98,7 @@ describe('ImageSearchPane loading', () => {
 
 describe('ImageSearchPane tiles', () => {
   it('falls back to the picture itself when Openverse cannot render the thumbnail', async () => {
-    render(<ImageSearchPane ownerId="o" documentId="d" onPicked={vi.fn()} />);
+    render(<ImageSearchPane ownerId="o" designId="d" onPicked={vi.fn()} />);
     await searchFor('mountains');
     await act(async () => {
       search.resolve!({ results: [result('a')], page: 1, pageCount: 1 });
@@ -123,7 +123,7 @@ describe('ImageSearchPane for a page background', () => {
     render(
       <ImageSearchPane
         ownerId="o"
-        documentId="d"
+        designId="d"
         onPicked={vi.fn()}
         filters={{ aspectRatio: 'tall', size: 'large' }}
         onPreview={onPreview}
@@ -152,7 +152,7 @@ describe('ImageSearchPane for a page background', () => {
 describe('ImageSearchPane picking', () => {
   it('marks the picked tile busy and walks its stages, then hands the picture on', async () => {
     const onPicked = vi.fn();
-    render(<ImageSearchPane ownerId="o" documentId="d" onPicked={onPicked} />);
+    render(<ImageSearchPane ownerId="o" designId="d" onPicked={onPicked} />);
     await searchFor('cats');
     await act(async () => {
       search.resolve!({ results: [result('a'), result('b')], page: 1, pageCount: 1 });

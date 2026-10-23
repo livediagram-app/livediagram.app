@@ -1,6 +1,6 @@
 import { useEffect, useSyncExternalStore } from 'react';
 
-import type { CodeLanguage } from '@livedesign/document';
+import type { CodeLanguage } from '@livedesign/design';
 import type { CodeToken } from './code-tokens';
 import { createListeners } from '@/lib/listeners';
 

@@ -1,10 +1,10 @@
 // Side by side tabs (docs/specs/007-editor/split-view.md): the pure rules behind the split. Two tabs
-// of the document share the screen, each keeping its side. The editor (its canvas, toolbars and
+// of the design share the screen, each keeping its side. The editor (its canvas, toolbars and
 // panels) sits in whichever pane holds the active tab; the other pane shows its tab live. Everything
 // here is a function of plain numbers and ids so the gesture, the layout and the persistence can be
 // tested without a DOM.
 
-import { isRecord } from '@livedesign/document';
+import { isRecord } from '@livedesign/design';
 import {
   readLocalStorageSafe,
   removeLocalStorageSafe,
@@ -150,25 +150,25 @@ export function pairAfterActivation(
   return { ...pair, leftId: nextActiveId };
 }
 
-// The persisted shape: which tabs a document was split on and on which side, and the width people chose
-// (one fraction for every document, because it is about their screen, not the document).
+// The persisted shape: which tabs a design was split on and on which side, and the width people chose
+// (one fraction for every design, because it is about their screen, not the design).
 const PAIR_KEY_PREFIX = 'livedesign:v2:split-view-pair:';
 const FRACTION_KEY = 'livedesign:v2:split-view-fraction';
 
-export function readStoredPair(documentId: string): SplitPair | null {
-  const raw = safeJson(readLocalStorageSafe(PAIR_KEY_PREFIX + documentId) ?? 'null');
+export function readStoredPair(designId: string): SplitPair | null {
+  const raw = safeJson(readLocalStorageSafe(PAIR_KEY_PREFIX + designId) ?? 'null');
   return isRecord(raw) && typeof raw.leftId === 'string' && typeof raw.rightId === 'string'
     ? { leftId: raw.leftId, rightId: raw.rightId }
     : null;
 }
 
 // Storage blocked (private mode): the split still works, it just isn't remembered.
-export function writeStoredPair(documentId: string, pair: SplitPair | null): void {
-  if (pair) writeLocalStorageSafe(PAIR_KEY_PREFIX + documentId, JSON.stringify(pair));
-  else removeLocalStorageSafe(PAIR_KEY_PREFIX + documentId);
+export function writeStoredPair(designId: string, pair: SplitPair | null): void {
+  if (pair) writeLocalStorageSafe(PAIR_KEY_PREFIX + designId, JSON.stringify(pair));
+  else removeLocalStorageSafe(PAIR_KEY_PREFIX + designId);
 }
 
-// The split to show when a document reopens on `activeId`: the stored pair, each tab on its side,
+// The split to show when a design reopens on `activeId`: the stored pair, each tab on its side,
 // when the page lands on one of them; landing on a third tab puts it where the left tab was. Null
 // when a tab is gone (or the pair would hold one tab twice).
 export function restoredPair(

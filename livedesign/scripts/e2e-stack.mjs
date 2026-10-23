@@ -9,7 +9,7 @@
 //      migrations to a fresh local database, so persistence works.
 //   2. live — a static file server for `out/` that reproduces the three
 //      things production does (docs/specs/003-system-architecture/e2e-smoke.md): strip the `/live` assetPrefix,
-//      rewrite `/document/*` to the single placeholder, and proxy
+//      rewrite `/design/*` to the single placeholder, and proxy
 //      `/api/*` (WebSocket upgrades included) to the api worker so the app
 //      is same-origin.
 //
@@ -90,7 +90,7 @@ function assetsOutOfCacheFor(req) {
   return cookiesOf(req).get(OUT_OF_CACHE_COOKIE) === '1';
 }
 
-const LIVE_PORT = Number(process.env.E2E_LIVE_PORT ?? 3302);
+const LIVE_PORT = Number(process.env.E2E_LIVE_PORT ?? 3402);
 const API_PORT = Number(process.env.E2E_API_PORT ?? 8989);
 // The other sites, for the audits that open them (docs/specs/004-interface-design/blueprints/
 // optical-alignment.md, "Ink audit"). Help and telemetry sit under their basePath on the
@@ -383,8 +383,8 @@ function resolveStatic(pathname, out) {
   // The build references assets as `/live/_next/*` (assetPrefix); the
   // files live at out/_next/*.
   let p = pathname.startsWith('/live/') ? pathname.slice('/live'.length) : pathname;
-  // /document and everything under it share one placeholder HTML.
-  if (p === '/document' || p.startsWith('/document/')) p = '/document/placeholder';
+  // /design and everything under it share one placeholder HTML.
+  if (p === '/design' || p.startsWith('/design/')) p = '/design/placeholder';
   // So does every form link, /form/<code> (apps/live/lib/form-path.ts, as the live worker rewrites it): without this
   // the stack answered a published form's link with the 404 page, so no spec could open one.
   if (p === '/form' || p.startsWith('/form/')) p = '/form/placeholder';
@@ -440,7 +440,7 @@ function proxyApi(req, res) {
   req.pipe(proxyReq);
 }
 
-// The realtime room is a WebSocket on /api/documents/<id>/ws. Production routes
+// The realtime room is a WebSocket on /api/designs/<id>/ws. Production routes
 // the upgrade through the router like any other /api request; without this the
 // browser's socket was never answered here, so no e2e test could see a room op.
 // Relays the raw upgrade to the api worker and pipes both directions.
@@ -541,7 +541,7 @@ function startLiveServer() {
     // this the stack answered 404, the page recovered client-side without its
     // query string, and `?truth=1` typed on `/new/` armed nothing.
     const bare = pathname.length > 1 && pathname.endsWith('/') ? pathname.slice(0, -1) : null;
-    if (bare && !bare.startsWith('/document') && existsSync(path.join(liveOut, `${bare}.html`))) {
+    if (bare && !bare.startsWith('/design') && existsSync(path.join(liveOut, `${bare}.html`))) {
       const search = new URL(req.url, 'http://localhost').search;
       res.writeHead(307, { Location: `${bare}${search}` });
       res.end();

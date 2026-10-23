@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // an unauthenticated caller (400) and, critically, a caller trying to
 // rewrite a participant id that isn't their own resolved owner (403) —
 // the impersonation guard, since a participant's name + colour shows
-// across every document they collaborate on.
+// across every design they collaborate on.
 
 const { db } = vi.hoisted(() => ({
   db: {

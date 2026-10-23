@@ -1,13 +1,13 @@
 // The MCP tools (docs/specs/015-api/mcp-server.md §4). Each is a thin wrapper over the api worker
-// plus the shared document helpers (validate / auto-layout / renderElementsToSvg)
+// plus the shared design helpers (validate / auto-layout / renderElementsToSvg)
 // — no business logic the editor doesn't already own. The calling LLM produces
 // the elements; these tools validate, lay out, persist, and render. The
 // shared result / auth / tab-building plumbing lives in tool-helpers.ts.
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type {
   ChangesetRequest,
-  DocumentListResponse,
-  DocumentResponse,
+  DesignListResponse,
+  DesignResponse,
   ShareLinkResponse,
   TabResponse,
 } from '@livedesign/api-schema';
@@ -17,7 +17,7 @@ import {
   isValidTab,
   normaliseElements,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import {
   buildTemplateTabs,
   templateTabName,
@@ -31,13 +31,13 @@ import {
   TRASH_RETENTION_DAYS,
   creationIntentOf,
   type LiveDoc,
-  type TrashedDocument,
+  type TrashedDesign,
 } from '@livedesign/api-schema';
 import { createdFolderLabel } from './created-folder';
 import { ApiError, apiFetch, apiJson, clientFor, reportApiFailure } from './api';
-import { readDocument } from './read-document';
+import { readDesign } from './read-design';
 import type { Env } from './env';
-import { fetchTeamLibraries, matchDocuments } from '@livedesign/agent-verbs';
+import { fetchTeamLibraries, matchDesigns } from '@livedesign/agent-verbs';
 import {
   deepLink,
   errorResult,
@@ -67,41 +67,41 @@ import {
 import { registerTool } from './tool-annotations';
 import { registerPagesTools } from './pages-tools';
 import {
-  createDocumentTab,
+  createDesignTab,
   mcpAddTab,
-  mcpCreateDocument,
-  mcpDeleteDocument,
-  mcpFindDocuments,
+  mcpCreateDesign,
+  mcpDeleteDesign,
+  mcpFindDesigns,
   mcpListTemplates,
   mcpListTrash,
-  mcpReadDocument,
-  mcpRenameDocument,
-  mcpRestoreDocument,
+  mcpReadDesign,
+  mcpRenameDesign,
+  mcpRestoreDesign,
   mcpSearchIcons,
-  mcpShareDocument,
-  mcpUpdateDocument,
+  mcpShareDesign,
+  mcpUpdateDesign,
 } from '@livedesign/agent-verbs/mcp';
 
 export function registerTools(server: McpServer, env: Env): void {
   registerPagesTools(server, env);
   // The user's image gallery, for image elements (docs/specs/015-api/mcp-server.md §4.5b).
   registerImageTools(server, env);
-  registerTool(server, env, mcpFindDocuments, async (args, extra) => {
+  registerTool(server, env, mcpFindDesigns, async (args, extra) => {
     const token = requireToken(extra);
-    // Personal + team shared libraries (docs/specs/013-workspace/team-shared-documents.md): a document filed into a
+    // Personal + team shared libraries (docs/specs/013-workspace/team-shared-designs.md): a design filed into a
     // team leaves the personal list, so both must be swept.
-    const [{ documents: liveDocs }, teamLibraries] = await Promise.all([
-      apiJson<DocumentListResponse>(env, token, '/documents'),
+    const [{ designs: liveDocs }, teamLibraries] = await Promise.all([
+      apiJson<DesignListResponse>(env, token, '/designs'),
       fetchTeamLibraries(clientFor(env, token)),
     ]);
-    const matched = matchDocuments(liveDocs, teamLibraries, args.query, args.limit ?? 20).map(
+    const matched = matchDesigns(liveDocs, teamLibraries, args.query, args.limit ?? 20).map(
       (d) => ({ ...d, url: deepLink(env, d.id) }),
     );
-    return textResult({ count: matched.length, documents: matched });
+    return textResult({ count: matched.length, designs: matched });
   });
 
-  registerTool(server, env, mcpReadDocument, async (args, extra) =>
-    readDocument(env, requireToken(extra as Extra), args),
+  registerTool(server, env, mcpReadDesign, async (args, extra) =>
+    readDesign(env, requireToken(extra as Extra), args),
   );
 
   registerTool(server, env, mcpListTemplates, async (_args, extra) => {
@@ -115,14 +115,14 @@ export function registerTools(server: McpServer, env: Env): void {
     return textResult(searchIcons(args.query, args.limit ?? 20));
   });
 
-  registerTool(server, env, mcpCreateDocument, async (args, extra) => {
+  registerTool(server, env, mcpCreateDesign, async (args, extra) => {
     const token = requireToken(extra);
     // An imageId names a picture in the caller's gallery (docs/specs/009-elements/images.md "Agents").
     const imageIssue = await imageIdIssue(env, token, args);
     if (imageIssue) return errorResult(imageIssue);
     // Accept either `tabs` (preferred) or a single `tab` alias, checked here against the tab shape.
     const single =
-      args.tabs || args.tab === undefined ? null : createDocumentTab.safeParse(args.tab);
+      args.tabs || args.tab === undefined ? null : createDesignTab.safeParse(args.tab);
     if (single && !single.success)
       return errorResult(
         `"tab": ${single.error.issues.map((i) => `${i.path.join('.') || 'tab'}: ${i.message}`).join('; ')}. ` +
@@ -185,12 +185,12 @@ export function registerTools(server: McpServer, env: Env): void {
     // The finish asked for (docs/specs/008-canvas/finish.md) is every new tab's.
     if (args.finish) for (const t of tabs) t.finish = args.finish;
     const id = crypto.randomUUID();
-    // Tag the document as made by AI (docs/specs/013-workspace/folders.md): the Explorer's Made by AI
-    // filter and badge read source != null, wherever the document is filed.
+    // Tag the design as made by AI (docs/specs/013-workspace/folders.md): the Explorer's Made by AI
+    // filter and badge read source != null, wherever the design is filed.
     // The creation intent (docs/specs/013-workspace/default-folders.md): with no folder named, the
-    // server files the document in the user's default folder for it, when they have one.
+    // server files the design in the user's default folder for it, when they have one.
     const intent = creationIntentOf(tabs[0]);
-    const { document: created } = await apiJson<{ document?: LiveDoc }>(env, token, '/documents', {
+    const { design: created } = await apiJson<{ design?: LiveDoc }>(env, token, '/designs', {
       method: 'POST',
       // markUsed only when the model gave one: absent, the making counts (the api's default).
       body: JSON.stringify({
@@ -208,7 +208,7 @@ export function registerTools(server: McpServer, env: Env): void {
     return imageResult(
       {
         id,
-        documentId: id,
+        designId: id,
         name: args.name,
         tabCount: tabs.length,
         tabIds,
@@ -248,21 +248,21 @@ export function registerTools(server: McpServer, env: Env): void {
     if (valueIssue) return errorResult(valueIssue);
     const ended = given ? resolveArrowEnds(given, idsOf(given)) : null;
     if (ended && 'error' in ended) return errorResult(ended.error);
-    // Default the new tab's theme to the document's existing one so it matches the other tabs
+    // Default the new tab's theme to the design's existing one so it matches the other tabs
     // rather than landing as a clashing brand-white tab; the model can still pass a theme.
     let themeId = args.theme;
     if (!themeId) {
       try {
-        themeId = (await loadTab(env, token, args.documentId))?.tab.theme;
+        themeId = (await loadTab(env, token, args.designId))?.tab.theme;
       } catch {
         /* the api keeps its default */
       }
     }
-    // One changeset that creates the tab, so anyone with the document open sees it arrive
+    // One changeset that creates the tab, so anyone with the design open sees it arrive
     // (docs/specs/015-api/mcp-server.md §4.3a).
     let answer;
     try {
-      answer = await submitChangeset(env, token, args.documentId, tabId, {
+      answer = await submitChangeset(env, token, args.designId, tabId, {
         replace: replaceBodyFrom({
           ...(args.template ? { template: args.template } : {}),
           ...(ended ? { elements: ended.elements } : {}),
@@ -280,14 +280,14 @@ export function registerTools(server: McpServer, env: Env): void {
     const { tab } = await apiJson<TabResponse>(
       env,
       token,
-      `/documents/${encodeURIComponent(args.documentId)}/tabs/${encodeURIComponent(tabId)}`,
+      `/designs/${encodeURIComponent(args.designId)}/tabs/${encodeURIComponent(tabId)}`,
     );
     return imageResult(
       {
-        documentId: args.documentId,
+        designId: args.designId,
         tabId,
         name: tab.name,
-        url: deepLink(env, args.documentId),
+        url: deepLink(env, args.designId),
         changesetId: answer.changeset?.id ?? null,
         rev: tab.rev,
         text: mcpResultText(answer.text),
@@ -299,13 +299,13 @@ export function registerTools(server: McpServer, env: Env): void {
     );
   });
 
-  registerTool(server, env, mcpUpdateDocument, async (args, extra) => {
+  registerTool(server, env, mcpUpdateDesign, async (args, extra) => {
     const token = requireToken(extra);
     // An imageId names a picture in the caller's gallery (docs/specs/009-elements/images.md "Agents").
     const imageIssue = await imageIdIssue(env, token, args);
     if (imageIssue) return errorResult(imageIssue);
-    const loaded = await loadTab(env, token, args.documentId, args.tabId);
-    if (!loaded) return errorResult('That document has no tabs.');
+    const loaded = await loadTab(env, token, args.designId, args.tabId);
+    if (!loaded) return errorResult('That design has no tabs.');
     const { tab } = loaded;
     const tabId = tab.id;
     // Both modes are one changeset (docs/specs/015-api/mcp-server.md §4.4): applied, laid out and
@@ -343,7 +343,7 @@ export function registerTools(server: McpServer, env: Env): void {
     }
     let answer;
     try {
-      answer = await submitChangeset(env, token, args.documentId, tabId, body);
+      answer = await submitChangeset(env, token, args.designId, tabId, body);
     } catch (err) {
       if (isChangesetRefusal(err)) return errorResult(changesetErrorText(err));
       throw err;
@@ -351,19 +351,19 @@ export function registerTools(server: McpServer, env: Env): void {
     const { tab: next } = await apiJson<TabResponse>(
       env,
       token,
-      `/documents/${encodeURIComponent(args.documentId)}/tabs/${encodeURIComponent(tabId)}`,
+      `/designs/${encodeURIComponent(args.designId)}/tabs/${encodeURIComponent(tabId)}`,
     );
     // An edit that changed nothing records no changeset and so carries no lint: the tab's own lint is read instead, so
     // the answer still says what is wrong with it rather than "lint unavailable".
     const lint =
       answer.lint ??
-      (answer.changeset ? null : (await lintReportsOf(env, token, args.documentId, [tabId]))[0]!);
+      (answer.changeset ? null : (await lintReportsOf(env, token, args.designId, [tabId]))[0]!);
     return imageResult(
       {
-        id: args.documentId,
-        documentId: args.documentId,
+        id: args.designId,
+        designId: args.designId,
         tabId,
-        url: deepLink(env, args.documentId),
+        url: deepLink(env, args.designId),
         changesetId: answer.changeset?.id ?? null,
         rev: next.rev,
         text: mcpResultText(answer.text, contentOrigin(tab.elements)),
@@ -375,60 +375,60 @@ export function registerTools(server: McpServer, env: Env): void {
     );
   });
 
-  registerTool(server, env, mcpShareDocument, async (args, extra) => {
+  registerTool(server, env, mcpShareDesign, async (args, extra) => {
     const token = requireToken(extra);
     // Default to Participant (docs/specs/013-workspace/share-roles.md): people take part without reshaping the
-    // document, and an automated share never silently grants edit. The api's own default is edit, so the role is
+    // design, and an automated share never silently grants edit. The api's own default is edit, so the role is
     // always sent.
     const role = args.role ?? DEFAULT_MCP_SHARE_LEVEL;
     const { link } = await apiJson<ShareLinkResponse>(
       env,
       token,
-      `/documents/${encodeURIComponent(args.documentId)}/share`,
+      `/designs/${encodeURIComponent(args.designId)}/share`,
       { method: 'POST', body: JSON.stringify({ role, expiry: args.expiry ?? 'never' }) },
     );
     return textResult({
       url: shareUrl(env, link.code),
       role: link.role,
       expiresAt: link.expiresAt,
-      documentUrl: deepLink(env, args.documentId),
+      designUrl: deepLink(env, args.designId),
     });
   });
 
-  registerTool(server, env, mcpRenameDocument, async (args, extra) => {
+  registerTool(server, env, mcpRenameDesign, async (args, extra) => {
     const token = requireToken(extra);
     if (args.tabId) {
-      // The tab name route: the name only, relayed to anyone with the document open
+      // The tab name route: the name only, relayed to anyone with the design open
       // (docs/specs/024-agents/agent-changesets.md "Whole-tab saves and tab renames").
       const { tab } = await apiJson<{ tab: { name: string } }>(
         env,
         token,
-        `/documents/${encodeURIComponent(args.documentId)}/tabs/${encodeURIComponent(args.tabId)}/name`,
+        `/designs/${encodeURIComponent(args.designId)}/tabs/${encodeURIComponent(args.tabId)}/name`,
         { method: 'PUT', body: JSON.stringify({ name: args.name }) },
       );
       return textResult({ renamed: 'tab', tabId: args.tabId, name: tab.name });
     }
-    const { document: liveDoc } = await apiJson<DocumentResponse>(
+    const { design: liveDoc } = await apiJson<DesignResponse>(
       env,
       token,
-      `/documents/${encodeURIComponent(args.documentId)}`,
+      `/designs/${encodeURIComponent(args.designId)}`,
       { method: 'PUT', body: JSON.stringify({ name: args.name }) },
     );
     return textResult({
-      renamed: 'document',
+      renamed: 'design',
       id: liveDoc.id,
       name: liveDoc.name,
       url: deepLink(env, liveDoc.id),
     });
   });
 
-  registerTool(server, env, mcpDeleteDocument, async (args, extra) => {
+  registerTool(server, env, mcpDeleteDesign, async (args, extra) => {
     const token = requireToken(extra);
-    // A whole document only ever goes to the Trash (docs/specs/013-workspace/trash.md):
+    // A whole design only ever goes to the Trash (docs/specs/013-workspace/trash.md):
     // a permanent delete is the REST API's, never an AI tool's. A tab has no Trash.
     const path = args.tabId
-      ? `/documents/${encodeURIComponent(args.documentId)}/tabs/${encodeURIComponent(args.tabId)}`
-      : `/documents/${encodeURIComponent(args.documentId)}`;
+      ? `/designs/${encodeURIComponent(args.designId)}/tabs/${encodeURIComponent(args.tabId)}`
+      : `/designs/${encodeURIComponent(args.designId)}`;
     // DELETE returns 204 with no body, so use apiFetch (apiJson would choke
     // parsing an empty response) and surface a clear message on failure.
     const res = await apiFetch(env, token, path, { method: 'DELETE' });
@@ -442,10 +442,10 @@ export function registerTools(server: McpServer, env: Env): void {
     }
     return textResult(
       args.tabId
-        ? { deleted: 'tab', documentId: args.documentId, tabId: args.tabId }
+        ? { deleted: 'tab', designId: args.designId, tabId: args.tabId }
         : {
-            deleted: 'document',
-            documentId: args.documentId,
+            deleted: 'design',
+            designId: args.designId,
             trashed: true,
             restorableForDays: TRASH_RETENTION_DAYS,
           },
@@ -453,12 +453,12 @@ export function registerTools(server: McpServer, env: Env): void {
   });
 
   // The Trash (docs/specs/013-workspace/trash.md, docs/specs/015-api/mcp-server.md §4.9):
-  // what delete_document put there, and the way back. Same authorisation as
+  // what delete_design put there, and the way back. Same authorisation as
   // GET /api/trash and POST /api/trash/<id>/restore: the user's personal Trash
   // and every team Trash they have joined.
   registerTool(server, env, mcpListTrash, async (_args, extra) => {
     const token = requireToken(extra);
-    const { trash } = await apiJson<{ trash?: TrashedDocument[] }>(env, token, '/trash');
+    const { trash } = await apiJson<{ trash?: TrashedDesign[] }>(env, token, '/trash');
     return textResult({
       trash: (trash ?? []).map((t) => ({
         id: t.id,
@@ -471,23 +471,23 @@ export function registerTools(server: McpServer, env: Env): void {
     });
   });
 
-  registerTool(server, env, mcpRestoreDocument, async (args, extra) => {
+  registerTool(server, env, mcpRestoreDesign, async (args, extra) => {
     const token = requireToken(extra);
     try {
-      const { document: liveDoc } = await apiJson<{
-        document?: { id: string; name: string } | null;
-      }>(env, token, `/trash/${encodeURIComponent(args.documentId)}/restore`, { method: 'POST' });
+      const { design: liveDoc } = await apiJson<{
+        design?: { id: string; name: string } | null;
+      }>(env, token, `/trash/${encodeURIComponent(args.designId)}/restore`, { method: 'POST' });
       return textResult({
-        restored: 'document',
-        id: liveDoc?.id ?? args.documentId,
+        restored: 'design',
+        id: liveDoc?.id ?? args.designId,
         name: liveDoc?.name ?? null,
-        url: deepLink(env, liveDoc?.id ?? args.documentId),
+        url: deepLink(env, liveDoc?.id ?? args.designId),
       });
     } catch (err) {
       // Not in the Trash, or not the user's to restore: model-correctable.
       if (err instanceof ApiError && err.status === 404) {
         return errorResult(
-          'That document is not in the Trash, or is not yours to restore. Check the id with list_trash.',
+          'That design is not in the Trash, or is not yours to restore. Check the id with list_trash.',
         );
       }
       throw err;
@@ -498,14 +498,14 @@ export function registerTools(server: McpServer, env: Env): void {
 // Why a delete was refused, by what was deleted and the status.
 export function deleteRefusal(status: number, tab: boolean): string {
   if (status === 410) return 'It is already in the Trash (see list_trash).';
-  if (status === 403) return 'You may view this document but not change it.';
+  if (status === 403) return 'You may view this design but not change it.';
   if (status === 404)
     return tab
-      ? 'No such tab in this document: read_document lists its tabs.'
-      : 'No such document, or it is not yours: find_documents lists them.';
+      ? 'No such tab in this design: read_design lists its tabs.'
+      : 'No such design, or it is not yours: find_designs lists them.';
   if (tab && status === 409)
-    return 'A document must keep at least one tab: you cannot delete the last one.';
+    return 'A design must keep at least one tab: you cannot delete the last one.';
   return tab
-    ? `The api refused it (${status}): check the document and tab ids.`
-    : 'Check the document id and that you own it.';
+    ? `The api refused it (${status}): check the design and tab ids.`
+    : 'Check the design id and that you own it.';
 }

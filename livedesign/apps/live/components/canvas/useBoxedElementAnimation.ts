@@ -12,7 +12,7 @@ import {
   type ShapeAnimation,
   STEP_SEQUENCE_BEAT_S,
   stepOrdinal,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { drawsShapeSvgOverlay } from '@/components/canvas/ShapeContentRouter';
 import { bodySetClass } from '@/lib/animation-classes';
 import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';

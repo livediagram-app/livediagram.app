@@ -20,7 +20,7 @@ import {
 } from '@/lib/user-preferences';
 import { isPowerUserMode, setPowerUserMode } from '@/lib/power-user-mode';
 import { PAGES_TOUR_KINDS, pagesKindSeen } from '@/lib/pages-tour';
-import type { PageKind } from '@livedesign/document';
+import type { PageKind } from '@livedesign/design';
 import {
   ELEMENT_TOUR_KINDS,
   elementTourSeen,
@@ -82,7 +82,7 @@ function logoGuidePart(
 // One email notification switch (docs/specs/014-identity/profile-and-email-notifications.md): only
 // where the deployment sends email AND the reader is signed in, since a guest has no address.
 type EmailKey =
-  | 'notifyDocumentJoin'
+  | 'notifyDesignJoin'
   | 'notifyInviteResponse'
   | 'notifyComments'
   | 'notifyActionAssigned'
@@ -297,7 +297,7 @@ export type SettingsTrashRowSpec = RowBase & { kind: 'trash' };
 export type SettingsPresetSummaryRowSpec = RowBase & { kind: 'presetSummary' };
 
 // One default folder entry (docs/specs/013-workspace/default-folders.md "Settings"): where new
-// documents of that key go, with Change and Clear. Not a preference: it reads and writes
+// designs of that key go, with Change and Clear. Not a preference: it reads and writes
 // `/api/placement-defaults` through the page's store, so it carries no read/write pair.
 export type SettingsPlacementDefaultRowSpec = RowBase & {
   kind: 'placementDefault';
@@ -332,7 +332,7 @@ export type SettingsCategorySpec = {
   parent?: SettingsIconId;
   // Only rendered when the api worker advertises AI capability (docs/specs/007-editor/ai-assistance.md).
   requiresAi?: boolean;
-  // A line under a section's heading, for what every row in it shares (Documents' Default Folders,
+  // A line under a section's heading, for what every row in it shares (Designs' Default Folders,
   // the Tours' "offer again"), said once rather than under each row.
   sectionNotes?: Record<string, { note: string; helpArticle?: HelpArticleKey }>;
   // Sections drawn as a closed accordion, for rows people rarely look for (the Tours' Element Tours): the heading
@@ -1311,11 +1311,11 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
   {
-    id: 'documents',
-    label: 'Documents',
+    id: 'designs',
+    label: 'Designs',
     sectionNotes: {
       'Default Folders': {
-        note: 'Where each kind of new document is saved when you create it without choosing a place.',
+        note: 'Where each kind of new design is saved when you create it without choosing a place.',
         helpArticle: 'defaultFolders',
       },
     },
@@ -1329,7 +1329,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         // Settings labels are title case; the entries' own labels are sentence case.
         label: titleCase(entry.label),
         keywords:
-          'default folder where new documents go save location place file automatically always save placement',
+          'default folder where new designs go save location place file automatically always save placement',
         description: `Where new ${entry.noun} go when you create one without choosing a place.`,
       })),
       {
@@ -1360,7 +1360,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords:
           'account profile identity name email signed in sign in avatar picture photo google joined',
         description:
-          'Your name, email and picture come from your account. Signed out, your documents belong to this browser.',
+          'Your name, email and picture come from your account. Signed out, your designs belong to this browser.',
         helpArticle: 'guestVsAccount',
       },
       {
@@ -1382,8 +1382,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Your Data',
         label: 'Trash',
         keywords:
-          'trash bin recycle deleted undo undelete restore recover get back document diagram permanently empty',
-        description: 'Deleted documents wait here for 30 days, ready to restore.',
+          'trash bin recycle deleted undo undelete restore recover get back design diagram permanently empty',
+        description: 'Deleted designs wait here for 30 days, ready to restore.',
         helpArticle: 'trash',
       },
       {
@@ -1393,7 +1393,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Delete Account',
         keywords: 'delete account remove wipe erase close cancel data gdpr',
         description:
-          'Removes your documents, folders, and the account itself, everywhere. There is no undo.',
+          'Removes your designs, folders, and the account itself, everywhere. There is no undo.',
       },
     ],
   },
@@ -1409,7 +1409,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'In the Editor',
         label: 'In-Editor Notifications',
         description:
-          'A brief note when something happens off screen, like moving a document to a folder. Errors and warnings always show.',
+          'A brief note when something happens off screen, like moving a design to a folder. Errors and warnings always show.',
         read: (p) => p.notificationsEnabled !== false,
         write: (p, v) => ({ ...p, notificationsEnabled: v }),
         event: { category: 'UI', on: 'NotificationsOn', off: 'NotificationsOff' },
@@ -1426,20 +1426,20 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         note: 'Sign in to choose which emails you get.',
         signIn: true,
         description:
-          'We can email you when someone joins one of your documents, comments on it, assigns you an action, and for a few other moments. Which ones is an account setting.',
+          'We can email you when someone joins one of your designs, comments on it, assigns you an action, and for a few other moments. Which ones is an account setting.',
         available: (ctx) => ctx.emailEnabled && !ctx.signedIn,
       },
-      emailSwitch('notifyDocumentJoin', {
-        event: { category: 'UI', on: 'NotifyDocumentJoinOn', off: 'NotifyDocumentJoinOff' },
+      emailSwitch('notifyDesignJoin', {
+        event: { category: 'UI', on: 'NotifyDesignJoinOn', off: 'NotifyDesignJoinOff' },
         keywords: 'email join collaborator opened',
-        label: 'Someone Joins My Document',
-        description: 'A new person opens one of your shared documents.',
+        label: 'Someone Joins My Design',
+        description: 'A new person opens one of your shared designs.',
       }),
       emailSwitch('notifyComments', {
         event: { category: 'UI', on: 'NotifyCommentsOn', off: 'NotifyCommentsOff' },
         keywords: 'email comment reply feedback',
-        label: 'Someone Comments on My Document',
-        description: 'Someone leaves a comment on a document you own.',
+        label: 'Someone Comments on My Design',
+        description: 'Someone leaves a comment on a design you own.',
       }),
       emailSwitch('notifyMentions', {
         event: { category: 'UI', on: 'NotifyMentionsOn', off: 'NotifyMentionsOff' },
@@ -1469,7 +1469,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'NotifyMilestonesOn', off: 'NotifyMilestonesOff' },
         keywords: 'email milestone achievement celebrate',
         label: 'Milestones',
-        description: 'A note when you hit one, like sharing your first document.',
+        description: 'A note when you hit one, like sharing your first design.',
       }),
     ],
   },
@@ -1541,9 +1541,9 @@ export function visibleCategories(
 }
 
 // What a workbench's Settings leave out (docs/specs/013-workspace/blueprints/workbench-embeds.md,
-// Surface table): the account and everything beyond the one document. A category nested under one
+// Surface table): the account and everything beyond the one design. A category nested under one
 // goes with it, so nothing is left without its parent.
-const WORKBENCH_HIDDEN_CATEGORIES = new Set(['ai', 'documents', 'account', 'tokens']);
+const WORKBENCH_HIDDEN_CATEGORIES = new Set(['ai', 'designs', 'account', 'tokens']);
 
 function hiddenInWorkbench(category: SettingsCategorySpec): boolean {
   return (

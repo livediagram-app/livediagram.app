@@ -1,7 +1,7 @@
 // The cursor while a marker is in hand (docs/specs/023-draw-mode/drawing-tools.md "Markers"): a
 // crosshair that marks exactly where ink lands, with a nib and a dot of the marker's colour beside
 // it.
-import type { Appearance } from '@livedesign/document';
+import type { Appearance } from '@livedesign/design';
 
 /** The SVG image of the marker cursor, drawn for the canvas `appearance`. */
 export function penCursorSvg(

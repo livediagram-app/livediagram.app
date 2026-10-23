@@ -2,7 +2,7 @@
 // worker against hostile or accidental oversized payloads (important ahead of
 // opening the API to external token callers). One place so the caps stay
 // consistent and tunable. Structural validity of tabs/elements lives in
-// @livedesign/document (isValidTab); these are the SIZE bounds a structurally
+// @livedesign/design (isValidTab); these are the SIZE bounds a structurally
 // valid payload must also respect.
 
 // Outer bound on any request body, gated on Content-Length before dispatch so
@@ -63,13 +63,13 @@ export class TabTooLargeError extends Error {
   }
 }
 
-// Human-facing names outside the document / tab name cap: folder / theme / API
-// token / OAuth client. Document and tab names are shortened to the far tighter
-// NAME_MAX_LENGTH instead (names.ts, docs/specs/006-document/name-length.md).
+// Human-facing names outside the design / tab name cap: folder / theme / API
+// token / OAuth client. Design and tab names are shortened to the far tighter
+// NAME_MAX_LENGTH instead (names.ts, docs/specs/006-design/name-length.md).
 export const MAX_NAME_LEN = 500;
 
-// A document's slide deck (docs/specs/012-collaboration/presentation-mode.md). Slides hold element REFERENCES, never
-// element copies, so a deck stays tiny however large the document is: a few
+// A design's slide deck (docs/specs/012-collaboration/presentation-mode.md). Slides hold element REFERENCES, never
+// element copies, so a deck stays tiny however large the design is: a few
 // hundred bytes per slide. 256KB is roughly a thousand slides and exists to
 // bound a hostile payload, not to constrain any real deck.
 export const MAX_DECK_LEN = 256 * 1024;
@@ -77,7 +77,7 @@ export const MAX_DECK_LEN = 256 * 1024;
 // A custom theme's JSON definition (palette + per-shape colours).
 export const MAX_THEME_DEF_BYTES = 256 * 1024;
 
-// The client-claimed document-write key relayed on presence. Real
+// The client-claimed design-write key relayed on presence. Real
 // ones are UUIDs; the clamp only stops a hostile hello pushing an oversize
 // string into the socket attachment, which has a small hard budget.
 export const MAX_PARTICIPANT_KEY_LEN = 64;

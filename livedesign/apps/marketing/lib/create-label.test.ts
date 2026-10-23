@@ -3,7 +3,7 @@ import { createLabelPrefix } from './create-label';
 
 describe('createLabelPrefix', () => {
   it('says "an" before a vowel sound and "a" before the rest', () => {
-    expect(createLabelPrefix('Infographic')).toBe('Create an ');
+    expect(createLabelPrefix('Illustration')).toBe('Create an ');
     expect(createLabelPrefix('Invoice')).toBe('Create an ');
     expect(createLabelPrefix('Empathy Map')).toBe('Create an ');
     expect(createLabelPrefix('OKRs')).toBe('Create an ');

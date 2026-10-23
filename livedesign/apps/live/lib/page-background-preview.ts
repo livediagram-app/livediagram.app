@@ -4,7 +4,7 @@
 // panel", Hover previews): shown on the sheet AND on what is drawn on it, so the ink the page would
 // take (the elements without colours of their own) is previewed with it, not only after the press.
 import { useSyncExternalStore } from 'react';
-import type { LaidOutPage, PageBackground } from '@livedesign/document';
+import type { LaidOutPage, PageBackground } from '@livedesign/design';
 import { withBackgroundPatch } from './page-paint';
 import { createListeners } from '@/lib/listeners';
 

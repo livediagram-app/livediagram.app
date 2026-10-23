@@ -44,7 +44,7 @@ export type PsdGroup = {
 
 export type PsdNode = PsdPixelLayer | PsdGroup;
 
-export type PsdDocument = {
+export type PsdDesign = {
   width: number;
   height: number;
   children: PsdNode[];

@@ -7,7 +7,7 @@
 // The look, in three layers: a soft shadow, the die-cut white plate, then the
 // content (an emoji glyph, or a word on a coloured pill). Deliberately NO
 // <filter> — an SVG filter needs a defs id, and the export packs every element
-// into one document where those ids would collide. The shadow is a plain
+// into one design where those ids would collide. The shadow is a plain
 // offset rounded rect at low opacity instead, which renders identically in
 // every target including headless ones.
 

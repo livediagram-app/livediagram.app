@@ -5,19 +5,19 @@
 // saves and relayed; the pages and mode ride the same batch. Then the room hears what an
 // editor's own edit sends. A lost race repeats once from the read.
 import type { PagesAnswer, PagesRefusal, PagesRequest, RoomOp } from '@livedesign/api-schema';
-import { diffToElementOps, type Tab } from '@livedesign/document';
+import { diffToElementOps, type Tab } from '@livedesign/design';
 import { applyPageChanges, pageSummaries } from '@livedesign/edit-operations';
 import { isTabRevStale, lastChangesetRev, upsertTabAtRev } from '../db';
 import { TabTooLargeError } from '../limits';
 import { relayPages } from '../room-client';
-import type { DocumentDTO, Env } from '../types';
+import type { DesignDTO, Env } from '../types';
 import { readStoredTab } from './stored-tab';
 import { SUBMIT_ATTEMPTS, withServerRules } from './submit';
 import { writeChangeset, type Author } from './write';
 
 type PagesArgs = {
   env: Env;
-  document: DocumentDTO;
+  design: DesignDTO;
   tabId: string;
   request: PagesRequest;
   author: Author;
@@ -59,11 +59,11 @@ export function pagesRoomOps(before: Tab, after: Tab): RoomOp[] {
 }
 
 export async function submitPages(args: PagesArgs): Promise<PagesResult> {
-  const { env, document, tabId, request } = args;
-  const where = { documentId: document.id, tabId };
+  const { env, design, tabId, request } = args;
+  const where = { designId: design.id, tabId };
   for (let attempt = 1; attempt <= SUBMIT_ATTEMPTS; attempt += 1) {
     const [stored, prevRev] = await Promise.all([
-      readStoredTab(env, document.id, tabId),
+      readStoredTab(env, design.id, tabId),
       lastChangesetRev(env, tabId),
     ]);
     if (!stored) return { status: 404, body: { error: 'not_found', message: 'No such tab.' } };
@@ -82,7 +82,7 @@ export async function submitPages(args: PagesArgs): Promise<PagesResult> {
     let changesetId: string | null = null;
     if (elementsChanged) {
       const written = await writeChangeset(env, {
-        documentId: document.id,
+        designId: design.id,
         tabId,
         stored,
         next,
@@ -107,7 +107,7 @@ export async function submitPages(args: PagesArgs): Promise<PagesResult> {
       changesetId = written.kind === 'written' ? written.written.id : null;
     } else {
       try {
-        rev = await upsertTabAtRev(env, document.id, next, stored.orderIndex, stored.rev);
+        rev = await upsertTabAtRev(env, design.id, next, stored.orderIndex, stored.rev);
       } catch (err) {
         if (err instanceof TabTooLargeError) return tooLarge();
         if (isTabRevStale(err)) {
@@ -120,7 +120,7 @@ export async function submitPages(args: PagesArgs): Promise<PagesResult> {
     const ops = pagesRoomOps(stored.tab, next);
     // Awaited, bounded per op by ROOM_RELAY_TIMEOUT_MS; a room that misses one is logged and never
     // fails the write.
-    await relayPages(env, document.id, ops);
+    await relayPages(env, design.id, ops);
     console.info('[pages-agent] applied', {
       ...where,
       changes: request.pages.length,

@@ -1,17 +1,17 @@
 // /api/teams/<id>/notify-mention: email the teammates a comment just
 // @-mentioned (docs/specs/012-collaboration/comment-mentions.md "The email"). The sibling of notify-action
 // (team-action-routes.ts), with a tighter team rule: a mention is only ever
-// of the document's OWN team, so the team in the path must be the document's.
+// of the design's OWN team, so the team in the path must be the design's.
 //
 // A POST, so the shared mutation gate in teams.ts has already required the
 // interactive Clerk session. Best-effort in the background. A comment reaches D1 only with the next
 // tab save, so the request carries its text and mentions.
 
 import { isOpenTeamMember } from '@livedesign/api-schema';
-import { legacyDocumentIdOf } from '../legacy-request-forms';
+import { legacyDesignIdOf } from '../legacy-request-forms';
 import type { TeamMember } from '@livedesign/api-schema';
-import { MENTIONS_MAX } from '@livedesign/document';
-import { getDocumentMeta, getParticipant, listTeamMembers } from '../db';
+import { MENTIONS_MAX } from '@livedesign/design';
+import { getDesignMeta, getParticipant, listTeamMembers } from '../db';
 import { notifyMentioned } from '../email/notifications';
 import { badRequest, forbidden, json, notFound } from '../responses';
 import type { RouteContext } from './context';
@@ -33,25 +33,25 @@ export async function handleTeamMentionRoutes(
   if (me.status !== 'joined') return forbidden();
 
   const body = (await request.json().catch(() => null)) as {
-    documentId?: unknown;
+    designId?: unknown;
     commentText?: unknown;
     mentions?: unknown;
   } | null;
-  const documentId =
-    typeof body?.documentId === 'string' ? body.documentId : legacyDocumentIdOf(body);
+  const designId =
+    typeof body?.designId === 'string' ? body.designId : legacyDesignIdOf(body);
   const commentText = typeof body?.commentText === 'string' ? body.commentText.trim() : '';
   const targets = Array.isArray(body?.mentions) ? (body.mentions as MentionTarget[]) : null;
-  if (!documentId || !commentText || !targets) {
-    return badRequest('missing documentId/commentText/mentions');
+  if (!designId || !commentText || !targets) {
+    return badRequest('missing designId/commentText/mentions');
   }
   if (commentText.length > MENTION_COMMENT_MAX) return badRequest('commentText too long');
   if (targets.length > MENTIONS_MAX) return badRequest('too many mentions');
 
-  // The document must live in THIS team's library: a mention is of the
-  // document's own team, and its members are exactly who can open it. The
+  // The design must live in THIS team's library: a mention is of the
+  // design's own team, and its members are exactly who can open it. The
   // caller is a joined member (checked above), so they can open it too. 404,
-  // never 403, so the route can't probe which documents exist.
-  const liveDoc = await getDocumentMeta(env, documentId);
+  // never 403, so the route can't probe which designs exist.
+  const liveDoc = await getDesignMeta(env, designId);
   if (!liveDoc || liveDoc.teamId !== teamId) return notFound();
 
   // Each target resolves to a member of this team other than the caller;
@@ -78,7 +78,7 @@ export async function handleTeamMentionRoutes(
         recipientFallbackEmail: m.email,
         authorUserId: userId,
         authorName,
-        document: { id: liveDoc.id, name: liveDoc.name },
+        design: { id: liveDoc.id, name: liveDoc.name },
         commentText,
       }).catch(() => {}),
     );

@@ -2,7 +2,7 @@
 // candidates"): a banded edit distance, so a typo in an id, a label or a name finds what was meant
 // at a bounded cost.
 
-import type { Element } from '@livedesign/document';
+import type { Element } from '@livedesign/design';
 import { labelOf } from './element-text';
 import { LABEL_CUT_CHARS, NEAREST_CANDIDATES_MAX, NEAREST_MAX_DISTANCE } from './vocabulary';
 

@@ -1,4 +1,4 @@
-// Shared primitives for the pages, slides and presenting card art (./infographics, ./present):
+// Shared primitives for the pages, photo and presenting card art (./pages, ./photo, ./present):
 // paper that reads as a page on the canvas in light and dark, an editor panel, a presenting
 // screen, lines of writing, a teammate's cursor. Every colour has its light value as the SVG
 // attribute and its dark value as a dark: utility, so a card is right in both appearances.
@@ -115,7 +115,7 @@ export function Panel({
   );
 }
 
-/** A screen presenting a slide: near black in both appearances, with an edge so dark still sees it. */
+/** A screen presenting a page: near black in both appearances, with an edge so dark still sees it. */
 export function Screen({ x, y, w, h }: { x: number; y: number; w: number; h: number }) {
   return (
     <g>
@@ -197,7 +197,7 @@ export function Cursor({
   );
 }
 
-// The serif an article or report headline is set in (Pages mode's Classic and Report looks).
+// The serif a wordmark or a page's headline is set in.
 export const SERIF = 'ui-serif, Georgia, Cambria, "Times New Roman", serif';
 
 // The small caption over a page, as the editor labels its pages.

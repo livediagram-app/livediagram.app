@@ -18,7 +18,7 @@ const StartFromTemplates = dynamic(
 // (useTemplatePickMove) keeps watching the tab.
 export function EditorStartPanels() {
   const ctx = useEditorContext();
-  const { hydrated, zenMode, embedMode, pendingDraw, activeTab, isReadOnly, clerkUserId } = ctx;
+  const { hydrated, zenMode, embedMode, pendingDraw, activeTab, isReadOnly, accountUserId } = ctx;
   // An editor's empty tab: its template start (docs/specs/007-editor/start-diagramming.md). A template picked from it
   // on a document /new just made goes to its default folder (docs/specs/013-workspace/default-folders.md "A template
   // picked after creation").
@@ -26,7 +26,7 @@ export function EditorStartPanels() {
     ownerId: ctx.selfParticipant.id,
     documentId: ctx.documentId,
     tabId: activeTab.id,
-    signedIn: !!clerkUserId,
+    signedIn: !!accountUserId,
     tabHasContent: activeTab.elements.length > 0,
   });
   const templateStart = showsTemplateStart({

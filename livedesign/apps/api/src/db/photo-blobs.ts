@@ -96,7 +96,7 @@ export async function adoptBlobs(
   return held;
 }
 
-/** Statements giving `toTab` a ref to every blob `fromTab` holds (a document copy, in its batch). */
+/** Statements giving `toTab` a ref to every blob `fromTab` holds (a design copy, in its batch). */
 export function copyBlobRefsStatements(env: Env, fromTab: string, toTab: string, now = Date.now()) {
   return [
     env.DB.prepare(

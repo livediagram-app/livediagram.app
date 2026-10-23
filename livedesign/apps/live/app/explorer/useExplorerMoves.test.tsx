@@ -1,31 +1,31 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { DocumentListItem, Folder } from '@/lib/api-client';
-import type { TeamDocumentRow } from '@/hooks/persistence/useTeamLibrariesSweep';
+import type { DesignListItem, Folder } from '@/lib/api-client';
+import type { TeamDesignRow } from '@/hooks/persistence/useTeamLibrariesSweep';
 
 vi.mock('@/lib/api-client', () => ({
   apiCreateFolder: vi.fn(),
-  apiSetDocumentFolder: vi.fn(),
+  apiSetDesignFolder: vi.fn(),
   apiUpdateFolder: vi.fn(),
 }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-const { apiCreateFolder, apiSetDocumentFolder, apiUpdateFolder } = await import('@/lib/api-client');
+const { apiCreateFolder, apiSetDesignFolder, apiUpdateFolder } = await import('@/lib/api-client');
 const { track } = await import('@/lib/telemetry');
 const { useExplorerMoves } = await import('./useExplorerMoves');
 
 // A move that fails says so (docs/specs/013-workspace/folders.md "A move that fails says so"): every
 // move ends in its toast or lands, and a failure logs `[explorer-move] <kind> failed`.
 
-const doc = (id: string) => ({ id, name: id, folderId: null }) as DocumentListItem;
+const doc = (id: string) => ({ id, name: id, folderId: null }) as DesignListItem;
 const teamDoc = (id: string, teamId: string) =>
-  ({ id, folderId: null, team: { id: teamId } }) as TeamDocumentRow;
+  ({ id, folderId: null, team: { id: teamId } }) as TeamDesignRow;
 
 function setup() {
   let list = [doc('a'), doc('b')];
-  const setDocuments = vi.fn(
-    (next: DocumentListItem[] | ((p: DocumentListItem[]) => DocumentListItem[])) => {
+  const setDesigns = vi.fn(
+    (next: DesignListItem[] | ((p: DesignListItem[]) => DesignListItem[])) => {
       list = typeof next === 'function' ? next(list) : next;
     },
   );
@@ -36,17 +36,17 @@ function setup() {
   const { result } = renderHook(() =>
     useExplorerMoves({
       ownerId: 'owner-1',
-      documents: list,
-      setDocuments,
+      designs: list,
+      setDesigns,
       folders: [] as Folder[],
       teams: [],
       teamFolders: [],
-      teamDocuments: [teamDoc('t1', 'team-1')],
+      teamDesigns: [teamDoc('t1', 'team-1')],
       descendantSet: () => new Set<string>(),
       refreshFolders,
       refreshTeamLibraries,
       refreshPersonal,
-      moveDocumentToFolder: vi.fn(),
+      moveDesignToFolder: vi.fn(),
       toast,
     }),
   );
@@ -90,68 +90,68 @@ describe('moving a folder', () => {
   });
 });
 
-describe('moving a document into a team', () => {
+describe('moving a design into a team', () => {
   it('brings the row back, says so and logs it when the move fails', async () => {
-    vi.mocked(apiSetDocumentFolder).mockRejectedValueOnce(new Error('offline'));
+    vi.mocked(apiSetDesignFolder).mockRejectedValueOnce(new Error('offline'));
     const { moves, toast, ids } = setup();
-    moves.moveDocumentToTeam('b', 'team-1');
+    moves.moveDesignToTeam('b', 'team-1');
     expect(ids()).toEqual(['a']);
     await vi.waitFor(() =>
       expect(toast.error).toHaveBeenCalledWith('Couldn’t move “b” to the team. Try again.'),
     );
     expect(ids()).toEqual(['b', 'a']);
-    expect(warned()).toEqual(['[explorer-move] document-to-team failed document=b: offline']);
+    expect(warned()).toEqual(['[explorer-move] design-to-team failed design=b: offline']);
   });
 });
 
-describe('moving a team document within its team', () => {
+describe('moving a team design within its team', () => {
   it('re-sweeps the teams once the move landed', async () => {
-    vi.mocked(apiSetDocumentFolder).mockResolvedValueOnce(undefined);
+    vi.mocked(apiSetDesignFolder).mockResolvedValueOnce(undefined);
     const { moves, toast, refreshTeamLibraries } = setup();
-    moves.moveDocumentTo('t1', { teamId: 'team-1', folderId: 'tf1' });
+    moves.moveDesignTo('t1', { teamId: 'team-1', folderId: 'tf1' });
     await vi.waitFor(() => expect(refreshTeamLibraries).toHaveBeenCalled());
-    expect(track).toHaveBeenCalledWith('Team', 'Moved', 'Document');
+    expect(track).toHaveBeenCalledWith('Team', 'Moved', 'Design');
     expect(toast.error).not.toHaveBeenCalled();
   });
 
   it('says so, and logs it, when the move fails', async () => {
-    vi.mocked(apiSetDocumentFolder).mockRejectedValueOnce(new Error('offline'));
+    vi.mocked(apiSetDesignFolder).mockRejectedValueOnce(new Error('offline'));
     const { moves, toast, refreshTeamLibraries } = setup();
-    moves.moveDocumentTo('t1', { teamId: 'team-1', folderId: 'tf1' });
+    moves.moveDesignTo('t1', { teamId: 'team-1', folderId: 'tf1' });
     await vi.waitFor(() =>
-      expect(toast.error).toHaveBeenCalledWith('Could not move the document. Try again.'),
+      expect(toast.error).toHaveBeenCalledWith('Could not move the design. Try again.'),
     );
     expect(refreshTeamLibraries).not.toHaveBeenCalled();
     expect(track).not.toHaveBeenCalled();
-    expect(warned()).toEqual(['[explorer-move] team-document failed document=t1: offline']);
+    expect(warned()).toEqual(['[explorer-move] team-design failed design=t1: offline']);
   });
 });
 
-describe('moving a team document out of its team', () => {
+describe('moving a team design out of its team', () => {
   it('re-sweeps the teams and My Work once the move landed', async () => {
-    vi.mocked(apiSetDocumentFolder).mockResolvedValueOnce(undefined);
+    vi.mocked(apiSetDesignFolder).mockResolvedValueOnce(undefined);
     const { moves, refreshTeamLibraries, refreshPersonal } = setup();
-    moves.moveDocumentTo('t1', { teamId: null, folderId: null });
+    moves.moveDesignTo('t1', { teamId: null, folderId: null });
     await vi.waitFor(() => expect(refreshPersonal).toHaveBeenCalledWith('owner-1'));
     expect(refreshTeamLibraries).toHaveBeenCalled();
-    expect(track).toHaveBeenCalledWith('Team', 'Removed', 'Document');
+    expect(track).toHaveBeenCalledWith('Team', 'Removed', 'Design');
   });
 
   it.each([
     ['to My Work', null],
     ['to another team', 'team-2'],
   ])('says so, and logs it, when the move %s fails', async (_, teamId) => {
-    vi.mocked(apiSetDocumentFolder).mockRejectedValueOnce(new Error('offline'));
+    vi.mocked(apiSetDesignFolder).mockRejectedValueOnce(new Error('offline'));
     const { moves, toast, refreshPersonal } = setup();
-    moves.moveDocumentTo('t1', { teamId, folderId: null });
+    moves.moveDesignTo('t1', { teamId, folderId: null });
     await vi.waitFor(() =>
       expect(toast.error).toHaveBeenCalledWith(
-        'Couldn’t move the document out of the team. Try again.',
+        'Couldn’t move the design out of the team. Try again.',
       ),
     );
     expect(refreshPersonal).not.toHaveBeenCalled();
     expect(track).not.toHaveBeenCalled();
-    expect(warned()).toEqual(['[explorer-move] team-document-out failed document=t1: offline']);
+    expect(warned()).toEqual(['[explorer-move] team-design-out failed design=t1: offline']);
   });
 });
 

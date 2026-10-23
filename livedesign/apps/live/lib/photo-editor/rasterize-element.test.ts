@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livedesign/document';
+import type { Element } from '@livedesign/design';
 import { elementPhotoRect, RASTERIZE_MARGIN } from './rasterize-element';
 
 const box = (x: number, y: number, width: number, height: number) =>

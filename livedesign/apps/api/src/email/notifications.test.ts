@@ -29,7 +29,7 @@ import { sendEmail } from './client';
 import { actionAssignedEmail, commentNotificationEmail } from './templates';
 import {
   notifyActionAssigned,
-  notifyDocumentJoin,
+  notifyDesignJoin,
   notifyMentioned,
   notifyFirstShare,
   notifyMilestone,
@@ -41,7 +41,7 @@ import {
 const env = { RESEND_API_KEY: 're', APP_BASE_URL: 'https://app.test' } as unknown as Env;
 const liveDoc = { id: 'd1', ownerId: 'u1', name: 'Roadmap' };
 const allowAll = {
-  notifyDocumentJoin: true,
+  notifyDesignJoin: true,
   notifyInviteResponse: true,
   notifyComments: true,
   notifyTips: true,
@@ -53,30 +53,30 @@ const allowAll = {
 afterEach(() => vi.clearAllMocks());
 
 describe('commentNotificationEmail', () => {
-  it('names the commenter + document, links to the document, omits comment text', () => {
+  it('names the commenter + design, links to the design, omits comment text', () => {
     const e = commentNotificationEmail(env, 'Roadmap', 'd1', 'Anna');
     expect(e.subject).toMatch(/Anna/);
     expect(e.html).toContain('Roadmap');
-    expect(e.html).toContain('https://app.test/document/d1');
+    expect(e.html).toContain('https://app.test/design/d1');
     // Footer links to the profile so the owner can turn it off (per request).
     expect(e.html).toContain('https://app.test/explorer?settings=notifications');
     expect(e.unsubscribeUrl).toBe('https://app.test/explorer?settings=notifications');
   });
 
-  it('falls back to "Someone" / "your document" when unknown', () => {
+  it('falls back to "Someone" / "your design" when unknown', () => {
     const e = commentNotificationEmail(env, '', 'd1', null);
     expect(e.subject).toMatch(/Someone/);
-    expect(e.html).toContain('your document');
+    expect(e.html).toContain('your design');
   });
 });
 
-describe('notifyDocumentJoin (docs/specs/014-identity/profile-and-email-notifications.md)', () => {
-  it('emails the owner when the per-document claim is won', async () => {
+describe('notifyDesignJoin (docs/specs/014-identity/profile-and-email-notifications.md)', () => {
+  it('emails the owner when the per-design claim is won', async () => {
     vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.test');
     vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
     vi.mocked(claimJoinNotify).mockResolvedValue(true);
     vi.mocked(sendEmail).mockResolvedValue({ sent: true });
-    await notifyDocumentJoin(env, liveDoc, 'Anna');
+    await notifyDesignJoin(env, liveDoc, 'Anna');
     expect(claimJoinNotify).toHaveBeenCalledWith(env, 'd1', expect.any(Number), expect.any(Number));
     const [, now, cutoff] = vi.mocked(claimJoinNotify).mock.calls[0]!.slice(1);
     expect((now as number) - (cutoff as number)).toBe(15 * 60 * 1000);
@@ -87,14 +87,14 @@ describe('notifyDocumentJoin (docs/specs/014-identity/profile-and-email-notifica
     vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.test');
     vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
     vi.mocked(claimJoinNotify).mockResolvedValue(false);
-    await notifyDocumentJoin(env, liveDoc, 'Anna');
+    await notifyDesignJoin(env, liveDoc, 'Anna');
     expect(sendEmail).not.toHaveBeenCalled();
   });
 
   it('spends no claim when the owner opted out', async () => {
     vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.test');
-    vi.mocked(getNotificationPrefs).mockResolvedValue({ ...allowAll, notifyDocumentJoin: false });
-    await notifyDocumentJoin(env, liveDoc, 'Anna');
+    vi.mocked(getNotificationPrefs).mockResolvedValue({ ...allowAll, notifyDesignJoin: false });
+    await notifyDesignJoin(env, liveDoc, 'Anna');
     expect(claimJoinNotify).not.toHaveBeenCalled();
     expect(sendEmail).not.toHaveBeenCalled();
   });
@@ -139,7 +139,7 @@ describe('notifyNewComment', () => {
 });
 
 describe('actionAssignedEmail (docs/specs/012-collaboration/assigned-actions.md)', () => {
-  it('names the assigner, document, and action, links to the document', () => {
+  it('names the assigner, design, and action, links to the design', () => {
     const e = actionAssignedEmail(
       env,
       'Sam',
@@ -151,7 +151,7 @@ describe('actionAssignedEmail (docs/specs/012-collaboration/assigned-actions.md)
     expect(e.html).toContain('Roadmap');
     expect(e.html).toContain('Review the copy');
     expect(e.html).toContain('Hero only');
-    expect(e.html).toContain('https://app.test/document/d1');
+    expect(e.html).toContain('https://app.test/design/d1');
     expect(e.unsubscribeUrl).toBe('https://app.test/explorer?settings=notifications');
   });
 
@@ -170,17 +170,17 @@ describe('actionAssignedEmail (docs/specs/012-collaboration/assigned-actions.md)
     expect(e.html).toContain(`${'y'.repeat(200)}…`);
   });
 
-  it('falls back when the assigner or document name is unknown', () => {
+  it('falls back when the assigner or design name is unknown', () => {
     const e = actionAssignedEmail(env, null, { id: 'd1', name: '' }, 'Do it', null);
     expect(e.subject).toMatch(/A teammate/);
-    expect(e.html).toContain('a shared document');
+    expect(e.html).toContain('a shared design');
   });
 
-  it('names no document, and links to none, for an assignee who cannot open it', () => {
+  it('names no design, and links to none, for an assignee who cannot open it', () => {
     const e = actionAssignedEmail(env, 'Sam', null, 'Review the copy', null);
     expect(e.html).toContain('Review the copy');
     expect(e.html).toContain('ask them to share it');
-    expect(e.html).not.toContain('/document/');
+    expect(e.html).not.toContain('/design/');
     expect(e.html).toContain('https://app.test/explorer');
   });
 });
@@ -191,7 +191,7 @@ describe('notifyActionAssigned (docs/specs/012-collaboration/assigned-actions.md
     assigneeFallbackEmail: 'invited@x.com',
     assignerUserId: 'u1',
     assignerName: 'Sam',
-    document: { id: 'd1', name: 'Roadmap' },
+    design: { id: 'd1', name: 'Roadmap' },
     assigneeCanOpen: true,
     actionName: 'Review the copy',
     description: null,
@@ -262,14 +262,14 @@ describe('notifyActionAssigned (docs/specs/012-collaboration/assigned-actions.md
     expect(sendEmail).not.toHaveBeenCalled();
   });
 
-  it('leaves the document out for an assignee who cannot open it', async () => {
+  it('leaves the design out for an assignee who cannot open it', async () => {
     vi.mocked(getOwnerEmail).mockResolvedValue('assignee@x.com');
     vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
     vi.mocked(sendEmail).mockResolvedValue({ sent: true });
     await notifyActionAssigned(env, { ...input, assigneeCanOpen: false });
     const html = vi.mocked(sendEmail).mock.calls[0]![1].html;
     expect(html).not.toContain('Roadmap');
-    expect(html).not.toContain('/document/d1');
+    expect(html).not.toContain('/design/d1');
   });
 });
 
@@ -279,7 +279,7 @@ describe('notifyMentioned (docs/specs/012-collaboration/comment-mentions.md)', (
     recipientFallbackEmail: 'invited@x.com',
     authorUserId: 'u1',
     authorName: 'Sam',
-    document: { id: 'd1', name: 'Roadmap' },
+    design: { id: 'd1', name: 'Roadmap' },
     commentText: 'Can you check this, @priya?',
   };
   beforeEach(() => vi.mocked(claimNotifyEmail).mockResolvedValue(true));

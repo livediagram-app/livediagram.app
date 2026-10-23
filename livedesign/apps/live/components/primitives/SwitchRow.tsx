@@ -6,7 +6,7 @@ import { ToggleSwitch } from '@/components/palette/palette-controls';
 // A sentence that turns something on, with the house iOS-style switch at its end
 // (docs/specs/004-interface-design/design-principles.md): the whole row is the control, a
 // `role="switch"` button named by its words, so it is one hit target and one announcement.
-// For an on/off choice inside a flow (the new-document wizard's "Always save" rows) where a
+// For an on/off choice inside a flow (the new-design wizard's "Always save" rows) where a
 // settings row's hint line would be too much; a settings popover uses SettingsToggleRow.
 export function SwitchRow({
   checked,

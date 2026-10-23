@@ -28,7 +28,7 @@ export interface Run {
   calls: Call[];
   texts: string[];
   finalText: string;
-  documentIds: string[];
+  designIds: string[];
   result: RunResult | null;
 }
 
@@ -48,6 +48,6 @@ export interface Metrics {
   finished: boolean;
 }
 
-export declare function documentIdsIn(text: string): string[];
+export declare function designIdsIn(text: string): string[];
 export declare function parseTranscript(jsonl: string): Run;
 export declare function metricsOf(run: Run, deprecated?: ReadonlySet<string>): Metrics;

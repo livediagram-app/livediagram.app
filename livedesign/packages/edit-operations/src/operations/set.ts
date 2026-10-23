@@ -4,7 +4,7 @@
 // not touched, so it is never normalised (E1, I2).
 
 import type { EditRejection } from '@livedesign/api-schema';
-import type { ArrowElement, Element } from '@livedesign/document';
+import type { ArrowElement, Element } from '@livedesign/design';
 import { sameValue } from '../equality';
 import { writeFieldsOnto } from '../fields';
 import { fitToLabel } from '../labels';

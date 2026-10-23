@@ -8,7 +8,7 @@
 
 import { useEffect, useSyncExternalStore } from 'react';
 import { isProfilePictureUrl } from '@livedesign/api-schema';
-import type { CommentThread, Element } from '@livedesign/document';
+import type { CommentThread, Element } from '@livedesign/design';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import { API_BASE, apiFetch, apiHeaders } from '@/lib/api/core';
 import { createListeners } from '@/lib/listeners';
@@ -38,7 +38,7 @@ function commentIdsOf(elements: readonly Element[] | undefined): string[] {
 }
 
 async function load(
-  documentId: string,
+  designId: string,
   tabId: string,
   ids: string[],
   ownerId: string,
@@ -47,7 +47,7 @@ async function load(
   for (const id of ids) asked.add(id);
   try {
     const res = await apiFetch(
-      `${API_BASE}/documents/${documentId}/tabs/${tabId}/comment-pictures`,
+      `${API_BASE}/designs/${designId}/tabs/${tabId}/comment-pictures`,
       { headers: await apiHeaders(ownerId, { share: shareCode }) },
     );
     if (!res.ok) return;
@@ -63,7 +63,7 @@ async function load(
 
 /** Keep the open tab's comment pictures loaded (signed-in readers only). */
 export function useCommentPicturesLoader(
-  documentId: string | null | undefined,
+  designId: string | null | undefined,
   tabId: string | null | undefined,
   elements: readonly Element[] | undefined,
   // The code a share-link reader arrived with: their read access rides on it.
@@ -73,9 +73,9 @@ export function useCommentPicturesLoader(
   const unasked = commentIdsOf(elements).filter((id) => !asked.has(id));
   const key = unasked.join(',');
   useEffect(() => {
-    if (!isSignedIn || !userId || !documentId || !tabId || key === '') return;
-    void load(documentId, tabId, key.split(','), userId, shareCode);
-  }, [isSignedIn, userId, documentId, tabId, key, shareCode]);
+    if (!isSignedIn || !userId || !designId || !tabId || key === '') return;
+    void load(designId, tabId, key.split(','), userId, shareCode);
+  }, [isSignedIn, userId, designId, tabId, key, shareCode]);
 }
 
 /**

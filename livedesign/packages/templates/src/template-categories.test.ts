@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EDITOR_MODES } from '@livedesign/document';
+import { EDITOR_MODES } from '@livedesign/design';
 import {
   TEMPLATE_ALSO_IN,
   TEMPLATE_CATEGORIES,

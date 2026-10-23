@@ -1,7 +1,7 @@
 // Tags (docs/specs/013-workspace/tags.md): the wire types, the limits, and the rules both sides apply
 // (the api enforces them; the client checks before it asks, so a refusal is only a race). Pure.
 
-import { STANDARD_COLOUR_NAMES, isHexColour, type StandardColourName } from '@livedesign/document';
+import { STANDARD_COLOUR_NAMES, isHexColour, type StandardColourName } from '@livedesign/design';
 
 /** How many tags one person can make (spec "A tag"). Safe range 50 to 500: every tag list is bounded by it. */
 export const TAG_LIMIT = 100;
@@ -20,8 +20,8 @@ export type Tag = {
   createdAt: number;
 };
 
-/** One tag on one document. */
-export type TagLink = { tagId: string; documentId: string };
+/** One tag on one design. */
+export type TagLink = { tagId: string; designId: string };
 
 /** `GET /api/tags`. */
 export type TagsList = { tags: Tag[]; links: TagLink[] };

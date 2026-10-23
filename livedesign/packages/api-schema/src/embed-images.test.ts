@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@livedesign/document';
+import type { Tab } from '@livedesign/design';
 import { embedTabImages, tabImageIds, type EmbedImageSource } from './embed-images';
 
-// The embedder both workers inline tab images with (docs/specs/015-api/mcp-server.md §5, docs/specs/006-document/document-snapshots.md).
+// The embedder both workers inline tab images with (docs/specs/015-api/mcp-server.md §5, docs/specs/006-design/design-snapshots.md).
 // Each worker passes its own byte source and limits, so these cases pin the
 // shared rules: which ids are read, what each limit skips, and what type the
 // data URL carries.

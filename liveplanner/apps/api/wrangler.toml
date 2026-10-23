@@ -1,4 +1,6 @@
 name = "liveplanner-api"
+# The liveworkspace Cloudflare account, which also hosts liveplanner.app, so a deploy can never land on another one.
+account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 main = "src/index.ts"
 compatibility_date = "2026-05-29"
 
@@ -68,7 +70,7 @@ OAUTH_ISSUER = "https://mcp.liveplanner.app"
 [[d1_databases]]
 binding = "DB"
 database_name = "liveplanner"
-database_id = "00000000-0000-4000-8000-000000000001"
+database_id = "8c7e45fd-6a13-42f4-bd59-fd115fdc3087"
 migrations_dir = "migrations"
 
 # R2 bucket caching each project's SVG snapshot (`thumb/<id>`, the Explorer thumbnail and
@@ -311,7 +313,7 @@ OAUTH_ISSUER = "https://mcp-staging.liveplanner.app"
 [[env.staging.d1_databases]]
 binding = "DB"
 database_name = "liveplanner-staging"
-database_id = "00000000-0000-4000-8000-000000000002"
+database_id = "08c233ed-6c77-4bb9-9c4c-3462efac9496"
 migrations_dir = "migrations"
 
 # Own bucket: `wrangler r2 bucket create liveplanner-snapshots-staging`. Sharing

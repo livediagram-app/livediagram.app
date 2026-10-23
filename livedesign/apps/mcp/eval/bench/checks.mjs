@@ -13,8 +13,8 @@ function asRegex(word) {
 // ---- what was made ---------------------------------------------------------------------------------------------
 
 export function tabsOf(snap) {
-  return (snap.documents ?? []).flatMap((d) =>
-    (d.tabs ?? []).map((t) => ({ ...t, documentId: d.id })),
+  return (snap.designs ?? []).flatMap((d) =>
+    (d.tabs ?? []).map((t) => ({ ...t, designId: d.id })),
   );
 }
 
@@ -77,7 +77,7 @@ export function pagesOf(snap) {
 // One lowercase string of every word the run made, wherever it sits (elements, pages).
 function allText(snap) {
   const out = [];
-  for (const d of snap.documents ?? []) {
+  for (const d of snap.designs ?? []) {
     out.push(d.name);
     for (const t of d.tabs ?? []) {
       out.push(t.name, ...t.elements.map(wordsOf));
@@ -109,7 +109,7 @@ export function atLeast(n, have, what) {
 
 // Every task's first check: the run made or changed something, and ended with a reply.
 const BASE_CHECKS = [
-  ['made something', ({ snap }) => (snap.documents ?? []).some((d) => !d.missing)],
+  ['made something', ({ snap }) => (snap.designs ?? []).some((d) => !d.missing)],
   ['replied', ({ run }) => (run.finalText ?? '').trim().length > 0],
 ];
 

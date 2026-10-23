@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { ADDER_KEY_LENGTH } from '@livedesign/document';
+import { ADDER_KEY_LENGTH } from '@livedesign/design';
 import { adderKeyFor } from './adder-key';
 
 describe('adderKeyFor', () => {
-  it('is stable per person and document, and differs across either', async () => {
+  it('is stable per person and design, and differs across either', async () => {
     const a = await adderKeyFor('doc-1', 'guest-1');
     expect(a).toHaveLength(ADDER_KEY_LENGTH);
     expect(a).toMatch(/^[0-9a-f]+$/);

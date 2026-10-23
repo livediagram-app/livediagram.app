@@ -3,7 +3,7 @@
 // tool is in hand; the tool's layer, which covers the page, sits under it.
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render } from '@testing-library/react';
-import type { LaidOutPage } from '@livedesign/document';
+import type { LaidOutPage } from '@livedesign/design';
 import { photoOf } from '@/lib/photo-editor/photo-test-utils';
 import { photoTools } from '@/lib/photo-editor/tool-state';
 import { PhotoCanvasOverlays } from './PhotoCanvasOverlays';

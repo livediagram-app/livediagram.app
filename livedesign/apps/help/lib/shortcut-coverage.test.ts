@@ -47,7 +47,7 @@ function boundKeys(): Set<string> {
   return keys;
 }
 
-// Keys the article documents, as single-character inline code: `V`, `7`.
+// Keys the article designs, as single-character inline code: `V`, `7`.
 function documentedKeys(): Set<string> {
   const src = readFileSync(ARTICLE, 'utf8');
   return new Set([...src.matchAll(/`([A-Z0-9])`/g)].map((m) => m[1]!));
@@ -81,13 +81,13 @@ describe('the Keyboard Shortcuts article covers what the editor binds', () => {
     expect(documentedKeys().size).toBeGreaterThan(20);
   });
 
-  it('documents every plain key in the lookup tables', () => {
+  it('designs every plain key in the lookup tables', () => {
     const documented = documentedKeys();
     const missing = [...boundKeys()].filter((k) => !documented.has(k)).sort();
     expect(missing).toEqual([]);
   });
 
-  it('documents every modifier chord the shortcuts dialog lists', () => {
+  it('designs every modifier chord the shortcuts dialog lists', () => {
     // The article claimed to be "the full shortcut reference" while naming no
     // chord at all: undo, copy, paste, group and zoom were in the product and
     // in the dialog, and nowhere in the help centre.
@@ -97,7 +97,7 @@ describe('the Keyboard Shortcuts article covers what the editor binds', () => {
     expect(missing).toEqual([]);
   });
 
-  it('documents the image key, which is bound outside the tables', () => {
+  it('designs the image key, which is bound outside the tables', () => {
     // `9` gets its own branch in the listener because its callback is nullable
     // (a guest deploy with no api worker has nowhere to put the file), so it
     // never reaches the tables above and the parse cannot see it. Asserted

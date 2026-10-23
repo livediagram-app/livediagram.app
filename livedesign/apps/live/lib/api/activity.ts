@@ -1,10 +1,10 @@
 // The Explorer's Inbox (docs/specs/013-workspace/inbox.md): what is outstanding for the
-// reader across every document they can open.
+// reader across every design they can open.
 //
 // Read-only: every row links into the editor, where completing /
-// resolving already live. Offline Mode (docs/specs/006-document/offline-mode.md) is a deliberate no-op
+// resolving already live. Offline Mode (docs/specs/006-design/offline-mode.md) is a deliberate no-op
 // here for the same reason as the Timeline: this endpoint is scoped to
-// an owner, not a document id, and a browser-only document never reaches
+// an owner, not a design id, and a browser-only design never reaches
 // the worker, so it has no rows to show.
 
 import type { ActivityReadResult } from '@livedesign/api-schema';

@@ -1,7 +1,7 @@
 // Which photo page is in focus (docs/specs/031-photo/photo-pages.md "Working on a photo page"): the
 // one pressed, while it is still in view; else the photo page that takes the most of the view. Only
 // the page in focus holds its layers' pixels; every other shows its preview.
-import type { LaidOutPage } from '@livedesign/document';
+import type { LaidOutPage } from '@livedesign/design';
 
 type Rect = { x: number; y: number; width: number; height: number };
 

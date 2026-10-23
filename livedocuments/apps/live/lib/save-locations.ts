@@ -10,9 +10,9 @@ export type SaveLocationId = 'livedocuments' | 'browser';
 // starts on livedocuments.
 export function defaultSaveLocationFor(who: {
   signedIn: boolean;
-  clerkEnabled: boolean;
+  signInEnabled: boolean;
 }): SaveLocationId {
-  return who.clerkEnabled && !who.signedIn ? 'browser' : 'livedocuments';
+  return who.signInEnabled && !who.signedIn ? 'browser' : 'livedocuments';
 }
 
 // Whether an id resolves to the browser-only IndexedDB store (Offline Mode,

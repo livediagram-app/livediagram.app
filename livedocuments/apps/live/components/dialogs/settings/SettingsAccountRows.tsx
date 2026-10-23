@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
-import { Button, SOLID_BRAND_DARK, PictureDisc } from '@livedocuments/ui';
+import { Button, GlyphDisc, SOLID_BRAND_DARK } from '@livedocuments/ui';
 import { SettingsRowShell } from './SettingsRowShell';
 import { SettingsSignInLink } from './SettingsSignInLink';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
@@ -13,8 +13,7 @@ import type { SettingsDeleteAccountRowSpec, SettingsIdentityRowSpec } from './se
 // (docs/specs/014-identity/profile-and-email-notifications.md) when that page was retired: everything it held now lives in
 // Settings, so a second account home was a second place to look.
 //
-// Lazy: the confirmation modal pulls in Clerk's reverification surface and
-// almost nobody deletes, so it only loads on first click.
+// Lazy: almost nobody deletes, so it only loads on first click.
 const DeleteAccountDialog = dynamic(
   () => import('@/components/dialogs/DeleteAccountDialog').then((m) => m.DeleteAccountDialog),
   { ssr: false },
@@ -23,8 +22,8 @@ const DeleteAccountDialog = dynamic(
 // The identity card's avatar diameter.
 const IDENTITY_AVATAR_PX = 44;
 
-// Identity, read from Clerk. Never written here: names and emails are managed
-// in Clerk itself, so this is a card, not a form.
+// Identity, read from the account. Never written here: names and emails are managed
+// on the liveworkspace accounts site, so this is a card, not a form.
 export function SettingsIdentityRow({ row }: { row: SettingsIdentityRowSpec }) {
   const { authLoaded, isSignedIn, user } = useDeferredAuth();
   const signedIn = Boolean(authLoaded && isSignedIn && user);
@@ -37,7 +36,7 @@ export function SettingsIdentityRow({ row }: { row: SettingsIdentityRowSpec }) {
       })
     : null;
 
-  // Signed in, the row IS the account: the picture, the name, the email and when it joined.
+  // Signed in, the row IS the account: the initial, the name, the email and when it joined.
   // A guest gets the guest row and the way in.
   const shown = signedIn
     ? {
@@ -52,14 +51,13 @@ export function SettingsIdentityRow({ row }: { row: SettingsIdentityRowSpec }) {
       row={shown}
       leading={
         signedIn ? (
-          <PictureDisc
-            pictureUrl={user?.pictureUrl}
+          <GlyphDisc
             size={IDENTITY_AVATAR_PX}
             aria-hidden
             className={`bg-brand-700 text-lg font-semibold text-white ${SOLID_BRAND_DARK}`}
           >
             {accountInitial(user)}
-          </PictureDisc>
+          </GlyphDisc>
         ) : null
       }
       descriptionContent={
@@ -77,13 +75,13 @@ export function SettingsIdentityRow({ row }: { row: SettingsIdentityRowSpec }) {
 const GUEST_IDENTITY = 'Your documents live in this browser. Sign in to keep them across devices.';
 
 // Delete account. Signed-in only, and not because of the UI: the api's
-// DELETE /api/account is Clerk-only by design (docs/specs/014-identity/profile-and-email-notifications.md), since the whole
+// DELETE /api/account is signed-in only by design (docs/specs/014-identity/profile-and-email-notifications.md), since the whole
 // point is wiping data bound to a VERIFIED identity. A guest's owner id is an
 // unverified header, so honouring it would let anyone wipe anyone's documents.
 // The row still renders for guests, saying why, rather than vanishing, so the
 // answer to "can I delete my data?" is in the panel either way.
 export const DELETE_ACCOUNT_SIGNED_IN =
-  'Permanently removes your documents (the Trash included), folders and account, everywhere. There is no undo: you type your email to confirm.';
+  'Permanently removes your livedocuments documents (the Trash included), folders and settings, closes your liveworkspace account for every app, then signs you out. There is no undo: you type your email to confirm.';
 export const DELETE_ACCOUNT_GUEST =
   'Available once you sign in: a guest browser has no verified account to delete.';
 
@@ -119,7 +117,7 @@ export function SettingsDeleteAccountRow({ row }: { row: SettingsDeleteAccountRo
           open={open}
           onClose={() => setOpen(false)}
           onDeleted={async () => {
-            // Backend + Clerk delete already completed inside the dialog;
+            // The data delete already completed inside the dialog;
             // sign out to clear client state and land on marketing.
             await signOut({ redirectUrl: '/' });
           }}

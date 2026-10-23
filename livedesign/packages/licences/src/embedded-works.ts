@@ -39,6 +39,18 @@ export const EMBEDDED_WORKS: readonly EmbeddedWork[] = [
     trigger: { assets: /(^|-)index_bg\.wasm$/ },
     texts: text('tiny-skia-0.10.0-LICENSE.txt'),
   },
+  // The photo editor's WebP codec: libwebp at the commit @jsquash/webp 1.5.0's Makefile builds,
+  // compiled to WebAssembly; the package ships libwebp's licence beside it.
+  {
+    id: 'libwebp',
+    name: 'libwebp',
+    version: 'd2e245ea',
+    licence: 'BSD-3-Clause',
+    carrier: '@jsquash/webp (WebAssembly)',
+    homepage: 'https://github.com/webmproject/libwebp',
+    trigger: { assets: /(^|[-/])webp_(enc|dec)(_simd)?\.[\w.-]*wasm$/ },
+    texts: [{ label: 'LICENSE', package: '@jsquash/webp', path: 'codec/LICENSE.codec.md' }],
+  },
   // The typeface the MCP server and the CLI render PNG previews with (packages/render-png/fonts).
   {
     id: 'inter',

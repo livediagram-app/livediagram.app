@@ -4,9 +4,9 @@
 
 import type { LintReport } from '@livedesign/api-schema';
 import { lintTab, type LintLogger } from '@livedesign/page-lint';
-import type { Tab } from '@livedesign/document';
+import type { Tab } from '@livedesign/design';
 
-type Where = { documentId: string; tabId: string };
+type Where = { designId: string; tabId: string };
 
 // The lint's own lines, prefixed with where they happened.
 export function lintLog(where: Where): LintLogger {

@@ -144,7 +144,7 @@ tour.
 6. **One Colour, a Whole Ramp**: rings the bottom layer. The top takes the accent and each below steps toward the
    fill; a colour change carries every band, their words kept readable.
 7. **Build It Up**: rings the stack and plays its **Build** animation on it once, as a preview: never stored, so the
-   document does not change, and gone with the step. Animation, then Concept: Build, or Pulse.
+   design does not change, and gone with the step. Animation, then Concept: Build, or Pulse.
 8. **That Is a Layer Stack** (closing card): it exports as drawn, every change one undo step; **Done** and the
    **Concept Graphics Help** link.
 

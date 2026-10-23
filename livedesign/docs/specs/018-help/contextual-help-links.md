@@ -101,7 +101,7 @@ Grouped by priority; each links the keyed article.
 - AI panel - **Connect agent** button (on the Ask / Clean row) -> `connect-ai-mcp`. Uses the
   `button` variant with a custom `label` + plug `icon` (the variant now accepts both; absent
   a custom label it still reads "Help").
-- Export dialog header -> `exporting-documents` (isometric toggle -> `isometric-mode`)
+- Export dialog header -> `exporting-designs` (isometric toggle -> `isometric-mode`)
 - Import dialog header -> `import-tabs`.
 - Team form / invite -> `team-roles-and-invites`
 
@@ -116,7 +116,7 @@ Grouped by priority; each links the keyed article.
 
 **Onboarding / empty states**
 
-- Empty-canvas card -> `your-first-document`
+- Empty-canvas card -> `your-first-design`
 - Template starts -> `templates` (Start Making Pages)
 - Settings - Keyboard category (was the Shortcuts dialog) -> `keyboard-shortcuts`
 - Sign-in reasons modal -> `guest-vs-account`
@@ -143,7 +143,7 @@ both the panel header and the popover band, and stops the pointer so
 pressing it opens the article rather than starting a panel drag.
 
 Wired: Palette, Explorer, Activity, Layers, Map, and the tool panels
-(Laser, Spotlight, Format, Slide Deck). This closed the gap the feature was written for and had never
+(Laser, Spotlight, Format, Eraser, Slide Deck, Photo). This closed the gap the feature was written for and had never
 reached: 21 surfaces linked an article, and every one of them was a dialog, so
 a panel you were looking at could not tell you there was a page about it.
 

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DOCUMENT_TRASHED_CLOSE } from '@livedesign/api-schema';
+import { DESIGN_TRASHED_CLOSE } from '@livedesign/api-schema';
 import type { TimingTrack } from '@livedesign/telemetry-client';
 import { resetTimingForTests, setTimingTrack } from '../timing';
 import { connectRoom } from './room';
@@ -102,7 +102,7 @@ describe('connectRoom timings', () => {
     connect();
     FakeSocket.all[0]!.fire('open');
     FakeSocket.all[0]!.fire('message', PRESENCE);
-    FakeSocket.all[0]!.fire('close', undefined, DOCUMENT_TRASHED_CLOSE);
+    FakeSocket.all[0]!.fire('close', undefined, DESIGN_TRASHED_CLOSE);
     expect(timings()).toEqual(['RoomConnect.Under100ms']);
   });
 

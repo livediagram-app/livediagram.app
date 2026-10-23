@@ -11,11 +11,11 @@ describe('ToastCard', () => {
     render(
       <ToastCard
         tone="info"
-        message="Document deleted"
+        message="Design deleted"
         actions={[
           {
             label: 'Undo',
-            ariaLabel: 'Undo: restore the document',
+            ariaLabel: 'Undo: restore the design',
             onSelect: () => {},
             primary: true,
           },
@@ -30,7 +30,7 @@ describe('ToastCard', () => {
     // The message and the actions share one wrapping row; the message's basis is its own width.
     expect(body!.className).toContain('flex-wrap');
     const [message, actions] = Array.from(body!.children);
-    expect(message!.textContent).toBe('Document deleted');
+    expect(message!.textContent).toBe('Design deleted');
     expect(message!.className).toContain('flex-[1_1_auto]');
     expect(actions!.className).toContain('ml-auto');
     expect(actions!.textContent).toBe('Undo');

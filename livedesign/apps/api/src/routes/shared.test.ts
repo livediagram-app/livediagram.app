@@ -4,7 +4,7 @@ import { makeTestRouteContext } from './test-route-context';
 // Route surface for the Explorer's "Shared with you" accordion. Everything
 // here is keyed off the RESOLVED owner rather than anything the caller names,
 // which is what stops one visitor listing — or dismissing — another's shared
-// documents. The guest path has to keep working too: shared_with rows are keyed
+// designs. The guest path has to keep working too: shared_with rows are keyed
 // off the same resolved string whether it came from a Clerk session or an
 // X-Owner-Id header (docs/specs/014-identity/auth-and-guest-access.md).
 
@@ -63,10 +63,10 @@ describe('GET /api/shared', () => {
   });
 });
 
-describe('DELETE /api/shared/:documentId', () => {
-  it('drops only this owner’s reference to the document', async () => {
-    // The row is (owner, document): dismissing a shared document must not touch
-    // anyone else's copy of the same reference, nor the document itself.
+describe('DELETE /api/shared/:designId', () => {
+  it('drops only this owner’s reference to the design', async () => {
+    // The row is (owner, design): dismissing a shared design must not touch
+    // anyone else's copy of the same reference, nor the design itself.
     const res = await handleShared(makeCtx('DELETE', '/api/shared/diag-1'));
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
@@ -88,11 +88,11 @@ describe('DELETE /api/shared/:documentId', () => {
 
 describe('handleShared routing', () => {
   it('404s a path that is not /api/shared', async () => {
-    const res = await handleShared(makeCtx('GET', '/api/documents'));
+    const res = await handleShared(makeCtx('GET', '/api/designs'));
     expect(res.status).toBe(404);
   });
 
-  it('404s a path nested deeper than one document id', async () => {
+  it('404s a path nested deeper than one design id', async () => {
     const res = await handleShared(makeCtx('DELETE', '/api/shared/diag-1/extra'));
     expect(res.status).toBe(404);
     expect(db.dropSharedAccess).not.toHaveBeenCalled();

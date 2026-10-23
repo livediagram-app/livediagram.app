@@ -2,7 +2,7 @@
 // (docs/specs/015-api/public-api-and-tokens.md §3.8). Kept only because the team routes that read it belong to
 // another change; it goes with them.
 
-export function legacyDocumentIdOf(body: unknown): string {
+export function legacyDesignIdOf(body: unknown): string {
   const value =
     body && typeof body === 'object' ? (body as { diagramId?: unknown }).diagramId : undefined;
   return typeof value === 'string' ? value : '';

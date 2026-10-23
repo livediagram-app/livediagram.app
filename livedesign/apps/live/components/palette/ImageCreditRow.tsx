@@ -1,4 +1,4 @@
-import type { ImageCredit } from '@livedesign/document';
+import type { ImageCredit } from '@livedesign/design';
 
 // The Image section's credit line for a picture picked from Image search
 // (docs/specs/009-elements/image-search.md "Credit on the element"): who made it,

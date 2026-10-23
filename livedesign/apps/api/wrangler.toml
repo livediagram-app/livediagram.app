@@ -78,7 +78,7 @@ GUEST_SIG_ENFORCE_AFTER = ""
 # from an older CLI.
 OAUTH_ISSUER = "https://mcp.livedesign.app"
 
-# D1 database holding documents + participants. The local binding name
+# D1 database holding designs + participants. The local binding name
 # (`DB`) is what `src/db.ts` reads via the Env type. The `database_name`
 # is the Cloudflare-side name (must be created via `wrangler d1 create
 # livedesign` or the dashboard). `database_id` is filled in after the
@@ -89,14 +89,9 @@ database_name = "livedesign"
 database_id = "00000000-0000-4000-8000-000000000001"
 migrations_dir = "migrations"
 
-# R2 bucket holding the bytes of every uploaded image element
-# (docs/specs/009-elements/images.md). The binding name `IMAGES` is what `src/index.ts` reads
-# via the Env type. The bucket must be created out of band via
-# `wrangler r2 bucket create livedesign-images` (production) or
-# the dashboard. Leaving the binding absent locally puts the api
-# in "no uploads" mode: the image endpoints return 503 and the
-# editor's palette hides the Image entry. See docs/specs/009-elements/images.md + docs/specs/002-project-scope/open-source-and-business-model.md
-# self-host promise.
+# R2 bucket holding design snapshots (thumb/<designId>, docs/specs/006-design/document-snapshots.md), and
+# the image bytes uploaded before images moved to liveworkspace's media service (MEDIA_KEY below), kept until
+# they are migrated. Created out of band via `wrangler r2 bucket create livedesign-images`.
 [[r2_buckets]]
 binding = "IMAGES"
 bucket_name = "livedesign-images"
@@ -128,7 +123,7 @@ simple = { limit = 300, period = 60 }
 
 # Per-IP limiter for the anonymous telemetry ingest (POST /api/events,
 # docs/specs/017-telemetry/telemetry.md). Separate namespace from the write limiter so abuse of the
-# public events endpoint can never eat into a user's document-write
+# public events endpoint can never eat into a user's design-write
 # budget. 120 batches / 60s per IP is generous for a real editor
 # session (which flushes a handful of batches a minute) while bounding
 # how fast one source can flood D1 / inflate the public dashboard.
@@ -140,22 +135,22 @@ type = "ratelimit"
 namespace_id = "1002"
 simple = { limit = 120, period = 60 }
 
-# Durable Object for per-document realtime (presence + broadcast). One
-# instance per document id; clients connect via WebSocket through the
-# `/api/documents/<id>/ws` endpoint.
+# Durable Object for per-design realtime (presence + broadcast). One
+# instance per design id; clients connect via WebSocket through the
+# `/api/designs/<id>/ws` endpoint.
 [[durable_objects.bindings]]
-name = "DOCUMENT_ROOM"
-class_name = "DocumentRoom"
+name = "DESIGN_ROOM"
+class_name = "DesignRoom"
 
 [[migrations]]
 tag = "v1"
 new_classes = ["DiagramRoom"]
 
-# The class was DiagramRoom until the container became a document
-# (docs/specs/006-document/document.md). A rename keeps every room's storage.
+# The class was DiagramRoom until the container became a design
+# (docs/specs/006-design/design.md). A rename keeps every room's storage.
 [[migrations]]
 tag = "v2"
-renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
+renamed_classes = [{ from = "DiagramRoom", to = "DesignRoom" }]
 
 # Scheduled jobs the worker handles via the `scheduled` export. One
 # entry per cron; each fires the same handler with `event.cron` set
@@ -169,12 +164,13 @@ renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
 #   - images, 30-day floor for UNUSED images only (docs/specs/009-elements/images.md): reaped
 #     from R2 + D1 once nothing references them.
 # Plus the docs/specs/014-identity/transactional-email.md email sweeps (lifecycle onboarding + token-expiry
-# warnings), both no-ops when RESEND_API_KEY is unset.
+# warnings), both no-ops when RESEND_API_KEY is unset. Every minute, the designs whose images changed go to
+# liveworkspace's media service (src/media.ts).
 [triggers]
-crons = ["0 3 * * *"]
+crons = ["0 3 * * *", "* * * * *"]
 
 # Per-IP rate limiter for the AI assistance endpoint (POST /api/ai,
-# docs/specs/007-editor/ai-assistance.md). Separate namespace so AI abuse never eats into document-write
+# docs/specs/007-editor/ai-assistance.md). Separate namespace so AI abuse never eats into design-write
 # or telemetry budgets. 20 requests / 60s per IP is generous for a
 # real user session while bounding runaway OpenAI spend. Absent binding
 # → helper allows, so self-host still works without this feature.
@@ -226,7 +222,7 @@ namespace_id = "1008"
 simple = { limit = 60, period = 60 }
 
 # Per-token limiter for workbench ticket mints and pairing requests (docs/specs/013-workspace/workbench-embeds.md,
-# WORKBENCH_TICKETS_PER_MINUTE), keyed workbench-ticket:<token id>. A workbench opens a few documents, never a stream.
+# WORKBENCH_TICKETS_PER_MINUTE), keyed workbench-ticket:<token id>. A workbench opens a few designs, never a stream.
 # Separate namespace. Absent binding → allow (self-host).
 [[unsafe.bindings]]
 name = "WORKBENCH_TICKET_RATE_LIMITER"
@@ -264,23 +260,8 @@ simple = { limit = 20, period = 60 }
 # { aiEnabled: false }, the editor shows no AI panel, and
 # the AI routes answer 503. That is the self-host default.
 
-# Per-owner soft caps on the image gallery (docs/specs/009-elements/images.md). Both default to
-# "no limit" so OSS self-host operators run their own storage budget;
-# hosted livedesign.app sets both, through `hosted-vars.json` (see the top of
-# this file), so a single owner can't drain the R2 bucket. POST /api/images
-# returns 403 { error: "gallery_full" } once either cap is reached:
-#
-#   - IMAGE_MAX_PER_OWNER: maximum number of image rows one owner
-#     may keep in the gallery. Hosted: "100".
-#   - IMAGE_MAX_BYTES_PER_OWNER: maximum total byte_size summed
-#     across one owner's images. Hosted: "104857600" (100 MB).
-#   - PHOTO_MAX_BYTES_PER_TAB: maximum bytes of photo blobs one tab may hold
-#     (docs/specs/031-photo/photo-store.md "Limits"). Hosted: "536870912" (512 MB).
-#
-# Plain vars; values are decimal strings parsed via parseInt at request time.
-# Unset, blank, "0", or non-numeric values all read as "no limit". A self-host
-# sets them in [vars] above, never only in the Cloudflare dashboard: every
-# `wrangler deploy` replaces the worker's plain vars with the ones it declares.
+# The image gallery's caps (100 images and 100 MB per person, across every app) are the media service's
+# (liveworkspace/docs/media.md "Uploads"), not this worker's.
 
 # RESEND_API_KEY + RESEND_FROM + APP_BASE_URL drive transactional &
 # lifecycle email (docs/specs/014-identity/transactional-email.md). All optional; an absent RESEND_API_KEY makes
@@ -350,6 +331,17 @@ simple = { limit = 20, period = 60 }
 # The two sides MUST match: a mismatch is silent (the caller simply lands
 # back in the shared bucket), so check `wrangler secret list` on both if
 # Mcp·Used counts look flat.
+
+# MEDIA_KEY is livedesign's secret on liveworkspace's media service (liveworkspace/docs/media.md,
+# src/media.ts), which keeps every app's uploaded images. The service holds the same value as
+# MEDIA_KEY_LIVEDESIGN. Never in [vars]:
+#
+#   - Local dev: `MEDIA_KEY=dev-livedesign-media-key` and
+#     `MEDIA_URL=http://localhost:8792/api/media` in `apps/api/.dev.vars`.
+#   - Production and staging: the MEDIA_KEY / MEDIA_KEY_STAGING GitHub secrets, synced by the
+#     deploy workflow. MEDIA_URL comes from hosted-vars.json.
+#
+# Unset = no images: the image endpoints answer 503 and the editor hides the Image entry.
 
 
 # ---------------------------------------------------------------------------
@@ -480,11 +472,11 @@ namespace_id = "1012"
 simple = { limit = 20, period = 60 }
 
 # A different script is a different Durable Object namespace, so staging's
-# DOCUMENT_ROOM instances are separate from production's for free. The class
+# DESIGN_ROOM instances are separate from production's for free. The class
 # still needs its own migration tag in this environment.
 [[env.staging.durable_objects.bindings]]
-name = "DOCUMENT_ROOM"
-class_name = "DocumentRoom"
+name = "DESIGN_ROOM"
+class_name = "DesignRoom"
 
 [[env.staging.migrations]]
 tag = "v1"
@@ -492,13 +484,13 @@ new_classes = ["DiagramRoom"]
 
 [[env.staging.migrations]]
 tag = "v2"
-renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
+renamed_classes = [{ from = "DiagramRoom", to = "DesignRoom" }]
 
 # The daily 03:00 UTC sweeps (retention + the docs/specs/014-identity/transactional-email.md email crons) run on
 # staging too, against staging's own data. Restated rather than inherited so
 # that reading this block tells you what the staging worker actually does.
 [env.staging.triggers]
-crons = ["0 3 * * *"]
+crons = ["0 3 * * *", "* * * * *"]
 
 # CLERK_JWKS_URL, GUEST_ID_HMAC_SECRET and INTERNAL_EVENTS_KEY come from the
 # `_STAGING` GitHub secrets via the deploy workflow. RESEND_API_KEY and the

@@ -6,7 +6,7 @@ import {
   newWireframePage,
   pageContentBox,
   pageScreenRect,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { buildPageLayout } from './page-layout-build';
 import { WIREFRAME_LAYOUTS, wireframeLayoutsFor } from './wireframe-layouts';
 import {

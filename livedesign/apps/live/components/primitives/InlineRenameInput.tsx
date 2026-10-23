@@ -1,14 +1,14 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { NAME_MAX_LENGTH } from '@livedesign/document';
+import { NAME_MAX_LENGTH } from '@livedesign/design';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { refocusAfterField } from './refocus-after-field';
 
 // Shared inline-rename input used by every "click rename, type a
 // new name, press Enter or click away" interaction in the app
-// (sidebar folder tree, list-view folder row, list-view document
-// row, floating Explorer's folder + document renames). Three near-
+// (sidebar folder tree, list-view folder row, list-view design
+// row, floating Explorer's folder + design renames). Three near-
 // identical copies of this used to exist; they drifted on focus
 // management and the most fragile copy (the standalone /explorer
 // page) was the one that exposed the focus-bounce bug. Living
@@ -47,13 +47,13 @@ export function InlineRenameInput({
 }) {
   const ref = useRef<HTMLInputElement>(null);
   const [draft, setDraft] = useState(initial);
-  // draftRef holds the latest draft for the document-level click
+  // draftRef holds the latest draft for the design-level click
   // handler. That handler is attached once and can't re-close
   // over a fresh draft on every keystroke without re-binding.
   const draftRef = useLatest(draft);
   // Same idea for onCommit: the parent rebuilds it every render
   // (it closes over the row id / state), and we don't want to
-  // thrash document listeners chasing that identity.
+  // thrash design listeners chasing that identity.
   const commitRef = useLatest(onCommit);
 
   useLayoutEffect(() => {
@@ -79,7 +79,7 @@ export function InlineRenameInput({
     <input
       ref={ref}
       value={draft}
-      // Names are capped (docs/specs/006-document/name-length.md). Enforced on the input too, not only on
+      // Names are capped (docs/specs/006-design/name-length.md). Enforced on the input too, not only on
       // commit, so the limit is visible as you type rather than silently
       // eating the end of what you wrote.
       maxLength={NAME_MAX_LENGTH}

@@ -10,7 +10,7 @@ import { track } from '@/lib/telemetry';
 // keyboard may want them; users dictating into the same browser
 // may not).
 //
-// Default is ENABLED. docs/specs/007-editor/live-app.md documents the contract; the toggle
+// Default is ENABLED. docs/specs/007-editor/live-app.md designs the contract; the toggle
 // lives in the new keyboard-shortcuts modal so it's discoverable
 // alongside the list it disables.
 

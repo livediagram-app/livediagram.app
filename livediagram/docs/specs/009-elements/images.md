@@ -1,6 +1,6 @@
 # Image element + per-owner gallery
 
-Users can drop an image element on the canvas, upload the bytes, and reuse anything they've previously uploaded from a per-owner gallery. Images live in Cloudflare R2, with a D1 table indexing them. See [Document structure](../006-document/document-structure.md) for the broader element model and [API app](../015-api/api.md) for the API conventions this spec extends.
+Users can drop an image element on the canvas, upload the bytes, and reuse anything they've previously uploaded from a per-owner gallery. Images live in liveworkspace's media service ([liveworkspace/docs/media.md](../../../../liveworkspace/docs/media.md)), which keeps every app's uploads, so a person's gallery follows them across the suite; this api keeps who may see what and serves the bytes. See [Document structure](../006-document/document-structure.md) for the broader element model and [API app](../015-api/api.md) for the API conventions this spec extends.
 
 ## Element model
 
@@ -44,26 +44,9 @@ Resizing aspect-locks by default (the image's `naturalWidth:naturalHeight` ratio
 
 ## Storage
 
-- **R2 bucket:** `livediagram-images`. Binding name `IMAGES` in `apps/api/wrangler.toml`. One bucket per environment (production `livediagram-images` and staging `livediagram-images-staging`, declared separately).
-- **D1 table:** `images`, created by `apps/api/migrations/0014_images.sql`:
-  ```sql
-  CREATE TABLE images (
-    id              TEXT PRIMARY KEY,           -- R2 object key (uuid v4)
-    owner_id        TEXT NOT NULL,
-    content_type    TEXT NOT NULL,              -- 'image/png' etc, narrowed at upload
-    byte_size       INTEGER NOT NULL,
-    width           INTEGER NOT NULL,
-    height          INTEGER NOT NULL,
-    sha256          TEXT NOT NULL,              -- hex; (owner_id, sha256) is unique
-    original_name   TEXT,                       -- optional, surfaces in the gallery
-    created_at      INTEGER NOT NULL
-  );
-  CREATE UNIQUE INDEX images_owner_sha_idx ON images (owner_id, sha256);
-  CREATE INDEX images_owner_created_idx ON images (owner_id, created_at DESC);
-  ```
-  Per-owner sha index drives dedupe: a second upload of the same bytes by the same owner reuses the existing row without touching R2.
-- **R2 object lifecycle:** the object key matches `images.id` so the API layer can read+delete without a separate lookup. Object metadata carries `owner_id` and `content_type` so a future garbage collector can verify orphans without joining D1.
-- **EXIF stripping on upload.** The api worker walks the JPEG byte stream and drops every APP1 (Exif), APP0 (JFIF metadata blob), APP2 (ICC profile), and COM (comment) marker segment before writing to R2. Strips GPS coordinates, camera serial, original-filename / software fields, and any other identifying metadata a phone may have embedded. Pure byte-level rewrite (no JPEG decode required): the image content stays bit-identical, only the metadata segments are removed. PNG / WebP / GIF aren't currently stripped (they carry less identifying metadata by convention; revisit if a real-world leak shows up).
+- **The media service** holds the bytes, one row per image, the dedupe (per person and bytes, across every app), the per-person caps and the EXIF stripping ([media.md](../../../../liveworkspace/docs/media.md) "Uploads"). The api calls it with `MEDIA_KEY` (`apps/api/src/media.ts`); a guest's id never leaves this api, which names a guest to the service by a hash of it.
+- **`media_images`** (migration 0101): whose each image is, as this api names owners, for every image it has met: one uploaded here, one listed in someone's gallery here, or one a document asked for (asked of the service once, and remembered, `''` for an id it doesn't know). The [placement grants](#placement-grants) read it.
+- **Images from before the move** stay in the `images` table and the `livediagram-images` bucket, unserved, until they are migrated. The bucket also keeps document snapshots (`thumb/`).
 
 ## Accepted formats and limits
 
@@ -85,8 +68,8 @@ Server-side enforcement: the upload endpoint checks `Content-Type` against the w
 ### Size cap
 
 - **Per-file cap: 10 MB.** Sits comfortably above typical phone JPEGs (2–4 MB) and 4K screenshots (~3–6 MB as PNG), while staying well below the Workers request-body limit (100 MB). Going higher hurts the picker UX (long uploads on slow networks) without serving real diagram content; canvas images render at thumbnail or modest sizes, so an 8K original is wasted bytes.
-- **Per-owner soft cap: configurable via two env vars** in the api worker, `IMAGE_MAX_PER_OWNER` and `IMAGE_MAX_BYTES_PER_OWNER` (decimal strings, parsed with `parseInt`). Hosted livediagram.app sets them to `100` and `104857600` (100 MB) respectively, through its hosted profile (`apps/api/hosted-vars.json`, sent with every hosted deploy and read back off the editor worker, [Deployment](../016-platform/deployment.md) "Hosted profile"). Both are optional: unset, blank, `0`, or non-numeric values read as "no limit", which is the OSS self-host default where the operator runs their own storage budget (see [Open source + distribution](../002-project-scope/open-source-and-business-model.md)). When either cap is exceeded the worker returns 403 with `{ error: "gallery_full", reason: "count" | "bytes", limit, current }` so the client can render an accurate message.
-- Enforcement order on POST: `Content-Length` against the per-file cap first (rejects oversize uploads before any D1 round-trip), then an early `X-Image-Sha256` dedupe lookup (returns the existing image without parsing the body when the header matches a row at `(owner, sha)`; only for the owner's own editor or a guest: a [workbench session](../013-workspace/workbench-embeds.md) or an API token skips it and uploads the body, which still dedupes on its real hash, because the shortcut would otherwise hand them the matching gallery row, its id, original name and size, for nothing more than a hash), then per-owner totals against the soft cap (a single grouped `COUNT + SUM(byte_size) WHERE owner_id = ?` query). Only uploads that clear all three actually parse the body and write to R2. The early totals check is a fast path, not the guarantee: the row's `INSERT` repeats both cap checks inside the statement, so uploads racing each other (the [Import image pipeline](../020-import-export/import-image-pipeline.md) sends three at once) cannot together pass a cap. An insert the caps refuse deletes the R2 object it just wrote and answers the same 403 `gallery_full`; in the rare case that the gallery has room again by then (an image was deleted meanwhile) it answers 409 `{ error: "upload_conflict" }` and the client may retry (the [Import image pipeline](../020-import-export/import-image-pipeline.md) retries once).
+- **Per-person cap: 100 images and 100 MB, across every app**, kept by the media service. When either is reached the upload answers 403 with `{ error: "gallery_full", reason: "count" | "bytes", limit, current }`, passed on as the service sent it, so the client can render an accurate message.
+- Enforcement order on POST: this api checks the declared type and `Content-Length` against the per-file cap first, so a refused file never leaves the worker; the service then answers an early `X-Image-Sha256` dedupe without the body (sent only for the owner's own editor or a guest: a [workbench session](../013-workspace/workbench-embeds.md) or an API token uploads the body, which still dedupes on its real hash, because the shortcut would otherwise hand them the matching gallery row for nothing more than a hash), checks the caps, sniffs the bytes and stores them. The caps ride inside the row's insert, so uploads racing each other (the [Import image pipeline](../020-import-export/import-image-pipeline.md) sends three at once) cannot together pass one; a refused insert answers the same 403, or 409 `{ error: "upload_conflict" }` when the gallery has room again by then, and the client may retry.
 
 ## API endpoints
 
@@ -185,12 +168,12 @@ The same `renderElementsToSvg` powers the headless snapshot behind the Explorer 
 
 ## Self-host degradation
 
-R2 is a Cloudflare-only binding. Self-hosters on alternative runtimes (Node, Bun, other edge providers) won't have it. To keep [Open source + distribution](../002-project-scope/open-source-and-business-model.md)'s self-host promise intact:
+Images need liveworkspace's media service. To keep [Open source + distribution](../002-project-scope/open-source-and-business-model.md)'s self-host promise intact:
 
-- `apps/api/src/types.ts`: `Env.IMAGES` is optional. When unbound, every `/api/images*` endpoint returns 503 with `{ error: 'images_unavailable' }`.
+- `apps/api/src/types.ts`: `Env.MEDIA_KEY` is optional. When unset, every `/api/images*` endpoint returns 503 with `{ error: 'images_unavailable' }`, as it does when the service refuses this api's key or is down.
 - `apps/editor/components/panels/ImagePicker.tsx`: a 503 response surfaces as a friendly "Image uploads aren't enabled on this deployment" notice instead of a generic error.
 - The Image palette entry hides entirely when a probe `GET /api/images` returns 503, so self-hosters without R2 don't see a dead-end button.
-- A future "S3-compatible storage" adapter can land alongside without changing the schema or the client (the R2 calls are localized to a handful of `env.IMAGES` put / get / delete calls in `apps/api/src/routes/images.ts`, so a Node-fs / S3 alternative could be slotted in from there).
+- Every call to the service goes through `apps/api/src/media.ts`, so another store could be slotted in from there without changing the client.
 
 ## Reference index
 
@@ -249,6 +232,8 @@ CREATE TABLE image_grants (
 - **Refusals log** `[images] not servable by document` with the document and image ids, never an owner id.
 
 ## Retention (unused-image cleanup)
+
+Images in the media service are swept by the service ([media.md](../../../../liveworkspace/docs/media.md) "Retention"), once every app has told it which images its documents place. This api tells it from the reference index: the index's writers queue each document whose images changed (`media_ref_outbox`, in the same batch), as do a tab linked in or out and a removed document, and the every-minute cron sends each queued document's whole set (`flushMediaRefs`); the daily run says `complete` when nothing is queued. The sweep below still runs over the images from before the move.
 
 Uploaded bytes that no document references are dead weight in R2 + D1. A daily sweep reclaims them so an abandoned upload (dropped a placeholder, never picked a file; uploaded then deleted the element; tried a few candidates and kept one) doesn't accrue storage forever.
 

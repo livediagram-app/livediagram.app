@@ -4,7 +4,7 @@
 // merged picture as a fallback when the file has no layers. Anything else is refused with a reason.
 import { createRaster } from '../raster/raster';
 import { blendFromKey } from './blend-keys';
-import { PsdError, type PsdDocument, type PsdGroup, type PsdMask, type PsdNode } from './model';
+import { PsdError, type PsdDesign, type PsdGroup, type PsdMask, type PsdNode } from './model';
 import { unpackBits } from './rle';
 
 class Reader {
@@ -113,14 +113,14 @@ function readChannel(r: Reader, width: number, height: number, length: number): 
 // The most pixels a PSD's canvas may hold here, and a layer's.
 const MAX_SIDE = 30000;
 
-/** A PSD file's document, or a PsdError saying why it cannot be read. */
-export function readPsd(bytes: Uint8Array, { maxSide = MAX_SIDE } = {}): PsdDocument {
+/** A PSD file's design, or a PsdError saying why it cannot be read. */
+export function readPsd(bytes: Uint8Array, { maxSide = MAX_SIDE } = {}): PsdDesign {
   const r = new Reader(bytes);
   if (bytes.length < 26 || r.ascii(4) !== '8BPS')
     throw new PsdError('not-psd', 'This is not a PSD file.');
   const version = r.u16();
   if (version === 2)
-    throw new PsdError('psb', 'Large Document Format (PSB) files are not supported.');
+    throw new PsdError('psb', 'Large Design Format (PSB) files are not supported.');
   if (version !== 1) throw new PsdError('corrupt', 'This PSD version is not supported.');
   r.skip(6);
   const channels = r.u16();

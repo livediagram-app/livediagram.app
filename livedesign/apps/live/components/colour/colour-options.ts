@@ -8,7 +8,7 @@ import {
   standardColours,
   type Appearance,
   type StandardTone,
-} from '@livedesign/document';
+} from '@livedesign/design';
 
 export type ColourOption = {
   // What a pick hands back: a surface's own id (a stock name, a slot, 'transparent'), or a hex.
@@ -80,7 +80,7 @@ export function optionMatches(option: ColourOption, value: string | null | undef
 
 /**
  * Custom colours in a stable order while a picker is open (docs/specs/004-interface-design/
- * colour-picker.md "Custom colours"). A hover preview rewrites the document,
+ * colour-picker.md "Custom colours"). A hover preview rewrites the design,
  * which would move the hovered colour to the front (or drop one it painted over) and slide the
  * swatches under the pointer. So a colour already shown keeps its slot, and only a colour new to the
  * list (a pick from the custom editor) joins, at the front. Returns `shown` itself when nothing new

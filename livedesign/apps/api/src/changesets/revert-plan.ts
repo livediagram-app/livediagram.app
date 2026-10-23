@@ -4,7 +4,7 @@ import {
   type Element,
   type ElementOp,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import type { RevertKept } from '@livedesign/api-schema';
 import type { ChangesetFingerprints } from '../db/changesets';
 

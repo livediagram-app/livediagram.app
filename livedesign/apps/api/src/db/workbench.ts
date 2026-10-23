@@ -13,19 +13,19 @@ import {
 } from '@livedesign/api-schema';
 import type { Env } from '../types';
 
-// What a ticket or session reaches: one document, or the workspace from an optional folder. The table CHECKs hold
-// the same rule, so a row never names a document in the workspace scope or misses one in the document scope.
+// What a ticket or session reaches: one design, or the workspace from an optional folder. The table CHECKs hold
+// the same rule, so a row never names a design in the workspace scope or misses one in the design scope.
 export type WorkbenchReach =
-  | { scope: 'document'; documentId: string; folderId: null }
-  | { scope: 'workspace'; documentId: null; folderId: string | null };
+  | { scope: 'design'; designId: string; folderId: null }
+  | { scope: 'workspace'; designId: null; folderId: string | null };
 
-type ReachColumns = { scope: WorkbenchScope; document_id: string | null; folder_id: string | null };
+type ReachColumns = { scope: WorkbenchScope; design_id: string | null; folder_id: string | null };
 
 function reachOf(row: ReachColumns): WorkbenchReach {
   if (row.scope === 'workspace')
-    return { scope: 'workspace', documentId: null, folderId: row.folder_id };
-  if (row.document_id === null) throw new Error('workbench: a document row with no document');
-  return { scope: 'document', documentId: row.document_id, folderId: null };
+    return { scope: 'workspace', designId: null, folderId: row.folder_id };
+  if (row.design_id === null) throw new Error('workbench: a design row with no design');
+  return { scope: 'design', designId: row.design_id, folderId: null };
 }
 
 // ---------------------------------------------------------------------
@@ -151,8 +151,8 @@ type PairingAnswer =
 
 // Answered once by the token's owner. Approval flips the request and records the pairing in one batch; the
 // insert reads the request it just flipped (by its answer time), so a lost race records nothing. A workspace
-// approval on an origin already paired for the document scope widens that pairing in place (same id, its name kept
-// unless the request names one); a document approval never narrows a workspace pairing (WB50).
+// approval on an origin already paired for the design scope widens that pairing in place (same id, its name kept
+// unless the request names one); a design approval never narrows a workspace pairing (WB50).
 export async function answerPairingRequest(
   env: Env,
   input: {
@@ -280,7 +280,7 @@ export type WorkbenchTicketRow = {
 export async function insertWorkbenchTicket(env: Env, row: WorkbenchTicketRow): Promise<void> {
   await env.DB.prepare(
     `INSERT INTO workbench_tickets
-       (ticket_hash, owner_id, token_id, pairing_id, scope, document_id, folder_id, tab_id, origin, role, created_at,
+       (ticket_hash, owner_id, token_id, pairing_id, scope, design_id, folder_id, tab_id, origin, role, created_at,
         expires_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
@@ -290,7 +290,7 @@ export async function insertWorkbenchTicket(env: Env, row: WorkbenchTicketRow): 
       row.tokenId,
       row.pairingId,
       row.scope,
-      row.documentId,
+      row.designId,
       row.folderId,
       row.tabId,
       row.origin,
@@ -322,7 +322,7 @@ export async function consumeWorkbenchTicket(
   const row = await env.DB.prepare(
     `UPDATE workbench_tickets SET used_at = ?
       WHERE ticket_hash = ? AND used_at IS NULL AND expires_at > ?
-      RETURNING owner_id, token_id, pairing_id, scope, document_id, folder_id, tab_id, origin, role`,
+      RETURNING owner_id, token_id, pairing_id, scope, design_id, folder_id, tab_id, origin, role`,
   )
     .bind(now, ticketHash, now)
     .first<
@@ -386,7 +386,7 @@ export type WorkbenchSessionRow = {
 export async function insertWorkbenchSession(env: Env, row: WorkbenchSessionRow): Promise<void> {
   await env.DB.prepare(
     `INSERT INTO workbench_sessions
-       (id, secret_hash, owner_id, token_id, pairing_id, scope, document_id, folder_id, tab_id, origin, role,
+       (id, secret_hash, owner_id, token_id, pairing_id, scope, design_id, folder_id, tab_id, origin, role,
         created_at, expires_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
@@ -397,7 +397,7 @@ export async function insertWorkbenchSession(env: Env, row: WorkbenchSessionRow)
       row.tokenId,
       row.pairingId,
       row.scope,
-      row.documentId,
+      row.designId,
       row.folderId,
       row.tabId,
       row.origin,
@@ -420,7 +420,7 @@ export async function readWorkbenchSession(
   secretHash: string,
 ): Promise<WorkbenchSessionRead | null> {
   const row = await env.DB.prepare(
-    `SELECT s.id, s.secret_hash, s.owner_id, s.token_id, s.pairing_id, s.scope, s.document_id, s.folder_id, s.tab_id,
+    `SELECT s.id, s.secret_hash, s.owner_id, s.token_id, s.pairing_id, s.scope, s.design_id, s.folder_id, s.tab_id,
             s.origin, s.role, s.created_at, s.expires_at,
             t.revoked AS token_revoked, t.read_only AS token_read_only, t.expires_at AS token_expires_at
        FROM workbench_sessions s JOIN api_tokens t ON t.id = s.token_id
@@ -468,16 +468,16 @@ export async function deleteWorkbenchSession(env: Env, id: string): Promise<void
 }
 
 // A room a workspace session joined (WB55): recorded when it mints the room's ticket, so ending access can close
-// the room as it closes a document session's.
+// the room as it closes a design session's.
 export async function noteWorkbenchSessionRoom(
   env: Env,
   sessionId: string,
-  documentId: string,
+  designId: string,
 ): Promise<void> {
   await env.DB.prepare(
-    'INSERT OR IGNORE INTO workbench_session_rooms (session_id, document_id) VALUES (?, ?)',
+    'INSERT OR IGNORE INTO workbench_session_rooms (session_id, design_id) VALUES (?, ?)',
   )
-    .bind(sessionId, documentId)
+    .bind(sessionId, designId)
     .run();
 }
 

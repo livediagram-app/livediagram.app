@@ -3,6 +3,8 @@
 Follow the references below only as needed; never upfront.
 
 Research holds dated measurements and experiment reports. They record what was measured and decided at the time; the specs state what the product does now.
+Every report here was written for livediagram, before livedesign was cut down to logo, wireframe and photo pages, so its
+whiteboards, diagrams, Markdown outlines and facilitation tools describe that product; each opens with a note saying so.
 
 ## Canvas performance
 
@@ -12,7 +14,7 @@ Where a large tab spends its time during pan, zoom, drag and marquee.
 
 ## Agent CLI
 
-How an AI agent should read, build, edit and comment on documents through a CLI, and work beside a person live.
+How an AI agent should read, build, edit and comment on designs through a CLI, and work beside a person live.
 The resulting specs live in docs/specs/024-agents/ and docs/specs/015-api/cli.md.
 
 - ./agent-cli/agent-cli-ergonomics.md - when shaping CLI help, output, refs, errors or exit codes for agents
@@ -24,7 +26,7 @@ The resulting specs live in docs/specs/024-agents/ and docs/specs/015-api/cli.md
 
 ## Access levels
 
-Who may do what to a document: how other products define levels, what each identity can do in the code, the
+Who may do what to a design: how other products define levels, what each identity can do in the code, the
 constraints, and where taking part in a session belongs. The resulting spec is docs/specs/013-workspace/share-roles.md.
 
 - ./access-levels/prior-art.md - when comparing access levels with Google, Figma, Miro, Lucid, Notion and facilitation tools

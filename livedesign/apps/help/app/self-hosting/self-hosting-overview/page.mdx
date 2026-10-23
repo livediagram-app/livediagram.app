@@ -20,16 +20,16 @@ There are two equally supported ways to use livedesign, and both have the same f
 - **Hosted by livedesign** at livedesign.app, free for everyone, a convenience and a public home for the project.
 - **Self-hosted**, where you deploy and run it yourself.
 
-You might self-host to keep document data on infrastructure you control, to meet an internal policy, to fork and customise the editor, or simply to run a private instance for your team. Since it is **MIT-licensed**, you are free to modify, embed, or build on it, commercially or not.
+You might self-host to keep design data on infrastructure you control, to meet an internal policy, to fork and customise the editor, or simply to run a private instance for your team. Since it is **MIT-licensed**, you are free to modify, embed, or build on it, commercially or not.
 
 ## What it runs on
 
 livedesign runs entirely on Cloudflare. The frontends are static (built with Next.js in export mode, so there is no server-side rendering and no Node runtime to operate), and all server-side logic lives in Cloudflare Workers.
 
 - **Cloudflare Workers** serve the apps and host the API.
-- **Cloudflare D1** is the database where documents live, reached only through the API Worker.
-- **Cloudflare Durable Objects** power the per-document real-time room.
-- **Cloudflare R2** (optional) stores uploaded images and the thumbnails the Explorer shows. The api `wrangler.toml` already binds a `livedesign-images` bucket, so create it, or remove that `[[r2_buckets]]` block to run without one. Without it, image uploads and live images are unavailable and documents show a generic icon in the Explorer.
+- **Cloudflare D1** is the database where designs live, reached only through the API Worker.
+- **Cloudflare Durable Objects** power the per-design real-time room.
+- **Cloudflare R2** (optional) stores uploaded images and the thumbnails the Explorer shows. The api `wrangler.toml` already binds a `livedesign-images` bucket, so create it, or remove that `[[r2_buckets]]` block to run without one. Without it, image uploads and live images are unavailable and designs show a generic icon in the Explorer.
 
 This means there is no separate database server, no container fleet, and no always-on box to babysit. You deploy Workers and static assets to your Cloudflare account. Durable Objects need the Workers paid plan on that account.
 

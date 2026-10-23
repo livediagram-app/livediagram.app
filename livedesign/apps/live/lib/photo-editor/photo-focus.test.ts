@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { LaidOutPage } from '@livedesign/document';
+import type { LaidOutPage } from '@livedesign/design';
 import { photoFocusOf } from './photo-focus';
 
 const page = (id: string, kind: string, x: number, width = 100, height = 100) =>

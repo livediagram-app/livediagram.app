@@ -2,7 +2,7 @@
 // from, by category. Pure builders like the page layouts: the artboard's safe area in, ordinary
 // themed elements out, in proportions of the box. The builders live per category
 // (logo-layouts-lockups, -wordmarks, -emblems, -marks); their shared parts in logo-layout-kit.
-import type { Element } from '@livedesign/document';
+import type { Element } from '@livedesign/design';
 import { kit, type Kit, type LayoutBox } from './page-layout-kit';
 import type { PageLayoutId } from './page-layouts';
 import {

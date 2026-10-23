@@ -15,7 +15,7 @@ import {
   searchSettings,
 } from '@/components/dialogs/settings/settings-search';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
-import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
+import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { PAGES_TOUR_KINDS, pagesKindSeen, requestPagesTourRelaunch } from '@/lib/pages-tour';
 import { track } from '@/lib/telemetry';
@@ -30,7 +30,7 @@ import {
 } from '@/components/dialogs/settings/useSettingsViewMemory';
 import type { UserPreferences } from '@/lib/user-preferences';
 import { isPowerUserMode } from '@/lib/power-user-mode';
-import { clerkEnabled } from '@/lib/clerk-config';
+import { signInEnabled } from '@/lib/auth-config';
 import { usePlacementDefaults } from '@/hooks/persistence/usePlacementDefaults';
 import { useWorkbenchSession } from '@/components/providers/workbench-session-context';
 
@@ -76,8 +76,8 @@ export function SettingsDialog({
   // Email rows need Resend configured AND a signed-in account: a guest has
   // no address, so those switches could never apply (docs/specs/014-identity/transactional-email.md).
   const { emailEnabled } = useCapabilities();
-  const { clerkUserId, isSignedIn } = useClerkApiBootstrap();
-  const signedIn = Boolean(isSignedIn && clerkUserId);
+  const { accountUserId, isSignedIn } = useAccountBootstrap();
+  const signedIn = Boolean(isSignedIn && accountUserId);
   // A workbench's Settings reach nothing beyond its one document (docs/specs/013-workspace/
   // blueprints/workbench-embeds.md, Surface table).
   const workbench = useWorkbenchSession() !== null;
@@ -85,8 +85,8 @@ export function SettingsDialog({
   const defaultsOwner = usePlacementDefaults(workbench ? null : ownerId).ownerId;
   const readerId = ownerId ?? defaultsOwner;
   const owner = useMemo(
-    () => (readerId ? { ownerId: readerId, clerkUserId: clerkUserId ?? null } : null),
-    [readerId, clerkUserId],
+    () => (readerId ? { ownerId: readerId, accountUserId: accountUserId ?? null } : null),
+    [readerId, accountUserId],
   );
   // Power-user-only rows appear the moment the mode's own row switches on
   // (docs/specs/007-editor/power-user-mode.md), so this reads the live settings, not a snapshot.
@@ -97,7 +97,7 @@ export function SettingsDialog({
       visibleCategories({
         emailEnabled,
         signedIn,
-        authEnabled: clerkEnabled,
+        authEnabled: signInEnabled,
         powerUserMode,
         preferences: settings,
         workbench,

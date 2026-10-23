@@ -66,7 +66,7 @@ describe('timing buckets', () => {
 
 describe('timingType', () => {
   it('joins the metric and its bucket', () => {
-    expect(timingType('DocumentLoad', 812)).toBe('DocumentLoad.Under1000ms');
+    expect(timingType('DesignLoad', 812)).toBe('DesignLoad.Under1000ms');
     expect(timingType('Lcp.Marketing', 2600)).toBe('Lcp.Marketing.Under4000ms');
     expect(timingType('Cls.Help', 0.02)).toBe('Cls.Help.Under0p05');
   });
@@ -117,7 +117,7 @@ describe('the ingest validator', () => {
       isValidTelemetryEvent({
         category: 'Timing',
         action: 'Measured',
-        type: 'DocumentLoad.Under500ms',
+        type: 'DesignLoad.Under500ms',
       }),
     ).toBe(true);
   });

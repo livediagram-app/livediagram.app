@@ -1,7 +1,7 @@
 // How a tab's pages are summarised for agents (docs/specs/024-agents/pages-for-agents.md
 // "change_pages" answer, "Reading: the pages view"): each page's place, kind, size and rectangle on
-// the canvas, where update_document puts elements onto it. Shared by the api's answer (@livedesign/edit-operations) and
-// the pages view (@livedesign/document-views).
+// the canvas, where update_design puts elements onto it. Shared by the api's answer (@livedesign/edit-operations) and
+// the pages view (@livedesign/design-views).
 import {
   elementIdsOnPage,
   pagesOf,
@@ -12,7 +12,7 @@ import {
   pageShowsSystemBars,
   type PageBackground,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import type { PageSummary } from './pages';
 
 export type PagesTab = Pick<Tab, 'elements' | 'pages'> & { pageOrientation?: unknown };

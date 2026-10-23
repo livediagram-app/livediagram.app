@@ -15,14 +15,14 @@ Scope, by file:
 | `apps/live/lib/locked-element-ids.ts`                | `lockedElementIds`: the lock rule, light enough for callers that do not tidy                 |
 | `apps/live/lib/tidy-verdict.ts`                      | `assessCleanup`, `cleanupVerdict`: whether a tidier is offered, its line and notice          |
 | `apps/live/lib/auto-align.ts`, `auto-align-lines.ts` | Auto-align: per-element sizes, positions by shared lines, even spacing, the overlap guard    |
-| `packages/document/src/auto-layout-tidy.ts`          | The tidy profile: direction, anchoring, clear placement, routing hand-off, mindmap fit       |
-| `packages/document/src/auto-layout-tidy-graph.ts`    | Units, riders, dashed arrows: the graph of nodes the profile lays out                        |
-| `packages/document/src/auto-layout-tidy-rank.ts`     | Drawn-order loop breaking, side steps, zero-length side edges in the layering                |
-| `packages/document/src/auto-layout-tidy-flow.ts`     | One component's flow positions: blocks, label-sized gaps, lane centres                       |
-| `packages/document/src/auto-layout-route.ts`         | Square arrow routes around the boxes                                                         |
-| `packages/document/src/auto-layout-route-grid.ts`    | Bucket grid of the boxes a route must clear                                                  |
+| `packages/design/src/auto-layout-tidy.ts`          | The tidy profile: direction, anchoring, clear placement, routing hand-off, mindmap fit       |
+| `packages/design/src/auto-layout-tidy-graph.ts`    | Units, riders, dashed arrows: the graph of nodes the profile lays out                        |
+| `packages/design/src/auto-layout-tidy-rank.ts`     | Drawn-order loop breaking, side steps, zero-length side edges in the layering                |
+| `packages/design/src/auto-layout-tidy-flow.ts`     | One component's flow positions: blocks, label-sized gaps, lane centres                       |
+| `packages/design/src/auto-layout-route.ts`         | Square arrow routes around the boxes                                                         |
+| `packages/design/src/auto-layout-route-grid.ts`    | Bucket grid of the boxes a route must clear                                                  |
 | `apps/live/hooks/canvas/useCleanupPreview.ts`        | `previewCleanup(kind)` / `endCleanupPreview()`, `assessCleanupKind`: snapshot, revert, judge |
-| `apps/live/app/document/[id]/useEditorState.ts`      | Mounts `useCleanupPreview` and returns its functions                                         |
+| `apps/live/app/design/[id]/useEditorState.ts`      | Mounts `useCleanupPreview` and returns its functions                                         |
 
 ## Domain and naming
 
@@ -88,8 +88,8 @@ element moves refused by `applyParticipantOp`.
   fifteen CPU-time runs, from Smart 36.6 / Flow down 34.3 / Flow right 32.1 ms to 22.0 / 17.5 / 18.8 ms: CI runs
   this test under coverage on slower runners, where the earlier figures read 156 to 170 ms and broke the budget.
 - **First load:** the tidy profile, its router, the verdicts and `cleanupElements` load on demand
-  (`lib/tidy-engine.ts`): a palette command loads them at the press. The document page's initial JS, measured as the
-  gzip sum of the scripts `out/document/placeholder.html` loads: 1,334.8 KiB before this work, 1,343.9 KiB with
+  (`lib/tidy-engine.ts`): a palette command loads them at the press. The design page's initial JS, measured as the
+  gzip sum of the scripts `out/design/placeholder.html` loads: 1,334.8 KiB before this work, 1,343.9 KiB with
   the tidiers static, 1,337.1 KiB loaded on demand. The remaining 2.3 KiB is Auto-align's line logic, which the AI
   apply path runs at first load.
 - Judging one tidier costs one cleanup plus the overlap sweep: at 300 nodes one layout takes about 130 ms when it
@@ -110,8 +110,8 @@ element moves refused by `applyParticipantOp`.
 | Checkout survives Auto-align, Smart, Down                                                                   | `tidy-verdict.test.ts`                                                                  |
 | A second press finds a template tidy                                                                        | `tidy-verdict.test.ts`                                                                  |
 | Auto-align keeps lines, spacing, no overlap                                                                 | `auto-align-lines.test.ts`, `auto-align.test.ts`                                        |
-| Tidy profile: spine, side steps, square routes clear of boxes, title, settled, units, riders, dashed arrows | `packages/document/src/auto-layout-tidy.test.ts`                                        |
-| The route grid misses no box a leg could hit; crossings match a pair-by-pair count                          | `packages/document/src/auto-layout-route-grid.test.ts`, `auto-layout-crossings.test.ts` |
+| Tidy profile: spine, side steps, square routes clear of boxes, title, settled, units, riders, dashed arrows | `packages/design/src/auto-layout-tidy.test.ts`                                        |
+| The route grid misses no box a leg could hit; crossings match a pair-by-pair count                          | `packages/design/src/auto-layout-route-grid.test.ts`, `auto-layout-crossings.test.ts` |
 
 ## Constants and configuration
 

@@ -5,13 +5,13 @@
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import type { SelectedNode } from '../views';
-import { LIBRARY_EXPAND_KEY, MY_DOCUMENTS_EXPAND_KEY } from './sidebar-structure';
+import { LIBRARY_EXPAND_KEY, MY_DESIGNS_EXPAND_KEY } from './sidebar-structure';
 import { useSidebarExpansion } from './useSidebarExpansion';
 
 describe('useSidebarExpansion', () => {
   it('starts with My Work open and Library closed', () => {
     const { result } = renderHook(() => useSidebarExpansion({ kind: 'timeline' }));
-    expect(result.current.expanded.has(MY_DOCUMENTS_EXPAND_KEY)).toBe(true);
+    expect(result.current.expanded.has(MY_DESIGNS_EXPAND_KEY)).toBe(true);
     expect(result.current.expanded.has(LIBRARY_EXPAND_KEY)).toBe(false);
   });
 

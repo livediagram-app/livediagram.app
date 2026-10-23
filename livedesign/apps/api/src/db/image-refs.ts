@@ -10,22 +10,25 @@
 // towards keeping bytes.
 
 import { IMAGE_REF_ID_MAX_LENGTH } from '../image-refs/extract';
+import { mediaRefQueueTabStatement } from '../media';
 import type { Env } from '../types';
 
 // ---------- Writers ---------------------------------------------------
 
 // A body replace: drop the tab's references the new body no longer has, then
-// add the ones it does. A save that changes no image writes no row.
+// add the ones it does. A save that changes no image writes no row. A change queues the tab's designs
+// for the media service first, while the old set is still there to compare (src/media.ts).
 export function imageRefReplaceStatements(
   env: Env,
   tabId: string,
   ids: string[],
 ): D1PreparedStatement[] {
   return [
+    mediaRefQueueTabStatement(env, tabId, ids, false),
     env.DB.prepare(
       'DELETE FROM image_refs WHERE tab_id = ?1 AND image_id NOT IN (SELECT value FROM json_each(?2))',
     ).bind(tabId, JSON.stringify(ids)),
-    ...imageRefAddStatements(env, tabId, ids),
+    ...insertRefs(env, tabId, ids),
   ];
 }
 
@@ -36,6 +39,21 @@ export function imageRefAddStatements(
   tabId: string,
   ids: string[],
 ): D1PreparedStatement[] {
+  if (ids.length === 0) return [];
+  return [mediaRefQueueTabStatement(env, tabId, ids, true), ...insertRefs(env, tabId, ids)];
+}
+
+// Add without telling the media service: for the backfill, which indexes tabs saved before images moved
+// there, so none of their images is the service's.
+export function imageRefBackfillAddStatements(
+  env: Env,
+  tabId: string,
+  ids: string[],
+): D1PreparedStatement[] {
+  return insertRefs(env, tabId, ids);
+}
+
+function insertRefs(env: Env, tabId: string, ids: string[]): D1PreparedStatement[] {
   if (ids.length === 0) return [];
   return [
     env.DB.prepare(
@@ -97,24 +115,24 @@ export function imageRefIndexPageStatement(
   return env.DB.prepare(indexTabsSql('t.rowid > ?1 AND t.rowid <= ?2')).bind(fromRowId, toRowId);
 }
 
-// Every tab of the owner's documents: the usage map's lazy index while the
+// Every tab of the owner's designs: the usage map's lazy index while the
 // backfill is incomplete.
 export function imageRefIndexOwnerStatement(env: Env, ownerId: string): D1PreparedStatement {
   return env.DB.prepare(
     indexTabsSql(
-      `t.id IN (SELECT dt.tab_id FROM document_tabs dt
-                  JOIN documents d ON d.id = dt.document_id
+      `t.id IN (SELECT dt.tab_id FROM design_tabs dt
+                  JOIN designs d ON d.id = dt.design_id
                  WHERE d.owner_id = ?1)`,
     ),
   ).bind(ownerId);
 }
 
-// Every tab of one document: the share read's lazy index while the backfill is
+// Every tab of one design: the share read's lazy index while the backfill is
 // incomplete.
-export function imageRefIndexDocumentStatement(env: Env, documentId: string): D1PreparedStatement {
+export function imageRefIndexDesignStatement(env: Env, designId: string): D1PreparedStatement {
   return env.DB.prepare(
-    indexTabsSql('t.id IN (SELECT tab_id FROM document_tabs WHERE document_id = ?1)'),
-  ).bind(documentId);
+    indexTabsSql('t.id IN (SELECT tab_id FROM design_tabs WHERE design_id = ?1)'),
+  ).bind(designId);
 }
 
 // ---------- Backfill state --------------------------------------------

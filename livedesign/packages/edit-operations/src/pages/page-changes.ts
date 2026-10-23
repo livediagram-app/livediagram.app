@@ -1,5 +1,5 @@
 // An agent's page changes applied to a tab (docs/specs/024-agents/pages-for-agents.md
-// "change_pages"), through the page panel's own edits (@livedesign/document pages-edits) so
+// "change_pages"), through the page panel's own edits (@livedesign/design pages-edits) so
 // an agent's edit is a person's. In order, each against the tab as the ones before it left it; the
 // first refusal stops them all and nothing is written.
 import type { PagesRefusal, PageBackgroundInput, PageChange } from '@livedesign/api-schema';
@@ -38,7 +38,7 @@ import {
   type PageKind,
   type Tab,
   plural,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { buildPageLayout, layoutCatalogueFor } from '@livedesign/templates';
 import { enterPages, type PagesIds } from './enter';
 import { pageLabel, pageSummaries, resolvePage, sizeLabel } from './summary';

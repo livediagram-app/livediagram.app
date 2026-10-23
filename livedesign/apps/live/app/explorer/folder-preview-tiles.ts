@@ -1,21 +1,21 @@
 // Which tiles a folder card's content preview shows (docs/specs/013-workspace/folder-content-previews.md), kept
-// pure and separate from the rendering so the rule ("documents first,
+// pure and separate from the rendering so the rule ("designs first,
 // subfolders fill the rest, four max, the overflow becomes +N") is
 // unit-testable without a DOM.
 
 import type { Folder } from '@/lib/api-client';
-import type { PaneDocument } from './views';
+import type { PaneDesign } from './views';
 
 // Four tiles: a 2x2 mosaic is the most a card-sized preview can show
 // before each snapshot is too small to recognise.
 const FOLDER_PREVIEW_TILES = 4;
 
 type FolderPreviewTile =
-  { kind: 'document'; document: PaneDocument } | { kind: 'folder'; folder: Folder };
+  { kind: 'design'; design: PaneDesign } | { kind: 'folder'; folder: Folder };
 
-export type FolderPreviewContents = { folders: Folder[]; documents: PaneDocument[] };
+export type FolderPreviewContents = { folders: Folder[]; designs: PaneDesign[] };
 
-export function folderPreviewTiles({ folders, documents: liveDocs }: FolderPreviewContents): {
+export function folderPreviewTiles({ folders, designs: liveDocs }: FolderPreviewContents): {
   tiles: FolderPreviewTile[];
   // Everything the mosaic couldn't fit, rendered as a trailing "+N"
   // tile. Zero when it all fits.
@@ -24,10 +24,10 @@ export function folderPreviewTiles({ folders, documents: liveDocs }: FolderPrevi
   const total = folders.length + liveDocs.length;
   if (total === 0) return { tiles: [], hidden: 0 };
 
-  // Documents lead: a snapshot is the only tile you can actually
+  // Designs lead: a snapshot is the only tile you can actually
   // recognise the folder by. Subfolders take whatever is left over.
   const ordered: FolderPreviewTile[] = [
-    ...liveDocs.map((liveDoc): FolderPreviewTile => ({ kind: 'document', document: liveDoc })),
+    ...liveDocs.map((liveDoc): FolderPreviewTile => ({ kind: 'design', design: liveDoc })),
     ...folders.map((folder): FolderPreviewTile => ({ kind: 'folder', folder })),
   ];
   if (total <= FOLDER_PREVIEW_TILES) return { tiles: ordered, hidden: 0 };

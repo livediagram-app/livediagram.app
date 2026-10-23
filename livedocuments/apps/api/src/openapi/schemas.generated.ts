@@ -4273,19 +4273,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "string",
           "null"
         ]
-      },
-      "pictureUrl": {
-        "type": [
-          "string",
-          "null"
-        ]
       }
     },
     "required": [
       "id",
       "name",
-      "color",
-      "pictureUrl"
+      "color"
     ],
     "type": "object"
   },
@@ -6521,20 +6514,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "name": {
         "type": "string"
-      },
-      "pictureUrl": {
-        "type": [
-          "string",
-          "null"
-        ]
       }
     },
     "required": [
       "id",
       "name",
       "color",
-      "createdAt",
-      "pictureUrl"
+      "createdAt"
     ],
     "type": "object"
   },
@@ -8767,12 +8753,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "null"
         ]
       },
-      "pictureUrl": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
       "role": {
         "$ref": "#/components/schemas/TeamRole"
       },
@@ -8800,7 +8780,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "role",
       "status",
       "name",
-      "pictureUrl",
       "createdAt",
       "updatedAt"
     ],
@@ -8821,275 +8800,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "member"
     ],
     "type": "string"
-  },
-  "TelemetryAction": {
-    "enum": [
-      "Created",
-      "Deleted",
-      "Added",
-      "Removed",
-      "Shared",
-      "Joined",
-      "Declined",
-      "Used",
-      "Changed",
-      "Exported",
-      "Locked",
-      "Unlocked",
-      "Grouped",
-      "Ungrouped",
-      "Duplicated",
-      "Renamed",
-      "Reordered",
-      "Linked",
-      "Unlinked",
-      "Resolved",
-      "Unresolved",
-      "Mentioned",
-      "Imported",
-      "Aligned",
-      "Undone",
-      "Redone",
-      "Cleared",
-      "Loaded",
-      "Opened",
-      "Searched",
-      "Selected",
-      "Toggled",
-      "Zoomed",
-      "Moved",
-      "Closed",
-      "Copied",
-      "Reverted",
-      "SignedIn",
-      "SignedUp",
-      "SignedOut",
-      "Started",
-      "Ended",
-      "View",
-      "Helpful",
-      "Unhelpful",
-      "Returned",
-      "Restored",
-      "Applied",
-      "Conflicted",
-      "Present",
-      "Held",
-      "Viewed",
-      "Sent",
-      "Api",
-      "Client",
-      "Warning",
-      "Measured"
-    ],
-    "type": "string"
-  },
-  "TelemetryCategory": {
-    "enum": [
-      "Document",
-      "Element",
-      "Tab",
-      "Theme",
-      "Canvas",
-      "Template",
-      "Comment",
-      "Note",
-      "Action",
-      "Search",
-      "UI",
-      "Folder",
-      "Layer",
-      "Session",
-      "Facilitator",
-      "Team",
-      "Participant",
-      "Help",
-      "Token",
-      "Mcp",
-      "Cli",
-      "Email",
-      "Error",
-      "Timeline",
-      "Home",
-      "Activity",
-      "Page",
-      "Cta",
-      "Trash",
-      "Explorer",
-      "Agent",
-      "Timing"
-    ],
-    "type": "string"
-  },
-  "TelemetryCount": {
-    "additionalProperties": false,
-    "properties": {
-      "action": {
-        "type": "string"
-      },
-      "category": {
-        "type": "string"
-      },
-      "count": {
-        "type": "number"
-      },
-      "type": {
-        "type": [
-          "string",
-          "null"
-        ]
-      }
-    },
-    "required": [
-      "category",
-      "action",
-      "type",
-      "count"
-    ],
-    "type": "object"
-  },
-  "TelemetryDaily": {
-    "additionalProperties": false,
-    "properties": {
-      "byCategory": {
-        "additionalProperties": {
-          "items": {
-            "type": "number"
-          },
-          "type": "array"
-        },
-        "type": "object"
-      },
-      "byMetric": {
-        "additionalProperties": {
-          "items": {
-            "type": "number"
-          },
-          "type": "array"
-        },
-        "type": "object"
-      },
-      "days": {
-        "items": {
-          "type": "number"
-        },
-        "type": "array"
-      },
-      "totals": {
-        "items": {
-          "type": "number"
-        },
-        "type": "array"
-      }
-    },
-    "required": [
-      "days",
-      "totals",
-      "byCategory",
-      "byMetric"
-    ],
-    "type": "object"
-  },
-  "TelemetryEvent": {
-    "additionalProperties": false,
-    "properties": {
-      "action": {
-        "$ref": "#/components/schemas/TelemetryAction"
-      },
-      "category": {
-        "$ref": "#/components/schemas/TelemetryCategory"
-      },
-      "type": {
-        "type": [
-          "string",
-          "null"
-        ]
-      }
-    },
-    "required": [
-      "category",
-      "action"
-    ],
-    "type": "object"
-  },
-  "TelemetrySummary": {
-    "additionalProperties": false,
-    "properties": {
-      "daily": {
-        "$ref": "#/components/schemas/TelemetryDaily"
-      },
-      "enabled": {
-        "type": "boolean"
-      },
-      "generatedAt": {
-        "type": "number"
-      },
-      "previousWindows": {
-        "additionalProperties": false,
-        "properties": {
-          "last30": {
-            "$ref": "#/components/schemas/TelemetryWindow"
-          },
-          "last7": {
-            "$ref": "#/components/schemas/TelemetryWindow"
-          },
-          "today": {
-            "$ref": "#/components/schemas/TelemetryWindow"
-          }
-        },
-        "required": [
-          "today",
-          "last7",
-          "last30"
-        ],
-        "type": "object"
-      },
-      "windows": {
-        "additionalProperties": false,
-        "properties": {
-          "last30": {
-            "$ref": "#/components/schemas/TelemetryWindow"
-          },
-          "last7": {
-            "$ref": "#/components/schemas/TelemetryWindow"
-          },
-          "today": {
-            "$ref": "#/components/schemas/TelemetryWindow"
-          }
-        },
-        "required": [
-          "today",
-          "last7",
-          "last30"
-        ],
-        "type": "object"
-      }
-    },
-    "required": [
-      "enabled",
-      "generatedAt",
-      "windows"
-    ],
-    "type": "object"
-  },
-  "TelemetryWindow": {
-    "additionalProperties": false,
-    "properties": {
-      "rows": {
-        "items": {
-          "$ref": "#/components/schemas/TelemetryCount"
-        },
-        "type": "array"
-      },
-      "total": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "total",
-      "rows"
-    ],
-    "type": "object"
   },
   "TemplateCatalogueResponse": {
     "additionalProperties": false,
@@ -10158,19 +9868,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "string",
           "null"
         ]
-      },
-      "pictureUrl": {
-        "type": [
-          "string",
-          "null"
-        ]
       }
     },
     "required": [
       "id",
       "name",
-      "color",
-      "pictureUrl"
+      "color"
     ],
     "type": "object"
   },

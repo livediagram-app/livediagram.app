@@ -7,7 +7,7 @@ import {
   joinNouns,
 } from './default-key-entries';
 
-// The entries of "New documents that open as" (docs/specs/013-workspace/default-folders.md
+// The entries of "New designs that open as" (docs/specs/013-workspace/default-folders.md
 // "Entry names"): one per key, in the keys' order, with the words a sentence uses.
 
 describe('DEFAULT_KEY_ENTRIES', () => {
@@ -16,11 +16,11 @@ describe('DEFAULT_KEY_ENTRIES', () => {
   });
 
   it('names each entry as the list shows it', () => {
-    expect(DEFAULT_KEY_ENTRIES.map((e) => e.label)).toEqual(['Documents']);
+    expect(DEFAULT_KEY_ENTRIES.map((e) => e.label)).toEqual(['Designs']);
   });
 
   it('gives each entry the plural a sentence uses', () => {
-    expect(defaultKeyEntry('mode:pages').noun).toBe('documents');
+    expect(defaultKeyEntry('mode:pages').noun).toBe('designs');
   });
 });
 
@@ -35,8 +35,8 @@ describe('joinNouns', () => {
 });
 
 describe('defaultFolderDescription', () => {
-  it('says which new documents a folder receives', () => {
-    expect(defaultFolderDescription(['mode:pages'])).toBe('Default folder for new documents');
+  it('says which new designs a folder receives', () => {
+    expect(defaultFolderDescription(['mode:pages'])).toBe('Default folder for new designs');
   });
 
   it('is empty for a folder that is no default', () => {

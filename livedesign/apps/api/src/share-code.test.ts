@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { generateShareCode, SHARE_CODE_LENGTH } from './db';
 
 // `generateShareCode` mints the short codes used as URL params on
-// /live/document/shared?s=<code>. Two contracts matter:
+// /live/design/shared?s=<code>. Two contracts matter:
 //
 //   1. Length is exact: callers stamp them into URLs and the share
 //      table indexes them. Drift between the requested length and

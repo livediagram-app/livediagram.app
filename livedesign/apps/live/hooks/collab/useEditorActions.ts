@@ -12,7 +12,7 @@
 //
 // Mutations run through `tickTabs` (NO history push), the same carve-out
 // comments use: Cmd+Z must never silently unassign someone's work. The
-// live-state graft in @livedesign/document carries `action` across
+// live-state graft in @livedesign/design carries `action` across
 // undo/redo restores for the same reason.
 //
 // Every mutation takes an optional action id, naming which of the element's
@@ -26,8 +26,8 @@ import {
   type ElementAction,
   type ElementActionAssignee,
   type ElementActionStatus,
-} from '@livedesign/document';
-import type { Tab } from '@livedesign/document';
+} from '@livedesign/design';
+import type { Tab } from '@livedesign/design';
 import { track } from '@/lib/telemetry';
 
 export type SaveActionInput = {

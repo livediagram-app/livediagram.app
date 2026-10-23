@@ -8,17 +8,17 @@ Scope, by file:
 
 | File                                                        | Role                                                                             |
 | ----------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `packages/document/src/web-components.ts`                   | Vocabulary, bounds, defaults, the pure layouts, `withWebRows`                    |
-| `packages/document/src/component-factories.ts`              | `createComponent`, `createHero`, `COMPONENT_SIZE`, `ComponentColors`             |
-| `packages/document/src/shape-factory.ts`                    | Default sizes and starting content per kind                                      |
-| `packages/document/src/svg-render-web.ts`                   | `svgWebComponent`, `svgHeroCaption`: the headless render                         |
-| `packages/document/src/themes.ts`                           | `themeColourFields`: accent bars retheme only their stroke                       |
-| `packages/document/src/colors.ts`                           | `defaultTextColor`, `SELF_PAINTING_SHAPES`, `acceptsInlineIcon`, `RADIUS_SHAPES` |
-| `packages/document/src/data-shapes.ts`                      | `isSelfDrawingShape`: stat row and process carry no label                        |
-| `packages/document/src/validate.ts`                         | Row, masthead and caption bounds; the legacy `pinned-group` end                  |
-| `packages/document/src/legacy-groups.ts`                    | `hasLegacyGroups`, `migrateLegacyGroups`                                         |
-| `packages/document/src/stored-elements.ts`                  | `migrateStoredElements`: legacy groups, then legacy docks                        |
-| `packages/document/src/stored-tab.ts`                       | `migrateStoredTab`: every stored-tab entry point runs it                         |
+| `packages/design/src/web-components.ts`                   | Vocabulary, bounds, defaults, the pure layouts, `withWebRows`                    |
+| `packages/design/src/component-factories.ts`              | `createComponent`, `createHero`, `COMPONENT_SIZE`, `ComponentColors`             |
+| `packages/design/src/shape-factory.ts`                    | Default sizes and starting content per kind                                      |
+| `packages/design/src/svg-render-web.ts`                   | `svgWebComponent`, `svgHeroCaption`: the headless render                         |
+| `packages/design/src/themes.ts`                           | `themeColourFields`: accent bars retheme only their stroke                       |
+| `packages/design/src/colors.ts`                           | `defaultTextColor`, `SELF_PAINTING_SHAPES`, `acceptsInlineIcon`, `RADIUS_SHAPES` |
+| `packages/design/src/data-shapes.ts`                      | `isSelfDrawingShape`: stat row and process carry no label                        |
+| `packages/design/src/validate.ts`                         | Row, masthead and caption bounds; the legacy `pinned-group` end                  |
+| `packages/design/src/legacy-groups.ts`                    | `hasLegacyGroups`, `migrateLegacyGroups`                                         |
+| `packages/design/src/stored-elements.ts`                  | `migrateStoredElements`: legacy groups, then legacy docks                        |
+| `packages/design/src/stored-tab.ts`                       | `migrateStoredTab`: every stored-tab entry point runs it                         |
 | `apps/api/src/tab-row.ts`                                   | `rowToTab` runs the migration                                                    |
 | `apps/api/src/thumbnail.ts`                                 | The thumbnail render runs the migration on the tab it parses                     |
 | `apps/live/lib/offline/offline-store.ts`                    | `offlineLoadTab` runs the migration                                              |
@@ -143,7 +143,7 @@ Invariants:
 ## Interfaces and contracts
 
 ```ts
-// packages/document/src/web-components.ts
+// packages/design/src/web-components.ts
 export type WebComponentShape = 'banner' | 'callout' | 'stat-row' | 'process' | 'site-header';
 export type StatItem = { value: string; caption: string };
 export type HeroCaption = { title: string; subtitle: string };
@@ -152,7 +152,7 @@ export function withWebRows<T extends { shape: ShapeKind }>(el: T, rows: WebRows
 export function appendWebRow<T extends { shape: ShapeKind } & WebRows>(el: T): T;
 export function canAppendWebRow(el: { shape: ShapeKind } & WebRows): boolean;
 
-// packages/document/src/component-factories.ts
+// packages/design/src/component-factories.ts
 export type ComponentColors = { accent: string; surface: string; ink: string };
 export function createComponent(
   kind: ComponentKind,
@@ -161,7 +161,7 @@ export function createComponent(
   colors: ComponentColors,
 ): Element;
 
-// packages/document/src/legacy-groups.ts / stored-elements.ts / stored-tab.ts
+// packages/design/src/legacy-groups.ts / stored-elements.ts / stored-tab.ts
 export function hasLegacyGroups(elements: readonly Element[]): boolean;
 export function migrateLegacyGroups(elements: Element[]): Element[];
 export function migrateStoredElements(elements: Element[]): Element[];
@@ -268,20 +268,20 @@ the same pipeline logs `[tab-migrate] retired-scheme` [GA1].
 
 | Rule                                         | Test                                                                                  | File                                                             |
 | -------------------------------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| One element per component, no `groupId` (I1) | every component builds exactly one element                                            | `packages/document/src/web-components.test.ts`                   |
-| Colours per family                           | dresses the accent-bar kinds in the accent with white text                            | `packages/document/src/web-components.test.ts`                   |
-| Hero is an image with a caption              | the hero is an image with a caption card in the accent                                | `packages/document/src/web-components.test.ts`                   |
-| Bounds (I3)                                  | validation bounds the rows (three cases)                                              | `packages/document/src/web-components.test.ts`                   |
-| Layouts re-flow (I4)                         | layouts re-flow with the box (four cases)                                             | `packages/document/src/web-components.test.ts`                   |
-| Accent bar retheme touches only stroke       | an accent bar retheme touches only its stroke                                         | `packages/document/src/web-components.test.ts`                   |
-| Export draws rows, title once, hero caption  | headless render (three cases)                                                         | `packages/document/src/web-components.test.ts`                   |
-| `withWebRows` / `appendWebRow`               | row writes (two cases)                                                                | `packages/document/src/web-components.test.ts`                   |
+| One element per component, no `groupId` (I1) | every component builds exactly one element                                            | `packages/design/src/web-components.test.ts`                   |
+| Colours per family                           | dresses the accent-bar kinds in the accent with white text                            | `packages/design/src/web-components.test.ts`                   |
+| Hero is an image with a caption              | the hero is an image with a caption card in the accent                                | `packages/design/src/web-components.test.ts`                   |
+| Bounds (I3)                                  | validation bounds the rows (three cases)                                              | `packages/design/src/web-components.test.ts`                   |
+| Layouts re-flow (I4)                         | layouts re-flow with the box (four cases)                                             | `packages/design/src/web-components.test.ts`                   |
+| Accent bar retheme touches only stroke       | an accent bar retheme touches only its stroke                                         | `packages/design/src/web-components.test.ts`                   |
+| Export draws rows, title once, hero caption  | headless render (three cases)                                                         | `packages/design/src/web-components.test.ts`                   |
+| `withWebRows` / `appendWebRow`               | row writes (two cases)                                                                | `packages/design/src/web-components.test.ts`                   |
 | Faces commit, inert until selected           | web component faces (six cases)                                                       | `apps/live/components/canvas/web/WebComponentFace.test.tsx`      |
 | Menu add, remove, reorder, bounds            | WebRowsMenuSection (five cases)                                                       | `apps/live/components/palette/context-menu-web-editors.test.tsx` |
 | Setters, caption toggle                      | useWebComponentSetters (five cases)                                                   | `apps/live/hooks/canvas/useWebComponentSetters.test.ts`          |
-| Migration freezes and strips (I2)            | migrateLegacyGroups (five cases)                                                      | `packages/document/src/legacy-groups.test.ts`                    |
-| Migration pipeline                           | migrateStoredElements (two cases)                                                     | `packages/document/src/stored-elements.test.ts`                  |
-| Tab migration includes the element step      | migrates a retired scheme and retired element fields in one pass                      | `packages/document/src/stored-tab.test.ts`                       |
+| Migration freezes and strips (I2)            | migrateLegacyGroups (five cases)                                                      | `packages/design/src/legacy-groups.test.ts`                    |
+| Migration pipeline                           | migrateStoredElements (two cases)                                                     | `packages/design/src/stored-elements.test.ts`                  |
+| Tab migration includes the element step      | migrates a retired scheme and retired element fields in one pass                      | `packages/design/src/stored-tab.test.ts`                       |
 | api read migrates                            | freezes a legacy group out of the stored elements                                     | `apps/api/src/tab-row.test.ts`                                   |
 | Offline load runs the tab migration          | migrates a tab saved against a retired scheme on load                                 | `apps/live/lib/offline/offline-store.test.ts`                    |
 | JSON import runs the tab migration           | migrates an imported tab saved against a retired scheme                               | `apps/live/lib/import-merge.test.ts`                             |
@@ -289,7 +289,7 @@ the same pipeline logs `[tab-migrate] retired-scheme` [GA1].
 | ⌘G left to the browser                       | leaves Cmd+G to the browser now that there are no groups                              | `apps/live/hooks/canvas/useEditorKeyboardShortcuts.test.ts`      |
 | Single selection bounds itself               | a single selection is bounded by the element itself                                   | `apps/live/lib/canvas-selection.test.ts`                         |
 | Drag-to-draw sizes per axis                  | sizes to the dragged box, per axis                                                    | `apps/live/lib/draw-commit.test.ts`                              |
-| Disc glyphs on the cap band in export        | %s centres its disc glyph on its cap band                                             | `packages/document/src/svg-cap-band-render.test.ts`              |
+| Disc glyphs on the cap band in export        | %s centres its disc glyph on its cap band                                             | `packages/design/src/svg-cap-band-render.test.ts`              |
 | Text alignment in the Quick Style Panel      | offers no text alignment on a kind with its own face, but keeps it on a web component | `apps/live/lib/quick-style.test.ts`                              |
 | Ring add hidden when full                    | none [GA14]                                                                           |                                                                  |
 | Export draws the inline icon                 | none [GA2]                                                                            |                                                                  |

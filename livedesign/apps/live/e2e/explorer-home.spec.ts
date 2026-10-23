@@ -4,11 +4,11 @@ import {
   asGuest,
   box,
   editLink,
-  openDocument,
+  openDesign,
   person,
   seedBusyHome,
-  seedHomeDocument,
-  seedLocalDocuments,
+  seedHomeDesign,
+  seedLocalDesigns,
   seedWithinReach,
   visitorSaves,
 } from './home-seed';
@@ -40,7 +40,7 @@ async function layoutShift(page: Page): Promise<number> {
   );
 }
 
-// Jump Back In's documents: the Most Used and Recent lists on a wide screen, the strip on a phone.
+// Jump Back In's designs: the Most Used and Recent lists on a wide screen, the strip on a phone.
 const jumpBackIn = (page: Page) =>
   page.getByRole('region', { name: 'Jump Back In' }).getByRole('listitem');
 const names = async (list: Locator) =>
@@ -58,14 +58,14 @@ test('the Explorer lands on Home: Jump Back In, then What Happened, no Timeline'
 
   await page.goto('/explorer');
   await expect(page).toHaveURL(/\/explorer\/home\/?$/);
-  // The hero is Home's header: the greeting is the page's heading; the field and New Document sit in it.
+  // The hero is Home's header: the greeting is the page's heading; the field and New Design sit in it.
   const hero = page.getByRole('region', { name: /What are we picking up\?$/ });
   await expect(hero.getByRole('heading', { level: 1 })).toHaveText(
     /^Good (morning|afternoon|evening)\. What are we picking up\?$/,
   );
-  await expect(hero.getByRole('combobox', { name: 'Filter documents' })).toBeVisible();
-  await expect(page.getByRole('combobox', { name: 'Filter documents' })).toHaveCount(1);
-  await expect(hero.getByRole('button', { name: 'New Document' })).toBeVisible();
+  await expect(hero.getByRole('combobox', { name: 'Filter designs' })).toBeVisible();
+  await expect(page.getByRole('combobox', { name: 'Filter designs' })).toHaveCount(1);
+  await expect(hero.getByRole('button', { name: 'New Design' })).toBeVisible();
   await expect(page).toHaveTitle('Home | livedesign');
 
   const jump = page.getByRole('region', { name: 'Jump Back In' });
@@ -73,7 +73,7 @@ test('the Explorer lands on Home: Jump Back In, then What Happened, no Timeline'
   await expect(jumpBackIn(page).getByRole('link')).toHaveCount(3);
   await expect(
     jumpBackIn(page).getByRole('link', { name: 'Payments architecture' }),
-  ).toHaveAttribute('href', `/document/${payments}`);
+  ).toHaveAttribute('href', `/design/${payments}`);
   // No Timeline column, no switch; the groups are labelled.
   await expect(page.getByRole('region', { name: 'Timeline' })).toHaveCount(0);
   await expect(page.getByRole('tablist')).toHaveCount(0);
@@ -84,7 +84,7 @@ test('the Explorer lands on Home: Jump Back In, then What Happened, no Timeline'
   expect(b!.y).toBeGreaterThan(a!.y + a!.height);
   expect(Math.round(b!.width)).toBe(Math.round(a!.width));
 
-  // Two people on one document: one summary, collapsed, that expands to every action.
+  // Two people on one design: one summary, collapsed, that expands to every action.
   const summary = happened.getByRole('button', {
     name: /^(Sam and Priya|Priya and Sam) commented and edited in Payments architecture/,
   });
@@ -249,24 +249,24 @@ test('on a phone the strip alternates, holds eight and ends in See More', async 
   expectNoPageErrors(pageErrors);
 });
 
-test('a document opened from Jump Back In opens in the editor', async ({
+test('a design opened from Jump Back In opens in the editor', async ({
   page,
   baseURL,
   pageErrors,
 }) => {
   const origin = new URL(baseURL!).origin;
   const owner = await mintSignedGuest(page.request);
-  const doc = await seedHomeDocument(page.request, owner, origin, 'Service map');
+  const doc = await seedHomeDesign(page.request, owner, origin, 'Service map');
   await asGuest(page, owner);
 
   // Open it once in the editor: that open is what puts it in Jump Back In.
-  await page.goto(`/document/${doc.id}`);
+  await page.goto(`/design/${doc.id}`);
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await page.goto('/explorer/home');
   const link = jumpBackIn(page).getByRole('link', { name: 'Service map' });
   await expect(link).toBeVisible();
   await link.click();
-  await expect(page).toHaveURL(new RegExp(`/document/${doc.id}`));
+  await expect(page).toHaveURL(new RegExp(`/design/${doc.id}`));
   expectNoPageErrors(pageErrors);
 });
 
@@ -277,8 +277,8 @@ test('with fewer than eight, only what exists shows, and nothing shifts', async 
 }) => {
   const origin = new URL(baseURL!).origin;
   const owner = await mintSignedGuest(page.request);
-  const doc = await seedHomeDocument(page.request, owner, origin, 'Only one');
-  await openDocument(page.request, owner, doc);
+  const doc = await seedHomeDesign(page.request, owner, origin, 'Only one');
+  await openDesign(page.request, owner, doc);
   await asGuest(page, owner);
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/explorer/home');
@@ -292,7 +292,7 @@ test('with fewer than eight, only what exists shows, and nothing shifts', async 
   expectNoPageErrors(pageErrors);
 });
 
-test('a document stored only in this browser joins Jump Back In with its pill', async ({
+test('a design stored only in this browser joins Jump Back In with its pill', async ({
   page,
   pageErrors,
 }) => {
@@ -310,7 +310,7 @@ test('a document stored only in this browser joins Jump Back In with its pill', 
     '/new?template=blank',
   );
 
-  await seedLocalDocuments(page, [{ name: 'Kept on this laptop', daysAgo: [0], lastOpenedIn: 0 }]);
+  await seedLocalDesigns(page, [{ name: 'Kept on this laptop', daysAgo: [0], lastOpenedIn: 0 }]);
   await page.reload();
   const link = jumpBackIn(page).getByRole('link', { name: 'Kept on this laptop, This Browser' });
   await expect(link).toBeVisible();
@@ -337,7 +337,7 @@ test('a failed read says so, and Try again reads again', async ({ page, pageErro
 test('what others did since the last look is marked New', async ({ page, baseURL, pageErrors }) => {
   const origin = new URL(baseURL!).origin;
   const owner = await mintSignedGuest(page.request);
-  const doc = await seedHomeDocument(page.request, owner, origin, 'Launch plan');
+  const doc = await seedHomeDesign(page.request, owner, origin, 'Launch plan');
   const code = await editLink(page.request, owner, origin, doc.id);
   await asGuest(page, owner);
 

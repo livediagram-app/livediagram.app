@@ -15,7 +15,7 @@ describe('galleryTemplates (docs/specs/019-marketing/marketing-site.md)', () => 
       (t) => t.kind,
     );
     expect(kinds).toEqual(expected);
-    for (const blank of ['blank', 'blank-illustration', 'blank-slide-deck', 'blank-logo']) {
+    for (const blank of ['blank', 'blank-illustration', 'blank-logo']) {
       expect(kinds).not.toContain(blank);
     }
     expect(new Set(kinds).size).toBe(kinds.length);

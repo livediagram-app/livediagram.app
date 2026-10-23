@@ -6,7 +6,7 @@
 // are.
 import { lucideImage } from '@livedesign/icons/lucide';
 import { lucideGlyph } from '@livedesign/ui';
-import type { LaidOutPage } from '@livedesign/document';
+import type { LaidOutPage } from '@livedesign/design';
 import { PREVIEW_CHECKER } from '@/components/dialogs/ImageExportPanel';
 import type { PhotoEditorView } from '@/hooks/editor/usePhotoEditor';
 import { PhotoSurface } from './PhotoSurface';

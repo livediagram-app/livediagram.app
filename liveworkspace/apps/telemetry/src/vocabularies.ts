@@ -7,6 +7,10 @@ import {
   isValidTelemetryEvent as isLivediagramEvent,
 } from '@livediagram/api-schema';
 import {
+  isServerEmittedEvent as isLivedocumentsServerEvent,
+  isValidTelemetryEvent as isLivedocumentsEvent,
+} from '@livedocuments/api-schema';
+import {
   isServerEmittedEvent as isLiveplannerServerEvent,
   isValidTelemetryEvent as isLiveplannerEvent,
 } from '@liveplanner/api-schema';
@@ -33,8 +37,10 @@ export const VOCABULARIES: Record<TelemetryApp, Vocabulary> = {
     isValid: isLiveplannerEvent as Vocabulary['isValid'],
     isServerOnly: isLiveplannerServerEvent,
   },
-  // livedocuments and livedesign define their vocabularies in their own api-schema packages, which
-  // aren't in this repo yet. Until they are, the service stores nothing from them.
-  'livedocuments.app': NOTHING_YET,
+  'livedocuments.app': {
+    isValid: isLivedocumentsEvent as Vocabulary['isValid'],
+    isServerOnly: isLivedocumentsServerEvent,
+  },
+  // livedesign doesn't send to this service yet, so the service stores nothing from it.
   'livedesign.app': NOTHING_YET,
 };

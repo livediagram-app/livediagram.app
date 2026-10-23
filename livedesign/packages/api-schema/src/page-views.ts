@@ -5,10 +5,10 @@
 // router can't disagree about who serves a path.
 
 // The live app's top-level page route segments. These serve at clean URLs
-// (`/document`, `/explorer`, ...), and the router forwards them to the live
+// (`/design`, `/explorer`, ...), and the router forwards them to the live
 // worker (docs/specs/016-platform/router-app.md). Marketing owns every other first segment.
 export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
-  'document',
+  'design',
   'embed',
   'explorer',
   'get-started',
@@ -48,7 +48,7 @@ function looksLikeId(segment: string): boolean {
 /**
  * Reduce a browser pathname to the page it is, for a `Page·View` event.
  * An id, and everything after it, is dropped: what follows an id is about
- * that one thing, not a different page. So every document is `/document`.
+ * that one thing, not a different page. So every design is `/design`.
  * Returns null when the path can't be expressed safely: deny-by-default, so
  * an odd path is lost rather than leaked. The query string and hash are never
  * part of a pathname, so they cannot reach here.
@@ -64,9 +64,9 @@ export function pageViewPath(pathname: string): string | null {
     .toLowerCase()
     .split('/')
     .filter((s) => s !== '');
-  // Every `/document/...` URL is the editor on one document (docs/specs/007-editor/new-document-route.md), and
-  // whatever follows the segment is the document's id.
-  if (segments[0] === 'document') segments = ['document'];
+  // Every `/design/...` URL is the editor on one design (docs/specs/007-editor/new-design-route.md), and
+  // whatever follows the segment is the design's id.
+  if (segments[0] === 'design') segments = ['design'];
   const last = segments[segments.length - 1];
   if (last === 'index.html') segments.pop();
   else if (last?.endsWith('.html')) segments[segments.length - 1] = last.slice(0, -5);

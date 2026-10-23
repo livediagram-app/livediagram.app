@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Layer } from '@livedesign/document';
+import type { Layer } from '@livedesign/design';
 
 import { LayersPanel, SINGLE_LAYER_HINT } from './LayersPanel';
 
@@ -12,7 +12,7 @@ globalThis.ResizeObserver ??= class {
   disconnect() {}
 } as unknown as typeof ResizeObserver;
 
-// docs/specs/006-document/layers.md "The Layers panel": header bar, single-layer hint, footer.
+// docs/specs/006-design/layers.md "The Layers panel": header bar, single-layer hint, footer.
 
 function renderPanel(
   layers: Layer[],

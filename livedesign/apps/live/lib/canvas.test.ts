@@ -5,7 +5,7 @@ import {
   createTable,
   type ArrowElement,
   type BoxedElement,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { describe, expect, it } from 'vitest';
 import {
   cornerOf,

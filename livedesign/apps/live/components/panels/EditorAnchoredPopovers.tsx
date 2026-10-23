@@ -2,13 +2,13 @@
 
 import { useCloseVanishedDialogs } from '@/components/dialogs/useCloseVanishedDialogs';
 import dynamic from 'next/dynamic';
-import { apiSetDocumentFolder } from '@/lib/api-client';
-import { isBoxed } from '@livedesign/document';
+import { apiSetDesignFolder } from '@/lib/api-client';
+import { isBoxed } from '@livedesign/design';
 
 import { track } from '@/lib/telemetry';
 import { canonicalNote, noteFieldsEqual } from '@/lib/note-value';
 import { commentPersisters } from '@/lib/comment-persistence';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useEditorContext } from '@/app/design/[id]/EditorContext';
 
 const CommentThreadPopover = dynamic(
   () => import('@/components/panels/CommentThreadPopover').then((m) => m.CommentThreadPopover),
@@ -39,7 +39,7 @@ export function EditorAnchoredPopovers() {
     addComment,
     isReadOnly,
     can,
-    documentId,
+    designId,
     selfParticipant,
     sessionShareCode,
     deleteComment,
@@ -62,9 +62,9 @@ export function EditorAnchoredPopovers() {
     deleteAction,
     teams,
     clerkUserId,
-    setDocumentTeamId,
+    setDesignTeamId,
     clerkDisplayName,
-    documentTeamId,
+    designTeamId,
     emailEnabled,
   } = useEditorContext();
 
@@ -76,7 +76,7 @@ export function EditorAnchoredPopovers() {
   // the room and its save (lib/comment-persistence.ts, shared with the Comment panel).
   const persist = commentPersisters({
     readOnly: isReadOnly,
-    documentId,
+    designId,
     tabId: activeTab.id,
     selfId: selfParticipant.id,
     shareCode: sessionShareCode,
@@ -176,22 +176,22 @@ export function EditorAnchoredPopovers() {
                 ownerId={clerkUserId ?? null}
                 selfUserId={actionSelfId}
                 selfName={actionSelfName}
-                documentId={documentId}
-                documentTeamId={documentTeamId}
+                designId={designId}
+                designTeamId={designTeamId}
                 emailEnabled={emailEnabled}
-                // Inline personal-document fix (docs/specs/012-collaboration/assigned-actions.md §2): file the document
+                // Inline personal-design fix (docs/specs/012-collaboration/assigned-actions.md §2): file the design
                 // into the picked team's library root so the picker can offer
                 // that team's members without an Explorer round-trip. The
-                // server enforces the docs/specs/013-workspace/team-shared-documents.md placement rules; on success the
+                // server enforces the docs/specs/013-workspace/team-shared-designs.md placement rules; on success the
                 // local team id flips and the member fetch re-runs.
                 onMoveToTeam={async (teamId) => {
-                  if (!clerkUserId || !documentId) return false;
+                  if (!clerkUserId || !designId) return false;
                   try {
-                    await apiSetDocumentFolder(clerkUserId, documentId, null, teamId);
+                    await apiSetDesignFolder(clerkUserId, designId, null, teamId);
                   } catch {
                     return false;
                   }
-                  setDocumentTeamId(teamId);
+                  setDesignTeamId(teamId);
                   return true;
                 }}
                 onSubmit={(input) => saveAction(target.id, input, assignActionId)}

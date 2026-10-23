@@ -1,9 +1,9 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR } from '@livedesign/document';
+import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR } from '@livedesign/design';
 
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import { commitUserPreferences } from '@/lib/user-preferences';
 
 const SettingsDialog = dynamic(

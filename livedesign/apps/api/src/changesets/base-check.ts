@@ -1,4 +1,4 @@
-import { elementFingerprint, type Element, type Tab } from '@livedesign/document';
+import { elementFingerprint, type Element, type Tab } from '@livedesign/design';
 import type { ChangesetBase, ChangesetConflict } from '@livedesign/api-schema';
 
 // The base check (docs/specs/024-agents/agent-changesets.md "Conflicts"): what the agent read

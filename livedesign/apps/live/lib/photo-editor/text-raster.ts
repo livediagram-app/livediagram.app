@@ -2,7 +2,7 @@
 // its font, size, weight, colour, alignment, line height and tracking, wrapped at its box's width,
 // anti-aliased. Used by both renderers: the CPU composite (a rect of it) and the GPU's content cache
 // (the whole of it as tiles).
-import { resolveFontStack } from '@livedesign/document';
+import { resolveFontStack } from '@livedesign/design';
 import {
   createRaster,
   hexToBytes,

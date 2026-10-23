@@ -1,6 +1,6 @@
 'use client';
 
-// "The reader just came back" — the document becoming visible again, or
+// "The reader just came back" — the design becoming visible again, or
 // the browser reporting the network back.
 //
 // Its own hook because the two events mean the same thing to a caller

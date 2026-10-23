@@ -45,11 +45,11 @@ describe('isChunkLoadError', () => {
 describe('navigation intents', () => {
   it('names the destination being navigated to while it is fresh, else the current page', () => {
     const intents = createNavigationIntents();
-    expect(intents.destination(0, '/document/a')).toBe('/document/a');
+    expect(intents.destination(0, '/design/a')).toBe('/design/a');
     intents.note('/explorer/unsorted', 1_000);
-    expect(intents.destination(1_500, '/document/a')).toBe('/explorer/unsorted');
-    expect(intents.destination(1_000 + NAVIGATION_INTENT_MS + 1, '/document/a')).toBe(
-      '/document/a',
+    expect(intents.destination(1_500, '/design/a')).toBe('/explorer/unsorted');
+    expect(intents.destination(1_000 + NAVIGATION_INTENT_MS + 1, '/design/a')).toBe(
+      '/design/a',
     );
   });
 });

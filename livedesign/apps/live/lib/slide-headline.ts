@@ -12,7 +12,7 @@ import {
   type Slide,
   type Tab,
   type TextSize,
-} from '@livedesign/document';
+} from '@livedesign/design';
 
 // Longer than a row shows; the row truncates with an ellipsis.
 export const SLIDE_HEADLINE_MAX = 80;

@@ -9,7 +9,7 @@ import { pageLs, pageSet } from './pages';
 // "Which tab").
 const ONE = 'tab-one-0000';
 const TWO = 'tab-two-0000';
-const tabPath = (id: string) => `/documents/${DOC_A}/tabs/${id}`;
+const tabPath = (id: string) => `/designs/${DOC_A}/tabs/${id}`;
 
 const ANSWER: PagesAnswer = {
   tab: { id: ONE, rev: 5 },
@@ -64,7 +64,7 @@ describe('which tab', () => {
     expect(await pagesTabOf(api, DOC_A, undefined)).toMatchObject({ tabId: ONE });
   });
 
-  it('turns a missing document into the api’s refusal', async () => {
+  it('turns a missing design into the api’s refusal', async () => {
     const { api } = setUp();
     expect(await pagesTabOf(api, 'nope', undefined)).toMatchObject({
       ok: false,
@@ -77,7 +77,7 @@ describe('the calls', () => {
   it('sends page changes and answers what the api did', async () => {
     const { api, sent } = setUp();
     const done = await changePages(api, DOC_A, { changes: [{ op: 'add', kind: 'logo' }] }, 'mcp');
-    expect(done).toMatchObject({ ok: true, documentId: DOC_A, tabId: ONE, tab: { rev: 5 } });
+    expect(done).toMatchObject({ ok: true, designId: DOC_A, tabId: ONE, tab: { rev: 5 } });
     expect(sent).toEqual([{ pages: [{ op: 'add', kind: 'logo' }] }]);
   });
 
@@ -104,12 +104,12 @@ describe('the calls', () => {
 
 describe('the calls with no tab to act on', () => {
   it('answer the refusal rather than send anything', async () => {
-    // Every tab of the document out of reach: no tab to fall back on.
-    const doc = tabsOfA[`/documents/${DOC_A}`].document;
+    // Every tab of the design out of reach: no tab to fall back on.
+    const doc = tabsOfA[`/designs/${DOC_A}`].design;
     const unreachable = fakeApi({
       ...library,
-      [`/documents/${DOC_A}`]: {
-        document: { ...doc, tabs: doc.tabs.map((t) => ({ ...t, outOfScope: true })) },
+      [`/designs/${DOC_A}`]: {
+        design: { ...doc, tabs: doc.tabs.map((t) => ({ ...t, outOfScope: true })) },
       },
     });
     expect(

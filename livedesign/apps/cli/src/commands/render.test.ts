@@ -15,21 +15,21 @@ const PNG = [0x89, 0x50, 0x4e, 0x47];
 const host: Route = (_r, url) => {
   const path = url.pathname;
   if (path === '/api/capabilities')
-    return Response.json({ apiBase: `${HOST}/api`, authEnabled: true, documentFormat: 2 });
+    return Response.json({ apiBase: `${HOST}/api`, authEnabled: true, designFormat: 2 });
   if (path === '/api/teams') return Response.json({ teams: [] });
-  if (path === '/api/documents')
-    return Response.json({ documents: [{ id: DOC, name: 'Shop', savedAt: NOW, ownerId: 'u' }] });
-  if (path === `/api/documents/${DOC}`)
+  if (path === '/api/designs')
+    return Response.json({ designs: [{ id: DOC, name: 'Shop', savedAt: NOW, ownerId: 'u' }] });
+  if (path === `/api/designs/${DOC}`)
     return Response.json({
-      document: {
+      design: {
         id: DOC,
         name: 'Shop',
         presentation: null,
         tabs: [{ id: 'main', name: 'Main', orderIndex: 0 }],
       },
     });
-  if (path === `/api/documents/${DOC}/tabs/main/render.svg`) return new Response(SVG);
-  if (path === `/api/documents/${DOC}/tabs/main`)
+  if (path === `/api/designs/${DOC}/tabs/main/render.svg`) return new Response(SVG);
+  if (path === `/api/designs/${DOC}/tabs/main`)
     return new Response(JSON.stringify({ tab: { id: 'main', name: 'Main', elements: [] } }), {
       headers: { ETag: 'W/"2"' },
     });
@@ -88,7 +88,7 @@ describe('export --format png', () => {
     expect(out.trim().split('\n')).toEqual([
       'b/shop/main.png',
       'b/shop/main.svg',
-      '1 document · 2 files',
+      '1 design · 2 files',
     ]);
     expect([...io.byteMap.get('b/shop/main.png')!.slice(0, 4)]).toEqual(PNG);
   });

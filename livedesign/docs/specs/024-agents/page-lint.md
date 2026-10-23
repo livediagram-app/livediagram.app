@@ -37,16 +37,16 @@ W text-overflow   t7 prints over t8           fix: move t8 below:t7
 
 ## Where it runs
 
-- One pure package, `@livedesign/page-lint`, using the measures `@livedesign/document` already has
+- One pure package, `@livedesign/page-lint`, using the measures `@livedesign/design` already has
   (`wrapLabel`, `labelRoom`, `estimatedLabelMeasure`, refs and layers), so it wraps text as every headless render
   wraps it.
 - Every changeset result's last line carries the lint verdict, `lint clean` or `lint 2 warnings`
   ([Edit operations](edit-operations.md#results)); `tab lint` shows the findings. A changeset lints its whole result
   tab, not only what it touched.
-- The api serves a stored tab's lint as a view, `GET /api/documents/:id/tabs/:tabId?view=lint`
-  ([Document views](document-views.md)); the CLI's `tab lint` reads it.
-- The MCP appends the summary line to the result of every tool that writes a tab's elements: `create_document`,
-  `add_tab` and `update_document`. An `update_document` whose edit changed nothing records no changeset and so has
+- The api serves a stored tab's lint as a view, `GET /api/designs/:id/tabs/:tabId?view=lint`
+  ([Design views](design-views.md)); the CLI's `tab lint` reads it.
+- The MCP appends the summary line to the result of every tool that writes a tab's elements: `create_design`,
+  `add_tab` and `update_design`. An `update_design` whose edit changed nothing records no changeset and so has
   no changeset lint: it reads the tab's lint view instead, so the answer still lists what is wrong with the tab.
 
 ## Properties

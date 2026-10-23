@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createText, TEXT_SCALE_MAX, TEXT_SCALE_MIN, type TextElement } from '@livedesign/document';
+import { createText, TEXT_SCALE_MAX, TEXT_SCALE_MIN, type TextElement } from '@livedesign/design';
 import {
   hugCommittedText,
   hugResizedText,
@@ -28,7 +28,7 @@ function text(patch: Partial<TextElement> = {}): TextElement {
 }
 
 describe('hugsText', () => {
-  // docs/specs/006-document/document-structure.md: keyed on the element's sizing alone.
+  // docs/specs/006-design/design-structure.md: keyed on the element's sizing alone.
   it('holds for a text box that fits or wraps, and never for a fixed box', () => {
     expect(hugsText(text({ sizing: 'fit' }))).toBe(true);
     expect(hugsText(text({ sizing: 'wrap' }))).toBe(true);

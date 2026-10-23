@@ -4,7 +4,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { clearMenuPath, CONTEXT_MENU, MENU_TARGET, openMenuPath } from './element-menu-tour';
 
-// jsdom lays nothing out, so "on screen" is just "in the document" here.
+// jsdom lays nothing out, so "on screen" is just "in the design" here.
 vi.mock('./tour-dom', async (actual) => ({
   ...(await actual<typeof import('./tour-dom')>()),
   waitForSelector: async (selector: string) => document.querySelector<HTMLElement>(selector),

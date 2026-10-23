@@ -27,7 +27,7 @@ function call(
           token: { id: caller.tokenId },
         }
       : caller.kind === 'clerk'
-        ? { owner: caller.userId, clerkUserId: caller.userId }
+        ? { owner: caller.userId, accountUserId: caller.userId }
         : {};
   return handleWorkbench(
     makeTestRouteContext(method, `/api/workbench/${path}`, {

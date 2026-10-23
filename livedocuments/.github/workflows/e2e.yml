@@ -56,7 +56,7 @@ jobs:
           name: live
           paths: apps/live/.next/cache
 
-      # Built the way production builds it: a clean env with no NEXT_PUBLIC_API_BASE / Clerk keys,
+      # Built the way production builds it: a clean env with no NEXT_PUBLIC_API_BASE / sign-in flag,
       # so it calls same-origin `/api` (the e2e stack proxies it) and runs in guest mode. A build
       # id, so the stale build spec can make the server report a newer one
       # (docs/specs/016-platform/stale-builds.md).
@@ -109,19 +109,18 @@ jobs:
           paths: |
             apps/live/.next/cache
             apps/help/.next/cache
-            apps/telemetry/.next/cache
             apps/marketing/.next/cache
 
       # The optical audit of the other sites needs their exports, and the stack serves help
-      # and telemetry on the live origin, so live is built beside them. Marketing comes last, as turbo.json
+      # on the live origin, so live is built beside it. Marketing comes last, as turbo.json
       # orders it: its licences page runs Next's analyzer in every other app, on that app's Turbopack
       # cache, and beside the app's own build the two corrupt it (a SIGBUS mid-build).
-      - name: Build live, help and telemetry
+      - name: Build live and help
         env:
           NEXT_PUBLIC_BUILD_ID: e2e-build
         run: >-
           bash scripts/next-build-cold-retry.sh pnpm --filter @livedocuments/live --filter @livedocuments/help
-          --filter @livedocuments/telemetry build
+          build
 
       - name: Build marketing
         run: bash scripts/next-build-cold-retry.sh pnpm --filter @livedocuments/marketing build
@@ -163,32 +162,32 @@ jobs:
       - name: Set up
         uses: ./.github/actions/e2e-setup
 
-      # The Clerk-stubbed build keeps its cache in the same directory as the guest build, under its
+      # The signed-in build keeps its cache in the same directory as the guest build, under its
       # own name, so each restores what it built.
       - name: Restore build cache
         uses: ./.github/actions/next-cache-restore
         with:
-          name: live-clerk-stub
+          name: live-signed-in
           paths: apps/live/.next/cache
 
-      # The signed-in specs (docs/specs/014-identity/blueprints/profile-picture.md) need Clerk ON, a
-      # build-time switch, so they run against their own export with a stub key and a fake
-      # window.Clerk; no Clerk account or secret is involved.
-      - name: Build live app with Clerk stubbed
-        run: bash scripts/next-build-cold-retry.sh pnpm --filter @livedocuments/live build:clerk-stub
+      # The signed-in specs (docs/specs/003-system-architecture/e2e-smoke.md) need sign-in ON, a
+      # build-time switch, so they run against their own export with the test-only auth bridge and
+      # the stack standing in for the accounts Worker; no account or secret is involved.
+      - name: Build live app with sign-in on
+        run: bash scripts/next-build-cold-retry.sh pnpm --filter @livedocuments/live build:signed-in
 
       - name: Run signed-in specs
-        run: pnpm --filter @livedocuments/live test:e2e:clerk-stub
+        run: pnpm --filter @livedocuments/live test:e2e:signed-in
 
       - name: Save build cache
         uses: ./.github/actions/next-cache-save
 
       - name: Upload report with traces
-        if: always() && hashFiles('apps/live/test-results-clerk-stub/**/trace.zip', 'apps/live/playwright-report-clerk-stub/data/*.zip') != ''
+        if: always() && hashFiles('apps/live/test-results-signed-in/**/trace.zip', 'apps/live/playwright-report-signed-in/data/*.zip') != ''
         uses: actions/upload-artifact@v7
         with:
-          name: playwright-report-clerk-stub
+          name: playwright-report-signed-in
           path: |
-            apps/live/playwright-report-clerk-stub
-            apps/live/test-results-clerk-stub
+            apps/live/playwright-report-signed-in
+            apps/live/test-results-signed-in
           retention-days: 7

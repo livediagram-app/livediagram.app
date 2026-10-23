@@ -5,7 +5,7 @@ import {
   setTableCell,
   type TableCellStyle,
   type TableElement,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { cellKey } from '@/components/canvas/TableCellView';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { track } from '@/lib/telemetry';

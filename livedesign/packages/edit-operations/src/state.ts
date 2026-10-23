@@ -17,7 +17,7 @@ import {
   type ElementId,
   type RefTable,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { lockedIds } from './locks';
 import type { Naming } from './element-text';
 import type { Fit } from './labels';

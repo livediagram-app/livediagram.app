@@ -5,7 +5,7 @@
 
 import { vi } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
-import type { Tab } from '@livedesign/document';
+import type { Tab } from '@livedesign/design';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
 
@@ -27,18 +27,18 @@ export function setup(opts: { indexPending?: boolean } = {}): SqliteD1 & { bucke
   return { ...db, bucket };
 }
 
-export function linkDocumentTab(sql: DatabaseSync, documentId: string, tabId: string) {
+export function linkDesignTab(sql: DatabaseSync, designId: string, tabId: string) {
   sql
     .prepare(
-      'INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES (?, ?, 0, 0)',
+      'INSERT INTO design_tabs (design_id, tab_id, order_index, added_at) VALUES (?, ?, 0, 0)',
     )
-    .run(documentId, tabId);
+    .run(designId, tabId);
 }
 
 export function liveDoc(sql: DatabaseSync, id: string, ownerId = 'owner', name = id) {
   sql
     .prepare(
-      'INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, 0, 0)',
+      'INSERT INTO designs (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, 0, 0)',
     )
     .run(id, ownerId, name);
 }
@@ -47,7 +47,21 @@ export function images(sql: DatabaseSync, createdAt: number, ...ids: string[]) {
   const stmt = sql.prepare(
     "INSERT INTO images (id, owner_id, content_type, byte_size, width, height, sha256, created_at) VALUES (?, 'owner', 'image/png', 1, 1, 1, ?, ?)",
   );
-  for (const id of ids) stmt.run(id, id, createdAt);
+  // And whose they are, as the media service's images are known here (src/media.ts), once 0101 has run.
+  const owned = hasTable(sql, 'media_images')
+    ? sql.prepare("INSERT INTO media_images (id, owner_id) VALUES (?, 'owner')")
+    : null;
+  for (const id of ids) {
+    stmt.run(id, id, createdAt);
+    owned?.run(id);
+  }
+}
+
+export function hasTable(sql: DatabaseSync, name: string): boolean {
+  return (
+    sql.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?").get(name) !==
+    undefined
+  );
 }
 
 export const tabWith = (id: string, ...imageIds: string[]): Tab =>

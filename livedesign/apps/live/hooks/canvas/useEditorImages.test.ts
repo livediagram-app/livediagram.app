@@ -21,7 +21,7 @@ function mount(galleryHidden?: boolean, ownerId = 'user_1', editsBlocked = false
         getViewportCenter: () => ({ x: 0, y: 0 }),
         commit: vi.fn(),
         setSelectedId: vi.fn(),
-        documentId: 'doc-1',
+        designId: 'doc-1',
         ownerId: owner,
         sessionShareCode: null,
       }),
@@ -32,7 +32,7 @@ function mount(galleryHidden?: boolean, ownerId = 'user_1', editsBlocked = false
 afterEach(() => apiListImages.mockClear());
 
 describe('useEditorImages', () => {
-  it('reads the recent images of an editable document', () => {
+  it('reads the recent images of an editable design', () => {
     mount();
     expect(apiListImages).toHaveBeenCalledWith('user_1');
   });
@@ -42,9 +42,9 @@ describe('useEditorImages', () => {
     expect(apiListImages).not.toHaveBeenCalled();
   });
 
-  // docs/specs/006-document/offline-mode.md "Instant open": the placeholder reader has no gallery, and
+  // docs/specs/006-design/offline-mode.md "Instant open": the placeholder reader has no gallery, and
   // the read follows once the reader is known.
-  it("waits for the reader when the document opened under the 'self' placeholder", () => {
+  it("waits for the reader when the design opened under the 'self' placeholder", () => {
     const hook = mount(false, 'self');
     expect(apiListImages).not.toHaveBeenCalled();
     hook.rerender({ owner: 'guest-1' });

@@ -44,7 +44,7 @@ test('a deck presents slide by slide and leaves the view as it was', async ({
       },
     ],
   };
-  const seeded = await page.request.post(`${apiBase}/documents`, {
+  const seeded = await page.request.post(`${apiBase}/designs`, {
     headers: ownerHeaders(owner, { Origin: new URL(baseURL!).origin }),
     data: {
       id,
@@ -62,7 +62,7 @@ test('a deck presents slide by slide and leaves the view as it was', async ({
     },
     { o: owner, sig: guestSigFor(owner) },
   );
-  await page.goto(`/document/${id}`);
+  await page.goto(`/design/${id}`);
   await page.locator(CANVAS).waitFor();
   await dismissQuickTour(page);
 

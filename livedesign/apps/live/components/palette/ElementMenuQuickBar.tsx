@@ -6,7 +6,7 @@
 // button reads View / Edit); Clear Styles alone at the right, apart from them, as it changes the element's look rather
 // than attaching to it. Each button closes the menu as it runs, as the tiles it replaces did.
 import type { ReactNode } from 'react';
-import { isBoxed, type BoxedElement, type Element } from '@livedesign/document';
+import { isBoxed, type BoxedElement, type Element } from '@livedesign/design';
 import { Tooltip } from '@livedesign/ui';
 import {
   ActionMenuIcon,

@@ -1,11 +1,11 @@
 'use client';
 
 // The sidebar's Tags row (docs/specs/013-workspace/tags.md "The sidebar"): it opens the Tags page and expands to one
-// row per tag (a dot of its colour, its name, its document count, and its menu on hover), each opening that tag's page.
+// row per tag (a dot of its colour, its name, its design count, and its menu on hover), each opening that tag's page.
 
 import type { Tag } from '@livedesign/api-schema';
 import { TagIcon } from '@/components/primitives/explorer-icons';
-import { useDocumentTags } from '@/components/tags/DocumentTagsProvider';
+import { useDesignTags } from '@/components/tags/DesignTagsProvider';
 import { useTagActionsMenu } from '@/components/tags/TagActionsMenu';
 import { TagDot } from '@/components/tags/TagChip';
 import { useExplorer } from '../ExplorerContext';
@@ -16,7 +16,7 @@ import { SidebarRow } from './SidebarRow';
 /** `depth`: Tags sits inside Library (tags.md "The sidebar"), one level down; its tag rows one below it. */
 export function TagsSidebarRow({ depth = 1 }: { depth?: number }) {
   const { selected, go, expanded, toggleExpand } = useExplorer();
-  const { tags } = useDocumentTags();
+  const { tags } = useDesignTags();
   const toggle = () => toggleExpand(TAGS_EXPAND_KEY);
   return (
     <SidebarRow
@@ -60,7 +60,7 @@ function TagSidebarRow({
   selected: boolean;
   onOpen: () => void;
 }) {
-  const { documentsFor } = useDocumentTags();
+  const { designsFor } = useDesignTags();
   const { go, selected: current } = useExplorer();
   const menu = useTagActionsMenu(tag, {
     size: 'md',
@@ -82,7 +82,7 @@ function TagSidebarRow({
       selected={selected}
       onActivate={onOpen}
       depth={depth}
-      badge={documentsFor(tag.id).size || undefined}
+      badge={designsFor(tag.id).size || undefined}
       onContextMenu={menu.onContextMenu}
       trailing={
         <>

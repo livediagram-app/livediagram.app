@@ -20,9 +20,9 @@ function host(mint: Response, env: Record<string, string> = {}) {
           events.push(...((await request.json()) as { events: unknown[] }).events);
           return new Response(null, { status: 204 });
         }
-        if (url.pathname === '/api/documents')
+        if (url.pathname === '/api/designs')
           return Response.json({
-            documents: [{ id: DOC, name: 'Home screen', savedAt: NOW, ownerId: 'u' }],
+            designs: [{ id: DOC, name: 'Home screen', savedAt: NOW, ownerId: 'u' }],
           });
         if (url.pathname === '/api/teams') return Response.json({ teams: [] });
         if (url.pathname === '/api/folders') return Response.json({ folders: [] });
@@ -35,7 +35,7 @@ function host(mint: Response, env: Record<string, string> = {}) {
 }
 
 const minted = Response.json(
-  { url: URL_OUT, documentId: DOC, tabId: null, expiresAt: NOW + 60_000 },
+  { url: URL_OUT, designId: DOC, tabId: null, expiresAt: NOW + 60_000 },
   { status: 201 },
 );
 
@@ -52,7 +52,7 @@ describe('workbench open', () => {
     expect(await open(json.io, '--json')).toBe(0);
     expect(JSON.parse(json.io.out())).toEqual({
       url: URL_OUT,
-      documentId: DOC,
+      designId: DOC,
       tabId: null,
       expiresAt: NOW + 60_000,
     });
@@ -78,7 +78,7 @@ describe('workbench open', () => {
     const shared = host(minted);
     expect(
       await run(
-        ['workbench', 'open', 'https://livedesign.app/document/shared?s=x', '--origin', ORIGIN],
+        ['workbench', 'open', 'https://livedesign.app/design/shared?s=x', '--origin', ORIGIN],
         shared.io,
       ),
     ).toBe(2);
@@ -132,7 +132,7 @@ describe('workbench open --workspace', () => {
     expect(lost.io.err()).toContain('no folder matches "Nowhere"');
   });
 
-  it('exits 2 when it names a document and --workspace both', async () => {
+  it('exits 2 when it names a design and --workspace both', async () => {
     const { io } = host(minted);
     expect(
       await run(['workbench', 'open', 'Home screen', '--workspace', '--origin', ORIGIN], io),

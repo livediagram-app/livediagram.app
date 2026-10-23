@@ -7,8 +7,8 @@ import {
   rowPageAt,
   type Element,
   type LaidOutPage,
-} from '@livedesign/document';
-import { elementFindTexts } from '@livedesign/document-views';
+} from '@livedesign/design';
+import { elementFindTexts } from '@livedesign/design-views';
 
 /** The words on each page, for Find a Page: the texts of the elements on it (their labels,
  *  notes, cells, items and the rest the editor's find reads). One walk over the tab's elements. */

@@ -2,7 +2,7 @@
 
 import { describe, expect, it, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { createText, type Element, type TextElement } from '@livedesign/document';
+import { createText, type Element, type TextElement } from '@livedesign/design';
 import { useTextStyleSetters } from './useTextStyleSetters';
 
 // Stands in for the DOM measure: the text block is 10 px a character at 14 px, scaled with the
@@ -19,7 +19,7 @@ vi.mock('@/components/canvas/text-hug-measure', () => ({
 }));
 
 // A text box whose edits land through the setters. Whether it hugs is its own sizing, whatever the
-// editor mode (docs/specs/006-document/document-structure.md).
+// editor mode (docs/specs/006-design/design-structure.md).
 function setup(el: TextElement) {
   let els: Element[] = [el];
   const commit = (map: (els: Element[]) => Element[]) => {
@@ -46,7 +46,7 @@ const hello = (patch: Partial<TextElement> = {}): TextElement => ({
   ...patch,
 });
 
-// docs/specs/006-document/document-structure.md (a text box's sizing): the box hugs its text through
+// docs/specs/006-design/design-structure.md (a text box's sizing): the box hugs its text through
 // every change to how the text is drawn.
 describe('useTextStyleSetters on a hugging text box', () => {
   it('re-hugs the box when the text size changes, and drops a Shift scale', () => {

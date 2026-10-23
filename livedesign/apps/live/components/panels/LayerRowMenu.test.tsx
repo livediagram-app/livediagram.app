@@ -1,11 +1,11 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Layer } from '@livedesign/document';
+import type { Layer } from '@livedesign/design';
 
 import { LayerRowMenu, layerMenuPosition } from './LayerRowMenu';
 
-// docs/specs/006-document/layers.md "Row context menu": every verb one click away, no categories.
+// docs/specs/006-design/layers.md "Row context menu": every verb one click away, no categories.
 
 const LAYER: Layer = { id: 'l1', name: 'Notes' };
 

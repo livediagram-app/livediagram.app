@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, layOutPages, type Element, type Page } from '@livedesign/document';
+import { createShape, layOutPages, type Element, type Page } from '@livedesign/design';
 import * as slideThumb from '@/lib/slide-thumb';
 import { usePageThumbnails, type PageThumbTab } from './usePageThumbnails';
 

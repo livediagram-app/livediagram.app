@@ -2,7 +2,7 @@
 
 import type { ReactElement } from 'react';
 import { Tooltip } from '@livedesign/ui';
-import type { PathHandleMode } from '@livedesign/document';
+import type { PathHandleMode } from '@livedesign/design';
 import { FloatingToolbar } from '@/components/chrome/FloatingToolbar';
 
 export type PathToolbarView = {

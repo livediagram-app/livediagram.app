@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, ThemeDefinition } from '@livedesign/document';
+import type { Element, ThemeDefinition } from '@livedesign/design';
 import { buildDressedDrawnArrow } from './draw-commit';
 import { drawnArrowAsShown } from './drawn-arrow-preview';
 

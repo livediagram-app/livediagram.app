@@ -8,7 +8,7 @@ import { StaleBuildBoot } from '@/components/providers/StaleBuildBoot';
 import { KeyboardAvoidanceBoot } from '@/components/providers/KeyboardAvoidanceBoot';
 import { ConfirmProvider } from '@/hooks/ui/useConfirm';
 import { ToastProvider } from '@/hooks/ui/useToast';
-import { googleFontsHref } from '@livedesign/document';
+import { googleFontsHref } from '@livedesign/design';
 import { BRAND_OG_IMAGE, BRAND_TWITTER_IMAGE } from '@livedesign/ui/seo';
 import { SITE_NAME } from '@livedesign/ui/site';
 import {
@@ -46,14 +46,14 @@ const TRUSTED_TYPES_BOOT = trustedTypesBootScript(
 );
 
 const TITLE = 'livedesign';
-const DESCRIPTION = 'Diagrams, whiteboards, illustrations and documents. Multiplayer canvas.';
+const DESCRIPTION = 'Diagrams, whiteboards, illustrations and designs. Multiplayer canvas.';
 
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   // Link previews (docs/specs/013-workspace/share-link-previews.md): every editor address previews with the brand
   // card rather than an empty box, and the live worker (src/share-page.ts) rewrites these same tags to name the
-  // document on a share link's page, so they must stay declared here.
+  // design on a share link's page, so they must stay declared here.
   openGraph: {
     type: 'website',
     siteName: SITE_NAME,
@@ -104,7 +104,7 @@ export const viewport: Viewport = {
 // additive (signed-in users get per-account persistence; guests keep
 // the localStorage participant id).
 //
-// The existing app/not-found.tsx → EditorPage mechanism (docs/specs/007-editor/new-document-route.md, fixes
+// The existing app/not-found.tsx → EditorPage mechanism (docs/specs/007-editor/new-design-route.md, fixes
 // the static-export dynamic-segment 404) is unaffected by the provider
 // — ClerkProvider doesn't touch the route tree.
 export default function RootLayout({ children }: { children: ReactNode }) {

@@ -85,7 +85,7 @@ describe('OpenAPI manifest ↔ dispatch (method, path-template) parity', () => {
     expect(phantom, `documented but not dispatched: ${phantom.join(', ')}`).toEqual([]);
   });
 
-  it('documents every path the dispatch serves', () => {
+  it('designs every path the dispatch serves', () => {
     const undocumented = [
       ...new Set(
         results
@@ -97,7 +97,7 @@ describe('OpenAPI manifest ↔ dispatch (method, path-template) parity', () => {
     expect(undocumented, `dispatched but not documented: ${undocumented.join(', ')}`).toEqual([]);
   });
 
-  it('documents every method a handler answers before touching storage', () => {
+  it('designs every method a handler answers before touching storage', () => {
     // A `routed` outcome is definitive about the method as well as the path.
     // A `storage` outcome is not (the handler loaded something before
     // branching on the verb), which is what the per-segment verb check in
@@ -114,7 +114,7 @@ describe('OpenAPI manifest ↔ dispatch (method, path-template) parity', () => {
     expect(undocumented, `answered but not documented: ${undocumented.join(', ')}`).toEqual([]);
   });
 
-  it('documents every literal the dispatch discriminates on, at its position', () => {
+  it('designs every literal the dispatch discriminates on, at its position', () => {
     // A literal route shadowed by a parameter sibling (`/teams/stats` next to
     // `/teams/{id}`) matches the parameter's template above and would pass.
     // The route code comparing `segments[k] === 'stats'` is what gives it

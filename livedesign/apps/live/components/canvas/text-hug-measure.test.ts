@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createText, type TextElement } from '@livedesign/document';
+import { createText, type TextElement } from '@livedesign/design';
 import { labelRuns, measureDrawnText, measureTextHug } from './text-hug-measure';
 
 // The DOM measure behind a text box's hug. jsdom lays nothing out, so these pin what the

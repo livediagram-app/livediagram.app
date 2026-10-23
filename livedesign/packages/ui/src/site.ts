@@ -17,7 +17,7 @@ export const SITE_NAME = 'livedesign';
 // What livedesign is, in the words every public surface uses (docs/specs/019-marketing/marketing-site.md
 // "SEO and metadata"), kept here so they can't drift: the landing page's title, its description
 // (also the web app manifest's), and the one-line pitch the share card, the share images' alt text
-// and the share rail build on. It names every kind of page a document is made of.
+// and the share rail build on. It names every kind of page a design is made of.
 export const SITE_TITLE = 'livedesign: Design logos and wireframes together, live';
 export const SITE_DESCRIPTION =
   'A free, real-time editor for logos and wireframes. Built for teams who design together.';

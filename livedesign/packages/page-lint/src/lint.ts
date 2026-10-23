@@ -2,7 +2,7 @@
 // tab's text fits where it is drawn, returning its measures and findings in a fixed order.
 
 import type { LintReport, LintSeverity } from '@livedesign/api-schema';
-import type { Tab } from '@livedesign/document';
+import type { Tab } from '@livedesign/design';
 import { LINT_CHECKS } from './checks';
 import { prepareLintContext } from './context';
 import { consoleLintLogger, type LintLogger } from './log';

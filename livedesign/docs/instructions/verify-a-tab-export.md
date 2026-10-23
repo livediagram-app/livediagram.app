@@ -4,9 +4,8 @@ How to check what the Export dialog really produces for a tab (a new page kind, 
 renderer), in the browser, without saving files to the Downloads folder. Spec: [Export fidelity](../specs/020-import-export/export-fidelity.md)
 for what an image draws.
 
-1. Use the running dev server and a document of your own (never someone's real document). Make it from `/new`
-   with a template that has the page kind you are checking (a slide deck, an article, an infographic, a logo or a
-   wireframe).
+1. Use the running dev server and a design of your own (never someone's real design). Make it from `/new`
+   with a template that has the page kind you are checking (a logo, a wireframe or a photo).
 2. Put real content in first: a few pages with text, a chart and a picture. An empty page only proves the empty
    state.
 3. Open the tab, then its tab menu (the ⋯ on its pill), then **Export**. Check the format cards against the spec:
@@ -48,8 +47,9 @@ for what an image draws.
    `await blob.text()`), or read the header (PDF: its `MediaBox` is the page in points, 0.75 a CSS px). A PNG is twice
    the image's size.
 
-7. For text formats, read the dialog's `textarea` value. JSON should carry the tab's pages and articles; Markdown
-   should read as the article. Import it back (tab menu, **Import**) to prove the round trip.
+7. For JSON, read the dialog's `textarea` value: it should carry the tab's pages (and a photo page's photo). Import it
+   back (tab menu, **Import**) to prove the round trip. The Logo Kit and a photo page's files (PNG, JPEG, WebP, PSD)
+   download like the images; capture them the same way.
 8. Don't rasterise the live DOM to compare: a DOM-to-image capture of the editor froze the page for over 45 seconds and
    came out blank (slots animate in and lazy-mount). Compare the preview with a screenshot of the tab instead.
 9. Reload the page when done, so the patched `click` is gone, and close your browser tab.

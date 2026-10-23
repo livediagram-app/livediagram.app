@@ -9,7 +9,7 @@ import {
   RECENT_THUMBS_CACHE,
   parseRecentDiagrams,
   recentThumbPath,
-  type DocumentSummary,
+  type DesignSummary,
 } from '@livedesign/api-schema';
 import { USER_PREFERENCES_STORAGE_KEY } from '@livedesign/telemetry-client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -34,7 +34,7 @@ function fakeCaches() {
   };
 }
 
-const doc = (id: string, savedAt: number, extra: Partial<DocumentSummary> = {}): DocumentSummary =>
+const doc = (id: string, savedAt: number, extra: Partial<DesignSummary> = {}): DesignSummary =>
   ({
     id,
     name: `Doc ${id}`,
@@ -42,7 +42,7 @@ const doc = (id: string, savedAt: number, extra: Partial<DocumentSummary> = {}):
     empty: false,
     opensIn: 'diagram',
     ...extra,
-  }) as DocumentSummary;
+  }) as DesignSummary;
 
 const thumbUrl = (id: string, savedAt: number) =>
   new URL(recentThumbPath(id, savedAt), location.origin).href;
@@ -80,7 +80,7 @@ afterEach(() => {
 });
 
 describe('rememberRecentDiagrams', () => {
-  it('notes the six newest saves, leaving out empty documents and those hidden from Recent', async () => {
+  it('notes the six newest saves, leaving out empty designs and those hidden from Recent', async () => {
     localStorage.setItem(
       USER_PREFERENCES_STORAGE_KEY,
       JSON.stringify({ recentExcludedIds: ['d7'] }),

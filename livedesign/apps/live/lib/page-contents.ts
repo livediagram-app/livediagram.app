@@ -9,7 +9,7 @@ import {
   type Page,
   type LaidOutPage,
   type PageKind,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { rowDropIndex, type RowDrop } from '@/hooks/ui/useRowReorderDrag';
 
 export type ContentsRow = {
@@ -73,7 +73,7 @@ export function filterContents(
   });
 }
 
-// Case and width folded, as the editor's find folds them (normaliseFind in document-views).
+// Case and width folded, as the editor's find folds them (normaliseFind in design-views).
 const normalise = (text: string) => text.normalize('NFKC').toLowerCase();
 
 /** The page in view: the one whose rectangle holds the middle of the screen, else the nearest to

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { clerkEnabled } from '@/lib/clerk-config';
+import { signInEnabled } from '@/lib/auth-config';
 import { useOptionalExplorer } from '../ExplorerContext';
 import { isFirstRun } from './first-run';
 
@@ -67,7 +67,7 @@ export function useFirstRun(): {
   // Until the lists land: new unless this browser last saw them hold something.
   const heroFirstRun = loading ? rememberedHasDocuments(ownerId) !== true : firstRun;
   // A guest on a deployment with sign-in may simply have been signed out.
-  const signedIn = Boolean(explorer.clerkUserId);
-  const offerSignIn = clerkEnabled && !signedIn;
+  const signedIn = Boolean(explorer.accountUserId);
+  const offerSignIn = signInEnabled && !signedIn;
   return { firstRun, heroFirstRun, signedIn, offerSignIn };
 }

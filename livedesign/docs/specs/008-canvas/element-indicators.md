@@ -112,7 +112,7 @@ moves: content that moved out of their way stays put, so selecting never shifts 
   **presented** ([Presentation mode](../012-collaboration/presentation-mode.md)) never draw them,
   whatever style the person chose (`SuppressElementIndicators` above the canvas reads as **Off**);
   the lock badge hides with them, so a presented slide shows only what the audience should see.
-  The share view (`/document/shared`) is the editor reached by a share link, so it draws them like
+  The share view (`/design/shared`) is the editor reached by a share link, so it draws them like
   the editor.
 
 ## Accessibility

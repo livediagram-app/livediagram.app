@@ -5,7 +5,7 @@ import type {
   LintReport,
 } from '@livedesign/api-schema';
 import { lintFooterPart } from '@livedesign/page-lint';
-import { migrateIncomingTab, type Tab } from '@livedesign/document';
+import { migrateIncomingTab, type Tab } from '@livedesign/design';
 import {
   applyEditOperations,
   applyReplace,
@@ -18,7 +18,7 @@ import { lastChangesetRev, tabIdsHeldElsewhere } from '../db';
 import { capStoredName } from '../names';
 import { personTagFor } from '../person-tag';
 import { readRoomSelections, type RoomSelection } from '../room-client';
-import type { DocumentDTO, Env } from '../types';
+import type { DesignDTO, Env } from '../types';
 import { afterChangeset } from './after';
 import { checkBase, type BaseOutcome } from './base-check';
 import type { FrontDoor } from './front-door';
@@ -39,7 +39,7 @@ const TAB_ID_MAX = 128;
 
 type SubmitArgs = {
   env: Env;
-  document: DocumentDTO;
+  design: DesignDTO;
   tabId: string;
   request: ParsedChangeset;
   dryRun: boolean;
@@ -51,24 +51,24 @@ type SubmitArgs = {
 
 export type SubmitResult = { status: number; body: unknown };
 
-type Where = { documentId: string; tabId: string };
+type Where = { designId: string; tabId: string };
 
 export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
-  const { env, document, tabId, request } = args;
-  const where: Where = { documentId: document.id, tabId };
+  const { env, design, tabId, request } = args;
+  const where: Where = { designId: design.id, tabId };
   if (tabId.length > TAB_ID_MAX) {
     return refusal(422, 'invalid_value', `a tab id holds at most ${TAB_ID_MAX} characters`);
   }
   for (let attempt = 1; attempt <= SUBMIT_ATTEMPTS; attempt += 1) {
     const [stored, prevRev, selections] = await Promise.all([
-      readStoredTab(env, document.id, tabId),
+      readStoredTab(env, design.id, tabId),
       lastChangesetRev(env, tabId),
-      args.tokenId ? readSelections(env, document.id, tabId, args.author.id) : null,
+      args.tokenId ? readSelections(env, design.id, tabId, args.author.id) : null,
     ]);
     if (!stored) {
       if (request.body.kind !== 'replace') return { status: 404, body: { error: 'not_found' } };
-      if ((await tabIdsHeldElsewhere(env, document.id, [tabId])).size > 0) {
-        return refusal(409, 'tab_id_taken', 'another document holds a tab with this id');
+      if ((await tabIdsHeldElsewhere(env, design.id, [tabId])).size > 0) {
+        return refusal(409, 'tab_id_taken', 'another design holds a tab with this id');
       }
     }
     const compiled = compile(args, stored, selections);
@@ -111,11 +111,11 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
     const next = withServerRules(compiled.tab, stored, args.author);
     const lint = lintResult(next, where);
     const outcome = await writeChangeset(env, {
-      documentId: document.id,
+      designId: design.id,
       tabId,
       stored,
       next,
-      orderIndex: stored?.orderIndex ?? document.tabs.length,
+      orderIndex: stored?.orderIndex ?? design.tabs.length,
       author: args.author,
       tokenId: args.tokenId,
       summary: request.summary,
@@ -123,7 +123,7 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
       rebasedOver: base.rebasedOver,
       prevRev,
       results: compiled.results,
-      textFor: (written) => [...lines, writtenFooter(written, document.id, lint)].join('\n'),
+      textFor: (written) => [...lines, writtenFooter(written, design.id, lint)].join('\n'),
       revertOf: null,
     });
     if (outcome.kind === 'stale') {
@@ -153,7 +153,7 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
     });
     args.waitUntil?.(
       afterChangeset.run(env, {
-        document,
+        design,
         author: args.author,
         next,
         stored: stored?.tab ?? null,
@@ -176,7 +176,7 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
 
 export function writtenFooter(
   written: ChangesetWritten,
-  documentId: string,
+  designId: string,
   lint: LintReport | null,
 ): string {
   return formatResultFooter({
@@ -185,7 +185,7 @@ export function writtenFooter(
     rev: written.rev,
     rebasedOver: written.rebasedOver,
     changesetId: written.id,
-    documentId,
+    designId,
     lint: lintFooterPart(lint),
   });
 }
@@ -193,11 +193,11 @@ export function writtenFooter(
 // The selections on the tab, the agent owner's own marked by their person tag.
 async function readSelections(
   env: Env,
-  documentId: string,
+  designId: string,
   tabId: string,
   ownerId: string,
 ): Promise<RoomSelection[] | null> {
-  return readRoomSelections(env, documentId, tabId, await personTagFor(documentId, ownerId));
+  return readRoomSelections(env, designId, tabId, await personTagFor(designId, ownerId));
 }
 
 function compile(
@@ -208,7 +208,7 @@ function compile(
   const options = {
     // What the owner has selected: what `selected` reads; null when the room was not read.
     selected: selections ? selections.filter((s) => s.mine).flatMap((s) => s.elementIds) : null,
-    log: engineLog({ documentId: args.document.id, tabId: args.tabId }),
+    log: engineLog({ designId: args.design.id, tabId: args.tabId }),
   };
   const body = args.request.body;
   if (body.kind === 'replace') {

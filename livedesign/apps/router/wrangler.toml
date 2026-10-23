@@ -27,7 +27,7 @@ service = "livedesign-telemetry"
 binding = "HELP"
 service = "livedesign-help"
 
-# Local dev (`wrangler dev --env local --port 3300`, the workspace `dev`
+# Local dev (`wrangler dev --env local --port 3400`, the workspace `dev`
 # script): service bindings can't reach the local Next dev servers, so this
 # environment defines none and sets plain HTTP origins instead. The worker
 # falls back to proxying these when a binding is absent. See docs/specs/016-platform/router-app.md.
@@ -35,11 +35,11 @@ service = "livedesign-help"
 # Tells the router it fronts `next dev`, whose chunks are not content-hashed, so their own
 # no-cache header passes through (docs/specs/016-platform/stale-builds.md "Caching rules").
 DEPLOY_ENV = "local"
-MARKETING_ORIGIN = "http://127.0.0.1:3301"
-LIVE_ORIGIN = "http://127.0.0.1:3302"
+MARKETING_ORIGIN = "http://127.0.0.1:3401"
+LIVE_ORIGIN = "http://127.0.0.1:3402"
 API_ORIGIN = "http://127.0.0.1:8989"
-TELEMETRY_ORIGIN = "http://127.0.0.1:3303"
-HELP_ORIGIN = "http://127.0.0.1:3304"
+TELEMETRY_ORIGIN = "http://127.0.0.1:3403"
+HELP_ORIGIN = "http://127.0.0.1:3404"
 
 # ---------------------------------------------------------------------------
 # Staging (docs/specs/016-platform/staging-environment.md). Deploys as `livedesign-router-staging` and fronts

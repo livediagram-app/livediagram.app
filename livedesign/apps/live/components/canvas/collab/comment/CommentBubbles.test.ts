@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Comment } from '@livedesign/document';
+import type { Comment } from '@livedesign/design';
 import { groupByAuthor } from './CommentBubbles';
 
 // Consecutive comments by one author read as one voice.

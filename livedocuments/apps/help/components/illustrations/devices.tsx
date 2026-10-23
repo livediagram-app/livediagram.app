@@ -112,16 +112,26 @@ const MINI_BAR_W = BAR.reduce(
   0,
 );
 
+// Where each of BAR's entries starts, from `start`: a divider takes MINI_DIVIDER, a name its length and a gap.
+function miniBarLefts(start: number): number[] {
+  const lefts: number[] = [];
+  let at = start;
+  for (const name of BAR) {
+    lefts.push(at);
+    at += name === '|' ? MINI_DIVIDER : name.length * MINI_CHAR + MINI_GAP;
+  }
+  return lefts;
+}
+
 /** The editor's top row in miniature, in `w` from (x, y): the menu button card, then the palette strip centred in
  *  the rest (the selection mode, the category bar with its categories by name, and Search). */
 function MiniTopRow({ x, y, w }: { x: number; y: number; w: number }) {
   const sw = Math.round(26 + MINI_BAR_W + 22);
   const sx = Math.round(x + 26 + (w - 26 - sw) / 2);
-  let at = sx + 26;
+  const lefts = miniBarLefts(sx + 26);
   const bar = BAR.map((name, i) => {
-    const left = at;
+    const left = lefts[i] ?? 0;
     if (name === '|') {
-      at += MINI_DIVIDER;
       return (
         <line
           key={i}
@@ -135,7 +145,6 @@ function MiniTopRow({ x, y, w }: { x: number; y: number; w: number }) {
       );
     }
     const len = name.length * MINI_CHAR;
-    at += len + MINI_GAP;
     return (
       <rect
         key={name}

@@ -4,7 +4,7 @@
 // the page you were on"): stored in this browser, capped, and found from where the view rests.
 
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { LaidOutPage } from '@livedesign/document';
+import type { LaidOutPage } from '@livedesign/design';
 import {
   LAST_PAGE_MAX,
   lastPageKey,
@@ -21,7 +21,7 @@ const row = [page('a', 0), page('b', 140), page('c', 280)];
 beforeEach(() => localStorage.clear());
 
 describe('the remembered page', () => {
-  it('is kept per document and tab', () => {
+  it('is kept per design and tab', () => {
     writeLastPage(lastPageKey('d1', 't1'), 'b');
     expect(readLastPage(lastPageKey('d1', 't1'))).toBe('b');
     expect(readLastPage(lastPageKey('d2', 't1'))).toBeUndefined();

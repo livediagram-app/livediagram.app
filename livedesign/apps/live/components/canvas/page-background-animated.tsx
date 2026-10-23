@@ -11,7 +11,7 @@ import {
   PAGE_MOTION_SPEED_MIN,
   type PageFill,
   type PageMotion,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { PagedCarousel } from '@/components/primitives/PagedCarousel';
 import { RANGE_SLIDER } from '@/components/primitives/surface-classes';
 import { CheckIcon, Tooltip } from '@livedesign/ui';

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { Folder } from '@livedesign/api-schema';
 import { folderPreviewTiles, type FolderPreviewContents } from './folder-preview-tiles';
-import type { PaneDocument } from './views';
+import type { PaneDesign } from './views';
 
-function liveDoc(id: string): PaneDocument {
+function liveDoc(id: string): PaneDesign {
   return { id, name: id, folderId: 'f', savedAt: 1, shareCode: null, ownerId: 'me' };
 }
 
@@ -19,8 +19,8 @@ function folder(id: string): Folder {
   };
 }
 
-function contents(documentIds: string[], folderIds: string[] = []): FolderPreviewContents {
-  return { documents: documentIds.map(liveDoc), folders: folderIds.map(folder) };
+function contents(designIds: string[], folderIds: string[] = []): FolderPreviewContents {
+  return { designs: designIds.map(liveDoc), folders: folderIds.map(folder) };
 }
 
 describe('folderPreviewTiles', () => {
@@ -28,10 +28,10 @@ describe('folderPreviewTiles', () => {
     expect(folderPreviewTiles(contents([]))).toEqual({ tiles: [], hidden: 0 });
   });
 
-  it('keeps the incoming document order, up to four', () => {
+  it('keeps the incoming design order, up to four', () => {
     const { tiles, hidden } = folderPreviewTiles(contents(['a', 'b', 'c', 'd']));
     expect(hidden).toBe(0);
-    expect(tiles.map((t) => (t.kind === 'document' ? t.document.id : t.folder.id))).toEqual([
+    expect(tiles.map((t) => (t.kind === 'design' ? t.design.id : t.folder.id))).toEqual([
       'a',
       'b',
       'c',
@@ -39,12 +39,12 @@ describe('folderPreviewTiles', () => {
     ]);
   });
 
-  it('puts documents before subfolders', () => {
+  it('puts designs before subfolders', () => {
     const { tiles } = folderPreviewTiles(contents(['a', 'b'], ['sub1', 'sub2']));
-    expect(tiles.map((t) => t.kind)).toEqual(['document', 'document', 'folder', 'folder']);
+    expect(tiles.map((t) => t.kind)).toEqual(['design', 'design', 'folder', 'folder']);
   });
 
-  it('previews subfolders when the folder holds no documents', () => {
+  it('previews subfolders when the folder holds no designs', () => {
     const { tiles, hidden } = folderPreviewTiles(contents([], ['sub1']));
     expect(hidden).toBe(0);
     expect(tiles).toEqual([{ kind: 'folder', folder: folder('sub1') }]);
@@ -56,9 +56,9 @@ describe('folderPreviewTiles', () => {
     expect(hidden).toBe(2);
   });
 
-  it('counts hidden subfolders as well as hidden documents', () => {
+  it('counts hidden subfolders as well as hidden designs', () => {
     const { tiles, hidden } = folderPreviewTiles(contents(['a', 'b', 'c'], ['sub1', 'sub2']));
-    expect(tiles.map((t) => t.kind)).toEqual(['document', 'document', 'document']);
+    expect(tiles.map((t) => t.kind)).toEqual(['design', 'design', 'design']);
     expect(hidden).toBe(2);
   });
 });

@@ -46,25 +46,25 @@ export function isLegacyGuestEra(
 // signature), `events` / `telemetry` / `capabilities` / `unfurl` (no owner),
 // and the Clerk-only `account` / `teams` / `tokens`.
 export const OWNER_SCOPED_SEGMENTS = new Set([
-  'documents',
+  'designs',
   'folders',
   'images',
   'custom-themes',
   'participants',
   'preferences',
   'shared',
-  // The feed is keyed on the resolved owner id and returns document
+  // The feed is keyed on the resolved owner id and returns design
   // names + comment text, so a harvested guest id must not read it.
   'timeline',
   // Same shape as the timeline: actions + comment threads (names, text)
-  // keyed on the resolved owner, and the owner's starred documents.
+  // keyed on the resolved owner, and the owner's starred designs.
   'activity',
   'favourites',
   // A person's tags and what they put them on (docs/specs/013-workspace/tags.md).
   'tags',
   // Explorer Home: the person's opens, own history and others' actions, keyed on the owner.
   'home',
-  // The Trash lists deleted documents' names and restores / purges them.
+  // The Trash lists deleted designs' names and restores / purges them.
   'trash',
   // A person's default folders (docs/specs/013-workspace/default-folders.md).
   'placement-defaults',

@@ -17,7 +17,7 @@ function show(uploadOnly?: boolean) {
   render(
     <ImagePicker
       ownerId="user_1"
-      documentId="doc-1"
+      designId="doc-1"
       forElementId={null}
       onSelect={vi.fn()}
       onClose={vi.fn()}

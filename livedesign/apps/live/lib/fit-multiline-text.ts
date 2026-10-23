@@ -1,4 +1,4 @@
-import { labelMeasure, wrapLabel } from '@livedesign/document';
+import { labelMeasure, wrapLabel } from '@livedesign/design';
 
 // Auto-fit for MULTI-LINE labels: the font size at which the
 // wrapped text just fills its box. `scale` on a sticky used to mean a fixed

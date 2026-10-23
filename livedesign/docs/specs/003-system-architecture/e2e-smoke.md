@@ -65,7 +65,7 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
   they are cheap.
 - **Parallel everywhere** (`fullyParallel`): 4 workers in CI, one per vCPU of the GitHub runner,
   and Playwright's default locally. Tests stay independent because each opens a fresh browser
-  context, so a fresh guest owner whose documents no other test sees.
+  context, so a fresh guest owner whose designs no other test sees.
 - **Guest signatures enforced** by default (`E2E_GUEST_SIG_ENFORCE`, unless `0`, sets
   `GUEST_SIG_ENFORCE_AFTER=1` in `scripts/e2e-stack.mjs`), as
   production runs once armed ([Public API and API tokens](../015-api/public-api-and-tokens.md) §4).
@@ -132,12 +132,12 @@ The stack serves whatever `apps/live/out` holds and never rebuilds it, so locall
    declares it in `[vars]`, which would refuse the localhost editor).
 2. **live**: the static `apps/live/out` served by a minimal Node
    server that reproduces the three things the production router +
-   live worker do (so clean routes and the document placeholder resolve
+   live worker do (so clean routes and the design placeholder resolve
    identically to prod):
    - strip the `/live` `assetPrefix` so `/live/_next/*` resolves to
      `out/_next/*`;
-   - rewrite every `/document/<id>` to the single placeholder
-     `out/document/[id].html` ([Dedicated route for new-document creation](../007-editor/new-document-route.md): one HTML backs every document
+   - rewrite every `/design/<id>` to the single placeholder
+     `out/design/[id].html` ([Dedicated route for new-design creation](../007-editor/new-design-route.md): one HTML backs every design
      URL);
    - proxy `/api/*` to the api worker, WebSocket upgrades included (the realtime room), so the app is same-origin (no CORS
      surprises, mirroring the router);
@@ -163,7 +163,7 @@ key (`E2E_NO_AI`) or with its AI budget spent (`E2E_AI_BUDGET_SPENT`); see
 [Local development](../../development/local-development.md).
 
 Locally the same `playwright.config.ts` sets `reuseExistingServer`, so a
-developer with `pnpm dev` already running (live :3302 + api :8989) runs
+developer with `pnpm dev` already running (live :3402 + api :8989) runs
 `pnpm --filter @livedesign/live test:e2e` against that stack with no
 extra boot.
 
@@ -180,19 +180,19 @@ Clerk account, secret or network.
 
 `pnpm --filter @livedesign/live test:e2e:clerk-stub` sets `E2E_CLERK_STUB=1`, which adds the
 `clerk-stub` project and boots the stack with `E2E_LIVE_OUT=.next/out-clerk-stub` on its own ports
-(live `:3315`, api `:8999`, marketing `:3316`), so a guest stack already up on `:3302` is never
+(live `:3315`, api `:8999`, marketing `:3316`), so a guest stack already up on `:3402` is never
 reused for it. The stack also stands in for Clerk (`E2E_CLERK_JWKS=1`): it makes a signing key at
 boot, serves its JWKS on `/e2e/jwks.json`, starts the api worker with `CLERK_JWKS_URL` pointing at
 it, and mints a session token for any test account on `/e2e/token?sub=user_…`, which the fake
 `window.Clerk` hands out. So a stub account is a real verified account to the api and the realtime
-room, and two or three stub browsers can collaborate in one document. A test that changes an
+room, and two or three stub browsers can collaborate in one design. A test that changes an
 account's synced settings takes a fresh id (`freshUserId`), since the stack's D1 outlives a test. `e2e.yml` builds and runs them in their own job, beside the smoke shards.
 
 ## Armed guest signatures
 
 Every stack enforces guest signatures (above), so every spec runs as production does once armed.
 The specs in `apps/live/e2e/armed/` focus on the entry paths: a first-time guest who arrives on `/` or `/new`, or opens the
-Explorer first, gets a signed id before any owner-scoped call, creates a document (`201`) and sees
+Explorer first, gets a signed id before any owner-scoped call, creates a design (`201`) and sees
 the canvas, and no api response is `401`. `pnpm --filter @livedesign/live test:e2e:armed` sets
 `E2E_GUEST_SIG_ENFORCE=1`, which adds the `armed` project and boots the stack on its own ports
 (live `:3017`, api `:8789`, marketing `:3018`). It
@@ -226,8 +226,8 @@ One spec file per feature, each linking the spec it proves:
 
 | File                            | What only a browser can show                                                                                                                                                                                                                                                                                                                                                                  | Spec                                                                                                          |
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `smoke.spec.ts`                 | `/new` renders the wizard; `/explorer` renders for a guest; create a blank document, add a shape, label it, and it survives a reload                                                                                                                                                                                                                                                          | this spec, [Canvas accessibility](../004-interface-design/canvas-accessibility.md)                            |
-| `save-failure.spec.ts`          | an autosave refused as unauthenticated says so, then the next edit saves again                                                                                                                                                                                                                                                                                                                | [Per-tab storage](../006-document/per-tab-storage.md)                                                         |
+| `smoke.spec.ts`                 | `/new` renders the wizard; `/explorer` renders for a guest; create a blank design, add a shape, label it, and it survives a reload                                                                                                                                                                                                                                                          | this spec, [Canvas accessibility](../004-interface-design/canvas-accessibility.md)                            |
+| `save-failure.spec.ts`          | an autosave refused as unauthenticated says so, then the next edit saves again                                                                                                                                                                                                                                                                                                                | [Per-tab storage](../006-design/per-tab-storage.md)                                                         |
 | `trash.spec.ts`                 | delete, find it in Settings › Trash, restore it; the deleted card; permanent delete and Empty Trash; an open editor, or one refused its room, is told                                                                                                                                                                                                                                         | [Trash](../013-workspace/trash.md)                                                                            |
 | `realtime-peers.spec.ts`        | an owner and an edit-link visitor see each other, edit live, keep both people's edits across a reload                                                                                                                                                                                                                                                                                         | [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)                          |
 | `realtime-same-element.spec.ts` | two peers dragging the same element at once end on the same position on both screens                                                                                                                                                                                                                                                                                                          | [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)                          |
@@ -240,7 +240,7 @@ One spec file per feature, each linking the spec it proves:
 | `palette-drag.spec.ts`          | a tile in a category's More popover on the Toolbar strip drags onto the canvas, whatever its catalogue: a shape, and a line icon and a sticker found by their own catalogue's search                                                                                                                                                                                                          | [Palette drag ghost](../010-palette/palette-drag-ghost.md), [Toolbar layout](../007-editor/toolbar-layout.md) |
 | `quick-style-panel.spec.ts`     | one-click styles, the left-edge placement, swatch targets, and custom swatch overrides                                                                                                                                                                                                                                                                                                        | [Quick style panel](../008-canvas/quick-style-panel.md)                                                       |
 | `multicolour-theme.spec.ts`     | a multi-colour theme gives its elements their palette colours                                                                                                                                                                                                                                                                                                                                 | [Multi-colour themes](../011-theme/multicolour-themes.md)                                                     |
-| `appearance.spec.ts`            | the appearance opens on the device setting and cycles, never writes to the document, tells Dark Reader to stand down, and is remembered before first paint                                                                                                                                                                                                                                    | [Live app](../007-editor/live-app.md)                                                                         |
+| `appearance.spec.ts`            | the appearance opens on the device setting and cycles, never writes to the design, tells Dark Reader to stand down, and is remembered before first paint                                                                                                                                                                                                                                    | [Live app](../007-editor/live-app.md)                                                                         |
 | `power-user-mode.spec.ts`       | the role pill toggles a read-only preview; Minimal chrome hides words; switching off restores untouched settings                                                                                                                                                                                                                                                                              | [Power user mode](../007-editor/power-user-mode.md)                                                           |
 | `settings-memory.spec.ts`       | Settings reopens on the last category and row, across a resize and deep inside a tall row                                                                                                                                                                                                                                                                                                     | [User preferences](../007-editor/user-preferences.md)                                                         |
 | `hints.spec.ts`                 | a palette tile's tooltip after a 500 ms hover, at once on focus, Escape, pointer onto it; hover cards                                                                                                                                                                                                                                                                                         | [Tooltips, hover cards and popovers](../004-interface-design/tooltips-hover-cards-popovers.md)                |
@@ -265,8 +265,8 @@ tests where it's cheap.
   `.test.ts` beside them is a Vitest unit test of a pure helper (`optical-snap.test.ts`, `perf/*.test.ts`),
   which `vitest.config.ts` runs and Playwright never loads.
 - `apps/live/e2e/fixtures.ts`: the `test` with its `pageErrors` fixture, `expectNoPageErrors`, and the
-  shared flows (`startBlankDocument`, `startTemplateDocument`, `seedTab`, `dismissQuickTour`).
-  `startTemplateDocument` exists because the blank helper skips the wizard's category step and so never
+  shared flows (`startBlankDesign`, `startTemplateDesign`, `seedTab`, `dismissQuickTour`).
+  `startTemplateDesign` exists because the blank helper skips the wizard's category step and so never
   exercises template creation.
 - `apps/live/e2e/fixtures/`: `audit-screens.ts`, `contrast.ts`, `optical.ts` and `optical-discover.ts`: the screens and measurements the dark-mode audits share.
 - `scripts/e2e-stack.mjs`: the stack boot + static serve (live, help, telemetry, marketing).

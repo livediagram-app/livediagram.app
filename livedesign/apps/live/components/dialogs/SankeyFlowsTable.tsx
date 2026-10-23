@@ -30,7 +30,7 @@ import {
   SANKEY_MAX_FLOWS,
   type ChartPaletteId,
   type SankeyNodeStyle,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import {
   draftFlows,
   draftNodeNames,

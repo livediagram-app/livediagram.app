@@ -19,7 +19,7 @@ const { db } = vi.hoisted(() => ({
     // tokens.ts
     listApiTokensByOwner: vi.fn(),
     mintApiToken: vi.fn(),
-    revokeApiToken: vi.fn(),
+    revokePresentedToken: vi.fn(),
     // document-share-routes.ts
     createShareLink: vi.fn(),
     deleteShareLink: vi.fn(),
@@ -65,7 +65,7 @@ function deferred() {
 beforeEach(() => {
   for (const fn of Object.values(db)) if (typeof fn === 'function') fn.mockReset();
   db.retractTimelineWarning.mockResolvedValue(undefined);
-  db.revokeApiToken.mockResolvedValue(true);
+  db.revokePresentedToken.mockResolvedValue(undefined);
   db.listApiTokensByOwner.mockResolvedValue([{ id: 'tok_1', name: 'CI' }]);
   db.getDocument.mockResolvedValue({ id: 'd_1', ownerId: 'user_1', tabs: [] });
   db.listShareLinks.mockResolvedValue([{ code: 'c1' }, { code: 'c2' }]);
@@ -75,15 +75,19 @@ beforeEach(() => {
   db.extendShareLink.mockResolvedValue({ code: 'c1', expiresAt: 9_999 });
 });
 
-describe('token revoke retracts its expiry warning', () => {
-  it('retracts token_expiring for the revoked token id', async () => {
-    const { waitUntil, settle } = deferred();
-    const ctx = makeTestRouteContext('DELETE', '/api/tokens/tok_1', {
-      clerkUserId: 'user_1',
+describe('a token revoking itself retracts its expiry warning', () => {
+  const selfRevoke = (waitUntil: (p: Promise<unknown>) => void) =>
+    makeTestRouteContext('DELETE', '/api/tokens/current', {
+      accountUserId: null,
       owner: 'user_1',
+      token: { id: 'tok_1', readOnly: false },
+      headers: { Authorization: 'Bearer lwt_secret' },
       waitUntil,
     });
-    const res = await handleTokens(ctx);
+
+  it('retracts token_expiring for the revoked token id', async () => {
+    const { waitUntil, settle } = deferred();
+    const res = await handleTokens(selfRevoke(waitUntil));
     expect(res.status).toBe(204);
     await settle();
     expect(db.retractTimelineWarning).toHaveBeenCalledWith(
@@ -94,16 +98,10 @@ describe('token revoke retracts its expiry warning', () => {
     );
   });
 
-  it('leaves the timeline alone when nothing was revoked', async () => {
-    db.revokeApiToken.mockResolvedValue(false);
+  it('leaves the timeline alone when the token was already gone', async () => {
+    db.listApiTokensByOwner.mockResolvedValue([]);
     const { waitUntil, settle } = deferred();
-    const res = await handleTokens(
-      makeTestRouteContext('DELETE', '/api/tokens/tok_1', {
-        clerkUserId: 'user_1',
-        owner: 'user_1',
-        waitUntil,
-      }),
-    );
+    const res = await handleTokens(selfRevoke(waitUntil));
     expect(res.status).toBe(404);
     await settle();
     expect(db.retractTimelineWarning).not.toHaveBeenCalled();
@@ -123,7 +121,7 @@ describe('share-link changes retract the document expiry warning', () => {
 
   const shareCtx = (method: string, path: string) =>
     makeTestRouteContext(method, path, {
-      clerkUserId: 'user_1',
+      accountUserId: 'user_1',
       owner: 'user_1',
       env: roomEnv,
     });

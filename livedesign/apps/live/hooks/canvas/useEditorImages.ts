@@ -28,7 +28,7 @@
 // contract.
 
 import { useCallback, useEffect, useEffectEvent, useMemo, useState } from 'react';
-import { createImage, isBoxed, type Element } from '@livedesign/document';
+import { createImage, isBoxed, type Element } from '@livedesign/design';
 import { apiFetchImageDataUrl, apiListImages, type ImageSummary } from '@/lib/api-client';
 import { isDataImageId } from '@/lib/offline/offline-images';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
@@ -63,9 +63,9 @@ type EditorImagesDeps = {
   // Selects an element by id (or clears with null). Newly placed
   // images select themselves so the user can immediately resize.
   setSelectedId: (id: string | null) => void;
-  // The current document id (null before hydration). The picker +
+  // The current design id (null before hydration). The picker +
   // recent-images list only operate once it's known.
-  documentId: string | null;
+  designId: string | null;
   // The local participant id — the owner the images belong to.
   ownerId: string;
   // The session's share code (edit-link visitors), forwarded to the
@@ -75,7 +75,7 @@ type EditorImagesDeps = {
 
 export function useEditorImages(deps: EditorImagesDeps) {
   const { editsBlocked, isReadOnly, embedMode, getViewportCenter, commit, setSelectedId } = deps;
-  const { documentId, ownerId, sessionShareCode, galleryHidden = false } = deps;
+  const { designId, ownerId, sessionShareCode, galleryHidden = false } = deps;
 
   const [imagePickerOpenFor, setImagePickerOpenFor] = useState<{
     forElementId: string | null;
@@ -88,19 +88,19 @@ export function useEditorImages(deps: EditorImagesDeps) {
       .catch(() => setRecentImages([]));
   }, []);
 
-  // Loads once on documentId mount; refreshed manually by
+  // Loads once on designId mount; refreshed manually by
   // refreshRecentImages after a successful picker upload so a
-  // newly-uploaded image surfaces without a document reload. View-
+  // newly-uploaded image surfaces without a design reload. View-
   // role visitors skip the fetch (the accordion is hidden for them
   // anyway via the !isReadOnly gate at the call site).
-  // The owner is a trigger too: a document in This Browser opens under the 'self' placeholder and learns
-  // who is reading afterwards (docs/specs/006-document/offline-mode.md "Instant open"), and the
+  // The owner is a trigger too: a design in This Browser opens under the 'self' placeholder and learns
+  // who is reading afterwards (docs/specs/006-design/offline-mode.md "Instant open"), and the
   // placeholder is nobody's gallery.
   const loadRecentImages = useEffectEvent(() => refreshRecentImages(ownerId));
   useEffect(() => {
-    if (!documentId || isReadOnly || embedMode || galleryHidden || ownerId === 'self') return;
+    if (!designId || isReadOnly || embedMode || galleryHidden || ownerId === 'self') return;
     loadRecentImages();
-  }, [documentId, isReadOnly, embedMode, galleryHidden, ownerId]);
+  }, [designId, isReadOnly, embedMode, galleryHidden, ownerId]);
 
   // Placing a NEW image lives in useElementCreation.addImage: it arms the
   // tap-or-drag draw gesture (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/images.md) rather than dropping a
@@ -136,10 +136,10 @@ export function useEditorImages(deps: EditorImagesDeps) {
   // tab whenever any unrelated state moved.
   const imageContext = useMemo(
     () =>
-      documentId
+      designId
         ? {
             ownerId,
-            documentId,
+            designId,
             shareCode: sessionShareCode,
             // Offered only where the picker opens: a locked tab refuses it, so its empty images
             // show no Select Image button that would do nothing.
@@ -147,7 +147,7 @@ export function useEditorImages(deps: EditorImagesDeps) {
           }
         : undefined,
     [
-      documentId,
+      designId,
       ownerId,
       sessionShareCode,
       isReadOnly,
@@ -216,11 +216,11 @@ export function useEditorImages(deps: EditorImagesDeps) {
     // embedMode also blocks the clipboard's paste-image upload, which
     // funnels through this handler after uploading.
     if (editsBlocked || embedMode) return;
-    // Offline documents must stay self-contained (docs/specs/006-document/offline-mode.md): a bare gallery
+    // Offline designs must stay self-contained (docs/specs/006-design/offline-mode.md): a bare gallery
     // id would break once the server's unused-image cleanup reaps it, so
     // fetch the bytes and place a data-URI embed instead. Re-entry with
     // the data URI as the id lands in the placement branch below.
-    if (documentId && isOfflineIdSync(documentId) && !isDataImageId(image.id)) {
+    if (designId && isOfflineIdSync(designId) && !isDataImageId(image.id)) {
       void apiFetchImageDataUrl(ownerId, image.id)
         .catch(() => null)
         .then((href) => {

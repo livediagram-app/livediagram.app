@@ -1,7 +1,7 @@
 'use client';
 
 // The editor's Explorer pane (docs/specs/013-workspace/explorer-structure.md "The pane"): the picked section's name,
-// Open Page to its Explorer page and its own action, over its content. Sections with documents are the tree's rows;
+// Open Page to its Explorer page and its own action, over its content. Sections with designs are the tree's rows;
 // the others are the Explorer page's own views, each loaded only when its section is first shown.
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
@@ -43,8 +43,8 @@ export function ExplorerPanelPane({
   narrow = false,
   teamName,
   ownerId,
-  currentDocumentId,
-  onOpenDocument,
+  currentDesignId,
+  onOpenDesign,
   tree,
   onPick,
   onNewFolder,
@@ -57,16 +57,16 @@ export function ExplorerPanelPane({
   narrow?: boolean;
   teamName: (id: string) => string | undefined;
   ownerId: string | null;
-  currentDocumentId: string | null;
-  onOpenDocument: (id: string, shareCode?: string) => void;
-  // The rows of a section that holds documents (PanelExplorerTree), rendered by the host which owns their state.
+  currentDesignId: string | null;
+  onOpenDesign: (id: string, shareCode?: string) => void;
+  // The rows of a section that holds designs (PanelExplorerTree), rendered by the host which owns their state.
   tree: ReactNode;
   onPick: (s: PanelSection) => void;
   // My Work' or a team's New Folder; absent where the session may not make one.
   onNewFolder?: () => void;
   // A folder is open in the pane, so New Folder makes one inside it and says so.
   inFolder?: boolean;
-  // The Trash restored or deleted a document.
+  // The Trash restored or deleted a design.
   onLibraryChanged: () => void;
   // Pinned under the content, outside its scroll (the sign-in bar).
   footer?: ReactNode;
@@ -79,8 +79,8 @@ export function ExplorerPanelPane({
       ownerId ? (
         <HomeSection
           ownerId={ownerId}
-          currentDocumentId={currentDocumentId}
-          onOpenDocument={onOpenDocument}
+          currentDesignId={currentDesignId}
+          onOpenDesign={onOpenDesign}
           onSeeTimeline={() => onPick({ kind: 'timeline' })}
         />
       ) : null

@@ -19,14 +19,14 @@ import {
 import { SETTINGS_ROW_BUTTON, SettingsRowShell } from './SettingsRowShell';
 import type { SettingsPlacementDefaultRowSpec } from './settings-catalogue';
 
-// One row of Settings > Documents > Default Folders
-// (docs/specs/013-workspace/default-folders.md "Settings"): an entry, where its new documents go
+// One row of Settings > Designs > Default Folders
+// (docs/specs/013-workspace/default-folders.md "Settings"): an entry, where its new designs go
 // (a folder, My Work, or a dangling default and where they go instead), Clear and Change (the
 // default folder picker). Not a preference: it reads and writes the page's default-folders store.
 
 export type SettingsPlacementLists = ReturnType<typeof usePlacementOptions>;
 
-/** Where new documents of this entry go, in words. */
+/** Where new designs of this entry go, in words. */
 function destinationText(destination: DefaultDestination): string {
   switch (destination.kind) {
     case 'root':
@@ -83,7 +83,7 @@ export function SettingsPlacementDefaultRow({
   return (
     <SettingsRowShell
       row={row}
-      // Where its documents go IS the row's description: the shared explanation sits once, under
+      // Where its designs go IS the row's description: the shared explanation sits once, under
       // the section's heading.
       descriptionContent={
         <span

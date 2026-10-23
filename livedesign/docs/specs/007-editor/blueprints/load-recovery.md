@@ -7,7 +7,7 @@ design decision.
 
 | Term                      | Identifier                                                                             |
 | ------------------------- | -------------------------------------------------------------------------------------- |
-| The load                  | `useIdentityBootstrap`'s `load` (`apps/live/app/document/[id]/`)                       |
+| The load                  | `useIdentityBootstrap`'s `load` (`apps/live/app/design/[id]/`)                       |
 | A load step               | `LoadStep` (`apps/live/lib/load-progress.ts`)                                          |
 | The watchdog              | `armLoadWatchdog(onTimedOut, deps)` → `{ finish }`                                     |
 | Self-healing reload       | the watchdog's `claimAutoReload` + `healing: true` in `LoadProgress`                   |
@@ -35,7 +35,7 @@ design decision.
 | `SESSION_TOKEN_TIMEOUT_MS`      | `10_000`                       | `lib/api/core.ts`              | Spec: 10 seconds per attempt                     |
 | `GUEST_ID_PREFIX_LENGTH`        | `8`                            | `packages/ui/.../identity.ts`  | Spec: first 8 characters                         |
 | `COPIED_FOR_MS`                 | `2_000`                        | `BrowserRepairPanel.tsx`       | Default D65                                      |
-| `SLOW_AFTER_MS`                 | `10_000`                       | `DocumentLoading.tsx`          | Unchanged                                        |
+| `SLOW_AFTER_MS`                 | `10_000`                       | `DesignLoading.tsx`          | Unchanged                                        |
 
 ## Behaviour and state
 
@@ -43,25 +43,25 @@ design decision.
 
 1. `armLoadWatchdog` sets `{ step: 'identity', startedAt: now, timedOut: false, healing: false }` and
    starts a `LOAD_TIMEOUT_MS` timer.
-2. The load calls `setLoadStep` at `participant` (after the guest identity), `share` or `document`
-   (before the fetch), `first-tab` (before `seedFetchedDocument`), `done` (success tail).
+2. The load calls `setLoadStep` at `participant` (after the guest identity), `share` or `design`
+   (before the fetch), `first-tab` (before `seedFetchedDesign`), `done` (success tail).
 3. Timer fires and the load has not finished → `timedOut: true`, warn
-   `DocumentLoad.TimedOut.<Step>`, then:
+   `DesignLoad.TimedOut.<Step>`, then:
    - `claimReloadIn(sessionStorage, AUTO_RELOAD_KEY, href, now, AUTO_RELOAD_WINDOW_MS)` true → warn
-     `DocumentLoad.AutoReload`, `healing: true`, `location.reload()` after `AUTO_RELOAD_DELAY_MS`;
+     `DesignLoad.AutoReload`, `healing: true`, `location.reload()` after `AUTO_RELOAD_DELAY_MS`;
    - false (claimed in the window, or storage unreadable) → `onTimedOut()`: `setLoadError(true)`,
-     `setLoadingDocument(false)`.
+     `setLoadingDesign(false)`.
 4. `finish()` is idempotent and leaves `step` where the load reached (only the success tail sets `done`, so a
    failed load's diagnostics name its step). Before the timer: disarm, return false. After it: warn
-   `DocumentLoad.Late`; a pending self-healing reload is cancelled (`healing: false`): the late load wins. Return
+   `DesignLoad.Late`; a pending self-healing reload is cancelled (`healing: false`): the late load wins. Return
    true. The success tail calls `setLoadStep('done')`, then `if (watchdog.finish()) setLoadError(false)`.
    Each bootstrap run takes a generation; a run superseded by a later one (auth settling twice: Clerk answering
    after the guest timeout, then a guest migration) has every setter and its seed turned into no-ops.
-5. The runner wraps `load()` in try/catch/finally: a throw → `Error·Client·DocumentLoad.<ErrorName>`,
-   `setLoadError(true)`, `setLoadingDocument(false)`; `finally` → `finish()`.
+5. The runner wraps `load()` in try/catch/finally: a throw → `Error·Client·DesignLoad.<ErrorName>`,
+   `setLoadError(true)`, `setLoadingDesign(false)`; `finally` → `finish()`.
 6. A password retry re-runs the bootstrap and arms a fresh watchdog.
 
-Invariant: on every path the bootstrap leaves `loadingDocument` false or the watchdog armed.
+Invariant: on every path the bootstrap leaves `loadingDesign` false or the watchdog armed.
 
 ## Offline
 
@@ -70,7 +70,7 @@ Invariant: on every path the bootstrap leaves `loadingDocument` false or the wat
   (`hooks/ui/useOnline.ts`) reads it with `useSyncExternalStore`.
 - The watchdog takes `deps.online` (default `getOnline`): offline at the deadline skips
   `claimAutoReload` and calls `onTimedOut`, leaving the tab's claim unspent.
-- `DocumentLoading`: `!online` renders the offline line ahead of `healing` and `slow`.
+- `DesignLoading`: `!online` renders the offline line ahead of `healing` and `slow`.
 - `LoadErrorCard` (`components/chrome/`), the lazy chunk behind the editor's `loadError` branch:
   `ApiErrorPage` with the offline eyebrow / title / message while offline, `LoadRecoveryCard` unless
   `embed`. A ref notes having been offline; the online transition after it calls `reload` once.
@@ -79,9 +79,9 @@ Invariant: on every path the bootstrap leaves `loadingDocument` false or the wat
 - `useAutosave`: an `online` listener clears a pending retry timer and bumps `retryTick`; nothing
   happens when no retry is pending.
 - `editor-persistence`: the `'error'` toast picks the offline copy when `getOnline()` is false.
-- `autosaveReadOnly({ canEdit, loadError, documentNotFound })` (`editor-page-helpers.ts`) is the
+- `autosaveReadOnly({ canEdit, loadError, designNotFound })` (`editor-page-helpers.ts`) is the
   `isReadOnly` `useEditorState` hands `useAutosave`, so neither the debounced save nor the unload
-  flush writes a document that did not load.
+  flush writes a design that did not load.
 - `recoverFromChunkError` takes `deps.online` (`getOnline` from `recoverInBrowser`): offline it
   returns `'offline'` without claiming the reload guard or marking the error handled.
 - `LoadErrorCard` is a static import in `editor-page.tsx`; `LoadRecoveryCard` is its `next/dynamic`
@@ -112,8 +112,8 @@ Invariant: on every path the bootstrap leaves `loadingDocument` false or the wat
 | IndexedDB `blocked`                       | Rejects at once, same as a timeout                                                |
 | IndexedDB opens after giving up           | The connection is closed on arrival                                               |
 | Token provider never settles              | Each attempt resolves null after 10 s; signed-in → `SessionTokenUnavailableError` |
-| Load throws                               | Load-error screen, `DocumentLoad.<ErrorName>`                                     |
-| Load lands after the watchdog             | Editor replaces the error screen, `DocumentLoad.Late`                             |
+| Load throws                               | Load-error screen, `DesignLoad.<ErrorName>`                                     |
+| Load lands after the watchdog             | Editor replaces the error screen, `DesignLoad.Late`                             |
 | Load lands while the healing reload pends | The reload is cancelled; the editor shows                                         |
 | sessionStorage unreadable                 | No self-healing reload; error screen at once                                      |
 | Clipboard refused                         | `execCommand('copy')`, then a read-only textarea                                  |
@@ -149,7 +149,7 @@ Invariant: on every path the bootstrap leaves `loadingDocument` false or the wat
 - Panel: Copy Diagnostics (Copy icon, "Copied" with a check for 2 s) and Repair This Browser
   (Refresh icon, `aria-expanded`); the inline confirm lists what is kept.
 - Help tool: a bordered box titled "This Browser" with the check lines, then the panel; after a
-  repair "Done. Open your document again." and "Go to your documents".
+  repair "Done. Open your design again." and "Go to your designs".
 
 ## Accessibility
 
@@ -161,7 +161,7 @@ Invariant: on every path the bootstrap leaves `loadingDocument` false or the wat
 ## Observability
 
 Console fingerprints: `[load] timed out after … at step …`, `[load] finished after its watchdog`,
-`[load] the document load threw`, `[offline-store] unavailable: …`, `[api] session token timed out
+`[load] the design load threw`, `[offline-store] unavailable: …`, `[api] session token timed out
 after …`, `[browser-repair] cleared N keys`. Telemetry as listed in the spec.
 
 ## Testing
@@ -169,7 +169,7 @@ after …`, `[browser-repair] cleared N keys`. Telemetry as listed in the spec.
 | Spec rule                                  | Test                                                                                                               |
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
 | Watchdog, self-healing reload, late load   | `apps/live/lib/load-progress.test.ts`                                                                              |
-| Load ends on hang, throw; late load wins   | `apps/live/app/document/[id]/useIdentityBootstrap.recovery.test.tsx`                                               |
+| Load ends on hang, throw; late load wins   | `apps/live/app/design/[id]/useIdentityBootstrap.recovery.test.tsx`                                               |
 | Offline store open limit                   | `apps/live/lib/offline/offline-store-timeout.test.ts`                                                              |
 | Session token limit                        | `apps/live/lib/api/core.test.ts` "session token limit"                                                             |
 | Diagnostics contents and redaction         | `apps/live/lib/load-diagnostics.test.ts`                                                                           |
@@ -178,8 +178,8 @@ after …`, `[browser-repair] cleared N keys`. Telemetry as listed in the spec.
 | Browser checks                             | `packages/ui/src/browser-repair/checks.test.ts`                                                                    |
 | Identity lines, cookie hint, not-yet-moved | `packages/ui/src/browser-repair/identity.test.ts`                                                                  |
 | Copy, fallback, confirm, cancel            | `packages/ui/src/browser-repair/BrowserRepairPanel.test.tsx`                                                       |
-| Opening screen messages                    | `apps/live/components/chrome/DocumentLoading.test.tsx`                                                             |
-| Offline: opening screen, card, banner      | `apps/live/components/chrome/DocumentLoading.test.tsx`, `LoadErrorCard.test.tsx`, `OfflineBanner.test.tsx`         |
-| Offline: no phantom tab, no stale reload   | `apps/live/app/document/[id]/editor-page-helpers.test.ts` `autosaveReadOnly`, `apps/live/lib/stale-chunks.test.ts` |
-| Offline: no auto reload, save on reconnect | `apps/live/lib/load-progress.test.ts`, `apps/live/app/document/[id]/useAutosave.test.tsx`                          |
+| Opening screen messages                    | `apps/live/components/chrome/DesignLoading.test.tsx`                                                             |
+| Offline: opening screen, card, banner      | `apps/live/components/chrome/DesignLoading.test.tsx`, `LoadErrorCard.test.tsx`, `OfflineBanner.test.tsx`         |
+| Offline: no phantom tab, no stale reload   | `apps/live/app/design/[id]/editor-page-helpers.test.ts` `autosaveReadOnly`, `apps/live/lib/stale-chunks.test.ts` |
+| Offline: no auto reload, save on reconnect | `apps/live/lib/load-progress.test.ts`, `apps/live/app/design/[id]/useAutosave.test.tsx`                          |
 | Recovery card contents                     | `apps/live/components/chrome/LoadRecoveryCard.test.tsx`                                                            |

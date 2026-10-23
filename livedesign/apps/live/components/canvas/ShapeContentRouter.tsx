@@ -23,7 +23,7 @@ import {
   progressTrackColour,
   isRatingShape,
   type ShapeKind,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import dynamic from 'next/dynamic';
 import type { ReactNode } from 'react';
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';

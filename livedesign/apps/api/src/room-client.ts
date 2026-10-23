@@ -4,7 +4,7 @@ import {
   type ElementDelta,
   type Tab,
   type TabLedger,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import {
   AGENT_PRESENCE_TTL_MS,
   ROOM_RELAY_TIMEOUT_MS,
@@ -15,19 +15,19 @@ import {
 import type { AgentPresenceWrite } from './room-agent-presence';
 import type { Env } from './types';
 
-// The worker's calls into a document's realtime room (docs/specs/012-collaboration/collab-race-hardening.md): reading its
+// The worker's calls into a design's realtime room (docs/specs/012-collaboration/collab-race-hardening.md): reading its
 // collaboration ledger to merge a save, and handing it a change the api made.
 
-// Every server-stored document has a room (docs/specs/024-agents/agent-changesets.md "Rooms for
-// personal documents"): an agent is a second writer even on a document nobody else can open.
-function roomStubFor(env: Env, documentId: string): DurableObjectStub {
-  return env.DOCUMENT_ROOM.get(env.DOCUMENT_ROOM.idFromName(documentId));
+// Every server-stored design has a room (docs/specs/024-agents/agent-changesets.md "Rooms for
+// personal designs"): an agent is a second writer even on a design nobody else can open.
+function roomStubFor(env: Env, designId: string): DurableObjectStub {
+  return env.DESIGN_ROOM.get(env.DESIGN_ROOM.idFromName(designId));
 }
 
 // A room call that gives up after `ms`: the api never waits on a room longer than that.
 export async function roomFetch(
   env: Env,
-  documentId: string,
+  designId: string,
   path: string,
   init: RequestInit | undefined,
   ms: number,
@@ -38,7 +38,7 @@ export async function roomFetch(
   });
   try {
     return await Promise.race([
-      roomStubFor(env, documentId).fetch(`https://room${path}`, init),
+      roomStubFor(env, designId).fetch(`https://room${path}`, init),
       timeout,
     ]);
   } finally {
@@ -54,19 +54,19 @@ function mutationInit(op: unknown): RequestInit {
   };
 }
 
-// Send one op to every socket in a document's room. Best-effort: the D1 write before it is the
+// Send one op to every socket in a design's room. Best-effort: the D1 write before it is the
 // authoritative change, so a room that can't be reached is logged as `[room-broadcast] <label> did
 // not reach the room` rather than failing the request.
 async function broadcastOp(
   env: Env,
-  documentId: string,
+  designId: string,
   op: unknown,
   label: string,
 ): Promise<void> {
   try {
-    await roomStubFor(env, documentId).fetch('https://room/broadcast', mutationInit(op));
+    await roomStubFor(env, designId).fetch('https://room/broadcast', mutationInit(op));
   } catch (err) {
-    console.warn(`[room-broadcast] ${label} did not reach the room`, documentId, err);
+    console.warn(`[room-broadcast] ${label} did not reach the room`, designId, err);
   }
 }
 
@@ -101,7 +101,7 @@ type FetchedRoomLedger = { ledger: TabLedger; seq: number } | null;
 
 export async function fetchRoomLedger(
   env: Env,
-  documentId: string,
+  designId: string,
   tabId: string,
   cursorHeader: string | null,
 ): Promise<FetchedRoomLedger> {
@@ -109,7 +109,7 @@ export async function fetchRoomLedger(
   if (!cursor) return null;
   try {
     const query = `tab=${encodeURIComponent(tabId)}&epoch=${encodeURIComponent(cursor.epoch)}`;
-    const res = await roomStubFor(env, documentId).fetch(`https://room/ledger?${query}`);
+    const res = await roomStubFor(env, designId).fetch(`https://room/ledger?${query}`);
     if (!res.ok) return null;
     const ledger = (await res.json()) as TabLedger;
     if (!ledger || typeof ledger !== 'object' || !ledger.elements) return null;
@@ -138,7 +138,7 @@ export function parseRoomCursor(header: string | null): { epoch: string; seq: nu
   return { epoch, seq };
 }
 
-// Hand the document's realtime room a change the api itself just wrote, so
+// Hand the design's realtime room a change the api itself just wrote, so
 // everyone connected sees it (docs/specs/012-collaboration/collab-race-hardening.md).
 //
 // The one case today is a view-role visitor's comment. The room refuses
@@ -152,17 +152,17 @@ export function parseRoomCursor(header: string | null): { epoch: string; seq: nu
 // this is the live copy; a relay the room refused or never received is logged.
 export async function relayElementDelta(
   env: Env,
-  documentId: string,
+  designId: string,
   tabId: string,
   elementId: string,
   delta: ElementDelta,
 ): Promise<boolean> {
   // The comment is saved either way; a room that did not hear about it is logged (PR26).
-  const fields = { documentId, tabId, delta: delta.kind };
+  const fields = { designId, tabId, delta: delta.kind };
   try {
     const res = await roomFetch(
       env,
-      documentId,
+      designId,
       '/mutation',
       mutationInit({ kind: 'el-delta', tabId, elementId, delta }),
       ROOM_RELAY_TIMEOUT_MS,
@@ -187,14 +187,14 @@ export async function relayElementDelta(
 // cannot be reached within ROOM_RELAY_TIMEOUT_MS is logged and answers false.
 export async function relayChangeset(
   env: Env,
-  documentId: string,
+  designId: string,
   op: ChangesetRoomOp,
 ): Promise<boolean> {
-  const fields = { documentId, tabId: op.tabId, changesetId: op.id };
+  const fields = { designId, tabId: op.tabId, changesetId: op.id };
   try {
     const res = await roomFetch(
       env,
-      documentId,
+      designId,
       '/mutation',
       mutationInit(op),
       ROOM_RELAY_TIMEOUT_MS,
@@ -207,17 +207,17 @@ export async function relayChangeset(
   return false;
 }
 
-// A document an agent renamed, as the document-meta op an editor's own rename sends: open editors show the new name
+// A design an agent renamed, as the design-meta op an editor's own rename sends: open editors show the new name
 // at once, and their next tab reorder carries it instead of writing the old one back. Best-effort and logged, like
 // the tab rename relay.
-export async function relayDocumentRename(
+export async function relayDesignRename(
   env: Env,
-  documentId: string,
+  designId: string,
   name: string,
   tabs: readonly { id: string; name: string; orderIndex: number; folder?: string }[],
 ): Promise<boolean> {
   const op: RoomOp = {
-    kind: 'document-meta',
+    kind: 'design-meta',
     name,
     tabs: tabs.map((t) => ({
       id: t.id,
@@ -229,19 +229,19 @@ export async function relayDocumentRename(
   try {
     const res = await roomFetch(
       env,
-      documentId,
+      designId,
       '/mutation',
       mutationInit(op),
       ROOM_RELAY_TIMEOUT_MS,
     );
     if (res.ok) return true;
-    console.warn('[room-mutation] document-meta did not reach the room', {
-      documentId,
+    console.warn('[room-mutation] design-meta did not reach the room', {
+      designId,
       error: `status ${res.status}`,
     });
   } catch (err) {
-    console.warn('[room-mutation] document-meta did not reach the room', {
-      documentId,
+    console.warn('[room-mutation] design-meta did not reach the room', {
+      designId,
       error: String(err),
     });
   }
@@ -249,11 +249,11 @@ export async function relayDocumentRename(
 }
 
 // A tab the api renamed (CS42), as the same tab-meta op an editor's own rename sends: a
-// document-meta keeps every open editor's names, so a stale tab list can never revert a rename.
+// design-meta keeps every open editor's names, so a stale tab list can never revert a rename.
 // Best-effort and logged, like the changeset relay.
 export async function relayTabRename(
   env: Env,
-  documentId: string,
+  designId: string,
   tabId: string,
   name: string,
 ): Promise<boolean> {
@@ -261,19 +261,19 @@ export async function relayTabRename(
   try {
     const res = await roomFetch(
       env,
-      documentId,
+      designId,
       '/mutation',
       mutationInit(op),
       ROOM_RELAY_TIMEOUT_MS,
     );
     if (res.ok) return true;
     console.warn('[room-mutation] tab-meta did not reach the room', {
-      documentId,
+      designId,
       error: `status ${res.status}`,
     });
   } catch (err) {
     console.warn('[room-mutation] tab-meta did not reach the room', {
-      documentId,
+      designId,
       error: String(err),
     });
   }
@@ -285,7 +285,7 @@ export async function relayTabRename(
 // tab rename relay; answers how many reached the room.
 export async function relayPages(
   env: Env,
-  documentId: string,
+  designId: string,
   ops: readonly RoomOp[],
   tag = '[pages-agent]',
 ): Promise<number> {
@@ -294,7 +294,7 @@ export async function relayPages(
     try {
       const res = await roomFetch(
         env,
-        documentId,
+        designId,
         '/mutation',
         mutationInit(op),
         ROOM_RELAY_TIMEOUT_MS,
@@ -304,13 +304,13 @@ export async function relayPages(
         continue;
       }
       console.warn(`${tag} relay-missed`, {
-        documentId,
+        designId,
         op: op.kind,
         error: `status ${res.status}`,
       });
     } catch (err) {
       console.warn(`${tag} relay-missed`, {
-        documentId,
+        designId,
         op: op.kind,
         error: String(err),
       });
@@ -328,7 +328,7 @@ export type RoomSelection = { elementIds: string[]; name: string; color: string;
 // the warning, under the reader's own fingerprint, says so.
 export async function readRoomSelections(
   env: Env,
-  documentId: string,
+  designId: string,
   tabId: string,
   personTag: string | null,
   reader: 'changeset' | 'views' = 'changeset',
@@ -337,7 +337,7 @@ export async function readRoomSelections(
   try {
     const res = await roomFetch(
       env,
-      documentId,
+      designId,
       `/selections?${query}`,
       undefined,
       ROOM_SELECTIONS_TIMEOUT_MS,
@@ -347,31 +347,31 @@ export async function readRoomSelections(
     if (!Array.isArray(body.selections)) throw new Error('no selections');
     return body.selections as RoomSelection[];
   } catch (err) {
-    console.warn(`[${reader}] selections-unreachable`, { documentId, tabId, error: String(err) });
+    console.warn(`[${reader}] selections-unreachable`, { designId, tabId, error: String(err) });
     return null;
   }
 }
 
-// Tell every socket in a document's room that a share link changed: revoked
+// Tell every socket in a design's room that a share link changed: revoked
 // (its holders leave the editor) or rescoped (they reload into the new scope,
 // docs/specs/013-workspace/tab-scoped-share-links.md). The room also closes those sockets. Best-effort: the
 // D1 write before it is the authoritative change, so a room that can't be
 // reached is logged rather than failing the request.
 export async function broadcastShareOp(
   env: Env,
-  documentId: string,
+  designId: string,
   op: { kind: 'share-revoked' | 'share-rescoped'; code: string },
 ): Promise<void> {
-  await broadcastOp(env, documentId, op, op.kind);
+  await broadcastOp(env, designId, op, op.kind);
 }
 
-// Tell a document's realtime room that the document was moved to the Trash
+// Tell a design's realtime room that the design was moved to the Trash
 // (docs/specs/013-workspace/trash.md): every open session hears the deleted
 // state, and the room closes every socket. Best-effort like the share-op
 // broadcast: the D1 write is the change, and a session the room misses still
-// has every save refused with document_trashed.
-export async function broadcastDocumentTrashed(env: Env, documentId: string): Promise<void> {
-  await broadcastOp(env, documentId, { kind: 'document-trashed' }, 'document-trashed');
+// has every save refused with design_trashed.
+export async function broadcastDesignTrashed(env: Env, designId: string): Promise<void> {
+  await broadcastOp(env, designId, { kind: 'design-trashed' }, 'design-trashed');
 }
 
 // Agent presence in the room (docs/specs/024-agents/blueprints/agent-presence.md "Room"). The room is its only store,
@@ -385,7 +385,7 @@ export class RoomUnavailableError extends Error {
   }
 }
 
-type AgentPresenceRoomWrite = AgentPresenceWrite & { documentId: string };
+type AgentPresenceRoomWrite = AgentPresenceWrite & { designId: string };
 
 export async function putAgentPresence(
   env: Env,
@@ -393,12 +393,12 @@ export async function putAgentPresence(
 ): Promise<
   { ok: true; expiresAt: number; created: boolean } | { ok: false; error: 'agent_presence_full' }
 > {
-  const { documentId, ...body } = write;
+  const { designId, ...body } = write;
   let res: Response;
   try {
     res = await roomFetch(
       env,
-      documentId,
+      designId,
       '/presence',
       { method: 'PUT', body: JSON.stringify(body) },
       ROOM_AGENT_PRESENCE_TIMEOUT_MS,
@@ -414,7 +414,7 @@ export async function putAgentPresence(
 
 export async function deleteAgentPresence(
   env: Env,
-  documentId: string,
+  designId: string,
   tokenId: string,
   tabId: string,
 ): Promise<boolean> {
@@ -423,7 +423,7 @@ export async function deleteAgentPresence(
   try {
     res = await roomFetch(
       env,
-      documentId,
+      designId,
       `/presence?${query}`,
       { method: 'DELETE' },
       ROOM_AGENT_PRESENCE_TIMEOUT_MS,
@@ -451,13 +451,13 @@ export async function refreshAgentPresence(
     });
     if (!answer.ok)
       console.warn('[agent-presence] refresh refused', {
-        documentId: write.documentId,
+        designId: write.designId,
         tabId: write.tabId,
         error: answer.error,
       });
   } catch (err) {
     console.warn('[agent-presence] refresh failed', {
-      documentId: write.documentId,
+      designId: write.designId,
       tabId: write.tabId,
       error: String(err),
     });

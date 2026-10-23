@@ -81,7 +81,7 @@ export async function apiDeleteImage(ownerId: string, imageId: string): Promise<
   });
 }
 
-// Inverse-index of which documents reference each owned image.
+// Inverse-index of which designs reference each owned image.
 // Backs the Explorer Image Gallery's "Used in" badge. Images that
 // aren't placed on any canvas yet are absent from the map (treat a
 // missing key as "0 uses, safe to delete"). 503 collapses to an
@@ -121,9 +121,9 @@ export const apiImageUsage = dedupeInFlight(_apiImageUsage, (ownerId) => ownerId
 export async function apiFetchImageBlobUrl(
   ownerId: string,
   imageId: string,
-  opts: { documentId?: string; shareCode?: string | null; maxEdge?: number } = {},
+  opts: { designId?: string; shareCode?: string | null; maxEdge?: number } = {},
 ): Promise<string | null> {
-  const key = [ownerId, imageId, opts.documentId ?? '', opts.shareCode ?? ''].join('\0');
+  const key = [ownerId, imageId, opts.designId ?? '', opts.shareCode ?? ''].join('\0');
   const blob = await cachedDisplayCopy(key, opts.maxEdge ?? displayEdge(), async () => {
     const res = await fetchImage(ownerId, imageId, opts);
     return res ? res.blob() : null;
@@ -142,7 +142,7 @@ export const releaseImageBlobUrl = releaseShownUrl;
 export async function apiFetchImageDataUrl(
   ownerId: string,
   imageId: string,
-  opts: { documentId?: string; shareCode?: string | null } = {},
+  opts: { designId?: string; shareCode?: string | null } = {},
 ): Promise<string | null> {
   const res = await fetchImage(ownerId, imageId, opts);
   if (!res) return null;
@@ -154,7 +154,7 @@ export async function apiFetchImageDataUrl(
 export async function apiFetchImageBlob(
   ownerId: string,
   imageId: string,
-  opts: { documentId?: string; shareCode?: string | null } = {},
+  opts: { designId?: string; shareCode?: string | null } = {},
 ): Promise<Blob | null> {
   const res = await fetchImage(ownerId, imageId, opts);
   return res ? res.blob() : null;
@@ -167,12 +167,12 @@ export async function apiFetchImageBlob(
 async function fetchImage(
   ownerId: string,
   imageId: string,
-  opts: { documentId?: string; shareCode?: string | null },
+  opts: { designId?: string; shareCode?: string | null },
 ): Promise<Response | null> {
   const params = new URLSearchParams();
-  // A workbench session reads images by its own document's path only (no owner shortcut).
-  const documentId = getWorkbenchConfinement()?.documentId ?? opts.documentId;
-  if (documentId) params.set('d', documentId);
+  // A workbench session reads images by its own design's path only (no owner shortcut).
+  const designId = getWorkbenchConfinement()?.designId ?? opts.designId;
+  if (designId) params.set('d', designId);
   const url = `${API_BASE}/images/${encodeURIComponent(imageId)}${
     params.toString() ? `?${params.toString()}` : ''
   }`;

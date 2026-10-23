@@ -9,7 +9,7 @@ import {
   type Element,
   type QuickSwatchSlot,
   type ThemeDefinition,
-} from '@livedesign/document';
+} from '@livedesign/design';
 
 const HEX = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 

@@ -12,7 +12,7 @@ import {
 
 export type ShareLinkRow = {
   code: string;
-  document_id: string;
+  design_id: string;
   role: string;
   // The access level (the baseline migration, docs/specs/013-workspace/share-roles.md); NULL on a row written before it,
   // which reads as its `role`.
@@ -35,7 +35,7 @@ export type ShareLinkRow = {
 export function rowToShareLink(row: ShareLinkRow): ShareLinkDTO {
   return {
     code: row.code,
-    documentId: row.document_id,
+    designId: row.design_id,
     role: storedLevelOf(row),
     createdAt: row.created_at,
     expiry: normaliseExpiry(row.expiry),

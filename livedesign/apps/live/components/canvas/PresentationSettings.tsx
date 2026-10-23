@@ -5,7 +5,7 @@
 // other presenter setting is set before the talk, in Settings > Presenting. This popover opens ON a projector, so
 // everything here is a segmented control or a switch, decided in one glance and undone in one more.
 //
-// The person's own (lib/presentation-config), following their account, not a property of the document.
+// The person's own (lib/presentation-config), following their account, not a property of the design.
 
 import { HoverCard } from '@livedesign/ui';
 import {

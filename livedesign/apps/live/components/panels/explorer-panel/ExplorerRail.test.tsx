@@ -5,7 +5,7 @@ import { ExplorerRail } from './ExplorerRail';
 import { panelSectionGroups, type PanelSection } from './panel-sections';
 
 // docs/specs/013-workspace/explorer-structure.md "The rail" and "Keyboard and ARIA".
-const groups = panelSectionGroups({ teams: [{ id: 't1' }], hasBrowserDocuments: true });
+const groups = panelSectionGroups({ teams: [{ id: 't1' }], hasBrowserDesigns: true });
 
 function show(
   over: { phone?: boolean; selected?: PanelSection; divider?: 'titles' | 'separators' } = {},

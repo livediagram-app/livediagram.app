@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SHAPE_KINDS } from '@livedesign/document';
+import { SHAPE_KINDS } from '@livedesign/design';
 import {
   ALL_PALETTE_TELEMETRY_TYPES,
   PALETTE_TELEMETRY_TYPES,

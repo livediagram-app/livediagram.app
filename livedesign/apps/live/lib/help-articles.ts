@@ -42,7 +42,7 @@ export const HELP_ARTICLES = {
   aiTools: 'tools/ai/ai-tools',
   connectAiTool: 'account-and-data/connect-ai-mcp',
   // Tabs / import-export
-  exportingDiagrams: 'account-and-data/exporting-documents',
+  exportingDiagrams: 'account-and-data/exporting-designs',
   apiTokens: 'account-and-data/api-tokens',
   trash: 'account-and-data/trash',
   importTabs: 'tabs/import-tabs',
@@ -72,7 +72,7 @@ export const HELP_ARTICLES = {
   timeline: 'explorer/timeline',
   // The Inbox's article keeps the slug it had as Activity, so links already out there keep working.
   inbox: 'explorer/activity',
-  recentDocuments: 'explorer/recent',
+  recentDesigns: 'explorer/recent',
   sharedWithYou: 'explorer/shared-with-you',
   folders: 'explorer/folders',
   defaultFolders: 'explorer/folders/default-folders',
@@ -97,7 +97,7 @@ export const HELP_ARTICLES = {
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
   guestVsAccount: 'getting-started/guest-vs-account',
   // Load recovery (docs/specs/007-editor/load-recovery.md).
-  documentNotLoading: 'troubleshooting/document-not-loading',
+  designNotLoading: 'troubleshooting/design-not-loading',
 } as const;
 
 export type HelpArticleKey = keyof typeof HELP_ARTICLES;
@@ -151,7 +151,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   laser: {
     title: 'Learn about the Laser',
-    description: 'Tips for pointing things out to the room without touching the document.',
+    description: 'Tips for pointing things out to the room without touching the design.',
   },
   spotlight: {
     title: 'Learn about the Spotlight',
@@ -167,7 +167,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   slideDeck: {
     title: 'Learn about the Slide Deck',
-    description: 'Tips for building and presenting slides from your document.',
+    description: 'Tips for building and presenting slides from your design.',
   },
   aiTools: {
     title: 'Learn about the AI tools',
@@ -175,7 +175,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   connectAiTool: {
     title: 'Learn about connecting AI tools',
-    description: 'Drive your documents from Claude, Cursor, and other AI tools over MCP.',
+    description: 'Drive your designs from Claude, Cursor, and other AI tools over MCP.',
   },
   exportingDiagrams: {
     title: 'Learn about exporting',
@@ -187,7 +187,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   trash: {
     title: 'Learn about the Trash',
-    description: 'How long deleted documents wait, and how to restore one.',
+    description: 'How long deleted designs wait, and how to restore one.',
   },
   importTabs: {
     title: 'Learn about importing tabs',
@@ -212,7 +212,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   customThemes: {
     title: 'Learn about custom themes',
-    description: 'Build your own palette and reuse it across documents.',
+    description: 'Build your own palette and reuse it across designs.',
   },
   choosingAFinish: {
     title: 'Learn about finishes',
@@ -224,11 +224,11 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   links: {
     title: 'Learn about links',
-    description: 'Linking elements to tabs, documents, and web addresses.',
+    description: 'Linking elements to tabs, designs, and web addresses.',
   },
   comments: {
     title: 'Learn about comments',
-    description: 'Tips and tricks for discussing a document right on the canvas.',
+    description: 'Tips and tricks for discussing a design right on the canvas.',
   },
   assignedActions: {
     title: 'Learn about assigned actions',
@@ -248,7 +248,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   imageGallery: {
     title: 'Learn about the Image Gallery',
-    description: 'How uploaded images are stored and reused across documents.',
+    description: 'How uploaded images are stored and reused across designs.',
   },
   timeline: {
     title: 'Learn about Home and the Timeline',
@@ -258,21 +258,21 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the Inbox',
     description: 'Open actions assigned to you or by you, and comment threads you are in.',
   },
-  recentDocuments: {
+  recentDesigns: {
     title: 'Learn about Recent',
-    description: 'Your most recently opened documents, personal and team, in one list.',
+    description: 'Your most recently opened designs, personal and team, in one list.',
   },
   tags: {
     title: 'Learn about tags',
-    description: 'Coloured labels that group related documents across folders and teams.',
+    description: 'Coloured labels that group related designs across folders and teams.',
   },
   sharedWithYou: {
     title: 'Learn about Shared With Me',
-    description: 'Documents other people have shared with you, collected here.',
+    description: 'Designs other people have shared with you, collected here.',
   },
   folders: {
     title: 'Learn about folders',
-    description: 'Tips for organising documents into a nestable tree of folders.',
+    description: 'Tips for organising designs into a nestable tree of folders.',
   },
   defaultFolders: {
     title: 'Learn about default folders',
@@ -317,7 +317,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   offlineMode: {
     title: 'Learn about Offline Mode',
-    description: 'Documents saved only in this browser, and how to sync them.',
+    description: 'Designs saved only in this browser, and how to sync them.',
   },
   templates: {
     title: 'Learn about templates',
@@ -338,7 +338,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
 
   livePresence: {
     title: 'Learn about live presence',
-    description: 'Who is in the document, where they are, and following them.',
+    description: 'Who is in the design, where they are, and following them.',
   },
   keyboardShortcuts: {
     title: 'Learn about keyboard shortcuts',
@@ -348,9 +348,9 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about guest vs account',
     description: 'What changes when you sign in, and what stays the same.',
   },
-  documentNotLoading: {
+  designNotLoading: {
     title: 'Learn about loading problems',
-    description: 'Steps to try when a document will not open.',
+    description: 'Steps to try when a design will not open.',
   },
 };
 

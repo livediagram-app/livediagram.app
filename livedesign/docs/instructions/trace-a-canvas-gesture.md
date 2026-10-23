@@ -8,19 +8,19 @@ browser. The budget it is held to is in [Canvas performance](../specs/008-canvas
 1. Work in your own worktree off `origin/main`.
 2. For named functions in profiles, add `productionBrowserSourceMaps: true` to
    `apps/live/next.config.ts` for this build only.
-3. Build the export against the api whose document you measure:
+3. Build the export against the api whose design you measure:
    `NEXT_PUBLIC_API_BASE=https://staging.livedesign.app/api npx next build` in `apps/live`, under
    PM2.
 4. Revert `next.config.ts` as soon as the build is done; the flag is never committed.
-5. Serve `apps/live/out` over HTTPS on a free loopback port, mapping every `/document/<id>` path to
-   `document/placeholder.html`, under PM2.
+5. Serve `apps/live/out` over HTTPS on a free loopback port, mapping every `/design/<id>` path to
+   `design/placeholder.html`, under PM2.
 
-## Open the document
+## Open the design
 
 6. Launch headless Chromium at 1440 × 900 in dark mode, ignoring the local certificate.
 7. Route every non-GET `/api/**` request to a 204 and swallow every WebSocket
-   (`context.routeWebSocket`), so the document is never written; staging documents belong to people.
-8. Open the document, wait for network idle, dismiss any dialog, and press `v` for the Select tool.
+   (`context.routeWebSocket`), so the design is never written; staging designs belong to people.
+8. Open the design, wait for network idle, dismiss any dialog, and press `v` for the Select tool.
 9. Set `Emulation.setCPUThrottlingRate` to 4.
 
 ## Measure

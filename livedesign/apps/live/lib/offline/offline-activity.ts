@@ -1,4 +1,4 @@
-// The Inbox's read of documents in This Browser (docs/specs/013-workspace/inbox.md §2.6). They never reach the
+// The Inbox's read of designs in This Browser (docs/specs/013-workspace/inbox.md §2.6). They never reach the
 // worker, so the server's collaboration index never holds them; this finds their open actions and comment threads
 // in the browser's offline store, with the same derivation the index uses (collabIndexRowsFromElements) and the
 // same rules the server read applies, the reader owning every one of them.
@@ -8,10 +8,10 @@ import {
   type ActivityAction,
   type ActivityThread,
 } from '@livedesign/api-schema';
-import { collabIndexRowsFromElements } from '@livedesign/document';
+import { collabIndexRowsFromElements } from '@livedesign/design';
 import { offlineBackend } from './offline-backend';
 import { offlineIdCount } from './offline-ids';
-import type { OfflineDocumentRecord } from './offline-store';
+import type { OfflineDesignRecord } from './offline-store';
 
 export type OfflineActivity = {
   actions: ActivityAction[];
@@ -27,7 +27,7 @@ export function offlineReader(ids: readonly (string | null)[]): OfflineReader {
   return { ids: [...new Set(ids.filter((id): id is string => !!id))] };
 }
 
-// Reads every live record in This Browser and lists what is waiting on the reader. A browser with no documents in This Browser
+// Reads every live record in This Browser and lists what is waiting on the reader. A browser with no designs in This Browser
 // reads no records: the id index answers first, and is cached for the page load.
 export async function readOfflineActivity(
   ids: readonly (string | null)[],
@@ -36,8 +36,8 @@ export async function readOfflineActivity(
   const records = await offlineBackend().all();
   const reader = offlineReader(ids);
   const collect = collector(reader);
-  // A browser holding many large documents would otherwise read them in one long task: hand the main thread
-  // back between documents once a slice has run (measured: 200 documents of 1,500 elements, ~250ms in one go).
+  // A browser holding many large designs would otherwise read them in one long task: hand the main thread
+  // back between designs once a slice has run (measured: 200 designs of 1,500 elements, ~250ms in one go).
   let sliceStart = performance.now();
   for (const rec of records) {
     if (performance.now() - sliceStart > OFFLINE_ACTIVITY_SLICE_MS) {
@@ -52,10 +52,10 @@ export async function readOfflineActivity(
 // How long the read runs before yielding: half a 60fps frame, so a click during it still answers promptly.
 const OFFLINE_ACTIVITY_SLICE_MS = 8;
 
-type Place = Pick<ActivityThread, 'documentId' | 'documentName' | 'teamId' | 'via' | 'shareCode'>;
+type Place = Pick<ActivityThread, 'designId' | 'designName' | 'teamId' | 'via' | 'shareCode'>;
 
-function placeOf(rec: OfflineDocumentRecord): Place {
-  return { documentId: rec.id, documentName: rec.name, teamId: null, via: 'own', shareCode: null };
+function placeOf(rec: OfflineDesignRecord): Place {
+  return { designId: rec.id, designName: rec.name, teamId: null, via: 'own', shareCode: null };
 }
 
 const newest = <T>(rows: T[], at: (row: T) => number): T[] =>
@@ -63,7 +63,7 @@ const newest = <T>(rows: T[], at: (row: T) => number): T[] =>
 
 // Pure: the records in, the Inbox's two lists out, each newest first and capped like the server read.
 export function offlineActivityFromRecords(
-  records: readonly OfflineDocumentRecord[],
+  records: readonly OfflineDesignRecord[],
   reader: OfflineReader,
 ): OfflineActivity {
   const collect = collector(reader);
@@ -75,8 +75,8 @@ export function offlineActivityFromRecords(
 function collector(reader: OfflineReader) {
   const me = new Set(reader.ids);
   const out: OfflineActivity = { actions: [], threads: [] };
-  const add = (rec: OfflineDocumentRecord): void => {
-    // A document in the local Trash waits there; the server read skips trashed documents the same way.
+  const add = (rec: OfflineDesignRecord): void => {
+    // A design in the local Trash waits there; the server read skips trashed designs the same way.
     if (rec.trashedAt !== undefined) return;
     const place = placeOf(rec);
     rec.tabs.forEach((tab) => {
@@ -118,8 +118,8 @@ function collector(reader: OfflineReader) {
           },
           firstAt: t.firstAt,
           youCommented: t.participantIds.some((id) => me.has(id)),
-          // The reader owns every document in This Browser.
-          onYourDocument: true,
+          // The reader owns every design in This Browser.
+          onYourDesign: true,
           mentionsYou: t.mentionedIds.some((id) => me.has(id)),
         });
       }

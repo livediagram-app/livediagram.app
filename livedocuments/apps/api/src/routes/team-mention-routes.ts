@@ -4,7 +4,7 @@
 // of the document's OWN team, so the team in the path must be the document's.
 //
 // A POST, so the shared mutation gate in teams.ts has already required the
-// interactive Clerk session. Best-effort in the background. A comment reaches D1 only with the next
+// interactive signed-in session. Best-effort in the background. A comment reaches D1 only with the next
 // tab save, so the request carries its text and mentions.
 
 import { isOpenTeamMember } from '@livedocuments/api-schema';
@@ -26,7 +26,7 @@ export async function handleTeamMentionRoutes(
   ctx: RouteContext,
   scope: { teamId: string; me: TeamMember; userId: string },
 ): Promise<Response | null> {
-  const { request, env, segments, clerkEmail } = ctx;
+  const { request, env, segments, accountEmail } = ctx;
   const { teamId, me, userId } = scope;
   if (segments.length !== 4 || segments[3] !== 'notify-mention') return null;
   if (request.method !== 'POST') return notFound();
@@ -70,7 +70,7 @@ export async function handleTeamMentionRoutes(
   }
 
   // The author's display name from their verified identity, never the body.
-  const authorName = (await getParticipant(env, userId))?.name ?? clerkEmail ?? null;
+  const authorName = (await getParticipant(env, userId))?.name ?? accountEmail ?? null;
   for (const m of recipients.values()) {
     ctx.waitUntil?.(
       notifyMentioned(env, {

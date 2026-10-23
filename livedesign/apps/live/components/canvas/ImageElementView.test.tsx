@@ -8,7 +8,7 @@ import {
   MIN_TEXT_CONTRAST,
   type ImageElement,
   type ThemeDefinition,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import {
   CanvasSurfaceProvider,
   CanvasThemeProvider,
@@ -72,7 +72,7 @@ function draw(
           <ImageElementView
             element={el}
             ownerId="o"
-            documentId="d"
+            designId="d"
             shareCode={null}
             onOpenPicker={canPick ? onOpenPicker : undefined}
             fontFamily={fontFamily}
@@ -157,7 +157,7 @@ describe('image placeholder ink', () => {
         <ImageElementView
           element={image()}
           ownerId="o"
-          documentId="d"
+          designId="d"
           shareCode={null}
           onOpenPicker={() => {}}
         />

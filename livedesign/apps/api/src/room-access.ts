@@ -6,8 +6,8 @@
 //   - `share-code`: every session a share code admitted, with the code itself or with a ticket a
 //     share-code visitor minted. A share password was set, so each must meet the gate again.
 //     The owner and team members carry no code and stay.
-//   - `person`: the sessions carrying one per-document person tag (person-tag.ts). A member left
-//     or was removed from the document's team.
+//   - `person`: the sessions carrying one per-design person tag (person-tag.ts). A member left
+//     or was removed from the design's team.
 //   - `workbench`: the sockets one workbench pairing opened (docs/specs/013-workspace/workbench-embeds.md). The
 //     pairing was removed or its token revoked; they close with WORKBENCH_ENDED_CLOSE.
 

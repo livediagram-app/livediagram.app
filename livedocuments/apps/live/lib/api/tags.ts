@@ -1,5 +1,5 @@
 // Tag calls (docs/specs/013-workspace/tags.md "API"): list / create / update / delete a tag, and put one on or take
-// it off a document. Owner-scoped, guests included (apiHeaders attaches the Clerk token when signed in, else
+// it off a document. Owner-scoped, guests included (apiHeaders attaches the account token when signed in, else
 // X-Owner-Id).
 //
 // An offline document's tags live on its offline record, never on the server (the spec's "An offline document's tags

@@ -8,13 +8,13 @@ The editor is friction-free and discoverable, but there's no place that explains
 
 ## Shape
 
-A new Next.js app, `apps/help`, deployed as the `livedocuments-help` Worker and stitched in by the router under `/help` — the same pattern as `apps/telemetry` (see [Router app](../016-platform/router-app.md), [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)):
+A new Next.js app, `apps/help`, deployed as the `livedocuments-help` Worker and stitched in by the router under `/help` — the same pattern as the live app's assets (see [Router app](../016-platform/router-app.md), [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)):
 
 - `output: 'export'`, `basePath: '/help'`, `assetPrefix: '/help'`. Static only, no SSR (see [hard constraints](../../../AGENTS.md)).
 - The router strips `/help` and forwards to the worker, which serves `./out`.
 - Content is **MDX** (`@next/mdx`) plus a TypeScript article index (`lib/articles.ts`). Navigation/index pages are TSX.
 
-It started as a copy of the Manager Toolkit help centre and has since been redesigned in the marketing site's language; what each page looks like (the home page's sections, category art, grouped category pages, article navigation, search keys) is [Help pages](help-pages.md). The building blocks below stay: hero + client-side search, category cards, article pages with an auto-generated table of contents, breadcrumbs, "Was this helpful?" feedback, reading time, related-guide sidebar, and a back-to-top button. An article's sections (the tinted bands between its `##` headings) are grouped while it renders, so the static HTML already has them, and the reading-time row holds its height before the time is counted: nothing moves after the page appears. The difference is the categories/content (livedocuments's) and the **brand**: livedocuments is sky-blue (`brand-500`, see [Theme](../004-interface-design/color-scheme.md)) on light or dark chrome ([Appearance](../004-interface-design/appearance.md)), not MT's dark purple, so every surface uses the shared `@livedocuments/tailwind-config` brand ramp and slate neutrals to match `apps/marketing` and `apps/telemetry`.
+It started as a copy of the Manager Toolkit help centre and has since been redesigned in the marketing site's language; what each page looks like (the home page's sections, category art, grouped category pages, article navigation, search keys) is [Help pages](help-pages.md). The building blocks below stay: hero + client-side search, category cards, article pages with an auto-generated table of contents, breadcrumbs, "Was this helpful?" feedback, reading time, related-guide sidebar, and a back-to-top button. An article's sections (the tinted bands between its `##` headings) are grouped while it renders, so the static HTML already has them, and the reading-time row holds its height before the time is counted: nothing moves after the page appears. The difference is the categories/content (livedocuments's) and the **brand**: livedocuments is sky-blue (`brand-500`, see [Theme](../004-interface-design/color-scheme.md)) on light or dark chrome ([Appearance](../004-interface-design/appearance.md)), not MT's dark purple, so every surface uses the shared `@livedocuments/tailwind-config` brand ramp and slate neutrals to match `apps/marketing`.
 
 ### No paid tier
 
@@ -267,7 +267,7 @@ The help centre emits through the first-party pipeline ([Telemetry + public tran
 
 ## Deployment
 
-A `deploy-help` job in `.github/workflows/deploy.yml` mirrors `deploy-telemetry` (build artifact → `wrangler deploy`). The router's `deploy-router` job already depends on the static apps; it gains a dependency on `deploy-help`, and `apps/router/wrangler.toml` gains a `HELP` service binding to `livedocuments-help`.
+A `deploy-help` job in `.github/workflows/deploy.yml` mirrors `deploy-marketing` (build artifact → `wrangler deploy`). The router's `deploy-router` job already depends on the static apps; it gains a dependency on `deploy-help`, and `apps/router/wrangler.toml` gains a `HELP` service binding to `livedocuments-help`.
 
 ## Out of scope (for now)
 

@@ -3,7 +3,7 @@
 // A logo page's Guides popover (docs/specs/007-editor/logo-pages.md "Beside the cog").
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { DEFAULT_MIRROR } from '@livedesign/document';
+import { DEFAULT_MIRROR } from '@livedesign/design';
 import type { LogoToolsView } from '@/hooks/editor/useLogoTools';
 import { LogoGuidesButton, LogoGuidesSettings } from './LogoGuidesPopover';
 

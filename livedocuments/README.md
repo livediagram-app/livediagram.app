@@ -5,7 +5,7 @@ A collaborative editor for documents made of pages (articles, slide decks, infog
 **Live at [livedocuments.app](https://livedocuments.app).** MIT-licensed and self-hostable end-to-end.
 
 ```
-apps/        marketing site + editor + telemetry dashboard + help centre + api + mcp server + router + cli
+apps/        marketing site + editor + help centre + api + mcp server + router + cli
 packages/    shared document model, wire-format types, UI primitives, icon + template catalogues + template previews, help-article registry, the Explorer filter lens, page backgrounds, the api client and agent verbs, the edit-operations engine, document views, the lint, PNG rendering, telemetry client, the TypeScript source parser for static guards, the licences generator, configs
 scripts/     repo-wide dev tooling (shared Next.js dev launcher)
 docs/        guides, product specs (docs/specs, read these before adding features) and instructions
@@ -28,10 +28,10 @@ marketing/   off-site copy + media for listings and promotion (see docs/specs/01
 - **Marketing** at `/` is the pitch and feature tour.
 - **Editor** is where pages are made and presented, served at clean routes (`/new`, `/document/<id>`, `/explorer/...`; no `/live` prefix). Guests get a per-browser identity and full persistence; signed-in users get the same plus cross-device sync. `/explorer` opens on **Home** ([Explorer Home](docs/specs/013-workspace/explorer-home.md)); the **Inbox** beneath it lists what is still outstanding for you (open actions assigned to or by you, comment threads you are in) across every document ([Inbox](docs/specs/013-workspace/inbox.md)), and the **Timeline** is a day-grouped feed of everything that happened across your documents, teams and account ([Timeline](docs/specs/013-workspace/timeline.md)).
 - **API** at `/api/*` is a Cloudflare Worker (REST + WebSocket realtime room per document, backed by D1).
-- **Telemetry** at `/telemetry` is the public anonymous-events dashboard (off in OSS forks by default).
+- **Telemetry** is liveworkspace's: events go to its central service and `/telemetry` redirects to its public dashboard, filtered to livedocuments (off in OSS forks by default).
 - **Help** at `/help` is the static help centre (guides, feature docs, troubleshooting).
 - **MCP** at `mcp.livedocuments.app` is a Cloudflare Worker that exposes the document tools to AI clients (Claude and other MCP hosts) over OAuth — its own host, not a router path.
-- **Router** stitches marketing, the editor, telemetry, help and the API under one hostname.
+- **Router** stitches marketing, the editor, help and the API under one hostname.
 - **CLI** (`apps/cli`) is `livedocuments`, the command line agents and scripts read and change documents with, published on npm as `@livedocuments/cli`. It also opens a document inside a developer tool ([CLI](docs/specs/015-api/cli.md), [Workbench embeds](docs/specs/013-workspace/workbench-embeds.md)).
 
 The whole stack runs on Cloudflare Workers (Static Assets for the Next.js apps). There's no Node-hosted backend, no SSR, no Next.js API routes.
@@ -49,6 +49,6 @@ Found a vulnerability? Please report it privately through [GitHub's advisory for
 
 ## License
 
-[MIT](LICENSE). Anyone can self-host. A free hosted version runs alongside at [livedocuments.app](https://livedocuments.app); there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional — Clerk (auth) and Resend (transactional email), each gated on its own key — and the editor runs fully without either of them.
+[MIT](LICENSE). Anyone can self-host. A free hosted version runs alongside at [livedocuments.app](https://livedocuments.app); there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional — the liveworkspace accounts Worker (sign-in) and Resend (transactional email), each gated on its own key — and the editor runs fully without either of them.
 
 Icon artwork includes Lucide (ISC) and Feather (MIT); see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Every third-party work the deployed apps ship is credited, with its licence and notices, on the generated [/licences](https://livedocuments.app/licences) page ([Third-party licences](docs/specs/002-project-scope/third-party-licences.md)).

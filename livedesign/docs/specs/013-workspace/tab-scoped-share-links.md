@@ -1,16 +1,16 @@
 # Tab-scoped share links
 
-A share link ([Auth + guest access](../014-identity/auth-and-guest-access.md), [API app](../015-api/api.md)) has a **scope**: either **All tabs** (the whole document) or **one tab**. A tab-scoped link opens only its tab. The other tabs stay visible in the visitor's tab bar as nameless "Not shared" pills, and the server never sends their content. That covers REST and the realtime room.
+A share link ([Auth + guest access](../014-identity/auth-and-guest-access.md), [API app](../015-api/api.md)) has a **scope**: either **All tabs** (the whole design) or **one tab**. A tab-scoped link opens only its tab. The other tabs stay visible in the visitor's tab bar as nameless "Not shared" pills, and the server never sends their content. That covers REST and the realtime room.
 
 ## Why
 
-Owners sometimes want to show one tab of a document, not the whole thing: the roadmap tab to a client, but not the pricing tab beside it. Until now the answer was to duplicate the tab into a new document, which forks it. A scoped link shares the living tab. See issue #29.
+Owners sometimes want to show one tab of a design, not the whole thing: the roadmap tab to a client, but not the pricing tab beside it. Until now the answer was to duplicate the tab into a new design, which forks it. A scoped link shares the living tab. See issue #29.
 
 ## Scope
 
 - Every link has a role (`view` / `edit`, unchanged) and a scope. Role and scope are independent: a tab-scoped link can be view or edit.
 - **All tabs is the default.** A link created without a tab is exactly the link that existed before this spec.
-- A document holds any number of links, of any mix of scopes: different tabs to different people, several links to the same tab, all-tab links alongside.
+- A design holds any number of links, of any mix of scopes: different tabs to different people, several links to the same tab, all-tab links alongside.
 - The owner can **change a link's scope** after creation, both ways (All tabs ↔ a tab, one tab ↔ another tab). The code stays the same, and the change takes effect immediately for everyone holding it (see [Rescoping](#rescoping)).
 - Only the owner manages links, as for every share-link operation.
 
@@ -26,35 +26,35 @@ The `ShareLink` DTO gains `tabId: string | null`, and `SharedWithItem` gains `ta
 
 ## Access
 
-A scoped link grants its role **on its tab only**. The worker enforces this in one place, the document access resolution: it answers not just "may this caller read/edit" but "with what tab scope". Every route applies the scope:
+A scoped link grants its role **on its tab only**. The worker enforces this in one place, the design access resolution: it answers not just "may this caller read/edit" but "with what tab scope". Every route applies the scope:
 
 | Door                                                          | Scoped visitor gets                                                                                                                                                          |
 | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/share/:code`                                        | `{ document, role, tabId }`, with the document redacted (see [Redaction](#redaction)).                                                                                       |
-| `GET /api/documents/:id`                                      | The same redacted document.                                                                                                                                                  |
-| `PUT /api/documents/:id` (rename, reorder, tab folders, deck) | 403. The document's structure isn't theirs to change.                                                                                                                        |
-| `GET/PUT/DELETE /api/documents/:id/tabs/:tabId`               | Their tab only, with the role's usual rules. Another tab id is a 404 (no existence leak). DELETE of their own tab is 403: a scoped link can't delete the tab it's scoped to. |
+| `GET /api/share/:code`                                        | `{ design, role, tabId }`, with the design redacted (see [Redaction](#redaction)).                                                                                       |
+| `GET /api/designs/:id`                                      | The same redacted design.                                                                                                                                                  |
+| `PUT /api/designs/:id` (rename, reorder, tab folders, deck) | 403. The design's structure isn't theirs to change.                                                                                                                        |
+| `GET/PUT/DELETE /api/designs/:id/tabs/:tabId`               | Their tab only, with the role's usual rules. Another tab id is a 404 (no existence leak). DELETE of their own tab is 403: a scoped link can't delete the tab it's scoped to. |
 | Comment `POST`/`DELETE`                                       | Their tab only; otherwise 404.                                                                                                                                               |
-| `POST /api/documents/:id/copy`                                | A copy holding **only their tab**.                                                                                                                                           |
-| `GET /api/documents/:id/thumbnail`                            | Their tab's image, not the first-tab snapshot.                                                                                                                               |
+| `POST /api/designs/:id/copy`                                | A copy holding **only their tab**.                                                                                                                                           |
+| `GET /api/designs/:id/thumbnail`                            | Their tab's image, not the first-tab snapshot.                                                                                                                               |
 | `GET /api/images/:id?d=`                                      | Only images referenced by their tab.                                                                                                                                         |
-| Document timeline feed                                        | Refused: it spans every tab.                                                                                                                                                 |
+| Design timeline feed                                        | Refused: it spans every tab.                                                                                                                                                 |
 | `GET /api/share/:code/image.svg`                              | Always their tab. A `?tab=` naming another tab is a 404.                                                                                                                     |
 | Room ticket / WS upgrade                                      | Admitted with the role and the scope (see [Realtime](#realtime)).                                                                                                            |
 
 Holding several links is never merged: each request is judged on the code it carries.
 
-### The tab must still belong to the document
+### The tab must still belong to the design
 
-A scoped link is only valid while its tab is still in the document. Deleting that tab **deletes every link scoped to it** in the same request, and broadcasts `share-revoked` for each, so the visitors holding them leave the editor exactly as on a manual revoke. The access resolution also treats a scoped link whose tab is gone as no link at all, so a race can't open anything.
+A scoped link is only valid while its tab is still in the design. Deleting that tab **deletes every link scoped to it** in the same request, and broadcasts `share-revoked` for each, so the visitors holding them leave the editor exactly as on a manual revoke. The access resolution also treats a scoped link whose tab is gone as no link at all, so a race can't open anything.
 
 ### Redaction
 
-A scoped visitor's copy of the document:
+A scoped visitor's copy of the design:
 
 - `tabs`: every tab keeps its `id` and `orderIndex`, so the bar can draw it in place. The other tabs carry `name: ''`, no `folder`, `updatedAt: 0` and `outOfScope: true`. (Not `locked`: `Tab.locked` is the existing user-toggled read-only lock, a different thing.) Their tab is unchanged.
 - `presentation`: `null`. A slide deck spans tabs.
-- The document's name, owner name and colour stay: the visitor sees those when resolving any link.
+- The design's name, owner name and colour stay: the visitor sees those when resolving any link.
 
 ### Shared with you and the Inbox
 
@@ -68,8 +68,8 @@ The upgrade forwards the resolved scope to the room with the role (`X-Verified-T
 
 For a scoped session:
 
-- **Outbound**: the room doesn't send it any op carrying a different `tabId`: element, tab, cursor, selection, reaction, viewport and focus ops. A `select` without a `tabId` is dropped, as is a `log` op whose entry is on another tab. `document-meta` is redacted the same way the REST document is. Catch-up replay applies the same filter. Its `seq` can lag because of filtered ops, which is harmless: every op on its own tab still reaches it, and the ledger merge is per tab.
-- **Inbound**: the room drops any op from it that carries a different `tabId` (presence included, so a `tab-focus` elsewhere too), a `select` with no `tabId`, and `document-meta` outright (and the retired `log` / `log-remove` ops of the removed Activity panel). Anything else fails closed.
+- **Outbound**: the room doesn't send it any op carrying a different `tabId`: element, tab, cursor, selection, reaction, viewport and focus ops. A `select` without a `tabId` is dropped, as is a `log` op whose entry is on another tab. `design-meta` is redacted the same way the REST design is. Catch-up replay applies the same filter. Its `seq` can lag because of filtered ops, which is harmless: every op on its own tab still reaches it, and the ledger merge is per tab.
+- **Inbound**: the room drops any op from it that carries a different `tabId` (presence included, so a `tab-focus` elsewhere too), a `select` with no `tabId`, and `design-meta` outright (and the retired `log` / `log-remove` ops of the removed Activity panel). Anything else fails closed.
 - Presence entries still carry each peer's tab id, so avatars can stack on "Not shared" pills. An id is not content.
 
 ### Revoke closes the socket
@@ -91,23 +91,23 @@ A session's scope and code come from its room ticket, minted a moment before the
 
 ## Visitor experience
 
-- A scoped visitor lands **on their tab**, whatever tab the document last had open.
+- A scoped visitor lands **on their tab**, whatever tab the design last had open.
 - Other tabs render as **"Not shared" pills**: greyed, an eye-off glyph, the label "Not shared", not clickable, not draggable, no context menu. The hover card reads "This tab isn't shared with you". They never sit inside a tab folder (the folder name is withheld too).
-- Everything that works across tabs, or on the tab bar itself, is off for a scoped visitor: the add-tab button, the tab menu (so rename, duplicate, delete and lock too), drag-reordering, tab folders, document rename, and the slide deck (picking it says "The slide deck isn't shared with you").
+- Everything that works across tabs, or on the tab bar itself, is off for a scoped visitor: the add-tab button, the tab menu (so rename, duplicate, delete and lock too), drag-reordering, tab folders, design rename, and the slide deck (picking it says "The slide deck isn't shared with you").
 - An element link, search result or keyboard switch pointing at a tab outside the scope does nothing but show the toast "That tab isn't shared with you".
 - Make a copy takes their tab only.
 
 ## Owner experience (Share dialog)
 
-- The composer's fine print gains an **Opens** row, a select above **Valid** ("Tabs this link opens"): "All tabs" (default), then each tab by name, in bar order. It only shows when the document has more than one tab.
-- Each active pass shows its scope beside **Opens** as a select ("All tabs" / a tab name); a single-tab document leaves the term off, since every pass opens every tab. Changing it rescopes the link at once. A single-tab document shows no scope control; its links are All tabs.
+- The composer's fine print gains an **Opens** row, a select above **Valid** ("Tabs this link opens"): "All tabs" (default), then each tab by name, in bar order. It only shows when the design has more than one tab.
+- Each active pass shows its scope beside **Opens** as a select ("All tabs" / a tab name); a single-tab design leaves the term off, since every pass opens every tab. Changing it rescopes the link at once. A single-tab design shows no scope control; its links are All tabs.
 - A scoped link's **Live image** has no tab picker: it always renders the link's tab.
 - A scoped link's Embed shows its tab, because the embed resolves through the same code.
 
 ## API
 
-- `POST /api/documents/:id/share` body gains optional `tabId: string | null`. An unknown tab, or one not in this document, is `400 invalid tab`.
-- `PUT /api/documents/:id/share/:code` (owner, or a joined team member on a team document), body `{ tabId: string | null }`: rescope. `400 invalid tab` as above, `404` for an unknown code. Returns `{ link }` and broadcasts `share-rescoped`.
+- `POST /api/designs/:id/share` body gains optional `tabId: string | null`. An unknown tab, or one not in this design, is `400 invalid tab`.
+- `PUT /api/designs/:id/share/:code` (owner, or a joined team member on a team design), body `{ tabId: string | null }`: rescope. `400 invalid tab` as above, `404` for an unknown code. Returns `{ link }` and broadcasts `share-rescoped`.
 - `GET /api/share/:code` returns `tabId` alongside `role`.
 
 ## Testing
@@ -116,7 +116,7 @@ A session's scope and code come from its room ticket, minted a moment before the
 
 ## Telemetry
 
-Following the [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) vocabulary, creating a scoped link also emits `Document/Shared/TabScoped`. A rescope emits `Document/Shared/Rescoped`.
+Following the [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) vocabulary, creating a scoped link also emits `Design/Shared/TabScoped`. A rescope emits `Design/Shared/Rescoped`.
 
 ## Out of scope
 

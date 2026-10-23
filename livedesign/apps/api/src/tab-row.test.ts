@@ -3,10 +3,10 @@ import { rowToTab, rowToTabSummary, type TabRow } from './tab-row';
 
 // rowToTab + rowToTabSummary translate every D1 tab row into the
 // wire-format DTOs the editor consumes. Every tab read in the
-// product (open a document, switch tabs, copy a tab, share-link
+// product (open a design, switch tabs, copy a tab, share-link
 // resolve) flows through one or the other; a regression that
-// dropped a field, swapped id with documentId, or let the JSON blob
-// override a real column would corrupt documents silently with no
+// dropped a field, swapped id with designId, or let the JSON blob
+// override a real column would corrupt designs silently with no
 // other surface signal. Pinning the contract here so the next
 // reader can see what each invariant is.
 
@@ -20,7 +20,7 @@ function bodyJson(extra: Record<string, unknown> = {}): string {
 
 const baseRow = (override: Partial<TabRow> = {}): TabRow => ({
   id: 'tab-1',
-  document_id: 'diag-1',
+  design_id: 'diag-1',
   name: 'Untitled',
   order_index: 0,
   data: bodyJson(),
@@ -123,7 +123,7 @@ describe('rowToTab', () => {
     const dto = rowToTab(baseRow());
     expect(dto).toEqual({
       id: 'tab-1',
-      documentId: 'diag-1',
+      designId: 'diag-1',
       name: 'Untitled',
       orderIndex: 0,
       updatedAt: 1_700_000_000_000,
@@ -158,30 +158,30 @@ describe('rowToTab', () => {
     expect(dto.elements).toEqual(els);
   });
 
-  it('lets row columns override forged id / name / documentId in the data blob', () => {
+  it('lets row columns override forged id / name / designId in the data blob', () => {
     // Spread order matters: data first, row columns second. So even if
     // an attacker (or stale write) stuffed conflicting id / name /
-    // documentId / orderIndex / updatedAt fields into the JSON blob,
+    // designId / orderIndex / updatedAt fields into the JSON blob,
     // the real row columns must win. This is the security-relevant
     // invariant of the mapper, separate from the round-trip contract.
     const forged = JSON.stringify({
       elements: [],
       id: 'attacker-id',
       name: 'attacker name',
-      documentId: 'other-diagram',
+      designId: 'other-diagram',
       orderIndex: 999,
       updatedAt: 0,
     });
     const dto = rowToTab(baseRow({ data: forged }));
     expect(dto.id).toBe('tab-1');
     expect(dto.name).toBe('Untitled');
-    expect(dto.documentId).toBe('diag-1');
+    expect(dto.designId).toBe('diag-1');
     expect(dto.orderIndex).toBe(0);
     expect(dto.updatedAt).toBe(1_700_000_000_000);
   });
 
-  it('takes folder from the row column and lets it override a forged data-blob folder (docs/specs/006-document/tab-folders.md)', () => {
-    // folder is per-document link metadata read from the document_tabs
+  it('takes folder from the row column and lets it override a forged data-blob folder (docs/specs/006-design/tab-folders.md)', () => {
+    // folder is per-design link metadata read from the design_tabs
     // JOIN, never from tabs.data (the client strips it before saving).
     // A folder stuffed into the blob must not win.
     const dto = rowToTab(baseRow({ folder: 'Org', data: bodyJson({ folder: 'Forged' }) }));
@@ -194,7 +194,7 @@ describe('rowToTab', () => {
   });
 
   it('throws on invalid JSON in the data column (call sites can decide whether to filter or surface)', () => {
-    // Documents the current contract: rowToTab does NOT silently
+    // Designs the current contract: rowToTab does NOT silently
     // swallow malformed JSON. A regression that wrapped this in a
     // try/catch and returned a partial DTO would mask corruption.
     expect(() => rowToTab(baseRow({ data: '{not json' }))).toThrow();
@@ -211,7 +211,7 @@ describe('rowToTabSummary', () => {
     const dto = rowToTabSummary(baseRow({ data: 'this is not json and that is fine' }));
     expect(dto).toEqual({
       id: 'tab-1',
-      documentId: 'diag-1',
+      designId: 'diag-1',
       name: 'Untitled',
       orderIndex: 0,
       updatedAt: 1_700_000_000_000,
@@ -226,7 +226,7 @@ describe('rowToTabSummary', () => {
     expect(rowToTabSummary(baseRow({ order_index: 0 })).orderIndex).toBe(0);
   });
 
-  it('carries the per-document folder name, mapping NULL to undefined (docs/specs/006-document/tab-folders.md)', () => {
+  it('carries the per-design folder name, mapping NULL to undefined (docs/specs/006-design/tab-folders.md)', () => {
     expect(rowToTabSummary(baseRow({ folder: 'Org' })).folder).toBe('Org');
     expect(rowToTabSummary(baseRow({ folder: null })).folder).toBeUndefined();
   });

@@ -125,8 +125,8 @@ export function ExplorerPane() {
     loading,
     ownerId,
     refreshPersonal,
-    clerkUserId,
-    clerkDisplayName,
+    accountUserId,
+    accountDisplayName,
     activity,
     paneTitle,
     paneCrumbs,
@@ -153,7 +153,6 @@ export function ExplorerPane() {
     invites,
     acceptInvite,
     declineInvite,
-    refreshTeams,
     movePersonalFolders,
     moveTeamDests,
     moveDocumentTo,
@@ -350,9 +349,8 @@ export function ExplorerPane() {
           <TeamPane
             ownerId={ownerId}
             teamId={selected.id}
-            clerkUserId={clerkUserId ?? null}
-            clerkDisplayName={clerkDisplayName}
-            onTeamsChanged={() => void refreshTeams()}
+            accountUserId={accountUserId ?? null}
+            accountDisplayName={accountDisplayName}
             onLeftTeam={() => go({ kind: 'home' })}
             onLoadResult={(found) => setNotFoundIn(found ? null : selected)}
             // The shared-documents move picker offers every space (docs/specs/013-workspace/team-shared-documents.md):

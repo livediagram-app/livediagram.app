@@ -22,13 +22,10 @@ A shape whose shorter side is at least four times the preset's px draws exactly 
 small shapes change, and only by rounding less. No stored value changes: the rule is applied
 where a corner is drawn.
 
-**One definition** draws every corner: `cornerRadiusPx` in `@livedesign/document`, read by the
-canvas (shapes, the dashed-border overlay, images, web components and each stat card, mind
-nodes), every export (SVG and PNG, which draws the SVG) and the hit outlines, so what is seen,
+**One definition** draws every corner: `cornerRadiusPx` in `@livedesign/design`, read by the
+canvas (shapes, the dashed-border overlay, images, web components and each stat card), every export (SVG and PNG, which draws the SVG) and the hit outlines, so what is seen,
 exported and clicked always agree.
 
 ## Where it is set
 
-- **Diagram tabs:** the context menu's Border category, as before.
-- **Whiteboards:** the quick style panel's **Corners** row (None, Small, Medium, Large), see
-  [Quick style panel](quick-style-panel.md); a whiteboard's menu does not offer corners.
+- The context menu's Border category.

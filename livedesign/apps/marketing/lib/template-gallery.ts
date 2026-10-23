@@ -1,4 +1,4 @@
-import { seededRandom } from '@livedesign/document';
+import { seededRandom } from '@livedesign/design';
 import {
   BLANK_TEMPLATE_FOR_MODE,
   EXTRA_BLANK_TEMPLATES,
@@ -14,8 +14,8 @@ import {
 } from '@livedesign/templates';
 
 // The landing page's template gallery (docs/specs/019-marketing/marketing-site.md): every template
-// the editor ships, each a link that creates that document straight away (/new?template=<kind>,
-// docs/specs/007-editor/new-document-route.md), laid out as the editor's template step lays them
+// the editor ships, each a link that creates that design straight away (/new?template=<kind>,
+// docs/specs/007-editor/new-design-route.md), laid out as the editor's template step lays them
 // out (docs/specs/008-canvas/canvas-and-palette.md "Templates"): Blank Slate first (every blank and nothing else:
 // one empty page, then a blank of each page kind), then one shelf per category. The data half lives here
 // so the lists and the filters can be tested without rendering the section.
@@ -54,10 +54,8 @@ export function galleryTemplates(): GalleryTemplate[] {
   return TEMPLATES.filter((t) => !t.hidden && !isBlankTemplate(t.kind)).map(toGallery);
 }
 
-// Blanks the row already shows by another name: Blank Infographic is Blank Illustration's own
-// empty infographic page, so it is left off rather than shown twice.
+// Blanks the row already shows by another name, left off rather than shown twice.
 const SHOWN_AS_ANOTHER_BLANK: readonly string[] = [
-  'blank-infographic',
   // One blank wireframe stands for all five (docs/specs/007-editor/wireframe-pages.md "Templates").
   'blank-wireframe-tablet',
   'blank-wireframe-browser',

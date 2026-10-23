@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pagesOf, offersPageKindChoice } from '@livedesign/document';
+import { pagesOf, offersPageKindChoice } from '@livedesign/design';
 import { BLANK_PAGE_TEMPLATE_KINDS, blankPageTemplateOverrides } from './blank-page-templates';
 import { buildTemplate } from './build-template';
 import { templateCategory } from './template-categories';

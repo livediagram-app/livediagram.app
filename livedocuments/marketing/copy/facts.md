@@ -47,7 +47,10 @@ value is the team, not the individual.
   any tab as JSON to import back.
 - For AI agents and scripts: an MCP server, a CLI (`@livedocuments/cli`) and a
   REST API that read, write and share documents.
-- Anonymous first-party telemetry with a public dashboard at `/telemetry`. No
+- Hybrid auth: guests get the full feature set keyed to a per-browser id;
+  signed-in users (a liveworkspace account) add cross-device sync and account self-delete.
+- Anonymous first-party telemetry with a public dashboard on liveworkspace.app
+  (`/telemetry` opens it). No
   third-party analytics, no identifiers on the wire. Off in self-hosted forks
   unless configured.
 
@@ -56,8 +59,9 @@ value is the team, not the individual.
 - MIT-licensed, publicly viewable, self-hostable end to end.
 - Hosted free at livedocuments.app. No paid tier and no plan to introduce one.
 - The open-source core never calls home and never gates features behind a
-  license check. Without sign-in configured, a self-hosted copy runs in guest
-  mode with saving, sharing and real-time collaboration all working.
+  license check. Sign-in through liveworkspace accounts is the one optional
+  dependency; without it a self-hosted copy runs in guest mode with saving,
+  sharing and real-time collaboration all working.
 
 ## Stack
 

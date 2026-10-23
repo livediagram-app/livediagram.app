@@ -1,7 +1,7 @@
 'use client';
 
 // A Timeline for something other than the reader's own feed (docs/specs/013-workspace/timeline.md
-// §3.4) — a team's activity, or one document's history.
+// §3.4) — a team's activity, or one design's history.
 //
 // Self-contained, unlike the Explorer's landing pane: it owns its
 // controls as well as its data, because it drops into a card on a
@@ -57,9 +57,9 @@ export function ScopedTimeline({
             description={emptyMessage}
           />
         }
-        // A team's activity or a document's history can fail to read for
+        // A team's activity or a design's history can fail to read for
         // exactly the reasons the landing feed can, and "nothing has
-        // happened to this document yet" is just as wrong an answer.
+        // happened to this design yet" is just as wrong an answer.
         error={feed.error}
         onRetry={feed.retry}
         hasMore={feed.hasMore}
@@ -87,13 +87,13 @@ export function TeamTimeline({ ownerId, teamId }: { ownerId: string; teamId: str
   );
 }
 
-export function DocumentTimeline({ ownerId, documentId }: { ownerId: string; documentId: string }) {
+export function DocumentTimeline({ ownerId, designId }: { ownerId: string; designId: string }) {
   return (
     <ScopedTimeline
       ownerId={ownerId}
-      scope={{ scopeType: 'document', scopeId: documentId }}
+      scope={{ scopeType: 'design', scopeId: designId }}
       title="History"
-      emptyMessage="What happens to this document will show here."
+      emptyMessage="What happens to this design will show here."
     />
   );
 }

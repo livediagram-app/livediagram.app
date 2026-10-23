@@ -1,7 +1,7 @@
 'use client';
 
 // The tag picker (docs/specs/013-workspace/tags.md "The tag picker"): a panel that stays open while the reader ticks
-// tags on and off a document, finds them by typing, makes a new one from what they typed, and recolours one from its
+// tags on and off a design, finds them by typing, makes a new one from what they typed, and recolours one from its
 // swatch. Every tick applies at once; there is no Save.
 
 import { useMemo, useRef, useState, type KeyboardEvent } from 'react';
@@ -11,7 +11,7 @@ import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import { TagIcon } from '@/components/primitives/explorer-icons';
 import { useOptionalExplorer } from '@/app/explorer/ExplorerContext';
 import { explorerPathFor } from '@/app/explorer/routes';
-import { useDocumentTags, type TagPickerTarget } from './DocumentTagsProvider';
+import { useDesignTags, type TagPickerTarget } from './DesignTagsProvider';
 import { TagColourButton } from './TagColourButton';
 import { TagDot } from './TagChip';
 import { assignAppLocation } from '@/lib/app-location';
@@ -38,13 +38,13 @@ function moveFocus(
 }
 
 export function TagPicker({ target, onClose }: { target: TagPickerTarget; onClose: () => void }) {
-  const { tags, tagsFor, status, createTag, updateTag, setDocumentTag } = useDocumentTags();
+  const { tags, tagsFor, status, createTag, updateTag, setDesignTag } = useDesignTags();
   const explorer = useOptionalExplorer();
   const [query, setQuery] = useState('');
   const panel = useRef<HTMLDivElement>(null);
   const field = useRef<HTMLInputElement>(null);
-  const { documentId, documentName } = target;
-  const on = useMemo(() => new Set(tagsFor(documentId).map((t) => t.id)), [tagsFor, documentId]);
+  const { designId, designName } = target;
+  const on = useMemo(() => new Set(tagsFor(designId).map((t) => t.id)), [tagsFor, designId]);
 
   const clean = normaliseTagName(query);
   const key = clean ? tagNameKey(clean) : '';
@@ -54,10 +54,10 @@ export function TagPicker({ target, onClose }: { target: TagPickerTarget; onClos
   const canCreate = clean !== null && !exact && !atLimit;
   const newColour = nextTagColour(tags.map((t) => t.colour));
 
-  const toggle = (tagId: string) => setDocumentTag(documentId, tagId, !on.has(tagId));
+  const toggle = (tagId: string) => setDesignTag(designId, tagId, !on.has(tagId));
   const create = () => {
     if (!clean) return;
-    if (createTag(clean, { applyTo: documentId })) setQuery('');
+    if (createTag(clean, { applyTo: designId })) setQuery('');
     field.current?.focus();
   };
   const onFieldKey = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -78,7 +78,7 @@ export function TagPicker({ target, onClose }: { target: TagPickerTarget; onClos
   return (
     <AnchoredPopover
       anchor={target.anchor}
-      name={`Tags for ${documentName || 'Untitled document'}`}
+      name={`Tags for ${designName || 'Untitled design'}`}
       width={TAG_PICKER_WIDTH}
       onClose={onClose}
     >
@@ -92,7 +92,7 @@ export function TagPicker({ target, onClose }: { target: TagPickerTarget; onClos
             Tags
             <span className="font-normal text-slate-500 dark:text-slate-400">
               {' '}
-              · {documentName || 'Untitled document'}
+              · {designName || 'Untitled design'}
             </span>
           </p>
           <input

@@ -22,7 +22,7 @@ import {
   rotationOf,
   finishSplitsFace,
   faceFinishOf,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
 import { elementAriaLabel, elementRole } from '@/lib/element-names';

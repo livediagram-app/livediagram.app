@@ -2,8 +2,8 @@
 
 // The Explorer's additions to a Timeline card (docs/specs/013-workspace/timeline.md §2.8, §2.9): a
 // menu on every card (each can be removed from the feed), the full
-// document menu for a document the Explorer has loaded, a rename input in
-// the title slot while that document is being renamed, and the document's
+// design menu for a design the Explorer has loaded, a rename input in
+// the title slot while that design is being renamed, and the design's
 // CURRENT name as the subject.
 
 import { renderHook } from '@testing-library/react';
@@ -19,10 +19,10 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 function explorer(over: Partial<ExplorerStateValue> = {}): ExplorerStateValue {
   return {
     ownerId: 'me',
-    documents: [
+    designs: [
       { id: 'd1', name: 'Payments v2', folderId: null, savedAt: 1, shareCode: null, ownerId: 'me' },
     ],
-    teamDocuments: [],
+    teamDesigns: [],
     shared: [
       {
         id: 's1',
@@ -34,12 +34,12 @@ function explorer(over: Partial<ExplorerStateValue> = {}): ExplorerStateValue {
         ownerColor: null,
       },
     ],
-    renamingDocumentId: null,
-    setRenamingDocumentId: vi.fn(),
-    renameDocument: vi.fn(),
-    deleteDocument: vi.fn(),
-    duplicateDocument: vi.fn(),
-    openMovePickerForDocument: vi.fn(),
+    renamingDesignId: null,
+    setRenamingDesignId: vi.fn(),
+    renameDesign: vi.fn(),
+    deleteDesign: vi.fn(),
+    duplicateDesign: vi.fn(),
+    openMovePickerForDesign: vi.fn(),
     dismissShared: vi.fn(),
     favouriteIds: new Set<string>(),
     toggleFavourite: vi.fn(),
@@ -62,14 +62,14 @@ function explorer(over: Partial<ExplorerStateValue> = {}): ExplorerStateValue {
 function event(over: Partial<TimelineEvent>): TimelineEvent {
   return {
     id: 'e',
-    sourceType: 'document',
+    sourceType: 'design',
     sourceId: 'd1',
-    eventType: 'document_created',
-    title: 'Document Created',
+    eventType: 'design_created',
+    title: 'Design Created',
     description: null,
     occurredAt: 1,
     actorId: 'me',
-    snapshot: { documentId: 'd1', documentName: 'Payments' },
+    snapshot: { designId: 'd1', designName: 'Payments' },
     ...over,
   };
 }
@@ -91,7 +91,7 @@ function slotsFor(value: ExplorerStateValue, onDismiss = vi.fn()) {
 }
 
 describe('useTimelineCardSlots', () => {
-  it('adds a menu and the current name for a document the Explorer knows', () => {
+  it('adds a menu and the current name for a design the Explorer knows', () => {
     const slots = slotsFor(explorer())(event({}));
     expect(slots?.menu).toBeTruthy();
     expect(slots?.subject).toBe('Payments v2');
@@ -100,13 +100,13 @@ describe('useTimelineCardSlots', () => {
   });
 
   // Every card can be removed from the feed (docs/specs/013-workspace/timeline.md §2.9), so every
-  // card has a menu — but only a loaded document's card borrows the
+  // card has a menu — but only a loaded design's card borrows the
   // Explorer's name for the subject; the rest keep the renderer's.
-  it('gives a tombstone and an unloaded document the entity menu, with no rename slot', () => {
+  it('gives a tombstone and an unloaded design the entity menu, with no rename slot', () => {
     const slots = slotsFor(explorer());
     for (const e of [
-      event({ snapshot: { documentName: 'Gone' } }),
-      event({ snapshot: { documentId: 'unknown', documentName: 'X' } }),
+      event({ snapshot: { designName: 'Gone' } }),
+      event({ snapshot: { designId: 'unknown', designName: 'X' } }),
     ]) {
       const s = slots(e);
       expect(s?.menu).toBeTruthy();
@@ -163,21 +163,21 @@ describe('useTimelineCardSlots', () => {
       }),
     );
     expect(slots?.menu).toBeTruthy();
-    const menu = slots!.menu as { props: { folder?: unknown; document?: unknown } };
+    const menu = slots!.menu as { props: { folder?: unknown; design?: unknown } };
     expect(menu.props.folder).toBeUndefined();
-    expect(menu.props.document).toBeUndefined();
+    expect(menu.props.design).toBeUndefined();
   });
 
-  it('resolves a shared-with-you document too', () => {
+  it('resolves a shared-with-you design too', () => {
     const slots = slotsFor(explorer())(
-      event({ snapshot: { documentId: 's1', documentName: 'Theirs' } }),
+      event({ snapshot: { designId: 's1', designName: 'Theirs' } }),
     );
     expect(slots?.menu).toBeTruthy();
     expect(slots?.subject).toBe('Theirs');
   });
 
-  it('puts a rename input in the title slot while that document is being renamed', () => {
-    const slots = slotsFor(explorer({ renamingDocumentId: 'd1' }))(event({}));
+  it('puts a rename input in the title slot while that design is being renamed', () => {
+    const slots = slotsFor(explorer({ renamingDesignId: 'd1' }))(event({}));
     expect(slots?.title).toBeTruthy();
     // Right-click is off while renaming: the card's own gesture would
     // fight the input's.

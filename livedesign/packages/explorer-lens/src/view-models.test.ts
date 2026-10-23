@@ -136,12 +136,12 @@ describe('issueMessage', () => {
 
 describe('announceResults', () => {
   it.each([
-    [40, 40, '40 documents'],
-    [1, 1, '1 document'],
-    [12, 40, '12 of 40 documents'],
-    [1, 40, '1 of 40 documents'],
-    [0, 40, 'No documents match'],
-    [0, 0, 'No documents match'],
+    [40, 40, '40 designs'],
+    [1, 1, '1 design'],
+    [12, 40, '12 of 40 designs'],
+    [1, 40, '1 of 40 designs'],
+    [0, 40, 'No designs match'],
+    [0, 0, 'No designs match'],
   ])('announces %i shown of %i', (shown, total, message) => {
     expect(announceResults(shown, total)).toBe(message);
   });

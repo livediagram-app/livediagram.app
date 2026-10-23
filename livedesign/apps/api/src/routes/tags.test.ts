@@ -1,7 +1,7 @@
 import { makeTestRouteContext } from './test-route-context';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Route surface for per-person document tags (docs/specs/013-workspace/tags.md "API"): the owner gate, the body
+// Route surface for per-person design tags (docs/specs/013-workspace/tags.md "API"): the owner gate, the body
 // rules, each refusal's status and token, and every write scoped to the resolved owner.
 
 const { db } = vi.hoisted(() => ({
@@ -10,8 +10,8 @@ const { db } = vi.hoisted(() => ({
     createTag: vi.fn(),
     updateTag: vi.fn(),
     deleteTag: vi.fn(),
-    addDocumentTag: vi.fn(),
-    removeDocumentTag: vi.fn(),
+    addDesignTag: vi.fn(),
+    removeDesignTag: vi.fn(),
   },
 }));
 vi.mock('../db', () => db);
@@ -40,10 +40,10 @@ describe('handleTags', () => {
   });
 
   it('lists the owner tags and links', async () => {
-    db.listTags.mockResolvedValue({ tags: [TAG], links: [{ tagId: 't1', documentId: 'd1' }] });
+    db.listTags.mockResolvedValue({ tags: [TAG], links: [{ tagId: 't1', designId: 'd1' }] });
     const res = await call('GET', '/api/tags');
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ tags: [TAG], links: [{ tagId: 't1', documentId: 'd1' }] });
+    expect(await res.json()).toEqual({ tags: [TAG], links: [{ tagId: 't1', designId: 'd1' }] });
     expect(db.listTags).toHaveBeenCalledWith({}, 'owner-1');
   });
 
@@ -104,18 +104,18 @@ describe('handleTags', () => {
     expect(db.deleteTag).toHaveBeenCalledWith({}, 'owner-1', 't1');
   });
 
-  it('puts a tag on and takes it off a document for THIS owner', async () => {
-    db.addDocumentTag.mockResolvedValue(true);
-    db.removeDocumentTag.mockResolvedValue(true);
-    expect((await call('PUT', '/api/tags/t1/documents/d1')).status).toBe(204);
-    expect((await call('DELETE', '/api/tags/t1/documents/d1')).status).toBe(204);
-    expect(db.addDocumentTag).toHaveBeenCalledWith({}, 'owner-1', 't1', 'd1');
-    expect(db.removeDocumentTag).toHaveBeenCalledWith({}, 'owner-1', 't1', 'd1');
+  it('puts a tag on and takes it off a design for THIS owner', async () => {
+    db.addDesignTag.mockResolvedValue(true);
+    db.removeDesignTag.mockResolvedValue(true);
+    expect((await call('PUT', '/api/tags/t1/designs/d1')).status).toBe(204);
+    expect((await call('DELETE', '/api/tags/t1/designs/d1')).status).toBe(204);
+    expect(db.addDesignTag).toHaveBeenCalledWith({}, 'owner-1', 't1', 'd1');
+    expect(db.removeDesignTag).toHaveBeenCalledWith({}, 'owner-1', 't1', 'd1');
   });
 
   it('404s a link the db refuses', async () => {
-    db.addDocumentTag.mockResolvedValue(false);
-    expect((await call('PUT', '/api/tags/t1/documents/gone')).status).toBe(404);
+    db.addDesignTag.mockResolvedValue(false);
+    expect((await call('PUT', '/api/tags/t1/designs/gone')).status).toBe(404);
   });
 
   it('404s unknown shapes and methods', async () => {
@@ -123,6 +123,6 @@ describe('handleTags', () => {
     expect((await call('GET', '/api/tags/t1')).status).toBe(404);
     expect((await call('GET', '/api/tags/a%2Fb')).status).toBe(404);
     expect((await call('PUT', '/api/tags/t1/other/d1')).status).toBe(404);
-    expect((await call('POST', '/api/tags/t1/documents/d1')).status).toBe(404);
+    expect((await call('POST', '/api/tags/t1/designs/d1')).status).toBe(404);
   });
 });

@@ -14,7 +14,7 @@ import {
   type BoxedElement,
   type Element,
   type Rect,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { LINT_OVERLAP_TOLERANCE_PX } from '../constants';
 import { refOf, type LintContext } from '../context';
 import { fixes } from '../fixes';

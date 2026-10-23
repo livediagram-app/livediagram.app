@@ -31,8 +31,8 @@ The same three fields as before, plus the app it came from:
 
 There is no identity, IP address, owner id or document id. Each app keeps its own closed vocabulary
 in its own api-schema (`telemetry-schema.ts`), because its editors and its vocabulary change
-together. The service imports both vocabularies, and only stores an event that its app could have
-sent.
+together. The service imports each sending app's vocabulary (livediagram's, liveplanner's and
+livedocuments'), and only stores an event that its app could have sent.
 
 ## Sending events
 
@@ -75,8 +75,8 @@ sent.
 
 ## The dashboard
 
-`https://liveworkspace.app/telemetry` shows **All apps**. `?app=livediagram.app` or
-`?app=liveplanner.app` opens one app's own dashboard, with all of its tabs, catalogues and
+`https://liveworkspace.app/telemetry` shows **All apps**. `?app=livediagram.app`,
+`?app=liveplanner.app` or `?app=livedocuments.app` opens one app's own dashboard, with all of its tabs, catalogues and
 explanations. Picking an app on the page updates the link.
 
 - **All apps** adds every app's events together. It shows the three windows (today, last 7 days,
@@ -109,14 +109,19 @@ Development accepts events from any `localhost` page. Point an app at it with
 from `.dev.vars`, for its Workers). The dashboard is the site's: `corepack pnpm dev:workspace` from
 the repo root runs the site with this Worker behind it, at http://localhost:3300/telemetry.
 
-## livedocuments and livedesign
+## Which apps send
 
-Both are in `TELEMETRY_APPS`, so the dashboard lists them in their own colours, but their event
-vocabularies live in their own `api-schema` packages, which aren't in this repo yet. Until they are,
-the service stores nothing from them (`NOTHING_YET` in `apps/telemetry/src/vocabularies.ts`), and
-picking one on the dashboard says there are no events yet. When an app lands: import its
-vocabulary in `vocabularies.ts`, add its dashboard under `apps/site/app/telemetry/<app>/`, and set
-its key.
+livediagram, liveplanner and livedocuments send events, and each has its own dashboard under
+`apps/site/app/telemetry/<app>/` (`livediagram/`, `liveplanner/`, `livedocuments/`). Each folder's
+tests read that app's source: every event an emitter can send must be in its vocabulary and have a
+chart (`metric-emitters.test.ts`, `computed-emitters.ts`), and every event has an explanation
+(`event-explanation.test.ts`).
+
+livedesign is in `TELEMETRY_APPS`, so the dashboard lists it in its own colour, but it doesn't send
+yet: the service stores nothing from it (`NOTHING_YET` in `apps/telemetry/src/vocabularies.ts`),
+and picking it on the dashboard says there are no events yet. When it does: import its vocabulary
+in `vocabularies.ts`, add its dashboard under `apps/site/app/telemetry/livedesign/`, and set its
+key.
 
 ## First deploy
 
@@ -124,9 +129,9 @@ its key.
    placeholders): `wrangler d1 create liveworkspace-telemetry` (and
    `liveworkspace-telemetry-staging`).
 2. Set one key per app, and give each app's api and mcp Workers the same value as `TELEMETRY_KEY`:
-   `openssl rand -hex 32`, then `wrangler secret put TELEMETRY_KEY_LIVEDIAGRAM` and
-   `TELEMETRY_KEY_LIVEPLANNER` (and `TELEMETRY_KEY_LIVEDOCUMENTS` and `TELEMETRY_KEY_LIVEDESIGN` once
-   those apps send events).
+   `openssl rand -hex 32`, then `wrangler secret put TELEMETRY_KEY_LIVEDIAGRAM`,
+   `TELEMETRY_KEY_LIVEPLANNER` and `TELEMETRY_KEY_LIVEDOCUMENTS` (and `TELEMETRY_KEY_LIVEDESIGN`
+   once livedesign sends events).
 3. `corepack pnpm db:migrate:remote`, then `corepack pnpm deploy`. The dashboard ships with the
    site ([site.md](site.md)).
 4. The Worker takes the route `liveworkspace.app/api/telemetry*` only, so the rest of the zone is
@@ -150,10 +155,10 @@ HTTPS, not a service binding. Only the key has to be copied across.
 
 - **Ingest**: one D1 batch insert per request, as before. Rows are 1 column wider (`app`).
 - **Summary**: one grouped query per filter, at most once per 5 minutes per edge location. The
-  query groups by `app` too, so "All apps" returns up to twice as many rows. Folding them is linear;
+  query groups by `app` too, so "All apps" returns up to one set of rows per sending app. Folding them is linear;
   a test folds a worst case (59 days × 2 apps × 1,500 events) inside a time budget.
 - **Index**: `(app, ts)` for one app's range, and `(ts)` for every app and for the sweep.
-- **Dashboard**: "All apps" loads neither app's catalogue. Each app's dashboard is split out and
+- **Dashboard**: "All apps" loads none of the apps' catalogues. Each app's dashboard is split out and
   loads when picked. Its styles are its own stylesheet, loaded only on `/telemetry`: the site's
   other pages carry 9.5 KB of CSS (gzipped), and the dashboard adds 16.6 KB.
 - **Apps**: a browser batch is now cross-site, so it can't reuse the app's own connection; the first

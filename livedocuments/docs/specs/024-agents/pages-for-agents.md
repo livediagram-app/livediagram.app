@@ -197,7 +197,7 @@ Every decision logs with the `[pages-agent]` fingerprint: `applied` (document, t
   `Cli`, `Api`), as a changeset does; a refusal sends nothing.
 - Reading the `pages` view sends `Agent · Viewed · Pages`, as every view does.
 - Each tool call and CLI verb counts as every one does: `Mcp · Used · ChangePages|WriteArticle` and
-  `Cli · Used · PageLs|PageSet|ArticleGet|ArticleSet`, charted on the telemetry dashboard (`apps/telemetry`).
+  `Cli · Used · PageLs|PageSet|ArticleGet|ArticleSet`, charted on the telemetry dashboard (`liveworkspace/apps/site/app/telemetry/livedocuments`).
 - The editor's grow for an absent writer is not a person's action and sends nothing.
 
 ## Non-goals

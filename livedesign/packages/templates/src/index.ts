@@ -14,7 +14,7 @@ export {
   POPULAR_TEMPLATE_KINDS,
   popularKindsFor,
 } from './popular';
-export { isUntitledDocumentName, UNTITLED_DOCUMENT_NAME } from './legacy-untitled';
+export { isUntitledDesignName, UNTITLED_DESIGN_NAME } from './legacy-untitled';
 export * from './template-layers';
 export { buildTemplate, templateTabs, type TemplateTabDef } from './build-template';
 export * from './page-layouts';

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { encodeStrokePoints, type Element, type Tab } from '@livedesign/document';
+import { encodeStrokePoints, type Element, type Tab } from '@livedesign/design';
 import { applyEditOperations } from '../apply';
 import { parseEditOperations } from '../parse';
 import { checkoutFlow, fixedIds } from '../fixtures/checkout-flow';

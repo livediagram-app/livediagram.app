@@ -13,7 +13,7 @@ import {
   topAnchor,
   type BoxedElement,
   type IndicatorBox,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { useElementIndicatorStyle } from '@/components/canvas/ElementIndicatorStyleContext';
 import type { ElementIndicatorStyle } from '@/lib/element-indicator-style';
 import { clusterSize, type IndicatorForm, type IndicatorItem } from './indicator-items';

@@ -19,7 +19,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 //   | contentWindow.length          | 0           | 0         |
 //   | resource timing entry         | present     | present   |
 //
-// Chrome serves its refusal page as a cross-origin document, so the classic
+// Chrome serves its refusal page as a cross-origin design, so the classic
 // "read location.href and see about:blank" trick reports success for both. An
 // earlier version of this hook used exactly that, backed by a timeout, and the
 // timeout is what actually fired: every website embed grew a "won't load"

@@ -1,4 +1,4 @@
-/* ── Pages, slides and presenting card art (components/feature-art/infographics.tsx,
+/* ── Pages, photo and presenting card art (components/feature-art/pages.tsx, photo.tsx,
    present.tsx, page-kit.tsx). Every loop is 7s so the pieces of one card stay in step; each piece
    waits its own --e-d. Reduced motion settles every piece in place (below). ── */
 @keyframes fa-e-in {

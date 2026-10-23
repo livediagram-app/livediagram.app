@@ -7,7 +7,7 @@
 import { useContext, type ReactNode } from 'react';
 import { lucideGrid3x3, lucideWandSparkles } from '@livedesign/icons/lucide';
 import { lucideGlyph, Tooltip } from '@livedesign/ui';
-import { EditorContext } from '@/app/document/[id]/EditorContext';
+import { EditorContext } from '@/app/design/[id]/EditorContext';
 import { useHasSelectionStore, useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import type { LogoToolsView } from '@/hooks/editor/useLogoTools';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';

@@ -16,7 +16,7 @@ import {
   type Appearance,
   type LaidOutPage,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import type { PageLayoutId } from '@livedesign/templates';
 import { trustedHtml, useAppearance } from '@livedesign/ui';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';

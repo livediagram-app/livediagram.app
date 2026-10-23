@@ -5,7 +5,7 @@
 // panel's pen rows read and change them.
 
 import { useState } from 'react';
-import type { PenColour } from '@livedesign/document';
+import type { PenColour } from '@livedesign/design';
 import { track } from '@/lib/telemetry';
 import {
   loadWhiteboardPrefs,

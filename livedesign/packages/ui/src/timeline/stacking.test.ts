@@ -7,10 +7,10 @@ function event(overrides: Partial<TimelineEvent> = {}): TimelineEvent {
   seq += 1;
   return {
     id: `e${seq}`,
-    sourceType: 'document',
+    sourceType: 'design',
     sourceId: `s${seq}`,
-    eventType: 'document_edited',
-    title: 'Document Updated',
+    eventType: 'design_edited',
+    title: 'Design Updated',
     description: null,
     occurredAt: 1_754_380_800_000,
     actorId: 'owner-1',
@@ -27,7 +27,7 @@ describe('buildStacks', () => {
   });
 
   it('keeps different kinds in separate stacks', () => {
-    const stacks = buildStacks([event(), event({ eventType: 'document_renamed' })]);
+    const stacks = buildStacks([event(), event({ eventType: 'design_renamed' })]);
     expect(stacks).toHaveLength(2);
   });
 
@@ -36,7 +36,7 @@ describe('buildStacks', () => {
   it('groups by kind regardless of adjacency', () => {
     const stacks = buildStacks([
       event(),
-      event({ eventType: 'document_renamed' }),
+      event({ eventType: 'design_renamed' }),
       event(),
       event(),
     ]);
@@ -48,7 +48,7 @@ describe('buildStacks', () => {
   it('places a stack at its most recent member, given newest-first input', () => {
     const newest = event({ id: 'newest', occurredAt: 3 });
     const stacks = buildStacks([
-      event({ eventType: 'document_renamed', occurredAt: 4 }),
+      event({ eventType: 'design_renamed', occurredAt: 4 }),
       newest,
       event({ occurredAt: 1 }),
     ]);
@@ -82,7 +82,7 @@ describe('buildStacks', () => {
 
 describe('bucketFor', () => {
   it('namespaces by source type so two products cannot collide', () => {
-    expect(bucketFor(event({ sourceType: 'document', eventType: 'x' }))).toBe('document::x');
+    expect(bucketFor(event({ sourceType: 'design', eventType: 'x' }))).toBe('design::x');
     expect(bucketFor(event({ sourceType: 'team', eventType: 'x' }))).toBe('team::x');
   });
 });
@@ -90,7 +90,7 @@ describe('bucketFor', () => {
 describe('stackLabel', () => {
   it('uses a generic headline that is true of every member', () => {
     const stacks = buildStacks([event(), event()]);
-    expect(stackLabel(stacks[0]!)).toBe('Documents Updated');
+    expect(stackLabel(stacks[0]!)).toBe('Designs Updated');
   });
 
   // A source type a newer worker invents still has to read correctly.

@@ -1,7 +1,7 @@
 // The editor's side of locked pages (docs/specs/007-editor/pages-mode.md "Locking a page"):
 // the commit choke point passes each edit of the guarded tab (the active one, in Pages mode)
 // through guardLockedPages, and says once in a while why something was held back.
-import { guardLockedPages, pagesOf, type Tab } from '@livedesign/document';
+import { guardLockedPages, pagesOf, type Tab } from '@livedesign/design';
 import { debugLog } from '@/lib/debug-log';
 
 // `onBlocked` is called inside the commit's state update: it must defer anything that sets state.

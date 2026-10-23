@@ -15,7 +15,7 @@ import {
 } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { decodeAnalyzeData } from '../src/analyze-data.ts';
@@ -30,6 +30,8 @@ import { TEXT_SOURCES, TEXTS_DIR } from '../src/texts.ts';
 import { log, logFailure } from './log.ts';
 
 const REPO_ROOT = resolve(fileURLToPath(new URL('../../../', import.meta.url)));
+// Next reports sources from the pnpm workspace root, the monorepo above this product.
+const WORKSPACE_ROOT = resolve(REPO_ROOT, '..');
 const NEXT_ANALYZE_DISTDIR = '.next-analyze';
 const OUTPUT_TAIL_CHARS = 4000;
 
@@ -101,7 +103,7 @@ function bundleNext(app: LicenceApp): AppBundle {
   const assets = new Set<string>();
   for (const file of files) {
     const decoded = decodeAnalyzeData(readFileSync(file));
-    decoded.sources.forEach((s) => sources.add(s));
+    decoded.sources.forEach((s) => sources.add(relative(REPO_ROOT, join(WORKSPACE_ROOT, s))));
     decoded.assets.forEach((a) => assets.add(a));
   }
   return { app: app.id, sources: [...sources].sort(), assets: [...assets].sort() };

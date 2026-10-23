@@ -3,7 +3,7 @@
 // words. The page summaries themselves are api-schema's (pages-summary), shared
 // with the pages view.
 import type { PageRef, PageSummary } from '@livedesign/api-schema';
-import { pageHasOrientation, pageSizeLabel, PAGE_SIZES, type Page } from '@livedesign/document';
+import { pageHasOrientation, pageSizeLabel, PAGE_SIZES, type Page } from '@livedesign/design';
 
 export { describeBackground, pageSummaries } from '@livedesign/api-schema';
 

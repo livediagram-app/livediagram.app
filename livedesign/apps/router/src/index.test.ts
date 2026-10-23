@@ -44,8 +44,8 @@ const dispatch = (path: string, env: Env) =>
 describe('production dispatch (service bindings)', () => {
   it('forwards /api/* to the api worker with the prefix KEPT', async () => {
     const { env, api } = makeEnv();
-    await dispatch('/api/documents/abc', env);
-    expect(api.urls).toEqual(['https://livedesign.app/api/documents/abc']);
+    await dispatch('/api/designs/abc', env);
+    expect(api.urls).toEqual(['https://livedesign.app/api/designs/abc']);
   });
 
   it('strips /live off the asset-prefix requests for the live worker', async () => {
@@ -90,10 +90,10 @@ describe('production dispatch (service bindings)', () => {
 
   it('forwards the clean live page routes UNstripped', async () => {
     const { env, live } = makeEnv();
-    await dispatch('/document/abc123', env);
+    await dispatch('/design/abc123', env);
     await dispatch('/new?blank=1', env);
     expect(live.urls).toEqual([
-      'https://livedesign.app/document/abc123',
+      'https://livedesign.app/design/abc123',
       'https://livedesign.app/new?blank=1',
     ]);
   });
@@ -130,10 +130,10 @@ describe('local-dev dispatch (origin proxy)', () => {
     const fetchMock = vi.fn((_req: Request) => Promise.resolve(new Response('ok')));
     vi.stubGlobal('fetch', fetchMock);
     try {
-      await dispatch('/telemetry/data', { TELEMETRY_ORIGIN: 'http://localhost:3303' });
+      await dispatch('/telemetry/data', { TELEMETRY_ORIGIN: 'http://localhost:3403' });
       const req = fetchMock.mock.calls[0]![0];
       // Dev servers serve their own basePath, so no strip on this path.
-      expect(req.url).toBe('http://localhost:3303/telemetry/data');
+      expect(req.url).toBe('http://localhost:3403/telemetry/data');
     } finally {
       vi.unstubAllGlobals();
     }
@@ -234,7 +234,7 @@ describe('staging noindex header', () => {
   });
 
   it('marks the api and the editor too, not just the indexable pages', async () => {
-    for (const path of ['/api/documents/abc', '/document/xyz', '/help/canvas/shadows/']) {
+    for (const path of ['/api/designs/abc', '/design/xyz', '/help/canvas/shadows/']) {
       const { env } = makeEnv();
       const res = await dispatch(path, staging(env));
       expect(res.headers.get('X-Robots-Tag')).toBe('noindex, nofollow');
@@ -272,7 +272,7 @@ describe('staging noindex header', () => {
       API: { fetch: () => Promise.resolve(upgrade) } as unknown as Fetcher,
       DEPLOY_ENV: 'staging',
     };
-    const res = await dispatch('/api/documents/abc/ws', env);
+    const res = await dispatch('/api/designs/abc/ws', env);
     expect(res).toBe(upgrade);
     expect(res.webSocket).toBe(socket);
   });

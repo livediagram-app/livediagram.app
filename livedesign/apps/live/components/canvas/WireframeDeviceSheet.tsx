@@ -14,7 +14,7 @@ import {
   type LaidOutPage,
   type PageBackground,
   type WireframeFrameTheme,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { pageSheetStyle } from '@/lib/page-paint';
 
 export const WireframeDeviceSheet = memo(function WireframeDeviceSheet({
@@ -63,7 +63,7 @@ export const WireframeDeviceSheet = memo(function WireframeDeviceSheet({
         width={page.rect.width}
         height={page.rect.height}
         viewBox={`0 0 ${page.rect.width} ${page.rect.height}`}
-        // The frame is this app's own markup (packages/document wireframe-device-svg), never content.
+        // The frame is this app's own markup (packages/design wireframe-device-svg), never content.
         dangerouslySetInnerHTML={{ __html: trustedHtml(under) }}
       />
       <div

@@ -145,7 +145,6 @@ export type WorkbenchPerson = {
   id: string;
   name: string | null;
   color: string | null;
-  pictureUrl: string | null;
 };
 export type WorkbenchSessionResponse = {
   session: string;
@@ -259,7 +258,6 @@ const WORKBENCH_ROUTES: readonly RouteShape[] = [
   shape('GET', 'documents/:doc/changesets/:p'),
   shape('GET', 'documents/:doc/comments'),
   shape('GET', 'documents/:doc/tabs/:p/render.svg'),
-  shape('GET', 'documents/:doc/tabs/:p/comment-pictures'),
   shape('POST', 'documents/:doc/tabs/:p/comments'),
   shape('POST', 'documents/:doc/tabs/:p/comments/:p/reply'),
   shape('POST', 'documents/:doc/tabs/:p/comments/:p/resolve'),
@@ -271,7 +269,7 @@ const WORKBENCH_ROUTES: readonly RouteShape[] = [
 
 // The workspace scope: everything the Explorer does, and the editor of every document in it. Never the account
 // (profile, preferences' writes, the guest migration, tokens and pairings, team administration, the account), and
-// never a route the minting token could not call (Clerk only, WB51).
+// never a route the minting token could not call (WB51).
 const WORKSPACE_ROUTES: readonly RouteShape[] = [
   shape('GET', 'capabilities'),
   shape('GET', 'openapi.json'),

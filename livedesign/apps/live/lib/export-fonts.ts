@@ -1,5 +1,5 @@
 import { bytesToBase64 } from '@livedesign/api-schema';
-import { googleFontsHref } from '@livedesign/document';
+import { googleFontsHref } from '@livedesign/design';
 
 // Webfonts, EMBEDDED, for an image export (docs/specs/004-interface-design/fonts.md).
 //

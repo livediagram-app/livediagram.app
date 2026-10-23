@@ -24,7 +24,7 @@ import {
   isBoxed,
   isSelfDrawingShape,
   supportsRotation,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { ArrowLineControls, ArrowPointerControls } from '@/components/canvas/arrow-controls';
 import { ContextMenu, ContextMenuDivider } from '@/components/palette/ContextMenu';
 import { SizeButton } from '@/components/palette/palette-controls';
@@ -171,7 +171,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             />
             <MenuTile icon={<LayerDownIcon />} label="Send to Back" onClick={props.onSendToBack} />
           </MenuTileGrid>
-          {/* Move to a named layer (docs/specs/006-document/layers.md) — only once the tab has
+          {/* Move to a named layer (docs/specs/006-design/layers.md) — only once the tab has
             more than one layer (the row renders nothing otherwise). */}
           {props.onMoveSelectionToLayer ? (
             <MoveToLayerRow

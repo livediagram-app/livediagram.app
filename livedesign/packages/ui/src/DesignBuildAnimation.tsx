@@ -16,7 +16,7 @@ import {
 // the pen, anchor by anchor with their handles showing; the path closes and fills, a cut-out lands in it, then the
 // cursor drags a corner of the selection to scale the mark up (smart guides lining it up with the artboard's centre)
 // and picks a new colour from the swatches before a few sparkles mark it done and the loop restarts. Shown by the
-// opening screen (DocumentLoading, docs/specs/007-editor/new-document-route.md). A bare illustration with no surface of
+// opening screen (DesignLoading, docs/specs/007-editor/new-design-route.md). A bare illustration with no surface of
 // its own, so each host composes it into its own card or screen.
 //
 // Pure SVG + CSS keyframes generated once at module load (no JS tick, no deps, runs in the static export). Every

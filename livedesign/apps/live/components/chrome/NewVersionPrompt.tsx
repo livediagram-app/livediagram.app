@@ -1,15 +1,15 @@
 'use client';
 
 // "A new version of livedesign is ready." (docs/specs/016-platform/new-version-prompt.md): shown when
-// the server serves a newer document format than this editor was built for. Calm and non-blocking:
+// the server serves a newer design format than this editor was built for. Calm and non-blocking:
 // a polite status that never takes focus, never reloads by itself, and reloads only once everything
 // edited has been saved.
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { DOCUMENT_FORMAT } from '@livedesign/api-schema';
+import { DESIGN_FORMAT } from '@livedesign/api-schema';
 import { Button } from '@livedesign/ui';
 import {
   newVersionAvailable,
-  serverDocumentFormat,
+  serverDesignFormat,
   subscribeServerRelease,
 } from '@/lib/server-release';
 import { reloadWhenSaved } from '@/lib/reload-when-saved';
@@ -26,7 +26,7 @@ const COPY: Record<Phase, string> = {
   unsaved: "Your latest changes aren't saved yet. Reload once they are.",
 };
 
-const getServerFormat = () => serverDocumentFormat();
+const getServerFormat = () => serverDesignFormat();
 
 export function NewVersionPrompt({
   hasUnsavedChanges,
@@ -45,7 +45,7 @@ export function NewVersionPrompt({
   useEffect(() => {
     if (!visible || announced.current) return;
     announced.current = true;
-    debugLog('[document-format] newer on the server', { editor: DOCUMENT_FORMAT, server });
+    debugLog('[design-format] newer on the server', { editor: DESIGN_FORMAT, server });
     track('UI', 'Opened', 'NewVersionPrompt');
   }, [visible, server]);
   // A toast already up stands on the prompt while it shows, and drops back when it goes.

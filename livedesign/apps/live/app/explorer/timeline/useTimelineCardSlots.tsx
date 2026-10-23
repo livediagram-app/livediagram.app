@@ -5,13 +5,13 @@
 // its items starts.
 //
 // Every card gets a menu, because every card can be removed from the
-// reader's own feed. A card about a document or a folder the Explorer has
+// reader's own feed. A card about a design or a folder the Explorer has
 // loaded gets that thing's full Explorer menu on top: an event only
 // NAMES its subject, and the menu's items depend on its folder, team,
 // share and owner, so the id is resolved against the Explorer's
-// already-loaded lists (personal, team, shared-with-you documents; the
+// already-loaded lists (personal, team, shared-with-you designs; the
 // personal folder tree), the same set Recent and the folder cards draw
-// from. Nothing found (a tombstone, or a team document the sidebar hasn't
+// from. Nothing found (a tombstone, or a team design the sidebar hasn't
 // loaded) means the one-verb menu: a menu of guesses is worse than none,
 // and the card still opens its subject on click.
 
@@ -22,7 +22,7 @@ import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { track } from '@/lib/telemetry';
 import { useExplorer } from '../ExplorerContext';
 import { folderMenuHandlers } from '../views';
-import { useExplorerDocumentsById } from '../useDocumentEntryFor';
+import { useExplorerDesignsById } from '../useDesignEntryFor';
 import { TimelineCardMenu } from './TimelineCardMenu';
 import type { TimelineEntityMenuFor } from './useTimelineEntityMenus';
 import { assignAppLocation } from '@/lib/app-location';
@@ -38,7 +38,7 @@ const RENAME_INPUT_CLASS =
 // The card's subject as the menu header should name it. Renderers
 // build the on-card subject from the same snapshot keys; this is the
 // plain-string reading of it, for a menu that can't take a node.
-const SUBJECT_KEYS = ['documentName', 'teamName', 'folderName', 'themeName', 'tokenName'];
+const SUBJECT_KEYS = ['designName', 'teamName', 'folderName', 'themeName', 'tokenName'];
 function subjectOf(event: TimelineEvent): string {
   for (const key of SUBJECT_KEYS) {
     const v = event.snapshot?.[key];
@@ -55,17 +55,17 @@ export function useTimelineCardSlots({
   onShowHistory: (id: string, name: string) => void;
   /** Take one card off the reader's feed (docs/specs/013-workspace/timeline.md §2.9). */
   onDismiss: (eventId: string) => void;
-  /** The verbs for a card that isn't a resolved document or folder (useTimelineEntityMenus). */
+  /** The verbs for a card that isn't a resolved design or folder (useTimelineEntityMenus). */
   entityMenu: TimelineEntityMenuFor;
 }): TimelineCardSlotsFor {
   const {
     ownerId,
-    renamingDocumentId,
-    setRenamingDocumentId,
-    renameDocument,
-    deleteDocument,
-    duplicateDocument,
-    openMovePickerForDocument,
+    renamingDesignId,
+    setRenamingDesignId,
+    renameDesign,
+    deleteDesign,
+    duplicateDesign,
+    openMovePickerForDesign,
     dismissShared,
     favouriteIds,
     toggleFavourite,
@@ -78,13 +78,13 @@ export function useTimelineCardSlots({
     commitRenameFolder,
   } = useExplorer();
 
-  const byId = useExplorerDocumentsById();
+  const byId = useExplorerDesignsById();
 
   // Memoised: a fresh `?? []` each render would make the slot callback
   // below a new function every render.
   const recentExcluded = useMemo(() => prefs.recentExcludedIds ?? [], [prefs.recentExcludedIds]);
 
-  // Which card's menu is open, by event id (one document can have several
+  // Which card's menu is open, by event id (one design can have several
   // cards on a day, and a menu belongs to the card it was opened from).
   // Held here rather than inside the trigger so the card's right-click
   // can open the same menu.
@@ -139,7 +139,7 @@ export function useTimelineCardSlots({
         };
       }
 
-      const id = event.sourceType === 'document' ? idOf(event.snapshot, 'documentId') : null;
+      const id = event.sourceType === 'design' ? idOf(event.snapshot, 'designId') : null;
       const liveDoc = id ? byId.get(id) : undefined;
       if (!id || !liveDoc) {
         // Everything else: the verbs the Explorer offers that kind of
@@ -160,19 +160,19 @@ export function useTimelineCardSlots({
       }
 
       const title =
-        renamingDocumentId === id ? (
+        renamingDesignId === id ? (
           <InlineRenameInput
             initial={liveDoc.name}
             ariaLabel={`Rename ${liveDoc.name}`}
-            onCommit={(name) => renameDocument(id, name)}
-            onCancel={() => setRenamingDocumentId(null)}
+            onCommit={(name) => renameDesign(id, name)}
+            onCancel={() => setRenamingDesignId(null)}
             className={RENAME_INPUT_CLASS}
           />
         ) : undefined;
 
       return {
         // The name as the Explorer knows it now. A card for the create of
-        // a document renamed since still shows its current name, the same
+        // a design renamed since still shows its current name, the same
         // way its preview shows the current picture.
         subject: liveDoc.name,
         title,
@@ -182,31 +182,31 @@ export function useTimelineCardSlots({
         menu: (
           <TimelineCardMenu
             subject={liveDoc.name}
-            document={liveDoc}
+            design={liveDoc}
             {...menuProps}
             handlers={{
               ownerId,
-              onStartRename: () => setRenamingDocumentId(id),
-              onDuplicate: () => void duplicateDocument(id),
-              onMove: (anchor) => openMovePickerForDocument(id, anchor),
-              onDelete: () => void deleteDocument(id),
+              onStartRename: () => setRenamingDesignId(id),
+              onDuplicate: () => void duplicateDesign(id),
+              onMove: (anchor) => openMovePickerForDesign(id, anchor),
+              onDelete: () => void deleteDesign(id),
               onDismiss: liveDoc.shared ? () => void dismissShared(id) : undefined,
               favourite: favouriteIds.has(id),
               onToggleFavourite: () => toggleFavourite(id),
               recentExcluded: recentExcluded.includes(id),
               onToggleRecentExclusion: () => toggleRecentExclusion(id),
-              // Offline documents never reach the worker, so they have no
-              // server history to show (docs/specs/006-document/offline-mode.md).
+              // Offline designs never reach the worker, so they have no
+              // server history to show (docs/specs/006-design/offline-mode.md).
               onShowHistory: isOfflineIdSync(id)
                 ? undefined
                 : () => onShowHistory(id, liveDoc.name),
               // Straight to the Share dialog (the editor honours
               // `?share=1`): the natural next step from a share-link
-              // card, and no worse from any other. Offline documents have
-              // nothing to share (docs/specs/006-document/offline-mode.md).
+              // card, and no worse from any other. Offline designs have
+              // nothing to share (docs/specs/006-design/offline-mode.md).
               onShare: isOfflineIdSync(id)
                 ? undefined
-                : () => assignAppLocation(`/document/${encodeURIComponent(id)}?share=1`),
+                : () => assignAppLocation(`/design/${encodeURIComponent(id)}?share=1`),
             }}
           />
         ),
@@ -217,12 +217,12 @@ export function useTimelineCardSlots({
       menuFor,
       openMenu,
       ownerId,
-      renamingDocumentId,
-      setRenamingDocumentId,
-      renameDocument,
-      deleteDocument,
-      duplicateDocument,
-      openMovePickerForDocument,
+      renamingDesignId,
+      setRenamingDesignId,
+      renameDesign,
+      deleteDesign,
+      duplicateDesign,
+      openMovePickerForDesign,
       dismissShared,
       favouriteIds,
       toggleFavourite,

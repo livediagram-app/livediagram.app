@@ -229,10 +229,10 @@ export const NOTIFICATION_SETTINGS = settingsStack(
     ),
     toggle(
       'UI',
-      'NotifyDocumentJoinOn',
-      'NotifyDocumentJoinOff',
-      'Someone Joins My Document',
-      'The document-joined email.',
+      'NotifyDesignJoinOn',
+      'NotifyDesignJoinOff',
+      'Someone Joins My Design',
+      'The design-joined email.',
     ),
     toggle(
       'UI',
@@ -245,7 +245,7 @@ export const NOTIFICATION_SETTINGS = settingsStack(
       'UI',
       'NotifyCommentsOn',
       'NotifyCommentsOff',
-      'Someone Comments on My Document',
+      'Someone Comments on My Design',
       'The new-comment email.',
     ),
     toggle(

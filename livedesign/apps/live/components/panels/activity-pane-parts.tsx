@@ -87,12 +87,12 @@ export function ActivityActionRow({
 // direct reason, so it wins (docs/specs/012-collaboration/comment-mentions.md "The Inbox").
 type ThreadFacts = Pick<
   ActivityThread,
-  'mentionsYou' | 'onYourDocument' | 'youCommented' | 'commentCount' | 'latest'
+  'mentionsYou' | 'onYourDesign' | 'youCommented' | 'commentCount' | 'latest'
 >;
 
 function threadHint(t: ThreadFacts): string | null {
   if (t.mentionsYou) return 'Mentioned You';
-  return t.onYourDocument && !t.youCommented ? 'Your document' : null;
+  return t.onYourDesign && !t.youCommented ? 'Your design' : null;
 }
 
 function threadAvatar(t: ThreadFacts) {
@@ -203,20 +203,20 @@ function ActivityRowShell({
   );
 }
 
-// Which document the row is from; a team document's chip leads with the
-// team glyph so the source of the work reads at a glance. When the document is in This Browser, the chip is followed by
-// the This Browser pill, as a label since the whole row is a link (docs/specs/006-document/offline-mode.md#this-browser-pill).
-// `local` is set when the document is saved only in this browser (docs/specs/013-workspace/inbox.md §2.6).
+// Which design the row is from; a team design's chip leads with the
+// team glyph so the source of the work reads at a glance. When the design is in This Browser, the chip is followed by
+// the This Browser pill, as a label since the whole row is a link (docs/specs/006-design/offline-mode.md#this-browser-pill).
+// `local` is set when the design is saved only in this browser (docs/specs/013-workspace/inbox.md §2.6).
 function PlaceChip({ place }: { place: Located<ActivityPlace> }) {
   return (
     <>
-      <DocumentChip place={place} />
+      <DesignChip place={place} />
       {place.local ? <ThisBrowserPill asLabel /> : null}
     </>
   );
 }
 
-function DocumentChip({ place }: { place: Located<ActivityPlace> }) {
+function DesignChip({ place }: { place: Located<ActivityPlace> }) {
   return (
     <span className="inline-flex max-w-[14rem] shrink-0 items-center gap-1 rounded-full bg-slate-100 px-1.5 py-0.5 font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
       {place.via === 'team' ? (
@@ -224,12 +224,12 @@ function DocumentChip({ place }: { place: Located<ActivityPlace> }) {
           <TeamIcon />
         </span>
       ) : null}
-      <span className="truncate">{place.documentName}</span>
+      <span className="truncate">{place.designName}</span>
     </span>
   );
 }
 
-// Nothing outstanding anywhere. No New Document CTA: a new document puts
+// Nothing outstanding anywhere. No New Design CTA: a new design puts
 // nothing on this page; assigning an action or commenting does.
 export function ActivityEmptyState({ compact = false }: { compact?: boolean } = {}) {
   return (
@@ -237,7 +237,7 @@ export function ActivityEmptyState({ compact = false }: { compact?: boolean } = 
       compact={compact}
       icon={<InboxIcon />}
       title="Nothing waiting on you"
-      description="Open actions assigned to you, actions you assigned, and comment threads you're in, collect here across every document."
+      description="Open actions assigned to you, actions you assigned, and comment threads you're in, collect here across every design."
     >
       <a
         href={helpArticleHref('assignedActions')}

@@ -10,7 +10,7 @@ import {
   rowPageAt,
   type Element,
   type LaidOutPage,
-} from '@livedesign/document';
+} from '@livedesign/design';
 
 export function pageElementBuckets(
   elements: readonly Element[],

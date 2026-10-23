@@ -1,4 +1,4 @@
-// How a tab's folder membership change gets reported to telemetry (docs/specs/006-document/tab-folders.md + docs/specs/017-telemetry/telemetry.md).
+// How a tab's folder membership change gets reported to telemetry (docs/specs/006-design/tab-folders.md + docs/specs/017-telemetry/telemetry.md).
 //
 // Its own module because there are TWO code paths to the same outcome: the
 // ellipsis menu (useTabFolders) and a drag that adopts the drop target's

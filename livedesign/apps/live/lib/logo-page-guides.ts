@@ -8,7 +8,7 @@ const STORAGE_KEY = 'livedesign:v2:logo-page-guides';
 /** How many pages' choices are kept (about 10 KB of local storage at most). */
 export const LOGO_PAGE_GUIDES_MAX = 200;
 
-/** A page's entry: its tab's id with its own, since page ids repeat across tabs and documents
+/** A page's entry: its tab's id with its own, since page ids repeat across tabs and designs
  *  (every tab's first page is 'page-1'). */
 export const logoPageGuidesKey = (tabId: string, pageId: string) => `${tabId}:${pageId}`;
 

@@ -13,7 +13,7 @@ afterEach(() => {
 
 // docs/specs/015-api/api.md "Purging a room"
 describe('purgeRooms', () => {
-  it("asks each document's room to purge, a bounded batch at a time", async () => {
+  it("asks each design's room to purge, a bounded batch at a time", async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     let inFlight = 0;
     let peak = 0;
@@ -43,7 +43,7 @@ describe('purgeRooms', () => {
     expect(warn).toHaveBeenCalledTimes(2);
   });
 
-  it('does nothing for no documents', async () => {
+  it('does nothing for no designs', async () => {
     expect(await purgeRooms({} as never, [])).toEqual({ rooms: 0, unreached: 0 });
     expect(roomFetch).not.toHaveBeenCalled();
   });

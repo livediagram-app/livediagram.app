@@ -35,7 +35,7 @@ type Env = { ASSETS: AssetsBinding; API?: Fetcher };
 //
 //   - Content-Security-Policy: Trusted Types alone, enforced
 //     (docs/specs/016-platform/trusted-types.md). The rest of a CSP
-//     (script-src for Clerk's external script, the api / R2 origins)
+//     (script-src, the api / R2 origins)
 //     is out of that spec's scope.
 const SECURITY_HEADERS: Record<string, string> = {
   'Content-Security-Policy': TRUSTED_TYPES_CSP,

@@ -6,16 +6,16 @@
 // An article page drags its whole article: the row is moved in units (a page, or an article), so
 // no slot falls inside an article.
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react';
-import { pageUnits, unionRects, type LaidOutPage, type PageRect } from '@livedesign/document';
+import { pageUnits, unionRects, type LaidOutPage, type PageRect } from '@livedesign/design';
 
 // Screen px a press must travel before it is a drag rather than a click.
 const DRAG_THRESHOLD = 6;
 
-// The dragged page and its unit's pages (it, or its whole document), and the slot among the other
+// The dragged page and its unit's pages (it, or its whole design), and the slot among the other
 // units it would land in.
 export type PageReorder = { pageId: string; pageIds: readonly string[]; slot: number };
 
-/** The row's units laid out: each a page or a whole document, with the rect its sheets span. */
+/** The row's units laid out: each a page or a whole design, with the rect its sheets span. */
 export function laidOutUnits(
   pages: readonly LaidOutPage[],
 ): { pageIds: string[]; rect: PageRect }[] {

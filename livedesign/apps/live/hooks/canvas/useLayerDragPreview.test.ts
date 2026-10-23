@@ -4,7 +4,7 @@ import {
   createPinnedArrow,
   createShape,
   type Element,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { applyOverlay, resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
 import { buildArrowLinks } from '@/components/canvas/drag-affected-arrows';
 import {
@@ -150,7 +150,7 @@ describe('the layer preview store', () => {
     expect(store.entryOf(a.id)).toBe(kept);
   });
 
-  it('tells an element again when the preview ends, so it draws from the document', () => {
+  it('tells an element again when the preview ends, so it draws from the design', () => {
     const store = createLayerPreviewStore();
     const told = vi.fn();
     store.subscribe(a.id, told);

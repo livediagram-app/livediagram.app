@@ -1,5 +1,7 @@
 # Canvas performance on large boards
 
+> **History.** Written for livediagram, before livedesign was cut down to logo, wireframe and photo pages. The board measured was a whiteboard tab, which livedesign does not have; the hot spots are in canvas code livedesign still runs, and the rules live in the spec.
+
 Measured 2026-10-02 on a real 658-element whiteboard on staging (277 shapes, 215 arrows, 76
 freehand, 74 text, 14 paths, 2 stickies; 164 KB), at the 19% zoom that fits it on screen. The
 resulting rules live in [Canvas performance](../specs/008-canvas/canvas-performance.md).
@@ -97,7 +99,7 @@ is 1,000 elements over four screens by three: denser than the staging board abov
 ## Fixed already
 
 - The Quick Style panel's placement re-ran every frame at rest (its `ResizeObserver` re-observed
-  each pass and re-notified itself): about 600 passes per 5 s idle, each a document-wide query and a
+  each pass and re-notified itself): about 600 passes per 5 s idle, each a design-wide query and a
   forced layout. Fixed in #277; frames painted in the same scripted pan went from 179 to 343.
 - Selection chrome measured itself every drag frame, and so did the canvas guide overlays (#280).
 - The Map rebuilt the whole board's markup on every drag frame (#282).
@@ -152,7 +154,7 @@ into "during the gesture" and "at release", at the reference speed.
   that also lifted the arrows' canvas-sized SVGs crashed the page. An emulated GPU (SwiftShader) was
   no better: it does its GPU work on the CPU.
 - At release, ~105 ms is the Map's picture being parsed (`SVGImage::DataChanged`, an
-  `IsolatedSVGDocumentHost` for a 1,000-element document) and ~100 ms the commit's script.
+  `IsolatedSVGDesignHost` for a 1,000-element design) and ~100 ms the commit's script.
 
 ## The Map without labels
 

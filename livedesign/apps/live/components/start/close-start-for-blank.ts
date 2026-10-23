@@ -1,4 +1,4 @@
-// An explicit blank starts blank (docs/specs/007-editor/start-diagramming.md "When it shows"): a document made by
+// An explicit blank starts blank (docs/specs/007-editor/start-diagramming.md "When it shows"): a design made by
 // Skip, Start Blank (`/new?blank=1`) or a blank's `/new?template=` link opens with its tab's start already closed, so
 // someone who asked for nothing gets nothing over the canvas.
 import { isBlankTemplate, templateEditorMode, type TemplateKind } from '@livedesign/templates';

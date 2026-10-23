@@ -1,9 +1,9 @@
 // The editor's session memory of what re-inking replaced, per tab (docs/specs/007-editor/
 // pages-mode.md "Re-inking", "Going back"): so a page taken to Midnight and back to the
-// paper gets every colour back as the author chose it. Never stored in the document; gone on a
+// paper gets every colour back as the author chose it. Never stored in the design; gone on a
 // reload. Bounded: a tab's memory holds at most one entry per element on it (pageInkFor drops the
 // ids no longer on the tab), and at most MAX_TABS tabs are remembered.
-import { EMPTY_INK_MEMORY, type InkMemory } from '@livedesign/document';
+import { EMPTY_INK_MEMORY, type InkMemory } from '@livedesign/design';
 
 // Tabs remembered at once; the least recently re-inked goes first.
 const MAX_TABS = 20;

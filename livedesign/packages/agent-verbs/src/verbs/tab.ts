@@ -1,4 +1,4 @@
-// The tab verbs that read (docs/specs/015-api/cli.md "Commands"): the tabs of a document, a view of one, and
+// The tab verbs that read (docs/specs/015-api/cli.md "Commands"): the tabs of a design, a view of one, and
 // its lint, as the api serves them.
 
 import { z } from 'zod';
@@ -7,14 +7,14 @@ import { formatLintReport } from '@livedesign/page-lint';
 import { readPlainTab, recordCopy, type ReadCopy } from '../copies';
 import { defineVerb, type VerbContext } from '../define';
 import { shortestUniquePrefixes } from '../refs';
-import { columns, documentOf, tabOf, tabPath } from './shared';
+import { columns, designOf, tabOf, tabPath } from './shared';
 
 const tabFlag = z
   .string()
   .optional()
   .describe('A tab name or id prefix; the first tab when omitted');
 
-// A document's tabs as `tab ls` lists them: in order, numbered from 1, each with the shortest unique ref. The CLI
+// A design's tabs as `tab ls` lists them: in order, numbered from 1, each with the shortest unique ref. The CLI
 // lists a pull file's tabs with it too.
 export function tabListOf(tabs: readonly { id: string; name: string; orderIndex: number }[]) {
   const ordered = [...tabs].sort((a, b) => a.orderIndex - b.orderIndex);
@@ -24,8 +24,8 @@ export function tabListOf(tabs: readonly { id: string; name: string; orderIndex:
 
 export const tabLs = defineVerb({
   id: 'tab.ls',
-  summary: "The document's tabs",
-  description: 'Lists the tabs of a document in order: position, ref and name.',
+  summary: "The design's tabs",
+  description: 'Lists the tabs of a design in order: position, ref and name.',
   behaviour: 'read',
   input: z.object({ doc: z.string().describe('A name, id prefix or livedesign URL') }),
   output: z.object({
@@ -35,8 +35,8 @@ export const tabLs = defineVerb({
   }),
   listKey: 'tabs',
   run: async (ctx, { doc }) => {
-    const document = await documentOf(ctx, doc);
-    return { tabs: tabListOf(document.tabs) };
+    const design = await designOf(ctx, doc);
+    return { tabs: tabListOf(design.tabs) };
   },
   text: ({ tabs }) =>
     tabs.length
@@ -63,19 +63,19 @@ const viewQuery = (params: Record<string, string | number | boolean | undefined>
 // is repeated once, and kept only if it then agrees (CLI24).
 async function keepCopyOf(
   ctx: VerbContext,
-  documentId: string,
+  designId: string,
   tabId: string,
   viewRev: number | null,
   plain: ReadCopy | null,
 ): Promise<void> {
   if (!ctx.copies || viewRev === null) return;
-  const agreed = plain?.rev === viewRev ? plain : await readPlainTab(ctx, documentId, tabId);
+  const agreed = plain?.rev === viewRev ? plain : await readPlainTab(ctx, designId, tabId);
   if (agreed?.rev !== viewRev) {
-    ctx.log(`copy skipped ${documentId}/${tabId} view rev ${viewRev}`);
+    ctx.log(`copy skipped ${designId}/${tabId} view rev ${viewRev}`);
     return;
   }
-  await ctx.copies.record(documentId, tabId, agreed);
-  ctx.log(`copy recorded ${documentId}/${tabId} rev ${agreed.rev}`);
+  await ctx.copies.record(designId, tabId, agreed);
+  ctx.log(`copy recorded ${designId}/${tabId} rev ${agreed.rev}`);
 }
 
 export const tabView = defineVerb({
@@ -108,7 +108,7 @@ export const tabView = defineVerb({
   }),
   output: viewOutput,
   run: async (ctx, input) => {
-    const { document, tab } = await tabOf(ctx, input.doc, input.tab);
+    const { design, tab } = await tabOf(ctx, input.doc, input.tab);
     const query = viewQuery({
       view: input.view,
       ref: input.ref,
@@ -121,16 +121,16 @@ export const tabView = defineVerb({
       json: input.json,
     });
     if (input.raw) {
-      const copy = await recordCopy(ctx, document.id, tab.id);
-      const plain = copy ?? (await readPlainTab(ctx, document.id, tab.id));
+      const copy = await recordCopy(ctx, design.id, tab.id);
+      const plain = copy ?? (await readPlainTab(ctx, design.id, tab.id));
       return { json: plain?.tab ?? null };
     }
-    const path = `${tabPath(document.id, tab.id)}?${query}`;
+    const path = `${tabPath(design.id, tab.id)}?${query}`;
     const [view, plain] = await Promise.all([
       ctx.api.text(path),
-      ctx.copies ? readPlainTab(ctx, document.id, tab.id) : null,
+      ctx.copies ? readPlainTab(ctx, design.id, tab.id) : null,
     ]);
-    await keepCopyOf(ctx, document.id, tab.id, revOfEtag(view.etag), plain);
+    await keepCopyOf(ctx, design.id, tab.id, revOfEtag(view.etag), plain);
     return input.json ? { json: JSON.parse(view.body) as unknown } : { text: view.body };
   },
   text: ({ text, json }) => [text ?? JSON.stringify(json)],
@@ -158,9 +158,9 @@ export const tabLint = defineVerb({
   output: z.object({ findings: z.array(z.unknown()), errors: z.number(), text: z.string() }),
   listKey: 'findings',
   run: async (ctx, input) => {
-    const { document, tab } = await tabOf(ctx, input.doc, input.tab);
+    const { design, tab } = await tabOf(ctx, input.doc, input.tab);
     const report = await ctx.api.json<LintReport>(
-      `${tabPath(document.id, tab.id)}?view=lint&json=1`,
+      `${tabPath(design.id, tab.id)}?view=lint&json=1`,
     );
     return {
       findings: report.findings,

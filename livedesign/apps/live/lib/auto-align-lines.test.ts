@@ -6,7 +6,7 @@ import {
   type Element,
   type ShapeElement,
   type ShapeKind,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { autoAlignElements } from './auto-align';
 import { LINK_TOLERANCE } from './auto-align-lines';
 

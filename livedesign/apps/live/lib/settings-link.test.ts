@@ -16,9 +16,9 @@ describe('the Settings deep link', () => {
     window.history.replaceState(
       null,
       '',
-      '/document/a?view=1&settings=account&section=your-data#t',
+      '/design/a?view=1&settings=account&section=your-data#t',
     );
     dropSettingsLink();
-    expect(`${location.pathname}${location.search}${location.hash}`).toBe('/document/a?view=1#t');
+    expect(`${location.pathname}${location.search}${location.hash}`).toBe('/design/a?view=1#t');
   });
 });

@@ -31,8 +31,8 @@ const place = {
   savedAt: 1,
   empty: false,
 };
-const jump = (documentId: string, useDays: number) =>
-  ({ ...place, documentId, useDays, lastUsedAt: 10 }) as HomeJumpBackInItem;
+const jump = (designId: string, useDays: number) =>
+  ({ ...place, designId, useDays, lastUsedAt: 10 }) as HomeJumpBackInItem;
 const home = (over: Partial<HomeResponse> = {}): HomeResponse => ({
   jumpBackIn: [jump('s1', 1)],
   whatHappened: [],
@@ -50,11 +50,11 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks());
 
 describe('useHome', () => {
-  it('reads Home in the browser’s time zone, merges local documents and clears the badge', async () => {
+  it('reads Home in the browser’s time zone, merges local designs and clears the badge', async () => {
     apiReadHome.mockResolvedValue(home());
     offlineListOpens.mockResolvedValue([
       {
-        document: { id: 'l1', name: 'Local', savedAt: 3, empty: false },
+        design: { id: 'l1', name: 'Local', savedAt: 3, empty: false },
         opens: { days: [new Date().toISOString().slice(0, 10)], lastOpenedAt: 20 },
       },
     ]);
@@ -66,7 +66,7 @@ describe('useHome', () => {
       tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
     });
     // One use day each; the local one is the more recent.
-    expect(result.current.jumpBackIn.mostUsed.map((d) => [d.documentId, d.localOnly])).toEqual([
+    expect(result.current.jumpBackIn.mostUsed.map((d) => [d.designId, d.localOnly])).toEqual([
       ['l1', true],
       ['s1', false],
     ]);
@@ -81,9 +81,9 @@ describe('useHome', () => {
     apiReadHome.mockResolvedValue(home({ jumpBackIn: [jump('s2', 2)] }));
     const again = renderHook(() => useHome('owner', vi.fn()));
     expect(again.result.current.status).toBe('ready');
-    expect(again.result.current.jumpBackIn.mostUsed.map((d) => d.documentId)).toEqual(['s1']);
+    expect(again.result.current.jumpBackIn.mostUsed.map((d) => d.designId)).toEqual(['s1']);
     await waitFor(() =>
-      expect(again.result.current.jumpBackIn.mostUsed.map((d) => d.documentId)).toEqual(['s2']),
+      expect(again.result.current.jumpBackIn.mostUsed.map((d) => d.designId)).toEqual(['s2']),
     );
     // Another owner never sees it.
     expect(renderHook(() => useHome('someone-else', vi.fn())).result.current.status).toBe(
@@ -102,12 +102,12 @@ describe('useHome', () => {
     await waitFor(() => expect(result.current.status).toBe('ready'));
   });
 
-  it('still draws Home when this browser cannot list its documents', async () => {
+  it('still draws Home when this browser cannot list its designs', async () => {
     apiReadHome.mockResolvedValue(home());
     offlineListOpens.mockRejectedValue(new Error('no IndexedDB'));
     const { result } = renderHook(() => useHome('owner', vi.fn()));
     await waitFor(() => expect(result.current.status).toBe('ready'));
-    expect(result.current.jumpBackIn.mostUsed.map((d) => d.documentId)).toEqual(['s1']);
+    expect(result.current.jumpBackIn.mostUsed.map((d) => d.designId)).toEqual(['s1']);
     expect(console.warn).toHaveBeenCalledWith('[home] local-opens-unavailable', expect.any(Error));
   });
 
@@ -122,7 +122,7 @@ describe('useHome', () => {
     rerender({ owner: 'user_1' });
     await waitFor(() => expect(result.current.status).toBe('ready'));
     await act(async () => first(home({ jumpBackIn: [jump('stale', 1)] })));
-    expect(result.current.jumpBackIn.mostUsed.map((d) => d.documentId)).toEqual(['mine']);
+    expect(result.current.jumpBackIn.mostUsed.map((d) => d.designId)).toEqual(['mine']);
   });
 
   it('keeps the first read’s mark, so a retry never clears what is new', async () => {

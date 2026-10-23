@@ -9,7 +9,7 @@ import { normaliseStack } from '../model/stack';
 import type { GroupLayer, Photo, PhotoLayer, PixelLayer } from '../model/types';
 import { alphaBounds, cropRaster, type Raster } from '../raster/raster';
 import { TiledRaster } from '../raster/tiles';
-import type { PsdDocument, PsdMask, PsdNode } from './model';
+import type { PsdDesign, PsdMask, PsdNode } from './model';
 
 export type PhotoPixels = { layers: Map<string, TiledRaster>; masks: Map<string, TiledRaster> };
 
@@ -34,7 +34,7 @@ function maskRaster(
 }
 
 /** The photo a PSD opens as, and its layers' pixels by id (to be stored by the editor). */
-export function photoFromPsd(doc: PsdDocument): { photo: Photo; pixels: PhotoPixels } {
+export function photoFromPsd(doc: PsdDesign): { photo: Photo; pixels: PhotoPixels } {
   const layers: PhotoLayer[] = [];
   const pixels: PhotoPixels = { layers: new Map(), masks: new Map() };
   const taken = new Set<string>();
@@ -153,7 +153,7 @@ export function psdFromPhoto(
   photo: Photo,
   pixels: PixelsLookup,
   text?: TextRasterizer,
-): PsdDocument {
+): PsdDesign {
   const all = { x: 0, y: 0, width: photo.width, height: photo.height };
   const byParent = new Map<string | undefined, PhotoLayer[]>();
   for (const l of photo.layers) {

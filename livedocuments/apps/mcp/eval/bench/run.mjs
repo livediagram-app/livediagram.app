@@ -51,7 +51,7 @@ function mintTokens(count) {
   const tokens = [];
   const rows = [];
   for (let i = 0; i < count; i++) {
-    const token = `lvd_${randomBytes(32).toString('base64url')}`;
+    const token = `lwt_${randomBytes(32).toString('base64url')}`;
     const owner = `bench_${opts.round}_${randomUUID().slice(0, 8)}`;
     const hash = createHash('sha256').update(token).digest('hex');
     tokens.push({ token, owner });

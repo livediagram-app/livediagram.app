@@ -6,7 +6,7 @@
 // popover stays for another pick; closing it drops any preview.
 import { useEffect, useRef } from 'react';
 import { lucidePaintRoller } from '@livedesign/icons/lucide';
-import type { Page, PageBackground } from '@livedesign/document';
+import type { Page, PageBackground } from '@livedesign/design';
 import { lucideGlyph } from '@livedesign/ui';
 import type { ThemeBackgroundPreset } from '@/lib/page-paint';
 import { track } from '@/lib/telemetry';

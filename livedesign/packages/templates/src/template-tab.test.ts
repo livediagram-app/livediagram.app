@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isValidTab, parseStrokePoints } from '@livedesign/document';
+import { isValidTab, parseStrokePoints } from '@livedesign/design';
 import {
   buildTemplateTab,
   buildTemplateTabs,
@@ -14,7 +14,7 @@ import { TEMPLATES } from './templates';
 import { templateCatalogue } from './template-catalogue';
 
 // What the MCP writes from a template must be a tab the api accepts, any strokes packed
-// (docs/specs/006-document/stroke-points.md), opening in Pages.
+// (docs/specs/006-design/stroke-points.md), opening in Pages.
 describe('buildTemplateTab', () => {
   it('builds every template as a valid tab opening in Pages, with packed strokes', () => {
     for (const { kind } of TEMPLATES) {

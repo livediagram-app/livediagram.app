@@ -22,7 +22,7 @@ let logs: string[];
 const PAGES = { mode: 'pages' };
 
 function create(
-  who: { owner: string; clerkUserId: string | null },
+  who: { owner: string; accountUserId: string | null },
   extra: Record<string, unknown>,
 ) {
   return handleDocuments(

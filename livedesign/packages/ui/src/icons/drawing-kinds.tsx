@@ -1,4 +1,4 @@
-import type { EditorMode } from '@livedesign/document';
+import type { EditorMode } from '@livedesign/design';
 import type { ComponentType } from 'react';
 
 import { Glyph, type IconProps } from './Glyph';

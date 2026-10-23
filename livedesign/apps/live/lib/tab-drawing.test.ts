@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { laidOutPagesOf, type Element, type Page, type Tab } from '@livedesign/document';
+import { laidOutPagesOf, type Element, type Page, type Tab } from '@livedesign/design';
 import { pageElements, renderTabDrawingSvg, tabDrawingFontIdsOf } from './tab-drawing';
 import { svgFrameOf } from './svg-frame';
 

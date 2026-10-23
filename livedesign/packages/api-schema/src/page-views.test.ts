@@ -17,12 +17,12 @@ describe('pageViewPath', () => {
     expect(pageViewPath('/index.html')).toBe('/');
   });
 
-  it('counts every document as the one /document page, whatever follows', () => {
-    expect(pageViewPath('/document/3f2b8c1e-9a4d-4e7b-8c21-0d5e6f7a8b9c')).toBe('/document');
-    expect(pageViewPath('/document/offline-abc')).toBe('/document');
-    expect(pageViewPath('/document/abc/extra/Weird Stuff!')).toBe('/document');
-    expect(pageViewPath('/document/a/b/c/d/e/f/g')).toBe('/document');
-    expect(pageViewPath('/document')).toBe('/document');
+  it('counts every design as the one /design page, whatever follows', () => {
+    expect(pageViewPath('/design/3f2b8c1e-9a4d-4e7b-8c21-0d5e6f7a8b9c')).toBe('/design');
+    expect(pageViewPath('/design/offline-abc')).toBe('/design');
+    expect(pageViewPath('/design/abc/extra/Weird Stuff!')).toBe('/design');
+    expect(pageViewPath('/design/a/b/c/d/e/f/g')).toBe('/design');
+    expect(pageViewPath('/design')).toBe('/design');
   });
 
   it('drops an id-looking segment, and everything after it, anywhere else', () => {
@@ -44,7 +44,7 @@ describe('pageViewPath', () => {
   });
 
   it('only ever produces paths the ingest accepts', () => {
-    for (const p of ['/', '/help/tabs', '/document/x', '/embed/0123456789abcdef/x', '/FAQ/']) {
+    for (const p of ['/', '/help/tabs', '/design/x', '/embed/0123456789abcdef/x', '/FAQ/']) {
       const out = pageViewPath(p);
       expect(out).not.toBeNull();
       expect(isValidPageViewPath(out!)).toBe(true);
@@ -60,7 +60,7 @@ describe('pageViewApp', () => {
     expect(pageViewApp('/help/canvas/the-canvas')).toBe('Help');
     expect(pageViewApp('/telemetry')).toBe('Dashboard');
     expect(pageViewApp('/explorer/recent')).toBe('Live');
-    expect(pageViewApp('/document')).toBe('Live');
+    expect(pageViewApp('/design')).toBe('Live');
     expect(pageViewApp('/new')).toBe('Live');
   });
 });
@@ -68,7 +68,7 @@ describe('pageViewApp', () => {
 describe('Page·View validation', () => {
   it('accepts a normalised path', () => {
     expect(isValidTelemetryEvent({ category: 'Page', action: 'View', type: '/' })).toBe(true);
-    expect(isValidTelemetryEvent({ category: 'Page', action: 'View', type: '/document' })).toBe(
+    expect(isValidTelemetryEvent({ category: 'Page', action: 'View', type: '/design' })).toBe(
       true,
     );
   });
@@ -79,7 +79,7 @@ describe('Page·View validation', () => {
       { category: 'Page', action: 'View', type: '/join?token=abc' },
       { category: 'Page', action: 'View', type: '/Help' },
       { category: 'Page', action: 'View', type: 'help' },
-      { category: 'Page', action: 'View', type: '/document/[id]' },
+      { category: 'Page', action: 'View', type: '/design/[id]' },
       { category: 'Page', action: 'View', type: `/${'a'.repeat(200)}` },
       { category: 'Page', action: 'Opened', type: '/' },
     ];

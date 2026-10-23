@@ -28,7 +28,7 @@ describe('PageGalleryPicker', () => {
     const onPicked = vi.fn();
     render(
       <div data-page-panel="">
-        <PageGalleryPicker ownerId="o" documentId="d" onPicked={onPicked} />
+        <PageGalleryPicker ownerId="o" designId="d" onPicked={onPicked} />
       </div>,
     );
     await act(async () => {
@@ -45,7 +45,7 @@ describe('PageGalleryPicker', () => {
   it('says so when there are no pictures yet', async () => {
     const { apiListImages } = await import('@/lib/api-client');
     vi.mocked(apiListImages).mockResolvedValueOnce([]);
-    render(<PageGalleryPicker ownerId="o" documentId="d" onPicked={vi.fn()} />);
+    render(<PageGalleryPicker ownerId="o" designId="d" onPicked={vi.fn()} />);
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: CHOOSE_FROM_MY_IMAGES }));
     });

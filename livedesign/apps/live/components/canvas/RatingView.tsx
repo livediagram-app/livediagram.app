@@ -16,7 +16,7 @@ import {
   RATING_LOOPING_ANIMS,
   RATING_MAX,
   type ShapeElement,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { animClass, animSpeedVars } from '@/lib/icons';
 
 const STAR_PATH =

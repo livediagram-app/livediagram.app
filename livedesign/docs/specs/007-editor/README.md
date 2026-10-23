@@ -3,9 +3,9 @@
 Follow the references below only as needed; never upfront.
 
 - ./live-app.md - when working on Live app: the Pages editor app (clean routes, no `/live` prefix)
-- ./load-recovery.md - when working on a document that will not load: the load's watchdog and time limits, the opening screen's self-healing reload, the load-error screen's recovery card (Copy Diagnostics, Repair This Browser), what a repair clears and keeps, and the help centre's Repair page
+- ./load-recovery.md - when working on a design that will not load: the load's watchdog and time limits, the opening screen's self-healing reload, the load-error screen's recovery card (Copy Diagnostics, Repair This Browser), what a repair clears and keeps, and the help centre's Repair page
 - ./start-diagramming.md - when working on an empty tab's template start (Start Making Pages): when it shows, Recommended and groups, search, the palette tray's Show Templates, the hidden first page and deletable last page, the tour waiting, its look
-- ./new-document-route.md - when working on Dedicated route for new-document creation: The welcome / create-new flow at `/new`, split from the editor
+- ./new-design-route.md - when working on Dedicated route for new-design creation: The welcome / create-new flow at `/new`, split from the editor
 - ./user-preferences.md - when working on User preferences: Per-user editor preference flags (footer settings dialog)
 - ./ai-assistance.md - when working on AI Assistance: Optional AI assistant (Build / Clean / Ask / Review) on the canvas
 - ./split-view.md - when working on Side by side tabs: dragging a tab to the right edge to open it beside the active tab, each tab keeping its side under one header, the editor following a click or a resting pointer between panes with no view jump, the live other pane, the drop zone and ghost, resizing, persistence

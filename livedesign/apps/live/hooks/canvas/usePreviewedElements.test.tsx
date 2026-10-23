@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { createShape, type Element } from '@livedesign/document';
+import { createShape, type Element } from '@livedesign/design';
 import { resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
 import { usePreviewedElements } from './usePreviewedElements';
 
@@ -15,12 +15,12 @@ const doc: Element[] = [a, b];
 afterEach(() => resetDragPreviewForTests());
 
 describe('usePreviewedElements', () => {
-  it('is the document itself with no preview', () => {
+  it('is the design itself with no preview', () => {
     const { result } = renderHook(() => usePreviewedElements(doc, 't'));
     expect(result.current).toBe(doc);
   });
 
-  it('lays the preview over the document while it lasts', () => {
+  it('lays the preview over the design while it lasts', () => {
     const { result } = renderHook(() => usePreviewedElements(doc, 't'));
     const movedA = { ...a, x: 90 };
     act(() => setLocalPreview('t', [movedA, b], doc));

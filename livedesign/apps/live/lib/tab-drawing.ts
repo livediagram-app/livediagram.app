@@ -13,12 +13,12 @@ import {
   type Endpoint,
   type LaidOutPage,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { renderTabToSvg, type ImageExportOpts } from './export-tab';
 
 const SVG_OPEN = '<svg xmlns="http://www.w3.org/2000/svg" ';
 
-/** The tab drawn, as a whole SVG document whose viewBox is in the tab's canvas space. */
+/** The tab drawn, as a whole SVG design whose viewBox is in the tab's canvas space. */
 export function renderTabDrawingSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   const pages = laidOutPagesOf(tab);
   return pages.length ? pagesAsLaidOut(tab, pages, opts) : renderTabToSvg(tab, opts);

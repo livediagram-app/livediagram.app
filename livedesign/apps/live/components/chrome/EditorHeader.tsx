@@ -30,30 +30,30 @@ export type SaveStatus =
   'idle' | 'saving' | 'saved' | 'error' | 'unauthenticated' | 'forbidden' | 'tooLarge';
 
 type EditorHeaderProps = {
-  documentName: string;
-  // Hides the centred document title while the first-run welcome modal
-  // is up (no document exists yet, naming it makes no sense). Brand and
+  designName: string;
+  // Hides the centred design title while the first-run welcome modal
+  // is up (no design exists yet, naming it makes no sense). Brand and
   // Share button stay.
   hideTitle?: boolean;
-  // Only the document's owner sees the Share button — visitors arriving
-  // via a share URL can't toggle sharing on their host's document.
+  // Only the design's owner sees the Share button — visitors arriving
+  // via a share URL can't toggle sharing on their host's design.
   showShare: boolean;
   shareable: boolean;
-  // The document lives in a team's shared library (docs/specs/013-workspace/team-shared-documents.md). Flips the
-  // title badge to "Team" when the document has no share links.
-  teamDocument?: boolean;
-  // Offline Mode (docs/specs/006-document/offline-mode.md): saved only in this browser. Flips the title badge
+  // The design lives in a team's shared library (docs/specs/013-workspace/team-shared-designs.md). Flips the
+  // title badge to "Team" when the design has no share links.
+  teamDesign?: boolean;
+  // Offline Mode (docs/specs/006-design/offline-mode.md): saved only in this browser. Flips the title badge
   // to "This Browser" (superseding "Private"); the caller also hides Share.
   offline?: boolean;
   // Counterpart to showShare for visitors: when present we render a
-  // "Make a copy" button that duplicates the document into the
+  // "Make a copy" button that duplicates the design into the
   // visitor's own files (item #9 / docs/specs/015-api/api.md). Optional so the owner
   // view stays unchanged.
   onMakeCopy?: () => void;
   copying?: boolean;
   // True for a view-only ('view' share role) session. Disables the
-  // click-to-rename affordance on the document title — the viewer
-  // isn't allowed to rename someone else's document. Make-a-copy +
+  // click-to-rename affordance on the design title — the viewer
+  // isn't allowed to rename someone else's design. Make-a-copy +
   // Share gates already handle their own visibility.
   readOnly?: boolean;
   // Accent colour for the brand logo's "diagram" half. Comes from the
@@ -61,10 +61,10 @@ type EditorHeaderProps = {
   brandAccent?: string;
   onOpenShare: () => void;
   // Opens the editor's Settings on its Account category (the account menu's
-  // Account item), so it doesn't navigate away from the document.
+  // Account item), so it doesn't navigate away from the design.
   onOpenAccount?: () => void;
   onRename: (name: string) => void;
-  // Bumped by the command palette's "Rename document" action to enter inline
+  // Bumped by the command palette's "Rename design" action to enter inline
   // edit mode (the palette can't reach this component's local editing state).
   // A monotonic counter; each increment opens the editor (unless read-only).
   renameNonce?: number;
@@ -76,11 +76,11 @@ type EditorHeaderProps = {
 };
 
 export function EditorHeader({
-  documentName,
+  designName,
   hideTitle = false,
   showShare,
   shareable,
-  teamDocument = false,
+  teamDesign = false,
   offline = false,
   onMakeCopy,
   copying = false,
@@ -135,9 +135,9 @@ export function EditorHeader({
       <div className="flex min-w-0 flex-1 items-center justify-start sm:justify-center">
         {hideTitle ? null : editing && !readOnly ? (
           <NameEditor
-            initial={documentName}
+            initial={designName}
             onCommit={(v) => {
-              onRename(v.trim() || documentName);
+              onRename(v.trim() || designName);
               setEditing(false);
             }}
             onCancel={() => setEditing(false)}
@@ -147,11 +147,11 @@ export function EditorHeader({
           <div className="flex min-w-0 items-center gap-1">
             {readOnly ? (
               <span className="truncate px-2 py-0.5 text-sm text-slate-600 dark:text-slate-200">
-                {documentName}
+                {designName}
               </span>
             ) : (
               <HoverCard
-                title="Rename document"
+                title="Rename design"
                 description="Click to edit the name."
                 className="min-w-0"
               >
@@ -161,14 +161,14 @@ export function EditorHeader({
                   // 44px tall on a touch screen; padding, not a pad, since `truncate` clips a ::before.
                   className="truncate rounded px-2 py-0.5 text-sm text-slate-600 transition pointer-coarse:py-3 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-white"
                 >
-                  {documentName}
+                  {designName}
                 </button>
               </HoverCard>
             )}
             <span className="hidden sm:contents">
               <SharedBadge
                 shareable={shareable}
-                team={teamDocument}
+                team={teamDesign}
                 offline={offline}
                 onManage={showShare ? onOpenShare : undefined}
               />
@@ -181,7 +181,7 @@ export function EditorHeader({
           the bar (the -mr-4 cancels the header's right padding). */}
       <div className="-mr-4 flex shrink-0 items-stretch self-stretch">
         {onMakeCopy ? (
-          <HoverCard title="Make a copy" description="Duplicate this document into your own files.">
+          <HoverCard title="Make a copy" description="Duplicate this design into your own files.">
             <button
               type="button"
               onClick={onMakeCopy}

@@ -25,7 +25,7 @@ import {
   type ElementId,
   type TextSize,
   type ThemeDefinition,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { writeFieldsOnto } from '../fields';
 import { newElementId } from '../ids';
 import { layerLockOf } from '../locks';

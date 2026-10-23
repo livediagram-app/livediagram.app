@@ -57,7 +57,7 @@
 
 /*
  * Editor fade-in (docs/specs/004-interface-design/motion.md "Editor arrival"): the editor's floating
- * chrome fades in as it mounts rather than popping into place, most visibly as a document opens.
+ * chrome fades in as it mounts rather than popping into place, most visibly as a design opens.
  * Opacity only, so a panel's own position is untouched; `fade-in` has no `to`, so a translucent
  * panel settles at its own opacity. In the components layer, so a surface's own entrance utility (a
  * panel's pop-in, a banner's fade) still wins. Reduced motion collapses it with every other
@@ -385,9 +385,9 @@
 }
 
 /*
- * Explorer document-row enter / exit. Used by the Explorer to make
+ * Explorer design-row enter / exit. Used by the Explorer to make
  * add + delete feel responsive when the list has many similarly-
- * named documents. Max-height collapse + horizontal translate +
+ * named designs. Max-height collapse + horizontal translate +
  * fade gives a real sense of motion; the row above slides up into
  * the gap as the deleted row collapses out.
  *
@@ -759,7 +759,7 @@
    So each element is staggered by its own paint index (--iso-z, set in
    CanvasElementsLayer). A hundredth of a pixel is far too small to see and far
    more than enough to order the layers, and it restores DOM paint order in 3D,
-   where painting goes by z rather than by document position.
+   where painting goes by z rather than by design position.
    The independent `translate` property is used rather than `transform` on
    purpose: it COMPOSES with an element's own rotation, where a transform would
    replace it. */
@@ -984,7 +984,7 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
   transition-timing-function: ease-out;
 }
 
-/* View Transitions (docs/specs/004-interface-design/motion.md "View Transitions"). The document root takes no part,
+/* View Transitions (docs/specs/004-interface-design/motion.md "View Transitions"). The design root takes no part,
    so only a named surface is captured: the rest of the page neither cross-fades nor freezes into a picture. Reduced
    motion adds nothing here: the handlers start no View Transition then (lib/view-transition.ts). */
 html {

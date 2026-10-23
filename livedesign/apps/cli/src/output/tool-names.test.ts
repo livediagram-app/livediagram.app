@@ -17,11 +17,11 @@ describe('the CLI words for MCP tools', () => {
   });
 
   it('writes a tool in a message as the command', () => {
-    expect(inCliWords('That document has no page 4. Add one with change_pages.')).toBe(
-      'That document has no page 4. Add one with livedesign page set.',
+    expect(inCliWords('That design has no page 4. Add one with change_pages.')).toBe(
+      'That design has no page 4. Add one with livedesign page set.',
     );
-    expect(inCliWords('read_document lists its pages; read_documents stays')).toBe(
-      'livedesign document view lists its pages; read_documents stays',
+    expect(inCliWords('read_design lists its pages; read_designs stays')).toBe(
+      'livedesign design view lists its pages; read_designs stays',
     );
   });
 

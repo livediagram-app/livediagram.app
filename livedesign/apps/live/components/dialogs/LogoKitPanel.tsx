@@ -5,7 +5,7 @@
 // checkerboard), what the kit holds, and the download. It owns the kit's making; the dialog hands
 // it the images it has loaded for previews.
 import { useState } from 'react';
-import type { LaidOutPage, Tab } from '@livedesign/document';
+import type { LaidOutPage, Tab } from '@livedesign/design';
 import { Button, Select } from '@livedesign/ui';
 import { BackBar } from '@/components/primitives/BackBar';
 import { exportLogoKit, LOGO_KIT_PNG_SIZES, logoKitFileName } from '@/lib/export-logo-kit';
@@ -20,7 +20,7 @@ type Images = Awaited<ReturnType<typeof loadTabImages>>;
 export function LogoKitPanel({
   tab,
   pages,
-  documentName,
+  designName,
   images,
   imagesReady,
   imageContext,
@@ -30,7 +30,7 @@ export function LogoKitPanel({
   tab: Tab;
   // The tab's pages, every kind: the kit is of one of its logo pages.
   pages: readonly LaidOutPage[];
-  documentName: string;
+  designName: string;
   // The images the dialog loaded for its previews, once ready.
   images: Images | undefined;
   imagesReady: boolean;
@@ -61,7 +61,7 @@ export function LogoKitPanel({
           ? await loadTabImages(tab, imageContext)
           : undefined;
       const blob = await exportLogoKit(tab, page, { images: loaded });
-      downloadBlob(blob, logoKitFileName(documentName, page, pages.length));
+      downloadBlob(blob, logoKitFileName(designName, page, pages.length));
       track('Document', 'Exported', 'LogoKit');
       onDone();
     } catch (e) {

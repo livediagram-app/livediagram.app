@@ -3,7 +3,7 @@
 
 import type { LintCode, LintFinding, LintReport, LintSeverity } from '@livedesign/api-schema';
 import { LINT_MAX_LINES_PER_CODE, LINT_MESSAGE_COLUMN_MAX } from './constants';
-import { plural } from '@livedesign/document';
+import { plural } from '@livedesign/design';
 
 const LETTER: Readonly<Record<LintSeverity, string>> = { error: 'E', warning: 'W', info: 'I' };
 // The longest code.

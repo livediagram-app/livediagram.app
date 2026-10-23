@@ -3,7 +3,7 @@
 // The workbench page (docs/specs/013-workspace/blueprints/workbench-embeds.md "The workbench page", "The
 // workspace frame"): runs the page machine through the handshake and renewal, and renders a status screen until
 // the workbench answers; then, signed in as the session's person (WorkbenchAuthBridge), the editor with the
-// workbench surface in the document scope, or the workspace frame in the workspace scope. The address names the
+// workbench surface in the design scope, or the workspace frame in the workspace scope. The address names the
 // scope. The chunk the scope shows starts loading on mount, while redeem and binding run, so mounting never waits.
 import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
@@ -18,7 +18,7 @@ import { useWorkbenchRenewal } from './useWorkbenchRenewal';
 import { endReasonOfInvalidSession } from './workbench-machine';
 import { WorkbenchStatus } from './WorkbenchStatus';
 
-const loadEditor = () => import('../../document/[id]/editor-page');
+const loadEditor = () => import('../../design/[id]/editor-page');
 const EditorPage = dynamic(loadEditor, {
   ssr: false,
   loading: () => <WorkbenchStatus phase={{ phase: 'reading' }} />,
@@ -65,7 +65,7 @@ export function WorkbenchPage() {
     return {
       scope: s.scope,
       secret: s.session,
-      documentId: s.documentId,
+      designId: s.designId,
       tabId: s.tabId,
       shareCode: null,
       origin: s.origin,

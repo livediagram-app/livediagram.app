@@ -3,7 +3,7 @@
 // only, cached five minutes; each answer logs `[catalogues] <segment> <status>`.
 
 import type { IconSearchResponse, TemplateCatalogueResponse } from '@livedesign/api-schema';
-import { renderView } from '@livedesign/document-views';
+import { renderView } from '@livedesign/design-views';
 import { addableKinds, elementFormatText, elementKindsText } from '@livedesign/edit-operations';
 import { ICON_QUERY_MAX, ICON_SEARCH_MAX_LIMIT, searchIcons } from '@livedesign/icons/search';
 import { buildTemplateTab, templateCatalogue, templateKindOf } from '@livedesign/templates';

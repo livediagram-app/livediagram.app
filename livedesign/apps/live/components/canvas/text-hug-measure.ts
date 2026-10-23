@@ -17,7 +17,7 @@ import {
   type ShapeElement,
   type TextElement,
   type TextRun,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { applyCss } from '@/components/rich-text/rich-text-format';
 import { effectiveRunStyle, labelRunPx } from '@/components/canvas/label-style';
 import { TEXT_HUG_LEADING, textHugFontPx, type MeasureTextBlock } from '@/lib/text-hug';

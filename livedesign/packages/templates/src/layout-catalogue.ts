@@ -2,12 +2,12 @@
 // docs/specs/007-editor/logo-pages.md "Logo layouts"): a logo page the logo layouts, a wireframe
 // page its device class's, each by its own categories, a photo page or one whose kind is not chosen
 // yet none; and any layout by its id, for placing it.
-import type { Element } from '@livedesign/document';
+import type { Element } from '@livedesign/design';
 import type { LayoutBox } from './page-layout-kit';
 import type { PageLayoutId } from './page-layouts';
 import { LOGO_LAYOUT_CATEGORIES, LOGO_LAYOUTS } from './logo-layouts';
 import { WIREFRAME_LAYOUTS, wireframeLayoutsFor } from './wireframe-layouts';
-import type { PageKind, WireframeDeviceClass } from '@livedesign/document';
+import type { PageKind, WireframeDeviceClass } from '@livedesign/design';
 
 type CatalogueLayout = {
   id: PageLayoutId;

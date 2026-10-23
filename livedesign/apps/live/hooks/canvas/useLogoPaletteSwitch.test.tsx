@@ -3,7 +3,7 @@
 // docs/specs/007-editor/logo-pages.md "The Logo palette": the palette turns to Logo.
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { layOutPages, newLogoPage, type LaidOutPage } from '@livedesign/document';
+import { layOutPages, newLogoPage, type LaidOutPage } from '@livedesign/design';
 import { onPaletteCategoryRequest } from '@/lib/palette-category-request';
 import { createViewportStore } from '@/lib/viewport-store';
 import type { ReactNode } from 'react';

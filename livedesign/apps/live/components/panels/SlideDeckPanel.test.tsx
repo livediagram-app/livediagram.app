@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Deck } from '@livedesign/document';
-import type { SlideDeckState } from '@/app/document/[id]/useSlideDeck';
+import type { Deck } from '@livedesign/design';
+import type { SlideDeckState } from '@/app/design/[id]/useSlideDeck';
 import { SlideDeckPanel } from './SlideDeckPanel';
 
 // docs/specs/007-editor/pages-mode.md "Slides": the Slide Deck panel on a Pages tab.

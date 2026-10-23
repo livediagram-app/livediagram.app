@@ -60,7 +60,7 @@ Each kind offers its own **anchors**: which of the sixteen it has, and where the
   - `diamond`, `parallelogram`, `hexagon`, `triangle` and `trapezoid` (their polygons in the
     shared shape-geometry table; the last four also place their anchors along their faces, above);
   - `stadium` (the capsule: a box with fully rounded ends);
-  - `cloud` and `document` (their drawn paths: the cloud's bumps, the document's wavy bottom edge);
+  - `cloud` and `document` (their drawn paths: the cloud's bumps, the document shape's wavy bottom edge);
   - `cylinder` (its body with the curved top and bottom).
 - Every other kind keeps its box as its outline for anchoring, including `star` and
   `speech-bubble`.
@@ -223,7 +223,7 @@ After the re-evaluation, two pinned ends on the **same side of the same shape** 
 
 ## Implementation
 
-- Vocabulary, anchors per shape and geometry: `packages/document/src/anchors.ts`, `shape-outline.ts`,
+- Vocabulary, anchors per shape and geometry: `packages/design/src/anchors.ts`, `shape-outline.ts`,
   `svg-path-outline.ts`, `geometry.ts`.
 - Creation choice: `bestAnchorTowards` in `anchor-choice.ts`.
 - Fan: `arrow-endpoint-spread.ts`.

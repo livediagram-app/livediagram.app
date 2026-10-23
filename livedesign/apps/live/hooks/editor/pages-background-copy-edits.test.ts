@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { pagesOf, pageKindOf, type Page, type Tab } from '@livedesign/document';
+import { pagesOf, pageKindOf, type Page, type Tab } from '@livedesign/design';
 import { track } from '@/lib/telemetry';
 import { appliedToAllMessage } from './pages-background-copy-edits';
 import { pageEdits } from './page-edits';

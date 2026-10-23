@@ -8,7 +8,7 @@
 // /live/new imports it statically since it's the template-creation
 // page by definition.
 
-import { type Tab } from '@livedesign/document';
+import { type Tab } from '@livedesign/design';
 import {
   templateCanvasOverrides,
   templateTabs,
@@ -19,7 +19,7 @@ import { getTheme, recolourElementsForTheme } from './themes';
 
 export {
   buildTemplate,
-  isDefaultDocumentName,
+  isDefaultDesignName,
   templateCanvasOverrides,
   templateTabs,
   untitledNameForTemplate,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement, ShapeElement, StickyElement, TextElement } from '@livedesign/document';
+import type { ArrowElement, ShapeElement, StickyElement, TextElement } from '@livedesign/design';
 import { getTheme } from './themes';
 import { resetElementColours } from './reset-colours';
 

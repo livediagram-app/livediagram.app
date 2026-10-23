@@ -9,7 +9,7 @@ import {
   type ConceptAnim,
   type ConceptShape,
   type ShapeElement,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { Glyph } from '@livedesign/ui';
 import { BorderGrid } from '@/components/palette/context-menu-rows';
 import { SizeButton } from '@/components/palette/palette-controls';

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { PEN_INK, penColourHex } from '@livedesign/document';
-import type { DocumentDTO, Env } from './types';
+import { PEN_INK, penColourHex } from '@livedesign/design';
+import type { DesignDTO, Env } from './types';
 
 // The render-cache reads/writes the snapshot freshness + first-tab body
 // through the db layer; mock it so the test pins the cache decision tree
@@ -16,14 +16,33 @@ const db = vi.hoisted(() => ({
   servableImageIds: vi.fn(async (_env: unknown, _doc: string, ids: string[]) => new Set(ids)),
 }));
 vi.mock('./db', () => db);
+// The images' bytes come from the media service (src/media.ts); here, from the same bucket stub as the
+// snapshots, so each test arranges both in one place.
+vi.mock('./media', () => ({
+  mediaClient: (env: Env) => {
+    const images = env.IMAGES;
+    if (!images) return null;
+    return {
+      bytes: async (id: string) => {
+        const object = await images.get(id);
+        if (!object) return null;
+        return {
+          owner: '',
+          contentType: object.httpMetadata?.contentType ?? 'application/octet-stream',
+          body: new Response(await object.arrayBuffer()).body,
+        };
+      },
+    };
+  },
+}));
 
-import { getDocumentTabImageSvg, getDocumentThumbnailSvg } from './thumbnail';
+import { getDesignTabImageSvg, getDesignThumbnailSvg } from './thumbnail';
 
 function r2() {
   return { get: vi.fn(), put: vi.fn().mockResolvedValue(undefined), delete: vi.fn() };
 }
 
-function liveDoc(over: Partial<DocumentDTO> = {}): DocumentDTO {
+function liveDoc(over: Partial<DesignDTO> = {}): DesignDTO {
   return {
     id: 'd1',
     ownerId: 'o1',
@@ -64,9 +83,9 @@ beforeEach(() => {
   db.stampTabElementCount.mockResolvedValue(undefined);
 });
 
-describe('getDocumentThumbnailSvg', () => {
+describe('getDesignThumbnailSvg', () => {
   it('returns null without an R2 binding (self-host without storage)', async () => {
-    const out = await getDocumentThumbnailSvg({} as Env, liveDoc());
+    const out = await getDesignThumbnailSvg({} as Env, liveDoc());
     expect(out).toBeNull();
     expect(db.getThumbRenderedAt).not.toHaveBeenCalled();
   });
@@ -77,7 +96,7 @@ describe('getDocumentThumbnailSvg', () => {
     db.getThumbRenderedAt.mockResolvedValue(2000); // >= savedAt 1000 → fresh
     const env = { IMAGES: images } as unknown as Env;
 
-    const out = await getDocumentThumbnailSvg(env, liveDoc());
+    const out = await getDesignThumbnailSvg(env, liveDoc());
 
     expect(out).toBe('<svg>cached</svg>');
     expect(db.getTabBody).not.toHaveBeenCalled();
@@ -92,7 +111,7 @@ describe('getDocumentThumbnailSvg', () => {
     db.getTabBody.mockResolvedValue(stored(TAB_DATA));
     const env = { IMAGES: images } as unknown as Env;
 
-    const out = await getDocumentThumbnailSvg(env, liveDoc());
+    const out = await getDesignThumbnailSvg(env, liveDoc());
 
     expect(out).toContain('<svg');
     expect(images.put).toHaveBeenCalledOnce();
@@ -105,7 +124,7 @@ describe('getDocumentThumbnailSvg', () => {
     images.get.mockResolvedValue({ text: async () => '<svg>cached</svg>' });
     const env = { IMAGES: images } as unknown as Env;
 
-    const out = await getDocumentThumbnailSvg(env, { ...liveDoc(), thumbRenderedAt: 2000 });
+    const out = await getDesignThumbnailSvg(env, { ...liveDoc(), thumbRenderedAt: 2000 });
 
     expect(out).toBe('<svg>cached</svg>');
     expect(db.getThumbRenderedAt).not.toHaveBeenCalled();
@@ -121,7 +140,7 @@ describe('getDocumentThumbnailSvg', () => {
 
     // Resolves while the put is still pending: the response is not held
     // behind the R2 write + D1 stamp.
-    const out = await getDocumentThumbnailSvg(
+    const out = await getDesignThumbnailSvg(
       env,
       { ...liveDoc(), thumbRenderedAt: null },
       { defer: (p) => deferred.push(p) },
@@ -142,19 +161,19 @@ describe('getDocumentThumbnailSvg', () => {
     db.getTabBody.mockResolvedValue(stored(TAB_DATA));
     const env = { IMAGES: images } as unknown as Env;
 
-    const out = await getDocumentThumbnailSvg(env, liveDoc());
+    const out = await getDesignThumbnailSvg(env, liveDoc());
 
     expect(out).toContain('<svg');
     expect(images.put).toHaveBeenCalledOnce();
   });
 
-  it('returns null for an empty document and never caches it', async () => {
+  it('returns null for an empty design and never caches it', async () => {
     const images = r2();
     db.getThumbRenderedAt.mockResolvedValue(null);
     db.getTabBody.mockResolvedValue(stored(JSON.stringify({ elements: [] }), 0));
     const env = { IMAGES: images } as unknown as Env;
 
-    const out = await getDocumentThumbnailSvg(env, liveDoc());
+    const out = await getDesignThumbnailSvg(env, liveDoc());
 
     expect(out).toBeNull();
     expect(images.put).not.toHaveBeenCalled();
@@ -162,15 +181,15 @@ describe('getDocumentThumbnailSvg', () => {
   });
 
   // The lazy backfill (the baseline migration): a tab stored before the count existed gets it from this parse,
-  // so an old empty document is asked for at most once.
+  // so an old empty design is asked for at most once.
   it('records an unknown count from the body it parsed, empty or drawn', async () => {
     const env = { IMAGES: r2() } as unknown as Env;
     db.getThumbRenderedAt.mockResolvedValue(null);
     db.getTabBody.mockResolvedValue(stored(JSON.stringify({ elements: [] }), null));
-    expect(await getDocumentThumbnailSvg(env, liveDoc())).toBeNull();
+    expect(await getDesignThumbnailSvg(env, liveDoc())).toBeNull();
     expect(db.stampTabElementCount).toHaveBeenCalledWith(env, 't1', 0);
     db.getTabBody.mockResolvedValue(stored(TAB_DATA, null));
-    expect(await getDocumentThumbnailSvg(env, liveDoc())).toContain('<svg');
+    expect(await getDesignThumbnailSvg(env, liveDoc())).toContain('<svg');
     expect(db.stampTabElementCount).toHaveBeenLastCalledWith(env, 't1', 1);
   });
 
@@ -178,9 +197,9 @@ describe('getDocumentThumbnailSvg', () => {
     const env = { IMAGES: r2() } as unknown as Env;
     db.getThumbRenderedAt.mockResolvedValue(null);
     db.getTabBody.mockResolvedValue(stored(JSON.stringify({ elements: [] }), 0));
-    await getDocumentThumbnailSvg(env, liveDoc());
+    await getDesignThumbnailSvg(env, liveDoc());
     db.getTabBody.mockResolvedValue(stored('not json', null));
-    expect(await getDocumentThumbnailSvg(env, liveDoc())).toBeNull();
+    expect(await getDesignThumbnailSvg(env, liveDoc())).toBeNull();
     expect(db.stampTabElementCount).not.toHaveBeenCalled();
   });
 
@@ -192,7 +211,7 @@ describe('getDocumentThumbnailSvg', () => {
     db.stampTabElementCount.mockRejectedValue(new Error('d1 busy'));
     const deferred: Promise<unknown>[] = [];
     expect(
-      await getDocumentThumbnailSvg(env, liveDoc(), { defer: (p) => deferred.push(p) }),
+      await getDesignThumbnailSvg(env, liveDoc(), { defer: (p) => deferred.push(p) }),
     ).toBeNull();
     expect(deferred).toHaveLength(1);
     await deferred[0];
@@ -202,13 +221,13 @@ describe('getDocumentThumbnailSvg', () => {
     );
   });
 
-  it('returns null when the document has no tabs', async () => {
+  it('returns null when the design has no tabs', async () => {
     const images = r2();
     db.getThumbRenderedAt.mockResolvedValue(null);
     db.getTabBody.mockResolvedValue(null);
     const env = { IMAGES: images } as unknown as Env;
 
-    expect(await getDocumentThumbnailSvg(env, liveDoc())).toBeNull();
+    expect(await getDesignThumbnailSvg(env, liveDoc())).toBeNull();
     expect(images.put).not.toHaveBeenCalled();
   });
 
@@ -229,7 +248,7 @@ describe('getDocumentThumbnailSvg', () => {
     );
     const env = { IMAGES: images } as unknown as Env;
 
-    const out = await getDocumentThumbnailSvg(env, liveDoc());
+    const out = await getDesignThumbnailSvg(env, liveDoc());
 
     expect(out).toContain('<image');
     // btoa of bytes [1,2,3,4] is "AQIDBA==".
@@ -247,15 +266,15 @@ describe('getDocumentThumbnailSvg', () => {
     images.get.mockResolvedValue(null); // image bytes absent
     const env = { IMAGES: images } as unknown as Env;
 
-    const out = await getDocumentThumbnailSvg(env, liveDoc());
+    const out = await getDesignThumbnailSvg(env, liveDoc());
 
     expect(out).toContain('stroke-dasharray="4 4"'); // dashed placeholder
     expect(out).not.toContain('<image');
   });
 
-  // An id the document may not serve (docs/specs/009-elements/images.md, "Placement grants")
+  // An id the design may not serve (docs/specs/009-elements/images.md, "Placement grants")
   // is never read from R2 and keeps the placeholder.
-  it('keeps the placeholder for an image the document may not serve, without reading it', async () => {
+  it('keeps the placeholder for an image the design may not serve, without reading it', async () => {
     const images = r2();
     const tabData = JSON.stringify({
       elements: [
@@ -271,7 +290,7 @@ describe('getDocumentThumbnailSvg', () => {
     });
     const env = { IMAGES: images } as unknown as Env;
 
-    const out = await getDocumentThumbnailSvg(env, liveDoc());
+    const out = await getDesignThumbnailSvg(env, liveDoc());
 
     expect(db.servableImageIds).toHaveBeenCalledWith(env, 'd1', ['foreign']);
     expect(images.get).not.toHaveBeenCalledWith('foreign');
@@ -287,7 +306,7 @@ describe('getDocumentThumbnailSvg', () => {
     db.getTabBody.mockResolvedValue(stored(TAB_DATA));
     const env = { IMAGES: images } as unknown as Env;
 
-    const out = await getDocumentThumbnailSvg(env, liveDoc());
+    const out = await getDesignThumbnailSvg(env, liveDoc());
 
     expect(out).toContain('<svg');
     expect(db.markThumbRendered).not.toHaveBeenCalled();
@@ -296,7 +315,7 @@ describe('getDocumentThumbnailSvg', () => {
 
 // Retired schemes (docs/specs/011-theme/retired-schemes.md): the thumbnail parses `tabs.data` itself,
 // so it runs the same stored-tab migration as every other read.
-// docs/specs/006-document/document-snapshots.md "Pages tabs": the first page alone, as an export draws it.
+// docs/specs/006-design/design-snapshots.md "Pages tabs": the first page alone, as an export draws it.
 describe('a thumbnail of a Pages tab', () => {
   const A4 = { orientation: 'portrait', size: 'a4' };
   const PICTURE = 'b'.repeat(32);
@@ -357,7 +376,7 @@ describe('a thumbnail of a Pages tab', () => {
 
   it('draws the first page alone, at its own size', async () => {
     const { env } = setup();
-    const out = (await getDocumentThumbnailSvg(env, liveDoc()))!;
+    const out = (await getDesignThumbnailSvg(env, liveDoc()))!;
     expect(out).toContain('Cover');
     expect(out).not.toContain('Later');
     // The page's own frame, not the bounds of everything on the canvas, nor the grid of every page.
@@ -366,7 +385,7 @@ describe('a thumbnail of a Pages tab', () => {
 
   it("reads only the first page's images, its picture background among them", async () => {
     const { env, images } = setup();
-    await getDocumentThumbnailSvg(env, liveDoc());
+    await getDesignThumbnailSvg(env, liveDoc());
     const read = images.get.mock.calls.map(([key]) => key as string);
     expect(read).toEqual(expect.arrayContaining([ON_FIRST, PICTURE]));
     expect(read).not.toContain(ON_SECOND);
@@ -378,14 +397,14 @@ describe('a thumbnail of a Pages tab', () => {
     db.getTabBody.mockResolvedValue(
       stored(JSON.stringify({ ...parsed, pages: [null, 5, ...parsed.pages] }), 4),
     );
-    const out = (await getDocumentThumbnailSvg(env, liveDoc()))!;
+    const out = (await getDesignThumbnailSvg(env, liveDoc()))!;
     expect(out).toContain('Cover');
     expect(out).not.toContain('Later');
   });
 
   it('draws the first page for a tab image too', async () => {
     const { env } = setup();
-    const tabImage = (await getDocumentTabImageSvg(env, liveDoc(), 't1'))!;
+    const tabImage = (await getDesignTabImageSvg(env, liveDoc(), 't1'))!;
     expect(tabImage).toContain('Cover');
     expect(tabImage).not.toContain('Later');
   });
@@ -418,7 +437,7 @@ describe('a thumbnail of a Charcoal tab', () => {
         }),
       ),
     );
-    const out = await getDocumentThumbnailSvg({ IMAGES: images } as unknown as Env, liveDoc());
+    const out = await getDesignThumbnailSvg({ IMAGES: images } as unknown as Env, liveDoc());
     expect(out).not.toContain('#2c2c33');
     expect(out).not.toContain('#2b2b33');
     expect(out).toContain('<rect x="1" y="1" width="98" height="78"');
@@ -444,7 +463,7 @@ describe('a thumbnail of named stock colours', () => {
         2,
       ),
     );
-    const out = await getDocumentThumbnailSvg({ IMAGES: images } as unknown as Env, liveDoc());
+    const out = await getDesignThumbnailSvg({ IMAGES: images } as unknown as Env, liveDoc());
     expect(out).toContain(penColourHex('blue', 'light'));
     expect(out).toContain(PEN_INK.light);
   });

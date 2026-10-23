@@ -10,7 +10,7 @@
 
 import { lucideList, lucideListOrdered } from '@livedesign/icons/lucide';
 import { useEffect, useRef, useState } from 'react';
-import type { ListStyle, RunBoolKey, RunHeading } from '@livedesign/document';
+import type { ListStyle, RunBoolKey, RunHeading } from '@livedesign/design';
 import { LinkMenuIcon } from '@/components/palette/context-menu-icons';
 import { noFocusSteal } from '@/components/rich-text/ToolbarDropdown';
 import {

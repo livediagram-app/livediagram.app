@@ -12,7 +12,7 @@
 // quotes, and CR/LF line endings. Non-numeric value cells fall back to 0.
 // Returns null when there's nothing usable (no header + at least one data row).
 
-import type { LineSeries } from '@livedesign/document';
+import type { LineSeries } from '@livedesign/design';
 
 // Soft caps so a pasted spreadsheet can't mint a pathologically huge chart.
 const MAX_SERIES = 12;

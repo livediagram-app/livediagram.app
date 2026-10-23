@@ -25,12 +25,12 @@ type ImageSearchError = OpenverseSearchError['kind'];
 
 export function useImageSearch({
   ownerId,
-  documentId,
+  designId,
   onPicked,
   filters,
 }: {
   ownerId: string;
-  documentId: string;
+  designId: string;
   // Told the stored picture and the result it came from.
   onPicked: (image: PickedImage, result: OpenverseImage) => void;
   // Openverse's shape and size filters (a page background's search); none in the picker.
@@ -123,7 +123,7 @@ export function useImageSearch({
       try {
         // The pipeline's browser half is DOM-heavy; load it on first pick.
         const { createBrowserImportImageSession } = await import('@/lib/import-images/browser');
-        const session = createBrowserImportImageSession({ ownerId, documentId });
+        const session = createBrowserImportImageSession({ ownerId, designId });
         outcome = await storeSearchResult(
           result,
           (source) => session.store(source),
@@ -147,7 +147,7 @@ export function useImageSearch({
       track('Error', 'Warning', pickWarningType(outcome.failure));
       setPickError(pickFailureMessage(outcome.failure));
     },
-    [documentId, onPicked, ownerId, pickingId],
+    [designId, onPicked, ownerId, pickingId],
   );
 
   return {

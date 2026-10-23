@@ -2,7 +2,7 @@
 // writing. Its own module, apart from the template catalogue in templates.ts: these read the template builders (a
 // template's pages are built here), and the editor reads the catalogue (a template's title) on every load, which
 // drew every builder into its first load while the two shared a module.
-import type { BackgroundPattern, Tab } from '@livedesign/document';
+import type { BackgroundPattern, Tab } from '@livedesign/design';
 import { blankPageTemplateOverrides } from './blank-page-templates';
 import { templateLayers } from './template-layers';
 import { templateEditorMode } from './template-modes';
@@ -15,7 +15,7 @@ const THEME_PATTERN: ReadonlySet<TemplateKind> = new Set<TemplateKind>(['blank']
 const PAGES_SURROUND: BackgroundPattern = 'blank';
 
 // Tab-level overrides a specific template ships with, applied on top of whatever theme is selected: its surround,
-// its layers (docs/specs/006-document/layers.md "Layered templates", matching the `layerId`s its builder pre-stamps),
+// its layers (docs/specs/006-design/layers.md "Layered templates", matching the `layerId`s its builder pre-stamps),
 // the mode it opens in, and its pages and writing, so every application path (the picker, /new, the MCP worker)
 // lands them in one commit.
 export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {

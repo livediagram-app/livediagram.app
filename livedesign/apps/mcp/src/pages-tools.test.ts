@@ -20,7 +20,7 @@ function api(answer: (body: unknown) => Response) {
       return answer(body);
     }
     if (/\/tabs\/[^/]+$/.test(path)) return Response.json({ tab: TAB });
-    return Response.json({ document: LIVE_DOC });
+    return Response.json({ design: LIVE_DOC });
   };
   return { handler, sent };
 }
@@ -46,7 +46,7 @@ async function call(
   args: Record<string, unknown>,
 ) {
   const client = await connectTestClient(handler);
-  return (await client.callTool({ name, arguments: { documentId: 'd1', ...args } })) as Result;
+  return (await client.callTool({ name, arguments: { designId: 'd1', ...args } })) as Result;
 }
 
 describe('the Pages tools', () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canonicalJson, type ShapeElement, type Tab } from '@livedesign/document';
+import { canonicalJson, type ShapeElement, type Tab } from '@livedesign/design';
 import {
   fileSlug,
   idSlug,
@@ -28,10 +28,10 @@ const tab = (over: Partial<Tab> = {}): Tab => ({
 });
 
 const file = (tabs: Tab[] = [tab()]): PullFile => ({
-  kind: 'livedesign.document',
+  kind: 'livedesign.design',
   schemaVersion: 1,
   exportedAt: 1,
-  document: { id: 'd1', name: 'Shop', presentation: null, tabs },
+  design: { id: 'd1', name: 'Shop', presentation: null, tabs },
   livedesignSync: {
     host: 'https://livedesign.app',
     pulledAt: 1,
@@ -76,7 +76,7 @@ describe('pullFileText and parsePullFile', () => {
   it('round-trips, keeping the envelope the editor imports', () => {
     const text = pullFileText(file());
     expect(JSON.parse(text)).toMatchObject({
-      kind: 'livedesign.document',
+      kind: 'livedesign.design',
       livedesignSync: { host: 'https://livedesign.app' },
     });
     expect(parsePullFile(text)).toEqual({ ok: true, file: file() });
@@ -86,15 +86,15 @@ describe('pullFileText and parsePullFile', () => {
     expect(parsePullFile('{')).toEqual({ ok: false, message: 'not JSON' });
     expect(parsePullFile('{"kind":"livedesign.tab"}')).toEqual({
       ok: false,
-      message: 'not a livedesign document',
+      message: 'not a livedesign design',
     });
     expect(parsePullFile(JSON.stringify({ ...file(), schemaVersion: 9 }))).toEqual({
       ok: false,
       message: 'written by a newer livedesign',
     });
-    expect(parsePullFile(JSON.stringify({ ...file(), document: { id: 'd1' } }))).toEqual({
+    expect(parsePullFile(JSON.stringify({ ...file(), design: { id: 'd1' } }))).toEqual({
       ok: false,
-      message: 'its document is malformed',
+      message: 'its design is malformed',
     });
     const { livedesignSync: _s, ...exported } = file();
     expect(parsePullFile(JSON.stringify(exported))).toEqual({

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createPath } from '@livedesign/document';
+import { createPath } from '@livedesign/design';
 import {
   heldMarker,
   inkPath,

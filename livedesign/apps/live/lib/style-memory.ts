@@ -10,7 +10,7 @@ import {
   rederiveQuickSwatches,
   type Element,
   type ThemeDefinition,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { safeJson } from './local-storage-safe';
 import { isQuickStyleTarget } from './quick-style';
 
@@ -71,7 +71,7 @@ const THEME_VALUE_OF: Readonly<Record<string, 'elementFill' | 'elementStroke' | 
 };
 
 const STORAGE_PREFIX = 'livedesign:v2:style-memory:';
-export const styleMemoryKey = (documentId: string): string => `${STORAGE_PREFIX}${documentId}`;
+export const styleMemoryKey = (designId: string): string => `${STORAGE_PREFIX}${designId}`;
 
 export function styleKindOf(el: Element): StyleKindKey | null {
   return el.type === 'arrow'

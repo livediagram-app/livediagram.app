@@ -1,7 +1,7 @@
 'use client';
 
 // One What Happened entry (docs/specs/013-workspace/explorer-home.md "What Happened"). A group
-// with one person shows that person's actions, each a link that opens the document. A group with
+// with one person shows that person's actions, each a link that opens the design. A group with
 // several people collapses into one summary: a disclosure button whose sentence names everyone
 // and everything, expanding (collapsed by default, never remembered) to every action, newest first.
 
@@ -18,7 +18,7 @@ import {
   updatesLabel,
   VERB_PHRASES,
 } from '@/app/explorer/home/home-copy';
-import { homeDocumentHref } from '@/app/explorer/home/home-model';
+import { homeDesignHref } from '@/app/explorer/home/home-model';
 import { AvatarStack, HomeAvatar } from './HomeAvatar';
 import { ChevronGlyph, VerbGlyph } from './home-icons';
 import { FOCUS_RING, MUTED, ROW } from './home-styles';
@@ -37,7 +37,7 @@ function NewPill() {
 
 const openFromFeed = () => track('Home', 'Selected', 'WhatHappened');
 
-/** One person's action: who, what, which document, where it lives, when. */
+/** One person's action: who, what, which design, where it lives, when. */
 export function ActionEntry({
   group,
   action,
@@ -52,7 +52,7 @@ export function ActionEntry({
   return (
     <li>
       <a
-        href={homeDocumentHref(group)}
+        href={homeDesignHref(group)}
         onClick={openFromFeed}
         className={`flex items-start gap-3 ${ROW} ${FOCUS_RING}`}
       >
@@ -83,7 +83,7 @@ export function ActionEntry({
   );
 }
 
-/** Several people's actions on one document in one day: a summary that expands. */
+/** Several people's actions on one design in one day: a summary that expands. */
 export function SummaryEntry({ group, isNew }: { group: HomeGroup; isNew: boolean }) {
   const [expanded, setExpanded] = useState(false);
   const listId = useId();
@@ -109,7 +109,7 @@ export function SummaryEntry({ group, isNew }: { group: HomeGroup; isNew: boolea
             {sentence.verbs}
             {sentence.preposition ? ` ${sentence.preposition}` : ''}{' '}
             <strong className="font-semibold text-slate-900 dark:text-slate-100">
-              {sentence.document}
+              {sentence.design}
             </strong>
           </span>
           <span className={`mt-0.5 block text-xs ${MUTED}`}>
@@ -134,7 +134,7 @@ export function SummaryEntry({ group, isNew }: { group: HomeGroup; isNew: boolea
               return (
                 <li key={action.id}>
                   <a
-                    href={homeDocumentHref(group)}
+                    href={homeDesignHref(group)}
                     onClick={openFromFeed}
                     aria-label={`${personName(person)} ${VERB_PHRASES[action.verb]}, ${group.name}, ${clockTime(action.occurredAt)}`}
                     className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition hover:bg-slate-100 dark:hover:bg-slate-800/70 ${FOCUS_RING}`}

@@ -34,7 +34,7 @@ function mint(db: SqliteD1, opts: Opts = {}) {
       token,
       body:
         opts.rawBody === undefined
-          ? (opts.body ?? { documentId: 'doc1', origin: ORIGIN })
+          ? (opts.body ?? { designId: 'doc1', origin: ORIGIN })
           : undefined,
       rawBody: opts.rawBody,
       workbench: opts.workbench ?? null,
@@ -59,7 +59,7 @@ describe('POST /api/workbench/tickets', () => {
     const db = await workbenchDb();
     pairToken(db);
 
-    const res = await mint(db, { body: { documentId: 'doc1', tabId: 't1', origin: ORIGIN } });
+    const res = await mint(db, { body: { designId: 'doc1', tabId: 't1', origin: ORIGIN } });
     const body = (await res.json()) as { url: string };
 
     expect(res.status).toBe(201);
@@ -67,7 +67,7 @@ describe('POST /api/workbench/tickets', () => {
       url: expect.stringMatching(
         /^https:\/\/app\.test\/embed\/workbench\?d=doc1#ticket=[A-Za-z0-9_-]{22}$/,
       ),
-      documentId: 'doc1',
+      designId: 'doc1',
       tabId: 't1',
       expiresAt: NOW + WORKBENCH_TICKET_TTL_MS,
     });
@@ -82,8 +82,8 @@ describe('POST /api/workbench/tickets', () => {
       ],
     );
     expect(console.log).toHaveBeenCalledWith('[workbench] ticket-minted', {
-      scope: 'document',
-      documentId: 'doc1',
+      scope: 'design',
+      designId: 'doc1',
       folderId: null,
       tokenId: 'tok1',
       role: 'edit',
@@ -144,11 +144,11 @@ describe('POST /api/workbench/tickets', () => {
 
   it.each([
     [
-      'an overlong document id',
-      { documentId: 'x'.repeat(65), origin: ORIGIN },
-      'invalid documentId',
+      'an overlong design id',
+      { designId: 'x'.repeat(65), origin: ORIGIN },
+      'invalid designId',
     ],
-    ['a bad tab id', { documentId: 'doc1', tabId: 5, origin: ORIGIN }, 'invalid tabId'],
+    ['a bad tab id', { designId: 'doc1', tabId: 5, origin: ORIGIN }, 'invalid tabId'],
   ])('refuses %s', async (_why, body, message) => {
     const db = await workbenchDb();
     pairToken(db);
@@ -173,45 +173,45 @@ describe('POST /api/workbench/tickets', () => {
       const db = await workbenchDb();
       pairToken(db);
 
-      const res = await mint(db, { body: { documentId: 'doc1', origin } });
+      const res = await mint(db, { body: { designId: 'doc1', origin } });
 
       expect(res.status).toBe(400);
       expect(await res.json()).toEqual({ error: 'invalid_origin' });
       expect(console.warn).toHaveBeenCalledWith('[workbench] mint-refused', {
         reason: 'invalid_origin',
-        scope: 'document',
+        scope: 'design',
         tokenId: 'tok1',
       });
     },
   );
 
-  it('answers 404 for a document the owner cannot open, and for a tab it does not link', async () => {
+  it('answers 404 for a design the owner cannot open, and for a tab it does not link', async () => {
     const db = await workbenchDb();
     pairToken(db);
 
-    const foreign = await mint(db, { body: { documentId: 'doc2', origin: ORIGIN } });
-    const missing = await mint(db, { body: { documentId: 'nope', origin: ORIGIN } });
-    const tab = await mint(db, { body: { documentId: 'doc1', tabId: 'nope', origin: ORIGIN } });
+    const foreign = await mint(db, { body: { designId: 'doc2', origin: ORIGIN } });
+    const missing = await mint(db, { body: { designId: 'nope', origin: ORIGIN } });
+    const tab = await mint(db, { body: { designId: 'doc1', tabId: 'nope', origin: ORIGIN } });
 
     expect([foreign.status, missing.status, tab.status]).toEqual([404, 404, 404]);
   });
 
-  it('answers 410 for the owner own trashed document', async () => {
+  it('answers 410 for the owner own trashed design', async () => {
     const db = await workbenchDb();
     pairToken(db);
-    db.sql.exec(`UPDATE documents SET trashed_at = 1 WHERE id = 'doc1'`);
+    db.sql.exec(`UPDATE designs SET trashed_at = 1 WHERE id = 'doc1'`);
 
     const res = await mint(db);
 
     expect(res.status).toBe(410);
   });
 
-  it('answers 404, not 410, for a trashed document the owner could never open', async () => {
+  it('answers 404, not 410, for a trashed design the owner could never open', async () => {
     const db = await workbenchDb();
     pairToken(db);
-    db.sql.exec(`UPDATE documents SET trashed_at = 1 WHERE id = 'doc2'`);
+    db.sql.exec(`UPDATE designs SET trashed_at = 1 WHERE id = 'doc2'`);
 
-    const res = await mint(db, { body: { documentId: 'doc2', origin: ORIGIN } });
+    const res = await mint(db, { body: { designId: 'doc2', origin: ORIGIN } });
 
     expect(res.status).toBe(404);
   });
@@ -219,11 +219,11 @@ describe('POST /api/workbench/tickets', () => {
   it('ignores a share code: only the owner own access counts', async () => {
     const db = await workbenchDb();
     pairToken(db);
-    db.sql.exec(`INSERT INTO share_links (code, document_id, role, created_at)
+    db.sql.exec(`INSERT INTO share_links (code, design_id, role, created_at)
                  VALUES ('code1', 'doc2', 'edit', 1)`);
 
     const res = await mint(db, {
-      body: { documentId: 'doc2', origin: ORIGIN },
+      body: { designId: 'doc2', origin: ORIGIN },
       headers: { 'X-Share-Code': 'code1' },
     });
 
@@ -260,7 +260,7 @@ describe('POST /api/workbench/tickets, workspace scope', () => {
     ...over,
   });
 
-  it('asks for a second approval when the origin is paired for the document scope only', async () => {
+  it('asks for a second approval when the origin is paired for the design scope only', async () => {
     const db = await workbenchDb();
     pairToken(db);
 
@@ -299,12 +299,12 @@ describe('POST /api/workbench/tickets, workspace scope', () => {
       folderId: null,
       expiresAt: NOW + WORKBENCH_TICKET_TTL_MS,
     });
-    expect(rows(db, 'SELECT scope, document_id, folder_id, role FROM workbench_tickets')).toEqual([
-      { scope: 'workspace', document_id: null, folder_id: null, role: 'edit' },
+    expect(rows(db, 'SELECT scope, design_id, folder_id, role FROM workbench_tickets')).toEqual([
+      { scope: 'workspace', design_id: null, folder_id: null, role: 'edit' },
     ]);
     expect(console.log).toHaveBeenCalledWith('[workbench] ticket-minted', {
       scope: 'workspace',
-      documentId: null,
+      designId: null,
       folderId: null,
       tokenId: 'tok1',
       role: 'edit',
@@ -338,15 +338,15 @@ describe('POST /api/workbench/tickets, workspace scope', () => {
     },
   );
 
-  it('mints a document ticket on a workspace pairing: the workspace covers the document scope', async () => {
+  it('mints a design ticket on a workspace pairing: the workspace covers the design scope', async () => {
     const db = await workbenchDb();
     pairToken(db, 'tok1', 'user_1', 'pair1', 'workspace');
 
     const res = await mint(db);
 
     expect(res.status).toBe(201);
-    expect(rows(db, 'SELECT scope, document_id FROM workbench_tickets')).toEqual([
-      { scope: 'document', document_id: 'doc1' },
+    expect(rows(db, 'SELECT scope, design_id FROM workbench_tickets')).toEqual([
+      { scope: 'design', design_id: 'doc1' },
     ]);
   });
 
@@ -362,21 +362,21 @@ describe('POST /api/workbench/tickets, workspace scope', () => {
 
   it.each([
     [
-      'a workspace ticket naming a document',
-      workspaceBody({ documentId: 'doc1' }),
-      'a workspace ticket names no document',
+      'a workspace ticket naming a design',
+      workspaceBody({ designId: 'doc1' }),
+      'a workspace ticket names no design',
     ],
     [
       'a workspace ticket naming a tab',
       workspaceBody({ tabId: 't1' }),
-      'a workspace ticket names no document',
+      'a workspace ticket names no design',
     ],
     ['a bad folder id', workspaceBody({ folderId: 7 }), 'invalid folderId'],
-    ['a document ticket without a document', { origin: ORIGIN }, 'invalid documentId'],
+    ['a design ticket without a design', { origin: ORIGIN }, 'invalid designId'],
     [
-      'a document ticket naming a folder',
-      { documentId: 'doc1', folderId: 'f-own', origin: ORIGIN },
-      'a document ticket names no folder',
+      'a design ticket naming a folder',
+      { designId: 'doc1', folderId: 'f-own', origin: ORIGIN },
+      'a design ticket names no folder',
     ],
     ['an unknown scope', { scope: 'galaxy', origin: ORIGIN }, 'invalid scope'],
   ])('refuses %s with invalid_value', async (_why, body, message) => {

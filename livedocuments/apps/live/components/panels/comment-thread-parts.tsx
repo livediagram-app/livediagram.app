@@ -9,6 +9,7 @@ import { useAutoHeight } from '@/hooks/ui/useAutoHeight';
 import {
   Button,
   CheckIcon,
+  GlyphDisc,
   IDENTITY_FILL,
   TrashIcon,
   Tooltip,
@@ -20,7 +21,6 @@ import { MentionText } from '@/components/primitives/MentionText';
 import { useMentionAutocomplete } from '@/hooks/ui/useMentionAutocomplete';
 import { useMentionScope } from '@/components/canvas/collab/comment/MentionContext';
 import { initialsOf } from '@/lib/identity';
-import { AuthorDisc } from '@/components/primitives/AuthorDisc';
 import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';
 
 type CommentDensity = 'compact' | 'comfortable';
@@ -264,9 +264,7 @@ function CommentRow({
       className={`group flex ${comfortable ? 'gap-2.5 py-2.5' : 'gap-2 py-2'} ${resolved ? 'opacity-60' : ''}`}
     >
       <span className="mt-0.5 inline-flex">
-        <AuthorDisc
-          commentId={comment.id}
-          authorId={comment.authorId}
+        <GlyphDisc
           size={comfortable ? 28 : 24}
           as="div"
           aria-hidden
@@ -274,7 +272,7 @@ function CommentRow({
           className={`text-[10px] font-semibold text-white ${IDENTITY_FILL}`}
         >
           {initialsOf(comment.authorName)}
-        </AuthorDisc>
+        </GlyphDisc>
       </span>
       <div className="min-w-0 flex-1">
         <div

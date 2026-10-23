@@ -12,7 +12,7 @@
 // shared: a helper reached from one family's folder is a dependency pointing
 // the wrong way.
 
-// The wash itself is the shared colorWash (@livedesign/document), which the
+// The wash itself is the shared colorWash (@livedesign/design), which the
 // headless export uses too, so a chair's seat or a card's chip washes the
 // same in an exported image.
-export { colorWash as tint } from '@livedesign/document';
+export { colorWash as tint } from '@livedesign/design';

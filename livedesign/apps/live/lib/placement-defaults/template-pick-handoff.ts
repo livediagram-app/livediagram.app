@@ -1,12 +1,12 @@
-// The New Document wizard's note to the editor (docs/specs/013-workspace/default-folders.md "A template picked
+// The New Design wizard's note to the editor (docs/specs/013-workspace/default-folders.md "A template picked
 // after creation"): /new now makes the chosen mode's blank, and the template is picked afterwards on the start
-// screen, so the template's default folder can only be applied then. The wizard notes the document it made, its
+// screen, so the template's default folder can only be applied then. The wizard notes the design it made, its
 // first tab and whether the person chose the folder themselves; the editor reads it at the first template pick and
-// clears it. Kept for this browser tab only (sessionStorage), and only for a cloud document made from a mode's blank.
+// clears it. Kept for this browser tab only (sessionStorage), and only for a cloud design made from a mode's blank.
 const KEY = 'livedesign:v2:template-pick-handoff';
 
 export type TemplatePickHandoff = {
-  documentId: string;
+  designId: string;
   tabId: string;
   // The folder was the person's own choice (picked on the Location step, or a /new?folder= / ?team= context, or
   // their saved "skip this step" place): it is kept whatever template is picked.
@@ -39,9 +39,9 @@ export function readTemplatePick(): TemplatePickHandoff | null {
     const raw: unknown = JSON.parse(store.getItem(KEY) ?? 'null');
     if (!raw || typeof raw !== 'object') return null;
     const h = raw as Record<string, unknown>;
-    if (typeof h.documentId !== 'string' || typeof h.tabId !== 'string') return null;
+    if (typeof h.designId !== 'string' || typeof h.tabId !== 'string') return null;
     return {
-      documentId: h.documentId,
+      designId: h.designId,
       tabId: h.tabId,
       placementChosen: h.placementChosen === true,
     };
@@ -50,10 +50,10 @@ export function readTemplatePick(): TemplatePickHandoff | null {
   }
 }
 
-/** The handoff for this document's first tab, taken (read and cleared) so it applies once. */
-export function takeTemplatePick(documentId: string, tabId: string): TemplatePickHandoff | null {
+/** The handoff for this design's first tab, taken (read and cleared) so it applies once. */
+export function takeTemplatePick(designId: string, tabId: string): TemplatePickHandoff | null {
   const handoff = readTemplatePick();
-  if (!handoff || handoff.documentId !== documentId) return null;
+  if (!handoff || handoff.designId !== designId) return null;
   handTemplatePick(null);
   return handoff.tabId === tabId ? handoff : null;
 }

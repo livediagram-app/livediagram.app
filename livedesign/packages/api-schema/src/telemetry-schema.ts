@@ -1,13 +1,13 @@
 // Telemetry wire-format (docs/specs/017-telemetry/telemetry.md): the closed category/action vocabulary,
 // the TelemetryEvent shape + validator, and the dashboard summary/window
-// types. Self-contained (no document deps); split out of the schema barrel.
+// types. Self-contained (no design deps); split out of the schema barrel.
 
 // ---------------------------------------------------------------------
 // Telemetry (docs/specs/017-telemetry/telemetry.md)
 // ---------------------------------------------------------------------
 //
 // Anonymous, first-party product events. Each event is three small
-// fields: a `category` (the parent: Document, Element, …), an `action`
+// fields: a `category` (the parent: Design, Element, …), an `action`
 // (the verb: Created, Added, …), and an optional `type` (one
 // app-defined reference value: 'Square', 'Edit', a template id …).
 // NEVER carries user-generated content — no names, ids, or element
@@ -36,7 +36,7 @@ export const TELEMETRY_CATEGORIES = [
   'Search',
   'UI',
   'Folder',
-  // Layers (docs/specs/006-document/layers.md): panel + layer lifecycle. 'Added'/'Deleted'/'Renamed'/
+  // Layers (docs/specs/006-design/layers.md): panel + layer lifecycle. 'Added'/'Deleted'/'Renamed'/
   // 'Reordered' for the layer rows, 'Toggled' with `type`
   // 'Hidden'/'Shown'/'Locked'/'Unlocked' for the eye + padlock,
   // 'Selected' for an active-layer switch, 'Moved' for move-selection-
@@ -64,7 +64,7 @@ export const TELEMETRY_CATEGORIES = [
   // via the consent screen, which mints a token under the hood).
   'Token',
   // MCP server tool calls (apps/mcp, docs/specs/015-api/mcp-server.md): 'Used' with `type` the tool
-  // name (CreateDocument, ReadDocument, ...). Emitted by the MCP worker, the
+  // name (CreateDesign, ReadDesign, ...). Emitted by the MCP worker, the
   // third app that reports telemetry, so usage shows up distinctly from the
   // in-editor AI panel.
   'Mcp',
@@ -93,43 +93,43 @@ export const TELEMETRY_CATEGORIES = [
   // the view mode, 'Selected' a filter chip's source type, and 'Loaded'
   // 'More' | 'Retry' — the second being a read that failed hard enough
   // that the reader pressed Try again (docs/specs/013-workspace/timeline.md §2.4), which is the
-  // only signal we get for a feed nobody could load. Never a document
+  // only signal we get for a feed nobody could load. Never a design
   // name, team name, or comment text.
   'Timeline',
   // Explorer Home (docs/specs/013-workspace/explorer-home.md): the landing view. 'Opened' with
   // `type` 'Landing' | 'Nav' (the page the Explorer opened on, or a later visit) and 'Group' (a
   // What happened summary expanded); 'Selected' with 'JumpBackIn.MostUsed' | 'JumpBackIn.Recent'
-  // (a document opened from Jump back in, by the half it belongs to), 'JumpBackIn.SeeMore' (See
-  // more followed to the Recent page) | 'WhatHappened' | 'Hero.Documents' | 'Hero.Inbox' (a hero
-  // status pill followed) | 'Hero.NewDocument' (the hero's New document) | 'Welcome.Blank' | 'Welcome.Template' |
+  // (a design opened from Jump back in, by the half it belongs to), 'JumpBackIn.SeeMore' (See
+  // more followed to the Recent page) | 'WhatHappened' | 'Hero.Designs' | 'Hero.Inbox' (a hero
+  // status pill followed) | 'Hero.NewDesign' (the hero's New design) | 'Welcome.Blank' | 'Welcome.Template' |
   // 'Welcome.AllTemplates' | 'Welcome.Search' | 'Welcome.StartBlank' | 'Welcome.SignIn' (a start taken from the
   // first-run Home); 'Opened' with 'Welcome' (the first-run Home shown); 'Loaded' with 'Retry' (a failed read
-  // retried). Never a document name or a person.
+  // retried). Never a design name or a person.
   'Home',
-  // Inbox (docs/specs/013-workspace/inbox.md): the Explorer's cross-document inbox of open
+  // Inbox (docs/specs/013-workspace/inbox.md): the Explorer's cross-design inbox of open
   // actions + comment threads. 'Opened' once per visit; 'Selected' with
   // `type` 'Action' | 'Thread' on a row click (which kind of row sends
-  // people back into a document); 'Loaded'/'Retry' when a failed read is
-  // retried. Never an action name, comment text, or document name.
+  // people back into a design); 'Loaded'/'Retry' when a failed read is
+  // retried. Never an action name, comment text, or design name.
   'Activity',
   // Page views (docs/specs/017-telemetry/page-view-telemetry.md): 'View' with `type` the normalised page path
-  // ('/help/canvas/the-canvas', '/document'), reported by every
+  // ('/help/canvas/the-canvas', '/design'), reported by every
   // frontend on each path change. The one category whose `type` is a path,
   // so it validates against PAGE_VIEW_PATH_PATTERN instead of the token
   // pattern, and only ever pairs with 'View'.
   'Page',
   // Landing funnel (docs/specs/019-marketing/landing-funnel.md): a call to action on a public page brought
-  // somebody to /new ('Opened'), and that visit created a document
+  // somebody to /new ('Opened'), and that visit created a design
   // ('Created'). `type` is the CTA's source from the closed CTA_SOURCES
   // table ('Home.Hero', 'Feature.Closing'), never a visitor or a URL; the
   // editor sends both, the marketing site still sends only page views.
   'Cta',
   // Trash (docs/specs/013-workspace/trash.md): the quiet backstop behind every
-  // document delete. 'Opened' with `type` 'Settings' (its one way in);
+  // design delete. 'Opened' with `type` 'Settings' (its one way in);
   // 'Restored' / 'Deleted' (for good) / 'Cleared' (Empty
   // Trash) with `type` the Trash it happened in ('Personal' | 'Team' |
-  // 'Local'). Whether people ever come back for a deleted document is the
-  // question; never a document or team name.
+  // 'Local'). Whether people ever come back for a deleted design is the
+  // question; never a design or team name.
   'Trash',
   // The markers (docs/specs/023-draw-mode/drawing-tools.md): a marker 'Changed' ('PenColour' |
   // 'PenWidth') and a stroke flipped between ink and a shape, 'Toggled' ('RecogniseOnceKey' |
@@ -143,12 +143,12 @@ export const TELEMETRY_CATEGORIES = [
   // Agent changesets (docs/specs/024-agents/agent-changesets.md "Observability and telemetry"):
   // 'Applied', 'Conflicted' and 'Held' for an agent's changeset, 'Reverted' for a revert of one,
   // typed by the front door ('Mcp' | 'Cli' | 'Api' | 'Editor'); 'Opened'·'Toast' when a person asks to
-  // see what changed; 'Viewed' for a document view the api answered, typed by the view. Never
+  // see what changed; 'Viewed' for a design view the api answered, typed by the view. Never
   // content, never an id.
   'Agent',
   // Timings (docs/specs/017-telemetry/timing-telemetry.md): how long a key moment of the experience took
-  // (a document opening, a tab switch, a save, the live room connecting, a page's Web Vitals). Only ever
-  // 'Measured', `type` the metric and the bucket its value fell in ('DocumentLoad.Under1000ms'), checked
+  // (a design opening, a tab switch, a save, the live room connecting, a page's Web Vitals). Only ever
+  // 'Measured', `type` the metric and the bucket its value fell in ('DesignLoad.Under1000ms'), checked
   // against the closed list in timing-telemetry.ts. Never a raw number, never an id.
   'Timing',
 ] as const;
@@ -191,7 +191,7 @@ export const TELEMETRY_ACTIONS = [
   'Undone',
   'Redone',
   'Cleared',
-  // Document / Tab (docs/specs/017-telemetry/telemetry.md): an existing document was opened, or a tab's
+  // Design / Tab (docs/specs/017-telemetry/telemetry.md): an existing design was opened, or a tab's
   // content was fetched for viewing (incl. switching to it). Fires on
   // every open, the counterpart to 'Created' — an engagement/opens signal.
   'Loaded',
@@ -219,7 +219,7 @@ export const TELEMETRY_ACTIONS = [
   // later UTC day. Paired with 'Participant'/'Created', gated once per
   // UTC day client-side; type is 'Anonymous' | 'Authenticated'.
   'Returned',
-  // Trash (docs/specs/013-workspace/trash.md): a deleted document was brought
+  // Trash (docs/specs/013-workspace/trash.md): a deleted design was brought
   // back from the Trash.
   'Restored',
   // Agent changesets (docs/specs/024-agents/agent-changesets.md): a changeset applied.
@@ -230,7 +230,7 @@ export const TELEMETRY_ACTIONS = [
   // An agent's presence on a tab created by an explicit set (docs/specs/024-agents/agent-presence.md "Observability").
   'Present',
   'Held',
-  // Document views (docs/specs/024-agents/document-views.md): a view the api answered, typed by the
+  // Design views (docs/specs/024-agents/design-views.md): a view the api answered, typed by the
   // view ('Overview' | 'Outline' | 'Graph' | 'Layout' | 'Comments' | 'Show' | 'Find' | 'Pages' | 'Lint').
   'Viewed',
   // Email (docs/specs/014-identity/transactional-email.md): a transactional / lifecycle email left the worker for

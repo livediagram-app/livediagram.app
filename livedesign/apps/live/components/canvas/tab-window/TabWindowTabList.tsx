@@ -1,9 +1,9 @@
 'use client';
 
-// The tabs a window may show (docs/specs/009-elements/tab-window.md "Choosing the tab"): every tab of the document but
+// The tabs a window may show (docs/specs/009-elements/tab-window.md "Choosing the tab"): every tab of the design but
 // the window's own, in tab-bar order, each by name, the shown one marked. Shared by the empty window's Choose a Tab and
 // the menu's Tab Window section.
-import { tabWindowOffers, type Tab } from '@livedesign/document';
+import { tabWindowOffers, type Tab } from '@livedesign/design';
 import { CompactEmptyState, lucideGlyph } from '@livedesign/ui';
 import { lucideAppWindow } from '@livedesign/icons/lucide';
 import { OptionRows } from '@/components/primitives/OptionRows';

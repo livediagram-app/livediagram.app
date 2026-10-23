@@ -7,7 +7,7 @@
 
 import type { CSSProperties, ReactNode } from 'react';
 import { HoverCard, useMediaQuery } from '@livedesign/ui';
-import type { BackgroundPattern } from '@livedesign/document';
+import type { BackgroundPattern } from '@livedesign/design';
 import { PagedCarousel } from '@/components/primitives/PagedCarousel';
 import type { PatternEntry } from '@/components/palette/palette-controls';
 import { tabBackgroundStyle } from '@/lib/canvas-backgrounds';

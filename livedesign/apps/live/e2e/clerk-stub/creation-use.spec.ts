@@ -2,9 +2,9 @@ import type { Page } from '@playwright/test';
 import { expect, expectNoPageErrors, test } from '../fixtures';
 import { freshUserId, installClerkStub, type StubUser } from './clerk-stub';
 
-// Making a document is a use (docs/specs/013-workspace/explorer-home.md "Making a document";
-// docs/specs/015-api/api.md "Marking a document used"), signed in, against the Clerk-enabled export:
-// a document an API client makes is in Jump Back In unopened; one it makes with markUsed: false is not.
+// Making a design is a use (docs/specs/013-workspace/explorer-home.md "Making a design";
+// docs/specs/015-api/api.md "Marking a design used"), signed in, against the Clerk-enabled export:
+// a design an API client makes is in Jump Back In unopened; one it makes with markUsed: false is not.
 
 test.use({ colorScheme: 'dark', viewport: { width: 1280, height: 800 } });
 
@@ -37,18 +37,18 @@ async function apiCreate(
   extra: Record<string, unknown> = {},
 ): Promise<void> {
   const id = crypto.randomUUID();
-  const res = await page.request.post('/api/documents', {
+  const res = await page.request.post('/api/designs', {
     headers,
     data: { id, name, tabs: [{ id: crypto.randomUUID(), name: 'Tab 1', elements: [] }], ...extra },
   });
   expect(res.status(), `create ${name}`).toBe(201);
 }
 
-// Jump Back In's documents: the Most Used and Recent lists on a wide screen, the strip on a phone.
+// Jump Back In's designs: the Most Used and Recent lists on a wide screen, the strip on a phone.
 const jumpBackIn = (page: Page) =>
   page.getByRole('region', { name: 'Jump Back In' }).getByRole('listitem');
 
-test('an API client’s document is in Jump Back In unless it says markUsed: false', async ({
+test('an API client’s design is in Jump Back In unless it says markUsed: false', async ({
   page,
   pageErrors,
 }) => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { elementFingerprint } from '@livedesign/document';
+import { elementFingerprint } from '@livedesign/design';
 import type { ChangesetRequest } from '@livedesign/api-schema';
 import { baseFromCopy, readPlainTab, recordCopy } from './copies';
 import { VerbRefusal } from './define';
@@ -8,8 +8,8 @@ import { memoryCopies } from './testing/memory-copies';
 import { box, plainTab, tabAnswer } from './testing/tabs';
 import { HELD_RETRY_INTERVAL_MS, submitChangeset } from './write';
 
-const TAB = `/documents/${DOC_A}/tabs/tab-one-0000`;
-const target = { documentId: DOC_A, tabId: 'tab-one-0000', tabName: 'Overview', doc: 'Auth flow' };
+const TAB = `/designs/${DOC_A}/tabs/tab-one-0000`;
+const target = { designId: DOC_A, tabId: 'tab-one-0000', tabName: 'Overview', doc: 'Auth flow' };
 const written = (rebasedOver = 0) => ({
   dryRun: false,
   changeset: { id: 'cs_1', tabId: 'tab-one-0000', rev: 6, previousRev: 5, rebasedOver },

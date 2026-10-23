@@ -8,7 +8,7 @@ import {
   type FreehandElement,
   type ShapeElement,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { makeCommitFreehand } from './commit-freehand';
 
@@ -62,7 +62,7 @@ const scribble = [
 ];
 
 describe('a marker stroke', () => {
-  // docs/specs/006-document/stroke-points.md "Limits": a stroke longer than a stroke can store is
+  // docs/specs/006-design/stroke-points.md "Limits": a stroke longer than a stroke can store is
   // simplified to fit on release, never lost.
   it('keeps a stroke drawn with more samples than a stroke can store, with its pressures', () => {
     const n = MAX_FREEHAND_POINTS + 5_000;

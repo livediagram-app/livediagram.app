@@ -28,7 +28,7 @@ import {
   type Tab,
   TAB_SCHEMA_VERSION,
   type ExportedTabEnvelope,
-} from '@livedesign/document';
+} from '@livedesign/design';
 
 type ImportResult = { ok: true; tab: Tab } | { ok: false; error: string };
 
@@ -69,7 +69,7 @@ export function parseImportedTab(text: string): ImportResult {
   if (typeof tab.id !== 'string' || typeof tab.name !== 'string' || !Array.isArray(tab.elements)) {
     return { ok: false, error: 'Tab payload is missing required fields (id, name, elements).' };
   }
-  // Every older version (v1: freehand points as `{ nx, ny }`, docs/specs/006-document/stroke-points.md)
+  // Every older version (v1: freehand points as `{ nx, ny }`, docs/specs/006-design/stroke-points.md)
   // migrates through the stored-element migrations, which leave current elements alone.
   //
   // Each element through the same guard clipboard paste uses. An array check

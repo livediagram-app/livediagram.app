@@ -1,6 +1,6 @@
 // The summary line's extent (blueprint "Behaviour and state" step 2): the drawing's rounded size.
 
-import { contentBounds } from '@livedesign/document';
+import { contentBounds } from '@livedesign/design';
 import { finiteRect } from './boxes';
 import type { LintContext } from './context';
 

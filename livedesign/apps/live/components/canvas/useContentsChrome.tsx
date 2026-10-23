@@ -23,7 +23,7 @@ import { readUserPreferences, writeUserPreferences } from '@/lib/user-preference
 import type { PageThumbTab } from '@/hooks/ui/usePageThumbnails';
 import type { CanvasChromeProps } from './CanvasChrome';
 
-// Both load with Pages mode, not with the editor: a document without pages pays nothing.
+// Both load with Pages mode, not with the editor: a design without pages pays nothing.
 const PageContentsPanel = dynamic(
   () => import('./PageContentsPanel').then((m) => m.PageContentsPanel),
   { ssr: false },

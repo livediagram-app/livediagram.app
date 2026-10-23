@@ -53,7 +53,7 @@ describe('apiHeaders (hybrid identity gate, docs/specs/014-identity/auth-and-gue
   });
 
   it('guest path: provider returning null falls back to X-Owner-Id', async () => {
-    // Signed-out Clerk session: useAuth().getToken() resolves to
+    // Signed-out signed-in session: useAuth().getToken() resolves to
     // null, so the provider is registered but currently inert. The
     // request must still carry the X-Owner-Id header (the editor
     // stays usable for signed-out visitors).
@@ -104,7 +104,7 @@ describe('apiHeaders (hybrid identity gate, docs/specs/014-identity/auth-and-gue
 
   it('bearer + share: signed-in visitor on a share URL still carries the share code', async () => {
     // A signed-in user clicking a share link sends Bearer (their
-    // Clerk identity) AND X-Share-Code (the link's role gates write
+    // account identity) AND X-Share-Code (the link's role gates write
     // access on the document they don't own). docs/specs/014-identity/auth-and-guest-access.md: "Share-code
     // visitors who happen to also be signed in send Bearer +
     // X-Share-Code; the per-link role still gates write access."

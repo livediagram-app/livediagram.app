@@ -1,5 +1,5 @@
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import { canAppendWebRow, type Element, type Rect } from '@livedesign/document';
+import { canAppendWebRow, type Element, type Rect } from '@livedesign/design';
 import type { QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
 import { QuickConnectRing } from '@/components/canvas/QuickConnectRing';
 

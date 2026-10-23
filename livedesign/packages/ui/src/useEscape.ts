@@ -25,7 +25,7 @@ import { useEffect, useRef } from 'react';
 //      user can't cancel a request that's already in flight.
 //   `capture` (default false): when true, register on `window` in
 //      the capture phase so the surface fires BEFORE the editor's
-//      global shortcuts at `document` bubble. For a surface that needs
+//      global shortcuts at `design` bubble. For a surface that needs
 //      Escape to be its alone, even though the editor maps Escape to
 //      "deselect current element".
 //   `stopPropagation` (default false): call e.stopPropagation() on

@@ -10,8 +10,8 @@
 //   invite  Open Invites · Accept · Decline
 //   theme   Open Themes · Edit Theme · Delete Theme (confirmed)
 //   image   Open Images
-//   document the Explorer can't resolve (a team document the sidebar
-//           hasn't loaded): Open Document
+//   design the Explorer can't resolve (a team design the sidebar
+//           hasn't loaded): Open Design
 //
 // A tombstone, or an entity the Explorer no longer holds (a revoked
 // token, an answered invite, a team the reader has left), keeps only
@@ -26,7 +26,7 @@
 import { CloseIcon } from '@livedesign/ui';
 import {
   CheckIcon,
-  DocumentIcon,
+  DesignIcon,
   ImageIcon,
   InviteIcon,
   KeyIcon,
@@ -225,18 +225,18 @@ export function useTimelineEntityMenus(): {
     (event) => {
       const { sourceType, eventType, snapshot } = event;
 
-      if (sourceType === 'document') {
-        // Only reached for a document the Explorer could NOT resolve (the
+      if (sourceType === 'design') {
+        // Only reached for a design the Explorer could NOT resolve (the
         // slots hook builds the full menu otherwise). The card click
         // opens it; the menu says so explicitly.
-        const id = str(snapshot, 'documentId');
+        const id = str(snapshot, 'designId');
         if (!id) return null;
         return {
           items: [
             {
-              label: 'Open Document',
-              icon: <DocumentIcon />,
-              onClick: () => assignAppLocation(`/document/${encodeURIComponent(id)}`),
+              label: 'Open Design',
+              icon: <DesignIcon />,
+              onClick: () => assignAppLocation(`/design/${encodeURIComponent(id)}`),
             },
           ],
         };

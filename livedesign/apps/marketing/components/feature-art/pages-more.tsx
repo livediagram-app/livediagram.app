@@ -1,6 +1,5 @@
 // Feature illustrations for Pages mode's pages beyond layouts (docs/specs/007-editor/pages-mode.md):
-// a live window onto another tab, a page tidied in one press, the
-// Contents sidebar, and a talk kept to time while presenting.
+// a live window onto another tab, the Contents sidebar, and a talk kept to time while presenting.
 
 import { YOU } from '@/components/art-tokens';
 import {
@@ -27,59 +26,37 @@ function Sheet({ x, y, w, h }: { x: number; y: number; w: number; h: number }) {
   );
 }
 
-// Tab window: a slide holding a window onto the Architecture tab, and that tab beside it, a box
-// just added on the tab appearing in the window too.
+// Tab window: a page holding a window onto the Logo tab, and that tab beside it, the dot just added
+// to the mark on the tab appearing in the window too.
 export function TabWindowArt() {
-  const box = (x: number, y: number, s: number, label: string) => (
+  const logo = (s: number, late: boolean) => (
     <g>
-      <rect
+      <circle
         className={INK}
-        x={x}
-        y={y}
-        width={30 * s}
-        height={14 * s}
-        rx={2 * s}
-        strokeWidth={0.9 * s}
+        cx={14 * s}
+        cy={12 * s}
+        r={10 * s}
+        fill="none"
+        strokeWidth={2.6 * s}
       />
-      <text
-        className={INK_TEXT}
-        x={x + 15 * s}
-        y={y + 9 * s}
-        fontSize={5.2 * s}
-        textAnchor="middle"
-      >
-        {label}
-      </text>
-    </g>
-  );
-  const diagram = (s: number, late: boolean) => (
-    <g>
-      {box(0, 0, s, 'App')}
-      <line className={ARROW} x1={30 * s} x2={42 * s} y1={7 * s} y2={7 * s} strokeWidth={0.9 * s} />
-      {box(42 * s, 0, s, 'API')}
       <g
         className={late ? 'fa-d-land' : undefined}
         style={late ? { animationDelay: '0.6s' } : undefined}
       >
-        <line
-          className={ARROW}
-          x1={57 * s}
-          x2={57 * s}
-          y1={14 * s}
-          y2={24 * s}
-          strokeWidth={0.9 * s}
-        />
-        {box(42 * s, 24 * s, s, 'Cache')}
+        <circle cx={14 * s} cy={12 * s} r={3.6 * s} fill={VIOLET} />
       </g>
+      <text className={INK_TEXT} x={30 * s} y={15 * s} fontSize={8 * s} fontWeight="800">
+        Bloom
+      </text>
     </g>
   );
   return (
     <Frame canvas>
       <Scene>
-        {/* The slide, its title and the window. */}
+        {/* The page, its title and the window. */}
         <Sheet x={10} y={10} w={136} h={76} />
         <text className={TEXT_STRONG} x="18" y="24" fontSize="7" fontWeight="800">
-          How it fits together
+          Brand sheet
         </text>
         <rect
           x="18"
@@ -92,14 +69,14 @@ export function TabWindowArt() {
           strokeDasharray="2 1.5"
         />
         <text className={TEXT_MUTED} x="22" y="37" fontSize="4.6" fontWeight="700">
-          Architecture
+          Logo
         </text>
-        <g transform="translate(44 42)">{diagram(0.95, true)}</g>
+        <g transform="translate(48 44)">{logo(1, true)}</g>
         {/* The tab itself. */}
         <text className={TEXT_MUTED} x="170" y="18" fontSize="5" fontWeight="700">
-          ARCHITECTURE TAB
+          LOGO TAB
         </text>
-        <g transform="translate(172 28)">{diagram(1.3, true)}</g>
+        <g transform="translate(176 32)">{logo(1.5, true)}</g>
         <path
           className={ARROW}
           d="M164 60 C156 60 152 56 146 56"
@@ -113,9 +90,9 @@ export function TabWindowArt() {
 }
 
 // Contents: the sidebar listing every page with a thumbnail, the current one highlighted, and Find a
-// Page narrowing a long document.
+// Page narrowing a long design.
 export function ContentsSidebarArt() {
-  const pages = ['Cover', 'Summary', 'Findings', 'Next steps'];
+  const pages = ['Logo', 'Sign in', 'Home feed', 'Checkout'];
   return (
     <Frame canvas>
       <Scene>
@@ -178,7 +155,7 @@ export function ContentsSidebarArt() {
         <g transform="translate(120 8)">
           <Sheet x={0} y={0} w={64} h={82} />
           <text className={TEXT_STRONG} x="7" y="13" fontSize="6.4" fontWeight="800">
-            Findings
+            Home feed
           </text>
           {[0, 1, 2, 3].map((r) => (
             <rect
@@ -191,10 +168,14 @@ export function ContentsSidebarArt() {
               rx="1"
             />
           ))}
+          {/* A picture's placeholder, crossed as a wireframe draws one. */}
           <rect x="7" y="44" width="50" height="22" rx="1" fill={VIOLET} fillOpacity="0.2" />
-          <rect x="11" y="54" width="8" height="10" fill={VIOLET} fillOpacity="0.7" />
-          <rect x="23" y="49" width="8" height="15" fill={VIOLET} fillOpacity="0.7" />
-          <rect x="35" y="52" width="8" height="12" fill={VIOLET} fillOpacity="0.7" />
+          <path
+            d="M7 44l50 22M57 44l-50 22"
+            stroke={VIOLET}
+            strokeOpacity="0.6"
+            strokeWidth="0.6"
+          />
           <text className={TEXT_MUTED} x="32" y="77" fontSize="4.6" textAnchor="middle">
             3
           </text>
@@ -202,7 +183,7 @@ export function ContentsSidebarArt() {
         <g transform="translate(196 8)" opacity="0.6">
           <Sheet x={0} y={0} w={64} h={82} />
           <text className={TEXT_STRONG} x="7" y="13" fontSize="6.4" fontWeight="800">
-            Next steps
+            Checkout
           </text>
         </g>
         <rect
@@ -220,29 +201,20 @@ export function ContentsSidebarArt() {
   );
 }
 
-// Keeping time: the presenter's corner while a slide is up, the elapsed time counting and this
-// slide's budget gone amber as it runs over, beside the slide itself.
+// Keeping time: the presenter's corner while a page is up, the elapsed time counting and this
+// page's budget gone amber as it runs over, beside the page itself.
 export function SlideTimingArt() {
   return (
     <Frame>
       <Scene>
-        {/* The slide, full screen. */}
+        {/* The page, full screen: a logo on its artboard. */}
         <rect className="fill-slate-900" x="10" y="8" width="160" height="80" rx="3" />
-        <text x="22" y="30" fontSize="9" fontWeight="800" fill="#fff">
-          Q3 results
+        <rect x="62" y="16" width="56" height="56" rx="3" fill="#fff" />
+        <circle cx="90" cy="38" r="11" fill="none" stroke={SKY} strokeWidth="3.4" />
+        <circle cx="90" cy="38" r="4" fill={VIOLET} />
+        <text x="90" y="63" fontSize="7" fontWeight="800" fill="#1e293b" textAnchor="middle">
+          Bloom
         </text>
-        {[24, 40, 32, 52].map((h, i) => (
-          <rect
-            key={i}
-            x={26 + i * 20}
-            y={80 - h}
-            width="12"
-            height={h}
-            rx="1"
-            fill={SKY}
-            fillOpacity={0.5 + i * 0.15}
-          />
-        ))}
         <text x="164" y="83" fontSize="5" fill="#94a3b8" textAnchor="end">
           4 / 12
         </text>
@@ -258,7 +230,7 @@ export function SlideTimingArt() {
         </text>
         <line className={HAIRLINE} x1="192" x2="280" y1="38" y2="38" strokeWidth="0.8" />
         <text className={TEXT_MUTED} x="192" y="50" fontSize="5" fontWeight="700">
-          THIS SLIDE
+          THIS PAGE
         </text>
         <g className="fa-d-ring">
           <Pill x={240} y={44} text="4:20 / 4:00" tone="amber" w={42} />

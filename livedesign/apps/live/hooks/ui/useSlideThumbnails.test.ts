@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, svgBoxed, type Deck, type Tab } from '@livedesign/document';
+import { createShape, svgBoxed, type Deck, type Tab } from '@livedesign/design';
 import { useSlideThumbnails } from './useSlideThumbnails';
 
 vi.mock('@/hooks/ui/useIconCatalogs', () => ({ useIconCatalogs: () => false }));

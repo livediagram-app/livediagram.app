@@ -2,18 +2,20 @@ import { FONT, TEAMMATE, YOU, at } from '@/components/art-tokens';
 import { CursorMark } from '@/components/hero-cursor';
 
 // The Collaborate window (docs/specs/019-marketing/marketing-site.md "Story beats"): two people on
-// one page at once. A one-page brief lands; you write its headline while a teammate arrives, selects
-// the chart (their colour glowing round it, their initials in its corner) and leaves a comment that
-// opens as a thread beside the page; you reply, and an action is handed to them. Every piece plays at
-// its own --d (hero-scenes/pages.css).
+// one page at once. A phone wireframe page lands; you write its headline while a teammate arrives, selects
+// the picture's placeholder (their colour glowing round it, their initials in its corner) and leaves a
+// comment that opens as a thread beside the page; you reply, and an action is handed to them. Every piece
+// plays at its own --d (hero-scenes/pages.css).
 
 const INK = '#1e293b';
 const MUTED = '#64748b';
 const LINE = '#e2e8f0';
+const WIRE = '#cbd5e1';
 const SKY = '#0ea5e9';
 const VIOLET = '#8b5cf6';
 
-const PAGE = { w: 210, h: 297 };
+// The phone's frame, in canvas units: a screen the shape of an iPhone's.
+const PHONE = { w: 170, h: 330 };
 
 function Lines({ x, y, w, count }: { x: number; y: number; w: number; count: number }) {
   return (
@@ -26,100 +28,94 @@ function Lines({ x, y, w, count }: { x: number; y: number; w: number; count: num
 }
 
 function Page({ x, y }: { x: number; y: number }) {
-  const chart = { x: x + 18, y: y + 150, w: PAGE.w - 36, h: 78 };
-  const bars = [34, 52, 44, 66];
+  const pad = 16;
+  const inner = PHONE.w - pad * 2;
+  const pic = { x: x + pad, y: y + 112, w: inner, h: 96 };
   return (
     <g>
       <text x={x} y={y - 8} fontFamily={FONT} fontSize="9" fontWeight="600" fill={MUTED}>
-        Brief
+        Home · Phone
       </text>
       <rect
         className="hm-pop"
         style={at(0.2)}
         x={x}
         y={y}
-        width={PAGE.w}
-        height={PAGE.h}
-        rx="4"
+        width={PHONE.w}
+        height={PHONE.h}
+        rx="22"
         fill="#ffffff"
-        stroke={LINE}
+        stroke={INK}
+        strokeWidth="3"
       />
-      <rect
-        className="hm-fade"
-        style={at(0.5)}
-        x={x}
-        y={y}
-        width={PAGE.w}
-        height="8"
-        rx="2"
-        fill={SKY}
-      />
+      {/* The island and the status bar. */}
+      <rect x={x + PHONE.w / 2 - 22} y={y + 10} width="44" height="10" rx="5" fill={INK} />
       <text
         className="hm-type"
-        style={at(0.8, { '--steps': 14 })}
-        x={x + 18}
-        y={y + 40}
+        style={at(0.8, { '--steps': 13 })}
+        x={x + pad}
+        y={y + 56}
         fontFamily={FONT}
-        fontSize="17"
+        fontSize="16"
         fontWeight="800"
         fill={INK}
       >
         Spring launch
       </text>
       <g className="hm-fade" style={at(1.5)}>
-        <Lines x={x + 18} y={y + 56} w={PAGE.w - 36} count={4} />
+        <Lines x={x + pad} y={y + 70} w={inner} count={3} />
       </g>
-      <g className="hm-fade" style={at(1.9)}>
-        <Lines x={x + 18} y={y + 100} w={PAGE.w - 36} count={4} />
-      </g>
-      {/* The chart the teammate selects. */}
+      {/* The picture's placeholder the teammate selects, crossed as a wireframe draws one. */}
       <g className="hm-fade" style={at(2.2)}>
         <rect
-          x={chart.x}
-          y={chart.y}
-          width={chart.w}
-          height={chart.h}
-          rx="4"
+          x={pic.x}
+          y={pic.y}
+          width={pic.w}
+          height={pic.h}
+          rx="6"
           fill="#f8fafc"
-          stroke={LINE}
+          stroke={WIRE}
         />
-        {bars.map((h, i) => (
-          <rect
-            key={i}
-            className="hm-grow"
-            style={at(2.4 + i * 0.15)}
-            x={chart.x + 18 + i * 38}
-            y={chart.y + chart.h - 10 - h}
-            width="22"
-            height={h}
-            rx="2"
-            fill={i === 3 ? VIOLET : SKY}
-          />
-        ))}
+        <path
+          d={`M${pic.x} ${pic.y}L${pic.x + pic.w} ${pic.y + pic.h}M${pic.x + pic.w} ${pic.y}L${pic.x} ${pic.y + pic.h}`}
+          stroke={WIRE}
+          strokeWidth="1.2"
+        />
       </g>
+      <g className="hm-fade" style={at(2.6)}>
+        <Lines x={x + pad} y={y + 222} w={inner} count={2} />
+      </g>
+      <g className="hm-pop" style={at(2.9)}>
+        <rect x={x + pad} y={y + 252} width={inner} height="28" rx="14" fill={SKY} />
+        <text
+          x={x + PHONE.w / 2}
+          y={y + 270}
+          textAnchor="middle"
+          fontFamily={FONT}
+          fontSize="10"
+          fontWeight="700"
+          fill="#ffffff"
+        >
+          Get started
+        </text>
+      </g>
+      <rect x={x + PHONE.w / 2 - 30} y={y + PHONE.h - 12} width="60" height="4" rx="2" fill={INK} />
       {/* Their selection: their colour round it and their initials in its corner. */}
       <g className="hm-fade" style={at(4.2)}>
         <rect
-          x={chart.x - 4}
-          y={chart.y - 4}
-          width={chart.w + 8}
-          height={chart.h + 8}
-          rx="6"
+          x={pic.x - 4}
+          y={pic.y - 4}
+          width={pic.w + 8}
+          height={pic.h + 8}
+          rx="8"
           fill="none"
           stroke={TEAMMATE}
           strokeWidth="2"
         />
-        <rect
-          x={chart.x + chart.w - 14}
-          y={chart.y - 12}
-          width="20"
-          height="12"
-          rx="3"
-          fill={TEAMMATE}
-        />
+        <rect x={pic.x + pic.w - 14} y={pic.y - 12} width="20" height="12" rx="3" fill={TEAMMATE} />
         <text
-          x={chart.x + chart.w - 4}
-          y={chart.y - 3.5}
+          x={pic.x + pic.w - 4}
+          y={pic.y - 3.5}
           textAnchor="middle"
           fontFamily={FONT}
           fontSize="7.5"
@@ -129,12 +125,12 @@ function Page({ x, y }: { x: number; y: number }) {
           JR
         </text>
       </g>
-      {/* The comment badge on the chart. */}
+      {/* The comment badge on the picture. */}
       <g className="hm-pop" style={at(5.2)}>
-        <circle cx={chart.x + chart.w + 4} cy={chart.y + 18} r="9" fill={TEAMMATE} />
+        <circle cx={pic.x + pic.w + 4} cy={pic.y + 18} r="9" fill={TEAMMATE} />
         <text
-          x={chart.x + chart.w + 4}
-          y={chart.y + 21.5}
+          x={pic.x + pic.w + 4}
+          y={pic.y + 21.5}
           textAnchor="middle"
           fontFamily={FONT}
           fontSize="9"
@@ -143,9 +139,6 @@ function Page({ x, y }: { x: number; y: number }) {
         >
           1
         </text>
-      </g>
-      <g className="hm-fade" style={at(2.8)}>
-        <Lines x={x + 18} y={y + 246} w={PAGE.w - 36} count={3} />
       </g>
     </g>
   );
@@ -201,10 +194,10 @@ function Thread({ x, y }: { x: number; y: number }) {
         y={y + 34}
         colour={TEAMMATE}
         who="JR"
-        text="Can Q2 be its own bar?"
+        text="Can the photo run edge to edge?"
         d={5.8}
       />
-      <Message x={x + 14} y={y + 62} colour={YOU} who="TM" text="Yes, splitting it now." d={6.8} />
+      <Message x={x + 14} y={y + 62} colour={YOU} who="TM" text="Yes, widening it now." d={6.8} />
       {/* The action handed to the teammate. */}
       <g className="hm-pop" style={at(7.6)}>
         <rect
@@ -220,7 +213,7 @@ function Thread({ x, y }: { x: number; y: number }) {
           Action for JR
         </text>
         <text x={x + 24} y={y + 127} fontFamily={FONT} fontSize="9" fill={INK}>
-          Check the Q2 numbers by Friday
+          Swap in the final photo by Friday
         </text>
       </g>
     </g>
@@ -228,7 +221,7 @@ function Thread({ x, y }: { x: number; y: number }) {
 }
 
 export function TogetherBoard() {
-  const page = { x: 70, y: -40 };
+  const page = { x: 90, y: -40 };
   const thread = { x: 330, y: 60 };
   return (
     <>
@@ -240,20 +233,20 @@ export function TogetherBoard() {
         style={at(0.6, {
           '--sx': `${page.x - 60}px`,
           '--sy': '320px',
-          '--cx': `${page.x + 150}px`,
-          '--cy': `${page.y + 34}px`,
+          '--cx': `${page.x + 130}px`,
+          '--cy': `${page.y + 50}px`,
         })}
       >
         <CursorMark colour={YOU} label="TM" />
       </g>
-      {/* The teammate, arriving on the chart. */}
+      {/* The teammate, arriving on the picture. */}
       <g
         className="hm-cursor"
         style={at(3.4, {
           '--sx': '640px',
           '--sy': '300px',
-          '--cx': `${page.x + 150}px`,
-          '--cy': `${page.y + 200}px`,
+          '--cx': `${page.x + 110}px`,
+          '--cy': `${page.y + 170}px`,
         })}
       >
         <CursorMark colour={TEAMMATE} label="JR" />

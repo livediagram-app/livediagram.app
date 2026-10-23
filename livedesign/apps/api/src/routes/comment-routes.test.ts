@@ -1,14 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { DocumentCommentsResponse } from '@livedesign/api-schema';
-import type { Comment, Element } from '@livedesign/document';
+import type { DesignCommentsResponse } from '@livedesign/api-schema';
+import type { Comment, Element } from '@livedesign/design';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import * as db from '../db';
 import { makeTestRouteContext } from './test-route-context';
-import { handleDocuments } from './documents';
+import { handleDesigns } from './designs';
 
 // The comment endpoints (docs/specs/024-agents/agent-presence.md "Comments", blueprint "REST"): add, delete-own,
 // reply, resolve and reopen through the tab's revision, relayed without author or token ids; the listing across
-// the document with refs and labels.
+// the design with refs and labels.
 
 let sql: SqliteD1;
 let pending: Promise<unknown>[];
@@ -54,8 +54,8 @@ type Call = {
 };
 
 function call({ method = 'POST', path, body, owner = 'owner', code, token }: Call) {
-  return handleDocuments(
-    makeTestRouteContext(method, `/api/documents/d1${path}`, {
+  return handleDesigns(
+    makeTestRouteContext(method, `/api/designs/d1${path}`, {
       env: sql.env,
       owner,
       ...(code ? { headers: { 'X-Share-Code': code } } : {}),
@@ -78,16 +78,16 @@ beforeEach(() => {
   sql = sqliteD1();
   pending = [];
   sql.sql.exec(`
-    INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
+    INSERT INTO designs (id, owner_id, name, shareable, saved_at, created_at)
       VALUES ('d1', 'owner', 'Payments', 1, 1, 1);
     INSERT INTO participants (id, name, color, created_at) VALUES ('owner', 'Webber', '#3b82f6', 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 'Main', '{"elements":[]}', 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t2', 'Detail', '{"elements":[]}', 1);
-    INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
-    INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't2', 1, 1);
-    INSERT INTO share_links (code, document_id, role, level, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', 'participate', NULL, 1);
-    INSERT INTO share_links (code, document_id, role, level, tab_id, created_at) VALUES ('TAB2', 'd1', 'view', 'participate', 't2', 1);
-    INSERT INTO share_links (code, document_id, role, tab_id, created_at) VALUES ('LOOK', 'd1', 'view', NULL, 1);
+    INSERT INTO design_tabs (design_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
+    INSERT INTO design_tabs (design_id, tab_id, order_index, added_at) VALUES ('d1', 't2', 1, 1);
+    INSERT INTO share_links (code, design_id, role, level, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', 'participate', NULL, 1);
+    INSERT INTO share_links (code, design_id, role, level, tab_id, created_at) VALUES ('TAB2', 'd1', 'view', 'participate', 't2', 1);
+    INSERT INTO share_links (code, design_id, role, tab_id, created_at) VALUES ('LOOK', 'd1', 'view', NULL, 1);
   `);
   vi.spyOn(console, 'info').mockImplementation(() => undefined);
 });
@@ -243,12 +243,12 @@ describe('delete-own', () => {
     const insert = sql.sql.prepare(
       `INSERT INTO timeline_events (id, actor_id, source_type, source_id, event_type, title,
          description, occurred_at, snapshot, created_at)
-       VALUES (?, 'owner', 'document', ?, ?, 't', 'text c1', 1, ?, 1)`,
+       VALUES (?, 'owner', 'design', ?, ?, 't', 'text c1', 1, ?, 1)`,
     );
-    insert.run('e-c1', 'c1', 'comment_added', JSON.stringify({ documentId: 'd1' }));
-    insert.run('e-res', 'd1:a', 'comment_resolved', JSON.stringify({ documentId: 'd1' }));
-    // Another document's event under the same comment id is never reached.
-    insert.run('e-other', 'c1', 'comment_resolved', JSON.stringify({ documentId: 'd2' }));
+    insert.run('e-c1', 'c1', 'comment_added', JSON.stringify({ designId: 'd1' }));
+    insert.run('e-res', 'd1:a', 'comment_resolved', JSON.stringify({ designId: 'd1' }));
+    // Another design's event under the same comment id is never reached.
+    insert.run('e-other', 'c1', 'comment_resolved', JSON.stringify({ designId: 'd2' }));
     await Promise.allSettled(pending);
     const events = () =>
       (sql.sql.prepare('SELECT id FROM timeline_events ORDER BY id').all() as { id: string }[]).map(
@@ -268,24 +268,24 @@ describe('delete-own', () => {
 });
 
 // docs/specs/013-workspace/timeline.md §4.3: a tab deleted whole takes every comment's words with it,
-// from the document it left only; a document still holding the tab keeps its own events.
+// from the design it left only; a design still holding the tab keeps its own events.
 describe('deleting the tab', () => {
-  it('retracts its comments from the document it left, and the last one to hold it', async () => {
+  it('retracts its comments from the design it left, and the last one to hold it', async () => {
     seed([
       shape('a', { commentThread: { resolved: true, comments: [comment('c1'), comment('c2')] } }),
     ]);
     sql.sql.exec(`
-      INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
+      INSERT INTO designs (id, owner_id, name, shareable, saved_at, created_at)
         VALUES ('d2', 'owner', 'Linked', 1, 1, 1);
-      INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d2', 't1', 0, 1);
+      INSERT INTO design_tabs (design_id, tab_id, order_index, added_at) VALUES ('d2', 't1', 0, 1);
     `);
     const insert = sql.sql.prepare(
       `INSERT INTO timeline_events (id, actor_id, source_type, source_id, event_type, title,
          description, occurred_at, snapshot, created_at)
-       VALUES (?, 'owner', 'document', ?, ?, 't', 'text', 1, ?, 1)`,
+       VALUES (?, 'owner', 'design', ?, ?, 't', 'text', 1, ?, 1)`,
     );
-    const on = (doc: string) => JSON.stringify({ documentId: doc });
-    // A comment's event is pinned to the document whose save recorded it: c1 through d1, c2 through d2.
+    const on = (doc: string) => JSON.stringify({ designId: doc });
+    // A comment's event is pinned to the design whose save recorded it: c1 through d1, c2 through d2.
     insert.run('d1-c1', 'c1', 'comment_added', on('d1'));
     insert.run('d1-res', 'd1:a', 'comment_resolved', on('d1'));
     insert.run('d1-t2', 'c9', 'comment_added', on('d1'));
@@ -302,8 +302,8 @@ describe('deleting the tab', () => {
     expect(events()).toEqual(['d1-t2', 'd2-c2', 'd2-res']);
 
     // d2 was the last to hold it: the tab row goes, and d2's events with it.
-    const res = await handleDocuments(
-      makeTestRouteContext('DELETE', '/api/documents/d2/tabs/t1', {
+    const res = await handleDesigns(
+      makeTestRouteContext('DELETE', '/api/designs/d2/tabs/t1', {
         env: sql.env,
         owner: 'owner',
         waitUntil: (p) => void pending.push(p),
@@ -358,7 +358,7 @@ describe('the thread listing', () => {
     });
     return {
       status: res.status,
-      body: await res.json<DocumentCommentsResponse & { error?: string }>(),
+      body: await res.json<DesignCommentsResponse & { error?: string }>(),
     };
   };
 
@@ -397,7 +397,7 @@ describe('the thread listing', () => {
     expect(body.threads.map((t) => t.elementId)).toEqual(['a']);
     expect(warn.mock.calls[0]![0]).toBe('[comments] list skipped tab');
     expect(console.info).toHaveBeenCalledWith('[comments] listed', {
-      documentId: 'd1',
+      designId: 'd1',
       status: 'open',
       tabsRead: 1,
       threads: 1,
@@ -412,7 +412,7 @@ describe('the thread listing', () => {
       warn.mock.calls.filter((c) => c[0] === '[comments] refused').map((c): unknown => c[1]),
     ).toEqual([
       {
-        documentId: 'd1',
+        designId: 'd1',
         tabId: null,
         route: 'list',
         agent: false,
@@ -420,7 +420,7 @@ describe('the thread listing', () => {
         code: 'invalid_status',
       },
       {
-        documentId: 'd1',
+        designId: 'd1',
         tabId: 't1',
         route: 'resolve',
         agent: true,

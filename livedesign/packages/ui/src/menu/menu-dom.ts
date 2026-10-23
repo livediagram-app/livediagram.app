@@ -127,7 +127,7 @@ export function isTextEditFocused(): boolean {
 
 /**
  * Whether the keyboard opened what is opening now: the last interaction was a key press, not a
- * pointer press (D51). Tracked on the document, because the control that opened a menu may be gone
+ * pointer press (D51). Tracked on the design, because the control that opened a menu may be gone
  * by the time the menu mounts.
  */
 export function openedFromKeyboard(): boolean {

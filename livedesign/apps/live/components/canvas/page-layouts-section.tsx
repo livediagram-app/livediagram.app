@@ -5,7 +5,7 @@
 // gallery. A press places the layout at once, over anything on the
 // page (one undo step brings it back). Hovering a tile previews it on the page
 // (PageLayoutPreview).
-import type { LaidOutPage } from '@livedesign/document';
+import type { LaidOutPage } from '@livedesign/design';
 import type { PageLayoutId } from '@livedesign/templates';
 import { LayoutGallery } from './layout-gallery/LayoutGallery';
 import { PanelSection } from './page-panel-sections';

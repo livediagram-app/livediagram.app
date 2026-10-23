@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, render } from '@testing-library/react';
 import { CHANGESET_REVEAL_MS } from '@livedesign/api-schema';
-import type { Element } from '@livedesign/document';
+import type { Element } from '@livedesign/design';
 import { createRevealStore } from '@/lib/changeset-reveals';
 import { ChangesetRevealContext, ChangesetRevealOverlay } from './ChangesetRevealOverlay';
 

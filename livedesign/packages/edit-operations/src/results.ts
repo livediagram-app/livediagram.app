@@ -13,7 +13,7 @@ import {
   type Element,
   type ElementId,
   type ThemeDefinition,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import type { Fit } from './labels';
 import { endRef, kindOf, labelOf } from './element-text';
 import { sameValue as same } from './equality';

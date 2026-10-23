@@ -1,7 +1,7 @@
 // The logo layouts' shared kit (docs/specs/007-editor/logo-pages.md "Logo layouts"): the
 // placeholder mark, wordmark type sized to the safe area, a tagline, a rule, an icon, arched text,
 // and rows stacked and centred down the artboard.
-import { LABEL_FONT_PX, type Element, type TextElement } from '@livedesign/document';
+import { LABEL_FONT_PX, type Element, type TextElement } from '@livedesign/design';
 import type { Kit } from './page-layout-kit';
 
 // The placeholder mark: a name, a second word, its initials, a tagline and an icon.

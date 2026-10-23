@@ -1,9 +1,8 @@
 // @vitest-environment jsdom
 
 // What a card's ⋯ menu offers for the thing it's about (docs/specs/013-workspace/timeline.md §2.8):
-// the Explorer's own verbs for tokens, teams, invites and themes, and
-// only the "open the section" row when the Explorer can't resolve the
-// entity any more.
+// the Explorer's own verbs for themes, a link to liveworkspace.app for teams and tokens (run there),
+// and only the "open the section" row when the Explorer can't resolve the entity any more.
 
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
@@ -14,13 +13,8 @@ import type { ExplorerStateValue } from '../useExplorerState';
 import { useTimelineEntityMenus } from './useTimelineEntityMenus';
 import { OPEN_SETTINGS_EVENT } from '@/lib/open-settings';
 
-vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-vi.mock('@/lib/api-client', () => ({
-  apiDeleteTeam: vi.fn(),
-  apiGetTeam: vi.fn(),
-  apiRemoveTeamMember: vi.fn(),
-  apiUpdateTeam: vi.fn(),
-}));
+const assign = vi.hoisted(() => vi.fn());
+vi.mock('@/lib/app-location', () => ({ assignAppLocation: assign }));
 const themes = vi.hoisted(() => ({
   themes: [{ id: 'th1', name: 'Dusk', definition: {} }],
   updateTheme: vi.fn(),
@@ -32,25 +26,15 @@ vi.mock('@/components/primitives/CustomThemeProvider', () => ({
   useCustomThemes: () => themes,
 }));
 
-const revoke = vi.fn();
 const go = vi.fn();
-const acceptInvite = vi.fn(async () => 't1');
-const declineInvite = vi.fn(async () => {});
 
 function explorer(over: Partial<ExplorerStateValue> = {}): ExplorerStateValue {
   return {
-    ownerId: 'me',
-    clerkUserId: 'me',
     go,
-    tokens: { list: [{ id: 'tok1', name: 'CI' }], revoke },
     teams: [
       { id: 't1', name: 'Guild', organisation: null, myRole: 'admin' },
       { id: 't2', name: 'Ops', organisation: null, myRole: 'member' },
     ],
-    invites: [{ memberId: 'm1', team: { id: 't3', name: 'Newcomers' }, memberCount: 2 }],
-    acceptInvite,
-    declineInvite,
-    refreshTeams: vi.fn(),
     ...over,
   } as unknown as ExplorerStateValue;
 }
@@ -80,14 +64,14 @@ function menuFor(value = explorer()) {
 const labels = (m: ReturnType<ReturnType<typeof menuFor>>) => m?.items.map((i) => i.label);
 
 describe('useTimelineEntityMenus', () => {
-  it('offers Revoke on a token the Explorer still holds, and only Open API Tokens on one it does not', () => {
+  it('opens API Tokens in Settings and links to liveworkspace.app, where tokens are run', () => {
     const m = menuFor();
-    const live = m(event({ sourceId: 'tok1', snapshot: { tokenName: 'CI' } }));
-    expect(labels(live)).toEqual(['Open API Tokens', 'Revoke Token']);
-    expect(live?.subject).toBe('CI');
-    expect(live?.items[1]?.destructive).toBe(true);
-    const gone = m(event({ sourceId: 'tok-old', eventType: 'token_revoked' }));
-    expect(labels(gone)).toEqual(['Open API Tokens']);
+    const created = m(event({ sourceId: 'tok1', snapshot: { tokenName: 'CI' } }));
+    expect(labels(created)).toEqual(['Open API Tokens', 'Manage API Tokens']);
+    created?.items[1]?.onClick();
+    expect(assign).toHaveBeenCalledWith('https://liveworkspace.app/account/tokens');
+    const revoked = m(event({ sourceId: 'tok-old', eventType: 'token_revoked' }));
+    expect(labels(revoked)).toEqual(['Open API Tokens', 'Manage API Tokens']);
   });
 
   it('opens Settings on API Tokens in place rather than navigating', () => {
@@ -100,17 +84,19 @@ describe('useTimelineEntityMenus', () => {
     expect(go).not.toHaveBeenCalled();
   });
 
-  it('gives an admin Edit and Delete on their team, a member only Leave', () => {
+  it('opens a team the reader is in and links to liveworkspace.app to manage it', () => {
     const m = menuFor();
     const admin = m(
       event({ sourceType: 'team', eventType: 'team_renamed', snapshot: { teamId: 't1' } }),
     );
-    expect(labels(admin)).toEqual(['Open Team', 'Edit Team', 'Leave Team', 'Delete Team']);
+    expect(labels(admin)).toEqual(['Open Team', 'Manage Team']);
     expect(admin?.subject).toBe('Guild');
+    admin?.items[1]?.onClick();
+    expect(assign).toHaveBeenCalledWith('https://liveworkspace.app/account/teams');
     const member = m(
       event({ sourceType: 'team', eventType: 'team_member_joined', snapshot: { teamId: 't2' } }),
     );
-    expect(labels(member)).toEqual(['Open Team', 'Leave Team']);
+    expect(labels(member)).toEqual(['Open Team', 'Manage Team']);
     // A team the reader has since left: nothing to act on.
     const left = m(
       event({ sourceType: 'team', eventType: 'team_member_left', snapshot: { teamId: 't9' } }),
@@ -118,30 +104,17 @@ describe('useTimelineEntityMenus', () => {
     expect(labels(left)).toEqual([]);
   });
 
-  it('offers Accept and Decline on a pending invite, and routes an accept to the team', async () => {
-    const m = menuFor();
-    const pending = m(
+  it('opens Invites for an invite, which are answered on liveworkspace.app', () => {
+    const invite = menuFor()(
       event({
         sourceType: 'team',
         eventType: 'team_invite_received',
         snapshot: { teamId: 't3', memberId: 'm1' },
       }),
     );
-    expect(labels(pending)).toEqual(['Open Invites', 'Accept Invite', 'Decline Invite']);
-    expect(pending?.subject).toBe('Newcomers');
-    pending!.items[1]!.onClick();
-    await Promise.resolve();
-    await Promise.resolve();
-    expect(acceptInvite).toHaveBeenCalled();
-    expect(go).toHaveBeenCalledWith({ kind: 'team', id: 't1' });
-    const answered = m(
-      event({
-        sourceType: 'team',
-        eventType: 'team_invite_received',
-        snapshot: { teamId: 't3', memberId: 'm-old' },
-      }),
-    );
-    expect(labels(answered)).toEqual(['Open Invites']);
+    expect(labels(invite)).toEqual(['Open Invites']);
+    invite?.items[0]?.onClick();
+    expect(go).toHaveBeenCalledWith({ kind: 'invites' });
   });
 
   it('offers Edit and Delete on a theme the reader still has', () => {

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ArrowElement, Element, ShapeElement } from '@livedesign/document';
+import type { ArrowElement, Element, ShapeElement } from '@livedesign/design';
 import {
   copyTooLargeMessage,
   IN_APP_COPY_ELSEWHERE,
@@ -75,7 +75,7 @@ function harness(start: Element[]) {
       setSelectedId: () => {},
       setMultiSelectedIds: () => {},
       ownerId: 'me',
-      documentId: 'd',
+      designId: 'd',
       toast: toast as never,
     }),
   );

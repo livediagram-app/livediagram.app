@@ -1,10 +1,10 @@
 // The server release signal on every api response (docs/specs/016-platform/new-version-prompt.md,
-// docs/specs/016-platform/stale-builds.md): the document format number, and the live build id when
+// docs/specs/016-platform/stale-builds.md): the design format number, and the live build id when
 // the deploy set one. An open editor reads both from traffic it already has, at no request.
 import {
   BUILD_ID_HEADER,
-  DOCUMENT_FORMAT,
-  DOCUMENT_FORMAT_HEADER,
+  DESIGN_FORMAT,
+  DESIGN_FORMAT_HEADER,
   parseBuildId,
 } from '@livedesign/api-schema';
 
@@ -16,7 +16,7 @@ export function withServerRelease(
   if (response.status === 101) return response;
   const build = parseBuildId(buildId);
   const stamp = (headers: Headers) => {
-    headers.set(DOCUMENT_FORMAT_HEADER, String(DOCUMENT_FORMAT));
+    headers.set(DESIGN_FORMAT_HEADER, String(DESIGN_FORMAT));
     if (build) headers.set(BUILD_ID_HEADER, build);
   };
   try {

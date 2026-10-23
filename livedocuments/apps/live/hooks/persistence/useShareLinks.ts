@@ -166,9 +166,7 @@ export function useShareLinks(deps: ShareLinksDeps) {
   // emits telemetry. Resolves to whether a password is now set (`false` is a
   // successful clear); FAILURE resolves to `undefined`, distinct from both, so
   // the dialog never renders "Saved" / "No password" over a write that didn't land.
-  const setDocumentSharePassword = async (
-    password: string | null,
-  ): Promise<boolean | undefined> => {
+  const setDocumentSharePassword = async (password: string | null): Promise<boolean | undefined> => {
     if (!documentId) return undefined;
     // Trimmed, as the visitor's gate trims what is typed, so the two always agree.
     const trimmed = password?.trim() || null;

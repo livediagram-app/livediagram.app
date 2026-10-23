@@ -9,7 +9,7 @@ import { box, plainTab, tabAnswer } from '../testing/tabs';
 import { changesetApply, elementVerbs, tabDiff } from './edit';
 import { tabView } from './tab';
 
-const TAB = `/documents/${DOC_A}/tabs/tab-one-0000`;
+const TAB = `/designs/${DOC_A}/tabs/tab-one-0000`;
 const written = {
   dryRun: false,
   changeset: { id: 'cs_1', tabId: 'tab-one-0000', rev: 6, previousRev: 5, rebasedOver: 1 },

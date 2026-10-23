@@ -8,16 +8,16 @@ import {
   type LensIssue,
 } from '@livedesign/explorer-lens';
 import { Button, EmptyState, SearchIcon } from '@livedesign/ui';
-import { DocumentIcon } from '@/components/primitives/explorer-icons';
+import { DesignIcon } from '@/components/primitives/explorer-icons';
 
 // What a lensed list says when it has nothing to show, or could not load, and what it tells a
 // screen reader once typing settles (docs/specs/013-workspace/explorer-filters.md "States").
 
-export const FILTERED_EMPTY_TITLE = 'No documents match these filters';
-export const LOAD_FAILED_TITLE = 'Couldn’t load documents';
+export const FILTERED_EMPTY_TITLE = 'No designs match these filters';
+export const LOAD_FAILED_TITLE = 'Couldn’t load designs';
 
 /**
- * The polite live region that says how many documents the lens left, once the lens has stopped
+ * The polite live region that says how many designs the lens left, once the lens has stopped
  * changing for `LENS_SETTLE_MS`. Silent on mount: arriving at a view is not a change.
  */
 export function LensAnnouncer({
@@ -68,7 +68,7 @@ export function LensIssues({ issues, id }: { issues: readonly LensIssue[]; id?: 
   );
 }
 
-/** The lens matched nothing in a view that holds documents. */
+/** The lens matched nothing in a view that holds designs. */
 export function FilteredEmpty({
   issues,
   onClear,
@@ -96,7 +96,7 @@ export function FilteredEmpty({
 export function LoadFailed({ onRetry }: { onRetry: () => void }) {
   return (
     <EmptyState
-      icon={<DocumentIcon />}
+      icon={<DesignIcon />}
       title={LOAD_FAILED_TITLE}
       description="Check your connection, then try again."
     >

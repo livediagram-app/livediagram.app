@@ -34,7 +34,7 @@ const TRUSTED_TYPES_BOOT = trustedTypesBootScript(
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  // Consistent document titles across the help centre: every page reads
+  // Consistent design titles across the help centre: every page reads
   // "<Page Title> | livedesign" (the template reaches every child segment;
   // the root index spells the suffix out itself). Link previews carry the
   // bare title, per the shared pageMetadata rule (docs/specs/018-help/help-app.md "SEO").

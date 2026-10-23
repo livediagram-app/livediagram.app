@@ -72,8 +72,8 @@ describe('apiHeaders (hybrid identity gate, docs/specs/014-identity/auth-and-gue
     expect(h['Authorization']).toBeUndefined();
   });
 
-  // Clerk's getToken() can resolve null for a moment on a live session. A
-  // null used to fall back to `X-Owner-Id: <Clerk id>`, which the worker
+  // The session's getToken() can resolve null for a moment on a live session. A
+  // null used to fall back to `X-Owner-Id: <account id>`, which the worker
   // refuses (401 account_id_not_a_guest_credential), surfacing as "Couldn't
   // save your changes. Check your connection." on a perfectly good network.
   it('asks for a fresh token, bypassing the cache, when the provider resolves null', async () => {

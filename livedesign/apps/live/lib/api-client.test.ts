@@ -1,8 +1,8 @@
-import type { Tab } from '@livedesign/document';
-import { DOCUMENT_OPEN_HEADER } from '@livedesign/api-schema';
+import type { Tab } from '@livedesign/design';
+import { DESIGN_OPEN_HEADER } from '@livedesign/api-schema';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-  apiCreateDocument,
+  apiCreateDesign,
   apiCreateShareLink,
   apiRescopeShareLink,
   apiDeleteImage,
@@ -12,10 +12,10 @@ import {
   apiFetchImageBlobUrl,
   releaseImageBlobUrl,
   apiListImages,
-  apiLoadDocument,
+  apiLoadDesign,
   apiLoadShared,
   apiLoadTab,
-  apiSaveDocumentMeta,
+  apiSaveDesignMeta,
   apiSaveTab,
   apiSharedTabs,
   apiUploadImage,
@@ -105,7 +105,7 @@ describe('apiHeaders (hybrid identity gate, docs/specs/014-identity/auth-and-gue
   it('bearer + share: signed-in visitor on a share URL still carries the share code', async () => {
     // A signed-in user clicking a share link sends Bearer (their
     // Clerk identity) AND X-Share-Code (the link's role gates write
-    // access on the document they don't own). docs/specs/014-identity/auth-and-guest-access.md: "Share-code
+    // access on the design they don't own). docs/specs/014-identity/auth-and-guest-access.md: "Share-code
     // visitors who happen to also be signed in send Bearer +
     // X-Share-Code; the per-link role still gates write access."
     setTokenProvider(async () => 'jwt-token-xyz');
@@ -160,14 +160,14 @@ describe('apiLoadShared password gate (docs/specs/013-workspace/share-password.m
     expect(await apiLoadShared('CODE2345', 'guest-3')).toBeNull();
   });
 
-  it('resolves the document + role on 200', async () => {
-    stubFetch(200, { document: { id: 'd1' }, role: 'view' });
+  it('resolves the design + role on 200', async () => {
+    stubFetch(200, { design: { id: 'd1' }, role: 'view' });
     const res = await apiLoadShared('CODE2345', 'guest-4');
-    expect(res).toMatchObject({ role: 'view', document: { id: 'd1' }, tabId: null });
+    expect(res).toMatchObject({ role: 'view', design: { id: 'd1' }, tabId: null });
   });
 
   it("carries a tab-scoped link's tab (docs/specs/013-workspace/tab-scoped-share-links.md)", async () => {
-    stubFetch(200, { document: { id: 'd1' }, role: 'edit', tabId: 'tab-2' });
+    stubFetch(200, { design: { id: 'd1' }, role: 'edit', tabId: 'tab-2' });
     const res = await apiLoadShared('CODE2345', 'guest-5');
     expect(res).toMatchObject({ role: 'edit', tabId: 'tab-2' });
   });
@@ -181,7 +181,7 @@ describe('share-link scope calls', () => {
     stubFetch(201, { link: { code: 'C', tabId: 't2' } });
     await apiCreateShareLink('owner-1', 'd1', 'view', 'never', 't2');
     const [url, init] = vi.mocked(fetch).mock.calls[0]!;
-    expect(url).toBe('/api/documents/d1/share');
+    expect(url).toBe('/api/designs/d1/share');
     expect(JSON.parse(init!.body as string)).toEqual({
       role: 'view',
       expiry: 'never',
@@ -200,7 +200,7 @@ describe('share-link scope calls', () => {
     stubFetch(200, { link: { code: 'C', tabId: null } });
     const link = await apiRescopeShareLink('owner-1', 'd1', 'C', null);
     const [url, init] = vi.mocked(fetch).mock.calls[0]!;
-    expect(url).toBe('/api/documents/d1/share/C');
+    expect(url).toBe('/api/designs/d1/share/C');
     expect(init!.method).toBe('PUT');
     expect(JSON.parse(init!.body as string)).toEqual({ tabId: null });
     expect(link.tabId).toBeNull();
@@ -242,7 +242,7 @@ describe('response helpers (observed through api callers)', () => {
         code: 'ABCD2345',
         role: 'edit' as const,
         createdAt: 0,
-        documentId: 'diag-1',
+        designId: 'diag-1',
       };
       stubFetch(200, { link });
       const got = await apiCreateShareLink('owner-1', 'diag-1', 'edit');
@@ -262,9 +262,9 @@ describe('response helpers (observed through api callers)', () => {
     });
   });
 
-  describe('expectOkOrNull (via apiLoadDocument)', () => {
-    it('returns the parsed document on 200', async () => {
-      // apiLoadDocument is wrapped in dedupeInFlight keyed by
+  describe('expectOkOrNull (via apiLoadDesign)', () => {
+    it('returns the parsed design on 200', async () => {
+      // apiLoadDesign is wrapped in dedupeInFlight keyed by
       // `${ownerId}|${id}`, so each test below uses a unique key
       // pair to avoid collecting a cached promise from a prior
       // case. Without unique keys, the second test in this block
@@ -279,44 +279,44 @@ describe('response helpers (observed through api callers)', () => {
         ownerId: 'o-200',
         tabs: [],
       };
-      stubFetch(200, { document: liveDoc });
-      const got = await apiLoadDocument('o-200', 'd-200');
+      stubFetch(200, { design: liveDoc });
+      const got = await apiLoadDesign('o-200', 'd-200');
       expect(got).toEqual(liveDoc);
     });
 
     it('returns null on 404 (the load-doesnt-exist path)', async () => {
-      // The 404 contract is what lets `/document/<unknown-id>`
+      // The 404 contract is what lets `/design/<unknown-id>`
       // surface the NotFound page instead of throwing into the
       // editor's load effect. A regression that re-threw 404
       // would tip every welcome flow + share-resolution into a
       // crash boundary.
       stubFetch(404, {});
-      const got = await apiLoadDocument('o-404', 'd-404');
+      const got = await apiLoadDesign('o-404', 'd-404');
       expect(got).toBeNull();
     });
 
     it('throws "load failed: <status>" on 500', async () => {
       stubFetch(500);
-      await expect(apiLoadDocument('o-500', 'd-500')).rejects.toThrow('load failed: 500');
+      await expect(apiLoadDesign('o-500', 'd-500')).rejects.toThrow('load failed: 500');
     });
   });
 
-  describe('expectOkVoid (via apiSaveDocumentMeta)', () => {
+  describe('expectOkVoid (via apiSaveDesignMeta)', () => {
     it('resolves quietly on 200 (no body to parse)', async () => {
-      // apiSaveDocumentMeta is a write with no response body. The
+      // apiSaveDesignMeta is a write with no response body. The
       // helper must NOT call res.json() or it would throw on an
       // empty body. Asserting the promise resolves without value
       // pins both the no-throw + no-body contract.
       stubFetch(200);
       await expect(
-        apiSaveDocumentMeta('owner', { id: 'd-1', name: 'New' }),
+        apiSaveDesignMeta('owner', { id: 'd-1', name: 'New' }),
       ).resolves.toBeUndefined();
     });
 
-    it('throws "save document meta failed: <status>" on 500', async () => {
+    it('throws "save design meta failed: <status>" on 500', async () => {
       stubFetch(500);
-      await expect(apiSaveDocumentMeta('owner', { id: 'd-1', name: 'New' })).rejects.toThrow(
-        'save document meta failed: 500',
+      await expect(apiSaveDesignMeta('owner', { id: 'd-1', name: 'New' })).rejects.toThrow(
+        'save design meta failed: 500',
       );
     });
   });
@@ -456,19 +456,19 @@ describe('apiDelete (internal, via public DELETE callers)', () => {
   });
 });
 
-describe('apiCreateDocument persisted body (docs/specs/006-document/tab-folders.md)', () => {
+describe('apiCreateDesign persisted body (docs/specs/006-design/tab-folders.md)', () => {
   afterEach(() => vi.unstubAllGlobals());
 
   it('strips UI-only tab fields (templateChosen, folder) before POSTing', async () => {
     const fetchSpy = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ document: { id: 'd1' } }), {
+      new Response(JSON.stringify({ design: { id: 'd1' } }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
       }),
     );
     vi.stubGlobal('fetch', fetchSpy);
     // A tab carrying the editor-only fields that must NOT reach tabs.data:
-    // templateChosen (UI state) + folder (per-document link, docs/specs/006-document/tab-folders.md).
+    // templateChosen (UI state) + folder (per-design link, docs/specs/006-design/tab-folders.md).
     const tab = {
       id: 't1',
       name: 'Tab',
@@ -477,10 +477,10 @@ describe('apiCreateDocument persisted body (docs/specs/006-document/tab-folders.
       folder: 'f1',
     } as unknown as Tab;
 
-    const out = await apiCreateDocument('owner', { id: 'd1', name: 'N', tabs: [tab] });
+    const out = await apiCreateDesign('owner', { id: 'd1', name: 'N', tabs: [tab] });
 
     const [url, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
-    expect(String(url)).toMatch(/\/documents$/);
+    expect(String(url)).toMatch(/\/designs$/);
     expect(init.method).toBe('POST');
     const body = JSON.parse(init.body as string) as { tabs: Record<string, unknown>[] };
     expect(body.tabs[0]).not.toHaveProperty('templateChosen');
@@ -490,15 +490,15 @@ describe('apiCreateDocument persisted body (docs/specs/006-document/tab-folders.
   });
 });
 
-describe('apiCreateDocument placement (docs/specs/013-workspace/folders.md "Placement on create")', () => {
+describe('apiCreateDesign placement (docs/specs/013-workspace/folders.md "Placement on create")', () => {
   afterEach(() => vi.unstubAllGlobals());
 
-  const sentBody = async (d: Parameters<typeof apiCreateDocument>[1]) => {
+  const sentBody = async (d: Parameters<typeof apiCreateDesign>[1]) => {
     const fetchSpy = vi
       .fn()
-      .mockResolvedValue(new Response(JSON.stringify({ document: { id: 'd1' } }), { status: 201 }));
+      .mockResolvedValue(new Response(JSON.stringify({ design: { id: 'd1' } }), { status: 201 }));
     vi.stubGlobal('fetch', fetchSpy);
-    await apiCreateDocument('owner', d);
+    await apiCreateDesign('owner', d);
     const [, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
     return JSON.parse(init.body as string) as Record<string, unknown>;
   };
@@ -545,19 +545,19 @@ describe('apiCreateDocument placement (docs/specs/013-workspace/folders.md "Plac
         ),
     );
     await expect(
-      apiCreateDocument('owner', { id: 'd1', name: 'N', teamId: 't1' }),
+      apiCreateDesign('owner', { id: 'd1', name: 'N', teamId: 't1' }),
     ).rejects.toMatchObject({ status: 403, code: 'team_forbidden' });
   });
 });
 
-describe('apiSharedTabs (docs/specs/006-document/tab-document-many-to-many.md)', () => {
+describe('apiSharedTabs (docs/specs/006-design/tab-design-many-to-many.md)', () => {
   afterEach(() => vi.unstubAllGlobals());
 
   it('reads the counts for the delete confirmation', async () => {
     const fetchSpy = vi
       .fn()
       .mockResolvedValue(
-        new Response(JSON.stringify({ sharedTabs: { tabs: 2, documents: 3 } }), { status: 200 }),
+        new Response(JSON.stringify({ sharedTabs: { tabs: 2, designs: 3 } }), { status: 200 }),
       );
     vi.stubGlobal('fetch', fetchSpy);
     const signal = new AbortController().signal;
@@ -565,9 +565,9 @@ describe('apiSharedTabs (docs/specs/006-document/tab-document-many-to-many.md)',
     const out = await apiSharedTabs('owner', 'd1', signal);
 
     const [url, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
-    expect(String(url)).toMatch(/\/documents\/d1\/shared-tabs$/);
+    expect(String(url)).toMatch(/\/designs\/d1\/shared-tabs$/);
     expect(init.signal).toBe(signal);
-    expect(out).toEqual({ tabs: 2, documents: 3 });
+    expect(out).toEqual({ tabs: 2, designs: 3 });
   });
 
   it('throws on a refused read, so the caller can open without the notice', async () => {
@@ -577,7 +577,7 @@ describe('apiSharedTabs (docs/specs/006-document/tab-document-many-to-many.md)',
   });
 });
 
-describe('apiSaveTab persisted body + allow-empty (docs/specs/006-document/tab-folders.md)', () => {
+describe('apiSaveTab persisted body + allow-empty (docs/specs/006-design/tab-folders.md)', () => {
   afterEach(() => vi.unstubAllGlobals());
 
   const stubOk = () => {
@@ -601,7 +601,7 @@ describe('apiSaveTab persisted body + allow-empty (docs/specs/006-document/tab-f
     const spy = stubOk();
     await apiSaveTab('owner', 'd1', tabWithUi);
     const [url, init] = spy.mock.calls[0] as [string, RequestInit];
-    expect(String(url)).toMatch(/\/documents\/d1\/tabs\/t1$/);
+    expect(String(url)).toMatch(/\/designs\/d1\/tabs\/t1$/);
     expect(init.method).toBe('PUT');
     const body = JSON.parse(init.body as string) as Record<string, unknown>;
     expect(body).not.toHaveProperty('templateChosen');
@@ -630,13 +630,13 @@ describe('apiLoadTab load boundary', () => {
     expect(await apiLoadTab('owner', 'd1', 't-404', null)).toBeNull();
   });
 
-  it('strips server-only fields (documentId / orderIndex / updatedAt) from the tab', async () => {
+  it('strips server-only fields (designId / orderIndex / updatedAt) from the tab', async () => {
     stubFetch(200, {
-      tab: { id: 't1', name: 'T', elements: [], documentId: 'd1', orderIndex: 3, updatedAt: 123 },
+      tab: { id: 't1', name: 'T', elements: [], designId: 'd1', orderIndex: 3, updatedAt: 123 },
     });
     const tab = await apiLoadTab('owner', 'd1', 't-strip', null);
     expect(tab).not.toBeNull();
-    expect(tab).not.toHaveProperty('documentId');
+    expect(tab).not.toHaveProperty('designId');
     expect(tab).not.toHaveProperty('orderIndex');
     expect(tab).not.toHaveProperty('updatedAt');
     expect(tab).toMatchObject({ id: 't1', name: 'T' });
@@ -670,13 +670,13 @@ describe('apiLoadTab load boundary', () => {
   it('declares an open only when asked to', async () => {
     stubFetch(200, { tab: { id: 't1', name: 'T', elements: [] } });
     await apiLoadTab('owner', 'd1', 't-open', null, { open: true });
-    expect(sentHeaders().get(DOCUMENT_OPEN_HEADER)).toBe('1');
+    expect(sentHeaders().get(DESIGN_OPEN_HEADER)).toBe('1');
   });
 
   it('sends no open marker on an ordinary load', async () => {
     stubFetch(200, { tab: { id: 't1', name: 'T', elements: [] } });
     await apiLoadTab('owner', 'd1', 't-plain', null);
-    expect(sentHeaders().has(DOCUMENT_OPEN_HEADER)).toBe(false);
+    expect(sentHeaders().has(DESIGN_OPEN_HEADER)).toBe(false);
   });
 
   it('keeps a marked load apart from an unmarked one in flight', async () => {
@@ -774,10 +774,10 @@ describe('apiFetchImageBlobUrl request shape (docs/specs/009-elements/images.md 
     return spy;
   };
 
-  it('adds the document query param + share code, returns null on a non-ok read', async () => {
+  it('adds the design query param + share code, returns null on a non-ok read', async () => {
     const spy = stub404();
     const out = await apiFetchImageBlobUrl('owner', 'img 1', {
-      documentId: 'd1',
+      designId: 'd1',
       shareCode: 'CODE2345',
     });
     expect(out).toBeNull();
@@ -793,8 +793,8 @@ describe('apiFetchImageBlobUrl request shape (docs/specs/009-elements/images.md 
     const made = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:shared');
     const revoke = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
     try {
-      const a = await apiFetchImageBlobUrl('owner', 'img-shared', { documentId: 'd1' });
-      const b = await apiFetchImageBlobUrl('owner', 'img-shared', { documentId: 'd1' });
+      const a = await apiFetchImageBlobUrl('owner', 'img-shared', { designId: 'd1' });
+      const b = await apiFetchImageBlobUrl('owner', 'img-shared', { designId: 'd1' });
       expect([a, b]).toEqual(['blob:shared', 'blob:shared']);
       expect(spy).toHaveBeenCalledTimes(1);
       expect(made).toHaveBeenCalledTimes(1);
@@ -808,20 +808,20 @@ describe('apiFetchImageBlobUrl request shape (docs/specs/009-elements/images.md 
     }
   });
 
-  it('omits the query string when no document id is given', async () => {
+  it('omits the query string when no design id is given', async () => {
     const spy = stub404();
     await apiFetchImageBlobUrl('owner', 'img1');
     expect(String(spy.mock.calls[0]![0])).toMatch(/\/images\/img1$/);
   });
 
-  // Under a workbench session the api reads an image only by its document path
+  // Under a workbench session the api reads an image only by its design path
   // (docs/specs/013-workspace/blueprints/workbench-embeds.md "Route effects under a session").
-  it("always names the session's document under a workbench session", async () => {
+  it("always names the session's design under a workbench session", async () => {
     const spy = stub404();
-    setWorkbenchConfinement({ scope: 'document', documentId: 'doc-wb', ownerId: 'owner' });
+    setWorkbenchConfinement({ scope: 'design', designId: 'doc-wb', ownerId: 'owner' });
     try {
       await apiFetchImageBlobUrl('owner', 'img1');
-      await apiFetchImageBlobUrl('owner', 'img1', { documentId: 'other' });
+      await apiFetchImageBlobUrl('owner', 'img1', { designId: 'other' });
     } finally {
       setWorkbenchConfinement(null);
     }

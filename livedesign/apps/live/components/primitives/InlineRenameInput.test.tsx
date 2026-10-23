@@ -19,7 +19,7 @@ function Row() {
           onCancel={() => setEditing(false)}
         />
       ) : (
-        <a href="/document/x">Roadmap</a>
+        <a href="/design/x">Roadmap</a>
       )}
     </div>
   );

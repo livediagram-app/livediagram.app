@@ -1,10 +1,10 @@
 'use client';
 
 import type { RefObject } from 'react';
-import type { Layer } from '@livedesign/document';
+import type { Layer } from '@livedesign/design';
 import { useRowPointerDrag } from '@/components/primitives/useRowPointerDrag';
 
-// Drag a layer row onto another to take its slot (docs/specs/006-document/layers.md), on the shared pointer
+// Drag a layer row onto another to take its slot (docs/specs/006-design/layers.md), on the shared pointer
 // drag (useRowPointerDrag): dropping ON a row means "take that row's slot", whichever half it lands in.
 export function useLayerRowDrag({
   listRef,

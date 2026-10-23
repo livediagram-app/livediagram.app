@@ -12,7 +12,7 @@ import {
 import { useLogoCombineDemo } from './useLogoCombineDemo';
 
 const ctx = vi.hoisted(() => ({ current: {} as Record<string, unknown> }));
-vi.mock('@/app/document/[id]/EditorContext', () => ({ useEditorContext: () => ctx.current }));
+vi.mock('@/app/design/[id]/EditorContext', () => ({ useEditorContext: () => ctx.current }));
 type Selection = { selectedId: string | null; multiSelectedIds: Set<string> };
 const setSelection = vi.hoisted(() => vi.fn<(s: Selection) => void>());
 vi.mock('@/hooks/canvas/useSelectionStore', () => ({

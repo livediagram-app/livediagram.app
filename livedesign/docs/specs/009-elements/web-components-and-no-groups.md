@@ -58,7 +58,7 @@ of the row while a stat row or process is selected.
 ## Resizing
 
 The point of making them single elements is that they can lay themselves out. Each layout is a
-pure function in `@livedesign/document` (`web-components.ts`) that both the canvas view and the
+pure function in `@livedesign/design` (`web-components.ts`) that both the canvas view and the
 headless SVG renderer call, so an export matches the editor.
 
 - **Banner / callout**: the text region is the box minus its padding. Title and body re-wrap to
@@ -90,7 +90,7 @@ embedding and the image menu all keep working with no second image pipeline. The
 can be turned off and on from the image's context menu, which also means any image can become a
 hero.
 
-## Existing documents
+## Existing designs
 
 - Components already on a tab were built as loose primitives and **stay as they are**: they
   are simply separate elements. We do not try to recognise and fuse them.

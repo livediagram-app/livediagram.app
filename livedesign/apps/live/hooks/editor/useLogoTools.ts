@@ -18,7 +18,7 @@ import {
   type MirroredPage,
   type MirrorSettings,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { track } from '@/lib/telemetry';
 import { preloadCombineEngine } from '@/lib/combine/combine';
 import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';

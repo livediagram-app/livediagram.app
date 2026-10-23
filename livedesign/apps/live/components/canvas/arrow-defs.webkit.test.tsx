@@ -4,7 +4,7 @@
 // lost on a dark canvas. There each arrow carries its own marker, painted its line's colour.
 import { render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ArrowElement } from '@livedesign/document';
+import type { ArrowElement } from '@livedesign/design';
 import { resetMarkersTakeLineColourForTests } from './arrow-defs';
 import { DrawnArrowPreview } from './DrawnArrowPreview';
 

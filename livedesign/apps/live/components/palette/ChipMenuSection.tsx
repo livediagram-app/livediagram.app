@@ -9,7 +9,7 @@ import {
   withStepSequence,
   type ChipLook,
   type ShapeElement,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { Glyph } from '@livedesign/ui';
 import { MenuAccordionSection, MenuActionButton } from '@/components/primitives/PortalMenu';
 import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';

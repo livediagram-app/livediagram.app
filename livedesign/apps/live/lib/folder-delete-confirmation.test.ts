@@ -9,7 +9,7 @@ describe('folderDeleteConfirmation', () => {
       folderDeleteConfirmation({ name: 'Sprints', parentName: 'Projects', scope: 'personal' }),
     ).toEqual({
       title: 'Delete "Sprints"?',
-      message: 'Its documents and subfolders move to "Projects".',
+      message: 'Its designs and subfolders move to "Projects".',
       confirmLabel: 'Delete folder',
     });
   });
@@ -17,9 +17,9 @@ describe('folderDeleteConfirmation', () => {
   it('names the space root for a top-level folder', () => {
     expect(
       folderDeleteConfirmation({ name: 'A', parentName: null, scope: 'personal' }).message,
-    ).toBe('Its documents and subfolders move to My Work.');
+    ).toBe('Its designs and subfolders move to My Work.');
     expect(folderDeleteConfirmation({ name: 'A', parentName: null, scope: 'team' }).message).toBe(
-      "Its documents and subfolders move to the team's root.",
+      "Its designs and subfolders move to the team's root.",
     );
   });
 
@@ -32,7 +32,7 @@ describe('folderDeleteConfirmation', () => {
         defaultKeys: ['mode:pages'],
       }).message,
     ).toBe(
-      'Its documents and subfolders move to My Work.\nNew documents are saved here by default. Choose another default folder in Settings.',
+      'Its designs and subfolders move to My Work.\nNew designs are saved here by default. Choose another default folder in Settings.',
     );
   });
 

@@ -24,7 +24,7 @@ export async function connectTestClient(
   clientSide.send = (message, options) =>
     send(message, {
       ...options,
-      authInfo: { token: 'lvd_test', clientId: 'test-client', scopes: [] },
+      authInfo: { token: 'lwt_test', clientId: 'test-client', scopes: [] },
     });
   await server.connect(serverSide);
   const client = new Client({ name: 'test-client', version: '0.0.0' });

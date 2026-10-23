@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DOCUMENT_TRASHED_CLOSE, type DocumentCommentThread } from '@livedesign/api-schema';
+import { DESIGN_TRASHED_CLOSE, type DesignCommentThread } from '@livedesign/api-schema';
 import { run } from '../main';
 import { capabilities, fakeIo, NOW, TOKEN, type FakeIo, type Route } from '../testing/fake-io';
 import { DEFAULT_PROFILE } from '../config/profiles';
@@ -12,7 +12,7 @@ import { WAIT_SETTLE_MS } from './wait';
 const DOC = 'aaaa1111-0000-4000-8000-000000000001';
 const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
 
-const thread: DocumentCommentThread = {
+const thread: DesignCommentThread = {
   tabId: 'main',
   tabName: 'Main',
   elementId: 'payments',
@@ -27,15 +27,15 @@ const thread: DocumentCommentThread = {
 function host(
   options: {
     rev?: number;
-    threads?: DocumentCommentThread[];
+    threads?: DesignCommentThread[];
     tabStatus?: number;
     etag?: false;
   } = {},
 ): Route {
   return (request, url) => {
-    if (url.pathname === `/api/documents/${DOC}`)
+    if (url.pathname === `/api/designs/${DOC}`)
       return Response.json({
-        document: {
+        design: {
           id: DOC,
           name: 'Shop',
           tabs: [
@@ -44,11 +44,11 @@ function host(
           ],
         },
       });
-    if (url.pathname === `/api/documents/${DOC}/room-ticket` && request.method === 'POST')
+    if (url.pathname === `/api/designs/${DOC}/room-ticket` && request.method === 'POST')
       return Response.json({ ticket: 'tk' });
-    if (url.pathname === `/api/documents/${DOC}/comments`)
+    if (url.pathname === `/api/designs/${DOC}/comments`)
       return Response.json({ threads: options.threads ?? [thread] });
-    if (url.pathname.startsWith(`/api/documents/${DOC}/tabs/`))
+    if (url.pathname.startsWith(`/api/designs/${DOC}/tabs/`))
       return options.tabStatus
         ? Response.json({ error: 'gone' }, { status: options.tabStatus })
         : new Response(
@@ -155,12 +155,12 @@ describe('wait --for change', () => {
     expect(io.out()).toBe('tab "fresh" changed\n');
   });
 
-  it('names a change to the document itself', async () => {
+  it('names a change to the design itself', async () => {
     const { io, exit } = await start(['wait', DOC, '--for', 'change']);
-    op(io, { kind: 'document-meta', name: 'Shop v2', tabs: [] });
+    op(io, { kind: 'design-meta', name: 'Shop v2', tabs: [] });
     await io.advance(WAIT_SETTLE_MS);
     expect(await exit).toBe(0);
-    expect(io.out()).toBe('document "Shop v2" changed\n');
+    expect(io.out()).toBe('design "Shop v2" changed\n');
   });
 });
 
@@ -172,16 +172,16 @@ describe('wait endings', () => {
     expect(io.out()).toBe('nothing new in 30 s\n');
   });
 
-  it('exits 1 on Ctrl-C, and 3 when the document goes to the Trash', async () => {
+  it('exits 1 on Ctrl-C, and 3 when the design goes to the Trash', async () => {
     const first = await start(['wait', DOC, '--for', 'comment']);
     first.io.interrupt();
     expect(await first.exit).toBe(1);
     expect(first.io.sockets[0]!.closedWith).toBe(1000);
     const second = await start(['wait', DOC, '--for', 'change']);
     op(second.io, changed());
-    second.io.sockets[0]!.drop(DOCUMENT_TRASHED_CLOSE);
+    second.io.sockets[0]!.drop(DESIGN_TRASHED_CLOSE);
     expect(await second.exit).toBe(3);
-    expect(second.io.err()).toContain('the document was moved to the Trash');
+    expect(second.io.err()).toContain('the design was moved to the Trash');
   });
 
   it('says how to see what was missed after a reconnect', async () => {
@@ -229,7 +229,7 @@ describe('watch', () => {
     });
     op(io, { kind: 'tab', tabId: 'other' });
     op(io, { kind: 'tab', tabId: 'fresh' });
-    op(io, { kind: 'document-meta', name: 'Shop v2', tabs: [{ id: 'main', name: 'Main' }] });
+    op(io, { kind: 'design-meta', name: 'Shop v2', tabs: [{ id: 'main', name: 'Main' }] });
     await tick();
     io.interrupt();
     expect(await exit).toBe(0);
@@ -241,7 +241,7 @@ describe('watch', () => {
       'changeset cs_1 by Webber: "add" (+1 ~0 -0)',
       'tab "Other" changed',
       'tab "fresh" changed',
-      'document renamed "Shop v2"',
+      'design renamed "Shop v2"',
       'tab "Other" removed',
       '',
     ]);
@@ -262,9 +262,9 @@ describe('watch', () => {
     );
   });
 
-  it('exits 3 when the document goes to the Trash, and as the api refused the ticket', async () => {
+  it('exits 3 when the design goes to the Trash, and as the api refused the ticket', async () => {
     const { io, exit } = await start(['watch', DOC]);
-    io.sockets[0]!.drop(DOCUMENT_TRASHED_CLOSE);
+    io.sockets[0]!.drop(DESIGN_TRASHED_CLOSE);
     expect(await exit).toBe(3);
     const refused = fakeIo({
       env: { LIVEDESIGN_TOKEN: TOKEN },

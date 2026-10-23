@@ -438,8 +438,8 @@ describe('full authorize -> complete -> token flow', () => {
 describe('isAllowedRedirectUri', () => {
   it('accepts https anywhere and http only on loopback', () => {
     expect(isAllowedRedirectUri('https://claude.ai/cb')).toBe(true);
-    expect(isAllowedRedirectUri('http://localhost:3300/cb')).toBe(true);
-    expect(isAllowedRedirectUri('http://127.0.0.1:3300/cb')).toBe(true);
+    expect(isAllowedRedirectUri('http://localhost:3400/cb')).toBe(true);
+    expect(isAllowedRedirectUri('http://127.0.0.1:3400/cb')).toBe(true);
     expect(isAllowedRedirectUri('http://example.com/cb')).toBe(false);
     expect(isAllowedRedirectUri('javascript://localhost/%0Aalert(1)//')).toBe(false);
     expect(isAllowedRedirectUri('not a url')).toBe(false);

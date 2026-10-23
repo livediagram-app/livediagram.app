@@ -1,11 +1,11 @@
 # Logo pages
 
-A **logo page** is one of the kinds of page ([Pages](pages-mode.md) "Page kinds"): a square artboard to design a logo on. It is laid out like an infographic page,
-with ordinary elements, and adds tools a logo needs and an infographic does not: **construction
+A **logo page** is one of the kinds of page ([Pages](pages-mode.md) "Page kinds"): a square artboard to design a logo on. It is laid out freely,
+with ordinary elements, and adds tools a logo needs: **construction
 guides** to build a balanced mark, **mirror** drawing for symmetry, **wordmark** type (tracking,
 weight, case, text on an arc), **combining** shapes into one mark, and a **logo
 kit** export. Everything [Pages](pages-mode.md) says
-of infographic pages applies to a logo page except where this spec says otherwise.
+of a page applies to a logo page except where this spec says otherwise.
 
 ## Domain language
 
@@ -40,7 +40,7 @@ of infographic pages applies to a logo page except where this spec says otherwis
 - **Re-fitting and laying out**: a logo page never changes size, so it never re-fits. Laying loose
   content out into pages never makes a logo page.
 - **No quick-connect pluses**: a selection on a logo page shows no **+** buttons around it (a
-  mark is drawn, not wired up as a diagram); everything else about selecting is as anywhere.
+  mark is drawn, not wired up with arrows); everything else about selecting is as anywhere.
 
 ## The Logo palette
 
@@ -104,8 +104,8 @@ cog).
 - **Layouts**: the **logo layouts** (below), in the layout gallery ( search, Surprise Me, category chips and large tiles, placed at once with the content carried over, and hover previews). Each
   tile is the layout exactly as it lands: built for this page and drawn by the export renderer in
   the tab's theme and font, on the page's background, its words and icon included (a wireframe
-  outside an editor). An empty logo page shows them inside itself (**Start From a Layout**) as an empty
-  infographic page does, with **Start From Scratch** at the card's foot, a full-width dashed row with a plus, quiet until hovered: it puts the card away for good on that page (the page is marked started blank, for everyone, in the same undoable edit), leaving the artboard to start from nothing. Hide puts it away until the tab is next opened. Either way the page's layouts stay in its panel's Layouts tab.
+  outside an editor). An empty logo page shows them inside itself (**Start From a Layout**,
+  [Pages](pages-mode.md) "Layouts"), with **Start From Scratch** at the card's foot, a full-width dashed row with a plus, quiet until hovered: it puts the card away for good on that page (the page is marked started blank, for everyone, in the same undoable edit), leaving the artboard to start from nothing. Hide puts it away until the tab is next opened. Either way the page's layouts stay in its panel's Layouts tab.
 - The cog opens the panel on Background (a logo page has no Page tab); the layout invite on Layouts.
 
 ### Show Me
@@ -265,7 +265,7 @@ Layout card is open. In screen px at any zoom; they take no presses.
 A text element carries four optional fields for wordmark type. They render wherever the text is
 (on any page, every export); the controls for them appear in a **Wordmark** section of a
 text element's **Text** options (its element menu) while its centre is on a logo page. A value out of
-its range is refused by the document's validation, as any malformed field is.
+its range is refused by the design's validation, as any malformed field is.
 
 - **Tracking** (`letterSpacing`): the space added between letters, in em, from -0.2 to 1 (absent
   is 0). Shown as a slider from -20 to 100 (hundredths of an em).
@@ -344,7 +344,7 @@ clean, as one edit:
   The Export dialog's PNG and SVG preview shows such a page see-through, over a checkerboard.
 - **Logo Kit**: the Export dialog offers a **Logo Kit** card while the tab has a logo page, and
   only then. Its panel asks which logo page when there are several, shows it over a checkerboard,
-  and downloads `<document> - <page name> - Logo Kit.zip` (the page by its name, else "Page n",
+  and downloads `<design> - <page name> - Logo Kit.zip` (the page by its name, else "Page n",
   or no page part while it is the only page), holding:
   - `logo.svg`, the artboard as SVG;
   - `logo-16.png`, `logo-32.png`, `logo-48.png`, `logo-64.png`, `logo-128.png`, `logo-180.png`,
@@ -356,7 +356,7 @@ clean, as one edit:
 - A logo page and everything on it sync like any page; the guides and mirror are each person's own
   view.
 - The `logo` kind, the `logo` size, `PathElement.subpaths` and the wordmark fields are part of the
-  document schema the api validates and agents read and write.
+  design schema the api validates and agents read and write.
 
 ## Telemetry
 
@@ -368,7 +368,7 @@ clean, as one edit:
 `LogoMirrorOff`; `UI · Changed · LogoGuideStrength<Faint|Medium|Strong>`,
 `LogoMirrorAxis<Vertical|Horizontal|Both|Radial>`, `LogoMirrorCopies<3|4|5|6|8>`,
 `LogoMirrorMergeOn` / `LogoMirrorMergeOff`;
-`Document · Exported · LogoKit`; `UI · Started · LogoTour`, `UI · Ended · LogoTourCompleted` / `LogoTourSkipped`
+`Design · Exported · LogoKit`; `UI · Started · LogoTour`, `UI · Ended · LogoTourCompleted` / `LogoTourSkipped`
 ([Show Me](#show-me)). Never a colour, name or text.
 
 ## Non-goals

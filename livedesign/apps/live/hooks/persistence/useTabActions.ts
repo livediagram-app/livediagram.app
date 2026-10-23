@@ -1,28 +1,28 @@
 // Tab-lifecycle actions, lifted out of editor-page.tsx: add / import /
 // rename / duplicate / delete / reorder tabs, the active-tab lock,
-// linking a tab into another document, and clearing a tab's content.
+// linking a tab into another design, and clearing a tab's content.
 //
 // This is the busiest of the extracted hooks because tab lifecycle
 // genuinely touches a lot: history (`commit` / `commitTabs`),
 // selection state, telemetry, the confirm dialog + toasts, and the
-// document list.
+// design list.
 // The deps object reflects that — the page still owns all that state;
 // this hook only relocates the handlers verbatim so the logic lives in
 // one auditable place. No behaviour change.
 //
-// NOT here: document-level lifecycle (new / open / delete / duplicate /
+// NOT here: design-level lifecycle (new / open / delete / duplicate /
 // move-to-folder), the template-picker flow, and the panel-accordion
 // helper — those are separate concerns that stay in the page (or move
 // in their own pass).
 
-import { defaultTabName } from '@livedesign/document';
+import { defaultTabName } from '@livedesign/design';
 import {
   normalizeFolderOrder,
   tabFolderName,
   truncateName,
   type Element,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { apiLinkTab } from '@/lib/api-client';
 import { newTabSeed } from '@/lib/new-tab-seed';
 import { track } from '@/lib/telemetry';
@@ -35,12 +35,12 @@ import { toastName } from '@/lib/toast-name';
 type TabActionsDeps = {
   tabs: Tab[];
   activeId: string;
-  // Whether the session may change the document's structure (its tabs): false for a view link and
+  // Whether the session may change the design's structure (its tabs): false for a view link and
   // for any tab-scoped link (docs/specs/013-workspace/tab-scoped-share-links.md).
   canEditStructure: boolean;
-  // The owner's document list — read for the destination name when
-  // linking a tab into another document.
-  documentList: { id: string; name: string }[];
+  // The owner's design list — read for the destination name when
+  // linking a tab into another design.
+  designList: { id: string; name: string }[];
   // The local participant id (owner of the link request).
   ownerId: string;
   // Factory for a blank tab (kept in the page because the initial-state
@@ -49,11 +49,11 @@ type TabActionsDeps = {
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
   // Mark a freshly-created tab as loaded so the lazy per-tab fetch
-  // (docs/specs/006-document/per-tab-storage.md) skips it — a locally-created tab has no server row to
+  // (docs/specs/006-design/per-tab-storage.md) skips it — a locally-created tab has no server row to
   // pull, so without this the canvas would flash its loading overlay
   // over the new (and never-resolving) tab.
   markTabLoaded: (id: string) => void;
-  // Whether a tab's content has actually been fetched (docs/specs/006-document/per-tab-storage.md).
+  // Whether a tab's content has actually been fetched (docs/specs/006-design/per-tab-storage.md).
   // Duplicate must refuse a still-loading source: copying the empty
   // placeholder and marking the copy loaded persists a permanently
   // empty tab.
@@ -66,8 +66,8 @@ type TabActionsDeps = {
   setImportError: (message: string | null) => void;
   // Frames the tab once replaced content has rendered (useTabEntryEffects).
   requestFit: () => void;
-  // Re-pulls the owner's document list after a cross-document tab link.
-  refreshDocumentList: (ownerId: string) => void;
+  // Re-pulls the owner's design list after a cross-design tab link.
+  refreshDesignList: (ownerId: string) => void;
   confirm: ReturnType<typeof useConfirm>;
   toast: ReturnType<typeof useToast>;
 };
@@ -76,7 +76,7 @@ export function useTabActions(deps: TabActionsDeps) {
   const {
     tabs,
     activeId,
-    documentList,
+    designList,
     ownerId,
     createTab,
     commit,
@@ -89,13 +89,13 @@ export function useTabActions(deps: TabActionsDeps) {
     setFormatSourceId,
     setImportError,
     requestFit,
-    refreshDocumentList,
+    refreshDesignList,
     confirm,
     toast,
   } = deps;
 
   const addTab = () => {
-    // A session that cannot change the document's tabs adds none, whichever control asked.
+    // A session that cannot change the design's tabs adds none, whichever control asked.
     if (!deps.canEditStructure) return;
     // The new tab takes the active tab's look (newTabSeed).
     // Skips the look when the active tab can't be resolved (mid-mount, or removed in another
@@ -144,39 +144,39 @@ export function useTabActions(deps: TabActionsDeps) {
     const previous = tabs.find((t) => t.id === id)?.name ?? '';
     // Capped here rather than at each input, so every route in (the tab
     // pill's inline rename, the command palette, an import) lands under the
-    // same limit (docs/specs/006-document/name-length.md).
+    // same limit (docs/specs/006-design/name-length.md).
     const trimmed = truncateName(name);
     if (trimmed === previous.trim()) return;
     commitTabs((ts) => ts.map((t) => (t.id === id ? { ...t, name: trimmed } : t)));
     track('Tab', 'Renamed');
   };
 
-  // Link the active tab into another of the user's documents (docs/specs/006-document/tab-document-many-to-many.md).
-  // Goes through POST /api/documents/<target>/tabs/<tabId>/link so the
-  // server inserts one `document_tabs` row pointing at the existing
+  // Link the active tab into another of the user's designs (docs/specs/006-design/tab-design-many-to-many.md).
+  // Goes through POST /api/designs/<target>/tabs/<tabId>/link so the
+  // server inserts one `design_tabs` row pointing at the existing
   // tab body. The previous implementation cloned the tab into a fresh
   // row with a new id; that duplicated the content (edits on either
   // side stayed siloed) and the menu label promised the linking
   // behaviour the user actually wanted. After this call, edits to
-  // the tab from either document write to the same `tabs.data` row.
-  const linkActiveTabTo = async (targetDocumentId: string) => {
+  // the tab from either design write to the same `tabs.data` row.
+  const linkActiveTabTo = async (targetDesignId: string) => {
     const source = tabs.find((t) => t.id === activeId);
     if (!source) return;
     const target =
-      toastName(documentList.find((d) => d.id === targetDocumentId)?.name) ?? 'that document';
+      toastName(designList.find((d) => d.id === targetDesignId)?.name) ?? 'that design';
     try {
-      await apiLinkTab(ownerId, targetDocumentId, source.id);
+      await apiLinkTab(ownerId, targetDesignId, source.id);
       toast.success(`${toastName(source.name) ?? 'Tab'} added to ${target}`);
       track('Tab', 'Linked');
     } catch {
       // Previously swallowed silently: the user clicked a destination
       // and nothing visible happened. The toast surfaces the failure
       // without forcing a modal; refresh still runs so the source
-      // document's local state remains consistent with what landed.
+      // design's local state remains consistent with what landed.
       // Two names fill the line, so the try-again is left to the reader.
       toast.error(`Could not add ${toastName(source.name) ?? 'the tab'} to ${target}.`);
     }
-    refreshDocumentList(ownerId);
+    refreshDesignList(ownerId);
   };
 
   const duplicateTab = (id: string) => {
@@ -191,7 +191,7 @@ export function useTabActions(deps: TabActionsDeps) {
       return;
     }
     // Re-mint ids (arrow endpoints remapped): element ids must be
-    // unique per DOCUMENT, not just per tab — verbatim copies made a
+    // unique per DESIGN, not just per tab — verbatim copies made a
     // peer's selection of the original render (and lock, docs/specs/007-editor/live-app.md) on
     // the copy too, since remote selections resolve by element id.
     const reminted = remintTabElements({ ...src, elements: src.elements.map((el) => ({ ...el })) });
@@ -233,7 +233,7 @@ export function useTabActions(deps: TabActionsDeps) {
           elements: t.elements.map((el) => {
             if (!el.link) return el;
             // Tab-level deletion only cleans up links pointing AT the
-            // gone tab. Document + url links target somewhere else
+            // gone tab. Design + url links target somewhere else
             // entirely, so they survive; only tab / element links carry
             // a tabId to check.
             if (el.link.kind !== 'tab' && el.link.kind !== 'element') return el;
@@ -256,7 +256,7 @@ export function useTabActions(deps: TabActionsDeps) {
     const srcIdx0 = tabs.findIndex((t) => t.id === sourceId);
     const tgtIdx0 = tabs.findIndex((t) => t.id === targetId);
     if (srcIdx0 < 0 || tgtIdx0 < 0) return;
-    // A drag ADOPTS the drop target's folder membership (docs/specs/006-document/tab-folders.md): dropping
+    // A drag ADOPTS the drop target's folder membership (docs/specs/006-design/tab-folders.md): dropping
     // a tab among a folder's pills joins that folder, dropping it among
     // loose tabs makes it loose, and dropping onto the folder chip (which
     // targets the run's first member) joins too. So one drag both reorders
@@ -280,7 +280,7 @@ export function useTabActions(deps: TabActionsDeps) {
       const insertBase = next.findIndex((t) => t.id === targetId);
       const insertIdx = placeBefore ? insertBase : insertBase + 1;
       next.splice(insertIdx, 0, { ...moved!, folder: folder ?? undefined });
-      // Re-normalize so every folder stays one contiguous run (docs/specs/006-document/tab-folders.md).
+      // Re-normalize so every folder stays one contiguous run (docs/specs/006-design/tab-folders.md).
       return normalizeFolderOrder(next);
     });
     // A drag that crosses a folder boundary reports the membership change, not

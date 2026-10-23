@@ -3,7 +3,7 @@ import type { DatabaseSync } from 'node:sqlite';
 import { sqliteD1 } from '../test-sqlite-d1';
 import { imageRefIdsFromData } from '../image-refs/extract';
 import {
-  imageRefIndexDocumentStatement,
+  imageRefIndexDesignStatement,
   imageRefIndexOwnerStatement,
   imageRefIndexPageStatement,
   isImageRefIndexComplete,
@@ -119,7 +119,7 @@ describe('the SQL extractor', () => {
     expect(refsByTab(sql)).toEqual({ t2: ['i2'] });
   });
 
-  it("scopes to an owner's or a document's tabs", async () => {
+  it("scopes to an owner's or a design's tabs", async () => {
     const { env, sql } = sqliteD1();
     for (const [d, owner] of [
       ['A', 'me'],
@@ -127,18 +127,18 @@ describe('the SQL extractor', () => {
     ]) {
       sql
         .prepare(
-          'INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, 0, 0)',
+          'INSERT INTO designs (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, 0, 0)',
         )
         .run(d!, owner!, d!);
     }
     tabRow(sql, 'ta', JSON.stringify({ elements: [img('ia')] }));
     tabRow(sql, 'tb', JSON.stringify({ elements: [img('ib')] }));
     sql.exec(
-      "INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('A', 'ta', 0, 0), ('B', 'tb', 0, 0)",
+      "INSERT INTO design_tabs (design_id, tab_id, order_index, added_at) VALUES ('A', 'ta', 0, 0), ('B', 'tb', 0, 0)",
     );
     await imageRefIndexOwnerStatement(env, 'me').run();
     expect(refsByTab(sql)).toEqual({ ta: ['ia'] });
-    await imageRefIndexDocumentStatement(env, 'B').run();
+    await imageRefIndexDesignStatement(env, 'B').run();
     expect(refsByTab(sql)).toEqual({ ta: ['ia'], tb: ['ib'] });
   });
 });

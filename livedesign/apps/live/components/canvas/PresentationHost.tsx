@@ -12,7 +12,7 @@ import dynamic from 'next/dynamic';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { loadedPresentationOverlay, loadPresentationOverlay } from '@/lib/editor-deferred-code';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import { slideDurationMs } from '@/lib/presentation-config';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { useFocusReturn } from '@/hooks/ui/useFocusReturn';

@@ -22,7 +22,7 @@
     "react-dom": "^19.3.0"
   },
   "dependencies": {
-    "@livedesign/document": "workspace:*",
+    "@livedesign/design": "workspace:*",
     "@livedesign/icons": "workspace:*",
     "@livedesign/templates": "workspace:*",
     "@livedesign/ui": "workspace:*"

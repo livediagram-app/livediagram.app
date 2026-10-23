@@ -17,11 +17,11 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-const base = { ownerId: 'o', documentId: 'd', tabId: 't', signedIn: false, tabHasContent: false };
+const base = { ownerId: 'o', designId: 'd', tabId: 't', signedIn: false, tabHasContent: false };
 
 describe('useTemplatePickMove', () => {
-  it('moves at the first pick on the document /new made, and says where', async () => {
-    handTemplatePick({ documentId: 'd', tabId: 't', placementChosen: false });
+  it('moves at the first pick on the design /new made, and says where', async () => {
+    handTemplatePick({ designId: 'd', tabId: 't', placementChosen: false });
     const { result } = renderHook(() => useTemplatePickMove(base));
     result.current('wireframe-mobile-app');
     expect(readTemplatePick()).toBeNull();
@@ -29,7 +29,7 @@ describe('useTemplatePickMove', () => {
       expect(info).toHaveBeenCalledWith(expect.stringMatching(/^Moved to Decks/)),
     );
     expect(move).toHaveBeenCalledWith(
-      expect.objectContaining({ documentId: 'd', kind: 'wireframe-mobile-app' }),
+      expect.objectContaining({ designId: 'd', kind: 'wireframe-mobile-app' }),
     );
     result.current('wireframe-mobile-app');
     expect(move).toHaveBeenCalledTimes(1);
@@ -38,13 +38,13 @@ describe('useTemplatePickMove', () => {
   it('does nothing without a handoff, or for a folder the person chose', () => {
     const { result } = renderHook(() => useTemplatePickMove(base));
     result.current('wireframe-mobile-app');
-    handTemplatePick({ documentId: 'd', tabId: 't', placementChosen: true });
+    handTemplatePick({ designId: 'd', tabId: 't', placementChosen: true });
     result.current('wireframe-mobile-app');
     expect(move).not.toHaveBeenCalled();
   });
 
   it('drops the handoff once the tab has content drawn some other way', () => {
-    handTemplatePick({ documentId: 'd', tabId: 't', placementChosen: false });
+    handTemplatePick({ designId: 'd', tabId: 't', placementChosen: false });
     renderHook(() => useTemplatePickMove({ ...base, tabHasContent: true }));
     expect(readTemplatePick()).toBeNull();
   });

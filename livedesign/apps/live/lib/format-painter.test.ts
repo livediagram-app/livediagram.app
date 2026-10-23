@@ -1,5 +1,5 @@
-import type { ArrowElement, BoxedElement, TextRun } from '@livedesign/document';
-import { createShape, createSticky, createText } from '@livedesign/document';
+import type { ArrowElement, BoxedElement, TextRun } from '@livedesign/design';
+import { createShape, createSticky, createText } from '@livedesign/design';
 import { describe, expect, it } from 'vitest';
 import {
   applyPaint,

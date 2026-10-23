@@ -11,7 +11,7 @@
 // generated COMPONENT_SCHEMAS, itself derived from @livedesign/api-schema) or
 // an inline JSON Schema for the small envelopes that wrap a payload. Path
 // parameters are derived from the `{param}` placeholders in `path` by
-// document.ts, so they aren't repeated here.
+// design.ts, so they aren't repeated here.
 
 import {
   LINT_VIEW_NAME,
@@ -19,8 +19,8 @@ import {
   TEAM_RECENT_INCLUDE,
   TEAM_RECENT_LIMIT,
 } from '@livedesign/api-schema';
-import { NAME_MAX_LENGTH } from '@livedesign/document';
-import { FIND_QUERY_MAX_LENGTH, VIEW_BUDGET_MAX } from '@livedesign/document-views';
+import { NAME_MAX_LENGTH } from '@livedesign/design';
+import { FIND_QUERY_MAX_LENGTH, VIEW_BUDGET_MAX } from '@livedesign/design-views';
 import type { BodySchema } from './types';
 
 /** How a caller authenticates (docs/specs/014-identity/auth-and-guest-access.md):
@@ -39,7 +39,7 @@ interface QueryParam {
 
 export interface RouteSpec {
   method: 'GET' | 'POST' | 'PUT' | 'DELETE';
-  /** Path template under the server base, e.g. `/documents/{id}/tabs/{tabId}`. */
+  /** Path template under the server base, e.g. `/designs/{id}/tabs/{tabId}`. */
   path: string;
   /** Top-level resource segment, matching index.ts's dispatch switch. Used by
    *  the drift test to assert manifest/handler parity. */
@@ -60,10 +60,10 @@ export interface RouteSpec {
   /** Media type of the success body. Defaults to `application/json`; the SVG
    *  snapshot endpoints answer `image/svg+xml`. */
   responseMediaType?: string;
-  /** A plain-text form of the success body beside the JSON one (a document view). */
+  /** A plain-text form of the success body beside the JSON one (a design view). */
   textResponse?: { description: string };
   /** Meaningful status codes. The first 2xx is the success response; the rest
-   *  are documented with the shared Error schema by document.ts. */
+   *  are documented with the shared Error schema by design.ts. */
   statuses: number[];
 }
 
@@ -76,15 +76,15 @@ const listOf = (key: string, name: string): BodySchema => ({
   properties: { [key]: { type: 'array', items: ref(name) } },
   required: [key],
 });
-// A document name field: the worker shortens it to the name cap rather than
-// rejecting it (docs/specs/006-document/name-length.md).
+// A design name field: the worker shortens it to the name cap rather than
+// rejecting it (docs/specs/006-design/name-length.md).
 const nameField = {
   type: 'string',
   description:
     `At most ${NAME_MAX_LENGTH} characters; a longer name is stored shortened at a word boundary ` +
     'with an ellipsis, and whitespace runs collapse to one space.',
 };
-// The document views' query (docs/specs/024-agents/document-views.md): `view` turns the plain read into a
+// The design views' query (docs/specs/024-agents/design-views.md): `view` turns the plain read into a
 // view, text by default.
 const VIEW_COMMON_QUERY = [
   { name: 'view', required: false, description: 'A view instead of the plain read.' },
@@ -138,7 +138,7 @@ const TAB_VIEW_QUERY = [
   },
   { name: 'all', required: false, description: 'comments: `1` adds resolved threads.' },
 ];
-const DOCUMENT_VIEW_QUERY = [
+const DESIGN_VIEW_QUERY = [
   {
     ...VIEW_COMMON_QUERY[0]!,
     description:
@@ -240,31 +240,31 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 404, 405],
   },
 
-  // ---- Documents ----
+  // ---- Designs ----
   {
     method: 'GET',
-    path: '/documents',
-    segment: 'documents',
-    tag: 'Documents',
-    summary: "List the caller's documents (metadata only, no tab contents).",
+    path: '/designs',
+    segment: 'designs',
+    tag: 'Designs',
+    summary: "List the caller's designs (metadata only, no tab contents).",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: [
       {
         name: 'include',
         required: false,
-        description: `${TEAM_RECENT_INCLUDE} adds \`teamRecent\`: the ${TEAM_RECENT_LIMIT} newest non-empty documents of the teams the caller has joined, newest first, each with its \`teamName\`.`,
+        description: `${TEAM_RECENT_INCLUDE} adds \`teamRecent\`: the ${TEAM_RECENT_LIMIT} newest non-empty designs of the teams the caller has joined, newest first, each with its \`teamName\`.`,
       },
     ],
     responseSchema: {
       type: 'object',
       properties: {
-        documents: { type: 'array', items: ref('DocumentSummary') },
+        designs: { type: 'array', items: ref('DesignSummary') },
         teamRecent: {
           type: 'array',
           items: {
             allOf: [
-              ref('DocumentSummary'),
+              ref('DesignSummary'),
               {
                 type: 'object',
                 properties: { teamName: { type: 'string' } },
@@ -274,17 +274,17 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
           },
         },
       },
-      required: ['documents'],
+      required: ['designs'],
     },
     statuses: [200, 401],
   },
   {
     method: 'POST',
-    path: '/documents',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/designs',
+    segment: 'designs',
+    tag: 'Designs',
     summary:
-      'Create a document, optionally seeding it with tabs and filing it in a team and/or folder. ' +
+      'Create a design, optionally seeding it with tabs and filing it in a team and/or folder. ' +
       'An invalid placement refuses the whole create by name (placement_invalid, team_forbidden, ' +
       'folder_not_found, folder_scope_mismatch) or a malformed intent (intent_invalid); nothing is ' +
       'written.',
@@ -317,7 +317,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
           },
         },
         source: {
-          anyOf: [ref('DocumentSource'), { type: 'null' }],
+          anyOf: [ref('DesignSource'), { type: 'null' }],
           description: 'The agent front door that made it; `ai` and `mcp` count as Made by AI.',
         },
         // Placement (docs/specs/013-workspace/folders.md "Placement on create").
@@ -337,8 +337,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         intent: {
           type: ['object', 'null'],
           description:
-            'What the new document is made as, recorded on it (opensIn, tabKind). ' +
-            "With no choice of place, the document lands in the caller's default folder for its " +
+            'What the new design is made as, recorded on it (opensIn, tabKind). ' +
+            "With no choice of place, the design lands in the caller's default folder for its " +
             'mode, else the root of My Work. Malformed: intent_invalid (400).',
           properties: {
             mode: ref('EditorMode'),
@@ -346,44 +346,44 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
           },
           required: ['mode'],
         },
-        // The document's own dates, ms since the epoch (docs/specs/015-api/api.md "Document dates").
+        // The design's own dates, ms since the epoch (docs/specs/015-api/api.md "Design dates").
         createdAt: { type: 'integer' },
         savedAt: { type: 'integer' },
-        // Making a document is a use (docs/specs/015-api/api.md "Marking a document used").
+        // Making a design is a use (docs/specs/015-api/api.md "Marking a design used").
         markUsed: {
           type: 'boolean',
           description:
-            'Whether making the document counts as a use of it for the caller, so it joins their ' +
-            'Jump back in at once. Default true; send false when making many documents in one go ' +
+            'Whether making the design counts as a use of it for the caller, so it joins their ' +
+            'Jump back in at once. Default true; send false when making many designs in one go ' +
             '(the editor does for an import of more than one), so they wait until opened. Not a ' +
             'boolean: 400 invalid markUsed.',
         },
       },
       required: ['id', 'name'],
     },
-    responseSchema: wrap('document', 'Document'),
+    responseSchema: wrap('design', 'Design'),
     statuses: [201, 400, 401, 403, 404, 410, 413, 422],
   },
   {
     method: 'GET',
-    path: '/documents/{id}',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/designs/{id}',
+    segment: 'designs',
+    tag: 'Designs',
     summary:
-      'Get a document (metadata + tab summaries; tab contents fetched separately), or with `view=overview` one line per tab.',
+      'Get a design (metadata + tab summaries; tab contents fetched separately), or with `view=overview` one line per tab.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
-    query: DOCUMENT_VIEW_QUERY,
-    responseSchema: wrap('document', 'Document'),
-    textResponse: { description: 'With `view=overview`: the document and one line per tab.' },
+    query: DESIGN_VIEW_QUERY,
+    responseSchema: wrap('design', 'Design'),
+    textResponse: { description: 'With `view=overview`: the design and one line per tab.' },
     statuses: [200, 400, 401, 404, 410],
   },
   {
     method: 'PUT',
-    path: '/documents/{id}',
-    segment: 'documents',
-    tag: 'Documents',
-    summary: 'Update a document name and/or tab order.',
+    path: '/designs/{id}',
+    segment: 'designs',
+    tag: 'Designs',
+    summary: 'Update a design name and/or tab order.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: {
@@ -393,16 +393,16 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         tabIds: { type: 'array', items: { type: 'string' } },
       },
     },
-    responseSchema: wrap('document', 'Document'),
+    responseSchema: wrap('design', 'Design'),
     statuses: [200, 400, 401, 403, 404, 410],
   },
   {
     method: 'DELETE',
-    path: '/documents/{id}',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/designs/{id}',
+    segment: 'designs',
+    tag: 'Designs',
     summary:
-      'Move a document to the Trash, restorable for 30 days. With permanent=true, delete it for good. 410 when it is already in the Trash (without permanent).',
+      'Move a design to the Trash, restorable for 30 days. With permanent=true, delete it for good. 410 when it is already in the Trash (without permanent).',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: [
@@ -410,17 +410,17 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         name: 'permanent',
         required: false,
         description:
-          '"true" deletes the document for good instead of moving it to the Trash; also purges one already in the Trash.',
+          '"true" deletes the design for good instead of moving it to the Trash; also purges one already in the Trash.',
       },
     ],
     statuses: [204, 401, 403, 404, 410],
   },
   {
     method: 'GET',
-    path: '/documents/{id}/shared-tabs',
-    segment: 'documents',
-    tag: 'Documents',
-    summary: 'Count the tabs a delete would leave in other documents.',
+    path: '/designs/{id}/shared-tabs',
+    segment: 'designs',
+    tag: 'Designs',
+    summary: 'Count the tabs a delete would leave in other designs.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: wrap('sharedTabs', 'SharedTabsSummary'),
@@ -428,22 +428,22 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/copy',
-    segment: 'documents',
-    tag: 'Documents',
-    summary: "Duplicate a document into the caller's files.",
+    path: '/designs/{id}/copy',
+    segment: 'designs',
+    tag: 'Designs',
+    summary: "Duplicate a design into the caller's files.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: { type: 'object', properties: { name: nameField } },
-    responseSchema: wrap('document', 'Document'),
+    responseSchema: wrap('design', 'Design'),
     statuses: [201, 401, 403, 404, 410],
   },
   {
     method: 'PUT',
-    path: '/documents/{id}/folder',
-    segment: 'documents',
-    tag: 'Documents',
-    summary: 'Move a document into a personal or team folder.',
+    path: '/designs/{id}/folder',
+    segment: 'designs',
+    tag: 'Designs',
+    summary: 'Move a design into a personal or team folder.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: {
@@ -457,9 +457,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/documents/{id}/tabs/{tabId}',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/designs/{id}/tabs/{tabId}',
+    segment: 'designs',
+    tag: 'Designs',
     summary:
       'Get the full contents (elements) of one tab, with its revision (`rev`, also the weak `ETag`): what a changeset base names.',
     auth: 'guest-or-clerk',
@@ -474,9 +474,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'PUT',
-    path: '/documents/{id}/tabs/{tabId}',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/designs/{id}/tabs/{tabId}',
+    segment: 'designs',
+    tag: 'Designs',
     summary: `The editor's whole-tab save: create or replace one tab and its elements, merged with every changeset the editor had not seen (\`X-Changeset-Seen\`). An API token is refused with 405 \`use_changesets\`: scripts and agents write tabs with changesets. A new or changed tab name is stored shortened to ${NAME_MAX_LENGTH} characters.`,
     auth: 'guest-or-clerk',
     requestSchema: 'Tab',
@@ -485,11 +485,11 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/changesets',
-    segment: 'documents',
+    path: '/designs/{id}/tabs/{tabId}/changesets',
+    segment: 'designs',
     tag: 'Changesets',
     summary:
-      'Change one tab with a changeset: ordered edit operations or one replace, applied atomically, shown live to everyone with the tab open, credited to you and revertable. Pass the base you read (rev and element fingerprints) to refuse a write over a change made since. A whole-tab replace on a tab id the document lacks creates that tab.',
+      'Change one tab with a changeset: ordered edit operations or one replace, applied atomically, shown live to everyone with the tab open, credited to you and revertable. Pass the base you read (rev and element fingerprints) to refuse a write over a change made since. A whole-tab replace on a tab id the design lacks creates that tab.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: [
@@ -501,10 +501,10 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/documents/{id}/changesets',
-    segment: 'documents',
+    path: '/designs/{id}/changesets',
+    segment: 'designs',
     tag: 'Changesets',
-    summary: "A document's changesets, newest first.",
+    summary: "A design's changesets, newest first.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: [
@@ -516,8 +516,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/documents/{id}/changesets/{changesetId}',
-    segment: 'documents',
+    path: '/designs/{id}/changesets/{changesetId}',
+    segment: 'designs',
     tag: 'Changesets',
     summary: 'One changeset, with the result lines it answered.',
     auth: 'guest-or-clerk',
@@ -527,8 +527,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/changesets/{changesetId}/revert',
-    segment: 'documents',
+    path: '/designs/{id}/changesets/{changesetId}/revert',
+    segment: 'designs',
     tag: 'Changesets',
     summary:
       'Revert a changeset: its inverse, applied as a new changeset by you. Elements changed since are kept as they are and listed. Possible for 30 days after it landed, by anyone with edit access to the tab.',
@@ -539,10 +539,10 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'PUT',
-    path: '/documents/{id}/tabs/{tabId}/name',
-    segment: 'documents',
-    tag: 'Documents',
-    summary: `Rename one tab. Advances the tab's revision and reaches everyone with the document open. Stored shortened to ${NAME_MAX_LENGTH} characters.`,
+    path: '/designs/{id}/tabs/{tabId}/name',
+    segment: 'designs',
+    tag: 'Designs',
+    summary: `Rename one tab. Advances the tab's revision and reaches everyone with the design open. Stored shortened to ${NAME_MAX_LENGTH} characters.`,
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: { type: 'object', properties: { name: nameField }, required: ['name'] },
@@ -551,11 +551,11 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/pages',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/designs/{id}/tabs/{tabId}/pages',
+    segment: 'designs',
+    tag: 'Designs',
     summary:
-      'Change the pages of a tab (add, set, lay out, move, duplicate, delete; up to 50, as one edit). Switches the tab into Pages and reaches everyone with the document open. Answers each page with its rectangle on the canvas.',
+      'Change the pages of a tab (add, set, lay out, move, duplicate, delete; up to 50, as one edit). Switches the tab into Pages and reaches everyone with the design open. Answers each page with its rectangle on the canvas.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: ref('PagesRequest'),
@@ -564,19 +564,19 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'DELETE',
-    path: '/documents/{id}/tabs/{tabId}',
-    segment: 'documents',
-    tag: 'Documents',
-    summary: 'Delete one tab from a document.',
+    path: '/designs/{id}/tabs/{tabId}',
+    segment: 'designs',
+    tag: 'Designs',
+    summary: 'Delete one tab from a design.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     statuses: [204, 401, 403, 404, 410],
   },
   {
     method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/comments',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/designs/{id}/tabs/{tabId}/comments',
+    segment: 'designs',
+    tag: 'Designs',
     summary:
       'Add a comment to an element on a tab; an API token is recorded on it for the audit trail.',
     auth: 'guest-or-clerk',
@@ -590,9 +590,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'DELETE',
-    path: '/documents/{id}/tabs/{tabId}/comments/{commentId}',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/designs/{id}/tabs/{tabId}/comments/{commentId}',
+    segment: 'designs',
+    tag: 'Designs',
     summary: 'Delete a comment you wrote.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
@@ -600,9 +600,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/comments/{commentId}/reply',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/designs/{id}/tabs/{tabId}/comments/{commentId}/reply',
+    segment: 'designs',
+    tag: 'Designs',
     summary: 'Reply on the thread that holds a comment; it reopens a resolved thread.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
@@ -615,9 +615,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/comments/{commentId}/resolve',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/designs/{id}/tabs/{tabId}/comments/{commentId}/resolve',
+    segment: 'designs',
+    tag: 'Designs',
     summary:
       'Resolve the thread that holds a comment; resolving a resolved thread changes nothing.',
     auth: 'guest-or-clerk',
@@ -626,9 +626,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/comments/{commentId}/reopen',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/designs/{id}/tabs/{tabId}/comments/{commentId}/reopen',
+    segment: 'designs',
+    tag: 'Designs',
     summary: 'Reopen the thread that holds a comment; reopening an open thread changes nothing.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
@@ -636,9 +636,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/documents/{id}/tabs/{tabId}/render.svg',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/designs/{id}/tabs/{tabId}/render.svg',
+    segment: 'designs',
+    tag: 'Designs',
     summary:
       'One tab drawn by the shared renderer (images inlined when the host stores them). Read-gated like the tab; never cached.',
     auth: 'guest-or-clerk',
@@ -649,9 +649,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'PUT',
-    path: '/documents/{id}/tabs/{tabId}/presence',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/designs/{id}/tabs/{tabId}/presence',
+    segment: 'designs',
+    tag: 'Designs',
     summary:
       "An agent's presence on a tab: a status line (up to 80 characters), focus (up to 20 refs) and a ttl (1 to 120 seconds; 30 by default). API tokens only; shown as the token's owner.",
     auth: 'guest-or-clerk',
@@ -669,9 +669,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'DELETE',
-    path: '/documents/{id}/tabs/{tabId}/presence',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/designs/{id}/tabs/{tabId}/presence',
+    segment: 'designs',
+    tag: 'Designs',
     summary: "Clear an agent's presence on a tab; 204 whether or not it was there.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
@@ -679,22 +679,22 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/documents/{id}/comments',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/designs/{id}/comments',
+    segment: 'designs',
+    tag: 'Designs',
     summary:
-      "The comment threads across the document, in tab and outline order, with each element's ref and label. status=open (default), resolved or all.",
+      "The comment threads across the design, in tab and outline order, with each element's ref and label. status=open (default), resolved or all.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: [{ name: 'status', required: false, description: 'open (default), resolved or all.' }],
-    responseSchema: listOf('threads', 'DocumentCommentThread'),
+    responseSchema: listOf('threads', 'DesignCommentThread'),
     statuses: [200, 400, 401, 403, 404, 405, 410],
   },
   {
     method: 'GET',
-    path: '/documents/{id}/tabs/{tabId}/comment-pictures',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/designs/{id}/tabs/{tabId}/comment-pictures',
+    segment: 'designs',
+    tag: 'Designs',
     summary:
       "The published profile pictures of a tab's comment authors, keyed by comment id. Empty unless the caller is signed in.",
     auth: 'guest-or-clerk',
@@ -707,9 +707,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   // ---- Photo blobs (docs/specs/031-photo/photo-store.md "The routes") ----
   {
     method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/photo-blobs-held',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/designs/{id}/tabs/{tabId}/photo-blobs-held',
+    segment: 'designs',
+    tag: 'Designs',
     summary:
       'Which of the given photo blob ids (`{ ids }`, at most 500) this tab already holds a ref to. Edit access; not for tokens.',
     auth: 'guest-or-clerk',
@@ -726,9 +726,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/photo-blobs',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/designs/{id}/tabs/{tabId}/photo-blobs',
+    segment: 'designs',
+    tag: 'Designs',
     summary:
       "Store a batch of photo blobs (a photo page's tiles, sources and previews) for this tab: a 4-byte length, a JSON index `[{ id, type, size }]`, then the bytes. Each id is checked against its bytes; PNG, JPEG or WebP only. 403 photo_full past the tab's cap. Edit access; not for tokens.",
     auth: 'guest-or-clerk',
@@ -741,20 +741,20 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/photo-blobs-adopt',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/designs/{id}/tabs/{tabId}/photo-blobs-adopt',
+    segment: 'designs',
+    tag: 'Designs',
     summary:
-      'Give this tab refs to the photo blobs another tab holds (`{ fromDocument, fromTab, ids }`), where the caller may read that tab now. For duplicated tabs and layers pasted between tabs. Edit access; not for tokens.',
+      'Give this tab refs to the photo blobs another tab holds (`{ fromDesign, fromTab, ids }`), where the caller may read that tab now. For duplicated tabs and layers pasted between tabs. Edit access; not for tokens.',
     auth: 'guest-or-clerk',
     requestSchema: {
       type: 'object',
       properties: {
-        fromDocument: { type: 'string' },
+        fromDesign: { type: 'string' },
         fromTab: { type: 'string' },
         ids: { type: 'array', items: { type: 'string' }, maxItems: 2000 },
       },
-      required: ['fromDocument', 'fromTab', 'ids'],
+      required: ['fromDesign', 'fromTab', 'ids'],
     },
     responseSchema: {
       type: 'object',
@@ -764,9 +764,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/documents/{id}/tabs/{tabId}/photo-blobs/{blobId}',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/designs/{id}/tabs/{tabId}/photo-blobs/{blobId}',
+    segment: 'designs',
+    tag: 'Designs',
     summary:
       "A photo blob's bytes, through a tab the caller may read that holds a ref to it. Named by content, so cached for good.",
     auth: 'guest-or-clerk',
@@ -775,20 +775,20 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/link',
-    segment: 'documents',
-    tag: 'Documents',
-    summary: 'Add (link) an existing tab into this document.',
+    path: '/designs/{id}/tabs/{tabId}/link',
+    segment: 'designs',
+    tag: 'Designs',
+    summary: 'Add (link) an existing tab into this design.',
     auth: 'guest-or-clerk',
     responseSchema: wrap('tab', 'TabSummary'),
     statuses: [200, 401, 403, 404, 410],
   },
   {
     method: 'GET',
-    path: '/documents/{id}/share',
-    segment: 'documents',
+    path: '/designs/{id}/share',
+    segment: 'designs',
     tag: 'Sharing',
-    summary: "List a document's share links and password state.",
+    summary: "List a design's share links and password state.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: listOf('links', 'ShareLink'),
@@ -796,8 +796,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/share',
-    segment: 'documents',
+    path: '/designs/{id}/share',
+    segment: 'designs',
     tag: 'Sharing',
     summary: 'Create a share link (edit or view role, optional expiry).',
     auth: 'guest-or-clerk',
@@ -816,20 +816,20 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'DELETE',
-    path: '/documents/{id}/share',
-    segment: 'documents',
+    path: '/designs/{id}/share',
+    segment: 'designs',
     tag: 'Sharing',
-    summary: 'Revoke all share links for a document.',
+    summary: 'Revoke all share links for a design.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     statuses: [200, 401, 403, 404, 410],
   },
   {
     method: 'PUT',
-    path: '/documents/{id}/share-password',
-    segment: 'documents',
+    path: '/designs/{id}/share-password',
+    segment: 'designs',
     tag: 'Sharing',
-    summary: "Set or clear a document's share password.",
+    summary: "Set or clear a design's share password.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: {
@@ -841,8 +841,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'DELETE',
-    path: '/documents/{id}/share/{code}',
-    segment: 'documents',
+    path: '/designs/{id}/share/{code}',
+    segment: 'designs',
     tag: 'Sharing',
     summary: 'Revoke one share link by its code.',
     auth: 'guest-or-clerk',
@@ -851,8 +851,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'PUT',
-    path: '/documents/{id}/share/{code}',
-    segment: 'documents',
+    path: '/designs/{id}/share/{code}',
+    segment: 'designs',
     tag: 'Sharing',
     summary: 'Change which tabs a share link opens: one tab, or null for all.',
     auth: 'guest-or-clerk',
@@ -867,8 +867,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/share/{code}/extend',
-    segment: 'documents',
+    path: '/designs/{id}/share/{code}/extend',
+    segment: 'designs',
     tag: 'Sharing',
     summary: 'Re-arm an expiring share link.',
     auth: 'guest-or-clerk',
@@ -878,11 +878,11 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/documents/{id}/thumbnail',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/designs/{id}/thumbnail',
+    segment: 'designs',
+    tag: 'Designs',
     summary:
-      "The document's cached SVG snapshot (a tab-scoped share visitor gets their tab). Read-gated like GET /documents/{id}; 404 when there is no snapshot.",
+      "The design's cached SVG snapshot (a tab-scoped share visitor gets their tab). Read-gated like GET /designs/{id}; 404 when there is no snapshot.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: [{ name: 'v', required: false, description: 'Cache-buster (the savedAt stamp).' }],
@@ -892,9 +892,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/room-ticket',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/designs/{id}/room-ticket',
+    segment: 'designs',
+    tag: 'Designs',
     summary:
       'Mint a one-time ticket for opening the realtime room: pass it to the WebSocket upgrade as `?t=`. Same access policy as a read, share password included. Exempt from the write rate limit.',
     auth: 'guest-or-clerk',
@@ -907,16 +907,16 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/documents/{id}/ws',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/designs/{id}/ws',
+    segment: 'designs',
+    tag: 'Designs',
     summary:
       'WebSocket upgrade to the realtime room. The op protocol is documented in docs/specs/015-api/api.md, not here.',
     auth: 'guest-or-clerk',
     query: [
       { name: 's', required: false, description: 'Share code, for non-owner collaborators.' },
       { name: 'o', required: false, description: 'Owner id (guest path).' },
-      { name: 'p', required: false, description: 'Share password, when the document is gated.' },
+      { name: 'p', required: false, description: 'Share password, when the design is gated.' },
     ],
     statuses: [101, 403, 404],
   },
@@ -1012,7 +1012,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/images/usage',
     segment: 'images',
     tag: 'Images',
-    summary: 'Map each image to the documents that reference it.',
+    summary: 'Map each image to the designs that reference it.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: { type: 'object' },
@@ -1026,7 +1026,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     summary: 'Download an image (owner, or a share-code reader).',
     auth: 'guest-or-clerk',
     tokenUsable: true,
-    query: [{ name: 'd', required: false, description: 'Document id, for share-code readers.' }],
+    query: [{ name: 'd', required: false, description: 'Design id, for share-code readers.' }],
     responseSchema: { type: 'string', format: 'binary' },
     statuses: [200, 404, 503],
   },
@@ -1169,7 +1169,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/shared',
     segment: 'shared',
     tag: 'Sharing',
-    summary: 'List documents shared with the caller.',
+    summary: 'List designs shared with the caller.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: listOf('shared', 'SharedWithItem'),
@@ -1177,10 +1177,10 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'DELETE',
-    path: '/shared/{documentId}',
+    path: '/shared/{designId}',
     segment: 'shared',
     tag: 'Sharing',
-    summary: 'Remove a document from the caller\'s "shared with you" list.',
+    summary: 'Remove a design from the caller\'s "shared with you" list.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     statuses: [200, 401],
@@ -1190,17 +1190,17 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/share/{code}',
     segment: 'share',
     tag: 'Sharing',
-    summary: 'Resolve a share code to a document and the granted role.',
+    summary: 'Resolve a share code to a design and the granted role.',
     auth: 'public',
     query: [{ name: 'password', required: false, description: 'Required when the link is gated.' }],
     responseSchema: {
       type: 'object',
       properties: {
-        document: ref('Document'),
+        design: ref('Design'),
         role: ref('ShareRole'),
         tabId: { type: ['string', 'null'] },
       },
-      required: ['document', 'role', 'tabId'],
+      required: ['design', 'role', 'tabId'],
     },
     statuses: [200, 401, 403, 404, 410],
   },
@@ -1210,7 +1210,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'share',
     tag: 'Sharing',
     summary:
-      'Live image: the shared document as SVG, embeddable by a bare <img>. Public by share code; a password-protected share has no image.',
+      'Live image: the shared design as SVG, embeddable by a bare <img>. Public by share code; a password-protected share has no image.',
     auth: 'public',
     query: [
       {
@@ -1229,7 +1229,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'share',
     tag: 'Sharing',
     summary:
-      "A link preview's text: the shared document's name. 404 wherever the live image is (a dead code, a share password).",
+      "A link preview's text: the shared design's name. 404 wherever the live image is (a dead code, a share password).",
     auth: 'public',
     responseSchema: {
       type: 'object',
@@ -1334,7 +1334,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/favourites',
     segment: 'favourites',
     tag: 'Account',
-    summary: 'The document ids the caller has starred, newest first.',
+    summary: 'The design ids the caller has starred, newest first.',
     auth: 'guest-or-clerk',
     responseSchema: {
       type: 'object',
@@ -1344,19 +1344,19 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'PUT',
-    path: '/favourites/{documentId}',
+    path: '/favourites/{designId}',
     segment: 'favourites',
     tag: 'Account',
-    summary: 'Star a document for the caller. Idempotent; 404 when there is no such document.',
+    summary: 'Star a design for the caller. Idempotent; 404 when there is no such design.',
     auth: 'guest-or-clerk',
     statuses: [204, 401, 404],
   },
   {
     method: 'DELETE',
-    path: '/favourites/{documentId}',
+    path: '/favourites/{designId}',
     segment: 'favourites',
     tag: 'Account',
-    summary: 'Un-star a document for the caller.',
+    summary: 'Un-star a design for the caller.',
     auth: 'guest-or-clerk',
     statuses: [204, 401],
   },
@@ -1367,7 +1367,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/tags',
     segment: 'tags',
     tag: 'Account',
-    summary: "The caller's tags, alphabetical, and which live documents each is on.",
+    summary: "The caller's tags, alphabetical, and which live designs each is on.",
     auth: 'guest-or-clerk',
     responseSchema: {
       type: 'object',
@@ -1388,7 +1388,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
           type: 'array',
           items: {
             type: 'object',
-            properties: { tagId: { type: 'string' }, documentId: { type: 'string' } },
+            properties: { tagId: { type: 'string' }, designId: { type: 'string' } },
           },
         },
       },
@@ -1429,26 +1429,26 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/tags/{tagId}',
     segment: 'tags',
     tag: 'Account',
-    summary: "Delete one of the caller's tags; it comes off every document.",
+    summary: "Delete one of the caller's tags; it comes off every design.",
     auth: 'guest-or-clerk',
     statuses: [204, 401, 404],
   },
   {
     method: 'PUT',
-    path: '/tags/{tagId}/documents/{documentId}',
+    path: '/tags/{tagId}/designs/{designId}',
     segment: 'tags',
     tag: 'Account',
     summary:
-      "Put a tag on a document. Idempotent; 404 when the tag is not the caller's or there is no such document.",
+      "Put a tag on a design. Idempotent; 404 when the tag is not the caller's or there is no such design.",
     auth: 'guest-or-clerk',
     statuses: [204, 401, 404],
   },
   {
     method: 'DELETE',
-    path: '/tags/{tagId}/documents/{documentId}',
+    path: '/tags/{tagId}/designs/{designId}',
     segment: 'tags',
     tag: 'Account',
-    summary: 'Take a tag off a document.',
+    summary: 'Take a tag off a design.',
     auth: 'guest-or-clerk',
     statuses: [204, 401, 404],
   },
@@ -1513,10 +1513,10 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'trash',
     tag: 'Trash',
     summary:
-      'The documents the caller may restore: their personal Trash and every joined team Trash, newest first.',
+      'The designs the caller may restore: their personal Trash and every joined team Trash, newest first.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
-    responseSchema: listOf('trash', 'TrashedDocument'),
+    responseSchema: listOf('trash', 'TrashedDesign'),
     statuses: [200, 400, 401],
   },
   {
@@ -1541,10 +1541,10 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'trash',
     tag: 'Trash',
     summary:
-      'Restore a document from the Trash to its folder, or the root of its space when that folder is gone.',
+      'Restore a design from the Trash to its folder, or the root of its space when that folder is gone.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
-    responseSchema: wrap('document', 'Document'),
+    responseSchema: wrap('design', 'Design'),
     statuses: [200, 400, 401, 404],
   },
   {
@@ -1552,7 +1552,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/trash/{id}',
     segment: 'trash',
     tag: 'Trash',
-    summary: 'Delete a document in the Trash for good.',
+    summary: 'Delete a design in the Trash for good.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     statuses: [204, 400, 401, 404],
@@ -1630,7 +1630,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'activity',
     tag: 'Account',
     summary:
-      'What is outstanding for the caller across every document they can open: open actions assigned to them or by them, and unresolved comment threads they are in. Capped at 100 per kind, newest first.',
+      'What is outstanding for the caller across every design they can open: open actions assigned to them or by them, and unresolved comment threads they are in. Capped at 100 per kind, newest first.',
     auth: 'guest-or-clerk',
     responseSchema: {
       type: 'object',
@@ -1650,7 +1650,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'home',
     tag: 'Account',
     summary:
-      "The Explorer's Home in one read: Jump back in (the caller's Within reach set: the 4 documents they used on the most days over the last 90, then the 4 they used most recently, none twice; most used first) and What happened (other people's actions on documents the caller can open over the last 14 days, one group per document per day in `tz`). Query: `tz` (IANA, default UTC). 400 `tz_invalid`.",
+      "The Explorer's Home in one read: Jump back in (the caller's Within reach set: the 4 designs they used on the most days over the last 90, then the 4 they used most recently, none twice; most used first) and What happened (other people's actions on designs the caller can open over the last 14 days, one group per design per day in `tz`). Query: `tz` (IANA, default UTC). 400 `tz_invalid`.",
     auth: 'guest-or-clerk',
     responseSchema: { $ref: '#/components/schemas/HomeResponse' },
     statuses: [200, 400, 401, 429],
@@ -1662,7 +1662,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/account',
     segment: 'account',
     tag: 'Account',
-    summary: 'Delete the signed-in account and all of its data (documents, tokens, ...).',
+    summary: 'Delete the signed-in account and all of its data (designs, tokens, ...).',
     auth: 'clerk',
     responseSchema: { type: 'object', properties: { deleted: { type: 'number' } } },
     statuses: [204, 401],
@@ -1845,7 +1845,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'teams',
     tag: 'Teams',
     summary:
-      'Whether a joined teammate can open a document the caller can access (docs/specs/012-collaboration/assigned-actions.md): owner, team-library member, or prior share-link visitor.',
+      'Whether a joined teammate can open a design the caller can access (docs/specs/012-collaboration/assigned-actions.md): owner, team-library member, or prior share-link visitor.',
     auth: 'clerk',
     responseSchema: {
       type: 'object',
@@ -1860,17 +1860,17 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'teams',
     tag: 'Teams',
     summary:
-      'Email a joined teammate that an action on a document element was assigned to them (docs/specs/012-collaboration/assigned-actions.md). Best-effort; the assignee may have opted out.',
+      'Email a joined teammate that an action on a design element was assigned to them (docs/specs/012-collaboration/assigned-actions.md). Best-effort; the assignee may have opted out.',
     auth: 'clerk',
     requestSchema: {
       type: 'object',
       properties: {
         assigneeUserId: { type: 'string' },
-        documentId: { type: 'string' },
+        designId: { type: 'string' },
         actionName: { type: 'string' },
         description: { type: 'string' },
       },
-      required: ['assigneeUserId', 'documentId', 'actionName'],
+      required: ['assigneeUserId', 'designId', 'actionName'],
     },
     statuses: [202, 400, 401, 403, 404],
   },
@@ -1880,12 +1880,12 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'teams',
     tag: 'Teams',
     summary:
-      "Email the teammates a comment just @-mentioned (docs/specs/012-collaboration/comment-mentions.md). The document must be in this team's library; each mention must be a member of the team. Best-effort; a recipient may have opted out.",
+      "Email the teammates a comment just @-mentioned (docs/specs/012-collaboration/comment-mentions.md). The design must be in this team's library; each mention must be a member of the team. Best-effort; a recipient may have opted out.",
     auth: 'clerk',
     requestSchema: {
       type: 'object',
       properties: {
-        documentId: { type: 'string' },
+        designId: { type: 'string' },
         commentText: { type: 'string' },
         mentions: {
           type: 'array',
@@ -1895,7 +1895,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
           },
         },
       },
-      required: ['documentId', 'commentText', 'mentions'],
+      required: ['designId', 'commentText', 'mentions'],
     },
     statuses: [202, 400, 401, 403, 404],
   },
@@ -1934,14 +1934,14 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/teams/{id}/library',
     segment: 'teams',
     tag: 'Teams',
-    summary: "Get a team's shared folder tree and documents (joined member).",
+    summary: "Get a team's shared folder tree and designs (joined member).",
     auth: 'clerk',
     tokenUsable: true,
     responseSchema: {
       type: 'object',
       properties: {
         folders: { type: 'array', items: ref('Folder') },
-        documents: { type: 'array', items: ref('DocumentSummary') },
+        designs: { type: 'array', items: ref('DesignSummary') },
       },
     },
     statuses: [200, 401, 403, 404],
@@ -2021,7 +2021,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'workbench',
     tag: 'Workbench',
     summary:
-      "Mint a single-use, one-minute ticket that opens a document, or the person's whole workspace (scope workspace, on Home or a folder), in a paired developer tool. An origin the token is not paired with for that scope answers 428 with the pairing URL.",
+      "Mint a single-use, one-minute ticket that opens a design, or the person's whole workspace (scope workspace, on Home or a folder), in a paired developer tool. An origin the token is not paired with for that scope answers 428 with the pairing URL.",
     auth: 'clerk',
     tokenUsable: true,
     requestSchema: 'WorkbenchTicketRequest',
@@ -2036,7 +2036,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'workbench',
     tag: 'Workbench',
     summary:
-      "Redeem a ticket for a workbench session: the person's editor on that one document, or in their workspace. The ticket is the credential.",
+      "Redeem a ticket for a workbench session: the person's editor on that one design, or in their workspace. The ticket is the credential.",
     auth: 'public',
     requestSchema: 'WorkbenchSessionRequest',
     responseSchema: 'WorkbenchSessionResponse',

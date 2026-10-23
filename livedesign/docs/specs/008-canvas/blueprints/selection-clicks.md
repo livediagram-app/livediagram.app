@@ -4,7 +4,7 @@ Derived from [Canvas and palette](../canvas-and-palette.md), its "Selection" bul
 selected element again** and its "Marquee box-select" rules **Only Shift adds to or takes from a
 selection** and **A plain click on a member**, and its "Selection" bullet **Right-clicking the empty canvas deselects too**. The spec decides; this file only adds engineering
 precision. Defaults are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`. The rules hold on
-every tab kind, the whiteboard included.
+every page kind.
 
 Scope, by file:
 
@@ -68,9 +68,6 @@ only past `PRESS_DRAG_SLOP_PX`, so a bend keeps the arrow selected.
 it selects again (boxed: step 1; arrow: `paired`); the `dblclick` (boxed) or the release of press 2
 (arrow) opens the editor. From an unselected element, press 1 selects and press 2 pairs with the
 element already selected, so nothing is settled.
-
-**Unchanged**: the whiteboard's Shift marquee (`useCanvasSurfaceGestures`, `useCanvasPanAndMarquee`)
-claims Shift presses in the capture phase before any element sees them.
 
 **Right-click or long-press on the empty canvas** (`useCanvasSurfaceGestures`): both open through
 `openCanvasMenu(x, y)` = `onDeselect()`, then `onCanvasContextMenu?.(x, y)`. The right-click opens on

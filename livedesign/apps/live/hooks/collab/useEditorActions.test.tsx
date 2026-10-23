@@ -4,7 +4,7 @@
 
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, elementActions, type Tab } from '@livedesign/document';
+import { createShape, elementActions, type Tab } from '@livedesign/design';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 

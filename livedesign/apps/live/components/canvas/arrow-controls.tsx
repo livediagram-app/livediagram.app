@@ -15,7 +15,7 @@ import {
   type ArrowStyle,
   type ArrowThickness,
   type BorderStyle,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { SizeButton, ToggleSwitch } from '@/components/palette/palette-controls';
 import {
   ArrowEndsIcon,

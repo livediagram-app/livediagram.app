@@ -1,9 +1,9 @@
 // Arrow ends named by ref (docs/specs/015-api/mcp-server.md §4.4 "Arrow ends by ref"): an arrow the model writes may
-// pin its ends with the short refs read_document prints (`4aeb`), as an op's elementId may. Each pinned end is
+// pin its ends with the short refs read_design prints (`4aeb`), as an op's elementId may. Each pinned end is
 // resolved to the element's id among the ids the result will hold (the tab's, plus this call's new elements); an end
 // that names nothing there is refused, never stored as an arrow to nowhere.
 
-import { computeRefs, resolveRef } from '@livedesign/document';
+import { computeRefs, resolveRef } from '@livedesign/design';
 
 type Rec = Record<string, unknown>;
 
@@ -43,7 +43,7 @@ export function resolveArrowEnds(
         return {
           error:
             `${what}: "${side}" is pinned to "${name}", which ${why}. Pin each end to an element's id ` +
-            '(or the ref read_document printed for it), or use a free end { "kind": "free", "x", "y" }.',
+            '(or the ref read_design printed for it), or use a free end { "kind": "free", "x", "y" }.',
         };
       }
       if (found.id !== name) {

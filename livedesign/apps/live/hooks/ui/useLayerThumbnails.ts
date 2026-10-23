@@ -14,13 +14,13 @@ import {
   svgBoxed,
   type Element,
   type Layer,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { useCanvasChartPalette, useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useTabFinish } from '@/components/canvas/CanvasFinishContext';
 
-// Per-layer preview markup (docs/specs/006-document/layers.md), shared by the Layers panel rows and
+// Per-layer preview markup (docs/specs/006-design/layers.md), shared by the Layers panel rows and
 // the context menu's Move-to-layer tiles: the SAME headless renderer the
 // Map / exports use, split into one markup string per layer. Every
 // preview shares the whole tab's content bounds as its viewBox, so each

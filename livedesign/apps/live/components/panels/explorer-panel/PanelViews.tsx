@@ -9,11 +9,11 @@ import { dateKey, pickRenderer, timeLabel } from '@livedesign/ui';
 import { ActivityPane } from '@/components/panels/ActivityPane';
 import { GalleryPane } from '@/components/panels/GalleryPane';
 import { ThemesPane } from '@/components/panels/ThemesPane';
-import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
+import { DesignThumbnail } from '@/components/panels/DesignThumbnail';
 import { AvatarStack } from '@/components/panels/home/HomeAvatar';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { ThisBrowserPill } from '@/components/primitives/ThisBrowserPill';
-import { ClockIcon, DocumentIcon, TrashIcon } from '@/components/primitives/explorer-icons';
+import { ClockIcon, DesignIcon, TrashIcon } from '@/components/primitives/explorer-icons';
 import { useActivityFeed } from '@/app/explorer/useActivityFeed';
 import { useTimelineFeed } from '@/app/explorer/useTimelineFeed';
 import { useHome } from '@/app/explorer/home/useHome';
@@ -47,7 +47,7 @@ import {
   PaneTile,
   type PaneTone,
 } from './pane-parts';
-import { usePaneDocumentMenu } from '../explorer-tree/usePaneDocumentMenu';
+import { usePaneDesignMenu } from '../explorer-tree/usePaneDesignMenu';
 import { usePanelTree } from '../explorer-tree/PanelTreeContext';
 import type { JumpBackInItem } from '@/app/explorer/home/home-model';
 import type { HomeGroup, TimelineEvent } from '@livedesign/api-schema';
@@ -57,7 +57,7 @@ import { lucideRotateCcw, lucideTrash2 } from '@livedesign/icons/lucide';
 const RestoreGlyph = lucideGlyph(lucideRotateCcw, 16);
 const DeleteGlyph = lucideGlyph(lucideTrash2, 16);
 
-// One of Jump Back In's documents as a preview card, with the document menu when the reader can reach it.
+// One of Jump Back In's designs as a preview card, with the design menu when the reader can reach it.
 function JumpBackInCard({
   item,
   ownerId,
@@ -69,14 +69,14 @@ function JumpBackInCard({
   onOpen: () => void;
   now: number;
 }) {
-  const doc = usePanelTree().documentById?.(item.documentId);
-  const menu = usePaneDocumentMenu(doc);
+  const doc = usePanelTree().designById?.(item.designId);
+  const menu = usePaneDesignMenu(doc);
   return (
     <PaneCard
       preview={
-        <DocumentThumbnail
+        <DesignThumbnail
           ownerId={ownerId}
-          documentId={item.documentId}
+          designId={item.designId}
           version={item.savedAt}
           empty={item.empty}
           shareCode={item.shareCode}
@@ -84,7 +84,7 @@ function JumpBackInCard({
           className={PANE_PREVIEW_BOX}
         />
       }
-      title={item.name || 'Untitled document'}
+      title={item.name || 'Untitled design'}
       meta={
         <span className="flex items-center gap-1.5">
           {/* Inside the row's button: a label, not a link (a link in a button is a control nested in a control). */}
@@ -99,12 +99,12 @@ function JumpBackInCard({
   );
 }
 
-// One of What Happened's groups: the people, what they did and where, with the document's menu.
+// One of What Happened's groups: the people, what they did and where, with the design's menu.
 function WhatHappenedRow({ group, onOpen }: { group: HomeGroup; onOpen: () => void }) {
-  const doc = usePanelTree().documentById?.(group.documentId);
-  const menu = usePaneDocumentMenu(doc);
+  const doc = usePanelTree().designById?.(group.designId);
+  const menu = usePaneDesignMenu(doc);
   const s = summarySentence(group);
-  const sentence = `${s.people} ${s.verbs}${s.preposition ? ` ${s.preposition}` : ''} ${s.document}`;
+  const sentence = `${s.people} ${s.verbs}${s.preposition ? ` ${s.preposition}` : ''} ${s.design}`;
   return (
     <PaneRow
       leading={
@@ -117,7 +117,7 @@ function WhatHappenedRow({ group, onOpen }: { group: HomeGroup; onOpen: () => vo
           <span className="font-semibold text-slate-800 dark:text-slate-100">{s.people}</span>{' '}
           {s.verbs}
           {s.preposition ? ` ${s.preposition}` : ''}{' '}
-          <span className="font-semibold text-slate-800 dark:text-slate-100">{s.document}</span>
+          <span className="font-semibold text-slate-800 dark:text-slate-100">{s.design}</span>
         </span>
       }
       label={sentence}
@@ -142,8 +142,8 @@ function eventTone(e: TimelineEvent): PaneTone {
 
 function TimelineRow({ event, ownerId }: { event: TimelineEvent; ownerId: string }) {
   const r = pickRenderer(event, TIMELINE_RENDERERS)(event, { viewerId: ownerId });
-  const doc = usePanelTree().documentById?.(event.sourceType === 'document' ? event.sourceId : '');
-  const menu = usePaneDocumentMenu(event.sourceType === 'document' ? doc : undefined);
+  const doc = usePanelTree().designById?.(event.sourceType === 'design' ? event.sourceId : '');
+  const menu = usePaneDesignMenu(event.sourceType === 'design' ? doc : undefined);
   return (
     <PaneRow
       leading={<PaneTile tone={eventTone(event)}>{r.icon}</PaneTile>}
@@ -162,18 +162,18 @@ function TimelineRow({ event, ownerId }: { event: TimelineEvent; ownerId: string
 
 type Open = (id: string, shareCode?: string) => void;
 
-// How many documents Home's Jump Back In lists in the pane.
+// How many designs Home's Jump Back In lists in the pane.
 const JUMP_BACK_IN_ROWS = 6;
 
 export function HomeSection({
   ownerId,
-  currentDocumentId,
-  onOpenDocument,
+  currentDesignId,
+  onOpenDesign,
   onSeeTimeline,
 }: {
   ownerId: string;
-  currentDocumentId: string | null;
-  onOpenDocument: Open;
+  currentDesignId: string | null;
+  onOpenDesign: Open;
   // Home's See Timeline shows the Timeline in the pane, as the rail would.
   onSeeTimeline: () => void;
 }) {
@@ -182,13 +182,13 @@ export function HomeSection({
   if (home.status === 'error')
     return <PaneFailed message={HOME_COPY.readFailed} onRetry={home.retry} />;
   if (home.status === 'loading') return <PaneSkeleton rows={6} />;
-  const recent = paneJumpBackIn(home.jumpBackIn, currentDocumentId, JUMP_BACK_IN_ROWS);
-  // Empty only because the open document is left out: the person has a document, so "No documents yet" would be
+  const recent = paneJumpBackIn(home.jumpBackIn, currentDesignId, JUMP_BACK_IN_ROWS);
+  // Empty only because the open design is left out: the person has a design, so "No designs yet" would be
   // wrong (explorer-structure.md "Home").
   const onlyOpen =
     recent.length === 0 &&
     [...home.jumpBackIn.mostUsed, ...home.jumpBackIn.recent].some(
-      (d) => d.documentId === currentDocumentId,
+      (d) => d.designId === currentDesignId,
     );
   return (
     <div className="flex flex-col gap-6">
@@ -204,11 +204,11 @@ export function HomeSection({
           <PaneGrid label={HOME_COPY.jumpBackIn}>
             {recent.map((d) => (
               <JumpBackInCard
-                key={d.documentId}
+                key={d.designId}
                 item={d}
                 ownerId={ownerId}
                 now={now}
-                onOpen={() => onOpenDocument(d.documentId, d.shareCode ?? undefined)}
+                onOpen={() => onOpenDesign(d.designId, d.shareCode ?? undefined)}
               />
             ))}
           </PaneGrid>
@@ -241,7 +241,7 @@ export function HomeSection({
                     <WhatHappenedRow
                       key={g.id}
                       group={g}
-                      onOpen={() => onOpenDocument(g.documentId, g.shareCode ?? undefined)}
+                      onOpen={() => onOpenDesign(g.designId, g.shareCode ?? undefined)}
                     />
                   ))}
                 </PaneList>
@@ -270,7 +270,7 @@ export function TimelineSection({ ownerId }: { ownerId: string }) {
       <PaneEmpty
         icon={<ClockIcon />}
         title="No activity yet"
-        description="Create a document, comment on one, or join a team, and it will show up here."
+        description="Create a design, comment on one, or join a team, and it will show up here."
       />
     );
   const days: { day: string; events: typeof feed.events }[] = [];
@@ -311,7 +311,7 @@ export function TrashSection({
   onChanged,
 }: {
   ownerId: string;
-  // A restore or a permanent delete: the panel's lists refresh so a restored document shows in its place.
+  // A restore or a permanent delete: the panel's lists refresh so a restored design shows in its place.
   onChanged: () => void;
 }) {
   const toast = useToast();
@@ -330,13 +330,13 @@ export function TrashSection({
       <PaneEmpty
         icon={<TrashIcon />}
         title="Nothing in the Trash right now"
-        description="Delete a document and it is kept here for 30 days, so you can restore it."
+        description="Delete a design and it is kept here for 30 days, so you can restore it."
       />
     );
   return (
     <div className="flex flex-col gap-5">
       <p className="px-2 text-[11px] leading-4 text-slate-500 dark:text-slate-400">
-        Deleted documents wait here for 30 days. Restoring one puts it back where it was.
+        Deleted designs wait here for 30 days. Restoring one puts it back where it was.
       </p>
       {groups.map((group) =>
         group.rows.length ? (
@@ -347,10 +347,10 @@ export function TrashSection({
                   key={row.id}
                   leading={
                     <PaneTile tone="rose">
-                      <DocumentIcon />
+                      <DesignIcon />
                     </PaneTile>
                   }
-                  title={row.name || 'Untitled document'}
+                  title={row.name || 'Untitled design'}
                   meta={`${trashedOnLabel(row)} · ${daysLeftLabel(row.trashedAt, now)}`}
                   trailing={
                     <>

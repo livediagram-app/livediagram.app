@@ -3,7 +3,7 @@
 // a Dashboard's chart picker all show a type by the same picture.
 import { Glyph, Prims } from '@livedesign/ui';
 import { lucideChartPie } from '@livedesign/icons/lucide';
-import type { ChartType } from '@livedesign/document';
+import type { ChartType } from '@livedesign/design';
 
 const AXES = 'M3 3v18h18';
 

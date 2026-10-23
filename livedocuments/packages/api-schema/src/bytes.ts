@@ -20,7 +20,7 @@ export function bytesToBase64(bytes: Uint8Array | ArrayBuffer): string {
 }
 
 // URL-safe base64 with no padding (RFC 4648 §5): what OAuth PKCE challenges,
-// HMAC signatures in a header, and `lvd_` API tokens are spelled in.
+// HMAC signatures in a header, and `lwt_` API tokens are spelled in.
 export function bytesToBase64Url(bytes: Uint8Array | ArrayBuffer): string {
   return bytesToBase64(bytes).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }

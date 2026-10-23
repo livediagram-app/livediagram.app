@@ -47,7 +47,7 @@ describe('resolveWorkbenchSession', () => {
     over: { tokenRevoked?: boolean; tokenReadOnly?: boolean; workspace?: boolean } = {},
   ) {
     const db: SqliteD1 = sqliteD1();
-    db.sql.exec(`INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
+    db.sql.exec(`INSERT INTO designs (id, owner_id, name, shareable, saved_at, created_at)
                  VALUES ('doc1', 'user_1', 'Doc', 0, 1, 1)`);
     db.sql
       .exec(`INSERT INTO api_tokens (id, owner_id, token_hash, name, created_at, expires_at, revoked, read_only)
@@ -63,8 +63,8 @@ describe('resolveWorkbenchSession', () => {
       tokenId: 'tok1',
       pairingId: 'pair1',
       ...(over.workspace
-        ? { scope: 'workspace' as const, documentId: null, folderId: 'fold1', tabId: null }
-        : { scope: 'document' as const, documentId: 'doc1', folderId: null, tabId: 't1' }),
+        ? { scope: 'workspace' as const, designId: null, folderId: 'fold1', tabId: null }
+        : { scope: 'design' as const, designId: 'doc1', folderId: null, tabId: 't1' }),
       origin: 'https://w.example',
       role: 'edit',
       createdAt: NOW,
@@ -83,8 +83,8 @@ describe('resolveWorkbenchSession', () => {
         ownerId: 'user_1',
         tokenId: 'tok1',
         pairingId: 'pair1',
-        scope: 'document',
-        documentId: 'doc1',
+        scope: 'design',
+        designId: 'doc1',
         folderId: null,
         tabId: 't1',
         origin: 'https://w.example',
@@ -94,14 +94,14 @@ describe('resolveWorkbenchSession', () => {
     });
   });
 
-  it('resolves a workspace session to its folder, with no document', async () => {
+  it('resolves a workspace session to its folder, with no design', async () => {
     const { db, secret } = await arrange({ workspace: true });
 
     const resolved = await resolveWorkbenchSession(db.env, secret, NOW);
 
     expect(resolved).toMatchObject({
       ok: true,
-      workbench: { scope: 'workspace', documentId: null, folderId: 'fold1', tabId: null },
+      workbench: { scope: 'workspace', designId: null, folderId: 'fold1', tabId: null },
     });
   });
 

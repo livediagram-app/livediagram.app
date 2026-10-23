@@ -2,7 +2,7 @@
 
 import { useRef, useState, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
 
-// Drag a list row onto another (docs/specs/006-document/layers.md, docs/specs/031-photo/photo-layers.md "The
+// Drag a list row onto another (docs/specs/006-design/layers.md, docs/specs/031-photo/photo-layers.md "The
 // Layers tab"): the canvas's Layers panel and a photo's Layers tab both restack this way.
 //
 // Deliberately POINTER events, not HTML5 drag-and-drop: the layers spec rules the latter out because it is

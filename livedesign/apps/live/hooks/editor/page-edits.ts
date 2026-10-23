@@ -44,7 +44,7 @@ import {
   type WireframeDeviceId,
   type WireframeDevicePatch,
   type WireframeFrameLook,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import type { PageLayoutId } from '@livedesign/templates';
 import { sameFill, withBackgroundPatch } from '@/lib/page-paint';
 import { pageInkMemory, rememberPageInk } from '@/lib/page-ink-memory';
@@ -63,9 +63,9 @@ export type PageEdits = BackgroundCopyEdits & {
   rename: (pageId: string, name: string) => void;
   // Laid over the page's background: `{ fill: undefined }` is back to the paper.
   setBackground: (pageId: string, patch: Partial<PageBackground>) => void;
-  // -1 left, 1 right (past one neighbouring page or document); a no-op at the row's end.
+  // -1 left, 1 right (past one neighbouring page or design); a no-op at the row's end.
   movePage: (pageId: string, by: -1 | 1) => void;
-  // A page's unit (the page, or its whole document) to a place among the units (0 first), its
+  // A page's unit (the page, or its whole design) to a place among the units (0 first), its
   // content with it: a page's label dragged.
   movePageTo: (pageId: string, unitIndex: number) => void;
   // Absent at the page limit. A wireframe page takes the device chosen for it.
@@ -84,7 +84,7 @@ export type PageEdits = BackgroundCopyEdits & {
   duplicatePage?: (pageId: string) => void;
   // Whether a page's copy fits under the page limit.
   canDuplicate: (pageId: string) => boolean;
-  // Deletes a page, or its whole document; the last one empties the tab, which opens Start Making Pages again.
+  // Deletes a page, or its whole design; the last one empties the tab, which opens Start Making Pages again.
   removePage?: (pageId: string) => void;
   // A Fit to Content page split into one page per cluster of its content, nothing scaled
   // (docs/specs/007-editor/pages-mode.md "Split Into Pages").

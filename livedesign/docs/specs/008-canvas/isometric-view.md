@@ -68,7 +68,7 @@ Isometric is **navigation-only**, modelled on the Hand tool:
   Select. **Escape** exits the view to the default editing tool — Select on
   desktop, Hand (pan) on touch viewports where Select isn't the default
   (mirrors how Spotlight reverts to Select).
-- It is **purely a view state**: it changes nothing about the document, never
+- It is **purely a view state**: it changes nothing about the design, never
   persists to the server, and is **not synced** to other participants — each
   viewer tilts independently (same contract as Zen mode, [Zen mode](../007-editor/zen-mode.md)).
 
@@ -113,7 +113,7 @@ Like Pan / Select, repeated re-selection isn't re-tracked.
   angle). The wrapper is made `pointer-events-none` so no element kind can be
   selected or dragged; pan still works because drag-to-pan is handled on
   `<main>` (and `wantsPan` gains the `isometric` case, like `pan` / `laser`).
-  No change to the document data model — every element stays 2D
+  No change to the design data model — every element stays 2D
   (`x, y, width, height`) and the view is a pure projection on top.
 - The tilt **pivots around the content centre**, not the wrapper centre. The
   rotation fragment is wrapped in `translate(pivot) … translate(-pivot)`
@@ -152,7 +152,7 @@ Like Pan / Select, repeated re-selection isn't re-tracked.
 The Export dialog ([Live app](../007-editor/live-app.md) `ExportTabDialog`) carries an **Isometric view**
 iOS-style toggle, **off by default**. When on, the image exports (PNG / SVG /
 PDF) tilt the rendered scene into the same isometric projection as the on-canvas
-view; JSON / Markdown ignore it. The export applies the projection's 2D affine
+view; JSON ignores it. The export applies the projection's 2D affine
 (`isoCanvasMatrix` in `lib/isometric.ts` — an in-plane rotation by the azimuth
 then a `cos(elevation)` vertical squash, the parallel-projection equivalent of
 the on-screen `rotateX·rotateZ`) and sizes the canvas / SVG viewBox to the
@@ -175,4 +175,4 @@ export reads with depth, not as a flat tilted plane.
 
 See also [Canvas and palette](canvas-and-palette.md) (the tool row +
 shortcuts), [Zen mode](../007-editor/zen-mode.md) (view-only, non-synced view state), and
-[Document structure](../006-document/document-structure.md) (the 2D element model this projects).
+[Design structure](../006-design/design-structure.md) (the 2D element model this projects).

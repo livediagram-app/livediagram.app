@@ -9,7 +9,7 @@
 // (a pan, a scroll, a zoom) moves onto it too. Staying on the same page never asks again, so another
 // category chosen meanwhile is kept.
 import { useEffect, useRef } from 'react';
-import { pageKindOf, type LaidOutPage, type PageKind } from '@livedesign/document';
+import { pageKindOf, type LaidOutPage, type PageKind } from '@livedesign/design';
 import { requestPaletteCategory } from '@/lib/palette-category-request';
 import { setCurrentPageKind } from '@/lib/current-page-kind';
 import { PALETTE_KIND_LANDING, paletteKindForPage } from '@/lib/palette-kind';

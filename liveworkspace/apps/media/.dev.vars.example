@@ -1,0 +1,7 @@
+# Local development: `wrangler dev` reads .dev.vars. Give each app's api Worker the same value as
+# MEDIA_KEY.
+ENVIRONMENT=development
+MEDIA_KEY_LIVEDIAGRAM=dev-livediagram-media-key
+MEDIA_KEY_LIVEPLANNER=dev-liveplanner-media-key
+MEDIA_KEY_LIVEDOCUMENTS=dev-livedocuments-media-key
+MEDIA_KEY_LIVEDESIGN=dev-livedesign-media-key

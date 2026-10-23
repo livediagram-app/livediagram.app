@@ -3,16 +3,16 @@
 **Status: built (Viewer, Participant, Editor links); token levels, ownership powers and collaboration keys still
 ahead ([Later](#later)).**
 
-Everyone who reaches a document without owning it, by a share link or an embed, does so at one of three **access
+Everyone who reaches a design without owning it, by a share link or an embed, does so at one of three **access
 levels**: **Viewer**, **Participant** or **Editor**. **Ownership** is not a level: it is a set of powers over the
-document, held apart from editing. The research behind this is in `docs/research/access-levels/`.
+design, held apart from editing. The research behind this is in `docs/research/access-levels/`.
 
 ## Why
 
-Someone gathering feedback on a deck or an infographic has to hand the team an edit link so they can comment, drop
-a sticky beside a slide and fix a typo. An edit link also lets them restyle the pages, move the layout around and
+Someone gathering feedback on a logo or a set of wireframes has to hand the team an edit link so they can comment, drop
+a sticky beside a page and fix a typo. An edit link also lets them restyle the pages, move the layout around and
 delete what others made, and in a busy review somebody does. A view link is no answer either: it cannot comment or
-add a sticky. The Participant level is the middle: take part in the document, never reshape it.
+add a sticky. The Participant level is the middle: take part in the design, never reshape it.
 
 ## The levels
 
@@ -30,17 +30,17 @@ add a sticky. The Participant level is the middle: take part in the document, ne
 
 ## What a Participant changes
 
-A Participant changes the document's **content**, never its **shape**.
+A Participant changes the design's **content**, never its **shape**.
 
-| May                                                                                                 | Never                                                                                                                                                 |
-| --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Add a sticky, a text element or an image                                                            | Add any other element: shapes, connectors, frames, templates, kits, page layouts                                                                      |
-| Write on any element: change its text (a sticky's, a shape's label, a table's cells)                | Change any other field of an element it did not add: size, style, rotation, layer, lock                                                               |
-| Move and resize any sticky or image; recolour any sticky; swap any image's picture                  | Move, resize or restyle anything else, text boxes included; turn (rotate) anything someone else added                                                 |
-| Delete anything it added itself                                                                     | Delete anything someone else added                                                                                                                    |
-| Change anything about what it added (size, style, text), so long as it stays something it could add | Reorder layers; group; lock                                                                                                                           |
-| Undo and redo its own changes (the room puts back any part it may not make)                         | Undo or redo anyone else's                                                                                                                            |
-| Nothing about tabs or pages                                                                         | Add, rename, reorder or delete tabs or pages; change a tab's theme, canvas or finish; change a page's size, background or layout; rename the document |
+| May                                                                                                 | Never                                                                                                                                               |
+| --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Add a sticky, a text element or an image                                                            | Add any other element: shapes, connectors, frames, templates, kits, page layouts                                                                    |
+| Write on any element: change its text (a sticky's, a shape's label, a table's cells)                | Change any other field of an element it did not add: size, style, rotation, layer, lock                                                             |
+| Move and resize any sticky or image; recolour any sticky; swap any image's picture                  | Move, resize or restyle anything else, text boxes included; turn (rotate) anything someone else added                                               |
+| Delete anything it added itself                                                                     | Delete anything someone else added                                                                                                                  |
+| Change anything about what it added (size, style, text), so long as it stays something it could add | Reorder layers; group; lock                                                                                                                         |
+| Undo and redo its own changes (the room puts back any part it may not make)                         | Undo or redo anyone else's                                                                                                                          |
+| Nothing about tabs or pages                                                                         | Add, rename, reorder or delete tabs or pages; change a tab's theme, canvas or finish; change a page's size, background or layout; rename the design |
 
 - **"It added"** means the server recorded the Participant as the element's adder when the element was created.
   An element an Editor added, or one added before this level existed, belongs to nobody a Participant can claim.
@@ -63,9 +63,9 @@ A Participant changes the document's **content**, never its **shape**.
 
 ## Building a new feature
 
-Every feature a shared document can reach states, in its own spec, what an Editor, a Participant and a Viewer may do
+Every feature a shared design can reach states, in its own spec, what an Editor, a Participant and a Viewer may do
 with it, and is gated and tested to match ([Gate a feature by share role](../../instructions/gate-a-feature-by-share-role.md)).
-The defaults: a Viewer only looks; a Participant takes part and adds content but never reshapes the document or
+The defaults: a Viewer only looks; a Participant takes part and adds content but never reshapes the design or
 changes settings; the rest is an Editor's. The role tests (the participant rule's leak test, the editor
 capabilities, the Participant palette, the room) keep a new feature from widening a role by accident.
 
@@ -79,7 +79,7 @@ capabilities, the Participant palette, the room) keep a new feature from widenin
 
 ## Ownership
 
-Ownership is a set of powers, held by the document's **owner**: its creator, or whoever moved it into their own
+Ownership is a set of powers, held by the design's **owner**: its creator, or whoever moved it into their own
 library. Sharing (creating, revoking and rescoping links, the share password) stays with the owner; delete, Trash
 and moves stay with the owner and joined team members. No level grants any of them. The full ownership model is
 [Later](#later).
@@ -90,26 +90,26 @@ and moves stay with the owner and joined team members. No level grants any of th
   **Participant** ("Adds stickies, writes and comments. Can't reshape the pages.") and **Viewer** ("Watches, pans
   and zooms. Can't comment or change a thing."). A pass's header band prints `EDITOR`, `PARTICIPANT` or `VIEWER`, each with a
   glyph and a colour that meets WCAG 2.2 AA against its word ([Live app](../007-editor/live-app.md#share-dialog)).
-- `POST /api/documents/:id/share` takes `role: 'view' | 'participate' | 'edit'`; an omitted role is `edit`, as today.
+- `POST /api/designs/:id/share` takes `role: 'view' | 'participate' | 'edit'`; an omitted role is `edit`, as today.
 - The editor's role pill reads Editing, Participating or Viewing.
-- **A visit is through one link.** Opening a document through a share link records that link with the visit
-  (`shared_with.share_code`). Shared with you, Home and every leg that reads a past visit open the document through
+- **A visit is through one link.** Opening a design through a share link records that link with the visit
+  (`shared_with.share_code`). Shared with you, Home and every leg that reads a past visit open the design through
   that same link only while it is live. **Revoking a link** (or deleting the tab it is scoped to) ends every visit it
-  granted: those people lose the document from Shared with you, and from the copy and activity legs, even when
+  granted: those people lose the design from Shared with you, and from the copy and activity legs, even when
   another link of the same level is still live; a newer link reaches them only if they open it. A visit recorded
   before links were recorded keeps the older rule (the oldest live link of its level and scope) until its next open.
 - **Losing access is explained, never silent.** A session open on a revoked pass leaves for the Explorer, which shows
-  a warning toast ("The link you opened that document with was revoked, so it is no longer open to you."). A session
+  a warning toast ("The link you opened that design with was revoked, so it is no longer open to you."). A session
   ended by an access change (a team removal, a share password, [API](../015-api/api.md) "Access changes end the
   sessions they affect") reloads into the access check, and a refusal then reads **No Longer Shared With You** ("Your
-  access to this document was removed while you had it open. Ask its owner to share it with you again.") instead of
+  access to this design was removed while you had it open. Ask its owner to share it with you again.") instead of
   "doesn't exist or isn't yours". The editor notes the reason in `sessionStorage` just before it goes and the first
   page after takes it once (`apps/live/lib/access-notice.ts`, honoured for a minute).
 - The collaborators list badges each person Editor, Participant or Viewer; "Shared with you" chips read Edit,
   Participate or View.
 - **Embeds look only below Editor**: an embed of a Participant link renders as a Viewer, since an embed has no
   identity screen to put a name on what it adds ([Embeds](embeds.md)).
-- The MCP's `share_document` creates a **Participant** link when no level is named.
+- The MCP's `share_design` creates a **Participant** link when no level is named.
 
 ## Integrity
 
@@ -118,7 +118,7 @@ and moves stay with the owner and joined team members. No level grants any of th
 - **Content goes through the server.** A Participant never saves a whole tab and never relays element changes over
   its socket: it sends them to the server, which applies the rule, stores the result, and relays what it accepted
   to everyone.
-- **The adder is stamped by the server**, never read from the request, from the caller's identity on the document.
+- **The adder is stamped by the server**, never read from the request, from the caller's identity on the design.
   A copy is nobody's addition: duplicating or pasting an element never carries its adder along.
 - **Peers take only what a Participant changed.** The room relays a Participant's update as the fields it changed,
   never the stored element whole, so an Editor's change that has not been saved yet is never undone by it.

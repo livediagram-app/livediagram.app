@@ -5,7 +5,7 @@ import {
   newWireframePage,
   type Element,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { pageEdits } from './page-edits';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

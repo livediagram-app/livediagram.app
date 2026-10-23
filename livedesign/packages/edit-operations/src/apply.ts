@@ -5,7 +5,7 @@
 // clock, no randomness beyond `options.makeId`.
 
 import { CHANGESET_MAX_OPERATIONS, type EditRejection } from '@livedesign/api-schema';
-import { diffToElementOps, invertElementOps, type ElementId, type Tab } from '@livedesign/document';
+import { diffToElementOps, invertElementOps, type ElementId, type Tab } from '@livedesign/design';
 import { finalise } from './finalise';
 import { applyAdd } from './operations/add';
 import { applyAddKind } from './operations/add-kind';

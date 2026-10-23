@@ -23,7 +23,7 @@ import {
 /* ──────────────── Zen, fonts ──────────────── */
 
 // Zen mode: the whole editor (header, palette strip, Explorer, the panel on the right and the tab
-// bar) melts away around the diagram, leaving it, the zoom controls and the way back.
+// bar) melts away around the design, leaving it, the zoom controls and the way back.
 export function ZenModeArt() {
   return (
     <Frame canvas>
@@ -116,10 +116,10 @@ export function ZenModeArt() {
           />
         </g>
 
-        {/* What stays: the diagram. */}
-        <Node x={78} y={39} w={40} h={20} label="Idea" tone="amber" size={7} />
-        <Node x={130} y={39} w={40} h={20} label="Draft" tone="sky" size={7} />
-        <Node x={182} y={39} w={40} h={20} label="Ship" tone="emerald" size={7} />
+        {/* What stays: the design. */}
+        <Node x={78} y={39} w={40} h={20} label="Logo" tone="amber" size={7} />
+        <Node x={130} y={39} w={40} h={20} label="Screens" tone="sky" size={7} />
+        <Node x={182} y={39} w={40} h={20} label="Photo" tone="emerald" size={7} />
         <path className={LINK} d="M118 49 H129" strokeWidth="1.3" markerEnd="url(#fac-zen-head)" />
         <path className={LINK} d="M170 49 H181" strokeWidth="1.3" markerEnd="url(#fac-zen-head)" />
 

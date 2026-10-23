@@ -9,7 +9,7 @@
 
 import {
   completeImageRefsBackfill,
-  imageRefAddStatements,
+  imageRefBackfillAddStatements,
   imageRefIndexPageStatement,
   imageRefsBackfillAdvanceStatement,
   maxTabRowId,
@@ -82,7 +82,7 @@ async function indexCorruptTabs(env: Env, fromRowId: number, toRowId: number): P
     const bad = await nextCorruptTabMentioningImages(env, after, toRowId);
     if (!bad) return;
     const ids = imageRefIdsFromText(bad.data);
-    const stmts = imageRefAddStatements(env, bad.id, ids);
+    const stmts = imageRefBackfillAddStatements(env, bad.id, ids);
     if (stmts.length > 0) await env.DB.batch(stmts);
     console.warn(`image-refs backfill: corrupt tab ${bad.id} scanned as text (${ids.length} ids)`);
     after = bad.rid;

@@ -10,7 +10,7 @@ import {
   newWireframePage,
   pageDeviceClass,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { layoutCatalogueFor, LOGO_LAYOUTS } from '@livedesign/templates';
 import { LayoutRenderThumb, layoutRenderSvg, PAGE_PAPER_DARK } from './layout-render-thumb';
 import { LayoutThumb } from './layout-thumb';

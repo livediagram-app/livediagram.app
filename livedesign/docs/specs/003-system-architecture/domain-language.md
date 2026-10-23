@@ -1,38 +1,45 @@
 # Domain language
 
+## Design
+
+What a person makes is a **design** ([Design](../006-design/design.md)), never a "document": in a file name, an
+identifier, a route, a table, copy or a spec (`packages/design/src/design-naming.test.ts` holds the line). The
+DOM's `document` and the flowchart shape `document` keep their names.
+
 ## Mode, kind and template
 
-Three words describe how a document and its tabs differ. They answer different questions and are never
+Three words describe how a design and its tabs differ. They answer different questions and are never
 interchangeable. These are design decisions, taken before any feature that uses them.
 
-| Term         | Answers                        | Values                            | Where it lives                                |
-| ------------ | ------------------------------ | --------------------------------- | --------------------------------------------- |
-| **mode**     | How is a tab worked on?        | Pages (`EditorMode`)              | Per tab, the same for everyone; `Tab.opensIn` |
-| **kind**     | What is a tab?                 | the general tab (`TabKind`)       | `Tab.kind`                                    |
-| **template** | What was a document made from? | a Pages template (`TemplateKind`) | Captured once, at creation                    |
+| Term         | Answers                      | Values                            | Where it lives                                |
+| ------------ | ---------------------------- | --------------------------------- | --------------------------------------------- |
+| **mode**     | How is a tab worked on?      | Pages (`EditorMode`)              | Per tab, the same for everyone; `Tab.opensIn` |
+| **kind**     | What is a tab?               | the general tab (`TabKind`)       | `Tab.kind`                                    |
+| **template** | What was a design made from? | a Pages template (`TemplateKind`) | Captured once, at creation                    |
 
 ### Mode
 
 - livedesign has one **editor mode**, Pages: every tab is a run of pages on a surround
   ([Pages mode](../007-editor/pages-mode.md)). The mode stays a named value (`EDITOR_MODE_CATALOGUE` in
-  `packages/document/src/editor-mode.ts`) so a stored mode reads through one place.
+  `packages/design/src/editor-mode.ts`) so a stored mode reads through one place.
 - A tab stores the mode it **opens in**. A stored mode from livediagram (Diagram, Draw, Workshop, Plan, or Pages'
   old names Illustrate and Infographic), a `/new?mode=` link or an `opens-in:` filter all read as Pages
   (`parseEditorMode`).
-- A mode is never a type of document or tab.
+- A mode is never a type of design or tab.
 
 ### Kind
 
 - A **tab kind** is what a tab is. livedesign has one kind, the general tab (`'diagram'` in code, kept for stored
   tabs); a kind this build does not have, such as a livediagram Board tab, reads as a general tab (`tabKindOf`).
-- What a **page** is (a design page, a slide, an article page, a logo or a wireframe) is the page's kind, not the
-  tab's ([Pages mode](../007-editor/pages-mode.md)).
+- What a **page** is (a logo, a wireframe or a photo) is the page's kind (`PageKind`), not the tab's
+  ([Pages mode](../007-editor/pages-mode.md)). A tab holds pages of any kind.
 
 ### Template
 
-- A **template** is what a document was made from. It shapes the starting pages of a tab and then has no further
+- A **template** is what a design was made from. It shapes the starting pages of a tab and then has no further
   hold on it.
-- A template is never a kind or a type: a slide deck is a general tab made from the Slide Deck template.
+- A template is never a kind or a type: a logo design is a general tab made from a Logos template, whose pages
+  are logo pages.
 
 ### Using the three together
 
@@ -58,7 +65,7 @@ The words for the elements a page is built from ([The card](../009-elements/card
 
 ## Agents
 
-The words for a program working on documents for a person ([Agents](../024-agents/README.md)).
+The words for a program working on designs for a person ([Agents](../024-agents/README.md)).
 
 | Term               | Means                                                                                                   | Never called                            |
 | ------------------ | ------------------------------------------------------------------------------------------------------- | --------------------------------------- |
@@ -69,7 +76,7 @@ The words for a program working on documents for a person ([Agents](../024-agent
 | **ref**            | The short name a view prints for an element: its id, or its shortest unique id prefix                   | handle (that is a mention), alias       |
 | **selector**       | An expression matching one or more elements (a ref, `type:sticky`, `in:f1`)                             | query, filter (that is the Explorer's)  |
 | **access level**   | What a share link, embed or token admits: Viewer, Participant or Editor (`view`, `participate`, `edit`) | permission, scope (the field is `role`) |
-| **ownership**      | The owner's powers over a document (sharing, delete, move), apart from any level                        | admin, edit level                       |
+| **ownership**      | The owner's powers over a design (sharing, delete, move), apart from any level                          | admin, edit level                       |
 
 - **Participant** is the access level; a person's name, colour and picture (the `participants` table) are their
   **display identity**.
@@ -86,7 +93,7 @@ The words for choosing a colour ([Colour picker](../004-interface-design/colour-
 | **standard colours**     | The ten named colours every picker offers (Ink or White, Grey, Red ... Pink)                      | stock colours, presets              |
 | **tone**                 | Which version of the standard colours a picker offers: `strong` (lines, text) or `soft` (fills)   | shade, variant, a drawing finish    |
 | **theme colours**        | The active theme's own colours, offered on the canvas only                                        | presets                             |
-| **Custom colours**       | The colours picked with + in the document, kept with its tabs                                     | custom swatches, recent colours     |
+| **Custom colours**       | The colours picked with + in the design, kept with its tabs                                       | custom swatches, recent colours     |
 | **custom colour editor** | The square, hue, hex and eyedropper panel that **Add a custom colour** (four coloured dots) opens | colour wheel, native picker         |
 | **skin**                 | Where and how a picker opens: inline, field, swatch button                                        | variant, mode                       |
 
@@ -119,9 +126,9 @@ The words for the editor framed beside code ([Workbench embeds](../013-workspace
 
 ## This Browser
 
-**This Browser** is the one name for a document saved only in this browser ([Offline Mode](../006-document/offline-mode.md)):
+**This Browser** is the one name for a design saved only in this browser ([Offline Mode](../006-design/offline-mode.md)):
 the place it lives (the Explorer's This Browser section, beside My Work and the teams), the pill and badge that
-mark it, and where a new guest's documents start. A document is **in This Browser**; it is never "Local Only",
+mark it, and where a new guest's designs start. A design is **in This Browser**; it is never "Local Only",
 "Local Browser" or "offline" in copy. "Offline Mode" stays the name of the feature, and code may say `offline`.
 
 ## Photo pages
@@ -132,7 +139,7 @@ A **photo page** is a page of kind `photo`, never a mode, a tab kind or a templa
 - A **photo** is a photo page's picture: its pixel size and its layer stack. A **picture** is a file brought in (opened,
   dropped, pasted); an **image** is the canvas's image element. **Edit as Photo** turns an image into a photo page.
 - A **layer** of a photo is one entry of its stack (pixel, adjustment, fill, text or group). The canvas's own
-  [layers](../006-document/layers.md) are its element layers; where both could be meant, say **photo layer**.
+  [layers](../006-design/layers.md) are its element layers; where both could be meant, say **photo layer**.
 - A **selection** on a photo is a soft mask of its pixels, each person's own; selecting elements on the canvas stays a
   **selection of elements**.
 - **Composite** is the layers drawn together; it is never called "flattened" except by **Flatten Image**, which makes
@@ -142,7 +149,7 @@ A **photo page** is a page of kind `photo`, never a mode, a tab kind or a templa
 ## Names in a sentence
 
 Copy that builds a phrase around a name (a page kind, a template, a chart type, an element type in an agent's
-error) takes its article from the name: `withArticle` / `indefiniteArticle` in `packages/document/src/indefinite-article.ts`
-(exported by `@livedesign/document`). A vowel sound takes "an" ("Add an infographic page", "Create an Article"),
+error) takes its article from the name: `withArticle` / `indefiniteArticle` in `packages/design/src/indefinite-article.ts`
+(exported by `@livedesign/design`). A vowel sound takes "an" ("Add an emblem", "Create an Emblem"),
 and a vowel said "you" keeps "a" ("a User Persona"). A fixed "a" before an interpolated name is how "Create a Org
 Chart" once reached livediagram's marketing site.

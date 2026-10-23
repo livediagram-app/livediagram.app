@@ -9,7 +9,7 @@ import {
 } from './fixtures';
 
 // docs/specs/008-canvas/drag-preview.md: while a drag lasts, the moved box and the arrow pinned to it
-// move on screen while nothing is written; the document changes once, on release; Escape puts the box
+// move on screen while nothing is written; the design changes once, on release; Escape puts the box
 // back; one undo takes the drag back. Dark mode; synthesised board.
 
 const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
@@ -49,12 +49,12 @@ async function savedX(page: Page, id: string): Promise<number | undefined> {
   return page.evaluate(
     async ({ base, id, headers }) => {
       const docId = location.pathname.split('/').filter(Boolean).pop()!;
-      const doc = (await (await fetch(`${base}/documents/${docId}`, { headers })).json()) as {
-        document?: { tabs?: { id: string }[] };
+      const doc = (await (await fetch(`${base}/designs/${docId}`, { headers })).json()) as {
+        design?: { tabs?: { id: string }[] };
       };
-      const tabId = doc.document?.tabs?.[0]?.id;
+      const tabId = doc.design?.tabs?.[0]?.id;
       const got = (await (
-        await fetch(`${base}/documents/${docId}/tabs/${tabId}`, { headers })
+        await fetch(`${base}/designs/${docId}/tabs/${tabId}`, { headers })
       ).json()) as { tab?: { elements: { id: string; x: number }[] } };
       return (got.tab?.elements ?? []).find((el) => el.id === id)?.x;
     },

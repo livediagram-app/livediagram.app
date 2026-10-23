@@ -14,7 +14,7 @@ import { useTeamPaneActions } from './useTeamPaneActions';
 import { lastAdminPinner } from './team-last-admin';
 import { TeamFormModal } from '@/components/dialogs/TeamFormModal';
 import { TeamInviteLinkDialog } from '@/components/dialogs/TeamInviteLinkDialog';
-import { TeamSharedDocuments } from '@/components/panels/TeamSharedDocuments';
+import { TeamSharedDesigns } from '@/components/panels/TeamSharedDesigns';
 import { TeamTimeline } from './ScopedTimeline';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { LIST_CARD } from '@/components/primitives/surface-classes';
@@ -37,7 +37,7 @@ export function TeamPane({
   onLeftTeam,
   onLoadResult,
   moveDests,
-  onMoveDocumentTo,
+  onMoveDesignTo,
   lens,
   onLibraryChange,
 }: {
@@ -55,15 +55,15 @@ export function TeamPane({
   // Whether the team loaded (true) or 404'd (false). The pane header
   // uses this to drop the team title on a 404 — there's no team to name.
   onLoadResult?: (found: boolean) => void;
-  // Full move destinations + cross-scope router for the shared-documents
-  // move picker (docs/specs/013-workspace/team-shared-documents.md): passed straight through to TeamSharedDocuments
-  // so a team document can be re-homed to My Work / another team.
-  moveDests?: ComponentProps<typeof TeamSharedDocuments>['moveDests'];
-  onMoveDocumentTo?: ComponentProps<typeof TeamSharedDocuments>['onMoveDocumentTo'];
+  // Full move destinations + cross-scope router for the shared-designs
+  // move picker (docs/specs/013-workspace/team-shared-designs.md): passed straight through to TeamSharedDesigns
+  // so a team design can be re-homed to My Work / another team.
+  moveDests?: ComponentProps<typeof TeamSharedDesigns>['moveDests'];
+  onMoveDesignTo?: ComponentProps<typeof TeamSharedDesigns>['onMoveDesignTo'];
   // The Explorer's lens (docs/specs/013-workspace/explorer-filters.md), passed straight through.
-  lens?: ComponentProps<typeof TeamSharedDocuments>['lens'];
+  lens?: ComponentProps<typeof TeamSharedDesigns>['lens'];
   // Passed straight through: a library this page changed, for the Explorer's own lists.
-  onLibraryChange?: ComponentProps<typeof TeamSharedDocuments>['onLibraryChange'];
+  onLibraryChange?: ComponentProps<typeof TeamSharedDesigns>['onLibraryChange'];
 }) {
   const surface = useExplorerSurface();
   const [detail, setDetail] = useState<TeamDetailResponse | null>(null);
@@ -169,10 +169,10 @@ export function TeamPane({
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
             This team doesn&apos;t exist, or you&apos;re not a member of it. Ask an admin for an
-            invite, or head back to your own documents.
+            invite, or head back to your own designs.
           </p>
           <Button size="md" onClick={onLeftTeam} className="mt-6 shadow-sm">
-            Back to your documents
+            Back to your designs
           </Button>
         </div>
       </div>
@@ -180,7 +180,7 @@ export function TeamPane({
   }
 
   const { team, members, myRole } = detail;
-  // A workspace frame reaches no team administration (WB62): the team's documents only.
+  // A workspace frame reaches no team administration (WB62): the team's designs only.
   const administration = explorerSurfaceFlags(surface).administration;
   const isAdmin = myRole === 'admin' && administration;
   const selfRow = members.find((m) => m.userId !== null && m.userId === clerkUserId) ?? null;
@@ -341,18 +341,18 @@ export function TeamPane({
         ) : null}
       </div>
 
-      {/* ---------- Shared documents (docs/specs/013-workspace/team-shared-documents.md): the team's folder
-          tree + documents, managed by every joined member. ---------- */}
+      {/* ---------- Shared designs (docs/specs/013-workspace/team-shared-designs.md): the team's folder
+          tree + designs, managed by every joined member. ---------- */}
       {/* key on teamId so switching teams remounts the library and
           resets its open-folder `spot` — otherwise a subfolder open in
           team A leaks into team B as a stale, empty folder view. */}
-      <TeamSharedDocuments
+      <TeamSharedDesigns
         key={`library-${teamId}`}
         ownerId={ownerId}
         teamId={teamId}
         teamName={team.name}
         moveDests={moveDests}
-        onMoveDocumentTo={onMoveDocumentTo}
+        onMoveDesignTo={onMoveDesignTo}
         lens={lens}
         onLibraryChange={onLibraryChange}
       />

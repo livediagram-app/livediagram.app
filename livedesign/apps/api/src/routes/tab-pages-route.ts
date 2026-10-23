@@ -1,14 +1,14 @@
-// POST /api/documents/<id>/tabs/<tabId>/pages: an agent's Pages edit, its page changes
+// POST /api/designs/<id>/tabs/<tabId>/pages: an agent's Pages edit, its page changes
 // (docs/specs/024-agents/pages-for-agents.md "The route"), for the CLI, the MCP and
 // any script. Gated like a changeset: anyone who may edit the tab, a read-only token refused.
 import { parsePagesRequest } from '@livedesign/edit-operations';
-import { getDocument } from '../db';
+import { getDesign } from '../db';
 import { afterChangeset } from '../changesets/after';
 import { frontDoorOf } from '../changesets/front-door';
 import { submitPages } from '../changesets/pages';
 import { forbidden, json } from '../responses';
 import { authorOf, refreshAfterWrite } from './changesets';
-import { gateEdit, missingDocument, requireOwner, type RouteContext } from './context';
+import { gateEdit, missingDesign, requireOwner, type RouteContext } from './context';
 
 export async function handleTabPages(
   ctx: RouteContext,
@@ -17,14 +17,14 @@ export async function handleTabPages(
 ): Promise<Response> {
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
-  const document = await getDocument(ctx.env, id);
-  if (!document) return missingDocument(ctx, id);
-  if (!(await gateEdit(ctx, id, document.ownerId, document.teamId, tabId))) return forbidden();
+  const design = await getDesign(ctx.env, id);
+  if (!design) return missingDesign(ctx, id);
+  if (!(await gateEdit(ctx, id, design.ownerId, design.teamId, tabId))) return forbidden();
   const parsed = parsePagesRequest(await ctx.request.json().catch(() => undefined));
   if ('refusal' in parsed) {
     const { code, ...rest } = parsed.refusal;
     console.info('[pages-agent] refused', {
-      documentId: id,
+      designId: id,
       tabId,
       code,
       change: rest.change ?? null,
@@ -34,7 +34,7 @@ export async function handleTabPages(
   const author = await authorOf(ctx, owner);
   const result = await submitPages({
     env: ctx.env,
-    document,
+    design,
     tabId,
     request: parsed,
     author,

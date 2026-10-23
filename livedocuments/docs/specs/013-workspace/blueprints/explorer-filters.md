@@ -341,9 +341,9 @@ The lens on `/explorer`, over `@livedocuments/explorer-lens`. Files:
 | `apps/live/hooks/persistence/useTeamLibrariesSweep.ts` | Team rows carry `source`, which Made by AI reads                                                           |
 | `apps/live/lib/api/documents.ts`                       | `DocumentListItem` carries `source`, optional                                                              |
 | `packages/api-schema/src/telemetry-schema.ts`          | The `Explorer` category                                                                                    |
-| `apps/telemetry/app/catalogue/features.ts`             | `EXPLORER_FILTERS_PICKED`, in the Organisation stack                                                       |
-| `apps/telemetry/app/computed-emitters.ts`              | The facets `Explorer·Selected` sends, read from `LENS_TELEMETRY_TYPES`                                     |
-| `apps/telemetry/app/event-explanations.ts`             | The `Explorer·Selected·<Facet>` sentences                                                                  |
+| `../liveworkspace/apps/site/app/telemetry/livedocuments/catalogue/features.ts`             | `EXPLORER_FILTERS_PICKED`, in the Organisation stack                                                       |
+| `../liveworkspace/apps/site/app/telemetry/livedocuments/computed-emitters.ts`              | The facets `Explorer·Selected` sends, read from `LENS_TELEMETRY_TYPES`                                     |
+| `../liveworkspace/apps/site/app/telemetry/livedocuments/event-explanations.ts`             | The `Explorer·Selected·<Facet>` sentences                                                                  |
 
 ### Views
 
@@ -508,7 +508,7 @@ list=documents|shared')`. Never a word of the lens or an id.
 | The panel's My Work: folders then documents                | `apps/live/components/panels/explorer-tree/PanelExplorerTree.test.tsx` |
 | A move to a root names the space                           | `apps/api/src/routes/document-placement-route.test.ts`                 |
 | Real browser as a guest, desktop and phone                 | `apps/live/e2e/explorer-filters.spec.ts`                               |
-| Real browser signed in: team root, team lens, Space chip   | `apps/live/e2e/clerk-stub/explorer-filters.spec.ts`                    |
+| Real browser signed in: team root, team lens, Space chip   | `apps/live/e2e/signed-in/explorer-filters.spec.ts`                     |
 
 ## Defaults ledger
 

@@ -6,7 +6,7 @@ import {
   STROKE_PRESSURE_MAX_ERROR,
   createFreehand,
   type FreehandElement,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { RECOGNITION_PREVIEW_DWELL_MS } from '@/lib/recognition-preview';
 import type { LiveStroke } from '@/lib/live-stroke';
@@ -21,7 +21,7 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 // inside the canvas's own transformed layer as exactly the stroke it lands as (the same box, svg
 // and filled perfect-freehand outline), so the same layer rasterises both. The landed stroke's
 // packed points are within STROKE_POINT_MAX_ERROR of the box of the raw samples the preview draws
-// (docs/specs/006-document/stroke-points.md): the only difference release makes.
+// (docs/specs/006-design/stroke-points.md): the only difference release makes.
 
 type Pen = Extract<PendingDraw, { variant: 'whiteboard' }>;
 const pen = (over: Partial<Pen> = {}): Pen => ({

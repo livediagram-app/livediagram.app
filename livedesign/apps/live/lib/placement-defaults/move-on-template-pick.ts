@@ -1,16 +1,16 @@
 // Applying a template's default folder when the template is picked after creation
 // (docs/specs/013-workspace/default-folders.md "A template picked after creation"). Loaded only at the pick (the
-// editor imports it dynamically): it reads the template's intent, the document's place, the person's defaults and the
-// folders they can see, then moves the document when a default answers somewhere else. Every failure leaves the
-// document where it is: being unable to apply a default is no reason to disturb the work.
+// editor imports it dynamically): it reads the template's intent, the design's place, the person's defaults and the
+// folders they can see, then moves the design when a default answers somewhere else. Every failure leaves the
+// design where it is: being unable to apply a default is no reason to disturb the work.
 import { creationIntentOf, type PlacementDefaultKey } from '@livedesign/api-schema';
 import { type TemplateKind } from '@livedesign/templates';
 import {
   apiGetTeamLibrary,
   apiListFolders,
   apiListTeams,
-  apiLoadDocument,
-  apiSetDocumentFolder,
+  apiLoadDesign,
+  apiSetDesignFolder,
 } from '@/lib/api-client';
 import { apiListPlacementDefaults } from '@/lib/api/placement-defaults';
 import { debugLog } from '@/lib/debug-log';
@@ -28,7 +28,7 @@ function movedMessage(folderName: string, key: PlacementDefaultKey): string {
 
 export async function moveOnTemplatePick(at: {
   ownerId: string;
-  documentId: string;
+  designId: string;
   // The wizard's handoff, taken at the pick (useTemplatePickMove).
   handoff: TemplatePickHandoff;
   kind: TemplateKind;
@@ -38,9 +38,9 @@ export async function moveOnTemplatePick(at: {
   const { handoff } = at;
   if (handoff.placementChosen) return null;
   try {
-    if (await isOfflineId(at.documentId)) return null;
+    if (await isOfflineId(at.designId)) return null;
     const [doc, defaults, folders, teams] = await Promise.all([
-      apiLoadDocument(at.ownerId, at.documentId),
+      apiLoadDesign(at.ownerId, at.designId),
       apiListPlacementDefaults(at.ownerId),
       apiListFolders(at.ownerId),
       at.signedIn ? apiListTeams(at.ownerId) : Promise.resolve([]),
@@ -67,7 +67,7 @@ export async function moveOnTemplatePick(at: {
       index,
     });
     if (!target) return null;
-    await apiSetDocumentFolder(at.ownerId, at.documentId, target.folder.id, target.folder.teamId);
+    await apiSetDesignFolder(at.ownerId, at.designId, target.folder.id, target.folder.teamId);
     debugLog(`[default-folders] moved on template pick key=${target.key}`);
     return movedMessage(target.folder.name, target.key);
   } catch (err) {

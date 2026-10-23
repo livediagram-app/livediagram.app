@@ -591,7 +591,7 @@ export async function deleteTimelineForOwner(env: Env, ownerId: string): Promise
     .run();
 }
 
-// Guest -> Clerk migration on sign-up (docs/specs/013-workspace/timeline.md §9). Moves the guest's
+// Guest -> account migration on sign-up (docs/specs/013-workspace/timeline.md §9). Moves the guest's
 // feed, the events they authored, and the scope-state row — the last so
 // the backfill doesn't run a second time against the new id and
 // duplicate what just migrated.

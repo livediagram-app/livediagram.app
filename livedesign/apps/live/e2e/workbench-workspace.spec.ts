@@ -6,16 +6,16 @@ import {
   mintWorkspaceTicket,
   newPerson,
   received,
-  seedDocumentAndToken,
+  seedDesignAndToken,
   serveFakeWorkbench,
   signIn,
   type FakeWorkbench,
 } from './workbench-support';
 
 // The workspace scope end to end (docs/specs/013-workspace/blueprints/workbench-embeds.md "Testing"): a fake
-// workbench on http://127.0.0.1:<port> frames the Explorer of the live app on http://localhost:<port>. A document
+// workbench on http://127.0.0.1:<port> frames the Explorer of the live app on http://localhost:<port>. A design
 // pairing does not reach the workspace: the workspace is its own approval, asked in its own words. Then the frame
-// shows the Explorer without the app's surroundings, opens documents in place with Back, makes a new document in
+// shows the Explorer without the app's surroundings, opens designs in place with Back, makes a new design in
 // place, tells the workbench where it is, and moves when the workbench asks. Opt-in like workbench-embed.spec.ts.
 
 let workbench: FakeWorkbench;
@@ -28,11 +28,11 @@ test.afterAll(async () => {
   await workbench.close();
 });
 
-type Place = { type: string; view?: string; documentId?: string | null; [k: string]: unknown };
+type Place = { type: string; view?: string; designId?: string | null; [k: string]: unknown };
 const places = async (page: Parameters<typeof received>[0]) =>
   (await received(page)).filter((m): m is Place => m.type === 'livedesign:place');
 
-test('a workspace frame is its own approval, browses the Explorer, and opens documents in place', async ({
+test('a workspace frame is its own approval, browses the Explorer, and opens designs in place', async ({
   page,
   context,
   request,
@@ -41,10 +41,10 @@ test('a workspace frame is its own approval, browses the Explorer, and opens doc
   test.setTimeout(150_000);
   const person = await newPerson(request, 'Webber');
   await signIn(context, person, new URL(baseURL!).origin);
-  const seeded = await seedDocumentAndToken(request, person);
+  const seeded = await seedDesignAndToken(request, person);
   const folderId = await createFolder(request, person, 'Minigames');
 
-  // A document pairing first.
+  // A design pairing first.
   const unpaired = await mintTicket(request, seeded, workbench.origin);
   expect(unpaired.status).toBe(428);
   await page.goto(unpaired.body.pairingUrl!);
@@ -57,7 +57,7 @@ test('a workspace frame is its own approval, browses the Explorer, and opens doc
   await page.goto(widening.body.pairingUrl!);
   await expect(page.getByRole('heading', { name: 'Allow this workbench?' })).toBeVisible();
   await expect(
-    page.getByText(/and to create, move, share and trash documents and folders in it/),
+    page.getByText(/and to create, move, share and trash designs and folders in it/),
   ).toBeVisible();
   await page.getByRole('button', { name: 'Allow', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Workbench allowed' })).toBeVisible();
@@ -82,7 +82,7 @@ test('a workspace frame is its own approval, browses the Explorer, and opens doc
     .toMatchObject({ scope: 'workspace', role: 'edit' });
   await expect.poll(async () => (await places(page)).at(-1)?.view).toBe('home');
 
-  // A sidebar row moves the frame; a document opens in it, with Back to where it was opened from.
+  // A sidebar row moves the frame; a design opens in it, with Back to where it was opened from.
   await frame.getByText('My Work', { exact: true }).first().click();
   await expect.poll(async () => (await places(page)).at(-1)?.view).toBe('all');
   await frame.getByText('Home screen', { exact: true }).first().click();
@@ -91,9 +91,9 @@ test('a workspace frame is its own approval, browses the Explorer, and opens doc
   await expect
     .poll(async () => (await places(page)).at(-1))
     .toMatchObject({
-      view: 'document',
-      documentId: seeded.documentId,
-      documentName: 'Home screen',
+      view: 'design',
+      designId: seeded.designId,
+      designName: 'Home screen',
       role: 'edit',
     });
   // Back is the first thing at the frame's top left (WB59): level with the palette strip and clear of it, outside
@@ -147,23 +147,23 @@ test('a workspace frame is its own approval, browses the Explorer, and opens doc
   );
   await expect
     .poll(async () => (await places(page)).at(-1))
-    .toMatchObject({ view: 'folder', folderId, folderName: 'Minigames', documentCount: 0 });
+    .toMatchObject({ view: 'folder', folderId, folderName: 'Minigames', designCount: 0 });
 
-  // New document makes the document in place, in the folder shown, and opens it in the frame.
-  await frame.getByRole('link', { name: 'New Document' }).first().click();
+  // New design makes the design in place, in the folder shown, and opens it in the frame.
+  await frame.getByRole('link', { name: 'New Design' }).first().click();
   await frame.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
-  await expect.poll(async () => (await places(page)).at(-1)?.view).toBe('document');
-  const made = (await places(page)).at(-1)!.documentId as string;
-  const doc = await apiJson<{ document: { folderId: string | null } }>(
+  await expect.poll(async () => (await places(page)).at(-1)?.view).toBe('design');
+  const made = (await places(page)).at(-1)!.designId as string;
+  const doc = await apiJson<{ design: { folderId: string | null } }>(
     request,
     'GET',
-    `/documents/${made}`,
+    `/designs/${made}`,
     person.jwt,
   );
   expect(doc.status).toBe(200);
-  expect(doc.body.document.folderId).toBe(folderId);
+  expect(doc.body.design.folderId).toBe(folderId);
   // The frame never left its page: its address is the frame's own.
-  expect(page.frames().some((f) => f.url().includes(`/embed/workbench/document/${made}`))).toBe(
+  expect(page.frames().some((f) => f.url().includes(`/embed/workbench/design/${made}`))).toBe(
     true,
   );
 });
@@ -177,7 +177,7 @@ test('a workspace ticket on a folder starts the frame there', async ({
   test.setTimeout(90_000);
   const person = await newPerson(request, 'Webber');
   await signIn(context, person, new URL(baseURL!).origin);
-  const seeded = await seedDocumentAndToken(request, person);
+  const seeded = await seedDesignAndToken(request, person);
   const folderId = await createFolder(request, person, 'Minigames');
   const unpaired = await mintWorkspaceTicket(request, seeded, workbench.origin, folderId);
   expect(unpaired.status).toBe(428);
@@ -192,8 +192,8 @@ test('a workspace ticket on a folder starts the frame there', async ({
 
   await expect
     .poll(async () => (await places(page)).at(-1), { timeout: 30_000 })
-    .toMatchObject({ view: 'folder', folderId, folderName: 'Minigames', documentCount: 0 });
+    .toMatchObject({ view: 'folder', folderId, folderName: 'Minigames', designCount: 0 });
   await expect(
-    page.frameLocator('#frame').getByRole('link', { name: 'New Document' }).first(),
+    page.frameLocator('#frame').getByRole('link', { name: 'New Design' }).first(),
   ).toBeVisible();
 });

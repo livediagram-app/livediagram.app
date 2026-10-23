@@ -14,7 +14,7 @@ function edits() {
   return (
     db.sql
       .prepare(
-        "SELECT actor_id, json_extract(snapshot, '$.backfilled') AS backfilled FROM timeline_events WHERE event_type = 'document_edited'",
+        "SELECT actor_id, json_extract(snapshot, '$.backfilled') AS backfilled FROM timeline_events WHERE event_type = 'design_edited'",
       )
       .all() as { actor_id: string; backfilled: number | null }[]
   ).map((r) => r.backfilled);
@@ -23,7 +23,7 @@ function edits() {
 function addDoc(savedAt: number) {
   db.sql
     .prepare(
-      `INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
+      `INSERT INTO designs (id, owner_id, name, shareable, saved_at, created_at)
        VALUES ('d1', 'owner', 'Payments', 0, ?, ?)`,
     )
     .run(savedAt, NOW - 30 * DAY);

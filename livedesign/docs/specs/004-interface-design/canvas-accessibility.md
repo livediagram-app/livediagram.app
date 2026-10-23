@@ -22,10 +22,10 @@ delete, undo, label edit via Space) that already work on a selection.
   first) falls through to the browser default, so keyboard focus can always
   leave the canvas. Escape keeps its existing behaviour (clear selection /
   exit transient modes).
-- **F6 moves between regions.** Tab is busy inside the canvas, walking its elements, so on a real document the
+- **F6 moves between regions.** Tab is busy inside the canvas, walking its elements, so on a real design the
   chrome after it in the tab order (the palette strip, the bottom controls, the tab bar) sat behind dozens of
   presses. F6 moves focus to the next region and Shift+F6 to the previous, wrapping round, in screen order:
-  **Header** (the document's title row), **Palette** (the strip), **Canvas**, **Controls** (the
+  **Header** (the design's title row), **Palette** (the strip), **Canvas**, **Controls** (the
   bottom-right cluster: Undo, Tidy Up, Layers, Style, zoom) and **Tabs** (the tab bar). A region lands on its first
   control (the Canvas on the canvas itself); a region not on screen (a viewer has no Palette, Zen hides the chrome)
   is skipped. It works from anywhere on the page but a modal dialog (whose focus trap keeps it) and with focus in a

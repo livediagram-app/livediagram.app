@@ -14,7 +14,7 @@ import {
   type Anchor,
   type Element,
   type ShapeKind,
-} from '@livedesign/document';
+} from '@livedesign/design';
 
 // docs/specs/008-canvas/blueprints/DEFAULTS.md D65.
 export const REFERENCE_SEED = 1;

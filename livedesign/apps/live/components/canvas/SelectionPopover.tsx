@@ -12,7 +12,7 @@ import {
 } from '@/components/canvas/selection-popover-icons';
 import { EditPointsIcon } from '@/components/palette/palette-icons';
 import { Divider, PopoverButton } from '@/components/canvas/SelectionPopoverButton';
-import type { Rect } from '@livedesign/document';
+import type { Rect } from '@livedesign/design';
 
 type SelectionPopoverProps = {
   bounds: Rect;
@@ -40,7 +40,7 @@ type SelectionPopoverProps = {
   // live only in the right-click context menu). Omitted in read-only /
   // view-role mode.
   onDuplicate?: () => void;
-  // Intra-LAYER z-order (docs/specs/006-document/layers.md gained no z-nudge until now): stack this
+  // Intra-LAYER z-order (docs/specs/006-design/layers.md gained no z-nudge until now): stack this
   // element in front of / behind its band-mates WITHOUT moving it between
   // layers, which is what the element menu's Bring to Front does.
   onBringToFront?: () => void;

@@ -51,7 +51,7 @@ vi.mock('./pages-tour-page', () => ({
     dom.page && unseen(dom.page.kind) ? dom.page : null,
 }));
 const ctx = vi.hoisted(() => ({ current: {} as Record<string, unknown> }));
-vi.mock('@/app/document/[id]/EditorContext', () => ({
+vi.mock('@/app/design/[id]/EditorContext', () => ({
   useEditorContext: () => ctx.current,
   useOptionalEditorContext: () => ctx.current,
 }));
@@ -91,7 +91,7 @@ beforeEach(() => {
   track.mockReset();
   dom.hidden = [];
   dom.page = { pageId: 'p1', kind: 'wireframe' };
-  // The + after the last page, read from the document for where the Add step points.
+  // The + after the last page, read from the design for where the Add step points.
   const plus = document.createElement('button');
   plus.dataset.tourId = 'add-page';
   document.body.append(plus);

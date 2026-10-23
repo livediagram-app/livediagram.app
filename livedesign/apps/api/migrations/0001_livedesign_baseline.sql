@@ -144,9 +144,9 @@ CREATE INDEX folders_owner_idx ON folders (owner_id);
 CREATE INDEX folders_parent_idx ON folders (parent_id);
 CREATE INDEX folders_team_idx ON folders (team_id);
 
--- A document (docs/specs/006-document/document.md): its name, owner, place, slide deck and Trash state. Its tabs
--- are rows of `tabs`, joined through `document_tabs`.
-CREATE TABLE documents (
+-- A design (docs/specs/006-design/design.md): its name, owner, place, slide deck and Trash state. Its tabs
+-- are rows of `tabs`, joined through `design_tabs`.
+CREATE TABLE designs (
   id                  TEXT    PRIMARY KEY,
   owner_id            TEXT    NOT NULL,
   name                TEXT    NOT NULL,
@@ -169,13 +169,13 @@ CREATE TABLE documents (
   tab_kind            TEXT,
   join_notified_at    INTEGER
 );
-CREATE INDEX idx_documents_owner_recent ON documents (owner_id, saved_at DESC);
-CREATE INDEX documents_folder_idx ON documents (folder_id);
-CREATE INDEX documents_team_idx ON documents (team_id);
-CREATE INDEX documents_source_idx ON documents (source);
-CREATE INDEX documents_trashed_idx ON documents (trashed_at) WHERE trashed_at IS NOT NULL;
+CREATE INDEX idx_designs_owner_recent ON designs (owner_id, saved_at DESC);
+CREATE INDEX designs_folder_idx ON designs (folder_id);
+CREATE INDEX designs_team_idx ON designs (team_id);
+CREATE INDEX designs_source_idx ON designs (source);
+CREATE INDEX designs_trashed_idx ON designs (trashed_at) WHERE trashed_at IS NOT NULL;
 
--- One tab's body (docs/specs/006-document/per-tab-storage.md): the live app's Tab minus { id, name }, elements and
+-- One tab's body (docs/specs/006-design/per-tab-storage.md): the live app's Tab minus { id, name }, elements and
 -- per-tab settings, as JSON. `rev` advances by exactly one on every body write (the trigger below).
 CREATE TABLE tabs (
   id            TEXT    PRIMARY KEY,
@@ -189,19 +189,19 @@ CREATE TRIGGER tabs_rev_advances BEFORE UPDATE OF data ON tabs
   WHEN NEW.rev IS NOT OLD.rev + 1
   BEGIN SELECT RAISE(ABORT, 'tab_rev_stale'); END;
 
--- Which tabs a document holds, in order, with each tab's folder in the tab bar.
-CREATE TABLE document_tabs (
-  document_id TEXT    NOT NULL,
+-- Which tabs a design holds, in order, with each tab's folder in the tab bar.
+CREATE TABLE design_tabs (
+  design_id TEXT    NOT NULL,
   tab_id      TEXT    NOT NULL,
   order_index INTEGER NOT NULL,
   added_at    INTEGER NOT NULL,
   folder      TEXT,
-  PRIMARY KEY (document_id, tab_id),
-  FOREIGN KEY (document_id) REFERENCES documents (id) ON DELETE CASCADE,
+  PRIMARY KEY (design_id, tab_id),
+  FOREIGN KEY (design_id) REFERENCES designs (id) ON DELETE CASCADE,
   FOREIGN KEY (tab_id) REFERENCES tabs (id) ON DELETE CASCADE
 );
-CREATE INDEX document_tabs_by_document ON document_tabs (document_id, order_index);
-CREATE INDEX document_tabs_by_tab ON document_tabs (tab_id);
+CREATE INDEX design_tabs_by_design ON design_tabs (design_id, order_index);
+CREATE INDEX design_tabs_by_tab ON design_tabs (tab_id);
 
 -- Counts written with each tab body, so listings never read a body.
 CREATE TABLE tab_stats (
@@ -213,25 +213,25 @@ CREATE TABLE tab_stats (
   written_at    INTEGER NOT NULL
 );
 
--- When each person last opened each document (Home's recents, the Explorer's Opened column).
-CREATE TABLE document_opens (
+-- When each person last opened each design (Home's recents, the Explorer's Opened column).
+CREATE TABLE design_opens (
   owner_id       TEXT    NOT NULL,
-  document_id    TEXT    NOT NULL REFERENCES documents (id) ON DELETE CASCADE,
+  design_id    TEXT    NOT NULL REFERENCES designs (id) ON DELETE CASCADE,
   last_opened_at INTEGER NOT NULL,
   last_open_day  TEXT    NOT NULL,
-  PRIMARY KEY (owner_id, document_id)
+  PRIMARY KEY (owner_id, design_id)
 );
-CREATE INDEX document_opens_document_idx ON document_opens (document_id);
-CREATE INDEX document_opens_last_idx ON document_opens (last_opened_at);
+CREATE INDEX design_opens_design_idx ON design_opens (design_id);
+CREATE INDEX design_opens_last_idx ON design_opens (last_opened_at);
 
 CREATE TABLE favourites (
   owner_id    TEXT    NOT NULL,
-  document_id TEXT    NOT NULL,
+  design_id TEXT    NOT NULL,
   created_at  INTEGER NOT NULL,
-  PRIMARY KEY (owner_id, document_id),
-  FOREIGN KEY (document_id) REFERENCES documents (id) ON DELETE CASCADE
+  PRIMARY KEY (owner_id, design_id),
+  FOREIGN KEY (design_id) REFERENCES designs (id) ON DELETE CASCADE
 );
-CREATE INDEX favourites_document_idx ON favourites (document_id);
+CREATE INDEX favourites_design_idx ON favourites (design_id);
 
 CREATE TABLE tags (
   id         TEXT    PRIMARY KEY,
@@ -243,17 +243,17 @@ CREATE TABLE tags (
 );
 CREATE UNIQUE INDEX tags_owner_name ON tags (owner_id, name COLLATE NOCASE);
 
-CREATE TABLE document_tags (
+CREATE TABLE design_tags (
   tag_id      TEXT    NOT NULL,
-  document_id TEXT    NOT NULL,
+  design_id TEXT    NOT NULL,
   created_at  INTEGER NOT NULL,
-  PRIMARY KEY (tag_id, document_id),
+  PRIMARY KEY (tag_id, design_id),
   FOREIGN KEY (tag_id) REFERENCES tags (id) ON DELETE CASCADE,
-  FOREIGN KEY (document_id) REFERENCES documents (id) ON DELETE CASCADE
+  FOREIGN KEY (design_id) REFERENCES designs (id) ON DELETE CASCADE
 );
-CREATE INDEX document_tags_document_idx ON document_tags (document_id);
+CREATE INDEX design_tags_design_idx ON design_tags (design_id);
 
--- The folder a person files each kind of new document into (docs/specs/013-workspace/default-folders.md).
+-- The folder a person files each kind of new design into (docs/specs/013-workspace/default-folders.md).
 CREATE TABLE placement_defaults (
   owner_id    TEXT    NOT NULL,
   default_key TEXT    NOT NULL,
@@ -281,37 +281,37 @@ CREATE INDEX custom_themes_owner_created_idx ON custom_themes (owner_id, created
 -- bit older readers use; `tab_id` scopes it to one tab.
 CREATE TABLE share_links (
   code        TEXT    PRIMARY KEY,
-  document_id TEXT    NOT NULL,
+  design_id TEXT    NOT NULL,
   role        TEXT    NOT NULL CHECK (role IN ('edit', 'view')),
   created_at  INTEGER NOT NULL,
   expiry      TEXT    NULL,
   expires_at  INTEGER NULL,
   tab_id      TEXT    NULL,
   level       TEXT    NULL CHECK (level IS NULL OR level IN ('view', 'participate', 'edit')),
-  FOREIGN KEY (document_id) REFERENCES documents (id) ON DELETE CASCADE
+  FOREIGN KEY (design_id) REFERENCES designs (id) ON DELETE CASCADE
 );
-CREATE INDEX idx_share_links_document_created ON share_links (document_id, created_at);
-CREATE INDEX idx_share_links_document_role_created ON share_links (document_id, role, created_at);
+CREATE INDEX idx_share_links_design_created ON share_links (design_id, created_at);
+CREATE INDEX idx_share_links_design_role_created ON share_links (design_id, role, created_at);
 
--- The documents shared with a person through a link they opened (the Explorer's Shared with me).
+-- The designs shared with a person through a link they opened (the Explorer's Shared with me).
 CREATE TABLE shared_with (
   owner_id    TEXT    NOT NULL,
-  document_id TEXT    NOT NULL,
+  design_id TEXT    NOT NULL,
   role        TEXT    NOT NULL CHECK (role IN ('edit', 'view')),
   last_seen   INTEGER NOT NULL,
   tab_id      TEXT    NULL,
   level       TEXT    NULL CHECK (level IS NULL OR level IN ('view', 'participate', 'edit')),
   share_code  TEXT    NULL,
-  PRIMARY KEY (owner_id, document_id),
-  FOREIGN KEY (document_id) REFERENCES documents (id) ON DELETE CASCADE
+  PRIMARY KEY (owner_id, design_id),
+  FOREIGN KEY (design_id) REFERENCES designs (id) ON DELETE CASCADE
 );
 CREATE INDEX shared_with_by_owner ON shared_with (owner_id, last_seen DESC);
-CREATE INDEX shared_with_document_code_idx ON shared_with (document_id, share_code);
+CREATE INDEX shared_with_design_code_idx ON shared_with (design_id, share_code);
 
 -- Single-use tickets a browser trades for its room WebSocket (docs/specs/015-api/api.md).
 CREATE TABLE ws_tickets (
   ticket            TEXT    PRIMARY KEY,
-  document_id       TEXT    NOT NULL,
+  design_id       TEXT    NOT NULL,
   role              TEXT    NOT NULL,
   expires_at        INTEGER NOT NULL,
   tab_scope         TEXT    NULL,
@@ -383,7 +383,7 @@ CREATE TABLE timeline_events (
   id          TEXT    PRIMARY KEY,
   -- Who did it; NULL for a system event with no person behind it (a token-expiry warning).
   actor_id    TEXT,
-  -- The thing it is about: 'document' | 'team' | 'account'.
+  -- The thing it is about: 'design' | 'team' | 'account'.
   source_type TEXT    NOT NULL,
   source_id   TEXT    NOT NULL,
   event_type  TEXT    NOT NULL,
@@ -429,7 +429,7 @@ CREATE TABLE timeline_scope_state (
 
 CREATE TABLE agent_changesets (
   id           TEXT    PRIMARY KEY,
-  document_id  TEXT    NOT NULL REFERENCES documents (id) ON DELETE CASCADE,
+  design_id  TEXT    NOT NULL REFERENCES designs (id) ON DELETE CASCADE,
   tab_id       TEXT    NOT NULL REFERENCES tabs (id) ON DELETE CASCADE,
   rev          INTEGER NOT NULL,
   base_rev     INTEGER,
@@ -447,7 +447,7 @@ CREATE TABLE agent_changesets (
   created_at   INTEGER NOT NULL
 );
 CREATE UNIQUE INDEX agent_changesets_tab_rev ON agent_changesets (tab_id, rev);
-CREATE INDEX agent_changesets_document_created ON agent_changesets (document_id, created_at);
+CREATE INDEX agent_changesets_design_created ON agent_changesets (design_id, created_at);
 CREATE INDEX agent_changesets_created ON agent_changesets (created_at);
 CREATE INDEX agent_changesets_author_idx ON agent_changesets (author_id);
 
@@ -498,13 +498,13 @@ CREATE TABLE image_refs_backfill (
 INSERT INTO image_refs_backfill (id, created_at, cursor, completed_at)
 VALUES (1, CAST(strftime('%s', 'now') AS INTEGER) * 1000, 0, CAST(strftime('%s', 'now') AS INTEGER) * 1000);
 
--- The images a document may serve beyond its owner's own ("Placement grants"). No foreign keys, like image_refs:
--- the document-removal batch deletes them.
+-- The images a design may serve beyond its owner's own ("Placement grants"). No foreign keys, like image_refs:
+-- the design-removal batch deletes them.
 CREATE TABLE image_grants (
-  document_id TEXT    NOT NULL,
+  design_id TEXT    NOT NULL,
   image_id    TEXT    NOT NULL,
   created_at  INTEGER NOT NULL,
-  PRIMARY KEY (document_id, image_id)
+  PRIMARY KEY (design_id, image_id)
 ) WITHOUT ROWID;
 
 -- ---------------------------------------------------------------------------------------------------------------
@@ -518,7 +518,7 @@ CREATE TABLE workbench_pairings (
   origin     TEXT    NOT NULL,
   name       TEXT    NULL,
   created_at INTEGER NOT NULL,
-  scope      TEXT    NOT NULL DEFAULT 'document' CHECK (scope IN ('document', 'workspace')),
+  scope      TEXT    NOT NULL DEFAULT 'design' CHECK (scope IN ('design', 'workspace')),
   UNIQUE (token_id, origin)
 );
 CREATE INDEX workbench_pairings_owner ON workbench_pairings (owner_id);
@@ -534,7 +534,7 @@ CREATE TABLE workbench_pairing_requests (
   created_at  INTEGER NOT NULL,
   expires_at  INTEGER NOT NULL,
   answered_at INTEGER NULL,
-  scope       TEXT    NOT NULL DEFAULT 'document' CHECK (scope IN ('document', 'workspace'))
+  scope       TEXT    NOT NULL DEFAULT 'design' CHECK (scope IN ('design', 'workspace'))
 );
 CREATE INDEX workbench_pairing_requests_expiry ON workbench_pairing_requests (expires_at);
 CREATE UNIQUE INDEX workbench_pairing_requests_live
@@ -545,8 +545,8 @@ CREATE TABLE workbench_tickets (
   owner_id    TEXT    NOT NULL,
   token_id    TEXT    NOT NULL REFERENCES api_tokens (id) ON DELETE CASCADE,
   pairing_id  TEXT    NOT NULL REFERENCES workbench_pairings (id) ON DELETE CASCADE,
-  scope       TEXT    NOT NULL DEFAULT 'document' CHECK (scope IN ('document', 'workspace')),
-  document_id TEXT    NULL REFERENCES documents (id) ON DELETE CASCADE,
+  scope       TEXT    NOT NULL DEFAULT 'design' CHECK (scope IN ('design', 'workspace')),
+  design_id TEXT    NULL REFERENCES designs (id) ON DELETE CASCADE,
   folder_id   TEXT    NULL,
   tab_id      TEXT    NULL,
   origin      TEXT    NOT NULL,
@@ -554,10 +554,10 @@ CREATE TABLE workbench_tickets (
   created_at  INTEGER NOT NULL,
   expires_at  INTEGER NOT NULL,
   used_at     INTEGER NULL,
-  CHECK ((scope = 'document') = (document_id IS NOT NULL)),
+  CHECK ((scope = 'design') = (design_id IS NOT NULL)),
   CHECK (scope = 'workspace' OR folder_id IS NULL)
 );
-CREATE INDEX workbench_tickets_document_idx ON workbench_tickets (document_id);
+CREATE INDEX workbench_tickets_design_idx ON workbench_tickets (design_id);
 CREATE INDEX workbench_tickets_expiry ON workbench_tickets (expires_at);
 
 CREATE TABLE workbench_sessions (
@@ -566,28 +566,28 @@ CREATE TABLE workbench_sessions (
   owner_id    TEXT    NOT NULL,
   token_id    TEXT    NOT NULL REFERENCES api_tokens (id) ON DELETE CASCADE,
   pairing_id  TEXT    NOT NULL REFERENCES workbench_pairings (id) ON DELETE CASCADE,
-  scope       TEXT    NOT NULL DEFAULT 'document' CHECK (scope IN ('document', 'workspace')),
-  document_id TEXT    NULL REFERENCES documents (id) ON DELETE CASCADE,
+  scope       TEXT    NOT NULL DEFAULT 'design' CHECK (scope IN ('design', 'workspace')),
+  design_id TEXT    NULL REFERENCES designs (id) ON DELETE CASCADE,
   folder_id   TEXT    NULL,
   tab_id      TEXT    NULL,
   origin      TEXT    NOT NULL,
   role        TEXT    NOT NULL CHECK (role IN ('view', 'participate', 'edit')),
   created_at  INTEGER NOT NULL,
   expires_at  INTEGER NOT NULL,
-  CHECK ((scope = 'document') = (document_id IS NOT NULL)),
+  CHECK ((scope = 'design') = (design_id IS NOT NULL)),
   CHECK (scope = 'workspace' OR folder_id IS NULL)
 );
-CREATE INDEX workbench_sessions_document_idx ON workbench_sessions (document_id);
+CREATE INDEX workbench_sessions_design_idx ON workbench_sessions (design_id);
 CREATE INDEX workbench_sessions_expiry ON workbench_sessions (expires_at);
 CREATE INDEX workbench_sessions_pairing ON workbench_sessions (pairing_id);
 
--- The documents a workspace-scoped session has opened rooms on, so revoking the session closes them.
+-- The designs a workspace-scoped session has opened rooms on, so revoking the session closes them.
 CREATE TABLE workbench_session_rooms (
   session_id  TEXT NOT NULL REFERENCES workbench_sessions (id) ON DELETE CASCADE,
-  document_id TEXT NOT NULL REFERENCES documents (id) ON DELETE CASCADE,
-  PRIMARY KEY (session_id, document_id)
+  design_id TEXT NOT NULL REFERENCES designs (id) ON DELETE CASCADE,
+  PRIMARY KEY (session_id, design_id)
 );
-CREATE INDEX workbench_session_rooms_document_idx ON workbench_session_rooms (document_id);
+CREATE INDEX workbench_session_rooms_design_idx ON workbench_session_rooms (design_id);
 
 -- ---------------------------------------------------------------------------------------------------------------
 -- Telemetry (docs/specs/017-telemetry/telemetry.md): anonymous events, never user content.
@@ -620,3 +620,25 @@ CREATE TABLE photo_blob_refs (
 ) WITHOUT ROWID;
 CREATE INDEX photo_blob_refs_blob_idx ON photo_blob_refs (blob_id);
 CREATE INDEX photo_blob_refs_created_idx ON photo_blob_refs (created_at);
+
+-- Images live in liveworkspace's media service (liveworkspace/docs/media.md): the bytes, the gallery, dedupe and
+-- the caps are its, and this api keeps what its own access rules need (src/media.ts).
+--
+-- Whose each image is, as this api names owners (an account id or a guest id), for every image this api has
+-- met: one uploaded here, one listed in someone's gallery here, or one a design asked for. The placement grants
+-- read it. An owner of '' is an id the service doesn't know, so a design placing it doesn't ask again on every
+-- read.
+CREATE TABLE media_images (
+  id       TEXT PRIMARY KEY,
+  owner_id TEXT NOT NULL
+) WITHOUT ROWID;
+
+CREATE INDEX media_images_owner_idx ON media_images (owner_id);
+
+-- The designs whose images changed since the service last heard (liveworkspace/docs/media.md "References"):
+-- written in the same batch as the change, sent by the every-minute cron. `queued_at` moves on each change, so
+-- the cron deletes only the rows it sent.
+CREATE TABLE media_ref_outbox (
+  design_id TEXT PRIMARY KEY,
+  queued_at INTEGER NOT NULL
+) WITHOUT ROWID;

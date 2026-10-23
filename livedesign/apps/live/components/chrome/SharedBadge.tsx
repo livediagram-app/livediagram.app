@@ -6,11 +6,11 @@ import { Chip } from '@livedesign/ui';
 import { SHARE_STATE_META, STATE_CHIP_HEIGHT_PX, StateDot, type ShareState } from './share-states';
 import { VisibilityLegend } from './VisibilityLegend';
 
-// The visibility pill rendered beside the document title, split out of
-// EditorHeader. Share links win: a shared team document reads "Shared" as
+// The visibility pill rendered beside the design title, split out of
+// EditorHeader. Share links win: a shared team design reads "Shared" as
 // normal; "Team" covers the team-but-unshared case where "Private" would be a
-// lie (every joined member can open it); "This Browser" (docs/specs/006-document/offline-mode.md)
-// supersedes "Private" for browser-only documents, matching the Explorer's This Browser pill. Hovering (or focusing) the pill opens a
+// lie (every joined member can open it); "This Browser" (docs/specs/006-design/offline-mode.md)
+// supersedes "Private" for browser-only designs, matching the Explorer's This Browser pill. Hovering (or focusing) the pill opens a
 // legend popover explaining every badge, with the current one highlighted, so
 // the states can be compared in place instead of hunting each hover card.
 
@@ -47,7 +47,7 @@ export function SharedBadge({
   // clip a legend drawn inside it).
   portal?: boolean;
   // Opens Share: the pill becomes a button and its legend offers Change Who Can See This. Absent where the
-  // reader may not change who can see the document.
+  // reader may not change who can see the design.
   onManage?: () => void;
   shareable: boolean;
   team?: boolean;
@@ -114,7 +114,7 @@ export function SharedBadge({
       <span id={descriptionId} className="sr-only">
         {meta.description}
       </span>
-      {/* The badge legend (docs/specs/006-document/offline-mode.md follow-up): every visibility state with its
+      {/* The badge legend (docs/specs/006-design/offline-mode.md follow-up): every visibility state with its
           meaning, current row highlighted. Anchored below the pill; the header
           creates its own stacking context and doesn't clip overflow (the
           AuthControls menu relies on the same), so no portal is needed. */}

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { contextOf, DOC_A, fakeApi, library, tabsOfA } from '../testing/fake-api';
 import {
-  documentCreate,
-  documentRename,
-  documentRestore,
-  documentRm,
-  documentShare,
+  designCreate,
+  designRename,
+  designRestore,
+  designRm,
+  designShare,
   tabAdd,
   tabRename,
   tabRm,
@@ -34,23 +34,23 @@ const written = (text: string) => ({
   lint: null,
 });
 
-describe('document create', () => {
+describe('design create', () => {
   it("creates one tab from a file, a template or nothing, marked as the CLI's", async () => {
     const { seen, route } = recorder((_, __, body) => {
       const b = body as { id: string; name: string; tabs: unknown[] };
-      return Response.json({ document: { id: b.id, name: b.name, tabs: b.tabs } }, { status: 201 });
+      return Response.json({ design: { id: b.id, name: b.name, tabs: b.tabs } }, { status: 201 });
     });
     const files: Record<string, string> = {
       'a.json': '[{"id":"a","type":"text"}]',
       'r.json': '{"replace":{"elements":[],"theme":"ocean"}}',
     };
-    const ctx = contextOf(fakeApi({ '/documents': route }), [], [], {
+    const ctx = contextOf(fakeApi({ '/designs': route }), [], [], {
       readInput: async (p) => files[p]!,
     });
-    const out = await documentCreate.run!(ctx, { name: 'Shop', file: 'a.json' });
-    await documentCreate.run!(ctx, { name: 'Retro', tab: 'Board', template: 'logo-design' });
-    await documentCreate.run!(ctx, { name: 'Blank' });
-    await documentCreate.run!(ctx, { name: 'R', file: 'r.json' });
+    const out = await designCreate.run!(ctx, { name: 'Shop', file: 'a.json' });
+    await designCreate.run!(ctx, { name: 'Retro', tab: 'Board', template: 'logo-design' });
+    await designCreate.run!(ctx, { name: 'Blank' });
+    await designCreate.run!(ctx, { name: 'R', file: 'r.json' });
     expect(seen.map((s) => s.body)).toEqual([
       {
         id: 'new-1',
@@ -77,22 +77,22 @@ describe('document create', () => {
         tabs: [{ id: 'new-8', name: 'R', elements: [] }],
       },
     ]);
-    expect(documentCreate.text!(out)).toEqual([
-      '+ document new-1 "Shop" · 1 tab · https://livedesign.app/document/new-1',
+    expect(designCreate.text!(out)).toEqual([
+      '+ design new-1 "Shop" · 1 tab · https://livedesign.app/design/new-1',
     ]);
-    expect(documentCreate.quiet!(out)).toEqual(['new-1']);
+    expect(designCreate.quiet!(out)).toEqual(['new-1']);
   });
 
   it('says how many tabs landed', async () => {
     const api = fakeApi({
-      '/documents': () =>
+      '/designs': () =>
         Response.json(
-          { document: { id: 'abcdef1234', name: 'X', tabs: [{}, {}] } },
+          { design: { id: 'abcdef1234', name: 'X', tabs: [{}, {}] } },
           { status: 201 },
         ),
     });
-    expect((await documentCreate.run!(contextOf(api), { name: 'X' })).text).toBe(
-      '+ document abcdef12 "X" · 2 tabs · https://livedesign.app/document/abcdef1234',
+    expect((await designCreate.run!(contextOf(api), { name: 'X' })).text).toBe(
+      '+ design abcdef12 "X" · 2 tabs · https://livedesign.app/design/abcdef1234',
     );
   });
 
@@ -100,39 +100,39 @@ describe('document create', () => {
     const files: Record<string, string> = { 'ops.txt': 'rm n1', 'x.json': '{"a":1}' };
     const ctx = contextOf(fakeApi({}), [], [], { readInput: async (p) => files[p]! });
     expect(
-      await documentCreate.run!(ctx, { name: 'S', file: 'ops.txt' }).catch((e: unknown) => e),
+      await designCreate.run!(ctx, { name: 'S', file: 'ops.txt' }).catch((e: unknown) => e),
     ).toMatchObject({
       status: 400,
       message: 'ops.txt holds edit operations, which change a tab that exists',
     });
     expect(
-      await documentCreate.run!(ctx, { name: 'S', file: '-' }).catch((e: unknown) => e),
+      await designCreate.run!(ctx, { name: 'S', file: '-' }).catch((e: unknown) => e),
     ).toBeDefined();
     expect(
-      await documentCreate.run!(ctx, { name: 'S', file: 'x.json' }).catch((e: unknown) => e),
+      await designCreate.run!(ctx, { name: 'S', file: 'x.json' }).catch((e: unknown) => e),
     ).toMatchObject({ code: 'unknown_source', message: "can't tell what x.json holds" });
     expect(
-      await documentCreate.run!(ctx, { name: 'S', file: 'x.json', template: 'logo-design' }).catch(
+      await designCreate.run!(ctx, { name: 'S', file: 'x.json', template: 'logo-design' }).catch(
         (e: unknown) => e,
       ),
     ).toMatchObject({ message: 'give -f or --template, not both' });
     const stdin = contextOf(fakeApi({}), [], [], { readInput: async () => 'rm n1' });
     expect(
-      await documentCreate.run!(stdin, { name: 'S', file: '-' }).catch((e: unknown) => e),
+      await designCreate.run!(stdin, { name: 'S', file: '-' }).catch((e: unknown) => e),
     ).toMatchObject({ message: 'stdin holds edit operations, which change a tab that exists' });
   });
 });
 
-describe('document rename, share, rm and restore', () => {
+describe('design rename, share, rm and restore', () => {
   const docRoutes = (answer: Parameters<typeof recorder>[0]) => {
     const r = recorder(answer);
     return {
       ...r,
       api: fakeApi({
         ...library,
-        [`/documents/${DOC_A}`]: (req: Request) =>
-          req.method === 'GET' ? Response.json(tabsOfA[`/documents/${DOC_A}`]) : r.route(req),
-        [`/documents/${DOC_A}/share`]: r.route,
+        [`/designs/${DOC_A}`]: (req: Request) =>
+          req.method === 'GET' ? Response.json(tabsOfA[`/designs/${DOC_A}`]) : r.route(req),
+        [`/designs/${DOC_A}/share`]: r.route,
         '/trash': r.route,
         [`/trash/${DOC_A}/restore`]: r.route,
         '/trash/cccc0000-0000/restore': r.route,
@@ -140,45 +140,45 @@ describe('document rename, share, rm and restore', () => {
     };
   };
 
-  it('renames through the document route', async () => {
-    const { seen, api } = docRoutes(() => Response.json({ document: { name: 'Sign-in' } }));
-    const out = await documentRename.run!(contextOf(api), { doc: 'Auth flow', name: 'Sign-in' });
+  it('renames through the design route', async () => {
+    const { seen, api } = docRoutes(() => Response.json({ design: { name: 'Sign-in' } }));
+    const out = await designRename.run!(contextOf(api), { doc: 'Auth flow', name: 'Sign-in' });
     expect(seen).toEqual([
-      { method: 'PUT', path: `/documents/${DOC_A}`, body: { name: 'Sign-in' } },
+      { method: 'PUT', path: `/designs/${DOC_A}`, body: { name: 'Sign-in' } },
     ]);
-    expect(documentRename.text!(out)).toEqual(['~ document aaaa1111 "Auth flow"→"Sign-in"']);
-    expect(documentRename.quiet!(out)).toEqual([DOC_A]);
+    expect(designRename.text!(out)).toEqual(['~ design aaaa1111 "Auth flow"→"Sign-in"']);
+    expect(designRename.quiet!(out)).toEqual([DOC_A]);
   });
 
   it("makes a share link on the profile's host", async () => {
     const { seen, api } = docRoutes(() =>
       Response.json({ link: { code: 'abc', role: 'edit', expiresAt: null } }),
     );
-    const out = await documentShare.run!(
+    const out = await designShare.run!(
       contextOf(api),
-      documentShare.input.parse({ doc: 'Auth flow', role: 'edit' }),
+      designShare.input.parse({ doc: 'Auth flow', role: 'edit' }),
     );
     expect(seen[0]).toMatchObject({ method: 'POST', body: { role: 'edit', expiry: 'never' } });
     expect(out).toEqual({
-      text: 'https://livedesign.app/document/shared?s=abc',
-      url: 'https://livedesign.app/document/shared?s=abc',
+      text: 'https://livedesign.app/design/shared?s=abc',
+      url: 'https://livedesign.app/design/shared?s=abc',
       role: 'edit',
       expiresAt: null,
     });
-    expect(documentShare.text!(out)).toEqual([out.url]);
-    expect(documentShare.quiet!(out)).toEqual([out.url]);
+    expect(designShare.text!(out)).toEqual([out.url]);
+    expect(designShare.quiet!(out)).toEqual([out.url]);
   });
 
-  it('moves a document to the Trash, naming how to restore it; a refusal throws', async () => {
+  it('moves a design to the Trash, naming how to restore it; a refusal throws', async () => {
     const { seen, api } = docRoutes(() => undefined);
-    const out = await documentRm.run!(contextOf(api), { doc: 'Auth flow' });
-    expect(seen).toEqual([{ method: 'DELETE', path: `/documents/${DOC_A}`, body: undefined }]);
+    const out = await designRm.run!(contextOf(api), { doc: 'Auth flow' });
+    expect(seen).toEqual([{ method: 'DELETE', path: `/designs/${DOC_A}`, body: undefined }]);
     expect(out.text).toBe(
-      `- document aaaa1111 "Auth flow" · in the Trash for 30 days · restore: livedesign document restore ${DOC_A}`,
+      `- design aaaa1111 "Auth flow" · in the Trash for 30 days · restore: livedesign design restore ${DOC_A}`,
     );
     const refused = docRoutes(() => Response.json({ error: 'forbidden' }, { status: 403 }));
     await expect(
-      documentRm.run!(contextOf(refused.api), { doc: 'Auth flow' }),
+      designRm.run!(contextOf(refused.api), { doc: 'Auth flow' }),
     ).rejects.toMatchObject({ status: 403 });
   });
 
@@ -189,24 +189,24 @@ describe('document rename, share, rm and restore', () => {
       { id: 'cccc0000-0000', name: 'Other', teamId: null, teamName: null },
     ];
     const { seen, api } = docRoutes((path) =>
-      path === '/trash' ? Response.json({ trash }) : Response.json({ document: {} }),
+      path === '/trash' ? Response.json({ trash }) : Response.json({ design: {} }),
     );
-    expect((await documentRestore.run!(contextOf(api), { doc: 'cccc' })).text).toBe(
-      '+ document cccc0000 "Other" restored',
+    expect((await designRestore.run!(contextOf(api), { doc: 'cccc' })).text).toBe(
+      '+ design cccc0000 "Other" restored',
     );
     expect(seen.at(-1)).toMatchObject({ method: 'POST', path: '/trash/cccc0000-0000/restore' });
-    expect((await documentRestore.run!(contextOf(api), { doc: DOC_A })).id).toBe(DOC_A);
+    expect((await designRestore.run!(contextOf(api), { doc: DOC_A })).id).toBe(DOC_A);
     expect(
-      await documentRestore.run!(contextOf(api), { doc: 'old' }).catch((e: unknown) => e),
+      await designRestore.run!(contextOf(api), { doc: 'old' }).catch((e: unknown) => e),
     ).toMatchObject({
       status: 404,
       code: 'ambiguous',
       lines: ['aaaa1  "Old"  personal', 'aaaa9  "Old"  Design'],
     });
     expect(
-      await documentRestore.run!(contextOf(api), { doc: 'nope' }).catch((e: unknown) => e),
+      await designRestore.run!(contextOf(api), { doc: 'nope' }).catch((e: unknown) => e),
     ).toMatchObject({ code: 'not_found', message: 'nothing in the Trash matches "nope"' });
-    expect(documentRestore.quiet!({ id: 'x', text: '' })).toEqual(['x']);
+    expect(designRestore.quiet!({ id: 'x', text: '' })).toEqual(['x']);
   });
 });
 
@@ -222,7 +222,7 @@ describe('tab add, rename and rm', () => {
     const api = fakeApi({
       ...library,
       ...tabsOfA,
-      [`/documents/${DOC_A}/tabs/new-1/changesets`]: route,
+      [`/designs/${DOC_A}/tabs/new-1/changesets`]: route,
     });
     const out = await tabAdd.run!(
       contextOf(api),
@@ -253,8 +253,8 @@ describe('tab add, rename and rm', () => {
     const api = fakeApi({
       ...library,
       ...tabsOfA,
-      [`/documents/${DOC_A}/tabs/tab-one-0000/name`]: route,
-      [`/documents/${DOC_A}/tabs/tab-two-0000`]: route,
+      [`/designs/${DOC_A}/tabs/tab-one-0000/name`]: route,
+      [`/designs/${DOC_A}/tabs/tab-two-0000`]: route,
     });
     const renamed = await tabRename.run!(contextOf(api), {
       doc: 'Auth flow',
@@ -266,8 +266,8 @@ describe('tab add, rename and rm', () => {
     expect(tabRm.text!(removed)).toEqual(['- tab tab-two-0000 "Details"']);
     expect(tabRm.quiet!(removed)).toEqual(['tab-two-0000']);
     expect(seen.map((s) => `${s.method} ${s.path}`)).toEqual([
-      `PUT /documents/${DOC_A}/tabs/tab-one-0000/name`,
-      `DELETE /documents/${DOC_A}/tabs/tab-two-0000`,
+      `PUT /designs/${DOC_A}/tabs/tab-one-0000/name`,
+      `DELETE /designs/${DOC_A}/tabs/tab-two-0000`,
     ]);
   });
 });

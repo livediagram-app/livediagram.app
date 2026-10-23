@@ -3,7 +3,7 @@
 // @livedesign/api-schema, where the changeset response carries them.
 
 import type { EditRejection, EditWarning, JsonValue, ResultLine } from '@livedesign/api-schema';
-import type { ElementId, ElementOp, Finish, Tab, ThemeDefinition } from '@livedesign/document';
+import type { ElementId, ElementOp, Finish, Tab, ThemeDefinition } from '@livedesign/design';
 import type { PlacementRelation } from './vocabulary';
 
 // A ref, a quoted label, or `key:value` terms joined by spaces, all of which must match.
@@ -159,7 +159,7 @@ export type ResultFooter =
       rev: number;
       rebasedOver: number;
       changesetId: string;
-      // The document the changeset belongs to: the revert command names it (CLI26).
-      documentId: string;
+      // The design the changeset belongs to: the revert command names it (CLI26).
+      designId: string;
       lint: string;
     };

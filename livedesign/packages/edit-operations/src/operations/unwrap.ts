@@ -2,7 +2,7 @@
 // stack goes; what it held stays where it is; arrows pinned to it go with it, as `rm` removes them.
 
 import type { EditRejection } from '@livedesign/api-schema';
-import { isContainer } from '@livedesign/document';
+import { isContainer } from '@livedesign/design';
 import { resolveOne } from '../selectors';
 import { refsOf, type EditState } from '../state';
 import type { UnwrapOperation } from '../types';

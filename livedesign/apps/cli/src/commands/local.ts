@@ -78,9 +78,9 @@ export async function callApi(
   if (!API_METHODS.includes(method))
     throw usage(`${input.method} is not one of ${API_METHODS.join(', ')}`);
   if (/^[a-z]+:/i.test(input.path) || input.path.startsWith('//'))
-    throw usage(`${input.path} is a URL; give a path under /api, such as /documents`);
+    throw usage(`${input.path} is a URL; give a path under /api, such as /designs`);
   const path = `/${input.path.replace(/^\/+/, '').replace(/^api\//, '')}`;
-  if (method === 'PUT' && /^\/documents\/[^/]*\/tabs\/[^/]*\/?$/.test(path.split('?')[0]!))
+  if (method === 'PUT' && /^\/designs\/[^/]*\/tabs\/[^/]*\/?$/.test(path.split('?')[0]!))
     throw usage(
       'the CLI never saves a whole tab; change a tab with a changeset',
       'livedesign guide edit',

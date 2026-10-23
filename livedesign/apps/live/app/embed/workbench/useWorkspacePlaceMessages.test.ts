@@ -10,12 +10,12 @@ describe('useWorkspacePlaceMessages', () => {
   it('sends a place once per change of its fields', () => {
     const port: WorkbenchPort = { origin: 'o', send: vi.fn(), subscribe: vi.fn(), close: vi.fn() };
     const { result } = renderHook(() => useWorkspacePlaceMessages(port));
-    const folder = (documentCount: number) =>
+    const folder = (designCount: number) =>
       explorerPlaceFields({
         view: 'folder',
         folderId: 'f1',
         folderName: 'Minigames',
-        documentCount,
+        designCount,
         role: 'edit',
       });
 
@@ -28,8 +28,8 @@ describe('useWorkspacePlaceMessages', () => {
       { type: 'livedesign:place', v: 1, ...folder(1) },
     ]);
     expect(folder(0)).toMatchObject({
-      documentId: null,
-      documentName: null,
+      designId: null,
+      designName: null,
       tabId: null,
       tabName: null,
     });

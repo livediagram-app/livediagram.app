@@ -14,7 +14,7 @@ Scope, by file (all under `packages/explorer-lens/src/`):
 | `packages/explorer-lens/src/types.ts`       | `Lens`, `LensTerm`, `LensIssue`, `WordProblem`, `LensContext`, `LensSubject`, `LensSuggestion`            |
 | `packages/explorer-lens/src/parse.ts`       | `parseLens`, `readWord`, `orderValues`, `tokenKeyOf`, `normaliseInput`, `emptyLens`                       |
 | `packages/explorer-lens/src/serialise.ts`   | `serialiseLens`, `tokenOf`, `setDimension`, `setDimensionValues`, `toggleDimensionValue`, `removeTerm`    |
-| `packages/explorer-lens/src/match.ts`       | `documentSubject`, `sharedSubject`, `compileLens`, `matchesLens`, `applyLens`, `editedCutoff`, `foldText` |
+| `packages/explorer-lens/src/match.ts`       | `designSubject`, `sharedSubject`, `compileLens`, `matchesLens`, `applyLens`, `editedCutoff`, `foldText` |
 | `packages/explorer-lens/src/suggest.ts`     | `suggestTokens`, `acceptSuggestion`                                                                       |
 | `packages/explorer-lens/src/view-models.ts` | `lensChips`, `lensPills`, `issueMessage`, `announceResults`                                               |
 | `packages/explorer-lens/src/labels.ts`      | `valueLabel`, `valueOptions`: one source of labels for chips, pills and suggestions                       |
@@ -108,7 +108,7 @@ except the cut tail, which is always reported; repeating a dimension and listing
 | `12m`       | `now` with its local calendar year moved back one (`D44`) |
 | `this-year` | Local midnight on 1 January of `now`'s year               |
 
-`documentSubject(summary, viewerId)`: `space` is `team:<teamId>` when the summary has a team, else `mine` (a document in
+`designSubject(summary, viewerId)`: `space` is `team:<teamId>` when the summary has a team, else `mine` (a design in
 this browser included, as the spec decides); `people` is `me` when `ownerId === viewerId`; `madeByAi` is
 `isMadeByAiSource(source)` (`ai` or `mcp`, never `cli`); `opensIn` is the summary's value
 when in its list, else `null`. `sharedSubject(item)`:
@@ -176,7 +176,7 @@ removeTerm(input: string, term: { start: number; end: number }): string;
 applyLens<T extends LensSubject>(subjects: readonly T[], lens: Lens, now: number): T[];
 matchesLens(subject: LensSubject, lens: Lens, now: number): boolean;
 compileLens(lens: Lens, now: number): (subject: LensSubject) => boolean;
-documentSubject(summary: LensDocumentSummary, viewerId: string): LensSubject;
+designSubject(summary: LensDesignSummary, viewerId: string): LensSubject;
 sharedSubject(item: { name: string; savedAt: number }): LensSubject;
 suggestTokens(input: string, caret: number, context: SuggestContext): LensSuggestion[];
 acceptSuggestion(input: string, suggestion: LensSuggestion): { input: string; caret: number };
@@ -196,8 +196,8 @@ dimensionLabel, name, matchesNothing }`. `name` is the option's accessible name:
 "<label>, <dimension label>" for a value, plus ", no matches" when marked. `id` is `dimension:<key>` or `value:<token>`, unique within one list, for
 `aria-activedescendant`. A `caret` outside `[0, input.length]` is clamped (`D51`).
 
-`applyLens` takes subjects so one rule serves documents, shared rows and, later, Timeline events: the caller maps each
-row with `documentSubject` / `sharedSubject` and keeps its row on the subject (`T extends LensSubject`).
+`applyLens` takes subjects so one rule serves designs, shared rows and, later, Timeline events: the caller maps each
+row with `designSubject` / `sharedSubject` and keeps its row on the subject (`T extends LensSubject`).
 
 ## Data and persistence
 
@@ -250,8 +250,8 @@ row with `documentSubject` / `sharedSubject` and keeps its row on the subject (`
 
 Copy is the spec's, in one place (`view-models.ts`, labels in `labels.ts`):
 
-- Value labels, dimension labels (a team the reader is not in reads "Unknown team"), the issue messages, and the announcement ("40 documents", "1 document",
-  "12 of 40 documents", "No documents match").
+- Value labels, dimension labels (a team the reader is not in reads "Unknown team"), the issue messages, and the announcement ("40 designs", "1 design",
+  "12 of 40 designs", "No designs match").
 - A pill reads `<Dimension>: <label>, <label>…`, except Made by AI, which reads "Made by AI". A muted pill's note is
   its issue message.
 - Chips are `multiple` (a multi-select listbox) except Made by AI, a `toggle` named "Made by AI". A chip is named
@@ -326,7 +326,7 @@ The lens on `/explorer`, over `@livedesign/explorer-lens`. Files:
 | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
 | `apps/live/app/explorer/lens/lens-views.ts`            | `lensViewOf`, `SEARCH_RESULTS_PATH`, `lensHref`, `carriedHref`                                             |
 | `apps/live/app/explorer/lens/field-model.ts`           | `splitField`, `composeField`, `settleField`, `writeDraft`, `removePill`, `chooseChipValue`                 |
-| `apps/live/app/explorer/lens/pane-lens.ts`             | `lensSubjectOf`, `isLensSet`, `narrowRows`, `scopeDocuments`, `RECENT_LIMIT`, `LibraryLens`                |
+| `apps/live/app/explorer/lens/pane-lens.ts`             | `lensSubjectOf`, `isLensSet`, `narrowRows`, `scopeDesigns`, `RECENT_LIMIT`, `LibraryLens`                |
 | `apps/live/app/explorer/lens/lens-telemetry.ts`        | `trackLensChange`: `Explorer / Selected / <Facet>` per gained facet                                        |
 | `apps/live/app/explorer/lens/useExplorerLens.ts`       | `useExplorerLens`, `ExplorerLens`: the string, the caret, the URL kept in step, Search results             |
 | `apps/live/app/explorer/lens/LensField.tsx`            | `LensField`, `FIELD_PLACEHOLDER`: the header field, its pills and its suggestion listbox                   |
@@ -341,9 +341,9 @@ The lens on `/explorer`, over `@livedesign/explorer-lens`. Files:
 | `apps/live/app/explorer/useExplorerState.ts`           | Composes `useExplorerLens`; carries the lens in `go`; `failedReads`                                        |
 | `apps/live/app/explorer/ExplorerShell.tsx`             | Mounts `LensField` in the header and `LensAnnouncer` beside it                                             |
 | `apps/live/app/explorer/ExplorerPane.tsx`              | `PaneLensBar` under the header; Failed, Empty, Filtered empty, the list; the folder chips                  |
-| `apps/live/components/panels/TeamSharedDocuments.tsx`  | Narrows the team library it reads (`LibraryLens`), its own announcer and filtered-empty state              |
+| `apps/live/components/panels/TeamSharedDesigns.tsx`  | Narrows the team library it reads (`LibraryLens`), its own announcer and filtered-empty state              |
 | `apps/live/hooks/persistence/useTeamLibrariesSweep.ts` | Team rows carry `source`, `opensIn`, `tabKind`                                                             |
-| `apps/live/lib/api/documents.ts`                       | `DocumentListItem` carries the recorded intent, optional                                                   |
+| `apps/live/lib/api/designs.ts`                       | `DesignListItem` carries the recorded intent, optional                                                   |
 | `packages/api-schema/src/telemetry-schema.ts`          | The `Explorer` category                                                                                    |
 | `apps/telemetry/app/catalogue/features.ts`             | `EXPLORER_FILTERS_PICKED`, in the Organisation stack                                                       |
 | `apps/telemetry/app/computed-emitters.ts`              | The facets `Explorer·Selected` sends, read from `LENS_TELEMETRY_TYPES`                                     |
@@ -356,10 +356,10 @@ The lens on `/explorer`, over `@livedesign/explorer-lens`. Files:
 
 | View         | Base list (before the lens)                                                                                                                            |
 | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `all`        | Unset: root folders, then root documents (`folderId === null`, not This Browser). Set: every own document in the tree, This Browser root ones excepted |
-| `folder`     | Unset: subfolders and documents in the folder. Set: every document in the folder's subtree (`scopeDocuments`)                                          |
-| `team`       | The team library at the open spot; set: every document in the spot's subtree                                                                           |
-| `offline`    | Every document in This Browser                                                                                                                         |
+| `all`        | Unset: root folders, then root designs (`folderId === null`, not This Browser). Set: every own design in the tree, This Browser root ones excepted |
+| `folder`     | Unset: subfolders and designs in the folder. Set: every design in the folder's subtree (`scopeDesigns`)                                          |
+| `team`       | The team library at the open spot; set: every design in the spot's subtree                                                                           |
+| `offline`    | Every design in This Browser                                                                                                                         |
 | `recent`     | Own, team and shared rows not hidden from Recent, newest first; the first `RECENT_LIMIT` (12) after the lens                                           |
 | `favourites` | Starred own and team rows                                                                                                                              |
 | `search`     | Own, team and shared rows, newest first, no cap                                                                                                        |
@@ -367,8 +367,8 @@ The lens on `/explorer`, over `@livedesign/explorer-lens`. Files:
 
 The subjects suggestions mark against are the rows a set lens would reach: a scoped view's whole scope, the team
 sweep's rows of the open team, and on a view with no lens the `search` list. `lensSubjectOf(row, viewerId)`: a
-`shared` row is `sharedSubject`; a team row (`team` or `teamId`) is `documentSubject` with its team id and owner; every
-other row, This Browser included, is `documentSubject` with `teamId: null` and the reader as owner. Folder rows are hidden
+`shared` row is `sharedSubject`; a team row (`team` or `teamId`) is `designSubject` with its team id and owner; every
+other row, This Browser included, is `designSubject` with `teamId: null` and the reader as owner. Folder rows are hidden
 while the lens is set (`D83`).
 
 ### Behaviour and state
@@ -400,7 +400,7 @@ draftCaret)` is the tokens, a space, then the draft. Every draft edit runs `writ
 7. **Chips.** `chooseChipValue(input, dimension, value, context)`: a value toggles in or out of its dimension's pill; the
    Any option (`null`) clears it; the Made by AI toggle sends `ai` or `null`. A new dimension's token is written after
    the tokens already there (`setDimensionValues`).
-8. **States.** Per document view, in order: loading skeleton; **Failed** when its read failed (`failedReads.documents`,
+8. **States.** Per design view, in order: loading skeleton; **Failed** when its read failed (`failedReads.designs`,
    or `failedReads.shared` for Shared With Me); **Empty** when the view holds nothing at all; **Filtered empty** when
    the lens is set and nothing matches (the chip row then leaves the issue lines to it); else the list.
 9. **Announce.** One `LensAnnouncer` lives in the shell beside the field, so it survives a navigation: it waits
@@ -410,8 +410,8 @@ draftCaret)` is the tokens, a space, then the draft. Every draft edit runs `writ
 10. **Retired views.** `selectedFromRoute` reads `/explorer/unsorted` and `/explorer/dynamic` as `all`, and
     `/explorer/generated` as `search` (and `/explorer/activity` as `inbox`, [Explorer structure](explorer-structure.md));
     their pages `router.replace` to `RETIRED_VIEW_TARGETS[from]`.
-11. **Reads.** A failed personal read sets `failedReads.documents` and logs; a failed shared read sets
-    `failedReads.shared`, logs, and when the personal read succeeded toasts "Couldn’t load the documents shared with
+11. **Reads.** A failed personal read sets `failedReads.designs` and logs; a failed shared read sets
+    `failedReads.shared`, logs, and when the personal read succeeded toasts "Couldn’t load the designs shared with
     you. Try again in a moment." (`D92`). Try again re-reads both.
 
 ### Interfaces
@@ -431,7 +431,7 @@ chooseChipValue(input: string, dimension: LensDimension, value: string | null, c
 lensSubjectOf(row: LensRow, viewerId: string): LensSubject;
 isLensSet(lens: Lens): boolean;
 narrowRows<R extends LensRow>(rows: readonly R[], lens: Lens, viewerId: string, now: number): R[];
-scopeDocuments<D>(folderId: string | null, childrenByParent, documentsByFolder): D[]; // newest first
+scopeDesigns<D>(folderId: string | null, childrenByParent, designsByFolder): D[]; // newest first
 trackLensChange(previous: Lens, next: Lens): void;
 type ExplorerLens = {
   view: LensView | null; context: LensContext; input: string; caret: number | null; parsed: ParsedLens; now: number;
@@ -461,26 +461,26 @@ type LibraryLens = { active: boolean; input: string; issues: readonly LensIssue[
 - **Header:** `flex-wrap`; from `sm` one `h-14` row (brand, field, account); below it the field's own row,
   `w-full pb-2 pr-4`.
 - **Field:** a rounded `h-9` box, `w-64` from `sm`, `w-[22rem]` from `lg`; a magnifier, the pills (`rounded-full`, 11px,
-  brand tone; a muted one slate with a dashed border), the input (placeholder "Search or filter documents"), the
+  brand tone; a muted one slate with a dashed border), the input (placeholder "Search or filter designs"), the
   listbox under the field (`max-h-72`, each option its label then the dimension in muted text, "No matches" in amber
   when marked). Pills and text scroll sideways inside the one-line box (`D50`).
 - **Chip row:** under the pane header, `flex` with sideways scroll; chips are `h-8` rounded buttons with a caret, a set
   chip in the brand tone showing its values; the listbox a portal popover under the chip with a check per chosen
   option. Clear is a text button at the end, `invisible` while the lens is empty (`D85`).
 - **Issues:** one `text-xs` amber line each under the row, the message from `issueMessage`.
-- **Filtered empty:** `EmptyState`, title "No documents match these filters", description "Change or clear the
+- **Filtered empty:** `EmptyState`, title "No designs match these filters", description "Change or clear the
   filters to see more.", the issue lines, and a Clear Filters button. **Failed:** `EmptyState`, title "Couldn’t load
-  documents", description "Check your connection, then try again.", a Try again button.
+  designs", description "Check your connection, then try again.", a Try again button.
 - **Made by AI badge:** `MadeByAiPill`, sparkle and "Made by AI", violet tone (`text-violet-800` on `bg-violet-50`,
   `ring-violet-600`; dark `text-violet-200` on `violet-500/15`, `ring-violet-400`), beside the name on rows, in the
-  card's meta row, and on the floating panel's document rows as the sparkle alone with the words for assistive
+  card's meta row, and on the floating panel's design rows as the sparkle alone with the words for assistive
   technology (`D89`).
 - **Page header:** wraps on a phone, so the actions take a second line instead of squeezing the title to nothing.
 
 ### Accessibility
 
 The field is `role="combobox"` on the input, `aria-autocomplete="list"`, `aria-expanded`, `aria-controls` the
-`listbox`, `aria-activedescendant` the active option id, `aria-label="Filter documents"`; each option is named by its
+`listbox`, `aria-activedescendant` the active option id, `aria-label="Filter designs"`; each option is named by its
 suggestion `name`. Pills: "Filter <label>" (plus ", not applied: <message>" for a muted one) in text, with a remove
 `button` named `pill.removeName` (24 by 24 px). Chips: a `group` named "Filters"; each multiple chip a `button` with
 `aria-haspopup="listbox"`, `aria-expanded`, named by `chip.name`; its listbox `aria-multiselectable="true"`, focused
@@ -494,7 +494,7 @@ rings `ring-2` / `outline-2` in brand. No animation beyond the house `motion-saf
 change, `[explorer-lens] url replaced view=<aggregate|scoped> empty=<bool>`, `[explorer-lens] url adopted empty=<bool>`,
 `[explorer-lens] carried from=<view|none> to=<view|none> kept=<bool>`, `[explorer-lens] search opened from=<kind>`,
 `[explorer] retired view replaced from=<unsorted|dynamic|generated>`; `console.warn('[explorer] list read failed
-list=documents|shared')`. Never a word of the lens or an id.
+list=designs|shared')`. Never a word of the lens or an id.
 
 ### Testing
 
@@ -509,8 +509,8 @@ list=documents|shared')`. Never a word of the lens or an id.
 | States copy and the announcer's settle                     | `apps/live/app/explorer/lens/LensStates.test.tsx`                      |
 | The Made by AI badge                                       | `apps/live/components/primitives/MadeByAiPill.test.tsx`                |
 | Routes, retired views, titles                              | `apps/live/app/explorer/routes.test.ts`, `view-titles.test.ts`         |
-| The panel's My Work: folders then documents                | `apps/live/components/panels/explorer-tree/PanelExplorerTree.test.tsx` |
-| A move to a root names the space                           | `apps/api/src/routes/document-placement-route.test.ts`                 |
+| The panel's My Work: folders then designs                | `apps/live/components/panels/explorer-tree/PanelExplorerTree.test.tsx` |
+| A move to a root names the space                           | `apps/api/src/routes/design-placement-route.test.ts`                 |
 | Real browser as a guest, desktop and phone                 | `apps/live/e2e/explorer-filters.spec.ts`                               |
 | Real browser signed in: team root, team lens, Space chip   | `apps/live/e2e/clerk-stub/explorer-filters.spec.ts`                    |
 

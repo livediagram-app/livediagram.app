@@ -56,7 +56,7 @@ describe('parseWorkbenchOrigin', () => {
 describe('isWorkbenchSessionFormat', () => {
   it('tells an lvw_ session from a token and from a malformed one', () => {
     expect(isWorkbenchSessionFormat(`${WORKBENCH_SESSION_PREFIX}${'a'.repeat(43)}`)).toBe(true);
-    expect(isWorkbenchSessionFormat(`lvd_${'a'.repeat(43)}`)).toBe(false);
+    expect(isWorkbenchSessionFormat(`lwt_${'a'.repeat(43)}`)).toBe(false);
     expect(isWorkbenchSessionFormat(`${WORKBENCH_SESSION_PREFIX}${'a'.repeat(42)}`)).toBe(false);
     expect(isWorkbenchSessionFormat(`${WORKBENCH_SESSION_PREFIX}${'a'.repeat(42)}!`)).toBe(false);
   });
@@ -106,7 +106,6 @@ describe('workbenchRouteVerdict', () => {
     ['GET', 'documents/doc1/changesets/cs_1'],
     ['GET', 'documents/doc1/comments'],
     ['GET', 'documents/doc1/tabs/t1/render.svg'],
-    ['GET', 'documents/doc1/tabs/t1/comment-pictures'],
     ['POST', 'documents/doc1/tabs/t1/comments'],
     ['POST', 'documents/doc1/tabs/t1/comments/c1/reply'],
     ['POST', 'documents/doc1/tabs/t1/comments/c1/resolve'],

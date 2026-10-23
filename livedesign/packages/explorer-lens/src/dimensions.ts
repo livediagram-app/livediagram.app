@@ -1,13 +1,13 @@
 // The lens's catalogue (docs/specs/013-workspace/explorer-filters.md "Dimensions"): every
 // dimension, its closed values, their British English labels and the closed telemetry types.
 
-import { EDITOR_MODES, type EditorMode } from '@livedesign/document';
+import { EDITOR_MODES, type EditorMode } from '@livedesign/design';
 
 /** The dimensions in canonical order: the order tokens are written in and chips are shown in. */
 export const LENS_DIMENSIONS = ['opens-in', 'made-by', 'edited', 'people', 'space'] as const;
 export type LensDimension = (typeof LENS_DIMENSIONS)[number];
 
-/** The editor modes a document can be created to open in: the one list of modes. */
+/** The editor modes a design can be created to open in: the one list of modes. */
 export const OPENS_IN_VALUES = EDITOR_MODES;
 export type OpensInValue = EditorMode;
 

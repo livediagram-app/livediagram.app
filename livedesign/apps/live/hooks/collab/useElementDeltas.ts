@@ -1,7 +1,7 @@
 import { useCallback, type RefObject } from 'react';
-import type { ElementDelta, Tab } from '@livedesign/document';
+import type { ElementDelta, Tab } from '@livedesign/design';
 import type { connectRoom } from '@/lib/api-client';
-import { applyDeltaToTabs } from '@/app/document/[id]/room-op-apply';
+import { applyDeltaToTabs } from '@/app/design/[id]/room-op-apply';
 
 // Send ONE checklist tick / comment change (docs/specs/012-collaboration/collab-race-hardening.md).
 //

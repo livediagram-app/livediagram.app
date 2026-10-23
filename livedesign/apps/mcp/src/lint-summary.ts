@@ -23,7 +23,7 @@ export function lintTextOf(report: LintReport | null): string {
 export async function lintReportsOf(
   env: Env,
   token: string,
-  documentId: string,
+  designId: string,
   tabIds: readonly string[],
 ): Promise<(LintReport | null)[]> {
   return Promise.all(
@@ -32,7 +32,7 @@ export async function lintReportsOf(
         const report = await apiJson<LintReport>(
           env,
           token,
-          `/documents/${encodeURIComponent(documentId)}/tabs/${encodeURIComponent(tabId)}?view=lint&json=1`,
+          `/designs/${encodeURIComponent(designId)}/tabs/${encodeURIComponent(tabId)}?view=lint&json=1`,
         );
         return report;
       } catch (err) {

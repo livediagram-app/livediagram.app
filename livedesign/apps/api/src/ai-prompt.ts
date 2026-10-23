@@ -8,7 +8,7 @@ import type { AiMode } from '@livedesign/api-schema';
 
 // ---------------------------------------------------------------------------
 // Schema — single source of truth for what the model can produce.
-// Keep ShapeKind in sync with packages/document/src/index.ts.
+// Keep ShapeKind in sync with packages/design/src/index.ts.
 // ---------------------------------------------------------------------------
 const SCHEMA = `
 ELEMENT TYPES (output only these):
@@ -31,7 +31,7 @@ ShapeKind — pick semantically, defaulting to "square":
   "checklist"     to-do card for plans/retros; add checklistItems:[{text,done}] (max 30 rows)
   "parallelogram" input/output in flowcharts
   "hexagon"       process hubs, APIs, gateways
-  "document"      documents, reports, files
+  "document"      paper pages, reports, files
   "cloud"         external cloud services / third-party systems
   "browser"       browser wireframe frames
   "monitor"       desktop screen wireframes

@@ -11,14 +11,14 @@
 //
 // The tabs render shared components (CanvasStyleControls,
 // ThemeCategoryBrowser) so they're identical to the palette accordion and the
-// New-document picker respectively. Follows the standard modal contract
+// New-design picker respectively. Follows the standard modal contract
 // (Portal + backdrop + Escape) used by SettingsDialog.
 
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 import { use, useRef, useState } from 'react';
 import { browser } from 'react-dom';
-import { resolveFinish, type BackgroundPattern, type Finish } from '@livedesign/document';
+import { resolveFinish, type BackgroundPattern, type Finish } from '@livedesign/design';
 import {
   useEscape,
   useFocusTrap,
@@ -38,7 +38,7 @@ import {
   useTabStyleTour,
 } from '@/components/tour/TabStyleTour';
 import { CustomThemePicker } from '@/components/palette/CustomThemePicker';
-import type { TextSize } from '@livedesign/document';
+import type { TextSize } from '@livedesign/design';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
 import { FinishTab } from './FinishTab';
 import { TextTab } from './TextTab';

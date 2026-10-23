@@ -40,13 +40,13 @@ export function sectionFromKey(key: string | null | undefined): PanelSection | n
 }
 
 // The rail's entries: the sidebar's three groups, without Invites, New Team or the sign-in nudge. This Browser only
-// while it holds a document.
+// while it holds a design.
 export function panelSectionGroups({
   teams,
-  hasBrowserDocuments,
+  hasBrowserDesigns,
 }: {
   teams: readonly { id: string }[];
-  hasBrowserDocuments: boolean;
+  hasBrowserDesigns: boolean;
 }): PanelSectionGroup[] {
   return [
     {
@@ -60,7 +60,7 @@ export function panelSectionGroups({
     {
       id: 'more',
       sections: [
-        ...(hasBrowserDocuments ? [{ kind: 'browser' as const }] : []),
+        ...(hasBrowserDesigns ? [{ kind: 'browser' as const }] : []),
         // The reader's tags (docs/specs/013-workspace/tags.md "The editor's Explorer panel").
         { kind: 'tags' },
         { kind: 'library' },
@@ -84,7 +84,7 @@ export function sectionLabel(
     case 'shared':
       return SIDEBAR_LABELS.shared;
     case 'mine':
-      return SIDEBAR_LABELS.myDocuments;
+      return SIDEBAR_LABELS.myDesigns;
     case 'team':
       return teamName?.(s.id) ?? 'Team';
     case 'browser':
@@ -121,7 +121,7 @@ export function sectionTelemetryRow(s: PanelSection): SidebarTelemetryRow {
     inbox: 'Inbox',
     timeline: 'Timeline',
     shared: 'SharedWithMe',
-    mine: 'MyDocuments',
+    mine: 'MyDesigns',
     team: 'Team',
     browser: 'ThisBrowser',
     tags: 'Tags',

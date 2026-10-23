@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { LaidOutPage } from '@livedesign/document';
+import type { LaidOutPage } from '@livedesign/design';
 import {
   LAYOUT_CARD_MAX_HEIGHT,
   LAYOUT_CARD_MAX_WIDTH,

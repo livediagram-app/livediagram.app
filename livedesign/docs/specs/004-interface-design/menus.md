@@ -34,7 +34,7 @@ groups and separators, so a slider inside one is invisible or garbled to a scree
 - A group's title (an accordion header inside a menu) is a `menuitem` with `aria-expanded`, and the
   rows it reveals are a `group` labelled by it. Collapsed rows are inert: not focusable, not read.
 - A divider is a `separator`. A header naming the menu is not an item and is never focused; its
-  title alone names the menu (a badge beside it, such as a document's visibility, is decoration).
+  title alone names the menu (a badge beside it, such as a design's visibility, is decoration).
 - Every item has a name: an icon-only tile carries one (the element menu's Shape tiles are named
   after their shape).
 - A submenu's trigger is a `menuitem` with `aria-haspopup="menu"`, `aria-expanded` and, while open,
@@ -157,18 +157,18 @@ Each menu, how it opens, what it holds, and what the keyboard could do before th
 
 | Menu                  | Opens from                                                     | Holds                                                                    | Keyboard before                                     |
 | --------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------ | --------------------------------------------------- |
-| Document menu         | ⋯ on an Explorer row, card or tree row; right-click; Shift+F10 | Name header, verbs, Delete or Dismiss under a separator                  | Tab only; no Escape; buttons in a `menu`            |
+| Design menu           | ⋯ on an Explorer row, card or tree row; right-click; Shift+F10 | Name header, verbs, Delete or Dismiss under a separator                  | Tab only; no Escape; buttons in a `menu`            |
 | Folder menu           | Same, on a folder; My Work in the sidebar and panel            | Name header, verbs, **Use as Default for** ▸ (checkable entries), Delete | Tab only; submenu unreachable by arrows             |
 | Timeline card menu    | ⋯ on a Timeline card                                           | Verbs                                                                    | Tab only                                            |
 | Explorer More menu    | More in the Explorer panel header                              | Verbs in bands                                                           | Tab only                                            |
-| New menus             | + in the Explorer pane header and a team library header        | Document, Folder tiles                                                   | Tab only                                            |
+| New menus             | + in the Explorer pane header and a team library header        | Design, Folder tiles                                                     | Tab only                                            |
 | Team menu             | ⋯ on a team in the Teams pane                                  | Tiles                                                                    | Tab only                                            |
 | Slide menu            | ⋯ on a presentation slide row                                  | Tool buttons, accordion groups of tiles                                  | Tab only, into collapsed rows too                   |
 | Embed copy menu       | Embed on a share pass                                          | Copy rows                                                                | Tab only                                            |
 | Selection filter menu | The filter button on a mixed selection                         | One tile per element type                                                | Tab only                                            |
 | Zoom menu             | Hovering or focusing the zoom percentage                       | One-of-a-set zoom levels, Fit to screen                                  | Opened on focus; Tab through; no arrows             |
 | Account menu          | The account pill                                               | Name header, Account, Sign out                                           | Tab only; trigger had no `aria-haspopup`; no Escape |
-| Embed tab menu        | The tab pill on an embedded document                           | One-of-a-set tabs                                                        | Tab, Escape                                         |
+| Embed tab menu        | The tab pill on an embedded design                             | One-of-a-set tabs                                                        | Tab, Escape                                         |
 | Locked element menu   | Right-click on an element someone else holds                   | "In use" header, Release rows, a note                                    | Escape only                                         |
 | Product switcher      | The section name in the help, telemetry and marketing headers  | Section links                                                            | Tab only                                            |
 | Telemetry view picker | The view button on the sticky window bar                       | Views                                                                    | Tab only                                            |
@@ -197,7 +197,7 @@ keep one stack for this (`components/primitives/popover-stack.ts`).
 ### Not menus
 
 Listbox dropdowns (the palette and canvas-tool pickers, the rich-text toolbar's dropdowns, the
-Explorer filter chips), dialog popovers (Settings, presence, infographic pages), mention suggestions
+Explorer filter chips), dialog popovers (Settings, presence), mention suggestions
 and toolbars follow their own patterns and are out of scope.
 
 ## Telemetry

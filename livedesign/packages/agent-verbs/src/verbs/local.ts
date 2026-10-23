@@ -75,14 +75,14 @@ export const apiCall = defineVerb({
   local: true,
   input: z.object({
     method: z.string().describe('GET, POST, PUT, PATCH or DELETE'),
-    path: z.string().describe('A path under /api, such as /documents'),
+    path: z.string().describe('A path under /api, such as /designs'),
     body: z.string().optional().describe('A file with the request body, or - for stdin'),
   }),
   output: z.object({ text: z.string(), status: z.number() }),
   text: ({ text }) => [text],
   cli: {
     positionals: ['method', 'path'],
-    examples: ['livedesign api GET /documents', 'livedesign api POST /documents --body doc.json'],
+    examples: ['livedesign api GET /designs', 'livedesign api POST /designs --body doc.json'],
     prints: 'the response body',
   },
 });
@@ -172,7 +172,7 @@ const telemetryVerb = (on: boolean) =>
       positionals: [],
       examples: [
         `livedesign telemetry ${on ? 'on' : 'off'}`,
-        `LIVEDESIGN_TELEMETRY=0 livedesign document ls`,
+        `LIVEDESIGN_TELEMETRY=0 livedesign design ls`,
       ],
       prints: `telemetry ${on ? 'on' : 'off'}`,
     },
@@ -188,7 +188,7 @@ export const waitFor = defineVerb({
   id: 'wait',
   summary: 'Block until a comment or a change arrives, then print it',
   description:
-    'Listens on the document\u2019s room until a comment is added, or until something changes and settles (a burst of edits is one change); prints it and exits 0. --timeout exits 0 with a line saying nothing came; Ctrl-C exits 1.',
+    'Listens on the design\u2019s room until a comment is added, or until something changes and settles (a burst of edits is one change); prints it and exits 0. --timeout exits 0 with a line saying nothing came; Ctrl-C exits 1.',
   behaviour: 'read',
   local: true,
   input: z.object({
@@ -215,7 +215,7 @@ export const watch = defineVerb({
   id: 'watch',
   summary: 'Stream comments and changes as they happen',
   description:
-    'Listens on the document\u2019s room and prints a line for each changeset, element change, comment and tab or document change, until Ctrl-C (exit 0).',
+    'Listens on the design\u2019s room and prints a line for each changeset, element change, comment and tab or design change, until Ctrl-C (exit 0).',
   behaviour: 'read',
   local: true,
   input: z.object({
@@ -234,13 +234,13 @@ export const watch = defineVerb({
   json: () => undefined,
 });
 
-// One document to a file and back (blueprint "Pull and push"): they read and write files, so the CLI runs them.
+// One design to a file and back (blueprint "Pull and push"): they read and write files, so the CLI runs them.
 export const pull = defineVerb({
   id: 'pull',
   files: true,
-  summary: 'Write a document to a file, to edit and push back',
+  summary: 'Write a design to a file, to edit and push back',
   description:
-    'Writes <slug>.livedesign.json: the document, every tab and each tab\u2019s revision, in the format the editor imports. --svg adds a drawing per tab. Prints the paths written.',
+    'Writes <slug>.livedesign.json: the design, every tab and each tab\u2019s revision, in the format the editor imports. --svg adds a drawing per tab. Prints the paths written.',
   behaviour: 'read',
   local: true,
   input: z.object({
@@ -290,29 +290,29 @@ export const push = defineVerb({
   },
 });
 
-// Every document to files, read-only, for backups and docs (blueprint "Pull and push", CLI29).
+// Every design to files, read-only, for backups and docs (blueprint "Pull and push", CLI29).
 export const EXPORT_FORMATS = ['json', 'svg', 'png'] as const;
 
 export const exportAll = defineVerb({
   id: 'export',
   files: true,
-  summary: 'Every document to files, for backups and docs',
+  summary: 'Every design to files, for backups and docs',
   description:
-    'Writes every document the token can read: <slug>.livedesign.json (json, the default), and per tab <slug>/<tab-slug>.svg, .png or .md. Prints the paths written, then the totals.',
+    'Writes every design the token can read: <slug>.livedesign.json (json, the default), and per tab <slug>/<tab-slug>.svg, .png or .md. Prints the paths written, then the totals.',
   behaviour: 'read',
   local: true,
   input: z.object({
-    all: z.boolean().optional().describe('Every document; required'),
+    all: z.boolean().optional().describe('Every design; required'),
     to: z.string().describe('The directory to write to'),
     format: z
       .string()
       .default('json')
       .describe(`A comma-separated list of ${EXPORT_FORMATS.join(', ')}`),
   }),
-  output: z.object({ paths: z.array(z.string()), documents: z.number(), exit: z.number() }),
-  text: ({ paths, documents }) => [
+  output: z.object({ paths: z.array(z.string()), designs: z.number(), exit: z.number() }),
+  text: ({ paths, designs }) => [
     ...paths,
-    `${documents} document${documents === 1 ? '' : 's'} · ${paths.length} file${paths.length === 1 ? '' : 's'}`,
+    `${designs} design${designs === 1 ? '' : 's'} · ${paths.length} file${paths.length === 1 ? '' : 's'}`,
   ],
   quiet: ({ paths }) => paths,
   exitCode: ({ exit }) => exit,
@@ -322,7 +322,7 @@ export const exportAll = defineVerb({
       'livedesign export --all --to backup',
       'livedesign export --all --to docs --format svg,md',
     ],
-    prints: 'the paths written, then <n> documents · <m> files',
+    prints: 'the paths written, then <n> designs · <m> files',
   },
 });
 

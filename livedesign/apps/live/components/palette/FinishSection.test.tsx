@@ -5,7 +5,7 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Finish } from '@livedesign/document';
+import type { Finish } from '@livedesign/design';
 import { FinishSection, resolveOwnFinish } from './FinishSection';
 
 afterEach(() => cleanup());

@@ -6,7 +6,7 @@
 
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { pagesOf, layOutPages, type Tab } from '@livedesign/document';
+import { pagesOf, layOutPages, type Tab } from '@livedesign/design';
 import { computeFitBelow } from '@/lib/viewport';
 import { createViewportStore, type ViewportStore } from '@/lib/viewport-store';
 import { LAST_PAGE_SETTLE_MS, lastPageKey, readLastPage } from '@/lib/last-page';
@@ -50,7 +50,7 @@ function mount(viewport: ViewportStore, tab = tabOf('t')) {
         clearSelection: vi.fn(),
         toastInfo: vi.fn(),
         frameFirstPageRef,
-        documentId: 'd',
+        designId: 'd',
         viewport,
       }),
     { initialProps: tab },

@@ -71,7 +71,7 @@ Scope, by file:
 | `apps/cli/src/render/png.ts`, `apps/cli/src/commands/render.ts`                                             | The Node loaders for `@livedocuments/render-png`                                                                                                                                                                                                                                                                                                                          |
 | `apps/cli/src/telemetry.ts` (+ test)                                                                        | `sendCliUsed`, `reportApiFailure`, `telemetryOffReason`, `setTelemetry`, the notice once (`state.json`)                                                                                                                                                                                                                                                                   |
 | `apps/cli/src/update-check.ts` (planned)                                                                    | The npm check                                                                                                                                                                                                                                                                                                                                                             |
-| `apps/telemetry/app/cli-commands.ts`, `apps/telemetry/app/catalogue/cli-commands.ts`                        | `CLI_COMMANDS` (one row a counted verb), `cliCommandSentence`; the CLI Commands stack (CLI56)                                                                                                                                                                                                                                                                             |
+| `../liveworkspace/apps/site/app/telemetry/livedocuments/cli-commands.ts`, `../liveworkspace/apps/site/app/telemetry/livedocuments/catalogue/cli-commands.ts`                        | `CLI_COMMANDS` (one row a counted verb), `cliCommandSentence`; the CLI Commands stack (CLI56)                                                                                                                                                                                                                                                                             |
 | `apps/api/src/routes/capabilities.ts`, `types.ts`, `wrangler.toml`                                          | `apiBase`, `authEnabled`, `oauthIssuer`, `documentFormat`, `cli`; vars `OAUTH_ISSUER`, `CLI_MIN_VERSION` (CLI10)                                                                                                                                                                                                                                                          |
 | `apps/api/src/routes/tokens.ts`                                                                             | `GET` and `DELETE /api/tokens/current`, reading the token's row from `listApiTokensByOwner`                                                                                                                                                                                                                                                                               |
 | `apps/api/src/routes/catalogues.ts` (+ test), `index.ts`                                                    | `GET /api/templates[/:kind]`, `/api/icons`, `/api/schema[/:kind]`; dispatch of the three segments                                                                                                                                                                                                                                                                         |
@@ -84,7 +84,7 @@ Scope, by file:
 | `apps/live/lib/mcp-consent-session.ts`                                                                      | `McpConsentSession` gains `clientId`                                                                                                                                                                                                                                                                                                                                      |
 | `apps/live/app/oauth/device/page.tsx`, `apps/live/lib/mcp-device-session.ts` (+ test)                       | The `/oauth/device` page and its trust boundary                                                                                                                                                                                                                                                                                                                           |
 | `apps/live/lib/export-tab.ts`, the envelope's callers, `lib/search.ts`                                      | Import the moved modules from `@livedocuments/document` and `@livedocuments/icons`                                                                                                                                                                                                                                                                                        |
-| `apps/telemetry/app/catalogue/connections.ts`, `computed-emitters.ts`, `event-explanations.ts`              | The `CLI Commands` stack, `CLI Sign-Ins` in API Token Activity, the computed sites, the sentences (CLI56)                                                                                                                                                                                                                                                                 |
+| `../liveworkspace/apps/site/app/telemetry/livedocuments/catalogue/connections.ts`, `computed-emitters.ts`, `event-explanations.ts`              | The `CLI Commands` stack, `CLI Sign-Ins` in API Token Activity, the computed sites, the sentences (CLI56)                                                                                                                                                                                                                                                                 |
 | `.github/workflows/ci.yml`, `.github/workflows/cli-publish.yml`                                             | Pack dry run on every PR; publish with provenance (CLI3)                                                                                                                                                                                                                                                                                                                  |
 | `README.md`, `docs/development/{architecture,local-development}.md`, `docs/operations/self-hosting.md`      | The app, the packages, the two api vars, the CLI on a self-host, the env token's host; `AGENTS.md`'s layout needs the operator's permission                                                                                                                                                                                                                               |
 
@@ -102,7 +102,7 @@ Scope, by file:
 | Host                | `Profile.host`                                                             | The origin a profile talks to (`https://livedocuments.app`)              |
 | Api base            | `Capabilities.apiBase`                                                     | Where the api answers for that host                                      |
 | Capabilities        | `CapabilitiesResponse`, `loadCapabilities`                                 | What a host offers, from `GET /api/capabilities`                         |
-| Credential          | `StoredCredential`, `CredentialSource` (`env`, `keychain`, `file`)         | The `lvd_` token the CLI presents, and where it came from                |
+| Credential          | `StoredCredential`, `CredentialSource` (`env`, `keychain`, `file`)         | The `lwt_` token the CLI presents, and where it came from                |
 | Version floor       | `cli.minVersion`, `isBelow`                                                | The oldest CLI a host accepts writes from                                |
 | Read copy           | `ReadCopy`, `ReadCopies`, `recordCopy`, `baseFromCopy`                     | The plain tab as the CLI last read it at one revision                    |
 | Base                | `baseFromCopy(copy)` → `ChangesetBase`                                     | A read copy's revision and every element's fingerprint, sent with writes |
@@ -159,7 +159,7 @@ Invariants:
   line. Every hint, warning, error, notice and progress line goes to stderr.
 - **I2** The CLI never prompts. It reads stdin only for `-` file arguments, `--body -` and `auth login --with-token`
   (CLI66).
-- **I3** No secret reaches stdout, stderr or a debug line: `Authorization` is printed as `Bearer lvd_…`, tokens never.
+- **I3** No secret reaches stdout, stderr or a debug line: `Authorization` is printed as `Bearer lwt_…`, tokens never.
 - **I4** The CLI never does a whole-tab save. Element and tab content is written by changesets (a new tab is a
   `replace` changeset on a new tab id), a tab's name by `PUT .../tabs/:tabId/name`, a new document by
   `POST /api/documents` compiling its tabs. `api` refuses `PUT /documents/:id/tabs/:tabId` locally (exit 2), and the
@@ -555,7 +555,7 @@ hint: livedocuments skill install --to ~/.claude/skills
 type CapabilitiesResponse = {
   emailEnabled?: boolean;
   apiBase?: string; // `${url.origin}/api` (CLI9)
-  authEnabled?: boolean; // CLERK_JWKS_URL is set (CLI11)
+  authEnabled?: boolean; // ACCOUNTS_URL and API_RESOURCE are set (CLI11)
   oauthIssuer?: string; // OAUTH_ISSUER, an https origin; absent when unset or invalid
   documentFormat?: number; // DOCUMENT_FORMAT
   cli?: { minVersion: string }; // CLI_MIN_VERSION when it is x.y.z; absent otherwise
@@ -785,7 +785,7 @@ nothing in D1.
   says "We couldn't find that code yet" with Try again, and the CLI keeps polling until expiry.
 - **E13** The platform's tool is missing, or refuses a store: the file store, with the one-line notice. A stored keychain token the tool cannot read back: exit 4, hint `livedocuments auth login`.
 - **E14** `credentials.json` readable by group or others: stderr warning, mode set to 0600, read continues.
-- **E15** `LIVEDOCUMENTS_TOKEN` is set but not `lvd_`-shaped: exit 4 "LIVEDOCUMENTS_TOKEN is not an API token".
+- **E15** `LIVEDOCUMENTS_TOKEN` is set but not `lwt_`-shaped: exit 4 "LIVEDOCUMENTS_TOKEN is not an API token".
 - **E16** `--host` and `--profile` together: exit 2 (CLI7).
 - **E17** A pasted URL on another host than the profile's: exit 2, hint `--host <origin>` (CLI21).
 - **E18** `push` of a file pulled from another host: exit 2.
@@ -866,7 +866,7 @@ minted token revoked`, or `[oauth] handover revoke failed` when the revoke itsel
   title "livedocuments CLI", heading "You're signed in", body "Return to your terminal. You can close this tab." On
   `access_denied`: "Sign-in cancelled", "Nothing was connected. You can close this tab."
 - **`/oauth/device` page**, in `OauthShell` (CLI65):
-  - not `clerkEnabled`: "Connecting apps isn't available" / "This deployment doesn't have accounts enabled, so
+  - not `signInEnabled`: "Connecting apps isn't available" / "This deployment doesn't have accounts enabled, so
     there's nothing to connect to."
   - signed out: "Sign in to connect the livedocuments CLI", with Sign in (back to this URL) and Cancel.
   - entry: heading "Connect a terminal", label "Code shown in your terminal", an 8-letter field formatted
@@ -1022,10 +1022,10 @@ WebSocket) with a fixed clock; none waits on a real timer or the network.
 | Bundle: one ESM file, wasm, font, Node 22, size                                               | `apps/cli/scripts/build.test.ts` (planned); CI `npm pack --dry-run`                                                                                                             |
 | Update check: once a day, stderr, skipped in CI, non-TTY, opt-out                             | `apps/cli/src/update-check.test.ts` (planned)                                                                                                                                   |
 | Telemetry: after success only, profile's api, opt-outs, flip first, notice once, no arguments | `apps/cli/src/telemetry.test.ts`                                                                                                                                                |
-| Every emitted event has a chart and a sentence; `Token·Created·Cli`                           | `apps/telemetry` `metric-emitters.test.ts`, `event-explanation.test.ts`; `apps/live/lib/mcp-consent-session.test.ts`                                                            |
+| Every emitted event has a chart and a sentence; `Token·Created·Cli`                           | `../liveworkspace/apps/site/app/telemetry/livedocuments` `metric-emitters.test.ts`, `event-explanation.test.ts`; `apps/live/lib/mcp-consent-session.test.ts`                                                            |
 | Port-agnostic loopback; built-in client; `clientId` on the session                            | `apps/mcp/src/oauth.test.ts`, `oauth-clients.test.ts`                                                                                                                           |
 | Device grant endpoints and polling answers                                                    | `apps/mcp/src/oauth-device.test.ts`, `apps/mcp/src/oauth.test.ts` (the built-in client)                                                                                         |
-| The device page trusts only the server's client name                                          | `apps/live/lib/mcp-device-session.test.ts`; `apps/live/e2e/clerk-stub/oauth-device.spec.ts` (dark scheme)                                                                       |
+| The device page trusts only the server's client name                                          | `apps/live/lib/mcp-device-session.test.ts`; `apps/live/e2e/signed-in/oauth-device.spec.ts` (dark scheme)                                                                        |
 | `tokens/current` read and revoke; session refused; any role revokes                           | `apps/api/src/routes/tokens.test.ts`                                                                                                                                            |
 | api-client and render-png extractions keep the MCP's behaviour                                | `packages/api-client/src/client.test.ts`; existing `apps/mcp` suites stay green                                                                                                 |
 

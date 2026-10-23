@@ -5,7 +5,7 @@ import {
   cubicAt,
   pathSegments,
   type PathAnchor,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import {
   PATH_NODE_HIT_PX,
   bendAt,

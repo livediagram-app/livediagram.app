@@ -7,7 +7,7 @@ import { createRaster, pixelAt, setPixel, solidRaster } from '../raster/raster';
 import { TiledRaster } from '../raster/tiles';
 import { blendFromKey, BLEND_KEYS } from './blend-keys';
 import { photoFromPsd, psdFromPhoto, tilesFor } from './convert';
-import { PsdError, type PsdDocument } from './model';
+import { PsdError, type PsdDesign } from './model';
 import { readPsd } from './read';
 import { packBits, unpackBits } from './rle';
 import { writePsd } from './write';
@@ -32,7 +32,7 @@ describe('PackBits', () => {
   });
 });
 
-function doc(): PsdDocument {
+function doc(): PsdDesign {
   const bg = solidRaster(8, 6, [10, 20, 30, 255]);
   const sticker = createRaster(3, 2);
   setPixel(sticker, 0, 0, [255, 0, 0, 255]);

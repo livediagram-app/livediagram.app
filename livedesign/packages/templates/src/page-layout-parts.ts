@@ -1,7 +1,7 @@
 // Parts the compare, social and figures layouts share (docs/specs/007-editor/pages-mode.md
 // "Layouts"): the source line a figure owes, a row of an icon beside a line, and the two colours
 // that carry meaning (a tick is green, a cross rose) rather than following the theme.
-import type { Element, TextElement } from '@livedesign/document';
+import type { Element, TextElement } from '@livedesign/design';
 import type { Kit } from './page-layout-kit';
 
 // A tick's green and a cross's rose: the same pair the retrospective and funnel templates use.

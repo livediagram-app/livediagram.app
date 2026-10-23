@@ -22,7 +22,7 @@ At most **one action per element** (mirrors note + link, keeps the panel,
 badge, and popover 1:1 with elements). Everything that reads actions goes through
 `elementActions(el)`, which returns the single `action` as a one-item list, so the Collaborate panel, the Inbox,
 the timeline and the email read it one way. A new optional field on boxed elements in
-`packages/document`:
+`packages/design`:
 
 ```ts
 interface ElementAction {
@@ -59,7 +59,7 @@ interface ElementAction {
 action?: ElementAction;
 ```
 
-**No email address is ever stored in the element blob.** Documents travel
+**No email address is ever stored in the element blob.** Designs travel
 (share links, embeds, exports); the blob carries only the Clerk `userId` /
 membership `memberId` and a display name, all already visible to anyone the
 assignee collaborates with. The assignee's address is resolved server-side
@@ -101,7 +101,7 @@ unchanged. The **Assign Action** tile:
 - **Always shows, for everyone.** The feature is not sign-in gated:
   a signed-out user (or a Clerk-less self-host, [Open source + distribution](../002-project-scope/open-source-and-business-model.md)) can assign an
   action to **themselves** — the picker offers a pinned **Myself** row in
-  every session, so actions double as personal to-dos on the document.
+  every session, so actions double as personal to-dos on the design.
   Only assigning to OTHER people needs an account: teammates come from
   teams ([Teams](../013-workspace/teams.md)), so a signed-out picker shows Myself alone plus a
   gentle "sign in and join a team to assign teammates" nudge with the
@@ -116,12 +116,12 @@ Clicking it opens the **Assign Action dialog** (its own component under
 
 - **Assignee**: a pinned **Myself** row (every session — the signed-in
   account, or the guest participant identity), then the **joined members
-  of the team whose shared library holds this document** (`GET
-/api/teams/<documentTeamId>` members, via the existing api-client
+  of the team whose shared library holds this design** (`GET
+/api/teams/<designTeamId>` members, via the existing api-client
   helper), each row showing the member's avatar bubble and display name
   (email local-part fallback, as TeamPane does). Members of the user's
   OTHER teams are deliberately not offered: they aren't members of this
-  document's team, so they almost certainly can't open the document to
+  design's team, so they almost certainly can't open the design to
   complete the action — offering them just manufactures the §4 access
   warning. **Invited-but-not-joined members ARE offered** (with the same
   amber "Invited" badge the team pane uses): work often gets divided up
@@ -133,14 +133,14 @@ Clicking it opens the **Assign Action dialog** (its own component under
   which needs an account to ask about. **Myself is preselected** when
   creating, so the common self-assignment is zero-click and handing off
   is one.
-  Myself-only states, each with its own nudge: a **personal document**
-  (no team library) offers the fix INLINE — "Move this document into a
+  Myself-only states, each with its own nudge: a **personal design**
+  (no team library) offers the fix INLINE — "Move this design into a
   team library to assign teammates", with a button per joined team that
-  performs the [Team shared documents](../013-workspace/team-shared-documents.md) placement move (`PUT /api/documents/<id>/folder`
+  performs the [Team shared designs](../013-workspace/team-shared-designs.md) placement move (`PUT /api/designs/<id>/folder`
   with the team id, landing at the team root) right from the dialog and
   reloads the picker with that team's members, no Explorer round-trip; a
   signed-in user with no teams gets the create-a-team link instead; a
-  signed-in user **not a member of the document's team** (a share-link
+  signed-in user **not a member of the design's team** (a share-link
   editor) gets a plain Myself-only picker; a signed-out user sees Myself
   plus the sign-in nudge (§2).
   The §4 access check stays as belt-and-braces on the picked assignee.
@@ -163,7 +163,7 @@ like comment mutations in `useEditorComments`), and, when the checkbox was
 ticked, fires the notify request (§4) fire-and-forget: email failure must
 never block or roll back the assignment.
 
-Assigning requires **edit access** to the document: the action rides the tab
+Assigning requires **edit access** to the design: the action rides the tab
 blob. View-role visitors see actions read-only (§7).
 
 ## 3. On-canvas surface: badge + popover
@@ -201,7 +201,7 @@ A new **signed-in-only** endpoint on the api worker (Clerk JWT required,
 
 ```
 POST /api/teams/<teamId>/notify-action
-body: { assigneeUserId?, assigneeMemberId?, documentId, actionName, description? }
+body: { assigneeUserId?, assigneeMemberId?, designId, actionName, description? }
 ```
 
 The server, not the client, establishes every fact that matters:
@@ -210,8 +210,8 @@ The server, not the client, establishes every fact that matters:
 - verifies the **assignee** (`assigneeUserId`, or `assigneeMemberId` for
   an invited member) is a joined OR invited member of `<teamId>` (404
   otherwise, so there is no probing which users exist);
-- verifies the caller can access `documentId` (owner, team library, or
-  shared-with), and reads the **document name from D1**, not the body;
+- verifies the caller can access `designId` (owner, team library, or
+  shared-with), and reads the **design name from D1**, not the body;
 - resolves the assignee's address from trusted server state
   (`team_members.email` / `email_lifecycle`), never a client header
   ([Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md) §7, [Account settings & email notifications](../014-identity/profile-and-email-notifications.md) §5);
@@ -221,13 +221,13 @@ The server, not the client, establishes every fact that matters:
   `notifyActionAssigned` pref (§6) is on; an invited member with no
   account has no prefs yet, so the pref defaults to on and the invite
   email from the membership row is the destination;
-- checks whether the **assignee** can open the document, by the access
-  check's legs below plus one: a document in this team's library counts as
+- checks whether the **assignee** can open the design, by the access
+  check's legs below plus one: a design in this team's library counts as
   open to an invited member too (they get in on accepting). When they cannot,
-  the email names no document and its button opens the Explorer instead, with
-  "ask them to share it" in place of the document name;
+  the email names no design and its button opens the Explorer instead, with
+  "ask them to share it" in place of the design name;
 - **claims** the email before sending, since the action name and description
-  come from the body: the same email (assigner, document, recipient, action
+  come from the body: the same email (assigner, design, recipient, action
   name, description) goes at most once per 24 hours, and one sender's
   action-assigned and mention emails are capped at 60 an hour, both in
   `notify_email_claims` ([Comment mentions](comment-mentions.md) "The email" has the
@@ -235,14 +235,14 @@ The server, not the client, establishes every fact that matters:
 
 Then it sends the **action-assigned** email (new template in
 `email/templates.ts`, dispatcher in `email/notifications.ts` following the
-`notifyDocumentJoin` shape, best-effort in `ctx.waitUntil`): "{assigner}
-assigned you an action on _{document name}_", the action name, the first
-~200 characters of the description, and a CTA linking to the document (when
+`notifyDesignJoin` shape, best-effort in `ctx.waitUntil`): "{assigner}
+assigned you an action on _{design name}_", the action name, the first
+~200 characters of the description, and a CTA linking to the design (when
 the assignee can open it, see above). All
-user-influenced strings (action name, description, document name, assigner
+user-influenced strings (action name, description, design name, assigner
 name) are HTML-escaped. The content stays within [Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md) §7: everything in
 the mail is either the assigner's own words being delivered on their behalf
-or a document/team fact the two already share.
+or a design/team fact the two already share.
 
 **Invited-assignee caveat:** the panel's / popover's "mine" match is by
 `userId`, so an action assigned to a not-yet-identified invitee (null
@@ -251,28 +251,28 @@ accept — acceptable v1: the action is still on the canvas, and reassigning
 (or completing) it works for anyone with edit access. Invitees the lazy
 claim already identified carry their real `userId` and match normally.
 
-**Access caveat:** assigning is allowed on any document the assigner can
+**Access caveat:** assigning is allowed on any design the assigner can
 edit, including ones the assignee cannot open. The dialog does a REAL
 check rather than guessing: picking an assignee fires
-`GET /api/teams/<teamId>/access-check?assigneeUserId=&documentId=`, which
+`GET /api/teams/<teamId>/access-check?assigneeUserId=&designId=`, which
 applies the same gates as notify-action (caller + assignee joined members
-of the team, caller can access the document, 404s that never probe) and
+of the team, caller can access the design, 404s that never probe) and
 answers `{ canAccess }` from the three legs the server can actually see —
-the assignee owns the document, is a joined member of the document's
+the assignee owns the design, is a joined member of the design's
 team-library team, or has previously opened it through a share link
 (`shared_with`). Only a definite "no" shows the hint ("{name} can't open
-this document yet: share it or move it to the team library"); while the
+this design yet: share it or move it to the team library"); while the
 check is in flight nothing shows, and if it errors the dialog falls back
-to the old heuristic (picked team ≠ the document's team → hedged "may not
+to the old heuristic (picked team ≠ the design's team → hedged "may not
 be able to open" wording). Auto-sharing on assign is explicitly not done
 (v1): quietly widening access as a side effect of an assignment is worse
-than a dead CTA, and the email to an assignee who cannot open the document
-names no document and links to none.
+than a dead CTA, and the email to an assignee who cannot open the design
+names no design and links to none.
 
 ## 5. The Collaborate Panel
 
 ONE docked panel ([Panel corner docking](../007-editor/panel-docking.md)) for both ways work gets discussed / divided
-on a document — it replaced the separate Comments and Actions panels,
+on a design — it replaced the separate Comments and Actions panels,
 which crowded the same corner:
 
 - `PanelId` `'collaborate'` in `lib/panel-layout.ts` (replacing the old
@@ -283,7 +283,7 @@ which crowded the same corner:
   `MovablePanel`, lazily imported and mounted from `useCanvasChromePanels.tsx`.
 - **It lives behind a button in the bottom-right cluster.** A
   **Collaborate** button (speech-bubble glyph) sits **just before the Layers and
-  Theme strip** ([Layers](../006-document/layers.md) is the model). It shows the tab's
+  Theme strip** ([Layers](../006-design/layers.md) is the model). It shows the tab's
   **open count** as a badge (the shared `CountBadge`, brand tone, hidden at
   zero). Pressing it opens the panel as a **popover hanging above it**
   (`computeDockAnchor(..., 'above')`); a second press or a press outside closes it, and it shares the
@@ -363,7 +363,7 @@ consent.
 
 ## 7. Permissions, guests, view role
 
-- **Assign / edit / complete / delete** require edit access to the document
+- **Assign / edit / complete / delete** require edit access to the design
   (the mutation is a tab write). Signed-out users can assign only to
   themselves (their guest participant id); assigning to teammates needs
   the signed-in team picker. Every edit-role collaborator can complete or
@@ -401,13 +401,13 @@ enum-ish tokens, not user content.
 
 ## 9. Out of scope (v1)
 
-- ~~A cross-document "my actions" inbox~~ — shipped as the Explorer's
+- ~~A cross-design "my actions" inbox~~ — shipped as the Explorer's
   [Inbox](../013-workspace/inbox.md), exactly the way this bullet predicted:
   a D1 projection (`collab_actions`) written beside every tab save,
   with the per-element blob still the source of truth.
 - Due dates, priorities, more than one action on an element, and multiple
   assignees.
-- Auto-sharing the document with the assignee on assign (§4 caveat).
+- Auto-sharing the design with the assignee on assign (§4 caveat).
 - View-role mutation endpoints (complete-without-edit-access).
 - Reminder / nag emails; exactly one send per assignment or reassignment
   with the box ticked, nothing recurring.

@@ -5,7 +5,7 @@ import {
   shapeColorPresets,
   quickSwatchColor,
   type Element,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { aliasesOf, writeFieldsOnto, type FieldsWrite } from './fields';
 import type { Fields } from './types';
 

@@ -2,11 +2,11 @@
 
 // The drag preview (docs/specs/008-canvas/drag-preview.md): what a move, resize or reshape would make
 // of the elements it touches, drawn in place of them while the gesture lasts, without writing the
-// document. One local preview (ours) and one per collaborator mid-drag, merged for drawing; the
+// design. One local preview (ours) and one per collaborator mid-drag, merged for drawing; the
 // local one wins on an element both touch.
 
 import { useSyncExternalStore } from 'react';
-import type { Element } from '@livedesign/document';
+import type { Element } from '@livedesign/design';
 import { createListeners } from '@/lib/listeners';
 
 export type DragOverlay = {
@@ -62,7 +62,7 @@ export function setLocalPreview(
   changedNow();
 }
 
-// How our last preview ended: written to the document (`landed`) or dropped (`cancelled`), for the
+// How our last preview ended: written to the design (`landed`) or dropped (`cancelled`), for the
 // end message collaborators get.
 let lastEnding: 'landed' | 'cancelled' = 'cancelled';
 

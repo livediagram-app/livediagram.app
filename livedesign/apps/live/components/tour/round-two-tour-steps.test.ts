@@ -4,7 +4,7 @@
 // element's own parts, and the menu step they share.
 
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element } from '@livedesign/document';
+import { createShape, type Element } from '@livedesign/design';
 import { ELEMENT_TOUR_DEFS } from './element-tour-defs';
 import type { ElementTourApi } from './element-tour-api';
 import { menuStep, type MenuTourEnv } from './menu-tour-step';

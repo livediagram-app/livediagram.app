@@ -2,8 +2,8 @@
 
 The livedesign logo is the **Living Prism**: an isometric glass cube whose translucent faces fold over one another,
 with a faint diagram (two nodes joined through a centre node) inside and a live signal pulse running along its front
-edge. It reads as "a workspace with a diagram living in it". The **wordmark** beside it reads `livedesign`, with
-`live` in the accent and `pages` in ink.
+edge. It reads as "a workspace with live work inside it". The **wordmark** beside it reads `livedesign`, with
+`live` in the accent and `design` in ink.
 
 ## The mark
 

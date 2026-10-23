@@ -3,7 +3,7 @@
 // A device's glyph at the title bar's icon size: a phone, a tablet, a laptop, a monitor, a browser
 // window or a watch, by the device's class (and the browser its own).
 import { Glyph } from '@livedesign/ui';
-import { WIREFRAME_DEVICES, type WireframeDeviceId } from '@livedesign/document';
+import { WIREFRAME_DEVICES, type WireframeDeviceId } from '@livedesign/design';
 
 export function DeviceGlyph({ device, size = 14 }: { device: WireframeDeviceId; size?: number }) {
   const cls = WIREFRAME_DEVICES[device].deviceClass;

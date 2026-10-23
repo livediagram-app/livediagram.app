@@ -10,7 +10,7 @@ import {
   withReadableLabelInks,
   type Appearance,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { getResolvedAppearance } from '@livedesign/ui';
 import { resolveTabBackdrop, themeViewMap } from './themes';
 import { labelsFollowCanvas } from './tab-theme-apply';

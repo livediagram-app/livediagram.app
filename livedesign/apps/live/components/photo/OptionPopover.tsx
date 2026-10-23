@@ -31,7 +31,7 @@ import {
   lucideType,
   lucideWand,
 } from '@livedesign/icons/lucide';
-import { FONTS } from '@livedesign/document';
+import { FONTS } from '@livedesign/design';
 import { lucideGlyph } from '@livedesign/ui';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import { FlyoutHeader, onFlyoutArrowKey } from '@/components/palette/CategoryFlyout';

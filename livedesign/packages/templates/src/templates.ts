@@ -1,5 +1,5 @@
 import { titleCase } from '@livedesign/api-schema';
-import { UNTITLED_DOCUMENT_NAME, isUntitledDocumentName } from './legacy-untitled';
+import { UNTITLED_DESIGN_NAME, isUntitledDesignName } from './legacy-untitled';
 
 // The Pages templates (docs/specs/008-canvas/canvas-and-palette.md "Templates"): every template opens in Pages,
 // on pages of its own.
@@ -145,7 +145,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
 
 // True when `value` names a template in the catalogue. The guard for a kind
 // that arrives as a plain string from outside the type system: the MCP
-// `template` argument, the `/new?template=<kind>` query (docs/specs/007-editor/new-document-route.md).
+// `template` argument, the `/new?template=<kind>` query (docs/specs/007-editor/new-design-route.md).
 export function isTemplateKind(value: unknown): value is TemplateKind {
   return typeof value === 'string' && TEMPLATES.some((t) => t.kind === value);
 }
@@ -169,34 +169,34 @@ export function templateKindOf(value: unknown): TemplateKind | null {
 }
 
 // The editor URL that creates this template without the wizard and opens it
-// (docs/specs/007-editor/new-document-route.md): what an outside surface links to, such as the marketing site's
+// (docs/specs/007-editor/new-design-route.md): what an outside surface links to, such as the marketing site's
 // template gallery (docs/specs/019-marketing/marketing-site.md). The route is the editor's; the builder lives
 // here so every caller spells the query the same way `isTemplateKind` reads.
 export function templateCreateHref(kind: TemplateKind): string {
   return `/new?template=${encodeURIComponent(kind)}`;
 }
 
-// Default name for a freshly-created document: "Untitled <Template Title>" in
-// title case so a templated document is recognisable in the Explorer (e.g.
+// Default name for a freshly-created design: "Untitled <Template Title>" in
+// title case so a templated design is recognisable in the Explorer (e.g.
 // "Untitled Logo Design"), while a blank one (or no template) keeps the plain
-// "Untitled document" (UNTITLED_DOCUMENT_NAME, legacy-untitled.ts).
+// "Untitled design" (UNTITLED_DESIGN_NAME, legacy-untitled.ts).
 
 export function untitledNameForTemplate(kind: TemplateKind | null): string {
-  if (!kind || kind === 'blank') return UNTITLED_DOCUMENT_NAME;
+  if (!kind || kind === 'blank') return UNTITLED_DESIGN_NAME;
   // A blank names what it makes ("Untitled Logo"), not the card ("Blank Logo").
   const title = TEMPLATES.find((t) => t.kind === kind)?.title.replace(/^Blank /, '');
-  return title ? `Untitled ${titleCase(title)}` : UNTITLED_DOCUMENT_NAME;
+  return title ? `Untitled ${titleCase(title)}` : UNTITLED_DESIGN_NAME;
 }
 
-// Every name a document is given before anyone names it: each template's untitled name, plus "Untitled document" and
+// Every name a design is given before anyone names it: each template's untitled name, plus "Untitled design" and
 // its legacy spelling. Built once, at first use.
 let DEFAULT_NAMES: ReadonlySet<string> | null = null;
 
 /**
- * Whether a document still has a default name (docs/specs/007-editor/new-document-route.md "What `/new` makes"), so a
+ * Whether a design still has a default name (docs/specs/007-editor/new-design-route.md "What `/new` makes"), so a
  * template picked on its first tab may name it after itself. A name someone gave it is never default.
  */
-export function isDefaultDocumentName(name: string): boolean {
+export function isDefaultDesignName(name: string): boolean {
   DEFAULT_NAMES ??= new Set(TEMPLATES.map((t) => untitledNameForTemplate(t.kind)));
-  return isUntitledDocumentName(name) || DEFAULT_NAMES.has(name);
+  return isUntitledDesignName(name) || DEFAULT_NAMES.has(name);
 }

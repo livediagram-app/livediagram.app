@@ -1,76 +1,63 @@
 import { Label } from '@/components/illustrations/primitives';
 import { Chip, Stage, Window } from './parts';
 
-// About livedesign: what it is in one picture. Three windows fanned out, one per kind of page (a slide, an article,
-// an infographic), under the two promises: free, and open source.
+// About livedesign: what it is in one picture. Three windows fanned out, one per kind of page (a logo, a
+// wireframe, a photo), under the two promises: free, and open source.
 export function AboutArt() {
   return (
     <Stage>
-      {/* A slide: a title and a bar chart, tilted back on the left. */}
+      {/* A logo: a mark over its wordmark, tilted back on the left. */}
       <g transform="rotate(-7 92 120)">
-        <Window x={18} y={52} w={150} h={118} title="Slide">
+        <Window x={18} y={52} w={150} h={118} title="Logo">
           <rect x={30} y={84} width={126} height={74} rx={4} className="fill-slate-50" />
-          <rect x={40} y={94} width={66} height={7} rx={3.5} className="fill-slate-700" />
-          <rect x={40} y={107} width={44} height={4} rx={2} className="fill-slate-300" />
-          {[18, 30, 22, 38].map((h, i) => (
-            <rect
-              key={i}
-              x={92 + i * 14}
-              y={150 - h}
-              width={9}
-              height={h}
-              rx={1.5}
-              className={i === 3 ? 'fill-violet-400' : 'fill-violet-200'}
-            />
-          ))}
+          <circle cx={93} cy={108} r={16} className="fill-violet-400" />
+          <path d="M84 116 L93 100 L102 116 Z" className="fill-white help-art-as-drawn" />
+          <rect x={68} y={134} width={50} height={7} rx={3.5} className="fill-slate-700" />
+          <rect x={78} y={146} width={30} height={4} rx={2} className="fill-slate-300" />
         </Window>
       </g>
-      {/* An infographic: a bold page, tilted forward on the right. */}
+      {/* A photo: a landscape picture, tilted forward on the right. */}
       <g transform="rotate(7 308 120)">
-        <Window x={232} y={52} w={150} h={118} title="Infographic">
-          <rect x={244} y={84} width={126} height={74} rx={6} className="fill-brand-500" />
+        <Window x={232} y={52} w={150} h={118} title="Photo">
+          <rect x={244} y={84} width={126} height={74} rx={4} className="fill-sky-200" />
+          <circle cx={346} cy={102} r={10} className="fill-amber-300" />
+          <path d="M244 158 L282 116 L310 140 L332 124 L370 158 Z" className="fill-emerald-500" />
           <rect
-            x={254}
-            y={96}
-            width={70}
-            height={7}
-            rx={3.5}
-            className="fill-white help-art-as-drawn"
+            x={252}
+            y={92}
+            width={48}
+            height={30}
+            rx={2}
+            className="fill-none stroke-brand-600"
+            strokeWidth={1.2}
+            strokeDasharray="3 2"
           />
-          <rect x={254} y={110} width={50} height={4} rx={2} className="fill-brand-200" />
-          <circle cx={346} cy={136} r={14} className="fill-amber-300" />
-          <rect x={254} y={136} width={34} height={14} rx={3} className="fill-brand-600" />
         </Window>
       </g>
-      {/* An article: in front, in the middle, a heading and lines of text. */}
-      <Window x={110} y={40} w={180} h={140} title="Article">
-        <rect x={126} y={76} width={86} height={8} rx={4} className="fill-brand-500" />
-        {[0, 1, 2, 3].map((i) => (
+      {/* A wireframe: in front, in the middle, a phone screen. */}
+      <Window x={110} y={40} w={180} h={140} title="Wireframe">
+        <rect x={170} y={70} width={60} height={104} rx={9} className="fill-slate-800" />
+        <rect x={174} y={74} width={52} height={96} rx={6} className="fill-white" />
+        <rect x={180} y={84} width={30} height={5} rx={2.5} className="fill-brand-500" />
+        <rect x={180} y={95} width={40} height={26} rx={3} className="fill-emerald-50" />
+        {[0, 1].map((i) => (
           <rect
             key={i}
-            x={126}
-            y={94 + i * 11}
-            width={i === 3 ? 96 : 148}
-            height={4.5}
-            rx={2.2}
+            x={180}
+            y={128 + i * 8}
+            width={i === 1 ? 26 : 40}
+            height={4}
+            rx={2}
             className="fill-slate-200"
           />
         ))}
-        <rect
-          x={126}
-          y={140}
-          width={148}
-          height={28}
-          rx={4}
-          className="fill-emerald-50 stroke-emerald-200"
-          strokeWidth={1.2}
-        />
+        <rect x={180} y={154} width={40} height={9} rx={4.5} className="fill-brand-500" />
       </Window>
 
       <Chip x={118} y={12} label="Free for everyone" tone="emerald" h={20} size={10} />
       <Chip x={236} y={12} label="Open source" tone="violet" h={20} size={10} />
       <Label x={200} y={204} anchor="middle" size={9} weight={600} tone="muted">
-        Articles · Slides · Infographics · Logos · Wireframes
+        Logos · Wireframes · Photos
       </Label>
     </Stage>
   );

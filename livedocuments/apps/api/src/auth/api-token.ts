@@ -3,15 +3,15 @@
 // presented value and looking that hash up (the hash is derived from 256 bits
 // of randomness, so an indexed equality lookup leaks nothing useful — there's
 // no low-entropy value to time-attack, unlike a password). Tokens authenticate
-// signed-in (Clerk) accounts only; see docs/specs/015-api/public-api-and-tokens.md.
+// signed-in accounts only; see docs/specs/015-api/public-api-and-tokens.md.
 
 import { API_TOKEN_PREFIX, randomBase64Url, sha256Hex } from '@livedocuments/api-schema';
 
 const TOKEN_PREFIX = API_TOKEN_PREFIX;
 const TOKEN_RANDOM_BYTES = 32; // 256 bits
 
-// `lvd_<base64url(32 random bytes)>`. The prefix is greppable for leak
-// scanning and disambiguates a token from a Clerk JWT in the same
+// `lwt_<base64url(32 random bytes)>`. The prefix is greppable for leak
+// scanning and disambiguates a token from an account access token in the same
 // `Authorization: Bearer` header.
 export function generateApiToken(): string {
   return TOKEN_PREFIX + randomBase64Url(TOKEN_RANDOM_BYTES);

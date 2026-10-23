@@ -40,7 +40,7 @@ Nine of the Shape set's values move or fade the element as a whole: **Blink**, *
 **Bounce**, **Wobble**, **Shake**, **Jelly**, **Float** and **Swing**. They are its **motions**, and they suit any
 silhouette, so an element whose own set animates inside it takes them too: sticky notes, drawings, images and
 videos, tables, charts, Sankey diagrams, progress, ratings and concept graphics. Its menu shows a
-**Shape** section beside its own, offering the motions alone; a photo on a slide can bounce. The Shape set's
+**Shape** section beside its own, offering the motions alone; a photo on a page can bounce. The Shape set's
 other values (Pulse, Glow, Trace, Gradient, Shimmer, Highlight) light or trace a shape's own outline and fill, so
 they stay with the Shape set's members.
 
@@ -118,7 +118,7 @@ A text element's old value lives in `animation`. Picking a Text animation for it
 - **Loops and reveals.** A **loop** repeats a motion around the rest frame. A **reveal** brings the element or its
   words in. With Repeat on, a reveal cycles: reveal, hold, clear, again. With Repeat off, it plays once and stays
   revealed; a loop plays one cycle and settles on its rest frame.
-- **When a play-once runs.** When the element appears with it: the document opening, a tab switch, or the moment it
+- **When a play-once runs.** When the element appears with it: the design opening, a tab switch, or the moment it
   is picked.
 - **Text plays once by default.** A Text animation's Repeat starts off: words type in (or ripple, or glow)
   once and stay revealed. Every other set loops by default.
@@ -269,7 +269,7 @@ to appear.
   (every other animation loops by default and stores Repeat only when false).
 - The fields are cosmetic. Validation is lenient on them as on every cosmetic field: an unknown value renders as no
   animation.
-- No migration: old documents render as they did.
+- No migration: old designs render as they did.
 
 ## Telemetry
 

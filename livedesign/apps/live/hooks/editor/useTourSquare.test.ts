@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { createShape, type Tab } from '@livedesign/document';
+import { createShape, type Tab } from '@livedesign/design';
 import { useTourSquare } from './useTourSquare';
 
 // A tour's demonstration square (docs/specs/007-editor/pages-tour.md): placed on the active tab,

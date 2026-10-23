@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, Tab } from '@livedesign/document';
+import type { Element, Tab } from '@livedesign/design';
 import { renderTabToSvg } from '@/lib/export-tab';
 import { tabWindowArts, tabWindowTargets } from './useTabWindowExport';
 

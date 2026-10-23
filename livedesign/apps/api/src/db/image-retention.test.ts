@@ -7,7 +7,7 @@ import {
   IMAGE_SWEEP_TRIPPED_MAX,
   sweepTripped,
 } from './image-retention';
-import { deleteDocument } from './documents';
+import { deleteDesign } from './designs';
 import { upsertTab } from './tabs';
 import {
   CUTOFF,
@@ -75,13 +75,13 @@ describe('deleteOldUnusedImages', () => {
     expect(db.bucket.delete).toHaveBeenCalledWith(['old-unused']);
   });
 
-  it('counts a tab no document links (kept conservatively) but not a dangling reference', async () => {
+  it('counts a tab no design links (kept conservatively) but not a dangling reference', async () => {
     const db = setup();
     liveDoc(db.sql, 'A');
     images(db.sql, OLD, 'on-orphan-tab', 'on-deleted-tab');
     await upsertTab(db.env, 'A', tabWith('orphan', 'on-orphan-tab'), 0);
     await upsertTab(db.env, 'A', tabWith('gone', 'on-deleted-tab'), 1);
-    db.sql.exec("DELETE FROM document_tabs WHERE tab_id = 'orphan'");
+    db.sql.exec("DELETE FROM design_tabs WHERE tab_id = 'orphan'");
     // A tab removed by a path that didn't prune: its row dangles.
     db.sql.exec("DELETE FROM tabs WHERE id = 'gone'");
     expect(await deleteOldUnusedImages(db.env, CUTOFF)).toBe(1);
@@ -89,13 +89,13 @@ describe('deleteOldUnusedImages', () => {
     expect(refsFor(db.sql, 'on-deleted-tab')).toBe(0);
   });
 
-  it('reaps the images of a deleted document', async () => {
+  it('reaps the images of a deleted design', async () => {
     const db = setup();
     liveDoc(db.sql, 'A');
     images(db.sql, OLD, 'img');
     await upsertTab(db.env, 'A', tabWith('t1', 'img'), 0);
     expect(await deleteOldUnusedImages(db.env, CUTOFF)).toBe(0);
-    await deleteDocument(db.env, 'A');
+    await deleteDesign(db.env, 'A');
     expect(await deleteOldUnusedImages(db.env, CUTOFF)).toBe(1);
   });
 

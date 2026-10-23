@@ -1,18 +1,18 @@
 // `export --all --to <dir> [--format json,svg,png]` (docs/specs/015-api/blueprints/cli.md "Pull and push",
-// CLI29): every document the token can read, written read-only for backups and docs. `json` is the editor's
-// `livedesign.document` envelope; the other formats are one file per tab under `<slug>/`. Two documents at a time;
-// a rate-limited read waits a minute and tries again, up to three times. A document that fails is reported and the
+// CLI29): every design the token can read, written read-only for backups and docs. `json` is the editor's
+// `livedesign.design` envelope; the other formats are one file per tab under `<slug>/`. Two designs at a time;
+// a rate-limited read waits a minute and tries again, up to three times. A design that fails is reported and the
 // rest still go (CLI84).
 
 import {
   EXPORT_FORMATS,
-  listAllDocuments,
+  listAllDesigns,
   tabPath,
   type VerbContext,
 } from '@livedesign/agent-verbs';
 import { ApiError } from '@livedesign/api-client';
-import type { DocumentResponse } from '@livedesign/api-schema';
-import { documentToEnvelopeText, type EnvelopeTab, type Tab } from '@livedesign/document';
+import type { DesignResponse } from '@livedesign/api-schema';
+import { designToEnvelopeText, type EnvelopeTab, type Tab } from '@livedesign/design';
 import type { CliIo } from '../io';
 import { CliError, formatError } from '../output/cli-error';
 import { EXIT, type ExitCode } from '../output/exit-codes';
@@ -87,22 +87,22 @@ const TAB_FILES: Record<Exclude<ExportFormat, 'json'>, string> = {
   png: 'png',
 };
 
-async function exportDocument(
+async function exportDesign(
   io: CliIo,
   ctx: VerbContext,
-  documentId: string,
+  designId: string,
   slug: string,
   dir: string,
   formats: readonly ExportFormat[],
 ): Promise<string[]> {
-  const { document } = await patiently(ctx, () =>
-    ctx.api.json<DocumentResponse>(`/documents/${encodeURIComponent(documentId)}`),
+  const { design } = await patiently(ctx, () =>
+    ctx.api.json<DesignResponse>(`/designs/${encodeURIComponent(designId)}`),
   );
-  const ordered = [...document.tabs].sort((a, b) => a.orderIndex - b.orderIndex);
+  const ordered = [...design.tabs].sort((a, b) => a.orderIndex - b.orderIndex);
   const tabs: EnvelopeTab[] = [];
   for (const summary of ordered) {
     const { tab } = await patiently(ctx, () =>
-      ctx.api.json<{ tab: Tab }>(tabPath(document.id, summary.id)),
+      ctx.api.json<{ tab: Tab }>(tabPath(design.id, summary.id)),
     );
     tabs.push({ ...tab, ...(summary.folder ? { folder: summary.folder } : {}) });
   }
@@ -112,7 +112,7 @@ async function exportDocument(
     written.push(path);
   };
   if (formats.includes('json')) {
-    const text = documentToEnvelopeText(document, tabs, ctx.now());
+    const text = designToEnvelopeText(design, tabs, ctx.now());
     await write(joinPath(dir, `${slug}${PULL_FILE_SUFFIX}`), `${text}\n`);
   }
   const perTab = formats.filter((f): f is Exclude<ExportFormat, 'json'> => f !== 'json');
@@ -125,7 +125,7 @@ async function exportDocument(
     for (const format of perTab) {
       const path = `${base}.${TAB_FILES[format]}`;
       const { body } = await patiently(ctx, () =>
-        ctx.api.text(`${tabPath(document.id, tab.id)}/render.svg`),
+        ctx.api.text(`${tabPath(design.id, tab.id)}/render.svg`),
       );
       if (format === 'svg') await write(path, body);
       else {
@@ -142,28 +142,28 @@ export async function exportAll(
   ctx: VerbContext,
   host: string,
   input: ExportInput,
-): Promise<{ paths: string[]; documents: number; exit: number }> {
+): Promise<{ paths: string[]; designs: number; exit: number }> {
   if (!input.all)
     throw new CliError({
       exit: EXIT.usage,
       code: 'usage',
-      message: 'export writes every document: add --all',
-      hint: 'one document: livedesign pull <doc>',
+      message: 'export writes every design: add --all',
+      hint: 'one design: livedesign pull <doc>',
     });
   const formats = formatsOf(input.format);
-  const documents = await patiently(ctx, () => listAllDocuments(ctx.api));
-  const slugs = uniqueSlugs(documents);
+  const designs = await patiently(ctx, () => listAllDesigns(ctx.api));
+  const slugs = uniqueSlugs(designs);
   await io.files.mkdir(input.to);
-  ctx.log(`export ${documents.length} documents as ${formats.join(',')}`);
-  const results = new Array<string[] | null>(documents.length).fill(null);
+  ctx.log(`export ${designs.length} designs as ${formats.join(',')}`);
+  const results = new Array<string[] | null>(designs.length).fill(null);
   let exit: ExitCode = EXIT.done;
   let next = 0;
   const worker = async () => {
-    while (next < documents.length) {
+    while (next < designs.length) {
       const index = next++;
-      const doc = documents[index]!;
+      const doc = designs[index]!;
       try {
-        results[index] = await exportDocument(
+        results[index] = await exportDesign(
           io,
           ctx,
           doc.id,
@@ -185,5 +185,5 @@ export async function exportAll(
   };
   await Promise.all(Array.from({ length: EXPORT_CONCURRENCY }, worker));
   const done = results.filter((r): r is string[] => r !== null);
-  return { paths: done.flat(), documents: done.length, exit };
+  return { paths: done.flat(), designs: done.length, exit };
 }

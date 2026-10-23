@@ -1,7 +1,7 @@
 // Before an agent's Pages edit (docs/specs/024-agents/pages-for-agents.md "Which tab"): a
 // locked tab is refused. Every tab is a Pages tab, so there is no mode to switch into.
 import type { PagesRefusal } from '@livedesign/api-schema';
-import type { Tab } from '@livedesign/document';
+import type { Tab } from '@livedesign/design';
 
 // Fresh ids, injectable so tests are deterministic.
 export type PagesIds = { page?: () => string };

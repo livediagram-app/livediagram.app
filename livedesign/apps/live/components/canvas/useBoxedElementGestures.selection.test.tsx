@@ -8,7 +8,7 @@ import {
   createTable,
   createText,
   type BoxedElement,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { useBoxedElementGestures } from './useBoxedElementGestures';
 
 // docs/specs/008-canvas/canvas-and-palette.md "Selection" (click the selected element again) and

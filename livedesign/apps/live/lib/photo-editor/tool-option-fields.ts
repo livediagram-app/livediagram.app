@@ -1,7 +1,7 @@
 // What the options flyout shows for each tool (docs/specs/031-photo/photo-tools.md names each tool's
 // options): a declarative list of each options group's fields, so one bar draws them all. A field may
 // be one tool's only (Protect Detail is the Sharpen tool's) with `only`.
-import { FONTS } from '@livedesign/document';
+import { FONTS } from '@livedesign/design';
 import { BLEND_MODE_GROUPS, BLEND_MODE_NAMES, type BlendMode } from '@livedesign/photo-engine';
 import type { PhotoToolId, SelectMode, ToolOptions } from './tool-state';
 

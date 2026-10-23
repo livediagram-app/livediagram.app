@@ -13,7 +13,7 @@ import {
   type EditOperation,
   type ReplaceBody,
 } from '@livedesign/edit-operations';
-import { isFinish, isRecord, ELEMENT_FINGERPRINT_LENGTH, type Finish } from '@livedesign/document';
+import { isFinish, isRecord, ELEMENT_FINGERPRINT_LENGTH, type Finish } from '@livedesign/design';
 
 // A changeset request as the route receives it (docs/specs/024-agents/blueprints/agent-changesets.md
 // "Interfaces and contracts"), checked member by member before anything is read. Pure.

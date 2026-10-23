@@ -2,7 +2,7 @@
 // pages-mode.md "Into pages"; issue #491: a template's stickies were shrunk until
 // their text was unreadable). Every template's content stays exactly as built.
 import { describe, expect, it } from 'vitest';
-import { withContentOnAPage } from '@livedesign/document';
+import { withContentOnAPage } from '@livedesign/design';
 import { buildTemplate } from './build-template';
 import { TEMPLATES } from './templates';
 

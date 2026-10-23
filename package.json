@@ -14,10 +14,11 @@
     "staging:check": "turbo run staging:check",
     "dev:diagram": "turbo run dev --filter=@livediagram/*",
     "dev:planner": "turbo run dev --filter=@liveplanner/*",
-    "dev:workspace": "turbo run dev --filter=@liveworkspace/site --filter=@liveworkspace/accounts --filter=@liveworkspace/telemetry-service --filter=@liveworkspace/community-service",
+    "dev:workspace": "turbo run dev --filter=@liveworkspace/site --filter=@liveworkspace/accounts --filter=@liveworkspace/telemetry-service --filter=@liveworkspace/community-service --filter=@liveworkspace/media-service",
     "dev:accounts": "turbo run dev --filter=@liveworkspace/accounts",
     "dev:telemetry": "turbo run dev --filter=@liveworkspace/telemetry-service",
     "dev:community": "turbo run dev --filter=@liveworkspace/community-service",
+    "dev:media": "turbo run dev --filter=@liveworkspace/media-service",
     "dev:site": "turbo run dev --filter=@liveworkspace/site",
     "dev:design": "turbo run dev --filter=@livedesign/*",
     "dev:documents": "turbo run dev --filter=@livedocuments/*"

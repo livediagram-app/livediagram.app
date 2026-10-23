@@ -4,8 +4,7 @@ import { use, useCallback, useDeferredValue, useEffect, useMemo, useState } from
 import { browser } from 'react-dom';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
-import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
-import { usePublishPicture } from '@/hooks/persistence/usePublishedPicture';
+import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import {
   apiListDocuments,
   apiListSharedWith,
@@ -26,7 +25,6 @@ import { useFavourites } from '@/hooks/persistence/useFavourites';
 import { useFolders } from '@/hooks/persistence/useFolders';
 import { useTeamLibrariesSweep } from '@/hooks/persistence/useTeamLibrariesSweep';
 import { useTeams } from '@/hooks/persistence/useTeams';
-import { useTokens } from '@/hooks/persistence/useTokens';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { useDocumentListActions } from '@/hooks/persistence/useDocumentListActions';
 import { useToast } from '@/hooks/ui/useToast';
@@ -57,7 +55,7 @@ import { useDefaultFolderMenus } from '@/hooks/persistence/useDefaultFolderMenus
 // navigates, so back/forward and deep links work for free.
 //
 // Open to both guests and signed-in users (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/013-workspace/folders.md): the
-// owner id resolves to the Clerk userId when signed in, otherwise to
+// owner id resolves to the account id when signed in, otherwise to
 // the `livedocuments:v2:self-id` localStorage UUID.
 
 export function useExplorerState() {
@@ -76,11 +74,9 @@ export function useExplorerState() {
       : selectedFromRoute(pathname ?? '/explorer', searchParams);
   }, [pathname, searchParams]);
 
-  const { authLoaded, clerkUserId, clerkDisplayName, isSignedIn } = useClerkApiBootstrap();
+  const { authLoaded, accountUserId, accountDisplayName, isSignedIn } = useAccountBootstrap();
   // In a workspace frame the Explorer drops the app's surroundings and the account (explorer-surface.ts).
   const surface = explorerSurfaceFlags(useExplorerSurface());
-  // Keep the participant record's profile picture current (docs/specs/014-identity/profile-picture.md §6).
-  usePublishPicture(surface.publishPicture ? clerkUserId : null);
 
   // Synced user preferences (docs/specs/007-editor/user-preferences.md). Owned HERE rather than in
   // ExplorerShell because the pane needs them too (Recent honours the
@@ -96,14 +92,14 @@ export function useExplorerState() {
   // device's state are read from the first render on.
   use(browser());
   // Owner id resolution mirrors new/page.tsx + editor-page.tsx: a
-  // signed-in user is keyed by Clerk userId, a guest is keyed by the
-  // localStorage UUID (minted on first visit). Null until Clerk has
+  // signed-in user is keyed by account id, a guest is keyed by the
+  // localStorage UUID (minted on first visit). Null until auth has
   // settled so a signed-in user never momentarily reads a guest id.
   // For a guest, the SIGNED id (useSignedGuestId; docs/specs/014-identity/auth-and-guest-access.md
   // "Signed guest ids"), so the lists' first calls carry the `X-Owner-Sig` the api may require. Null
   // until it resolves (the lists are autoLoad:false off ownerId).
-  const guestId = useSignedGuestId(authLoaded, clerkUserId);
-  const ownerId: string | null = !authLoaded ? null : (clerkUserId ?? guestId);
+  const guestId = useSignedGuestId(authLoaded, accountUserId);
+  const ownerId: string | null = !authLoaded ? null : (accountUserId ?? guestId);
   // Daily-active-returns signal (docs/specs/017-telemetry/telemetry.md): the Explorer is an app-open
   // surface too, so count a returning visitor here. Gated once per
   // browser per UTC day inside the helper (shared with the editor +
@@ -111,8 +107,8 @@ export function useExplorerState() {
   // once. Runs once auth has settled so guest vs signed-in is known.
   useEffect(() => {
     if (!authLoaded) return;
-    trackDailyReturn(!!clerkUserId);
-  }, [authLoaded, clerkUserId]);
+    trackDailyReturn(!!accountUserId);
+  }, [authLoaded, accountUserId]);
   const [liveDocs, setDocuments] = useState<DocumentListItem[]>([]);
   const {
     folders,
@@ -123,13 +119,12 @@ export function useExplorerState() {
   } = useFolders(ownerId, { autoLoad: false });
   const [shared, setShared] = useState<SharedWithItem[]>([]);
   // Teams (docs/specs/013-workspace/teams.md): signed-in only. Guests get a sign-in prompt in
-  // the sidebar section instead of rows; Clerk-disabled self-host
+  // the sidebar section instead of rows; sign-in-disabled self-host
   // deployments hide the section entirely.
-  const teamsEnabled = Boolean(isSignedIn && clerkUserId);
+  const teamsEnabled = Boolean(isSignedIn && accountUserId);
   const {
     teams,
     invites,
-    createTeam: hookCreateTeam,
     acceptInvite,
     declineInvite,
     refresh: refreshTeams,
@@ -142,11 +137,6 @@ export function useExplorerState() {
     search: searchParams?.toString() ?? '',
     router,
   });
-  // API tokens (docs/specs/015-api/public-api-and-tokens.md): signed-in only, same gate as teams. Loaded here for
-  // the timeline's token-card menus, which offer Revoke for a token that is
-  // still live. Managing them is the Settings API Tokens category.
-  const tokens = useTokens(ownerId, { enabled: teamsEnabled && surface.administration });
-  const [teamModalOpen, setTeamModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   // Which list read failed last, so a view says Failed rather than Empty.
   const [failedReads, setFailedReads] = useState({ documents: false, shared: false });
@@ -286,7 +276,7 @@ export function useExplorerState() {
 
   // A guest's ownerId resolves asynchronously now (ensureSignedGuestIdentity
   // above), so it lags `authLoaded` by a tick. Keep the skeleton rather than
-  // flashing an empty state — ownerId always resolves (signed-in → Clerk id;
+  // flashing an empty state — ownerId always resolves (signed-in → account id;
   // guest → minted id), so this never stalls. A new owner is loading from its
   // first render.
   const loadOwner = authLoaded ? ownerId : null;
@@ -540,8 +530,8 @@ export function useExplorerState() {
   return {
     // Identity / auth
     authLoaded,
-    clerkUserId,
-    clerkDisplayName,
+    accountUserId,
+    accountDisplayName,
     ownerId,
     teamsEnabled,
     // Route
@@ -557,7 +547,6 @@ export function useExplorerState() {
     // My Work' own menu: "Use as Default for" only.
     rootDefaults: defaultFolders.forRoot,
     invites,
-    tokens,
     loading,
     // Re-read the owner's lists (after an import made documents).
     refreshPersonal: refresh,
@@ -627,7 +616,6 @@ export function useExplorerState() {
     moveTeamDests,
     dismissShared,
     // Teams
-    hookCreateTeam,
     acceptInvite,
     declineInvite,
     refreshTeams,
@@ -644,8 +632,6 @@ export function useExplorerState() {
       if (teamId) refreshTeamLibraries();
       else void refreshFolders();
     },
-    teamModalOpen,
-    setTeamModalOpen,
   };
 }
 

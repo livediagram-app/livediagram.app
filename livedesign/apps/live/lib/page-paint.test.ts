@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pageIsDark, type Page } from '@livedesign/document';
+import { pageIsDark, type Page } from '@livedesign/design';
 import {
   fillCss,
   gradientFill,

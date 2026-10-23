@@ -148,7 +148,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   // A die-cut plate: the outer cut line, the white margin inside it, and a motif
   // on the plate. Deliberately NOT a folded corner — that idiom already means a
-  // document here (`document`, `page`), and a sticker is the opposite of a page.
+  // design here (`design`, `page`), and a sticker is the opposite of a page.
   stickers: (
     <Glyph>
       <rect x="3" y="3" width="18" height="18" rx="5" />
@@ -227,7 +227,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <circle cx="12" cy="11" r="9.5" strokeDasharray="1.6 1.4" />
     </Glyph>
   ),
-  // A page with a title and a bar chart: the poster an infographic becomes.
+  // A page with a title and a bar chart: a page built up into one finished picture.
   'working-with-pages': (
     <Glyph>
       <rect x="5" y="2.5" width="14" height="19" rx="1.5" />
@@ -362,7 +362,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   // A folder handed outward: the team library is a folder every member can reach.
   // `search-teams` is a folder with people INSIDE it, which is a different claim.
-  'team-shared-documents': (
+  'team-shared-designs': (
     <Glyph>
       <path d="M2.5 8A1.5 1.5 0 014 6.5h4L9.5 8.5h5A1.5 1.5 0 0116 10v7.5A1.5 1.5 0 0114.5 19H4A1.5 1.5 0 012.5 17.5z" />
       <path d="M17.5 8.5H22" />
@@ -411,7 +411,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M15.5 11.5v3l2.2 1.4" />
     </Glyph>
   ),
-  // A document inside somebody else's page — the outer frame is the point.
+  // A design inside somebody else's page — the outer frame is the point.
   embeds: (
     <Glyph>
       <rect x="2" y="3.5" width="20" height="17" rx="2" />
@@ -606,8 +606,8 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M8.2 10.5h7.6M5.9 15h12.2" />
     </Glyph>
   ),
-  // A globe in the window, not a document: `embeds` is a document inside somebody
-  // else's page, and this is somebody else's page inside a document.
+  // A globe in the window, not a design: `embeds` is a design inside somebody
+  // else's page, and this is somebody else's page inside a design.
   website: (
     <Glyph>
       <rect x="2.5" y="4" width="19" height="16" rx="2" />
@@ -1014,7 +1014,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M9 12.5A1.5 1.5 0 0110.5 11h2l1.5 1.5h4a1.5 1.5 0 011.5 1.5v4a1.5 1.5 0 01-1.5 1.5h-8A1.5 1.5 0 019 19z" />
     </Glyph>
   ),
-  // A new document dropping into its folder: where things go without being told.
+  // A new design dropping into its folder: where things go without being told.
   'default-folders': (
     <Glyph>
       <path d="M3 10.5A1.5 1.5 0 014.5 9h3L9 10.5h10.5A1.5 1.5 0 0121 12v6.5a1.5 1.5 0 01-1.5 1.5h-15A1.5 1.5 0 013 18.5z" />
@@ -1086,7 +1086,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <Prims prims={lucideLink} />
     </Glyph>
   ),
-  'add-to-document': (
+  'add-to-design': (
     <Glyph>
       <rect x="3" y="3" width="12" height="12" rx="2" />
       <path d="M9 21h10a2 2 0 0 0 2-2V9" />
@@ -1099,7 +1099,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12 3v9M9 9l3 3 3-3" />
     </Glyph>
   ),
-  // A luggage tag with its eyelet: a label you put on a document.
+  // A luggage tag with its eyelet: a label you put on a design.
   tags: (
     <Glyph>
       <path d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7a1 1 0 0 1 .7.3l7.6 7.6a1 1 0 0 1 0 1.4l-7.7 7.7a1 1 0 0 1-1.4 0l-7.6-7.6a1 1 0 0 1-.3-.7z" />
@@ -1119,7 +1119,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   // Search Panel guides. Six articles about one control, so by the rule the
   // Behaviour batch settled on, none of these draws a magnifier — `the-search-
-  // panel` below already does. Each draws WHAT you find: documents, a team, a tab
+  // panel` below already does. Each draws WHAT you find: designs, a team, a tab
   // and an element, a shape landing on the canvas, a new tab.
   'command-palette': (
     <Glyph>
@@ -1128,7 +1128,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M11 13.5h7" />
     </Glyph>
   ),
-  'search-documents': (
+  'search-designs': (
     <Glyph>
       <path d="M3 7a1.5 1.5 0 011.5-1.5h4L10 7.5h8A1.5 1.5 0 0119.5 9v8.5A1.5 1.5 0 0118 19H4.5A1.5 1.5 0 013 17.5z" />
       <rect x="5.5" y="11" width="4.5" height="3.5" rx="0.5" />

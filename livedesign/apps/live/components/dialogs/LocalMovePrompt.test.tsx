@@ -2,8 +2,8 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// docs/specs/014-identity/auth-and-guest-access.md "Moving documents in This Browser after signing in": offered
-// once signed in when this browser holds documents in This Browser, every one ticked; Move syncs each in
+// docs/specs/014-identity/auth-and-guest-access.md "Moving designs in This Browser after signing in": offered
+// once signed in when this browser holds designs in This Browser, every one ticked; Move syncs each in
 // turn and names any that stayed; Not Now is remembered until the count grows.
 
 const { auth, store, convert, track } = vi.hoisted(() => {
@@ -13,7 +13,7 @@ const { auth, store, convert, track } = vi.hoisted(() => {
   };
   return {
     auth,
-    store: { offlineListDocuments: vi.fn(), offlineIdCount: vi.fn() },
+    store: { offlineListDesigns: vi.fn(), offlineIdCount: vi.fn() },
     convert: { saveOfflineToCloud: vi.fn() },
     track: vi.fn(),
   };
@@ -34,7 +34,7 @@ const reload = vi.fn();
 beforeEach(() => {
   auth.authLoaded = true;
   auth.clerkUserId = 'user_1';
-  store.offlineListDocuments.mockResolvedValue(DOCS);
+  store.offlineListDesigns.mockResolvedValue(DOCS);
   store.offlineIdCount.mockResolvedValue(DOCS.length);
   convert.saveOfflineToCloud.mockResolvedValue('x');
   vi.stubGlobal('location', { ...window.location, reload });
@@ -52,9 +52,9 @@ const show = async (enabled?: boolean) => {
 };
 
 describe('LocalMovePrompt', () => {
-  it('offers every document in This Browser, newest first, all ticked', async () => {
+  it('offers every design in This Browser, newest first, all ticked', async () => {
     await show();
-    expect(screen.getByText('Move Documents in This Browser to Your Account?')).toBeTruthy();
+    expect(screen.getByText('Move Designs in This Browser to Your Account?')).toBeTruthy();
     const names = screen.getAllByRole('checkbox').slice(1);
     expect(names.map((c) => (c as HTMLInputElement).checked)).toEqual([true, true]);
     expect(screen.getAllByRole('listitem').map((li) => li.textContent)).toEqual([
@@ -72,15 +72,15 @@ describe('LocalMovePrompt', () => {
     await show();
     auth.authLoaded = true;
     await show(false);
-    expect(store.offlineListDocuments).not.toHaveBeenCalled();
+    expect(store.offlineListDesigns).not.toHaveBeenCalled();
     store.offlineIdCount.mockResolvedValue(0);
     await show();
     // Nothing held here: the records are never read.
-    expect(store.offlineListDocuments).not.toHaveBeenCalled();
-    expect(screen.queryByText('Move Documents in This Browser to Your Account?')).toBeNull();
+    expect(store.offlineListDesigns).not.toHaveBeenCalled();
+    expect(screen.queryByText('Move Designs in This Browser to Your Account?')).toBeNull();
   });
 
-  it('moves the ticked documents into the account, then reloads', async () => {
+  it('moves the ticked designs into the account, then reloads', async () => {
     await show();
     fireEvent.click(screen.getByRole('checkbox', { name: /Older sketch/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Move' }));
@@ -107,23 +107,23 @@ describe('LocalMovePrompt', () => {
     expect(reload).toHaveBeenCalledOnce();
   });
 
-  it('remembers Not Now until there are more documents in This Browser', async () => {
+  it('remembers Not Now until there are more designs in This Browser', async () => {
     await show();
     fireEvent.click(screen.getByRole('button', { name: 'Not Now' }));
     expect(track).toHaveBeenCalledWith('UI', 'Closed', 'LocalMovePrompt');
-    expect(screen.queryByText('Move Documents in This Browser to Your Account?')).toBeNull();
+    expect(screen.queryByText('Move Designs in This Browser to Your Account?')).toBeNull();
     cleanup();
     await show();
-    expect(screen.queryByText('Move Documents in This Browser to Your Account?')).toBeNull();
+    expect(screen.queryByText('Move Designs in This Browser to Your Account?')).toBeNull();
     // Not even listed while the count is no more than what was put off.
-    expect(store.offlineListDocuments).toHaveBeenCalledOnce();
+    expect(store.offlineListDesigns).toHaveBeenCalledOnce();
     store.offlineIdCount.mockResolvedValue(3);
-    store.offlineListDocuments.mockResolvedValue([
+    store.offlineListDesigns.mockResolvedValue([
       ...DOCS,
       { id: 'c', name: 'New', savedAt: Date.now() },
     ]);
     cleanup();
     await show();
-    expect(screen.getByText('Move Documents in This Browser to Your Account?')).toBeTruthy();
+    expect(screen.getByText('Move Designs in This Browser to Your Account?')).toBeTruthy();
   });
 });

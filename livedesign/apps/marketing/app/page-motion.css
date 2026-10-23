@@ -4,7 +4,7 @@
    modes and no-JS visitors get the same text: nothing waits on script, and a
    browser without these features simply shows the page as it is.
 
-   1. Cross-document view transitions (opted into in app/layout.tsx's <head>):
+   1. Cross-design view transitions (opted into in app/layout.tsx's <head>):
       navigating between two marketing pages
       (home to /features/<id> and back) crossfades instead of flashing white,
       and the sticky header (view-transition-name: site-header, set on the

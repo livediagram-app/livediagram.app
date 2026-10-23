@@ -4,12 +4,12 @@ Status: shipped
 
 ## The rule
 
-**An exported image is a picture of the document.** Whatever the canvas draws,
+**An exported image is a picture of the design.** Whatever the canvas draws,
 every export draws: same sizes, same colours, same marks, in the same places.
 A difference between the canvas and its export is a bug, not a degradation.
 
 That applies to all four surfaces the headless renderer feeds, because they are
-all "a picture of the document" to whoever is looking at one: the SVG / PNG / PDF
+all "a picture of the design" to whoever is looking at one: the SVG / PNG / PDF
 export, the Explorer's preview thumbnails, the public live-image share link
 ([Live image share link](../013-workspace/live-image-share.md)), and the inline images the MCP server
 returns ([MCP server](../015-api/mcp-server.md)).
@@ -17,7 +17,7 @@ returns ([MCP server](../015-api/mcp-server.md)).
 ## Why it kept breaking
 
 There are **three** renderers for the same content: the canvas (React, DOM +
-CSS + SVG), the SVG emitters in `packages/document/src/svg-render*.ts`, and the
+CSS + SVG), the SVG emitters in `packages/design/src/svg-render*.ts`, and the
 PNG / PDF canvas-2D drawers in `apps/live/lib/export-tab-canvas-draw.ts`. Each
 was internally consistent, so each looked right in its own tests, and the
 differences between them were invisible until someone laid two pictures side by
@@ -37,7 +37,7 @@ side. They were not small:
 
 ## How it is held
 
-**One definition per decision, in `@livedesign/document`,** imported by both
+**One definition per decision, in `@livedesign/design`,** imported by both
 sides rather than reimplemented. That is the only mechanism that works: a rule
 written down in two places is a rule that drifts. What moved there for this:
 
@@ -57,7 +57,7 @@ canvas-2D drawers cannot draw. Adding a body to a kind wires up both exports.
 **Borders are the element's own.** A shape's export border uses its stroke
 width, dash pattern and radius (`svg-render-border.ts`), inset by half the
 stroke the way the canvas's CSS border sits inside the box; every silhouette drawn
-to its box edge (`strokeInside`: diamond, parallelogram, hexagon, document, cylinder,
+to its box edge (`strokeInside`: diamond, parallelogram, hexagon, design, cylinder,
 cloud) is inset the same way, so its outline never crosses the box edge.
 
 **Every export draws an arrow the same way.** The SVG and the PNG / PDF both
@@ -96,7 +96,7 @@ known gap is the Callout body's indent, a few pixels off the canvas's.
 
 ## Checking it
 
-`packages/document/src/export-consistency.test.ts` holds the wiring rather than
+`packages/design/src/export-consistency.test.ts` holds the wiring rather than
 pixels: that the exporter reads the canvas font table, that every kind with a
 body draws more than a box, that a face's title is not also printed as a centred
 label, and that every kind whose body the SVG draws is one the PNG rasterises.

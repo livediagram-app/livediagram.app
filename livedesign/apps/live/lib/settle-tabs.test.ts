@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, type ShapeElement, type Tab } from '@livedesign/document';
+import { createShape, type ShapeElement, type Tab } from '@livedesign/design';
 import { settleChipsInTabs } from './settle-tabs';
 
 const tab = (id: string, elements: Tab['elements']) => ({ id, name: id, elements }) as Tab;

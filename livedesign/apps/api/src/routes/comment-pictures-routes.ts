@@ -1,4 +1,4 @@
-// GET /api/documents/<id>/tabs/<tabId>/comment-pictures — the published profile pictures of a tab's
+// GET /api/designs/<id>/tabs/<tabId>/comment-pictures — the published profile pictures of a tab's
 // comment authors, keyed by COMMENT id (docs/specs/014-identity/profile-picture.md §5, §6).
 //
 // Keyed by comment because a reader never gets other people's comment author ids: they are owner
@@ -6,11 +6,11 @@
 // up, and hands back only comment id -> picture URL. Only a signed-in caller gets any: an anonymous
 // share-link visitor reads an empty map, so the URL never reaches them.
 
-import type { Element } from '@livedesign/document';
+import type { Element } from '@livedesign/design';
 import { commentThreadOf } from '../comments';
-import { getDocument, getParticipant, getTab } from '../db';
+import { getDesign, getParticipant, getTab } from '../db';
 import { forbidden, json } from '../responses';
-import { gateRead, missingDocument, requireOwner, type RouteContext } from './context';
+import { gateRead, missingDesign, requireOwner, type RouteContext } from './context';
 
 // Bounds the participant reads one request can cause; a tab past it shows initials for the rest.
 const MAX_COMMENT_PICTURE_AUTHORS = 50;
@@ -29,8 +29,8 @@ export async function handleCommentPicturesRoute(ctx: RouteContext): Promise<Res
   const tabId = segments[4]!;
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
-  const existing = await getDocument(env, id);
-  if (!existing) return missingDocument(ctx, id);
+  const existing = await getDesign(env, id);
+  if (!existing) return missingDesign(ctx, id);
   if (!(await gateRead(ctx, id, existing.ownerId, existing.teamId, tabId))) return forbidden();
   if (!ctx.verifiedUserId) return json({ pictures: {} });
   const tab = await getTab(env, id, tabId);

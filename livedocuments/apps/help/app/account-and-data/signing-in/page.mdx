@@ -1,6 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { SignInCard, MigrateOnSignUp } from '@/components/illustrations/account';
+import { MigrateOnSignUp } from '@/components/illustrations/account';
 
 export const metadata = helpMetadata({
   title: 'Signing In',
@@ -15,33 +15,15 @@ Signing in to livedocuments is entirely optional. The canvas works without an ac
 
 ## Creating an account
 
-There are two routes:
+Your livedocuments account is a **liveworkspace** account: one sign-in for livedocuments, livediagram and the other liveworkspace apps. Choosing **Sign in** at the top right of the editor or the Explorer (or opening `/sign-in` or `/get-started`) takes you to the liveworkspace sign-in page at liveworkspace.app. Enter your email and we send you a 6-digit code; type it in and you are back in livedocuments, signed in. There is no password, and there is no separate sign-up step: the first time you sign in with an email, that is your account made.
 
-- **Sign up** at `/get-started`. Enter your first name, last name and email, then confirm with the 6-digit code we email you.
-- **Sign in** at `/sign-in` (the **Sign in** link at the top right of the editor and the Explorer) if you already have an account. Enter your email, choose **Continue with email**, and type the 6-digit code.
-
-Where Google sign-in is enabled, as it is on livedocuments.app, both pages also offer **Continue with Google** above the email field. If you try to sign in with an email that has no account yet, you are taken to sign-up with that email already filled in.
+If you are already signed in to another liveworkspace app in the same browser, signing in to livedocuments takes you straight back with no code to type.
 
 Accounts are free, with no paid tier and nothing to upgrade. After signing in from the sign-in page you land on the [Explorer](/explorer) to see your documents; after signing up you land on the new-document flow to start building. If you used the **Sign in** link in the editor or the Explorer, you go back to where you were instead.
 
-<Figure
-  caption="The sign-in card: Continue with Google where it is enabled, or your email and a 6-digit code."
-  width="narrow"
->
-  <SignInCard />
-</Figure>
+Once you are signed in, your initial and name replace the **Sign in** link. Click it for the account menu: **Account** opens the Account category of Settings, where your name, email, [Trash](/help/account-and-data/trash/) and **Delete Account** live, and **Sign out** signs you out of livedocuments and returns you to the home page. Settings shows the name and email of your account; it does not edit them.
 
-Once you are signed in, your picture (or initial) and first name replace the **Sign in** link. Click it for the account menu: **Account** opens the Account category of Settings, where your name, email, profile picture switch, [Trash](/help/account-and-data/trash/) and **Delete Account** live, and **Sign out** signs you out and returns you to the home page. Settings shows the name and email your account was created with; it does not edit them.
-
-## Your profile picture
-
-When you sign in with Google, your Google profile picture becomes your avatar. If your account already has a picture of its own, that one is used instead (livedocuments itself has no upload). If you have no picture, or it cannot load, you see your initial.
-
-**Who sees it.** You always see your picture: on the account button at the top right and on your card in **Settings > Account**. People you collaborate with who are signed in see it too: on your presence avatar, your cursor, your comments and your team's member list. People who open your share links without signing in always see your initials.
-
-**Turning it off.** Switch off **Settings > Account > Show My Profile Picture** and everyone else sees your initials again, including in documents that are open right now. You still see your own picture.
-
-**Keeping it current.** If you change your picture at Google, livedocuments shows the new one after your next sign-in with Google: Google only shares your picture when you sign in. livedocuments keeps only the picture's web address, never the image itself.
+**Delete Account** removes everything you have in livedocuments, closes your liveworkspace account and signs you out. Closing it signs you out of the other liveworkspace apps too, and you can no longer sign in to them with it.
 
 ## When sign-in is not available
 

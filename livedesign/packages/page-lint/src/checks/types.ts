@@ -2,7 +2,7 @@
 // subject sits for reading order (null reads first).
 
 import type { LintCode } from '@livedesign/api-schema';
-import type { Point } from '@livedesign/document';
+import type { Point } from '@livedesign/design';
 import type { LintContext } from '../context';
 
 export type RawFinding = {

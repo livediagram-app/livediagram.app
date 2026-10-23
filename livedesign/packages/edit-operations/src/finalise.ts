@@ -18,7 +18,7 @@ import {
   type ElementId,
   type Endpoint,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { kindOf } from './element-text';
 import { ROUTE_KEYS, rerouted } from './operations/connect';
 import { sameValue } from './equality';

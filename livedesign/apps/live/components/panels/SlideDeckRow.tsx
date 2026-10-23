@@ -6,7 +6,7 @@
 // slide's number on it, and Present from Here on hover; in the narrow corner panel a small picture
 // beside its number.
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { slideName, type Slide } from '@livedesign/document';
+import { slideName, type Slide } from '@livedesign/design';
 import { lucideFileText } from '@livedesign/icons/lucide';
 import { HoverCard, lucideGlyph, Tooltip, trustedHtml } from '@livedesign/ui';
 import { EyeOffIcon } from '@/components/panels/layers-panel-icons';

@@ -2,14 +2,14 @@
 // elements go through, the single-undo-step content replace, and the format-dispatched importer (JSON)
 // with its lazy-loaded parsers.
 
-import { remapElementRefs, savableElements, type Element, type Tab } from '@livedesign/document';
+import { remapElementRefs, savableElements, type Element, type Tab } from '@livedesign/design';
 import { mergeImportedTab } from '@/lib/import-merge';
 import type { ImportOutcome } from '@/lib/import-tab';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@/lib/debug-log';
 
 // Re-mint element ids (and remap pinned-arrow endpoints) so imported elements can't collide with anything already on
-// the document, with the old-to-new map of the element ids. Shared with remintTabElements, which a Duplicate goes
+// the design, with the old-to-new map of the element ids. Shared with remintTabElements, which a Duplicate goes
 // through too.
 export function remintElements(elements: Element[]): {
   elements: Element[];

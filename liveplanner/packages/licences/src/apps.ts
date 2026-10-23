@@ -5,7 +5,7 @@ export type LicenceApp = { id: AppId; label: string; side: Side; bundler: 'next'
 // Every deployed app, in the order the page lists them. apps.test.ts fails when
 // a directory in apps/ is missing here.
 export const LICENCE_APPS: readonly LicenceApp[] = [
-  { id: 'live', label: 'Editor', side: 'browser', bundler: 'next' },
+  { id: 'editor', label: 'Editor', side: 'browser', bundler: 'next' },
   { id: 'marketing', label: 'Website', side: 'browser', bundler: 'next' },
   { id: 'help', label: 'Help centre', side: 'browser', bundler: 'next' },
   { id: 'api', label: 'API', side: 'server', bundler: 'worker' },

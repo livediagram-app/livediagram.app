@@ -20,7 +20,7 @@ import {
   shade,
   tint,
   type ShapeKind,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import type { CustomThemeDefinition } from '@livedesign/api-schema';
 import { Button } from '@livedesign/ui';
 import { materialiseCustomTheme } from '@/lib/custom-theme-registry';

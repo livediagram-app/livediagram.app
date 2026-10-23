@@ -1,24 +1,24 @@
 # Default folders
 
 Status: shipped. The server side (storage, the API, resolution on create, the intent every create
-caller sends, the intent recorded on the document) and the surfaces that set, show and clear a
+caller sends, the intent recorded on the design) and the surfaces that set, show and clear a
 default ([Surfaces](#surfaces)) are live.
 
 ## What
 
-A **default folder** is where a person's new documents land when they create one without choosing
+A **default folder** is where a person's new designs land when they create one without choosing
 a place. A person keeps one default per **default key**, and the key is chosen by how the new
-document opens. livedesign has one editor mode, Pages, so today the list holds one key: every new document can land in, say, "Pages". Defaults belong to the person, not to a folder or a
-team: two teammates may send the same new documents to different places.
+design opens. livedesign has one editor mode, Pages, so today the list holds one key: every new design can land in, say, "Pages". Defaults belong to the person, not to a folder or a
+team: two teammates may send the same new designs to different places.
 
 ## Domain language
 
 | Term                 | Means                                                                                              |
 | -------------------- | -------------------------------------------------------------------------------------------------- |
-| **default folder**   | The folder a person's new documents of one key land in when no place is chosen.                    |
+| **default folder**   | The folder a person's new designs of one key land in when no place is chosen.                      |
 | **default key**      | What a default is for: `<dimension>:<value>`, e.g. `mode:pages` (`PlacementDefaultKey`).           |
-| **creation intent**  | What a new document is made as, captured once when it is created: opens in and tab kind.           |
-| **opens in**         | The editor mode the document's first tab opens in (`EditorMode`).                                  |
+| **creation intent**  | What a new design is made as, captured once when it is created: opens in and tab kind.             |
+| **opens in**         | The editor mode the design's first tab opens in (`EditorMode`).                                    |
 | **tab kind**         | What the first tab is (`TabKind`).                                                                 |
 | **explicit root**    | The root of My Work, chosen on purpose (the placement picker's root tile): a place like any other. |
 | **dangling default** | A default whose folder is gone, no longer the person's to see, or in a team the person has left.   |
@@ -29,56 +29,56 @@ team: two teammates may send the same new documents to different places.
 
 ## Default keys
 
-The list a person sets defaults from is titled **New documents that open as**, and holds, in this
+The list a person sets defaults from is titled **New designs that open as**, and holds, in this
 order:
 
-| Entry           | Key          |
-| --------------- | ------------ |
-| Pages documents | `mode:pages` |
+| Entry         | Key          |
+| ------------- | ------------ |
+| Pages designs | `mode:pages` |
 
 - A key is `<dimension>:<value>`. There is one dimension, `mode` (opens in).
 - The keys are a **closed list** (`PLACEMENT_DEFAULT_KEYS`), generated from the editor modes. A key
   outside it is refused when set and ignored when read.
-  - **Mode keys** come from the editor modes (`EDITOR_MODES` in `@livedesign/document`), one
+  - **Mode keys** come from the editor modes (`EDITOR_MODES` in `@livedesign/design`), one
     `mode:<mode>` per mode in the modes' order: a new editor mode gains its key, and its entry in
     the list, with no other change.
 
 ## Creation intent
 
 - **Captured once, at creation**, and never re-derived: content drawn afterwards does not move a
-  document. The intent is recorded on the document ([Recorded intent](#recorded-intent)).
-  - `mode`: the editor mode the first tab opens in: `pages`, including a document with no tab.
+  design. The intent is recorded on the design ([Recorded intent](#recorded-intent)).
+  - `mode`: the editor mode the first tab opens in: `pages`, including a design with no tab.
   - `tabKind`: the first tab's kind. Absent on the wire reads as the general tab.
 - **Sent on the create** as `intent: { mode, tabKind? }` beside the placement
   ([Placement on create](folders.md#placement-on-create)).
 - **Who sends it:**
-  - every create that makes something new: the New Document wizard and its bypasses
-    (`/new?blank=1`, `/new?template=`), imports into the account and the MCP `create_document` tool, which sends the intent of the first
+  - every create that makes something new: the New Design wizard and its bypasses
+    (`/new?blank=1`, `/new?template=`), imports into the account and the MCP `create_design` tool, which sends the intent of the first
     tab it built;
   - **Duplicate**, which sends the source's **recorded** intent unchanged, together with an explicit
     placement, so it is recorded and never routed ([Duplicate](#duplicate)).
-- **Who does not:** a create that keeps a place the document already has and has no recorded intent
+- **Who does not:** a create that keeps a place the design already has and has no recorded intent
   to carry. An Offline Mode sync keeps the folder it had in the browser and records unknown. A create without an intent never consults defaults.
 - An intent that is present but malformed (no known `mode`, a `tabKind` outside its list) refuses the create, `intent_invalid` (400), before anything is written.
 
 ## Recorded intent
 
-The creation intent is also **written on the document**, by the same insert that creates it, and
+The creation intent is also **written on the design**, by the same insert that creates it, and
 never re-derived or rewritten afterwards:
 
-| Column     | Field     | Holds                                          |
-| ---------- | --------- | ---------------------------------------------- |
-| `opens_in` | `opensIn` | The editor mode the document opens in, or null |
-| `tab_kind` | `tabKind` | The first tab's kind at creation, or null      |
+| Column     | Field     | Holds                                        |
+| ---------- | --------- | -------------------------------------------- |
+| `opens_in` | `opensIn` | The editor mode the design opens in, or null |
+| `tab_kind` | `tabKind` | The first tab's kind at creation, or null    |
 
-- **Null `opensIn` means unknown**, never Pages: the document was made before intents were
+- **Null `opensIn` means unknown**, never Pages: the design was made before intents were
   recorded, or by a create that carries none (an Offline Mode sync, an API
-  script, the Duplicate of a document whose own intent is unknown). Its `tabKind` is then unknown too.
+  script, the Duplicate of a design whose own intent is unknown). Its `tabKind` is then unknown too.
 - **With a known `opensIn`**, `tabKind` is always known.
-- The first tab's kind is a column of its own because the document has no other honest record of
-  it: tabs are reordered, removed and shared between documents after creation.
-- The fields are on both the document summary and the document.
-- A copy made by `POST /api/documents/:id/copy` carries the source's recorded values, as Duplicate
+- The first tab's kind is a column of its own because the design has no other honest record of
+  it: tabs are reordered, removed and shared between designs after creation.
+- The fields are on both the design summary and the design.
+- A copy made by `POST /api/designs/:id/copy` carries the source's recorded values, as Duplicate
   does: they are a fact about the content, not derived again.
 - A stored value outside its list (one since retired) reads as null.
 - They are kept for the [Explorer filters](explorer-filters.md), whose `opens-in:` token reads `opensIn`.
@@ -93,7 +93,7 @@ never re-derived or rewritten afterwards:
 - It records the **source's recorded intent** (`opensIn`, `tabKind`), unchanged;
   an unknown one stays unknown.
 - It is **never routed by a default**: its placement is always explicit.
-- The server copy (`POST /api/documents/:id/copy`) agrees: it carries the same two values, and
+- The server copy (`POST /api/designs/:id/copy`) agrees: it carries the same two values, and
   files the copy at the root of the copier's My Work, a place it chooses, never a default.
 
 ## Precedence
@@ -101,7 +101,7 @@ never re-derived or rewritten afterwards:
 A create's place is decided in this order; the first that answers wins:
 
 1. **Explicit placement**: a folder, a team (its root included), or the explicit root of My
-   documents.
+   designs.
 2. **Mode default**: the default for `mode:<mode>`.
 3. **The root of My Work**.
 
@@ -112,7 +112,7 @@ A create's place is decided in this order; the first that answers wins:
   over a default. ([Placement on create](folders.md#placement-on-create) names the wire shape.)
 - **The wizard** sends a `/new?folder=` / `?team=` context as an explicit placement. Every other create from
   `/new` (**Create**, **Skip**, a bypass link without context) sends no placement, so these
-  defaults decide ([The New Document wizard](#the-new-document-wizard)).
+  defaults decide ([The New Design wizard](#the-new-design-wizard)).
 - A re-commit of an id the person already owns keeps its stored place; defaults are not consulted.
 
 ## What a default may point at
@@ -120,7 +120,7 @@ A create's place is decided in this order; the first that answers wins:
 - **A personal folder of the person**, or **a team folder of a team the person has joined**. Team
   membership is checked against the verified account id (a Clerk session or an API token) only,
   never the guest `X-Owner-Id`, as for [Placement on create](folders.md#placement-on-create).
-- Not a space's root: the root of My Work is where a document lands with no default, and a
+- Not a space's root: the root of My Work is where a design lands with no default, and a
   team's root is reached by creating inside the team.
 - Setting a default checks the folder then: a folder that is missing, someone else's, or in a team
   the person has not joined is `folder_not_found` (the answer never reveals that someone else's
@@ -164,13 +164,13 @@ A create's place is decided in this order; the first that answers wins:
   included: a surface shows a dangling default as such.
 - `DELETE` of a key with no default is a 204 as well.
 
-| Rejection                | Status | When                                                                  |
-| ------------------------ | ------ | --------------------------------------------------------------------- |
-| `default_key_invalid`    | 400    | `:key` is not one of the keys                                         |
-| `default_folder_invalid` | 400    | The body is not an object whose `folderId` is a non-empty string      |
-| `folder_not_found`       | 404    | The folder is missing, someone else's, or in a team not joined        |
-| `rate_limited`           | 429    | The per-owner write rate limit is spent                               |
-| `intent_invalid`         | 400    | (on `POST /api/documents`) `intent` is present but not a valid intent |
+| Rejection                | Status | When                                                                |
+| ------------------------ | ------ | ------------------------------------------------------------------- |
+| `default_key_invalid`    | 400    | `:key` is not one of the keys                                       |
+| `default_folder_invalid` | 400    | The body is not an object whose `folderId` is a non-empty string    |
+| `folder_not_found`       | 404    | The folder is missing, someone else's, or in a team not joined      |
+| `rate_limited`           | 429    | The per-owner write rate limit is spent                             |
+| `intent_invalid`         | 400    | (on `POST /api/designs`) `intent` is present but not a valid intent |
 
 ## Surfaces
 
@@ -182,9 +182,9 @@ Settings.
 
 Each key has a label, the plural a sentence uses, and an icon, in list order:
 
-| Key          | Label           | In a sentence   | Icon                  |
-| ------------ | --------------- | --------------- | --------------------- |
-| `mode:pages` | Pages documents | Pages documents | The Pages mode's icon |
+| Key          | Label         | In a sentence | Icon                  |
+| ------------ | ------------- | ------------- | --------------------- |
+| `mode:pages` | Pages designs | Pages designs | The Pages mode's icon |
 
 - A new editor mode is named once (label, plural and icon) and
   needs nothing else; until it is named, it does not compile.
@@ -194,7 +194,7 @@ Each key has a label, the plural a sentence uses, and an icon, in list order:
 
 - **Every folder menu** (the one shared folder menu of the Explorer page's rows and cards, the
   sidebar tree, the editor's Explorer panel and a team's library) carries **Use as Default for**,
-  which opens a submenu titled **New documents that open as** listing the entries, each a
+  which opens a submenu titled **New designs that open as** listing the entries, each a
   checkable item, checked when this folder is that key's default.
   - Choosing an unchecked entry makes this folder the key's default; a key points at one folder,
     so the folder that held it loses it.
@@ -204,9 +204,9 @@ Each key has a label, the plural a sentence uses, and an icon, in list order:
 - **Team folders** offer it only to a signed-in, joined member: the folder menus of a team's
   library, and of the editor panel's team tree, are theirs alone. A guest never sees a team folder.
 - **My Work** carries the same submenu on its own menu (the sidebar's My Work row, and
-  the editor panel's): the root is where a document lands without a default, so there an entry is
+  the editor panel's): the root is where a design lands without a default, so there an entry is
   checked when its key has **no working default** (none, or a dangling one). Choosing an unchecked
-  entry clears that key's default, sending those documents back to the root; a checked entry is
+  entry clears that key's default, sending those designs back to the root; a checked entry is
   already the root's, and is shown checked and unavailable.
 - **A team's root** offers no submenu: it cannot be a default ([What a default may point
   at](#what-a-default-may-point-at)).
@@ -218,36 +218,36 @@ Each key has a label, the plural a sentence uses, and an icon, in list order:
   the Explorer's and a team library's folder list rows and cards.
 - The marker shows the icons of the folder's keys in list order, at most two, then **+N** for the
   rest, in the muted chrome colour.
-- Its tooltip says what it means: "Default folder for new Pages documents". Assistive technology hears the same words: as the
+- Its tooltip says what it means: "Default folder for new Pages designs". Assistive technology hears the same words: as the
   row's description in a tree, after the name in a list row or card. It is never colour alone: the
   icons differ in shape, and the words are always there.
 - It takes space the row already holds after the name, so its appearance once the defaults load
   moves nothing on the row.
 - A dangling default marks nothing; the My Work row shows no marker.
 
-### The New Document wizard
+### The New Design wizard
 
-The wizard never asks where a document goes ([New document route](../007-editor/new-document-route.md#one-step-wizard)):
+The wizard never asks where a design goes ([New design route](../007-editor/new-design-route.md#one-step-wizard)):
 it has no Location step and shows no folder browser.
 
-- **No context, no placement.** A document made from `/new` without a `/new?folder=` or `?team=` context carries no
+- **No context, no placement.** A design made from `/new` without a `/new?folder=` or `?team=` context carries no
   placement, only its intent, so the server's [precedence](#precedence) files it: the default for its key, else the
   root of My Work. A default the browser has not loaded yet is still honoured, as the server
   resolves it.
-- **A context is explicit.** A `/new?folder=` or `?team=` link files the document there, in livedesign, ahead of
+- **A context is explicit.** A `/new?folder=` or `?team=` link files the design there, in livedesign, ahead of
   any default.
-- **Where to change it.** Settings > Documents > Default Folders ([Settings](#settings)), the folder menus' **Use as
+- **Where to change it.** Settings > Designs > Default Folders ([Settings](#settings)), the folder menus' **Use as
   Default for** and My Work' own menu. The wizard itself sets nothing.
-- None of this applies to **This Browser**: an offline document has no folder ([Non-goals](#non-goals)).
+- None of this applies to **This Browser**: an offline design has no folder ([Non-goals](#non-goals)).
 
 ### Settings
 
-- Settings holds a **Documents** category, for guests and accounts alike, led by **Default Folders**.
+- Settings holds a **Designs** category, for guests and accounts alike, led by **Default Folders**.
 - **Default Folders** has one row per entry, in list order, under one line saying what they share
-  ("Where each kind of new document is saved when you create it without choosing a place.") and the
+  ("Where each kind of new design is saved when you create it without choosing a place.") and the
   article's **Learn more**, said once rather than under every row.
-- A row names the entry, in the title case of every Settings label ("Pages Documents"), and beneath it where those documents go: the folder's name (a team folder adds its
-  team: "Decks · Design team", with a small folder mark), or **My Work** when there is
+- A row names the entry, in the title case of every Settings label ("Pages Designs"), and beneath it where those designs go: the folder's name (a team folder adds its
+  team: "Logos · Design team", with a small folder mark), or **My Work** when there is
   no default. Until the
   defaults and the folders have loaded it reads "Loading…"; if either cannot be read, "Couldn't
   load your default folders", with no buttons, never a guess.
@@ -255,7 +255,7 @@ it has no Location step and shows no folder browser.
   picker](#the-default-folder-picker). **Clear** clears the default; it is shown only while there is one.
 - **A dangling default** reads "<folder> (deleted), using <place>", or "<folder> (no longer
   available), using <place>" for a team folder whose team is not among the reader's, where <place>
-  is where those documents go instead: the next working default of the
+  is where those designs go instead: the next working default of the
   [precedence](#precedence) for that entry, else My Work. A Clear is offered.
   - The folder's name comes from this browser's memory of the names of the reader's default
     folders, kept while they were visible. When the browser never saw it, the row reads "A deleted
@@ -276,7 +276,7 @@ new <these>", opened by Settings' Change.
 ### Deleting a default folder
 
 - The folder delete confirmation ([Folders](folders.md#deleting-a-folder)) adds a line when the
-  folder is one of the reader's defaults: "New Pages documents are saved here by
+  folder is one of the reader's defaults: "New Pages designs are saved here by
   default. Choose another default folder in Settings."
 - Deleting it leaves the default dangling ([Dangling defaults](#dangling-defaults)); the confirm
   does not clear it.
@@ -308,11 +308,11 @@ new <these>", opened by Settings' Change.
 ## Non-goals
 
 - A default for a space's root, per device, or per template.
-- Defaults for Offline Mode documents: a document made in the browser is filed where it is made.
-- Moving existing documents when a default changes.
+- Defaults for Offline Mode designs: a design made in the browser is filed where it is made.
+- Moving existing designs when a default changes.
 
 ## References
 
-[Folders](folders.md), [Team shared documents](team-shared-documents.md),
-[Dedicated route for new-document creation](../007-editor/new-document-route.md),
+[Folders](folders.md), [Team shared designs](team-shared-designs.md),
+[Dedicated route for new-design creation](../007-editor/new-design-route.md),
 [MCP server](../015-api/mcp-server.md), [Auth + guest access](../014-identity/auth-and-guest-access.md).

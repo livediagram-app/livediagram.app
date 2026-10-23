@@ -7,7 +7,7 @@ import { openSearchWithPrefetch } from '@/lib/open-search';
 import { pastePointer } from '@/lib/canvas-pointer';
 import { dropThenDisarm } from '@/lib/palette-drop';
 import { describeOne } from '@/lib/element-names';
-import { canvasSurface, DEFAULT_BACKGROUND_COLOR, PEN_INK } from '@livedesign/document';
+import { canvasSurface, DEFAULT_BACKGROUND_COLOR, PEN_INK } from '@livedesign/design';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { usePageView } from '@/hooks/canvas/usePageView';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
@@ -25,7 +25,7 @@ import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useIsLandscapePhone } from '@/hooks/ui/useIsMobileViewport';
 import { Canvas } from '@/components/canvas/Canvas';
 import { useStableObject } from '@/hooks/ui/useStableObject';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
 import { canEditSankey } from '@/lib/sankey-edit';
 import { CanvasThemeProvider } from '@/components/canvas/CanvasSurfaceContext';
@@ -33,7 +33,7 @@ import {
   TabWindowContext,
   useTabWindowContextValue,
 } from '@/components/canvas/tab-window/tab-window-context';
-import { useSelectTab } from '@/app/document/[id]/useSelectTab';
+import { useSelectTab } from '@/app/design/[id]/useSelectTab';
 import { brushPageId, pageBrushPreview, pagePaintPress } from '@/lib/format-page-brush';
 import { useDeadPageBrush } from '@/hooks/editor/useDeadPageBrush';
 import { useWorkbenchSession } from '@/components/providers/workbench-session-context';
@@ -163,19 +163,19 @@ export function EditorCanvasHost() {
     commitTable,
     createFolder,
     deleteCurvePoint,
-    deleteDocument,
-    refreshOwnDocuments,
+    deleteDesign,
+    refreshOwnDesigns,
     deleteFolder,
     deleteMultiSelected,
     deleteSelected,
-    documentId,
-    documentList,
-    documentListLoading,
-    documentName,
-    dismissSharedDocument,
+    designId,
+    designList,
+    designListLoading,
+    designName,
+    dismissSharedDesign,
     dropIconOnElement,
     dropPaletteItem,
-    duplicateDocument,
+    duplicateDesign,
     duplicateMultiSelected,
     canCombine,
     combineSelected,
@@ -197,7 +197,7 @@ export function EditorCanvasHost() {
     identityOnlyScreenOpen,
     imageContext,
     isOwner,
-    canShareDocument,
+    canShareDesign,
     setSearchOpen,
     setShareDialogOpen,
     setSettingsOpen,
@@ -211,16 +211,16 @@ export function EditorCanvasHost() {
     livePresence,
     lockedByOther,
     mapPosition,
-    moveDocumentToFolder,
-    moveDocumentTo,
+    moveDesignToFolder,
+    moveDesignTo,
     narrowMultiSelection,
-    newDocument,
+    newDesign,
     openActionPopover,
     completeAction,
     reopenAction,
     openCellLinkPicker,
     openComments,
-    openDocument,
+    openDesign,
     openNote,
     pendingDraw,
     redo,
@@ -240,8 +240,8 @@ export function EditorCanvasHost() {
     setCanvasThemeTab,
     setCommentsPanelPosition,
     setContextMenu,
-    setDocumentList,
-    setDocumentName,
+    setDesignList,
+    setDesignName,
     setEditingId,
     setExportOpen,
     setExportScope,
@@ -260,12 +260,12 @@ export function EditorCanvasHost() {
     setTextAlignSelected,
     setViewportOffset,
     setViewportZoom,
-    sharedDocuments,
+    sharedDesigns,
     shiftDupGhostIds,
     snapGuideStore,
     spawnConnectSelected,
     tabSummaries,
-    teamDocuments,
+    teamDesigns,
     teamFolders,
     teams,
     refreshTeamLibraries,
@@ -312,7 +312,7 @@ export function EditorCanvasHost() {
   // the editor re-rendered. It recomputes only when its real input changes.
   const explorerTeams = useMemo(() => teams.map((t) => ({ id: t.id, name: t.name })), [teams]);
   // Team-library folder mutations for the Explorer panel's team tree
-  // (docs/specs/013-workspace/team-shared-documents.md) - see useTeamFolderActions.
+  // (docs/specs/013-workspace/team-shared-designs.md) - see useTeamFolderActions.
   const viewerId = selfParticipant?.id ?? null;
   const onTeamFolders = useTeamFolderActions({
     clerkUserId,
@@ -362,7 +362,7 @@ export function EditorCanvasHost() {
       : undefined,
     pageView,
   );
-  // Lazy per-tab load gate (docs/specs/006-document/per-tab-storage.md): show a blocking loader / error over
+  // Lazy per-tab load gate (docs/specs/006-design/per-tab-storage.md): show a blocking loader / error over
   // the canvas while the active tab's content is still being fetched, so
   // the user never edits a blank placeholder whose autosave would
   // overwrite the real server row. Derived once in useEditorState (it also
@@ -434,7 +434,7 @@ export function EditorCanvasHost() {
               canMove={can.move}
               canWriteText={can.writeText}
               canResize={can.resize}
-              documentName={documentName}
+              designName={designName}
               tabBackgroundPattern={backdrop.backgroundPattern ?? 'grid'}
               tabBackgroundColor={backdrop.backgroundColor}
               tabBackgroundOpacity={backdrop.backgroundOpacity ?? 1}
@@ -582,14 +582,14 @@ export function EditorCanvasHost() {
               onCancelDraw={cancelDrawShape}
               onUndo={undo}
               onRedo={redo}
-              documentList={documentList}
+              designList={designList}
               folders={folders}
-              sharedDocuments={sharedDocuments}
+              sharedDesigns={sharedDesigns}
               teams={explorerTeams}
               teamFolders={teamFolders}
-              teamDocuments={teamDocuments}
-              onDismissShared={(id) => void dismissSharedDocument(id)}
-              documentListLoading={documentListLoading}
+              teamDesigns={teamDesigns}
+              onDismissShared={(id) => void dismissSharedDesign(id)}
+              designListLoading={designListLoading}
               mapPosition={mapPosition}
               onMoveMap={(x, y) =>
                 // Equality-guarded so a drag tick that resolves to the same spot
@@ -685,14 +685,14 @@ export function EditorCanvasHost() {
                   : (id, done, actionId) =>
                       done ? completeAction(id, actionId) : reopenAction(id, actionId)
               }
-              currentDocumentId={documentId}
-              onOpenDocument={openDocument}
-              onNewDocument={newDocument}
+              currentDesignId={designId}
+              onOpenDesign={openDesign}
+              onNewDesign={newDesign}
               explorerMenuActions={{
-                // The header's Share gate: the owner, or a joined member of the document's team
-                // (docs/specs/013-workspace/folders.md, docs/specs/013-workspace/team-shared-documents.md).
+                // The header's Share gate: the owner, or a joined member of the design's team
+                // (docs/specs/013-workspace/folders.md, docs/specs/013-workspace/team-shared-designs.md).
                 onShare:
-                  canShareDocument && hydrated
+                  canShareDesign && hydrated
                     ? () => {
                         setShareDialogOpen(true);
                         track('UI', 'Opened', 'Share');
@@ -709,24 +709,24 @@ export function EditorCanvasHost() {
                 },
               }}
               onRenameCurrent={(next) => {
-                const prev = documentName.trim();
+                const prev = designName.trim();
                 const nextTrim = next.trim();
-                setDocumentName(next);
-                if (nextTrim && documentId)
-                  setDocumentList((prev) =>
-                    prev.map((d) => (d.id === documentId ? { ...d, name: nextTrim } : d)),
+                setDesignName(next);
+                if (nextTrim && designId)
+                  setDesignList((prev) =>
+                    prev.map((d) => (d.id === designId ? { ...d, name: nextTrim } : d)),
                   );
                 if (nextTrim && nextTrim !== prev) track('Document', 'Renamed');
               }}
-              onDeleteDocument={(id) => void deleteDocument(id)}
-              onLibraryChanged={refreshOwnDocuments}
-              onDuplicateDocument={(id) => void duplicateDocument(id)}
+              onDeleteDesign={(id) => void deleteDesign(id)}
+              onLibraryChanged={refreshOwnDesigns}
+              onDuplicateDesign={(id) => void duplicateDesign(id)}
               onCreateFolder={createFolder}
               onRenameFolder={renameFolder}
               onDeleteFolder={(id) => void deleteFolder(id)}
               onTeamFolders={onTeamFolders}
-              onMoveDocumentToFolder={moveDocumentToFolder}
-              onMoveDocumentTo={moveDocumentTo}
+              onMoveDesignToFolder={moveDesignToFolder}
+              onMoveDesignTo={moveDesignTo}
               onDeselect={() => {
                 // Clicking empty canvas also cancels an armed arrow-connect, and
                 // wraps up the Format tool — restoring the pre-Format tool — so a
@@ -867,7 +867,7 @@ export function EditorCanvasHost() {
               // participant row, so there's no 403, and they should set a name before others see them in presence.
               showIdentityPrompt={identityOnlyScreenOpen}
               hydrated={hydrated}
-              // Visitor on someone else's document + signed in → lock the
+              // Visitor on someone else's design + signed in → lock the
               // identity input to their Clerk name. Owner branch never
               // shows the identity prompt so `lockedName` is moot there;
               // pure guests pass null and keep the editable name field.

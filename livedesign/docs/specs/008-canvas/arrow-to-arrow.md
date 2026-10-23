@@ -34,7 +34,7 @@ point, and stays attached as the trunk moves.
 ## Model
 
 `Endpoint` gains a third kind alongside `free` and `pinned`
-(`@livedesign/document`, declared in `src/arrow-types.ts`):
+(`@livedesign/design`, declared in `src/arrow-types.ts`):
 
 ```ts
 | { kind: 'on-arrow'; arrowId: ElementId; t: number }

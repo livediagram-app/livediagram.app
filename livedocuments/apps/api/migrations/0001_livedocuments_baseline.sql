@@ -9,13 +9,12 @@
 -- Identity
 -- ---------------------------------------------------------------------------------------------------------------
 
--- A person's display name, presence colour and optional profile picture, by owner id.
+-- A person's display name and presence colour, by owner id.
 CREATE TABLE participants (
-  id          TEXT    PRIMARY KEY,
-  name        TEXT    NOT NULL,
-  color       TEXT    NOT NULL,
-  created_at  INTEGER NOT NULL,
-  picture_url TEXT    NULL
+  id         TEXT    PRIMARY KEY,
+  name       TEXT    NOT NULL,
+  color      TEXT    NOT NULL,
+  created_at INTEGER NOT NULL
 );
 
 -- The guest ids a signed-in account was migrated from (POST /api/migrate), so their history still reads as theirs.
@@ -27,17 +26,12 @@ CREATE TABLE owner_aliases (
 );
 CREATE INDEX owner_aliases_alias_idx ON owner_aliases (alias_id);
 
--- First sightings of a Clerk account and session: the sign-up and sign-in counts key on them.
+-- First sighting of an account: a sign-in from an account never seen before counts as a sign-up.
 CREATE TABLE auth_accounts (
   owner_id      TEXT    PRIMARY KEY NOT NULL,
   first_seen_at INTEGER NOT NULL
 );
 
-CREATE TABLE auth_sessions (
-  session_id    TEXT    PRIMARY KEY NOT NULL,
-  first_seen_at INTEGER NOT NULL
-);
-CREATE INDEX auth_sessions_seen_idx ON auth_sessions (first_seen_at);
 
 -- Settings that follow a person between browsers: one JSON blob each.
 CREATE TABLE user_preferences (
@@ -46,7 +40,8 @@ CREATE TABLE user_preferences (
   updated_at INTEGER NOT NULL
 );
 
--- Personal API tokens (docs/specs/015-api/public-api-and-tokens.md): only the hash is kept.
+-- The liveworkspace account tokens this app has seen (src/db/api-tokens.ts): its mirror, which workbench
+-- pairings and sessions hang off. Only the hash is kept.
 CREATE TABLE api_tokens (
   id               TEXT    PRIMARY KEY,
   owner_id         TEXT    NOT NULL,
@@ -90,6 +85,15 @@ CREATE INDEX notify_email_claims_sender ON notify_email_claims (sender_id, creat
 -- ---------------------------------------------------------------------------------------------------------------
 -- Teams and the workspace
 -- ---------------------------------------------------------------------------------------------------------------
+
+-- Teams are run on liveworkspace.app (liveworkspace/docs/accounts.md): teams and team_members are this
+-- app's copy of each team and its joined members, kept by following liveworkspace's change feed from
+-- this cursor (src/db/team-sync.ts).
+CREATE TABLE team_sync_state (
+  id        INTEGER PRIMARY KEY CHECK (id = 1),
+  cursor    TEXT    NOT NULL,
+  synced_at INTEGER NOT NULL
+);
 
 CREATE TABLE teams (
   id                     TEXT    PRIMARY KEY,
@@ -312,7 +316,6 @@ CREATE TABLE ws_tickets (
   expires_at        INTEGER NOT NULL,
   tab_scope         TEXT    NULL,
   share_code        TEXT    NULL,
-  account           INTEGER NOT NULL DEFAULT 0,
   person_tag        TEXT,
   workbench_pairing TEXT    NULL
 );
@@ -573,16 +576,3 @@ CREATE TABLE workbench_session_rooms (
   PRIMARY KEY (session_id, document_id)
 );
 CREATE INDEX workbench_session_rooms_document_idx ON workbench_session_rooms (document_id);
-
--- ---------------------------------------------------------------------------------------------------------------
--- Telemetry (docs/specs/017-telemetry/telemetry.md): anonymous events, never user content.
--- ---------------------------------------------------------------------------------------------------------------
-
-CREATE TABLE events (
-  id       INTEGER PRIMARY KEY AUTOINCREMENT,
-  category TEXT    NOT NULL,
-  action   TEXT    NOT NULL,
-  type     TEXT,
-  ts       INTEGER NOT NULL
-);
-CREATE INDEX events_ts_idx ON events (ts);

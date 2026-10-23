@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@livedesign/document';
+import type { Tab } from '@livedesign/design';
 import { newTabSeed } from './new-tab-seed';
 
 const source: Tab = {

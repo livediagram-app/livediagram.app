@@ -4,17 +4,17 @@
 import {
   LENS_DIMENSIONS,
   compileLens,
-  documentSubject,
+  designSubject,
   sharedSubject,
   type Lens,
   type LensIssue,
   type LensSubject,
 } from '@livedesign/explorer-lens';
 
-/** Recent lists this many of the newest documents that match. */
+/** Recent lists this many of the newest designs that match. */
 export const RECENT_LIMIT = 12;
 
-/** A listed document as the Explorer holds it: its own, a team's, one in this browser, or shared. */
+/** A listed design as the Explorer holds it: its own, a team's, one in this browser, or shared. */
 export type LensRow = {
   name: string;
   savedAt: number;
@@ -28,11 +28,11 @@ export type LensRow = {
   shared?: unknown;
 };
 
-/** One row, reduced to what the lens reads. A document in this browser is the reader's own: it
+/** One row, reduced to what the lens reads. A design in this browser is the reader's own: it
  *  has no team, and its owner is the browser's, so it reads as made by the reader. */
 export function lensSubjectOf(row: LensRow, viewerId: string): LensSubject {
   if (row.shared) return sharedSubject(row);
-  return documentSubject(
+  return designSubject(
     {
       name: row.name,
       savedAt: row.savedAt,
@@ -63,13 +63,13 @@ export function narrowRows<R extends LensRow>(
 }
 
 /**
- * Every document in a scope, at any depth: the folder and its subfolders, or the whole tree from
- * the root (null). Newest first, as every Explorer list orders documents.
+ * Every design in a scope, at any depth: the folder and its subfolders, or the whole tree from
+ * the root (null). Newest first, as every Explorer list orders designs.
  */
-export function scopeDocuments<D extends { savedAt: number }>(
+export function scopeDesigns<D extends { savedAt: number }>(
   folderId: string | null,
   childrenByParent: ReadonlyMap<string | null, readonly { id: string }[]>,
-  documentsByFolder: ReadonlyMap<string | null, readonly D[]>,
+  designsByFolder: ReadonlyMap<string | null, readonly D[]>,
 ): D[] {
   const out: D[] = [];
   const seen = new Set<string | null>();
@@ -78,14 +78,14 @@ export function scopeDocuments<D extends { savedAt: number }>(
     const current = stack.pop()!;
     if (seen.has(current)) continue;
     seen.add(current);
-    out.push(...(documentsByFolder.get(current) ?? []));
+    out.push(...(designsByFolder.get(current) ?? []));
     for (const child of childrenByParent.get(current) ?? []) stack.push(child.id);
   }
   return out.sort((a, b) => b.savedAt - a.savedAt);
 }
 
 /** The lens as a library that reads its own rows takes it (the team library,
- *  docs/specs/013-workspace/team-shared-documents.md): whether it is set, how to narrow, and the
+ *  docs/specs/013-workspace/team-shared-designs.md): whether it is set, how to narrow, and the
  *  words it reported, for the filtered-empty state. */
 export type LibraryLens = {
   active: boolean;

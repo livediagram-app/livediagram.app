@@ -4,7 +4,7 @@
 import type { Verb } from '@livedesign/agent-verbs';
 import { CliError } from './cli-error';
 import { EXIT } from './exit-codes';
-import { isRecord } from '@livedesign/document';
+import { isRecord } from '@livedesign/design';
 
 export type PrintMode = { json: boolean; fields?: string[]; quiet: boolean };
 

@@ -10,7 +10,7 @@ const manifest: LicencesManifest = {
     {
       side: 'browser',
       apps: [
-        { id: 'live', label: 'Editor' },
+        { id: 'editor', label: 'Editor' },
         { id: 'marketing', label: 'Website' },
       ],
       works: [
@@ -21,7 +21,7 @@ const manifest: LicencesManifest = {
           version: '16.3.6',
           licence: 'MIT',
           homepage: 'https://nextjs.org/',
-          apps: ['live', 'marketing'],
+          apps: ['editor', 'marketing'],
           texts: [{ label: 'license.md', hash: 'aaaaaaaaaaaaaaaa' }],
         },
         {
@@ -31,7 +31,7 @@ const manifest: LicencesManifest = {
           version: '5e8033a',
           licence: 'BSD-3-Clause',
           carrier: '@tensorflow/tfjs-backend-wasm (WebAssembly)',
-          apps: ['live'],
+          apps: ['editor'],
           texts: [{ label: 'LICENSE', hash: 'bbbbbbbbbbbbbbbb' }],
         },
       ],

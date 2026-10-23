@@ -2,12 +2,12 @@
 
 // A marker's colour (docs/specs/023-draw-mode/drawing-tools.md "The colour picker"): the one colour
 // picker (docs/specs/004-interface-design/colour-picker.md) with the strong standard colours by
-// name, each in its version for the board, Custom colours from the document, and + with the
+// name, each in its version for the board, Custom colours from the design, and + with the
 // hard-to-see warning. Ink is the pen's null colour.
-import { INK_PEN_COLOUR, type Appearance, type PenColour } from '@livedesign/document';
+import { INK_PEN_COLOUR, type Appearance, type PenColour } from '@livedesign/design';
 import { ColourPicker as Picker } from '@/components/colour/ColourPicker';
 import { standardGroup } from '@/components/colour/colour-options';
-import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
+import { useDesignColours } from '@/hooks/ui/useDesignColours';
 
 export function ColourPicker({
   value,
@@ -19,7 +19,7 @@ export function ColourPicker({
   board: Appearance;
   onPick: (colour: PenColour | null) => void;
 }) {
-  const yours = useDocumentColours();
+  const yours = useDesignColours();
   return (
     <Picker
       label="Marker colour"

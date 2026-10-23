@@ -12,7 +12,7 @@ import {
   type FontWeight,
   type TextCase,
   type TextElement,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { Glyph } from '@livedesign/ui';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { PreviewSliderRow, SliderRowAction } from '@/components/primitives/PreviewSliderRow';

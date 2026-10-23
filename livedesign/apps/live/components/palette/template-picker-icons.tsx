@@ -1,5 +1,5 @@
 import { Glyph } from '@livedesign/ui';
-// Inline SVG icons for the New Document wizard and its neighbours (folder-open, spinner, sparkle). Pure
+// Inline SVG icons for the New Design wizard and its neighbours (folder-open, spinner, sparkle). Pure
 // presentational.
 export function FolderOpenIcon() {
   return (
@@ -10,7 +10,7 @@ export function FolderOpenIcon() {
   );
 }
 
-// Inline spinner for the Create Document button while the host commits.
+// Inline spinner for the Create Design button while the host commits.
 export function Spinner() {
   return (
     <Glyph size={13} units={16} className="animate-spin" strokeLinejoin="miter">

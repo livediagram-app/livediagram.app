@@ -1,6 +1,6 @@
 import { useCanvasViewKey } from '@/hooks/canvas/useViewportStore';
 import type { RefObject } from 'react';
-import { isSelfDrawingShape, type MirroredPage } from '@livedesign/document';
+import { isSelfDrawingShape, type MirroredPage } from '@livedesign/design';
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
 import { POLYGON_CLOSE_PX } from '@/components/canvas/useCanvasPolygonGesture';
 import { isWhiteboardPenIntent, type PendingDraw } from '@/lib/draw-mode';

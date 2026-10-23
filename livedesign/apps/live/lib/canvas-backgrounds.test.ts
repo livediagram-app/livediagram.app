@@ -3,7 +3,7 @@ import {
   ANIMATED_BACKGROUND_PATTERNS,
   type AnimatedBackgroundPattern,
   type BackgroundPattern,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import {
   backgroundPatternTile,
   safeCssColor,
@@ -214,7 +214,7 @@ describe('worldPatternOrigin', () => {
   });
 });
 
-// A pattern colour is document data another editor chooses, and it lands in
+// A pattern colour is design data another editor chooses, and it lands in
 // SVG markup that the export preview renders as HTML.
 describe('pattern colour sanitising', () => {
   it('keeps plain colours', () => {

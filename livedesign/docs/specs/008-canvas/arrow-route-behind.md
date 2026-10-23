@@ -43,8 +43,7 @@ a wrong obstacle **erases a line that should be visible**:
   a gap under a transparent label reads as a bug, not as depth.
 - **Arrows and freehand never cut**: not boxes. A freehand stroke is a boxed
   element in the model, so it is excluded by name; ink hides nothing.
-- **A shape with no fill never cuts** (`fillColor: transparent`, as every
-  whiteboard shape starts): there is nothing to hide behind, and a line
+- **A shape with no fill never cuts** (`fillColor: transparent`): there is nothing to hide behind, and a line
   broken under an outline reads as a fault.
 - **An open path never cuts.** A path paints its fill only when closed, so an
   open curve (a Path tool line, or an imported multi-point line) is ink like
@@ -78,7 +77,7 @@ deliberate rather than ragged. Being canvas units it scales with zoom like
 everything else. Box-proportional sizing was rejected — a large box already
 makes a long break by being wide, so scaling on top over-cuts the line.
 
-## How (packages/document/src/arrow-behind.ts + ArrowView)
+## How (packages/design/src/arrow-behind.ts + ArrowView)
 
 `routeBehindHoles(arrow, from, to, elements)` returns the margin-inflated
 rects, filtered by the rules above and by intersection with the arrow's padded
@@ -111,7 +110,7 @@ to the visible path and the selection halo:
 
 ## Exports
 
-The shared SVG arrow renderer (`svgArrow` in `packages/document/src/svg-render-arrows.ts`)
+The shared SVG arrow renderer (`svgArrow` in `packages/design/src/svg-render-arrows.ts`)
 punches the same holes into the same mask as the label knockouts, so every
 export shows the gaps the canvas shows: SVG, PNG / PDF (which rasterise the
 arrows from that markup), server snapshots and thumbnails, and the MCP's inline

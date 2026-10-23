@@ -30,7 +30,7 @@ The **`@livedesign/help-registry` package** is the single source of truth for ca
 
 Categories fall into two kinds. The **support** categories carry standalone articles; the **feature** categories (`kind: 'feature'`) carry the in-depth feature guides and are grouped under a separate "Editor Guides" heading on the home page and listed on the `/features` index. Each feature category has a card-grid index page at `/help/<slug>/` (shared `FeatureCategoryIndex` component), and within it each feature has its own landing page plus optional sub-articles.
 
-**Developers.** A support category for the public REST API ([Public API and API tokens](../015-api/public-api-and-tokens.md)). Standalone articles — _The livedesign API_ (overview + base URL), _Authentication_ (bearer API tokens vs the guest path), _Working with Documents_ (worked `curl` examples), and _Errors and Rate Limits_ — that tell an integrator how to call the API a token unlocks. The human-facing companion to the machine-readable `GET /api/openapi.json` ([API documentation (OpenAPI)](../015-api/api-documentation.md)), which the articles link out to rather than duplicate.
+**Developers.** A support category for the public REST API ([Public API and API tokens](../015-api/public-api-and-tokens.md)). Standalone articles — _The livedesign API_ (overview + base URL), _Authentication_ (bearer API tokens vs the guest path), _Working with Designs_ (worked `curl` examples), and _Errors and Rate Limits_ — that tell an integrator how to call the API a token unlocks. The human-facing companion to the machine-readable `GET /api/openapi.json` ([API documentation (OpenAPI)](../015-api/api-documentation.md)), which the articles link out to rather than duplicate.
 
 **Policies.** A support category, not a feature one. It is the home for the hosted service's legal pages: the **Terms of Service**, the **Privacy Policy** and **Reporting a Vulnerability** (the vulnerability disclosure policy, [Vulnerability disclosure](../002-project-scope/vulnerability-disclosure.md), which the marketing `/security` route, `/.well-known/security.txt` and the repo's `SECURITY.md` all point at). The Terms and Privacy Policy govern only the hosted service at livedesign.app (a self-hosted copy is the operator's responsibility). These were standalone marketing routes (`/terms`, `/privacy`); they now live as help articles under `/help/policies/`, and the old marketing routes stay alive as thin client redirects so historical links keep resolving. (The Privacy Policy previously sat in `privacy-and-security`; it moved here so the two policies sit together, and the old help URL redirects to the new one.)
 
@@ -60,16 +60,16 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 
 The feature categories group the feature guides by area. **Pages is the first**: it is what livedesign is for.
 
-- **Pages** — the pages a document is made of, in two groups: **Basics** (Working with Pages, exporting pages, the Pages tour) and **Kinds of Page** (logo pages and wireframe pages).
+- **Pages** — the pages a design is made of, in two groups: **Basics** (Working with Pages, exporting and presenting pages, the Pages tour, tab windows) and **Kinds of Page** (logo pages, wireframe pages and photo pages).
 - **User Interface** — the panels, toolbar, context menus, the Map, zoom and tab bars, quick controls and power user mode.
-- **Explorer** — the document library: The Explorer overview, Home (the Timeline), Recent, Shared With Me, My Work and folders, Team Spaces, Image Gallery, and Saved Themes, one guide per sidebar row.
+- **Explorer** — the design library: The Explorer overview, Home (the Timeline), Recent, Shared With Me, My Work and folders, Team Spaces, Image Gallery, and Saved Themes, one guide per sidebar row.
 - **Selection Modes** — one guide per tool-picker mode: Select, Hand, Format Painter, Laser, Spotlight, Isometric.
 - **Palette** — the palette strip: one guide per palette category (Shapes and arrows, Text, Media and images, Data elements, Concepts, Components, Devices, Icons, Stickers) and one per palette setting.
 - **Canvas** — the canvas around the pages, selecting many elements, links and link cards, themes, templates, text and fonts, layers, animations, Undo and Redo.
-- **Tabs** — a document's tabs: Tabs, Tab Folders, Linking Across Tabs, Add a Tab to Another Document, Importing and Exporting, one guide per tab-menu action.
+- **Tabs** — a design's tabs: Tabs, Tab Folders, Linking Across Tabs, Add a Tab to Another Design, Importing and Exporting, one guide per tab-menu action.
 - **Collaboration** — comments, live presence (live cursors, selections, per-tab presence), following a presenter, teams, sharing and embeds.
 - **Tools** — AI assistance, zen mode and appearance (light, dark, system).
-- **Search Panel** — the global search: an overview landing plus sub-articles for each thing search does, finding documents/folders, teams, tabs and elements, adding palette items to the canvas, and the Create-new-tab action.
+- **Search Panel** — the global search: an overview landing plus sub-articles for each thing search does, finding designs/folders, teams, tabs and elements, adding palette items to the canvas, and the Create-new-tab action.
 
 Where a feature's name would equal its category slug, the landing slug is distinguished (`the-canvas`, `the-explorer`, `using-tabs`) so a feature slug never equals a category slug (which would break the breadcrumb's parent link).
 
@@ -109,7 +109,7 @@ it arrives with its own registry entry.
 The **support** categories work the same way one level simpler. Their cards render
 through `ArticleCard`, which takes its glyph from `SUPPORT_ARTICLE_ICONS`
 (`lib/articleIcons.tsx`) and its tone from the brand, so there is no paired hue
-map to keep in step — and it falls back to a generic document glyph rather than a
+map to keep in step — and it falls back to a generic design glyph rather than a
 per-category one. That fallback had 13 of the 40 icon-showing support cards on it,
 a third of them identical, so those are drawn too. (Getting Started is the
 exception by design: its cards lead with a numbered step badge instead of an
@@ -136,7 +136,7 @@ a category at a time: a batch that shares a family reads as a set. And **look at
 them rendered before shipping** — valid path geometry is not the same as a
 legible 24px glyph. Three of the Palette thirteen had to be redrawn only after
 seeing them: a chair that read as a table, a button whose pointer swallowed it,
-and a sticker using the folded corner that already means a document here. The
+and a sticker using the folded corner that already means a design here. The
 Canvas batch cost two more, both from colliding with a glyph already in the set —
 a magnet drawn as a shield, and a drop shadow that read first as "duplicate" and
 then, hatched, as the motion lines on `animations`. `shadows` is the one glyph
@@ -150,7 +150,7 @@ already in the set, or landed on a completely different idiom's meaning.
 One rule is worth keeping: **draw what the thing DOES, never the control itself.**
 Applied up front, that rule is also what made the Search Panel's six the first
 batch to need no redraw at all: six articles about one control, and not one of
-them draws a magnifier. They draw what you find — documents in a folder, a team,
+them draws a magnifier. They draw what you find — designs in a folder, a team,
 a tab and the element inside it, a shape landing on the canvas, a new tab.
 
 The Explorer's five raised the mirror-image problem and it is worth naming: a
@@ -172,7 +172,7 @@ glyph that is already an arrow — so they draw the three shapes, the handle you
 drag, the obstacle, and the other arrow. The Sharing guides ran into it a third
 way: the obvious drawing for each was already spoken for somewhere else in the
 set — a padlock is `locking`, a chain is `links`, a picture is `images` — so they
-draw the password field, the deadline, the page the document sits inside, and the
+draw the password field, the deadline, the page the design sits inside, and the
 refresh. And Changing the Theme is the plainest collision of the lot: a wheel of hues
 rendered as the `pie-chart` glyph exactly, while `themes` already owned the paint
 palette and `custom-themes` owned swatches-with-a-plus, so what was left to draw
@@ -205,7 +205,7 @@ The system has three layers, all under `apps/help`:
   their subject, never after the batch of work that produced them.
 - **`components/illustrations/<area>-parts.tsx`** — an area's own building
   blocks, when it grows enough of them to interleave with its scenes (the
-  Explorer's sidebar row and document card). Distinct from `primitives.tsx`, which is the house style
+  Explorer's sidebar row and design card). Distinct from `primitives.tsx`, which is the house style
   every area shares: these are wanted by one area only. The split exists so an
   `<area>.tsx` reads as a uniform list of complete scenes rather than
   alternating between two kinds of thing — an area with one or two helpers
@@ -230,7 +230,7 @@ The help centre's header is the shared `SiteHeader` from `@livedesign/ui`, the s
 
 One rule for every public page, shared with the marketing site ([Marketing site](../019-marketing/marketing-site.md) "SEO and metadata"): per-page metadata comes from `pageMetadata` in `@livedesign/ui`, which help wraps as `helpMetadata({ title, description, path })` only to name itself (`siteName: 'livedesign Help'`).
 
-- **The title passes through as given.** Link previews (`og:title`, `twitter:title`) carry the bare article title, with the site name beside it. The document `<title>` still reads "<Title> | livedesign": the root layout's `title.template` adds the suffix to every child segment, and the help home (the root index, which the template doesn't reach) spells it out as `Help | livedesign`.
+- **The title passes through as given.** Link previews (`og:title`, `twitter:title`) carry the bare article title, with the site name beside it. The design `<title>` still reads "<Title> | livedesign": the root layout's `title.template` adds the suffix to every child segment, and the help home (the root index, which the template doesn't reach) spells it out as `Help | livedesign`.
 - **Canonical and `og:url` are the page's path**, `/help/<categorySlug>/<slug>/`, resolved against the shared origin; `seo-canonical.test.ts` checks every article's path matches its route.
 - **Every article and category landing has its own card**: `og:type` article, Twitter `summary_large_image`, with a 1200x630 PNG at `/help/og/<route>.png` (`lib/help-cards.ts`, rendered at build time by `app/og/[...card]/route.tsx` through the shared `renderSocialCard` in `@livedesign/ui`, the one marketing's cards use). The card shows the top category as its kicker (Help Topic on a landing), the title, the registry's card description through `cardSubtitle` (two lines, ending on a whole word) and "Help Centre" in its footer beside the livedesign.app pill. Pages outside the registry (the home, the features index) carry the brand card marketing generates (`/opengraph-image`, `/twitter-image`).
 - **The sitemap dates each page by its last commit** (`lib/article-dates.ts`): one `git log` pass over `app/` at build time, page files only, and a landing dated by its newest article. A shallow clone, or no git, leaves `lastModified` out rather than claim every page changed today; the deploy build fetches full history without file contents (`fetch-depth: 0`, `filter: blob:none`) for this.

@@ -8,21 +8,21 @@ import { objectOrEmpty, type WorkbenchRole } from '@livedesign/api-schema';
 // doesn't recognise (preserving the original fall-through-to-404).
 
 import {
-  canEditDocument,
-  canParticipateDocument,
-  canReadDocument,
-  resolveDocumentGrant,
-  type DocumentGrant,
-} from '../auth/document-access';
+  canEditDesign,
+  canParticipateDesign,
+  canReadDesign,
+  resolveDesignGrant,
+  type DesignGrant,
+} from '../auth/design-access';
 import type { SharePasswordAttempt } from '../auth/share-access';
 import type { WorkbenchReach } from '../db/workbench';
 import { clientRateKey } from '../client-ip';
-import { getDocument, getMembership, getTrashedDocumentMeta } from '../db';
-import { badRequest, documentTrashed, forbidden, missingAuth, notFound } from '../responses';
-import type { DocumentDTO, Env } from '../types';
+import { getDesign, getMembership, getTrashedDesignMeta } from '../db';
+import { badRequest, designTrashed, forbidden, missingAuth, notFound } from '../responses';
+import type { DesignDTO, Env } from '../types';
 
 // A workbench session as the choke point resolved it (blueprint "A request bearing lvw_", "The choke point by
-// scope"): one document in the document scope, the workspace (from an optional folder) in the workspace scope.
+// scope"): one design in the design scope, the workspace (from an optional folder) in the workspace scope.
 export type WorkbenchContext = {
   sessionId: string;
   ownerId: string;
@@ -49,7 +49,7 @@ export type RouteContext = {
   // session JWT, or an `lvd_` API token (whose owner is always a Clerk
   // account, docs/specs/015-api/public-api-and-tokens.md §3.3). This is the identity for team-membership
   // CONTENT access — gateRead/gateEdit and the teams-surface reads — so a
-  // token reaches the same documents the app does (docs/specs/015-api/public-api-and-tokens.md §3.4). Account
+  // token reaches the same designs the app does (docs/specs/015-api/public-api-and-tokens.md §3.4). Account
   // and team ADMINISTRATION (team mutations, token management, account
   // deletion, migration) keeps requiring `clerkUserId`: a leaked token
   // must not be able to manage membership or mint further credentials.
@@ -68,7 +68,7 @@ export type RouteContext = {
   token?: { id: string; readOnly?: boolean } | null;
   // The presenting workbench session (docs/specs/013-workspace/workbench-embeds.md), or null for every other
   // caller. Under one, `clerkUserId` and `token` are null and `resolveOwner()` is the owner: a person's editor on
-  // one document, never a token and never an administrator. Optional so unit tests can leave it out.
+  // one design, never a token and never an administrator. Optional so unit tests can leave it out.
   workbench?: WorkbenchContext | null;
   // Schedule background work that may outlive the response (docs/specs/014-identity/transactional-email.md email
   // sends). Forwards to the fetch handler's ExecutionContext.waitUntil.
@@ -79,57 +79,57 @@ export type RouteContext = {
 };
 
 // Visitor share code carried on edit/view-link requests so a non-owner
-// can authorise against a document they don't own.
+// can authorise against a design they don't own.
 //
 // Exported because its PRESENCE is the only honest signal that a caller
 // arrived through a share link. "Isn't the owner" is not that signal: a
-// joined team member reads every document in their team's library without a
-// code (docs/specs/013-workspace/team-shared-documents.md), so the visitor-facing timeline events keyed on
+// joined team member reads every design in their team's library without a
+// code (docs/specs/013-workspace/team-shared-designs.md), so the visitor-facing timeline events keyed on
 // `owner !== ownerId` were reporting teammates as strangers with a link.
 export function shareCodeOf(request: Request): string | null {
   return request.headers.get('X-Share-Code');
 }
 
 // Share password (docs/specs/013-workspace/share-password.md) carried alongside the share code when the
-// document the visitor is accessing is password-protected. Owners never
+// design the visitor is accessing is password-protected. Owners never
 // send it (their identity short-circuits the check); a non-owner with a
-// share code must, or the access gate denies password-protected documents.
+// share code must, or the access gate denies password-protected designs.
 export function sharePasswordOf(request: Request): SharePasswordAttempt | null {
   const value = request.headers.get('X-Share-Password');
   return value === null ? null : { value, rateKey: clientRateKey(request) };
 }
 
-// Route-side wrappers around canReadDocument / canEditDocument. Most
+// Route-side wrappers around canReadDesign / canEditDesign. Most
 // handler call sites need the same six args to the auth helpers
-// (env, documentId, caller, share code, document owner, share
+// (env, designId, caller, share code, design owner, share
 // password); four of them (env, caller, share code, share password)
 // fall straight out of the RouteContext, so condensing them into a
-// (ctx, documentId, documentOwnerId) helper drops a stack of
+// (ctx, designId, designOwnerId) helper drops a stack of
 // repetitive 6-line invocations to 1-liners. Behaviour stays
 // identical: each helper just forwards the ctx-derived args.
 //
 // `tabId` names the tab the request touches. Leave it off for a
-// document-level door: a tab-scoped link is then refused (fail closed,
+// design-level door: a tab-scoped link is then refused (fail closed,
 // docs/specs/013-workspace/tab-scoped-share-links.md).
 
 export function gateRead(
   ctx: RouteContext,
-  documentId: string,
-  documentOwnerId: string,
-  documentTeamId: string | null = null,
+  designId: string,
+  designOwnerId: string,
+  designTeamId: string | null = null,
   tabId?: string,
 ): Promise<boolean> {
-  return canReadDocument(
+  return canReadDesign(
     ctx.env,
-    documentId,
+    designId,
     ctx.resolveOwner(),
     shareCodeOf(ctx.request),
-    documentOwnerId,
+    designOwnerId,
     sharePasswordOf(ctx.request),
-    documentTeamId,
+    designTeamId,
     // Server-verified account id (Clerk session or API token) for the
     // team-membership check — never the unsigned X-Owner-Id header
-    // (docs/specs/013-workspace/team-shared-documents.md access trust boundary).
+    // (docs/specs/013-workspace/team-shared-designs.md access trust boundary).
     ctx.verifiedUserId,
     tabId,
   );
@@ -140,19 +140,19 @@ export function gateRead(
 // presence stays on gateRead: an agent acts at its owner's level.
 export function gateParticipate(
   ctx: RouteContext,
-  documentId: string,
-  documentOwnerId: string,
-  documentTeamId: string | null = null,
+  designId: string,
+  designOwnerId: string,
+  designTeamId: string | null = null,
   tabId?: string,
 ): Promise<boolean> {
-  return canParticipateDocument(
+  return canParticipateDesign(
     ctx.env,
-    documentId,
+    designId,
     ctx.resolveOwner(),
     shareCodeOf(ctx.request),
-    documentOwnerId,
+    designOwnerId,
     sharePasswordOf(ctx.request),
-    documentTeamId,
+    designTeamId,
     ctx.verifiedUserId,
     tabId,
   );
@@ -160,50 +160,50 @@ export function gateParticipate(
 
 export function gateEdit(
   ctx: RouteContext,
-  documentId: string,
-  documentOwnerId: string,
-  documentTeamId: string | null = null,
+  designId: string,
+  designOwnerId: string,
+  designTeamId: string | null = null,
   tabId?: string,
 ): Promise<boolean> {
-  return canEditDocument(
+  return canEditDesign(
     ctx.env,
-    documentId,
+    designId,
     ctx.resolveOwner(),
     shareCodeOf(ctx.request),
-    documentOwnerId,
+    designOwnerId,
     sharePasswordOf(ctx.request),
-    documentTeamId,
+    designTeamId,
     // Server-verified account id (Clerk session or API token) for the
     // team-membership check — never the unsigned X-Owner-Id header
-    // (docs/specs/013-workspace/team-shared-documents.md access trust boundary).
+    // (docs/specs/013-workspace/team-shared-designs.md access trust boundary).
     ctx.verifiedUserId,
     tabId,
   );
 }
 
-// The caller's grant on a document, scope included, for the doors that narrow
+// The caller's grant on a design, scope included, for the doors that narrow
 // what they return to a scoped visitor's tab rather than refuse them
 // (docs/specs/013-workspace/tab-scoped-share-links.md). Null = no access.
 export function gateGrant(
   ctx: RouteContext,
-  documentId: string,
-  documentOwnerId: string,
-  documentTeamId: string | null = null,
-): Promise<DocumentGrant | null> {
-  return resolveDocumentGrant(
+  designId: string,
+  designOwnerId: string,
+  designTeamId: string | null = null,
+): Promise<DesignGrant | null> {
+  return resolveDesignGrant(
     ctx.env,
-    documentId,
+    designId,
     ctx.resolveOwner(),
     shareCodeOf(ctx.request),
-    documentOwnerId,
+    designOwnerId,
     sharePasswordOf(ctx.request),
-    documentTeamId,
+    designTeamId,
     ctx.verifiedUserId,
   );
 }
 
 // Route-entry guards. Each resolves the caller / loads + authorises the
-// document and returns EITHER the value the handler needs OR the exact
+// design and returns EITHER the value the handler needs OR the exact
 // Response it should return instead. The caller's one-liner is:
 //
 //   const owner = requireOwner(ctx);
@@ -211,7 +211,7 @@ export function gateGrant(
 //
 // which collapses the `const owner = resolveOwner(); if (!owner) return
 // missingAuth();` pair (and its load-and-check cousins) that every
-// owner-scoped path in documents.ts repeated by hand. Centralising them
+// owner-scoped path in designs.ts repeated by hand. Centralising them
 // means the authz status-code mapping (400 / 404 / 403) lives in one
 // place a reviewer can check, instead of N copies that can drift.
 
@@ -221,33 +221,33 @@ export function requireOwner(ctx: RouteContext): string | Response {
   return ctx.resolveOwner() ?? missingAuth();
 }
 
-// Is `ctx` the owner of this document? The one rule both owner-only guards
+// Is `ctx` the owner of this design? The one rule both owner-only guards
 // below share, and the reason it isn't a bare `owner === ownerId`.
 //
-// For a PERSONAL document the hybrid identity is safe: the owner id is either
+// For a PERSONAL design the hybrid identity is safe: the owner id is either
 // a Clerk `sub` the caller proved with a verified JWT, or a guest UUID that
 // is unguessable.
 //
-// For a TEAM document it is NOT. A team's owner id is a Clerk id deliberately
+// For a TEAM design it is NOT. A team's owner id is a Clerk id deliberately
 // visible to every teammate (`GET /api/teams/<id>` lists `members[].userId`),
 // so accepting the unsigned `X-Owner-Id` header here would let anyone who
 // ever learned it — a removed member, an invitee who declined — present it as
 // a credential and reach the owner-only surfaces: reading the share password
 // in the clear, minting an edit-role share link, clearing the password,
-// deleting the document. So a team document's ownership must be proven with a
+// deleting the design. So a team design's ownership must be proven with a
 // server-VERIFIED account id (Clerk session or API token), never the header.
 //
-// This is the same trust boundary auth/document-access.ts draws for the
+// This is the same trust boundary auth/design-access.ts draws for the
 // read/edit gates; it belongs here too rather than only there.
 //
-// And the owner of a team document must still BE in the team. A member who
+// And the owner of a team design must still BE in the team. A member who
 // leaves or is removed has their team work handed on (handTeamWorkToHeir),
 // but rows from before that existed are still owned by people who have gone,
 // and ownership is what the share-link, password, delete and move-out routes
 // check first.
-export async function ownsDocument(
+export async function ownsDesign(
   ctx: RouteContext,
-  liveDoc: Pick<DocumentDTO, 'ownerId' | 'teamId'>,
+  liveDoc: Pick<DesignDTO, 'ownerId' | 'teamId'>,
 ): Promise<boolean> {
   if (liveDoc.teamId) {
     if (ctx.verifiedUserId == null || ctx.verifiedUserId !== liveDoc.ownerId) return false;
@@ -257,69 +257,69 @@ export async function ownsDocument(
   return ctx.resolveOwner() === liveDoc.ownerId;
 }
 
-// Does `ctx` manage this document? Its owner, OR a joined member of its team
-// (docs/specs/013-workspace/team-shared-documents.md: a team's library belongs to
-// every joined member, so each may share, delete and restore its documents). NOT a
+// Does `ctx` manage this design? Its owner, OR a joined member of its team
+// (docs/specs/013-workspace/team-shared-designs.md: a team's library belongs to
+// every joined member, so each may share, delete and restore its designs). NOT a
 // share-link visitor: editing content via a link is one thing, deciding who else
-// gets in or destroying the document is owner/team-only. The member leg is checked
-// against the verified account id, never the header, like ownsDocument.
-async function managesDocument(
+// gets in or destroying the design is owner/team-only. The member leg is checked
+// against the verified account id, never the header, like ownsDesign.
+async function managesDesign(
   ctx: RouteContext,
-  liveDoc: Pick<DocumentDTO, 'ownerId' | 'teamId'>,
+  liveDoc: Pick<DesignDTO, 'ownerId' | 'teamId'>,
 ): Promise<boolean> {
-  if (await ownsDocument(ctx, liveDoc)) return true;
+  if (await ownsDesign(ctx, liveDoc)) return true;
   if (!liveDoc.teamId || !ctx.verifiedUserId) return false;
   const membership = await getMembership(ctx.env, liveDoc.teamId, ctx.verifiedUserId);
   return membership?.status === 'joined';
 }
 
-// May `ctx` delete this document? Exactly who manages it (managesDocument). Also
+// May `ctx` delete this design? Exactly who manages it (managesDesign). Also
 // gates what the delete confirmation reads first (the shared-tabs notice).
-export const mayDeleteDocument = managesDocument;
+export const mayDeleteDesign = managesDesign;
 
-// The answer for a document id no LIVE row holds (docs/specs/013-workspace/trash.md):
-// 410 `document_trashed` when it is in the Trash and the caller could have
+// The answer for a design id no LIVE row holds (docs/specs/013-workspace/trash.md):
+// 410 `design_trashed` when it is in the Trash and the caller could have
 // opened it (owner, joined team member, share-code holder), else the 404 a
 // never-existing id gets, so the deleted state leaks nothing to a stranger.
-export async function missingDocument(ctx: RouteContext, documentId: string): Promise<Response> {
-  const trashed = await getTrashedDocumentMeta(ctx.env, documentId);
+export async function missingDesign(ctx: RouteContext, designId: string): Promise<Response> {
+  const trashed = await getTrashedDesignMeta(ctx.env, designId);
   if (!trashed) return notFound();
-  const grant = await gateGrant(ctx, documentId, trashed.ownerId, trashed.teamId);
-  return grant ? documentTrashed() : notFound();
+  const grant = await gateGrant(ctx, designId, trashed.ownerId, trashed.teamId);
+  return grant ? designTrashed() : notFound();
 }
 
-// Owner-only resource: resolve the caller, load the document, and confirm
-// the caller owns it. Returns the document, or 400 (no owner) / 404
+// Owner-only resource: resolve the caller, load the design, and confirm
+// the caller owns it. Returns the design, or 400 (no owner) / 404
 // (missing) / 403 (foreign). 404-before-403 means a foreign id can't be
 // distinguished from a missing one until ownership is proven, but once
 // the row exists a non-owner gets 403 — matching every owner-only branch
-// documents.ts hand-rolled (DELETE :id, /folder, /share, /share-password,
+// designs.ts hand-rolled (DELETE :id, /folder, /share, /share-password,
 // /share/:code).
-export async function requireOwnedDocument(
+export async function requireOwnedDesign(
   ctx: RouteContext,
-  documentId: string,
-): Promise<DocumentDTO | Response> {
+  designId: string,
+): Promise<DesignDTO | Response> {
   const owner = ctx.resolveOwner();
   if (!owner) return missingAuth();
-  const existing = await getDocument(ctx.env, documentId);
-  if (!existing) return missingDocument(ctx, documentId);
-  if (!(await ownsDocument(ctx, existing))) return forbidden();
+  const existing = await getDesign(ctx.env, designId);
+  if (!existing) return missingDesign(ctx, designId);
+  if (!(await ownsDesign(ctx, existing))) return forbidden();
   return existing;
 }
 
-// The share-link family's guard (docs/specs/013-workspace/team-shared-documents.md): the
-// same 400 / 404 / 403 ladder as requireOwnedDocument, but a joined member of a team
-// document passes as well as its owner, since the team's documents are all of theirs
+// The share-link family's guard (docs/specs/013-workspace/team-shared-designs.md): the
+// same 400 / 404 / 403 ladder as requireOwnedDesign, but a joined member of a team
+// design passes as well as its owner, since the team's designs are all of theirs
 // to share.
-export async function requireManagedDocument(
+export async function requireManagedDesign(
   ctx: RouteContext,
-  documentId: string,
-): Promise<DocumentDTO | Response> {
+  designId: string,
+): Promise<DesignDTO | Response> {
   const owner = ctx.resolveOwner();
   if (!owner) return missingAuth();
-  const existing = await getDocument(ctx.env, documentId);
-  if (!existing) return missingDocument(ctx, documentId);
-  if (!(await managesDocument(ctx, existing))) return forbidden();
+  const existing = await getDesign(ctx.env, designId);
+  if (!existing) return missingDesign(ctx, designId);
+  if (!(await managesDesign(ctx, existing))) return forbidden();
   return existing;
 }
 
@@ -342,7 +342,7 @@ export async function deniedParticipate(
   const grant = await gateGrant(ctx, liveDoc.id, liveDoc.ownerId, liveDoc.teamId);
   if (grant && grant.tabScope !== null && grant.tabScope !== tabId) return notFound();
   if (grant)
-    console.info('[access-levels] participation refused', { documentId: liveDoc.id, tabId });
+    console.info('[access-levels] participation refused', { designId: liveDoc.id, tabId });
   return forbidden();
 }
 

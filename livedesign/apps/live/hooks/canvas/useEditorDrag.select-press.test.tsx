@@ -3,7 +3,7 @@ import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DragMode } from '@/lib/canvas';
 import { canvasGestureNow, resetCanvasGesturesForTests } from '@/lib/canvas-gesture';
-import { createShape, type Element, type Tab } from '@livedesign/document';
+import { createShape, type Element, type Tab } from '@livedesign/design';
 import { useEditorDrag } from './useEditorDrag';
 import type { EditorDragDeps } from './useEditorDrag.types';
 

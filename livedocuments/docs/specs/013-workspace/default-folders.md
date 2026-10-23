@@ -100,7 +100,7 @@ A create's place is decided in this order; the first that answers wins:
 ## What a default may point at
 
 - **A personal folder of the person**, or **a team folder of a team the person has joined**. Team
-  membership is checked against the verified account id (a Clerk session or an API token) only,
+  membership is checked against the verified account id (a signed-in session or an API token) only,
   never the guest `X-Owner-Id`, as for [Placement on create](folders.md#placement-on-create).
 - Not a space's root: the root of My Work is where a document lands with no default, and a
   team's root is reached by creating inside the team.
@@ -141,7 +141,7 @@ A create's place is decided in this order; the first that answers wins:
 | PUT    | `/api/placement-defaults/:key` | `{ folderId }` | 204, the default set                |
 | DELETE | `/api/placement-defaults/:key` |                | 204, the default cleared            |
 
-- Owner-scoped: the Clerk user, an API token's owner, or a guest's `X-Owner-Id`.
+- Owner-scoped: the signed-in account, an API token's owner, or a guest's `X-Owner-Id`.
 - `GET` answers every stored default whose key is in the list, in list order, dangling ones
   included: a surface shows a dangling default as such.
 - `DELETE` of a key with no default is a 204 as well.

@@ -11,7 +11,7 @@ import {
   type Element,
   type ElementOp,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import {
   insertChangesetPartStatement,
   insertChangesetStatement,
@@ -31,12 +31,12 @@ import type { StoredTab } from './stored-tab';
 // One changeset's write (docs/specs/024-agents/blueprints/agent-changesets.md "The pipeline" steps
 // 7 to 10), shared by a submit and a revert: the tab at the revision it was read, the record and
 // its three parts in ONE batch (the revision trigger aborts all of it when the tab moved), then the
-// relay to the document's room, which never fails the write.
+// relay to the design's room, which never fails the write.
 
 export type Author = { id: string; name: string; color: string };
 
 type ChangesetWrite = {
-  documentId: string;
+  designId: string;
   tabId: string;
   // The tab as read; null when the changeset creates it.
   stored: StoredTab | null;
@@ -86,7 +86,7 @@ export async function writeChangeset(env: Env, w: ChangesetWrite): Promise<Write
   });
   let record: ChangesetRecord = {
     id: mintChangesetId(),
-    documentId: w.documentId,
+    designId: w.designId,
     tabId: w.tabId,
     rev,
     baseRev: w.baseRev,
@@ -109,7 +109,7 @@ export async function writeChangeset(env: Env, w: ChangesetWrite): Promise<Write
   for (let mint = 0; mint < 2; mint += 1) {
     try {
       const results = await env.DB.batch([
-        ...tabWriteStatements(env, w.documentId, w.next, w.orderIndex, { expected }, now),
+        ...tabWriteStatements(env, w.designId, w.next, w.orderIndex, { expected }, now),
         insertChangesetStatement(env, record),
         insertChangesetPartStatement(env, record.id, 'ops', parts.ops),
         insertChangesetPartStatement(env, record.id, 'inverse', parts.inverse),
@@ -130,7 +130,7 @@ export async function writeChangeset(env: Env, w: ChangesetWrite): Promise<Write
   }
   await relayChangeset(
     env,
-    w.documentId,
+    w.designId,
     changesetRoomOp({
       id: record.id,
       tabId: w.tabId,
@@ -196,7 +196,7 @@ function isCreateRace(err: unknown, creates: boolean): boolean {
   return (
     creates &&
     err instanceof Error &&
-    /UNIQUE constraint failed: (tabs|document_tabs)/.test(err.message)
+    /UNIQUE constraint failed: (tabs|design_tabs)/.test(err.message)
   );
 }
 

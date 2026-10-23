@@ -1,4 +1,4 @@
-import { useOptionalEditorContext } from '@/app/document/[id]/EditorContext';
+import { useOptionalEditorContext } from '@/app/design/[id]/EditorContext';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { getTheme, resolveTabBackdrop } from '@/lib/themes';
 import { startPalette, startPanelColours, type StartPalette } from './start-palette';

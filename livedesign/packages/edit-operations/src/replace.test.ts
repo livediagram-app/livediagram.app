@@ -4,7 +4,7 @@ import {
   getBuiltInTheme,
   type Tab,
   type ThemeDefinition,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { formatResultLines } from './format-results';
 import { checkoutFlow, fixedIds } from './fixtures/checkout-flow';
 import { applied, refused } from './fixtures/outcomes';
@@ -148,7 +148,7 @@ describe('applyReplace for a new tab', () => {
     expect(createdIds).toEqual(tab.elements.map((el) => el.id));
   });
 
-  it('names the theme by id, as the MCP passes the document theme to add_tab', () => {
+  it('names the theme by id, as the MCP passes the design theme to add_tab', () => {
     const { tab } = applied(
       applyReplace(null, pair, { ...options, themeId: 'ocean', theme: getBuiltInTheme('brand') }),
     );

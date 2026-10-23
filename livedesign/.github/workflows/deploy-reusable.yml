@@ -59,6 +59,8 @@ on:
         required: false
       GUEST_ID_HMAC_SECRET:
         required: false
+      MEDIA_KEY:
+        required: false
       INTERNAL_EVENTS_KEY:
         required: false
 
@@ -348,6 +350,7 @@ jobs:
     env:
       CLERK_JWKS_URL: ${{ secrets.CLERK_JWKS_URL }}
       GUEST_ID_HMAC_SECRET: ${{ secrets.GUEST_ID_HMAC_SECRET }}
+      MEDIA_KEY: ${{ secrets.MEDIA_KEY }}
       INTERNAL_EVENTS_KEY: ${{ secrets.INTERNAL_EVENTS_KEY }}
       WRANGLER_ENV: ${{ inputs.wrangler_env }}
     steps:
@@ -431,6 +434,18 @@ jobs:
         run: |
           printf '%s' "$INTERNAL_EVENTS_KEY" \
             | pnpm exec wrangler secret put INTERNAL_EVENTS_KEY ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
+
+      # MEDIA_KEY (liveworkspace/docs/media.md) is livedesign's secret on the liveworkspace media service, which
+      # holds it as MEDIA_KEY_LIVEDESIGN. Unset = the step skips, leaving whatever is already on the worker untouched.
+      - name: Sync MEDIA_KEY secret
+        if: ${{ env.MEDIA_KEY != '' }}
+        working-directory: apps/api
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: |
+          printf '%s' "$MEDIA_KEY" \
+            | pnpm exec wrangler secret put MEDIA_KEY ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
       # Runs straight before the deploy, after the secret syncs, so the time the
       # live worker runs against a schema newer than its code is only the deploy

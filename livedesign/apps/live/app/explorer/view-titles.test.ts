@@ -10,7 +10,7 @@ describe('VIEW_TITLES', () => {
     expect(VIEW_TITLES.inbox).toBe(SIDEBAR_LABELS.inbox);
     expect(VIEW_TITLES.timeline).toBe(SIDEBAR_LABELS.timeline);
     expect(VIEW_TITLES.shared).toBe(SIDEBAR_LABELS.shared);
-    expect(VIEW_TITLES.all).toBe(SIDEBAR_LABELS.myDocuments);
+    expect(VIEW_TITLES.all).toBe(SIDEBAR_LABELS.myDesigns);
     expect(VIEW_TITLES.offline).toBe(SIDEBAR_LABELS.thisBrowser);
     expect(VIEW_TITLES.gallery).toBe(SIDEBAR_LABELS.gallery);
     expect(VIEW_TITLES.themes).toBe(SIDEBAR_LABELS.themes);

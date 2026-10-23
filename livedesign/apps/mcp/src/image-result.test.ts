@@ -107,7 +107,7 @@ describe('tabPreview', () => {
     expect(blocks).toEqual([
       {
         type: 'text',
-        text: '2 pictures are drawn as a placeholder in this preview, which draws only so many pixels; the document holds them as placed, and the editor shows them.',
+        text: '2 pictures are drawn as a placeholder in this preview, which draws only so many pixels; the design holds them as placed, and the editor shows them.',
       },
       { type: 'image', data: 'cG5n', mimeType: 'image/png' },
     ]);

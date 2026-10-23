@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { auditContrast } from './contrast';
-import { dismissQuickTour, expect, expectNoPageErrors, startBlankDocument, test } from './fixtures';
+import { dismissQuickTour, expect, expectNoPageErrors, startBlankDesign, test } from './fixtures';
 
 // Tooltips and hover cards (docs/specs/004-interface-design/tooltips-hover-cards-popovers.md), in a real
 // browser: the 1 s tooltip delay, instant keyboard focus, the instant hover
@@ -19,10 +19,10 @@ const SEARCH = '[data-toolbar-search]';
 const squareTile = (page: Page) =>
   page.locator(SEARCH).getByRole('button', { name: 'Add Square', exact: true });
 
-// A blank document with the quick tour out of the way (its dialog would cover
+// A blank design with the quick tour out of the way (its dialog would cover
 // the palette mid-hover), and the strip's Search open on "square".
 async function openEditor(page: Page) {
-  await startBlankDocument(page);
+  await startBlankDesign(page);
   await dismissQuickTour(page);
   await page.getByRole('button', { name: 'Search elements' }).click();
   await page.locator(SEARCH).getByRole('textbox', { name: 'Search elements' }).fill('square');

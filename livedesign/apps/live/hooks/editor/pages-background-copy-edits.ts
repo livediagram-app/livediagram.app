@@ -1,7 +1,7 @@
 // A page's background given to other pages from the editor (docs/specs/007-editor/
 // pages-mode.md "Copying a background"): the Background tab's Apply to All, and the Format
 // tool painting one page's background onto another. Each is one tab edit (one undo step, synced),
-// the pages it reaches re-inked as a pick on each would; the pure edits are the document package's.
+// the pages it reaches re-inked as a pick on each would; the pure edits are the design package's.
 import {
   backgroundPatchFor,
   pageBackgroundCopied,
@@ -12,7 +12,7 @@ import {
   type Page,
   type PageKind,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { pageInkMemory, rememberPageInk } from '@/lib/page-ink-memory';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';

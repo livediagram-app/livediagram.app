@@ -261,7 +261,6 @@
         "^build",
         "@livedocuments/live#build",
         "@livedocuments/help#build",
-        "@livedocuments/telemetry#build",
         "@livedocuments/api#build",
         "@livedocuments/mcp#build",
         "@livedocuments/router#build"

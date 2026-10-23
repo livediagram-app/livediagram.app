@@ -1,4 +1,4 @@
-// Privacy and Security category illustrations (docs/specs/018-help/help-app.md): where documents live on
+// Privacy and Security category illustrations (docs/specs/018-help/help-app.md): where designs live on
 // Cloudflare, who can read them, the anonymous-telemetry opt-out, and the
 // open-source / public-code motif. (Share-link security reuses the Share
 // dialog scenes in sharing.tsx.)
@@ -27,9 +27,9 @@ function Shield({ x, y, scale = 1 }: { x: number; y: number; scale?: number }) {
   );
 }
 
-/** Where documents live: the browser sends edits through one API to Cloudflare
+/** Where designs live: the browser sends edits through one API to Cloudflare
  *  storage (D1, a Durable Object room, object storage), all behind a shield. */
-export function DocumentStorage() {
+export function DesignStorage() {
   return (
     <Scene w={420} h={240}>
       {/* Browser */}
@@ -74,13 +74,13 @@ export function DocumentStorage() {
   );
 }
 
-/** Access control: a document is owned by an identity, so a non-owner request
+/** Access control: a design is owned by an identity, so a non-owner request
  *  comes back as a plain "not found" rather than confirming it exists. */
 export function AccessControl() {
   return (
     <Scene w={420} h={210}>
-      {/* The private document, with a lock */}
-      <Panel x={150} y={48} w={120} h={108} title="DOCUMENT">
+      {/* The private design, with a lock */}
+      <Panel x={150} y={48} w={120} h={108} title="DESIGN">
         <Shape x={166} y={88} w={40} h={26} kind="rect" />
         <Shape x={216} y={88} w={40} h={26} kind="circle" accent />
         <g transform="translate(210 124)">

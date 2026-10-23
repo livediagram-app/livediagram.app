@@ -2,12 +2,12 @@
 // (docs/specs/015-api/cli.md "One catalogue for the CLI and the MCP"; blueprint "The verb").
 export {
   fetchTeamLibraries,
-  listAllDocuments,
-  matchDocuments,
+  listAllDesigns,
+  matchDesigns,
   readLibraries,
-  type FoundDocument,
+  type FoundDesign,
   type Libraries,
-} from './find-documents';
+} from './find-designs';
 export {
   defineVerb,
   VerbRefusal,
@@ -26,12 +26,12 @@ export {
 } from './folders';
 export {
   AddressError,
-  parseDocumentUrl,
-  resolveDocument,
+  parseDesignUrl,
+  resolveDesign,
   resolveTab,
   type AddressCandidate,
   type AddressFailure,
-  type ResolvedDocument,
+  type ResolvedDesign,
   type TabSummary,
 } from './addressing';
 export {
@@ -50,7 +50,7 @@ export { classifySource } from './source-kind';
 export { HELD_RETRY_INTERVAL_MS, submitChangeset, type WriteFlags } from './write';
 export { GUIDE_TOPIC_NAMES, GUIDE_TOPICS, isGuideTopic } from './guides';
 export { renderSkill, SKILL_DESCRIPTION, SKILL_DIRECTORIES, SKILL_NAME } from './skill';
-export { documentOf, LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT, tabOf, tabPath } from './verbs/shared';
+export { designOf, LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT, tabOf, tabPath } from './verbs/shared';
 export { tabListOf } from './verbs/tab';
 export { EXPORT_FORMATS } from './verbs/local';
 export { workbenchNameOf, workbenchOriginOf } from './verbs/workbench';

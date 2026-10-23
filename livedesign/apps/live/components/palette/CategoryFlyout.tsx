@@ -1,7 +1,7 @@
 'use client';
 
 import { useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
-import type { EditorMode } from '@livedesign/document';
+import type { EditorMode } from '@livedesign/design';
 import { CountBadge } from '@livedesign/ui';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTileDef } from './palette-tile-defs';

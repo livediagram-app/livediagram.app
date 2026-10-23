@@ -4,7 +4,7 @@
 // the same words. Kept apart from palette-search, which also enumerates the icon catalogues, so the
 // strip pulls in only this.
 
-import type { ShapeKind } from '@livedesign/document';
+import type { ShapeKind } from '@livedesign/design';
 
 import type { PaletteTileDef } from '@/components/palette/palette-tile-defs';
 
@@ -32,7 +32,7 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   star: 'favourite highlight rating',
   'speech-bubble': 'comment callout chat note',
   frame: 'section container group region',
-  page: 'document doc write article heading',
+  page: 'design doc write article heading',
   card: 'node service component box tile persona tag title',
   badge: 'tag pill label chip status version beta new count',
   step: 'number numbered sequence order walkthrough marker 1 2 3',

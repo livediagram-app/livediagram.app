@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   applyLens,
-  documentSubject,
+  designSubject,
   editedCutoff,
   foldText,
   matchesLens,
@@ -27,7 +27,7 @@ const subject = (overrides: Partial<LensSubject> = {}): LensSubject => ({
   ...overrides,
 });
 
-describe('documentSubject', () => {
+describe('designSubject', () => {
   const summary = {
     name: 'Storm',
     savedAt: 5,
@@ -37,8 +37,8 @@ describe('documentSubject', () => {
     opensIn: 'pages',
   };
 
-  it('reads a personal document of the reader, this browser’s included', () => {
-    expect(documentSubject(summary, 'me-id')).toEqual({
+  it('reads a personal design of the reader, this browser’s included', () => {
+    expect(designSubject(summary, 'me-id')).toEqual({
       name: 'Storm',
       savedAt: 5,
       space: 'mine',
@@ -48,23 +48,23 @@ describe('documentSubject', () => {
     });
   });
 
-  it('reads a team document someone else made with AI', () => {
-    expect(documentSubject({ ...summary, teamId: 'T1', source: 'mcp' }, 'other')).toMatchObject({
+  it('reads a team design someone else made with AI', () => {
+    expect(designSubject({ ...summary, teamId: 'T1', source: 'mcp' }, 'other')).toMatchObject({
       space: 'team:T1',
       people: 'others',
       madeByAi: true,
     });
   });
 
-  it('reads a document the CLI made as made by a person, not by AI', () => {
-    expect(documentSubject({ ...summary, source: 'cli' }, 'me-id').madeByAi).toBe(false);
+  it('reads a design the CLI made as made by a person, not by AI', () => {
+    expect(designSubject({ ...summary, source: 'cli' }, 'me-id').madeByAi).toBe(false);
   });
 
   it('reads an unrecorded or retired intent as unknown', () => {
     const unrecorded = { ...summary, opensIn: undefined };
-    expect(documentSubject(unrecorded, 'me-id')).toMatchObject({ opensIn: null });
+    expect(designSubject(unrecorded, 'me-id')).toMatchObject({ opensIn: null });
     const retired = { ...summary, opensIn: 'whiteboard' };
-    expect(documentSubject(retired, 'me-id')).toMatchObject({ opensIn: null });
+    expect(designSubject(retired, 'me-id')).toMatchObject({ opensIn: null });
   });
 });
 

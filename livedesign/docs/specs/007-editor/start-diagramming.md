@@ -2,8 +2,8 @@
 
 An empty tab starts from a choice, not a blank page and a modal. Every new tab offers **Start Making Pages**: a wide
 panel in the middle of the canvas, its rail of groups beside a grid of the Pages templates, so the templates sit
-where the work begins instead of in a step before it. The New Document route asks for nothing first
-([New document route](new-document-route.md)), and the document opens on its tab's start.
+where the work begins instead of in a step before it. The New Design route asks for nothing first
+([New design route](new-design-route.md)), and the design opens on its tab's start.
 
 ## The panel
 
@@ -66,13 +66,13 @@ hides the start for good. The palette publishes the state in `lib/palette-popove
 its own root. Never a wrapper around it: the start's View Transition pictures that root, and a `display: contents`
 wrapper has no box to picture.
 
-A **Participant** or **Viewer** never sees a start: they keep the empty-canvas card ([New document
-route](new-document-route.md) "The empty-canvas hint"), which tells a Viewer the owner can build it out and points a
+A **Participant** or **Viewer** never sees a start: they keep the empty-canvas card ([New design
+route](new-design-route.md) "The empty-canvas hint"), which tells a Viewer the owner can build it out and points a
 Participant at what they may add.
 
 A new tab opens on its start (`newTabOpening` in `apps/live/lib/new-tab-seed.ts`).
 
-An **explicit blank** opens with its start already closed (`closeStartForBlank`): a document made by Start Blank's
+An **explicit blank** opens with its start already closed (`closeStartForBlank`): a design made by Start Blank's
 `/new?blank=1`, a blank's `/new?template=` link, or the public sites' Start Blank (`/new?start=blank`).
 
 ## Bringing it back
@@ -99,7 +99,7 @@ page edits keep their own rule (`pageRemoved` refuses the last page, `last_page`
 
 ## Default folders
 
-A template picked here on a document `/new` just made goes to that template's default folder, unless the document
+A template picked here on a design `/new` just made goes to that template's default folder, unless the design
 was made into a folder on purpose (a `/new?folder=` or `?team=` link, [Default
 folders](../013-workspace/default-folders.md) "A template picked after creation"). The move loads only at the pick
 (`useTemplatePickMove`, a dynamic import of `move-on-template-pick.ts`).
@@ -112,7 +112,7 @@ once a template is picked or the start closed (`start-panel-open.ts`, `useStartP
 ## Search handed over
 
 A `/new?q=<words>` link (the marketing site's **Build yours**, a gallery search) makes its words the search of the
-new document's start, so the templates it meant are the ones shown. They are kept for the browser tab only and read
+new design's start, so the templates it meant are the ones shown. They are kept for the browser tab only and read
 once (`start-query.ts`).
 
 ## Look
@@ -124,7 +124,7 @@ once (`start-query.ts`).
 - **Entrance.** The panel rises in with the dialog entrance (`animate-dialog-in`; a fade alone under reduced
   motion), and its cards and rail cascade in after it (`lvd-cascade`).
 - **On a phone** the panel is a sheet risen from the bottom (`animate-sheet-up`), full width below the top bar,
-  standing on the tab bar, with the grab handle every phone sheet has. The tab bar stays in reach, so the document's
+  standing on the tab bar, with the grab handle every phone sheet has. The tab bar stays in reach, so the design's
   other tabs and the tab's menu are never hidden behind the start. Where the bar stands is measured, as the toast
   stack measures its floor (`useChromeFloor`).
 - **On a short window** (under 500px tall, whatever the pointer: a phone held sideways, or a laptop zoomed to 200%,

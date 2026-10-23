@@ -1,11 +1,11 @@
 // The editor's element deep link (docs/specs/013-workspace/inbox.md §1): the URL fragment an
-// Inbox row opens a document with, and the parser the editor reads it
+// Inbox row opens a design with, and the parser the editor reads it
 // back with.
 //
-//   /document/<id>[?s=<code>]#t=<tabId>&el=<elementId>&open=action|comments
+//   /design/<id>[?s=<code>]#t=<tabId>&el=<elementId>&open=action|comments
 //
 // `t` is the tab pin the editor already writes on every tab switch
-// (docs/specs/006-document/per-tab-storage.md, useTabEntryEffects); `el` and `open` ride beside it and are
+// (docs/specs/006-design/per-tab-storage.md, useTabEntryEffects); `el` and `open` ride beside it and are
 // consumed once on load. Pure functions, shared by the Explorer (which
 // builds the link) and the editor (which reads it), so the two halves
 // cannot drift on the parameter names.
@@ -20,19 +20,19 @@ export type CollabDeepLink = {
   open: CollabPopover | null;
 };
 
-type Reachable = Pick<ActivityPlace, 'documentId' | 'via' | 'shareCode'>;
+type Reachable = Pick<ActivityPlace, 'designId' | 'via' | 'shareCode'>;
 
-function documentHref(doc: Reachable, hash: string): string {
+function designHref(doc: Reachable, hash: string): string {
   const query =
     doc.via === 'shared' && doc.shareCode ? `?s=${encodeURIComponent(doc.shareCode)}` : '';
-  return `/document/${encodeURIComponent(doc.documentId)}${query}#${hash}`;
+  return `/design/${encodeURIComponent(doc.designId)}${query}#${hash}`;
 }
 
 const pin = (tabId: string, elementId: string) =>
   `t=${encodeURIComponent(tabId)}&el=${encodeURIComponent(elementId)}`;
 
 export function collabDeepLinkHref(place: ActivityPlace, open: CollabPopover): string {
-  return documentHref(place, `${pin(place.tabId, place.elementId)}&open=${open}`);
+  return designHref(place, `${pin(place.tabId, place.elementId)}&open=${open}`);
 }
 
 // Null unless the fragment names a tab AND an element: a plain

@@ -44,7 +44,7 @@ const TAB_ACTIVE =
 export function EditorWindow({
   title,
   tabs,
-  document: liveDoc,
+  design: liveDoc,
   viewBox = LANDSCAPE_VIEWBOX,
   playing,
   veil,
@@ -54,7 +54,7 @@ export function EditorWindow({
 }: {
   title: string;
   tabs: TabDef[];
-  document: ReactNode;
+  design: ReactNode;
   // The diagram's viewBox: the wide landscape one, or a phone's portrait one for a portrait layout.
   viewBox?: string;
   playing: boolean;
@@ -86,7 +86,7 @@ export function EditorWindow({
           }`}
         />
         {/* Editor header strip (static chrome), laid out as EditorHeader lays it out: the brand
-            and the Editor menu on the left, the document's name with its share state and your role
+            and the Editor menu on the left, the design's name with its share state and your role
             in the middle, and Share on the right behind a hairline. */}
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 border-b border-slate-100 bg-white py-1.5 pl-3 dark:border-slate-800 dark:bg-slate-900">
           <div className="flex min-w-0 items-center gap-2">
@@ -179,7 +179,7 @@ export function EditorWindow({
                 {/* Presence lives IN the tab, as the editor's TabPresenceStack
                         draws it: a stack of small initials between the tab name
                         and its ellipsis, one per person on that tab (you, and on
-                        a shared document whoever else is there). */}
+                        a shared design whoever else is there). */}
                 {t.active ? (
                   <span className="ml-0.5 flex items-center">
                     <TabAvatar initials="TM" color="#e11d48" last={!shared} />

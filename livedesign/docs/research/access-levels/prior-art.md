@@ -1,5 +1,7 @@
 # Access levels: how other products do it
 
+> **History.** Written for livediagram, before livedesign was cut down to logo, wireframe and photo pages. The whiteboarding and facilitation comparisons describe that product; the spec it fed is [Share roles](../../specs/013-workspace/share-roles.md).
+
 Research for the access-levels design ([draft spec](../../specs/013-workspace/share-roles.md), on the
 `docs/agent-cli` branch). It surveys how collaborative, whiteboarding and facilitation products name and
 bound their access levels, and what that means for livedesign's proposed four: **Viewer**, **Participant**,
@@ -186,7 +188,7 @@ bound their access levels, and what that means for livedesign's proposed four: *
 | MS Whiteboard / Loop                                                                                            | can view, can edit (unverified)                        | Edit (unverified)                                                                                         | Tenant policy                                                          | OneDrive owner                                              | Sharing links                                                                | Graph scopes                                                                                                           |
 | [Excalidraw+](https://plus.excalidraw.com/docs/mcp/auth-and-permissions) / tldraw                               | Edit room link; host-defined                           | n/a                                                                                                       | Anyone with link                                                       | n/a                                                         | Link only                                                                    | Read-only, full, route-restricted keys                                                                                 |
 | Whimsical / Canva                                                                                               | view, comment, edit (unverified)                       | n/a                                                                                                       | Link viewers                                                           | Owner transfers (unverified)                                | Both                                                                         | MCP / Connect APIs                                                                                                     |
-| [Mentimeter](https://help.mentimeter.com/en/articles/5422663-collaborate-on-mentis-and-folders-with-colleagues) | Collaborators: View, Comment, Edit; **audience** apart | **Audience**, no document access                                                                          | Audience anonymous by default                                          | Owner manages collaborators                                 | Invite for collaborators; code for audience                                  | n/a here                                                                                                               |
+| [Mentimeter](https://help.mentimeter.com/en/articles/5422663-collaborate-on-mentis-and-folders-with-colleagues) | Collaborators: View, Comment, Edit; **audience** apart | **Audience**, no design access                                                                            | Audience anonymous by default                                          | Owner manages collaborators                                 | Invite for collaborators; code for audience                                  | n/a here                                                                                                               |
 | Slido, Parabol, retro tools                                                                                     | Host/facilitator + participants                        | **Participation is the baseline**                                                                         | Anonymous by design ([Parabol](https://github.com/ParabolInc/parabol)) | Facilitator role passes                                     | Join link or code                                                            | n/a here                                                                                                               |
 
 ## Recurring patterns
@@ -231,7 +233,7 @@ bound their access levels, and what that means for livedesign's proposed four: *
 ### What exists today
 
 - Two link roles, `view` and `edit` ([API app](../../specs/015-api/api.md)); owners and joined team members always
-  edit; team `admin` and `member` govern the team, not documents ([Teams](../../specs/013-workspace/teams.md)).
+  edit; team `admin` and `member` govern the team, not designs ([Teams](../../specs/013-workspace/teams.md)).
 - The realtime room relays **presence** ops from anyone and **mutation** ops from `edit` only
   ([API app, op classes](../../specs/015-api/api.md)).
 - A `view` link can therefore already: read, comment and delete its own comment, add and upvote on the Q&A board,
@@ -260,7 +262,7 @@ bound their access levels, and what that means for livedesign's proposed four: *
 - **Facilitating stays a session role**, held by an Editor through the baton, as Lucid and Miro do. It should not
   become a fifth access level.
 - **Ownership carries the familiar bundle**: delete, transfer, share-link management, password and expiry. For team
-  documents the owner is effectively the team, which Miro and Notion model with admins and broad grants; the open
+  designs the owner is effectively the team, which Miro and Notion model with admins and broad grants; the open
   question is who in a team holds those powers.
 - **Tokens should take the same vocabulary**, narrowed from the user, never widened (Figma, Excalidraw). A
   Participant token has a precedent in Notion's comment capabilities and gives an agent a safe way to comment or
@@ -280,7 +282,7 @@ bound their access levels, and what that means for livedesign's proposed four: *
    namely comments, Q&A, polls, dot votes, estimates, temperature checks, quiz answers, idea-box cards and Done
    checks. Move the response family off the edit-only mutation gate onto a participant gate, as the comment and Q&A
    endpoints already do.
-3. Keep **ownership a relationship, not a level**: the owner (or, for team documents, the team's admins) holds
+3. Keep **ownership a relationship, not a level**: the owner (or, for team designs, the team's admins) holds
    delete, transfer, share-link management, password and expiry. Editors never manage sharing, matching the draft.
 4. Keep **facilitation a session role** held by an Editor via the baton; Participants take part, never run.
 5. Give **tokens the same three levels**, documented as the minting user's access narrowed, and never above it.
@@ -301,7 +303,7 @@ bound their access levels, and what that means for livedesign's proposed four: *
    - **Every response**: comments, Q&A, polls, dot votes, estimates, temperature, quiz, idea box, Done check (recommended)
    - **Only ephemeral ones**: comments, Q&A, polls (today's view link), votes stay with editors
    - **Per tool**, set by the facilitator when starting it
-   - **Per document**, an owner switch "participants may vote"
+   - **Per design**, an owner switch "participants may vote"
 
 3. **What do existing `view` links become?**
    - **Participant**, keeping comments and gaining votes (recommended)
@@ -325,7 +327,7 @@ bound their access levels, and what that means for livedesign's proposed four: *
    - **Viewer, Participant, Editor**, one vocabulary with links (recommended)
    - **Viewer and Editor** only, as today
    - **Capabilities** (read, comment, respond, write) composed freely, like Notion
-   - Per-document tokens, like Google's `drive.file`
+   - Per-design tokens, like Google's `drive.file`
 
 7. **Should an agent with a Participant token answer votes and polls?**
    - **Comments only**; responses are for people

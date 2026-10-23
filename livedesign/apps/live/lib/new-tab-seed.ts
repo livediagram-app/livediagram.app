@@ -1,7 +1,7 @@
 // What a tab added from the tab bar starts with: the theme, canvas
 // styling and type of the tab it was added from, so a user mid-diagram who hits "+ tab" keeps
 // their visual context. Each tab keeps its own styling once created.
-import type { Tab } from '@livedesign/document';
+import type { Tab } from '@livedesign/design';
 
 export function newTabSeed(source: Tab | undefined): Partial<Tab> {
   if (!source) return {};

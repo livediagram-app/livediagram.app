@@ -33,27 +33,28 @@ export type Env = {
   // NEXT_PUBLIC_BUILD_ID (docs/specs/016-platform/stale-builds.md). Unset (local dev, a self-host that
   // sets neither) leaves it off the server release signal.
   BUILD_ID?: string;
-  // Clerk JWKS URL: when set, the request handler verifies Bearer
-  // tokens against it via `src/auth/clerk.ts` and prefers the
-  // resulting userId over `X-Owner-Id`. When unset, the worker stays
-  // in pure-guest mode (X-Owner-Id only). See docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md.
-  CLERK_JWKS_URL?: string;
+  // Signing in through the liveworkspace accounts Worker (docs/specs/014-identity/auth-and-guest-access.md,
+  // auth/accounts.ts + routes/auth.ts). ACCOUNTS_URL is its origin, e.g.
+  // `https://liveworkspace.app`; its issuer and key set sit under `/api/auth`. API_RESOURCE is
+  // what this API was registered as, e.g. `https://livedocuments.app/api`, and every access token must
+  // name it as its audience. With either unset the worker stays in pure-guest mode (X-Owner-Id only).
+  ACCOUNTS_URL?: string;
+  API_RESOURCE?: string;
+  // This app's OAuth client at the accounts Worker (its scripts/register-client.ts). Only the
+  // /api/auth routes read them; the secret is a `wrangler secret`.
+  ACCOUNTS_CLIENT_ID?: string;
+  ACCOUNTS_CLIENT_SECRET?: string;
+  // Local dev only: the origin the browser is on (the router, `http://localhost:3100`), which the
+  // sign-in redirect returns to. Unset in production, where the request's own origin is right.
+  AUTH_ORIGIN?: string;
   // The OAuth server the CLI signs in through (docs/specs/015-api/cli.md), an https origin.
   OAUTH_ISSUER?: string;
   // The oldest CLI the api accepts writes from, x.y.z; unset for no floor.
   CLI_MIN_VERSION?: string;
-  // Optional: when set, the Clerk JWT verifier also asserts the `iss`
-  // claim (docs/specs/014-identity/auth-and-guest-access.md) so a token from another instance sharing the JWKS
-  // host can't be replayed. Unset → issuer not asserted (back-compat).
-  CLERK_ISSUER?: string;
-  // Optional: when set, the Clerk JWT verifier also asserts the `aud`
-  // claim (docs/specs/014-identity/auth-and-guest-access.md) so a token minted for a different audience/app can't
-  // be replayed here. Unset → audience not asserted (back-compat).
-  CLERK_AUDIENCE?: string;
   // HMAC secret for signing guest owner-ids (docs/specs/014-identity/auth-and-guest-access.md + auth/
   // owner-signature.ts). When set, POST /api/guest-id mints a signed id
   // and /api/migrate requires a valid signature before reassigning a
-  // guest's data to a Clerk account — closing the "observe a guest id,
+  // guest's data to an account — closing the "observe a guest id,
   // claim its data" hole. Unset → migrate keeps its legacy unsigned
   // behaviour (OSS self-host that hasn't configured it).
   GUEST_ID_HMAC_SECRET?: string;
@@ -81,7 +82,7 @@ export type Env = {
   // feature flag still serve (the check helper returns "allowed"
   // when the binding is absent).
   WRITE_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
-  // Per-IP limiter for the anonymous telemetry ingest (docs/specs/017-telemetry/telemetry.md),
+  // Per-IP limiter for the anonymous telemetry relay (docs/specs/017-telemetry/telemetry.md "The relay"),
   // SEPARATE from WRITE_RATE_LIMITER so it never competes with users'
   // real document writes. Keyed on CF-Connecting-IP. Optional: absent
   // (self-host) falls through to "allow", same as the write limiter.
@@ -100,20 +101,17 @@ export type Env = {
   // email"), keyed `invite-decline:<address range>`: open doors, so the owner-keyed limiter cannot key them.
   // Optional: absent (self-host) → "allow".
   TEAM_INVITE_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
-  // Telemetry on/off switch (docs/specs/017-telemetry/telemetry.md). Authoritative: gates both
-  // POST /api/events and GET /api/telemetry/summary. A plain
+  // Telemetry on/off switch (docs/specs/017-telemetry/telemetry.md) for this worker's own events. A plain
   // wrangler.toml [vars] string; only the literal "true" enables it.
   // Absent/anything-else keeps telemetry fully off — the self-host
-  // default, so OSS forks never ingest or serve analytics unless they
-  // opt in.
+  // default, so OSS forks never send analytics unless they opt in.
   TELEMETRY_ENABLED?: string;
-  // Shared secret proving a /api/events post came from one of our own
-  // workers over a service binding, not the open internet (docs/specs/017-telemetry/telemetry.md, issue
-  // #36). Those calls carry no CF-Connecting-IP, so they all collapsed onto
-  // one 'anonymous' rate-limit key and throttled each other. Optional:
-  // unset means no caller is ever exempt, which is the pre-existing
-  // behaviour and keeps self-hosting working with no configuration.
-  INTERNAL_EVENTS_KEY?: string;
+  // liveworkspace's central telemetry service (liveworkspace/docs/telemetry.md). Unset means
+  // production's, TELEMETRY_URL in @liveworkspace/telemetry.
+  TELEMETRY_URL?: string;
+  // livedocuments' Worker key for that service (a secret, the same value as the mcp worker's),
+  // sent as X-Telemetry-Key. Unset means this worker sends no telemetry.
+  TELEMETRY_KEY?: string;
   // Resend API key for transactional + lifecycle email (docs/specs/014-identity/transactional-email.md). When absent
   // the whole email feature is inert: no sends, and the email_lifecycle table
   // is never touched. Set via `wrangler secret put RESEND_API_KEY` for prod;

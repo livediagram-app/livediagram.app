@@ -25,5 +25,5 @@ export const PREVIEW_IMAGE_MAX_BYTES = 2 * 1024 * 1024;
 // does not take a placeholder for a failed placement and place the picture again.
 export function previewLeftOutNote(count: number): string {
   const pictures = count === 1 ? '1 picture is' : `${count} pictures are`;
-  return `${pictures} drawn as a placeholder in this preview, which draws only so many pixels; the document holds them as placed, and the editor shows them.`;
+  return `${pictures} drawn as a placeholder in this preview, which draws only so many pixels; the design holds them as placed, and the editor shows them.`;
 }

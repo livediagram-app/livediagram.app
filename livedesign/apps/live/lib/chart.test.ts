@@ -1,4 +1,4 @@
-import { PIE_DEFAULT_SLICES, type ShapeElement } from '@livedesign/document';
+import { PIE_DEFAULT_SLICES, type ShapeElement } from '@livedesign/design';
 import { describe, expect, it } from 'vitest';
 import { chartFrame } from './chart';
 

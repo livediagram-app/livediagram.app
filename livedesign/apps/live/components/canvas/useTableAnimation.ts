@@ -1,5 +1,5 @@
 import { useMemo, type CSSProperties } from 'react';
-import type { TableElement } from '@livedesign/document';
+import type { TableElement } from '@livedesign/design';
 import { bodySetClass } from '@/lib/animation-classes';
 import { unitCount } from './animated-words';
 import { useTextAnimation, type TextAnimView } from './useTextAnimation';

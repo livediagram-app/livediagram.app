@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 // every header action holds its glyph in the same 20px icon slot, so an avatar beside a 13px icon no
 // longer drops its label below its neighbour's.
 
-vi.mock('@/lib/clerk-config', () => ({ clerkEnabled: true, sessionsEnabled: true }));
+vi.mock('@/lib/auth-config', () => ({ signInEnabled: true, sessionsEnabled: true }));
 vi.mock('@/components/providers/deferred-auth', () => ({
   useDeferredAuth: () => ({
     authLoaded: true,
@@ -59,11 +59,8 @@ describe('EditorHeader stack row', () => {
     renderHeader();
     const slot = screen.getByRole('button', { name: 'Account menu' })
       .firstElementChild as HTMLElement;
-    // The account avatar (docs/specs/014-identity/profile-picture.md) holds the slot at its size.
-    const avatar = slot.firstElementChild as HTMLElement;
-    expect(avatar.dataset.avatarState).toBe('initial');
-    expect(avatar.style.width).toBe(`${HEADER_ICON_SLOT_PX}px`);
-    const disc = avatar.firstElementChild as HTMLElement;
+    // The account avatar holds the slot at its size.
+    const disc = slot.firstElementChild as HTMLElement;
     expect(disc.dataset.optical).toBe('disc');
     expect(disc.style.width).toBe(`${HEADER_ICON_SLOT_PX}px`);
     expect(disc.querySelector('.text-optical-centre')?.textContent).toBe('W');

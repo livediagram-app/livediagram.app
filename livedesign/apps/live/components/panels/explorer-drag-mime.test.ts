@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
-  DOCUMENT_DRAG_MIME,
+  DESIGN_DRAG_MIME,
   FOLDER_DRAG_MIME,
   explorerDragKind,
   folderDragProps,
 } from './explorer-drag-mime';
 
 // docs/specs/013-workspace/explorer-structure.md "Dragging to the Trash": a folder drags under its own type, only the
-// reader's own and never mid-rename; a drag is read as a document, a folder or neither from its types.
+// reader's own and never mid-rename; a drag is read as a design, a folder or neither from its types.
 
 describe('folderDragProps', () => {
   it("makes one of the reader's own folders a drag source carrying its id under the folder type", () => {
@@ -27,8 +27,8 @@ describe('folderDragProps', () => {
 });
 
 describe('explorerDragKind', () => {
-  it('reads a document, a folder, or neither', () => {
-    expect(explorerDragKind([DOCUMENT_DRAG_MIME])).toBe('document');
+  it('reads a design, a folder, or neither', () => {
+    expect(explorerDragKind([DESIGN_DRAG_MIME])).toBe('design');
     expect(explorerDragKind([FOLDER_DRAG_MIME])).toBe('folder');
     expect(explorerDragKind(['text/plain', 'Files'])).toBeNull();
   });

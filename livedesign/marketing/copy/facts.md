@@ -26,7 +26,7 @@ is the team, not the individual.
 ## Shipped today
 
 - Real-time multiplayer: live cursors, selection rings, comment threads, and
-  laser-pointer broadcast, one Durable Object room per document.
+  laser-pointer broadcast, one Durable Object room per design.
 - Canvas: ten core shapes, sticky notes, text, images, arrows (straight /
   curved / angled with draggable handles, configurable thickness and arrowheads,
   optional labels), freehand Pencil tool with optional shape recognition,
@@ -37,7 +37,7 @@ is the team, not the individual.
   design, plus three UI wireframes).
 - 18 themes that recolor the whole canvas in one click.
 - Undo and redo (Cmd/Ctrl+Z, Cmd/Ctrl+Shift+Z), personal to each editor.
-- Tabs per document (link across them, copy a tab into another document), nested
+- Tabs per design (link across them, copy a tab into another design), nested
   folders in the Explorer.
 - Editor or view-only share links, revocable any time. "Shared with you"
   visitors can make their own copy.
@@ -64,7 +64,7 @@ Node-hosted backend, no SSR.
 
 ## Not yet shipped (do not imply these exist)
 
-- Team workspaces (a document belongs to one identity today).
+- Team workspaces (a design belongs to one identity today).
 - Transactional email (Resend).
 - Operational transform / CRDT (realtime is last-writer-wins today).
 

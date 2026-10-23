@@ -43,7 +43,7 @@ Google sign-in, short of calling Google on their behalf.
 
 ### How Clerk's image URLs name their source (observed, undocumented)
 
-Clerk does not document how to tell a picture the person **uploaded** from
+Clerk does not design how to tell a picture the person **uploaded** from
 the copy of their Google picture Clerk made at sign-up: `hasImage` is true
 for both. The URLs do tell them apart. Every `img.clerk.com` URL's path is
 one base64url-encoded JSON object naming the image it serves, and across the
@@ -157,7 +157,7 @@ verified Clerk session and both cleared when the switch is off:
 - **Comment authors** are looked up by the server, because a reader never
   holds other people's comment author ids (they are owner ids, a guest's
   credential, redacted on every read).
-  `GET /api/documents/<id>/tabs/<tabId>/comment-pictures` answers a reader
+  `GET /api/designs/<id>/tabs/<tabId>/comment-pictures` answers a reader
   with read access with comment id to picture URL, and an anonymous reader
   with an empty map. Your own comments show your own picture to you.
 - **The realtime room's presence.** A signed-in client's room join mints a
@@ -215,7 +215,7 @@ initials underneath keep their existing contrast.
   open your share links without signing in see your initials.
 - `https:` on `img.clerk.com` only. Every image is requested with
   `referrerpolicy="no-referrer"`, so Clerk's host never learns which
-  document is open.
+  design is open.
 - The live app sends no `Content-Security-Policy` today (its worker defers
   CSP to a dedicated cycle). When one lands, `img-src` must allow
   `https://img.clerk.com`, as Clerk's CSP guide says.

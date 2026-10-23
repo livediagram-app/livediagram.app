@@ -2,7 +2,7 @@
 // element on a photo page drawn into pixels at the photo's resolution, as the page's export draws
 // it, so a new layer can take it. Only the element's own box (with room for its stroke and shadow)
 // is drawn, so a large photo never needs a canvas its whole size.
-import { elementBounds, type Element, type LaidOutPage, type Tab } from '@livedesign/document';
+import { elementBounds, type Element, type LaidOutPage, type Tab } from '@livedesign/design';
 import type { Raster } from '@livedesign/photo-engine';
 import { renderTabToSvg } from '../export-tab';
 

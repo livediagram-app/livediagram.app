@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
-import type { Element, ElementGrid, ElementIndex } from '@livedesign/document';
+import type { Element, ElementGrid, ElementIndex } from '@livedesign/design';
 import { dragPreviewFor, subscribeDragPreview, type DragOverlay } from '@/lib/drag-preview';
 import type { ArrowLabelRender, ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
 import { sameArrowViewFrame, type ArrowViewFrame } from '@/components/canvas/arrow-view-frame';
@@ -10,7 +10,7 @@ import {
   previewArrowGeometry,
   type ArrowLinks,
 } from '@/components/canvas/drag-affected-arrows';
-import type { Rect } from '@livedesign/document';
+import type { Rect } from '@livedesign/design';
 
 // The element layer's drag preview (docs/specs/008-canvas/drag-preview.md "The preview",
 // docs/specs/008-canvas/canvas-performance.md "A move re-renders what moved"): what each element looks
@@ -220,7 +220,7 @@ export function createLayerPreviewStore(): LayerPreviewStore {
       const structureChanged = structureKey(nextStructure) !== structureKey(structure);
       if (structureChanged) structure = nextStructure;
       // Only the elements whose entry changed (an entry that draws the same is kept, steadyEntry; one the preview no
-      // longer holds redraws from the document).
+      // longer holds redraws from the design).
       const touched = new Set([...prev.keys(), ...entries.keys()]);
       for (const id of touched) {
         if (prev.get(id) === entries.get(id)) continue;

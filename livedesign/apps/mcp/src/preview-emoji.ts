@@ -2,7 +2,7 @@
 // emoji sticker or icon drew as a disc labelled "emoji" and an agent could not judge it. Each emoji the tab uses is
 // drawn from its Twemoji SVG instead, fetched from a pinned release (graphics CC-BY 4.0, THIRD_PARTY_NOTICES.md) by
 // its code points. Best effort, as fonts are: one that cannot be fetched in time draws as the disc. Each file is kept
-// in the Cache API, so a document's previews fetch nothing after the first.
+// in the Cache API, so a design's previews fetch nothing after the first.
 import {
   emojiArtOf,
   iconEmojiGlyph,
@@ -10,7 +10,7 @@ import {
   twemojiFileName,
   type EmojiArt,
 } from '@livedesign/icons/resolve';
-import type { Element } from '@livedesign/document';
+import type { Element } from '@livedesign/design';
 import { cached, type Fetcher } from './preview-fonts';
 
 export const TWEMOJI_BASE = 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/';

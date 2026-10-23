@@ -1,19 +1,19 @@
-// Chart-view helpers: the shared LAYOUT is re-exported from the document
+// Chart-view helpers: the shared LAYOUT is re-exported from the design
 // package (see below); what stays here is the animation wiring, which is CSS
 // classes and therefore the canvas's alone.
 //
 // The LAYOUT it used to hold (the palette, the box, the data, the legend
-// toggle, the plot + legend rects) moved to @livedesign/document, because the
+// toggle, the plot + legend rects) moved to @livedesign/design, because the
 // headless renderer has to lay a chart out the same way or an exported chart
 // is a different chart. Re-exported here so a chart view keeps importing it
 // from the module it always has.
 
 import type { CSSProperties } from 'react';
-import { animLoops, PIE_LOOPING_ANIMS, type ShapeElement } from '@livedesign/document';
+import { animLoops, PIE_LOOPING_ANIMS, type ShapeElement } from '@livedesign/design';
 import { useConceptTourPreview } from './concept-tour-preview';
 import { animClass, animSpeedVars } from './icons';
 
-export { chartFrame } from '@livedesign/document';
+export { chartFrame } from '@livedesign/design';
 
 // The animated-group className + style for a chart element (pie / bar share the
 // `pieAnim` / `pieAnimRepeat` / `pieAnimSpeed` fields + the `lvd-pie-*` classes).

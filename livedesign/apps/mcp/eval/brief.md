@@ -18,14 +18,14 @@ Rules:
 
   Always prefix with `EVAL_LOG=<your log path> EVAL_IMG_DIR=<your shots dir>`.
 
-- Work as a careful assistant would: you may look at your result (read_document with image:true saves a PNG whose
+- Work as a careful assistant would: you may look at your result (read_design with image:true saves a PNG whose
   path is printed; open it with the Read tool) and improve it, as a user's assistant could.
-- When a scenario is done, ALWAYS render the final result once more with read_document image:true (each tab you
+- When a scenario is done, ALWAYS render the final result once more with read_design image:true (each tab you
   made) so the final picture is on disk.
 
 Report, per scenario:
 
-- id, document id, tab ids, final image path(s)
+- id, design id, tab ids, final image path(s)
 - calls made, tool errors (verbatim first line), anything that silently did not do what you asked
 - what you would have needed to know or have that the tools did not tell you or offer
 - every visual defect against a polished, template-quality artefact, with the element ids and what you saw in the

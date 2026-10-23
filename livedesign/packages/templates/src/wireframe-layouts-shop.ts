@@ -117,7 +117,7 @@ export const verifyCode = responsive(
 const PERMISSIONS: readonly [string, string, string, boolean][] = [
   ['bell', 'Notifications', 'Reminders for what you plan.', true],
   ['map-pin', 'Location', 'Places near you, never shared.', true],
-  ['camera', 'Camera', 'Scan receipts and documents.', false],
+  ['camera', 'Camera', 'Scan receipts and designs.', false],
   ['users', 'Contacts', 'Find friends already here.', false],
 ];
 

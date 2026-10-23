@@ -96,7 +96,7 @@ describe('suggestTokens', () => {
     expect(ids('people:x')).toEqual([]);
   });
 
-  it('offers my documents, shared, then teams by name, never showing an id', () => {
+  it('offers my designs, shared, then teams by name, never showing an id', () => {
     const spaces = (['mine', 'shared', 'team:T1', 'team:T2'] as const).map((space) =>
       subject({ space }),
     );

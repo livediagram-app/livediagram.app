@@ -18,7 +18,7 @@ import {
   type Slide,
   type Tab,
   tabWireframeFrameTheme,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { CANVAS_PAPER } from '@/lib/page-paint';
 import { pageExportFrame } from '@/lib/export-page';
 import { exportChartInk } from '@/lib/export-chart-ink';

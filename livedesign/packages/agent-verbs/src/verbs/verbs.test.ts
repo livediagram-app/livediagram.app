@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest';
 import type { ChangesetSummary, LintReport } from '@livedesign/api-schema';
 import { contextOf, DOC_A, DOC_C, fakeApi, library, tabsOfA } from '../testing/fake-api';
 import { changesetLs, changesetRevert, changesetShow } from './changeset';
-import { documentLs, documentView } from './document';
+import { designLs, designView } from './design';
 import { columns } from './shared';
 import { tabLint, tabLs, tabView } from './tab';
 
-const tabPath = `/documents/${DOC_A}/tabs/tab-one-0000`;
+const tabPath = `/designs/${DOC_A}/tabs/tab-one-0000`;
 
 describe('columns', () => {
   it('pads every column but the last to its widest cell', () => {
@@ -19,62 +19,62 @@ describe('columns', () => {
   });
 });
 
-describe('document ls', () => {
+describe('design ls', () => {
   it('lists newest first with refs, and narrows by a query', async () => {
     const ctx = contextOf(fakeApi(library));
-    const all = await documentLs.run!(ctx, documentLs.input.parse({}));
-    expect(all.documents.map((d) => [d.ref, d.name, d.updated])).toEqual([
+    const all = await designLs.run!(ctx, designLs.input.parse({}));
+    expect(all.designs.map((d) => [d.ref, d.name, d.updated])).toEqual([
       ['aaaa2', 'Auth flow v2', '2026-10-03'],
       ['bbbb', 'Shop', '2026-10-02'],
       ['aaaa1', 'Auth flow', '2026-10-01'],
     ]);
-    expect(documentLs.text!(all)).toEqual([
+    expect(designLs.text!(all)).toEqual([
       'aaaa2  "Auth flow v2"  personal  2026-10-03',
       'bbbb   "Shop"          personal  2026-10-02',
       'aaaa1  "Auth flow"     personal  2026-10-01',
     ]);
-    expect(documentLs.quiet!(all)).toEqual(['aaaa2', 'bbbb', 'aaaa1']);
-    const some = await documentLs.run!(ctx, documentLs.input.parse({ query: 'AUTH', limit: '1' }));
+    expect(designLs.quiet!(all)).toEqual(['aaaa2', 'bbbb', 'aaaa1']);
+    const some = await designLs.run!(ctx, designLs.input.parse({ query: 'AUTH', limit: '1' }));
     expect(some).toMatchObject({ more: 1, query: 'AUTH' });
-    expect(documentLs.text!(some).at(-1)).toBe('… 1 more; --limit 2, or narrow with a query');
+    expect(designLs.text!(some).at(-1)).toBe('… 1 more; --limit 2, or narrow with a query');
   });
 
   it('says when nothing is there, or nothing matches', async () => {
-    const ctx = contextOf(fakeApi({ '/documents': { documents: [] }, '/teams': { teams: [] } }));
-    expect(documentLs.text!(await documentLs.run!(ctx, documentLs.input.parse({})))).toEqual([
-      'no documents',
+    const ctx = contextOf(fakeApi({ '/designs': { designs: [] }, '/teams': { teams: [] } }));
+    expect(designLs.text!(await designLs.run!(ctx, designLs.input.parse({})))).toEqual([
+      'no designs',
     ]);
     expect(
-      documentLs.text!(await documentLs.run!(ctx, documentLs.input.parse({ query: 'x' }))),
-    ).toEqual(['no documents match "x"']);
+      designLs.text!(await designLs.run!(ctx, designLs.input.parse({ query: 'x' }))),
+    ).toEqual(['no designs match "x"']);
   });
 
   it('refuses a limit out of range', () => {
-    expect(documentLs.input.safeParse({ limit: '0' }).success).toBe(false);
-    expect(documentLs.input.safeParse({ limit: '201' }).success).toBe(false);
+    expect(designLs.input.safeParse({ limit: '0' }).success).toBe(false);
+    expect(designLs.input.safeParse({ limit: '201' }).success).toBe(false);
   });
 });
 
-describe('document view', () => {
+describe('design view', () => {
   it('prints the overview view the api renders', async () => {
     const api = fakeApi({
       ...library,
-      [`/documents/${DOC_C}`]: { document: { id: DOC_C, name: 'Shop', tabs: [] } },
-      [`/documents/${DOC_C}?view=overview`]: { text: 'document Shop · 1 tab' },
+      [`/designs/${DOC_C}`]: { design: { id: DOC_C, name: 'Shop', tabs: [] } },
+      [`/designs/${DOC_C}?view=overview`]: { text: 'design Shop · 1 tab' },
     });
-    const out = await documentView.run!(contextOf(api), { doc: 'shop' });
-    expect(documentView.text!(out)).toEqual(['document Shop · 1 tab']);
+    const out = await designView.run!(contextOf(api), { doc: 'shop' });
+    expect(designView.text!(out)).toEqual(['design Shop · 1 tab']);
   });
 
   it("sends a share link's code with the requests after it", async () => {
     const codes: string[] = [];
     const api = fakeApi({
-      '/share/abc123': { document: { id: DOC_C, name: 'Shop' } },
-      [`/documents/${DOC_C}`]: { document: { id: DOC_C, name: 'Shop', tabs: [] } },
-      [`/documents/${DOC_C}?view=overview`]: { text: 'document Shop' },
+      '/share/abc123': { design: { id: DOC_C, name: 'Shop' } },
+      [`/designs/${DOC_C}`]: { design: { id: DOC_C, name: 'Shop', tabs: [] } },
+      [`/designs/${DOC_C}?view=overview`]: { text: 'design Shop' },
     });
-    await documentView.run!(contextOf(api, codes), {
-      doc: 'https://livedesign.app/document/shared?s=abc123',
+    await designView.run!(contextOf(api, codes), {
+      doc: 'https://livedesign.app/design/shared?s=abc123',
     });
     expect(codes).toEqual(['abc123']);
   });
@@ -114,7 +114,7 @@ describe('tab view', () => {
     const api = fakeApi({
       ...library,
       ...tabsOfA,
-      [`/documents/${DOC_A}/tabs/tab-two-0000`]: { nodes: [] },
+      [`/designs/${DOC_A}/tabs/tab-two-0000`]: { nodes: [] },
     });
     const out = await tabView.run!(
       contextOf(api),
@@ -122,7 +122,7 @@ describe('tab view', () => {
     );
     expect(tabView.json!(out)).toEqual({ nodes: [] });
     expect(tabView.text!(out)).toEqual(['{"nodes":[]}']);
-    expect(api.calls.at(-1)).toBe(`/documents/${DOC_A}/tabs/tab-two-0000?view=outline&json=1`);
+    expect(api.calls.at(-1)).toBe(`/designs/${DOC_A}/tabs/tab-two-0000?view=outline&json=1`);
   });
 });
 
@@ -167,11 +167,11 @@ const changeset = (over: Partial<ChangesetSummary>): ChangesetSummary => ({
 });
 
 describe('changeset ls', () => {
-  it('lists the changesets of a document, or of one tab', async () => {
+  it('lists the changesets of a design, or of one tab', async () => {
     const api = fakeApi({
       ...library,
       ...tabsOfA,
-      [`/documents/${DOC_A}/changesets?limit=20`]: {
+      [`/designs/${DOC_A}/changesets?limit=20`]: {
         changesets: [
           changeset({}),
           changeset({
@@ -184,7 +184,7 @@ describe('changeset ls', () => {
           }),
         ],
       },
-      [`/documents/${DOC_A}/changesets?limit=5&tab=tab-two-0000`]: { changesets: [] },
+      [`/designs/${DOC_A}/changesets?limit=5&tab=tab-two-0000`]: { changesets: [] },
     });
     const out = await changesetLs.run!(
       contextOf(api),
@@ -208,12 +208,12 @@ describe('changeset show', () => {
     const api = fakeApi({
       ...library,
       ...tabsOfA,
-      [`/documents/${DOC_A}/changesets/cs_8k2m4q7d1x`]: {
+      [`/designs/${DOC_A}/changesets/cs_8k2m4q7d1x`]: {
         changeset: changeset({}),
         results: [],
         text: '+ n3 square "Sign in"',
       },
-      [`/documents/${DOC_A}/changesets/cs_9`]: {
+      [`/designs/${DOC_A}/changesets/cs_9`]: {
         changeset: changeset({ tabId: 'gone' }),
         results: [],
         text: '',
@@ -235,7 +235,7 @@ describe('changeset show', () => {
 
 describe('changeset revert', () => {
   const lint = report(0);
-  const path = `/documents/${DOC_A}/changesets/cs_8k2m4q7d1x/revert`;
+  const path = `/designs/${DOC_A}/changesets/cs_8k2m4q7d1x/revert`;
 
   it('reverts one changeset as a new one, naming what it kept', async () => {
     const api = fakeApi({

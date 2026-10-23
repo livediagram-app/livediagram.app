@@ -1,5 +1,5 @@
 // Seeding for the Explorer Home specs (docs/specs/013-workspace/explorer-home.md): an owner with
-// drawn documents and opens, and other people acting on one of them through an edit link, all
+// drawn designs and opens, and other people acting on one of them through an edit link, all
 // through the api, as the product writes them.
 
 import type { APIRequestContext, Page } from '@playwright/test';
@@ -13,8 +13,8 @@ export function box(id: string, label: string, x: number, y: number): Element {
   return { id, type: 'shape', shape: 'square', x, y, width: 200, height: 100, label };
 }
 
-/** A drawn document; returns its id and its first tab's id. */
-export async function seedHomeDocument(
+/** A drawn design; returns its id and its first tab's id. */
+export async function seedHomeDesign(
   request: APIRequestContext,
   owner: string,
   origin: string,
@@ -23,7 +23,7 @@ export async function seedHomeDocument(
 ): Promise<{ id: string; tabId: string }> {
   const id = crypto.randomUUID();
   const tabId = crypto.randomUUID();
-  const res = await request.post(`${apiBase}/documents`, {
+  const res = await request.post(`${apiBase}/designs`, {
     headers: ownerHeaders(owner, { Origin: origin }),
     data: { id, name, tabs: [{ id: tabId, name: 'Tab 1', elements }] },
   });
@@ -32,13 +32,13 @@ export async function seedHomeDocument(
 }
 
 /** The editor's marked first-tab read: one open for today. */
-export async function openDocument(
+export async function openDesign(
   request: APIRequestContext,
   owner: string,
   doc: { id: string; tabId: string },
 ): Promise<void> {
-  const res = await request.get(`${apiBase}/documents/${doc.id}/tabs/${doc.tabId}`, {
-    headers: ownerHeaders(owner, { 'X-Document-Open': '1' }),
+  const res = await request.get(`${apiBase}/designs/${doc.id}/tabs/${doc.tabId}`, {
+    headers: ownerHeaders(owner, { 'X-Design-Open': '1' }),
   });
   expect(res.ok()).toBe(true);
 }
@@ -62,7 +62,7 @@ export async function editLink(
   origin: string,
   id: string,
 ): Promise<string> {
-  const res = await request.post(`${apiBase}/documents/${id}/share`, {
+  const res = await request.post(`${apiBase}/designs/${id}/share`, {
     headers: ownerHeaders(owner, { Origin: origin }),
     data: { role: 'edit' },
   });
@@ -78,7 +78,7 @@ export async function visitorSaves(
   doc: { id: string; tabId: string },
   elements: Element[],
 ): Promise<void> {
-  const res = await request.put(`${apiBase}/documents/${doc.id}/tabs/${doc.tabId}`, {
+  const res = await request.put(`${apiBase}/designs/${doc.id}/tabs/${doc.tabId}`, {
     headers: ownerHeaders(visitor, { 'X-Share-Code': code }),
     data: { id: doc.tabId, name: 'Tab 1', elements },
   });
@@ -120,7 +120,7 @@ export async function asGuest(page: Page, owner: string): Promise<void> {
 }
 
 /**
- * An owner whose Home has everything: three drawn documents opened today, and on the first one
+ * An owner whose Home has everything: three drawn designs opened today, and on the first one
  * two other people at work (Priya comments, Sam edits), so What Happened holds a summary.
  */
 export async function seedBusyHome(
@@ -128,10 +128,10 @@ export async function seedBusyHome(
   origin: string,
 ): Promise<{ owner: string; payments: string; onboarding: string; roadmap: string }> {
   const owner = await mintSignedGuest(request);
-  const payments = await seedHomeDocument(request, owner, origin, 'Payments architecture');
-  const onboarding = await seedHomeDocument(request, owner, origin, 'Onboarding flow');
-  const roadmap = await seedHomeDocument(request, owner, origin, 'Roadmap 2027');
-  for (const doc of [payments, onboarding, roadmap]) await openDocument(request, owner, doc);
+  const payments = await seedHomeDesign(request, owner, origin, 'Payments architecture');
+  const onboarding = await seedHomeDesign(request, owner, origin, 'Onboarding flow');
+  const roadmap = await seedHomeDesign(request, owner, origin, 'Roadmap 2027');
+  for (const doc of [payments, onboarding, roadmap]) await openDesign(request, owner, doc);
 
   const code = await editLink(request, owner, origin, payments.id);
   const priya = await person(request, 'Priya', '#8b5cf6');
@@ -147,17 +147,17 @@ export async function seedBusyHome(
   return { owner, payments: payments.id, onboarding: onboarding.id, roadmap: roadmap.id };
 }
 
-/** A document stored only in this browser, written as the editor writes it. */
+/** A design stored only in this browser, written as the editor writes it. */
 type LocalSeed = {
   name: string;
-  /** Days before today (UTC) the document was opened on. */
+  /** Days before today (UTC) the design was opened on. */
   daysAgo: number[];
   /** Its last open, ms after now (negative: before). */
   lastOpenedIn: number;
 };
 
-/** Writes local documents into this browser's store; the page must be on the app's origin. */
-export async function seedLocalDocuments(page: Page, docs: LocalSeed[]): Promise<void> {
+/** Writes local designs into this browser's store; the page must be on the app's origin. */
+export async function seedLocalDesigns(page: Page, docs: LocalSeed[]): Promise<void> {
   await page.evaluate(async (seeds) => {
     const now = Date.now();
     const day = (ago: number) => new Date(now - ago * 86_400_000).toISOString().slice(0, 10);
@@ -165,9 +165,9 @@ export async function seedLocalDocuments(page: Page, docs: LocalSeed[]): Promise
       const open = indexedDB.open('livedesign-offline', 2);
       open.onerror = () => reject(open.error ?? new Error('IndexedDB open failed'));
       open.onsuccess = () => {
-        const tx = open.result.transaction('documents', 'readwrite');
+        const tx = open.result.transaction('designs', 'readwrite');
         for (const seed of seeds) {
-          tx.objectStore('documents').put({
+          tx.objectStore('designs').put({
             id: crypto.randomUUID(),
             name: seed.name,
             folderId: null,
@@ -187,20 +187,20 @@ export async function seedLocalDocuments(page: Page, docs: LocalSeed[]): Promise
 const DAY_MS = 86_400_000;
 
 /**
- * Ten documents, so Within reach has to choose: four used on many days (the first also the newest
+ * Ten designs, so Within reach has to choose: four used on many days (the first also the newest
  * of all, so it is both most used and recent), two opened today on the server, four opened once a
  * few days ago. Expect most used [Atlas, Beacon, Compass, Delta], recent [Server two, Server one,
  * Echo, Foxtrot]; Golf and Hotel stay out.
  */
 export async function seedWithinReach(page: Page, origin: string, owner: string) {
-  const one = await seedHomeDocument(page.request, owner, origin, 'Server one');
-  const two = await seedHomeDocument(page.request, owner, origin, 'Server two');
-  await openDocument(page.request, owner, one);
-  await openDocument(page.request, owner, two);
+  const one = await seedHomeDesign(page.request, owner, origin, 'Server one');
+  const two = await seedHomeDesign(page.request, owner, origin, 'Server two');
+  await openDesign(page.request, owner, one);
+  await openDesign(page.request, owner, two);
   await page.goto('/explorer/home');
   // Home has read this browser's store by now, so the store exists and is not being opened.
   await expect(page.getByRole('region', { name: 'Jump Back In' })).toBeVisible();
-  await seedLocalDocuments(page, [
+  await seedLocalDesigns(page, [
     { name: 'Atlas', daysAgo: [0, 1, 2, 3, 4, 5], lastOpenedIn: 60_000 },
     { name: 'Beacon', daysAgo: [1, 2, 3, 4, 5], lastOpenedIn: -1 * DAY_MS },
     { name: 'Compass', daysAgo: [2, 3, 4, 5], lastOpenedIn: -2 * DAY_MS },

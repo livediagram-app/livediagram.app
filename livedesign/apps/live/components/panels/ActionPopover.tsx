@@ -15,7 +15,7 @@ import {
   Tooltip,
 } from '@livedesign/ui';
 import { useRef, useState, useCallback } from 'react';
-import type { ElementAction } from '@livedesign/document';
+import type { ElementAction } from '@livedesign/design';
 import { useReposition } from '@/hooks/canvas/useReposition';
 import { initialsOf } from '@/lib/identity';
 import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';

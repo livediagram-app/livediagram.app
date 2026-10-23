@@ -20,7 +20,7 @@ function cliCapabilities({ env, url }: RouteContext) {
   const minVersion = env.CLI_MIN_VERSION?.trim();
   return {
     apiBase: `${url.origin}/api`,
-    authEnabled: Boolean(env.CLERK_JWKS_URL),
+    authEnabled: Boolean(env.ACCOUNTS_URL && env.API_RESOURCE),
     ...(issuer ? { oauthIssuer: issuer } : {}),
     documentFormat: DOCUMENT_FORMAT,
     ...(minVersion && VERSION.test(minVersion) ? { cli: { minVersion } } : {}),

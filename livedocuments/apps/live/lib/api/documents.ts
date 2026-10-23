@@ -77,10 +77,7 @@ async function _apiLoadDocument(ownerId: string, id: string): Promise<LiveDoc | 
   const body = await expectOkOrNull<DocumentResponse>(res, 'load');
   return body?.document ?? null;
 }
-export const apiLoadDocument = dedupeInFlight(
-  _apiLoadDocument,
-  (ownerId, id) => `${ownerId}|${id}`,
-);
+export const apiLoadDocument = dedupeInFlight(_apiLoadDocument, (ownerId, id) => `${ownerId}|${id}`);
 
 // How many of the document's tabs are also in other documents, and how many
 // documents (docs/specs/006-document/tab-document-many-to-many.md, "Shared-tab
@@ -203,7 +200,7 @@ export async function apiDeleteDocument(ownerId: string, id: string): Promise<vo
   if (await isOfflineId(id)) return offlineTrashDocument(id, Date.now());
   // Owner-gated server-side as of the security fix — without the
   // identity headers the worker would 400 / 403. apiHeaders prefers
-  // the Clerk Bearer when a token provider is registered, falls
+  // the account Bearer when a token provider is registered, falls
   // through to X-Owner-Id otherwise (docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/api.md).
   return apiDelete(`${API_BASE}/documents/${id}`, ownerId, {
     action: 'delete document',

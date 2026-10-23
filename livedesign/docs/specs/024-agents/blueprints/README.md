@@ -4,7 +4,7 @@ Follow the references below only as needed; never upfront.
 
 - ./agent-changesets.md - when building the changeset route, tab revisions and renames, merge on save, the room relay or the editor toast
 - ./agent-presence.md - when implementing or changing agent presence or the comment verbs: the presence routes, room entries and expiry, the roster fold, focus rings, reply/resolve/reopen, the cross-tab comment list, token levels on them
-- ./document-views.md - when implementing or changing views: refs, slug ids, the outline grammar, containment, every view, budgets, the `?view=` doors, `read_document`
+- ./design-views.md - when implementing or changing views: refs, slug ids, the outline grammar, containment, every view, budgets, the `?view=` doors, `read_design`
 - ./edit-operations.md - when implementing or changing edit operations: the grammar, selectors, placement, layout on edit, values, results and rejections, `applyEditOperations`
 - ./page-lint.md - when implementing or changing the page lint: the checks, summary and finding lines, and where changesets, the MCP and the CLI call it
 - ./pages-for-agents.md - when implementing or changing the Pages tools: the page-change engine, the pages route and relay, the pages view

@@ -1,5 +1,5 @@
 // The Elements palette's own tiles (docs/specs/007-editor/wireframe-pages.md "The Elements
-// palette"): a screen's parts, each one shape placed as its part (packages/document
+// palette"): a screen's parts, each one shape placed as its part (packages/design
 // shape-variants.ts WIREFRAME_PARTS). The category also lists the Badge, the Card and the
 // Checklist (palette-layouts.ts); Text and the Sticky Note stay in Write.
 import { Glyph } from '@livedesign/ui';

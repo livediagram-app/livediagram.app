@@ -20,10 +20,14 @@ globs = ["**/*.ttf", "**/*.otf"]
 # with `wrangler deploy --var` on livedocuments.app's own repository only, and
 # then verifies on the live worker (docs/specs/016-platform/deployment.md
 # "Hosted profile"). A fork is therefore telemetry-off and uncapped until it
-# opts in, by declaring the var here. TELEMETRY_ENABLED gates the anonymous,
-# first-party product analytics + the public /telemetry dashboard
-# (docs/specs/017-telemetry/telemetry.md): "true" turns it on; anything else,
-# or absent, keeps it fully off.
+# opts in, by declaring the var here. TELEMETRY_ENABLED gates this worker's
+# anonymous, first-party product events, sent to liveworkspace's central
+# telemetry service (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/telemetry.md):
+# "true" turns it on; anything else, or absent, keeps it fully off. The
+# service's URL is TELEMETRY_URL, also from the hosted profile (per
+# environment, mirrored into the frontends as NEXT_PUBLIC_TELEMETRY_URL);
+# unset means production's (https://liveworkspace.app/api/telemetry). Locally,
+# `TELEMETRY_URL=http://localhost:8790/api/telemetry` in .dev.vars.
 [vars]
 
 # Guest signature enforcement (docs/specs/015-api/public-api-and-tokens.md §4). Stated here,
@@ -93,14 +97,10 @@ type = "ratelimit"
 namespace_id = "1001"
 simple = { limit = 300, period = 60 }
 
-# Per-IP limiter for the anonymous telemetry ingest (POST /api/events,
-# docs/specs/017-telemetry/telemetry.md). Separate namespace from the write limiter so abuse of the
-# public events endpoint can never eat into a user's document-write
-# budget. 120 batches / 60s per IP is generous for a real editor
-# session (which flushes a handful of batches a minute) while bounding
-# how fast one source can flood D1 / inflate the public dashboard.
-# Keyed on CF-Connecting-IP in src/index.ts. Absent binding → the
-# helper allows, so self-host still works.
+# Per-IP limiter for the CLI's telemetry relay (POST /api/events,
+# docs/specs/017-telemetry/telemetry.md "The relay"). Separate namespace from the write limiter so abuse of
+# the public relay can never eat into a user's document-write budget. Keyed on
+# CF-Connecting-IP in src/routes/events.ts. Absent binding → the helper allows.
 [[unsafe.bindings]]
 name = "EVENTS_RATE_LIMITER"
 type = "ratelimit"
@@ -123,16 +123,16 @@ new_classes = ["DocumentRoom"]
 # to the matching pattern so the body can dispatch.
 #
 # `0 3 * * *`: daily at 03:00 UTC. Fires independent retention sweeps
-# on this trigger, among them:
-#   - events, 60-day floor (docs/specs/017-telemetry/telemetry.md "Retention"). The /telemetry
-#     dashboard surfaces a 30-day max window, so anything past 60
-#     days is dead storage.
+# on this trigger (telemetry's retention is liveworkspace's, liveworkspace/docs/telemetry.md), among them:
 #   - images, 30-day floor for UNUSED images only (docs/specs/009-elements/images.md): reaped
 #     from R2 + D1 once nothing references them.
-# Plus the docs/specs/014-identity/transactional-email.md email sweeps (lifecycle onboarding + token-expiry
-# warnings), both no-ops when RESEND_API_KEY is unset.
+# Plus the docs/specs/014-identity/transactional-email.md lifecycle onboarding emails, a no-op when
+# RESEND_API_KEY is unset.
+#
+# `*/5 * * * *`: every five minutes, follow liveworkspace's teams change feed into this app's copy
+# and mark tokens revoked on liveworkspace.app (liveworkspace/docs/accounts.md "How an app keeps up").
 [triggers]
-crons = ["0 3 * * *"]
+crons = ["0 3 * * *", "*/5 * * * *"]
 
 # Per-IP limiter for share-code resolution (GET /api/share/<code>). That
 # read carries the optional share password and is otherwise unauthed +
@@ -224,25 +224,31 @@ simple = { limit = 20, period = 60 }
 #   - APP_BASE_URL: optional [vars] public origin for links in emails.
 #     Defaults to "https://livedocuments.app".
 
-# CLERK_JWKS_URL is provisioned out-of-band so the value never lands
-# in the public repo (docs/specs/002-project-scope/secrets-policy.md):
+# Sign-in (docs/specs/014-identity/auth-and-guest-access.md) goes through the
+# liveworkspace accounts Worker. Four values, provisioned out-of-band so none
+# lands in the public repo (docs/specs/002-project-scope/secrets-policy.md):
 #
-#   - Local dev: drop `CLERK_JWKS_URL=https://...` into
-#     `apps/api/.dev.vars` (gitignored). Wrangler reads it on the
-#     next `wrangler dev`.
-#   - Production: stored as a Cloudflare Worker secret via
-#     `wrangler secret put CLERK_JWKS_URL`. The deploy workflow
-#     pulls it from the GitHub repo secret `CLERK_JWKS_URL` and
-#     pipes it into `wrangler secret put` on every deploy so the
-#     value can rotate by editing the GitHub secret. Secrets
-#     persist across deploys independently of this file.
+#   ACCOUNTS_URL            the accounts Worker's origin
+#                           (https://liveworkspace.app)
+#   API_RESOURCE            this API's registered resource, the access
+#                           token's audience (https://livedocuments.app/api)
+#   ACCOUNTS_CLIENT_ID      this app's OAuth client id
+#   ACCOUNTS_CLIENT_SECRET  its client secret (the only real secret)
 #
-# When the secret is unset the api worker stays in pure-guest mode
-# and trusts `X-Owner-Id` exclusively (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md). Get the
-# URL from the Clerk dashboard → API Keys → "Show JWKS URL"; format
-# is `https://<your-instance>.clerk.accounts.dev/.well-known/jwks.json`
-# (test tenant) or `https://clerk.<your-domain>/.well-known/jwks.json`
-# (production tenant).
+#   - Local dev: put them in `apps/api/.dev.vars` (gitignored), plus
+#     AUTH_ORIGIN=http://localhost:3100 so the callback comes back
+#     through the router. Wrangler reads it on the next `wrangler dev`.
+#   - Production: Cloudflare Worker secrets. The deploy workflow pulls
+#     each from the GitHub repo secret of the same name and pipes it into
+#     `wrangler secret put` on every deploy, so a value rotates by
+#     editing the GitHub secret. Secrets persist across deploys
+#     independently of this file.
+#
+# With ACCOUNTS_URL or API_RESOURCE unset the api worker stays in
+# pure-guest mode and trusts `X-Owner-Id` exclusively
+# (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md).
+# The client id and secret come from registering livedocuments with the
+# accounts Worker (liveworkspace/docs/integrating-an-app.md).
 #
 # GUEST_ID_HMAC_SECRET is provisioned the same way (`.dev.vars` locally,
 # `wrangler secret put GUEST_ID_HMAC_SECRET` + a matching GitHub repo
@@ -252,32 +258,19 @@ simple = { limit = 20, period = 60 }
 # (docs/specs/014-identity/auth-and-guest-access.md). Generate with `openssl rand -hex 32`. Unset = legacy unsigned
 # migrate (pure-guest / single-user self-host).
 
-# INTERNAL_EVENTS_KEY marks a POST to /api/events as coming from one of our
-# OWN workers over a service binding, rather than from the open internet
-# (docs/specs/017-telemetry/telemetry.md, issue #36). Provisioned out-of-band like the two above; never in
-# [vars] — it is secret material:
+# TELEMETRY_KEY is livedocuments' Worker key for liveworkspace's central
+# telemetry service (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/telemetry.md), sent as
+# X-Telemetry-Key: a Worker sends no Origin, so the key is what lets its posts
+# speak for livedocuments.app. Secret material, provisioned out-of-band like the
+# two above; never in [vars]:
 #
-#   - Local dev: `INTERNAL_EVENTS_KEY=...` in `apps/api/.dev.vars`
-#     (gitignored). Rarely needed — local dev doesn't run the MCP worker
-#     over a service binding.
-#   - Production: `wrangler secret put INTERNAL_EVENTS_KEY`, and the SAME
-#     value on the mcp worker (`wrangler secret put INTERNAL_EVENTS_KEY`
-#     from apps/mcp). Generate with `openssl rand -hex 32`.
+#   - Local dev: `TELEMETRY_KEY=dev-livedocuments-key` in `apps/api/.dev.vars`
+#     (gitignored), matching the service's .dev.vars.
+#   - Production: `wrangler secret put TELEMETRY_KEY` here and on the mcp
+#     worker, the SAME value as the service's TELEMETRY_KEY_LIVEDOCUMENTS.
+#     Generate with `openssl rand -hex 32`.
 #
-# Why it exists: a service-binding call carries no CF-Connecting-IP, so
-# `clientIp` fell back to the literal 'anonymous' and every internal caller
-# in the world shared ONE 120/min EVENTS_RATE_LIMITER key, with the overflow
-# dropped as a 204 the caller can't distinguish from success. Since the mcp
-# worker posts one request per tool call, that ceiling was roughly two tool
-# calls per second globally. A matching key exempts those calls from the
-# per-IP limiter, which exists to stop ANONYMOUS abuse of a public endpoint
-# and was never aimed at us.
-#
-# Unset on either side = nobody is exempt, which is the pre-existing
-# behaviour and needs no configuration, so a self-host can ignore this.
-# The two sides MUST match: a mismatch is silent (the caller simply lands
-# back in the shared bucket), so check `wrangler secret list` on both if
-# Mcp·Used counts look flat.
+# Unset = this worker sends no telemetry, so a self-host can ignore it.
 
 
 # ---------------------------------------------------------------------------
@@ -303,8 +296,8 @@ simple = { limit = 20, period = 60 }
 name = "livedocuments-api-staging"
 
 # TELEMETRY_ENABLED and the image caps come from `hosted-vars.json`, exactly as
-# for production (see the top of this file). Staging's events land in its own D1,
-# on STAGING's /telemetry dashboard, never in production's published numbers.
+# for production (see the top of this file), and so does TELEMETRY_URL: staging's
+# events go to staging's telemetry service, never into production's published numbers.
 [env.staging.vars]
 # APP_BASE_URL comes from `hosted-vars.json` per environment, so staging's email and workbench links point
 # back at staging (docs/specs/014-identity/transactional-email.md, docs/specs/013-workspace/workbench-embeds.md).
@@ -401,9 +394,10 @@ new_classes = ["DocumentRoom"]
 # staging too, against staging's own data. Restated rather than inherited so
 # that reading this block tells you what the staging worker actually does.
 [env.staging.triggers]
-crons = ["0 3 * * *"]
+crons = ["0 3 * * *", "*/5 * * * *"]
 
-# CLERK_JWKS_URL, GUEST_ID_HMAC_SECRET and INTERNAL_EVENTS_KEY come from the
+# The four ACCOUNTS_* / API_RESOURCE values, GUEST_ID_HMAC_SECRET and
+# TELEMETRY_KEY come from the
 # `_STAGING` GitHub secrets via the deploy workflow. RESEND_API_KEY is provisioned by
 # hand exactly as it is for production:
 #   cd apps/api && wrangler secret put RESEND_API_KEY --env staging

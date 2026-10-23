@@ -17,7 +17,7 @@ const TemplateGallery = dynamic(() =>
 );
 
 // The page tells one story (docs/specs/019-marketing/marketing-site.md): what it is, one click to a real
-// document, its promises (built with your values in mind), then a beat per kind of page and one for
+// design, its promises (built with your values in mind), then a beat per kind of page and one for
 // working together, each linking into its own category page.
 export default function LandingPage() {
   return (

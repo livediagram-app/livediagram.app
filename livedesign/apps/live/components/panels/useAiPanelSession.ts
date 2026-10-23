@@ -5,9 +5,9 @@
 // per-mode and per-tab reset effects, and the streaming handleSend with
 // its history bookkeeping + telemetry. AiPanel keeps the render.
 
-import { plural } from '@livedesign/document';
+import { plural } from '@livedesign/design';
 import { useEffect, useRef, useState } from 'react';
-import type { Element } from '@livedesign/document';
+import type { Element } from '@livedesign/design';
 import { apiAiStream, type AiMode, type AiConversationTurn } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 import { aiContextElements } from '@/lib/ai-context';

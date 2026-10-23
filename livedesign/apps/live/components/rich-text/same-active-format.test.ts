@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { sameActiveFormat, type ActiveFormat } from './rich-text-format';
 
-// The toolbar keeps its previous state object while nothing changed (useRichTextDocument), so a keystroke
+// The toolbar keeps its previous state object while nothing changed (useRichTextDesign), so a keystroke
 // renders the editor once. A field the comparison missed would leave the toolbar showing a stale state.
 const BASE: ActiveFormat = {
   bold: false,

@@ -1,7 +1,7 @@
 // The Toolbar strip's Search (docs/specs/007-editor/toolbar-layout.md "Search: every element type"):
 // Pages' own tiles, and the ranking.
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livedesign/document';
+import type { Element } from '@livedesign/design';
 import {
   elementSignature,
   mergeByName,

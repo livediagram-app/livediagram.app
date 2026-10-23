@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getBuiltInTheme, quickSwatchColor, type Element } from '@livedesign/document';
+import { getBuiltInTheme, quickSwatchColor, type Element } from '@livedesign/design';
 import { fillSlotNames, isHexColour, resolveColourValue } from './colours';
 
 const theme = getBuiltInTheme(undefined);

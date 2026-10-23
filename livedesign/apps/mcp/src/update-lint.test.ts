@@ -3,7 +3,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { LintReport } from '@livedesign/api-schema';
 import type { Env } from './env';
 
-// update_document's lint when an edit changed nothing (docs/specs/024-agents/page-lint.md "Where it runs"): no
+// update_design's lint when an edit changed nothing (docs/specs/024-agents/page-lint.md "Where it runs"): no
 // changeset was recorded, so the tab's own lint is read and answered, never "lint unavailable".
 
 const shown: { result: Record<string, unknown>; notes: string[] }[] = [];
@@ -31,12 +31,12 @@ const REPORT: LintReport = {
   counts: { error: 0, warning: 1, info: 0 },
 };
 
-function updateDocument(changed: boolean) {
+function updateDesign(changed: boolean) {
   const lintReads: string[] = [];
   let handler: ((args: unknown, extra: unknown) => Promise<unknown>) | undefined;
   const server = {
     registerTool: (name: string, _config: unknown, h: typeof handler) => {
-      if (name === 'update_document') handler = h;
+      if (name === 'update_design') handler = h;
     },
   } as unknown as McpServer;
   const env = {
@@ -60,7 +60,7 @@ function updateDocument(changed: boolean) {
           });
         if (/\/tabs\/[^/]+$/.test(path)) return Response.json({ tab: TAB });
         return Response.json({
-          document: { id: 'd_1', name: 'D', tabs: [{ id: 't_1', name: 'Tab 1' }] },
+          design: { id: 'd_1', name: 'D', tabs: [{ id: 't_1', name: 'Tab 1' }] },
         });
       },
     },
@@ -70,25 +70,25 @@ function updateDocument(changed: boolean) {
     lintReads,
     run: () =>
       handler!(
-        { documentId: 'd_1', mode: 'edits', edits: 'set bea4 label="Same"' },
+        { designId: 'd_1', mode: 'edits', edits: 'set bea4 label="Same"' },
         { authInfo: { token: 'lvd_test' } },
       ),
   };
 }
 
-describe('update_document lint', () => {
+describe('update_design lint', () => {
   it("reads the tab's own lint when the edit changed nothing", async () => {
     shown.length = 0;
-    const call = updateDocument(false);
+    const call = updateDesign(false);
     await call.run();
-    expect(call.lintReads).toEqual(['/documents/d_1/tabs/t_1']);
+    expect(call.lintReads).toEqual(['/designs/d_1/tabs/t_1']);
     expect(shown[0]!.result.lint).toContain('1 warning');
     expect(shown[0]!.notes[0]).toContain('set bea4 height=184');
   });
 
   it("takes the changeset's lint when the edit changed something, reading no more", async () => {
     shown.length = 0;
-    const call = updateDocument(true);
+    const call = updateDesign(true);
     await call.run();
     expect(call.lintReads).toEqual([]);
     expect(shown[0]!.result.lint).toContain('1 warning');

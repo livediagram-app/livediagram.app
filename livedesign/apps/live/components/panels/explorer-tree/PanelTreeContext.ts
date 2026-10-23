@@ -2,32 +2,32 @@
 
 import { createContext, useContext } from 'react';
 import type { TeamFolderHandlers } from '../Explorer.types';
-import type { PaneDocument } from '@/app/explorer/views';
+import type { PaneDesign } from '@/app/explorer/views';
 import type { DefaultFolderMenus } from '@/hooks/persistence/useDefaultFolderMenus';
 
 // What every row of the floating Explorer panel's tree can reach
 // (docs/specs/013-workspace/explorer-structure.md#the-floating-explorer-panel): the panel's
-// expansion, the open document, and the verbs the host wired. Handed down once by
+// expansion, the open design, and the verbs the host wired. Handed down once by
 // PanelExplorerTree rather than threaded through every level of the recursion.
 export type PanelTree = {
   // The VIEWER's owner id, for thumbnails and Offline Mode conversions in the menus.
   ownerId: string | null;
-  currentDocumentId: string | null;
+  currentDesignId: string | null;
   // Ids mid slide-out after a delete (useExplorerRowDelete).
-  exitingDocumentIds: Set<string>;
+  exitingDesignIds: Set<string>;
   expanded: Record<string, boolean>;
   onToggle: (key: string) => void;
-  // Any document the reader can reach, by id: the pane's views (Home, the Timeline) give it its menu.
-  documentById?: (id: string) => PaneDocument | undefined;
-  // Opens a folder in the pane (its subfolders, then its documents, under a breadcrumb).
+  // Any design the reader can reach, by id: the pane's views (Home, the Timeline) give it its menu.
+  designById?: (id: string) => PaneDesign | undefined;
+  // Opens a folder in the pane (its subfolders, then its designs, under a breadcrumb).
   onOpenFolder?: (folderId: string) => void;
-  onOpenDocument: (id: string, shareCode?: string) => void;
-  onDeleteDocument?: (id: string, anchor: HTMLElement | null) => void;
-  onDuplicateDocument?: (id: string) => void;
-  onMoveDocumentRequest?: (id: string) => void;
-  onMoveTeamDocumentRequest?: (id: string, teamId: string) => void;
+  onOpenDesign: (id: string, shareCode?: string) => void;
+  onDeleteDesign?: (id: string, anchor: HTMLElement | null) => void;
+  onDuplicateDesign?: (id: string) => void;
+  onMoveDesignRequest?: (id: string) => void;
+  onMoveTeamDesignRequest?: (id: string, teamId: string) => void;
   // Present = the reader's own rows drag onto personal folders and My Work.
-  onMoveDocumentToFolder?: (documentId: string, folderId: string | null) => void;
+  onMoveDesignToFolder?: (designId: string, folderId: string | null) => void;
   onDismissShared?: (id: string) => void;
   favouriteIds?: Set<string>;
   onToggleFavourite?: (id: string) => void;

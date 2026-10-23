@@ -51,24 +51,24 @@ describe('registerTool answers fixable errors', () => {
 describe('deleteRefusal', () => {
   it('says why, by status and what was deleted', () => {
     expect(deleteRefusal(410, false)).toContain('already in the Trash');
-    expect(deleteRefusal(403, true)).toContain('view this document but not change it');
-    expect(deleteRefusal(404, true)).toContain('read_document lists its tabs');
-    expect(deleteRefusal(404, false)).toContain('find_documents');
+    expect(deleteRefusal(403, true)).toContain('view this design but not change it');
+    expect(deleteRefusal(404, true)).toContain('read_design lists its tabs');
+    expect(deleteRefusal(404, false)).toContain('find_designs');
     expect(deleteRefusal(409, true)).toContain('last one');
     // Any other status is named, never blamed on the last tab.
     expect(deleteRefusal(401, true)).not.toContain('last one');
     expect(deleteRefusal(503, true)).toContain('503');
-    expect(deleteRefusal(400, false)).toContain('Check the document id');
+    expect(deleteRefusal(400, false)).toContain('Check the design id');
   });
 });
 
 describe('loadTab', () => {
-  it('names the tabs there are when asked for one the document lacks', async () => {
+  it('names the tabs there are when asked for one the design lacks', async () => {
     const env = {
       API: {
         fetch: async () =>
           Response.json({
-            document: { id: 'd', tabs: [{ id: 't1', name: 'Board', orderIndex: 0 }] },
+            design: { id: 'd', tabs: [{ id: 't1', name: 'Board', orderIndex: 0 }] },
           }),
       },
     } as unknown as Env;

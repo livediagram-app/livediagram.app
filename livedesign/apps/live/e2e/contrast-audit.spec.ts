@@ -2,11 +2,11 @@ import { auditContrast, type ContrastReport } from './contrast';
 import {
   CANVAS,
   darkVisitor,
-  documentRow,
+  designRow,
   freshDarkPage,
   jumpBackIn,
-  seedDocument,
-  seedOpenedDocument,
+  seedDesign,
+  seedOpenedDesign,
   shareLink,
 } from './audit-screens';
 import {
@@ -39,10 +39,10 @@ function expectAA(report: ContrastReport, screen: string): void {
 }
 
 test.describe('Contrast audit, dark mode', () => {
-  test('the New Document wizard', async ({ page, pageErrors }) => {
+  test('the New Design wizard', async ({ page, pageErrors }) => {
     await darkVisitor(page);
     await page.goto('/new');
-    await page.getByText('New Document', { exact: false }).first().waitFor();
+    await page.getByText('New Design', { exact: false }).first().waitFor();
     await untilHydrated(page.getByRole('button', { name: /^create$/i }));
     await expect(page.locator('html')).toHaveClass(/dark/);
     expectAA(await auditContrast(page), 'wizard');
@@ -52,9 +52,9 @@ test.describe('Contrast audit, dark mode', () => {
   test('the editor, its panels and dialogs', async ({ page, pageErrors, baseURL }) => {
     const owner = await mintSignedGuest(page.request);
     const origin = new URL(baseURL!).origin;
-    const id = await seedDocument(page, owner, origin);
+    const id = await seedDesign(page, owner, origin);
     await darkVisitor(page, owner);
-    await page.goto(`/document/${id}`);
+    await page.goto(`/design/${id}`);
     await page.locator(CANVAS).waitFor();
     await dismissQuickTour(page);
     await expect(page.getByRole('img', { name: /Spinner/ }).first()).toBeVisible();
@@ -73,7 +73,7 @@ test.describe('Contrast audit, dark mode', () => {
     await page.keyboard.press('Escape');
 
     await page.getByRole('button', { name: /^Share$/ }).click();
-    await page.getByRole('dialog', { name: 'Share This Document' }).waitFor();
+    await page.getByRole('dialog', { name: 'Share This Design' }).waitFor();
     expectAA(await auditContrast(page), 'Share dialog');
     await page.keyboard.press('Escape');
     expectNoPageErrors(pageErrors);
@@ -82,28 +82,28 @@ test.describe('Contrast audit, dark mode', () => {
   test('the Join dialog a share link opens', async ({ page, browser, baseURL }) => {
     const owner = await mintSignedGuest(page.request);
     const origin = new URL(baseURL!).origin;
-    const id = await seedDocument(page, owner, origin);
+    const id = await seedDesign(page, owner, origin);
     const code = await shareLink(page, owner, origin, id);
     const visitor = await freshDarkPage(browser);
-    await visitor.goto(`/document/shared?s=${code}`);
+    await visitor.goto(`/design/shared?s=${code}`);
     await visitor.getByRole('button', { name: /^join$/i }).waitFor();
     expectAA(await auditContrast(visitor), 'Join dialog');
     await visitor.context().close();
   });
 
-  // Home as a returning owner meets it (the document they opened in Jump Back In), then My
-  // documents, which lists it as a row.
+  // Home as a returning owner meets it (the design they opened in Jump Back In), then My
+  // designs, which lists it as a row.
   test('the Explorer', async ({ page, pageErrors, baseURL }) => {
     // Signed, so the identity holds across the two page loads.
     const owner = await mintSignedGuest(page.request);
-    await seedOpenedDocument(page, owner, new URL(baseURL!).origin);
+    await seedOpenedDesign(page, owner, new URL(baseURL!).origin);
     await darkVisitor(page, owner);
     await page.goto('/explorer');
     await jumpBackIn(page, 'Contrast').waitFor();
     expectAA(await auditContrast(page), 'Explorer Home');
 
     await page.goto('/explorer/all');
-    await documentRow(page, 'Contrast').waitFor();
+    await designRow(page, 'Contrast').waitFor();
     expectAA(await auditContrast(page), 'Explorer, My Work');
     expectNoPageErrors(pageErrors);
   });

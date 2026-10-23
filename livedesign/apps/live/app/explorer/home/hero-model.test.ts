@@ -3,7 +3,7 @@ import { cpuBudgetMs, cpuMsOf } from '@livedesign/vitest-config/cpu-time';
 import { HERO_SHEETS, heroGreeting, heroPills, heroSheets } from './hero-model';
 
 // Home's hero (docs/specs/013-workspace/explorer-home.md "The hero"): the greeting by hour, the pills' words and
-// when they show, and the sheets' documents.
+// when they show, and the sheets' designs.
 
 describe('heroGreeting', () => {
   it('says good morning from 5 to 11, good afternoon from 12 to 17, good evening otherwise', () => {
@@ -18,22 +18,22 @@ describe('heroGreeting', () => {
 });
 
 describe('heroPills', () => {
-  it('counts the documents and says how the Inbox stands', () => {
-    expect(heroPills({ documents: 1, inbox: 0 })).toEqual([
-      { id: 'documents', label: '1 document', tone: 'emerald' },
+  it('counts the designs and says how the Inbox stands', () => {
+    expect(heroPills({ designs: 1, inbox: 0 })).toEqual([
+      { id: 'designs', label: '1 design', tone: 'emerald' },
       { id: 'inbox', label: 'Inbox is clear', tone: 'sky' },
     ]);
-    expect(heroPills({ documents: 9, inbox: 3 }).map((p) => p.label)).toEqual([
-      '9 documents',
+    expect(heroPills({ designs: 9, inbox: 3 }).map((p) => p.label)).toEqual([
+      '9 designs',
       '3 open in your Inbox',
     ]);
-    expect(heroPills({ documents: 0, inbox: 1 })[0]!.label).toBe('0 documents');
+    expect(heroPills({ designs: 0, inbox: 1 })[0]!.label).toBe('0 designs');
   });
 
   it('draws a pill only once its count is known', () => {
-    expect(heroPills({ documents: undefined, inbox: undefined })).toEqual([]);
-    expect(heroPills({ documents: undefined, inbox: 0 }).map((p) => p.id)).toEqual(['inbox']);
-    expect(heroPills({ documents: 2, inbox: undefined }).map((p) => p.id)).toEqual(['documents']);
+    expect(heroPills({ designs: undefined, inbox: undefined })).toEqual([]);
+    expect(heroPills({ designs: undefined, inbox: 0 }).map((p) => p.id)).toEqual(['inbox']);
+    expect(heroPills({ designs: 2, inbox: undefined }).map((p) => p.id)).toEqual(['designs']);
   });
 });
 

@@ -21,12 +21,12 @@ export const CHOOSE_FROM_MY_IMAGES = 'Choose From My Images';
 
 export function PageGalleryPicker({
   ownerId,
-  documentId,
+  designId,
   disabled,
   onPicked,
 }: {
   ownerId: string;
-  documentId: string;
+  designId: string;
   disabled?: boolean;
   onPicked: (image: PickedImage) => void;
 }) {
@@ -60,7 +60,7 @@ export function PageGalleryPicker({
             </p>
             <GalleryChoices
               ownerId={ownerId}
-              documentId={documentId}
+              designId={designId}
               onPicked={(image) => {
                 setOpen(false);
                 onPicked(image);
@@ -75,14 +75,14 @@ export function PageGalleryPicker({
 
 function GalleryChoices({
   ownerId,
-  documentId,
+  designId,
   onPicked,
 }: {
   ownerId: string;
-  documentId: string;
+  designId: string;
   onPicked: (image: PickedImage) => void;
 }) {
-  const { gallery, error, pick } = useImageGallery(ownerId, documentId);
+  const { gallery, error, pick } = useImageGallery(ownerId, designId);
   const choose = async (image: ImageSummary) => {
     const picked = await pick(image);
     if (picked) onPicked(picked);
@@ -116,7 +116,7 @@ function GalleryChoices({
           <GalleryImageButton
             image={image}
             ownerId={ownerId}
-            documentId={documentId}
+            designId={designId}
             ariaLabel={`Use ${image.originalName ?? 'image'}`}
             onClick={() => void choose(image)}
           />

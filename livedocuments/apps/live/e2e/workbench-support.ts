@@ -1,6 +1,6 @@
 // Support for the workbench embed e2e (docs/specs/013-workspace/blueprints/workbench-embeds.md,
 // "Testing"): the fake workbench served from its own loopback origin, the signed-in person the e2e
-// stack mints (E2E_WORKBENCH=1 makes it act as Clerk), and the api calls the CLI would make.
+// stack mints (E2E_WORKBENCH=1 makes it act as the accounts Worker), and the api calls the CLI would make.
 
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';

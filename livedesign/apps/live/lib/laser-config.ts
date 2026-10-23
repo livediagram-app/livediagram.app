@@ -4,7 +4,7 @@
 //
 // Device-local by design, like the panel
 // layout (docs/specs/007-editor/panel-docking.md): which pen suits you depends on your screen and the room you
-// are presenting in, not on the document. It lives ONLY in localStorage and is
+// are presenting in, not on the design. It lives ONLY in localStorage and is
 // never sent to the api or folded into the synced preferences blob (docs/specs/007-editor/user-preferences.md).
 // It IS published alongside each laser sample, so peers draw your pen, not
 // theirs.
@@ -16,7 +16,7 @@ import {
   penColourLabel,
   type Appearance,
   type StandardColourName,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import {
   readLocalStorageSafe,
   pickOption,

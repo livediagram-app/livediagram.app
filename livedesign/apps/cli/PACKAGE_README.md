@@ -33,7 +33,7 @@ The CLI never prompts. A self-hosted livedesign is reached with `--host https://
 ## Start
 
 ```bash
-livedesign document ls auth            # find a document
+livedesign design ls auth            # find a design
 livedesign tab view "Auth flow"        # its first tab, as an outline
 livedesign tab lint "Auth flow"        # what is wrong with how it is drawn
 livedesign edit "Auth flow" -f ops.txt # change it with edit operations
@@ -45,7 +45,7 @@ install --to ~/.claude/skills` gives a coding agent the skill that says when to 
 
 ## Privacy
 
-The CLI counts which commands succeed (the command's name only: never arguments, documents or hosts) and sends the
+The CLI counts which commands succeed (the command's name only: never arguments, designs or hosts) and sends the
 count to the host it talks to. Turn it off with `livedesign telemetry off`, `LIVEDESIGN_TELEMETRY=0` or
 `DO_NOT_TRACK=1`.
 

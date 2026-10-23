@@ -25,7 +25,7 @@ const ORIGIN = 'https://127.0.0.1:5175';
 
 function arrange(): SqliteD1 {
   const db = sqliteD1();
-  db.sql.exec(`INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
+  db.sql.exec(`INSERT INTO designs (id, owner_id, name, shareable, saved_at, created_at)
                VALUES ('doc1', 'user_1', 'Home screen', 0, 1, 1)`);
   db.sql
     .exec(`INSERT INTO api_tokens (id, owner_id, token_hash, name, created_at, expires_at, revoked)
@@ -39,7 +39,7 @@ async function paired(db: SqliteD1): Promise<string> {
     ownerId: 'user_1',
     tokenId: 'tok1',
     origin: ORIGIN,
-    scope: 'document',
+    scope: 'design',
     name: 'Acme Editor',
     code: 'code_aaaaaaaaaaaaaaaaaa',
     now: NOW,
@@ -55,12 +55,12 @@ async function paired(db: SqliteD1): Promise<string> {
   return answered.pairing.id;
 }
 
-// The document scope by default; `reach` puts a ticket or a session in the workspace.
+// The design scope by default; `reach` puts a ticket or a session in the workspace.
 type Over<Row> = Partial<Omit<Row, keyof WorkbenchReach>> & { reach?: WorkbenchReach };
-const DOCUMENT_REACH: WorkbenchReach = { scope: 'document', documentId: 'doc1', folderId: null };
+const DESIGN_REACH: WorkbenchReach = { scope: 'design', designId: 'doc1', folderId: null };
 
 const ticket = ({
-  reach = DOCUMENT_REACH,
+  reach = DESIGN_REACH,
   ...over
 }: Over<WorkbenchTicketRow> = {}): WorkbenchTicketRow => ({
   ticketHash: 'th1',
@@ -77,7 +77,7 @@ const ticket = ({
 });
 
 const session = ({
-  reach = DOCUMENT_REACH,
+  reach = DESIGN_REACH,
   ...over
 }: Over<WorkbenchSessionRow> = {}): WorkbenchSessionRow => ({
   id: 'sess-1',
@@ -104,7 +104,7 @@ describe('pairing requests', () => {
       ownerId: 'user_1',
       tokenId: 'tok1',
       origin: ORIGIN,
-      scope: 'document' as const,
+      scope: 'design' as const,
       now: NOW,
     };
 
@@ -137,7 +137,7 @@ describe('pairing requests', () => {
       ownerId: 'user_1',
       tokenId: 'tok1',
       origin: ORIGIN,
-      scope: 'document' as const,
+      scope: 'design' as const,
       name: null,
     };
     await openPairingRequest(db.env, { ...input, code: 'code_aaaaaaaaaaaaaaaaaa', now: NOW });
@@ -160,7 +160,7 @@ describe('pairing requests', () => {
       ownerId: 'user_1',
       tokenId: 'tok1',
       origin: ORIGIN,
-      scope: 'document',
+      scope: 'design',
       name: 'Acme Editor',
       code: 'code_aaaaaaaaaaaaaaaaaa',
       now: NOW,
@@ -172,7 +172,7 @@ describe('pairing requests', () => {
       origin: ORIGIN,
       name: 'Acme Editor',
       tokenName: 'livedesign CLI',
-      scope: 'document',
+      scope: 'design',
       expiresAt: NOW + WORKBENCH_PAIRING_TTL_MS,
       status: 'pending',
     });
@@ -211,7 +211,7 @@ describe('pairing requests', () => {
       ownerId: 'user_1',
       tokenId: 'tok1',
       origin: ORIGIN,
-      scope: 'document',
+      scope: 'design',
       name: null,
       code: 'code_aaaaaaaaaaaaaaaaaa',
       now: NOW,
@@ -225,7 +225,7 @@ describe('pairing requests', () => {
       now: NOW,
     });
 
-    expect(answered).toEqual({ outcome: 'declined', tokenId: 'tok1', asked: 'document' });
+    expect(answered).toEqual({ outcome: 'declined', tokenId: 'tok1', asked: 'design' });
     expect(count(db, 'workbench_pairings')).toBe(0);
     expect(await pairingRequestStatus(db.env, 'code_aaaaaaaaaaaaaaaaaa', 'tok1', NOW)).toEqual({
       status: 'declined',
@@ -239,7 +239,7 @@ describe('pairing requests', () => {
       ownerId: 'user_1',
       tokenId: 'tok1',
       origin: ORIGIN,
-      scope: 'document',
+      scope: 'design',
       name: null,
       code: 'code_aaaaaaaaaaaaaaaaaa',
       now: NOW,
@@ -300,7 +300,7 @@ describe('racing answers', () => {
       ownerId: 'user_1',
       tokenId: 'tok1',
       origin: ORIGIN,
-      scope: 'document',
+      scope: 'design',
       name: null,
       code: 'code_aaaaaaaaaaaaaaaaaa',
       now: NOW,
@@ -363,7 +363,7 @@ describe('racing answers', () => {
         ownerId: 'user_2',
         tokenId: 'tok2',
         origin: ORIGIN,
-        scope: 'document',
+        scope: 'design',
         name: null,
         code: 'code_aaaaaaaaaaaaaaaaaa',
         now: NOW,
@@ -385,7 +385,7 @@ describe('pairings', () => {
         tokenId: 'tok1',
         origin: ORIGIN,
         name: 'Acme Editor',
-        scope: 'document',
+        scope: 'design',
         pairedAt: NOW,
       },
       {
@@ -393,7 +393,7 @@ describe('pairings', () => {
         tokenId: 'tok1',
         origin: 'https://old.example',
         name: null,
-        scope: 'document',
+        scope: 'design',
         pairedAt: NOW - 10,
       },
     ]);
@@ -418,8 +418,8 @@ describe('tickets', () => {
         ownerId: 'user_1',
         tokenId: 'tok1',
         pairingId: 'pair1',
-        scope: 'document',
-        documentId: 'doc1',
+        scope: 'design',
+        designId: 'doc1',
         folderId: null,
         tabId: null,
         origin: ORIGIN,
@@ -469,13 +469,13 @@ describe('tickets', () => {
     expect(count(db, 'workbench_sessions')).toBe(0);
   });
 
-  it('goes with a purged document', async () => {
+  it('goes with a purged design', async () => {
     const db = arrange();
     await paired(db);
     await insertWorkbenchTicket(db.env, ticket());
     await insertWorkbenchSession(db.env, session());
 
-    db.sql.exec(`DELETE FROM documents WHERE id = 'doc1'`);
+    db.sql.exec(`DELETE FROM designs WHERE id = 'doc1'`);
 
     expect(count(db, 'workbench_tickets')).toBe(0);
     expect(count(db, 'workbench_sessions')).toBe(0);
@@ -528,7 +528,7 @@ describe('sweepWorkbench', () => {
       ownerId: 'user_2',
       tokenId: 'tok2',
       origin: ORIGIN,
-      scope: 'document',
+      scope: 'design',
       name: null,
       code: 'code_cccccccccccccccccc',
       now: NOW - WORKBENCH_PAIRING_TTL_MS - 1,
@@ -547,8 +547,8 @@ describe('sweepWorkbench', () => {
 });
 
 describe('the workspace scope (the baseline migration)', () => {
-  const WORKSPACE_REACH: WorkbenchReach = { scope: 'workspace', documentId: null, folderId: 'f1' };
-  const ask = (db: SqliteD1, scope: 'document' | 'workspace', code: string) =>
+  const WORKSPACE_REACH: WorkbenchReach = { scope: 'workspace', designId: null, folderId: 'f1' };
+  const ask = (db: SqliteD1, scope: 'design' | 'workspace', code: string) =>
     openPairingRequest(db.env, {
       ownerId: 'user_1',
       tokenId: 'tok1',
@@ -567,22 +567,22 @@ describe('the workspace scope (the baseline migration)', () => {
       now: NOW,
     });
 
-  it('reads a pairing recorded without a scope as a document pairing', async () => {
+  it('reads a pairing recorded without a scope as a design pairing', async () => {
     const db = arrange();
     db.sql.exec(`INSERT INTO workbench_pairings (id, owner_id, token_id, origin, name, created_at)
                  VALUES ('old', 'user_1', 'tok1', '${ORIGIN}', NULL, 1)`);
 
-    expect((await findWorkbenchPairing(db.env, 'tok1', ORIGIN))?.scope).toBe('document');
+    expect((await findWorkbenchPairing(db.env, 'tok1', ORIGIN))?.scope).toBe('design');
   });
 
   it('keeps one live request per scope, each with its own code', async () => {
     const db = arrange();
 
-    const document = await ask(db, 'document', 'code_aaaaaaaaaaaaaaaaaa');
+    const design = await ask(db, 'design', 'code_aaaaaaaaaaaaaaaaaa');
     const workspace = await ask(db, 'workspace', 'code_bbbbbbbbbbbbbbbbbb');
     const again = await ask(db, 'workspace', 'code_cccccccccccccccccc');
 
-    expect(document.code).toBe('code_aaaaaaaaaaaaaaaaaa');
+    expect(design.code).toBe('code_aaaaaaaaaaaaaaaaaa');
     expect(workspace).toMatchObject({ code: 'code_bbbbbbbbbbbbbbbbbb', reused: false });
     expect(again).toMatchObject({ code: 'code_bbbbbbbbbbbbbbbbbb', reused: true });
     expect((await readPairingRequest(db.env, 'code_bbbbbbbbbbbbbbbbbb', NOW))?.scope).toBe(
@@ -590,7 +590,7 @@ describe('the workspace scope (the baseline migration)', () => {
     );
   });
 
-  it('widens a document pairing in place when a workspace request is approved', async () => {
+  it('widens a design pairing in place when a workspace request is approved', async () => {
     const db = arrange();
     await paired(db);
     await ask(db, 'workspace', 'code_bbbbbbbbbbbbbbbbbb');
@@ -605,17 +605,17 @@ describe('the workspace scope (the baseline migration)', () => {
     expect(count(db, 'workbench_pairings')).toBe(1);
   });
 
-  it('never narrows a workspace pairing with a document approval', async () => {
+  it('never narrows a workspace pairing with a design approval', async () => {
     const db = arrange();
     await ask(db, 'workspace', 'code_bbbbbbbbbbbbbbbbbb');
     await approve(db, 'code_bbbbbbbbbbbbbbbbbb', 'pair1');
-    await ask(db, 'document', 'code_aaaaaaaaaaaaaaaaaa');
+    await ask(db, 'design', 'code_aaaaaaaaaaaaaaaaaa');
 
     const answered = await approve(db, 'code_aaaaaaaaaaaaaaaaaa', 'pair2');
 
     expect(answered).toMatchObject({
       outcome: 'approved',
-      asked: 'document',
+      asked: 'design',
       pairing: { id: 'pair1', scope: 'workspace' },
     });
   });
@@ -633,20 +633,20 @@ describe('the workspace scope (the baseline migration)', () => {
     expect(read).toMatchObject(WORKSPACE_REACH);
   });
 
-  it('refuses a row whose document does not fit its scope', async () => {
+  it('refuses a row whose design does not fit its scope', async () => {
     const db = arrange();
     await paired(db);
-    const insert = (scope: string, documentId: string | null, folderId: string | null) =>
+    const insert = (scope: string, designId: string | null, folderId: string | null) =>
       db.sql.exec(`INSERT INTO workbench_sessions
-          (id, secret_hash, owner_id, token_id, pairing_id, scope, document_id, folder_id, origin, role, created_at,
+          (id, secret_hash, owner_id, token_id, pairing_id, scope, design_id, folder_id, origin, role, created_at,
            expires_at)
-        VALUES ('s-${scope}-${documentId}-${folderId}', 'h-${scope}-${documentId}-${folderId}', 'user_1', 'tok1',
-          'pair1', '${scope}', ${documentId ? `'${documentId}'` : 'NULL'}, ${folderId ? `'${folderId}'` : 'NULL'},
+        VALUES ('s-${scope}-${designId}-${folderId}', 'h-${scope}-${designId}-${folderId}', 'user_1', 'tok1',
+          'pair1', '${scope}', ${designId ? `'${designId}'` : 'NULL'}, ${folderId ? `'${folderId}'` : 'NULL'},
           '${ORIGIN}', 'edit', 1, 2)`);
 
     expect(() => insert('workspace', 'doc1', null)).toThrow(/CHECK/);
-    expect(() => insert('document', null, null)).toThrow(/CHECK/);
-    expect(() => insert('document', 'doc1', 'f1')).toThrow(/CHECK/);
+    expect(() => insert('design', null, null)).toThrow(/CHECK/);
+    expect(() => insert('design', 'doc1', 'f1')).toThrow(/CHECK/);
     expect(() => insert('galaxy', null, null)).toThrow(/CHECK/);
   });
 

@@ -4,7 +4,7 @@
 // on a filled page for.
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { createText, layOutPages, type Element, type Page } from '@livedesign/document';
+import { createText, layOutPages, type Element, type Page } from '@livedesign/design';
 import { usePageView } from './usePageView';
 
 const page: Page = { id: 's', orientation: 'landscape', kind: 'logo', size: 'logo' };

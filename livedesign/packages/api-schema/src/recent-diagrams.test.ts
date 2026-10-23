@@ -26,7 +26,7 @@ describe('pickRecentDiagrams', () => {
     expect(picked.map((d) => d.id)).toEqual(['d8', 'd7', 'd6', 'd5', 'd4', 'd3']);
   });
 
-  it('leaves out empty documents and those hidden from Recent', () => {
+  it('leaves out empty designs and those hidden from Recent', () => {
     const picked = pickRecentDiagrams(
       [doc('a', 3), doc('b', 2, { empty: true }), doc('c', 1)],
       ['a'],
@@ -44,7 +44,7 @@ describe('pickRecentDiagrams', () => {
     });
   });
 
-  it('carries the team of a team library document', () => {
+  it('carries the team of a team library design', () => {
     const picked = pickRecentDiagrams([doc('own', 1), { ...doc('team', 2), teamName: 'Design' }]);
     expect(picked.map((d) => [d.id, d.teamName])).toEqual([
       ['team', 'Design'],

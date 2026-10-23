@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { SANKEY_MAX_FLOWS } from '@livedesign/document';
+import { SANKEY_MAX_FLOWS } from '@livedesign/design';
 import { flowLevels, flowNodeColors } from './sankey-flow-levels';
 import { rowFrom, rowsFromFlows, type SankeyDraftRow } from './sankey-flow-rows';
-import { sankeyGraph } from '@livedesign/document';
+import { sankeyGraph } from '@livedesign/design';
 
 const row = (from: string, to: string, value: string): SankeyDraftRow => ({
   key: 0,

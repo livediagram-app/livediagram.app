@@ -1,4 +1,4 @@
-import { contrastRatio } from '@livedesign/document';
+import { contrastRatio } from '@livedesign/design';
 import { describe, expect, it } from 'vitest';
 import { PARTICIPANT_COLORS } from './identity';
 import { IDENTITY_FILL, identityDeep, identityVars } from '@livedesign/ui';

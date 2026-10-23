@@ -2,12 +2,12 @@
 
 // Who a comment can @-mention, and the notify that follows a mention
 // (docs/specs/012-collaboration/comment-mentions.md). The candidates are the members of the team whose library
-// holds this document, joined and invited, except yourself: the Assign Action
+// holds this design, joined and invited, except yourself: the Assign Action
 // picker's rule, for the same reason (a mention should reach someone who can
-// open the document). A personal document or a guest has none.
+// open the design). A personal design or a guest has none.
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { assignHandles, type CommentMention } from '@livedesign/document';
+import { assignHandles, type CommentMention } from '@livedesign/design';
 import { apiGetTeam, apiNotifyMention, type TeamListItem } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 import { teamMemberRows } from './team-member-rows';
@@ -19,18 +19,18 @@ const NONE: MentionCandidate[] = [];
 export function useCommentMentions({
   ownerId,
   teams,
-  documentTeamId,
-  documentId,
+  designTeamId,
+  designId,
 }: {
   // The signed-in account; null for a guest (no teams, no mentions).
   ownerId: string | null;
   teams: TeamListItem[];
-  documentTeamId: string | null;
-  documentId: string | null;
+  designTeamId: string | null;
+  designId: string | null;
 }) {
   const team = useMemo(
-    () => (ownerId ? (teams.find((t) => t.id === documentTeamId) ?? null) : null),
-    [ownerId, teams, documentTeamId],
+    () => (ownerId ? (teams.find((t) => t.id === designTeamId) ?? null) : null),
+    [ownerId, teams, designTeamId],
   );
   const key = team && ownerId ? `${ownerId}:${team.id}` : null;
   const [loaded, setLoaded] = useState<{ key: string; list: MentionCandidate[] } | null>(null);
@@ -71,9 +71,9 @@ export function useCommentMentions({
     (text: string, mentions: readonly CommentMention[]) => {
       if (mentions.length === 0) return;
       track('Comment', 'Mentioned');
-      if (!ownerId || !team || !documentId) return;
+      if (!ownerId || !team || !designId) return;
       void apiNotifyMention(ownerId, team.id, {
-        documentId,
+        designId,
         commentText: text,
         mentions: mentions.map((m) => ({
           userId: m.userId,
@@ -81,7 +81,7 @@ export function useCommentMentions({
         })),
       }).catch(() => {});
     },
-    [ownerId, team, documentId],
+    [ownerId, team, designId],
   );
 
   return { candidates, available: team !== null, notifyMentioned };

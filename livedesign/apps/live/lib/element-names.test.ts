@@ -7,7 +7,7 @@ import {
   createSticky,
   createText,
   type Element,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import {
   describeMany,
   describeOne,

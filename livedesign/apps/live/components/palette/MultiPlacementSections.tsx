@@ -6,7 +6,7 @@ import {
   type BoxedElement,
   type Element,
   type ShapeElement,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { ContextMenuDivider } from '@/components/palette/ContextMenu';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { onMouseHover } from '@/components/primitives/hover-preview';
@@ -98,7 +98,7 @@ export function MultiPlacementSections({
           <MenuTile icon={<LayerUpIcon />} label="Bring to Front" onClick={props.onBringToFront} />
           <MenuTile icon={<LayerDownIcon />} label="Send to Back" onClick={props.onSendToBack} />
         </MenuTileGrid>
-        {/* Move the whole selection to a named layer (docs/specs/006-document/layers.md). */}
+        {/* Move the whole selection to a named layer (docs/specs/006-design/layers.md). */}
         {props.onMoveSelectionToLayer ? (
           <MoveToLayerRow
             layers={props.layers}

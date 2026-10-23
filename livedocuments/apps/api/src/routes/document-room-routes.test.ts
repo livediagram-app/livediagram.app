@@ -177,7 +177,7 @@ describe('WebSocket upgrade — trust headers', () => {
   });
 
   it('does not treat a TEAM document owner id in ?o= as the owner', async () => {
-    // A team owner id is a Clerk id every teammate can read, so the bare-`o`
+    // A team owner id is an account id every teammate can read, so the bare-`o`
     // leg is personal-only; team owners come in through the ticket.
     db.getDocumentMeta.mockResolvedValue({ ownerId: 'user_owner', teamId: 'team-1' });
     db.getShareLink.mockResolvedValue(null);
@@ -275,7 +275,6 @@ describe('POST room-ticket', () => {
       role: 'view',
       tabScope: null,
       shareCode: null,
-      account: true,
       personTag: await personTagFor('d1', 'user_1'),
       workbenchPairing: 'pair-1',
     });
@@ -292,7 +291,6 @@ describe('POST room-ticket', () => {
       role: 'edit',
       tabScope: null,
       shareCode: null,
-      account: false,
       personTag: null,
       workbenchPairing: null,
     });
@@ -309,7 +307,6 @@ describe('POST room-ticket', () => {
       role: 'view',
       tabScope: null,
       shareCode: 'C',
-      account: false,
       personTag: null,
       workbenchPairing: null,
     });
@@ -398,72 +395,9 @@ describe('WebSocket upgrade: tab scope', () => {
       role: 'edit',
       tabScope: 't2',
       shareCode: 'CODE1234',
-      account: false,
       personTag: null,
       workbenchPairing: null,
     });
-  });
-});
-
-// The account bit (docs/specs/014-identity/profile-picture.md §6): only a verified Clerk session
-// mints an account ticket, and the upgrade stamps the bit on every path, so a client header can
-// never claim it.
-describe('account sessions', () => {
-  it('mints an account ticket for a verified Clerk caller only', async () => {
-    db.getDocumentMeta.mockResolvedValue({ ownerId: 'other', teamId: null });
-    gates.resolveDocumentGrant.mockResolvedValue({ role: 'view', tabScope: null, shareCode: 'C' });
-    await handleDocumentRoomRoutes(
-      makeTestRouteContext('POST', '/api/documents/d1/room-ticket', {
-        owner: 'user_ann',
-        clerkUserId: 'user_ann',
-      }),
-    );
-    expect(db.createWsTicket).toHaveBeenLastCalledWith(
-      expect.anything(),
-      'd1',
-      expect.objectContaining({ account: true }),
-    );
-    await handleDocumentRoomRoutes(
-      makeTestRouteContext('POST', '/api/documents/d1/room-ticket', {
-        owner: 'user_ann',
-        verifiedUserId: 'user_ann',
-      }),
-    );
-    expect(db.createWsTicket).toHaveBeenLastCalledWith(
-      expect.anything(),
-      'd1',
-      expect.objectContaining({ account: false }),
-    );
-  });
-
-  it('stamps X-Verified-Account from the ticket, and 0 on every other leg', async () => {
-    db.getDocumentMeta.mockResolvedValue({ ownerId: 'owner-uuid', teamId: null });
-    db.consumeWsTicket.mockResolvedValue({
-      role: 'edit',
-      tabScope: null,
-      shareCode: null,
-      account: true,
-    });
-    const ticketed = roomEnv();
-    await handleDocumentRoomRoutes(
-      makeTestRouteContext('GET', '/api/documents/d1/ws?t=T', {
-        owner: null,
-        headers: { Upgrade: 'websocket' },
-        env: ticketed.env,
-      }),
-    );
-    expect(ticketed.seen[0]!.headers.get('X-Verified-Account')).toBe('1');
-
-    db.getShareLink.mockResolvedValue({ documentId: 'd1', role: 'view' });
-    const anonymous = roomEnv();
-    await handleDocumentRoomRoutes(
-      makeTestRouteContext('GET', '/api/documents/d1/ws?s=CODE1234', {
-        owner: null,
-        headers: { Upgrade: 'websocket', 'X-Verified-Account': '1' },
-        env: anonymous.env,
-      }),
-    );
-    expect(anonymous.seen[0]!.headers.get('X-Verified-Account')).toBe('0');
   });
 });
 
@@ -476,7 +410,7 @@ describe('person tag', () => {
     await handleDocumentRoomRoutes(
       makeTestRouteContext('POST', '/api/documents/d1/room-ticket', {
         owner: 'user_ann',
-        clerkUserId: 'user_ann',
+        accountUserId: 'user_ann',
       }),
     );
     expect(db.createWsTicket).toHaveBeenLastCalledWith(
@@ -500,7 +434,6 @@ describe('person tag', () => {
       role: 'edit',
       tabScope: null,
       shareCode: null,
-      account: true,
       personTag: 'tag1',
     });
     const ticketed = roomEnv();
@@ -531,7 +464,6 @@ describe('person tag', () => {
       role: 'edit',
       tabScope: null,
       shareCode: null,
-      account: true,
       personTag: 'tag1',
       workbenchPairing: 'pair-1',
     });
@@ -582,7 +514,6 @@ describe('person tag', () => {
       role: 'participate',
       tabScope: null,
       shareCode: 'C',
-      account: false,
       personTag: null,
       workbenchPairing: null,
     });

@@ -5,18 +5,18 @@ import { CliDeviceSignIn, CliConsent } from '@/components/illustrations/cli';
 export const metadata = helpMetadata({
   title: 'The livedesign CLI',
   description:
-    'Install the livedesign CLI from npm, sign in by browser, device code or API token, then read, build, edit and export documents from a terminal or agent.',
+    'Install the livedesign CLI from npm, sign in by browser, device code or API token, then read, build, edit and export designs from a terminal or agent.',
   path: '/help/developers/cli/',
 });
 
 <ArticleLayout
   title="The livedesign CLI"
-  description="Read, build, edit and discuss documents from a terminal: install, sign in, the commands, and self-hosting."
+  description="Read, build, edit and discuss designs from a terminal: install, sign in, the commands, and self-hosting."
   categoryTitle="Developers"
   categorySlug="developers"
 >
 
-`livedesign` is a command line for the livedesign API. It is built first for **coding agents** (an agent working in your repository, or one changing a document while you talk to it) and second for **scripts**: finding documents, reading a tab as text, changing it with edit operations, answering comments, and syncing documents to files.
+`livedesign` is a command line for the livedesign API. It is built first for **coding agents** (an agent working in your repository, or one changing a design while you talk to it) and second for **scripts**: finding designs, reading a tab as text, changing it with edit operations, answering comments, and syncing designs to files.
 
 It sits beside the [MCP server](/help/account-and-data/connect-ai-mcp/), not in place of it. Both call the same [API](/help/developers/api-overview/) with an [API token](/help/account-and-data/api-tokens/), and the API owns every change, so an older copy of the CLI never writes the old way.
 
@@ -47,7 +47,7 @@ You need a livedesign account: the CLI acts as you, through an API token, and ne
 livedesign auth login
 ```
 
-The CLI opens a sign-in page in your browser (and prints its address, in case the browser does not open). Sign in if you are not already, and you reach an approval card, **Connect livedesign CLI**. Leave **Read-only access** off to let the CLI change documents, or switch it on so it can find and view documents but not create, edit, delete or share them. The card also says where the access goes: your own computer, `127.0.0.1` and a port number. Choose **Connect**, and the page says **You're signed in**: return to your terminal.
+The CLI opens a sign-in page in your browser (and prints its address, in case the browser does not open). Sign in if you are not already, and you reach an approval card, **Connect livedesign CLI**. Leave **Read-only access** off to let the CLI change designs, or switch it on so it can find and view designs but not create, edit, delete or share them. The card also says where the access goes: your own computer, `127.0.0.1` and a port number. Choose **Connect**, and the page says **You're signed in**: return to your terminal.
 
 <Figure
   caption="The approval card: an optional Read-only access switch, where the access goes, then Connect."
@@ -103,37 +103,37 @@ The browser and device sign-ins create an ordinary API token named **livedesign 
 
 A stored token goes in your operating system's own secret store: the macOS Keychain, the Secret Service on Linux (through `secret-tool`), or on Windows the token sealed to your user account by Windows' own data protection. Where that store is unavailable, the token is kept in `~/.config/livedesign/credentials.json`, readable only by you, and the CLI tells you so when it stores it there. If it finds that file readable by others, it tightens it and warns you.
 
-## Find and Read Documents
+## Find and Read Designs
 
-Commands are a resource, then a verb. `doc` and `el` are short for `document` and `element`.
+Commands are a resource, then a verb. `doc` and `el` are short for `design` and `element`.
 
 ```bash
-livedesign document ls auth                  # documents whose name contains "auth"
-livedesign tab ls "Auth flow"                # the document's tabs
+livedesign design ls auth                  # designs whose name contains "auth"
+livedesign tab ls "Auth flow"                # the design's tabs
 livedesign tab view "Auth flow"              # the first tab, as an outline
 livedesign tab view "Auth flow" --tab Flow --view graph
 livedesign tab lint "Auth flow"              # what is wrong with how it is drawn
 livedesign tab render "Auth flow" --png auth.png
 ```
 
-`document ls` covers your personal library and every team you have joined, newest first. Wherever a command takes a document, you can give its **name**, the start of its **id**, or a pasted **livedesign link**; a share link acts through that link. A name that matches more than one document is refused with the candidates, rather than guessed. `--tab` takes a tab name or the start of its id, and the first tab is used when you leave it out.
+`design ls` covers your personal library and every team you have joined, newest first. Wherever a command takes a design, you can give its **name**, the start of its **id**, or a pasted **livedesign link**; a share link acts through that link. A name that matches more than one design is refused with the candidates, rather than guessed. `--tab` takes a tab name or the start of its id, and the first tab is used when you leave it out.
 
 `tab view` reads a tab as text, the outline by default; `--view` picks `graph`, `layout`, `comments`, `show` (one element, with `--ref`) or `find` (with `--text`), and `--budget` fits it to about that many tokens. `tab render` writes a PNG or SVG preview and prints its path and size, never image bytes.
 
-A few commands read livedesign's catalogues rather than your documents, which helps before writing anything:
+A few commands read livedesign's catalogues rather than your designs, which helps before writing anything:
 
 ```bash
-livedesign template ls                       # the templates a document or tab can start from
-livedesign template view slide-deck          # one template, as the outline of the tab it builds
-livedesign icon search "message queue"       # icons by name, best match first, for iconId=
-livedesign schema sticky                     # the element kinds, or one kind's fields and values
+livedesign template ls                         # the templates a design or tab can start from
+livedesign template view wireframe-mobile-app  # one template, as the outline of the tab it builds
+livedesign icon search "message queue"         # icons by name, best match first, for iconId=
+livedesign schema sticky                       # the element kinds, or one kind's fields and values
 ```
 
-## Change a Document
+## Change a Design
 
 ```bash
-livedesign document create "Shop" -f arch.json            # from an elements file
-livedesign document create "Pitch" --template slide-deck
+livedesign design create "Shop" -f arch.json            # from an elements file
+livedesign design create "Coffee app" --template wireframe-mobile-app
 livedesign element set "Auth flow" n3 label="Sign in" shape=stadium
 livedesign edit "Auth flow" -f ops.txt                     # many edit operations at once
 livedesign changeset revert "Auth flow" cs_8k2m4q7d1x
@@ -143,7 +143,7 @@ livedesign tab rm "Auth flow" Scratch                      # delete one tab; the
 
 Every change is **one changeset**, applied all or nothing and checked against the version of the tab you last read, so the CLI never silently overwrites someone else's work. Each write prints what changed, the new revision, a lint summary and the command that reverts it. Add `--dry-run` to see the plan without writing anything, and `--summary` to say what the change is for. `livedesign guide edit` explains how edit operations read.
 
-`document rm` moves a document to the [Trash](/help/account-and-data/trash/) for 30 days, and `document restore` brings it back to its folder (or the top level, when that folder is gone); the CLI has no permanent delete.
+`design rm` moves a design to the [Trash](/help/account-and-data/trash/) for 30 days, and `design restore` brings it back to its folder (or the top level, when that folder is gone); the CLI has no permanent delete.
 
 ## Comments and Waiting
 
@@ -154,15 +154,15 @@ livedesign wait "Shop" --for comment --timeout 600
 livedesign watch "Shop"                         # stream changes until you stop it
 ```
 
-`wait` blocks until someone comments or the document changes (a burst of edits counts as one change), prints it and exits, which lets an agent respond to the people working beside it. Comments the CLI adds are yours.
+`wait` blocks until someone comments or the design changes (a burst of edits counts as one change), prints it and exits, which lets an agent respond to the people working beside it. Comments the CLI adds are yours.
 
 ## Pages
 
-A tab's [pages](/help/pages/working-with-pages/) (logos and wireframes) have their own commands:
+A tab's [pages](/help/pages/working-with-pages/) (logos, wireframes and photos) have their own commands:
 
 ```bash
-livedesign page ls "Pitch deck"                                  # each page, its refs and layouts
-livedesign page set "Pitch deck" --add slide --layout slide-title  # add, lay out, move, copy or delete pages
+livedesign page ls "Brand kit"                                       # each page, its refs and layouts
+livedesign page set "Brand kit" --add logo --layout logo-icon-above  # add, lay out, move, copy or delete pages
 ```
 
 `page set` makes one change from its flags, or up to 50 from a JSON list with `--changes`.
@@ -175,9 +175,9 @@ livedesign push docs/shop.livedesign.json        # send back each tab whose elem
 livedesign export --all --to backup --format json,svg,md
 ```
 
-To draw beside your agent inside a developer tool, see [Documents in Your Developer Tools](/help/developers/workbenches/).
+To draw beside your agent inside a developer tool, see [Designs in Your Developer Tools](/help/developers/workbenches/).
 
-`pull` writes the document in the format the editor imports, and never overwrites a file holding changes you have not pushed yet (add `--force` to drop them). `push` sends each changed tab as a changeset; a tab that changed on livedesign since you pulled it is refused and named, so pull again. Only elements travel: each changed tab's elements are replaced by the file's, so an element you removed from the file is removed from the tab, and a tab the document lacks is created. Changes to a tab's name, theme or background are not sent (a tab a push creates goes up with its name), and no tab or document is ever deleted by a push. `export --all` writes every document you can read, for backups and docs.
+`pull` writes the design in the format the editor imports, and never overwrites a file holding changes you have not pushed yet (add `--force` to drop them). `push` sends each changed tab as a changeset; a tab that changed on livedesign since you pulled it is refused and named, so pull again. Only elements travel: each changed tab's elements are replaced by the file's, so an element you removed from the file is removed from the tab, and a tab the design lacks is created. Changes to a tab's name, theme or background are not sent (a tab a push creates goes up with its name), and no tab or design is ever deleted by a push. `export --all` writes every design you can read, for backups and docs.
 
 ## Help, Guides and the Agent Skill
 
@@ -190,7 +190,7 @@ livedesign skill install --to ~/.claude/skills
 livedesign skill print > SKILL.md
 ```
 
-Help is kept short so an agent pays only for what it asks. `skill install` writes a `SKILL.md` that tells a coding agent when to reach for the CLI; without `--to` it lists the usual skills folders (such as `~/.claude/skills` for Claude Code). `skill print` writes the same file to stdout, for agents that keep their skills somewhere else. `livedesign api GET /documents` calls any API path with your sign-in, as an escape hatch.
+Help is kept short so an agent pays only for what it asks. `skill install` writes a `SKILL.md` that tells a coding agent when to reach for the CLI; without `--to` it lists the usual skills folders (such as `~/.claude/skills` for Claude Code). `skill print` writes the same file to stdout, for agents that keep their skills somewhere else. `livedesign api GET /designs` calls any API path with your sign-in, as an escape hatch.
 
 ## Output and Exit Codes
 
@@ -201,7 +201,7 @@ The CLI never prompts when its input or output is not a terminal, so it is safe 
 | `0`       | Done                                                       |
 | `1`       | Refused: the input was understood but not accepted         |
 | `2`       | Usage: the command line does not parse                     |
-| `3`       | Not found, or ambiguous: a document, tab or element        |
+| `3`       | Not found, or ambiguous: a design, tab or element          |
 | `4`       | Not signed in, or not allowed (a read-only token's writes) |
 | `5`       | Conflict: the tab changed since you read it; read, retry   |
 | `6`       | Rate limited                                               |
@@ -228,7 +228,7 @@ The CLI is subject to the same limits as any API client, per token: on the hoste
 
 ## Usage Counts
 
-The CLI counts which commands succeed, and which fail because of the server or the network, by the command's name only (never its arguments, your documents or the host), and sends the count to the host it talks to, as anonymous [telemetry](/help/privacy-and-security/what-we-collect/). The first time it counts one, it says so. Turn it off with `livedesign telemetry off`, `LIVEDESIGN_TELEMETRY=0` or `DO_NOT_TRACK=1`.
+The CLI counts which commands succeed, and which fail because of the server or the network, by the command's name only (never its arguments, your designs or the host), and sends the count to the host it talks to, as anonymous [telemetry](/help/privacy-and-security/what-we-collect/). The first time it counts one, it says so. Turn it off with `livedesign telemetry off`, `LIVEDESIGN_TELEMETRY=0` or `DO_NOT_TRACK=1`.
 
 ## Keep It Safe
 

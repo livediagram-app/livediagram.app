@@ -145,7 +145,7 @@ arrival").
 Every chrome `duration-<n>` becomes a token. Hover-driven ones become `duration-micro`.
 
 - **`apps/live`**
-  - `micro`: `RecentDocumentsCard`, `BackBar`, `ChevronIcon`, `PanelSnapSlot`,
+  - `micro`: `RecentDesignsCard`, `BackBar`, `ChevronIcon`, `PanelSnapSlot`,
     `TimelineLanesOverlay`, and the `MovablePanel` fade.
   - `short`: `ToolbarStripRail`, `AccordionSection`,
     `MovablePanel` rows, `AnimatedHeightBox`, the `PortalMenu` body and chevron, the

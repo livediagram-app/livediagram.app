@@ -8,7 +8,7 @@ import {
   type ShapeElement,
   type StickyElement,
   type TextElement,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { describe, expect, it } from 'vitest';
 import {
   applyQuickFill,

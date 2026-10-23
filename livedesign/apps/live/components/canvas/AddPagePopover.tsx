@@ -12,7 +12,7 @@ import {
   WIREFRAME_DEVICES,
   type PageKind,
   type WireframeDeviceId,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,

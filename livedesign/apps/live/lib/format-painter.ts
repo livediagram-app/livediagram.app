@@ -43,7 +43,7 @@ import {
   type RunBoolKey,
   type TextAnimation,
   type TextRun,
-} from '@livedesign/document';
+} from '@livedesign/design';
 
 type BoxedKind = BoxedElement['type'];
 

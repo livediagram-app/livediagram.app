@@ -61,7 +61,7 @@ async function seedDeck(page: Page, baseURL: string, owner: string, size: Size):
     tabId,
     elementIds: board.slice(i * per, (i + 1) * per).map((el) => el.id),
   })).filter((s) => s.elementIds.length > 0);
-  const res = await page.request.post(`${apiBase}/documents`, {
+  const res = await page.request.post(`${apiBase}/designs`, {
     headers: ownerHeaders(owner, { Origin: new URL(baseURL).origin }),
     data: {
       id,
@@ -115,7 +115,7 @@ async function openDeck(
   const page = await ctx.newPage();
   // Chromium only: the trace and the CPU throttle (throttle 0 is another engine, untraced).
   const cdp = throttle > 0 ? await ctx.newCDPSession(page) : null;
-  await page.goto(`/document/${id}`);
+  await page.goto(`/design/${id}`);
   await page.locator(CANVAS).waitFor({ timeout: 60_000 });
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'Selection mode' }).click();
@@ -348,7 +348,7 @@ test('editing starts no view transitions', async ({ page, browser, baseURL }) =>
     { o: owner, sig: guestSigFor(owner) },
   );
   const p = await ctx.newPage();
-  await p.goto(`/document/${id}`);
+  await p.goto(`/design/${id}`);
   await p.locator(CANVAS).waitFor({ timeout: 60_000 });
   await p.keyboard.press('Escape');
   await p.waitForTimeout(1500);

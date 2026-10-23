@@ -2,7 +2,7 @@
 
 // A page kind's glyph (docs/specs/007-editor/pages-mode.md "Adding a page"): the one each kind wears
 // wherever pages are added, the Add a Page chooser and Contents' Add Page alike.
-import type { PageKind } from '@livedesign/document';
+import type { PageKind } from '@livedesign/design';
 import { lucideImage, lucidePanelsTopLeft, lucideShapes } from '@livedesign/icons/lucide';
 import { lucideGlyph } from '@livedesign/ui';
 import { DeviceGlyph } from './wireframe/DeviceGlyph';

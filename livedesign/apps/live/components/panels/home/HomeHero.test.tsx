@@ -4,7 +4,7 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Home's hero (docs/specs/013-workspace/explorer-home.md "The hero"): the status pills open their views, the
-// greeting is the page's heading, New Document starts one, the lens field is drawn large with New Document inside
+// greeting is the page's heading, New Design starts one, the lens field is drawn large with New Design inside
 // it, the sheets are decoration, and the menu button opens the drawer.
 
 const { track, lensField, commitUserPreferences } = vi.hoisted(() => ({
@@ -17,9 +17,9 @@ vi.mock('@/lib/user-preferences', async (orig) => ({
   ...(await orig<typeof import('@/lib/user-preferences')>()),
   commitUserPreferences,
 }));
-vi.mock('@/components/panels/DocumentThumbnail', () => ({
-  DocumentThumbnail: (p: { documentId: string; offline?: boolean }) => (
-    <span data-testid={`thumb-${p.documentId}`} data-offline={p.offline ? '' : undefined} />
+vi.mock('@/components/panels/DesignThumbnail', () => ({
+  DesignThumbnail: (p: { designId: string; offline?: boolean }) => (
+    <span data-testid={`thumb-${p.designId}`} data-offline={p.offline ? '' : undefined} />
   ),
 }));
 vi.mock('@/app/explorer/lens/LensField', () => ({
@@ -50,7 +50,7 @@ const setMobileNavOpen = vi.fn();
 function renderHero(over: Partial<ExplorerStateValue> = {}, active = true) {
   const value = {
     ownerId: 'me',
-    documents: [
+    designs: [
       { id: 'a', name: 'A', savedAt: 1 },
       { id: 'b', name: 'B', savedAt: 3 },
       { id: 'c', name: 'C', savedAt: 2 },
@@ -58,10 +58,10 @@ function renderHero(over: Partial<ExplorerStateValue> = {}, active = true) {
     ],
     loading: false,
     shared: [],
-    teamDocuments: [],
-    offlineDocuments: [],
+    teamDesigns: [],
+    offlineDesigns: [],
     clerkUserId: null,
-    failedReads: { documents: false, shared: false },
+    failedReads: { designs: false, shared: false },
     activity: { assignedToMe: [{}, {}], loading: false, error: false },
     go,
     setMobileNavOpen,
@@ -104,13 +104,13 @@ describe('HomeHero', () => {
     expect(screen.getByRole('region', { name: heading.textContent })).toBeTruthy();
   });
 
-  it('counts the documents and the Inbox in pills that open their views', () => {
+  it('counts the designs and the Inbox in pills that open their views', () => {
     renderHero();
-    const docs = screen.getByRole('link', { name: '4 documents' });
+    const docs = screen.getByRole('link', { name: '4 designs' });
     expect(docs.getAttribute('href')).toBe('/explorer/all');
     fireEvent.click(docs);
     expect(go).toHaveBeenLastCalledWith({ kind: 'all' });
-    expect(track).toHaveBeenLastCalledWith('Home', 'Selected', 'Hero.Documents');
+    expect(track).toHaveBeenLastCalledWith('Home', 'Selected', 'Hero.Designs');
     fireEvent.click(screen.getByRole('link', { name: '2 open in your Inbox' }));
     expect(go).toHaveBeenLastCalledWith({ kind: 'inbox' });
     expect(track).toHaveBeenLastCalledWith('Home', 'Selected', 'Hero.Inbox');
@@ -121,25 +121,25 @@ describe('HomeHero', () => {
       loading: true,
       activity: { assignedToMe: [], loading: true, error: false },
     } as unknown as Partial<ExplorerStateValue>);
-    expect(screen.queryByRole('link', { name: /documents?$/ })).toBeNull();
+    expect(screen.queryByRole('link', { name: /designs?$/ })).toBeNull();
     expect(screen.queryByRole('link', { name: /Inbox/ })).toBeNull();
   });
 
-  it('draws no documents pill when the list failed to load, never "0 documents"', () => {
+  it('draws no designs pill when the list failed to load, never "0 designs"', () => {
     renderHero({
-      documents: [],
-      failedReads: { documents: true, shared: false },
+      designs: [],
+      failedReads: { designs: true, shared: false },
     });
-    expect(screen.queryByRole('link', { name: /documents?$/ })).toBeNull();
+    expect(screen.queryByRole('link', { name: /designs?$/ })).toBeNull();
   });
 
-  it('draws the lens field large with New Document inside it', () => {
+  it('draws the lens field large with New Design inside it', () => {
     renderHero();
     const lens = screen.getByTestId('lens');
     expect(lens.dataset.size).toBe('hero');
-    fireEvent.click(within(lens).getByRole('button', { name: 'New Document' }));
+    fireEvent.click(within(lens).getByRole('button', { name: 'New Design' }));
     expect(assign).toHaveBeenCalledWith('/new');
-    expect(track).toHaveBeenLastCalledWith('Home', 'Selected', 'Hero.NewDocument');
+    expect(track).toHaveBeenLastCalledWith('Home', 'Selected', 'Hero.NewDesign');
   });
 
   it('draws its field still while it folds away, so the page holds one live field', () => {
@@ -149,7 +149,7 @@ describe('HomeHero', () => {
     expect(lensField).not.toHaveBeenCalled();
   });
 
-  it('fans the three newest documents as decoration', () => {
+  it('fans the three newest designs as decoration', () => {
     const { container } = renderHero();
     const sheets = [...container.querySelectorAll('[data-hero-sheet]')];
     expect(
@@ -158,10 +158,10 @@ describe('HomeHero', () => {
     expect(sheets[0]!.parentElement!.getAttribute('aria-hidden')).toBe('true');
   });
 
-  // docs/specs/006-document/document-snapshots.md: a document in This Browser has no server snapshot to ask for.
-  it('draws a document in This Browser without asking the server for its snapshot', () => {
+  // docs/specs/006-design/design-snapshots.md: a design in This Browser has no server snapshot to ask for.
+  it('draws a design in This Browser without asking the server for its snapshot', () => {
     const { container } = renderHero({
-      documents: [
+      designs: [
         { id: 'a', name: 'A', savedAt: 1, ownerId: 'me' },
         { id: 'b', name: 'B', savedAt: 3, ownerId: 'offline' },
       ] as never,
@@ -174,12 +174,12 @@ describe('HomeHero', () => {
     );
   });
 
-  it('welcomes a person with nothing yet: plain pills, the template search, no document sheets', () => {
-    const { container } = renderHero({ documents: [] });
+  it('welcomes a person with nothing yet: plain pills, the template search, no design sheets', () => {
+    const { container } = renderHero({ designs: [] });
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(
       'Welcome to livedesign. What are you making first?',
     );
-    expect(screen.queryByRole('link', { name: /documents?$/ })).toBeNull();
+    expect(screen.queryByRole('link', { name: /designs?$/ })).toBeNull();
     expect(screen.getByText('Free and open source')).toBeTruthy();
     expect(screen.getByText('No sign-up to start')).toBeTruthy();
     expect(screen.getByRole('searchbox', { name: 'Search templates' })).toBeTruthy();
@@ -188,7 +188,7 @@ describe('HomeHero', () => {
   });
 
   it('tells a signed-in newcomer their work is saved to their account', () => {
-    renderHero({ documents: [], clerkUserId: 'user_1' });
+    renderHero({ designs: [], clerkUserId: 'user_1' });
     expect(screen.getByText('Saved to your account')).toBeTruthy();
   });
 

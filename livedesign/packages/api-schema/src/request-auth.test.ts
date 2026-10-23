@@ -21,7 +21,7 @@ describe('bearerTokenOf', () => {
 
 describe('isLoopbackHostname', () => {
   it('knows IPv4, IPv6 and the name, as URL reports them', () => {
-    for (const u of ['http://localhost:3300', 'http://127.0.0.1', 'http://[::1]:8989']) {
+    for (const u of ['http://localhost:3400', 'http://127.0.0.1', 'http://[::1]:8989']) {
       expect(isLoopbackHostname(new URL(u).hostname)).toBe(true);
     }
     expect(isLoopbackHostname('livedesign.app')).toBe(false);
@@ -53,7 +53,7 @@ describe('isClerkIdShape', () => {
 describe('oauthRedirectUrl', () => {
   it('takes https anywhere and http only on a loopback host', () => {
     expect(oauthRedirectUrl('https://claude.ai/cb')?.pathname).toBe('/cb');
-    for (const u of ['http://localhost:3300/cb', 'http://127.0.0.1/cb', 'http://[::1]:8989/cb'])
+    for (const u of ['http://localhost:3400/cb', 'http://127.0.0.1/cb', 'http://[::1]:8989/cb'])
       expect(oauthRedirectUrl(u)).not.toBeNull();
     expect(oauthRedirectUrl('http://example.com/cb')).toBeNull();
   });

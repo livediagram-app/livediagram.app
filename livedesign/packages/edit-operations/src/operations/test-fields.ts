@@ -4,7 +4,7 @@
 // by slot or the hex case-insensitively. Any difference refuses the changeset; it changes nothing.
 
 import type { EditRejection, JsonValue } from '@livedesign/api-schema';
-import type { Element } from '@livedesign/document';
+import type { Element } from '@livedesign/design';
 import { isHexColour } from '../colours';
 import { sameValue } from '../equality';
 import { fieldValue, writeFieldsOnto } from '../fields';

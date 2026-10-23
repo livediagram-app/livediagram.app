@@ -1,7 +1,7 @@
 // The Toolbar strip's Search (docs/specs/007-editor/toolbar-layout.md "Search: every element type"):
 // which element tiles a query finds among the ones the current editor mode's palette offers. Pure,
 // so the ranking is tested without a strip.
-import { componentShapeKind, type EditorMode, type Element } from '@livedesign/document';
+import { componentShapeKind, type EditorMode, type Element } from '@livedesign/design';
 import { paletteRank } from '@livedesign/icons';
 import { tileKeywords } from '@/lib/palette-tile-keywords';
 import { paletteCategoriesFor } from './palette-layouts';

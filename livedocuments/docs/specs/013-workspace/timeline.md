@@ -77,7 +77,7 @@ One thing that happened. Carries:
 - `snapshot` — JSON extras the renderer needs (the document's thumbnail
   key, the commenter's colour, the team's member count) captured at
   emit time so rendering the feed never fans out into other tables.
-- `actorId` — who did it, as an owner id (Clerk `sub` or guest
+- `actorId` — who did it, as an owner id (account `sub` or guest
   participant id). `NULL` for system events like a token expiry
   warning. An owner id is a credential, so a `document:` scope (which a
   share-link visitor can read) returns only the reader's own id; every
@@ -1251,7 +1251,7 @@ scope in the same lazy-claim step that fills in `user_id`, using the
 invite's original `created_at` as `occurred_at`. The invite then
 appears on the new member's Timeline dated when it was actually sent.
 
-Teams are Clerk-only, so none of these events ever reach a guest scope.
+Teams are for accounts only, so none of these events ever reach a guest scope.
 
 ### 4.5 Account and housekeeping
 
@@ -1420,7 +1420,7 @@ Response:
 ```
 
 **Authorisation.** A caller may only read a `user` scope whose
-`scopeId` is their own resolved owner id — the Clerk `sub` for a signed
+`scopeId` is their own resolved owner id — the account `sub` for a signed
 -in caller, the signed guest participant id otherwise. Any other scope
 is `403`. This is the only gate the endpoint needs in v1, and it is
 worth stating plainly because the scope parameter looks like it invites
@@ -1600,11 +1600,11 @@ users who never switch modes.
 Guests get the Timeline, keyed to their signed participant id
 ([Auth + guest access](../014-identity/auth-and-guest-access.md)). They see document lifecycle, editing, comments on their own
 documents, and share-link events. Team, invite, and token events never
-reach them because those features are Clerk-only — the feed is simply
+reach them because those features are signed-in only — the feed is simply
 thinner, with no sign-in wall and no empty-section prompt.
 
 **On sign-up, timeline history migrates.** `POST /api/migrate` already
-moves documents from the guest participant id to the Clerk user id; it
+moves documents from the guest participant id to the account user id; it
 gains two statements in the same transaction:
 
 ```sql
@@ -1669,7 +1669,7 @@ Per [Testing](../003-system-architecture/testing.md):
   every joined member and to nobody who is merely `invited`.
 - **Coalescing**: three saves in one UTC day produce one row whose
   `occurred_at` advances; a save the next day produces a second row.
-- **Migration**: guest → Clerk id moves scopes, events, and scope
+- **Migration**: guest → account id moves scopes, events, and scope
   state, and the backfill does not re-run afterwards.
 - **Round-trip**: `/explorer/timeline` added to `STATIC_NODES` in
   `routes.test.ts`.

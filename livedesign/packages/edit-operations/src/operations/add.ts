@@ -3,7 +3,7 @@
 // kept, its id kept when free. Finalise normalises and validates it.
 
 import type { EditRejection } from '@livedesign/api-schema';
-import { ELEMENT_FIELD_NAMES, type Element } from '@livedesign/document';
+import { ELEMENT_FIELD_NAMES, type Element } from '@livedesign/design';
 import { layerLockOf } from '../locks';
 import { idTaken, unknownField } from '../rejections';
 import { type EditState, isTaken, putElement, refuseLocked } from '../state';

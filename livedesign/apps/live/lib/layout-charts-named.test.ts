@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { layOutPages, newWireframePage, type Element } from '@livedesign/document';
+import { layOutPages, newWireframePage, type Element } from '@livedesign/design';
 import { buildPageLayout, layoutCatalogueFor } from '@livedesign/templates';
 
 // docs/specs/009-elements/pie-chart.md "Show Values": a column chart names its columns under its baseline only

@@ -6,7 +6,7 @@ import type {
   AiRequest,
   CapabilitiesResponse,
 } from '@livedesign/api-schema';
-import { isTextSize, isValidElement, type Element } from '@livedesign/document';
+import { isTextSize, isValidElement, type Element } from '@livedesign/design';
 import { API_BASE, apiHeaders, apiFetch } from './core';
 
 // Fetch server capabilities. Returns everything fail-closed (false) on any
@@ -49,7 +49,7 @@ async function fetchCapabilities(): Promise<{ caps: CapabilitiesResponse; ok: bo
 // shape still shows; a dropped one leaves arrows pointing at nothing. The
 // data-carrying composites (charts / rail / rating / progress / icon) are
 // deliberately excluded: without their extra fields they'd render empty, so
-// they collapse to a plain square. Keep in sync with packages/document
+// they collapse to a plain square. Keep in sync with packages/design
 // ShapeKind (the simple, self-contained subset).
 //
 // That exclusion is about elements the model INVENTS. It must never reach an
@@ -96,7 +96,7 @@ const AI_DEFAULT_SHAPE_H = 64;
 const AI_ELEMENT_TYPES = new Set(['shape', 'text', 'sticky', 'arrow']);
 
 // Parse, normalise, then hold the result to the SAME structural guard every
-// save goes through (`isValidElement` from @livedesign/document). A looser
+// save goes through (`isValidElement` from @livedesign/design). A looser
 // local copy used to live here: it let through arrows with junk endpoints and
 // non-finite coordinates, which rendered, then failed the api's tab validation
 // on save. Normalising first keeps the forgiving part (a stray kind or a

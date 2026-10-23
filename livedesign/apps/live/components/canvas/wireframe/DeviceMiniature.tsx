@@ -13,7 +13,7 @@ import {
   type WireframeDeviceId,
   type WireframeFrameLook,
   type WireframeFrameTheme,
-} from '@livedesign/document';
+} from '@livedesign/design';
 
 export const DeviceMiniature = memo(function DeviceMiniature({
   device,
@@ -52,7 +52,7 @@ export const DeviceMiniature = memo(function DeviceMiniature({
       viewBox={`0 0 ${g.width} ${g.height}`}
       preserveAspectRatio="xMidYMid meet"
       className="drop-shadow-sm"
-      // This app's own markup (packages/document wireframe-device-svg), never content.
+      // This app's own markup (packages/design wireframe-device-svg), never content.
       dangerouslySetInnerHTML={{ __html: trustedHtml(markup) }}
     />
   );

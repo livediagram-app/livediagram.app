@@ -14,7 +14,7 @@ import {
   type FacePartPaint,
   type FacePartShape,
   type Finish,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { trustedHtml } from '@livedesign/ui';
 import { watchUntilSettled } from '@/components/canvas/settle-watch';
 

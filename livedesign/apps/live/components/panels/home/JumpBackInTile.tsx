@@ -1,17 +1,17 @@
 'use client';
 
-// One document of Jump Back In (docs/specs/013-workspace/explorer-home.md "Jump Back In"): its
-// snapshot thumbnail with its name below, one link named by the document (plus This Browser for one
+// One design of Jump Back In (docs/specs/013-workspace/explorer-home.md "Jump Back In"): its
+// snapshot thumbnail with its name below, one link named by the design (plus This Browser for one
 // stored here), the full name as its tooltip. Grid and strip draw the same tile at their own size.
 // Which half of the set it came from is tracked, never shown (Calm by default). The strip ends in
-// the See More tile, the same size as a thumbnail. A document's tile carries its ⋯ menu (JumpBackInMenu) when the
+// the See More tile, the same size as a thumbnail. A design's tile carries its ⋯ menu (JumpBackInMenu) when the
 // Explorer has it.
 
 import { ChevronRightIcon, Tooltip } from '@livedesign/ui';
-import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
+import { DesignThumbnail } from '@/components/panels/DesignThumbnail';
 import { ThisBrowserPill, THIS_BROWSER_LABEL } from '@/components/primitives/ThisBrowserPill';
 import { track } from '@/lib/telemetry';
-import type { DocumentEntryProps } from '@/app/explorer/explorer-view-props';
+import type { DesignEntryProps } from '@/app/explorer/explorer-view-props';
 import { HOME_COPY } from '@/app/explorer/home/home-copy';
 import type { JumpBackInGroup, JumpBackInItem } from '@/app/explorer/home/home-model';
 import { InAppLink } from './HomeSection';
@@ -33,18 +33,18 @@ export function JumpBackInTile({
   group: JumpBackInGroup;
   /** The thumbnail's size: the grid's share of the width, or the strip's 128 × 80. */
   thumbClassName: string;
-  /** The document's Explorer menu, or null when the Explorer has not loaded it (no ⋯). */
-  entry?: DocumentEntryProps | null;
+  /** The design's Explorer menu, or null when the Explorer has not loaded it (no ⋯). */
+  entry?: DesignEntryProps | null;
 }) {
-  // The Explorer's own name once it has the document, so a rename from the menu shows at once.
-  const name = entry?.document.name ?? item.name;
+  // The Explorer's own name once it has the design, so a rename from the menu shows at once.
+  const name = entry?.design.name ?? item.name;
   if (entry?.renaming) {
     return (
       <div className="min-w-0">
         <span className="relative block">
-          <DocumentThumbnail
+          <DesignThumbnail
             ownerId={ownerId}
-            documentId={item.documentId}
+            designId={item.designId}
             version={item.savedAt}
             shareCode={item.shareCode}
             offline={item.localOnly}
@@ -73,9 +73,9 @@ export function JumpBackInTile({
           className={`group block min-w-0 rounded-md ${FOCUS_RING}`}
         >
           <span className="relative block">
-            <DocumentThumbnail
+            <DesignThumbnail
               ownerId={ownerId}
-              documentId={item.documentId}
+              designId={item.designId}
               version={item.savedAt}
               shareCode={item.shareCode}
               offline={item.localOnly}

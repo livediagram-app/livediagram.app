@@ -2,7 +2,7 @@
 // draw, tap-to-place or double-click-to-add that starts off every page is swallowed. Elements
 // already on the canvas move freely; only making something new is confined to the pages.
 import type { RefObject } from 'react';
-import { pageAt } from '@livedesign/document';
+import { pageAt } from '@livedesign/design';
 import { pointerToCanvas } from '@/lib/canvas';
 import { debugLog } from '@/lib/debug-log';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';

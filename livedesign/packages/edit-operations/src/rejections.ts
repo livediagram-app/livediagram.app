@@ -7,7 +7,7 @@ import {
   type EditRejection,
   type JsonValue,
 } from '@livedesign/api-schema';
-import type { Element } from '@livedesign/document';
+import type { Element } from '@livedesign/design';
 import { describeElement, kindOf, labelOf, quoteCut } from './element-text';
 import { nearestName } from './nearest';
 import {

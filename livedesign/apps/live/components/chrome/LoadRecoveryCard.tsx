@@ -15,7 +15,7 @@ export function LoadRecoveryCard({ ownerId }: { ownerId: string | null }) {
       <p className="text-sm font-medium text-slate-800 dark:text-slate-100">Still not loading?</p>
       <p className="mt-1 mb-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
         Copy the diagnostics to send to support, or repair this browser. A repair keeps your
-        documents and identity.
+        designs and identity.
       </p>
       <BrowserRepairPanel
         buildReport={() => buildLoadDiagnostics(ownerId)}
@@ -24,7 +24,7 @@ export function LoadRecoveryCard({ ownerId }: { ownerId: string | null }) {
         onRepaired={() => window.location.reload()}
       >
         <HelpArticleLink
-          article="documentNotLoading"
+          article="designNotLoading"
           variant="text"
           label="Troubleshooting steps"
         />

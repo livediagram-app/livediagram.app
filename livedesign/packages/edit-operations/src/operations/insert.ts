@@ -3,7 +3,7 @@
 // the midline, the a→b arrow ends at the node, and a new arrow from the node to b copies its style.
 
 import type { EditRejection } from '@livedesign/api-schema';
-import type { ArrowElement, BoxedElement } from '@livedesign/document';
+import type { ArrowElement, BoxedElement } from '@livedesign/design';
 import { describeElement } from '../element-text';
 import { mintId } from '../ids';
 import { makeRoom, type Axis } from '../make-room';

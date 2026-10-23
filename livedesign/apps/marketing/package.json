@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node ../../scripts/next-dev.mjs --port 3301",
+    "dev": "node ../../scripts/next-dev.mjs --port 3401",
     "build": "node ../../packages/licences/scripts/generate.ts --out . && next build && node ../../packages/licences/scripts/verify.ts .",
     "licences": "node ../../packages/licences/scripts/generate.ts --out .",
     "lint": "oxlint",
@@ -24,7 +24,7 @@
     "react-dom": "^19.3.1"
   },
   "devDependencies": {
-    "@livedesign/document": "workspace:*",
+    "@livedesign/design": "workspace:*",
     "@livedesign/help-registry": "workspace:*",
     "@livedesign/licences": "workspace:*",
     "@livedesign/next-config": "workspace:*",

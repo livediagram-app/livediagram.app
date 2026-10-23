@@ -7,7 +7,7 @@ import {
   pathAnchors,
   type PathAnchor,
   type PathElement,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { pointerToCanvas } from '@/lib/canvas';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { PATH_DOUBLE_PRESS_MS, PATH_DRAG_THRESHOLD_PX } from '@/lib/path-draw';

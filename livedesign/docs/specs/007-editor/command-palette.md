@@ -6,7 +6,7 @@ grouped, keyboard-navigable results list with an **Actions** group backed by
 the command registry (`lib/editor-commands.ts`). This spec promotes that
 Actions group into a full command palette by (a) binding the conventional
 **Cmd/Ctrl+K** shortcut alongside the existing Cmd/Ctrl+., and (b) widening
-the registry from selection/document verbs to the whole app surface.
+the registry from selection/design verbs to the whole app surface.
 
 ## Shortcut
 
@@ -35,7 +35,7 @@ forks, no drifted telemetry):
 
 The registry previously returned nothing for read-only views. Now it returns
 the **view-safe subset** (zen mode, fit to screen, export, Collaborators, and
-the canvas tool switches that do not write to the document); mutating
+the canvas tool switches that do not write to the design); mutating
 commands and the Format painter tool stay editor-only. `CommandContext` carries `isReadOnly` so the gating lives
 in the pure builder where it's unit-tested.
 
@@ -43,7 +43,7 @@ in the pure builder where it's unit-tested.
 
 The palette offers only what would do something. On a **locked tab** (`tabLocked`) the element
 verbs, layout cleanup and the Format tool are withheld, since the tab refuses every element edit;
-the document, tab and view commands stay.
+the design, tab and view commands stay.
 
 ## Unchanged on purpose
 

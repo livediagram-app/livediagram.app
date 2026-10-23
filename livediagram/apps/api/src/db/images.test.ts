@@ -95,8 +95,8 @@ describe('documentServesImage (placement)', () => {
       `INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 't1', '${JSON.stringify(tabWith('t1', 'img'))}', 0)`,
     );
     linkDocumentTab(db.sql, 'A', 't1');
-    images(db.sql, 0, 'img');
     migrateFrom(db.sql, '0050');
+    images(db.sql, 0, 'img');
     expect(await documentServesImage(db.env, 'A', 'img')).toBe(true);
   });
 });

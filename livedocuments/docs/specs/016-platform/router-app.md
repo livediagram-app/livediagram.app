@@ -8,15 +8,15 @@ A small Cloudflare Worker that fronts the apex domain (`livedocuments.app`) and 
 
 ## Routing table
 
-| Path                                                                                                                                            | Forwards to                      |
-| ----------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| `/api`, `/api/*`                                                                                                                                | api worker (`apps/api`)          |
-| `/telemetry`, `/telemetry/*`                                                                                                                    | telemetry app (`apps/telemetry`) |
-| `/help`, `/help/*`                                                                                                                              | help app (`apps/help`), stripped |
-| `/live/*` (the live app's `_next` assets only)                                                                                                  | live app (`apps/live`), stripped |
-| live page routes: `/document/*`, `/explorer/*`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed`, `/oauth/*`, `/sso-callback`, `/icon.svg` | live app (`apps/live`), as-is    |
-| a help category segment with no `/help` prefix (`/canvas/*`, `/policies/*`, ...)                                                                | 308 redirect to `/help/<path>`   |
-| everything else                                                                                                                                 | marketing app (`apps/marketing`) |
+| Path                                                                                                                           | Forwards to                      |
+| ------------------------------------------------------------------------------------------------------------------------------ | -------------------------------- |
+| `/api`, `/api/*`                                                                                                               | api worker (`apps/api`)          |
+| `/telemetry`, `/telemetry/*`                                                                                                   | `301` to the central dashboard, `?app=livedocuments.app` (liveworkspace/docs/telemetry.md) |
+| `/help`, `/help/*`                                                                                                             | help app (`apps/help`), stripped |
+| `/live/*` (the live app's `_next` assets only)                                                                                 | live app (`apps/live`), stripped |
+| live page routes: `/document/*`, `/explorer/*`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed`, `/oauth/*`, `/icon.svg` | live app (`apps/live`), as-is    |
+| a help category segment with no `/help` prefix (`/canvas/*`, `/policies/*`, ...)                                               | 308 redirect to `/help/<path>`   |
+| everything else                                                                                                                | marketing app (`apps/marketing`) |
 
 The live app serves at **clean URLs** — there's no `/live` prefix in the address bar. Marketing owns every other first segment (`/`, `/alternatives`, `/faq`, the legal pages), and the live app's route segments don't overlap any of them, so the router selects the live app by matching its known first segments (`LIVE_ROUTE_SEGMENTS`, exported from `@livedocuments/api-schema` so the telemetry dashboard's per-app page-view split, [Page view telemetry](../017-telemetry/page-view-telemetry.md), reads the same list) and forwards those **as-is** (no strip — the live worker's `out/` files are already prefix-free).
 
@@ -38,7 +38,7 @@ Two properties keep it safe. It sits **after** the live-route check, so `/explor
 
 ## Implementation
 
-In production the Worker has five **service bindings**, one to each downstream app (MARKETING / LIVE / API / TELEMETRY / HELP). A shared `forward()` helper resolves each target as _binding if present, else local-dev origin_ (see Local development below) and strips the prefix for the basePath/assetPrefix paths (live assets + telemetry + help) when forwarding to a binding:
+In production the Worker has four **service bindings**, one to each downstream app (MARKETING / LIVE / API / HELP); `/telemetry` is a redirect to liveworkspace's central dashboard, not a binding (liveworkspace/docs/telemetry.md). A shared `forward()` helper resolves each target as _binding if present, else local-dev origin_ (see Local development below) and strips the prefix for the basePath/assetPrefix paths (live assets + help) when forwarding to a binding:
 
 ```ts
 // sketch, real source: apps/router/src/index.ts
@@ -51,7 +51,6 @@ const LIVE_ROUTE_SEGMENTS = new Set([
   'new',
   'oauth',
   'sign-in',
-  'sso-callback',
 ]);
 export default {
   async fetch(request, env) {
@@ -64,7 +63,7 @@ export default {
       return forward(request, url, env.LIVE, env.LIVE_ORIGIN, '/live');
     }
     if (url.pathname === '/telemetry' || url.pathname.startsWith('/telemetry/')) {
-      return forward(request, url, env.TELEMETRY, env.TELEMETRY_ORIGIN, '/telemetry');
+      return telemetryRedirect(env); // 301 to the central dashboard, ?app=livedocuments.app
     }
     // Clean live-app page routes + its root icon: forward as-is (no strip).
     if (LIVE_ROUTE_SEGMENTS.has(url.pathname.split('/')[1]) || url.pathname === '/icon.svg') {
@@ -83,14 +82,13 @@ Service bindings target deployed Workers. The downstream apps deploy as their ow
 
 ## Local development
 
-The router **also runs locally**, so `pnpm dev` gives you the production URL shape on one port — `http://localhost:3200` serves marketing at `/`, the editor at `/new` etc., `/telemetry`, `/help` and `/api`, with no per-app port to remember. Each app still runs on its own port underneath and stays directly reachable:
+The router **also runs locally**, so `pnpm dev` gives you the production URL shape on one port — `http://localhost:3200` serves marketing at `/`, the editor at `/new` etc., `/help` and `/api` (and `/telemetry` redirects to the central dashboard, a local liveworkspace site on `:3300` in dev), with no per-app port to remember. Each app still runs on its own port underneath and stays directly reachable:
 
 | App       | Local URL                                                           |
 | --------- | ------------------------------------------------------------------- |
 | router    | `http://localhost:3200/` — everything, stitched like production     |
 | marketing | `http://localhost:3201/`                                            |
 | live      | `http://localhost:3202/new`, `/explorer/recent`, ... (clean routes) |
-| telemetry | `http://localhost:3203/telemetry` (basePath baked in)               |
 | help      | `http://localhost:3204/help` (basePath baked in)                    |
 | api       | `http://localhost:8987/api/...` (wrangler dev)                      |
 

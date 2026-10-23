@@ -29,9 +29,7 @@ afterEach(() => {
 describe('ExplorerCurrentDocument', () => {
   it('renames on a click of the name: Enter saves, Escape keeps it', () => {
     const onRename = vi.fn();
-    render(
-      <ExplorerCurrentDocument item={doc} ownerId="me" onOpen={vi.fn()} onRename={onRename} />,
-    );
+    render(<ExplorerCurrentDocument item={doc} ownerId="me" onOpen={vi.fn()} onRename={onRename} />);
     fireEvent.click(screen.getByRole('button', { name: 'Rename Roadmap' }));
     const field = screen.getByRole('textbox');
     fireEvent.change(field, { target: { value: 'Roadmap 2027' } });

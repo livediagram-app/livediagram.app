@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Page } from '@livedesign/document';
+import type { Page } from '@livedesign/design';
 import { describeBackground, pageLabel, resolvePage, sizeLabel } from './summary';
 
 // docs/specs/024-agents/pages-for-agents.md "change_pages" (the answer), "Naming a page".

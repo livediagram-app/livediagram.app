@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { sameMembers, selectionIds, type Selection } from '@/lib/selection-store';
 import { AskIcon, BlinkCursor, CleanIcon, PlugIcon, SendIcon, Spinner } from './ai-panel-icons';
-import type { Element } from '@livedesign/document';
+import type { Element } from '@livedesign/design';
 import { AI_MAX_PROMPT_CHARS } from '@livedesign/api-schema';
 import type { AiMode } from '@/lib/api-client';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';

@@ -39,9 +39,9 @@ EA1 onwards in [DEFAULTS.md](DEFAULTS.md).
 
 | Module                                                    | Holds                                                                                                                                      |
 | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `packages/document/src/animation-sets.ts`                 | the six catalogues, reveals, titles, labels, telemetry types, kept values; a leaf                                                          |
-| `packages/document/src/animation.ts`                      | speed, `animLoops`, icon and progress sets; re-exports `animation-sets`                                                                    |
-| `packages/document/src/animation-membership.ts`           | `bodyAnimationSetOf`, `takesShapeMotions`, `shapeAnimationsFor`, `animationSectionOf`, `carriesWords`, `inAnimationSet`, `animationSetsOf` |
+| `packages/design/src/animation-sets.ts`                 | the six catalogues, reveals, titles, labels, telemetry types, kept values; a leaf                                                          |
+| `packages/design/src/animation.ts`                      | speed, `animLoops`, icon and progress sets; re-exports `animation-sets`                                                                    |
+| `packages/design/src/animation-membership.ts`           | `bodyAnimationSetOf`, `takesShapeMotions`, `shapeAnimationsFor`, `animationSectionOf`, `carriesWords`, `inAnimationSet`, `animationSetsOf` |
 | `apps/live/lib/animation-set-writes.ts`                   | `withSetAnimation`, `withSetAnimationSpeed`, `withSetAnimationRepeat`, `withoutAnimations`, `setAnimationState`                            |
 | `apps/live/lib/animation-classes.ts`                      | `ANIMATION_CLASS_PREFIX`, `setAnimationClass`, `bodySetClass`                                                                              |
 | `apps/live/components/palette/AnimationSections.tsx`      | every animation category for a selection, `animationCategoriesOf` (single and multi menus)                                                 |
@@ -99,7 +99,7 @@ through the menu's `elementStyle` ops; Progress and Rating render `ProgressAnimT
 New optional fields on `ShapeElement`, `TextElement`, `StickyElement`, `TableElement`: `textAnimation?:
 TextAnimation`, `textAnimationSpeed?: AnimationSpeed`, `textAnimationRepeat?: boolean` (Text plays once by default: stored only when true; `setRepeats(set, stored)` reads either default). They
 are listed in `ELEMENT_FIELD_NAMES`, mapped to the format painter's `effects` group (`lib/format-config.ts`),
-projected by `paintableBoxedFields` for a word-carrying source, and in the OpenAPI document (regenerated with
+projected by `paintableBoxedFields` for a word-carrying source, and in the OpenAPI design (regenerated with
 `node scripts/gen-openapi-schemas.mjs` in `apps/api`). Validation stays lenient.
 
 A text element's `animation` is legacy: `setAnimationState` reads it as the Text value (shown as the kept tile);
@@ -308,7 +308,7 @@ in `apps/telemetry/app/event-explanations.ts`.
 
 | Rule                                                                | Test                                                      |
 | ------------------------------------------------------------------- | --------------------------------------------------------- |
-| Membership, Shape motions, carries words, set order, kept values    | `packages/document/src/animation-membership.test.ts`      |
+| Membership, Shape motions, carries words, set order, kept values    | `packages/design/src/animation-membership.test.ts`      |
 | Every option has a rule in its sheet, none orphaned, reduced motion | `apps/live/app/animation-classes.test.ts`                 |
 | One category per set present                                        | `apps/live/components/palette/AnimationSections.test.tsx` |
 | Tiles, labels, kept tile                                            | `apps/live/components/palette/AnimationSetTiles.test.tsx` |

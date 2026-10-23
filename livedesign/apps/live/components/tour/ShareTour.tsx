@@ -9,7 +9,7 @@ import { shareTourSteps, type ShareTourApi } from './share-tour-steps';
 import { ShowMeButton, ShowMeStage } from './ShowMe';
 import { useTourEngine, type TourEngine } from './useTourEngine';
 
-// The tour, and `freeze`, which fixes its steps from the document as it is when Show Me is pressed: a collaborator
+// The tour, and `freeze`, which fixes its steps from the design as it is when Show Me is pressed: a collaborator
 // adding or removing a tab mid-tour must not shift the steps out from under the person.
 export function useShareTour(multiTab: boolean): {
   tour: TourEngine<ShareTourApi>;

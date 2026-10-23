@@ -24,7 +24,7 @@ type RecognitionChipProps = {
 // sits in the canvas's transformed layer beside the stroke, at the tip, with the zoom undone: a
 // 44 x 44 px target at any zoom. Its presses are its own: `data-floating-panel` keeps the canvas's
 // capture-phase handler (pan, a new stroke) out, the press stops at the
-// chip, and its touchstart never reaches the document's pinch detection, so the tap is never a
+// chip, and its touchstart never reaches the design's pinch detection, so the tap is never a
 // pan, a pinch or a stroke, and the stroke under the pen carries on.
 export function RecognitionChip({ chip, zoom, onFlip }: RecognitionChipProps) {
   const ref = useRef<HTMLButtonElement>(null);

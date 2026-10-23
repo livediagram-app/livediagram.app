@@ -24,7 +24,7 @@ import { titleCaseType } from './telemetry';
 const mockedReadPrefs = vi.mocked(readUserPreferences);
 
 // Capture fetch + sendBeacon so we can assert (or not assert) that
-// they fire. window + document + navigator are stubbed per test so
+// they fire. window + design + navigator are stubbed per test so
 // the module's "is the browser there?" guards see what we want.
 const fetchMock = vi.fn();
 const sendBeaconMock = vi.fn();

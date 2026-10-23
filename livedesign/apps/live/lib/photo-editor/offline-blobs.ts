@@ -1,6 +1,6 @@
-// An Offline Mode document's photo blobs, in this browser (docs/specs/031-photo/photo-store.md
-// "Offline Mode documents"): IndexedDB `livedesign-photo-blobs`, one record a blob id. Blobs are
-// named by content, so every document in the browser shares them.
+// An Offline Mode design's photo blobs, in this browser (docs/specs/031-photo/photo-store.md
+// "Offline Mode designs"): IndexedDB `livedesign-photo-blobs`, one record a blob id. Blobs are
+// named by content, so every design in the browser shares them.
 import type { PhotoBlobEntry } from '@livedesign/api-schema';
 
 const DB_NAME = 'livedesign-photo-blobs';
@@ -67,7 +67,7 @@ export async function offlineBlobsHeld(ids: readonly string[]): Promise<Set<stri
   return held;
 }
 
-/** Every stored blob of `ids`, for Sync Document to upload. */
+/** Every stored blob of `ids`, for Sync Design to upload. */
 export async function offlineBlobsFor(ids: readonly string[]): Promise<PhotoBlobEntry[]> {
   const out: PhotoBlobEntry[] = [];
   for (const id of ids) {

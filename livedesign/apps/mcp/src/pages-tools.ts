@@ -14,12 +14,12 @@ const refusalText = (r: { message: string; change?: number }) =>
   r.change === undefined ? r.message : `Change ${r.change + 1}: ${r.message}`;
 
 const answerOf = (env: Env, done: PagesDone) => ({
-  documentId: done.documentId,
+  designId: done.designId,
   tabId: done.tabId,
   lines: done.lines,
   pages: done.pages,
   rev: done.tab.rev,
-  url: deepLink(env, done.documentId),
+  url: deepLink(env, done.designId),
 });
 
 export function registerPagesTools(server: McpServer, env: Env): void {
@@ -27,7 +27,7 @@ export function registerPagesTools(server: McpServer, env: Env): void {
     const api = clientFor(env, requireToken(extra));
     const done = await changePages(
       api,
-      args.documentId,
+      args.designId,
       { ...(args.tabId ? { tabId: args.tabId } : {}), changes: args.changes },
       'mcp',
     );

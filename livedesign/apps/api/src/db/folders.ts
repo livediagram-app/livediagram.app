@@ -1,5 +1,5 @@
 // folders — self-referential tree, personal (owner-scoped, docs/specs/013-workspace/folders.md)
-// or team-scoped (docs/specs/013-workspace/team-shared-documents.md) via the nullable team_id column.
+// or team-scoped (docs/specs/013-workspace/team-shared-designs.md) via the nullable team_id column.
 
 import { rowToFolder, type FolderRow } from '../folder-row';
 import type { Env, FolderDTO } from '../types';
@@ -7,7 +7,7 @@ import type { Env, FolderDTO } from '../types';
 const FOLDER_COLS = 'id, owner_id, parent_id, team_id, name, created_at, updated_at';
 
 // Personal tree only: team folders never bleed into the owner's
-// Explorer sidebar (they render on the team page instead — docs/specs/013-workspace/team-shared-documents.md).
+// Explorer sidebar (they render on the team page instead — docs/specs/013-workspace/team-shared-designs.md).
 export async function listFoldersByOwner(env: Env, ownerId: string): Promise<FolderDTO[]> {
   const result = await env.DB.prepare(
     `SELECT ${FOLDER_COLS} FROM folders WHERE owner_id = ? AND team_id IS NULL ORDER BY name ASC`,
@@ -17,7 +17,7 @@ export async function listFoldersByOwner(env: Env, ownerId: string): Promise<Fol
   return (result.results ?? []).map(rowToFolder);
 }
 
-// One team's shared folder tree (docs/specs/013-workspace/team-shared-documents.md).
+// One team's shared folder tree (docs/specs/013-workspace/team-shared-designs.md).
 export async function listFoldersByTeam(env: Env, teamId: string): Promise<FolderDTO[]> {
   const result = await env.DB.prepare(
     `SELECT ${FOLDER_COLS} FROM folders WHERE team_id = ? ORDER BY name ASC`,
@@ -63,7 +63,7 @@ export async function renameFolder(env: Env, id: string, name: string): Promise<
     .run();
 }
 
-// Deleting a folder moves its direct subfolders and documents (trashed ones too) up to its parent,
+// Deleting a folder moves its direct subfolders and designs (trashed ones too) up to its parent,
 // the space's root for a top-level folder (docs/specs/013-workspace/folders.md "Deleting a folder",
 // blueprint folder-delete.md). One batch, one transaction: the parent is read by subquery INSIDE it,
 // while the row still exists, so a concurrent move cannot strand the contents. The FKs'
@@ -78,7 +78,7 @@ export async function deleteFolder(env: Env, id: string): Promise<{ parentId: st
     env.DB.prepare(
       `UPDATE folders SET parent_id = ${parentOf}, updated_at = ?2 WHERE parent_id = ?1`,
     ).bind(id, Date.now()),
-    env.DB.prepare(`UPDATE documents SET folder_id = ${parentOf} WHERE folder_id = ?1`).bind(id),
+    env.DB.prepare(`UPDATE designs SET folder_id = ${parentOf} WHERE folder_id = ?1`).bind(id),
     env.DB.prepare('DELETE FROM folders WHERE id = ?').bind(id),
   ]);
   return { parentId: parent?.parent_id ?? null };

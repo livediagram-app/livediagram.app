@@ -2,10 +2,10 @@
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 
-const create = vi.hoisted(() => ({ createDocumentInPlace: vi.fn() }));
+const create = vi.hoisted(() => ({ createDesignInPlace: vi.fn() }));
 vi.mock('./create-in-place', async (original) => ({
   ...(await original<typeof import('./create-in-place')>()),
-  createDocumentInPlace: create.createDocumentInPlace,
+  createDesignInPlace: create.createDesignInPlace,
 }));
 
 import { assignAppLocation } from '@/lib/app-location';
@@ -13,7 +13,7 @@ import type { WorkspacePlace } from '@/lib/workbench/workspace-place';
 import { useWorkspaceNavigation } from './useWorkspaceNavigation';
 
 // How a workspace frame moves (docs/specs/013-workspace/blueprints/workbench-embeds.md "The workspace frame"):
-// every navigation becomes a move of its own, the wizard becomes New document in place, the rest a new tab.
+// every navigation becomes a move of its own, the wizard becomes New design in place, the rest a new tab.
 
 const HOME: WorkspacePlace = { kind: 'explorer', node: { kind: 'home' } };
 const path = () => `${window.location.pathname}${window.location.search}`;
@@ -47,7 +47,7 @@ beforeEach(() => {
   root = document.createElement('div');
   document.body.appendChild(root);
   onCreateFailed = vi.fn<() => void>();
-  create.createDocumentInPlace.mockReset();
+  create.createDesignInPlace.mockReset();
 });
 
 afterEach(() => {
@@ -63,8 +63,8 @@ describe('useWorkspaceNavigation', () => {
     act(() => assignAppLocation('/explorer/folder?id=f1'));
     expect(path()).toBe('/embed/workbench/explorer/folder/f1');
 
-    act(() => assignAppLocation('/document/doc-1?s=CODE2345'));
-    expect(path()).toBe('/embed/workbench/document/doc-1?s=CODE2345');
+    act(() => assignAppLocation('/design/doc-1?s=CODE2345'));
+    expect(path()).toBe('/embed/workbench/design/doc-1?s=CODE2345');
     expect((window.history.state as { workbenchFrom?: string }).workbenchFrom).toBe(
       '/embed/workbench/explorer/folder/f1',
     );
@@ -102,23 +102,23 @@ describe('useWorkspaceNavigation', () => {
     expect(path()).toBe('/embed/workbench/explorer');
   });
 
-  it('makes a new document in place for the wizard, in the folder shown, and opens it', async () => {
-    create.createDocumentInPlace.mockResolvedValue('doc-new');
+  it('makes a new design in place for the wizard, in the folder shown, and opens it', async () => {
+    create.createDesignInPlace.mockResolvedValue('doc-new');
     mount({ kind: 'explorer', node: { kind: 'folder', id: 'f1' } });
 
     await act(async () => assignAppLocation('/new'));
 
-    expect(create.createDocumentInPlace).toHaveBeenCalledWith('user_1', {
+    expect(create.createDesignInPlace).toHaveBeenCalledWith('user_1', {
       folderId: 'f1',
       teamId: null,
       templateKind: null,
     });
-    expect(path()).toBe('/embed/workbench/document/doc-new');
+    expect(path()).toBe('/embed/workbench/design/doc-new');
   });
 
-  it('says so when the new document cannot be made, and stays', async () => {
+  it('says so when the new design cannot be made, and stays', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
-    create.createDocumentInPlace.mockRejectedValue(Object.assign(new Error('no'), { status: 403 }));
+    create.createDesignInPlace.mockRejectedValue(Object.assign(new Error('no'), { status: 403 }));
     mount();
 
     await act(async () => assignAppLocation('/new?folder=f1'));
@@ -128,16 +128,16 @@ describe('useWorkspaceNavigation', () => {
     expect(path()).toBe('/embed/workbench/explorer');
   });
 
-  it('goes back to where a document was opened from, else to Home', () => {
+  it('goes back to where a design was opened from, else to Home', () => {
     const back = vi.spyOn(window.history, 'back').mockImplementation(() => {});
     const { result } = mount();
 
     act(() => assignAppLocation('/explorer/recent'));
-    act(() => assignAppLocation('/document/doc-1'));
+    act(() => assignAppLocation('/design/doc-1'));
     act(() => result.current.back());
     expect(back).toHaveBeenCalledTimes(1);
 
-    window.history.replaceState(null, '', '/embed/workbench/document/doc-2');
+    window.history.replaceState(null, '', '/embed/workbench/design/doc-2');
     act(() => result.current.back());
     expect(path()).toBe('/embed/workbench/explorer');
   });

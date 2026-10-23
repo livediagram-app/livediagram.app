@@ -14,7 +14,7 @@ const index = buildDefaultFolderIndex(
 );
 const defaults = new Map<PlacementDefaultKey, string>([['mode:pages', 'decks']]);
 const deck = { mode: 'pages', tabKind: 'diagram' } as const;
-const handoff = { documentId: 'd', tabId: 't', placementChosen: false };
+const handoff = { designId: 'd', tabId: 't', placementChosen: false };
 const at = (over: Partial<Parameters<typeof templatePickMoveTarget>[0]> = {}) =>
   templatePickMoveTarget({
     handoff,
@@ -26,7 +26,7 @@ const at = (over: Partial<Parameters<typeof templatePickMoveTarget>[0]> = {}) =>
   });
 
 describe('templatePickMoveTarget', () => {
-  it("moves a document to its mode's default", () => {
+  it("moves a design to its mode's default", () => {
     expect(at()?.folder.id).toBe('decks');
     expect(at()?.key).toBe('mode:pages');
   });
@@ -35,7 +35,7 @@ describe('templatePickMoveTarget', () => {
     expect(at({ current: { folderId: 'decks', teamId: null } })).toBeNull();
   });
 
-  it('leaves a folder the person chose, and a document the wizard did not just make', () => {
+  it('leaves a folder the person chose, and a design the wizard did not just make', () => {
     expect(at({ handoff: { ...handoff, placementChosen: true } })).toBeNull();
     expect(at({ handoff: null })).toBeNull();
   });

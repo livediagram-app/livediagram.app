@@ -21,7 +21,7 @@ export function useActiveTabName(): string {
   return useSyncExternalStore(listeners.subscribe, get, none);
 }
 
-// Renaming the open tab from the menu box (a click on its name), for someone who may change the document's tabs; null
+// Renaming the open tab from the menu box (a click on its name), for someone who may change the design's tabs; null
 // otherwise. Published by the editor through usePublishTabRename, stable while the tab is the same. `tabId` names the
 // tab it renames, so a draft begun on one tab is never saved onto the next.
 export type TabRename = { tabId: string; rename: (name: string) => void };

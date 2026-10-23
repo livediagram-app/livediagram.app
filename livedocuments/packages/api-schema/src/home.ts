@@ -100,7 +100,6 @@ export type HomePerson = {
   id: string;
   name: string | null;
   color: string | null;
-  pictureUrl: string | null;
 };
 
 /** One thing somebody did. */

@@ -7,20 +7,20 @@ const apiGetTeamLibrary = vi.fn<typeof import('@/lib/api-client').apiGetTeamLibr
 const apiCreateFolder = vi.fn<typeof import('@/lib/api-client').apiCreateFolder>();
 const apiUpdateFolder = vi.fn<typeof import('@/lib/api-client').apiUpdateFolder>();
 const apiDeleteFolder = vi.fn<typeof import('@/lib/api-client').apiDeleteFolder>();
-const apiSetDocumentFolder = vi.fn<typeof import('@/lib/api-client').apiSetDocumentFolder>();
-const apiSaveDocumentMeta = vi.fn<typeof import('@/lib/api-client').apiSaveDocumentMeta>();
+const apiSetDesignFolder = vi.fn<typeof import('@/lib/api-client').apiSetDesignFolder>();
+const apiSaveDesignMeta = vi.fn<typeof import('@/lib/api-client').apiSaveDesignMeta>();
 vi.mock('@/lib/api-client', () => ({
   apiGetTeamLibrary: (o: string, t: string) => apiGetTeamLibrary(o, t),
   apiCreateFolder: (...a: Parameters<typeof apiCreateFolder>) => apiCreateFolder(...a),
   apiUpdateFolder: (...a: Parameters<typeof apiUpdateFolder>) => apiUpdateFolder(...a),
   apiDeleteFolder: (...a: Parameters<typeof apiDeleteFolder>) => apiDeleteFolder(...a),
-  apiSetDocumentFolder: (...a: Parameters<typeof apiSetDocumentFolder>) =>
-    apiSetDocumentFolder(...a),
-  apiSaveDocumentMeta: (...a: Parameters<typeof apiSaveDocumentMeta>) => apiSaveDocumentMeta(...a),
+  apiSetDesignFolder: (...a: Parameters<typeof apiSetDesignFolder>) =>
+    apiSetDesignFolder(...a),
+  apiSaveDesignMeta: (...a: Parameters<typeof apiSaveDesignMeta>) => apiSaveDesignMeta(...a),
 }));
-const duplicateDocument = vi.fn<typeof import('@/lib/duplicate-document').duplicateDocument>();
-vi.mock('@/lib/duplicate-document', () => ({
-  duplicateDocument: (...a: Parameters<typeof duplicateDocument>) => duplicateDocument(...a),
+const duplicateDesign = vi.fn<typeof import('@/lib/duplicate-design').duplicateDesign>();
+vi.mock('@/lib/duplicate-design', () => ({
+  duplicateDesign: (...a: Parameters<typeof duplicateDesign>) => duplicateDesign(...a),
 }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 const toast = vi.hoisted(() => ({ error: vi.fn(), success: vi.fn(), info: vi.fn() }));
@@ -32,10 +32,10 @@ afterEach(() => vi.clearAllMocks());
 const lib = (teamId: string) =>
   ({
     folders: [{ id: `${teamId}-f`, name: 'F', parentId: null }],
-    documents: [{ id: `${teamId}-d`, name: 'D', folderId: null }],
+    designs: [{ id: `${teamId}-d`, name: 'D', folderId: null }],
   }) as unknown as Awaited<ReturnType<typeof apiGetTeamLibrary>>;
 
-// One team's shared library (docs/specs/013-workspace/team-shared-documents.md).
+// One team's shared library (docs/specs/013-workspace/team-shared-designs.md).
 describe('useTeamLibrary', () => {
   it('loads the team library', async () => {
     apiGetTeamLibrary.mockResolvedValue(lib('t1'));
@@ -92,24 +92,24 @@ describe('useTeamLibrary', () => {
 // docs/specs/013-workspace/folders.md "A write that fails says so": every write a team page makes either lands or
 // ends in an error toast, and the refetch after it shows the library as the server holds it.
 describe('useTeamLibrary when the server refuses', () => {
-  it('says so for every folder and document write', async () => {
+  it('says so for every folder and design write', async () => {
     apiGetTeamLibrary.mockResolvedValue(lib('t1'));
     const refused = () => Promise.reject(new Error('403'));
     apiCreateFolder.mockImplementation(refused);
     apiUpdateFolder.mockImplementation(refused);
     apiDeleteFolder.mockImplementation(refused);
-    apiSetDocumentFolder.mockImplementation(refused);
-    apiSaveDocumentMeta.mockImplementation(refused);
-    duplicateDocument.mockResolvedValue(undefined);
+    apiSetDesignFolder.mockImplementation(refused);
+    apiSaveDesignMeta.mockImplementation(refused);
+    duplicateDesign.mockResolvedValue(undefined);
     const { result } = renderHook(() => useTeamLibrary('u1', 't1'));
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(await result.current.createFolder(null, 'Planning')).toBeUndefined();
     await result.current.renameFolder('t1-f', 'Plans');
     await result.current.moveFolder('t1-f', null);
     await result.current.deleteFolder('t1-f');
-    await result.current.moveDocument('t1-d', 't1-f');
-    await result.current.renameDocument('t1-d', 'Doc');
-    await result.current.duplicateDocument('t1-d');
+    await result.current.moveDesign('t1-d', 't1-f');
+    await result.current.renameDesign('t1-d', 'Doc');
+    await result.current.duplicateDesign('t1-d');
     expect(toast.error.mock.calls).toEqual([
       ['Could not create “Planning”. Try again.'],
       ['Could not rename “F”. Try again.'],
@@ -127,17 +127,17 @@ describe('useTeamLibrary when the server refuses', () => {
       ReturnType<typeof apiUpdateFolder>
     >);
     apiDeleteFolder.mockResolvedValue(undefined);
-    apiSetDocumentFolder.mockResolvedValue(undefined);
-    apiSaveDocumentMeta.mockResolvedValue(undefined);
-    duplicateDocument.mockResolvedValue('copy');
+    apiSetDesignFolder.mockResolvedValue(undefined);
+    apiSaveDesignMeta.mockResolvedValue(undefined);
+    duplicateDesign.mockResolvedValue('copy');
     const { result } = renderHook(() => useTeamLibrary('u1', 't1'));
     await waitFor(() => expect(result.current.loading).toBe(false));
     await result.current.renameFolder('t1-f', 'Plans');
     await result.current.moveFolder('t1-f', null);
     await result.current.deleteFolder('t1-f');
-    await result.current.moveDocument('t1-d', null);
-    await result.current.renameDocument('t1-d', 'Doc');
-    await result.current.duplicateDocument('t1-d');
+    await result.current.moveDesign('t1-d', null);
+    await result.current.renameDesign('t1-d', 'Doc');
+    await result.current.duplicateDesign('t1-d');
     expect(toast.error).not.toHaveBeenCalled();
   });
 });

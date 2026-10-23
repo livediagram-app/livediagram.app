@@ -68,8 +68,8 @@ describe('POST /api/workbench/sessions', () => {
   it('opens a session as the person, with their display identity', async () => {
     const db = await workbenchDb();
     pairToken(db);
-    db.sql.exec(`INSERT INTO participants (id, name, color, created_at, picture_url)
-                 VALUES ('user_1', 'Webber', '#ff8800', 1, NULL)`);
+    db.sql.exec(`INSERT INTO participants (id, name, color, created_at)
+                 VALUES ('user_1', 'Webber', '#ff8800', 1)`);
     const ticket = await mintTicket(db);
 
     const res = await redeem(db, { ticket });
@@ -85,7 +85,7 @@ describe('POST /api/workbench/sessions', () => {
       origin: ORIGIN,
       role: 'edit',
       expiresAt: NOW + WORKBENCH_SESSION_TTL_MS,
-      person: { id: 'user_1', name: 'Webber', color: '#ff8800', pictureUrl: null },
+      person: { id: 'user_1', name: 'Webber', color: '#ff8800' },
     });
     expect(isWorkbenchSessionFormat(body.session)).toBe(true);
     expect(rows(db, 'SELECT secret_hash, pairing_id FROM workbench_sessions')).toEqual([
@@ -107,7 +107,7 @@ describe('POST /api/workbench/sessions', () => {
 
     const body = (await (await redeem(db, { ticket })).json()) as { person: unknown };
 
-    expect(body.person).toEqual({ id: 'user_1', name: null, color: null, pictureUrl: null });
+    expect(body.person).toEqual({ id: 'user_1', name: null, color: null });
   });
 
   it('caps the session at the token expiry', async () => {
@@ -301,7 +301,7 @@ describe('POST /api/workbench/sessions, workspace scope', () => {
       origin: ORIGIN,
       role: 'edit',
       expiresAt: NOW + WORKBENCH_SESSION_TTL_MS,
-      person: { id: 'user_1', name: null, color: null, pictureUrl: null },
+      person: { id: 'user_1', name: null, color: null },
     });
     expect(rows(db, 'SELECT scope, document_id, folder_id FROM workbench_sessions')).toEqual([
       { scope: 'workspace', document_id: null, folder_id: 'f-own' },

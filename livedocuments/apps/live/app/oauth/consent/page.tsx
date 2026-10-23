@@ -2,28 +2,28 @@
 
 // MCP OAuth consent screen (docs/specs/015-api/mcp-server.md §3). The MCP authorize endpoint redirects
 // the signed-in user here with a `session` (and a display-only `client` name +
-// `to` redirect host). On approve we mint an lvd_ token via the api
-// (Clerk-authed) and hand it to the MCP's /oauth/complete bound to a one-time
+// `to` redirect host). On approve we mint an lwt_ token via the api
+// (signed-in) and hand it to the MCP's /oauth/complete bound to a one-time
 // PKCE code, then bounce the browser to the client's redirect. Signed-in only;
-// absent end-to-end without Clerk.
+// absent end-to-end without sign-in.
 import { Suspense, use, useEffect, useState } from 'react';
 import { browser } from 'react-dom';
 import { useSearchParams } from 'next/navigation';
 import { CLI_CLIENT_ID } from '@livedocuments/api-schema';
 import { OAUTH_PRIMARY, OauthHelpLink, OauthShell, ReadOnlyAccessToggle } from '../oauth-shell';
 import { AUTH_TITLE } from '@/components/chrome/AuthStage';
-import { apiExchangeOauthToken, apiRevokeToken } from '@/lib/api-client';
-import { clerkEnabled } from '@/lib/clerk-config';
+import { apiExchangeOauthToken, apiRevokeTokenAsItself } from '@/lib/api-client';
+import { signInEnabled } from '@/lib/auth-config';
 import { MCP_ORIGIN } from '@/lib/mcp-config';
 import { fetchConsentSession, type McpConsentSession } from '@/lib/mcp-consent-session';
 import { handoverFailureCopy, mintAndHandOver, type HandoverFailure } from '@/lib/oauth-handover';
 import { track } from '@/lib/telemetry';
-import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
+import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 
 function Consent() {
   const params = useSearchParams();
   const session = params.get('session');
-  const { authLoaded, isSignedIn, clerkUserId } = useClerkApiBootstrap();
+  const { authLoaded, isSignedIn, accountUserId } = useAccountBootstrap();
   const [status, setStatus] = useState<'idle' | 'connecting' | 'error' | 'cancelled'>('idle');
   // Why the last Connect failed, for the line under the buttons.
   const [failure, setFailure] = useState<HandoverFailure>('failed');
@@ -70,7 +70,7 @@ function Consent() {
     );
   }
 
-  if (!clerkEnabled) {
+  if (!signInEnabled) {
     return (
       <OauthShell>
         <h1 className={AUTH_TITLE}>Connecting apps isn’t available</h1>
@@ -87,7 +87,7 @@ function Consent() {
       </OauthShell>
     );
   }
-  if (!isSignedIn || !clerkUserId) {
+  if (!isSignedIn || !accountUserId) {
     // Return here after sign-in. The sign-in page reads `redirect_url` (NOT
     // `redirect`) and validates it as a safe internal path before bouncing
     // back — /oauth/consent?... qualifies, so the user lands back on consent.
@@ -156,7 +156,7 @@ function Consent() {
     // Connect never leaves a six-month token behind (lib/oauth-handover.ts).
     const result = await mintAndHandOver({
       sessionLive: async () => (await fetchConsentSession(session)) !== null,
-      mint: () => apiExchangeOauthToken(clerkUserId, client, readOnly),
+      mint: () => apiExchangeOauthToken(accountUserId, client, readOnly),
       complete: async (token, expiresAt) => {
         const res = await fetch(`${MCP_ORIGIN}/oauth/complete`, {
           method: 'POST',
@@ -167,7 +167,7 @@ function Consent() {
         const { redirectTo } = (await res.json()) as { redirectTo: string };
         return redirectTo;
       },
-      revoke: (id) => apiRevokeToken(clerkUserId, id),
+      revoke: (token) => apiRevokeTokenAsItself(token),
     });
     if (!result.ok) {
       setFailure(result.reason);
@@ -197,8 +197,8 @@ function Consent() {
       <h1 className={AUTH_TITLE}>Connect {client}</h1>
       <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
         <span className="font-medium text-slate-700 dark:text-slate-200">{client}</span> wants to
-        access your livedocuments documents on your behalf. Approving creates an API token, which you
-        can revoke any time from Settings, under Account › API Tokens.
+        act as you in your liveworkspace apps, livedocuments among them. Approving creates an API
+        token for your liveworkspace account, which you can revoke any time on liveworkspace.app.
       </p>
       <ReadOnlyAccessToggle readOnly={readOnly} onChange={setReadOnly} />
       {/* The one fact worth checking before approving, and now the server's

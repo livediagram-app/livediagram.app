@@ -15,7 +15,7 @@ import {
   type ElementGrid,
   type ElementIndex,
   type Rect,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import type { DragOverlay } from '@/lib/drag-preview';
 import { deriveArrowViewFrame, type ArrowViewFrame } from './arrow-view-frame';
 
@@ -26,7 +26,7 @@ export type ArrowLinks = {
   rects: ReadonlyMap<string, Rect>;
 };
 
-// Once per document change.
+// Once per design change.
 export function buildArrowLinks(elements: readonly Element[]): ArrowLinks {
   const index = buildElementIndex(elements as Element[]);
   const dependants = new Map<string, string[]>();
@@ -77,8 +77,8 @@ export function affectedArrows(
 }
 
 // An affected arrow's frame and holes while a preview lasts: ends resolved through `index` (the
-// document's index with the previewed elements over it), holes cut by the grid's candidates as the
-// document has them, minus what the gesture moved, plus the moved and added boxes where they are now.
+// design's index with the previewed elements over it), holes cut by the grid's candidates as the
+// design has them, minus what the gesture moved, plus the moved and added boxes where they are now.
 export function previewArrowGeometry(
   arrow: ArrowElement,
   index: ElementIndex,

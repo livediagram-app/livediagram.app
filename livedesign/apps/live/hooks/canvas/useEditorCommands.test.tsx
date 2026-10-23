@@ -9,8 +9,8 @@ import { describe, expect, it, vi } from 'vitest';
 // the editor's state, and a command runs the editor's action as it is when it runs.
 
 let ctx: Record<string, unknown> = {};
-vi.mock('@/app/document/[id]/EditorContext', () => ({ useEditorContext: () => ctx }));
-vi.mock('@/hooks/persistence/useIsOfflineDocument', () => ({ useIsOfflineDocument: () => false }));
+vi.mock('@/app/design/[id]/EditorContext', () => ({ useEditorContext: () => ctx }));
+vi.mock('@/hooks/persistence/useIsOfflineDesign', () => ({ useIsOfflineDesign: () => false }));
 vi.mock('@/hooks/ui/useIsMobileViewport', () => ({ useIsMobileViewport: () => false }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
@@ -31,10 +31,10 @@ const run = (open = true) => {
 function editor(over: Record<string, unknown> = {}) {
   return {
     isReadOnly: false,
-    canShareDocument: true,
+    canShareDesign: true,
     canCombine: () => false,
     combineSelected: vi.fn(),
-    documentId: 'd1',
+    designId: 'd1',
     activeTab: { id: 't1', elements: [] },
     editorMode: { mode: 'diagram', setMode: vi.fn(), canSwitch: true },
     canUndo: true,

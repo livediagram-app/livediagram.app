@@ -4,7 +4,7 @@
 // panel"): colour and width for the selected marker strokes, or for the marker in
 // hand when nothing is selected, so picking up a marker already offers its style. Quick choices
 // only, one row each: Marker colour is the nine stock colours, Ink first, then More colours (the
-// colour picker, where the document's custom colours live); then Marker width.
+// colour picker, where the design's custom colours live); then Marker width.
 
 import { PenWidthIcon } from './whiteboard/PenWidthIcon';
 import type { QuickStyleApi } from '@/hooks/canvas/useQuickStyle';

@@ -11,7 +11,7 @@ import { ColourPopover } from '@/components/colour/ColourPopover';
 import { SwatchChip } from '@/components/colour/ColourSwatch';
 import { standardGroup } from '@/components/colour/colour-options';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
-import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
+import { useDesignColours } from '@/hooks/ui/useDesignColours';
 import {
   LASER_PRESENCE,
   laserColour,
@@ -32,7 +32,7 @@ export function LaserColourRow({
   onOpen?: () => void;
 }) {
   const appearance = useCanvasSurface();
-  const yours = useDocumentColours();
+  const yours = useDesignColours();
   const [open, setOpen] = useState(false);
   // The trigger, held in state (a callback ref) so the popover can anchor to it during render.
   const [trigger, setTrigger] = useState<HTMLButtonElement | null>(null);

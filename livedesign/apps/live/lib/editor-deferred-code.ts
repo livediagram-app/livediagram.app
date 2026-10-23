@@ -4,10 +4,10 @@ import type { PresentationOverlay as PresentationOverlayComponent } from '@/comp
 // surface's dynamic import and the prefetch below name the same module.
 //
 // - Content a board may draw as soon as it opens (Pages and their writing, tables):
-//   fetched as the editor mounts, alongside the document request, so a board that has
+//   fetched as the editor mounts, alongside the design request, so a board that has
 //   one finds its code already in. A board without one pays nothing on the critical path.
 // - Surfaces someone opens (the Explorer, search, layers, the style panel, tool panels, presenting): fetched
-//   once the opened document has rendered and the page is idle, so a first open does not wait.
+//   once the opened design has rendered and the page is idle, so a first open does not wait.
 
 export const loadCanvasPages = () =>
   import('@/components/canvas/CanvasPages').then((m) => m.CanvasPages);
@@ -43,7 +43,7 @@ export const loadPresentationOverlay = () =>
 export const loadedPresentationOverlay = () => presentationOverlay;
 export const loadToolPanels = () => import('@/components/canvas/tool-panels');
 
-export const DOCUMENT_CONTENT_CODE = [loadCanvasPages, loadTableView] as const;
+export const DESIGN_CONTENT_CODE = [loadCanvasPages, loadTableView] as const;
 
 export const EDITOR_SURFACE_CODE = [
   loadExplorerPanel,

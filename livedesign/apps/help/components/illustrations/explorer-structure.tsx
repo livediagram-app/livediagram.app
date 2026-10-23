@@ -108,7 +108,7 @@ function Glyph({ kind, active = false }: { kind: GlyphKind; active?: boolean }) 
   }
 }
 
-/** A small uppercase group title (Overview, Spaces, More, Current Document). */
+/** A small uppercase group title (Overview, Spaces, More, Current Design). */
 function GroupTitle({ x, y, children }: { x: number; y: number; children: string }) {
   return (
     <Label x={x} y={y} size={10} weight={700} tone="muted">
@@ -300,7 +300,7 @@ function Star({ x, y }: { x: number; y: number }) {
   );
 }
 
-/** A document card: the preview above the name and a meta line. */
+/** A design card: the preview above the name and a meta line. */
 function DocCard({
   x,
   y,
@@ -618,10 +618,10 @@ export function ExplorerPageLayout() {
   );
 }
 
-/** The editor's Explorer, open under the menu button in the top-left card: the Current Document
+/** The editor's Explorer, open under the menu button in the top-left card: the Current Design
  *  card, then Overview, Spaces and More, with My Work opened in place to a folder and a
- *  document. */
-/** The editor's Explorer panel open under the menu button: the Current Document card (its name to rename, its
+ *  design. */
+/** The editor's Explorer panel open under the menu button: the Current Design card (its name to rename, its
  *  visibility badge at the right), the rail of sections beside the pane showing the picked one (My Work), and
  *  the product's links along the foot. */
 export function ExplorerPanelLayout() {
@@ -662,7 +662,7 @@ export function ExplorerPanelLayout() {
           <circle cx={px + pw - 10} cy={31} r={1.5} />
         </g>
 
-        {/* Current Document: thumbnail, label, the name (click to rename), the badge at the right. */}
+        {/* Current Design: thumbnail, label, the name (click to rename), the badge at the right. */}
         <rect x={px + 10} y={48} width={pw - 20} height={58} rx={9} className="fill-slate-50" />
         <rect
           x={px + 18}
@@ -675,7 +675,7 @@ export function ExplorerPanelLayout() {
         />
         <Thumb x={px + 18} y={56} w={62} h={42} kind={1} />
         <GroupTitle x={px + 92} y={66}>
-          CURRENT DOCUMENT
+          CURRENT DESIGN
         </GroupTitle>
         <rect
           x={px + 88}
@@ -805,7 +805,7 @@ export function ExplorerPanelLayout() {
 }
 
 /** Search results narrowed by a typed Made by AI filter and a word: the pill in the field, the lit
- *  chip in the row (Space included, as on every gathered list), and the documents that match. */
+ *  chip in the row (Space included, as on every gathered list), and the designs that match. */
 export function FilterSearchResults() {
   const chips: { w: number; label: string; set?: boolean }[] = [
     { w: 54, label: 'Opens in' },
@@ -875,7 +875,7 @@ export function FilterSearchResults() {
 }
 
 /** The card view inside a folder: the List / Card / Details toggle set to cards, a subfolder's preview mosaic
- *  with its +N tile, and document cards with a favourite star. */
+ *  with its +N tile, and design cards with a favourite star. */
 export function CardViewGrid() {
   return (
     <Scene w={420} h={200} bg="plain">
@@ -971,27 +971,20 @@ export function MoveToFolderScene() {
   );
 }
 
-/** A folder's menu with Use as Default for open: the "New documents that open as" list, one
- *  checkable entry per kind of new document. */
+/** A folder's menu with Use as Default for open: the "New designs that open as" list, its one
+ *  entry, Designs, ticked. */
 export function UseAsDefaultScene() {
   const mx = 16;
   const my = 16;
   const mw = 156;
   const items = ['Rename', 'New Subfolder', 'Change Folder', 'Use as Default for'];
-  const kinds = [
-    'Diagrams',
-    'Whiteboards',
-    'Pages documents',
-    'Plan boards',
-    'Retrospectives',
-    'Kanban boards',
-  ];
-  const ticked = new Set(['Whiteboards', 'Retrospectives']);
+  const kinds = ['Designs'];
+  const ticked = new Set(['Designs']);
   const fx = 180;
   const fy = 72;
   const fw = 222;
   return (
-    <Scene w={420} h={250} bg="plain">
+    <Scene w={420} h={190} bg="plain">
       {/* The folder menu */}
       <rect
         x={mx}
@@ -1003,7 +996,7 @@ export function UseAsDefaultScene() {
         strokeWidth={1.5}
       />
       <Label x={mx + 12} y={my + 16} size={10} weight={700} tone="strong">
-        Workshops
+        Brand Work
       </Label>
       <line
         x1={mx}
@@ -1055,13 +1048,13 @@ export function UseAsDefaultScene() {
         x={fx}
         y={fy}
         width={fw}
-        height={170}
+        height={56}
         rx={8}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
       <Label x={fx + 12} y={fy + 15} size={10} weight={700} tone="muted">
-        New documents that open as
+        New designs that open as
       </Label>
       {kinds.map((k, i) => {
         const ry = fy + 26 + i * 20;

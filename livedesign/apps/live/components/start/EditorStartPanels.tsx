@@ -1,8 +1,8 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { pagesOf } from '@livedesign/document';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { pagesOf } from '@livedesign/design';
+import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import { StartAgainTray } from '@/components/start/StartAgainTray';
 import { templateStartMode } from '@/components/start/template-start-mode';
 import { useTemplatePickMove } from '@/components/start/useTemplatePickMove';
@@ -20,11 +20,11 @@ export function EditorStartPanels() {
   const ctx = useEditorContext();
   const { hydrated, zenMode, embedMode, pendingDraw, activeTab, isReadOnly, clerkUserId } = ctx;
   // An editor's empty tab: its template start (docs/specs/007-editor/start-diagramming.md). A template picked from it
-  // on a document /new just made goes to its default folder (docs/specs/013-workspace/default-folders.md "A template
+  // on a design /new just made goes to its default folder (docs/specs/013-workspace/default-folders.md "A template
   // picked after creation").
   const moveOnTemplatePick = useTemplatePickMove({
     ownerId: ctx.selfParticipant.id,
-    documentId: ctx.documentId,
+    designId: ctx.designId,
     tabId: activeTab.id,
     signedIn: !!clerkUserId,
     tabHasContent: activeTab.elements.length > 0,

@@ -14,9 +14,9 @@ import type {
   Tab,
   TextAlignX,
   ThemeDefinition,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { track } from '@/lib/telemetry';
-import { canvasSurface, PEN_INK } from '@livedesign/document';
+import { canvasSurface, PEN_INK } from '@livedesign/design';
 import { quickStyleApplicability, quickStyleCaption } from '@/lib/quick-style-applicability';
 import {
   applyPenStyle,

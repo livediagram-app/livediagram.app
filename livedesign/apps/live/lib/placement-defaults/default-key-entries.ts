@@ -1,15 +1,15 @@
 // What each default key is called (docs/specs/013-workspace/default-folders.md "Entry names"): the
-// label "New documents that open as" lists, and the plural a sentence uses. Typed by mode, so a new
+// label "New designs that open as" lists, and the plural a sentence uses. Typed by mode, so a new
 // editor mode does not compile until it is named here.
 import { PLACEMENT_DEFAULT_KEYS, type PlacementDefaultKey } from '@livedesign/api-schema';
-import type { EditorMode } from '@livedesign/document';
+import type { EditorMode } from '@livedesign/design';
 
 type DefaultKeyEntry = { key: PlacementDefaultKey; label: string; noun: string };
 
 type Words = { label: string; noun: string };
 
 const MODE_WORDS: Record<EditorMode, Words> = {
-  pages: { label: 'Documents', noun: 'documents' },
+  pages: { label: 'Designs', noun: 'designs' },
 };
 
 function wordsOf(key: PlacementDefaultKey): Words {

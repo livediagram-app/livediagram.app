@@ -41,12 +41,12 @@ describe('DefaultFolderMarker', () => {
     await withDefaults([{ key: 'mode:pages', folderId: 'w' }]);
     const { container } = render(<DefaultFolderMarker folderId="w" />);
     expect(icons(container)).toBe(1);
-    expect(screen.getByText('Default folder for new documents')).toBeTruthy();
+    expect(screen.getByText('Default folder for new designs')).toBeTruthy();
   });
 
   it('leaves the words to the host when asked', async () => {
     await withDefaults([{ key: 'mode:pages', folderId: 'w' }]);
     render(<DefaultFolderMarker folderId="w" withWords={false} />);
-    expect(screen.queryByText('Default folder for new documents')).toBeNull();
+    expect(screen.queryByText('Default folder for new designs')).toBeNull();
   });
 });

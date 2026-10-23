@@ -9,8 +9,8 @@ import type { UserPreferences } from '@/lib/user-preferences';
 import { setPowerUserMode } from '@/lib/power-user-mode';
 
 // Who is reading: a guest unless a test signs in.
-const clerk = vi.hoisted(() => ({ clerkUserId: null as string | null, isSignedIn: false }));
-vi.mock('@/hooks/persistence/useClerkApiBootstrap', () => ({ useClerkApiBootstrap: () => clerk }));
+const clerk = vi.hoisted(() => ({ accountUserId: null as string | null, isSignedIn: false }));
+vi.mock('@/hooks/persistence/useAccountBootstrap', () => ({ useAccountBootstrap: () => clerk }));
 
 // The dialog takes BOTH iOS Settings shapes, one per viewport (docs/specs/007-editor/user-preferences.md): the
 // iPad split view on desktop, the iPhone push navigation on a phone. Which
@@ -42,7 +42,7 @@ function renderDialog(overrides: Partial<UserPreferences> = {}) {
 const FIRST_CATEGORY = visibleCategories({ emailEnabled: true, signedIn: false })[0]!;
 
 afterEach(() => {
-  clerk.clerkUserId = null;
+  clerk.accountUserId = null;
   clerk.isSignedIn = false;
   cleanup();
   sessionStorage.clear();
@@ -285,7 +285,7 @@ describe('SettingsDialog footer', () => {
   });
 
   it('tells a signed-in person their settings follow their account', () => {
-    clerk.clerkUserId = 'user_1';
+    clerk.accountUserId = 'user_1';
     clerk.isSignedIn = true;
     setViewport(false);
     renderDialog();

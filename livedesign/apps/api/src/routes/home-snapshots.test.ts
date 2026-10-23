@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Element } from '@livedesign/document';
+import type { Element } from '@livedesign/design';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { recordTabSave } from '../timeline';
 import { makeTestRouteContext } from './test-route-context';
-import { handleDocuments } from './documents';
+import { handleDesigns } from './designs';
 
 // What What happened needs from the stored events (docs/specs/013-workspace/timeline.md §4.3;
 // docs/specs/013-workspace/explorer-home.md "What happened"): a comment says whether it replies,
@@ -47,11 +47,11 @@ beforeEach(() => {
   db = sqliteD1();
   pending = [];
   db.sql.exec(`
-    INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
+    INSERT INTO designs (id, owner_id, name, shareable, saved_at, created_at)
       VALUES ('d1', 'owner', 'Payments', 1, 1, 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 'Tab 1', '{"elements":[]}', 1);
-    INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
-    INSERT INTO share_links (code, document_id, role, level, tab_id, created_at)
+    INSERT INTO design_tabs (design_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
+    INSERT INTO share_links (code, design_id, role, level, tab_id, created_at)
       VALUES ('CODE', 'd1', 'view', 'participate', NULL, 1);
   `);
   vi.spyOn(console, 'info').mockImplementation(() => undefined);
@@ -167,8 +167,8 @@ describe("the tab save's comment authors and deletions", () => {
 
 describe('the view-role comment', () => {
   async function post(elementId: string) {
-    const res = await handleDocuments(
-      makeTestRouteContext('POST', '/api/documents/d1/tabs/t1/comments', {
+    const res = await handleDesigns(
+      makeTestRouteContext('POST', '/api/designs/d1/tabs/t1/comments', {
         env: db.env,
         owner: 'guest-visitor',
         headers: { 'X-Share-Code': 'CODE' },

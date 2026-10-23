@@ -26,8 +26,8 @@ import type { BodySchema } from './types';
 /** How a caller authenticates (docs/specs/014-identity/auth-and-guest-access.md):
  *  - `public`: no identity required.
  *  - `guest-or-clerk`: the guest `X-Owner-Id` header OR a Bearer credential
- *    (a Clerk session JWT or an API token).
- *  - `clerk`: a Bearer credential only (Clerk JWT or API token); guests are
+ *    (an account access token or an API token).
+ *  - `clerk`: a Bearer credential only (account access token or API token); guests are
  *    rejected. */
 export type AuthMode = 'public' | 'guest-or-clerk' | 'clerk';
 
@@ -690,20 +690,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 400, 401, 403, 404, 405, 410],
   },
   {
-    method: 'GET',
-    path: '/documents/{id}/tabs/{tabId}/comment-pictures',
-    segment: 'documents',
-    tag: 'Documents',
-    summary:
-      "The published profile pictures of a tab's comment authors, keyed by comment id. Empty unless the caller is signed in.",
-    auth: 'guest-or-clerk',
-    responseSchema: {
-      type: 'object',
-      properties: { pictures: { type: 'object', additionalProperties: { type: 'string' } } },
-    },
-    statuses: [200, 403, 404],
-  },
-  {
     method: 'POST',
     path: '/documents/{id}/tabs/{tabId}/link',
     segment: 'documents',
@@ -1188,7 +1174,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'participants',
     tag: 'Participants',
     summary:
-      "Get a participant's display name and colour; their published picture only for a signed-in caller. Your own id before you have saved a profile answers { participant: null }.",
+      "Get a participant's display name and colour. Your own id before you have saved a profile answers { participant: null }.",
     auth: 'public',
     responseSchema: {
       type: 'object',
@@ -1210,25 +1196,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       required: ['name', 'color'],
     },
     responseSchema: wrap('participant', 'ParticipantRecord'),
-    statuses: [200, 400, 401, 403, 404],
-  },
-  {
-    method: 'PUT',
-    path: '/participants/{id}/picture',
-    segment: 'participants',
-    tag: 'Participants',
-    summary:
-      'Set or clear your published profile picture (a Clerk image URL; signed-in session only).',
-    auth: 'clerk',
-    requestSchema: {
-      type: 'object',
-      properties: { pictureUrl: { type: ['string', 'null'] } },
-      required: ['pictureUrl'],
-    },
-    responseSchema: {
-      type: 'object',
-      properties: { pictureUrl: { type: ['string', 'null'] } },
-    },
     statuses: [200, 400, 401, 403, 404],
   },
 
@@ -1908,28 +1875,27 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/events',
     segment: 'events',
     tag: 'Telemetry',
-    summary: 'Ingest a batch of anonymous first-party telemetry events.',
-    // The route also honours an `X-Internal-Events-Key` header that exempts
-    // our own workers from the per-IP rate limiter (docs/specs/017-telemetry/telemetry.md). Deliberately
-    // NOT documented here: the public spec describes what a public caller
-    // can use, and advertising the bypass header would only invite guessing
-    // at the secret. Its absence is a choice, not an oversight.
+    summary:
+      'Pass a batch of anonymous first-party telemetry events on to the liveworkspace telemetry service, for clients that cannot post there themselves (the CLI).',
     auth: 'public',
     requestSchema: {
       type: 'object',
-      properties: { events: { type: 'array', items: ref('TelemetryEvent') } },
+      properties: {
+        events: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              category: { type: 'string' },
+              action: { type: 'string' },
+              type: { type: ['string', 'null'] },
+            },
+            required: ['category', 'action'],
+          },
+        },
+      },
     },
     statuses: [204],
-  },
-  {
-    method: 'GET',
-    path: '/telemetry/summary',
-    segment: 'telemetry',
-    tag: 'Telemetry',
-    summary: 'Public usage summary that powers the /telemetry dashboard.',
-    auth: 'public',
-    responseSchema: 'TelemetrySummary',
-    statuses: [200],
   },
 
   // ---- Workbench (docs/specs/013-workspace/workbench-embeds.md) ----

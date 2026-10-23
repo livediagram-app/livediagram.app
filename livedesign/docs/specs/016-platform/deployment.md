@@ -16,7 +16,7 @@ There is a second environment, **staging**, which does deploy on its own: every 
 | `apps/mcp`       | `livedesign-mcp`       | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)).                                      |
 | `apps/router`    | `livedesign-router`    | Worker (service bindings to the other five).                                                                       |
 
-The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`). The live worker serves files from `apps/live/out/` plus a small worker (`apps/live/src/worker.ts`) that rewrites every `/document/<id>` request to the single statically-built `/document/placeholder/` page — see [New document route](../007-editor/new-document-route.md). The telemetry worker is static-assets-only like marketing, served under `/telemetry` ([22-telemetry](../017-telemetry/telemetry.md)). The help worker is static-assets-only too, served under `/help` ([55-help-app](../018-help/help-app.md)). The api worker holds the REST + WebSocket layer (see [11-api.md](../015-api/api.md)). The mcp worker exposes the AI tools over its own host `mcp.livedesign.app` (it binds to the api worker, not the router; see [62-mcp-server.md](../015-api/mcp-server.md)). The router holds **no application logic** — only `MARKETING`, `LIVE`, `TELEMETRY`, `HELP` and `API` service bindings that forward requests to the right downstream worker.
+The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`). The live worker serves files from `apps/live/out/` plus a small worker (`apps/live/src/worker.ts`) that rewrites every `/design/<id>` request to the single statically-built `/design/placeholder/` page — see [New design route](../007-editor/new-design-route.md). The telemetry worker is static-assets-only like marketing, served under `/telemetry` ([22-telemetry](../017-telemetry/telemetry.md)). The help worker is static-assets-only too, served under `/help` ([55-help-app](../018-help/help-app.md)). The api worker holds the REST + WebSocket layer (see [11-api.md](../015-api/api.md)). The mcp worker exposes the AI tools over its own host `mcp.livedesign.app` (it binds to the api worker, not the router; see [62-mcp-server.md](../015-api/mcp-server.md)). The router holds **no application logic** — only `MARKETING`, `LIVE`, `TELEMETRY`, `HELP` and `API` service bindings that forward requests to the right downstream worker.
 
 `wrangler.toml` for each app sits at the app root and is the source of truth for the worker's name, compatibility date, `[assets]`, `[[services]]`, `[[d1_databases]]`, and Durable Object bindings. Account-level identifiers (account id, custom domain, secrets) **never** go in `wrangler.toml` — they live in environment variables or the Cloudflare dashboard. See [06-secrets-policy.md](../002-project-scope/secrets-policy.md).
 
@@ -89,7 +89,7 @@ All seven deploy jobs use raw `pnpm exec wrangler` rather than `cloudflare/wrang
 ### Renaming migrations
 
 Most migrations only add, so the new worker running briefly on the newer schema is harmless. A
-migration that **renames** (`0055_documents.sql`, [Document](../006-document/document.md#renaming-from-diagram))
+migration that **renames** (`0055_designs.sql`, [Design](../006-design/design.md#renaming-from-diagram))
 is different: from the moment it applies until the new api worker is live, the old worker's queries
 name tables that no longer exist, and the other apps' workers deploy separately, so old and new
 versions briefly serve side by side. The deploy keeps that window short and recoverable:
@@ -99,7 +99,7 @@ versions briefly serve side by side. The deploy keeps that window short and reco
 - **deploy-live** waits for **deploy-api**, so a new editor never calls an api that lacks its routes;
   **deploy-router** still waits for the six it binds.
 - A save that fails in the window is retried on its own
-  ([Per-tab storage](../006-document/per-tab-storage.md#retrying-a-failed-save)).
+  ([Per-tab storage](../006-design/per-tab-storage.md#retrying-a-failed-save)).
 - Deploy a renaming migration to **staging first**, and to production at a quiet hour: for a minute or
   so, api calls from open editors can fail and are retried.
 

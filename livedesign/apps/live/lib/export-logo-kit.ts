@@ -2,7 +2,7 @@
 // PNGs at the common icon sizes and a favicon.ico. The plain paper is see-through. One raster at
 // the artboard's full size is drawn and every smaller PNG is stepped down from it (halving, then
 // one last high-quality scale), rather than drawing the page ten times.
-import type { LaidOutPage, Tab } from '@livedesign/document';
+import type { LaidOutPage, Tab } from '@livedesign/design';
 import { sanitizeFilename } from './export-pages';
 import { encodeIco } from './ico-writer';
 import { exportTabAsSvg, renderTabToCanvas, type ImageExportOpts } from './export-tab';
@@ -87,14 +87,14 @@ export async function exportLogoKit(
   return new Blob([writeZip(files)], { type: 'application/zip' });
 }
 
-/** The kit's file name: `<document> - <page name> - Logo Kit.zip`, the page by its name, else its
+/** The kit's file name: `<design> - <page name> - Logo Kit.zip`, the page by its name, else its
  *  place ("Page 2"), or no page at all while it is the only one. */
 export function logoKitFileName(
-  documentName: string,
+  designName: string,
   page: LaidOutPage,
   pageCount: number,
 ): string {
   const pageName = page.name ?? (pageCount > 1 ? `Page ${page.index + 1}` : '');
-  const base = `${documentName || 'document'}${pageName ? ` - ${pageName}` : ''}`;
+  const base = `${designName || 'design'}${pageName ? ` - ${pageName}` : ''}`;
   return `${sanitizeFilename(base)} - Logo Kit.zip`;
 }

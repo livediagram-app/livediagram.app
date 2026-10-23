@@ -2,7 +2,7 @@
 
 **Status: in progress.** Optional, off by default. Wires [Resend](https://resend.com)
 into the api worker so the product can send a small set of account emails. Like
-Clerk ([Auth + guest access](auth-and-guest-access.md)), it is **entirely gated on a secret**: when
+sign-in ([Auth + guest access](auth-and-guest-access.md)), it is **entirely gated on a secret**: when
 `RESEND_API_KEY` is absent the whole feature is inert — no sends, no new request
 work — and everything else behaves exactly as before. Guests and the canvas stay
 account-free and never receive email.
@@ -22,13 +22,12 @@ Five messages, two kinds:
 
 **Transactional — always send (when the feature is on):**
 
-4. **Team invite** — when an email address is invited to a team ([Teams](../013-workspace/teams.md)), the
-   invitee gets a message with a link to sign in and view/accept the invite
-   (`/explorer/invites`), and a quieter **Decline invite** link to
-   `/join/decline?token=<token>` that turns it down with no account and no
-   sign-in ([Teams → Declining from the email](../013-workspace/teams.md#declining-from-the-email)).
+4. **Team invite** — no longer sent by livedocuments: teams, their invitations
+   and those emails belong to the liveworkspace account and come from
+   liveworkspace ([Teams](../013-workspace/teams.md)).
 5. **Account deleted** — after a user deletes their account (spec: account
-   self-deletion), a confirmation that the account and its data are gone.
+   self-deletion), a confirmation that their livedocuments data and their
+   liveworkspace account are gone.
 
 [Account settings & email notifications](profile-and-email-notifications.md) adds two further opt-out
 notifications — **someone joined my document** and **someone responded to my team
@@ -45,9 +44,9 @@ invite** — read from the [User preferences](../007-editor/user-preferences.md)
 8. **Milestone** (#6, opt-out `notifyMilestones`) — a celebration when an owner's
    document count reaches 10, fired on a genuine create. Atomic `claimMilestone`
    dedups a burst of saves. `milestone_sent_at`, the baseline migration.
-9. **API-token expiry** (#3, transactional) — 7 days before a token's 6-month
-   expiry, so a script / connected tool doesn't silently break. Daily cron.
-   `api_tokens.expiry_warned_at`, the baseline migration.
+9. **API-token expiry** — no longer sent by livedocuments: API tokens belong to the
+   liveworkspace account ([Public API + tokens](../015-api/public-api-and-tokens.md)),
+   and liveworkspace does not send an expiry reminder yet.
 10. **New comment** (#1, opt-out `notifyComments`) — when someone other than the
     owner comments on a document (either comment path), the owner is emailed
     **immediately** (no cron). Never includes the comment text. On the tab save
@@ -60,13 +59,7 @@ invite** — read from the [User preferences](../007-editor/user-preferences.md)
     recipient in a comment ([Comment mentions](../012-collaboration/comment-mentions.md)). Unlike the owner's new-comment email it
     quotes the comment (the first 280 characters): the recipient was named in
     it, and the document is in their own team's library.
-13. **Team invite reminders** (transactional, kinds `TeamInviteReminder1` /
-    `TeamInviteReminder2` / `TeamInviteReminder3`) — 1, 7 and 21 days after an
-    invite nobody has answered, from the daily cron, each with its own Decline
-    invite link. The invite expires (is rejected) 28 days after it was sent. Not
-    opt-out: the recipient may have no account to hold a preference, and the
-    Decline link is the one-click way to stop them. Stamps on the invite's own
-    `team_members` row (`reminder1_sent_at` to `reminder3_sent_at`, `reminder_attempts`, `clock_started_at`, the baseline migration); see [Teams → Reminders and expiry](../013-workspace/teams.md#reminders-and-expiry).
+13. **Team invite reminders** — gone with the invitations themselves (item 4).
 
 The three opt-out lifecycle/notification categories (`notifyComments`,
 `notifyTips`, `notifyMilestones`) join the [Account settings & email notifications](profile-and-email-notifications.md) pair in `getNotificationPrefs`
@@ -96,13 +89,13 @@ Production: `wrangler secret put RESEND_API_KEY`.
 
 ## 3. Data model
 
-One table, keyed by the owner id (the Clerk `sub` — lifecycle email is
+One table, keyed by the owner id (the account `sub` — lifecycle email is
 authenticated-only). The baseline migration, `0001_livedocuments_baseline.sql`:
 
 ```sql
 CREATE TABLE IF NOT EXISTS email_lifecycle (
-  owner_id        TEXT PRIMARY KEY,   -- Clerk user id (verified)
-  email           TEXT NOT NULL,      -- from the verified session token only
+  owner_id        TEXT PRIMARY KEY,   -- account user id (verified)
+  email           TEXT NOT NULL,      -- from the verified access token only
   created_at      INTEGER NOT NULL,   -- first authenticated sighting (ms)
   welcome_sent_at INTEGER,
   week1_sent_at   INTEGER,
@@ -111,19 +104,19 @@ CREATE TABLE IF NOT EXISTS email_lifecycle (
 CREATE INDEX IF NOT EXISTS idx_email_lifecycle_due ON email_lifecycle (created_at);
 ```
 
-The `email` is only ever the **verified** `email` claim from the Clerk session
+The `email` is only ever the **verified** `email` claim from the account access
 token ([Teams](../013-workspace/teams.md)) — never a client-supplied value, never a guest. Rows exist only
 for authenticated owners.
 
 ## 4. Sign-up detection — first authenticated sighting
 
-On any request carrying a verified Clerk identity (userId + email), and only
+On any request carrying a verified account identity (userId + email), and only
 when `emailEnabled`, the worker does an `INSERT … ON CONFLICT DO NOTHING` into
 `email_lifecycle`. If a **new** row was created (`meta.changes === 1`), that
 first sighting is treated as sign-up: send the welcome and stamp
 `welcome_sent_at`. On a returning owner's sighting the row instead takes the
 token's address when it differs (an `UPDATE` guarded on `email <> ''` and on the
-address actually changing), so a changed Clerk primary email is where the next
+address actually changing), so a changed account email is where the next
 email goes; a backfilled suppression row (below) keeps its empty sentinel, and
 "is new" stays the insert's answer alone. All of this runs in `ctx.waitUntil(...)` so it never delays
 the response, and is wrapped so an email/D1 hiccup can't fail the user's request.
@@ -139,7 +132,7 @@ INSERT OR IGNORE INTO email_lifecycle
 SELECT DISTINCT owner_id, '', 0, 0, 0, 0 FROM documents WHERE owner_id LIKE 'user_%';
 ```
 
-(The `'user_%'` prefix targets Clerk ids, skipping guest UUID owners.)
+(The `'user_%'` prefix targets account ids, skipping guest UUID owners.)
 
 ## 5. Scheduling the series — the existing daily cron
 
@@ -187,14 +180,13 @@ sighting with a changed address (§4), resets the count to zero.
   refreshes a returning owner's address), the
   two due-queries + mark-sent, and row deletion (called from `deleteAccount`).
 - Hooks: welcome in the request path (`index.ts`), week1/week2 in `scheduled()`,
-  invite in `routes/teams.ts` (invite create), invite reminders + expiry in
-  `scheduled()` via `email/team-invite-reminders.ts`, deletion in `routes/account.ts`.
+  deletion in `routes/account.ts`.
 
 All sends use `ctx.waitUntil` (or are already in the cron) — email is never on
 the request's critical path.
 
 **Counting sends ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).** `sendEmail` writes one
-anonymous `Email·Sent·<kind>` row straight to the events table, and a failure
+anonymous `Email·Sent·<kind>` event (`reportServerEvent`), and a failure
 writes `Error·Api·Http<status>.SendEmail` (or `Network.SendEmail` when the
 request never completed). Server-side rather than through `POST /api/events`
 because nothing about an email reaches a browser: the send happens in a cron or
@@ -210,12 +202,7 @@ name, or a recipient count.
 
 - Authenticated-only; the address is the verified token claim, never input.
 - No document content, names, or anything the user typed is ever in an email
-  beyond the team name (already known to the invitee's inviter) and the user's
-  own email.
-- The team invite and its reminders go to an address an Admin typed, which may
-  have no account: that is why they carry no account footer, and why their only
-  credential is the single-purpose decline token, stored hashed
-  ([Teams → Declining from the email](../013-workspace/teams.md#declining-from-the-email)).
+  beyond the team name and the user's own email.
 - Off by default; self-hosters opt in by providing their own Resend key + domain
   (keeps [Open source + distribution](../002-project-scope/open-source-and-business-model.md) self-hosting intact — no required SaaS call).
 

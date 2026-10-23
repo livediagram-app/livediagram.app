@@ -2,15 +2,15 @@
 
 import { useMemo } from 'react';
 import { useDefaultFolderMenus } from '@/hooks/persistence/useDefaultFolderMenus';
-import type { DocumentListItem, SharedWithItem } from '@/lib/api-client';
-import { sharedToPaneDocument, type PaneDocument, type SelectedNode } from '@/app/explorer/views';
+import type { DesignListItem, SharedWithItem } from '@/lib/api-client';
+import { sharedToPaneDesign, type PaneDesign, type SelectedNode } from '@/app/explorer/views';
 import { EmptyPane } from '@/app/explorer/ExplorerEmptyState';
 import { BackBar } from '@/components/primitives/BackBar';
-import { groupDocumentsByFolder, indexFolders } from '@/lib/folder-tree';
+import { groupDesignsByFolder, indexFolders } from '@/lib/folder-tree';
 import type { PanelSection } from '../explorer-panel/panel-sections';
 import { PaneGrid, PaneList, PaneSkeleton } from '../explorer-panel/pane-parts';
 import { PanelFolderItem, type PanelFolder, type PanelFolderIndex } from './PanelFolderItem';
-import { PanelDocumentItem } from './PanelDocumentItem';
+import { PanelDesignItem } from './PanelDesignItem';
 import { PanelTagsSection } from './PanelTagsSection';
 import { PanelTreeProvider, type PanelTree } from './PanelTreeContext';
 
@@ -38,11 +38,11 @@ export function paneFolderParent(
   for (const f of folders) if (f.id === folderId) return folderId;
   return null;
 }
-const NO_DOCUMENTS: DocumentListItem[] = [];
+const NO_DESIGNS: DesignListItem[] = [];
 
-// The rows of one of the editor's Explorer sections that hold documents (docs/specs/013-workspace/explorer-structure.md
-// "The pane"): My Work' and a team's folders then documents, opening a folder in place under a breadcrumb back
-// to the space's root; This Browser's documents; what is shared with the reader. Each empty place says so in the
+// The rows of one of the editor's Explorer sections that hold designs (docs/specs/013-workspace/explorer-structure.md
+// "The pane"): My Work' and a team's folders then designs, opening a folder in place under a breadcrumb back
+// to the space's root; This Browser's designs; what is shared with the reader. Each empty place says so in the
 // Explorer's own empty state.
 export function PanelExplorerTree({
   section,
@@ -51,10 +51,10 @@ export function PanelExplorerTree({
   busy = false,
   shared,
   ownIndex,
-  offlineDocuments,
+  offlineDesigns,
   teams,
   foldersByTeam,
-  documentsByTeam,
+  designsByTeam,
   folderId,
   onOpenFolder,
 }: {
@@ -62,15 +62,15 @@ export function PanelExplorerTree({
   // The space's name, the breadcrumb's first step.
   rootLabel: string;
   tree: PanelTree;
-  // The document lists are still loading.
+  // The design lists are still loading.
   busy?: boolean;
   shared: SharedWithItem[];
-  // The reader's own tree, this browser's documents excluded.
+  // The reader's own tree, this browser's designs excluded.
   ownIndex: PanelFolderIndex;
-  offlineDocuments: DocumentListItem[];
+  offlineDesigns: DesignListItem[];
   teams: { id: string; name: string }[];
   foldersByTeam: Map<string, PanelFolder[]>;
-  documentsByTeam: Map<string, DocumentListItem[]>;
+  designsByTeam: Map<string, DesignListItem[]>;
   // The folder open in the pane, null at the space's root. The host holds it, so its header's New Folder makes the
   // folder in the one open here (paneFolderParent).
   folderId: string | null;
@@ -90,36 +90,36 @@ export function PanelExplorerTree({
   );
   const team = section.kind === 'team' ? teams.find((t) => t.id === section.id) : undefined;
   const teamFolders = (team && foldersByTeam.get(team.id)) || NO_FOLDERS;
-  const teamDocuments = (team && documentsByTeam.get(team.id)) || NO_DOCUMENTS;
+  const teamDesigns = (team && designsByTeam.get(team.id)) || NO_DESIGNS;
   const teamIndex = useMemo<PanelFolderIndex>(
     () => ({
       foldersByParent: indexFolders(teamFolders).childrenByParent,
-      documentsByFolder: groupDocumentsByFolder(teamDocuments),
+      designsByFolder: groupDesignsByFolder(teamDesigns),
     }),
-    [teamFolders, teamDocuments],
+    [teamFolders, teamDesigns],
   );
-  const draggable = !!tree.onMoveDocumentToFolder;
+  const draggable = !!tree.onMoveDesignToFolder;
 
   const value = { ...tree, defaultFolders, onOpenFolder };
   let body: React.ReactNode;
   if (section.kind === 'tags') {
-    // Every document a tag can sit on: the reader's own (this browser's included) and their teams', newest first.
-    const own = [...ownIndex.documentsByFolder.values()].flat();
+    // Every design a tag can sit on: the reader's own (this browser's included) and their teams', newest first.
+    const own = [...ownIndex.designsByFolder.values()].flat();
     const byTeam = teams.flatMap((t) =>
-      (documentsByTeam.get(t.id) ?? NO_DOCUMENTS).map((d): PaneDocument => ({ ...d, team: t })),
+      (designsByTeam.get(t.id) ?? NO_DESIGNS).map((d): PaneDesign => ({ ...d, team: t })),
     );
-    // By id: a browser document filed in a folder is in both of the first two lists.
+    // By id: a browser design filed in a folder is in both of the first two lists.
     const docs = [
-      ...new Map([...own, ...offlineDocuments, ...byTeam].map((d) => [d.id, d])).values(),
+      ...new Map([...own, ...offlineDesigns, ...byTeam].map((d) => [d.id, d])).values(),
     ].sort((a, b) => b.savedAt - a.savedAt);
-    body = <PanelTagsSection documents={docs} />;
+    body = <PanelTagsSection designs={docs} />;
   } else if (section.kind === 'browser' || section.kind === 'shared') {
-    const docs: PaneDocument[] =
-      section.kind === 'browser' ? offlineDocuments : shared.map(sharedToPaneDocument);
+    const docs: PaneDesign[] =
+      section.kind === 'browser' ? offlineDesigns : shared.map(sharedToPaneDesign);
     body = docs.length ? (
       <PaneList label={rootLabel}>
         {docs.map((d) => (
-          <PanelDocumentItem key={d.id} document={d} />
+          <PanelDesignItem key={d.id} design={d} />
         ))}
       </PaneList>
     ) : (
@@ -138,7 +138,7 @@ export function PanelExplorerTree({
     )
       trail.unshift(f);
     const folders = index.foldersByParent.get(here) ?? [];
-    const docs = index.documentsByFolder.get(here) ?? [];
+    const docs = index.designsByFolder.get(here) ?? [];
     const empty: SelectedNode = here ? { kind: 'folder', id: here } : { kind: 'all' };
     body = (
       <div className="flex flex-col gap-1">
@@ -165,9 +165,9 @@ export function PanelExplorerTree({
             {docs.length ? (
               <PaneList label={trail.at(-1)?.name ?? rootLabel}>
                 {docs.map((d) => (
-                  <PanelDocumentItem
+                  <PanelDesignItem
                     key={d.id}
-                    document={team ? { ...d, team } : d}
+                    design={team ? { ...d, team } : d}
                     draggable={!team && draggable}
                   />
                 ))}

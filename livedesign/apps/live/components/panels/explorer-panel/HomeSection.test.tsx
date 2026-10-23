@@ -3,10 +3,10 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { JumpBackInItem } from '@/app/explorer/home/home-model';
 
-const item = (documentId: string, name: string): JumpBackInItem => ({
-  documentId,
+const item = (designId: string, name: string): JumpBackInItem => ({
+  designId,
   name,
-  href: `/document/${documentId}`,
+  href: `/design/${designId}`,
   savedAt: 1,
   empty: false,
   shareCode: null,
@@ -26,9 +26,9 @@ vi.mock('@/app/explorer/home/useHome', () => ({
     retry: () => {},
   }),
 }));
-vi.mock('@/components/panels/DocumentThumbnail', () => ({ DocumentThumbnail: () => <span /> }));
+vi.mock('@/components/panels/DesignThumbnail', () => ({ DesignThumbnail: () => <span /> }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-// The cards read the Explorer's tree for each document's row; this suite needs none.
+// The cards read the Explorer's tree for each design's row; this suite needs none.
 vi.mock('../explorer-tree/PanelTreeContext', () => ({ usePanelTree: () => ({}) }));
 
 import { HomeSection } from './PanelViews';
@@ -37,30 +37,30 @@ const show = (current: string | null) =>
   render(
     <HomeSection
       ownerId="me"
-      currentDocumentId={current}
-      onOpenDocument={() => {}}
+      currentDesignId={current}
+      onOpenDesign={() => {}}
       onSeeTimeline={() => {}}
     />,
   );
 
-// docs/specs/013-workspace/explorer-structure.md "Home": never the open document, and never "No documents yet"
-// to someone whose only document is the open one.
+// docs/specs/013-workspace/explorer-structure.md "Home": never the open design, and never "No designs yet"
+// to someone whose only design is the open one.
 describe('HomeSection Jump Back In', () => {
-  it('says nothing else is there yet when the open document is the only one', () => {
+  it('says nothing else is there yet when the open design is the only one', () => {
     home.current = { mostUsed: [item('d1', 'Roadmap')], recent: [] };
     show('d1');
     expect(screen.getByText('Nothing else yet')).toBeTruthy();
-    expect(screen.queryByText('No documents yet')).toBeNull();
+    expect(screen.queryByText('No designs yet')).toBeNull();
     expect(screen.queryByText('Roadmap')).toBeNull();
   });
 
-  it('says there are no documents when there are none', () => {
+  it('says there are no designs when there are none', () => {
     home.current = { mostUsed: [], recent: [] };
     show('d1');
-    expect(screen.getByText('No documents yet')).toBeTruthy();
+    expect(screen.getByText('No designs yet')).toBeTruthy();
   });
 
-  it('lists the other documents', () => {
+  it('lists the other designs', () => {
     home.current = { mostUsed: [item('d1', 'Roadmap')], recent: [item('d2', 'Budget')] };
     show('d1');
     expect(screen.getByText('Budget')).toBeTruthy();

@@ -1,9 +1,9 @@
 // Reads a `claude -p --output-format stream-json` transcript into what the benchmark measures: each tool call with
-// its outcome, the final reply, usage and the documents the run touched. Pure: lines in, a run out.
+// its outcome, the final reply, usage and the designs the run touched. Pure: lines in, a run out.
 
 const MCP_PREFIX = 'mcp__livedesign__';
 const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
-const DOC_ID = new RegExp(`(?:"documentId"\\s*:\\s*"|/document/)(${UUID})`, 'g');
+const DOC_ID = new RegExp(`(?:"designId"\\s*:\\s*"|/design/)(${UUID})`, 'g');
 
 function textOf(content) {
   if (typeof content === 'string') return content;
@@ -14,10 +14,10 @@ function textOf(content) {
     .join('\n');
 }
 
-// Results longer than this (a document read whole) are kept only as their length.
+// Results longer than this (a design read whole) are kept only as their length.
 const RESULT_TEXT_MAX = 20_000;
 
-export function documentIdsIn(text) {
+export function designIdsIn(text) {
   return [...text.matchAll(DOC_ID)].map((m) => m[1]);
 }
 
@@ -32,7 +32,7 @@ export function parseTranscript(jsonl) {
     calls,
     texts: [],
     finalText: '',
-    documentIds: [],
+    designIds: [],
     result: null,
   };
   for (const line of jsonl.split('\n')) {
@@ -64,7 +64,7 @@ export function parseTranscript(jsonl) {
           result: null,
           images: 0,
         };
-        for (const id of documentIdsIn(JSON.stringify(c.input ?? {}))) docs.add(id);
+        for (const id of designIdsIn(JSON.stringify(c.input ?? {}))) docs.add(id);
         calls.push(call);
         byId.set(c.id, call);
       }
@@ -83,7 +83,7 @@ export function parseTranscript(jsonl) {
         call.images = Array.isArray(c.content)
           ? c.content.filter((x) => x.type === 'image').length
           : 0;
-        if (!call.isError) for (const id of documentIdsIn(text)) docs.add(id);
+        if (!call.isError) for (const id of designIdsIn(text)) docs.add(id);
       }
     } else if (m.type === 'result') {
       run.result = {
@@ -102,7 +102,7 @@ export function parseTranscript(jsonl) {
     }
   }
   if (!run.finalText) run.finalText = run.texts.at(-1) ?? '';
-  run.documentIds = [...docs];
+  run.designIds = [...docs];
   return run;
 }
 

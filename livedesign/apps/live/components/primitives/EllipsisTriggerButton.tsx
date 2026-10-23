@@ -12,7 +12,7 @@ export function EllipsisGlyph({ size = 14 }: { size?: number }) {
 const SIZE_CLASS = {
   // The panel's dense rows (Explorer tree, slide deck, panel header).
   sm: 'h-5 w-5 relative touch-target',
-  // The Explorer page's sidebar tree and the panel's document rows.
+  // The Explorer page's sidebar tree and the panel's design rows.
   md: 'h-6 w-6 relative touch-target',
   // The Explorer page's list rows and cards.
   lg: 'h-7 w-7 relative touch-target',
@@ -30,7 +30,7 @@ const SIZE_CLASS = {
 //   coarse pointer (touch), where there is no hover. An open menu
 //   (`expanded`) pins it visible, so the anchor doesn't vanish from under
 //   its own menu.
-// - `tuck`: the card variant's corner-tuck margins (DocumentCard /
+// - `tuck`: the card variant's corner-tuck margins (DesignCard /
 //   FolderCard headers).
 // - `onPointerDown`: for triggers inside draggable / pressable rows,
 //   which stop the press from starting a drag.

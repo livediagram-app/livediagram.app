@@ -9,12 +9,12 @@ import { z } from 'zod';
 
 export function registerPrompts(server: McpServer): void {
   server.registerPrompt(
-    'show_my_document',
+    'show_my_design',
     {
-      title: 'Show my document',
-      description: 'Find one of your documents by name and display it inline.',
+      title: 'Show my design',
+      description: 'Find one of your designs by name and display it inline.',
       argsSchema: {
-        name: z.string().describe('Part of the document’s name.'),
+        name: z.string().describe('Part of the design’s name.'),
       },
     },
     ({ name }) => ({
@@ -24,8 +24,8 @@ export function registerPrompts(server: McpServer): void {
           content: {
             type: 'text',
             text:
-              `Find my livedesign document matching "${name}" with find_documents, then ` +
-              `read_document it to show me the image and a link. If several match, list them ` +
+              `Find my livedesign design matching "${name}" with find_designs, then ` +
+              `read_design it to show me the image and a link. If several match, list them ` +
               `and ask which one.`,
           },
         },

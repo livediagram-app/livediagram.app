@@ -6,7 +6,7 @@ a per-tab default — from a curated set of eleven Google Fonts.
 ## The eleven fonts
 
 A wide spread of voices so a page can read as crisp, friendly, formal,
-hand-drawn, or bold. Defined once in `packages/document/src/fonts.ts` (id + label
+hand-drawn, or bold. Defined once in `packages/design/src/fonts.ts` (id + label
 
 - CSS stack + Google family spec):
 
@@ -47,12 +47,12 @@ self-host that opts out). The editor never depends on the fonts loading.
     changing it later never resizes existing elements). Unset = the
     per-type factory default ('md').
 
-A **new document's first tab** (and any blank tab minted by `createTab`)
+A **new design's first tab** (and any blank tab minted by `createTab`)
 defaults `defaultTextSize` to **small** (`sm`), so a fresh canvas starts
-compact. A **new tab added to an existing document** inherits the active
+compact. A **new tab added to an existing design** inherits the active
 tab's `font` and `defaultTextSize` (the same way it inherits the theme),
 falling back to small when the active tab has no explicit size — so tabs in
-one document stay consistent and a brand-new tab still defaults to small
+one design stay consistent and a brand-new tab still defaults to small
 rather than the `md` factory baseline.
 
 ## Text size
@@ -82,7 +82,7 @@ The control:
   fixed px.
 
 An exact px **draws at that px on every surface**: a shape label, a note, an arrow caption, a table
-cell, a chart key and a Sankey's labels alike, on the canvas and in every export. Earlier documents
+cell, a chart key and a Sankey's labels alike, on the canvas and in every export. Earlier designs
 and templates still carry the named presets **Small / Medium / Large** (`sm` / `md` / `lg`); they
 render exactly as before, each on its surface's own scale (a label's Large is 32px, a note's 22px).
 The slider shows a preset at the px it draws at on that surface (a label's Large reads `32px`
@@ -116,7 +116,7 @@ font, so they take the tab default).
 ## Storage & behaviour
 
 - The model stores the stable **id** (`Element.font` / `Tab.font` in
-  `packages/document`), not a CSS stack, so saved documents round-trip even
+  `packages/design`), not a CSS stack, so saved designs round-trip even
   if the catalogue's exact stacks change. Both fields are optional;
   unset = inherit (element → tab → default).
 - Font changes go through the normal history/commit path, so undo/redo
@@ -173,11 +173,11 @@ sans, which quietly rewrote every canvas).
 - The PNG drawer awaits `document.fonts.ready` before painting: rasterising
   mid-swap would bake the fallback into the file.
 
-Implementation: `packages/document/src/fonts.ts` (catalogue + resolver),
+Implementation: `packages/design/src/fonts.ts` (catalogue + resolver),
 `components/dialogs/TextTab.tsx` (the per-tab typeface cards; element fonts use the
 rich-text toolbar's own font grid in `RichTextToolbar.tsx`),
 the label renderers (`element-labels.tsx`), `TableView`, and `ArrowView`
 apply the resolved stack; `useElementStyle.setFontSelected` and
 `useTabCanvas.setTabFont` are the mutators. See also
-[Document structure](../006-document/document-structure.md) and
+[Design structure](../006-design/design-structure.md) and
 [Canvas and palette](../008-canvas/canvas-and-palette.md).

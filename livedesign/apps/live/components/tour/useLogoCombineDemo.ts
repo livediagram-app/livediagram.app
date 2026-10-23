@@ -7,8 +7,8 @@ import {
   pagesOf,
   type BoxedElement,
   type Element,
-} from '@livedesign/document';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
+} from '@livedesign/design';
+import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import { useOptionalSelectionStore } from '@/hooks/canvas/useSelectionStore';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { combineElements } from '@/lib/combine/combine';

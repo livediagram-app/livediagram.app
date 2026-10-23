@@ -8,7 +8,7 @@ import { createHeldKeyStore, useHeldKey } from './held-key-store';
 //
 // Used by the palette's IconButton to surface the per-element
 // shortcut letter as a corner badge whenever the modifier is down,
-// turning the palette into a self-documenting cheat sheet without
+// turning the palette into a self-designing cheat sheet without
 // adding any persistent chrome.
 //
 // The modifier is read off the EVENT rather than tracked as a key in its

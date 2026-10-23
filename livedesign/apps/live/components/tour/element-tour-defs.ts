@@ -8,7 +8,7 @@ import {
   stackSettingsOf,
   type Element,
   type ShapeElement,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import type { ElementTourKind } from '@/lib/element-tours';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { layerStackTourSteps } from './layer-stack-tour-steps';

@@ -57,7 +57,7 @@ export type LiveDoc = {
   // Owner's display name + avatar colour, joined server-side from the
   // participants table so visitors can render "Owner: <name>" without
   // waiting for the owner to come online in the realtime room. Null
-  // when the owner has no participant row yet (e.g. Clerk-authed
+  // when the owner has no participant row yet (e.g. signed-in
   // owners who never set a name on a document); the UI falls back to
   // hiding the badge in that case.
   ownerName: string | null;
@@ -126,7 +126,7 @@ export type SharedWithItem = {
   // `shareCode` always carries this same scope, never a broader one.
   tabId: string | null;
   // Owner's display name + avatar colour, joined from participants.
-  // Nullable: Clerk-authed owners may have no participant row yet, so
+  // Nullable: signed-in owners may have no participant row yet, so
   // the UI shows an "Unknown owner" placeholder.
   ownerName: string | null;
   ownerColor: string | null;
@@ -236,7 +236,7 @@ export type CustomTheme = {
 // API tokens (docs/specs/015-api/public-api-and-tokens.md)
 // ---------------------------------------------------------------------
 
-// An external API credential, owner-scoped to a Clerk account. The wire
+// An external API credential, owner-scoped to an account. The wire
 // shape NEVER carries the secret or its hash — only the public id +
 // metadata shown in the management list. The plaintext is returned once,
 // at creation, on a separate response field (see the /api/tokens route).
@@ -291,7 +291,7 @@ export function isOpenTeamMember(member: { status: TeamMemberStatus }): boolean 
   return member.status === 'invited' || member.status === 'joined';
 }
 
-// One member link row. `userId` is the Clerk user id, null while the
+// One member link row. `userId` is the account id, null while the
 // invite hasn't connected yet (docs/specs/013-workspace/teams.md's lazy claim fills it in —
 // connecting identifies the person, it does NOT accept for them).
 // `email` is the lowercased invite address; null only on a creator
@@ -309,9 +309,6 @@ export type TeamMember = {
   // a pending invite or a member with no profile yet; the client then
   // falls back to the invite email's local part.
   name: string | null;
-  // The joined member's published profile picture (docs/specs/014-identity/profile-picture.md §5), or
-  // null (pending invite, no picture, or the switch off).
-  pictureUrl: string | null;
   createdAt: number;
   updatedAt: number;
 };
@@ -408,10 +405,6 @@ export type ParticipantRecord = {
   name: string;
   color: string;
   createdAt: number;
-  // The published profile picture (docs/specs/014-identity/profile-picture.md §6): set only by the
-  // participant's own verified Clerk session, null when they have none or turned it off, and
-  // returned only to signed-in callers (null for everyone else).
-  pictureUrl: string | null;
 };
 
 // Realtime presence identity, broadcast to every connected peer: the room and the participant route clamp to
@@ -450,10 +443,6 @@ export type ParticipantPresence = {
   // can't do it: the room mints that per socket. Relayed VERBATIM: claimed, not verified, and it grants nothing.
   // Optional, so a hello without one still parses (the roster falls back to `id`).
   key?: string;
-  // The participant's published profile picture (docs/specs/014-identity/profile-picture.md §6). The
-  // room keeps it only from a verified account session and sends it only to account sessions;
-  // anonymous recipients get the roster without it.
-  picture?: string;
 };
 
 // ---------------------------------------------------------------------
@@ -506,7 +495,7 @@ export { BUILD_ID_HEADER, parseBuildId } from './build-id';
 // so the two can't disagree on what a request presented (see ./request-auth.ts).
 export {
   bearerTokenOf,
-  isClerkIdShape,
+  isAccountIdShape,
   isLoopbackHostname,
   oauthRedirectUrl,
 } from './request-auth';
@@ -558,7 +547,6 @@ export * from './activity';
 export * from './responses';
 export * from './trash';
 export { upgradeLegacyPreferences } from './legacy-preferences';
-export * from './profile-picture';
 // A document's own dates on create (docs/specs/015-api/api.md "Document dates"): the worker's
 // check, and the editor's before it sends an imported board's dates.
 export * from './document-dates';
@@ -620,3 +608,6 @@ export * from './pages';
 export * from './article-frames';
 export * from './pages-summary';
 export * from './mcp-origin';
+
+// The readable signed-in hint cookie the api sets and the apps read (see ./signed-in-hint.ts).
+export { SIGNED_IN_HINT_COOKIE, signedInHintOf } from './signed-in-hint';

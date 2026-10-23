@@ -3,6 +3,7 @@ import {
   isLegacyDocumentsPath,
   toLegacyResponse,
 } from './legacy-documents-alias';
+import { flushMediaRefs } from './media';
 import { runTabStatsBackfill } from './tab-stats-backfill';
 import { getClerkIdentity } from './auth/clerk';
 import { noteAuthSighting } from './auth/session-telemetry';
@@ -644,6 +645,15 @@ const worker = {
     // docs/specs/025-community/community.md "Keeping in step": every minute, what changed about published documents
     // goes to the liveworkspace Community service, and the posts it hid after reports close their links here.
     if (event.cron === COMMUNITY_SYNC_CRON) ctx.waitUntil(syncCommunity(env));
+    // liveworkspace/docs/media.md "References": every minute, the documents whose images changed go to the
+    // media service; the daily run also says nothing is left, when nothing is.
+    if (event.cron === COMMUNITY_SYNC_CRON || event.cron === '0 3 * * *') {
+      ctx.waitUntil(
+        flushMediaRefs(env, event.cron === '0 3 * * *')
+          .then(() => undefined)
+          .catch((err) => console.error('[media] refs sync failed', err)),
+      );
+    }
   },
 } satisfies ExportedHandler<Env>;
 

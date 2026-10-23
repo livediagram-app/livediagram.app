@@ -6,21 +6,21 @@
 
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { DocumentListItem } from '@/lib/api-client';
-import type { TeamDocumentRow } from '@/hooks/persistence/useTeamLibrariesSweep';
+import type { DesignListItem } from '@/lib/api-client';
+import type { TeamDesignRow } from '@/hooks/persistence/useTeamLibrariesSweep';
 import { useExplorerRowDelete } from './useExplorerRowDelete';
 
-const row = (id: string) => ({ id, name: id }) as DocumentListItem;
-const teamRow = (id: string): TeamDocumentRow => ({
+const row = (id: string) => ({ id, name: id }) as DesignListItem;
+const teamRow = (id: string): TeamDesignRow => ({
   ...row(id),
   team: { id: 'team', name: 'Team' },
 });
 
-type Lists = { documents: DocumentListItem[]; teamDocuments: TeamDocumentRow[] };
+type Lists = { designs: DesignListItem[]; teamDesigns: TeamDesignRow[] };
 
 function hook(initial: Lists) {
   // The parent's delete: animate out first, then (in the real app) drop the row from the list.
-  const onDeleteDocument = vi.fn(
+  const onDeleteDesign = vi.fn(
     (
       _id: string,
       beforeRemove?: () => void | Promise<void>,
@@ -29,10 +29,10 @@ function hook(initial: Lists) {
       void beforeRemove?.();
     },
   );
-  const view = renderHook((lists: Lists) => useExplorerRowDelete({ ...lists, onDeleteDocument }), {
+  const view = renderHook((lists: Lists) => useExplorerRowDelete({ ...lists, onDeleteDesign }), {
     initialProps: initial,
   });
-  return { ...view, onDeleteDocument };
+  return { ...view, onDeleteDesign };
 }
 
 const deleteRow = (result: { current: ReturnType<typeof useExplorerRowDelete> }, id: string) =>
@@ -42,32 +42,32 @@ describe('useExplorerRowDelete', () => {
   it('keeps a personal row sliding out until the list drops it', async () => {
     const a = row('a');
     const b = row('b');
-    const { result, rerender } = hook({ documents: [a, b], teamDocuments: [] });
+    const { result, rerender } = hook({ designs: [a, b], teamDesigns: [] });
     deleteRow(result, 'a');
-    expect(result.current.exitingDocumentIds.has('a')).toBe(true);
-    rerender({ documents: [a, b], teamDocuments: [] });
-    expect(result.current.exitingDocumentIds.has('a')).toBe(true);
-    rerender({ documents: [b], teamDocuments: [] });
-    expect(result.current.exitingDocumentIds.has('a')).toBe(false);
+    expect(result.current.exitingDesignIds.has('a')).toBe(true);
+    rerender({ designs: [a, b], teamDesigns: [] });
+    expect(result.current.exitingDesignIds.has('a')).toBe(true);
+    rerender({ designs: [b], teamDesigns: [] });
+    expect(result.current.exitingDesignIds.has('a')).toBe(false);
   });
 
   it('hides a team row until the sweep drops it', async () => {
     const t = teamRow('t');
-    const { result, rerender } = hook({ documents: [], teamDocuments: [t] });
+    const { result, rerender } = hook({ designs: [], teamDesigns: [t] });
     deleteRow(result, 't');
     expect(result.current.deletedTeamIds.has('t')).toBe(true);
-    rerender({ documents: [], teamDocuments: [t] });
+    rerender({ designs: [], teamDesigns: [t] });
     expect(result.current.deletedTeamIds.has('t')).toBe(true);
-    rerender({ documents: [], teamDocuments: [] });
+    rerender({ designs: [], teamDesigns: [] });
     expect(result.current.deletedTeamIds.has('t')).toBe(false);
   });
 
   it('brings a hidden team row back on Undo', () => {
     const t = teamRow('t');
-    const { result, onDeleteDocument } = hook({ documents: [], teamDocuments: [t] });
+    const { result, onDeleteDesign } = hook({ designs: [], teamDesigns: [t] });
     deleteRow(result, 't');
     expect(result.current.deletedTeamIds.has('t')).toBe(true);
-    act(() => onDeleteDocument.mock.calls[0]![2]!.onRestored!());
+    act(() => onDeleteDesign.mock.calls[0]![2]!.onRestored!());
     expect(result.current.deletedTeamIds.has('t')).toBe(false);
   });
 });

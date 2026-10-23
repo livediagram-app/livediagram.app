@@ -14,7 +14,7 @@ A guest can open `/new`, create a document, and use the full canvas without an a
 
 - `/new` — welcome / template-picker flow for creating a new document (the app's entry point). See [New document route](new-document-route.md).
 - `/document/<id>` — the editor itself, scoped to one document id. Static-exports a single `/document/placeholder` page; the live worker rewrites all `/document/<id>` paths to it at the edge, and the client reads the real id from the path.
-- `/explorer/*`, `/sign-in`, `/get-started`, `/sso-callback`, `/embed` — the library, auth, and read-only embed surfaces.
+- `/explorer/*`, `/sign-in`, `/get-started`, `/embed` — the library, auth, and read-only embed surfaces. `/sign-in` and `/get-started` hand off to the liveworkspace accounts site ([Auth + guest access → Signing in](../014-identity/auth-and-guest-access.md#signing-in)).
 
 ## Persistence
 
@@ -98,7 +98,7 @@ To cut down on two people fighting over the same element, an element another par
 The live app is the product, not a content surface. Every page the live app serves is one of:
 
 - A signed-in workspace (`/explorer`, `/document/[id]`) carrying private user data that must not appear in search results.
-- An auth flow (`/sign-in`, `/get-started`, `/sso-callback`) that's worthless to crawlers and pointless to index.
+- An auth flow (`/sign-in`, `/get-started`) that's worthless to crawlers and pointless to index.
 - The new-document welcome flow (`/new`) that needs the user's runtime identity to mean anything.
 
 `apps/live/app/layout.tsx` declares `robots: { index: false, follow: false }` in the root metadata so every live-app route inherits the directive. Cascades correctly through the static-export pages: each rendered HTML head carries `<meta name="robots" content="noindex,nofollow">`.
@@ -163,7 +163,7 @@ Passes never appear or vanish in one frame. A **new pass opens its own space**: 
 3. **Passes** (active, newest first), set off from the composer by a hairline rule, its count in a `CountBadge` beside the caption (the Expired caption carries one too). Revoking a pass asks first in a `ConfirmPopover` beside the bin ("Revoke this pass? The link stops working at once for everyone holding it." / **Revoke**), per [Destructive actions](#destructive-actions). Empty state: a dashed ghost ticket reading "No passes yet. Only you can open this document." When every pass has expired it reads "Every pass has expired. Extend one below or issue a new one."
 4. **Expired passes** ([Share-link expiry](../013-workspace/share-link-expiry.md)), only when non-empty.
 5. **Password** ([Share password](../013-workspace/share-password.md)): a switch row (the shared `SettingsToggleRow`), "Password Protection", with the hint "Everyone opening a pass must enter it first, embeds included." Switching it on reveals the field with **Save**. Once saved, the field gives way to a **Password Set** line with **Replace** (an empty field with **Save** and **Cancel**) and **Remove**: only a hash is stored, so the password cannot be shown again. Switching it off removes it too. A password cannot be switched off without removing it, so the switch never disagrees with what the server enforces.
-6. **Footer**: for guests only, **Sharing as**: the identity avatar, then under the caption the shuffle button hard against the left of an inline name field (next to the name it changes, not out by Done). This is the name peers see on cursors and comments. It sits in the footer so it is always visible without leading the dialog with a form; it is saved when a pass is created (as before) and whenever the dialog closes (Done, the close button, Esc, or the backdrop). Signed-in users' names come from their Clerk account, so the identity hides. **Done** closes.
+6. **Footer**: for guests only, **Sharing as**: the identity avatar, then under the caption the shuffle button hard against the left of an inline name field (next to the name it changes, not out by Done). This is the name peers see on cursors and comments. It sits in the footer so it is always visible without leading the dialog with a form; it is saved when a pass is created (as before) and whenever the dialog closes (Done, the close button, Esc, or the backdrop). Signed-in users' names come from their liveworkspace account, so the identity hides. **Done** closes.
 
 ### Show Me
 
