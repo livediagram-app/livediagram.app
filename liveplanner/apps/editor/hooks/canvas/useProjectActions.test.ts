@@ -10,6 +10,8 @@ const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn() }));
 vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
 
 const { useProjectActions } = await import('./useProjectActions');
+const { isProjectDeleted } = await import('@/lib/project-tombstones');
+const { takeDeleteUndo } = await import('@/lib/project-delete-undo');
 
 const assign = vi.fn();
 
@@ -53,16 +55,24 @@ describe('useProjectActions', () => {
     expect(toast.error).toHaveBeenCalled();
   });
 
-  it('sends the open plan to the Trash and goes there', async () => {
-    index.deleteItem.mockResolvedValue(undefined);
+  it('stops saving the open plan before it goes to the Trash, then hands its Undo to the Explorer', async () => {
+    let tombstonedAtDelete = false;
+    index.deleteItem.mockImplementation(async () => {
+      tombstonedAtDelete = isProjectDeleted('p1');
+    });
     await actions().deleteProject('p1');
-    expect(index.deleteItem).toHaveBeenCalledWith('p1');
-    expect(assign).toHaveBeenCalledWith('http://localhost:3200/explorer/trash');
+    expect(tombstonedAtDelete).toBe(true);
+    expect(isProjectDeleted('p1')).toBe(true);
+    expect(assign).toHaveBeenCalledWith('/explorer');
+    expect(takeDeleteUndo()).toEqual({ id: 'p1', title: 'Roadmap' });
   });
 
-  it('deletes nothing the person did not confirm', async () => {
-    await actions({ confirm: vi.fn(async () => false) }).deleteProject('p1');
-    expect(index.deleteItem).not.toHaveBeenCalled();
+  it('lets a refused delete save again and stay open', async () => {
+    index.deleteItem.mockRejectedValue(new Error('no'));
+    await actions({ projectId: 'p3' }).deleteProject('p3');
+    expect(isProjectDeleted('p3')).toBe(false);
+    expect(assign).not.toHaveBeenCalled();
+    expect(toast.error).toHaveBeenCalled();
   });
 
   it('opens a plan, through its link when it has one', () => {

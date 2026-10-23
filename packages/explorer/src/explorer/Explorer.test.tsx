@@ -203,6 +203,30 @@ describe('<Explorer>', () => {
     const help = await screen.findByRole('link', { name: 'Help' });
     expect(help.getAttribute('href')).toBe('/help/all');
   });
+
+  it('offers the Undo for an item the host trashed on the way in, once, restoring it and re-reading the lists', async () => {
+    const item = makeItem(1, { trashedAt: 10, trashReason: 'deleted' });
+    const index = createFakeIndex({ items: [item] });
+    const trashed = { id: item.id, title: 'Roadmap' };
+    const { rerender } = renderExplorer(index, { kind: 'all' }, { trashedOnArrival: trashed });
+    const listsBefore = index.count('listItems');
+    fireEvent.click(await screen.findByRole('button', { name: 'Undo' }));
+    await waitFor(() => expect(index.count('restoreItem')).toBe(1));
+    await screen.findByText('Restored “Roadmap”.');
+    await waitFor(() => expect(index.count('listItems')).toBeGreaterThan(listsBefore));
+    rerender(
+      <Explorer
+        app="liveplanner"
+        client={index.client}
+        view={{ kind: 'all' }}
+        onNavigate={vi.fn()}
+        itemHref={itemHref}
+        onCreate={vi.fn()}
+        trashedOnArrival={trashed}
+      />,
+    );
+    expect(screen.queryAllByText('Moved “Roadmap” to the Trash.')).toHaveLength(0);
+  });
 });
 
 export type { Item };

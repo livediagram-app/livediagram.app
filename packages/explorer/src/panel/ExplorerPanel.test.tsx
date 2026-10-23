@@ -93,6 +93,17 @@ describe('<ExplorerPanel>', () => {
     expect(screen.getByRole('heading', { level: 3, name: 'Home' })).toBeTruthy();
   });
 
+  it("hands the open item's Delete to the host, and trashes any other itself", async () => {
+    const items = [1, 2].map((i) => makeItem(i, { lastOpenedAt: 5_000_000 - i }));
+    const index = createFakeIndex({ items });
+    const onTrashCurrent = vi.fn(async () => true);
+    renderPanel(index, { current: items[0], currentId: items[0]!.id, onTrashCurrent });
+    fireEvent.click(screen.getByRole('button', { name: 'Plan menu' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: /Delete/ }));
+    await waitFor(() => expect(onTrashCurrent).toHaveBeenCalledWith(items[0]));
+    expect(index.count('deleteItem')).toBe(0);
+  });
+
   it('sends Open Page to the Explorer at the section shown', () => {
     const { onOpenExplorer } = renderPanel(createFakeIndex({ items: [] }));
     fireEvent.click(within(rail()).getByRole('button', { name: 'My Work' }));

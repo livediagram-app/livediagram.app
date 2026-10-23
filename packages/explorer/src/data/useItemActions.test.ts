@@ -82,6 +82,35 @@ describe('item actions: optimistic, with rollback', () => {
     expect(overlay.apply(item).trashedAt).toBeNull();
   });
 
+  it('leaves an item the host handles to the host: no index call, no patch', async () => {
+    const { item, index, overlay, toast } = setup();
+    const hostTrash = vi.fn((it: typeof item) => (it.id === item.id ? Promise.resolve(true) : null));
+    const actions = createItemActions({
+      client: index.client,
+      overlay,
+      toast,
+      reloadLists: vi.fn(),
+      hostTrash,
+    });
+    await expect(actions.trash(item)).resolves.toBe(true);
+    expect(hostTrash).toHaveBeenCalledWith(item);
+    expect(index.count('deleteItem')).toBe(0);
+    expect(overlay.apply(item).trashedAt).toBeFalsy();
+  });
+
+  it('says so when the host could not trash its item', async () => {
+    const { item, index, overlay, toast } = setup();
+    const actions = createItemActions({
+      client: index.client,
+      overlay,
+      toast,
+      reloadLists: vi.fn(),
+      hostTrash: () => Promise.resolve(false),
+    });
+    await expect(actions.trash(item)).resolves.toBe(false);
+    expect(toast.error).toHaveBeenCalled();
+  });
+
   it('reloads the lists after a copy, which cannot be guessed', async () => {
     const { item, reloadLists, actions } = setup();
     const copy = await actions.duplicate(item, 'Item 1 (copy)');

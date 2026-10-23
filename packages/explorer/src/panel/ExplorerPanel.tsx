@@ -105,6 +105,9 @@ export type ExplorerPanelProps = {
   current?: Item | null;
   // The id of the item open in the editor, known before `current` is read.
   currentId?: string | null;
+  // Trashes the item open in the editor, from any of the panel's menus: the host stops saving it first, then leaves
+  // it (the Explorer offers the Undo). Settles true once it is in the Trash.
+  onTrashCurrent?: (item: Item) => Promise<boolean>;
   // Opens the full Explorer at a view (Open Page, See all).
   onOpenExplorer?: (view: ExplorerView) => void;
   renderThumbnail?: RenderThumbnail;
@@ -141,6 +144,7 @@ function PanelInner({
   onCreate,
   current = null,
   currentId = null,
+  onTrashCurrent,
   onOpenExplorer,
   renderThumbnail,
   Link,
@@ -190,8 +194,15 @@ function PanelInner({
     [pickSection, onOpenExplorer],
   );
 
+  const openId = currentId ?? current?.id ?? null;
+  const hostTrash = useCallback(
+    (item: Item) => (onTrashCurrent && item.id === openId ? onTrashCurrent(item) : null),
+    [onTrashCurrent, openId],
+  );
+
   return (
     <ExplorerProvider
+      hostTrash={hostTrash}
       app={app}
       client={client}
       view={view}

@@ -26,6 +26,7 @@ import { manageTeamsUrl } from '@/lib/auth-config';
 import { indexClient } from '@/lib/index-client';
 import { isPowerUserMode } from '@/lib/power-user-mode';
 import { dropSettingsLink, readSettingsLink } from '@/lib/settings-link';
+import { arrivedTrashed } from '@/lib/project-delete-undo';
 import { track } from '@/lib/telemetry';
 import { commitUserPreferences, type UserPreferences } from '@/lib/user-preferences';
 import {
@@ -79,6 +80,8 @@ export function ExplorerHost({
     passwordGated: false,
   });
   const chrome: ExplorerChrome = { prefs, ownerId: viewerId ?? null };
+  // The open plan deleted from the editor lands here with its Undo (lib/project-delete-undo.ts), taken once.
+  const [trashedOnArrival] = useState(arrivedTrashed);
   // The hero's close (docs/specs/013-workspace/explorer-home.md "Hiding the banner"): reported, then written, so
   // every device the person signs in on opens Home without it. Settings > Plans turns it back on.
   const hideHero = useCallback(() => {
@@ -116,6 +119,7 @@ export function ExplorerHost({
         manageTeamsUrl={isSignedIn ? manageTeamsUrl : undefined}
         helpHref={explorerHelpHref}
         heroArt={HERO_ART}
+        trashedOnArrival={trashedOnArrival}
         heroHidden={prefs.homeBanner === false}
         onHideHero={hideHero}
         header={header ? ({ search }) => header(search, chrome) : undefined}

@@ -114,6 +114,9 @@ export function PortalMenu({
       <div
         ref={ref}
         role="menu"
+        // A host's popover counts its portalled menus as inside (liveplanner's MovablePanel): without the mark, the
+        // tap on an item closes the popover, and the menu with it, before the item runs.
+        data-menu-surface=""
         aria-label={label}
         tabIndex={-1}
         onKeyDown={onKeyDown}

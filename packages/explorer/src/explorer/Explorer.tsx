@@ -78,6 +78,9 @@ export type ExplorerProps = {
   onHideHero?: () => void;
   /** A view's help article; a Help button shows in its header (and Home's hero) when there is one. */
   helpHref?: HelpHref;
+  /** An item the host trashed just before landing here (the plan open in its editor): the Explorer says so, once,
+   *  with an Undo that restores it and re-reads the lists. */
+  trashedOnArrival?: { id: string; title: string | null } | null;
 };
 
 const FILTER_KEY = (app: App) => `liveworkspace:explorer-filter:${app}`;
@@ -168,6 +171,7 @@ function ExplorerInner({
   heroHidden: controlledHeroHidden,
   onHideHero,
   helpHref,
+  trashedOnArrival,
 }: ExplorerProps) {
   const [filter, setFilter] = useFilter(app, controlledFilter, onFilterChange);
   const [heroHidden, hideHero] = useHeroHidden(app, controlledHeroHidden, onHideHero);
@@ -242,8 +246,34 @@ function ExplorerInner({
         </main>
       </div>
       <ExplorerDialogs />
+      {trashedOnArrival ? <ArrivalUndo trashed={trashedOnArrival} /> : null}
     </ExplorerProvider>
   );
+}
+
+/** The Trash toast for an item trashed before the page opened, with its Undo; offered once per item. */
+function ArrivalUndo({ trashed }: { trashed: { id: string; title: string | null } }) {
+  const { client, toast, reloadLists } = useExplorerContext();
+  const offered = useRef<string | null>(null);
+  useEffect(() => {
+    if (offered.current === trashed.id) return;
+    offered.current = trashed.id;
+    const name = trashed.title || 'Untitled';
+    toast.show(`Moved “${name}” to the Trash.`, {
+      action: {
+        label: 'Undo',
+        run: () =>
+          void client.restoreItem(trashed.id).then(
+            () => {
+              reloadLists();
+              toast.show(`Restored “${name}”.`, { tone: 'success' });
+            },
+            () => toast.error(`Couldn’t restore “${name}”. It is in the Trash.`),
+          ),
+      },
+    });
+  }, [trashed, client, toast, reloadLists]);
+  return null;
 }
 
 /** The header's field, with the host's own controls beside it. */

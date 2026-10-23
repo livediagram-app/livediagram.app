@@ -8,7 +8,7 @@ import { createContext, useCallback, useContext, useMemo, useState, type ReactNo
 import type { App, IndexClient, Item } from '@liveworkspace/index-client';
 import { createItemOverlay, type ItemOverlay } from '../data/overlay';
 import { useFolderStore, type FolderStore } from '../data/useFolders';
-import { useItemActions, type ItemActions } from '../data/useItemActions';
+import { useItemActions, type HostTrash, type ItemActions } from '../data/useItemActions';
 import { useInbox, type InboxState } from '../data/useInbox';
 import { useToast, type ToastApi } from '../ui/Toasts';
 import { explorerPath, type ExplorerView } from '../views';
@@ -129,6 +129,8 @@ export type ExplorerProviderProps = {
   openNav?: () => void;
   helpHref?: HelpHref;
   heroWords?: HeroWords;
+  // Trashes an item the host handles itself (see HostTrash); stable, or the actions are rebuilt.
+  hostTrash?: HostTrash;
   children: ReactNode;
 };
 
@@ -156,6 +158,7 @@ export function ExplorerProvider({
   openNav = NO_NAV,
   helpHref,
   heroWords,
+  hostTrash,
   children,
 }: ExplorerProviderProps) {
   const toast = useToast();
@@ -163,7 +166,7 @@ export function ExplorerProvider({
   const [epoch, setEpoch] = useState(0);
   const reloadLists = useCallback(() => setEpoch((n) => n + 1), []);
   const folders = useFolderStore(client, toast.error, reloadLists);
-  const actions = useItemActions({ client, overlay, toast, reloadLists });
+  const actions = useItemActions({ client, overlay, toast, reloadLists, hostTrash });
   const inbox = useInbox(client, app, filter);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [dialog, openDialog] = useState<DialogTarget>(null);

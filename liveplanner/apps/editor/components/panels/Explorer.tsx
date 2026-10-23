@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 import { ExplorerPanel, explorerPath } from '@liveworkspace/explorer';
 import type { Item } from '@liveworkspace/index-client';
 import Link from 'next/link';
@@ -16,6 +16,7 @@ import { getSessionSharePassword } from '@/lib/api-client';
 import { indexClient } from '@/lib/index-client';
 import { itemHref, newPlanHref, shareUrl, useTokenTeams } from '@/lib/explorer-host';
 import { renderPlanThumbnail } from '@/lib/explorer-thumbnail';
+import { trashOpenPlan } from '@/lib/project-delete-undo';
 import type { ExplorerProps } from './Explorer.types';
 
 // The editor's floating Explorer panel: the shared Explorer's panel (@liveworkspace/explorer, drawn as this panel
@@ -69,6 +70,8 @@ function ExplorerImpl({
     return () => document.body.removeAttribute('data-explorer-open');
   }, [shown]);
 
+  const trashCurrent = useCallback((item: Item) => trashOpenPlan(item.id, item.title), []);
+
   const go = (href: string) =>
     href.startsWith('/') ? router.push(href) : window.location.assign(href);
 
@@ -111,6 +114,8 @@ function ExplorerImpl({
         itemHref={itemHref}
         current={currentProjectId ? current : null}
         currentId={currentProjectId ?? null}
+        // The open plan stops saving before it goes, then the editor leaves for the Explorer and its Undo.
+        onTrashCurrent={trashCurrent}
         onCreate={(placement) =>
           onNewProject && !placement.folderId && !placement.teamId
             ? onNewProject()

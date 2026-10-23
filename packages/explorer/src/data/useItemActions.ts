@@ -23,16 +23,22 @@ export type ItemActions = {
   emptyTrash: () => Promise<boolean>;
 };
 
+// The host's own Trash for an item it handles itself (the plan open in the editor, which must stop saving before it
+// goes): its promise settles the action. null lets the Explorer trash it.
+export type HostTrash = (item: Item) => Promise<boolean> | null;
+
 export function createItemActions({
   client,
   overlay,
   toast,
   reloadLists,
+  hostTrash,
 }: {
   client: IndexClient;
   overlay: ItemOverlay;
   toast: ToastApi;
   reloadLists: () => void;
+  hostTrash?: HostTrash;
 }): ItemActions {
   // Patch, call, and on a refusal take the patch back and say why.
   async function optimistic(
@@ -84,6 +90,12 @@ export function createItemActions({
       );
     },
     trash: async (item) => {
+      const hosted = hostTrash?.(item);
+      if (hosted) {
+        const done = await hosted;
+        if (!done) toast.error('Couldn’t move it to the Trash. Try again.');
+        return done;
+      }
       const ok = await optimistic(
         item,
         { trashedAt: Date.now(), trashReason: 'deleted' },
@@ -149,9 +161,9 @@ function sharedAccess(item: Item) {
 }
 
 export function useItemActions(deps: Parameters<typeof createItemActions>[0]): ItemActions {
-  const { client, overlay, toast, reloadLists } = deps;
+  const { client, overlay, toast, reloadLists, hostTrash } = deps;
   return useMemo(
-    () => createItemActions({ client, overlay, toast, reloadLists }),
-    [client, overlay, toast, reloadLists],
+    () => createItemActions({ client, overlay, toast, reloadLists, hostTrash }),
+    [client, overlay, toast, reloadLists, hostTrash],
   );
 }

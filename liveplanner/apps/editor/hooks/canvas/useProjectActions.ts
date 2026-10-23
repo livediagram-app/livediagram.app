@@ -11,6 +11,7 @@
 import { indexClient } from '@/lib/index-client';
 import { track } from '@/lib/telemetry';
 import type { useConfirm } from '@/hooks/ui/useConfirm';
+import { trashOpenPlan } from '@/lib/project-delete-undo';
 import { useToast } from '@/hooks/ui/useToast';
 import { getSessionSharePassword } from '@/lib/api-client';
 import { PROJECT_FAILURE } from '@/lib/write-failure-copy';
@@ -26,7 +27,7 @@ type ProjectActionsDeps = {
 };
 
 export function useProjectActions(deps: ProjectActionsDeps) {
-  const { projectId, projectName, confirm, copying, setCopying, sessionShareCode } = deps;
+  const { projectId, projectName, copying, setCopying, sessionShareCode } = deps;
   const toast = useToast();
 
   const openProject = (id: string, shareCode?: string) => {
@@ -59,21 +60,18 @@ export function useProjectActions(deps: ProjectActionsDeps) {
     }
   };
 
-  // The command palette's Delete Plan: the open plan to the Trash, then the Explorer, where the Trash restores it.
+  // The command palette's Delete Plan, as every delete (docs/specs/013-workspace/trash.md "Deleting"): nothing is
+  // asked, the plan stops saving and goes to the Trash, and the Explorer offers the Undo. Another plan's id (none
+  // today) goes the same way without leaving.
   const deleteProject = async (id: string) => {
-    const ok = await confirm({
-      title: 'Delete this plan?',
-      message: 'It goes to the Trash, where you can restore it.',
-      confirmLabel: 'Delete',
-    });
-    if (!ok) return;
-    try {
-      await indexClient.deleteItem(id);
-      track('Project', 'Deleted');
-      if (id === projectId) window.location.assign(`${window.location.origin}/explorer/trash`);
-    } catch {
-      toast.error(PROJECT_FAILURE.delete(id === projectId ? projectName : undefined));
-    }
+    const ok =
+      id === projectId
+        ? await trashOpenPlan(id, projectName)
+        : await indexClient.deleteItem(id).then(
+            () => (track('Project', 'Deleted'), true),
+            () => false,
+          );
+    if (!ok) toast.error(PROJECT_FAILURE.delete(id === projectId ? projectName : undefined));
   };
 
   return { newProject, openProject, makeCopy, deleteProject };
