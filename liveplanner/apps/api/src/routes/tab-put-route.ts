@@ -14,11 +14,11 @@ import { mergeChangesetsIntoSave } from '../changesets/merge-on-save';
 import { hasNewComments, rewriteCommentAuthors } from '../comments';
 import {
   changesetMergePages,
-  getParticipant,
   getTab,
   isTabRevStale,
   upsertTabAtRev,
 } from '../db';
+import { getParticipant } from '../person/profiles';
 import { emailEnabled } from '../email/client';
 import { notifyNewComment } from '../email/notifications';
 import { MAX_TAB_BYTES, bodyExceedsCap, storeTab } from '../limits';

@@ -8,7 +8,8 @@
 import { bearerTokenOf, type CurrentTokenResponse } from '@liveplanner/api-schema';
 import { forbidden, json, methodNotAllowed, noContent, notFound } from '../responses';
 import type { RouteContext } from './context';
-import { getParticipant, listApiTokensByOwner, revokePresentedToken } from '../db';
+import { listApiTokensByOwner, revokePresentedToken } from '../db';
+import { getParticipant } from '../person/profiles';
 import { endWorkbenchAccess } from '../workbench-end';
 
 export async function handleTokens(ctx: RouteContext): Promise<Response> {

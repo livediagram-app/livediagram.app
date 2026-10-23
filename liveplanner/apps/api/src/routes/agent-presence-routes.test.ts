@@ -1,4 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
+vi.mock('../person/profiles', () => import('../test-profiles'));
+import { clearTestProfiles, setTestProfile } from '../test-profiles';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import * as roomClient from '../room-client';
 import { makeTestRouteContext } from './test-route-context';
@@ -44,9 +46,10 @@ function call({
 beforeEach(() => {
   sql = sqliteD1();
   pending = [];
+  clearTestProfiles();
+  setTestProfile('owner', 'Webber', '#3b82f6');
   sql.sql.exec(`
     INSERT INTO test_plans (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d1', 'owner', 'Shop', 0, 1, 1);
-    INSERT INTO participants (id, name, color, created_at) VALUES ('owner', 'Webber', '#3b82f6', 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 'Main', '{"elements":[{"id":"web-app","type":"shape","shape":"square","x":0,"y":0,"width":100,"height":60,"label":"Web app"},{"id":"web-api","type":"shape","shape":"square","x":200,"y":0,"width":100,"height":60,"label":"Web API"}]}', 1);
     INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
   `);

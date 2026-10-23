@@ -1,13 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Env } from '../types';
-import {
-  accountDeletedEmail,
-  activationEmail,
-  winBackEmail,
-  week1Email,
-  week2Email,
-  welcomeEmail,
-} from './templates';
+import { accountDeletedEmail, commentNotificationEmail, formResponseEmail } from './templates';
 
 const env = { APP_BASE_URL: 'https://app.test' } as unknown as Env;
 
@@ -15,7 +8,7 @@ describe('email templates', () => {
   // docs/specs/014-identity/transactional-email.md §6 "Branding": every email opens with the logo mark next
   // to the wordmark and closes on the branded footer, all from the one shell.
   it.each([
-    ['welcome', () => welcomeEmail(env)],
+    ['comment notification', () => commentNotificationEmail(env, 'Roadmap', 'p1', 'Ada')],
     ['account deleted', () => accountDeletedEmail(env)],
   ])('%s carries the logo beside the wordmark', (_label, build) => {
     const { html } = build();
@@ -30,37 +23,23 @@ describe('email templates', () => {
     expect(html).toContain('>app.test</a>');
   });
 
-  it('welcome has a subject + links to /new', () => {
-    const e = welcomeEmail(env);
-    expect(e.subject).toMatch(/welcome/i);
-    expect(e.html).toContain('https://app.test/new');
-  });
-
-  it('week 1 links to the explorer', () =>
-    expect(week1Email(env).html).toContain('https://app.test/explorer'));
-
-  it('week 2 links to teams', () =>
-    expect(week2Email(env).html).toContain('https://app.test/explorer/team'));
-
-  // docs/specs/014-identity/transactional-email.md: every tip / check-in respects notifyTips, so each one
-  // links to the toggle in its footer and in its List-Unsubscribe header.
+  // docs/specs/014-identity/transactional-email.md: every opt-out notification links to the switch that stops
+  // it, in its footer and in its List-Unsubscribe header.
   it.each([
-    ['week 1', week1Email],
-    ['week 2', week2Email],
-    ['activation', activationEmail],
-    ['win-back', winBackEmail],
+    ['comment notification', () => commentNotificationEmail(env, 'Roadmap', 'p1', 'Ada')],
+    [
+      'form response',
+      () => formResponseEmail(env, { heading: 'Intake', projectId: 'p1', projectName: 'Roadmap' }, 'A card', 0),
+    ],
   ])('%s carries the manage-notifications footer and unsubscribe url', (_label, build) => {
-    const e = build(env);
+    const e = build();
     expect(e.unsubscribeUrl).toBe('https://app.test/explorer?settings=notifications');
     expect(e.html).toContain('Manage your notifications');
-    expect(e.html).toContain('tips and check-ins are on');
   });
 
-  it('the welcome is not opt-out, so it carries no unsubscribe url', () =>
-    expect(welcomeEmail(env).unsubscribeUrl).toBeUndefined());
-
-  it('account-deleted confirms the deletion', () =>
-    expect(accountDeletedEmail(env).subject).toMatch(/deleted/i));
-
+  it('account-deleted confirms the deletion, and is not opt-out', () => {
+    const e = accountDeletedEmail(env);
+    expect(e.subject).toMatch(/deleted/i);
+    expect(e.unsubscribeUrl).toBeUndefined();
+  });
 });
-

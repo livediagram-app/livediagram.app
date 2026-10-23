@@ -7,7 +7,9 @@ import { deleteAccount } from './account';
 // "Owner-keyed data"). The ledger is checked against the migrated schema, so a new table keyed on an owner fails
 // here until it is classified; each entry is then proven against a real SQLite database, so a classification the
 // code does not honour fails too. Where a person's plans are, and everything the Explorer keeps about them, is
-// liveworkspace's index: account deletion has the index purge the plans (routes/account.ts).
+// liveworkspace's index: account deletion has the index purge the plans (routes/account.ts). A person's name and
+// colour, settings, address and sign-up are the liveworkspace accounts Worker's, which deletes them itself when it
+// closes the account.
 
 type OwnerColumn = {
   table: string;
@@ -17,13 +19,9 @@ type OwnerColumn = {
 };
 
 const OWNER_COLUMNS: OwnerColumn[] = [
-  { table: 'participants', column: 'id' },
-  { table: 'user_preferences', column: 'owner_id' },
   // What a reader has seen of a form's responses (docs/specs/030-forms/forms.md).
   { table: 'form_reads', column: 'owner_id' },
   { table: 'api_tokens', column: 'owner_id' },
-  { table: 'email_lifecycle', column: 'owner_id' },
-  { table: 'auth_accounts', column: 'owner_id' },
   // Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).
   { table: 'workbench_pairing_requests', column: 'owner_id' },
   { table: 'workbench_pairings', column: 'owner_id' },
@@ -71,11 +69,9 @@ function insert(sql: DatabaseSync, table: string, row: Record<string, string | n
 
 // One row in every owner-keyed column, keyed on `id`.
 function seed(sql: DatabaseSync, id: string) {
-  insert(sql, 'participants', { id, name: 'Otter', color: '#ff8800', created_at: T0 });
   insert(sql, 'test_plans', { id: `d-${id}`, owner_id: id, name: id, saved_at: T0, created_at: T0 });
   insert(sql, 'form_links', { code: `form-${id}`, project_id: `d-${id}`, tab_id: `t-${id}`, created_at: T0 });
   insert(sql, 'form_reads', { code: `form-${id}`, owner_id: id, seen_number: 3 });
-  insert(sql, 'user_preferences', { owner_id: id, prefs: '{}', updated_at: T0 });
   insert(sql, 'tabs', { id: `tab-${id}`, name: 'Board', data: '{"elements":[]}', updated_at: T0 });
   insert(sql, 'agent_changesets', {
     id: `cs-${id}`,
@@ -100,8 +96,6 @@ function seed(sql: DatabaseSync, id: string) {
     revoked: 0,
     read_only: 0,
   });
-  insert(sql, 'email_lifecycle', { owner_id: id, email: `${id}@example.com`, created_at: T0 });
-  insert(sql, 'auth_accounts', { owner_id: id, first_seen_at: T0 });
   const workbenchRow = { owner_id: id, token_id: `tok-${id}`, origin: 'https://w.example' };
   insert(sql, 'workbench_pairing_requests', {
     ...workbenchRow,

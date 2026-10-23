@@ -27,6 +27,17 @@ vi.mock('../auth/accounts', () => ({
     email: null,
     teams: [{ id: 'probe-param', name: 'Probe', role: 'owner' }],
   }),
+  accountCredentials: () => null,
+}));
+// Every participant id names someone, so GET /participants/{id} answers rather than 404ing.
+vi.mock('../person/profiles', async () => ({
+  ...(await import('../test-profiles')),
+  getParticipant: async (_env: unknown, id: string) => ({
+    id,
+    name: 'Probe',
+    color: '#000',
+    createdAt: 1,
+  }),
 }));
 
 const vocabulary = routeVocabulary();

@@ -2,10 +2,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { PlanEnv } from '../types';
 
 vi.mock('../db', () => ({
-  getOwnerEmail: vi.fn(),
-  getNotificationPrefs: vi.fn(),
   claimFormEmail: vi.fn(),
 }));
+// The owner's address and switches are the liveworkspace accounts Worker's (person/, tested on its own).
+vi.mock('../person/account-app', () => ({ ownerEmail: vi.fn() }));
+vi.mock('../person/settings', () => ({ getNotificationPrefs: vi.fn() }));
 vi.mock('../plan-room/plan-content', () => ({
   claimCommentNotify: vi.fn(),
 }));
@@ -14,7 +15,9 @@ vi.mock('./client', async (importOriginal) => ({
   sendEmail: vi.fn(),
 }));
 
-import { claimFormEmail, getNotificationPrefs, getOwnerEmail } from '../db';
+import { claimFormEmail } from '../db';
+import { ownerEmail } from '../person/account-app';
+import { getNotificationPrefs } from '../person/settings';
 import { claimCommentNotify } from '../plan-room/plan-content';
 import { sendEmail } from './client';
 import { commentNotificationEmail, formResponseEmail } from './templates';
@@ -22,16 +25,7 @@ import { notifyNewComment, notifyFormResponse } from './notifications';
 
 const env = { RESEND_API_KEY: 're', APP_BASE_URL: 'https://app.test' } as unknown as PlanEnv;
 const liveDoc = { id: 'd1', ownerId: 'u1', name: 'Roadmap' };
-const allowAll = {
-  notifyProjectJoin: true,
-  notifyInviteResponse: true,
-  notifyComments: true,
-  notifyTips: true,
-  notifyMilestones: true,
-  notifyActionAssigned: true,
-  notifyMentions: true,
-  notifyFormResponses: true,
-};
+const allowAll = { notifyComments: true, notifyFormResponses: true };
 
 afterEach(() => vi.clearAllMocks());
 
@@ -56,11 +50,11 @@ describe('commentNotificationEmail', () => {
 describe('notifyNewComment', () => {
   it('does nothing when email is off', async () => {
     await notifyNewComment({} as PlanEnv, liveDoc, 'Anna');
-    expect(getOwnerEmail).not.toHaveBeenCalled();
+    expect(ownerEmail).not.toHaveBeenCalled();
   });
 
   it('sends to the owner when they have an address and have not opted out', async () => {
-    vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.com');
+    vi.mocked(ownerEmail).mockResolvedValue('owner@x.com');
     vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
     vi.mocked(claimCommentNotify).mockResolvedValue(true);
     vi.mocked(sendEmail).mockResolvedValue({ sent: true });
@@ -69,7 +63,7 @@ describe('notifyNewComment', () => {
   });
 
   it('throttles: no send when a comment email went out recently', async () => {
-    vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.com');
+    vi.mocked(ownerEmail).mockResolvedValue('owner@x.com');
     vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
     vi.mocked(claimCommentNotify).mockResolvedValue(false);
     await notifyNewComment(env, liveDoc, 'Anna');
@@ -77,14 +71,14 @@ describe('notifyNewComment', () => {
   });
 
   it('skips when the owner opted out of comment notifications', async () => {
-    vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.com');
+    vi.mocked(ownerEmail).mockResolvedValue('owner@x.com');
     vi.mocked(getNotificationPrefs).mockResolvedValue({ ...allowAll, notifyComments: false });
     await notifyNewComment(env, liveDoc, 'Anna');
     expect(sendEmail).not.toHaveBeenCalled();
   });
 
   it('skips when the owner has no stored address (e.g. a guest)', async () => {
-    vi.mocked(getOwnerEmail).mockResolvedValue(null);
+    vi.mocked(ownerEmail).mockResolvedValue(null);
     await notifyNewComment(env, liveDoc, 'Anna');
     expect(getNotificationPrefs).not.toHaveBeenCalled();
     expect(sendEmail).not.toHaveBeenCalled();
@@ -113,7 +107,7 @@ describe('the form response email (docs/specs/030-forms/forms.md "Hearing about 
   });
 
   it('emails the owner when the per-form claim is won', async () => {
-    vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.test');
+    vi.mocked(ownerEmail).mockResolvedValue('owner@x.test');
     vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
     vi.mocked(claimFormEmail).mockResolvedValue({ send: true, heldBefore: 2 });
     vi.mocked(sendEmail).mockResolvedValue({ sent: true });
@@ -125,7 +119,7 @@ describe('the form response email (docs/specs/030-forms/forms.md "Hearing about 
   });
 
   it('holds the email inside the throttle, and respects the opt-out', async () => {
-    vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.test');
+    vi.mocked(ownerEmail).mockResolvedValue('owner@x.test');
     vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
     vi.mocked(claimFormEmail).mockResolvedValue({ send: false });
     await notifyFormResponse(env, liveDoc, form, 'Crash');
@@ -137,7 +131,7 @@ describe('the form response email (docs/specs/030-forms/forms.md "Hearing about 
 
   it('sends nothing without email or an owner address', async () => {
     await notifyFormResponse({ APP_BASE_URL: 'x' } as unknown as PlanEnv, liveDoc, form, 'Crash');
-    vi.mocked(getOwnerEmail).mockResolvedValue(null);
+    vi.mocked(ownerEmail).mockResolvedValue(null);
     await notifyFormResponse(env, liveDoc, form, 'Crash');
     expect(sendEmail).not.toHaveBeenCalled();
   });

@@ -1,10 +1,11 @@
 // A plan as this api knows it (liveworkspace/docs/one-explorer.md): its content and what it knows of itself (name,
 // owner, team, provenance, creation intent) live in its Durable Object's own SQLite (plan-room/plan-schema.ts,
 // the `plan` row). Where it is filed, who may open it, its sharing and its Trash state are the index's; this
-// module never answers them. The read joins the owner's display name from participants.
+// module never answers them. The read adds the owner's display name, from their profile at the liveworkspace
+// accounts Worker (person/profiles.ts).
 
 import type { ProjectDTO, Env } from '../types';
-import { getParticipant } from './participants';
+import { getParticipant } from '../person/profiles';
 import { readRecordedIntent } from '../project-intent-row';
 import { planRoom } from '../plan-client';
 import { isProjectSource } from '@liveplanner/api-schema';
@@ -41,8 +42,8 @@ function projectOf(
   };
 }
 
-// The plan's outline (one call to its Durable Object, a local call inside it) and its owner's participant row,
-// side by side. Null for a plan never started (nothing has created or opened it).
+// The plan's outline (one call to its Durable Object, a local call inside it) and its owner's profile,
+// one after the other. Null for a plan never started (nothing has created or opened it).
 export async function getProject(env: Env, id: string): Promise<ProjectDTO | null> {
   const outline = await planRoom(env, id).outline();
   const meta = outline.meta;
@@ -51,7 +52,7 @@ export async function getProject(env: Env, id: string): Promise<ProjectDTO | nul
   return projectOf(id, outline, meta, owner);
 }
 
-// What the gates and notices need (owner, team, name) without the owner's participant row.
+// What the gates and notices need (owner, team, name) without the owner's profile.
 export async function getProjectMeta(
   env: Env,
   id: string,

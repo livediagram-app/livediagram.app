@@ -1,4 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+vi.mock('../person/profiles', () => import('../test-profiles'));
+import { clearTestProfiles, setTestProfile } from '../test-profiles';
 import { sentJson } from '@liveplanner/vitest-config/sent-request';
 import { CHANGESET_MAX_OPERATIONS } from '@liveplanner/api-schema';
 import { elementFingerprint, type Element } from '@liveplanner/project';
@@ -78,9 +80,8 @@ async function setUp(
     ...TELEMETRY_ON,
   } as unknown as Partial<Env>);
   sent = stubTelemetry();
-  db.sql.exec(
-    `INSERT INTO participants (id, name, color, created_at) VALUES ('${OWNER}', 'Webber', '#123456', 1)`,
-  );
+  clearTestProfiles();
+  setTestProfile(OWNER, 'Webber', '#123456');
   const created = await call(db, 'POST', '/api/projects', {
     id: 'D',
     name: 'Board',

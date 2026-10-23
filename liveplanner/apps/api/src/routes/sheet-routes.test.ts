@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+vi.mock('../person/profiles', () => import('../test-profiles'));
+import { clearTestProfiles, setTestProfile } from '../test-profiles';
 import { sentJson } from '@liveplanner/vitest-config/sent-request';
 import type { SheetResponse, SheetsResponse, SheetWriteResponse } from '@liveplanner/api-schema';
 import { emptyLayout, type SheetWrite } from '@liveplanner/sheets';
@@ -86,9 +88,10 @@ beforeEach(() => {
       },
     }),
   };
+  clearTestProfiles();
+  setTestProfile('owner', 'Webber', '#3b82f6');
   sql.sql.exec(`
     INSERT INTO test_plans (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d1', 'owner', 'Plan', 1, 1, 1);
-    INSERT INTO participants (id, name, color, created_at) VALUES ('owner', 'Webber', '#3b82f6', 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 'One', '{"elements":[]}', 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t2', 'Two', '{"elements":[]}', 1);
     INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);

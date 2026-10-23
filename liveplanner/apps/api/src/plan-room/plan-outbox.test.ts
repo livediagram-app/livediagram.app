@@ -1,7 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { Element } from '@liveplanner/project';
 import { deleteTabRow, upsertTab } from '../db/tabs';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
+import { ACCOUNTS_ON, stubAccounts } from '../test-accounts';
 import { DRAIN_TABS, drainOutbox, readContentSummary, recordEditor } from './plan-outbox';
 import {
   IndexError,
@@ -130,15 +131,25 @@ describe('the outbox', () => {
     expect(index.summaries[0]!.summary).toMatchObject({ elements: 1, empty: false });
   });
 
-  it("stamps the owner's newest save for the lifecycle email with the summary", async () => {
-    const db = plan();
-    db.sql.exec(
-      `INSERT INTO email_lifecycle (owner_id, email, created_at) VALUES ('owner', 'o@x.test', 1)`,
-    );
-    await upsertTab(db.env, 'P', { id: 't1', name: 'Board', elements: [actionOn('a')] }, 0);
-    await drainOutbox(db.env, 'P', fakeIndex().client);
-    const row = rows(db, "SELECT active_at FROM email_lifecycle WHERE owner_id = 'owner'")[0]!;
-    expect(Number(row.active_at)).toBeGreaterThan(0);
+  // liveworkspace's onboarding emails read when someone last saved (liveworkspace/docs/accounts.md "Onboarding
+  // emails"): the plan's owner, reported with its summary, never a guest.
+  it("reports the owner's newest save to the accounts Worker with the summary", async () => {
+    const accounts = stubAccounts();
+    try {
+      const db = sqliteD1(ACCOUNTS_ON);
+      db.sql.exec(`INSERT INTO test_plans (id, owner_id, name, saved_at, created_at)
+                   VALUES ('P', 'user_owner', 'P', ${T0}, ${T0}),
+                          ('G', 'guest_0f5ca4af-9a8a-4a60-be5e-1179e5555880', 'G', ${T0}, ${T0})`);
+      await upsertTab(db.env, 'P', { id: 't1', name: 'Board', elements: [actionOn('a')] }, 0);
+      await upsertTab(db.env, 'G', { id: 't2', name: 'Board', elements: [actionOn('b')] }, 0);
+      await drainOutbox(db.env, 'P', fakeIndex().client);
+      await drainOutbox(db.env, 'G', fakeIndex().client);
+      expect(accounts.activity).toHaveLength(1);
+      expect(accounts.activity[0]!.userId).toBe('user_owner');
+      expect(accounts.activity[0]!.at).toBeGreaterThan(0);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it('pushes an empty collab for a tab that is gone', async () => {

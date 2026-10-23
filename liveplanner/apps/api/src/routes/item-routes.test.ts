@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+vi.mock('../person/profiles', () => import('../test-profiles'));
+import { clearTestProfiles, setTestProfile } from '../test-profiles';
 import { sentJson } from '@liveplanner/vitest-config/sent-request';
 import type { ItemResponse, ItemsResponse } from '@liveplanner/api-schema';
 import { itemPersonId, presetSetup, type Item } from '@liveplanner/items';
@@ -77,8 +79,9 @@ beforeEach(() => {
   sql.sql
     .prepare(`INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 'Board', ?, 1)`)
     .run(JSON.stringify({ elements: [board] }));
+  clearTestProfiles();
+  setTestProfile('owner', 'Webber', '#3b82f6');
   sql.sql.exec(`
-    INSERT INTO participants (id, name, color, created_at) VALUES ('owner', 'Webber', '#3b82f6', 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t2', 'Other', '{"elements":[]}', 1);
     INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
     INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d1', 't2', 1, 1);

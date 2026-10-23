@@ -1265,7 +1265,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       required: ['name', 'color'],
     },
     responseSchema: wrap('participant', 'ParticipantRecord'),
-    statuses: [200, 400, 401, 403, 404],
+    statuses: [200, 400, 401, 403, 404, 503],
   },
 
   // ---- Preferences ----
@@ -1274,24 +1274,29 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/preferences',
     segment: 'preferences',
     tag: 'Account',
-    summary: "Get the caller's editor preferences (opaque blob).",
+    summary:
+      "Get the caller's settings: those every app shares and liveplanner's own, as one object. null where this deployment keeps none (the editor keeps them in the browser).",
     auth: 'guest-or-clerk',
-    responseSchema: { type: 'object', properties: { prefs: { type: 'object' } } },
-    statuses: [200, 401],
+    responseSchema: {
+      type: 'object',
+      properties: { prefs: { oneOf: [{ type: 'object' }, { type: 'null' }] } },
+    },
+    statuses: [200, 401, 503],
   },
   {
     method: 'PUT',
     path: '/preferences',
     segment: 'preferences',
     tag: 'Account',
-    summary: 'Replace the editor preferences blob.',
+    summary:
+      'Change settings: each key named takes its value whole, a key set to null is deleted, keys not named stay.',
     auth: 'guest-or-clerk',
     requestSchema: {
       type: 'object',
       properties: { prefs: { type: 'object' } },
       required: ['prefs'],
     },
-    statuses: [204, 400, 401],
+    statuses: [204, 400, 401, 404, 413, 503],
   },
 
 

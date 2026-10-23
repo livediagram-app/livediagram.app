@@ -1,4 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+vi.mock('../person/profiles', () => import('../test-profiles'));
+import { clearTestProfiles, setTestProfile } from '../test-profiles';
 import {
   isWorkbenchSessionFormat,
   WORKBENCH_SESSION_TTL_MS,
@@ -59,6 +61,9 @@ async function mintTicket(
 const redeem = (db: SqliteD1, body: unknown) =>
   handleWorkbench(makeTestRouteContext('POST', '/api/workbench/sessions', { env: db.env, body }));
 
+// A person's name and colour come from their profile (person/profiles.ts); each test starts with no one named.
+beforeEach(() => clearTestProfiles());
+
 describe('POST /api/workbench/sessions', () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -74,8 +79,8 @@ describe('POST /api/workbench/sessions', () => {
   it('opens a session as the person, with their display identity', async () => {
     const db = await workbenchDb();
     pairToken(db);
-    db.sql.exec(`INSERT INTO participants (id, name, color, created_at)
-                 VALUES ('user_1', 'Webber', '#ff8800', 1)`);
+    clearTestProfiles();
+    setTestProfile('user_1', 'Webber', '#ff8800');
     const ticket = await mintTicket(db);
 
     const res = await redeem(db, { ticket });

@@ -26,8 +26,8 @@ import type { PlanRoom } from './plan-room/plan-room';
 // Worker bindings injected by Cloudflare at runtime. Not part of the
 // wire format (purely a server-side capability handle).
 export type Env = {
-  // What is neither a plan's content nor the index's (docs/specs/015-api/api.md "Storage"): people and their
-  // settings, form links and workbench embeds.
+  // What is neither a plan's content nor the index's (docs/specs/015-api/api.md "Storage"): API tokens, form
+  // links and workbench embeds. A person's settings and profile are the liveworkspace accounts Worker's.
   DB: D1Database;
   // Each plan's Durable Object (src/plan-room/plan-room.ts): its content, in its own SQLite, and its
   // realtime room. Reached through plan-client.ts `planRoom(env, planId)`.
@@ -100,9 +100,8 @@ export type Env = {
   // liveplanner's Worker key for that service (a secret, the same value as the mcp worker's),
   // sent as X-Telemetry-Key. Unset means this worker sends no telemetry.
   TELEMETRY_KEY?: string;
-  // Resend API key for transactional + lifecycle email (docs/specs/014-identity/transactional-email.md). When absent
-  // the whole email feature is inert: no sends, and the email_lifecycle table
-  // is never touched. Set via `wrangler secret put RESEND_API_KEY` for prod;
+  // Resend API key for transactional email (docs/specs/014-identity/transactional-email.md). When absent
+  // the whole email feature is inert: no sends. Set via `wrangler secret put RESEND_API_KEY` for prod;
   // drop into `apps/api/.dev.vars` for local dev (gitignored, never commit).
   RESEND_API_KEY?: string;
   // From identity for outbound email (optional). Defaults to

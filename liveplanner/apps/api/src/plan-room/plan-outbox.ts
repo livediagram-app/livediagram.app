@@ -2,8 +2,8 @@
 // docs/specs/015-api/api.md "Storage"): its summary to the index (`PUT /app/items/:id/summary`), each changed
 // tab's comment threads and actions for the Inbox (`PUT /app/items/:id/collab/:tabId`), who edited it for the
 // Timeline and their Most Used (`PUT /app/items/:id/events`), all with this app's key, a Form tab's name and
-// heading on its form link (D1, form_links), and the owner's newest save for the lifecycle email (D1,
-// email_lifecycle.active_at).
+// heading on its form link (D1, form_links), and the owner's newest save to the liveworkspace accounts Worker
+// for its onboarding emails (person/account-app.ts reportOwnerActivity).
 //
 // The plan's triggers fill `outbox` with a key per changed thing (plan-schema.ts), in the same transaction as the
 // write, so no write path can forget one and a save makes no network call. The room's alarm drains it on idle,
@@ -30,7 +30,7 @@ import {
 import { projectStatsSql } from '../db/tab-stats';
 import { isEmptyCount, type ContentSummary } from '../db/content-summary';
 import { indexAppClient } from '../index-service';
-import { ownerActiveStatement } from '../db/email-lifecycle';
+import { reportOwnerActivity } from '../person/account-app';
 import type { PlanEnv } from '../types';
 
 type OutboxRow = { id: number; kind: string; key: string };
@@ -263,6 +263,8 @@ export async function drainOutbox(
   const failures: unknown[] = [];
   const formStmts: D1PreparedStatement[] = [];
   const tasks: (() => Promise<void>)[] = [];
+  // The owner's newest save, reported beside the index pushes (person/account-app.ts); never throws.
+  let activity: Promise<void> | null = null;
 
   for (const row of pending) {
     if (row.kind === 'tab') {
@@ -288,8 +290,9 @@ export async function drainOutbox(
       });
     } else if (row.kind === 'summary') {
       const { summary, savedAt, ownerId } = await readContentSummary(env, planId);
-      // The owner's newest activity, for the lifecycle email (db/email-lifecycle.ts): rides the D1 batch below.
-      if (ownerId && savedAt > 0) formStmts.push(ownerActiveStatement(env, ownerId, savedAt));
+      // The owner's newest activity, for liveworkspace's onboarding emails: at most once a minute a plan, with
+      // the summary. Best effort, never failing the drain; a guest's is not sent.
+      if (ownerId && savedAt > 0) activity = reportOwnerActivity(env, ownerId, savedAt);
       tasks.push(async () => {
         try {
           await client?.pushSummary(planId, itemSummaryOf(summary), savedAt);
@@ -323,7 +326,7 @@ export async function drainOutbox(
     });
   }
 
-  await inBatches(tasks);
+  await Promise.all([inBatches(tasks), activity]);
   if (formStmts.length > 0) await env.DB.batch(formStmts);
   if (done.length > 0)
     await env.PLAN_DB.prepare('DELETE FROM outbox WHERE id IN (SELECT value FROM json_each(?))')

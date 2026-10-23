@@ -13,7 +13,8 @@ import {
   type ResultLine,
 } from '@liveplanner/api-schema';
 import { redactCommentAuthorIds } from '../comments';
-import { getChangeset, getChangesetPart, getProject, getParticipant, listChangesets } from '../db';
+import { getChangeset, getChangesetPart, getProject, listChangesets } from '../db';
+import { getParticipant } from '../person/profiles';
 import type { ChangesetRecord } from '../db';
 import { forbidden, json, notFound } from '../responses';
 import { personTagFor } from '../person-tag';

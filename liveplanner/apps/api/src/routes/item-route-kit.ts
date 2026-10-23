@@ -13,7 +13,8 @@ import {
   type ItemPerson,
   type ItemRejection,
 } from '@liveplanner/items';
-import { getProject, getParticipant, getTab, listItems } from '../db';
+import { getProject, getTab, listItems } from '../db';
+import { getParticipant } from '../person/profiles';
 import { forbidden, json, notFound } from '../responses';
 import { relayItems } from '../room-client';
 import {

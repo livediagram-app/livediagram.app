@@ -1,7 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock the async deps the request path touches before dispatch, so the worker's front-door gates run alone.
-vi.mock('./auth/accounts', () => ({ getPersonIdentity: async () => null }));
+vi.mock('./auth/accounts', () => ({
+  getPersonIdentity: async () => null,
+  accountCredentials: () => null,
+}));
 const { resolveApiTokenMock } = vi.hoisted(() => ({ resolveApiTokenMock: vi.fn() }));
 vi.mock('./db', () => ({
   resolveApiToken: resolveApiTokenMock,

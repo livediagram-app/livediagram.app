@@ -1,13 +1,16 @@
 // docs/specs/014-identity/profile-and-email-notifications.md: the opt-out transactional notifications layered on top
 // of the docs/specs/014-identity/transactional-email.md email feature (a new comment, a form response, a suspended
 // form). Each is best-effort, fired from `ctx.waitUntil` on a request made by SOMEONE OTHER than the recipient, so
-// the recipient's address comes from trusted server state (email_lifecycle), never the caller's headers, and their
-// opt-out is read from user_preferences (docs/specs/007-editor/user-preferences.md).
+// the recipient's address is their verified one at the liveworkspace accounts Worker (person/account-app.ts), never
+// the caller's headers, and their opt-out is read from their settings there (person/settings.ts,
+// docs/specs/007-editor/user-preferences.md).
 //
 // Like every docs/specs/014-identity/transactional-email.md send these never throw — sendEmail swallows failures — so
 // a notification problem can't break the request that triggered it.
 
-import { claimFormEmail, getNotificationPrefs, getOwnerEmail } from '../db';
+import { claimFormEmail } from '../db';
+import { ownerEmail } from '../person/account-app';
+import { getNotificationPrefs } from '../person/settings';
 import { claimCommentNotify } from '../plan-room/plan-content';
 import type { Env, PlanEnv } from '../types';
 import { emailEnabled, sendEmail } from './client';
@@ -29,7 +32,7 @@ export async function notifyNewComment(
   commenterName: string | null,
 ): Promise<void> {
   if (!emailEnabled(env)) return;
-  const to = await getOwnerEmail(env, liveDoc.ownerId);
+  const to = await ownerEmail(env, liveDoc.ownerId);
   if (!to) return;
   const prefs = await getNotificationPrefs(env, liveDoc.ownerId);
   if (!prefs.notifyComments) return;
@@ -51,7 +54,7 @@ export async function notifyFormResponse(
   cardTitle: string,
 ): Promise<void> {
   if (!emailEnabled(env)) return;
-  const to = await getOwnerEmail(env, liveDoc.ownerId);
+  const to = await ownerEmail(env, liveDoc.ownerId);
   if (!to) return;
   const prefs = await getNotificationPrefs(env, liveDoc.ownerId);
   if (!prefs.notifyFormResponses) return;
@@ -80,7 +83,7 @@ export async function notifyFormSuspended(
   heading: string,
 ): Promise<void> {
   if (!emailEnabled(env)) return;
-  const to = await getOwnerEmail(env, liveDoc.ownerId);
+  const to = await ownerEmail(env, liveDoc.ownerId);
   if (!to) return;
   await sendEmail(env, {
     to,

@@ -1,9 +1,10 @@
 // What a tab save needs of its plan (docs/specs/015-api/api.md "Tab save"): the plan's own row and tab count from
-// its store, and the owner's display name from D1, side by side. It runs on every autosave.
+// its store, and the owner's display name from their profile at the liveworkspace accounts Worker (person/profiles.ts,
+// remembered for a minute per isolate). It runs on every autosave.
 
 import type { ProjectDTO, PlanEnv } from '../types';
 import { readPlanMeta } from '../plan-room/plan-content';
-import { getParticipant } from './participants';
+import { getParticipant } from '../person/profiles';
 
 export type TabSaveProject = Pick<
   ProjectDTO,

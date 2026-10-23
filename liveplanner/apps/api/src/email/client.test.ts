@@ -28,7 +28,7 @@ describe('sendEmail', () => {
     const f = vi.fn();
     vi.stubGlobal('fetch', f);
     const res = await sendEmail(noKey, {
-      kind: 'Welcome',
+      kind: 'CommentNotification',
       to: 'a@b.com',
       subject: 's',
       html: '<p>h</p>',
@@ -41,7 +41,7 @@ describe('sendEmail', () => {
     const f = vi.fn().mockResolvedValue(new Response('{"id":"x"}', { status: 200 }));
     vi.stubGlobal('fetch', f);
     const res = await sendEmail(withKey, {
-      kind: 'Welcome',
+      kind: 'CommentNotification',
       to: 'a@b.com',
       subject: 'Hi',
       html: '<p>h</p>',
@@ -65,7 +65,7 @@ describe('sendEmail', () => {
     const f = vi.fn().mockResolvedValue(new Response('{}', { status: 200 }));
     vi.stubGlobal('fetch', f);
     await sendEmail({ RESEND_API_KEY: 're', RESEND_FROM: 'X <x@y.com>' } as unknown as Env, {
-      kind: 'Welcome',
+      kind: 'CommentNotification',
       to: 'a@b.com',
       subject: 's',
       html: 'h',
@@ -79,7 +79,12 @@ describe('sendEmail', () => {
   it('returns sent:false on a non-2xx response', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('nope', { status: 422 })));
     expect(
-      await sendEmail(withKey, { kind: 'Welcome', to: 'a@b.com', subject: 's', html: 'h' }),
+      await sendEmail(withKey, {
+        kind: 'CommentNotification',
+        to: 'a@b.com',
+        subject: 's',
+        html: 'h',
+      }),
     ).toEqual({
       sent: false,
     });
@@ -88,7 +93,12 @@ describe('sendEmail', () => {
   it('never throws — returns sent:false when fetch rejects', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network')));
     expect(
-      await sendEmail(withKey, { kind: 'Welcome', to: 'a@b.com', subject: 's', html: 'h' }),
+      await sendEmail(withKey, {
+        kind: 'CommentNotification',
+        to: 'a@b.com',
+        subject: 's',
+        html: 'h',
+      }),
     ).toEqual({
       sent: false,
     });
@@ -110,7 +120,12 @@ describe('sendEmail timeout', () => {
       }),
     );
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    const sent = sendEmail(withKey, { kind: 'Welcome', to: 'a@b.com', subject: 's', html: 'h' });
+    const sent = sendEmail(withKey, {
+      kind: 'CommentNotification',
+      to: 'a@b.com',
+      subject: 's',
+      html: 'h',
+    });
     expect(await sent).toEqual({ sent: false });
     expect(timeout).toHaveBeenCalledWith(EMAIL_SEND_TIMEOUT_MS);
   });

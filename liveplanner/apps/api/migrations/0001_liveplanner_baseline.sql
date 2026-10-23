@@ -7,34 +7,13 @@
 --
 -- Where a plan is and who may reach it (its title, folder, team, Trash state, share links, favourites, tags, opens,
 -- and the Inbox's comments and actions) is liveworkspace's index (liveworkspace/docs/one-explorer.md), never here;
--- a plan's content is its own Durable Object (src/plan-room/plan-schema.ts). What is left is people and their
--- settings, form links and workbench embeds.
+-- a plan's content is its own Durable Object (src/plan-room/plan-schema.ts). A person's settings, name and colour,
+-- sign-ups and onboarding emails are the liveworkspace accounts Worker's (liveworkspace/docs/accounts.md). What is
+-- left is the API tokens this app has seen, form links and workbench embeds.
 
 -- ---------------------------------------------------------------------------------------------------------------
 -- Identity
 -- ---------------------------------------------------------------------------------------------------------------
-
--- A person's display name and presence colour, by owner id.
-CREATE TABLE participants (
-  id         TEXT    PRIMARY KEY,
-  name       TEXT    NOT NULL,
-  color      TEXT    NOT NULL,
-  created_at INTEGER NOT NULL
-);
-
--- First sighting of an account: a sign-in from an account never seen before counts as a sign-up.
-CREATE TABLE auth_accounts (
-  owner_id      TEXT    PRIMARY KEY NOT NULL,
-  first_seen_at INTEGER NOT NULL
-);
-
-
--- Settings that follow a person between browsers: one JSON blob each.
-CREATE TABLE user_preferences (
-  owner_id   TEXT    PRIMARY KEY NOT NULL,
-  prefs      TEXT    NOT NULL,
-  updated_at INTEGER NOT NULL
-);
 
 -- The liveworkspace account tokens this app has seen (src/db/api-tokens.ts): its mirror, which workbench
 -- pairings and sessions hang off. Only the hash is kept.
@@ -51,24 +30,6 @@ CREATE TABLE api_tokens (
   read_only        INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX api_tokens_owner_idx ON api_tokens (owner_id);
-
--- The lifecycle emails each account has been sent (docs/specs/014-identity/transactional-email.md).
-CREATE TABLE email_lifecycle (
-  owner_id            TEXT    PRIMARY KEY,
-  email               TEXT    NOT NULL,
-  created_at          INTEGER NOT NULL,
-  welcome_sent_at     INTEGER,
-  week1_sent_at       INTEGER,
-  week2_sent_at       INTEGER,
-  activation_sent_at  INTEGER,
-  winback_sent_at     INTEGER,
-  send_attempts       INTEGER NOT NULL DEFAULT 0,
-  last_attempt_at     INTEGER,
-  -- The newest save on any plan the person owns (epoch ms), stamped by the plan's summary push (at most once a
-  -- minute a plan): NULL until they first make something. The activation nudge and win-back read it.
-  active_at           INTEGER
-);
-CREATE INDEX idx_email_lifecycle_due ON email_lifecycle (created_at);
 
 
 -- ---------------------------------------------------------------------------------------------------------------

@@ -3,8 +3,6 @@ import { AccountsUnavailable, sweepRevokedTokens, type ResolvedApiToken } from '
 import { endWorkbenchAccess } from './workbench-end';
 import { handleAuth } from './routes/auth';
 import { reportServerEvent, telemetryEnabled } from './server-telemetry';
-import { emailEnabled } from './email/client';
-import { runLifecycleSweep, welcomeOnSighting } from './email/lifecycle';
 import { resolveApiToken } from './db';
 import { apiRouteLabel, bearerTokenOf, errorTypeToken } from '@liveplanner/api-schema';
 import {
@@ -56,10 +54,6 @@ async function isWriteRateLimited(env: Env, ownerId: string): Promise<boolean> {
   return !result.success;
 }
 
-// Owners whose first-sighting write already ran in this isolate — see
-// the welcomeOnSighting call below.
-const sightedThisIsolate = new Set<string>();
-
 // Every request the worker answers; `fetch` below stamps the project format number on it.
 async function routeApiRequest(
   request: Request,
@@ -89,26 +83,9 @@ async function routeApiRequest(
   const person = await getPersonIdentity(env, request);
   const account = person?.kind === 'account' ? person : null;
   const accountUserId = account?.userId ?? null;
-  // Email used for the notification and lifecycle emails. ONLY the verified `email` claim from the checked
-  // access token is trusted, never a client-supplied header.
+  // The caller's address. ONLY the verified `email` claim from the checked access token is trusted, never a
+  // client-supplied header.
   const accountEmail = account?.email ?? null;
-  // docs/specs/014-identity/transactional-email.md: first authenticated sighting => sign-up. Fire-and-forget (the
-  // sighting + welcome run in the background) so it never delays the response;
-  // a no-op when RESEND_API_KEY is unset.
-  if (
-    accountUserId &&
-    accountEmail &&
-    emailEnabled(env) &&
-    !sightedThisIsolate.has(accountUserId)
-  ) {
-    // Once per isolate, not per request: a signed-in editor autosaves
-    // every ~600ms, and each request was scheduling a (no-op after the
-    // first) INSERT OR IGNORE into email_lifecycle — ~100 wasted D1
-    // writes a minute. The INSERT stays idempotent, so a cold isolate
-    // simply pays it once more.
-    sightedThisIsolate.add(accountUserId);
-    executionCtx?.waitUntil(welcomeOnSighting(env, accountUserId, accountEmail));
-  }
   // API token (docs/specs/015-api/public-api-and-tokens.md): a `Bearer lwt_…` resolves to its owner — always a
   // account — via the hashed-token lookup. Only consulted when no account
   // access token verified (a token and a JWT can't both be the bearer). The resolved
@@ -376,9 +353,10 @@ const worker = {
   // One worker invocation per `triggers.crons` entry; dispatch on
   // `event.cron` for each pattern. The Trash, its purge and the empty-plan
   // sweep are the index's now (liveworkspace/docs/index-service.md); what is
-  // left here is this app's own: tokens, notification claims, lifecycle email
-  // and workbench rows. All use `ctx.waitUntil` so they run concurrently and
-  // the worker can exit as soon as the schedule callback returns.
+  // left here is this app's own: tokens, notification claims and workbench
+  // rows (the onboarding emails are the liveworkspace accounts Worker's,
+  // liveworkspace/docs/accounts.md). All use `ctx.waitUntil` so they run
+  // concurrently and the worker can exit as soon as the schedule callback returns.
   async scheduled(event: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
     // liveworkspace/docs/accounts.md "How an app keeps up": end the workbench access of any token revoked
     // on liveworkspace.app.
@@ -398,9 +376,6 @@ const worker = {
       const now = Date.now();
       // A plan's changesets and unreferenced sheets are kept by the plan's own Durable Object, swept by its daily
       // upkeep alarm (plan-room.ts `maintain`), not from here.
-      // docs/specs/014-identity/transactional-email.md: send any due onboarding emails (welcome catch-up + week 1 / 2).
-      // No-op when RESEND_API_KEY is unset.
-      ctx.waitUntil(runLifecycleSweep(env));
       // docs/specs/013-workspace/blueprints/workbench-embeds.md "Retention": spent tickets and requests,
       // sessions past their grace, pairings of tokens no longer live.
       ctx.waitUntil(

@@ -24,13 +24,13 @@ import { formatA1, layoutIndex } from '@liveplanner/sheets';
 import { findCommentHost, removeComment, threadsOfTab } from '../comments';
 import {
   getProject,
-  getParticipant,
   getTab,
   listSheetHeads,
   isTabRevStale,
   tabIdsWithComments,
   upsertTabAtRev,
 } from '../db';
+import { getParticipant } from '../person/profiles';
 import { emailEnabled } from '../email/client';
 import { notifyNewComment } from '../email/notifications';
 import { storeTab } from '../limits';

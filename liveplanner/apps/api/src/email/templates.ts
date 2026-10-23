@@ -1,8 +1,9 @@
-// docs/specs/014-identity/transactional-email.md: the five email bodies. Plain, inline-styled, email-client-safe HTML
-// (no external CSS, tables for layout where it matters). Each builder returns
+// docs/specs/014-identity/transactional-email.md: the bodies of the emails liveplanner sends itself, the
+// notifications about other people's activity and the account-deleted notice. The onboarding series and the team
+// emails are the liveworkspace accounts Worker's (liveworkspace/docs/accounts.md). Plain, inline-styled,
+// email-client-safe HTML (no external CSS, tables for layout where it matters). Each builder returns
 // { subject, html }; links resolve against APP_BASE_URL via appBaseUrl(env).
-// Content only: never a project's contents, only the user's own account facts
-// plus a team name the inviter already chose.
+// Content only: never a project's contents, only names the recipient already knows.
 
 import { xmlEscape } from '@liveplanner/icons';
 import type { Env } from '../types';
@@ -27,9 +28,8 @@ const CANVAS = '#f5f3ff';
 const LOGO_PATH = '/email/liveplanner-mark-64.png';
 const LOGO_SIZE = 28;
 
-// Default sign-off, used by the onboarding emails (their recipients all have an
-// account). The invite + account-deleted builders pass their own, since those
-// recipients may not have (or no longer have) an account.
+// Default sign-off, for an email that names no footer of its own (its recipient has an account). The
+// notifications and the account-deleted notice each pass their own.
 const ACCOUNT_FOOTER =
   'You’re receiving this because you have a liveplanner account. liveplanner is free, with no ads and no trackers.';
 
@@ -40,34 +40,14 @@ function manageNotificationsFooter(env: Env, reason: string): string {
   return `${reason} <a href="${href}" style="color:${BRAND};text-decoration:underline">Manage your notifications</a> to turn these off.`;
 }
 
-// docs/specs/014-identity/transactional-email.md: every tip / check-in after the welcome (week 1, week 2, the
-// activation nudge, win-back) respects notifyTips, so each carries the same opt-out footer and the
-// List-Unsubscribe header pointing at the toggle that stops it.
-function tipsFooter(env: Env): string {
-  return manageNotificationsFooter(
-    env,
-    'You’re receiving this because you have a liveplanner account and tips and check-ins are on.',
-  );
-}
-
 // `kind` is the template's telemetry token (docs/specs/017-telemetry/telemetry.md 'Email' category): it rides
 // along on the builder's return so it reaches `sendEmail` through the same
 // spread every caller already writes, rather than being re-stated (and
-// forgotten) at each of the fourteen call sites. A fixed literal, never a
+// forgotten) at each call site. A fixed literal, never a
 // subject line or anything the recipient wrote.
 export type EmailKind =
-  | 'Welcome'
-  | 'Week1'
-  | 'Week2'
-  | 'Activation'
-  | 'WinBack'
   | 'Milestone'
   | 'FirstShare'
-  | 'TeamInvite'
-  | 'TeamInviteReminder1'
-  | 'TeamInviteReminder2'
-  | 'TeamInviteReminder3'
-  | 'InviteResponse'
   | 'ProjectJoined'
   | 'CommentNotification'
   | 'ActionAssigned'
@@ -171,70 +151,6 @@ function shell(env: Env, section: Section): string {
 </body></html>`;
 }
 
-export function welcomeEmail(env: Env): RenderedEmail {
-  const base = appBaseUrl(env);
-  return {
-    kind: 'Welcome',
-    subject: 'Welcome to liveplanner',
-    html: shell(env, {
-      heading: 'Welcome, let’s plan something',
-      intro:
-        'liveplanner is a free, real-time planner for teams. Here’s how to get your first plan going:',
-      points: [
-        '<strong>Start a board</strong> of cards, add columns for each stage, and drag cards along as the work moves.',
-        '<strong>Add a sheet, a dashboard or a form</strong> as another tab, so the numbers, the charts and the requests live in the same plan.',
-        '<strong>Start from a template</strong> (kanban, project planner, bug triage and more) to have the columns and card types ready to fill.',
-      ],
-      outro: 'Everything saves as you go, so you can just start and come back later.',
-      ctaText: 'Start planning',
-      ctaHref: `${base}/new`,
-    }),
-  };
-}
-
-export function week1Email(env: Env): RenderedEmail {
-  const base = appBaseUrl(env);
-  return {
-    kind: 'Week1',
-    subject: 'Find your way around the Explorer',
-    html: shell(env, {
-      heading: 'Your plans, organised',
-      intro: 'Now that you’ve made a few plans, the Explorer is where you keep them tidy:',
-      points: [
-        '<strong>Folders</strong> group related plans; drag to sort, and collapse folders you’re not using.',
-        '<strong>Search and Recents</strong> jump you straight back to what you were working on.',
-        '<strong>Share</strong> right from the grid with a view-only or editor link, and open a plan to export a PDF / PNG / SVG / Markdown copy.',
-      ],
-      ctaText: 'Open your Explorer',
-      ctaHref: `${base}/explorer`,
-      footer: tipsFooter(env),
-    }),
-    unsubscribeUrl: profilePath(env),
-  };
-}
-
-export function week2Email(env: Env): RenderedEmail {
-  const base = appBaseUrl(env);
-  return {
-    kind: 'Week2',
-    subject: 'Bring your team into your plans',
-    html: shell(env, {
-      heading: 'Plans are better together',
-      intro: 'If you’re working with other people, a team gives everyone a shared home for plans:',
-      points: [
-        '<strong>Create a team</strong> from the Explorer and invite people by email.',
-        '<strong>A shared folder</strong> every member can open and edit (no more passing links around).',
-        '<strong>Admin and Member roles</strong>: admins manage who’s in the team, everyone else just gets to work.',
-      ],
-      outro: 'A plan still needs no account. Teams just add a shared home on top.',
-      ctaText: 'Create a team',
-      ctaHref: `${base}/explorer/team`,
-      footer: tipsFooter(env),
-    }),
-    unsubscribeUrl: profilePath(env),
-  };
-}
-
 export function accountDeletedEmail(env: Env): RenderedEmail {
   const base = appBaseUrl(env);
   return {
@@ -261,31 +177,6 @@ const escapeHtml = xmlEscape;
 
 function escapeText(s: string): string {
   return s.replace(/[\r\n]+/g, ' ').slice(0, 80);
-}
-
-// docs/specs/014-identity/transactional-email.md (#4): a gentle nudge for someone who signed up but hasn't created a
-// project yet (fires once, ~3 days in). Opt-out (notifyTips).
-export function activationEmail(env: Env): RenderedEmail {
-  const base = appBaseUrl(env);
-  return {
-    kind: 'Activation',
-    subject: 'Your first plan is waiting',
-    html: shell(env, {
-      heading: 'Ready when you are',
-      intro:
-        'You signed up for liveplanner but haven’t made a plan yet. It takes about thirty seconds to get going:',
-      points: [
-        'Start a blank board and add a few cards, or start from a template (kanban, project planner, bug triage and more).',
-        'Add a sheet, a dashboard or a form beside it, and it all saves as you go.',
-        'Share it with one link and plan it together in real time.',
-      ],
-      outro: 'No pressure: liveplanner is free and always here.',
-      ctaText: 'Make your first plan',
-      ctaHref: `${base}/new`,
-      footer: tipsFooter(env),
-    }),
-    unsubscribeUrl: profilePath(env),
-  };
 }
 
 // docs/specs/014-identity/transactional-email.md (#1): someone other than the owner left a comment on a project the
@@ -377,30 +268,5 @@ export function formSuspendedEmail(
         'You’re receiving this because a form you published was reported by the people it was sent to.',
       ),
     }),
-  };
-}
-
-// docs/specs/014-identity/transactional-email.md (#5): a friendly re-engagement nudge for someone who's been away for
-// a few weeks. Opt-out (notifyTips).
-export function winBackEmail(env: Env): RenderedEmail {
-  const base = appBaseUrl(env);
-  return {
-    kind: 'WinBack',
-    subject: 'Your plans are waiting',
-    html: shell(env, {
-      heading: 'It’s been a while',
-      intro:
-        'You haven’t opened liveplanner in a few weeks, and your plans are right where you left them. A few things you can pick back up:',
-      points: [
-        'Start something new in seconds from a template or theme.',
-        'Share a plan with a live link, or bring a team into it.',
-        'Export to PDF / PNG / SVG / Markdown whenever you need a copy.',
-      ],
-      outro: 'No rush: it’s all still here whenever you want it.',
-      ctaText: 'Open your plans',
-      ctaHref: `${base}/explorer`,
-      footer: tipsFooter(env),
-    }),
-    unsubscribeUrl: profilePath(env),
   };
 }

@@ -11,6 +11,8 @@ const { db } = vi.hoisted(() => ({
   },
 }));
 vi.mock('../db', () => db);
+// The account's name is its profile at the accounts Worker (person/profiles.ts).
+vi.mock('../person/profiles', () => ({ getParticipant: db.getParticipant }));
 
 
 const { workbenchEnd } = vi.hoisted(() => ({ workbenchEnd: { endWorkbenchAccess: vi.fn() } }));

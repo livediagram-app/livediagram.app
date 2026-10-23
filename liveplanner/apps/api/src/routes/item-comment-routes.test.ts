@@ -1,4 +1,6 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+vi.mock('../person/profiles', () => import('../test-profiles'));
+import { clearTestProfiles, setTestProfile } from '../test-profiles';
 import { sentJson } from '@liveplanner/vitest-config/sent-request';
 import type { ItemCommentAddResponse, ItemResponse, ItemsResponse } from '@liveplanner/api-schema';
 import type { CommentThread } from '@liveplanner/project';
@@ -60,11 +62,12 @@ beforeEach(async () => {
       },
     }),
   };
+  clearTestProfiles();
+  setTestProfile('owner', 'Webber', '#3b82f6');
+  setTestProfile('visitor', 'Vee', '#16a34a');
   sql.sql.exec(`
     INSERT INTO test_plans (id, owner_id, name, shareable, saved_at, created_at)
       VALUES ('d1', 'owner', 'Plan', 1, 1, 1);
-    INSERT INTO participants (id, name, color, created_at) VALUES ('owner', 'Webber', '#3b82f6', 1);
-    INSERT INTO participants (id, name, color, created_at) VALUES ('visitor', 'Vee', '#16a34a', 1);
     INSERT INTO test_share_links (code, project_id, role, level, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', 'participate', NULL, 1);
     INSERT INTO test_share_links (code, project_id, role, tab_id, created_at) VALUES ('LOOK', 'd1', 'view', NULL, 1);
   `);

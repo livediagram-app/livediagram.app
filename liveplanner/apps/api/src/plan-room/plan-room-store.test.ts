@@ -19,6 +19,7 @@ import { MAINTENANCE_EVERY_MS, PlanRoom } from './plan-room';
 
 vi.mock('../auth/accounts', () => ({
   getPersonIdentity: async () => ({ kind: 'guest', guestId: 'guest_owner' }),
+  accountCredentials: () => null,
 }));
 
 // The index's grants, signed by a stand-in (`G.<claims>`): the owner edits every plan it names.
