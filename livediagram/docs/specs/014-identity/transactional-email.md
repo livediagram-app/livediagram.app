@@ -28,8 +28,8 @@ Five messages, two kinds:
    `/join/decline?token=<token>` that turns it down with no account and no
    sign-in ([Teams → Declining from the email](../013-workspace/teams.md#declining-from-the-email)).
 5. **Account deleted** — after a user deletes their account (spec: account
-   self-deletion), a confirmation that their livediagram data is gone (their
-   liveworkspace account stays, for the other apps that use it).
+   self-deletion), a confirmation that their livediagram data and their
+   liveworkspace account are gone.
 
 [Account settings & email notifications](profile-and-email-notifications.md) adds two further opt-out
 notifications — **someone joined my document** and **someone responded to my team

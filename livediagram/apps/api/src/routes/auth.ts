@@ -2,7 +2,7 @@ import { SIGNED_IN_HINT_COOKIE } from '@livediagram/api-schema';
 // /api/auth/* — signing in through the liveworkspace accounts Worker
 // (docs/specs/014-identity/auth-and-guest-access.md "Signing in").
 //
-// livediagram.app and accounts.liveworkspace.app are separate sites, so the
+// livediagram.app and liveworkspace.app are separate sites, so the
 // browser is sent there on a full-page visit and comes back with a one-time
 // code (OAuth 2.1 authorization code + PKCE). This worker swaps the code for
 // tokens, because the swap sends the client secret. The refresh token stays
@@ -58,7 +58,8 @@ type Configured = {
   resource: string;
 };
 
-function configured(env: Env): Configured | null {
+// The accounts Worker and this app's client there, or null on a guest-only deployment.
+export function configured(env: Env): Configured | null {
   const { ACCOUNTS_URL, ACCOUNTS_CLIENT_ID, ACCOUNTS_CLIENT_SECRET, API_RESOURCE } = env;
   if (!ACCOUNTS_URL || !ACCOUNTS_CLIENT_ID || !ACCOUNTS_CLIENT_SECRET || !API_RESOURCE) return null;
   return {
@@ -114,7 +115,7 @@ const sessionCookies = (refreshToken: string) => [
   cookie(REFRESH_COOKIE, refreshToken, REFRESH_MAX_AGE_SECONDS, 'Strict'),
   hintCookie(true),
 ];
-const signedOutCookies = () => [clearCookie(REFRESH_COOKIE), hintCookie(false)];
+export const signedOutCookies = () => [clearCookie(REFRESH_COOKIE), hintCookie(false)];
 
 // The PKCE verifier, the state and the return path ride one short-lived cookie. It needs no
 // signature: only this browser can present it, and `state` must match what came back.

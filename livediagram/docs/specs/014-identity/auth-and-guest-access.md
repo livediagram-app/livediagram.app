@@ -29,7 +29,7 @@ Because `NEXT_PUBLIC_*` vars are baked at build time, the choice is a compile-ti
 
 ## Signing in
 
-livediagram has no sign-in form of its own. People sign in to their **liveworkspace account** on the accounts site (`accounts.liveworkspace.app`, an OAuth 2.1 / OpenID Connect provider shared by the liveworkspace apps), by emailed code, and come back signed in. The api worker is the OAuth client (`apps/api/src/routes/auth.ts`), so the client secret and the refresh token never reach page script:
+livediagram has no sign-in form of its own. People sign in to their **liveworkspace account** on the accounts site (`liveworkspace.app`, an OAuth 2.1 / OpenID Connect provider shared by the liveworkspace apps), by emailed code, and come back signed in. The api worker is the OAuth client (`apps/api/src/routes/auth.ts`), so the client secret and the refresh token never reach page script:
 
 1. **`GET /api/auth/sign-in?return_to=<path>`** sends the browser to the accounts site's authorize endpoint with PKCE (S256), a random `state`, and this API's resource (`API_RESOURCE`) so the access token is minted for livediagram alone. The verifier, state and return path ride a 10-minute HttpOnly `lp_pkce` cookie scoped to `/api/auth`.
 2. **`GET /api/auth/callback`** checks `state` against the cookie, swaps the code for tokens with the client secret, keeps the refresh token in an HttpOnly, `SameSite=Strict` `lp_refresh` cookie scoped to `/api/auth`, sets the readable `ld_signed_in=1` hint ([below](#who-is-a-guest-before-sign-in-answers)), counts the sign-in once (`reportSignIn`, [Telemetry](../017-telemetry/telemetry.md)), and returns to the safe path. A mismatched or missing state lands on `/sign-in?error=expired`, a failed swap on `/sign-in?error=failed`.
@@ -163,12 +163,12 @@ A guest's `X-Owner-Id` is a bearer value that **leaks**: it rides in document DT
 
 ## Deleting an account
 
-Settings > Account > Delete Account removes the person's livediagram data, then ends the session:
+Settings > Account > Delete Account deletes the whole account: the person's livediagram data and their **liveworkspace account**, which closes it in every liveworkspace app. Then it ends the session:
 
-1. **Delete the server data** (`DELETE /api/account`, [API](../015-api/api.md)): documents, folders, the participant row and the rest of the [owner-keyed data](../015-api/api.md#owner-keyed-data).
+1. **Delete the server data, then close the account** (`DELETE /api/account`, [API](../015-api/api.md)). The worker removes documents, folders, the participant row and the rest of the [owner-keyed data](../015-api/api.md#owner-keyed-data), then asks the accounts Worker to close the account (`closeAccount` from `@liveworkspace/auth-client`: `POST /api/auth/delete-account` with this app's client credentials and the caller's access token). Closing it removes the account's sessions, its Google link, and every app's refresh tokens. The response clears the refresh cookie.
 2. **End the session** (`POST /api/auth/sign-out`), then a full load to the landing page.
 
-The **liveworkspace account itself stays**. It signs the person in to the other liveworkspace apps too, so it is not livediagram's to delete; the dialog says so, and closing the account is done on the accounts site. A person who signs in to livediagram again afterwards starts with an empty account.
+The data goes first: closed first, an account whose data delete then failed could never be signed in to again to finish it. If closing fails after the data has gone, the worker answers `502 { error: 'account_not_closed' }`, the dialog says the data is gone but the account is not, and the person, still signed in, can ask again (the data delete is idempotent). Signing in again afterwards with the same email or Google account makes a new, empty account.
 
 There is no separate step-up confirmation: the dialog's own confirmation is the gate, and the session that asks is already a verified one.
 

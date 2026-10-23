@@ -35,7 +35,7 @@ export type Env = {
   BUILD_ID?: string;
   // Signing in through the liveworkspace accounts Worker (docs/specs/014-identity/auth-and-guest-access.md,
   // auth/accounts.ts + routes/auth.ts). ACCOUNTS_URL is its origin, e.g.
-  // `https://accounts.liveworkspace.app`; its issuer and key set sit under `/api/auth`. API_RESOURCE is
+  // `https://liveworkspace.app`; its issuer and key set sit under `/api/auth`. API_RESOURCE is
   // what this API was registered as, e.g. `https://livediagram.app/api`, and every access token must
   // name it as its audience. With either unset the worker stays in pure-guest mode (X-Owner-Id only).
   ACCOUNTS_URL?: string;
