@@ -1,4 +1,11 @@
-export { createVerifier, type AccountClaims, type VerifierOptions } from './verify';
+export {
+  createPersonVerifier,
+  createVerifier,
+  type AccountClaims,
+  type GuestClaims,
+  type PersonClaims,
+  type VerifierOptions,
+} from './verify';
 export {
   authorizeUrl,
   closeAccount,

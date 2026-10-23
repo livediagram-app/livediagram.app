@@ -179,6 +179,8 @@ export interface MergeConfig {
   secret: string;
   secure: boolean;
   indexUrl?: string;
+  // The index Worker's service binding; plain fetch to indexUrl without one (tests, other hosts).
+  indexService?: Fetcher;
   indexMergeKey?: string;
 }
 
@@ -206,7 +208,10 @@ export async function mergeGuestOnSignIn(
   // Awaited, so the cookie is cleared only once the index has the guest's things: a merge that
   // fails keeps the cookie, and the next sign-in tries again (the merge is idempotent). It adds one
   // request to signing in, capped at MERGE_TIMEOUT_MS.
-  const merged = await fetch(`${config.indexUrl}/internal/merge`, {
+  const send = config.indexService
+    ? config.indexService.fetch.bind(config.indexService)
+    : fetch;
+  const merged = await send(`${config.indexUrl}/internal/merge`, {
     method: 'POST',
     headers: {
       'content-type': 'application/json',

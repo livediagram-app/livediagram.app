@@ -1,0 +1,65 @@
+name = "liveworkspace-index"
+# The liveworkspace Cloudflare account, so a deploy can never land on another one.
+account_id = "851be7d244b76a6557bcbe6c4ded80f5"
+main = "src/index.ts"
+compatibility_date = "2026-05-29"
+# Only its API, /api/index, on liveworkspace.app (liveworkspace/docs/index-service.md). Browsers reach it
+# through their own app's router, which forwards /api/index/* on the app's origin here.
+routes = [{ pattern = "liveworkspace.app/api/index*", zone_name = "liveworkspace.app" }]
+
+# Secrets (wrangler secret put):
+#   INDEX_KEY_LIVEDIAGRAM, INDEX_KEY_LIVEPLANNER, INDEX_KEY_LIVEDOCUMENTS, INDEX_KEY_LIVEDESIGN
+#     each shared with that app as INDEX_KEY: the app's server pushes summaries and comments with it,
+#     and the index calls the app's internal routes (copy, purge, revoke) with it.
+#   GRANT_SIGNING_KEY   the private ES256 JWK (with its kid) grants are signed with; its public half
+#                       is served at /api/index/jwks.
+#   MERGE_KEY           accounts' INDEX_MERGE_KEY: it moves a guest's things to their new account.
+[vars]
+ENVIRONMENT = "production"
+# The accounts origin: access and guest tokens are checked against `${ACCOUNTS_URL}/api/auth`, and
+# grants are issued as `${ACCOUNTS_URL}/api/index`.
+ACCOUNTS_URL = "https://liveworkspace.app"
+# Every app's API resource: an access or guest token addressed to any of them is let in.
+INDEX_AUDIENCES = "https://livediagram.app/api,https://liveplanner.app/api,https://livedocuments.app/api,https://livedesign.app/api"
+# Where the index calls each app's internal routes.
+APP_ORIGIN_LIVEDIAGRAM = "https://livediagram.app"
+APP_ORIGIN_LIVEPLANNER = "https://liveplanner.app"
+APP_ORIGIN_LIVEDOCUMENTS = "https://livedocuments.app"
+APP_ORIGIN_LIVEDESIGN = "https://livedesign.app"
+
+# Its own database, apart from accounts and every other service's data. The id is a placeholder: the
+# database is created on first deploy (liveworkspace/docs/index-service.md "First deploy").
+[[d1_databases]]
+binding = "INDEX_DB"
+database_name = "liveworkspace-index"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
+
+# Once a day: purge items 30 days in the Trash, and retry apps that missed a purge.
+[triggers]
+crons = ["23 4 * * *"]
+
+[env.staging]
+name = "liveworkspace-index-staging"
+routes = [{ pattern = "staging.liveworkspace.app/api/index*", zone_name = "liveworkspace.app" }]
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+# Staging's app origins and API resources: check them against each app's staging deploy before the first
+# deploy here.
+ACCOUNTS_URL = "https://staging.liveworkspace.app"
+INDEX_AUDIENCES = "https://staging.livediagram.app/api,https://staging.liveplanner.app/api,https://staging.livedocuments.app/api,https://staging.livedesign.app/api"
+APP_ORIGIN_LIVEDIAGRAM = "https://staging.livediagram.app"
+APP_ORIGIN_LIVEPLANNER = "https://staging.liveplanner.app"
+APP_ORIGIN_LIVEDOCUMENTS = "https://staging.livedocuments.app"
+APP_ORIGIN_LIVEDESIGN = "https://staging.livedesign.app"
+
+# Created on first deploy, like production's.
+[[env.staging.d1_databases]]
+binding = "INDEX_DB"
+database_name = "liveworkspace-index-staging"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
+
+[env.staging.triggers]
+crons = ["23 4 * * *"]

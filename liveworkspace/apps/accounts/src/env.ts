@@ -17,6 +17,8 @@ export interface Env {
   // The index service (one-explorer-contracts.md), told when a guest signs in. Either unset skips it.
   INDEX_URL?: string;
   INDEX_MERGE_KEY?: string;
+  // The index Worker itself, so the merge reaches it rather than going out and back (wrangler.toml).
+  INDEX?: Fetcher;
 
   AUTH_DB: D1Database;
   CODE_IP_LIMITER: RateLimit;

@@ -6,6 +6,7 @@
 liveworkspace/                 git root, one pnpm workspace, one lockfile, one turbo.json
 ├─ packages/                   shared by every product (@liveworkspace/*)
 │  ├─ auth-client              sign-in redirect, code swap, refresh, token check
+│  ├─ index-client             the One Explorer index contract: types, a client, the grant check
 │  ├─ community                the Community contract: apps, vocabulary, limits, wire shapes
 │  ├─ media                    the media contract: apps, upload limits, wire shapes, a client
 │  ├─ sites                    liveworkspace's sites, for every logo's site switcher
@@ -15,6 +16,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ apps/accounts            liveworkspace.app/api/auth: sign-in for every product
 │  ├─ apps/community           liveworkspace.app/api/community: every app's listings, own D1
 │  ├─ apps/media               liveworkspace.app/api/media: every app's images, own D1 and R2
+│  ├─ apps/index               liveworkspace.app/api/index: every app's items for the One Explorer, own D1
 │  └─ apps/telemetry           liveworkspace.app/api/telemetry: every product's events, own D1
 ├─ livediagram/                imported with full history (main at 82e6ed79a); Diagram, Draw, Workshop
 │  ├─ apps/                    live, api, mcp, cli, marketing, help, community, router

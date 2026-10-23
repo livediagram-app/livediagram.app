@@ -1,0 +1,102 @@
+// A guest becoming an account (liveworkspace/docs/one-explorer-contracts.md "Becoming an account"):
+// accounts calls this with its own key, and everything the guest had moves to the account in one batch.
+// Where the account already has the same thing (a tag of the same name, a favourite, a default), the
+// account's stays. Running it again finds nothing left to move.
+
+import { isMergeCaller } from './auth';
+import { isId } from './codec';
+import type { Env } from './env';
+import { badRequest, json, notFound, readObject, unauthorized } from './http';
+
+export async function handleMerge(request: Request, env: Env): Promise<Response> {
+  if (request.method !== 'POST') return notFound();
+  if (!(await isMergeCaller(request, env))) return unauthorized();
+  const body = await readObject(request);
+  const guest = body?.guestId;
+  const user = body?.userId;
+  if (
+    !isId(guest) ||
+    !guest.startsWith('guest_') ||
+    !isId(user) ||
+    user.startsWith('guest_') ||
+    guest === user
+  ) {
+    return badRequest();
+  }
+  const db = env.INDEX_DB;
+  const personal = `p:${user}`;
+  const results = await db.batch([
+    db
+      .prepare(
+        `UPDATE items SET owner_id = ?, scope = CASE WHEN team_id IS NULL THEN ? ELSE scope END
+         WHERE owner_id = ?`,
+      )
+      .bind(user, personal, guest),
+    db
+      .prepare(
+        `UPDATE folders SET owner_id = ?, scope = CASE WHEN team_id IS NULL THEN ? ELSE scope END
+         WHERE owner_id = ?`,
+      )
+      .bind(user, personal, guest),
+    // A guest tag whose name the account already uses: its items take the account's tag.
+    db
+      .prepare(
+        `INSERT OR IGNORE INTO item_tags (tag_id, item_id, created_at)
+         SELECT u.id, it.item_id, it.created_at FROM tags g
+         JOIN tags u ON u.owner_id = ? AND u.name = g.name COLLATE NOCASE
+         JOIN item_tags it ON it.tag_id = g.id
+         WHERE g.owner_id = ?`,
+      )
+      .bind(user, guest),
+    db
+      .prepare(
+        `DELETE FROM tags WHERE owner_id = ? AND EXISTS (
+           SELECT 1 FROM tags u WHERE u.owner_id = ? AND u.name = tags.name COLLATE NOCASE)`,
+      )
+      .bind(guest, user),
+    db.prepare('UPDATE tags SET owner_id = ? WHERE owner_id = ?').bind(user, guest),
+    db
+      .prepare(
+        `INSERT OR IGNORE INTO favourites (person_id, item_id, created_at)
+         SELECT ?, item_id, created_at FROM favourites WHERE person_id = ?`,
+      )
+      .bind(user, guest),
+    db.prepare('DELETE FROM favourites WHERE person_id = ?').bind(guest),
+    db
+      .prepare(
+        `INSERT INTO opens (person_id, item_id, last_opened_at)
+         SELECT ?, item_id, last_opened_at FROM opens WHERE person_id = ?
+         ON CONFLICT (person_id, item_id) DO UPDATE
+           SET last_opened_at = MAX(opens.last_opened_at, excluded.last_opened_at)`,
+      )
+      .bind(user, guest),
+    db.prepare('DELETE FROM opens WHERE person_id = ?').bind(guest),
+    db
+      .prepare(
+        `INSERT OR IGNORE INTO shared_with (person_id, item_id, share_code, last_seen)
+         SELECT ?, item_id, share_code, last_seen FROM shared_with WHERE person_id = ?`,
+      )
+      .bind(user, guest),
+    db.prepare('DELETE FROM shared_with WHERE person_id = ?').bind(guest),
+    db
+      .prepare(
+        `INSERT OR IGNORE INTO placement_defaults (person_id, default_key, folder_id, updated_at)
+         SELECT ?, default_key, folder_id, updated_at FROM placement_defaults WHERE person_id = ?`,
+      )
+      .bind(user, guest),
+    db.prepare('DELETE FROM placement_defaults WHERE person_id = ?').bind(guest),
+    // The Inbox follows them too.
+    db.prepare('UPDATE collab_actions SET assignee_id = ? WHERE assignee_id = ?').bind(user, guest),
+    db.prepare('UPDATE collab_actions SET assigner_id = ? WHERE assigner_id = ?').bind(user, guest),
+    db
+      .prepare(
+        `INSERT OR IGNORE INTO collab_thread_people (app, item_id, tab_id, element_id, person_id)
+         SELECT app, item_id, tab_id, element_id, ? FROM collab_thread_people WHERE person_id = ?`,
+      )
+      .bind(user, guest),
+    db.prepare('DELETE FROM collab_thread_people WHERE person_id = ?').bind(guest),
+  ]);
+  const items = (results[0] as D1Result).meta.changes ?? 0;
+  console.log('[index] merged a guest into an account', { items });
+  return json({ items });
+}

@@ -25,11 +25,16 @@ routes = [
 [vars]
 ENVIRONMENT = "production"
 BASE_URL = "https://liveworkspace.app"
-# The index service, told when a guest signs in (src/guests.ts). Unset, or without INDEX_MERGE_KEY,
-# the merge is skipped.
+# The index service, told when a guest signs in (src/guests.ts), reached through the INDEX service
+# binding below: a Worker's fetch to another Worker's route on its own zone isn't routed to it.
+# Unset, or without INDEX_MERGE_KEY, the merge is skipped.
 INDEX_URL = "https://liveworkspace.app/api/index"
 EMAIL_FROM = "sign-in@liveworkspace.app"
 TURNSTILE_SITE_KEY = ""
+
+[[services]]
+binding = "INDEX"
+service = "liveworkspace-index"
 
 [[d1_databases]]
 binding = "AUTH_DB"
@@ -70,6 +75,10 @@ BASE_URL = "https://staging.liveworkspace.app"
 INDEX_URL = "https://staging.liveworkspace.app/api/index"
 EMAIL_FROM = "sign-in@liveworkspace.app"
 TURNSTILE_SITE_KEY = ""
+
+[[env.staging.services]]
+binding = "INDEX"
+service = "liveworkspace-index-staging"
 
 [[env.staging.d1_databases]]
 binding = "AUTH_DB"

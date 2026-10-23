@@ -23,6 +23,7 @@ function build(env: Env) {
         guestMerge: {
           secure: env.ENVIRONMENT !== 'development',
           indexUrl: env.INDEX_URL,
+          indexService: env.INDEX,
           indexMergeKey: env.INDEX_MERGE_KEY,
         },
       },

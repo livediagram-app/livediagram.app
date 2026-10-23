@@ -1,0 +1,74 @@
+import type { App } from '@liveworkspace/index-client';
+
+export interface Env {
+  // 'production', 'staging' or 'development'. Development signs grants with an ephemeral key when
+  // GRANT_SIGNING_KEY is unset.
+  ENVIRONMENT: string;
+  // The service's off switch: "false", "0" or "off" answers every route as missing. Unset is on.
+  INDEX_ENABLED?: string;
+  INDEX_DB: D1Database;
+  // The accounts origin, e.g. https://liveworkspace.app: tokens are checked against
+  // `${ACCOUNTS_URL}/api/auth`, and grants are issued as `${ACCOUNTS_URL}/api/index`.
+  ACCOUNTS_URL?: string;
+  // Comma-separated: every app's API resource. A token addressed to any of them is let in.
+  INDEX_AUDIENCES?: string;
+  // The private ES256 JWK, as JSON with its `kid`, that grants are signed with.
+  GRANT_SIGNING_KEY?: string;
+  // Accounts' key for the guest-to-account merge (its INDEX_MERGE_KEY).
+  MERGE_KEY?: string;
+  // Each app's key (wrangler secret put), the app's INDEX_KEY. Unset means that app can't push, and the
+  // index can't call it.
+  INDEX_KEY_LIVEDIAGRAM?: string;
+  INDEX_KEY_LIVEPLANNER?: string;
+  INDEX_KEY_LIVEDOCUMENTS?: string;
+  INDEX_KEY_LIVEDESIGN?: string;
+  // Where each app's internal routes live (copy, purge, revoke).
+  APP_ORIGIN_LIVEDIAGRAM?: string;
+  APP_ORIGIN_LIVEPLANNER?: string;
+  APP_ORIGIN_LIVEDOCUMENTS?: string;
+  APP_ORIGIN_LIVEDESIGN?: string;
+}
+
+const KEY_OF: Record<App, keyof Env> = {
+  livediagram: 'INDEX_KEY_LIVEDIAGRAM',
+  liveplanner: 'INDEX_KEY_LIVEPLANNER',
+  livedocuments: 'INDEX_KEY_LIVEDOCUMENTS',
+  livedesign: 'INDEX_KEY_LIVEDESIGN',
+};
+
+const ORIGIN_OF: Record<App, keyof Env> = {
+  livediagram: 'APP_ORIGIN_LIVEDIAGRAM',
+  liveplanner: 'APP_ORIGIN_LIVEPLANNER',
+  livedocuments: 'APP_ORIGIN_LIVEDOCUMENTS',
+  livedesign: 'APP_ORIGIN_LIVEDESIGN',
+};
+
+const setting = (value: unknown): string | undefined =>
+  typeof value === 'string' && value.trim() !== '' ? value.trim() : undefined;
+
+export function appKey(env: Env, app: App): string | undefined {
+  return setting(env[KEY_OF[app]]);
+}
+
+export function appOrigin(env: Env, app: App): string | undefined {
+  return setting(env[ORIGIN_OF[app]])?.replace(/\/+$/, '');
+}
+
+const DEFAULT_ACCOUNTS_URL = 'https://liveworkspace.app';
+
+export function accountsUrl(env: Env): string {
+  return (setting(env.ACCOUNTS_URL) ?? DEFAULT_ACCOUNTS_URL).replace(/\/+$/, '');
+}
+
+export function audiences(env: Env): string[] {
+  return (env.INDEX_AUDIENCES ?? '')
+    .split(',')
+    .map((a) => a.trim())
+    .filter(Boolean);
+}
+
+const OFF = new Set(['false', '0', 'off']);
+
+export function indexEnabled(env: Pick<Env, 'INDEX_ENABLED'>): boolean {
+  return !OFF.has(env.INDEX_ENABLED?.trim().toLowerCase() ?? '');
+}

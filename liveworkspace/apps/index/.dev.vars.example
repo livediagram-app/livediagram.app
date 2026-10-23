@@ -1,0 +1,16 @@
+# Local development: `wrangler dev` reads .dev.vars. Development makes an ephemeral grant key per isolate
+# when GRANT_SIGNING_KEY is unset. Give each app the same INDEX_KEY, and accounts INDEX_MERGE_KEY the
+# same value as MERGE_KEY.
+ENVIRONMENT=development
+ACCOUNTS_URL=http://localhost:3000
+# The API resource every local app's api Worker uses (API_RESOURCE in its .dev.vars).
+INDEX_AUDIENCES=http://localhost/api
+INDEX_KEY_LIVEDIAGRAM=dev-livediagram-index-key
+INDEX_KEY_LIVEPLANNER=dev-liveplanner-index-key
+INDEX_KEY_LIVEDOCUMENTS=dev-livedocuments-index-key
+INDEX_KEY_LIVEDESIGN=dev-livedesign-index-key
+MERGE_KEY=dev-index-merge-key
+APP_ORIGIN_LIVEDIAGRAM=http://localhost:3100
+APP_ORIGIN_LIVEPLANNER=http://localhost:3200
+APP_ORIGIN_LIVEDOCUMENTS=http://localhost:3300
+APP_ORIGIN_LIVEDESIGN=http://localhost:3400
