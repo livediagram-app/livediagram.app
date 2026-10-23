@@ -65,7 +65,7 @@ export type LandingSection = {
 
 /**
  * The feature categories, in the order the landing page tells them: presenting the pages as a deck,
- * the kinds of page a document is made of (logos and wireframes), then working on them together. `page.tsx` renders one beat per entry and alternates its background by index;
+ * the kinds of page a design is made of (logos and wireframes), then working on them together. `page.tsx` renders one beat per entry and alternates its background by index;
  * `/features/<id>` renders each one's cards.
  */
 export const LANDING_SECTIONS: LandingSection[] = [
@@ -92,7 +92,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Build',
         title: 'One deck across every tab',
         description:
-          'Any page can be a slide: a logo, a wireframe, a blank page. Order them in the Slide Deck panel: drag to rearrange, rename, duplicate, or hide a slide you might want next week without deleting it. The deck is saved with the document, so a teammate opens it and sees the same talk.',
+          'Any page can be a slide: a logo, a wireframe, a blank page. Order them in the Slide Deck panel: drag to rearrange, rename, duplicate, or hide a slide you might want next week without deleting it. The deck is saved with the design, so a teammate opens it and sees the same talk.',
       },
       {
         art: <PresenterNotesArt />,
@@ -116,7 +116,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Present',
         title: 'Your screen, not everyone else’s',
         description:
-          'Presenting shows the deck on your screen and nowhere else. Nobody is dragged into your slide, nobody’s view moves, and collaborators with the document open carry on working. You share your screen the way you already do. Nothing on a slide can be changed by a stray click, so a projector is safe. To leave a deck running on a screen, set it to advance every 5 to 60 seconds and loop back to the start.',
+          'Presenting shows the deck on your screen and nowhere else. Nobody is dragged into your slide, nobody’s view moves, and collaborators with the design open carry on working. You share your screen the way you already do. Nothing on a slide can be changed by a stray click, so a projector is safe. To leave a deck running on a screen, set it to advance every 5 to 60 seconds and loop back to the start.',
       },
       {
         art: <LaserArt />,
@@ -239,7 +239,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Make it yours',
         title: 'Your brand as a theme',
         description:
-          'Build a custom theme from your brand palette, save it to your account, and reuse it across documents just like a built-in one. Edit it any time.',
+          'Build a custom theme from your brand palette, save it to your account, and reuse it across designs just like a built-in one. Edit it any time.',
       },
       {
         art: <FontsArt />,
@@ -265,7 +265,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       'Live presence',
       'Comments on anything',
       'Assign actions to teammates',
-      'Make documents with AI',
+      'Make designs with AI',
     ],
     items: [
       {
@@ -274,7 +274,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Work together live',
         title: 'Live presence',
         description:
-          'See who is in the document from the participant avatars on each tab. Status rings show online, away, or stale.',
+          'See who is in the design from the participant avatars on each tab. Status rings show online, away, or stale.',
       },
       {
         art: <RealtimeArt />,
@@ -322,7 +322,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Work together live',
         title: 'See what happened while you were away',
         description:
-          'The Explorer opens on Home: the documents you return to most, and what your teammates commented, edited and assigned you while you were away. The Timeline holds the full feed, and the Inbox gathers the actions and threads still waiting on you.',
+          'The Explorer opens on Home: the designs you return to most, and what your teammates commented, edited and assigned you while you were away. The Timeline holds the full feed, and the Inbox gathers the actions and threads still waiting on you.',
       },
       {
         art: <UndoRedoArt />,
@@ -338,7 +338,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Share & access',
         title: 'Editor or view-only links',
         description:
-          'Create an editor link for collaborators, or a view-only link for readers who should look, not touch. Run as many links as you like, side by side, and point one at a single tab to keep the rest of the document private.',
+          'Create an editor link for collaborators, or a view-only link for readers who should look, not touch. Run as many links as you like, side by side, and point one at a single tab to keep the rest of the design private.',
       },
       {
         art: <LiveImageArt />,
@@ -346,7 +346,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Share & access',
         title: 'Live in your wiki, docs or README',
         description:
-          'Copy an iframe from the Share dialog and the document sits inside your wiki, Notion or site, live as people edit it. Where iframes are blocked, like a GitHub README, paste a live image instead: a plain picture URL that shows the latest version after every save.',
+          'Copy an iframe from the Share dialog and the design sits inside your wiki, Notion or site, live as people edit it. Where iframes are blocked, like a GitHub README, paste a live image instead: a plain picture URL that shows the latest version after every save.',
       },
       {
         art: <TeamsArt />,
@@ -354,7 +354,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Share & access',
         title: 'Teams with a shared library',
         description:
-          'Create a team, invite people by email, and everyone gets a shared folder of documents they can all open and edit. Admins manage membership and roles; members just get to work.',
+          'Create a team, invite people by email, and everyone gets a shared folder of designs they can all open and edit. Admins manage membership and roles; members just get to work.',
       },
       {
         art: <ExpiryArt />,
@@ -370,15 +370,15 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Share & access',
         title: 'Stop sharing on demand',
         description:
-          'Sharing is a toggle, not a state of being. Revoke a link and the URL stops working. The document is yours again.',
+          'Sharing is a toggle, not a state of being. Revoke a link and the URL stops working. The design is yours again.',
       },
       {
         art: <McpArt />,
         href: '/help/account-and-data/connect-ai-mcp/',
         group: 'AI & your tools',
-        title: 'Make documents with AI',
+        title: 'Make designs with AI',
         description:
-          'Connect Claude or any MCP client and let it find, read, create, edit and share your documents for you. It runs on a revocable token, read-only if you prefer.',
+          'Connect Claude or any MCP client and let it find, read, create, edit and share your designs for you. It runs on a revocable token, read-only if you prefer.',
       },
       {
         art: <ApiArt />,
@@ -386,7 +386,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'AI & your tools',
         title: 'A command line and an API',
         description:
-          'Install the livedesign command-line tool from npm to read, edit, share and export documents from your terminal, or call the same REST API the editor uses with an API token. Signed in, revocable, no lock-in.',
+          'Install the livedesign command-line tool from npm to read, edit, share and export designs from your terminal, or call the same REST API the editor uses with an API token. Signed in, revocable, no lock-in.',
       },
       {
         art: <SearchPaletteArt />,
@@ -394,7 +394,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'AI & your tools',
         title: 'Find or run anything with ⌘K',
         description:
-          'One box finds your documents, tabs and pages, and runs commands by name. It jumps to a setting, and opens the help article for whatever you just searched.',
+          'One box finds your designs, tabs and pages, and runs commands by name. It jumps to a setting, and opens the help article for whatever you just searched.',
       },
     ],
   },

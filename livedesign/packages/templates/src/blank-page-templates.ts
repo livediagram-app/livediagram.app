@@ -8,7 +8,7 @@ import {
   type PageKind,
   type Tab,
   type WireframeDeviceId,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import type { TemplateKind } from './templates';
 
 // Each blank of a page kind and the kind its one page is.

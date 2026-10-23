@@ -78,7 +78,7 @@ GUEST_SIG_ENFORCE_AFTER = ""
 # from an older CLI.
 OAUTH_ISSUER = "https://mcp.livedesign.app"
 
-# D1 database holding documents + participants. The local binding name
+# D1 database holding designs + participants. The local binding name
 # (`DB`) is what `src/db.ts` reads via the Env type. The `database_name`
 # is the Cloudflare-side name (must be created via `wrangler d1 create
 # livedesign` or the dashboard). `database_id` is filled in after the
@@ -128,7 +128,7 @@ simple = { limit = 300, period = 60 }
 
 # Per-IP limiter for the anonymous telemetry ingest (POST /api/events,
 # docs/specs/017-telemetry/telemetry.md). Separate namespace from the write limiter so abuse of the
-# public events endpoint can never eat into a user's document-write
+# public events endpoint can never eat into a user's design-write
 # budget. 120 batches / 60s per IP is generous for a real editor
 # session (which flushes a handful of batches a minute) while bounding
 # how fast one source can flood D1 / inflate the public dashboard.
@@ -140,22 +140,22 @@ type = "ratelimit"
 namespace_id = "1002"
 simple = { limit = 120, period = 60 }
 
-# Durable Object for per-document realtime (presence + broadcast). One
-# instance per document id; clients connect via WebSocket through the
-# `/api/documents/<id>/ws` endpoint.
+# Durable Object for per-design realtime (presence + broadcast). One
+# instance per design id; clients connect via WebSocket through the
+# `/api/designs/<id>/ws` endpoint.
 [[durable_objects.bindings]]
-name = "DOCUMENT_ROOM"
-class_name = "DocumentRoom"
+name = "DESIGN_ROOM"
+class_name = "DesignRoom"
 
 [[migrations]]
 tag = "v1"
 new_classes = ["DiagramRoom"]
 
-# The class was DiagramRoom until the container became a document
-# (docs/specs/006-document/document.md). A rename keeps every room's storage.
+# The class was DiagramRoom until the container became a design
+# (docs/specs/006-design/design.md). A rename keeps every room's storage.
 [[migrations]]
 tag = "v2"
-renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
+renamed_classes = [{ from = "DiagramRoom", to = "DesignRoom" }]
 
 # Scheduled jobs the worker handles via the `scheduled` export. One
 # entry per cron; each fires the same handler with `event.cron` set
@@ -174,7 +174,7 @@ renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
 crons = ["0 3 * * *"]
 
 # Per-IP rate limiter for the AI assistance endpoint (POST /api/ai,
-# docs/specs/007-editor/ai-assistance.md). Separate namespace so AI abuse never eats into document-write
+# docs/specs/007-editor/ai-assistance.md). Separate namespace so AI abuse never eats into design-write
 # or telemetry budgets. 20 requests / 60s per IP is generous for a
 # real user session while bounding runaway OpenAI spend. Absent binding
 # → helper allows, so self-host still works without this feature.
@@ -226,7 +226,7 @@ namespace_id = "1008"
 simple = { limit = 60, period = 60 }
 
 # Per-token limiter for workbench ticket mints and pairing requests (docs/specs/013-workspace/workbench-embeds.md,
-# WORKBENCH_TICKETS_PER_MINUTE), keyed workbench-ticket:<token id>. A workbench opens a few documents, never a stream.
+# WORKBENCH_TICKETS_PER_MINUTE), keyed workbench-ticket:<token id>. A workbench opens a few designs, never a stream.
 # Separate namespace. Absent binding → allow (self-host).
 [[unsafe.bindings]]
 name = "WORKBENCH_TICKET_RATE_LIMITER"
@@ -480,11 +480,11 @@ namespace_id = "1012"
 simple = { limit = 20, period = 60 }
 
 # A different script is a different Durable Object namespace, so staging's
-# DOCUMENT_ROOM instances are separate from production's for free. The class
+# DESIGN_ROOM instances are separate from production's for free. The class
 # still needs its own migration tag in this environment.
 [[env.staging.durable_objects.bindings]]
-name = "DOCUMENT_ROOM"
-class_name = "DocumentRoom"
+name = "DESIGN_ROOM"
+class_name = "DesignRoom"
 
 [[env.staging.migrations]]
 tag = "v1"
@@ -492,7 +492,7 @@ new_classes = ["DiagramRoom"]
 
 [[env.staging.migrations]]
 tag = "v2"
-renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
+renamed_classes = [{ from = "DiagramRoom", to = "DesignRoom" }]
 
 # The daily 03:00 UTC sweeps (retention + the docs/specs/014-identity/transactional-email.md email crons) run on
 # staging too, against staging's own data. Restated rather than inherited so

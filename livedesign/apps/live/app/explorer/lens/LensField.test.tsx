@@ -7,7 +7,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
-  documentSubject,
+  designSubject,
   parseLens,
   type LensContext,
   type LensSubject,
@@ -62,7 +62,7 @@ function Harness({
   );
 }
 
-const field = () => screen.getByRole('combobox', { name: 'Filter documents' });
+const field = () => screen.getByRole('combobox', { name: 'Filter designs' });
 const lensString = () => screen.getByTestId('lens').textContent;
 const type = (value: string) => {
   fireEvent.focus(field());
@@ -77,7 +77,7 @@ describe('LensField', () => {
     expect(input.getAttribute('aria-expanded')).toBe('false');
     const list = document.getElementById(input.getAttribute('aria-controls')!);
     expect(list?.getAttribute('role')).toBe('listbox');
-    expect(input.getAttribute('placeholder')).toBe('Search or filter documents');
+    expect(input.getAttribute('placeholder')).toBe('Search or filter designs');
   });
 
   it('offers the dimensions a word starts, and accepts one with Down and Enter', () => {
@@ -120,7 +120,7 @@ describe('LensField', () => {
 
   it('marks a value that would match nothing, never hiding it', () => {
     const subjects = [
-      documentSubject(
+      designSubject(
         { name: 'Plan', savedAt: NOW, ownerId: 'me', teamId: null, source: null },
         'me',
       ),
@@ -166,7 +166,7 @@ describe('LensField', () => {
   });
 });
 
-// Home's hero (explorer-filters.md "The field"): the same field drawn large, New document inside its end, and the
+// Home's hero (explorer-filters.md "The field"): the same field drawn large, New design inside its end, and the
 // typing handed to the header's field on Search results.
 describe('LensField in the hero', () => {
   afterEach(() => {
@@ -174,10 +174,10 @@ describe('LensField in the hero', () => {
   });
 
   it('draws large, with its trailing control inside the field', () => {
-    render(<Harness home size="hero" trailing={<button type="button">New document</button>} />);
+    render(<Harness home size="hero" trailing={<button type="button">New design</button>} />);
     const box = field().parentElement!;
     expect(box.className).toContain('h-[60px]');
-    expect(box.contains(screen.getByRole('button', { name: 'New document' }))).toBe(true);
+    expect(box.contains(screen.getByRole('button', { name: 'New design' }))).toBe(true);
     expect(field().dataset.lensInput).toBe('hero');
   });
 
@@ -217,7 +217,7 @@ describe('LensFieldStill', () => {
     expect(screen.queryByRole('combobox')).toBeNull();
     const still = container.querySelector('[data-lens-still]')!;
     expect(still.getAttribute('aria-hidden')).toBe('true');
-    expect(still.textContent).toContain('Search or filter documents');
+    expect(still.textContent).toContain('Search or filter designs');
     expect(still.firstElementChild!.className).toContain('h-[60px]');
   });
 });

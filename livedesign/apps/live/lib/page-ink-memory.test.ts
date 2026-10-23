@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { InkMemory } from '@livedesign/document';
+import type { InkMemory } from '@livedesign/design';
 import { pageInkMemory, rememberPageInk } from './page-ink-memory';
 
 // docs/specs/007-editor/pages-mode.md "Re-inking", "Going back": a session memory per tab,

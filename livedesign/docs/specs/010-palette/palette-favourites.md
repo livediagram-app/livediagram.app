@@ -28,5 +28,5 @@ What went with it:
 What stays: tile ids are still stable (`palette-tile-defs`), since palette
 layouts, the Search panel and the Toolbar strip address tiles by id.
 
-The Explorer's **document** favourites (starred documents) are a separate
+The Explorer's **design** favourites (starred designs) are a separate
 feature and are unchanged ([Favourites](../013-workspace/favourites.md)).

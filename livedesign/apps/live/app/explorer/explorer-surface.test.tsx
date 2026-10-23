@@ -40,7 +40,7 @@ describe('useExplorerSurface', () => {
 
   it('is the workbench surface under a workspace session only', () => {
     expect(surfaceUnder(null)).toBe('app');
-    expect(surfaceUnder(sessionOf('document'))).toBe('app');
+    expect(surfaceUnder(sessionOf('design'))).toBe('app');
     expect(surfaceUnder(sessionOf('workspace'))).toBe('workbench');
   });
 });

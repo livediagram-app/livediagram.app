@@ -15,8 +15,8 @@ import { SidebarRow } from './SidebarRow';
 import { TagsSidebarRow } from './TagRows';
 import { TrashSidebarRow } from './TrashSidebarRow';
 
-// More (docs/specs/013-workspace/explorer-structure.md): This Browser (offline documents,
-// docs/specs/006-document/offline-mode.md), Library (Tags, docs/specs/013-workspace/tags.md, then the Library
+// More (docs/specs/013-workspace/explorer-structure.md): This Browser (offline designs,
+// docs/specs/006-design/offline-mode.md), Library (Tags, docs/specs/013-workspace/tags.md, then the Library
 // pages), and Trash (docs/specs/013-workspace/trash.md). `rows` decides whether This Browser shows.
 export function MoreGroup({
   rows,
@@ -27,7 +27,7 @@ export function MoreGroup({
   divider: SidebarDivider;
   first: boolean;
 }) {
-  const { selected, go, expanded, toggleExpand, offlineDocuments } = useExplorer();
+  const { selected, go, expanded, toggleExpand, offlineDesigns } = useExplorer();
   const toggleLibrary = () => toggleExpand(LIBRARY_EXPAND_KEY);
   return (
     <SidebarGroup id="more" divider={divider} first={first}>
@@ -42,7 +42,7 @@ export function MoreGroup({
             go({ kind: 'offline' });
           }}
           depth={0}
-          badge={offlineDocuments.length || undefined}
+          badge={offlineDesigns.length || undefined}
         />
       ) : null}
       {/* Library has no page of its own: activating it opens or closes it. */}
@@ -76,7 +76,7 @@ export function MoreGroup({
           />
         ))}
       </SidebarRow>
-      {/* Also a drop target for a dragged document or folder (explorer-structure.md "Dragging to the Trash"). */}
+      {/* Also a drop target for a dragged design or folder (explorer-structure.md "Dragging to the Trash"). */}
       <TrashSidebarRow />
     </SidebarGroup>
   );

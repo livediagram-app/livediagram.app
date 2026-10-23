@@ -3,7 +3,7 @@
 import { createElement } from 'react';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import type { LaidOutPage } from '@livedesign/document';
+import type { LaidOutPage } from '@livedesign/design';
 import { photoOf } from '@/lib/photo-editor/photo-test-utils';
 import { photoTools } from '@/lib/photo-editor/tool-state';
 import { photoView } from './photo-view-test-utils';

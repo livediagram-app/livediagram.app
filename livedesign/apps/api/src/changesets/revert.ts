@@ -1,10 +1,10 @@
-import type { ElementOp } from '@livedesign/document';
+import type { ElementOp } from '@livedesign/design';
 import type { RevertResponse } from '@livedesign/api-schema';
 import { formatResultLines } from '@livedesign/edit-operations';
 import { getChangesetPart, lastChangesetRev, type ChangesetRecord } from '../db';
 import { readRoomSelections } from '../room-client';
 import { personTagFor } from '../person-tag';
-import type { DocumentDTO, Env } from '../types';
+import type { DesignDTO, Env } from '../types';
 import { afterChangeset } from './after';
 import type { FrontDoor } from './front-door';
 import { heldTargets } from './held-check';
@@ -21,7 +21,7 @@ import { writeChangeset, type Author } from './write';
 
 type RevertArgs = {
   env: Env;
-  document: DocumentDTO;
+  design: DesignDTO;
   record: ChangesetRecord;
   author: Author;
   tokenId: string | null;
@@ -30,8 +30,8 @@ type RevertArgs = {
 };
 
 export async function revertChangeset(args: RevertArgs): Promise<SubmitResult> {
-  const { env, document, record } = args;
-  const where = { documentId: document.id, tabId: record.tabId, changesetId: record.id };
+  const { env, design, record } = args;
+  const where = { designId: design.id, tabId: record.tabId, changesetId: record.id };
   const [opsPart, inversePart] = await Promise.all([
     getChangesetPart(env, record.id, 'ops'),
     getChangesetPart(env, record.id, 'inverse'),
@@ -42,15 +42,15 @@ export async function revertChangeset(args: RevertArgs): Promise<SubmitResult> {
   const inverse = JSON.parse(inversePart) as ElementOp[];
   for (let attempt = 1; attempt <= SUBMIT_ATTEMPTS; attempt += 1) {
     const [stored, prevRev] = await Promise.all([
-      readStoredTab(env, document.id, record.tabId),
+      readStoredTab(env, design.id, record.tabId),
       lastChangesetRev(env, record.tabId),
     ]);
-    // The tab left the document since: nothing here to revert.
+    // The tab left the design since: nothing here to revert.
     if (!stored) return { status: 404, body: { error: 'not_found' } };
     const plan = planRevert(stored.tab, ops, inverse, record.fingerprints);
     if (args.tokenId) {
-      const tag = await personTagFor(document.id, args.author.id);
-      const selections = await readRoomSelections(env, document.id, record.tabId, tag);
+      const tag = await personTagFor(design.id, args.author.id);
+      const selections = await readRoomSelections(env, design.id, record.tabId, tag);
       const touched = ops.flatMap((op) =>
         op.kind === 'remove' ? [op.id] : op.kind === 'reorder' ? [] : [op.element.id],
       );
@@ -63,7 +63,7 @@ export async function revertChangeset(args: RevertArgs): Promise<SubmitResult> {
     const next = { ...stored.tab, elements: plan.elements };
     const lint = lintResult(next, where);
     const outcome = await writeChangeset(env, {
-      documentId: document.id,
+      designId: design.id,
       tabId: record.tabId,
       stored,
       next,
@@ -76,7 +76,7 @@ export async function revertChangeset(args: RevertArgs): Promise<SubmitResult> {
       prevRev,
       results: [],
       textFor: (written) =>
-        [...formatResultLines([]), writtenFooter(written, document.id, lint)].join('\n'),
+        [...formatResultLines([]), writtenFooter(written, design.id, lint)].join('\n'),
       revertOf: record.id,
     });
     if (outcome.kind === 'stale') {
@@ -94,7 +94,7 @@ export async function revertChangeset(args: RevertArgs): Promise<SubmitResult> {
     if (changeset) {
       args.waitUntil?.(
         afterChangeset.run(env, {
-          document,
+          design,
           author: args.author,
           next: { ...stored.tab, elements: plan.elements },
           stored: stored.tab,

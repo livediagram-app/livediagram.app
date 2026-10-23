@@ -26,8 +26,8 @@ import {
   type LaidOutPage,
   type ResolveTabWindow,
   type Tab,
-} from '@livedesign/document';
-// Shared SVG render helpers (docs/specs/015-api/mcp-server.md §5): moved into the document package so the
+} from '@livedesign/design';
+// Shared SVG render helpers (docs/specs/015-api/mcp-server.md §5): moved into the design package so the
 // MCP worker reuses the same element drawing. The canvas / isometric / backdrop
 // orchestration below stays here and imports the per-element drawers + helpers.
 import {
@@ -48,7 +48,7 @@ import {
   svgShadowDefs,
   xmlEscape,
   type ExportShape,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { backgroundPatternTile } from './canvas-backgrounds';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from './icon-registry';
 import {
@@ -61,7 +61,7 @@ import {
 } from './isometric';
 import { drawBoxed, drawBoxedExtrusion } from './export-tab-canvas-draw';
 import { EXPORT_PAPER, pageExportFrame } from './export-page';
-import { pageScreenRect, tabWireframeFrameTheme, withinPageFrame } from '@livedesign/document';
+import { pageScreenRect, tabWireframeFrameTheme, withinPageFrame } from '@livedesign/design';
 import type { ExportImageMap } from './export-tab-images';
 import { exportChartInk } from './export-chart-ink';
 import { motionFrameHref, paintMotionFrame, type MotionFrameCache } from './page-motion-canvas';
@@ -73,7 +73,7 @@ import { motionFrameHref, paintMotionFrame, type MotionFrameCache } from './page
 // `images` carries pre-loaded bitmaps (keyed by imageId) so image / avatar
 // elements embed their photo instead of a placeholder; absent ids (or no map)
 // fall back to the placeholder. Build it with loadTabImages (export-tab-images).
-// `hiddenLayers` INCLUDES layers the user has hidden (docs/specs/006-document/layers.md); off by default
+// `hiddenLayers` INCLUDES layers the user has hidden (docs/specs/006-design/layers.md); off by default
 // so the export matches what the canvas shows.
 export type ImageExportOpts = {
   isometric?: boolean;
@@ -199,7 +199,7 @@ export async function renderTabToCanvas(
   const chartInk = exportChartInk(tab, opts.page);
   const reaches = (el: Element) => !frame || frame.reaches(el, tab.elements);
   // Hidden layers drop out of the export (bounds included) unless the
-  // dialog's include-hidden option is on (docs/specs/006-document/layers.md). `ordered` is the
+  // dialog's include-hidden option is on (docs/specs/006-design/layers.md). `ordered` is the
   // paint order — layer bands bottom -> top, frames first per band —
   // with each element carrying its band's opacity factor.
   const els = (
@@ -343,7 +343,7 @@ export async function renderTabToCanvas(
     const diag = Math.hypot(el.width, el.height);
     // A shadow sweeps outside the box by its offset + blur (docs/specs/008-canvas/element-shadows.md);
     // grow the raster pad so it isn't clipped, and inline its filter
-    // def (the fragment has no document <defs> to resolve against).
+    // def (the fragment has no design <defs> to resolve against).
     const shadow = supportsShadow(el) && el.shadow ? el.shadow : undefined;
     const shadowPad = shadow
       ? Math.max(Math.abs(shadow.offsetX), Math.abs(shadow.offsetY)) + shadow.blur
@@ -373,7 +373,7 @@ export async function renderTabToCanvas(
       // Fall through to drawBoxed's plain box below.
     }
   }
-  // One pass in the canvas's paint order (docs/specs/006-document/layers.md): arrows and boxes
+  // One pass in the canvas's paint order (docs/specs/006-design/layers.md): arrows and boxes
   // interleave by array order, so an arrow sent behind a box stays behind it.
   // Arrows rasterise from the SAME markup the SVG export emits (heads, fans,
   // wrapped captions, knockouts, route-behind gaps), batched: each run of
@@ -630,7 +630,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   }
   // Within each band: boxed elements first, then arrows on top (same
   // z-order as the canvas); bands stack bottom -> top with frame
-  // sections behind their band-mates (docs/specs/006-document/layers.md + docs/specs/008-canvas/canvas-and-palette.md).
+  // sections behind their band-mates (docs/specs/006-design/layers.md + docs/specs/008-canvas/canvas-and-palette.md).
   const resolveImageHref = opts.images ? (id: string) => opts.images!.get(id)?.href : undefined;
   // A wireframe page's elements are cut to its screen, its system bars over them (withinPageFrame).
   const bandsStart = parts.length;

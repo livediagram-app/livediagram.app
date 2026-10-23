@@ -37,14 +37,14 @@ rev? }`: the pixel size, the layer stack ([Photo layers](photo-layers.md)), the 
 
 ## The routes
 
-Under a document's tab, on the api worker ([API app](../015-api/api.md)):
+Under a design's tab, on the api worker ([API app](../015-api/api.md)):
 
 | Method | Path                                                    | Gate | Does                                                                                                                                                                                                                                                |
 | ------ | ------------------------------------------------------- | ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| POST   | `/api/documents/<id>/tabs/<tabId>/photo-blobs-held`     | edit | Body `{ ids: string[] }` (at most 500): answers `{ has: string[] }`, the ids this tab already holds a ref to.                                                                                                                                       |
-| POST   | `/api/documents/<id>/tabs/<tabId>/photo-blobs`          | edit | Body: a **blob batch** (below). Stores each blob, adds the tab's ref, answers `{ stored: string[] }`.                                                                                                                                               |
-| POST   | `/api/documents/<id>/tabs/<tabId>/photo-blobs-adopt`    | edit | Body `{ fromDocument, fromTab, ids }` (at most 2000): adds this tab's refs to blobs `fromTab` holds, where the caller may read `fromTab` in `fromDocument`. For duplicating a tab, and layers pasted between tabs. Answers `{ adopted: string[] }`. |
-| GET    | `/api/documents/<id>/tabs/<tabId>/photo-blobs/<blobId>` | read | The blob's bytes, its stored content type, `Cache-Control: private, max-age=31536000, immutable`. 404 when the tab holds no ref to it.                                                                                                              |
+| POST   | `/api/designs/<id>/tabs/<tabId>/photo-blobs-held`     | edit | Body `{ ids: string[] }` (at most 500): answers `{ has: string[] }`, the ids this tab already holds a ref to.                                                                                                                                       |
+| POST   | `/api/designs/<id>/tabs/<tabId>/photo-blobs`          | edit | Body: a **blob batch** (below). Stores each blob, adds the tab's ref, answers `{ stored: string[] }`.                                                                                                                                               |
+| POST   | `/api/designs/<id>/tabs/<tabId>/photo-blobs-adopt`    | edit | Body `{ fromDesign, fromTab, ids }` (at most 2000): adds this tab's refs to blobs `fromTab` holds, where the caller may read `fromTab` in `fromDesign`. For duplicating a tab, and layers pasted between tabs. Answers `{ adopted: string[] }`. |
+| GET    | `/api/designs/<id>/tabs/<tabId>/photo-blobs/<blobId>` | read | The blob's bytes, its stored content type, `Cache-Control: private, max-age=31536000, immutable`. 404 when the tab holds no ref to it.                                                                                                              |
 
 - **A blob batch** is one request body: a 4-byte big-endian length, then that many bytes of JSON
   `[{ id, type, size }]`, then the blobs' bytes back to back in that order. At most 64 blobs and 24 MB a batch; a
@@ -56,9 +56,9 @@ Under a document's tab, on the api worker ([API app](../015-api/api.md)):
   `photo_full`, with `limit` and `current`). A blob already stored is not written again, but its bytes are always
   sent and checked: holding a ref means having had the bytes, never just knowing an id.
 - **Self-host**: without the `PHOTO_BLOBS` binding every route answers 503 `photos_unavailable`; the editor then offers
-  photo pages only in Offline Mode documents ("Photo editing needs image storage on this server."), and hides the
+  photo pages only in Offline Mode designs ("Photo editing needs image storage on this server."), and hides the
   Photo card elsewhere.
-- **Refusals log** `[photo-blobs] refused <reason>` with the document and tab ids, never an owner id.
+- **Refusals log** `[photo-blobs] refused <reason>` with the design and tab ids, never an owner id.
 
 ## Committing an edit
 
@@ -102,17 +102,17 @@ ids }` (the stack's order) and `{ op: 'preview', blob }`; or `{ kind: 'photo', t
 
 ## Copies, duplicates and links
 
-- **Copying a document** (Copy to my files, a tab-scoped copy, a Community copy, a template from a document) gives
+- **Copying a design** (Copy to my files, a tab-scoped copy, a Community copy, a template from a design) gives
   every copied tab refs to every blob its source tab held, in the same batch as the copy.
 - **Duplicating a tab** in the editor adopts its blobs into the new tab (`photo-blobs-adopt`) before the new tab's first save.
-- **A tab linked into another document** is the same tab: its refs serve both.
+- **A tab linked into another design** is the same tab: its refs serve both.
 - **Layers pasted** from one tab's photo into another's adopt their blobs into the target tab first.
 
-## Offline Mode documents
+## Offline Mode designs
 
-- An [Offline Mode](../006-document/offline-mode.md) document keeps its photo blobs in this browser (IndexedDB,
+- An [Offline Mode](../006-design/offline-mode.md) design keeps its photo blobs in this browser (IndexedDB,
   `livedesign-photo-blobs`, by blob id); nothing is uploaded. Its saves never wait.
-- **Sync Document** uploads every blob its photos name into the new cloud tabs before their first save; **Take
+- **Sync Design** uploads every blob its photos name into the new cloud tabs before their first save; **Take
   Offline** downloads them first. Either refuses (and says so) when a blob cannot be moved.
 
 ## Retention

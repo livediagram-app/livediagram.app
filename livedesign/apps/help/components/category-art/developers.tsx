@@ -43,7 +43,7 @@ export function DevelopersArt() {
           y={62}
           parts={[
             ['POST', 'fill-violet-300'],
-            [' /api/documents', 'fill-slate-100'],
+            [' /api/designs', 'fill-slate-100'],
           ]}
         />
         <Code

@@ -14,7 +14,7 @@ import {
   isLensDimension,
   type LensDimension,
 } from './dimensions';
-import { parseEditorMode } from '@livedesign/document';
+import { parseEditorMode } from '@livedesign/design';
 import type {
   Lens,
   LensContext,

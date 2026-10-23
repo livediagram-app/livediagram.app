@@ -1,16 +1,16 @@
 'use client';
 
-// What a tab window on the canvas reads (docs/specs/009-elements/tab-window.md): the document's tabs, where each
+// What a tab window on the canvas reads (docs/specs/009-elements/tab-window.md): the design's tabs, where each
 // one's content is, and the few things a window does (ask for its tab, open it, show another). Provided once by the
 // canvas host rather than threaded through every element.
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
-import type { Tab } from '@livedesign/document';
+import type { Tab } from '@livedesign/design';
 import { track } from '@/lib/telemetry';
 
 export type TabWindowStatus = 'loaded' | 'loading' | 'failed';
 
 export type TabWindowContextValue = {
-  // The document's tabs this person sees, in tab-bar order, and the tab the canvas is on.
+  // The design's tabs this person sees, in tab-bar order, and the tab the canvas is on.
   tabs: readonly Tab[];
   ownTabId: string;
   // Where a tab's content is (per-tab storage: it arrives only when opened or fetched).

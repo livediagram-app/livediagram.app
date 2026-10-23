@@ -6,7 +6,7 @@ import {
   type ShapeKind,
   type ShapePart,
   type ShapePartRole,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { useRef, type CSSProperties, type SVGAttributes } from 'react';
 import { useTraceDashes } from './useTraceDashes';
 import {
@@ -94,7 +94,7 @@ export function ShapeSvgOverlay({
   // Gradient / trace / pulse-glow plumbing (docs/specs/008-canvas/canvas-and-palette.md) — see
   // useShapeSvgAnimation.
   const { effectiveFill, gradientDefs, effect } = useShapeSvgAnimation(animation, fill);
-  // The geometry lives in the shared table (@livedesign/document
+  // The geometry lives in the shared table (@livedesign/design
   // shape-geometry.ts), the same data the headless export draws from, so
   // the canvas and an exported image can't disagree about a silhouette.
   // Browser is NOT in it: it is a CSS-rendered rounded rectangle (see

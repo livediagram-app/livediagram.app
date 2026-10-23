@@ -1,6 +1,6 @@
 import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
 import { useRef, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
-import { isSelfDrawingShape } from '@livedesign/document';
+import { isSelfDrawingShape } from '@livedesign/design';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { pressLedger } from '@/lib/double-press';

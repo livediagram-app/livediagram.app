@@ -23,7 +23,7 @@ import {
   type Element,
   type LaidOutPage,
   type WireframeFrameTheme,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import type { PageLayoutId } from '@livedesign/templates';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 import { pageSheetStyle } from '@/lib/page-paint';

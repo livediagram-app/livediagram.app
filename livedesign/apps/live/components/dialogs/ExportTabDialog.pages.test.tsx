@@ -6,7 +6,7 @@
 
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, pagesOf, layOutPages, type Tab } from '@livedesign/document';
+import { createShape, pagesOf, layOutPages, type Tab } from '@livedesign/design';
 import { ExportTabDialog } from './ExportTabDialog';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -37,7 +37,7 @@ const open = (withPages = true) =>
   render(
     <ExportTabDialog
       tab={tab}
-      documentName="Doc"
+      designName="Doc"
       onClose={vi.fn()}
       {...(withPages ? { pages } : {})}
     />,

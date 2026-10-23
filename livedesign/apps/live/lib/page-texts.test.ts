@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, layOutPages, type Page } from '@livedesign/document';
+import { createShape, layOutPages, type Page } from '@livedesign/design';
 import { contentsRows, filterContents } from './page-contents';
 import { pageTexts } from './page-texts';
 

@@ -1,6 +1,6 @@
 'use client';
 
-import type { PageKind } from '@livedesign/document';
+import type { PageKind } from '@livedesign/design';
 import type { ReactNode } from 'react';
 import { ART, TourArtFrame } from './TourArtFrame';
 

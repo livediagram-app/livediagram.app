@@ -13,7 +13,7 @@ import {
   LABEL_LINE_HEIGHT,
   labelRoom,
   wrapLabel,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { refOf } from '../context';
 import { fixes } from '../fixes';
 import type { Check } from './types';

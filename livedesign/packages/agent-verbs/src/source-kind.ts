@@ -2,7 +2,7 @@
 // edit operations send `{ operations }`; elements or a whole `replace` send `{ replace }`.
 
 import type { ChangesetRequest } from '@livedesign/api-schema';
-import { isRecord } from '@livedesign/document';
+import { isRecord } from '@livedesign/design';
 
 type SourceKind = 'operations' | 'elements' | 'replace';
 

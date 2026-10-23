@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@livedesign/document';
+import type { Tab } from '@livedesign/design';
 import { getTheme, themeChartPalette } from './themes';
 import { slideThumbFor } from './slide-thumb';
 import { CANVAS_PAPER } from './page-paint';

@@ -1,5 +1,5 @@
 // Explorer Home's reads (docs/specs/013-workspace/explorer-home.md; blueprint "Reads"). Each one
-// scopes by the documents the person can open FIRST (VISIBLE_DOCUMENTS_CTES) and filters after.
+// scopes by the designs the person can open FIRST (VISIBLE_DESIGNS_CTES) and filters after.
 //
 // Binds shared by both: ?1 = the person's owner id, ?2 = now.
 
@@ -9,19 +9,19 @@ import {
   HOME_WITHIN_REACH_PER_ROW,
   windowStartOf,
   withinReach,
-  type HomeDocument,
+  type HomeDesign,
   type HomeJumpBackInItem,
   type WithinReach,
 } from '@livedesign/api-schema';
 import { WHAT_HAPPENED_EVENT_TYPES, type WhatHappenedRow } from '../home/what-happened';
 import type { Env } from '../types';
-import { VISIBLE_DOCUMENTS_CTES } from './document-visibility';
+import { VISIBLE_DESIGNS_CTES } from './design-visibility';
 import { firstTabCountSql, isEmptyCount } from './tabs';
 
-// Where each document lives and what its thumbnail needs. A shared document's team and folder
+// Where each design lives and what its thumbnail needs. A shared design's team and folder
 // are the owner's filing, so they are not disclosed.
 const PLACE_COLUMNS = `
-  v.id AS document_id, v.name AS document_name, v.via, v.share_code, v.scope_tab_id,
+  v.id AS design_id, v.name AS design_name, v.via, v.share_code, v.scope_tab_id,
   CASE WHEN v.via = 'shared' THEN NULL ELSE v.team_id END AS team_id,
   CASE WHEN v.via = 'shared' THEN NULL ELSE pt.name END AS team_name,
   CASE WHEN v.via = 'shared' THEN NULL ELSE v.folder_id END AS folder_id,
@@ -35,9 +35,9 @@ const PLACE_JOINS = `
   LEFT JOIN participants po ON po.id = v.owner_id`;
 
 type PlaceRow = {
-  document_id: string;
-  document_name: string;
-  via: HomeDocument['via'];
+  design_id: string;
+  design_name: string;
+  via: HomeDesign['via'];
   share_code: string | null;
   scope_tab_id: string | null;
   team_id: string | null;
@@ -49,10 +49,10 @@ type PlaceRow = {
   first_tab_count: number | null;
 };
 
-function placeOf(row: PlaceRow): HomeDocument {
+function placeOf(row: PlaceRow): HomeDesign {
   return {
-    documentId: row.document_id,
-    name: row.document_name,
+    designId: row.design_id,
+    name: row.design_name,
     via: row.via,
     shareCode: row.via === 'shared' ? row.share_code : null,
     tabId: row.scope_tab_id,
@@ -70,10 +70,10 @@ function placeOf(row: PlaceRow): HomeDocument {
  *  teammate's save to the owner (docs/specs/013-workspace/timeline.md §5). On `e`. */
 const REAL_EDIT = `json_extract(e.snapshot, '$.backfilled') IS NOT 1`;
 
-/** A making that counts as a use of the document for its maker: a creation or a copy whose event
- *  says `markUsed` (docs/specs/013-workspace/explorer-home.md "Making a document"). Makings recorded
+/** A making that counts as a use of the design for its maker: a creation or a copy whose event
+ *  says `markUsed` (docs/specs/013-workspace/explorer-home.md "Making a design"). Makings recorded
  *  before the mark, and every bulk import, carry none. On `e`. */
-const MARKED_MAKING = `(e.event_type IN ('document_created', 'document_duplicated')
+const MARKED_MAKING = `(e.event_type IN ('design_created', 'design_duplicated')
   AND json_extract(e.snapshot, '$.markUsed') IS 1)`;
 
 // ---------- Jump back in ----------------------------------------------
@@ -81,49 +81,49 @@ const MARKED_MAKING = `(e.event_type IN ('document_created', 'document_duplicate
 type JumpBackInRow = PlaceRow & { use_days: number; last_used_at: number };
 
 // Exported for the query-plan guard in home-plans.test.ts.
-export const JUMP_BACK_IN_SQL = `WITH ${VISIBLE_DOCUMENTS_CTES},
+export const JUMP_BACK_IN_SQL = `WITH ${VISIBLE_DESIGNS_CTES},
      used AS (
-       SELECT e.source_id AS document_id,
+       SELECT e.source_id AS design_id,
               COUNT(DISTINCT e.occurred_at / ${DAY_MS}) AS use_days,
               MAX(e.occurred_at) AS last_at
          FROM timeline_events e
         WHERE e.actor_id = ?1
-          AND e.source_type = 'document'
+          AND e.source_type = 'design'
           AND e.occurred_at >= ?3 AND e.occurred_at <= ?2
           AND (e.event_type = '${HOME_OPENED_EVENT_TYPE}'
-               OR (e.event_type = 'document_edited' AND ${REAL_EDIT})
+               OR (e.event_type = 'design_edited' AND ${REAL_EDIT})
                OR ${MARKED_MAKING})
         GROUP BY e.source_id
      ),
-     candidates(document_id) AS (
-       SELECT document_id FROM used
+     candidates(design_id) AS (
+       SELECT design_id FROM used
        UNION
-       SELECT document_id FROM document_opens WHERE owner_id = ?1
+       SELECT design_id FROM design_opens WHERE owner_id = ?1
      ),
      reach AS (
-       SELECT c.document_id,
+       SELECT c.design_id,
               COALESCE(u.use_days, 0) AS use_days,
               MAX(COALESCE(u.last_at, 0), COALESCE(o.last_opened_at, 0)) AS last_used_at
          FROM candidates c
-         JOIN visible v ON v.id = c.document_id
-         LEFT JOIN used u ON u.document_id = c.document_id
-         LEFT JOIN document_opens o ON o.owner_id = ?1 AND o.document_id = c.document_id
+         JOIN visible v ON v.id = c.design_id
+         LEFT JOIN used u ON u.design_id = c.design_id
+         LEFT JOIN design_opens o ON o.owner_id = ?1 AND o.design_id = c.design_id
      ),
-     picked(document_id) AS (
-       SELECT document_id FROM (
-         SELECT document_id FROM reach WHERE use_days > 0
-          ORDER BY use_days DESC, last_used_at DESC, document_id ASC LIMIT ?4)
+     picked(design_id) AS (
+       SELECT design_id FROM (
+         SELECT design_id FROM reach WHERE use_days > 0
+          ORDER BY use_days DESC, last_used_at DESC, design_id ASC LIMIT ?4)
        UNION
-       SELECT document_id FROM (
-         SELECT document_id FROM reach
-          ORDER BY last_used_at DESC, document_id ASC LIMIT ?5)
+       SELECT design_id FROM (
+         SELECT design_id FROM reach
+          ORDER BY last_used_at DESC, design_id ASC LIMIT ?5)
      )
      -- Unordered: rows are put in id order in JS (readJumpBackIn). An ORDER BY v.id here let the
-     -- planner walk every document in the database in id order to meet the few picked.
+     -- planner walk every design in the database in id order to meet the few picked.
      SELECT r.use_days, r.last_used_at, ${PLACE_COLUMNS}
        FROM picked p
-       JOIN reach r ON r.document_id = p.document_id
-       JOIN visible v ON v.id = p.document_id
+       JOIN reach r ON r.design_id = p.design_id
+       JOIN visible v ON v.id = p.design_id
        ${PLACE_JOINS}`;
 
 /** The person's server-side Within reach set (blueprint "Jump back in"): use days are the UTC days
@@ -140,7 +140,7 @@ export async function readJumpBackIn(
     .bind(personId, now, windowStartOf(now), n, 2 * n)
     .all<JumpBackInRow>();
   const rows = (res.results ?? []).sort((a, b) =>
-    a.document_id < b.document_id ? -1 : a.document_id > b.document_id ? 1 : 0,
+    a.design_id < b.design_id ? -1 : a.design_id > b.design_id ? 1 : 0,
   );
   const items = rows.map((r): HomeJumpBackInItem => ({
     ...placeOf(r),
@@ -168,14 +168,14 @@ export const WHAT_HAPPENED_SQL = `WITH me(id) AS (
        UNION
        SELECT alias_id FROM owner_aliases WHERE owner_id = ?1
      ),
-     ${VISIBLE_DOCUMENTS_CTES}
+     ${VISIBLE_DESIGNS_CTES}
      SELECT e.id AS event_id, e.event_type, e.actor_id, e.occurred_at, e.description, e.snapshot,
             ap.name AS actor_name, ap.color AS actor_color, ap.picture_url AS actor_picture,
             ${PLACE_COLUMNS}
-       -- The reader's documents lead (CROSS JOIN fixes the order), so the scopes are sought by
-       -- (scope_type, scope_id); led by scope_type alone, the read walked every document's events.
+       -- The reader's designs lead (CROSS JOIN fixes the order), so the scopes are sought by
+       -- (scope_type, scope_id); led by scope_type alone, the read walked every design's events.
        FROM visible v
-       CROSS JOIN timeline_event_scopes sc ON sc.scope_type = 'document' AND sc.scope_id = v.id
+       CROSS JOIN timeline_event_scopes sc ON sc.scope_type = 'design' AND sc.scope_id = v.id
        JOIN timeline_events e ON e.id = sc.event_id
        LEFT JOIN participants ap ON ap.id = e.actor_id
        ${PLACE_JOINS}
@@ -187,7 +187,7 @@ export const WHAT_HAPPENED_SQL = `WITH me(id) AS (
       ORDER BY e.occurred_at DESC, e.id DESC
       LIMIT ?4`;
 
-/** Other people's actions on the documents the person can open, newest first, from `since`. A
+/** Other people's actions on the designs the person can open, newest first, from `since`. A
  *  tab-scoped share is left out: its actions name things on tabs the link does not reach. */
 export async function readWhatHappenedRows(
   env: Env,
@@ -217,7 +217,7 @@ export async function readWhatHappenedRows(
     occurredAt: r.occurred_at,
     description: r.description,
     snapshot: parseSnapshot(r.snapshot),
-    document: placeOf(r),
+    design: placeOf(r),
     actor: { name: r.actor_name, color: r.actor_color, pictureUrl: r.actor_picture },
   }));
 }

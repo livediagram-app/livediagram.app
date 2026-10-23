@@ -34,7 +34,7 @@ import {
   type ChecklistItem,
   type LegendItem,
   type PieSlice,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { ProgressMenuGlyph, ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { AnimationSections } from '@/components/palette/AnimationSections';

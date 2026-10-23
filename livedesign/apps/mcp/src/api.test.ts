@@ -20,14 +20,14 @@ function envWith(handler: (req: Request) => Response): { env: Env; calls: Reques
 describe('apiFetch', () => {
   it('forwards the bearer token and the /api path to the service binding', async () => {
     const { env, calls } = envWith(() => new Response('{}'));
-    await apiFetch(env, 'lvd_abc', '/documents');
+    await apiFetch(env, 'lvd_abc', '/designs');
     expect(calls[0]!.headers.get('Authorization')).toBe('Bearer lvd_abc');
-    expect(new URL(calls[0]!.url).pathname).toBe('/api/documents');
+    expect(new URL(calls[0]!.url).pathname).toBe('/api/designs');
   });
 
   it('sets a JSON content-type when a body is present', async () => {
     const { env, calls } = envWith(() => new Response('{}'));
-    await apiFetch(env, 't', '/documents', { method: 'POST', body: '{}' });
+    await apiFetch(env, 't', '/designs', { method: 'POST', body: '{}' });
     expect(calls[0]!.headers.get('Content-Type')).toBe('application/json');
   });
 });
@@ -60,13 +60,13 @@ describe('apiJson error telemetry (docs/specs/015-api/mcp-server.md §4.12)', ()
         ? new Response(null, { status: 204 })
         : new Response('boom', { status: 503 }),
     );
-    await expect(apiJson(env, 't', '/documents')).rejects.toBeInstanceOf(ApiError);
+    await expect(apiJson(env, 't', '/designs')).rejects.toBeInstanceOf(ApiError);
     expect(eventsPosted(calls)).toBe(true);
   });
 
   it('does NOT report a 4xx (expected, model-correctable)', async () => {
     const { env, calls } = envWith(() => new Response('nope', { status: 404 }));
-    await expect(apiJson(env, 't', '/documents/bad')).rejects.toBeInstanceOf(ApiError);
+    await expect(apiJson(env, 't', '/designs/bad')).rejects.toBeInstanceOf(ApiError);
     expect(eventsPosted(calls)).toBe(false);
   });
 
@@ -79,11 +79,11 @@ describe('apiJson error telemetry (docs/specs/015-api/mcp-server.md §4.12)', ()
         : new Response('boom', { status: 503 }),
     );
     await expect(
-      runInTool('update_document', () => apiJson(env, 't', '/documents/x/tabs/y')),
+      runInTool('update_design', () => apiJson(env, 't', '/designs/x/tabs/y')),
     ).rejects.toBeInstanceOf(ApiError);
     const event = calls.find((r) => new URL(r.url).pathname === '/api/events')!;
     const body = (await event.json()) as { events: Array<{ type: string }> };
-    expect(body.events[0]!.type).toBe('Http503.UpdateDocument');
+    expect(body.events[0]!.type).toBe('Http503.UpdateDesign');
   });
 
   it('reports a network failure (binding threw) as Internal, then rethrows', async () => {
@@ -99,7 +99,7 @@ describe('apiJson error telemetry (docs/specs/015-api/mcp-server.md §4.12)', ()
       } as unknown as Fetcher,
       OAUTH_KV: {} as KVNamespace,
     };
-    await expect(apiJson(env, 't', '/documents')).rejects.toThrow('network down');
+    await expect(apiJson(env, 't', '/designs')).rejects.toThrow('network down');
     expect(calls.some((r) => new URL(r.url).pathname === '/api/events')).toBe(true);
   });
 });
@@ -114,7 +114,7 @@ describe('postTelemetry', () => {
       } as unknown as Fetcher,
       OAUTH_KV: {} as KVNamespace,
     };
-    expect(() => postTelemetry(env, 'Mcp', 'Used', 'ReadDocument')).not.toThrow();
+    expect(() => postTelemetry(env, 'Mcp', 'Used', 'ReadDesign')).not.toThrow();
   });
 
   it('names itself as internal when the key is set, and swallows a failed post', async () => {
@@ -129,7 +129,7 @@ describe('postTelemetry', () => {
       OAUTH_KV: {} as KVNamespace,
       INTERNAL_EVENTS_KEY: 'k',
     };
-    postTelemetry(env, 'Mcp', 'Used', 'ReadDocument');
+    postTelemetry(env, 'Mcp', 'Used', 'ReadDesign');
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(calls[0]!.headers.get('X-Internal-Events-Key')).toBe('k');
   });
@@ -138,7 +138,7 @@ describe('postTelemetry', () => {
 describe('apiText', () => {
   it('returns the body and the ETag, and fails like apiJson', async () => {
     const ok = envWith(() => new Response('tab t1', { headers: { ETag: 'W/"2"' } }));
-    expect(await apiText(ok.env, 't', '/documents/d/tabs/t?view=outline')).toEqual({
+    expect(await apiText(ok.env, 't', '/designs/d/tabs/t?view=outline')).toEqual({
       text: 'tab t1',
       etag: 'W/"2"',
     });

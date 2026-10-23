@@ -5,7 +5,7 @@ import { makeTestRouteContext } from './test-route-context';
 // never exposing an author id, and empty for anyone not signed in.
 
 const { db, gates } = vi.hoisted(() => ({
-  db: { getDocument: vi.fn(), getTab: vi.fn(), getParticipant: vi.fn() },
+  db: { getDesign: vi.fn(), getTab: vi.fn(), getParticipant: vi.fn() },
   gates: { gateRead: vi.fn() },
 }));
 vi.mock('../db', () => db);
@@ -25,11 +25,11 @@ const comment = (id: string, authorId?: string) => ({
   authorColor: '#f00',
   ...(authorId ? { authorId } : {}),
 });
-const PATH = '/api/documents/d1/tabs/t1/comment-pictures';
+const PATH = '/api/designs/d1/tabs/t1/comment-pictures';
 
 beforeEach(() => {
   vi.clearAllMocks();
-  db.getDocument.mockResolvedValue({ ownerId: 'user_ann', teamId: null });
+  db.getDesign.mockResolvedValue({ ownerId: 'user_ann', teamId: null });
   gates.gateRead.mockResolvedValue(true);
   db.getTab.mockResolvedValue({
     elements: [
@@ -75,7 +75,7 @@ describe('GET comment-pictures', () => {
 
   it('leaves every other path alone', async () => {
     expect(
-      await handleCommentPicturesRoute(makeTestRouteContext('GET', '/api/documents/d1/tabs/t1')),
+      await handleCommentPicturesRoute(makeTestRouteContext('GET', '/api/designs/d1/tabs/t1')),
     ).toBeNull();
   });
 });

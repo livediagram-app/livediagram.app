@@ -28,7 +28,7 @@ function Consent() {
   // Why the last Connect failed, for the line under the buttons.
   const [failure, setFailure] = useState<HandoverFailure>('failed');
   // Read-only opt-in (docs/specs/015-api/mcp-server.md §4.11): grant the tool view-only access — it can
-  // find and read documents but not create / edit / delete / share.
+  // find and read designs but not create / edit / delete / share.
   const [readOnly, setReadOnly] = useState(false);
   // The SERVER's account of this authorize request. Deliberately not the
   // `client` / `to` query params the redirect also carries: those are writable
@@ -98,7 +98,7 @@ function Consent() {
       <OauthShell>
         <h1 className={AUTH_TITLE}>Sign in to connect {client}</h1>
         <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-          You need to be signed in to connect an app to your documents.
+          You need to be signed in to connect an app to your designs.
         </p>
         <div className="mt-5 flex items-center gap-2">
           <a
@@ -197,7 +197,7 @@ function Consent() {
       <h1 className={AUTH_TITLE}>Connect {client}</h1>
       <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
         <span className="font-medium text-slate-700 dark:text-slate-200">{client}</span> wants to
-        access your livedesign documents on your behalf. Approving creates an API token, which you
+        access your livedesign designs on your behalf. Approving creates an API token, which you
         can revoke any time from Settings, under Account › API Tokens.
       </p>
       <ReadOnlyAccessToggle readOnly={readOnly} onChange={setReadOnly} />

@@ -1,14 +1,14 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import type { Element } from '@livedesign/document';
+import type { Element } from '@livedesign/design';
 import {
   usePreviewEntry,
   type LayerPreviewStore,
   type PreviewEntry,
 } from '@/hooks/canvas/useLayerDragPreview';
 
-// One element of the layer, drawn from the drag preview while one changes it and from the document
+// One element of the layer, drawn from the drag preview while one changes it and from the design
 // otherwise (docs/specs/008-canvas/drag-preview.md): a preview frame re-renders this, not the layer.
 export function PreviewedElement({
   store,

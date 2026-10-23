@@ -9,7 +9,7 @@ const GROUPS: {
   rows: { glyph: ReactNode; title: string; where: string; active?: boolean }[];
 }[] = [
   {
-    heading: 'DOCUMENTS',
+    heading: 'DESIGNS',
     rows: [
       {
         glyph: (
@@ -93,7 +93,7 @@ const GROUP_TOPS = GROUPS.reduce<number[]>(
 );
 
 // Search Panel: one box that finds everything. A query typed, and its results grouped by what they are:
-// a document, a tab, an element on a canvas and a help guide.
+// a design, a tab, an element on a canvas and a help guide.
 export function SearchPanelArt() {
   return (
     <Stage>

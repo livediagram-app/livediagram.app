@@ -1,5 +1,5 @@
 // The pull file (docs/specs/015-api/blueprints/cli.md "The pull file", CLI27, CLI28): the editor's
-// `livedesign.document` envelope, so "Import a copy" reads it, plus `livedesignSync`, which the envelope parser
+// `livedesign.design` envelope, so "Import a copy" reads it, plus `livedesignSync`, which the envelope parser
 // ignores: the host it came from and each tab's revision and hashes. `hash` covers a tab's elements, which push sends;
 // `settingsHash` covers everything else, which push names as not pushed.
 
@@ -7,15 +7,15 @@ import {
   canonicalJson,
   isRecord,
   isValidTab,
-  parseDocumentEnvelope,
-  type DocumentEnvelope,
+  parseDesignEnvelope,
+  type DesignEnvelope,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { sha256Hex } from '@livedesign/api-schema';
 
 export type PulledTab = { rev: number; hash: string; settingsHash: string };
 export type PullSync = { host: string; pulledAt: number; tabs: Record<string, PulledTab> };
-export type PullFile = DocumentEnvelope & { livedesignSync: PullSync };
+export type PullFile = DesignEnvelope & { livedesignSync: PullSync };
 
 export const PULL_FILE_SUFFIX = '.livedesign.json';
 const SLUG_MAX = 60;
@@ -87,21 +87,21 @@ function syncOf(value: unknown): PullSync | null {
 
 const FAILURES = {
   not_json: 'not JSON',
-  wrong_kind: 'not a livedesign document',
+  wrong_kind: 'not a livedesign design',
   unsupported_version: 'written by a newer livedesign',
-  malformed: 'its document is malformed',
+  malformed: 'its design is malformed',
 } as const;
 
 // A pull file read back, or why it is not one; a tab edited into something the editor would refuse is named (E20).
 export function parsePullFile(
   text: string,
 ): { ok: true; file: PullFile } | { ok: false; message: string } {
-  const parsed = parseDocumentEnvelope(text);
+  const parsed = parseDesignEnvelope(text);
   if (!parsed.ok) return { ok: false, message: FAILURES[parsed.failure] };
   // The envelope parse has already proved the text is a JSON object.
   const sync = syncOf(Reflect.get(Object(JSON.parse(text)), 'livedesignSync'));
   if (!sync) return { ok: false, message: 'not pulled by the CLI (no livedesignSync)' };
-  const { tabs } = parsed.envelope.document;
+  const { tabs } = parsed.envelope.design;
   const invalid = tabs.findIndex((tab: unknown) => !isValidTab(tab));
   if (invalid >= 0)
     return { ok: false, message: `tab ${JSON.stringify(tabs[invalid]!.name)} is not a valid tab` };

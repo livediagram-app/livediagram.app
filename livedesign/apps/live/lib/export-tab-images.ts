@@ -6,7 +6,7 @@
 // onto the export canvas without tainting it — then decode it to an
 // HTMLImageElement for the canvas path. Browser-only (uses Image / FileReader);
 // never reached in the no-DOM test runs.
-import { pageImageIds, photosOf, type Tab } from '@livedesign/document';
+import { pageImageIds, photosOf, type Tab } from '@livedesign/design';
 import { apiFetchImageDataUrl } from './api/images';
 import { fetchBlob } from './photo-editor/blob-client';
 
@@ -51,7 +51,7 @@ export function tabImageKey(tab: Pick<Tab, 'elements' | 'pages'>): string {
 // bitmap never aborts the export — that element just renders its placeholder.
 export async function loadTabImages(
   tab: Tab,
-  ctx: { ownerId: string; documentId: string; shareCode: string | null },
+  ctx: { ownerId: string; designId: string; shareCode: string | null },
 ): Promise<ExportImageMap> {
   const ids = tabImageIds(tab);
   const map: ExportImageMap = new Map();
@@ -73,14 +73,14 @@ export async function loadTabImages(
   await Promise.all(
     ids.map(async (id) => {
       try {
-        // Offline Mode (docs/specs/006-document/offline-mode.md): an embedded image already IS a data URL.
+        // Offline Mode (docs/specs/006-design/offline-mode.md): an embedded image already IS a data URL.
         // Only a base64 raster data URL is taken as inline bytes: the id is
-        // document data another editor chose, and it becomes markup below.
+        // design data another editor chose, and it becomes markup below.
         if (id.startsWith('data:') && !SAFE_INLINE_IMAGE.test(id)) return;
         const href = id.startsWith('data:')
           ? id
           : await apiFetchImageDataUrl(ctx.ownerId, id, {
-              documentId: ctx.documentId,
+              designId: ctx.designId,
               shareCode: ctx.shareCode,
             });
         if (!href) return;

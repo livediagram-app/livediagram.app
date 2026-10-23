@@ -1,15 +1,15 @@
-// /api/tags — per-person document tags (docs/specs/013-workspace/tags.md "API").
+// /api/tags — per-person design tags (docs/specs/013-workspace/tags.md "API").
 //
 // GET    /api/tags                               -> { tags, links }
 // POST   /api/tags                               -> 201 { tag }   make one: { id, name, colour }
 // PUT    /api/tags/:id                           -> { tag }       rename / recolour: { name?, colour? }
 // DELETE /api/tags/:id                           -> 204           its links cascade
-// PUT    /api/tags/:id/documents/:documentId     -> 204           put it on the document
-// DELETE /api/tags/:id/documents/:documentId     -> 204           take it off
+// PUT    /api/tags/:id/designs/:designId     -> 204           put it on the design
+// DELETE /api/tags/:id/designs/:designId     -> 204           take it off
 //
-// Hybrid identity like the rest of the api, guests included. Like a star, putting a tag on a document checks no access
-// to the document: the link is the tagger's own row, granting and revealing nothing, and the Tags page shows only the
-// documents the reader can already open.
+// Hybrid identity like the rest of the api, guests included. Like a star, putting a tag on a design checks no access
+// to the design: the link is the tagger's own row, granting and revealing nothing, and the Tags page shows only the
+// designs the reader can already open.
 
 import {
   TAG_ERRORS,
@@ -20,11 +20,11 @@ import {
 } from '@livedesign/api-schema';
 import { conflict, json, noContent, notFound } from '../responses';
 import {
-  addDocumentTag,
+  addDesignTag,
   createTag,
   deleteTag,
   listTags,
-  removeDocumentTag,
+  removeDesignTag,
   updateTag,
   type TagWriteResult,
 } from '../db';
@@ -102,13 +102,13 @@ export async function handleTags(ctx: RouteContext): Promise<Response> {
     return notFound();
   }
 
-  const documentId = segments[4];
-  if (segments.length === 5 && segments[3] === 'documents' && documentId) {
+  const designId = segments[4];
+  if (segments.length === 5 && segments[3] === 'designs' && designId) {
     if (request.method === 'PUT') {
-      return (await addDocumentTag(env, owner, tagId, documentId)) ? noContent() : notFound();
+      return (await addDesignTag(env, owner, tagId, designId)) ? noContent() : notFound();
     }
     if (request.method === 'DELETE') {
-      return (await removeDocumentTag(env, owner, tagId, documentId)) ? noContent() : notFound();
+      return (await removeDesignTag(env, owner, tagId, designId)) ? noContent() : notFound();
     }
   }
   return notFound();

@@ -1,5 +1,5 @@
 // The workbench verbs (docs/specs/013-workspace/blueprints/workbench-embeds.md "The CLI", "CLI verbs", "The CLI,
-// workspace scope"): a single-use link that opens a document, or the person's whole workspace, live inside a
+// workspace scope"): a single-use link that opens a design, or the person's whole workspace, live inside a
 // developer tool's frame, and pairing the token with that tool once, for one scope. `workbench pair` waits on the
 // person's browser, so the CLI runs it (CLI55).
 
@@ -13,9 +13,9 @@ import {
   type WorkbenchTicketResponse,
   type WorkbenchWorkspaceTicketResponse,
 } from '@livedesign/api-schema';
-import { readLibraries } from '../find-documents';
+import { readLibraries } from '../find-designs';
 import { folderChoices, resolveFolderRef } from '../folders';
-import { AddressError, parseDocumentUrl, resolveDocument } from '../addressing';
+import { AddressError, parseDesignUrl, resolveDesign } from '../addressing';
 import { defineVerb, VerbRefusal, type VerbContext } from '../define';
 import { tabOf } from './shared';
 
@@ -56,11 +56,11 @@ export function workbenchNameOf(input: string | undefined, log: Log): string | n
   });
 }
 
-// Exactly one of a document and --workspace; --tab only with a document, --folder only with --workspace.
+// Exactly one of a design and --workspace; --tab only with a design, --folder only with --workspace.
 function usageRefusal(message: string, hint: string): AddressError {
   return new AddressError({
     kind: 'usage',
-    what: 'document',
+    what: 'design',
     input: '',
     candidates: [],
     message,
@@ -72,11 +72,11 @@ function checkScope(input: { doc?: string; workspace?: boolean; tab?: string; fo
   const workspace = input.workspace === true;
   if (workspace === (input.doc !== undefined))
     throw usageRefusal(
-      'name a document, or --workspace',
+      'name a design, or --workspace',
       `livedesign workbench open --workspace --origin ${EXAMPLE_ORIGIN}`,
     );
   if (workspace && input.tab !== undefined)
-    throw usageRefusal('--tab opens a tab of a document, not of the workspace', 'drop --tab');
+    throw usageRefusal('--tab opens a tab of a design, not of the workspace', 'drop --tab');
   if (!workspace && input.folder !== undefined)
     throw usageRefusal(
       '--folder takes --workspace',
@@ -84,18 +84,18 @@ function checkScope(input: { doc?: string; workspace?: boolean; tab?: string; fo
     );
 }
 
-// The document, and the tab only when one is named: without one the editor opens the first (WB44).
+// The design, and the tab only when one is named: without one the editor opens the first (WB44).
 async function ticketRequestOf(
   ctx: VerbContext,
   input: { doc: string; tab?: string },
   origin: string,
 ): Promise<WorkbenchTicketRequest> {
   if (input.tab === undefined) {
-    const document = await resolveDocument(ctx.api, input.doc, ctx.host, ctx.log);
-    return { documentId: document.id, origin };
+    const design = await resolveDesign(ctx.api, input.doc, ctx.host, ctx.log);
+    return { designId: design.id, origin };
   }
-  const { document, tab } = await tabOf(ctx, input.doc, input.tab);
-  return { documentId: document.id, tabId: tab.id, origin };
+  const { design, tab } = await tabOf(ctx, input.doc, input.tab);
+  return { designId: design.id, tabId: tab.id, origin };
 }
 
 const originFlag = z
@@ -104,15 +104,15 @@ const originFlag = z
 
 export const workbenchOpen = defineVerb({
   id: 'workbench.open',
-  summary: 'A link that opens a document live inside a workbench',
+  summary: 'A link that opens a design live inside a workbench',
   description:
-    'Mints a link that opens your document in the editor, or with --workspace your whole workspace in the Explorer (on Home, or the --folder), signed in as you, inside the workbench at --origin. The link works once, within a minute. A workbench the token is not paired with for that scope exits 4, naming workbench pair.',
+    'Mints a link that opens your design in the editor, or with --workspace your whole workspace in the Explorer (on Home, or the --folder), signed in as you, inside the workbench at --origin. The link works once, within a minute. A workbench the token is not paired with for that scope exits 4, naming workbench pair.',
   behaviour: 'write',
   input: z.object({
     doc: z
       .string()
       .optional()
-      .describe('A name, id prefix or livedesign URL of your own document; or --workspace'),
+      .describe('A name, id prefix or livedesign URL of your own design; or --workspace'),
     workspace: z.boolean().optional().describe('The whole workspace, in the Explorer'),
     folder: z
       .string()
@@ -121,13 +121,13 @@ export const workbenchOpen = defineVerb({
     tab: z
       .string()
       .optional()
-      .describe("A tab name or id prefix; the document's first tab when omitted"),
+      .describe("A tab name or id prefix; the design's first tab when omitted"),
     origin: originFlag,
   }),
   output: z.union([
     z.object({
       url: z.string(),
-      documentId: z.string(),
+      designId: z.string(),
       tabId: z.string().nullable(),
       expiresAt: z.number(),
     }),
@@ -143,21 +143,21 @@ export const workbenchOpen = defineVerb({
     const origin = workbenchOriginOf(input.origin, 'open', ctx.log);
     if (input.doc === undefined) return mintWorkspace(ctx, origin, input.folder);
     // The owner's own access only (WB3): a share link's code never rides a mint.
-    const url = parseDocumentUrl(input.doc, ctx.host);
+    const url = parseDesignUrl(input.doc, ctx.host);
     if (url && 'shareCode' in url) {
       ctx.log('workbench open refused share-link');
       throw new AddressError({
         kind: 'usage',
-        what: 'document',
+        what: 'design',
         input: input.doc,
         candidates: [],
-        message: 'a workbench opens your own documents, not a share link',
-        hint: 'livedesign document ls',
+        message: 'a workbench opens your own designs, not a share link',
+        hint: 'livedesign design ls',
       });
     }
     const request = await ticketRequestOf(ctx, { doc: input.doc, tab: input.tab }, origin);
     const minted = await mint<WorkbenchTicketResponse>(ctx, request, '');
-    ctx.log(`workbench open minted ${minted.documentId}`);
+    ctx.log(`workbench open minted ${minted.designId}`);
     return minted;
   },
   text: ({ url }) => [url],
@@ -168,7 +168,7 @@ export const workbenchOpen = defineVerb({
       `livedesign workbench open --workspace --folder Minigames --origin ${EXAMPLE_ORIGIN} --json`,
     ],
     prints:
-      'the link; --json { url, documentId, tabId, expiresAt }, or with --workspace { url, scope, folderId, expiresAt }',
+      'the link; --json { url, designId, tabId, expiresAt }, or with --workspace { url, scope, folderId, expiresAt }',
   },
 });
 
@@ -234,13 +234,13 @@ export const workbenchPair = defineVerb({
     workspace: z
       .boolean()
       .optional()
-      .describe('Ask for the whole workspace, not one document at a time'),
+      .describe('Ask for the whole workspace, not one design at a time'),
   }),
   output: z.object({
     status: z.literal('paired'),
     origin: z.string(),
     name: z.string().nullable(),
-    scope: z.enum(['document', 'workspace']),
+    scope: z.enum(['design', 'workspace']),
   }),
   text: ({ origin, name, scope }) => [
     `paired ${origin}${name ? ` as ${name}` : ''}${scope === 'workspace' ? ' (whole workspace)' : ''}`,

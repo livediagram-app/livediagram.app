@@ -3,7 +3,7 @@
 // Unicode ('luni') as well as Pascal, masks as user mask channels (-2).
 import type { Raster } from '../raster/raster';
 import { BLEND_KEYS } from './blend-keys';
-import type { PsdDocument, PsdMask, PsdNode } from './model';
+import type { PsdDesign, PsdMask, PsdNode } from './model';
 import { packBits } from './rle';
 
 class Writer {
@@ -163,8 +163,8 @@ function pascal(w: Writer, name: string, pad: number): void {
   while ((w.length - start) % pad !== 0) w.u8(0);
 }
 
-/** The PSD file of a document. */
-export function writePsd(doc: PsdDocument): Uint8Array {
+/** The PSD file of a design. */
+export function writePsd(doc: PsdDesign): Uint8Array {
   const w = new Writer();
   w.ascii('8BPS');
   w.u16(1);

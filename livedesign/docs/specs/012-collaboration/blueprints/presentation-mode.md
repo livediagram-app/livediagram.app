@@ -40,8 +40,8 @@ Transitions) and "Full screen" (refusals logged). The rest of presentation mode 
 
 ### Full screen
 
-`PresentationOverlay`'s effect keeps `document.documentElement.requestFullscreen()` (the whole document, which no
-component renders, so the document listeners in `whenScreenSettles` stay). Its `.catch` logs instead of swallowing:
+`PresentationOverlay`'s effect keeps `document.documentElement.requestFullscreen()` (the whole design, which no
+component renders, so the design listeners in `whenScreenSettles` stay). Its `.catch` logs instead of swallowing:
 `console.warn('[presentation] fullscreen-refused', reason)` on entry and `[presentation] fullscreen-exit-failed` on
 exit.
 

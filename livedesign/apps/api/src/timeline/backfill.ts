@@ -1,6 +1,6 @@
 // One-shot backfill (docs/specs/013-workspace/timeline.md §5).
 //
-// A brand-new Timeline that is empty for a user with sixty documents
+// A brand-new Timeline that is empty for a user with sixty designs
 // reads as a broken feature, not a new one. On the first read of a
 // scope we seed it from what the database already knows.
 //
@@ -16,11 +16,11 @@ import { userScope } from './audience';
 import { record } from './record';
 
 // How far back the seed reaches. A cap rather than the whole library
-// because this runs in one request: a user with a thousand documents
+// because this runs in one request: a user with a thousand designs
 // would otherwise pay for a thousand upserts on their first page load.
-const BACKFILL_DOCUMENT_LIMIT = 200;
+const BACKFILL_DESIGN_LIMIT = 200;
 
-type DocumentSeedRow = {
+type DesignSeedRow = {
   id: string;
   name: string;
   created_at: number;
@@ -37,19 +37,19 @@ export async function backfillUserScope(env: Env, ownerId: string): Promise<void
   const scope = [userScope(ownerId)];
 
   const liveDocs = await env.DB.prepare(
-    `SELECT id, name, created_at, saved_at FROM documents
+    `SELECT id, name, created_at, saved_at FROM designs
       WHERE owner_id = ?1
       ORDER BY saved_at DESC
       LIMIT ?2`,
   )
-    .bind(ownerId, BACKFILL_DOCUMENT_LIMIT)
-    .all<DocumentSeedRow>();
+    .bind(ownerId, BACKFILL_DESIGN_LIMIT)
+    .all<DesignSeedRow>();
 
   const rows = liveDocs.results ?? [];
-  // Log rather than silently truncate: a user with 400 documents should
+  // Log rather than silently truncate: a user with 400 designs should
   // not be told their history starts in March when it doesn't.
-  if (rows.length === BACKFILL_DOCUMENT_LIMIT) {
-    console.info('timeline backfill capped', ownerId, BACKFILL_DOCUMENT_LIMIT);
+  if (rows.length === BACKFILL_DESIGN_LIMIT) {
+    console.info('timeline backfill capped', ownerId, BACKFILL_DESIGN_LIMIT);
   }
 
   for (const row of rows) {
@@ -57,39 +57,39 @@ export async function backfillUserScope(env: Env, ownerId: string): Promise<void
       env,
       {
         actorId: ownerId,
-        sourceType: 'document',
+        sourceType: 'design',
         sourceId: row.id,
-        eventType: 'document_created',
-        title: 'Document Created',
+        eventType: 'design_created',
+        title: 'Design Created',
         description: row.name,
         occurredAt: row.created_at,
-        snapshot: { documentId: row.id, documentName: row.name },
+        snapshot: { designId: row.id, designName: row.name },
         // A reconstruction: it never overwrites the real creation already recorded, whose snapshot
         // may say the making counts as a use (docs/specs/013-workspace/explorer-home.md "Making a
-        // document").
+        // design").
         keepExisting: true,
       },
       scope,
     );
-    // Only when the document was actually touched after it was made —
-    // otherwise every seeded document gets a redundant "Updated" bubble
+    // Only when the design was actually touched after it was made —
+    // otherwise every seeded design gets a redundant "Updated" bubble
     // one millisecond after its "Created" one.
     if (row.saved_at > row.created_at) {
       await record(
         env,
         {
           actorId: ownerId,
-          sourceType: 'document',
+          sourceType: 'design',
           sourceId: row.id,
-          eventType: 'document_edited',
+          eventType: 'design_edited',
           dedupeKey: dedupeKeyForDay(ownerId, row.saved_at),
-          title: 'Document Updated',
+          title: 'Design Updated',
           description: row.name,
           occurredAt: row.saved_at,
           // A reconstruction: the last save may have been a teammate's, so Explorer Home, which
           // counts only real edits, leaves it out; and it never overwrites a real edit already
           // recorded for that day (docs/specs/013-workspace/timeline.md §5).
-          snapshot: { documentId: row.id, documentName: row.name, backfilled: true },
+          snapshot: { designId: row.id, designName: row.name, backfilled: true },
           keepExisting: true,
         },
         scope,
@@ -125,7 +125,7 @@ export async function backfillUserScope(env: Env, ownerId: string): Promise<void
 
   // Comments and assigned actions are deliberately NOT seeded. They
   // live inside element JSON in `tabs`, so backfilling them means
-  // parsing every tab of every document — a cost with no ceiling, in a
+  // parsing every tab of every design — a cost with no ceiling, in a
   // request. The feed's older reaches are thinner than its recent ones;
   // that gap closes on its own within a week of use.
 

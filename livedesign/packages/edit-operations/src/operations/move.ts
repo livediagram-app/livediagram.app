@@ -9,7 +9,7 @@ import {
   type BoxedElement,
   type Element,
   type ElementId,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { growContainer, HOLD_PAD } from '../grow-container';
 import { boxOf, resolvePlacement, shifted } from '../placement';
 import { resolveSome } from '../selectors';

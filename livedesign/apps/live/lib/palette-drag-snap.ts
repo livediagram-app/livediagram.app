@@ -5,7 +5,7 @@ import {
   type AlignmentGuide,
   type DistributionGuide,
   type Element,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { ALIGN_SNAP_THRESHOLD } from '@/lib/canvas';
 
 // Alignment help BEFORE the drop (docs/specs/010-palette/palette-drag-ghost.md): a palette tile dragged over the

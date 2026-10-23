@@ -30,29 +30,29 @@ describe('eventCategory', () => {
 
   // The design decision worth pinning: chips group by CONSEQUENCE, not by which
   // table the row came from. Someone scanning for "did anything disappear?"
-  // wants a lost document, folder, theme, team and working token in one place.
+  // wants a lost design, folder, theme, team and working token in one place.
   it('groups losses together regardless of what was lost', () => {
     for (const type of ['folder_deleted', 'theme_deleted', 'team_deleted', 'token_revoked']) {
       expect(eventCategory(type)).toBe('deletions');
     }
   });
 
-  it('counts someone reaching your work as sharing, not as a document event', () => {
-    expect(eventCategory('document_opened_by_visitor')).toBe('sharing');
-    expect(eventCategory('document_copied_by_visitor')).toBe('sharing');
-    expect(eventCategory('team_document_added')).toBe('sharing');
-    expect(eventCategory('team_document_removed')).toBe('sharing');
+  it('counts someone reaching your work as sharing, not as a design event', () => {
+    expect(eventCategory('design_opened_by_visitor')).toBe('sharing');
+    expect(eventCategory('design_copied_by_visitor')).toBe('sharing');
+    expect(eventCategory('team_design_added')).toBe('sharing');
+    expect(eventCategory('team_design_removed')).toBe('sharing');
   });
 
-  it('separates where a document lives from what changed inside it', () => {
-    expect(eventCategory('document_moved')).toBe('filing');
-    expect(eventCategory('document_offline')).toBe('filing');
-    expect(eventCategory('document_synced')).toBe('filing');
-    expect(eventCategory('document_edited')).toBe('edits');
+  it('separates where a design lives from what changed inside it', () => {
+    expect(eventCategory('design_moved')).toBe('filing');
+    expect(eventCategory('design_offline')).toBe('filing');
+    expect(eventCategory('design_synced')).toBe('filing');
+    expect(eventCategory('design_edited')).toBe('edits');
   });
 
-  it('keeps renames in one chip across documents and teams', () => {
-    expect(eventCategory('document_renamed')).toBe('renames');
+  it('keeps renames in one chip across designs and teams', () => {
+    expect(eventCategory('design_renamed')).toBe('renames');
     expect(eventCategory('team_renamed')).toBe('renames');
   });
 });

@@ -1,6 +1,6 @@
 'use client';
 
-import { DocumentIcon, FolderOutlineIcon, PlusIcon } from '@/components/primitives/explorer-icons';
+import { DesignIcon, FolderOutlineIcon, PlusIcon } from '@/components/primitives/explorer-icons';
 import { useState } from 'react';
 import { Button, Glyph } from '@livedesign/ui';
 import { PortalMenu } from '@/components/primitives/PortalMenu';
@@ -10,11 +10,11 @@ import type { ExplorerViewMode } from '@/app/explorer/useExplorerViewMode';
 import type { Folder } from '@livedesign/api-schema';
 import { assignAppLocation } from '@/lib/app-location';
 
-// The bar above the team library (docs/specs/013-workspace/team-shared-documents.md): where you are, and the two things
+// The bar above the team library (docs/specs/013-workspace/team-shared-designs.md): where you are, and the two things
 // you can do from anywhere in it — switch card / list view, and add something.
 //
-// Split out of TeamSharedDocuments because it is the half of that component
-// that has nothing to do with listing documents. Below it is a folder tree and
+// Split out of TeamSharedDesigns because it is the half of that component
+// that has nothing to do with listing designs. Below it is a folder tree and
 // its rows; this is navigation and creation, and the two only meet through the
 // current spot.
 
@@ -33,7 +33,7 @@ export function TeamLibraryHeader({
   /** Root-first trail; the last entry is where you are and never links. */
   crumbs: TeamLibraryCrumb[];
   teamId: string;
-  /** The folder a new document or subfolder lands in, or null at the root. */
+  /** The folder a new design or subfolder lands in, or null at the root. */
   currentFolderId: string | null;
   /** Whether the current spot is a folder, so the tile reads "New subfolder". */
   inFolder: boolean;
@@ -67,7 +67,7 @@ export function TeamLibraryHeader({
                 </button>
               ) : (
                 // The section-label uppercase look is reserved for the
-                // root "Shared documents" crumb; deeper crumbs are user
+                // root "Shared designs" crumb; deeper crumbs are user
                 // folder names and must keep their own casing.
                 <span
                   className={
@@ -109,16 +109,16 @@ export function TeamLibraryHeader({
               onClose={() => setCreateOpen(false)}
             >
               <MenuTileGrid cols={2}>
-                {/* New Document lands directly in the team library, scoped
-                to the folder currently open (docs/specs/013-workspace/team-shared-documents.md): /live/new
+                {/* New Design lands directly in the team library, scoped
+                to the folder currently open (docs/specs/013-workspace/team-shared-designs.md): /live/new
                 applies the team + folder placement after the create. */}
                 <MenuTile
                   icon={
                     <span className="[&_svg]:h-5 [&_svg]:w-5">
-                      <DocumentIcon />
+                      <DesignIcon />
                     </span>
                   }
-                  label="New Document"
+                  label="New Design"
                   onClick={() => {
                     setCreateOpen(false);
                     assignAppLocation(

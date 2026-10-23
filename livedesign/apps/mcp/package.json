@@ -19,7 +19,7 @@
     "@livedesign/api-client": "workspace:*",
     "@livedesign/api-schema": "workspace:*",
     "@livedesign/page-lint": "workspace:*",
-    "@livedesign/document": "workspace:*",
+    "@livedesign/design": "workspace:*",
     "@livedesign/edit-operations": "workspace:*",
     "@livedesign/icons": "workspace:*",
     "@livedesign/render-png": "workspace:*",

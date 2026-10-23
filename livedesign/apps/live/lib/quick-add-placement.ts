@@ -1,4 +1,4 @@
-import { isBoxed, type Element, type Rect } from '@livedesign/document';
+import { isBoxed, type Element, type Rect } from '@livedesign/design';
 import type { QuickConnectDirection } from '@/lib/canvas';
 
 // Placement math for quick add (docs/specs/008-canvas/canvas-and-palette.md), lifted out of

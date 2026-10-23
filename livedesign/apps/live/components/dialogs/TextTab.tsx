@@ -6,7 +6,7 @@
 // px from the slider, which the preview follows as it moves), and Apply to All Elements.
 
 import { useState } from 'react';
-import { FONTS, type Finish, type TextSize } from '@livedesign/document';
+import { FONTS, type Finish, type TextSize } from '@livedesign/design';
 import { PagedCarousel } from '@/components/primitives/PagedCarousel';
 import { TextSizeControl } from '@/components/palette/TextSizeControl';
 import { TabStylePreview } from './TabStylePreview';

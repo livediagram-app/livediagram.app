@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 // The tour's click shield (docs/specs/007-editor/pages-tour.md "The page waits"): a press on it never reaches the page,
-// not even a document listener such as an open menu's outside-press close.
+// not even a design listener such as an open menu's outside-press close.
 import { cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { TourShield } from './TourShield';
@@ -8,7 +8,7 @@ import { TourShield } from './TourShield';
 afterEach(cleanup);
 
 describe('TourShield', () => {
-  it('stops a press on the shield before any document listener sees it', () => {
+  it('stops a press on the shield before any design listener sees it', () => {
     render(<TourShield />);
     const shield = document.querySelector<HTMLElement>('[data-tour-shield]')!;
     const outsidePress = vi.fn();

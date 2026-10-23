@@ -8,7 +8,7 @@ Annotations are a first-class element type. They build on the existing
 per-element **note** feature (`note?: string` on every boxed element, edited
 through `NotePopover` / `useEditorNotes`, see [Canvas and palette](../008-canvas/canvas-and-palette.md));
 an annotation is just the dedicated, palette-addable element whose entire
-purpose is to carry one. The note is a small **rich-text** document
+purpose is to carry one. The note is a small **rich-text** design
 ([Rich-text notes](rich-text-notes.md)): formatting lives in `noteRich?: TextRun[]`
 and `note` is the plain-text mirror.
 
@@ -63,7 +63,7 @@ and `note` is the plain-text mirror.
 through every generic boxed path (selection, drag, layering, lock,
 link, colours, comments, the note feature). It carries the shared boxed
 fields plus `note?: string` (and `noteRich?: TextRun[]`, [Rich-text notes](rich-text-notes.md)). `createAnnotation(x, y)` (in
-`packages/document/src/factories.ts`) returns one at the default 44×44 marker
+`packages/design/src/factories.ts`) returns one at the default 44×44 marker
 size. `isBoxed` and the `BoxedElement` union include it.
 
 - **Sizing:** `inheritedSizeFor` keeps an annotation at its intrinsic marker
@@ -73,7 +73,7 @@ size. `isBoxed` and the `BoxedElement` union include it.
   `strokeColor` (ring + glyph) via `THEME_COLOUR_FIELDS`, exactly like a
   shape's fill + stroke; it has no themed text (the note is not drawn on the
   marker). The
-  per-type colour defaults live in `packages/document/src/colors.ts`
+  per-type colour defaults live in `packages/design/src/colors.ts`
   (`defaultFillColor` / `defaultStrokeColor` / `defaultTextColor` /
   `defaultPadding`) and `supportsColours` returns true for it.
 - **Controls hidden:** the Shape morph grid, Border accordion, and aspect-lock

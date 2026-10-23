@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { MCP_TOOL_VERBS, mcpShareDocument } from './mcp-tools';
+import { MCP_TOOL_VERBS, mcpShareDesign } from './mcp-tools';
 
 // The MCP's tools as verbs (docs/specs/015-api/cli.md "One catalogue for the CLI and the MCP"). The MCP's own
 // parity test checks the server registers each as declared; this checks the declarations themselves.
@@ -10,18 +10,18 @@ describe('the MCP tool verbs', () => {
     expect(MCP_TOOL_VERBS.map((v) => v.mcp.tool)).toEqual([
       'change_pages',
       'list_images',
-      'find_documents',
-      'read_document',
+      'find_designs',
+      'read_design',
       'list_templates',
       'search_icons',
-      'create_document',
+      'create_design',
       'add_tab',
-      'update_document',
-      'share_document',
-      'rename_document',
-      'delete_document',
+      'update_design',
+      'share_design',
+      'rename_design',
+      'delete_design',
       'list_trash',
-      'restore_document',
+      'restore_design',
     ]);
     for (const v of MCP_TOOL_VERBS) {
       expect(v.id).toBe(`mcp.${v.mcp.tool}`);
@@ -44,8 +44,8 @@ describe('the MCP tool verbs', () => {
     const reads = MCP_TOOL_VERBS.filter((v) => v.behaviour === 'read').map((v) => v.mcp.tool);
     expect(reads).toEqual([
       'list_images',
-      'find_documents',
-      'read_document',
+      'find_designs',
+      'read_design',
       'list_templates',
       'search_icons',
       'list_trash',
@@ -53,10 +53,10 @@ describe('the MCP tool verbs', () => {
   });
 });
 
-// docs/specs/015-api/mcp-server.md: share_document makes a Participant link when the agent names no level.
-describe('share_document', () => {
+// docs/specs/015-api/mcp-server.md: share_design makes a Participant link when the agent names no level.
+describe('share_design', () => {
   it('names the default level the api applies', () => {
-    expect(mcpShareDocument.description).toContain('"participate" (the default');
-    expect(mcpShareDocument.description).not.toMatch(/"view" \([^)]*default/);
+    expect(mcpShareDesign.description).toContain('"participate" (the default');
+    expect(mcpShareDesign.description).not.toMatch(/"view" \([^)]*default/);
   });
 });

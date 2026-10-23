@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { ANIMATION_SET_VALUES, type AnimationSetId } from '@livedesign/document';
+import { ANIMATION_SET_VALUES, type AnimationSetId } from '@livedesign/design';
 import { AnimationSetTiles } from './AnimationSetTiles';
 
 const noop = () => {};

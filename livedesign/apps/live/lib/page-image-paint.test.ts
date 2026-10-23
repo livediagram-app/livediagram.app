@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { PageImageFill } from '@livedesign/document';
+import type { PageImageFill } from '@livedesign/design';
 import { backgroundCategoryOf, fillCss, pageSheetStyle } from './page-paint';
 import {
   pageImageCssUrl,

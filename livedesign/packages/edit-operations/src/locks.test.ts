@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@livedesign/document';
+import type { Tab } from '@livedesign/design';
 import { checkoutFlow } from './fixtures/checkout-flow';
 import { layerLockOf, lockedIds } from './locks';
 

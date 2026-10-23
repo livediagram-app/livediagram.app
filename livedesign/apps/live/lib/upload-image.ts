@@ -1,5 +1,5 @@
 import { sha256Hex, type ImageSummary } from '@livedesign/api-schema';
-import type { ImageCredit } from '@livedesign/document';
+import type { ImageCredit } from '@livedesign/design';
 import { ApiError, apiUploadImage } from './api-client';
 import { isOfflineIdSync } from './offline/offline-store';
 import {
@@ -110,7 +110,7 @@ export async function uploadImageFile(ownerId: string, file: File): Promise<Uplo
   }
 }
 
-// Offline Mode (docs/specs/006-document/offline-mode.md): an offline document must stay self-contained, so
+// Offline Mode (docs/specs/006-design/offline-mode.md): an offline design must stay self-contained, so
 // instead of uploading to the server gallery the file is embedded straight
 // into the element as a base64 data URI (the renderer and the exporters
 // treat a data-URI imageId as the bytes themselves, the same shape Take
@@ -140,17 +140,17 @@ async function embedImageFile(file: File): Promise<UploadResult> {
 }
 
 // The single entry point for "the user handed the editor an image file for
-// THIS document" (picker upload, drag-drop, clipboard paste): cloud documents
-// upload to the gallery, offline documents embed locally so no server copy
-// is created for a document the server doesn't know about. The offline id
-// cache is warm whenever an offline document is open, so the sync check is
+// THIS design" (picker upload, drag-drop, clipboard paste): cloud designs
+// upload to the gallery, offline designs embed locally so no server copy
+// is created for a design the server doesn't know about. The offline id
+// cache is warm whenever an offline design is open, so the sync check is
 // reliable here.
-export async function addImageFileForDocument(
+export async function addImageFileForDesign(
   ownerId: string,
-  documentId: string | null,
+  designId: string | null,
   file: File,
 ): Promise<UploadResult> {
-  if (documentId && isOfflineIdSync(documentId)) return embedImageFile(file);
+  if (designId && isOfflineIdSync(designId)) return embedImageFile(file);
   return uploadImageFile(ownerId, file);
 }
 

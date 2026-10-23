@@ -5,7 +5,7 @@
 // result previewed, a pick one edit with a readable overlay, and the overlay, strength and position.
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Page, PageFill, PageImageFill } from '@livedesign/document';
+import type { Page, PageFill, PageImageFill } from '@livedesign/design';
 import type { OpenverseImage } from '@/lib/image-search/openverse';
 import type { PickedImage } from '@/lib/upload-image';
 
@@ -41,7 +41,7 @@ afterEach(() => {
   track.mockClear();
 });
 
-const ACCESS = { ownerId: 'o', documentId: 'd', shareCode: null };
+const ACCESS = { ownerId: 'o', designId: 'd', shareCode: null };
 const picture: PageImageFill = {
   kind: 'image',
   imageId: 'img-1',

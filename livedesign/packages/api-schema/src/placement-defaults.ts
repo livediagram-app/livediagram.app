@@ -1,6 +1,6 @@
 // Default folders (docs/specs/013-workspace/default-folders.md, blueprint
-// docs/specs/013-workspace/blueprints/default-folders.md): where a person's new documents land when
-// no place is chosen, keyed by what the document is made as. The api resolves and stores them; the
+// docs/specs/013-workspace/blueprints/default-folders.md): where a person's new designs land when
+// no place is chosen, keyed by what the design is made as. The api resolves and stores them; the
 // editor and the MCP server send the creation intent; all read the keys and the intent from here.
 //
 // One dimension: the editor mode it opens in. It comes from one closed list, and the keys are
@@ -13,13 +13,13 @@ import {
   isEditorMode,
   type EditorMode,
   type TabKind,
-} from '@livedesign/document';
+} from '@livedesign/design';
 
-/** The tab kinds a document can be created with. */
+/** The tab kinds a design can be created with. */
 export const CREATION_TAB_KINDS = ['diagram'] as const satisfies readonly TabKind[];
 export type CreationTabKind = (typeof CREATION_TAB_KINDS)[number];
 
-/** What a new document is made as, captured once when it is created: the create body's `intent`. */
+/** What a new design is made as, captured once when it is created: the create body's `intent`. */
 export type CreationIntent = {
   mode: EditorMode;
   tabKind: CreationTabKind;
@@ -27,7 +27,7 @@ export type CreationIntent = {
 
 export type PlacementDefaultKey = `mode:${EditorMode}`;
 
-/** The default keys, `mode:<mode>`, in the order the "New documents that open as" list shows them:
+/** The default keys, `mode:<mode>`, in the order the "New designs that open as" list shows them:
  *  one per editor mode, all generated. */
 export const PLACEMENT_DEFAULT_KEYS: readonly PlacementDefaultKey[] = EDITOR_MODES.map(
   (mode) => `mode:${mode}` as const,
@@ -69,7 +69,7 @@ export function placementDefaultTelemetryType(key: PlacementDefaultKey): string 
   return `Default${key.split(':').map(pascal).join('')}`;
 }
 
-/** The creation intent of a new document, from its first tab. Every tab opens in Pages. */
+/** The creation intent of a new design, from its first tab. Every tab opens in Pages. */
 export function creationIntentOf(_tab: { opensIn?: string } | undefined): CreationIntent {
   return { mode: DEFAULT_EDITOR_MODE, tabKind: DEFAULT_TAB_KIND };
 }

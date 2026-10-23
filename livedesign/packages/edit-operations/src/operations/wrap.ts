@@ -15,7 +15,7 @@ import {
   type Element,
   type ElementId,
   type ShapeElement,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { describeElement } from '../element-text';
 import { writeFieldsOnto } from '../fields';
 import { newElementId } from '../ids';

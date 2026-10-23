@@ -18,7 +18,7 @@ const timing = (type: string, count: number) => ({
 
 function summary(daily = true): TelemetrySummary {
   const rows = [
-    timing('DocumentLoad.Under1000ms', 40),
+    timing('DesignLoad.Under1000ms', 40),
     timing('Save.Under250ms', 3),
     timing('Lcp.Marketing.Under2500ms', 30),
     timing('Inp.Marketing.Under500ms', 30),
@@ -35,8 +35,8 @@ function summary(daily = true): TelemetrySummary {
           totals: [0, 0, 0],
           byCategory: {},
           byMetric: {
-            [metricKey('Timing', 'Measured', 'DocumentLoad.Under1000ms')]: [20, 0, 20],
-            [metricKey('Timing', 'Measured', 'DocumentLoad.Under2000ms')]: [0, 0, 20],
+            [metricKey('Timing', 'Measured', 'DesignLoad.Under1000ms')]: [20, 0, 20],
+            [metricKey('Timing', 'Measured', 'DesignLoad.Under2000ms')]: [0, 0, 20],
             [metricKey('Timing', 'Measured', 'Save.Under250ms')]: [5, 5, 0],
           },
         }
@@ -66,7 +66,7 @@ const card = (host: HTMLElement, title: string) =>
 describe('TimingsView', () => {
   it('shows each editor timing as its estimated percentiles', () => {
     const host = render(summary());
-    const load = card(host, 'Document Load');
+    const load = card(host, 'Design Load');
     expect(load.textContent).toContain('875 ms'); // p75 of 500..1000
     expect(load.textContent).toContain('Median 750 ms · p95 975 ms');
     expect(load.textContent).toContain('40 timings');
@@ -98,6 +98,6 @@ describe('TimingsView', () => {
 
   it('renders without the daily series from an older api', () => {
     const host = render(summary(false));
-    expect(card(host, 'Document Load').textContent).not.toContain('Daily p75');
+    expect(card(host, 'Design Load').textContent).not.toContain('Daily p75');
   });
 });

@@ -1,7 +1,7 @@
 // A member moved out leaves no hole (docs/specs/024-agents/edit-operations.md "Layout on edit"): the frame that grew
 // to hold it gives the room back, and what it pushed on comes back with it.
 import { describe, expect, it } from 'vitest';
-import { type BoxedElement, type Tab } from '@livedesign/document';
+import { type BoxedElement, type Tab } from '@livedesign/design';
 import { applied, lines } from '../fixtures/outcomes';
 import { laidOutTab } from '../fixtures/laid-out-tabs';
 import { run } from '../fixtures/run';

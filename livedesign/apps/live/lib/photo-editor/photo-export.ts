@@ -2,7 +2,7 @@
 // PNG, JPEG or WebP, its layers kept as a PSD, each visible layer as a PNG, and one layer alone (the
 // Layers row's Export Layer). Large photos are written band by band (encodePngStream), so the whole
 // picture is never one canvas.
-import { photoOfPage, type LaidOutPage, type Tab } from '@livedesign/document';
+import { photoOfPage, type LaidOutPage, type Tab } from '@livedesign/design';
 import {
   compositePhoto,
   encodePngStream,

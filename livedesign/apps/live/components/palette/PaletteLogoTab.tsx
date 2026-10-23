@@ -6,7 +6,7 @@
 // stroke; pressed again while held, it opens its flyout (colour and width), whose
 // changes re-arm it at once.
 import { useContext, useState } from 'react';
-import { EditorContext } from '@/app/document/[id]/EditorContext';
+import { EditorContext } from '@/app/design/[id]/EditorContext';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { PenFlyoutBody, penFlyoutLabel } from '@/components/canvas/whiteboard/dock-flyouts';
 import { WhiteboardFlyout } from '@/components/canvas/whiteboard/WhiteboardFlyout';

@@ -13,7 +13,7 @@ import {
   type MirroredPage,
   type MirrorSettings,
   withMirrorSettings,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { track } from '@/lib/telemetry';
 import { mergeWithTwins } from './mirror-merge';
 

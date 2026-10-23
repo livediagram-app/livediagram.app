@@ -20,10 +20,10 @@ from browsers and code editors: drag the tab to where you want it.
   qualify; 1,280 px and 1,366 px laptops, tablets and phones, where two editors read as cramped,
   keep one tab at a time. A window resized below the floor hides the split; widening it again
   brings it back.
-- **Two panes, one editor.** Each pane shows one tab of the same document and keeps its side. The
+- **Two panes, one editor.** Each pane shows one tab of the same design and keeps its side. The
   editor (canvas, palette, Explorer, panels, zoom) sits in the pane of the active tab. The other
   pane draws its tab live. Moving between the panes moves the editor, never the tabs.
-- **One header, one footer.** The site header (document title, share, account) runs across the top
+- **One header, one footer.** The site header (design title, share, account) runs across the top
   of both panes, and the tab bar (tabs, Search, Settings, System) across the bottom, as they do
   with one tab.
 - **No quick style panel.** The [quick style panel](../008-canvas/quick-style-panel.md) stands down
@@ -31,8 +31,8 @@ from browsers and code editors: drag the tab to where you want it.
   the element's menu.
 - **Steps aside, is kept.** Zen mode, embeds and presenting hide the split; leaving them brings it
   back. A window that becomes too narrow hides it the same way.
-- **Per browser.** The split is remembered on this device, per document. It is not shared with
-  collaborators and not part of the document.
+- **Per browser.** The split is remembered on this device, per design. It is not shared with
+  collaborators and not part of the design.
 
 ## Opening
 
@@ -57,7 +57,7 @@ Which tab goes where:
 - With a split already open, the drop zone is the right pane (**Show _name_ Here**), and a drop
   puts the dragged tab there. If the editor was in the right pane it now edits that tab. Dropping
   the left pane's tab trades the two sides. Dropping the right pane's own tab does nothing.
-- A document with one tab offers nothing to drop on.
+- A design with one tab offers nothing to drop on.
 
 **From the menu.** The tab's ⋯ menu (and the canvas right-click menu) has **Side by Side** in its
 quick-action row: it does what dragging the active tab does. With a split open the same button
@@ -124,7 +124,7 @@ on them is never taken as a resize.
 
 The seam between the panes is a separator: drag it, or focus it and use the arrow keys (24 px;
 96 px with Shift; Home and End for the extremes). Double-click restores halves. The width is a
-fraction of the window, remembered once for every document. The editor keeps whatever it was
+fraction of the window, remembered once for every design. The editor keeps whatever it was
 centred on when its pane opens, closes or is resized.
 
 ## How the editor fits in its pane
@@ -160,7 +160,7 @@ motion.
 
 ## Performance
 
-- The other pane, the SVG renderer and the icon catalogues load with the first split; a document
+- The other pane, the SVG renderer and the icon catalogues load with the first split; a design
   never split pays nothing for them.
 - Rendering a tab's SVG takes ~0.5 ms for 50 elements, ~4 ms for 500 and ~9 ms for 2,000 (measured
   in jsdom). It reruns only when that tab or the appearance changes.

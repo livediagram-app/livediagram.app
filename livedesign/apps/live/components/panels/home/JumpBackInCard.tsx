@@ -1,17 +1,17 @@
 'use client';
 
-// One document of Jump Back In on a desktop or tablet (docs/specs/013-workspace/explorer-home.md "Jump Back In"): a
+// One design of Jump Back In on a desktop or tablet (docs/specs/013-workspace/explorer-home.md "Jump Back In"): a
 // card with its snapshot thumbnail, its name and the quiet line that says why it is there. Large for a most used
-// document (the thumbnail over the words), compact for a recent one (the thumbnail beside them). One link named by
-// the document (plus This Browser for one stored here), the quiet line its description. No tooltip: the name is
-// already written under the picture. Beside the link, the document's ⋯ menu (JumpBackInMenu) when the Explorer has it.
+// design (the thumbnail over the words), compact for a recent one (the thumbnail beside them). One link named by
+// the design (plus This Browser for one stored here), the quiet line its description. No tooltip: the name is
+// already written under the picture. Beside the link, the design's ⋯ menu (JumpBackInMenu) when the Explorer has it.
 // The phone's strip keeps JumpBackInTile.
 
 import { useId } from 'react';
-import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
+import { DesignThumbnail } from '@/components/panels/DesignThumbnail';
 import { ThisBrowserPill, THIS_BROWSER_LABEL } from '@/components/primitives/ThisBrowserPill';
 import { track } from '@/lib/telemetry';
-import type { DocumentEntryProps } from '@/app/explorer/explorer-view-props';
+import type { DesignEntryProps } from '@/app/explorer/explorer-view-props';
 import {
   jumpBackInLine,
   type JumpBackInGroup,
@@ -45,19 +45,19 @@ export function JumpBackInCard({
   group: JumpBackInGroup;
   /** The page's shared instant, so every card's relative time agrees. */
   now: number;
-  /** The document's Explorer menu, or null when the Explorer has not loaded it (no ⋯). */
-  entry?: DocumentEntryProps | null;
+  /** The design's Explorer menu, or null when the Explorer has not loaded it (no ⋯). */
+  entry?: DesignEntryProps | null;
 }) {
   const lineId = useId();
   const large = group === 'mostUsed';
-  // The Explorer's own name once it has the document, so a rename from the menu shows at once.
-  const name = entry?.document.name ?? item.name;
+  // The Explorer's own name once it has the design, so a rename from the menu shows at once.
+  const name = entry?.design.name ?? item.name;
   const renaming = entry?.renaming === true;
   const thumb = (
     <span className={`relative block ${large ? 'w-full' : 'shrink-0'}`}>
-      <DocumentThumbnail
+      <DesignThumbnail
         ownerId={ownerId}
-        documentId={item.documentId}
+        designId={item.designId}
         version={item.savedAt}
         shareCode={item.shareCode}
         offline={item.localOnly}

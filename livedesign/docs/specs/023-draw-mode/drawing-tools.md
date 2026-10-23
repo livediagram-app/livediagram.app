@@ -40,7 +40,7 @@ style panel's marker rows. Where they sit in the palette is [Logo pages](../007-
 - **What you draw is what lands.** The stroke being drawn is drawn in the canvas itself, laid out
   exactly as the stroke it becomes, so release moves no pixel; ink the smoothing has settled never
   moves while drawing. The landed stroke stores its samples packed
-  ([Stroke points](../006-document/stroke-points.md)).
+  ([Stroke points](../006-design/stroke-points.md)).
 - **A marker's width is ink on the canvas**, in canvas px, so a stroke zooms like everything else.
 - **A tap is a dot**: a press lifted where it went down leaves a round dot as wide as the line.
 - **A marker lines up as the pencil does**: its first point snaps to nearby alignments and its
@@ -50,7 +50,7 @@ style panel's marker rows. Where they sit in the palette is [Logo pages](../007-
 - **Input:** only the pointer that started a stroke draws it; a stroke a second finger turns into a
   pinch, or the browser cancels, is discarded; putting the marker down mid-stroke (Escape) discards
   it.
-- The markers are the person's, not the document's: they persist device-locally in `localStorage`
+- The markers are the person's, not the design's: they persist device-locally in `localStorage`
   (`livedesign:v2:whiteboard-pens`).
 - A stroke records its marker's colour and width on its `freehand` element (`penColour`,
   `penWidth`), with its samples, a pressure per sample when a pen drew it, and its streamline. The
@@ -63,7 +63,7 @@ Markers 2 and 3 take their colour from the one colour picker
 ([Colour picker](../004-interface-design/colour-picker.md)): the **stock colours** in one row,
 **Ink** first, then Grey, Red, Orange, Yellow, Green, Teal, Blue, Violet and Pink, each stored by
 name and drawn in the version tuned for the canvas it is shown on (at least 4.5:1 against it); then
-the document's **Custom Colours** and **Add a custom colour**. A custom colour is one exact hex on
+the design's **Custom Colours** and **Add a custom colour**. A custom colour is one exact hex on
 every canvas; one under 3:1 on either canvas shows a warning with a nearby readable version.
 Existing strokes stay as drawn: a stroke keeps the colour it was drawn in.
 

@@ -5,7 +5,7 @@ import {
   type ArrowElement,
   type Element,
   type ShapeElement,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { cleanupVerdict, verdictLine, verdictNotice } from './tidy-verdict';
 
 // docs/specs/008-canvas/layout-cleanup.md "A tidy never trashes the work".

@@ -13,7 +13,7 @@ import {
   type LaidOutPage,
   type Tab,
   tabToJsonText,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import {
   downloadBlob,
   exportTabAsPng,
@@ -53,7 +53,7 @@ const EXPORT_LABEL: Record<Format, string> = {
   photo: 'Photo',
 };
 
-// A text format taken (downloaded or copied) counts as the document's export.
+// A text format taken (downloaded or copied) counts as the design's export.
 function trackTextExport(format: TextFormat): void {
   track('Document', 'Exported', EXPORT_LABEL[format]);
 }
@@ -83,7 +83,7 @@ const PAGES_CARD_COPY: Partial<Record<Format, string>> = {
 
 type ExportTabDialogProps = {
   tab: Tab;
-  documentName: string;
+  designName: string;
   onClose: () => void;
   // 'tab' (default) exports the whole active tab; 'selection' exports a
   // derived tab whose `elements` are just the multi-selection. The caller
@@ -91,11 +91,11 @@ type ExportTabDialogProps = {
   // flag only drives the copy, filename suffix, and telemetry so the dialog
   // stays a dumb renderer over whatever Tab it's given.
   scope?: 'tab' | 'selection';
-  // Owner / document / share context for fetching image bytes so PNG / SVG /
+  // Owner / design / share context for fetching image bytes so PNG / SVG /
   // PDF embed image + avatar elements (the bitmaps live behind an
-  // authenticated endpoint). Absent (e.g. no document id) → images export as
+  // authenticated endpoint). Absent (e.g. no design id) → images export as
   // their placeholder, same as before.
-  imageContext?: { ownerId: string; documentId: string; shareCode: string | null };
+  imageContext?: { ownerId: string; designId: string; shareCode: string | null };
   // False while the Layers panel is off in Settings (docs/specs/007-editor/user-preferences.md): the
   // image options then leave out "Hidden layers", and hidden layers stay out
   // of the export as they stay off the canvas.
@@ -103,13 +103,13 @@ type ExportTabDialogProps = {
   // Pages mode's pages (docs/specs/007-editor/pages-mode.md "Export"): PDF, PNG and
   // SVG export all pages or one chosen page, each exactly its sheet. Absent elsewhere.
   pages?: LaidOutPage[];
-  // The document's tabs, for the tabs a tab window shows (docs/specs/009-elements/tab-window.md "Exports").
-  documentTabs?: readonly Tab[];
+  // The design's tabs, for the tabs a tab window shows (docs/specs/009-elements/tab-window.md "Exports").
+  designTabs?: readonly Tab[];
   // Fetch tabs' content (a tab window's tab, which arrives only when opened or fetched); resolves to the failures.
   loadTabs?: (only: readonly string[]) => Promise<string[]>;
 };
 
-const NO_DOCUMENT_TABS: readonly Tab[] = [];
+const NO_DESIGN_TABS: readonly Tab[] = [];
 
 // The format keys ('file' is the livedesign .json): 'logo-kit' is a logo page's kit
 // (docs/specs/007-editor/logo-pages.md "Export"), while the tab has one; 'photo' a photo page's
@@ -185,13 +185,13 @@ const TEXT_PANELS: Record<
 // options bleed onto it.
 export function ExportTabDialog({
   tab,
-  documentName,
+  designName,
   onClose,
   scope = 'tab',
   imageContext,
   offerHiddenLayers = true,
   pages,
-  documentTabs,
+  designTabs,
   loadTabs,
 }: ExportTabDialogProps) {
   // null = the format grid; otherwise the picked format's sub-panel.
@@ -231,7 +231,7 @@ export function ExportTabDialog({
   const isSelection = scope === 'selection';
   const suffix = isSelection ? ' - selection' : '';
   const baseName = sanitizeFilename(
-    `${documentName || 'document'} - ${tab.name || 'tab'}${suffix}`,
+    `${designName || 'design'} - ${tab.name || 'tab'}${suffix}`,
   );
 
   // A new image load (format picked, tab or image context changed) is not ready until it lands;
@@ -280,7 +280,7 @@ export function ExportTabDialog({
   // "Exports").
   const windows = useTabWindowExport({
     tab,
-    tabs: documentTabs ?? NO_DOCUMENT_TABS,
+    tabs: designTabs ?? NO_DESIGN_TABS,
     loadTabs,
     imageContext,
     active: !!active && !isTextFormat(active),
@@ -407,7 +407,7 @@ export function ExportTabDialog({
           <LogoKitPanel
             tab={tab}
             pages={pages}
-            documentName={documentName}
+            designName={designName}
             images={previewImages}
             imagesReady={previewReady}
             imageContext={imageContext}
@@ -418,7 +418,7 @@ export function ExportTabDialog({
           <PhotoExportPanel
             tab={tab}
             pages={pages}
-            documentName={documentName}
+            designName={designName}
             imageContext={imageContext}
             onDone={onClose}
             onBack={() => setActive(null)}

@@ -5,11 +5,11 @@ import type { SelectedNode } from './views';
 
 type Kind = SelectedNode['kind'];
 
-// Sections with no New document: none of them is a place a new document lands. Home is
-// deliberately absent (docs/specs/013-workspace/explorer-home.md: starting a document from the
+// Sections with no New design: none of them is a place a new design lands. Home is
+// deliberately absent (docs/specs/013-workspace/explorer-home.md: starting a design from the
 // first screen is never a dead end), as are the aggregate views (Recent, Favourites, Search
-// results), whose New document simply files at the root.
-const NO_NEW_DOCUMENT: ReadonlySet<Kind> = new Set<Kind>([
+// results), whose New design simply files at the root.
+const NO_NEW_DESIGN: ReadonlySet<Kind> = new Set<Kind>([
   // The Inbox lists open actions and threads (docs/specs/013-workspace/inbox.md §1).
   'inbox',
   'shared',
@@ -18,9 +18,9 @@ const NO_NEW_DOCUMENT: ReadonlySet<Kind> = new Set<Kind>([
   'trash',
   'team',
   'invites',
-  // This Browser is a read-through view; offline documents come from the /new wizard.
+  // This Browser is a read-through view; offline designs come from the /new wizard.
   'offline',
-  // Tags gather documents from every place; a new one lands in none of them (docs/specs/013-workspace/tags.md).
+  // Tags gather designs from every place; a new one lands in none of them (docs/specs/013-workspace/tags.md).
   'tags',
 ]);
 
@@ -30,10 +30,10 @@ const NO_NEW_DOCUMENT: ReadonlySet<Kind> = new Set<Kind>([
 const NEW_FOLDER: ReadonlySet<Kind> = new Set<Kind>(['all', 'folder']);
 
 type PaneHeaderActions = {
-  newDocument: boolean;
+  newDesign: boolean;
   newFolder: boolean;
 };
 
 export function paneHeaderActions(kind: Kind): PaneHeaderActions {
-  return { newDocument: !NO_NEW_DOCUMENT.has(kind), newFolder: NEW_FOLDER.has(kind) };
+  return { newDesign: !NO_NEW_DESIGN.has(kind), newFolder: NEW_FOLDER.has(kind) };
 }

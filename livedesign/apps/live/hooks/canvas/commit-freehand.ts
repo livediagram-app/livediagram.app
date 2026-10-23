@@ -14,8 +14,8 @@ import {
   type PenColour,
   type Endpoint,
   type ShapeElement,
-} from '@livedesign/document';
-import type { Tab } from '@livedesign/document';
+} from '@livedesign/design';
+import type { Tab } from '@livedesign/design';
 import type { MutableRefObject } from 'react';
 import { ARROW_SNAP_THRESHOLD_PX } from '@/lib/canvas';
 import { NEW_ARROW_THEME_STROKE_FALLBACK } from '@/lib/draw-commit';
@@ -98,7 +98,7 @@ export function makeCommitFreehand({
     const zoom = zoomRef.current ?? 1;
     // A whiteboard stroke keeps its raw samples; anything else is simplified here
     // (lib/pen-smoothing). Either is then fitted to what a stroke can store
-    // (docs/specs/006-document/stroke-points.md "Limits"): a stroke longer than that is simplified
+    // (docs/specs/006-design/stroke-points.md "Limits"): a stroke longer than that is simplified
     // just enough to fit, so it is kept, never lost on release.
     const fitted = fitStrokeToLimit(
       whiteboardPen ? rawPoints : simplifyPenStroke(rawPoints, zoom),

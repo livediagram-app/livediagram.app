@@ -12,7 +12,7 @@ import {
   type Finish,
   type TextSize,
   type TextSizePreset,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { Glyph, lucideGlyph } from '@livedesign/ui';
 import { lucideChevronRight } from '@livedesign/icons/lucide';
 import { ThemeSwatch } from '@/components/primitives/ThemeSwatch';

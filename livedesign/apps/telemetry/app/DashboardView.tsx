@@ -7,8 +7,8 @@ import {
   ALL_VISITORS,
   CANVAS_MODES,
   CLI_COMMANDS_STACK,
-  DOCUMENT_ACTIONS,
-  DOCUMENTS_CREATED,
+  DESIGN_ACTIONS,
+  DESIGNS_CREATED,
   ELEMENT_EDITING,
   ELEMENTS_ADDED,
   EMAILS_SENT,
@@ -61,7 +61,7 @@ export const GROUPS: MetricGroup[] = [
       NEW_VISITORS,
       RETURNING_VISITORS,
       SIGN_UPS,
-      DOCUMENTS_CREATED,
+      DESIGNS_CREATED,
       MULTIPLAYER_SESSIONS,
       FAILED_REQUESTS,
     ],
@@ -72,7 +72,7 @@ export const GROUPS: MetricGroup[] = [
   },
   {
     title: 'Content',
-    metrics: [DOCUMENT_ACTIONS, TAB_ACTIONS, ELEMENTS_ADDED, ELEMENT_EDITING],
+    metrics: [DESIGN_ACTIONS, TAB_ACTIONS, ELEMENTS_ADDED, ELEMENT_EDITING],
   },
   {
     title: 'Features',

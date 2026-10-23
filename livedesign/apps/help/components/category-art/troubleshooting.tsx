@@ -4,10 +4,10 @@ import { Card, Stage, TickDisc, Window } from './parts';
 const CHECKS: { label: string; done: boolean }[] = [
   { label: 'Check the connection', done: true },
   { label: 'Clear stuck settings', done: true },
-  { label: 'Reload the document', done: false },
+  { label: 'Reload the design', done: false },
 ];
 
-// Troubleshooting: a document that would not load, the fix-it button, and the checklist working through it.
+// Troubleshooting: a design that would not load, the fix-it button, and the checklist working through it.
 export function TroubleshootingArt() {
   return (
     <Stage>
@@ -29,7 +29,7 @@ export function TroubleshootingArt() {
         />
         <circle cx={118} cy={90.5} r={1.8} className="fill-white help-art-as-drawn" />
         <Label x={118} y={122} anchor="middle" size={11} weight={700} tone="strong">
-          This document didn&apos;t load
+          This design didn&apos;t load
         </Label>
         <Label x={118} y={138} anchor="middle" size={9} tone="muted">
           Your work is safe on the server.

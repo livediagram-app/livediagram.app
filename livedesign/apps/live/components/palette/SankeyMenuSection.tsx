@@ -29,10 +29,10 @@ import {
   type SankeyValueLabel,
   type ShapeElement,
   type TextSize,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardGroup } from '@/components/colour/colour-options';
-import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
+import { useDesignColours } from '@/hooks/ui/useDesignColours';
 import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { OptionRows } from '@/components/primitives/OptionRows';
@@ -264,7 +264,7 @@ function NodeColourRow({
   paletteColour: string;
   onPick: (color: string | undefined) => void;
 }) {
-  const yours = useDocumentColours();
+  const yours = useDesignColours();
   return (
     <div className="flex items-center gap-1.5 text-[11px] text-slate-700 dark:text-slate-200">
       <ColourSwatchButton

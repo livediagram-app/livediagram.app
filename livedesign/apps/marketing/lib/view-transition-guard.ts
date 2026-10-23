@@ -1,6 +1,6 @@
 import { NON_MARKETING_SEGMENTS } from '@livedesign/api-schema';
 
-// Only the marketing pages opt in to cross-document view transitions (docs/specs/019-marketing/marketing-site.md).
+// Only the marketing pages opt in to cross-design view transitions (docs/specs/019-marketing/marketing-site.md).
 // Leaving for another app (the editor, the help centre, the dashboard), the browser would still start one,
 // find the new page declined, and report "Transition was aborted because of invalid state" as an uncaught
 // error. This inline script skips the transition as the page swaps to any of them. Plain ES5 in a string,

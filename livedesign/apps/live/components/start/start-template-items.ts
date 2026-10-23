@@ -12,7 +12,7 @@ import {
   type TemplateDescriptor,
   type TemplateKind,
 } from '@livedesign/templates';
-import type { EditorMode } from '@livedesign/document';
+import type { EditorMode } from '@livedesign/design';
 
 type TemplateStartGroup = {
   id: string;

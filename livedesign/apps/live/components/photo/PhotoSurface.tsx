@@ -4,7 +4,7 @@
 // photo page"): a canvas over the part of the sheet on screen, drawn by the SurfacePainter on the next
 // frame after the view moves or the session reports a change.
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import type { LaidOutPage } from '@livedesign/document';
+import type { LaidOutPage } from '@livedesign/design';
 import type { PhotoSession } from '@/lib/photo-editor/session';
 import { SurfacePainter } from '@/lib/photo-editor/surface-painter';
 import { photoViewOptions } from '@/lib/photo-editor/view-options';

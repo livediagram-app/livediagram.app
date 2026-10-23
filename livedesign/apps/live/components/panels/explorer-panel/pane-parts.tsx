@@ -6,7 +6,7 @@
 import type { KeyboardEvent, ReactNode } from 'react';
 import { EmptyState, Tooltip } from '@livedesign/ui';
 
-// A row's thumbnail box: the document's snapshot at the pane's size, framed like a little page.
+// A row's thumbnail box: the design's snapshot at the pane's size, framed like a little page.
 export const PANE_THUMB_BOX =
   'h-11 w-[60px] shrink-0 overflow-hidden rounded-lg bg-white ring-1 ring-slate-200/90 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.6)] dark:bg-slate-900 dark:ring-slate-700';
 // A preview card's thumbnail: filling the card's top.
@@ -92,13 +92,13 @@ export function PaneRow({
   meta?: ReactNode;
   trailing?: ReactNode;
   onActivate?: () => void;
-  // The open document's row.
+  // The open design's row.
   current?: boolean;
   // The accessible name, when the title is more than words.
   label?: string;
   // Drag and drop, a context menu: spread on the row itself.
   rowProps?: React.HTMLAttributes<HTMLLIElement>;
-  // A dragged document rests on it.
+  // A dragged design rests on it.
   highlighted?: boolean;
   className?: string;
 }) {
@@ -149,7 +149,7 @@ export function PaneRow({
   );
 }
 
-// A leading tile for what has no thumbnail: a folder, an event, a trashed document. Each tone a soft gradient with a
+// A leading tile for what has no thumbnail: a folder, an event, a trashed design. Each tone a soft gradient with a
 // hairline of its own colour, so tiles read as a family at a glance.
 export type PaneTone = 'slate' | 'brand' | 'amber' | 'emerald' | 'sky' | 'violet' | 'rose';
 const TONES: Record<PaneTone, string> = {
@@ -178,7 +178,7 @@ export function PaneTile({ children, tone = 'slate' }: { children: ReactNode; to
   );
 }
 
-// A preview card: a picture across its top (a document's snapshot, a folder's tile), the name and a quiet line under
+// A preview card: a picture across its top (a design's snapshot, a folder's tile), the name and a quiet line under
 // it, a trailing slot (the ⋯ menu) over the picture's corner.
 export function PaneCard({
   preview,

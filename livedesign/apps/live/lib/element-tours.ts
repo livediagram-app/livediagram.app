@@ -1,4 +1,4 @@
-import { isChartShape, type Element } from '@livedesign/document';
+import { isChartShape, type Element } from '@livedesign/design';
 import type { EditorCapabilities } from './editor-capabilities';
 import { canEditSankey } from './sankey-edit';
 import { tourTrackSeen, withTracksAnswered } from './tour-tracks';

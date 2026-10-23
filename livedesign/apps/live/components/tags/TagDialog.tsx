@@ -10,8 +10,8 @@ import { TAG_NAME_MAX, nextTagColour, normaliseTagName, type Tag } from '@livede
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 import { ColourPicker } from '@/components/colour/ColourPicker';
-import { useDocumentTags } from './DocumentTagsProvider';
-import { tagNameProblem } from './useDocumentTagsState';
+import { useDesignTags } from './DesignTagsProvider';
+import { tagNameProblem } from './useDesignTagsState';
 import { TAG_NO_THEME, TagColourIsolation, useTagColourOptions } from './TagColourButton';
 import { TagChip } from './TagChip';
 
@@ -25,7 +25,7 @@ export function TagDialog({
   onClose: () => void;
   onCreated?: (tag: Tag) => void;
 }) {
-  const { tags, createTag, updateTag } = useDocumentTags();
+  const { tags, createTag, updateTag } = useDesignTags();
   const { standard, yours } = useTagColourOptions();
   const [name, setName] = useState(tag?.name ?? '');
   const [colour, setColour] = useState(tag?.colour ?? nextTagColour(tags.map((t) => t.colour)));

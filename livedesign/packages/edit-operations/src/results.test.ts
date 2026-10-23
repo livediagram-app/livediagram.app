@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ResultLine } from '@livedesign/api-schema';
-import { getBuiltInTheme, type Element } from '@livedesign/document';
+import { getBuiltInTheme, type Element } from '@livedesign/design';
 import { formatResultFooter, formatResultLines } from './format-results';
 import { addedLine, buildResultLines, removedLine } from './results';
 import { checkoutFlow } from './fixtures/checkout-flow';
@@ -44,7 +44,7 @@ describe('formatResultLines', () => {
       rev: 42,
       rebasedOver: 0,
       changesetId: 'cs_8k2m4q7d1x',
-      documentId: 'd-auth',
+      designId: 'd-auth',
       lint: 'lint clean',
     });
     expect([...formatResultLines(results), footer].join('\n')).toBe(
@@ -146,7 +146,7 @@ describe('formatResultFooter', () => {
       dryRun: false as const,
       previousRev: 41,
       changesetId: 'cs_1',
-      documentId: 'd1',
+      designId: 'd1',
       lint: 'x',
     };
     expect(formatResultFooter({ ...write, rev: 44, rebasedOver: 3 })).toBe(

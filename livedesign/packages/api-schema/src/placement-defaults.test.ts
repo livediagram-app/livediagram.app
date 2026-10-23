@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EDITOR_MODES } from '@livedesign/document';
+import { EDITOR_MODES } from '@livedesign/design';
 import {
   PLACEMENT_DEFAULT_KEYS,
   creationIntentOf,
@@ -53,7 +53,7 @@ describe('creationIntentOf', () => {
     expect(creationIntentOf({})).toEqual({ mode: 'pages', tabKind: 'diagram' });
   });
 
-  it('reads a document with no tab as Pages', () => {
+  it('reads a design with no tab as Pages', () => {
     expect(creationIntentOf(undefined)).toEqual({ mode: 'pages', tabKind: 'diagram' });
   });
 });

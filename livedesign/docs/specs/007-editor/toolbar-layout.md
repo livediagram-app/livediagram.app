@@ -214,7 +214,7 @@ so a new page load starts on the page kind's landing.
   hairline. It is the chrome's ink, 14 px at regular weight (never bold), cut short
   with an ellipsis past 16rem, and follows a rename at once. The box shows a name alone, never an icon beside it.
 - A click (a tap) on it renames the tab in place, for someone who may change the
-  document's tabs: Enter or leaving saves, Escape puts it back; up to 60 characters.
+  design's tabs: Enter or leaving saves, Escape puts it back; up to 60 characters.
 - Not on a phone: the top row is the strip's there.
 
 ## The Explorer and the other panels
@@ -368,7 +368,7 @@ panels in their corners, the bottom-row popovers over their buttons. What change
 ## Decided in review
 
 - **The strip opens on the page kind's landing every time** (`palette-layouts.ts`). It does not remember the last
-  category across documents.
+  category across designs.
 - **The top corners give way to the strip.** When the strip reaches a panel
   docked in a top corner, measured against the real corner stack
   (`useStripCrowdsCorners`, re-checked as panels dock and the window

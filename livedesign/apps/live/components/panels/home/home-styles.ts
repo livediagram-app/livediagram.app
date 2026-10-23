@@ -70,7 +70,7 @@ export const STRIP_THUMB = 'h-20 w-32';
 /** The strip's height: a tile (100 px) plus the scroller's padding for focus rings. */
 export const STRIP_HEIGHT = 'h-28';
 
-// ---- The hero's fanned sheets: the newest documents, or on a first run three template previews ----
+// ---- The hero's fanned sheets: the newest designs, or on a first run three template previews ----
 
 /** A sheet: a white frame round its picture. */
 export const SHEET_FRAME =

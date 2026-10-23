@@ -9,7 +9,7 @@ import {
   pageMargin,
   type Page,
   type PageBackground,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { kit, type Kit } from './page-layout-kit';
 
 /** A template's logo page (docs/specs/007-editor/logo-pages.md): the 1024 artboard, named. */

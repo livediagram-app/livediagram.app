@@ -95,14 +95,14 @@ export function FolderSolidIcon({ open = false, size = 13 }: IconProps & { open?
 // The line folder: the panel tree's folders, and every menu's Change Folder / folder chip.
 export const FolderOutlineIcon = lucideGlyph(lucideFolder, 12);
 
-// Sparkle for the synthetic "Generated" folder (AI / MCP-created documents): the one shared sparkle.
+// Sparkle for the synthetic "Generated" folder (AI / MCP-created designs): the one shared sparkle.
 export function SparkleIcon({ size = 13 }: IconProps) {
   return <SharedSparkleIcon size={size} />;
 }
 
 // ---------- Sections -------------------------------------------------
 
-export function DocumentIcon({ size = 13 }: IconProps) {
+export function DesignIcon({ size = 13 }: IconProps) {
   return (
     <G16 size={size}>
       <rect x="2" y="2" width="12" height="12" rx="2" />
@@ -141,7 +141,7 @@ export function TimelineIcon({ size = 13 }: IconProps) {
 // (docs/specs/013-workspace/hide-from-recent.md); the label carries the direction, the glyph the topic.
 export const ClockIcon = lucideGlyph(lucideClock, 13);
 
-// The clock with a strike-through: a document hidden from Recent
+// The clock with a strike-through: a design hidden from Recent
 // (docs/specs/013-workspace/hide-from-recent.md). Paired with ClockIcon so the menu row's glyph flips with
 // its label rather than relying on the wording alone.
 export function ClockOffIcon({ size = 13 }: IconProps) {
@@ -153,7 +153,7 @@ export function ClockOffIcon({ size = 13 }: IconProps) {
   );
 }
 
-// Star: per-user favourites (docs/specs/013-workspace/favourites.md). Filled when the document is
+// Star: per-user favourites (docs/specs/013-workspace/favourites.md). Filled when the design is
 // starred, hollow when it isn't, so a menu row's glyph carries the state
 // alongside its label.
 export function StarIcon({ filled = false, size = 13 }: IconProps & { filled?: boolean }) {
@@ -173,12 +173,12 @@ export const KeyIcon = lucideGlyph(lucideKey, 13);
 export { TeamIcon } from '@livedesign/ui';
 export const InviteIcon = lucideGlyph(lucideMail, 13);
 // The sidebar rows of docs/specs/013-workspace/explorer-structure.md: Home (the Timeline), My
-// documents (a root folder), Library, and This Browser (a browser window).
+// designs (a root folder), Library, and This Browser (a browser window).
 export const HomeIcon = lucideGlyph(lucideHouse, 13);
-export const MyDocumentsIcon = lucideGlyph(lucideFolderRoot, 13);
+export const MyDesignsIcon = lucideGlyph(lucideFolderRoot, 13);
 export const LibraryIcon = lucideGlyph(lucideLibrary, 13);
 export const ThisBrowserIcon = lucideGlyph(lucideAppWindow, 13);
-// A luggage tag: Tags (docs/specs/013-workspace/tags.md), the sidebar row and the document menu's verb.
+// A luggage tag: Tags (docs/specs/013-workspace/tags.md), the sidebar row and the design menu's verb.
 export const TagIcon = lucideGlyph(lucideTag, 13);
 
 // ---------- Verbs ----------------------------------------------------
@@ -206,11 +206,11 @@ export function TrashIcon({ size = 13 }: IconProps) {
 
 export const OpenIcon = lucideGlyph(lucideExternalLink, 13);
 
-// Offline Mode conversions (docs/specs/006-document/offline-mode.md), from the document menu: a cloud with
+// Offline Mode conversions (docs/specs/006-design/offline-mode.md), from the design menu: a cloud with
 // an arrow going up into it, and a tray with an arrow coming down.
 export const SyncIcon = lucideGlyph(lucideCloudUpload, 14);
 export const TakeOfflineIcon = lucideGlyph(lucideDownload, 14);
 
-// A clock with an arrow curling back: a document's History. Distinct from
+// A clock with an arrow curling back: a design's History. Distinct from
 // ClockIcon, which the same menu uses for Hide-from-Recent.
 export const HistoryIcon = lucideGlyph(lucideHistory, 16);

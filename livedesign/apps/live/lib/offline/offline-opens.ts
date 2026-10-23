@@ -1,13 +1,13 @@
-// This browser's own opens of the documents stored only here (docs/specs/013-workspace/explorer-home.md
+// This browser's own opens of the designs stored only here (docs/specs/013-workspace/explorer-home.md
 // "Opens"; blueprint docs/specs/013-workspace/blueprints/explorer-home-view.md "Local opens").
 //
-// The server never sees an Offline Mode document, so it cannot count its opens. This Browser does,
+// The server never sees an Offline Mode design, so it cannot count its opens. This Browser does,
 // by the server's own rule: the UTC days with an open, inside the 90-day use window, and the last
-// open, so Home's Jump Back In places a local document among the rest. The record sits on the
-// document's own record, so it goes wherever the record goes (the local Trash, a purge, Sync
-// Document) and never leaves the browser.
+// open, so Home's Jump Back In places a local design among the rest. The record sits on the
+// design's own record, so it goes wherever the record goes (the local Trash, a purge, Sync
+// Design) and never leaves the browser.
 
-import type { DocumentSummary } from '@livedesign/api-schema';
+import type { DesignSummary } from '@livedesign/api-schema';
 import { windowStartOf, utcDay } from '@livedesign/api-schema';
 import {
   offlineBackend,
@@ -20,8 +20,8 @@ import { debugLog } from '@/lib/debug-log';
 
 export type { LocalOpens };
 
-/** A local document that has been opened, as Jump Back In merges it. */
-export type LocalOpenDocument = { document: DocumentSummary; opens: LocalOpens };
+/** A local design that has been opened, as Jump Back In merges it. */
+export type LocalOpenDesign = { design: DesignSummary; opens: LocalOpens };
 
 /** A record's stored opens as the current shape. The shape written before Within reach still
  *  vouches for its last open day and last open; anything unreadable is never opened. */
@@ -49,7 +49,7 @@ export function nextLocalOpens(prev: LocalOpens | undefined, now: number): Local
   };
 }
 
-/** Count an open of a local document. Never throws: a failure is logged and the load goes on. */
+/** Count an open of a local design. Never throws: a failure is logged and the load goes on. */
 export async function offlineRecordOpen(id: string, now: number): Promise<void> {
   try {
     await serializeOfflineWrite(async () => {
@@ -68,11 +68,11 @@ export async function offlineRecordOpen(id: string, now: number): Promise<void> 
   }
 }
 
-/** Every live local document that has been opened, with its opens. */
-export async function offlineListOpens(): Promise<LocalOpenDocument[]> {
+/** Every live local design that has been opened, with its opens. */
+export async function offlineListOpens(): Promise<LocalOpenDesign[]> {
   const recs = await offlineBackend().all();
   return recs.flatMap((rec) => {
     const opens = rec.trashedAt === undefined ? localOpensOf(rec.opens) : undefined;
-    return opens ? [{ document: recordToSummary(rec), opens }] : [];
+    return opens ? [{ design: recordToSummary(rec), opens }] : [];
   });
 }

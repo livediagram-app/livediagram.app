@@ -7,7 +7,7 @@ import {
   isCreditUrl,
   isRecord,
   type ImageCredit,
-} from '@livedesign/document';
+} from '@livedesign/design';
 
 const OPENVERSE_API_BASE = 'https://api.openverse.org/v1';
 // Openverse's anonymous maximum.

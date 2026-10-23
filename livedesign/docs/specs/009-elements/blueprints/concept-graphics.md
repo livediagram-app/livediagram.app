@@ -4,13 +4,13 @@ Derived from [Concept graphics](../concept-graphics.md). Defaults in [DEFAULTS.m
 
 | File                                                                                                 | Role                                                                         |
 | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `packages/document/src/concept.ts`                                                                   | Kinds, rows, bounds, ramp, the three layouts, variant + anim writes          |
-| `packages/document/src/web-components.ts`                                                            | `conceptRows` in `WebRows`; `withWebRows`, `appendWebRow`, `canAppendWebRow` |
-| `packages/document/src/svg-render-concept.ts`                                                        | `svgConcept`: the headless body (rest frame)                                 |
-| `packages/document/src/concept-timeline.ts`, `svg-render-timeline.ts`                                | The Timeline's `timelineLayout` and its export (`svgTimeline`)               |
+| `packages/design/src/concept.ts`                                                                   | Kinds, rows, bounds, ramp, the three layouts, variant + anim writes          |
+| `packages/design/src/web-components.ts`                                                            | `conceptRows` in `WebRows`; `withWebRows`, `appendWebRow`, `canAppendWebRow` |
+| `packages/design/src/svg-render-concept.ts`                                                        | `svgConcept`: the headless body (rest frame)                                 |
+| `packages/design/src/concept-timeline.ts`, `svg-render-timeline.ts`                                | The Timeline's `timelineLayout` and its export (`svgTimeline`)               |
 | `apps/live/components/canvas/ConceptTimelineBody.tsx`, `concept-row-layer.tsx`                       | The Timeline's face body; `ConceptRowLayer`, one animated row layer          |
-| `packages/document/src/element-normalise.ts`                                                         | `railToTimeline`: a saved timeline rail's points into milestones             |
-| `packages/document/src/shape-variants.ts`                                                            | `pyramid` + `funnel` / `inverted` variants                                   |
+| `packages/design/src/element-normalise.ts`                                                         | `railToTimeline`: a saved timeline rail's points into milestones             |
+| `packages/design/src/shape-variants.ts`                                                            | `pyramid` + `funnel` / `inverted` variants                                   |
 | `apps/live/components/canvas/ConceptFace.tsx`                                                        | Canvas face: rows, in-place lines, the Cycle's centre label                  |
 | `apps/live/app/canvas-motion.css`                                                                    | `lvd-concept-*` keyframes                                                    |
 | `apps/live/components/palette/ConceptMenuSection.tsx`                                                | Variant tiles, a hub's Spokes; none for a kind with neither                  |
@@ -184,7 +184,7 @@ element is still.
 ## Presentation and UX
 
 - Starting content (D186): stack 360 × 260 Presentation / API / Domain / Storage with notes "Next.js", "Workers",
-  "packages/document", "D1"; pyramid 320 × 260 Vision / Strategy / Objectives / Daily work; funnel 340 × 260 Visited
+  "packages/design", "D1"; pyramid 320 × 260 Vision / Strategy / Objectives / Daily work; funnel 340 × 260 Visited
   12,400 / Signed up 3,100 / Activated 820 / Retained 210; cycle 300 × 300 Plan / Do / Check / Act, centre "Weekly loop". Round 2 (D188): hub 340 × 320 Payments / Stock / Email / Search / Analytics / Support,
   centre "Orders"; onion 320 × 320 Domain / Application / Adapters / Infrastructure; chevrons 600 × 150 Commit /
   Build / Test / Release with notes "push to main", "2 min", "8,400 tests", "manual gate"; timeline 720 × 240
@@ -223,13 +223,13 @@ In-place edits commit on blur (INP); animations are compositor-only except Flow'
 
 | Rule                                             | Test file                                                                            |
 | ------------------------------------------------ | ------------------------------------------------------------------------------------ |
-| Bounds (I1), ramp, layouts per kind (I2)         | `packages/document/src/concept.test.ts`                                              |
+| Bounds (I1), ramp, layouts per kind (I2)         | `packages/design/src/concept.test.ts`                                              |
 | Writes, anims offered (I3), validation           | same                                                                                 |
 | Export draws rows, notes, arcs                   | same                                                                                 |
 | Face, in-place commit                            | `apps/live/components/canvas/ConceptFace.test.tsx`                                   |
 | Menu section                                     | `apps/live/components/palette/ConceptMenuSection.test.tsx`                           |
 | Chevron stage bars (hover, phone, roles, writes) | `apps/live/components/canvas/ConceptRowBar.test.tsx`                                 |
-| Timeline layout, export, rail migration          | `packages/document/src/concept-timeline.test.ts`, `concept-timeline-element.test.ts` |
+| Timeline layout, export, rail migration          | `packages/design/src/concept-timeline.test.ts`, `concept-timeline-element.test.ts` |
 | No Rows section for chevrons                     | `apps/live/components/palette/context-menu-web-editors.test.tsx`                     |
 | Motion budget (loops infinite, reduced motion)   | existing CSS motion-budget test                                                      |
 

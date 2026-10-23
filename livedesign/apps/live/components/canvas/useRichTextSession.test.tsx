@@ -2,7 +2,7 @@
 
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape } from '@livedesign/document';
+import { createShape } from '@livedesign/design';
 import type { RichTextEditorProps } from './RichTextEditor.types';
 import { useRichTextSession } from './useRichTextSession';
 

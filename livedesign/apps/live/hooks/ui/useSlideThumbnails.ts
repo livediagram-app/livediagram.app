@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import type { Deck, Tab } from '@livedesign/document';
+import type { Deck, Tab } from '@livedesign/design';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { slideThumbFor, type SlideThumb } from '@/lib/slide-thumb';

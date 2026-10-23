@@ -4,7 +4,7 @@
 // GET /api/home  -> HomeResponse: Jump back in and What happened
 //
 // Read-only. Hybrid identity like the rest of the api: guests get their own Home, keyed to their
-// guest id. Opens are recorded on the tab read, not here (routes/document-subresource-routes.ts).
+// guest id. Opens are recorded on the tab read, not here (routes/design-subresource-routes.ts).
 
 import {
   DAY_MS,
@@ -57,7 +57,7 @@ export async function handleHome(ctx: RouteContext): Promise<Response> {
     console.warn(`home: what-happened-capped max=${HOME_WHAT_HAPPENED_ACTION_MAX}`);
   }
   const whatHappened = groupWhatHappened(rows, timeZone, me);
-  // Most used, then recent: the view merges this browser's local documents in by the same rule.
+  // Most used, then recent: the view merges this browser's local designs in by the same rule.
   const jumpBackIn = [...set.mostUsed, ...set.recent];
 
   // Viewing Home is having looked (docs/specs/013-workspace/explorer-home.md "Unread"): the

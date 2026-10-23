@@ -2,7 +2,7 @@
 
 import type { ViewportStore } from '@/lib/viewport-store';
 import { useEffect, useRef, type RefObject } from 'react';
-import { clamp } from '@livedesign/document';
+import { clamp } from '@livedesign/design';
 import { ZOOM_MIN, zoomCeilingRaised, zoomMax } from '@/lib/canvas';
 import { WHEEL_SETTLE_MS, beginCanvasGesture } from '@/lib/canvas-gesture';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -15,7 +15,7 @@ import { useLatest } from '@/hooks/ui/useLatest';
 //     (hold-space drag) lives in useCanvasPanAndMarquee; this is the
 //     wheel half of the same behaviour.
 //
-// All listeners are registered on `document` rather than on the canvas
+// All listeners are registered on `design` rather than on the canvas
 // element so registration never depends on canvasMainRef.current being
 // populated at mount time. The handlers look up the element via depsRef
 // at call time and guard with canvasEl.contains(e.target) so events
@@ -176,7 +176,7 @@ export function useCanvasPinchZoom(deps: Deps): Api {
 
     // ── Wheel (trackpad pinch / Ctrl- or Cmd-scroll = zoom; plain
     //    two-finger drag = pan) ─────────────────────────────────────────
-    // Capture phase on document beats the browser's built-in page zoom /
+    // Capture phase on design beats the browser's built-in page zoom /
     // scroll. We only act when the cursor is over the canvas so a
     // scroll elsewhere (address bar, DevTools, a side panel) keeps normal
     // browser behaviour.

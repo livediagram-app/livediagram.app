@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   WORKBENCH_RENEW_LEAD_MS,
   WORKBENCH_RENEW_RETRY_MS,
-  type WorkbenchDocumentSessionResponse,
+  type WorkbenchDesignSessionResponse,
   type WorkbenchToPageMessage,
 } from '@livedesign/api-schema';
 import type { WorkbenchRedeemOutcome } from '@/lib/api/workbench';
@@ -31,10 +31,10 @@ const NOW = 1_000_000;
 const TTL = 60 * 60 * 1000;
 const ORIGIN = 'https://127.0.0.1:5175';
 const TICKET = 'Ab3_-xYz0123456789abcd';
-const SESSION: WorkbenchDocumentSessionResponse = {
+const SESSION: WorkbenchDesignSessionResponse = {
   session: `lvw_${'a'.repeat(43)}`,
-  scope: 'document',
-  documentId: 'doc-1',
+  scope: 'design',
+  designId: 'doc-1',
   folderId: null,
   tabId: null,
   origin: ORIGIN,
@@ -42,7 +42,7 @@ const SESSION: WorkbenchDocumentSessionResponse = {
   expiresAt: NOW + TTL,
   person: { id: 'user_1', name: 'Webber', color: '#0ea5e9', pictureUrl: null },
 };
-const RENEWED: WorkbenchDocumentSessionResponse = {
+const RENEWED: WorkbenchDesignSessionResponse = {
   ...SESSION,
   session: `lvw_${'b'.repeat(43)}`,
   expiresAt: NOW + 2 * TTL,
@@ -121,7 +121,7 @@ describe('useWorkbenchRenewal', () => {
     expect(renews(port)).toBe(1);
   });
 
-  it('swaps the session on a ticket for the same document and origin, and ends the old one', async () => {
+  it('swaps the session on a ticket for the same design and origin, and ends the old one', async () => {
     const { port, deliver } = fakePort();
     redeem.mockResolvedValue({ kind: 'opened', session: RENEWED });
     const { result } = mount(port, mounted);
@@ -152,9 +152,9 @@ describe('useWorkbenchRenewal', () => {
     expect(renews(port)).toBe(1);
   });
 
-  it('refuses a renewal for another document, deleting the new session, and keeps asking', async () => {
+  it('refuses a renewal for another design, deleting the new session, and keeps asking', async () => {
     const { port, deliver } = fakePort();
-    redeem.mockResolvedValue({ kind: 'opened', session: { ...RENEWED, documentId: 'doc-2' } });
+    redeem.mockResolvedValue({ kind: 'opened', session: { ...RENEWED, designId: 'doc-2' } });
     const { result } = mount(port, mounted);
 
     await act(async () => deliver({ type: 'livedesign:ticket', v: 1, ticket: TICKET }));

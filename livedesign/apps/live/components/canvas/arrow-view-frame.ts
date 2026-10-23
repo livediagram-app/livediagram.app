@@ -15,7 +15,7 @@ import {
   type ElementGrid,
   type ElementIndex,
   type Rect,
-} from '@livedesign/document';
+} from '@livedesign/design';
 
 // The pure per-render frame of an arrow view, lifted out of ArrowView
 // (following the boxed-drag-resolve / arrow-*-resolve pattern):

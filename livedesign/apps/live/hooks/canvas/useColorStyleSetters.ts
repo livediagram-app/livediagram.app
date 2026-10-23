@@ -7,7 +7,7 @@
 // file makes it auditable. `resetColorsSelected` (the "Reset to Theme"
 // action) lives here too since it is the inverse of these writes.
 
-import type { Element, ElementShadow, Tab } from '@livedesign/document';
+import type { Element, ElementShadow, Tab } from '@livedesign/design';
 import { getTheme } from '@/lib/themes';
 import { resetElementColours } from '@/lib/reset-colours';
 import {

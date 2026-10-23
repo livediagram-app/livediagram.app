@@ -33,8 +33,8 @@ const base: Args = {
   ownerId: 'u1',
   selfUserId: 'u1',
   selfName: 'Me',
-  documentId: 'd1',
-  documentTeamId: 't1',
+  designId: 'd1',
+  designTeamId: 't1',
   assignee: null,
   setAssignee: vi.fn(),
 };
@@ -48,7 +48,7 @@ const teamDetail = {
 
 // The Assign Action dialog's assignee dataset (docs/specs/012-collaboration/assigned-actions.md §2 + §4).
 describe('useAssigneeOptions members', () => {
-  it('loads the document team, without the assigner', async () => {
+  it('loads the design team, without the assigner', async () => {
     apiGetTeam.mockResolvedValue(teamDetail);
     const { result } = renderHook((a: Args) => useAssigneeOptions(a), { initialProps: base });
     expect(result.current.members).toBeNull();
@@ -97,7 +97,7 @@ describe('useAssigneeOptions access', () => {
   });
 
   it('is error when it cannot be asked', () => {
-    expect(access(mate, { documentId: null }).result.current.assigneeAccess).toBe('error');
+    expect(access(mate, { designId: null }).result.current.assigneeAccess).toBe('error');
   });
 
   it('asks the server, unknown until it answers, and again for another pick', async () => {
@@ -107,7 +107,7 @@ describe('useAssigneeOptions access', () => {
     await waitFor(() => expect(result.current.assigneeAccess).toBe('no'));
     expect(apiCheckAssigneeAccess).toHaveBeenCalledWith('u1', 't1', {
       assigneeUserId: 'u2',
-      documentId: 'd1',
+      designId: 'd1',
     });
     rerender({ ...base, assignee: { ...mate, userId: 'u3' } });
     expect(result.current.assigneeAccess).toBe('unknown');

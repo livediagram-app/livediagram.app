@@ -113,7 +113,7 @@ await writeFile(
       // Published under the workspace's own name, @livedesign/cli (CLI1); the command it installs is `livedesign`.
       name: source.name,
       version: source.version,
-      description: 'Read, build, edit and discuss livedesign documents from the terminal.',
+      description: 'Read, build, edit and discuss livedesign designs from the terminal.',
       license: 'MIT',
       type: 'module',
       bin: { livedesign: 'livedesign.mjs' },

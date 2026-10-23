@@ -7,8 +7,8 @@
 // the worker-only `Env` binding shape that has nowhere else to live.
 
 export type {
-  LiveDoc as DocumentDTO,
-  DocumentSummary,
+  LiveDoc as DesignDTO,
+  DesignSummary,
   TabSummary as TabSummaryDTO,
   TabRecord as TabDTO,
   Folder as FolderDTO,
@@ -28,7 +28,7 @@ export type {
 // wire format (purely a server-side capability handle).
 export type Env = {
   DB: D1Database;
-  DOCUMENT_ROOM: DurableObjectNamespace;
+  DESIGN_ROOM: DurableObjectNamespace;
   // The live build id: the deploy's commit, the same one baked into the editor build as
   // NEXT_PUBLIC_BUILD_ID (docs/specs/016-platform/stale-builds.md). Unset (local dev, a self-host that
   // sets neither) leaves it off the server release signal.
@@ -86,7 +86,7 @@ export type Env = {
   WRITE_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-IP limiter for the anonymous telemetry ingest (docs/specs/017-telemetry/telemetry.md),
   // SEPARATE from WRITE_RATE_LIMITER so it never competes with users'
-  // real document writes. Keyed on CF-Connecting-IP. Optional: absent
+  // real design writes. Keyed on CF-Connecting-IP. Optional: absent
   // (self-host) falls through to "allow", same as the write limiter.
   EVENTS_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-IP limiter for share-code resolution (GET /api/share/<code>),

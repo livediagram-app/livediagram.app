@@ -4,11 +4,11 @@ import type { PagesAnswer } from '@livedesign/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
 import { makeTestRouteContext } from './test-route-context';
-import { handleDocuments } from './documents';
+import { handleDesigns } from './designs';
 import { pagesRoomOps } from '../changesets/pages';
 import { layoutCatalogueFor } from '@livedesign/templates';
 
-// POST /api/documents/:id/tabs/:tabId/pages (docs/specs/024-agents/pages-for-agents.md
+// POST /api/designs/:id/tabs/:tabId/pages (docs/specs/024-agents/pages-for-agents.md
 // "The route"): page changes, at the tab's revision, relayed to the room as an
 // editor's own edit.
 
@@ -30,9 +30,9 @@ function roomRecorder(status = 204) {
 const call = (
   db: SqliteD1,
   body: unknown,
-  { owner = 'user_o', token = true, path = '/api/documents/D/tabs/t1/pages' } = {},
+  { owner = 'user_o', token = true, path = '/api/designs/D/tabs/t1/pages' } = {},
 ) =>
-  handleDocuments(
+  handleDesigns(
     makeTestRouteContext('POST', path, {
       env: db.env,
       owner,
@@ -45,9 +45,9 @@ const call = (
 
 async function setUp(status = 204, tab: Record<string, unknown> = {}) {
   const room = roomRecorder(status);
-  const db = sqliteD1({ DOCUMENT_ROOM: room.binding } as unknown as Partial<Env>);
-  await handleDocuments(
-    makeTestRouteContext('POST', '/api/documents', {
+  const db = sqliteD1({ DESIGN_ROOM: room.binding } as unknown as Partial<Env>);
+  await handleDesigns(
+    makeTestRouteContext('POST', '/api/designs', {
       env: db.env,
       owner: 'user_o',
       clerkUserId: 'user_o',
@@ -140,7 +140,7 @@ describe('page changes', () => {
         await call(
           db,
           { pages: [{ op: 'add', kind: 'logo' }] },
-          { path: '/api/documents/D/tabs/nope/pages' },
+          { path: '/api/designs/D/tabs/nope/pages' },
         )
       ).status,
     ).toBe(404);
@@ -149,7 +149,7 @@ describe('page changes', () => {
         await call(
           db,
           { pages: [{ op: 'add', kind: 'logo' }] },
-          { path: '/api/documents/Z/tabs/t1/pages' },
+          { path: '/api/designs/Z/tabs/t1/pages' },
         )
       ).status,
     ).toBe(404);

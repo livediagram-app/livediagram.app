@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livedesign/document';
+import type { Element } from '@livedesign/design';
 import { lint, of, tabOf } from '../fixtures/build';
 
 // LN text-overflow: a page's text element's words fit its box, and no two texts print over each other.

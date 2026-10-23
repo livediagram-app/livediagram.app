@@ -16,7 +16,7 @@
     "clean": "rm -rf node_modules .turbo"
   },
   "dependencies": {
-    "@livedesign/document": "workspace:*",
+    "@livedesign/design": "workspace:*",
     "@livedesign/photo-engine": "workspace:*"
   },
   "devDependencies": {

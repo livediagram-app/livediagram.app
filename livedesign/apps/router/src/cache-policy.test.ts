@@ -98,7 +98,7 @@ describe('applyCachePolicy', () => {
 
   it('leaves a WebSocket upgrade and anything unruled alone', () => {
     const upgrade = { status: 101, headers: new Headers() } as unknown as Response;
-    expect(applyCachePolicy(upgrade, '/api/documents/d/ws')).toBe(upgrade);
+    expect(applyCachePolicy(upgrade, '/api/designs/d/ws')).toBe(upgrade);
     const icon = new Response('svg', { headers: { 'Content-Type': 'image/svg+xml' } });
     expect(applyCachePolicy(icon, '/icon.svg')).toBe(icon);
   });

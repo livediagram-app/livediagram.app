@@ -1,19 +1,19 @@
 // Per-tab calls: lazy load, upsert (the autosave path), comment append,
-// cross-document link, and delete.
+// cross-design link, and delete.
 import {
   CHANGESET_SEEN_HEADER,
-  DOCUMENT_OPEN_HEADER,
+  DESIGN_OPEN_HEADER,
   type TabResponse,
   type TabSummary,
 } from '@livedesign/api-schema';
-import { normalizeTable, type CommentMention, type Tab } from '@livedesign/document';
+import { normalizeTable, type CommentMention, type Tab } from '@livedesign/design';
 import { dedupeInFlight } from '../dedupe';
 import {
   isOfflineId,
   isOfflineIdSync,
   offlineDeleteTab,
   offlineLoadTab,
-  offlineSaveDocumentMeta,
+  offlineSaveDesignMeta,
   offlineSaveTab,
 } from '../offline/offline-store';
 import { offlineRecordOpen } from '../offline/offline-opens';
@@ -33,10 +33,10 @@ import {
 } from './core';
 
 // Full tab payload, including elements + per-tab metadata. Pulled
-// lazily when the user opens a tab; the document-summary fetch only
+// lazily when the user opens a tab; the design-summary fetch only
 // carries TabSummary rows.
 //
-// `open` declares this read an open of the document, for the reader's
+// `open` declares this read an open of the design, for the reader's
 // Home (docs/specs/013-workspace/explorer-home.md "Opens"): only the
 // editor's first-tab read sets it, never a resync, a duplicate, Take
 // Offline or an embed.
@@ -46,28 +46,28 @@ import {
 // feed what the loaded content already holds. An offline tab has no revision (0).
 async function _apiLoadTabRevisioned(
   ownerId: string,
-  documentId: string,
+  designId: string,
   tabId: string,
   shareCode: string | null,
   opts: { open?: boolean } = {},
 ): Promise<{ tab: Tab; rev: number } | null> {
-  // Offline Mode (docs/specs/006-document/offline-mode.md): an offline document's tabs come from IndexedDB,
+  // Offline Mode (docs/specs/006-design/offline-mode.md): an offline design's tabs come from IndexedDB,
   // and this browser counts its opens, since the server never sees it (offline-opens.ts).
-  if (await isOfflineId(documentId)) {
-    if (opts.open) void offlineRecordOpen(documentId, Date.now());
-    const tab = await offlineLoadTab(documentId, tabId);
+  if (await isOfflineId(designId)) {
+    if (opts.open) void offlineRecordOpen(designId, Date.now());
+    const tab = await offlineLoadTab(designId, tabId);
     return tab ? { tab, rev: 0 } : null;
   }
-  const res = await apiFetch(`${API_BASE}/documents/${documentId}/tabs/${tabId}`, {
+  const res = await apiFetch(`${API_BASE}/designs/${designId}/tabs/${tabId}`, {
     headers: await apiHeaders(ownerId, {
       share: shareCode,
-      ...(opts.open ? { extra: { [DOCUMENT_OPEN_HEADER]: '1' } } : {}),
+      ...(opts.open ? { extra: { [DESIGN_OPEN_HEADER]: '1' } } : {}),
     }),
   });
   const body = await expectOkOrNull<TabResponse>(res, 'load tab');
   if (!body) return null;
   const { tab } = body;
-  const { documentId: _did, orderIndex: _oi, updatedAt: _ua, rev, ...clientTab } = tab;
+  const { designId: _did, orderIndex: _oi, updatedAt: _ua, rev, ...clientTab } = tab;
   void _did;
   void _oi;
   void _ua;
@@ -91,8 +91,8 @@ export const apiLoadTabRevisioned = dedupeInFlight<
   _apiLoadTabRevisioned,
   // The open marker is part of the key: an unmarked load already in flight must not swallow the
   // editor's marked one, or the open would never be recorded.
-  (ownerId, documentId, tabId, shareCode, opts) =>
-    `${ownerId}␟${documentId}␟${tabId}␟${shareCode ?? ''}␟${opts?.open ? 'open' : ''}`,
+  (ownerId, designId, tabId, shareCode, opts) =>
+    `${ownerId}␟${designId}␟${tabId}␟${shareCode ?? ''}␟${opts?.open ? 'open' : ''}`,
 );
 
 // The tab alone, for callers that need no revision (a duplicate, Take Offline).
@@ -106,14 +106,14 @@ export async function apiLoadTab(
 // instead of shipping every tab on every keystroke.
 //
 // `allowEmpty` opts into overwriting a tab whose stored row has content
-// with an empty one. The server refuses that by default (docs/specs/006-document/per-tab-storage.md
+// with an empty one. The server refuses that by default (docs/specs/006-design/per-tab-storage.md
 // data-loss backstop) so a never-loaded placeholder PUT can't wipe a
 // real row. The caller sets it only when the tab's content was
 // authoritatively loaded — i.e. a genuine reset-canvas / delete-all,
 // never an unfetched placeholder. Forwarded as `X-Allow-Empty: 1`.
 export async function apiSaveTab(
   ownerId: string,
-  documentId: string,
+  designId: string,
   tab: Tab,
   shareCode: string | null = null,
   // `roomCursor`: where this client stood in the realtime room when it took
@@ -127,8 +127,8 @@ export async function apiSaveTab(
     changesetSeen?: number;
   } = {},
 ): Promise<number | null> {
-  if (await isOfflineId(documentId)) {
-    await offlineSaveTab(documentId, tab, Date.now());
+  if (await isOfflineId(designId)) {
+    await offlineSaveTab(designId, tab, Date.now());
     return null;
   }
   const headers = new Headers(await apiHeaders(ownerId, { share: shareCode, body: true }));
@@ -140,7 +140,7 @@ export async function apiSaveTab(
     headers.set(CHANGESET_SEEN_HEADER, String(opts.changesetSeen));
   }
   const body = JSON.stringify(tabForWire(tab));
-  const res = await apiFetch(`${API_BASE}/documents/${documentId}/tabs/${tab.id}`, {
+  const res = await apiFetch(`${API_BASE}/designs/${designId}/tabs/${tab.id}`, {
     method: 'PUT',
     headers,
     body,
@@ -162,11 +162,11 @@ async function savedRevOf(res: Response): Promise<number | null> {
   }
 }
 
-// Last-ditch `beforeunload` flush of pending tab/meta writes (docs/specs/006-document/per-tab-storage.md),
+// Last-ditch `beforeunload` flush of pending tab/meta writes (docs/specs/006-design/per-tab-storage.md),
 // so a fast edit -> reload doesn't lose changes. Lives here at the
 // persistence boundary rather than inline in useAutosave so the editor
 // hook holds no raw fetch — the debounced save already goes through
-// apiSaveTab/apiDeleteTab/apiSaveDocumentMeta; this is the same set of
+// apiSaveTab/apiDeleteTab/apiSaveDesignMeta; this is the same set of
 // writes for the unload moment.
 //
 // Why it can't reuse those async helpers: a `beforeunload` handler can't
@@ -182,15 +182,15 @@ async function savedRevOf(res: Response): Promise<number | null> {
 // headroom for another keepalive request in flight. Safe range: 32 KB to 63 KB.
 const KEEPALIVE_BUDGET_BYTES = 60 * 1024;
 
-export function flushDocumentSavesBeacon(args: {
+export function flushDesignSavesBeacon(args: {
   ownerId: string;
-  documentId: string;
+  designId: string;
   shareCode: string | null;
   changedTabs: Tab[];
   deletedIds: string[];
   // Tabs whose content is authoritative in memory — only these may
   // authorise an empty-body overwrite (X-Allow-Empty), mirroring the
-  // debounced path's docs/specs/006-document/per-tab-storage.md data-loss backstop.
+  // debounced path's docs/specs/006-design/per-tab-storage.md data-loss backstop.
   loadedTabIds: Set<string>;
   orderChanged: boolean;
   nameChanged: boolean;
@@ -199,18 +199,18 @@ export function flushDocumentSavesBeacon(args: {
   // The seen changeset revision per tab, as the debounced save sends it.
   changesetSeen?: ReadonlyMap<string, number>;
 }): void {
-  // Offline Mode (docs/specs/006-document/offline-mode.md): best-effort flush to IndexedDB. A beforeunload
+  // Offline Mode (docs/specs/006-design/offline-mode.md): best-effort flush to IndexedDB. A beforeunload
   // handler can't await, so these writes may not finish — the 600ms debounced
   // autosave covers all but the final edit window. Sync id check off the cache.
-  if (isOfflineIdSync(args.documentId)) {
+  if (isOfflineIdSync(args.designId)) {
     const now = Date.now();
-    for (const t of args.changedTabs) void offlineSaveTab(args.documentId, t, now);
-    for (const tabId of args.deletedIds) void offlineDeleteTab(args.documentId, tabId, now);
+    for (const t of args.changedTabs) void offlineSaveTab(args.designId, t, now);
+    for (const tabId of args.deletedIds) void offlineDeleteTab(args.designId, tabId, now);
     // The rename / tab order too, like the cloud branch below: returning
     // before it lost a rename or reorder made in the last debounce window.
     if (args.orderChanged || args.nameChanged) {
-      void offlineSaveDocumentMeta(
-        args.documentId,
+      void offlineSaveDesignMeta(
+        args.designId,
         { name: args.name, tabs: args.tabs.map((t) => ({ id: t.id, folder: t.folder })) },
         now,
       );
@@ -237,7 +237,7 @@ export function flushDocumentSavesBeacon(args: {
   if (args.shareCode) base['X-Share-Code'] = args.shareCode;
   // The share password (docs/specs/013-workspace/share-password.md) is a synchronous session read too —
   // without it an edit-role visitor's flush 403s on a protected
-  // document, losing the final debounce window's edits.
+  // design, losing the final debounce window's edits.
   const sharePassword = getSessionSharePassword();
   if (sharePassword) base['X-Share-Password'] = sharePassword;
   const jsonHeaders = { ...base, 'Content-Type': 'application/json' };
@@ -259,7 +259,7 @@ export function flushDocumentSavesBeacon(args: {
       ...(seen !== undefined ? { [CHANGESET_SEEN_HEADER]: String(seen) } : {}),
     };
     const body = JSON.stringify(tabForWire(t));
-    void apiFetch(`${API_BASE}/documents/${args.documentId}/tabs/${t.id}`, {
+    void apiFetch(`${API_BASE}/designs/${args.designId}/tabs/${t.id}`, {
       method: 'PUT',
       headers,
       body,
@@ -267,7 +267,7 @@ export function flushDocumentSavesBeacon(args: {
     }).catch(() => {});
   }
   for (const tabId of args.deletedIds) {
-    void apiFetch(`${API_BASE}/documents/${args.documentId}/tabs/${tabId}`, {
+    void apiFetch(`${API_BASE}/designs/${args.designId}/tabs/${tabId}`, {
       method: 'DELETE',
       headers: base,
       keepalive: keepaliveFor(undefined),
@@ -278,7 +278,7 @@ export function flushDocumentSavesBeacon(args: {
       name: args.name,
       tabs: args.tabs.map((t) => ({ id: t.id, folder: t.folder })),
     });
-    void apiFetch(`${API_BASE}/documents/${args.documentId}`, {
+    void apiFetch(`${API_BASE}/designs/${args.designId}`, {
       method: 'PUT',
       headers: jsonHeaders,
       body,
@@ -296,7 +296,7 @@ export function flushDocumentSavesBeacon(args: {
 // merge it into local state without a tab refetch.
 export async function apiAddComment(
   ownerId: string,
-  documentId: string,
+  designId: string,
   tabId: string,
   elementId: string,
   text: string,
@@ -313,7 +313,7 @@ export async function apiAddComment(
   authorColor: string;
 }> {
   const res = await apiFetch(
-    `${API_BASE}/documents/${encodeURIComponent(documentId)}/tabs/${encodeURIComponent(tabId)}/comments`,
+    `${API_BASE}/designs/${encodeURIComponent(designId)}/tabs/${encodeURIComponent(tabId)}/comments`,
     {
       method: 'POST',
       headers: await apiHeaders(ownerId, { share: shareCode, body: true }),
@@ -345,13 +345,13 @@ export async function apiAddComment(
 // edit rights via the tab PUT.
 export async function apiDeleteComment(
   ownerId: string,
-  documentId: string,
+  designId: string,
   tabId: string,
   commentId: string,
   shareCode: string | null = null,
 ): Promise<void> {
   const res = await apiFetch(
-    `${API_BASE}/documents/${encodeURIComponent(documentId)}/tabs/${encodeURIComponent(tabId)}/comments/${encodeURIComponent(commentId)}`,
+    `${API_BASE}/designs/${encodeURIComponent(designId)}/tabs/${encodeURIComponent(tabId)}/comments/${encodeURIComponent(commentId)}`,
     {
       method: 'DELETE',
       headers: await apiHeaders(ownerId, { share: shareCode }),
@@ -364,7 +364,7 @@ export async function apiDeleteComment(
 // path of a session that may comment but not edit, which has no autosave. The thread is named by any of its comments.
 export async function apiSetThreadResolved(
   ownerId: string,
-  documentId: string,
+  designId: string,
   tabId: string,
   commentId: string,
   resolved: boolean,
@@ -372,25 +372,25 @@ export async function apiSetThreadResolved(
 ): Promise<void> {
   const verb = resolved ? 'resolve' : 'reopen';
   const res = await apiFetch(
-    `${API_BASE}/documents/${encodeURIComponent(documentId)}/tabs/${encodeURIComponent(tabId)}/comments/${encodeURIComponent(commentId)}/${verb}`,
+    `${API_BASE}/designs/${encodeURIComponent(designId)}/tabs/${encodeURIComponent(tabId)}/comments/${encodeURIComponent(commentId)}/${verb}`,
     { method: 'POST', headers: await apiHeaders(ownerId, { share: shareCode }) },
   );
   await expectOkVoid(res, `${verb} thread`);
 }
 
-// Link an existing tab into another of the caller's documents
-// (docs/specs/006-document/tab-document-many-to-many.md). After this returns, the tab body is shared: edits
-// from either document write to the same `tabs.data` row. Returns
-// the target document's summary view of the now-attached tab so
-// the caller can update its TabBar without a full document
+// Link an existing tab into another of the caller's designs
+// (docs/specs/006-design/tab-design-many-to-many.md). After this returns, the tab body is shared: edits
+// from either design write to the same `tabs.data` row. Returns
+// the target design's summary view of the now-attached tab so
+// the caller can update its TabBar without a full design
 // refetch.
 export async function apiLinkTab(
   ownerId: string,
-  documentId: string,
+  designId: string,
   tabId: string,
 ): Promise<TabSummary> {
   const res = await apiFetch(
-    `${API_BASE}/documents/${encodeURIComponent(documentId)}/tabs/${encodeURIComponent(tabId)}/link`,
+    `${API_BASE}/designs/${encodeURIComponent(designId)}/tabs/${encodeURIComponent(tabId)}/link`,
     {
       method: 'POST',
       headers: await apiHeaders(ownerId),
@@ -401,12 +401,12 @@ export async function apiLinkTab(
 
 export async function apiDeleteTab(
   ownerId: string,
-  documentId: string,
+  designId: string,
   tabId: string,
   shareCode: string | null = null,
 ): Promise<void> {
-  if (await isOfflineId(documentId)) return offlineDeleteTab(documentId, tabId, Date.now());
-  return apiDelete(`${API_BASE}/documents/${documentId}/tabs/${tabId}`, ownerId, {
+  if (await isOfflineId(designId)) return offlineDeleteTab(designId, tabId, Date.now());
+  return apiDelete(`${API_BASE}/designs/${designId}/tabs/${tabId}`, ownerId, {
     action: 'delete tab',
     share: shareCode,
   });

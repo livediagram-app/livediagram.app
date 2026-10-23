@@ -167,7 +167,7 @@ corner and handle can be adjusted, by mouse, pen, finger and keyboard.
 ## Export, sharing and import
 
 - Paths render in the SVG and PNG exports and in thumbnails exactly as on the canvas.
-- Real-time collaboration, history, copy and paste, duplication and the document format carry
+- Real-time collaboration, history, copy and paste, duplication and the design format carry
   paths like every element.
 - Import never creates paths.
 

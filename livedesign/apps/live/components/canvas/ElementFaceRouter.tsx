@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import { TabWindowFace } from './tab-window/TabWindowFace';
 import type { ReactNode } from 'react';
-import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@livedesign/document';
+import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@livedesign/design';
 import {
   PADDING_PX,
   defaultFillColor,
@@ -20,7 +20,7 @@ import {
   type TextAlignX,
   type TextAlignY,
   type TextSize,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { AnnotationGlyph } from '@/components/canvas/AnnotationMarker';
 import { FreehandSvg } from '@/components/canvas/boxed-element-overlays';
 import { PathSvg } from '@/components/canvas/path/PathSvg';
@@ -128,7 +128,7 @@ export function ElementFaceRouter({
   return (
     <>
       {element.type === 'shape' && element.shape === 'tab-window' ? (
-        /* Tab window (docs/specs/009-elements/tab-window.md): another tab of the document, live, fitted inside it. */
+        /* Tab window (docs/specs/009-elements/tab-window.md): another tab of the design, live, fitted inside it. */
         <TabWindowFace
           element={element}
           surface={surface}
@@ -153,7 +153,7 @@ export function ElementFaceRouter({
           <ImageElementView
             element={element}
             ownerId={imageContext.ownerId}
-            documentId={imageContext.documentId}
+            designId={imageContext.designId}
             shareCode={imageContext.shareCode}
             onOpenPicker={imageContext.onOpenPicker}
             fontFamily={fontFamily}

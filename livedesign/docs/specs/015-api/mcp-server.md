@@ -12,11 +12,11 @@ mints. No new authorization model; an OAuth front door onto the existing token.
 Let a person connect livedesign to whatever AI tool they already drive (Claude
 desktop/web, Claude Code, any MCP client) and, from inside that tool:
 
-1. **Find and view** the documents they already have — search by name, get back a
-   link to open in the editor **and an inline image** of the document.
-2. **Create** a new document from a request — e.g. point the AI at a codebase and
+1. **Find and view** the designs they already have — search by name, get back a
+   link to open in the editor **and an inline image** of the design.
+2. **Create** a new design from a request — e.g. point the AI at a codebase and
    have it write an article or a slide deck explaining it.
-3. **Edit** an existing document — full rework of a tab, or a small adjustment.
+3. **Edit** an existing design — full rework of a tab, or a small adjustment.
 
 **The calling LLM does the thinking; the MCP is only the bridge.** This is the
 load-bearing decision. We are **not** proxying to the first-party `/api/ai`
@@ -29,7 +29,7 @@ model of its own and makes no LLM calls.
 
 **Keep the surface small.** Fifteen tools and one schema resource (see
 [§4](#4-tools)). Each tool is a thin wrapper over an existing `/api` route plus
-shared helpers from `packages/document`; the MCP adds no business logic that
+shared helpers from `packages/design`; the MCP adds no business logic that
 isn't reusable.
 
 This must not weaken the friction-free guest model
@@ -56,7 +56,7 @@ stays a pure REST/WS surface.
   The api worker already accepts `lvd_` tokens on every route
   ([Public API and API tokens §3.3](public-api-and-tokens.md)), so **no api authorization
   changes are needed** for the tools themselves.
-- **Reuses `packages/document`** headless: element factories, `validate.ts`
+- **Reuses `packages/design`** headless: element factories, `validate.ts`
   (`isValidTab`/`isValidElement`), `auto-layout.ts` (`autoLayoutElements`,
   `isLayoutCandidate`), and a new pure SVG renderer ([§5](#5-visualise--inline-image-render)).
   This is the reuse-over-duplication rule: the MCP must not re-implement layout,
@@ -175,31 +175,31 @@ browser. A token minted for the CLI is named "livedesign CLI".
 
 ## 4. Tools
 
-Fourteen tools: thirteen for documents and one for pages ([§4.9d](#49d-the-pages-tools)),. The search/view capability is two tools (find, then read); create,
+Fourteen tools: thirteen for designs and one for pages ([§4.9d](#49d-the-pages-tools)),. The search/view capability is two tools (find, then read); create,
 add_tab, and update are separate because their inputs and intent differ;
 list_templates exposes the template catalogue ([§4.5](#45-list_templates)), search_icons the icon catalogue
 ([§4.5a](#45a-search_icons)) and list_images the user's image gallery ([§4.5b](#45b-list_images));
 share, rename, and delete complete the CRUD verbs, with list_trash and
-restore_document as the way back from a delete
-([§4.8](#48-share_document), [§4.9](#49-rename_document-and-delete_document), [§4.9a](#49a-list_trash-and-restore_document)).
+restore_design as the way back from a delete
+([§4.8](#48-share_design), [§4.9](#49-rename_design-and-delete_design), [§4.9a](#49a-list_trash-and-restore_design)).
 Every one of them declares its behaviour as **annotations**
 ([§4.14](#414-tool-annotations-behaviour-hints)), describes itself in facts
 rather than instructions ([§4.15](#415-descriptions-state-facts-not-instructions)),
 and declares the shape of its result as an **output schema**
 ([§4.17](#417-structured-output-and-described-parameters)).
 
-Every document and tab **name** argument (`create_document`'s `name` and each
-tab's `name`, `add_tab`'s `name`, `rename_document`'s `name`) states the
+Every design and tab **name** argument (`create_design`'s `name` and each
+tab's `name`, `add_tab`'s `name`, `rename_design`'s `name`) states the
 60-character cap in its description and is shortened by the schema itself
 with the shared `truncateName`, so the name a tool sends and reports back is
-the one the api stores ([Tab and document name length](../006-document/name-length.md)).
+the one the api stores ([Tab and design name length](../006-design/name-length.md)).
 
-### 4.1 `find_documents`
+### 4.1 `find_designs`
 
-Search/list the caller's documents — the **personal library AND every joined
-team's shared library** ([Team shared documents](../013-workspace/team-shared-documents.md)). A document
+Search/list the caller's designs — the **personal library AND every joined
+team's shared library** ([Team shared designs](../013-workspace/team-shared-designs.md)). A design
 filed into a team leaves its owner's personal list entirely, so the personal
-`GET /api/documents` alone is not "the user's documents": the tool sweeps
+`GET /api/designs` alone is not "the user's designs": the tool sweeps
 `GET /api/teams` + `GET /api/teams/:id/library` alongside it (the api accepts
 the token identity on those reads — [Public API and API tokens §3.4](public-api-and-tokens.md)),
 merges, and ranks newest-saved first. The team sweep is best-effort: a teams
@@ -208,33 +208,33 @@ failure degrades to personal-only results, never an error. Input: optional
 `{ id, name, updatedAt, library, url }` where `library` is `personal` or the
 team's name and `url` is the `livedesign.app` deep link to open it. **No image
 here** — kept lightweight so the model can scan many results cheaply, then
-`read_document` the one it wants.
+`read_design` the one it wants.
 
-### 4.2 `read_document`
+### 4.2 `read_design`
 
-Fetch one document's full content **and render it** — this is the "visualise"
-capability. Input: `documentId`, optional `tabId` (defaults to the first tab).
-Wraps `GET /api/documents/:id` + `GET /api/documents/:id/tabs/:tabId?view=outline`. Returns the
-tab's [outline view](../024-agents/document-views.md), about a tenth of the element JSON, with
+Fetch one design's full content **and render it** — this is the "visualise"
+capability. Input: `designId`, optional `tabId` (defaults to the first tab).
+Wraps `GET /api/designs/:id` + `GET /api/designs/:id/tabs/:tabId?view=outline`. Returns the
+tab's [outline view](../024-agents/design-views.md), about a tenth of the element JSON, with
 the refs the edit tools take (`format: "json"` returns the elements instead), plus the deep-link
 `url`. With `image: true` it also attaches an inline **PNG** of the tab as MCP image content
-([§5](#5-visualise--inline-image-render)); without it a read costs no image tokens. So "show me my onboarding deck" → `find_documents` →
-`read_document` with `image: true` renders it inline. Its structured result carries the tab's `rev`,
-which `update_document` takes back as the base of its ops ([§4.4](#44-update_document)).
+([§5](#5-visualise--inline-image-render)); without it a read costs no image tokens. So "show me my onboarding deck" → `find_designs` →
+`read_design` with `image: true` renders it inline. Its structured result carries the tab's `rev`,
+which `update_design` takes back as the base of its ops ([§4.4](#44-update_design)).
 It also takes `view` (`outline`, `pages`, `layout`, `comments`, `show`, `find`), `budget` (8,000 tokens unless
 given), `only`, `ref`, `q`, `coarse`, `all` and `style`; a ref that names nothing or several comes back as a
 correctable result naming the candidates.
 
-### 4.3 `create_document`
+### 4.3 `create_design`
 
-Create a new document from elements the model produced. Input: `name`, `tabs:
+Create a new design from elements the model produced. Input: `name`, `tabs:
 [{ name, elements: Element[] }]` (one tab, or several to build a **multi-tab**
-document in one call — an overview plus a detail tab per subsystem), the
+design in one call — an overview plus a detail tab per subsystem), the
 optional `layout`, and the optional `markUsed` (boolean, default `true`). Each tab may instead pass `template: TemplateKind` in place
 of `elements` — the server materialises the hand-tuned scaffold from
 `@livedesign/templates` ([§4.5](#45-list_templates)), keeping its curated
 layout (`layout` is ignored for a template tab) and applying that template's
-canvas overrides; the model then personalises labels via `update_document`'s
+canvas overrides; the model then personalises labels via `update_design`'s
 `ops` mode. The MCP:
 
 1. **Validates** each tab's `elements` with `isValidTab` (reject `400`-style with
@@ -247,15 +247,15 @@ canvas overrides; the model then personalises labels via `update_document`'s
    piled at ~one point (`nodesLookUnplaced`). The server never overrides the
    model's spatial intent; when it does lay out it reuses the editor's engine, so
    the model is never _forced_ into pixel-perfect placement.
-3. **Tags it as made by AI.** The create sends `source: 'mcp'`, which the Explorer's **Made by AI** filter (`made-by:ai`, [Explorer filters](../013-workspace/explorer-filters.md)) reads, so a user's own work and AI-made documents can be told apart wherever either is filed. Unfiled, it sits at the root of My Work like any other document, with its **Made by AI** badge. (Earlier this find-or-created a real "Generated" folder, then the Explorer showed a Generated view; provenance is a filter, not a place.) The create also sends the creation `intent` of the first tab it built and the template it used, so with no folder named the server files it in the user's [default folder](../013-workspace/default-folders.md) for that intent, when they have one.
-4. **Persists** all tabs via `POST /api/documents` (which seeds a `tabs[]` array
+3. **Tags it as made by AI.** The create sends `source: 'mcp'`, which the Explorer's **Made by AI** filter (`made-by:ai`, [Explorer filters](../013-workspace/explorer-filters.md)) reads, so a user's own work and AI-made designs can be told apart wherever either is filed. Unfiled, it sits at the root of My Work like any other design, with its **Made by AI** badge. (Earlier this find-or-created a real "Generated" folder, then the Explorer showed a Generated view; provenance is a filter, not a place.) The create also sends the creation `intent` of the first tab it built and the template it used, so with no folder named the server files it in the user's [default folder](../013-workspace/default-folders.md) for that intent, when they have one.
+4. **Persists** all tabs via `POST /api/designs` (which seeds a `tabs[]` array
    and accepts `source`). A tab given as a `template` travels
    as such and is compiled by the api ([API app](api.md)), so the MCP and the
-   [CLI](cli.md) build documents alike.
-   Making a document is a use of it, so it joins the user's
-   Jump Back In at once ([Explorer Home](../013-workspace/explorer-home.md#making-a-document));
+   [CLI](cli.md) build designs alike.
+   Making a design is a use of it, so it joins the user's
+   Jump Back In at once ([Explorer Home](../013-workspace/explorer-home.md#making-a-design));
    `markUsed: false` is passed through to the create
-   ([API](api.md#marking-a-document-used)) for a model making many documents in one go,
+   ([API](api.md#marking-a-design-used)) for a model making many designs in one go,
    so a batch never pushes the user's own work out of reach. Absent, nothing is sent and the
    create counts.
 5. **Returns** the new `id`, tab count + ids, the folder ("My Work" for the root,
@@ -264,27 +264,27 @@ canvas overrides; the model then personalises labels via `update_document`'s
 
 ### 4.3a `add_tab`
 
-Add a **new tab** (its own canvas) to an existing document — the motivating case:
+Add a **new tab** (its own canvas) to an existing design — the motivating case:
 "add a tab with the speaker handout for this deck." Input:
-`documentId`, `name`, `elements`, optional `layout` — or `template: TemplateKind`
-instead of `elements`, exactly like a `create_document` tab. Validates + lays out
-exactly like a `create_document` tab, then submits a [changeset](../024-agents/agent-changesets.md)
-that creates the tab, so anyone with the document open sees it arrive. Returns the new `tabId`, `url`,
-and the rendered PNG. (Pair with `read_document`, which lists the document's
+`designId`, `name`, `elements`, optional `layout` — or `template: TemplateKind`
+instead of `elements`, exactly like a `create_design` tab. Validates + lays out
+exactly like a `create_design` tab, then submits a [changeset](../024-agents/agent-changesets.md)
+that creates the tab, so anyone with the design open sees it arrive. Returns the new `tabId`, `url`,
+and the rendered PNG. (Pair with `read_design`, which lists the design's
 existing tabs, to decide where a new one fits.)
 
-### 4.4 `update_document`
+### 4.4 `update_design`
 
 Edit an existing tab. **Two modes** (the user asked for both):
 
 - **`replace`** — for building or reworking a whole tab. Input: full new
   `elements: Element[]` (and the same optional `layout` control as
-  `create_document`). Validated + laid out exactly like `create_document`, as a
+  `create_design`). Validated + laid out exactly like `create_design`, as a
   `replace` changeset. Use when the change is large enough that re-emitting the
   tab is cleaner than patching.
 - **`ops`** — for small adjustments. Input: an ordered list of
   `{ op: 'add' | 'update' | 'remove', element? , elementId? }` targeting existing
-  elements by id or by the ref `read_document` prints, sent as `set` / `rm` on the always-safe `id:"…"` ref and
+  elements by id or by the ref `read_design` prints, sent as `set` / `rm` on the always-safe `id:"…"` ref and
   compiled by the api's edit-operation engine. **Auto-layout is NOT run by default** in `ops` mode —
   the point of a granular edit is to preserve the user's existing positions;
   re-laying out would move everything. (A future `relayout: true` opt-in could be
@@ -294,10 +294,10 @@ Both modes submit one [changeset](../024-agents/agent-changesets.md); the api
 applies, validates and lays out, relays it live to anyone with the tab open, and
 keeps it through their next save. `ops` mode sends its ops as
 [edit operations](../024-agents/edit-operations.md) based on the revision
-`read_document` returned, so nothing a person saved in between is overwritten: a
+`read_design` returned, so nothing a person saved in between is overwritten: a
 touched element that changed is a conflict, an element a person has selected is
 refused as held. Both return the changeset's result lines, its [lint](../024-agents/page-lint.md) summary line
-(also as its own text block; `create_document` carries one per created tab) and
+(also as its own text block; `create_design` carries one per created tab) and
 the rendered PNG of the result. The model picks the mode: rebuild → `replace`;
 tweak → `ops`.
 
@@ -310,14 +310,14 @@ model read (else the tab as loaded) and every element's fingerprint as loaded, s
 Coordinates in edits are relative to the content origin, as views print them. `ops` and `edits` together are refused.
 The tool's `edits` description carries the vocabulary, selectors, placements and keys in brief.
 
-**Arrow ends by ref.** A pinned arrow end the model writes (on `create_document`, `add_tab` and both modes here)
-may name its element by id or by the ref `read_document` prints, as an op's `elementId` may. Each end is resolved
+**Arrow ends by ref.** A pinned arrow end the model writes (on `create_design`, `add_tab` and both modes here)
+may name its element by id or by the ref `read_design` prints, as an op's `elementId` may. Each end is resolved
 among the ids the result will hold: in `ops` mode the tab's elements and every element the call adds; in `replace`
 mode and on a new tab only the elements sent. An end that names nothing there, or more than one element, refuses
 the call, naming the arrow and its side (`arrow "a1": "to" is pinned to "4aeb", which is no element on the tab or
 in this call`); an arrow to nowhere is never stored.
 
-**Values checked.** A whole element the model sends (on `create_document`, `add_tab`, `replace` and an ops `add`)
+**Values checked.** A whole element the model sends (on `create_design`, `add_tab`, `replace` and an ops `add`)
 is checked as an edit operation's `set` checks a field: a field its type does not have is refused with the fields
 like it (`"icon" is not a field of a shape; fields like it: iconId, iconPosition`), a value off a closed vocabulary
 (`textSize` `sm`, `md`, `lg`, `scale` or a pixel number; the alignments, arrow styles, ends and heads, border styles
@@ -334,11 +334,11 @@ template starts ship ([Canvas and palette](../008-canvas/canvas-and-palette.md))
 `@livedesign/templates` package so the worker and the editor can't drift.
 No input. Returns the categories plus one row per template:
 `{ kind, title, description, category }` — enough for the model to pick a
-`kind` and pass it as `template` on `create_document` / `add_tab`. Deliberately
+`kind` and pass it as `template` on `create_design` / `add_tab`. Deliberately
 metadata-only (no elements): the scaffold materialises server-side on create,
 so the model never has to re-emit — or accidentally mangle — a curated layout.
 The recommended flow for "make me a pitch deck"-style asks: `list_templates`
-→ create with `template` → `update_document` (`ops`) to fill in real content.
+→ create with `template` → `update_design` (`ops`) to fill in real content.
 
 A `template` that names no kind is refused before anything is written, offering the kinds it most likely meant first:
 those whose kind or title has a word starting with a word of it of 3 letters or more (`closestTemplateKinds`, at most
@@ -382,12 +382,12 @@ model produces high-quality pages**: the schema is presented once, declaratively
 rather than baked verbatim into every tool description. The same essentials are
 also summarised in the MCP server `instructions` and in the `create`/`update`
 input-schema field descriptions, so a client that ignores resources still gets
-enough. The schema text derives from `packages/document` types — single source of
+enough. The schema text derives from `packages/design` types — single source of
 truth, no hand-maintained copy that can drift.
 
 ### 4.7a Content-carrying element kinds
 
-These kinds hold content of their own, and the element format documents their
+These kinds hold content of their own, and the element format designs their
 fields so a model can fill them rather than guess: **sticky**, **table**,
 **code block**, the three **charts** (bar, line, pie), the **Sankey**, **card**, **badge**, **step**,
 the concept graphics (**layer stack**, **pyramid**, **cycle**, **hub**, **onion**, **chevrons**, **timeline**),
@@ -418,7 +418,7 @@ model leaves colours to the theme (§4.6) holds for every themed element; a
 sticky is not themed at all (it keeps its amber across every theme), so its
 `fillColor` / `textColor` are content, and the notes say so.
 
-**The server makes these kinds safe to author** (`packages/document/src/element-normalise.ts`),
+**The server makes these kinds safe to author** (`packages/design/src/element-normalise.ts`),
 before validation, on every element path (create, add_tab, update in either
 mode), so a near-miss draws correctly instead of failing the call or drawing
 wrongly:
@@ -445,7 +445,7 @@ wrongly:
   to the category count. Empty data draws the built-in sample, which the notes
   state.
 - **A freehand stroke in the former `{ nx, ny }` shape is packed**
-  ([Stroke points](../006-document/stroke-points.md)): a stroke read from a tab
+  ([Stroke points](../006-design/stroke-points.md)): a stroke read from a tab
   carries its points as one `packedPoints` block, and a model that writes
   `points` instead gets them packed, as the api's own writes would. In an
   update, sent `points` replace the stroke's block (`mergeElementUpdate`).
@@ -463,71 +463,71 @@ a checklist's `checklistItems`, a stat row's `stats`, a callout's `pageTitle` ov
 
 **Outlines.** A `freehand` element (a logo's polygon outline) is written with `points` as canvas coordinates, `[[x, y], ...]` in
 drawing order, `closed` to close and fill it, and a `penColour` (ink, grey or a hued pen). The stored form is a box
-with the points packed inside it ([Stroke points](../006-document/stroke-points.md)), which no model can write, so
+with the points packed inside it ([Stroke points](../006-design/stroke-points.md)), which no model can write, so
 the MCP takes the box from the points and packs them through the stored-tab migration, before the element is
 checked, on every element path (`freehand-points.ts`), and an ops update giving a stroke new `points` sets its new box and block together, where a bare `points` field would have emptied the stroke. Points it cannot draw (none, more than
 `MAX_FREEHAND_POINTS`, or not number pairs) are refused naming the element. The format says that any box may carry a small `rotation`.
 
 **Found by search.** A client that searches tools by text finds a tool by its name, description and schema, and
-ranks long ones down or leaves the largest out. So `create_document` leads with what it makes (pages of infographics,
+ranks long ones down or leaves the largest out. So `create_design` leads with what it makes (pages of infographics,
 logos and wireframes among them, and how to start one), `change_pages` says it is for those pages, and the single-`tab` alias
 is checked against the tab shape by the tool rather than repeating that shape (the whole element format) in the
-schema: the definition halved, from about 41 KB to 21 KB, the size of `update_document` and `add_tab`.
+schema: the definition halved, from about 41 KB to 21 KB, the size of `update_design` and `add_tab`.
 
 **No CLI hints.** An edit's result text is the api's, less its footer's revert line: that line names the
 `livedesign changeset revert` command, which no MCP tool runs. Its `@x,y` positions are from the content's top-left as it was read, while an element's `x` and `y` are canvas
 coordinates; when the content does not start at 0,0, a closing line gives the offset (`x, y = @x + ox, @y + oy`),
 so a position read from a result is not sent back off by it.
 
-### 4.8 `share_document`
+### 4.8 `share_design`
 
-Create a shareable link so anyone with the URL can open a document without
+Create a shareable link so anyone with the URL can open a design without
 signing in — the verb that turns "the AI made a deck" into "the AI made a
-deck and here's a link to send the team." Wraps `POST /api/documents/<id>/share`
-([Share password](../013-workspace/share-password.md)): `{ documentId, role?, expiry? }` → the public URL
-(`/document/shared?s=<code>`), the granted role, and the expiry. `role` is
+deck and here's a link to send the team." Wraps `POST /api/designs/<id>/share`
+([Share password](../013-workspace/share-password.md)): `{ designId, role?, expiry? }` → the public URL
+(`/design/shared?s=<code>`), the granted role, and the expiry. `role` is
 `view`, `participate` or `edit` ([Share roles](../013-workspace/share-roles.md)) and defaults to
 **`participate`**: recipients take part (stickies, text, comments) without reshaping the pages, and an automated share
 never silently grants edit; the model passes `edit` to allow any change or `view` for an audience, and
 the api applies the same owner-only authorization every share route enforces, so
-a token can only share documents its account owns. `expiry` ([Share-link expiry](../013-workspace/share-link-expiry.md)) defaults to
+a token can only share designs its account owns. `expiry` ([Share-link expiry](../013-workspace/share-link-expiry.md)) defaults to
 `never`.
 
-### 4.9 `rename_document` and `delete_document`
+### 4.9 `rename_design` and `delete_design`
 
 CRUD completeness — the verbs a user will reach for the moment they ask their
 assistant to "rename that" or "delete the old one":
 
-- **`rename_document`** — `{ documentId, name, tabId? }`. Renames the document
-  (`PUT /api/documents/<id>` `{ name }`), or one tab when `tabId` is given
-  (`PUT /api/documents/<id>/tabs/<tabId>/name`, no whole-tab save). Non-destructive.
-- **`delete_document`** — `{ documentId, tabId? }`. Moves the document to the
-  [Trash](../013-workspace/trash.md) (`DELETE /api/documents/<id>`), restorable
+- **`rename_design`** — `{ designId, name, tabId? }`. Renames the design
+  (`PUT /api/designs/<id>` `{ name }`), or one tab when `tabId` is given
+  (`PUT /api/designs/<id>/tabs/<tabId>/name`, no whole-tab save). Non-destructive.
+- **`delete_design`** — `{ designId, tabId? }`. Moves the design to the
+  [Trash](../013-workspace/trash.md) (`DELETE /api/designs/<id>`), restorable
   for 30 days, and says so in its result (`trashed: true`, `restorableForDays`).
-  There is no permanent option: an AI tool can only ever bin a document, never
+  There is no permanent option: an AI tool can only ever bin a design, never
   destroy it. A permanent delete stays with the person (Settings › Trash) or
   the REST API's `?permanent=true` ([Public API and API tokens](public-api-and-tokens.md)).
   With `tabId` it deletes one tab (`DELETE …/tabs/<tabId>`) outright: tabs have
   no Trash. Still destructive, so the description tells the model to confirm
-  with the user first; the api refuses deleting a document's last remaining tab,
-  and a document already in the Trash answers 410, which the tool reports as
+  with the user first; the api refuses deleting a design's last remaining tab,
+  and a design already in the Trash answers 410, which the tool reports as
   already in the Trash, pointing at `list_trash`.
 
 Both inherit the ordinary owner/team authorization the routes already enforce
 ([Public API and API tokens §3.4](public-api-and-tokens.md)).
 
-### 4.9a `list_trash` and `restore_document`
+### 4.9a `list_trash` and `restore_design`
 
-The way back from `delete_document`, with exactly the REST Trash's authority
+The way back from `delete_design`, with exactly the REST Trash's authority
 (`GET /api/trash`, `POST /api/trash/<id>/restore`): the user's personal Trash
 and every team Trash they have joined.
 
-- **`list_trash`** — `{}`. Read-only. Each document the user may restore:
+- **`list_trash`** — `{}`. Read-only. Each design the user may restore:
   `{ id, name, library, reason, deletedAt, purgeAt }`, `library` being
   `personal` or the team's name, `reason` being `deleted` or `empty` (moved by
-  the [empty document clean-up](../013-workspace/empty-document-cleanup.md)),
+  the [empty design clean-up](../013-workspace/empty-design-cleanup.md)),
   the two times ISO 8601.
-- **`restore_document`** — `{ documentId }`. Restores it to its folder, or
+- **`restore_design`** — `{ designId }`. Restores it to its folder, or
   the root of its space when that folder is gone, and returns `{ restored, id, name, url }`.
   A 404 (not in the Trash, or not the user's) becomes a model-correctable error
   pointing at `list_trash`.
@@ -536,7 +536,7 @@ and every team Trash they have joined.
 
 The pages of a tab in Pages mode ([Pages for agents](../024-agents/pages-for-agents.md)).
 Pages are named by id, place (`2`) or name. The tool goes through one api route
-(`POST /api/documents/:id/tabs/:tabId/pages`, `apps/mcp/src/pages-tools.ts` over
+(`POST /api/designs/:id/tabs/:tabId/pages`, `apps/mcp/src/pages-tools.ts` over
 `packages/agent-verbs/src/pages/`) and the editor's own page edits, and reach open editors at once.
 
 - **`change_pages`** (destructive, as it deletes and replaces page content): up to 50 page changes in order,
@@ -544,8 +544,8 @@ Pages are named by id, place (`2`) or name. The tool goes through one api route
   `{ page, name, size, orientation, background, locked }`, `layout` `{ page, layout }`, `move` `{ page, to }`,
   `duplicate` `{ page }`, `delete` `{ page }` and `apply_background_to_all` `{ page }` (every other page of its kind
   takes its background), written as one edit; a refusal writes nothing and names the
-  change. The answer lists each page with its rectangle on the canvas, where `update_document` puts elements.
-- **Reading**: `read_document` with `view: "pages"` lists the pages, the elements on each and the layouts on
+  change. The answer lists each page with its rectangle on the canvas, where `update_design` puts elements.
+- **Reading**: `read_design` with `view: "pages"` lists the pages, the elements on each and the layouts on
   offer.
 
 ### 4.10 Prompts (discoverability)
@@ -555,7 +555,7 @@ commands / quick actions, so a user finds what the server does without knowing
 the tool names. Pure text (no api calls, no auth to list); each steers the model
 to the right tools:
 
-- **`show_my_document`** `{ name }` — find a document by name and read_document it
+- **`show_my_design`** `{ name }` — find a design by name and read_design it
   inline.
 
 Registered in `apps/mcp/src/prompts.ts`, wired in `buildServer` beside the tools
@@ -569,7 +569,7 @@ access"** checkbox. When ticked, the minted `lvd_` token carries `read_only = 1`
 presents — `POST`/`PUT`/`DELETE` → `403 read_only_token` — at a **single
 dispatch choke point** in `apps/api/src/index.ts`, so no write route can be
 reached, present or future, with no per-route changes. The read tools
-(find_documents, read_document, both GETs) still work; every write tool
+(find_designs, read_design, both GETs) still work; every write tool
 (create/update/delete/share/add_tab/rename) is blocked server-side, which is the
 security boundary (the tool list is static, but the api is the enforcer). Clerk
 sessions and full tokens are unaffected. The token list in the Explorer shows a
@@ -582,8 +582,8 @@ Genuine tool failures reach the public **Exceptions** dashboard ([Telemetry + pu
 category), so we see WHERE the MCP breaks. `apiJson` reports a **5xx** from the
 api worker (`Error·Api·Http5xx.<Tool>`) and a **network fault** (the service
 binding threw — `Error·Api·Internal.<Tool>`), then rethrows; the
-`delete_document` raw-fetch path reports a 5xx too. `<Tool>` is the running
-tool's PascalCase name (`Http503.UpdateDocument`), the same token as its
+`delete_design` raw-fetch path reports a 5xx too. `<Tool>` is the running
+tool's PascalCase name (`Http503.UpdateDesign`), the same token as its
 `Mcp·Used` event, carried by the `AsyncLocalStorage` scope `registerTool` wraps
 every handler in (`tool-scope.ts`), so the dashboard says which tool broke. A **4xx is deliberately NOT reported** — a bad id or
 malformed elements is expected, model-correctable input, not a fault, and
@@ -631,18 +631,18 @@ Three behaviours cover the fifteen tools, and each is a preset in
 
 | Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                            |
 | --------------- | -------------- | ----------------- | ------------------------------------------------------------------------------------------------ |
-| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `search_icons`, `list_trash`, `list_images` |
-| **write**       | `false`        | `false`           | `create_document`, `add_tab`, `share_document`, `rename_document`, `restore_document`            |
-| **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `change_pages`                                             |
+| **read**        | `true`         | (not applicable)  | `find_designs`, `read_design`, `list_templates`, `search_icons`, `list_trash`, `list_images` |
+| **write**       | `false`        | `false`           | `create_design`, `add_tab`, `share_design`, `rename_design`, `restore_design`            |
+| **destructive** | `false`        | `true`            | `update_design`, `delete_design`, `change_pages`                                             |
 
 The split mirrors §4.11's read-only-token boundary exactly (what a
 `read_only = 1` token can still reach is what `read` annotates), so the hint a
 client sees and the rule the api enforces can't drift apart.
 
-`update_document` is **destructive** rather than a plain write: its `replace`
+`update_design` is **destructive** rather than a plain write: its `replace`
 mode swaps a tab's whole element set, so an edit can overwrite work the user
 already had. (Its `ops` mode is surgical, but a hint describes the tool, not
-the argument, and the cautious reading is the right one.) `share_document`
+the argument, and the cautious reading is the right one.) `share_design`
 stays a plain write: it mints a new link and changes nothing that existed,
 and the link is revocable. `destructiveHint` is deliberately omitted where
 `readOnlyHint` is `true`: MCP ignores it there, and stating it would imply the
@@ -671,13 +671,13 @@ The rule bites where it's tempting to be helpful. Because the element format
 is carried inline on every element argument (§4.5), the honest thing to say is
 that the format is complete right there; earlier wording went one step
 further and instructed the model not to web-search, open the repo, or read
-another document to find it. Same information, but phrased as a rule for the
+another design to find it. Same information, but phrased as a rule for the
 caller, so it was rewritten as a plain statement:
 
 > The full element format is documented inline on each tool's element
 > argument, so the tool definitions are the complete reference for it.
 
-Where a genuine safety confirmation belongs, as in `delete_document` asking the
+Where a genuine safety confirmation belongs, as in `delete_design` asking the
 user before an irreversible delete, it stays, and is now also carried
 structurally by `destructiveHint` (§4.14), which is the mechanism a client
 actually acts on.
@@ -710,28 +710,28 @@ returns on success. A successful result carries that object twice: as
 **`structuredContent`**, which a client can parse and validate without reading
 prose, and serialised as the first text block, for clients that only read
 `content` (the backwards-compatible form MCP recommends). The four tools that
-render a preview (`read_document`, `create_document`, `add_tab`,
-`update_document`) add the inline PNG after it (`read_document` only when asked with `image: true`) ([§5](#5-visualise--inline-image-render)).
+render a preview (`read_design`, `create_design`, `add_tab`,
+`update_design`) add the inline PNG after it (`read_design` only when asked with `image: true`) ([§5](#5-visualise--inline-image-render)).
 An error result (`isError: true`, a model-correctable message) carries text only
 and no `structuredContent`; MCP exempts errors from the output schema. Every mistake the caller can fix is
 such a result, never a thrown protocol error: the `registerTool` wrapper answers an api 4xx in words (by its
-code or status: a document in the Trash, a view-only grant, an id that names nothing) and a named input error
-(a tab id the document lacks names its tabs); only a 5xx or a network failure throws. A deleted tab's refusal
+code or status: a design in the Trash, a view-only grant, an id that names nothing) and a named input error
+(a tab id the design lacks names its tabs); only a 5xx or a network failure throws. A deleted tab's refusal
 says why by its status (no such tab, view only, the last tab).
 
 | Tool               | Result object                                                                                             |
 | ------------------ | --------------------------------------------------------------------------------------------------------- |
-| `find_documents`   | `count`, `documents[]` of `{ id, name, updatedAt, library, url }`                                         |
-| `read_document`    | `id`, `name`, `tab { id, name, rev, ... }`, `tabs[]` of `{ id, name }` (every tab, in order), `url`       |
+| `find_designs`   | `count`, `designs[]` of `{ id, name, updatedAt, library, url }`                                         |
+| `read_design`    | `id`, `name`, `tab { id, name, rev, ... }`, `tabs[]` of `{ id, name }` (every tab, in order), `url`       |
 | `list_templates`   | `categories[]` of `{ id, label, description }`, `templates[]` of `{ kind, title, description, category }` |
-| `create_document`  | `id` and `documentId` (the same), `name`, `tabCount`, `tabIds[]`, `folder`, `url`                         |
-| `add_tab`          | `documentId`, `tabId`, `name`, `url`, `note` when a template has more tabs than it added                  |
-| `update_document`  | `id` and `documentId` (the same), `tabId`, `url`                                                          |
-| `share_document`   | `url`, `role`, `expiresAt` (ms epoch, or null for never), `documentUrl`                                   |
-| `rename_document`  | `renamed` (`document` or `tab`), `name`, then `id` + `url` for a document or `tabId` for a tab            |
-| `delete_document`  | `deleted` (`document` or `tab`), `documentId`, then `trashed` + `restorableForDays` or `tabId`            |
+| `create_design`  | `id` and `designId` (the same), `name`, `tabCount`, `tabIds[]`, `folder`, `url`                         |
+| `add_tab`          | `designId`, `tabId`, `name`, `url`, `note` when a template has more tabs than it added                  |
+| `update_design`  | `id` and `designId` (the same), `tabId`, `url`                                                          |
+| `share_design`   | `url`, `role`, `expiresAt` (ms epoch, or null for never), `designUrl`                                   |
+| `rename_design`  | `renamed` (`design` or `tab`), `name`, then `id` + `url` for a design or `tabId` for a tab            |
+| `delete_design`  | `deleted` (`design` or `tab`), `designId`, then `trashed` + `restorableForDays` or `tabId`            |
 | `list_trash`       | `trash[]` of `{ id, name, library, reason, deletedAt, purgeAt }` (ISO timestamps)                         |
-| `restore_document` | `restored`, `id`, `name` (null when the api omits it), `url`                                              |
+| `restore_design` | `restored`, `id`, `name` (null when the api omits it), `url`                                              |
 
 **The schema and the result can't drift.** Each tool is a verb in the shared catalogue
 (`packages/agent-verbs/src/verbs/mcp-tools.ts`, [CLI](cli.md#one-catalogue-for-the-cli-and-the-mcp)) holding its
@@ -750,13 +750,13 @@ values, and connector directories score servers on it. A test walks the
 advertised `tools/list` schemas and fails on any property without a
 description.
 
-**Tool names stay `snake_case` verbs** (`create_document`, `list_trash`). Some
-directories prefer dot-notation trees (`document.create`); it is not adopted,
+**Tool names stay `snake_case` verbs** (`create_design`, `list_trash`). Some
+directories prefer dot-notation trees (`design.create`); it is not adopted,
 because several clients restrict a tool name to `[a-zA-Z0-9_-]`, and a rename
 would break every existing connection and the cross-references between tool
 descriptions.
 
-- **Previews**: `read_document` with `image` draws a Pages tab as its pages, each as the editor exports it
+- **Previews**: `read_design` with `image` draws a Pages tab as its pages, each as the editor exports it
   (`svg-render-pages.ts` over `page-frame.ts`): its background, gradient, pattern or picture, the elements
   reaching onto it cut at its edges, in rows (two wide pages or three tall pages to a row) with each page's place and name
   under it; `page` (an id, place or name) draws one page alone at its own size. An emoji icon or sticker, which needs a colour-emoji font a Worker lacks,
@@ -767,19 +767,19 @@ descriptions.
 
 ## 5. Visualise — inline image render
 
-`create_document`, `add_tab` and `update_document` return, and `read_document` with `image: true` returns, an **inline
+`create_design`, `add_tab` and `update_design` return, and `read_design` with `image: true` returns, an **inline
 PNG** so the pages show in the chat. This needs headless rendering inside a
 Worker (no DOM, no React).
 
 - **Reuse what's already pure.** The existing export
   (`apps/live/lib/export-tab.ts`) has a **purely procedural SVG path**
-  (`renderTabToSvg`) that already calls headless helpers in `packages/document`:
+  (`renderTabToSvg`) that already calls headless helpers in `packages/design`:
   `arrow-path.ts` (path `d` strings, label anchors), `geometry.ts` (endpoint /
   anchor / bounds), `colors.ts` (`defaultFillColor` / `defaultStrokeColor` /
   `defaultTextColor` theme resolution). The PNG/PDF paths are Canvas/DOM-bound
   and are **not** reusable.
 - **Extract a shared renderer.** Move the SVG-building logic into a new pure
-  `packages/document/src/svg-render.ts` (`renderElementsToSvg(tab): string`),
+  `packages/design/src/svg-render.ts` (`renderElementsToSvg(tab): string`),
   consumed by **both** the existing in-app export (dedup — the editor stops
   carrying its own copy) and the MCP worker. This is the reuse rule applied: one
   renderer, two callers.
@@ -812,7 +812,7 @@ Worker (no DOM, no React).
   renderer's `resolveImageHref` hook — resvg (WASM) can't fetch, so the bytes
   must be inline. A tab with no images does no extra work. The fetch-and-inline core is
   `embedTabImages` in `@livedesign/api-schema`, shared with the api worker's
-  snapshot render ([Document SVG snapshots](../006-document/document-snapshots.md)), which passes its own byte source
+  snapshot render ([Design SVG snapshots](../006-design/design-snapshots.md)), which passes its own byte source
   (R2) and a total byte budget.
 - **Picture budget.** resvg decodes every picture at full size and holds them all while it draws: about 4 bytes a
   pixel on top of about 28 MB for a 2048 px preview, in wasm memory that never shrinks. Measured: one 2880x1800
@@ -832,7 +832,7 @@ Worker (no DOM, no React).
   (tracks / headers / zebra / per-cell text, `svg-render-table.ts`), freehand
   sketches as the canvas draws them (the same Catmull-Rom smoothing, straight
   segments for a polygon-tool path), the full shape-silhouette vocabulary (hexagon /
-  cylinder / document / cloud / devices / actor / frame ... —
+  cylinder / design / cloud / devices / actor / frame ... —
   `svg-render-shapes.ts`, drawn from the same geometry table as the editor's
   ShapeSvgOverlay: `shape-geometry.ts`, pinned by a test per kind on each side),
   element rotation, and icon glyphs (above). The PNG/PDF canvas path
@@ -853,12 +853,12 @@ Worker (no DOM, no React).
 
 1. **`apps/mcp` skeleton** — worker, Hono, MCP SDK, service binding to api,
    `/health`, deploy wiring + `mcp.livedesign.app` host. `.env.example`.
-2. **Shared SVG renderer** — extract `packages/document/src/svg-render.ts` from
+2. **Shared SVG renderer** — extract `packages/design/src/svg-render.ts` from
    `export-tab.ts`, repoint the in-app export to it (no behaviour change), add
    `@resvg/resvg-wasm` rasterisation in the worker.
-3. **Tools, read-first** — `find_documents`, `read_document` (+ schema resource).
+3. **Tools, read-first** — `find_designs`, `read_design` (+ schema resource).
    These are read-only and prove the schema + render path end to end.
-4. **Write tools** — `create_document`, `update_document` (both modes), reusing
+4. **Write tools** — `create_design`, `update_design` (both modes), reusing
    `validate.ts` + `auto-layout.ts`.
 5. **OAuth** — `/api/oauth/exchange` on the api worker (reusing the token-mint
    path, Clerk-gated like `/api/tokens`); `apps/live` consent page; the MCP
@@ -878,13 +878,13 @@ Worker (no DOM, no React).
 
 - **Streaming progress** from tools (the SDK supports it; v1 returns once).
 - **Folder / team management** via MCP — there are no tools to list, rename, or
-  move folders (create_document files new documents at the root of the user's My Work, or their default folder);
+  move folders (create_design files new designs at the root of the user's My Work, or their default folder);
   more `/api` surface can be wrapped later if demand appears. (Share-link
-  creation IS in scope now — `share_document`, [§4.8](#48-share_document); managing
+  creation IS in scope now — `share_design`, [§4.8](#48-share_design); managing
   folders/teams themselves stays out.)
-  (Team **content** is in scope: `find_documents` sweeps team shared libraries
-  and the other tools read/edit team documents through the ordinary access
-  gates — [§4.1](#41-find_documents), [Public API and API tokens §3.4](public-api-and-tokens.md).
+  (Team **content** is in scope: `find_designs` sweeps team shared libraries
+  and the other tools read/edit team designs through the ordinary access
+  gates — [§4.1](#41-find_designs), [Public API and API tokens §3.4](public-api-and-tokens.md).
   Managing teams themselves stays out, and the api refuses it to tokens.)
 - **Token-paste connector** as a supported path — OAuth is the chosen front door
   ([§3](#3-authentication-oauth-21)); a raw Bearer still works for local dev but

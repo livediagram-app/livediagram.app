@@ -5,7 +5,7 @@
 // (blend-swatch), a gradient style as itself, a crop ratio as its shape, a font in its face. A choice with no drawing
 // has none, and its tile shows its name alone.
 import type { ReactNode } from 'react';
-import { FONTS } from '@livedesign/document';
+import { FONTS } from '@livedesign/design';
 import type { BlendMode } from '@livedesign/photo-engine';
 import {
   lucideImage,

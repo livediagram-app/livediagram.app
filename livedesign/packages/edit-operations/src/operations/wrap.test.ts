@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FRAME_PAD, FRAME_TOP, type Element } from '@livedesign/document';
+import { FRAME_PAD, FRAME_TOP, type Element } from '@livedesign/design';
 import { applyEditOperations } from '../apply';
 import { checkoutFlow } from '../fixtures/checkout-flow';
 import { applied, lines, refused } from '../fixtures/outcomes';

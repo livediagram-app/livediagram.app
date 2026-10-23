@@ -1,7 +1,7 @@
 // A page kind's track (docs/specs/007-editor/pages-tour.md "The steps"): its steps as Show Me runs them, or behind
 // its welcome card as the Pages tour offers them. Loaded at the offer or the press (`import('./page-tour-steps')`),
 // so the copy stays out of the editor's first load.
-import type { PageKind } from '@livedesign/document';
+import type { PageKind } from '@livedesign/design';
 import { LOGO_WELCOME, logoTourSteps } from './logo-tour-steps';
 import { WIREFRAME_WELCOME, wireframeTourSteps } from './wireframe-tour-steps';
 import { PHOTO_WELCOME, photoTourSteps } from './photo-tour-steps';

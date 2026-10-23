@@ -1,7 +1,7 @@
 // The editor mode each template opens in (docs/specs/007-editor/pages-mode.md "One mode"): livedesign
 // has one mode, Pages, so every template opens there. Read by the template step (its mode filter and the glyph on
 // every card) and by templateCanvasOverrides (the tab's `opensIn`), so the two can never disagree.
-import type { EditorMode } from '@livedesign/document';
+import type { EditorMode } from '@livedesign/design';
 import type { TemplateKind } from './templates';
 
 /** The mode a template's tab opens in: always Pages. */

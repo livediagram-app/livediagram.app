@@ -101,17 +101,17 @@ export async function apiJson<T>(
   return { status: res.status(), body: (text ? JSON.parse(text) : null) as T };
 }
 
-export type Seeded = { documentId: string; tabId: string; token: string };
+export type Seeded = { designId: string; tabId: string; token: string };
 
-// A document of the person's with one labelled square, and an API token, as the CLI holds.
-export async function seedDocumentAndToken(
+// A design of the person's with one labelled square, and an API token, as the CLI holds.
+export async function seedDesignAndToken(
   request: APIRequestContext,
   person: Person,
 ): Promise<Seeded> {
-  const documentId = `wb-doc-${randomUUID()}`;
+  const designId = `wb-doc-${randomUUID()}`;
   const tabId = `wb-tab-${randomUUID()}`;
-  const created = await apiJson(request, 'POST', '/documents', person.jwt, {
-    id: documentId,
+  const created = await apiJson(request, 'POST', '/designs', person.jwt, {
+    id: designId,
     name: 'Home screen',
     tabs: [
       {
@@ -132,12 +132,12 @@ export async function seedDocumentAndToken(
       },
     ],
   });
-  if (created.status >= 300) throw new Error(`creating the document failed: ${created.status}`);
+  if (created.status >= 300) throw new Error(`creating the design failed: ${created.status}`);
   const token = await apiJson<{ token: string }>(request, 'POST', '/tokens', person.jwt, {
     name: 'livedesign CLI',
   });
   if (token.status >= 300) throw new Error(`creating the token failed: ${token.status}`);
-  return { documentId, tabId, token: token.body.token };
+  return { designId, tabId, token: token.body.token };
 }
 
 // `livedesign workbench open`: POST /api/workbench/tickets with the token.
@@ -147,7 +147,7 @@ export function mintTicket(
   origin: string,
 ): Promise<{ status: number; body: { url?: string; pairingUrl?: string } }> {
   return apiJson(request, 'POST', '/workbench/tickets', seeded.token, {
-    documentId: seeded.documentId,
+    designId: seeded.designId,
     origin,
   });
 }

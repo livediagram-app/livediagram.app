@@ -12,7 +12,7 @@ import {
   type BoxedElement,
   type Element,
   type ElementId,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { boxOf, shifted, type Box } from './placement';
 import { currentElements, moveElement, putElement, touch, type EditState } from './state';
 

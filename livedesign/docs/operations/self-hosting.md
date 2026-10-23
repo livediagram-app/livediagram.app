@@ -8,10 +8,10 @@ This guide is the practical path: provision Cloudflare resources, configure secr
 
 | Resource                             | Used by           | Why                                                                                                                                                                                                                                                                                                                                        |
 | ------------------------------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Workers paid plan**                | All seven workers | Durable Objects (per-document realtime room) need the paid plan.                                                                                                                                                                                                                                                                           |
-| **D1 database**                      | `apps/api`        | Documents, tabs, comments, folders, share links, shared-with index, image metadata, user preferences, teams + membership + team library, custom themes, telemetry rows.                                                                                                                                                                    |
-| **Durable Object namespace**         | `apps/api`        | One stateful room per document for realtime presence + ops.                                                                                                                                                                                                                                                                                |
-| **R2 bucket** (optional)             | `apps/api`        | Image uploads ([Image element + per-owner gallery](../specs/009-elements/images.md)) + document SVG snapshots ([Document SVG snapshots](../specs/006-document/document-snapshots.md): Explorer thumbnails + the live image share). Without it, image endpoints `503` and snapshot endpoints `404` (the Explorer row shows a generic icon). |
+| **Workers paid plan**                | All seven workers | Durable Objects (per-design realtime room) need the paid plan.                                                                                                                                                                                                                                                                           |
+| **D1 database**                      | `apps/api`        | Designs, tabs, comments, folders, share links, shared-with index, image metadata, user preferences, teams + membership + team library, custom themes, telemetry rows.                                                                                                                                                                    |
+| **Durable Object namespace**         | `apps/api`        | One stateful room per design for realtime presence + ops.                                                                                                                                                                                                                                                                                |
+| **R2 bucket** (optional)             | `apps/api`        | Image uploads ([Image element + per-owner gallery](../specs/009-elements/images.md)) + design SVG snapshots ([Design SVG snapshots](../specs/006-design/design-snapshots.md): Explorer thumbnails + the live image share). Without it, image endpoints `503` and snapshot endpoints `404` (the Explorer row shows a generic icon). |
 | **Rate Limiter bindings** (optional) | `apps/api`        | Abuse throttles: per-owner writes, plus telemetry ingest, share-code lookups, link unfurls, AI calls and API-token reads. Any binding you don't provision falls through to "allow", so none are required.                                                                                                                                  |
 | **Custom domain**                    | `apps/router`     | The router worker serves your hostname; downstream workers don't need their own domain.                                                                                                                                                                                                                                                    |
 
@@ -87,7 +87,7 @@ The hosted version uses Clerk for sign-in. To enable on your self-host:
 
    Without it, teams still work (create / roles / member management), but an invited address only connects when an admin re-invites after the claim is configured; the worker never trusts a client-supplied email.
 
-5. **Recommended when Clerk is on — sign guest ids.** Set a random HMAC secret so the worker mints signed guest ids and `POST /api/migrate` requires a valid signature before moving a guest's data into a Clerk account. Without it, anyone who observed a guest's id (it appears in shared-document DTOs / presence) could claim that guest's data at sign-up. Generate and set:
+5. **Recommended when Clerk is on — sign guest ids.** Set a random HMAC secret so the worker mints signed guest ids and `POST /api/migrate` requires a valid signature before moving a guest's data into a Clerk account. Without it, anyone who observed a guest's id (it appears in shared-design DTOs / presence) could claim that guest's data at sign-up. Generate and set:
 
    ```sh
    openssl rand -hex 32 | pnpm --filter @livedesign/api exec wrangler secret put GUEST_ID_HMAC_SECRET
@@ -95,12 +95,12 @@ The hosted version uses Clerk for sign-in. To enable on your self-host:
 
    Leaving it unset keeps the legacy unsigned migrate, which is fine for a single-user self-host (no one else to claim from). See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md).
 
-   With the secret set, you can also require a valid signature on the guest `X-Owner-Id` REST path ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md) §4), which closes the "observe a guest id, use it as a credential" hole for shared documents. Two plain vars in `apps/api/wrangler.toml` `[vars]` control it, and **the file ships the hosted values, so edit both for your deployment** (or delete both lines to leave enforcement off):
+   With the secret set, you can also require a valid signature on the guest `X-Owner-Id` REST path ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md) §4), which closes the "observe a guest id, use it as a credential" hole for shared designs. Two plain vars in `apps/api/wrangler.toml` `[vars]` control it, and **the file ships the hosted values, so edit both for your deployment** (or delete both lines to leave enforcement off):
 
-   - `GUEST_SIGNING_LIVE_AT`: epoch ms when your deployment first had `GUEST_ID_HMAC_SECRET`. A guest id created before it can still make its one-time upgrade onto a signed id after enforcement starts, so returning pre-signing guests keep their documents.
+   - `GUEST_SIGNING_LIVE_AT`: epoch ms when your deployment first had `GUEST_ID_HMAC_SECRET`. A guest id created before it can still make its one-time upgrade onto a signed id after enforcement starts, so returning pre-signing guests keep their designs.
    - `GUEST_SIG_ENFORCE_AFTER`: epoch ms from which owner-scoped routes, the realtime room's owner leg and the upgrade itself require a valid signature.
 
-   Arm it only on a build where every entry path signs first: before that, `/new` minted a local unsigned id, and with enforcement armed a first-time visitor who opened it could not create a document ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md) §6). Every entry path now signs first, and every e2e stack runs with enforcement on, so a regression of that kind fails the suite.
+   Arm it only on a build where every entry path signs first: before that, `/new` minted a local unsigned id, and with enforcement armed a first-time visitor who opened it could not create a design ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md) §6). Every entry path now signs first, and every e2e stack runs with enforcement on, so a regression of that kind fails the suite.
 
    Set them in the file rather than the Cloudflare dashboard: every `wrangler deploy` replaces plain vars with the ones the file declares. Both are no-ops without `GUEST_ID_HMAC_SECRET`. `pnpm dev` blanks `GUEST_SIG_ENFORCE_AFTER`, so local guests made before your local secret keep working; every e2e stack enforces it.
 
@@ -159,7 +159,7 @@ Serve the editor over HTTPS (Cloudflare does by default, on `workers.dev` and on
 ## MCP server (optional, needs Clerk)
 
 The `apps/mcp` worker ([MCP server](../specs/015-api/mcp-server.md)) lets people connect an AI tool (Claude, any MCP
-client) to drive their documents. It's **optional** — don't deploy it and nothing
+client) to drive their designs. It's **optional** — don't deploy it and nothing
 else references it — and **needs Clerk**, exactly like API tokens and teams: the
 OAuth consent page authenticates the user via Clerk and the api's
 `/api/oauth/exchange` requires a Clerk identity, so a no-auth self-host can mint
@@ -230,7 +230,7 @@ The last two are the spend-DoS defence: on a public deployment they stop a third
 
 ## Email (optional, Resend)
 
-The api worker can send a small set of account emails via [Resend](https://resend.com) ([Transactional & lifecycle email (Resend)](../specs/014-identity/transactional-email.md)): a welcome on first sign-in; week-1 (Explorer) and week-2 (Teams) onboarding tips, an activation nudge and a win-back note off the daily cron; a warning before an API token expires; notifications (someone opened, commented on or mentioned you in a document, assigned you an action, or answered your team invite) plus first-share and document-count milestone notes; and transactional team-invite (with a Decline link that needs no account), team-invite reminder (1, 7 and 21 days after an unanswered invite) and account-deleted messages. The whole feature is **off until you provide a key** — no key, no sends, and the `email_lifecycle` table is never touched. Guests never receive email (it's authenticated-only).
+The api worker can send a small set of account emails via [Resend](https://resend.com) ([Transactional & lifecycle email (Resend)](../specs/014-identity/transactional-email.md)): a welcome on first sign-in; week-1 (Explorer) and week-2 (Teams) onboarding tips, an activation nudge and a win-back note off the daily cron; a warning before an API token expires; notifications (someone opened, commented on or mentioned you in a design, assigned you an action, or answered your team invite) plus first-share and design-count milestone notes; and transactional team-invite (with a Decline link that needs no account), team-invite reminder (1, 7 and 21 days after an unanswered invite) and account-deleted messages. The whole feature is **off until you provide a key** — no key, no sends, and the `email_lifecycle` table is never touched. Guests never receive email (it's authenticated-only).
 
 To turn it on, verify a sending domain in Resend, then:
 
@@ -270,7 +270,7 @@ The api worker honours two optional `[vars]` that cap how much one owner can kee
 
 - `IMAGE_MAX_PER_OWNER`: maximum image rows per owner (decimal string).
 - `IMAGE_MAX_BYTES_PER_OWNER`: maximum summed `byte_size` per owner (decimal byte count).
-- `PHOTO_MAX_BYTES_PER_TAB`: maximum bytes of photo page pixels one tab may hold ([Photo store](../specs/031-photo/photo-store.md) "Limits"), answered as a 403 `{ error: "photo_full", limit, current }` on an upload past it. Photo pages store their pixels in the same `IMAGES` bucket, under `photo/`; without the binding they are offered in Offline Mode documents only.
+- `PHOTO_MAX_BYTES_PER_TAB`: maximum bytes of photo page pixels one tab may hold ([Photo store](../specs/031-photo/photo-store.md) "Limits"), answered as a 403 `{ error: "photo_full", limit, current }` on an upload past it. Photo pages store their pixels in the same `IMAGES` bucket, under `photo/`; without the binding they are offered in Offline Mode designs only.
 
 Both default to "no limit" when unset, blank, `0`, or non-numeric, which is the OSS self-host default where the operator runs their own R2 budget. To cap, declare them under `[vars]` in `apps/api/wrangler.toml`, not in the Cloudflare dashboard: every `wrangler deploy` replaces the worker's plain vars with the ones it declares, so a dashboard-only cap is silently gone after the next deploy. The hosted livedesign.app sets them to `100` and `104857600` (100 MB) through its hosted profile, which a fork's deploy does not apply. The worker also honours an early `X-Image-Sha256` dedupe check sent by the live editor: if the header matches an existing row at `(owner, sha256)` the upload short-circuits before the body parse, the cap check, or the R2 write, so re-uploading bytes the user already has costs almost nothing.
 
@@ -279,7 +279,7 @@ Both default to "no limit" when unset, blank, `0`, or non-numeric, which is the 
 Add a custom-domain route to the router worker (`apps/router/wrangler.toml`) and point your DNS at Cloudflare. The router stitches all paths under one hostname:
 
 - `/` → marketing
-- `/document/*`, `/explorer/*`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed`, `/sso-callback` → live editor (clean routes; `/live/*` carries only its `_next` assets)
+- `/design/*`, `/explorer/*`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed`, `/sso-callback` → live editor (clean routes; `/live/*` carries only its `_next` assets)
 - `/telemetry` → telemetry dashboard
 - `/help` → help centre
 - `/api/*` → api worker
@@ -289,5 +289,5 @@ The five downstream workers don't need their own domain; the router fans out via
 ## What can break, and how to debug
 
 - **`account not authorized` from wrangler**: the API token is missing a scope. See the token list above; most often it's missing **Account → Account Settings: Read**, which wrangler uses to look up your account.
-- **`Durable Object class is not exported`**: the api worker's `wrangler.toml` references `DocumentRoom` as the DO class. It IS exported from `apps/api/src/index.ts`; if you've forked + renamed, keep the export name in step with the binding.
-- **Editor loads but every request 403s**: the resolved owner doesn't match the document's stored owner. If you migrated from one auth setup to another (added Clerk after running guest-only), the old guest documents still belong to the old guest id. The `/api/migrate` endpoint moves rows from a guest id to a Clerk userId after sign-up; see [Auth + guest access](../specs/014-identity/auth-and-guest-access.md).
+- **`Durable Object class is not exported`**: the api worker's `wrangler.toml` references `DesignRoom` as the DO class. It IS exported from `apps/api/src/index.ts`; if you've forked + renamed, keep the export name in step with the binding.
+- **Editor loads but every request 403s**: the resolved owner doesn't match the design's stored owner. If you migrated from one auth setup to another (added Clerk after running guest-only), the old guest designs still belong to the old guest id. The `/api/migrate` endpoint moves rows from a guest id to a Clerk userId after sign-up; see [Auth + guest access](../specs/014-identity/auth-and-guest-access.md).

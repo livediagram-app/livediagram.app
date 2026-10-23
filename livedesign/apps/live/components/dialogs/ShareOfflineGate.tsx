@@ -5,13 +5,13 @@ import { Button, DialogCloseButton, DialogHeader } from '@livedesign/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
-import { SyncDocumentPrompt } from './SyncDocumentPrompt';
+import { SyncDesignPrompt } from './SyncDesignPrompt';
 
-// The Share dialog's offline gate (docs/specs/006-document/offline-mode.md "Sharing a document in
-// This Browser"). An offline document is stored only in this browser, so there are no links to mint until it
-// is synced. The gate says so and offers Sync Document (SyncDocumentPrompt, which Share Form draws too); the
-// sync converts the open document in place ("Syncing in place"), with no reload, and the Share dialog swaps the
-// gate for its share options as the document stops being offline. Sync waits for `ready` (the reader is known).
+// The Share dialog's offline gate (docs/specs/006-design/offline-mode.md "Sharing a design in
+// This Browser"). An offline design is stored only in this browser, so there are no links to mint until it
+// is synced. The gate says so and offers Sync Design (SyncDesignPrompt, which Share Form draws too); the
+// sync converts the open design in place ("Syncing in place"), with no reload, and the Share dialog swaps the
+// gate for its share options as the design stops being offline. Sync waits for `ready` (the reader is known).
 export function ShareOfflineGate({
   onSyncToCloud,
   ready = true,
@@ -23,13 +23,13 @@ export function ShareOfflineGate({
 }) {
   const [busy, setBusy] = useState(false);
   return (
-    <Dialog open onClose={onClose} ariaLabel="Share This Document" size="md">
-      <DialogHeader title="Share This Document" subtitle="Saved only in this browser.">
+    <Dialog open onClose={onClose} ariaLabel="Share This Design" size="md">
+      <DialogHeader title="Share This Design" subtitle="Saved only in this browser.">
         <HelpArticleLink article="offlineMode" size="md" />
         <DialogCloseButton onClick={onClose} />
       </DialogHeader>
 
-      <SyncDocumentPrompt
+      <SyncDesignPrompt
         onSyncToCloud={onSyncToCloud}
         ready={ready}
         onBusyChange={setBusy}

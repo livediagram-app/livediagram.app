@@ -39,7 +39,7 @@ control. The Size row always renders, dimmed and inert until a marker is set
 ([Menu flyouts must not resize under the pointer](../004-interface-design/flyout-height-stability.md)).
 Hovering a tile or a size previews it on the canvas; a click commits. Shapes
 only; not offered for arrows / text / images / tables, nor on a shape kind where
-a marker would never show (`isSelfDrawingShape` in `@livedesign/document`): the
+a marker would never show (`isSelfDrawingShape` in `@livedesign/design`): the
 self-drawing kinds, which have no label. The same
 reasoning, and the same list, as the Text alignment gate. The multi-selection
 menu offers markers too, for every marker-capable shape in the selection with
@@ -48,7 +48,7 @@ text.
 ## Implementation notes
 
 - Data model: `ShapeElement.marker?: ShapeMarker` and
-  `ShapeElement.markerSize?: TextSize` (`packages/document/src/shape-marker.ts`
+  `ShapeElement.markerSize?: TextSize` (`packages/design/src/shape-marker.ts`
   defines the `ShapeMarker` union + `SHAPE_MARKERS` order).
 - The glyph is one component, `ShapeMarkerGlyph` (`apps/live/components/canvas/ShapeMarker.tsx`),
   shared by the canvas renderer and the context-menu tiles; the circles carry a

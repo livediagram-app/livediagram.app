@@ -6,7 +6,7 @@ import {
   packFreehandPoints,
   type Element,
   type FreehandElement,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { logoGuideSnapper, logoTidyGuides, snapNewStrokes } from './logo-guide-snapping';
 
 // docs/specs/007-editor/logo-pages.md "Construction guides": drawing snaps onto the shown guides.

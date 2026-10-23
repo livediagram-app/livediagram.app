@@ -1,13 +1,13 @@
 // The three markers' device-local settings (docs/specs/023-draw-mode/drawing-tools.md "Markers"):
 // each one's colour and width. The user's, not the page's: stored in this browser, never sent with
-// the document.
+// the design.
 
 import {
   isCustomPenColour,
   isPenColourName,
   penColourLabel,
   type PenColour,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import {
   readLocalStorageSafe,
   safeJson,

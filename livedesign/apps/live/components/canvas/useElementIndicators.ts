@@ -9,7 +9,7 @@ import {
   type TextAlignX,
   type TextAlignY,
   type TextSize,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { describeLink } from '@/lib/link-label';
 import { colorForKey, initialsOf } from '@/lib/identity';
 import { useCommentBadges } from '@/components/canvas/CommentBadgesContext';
@@ -36,7 +36,7 @@ export function elementIndicatorItems(
   const link =
     element.type !== 'link-card' &&
     element.link &&
-    (element.link.kind === 'tab' || element.link.kind === 'document' || element.link.kind === 'url')
+    (element.link.kind === 'tab' || element.link.kind === 'design' || element.link.kind === 'url')
       ? element.link
       : undefined;
   const assignee = isOpenAction(element.action) ? element.action?.assignee : undefined;

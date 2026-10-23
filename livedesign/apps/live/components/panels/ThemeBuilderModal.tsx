@@ -47,7 +47,7 @@ export function ThemeBuilderModal({
 export function themeDeleteConfirm(name: string) {
   return {
     title: `Delete "${name}"?`,
-    message: 'Documents using it fall back to the Default theme. This cannot be undone.',
+    message: 'Designs using it fall back to the Default theme. This cannot be undone.',
     confirmLabel: 'Delete',
   };
 }

@@ -5,7 +5,7 @@ import {
   DEFAULT_WIREFRAME_DEVICE,
   isWireframeDeviceId,
   type WireframeDeviceId,
-} from '@livedesign/document';
+} from '@livedesign/design';
 
 const KEY = 'livedesign:v2:wireframe-device';
 

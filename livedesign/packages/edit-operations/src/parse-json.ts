@@ -18,7 +18,7 @@ import {
   WRAP_CONTAINERS,
   type EditOperationName,
 } from './vocabulary';
-import { isRecord } from '@livedesign/document';
+import { isRecord } from '@livedesign/design';
 
 type Raw = Record<string, unknown>;
 

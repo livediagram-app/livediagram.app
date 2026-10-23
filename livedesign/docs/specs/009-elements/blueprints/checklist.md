@@ -9,15 +9,15 @@ Scope, by file:
 
 | File                                                         | Role                                                                                                        |
 | ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
-| `packages/document/src/data-shapes.ts`                       | `ChecklistItem`, `CHECKLIST_MAX_ITEMS`, `CHECKLIST_MAX_TEXT`, `CHECKLIST_DEFAULT_ITEMS`, `isChecklistShape` |
-| `packages/document/src/shape-factory.ts`                     | Size 240 × 180; seeds the three rows                                                                        |
-| `packages/document/src/validate.ts`                          | Row count, row text and `done` type checks                                                                  |
-| `packages/document/src/element-deltas.ts`                    | The `check` delta, `checklistDeltaFor`, `keepLocalTicks`, `mergeIncomingElement`                            |
-| `packages/document/src/collab-ledger.ts`                     | Wire validation of an incoming `check` delta                                                                |
-| `packages/document/src/svg-render-shapes.ts`                 | `svgChecklistShape`: the headless render                                                                    |
+| `packages/design/src/data-shapes.ts`                       | `ChecklistItem`, `CHECKLIST_MAX_ITEMS`, `CHECKLIST_MAX_TEXT`, `CHECKLIST_DEFAULT_ITEMS`, `isChecklistShape` |
+| `packages/design/src/shape-factory.ts`                     | Size 240 × 180; seeds the three rows                                                                        |
+| `packages/design/src/validate.ts`                          | Row count, row text and `done` type checks                                                                  |
+| `packages/design/src/element-deltas.ts`                    | The `check` delta, `checklistDeltaFor`, `keepLocalTicks`, `mergeIncomingElement`                            |
+| `packages/design/src/collab-ledger.ts`                     | Wire validation of an incoming `check` delta                                                                |
+| `packages/design/src/svg-render-shapes.ts`                 | `svgChecklistShape`: the headless render                                                                    |
 | `apps/live/components/canvas/ChecklistView.tsx`              | Canvas card, row buttons, footer count                                                                      |
 | `apps/live/components/canvas/ShapeContentRouter.tsx`         | Routes the kind; `editable = !readOnly && !isLocked`                                                        |
-| `apps/live/app/document/[id]/useEditorState.ts`              | `toggleChecklistItem`: builds and applies the delta                                                         |
+| `apps/live/app/design/[id]/useEditorState.ts`              | `toggleChecklistItem`: builds and applies the delta                                                         |
 | `apps/live/hooks/canvas/useDataShapeSetters.ts`              | `setChecklistItemsSelected`: whole-array row edits                                                          |
 | `apps/live/components/palette/ElementDataSections.tsx`       | The Checklist section (Tools flyout)                                                                        |
 | `apps/live/components/palette/context-menu-data-editors.tsx` | `ChecklistRowsEditor`                                                                                       |
@@ -164,13 +164,13 @@ dropped delta (no match) is silent [GE12].
 
 | Rule                                   | Test                                                                                                 | File                                                              |
 | -------------------------------------- | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| Guard matches only `checklist`         | checklist matches only its own kind                                                                  | `packages/document/src/data-shapes.test.ts`                       |
-| Bounds                                 | bounds the code block + checklist fields                                                             | `packages/document/src/validate.test.ts`                          |
-| Two ticks on different rows both land  | ticks different checklist rows from two people                                                       | `packages/document/src/element-deltas.test.ts`                    |
-| Row found by text after a move         | finds a checklist row by its text when the rows moved                                                | `packages/document/src/element-deltas.test.ts`                    |
-| Whole-element update keeps ticks       | keeps our ticks and our comments, takes their row edits                                              | `packages/document/src/element-deltas.test.ts`                    |
-| Tick-only change is delta-only         | is true for an answer, a tick or a comment alone                                                     | `packages/document/src/element-deltas.test.ts`                    |
-| Export: rows, strike-through, footer   | renders a checklist as rows with ticked boxes                                                        | `packages/document/src/svg-render.test.ts`                        |
+| Guard matches only `checklist`         | checklist matches only its own kind                                                                  | `packages/design/src/data-shapes.test.ts`                       |
+| Bounds                                 | bounds the code block + checklist fields                                                             | `packages/design/src/validate.test.ts`                          |
+| Two ticks on different rows both land  | ticks different checklist rows from two people                                                       | `packages/design/src/element-deltas.test.ts`                    |
+| Row found by text after a move         | finds a checklist row by its text when the rows moved                                                | `packages/design/src/element-deltas.test.ts`                    |
+| Whole-element update keeps ticks       | keeps our ticks and our comments, takes their row edits                                              | `packages/design/src/element-deltas.test.ts`                    |
+| Tick-only change is delta-only         | is true for an answer, a tick or a comment alone                                                     | `packages/design/src/element-deltas.test.ts`                    |
+| Export: rows, strike-through, footer   | renders a checklist as rows with ticked boxes                                                        | `packages/design/src/svg-render.test.ts`                        |
 | Row draft survives, follows the rows   | keeps a typed draft through a re-render with the same rows; follows the element when its rows change | `apps/live/components/palette/context-menu-data-editors.test.tsx` |
 | Starter rows all unchecked, no footer  | none [GE11]                                                                                          |                                                                   |
 | Lock and layer gating of ticks         | none [GE6]                                                                                           |                                                                   |

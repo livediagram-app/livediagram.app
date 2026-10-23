@@ -11,7 +11,7 @@ import { workbenchNameOf, workbenchOpen, workbenchOriginOf, workbenchPair } from
 const ORIGIN = 'https://127.0.0.1:5175';
 const minted = {
   url: `https://livedesign.app/embed/workbench?d=${DOC_A}#ticket=${'t'.repeat(22)}`,
-  documentId: DOC_A,
+  designId: DOC_A,
   tabId: null,
   expiresAt: Date.UTC(2026, 9, 5, 8, 1),
 };
@@ -34,9 +34,9 @@ const refusalOf = async (work: Promise<unknown>) => {
 };
 
 describe('workbench open', () => {
-  it('mints a ticket for the whole document and prints its link', async () => {
+  it('mints a ticket for the whole design and prints its link', async () => {
     const { bodies, route } = mint((body) =>
-      Response.json({ ...minted, documentId: body.documentId }, { status: 201 }),
+      Response.json({ ...minted, designId: body.designId }, { status: 201 }),
     );
     const logs: string[] = [];
     const api = fakeApi({ ...library, '/workbench/tickets': route });
@@ -44,8 +44,8 @@ describe('workbench open', () => {
       doc: 'Shop',
       origin: ORIGIN,
     });
-    expect(output).toEqual({ ...minted, documentId: DOC_C });
-    expect(bodies).toEqual([{ method: 'POST', documentId: DOC_C, origin: ORIGIN }]);
+    expect(output).toEqual({ ...minted, designId: DOC_C });
+    expect(bodies).toEqual([{ method: 'POST', designId: DOC_C, origin: ORIGIN }]);
     expect(workbenchOpen.text!(output)).toEqual([minted.url]);
     expect(logs).toContain(`workbench open minted ${DOC_C}`);
   });
@@ -61,7 +61,7 @@ describe('workbench open', () => {
       origin: ORIGIN,
     });
     expect(output).toMatchObject({ tabId: 'tab-two-0000' });
-    expect(bodies[0]).toMatchObject({ documentId: DOC_A, tabId: 'tab-two-0000', origin: ORIGIN });
+    expect(bodies[0]).toMatchObject({ designId: DOC_A, tabId: 'tab-two-0000', origin: ORIGIN });
   });
 
   it('refuses an unpaired workbench as not permitted, naming the pair command (WB23)', async () => {
@@ -111,17 +111,17 @@ describe('workbench open', () => {
     expect(err).toBeInstanceOf(TypeError);
   });
 
-  it('opens only your own documents: a share link is a usage error', async () => {
+  it('opens only your own designs: a share link is a usage error', async () => {
     const api = fakeApi({});
     const logs: string[] = [];
     const err = await workbenchOpen.run!(contextOf(api, [], logs), {
-      doc: 'https://livedesign.app/document/shared?s=abc',
+      doc: 'https://livedesign.app/design/shared?s=abc',
       origin: ORIGIN,
     }).catch((e: unknown) => e);
     expect(err).toBeInstanceOf(AddressError);
     expect((err as AddressError).failure).toMatchObject({
       kind: 'usage',
-      message: 'a workbench opens your own documents, not a share link',
+      message: 'a workbench opens your own designs, not a share link',
     });
     expect(api.calls).toEqual([]);
     expect(logs).toContain('workbench open refused share-link');
@@ -214,11 +214,11 @@ describe('workbench pair', () => {
         status: 'paired',
         origin: ORIGIN,
         name: 'Acme Editor',
-        scope: 'document',
+        scope: 'design',
       }),
     ).toEqual([`paired ${ORIGIN} as Acme Editor`]);
     expect(
-      workbenchPair.text!({ status: 'paired', origin: ORIGIN, name: null, scope: 'document' }),
+      workbenchPair.text!({ status: 'paired', origin: ORIGIN, name: null, scope: 'design' }),
     ).toEqual([`paired ${ORIGIN}`]);
     expect(
       workbenchPair.text!({ status: 'paired', origin: ORIGIN, name: null, scope: 'workspace' }),
@@ -278,7 +278,7 @@ describe('workbench open --workspace', () => {
     expect(refusal).toMatchObject({ status: 404, code: 'not_found' });
   });
 
-  it('names the workspace pairing when the token is paired for documents only', async () => {
+  it('names the workspace pairing when the token is paired for designs only', async () => {
     const { route } = mint(() =>
       Response.json({ error: 'pairing_required', pairingUrl: 'u', expiresAt: 1 }, { status: 428 }),
     );
@@ -296,8 +296,8 @@ describe('workbench open --workspace', () => {
   });
 
   it.each([
-    ['neither a document nor --workspace', { origin: ORIGIN }],
-    ['both a document and --workspace', { doc: 'Shop', workspace: true, origin: ORIGIN }],
+    ['neither a design nor --workspace', { origin: ORIGIN }],
+    ['both a design and --workspace', { doc: 'Shop', workspace: true, origin: ORIGIN }],
     ['--tab with --workspace', { workspace: true, tab: 'Details', origin: ORIGIN }],
     ['--folder without --workspace', { doc: 'Shop', folder: 'Minigames', origin: ORIGIN }],
   ])('refuses %s as a usage error', async (_why, input) => {

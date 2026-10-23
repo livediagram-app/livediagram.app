@@ -7,14 +7,14 @@ type SharePasswordGateProps = {
   // True when the visitor already submitted a wrong password (vs the
   // first prompt), so we show an error line.
   invalid: boolean;
-  // The document owner's display name, for context ("X's document"), or
+  // The design owner's display name, for context ("X's design"), or
   // null when we don't know it yet.
   ownerName: string | null;
   onSubmit: (password: string) => void;
 };
 
 // Full-screen gate shown when a visitor opens a password-protected
-// document's share link (docs/specs/013-workspace/share-password.md) and hasn't supplied a valid password.
+// design's share link (docs/specs/013-workspace/share-password.md) and hasn't supplied a valid password.
 // Submitting hands the password up; the editor stashes it on the
 // session and re-runs the bootstrap, which either hydrates or re-shows
 // this gate with `invalid` set.
@@ -41,12 +41,12 @@ export function SharePasswordGate({ invalid, ownerName, onSubmit }: SharePasswor
         </span>
         <div>
           <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-            This document is password-protected
+            This design is password-protected
           </h1>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
             {ownerName
-              ? `Enter the password ${ownerName} set to open this document.`
-              : 'Enter the password the owner set to open this document.'}
+              ? `Enter the password ${ownerName} set to open this design.`
+              : 'Enter the password the owner set to open this design.'}
           </p>
         </div>
         <TextInput
@@ -55,7 +55,7 @@ export function SharePasswordGate({ invalid, ownerName, onSubmit }: SharePasswor
           value={value}
           onChange={(e) => setValue(e.target.value)}
           placeholder="Password"
-          aria-label="Document password"
+          aria-label="Design password"
           aria-invalid={invalid}
         />
         {invalid ? (
@@ -64,7 +64,7 @@ export function SharePasswordGate({ invalid, ownerName, onSubmit }: SharePasswor
           </p>
         ) : null}
         <Button type="submit" size="md" disabled={!value.trim()} className="w-full shadow-sm">
-          Open document
+          Open design
         </Button>
       </form>
     </div>

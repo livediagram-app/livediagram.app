@@ -18,7 +18,7 @@ import { flyoutCardColumns, flyoutLayout } from './category-flyout-groups';
 import { opensSide } from './category-flyout-items';
 import { CategoryFlyoutSide, sidePlacement, type SideOpen } from './CategoryFlyoutSide';
 import type { PaletteTileDef } from './palette-tile-defs';
-import type { EditorMode } from '@livedesign/document';
+import type { EditorMode } from '@livedesign/design';
 import { StripOpenedBody, Divider } from './strip-rail-items';
 import type { PaletteTileActions } from './PaletteTileGrid';
 

@@ -6,7 +6,7 @@
 // the Workers' ./resolve).
 //
 // The legacy entries are the compatibility half of docs/specs/010-palette/stickers.md. Emoji shipped as
-// icons under docs/specs/010-palette/emoji-icons.md, so saved documents hold `iconId: 'emoji-*'` elements;
+// icons under docs/specs/010-palette/emoji-icons.md, so saved designs hold `iconId: 'emoji-*'` elements;
 // they are derived from the sticker catalogue (never hand-copied) so the two
 // can't drift, and they keep rendering as the bare tinted glyph those
 // elements have always been. The palette does not offer them — the Stickers
@@ -224,7 +224,7 @@ export const ICON_CATALOG_2: IconDef[] = [
   {
     id: 'file-plus',
     label: 'New file',
-    keywords: 'file add create document new',
+    keywords: 'file add create design new',
     prims: [
       { t: 'path', d: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z' },
       { t: 'polyline', points: '14 2 14 8 20 8' },

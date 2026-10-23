@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { HomeGroup, HomeJumpBackInItem } from '@livedesign/api-schema';
-import type { LocalOpenDocument } from '@/lib/offline/offline-opens';
+import type { LocalOpenDesign } from '@/lib/offline/offline-opens';
 import {
   dayHeading,
   groupsByDay,
-  homeDocumentHref,
+  homeDesignHref,
   jumpBackInSet,
   paneJumpBackIn,
   phoneOrder,
@@ -34,19 +34,19 @@ const place = {
 };
 
 const server = (
-  documentId: string,
+  designId: string,
   useDays: number,
   lastUsedAt: number,
   over: Partial<HomeJumpBackInItem> = {},
-) => ({ ...place, documentId, useDays, lastUsedAt, ...over }) as HomeJumpBackInItem;
+) => ({ ...place, designId, useDays, lastUsedAt, ...over }) as HomeJumpBackInItem;
 
 const local = (
   id: string,
   days: string[],
   lastOpenedAt: number,
   savedAt = 7,
-): LocalOpenDocument => ({
-  document: {
+): LocalOpenDesign => ({
+  design: {
     id,
     ownerId: 'offline',
     name: `Local ${id}`,
@@ -66,29 +66,29 @@ const local = (
 });
 
 const ids = (set: JumpBackInSet) => ({
-  mostUsed: set.mostUsed.map((d) => d.documentId),
-  recent: set.recent.map((d) => d.documentId),
+  mostUsed: set.mostUsed.map((d) => d.designId),
+  recent: set.recent.map((d) => d.designId),
 });
 
-describe('homeDocumentHref', () => {
-  it('opens own and team documents on their path', () => {
-    expect(homeDocumentHref({ documentId: 'd1', via: 'own', shareCode: null })).toBe(
-      '/document/d1',
+describe('homeDesignHref', () => {
+  it('opens own and team designs on their path', () => {
+    expect(homeDesignHref({ designId: 'd1', via: 'own', shareCode: null })).toBe(
+      '/design/d1',
     );
-    expect(homeDocumentHref({ documentId: 'd1', via: 'team', shareCode: null })).toBe(
-      '/document/d1',
+    expect(homeDesignHref({ designId: 'd1', via: 'team', shareCode: null })).toBe(
+      '/design/d1',
     );
   });
 
-  it('opens a shared document through its link', () => {
-    expect(homeDocumentHref({ documentId: 'd1', via: 'shared', shareCode: 'A b' })).toBe(
-      '/document/d1?s=A%20b',
+  it('opens a shared design through its link', () => {
+    expect(homeDesignHref({ designId: 'd1', via: 'shared', shareCode: 'A b' })).toBe(
+      '/design/d1?s=A%20b',
     );
   });
 });
 
 describe('jumpBackInSet', () => {
-  it('places local documents among the server ones by the same rule', () => {
+  it('places local designs among the server ones by the same rule', () => {
     const set = jumpBackInSet(
       [server('s1', 9, 10), server('s2', 1, 50), server('s3', 0, 40)],
       [local('l1', ['2026-08-30', '2026-08-29'], 30)],
@@ -98,7 +98,7 @@ describe('jumpBackInSet', () => {
     expect(ids(set)).toEqual({ mostUsed: ['s1', 'l1'], recent: ['s2', 's3'] });
     expect(set.mostUsed[1]).toMatchObject({
       name: 'Local l1',
-      href: '/document/l1',
+      href: '/design/l1',
       savedAt: 7,
       empty: true,
       shareCode: null,
@@ -108,7 +108,7 @@ describe('jumpBackInSet', () => {
     expect(set.mostUsed[0]!.localOnly).toBe(false);
   });
 
-  it("counts a local document's days inside the window only, and its save as its last use", () => {
+  it("counts a local design's days inside the window only, and its save as its last use", () => {
     const set = jumpBackInSet(
       [],
       [local('l1', ['2026-08-30', '2026-06-01'], at(30, 9), at(30, 14))],
@@ -118,7 +118,7 @@ describe('jumpBackInSet', () => {
     expect(set.mostUsed[0]).toMatchObject({ useDays: 1, lastUsedAt: at(30, 14) });
   });
 
-  it('shows a document that is both most used and recent once, under most used', () => {
+  it('shows a design that is both most used and recent once, under most used', () => {
     const set = jumpBackInSet(
       [server('a', 5, 100), server('b', 1, 90), server('c', 0, 80)],
       [],
@@ -128,7 +128,7 @@ describe('jumpBackInSet', () => {
     expect(ids(set)).toEqual({ mostUsed: ['a'], recent: ['b'] });
   });
 
-  it('breaks ties by document id, wherever the documents come from', () => {
+  it('breaks ties by design id, wherever the designs come from', () => {
     const set = jumpBackInSet(
       [server('s2', 1, 5), server('s1', 1, 5)],
       [local('a', ['2026-08-30'], 5, 0)],
@@ -137,9 +137,9 @@ describe('jumpBackInSet', () => {
     expect(ids(set).mostUsed).toEqual(['a', 's1', 's2']);
   });
 
-  it('carries a shared document’s link and code', () => {
+  it('carries a shared design’s link and code', () => {
     const set = jumpBackInSet([server('s1', 1, 1, { via: 'shared', shareCode: 'C' })], [], NOW);
-    expect(set.mostUsed[0]).toMatchObject({ href: '/document/s1?s=C', shareCode: 'C' });
+    expect(set.mostUsed[0]).toMatchObject({ href: '/design/s1?s=C', shareCode: 'C' });
   });
 });
 
@@ -154,7 +154,7 @@ describe('phoneOrder', () => {
       NOW,
     );
   const order = (s: JumpBackInSet) =>
-    phoneOrder(s).map(({ item, group }) => `${item.documentId}:${group}`);
+    phoneOrder(s).map(({ item, group }) => `${item.designId}:${group}`);
 
   it('alternates most used and recent, at most eight', () => {
     expect(order(set(['m1', 'm2', 'm3', 'm4'], ['r1', 'r2', 'r3', 'r4']))).toEqual([
@@ -214,15 +214,15 @@ describe('stripFade', () => {
 });
 
 describe('paneJumpBackIn', () => {
-  const item = (documentId: string) => ({ documentId }) as JumpBackInItem;
+  const item = (designId: string) => ({ designId }) as JumpBackInItem;
   const set = { mostUsed: [item('a'), item('b')], recent: [item('b'), item('c'), item('d')] };
-  const ids = (xs: JumpBackInItem[]) => xs.map((d) => d.documentId);
+  const ids = (xs: JumpBackInItem[]) => xs.map((d) => d.designId);
 
-  it('lists most used then recent, each document once', () => {
+  it('lists most used then recent, each design once', () => {
     expect(ids(paneJumpBackIn(set, null, 6))).toEqual(['a', 'b', 'c', 'd']);
   });
 
-  it('leaves out the document already open, and the next one takes its place', () => {
+  it('leaves out the design already open, and the next one takes its place', () => {
     expect(ids(paneJumpBackIn(set, 'b', 3))).toEqual(['a', 'c', 'd']);
     expect(ids(paneJumpBackIn(set, 'a', 6))).toEqual(['b', 'c', 'd']);
   });

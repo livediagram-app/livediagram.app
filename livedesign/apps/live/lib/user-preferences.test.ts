@@ -110,7 +110,7 @@ beforeEach(() => {
 
 describe('readUserPreferences (no window)', () => {
   // SSR / static-export build code path. Both helpers degrade to
-  // safe no-ops so the document page can render server-side without
+  // safe no-ops so the design page can render server-side without
   // throwing on `localStorage` access.
   it('returns {} when window is undefined', () => {
     expect(readUserPreferences()).toEqual({});
@@ -137,7 +137,7 @@ describe('readUserPreferences (with localStorage)', () => {
     });
   });
 
-  it('uses a single shared storage key (no per-document suffix anymore)', () => {
+  it('uses a single shared storage key (no per-design suffix anymore)', () => {
     const { storage } = mockBrowser();
     writeUserPreferences({ autoRebindArrows: false });
     // The spec says the key lives at exactly one place; this asserts
@@ -223,7 +223,7 @@ describe('writeUserPreferences (server sync)', () => {
     expect(mockedPut).not.toHaveBeenCalled();
   });
 
-  // docs/specs/006-document/offline-mode.md "Instant open": a document in This Browser opens under the
+  // docs/specs/006-design/offline-mode.md "Instant open": a design in This Browser opens under the
   // 'self' placeholder, which is nobody's preferences row.
   it("keeps the write local under the 'self' placeholder", () => {
     mockBrowser();
@@ -235,7 +235,7 @@ describe('writeUserPreferences (server sync)', () => {
   // workbench-embeds.md, I9): the local write and the event stay.
   it('keeps the write local under a workbench session', () => {
     const { storage, events } = mockBrowser();
-    setWorkbenchConfinement({ scope: 'document', documentId: 'doc-1', ownerId: 'user_1' });
+    setWorkbenchConfinement({ scope: 'design', designId: 'doc-1', ownerId: 'user_1' });
     try {
       writeUserPreferences({ showMinimap: false }, 'user_1');
     } finally {

@@ -8,7 +8,7 @@ import type { Dispatch, SetStateAction } from 'react';
 // via inline import('...') so this file only needs the bare-named
 // types as top-level imports.
 import type { PointerEvent as ReactPointerEvent, Ref } from 'react';
-import type { EmbedProvider, Finish, FrameHandle } from '@livedesign/document';
+import type { EmbedProvider, Finish, FrameHandle } from '@livedesign/design';
 import type {
   BackgroundPattern,
   EditorMode,
@@ -19,13 +19,13 @@ import type {
   TextAlignX,
   TextAlignY,
   TextRun,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import type { ArrowEnd, DragMode, QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { UserPreferences } from '@/lib/user-preferences';
-import type { DocumentListItem, Folder, SharedWithItem } from '@/lib/api-client';
+import type { DesignListItem, Folder, SharedWithItem } from '@/lib/api-client';
 import type { TeamFolderHandlers } from '@/components/panels/Explorer.types';
-import type { TeamDocumentRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
+import type { TeamDesignRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import type { WorkspaceFrameHooks } from '@/components/providers/workbench-session-context';
 
@@ -51,7 +51,7 @@ export type CanvasProps = {
   canWriteText?: (el: Element) => boolean;
   // Which elements a read-only session may still resize (a Participant's); absent, none.
   canResize?: (el: Element) => boolean;
-  documentName: string;
+  designName: string;
   tabBackgroundPattern: BackgroundPattern;
   tabBackgroundColor: string;
   tabBackgroundOpacity: number;
@@ -74,7 +74,7 @@ export type CanvasProps = {
   onFitToScreen: () => void;
   isPinchingRef?: React.RefObject<boolean>;
   elements: Element[];
-  // The active tab's raw layers array (docs/specs/006-document/layers.md), undefined until the tab
+  // The active tab's raw layers array (docs/specs/006-design/layers.md), undefined until the tab
   // materialises one. Drives the band-aware paint order + hidden-layer
   // filtering in CanvasElementsLayer and the Minimap.
   tabLayers?: Layer[];
@@ -84,7 +84,7 @@ export type CanvasProps = {
   pagesMode?: import('@/hooks/editor/usePagesMode').PagesModeView | null;
   // The canvas ink for this appearance: what a marker's stroke and the logo page's guides draw in.
   whiteboardInk?: string;
-  // Element ids on a hidden or locked layer (docs/specs/006-document/layers.md) — inert to every
+  // Element ids on a hidden or locked layer (docs/specs/006-design/layers.md) — inert to every
   // selection surface, including the right-click context menu.
   layerInertIds: Set<string>;
   // Dragged element ids to render translucent while a shift-duplicate is
@@ -144,7 +144,7 @@ export type CanvasProps = {
   slideDeckPanelPosition?: { x: number; y: number } | null;
   onMoveSlideDeckPanel?: (x: number, y: number) => void;
   onResetSlideDeckPanel?: () => void;
-  slideDeck?: import('@/app/document/[id]/useSlideDeck').SlideDeckState;
+  slideDeck?: import('@/app/design/[id]/useSlideDeck').SlideDeckState;
   // Map of elementId -> remote participants currently focused on that
   // element. Drives a small badge ring on each element so participants
   // can see in real time what others are working on.
@@ -216,7 +216,7 @@ export type CanvasProps = {
   // Palette's Image entry hides when missing (docs/specs/009-elements/images.md).
   onAddImage?: () => void;
   // `ends`: the Arrow tool's pointer at its end by default, `'none'` for the Line tool.
-  onAddArrow: (ends?: import('@livedesign/document').ArrowEnds) => void;
+  onAddArrow: (ends?: import('@livedesign/design').ArrowEnds) => void;
   // The arrow whose shape a handle drag is changing (a bend, curve, elbow or endpoint): its
   // selection frame stands down until the drag ends (docs/specs/008-canvas/arrow-bending.md).
   reshapingArrowId?: string | null;
@@ -275,10 +275,10 @@ export type CanvasProps = {
   onCommitPath: (commit: import('@/components/canvas/path/usePathDrawGesture').PathCommit) => void;
   onCommitPathEdit: (
     id: string,
-    next: { anchors: import('@livedesign/document').PathAnchor[]; closed: boolean },
+    next: { anchors: import('@livedesign/design').PathAnchor[]; closed: boolean },
     kind: import('@/hooks/canvas/usePathCommits').PathEditKind,
   ) => void;
-  onDressPath?: <T extends import('@livedesign/document').Element>(el: T) => T;
+  onDressPath?: <T extends import('@livedesign/design').Element>(el: T) => T;
   // The line or arrow a draw would land if released now, as the canvas would show it, drawn in
   // place of a stand-in while the drag is in flight. From lib/drawn-arrow-preview.
   previewDrawnArrow?: (
@@ -287,14 +287,14 @@ export type CanvasProps = {
     startY: number,
     endX: number,
     endY: number,
-  ) => import('@livedesign/document').ArrowElement;
+  ) => import('@livedesign/design').ArrowElement;
   // The user preferences (docs/specs/007-editor/user-preferences.md) the chrome reads.
   settings: UserPreferences;
   onCancelDraw: () => void;
   onUndo: () => void;
   onRedo: () => void;
-  documentList: DocumentListItem[];
-  // Lightweight id + name of this document's tabs, so a link badge's
+  designList: DesignListItem[];
+  // Lightweight id + name of this design's tabs, so a link badge's
   // hover card can name the tab/element a link points at (docs/specs/008-canvas/canvas-and-palette.md). Kept
   // minimal + memoised by the caller so element edits don't churn it.
   tabSummaries: { id: string; name: string }[];
@@ -306,21 +306,21 @@ export type CanvasProps = {
   folders: Folder[];
   // Shared-with-you list. Empty by default so legacy callers can
   // omit it.
-  sharedDocuments?: SharedWithItem[];
-  onDismissShared?: (documentId: string) => void;
+  sharedDesigns?: SharedWithItem[];
+  onDismissShared?: (designId: string) => void;
   // Teams the signed-in user belongs to + their swept libraries
-  // (docs/specs/013-workspace/team-shared-documents.md), forwarded to the Explorer popover for its Teams
-  // accordion, team rows in Recent, and the current team document.
+  // (docs/specs/013-workspace/team-shared-designs.md), forwarded to the Explorer popover for its Teams
+  // accordion, team rows in Recent, and the current team design.
   // Empty by default so guest / legacy callers can omit them.
   teams?: { id: string; name: string }[];
   teamFolders?: TeamFolderRow[];
-  teamDocuments?: TeamDocumentRow[];
-  documentListLoading: boolean;
+  teamDesigns?: TeamDesignRow[];
+  designListLoading: boolean;
   // Map panel (docs/specs/008-canvas/minimap.md) position + move/reset, shared with the other panels.
   mapPosition: { x: number; y: number } | null;
   onMoveMap: (x: number, y: number) => void;
   onResetMap: () => void;
-  // Layers panel (docs/specs/006-document/layers.md). `layers` is the NORMALISED stack (bottom ->
+  // Layers panel (docs/specs/006-design/layers.md). `layers` is the NORMALISED stack (bottom ->
   // top, never empty) the panel renders; `tabLayers` above stays the raw
   // field for the render-order helpers. A popover over its bottom-right
   // cluster button.
@@ -330,10 +330,10 @@ export type CanvasProps = {
   // Per-user preferences (docs/specs/007-editor/user-preferences.md) + the Recent exclusion toggle
   // (docs/specs/013-workspace/hide-from-recent.md), for the Explorer panel's Recent list.
   userPreferences: import('@/lib/user-preferences').UserPreferences;
-  onToggleRecentExclusion: (documentId: string) => void;
+  onToggleRecentExclusion: (designId: string) => void;
   // Per-user stars (docs/specs/013-workspace/favourites.md).
   favouriteIds: Set<string>;
-  onToggleFavourite: (documentId: string) => void;
+  onToggleFavourite: (designId: string) => void;
   // Bottom-dock "Theme & canvas" button (docs/specs/011-theme/canvas-and-theme-dialog.md): opens the
   // CanvasThemeDialog. Omitted in read-only / embed sessions (no button).
   onOpenCanvasTheme?: () => void;
@@ -348,13 +348,13 @@ export type CanvasProps = {
   onSetLayerOpacity: (layerId: string, opacity: number) => void;
   onClearLayer: (layerId: string) => void;
   onHideOtherLayers: (layerId: string) => void;
-  // Hover-to-solo (docs/specs/006-document/layers.md): while set, the canvas renders ONLY this
+  // Hover-to-solo (docs/specs/006-design/layers.md): while set, the canvas renders ONLY this
   // layer. Driven by hovering a Layers-panel row; pure view state.
   layerPreviewId: string | null;
   onPreviewLayer: (layerId: string | null) => void;
   // Floating Comments panel. Only mounted when commentRows is
   // non-empty: the panel exists to list discussion that already
-  // exists, so on documents without it the panel stays out of the
+  // exists, so on designs without it the panel stays out of the
   // chrome entirely.
   commentRows: import('@/components/panels/CollaboratePanel').CommentRow[];
   commentsPanelPosition: { x: number; y: number } | null;
@@ -371,30 +371,30 @@ export type CanvasProps = {
   // The Collaborate panel row's round check (docs/specs/012-collaboration/assigned-actions.md §5): complete
   // (done) or reopen the action in place. Absent for a read-only visitor.
   onToggleActionDone?: (elementId: string, done: boolean, actionId: string) => void;
-  currentDocumentId: string | null;
-  onOpenDocument: (id: string, shareCode?: string) => void;
-  onNewDocument: () => void;
+  currentDesignId: string | null;
+  onOpenDesign: (id: string, shareCode?: string) => void;
+  onNewDesign: () => void;
   // The Explorer panel's ⋯ menu verbs beyond new / open (docs/specs/013-workspace/folders.md).
   explorerMenuActions?: import('@/components/panels/Explorer.types').ExplorerMenuActions;
   onRenameCurrent: (name: string) => void;
-  onDeleteDocument: (id: string) => void;
-  // The Explorer panel's Trash restored or deleted a document: refetch the lists.
+  onDeleteDesign: (id: string) => void;
+  // The Explorer panel's Trash restored or deleted a design: refetch the lists.
   onLibraryChanged?: () => void;
-  onDuplicateDocument: (id: string) => void;
+  onDuplicateDesign: (id: string) => void;
   onCreateFolder: (input: { name: string; parentId: string | null }) => Promise<Folder | void>;
   onRenameFolder: (id: string, name: string) => void;
   onDeleteFolder: (id: string) => void;
   // Team-library folder mutations for the Explorer panel's team tree
-  // (docs/specs/013-workspace/team-shared-documents.md); absent while signed out or without teams.
+  // (docs/specs/013-workspace/team-shared-designs.md); absent while signed out or without teams.
   onTeamFolders?: TeamFolderHandlers;
-  onMoveDocumentToFolder: (documentId: string, folderId: string | null) => void;
-  // Scope-crossing move (docs/specs/013-workspace/team-shared-documents.md): the Explorer panel's move picker routes
+  onMoveDesignToFolder: (designId: string, folderId: string | null) => void;
+  // Scope-crossing move (docs/specs/013-workspace/team-shared-designs.md): the Explorer panel's move picker routes
   // any pick that involves a team (either side) here — re-folder within a
   // team, personal -> team, or team -> personal.
-  onMoveDocumentTo?: (
-    documentId: string,
+  onMoveDesignTo?: (
+    designId: string,
     dest: { teamId: string | null; folderId: string | null },
-    // Where the document is coming from (null = the personal tree), so a
+    // Where the design is coming from (null = the personal tree), so a
     // personal -> team move counts as Team·Added·Document (docs/specs/017-telemetry/telemetry.md).
     fromTeamId?: string | null,
   ) => void;
@@ -440,7 +440,7 @@ export type CanvasProps = {
     id: string,
     patch: Partial<
       Pick<
-        import('@livedesign/document').TableElement,
+        import('@livedesign/design').TableElement,
         'cells' | 'colWidths' | 'rowHeights' | 'cellStyles'
       >
     >,
@@ -457,13 +457,13 @@ export type CanvasProps = {
   onSetPageHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md): a row edited in place, one more row from
   // the quick-connect ring, and a hero's caption line. Omitted in read-only.
-  onSetWebRows?: (elementId: string, rows: import('@livedesign/document').WebRows) => void;
+  onSetWebRows?: (elementId: string, rows: import('@livedesign/design').WebRows) => void;
   // A pointer note's tip let go at a canvas point (docs/specs/009-elements/pointer-note.md). Omitted in read-only.
   onSetPointerTip?: (elementId: string, tipAbs: { x: number; y: number }) => void;
   onAppendWebRow?: (elementId: string) => void;
   onSetHeroCaptionLine?: (
     elementId: string,
-    field: keyof import('@livedesign/document').HeroCaption,
+    field: keyof import('@livedesign/design').HeroCaption,
     value: string,
   ) => void;
   // Default chart slice colours derived from the active theme (docs/specs/009-elements/pie-chart.md), used
@@ -487,7 +487,7 @@ export type CanvasProps = {
   // "Copying a background"): arms or paints that page's background. Absent where pages cannot be
   // painted (another mode, a person who may not edit them), so such a press is an empty-canvas one.
   onFormatPagePress?: (pageId: string) => void;
-  onFollowLink: (link: import('@livedesign/document').ElementLink) => void;
+  onFollowLink: (link: import('@livedesign/design').ElementLink) => void;
   onOpenComments: (elementId: string) => void;
   // Open the element's assigned-action popover (docs/specs/012-collaboration/assigned-actions.md). Available in
   // read-only sessions too — visitors may read an action; the popover
@@ -509,11 +509,11 @@ export type CanvasProps = {
   onOpenEditDialog?: (id: string) => void;
   // Per-render context for image elements: identity + auth bits the
   // ImageElementView needs to fetch bitmap bytes. Optional so the
-  // welcome / new-document surface (where Canvas mounts before
+  // welcome / new-design surface (where Canvas mounts before
   // identity / share-code are settled) can omit it.
   imageContext?: {
     ownerId: string;
-    documentId: string;
+    designId: string;
     shareCode: string | null;
     onOpenPicker?: (elementId: string) => void;
   };
@@ -522,10 +522,10 @@ export type CanvasProps = {
   onOpenElementContextMenu?: (elementId: string, screenX: number, screenY: number) => void;
   // The visitor name prompt (IdentityPrompt).
   showIdentityPrompt: boolean;
-  // True after the page has resolved its initial identity + document
+  // True after the page has resolved its initial identity + design
   // fetch. Used to suppress the empty-state card during the brief
   // window between "loader dropped" and "welcome modal mounted" so
-  // a fresh New Document doesn't flash the Empty Canvas message.
+  // a fresh New Design doesn't flash the Empty Canvas message.
   hydrated: boolean;
   // When non-null, the visitor is signed in via Clerk and their
   // display name is fixed to their account name: IdentityPrompt
@@ -592,18 +592,18 @@ export type CanvasProps = {
   // can stand down (one gesture, one answer).
   elementMenuOpen?: boolean;
   onDuplicateSelected: () => void;
-  // Intra-LAYER z-order from the selection popover (docs/specs/006-document/layers.md): stack the
+  // Intra-LAYER z-order from the selection popover (docs/specs/006-design/layers.md): stack the
   // selection within its own band, never between layers.
   onBringSelectedToFront: () => void;
   onSendSelectedToBack: () => void;
   onCanvasDoubleClick: (x: number, y: number) => void;
-  // Lazy per-tab load (docs/specs/006-document/per-tab-storage.md). While the active tab's content is being
+  // Lazy per-tab load (docs/specs/006-design/per-tab-storage.md). While the active tab's content is being
   // fetched ('loading') or after that fetch failed ('error'), Canvas
   // renders a blocking TabLoadOverlay so the user never edits a blank
   // placeholder whose autosave would wipe the real server row. 'ready'
   // (or undefined) renders the canvas normally. `onRetryTabLoad`
   // re-issues the fetch from the error card.
-  tabLoadState?: import('@/app/document/[id]/editor-page-helpers').TabLoadState;
+  tabLoadState?: import('@/app/design/[id]/editor-page-helpers').TabLoadState;
   onRetryTabLoad?: () => void;
   // Zen / focus mode (docs/specs/007-editor/zen-mode.md). When true, CanvasChrome hides every
   // floating panel + the history dock + the owner badge, keeping only

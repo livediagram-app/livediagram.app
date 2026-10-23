@@ -1,4 +1,4 @@
-import type { BorderStyle } from '@livedesign/document';
+import type { BorderStyle } from '@livedesign/design';
 import { describe, expect, it } from 'vitest';
 import { isCssNativeBorderStyle, nearestCssBorderStyle } from './border-css';
 

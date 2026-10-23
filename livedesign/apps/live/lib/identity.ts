@@ -3,7 +3,7 @@
 // random colour from a curated palette. This module is the single source
 // for that name/colour generation plus presence-status semantics.
 
-import { fnv1aString } from '@livedesign/document';
+import { fnv1aString } from '@livedesign/design';
 import { randomPick } from './random';
 import type { AccessLevel } from '@livedesign/api-schema';
 
@@ -35,9 +35,9 @@ export type Participant = {
   // legacy callers that don't track it can still construct a
   // Participant; treated as "now" when omitted.
   lastActiveAt?: number;
-  // Server-verified share-code role inside this document. Set by the
+  // Server-verified share-code role inside this design. Set by the
   // api worker at WS upgrade time; clients can't forge it. Optional
-  // because guest / private-document sessions don't have a role. The
+  // because guest / private-design sessions don't have a role. The
   // hover card uses it to tag a peer as 'Editor' / 'Viewer' alongside
   // their name.
   role?: AccessLevel;
@@ -172,8 +172,8 @@ export function nextFreeColor(taken: Set<string>, preferred?: string): string {
 }
 
 // Up to two characters for the avatar: shared with the headless export, so
-// it lives in @livedesign/document (names.ts).
-export { initialsOf } from '@livedesign/document';
+// it lives in @livedesign/design (names.ts).
+export { initialsOf } from '@livedesign/design';
 
 // Status ring colour for the header avatar. Greens / oranges / reds are
 // the conventional presence vocabulary.

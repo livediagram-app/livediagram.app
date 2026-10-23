@@ -2,7 +2,7 @@
 // soft its edge is, and its shape — plus the values the overlay draws from.
 //
 // Device-local, like the laser pen (docs/specs/008-canvas/laser-panel.md): it depends on your screen and the room you are presenting in,
-// not on the document. Unlike the pen it is NOT published — Spotlight is a view
+// not on the design. Unlike the pen it is NOT published — Spotlight is a view
 // aid for the person using it, so there is nothing on the wire (docs/specs/008-canvas/canvas-and-palette.md).
 
 import {

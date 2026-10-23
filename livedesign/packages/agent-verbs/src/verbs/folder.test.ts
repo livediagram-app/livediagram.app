@@ -88,7 +88,7 @@ describe('folder create', () => {
       ...library,
       '/teams': { teams: [{ id: 't1', name: 'Studio' }] },
       '/teams/t1/library': {
-        documents: [],
+        designs: [],
         folders: [
           { id: 'f0000003-studio', name: 'Art', parentId: null, teamId: 't1', ownerId: 'u' },
         ],

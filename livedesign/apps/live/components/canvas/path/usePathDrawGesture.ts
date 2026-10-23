@@ -1,5 +1,5 @@
 import { useEffect, useEffectEvent, useMemo, useRef, useState, type RefObject } from 'react';
-import { isCommittablePath, type Element, type PathAnchor } from '@livedesign/document';
+import { isCommittablePath, type Element, type PathAnchor } from '@livedesign/design';
 import { pointerToCanvas } from '@/lib/canvas';
 import { announce } from '@/lib/announcer';
 import { useLatest } from '@/hooks/ui/useLatest';

@@ -8,10 +8,10 @@ Derived from [Colour picker](../colour-picker.md). Engineering detail only; desi
 | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | colour picker        | `ColourPicker` (`apps/live/components/colour/ColourPicker.tsx`)                                                                                                                                 |
 | swatch               | `ColourSwatch`, `SwatchChip` (`apps/live/components/colour/ColourSwatch.tsx`)                                                                                                                   |
-| standard colours     | `STANDARD_COLOUR_NAMES`, `standardColours(tone, appearance)` (`packages/document/src/standard-colours.ts`)                                                                                      |
+| standard colours     | `STANDARD_COLOUR_NAMES`, `standardColours(tone, appearance)` (`packages/design/src/standard-colours.ts`)                                                                                      |
 | tone                 | `StandardTone = 'strong' \| 'soft'`                                                                                                                                                             |
-| theme colours        | the host's `ColourOption[]` passed as `theme`, named by `colourWords` (`packages/document/src/quick-swatches.ts`)                                                                               |
-| Custom colours       | `Tab.customColours`, `customColoursOf` / `withCustomColour` (`packages/document`), `documentColours(...)` (`apps/live/lib/document-colours.ts`), `useDocumentColours()` (`apps/live/hooks/ui/`) |
+| theme colours        | the host's `ColourOption[]` passed as `theme`, named by `colourWords` (`packages/design/src/quick-swatches.ts`)                                                                               |
+| Custom colours       | `Tab.customColours`, `customColoursOf` / `withCustomColour` (`packages/design`), `designColours(...)` (`apps/live/lib/design-colours.ts`), `useDesignColours()` (`apps/live/hooks/ui/`) |
 | custom colour editor | `CustomColourEditor` (`apps/live/components/colour/CustomColourEditor.tsx`)                                                                                                                     |
 | skins                | inline `ColourPicker`; row (`ColourRow`, `LaserColourRow`); `ColourField`; `ColourSwatchButton`, `useColourWell`; all popovers are `ColourPopover`                                              |
 | no colour            | a leading `ColourOption` with `none: true` (`noColour(id, label)`)                                                                                                                              |
@@ -21,7 +21,7 @@ It is not in `PEN_COLOURS` (the hued list the snap measures hues against), so sn
 
 ## Interfaces and contracts
 
-### `packages/document`
+### `packages/design`
 
 - `pen-colours.ts`: `GREY_PEN_COLOUR`; `isPenColourName` accepts it; `penColourLabel('grey') = 'Grey'`;
   `penColourHex('grey', board)` is the OKLCH chroma-0 colour tuned like the hued ones to `PEN_STOCK_CONTRAST`.
@@ -106,16 +106,16 @@ ColourPicker({
   light hex; Ink leaves a nameless element unchanged.
 - Laser config (`apps/live/lib/laser-config.ts`): colour is `presence`, a standard name, or `#rrggbb`; legacy `cyan`
   reads as `teal`, `white` as `ink`, anything else as `presence`. The room message carries it as a string.
-- `Tab.customColours?: string[]` (`packages/document/src/index.ts`), read with `customColoursOf(tab)` (lower-case
+- `Tab.customColours?: string[]` (`packages/design/src/index.ts`), read with `customColoursOf(tab)` (lower-case
   `#rrggbb`, deduped, anything else dropped, at most `CUSTOM_COLOURS_MAX` = 12) and written with
   `withCustomColour(tab, hex)` (moves `hex` to the front, caps; returns the tab itself when nothing changes), both in
-  `packages/document/src/custom-colours.ts`. Synced as a `tab-meta` field like any other.
+  `packages/design/src/custom-colours.ts`. Synced as a `tab-meta` field like any other.
 - `addCustomColour(hex)` on the editor state (`hooks/editor/useAddCustomColour.ts`): `tickTabs` on the active tab
   (no history step), a no-op without edit rights or when nothing changes. `ColourPicker` calls it, lower-cased, on the
   custom editor's **Use**, before `onPick`; outside an `EditorContext` there is none.
-- `documentColours(tabs, offered = [], firstTabId?)` (`apps/live/lib/document-colours.ts`): `customColoursOf` of
+- `designColours(tabs, offered = [], firstTabId?)` (`apps/live/lib/design-colours.ts`): `customColoursOf` of
   `firstTabId`'s tab, then the others in tab order; leaves out `offered`; deduped; stops at `YOUR_COLOURS_MAX`
-  (= `CUSTOM_COLOURS_MAX`). Never reads elements or pages. `useDocumentColours(offered?)` memoises on the
+  (= `CUSTOM_COLOURS_MAX`). Never reads elements or pages. `useDesignColours(offered?)` memoises on the
   editor's `tabs`, the active tab id and the joined `offered`; with no editor context, `[]`. `ColourPicker` also leaves
   out of Custom Colours any colour another group offers.
 - `stableColours(shown, next, max)` (`components/colour/colour-options.ts`): colours in `next` not in `shown` go
@@ -138,8 +138,8 @@ from typed constants; nothing is injected as markup.
 ## Performance and limits
 
 - `standardColours` tables: built once at module load (20 tunes of at most 200 OKLCH steps, plus 20 soft washes).
-- `documentColours`: reads at most 12 stored colours a tab, never the elements, so its cost is the tab count, not the
-  document size; memoised on the tabs.
+- `designColours`: reads at most 12 stored colours a tab, never the elements, so its cost is the tab count, not the
+  design size; memoised on the tabs.
 - `ColourPicker` renders at most about 50 buttons; no context provider, no per-swatch store read.
 
 ## Presentation and UX
@@ -174,13 +174,13 @@ Picks are reported by each surface's own write path (`track('Element', 'Changed'
 
 | Rule                                                      | Test                                                                                              |
 | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| ten standard colours, both tones, readable                | `packages/document/src/standard-colours.test.ts`                                                  |
-| Grey is a stock colour, not hued                          | `packages/document/src/pen-colours.test.ts`                                                       |
+| ten standard colours, both tones, readable                | `packages/design/src/standard-colours.test.ts`                                                  |
+| Grey is a stock colour, not hued                          | `packages/design/src/pen-colours.test.ts`                                                       |
 | one Tab stop, arrows wrap, Home/End                       | `apps/live/components/colour/ColourPicker.test.tsx`                                               |
 | pick, custom Use, value matching, yours cap               | `ColourPicker.test.tsx`                                                                           |
 | preview and revert                                        | `ColourPicker.test.tsx`                                                                           |
 | skins open, pick closes, Escape refocuses                 | `ColourSkins.test.tsx`                                                                            |
-| custom colours kept and listed                            | `packages/document/src/custom-colours.test.ts`, `apps/live/lib/document-colours.test.ts`          |
+| custom colours kept and listed                            | `packages/design/src/custom-colours.test.ts`, `apps/live/lib/design-colours.test.ts`          |
 | no new pickers: no colour well, editor only in the picker | `apps/live/components/colour/one-picker.test.ts`                                                  |
 | element menu rows                                         | `components/palette/context-menu-input-rows.test.tsx`                                             |
 | Quick Style rows, More colours, keys                      | `components/canvas/QuickStylePanel.test.tsx`, `hooks/canvas/useQuickStyle.test.tsx`               |

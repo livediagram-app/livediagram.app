@@ -6,12 +6,12 @@
 // which route a card opens, what its preview shows, and when to say
 // "you" instead of a name. The components in @livedesign/ui take this
 // registry as a prop and never import a route themselves, which is what
-// lets a per-document feed reuse them without inheriting the Explorer's
+// lets a per-design feed reuse them without inheriting the Explorer's
 // copy.
 //
-// Copy rule (docs/specs/013-workspace/timeline.md §2): a card's TITLE is the subject (the document,
+// Copy rule (docs/specs/013-workspace/timeline.md §2): a card's TITLE is the subject (the design,
 // the team, the token) and its REASON LINE is the stored Title Case
-// category ("Document Created"). Renderers therefore set `subject` and
+// category ("Design Created"). Renderers therefore set `subject` and
 // leave `label` to fall back to `event.title`, so every card and every
 // collapsed stack draws its wording from the same field and the feed
 // can't drift into a mix of "created" and "Created". People and detail
@@ -24,7 +24,7 @@ import type {
   TimelineRendererRegistry,
 } from '@livedesign/ui';
 import { SourceTypeIcon } from '@livedesign/ui';
-import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
+import { DesignThumbnail } from '@/components/panels/DesignThumbnail';
 import { EVENT_ICONS } from './icons';
 import { requestOpenSettings } from '@/lib/open-settings';
 import { explorerPathFor } from '../routes';
@@ -55,21 +55,21 @@ function byActor(event: TimelineEvent, ctx: TimelineRendererContext): string {
   return isMine(event, ctx) ? 'by you' : `by ${actorName(event, ctx)}`;
 }
 
-// The document's snapshot, filling the card's preview box. Reuses the
+// The design's snapshot, filling the card's preview box. Reuses the
 // Explorer's own thumbnail component, so this inherits its lazy
 // intersection-observer fetch, its blob-URL auth handling, and its
 // stable placeholder: a feed of fifty cards doesn't fire fifty renders
-// for documents the reader never scrolls to.
+// for designs the reader never scrolls to.
 function preview(event: TimelineEvent, ctx: TimelineRendererContext) {
-  const documentId = str(event.snapshot, 'documentId');
-  if (!documentId) return undefined;
+  const designId = str(event.snapshot, 'designId');
+  if (!designId) return undefined;
   return (
-    <DocumentThumbnail
+    <DesignThumbnail
       ownerId={ctx.viewerId}
-      documentId={documentId}
+      designId={designId}
       // The event's own timestamp as the cache-bust key. The coalesced
       // edit event's timestamp walks forward through a day, so an
-      // actively-edited document re-fetches; a months-old card keeps
+      // actively-edited design re-fetches; a months-old card keeps
       // serving its cached snapshot rather than re-rendering on scroll.
       version={event.occurredAt}
       className="h-full w-full"
@@ -77,17 +77,17 @@ function preview(event: TimelineEvent, ctx: TimelineRendererContext) {
   );
 }
 
-const documentRenderer: TimelineRenderer = (event, ctx) => {
-  const name = str(event.snapshot, 'documentName') ?? 'A document';
-  const documentId = str(event.snapshot, 'documentId');
+const designRenderer: TimelineRenderer = (event, ctx) => {
+  const name = str(event.snapshot, 'designName') ?? 'A design';
+  const designId = str(event.snapshot, 'designId');
   // No id, no link: a row from an older worker (or one whose snapshot
   // lost its id) must not point the reader at nothing. The card dims
   // itself when there's no handler.
-  const open = documentId
-    ? () => assignAppLocation(`/document/${encodeURIComponent(documentId)}`)
+  const open = designId
+    ? () => assignAppLocation(`/design/${encodeURIComponent(designId)}`)
     : undefined;
   // `description: null` clears the stored line: the reason line already
-  // says what happened and the title already names the document, so
+  // says what happened and the title already names the design, so
   // repeating either underneath is noise. Comments are the exception.
   const base = {
     icon: icon(event),
@@ -98,19 +98,19 @@ const documentRenderer: TimelineRenderer = (event, ctx) => {
   };
 
   switch (event.eventType) {
-    case 'document_edited':
+    case 'design_edited':
       return { ...base, meta: byActor(event, ctx) };
-    case 'document_duplicated': {
+    case 'design_duplicated': {
       const source = str(event.snapshot, 'sourceName');
       return { ...base, meta: source ? `Copy of ${source}` : undefined };
     }
-    case 'document_moved':
+    case 'design_moved':
       return { ...base, meta: `To ${str(event.snapshot, 'destination') ?? 'a folder'}` };
-    case 'team_document_added':
+    case 'team_design_added':
       return { ...base, meta: str(event.snapshot, 'teamName') ?? undefined };
-    case 'team_document_removed': {
-      // Who has it now. A non-owner pulling a team document out takes
-      // ownership of it (docs/specs/013-workspace/team-shared-documents.md), so this is the part a reader of the
+    case 'team_design_removed': {
+      // Who has it now. A non-owner pulling a team design out takes
+      // ownership of it (docs/specs/013-workspace/team-shared-designs.md), so this is the part a reader of the
       // TEAM's copy of this event actually needs.
       const owner = str(event.snapshot, 'newOwnerName');
       return {
@@ -123,7 +123,7 @@ const documentRenderer: TimelineRenderer = (event, ctx) => {
       // The stored description holds the comment's words (for a
       // resolution, the thread's opening comment), which is the whole
       // reason to look, so it stays. The person goes in the meta,
-      // because on a shared document "who" is the next thing worth
+      // because on a shared design "who" is the next thing worth
       // knowing.
       return { ...base, meta: actorName(event, ctx), description: undefined };
     case 'action_assigned': {
@@ -143,10 +143,10 @@ const documentRenderer: TimelineRenderer = (event, ctx) => {
         description: str(event.snapshot, 'actionName') ?? null,
         meta: byActor(event, ctx),
       };
-    case 'document_offline':
+    case 'design_offline':
       return { ...base, meta: 'Kept only in this browser' };
-    case 'document_opened_by_visitor':
-    case 'document_copied_by_visitor':
+    case 'design_opened_by_visitor':
+    case 'design_copied_by_visitor':
       return {
         ...base,
         meta: str(event.snapshot, 'visitorName') ?? 'Someone with the share link',
@@ -249,7 +249,7 @@ const accountRenderer: TimelineRenderer = (event) => {
 };
 
 export const TIMELINE_RENDERERS: TimelineRendererRegistry = {
-  document: documentRenderer,
+  design: designRenderer,
   team: teamRenderer,
   account: accountRenderer,
 };

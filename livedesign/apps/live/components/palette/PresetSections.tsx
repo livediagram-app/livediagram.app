@@ -18,7 +18,7 @@ import {
   type ShapeColorPreset,
   type ShapeElement,
   type ShapeKind,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { PresetsMenuGlyph } from '@/components/palette/context-menu-icons';
 import {
   ArrowPresets,

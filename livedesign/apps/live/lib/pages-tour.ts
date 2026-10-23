@@ -1,4 +1,4 @@
-import type { PageKind } from '@livedesign/document';
+import type { PageKind } from '@livedesign/design';
 import { tourTrackSeen, withTracksAnswered } from './tour-tracks';
 import type { UserPreferences } from './user-preferences';
 

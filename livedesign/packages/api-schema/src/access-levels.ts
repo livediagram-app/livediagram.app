@@ -6,7 +6,7 @@ export type AccessLevel = (typeof ACCESS_LEVELS)[number];
 
 // An omitted role on `POST /share` is edit, as it always was.
 export const DEFAULT_LINK_LEVEL: AccessLevel = 'edit';
-// The MCP's share_document makes a Participant link when the agent names no level.
+// The MCP's share_design makes a Participant link when the agent names no level.
 export const DEFAULT_MCP_SHARE_LEVEL: AccessLevel = 'participate';
 // The Share dialog's card order, most capable first.
 export const LEVEL_ORDER: readonly AccessLevel[] = ['edit', 'participate', 'view'];
@@ -31,7 +31,7 @@ export function lowerLevel(level: AccessLevel, ceiling?: AccessLevel | null): Ac
   return levelAtLeast(level, ceiling) ? ceiling : level;
 }
 
-// `POST /api/documents/:id/room-ticket`'s answer. A Participant's carries its own adder key, the id the room
+// `POST /api/designs/:id/room-ticket`'s answer. A Participant's carries its own adder key, the id the room
 // stamps on what it adds, so its editor knows which stickies are its own.
 export type RoomTicketResponse = { ticket: string; adderKey?: string };
 

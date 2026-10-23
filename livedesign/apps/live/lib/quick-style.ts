@@ -25,7 +25,7 @@ import {
   type TextAlignX,
   type TextElement,
   type ThemeDefinition,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { applySwatchOverrides, type ShownSwatch, type SwatchOverrides } from './swatch-overrides';
 import type { QuickPenStyle } from './quick-style-pen';
 

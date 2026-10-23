@@ -1,7 +1,7 @@
-import type { DocumentListItem, Folder, SharedWithItem } from '@/lib/api-client';
+import type { DesignListItem, Folder, SharedWithItem } from '@/lib/api-client';
 import type { MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import type { MovablePanelPopoverProps } from '@/components/primitives/MovablePanel.types';
-import type { TeamDocumentRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
+import type { TeamDesignRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
 
 // Folder mutations inside a team library, for the panel's team tree.
 // Create returns the new folder so the tree can open its parent and
@@ -14,83 +14,83 @@ export type TeamFolderHandlers = {
 
 export type ExplorerProps = {
   position: { x: number; y: number } | null;
-  // Every document known to the local store. Current document is marked
+  // Every design known to the local store. Current design is marked
   // active; clicking any other navigates to it (preserving the
   // current's state via the auto-save).
-  documents: DocumentListItem[];
+  designs: DesignListItem[];
   // The VIEWER's resolved owner id (self/participant id), threaded down
-  // to each DocumentRow so its thumbnail fetch authenticates as the
-  // viewer. Distinct from a document's own ownerId.
+  // to each DesignRow so its thumbnail fetch authenticates as the
+  // viewer. Distinct from a design's own ownerId.
   ownerId: string | null;
   // Every folder for the owner. Empty array = no user folders, but
   // My Work still renders. See docs/specs/013-workspace/folders.md.
   folders: Folder[];
-  // Documents shared with the current owner (read-only or edit
+  // Designs shared with the current owner (read-only or edit
   // visitor entries). Empty array hides the section entirely so
   // pure-private users don't see an empty accordion.
   shared?: SharedWithItem[];
   // Teams the signed-in user belongs to + their swept libraries
-  // (docs/specs/013-workspace/team-shared-documents.md). Drive the Teams accordion, team rows in Recent, and the
-  // current-team-document row. Empty / omitted = no Teams section (the
+  // (docs/specs/013-workspace/team-shared-designs.md). Drive the Teams accordion, team rows in Recent, and the
+  // current-team-design row. Empty / omitted = no Teams section (the
   // common guest / no-teams case).
   teams?: { id: string; name: string }[];
   teamFolders?: TeamFolderRow[];
-  teamDocuments?: TeamDocumentRow[];
-  // The caller's resolved owner id. Team-document rows expose a hard
+  teamDesigns?: TeamDesignRow[];
+  // The caller's resolved owner id. Team-design rows expose a hard
   // Dismiss a single Shared row — drops the shared_with reference
   // server-side so the row no longer surfaces. Optional so consumers
   // that haven't wired the api endpoint can omit it.
-  onDismissShared?: (documentId: string) => void;
+  onDismissShared?: (designId: string) => void;
   // Navigate to the standalone /live/explorer page. When set, the
   // panel header surfaces an "Expand" button next to the title.
-  // True while the initial document-list fetch is in flight. Shows a
+  // True while the initial design-list fetch is in flight. Shows a
   // skeleton in place of the list so the panel doesn't read as "no
-  // documents" before the API call resolves.
+  // designs" before the API call resolves.
   loading: boolean;
-  currentDocumentId: string | null;
-  // Documents this user hid from Recent, and the toggle (docs/specs/013-workspace/hide-from-recent.md). Recent
+  currentDesignId: string | null;
+  // Designs this user hid from Recent, and the toggle (docs/specs/013-workspace/hide-from-recent.md). Recent
   // is the only section that honours the list.
   recentExcludedIds: string[];
-  onToggleRecentExclusion: (documentId: string) => void;
+  onToggleRecentExclusion: (designId: string) => void;
   // Per-user stars (docs/specs/013-workspace/favourites.md).
   favouriteIds: Set<string>;
-  onToggleFavourite: (documentId: string) => void;
+  onToggleFavourite: (designId: string) => void;
   onMoveTo: (x: number, y: number) => void;
   onReset?: () => void;
-  onOpenDocument: (id: string, shareCode?: string) => void;
-  // Optional so consumers that have nowhere to mint a new document
-  // (e.g. the welcome route, which IS the new-document flow) can hide
+  onOpenDesign: (id: string, shareCode?: string) => void;
+  // Optional so consumers that have nowhere to mint a new design
+  // (e.g. the welcome route, which IS the new-design flow) can hide
   // the button entirely. When omitted the row isn't rendered.
-  onNewDocument?: () => void;
+  onNewDesign?: () => void;
   // Optional row-level actions. When provided, each row renders an
   // ellipsis menu that delegates to these handlers.
   onRenameCurrent?: (name: string) => void;
   // `beforeRemove` runs before the row is pulled from the list, so the caller (Explorer) can slide it out first;
   // `opts.onRestored` after an Undo, for a row the list does not hold (a team row the panel hid).
-  onDeleteDocument?: (
+  onDeleteDesign?: (
     id: string,
     beforeRemove?: () => Promise<void> | void,
     opts?: { onRestored?: () => void; name?: string },
   ) => void;
-  onDuplicateDocument?: (id: string) => void;
+  onDuplicateDesign?: (id: string) => void;
   // Folder mutations. Optional so read-only surfaces can omit them.
   onCreateFolder?: (input: { name: string; parentId: string | null }) => Promise<Folder | void>;
   onRenameFolder?: (id: string, name: string) => void;
   onDeleteFolder?: (id: string) => void;
-  // The same three for a TEAM's folders (docs/specs/013-workspace/team-shared-documents.md): the panel's team tree
+  // The same three for a TEAM's folders (docs/specs/013-workspace/team-shared-designs.md): the panel's team tree
   // offers rename / new subfolder / delete like the personal tree. Absent
   // = the team tree is browse-only.
   onTeamFolders?: TeamFolderHandlers;
-  onMoveDocumentToFolder?: (documentId: string, folderId: string | null) => void;
-  // The panel's Trash restored or deleted a document: the host refetches its lists.
+  onMoveDesignToFolder?: (designId: string, folderId: string | null) => void;
+  // The panel's Trash restored or deleted a design: the host refetches its lists.
   onLibraryChanged?: () => void;
-  // Scope-aware move (docs/specs/013-workspace/team-shared-documents.md): routes a pick that involves a team on
+  // Scope-aware move (docs/specs/013-workspace/team-shared-designs.md): routes a pick that involves a team on
   // either side (re-folder within a team, personal -> team, team ->
   // personal). When wired, the move picker offers every space.
-  onMoveDocumentTo?: (
-    documentId: string,
+  onMoveDesignTo?: (
+    designId: string,
     dest: { teamId: string | null; folderId: string | null },
-    // Where the document is coming from (null = the personal tree), so a
+    // Where the design is coming from (null = the personal tree), so a
     // personal -> team move counts as Team·Added·Document (docs/specs/017-telemetry/telemetry.md).
     fromTeamId?: string | null,
   ) => void;

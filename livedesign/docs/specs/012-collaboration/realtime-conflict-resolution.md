@@ -10,8 +10,8 @@ not prevent them.
 
 ## The problem it fixed
 
-The realtime room (`apps/api/src/document-room.ts`) was a **stateless relay**: it
-broadcast ops between peers and tracked presence, but held no document state and
+The realtime room (`apps/api/src/design-room.ts`) was a **stateless relay**: it
+broadcast ops between peers and tracked presence, but held no design state and
 merged nothing. The conflict unit was a **whole tab** — editing anything on a tab
 broadcast the tab's entire element array and receivers **replaced** their copy.
 So if A moved element X and B moved element Y on the same tab within the sync
@@ -34,7 +34,7 @@ relays them; it does not merge them.
 - Wire (`packages/api-schema/src/room-messages.ts`): `{ kind: 'el'; tabId;
 op: ElementOp }` and `{ kind: 'tab-meta'; tabId; patch }` alongside the kept
   `tab` op (back-compat fallback). `ElementOp` (add / update / remove / reorder)
-  lives in `@livedesign/document` so it's shared and unit-tested off-socket.
+  lives in `@livedesign/design` so it's shared and unit-tested off-socket.
 - Derivation is free: `diffToElementOps(before, after)` diffs the tab's
   elements before and after each commit. Apply
   is `applyElementOp(elements, op)` by id — an op for an already-removed id is a
@@ -147,18 +147,18 @@ that let `viewport` through.
 **D1 stays the system of record.** Tab content is persisted by clients (each
 editor PUTs its whole copy of a changed tab); the op log is a warm catch-up
 cache, not a second writer. One later addition puts the room on the
-persistence path without making it hold the document: the tab PUT merges the
+persistence path without making it hold the design: the tab PUT merges the
 room's collaboration ledger in before writing
 ([Collaboration race hardening](collab-race-hardening.md) phase 3).
 
 ### A malformed op
 
 The room relays an Editor's op as it was sent and keeps it in the catch-up log, so every receiver checks a
-document-changing op's envelope before applying it (`roomOpIsWellFormed`, `room-op-shape.ts`): a `tab` carries a
+design-changing op's envelope before applying it (`roomOpIsWellFormed`, `room-op-shape.ts`): a `tab` carries a
 tab with its elements, an `el` an element op (an add or update an element with an id and a type, a remove an id, a
 reorder a list, a patch an id and its fields), an `el-delta` an element id and a delta, a `changeset` a list of
-element ops if any, a `tab-meta` a patch, a `document-meta`
-a name and a list of tabs with ids and names; each but `document-meta` names its tab. One that does not is dropped
+element ops if any, a `tab-meta` a patch, a `design-meta`
+a name and a list of tabs with ids and names; each but `design-meta` names its tab. One that does not is dropped
 and logged (`[room] malformed op dropped`), so it can no longer stop every editor in the room, or each one that
 reconnects, from rendering. What an element or a patch holds is the stored-element migrations' to settle; a kind
 this build does not apply passes, to be ignored as before.
@@ -190,7 +190,7 @@ the editor until a reload, and nothing says so. The client therefore checks its 
    tab they added, and the resulting element ops are broadcast as yours. A
    resync's re-read content replaces only what is on screen.
 2. **D1 is the system of record.** The room holds ordering and collaboration
-   state (epoch + seq, the op log, the collaboration ledger), never a copy of the document. REST reads, exports, and
+   state (epoch + seq, the op log, the collaboration ledger), never a copy of the design. REST reads, exports, and
    offline durability read D1.
 3. **The selection lock stays advisory.** The [Live app](../007-editor/live-app.md) lock soft-locks a
    selected element for peers on the client. It makes same-element concurrent
@@ -217,29 +217,29 @@ It was dropped because the cost outweighed the benefit:
 - **The cost is paid by everyone, always.** It pulled in a third-party CRDT
   library (~60 KB gzipped) that shipped in the editor bundle regardless of use,
   added a permanent second sync path to maintain alongside the element-op path,
-  and made the room hold a live copy of the whole document in memory: a second
+  and made the room hold a live copy of the whole design in memory: a second
   copy beside D1, which the room otherwise never holds.
 - **It was unverified.** It was never exercised with two live clients, so
   keeping it meant carrying risk that a future change flips it on and corrupts
-  documents.
+  designs.
 
 If same-element field-level merge ever becomes a real need, revisit it then —
 verified end-to-end and turned on properly, not carried as dormant code.
 
 ## Implementation map
 
-- `packages/document` — `element-ops.ts`: `ElementOp`, `diffToElementOps`,
+- `packages/design` — `element-ops.ts`: `ElementOp`, `diffToElementOps`,
   `applyElementOp` (pure, unit-tested).
 - `packages/api-schema/src/room-messages.ts` — `el` / `tab-meta` ops; `seq` /
   `epoch` on the op frame; the `sync` + `catchup` frames.
 - `packages/api-schema/src/room-messages.ts` — `PRESENCE_OP_KINDS` /
   `MUTATION_OP_KINDS` / `SYSTEM_OP_KINDS`, the one classification of every op.
-- `packages/document` — `element-deltas.ts` (`applyElementDelta`,
+- `packages/design` — `element-deltas.ts` (`applyElementDelta`,
   `mergeIncomingElement`), `collab-ledger.ts` (the ledger's entries and the
   save merge), `comments.ts` (`opForTheWire`, `stampCommentAuthor`).
-- `apps/api/src/document-room.ts` — the role / class gate, seq + epoch
+- `apps/api/src/design-room.ts` — the role / class gate, seq + epoch
   (persisted as `order-state`), the bounded in-memory op log and the
-  `sync` → `catchup` handler (`resolveCatchup` in `document-room-rules.ts`). It
+  `sync` → `catchup` handler (`resolveCatchup` in `design-room-rules.ts`). It
   rewrites comment authors in every mutation it relays and keeps collaboration
   state in Durable Object storage: the per-element ledger
   (`room-ledger-store.ts`). The full description is

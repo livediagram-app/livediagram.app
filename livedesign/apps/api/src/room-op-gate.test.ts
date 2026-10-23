@@ -49,6 +49,6 @@ describe('gateClientOp', () => {
     const scoped = as('edit', { tabScope: 't1' });
     expect(gateClientOp({ kind: 'tab', tabId: 't1' }, scoped)).toEqual(relay(false));
     expect(gateClientOp({ kind: 'tab', tabId: 't2' }, scoped)).toEqual(DROP);
-    expect(gateClientOp({ kind: 'document-meta' }, scoped)).toEqual(DROP);
+    expect(gateClientOp({ kind: 'design-meta' }, scoped)).toEqual(DROP);
   });
 });

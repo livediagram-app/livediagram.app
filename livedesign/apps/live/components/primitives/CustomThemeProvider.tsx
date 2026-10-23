@@ -72,10 +72,10 @@ export function CustomThemeProvider({
   readOnly?: boolean;
   // Called synchronously when a theme is deleted, with its id, BEFORE the
   // delete is persisted. The editor uses it to revert any tab in the open
-  // document that was using the now-dead `custom:<uuid>` id back to the
+  // design that was using the now-dead `custom:<uuid>` id back to the
   // default theme, so the deletion is reflected on the canvas immediately
-  // (docs/specs/011-theme/custom-themes.md). Surfaces other than the editor (Explorer, new-document) omit
-  // it — they have no open document to repaint.
+  // (docs/specs/011-theme/custom-themes.md). Surfaces other than the editor (Explorer, new-design) omit
+  // it — they have no open design to repaint.
   onThemeDeleted?: (id: string) => void;
   children: ReactNode;
 }) {
@@ -99,7 +99,7 @@ export function CustomThemeProvider({
         const live = new Set(list.map((t) => t.id));
         pruneCustomThemeSwatchOverrides(ownerId, (id) => live.has(id));
       } catch {
-        // Silent: custom themes are optional; documents fall back to
+        // Silent: custom themes are optional; designs fall back to
         // built-ins via getTheme. The next mount retries.
       } finally {
         if (alive) setSettledFor(ownerId);

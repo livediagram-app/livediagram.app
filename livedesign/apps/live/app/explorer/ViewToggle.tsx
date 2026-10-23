@@ -5,9 +5,9 @@ import type { ExplorerViewMode } from './useExplorerViewMode';
 import { HoverCard, Glyph } from '@livedesign/ui';
 
 // The List / Card / Details segmented toggle in the Explorer header
-// (docs/specs/006-document/document-snapshots.md, docs/specs/013-workspace/explorer-details-view.md).
+// (docs/specs/006-design/design-snapshots.md, docs/specs/013-workspace/explorer-details-view.md).
 // Lets you switch how the browse views render the same folders +
-// documents: dense rows, cards with a large SVG snapshot, or a sortable table.
+// designs: dense rows, cards with a large SVG snapshot, or a sortable table.
 // A phone always shows cards (useExplorerViewMode), so the toggle is not
 // drawn there: the `phone:` variant matches the same query, before hydration.
 const TOGGLE_TELEMETRY = {
@@ -49,7 +49,7 @@ export function ViewToggle({
         active={mode === 'card'}
         onClick={() => choose('card')}
         label="Card view"
-        description="Cards with a large preview of each document."
+        description="Cards with a large preview of each design."
       >
         <GridIcon />
       </ToggleButton>

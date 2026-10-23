@@ -1,19 +1,19 @@
-// Statements by document id or author id seek an index (the baseline migration), against the real migrations: each of
-// these tables is keyed by owner first, and these statements used to read the whole table. A document delete
+// Statements by design id or author id seek an index (the baseline migration), against the real migrations: each of
+// these tables is keyed by owner first, and these statements used to read the whole table. A design delete
 // cascades into the first four; the guest-to-account migration and account deletion run the last two.
 import { describe, expect, it } from 'vitest';
 import { sqliteD1 } from '../test-sqlite-d1';
 
 const STATEMENTS = [
-  'DELETE FROM favourites WHERE document_id = ?',
-  'DELETE FROM document_opens WHERE document_id = ?',
-  'DELETE FROM workbench_tickets WHERE document_id = ?',
-  'DELETE FROM workbench_sessions WHERE document_id = ?',
+  'DELETE FROM favourites WHERE design_id = ?',
+  'DELETE FROM design_opens WHERE design_id = ?',
+  'DELETE FROM workbench_tickets WHERE design_id = ?',
+  'DELETE FROM workbench_sessions WHERE design_id = ?',
   'UPDATE agent_changesets SET author_id = ? WHERE author_id = ?',
   'DELETE FROM agent_changesets WHERE author_id = ?',
 ];
 
-describe('lookups by document and by author', () => {
+describe('lookups by design and by author', () => {
   const { sql } = sqliteD1();
   it.each(STATEMENTS)('%s seeks an index', (statement) => {
     const binds = (statement.match(/\?/g) ?? []).map(() => 'x');
@@ -27,7 +27,7 @@ describe('lookups by document and by author', () => {
 
   it('keeps one index for reads by owner: the favourites primary key', () => {
     const plan = sql
-      .prepare('EXPLAIN QUERY PLAN SELECT document_id FROM favourites WHERE owner_id = ?')
+      .prepare('EXPLAIN QUERY PLAN SELECT design_id FROM favourites WHERE owner_id = ?')
       .all('x')
       .map((row) => String(row['detail']));
     expect(plan.join('\n')).toMatch(

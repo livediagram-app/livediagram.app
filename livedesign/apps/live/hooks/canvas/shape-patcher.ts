@@ -1,4 +1,4 @@
-import type { Element, ShapeElement, ShapeKind } from '@livedesign/document';
+import type { Element, ShapeElement, ShapeKind } from '@livedesign/design';
 import { track } from '@/lib/telemetry';
 
 // "Patch this field on every SELECTED shape of one kind, and say so."

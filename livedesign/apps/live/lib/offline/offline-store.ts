@@ -1,21 +1,21 @@
-// Offline Mode (docs/specs/006-document/offline-mode.md): documents saved only in THIS browser, in IndexedDB,
+// Offline Mode (docs/specs/006-design/offline-mode.md): designs saved only in THIS browser, in IndexedDB,
 // never to the API. This module is the local counterpart of `lib/api/*` — it
-// produces the same wire shapes (LiveDoc / DocumentSummary / Tab) so the editor
-// and Explorer render an offline document exactly like a cloud one; the
-// persistence dispatch in `lib/api/*` routes to these when a document id is
+// produces the same wire shapes (LiveDoc / DesignSummary / Tab) so the editor
+// and Explorer render an offline design exactly like a cloud one; the
+// persistence dispatch in `lib/api/*` routes to these when a design id is
 // registered offline (see `isOfflineId`).
 //
-// Storage: one IndexedDB record per document, holding its meta + all tab bodies
-// inline (offline documents load whole — no lazy per-tab fetch). The set of
+// Storage: one IndexedDB record per design, holding its meta + all tab bodies
+// inline (offline designs load whole — no lazy per-tab fetch). The set of
 // offline ids IS the set of record keys, mirrored in an in-memory cache so the
 // dispatch can answer "is this id offline?" cheaply (./offline-ids, which keeps
 // every tab of the browser in step).
 
-import type { LiveDoc, DocumentSummary, RecordedIntent, TabSummary } from '@livedesign/api-schema';
+import type { LiveDoc, DesignSummary, RecordedIntent, TabSummary } from '@livedesign/api-schema';
 import { utcDay } from '@livedesign/api-schema';
-import { drawnCount, migrateStoredTab, stampTabKind } from '@livedesign/document';
-import type { Tab } from '@livedesign/document';
-import { DocumentTrashedError } from '../document-trashed';
+import { drawnCount, migrateStoredTab, stampTabKind } from '@livedesign/design';
+import type { Tab } from '@livedesign/design';
+import { DesignTrashedError } from '../design-trashed';
 import {
   offlineBackend,
   setOfflineBackend,
@@ -28,44 +28,44 @@ import {
   rememberOfflineId,
   resetOfflineIds,
 } from './offline-ids';
-import { offlineDocumentStats } from './offline-stats';
+import { offlineDesignStats } from './offline-stats';
 
-// Sentinel owner id stamped on offline documents. They have no server owner;
+// Sentinel owner id stamped on offline designs. They have no server owner;
 // this keeps the wire shape valid and is never sent anywhere.
 export const OFFLINE_OWNER_ID = 'offline';
 
-// The stored shape for one offline document.
-export type OfflineDocumentRecord = {
+// The stored shape for one offline design.
+export type OfflineDesignRecord = {
   id: string;
   name: string;
   folderId: string | null;
   createdAt: number;
   savedAt: number;
   tabs: Tab[];
-  // Slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised StoredPresentation. Offline documents get
+  // Slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised StoredPresentation. Offline designs get
   // decks for the same reason they get everything else: Offline Mode is the
   // whole product minus the server, not a reduced one. Optional so records
   // written before the field existed stay valid.
   presentation?: string | null;
   // Starred in the Explorer (docs/specs/013-workspace/favourites.md). Cloud stars live in a D1 table whose
-  // document_id is a foreign key into `documents`, which an offline document has
+  // design_id is a foreign key into `designs`, which an offline design has
   // no row in, so its star has to live here instead. Optional so records
   // written before the field existed stay valid.
   favourite?: boolean;
-  // The reader's tags on it (docs/specs/013-workspace/tags.md "An offline document's tags live in the browser"), by
-  // tag id, for the same reason as the star: document_tags.document_id is a foreign key into `documents`. Optional so
+  // The reader's tags on it (docs/specs/013-workspace/tags.md "An offline design's tags live in the browser"), by
+  // tag id, for the same reason as the star: design_tags.design_id is a foreign key into `designs`. Optional so
   // records written before the field existed stay valid.
   tagIds?: string[];
-  // When the document was moved to this browser's local Trash
+  // When the design was moved to this browser's local Trash
   // (docs/specs/013-workspace/trash.md, see ./offline-trash.ts). Absent = live.
   // A trashed record keeps everything else so a restore is exact.
   trashedAt?: number;
-  // This Browser's opens of the document (docs/specs/013-workspace/explorer-home.md "Opens"),
+  // This Browser's opens of the design (docs/specs/013-workspace/explorer-home.md "Opens"),
   // for Home's Jump Back In; see ./offline-opens.ts. Optional: a record never opened has none.
   opens?: StoredLocalOpens;
 };
 
-// A local document's opens, counted like the server's (docs/specs/013-workspace/explorer-home.md
+// A local design's opens, counted like the server's (docs/specs/013-workspace/explorer-home.md
 // "Opens"): the UTC days (`YYYY-MM-DD`, newest first) with an open inside the 90-day use window,
 // and the last open.
 export type LocalOpens = { days: string[]; lastOpenedAt: number };
@@ -81,13 +81,13 @@ export type StoredLocalOpens =
 
 export function tabToSummary(
   tab: Tab,
-  documentId: string,
+  designId: string,
   orderIndex: number,
   at: number,
 ): TabSummary {
   const summary: TabSummary = {
     id: tab.id,
-    documentId,
+    designId,
     name: tab.name,
     orderIndex,
     updatedAt: at,
@@ -102,8 +102,8 @@ const UNKNOWN_INTENT: RecordedIntent = { opensIn: null, tabKind: null };
 
 // Project a stored record into the full `LiveDoc` the editor hydrates from.
 // The server-only fields take their inert defaults (unshared, no team, no
-// provenance, no owner join) — offline documents are private by construction.
-export function recordToDocument(rec: OfflineDocumentRecord): LiveDoc {
+// provenance, no owner join) — offline designs are private by construction.
+export function recordToDesign(rec: OfflineDesignRecord): LiveDoc {
   return {
     id: rec.id,
     ownerId: OFFLINE_OWNER_ID,
@@ -124,7 +124,7 @@ export function recordToDocument(rec: OfflineDocumentRecord): LiveDoc {
 }
 
 // Project a record into a list row (drops tab bodies).
-export function recordToSummary(rec: OfflineDocumentRecord): DocumentSummary {
+export function recordToSummary(rec: OfflineDesignRecord): DesignSummary {
   return {
     id: rec.id,
     ownerId: OFFLINE_OWNER_ID,
@@ -138,24 +138,24 @@ export function recordToSummary(rec: OfflineDocumentRecord): DocumentSummary {
     savedAt: rec.savedAt,
     createdAt: rec.createdAt,
     empty: drawnCount(rec.tabs[0] ?? {}) === 0,
-    stats: offlineDocumentStats(rec),
+    stats: offlineDesignStats(rec),
   };
 }
 
-// Apply a document-meta change (rename + tab order/folder) to a record,
-// returning a new record. Mirrors `apiSaveDocumentMeta`: `tabs` (when given)
+// Apply a design-meta change (rename + tab order/folder) to a record,
+// returning a new record. Mirrors `apiSaveDesignMeta`: `tabs` (when given)
 // reorders the existing tab bodies by id and refreshes each tab's folder.
 export function applyMeta(
-  rec: OfflineDocumentRecord,
+  rec: OfflineDesignRecord,
   patch: {
     name?: string;
     tabs?: { id: string; folder?: string }[];
     // Absent leaves the stored deck alone; null clears it. Same contract as
-    // the server's PUT, so an offline document behaves identically.
+    // the server's PUT, so an offline design behaves identically.
     presentation?: string | null;
   },
   at: number,
-): OfflineDocumentRecord {
+): OfflineDesignRecord {
   let tabs = rec.tabs;
   if (patch.tabs) {
     const byId = new Map(rec.tabs.map((t) => [t.id, t] as const));
@@ -178,10 +178,10 @@ export function applyMeta(
 
 // Upsert one tab body into a record (the autosave path). A new tab id is
 // appended; an existing one is replaced in place, preserving order.
-export function upsertTab(rec: OfflineDocumentRecord, tab: Tab, at: number): OfflineDocumentRecord {
+export function upsertTab(rec: OfflineDesignRecord, tab: Tab, at: number): OfflineDesignRecord {
   // Stamp the tab kind here for the same reason the cloud path stamps it
   // in tabForWire: both stores must agree on what a tab IS, or a
-  // Sync Document would hand the cloud a board that has forgotten itself.
+  // Sync Design would hand the cloud a board that has forgotten itself.
   const stamped = stampTabKind(tab);
   const i = rec.tabs.findIndex((t) => t.id === stamped.id);
   const tabs =
@@ -190,10 +190,10 @@ export function upsertTab(rec: OfflineDocumentRecord, tab: Tab, at: number): Off
 }
 
 export function removeTab(
-  rec: OfflineDocumentRecord,
+  rec: OfflineDesignRecord,
   tabId: string,
   at: number,
-): OfflineDocumentRecord {
+): OfflineDesignRecord {
   return { ...rec, tabs: rec.tabs.filter((t) => t.id !== tabId), savedAt: at };
 }
 
@@ -217,16 +217,16 @@ export function __setOfflineBackend(b: OfflineBackend | null): void {
 
 // Thrown by a write whose record is gone while this tab still lists the id: another tab synced it
 // to the cloud or purged it, and the write has nowhere to land. The id is forgotten first, so the
-// autosave shows the failure instead of "Saved" and its retry routes where the document now is.
-export class OfflineDocumentMissingError extends Error {
+// autosave shows the failure instead of "Saved" and its retry routes where the design now is.
+export class OfflineDesignMissingError extends Error {
   constructor(id: string) {
-    super(`offline document ${id} is no longer in this browser`);
-    this.name = 'OfflineDocumentMissingError';
+    super(`offline design ${id} is no longer in this browser`);
+    this.name = 'OfflineDesignMissingError';
   }
 }
 
 // ---------------------------------------------------------------------------
-// Public operations — the local mirror of the document/tab api surface
+// Public operations — the local mirror of the design/tab api surface
 // ---------------------------------------------------------------------------
 
 // Every mutation below rewrites the WHOLE record after reading it, so two
@@ -240,8 +240,8 @@ export class OfflineDocumentMissingError extends Error {
 let writeChain: Promise<unknown> = Promise.resolve();
 
 // A record the editor may still write: present, and not in the local Trash
-// (an editor left open on a binned document must not keep changing it).
-function writable(rec: OfflineDocumentRecord | undefined): rec is OfflineDocumentRecord {
+// (an editor left open on a binned design must not keep changing it).
+function writable(rec: OfflineDesignRecord | undefined): rec is OfflineDesignRecord {
   return rec !== undefined && rec.trashedAt === undefined;
 }
 export function serializeOfflineWrite<T>(op: () => Promise<T>): Promise<T> {
@@ -261,10 +261,10 @@ export function offlineUpdateRecord(id: string, change: OfflineRecordChange): Pr
 
 // The editor's writes to a live record: `change` runs on it when it is writable. A missing record
 // is a no-op when this tab has already forgotten the id (a queued autosave landing after this
-// tab's own Sync Document), and an OfflineDocumentMissingError when the id is still listed.
+// tab's own Sync Design), and an OfflineDesignMissingError when the id is still listed.
 async function writeLive(
   id: string,
-  change: (rec: OfflineDocumentRecord) => OfflineDocumentRecord,
+  change: (rec: OfflineDesignRecord) => OfflineDesignRecord,
 ): Promise<void> {
   await serializeOfflineWrite(async () => {
     let missing = false;
@@ -275,37 +275,37 @@ async function writeLive(
     if (missing && isOfflineIdSync(id)) {
       forgetOfflineId(id);
       console.warn('[offline-store] write-to-missing-record, id forgotten');
-      throw new OfflineDocumentMissingError(id);
+      throw new OfflineDesignMissingError(id);
     }
   });
 }
 
 // Live records only: a trashed one waits in the local Trash.
-export async function offlineListDocuments(): Promise<DocumentSummary[]> {
+export async function offlineListDesigns(): Promise<DesignSummary[]> {
   const recs = await offlineBackend().all();
   return recs.filter((r) => r.trashedAt === undefined).map(recordToSummary);
 }
 
 // A trashed record reads as the deleted state, the local twin of the api's 410.
-export async function offlineLoadDocument(id: string): Promise<LiveDoc | null> {
+export async function offlineLoadDesign(id: string): Promise<LiveDoc | null> {
   const rec = await offlineBackend().get(id);
-  if (rec?.trashedAt !== undefined) throw new DocumentTrashedError(id);
-  return rec ? recordToDocument(rec) : null;
+  if (rec?.trashedAt !== undefined) throw new DesignTrashedError(id);
+  return rec ? recordToDesign(rec) : null;
 }
 
 export async function offlineLoadTab(id: string, tabId: string): Promise<Tab | null> {
   const rec = await offlineBackend().get(id);
   const tab = rec?.tabs.find((t) => t.id === tabId) ?? null;
-  // The offline twin of the api's rowToTab: a document kept in this browser can
+  // The offline twin of the api's rowToTab: a design kept in this browser can
   // still be on a retired scheme (docs/specs/011-theme/retired-schemes.md) or carry retired element fields.
   return tab ? migrateStoredTab(tab) : null;
 }
 
-// `extra`: a document's own created and last-modified dates (docs/specs/015-api/api.md "Document
-// dates"), absent now; the personal folder it is filed in. Making a document here is a use of it: its
+// `extra`: a design's own created and last-modified dates (docs/specs/015-api/api.md "Design
+// dates"), absent now; the personal folder it is filed in. Making a design here is a use of it: its
 // record of uses starts with the day and the moment it was made, as a first open would
-// (docs/specs/013-workspace/explorer-home.md "Making a document"; offline-opens.ts).
-export async function offlineCreateDocument(
+// (docs/specs/013-workspace/explorer-home.md "Making a design"; offline-opens.ts).
+export async function offlineCreateDesign(
   d: { id: string; name: string; tabs?: Tab[] },
   now: number,
   extra: {
@@ -314,7 +314,7 @@ export async function offlineCreateDocument(
     folderId?: string | null;
   } = {},
 ): Promise<LiveDoc> {
-  const rec: OfflineDocumentRecord = {
+  const rec: OfflineDesignRecord = {
     id: d.id,
     name: d.name,
     folderId: extra.folderId ?? null,
@@ -325,10 +325,10 @@ export async function offlineCreateDocument(
   };
   await offlineBackend().put(rec);
   rememberOfflineId(rec.id);
-  return recordToDocument(rec);
+  return recordToDesign(rec);
 }
 
-export async function offlineSaveDocumentMeta(
+export async function offlineSaveDesignMeta(
   id: string,
   patch: { name?: string; tabs?: { id: string; folder?: string }[]; presentation?: string | null },
   now: number,
@@ -336,10 +336,10 @@ export async function offlineSaveDocumentMeta(
   await writeLive(id, (rec) => applyMeta(rec, patch, now));
 }
 
-// Personal-folder placement for an offline document (docs/specs/013-workspace/folders.md). Folders are
+// Personal-folder placement for an offline design (docs/specs/013-workspace/folders.md). Folders are
 // server-side rows, but an offline record carries a folderId so its row can
 // sit in the Explorer's personal tree like any other.
-export async function offlineSetDocumentFolder(
+export async function offlineSetDesignFolder(
   id: string,
   folderId: string | null,
   now: number,
@@ -347,9 +347,9 @@ export async function offlineSetDocumentFolder(
   await writeLive(id, (rec) => ({ ...rec, folderId, savedAt: now }));
 }
 
-// Star / un-star an offline document (docs/specs/013-workspace/favourites.md). The savedAt stamp is left
+// Star / un-star an offline design (docs/specs/013-workspace/favourites.md). The savedAt stamp is left
 // alone on purpose: a star is a per-user bookmark, not an edit to the
-// document, and bumping it would reorder Recent on a click that changed
+// design, and bumping it would reorder Recent on a click that changed
 // nothing about the content.
 export async function offlineSetFavourite(id: string, favourite: boolean): Promise<void> {
   await serializeOfflineWrite(() =>
@@ -362,9 +362,9 @@ export async function offlineListFavouriteIds(): Promise<string[]> {
   return recs.filter((r) => r.favourite && r.trashedAt === undefined).map((r) => r.id);
 }
 
-// Put a tag on / take it off an offline document (docs/specs/013-workspace/tags.md). Like a star, a tag is the
+// Put a tag on / take it off an offline design (docs/specs/013-workspace/tags.md). Like a star, a tag is the
 // reader's own label, not an edit, so savedAt is left alone.
-export async function offlineSetDocumentTag(id: string, tagId: string, on: boolean): Promise<void> {
+export async function offlineSetDesignTag(id: string, tagId: string, on: boolean): Promise<void> {
   await serializeOfflineWrite(() =>
     offlineUpdateRecord(id, (rec) => {
       if (!rec) return undefined;
@@ -374,21 +374,21 @@ export async function offlineSetDocumentTag(id: string, tagId: string, on: boole
   );
 }
 
-// Every live offline document's tags, as links.
-export async function offlineListTagLinks(): Promise<{ tagId: string; documentId: string }[]> {
+// Every live offline design's tags, as links.
+export async function offlineListTagLinks(): Promise<{ tagId: string; designId: string }[]> {
   const recs = await offlineBackend().all();
   return recs
     .filter((r) => r.trashedAt === undefined)
-    .flatMap((r) => (r.tagIds ?? []).map((tagId) => ({ tagId, documentId: r.id })));
+    .flatMap((r) => (r.tagIds ?? []).map((tagId) => ({ tagId, designId: r.id })));
 }
 
 export async function offlineSaveTab(id: string, tab: Tab, now: number): Promise<void> {
-  // No create-on-missing: a save must never resurrect a deleted document.
+  // No create-on-missing: a save must never resurrect a deleted design.
   // A pending debounced autosave can land AFTER a sync-to-cloud deleted
   // the record; recreating it here would shadow the freshly-synced cloud
   // copy behind a 1-tab offline ghost (the local analog of the server's
   // old create-on-first-write bug). Records are only ever created by
-  // offlineCreateDocument / offlinePutRecord.
+  // offlineCreateDesign / offlinePutRecord.
   await writeLive(id, (rec) => upsertTab(rec, tab, now));
 }
 
@@ -396,7 +396,7 @@ export async function offlineDeleteTab(id: string, tabId: string, now: number): 
   await writeLive(id, (rec) => removeTab(rec, tabId, now));
 }
 
-export async function offlineDeleteDocument(id: string): Promise<void> {
+export async function offlineDeleteDesign(id: string): Promise<void> {
   // Serialized with the tab / meta writes so a queued save can't interleave
   // with (or observe a half-applied) delete.
   await serializeOfflineWrite(async () => {
@@ -405,16 +405,16 @@ export async function offlineDeleteDocument(id: string): Promise<void> {
   });
 }
 
-// Sync Document's last step (docs/specs/006-document/offline-mode.md "Save to server"): remove the
+// Sync Design's last step (docs/specs/006-design/offline-mode.md "Save to server"): remove the
 // record only if it still matches what was uploaded, judged and done in one transaction so no write
 // (from this tab or another) can land between the check and the delete. Answers what it found:
 // `deleted` (with the record as it was), `changed` (with the record as it is now) or `missing`.
 type OfflineDeleteOutcome =
-  { outcome: 'deleted' | 'changed'; rec: OfflineDocumentRecord } | { outcome: 'missing' };
+  { outcome: 'deleted' | 'changed'; rec: OfflineDesignRecord } | { outcome: 'missing' };
 
 export async function offlineDeleteIfUnchanged(
   id: string,
-  unchanged: (rec: OfflineDocumentRecord) => boolean,
+  unchanged: (rec: OfflineDesignRecord) => boolean,
 ): Promise<OfflineDeleteOutcome> {
   return serializeOfflineWrite(async () => {
     let found = { outcome: 'missing' } as OfflineDeleteOutcome;
@@ -429,13 +429,13 @@ export async function offlineDeleteIfUnchanged(
   });
 }
 
-// Read the raw record — used by the Offline → Cloud conversion (docs/specs/006-document/offline-mode.md) to
-// upload the whole document, and by "take offline" to seed one.
-export async function offlineGetRecord(id: string): Promise<OfflineDocumentRecord | null> {
+// Read the raw record — used by the Offline → Cloud conversion (docs/specs/006-design/offline-mode.md) to
+// upload the whole design, and by "take offline" to seed one.
+export async function offlineGetRecord(id: string): Promise<OfflineDesignRecord | null> {
   return (await offlineBackend().get(id)) ?? null;
 }
 
-export async function offlinePutRecord(rec: OfflineDocumentRecord): Promise<void> {
+export async function offlinePutRecord(rec: OfflineDesignRecord): Promise<void> {
   await offlineBackend().put(rec);
   rememberOfflineId(rec.id);
 }

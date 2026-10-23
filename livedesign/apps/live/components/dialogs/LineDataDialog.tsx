@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { Button, CloseIcon, DialogHeader } from '@livedesign/ui';
-import type { LineSeries } from '@livedesign/document';
+import type { LineSeries } from '@livedesign/design';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useLatest } from '@/hooks/ui/useLatest';

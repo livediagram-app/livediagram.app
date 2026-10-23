@@ -4,7 +4,7 @@
 // every id minted earlier in the changeset.
 
 import type { EditRejection } from '@livedesign/api-schema';
-import { SLUG_ID_MAX_LENGTH, isSlugId, slugIdFor } from '@livedesign/document';
+import { SLUG_ID_MAX_LENGTH, isSlugId, slugIdFor } from '@livedesign/design';
 import { idTaken, invalidValue } from './rejections';
 import type { EditState } from './state';
 import { RESERVED_WORDS } from './vocabulary';

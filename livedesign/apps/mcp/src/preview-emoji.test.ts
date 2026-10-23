@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { Element } from '@livedesign/document';
+import type { Element } from '@livedesign/design';
 import {
   emojiGlyphsOf,
   previewEmoji,

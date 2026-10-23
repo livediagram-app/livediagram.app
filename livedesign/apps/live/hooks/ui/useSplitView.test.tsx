@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livedesign/document';
+import type { Tab } from '@livedesign/design';
 import { useSplitView } from './useSplitView';
 
 const track = vi.fn<typeof import('@/lib/telemetry').track>();
@@ -26,7 +26,7 @@ function setup(initial: Props, failing: readonly string[] = []) {
           props = { ...props, activeId: id };
           view.rerender(props);
         },
-        documentId: 'doc',
+        designId: 'doc',
         hydrated: true,
         loadedTabIds: new Set(['a']),
         loadTabs,

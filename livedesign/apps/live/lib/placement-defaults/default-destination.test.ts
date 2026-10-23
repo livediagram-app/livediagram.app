@@ -9,7 +9,7 @@ import {
   workingDefault,
 } from './default-destination';
 
-// Where a person's new documents go, read on the client
+// Where a person's new designs go, read on the client
 // (docs/specs/013-workspace/default-folders.md "Surfaces", "Precedence", "Dangling defaults").
 
 const index = buildDefaultFolderIndex(
@@ -85,7 +85,7 @@ describe('destinationOf', () => {
     );
   });
 
-  it('is dangling when deleted, its documents going to My Work instead', () => {
+  it('is dangling when deleted, its designs going to My Work instead', () => {
     const d = defaults([['mode:pages', 'gone']]);
     expect(destinationOf('mode:pages', d, index, () => ({ name: 'Decks', teamId: null }))).toEqual({
       kind: 'dangling',

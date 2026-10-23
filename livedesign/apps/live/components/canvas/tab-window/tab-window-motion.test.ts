@@ -6,7 +6,7 @@ import {
   type BoxedElement,
   type Element,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { renderTabToSvg } from '@/lib/export-tab';
 import {
   WINDOW_SHAPE_PLAYS,

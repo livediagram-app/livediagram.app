@@ -5,18 +5,18 @@ import type { Metric, MetricStack } from '../metric-series';
 import { SLIDE_DECK_OPENED } from './features';
 import { chart } from './helpers';
 
-export const TEAM_DOCUMENTS_MOVED = chart(
+export const TEAM_DESIGNS_MOVED = chart(
   'Team',
   'Moved',
-  'Team Documents Moved',
-  'A document moved within a team library.',
+  'Team Designs Moved',
+  'A design moved within a team library.',
 );
 
 export const SHARE_LINKS_COPIED = chart(
   'UI',
   'Copied',
   'Share Links Copied',
-  'A document share link, embed code or live image copied. (Team invite links are in Team Activity.)',
+  'A design share link, embed code or live image copied. (Team invite links are in Team Activity.)',
   {
     typeIn: (t) => t !== 'TeamInviteLink' && t !== 'Diagnostics' && t !== 'Diagnostics.Help',
   },
@@ -96,7 +96,7 @@ export const EMBEDS_VIEWED = chart(
   'Session',
   'Opened',
   'Embeds Viewed',
-  'A document opened inside another site through its embed.',
+  'A design opened inside another site through its embed.',
   { types: ['Embed'] },
 );
 
@@ -104,7 +104,7 @@ export const WORKBENCH_SESSIONS = chart(
   'Session',
   'Opened',
   'Workbench Sessions',
-  'A document opened inside a developer tool’s frame, signed in.',
+  'A design opened inside a developer tool’s frame, signed in.',
   { types: ['Workbench'] },
 );
 
@@ -132,7 +132,7 @@ export const TEAM_REMOVALS = chart(
   'Team',
   'Removed',
   'Team Removals',
-  'A member removed, an invite withdrawn, a document or an invite link taken out of a team, or someone leaving.',
+  'A member removed, an invite withdrawn, a design or an invite link taken out of a team, or someone leaving.',
   { rising: 'neutral' },
 );
 
@@ -170,7 +170,7 @@ export const MULTIPLAYER_SESSIONS: Metric = {
   type: 'Multiplayer',
   title: 'Multiplayer Sessions',
   blurb:
-    'A document was open with at least one other person live in the room. Counted once per document per visit, however many people turn up.',
+    'A design was open with at least one other person live in the room. Counted once per design per visit, however many people turn up.',
 };
 
 export const VIEWPORTS_FOLLOWED: Metric = {
@@ -210,7 +210,7 @@ export const PARTICIPANTS_JOINED: Metric = {
   type: 'Participate',
   title: 'Participants Joined',
   blurb:
-    'People who came into a document through a Participant link. Counted once per person per document, not on every revisit.',
+    'People who came into a design through a Participant link. Counted once per person per design, not on every revisit.',
 };
 
 export const COLLABORATORS_JOINED: Metric = {
@@ -219,7 +219,7 @@ export const COLLABORATORS_JOINED: Metric = {
   type: 'Edit',
   title: 'Collaborators Joined',
   blurb:
-    'People who came into a document through an edit link. Counted once per person per document, not on every revisit.',
+    'People who came into a design through an edit link. Counted once per person per design, not on every revisit.',
 };
 
 export const VIEWERS_JOINED: Metric = {
@@ -228,7 +228,7 @@ export const VIEWERS_JOINED: Metric = {
   type: 'View',
   title: 'Viewers Joined',
   blurb:
-    'People who came into a document through a view-only link. Counted once per person per document, not on every revisit.',
+    'People who came into a design through a view-only link. Counted once per person per design, not on every revisit.',
 };
 
 export const COMMENTS_ADDED: Metric = {
@@ -307,12 +307,12 @@ export const INVITES_DECLINED_FROM_EMAIL: Metric = {
     "The recipient turned an invitation down from the email's Decline link, without signing in.",
 };
 
-export const DOCUMENTS_SHARED_TO_A_TEAM: Metric = {
+export const DESIGNS_SHARED_TO_A_TEAM: Metric = {
   category: 'Team',
   action: 'Added',
-  type: 'Document',
-  title: 'Documents Shared to a Team',
-  blurb: "A document was moved into a team's shared library for everyone on the team.",
+  type: 'Design',
+  title: 'Designs Shared to a Team',
+  blurb: "A design was moved into a team's shared library for everyone on the team.",
 };
 
 export const LIVE_TOGETHER: MetricStack = {
@@ -370,16 +370,15 @@ export const INVITE_LINKS_COPIED = chart(
 export const TEAM_ACTIVITY: MetricStack = {
   stack: true,
   title: 'Team Activity',
-  blurb:
-    'Teams made, the invite funnel (sent, accepted, declined), and documents shared to a team.',
+  blurb: 'Teams made, the invite funnel (sent, accepted, declined), and designs shared to a team.',
   members: [
     TEAMS_CREATED,
     INVITES_SENT,
     INVITES_ACCEPTED,
     INVITES_DECLINED,
     INVITES_DECLINED_FROM_EMAIL,
-    DOCUMENTS_SHARED_TO_A_TEAM,
-    TEAM_DOCUMENTS_MOVED,
+    DESIGNS_SHARED_TO_A_TEAM,
+    TEAM_DESIGNS_MOVED,
     INVITE_LINKS_SHARED,
     TEAM_CHANGES,
     TEAM_REMOVALS,
@@ -448,7 +447,7 @@ export const ACTIVITY_THREADS = chart(
   "An action or a comment thread opened from the Explorer's Inbox.",
 );
 
-// Explorer Home (docs/specs/013-workspace/explorer-home.md): arrivals by type, documents opened
+// Explorer Home (docs/specs/013-workspace/explorer-home.md): arrivals by type, designs opened
 // from each part of Home, summaries expanded, and failed reads retried.
 export const HOME_LANDINGS = chart(
   'Home',
@@ -470,22 +469,22 @@ export const HOME_WELCOMES = chart(
   'Home',
   'Opened',
   'First-Run Homes',
-  'Home shown to someone with no documents yet, offering blanks and popular templates to start from.',
+  'Home shown to someone with no designs yet, offering blanks and popular templates to start from.',
   { types: ['Welcome'] },
 );
 
-export const HOME_DOCUMENTS_OPENED = chart(
+export const HOME_DESIGNS_OPENED = chart(
   'Home',
   'Selected',
-  'Documents Opened from Home',
-  'A document opened from Jump Back In (most used or recent) or What Happened, See More followed, or a start taken from the first-run Home.',
+  'Designs Opened from Home',
+  'A design opened from Jump Back In (most used or recent) or What Happened, See More followed, or a start taken from the first-run Home.',
 );
 
 export const HOME_GROUPS_EXPANDED = chart(
   'Home',
   'Opened',
   'Home Summaries Expanded',
-  "A summary of several people's work on one document opened up to every action.",
+  "A summary of several people's work on one design opened up to every action.",
   { types: ['Group'] },
 );
 
@@ -500,7 +499,7 @@ export const TIMELINE_AND_ACTIVITY: MetricStack = {
     HOME_LANDINGS,
     HOME_VISITS,
     HOME_WELCOMES,
-    HOME_DOCUMENTS_OPENED,
+    HOME_DESIGNS_OPENED,
     HOME_GROUPS_EXPANDED,
     HOME_LOADS,
     TIMELINE_LANDINGS,

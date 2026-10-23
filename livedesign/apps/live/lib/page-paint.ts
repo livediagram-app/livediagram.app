@@ -21,7 +21,7 @@ import {
   type PageBackground,
   type PageFill,
   type PagePattern,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import type { CSSProperties } from 'react';
 import {
   pageImageCssUrl,
@@ -30,14 +30,14 @@ import {
   pageImageSrc,
 } from './page-image-paint';
 
-// The background edit itself is the document's, shared with the agents' page changes.
+// The background edit itself is the design's, shared with the agents' page changes.
 export {
   PAGE_GRADIENT_ANGLE,
   PAGE_PATTERN_PITCH,
   pagePatternInk,
   sameFill,
   withBackgroundPatch,
-} from '@livedesign/document';
+} from '@livedesign/design';
 
 type GradientPreset = { id: string; label: string; from: string; to: string };
 
@@ -58,7 +58,7 @@ export const PAGE_GRADIENT_PRESETS: readonly GradientPreset[] = [
   { id: 'meadow', label: 'Meadow', from: '#bbf7d0', to: '#a5f3fc' },
   { id: 'mint', label: 'Mint', from: '#ccfbf1', to: '#d9f99d' },
   { id: 'sand', label: 'Sand', from: '#fef3c7', to: '#e7e5e4' },
-  // A new slide document's slide (defaultPageBackground).
+  // A new slide design's slide (defaultPageBackground).
   { id: 'steel', label: 'Steel', ...STEEL_GRADIENT },
   { id: 'dusk', label: 'Dusk', from: '#1e1b4b', to: '#4c1d95' },
   { id: 'night', label: 'Night', from: '#0f172a', to: '#1e3a8a' },
@@ -177,9 +177,9 @@ export function pageSheetStyle(
 
 export type ThemeBackgroundPreset = { id: string; label: string; fill: PageFill };
 
-// The theme's accent and its default page background are the document's, shared with every path
+// The theme's accent and its default page background are the design's, shared with every path
 // that makes a page.
-export { themeAccent } from '@livedesign/document';
+export { themeAccent } from '@livedesign/design';
 const FALLBACK_ACCENT = FALLBACK_THEME_ACCENT;
 const isHex = (c: string | null | undefined): c is string => !!c && /^#[0-9a-f]{6}$/i.test(c);
 

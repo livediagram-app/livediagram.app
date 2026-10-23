@@ -1,13 +1,13 @@
 // Talking to the photo blob store (docs/specs/031-photo/photo-store.md "The routes"): which blobs a
-// tab holds, uploading a batch, adopting another tab's, and reading one. An Offline Mode document
+// tab holds, uploading a batch, adopting another tab's, and reading one. An Offline Mode design
 // keeps its blobs in this browser instead (offline-blobs.ts), behind the same calls.
 import { encodeBlobBatch, type PhotoBlobEntry } from '@livedesign/api-schema';
 import { API_BASE, apiFetch, apiHeaders } from '../api/core';
 import { isOfflineId } from '../offline/offline-ids';
 import { offlineBlobsHeld, offlineGetBlob, offlinePutBlobs } from './offline-blobs';
 
-/** Who is asking and about which document: the request's identity and share code. */
-export type PhotoBlobScope = { ownerId: string; documentId: string; shareCode: string | null };
+/** Who is asking and about which design: the request's identity and share code. */
+export type PhotoBlobScope = { ownerId: string; designId: string; shareCode: string | null };
 
 export class PhotoBlobError extends Error {
   readonly status: number;
@@ -21,7 +21,7 @@ export class PhotoBlobError extends Error {
 }
 
 const base = (s: PhotoBlobScope, tabId: string) =>
-  `${API_BASE}/documents/${encodeURIComponent(s.documentId)}/tabs/${encodeURIComponent(tabId)}`;
+  `${API_BASE}/designs/${encodeURIComponent(s.designId)}/tabs/${encodeURIComponent(tabId)}`;
 
 async function failed(res: Response): Promise<PhotoBlobError> {
   let code: string | null = null;
@@ -40,7 +40,7 @@ export async function blobsHeld(
   ids: readonly string[],
 ): Promise<Set<string>> {
   if (ids.length === 0) return new Set();
-  if (await isOfflineId(s.documentId)) return offlineBlobsHeld(ids);
+  if (await isOfflineId(s.designId)) return offlineBlobsHeld(ids);
   const res = await apiFetch(`${base(s, tabId)}/photo-blobs-held`, {
     method: 'POST',
     headers: await apiHeaders(s.ownerId, { share: s.shareCode, body: true }),
@@ -57,7 +57,7 @@ export async function uploadBlobs(
   entries: readonly PhotoBlobEntry[],
 ): Promise<void> {
   if (entries.length === 0) return;
-  if (await isOfflineId(s.documentId)) return offlinePutBlobs(entries);
+  if (await isOfflineId(s.designId)) return offlinePutBlobs(entries);
   const body = encodeBlobBatch(entries) as Uint8Array<ArrayBuffer>;
   const headers = new Headers(await apiHeaders(s.ownerId, { share: s.shareCode }));
   headers.set('Content-Type', 'application/octet-stream');
@@ -69,14 +69,14 @@ export async function uploadBlobs(
 export async function adoptBlobs(
   s: PhotoBlobScope,
   tabId: string,
-  from: { documentId: string; tabId: string },
+  from: { designId: string; tabId: string },
   ids: readonly string[],
 ): Promise<Set<string>> {
-  if (ids.length === 0 || (await isOfflineId(s.documentId))) return new Set(ids);
+  if (ids.length === 0 || (await isOfflineId(s.designId))) return new Set(ids);
   const res = await apiFetch(`${base(s, tabId)}/photo-blobs-adopt`, {
     method: 'POST',
     headers: await apiHeaders(s.ownerId, { share: s.shareCode, body: true }),
-    body: JSON.stringify({ fromDocument: from.documentId, fromTab: from.tabId, ids }),
+    body: JSON.stringify({ fromDesign: from.designId, fromTab: from.tabId, ids }),
   });
   if (!res.ok) throw await failed(res);
   return new Set(((await res.json()) as { adopted: string[] }).adopted);
@@ -88,7 +88,7 @@ export async function fetchBlob(
   tabId: string,
   id: string,
 ): Promise<Blob | null> {
-  if (await isOfflineId(s.documentId)) return offlineGetBlob(id);
+  if (await isOfflineId(s.designId)) return offlineGetBlob(id);
   const res = await apiFetch(`${base(s, tabId)}/photo-blobs/${encodeURIComponent(id)}`, {
     headers: await apiHeaders(s.ownerId, { share: s.shareCode }),
   });

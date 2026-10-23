@@ -56,7 +56,7 @@ export function TimelineCalendarView({
   //
   // Grouped by TONE rather than by source type, matching the bubbles:
   // three dots that mean created / changed / removed answer "what kind
-  // of day was that" at a glance, where "document vs team" does not.
+  // of day was that" at a glance, where "design vs team" does not.
   const byDayAndTone = useMemo(() => {
     const map = new Map<string, TimelineEvent[]>();
     for (const event of events) {
@@ -110,7 +110,7 @@ export function TimelineCalendarView({
 
   // Close the popover on any press outside the grid and on Escape. Listeners
   // are only mounted while one is open, so a closed calendar costs
-  // nothing on every document click.
+  // nothing on every design click.
   useClickOutside(gridRef, () => setOpenCell(null), openCell !== null);
   useEscape(() => setOpenCell(null), { enabled: openCell !== null });
 

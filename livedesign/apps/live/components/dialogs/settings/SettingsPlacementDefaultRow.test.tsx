@@ -2,8 +2,8 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Settings > Documents > Where New Documents Go (docs/specs/013-workspace/default-folders.md
-// "Settings"): each row says where its new documents go, and changes or clears it.
+// Settings > Designs > Where New Designs Go (docs/specs/013-workspace/default-folders.md
+// "Settings"): each row says where its new designs go, and changes or clears it.
 
 const { api } = vi.hoisted(() => ({
   api: {
@@ -27,7 +27,7 @@ import {
 } from './SettingsPlacementDefaultRow';
 
 const rowFor = (key: string) =>
-  SETTINGS_CATEGORIES.find((c) => c.id === 'documents')!.rows.find(
+  SETTINGS_CATEGORIES.find((c) => c.id === 'designs')!.rows.find(
     (r) => r.kind === 'placementDefault' && r.placementKey === key,
   ) as SettingsPlacementDefaultRowSpec;
 
@@ -56,16 +56,16 @@ afterEach(cleanup);
 
 describe('SettingsPlacementDefaultRow', () => {
   it('lists the one entry in title case under Default Folders', () => {
-    const rows = SETTINGS_CATEGORIES.find((c) => c.id === 'documents')!.rows;
+    const rows = SETTINGS_CATEGORIES.find((c) => c.id === 'designs')!.rows;
     expect(rows.filter((r) => r.kind === 'placementDefault').map((r) => r.label)).toEqual([
-      'Documents',
+      'Designs',
     ]);
     expect(
       new Set(rows.filter((r) => r.kind === 'placementDefault').map((r) => r.section)),
     ).toEqual(new Set(['Default Folders']));
     // What they share is said once, under the heading, with the article.
     expect(
-      SETTINGS_CATEGORIES.find((c) => c.id === 'documents')!.sectionNotes?.['Default Folders'],
+      SETTINGS_CATEGORIES.find((c) => c.id === 'designs')!.sectionNotes?.['Default Folders'],
     ).toMatchObject({ helpArticle: 'defaultFolders' });
   });
 
@@ -74,7 +74,7 @@ describe('SettingsPlacementDefaultRow', () => {
     render(<SettingsPlacementDefaultRow row={rowFor('mode:pages')} lists={lists()} />);
     expect(screen.getByText('My Work')).toBeTruthy();
     expect(
-      screen.getByRole('button', { name: 'Change default folder for documents' }),
+      screen.getByRole('button', { name: 'Change default folder for designs' }),
     ).toBeTruthy();
     expect(screen.queryByRole('button', { name: /Clear/ })).toBeNull();
   });
@@ -84,13 +84,13 @@ describe('SettingsPlacementDefaultRow', () => {
     render(<SettingsPlacementDefaultRow row={rowFor('mode:pages')} lists={lists()} />);
     expect(screen.getByText('Sprints · Design')).toBeTruthy();
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Clear default folder for documents' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Clear default folder for designs' }));
     });
     expect(api.apiClearPlacementDefault).toHaveBeenCalledWith('owner', 'mode:pages');
     expect(screen.getByText('My Work')).toBeTruthy();
   });
 
-  it('says a deleted default is deleted, by its remembered name, and where documents go instead', async () => {
+  it('says a deleted default is deleted, by its remembered name, and where designs go instead', async () => {
     localStorage.setItem(
       `${DEFAULT_FOLDER_NAMES_PREFIX}owner`,
       JSON.stringify({ gone: { name: 'Old decks', teamId: null } }),
@@ -98,7 +98,7 @@ describe('SettingsPlacementDefaultRow', () => {
     await withDefaults([{ key: 'mode:pages', folderId: 'gone' }]);
     render(<SettingsPlacementDefaultRow row={rowFor('mode:pages')} lists={lists()} />);
     expect(screen.getByText('Old decks (deleted), using My Work')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Clear default folder for documents' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Clear default folder for designs' })).toBeTruthy();
   });
 
   it('says so when it never saw the deleted folder', async () => {

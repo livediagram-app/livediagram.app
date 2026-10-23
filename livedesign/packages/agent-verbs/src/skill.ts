@@ -11,7 +11,7 @@ export const SKILL_FRONTMATTER_MAX_TOKENS = 80;
 export const SKILL_BODY_MAX_TOKENS = 1500;
 
 export const SKILL_DESCRIPTION =
-  'Read, build, edit and comment on livedesign documents with the livedesign CLI. Use when asked to make, change or check a logo or a wireframe on livedesign.app, or when a message carries a [livedesign] line.';
+  'Read, build, edit and comment on livedesign designs with the livedesign CLI. Use when asked to make, change or check a logo or a wireframe on livedesign.app, or when a message carries a [livedesign] line.';
 
 export const SKILL_DIRECTORIES: readonly { path: string; agent: string }[] = [
   { path: '~/.claude/skills', agent: 'Claude Code, every project' },
@@ -32,7 +32,7 @@ export function renderSkill(): string {
     '',
     'Start:',
     '',
-    '- `livedesign document ls <query>`: find a document',
+    '- `livedesign design ls <query>`: find a design',
     '- `livedesign tab view <doc>`: its first tab, as an outline',
     '- `livedesign edit <doc> -f -`: edit operations from stdin, as one changeset',
     '- `livedesign tab lint <doc>`: text that does not fit where it is drawn',

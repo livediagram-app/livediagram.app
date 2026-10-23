@@ -9,12 +9,12 @@ function arrange() {
   const db = sqliteD1();
   db.sql
     .prepare(
-      `INSERT INTO documents (id, owner_id, name, saved_at, created_at, shareable)
+      `INSERT INTO designs (id, owner_id, name, saved_at, created_at, shareable)
        VALUES ('d1', 'owner', 'Plan', 1, 1, 1)`,
     )
     .run();
   const link = db.sql.prepare(
-    `INSERT INTO share_links (code, document_id, role, created_at) VALUES (?, 'd1', 'edit', ?)`,
+    `INSERT INTO share_links (code, design_id, role, created_at) VALUES (?, 'd1', 'edit', ?)`,
   );
   // L1 is the older link: the old rule would hand every edit visitor L1, and L2 after L1 went.
   link.run('LINKONE1', 1);
@@ -42,7 +42,7 @@ describe('a revoked share link', () => {
     const { env, sql } = arrange();
     sql
       .prepare(
-        `INSERT INTO shared_with (owner_id, document_id, role, last_seen) VALUES ('legacy', 'd1', 'edit', 1)`,
+        `INSERT INTO shared_with (owner_id, design_id, role, last_seen) VALUES ('legacy', 'd1', 'edit', 1)`,
       )
       .run();
     expect((await listSharedWith(env, 'legacy')).map((r) => r.shareCode)).toEqual(['LINKONE1']);

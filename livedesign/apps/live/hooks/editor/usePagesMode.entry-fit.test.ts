@@ -6,7 +6,7 @@
 
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { pagesOf, layOutPages, type Tab } from '@livedesign/document';
+import { pagesOf, layOutPages, type Tab } from '@livedesign/design';
 import { computeFitBelow } from '@/lib/viewport';
 import { usePagesMode } from './usePagesMode';
 

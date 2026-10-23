@@ -4,7 +4,7 @@ import { crc32, deflateSync } from 'node:zlib';
 import { randomFillSync } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { embedTabImages } from '@livedesign/api-schema';
-import { renderElementsToSvg, type Tab } from '@livedesign/document';
+import { renderElementsToSvg, type Tab } from '@livedesign/design';
 import { createPngRenderer } from '@livedesign/render-png';
 import { cpuBudgetMs, cpuMsOfAsync } from '@livedesign/vitest-config/cpu-time';
 import {

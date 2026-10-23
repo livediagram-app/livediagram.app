@@ -15,10 +15,10 @@ function env() {
 }
 
 describe('live worker editor route', () => {
-  it('serves the editor page for /document/<id>', async () => {
+  it('serves the editor page for /design/<id>', async () => {
     const { env: e, seen } = env();
-    await worker.fetch(new Request('https://livedesign.app/document/abc'), e);
-    expect(seen).toEqual(['/document/placeholder']);
+    await worker.fetch(new Request('https://livedesign.app/design/abc'), e);
+    expect(seen).toEqual(['/design/placeholder']);
   });
 
   it('leaves other paths to the static assets', async () => {
@@ -40,7 +40,7 @@ describe('live worker security headers', () => {
   // docs/specs/016-platform/trusted-types.md: every page enforces Trusted Types, the embed included.
   it('enforces Trusted Types on every page', async () => {
     const { env: e } = env();
-    for (const path of ['/document/abc', '/embed', '/explorer/home', '/oauth/consent']) {
+    for (const path of ['/design/abc', '/embed', '/explorer/home', '/oauth/consent']) {
       const res = await worker.fetch(new Request(`https://livedesign.app${path}`), e);
       expect(res.headers.get('Content-Security-Policy'), path).toBe(TRUSTED_TYPES_CSP);
     }
@@ -74,7 +74,7 @@ describe('live worker security headers', () => {
       '/embed/workbench/explorer',
       '/embed/workbench/explorer/folder/f1',
       '/embed/workbench/explorer/recent?q=x',
-      '/embed/workbench/document/doc-1?s=CODE2345',
+      '/embed/workbench/design/doc-1?s=CODE2345',
     ]) {
       const res = await worker.fetch(new Request(`https://livedesign.app${path}`), e);
       expect(res.headers.get('X-Frame-Options')).toBeNull();
@@ -91,7 +91,7 @@ describe('live worker security headers', () => {
     const { env: e } = env();
     for (const path of [
       '/workbench/pair?code=x',
-      '/document/doc-1',
+      '/design/doc-1',
       '/embedded',
       '/explorer/home',
     ]) {

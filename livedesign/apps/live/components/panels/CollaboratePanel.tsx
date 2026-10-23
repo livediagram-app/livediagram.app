@@ -6,7 +6,7 @@ import {
   elementDisplayLabel,
   type BoxedElement,
   type ElementActionStatus,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import type {
   MovablePanelPlacementProps,

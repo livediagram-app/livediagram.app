@@ -11,7 +11,7 @@ export interface Tab {
   pages?: string;
 }
 export interface Snapshot {
-  documents: {
+  designs: {
     id: string;
     name?: string;
     missing?: boolean;

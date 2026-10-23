@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createPinnedArrow, createShape, type Element, type Layer } from '@livedesign/document';
+import { createPinnedArrow, createShape, type Element, type Layer } from '@livedesign/design';
 import { cleanupElements, lockedElementIds } from './tab-cleanup';
 
 // docs/specs/008-canvas/layout-cleanup.md "Locked elements stay put": neither cleanup moves or

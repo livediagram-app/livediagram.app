@@ -56,17 +56,17 @@ const COMPONENTS: Component[] = [
   {
     name: 'Realtime room',
     description:
-      'Per-document Durable Object that brokers cursor / selection / log ops. Lives inside the API Worker.',
+      'Per-design Durable Object that brokers cursor / selection / log ops. Lives inside the API Worker.',
   },
   {
     name: 'Database',
     description:
-      'Cloudflare D1 (SQLite at the edge). Holds documents, tabs, change logs, share links, telemetry events.',
+      'Cloudflare D1 (SQLite at the edge). Holds designs, tabs, change logs, share links, telemetry events.',
   },
   {
     name: 'Image storage',
     description:
-      'Cloudflare R2. Stores uploaded image blobs (content-addressed, indexed in D1) and cached document snapshots.',
+      'Cloudflare R2. Stores uploaded image blobs (content-addressed, indexed in D1) and cached design snapshots.',
   },
   {
     name: 'Edge router',

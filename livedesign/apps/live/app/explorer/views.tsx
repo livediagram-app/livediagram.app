@@ -8,12 +8,12 @@
 // level state, no api calls. The page wires them together.
 
 import Link from 'next/link';
-import { documentEntryPropsFor, type ExplorerViewProps } from '@/app/explorer/explorer-view-props';
-import type { DocumentListItem, SharedWithItem } from '@/lib/api-client';
+import { designEntryPropsFor, type ExplorerViewProps } from '@/app/explorer/explorer-view-props';
+import type { DesignListItem, SharedWithItem } from '@/lib/api-client';
 import { EmptyPane } from './ExplorerEmptyState';
-import { DocumentRow } from './explorer-route-document-row';
+import { DesignRow } from './explorer-route-design-row';
 import { FolderRow } from './folder-row';
-import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
+import { DesignThumbnail } from '@/components/panels/DesignThumbnail';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 import { DISMISS_SHARED, DismissSharedIcon } from '@/components/primitives/dismiss-shared';
 import { HoverCard } from '@livedesign/ui';
@@ -33,25 +33,25 @@ export { PaneHeader } from './PaneHeader';
 export { menuHandlers as folderMenuHandlers } from './folder-row';
 export { FolderRow };
 
-// Document rows render the api client's DocumentListItem directly
+// Design rows render the api client's DesignListItem directly
 // (same rows the floating Explorer panel uses), so the two explorer
 // surfaces can't drift apart on what a list item carries. Recent rows
-// (docs/specs/013-workspace/team-shared-documents.md) may additionally carry:
-//   - `team`: the team library the document lives in — a "Team"
+// (docs/specs/013-workspace/team-shared-designs.md) may additionally carry:
+//   - `team`: the team library the design lives in — a "Team"
 //     visibility badge + the team as owner, and a team-scoped menu.
-//   - `shared`: a document shared WITH the viewer (not theirs) — a
+//   - `shared`: a design shared WITH the viewer (not theirs) — a
 //     "Shared" badge, the sharer as owner, a share-link title, and a
 //     "Dismiss" action. Mutually exclusive with `team`.
-export type PaneDocument = DocumentListItem & {
+export type PaneDesign = DesignListItem & {
   team?: { id: string; name: string };
   shared?: { ownerName: string | null; role: AccessLevel; shareCode: string };
 };
 
-// A document shared WITH the viewer, as a pane row. It lives in the
+// A design shared WITH the viewer, as a pane row. It lives in the
 // sharer's library, not yours, so it carries no folder and an empty
 // owner; the share code is what makes it openable. One helper so Recent
 // and the Timeline's card menus build the same row.
-export function sharedToPaneDocument(s: SharedWithItem): PaneDocument {
+export function sharedToPaneDesign(s: SharedWithItem): PaneDesign {
   return {
     id: s.id,
     name: s.name,
@@ -76,15 +76,15 @@ export type SelectedNode =
   // happened, with its own sidebar row and Home's See Timeline link.
   | { kind: 'timeline' }
   // The Inbox (docs/specs/013-workspace/inbox.md): what is outstanding for the reader across every
-  // document, open actions assigned to / by them and unresolved threads they're in.
+  // design, open actions assigned to / by them and unresolved threads they're in.
   | { kind: 'inbox' }
   | { kind: 'recent' }
   | { kind: 'all' }
-  // Every document the reader can open, narrowed by the lens (docs/specs/013-workspace/explorer-filters.md#views).
+  // Every design the reader can open, narrowed by the lens (docs/specs/013-workspace/explorer-filters.md#views).
   | { kind: 'search' }
-  // Documents this user starred, personal or team (docs/specs/013-workspace/favourites.md).
+  // Designs this user starred, personal or team (docs/specs/013-workspace/favourites.md).
   | { kind: 'favourites' }
-  // The reader's tags (docs/specs/013-workspace/tags.md "The Tags page"): every tag's documents, or one tag's.
+  // The reader's tags (docs/specs/013-workspace/tags.md "The Tags page"): every tag's designs, or one tag's.
   | { kind: 'tags'; id?: string }
   | { kind: 'offline' }
   | { kind: 'shared' }
@@ -102,14 +102,14 @@ export type SelectedNode =
 export function ListView(props: ExplorerViewProps) {
   const {
     folders,
-    documents: liveDocs,
+    designs: liveDocs,
     onOpenFolder,
     onCommitRenameFolder,
     onCancelRenameFolder,
     renamingFolderId,
     folderActions,
     childrenCount,
-    documentsCount,
+    designsCount,
     showOwner = false,
   } = props;
   return (
@@ -134,7 +134,7 @@ export function ListView(props: ExplorerViewProps) {
             key={f.id}
             folder={f}
             renaming={renamingFolderId === f.id}
-            childCount={childrenCount(f.id) + documentsCount(f.id)}
+            childCount={childrenCount(f.id) + designsCount(f.id)}
             onOpen={() => onOpenFolder(f.id)}
             onCommitRename={(name) => onCommitRenameFolder(f.id, name)}
             onCancelRename={onCancelRenameFolder}
@@ -142,7 +142,7 @@ export function ListView(props: ExplorerViewProps) {
           />
         ))}
         {liveDocs.map((d) => (
-          <DocumentRow key={d.id} {...documentEntryPropsFor(props, d)} />
+          <DesignRow key={d.id} {...designEntryPropsFor(props, d)} />
         ))}
       </ul>
     </div>
@@ -155,7 +155,7 @@ export function SharedList({
   onDismiss,
 }: {
   shared: SharedWithItem[];
-  // Viewer identity for each row's thumbnail fetch (docs/specs/006-document/document-snapshots.md); the share
+  // Viewer identity for each row's thumbnail fetch (docs/specs/006-design/design-snapshots.md); the share
   // code on the item authorises the read.
   ownerId: string | null;
   onDismiss: (id: string) => void;
@@ -179,12 +179,12 @@ export function SharedList({
             className="group grid grid-cols-[1fr_60px_140px_40px] items-center gap-2 px-4 py-2 transition hover:bg-slate-50 dark:hover:bg-slate-700 sm:grid-cols-[1fr_110px_60px_140px_40px]"
           >
             <Link
-              href={`/document/${s.id}?s=${encodeURIComponent(s.shareCode)}`}
+              href={`/design/${s.id}?s=${encodeURIComponent(s.shareCode)}`}
               className="flex min-w-0 items-center gap-2 truncate text-sm font-medium text-slate-900 hover:text-brand-700 dark:text-slate-100 dark:hover:text-brand-300"
             >
-              <DocumentThumbnail
+              <DesignThumbnail
                 ownerId={ownerId}
-                documentId={s.id}
+                designId={s.id}
                 version={s.savedAt}
                 empty={s.empty}
                 shareCode={s.shareCode}

@@ -4,7 +4,7 @@ import {
   type Element,
   type Endpoint,
   type Rect,
-} from '@livedesign/document';
+} from '@livedesign/design';
 
 // Where a paste lands (docs/specs/008-canvas/canvas-and-palette.md Clipboard). Pure, so the rule is one
 // testable answer rather than a pile of conditions inside the clipboard hook.

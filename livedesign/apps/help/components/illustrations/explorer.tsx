@@ -8,8 +8,8 @@ import { SidebarRow } from './explorer-parts';
 
 // --- Scenes ------------------------------------------------------------------
 
-/** My Work as a folder tree: its root folders, nested project folders, then root documents. */
-export function MyDocumentsTree() {
+/** My Work as a folder tree: its root folders, nested project folders, then root designs. */
+export function MyDesignsTree() {
   const row = (
     y: number,
     label: string,

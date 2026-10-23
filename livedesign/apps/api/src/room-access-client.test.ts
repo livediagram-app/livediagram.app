@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sentJson } from '@livedesign/vitest-config/sent-request';
 
-const { db } = vi.hoisted(() => ({ db: { listDocumentsByTeam: vi.fn() } }));
+const { db } = vi.hoisted(() => ({ db: { listDesignsByTeam: vi.fn() } }));
 vi.mock('./db', () => db);
 
 import { personTagFor } from './person-tag';
@@ -9,33 +9,33 @@ import {
   closeMemberTeamSessions,
   closeShareCodeSessions,
   TEAM_ROOM_CLOSE_CONCURRENCY,
-  TEAM_ROOM_CLOSE_MAX_DOCUMENTS,
+  TEAM_ROOM_CLOSE_MAX_DESIGNS,
 } from './room-access-client';
 import type { Env } from './types';
 
-// One fake room per document id, recording what each was asked and how many were in flight at once.
+// One fake room per design id, recording what each was asked and how many were in flight at once.
 function roomsEnv(
-  answer: (documentId: string) => Response | Promise<Response> = () =>
+  answer: (designId: string) => Response | Promise<Response> = () =>
     new Response(null, { status: 204 }),
 ) {
-  const calls: { documentId: string; path: string; body: unknown }[] = [];
+  const calls: { designId: string; path: string; body: unknown }[] = [];
   let inFlight = 0;
   let maxInFlight = 0;
   const env = {
-    DOCUMENT_ROOM: {
+    DESIGN_ROOM: {
       idFromName: (name: string) => name,
-      get: (documentId: string) => ({
+      get: (designId: string) => ({
         fetch: async (url: string, init: RequestInit) => {
           inFlight++;
           maxInFlight = Math.max(maxInFlight, inFlight);
           await Promise.resolve();
           calls.push({
-            documentId,
+            designId,
             path: new URL(url).pathname,
             body: sentJson(init),
           });
           inFlight--;
-          return answer(documentId);
+          return answer(designId);
         },
       }),
     },
@@ -43,14 +43,14 @@ function roomsEnv(
   return { env, calls, maxInFlight: () => maxInFlight };
 }
 
-beforeEach(() => db.listDocumentsByTeam.mockReset());
+beforeEach(() => db.listDesignsByTeam.mockReset());
 
 describe('closeShareCodeSessions', () => {
-  it("asks the document's room to close its share-code sessions", async () => {
+  it("asks the design's room to close its share-code sessions", async () => {
     const { env, calls } = roomsEnv();
     expect(await closeShareCodeSessions(env, 'd1')).toBe(true);
     expect(calls).toEqual([
-      { documentId: 'd1', path: '/close-sessions', body: { match: 'share-code' } },
+      { designId: 'd1', path: '/close-sessions', body: { match: 'share-code' } },
     ]);
   });
 
@@ -67,13 +67,13 @@ describe('closeShareCodeSessions', () => {
 describe('closeMemberTeamSessions', () => {
   const docs = (n: number) => Array.from({ length: n }, (_, i) => ({ id: `d${i}` }));
 
-  it("closes the member's sessions on every team document by its own person tag", async () => {
-    db.listDocumentsByTeam.mockResolvedValue(docs(3));
+  it("closes the member's sessions on every team design by its own person tag", async () => {
+    db.listDesignsByTeam.mockResolvedValue(docs(3));
     const { env, calls } = roomsEnv();
     const result = await closeMemberTeamSessions(env, 'team-1', 'user_gone');
     expect(result).toEqual({ rooms: 3, unreached: 0, truncated: false });
     for (const id of ['d0', 'd1', 'd2']) {
-      const call = calls.find((c) => c.documentId === id)!;
+      const call = calls.find((c) => c.designId === id)!;
       expect(call.body).toEqual({
         match: 'person',
         personTag: await personTagFor(id, 'user_gone'),
@@ -82,24 +82,24 @@ describe('closeMemberTeamSessions', () => {
   });
 
   it('never has more rooms in flight than the concurrency bound', async () => {
-    db.listDocumentsByTeam.mockResolvedValue(docs(35));
+    db.listDesignsByTeam.mockResolvedValue(docs(35));
     const rooms = roomsEnv();
     await closeMemberTeamSessions(rooms.env, 'team-1', 'user_gone');
     expect(rooms.calls).toHaveLength(35);
     expect(rooms.maxInFlight()).toBeLessThanOrEqual(TEAM_ROOM_CLOSE_CONCURRENCY);
   });
 
-  it('stops at the document cap and says so', async () => {
-    db.listDocumentsByTeam.mockResolvedValue(docs(TEAM_ROOM_CLOSE_MAX_DOCUMENTS + 7));
+  it('stops at the design cap and says so', async () => {
+    db.listDesignsByTeam.mockResolvedValue(docs(TEAM_ROOM_CLOSE_MAX_DESIGNS + 7));
     const { env, calls } = roomsEnv();
     const result = await closeMemberTeamSessions(env, 'team-1', 'user_gone');
-    expect(calls).toHaveLength(TEAM_ROOM_CLOSE_MAX_DOCUMENTS);
+    expect(calls).toHaveLength(TEAM_ROOM_CLOSE_MAX_DESIGNS);
     expect(result.truncated).toBe(true);
   });
 
   it('counts rooms it could not reach and carries on with the rest', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
-    db.listDocumentsByTeam.mockResolvedValue(docs(3));
+    db.listDesignsByTeam.mockResolvedValue(docs(3));
     const { env, calls } = roomsEnv(
       (id) => new Response(null, { status: id === 'd1' ? 503 : 204 }),
     );

@@ -69,7 +69,7 @@ export function ThemesPane({ compact = false }: { compact?: boolean } = {}) {
           compact={compact}
           icon={<PaletteIcon />}
           title="No custom themes yet"
-          description="Build your own colour palette and reuse it across every document, just like a built-in one."
+          description="Build your own colour palette and reuse it across every design, just like a built-in one."
         >
           <button
             type="button"

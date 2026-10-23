@@ -54,7 +54,7 @@ export async function runTabStatsBackfill(
     const statements = results.map((row) => {
       const { stats, corrupt } = tabStatsOfData(row.data);
       if (corrupt) console.warn(`tab-stats: corrupt tab ${row.id} counted empty`);
-      // The tab's own last write, never the run's time: a document's Type is the mode of its newest
+      // The tab's own last write, never the run's time: a design's Type is the mode of its newest
       // `written_at`, so stamping now would let an old tab outrank one edited yesterday.
       return tabStatsBackfillStatement(env, row.id, stats, row.updated_at);
     });

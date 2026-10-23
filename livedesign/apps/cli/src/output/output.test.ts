@@ -60,23 +60,23 @@ describe('failureOf', () => {
 
   it('reads an address failure: not found with the nearest, ambiguous, usage', () => {
     const candidates = [{ ref: 'aaaa1', name: 'Auth flow', detail: 'personal' }];
-    const base = { what: 'document' as const, input: 'Auth', hint: 'livedesign document ls' };
+    const base = { what: 'design' as const, input: 'Auth', hint: 'livedesign design ls' };
     expect(
       failureOf(
         new AddressError({
           ...base,
           kind: 'not-found',
           candidates,
-          message: 'no document matches "Auth"',
+          message: 'no design matches "Auth"',
         }),
         HOST,
       ),
     ).toEqual({
       exit: EXIT.notFound,
       code: 'not_found',
-      message: 'no document matches "Auth"; the nearest:',
+      message: 'no design matches "Auth"; the nearest:',
       lines: ['aaaa1     "Auth flow"             personal'],
-      hint: 'livedesign document ls',
+      hint: 'livedesign design ls',
     });
     expect(
       failureOf(
@@ -147,9 +147,9 @@ describe('failureOf', () => {
 });
 
 describe('render', () => {
-  const ls = verbById('document.ls')!;
+  const ls = verbById('design.ls')!;
   const out = {
-    documents: [
+    designs: [
       {
         ref: 'aaaa1',
         id: 'aaaa1-full',
@@ -171,7 +171,7 @@ describe('render', () => {
 
   it('picks fields of each list item, or of the output', () => {
     expect(JSON.parse(render(ls, out, { json: true, fields: ['name'], quiet: false }))).toEqual({
-      documents: [{ name: 'Auth flow' }],
+      designs: [{ name: 'Auth flow' }],
       more: 0,
     });
     const status = verbById('auth.status')!;

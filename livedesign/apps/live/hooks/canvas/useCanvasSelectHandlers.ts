@@ -17,7 +17,7 @@ export function useCanvasSelectHandlers({
   onElementContextMenu,
   onMultiContextMenu,
 }: {
-  // Elements on a hidden or locked layer (docs/specs/006-document/layers.md): right-click and
+  // Elements on a hidden or locked layer (docs/specs/006-design/layers.md): right-click and
   // arrow-click route nowhere for them.
   inertIds: Set<string>;
   // The format painter is armed: every press paints, so none settles a click.

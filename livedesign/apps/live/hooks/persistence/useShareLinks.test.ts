@@ -25,7 +25,7 @@ const { useShareLinks } = await import('./useShareLinks');
 
 const link = (over: Partial<ShareLink> = {}): ShareLink => ({
   code: 'CODE2345',
-  documentId: 'd1',
+  designId: 'd1',
   role: 'view',
   createdAt: 1,
   expiry: 'never',
@@ -41,14 +41,14 @@ function setup(links: ShareLink[] = [], setSharePasswordSet = vi.fn()) {
   });
   const { result } = renderHook(() =>
     useShareLinks({
-      documentId: 'd1',
+      designId: 'd1',
       selfParticipant: { id: 'me', name: 'Ada', color: '#0ea5e9', status: 'online' },
       setSelfParticipant: vi.fn(),
       setShareLinks,
       setSharePasswordSet,
-      setDocumentShareable: vi.fn(),
-      setDocumentShareCode: vi.fn(),
-      documentShareCode: null,
+      setDesignShareable: vi.fn(),
+      setDesignShareCode: vi.fn(),
+      designShareCode: null,
       confirmName: vi.fn(),
     }),
   );
@@ -105,7 +105,7 @@ describe('useShareLinks share password', () => {
     api.apiSetSharePassword.mockResolvedValue(true);
     const setSharePasswordSet = vi.fn();
     const { result } = setup([], setSharePasswordSet);
-    expect(await result.current.setDocumentSharePassword('hunter2')).toBe(true);
+    expect(await result.current.setDesignSharePassword('hunter2')).toBe(true);
     expect(api.apiSetSharePassword).toHaveBeenCalledWith('me', 'd1', 'hunter2');
     expect(setSharePasswordSet).toHaveBeenCalledWith(true);
     expect(track).toHaveBeenCalledWith('Document', 'Shared', 'PasswordSet');
@@ -115,7 +115,7 @@ describe('useShareLinks share password', () => {
     api.apiSetSharePassword.mockResolvedValue(false);
     const setSharePasswordSet = vi.fn();
     const { result } = setup([], setSharePasswordSet);
-    expect(await result.current.setDocumentSharePassword('   ')).toBe(false);
+    expect(await result.current.setDesignSharePassword('   ')).toBe(false);
     expect(api.apiSetSharePassword).toHaveBeenCalledWith('me', 'd1', null);
     expect(setSharePasswordSet).toHaveBeenCalledWith(false);
     expect(track).toHaveBeenCalledWith('Document', 'Shared', 'PasswordCleared');

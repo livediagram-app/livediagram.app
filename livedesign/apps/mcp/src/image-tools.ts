@@ -11,7 +11,7 @@ import {
   type GalleryImage,
 } from '@livedesign/agent-verbs';
 import { mcpListImages } from '@livedesign/agent-verbs/mcp';
-import type { Element, Tab } from '@livedesign/document';
+import type { Element, Tab } from '@livedesign/design';
 import { ApiError, apiJson } from './api';
 import type { Env } from './env';
 import { imageResult } from './image-result';

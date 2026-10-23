@@ -11,7 +11,7 @@ import {
   commentResolve,
 } from './verbs/comment';
 import { presenceClear, presenceSet } from './verbs/presence';
-import { documentLs, documentView } from './verbs/document';
+import { designLs, designView } from './verbs/design';
 import {
   apiCall,
   authLogin,
@@ -33,11 +33,11 @@ import { iconSearch, schemaView, templateLs, templateView } from './verbs/catalo
 import { imageLs } from './verbs/image';
 import { changesetApply, elementVerbs, tabDiff } from './verbs/edit';
 import {
-  documentCreate,
-  documentRename,
-  documentRestore,
-  documentRm,
-  documentShare,
+  designCreate,
+  designRename,
+  designRestore,
+  designRm,
+  designShare,
   tabAdd,
   tabRename,
   tabRm,
@@ -48,13 +48,13 @@ import { workbenchOpen, workbenchPair } from './verbs/workbench';
 import { folderCreate, folderLs } from './verbs/folder';
 
 export const VERBS: readonly Verb[] = [
-  documentLs,
-  documentView,
-  documentCreate,
-  documentRename,
-  documentShare,
-  documentRm,
-  documentRestore,
+  designLs,
+  designView,
+  designCreate,
+  designRename,
+  designShare,
+  designRm,
+  designRestore,
   tabLs,
   tabView,
   tabLint,
@@ -103,9 +103,9 @@ export const VERBS: readonly Verb[] = [
 
 export const RESOURCES: readonly { name: string; alias?: string; summary: string }[] = [
   {
-    name: 'document',
+    name: 'design',
     alias: 'doc',
-    summary: 'Documents: find, read, create, rename, share and remove them',
+    summary: 'Designs: find, read, create, rename, share and remove them',
   },
   { name: 'folder', summary: 'Folders: their paths and ids, and a new one' },
   { name: 'tab', summary: 'Tabs: their views, their lint, and what changed' },
@@ -116,7 +116,7 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   { name: 'presence', summary: 'What the agent is doing, shown on a tab' },
   {
     name: 'workbench',
-    summary: 'Workbenches: open a document in a developer tool, pair one',
+    summary: 'Workbenches: open a design in a developer tool, pair one',
   },
   { name: 'template', summary: 'Templates: the library, and one as an outline' },
   { name: 'icon', summary: 'Icons: find one for iconId=' },
@@ -130,7 +130,7 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
 export const TOP_LEVEL = ['guide', 'api', 'wait', 'watch', 'pull', 'push', 'export'] as const;
 
 export const RESOURCE_ALIASES: Readonly<Record<string, string>> = {
-  doc: 'document',
+  doc: 'design',
   el: 'element',
 };
 

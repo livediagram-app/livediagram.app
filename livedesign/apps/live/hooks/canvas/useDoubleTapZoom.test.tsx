@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import type { Element as CanvasElement } from '@livedesign/document';
+import type { Element as CanvasElement } from '@livedesign/design';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('@/lib/viewport-glide', () => ({ glideViewport: vi.fn(() => vi.fn()) }));

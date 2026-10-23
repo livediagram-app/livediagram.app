@@ -74,7 +74,7 @@ common two-tier node ("Payments" over "Stripe, EU region").
   any heading or list prefix it finds, so the result is always the same two tiers.
 - It is one history step, and the picker's trigger keeps reporting the first line's block type.
 
-The note toolbar does not offer it: a note is a document, not a node.
+The note toolbar does not offer it: a note is a design, not a node.
 
 `muted` is a run attribute beside `color` (`TextRun.muted?: boolean`), so the caption keeps the label's own colour
 and follows a theme switch rather than baking a grey. Every label renderer and every export draws a muted run at

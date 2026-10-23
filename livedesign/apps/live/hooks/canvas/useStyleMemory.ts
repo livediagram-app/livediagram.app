@@ -1,11 +1,11 @@
 'use client';
 
 // Style memory's state and storage (docs/specs/008-canvas/quick-style-panel.md "Style memory"): read once
-// per document from this browser, written back at most every 250 ms. Never
-// synced and never in the document. The logic is pure, in lib/style-memory.
+// per design from this browser, written back at most every 250 ms. Never
+// synced and never in the design. The logic is pure, in lib/style-memory.
 
 import { useEffect, useRef } from 'react';
-import type { Element, ThemeDefinition } from '@livedesign/document';
+import type { Element, ThemeDefinition } from '@livedesign/design';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '@/lib/local-storage-safe';
 import {
   applyStyleMemory,
@@ -30,10 +30,10 @@ export type StyleMemoryApi = {
 };
 
 export function useStyleMemory({
-  documentId,
+  designId,
   theme,
 }: {
-  documentId: string | null;
+  designId: string | null;
   theme: ThemeDefinition;
 }): StyleMemoryApi {
   const memoryRef = useRef<StyleMemory>({});
@@ -41,17 +41,17 @@ export function useStyleMemory({
   const pending = useRef<ReturnType<typeof setTimeout> | null>(null);
   const warnedWrite = useRef(false);
 
-  // Read synchronously on the first call for a document, so an element drawn in
+  // Read synchronously on the first call for a design, so an element drawn in
   // the same tick as the load already sees it.
   const ensureLoaded = (): boolean => {
-    if (!documentId) return false;
-    if (loadedFor.current !== documentId) {
-      const raw = readLocalStorageSafe(styleMemoryKey(documentId));
+    if (!designId) return false;
+    if (loadedFor.current !== designId) {
+      const raw = readLocalStorageSafe(styleMemoryKey(designId));
       memoryRef.current = parseStyleMemory(raw);
       if (raw !== null && Object.keys(memoryRef.current).length === 0 && raw !== '{}') {
-        console.warn('[style-memory] unreadable', styleMemoryKey(documentId));
+        console.warn('[style-memory] unreadable', styleMemoryKey(designId));
       }
-      loadedFor.current = documentId;
+      loadedFor.current = designId;
     }
     return true;
   };
@@ -76,8 +76,8 @@ export function useStyleMemory({
     pending.current = setTimeout(flush, STYLE_MEMORY_WRITE_DEBOUNCE_MS);
   };
 
-  // A document switch or unmount writes what is pending for the old one.
-  useEffect(() => () => flush(), [documentId]);
+  // A design switch or unmount writes what is pending for the old one.
+  useEffect(() => () => flush(), [designId]);
 
   const commit = (next: StyleMemory, log: string, detail: unknown) => {
     if (next === memoryRef.current) return;

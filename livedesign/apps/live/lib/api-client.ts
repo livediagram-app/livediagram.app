@@ -1,5 +1,5 @@
 // Barrel for the livedesign HTTP/WS client. The implementation is split
-// by domain under lib/api/* (core plumbing + documents / tabs / share /
+// by domain under lib/api/* (core plumbing + designs / tabs / share /
 // folders / self / room / images / preferences / ai); this
 // file re-exports the public surface so existing `@/lib/api-client`
 // imports keep working unchanged.
@@ -32,7 +32,7 @@ export { ApiError, SessionTokenUnavailableError } from './api/core';
 export { reportSaveFailure, setApiErrorReporter, setApiWarningReporter } from './api/error-report';
 export {
   API_BASE,
-  DOCUMENT_LIST_LOAD_SAFETY_MS,
+  DESIGN_LIST_LOAD_SAFETY_MS,
   setTokenProvider,
   registerTokenProvider,
   setSessionSharePassword,
@@ -41,7 +41,7 @@ export {
   writeCachedSharePassword,
 } from './api/core';
 
-export * from './api/documents';
+export * from './api/designs';
 export * from './api/tabs';
 export * from './api/changesets';
 export * from './api/share';

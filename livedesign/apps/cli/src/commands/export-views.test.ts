@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
-  DOCUMENT_ENVELOPE_KIND,
+  DESIGN_ENVELOPE_KIND,
   type ArrowElement,
   type ShapeElement,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { run } from '../main';
 import { pullFileText, type PullFile } from '../sync/pull-file';
 import { fakeIo, NOW, TOKEN, type FakeIo, type Route } from '../testing/fake-io';
@@ -31,15 +31,15 @@ function host(docs: Record<string, HostDoc>, options: { limited?: number } = {})
   const route: Route = (_request, url) => {
     const path = url.pathname;
     if (path === '/api/capabilities')
-      return Response.json({ apiBase: `${HOST}/api`, authEnabled: true, documentFormat: 2 });
+      return Response.json({ apiBase: `${HOST}/api`, authEnabled: true, designFormat: 2 });
     if (path === '/api/teams') return Response.json({ teams: [] });
-    if (path === '/api/documents') {
+    if (path === '/api/designs') {
       if (limited > 0) {
         limited -= 1;
         return Response.json({ error: 'rate_limited' }, { status: 429 });
       }
       return Response.json({
-        documents: Object.entries(docs).map(([id, d]) => ({
+        designs: Object.entries(docs).map(([id, d]) => ({
           id,
           name: d.name,
           savedAt: NOW,
@@ -47,13 +47,13 @@ function host(docs: Record<string, HostDoc>, options: { limited?: number } = {})
         })),
       });
     }
-    const m = /^\/api\/documents\/([^/]+)(?:\/tabs\/([^/]+)(\/render\.svg)?)?$/.exec(path);
+    const m = /^\/api\/designs\/([^/]+)(?:\/tabs\/([^/]+)(\/render\.svg)?)?$/.exec(path);
     const doc = m ? docs[m[1]!] : undefined;
     if (!m || !doc) return undefined;
     if (doc.status) return Response.json({ error: 'forbidden' }, { status: doc.status });
     if (!m[2])
       return Response.json({
-        document: {
+        design: {
           id: m[1],
           name: doc.name,
           presentation: null,
@@ -105,20 +105,20 @@ const docs: Record<string, HostDoc> = {
 };
 
 describe('export --all', () => {
-  it('writes every document as the editor’s envelope by default, telling apart documents of one name', async () => {
+  it('writes every design as the editor’s envelope by default, telling apart designs of one name', async () => {
     const { code, out, io } = await cli(['export', '--all', '--to', 'backup'], host(docs));
     expect(code).toBe(0);
     expect(out.trim().split('\n')).toEqual([
       'backup/shop-aaaa0001.livedesign.json',
       'backup/shop-bbbb0002.livedesign.json',
       'backup/notes.livedesign.json',
-      '3 documents · 3 files',
+      '3 designs · 3 files',
     ]);
     const envelope = JSON.parse(
       io.fileMap.get('backup/shop-aaaa0001.livedesign.json')!.data,
     ) as PullFile;
-    expect(envelope.kind).toBe(DOCUMENT_ENVELOPE_KIND);
-    expect(envelope.document.tabs[0]).toMatchObject({ id: 'flow-0001', folder: 'Core' });
+    expect(envelope.kind).toBe(DESIGN_ENVELOPE_KIND);
+    expect(envelope.design.tabs[0]).toMatchObject({ id: 'flow-0001', folder: 'Core' });
     expect(envelope).not.toHaveProperty('livedesignSync');
   });
 
@@ -131,7 +131,7 @@ describe('export --all', () => {
     expect(out.trim().split('\n')).toEqual([
       'out/shop/flow-flow-0001.svg',
       'out/shop/flow-flow-0002.svg',
-      '1 document · 2 files',
+      '1 design · 2 files',
     ]);
   });
 
@@ -145,7 +145,7 @@ describe('export --all', () => {
     expect((await cli(['export', '--all', '--to', 'b'], host(docs, { limited: 4 }))).code).toBe(6);
   });
 
-  it('reports a document it cannot read and exports the rest, exiting with the failure', async () => {
+  it('reports a design it cannot read and exports the rest, exiting with the failure', async () => {
     const { code, out, err } = await cli(
       ['export', '--all', '--to', 'b'],
       host({
@@ -155,7 +155,7 @@ describe('export --all', () => {
       }),
     );
     expect(code).toBe(4);
-    expect(out).toContain('3 documents · 3 files');
+    expect(out).toContain('3 designs · 3 files');
     expect(err).toContain('"Locked":');
   });
 
@@ -170,10 +170,10 @@ describe('export --all', () => {
 
 describe('a pull file read offline', () => {
   const file: PullFile = {
-    kind: 'livedesign.document',
+    kind: 'livedesign.design',
     schemaVersion: 1,
     exportedAt: NOW,
-    document: {
+    design: {
       id: 'aaaa0001-doc',
       name: 'Shop',
       presentation: null,
@@ -195,7 +195,7 @@ describe('a pull file read offline', () => {
     const ls = await offline(['tab', 'ls', 'shop.livedesign.json']);
     expect(ls.code).toBe(0);
     expect(ls.out).toContain('"Flow"');
-    const overview = await offline(['document', 'view', 'shop.livedesign.json']);
+    const overview = await offline(['design', 'view', 'shop.livedesign.json']);
     expect(overview.code).toBe(0);
     expect(overview.out).toContain('Shop');
     expect(overview.out).toContain('rev 9');
@@ -271,17 +271,17 @@ describe('a pull file read offline', () => {
     const write = await offline(['element', 'rm', 'shop.livedesign.json', 'web']);
     expect([write.code, write.err]).toEqual([
       2,
-      expect.stringContaining('is a pull file: only document view, tab ls and tab view read it'),
+      expect.stringContaining('is a pull file: only design view, tab ls and tab view read it'),
     ]);
   });
 
-  it('names a file that is not a pull file, and treats a missing one as a document name', async () => {
+  it('names a file that is not a pull file, and treats a missing one as a design name', async () => {
     const broken = await offline(['tab', 'ls', 'shop.livedesign.json'], '{');
     expect([broken.code, broken.err]).toEqual([
       1,
       expect.stringContaining('shop.livedesign.json: not JSON'),
     ]);
-    // A path that names no file is a document name, looked up on the host.
+    // A path that names no file is a design name, looked up on the host.
     const absent = await offline(['tab', 'ls', 'gone.livedesign.json']);
     expect(absent.io.requests.length).toBeGreaterThan(0);
   });

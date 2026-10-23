@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EMBED_PROVIDERS } from '@livedesign/document';
+import { EMBED_PROVIDERS } from '@livedesign/design';
 import {
   drawBannerMessage,
   drawIntentCursor,

@@ -63,7 +63,7 @@ const OUTRO: ShareTourStep = {
   body: 'Open Share any time to make, change or revoke a link.',
 };
 
-// The steps for this document: Opens only where there is more than one tab to choose from.
+// The steps for this design: Opens only where there is more than one tab to choose from.
 export function shareTourSteps(multiTab: boolean): ShareTourStep[] {
   return [ROLE, ...(multiTab ? [SCOPE] : []), VALID, CREATE, PASSES, PASSWORD, OUTRO];
 }

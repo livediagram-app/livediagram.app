@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@livedesign/document';
+import type { Tab } from '@livedesign/design';
 import { dataUrlToFile, isDataImageId, rewriteImageIds, tabImageIds } from './offline-images';
 
 // 1x1 transparent PNG.

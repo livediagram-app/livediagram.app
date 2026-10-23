@@ -19,7 +19,7 @@ import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerBu
 import { lucideGlyph, PlusIcon } from '@livedesign/ui';
 import { lucideGroup, lucideMinus } from '@livedesign/icons/lucide';
 
-import { slideName, type Slide } from '@livedesign/document';
+import { slideName, type Slide } from '@livedesign/design';
 
 import { MenuAccordionSection, PortalMenu } from '@/components/primitives/PortalMenu';
 import {

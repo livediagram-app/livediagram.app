@@ -6,7 +6,7 @@ import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
 import { CanvasDrawPreview } from '@/components/canvas/CanvasDrawPreview';
 import { TopCenterChrome } from '@/components/chrome/TopCenterChrome';
 // Lazy-load the visitor name prompt the same way ExportTabDialog + ShareDialog already are. It is gated on
-// `showIdentityPrompt`, false on the common path (the owner opening their own document); for a visitor the empty
+// `showIdentityPrompt`, false on the common path (the owner opening their own design); for a visitor the empty
 // canvas underneath has already rendered, so the prompt fades in a frame later rather than blocking the route on its JS.
 import dynamic from 'next/dynamic';
 const IdentityPrompt = dynamic(
@@ -124,7 +124,7 @@ type ChromeExtras = {
   slideDeckPanelPosition?: { x: number; y: number } | null;
   onMoveSlideDeckPanel?: (x: number, y: number) => void;
   onResetSlideDeckPanel?: () => void;
-  slideDeck?: import('@/app/document/[id]/useSlideDeck').SlideDeckState;
+  slideDeck?: import('@/app/design/[id]/useSlideDeck').SlideDeckState;
   // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, owned in editor state
   // (the paint lives there), plus a description of the loaded element.
   formatConfig?: import('@/lib/format-config').FormatConfig;
@@ -171,7 +171,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     canRedo,
     canUndo,
     canvasTool,
-    documentName,
+    designName,
     drawDrag,
     drawHover,
     elements,
@@ -388,7 +388,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {showIdentityPrompt ? (
         <IdentityPrompt
           participant={selfParticipant}
-          documentName={documentName}
+          designName={designName}
           lockedName={identityLockedName}
           onJoin={onConfirmIdentity}
           onCancel={onCancelIdentity}
@@ -587,7 +587,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 onTogglePopover={(button) => handleDockButtonClick('collaborate', button, true)}
               />
             ) : null}
-            {/* Layers (docs/specs/006-document/layers.md) and the Theme & Canvas brush
+            {/* Layers (docs/specs/006-design/layers.md) and the Theme & Canvas brush
                 (docs/specs/011-theme/canvas-and-theme-dialog.md, its one entry point; read-only sessions
                 pass no handler), one strip in every mode: see LayersThemeStrip. */}
             {!zenMode ? (

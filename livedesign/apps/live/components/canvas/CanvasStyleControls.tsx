@@ -10,7 +10,7 @@
 // Purely presentational: every change is a callback prop applied live to
 // the active tab. The "Show more" expansion is local UI state owned here.
 
-import { isAnimatedPattern, type BackgroundPattern } from '@livedesign/document';
+import { isAnimatedPattern, type BackgroundPattern } from '@livedesign/design';
 import { useShowMoreList } from '@/hooks/ui/useShowMoreList';
 import { PatternCarousel } from './PatternCarousel';
 import {

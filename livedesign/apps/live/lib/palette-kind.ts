@@ -2,7 +2,7 @@
 // categories the palette offers, in what order (each kind's layout, palette-layouts.ts). Design for
 // a blank page and a photo page (whose own tools stand in for the categories), Wireframe and Logo for theirs. Always the kind of the page someone is
 // on: it is never shown or chosen.
-import type { PageKind } from '@livedesign/document';
+import type { PageKind } from '@livedesign/design';
 import { useCurrentPageKind } from './current-page-kind';
 
 export type PaletteKind = 'design' | 'wireframe' | 'logo';

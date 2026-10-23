@@ -122,21 +122,21 @@ const browserImageCodec: ImageCodec = {
   encode,
 };
 
-// One session per import: cloud documents upload to the owner's gallery,
-// Offline Mode documents embed (docs/specs/006-document/offline-mode.md).
-// `offline` states it outright where there is no open document to ask (an import from the
-// Explorer page); otherwise the document's id decides.
+// One session per import: cloud designs upload to the owner's gallery,
+// Offline Mode designs embed (docs/specs/006-design/offline-mode.md).
+// `offline` states it outright where there is no open design to ask (an import from the
+// Explorer page); otherwise the design's id decides.
 export function createBrowserImportImageSession({
   ownerId,
-  documentId,
+  designId,
   offline,
 }: {
   ownerId: string;
-  documentId: string | null;
+  designId: string | null;
   offline?: boolean;
 }): ImportImageSession {
   return createImportImageSession({
-    offline: offline ?? (!!documentId && isOfflineIdSync(documentId)),
+    offline: offline ?? (!!designId && isOfflineIdSync(designId)),
     codec: browserImageCodec,
     toDataUrl: blobToDataUrl,
     upload: async (prepared, name) => {

@@ -16,7 +16,7 @@ import {
   type LaidOutPage,
   type Slide,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { pageElementBuckets } from '@/lib/page-element-buckets';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';

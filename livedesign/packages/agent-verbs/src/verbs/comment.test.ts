@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { DocumentCommentThread } from '@livedesign/api-schema';
+import type { DesignCommentThread } from '@livedesign/api-schema';
 import { VerbRefusal } from '../define';
 import { contextOf, DOC_A, fakeApi, tabsOfA } from '../testing/fake-api';
 import { commentAdd, commentLs, commentReopen, commentReply, commentResolve } from './comment';
@@ -7,7 +7,7 @@ import { presenceClear, presenceSet } from './presence';
 
 // docs/specs/015-api/cli.md "Commands" (comment, presence), blueprint "Addressing" (CLI78).
 
-const TAB = `/documents/${DOC_A}/tabs/tab-one-0000`;
+const TAB = `/designs/${DOC_A}/tabs/tab-one-0000`;
 const box = (id: string, comments: string[] = []) => ({
   id,
   type: 'shape',
@@ -57,7 +57,7 @@ function recorder(answer: (path: string, method: string, body: unknown) => Respo
   return { seen, route };
 }
 
-const thread = (over: Partial<DocumentCommentThread>): DocumentCommentThread => ({
+const thread = (over: Partial<DesignCommentThread>): DesignCommentThread => ({
   tabId: 'tab-one-0000',
   tabName: 'Overview',
   elementId: 'api-gw',
@@ -78,7 +78,7 @@ const thread = (over: Partial<DocumentCommentThread>): DocumentCommentThread => 
 });
 
 describe('comment ls', () => {
-  it('lists the document’s threads, or one tab’s, as the listing prints them', async () => {
+  it('lists the design’s threads, or one tab’s, as the listing prints them', async () => {
     const listing = {
       threads: [
         thread({}),
@@ -88,8 +88,8 @@ describe('comment ls', () => {
     const logs: string[] = [];
     const api = fakeApi({
       ...tabsOfA,
-      [`/documents/${DOC_A}/comments?status=open`]: listing,
-      [`/documents/${DOC_A}/comments?status=all`]: { threads: [] },
+      [`/designs/${DOC_A}/comments?status=open`]: listing,
+      [`/designs/${DOC_A}/comments?status=all`]: { threads: [] },
     });
     const ctx = contextOf(api, [], logs);
     const all = await commentLs.run!(ctx, { doc: DOC_A, status: 'open' });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ElementOp, Tab } from '@livedesign/document';
+import type { ElementOp, Tab } from '@livedesign/design';
 import { CHANGESET_MERGE_PAGE } from '@livedesign/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import {
@@ -20,9 +20,9 @@ import { tabWriteStatements, upsertTab } from './tabs';
 
 const tab: Tab = { id: 't1', name: 'Board', elements: [] };
 
-async function documentWithTab(): Promise<SqliteD1> {
+async function designWithTab(): Promise<SqliteD1> {
   const db = sqliteD1();
-  db.sql.exec(`INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
+  db.sql.exec(`INSERT INTO designs (id, owner_id, name, shareable, saved_at, created_at)
                VALUES ('D', 'o', 'Doc', 0, 1, 1)`);
   await upsertTab(db.env, 'D', tab, 0);
   return db;
@@ -31,7 +31,7 @@ async function documentWithTab(): Promise<SqliteD1> {
 function record(over: Partial<ChangesetRecord> = {}): ChangesetRecord {
   return {
     id: 'cs_0000000001',
-    documentId: 'D',
+    designId: 'D',
     tabId: 't1',
     rev: 2,
     baseRev: 1,
@@ -68,7 +68,7 @@ async function store(db: SqliteD1, r: ChangesetRecord): Promise<void> {
 
 describe('changeset records', () => {
   it('round-trips a record and its parts', async () => {
-    const db = await documentWithTab();
+    const db = await designWithTab();
     await store(db, record());
     expect(await getChangeset(db.env, 'D', 'cs_0000000001')).toEqual(record());
     expect(await getChangesetPart(db.env, 'cs_0000000001', 'ops')).toBe(JSON.stringify(ops));
@@ -76,13 +76,13 @@ describe('changeset records', () => {
   });
 
   it('holds one changeset per tab revision', async () => {
-    const db = await documentWithTab();
+    const db = await designWithTab();
     await store(db, record());
     await expect(store(db, record({ id: 'cs_0000000002' }))).rejects.toThrow();
   });
 
   it('never lands without its tab write: a stale tab write aborts the record with it', async () => {
-    const db = await documentWithTab();
+    const db = await designWithTab();
     await expect(
       db.env.DB.batch([
         ...tabWriteStatements(db.env, 'D', tab, 0, { expected: 0 }),
@@ -93,7 +93,7 @@ describe('changeset records', () => {
   });
 
   it("answers the tab's last changeset revision", async () => {
-    const db = await documentWithTab();
+    const db = await designWithTab();
     expect(await lastChangesetRev(db.env, 't1')).toBeNull();
     await store(db, record({ rev: 2 }));
     await store(db, record({ id: 'cs_0000000002', rev: 5 }));
@@ -101,7 +101,7 @@ describe('changeset records', () => {
   });
 
   it('lists newest first, by tab, within a limit', async () => {
-    const db = await documentWithTab();
+    const db = await designWithTab();
     await store(db, record({ rev: 2, createdAt: 1 }));
     await store(db, record({ id: 'cs_0000000002', rev: 3, createdAt: 2 }));
     const all = await listChangesets(db.env, 'D', { limit: 20 });
@@ -113,7 +113,7 @@ describe('changeset records', () => {
 
 describe('the merge read', () => {
   it('pages the records after a seen revision in revision order, each with its ops', async () => {
-    const db = await documentWithTab();
+    const db = await designWithTab();
     const total = CHANGESET_MERGE_PAGE + 3;
     for (let i = 0; i < total; i += 1) {
       await store(db, record({ id: `cs_${String(i).padStart(10, '0')}`, rev: i + 2 }));
@@ -128,7 +128,7 @@ describe('the merge read', () => {
   });
 
   it('reads by age when the save carried no seen revision', async () => {
-    const db = await documentWithTab();
+    const db = await designWithTab();
     await store(db, record({ rev: 2, createdAt: 100 }));
     await store(db, record({ id: 'cs_0000000002', rev: 3, createdAt: 900 }));
     const pages = [];
@@ -139,7 +139,7 @@ describe('the merge read', () => {
 
 describe('the sweep', () => {
   it('deletes records older than the cutoff, their parts by cascade', async () => {
-    const db = await documentWithTab();
+    const db = await designWithTab();
     await store(db, record({ createdAt: 10 }));
     await store(db, record({ id: 'cs_0000000002', rev: 3, createdAt: 99 }));
     expect(await deleteOldChangesets(db.env, 50)).toBe(1);
@@ -152,10 +152,10 @@ describe('the sweep', () => {
     expect(parts.n).toBe(0);
   });
 
-  it('goes with its document', async () => {
-    const db = await documentWithTab();
+  it('goes with its design', async () => {
+    const db = await designWithTab();
     await store(db, record());
-    db.sql.exec("DELETE FROM documents WHERE id = 'D'");
+    db.sql.exec("DELETE FROM designs WHERE id = 'D'");
     expect(db.sql.prepare('SELECT COUNT(*) AS n FROM agent_changesets').get()!.n).toBe(0);
   });
 });

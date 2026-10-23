@@ -9,7 +9,7 @@
 // out only where a kind differs. The catalogue categories (Icons, Stickers, Tech) are
 // bodies with their own content and take no tile list. Every kind lands on its own Popular, a
 // fixed pick of twelve tiles from across its categories.
-import type { EditorMode } from '@livedesign/document';
+import type { EditorMode } from '@livedesign/design';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { tileById, tilesForCategory, type PaletteTileDef } from './palette-tile-defs';
 import { openerById } from './palette-openers';

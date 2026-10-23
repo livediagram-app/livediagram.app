@@ -38,11 +38,11 @@ never hides behind it.
 
 **Toasts stand on it.** While the banner shows, in the Explorer or the editor, its card is part of the bottom chrome
 the toast stack clears ([Toasts](../004-interface-design/toasts.md) "Placement"): the stack sits 8px above the card's
-top instead of landing on its words, as a "Document deleted · Undo" once did.
+top instead of landing on its words, as a "Design deleted · Undo" once did.
 
-**Editor** (`app/document/[id]/EditorView.tsx`): shown only **after a
+**Editor** (`app/design/[id]/EditorView.tsx`): shown only **after a
 ~5 minute delay** into the session (`SIGNIN_BANNER_DELAY_MS`), so it
-never greets someone the instant they open a document. It **stands on the
+never greets someone the instant they open a design. It **stands on the
 bottom chrome**, 8px above the tab bar and the bottom-right cluster (Undo / Redo,
 Layers, Zoom), measured as
 the toast stack measures its floor (`useChromeFloor`, `BOTTOM_CHROME_SELECTOR`), so it never
@@ -59,7 +59,7 @@ covers a control. It is drawn over the canvas, and is additionally hidden:
   panel closes (a `[data-dock-button]` control with `aria-expanded="true"`).
 
 The delay is per editor session (per page load); it isn't persisted
-across reloads. Opening document after document in quick succession
+across reloads. Opening design after design in quick succession
 never triggers it; staying in one for 5+ minutes does.
 
 ## Banner
@@ -73,7 +73,7 @@ never triggers it; staying in one for 5+ minutes does.
   reasons modal's header wears the same gradient.
 - Contents: a small icon/illustration, a headline ("Sign in to access
   Teams & AI"), one line of supporting copy saying what those give and
-  that documents sync ("Share with your team, build with AI, sync across
+  that designs sync ("Share with your team, build with AI, sync across
   devices."), a primary **Sign in**
   button (→ `/sign-in/`), a secondary **Learn more** button (opens the
   reasons modal), and a dismiss (×) control.
@@ -87,15 +87,15 @@ never triggers it; staying in one for 5+ minutes does.
 Reuses the app's portal-based modal pattern (Escape + backdrop close).
 Lists the benefits, each with an icon, headline, and a sentence:
 
-1. **Keep your documents safe.** Guest documents live under a
+1. **Keep your designs safe.** Guest designs live under a
    per-browser id; clearing your browser cache or cookies can lose
    access to them. Signing in ties them to your account so they
    survive a cache clear or browser restart.
 2. **Open them anywhere.** Your work syncs to your account, so the
-   same documents are there on your laptop, desktop, and phone.
+   same designs are there on your laptop, desktop, and phone.
 3. **Work as a team.** Create teams, invite teammates by email, and
-   share a team library everyone can manage ([Teams](../013-workspace/teams.md), [Team shared documents](../013-workspace/team-shared-documents.md)).
-4. **Use your real name.** Shared documents and live cursors show your
+   share a team library everyone can manage ([Teams](../013-workspace/teams.md), [Team shared designs](../013-workspace/team-shared-designs.md)).
+4. **Use your real name.** Shared designs and live cursors show your
    account name instead of a random guest identity, so collaborators
    know who did what.
 5. **Your shares, organised.** Manage every share link and expiry from

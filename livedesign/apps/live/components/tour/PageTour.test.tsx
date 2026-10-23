@@ -4,7 +4,7 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { layOutPages, pageKindOf, type Page } from '@livedesign/document';
+import { layOutPages, pageKindOf, type Page } from '@livedesign/design';
 import type { PageEdits } from '@/hooks/editor/usePagesMode';
 import { useFollowPagePanelRequests } from '@/lib/page-panel-request';
 import { track } from '@/lib/telemetry';
@@ -13,7 +13,7 @@ import { PAGE_TOUR_HELP, PageShowMeButton, PageTourStage, usePageTour } from './
 import { registerCombineDemo } from './logo-combine-demo';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-// jsdom lays nothing out, so "on screen" is just "in the document" here.
+// jsdom lays nothing out, so "on screen" is just "in the design" here.
 vi.mock('./tour-dom', async (actual) => ({
   ...(await actual<typeof import('./tour-dom')>()),
   waitForSelector: async (selector: string) => document.querySelector<HTMLElement>(selector),

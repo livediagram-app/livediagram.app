@@ -2,7 +2,7 @@
 //
 // Device-local, like the other tool settings (the eraser's brush, the laser's
 // pen): it is how YOU want to drive a deck on THIS machine, not a property of
-// the document. A colleague opening the same document gets their own. Never sent
+// the design. A colleague opening the same design gets their own. Never sent
 // to the api.
 
 import { readLocalStorageSafe } from './local-storage-safe';

@@ -12,25 +12,25 @@ vi.mock('../room-purge-client', () => ({
   purgeRooms: vi.fn(() => Promise.resolve({ rooms: 0, unreached: 0 })),
 }));
 import {
-  getDocument,
-  getDocumentMeta,
-  listDocumentsByOwner,
-  listDocumentsByTeam,
-} from './documents';
+  getDesign,
+  getDesignMeta,
+  listDesignsByOwner,
+  listDesignsByTeam,
+} from './designs';
 import { deleteFolder } from './folders';
-import { linkTabToDocument, upsertTab } from './tabs';
+import { linkTabToDesign, upsertTab } from './tabs';
 import {
-  getTrashedDocumentMeta,
+  getTrashedDesignMeta,
   listTrash,
-  purgeDocuments,
+  purgeDesigns,
   purgeExpiredTrash,
-  restoreDocument,
-  trashDocument,
+  restoreDesign,
+  trashDesign,
   trashedIdsIn,
 } from './trash';
 
 // The Trash (docs/specs/013-workspace/trash.md), proven on a real SQLite with
-// every migration applied: trashing stamps a time and hides the document,
+// every migration applied: trashing stamps a time and hides the design,
 // restoring puts it back where it was, and the purge removes it the way a
 // delete always has, shared tabs spared.
 
@@ -45,12 +45,12 @@ function folder(sql: DatabaseSync, id: string, owner = 'owner', team: string | n
   });
 }
 
-async function tab(db: SqliteD1, documentId: string, id: string) {
-  await upsertTab(db.env, documentId, { id, name: id, elements: [] }, 0);
+async function tab(db: SqliteD1, designId: string, id: string) {
+  await upsertTab(db.env, designId, { id, name: id, elements: [] }, 0);
 }
 
 function column(sql: DatabaseSync, id: string, name: string): unknown {
-  return sql.prepare(`SELECT ${name} AS v FROM documents WHERE id = ?`).get(id)?.v;
+  return sql.prepare(`SELECT ${name} AS v FROM designs WHERE id = ?`).get(id)?.v;
 }
 
 function count(sql: DatabaseSync, table: string, where: string, ...args: string[]): number {
@@ -67,45 +67,45 @@ describe('diagrams.trashed_at', () => {
   it('adds a nullable trashed_at with a partial index', () => {
     const { sql } = sqliteD1();
     const col = sql
-      .prepare('PRAGMA table_info(documents)')
+      .prepare('PRAGMA table_info(designs)')
       .all()
       .find((c) => c.name === 'trashed_at');
     expect(col).toMatchObject({ type: 'INTEGER', notnull: 0, dflt_value: null });
     const idx = sql
-      .prepare("SELECT sql FROM sqlite_master WHERE name = 'documents_trashed_idx'")
+      .prepare("SELECT sql FROM sqlite_master WHERE name = 'designs_trashed_idx'")
       .get()?.sql as string;
     expect(idx).toContain('WHERE trashed_at IS NOT NULL');
   });
 });
 
-describe('trashDocument', () => {
-  it('stamps the time and hides the document from every document read', async () => {
+describe('trashDesign', () => {
+  it('stamps the time and hides the design from every design read', async () => {
     const { env, sql } = sqliteD1();
     liveDoc(sql, 'A');
     liveDoc(sql, 'T', { team: 'team' });
 
-    expect(await trashDocument(env, 'A', T0)).toBe(true);
-    expect(await trashDocument(env, 'T', T0)).toBe(true);
+    expect(await trashDesign(env, 'A', T0)).toBe(true);
+    expect(await trashDesign(env, 'T', T0)).toBe(true);
 
     expect(column(sql, 'A', 'trashed_at')).toBe(T0);
-    expect(await getDocument(env, 'A')).toBeNull();
-    expect(await getDocumentMeta(env, 'A')).toBeNull();
-    expect(await listDocumentsByOwner(env, 'owner')).toEqual([]);
-    expect(await listDocumentsByTeam(env, 'team')).toEqual([]);
+    expect(await getDesign(env, 'A')).toBeNull();
+    expect(await getDesignMeta(env, 'A')).toBeNull();
+    expect(await listDesignsByOwner(env, 'owner')).toEqual([]);
+    expect(await listDesignsByTeam(env, 'team')).toEqual([]);
   });
 
   it('keeps the first deletion time when trashed again', async () => {
     const { env, sql } = sqliteD1();
     liveDoc(sql, 'A');
-    await trashDocument(env, 'A', T0);
+    await trashDesign(env, 'A', T0);
 
-    expect(await trashDocument(env, 'A', T0 + DAY)).toBe(false);
+    expect(await trashDesign(env, 'A', T0 + DAY)).toBe(false);
     expect(column(sql, 'A', 'trashed_at')).toBe(T0);
   });
 
-  it('reports a missing document', async () => {
+  it('reports a missing design', async () => {
     const { env } = sqliteD1();
-    expect(await trashDocument(env, 'nope', T0)).toBe(false);
+    expect(await trashDesign(env, 'nope', T0)).toBe(false);
   });
 
   it('leaves tabs, links, share links and stars in place', async () => {
@@ -114,37 +114,37 @@ describe('trashDocument', () => {
     await tab(db, 'A', 't1');
     insert(db.sql, 'share_links', {
       code: 'code1',
-      document_id: 'A',
+      design_id: 'A',
       role: 'edit',
       created_at: T0,
     });
-    insert(db.sql, 'favourites', { owner_id: 'owner', document_id: 'A', created_at: T0 });
+    insert(db.sql, 'favourites', { owner_id: 'owner', design_id: 'A', created_at: T0 });
 
-    await trashDocument(db.env, 'A', T0);
+    await trashDesign(db.env, 'A', T0);
 
     expect(count(db.sql, 'tabs', 'id = ?', 't1')).toBe(1);
-    expect(count(db.sql, 'document_tabs', 'document_id = ?', 'A')).toBe(1);
-    expect(count(db.sql, 'share_links', 'document_id = ?', 'A')).toBe(1);
-    expect(count(db.sql, 'favourites', 'document_id = ?', 'A')).toBe(1);
+    expect(count(db.sql, 'design_tabs', 'design_id = ?', 'A')).toBe(1);
+    expect(count(db.sql, 'share_links', 'design_id = ?', 'A')).toBe(1);
+    expect(count(db.sql, 'favourites', 'design_id = ?', 'A')).toBe(1);
   });
 });
 
-describe('getTrashedDocumentMeta', () => {
-  it('reads a trashed document and nothing else', async () => {
+describe('getTrashedDesignMeta', () => {
+  it('reads a trashed design and nothing else', async () => {
     const { env, sql } = sqliteD1();
     liveDoc(sql, 'A', { team: 'team' });
     liveDoc(sql, 'live');
-    await trashDocument(env, 'A', T0);
+    await trashDesign(env, 'A', T0);
 
-    expect(await getTrashedDocumentMeta(env, 'A')).toEqual({
+    expect(await getTrashedDesignMeta(env, 'A')).toEqual({
       id: 'A',
       ownerId: 'owner',
       teamId: 'team',
-      name: 'Document A',
+      name: 'Design A',
       trashedAt: T0,
     });
-    expect(await getTrashedDocumentMeta(env, 'live')).toBeNull();
-    expect(await getTrashedDocumentMeta(env, 'nope')).toBeNull();
+    expect(await getTrashedDesignMeta(env, 'live')).toBeNull();
+    expect(await getTrashedDesignMeta(env, 'nope')).toBeNull();
   });
 });
 
@@ -153,36 +153,36 @@ describe('trashedIdsIn', () => {
     const { env, sql } = sqliteD1();
     liveDoc(sql, 'A');
     liveDoc(sql, 'B');
-    await trashDocument(env, 'A', T0);
+    await trashDesign(env, 'A', T0);
 
     expect([...(await trashedIdsIn(env, ['A', 'B', 'nope']))]).toEqual(['A']);
     expect([...(await trashedIdsIn(env, []))]).toEqual([]);
   });
 });
 
-describe('restoreDocument', () => {
-  it('returns the document to its folder', async () => {
+describe('restoreDesign', () => {
+  it('returns the design to its folder', async () => {
     const { env, sql } = sqliteD1();
     folder(sql, 'F');
     liveDoc(sql, 'A', { folder: 'F' });
-    await trashDocument(env, 'A', T0);
+    await trashDesign(env, 'A', T0);
 
-    expect(await restoreDocument(env, 'A', T0 + DAY)).toBe(true);
+    expect(await restoreDesign(env, 'A', T0 + DAY)).toBe(true);
 
     expect(column(sql, 'A', 'trashed_at')).toBeNull();
-    expect((await getDocument(env, 'A'))?.folderId).toBe('F');
+    expect((await getDesign(env, 'A'))?.folderId).toBe('F');
   });
 
   it('lands at the root when its top-level folder was deleted meanwhile', async () => {
     const { env, sql } = sqliteD1();
     folder(sql, 'F');
     liveDoc(sql, 'A', { folder: 'F' });
-    await trashDocument(env, 'A', T0);
+    await trashDesign(env, 'A', T0);
     await deleteFolder(env, 'F');
 
-    await restoreDocument(env, 'A', T0 + DAY);
+    await restoreDesign(env, 'A', T0 + DAY);
 
-    expect((await getDocument(env, 'A'))?.folderId).toBeNull();
+    expect((await getDesign(env, 'A'))?.folderId).toBeNull();
   });
 
   it('lands in the deleted folder’s parent when that folder was nested', async () => {
@@ -191,51 +191,51 @@ describe('restoreDocument', () => {
     folder(sql, 'F');
     sql.prepare("UPDATE folders SET parent_id = 'P' WHERE id = 'F'").run();
     liveDoc(sql, 'A', { folder: 'F' });
-    await trashDocument(env, 'A', T0);
+    await trashDesign(env, 'A', T0);
     await deleteFolder(env, 'F');
 
-    await restoreDocument(env, 'A', T0 + DAY);
+    await restoreDesign(env, 'A', T0 + DAY);
 
-    expect((await getDocument(env, 'A'))?.folderId).toBe('P');
+    expect((await getDesign(env, 'A'))?.folderId).toBe('P');
   });
 
   it('lands at the root when its folder is no longer in its scope', async () => {
     // Belt and braces: a folder_id that names a folder of another owner or
-    // another team must not come back as the document's place.
+    // another team must not come back as the design's place.
     const { env, sql } = sqliteD1();
     folder(sql, 'theirs', 'someone-else');
     folder(sql, 'teamF', 'owner', 'other-team');
     liveDoc(sql, 'A', { folder: 'theirs' });
     liveDoc(sql, 'T', { team: 'team', folder: 'teamF' });
-    await trashDocument(env, 'A', T0);
-    await trashDocument(env, 'T', T0);
+    await trashDesign(env, 'A', T0);
+    await trashDesign(env, 'T', T0);
 
-    await restoreDocument(env, 'A', T0 + DAY);
-    await restoreDocument(env, 'T', T0 + DAY);
+    await restoreDesign(env, 'A', T0 + DAY);
+    await restoreDesign(env, 'T', T0 + DAY);
 
-    expect((await getDocument(env, 'A'))?.folderId).toBeNull();
-    expect((await getDocument(env, 'T'))?.folderId).toBeNull();
-    expect((await getDocument(env, 'T'))?.teamId).toBe('team');
+    expect((await getDesign(env, 'A'))?.folderId).toBeNull();
+    expect((await getDesign(env, 'T'))?.folderId).toBeNull();
+    expect((await getDesign(env, 'T'))?.teamId).toBe('team');
   });
 
-  it('returns a team document to its team folder', async () => {
+  it('returns a team design to its team folder', async () => {
     const { env, sql } = sqliteD1();
     folder(sql, 'TF', 'owner', 'team');
     liveDoc(sql, 'T', { team: 'team', folder: 'TF' });
-    await trashDocument(env, 'T', T0);
+    await trashDesign(env, 'T', T0);
 
-    await restoreDocument(env, 'T', T0 + DAY);
+    await restoreDesign(env, 'T', T0 + DAY);
 
-    expect((await listDocumentsByTeam(env, 'team')).map((d) => [d.id, d.folderId])).toEqual([
+    expect((await listDesignsByTeam(env, 'team')).map((d) => [d.id, d.folderId])).toEqual([
       ['T', 'TF'],
     ]);
   });
 
-  it('does nothing to a live or missing document', async () => {
+  it('does nothing to a live or missing design', async () => {
     const { env, sql } = sqliteD1();
     liveDoc(sql, 'A');
-    expect(await restoreDocument(env, 'A', T0 + DAY)).toBe(false);
-    expect(await restoreDocument(env, 'nope', T0 + DAY)).toBe(false);
+    expect(await restoreDesign(env, 'A', T0 + DAY)).toBe(false);
+    expect(await restoreDesign(env, 'nope', T0 + DAY)).toBe(false);
   });
 });
 
@@ -249,15 +249,15 @@ describe('listTrash', () => {
     liveDoc(sql, 'teammate', { owner: 'user_bob', team: 'joined' });
     liveDoc(sql, 'invited', { owner: 'user_bob', team: 'pending' });
     liveDoc(sql, 'stranger', { owner: 'user_bob' });
-    await trashDocument(env, 'mine', T0);
-    await trashDocument(env, 'teammate', T0 + 1);
-    await trashDocument(env, 'invited', T0);
-    await trashDocument(env, 'stranger', T0);
+    await trashDesign(env, 'mine', T0);
+    await trashDesign(env, 'teammate', T0 + 1);
+    await trashDesign(env, 'invited', T0);
+    await trashDesign(env, 'stranger', T0);
 
     expect(await listTrash(env, { owner: 'user_me', verifiedUserId: 'user_me' })).toEqual([
       {
         id: 'teammate',
-        name: 'Document teammate',
+        name: 'Design teammate',
         teamId: 'joined',
         teamName: 'Team joined',
         trashedAt: T0 + 1,
@@ -266,7 +266,7 @@ describe('listTrash', () => {
       },
       {
         id: 'mine',
-        name: 'Document mine',
+        name: 'Design mine',
         teamId: null,
         teamName: null,
         trashedAt: T0,
@@ -281,88 +281,88 @@ describe('listTrash', () => {
     team(sql, 'joined', [['guest-1', 'joined']]);
     liveDoc(sql, 'mine', { owner: 'guest-1' });
     liveDoc(sql, 'team', { owner: 'user_bob', team: 'joined' });
-    await trashDocument(env, 'mine', T0);
-    await trashDocument(env, 'team', T0);
+    await trashDesign(env, 'mine', T0);
+    await trashDesign(env, 'team', T0);
 
     const items = await listTrash(env, { owner: 'guest-1', verifiedUserId: null });
 
     expect(items.map((i) => i.id)).toEqual(['mine']);
   });
 
-  it('does not list a team document under its owner’s personal Trash', async () => {
+  it('does not list a team design under its owner’s personal Trash', async () => {
     const { env, sql } = sqliteD1();
     team(sql, 'left', []);
     liveDoc(sql, 'T', { owner: 'user_me', team: 'left' });
-    await trashDocument(env, 'T', T0);
+    await trashDesign(env, 'T', T0);
 
     expect(await listTrash(env, { owner: 'user_me', verifiedUserId: 'user_me' })).toEqual([]);
   });
 });
 
-describe('purgeDocuments', () => {
-  it('removes the document, its own tabs and its snapshot', async () => {
+describe('purgeDesigns', () => {
+  it('removes the design, its own tabs and its snapshot', async () => {
     const { db, del } = withImages();
     liveDoc(db.sql, 'A');
     await tab(db, 'A', 't1');
-    await trashDocument(db.env, 'A', T0);
+    await trashDesign(db.env, 'A', T0);
 
-    expect(await purgeDocuments(db.env, ['A'])).toBe(1);
+    expect(await purgeDesigns(db.env, ['A'])).toBe(1);
 
-    expect(count(db.sql, 'documents', 'id = ?', 'A')).toBe(0);
+    expect(count(db.sql, 'designs', 'id = ?', 'A')).toBe(0);
     expect(count(db.sql, 'tabs', 'id = ?', 't1')).toBe(0);
     expect(del).toHaveBeenCalledWith(['thumb/A', 'og/A']);
     // Its room's storage, where the ledger keeps comment and idea text (docs/specs/015-api/api.md "Purging a room").
     expect(vi.mocked(purgeRooms)).toHaveBeenCalledWith(db.env, ['A']);
   });
 
-  it('keeps a tab another document still holds', async () => {
+  it('keeps a tab another design still holds', async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'A');
     liveDoc(db.sql, 'B');
     await tab(db, 'A', 'shared');
-    await linkTabToDocument(db.env, 'B', 'shared');
-    await trashDocument(db.env, 'A', T0);
+    await linkTabToDesign(db.env, 'B', 'shared');
+    await trashDesign(db.env, 'A', T0);
 
-    await purgeDocuments(db.env, ['A']);
+    await purgeDesigns(db.env, ['A']);
 
     expect(count(db.sql, 'tabs', 'id = ?', 'shared')).toBe(1);
-    expect(count(db.sql, 'document_tabs', 'tab_id = ?', 'shared')).toBe(1);
+    expect(count(db.sql, 'design_tabs', 'tab_id = ?', 'shared')).toBe(1);
   });
 
-  it('never purges a live document', async () => {
+  it('never purges a live design', async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'live');
 
     vi.mocked(purgeRooms).mockClear();
-    expect(await purgeDocuments(db.env, ['live'])).toBe(0);
-    expect(count(db.sql, 'documents', 'id = ?', 'live')).toBe(1);
+    expect(await purgeDesigns(db.env, ['live'])).toBe(0);
+    expect(count(db.sql, 'designs', 'id = ?', 'live')).toBe(1);
     expect(vi.mocked(purgeRooms)).not.toHaveBeenCalled();
   });
 
-  it('sweeps the document’s Timeline events', async () => {
+  it('sweeps the design’s Timeline events', async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'A');
     liveDoc(db.sql, 'B');
     for (const [id, source, snapshot] of [
-      ['e1', 'A', '{"documentId":"A"}'],
-      ['e2', 'thread-1', '{"documentId":"A"}'],
-      ['e3', 'B', '{"documentId":"B"}'],
+      ['e1', 'A', '{"designId":"A"}'],
+      ['e2', 'thread-1', '{"designId":"A"}'],
+      ['e3', 'B', '{"designId":"B"}'],
     ] as const) {
       insert(db.sql, 'timeline_events', {
         id,
         actor_id: 'owner',
-        source_type: 'document',
+        source_type: 'design',
         source_id: source,
-        event_type: 'document_created',
-        title: 'Document Created',
+        event_type: 'design_created',
+        title: 'Design Created',
         occurred_at: T0,
         snapshot,
         created_at: T0,
       });
     }
-    await trashDocument(db.env, 'A', T0);
+    await trashDesign(db.env, 'A', T0);
 
-    await purgeDocuments(db.env, ['A']);
+    await purgeDesigns(db.env, ['A']);
 
     expect(
       db.sql
@@ -374,7 +374,7 @@ describe('purgeDocuments', () => {
 
   it('is a no-op for no ids', async () => {
     const { db, del } = withImages();
-    expect(await purgeDocuments(db.env, [])).toBe(0);
+    expect(await purgeDesigns(db.env, [])).toBe(0);
     expect(del).not.toHaveBeenCalled();
   });
 
@@ -384,10 +384,10 @@ describe('purgeDocuments', () => {
     });
     const db = sqliteD1({ IMAGES: { delete: del } as unknown as Env['IMAGES'] });
     liveDoc(db.sql, 'A');
-    await trashDocument(db.env, 'A', T0);
+    await trashDesign(db.env, 'A', T0);
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-    expect(await purgeDocuments(db.env, ['A'])).toBe(1);
+    expect(await purgeDesigns(db.env, ['A'])).toBe(1);
     expect(warn).toHaveBeenCalledWith('[trash] snapshot delete failed', 1, expect.any(Error));
     warn.mockRestore();
   });
@@ -401,15 +401,15 @@ describe('purgeExpiredTrash', () => {
     liveDoc(db.sql, 'young');
     liveDoc(db.sql, 'live');
     const now = T0 + 40 * DAY;
-    await trashDocument(db.env, 'old', T0);
-    await trashDocument(db.env, 'due', now - TRASH_RETENTION_MS);
-    await trashDocument(db.env, 'young', now - TRASH_RETENTION_MS + 1);
+    await trashDesign(db.env, 'old', T0);
+    await trashDesign(db.env, 'due', now - TRASH_RETENTION_MS);
+    await trashDesign(db.env, 'young', now - TRASH_RETENTION_MS + 1);
 
     expect(await purgeExpiredTrash(db.env, now)).toBe(2);
 
     expect(
       db.sql
-        .prepare('SELECT id FROM documents ORDER BY id')
+        .prepare('SELECT id FROM designs ORDER BY id')
         .all()
         .map((r) => r.id),
     ).toEqual(['live', 'young']);
@@ -419,25 +419,25 @@ describe('purgeExpiredTrash', () => {
     const db = sqliteD1();
     for (let i = 0; i < 7; i++) {
       liveDoc(db.sql, `d${i}`);
-      await trashDocument(db.env, `d${i}`, T0);
+      await trashDesign(db.env, `d${i}`, T0);
     }
 
     expect(await purgeExpiredTrash(db.env, T0 + 31 * DAY, { batch: 3, maxBatches: 5 })).toBe(7);
-    expect(count(db.sql, 'documents', '1 = 1')).toBe(0);
+    expect(count(db.sql, 'designs', '1 = 1')).toBe(0);
   });
 
   it('stops at the per-run cap and leaves the rest for tomorrow', async () => {
     const db = sqliteD1();
     for (let i = 0; i < 7; i++) {
       liveDoc(db.sql, `d${i}`);
-      await trashDocument(db.env, `d${i}`, T0 + i);
+      await trashDesign(db.env, `d${i}`, T0 + i);
     }
 
     expect(await purgeExpiredTrash(db.env, T0 + 31 * DAY, { batch: 2, maxBatches: 2 })).toBe(4);
     // Oldest first, so nothing waits longer than it must.
     expect(
       db.sql
-        .prepare('SELECT id FROM documents ORDER BY id')
+        .prepare('SELECT id FROM designs ORDER BY id')
         .all()
         .map((r) => r.id),
     ).toEqual(['d4', 'd5', 'd6']);
@@ -445,14 +445,14 @@ describe('purgeExpiredTrash', () => {
 });
 
 describe('deleteAccount with a Trash', () => {
-  it('hard-deletes trashed documents with the rest', async () => {
+  it('hard-deletes trashed designs with the rest', async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'live', { owner: 'user_leaver' });
     liveDoc(db.sql, 'binned', { owner: 'user_leaver' });
-    await trashDocument(db.env, 'binned', T0);
+    await trashDesign(db.env, 'binned', T0);
 
     await deleteAccount(db.env, 'user_leaver');
 
-    expect(count(db.sql, 'documents', 'owner_id = ?', 'user_leaver')).toBe(0);
+    expect(count(db.sql, 'designs', 'owner_id = ?', 'user_leaver')).toBe(0);
   });
 });

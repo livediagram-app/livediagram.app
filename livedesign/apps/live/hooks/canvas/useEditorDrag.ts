@@ -28,7 +28,7 @@ import {
   rebindArrowAnchorsAfterMove,
   type ArrowElement,
   type Element,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import { isTechIconId } from '@/lib/tech-icons';
@@ -113,10 +113,10 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // fresh values without re-subscribing global pointer listeners.
   const depsRef = useLatest(deps);
   // The gesture's preview (docs/specs/008-canvas/drag-preview.md): every write a drag makes lands
-  // here, not in the document, and the document changes once, on release. `base` is the board as
+  // here, not in the design, and the design changes once, on release. `base` is the board as
   // the gesture found it (the overlay is what the gesture changed relative to it, so a
   // collaborator's change to another element is never undone), `virtual` the gesture's own result,
-  // which the drag logic reads in place of the written document. Kept across the effect's re-runs
+  // which the drag logic reads in place of the written design. Kept across the effect's re-runs
   // within one gesture (a quick-connect arrow turning to follow the pointer).
   const previewRef = useRef<{ tabId: string; base: Element[]; virtual: Element[] } | null>(null);
   const virtualTab = useEffectEvent(() => {
@@ -136,7 +136,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     previewRef.current = next;
     setLocalPreview(next.tabId, next.virtual, next.base);
   });
-  // The preview becomes the document in one change: one checkpoint (for an edit of existing
+  // The preview becomes the design in one change: one checkpoint (for an edit of existing
   // elements; a creation drag never arms one), one write.
   const commitPreview = useEffectEvent(() => {
     const p = previewRef.current;
@@ -249,7 +249,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       }
       const activeTab = virtualTab();
       const { zoomRef } = depsRef.current;
-      // Every branch below writes through this: into the gesture's preview, never the document.
+      // Every branch below writes through this: into the gesture's preview, never the design.
       const tick = previewTick;
       // Screen-pixel delta into canvas-coord delta (invert the
       // current zoom).
@@ -358,7 +358,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           if (!resize) return;
           if (resize.guides !== null) scheduleGuides(resize.guides);
           // A lone text box that fits or wraps hugs its text through the resize
-          // (docs/specs/006-document/document-structure.md, a text box's sizing).
+          // (docs/specs/006-design/design-structure.md, a text box's sizing).
           const textHug =
             drag.startBounds.size === 1
               ? {
@@ -487,7 +487,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       // A freshly DRAWN arrow (never a reposition) gets the one-shot collision-avoiding bow
       // (docs/specs/008-canvas/arrow-collision-avoidance.md) as its gesture ends, folded into the
       // gesture's result so the two land as the one write. Written afterwards through `commit`, it
-      // started from the document as last rendered, before the result had landed, and put the
+      // started from the design as last rendered, before the result had landed, and put the
       // arrow's end back where the drag began. A touch tap that never moved places its end below
       // instead, as it always has, with no bow.
       const tapStill =

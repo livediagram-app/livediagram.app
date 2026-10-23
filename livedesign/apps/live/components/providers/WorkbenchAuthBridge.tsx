@@ -22,13 +22,13 @@ export function WorkbenchAuthBridge({
   // Renewal swaps the secret; the provider and the published getter read the newest one.
   const secretRef = useLatest(session.secret);
   const { person } = session;
-  // What the api's allow-list judges every request by: the document scope's one document, or the workspace.
+  // What the api's allow-list judges every request by: the design scope's one design, or the workspace.
   const confinement = useMemo<WorkbenchConfinementSession>(
     () =>
-      session.scope === 'document' && session.documentId !== null
-        ? { scope: 'document', documentId: session.documentId, ownerId: person.id }
-        : { scope: 'workspace', documentId: null, ownerId: person.id },
-    [session.scope, session.documentId, person.id],
+      session.scope === 'design' && session.designId !== null
+        ? { scope: 'design', designId: session.designId, ownerId: person.id }
+        : { scope: 'workspace', designId: null, ownerId: person.id },
+    [session.scope, session.designId, person.id],
   );
 
   const auth = useMemo<DeferredAuthState>(

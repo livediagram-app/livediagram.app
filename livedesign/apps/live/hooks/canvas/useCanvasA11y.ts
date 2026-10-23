@@ -13,7 +13,7 @@
 //   log prints (lib/element-names).
 
 import { useEffect } from 'react';
-import { isBoxed, type Element } from '@livedesign/document';
+import { isBoxed, type Element } from '@livedesign/design';
 import { anyModalOpen } from '@/lib/modal-guard';
 import { announce, getAnnouncementSnapshot } from '@/lib/announcer';
 import { describeMany, describeSelected } from '@/lib/element-names';
@@ -51,7 +51,7 @@ type CanvasA11yDeps = {
   editingId: string | null;
   selectElement: (id: string) => void;
   lockedByOther: (id: string) => boolean;
-  // Elements on a hidden or locked layer (docs/specs/006-document/layers.md): skipped by the
+  // Elements on a hidden or locked layer (docs/specs/006-design/layers.md): skipped by the
   // traversal exactly like remotely-locked ones.
   layerInertIds: Set<string>;
   scrollIntoView: (x: number, y: number, w: number, h: number) => void;

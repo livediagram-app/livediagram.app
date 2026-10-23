@@ -9,9 +9,9 @@ Scope, by file:
 
 | File                                              | Role                                                                    |
 | ------------------------------------------------- | ----------------------------------------------------------------------- |
-| `packages/document/src/image-credit.ts`           | `ImageCredit`, its two limits, `isCreditUrl`, `isImageCredit`           |
-| `packages/document/src/element-types.ts`          | `ImageElement.credit`                                                   |
-| `packages/document/src/validate.ts`               | Image branch calls `isImageCredit` on `credit`                          |
+| `packages/design/src/image-credit.ts`           | `ImageCredit`, its two limits, `isCreditUrl`, `isImageCredit`           |
+| `packages/design/src/element-types.ts`          | `ImageElement.credit`                                                   |
+| `packages/design/src/validate.ts`               | Image branch calls `isImageCredit` on `credit`                          |
 | `apps/live/lib/upload-image.ts`                   | `PickedImage`: what every picker tab hands back                         |
 | `apps/live/lib/image-search/openverse.ts`         | Pure: `openverseSearchUrl`, `parseOpenverseSearch`, `creditFor`         |
 | `apps/live/lib/image-search/search.ts`            | `searchOpenverse`: one page over an injected `fetch`, typed errors      |
@@ -152,7 +152,7 @@ characters; `sourceUrl` and optional `licenseUrl` strings of at most 2048 charac
 | Host declares or streams > 50 MB              | Download stops at the cap; `too-large`, final, nothing stored       |
 | Both downloads fail                           | "Couldn't download that image. Try another one."                    |
 | Gallery full / images unavailable / too large | The pipeline failure's upload copy (table below)                    |
-| Offline Mode document                         | Session embeds as data URI; over budget → "too large" copy          |
+| Offline Mode design                         | Session embeds as data URI; over budget → "too large" copy          |
 | Picker closed mid-pick                        | The store finishes; `onPicked` is ignored after unmount (D153)      |
 | Result with no landing URL                    | Stored without `credit`                                             |
 
@@ -173,7 +173,7 @@ Pick failure copy (`pickFailureMessage`):
   upload checks (type sniff, size, caps); nothing is stored unseen.
 - Fetches send no cookies (`credentials: 'omit'`) and no referrer.
 - Credit links render as `<a target="_blank" rel="noopener noreferrer">`, and `validate.ts` refuses a
-  non-http(s) URL, so a crafted document can't plant a `javascript:` link.
+  non-http(s) URL, so a crafted design can't plant a `javascript:` link.
 - Rate limits are Openverse's per-IP limits; the button is disabled while loading, and search runs
   only on submit.
 
@@ -261,7 +261,7 @@ dropped as stale sends nothing.
 | Stages: downloading, saving; again for the thumbnail         | `apps/live/lib/image-search/pick.test.ts`              |
 | Placeholders while searching; a tile's until it loads        | `apps/live/components/panels/ImageSearchPane.test.tsx` |
 | Picked tile busy, stage copy, others disabled, hand-off      | `apps/live/components/panels/ImageSearchPane.test.tsx` |
-| `credit` validation accepts good, rejects bad text / URLs    | `packages/document/src/validate.test.ts`               |
+| `credit` validation accepts good, rejects bad text / URLs    | `packages/design/src/validate.test.ts`               |
 | Search tab end to end                                        | Browser verification (no e2e: external network)        |
 
 ## Constants and configuration

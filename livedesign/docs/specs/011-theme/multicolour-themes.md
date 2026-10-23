@@ -1,6 +1,6 @@
 # Multi-colour (rainbow) themes
 
-Most themes in the catalogue ([Canvas and palette](../008-canvas/canvas-and-palette.md), `packages/document/src/themes-data.ts`) paint every element one colour — a single fill / stroke / text triple applied uniformly. **Multi-colour themes** instead carry a _palette_ of several colour triples and assign each branch of the tab's hierarchy a different one, the way XMind's "Rainbow" theme tints each main branch of a mind map a distinct hue.
+Most themes in the catalogue ([Canvas and palette](../008-canvas/canvas-and-palette.md), `packages/design/src/themes-data.ts`) paint every element one colour — a single fill / stroke / text triple applied uniformly. **Multi-colour themes** instead carry a _palette_ of several colour triples and assign each branch of the tab's hierarchy a different one, the way XMind's "Rainbow" theme tints each main branch of a mind map a distinct hue.
 
 ## What they are
 
@@ -25,7 +25,7 @@ The catalogue ships three multi-colour themes, all extra:
 
 ## How a branch is decided
 
-The document model has no explicit parent/child field; hierarchy is **implicit in pinned arrows** ([Document structure](../006-document/document-structure.md), `Endpoint.kind === 'pinned'`). `packages/document/src/hierarchy.ts` derives branches from them:
+The design model has no explicit parent/child field; hierarchy is **implicit in pinned arrows** ([Design structure](../006-design/design-structure.md), `Endpoint.kind === 'pinned'`). `packages/design/src/hierarchy.ts` derives branches from them:
 
 1. Each arrow whose **both** endpoints pin to **boxed** elements defines a directed edge `from → to` (parent → child). Free-floating arrows, arrows pinned to another arrow or to an element no longer on the tab, and self-loops contribute nothing.
 2. **Roots** are boxed elements with no incoming pinned edge but at least one outgoing one (the hub of a process, the top of a hierarchy). Roots get the sentinel `ROOT_BRANCH`.
@@ -38,7 +38,7 @@ The walk is a pure function over the element list, so it is unit-tested without 
 
 ## Where it applies
 
-Multi-colour assignment needs the **whole element list** (to see the arrow graph), unlike the single-colour path which is per-element. So `packages/document/src/theme-graph.ts` exposes graph-aware wrappers alongside the per-element helpers in `packages/document/src/themes.ts`:
+Multi-colour assignment needs the **whole element list** (to see the arrow graph), unlike the single-colour path which is per-element. So `packages/design/src/theme-graph.ts` exposes graph-aware wrappers alongside the per-element helpers in `packages/design/src/themes.ts`:
 
 - `recolourElementsForTheme(elements, theme)` — used when a template or an agent's tab is painted with a theme.
 - `switchThemeElements(elements, prev, next)` — the Theme accordion / welcome picker "apply a theme" path. Preserves a field the user hand-customised away from the previous theme, same per-field rule as the single-colour `switchThemeElement`.
@@ -65,4 +65,4 @@ Applying any theme already emits `track('Theme', 'Changed', <label>)` ([Telemetr
 
 ## Counts
 
-The catalogue ships **24 themes** (12 default + 12 extra), the extras including the dark schemes (Pine, Plum, Abyss, Espresso) and three multicolour themes (Rainbow, Pastel, Tropical). It was 27 until Basic and Charcoal merged into the single **Default** scheme ([Live app](../007-editor/live-app.md)), and 26 until Autumn and Jewel retired ([Light and dark halves](light-and-dark.md)); documents saved against a retired scheme are migrated on load ([Retired colour schemes](retired-schemes.md)). The counts are pinned by `apps/live/lib/themes.test.ts` and cited in [Canvas and palette](../008-canvas/canvas-and-palette.md), [Marketing site](../019-marketing/marketing-site.md), and [Marketing assets](../019-marketing/marketing-assets.md); all four move together. Six **seasonal themes** (three of them multicolour: Spring, Pumpkin, Yuletide) sit outside these counts: no picker lists them, and a tab wears one only through a seasonal look ([Seasonal looks](canvas-and-theme-dialog.md#seasonal-looks)).
+The catalogue ships **24 themes** (12 default + 12 extra), the extras including the dark schemes (Pine, Plum, Abyss, Espresso) and three multicolour themes (Rainbow, Pastel, Tropical). It was 27 until Basic and Charcoal merged into the single **Default** scheme ([Live app](../007-editor/live-app.md)), and 26 until Autumn and Jewel retired ([Light and dark halves](light-and-dark.md)); designs saved against a retired scheme are migrated on load ([Retired colour schemes](retired-schemes.md)). The counts are pinned by `apps/live/lib/themes.test.ts` and cited in [Canvas and palette](../008-canvas/canvas-and-palette.md), [Marketing site](../019-marketing/marketing-site.md), and [Marketing assets](../019-marketing/marketing-assets.md); all four move together. Six **seasonal themes** (three of them multicolour: Spring, Pumpkin, Yuletide) sit outside these counts: no picker lists them, and a tab wears one only through a seasonal look ([Seasonal looks](canvas-and-theme-dialog.md#seasonal-looks)).

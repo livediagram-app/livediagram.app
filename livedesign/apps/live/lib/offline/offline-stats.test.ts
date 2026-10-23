@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@livedesign/document';
-import { offlineDocumentStats } from './offline-stats';
+import type { Tab } from '@livedesign/design';
+import { offlineDesignStats } from './offline-stats';
 
-// docs/specs/013-workspace/explorer-details-view.md: a document in this browser is counted from its
+// docs/specs/013-workspace/explorer-details-view.md: a design in this browser is counted from its
 // own record, the same way the api counts a stored tab.
 
 const tab = (id: string, extra: Record<string, unknown>, comments: number[] = []): Tab =>
@@ -21,11 +21,11 @@ const bytesOf = (t: Tab) => {
   return new TextEncoder().encode(JSON.stringify(rest)).length;
 };
 
-describe('offlineDocumentStats', () => {
+describe('offlineDesignStats', () => {
   it('sums elements, comments and bytes over the tabs, in the first tab mode', () => {
     const a = tab('a', { opensIn: 'pages' }, [2, 0]);
     const b = tab('b', {}, [1]);
-    expect(offlineDocumentStats({ id: 'd', savedAt: 1, tabs: [a, b] })).toEqual({
+    expect(offlineDesignStats({ id: 'd', savedAt: 1, tabs: [a, b] })).toEqual({
       mode: 'pages',
       elements: 3,
       comments: 3,
@@ -33,13 +33,13 @@ describe('offlineDocumentStats', () => {
     });
   });
 
-  it('is null for a document with no tab', () => {
-    expect(offlineDocumentStats({ id: 'no-tabs', savedAt: 1, tabs: [] })).toBeNull();
+  it('is null for a design with no tab', () => {
+    expect(offlineDesignStats({ id: 'no-tabs', savedAt: 1, tabs: [] })).toBeNull();
   });
 
   it('answers the same object for the same saved record, so a list re-read costs nothing', () => {
     const rec = { id: 'cached', savedAt: 5, tabs: [tab('a', {})] };
-    expect(offlineDocumentStats(rec)).toBe(offlineDocumentStats({ ...rec, tabs: [...rec.tabs] }));
-    expect(offlineDocumentStats({ ...rec, savedAt: 6 })).not.toBe(offlineDocumentStats(rec));
+    expect(offlineDesignStats(rec)).toBe(offlineDesignStats({ ...rec, tabs: [...rec.tabs] }));
+    expect(offlineDesignStats({ ...rec, savedAt: 6 })).not.toBe(offlineDesignStats(rec));
   });
 });

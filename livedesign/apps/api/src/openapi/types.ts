@@ -1,4 +1,4 @@
-// Minimal structural types for the OpenAPI 3.1 document the worker serves at
+// Minimal structural types for the OpenAPI 3.1 design the worker serves at
 // GET /api/openapi.json (docs/specs/015-api/api-documentation.md). Deliberately loose: a JSON Schema / OpenAPI
 // object is an open recursive shape, and the value is built from the
 // (typechecked) route manifest + the generated component schemas, so a full
@@ -15,10 +15,10 @@ export type ComponentSchemas = Record<string, JsonSchema>;
 /** A request/response body schema in the manifest: either a `$ref`-able
  *  component name (a key of the generated schemas) or an inline JSON Schema
  *  (used for the small response envelopes that wrap a payload, e.g.
- *  `{ documents: DocumentSummary[] }`). */
+ *  `{ designs: DesignSummary[] }`). */
 export type BodySchema = string | JsonSchema;
 
-export interface OpenApiDocument {
+export interface OpenApiDesign {
   openapi: string;
   info: Record<string, unknown>;
   servers: { url: string; description?: string }[];

@@ -1,6 +1,6 @@
 // Tabs-category illustrations (docs/specs/018-help/help-app.md): the tab bar and its tab pills,
 // tab folders and their upward fan, the tab menu (toolbar over full-width rows split into groups),
-// the Add to Folder / Add to Document / Import / Export dialogs, cross-tab links, a locked tab,
+// the Add to Folder / Add to Design / Import / Export dialogs, cross-tab links, a locked tab,
 // and a before/after cleanup. Labels are the editor's own (TabPortalMenu,
 // TabOrganiseDialogs, ImportTabDialog, ExportTabDialog).
 // Composed only from the shared primitives so the house style holds.
@@ -422,14 +422,14 @@ function MenuRowList({
 }
 
 /** The tab menu: the quick-action toolbar (Rename, Duplicate, Paste, Lock Tab, Delete) over
- *  full-width rows in two groups (folders and documents, content), opened from the
+ *  full-width rows in two groups (folders and designs, content), opened from the
  *  active tab's ⋯ button. */
 export function TabMenu() {
   const barY = 178;
   const mx = 150;
   const my = 10;
   const mw = 200;
-  const rows = ['Add to Folder', 'Add to Document', null, 'Import', 'Export', 'Clear'];
+  const rows = ['Add to Folder', 'Add to Design', null, 'Import', 'Export', 'Clear'];
   return (
     <Scene w={420} h={230}>
       <TabBar y={barY} w={420} />
@@ -683,8 +683,8 @@ export function CrossTabLink() {
   );
 }
 
-/** The Add to Document dialog: a filter box over a grid of your other documents. */
-export function AddToDocumentMenu() {
+/** The Add to Design dialog: a filter box over a grid of your other designs. */
+export function AddToDesignMenu() {
   const W = 420;
   const H = 210;
   const dx = 30;
@@ -692,7 +692,7 @@ export function AddToDocumentMenu() {
   const docs = ['Roadmap 2026', 'Onboarding', 'Architecture'];
   return (
     <Scene w={W} h={H}>
-      <Dialog x={dx} y={dy} w={360} h={182} title="Add to Document" sceneW={W} sceneH={H}>
+      <Dialog x={dx} y={dy} w={360} h={182} title="Add to Design" sceneW={W} sceneH={H}>
         <rect
           x={dx + 16}
           y={dy + 48}
@@ -703,7 +703,7 @@ export function AddToDocumentMenu() {
           strokeWidth={1.5}
         />
         <Label x={dx + 26} y={dy + 61} size={11} tone="muted">
-          Filter documents…
+          Filter designs…
         </Label>
         {docs.map((d, i) => {
           const tx = dx + 16 + i * 112;
@@ -790,7 +790,7 @@ export function ImportMenu() {
         x={mx}
         y={my + 6}
         w={192}
-        rows={['Add to Folder', 'Add to Document', null, 'Import', 'Export', 'Clear']}
+        rows={['Add to Folder', 'Add to Design', null, 'Import', 'Export', 'Clear']}
         highlight="Import"
       />
     </Scene>

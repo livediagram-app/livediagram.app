@@ -12,10 +12,10 @@
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { EMPTY_SELECTION, type Selection } from '@/lib/selection-store';
 import { useCallback, useMemo } from 'react';
-import { isBoxed, renumberSteps, supportsRotation } from '@livedesign/document';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { isBoxed, renumberSteps, supportsRotation } from '@livedesign/design';
+import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import type { CanvasTool } from '@/components/palette/palette.types';
-import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
+import { useIsOfflineDesign } from '@/hooks/persistence/useIsOfflineDesign';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import {
   buildEditorCommands,
@@ -44,8 +44,8 @@ const INERT_HANDLERS: CommandHandlers = {
   addComment: noop,
   editNote: noop,
   createTab: noop,
-  renameDocument: noop,
-  deleteDocument: noop,
+  renameDesign: noop,
+  deleteDesign: noop,
   renameTab: noop,
   openTheme: noop,
   openCanvasOptions: noop,
@@ -78,8 +78,8 @@ export function useEditorCommands(open: boolean): {
   );
   const {
     isReadOnly,
-    canShareDocument,
-    documentId,
+    canShareDesign,
+    designId,
     activeTab,
     deleteSelected,
     deleteMultiSelected,
@@ -97,10 +97,10 @@ export function useEditorCommands(open: boolean): {
     openComments,
     openNote,
     addTab,
-    deleteDocument,
+    deleteDesign,
     setShareDialogOpen,
     setCanvasThemeTab,
-    requestRenameDocument,
+    requestRenameDesign,
     requestRenameTab,
     undo,
     redo,
@@ -124,9 +124,9 @@ export function useEditorCommands(open: boolean): {
     pagesMode,
   } = ctx;
 
-  // Offline documents (docs/specs/006-document/offline-mode.md) have nothing on the server to share, so the
+  // Offline designs (docs/specs/006-design/offline-mode.md) have nothing on the server to share, so the
   // Share command is withheld the same way the header hides its button.
-  const isOffline = useIsOfflineDocument(documentId);
+  const isOffline = useIsOfflineDesign(designId);
   // Spotlight is desktop-only, so the tool commands need the same viewport
   // answer the palette's tool dropdown uses.
   const isMobile = useIsMobileViewport();
@@ -170,7 +170,7 @@ export function useEditorCommands(open: boolean): {
       hasAnimation,
       tabHasSteps,
       marker,
-      canShare: canShareDocument,
+      canShare: canShareDesign,
       isOffline,
       workbench: workbenchMode,
       canvasTool,
@@ -195,7 +195,7 @@ export function useEditorCommands(open: boolean): {
       hasAnimation,
       tabHasSteps,
       marker,
-      canShareDocument,
+      canShareDesign,
       isOffline,
       workbenchMode,
       canvasTool,
@@ -233,11 +233,11 @@ export function useEditorCommands(open: boolean): {
       if (selectedId) openNote(selectedId);
     },
     createTab: addTab,
-    renameDocument: requestRenameDocument,
-    // deleteDocument confirms internally and (for the current document)
-    // redirects to /explorer; it needs the document's own id.
-    deleteDocument: () => {
-      if (documentId) void deleteDocument(documentId);
+    renameDesign: requestRenameDesign,
+    // deleteDesign confirms internally and (for the current design)
+    // redirects to /explorer; it needs the design's own id.
+    deleteDesign: () => {
+      if (designId) void deleteDesign(designId);
     },
     renameTab: requestRenameTab,
     // Replicate the telemetry the menu/header entry points fire, since the

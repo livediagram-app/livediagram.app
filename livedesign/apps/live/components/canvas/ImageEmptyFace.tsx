@@ -1,7 +1,7 @@
 'use client';
 
 import type { CSSProperties, MouseEvent, PointerEvent } from 'react';
-import { shade, tint } from '@livedesign/document';
+import { shade, tint } from '@livedesign/design';
 import { Glyph } from '@livedesign/ui';
 import {
   EMPTY_FACE,

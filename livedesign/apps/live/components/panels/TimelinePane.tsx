@@ -13,7 +13,7 @@
 // is shared with <TimelineControls> up there.
 //
 // The card menus (docs/specs/013-workspace/timeline.md §2.8) are built here too, because this pane
-// sits inside the Explorer context that holds the document lists and the
+// sits inside the Explorer context that holds the design lists and the
 // rename / move / delete handlers they need.
 
 import { Timeline } from '@livedesign/ui';
@@ -32,7 +32,7 @@ export function TimelinePane({
 }: {
   feed: TimelineFeed;
   ownerId: string;
-  /** Opens one document's History dialog, which the pane above owns. */
+  /** Opens one design's History dialog, which the pane above owns. */
   onShowHistory: (id: string, name: string) => void;
 }) {
   const entityMenus = useTimelineEntityMenus();

@@ -13,7 +13,7 @@ import {
   type PageSizeId,
   type WireframeDeviceId,
   type WireframeFrameLook,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { layoutCatalogueFor } from '@livedesign/templates';
 
 const layoutIds = (kind: PageKind) =>
@@ -21,8 +21,8 @@ const layoutIds = (kind: PageKind) =>
     .layouts.map((l) => l.id)
     .join(', ');
 
-const url = z.string().describe('Link that opens the document in the livedesign editor.');
-const documentId = z.string().describe('The document (from find_documents).');
+const url = z.string().describe('Link that opens the design in the livedesign editor.');
+const designId = z.string().describe('The design (from find_designs).');
 const tabId = z.string().optional().describe('The tab. Absent: the first tab.');
 const pageRef = z
   .union([z.string(), z.number().int().min(1)])
@@ -172,7 +172,7 @@ const pageChange = z
   .describe('One page change.');
 
 export const changePagesShape = {
-  documentId,
+  designId,
   tabId,
   changes: z
     .array(pageChange)
@@ -195,7 +195,7 @@ const pageOut = z
     size: z.string().describe('Its size id.'),
     orientation: z.string().nullable().describe('portrait, landscape, or null for none.'),
     rect: canvasRect.describe(
-      'Where the page sits on the canvas: put elements inside it with update_document.',
+      'Where the page sits on the canvas: put elements inside it with update_design.',
     ),
     background: z.string().nullable().describe('Its background in words, or null for the paper.'),
     locked: z.boolean().describe('Whether it is locked.'),
@@ -212,7 +212,7 @@ const pageOut = z
   .describe('A page as it is now.');
 
 const answerOut = {
-  documentId: z.string().describe('The document id.'),
+  designId: z.string().describe('The design id.'),
   tabId: z.string().describe('The tab changed.'),
   lines: z.array(z.string()).describe('What was done, one line each.'),
   pages: z.array(pageOut).describe('Every page of the tab as it now is.'),

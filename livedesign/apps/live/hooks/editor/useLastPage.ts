@@ -3,7 +3,7 @@
 // landing on a tab of pages can go back to it. Follows the viewport store without rendering: a
 // pan or zoom only restarts a timer, and the page is worked out once the view has settled.
 import { useCallback, useLayoutEffect, useRef, type RefObject } from 'react';
-import type { LaidOutPage } from '@livedesign/document';
+import type { LaidOutPage } from '@livedesign/design';
 import { computeViewportCenter } from '@/lib/viewport';
 import { debugLog } from '@/lib/debug-log';
 import type { View } from '@/lib/viewport-store';

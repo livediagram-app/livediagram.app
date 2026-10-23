@@ -11,7 +11,7 @@ import {
   renderPagesToSvg,
   type LaidOutPage,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 // Static-import icon resolver (Worker bundle, size not user-facing) so icon
 // elements render their real glyph in the inline image.
 // The preview resolvers: an emoji (no emoji font in a Worker) draws from its fetched art, else as a labelled disc,
@@ -37,7 +37,7 @@ import { textResult, type StructuredValue, type ToolResult } from './tool-helper
 // GET /api/images/:id the app uses. The shared embedder reads them in document
 // order within the preview's budget (./preview-budget.ts); any failure
 // (missing, too big, past the budget, error) skips that image and the
-// placeholder shows; a document with no images does no work. `leftOut` counts
+// placeholder shows; a design with no images does no work. `leftOut` counts
 // the pictures a limit kept out, for the preview's note.
 type ImageResolver = {
   resolveImageHref?: (imageId: string) => string | undefined;
@@ -83,7 +83,7 @@ const NO_IMAGES: ImageResolver = { leftOut: 0 };
 export async function tabPreview(
   tab: Tab,
   auth?: { env: Env; token: string },
-  // One page of the tab to draw alone (read_document's `page`); every page when absent.
+  // One page of the tab to draw alone (read_design's `page`); every page when absent.
   page?: LaidOutPage,
 ): Promise<(TextBlock | ImageBlock)[]> {
   // A tab draws as its pages (svg-render-pages.ts), as the editor exports them. Its pictures and its faces are

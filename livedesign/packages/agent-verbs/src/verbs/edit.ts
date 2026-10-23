@@ -3,7 +3,7 @@
 
 import { z } from 'zod';
 import type { ChangesetResponse } from '@livedesign/api-schema';
-import { diffView } from '@livedesign/document-views';
+import { diffView } from '@livedesign/design-views';
 import { argvToOperationLine } from '../argv-line';
 import { readPlainTab } from '../copies';
 import { defineVerb, VerbRefusal, type Verb, type VerbContext } from '../define';
@@ -32,7 +32,7 @@ const outputOf = (response: ChangesetResponse) => ({
 
 async function targetOf(ctx: VerbContext, doc: string, tab: string | undefined) {
   const found = await tabOf(ctx, doc, tab);
-  return { documentId: found.document.id, tabId: found.tab.id, tabName: found.tab.name, doc };
+  return { designId: found.design.id, tabId: found.tab.id, tabName: found.tab.name, doc };
 }
 
 export const changesetApply = defineVerb({
@@ -169,11 +169,11 @@ export const tabDiff = defineVerb({
   output: z.object({ text: z.string(), json: z.unknown() }),
   run: async (ctx, input) => {
     const found = await tabOf(ctx, input.doc, input.tab);
-    const documentId = found.document.id;
+    const designId = found.design.id;
     const tabId = found.tab.id;
-    const before = await ctx.copies?.at(documentId, tabId, input.since);
+    const before = await ctx.copies?.at(designId, tabId, input.since);
     if (!before) {
-      const held = (await ctx.copies?.revisions(documentId, tabId)) ?? [];
+      const held = (await ctx.copies?.revisions(designId, tabId)) ?? [];
       throw new VerbRefusal({
         status: 404,
         code: 'no_copy',
@@ -182,10 +182,10 @@ export const tabDiff = defineVerb({
         hint: `livedesign tab view ${JSON.stringify(input.doc)} --tab ${JSON.stringify(found.tab.name)}`,
       });
     }
-    const after = await readPlainTab(ctx, documentId, tabId);
+    const after = await readPlainTab(ctx, designId, tabId);
     if (!after) throw new Error('the tab read carried no revision');
-    await ctx.copies!.record(documentId, tabId, after);
-    const tabIds = found.document.tabs.map((t) => t.id);
+    await ctx.copies!.record(designId, tabId, after);
+    const tabIds = found.design.tabs.map((t) => t.id);
     const view = diffView(
       before.tab,
       after.tab,

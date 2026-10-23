@@ -49,7 +49,7 @@ function Screen({ x, y, w, h }: { x: number; y: number; w: number; h: number }) 
   );
 }
 
-// Supported Devices: one document on a computer, a tablet and a phone.
+// Supported Devices: one design on a computer, a tablet and a phone.
 export function SupportedDevicesArt() {
   return (
     <Stage>

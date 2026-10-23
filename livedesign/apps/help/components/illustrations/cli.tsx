@@ -134,7 +134,7 @@ export function CliConsent() {
       title="Connect livedesign CLI"
       intro={[
         'livedesign CLI wants to access your livedesign',
-        'documents on your behalf. Approving creates an API token.',
+        'designs on your behalf. Approving creates an API token.',
       ]}
       sentTo="127.0.0.1:53124"
     />

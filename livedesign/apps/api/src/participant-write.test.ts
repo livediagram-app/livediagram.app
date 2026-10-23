@@ -21,7 +21,7 @@ const sticky = (id: string, extra: Record<string, unknown> = {}) => ({
   label: 'x',
   ...extra,
 });
-const req = (op: unknown) => ({ documentId: 'd1', tabId: 't1', op: op as never, adderKey: ME });
+const req = (op: unknown) => ({ designId: 'd1', tabId: 't1', op: op as never, adderKey: ME });
 
 beforeEach(() => {
   db.getTabData.mockReset();
@@ -39,8 +39,8 @@ describe('writeParticipantOp', () => {
     );
     expect(out).toMatchObject({ ok: true, outcome: { result: 'applied', changed: true } });
     const swap: unknown[] = db.swapTabData.mock.calls[0]!;
-    const [, documentId, tabId, expected, next, stats] = swap;
-    expect([documentId, tabId, expected]).toEqual(['d1', 't1', before]);
+    const [, designId, tabId, expected, next, stats] = swap;
+    expect([designId, tabId, expected]).toEqual(['d1', 't1', before]);
     // The stats handed over are the next body's, counted as every write counts them.
     expect(stats).toEqual(tabStatsOfData(next as string).stats);
     expect(stats).toMatchObject({ elementCount: 2 });

@@ -6,7 +6,7 @@
 // many setters scattered across the page (next slice on deck).
 //
 // Throttle: both broadcasters cap at ~30 Hz (33 ms between sends).
-// That matches the cursor / laser packet rates the document-room
+// That matches the cursor / laser packet rates the design-room
 // Durable Object expects per docs/specs/015-api/api.md; faster sends would just be
 // dropped on the wire.
 
@@ -36,12 +36,12 @@ type EditorBroadcastDeps = {
   // realtime effect won't have opened the socket otherwise and we'd
   // be sending into the void.
   hydrated: boolean;
-  documentId: string | null;
-  documentShareable: boolean;
-  // The document's team (docs/specs/013-workspace/team-shared-documents.md), null for a personal document. A team
-  // document is a live room for its members even without a share link,
+  designId: string | null;
+  designShareable: boolean;
+  // The design's team (docs/specs/013-workspace/team-shared-designs.md), null for a personal design. A team
+  // design is a live room for its members even without a share link,
   // so cursor / laser ops broadcast for it too.
-  documentTeamId: string | null;
+  designTeamId: string | null;
   // Which tab is currently active. Stamped on every cursor / laser
   // op so peers can filter trails by tab (a laser drawn on Tab 1
   // doesn't show on Tab 2).
@@ -109,7 +109,7 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
   }
 
   const broadcastCursor = (pos: { x: number; y: number } | null) => {
-    if (!deps.hydrated || !deps.documentId || (!deps.documentShareable && !deps.documentTeamId))
+    if (!deps.hydrated || !deps.designId || (!deps.designShareable && !deps.designTeamId))
       return;
     const send = (at: { x: number; y: number } | null) => {
       lastCursorSentRef.current = performance.now();
@@ -150,7 +150,7 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     if (now - lastLaserSentRef.current < BROADCAST_THROTTLE_MS) return;
     lastLaserSentRef.current = now;
     setLocalLaserTrail((prev) => trimLaserBuffer([...prev, { x, y, t: now }]));
-    if (!deps.hydrated || !deps.documentId || (!deps.documentShareable && !deps.documentTeamId))
+    if (!deps.hydrated || !deps.designId || (!deps.designShareable && !deps.designTeamId))
       return;
     deps.roomRef.current?.send({
       kind: 'op',
@@ -167,7 +167,7 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     zoom: number,
     size: { width: number; height: number },
   ) => {
-    if (!deps.hydrated || !deps.documentId || (!deps.documentShareable && !deps.documentTeamId))
+    if (!deps.hydrated || !deps.designId || (!deps.designShareable && !deps.designTeamId))
       return;
     const now = performance.now();
     if (now - lastViewportSentRef.current < VIEWPORT_THROTTLE_MS) return;

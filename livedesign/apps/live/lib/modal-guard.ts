@@ -15,7 +15,7 @@ import { createListeners } from '@/lib/listeners';
 //
 // A counter (not a boolean) because dialogs can stack (a confirm on
 // top of Settings). Module-level for the same reason as the telemetry
-// buffer: one editor document per page, and threading a context through
+// buffer: one editor design per page, and threading a context through
 // every window-listener hook adds plumbing without adding safety.
 
 let openModals = 0;

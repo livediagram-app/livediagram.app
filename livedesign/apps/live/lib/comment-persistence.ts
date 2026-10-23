@@ -1,4 +1,4 @@
-import type { CommentMention } from '@livedesign/document';
+import type { CommentMention } from '@livedesign/design';
 import { apiAddComment, apiDeleteComment, apiSetThreadResolved } from '@/lib/api-client';
 
 // How a comment change is kept (docs/specs/008-canvas/canvas-and-palette.md "Comments", docs/specs/013-workspace/share-roles.md):
@@ -8,7 +8,7 @@ import { apiAddComment, apiDeleteComment, apiSetThreadResolved } from '@/lib/api
 // Participant's panel comment stayed on their own screen, unsaved and unseen by anyone else.
 export type CommentSession = {
   readOnly: boolean;
-  documentId: string | null;
+  designId: string | null;
   tabId: string;
   selfId: string;
   shareCode: string | null;
@@ -17,8 +17,8 @@ export type CommentSession = {
 type Thread = { comments: readonly { id: string }[] } | undefined;
 
 export function commentPersisters(session: CommentSession) {
-  const { readOnly, documentId, tabId, selfId, shareCode } = session;
-  const endpoint = readOnly && documentId !== null ? documentId : null;
+  const { readOnly, designId, tabId, selfId, shareCode } = session;
+  const endpoint = readOnly && designId !== null ? designId : null;
   return {
     add: (elementId: string, text: string, mentions?: CommentMention[], cell?: string) =>
       endpoint === null

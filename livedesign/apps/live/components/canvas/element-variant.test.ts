@@ -1,4 +1,4 @@
-import type { BoxedElement } from '@livedesign/document';
+import type { BoxedElement } from '@livedesign/design';
 import { describe, expect, it } from 'vitest';
 import { describeVariant, editingLook } from '@/components/canvas/element-variant';
 

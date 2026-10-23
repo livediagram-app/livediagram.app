@@ -20,7 +20,7 @@ const TERM = {
   dim: '#64748b',
 };
 
-/** The API: a curl call with a bearer token, and the documents it returns. */
+/** The API: a curl call with a bearer token, and the designs it returns. */
 export function ApiArt() {
   const mono = {
     fontFamily: MONO,
@@ -53,7 +53,7 @@ export function ApiArt() {
         <text x="32" y="33" {...mono}>
           <tspan fill={EMERALD}>$ </tspan>
           <tspan fill={TERM.text}>curl </tspan>
-          <tspan fill={TERM.string}>https://livedesign.app/api/documents</tspan>
+          <tspan fill={TERM.string}>https://livedesign.app/api/designs</tspan>
           <tspan fill={TERM.dim}> \</tspan>
         </text>
         <text x="42" y="43" {...mono}>
@@ -153,7 +153,7 @@ export function McpArt() {
           fontWeight="600"
           fontFamily={MONO}
         >
-          livedesign.create_document
+          livedesign.create_design
         </text>
         <g className="fa-b-early">
           <circle

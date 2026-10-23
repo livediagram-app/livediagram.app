@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // The `scope` query parameter is the interesting part: it exists so the
 // wire shape is fixed before a second scope type ships, but in v1 the
 // ONLY scope anyone may read is their own. A bug there would let a
-// caller read another owner's document names and comment text, so the
+// caller read another owner's design names and comment text, so the
 // authorisation cases below carry the weight of this file.
 
 const { store } = vi.hoisted(() => ({
@@ -25,7 +25,7 @@ vi.mock('../db/timeline', () => store);
 const { emit } = vi.hoisted(() => ({ emit: { backfillUserScope: vi.fn() } }));
 vi.mock('../timeline', () => emit);
 
-const { db } = vi.hoisted(() => ({ db: { getMembership: vi.fn(), getDocument: vi.fn() } }));
+const { db } = vi.hoisted(() => ({ db: { getMembership: vi.fn(), getDesign: vi.fn() } }));
 vi.mock('../db', () => db);
 
 const { gate } = vi.hoisted(() => ({ gate: { gateRead: vi.fn() } }));
@@ -54,8 +54,8 @@ beforeEach(() => {
   emit.backfillUserScope.mockReset();
   db.getMembership.mockReset();
   db.getMembership.mockResolvedValue(null);
-  db.getDocument.mockReset();
-  db.getDocument.mockResolvedValue({ id: 'd-1', ownerId: 'owner-1', teamId: null });
+  db.getDesign.mockReset();
+  db.getDesign.mockResolvedValue({ id: 'd-1', ownerId: 'owner-1', teamId: null });
   gate.gateRead.mockReset();
   gate.gateRead.mockResolvedValue(false);
   store.readTimeline.mockResolvedValue({ items: [] });
@@ -95,22 +95,22 @@ describe('handleTimeline read', () => {
     expect(store.readTimeline).not.toHaveBeenCalled();
   });
 
-  // A document's history is readable by exactly whoever can read the
-  // document — which includes a share-link visitor who is in nobody's
-  // user scope, so it defers to the document's own gate rather than
+  // A design's history is readable by exactly whoever can read the
+  // design — which includes a share-link visitor who is in nobody's
+  // user scope, so it defers to the design's own gate rather than
   // re-deriving one.
-  it('serves a document scope to anyone the document gate allows', async () => {
+  it('serves a design scope to anyone the design gate allows', async () => {
     gate.gateRead.mockResolvedValue(true);
-    const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=document:d-1'));
+    const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=design:d-1'));
     expect(res.status).toBe(200);
     // Called with the whole RouteContext (it needs the share-code
-    // headers), so assert the document identity rather than the ctx.
+    // headers), so assert the design identity rather than the ctx.
     expect(gate.gateRead).toHaveBeenCalledWith(expect.anything(), 'd-1', 'owner-1', null);
   });
 
   // An owner id is a credential, and a share-link visitor can read a
-  // document's feed, so only the reader's own id survives the response.
-  it('nulls every actor id except the readers own in a document scope', async () => {
+  // design's feed, so only the reader's own id survives the response.
+  it('nulls every actor id except the readers own in a design scope', async () => {
     gate.gateRead.mockResolvedValue(true);
     store.readTimeline.mockResolvedValue({
       items: [
@@ -119,7 +119,7 @@ describe('handleTimeline read', () => {
         { id: 'e3', actorId: null },
       ],
     });
-    const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=document:d-1'));
+    const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=design:d-1'));
     const body = (await res.json()) as { items: { id: string; actorId: string | null }[] };
     expect(body.items.map((e) => e.actorId)).toEqual([null, 'owner-1', null]);
   });
@@ -131,22 +131,22 @@ describe('handleTimeline read', () => {
     expect(body.items[0]!.actorId).toBe('someone');
   });
 
-  it('403s a document scope the gate refuses', async () => {
-    const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=document:d-1'));
+  it('403s a design scope the gate refuses', async () => {
+    const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=design:d-1'));
     expect(res.status).toBe(403);
     expect(store.readTimeline).not.toHaveBeenCalled();
   });
 
   // A refusal, not a 404: a guessed id must not be probeable for
-  // existence through this endpoint any more than through the document's.
-  it('403s a document scope for an id that does not exist', async () => {
-    db.getDocument.mockResolvedValue(null);
-    const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=document:missing'));
+  // existence through this endpoint any more than through the design's.
+  it('403s a design scope for an id that does not exist', async () => {
+    db.getDesign.mockResolvedValue(null);
+    const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=design:missing'));
     expect(res.status).toBe(403);
     expect(gate.gateRead).not.toHaveBeenCalled();
   });
 
-  // A team feed carries the team's document names and comment text, so
+  // A team feed carries the team's design names and comment text, so
   // membership is the whole gate.
   it('serves a team scope to a joined member', async () => {
     db.getMembership.mockResolvedValue({ status: 'joined', role: 'member' });
@@ -211,7 +211,7 @@ describe('handleTimeline read', () => {
     await handleTimeline(
       makeCtx(
         'GET',
-        '/api/timeline?cursor=100:abc&from=50&to=200&sourceType=document&sourceType=team',
+        '/api/timeline?cursor=100:abc&from=50&to=200&sourceType=design&sourceType=team',
       ),
     );
     expect(store.readTimeline).toHaveBeenCalledWith(
@@ -220,7 +220,7 @@ describe('handleTimeline read', () => {
         cursor: '100:abc',
         from: 50,
         to: 200,
-        sourceTypes: ['document', 'team'],
+        sourceTypes: ['design', 'team'],
       }),
     );
   });

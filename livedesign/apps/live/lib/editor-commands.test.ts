@@ -19,8 +19,8 @@ function handlers(): CommandHandlers {
     addComment: vi.fn(),
     editNote: vi.fn(),
     createTab: vi.fn(),
-    renameDocument: vi.fn(),
-    deleteDocument: vi.fn(),
+    renameDesign: vi.fn(),
+    deleteDesign: vi.fn(),
     renameTab: vi.fn(),
     openTheme: vi.fn(),
     openCanvasOptions: vi.fn(),
@@ -62,14 +62,14 @@ const base: CommandContext = {
 
 const ids = (ctx: CommandContext) => buildEditorCommands(ctx, handlers()).map((c) => c.id);
 
-describe('buildEditorCommands — document/tab commands', () => {
-  it('always offers the in-document commands regardless of selection', () => {
+describe('buildEditorCommands — design/tab commands', () => {
+  it('always offers the in-design commands regardless of selection', () => {
     expect(ids(base)).toEqual(
       expect.arrayContaining([
         'create-tab',
         'rename-tab',
-        'rename-document',
-        'delete-document',
+        'rename-design',
+        'delete-design',
         'open-theme',
         'open-canvas',
         'share',
@@ -81,7 +81,7 @@ describe('buildEditorCommands — document/tab commands', () => {
     expect(ids({ ...base, canShare: false })).not.toContain('share');
   });
 
-  it('hides Share for offline documents (docs/specs/006-document/offline-mode.md)', () => {
+  it('hides Share for offline designs (docs/specs/006-design/offline-mode.md)', () => {
     expect(ids({ ...base, isOffline: true })).not.toContain('share');
   });
 
@@ -95,13 +95,13 @@ describe('buildEditorCommands — document/tab commands', () => {
 
 // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
 describe('buildEditorCommands — in a workbench', () => {
-  it('offers neither Share nor Delete document, and keeps the rest', () => {
+  it('offers neither Share nor Delete design, and keeps the rest', () => {
     const inWorkbench = ids({ ...base, canShare: true, workbench: true });
     expect(inWorkbench).not.toContain('share');
-    expect(inWorkbench).not.toContain('delete-document');
-    expect(inWorkbench).toContain('rename-document');
+    expect(inWorkbench).not.toContain('delete-design');
+    expect(inWorkbench).toContain('rename-design');
     expect(ids({ ...base, canShare: true })).toEqual(
-      expect.arrayContaining(['share', 'delete-document']),
+      expect.arrayContaining(['share', 'delete-design']),
     );
   });
 });
@@ -117,7 +117,7 @@ describe('buildEditorCommands — selection commands', () => {
     expect(out).not.toContain('note');
   });
 
-  it('ranks selection commands ahead of the document/tab commands', () => {
+  it('ranks selection commands ahead of the design/tab commands', () => {
     const out = ids({ ...base, selectionCount: 1, singleIsBoxed: true });
     expect(out.indexOf('delete')).toBeLessThan(out.indexOf('create-tab'));
   });
@@ -240,7 +240,7 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
 
   it('read-only sessions get exactly the view-safe subset', () => {
     // The three view verbs plus the tools that only change how you LOOK at
-    // the canvas. Nothing here writes to the document, which is the property
+    // the canvas. Nothing here writes to the design, which is the property
     // this test exists to hold: the eraser and the format painter are
     // withheld, and so is every command below the read-only return.
     expect(ids({ ...base, isReadOnly: true })).toEqual([
@@ -258,8 +258,8 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
   });
 
   it('offers Collaborators to everyone, shared or not, owner or not', () => {
-    // The panel answers "who is in this document" — a question that is just as
-    // valid alone, on someone else's link, or on an offline document.
+    // The panel answers "who is in this design" — a question that is just as
+    // valid alone, on someone else's link, or on an offline design.
     for (const over of [
       {},
       { canShare: false },
@@ -417,8 +417,8 @@ describe('buildEditorCommands — locked tab and Plan mode', () => {
     expect(got).not.toContain('auto-align');
     expect(got).not.toContain('tool:eraser');
     expect(got).not.toContain('tool:format');
-    // The document and the view stay workable.
-    expect(got).toEqual(expect.arrayContaining(['create-tab', 'rename-document', 'fit-to-screen']));
+    // The design and the view stay workable.
+    expect(got).toEqual(expect.arrayContaining(['create-tab', 'rename-design', 'fit-to-screen']));
   });
 
   it('keeps them on an unlocked tab', () => {

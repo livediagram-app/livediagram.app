@@ -1,5 +1,5 @@
 // Feature illustrations for getting around and getting it out: the search panel that doubles as a
-// command palette, following a teammate's view, and a document shown live somewhere else (an embed
+// command palette, following a teammate's view, and a design shown live somewhere else (an embed
 // or a live image in a README). Panels use the editor's floating chrome; diagrams the Default ink.
 
 import type { CSSProperties } from 'react';

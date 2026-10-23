@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { EditorMode, Element } from '@livedesign/document';
+import type { EditorMode, Element } from '@livedesign/design';
 import { CompactEmptyState, HoverCard, NoMatches, SearchIcon } from '@livedesign/ui';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { SearchInput } from '@/components/primitives/SearchInput';

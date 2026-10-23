@@ -2,14 +2,14 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { clampIntoRange, Portal } from '@livedesign/ui';
-import type { TextRun } from '@livedesign/document';
+import type { TextRun } from '@livedesign/design';
 import { NoteRichText, noteRuns } from '@/components/notes/NoteRichText';
 import { NoteRichTextEditor } from '@/components/notes/NoteRichTextEditor';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
 import { elementSelector } from '@/lib/canvas-selectors';
 
 // Per-element note popover. Distinct from CommentThreadPopover: notes are a
-// SINGLE small document (no author, no thread, no resolve / replies),
+// SINGLE small design (no author, no thread, no resolve / replies),
 // surfaced as `element.note?` plus its formatting runs `element.noteRich?`
 // on the schema. Rich text (bold / italic / underline, headings, bullet +
 // numbered lists, links) landed in docs/specs/009-elements/rich-text-notes.md; the editing surface itself is

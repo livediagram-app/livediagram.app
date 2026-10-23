@@ -15,7 +15,7 @@ const row = (category: string, action: string, type: string | null, count: numbe
 const ROWS = [
   row('Page', 'View', '/', 40),
   row('Page', 'View', '/new', 10),
-  row('Page', 'View', '/document', 90),
+  row('Page', 'View', '/design', 90),
   row('Page', 'View', '/help/canvas/the-canvas', 12),
   row('Page', 'View', '/explorer', 20),
   row('Page', 'View', '/explorer/timeline', 30),
@@ -31,7 +31,7 @@ const paths = (rows: TelemetryCount[]) => rows.map((r) => r.type);
 describe('pageViewRows', () => {
   it('ranks every page view, most viewed first, and nothing else', () => {
     expect(paths(pageViewRows(ROWS, 'All'))).toEqual([
-      '/document',
+      '/design',
       '/',
       '/explorer/timeline',
       '/explorer',
@@ -44,7 +44,7 @@ describe('pageViewRows', () => {
 
   it('narrows to the app that serves each path', () => {
     expect(paths(pageViewRows(ROWS, 'Live'))).toEqual([
-      '/document',
+      '/design',
       '/explorer/timeline',
       '/explorer',
       '/new',

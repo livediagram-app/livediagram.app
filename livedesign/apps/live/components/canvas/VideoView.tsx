@@ -9,7 +9,7 @@ import {
   type EmbedProvider,
   type EmbedTarget,
   type VideoElement,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { track } from '@/lib/telemetry';
 import { bodySetClass } from '@/lib/animation-classes';
 import { useFrameBlocked } from '@/components/canvas/use-frame-blocked';
@@ -26,7 +26,7 @@ import { useFrameBlocked } from '@/components/canvas/use-frame-blocked';
 //   always-mounted player would be a hole in the canvas you could not drag,
 //   select, or marquee over.
 // - youtube-nocookie.com sets nothing until playback starts, so opening a
-//   document that contains a video is not a tracked visit. The repo is public
+//   design that contains a video is not a tracked visit. The repo is public
 //   and self-hostable (docs/specs/002-project-scope/open-source-and-business-model.md); a self-hoster should not be silently
 //   shipping their users to Google on page load.
 

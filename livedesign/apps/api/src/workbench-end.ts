@@ -1,7 +1,7 @@
 // Ending workbench access (docs/specs/013-workspace/blueprints/workbench-embeds.md "Ending access"): Unpair
 // removes one pairing; revoking a token removes all of its pairings and its pending requests. Tickets and
 // sessions cascade with their pairing. The D1 delete is the change; closing the rooms is best-effort, since
-// every later request of a removed session already fails. A document session's room is its document; a
+// every later request of a removed session already fails. A design session's room is its design; a
 // workspace session's rooms are the ones it joined (`workbench_session_rooms`, WB55).
 
 import type { WorkbenchScope } from '@livedesign/api-schema';
@@ -18,7 +18,7 @@ type SessionRow = {
   pairing_id: string;
   token_id: string;
   scope: WorkbenchScope;
-  document_id: string | null;
+  design_id: string | null;
 };
 
 export async function endWorkbenchAccess(
@@ -35,18 +35,18 @@ export async function endWorkbenchAccess(
     .bind(key)
     .all<{ id: string; token_id: string; scope: WorkbenchScope }>();
   const { results: sessions } = await env.DB.prepare(
-    `SELECT s.id, s.pairing_id, s.token_id, s.scope, s.document_id FROM workbench_sessions s
+    `SELECT s.id, s.pairing_id, s.token_id, s.scope, s.design_id FROM workbench_sessions s
       WHERE s.pairing_id IN (${pairingsOfTarget})`,
   )
     .bind(key)
     .all<SessionRow>();
   const { results: rooms } = await env.DB.prepare(
-    `SELECT s.pairing_id, r.document_id FROM workbench_session_rooms r
+    `SELECT s.pairing_id, r.design_id FROM workbench_session_rooms r
        JOIN workbench_sessions s ON s.id = r.session_id
       WHERE s.pairing_id IN (${pairingsOfTarget})`,
   )
     .bind(key)
-    .all<{ pairing_id: string; document_id: string }>();
+    .all<{ pairing_id: string; design_id: string }>();
 
   const deletes = [
     env.DB.prepare(`DELETE FROM workbench_pairings WHERE ${byToken ? 'token_id' : 'id'} = ?`).bind(
@@ -63,24 +63,24 @@ export async function endWorkbenchAccess(
     console.log('[workbench] session-ended', {
       reason,
       scope: session.scope,
-      documentId: session.document_id,
+      designId: session.design_id,
       tokenId: session.token_id,
       sessionPrefix: sessionPrefixOf(session.id),
     });
   }
 
   for (const pairing of pairings) {
-    const documents = [
+    const designs = [
       ...new Set([
         ...sessions.flatMap((s) =>
-          s.pairing_id === pairing.id && s.document_id !== null ? [s.document_id] : [],
+          s.pairing_id === pairing.id && s.design_id !== null ? [s.design_id] : [],
         ),
-        ...rooms.filter((r) => r.pairing_id === pairing.id).map((r) => r.document_id),
+        ...rooms.filter((r) => r.pairing_id === pairing.id).map((r) => r.design_id),
       ]),
     ];
     let unreached = 0;
-    for (let i = 0; i < documents.length; i += TEAM_ROOM_CLOSE_CONCURRENCY) {
-      const batch = documents.slice(i, i + TEAM_ROOM_CLOSE_CONCURRENCY);
+    for (let i = 0; i < designs.length; i += TEAM_ROOM_CLOSE_CONCURRENCY) {
+      const batch = designs.slice(i, i + TEAM_ROOM_CLOSE_CONCURRENCY);
       const reached = await Promise.all(
         batch.map((doc) => closeWorkbenchSessions(env, doc, pairing.id)),
       );
@@ -91,7 +91,7 @@ export async function endWorkbenchAccess(
       pairingId: pairing.id,
       scope: pairing.scope,
       reason,
-      rooms: documents.length,
+      rooms: designs.length,
       unreached,
     });
   }

@@ -8,7 +8,7 @@ import {
   nearestBorderStroke,
   type RecognisedShape,
   type ShapeKind,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
 
 // A recognised shape's outline: the outline the committed shape will have, unfilled. SVG-rendered outlines keep a

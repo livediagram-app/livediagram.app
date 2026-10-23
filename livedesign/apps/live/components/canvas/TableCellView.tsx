@@ -6,7 +6,7 @@ import {
   type ElementLink,
   type TableCellStyle,
   type TableElement,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { CellLinkIcon } from '@/components/canvas/table-icons';
 import { TableCellEditor } from '@/components/canvas/TableCellEditor';
 import { describeLink } from '@/lib/link-label';

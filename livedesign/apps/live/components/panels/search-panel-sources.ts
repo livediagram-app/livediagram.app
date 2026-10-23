@@ -1,13 +1,13 @@
 // What the search panel searches across, and how both of its hosts (the Explorer and the editor) shape their lists
 // for it. Kept apart from SearchPanel.tsx, which both hosts load lazily: importing this costs no first-load JS.
-import { isInThisBrowser } from '@/lib/document-space';
+import { isInThisBrowser } from '@/lib/design-space';
 
-export type SearchPanelDocument = { id: string; name: string; localOnly?: boolean };
+export type SearchPanelDesign = { id: string; name: string; localOnly?: boolean };
 export type SearchPanelFolder = { id: string; name: string };
 export type SearchPanelShared = { id: string; name: string; shareCode: string };
 export type SearchPanelTeam = { id: string; name: string };
 export type SearchPanelTeamFolder = { id: string; path: string; teamId: string; teamName: string };
-export type SearchPanelTeamDocument = {
+export type SearchPanelTeamDesign = {
   id: string;
   name: string;
   teamId: string;
@@ -17,20 +17,20 @@ export type SearchPanelTeamDocument = {
 type Named = { id: string; name: string };
 
 export function searchPanelSources(lists: {
-  documents: readonly (Named & { ownerId: string })[];
+  designs: readonly (Named & { ownerId: string })[];
   folders: readonly Named[];
   shared: readonly (Named & { shareCode: string })[];
   teams: readonly Named[];
-  teamDocuments: readonly (Named & { team: Named })[];
+  teamDesigns: readonly (Named & { team: Named })[];
 }): {
-  documents: SearchPanelDocument[];
+  designs: SearchPanelDesign[];
   folders: SearchPanelFolder[];
   shared: SearchPanelShared[];
   teams: SearchPanelTeam[];
-  teamDocuments: SearchPanelTeamDocument[];
+  teamDesigns: SearchPanelTeamDesign[];
 } {
   return {
-    documents: lists.documents.map((d) => ({
+    designs: lists.designs.map((d) => ({
       id: d.id,
       name: d.name,
       localOnly: isInThisBrowser(d),
@@ -38,7 +38,7 @@ export function searchPanelSources(lists: {
     folders: lists.folders.map((f) => ({ id: f.id, name: f.name })),
     shared: lists.shared.map((s) => ({ id: s.id, name: s.name, shareCode: s.shareCode })),
     teams: lists.teams.map((t) => ({ id: t.id, name: t.name })),
-    teamDocuments: lists.teamDocuments.map((d) => ({
+    teamDesigns: lists.teamDesigns.map((d) => ({
       id: d.id,
       name: d.name,
       teamId: d.team.id,

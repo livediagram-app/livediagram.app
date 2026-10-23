@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
-import { penColourHex, standardColours } from '@livedesign/document';
+import { penColourHex, standardColours } from '@livedesign/design';
 import { ColourRow } from './context-menu-input-rows';
 
 // docs/specs/008-canvas/canvas-and-palette.md Colours, on the one colour picker

@@ -12,7 +12,7 @@ This section describes the process of organising and layering empirical informat
 It guides the engineering efforts by having agents specify with sufficient detail.
 The goal is for agents to become increasingly self-sufficient when working on systems they already know.
 
-This is achieved by iteratively capturing contextual information about the domain and documenting intentions from humans.
+This is achieved by iteratively capturing contextual information about the domain and designing intentions from humans.
 
 This section is exclusively human-hand-written; agents MUST NOT edit this section directly.
 
@@ -42,9 +42,9 @@ Further details below.
 - They are indexed under `docs/README.md`.
 - The docs index includes entry points to `specs` and `instructions`.
 - Docs convey information in scope of the project.
-- All docs SHOULD be treated as persistent documents that can be iterated on.
+- All docs SHOULD be treated as persistent designs that can be iterated on.
 - Stay cognizant of the deltas of each change.
-- Reuse documents where it makes sense.
+- Reuse designs where it makes sense.
 - Folders of substance SHOULD hold a `README.md` with an index.
 - Docs, indexes and references **MUST be continuously kept-up-to-date** throughout all work.
 
@@ -185,10 +185,10 @@ Whenever you add, remove or rename a help article, follow [`docs/instructions/re
 
 See [Domain language](docs/specs/003-system-architecture/domain-language.md).
 
-- **Mode** is how a tab is worked on. livedesign has one, **Pages**; a mode stored by livediagram (Diagram, Draw, Workshop, Plan) reads as Pages. Never a type of document or tab.
+- **Mode** is how a tab is worked on. livedesign has one, **Pages**; a mode stored by livediagram (Diagram, Draw, Workshop, Plan) reads as Pages. Never a type of design or tab.
 - **Page kind** is what a page is: infographic, article, slide, logo or wireframe. A tab holds pages of any kind.
-- **Template** is what a document was made from: a Pages template or a page layout, never a kind.
-- **This Browser** names a document saved only in this browser, its place, pill and badge alike; never "Local Only" or "Local Browser".
+- **Template** is what a design was made from: a Pages template or a page layout, never a kind.
+- **This Browser** names a design saved only in this browser, its place, pill and badge alike; never "Local Only" or "Local Browser".
 
 ## Repo layout
 
@@ -204,7 +204,7 @@ apps/
   cli/          # the livedesign command line for agents and scripts (Node, one esbuild bundle)
 packages/
   ui/             # shared UI primitives (Brand, SiteHeader, Button, TextInput, Select, Tooltip, hooks) + chrome icons (src/icons)
-  document/       # document data model (Tab, Element types + element helpers)
+  design/       # design data model (Tab, Element types + element helpers)
   icons/          # icon catalogues (line-art + stickers) + SVG markup builders + xmlEscape
   templates/      # template catalogue + pure element builders (editor template starts + MCP)
   template-previews/ # per-template preview SVGs (editor template starts + marketing template gallery)
@@ -212,7 +212,7 @@ packages/
   explorer-lens/  # the Explorer filter lens: parse, match and autocomplete filter tokens (pure)
   page-background/ # a page background's colours, patterns and motions + their parser (pure)
   photo-engine/   # photo pages: the layer model + the pixel engine (composite, adjustments, filters, selections, paint, PSD) (pure)
-  document-views/ # read-only text views of a tab (outline, pages, layout, ...) for agents and scripts
+  design-views/ # read-only text views of a tab (outline, pages, layout, ...) for agents and scripts
   api-schema/     # wire-format DTOs the api worker emits + the live editor consumes
   api-client/     # the api client the MCP server and the CLI share (fetch, timeouts, ApiError)
   agent-verbs/    # the verbs the CLI routes to: schemas, handlers, compact text, addressing, guides
@@ -255,7 +255,7 @@ See [Secrets policy](docs/specs/002-project-scope/secrets-policy.md). **Repo is 
 - All secrets via env vars: `.env.local` (gitignored) for dev, `wrangler secret put` for Workers, dashboard env vars for Pages.
 - Client bundles only carry values explicitly prefixed `NEXT_PUBLIC_*` and only when documented as publishable (e.g. Clerk publishable key).
 - Server-only secrets (Clerk secret key, Resend, D1 access) never appear in client code.
-- Each app/worker that needs env vars ships a `.env.example` documenting what's required.
+- Each app/worker that needs env vars ships a `.env.example` designing what's required.
 
 ## Auth model
 
@@ -267,7 +267,7 @@ See [Auth + guest access](docs/specs/014-identity/auth-and-guest-access.md).
   - **Authed path**: a Clerk session JWT in `Authorization: Bearer <token>`, verified via `CLERK_JWKS_URL`.
   - The api worker uses the `sub` claim as the owner id.
 - The two paths coexist forever — a signed-in user can still hand a share link to a guest who edits without auth.
-- Sign-in lives at `/sign-in/` and sign-up at `/get-started/` (custom UI; email-code or Google OAuth). On sign-up, guest documents migrate from the localStorage id to the Clerk user id via `POST /api/migrate`.
+- Sign-in lives at `/sign-in/` and sign-up at `/get-started/` (custom UI; email-code or Google OAuth). On sign-up, guest designs migrate from the localStorage id to the Clerk user id via `POST /api/migrate`.
 
 ## Core principle: reuse over duplication
 
@@ -317,7 +317,7 @@ See [Deployment](docs/specs/016-platform/deployment.md) and [Staging environment
 
 ## Guidelines
 
-- **Every feature decides its share roles.** When specifying or building anything a shared document can reach, state what an Editor, a Participant and a Viewer may do with it, gate it on the session's `can`, never on `isReadOnly` alone, and lock it with tests: follow [`docs/instructions/gate-a-feature-by-share-role.md`](docs/instructions/gate-a-feature-by-share-role.md).
+- **Every feature decides its share roles.** When specifying or building anything a shared design can reach, state what an Editor, a Participant and a Viewer may do with it, gate it on the session's `can`, never on `isReadOnly` alone, and lock it with tests: follow [`docs/instructions/gate-a-feature-by-share-role.md`](docs/instructions/gate-a-feature-by-share-role.md).
 - Don't add SSR, Next.js API routes, or Node-only runtime code to a frontend app — it will break Cloudflare Pages deploys.
 - Put any logic shared by two or more apps in `packages/` rather than copying it.
 - **One colour picker.** Anything that lets someone choose a colour uses the shared picker in `apps/live/components/colour/` (see [Colour picker](docs/specs/004-interface-design/colour-picker.md#the-rule-for-new-work)); never build a new swatch grid, custom colour editor or `<input type="color">`. If no skin fits, extend the picker.

@@ -76,7 +76,7 @@ export const ALTERNATIVES: Alternative[] = [
     description:
       'A free, open-source Google Slides alternative for presenting designs: every page joins the deck, with presenter notes, timing, a laser and a spotlight.',
     h1: 'A free, open-source Google Slides alternative',
-    lede: 'Google Slides is the presentation tool most people already have open. livedesign makes decks a little differently: every page of a design joins its deck, so the logo and the wireframes present as they are, from tabs of one document, with your team editing alongside you.',
+    lede: 'Google Slides is the presentation tool most people already have open. livedesign makes decks a little differently: every page of a design joins its deck, so the logo and the wireframes present as they are, from tabs of one design, with your team editing alongside you.',
     rows: [
       { label: 'Price', us: 'Free, every feature', them: 'Free with a Google account' },
       { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, proprietary' },
@@ -103,7 +103,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         label: 'Beyond the deck',
-        us: 'Logos, wireframes and photos in the same document',
+        us: 'Logos, wireframes and photos in the same design',
         them: 'One of several Google Workspace apps',
       },
       { label: 'Self-hostable', us: 'Yes, on your own Cloudflare account', them: 'No' },
@@ -115,8 +115,8 @@ export const ALTERNATIVES: Alternative[] = [
       'Gemini in Slides drafts a whole, editable deck from a prompt, styled from your files, on eligible Workspace and Google AI plans.',
     ],
     usBest: [
-      'Every page of a design joins its deck: reorder them, hide the ones to skip, and present. The deck is saved with the document.',
-      'One document for the whole story: the logo, the wireframes and the deck that presents them, side by side as tabs.',
+      'Every page of a design joins its deck: reorder them, hide the ones to skip, and present. The deck is saved with the design.',
+      'One design for the whole story: the logo, the wireframes and the deck that presents them, side by side as tabs.',
       'Present with presenter notes, a time budget per slide, transitions, a laser pointer and a spotlight; your screen moves, nobody else’s.',
       'Leave a deck running on a screen: auto-advance every 5 to 60 seconds and loop back to the start.',
       'Put another tab on a slide, live: a tab window shows it as it is now, so the slide follows every change.',
@@ -136,20 +136,20 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'Presenting, built for the room',
         paragraphs: [
-          'Presenting runs full screen on your screen alone: nobody is dragged into your slide, and collaborators with the document open carry on working. Each slide carries its own presenter notes behind a button, and an optional time budget you can watch as you talk. A laser pointer and a spotlight guide the room.',
+          'Presenting runs full screen on your screen alone: nobody is dragged into your slide, and collaborators with the design open carry on working. Each slide carries its own presenter notes behind a button, and an optional time budget you can watch as you talk. A laser pointer and a spotlight guide the room.',
           'Nothing on a slide can be changed by a stray click, so a projector is safe, and a deck can advance on its own and loop for a screen in a lobby.',
         ],
       },
       {
         heading: 'The deck and everything behind it',
         paragraphs: [
-          'A deck is usually the last step of something: a brand, a product, a launch. In Workspace the pieces live in separate files. In livedesign they are tabs of one document: design the logo, sketch the screens, and present from all of it. Everyone edits live, with comments and assigned actions on the pages themselves.',
+          'A deck is usually the last step of something: a brand, a product, a launch. In Workspace the pieces live in separate files. In livedesign they are tabs of one design: design the logo, sketch the screens, and present from all of it. Everyone edits live, with comments and assigned actions on the pages themselves.',
         ],
       },
       {
         heading: 'Free, open and no account needed',
         paragraphs: [
-          'Slides is free with a Google account. livedesign needs no account at all: open the editor and start, and a guest’s document stays in their browser until they press Share, which syncs it in one step. The whole product is MIT-licensed with no paid tier, and you can run your own copy on your own Cloudflare account. Export any page as a PNG, SVG or a print-ready PDF when a deck has to travel.',
+          'Slides is free with a Google account. livedesign needs no account at all: open the editor and start, and a guest’s design stays in their browser until they press Share, which syncs it in one step. The whole product is MIT-licensed with no paid tier, and you can run your own copy on your own Cloudflare account. Export any page as a PNG, SVG or a print-ready PDF when a deck has to travel.',
         ],
       },
     ],

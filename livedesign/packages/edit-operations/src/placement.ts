@@ -13,7 +13,7 @@ import {
   type Element,
   type Endpoint,
   type ElementId,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { resolveOne } from './selectors';
 import { currentElements, holdersOf, refsOf, type EditState } from './state';
 import type { Placement } from './types';

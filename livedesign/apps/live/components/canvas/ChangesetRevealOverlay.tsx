@@ -7,7 +7,7 @@ import {
   DEFAULT_BACKGROUND_COLOR,
   elementBounds,
   type Element,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { useCanvasSurface } from './CanvasSurfaceContext';
 import type { ChangesetReveal, RevealStore } from '@/lib/changeset-reveals';
 

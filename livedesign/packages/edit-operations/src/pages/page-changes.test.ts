@@ -7,8 +7,8 @@ import {
   type Element,
   type Page,
   type Tab,
-} from '@livedesign/document';
-import { getBuiltInTheme } from '@livedesign/document';
+} from '@livedesign/design';
+import { getBuiltInTheme } from '@livedesign/design';
 import { layoutCatalogueFor } from '@livedesign/templates';
 import { applyPageChanges, backgroundPatch } from './page-changes';
 import { pageSummaries } from './summary';

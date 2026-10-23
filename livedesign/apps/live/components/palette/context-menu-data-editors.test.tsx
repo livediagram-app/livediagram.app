@@ -6,7 +6,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ReactElement } from 'react';
-import type { ChecklistItem, LegendItem, PieSlice } from '@livedesign/document';
+import type { ChecklistItem, LegendItem, PieSlice } from '@livedesign/design';
 import { ChecklistRowsEditor, LegendDataEditor, PieDataEditor } from './context-menu-data-editors';
 
 afterEach(() => cleanup());

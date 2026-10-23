@@ -4,7 +4,7 @@
 import { carryLensQuery, withLensQuery, type LensView } from '@livedesign/explorer-lens';
 import type { SelectedNode } from '../views';
 
-/** Search results: every document the reader can open, narrowed by the lens. */
+/** Search results: every design the reader can open, narrowed by the lens. */
 export const SEARCH_RESULTS_PATH = '/explorer/search';
 
 const VIEWS: Partial<Record<SelectedNode['kind'], LensView>> = {
@@ -18,7 +18,7 @@ const VIEWS: Partial<Record<SelectedNode['kind'], LensView>> = {
   shared: 'aggregate',
 };
 
-/** Whether a view has a scope (its breadcrumb), lists every place at once, or lists no documents. */
+/** Whether a view has a scope (its breadcrumb), lists every place at once, or lists no designs. */
 export function lensViewOf(kind: SelectedNode['kind']): LensView | null {
   return VIEWS[kind] ?? null;
 }

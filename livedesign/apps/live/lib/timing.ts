@@ -1,11 +1,11 @@
-// The editor's timings (docs/specs/017-telemetry/timing-telemetry.md): opening a document, switching
+// The editor's timings (docs/specs/017-telemetry/timing-telemetry.md): opening a design, switching
 // to a tab, an autosave, and the live room connecting and reconnecting, each sent as
 // `Timing·Measured·<Metric>.<Bucket>` through the shared startTiming.
 //
 // lib/api can't import lib/telemetry (import cycle), and the room's timings start inside lib/api, so
 // the track is registered by TimingTelemetryBoot, the way the api error reporter is. It is read when a
 // timing ENDS, not when it starts, so a load that starts before the boot's effect has run (the
-// document page's layout effect runs first) still reports.
+// design page's layout effect runs first) still reports.
 
 import type { EditorTimingMetric } from '@livedesign/api-schema';
 import {
@@ -36,16 +36,16 @@ const SAVE_TIMING_INTERVAL_MS = 60_000;
 
 export const sampleSaveTiming: () => boolean = createTimingSampler(SAVE_TIMING_INTERVAL_MS);
 
-// Set once the page's first document load has ended, however it ended: only that load can have
+// Set once the page's first design load has ended, however it ended: only that load can have
 // started at the navigation. Coming back in-app to the page's own address is not a fresh page load.
 let firstLoadEnded = false;
 
 /**
- * When a document load began, for DocumentLoad: the page's navigation start (0) for the first load on
- * a page that opened on this document, so the number includes downloading the app; otherwise (an
+ * When a design load began, for DesignLoad: the page's navigation start (0) for the first load on
+ * a page that opened on this design, so the number includes downloading the app; otherwise (an
  * in-app arrival from the Explorer) undefined, meaning now.
  */
-export function documentLoadOrigin(): number | undefined {
+export function designLoadOrigin(): number | undefined {
   if (firstLoadEnded) return undefined;
   try {
     const [navigation] = performance.getEntriesByType('navigation');
@@ -56,8 +56,8 @@ export function documentLoadOrigin(): number | undefined {
   return undefined;
 }
 
-/** A document load ended (opened, failed or stopped at a password): later loads are in-app. */
-export function noteDocumentLoadEnded(): void {
+/** A design load ended (opened, failed or stopped at a password): later loads are in-app. */
+export function noteDesignLoadEnded(): void {
   firstLoadEnded = true;
 }
 

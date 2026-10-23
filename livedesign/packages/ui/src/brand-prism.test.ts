@@ -1,4 +1,4 @@
-import { contrastRatio } from '@livedesign/document';
+import { contrastRatio } from '@livedesign/design';
 import { describe, expect, it } from 'vitest';
 import { PRISM_PALETTES, PRISM_STOPS, prismPalette } from './brand-prism';
 

@@ -77,9 +77,9 @@ export const presenceSet = defineVerb({
         message: REFUSALS[parsed.code],
         hint: 'livedesign presence set --help',
       });
-    const { document, tab } = await tabOf(ctx, input.doc, input.tab);
+    const { design, tab } = await tabOf(ctx, input.doc, input.tab);
     const { presence } = await ctx.api.json<{ presence: AgentPresenceResult }>(
-      `${tabPath(document.id, tab.id)}/presence`,
+      `${tabPath(design.id, tab.id)}/presence`,
       { method: 'PUT', body: JSON.stringify(body) },
     );
     return { tabName: tab.name, presence };
@@ -105,8 +105,8 @@ export const presenceClear = defineVerb({
   input: z.object({ doc: docArg, tab: tabFlag }),
   output: z.object({ text: z.string() }),
   run: async (ctx, input) => {
-    const { document, tab } = await tabOf(ctx, input.doc, input.tab);
-    const res = await ctx.api.fetch(`${tabPath(document.id, tab.id)}/presence`, {
+    const { design, tab } = await tabOf(ctx, input.doc, input.tab);
+    const res = await ctx.api.fetch(`${tabPath(design.id, tab.id)}/presence`, {
       method: 'DELETE',
     });
     if (!res.ok) throw new ApiError(res.status, await res.text());

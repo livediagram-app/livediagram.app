@@ -1,6 +1,6 @@
 // Which shape the Explorer header's create affordance takes (docs/specs/013-workspace/folders.md).
 //
-// Two actions (New document + New subfolder, inside a folder) share one
+// Two actions (New design + New subfolder, inside a folder) share one
 // compact "+ Create" dropdown: two shrink-0 buttons squeezed the folder-name
 // title to nothing on a narrow phone. But a dropdown holding a single tile is
 // two clicks and a hidden label for one action — it reads as "Create… what?".
@@ -11,15 +11,15 @@
 // without mounting the header (docs/specs/003-system-architecture/testing.md).
 
 type PaneCreateMode =
-  { kind: 'none' } | { kind: 'menu' } | { kind: 'single'; action: 'document' | 'folder' };
+  { kind: 'none' } | { kind: 'menu' } | { kind: 'single'; action: 'design' | 'folder' };
 
 export function paneCreateMode(opts: {
-  hasCreateDocument: boolean;
+  hasCreateDesign: boolean;
   hasCreateFolder: boolean;
 }): PaneCreateMode {
-  const { hasCreateDocument, hasCreateFolder } = opts;
-  if (hasCreateDocument && hasCreateFolder) return { kind: 'menu' };
-  if (hasCreateDocument) return { kind: 'single', action: 'document' };
+  const { hasCreateDesign, hasCreateFolder } = opts;
+  if (hasCreateDesign && hasCreateFolder) return { kind: 'menu' };
+  if (hasCreateDesign) return { kind: 'single', action: 'design' };
   if (hasCreateFolder) return { kind: 'single', action: 'folder' };
   return { kind: 'none' };
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { ShapeElement, Tab, TabLedger } from '@livedesign/document';
+import type { ShapeElement, Tab, TabLedger } from '@livedesign/design';
 import { commentThreadOf } from './comments';
 import type { Env } from './types';
 import {
@@ -37,7 +37,7 @@ const ledger: TabLedger = {
 function envWith(fetch: (url: string, init?: RequestInit) => Promise<Response>) {
   const stubFetch = vi.fn(fetch);
   const env = {
-    DOCUMENT_ROOM: {
+    DESIGN_ROOM: {
       idFromName: (name: string) => name,
       get: () => ({ fetch: stubFetch }),
     },
@@ -46,8 +46,8 @@ function envWith(fetch: (url: string, init?: RequestInit) => Promise<Response>) 
 }
 
 // The tab PUT's two halves, fetch then apply, as the route runs them.
-const mergeRoomLedger = async (env: Env, documentId: string, t: Tab, cursor: string | null) =>
-  applyRoomLedger(t, await fetchRoomLedger(env, documentId, t.id, cursor));
+const mergeRoomLedger = async (env: Env, designId: string, t: Tab, cursor: string | null) =>
+  applyRoomLedger(t, await fetchRoomLedger(env, designId, t.id, cursor));
 
 describe('the room ledger merge (docs/specs/012-collaboration/collab-race-hardening.md phase 3)', () => {
   it("merges the room's comments the saver hadn't seen", async () => {
@@ -63,7 +63,7 @@ describe('the room ledger merge (docs/specs/012-collaboration/collab-race-harden
     expect(stubFetch).not.toHaveBeenCalled();
   });
 
-  it('asks the room of a personal document too: every server-stored document has one', async () => {
+  it('asks the room of a personal design too: every server-stored design has one', async () => {
     const { env, stubFetch } = envWith(async () => Response.json(ledger));
     await mergeRoomLedger(env, 'personal', tab, 'ep:4');
     expect(stubFetch).toHaveBeenCalledOnce();
@@ -94,7 +94,7 @@ describe('parseRoomCursor', () => {
 // op reaches the room's broadcast endpoint, and a room that can't be reached
 // is logged, never thrown, because the D1 write it follows is the real change.
 describe('broadcastShareOp', () => {
-  it("posts the op to the document's room", async () => {
+  it("posts the op to the design's room", async () => {
     const { env, stubFetch } = envWith(async () => new Response(null, { status: 204 }));
     await broadcastShareOp(env, 'd1', { kind: 'share-rescoped', code: 'ABCD2345' });
     const [url, init] = stubFetch.mock.calls[0] as unknown as [string, RequestInit];
@@ -134,7 +134,7 @@ describe('relayChangeset', () => {
     counts: { added: 1, changed: 0, removed: 0 },
   };
 
-  it("posts one changeset op to the document's room", async () => {
+  it("posts one changeset op to the design's room", async () => {
     const { env, stubFetch } = envWith(async () => new Response(null, { status: 204 }));
     expect(await relayChangeset(env, 'personal', op)).toBe(true);
     const [url, init] = stubFetch.mock.calls[0] as unknown as [string, RequestInit];
@@ -152,7 +152,7 @@ describe('relayChangeset', () => {
     expect(await relayChangeset(down.env, 'd1', op)).toBe(false);
     expect(warn).toHaveBeenCalledWith(
       '[changeset] relay-failed',
-      expect.objectContaining({ documentId: 'd1', tabId: 't1', changesetId: 'cs_0000000001' }),
+      expect.objectContaining({ designId: 'd1', tabId: 't1', changesetId: 'cs_0000000001' }),
     );
     warn.mockRestore();
   });
@@ -184,12 +184,12 @@ describe('readRoomSelections', () => {
     expect(await readRoomSelections(env, 'd1', 't1', null)).toBeNull();
     expect(warn).toHaveBeenCalledWith(
       '[changeset] selections-unreachable',
-      expect.objectContaining({ documentId: 'd1', tabId: 't1' }),
+      expect.objectContaining({ designId: 'd1', tabId: 't1' }),
     );
     expect(await readRoomSelections(env, 'd1', 't1', null, 'views')).toBeNull();
     expect(warn).toHaveBeenLastCalledWith(
       '[views] selections-unreachable',
-      expect.objectContaining({ documentId: 'd1' }),
+      expect.objectContaining({ designId: 'd1' }),
     );
     warn.mockRestore();
   });
@@ -197,7 +197,7 @@ describe('readRoomSelections', () => {
 
 describe('agent presence in the room (docs/specs/024-agents/blueprints/agent-presence.md "Room")', () => {
   const write = {
-    documentId: 'd1',
+    designId: 'd1',
     tokenId: 'tok_1',
     tabId: 't1',
     personTag: 'p',
@@ -220,7 +220,7 @@ describe('agent presence in the room (docs/specs/024-agents/blueprints/agent-pre
     const { env, stubFetch } = envWith(async () => answers.shift()!);
     expect(await putAgentPresence(env, write)).toEqual({ ok: true, expiresAt: 5, created: true });
     expect(JSON.parse(stubFetch.mock.calls[0]![1]!.body as string)).not.toHaveProperty(
-      'documentId',
+      'designId',
     );
     expect(await putAgentPresence(env, write)).toEqual({ ok: false, error: 'agent_presence_full' });
     await expect(putAgentPresence(env, write)).rejects.toBeInstanceOf(RoomUnavailableError);
@@ -303,11 +303,11 @@ describe('relayElementDelta (agent-presence PR26)', () => {
     expect(warn.mock.calls).toEqual([
       [
         '[room-mutation] el-delta did not reach the room',
-        { documentId: 'd1', tabId: 't1', delta: 'comment-resolve', error: 'status 400' },
+        { designId: 'd1', tabId: 't1', delta: 'comment-resolve', error: 'status 400' },
       ],
       [
         '[room-mutation] el-delta did not reach the room',
-        { documentId: 'd1', tabId: 't1', delta: 'comment-resolve', error: 'Error: gone' },
+        { designId: 'd1', tabId: 't1', delta: 'comment-resolve', error: 'Error: gone' },
       ],
     ]);
     warn.mockRestore();

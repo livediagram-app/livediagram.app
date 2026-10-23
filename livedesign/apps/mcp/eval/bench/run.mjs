@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Runs the benchmark: each task, on each model, a number of times, as a real headless Claude session with the
 // livedesign MCP mounted and nothing else (docs/instructions/evaluate-mcp-output.md). Each run gets its own fresh
-// library (a token minted for a throwaway owner), so runs never see each other's documents. Writes, per run,
+// library (a token minted for a throwaway owner), so runs never see each other's designs. Writes, per run,
 // runs/<round>/<task>-<model>-<n>.{jsonl,snapshot.json} (and .base.jsonl for an edit task's first turn).
 //
 //   node bench/run.mjs --round r1 [--tasks all|<area>|<ids>] [--models haiku,sonnet,opus] [--repeat 2]
@@ -152,7 +152,7 @@ async function runJob(job) {
       const base = await claudeTurn({ prompt: taskById(task.after).prompt, model, token, cwd });
       writeFileSync(join(OUT, `${name}.base.jsonl`), base.transcript);
       const parsed = parseTranscript(base.transcript);
-      parsed.documentIds.forEach((id) => touched.add(id));
+      parsed.designIds.forEach((id) => touched.add(id));
       resume = parsed.sessionId ?? undefined;
     }
     let turn = await claudeTurn({ prompt: task.prompt, model, token, cwd, resume });
@@ -164,7 +164,7 @@ async function runJob(job) {
     }
     writeFileSync(join(OUT, `${name}.jsonl`), turn.transcript);
     if (turn.code !== 0) writeFileSync(join(OUT, `${name}.stderr.txt`), turn.stderr);
-    parseTranscript(turn.transcript).documentIds.forEach((id) => touched.add(id));
+    parseTranscript(turn.transcript).designIds.forEach((id) => touched.add(id));
     const snap = { ...(await snapshot(client, [...touched])), ...(gallery ? { gallery } : {}) };
     writeFileSync(join(OUT, `${name}.snapshot.json`), JSON.stringify(snap));
     console.log(

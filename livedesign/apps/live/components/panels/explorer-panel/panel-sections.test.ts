@@ -10,16 +10,16 @@ import {
 } from './panel-sections';
 
 // docs/specs/013-workspace/explorer-structure.md "The rail": every section a mode of the pane.
-const groups = panelSectionGroups({ teams: [{ id: 't1' }], hasBrowserDocuments: true });
+const groups = panelSectionGroups({ teams: [{ id: 't1' }], hasBrowserDesigns: true });
 
 describe('the editor Explorer sections', () => {
-  it("lists the sidebar's groups, This Browser only while it holds documents", () => {
+  it("lists the sidebar's groups, This Browser only while it holds designs", () => {
     expect(groups.map((g) => g.sections.map(sectionKey))).toEqual([
       ['home', 'inbox', 'timeline', 'shared'],
       ['mine', 'team:t1'],
       ['browser', 'tags', 'library', 'trash'],
     ]);
-    const none = panelSectionGroups({ teams: [], hasBrowserDocuments: false });
+    const none = panelSectionGroups({ teams: [], hasBrowserDesigns: false });
     expect(none[2]!.sections.map(sectionKey)).toEqual(['tags', 'library', 'trash']);
   });
 

@@ -2,7 +2,7 @@
 // pan or a zoom lets go, which page the view lands on and the frame it lands at. Never between
 // pages, past the row, or zoomed out past a page; zoomed in further than fit stays zoomed in, the
 // page kept across what shows. Pure: usePageSnap measures the canvas and hands it in.
-import type { LaidOutPage } from '@livedesign/document';
+import type { LaidOutPage } from '@livedesign/design';
 import { pageInView } from './page-contents';
 import type { Offset } from './viewport';
 

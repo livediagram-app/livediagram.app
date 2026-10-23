@@ -13,7 +13,7 @@ import {
   type BoxedElement,
   type FreehandElement,
   type PathAnchor,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { combineElementsNow } from './combine/combine';
 import { simplifyLine } from './simplify-line';
 import { lineStyle } from './stroke-tidy';

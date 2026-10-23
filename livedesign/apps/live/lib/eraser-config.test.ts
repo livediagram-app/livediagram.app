@@ -5,7 +5,7 @@ import {
   createShape,
   createText,
   type Element,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import {
   DEFAULT_ERASER_CONFIG,
   eraserAllows,

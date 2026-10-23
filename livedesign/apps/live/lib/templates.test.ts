@@ -19,7 +19,7 @@ import { getTheme } from './themes';
 // `buildTemplatedTab` is the seam between /live/new (the welcome
 // flow) and the editor: a freshly chosen template + theme has to
 // land in the editor as a fully styled tab, or the user opens an
-// "Untitled" document that doesn't match the option they picked.
+// "Untitled" design that doesn't match the option they picked.
 // The theming is the bit most likely to silently drift, so the
 // tests below pin each element type's recolouring contract.
 
@@ -95,7 +95,7 @@ describe('TEMPLATES catalogue', () => {
   it('every kind builds without throwing (the buildTemplate switch handles every union member)', () => {
     for (const kind of ALL_KINDS) {
       const tab = buildTemplatedTab(kind, 'brand', `tab-${kind}`, 'name');
-      // The blanks are intentionally empty (docs/specs/007-editor/new-document-route.md): Blank Tab and Blank
+      // The blanks are intentionally empty (docs/specs/007-editor/new-design-route.md): Blank Tab and Blank
       // Illustration are one empty page that asks what it is for, a blank of a page kind one empty page of its kind.
       // Photo Edit is one unstarted photo page (docs/specs/031-photo/photo-pages.md). Every other kind seeds
       // content. Either way the switch must handle the union member.
@@ -128,12 +128,12 @@ describe('templateCanvasOverrides', () => {
   });
 });
 
-// Layered templates (docs/specs/006-document/layers.md "Layered templates"): a layered template's
+// Layered templates (docs/specs/006-design/layers.md "Layered templates"): a layered template's
 // builder pre-stamps `layerId` on every element, and the matching
 // `Tab.layers` rides templateCanvasOverrides, so the two can't be
 // allowed to drift apart — an element stamped with an id the layers
 // array doesn't know would silently fall back to the default layer.
-describe('layered templates (docs/specs/006-document/layers.md)', () => {
+describe('layered templates (docs/specs/006-design/layers.md)', () => {
   it('keeps every builder in lockstep with templateLayers across the catalogue', () => {
     for (const kind of TEMPLATES.map((t) => t.kind)) {
       const layers = templateLayers(kind);
@@ -175,7 +175,7 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     ][]) {
       const layers = templateLayers(kind)!;
       // Scaffold at the bottom, content LAST (top): the default active
-      // layer, so new elements land with the content (docs/specs/006-document/layers.md). Scaffold
+      // layer, so new elements land with the content (docs/specs/006-design/layers.md). Scaffold
       // ships unlocked and visible: locking is one click away.
       expect(
         layers.map((l) => l.name),
@@ -249,13 +249,13 @@ describe('buildTemplatedTab', () => {
 });
 
 describe('untitledNameForTemplate', () => {
-  it('names a templated document in title case after its template title', () => {
+  it('names a templated design in title case after its template title', () => {
     expect(untitledNameForTemplate('logo-design')).toBe('Untitled Logo Design');
     expect(untitledNameForTemplate('wireframe-website')).toBe('Untitled Website Wireframe');
   });
-  it('keeps "Untitled document" for blank or no template', () => {
-    expect(untitledNameForTemplate('blank')).toBe('Untitled document');
-    expect(untitledNameForTemplate(null)).toBe('Untitled document');
+  it('keeps "Untitled design" for blank or no template', () => {
+    expect(untitledNameForTemplate('blank')).toBe('Untitled design');
+    expect(untitledNameForTemplate(null)).toBe('Untitled design');
   });
 });
 

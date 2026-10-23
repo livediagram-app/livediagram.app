@@ -7,9 +7,9 @@ import {
   type Element,
   type ShapeElement,
   type StickyElement,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { describe, expect, it } from 'vitest';
-import type { ThemeDefinition } from '@livedesign/document';
+import type { ThemeDefinition } from '@livedesign/design';
 import {
   applyStyleMemory,
   forgetStyleKinds,

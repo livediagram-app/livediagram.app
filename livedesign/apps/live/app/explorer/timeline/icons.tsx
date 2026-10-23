@@ -1,8 +1,8 @@
 // Per-event-type glyphs for the Timeline (docs/specs/013-workspace/timeline.md §2).
 //
 // The shared package draws one icon per SOURCE type, which is enough
-// to tell a document bubble from a team one. That's the right default
-// for a product-agnostic component, but a feed where twelve document
+// to tell a design bubble from a team one. That's the right default
+// for a product-agnostic component, but a feed where twelve design
 // events all wear the same square is harder to skim than one where a
 // comment looks like a comment. These override per event type; the
 // source-type glyph remains the fallback for anything unmapped, so a
@@ -104,17 +104,17 @@ const SWATCH_X =
 // (the sidebar's two-person team mark) rather than a path. Exported so a
 // test can check that no two types share a mark.
 export const EVENT_GLYPH_PATHS: Record<KnownTimelineEventType, string | null> = {
-  document_created: PLUS,
-  document_edited: PENCIL,
-  document_renamed: TAG,
-  document_duplicated: COPY,
-  document_moved: FOLDER_ARROW,
-  team_document_added: SHARE_OUT,
-  team_document_removed: TAKE_BACK,
-  document_offline: CLOUD_OFF,
-  document_synced: CLOUD,
-  document_opened_by_visitor: EYE,
-  document_copied_by_visitor: CLIPBOARD_COPY,
+  design_created: PLUS,
+  design_edited: PENCIL,
+  design_renamed: TAG,
+  design_duplicated: COPY,
+  design_moved: FOLDER_ARROW,
+  team_design_added: SHARE_OUT,
+  team_design_removed: TAKE_BACK,
+  design_offline: CLOUD_OFF,
+  design_synced: CLOUD,
+  design_opened_by_visitor: EYE,
+  design_copied_by_visitor: CLIPBOARD_COPY,
   folder_created: FOLDER_PLUS,
   folder_deleted: FOLDER_MINUS,
   comment_added: CHAT,

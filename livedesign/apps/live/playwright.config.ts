@@ -44,7 +44,7 @@ export default defineConfig({
   // fail fast rather than burn CI minutes on a hung run.
   timeout: 30_000,
   expect: { timeout: 10_000 },
-  // Every test opens a fresh browser context, so a fresh guest owner with its own documents; tests
+  // Every test opens a fresh browser context, so a fresh guest owner with its own designs; tests
   // share the stack but never its data, and run in parallel everywhere. CI pins one worker per
   // vCPU of the GitHub runner.
   fullyParallel: true,

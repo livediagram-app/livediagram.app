@@ -1,5 +1,5 @@
 // A Participant's writes in the room (docs/specs/013-workspace/share-roles.md "Integrity"; blueprint "Behaviour
-// and state"). Split out of document-room.ts, which owns the sockets and hands this module what it needs.
+// and state"). Split out of design-room.ts, which owns the sockets and hands this module what it needs.
 //
 // Content: a Participant's `el` op is never relayed as sent. It joins the room's tab write queue, is applied to
 // the stored tab by the participant content rule, and only what the rule produced reaches anyone:
@@ -11,7 +11,7 @@
 //     flood past PARTICIPANT_PENDING_MAX), and the sender re-hydrates (`catchup { resync: true }`).
 
 import { isRoomOpRef, type ServerMessage } from '@livedesign/api-schema';
-import type { ElementOp } from '@livedesign/document';
+import type { ElementOp } from '@livedesign/design';
 import { writeParticipantOp, type ParticipantWriteResult } from './participant-write';
 import type { Env } from './types';
 
@@ -33,7 +33,7 @@ type ParticipantRoomHooks = {
 type ParticipantSender = {
   ws: WebSocket;
   presenceId: string;
-  documentId: string | null;
+  designId: string | null;
   adderKey: string | null;
 };
 
@@ -66,33 +66,33 @@ export class RoomParticipantWrites {
     const env = this.hooks.env;
     if (!isElFrame(frame)) return;
     const { tabId, op } = frame;
-    const documentId = sender.documentId;
-    // Nothing to write against (an attachment from before the room knew its document): the sender re-hydrates.
-    if (!env || !documentId) return this.resync(sender);
+    const designId = sender.designId;
+    // Nothing to write against (an attachment from before the room knew its design): the sender re-hydrates.
+    if (!env || !designId) return this.resync(sender);
     const queued = this.pending.get(sender.ws) ?? 0;
     if (queued >= PARTICIPANT_PENDING_MAX) {
-      console.warn('[participant-write] flood', { documentId, tabId, queued });
+      console.warn('[participant-write] flood', { designId, tabId, queued });
       return this.resync(sender);
     }
     this.pending.set(sender.ws, queued + 1);
     let result: ParticipantWriteResult;
     try {
       result = await this.hooks.enqueue(() =>
-        writeParticipantOp(env, { documentId, tabId, op, adderKey: sender.adderKey }),
+        writeParticipantOp(env, { designId, tabId, op, adderKey: sender.adderKey }),
       );
     } catch (error) {
-      console.error('[participant-write] failed', { documentId, tabId, error: String(error) });
+      console.error('[participant-write] failed', { designId, tabId, error: String(error) });
       return this.resync(sender);
     } finally {
       this.pending.set(sender.ws, (this.pending.get(sender.ws) ?? 1) - 1);
     }
     if (!result.ok) {
-      console.error('[participant-write] failed', { documentId, tabId, status: result.status });
+      console.error('[participant-write] failed', { designId, tabId, status: result.status });
       return this.resync(sender);
     }
     const outcome = result.outcome;
     if (outcome.result === 'refused') {
-      console.info('[participant-write] refused', { documentId, tabId, reason: outcome.reason });
+      console.info('[participant-write] refused', { designId, tabId, reason: outcome.reason });
       // An element not saved yet (an Editor's, inside its autosave): nothing here to put back, so the sender
       // re-hydrates rather than keep a change nobody else has.
       if (outcome.reason === 'missing') return this.resync(sender);

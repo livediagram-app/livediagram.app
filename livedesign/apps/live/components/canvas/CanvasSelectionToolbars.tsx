@@ -10,7 +10,7 @@ import {
   isCompoundPath,
   type CommentThread,
   type Element,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import {
   useCanvasSelectionView,
@@ -149,7 +149,7 @@ export function CanvasSelectionToolbars({
                 : undefined
             }
             onDuplicate={readOnly ? undefined : selected ? onDuplicateSelected : undefined}
-            // Intra-layer z-order (docs/specs/006-document/layers.md): stack within the element's own
+            // Intra-layer z-order (docs/specs/006-design/layers.md): stack within the element's own
             // band. The element menu's Bring to Front moves LAYERS; these
             // are the missing nudge for two things on the same one.
             onBringToFront={readOnly || !selected ? undefined : props.onBringSelectedToFront}

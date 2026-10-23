@@ -1,4 +1,4 @@
-import { isFixedSizeElement } from '@livedesign/document';
+import { isFixedSizeElement } from '@livedesign/design';
 import {
   alignmentGuides,
   distributionSnap,
@@ -11,7 +11,7 @@ import {
   type DistributionGuide,
   type Element,
   type TextElement,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { hugResizedText, hugsText, type MeasureTextBlock } from '@/lib/text-hug';
 import {
   ALIGN_SNAP_THRESHOLD,
@@ -345,7 +345,7 @@ function unionMinScale(elements: Element[], startBounds: ReadonlyMap<string, Sha
   return floor;
 }
 
-// How a resize frame's hugging text boxes are sized (docs/specs/006-document/document-structure.md):
+// How a resize frame's hugging text boxes are sized (docs/specs/006-design/design-structure.md):
 // the handle, whether the ratio is kept (Shift or the element's lock), and the DOM
 // measure. Given only for a single element; it applies to a text box that fits or wraps.
 type TextHugResize = {

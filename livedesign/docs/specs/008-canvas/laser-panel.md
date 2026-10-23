@@ -31,7 +31,7 @@ It rides the existing op rather than a second one: the alternative (a separate l
 
 ## Persistence
 
-Device-local, in `localStorage` (`livedesign:v2:laser-config`), like the panel placements: which pen suits you depends on your screen and the room you present in, not on the document. It is never sent to the api and never folded into the synced preferences blob ([User preferences](../007-editor/user-preferences.md)).
+Device-local, in `localStorage` (`livedesign:v2:laser-config`), like the panel placements: which pen suits you depends on your screen and the room you present in, not on the design. It is never sent to the api and never folded into the synced preferences blob ([User preferences](../007-editor/user-preferences.md)).
 
 ## Telemetry
 
@@ -39,6 +39,6 @@ Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): 
 
 ## Out of scope
 
-- Persisting a pen per document or per team. It is a personal, per-device ergonomic choice.
+- Persisting a pen per design or per team. It is a personal, per-device ergonomic choice.
 - A laser that leaves permanent marks. That is the Pencil ([Canvas and palette](canvas-and-palette.md)) — the laser's whole nature is that it fades.
 - Pointer sounds, click-to-ping, or a "laser cursor" for peers who aren't presenting.

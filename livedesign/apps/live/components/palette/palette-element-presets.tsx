@@ -1,11 +1,11 @@
 import { Glyph } from '@livedesign/ui';
-import { badgePresetFace } from '@livedesign/document';
+import { badgePresetFace } from '@livedesign/design';
 import { BadgePresetGlyph } from './BadgePresetGlyph';
 import type { PaletteTileDef } from './palette-tile-defs';
 
 // The presets a tile's opener shows on the Toolbar strip: the Card's (docs/specs/009-elements/card.md "Card presets")
 // and the Badge's (docs/specs/009-elements/badge.md "Badge presets"), each an ordinary tile carrying its variant
-// (packages/document shape-variants.ts). Not in PALETTE_TILES: they live under their tile, so a category's tile count
+// (packages/design shape-variants.ts). Not in PALETTE_TILES: they live under their tile, so a category's tile count
 // and Search keep the one Card and the one Badge.
 
 const preset = (

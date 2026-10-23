@@ -6,7 +6,7 @@
 // materialises these directly (docs/specs/015-api/mcp-server.md §4.5).
 
 import { buildWireframeFlow } from './template-builders-wireframe-flows';
-import { settleChips, type Element } from '@livedesign/document';
+import { settleChips, type Element } from '@livedesign/design';
 import type { TemplateKind } from './templates';
 import { buildLogoDesign } from './template-builders-logo';
 

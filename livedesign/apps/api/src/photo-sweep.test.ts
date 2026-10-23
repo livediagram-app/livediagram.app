@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livedesign/document';
+import type { Tab } from '@livedesign/design';
 import { sqliteD1 } from './test-sqlite-d1';
-import { copyDocument } from './db/documents';
+import { copyDesign } from './db/designs';
 import { upsertTab } from './db/tabs';
 import { recordBlobs } from './db/photo-blobs';
 import { runPhotoSweep, sweepPhotoBlobs } from './photo-sweep';
@@ -20,7 +20,7 @@ const id = (c: string) => c.repeat(22);
 function setup() {
   const bucket = { delete: vi.fn(async () => {}) };
   const db = sqliteD1({ PHOTO_BLOBS: bucket } as unknown as Partial<Env>);
-  db.sql.exec(`INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
+  db.sql.exec(`INSERT INTO designs (id, owner_id, name, shareable, saved_at, created_at)
     VALUES ('A', 'owner', 'A', 0, 0, 0)`);
   return { ...db, bucket };
 }
@@ -120,11 +120,11 @@ describe('the photo sweep', () => {
 });
 
 describe('copies carry refs', () => {
-  it("gives a copied document's tabs every blob their source tab held", async () => {
+  it("gives a copied design's tabs every blob their source tab held", async () => {
     const db = setup();
     await upsertTab(db.env, 'A', photoTab('t1', id('h')), 0);
     await recordBlobs(db.env, 't1', [blob('h')], OLD);
-    const copy = await copyDocument(db.env, 'A', 'B', 'visitor', 'Copy of A');
+    const copy = await copyDesign(db.env, 'A', 'B', 'visitor', 'Copy of A');
     const copied = copy!.tabs[0]!.id;
     expect(refsOf(db.sql, copied)).toEqual([id('h')]);
   });

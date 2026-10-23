@@ -2,11 +2,11 @@
 // error result shapes, the deep links, the bearer-token guard every tool
 // uses, and the load-a-tab sequence the read and edit tools share.
 // Deliberately render-free, so it can be unit-tested: the inline-PNG
-// result lives in image-result.ts and the pure tab builders in @livedesign/document
+// result lives in image-result.ts and the pure tab builders in @livedesign/design
 // and @livedesign/templates. tools.ts keeps the registrations.
 
 import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js';
-import type { LiveDoc, DocumentResponse, TabRecord, TabResponse } from '@livedesign/api-schema';
+import type { LiveDoc, DesignResponse, TabRecord, TabResponse } from '@livedesign/api-schema';
 import { apiJson } from './api';
 import type { Env } from './env';
 
@@ -29,12 +29,12 @@ export const appBase = (env: Pick<Env, 'CONSENT_BASE_URL'>) =>
   env.CONSENT_BASE_URL ?? 'https://livedesign.app';
 
 export const deepLink = (env: Pick<Env, 'CONSENT_BASE_URL'>, id: string) =>
-  `${appBase(env)}/document/${id}`;
+  `${appBase(env)}/design/${id}`;
 
-// A share link's public URL (docs/specs/013-workspace/share-password.md): visitors land on /document/shared?s=<code>
-// and the app resolves the code to the document + granted role.
+// A share link's public URL (docs/specs/013-workspace/share-password.md): visitors land on /design/shared?s=<code>
+// and the app resolves the code to the design + granted role.
 export const shareUrl = (env: Pick<Env, 'CONSENT_BASE_URL'>, code: string) =>
-  `${appBase(env)}/document/shared?s=${encodeURIComponent(code)}`;
+  `${appBase(env)}/design/shared?s=${encodeURIComponent(code)}`;
 
 export function requireToken(extra: Extra): string {
   const token = extra.authInfo?.token;
@@ -49,8 +49,8 @@ export function textResult(value: StructuredValue): ToolResult {
   };
 }
 
-// A document view (docs/specs/024-agents/document-views.md): the view's text first, then one line of
-// JSON naming the document, the tab, its revision and its link (VW55).
+// A design view (docs/specs/024-agents/design-views.md): the view's text first, then one line of
+// JSON naming the design, the tab, its revision and its link (VW55).
 export function viewResult(
   text: string,
   meta: {
@@ -82,31 +82,31 @@ export function errorResult(message: string): ToolResult {
 // An input the caller can correct, thrown from deep in a handler and answered as a tool error by registerTool.
 export class ToolInputError extends Error {}
 
-// Load a document and one of its tabs: the named tab, or the first one when the
+// Load a design and one of its tabs: the named tab, or the first one when the
 // caller didn't name one (the default every tab-scoped tool applies). Null when
-// the document has no tabs to default to; a tab id the document lacks is a ToolInputError naming its tabs.
+// the design has no tabs to default to; a tab id the design lacks is a ToolInputError naming its tabs.
 
 export async function loadTab(
   env: Env,
   token: string,
-  documentId: string,
+  designId: string,
   tabId?: string,
-): Promise<{ document: LiveDoc; tab: TabRecord } | null> {
-  const { document: liveDoc } = await apiJson<DocumentResponse>(
+): Promise<{ design: LiveDoc; tab: TabRecord } | null> {
+  const { design: liveDoc } = await apiJson<DesignResponse>(
     env,
     token,
-    `/documents/${encodeURIComponent(documentId)}`,
+    `/designs/${encodeURIComponent(designId)}`,
   );
   const id = tabId ?? liveDoc.tabs[0]?.id;
   if (!id) return null;
   if (!liveDoc.tabs.some((t) => t.id === id))
     throw new ToolInputError(
-      `No tab "${id}" in this document. Tabs: ${liveDoc.tabs.map((t) => `${t.name} (${t.id})`).join(', ')}.`,
+      `No tab "${id}" in this design. Tabs: ${liveDoc.tabs.map((t) => `${t.name} (${t.id})`).join(', ')}.`,
     );
   const { tab } = await apiJson<TabResponse>(
     env,
     token,
-    `/documents/${encodeURIComponent(documentId)}/tabs/${encodeURIComponent(id)}`,
+    `/designs/${encodeURIComponent(designId)}/tabs/${encodeURIComponent(id)}`,
   );
-  return { document: liveDoc, tab };
+  return { design: liveDoc, tab };
 }

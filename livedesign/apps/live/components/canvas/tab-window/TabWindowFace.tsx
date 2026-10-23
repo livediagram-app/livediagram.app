@@ -1,6 +1,6 @@
 'use client';
 
-// A tab window on the canvas (docs/specs/009-elements/tab-window.md): another tab of the document drawn inside a
+// A tab window on the canvas (docs/specs/009-elements/tab-window.md): another tab of the design drawn inside a
 // rounded frame, live, zoomed to fit; or what it is waiting for (no tab chosen, the tab's content on its way or failed,
 // the tab gone or not shared). Every tab draws, as its pages, whatever is on them. Choose a Tab is an Editor's; Open <name> is everyone's who sees the tab.
 import dynamic from 'next/dynamic';
@@ -12,7 +12,7 @@ import {
   tabWindowMayShow,
   type CanvasSurface,
   type ShapeElement,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { lucideArrowUpRight } from '@livedesign/icons/lucide';
 import { lucideGlyph, Tooltip } from '@livedesign/ui';
 import { useTabWindows } from './tab-window-context';

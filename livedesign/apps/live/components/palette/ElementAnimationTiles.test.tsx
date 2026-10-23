@@ -9,7 +9,7 @@ import {
   type ConceptShape,
   type Element,
   type ShapeElement,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { ConceptAnimTiles } from './ElementAnimationTiles';
 import type { ElementStyleOps } from '@/lib/element-style-ops';
 

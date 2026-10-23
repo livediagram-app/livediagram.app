@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CHANGESET_RELAY_MAX_BYTES } from '@livedesign/api-schema';
-import type { Element, ElementOp } from '@livedesign/document';
+import type { Element, ElementOp } from '@livedesign/design';
 import { agentKeyFor, changesetRoomOp } from './room-op';
 
 // docs/specs/024-agents/agent-changesets.md "What the room does".

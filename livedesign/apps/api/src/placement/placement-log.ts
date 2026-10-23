@@ -1,9 +1,9 @@
 // The `placement:` and `placement-defaults:` fingerprints (docs/specs/013-workspace/folders.md
 // "Placement on create", docs/specs/013-workspace/default-folders.md "Observability"): one line per
-// decision a create makes about where its document is filed, and per change to a default folder.
+// decision a create makes about where its design is filed, and per change to a default folder.
 
 import type {
-  DocumentPlacement,
+  DesignPlacement,
   INTENT_INVALID,
   PlacementDefaultKey,
   PlacementDefaultRejection,
@@ -19,7 +19,7 @@ export function placementScope(teamId: unknown): PlacementScope {
 }
 
 export function logPlacementResolved(
-  placement: DocumentPlacement,
+  placement: DesignPlacement,
   decision: PlacementDecision,
 ): void {
   const folder = placement.folderId === null ? 'root' : 'set';

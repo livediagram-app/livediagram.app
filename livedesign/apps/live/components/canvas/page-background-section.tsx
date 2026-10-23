@@ -19,7 +19,7 @@ import {
   type PageBackground,
   type PageFill,
   type PagePattern,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { CheckIcon, Tooltip } from '@livedesign/ui';
 import {
   backgroundCategoryOf,
@@ -43,7 +43,7 @@ import { ImageBackgroundChoices } from './page-background-image';
 import { ColourPicker } from '@/components/colour/ColourPicker';
 import { noColour, type ColourOption } from '@/components/colour/colour-options';
 import { useThemeColours } from '@/components/colour/useThemeColours';
-import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
+import { useDesignColours } from '@/hooks/ui/useDesignColours';
 
 // Paper, the page's own default: no fill stored.
 const PAPER = 'paper';
@@ -168,7 +168,7 @@ export function BackgroundSection({
   const [chosen, setChosen] = useState<BackgroundCategory | null>(null);
   const opened = backgroundCategoryOf(fill);
   const category = chosen && categories.includes(chosen) ? chosen : opened;
-  const yours = useDocumentColours();
+  const yours = useDesignColours();
   const themeColours = pageThemeColours(useThemeColours());
   // The custom gradient's editor shows for a gradient no preset names, or once Custom gradient is
   // pressed on a preset one (its colours are where the custom one starts; editing makes it custom).

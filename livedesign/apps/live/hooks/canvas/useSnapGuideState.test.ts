@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { AlignmentGuide } from '@livedesign/document';
+import type { AlignmentGuide } from '@livedesign/design';
 import { createSnapGuideStore, useSnapGuideState, useSnapGuides } from './useSnapGuideState';
 
 // docs/specs/008-canvas/canvas-performance.md "A move re-renders what moved": the drag's snap guides

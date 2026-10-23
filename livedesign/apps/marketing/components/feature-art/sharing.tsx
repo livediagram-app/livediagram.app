@@ -135,7 +135,7 @@ export function TeamsArt() {
         Design
       </text>
       <text className={MUTED} x="226" y="49" fontSize="6.5">
-        12 documents
+        12 designs
       </text>
       <Avatar cx={198} cy={64} r={4.5} color={YOU} initials="TM" />
       <Avatar cx={206} cy={64} r={4.5} color={JORDAN} initials="JR" />
@@ -230,7 +230,7 @@ export function ExpiryArt() {
   );
 }
 
-/** Stop sharing on demand: switch the link off and the document is yours again. */
+/** Stop sharing on demand: switch the link off and the design is yours again. */
 export function RevokeArt() {
   return (
     <Scene>

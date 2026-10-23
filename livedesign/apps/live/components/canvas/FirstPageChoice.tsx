@@ -5,7 +5,7 @@
 // add-a-page popover. Logo turns it into the 1024 artboard; Wireframe asks for its device; Photo makes
 // it a photo page, its Start a Photo card asking for a picture. Held at one screen size, centred on
 // the page.
-import type { PageKind, WireframeDeviceId } from '@livedesign/document';
+import type { PageKind, WireframeDeviceId } from '@livedesign/design';
 import { useRef, useState } from 'react';
 import { rememberWireframeDevice } from '@/lib/wireframe-device-memory';
 import { ChooseDeviceStep } from './wireframe/ChooseDeviceStep';

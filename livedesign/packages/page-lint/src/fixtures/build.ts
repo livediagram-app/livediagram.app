@@ -1,7 +1,7 @@
 // Small builders for lint fixtures: boxes and text on a tab, and a quiet lint.
 
 import type { LintCode, LintReport } from '@livedesign/api-schema';
-import type { Element, Tab } from '@livedesign/document';
+import type { Element, Tab } from '@livedesign/design';
 import type { LintLogger } from '../log';
 import { lintTab } from '../lint';
 

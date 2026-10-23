@@ -16,7 +16,7 @@ import {
   type PageImageOverlay,
   type PageImageOverlayKind,
   type PageImagePosition,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { Button } from '@livedesign/ui';
 import { ImageSearchPane } from '@/components/panels/ImageSearchPane';
 import { PageGalleryPicker } from './PageGalleryPicker';
@@ -30,7 +30,7 @@ import { pageImageCssUrl, pageImageOverlayCss } from '@/lib/page-image-paint';
 import { sampleImageTone } from '@/lib/page-image-tone';
 import { track } from '@/lib/telemetry';
 import {
-  addImageFileForDocument,
+  addImageFileForDesign,
   ImageUploadError,
   UPLOAD_ACCEPT_ATTR,
   type PickedImage,
@@ -128,7 +128,7 @@ export function ImageBackgroundChoices({
     if (imageId.startsWith('data:')) return sampleImageTone(imageId);
     // A tile's copy is plenty for an average colour.
     const url = await apiFetchImageBlobUrl(access.ownerId, imageId, {
-      documentId: access.documentId,
+      designId: access.designId,
       shareCode: access.shareCode,
       maxEdge: DISPLAY_EDGE_TILE,
     }).catch(() => null);
@@ -145,7 +145,7 @@ export function ImageBackgroundChoices({
     setBusy(true);
     const local = URL.createObjectURL(file);
     try {
-      const { image } = await addImageFileForDocument(access.ownerId, access.documentId, file);
+      const { image } = await addImageFileForDesign(access.ownerId, access.designId, file);
       await land(image, local);
     } catch (e) {
       console.warn('[page] background upload failed');
@@ -184,7 +184,7 @@ export function ImageBackgroundChoices({
     <>
       <ImageSearchPane
         ownerId={access.ownerId}
-        documentId={access.documentId}
+        designId={access.designId}
         filters={pageImageFilters(page)}
         columns={3}
         autoFocus={false}
@@ -208,7 +208,7 @@ export function ImageBackgroundChoices({
       />
       <PageGalleryPicker
         ownerId={access.ownerId}
-        documentId={access.documentId}
+        designId={access.designId}
         disabled={busy}
         onPicked={(picked) => {
           onPreview(null);
@@ -349,7 +349,7 @@ export function ImageBackgroundChoices({
 function CurrentPicture({ fill, onRemove }: { fill: PageImageFill; onRemove: () => void }) {
   const access = usePageImageAccess();
   const state = useImageBlobUrl(access?.ownerId ?? '', fill.imageId, {
-    documentId: access?.documentId ?? '',
+    designId: access?.designId ?? '',
     shareCode: access?.shareCode,
   });
   const url = state.status === 'ready' ? pageImageCssUrl(state.src) : null;

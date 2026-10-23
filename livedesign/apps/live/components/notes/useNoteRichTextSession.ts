@@ -2,7 +2,7 @@
 // label editor's useRichTextSession because a note has no canvas to fight:
 // no zoom counter-scale, no toolbar flip, no context menu riding alongside,
 // and no commit-on-blur (the popover owns the commit, on outside click or
-// Cmd-Enter). All this adds over the shared useRichTextDocument is the mount
+// Cmd-Enter). All this adds over the shared useRichTextDesign is the mount
 // paint + caret, and reporting every edit up so the popover always holds the
 // current value.
 
@@ -13,9 +13,9 @@ import {
   type RunBoolKey,
   type RunHeading,
   type TextRun,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { PLAIN_RUN_DEFAULTS } from '@/components/rich-text/rich-text-format';
-import { useRichTextDocument } from '@/components/rich-text/useRichTextDocument';
+import { useRichTextDesign } from '@/components/rich-text/useRichTextDesign';
 import { track } from '@/lib/telemetry';
 import { noteRunStyle } from './note-run-style';
 
@@ -35,12 +35,12 @@ export function useNoteRichTextSession({
   // A note opens to be written in; a description in the item panel waits to be clicked.
   autoFocus?: boolean;
 }) {
-  const doc = useRichTextDocument({
+  const doc = useRichTextDesign({
     initialRuns,
     runStyle: noteRunStyle,
     // A note has no whole-element typography to inherit.
     defaults: PLAIN_RUN_DEFAULTS,
-    // A note is a document, not a one-line label: a command with no selection
+    // A note is a design, not a one-line label: a command with no selection
     // acts on the word (inline) or the line (block) under the caret, never on
     // the whole note.
     collapsedScope: 'word',
@@ -83,7 +83,7 @@ export function useNoteRichTextSession({
 
   // Mount: paint the initial runs, focus, and park the caret at the END so
   // reopening a note continues it rather than replacing it on the next
-  // keystroke (a note is a document; the label editor's select-all would put
+  // keystroke (a note is a design; the label editor's select-all would put
   // a paragraph one keypress away from being wiped). Mount-only: an effect event, run once.
   const openEditor = useEffectEvent(() => {
     const el = editorRef.current;

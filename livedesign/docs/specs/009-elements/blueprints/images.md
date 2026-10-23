@@ -8,12 +8,12 @@ Scope, by file:
 
 | File                                                 | Role                                                                    |
 | ---------------------------------------------------- | ----------------------------------------------------------------------- |
-| `packages/document/src/element-types.ts`             | `ImageElement`                                                          |
-| `packages/document/src/factories.ts`                 | `createImage`: the 200×150 placeholder, `aspectLocked: true`            |
-| `packages/document/src/validate.ts`                  | Structural check of an image element in a tab body                      |
-| `packages/document/src/svg-render-describe.ts`       | `describeBoxedExport`: image `ExportShape` with `href` / fit / radius   |
-| `packages/document/src/svg-render.ts`                | Image branch: `svgImageShape`, else the dashed placeholder rect         |
-| `packages/document/src/svg-render-image-icon.ts`     | `svgImageShape`: clipped `<image>` over a white backing rect            |
+| `packages/design/src/element-types.ts`             | `ImageElement`                                                          |
+| `packages/design/src/factories.ts`                 | `createImage`: the 200×150 placeholder, `aspectLocked: true`            |
+| `packages/design/src/validate.ts`                  | Structural check of an image element in a tab body                      |
+| `packages/design/src/svg-render-describe.ts`       | `describeBoxedExport`: image `ExportShape` with `href` / fit / radius   |
+| `packages/design/src/svg-render.ts`                | Image branch: `svgImageShape`, else the dashed placeholder rect         |
+| `packages/design/src/svg-render-image-icon.ts`     | `svgImageShape`: clipped `<image>` over a white backing rect            |
 | `packages/api-schema/src/image-limits.ts`            | `MAX_IMAGE_BYTES`, `ACCEPTED_IMAGE_TYPES` and their derived copy        |
 | `packages/api-schema/src/image-sniff.ts`             | `sniffImageType`: magic-number table                                    |
 | `packages/api-schema/src/embed-images.ts`            | `embedTabImages`, `tabImageIds`: server-side data-URL inlining          |
@@ -29,7 +29,7 @@ Scope, by file:
 | `apps/api/wrangler.toml`                             | `IMAGES` bucket (production and `[env.staging]`), caps comment          |
 | `apps/api/hosted-vars.json`                          | Hosted livedesign.app's per-owner caps                                  |
 | `apps/live/lib/api/images.ts`                        | `apiListImages`, `apiUploadImage`, `apiDeleteImage`, `apiImageUsage`, … |
-| `apps/live/lib/upload-image.ts`                      | `uploadImageFile`, `addImageFileForDocument`, `ImageUploadError`        |
+| `apps/live/lib/upload-image.ts`                      | `uploadImageFile`, `addImageFileForDesign`, `ImageUploadError`        |
 | `apps/live/hooks/canvas/useEditorImages.ts`          | Picker state, attach, detach, place-from-gallery                        |
 | `apps/live/hooks/canvas/useClipboard.ts`             | `pasteImageFile`: Cmd/Ctrl+V image paste                                |
 | `apps/live/hooks/persistence/useImageBlobUrl.ts`     | Authenticated fetch to a revocable blob URL                             |
@@ -39,12 +39,12 @@ Scope, by file:
 | `apps/live/components/canvas/ImageDropZone.tsx`      | Drop, paste, file-input zone shared with the Explorer gallery           |
 | `apps/live/lib/export-tab-images.ts`                 | `loadTabImages`: client export prefetch                                 |
 | `apps/live/components/palette/palette-tile-defs.tsx` | `tools:image` tile (`needsImage: true`, shortcut `9`)                   |
-| `apps/live/app/document/[id]/useElementCreation.ts`  | `addImage`: arms the draw gesture                                       |
+| `apps/live/app/design/[id]/useElementCreation.ts`  | `addImage`: arms the draw gesture                                       |
 | `apps/live/hooks/canvas/useShapeDrawing.ts`          | Commit of the draw: telemetry, selects the placeholder (no picker)      |
 
 Out of this blueprint, cited where they touch images: the reference index and the retention sweep
 ([Image reference index](image-reference-index.md)), Offline Mode data-URI embedding
-(`apps/live/lib/offline/offline-images.ts`, [Offline Mode](../../006-document/offline-mode.md)), the
+(`apps/live/lib/offline/offline-images.ts`, [Offline Mode](../../006-design/offline-mode.md)), the
 import pipeline (`apps/live/lib/import-images/`,
 [Import image pipeline](../../020-import-export/import-image-pipeline.md)), the Explorer gallery
 (`apps/live/components/panels/GalleryPane.tsx`, [Folders](../../013-workspace/folders.md)),
@@ -72,7 +72,7 @@ account deletion and guest migration (`apps/api/src/db/account.ts`,
 | Images available | `env.IMAGES !== undefined`                 | The deployment has an R2 binding                           |
 
 Banned synonyms: "asset", "upload" as a noun for the stored row (say image), "photo" in code, "GC"
-(say retention sweep), "thumbnail" for a gallery tile (thumbnail is the document snapshot).
+(say retention sweep), "thumbnail" for a gallery tile (thumbnail is the design snapshot).
 
 ## Behaviour and state
 
@@ -149,8 +149,8 @@ Invariants:
 ### Read (`GET /api/images/:id`)
 
 1. No row → 404. The caller's resolved owner equals the row's `owner_id` → allowed.
-2. Otherwise, with `?d=<documentId>`: `getDocument` finds the document outside the Trash,
-   `gateGrant` returns a grant, and `documentReferencesImage(d, id, grant.tabScope)` is true →
+2. Otherwise, with `?d=<designId>`: `getDesign` finds the design outside the Trash,
+   `gateGrant` returns a grant, and `designReferencesImage(d, id, grant.tabScope)` is true →
    allowed. The reference is read from the index
    ([Image reference index](image-reference-index.md#readers)). A tab-scoped visitor counts only
    their tab ([Tab-scoped share links](../../013-workspace/tab-scoped-share-links.md)). `[QB8]`
@@ -165,9 +165,9 @@ Invariants:
   caught and logged `[images] R2 delete failed after the row was removed` with the id, and the
   answer is still 200 (orphaned bytes, never a row that dedupe hands back with nothing behind it).
 - `GET /api/images`: owner only; `listImagesByOwner`, newest first.
-- `GET /api/images/usage`: owner only; `imageUsageByOwner` reads the owner's `documents →
-document_tabs → image_refs` ([Image reference index](image-reference-index.md#readers)), no tab
-  body read, each document once per image. A document in the Trash still counts
+- `GET /api/images/usage`: owner only; `imageUsageByOwner` reads the owner's `designs →
+design_tabs → image_refs` ([Image reference index](image-reference-index.md#readers)), no tab
+  body read, each design once per image. A design in the Trash still counts
   ([Trash](../../013-workspace/trash.md)).
 
 ### Retention
@@ -181,7 +181,7 @@ null or `data:` id references nothing.
 ### Client export and server snapshot
 
 - Client: `loadTabImages` takes the distinct ids of the tab, uses a `data:` id as is, otherwise
-  `apiFetchImageDataUrl` with `documentId` and `shareCode`, decodes each to an
+  `apiFetchImageDataUrl` with `designId` and `shareCode`, decodes each to an
   `HTMLImageElement`, concurrently, with no budget (D45). A failure skips that id.
 - `describeBoxedExport`: `radius = BORDER_RADIUS_PX[borderRadius]` or 4, `objectFit ??
 'contain'`, `href = resolveImageHref?.(imageId)`; the alt-text label only when `href` is
@@ -203,7 +203,7 @@ null or `data:` id references nothing.
 ## Interfaces and contracts
 
 ```ts
-// packages/document/src/element-types.ts (image-specific fields)
+// packages/design/src/element-types.ts (image-specific fields)
 export type ImageElement = {
   id: ElementId;
   type: 'image';
@@ -264,9 +264,9 @@ export function imageUsageByOwner(
   env: Env,
   ownerId: string,
 ): Promise<Record<string, { id: string; name: string }[]>>;
-export function documentReferencesImage(
+export function designReferencesImage(
   env: Env,
-  documentId: string,
+  designId: string,
   imageId: string,
   onlyTabId?: string | null,
 ): Promise<boolean>;
@@ -276,9 +276,9 @@ export function parsePositiveCap(raw: string | undefined): number | null;
 
 // apps/live/lib/upload-image.ts
 export function uploadImageFile(ownerId: string, file: File): Promise<UploadResult>;
-export function addImageFileForDocument(
+export function addImageFileForDesign(
   ownerId: string,
-  documentId: string | null,
+  designId: string | null,
   file: File,
 ): Promise<UploadResult>;
 ```
@@ -309,26 +309,26 @@ read a 503 as `null` and `{}`.
   `original_name` (nullable), `created_at` (ms). `images_owner_sha_idx` unique on
   `(owner_id, sha256)`; `images_owner_created_idx` on `(owner_id, created_at DESC)`.
 - **R2 `IMAGES`**: key `images.id`; `httpMetadata.contentType` the sniffed type;
-  `customMetadata` `{ ownerId, originalName }`. The same bucket holds document snapshots under
-  `thumb/<documentId>` ([Document SVG snapshots](../../006-document/document-snapshots.md)).
+  `customMetadata` `{ ownerId, originalName }`. The same bucket holds design snapshots under
+  `thumb/<designId>` ([Design SVG snapshots](../../006-design/design-snapshots.md)).
 - **Tab body**: the element fields above, validated by `validate.ts` (`imageId` string or null).
 - **Never on the wire**: `owner_id`, `sha256` (`imageRowToSummary`).
 - **Snapshot / restore**: a tab snapshot carries only `imageId`; restoring an element whose image
   was deleted renders **broken**. Undo restores the prior `imageId`.
 - **Account deletion** ([Owner-keyed data](../../015-api/api.md#owner-keyed-data)): one
   `IMAGES.delete(ids)` for every owned id (GB17), then `DELETE FROM images WHERE owner_id = ?`.
-  An image a surviving shared tab still places in another owner's document goes too; that
+  An image a surviving shared tab still places in another owner's design goes too; that
   element renders **broken** (D142).
   **Guest to account migration**: `UPDATE OR IGNORE images SET owner_id`; rows that collide on
-  the dedupe key stay with the guest id. The documents move in one batch after
+  the dedupe key stay with the guest id. The designs move in one batch after
   `imageGrantOwnerChangeStatement(env, 'd.owner_id = ?2', [guestId], now)`, so every guest image
   they place, a dedupe loser included, keeps serving in them by grant.
-- **Trash**: a trashed document keeps its tabs, so its images stay referenced until the purge
+- **Trash**: a trashed design keeps its tabs, so its images stay referenced until the purge
   ([Trash](../../013-workspace/trash.md)); its share link grants no image read meanwhile.
 - **Reference index**: `image_refs` is derived from tab bodies and owned by the
   [Image reference index](image-reference-index.md) blueprint.
-- **Offline documents** hold `data:` URIs in `imageId`; Take Offline and Sync Document convert
-  ([Offline Mode](../../006-document/offline-mode.md)).
+- **Offline designs** hold `data:` URIs in `imageId`; Take Offline and Sync Design convert
+  ([Offline Mode](../../006-design/offline-mode.md)).
 - **Migration**: `0014` for `images`; `0050_image_refs.sql` belongs to the index blueprint.
 
 ## Errors and edge cases
@@ -349,7 +349,7 @@ read a 503 as `null` and `{}`.
 | E10 | Snapshot images over the budget                     | Placeholder for each that does not fit                                                               |
 | E11 | Offline `data:` id sent to the api                  | R2 miss, placeholder in snapshots; canvas and client export use it directly                          |
 | E12 | Retention and reference edge cases                  | [Image reference index](image-reference-index.md#errors-and-edge-cases)                              |
-| E13 | Share read of a document in the Trash               | `getDocument` misses it; 404                                                                         |
+| E13 | Share read of a design in the Trash               | `getDesign` misses it; 404                                                                         |
 | E14 | Account deletion of an owner past 1000 images       | One R2 call over the key limit throws; nothing is deleted (GB17)                                     |
 | E15 | Picker opened while the tab is locked / view role   | `openImagePickerFor` no-ops; placeholder shows "No image"                                            |
 | E16 | Image with zero natural height                      | `readImageDimensions` fails, "Could not read image dimensions."                                      |
@@ -361,10 +361,10 @@ read a 503 as `null` and `{}`.
 - **Stored XSS.** SVG is never accepted (`ACCEPTED_IMAGE_TYPES`); served bytes carry their sniffed
   type. An `imageId` is written into export SVG as `href` and must be XML-escaped; `validate.ts`
   admits only a uuid or a `data:image/(png|jpeg|gif|webp);base64,` URI (GB1).
-- **Read authorisation.** Owner, or a reader of a document that references the id. Knowing an id
+- **Read authorisation.** Owner, or a reader of a design that references the id. Knowing an id
   is therefore a read capability: ids travel in tab JSON to every reader of that tab. `[QB8]`
 - **Server-side embed.** Only ids with an `images` row are read from R2, so a tab cannot pull a
-  `thumb/<documentId>` snapshot or any other key into its public live image. `[QB7]`
+  `thumb/<designId>` snapshot or any other key into its public live image. `[QB7]`
 - **Privacy.** JPEG APPn and COM segments are stripped before storage (I2). PNG, WebP and GIF
   pass through (spec, Out of scope).
 - **Abuse.** `WRITE_RATE_LIMITER` (300 per 60 s per owner or token) on POST and DELETE; per-file
@@ -379,7 +379,7 @@ read a 503 as `null` and `{}`.
   one linear JPEG walk (`O(n)`, one output buffer of input size), one R2 put, one D1 insert
   carrying two cap sub-selects. Worst case 10 MiB in memory twice (input plus stripped copy).
 - Read by reference: one D1 row plus one indexed lookup on `image_refs`; no tab body is read.
-- Usage: one join over the owner's documents and `image_refs`, no tab body read; deduped in
+- Usage: one join over the owner's designs and `image_refs`, no tab body read; deduped in
   flight on the client (`dedupeInFlight`).
 - Retention: budgets in [Image reference index](image-reference-index.md#performance-and-limits).
 - Snapshot: at most `IMAGE_EMBED_BUDGET_BYTES` raw (about 4 MiB base64) per snapshot, read one
@@ -459,15 +459,15 @@ backfill fingerprints live in [Image reference index](image-reference-index.md#o
 | JPEG strip (APPn, COM, SOS verbatim, throws)         | `stripJpegMetadata` suite                                 | `apps/api/src/image-strip.test.ts`             |
 | Summary hides `owner_id` / `sha256`                  | `imageRowToSummary` suite                                 | `apps/api/src/image-row.test.ts`               |
 | Whitelist, cap, no SVG                               | `MAX_IMAGE_BYTES`, `ACCEPTED_IMAGE_TYPES`                 | `packages/api-schema/src/image-limits.test.ts` |
-| Usage and share read from the index                  | `imageUsageByOwner`, `documentReferencesImage`            | `apps/api/src/db/images.test.ts`               |
+| Usage and share read from the index                  | `imageUsageByOwner`, `designReferencesImage`            | `apps/api/src/db/images.test.ts`               |
 | Retention, backfill, tripwire                        | [Image reference index](image-reference-index.md#testing) |                                                |
-| Snapshot embeds, missing keeps placeholder           | two `getDocumentThumbnailSvg` tests                       | `apps/api/src/thumbnail.test.ts`               |
+| Snapshot embeds, missing keeps placeholder           | two `getDesignThumbnailSvg` tests                       | `apps/api/src/thumbnail.test.ts`               |
 | Embed budget in document order                       | `spends a total budget in document order…`                | `packages/api-schema/src/embed-images.test.ts` |
-| Export embeds `<image>`, placeholder without href    | `image elements` suite                                    | `packages/document/src/svg-render.test.ts`     |
+| Export embeds `<image>`, placeholder without href    | `image elements` suite                                    | `packages/design/src/svg-render.test.ts`     |
 | Client gate: type, size, empty, error mapping        | `uploadImageFile` suites                                  | `apps/live/lib/upload-image.test.ts`           |
 | Upload headers, 503 → null                           | `apiUploadImage`, `apiListImages` suites                  | `apps/live/lib/api-client.test.ts`             |
-| Placeholder factory, aspect lock on                  | `createImage drops a 200x150 placeholder…`                | `packages/document/src/factories.test.ts`      |
-| No colour controls                                   | `supportsColours covers … freehand; not image`            | `packages/document/src/geometry.test.ts`       |
+| Placeholder factory, aspect lock on                  | `createImage drops a 200x150 placeholder…`                | `packages/design/src/factories.test.ts`      |
+| No colour controls                                   | `supportsColours covers … freehand; not image`            | `packages/design/src/geometry.test.ts`       |
 | Offline data-URI rewrite                             | `offline-images` suites                                   | `apps/live/lib/offline/offline-images.test.ts` |
 | Palette hides without R2 `[QB1]`                     | none                                                      |                                                |
 | Set / Cleared image log `[QB4]` (retired)            | n/a                                                       |                                                |

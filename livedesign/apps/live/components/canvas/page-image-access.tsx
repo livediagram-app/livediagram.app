@@ -12,10 +12,10 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import type { LaidOutPage } from '@livedesign/document';
+import type { LaidOutPage } from '@livedesign/design';
 import { apiFetchImageBlobUrl, releaseImageBlobUrl } from '@/lib/api-client';
 
-type PageImageAccess = { ownerId: string; documentId: string; shareCode: string | null };
+type PageImageAccess = { ownerId: string; designId: string; shareCode: string | null };
 
 const PageImageAccessContext = createContext<PageImageAccess | null>(null);
 
@@ -39,7 +39,7 @@ export function usePageImageAccess(): PageImageAccess | null {
   return useContext(PageImageAccessContext);
 }
 
-// The gallery pictures the pages paint (an offline document's inline bytes need no fetch).
+// The gallery pictures the pages paint (an offline design's inline bytes need no fetch).
 function galleryIds(pages: readonly LaidOutPage[]): string[] {
   const ids = new Set<string>();
   for (const p of pages) {
@@ -65,11 +65,11 @@ export function usePageImageSources(
 export function useImageSources(ids: readonly string[]): (imageId: string) => string | undefined {
   const access = usePageImageAccess();
   const key = [...new Set(ids.filter((id) => !id.startsWith('data:')))].sort().join('\n');
-  const accessKey = access ? `${access.ownerId}\0${access.documentId}\0${access.shareCode}` : '';
+  const accessKey = access ? `${access.ownerId}\0${access.designId}\0${access.shareCode}` : '';
   const [sources, setSources] = useState<ReadonlyMap<string, string>>(new Map());
   // Every id asked for under this access, with its URL once it came.
   const held = useRef(new Map<string, string | null>());
-  // A new access (another document, a share code) starts over.
+  // A new access (another design, a share code) starts over.
   useEffect(() => {
     const mine = held.current;
     return () => {
@@ -94,7 +94,7 @@ export function useImageSources(ids: readonly string[]): (imageId: string) => st
       if (mine.has(id)) continue;
       mine.set(id, null);
       apiFetchImageBlobUrl(access.ownerId, id, {
-        documentId: access.documentId,
+        designId: access.designId,
         shareCode: access.shareCode,
       })
         .then((url) => {

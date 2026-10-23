@@ -5,7 +5,7 @@ import {
   pathWorldAnchors,
   type FreehandElement,
   type PathElement,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { tidyUpStroke, isTidyable } from './stroke-tidy';
 
 // docs/specs/007-editor/logo-pages.md "Tidy": hand-drawn lines made straight.

@@ -1,4 +1,4 @@
-// The changeset verbs (docs/specs/015-api/cli.md "Commands"): the recent changesets of a document, one with
+// The changeset verbs (docs/specs/015-api/cli.md "Commands"): the recent changesets of a design, one with
 // its result lines, and the revert of one.
 
 import { z } from 'zod';
@@ -6,7 +6,7 @@ import type { ChangesetDetail, ChangesetSummary, RevertResponse } from '@livedes
 import { lintFooterPart } from '@livedesign/page-lint';
 import { resolveTab } from '../addressing';
 import { defineVerb } from '../define';
-import { documentOf, LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT, minute } from './shared';
+import { designOf, LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT, minute } from './shared';
 
 const summaryLine = (c: ChangesetSummary, tabName: string) => {
   const { added, changed, removed } = c.counts;
@@ -26,7 +26,7 @@ export const changesetLs = defineVerb({
   id: 'changeset.ls',
   summary: 'Recent changesets, newest first',
   description:
-    'Lists the recent changesets of a document, or of one tab with --tab: who, what, when, and its counts.',
+    'Lists the recent changesets of a design, or of one tab with --tab: who, what, when, and its counts.',
   behaviour: 'read',
   input: z.object({
     doc: z.string().describe('A name, id prefix or livedesign URL'),
@@ -42,12 +42,12 @@ export const changesetLs = defineVerb({
   output: z.object({ changesets: z.array(listedChangeset) }),
   listKey: 'changesets',
   run: async (ctx, { doc, tab, limit }) => {
-    const document = await documentOf(ctx, doc);
-    const names = new Map(document.tabs.map((t) => [t.id, t.name]));
-    const tabId = tab === undefined ? undefined : resolveTab(document.tabs, tab, doc, ctx.log).id;
+    const design = await designOf(ctx, doc);
+    const names = new Map(design.tabs.map((t) => [t.id, t.name]));
+    const tabId = tab === undefined ? undefined : resolveTab(design.tabs, tab, doc, ctx.log).id;
     const query = new URLSearchParams({ limit: String(limit), ...(tabId ? { tab: tabId } : {}) });
     const { changesets } = await ctx.api.json<{ changesets: ChangesetSummary[] }>(
-      `/documents/${encodeURIComponent(document.id)}/changesets?${query}`,
+      `/designs/${encodeURIComponent(design.id)}/changesets?${query}`,
     );
     return {
       changesets: changesets.map((c) => ({
@@ -81,12 +81,12 @@ export const changesetShow = defineVerb({
   }),
   output: z.object({ line: z.string(), text: z.string() }),
   run: async (ctx, { doc, changeset }) => {
-    const document = await documentOf(ctx, doc);
+    const design = await designOf(ctx, doc);
     const detail = await ctx.api.json<ChangesetDetail>(
-      `/documents/${encodeURIComponent(document.id)}/changesets/${encodeURIComponent(changeset)}`,
+      `/designs/${encodeURIComponent(design.id)}/changesets/${encodeURIComponent(changeset)}`,
     );
     const tabName =
-      document.tabs.find((t) => t.id === detail.changeset.tabId)?.name ?? detail.changeset.tabId;
+      design.tabs.find((t) => t.id === detail.changeset.tabId)?.name ?? detail.changeset.tabId;
     return { line: summaryLine(detail.changeset, tabName), text: detail.text };
   },
   text: ({ line, text }) => [line, text],
@@ -117,9 +117,9 @@ export const changesetRevert = defineVerb({
     lint: z.string(),
   }),
   run: async (ctx, { doc, changeset }) => {
-    const document = await documentOf(ctx, doc);
+    const design = await designOf(ctx, doc);
     const answer = await ctx.api.json<RevertResponse>(
-      `/documents/${encodeURIComponent(document.id)}/changesets/${encodeURIComponent(changeset)}/revert`,
+      `/designs/${encodeURIComponent(design.id)}/changesets/${encodeURIComponent(changeset)}/revert`,
       { method: 'POST' },
     );
     return {

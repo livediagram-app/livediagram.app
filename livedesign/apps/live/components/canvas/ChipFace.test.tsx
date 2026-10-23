@@ -4,7 +4,7 @@
 
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { createShape, type ShapeElement } from '@livedesign/document';
+import { createShape, type ShapeElement } from '@livedesign/design';
 import { ChipFace } from './ChipFace';
 
 afterEach(cleanup);

@@ -96,7 +96,7 @@ describe('runLifecycleSweep', () => {
     expect(markStageSent).toHaveBeenCalledWith(env, 'u1', 'welcome');
   });
 
-  it('nudges + stamps a zero-document signup (activation, docs/specs/014-identity/transactional-email.md #4)', async () => {
+  it('nudges + stamps a zero-design signup (activation, docs/specs/014-identity/transactional-email.md #4)', async () => {
     vi.mocked(dueForStage).mockResolvedValue([]);
     vi.mocked(dueForActivation).mockResolvedValue([{ ownerId: 'u2', email: 'c@d.com' }]);
     vi.mocked(dueForWinback).mockResolvedValue([]);

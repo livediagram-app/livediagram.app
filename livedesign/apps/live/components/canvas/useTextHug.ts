@@ -4,7 +4,7 @@
 // label and its hugged size together, as one step (useSelectionEditing.commitLabel).
 
 import { useCallback, useState } from 'react';
-import type { BoxedElement } from '@livedesign/document';
+import type { BoxedElement } from '@livedesign/design';
 import {
   hugsText,
   hugTextSize,

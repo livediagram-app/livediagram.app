@@ -4,10 +4,10 @@ Derived from [Tag colours](../tag-colours.md). Defaults in [DEFAULTS.md](DEFAULT
 
 | File                                                | Role                                                                   |
 | --------------------------------------------------- | ---------------------------------------------------------------------- |
-| `packages/document/src/tag-colours.ts`              | Type, bounds, lookup, write, the card's tag colour, the render overlay |
-| `packages/document/src/validate.ts` (tab checks)    | `tagColours` validation                                                |
-| `packages/document/src/accent-edge.ts`              | `resolvedAccentEdge` takes the tab's map                               |
-| `packages/document/src/svg-render-card.ts`          | Tinted tag chips in export                                             |
+| `packages/design/src/tag-colours.ts`              | Type, bounds, lookup, write, the card's tag colour, the render overlay |
+| `packages/design/src/validate.ts` (tab checks)    | `tagColours` validation                                                |
+| `packages/design/src/accent-edge.ts`              | `resolvedAccentEdge` takes the tab's map                               |
+| `packages/design/src/svg-render-card.ts`          | Tinted tag chips in export                                             |
 | `apps/live/components/canvas/TagColoursContext.tsx` | The active tab's map, for the canvas                                   |
 | `apps/live/hooks/editor/useTagColourSetter.ts`      | `setTagColour(tag, colour \| null)`: one history step on the tab       |
 | `apps/live/components/palette/TagColoursBlock.tsx`  | The Card section's Tag Colours rows                                    |
@@ -102,7 +102,7 @@ Each colour row is named "<tag> colour"; Clear is "Clear <tag> colour".
 
 | Rule                         | Test file                                               |
 | ---------------------------- | ------------------------------------------------------- |
-| Map writes, lookup, I1 to I2 | `packages/document/src/tag-colours.test.ts`             |
+| Map writes, lookup, I1 to I2 | `packages/design/src/tag-colours.test.ts`             |
 | Export (I3)                  | same                                                    |
 | Canvas edge and chips        | `apps/live/components/canvas/web/CardFace.test.tsx`     |
 | Menu block                   | `apps/live/components/palette/TagColoursBlock.test.tsx` |

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EDITOR_MODES } from '@livedesign/document';
+import { EDITOR_MODES } from '@livedesign/design';
 import {
   POPULAR_BY_MODE,
   POPULAR_PER_MODE,

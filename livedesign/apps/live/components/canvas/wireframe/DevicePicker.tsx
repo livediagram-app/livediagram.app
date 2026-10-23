@@ -11,7 +11,7 @@ import {
   type WireframeDeviceId,
   type WireframeFrameLook,
   type WireframeFrameTheme,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { DeviceMiniature } from './DeviceMiniature';
 
 const ORDER = WIREFRAME_DEVICE_GROUPS.flatMap((g) => g.devices);

@@ -8,7 +8,7 @@ plain-http wiki and a self-hosted instance on a LAN address both open.
 
 ## Why
 
-The editor mints ids (documents, tabs, elements, the guest's own participant id) with `crypto.randomUUID()`, more
+The editor mints ids (designs, tabs, elements, the guest's own participant id) with `crypto.randomUUID()`, more
 than a hundred call sites across `apps/live` and the shared packages. `randomUUID` is secure-context only. On
 livedesign.app the editor itself is always HTTPS, but an [embed](../013-workspace/embeds.md) on an `http://` page is
 not secure (its ancestor is not), and neither is a self-hosted instance reached as `http://192.168.1.20`. There the

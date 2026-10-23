@@ -1,7 +1,7 @@
 import { SIDEBAR_LABELS } from './sidebar/sidebar-structure';
 import type { SelectedNode } from './views';
 
-// What each Explorer view is called: its page heading, document title and breadcrumb
+// What each Explorer view is called: its page heading, design title and breadcrumb
 // (docs/specs/013-workspace/explorer-structure.md#page-titles-follow-the-rows). A view with a
 // sidebar row is named by that row; the views without one keep their own names. Folder and
 // team views are named by the folder or team.
@@ -12,7 +12,7 @@ export const VIEW_TITLES: Readonly<Record<NamedKind, string>> = {
   inbox: SIDEBAR_LABELS.inbox,
   timeline: SIDEBAR_LABELS.timeline,
   shared: SIDEBAR_LABELS.shared,
-  all: SIDEBAR_LABELS.myDocuments,
+  all: SIDEBAR_LABELS.myDesigns,
   offline: SIDEBAR_LABELS.thisBrowser,
   invites: SIDEBAR_LABELS.invites,
   gallery: SIDEBAR_LABELS.gallery,
@@ -24,8 +24,8 @@ export const VIEW_TITLES: Readonly<Record<NamedKind, string>> = {
   search: 'Search results',
 };
 
-// The document title a static Explorer page exports.
-export function viewDocumentTitle(kind: NamedKind): string {
+// The design title a static Explorer page exports.
+export function viewDesignTitle(kind: NamedKind): string {
   return `${VIEW_TITLES[kind]} | livedesign`;
 }
 

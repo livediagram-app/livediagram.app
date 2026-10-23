@@ -113,7 +113,7 @@ export function TabWindowArt() {
 }
 
 // Contents: the sidebar listing every page with a thumbnail, the current one highlighted, and Find a
-// Page narrowing a long document.
+// Page narrowing a long design.
 export function ContentsSidebarArt() {
   const pages = ['Cover', 'Summary', 'Findings', 'Next steps'];
   return (

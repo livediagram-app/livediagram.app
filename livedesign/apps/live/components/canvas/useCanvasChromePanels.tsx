@@ -6,7 +6,7 @@ import { useStableCallbacks } from '@/hooks/ui/useStableCallbacks';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
 import { loadLayersPanel, loadPhotoPanel } from '@/lib/editor-deferred-code';
-import { visibleLayerElements } from '@livedesign/document';
+import { visibleLayerElements } from '@livedesign/design';
 import { CanvasAiPanel } from './CanvasAiPanel';
 import { LazyExplorer } from '@/components/panels/LazyExplorer';
 import { ViewMinimap } from '@/components/canvas/view-readers';
@@ -24,7 +24,7 @@ const PhotoPanel = dynamic(loadPhotoPanel, { ssr: false });
 
 // Lazy-load CommentsPanel: only mounts when the active tab has at
 // least one element with comments. It stacks below the Palette (the
-// top-right panel). Most documents never accumulate comments, so deferring
+// top-right panel). Most designs never accumulate comments, so deferring
 // the 164-line panel + its relative-time formatting
 // dependencies keeps the editor's initial chunk lean.
 const CollaboratePanel = dynamic(
@@ -86,9 +86,9 @@ export function useCanvasChromePanels({
     actionRows,
     commentRows,
     commentsPanelPosition,
-    currentDocumentId,
-    documentList,
-    documentListLoading,
+    currentDesignId,
+    designList,
+    designListLoading,
     elements,
     folders,
     layers,
@@ -111,20 +111,20 @@ export function useCanvasChromePanels({
     onHideOtherLayers,
     onPreviewLayer,
     onCreateFolder,
-    onDeleteDocument,
+    onDeleteDesign,
     onDeleteFolder,
     onDismissShared,
-    onDuplicateDocument,
+    onDuplicateDesign,
     onMoveCommentsPanel,
-    onMoveDocumentToFolder,
-    onMoveDocumentTo,
+    onMoveDesignToFolder,
+    onMoveDesignTo,
     onLibraryChanged,
-    onNewDocument,
+    onNewDesign,
     explorerMenuActions,
     onOpenActionForElement,
     onToggleActionDone,
     onOpenCommentsForElement,
-    onOpenDocument,
+    onOpenDesign,
     onRenameCurrent,
     onRenameFolder,
     onTeamFolders,
@@ -134,10 +134,10 @@ export function useCanvasChromePanels({
     setActiveDockAnchor,
     setActiveDockPanel,
     settings,
-    sharedDocuments,
+    sharedDesigns,
     tabName,
     tabThemeId,
-    teamDocuments,
+    teamDesigns,
     teamFolders,
     teams,
     zenMode,
@@ -150,16 +150,16 @@ export function useCanvasChromePanels({
   // mid-drag, and EditorView memoises the `teams` array.)
   const explorerHandlers = useStableCallbacks({
     onDismissShared,
-    onOpenDocument,
-    onNewDocument,
+    onOpenDesign,
+    onNewDesign,
     onRenameCurrent,
-    onDeleteDocument,
-    onDuplicateDocument,
+    onDeleteDesign,
+    onDuplicateDesign,
     onCreateFolder,
     onRenameFolder,
     onDeleteFolder,
-    onMoveDocumentToFolder,
-    onMoveDocumentTo,
+    onMoveDesignToFolder,
+    onMoveDesignTo,
     onLibraryChanged,
     onMenuShare: explorerMenuActions?.onShare,
     onMenuExport: explorerMenuActions?.onExport,
@@ -240,30 +240,30 @@ export function useCanvasChromePanels({
         onToggleFavourite={onToggleFavourite}
         // A popover under the menu button (docs/specs/007-editor/toolbar-layout.md): never placed or dragged.
         position={null}
-        documents={documentList}
+        designs={designList}
         ownerId={selfParticipant?.id ?? null}
         folders={folders}
-        loading={documentListLoading}
-        shared={sharedDocuments}
+        loading={designListLoading}
+        shared={sharedDesigns}
         teams={teams}
         teamFolders={teamFolders}
-        teamDocuments={teamDocuments}
+        teamDesigns={teamDesigns}
         onDismissShared={explorerHandlers.onDismissShared}
-        currentDocumentId={currentDocumentId}
+        currentDesignId={currentDesignId}
         onMoveTo={NO_MOVE}
-        onOpenDocument={explorerHandlers.onOpenDocument}
-        onNewDocument={explorerHandlers.onNewDocument}
+        onOpenDesign={explorerHandlers.onOpenDesign}
+        onNewDesign={explorerHandlers.onNewDesign}
         menuActions={explorerMenu}
         onRenameCurrent={explorerHandlers.onRenameCurrent}
-        onDeleteDocument={explorerHandlers.onDeleteDocument}
+        onDeleteDesign={explorerHandlers.onDeleteDesign}
         onLibraryChanged={explorerHandlers.onLibraryChanged}
-        onDuplicateDocument={explorerHandlers.onDuplicateDocument}
+        onDuplicateDesign={explorerHandlers.onDuplicateDesign}
         onCreateFolder={explorerHandlers.onCreateFolder}
         onRenameFolder={explorerHandlers.onRenameFolder}
         onDeleteFolder={explorerHandlers.onDeleteFolder}
         onTeamFolders={onTeamFolders}
-        onMoveDocumentToFolder={explorerHandlers.onMoveDocumentToFolder}
-        onMoveDocumentTo={onMoveDocumentTo ? explorerHandlers.onMoveDocumentTo : undefined}
+        onMoveDesignToFolder={explorerHandlers.onMoveDesignToFolder}
+        onMoveDesignTo={onMoveDesignTo ? explorerHandlers.onMoveDesignTo : undefined}
         popoverOpen={explorerOpen}
         popoverAnchor={activeDockAnchor ?? undefined}
         asPopover
@@ -309,7 +309,7 @@ export function useCanvasChromePanels({
       <CanvasAiPanel aiPanel={aiPanel} wiring={aiWiring} tabName={tabName} settings={settings} />
     ) : null;
 
-  // Layers panel (docs/specs/006-document/layers.md). Edit sessions only (a viewer can't manage
+  // Layers panel (docs/specs/006-design/layers.md). Edit sessions only (a viewer can't manage
   // layers; visibility / lock still shape what they see via the render
   // path). A popover over its bottom-right cluster button, always mounted so
   // that button can pop it open (popoverOpen gates the actual render).
@@ -352,7 +352,7 @@ export function useCanvasChromePanels({
   const mapEnabled = settings?.showMinimap !== false;
   const mapAccent = paletteTheme.elementStroke;
   const minimapWiring = panelWiringFor('minimap', props.mapPosition, props.onResetMap);
-  // Hidden layers (docs/specs/006-document/layers.md) drop out of the miniature too, so the map
+  // Hidden layers (docs/specs/006-design/layers.md) drop out of the miniature too, so the map
   // matches the canvas. Memoised: with a hidden layer the filter returns a new array, which would
   // rebuild the Map's whole drawing on every render (docs/specs/008-canvas/canvas-performance.md).
   const mapElements = useMemo(

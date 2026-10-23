@@ -2,14 +2,14 @@
 
 // The Map's current-view window (docs/specs/008-canvas/minimap.md): the lit rectangle showing where the
 // canvas is looking. It regressed once when the map measured <main> itself: rendered inside <main>, its
-// layout effect ran before <main>'s ref attached, so opening a document left it unmeasured and the window
+// layout effect ran before <main>'s ref attached, so opening a design left it unmeasured and the window
 // vanished. The size now comes in from the Canvas; these pin that the window draws from it.
 
 import { renderToStaticMarkup } from 'react-dom/server';
 import { act, cleanup, render } from '@testing-library/react';
 import { beginCanvasGesture, resetCanvasGesturesForTests } from '@/lib/canvas-gesture';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { createPinnedArrow, createShape, createText } from '@livedesign/document';
+import { createPinnedArrow, createShape, createText } from '@livedesign/design';
 import { Minimap } from './Minimap';
 
 afterEach(cleanup);

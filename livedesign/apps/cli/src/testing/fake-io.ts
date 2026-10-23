@@ -237,7 +237,7 @@ export const capabilities: Route = (_, url) =>
         aiEnabled: false,
         apiBase: 'https://livedesign.app/api',
         authEnabled: true,
-        documentFormat: 2,
+        designFormat: 2,
       })
     : undefined;
 

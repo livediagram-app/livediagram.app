@@ -1,5 +1,5 @@
 // Relative-time formatting shared by the footer save indicator, the
-// Explorer's "Your documents" list, and the Explorer's Inbox rows.
+// Explorer's "Your designs" list, and the Explorer's Inbox rows.
 // Kept here so every surface reads identically — previously each
 // surface had its own slightly different copy.
 //

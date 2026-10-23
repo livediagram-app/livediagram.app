@@ -7,7 +7,7 @@
 // Either way it steps aside while a mode's message is up, which takes the same place.
 import { lucideGlyph } from '@livedesign/ui';
 import { lucideSparkles } from '@livedesign/icons/lucide';
-import type { EditorMode } from '@livedesign/document';
+import type { EditorMode } from '@livedesign/design';
 import {
   PaletteTray,
   PaletteTrayAction,

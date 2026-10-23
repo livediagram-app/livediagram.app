@@ -7,7 +7,7 @@ import {
   wasHiddenSince,
 } from './timing';
 
-// Plain node with a hand-rolled document and a controllable performance clock, like index.test.ts.
+// Plain node with a hand-rolled design and a controllable performance clock, like index.test.ts.
 
 let clock = 0;
 let visibility = 'visible';
@@ -66,8 +66,8 @@ describe('startTiming', () => {
 
   it('backdates the start with from', () => {
     const track = vi.fn();
-    startTiming(track, 'DocumentLoad', { from: 0 }).end();
-    expect(track).toHaveBeenCalledWith('Timing', 'Measured', 'DocumentLoad.Under2000ms');
+    startTiming(track, 'DesignLoad', { from: 0 }).end();
+    expect(track).toHaveBeenCalledWith('Timing', 'Measured', 'DesignLoad.Under2000ms');
   });
 
   it('drops a timing the page was hidden during', () => {
@@ -148,7 +148,7 @@ describe('wasHiddenSince', () => {
     expect(wasHiddenSince(600)).toBe(false);
   });
 
-  it('is true while the page is hidden, and where there is no document', () => {
+  it('is true while the page is hidden, and where there is no design', () => {
     visibility = 'hidden';
     expect(wasHiddenSince(clock)).toBe(true);
     vi.stubGlobal('document', undefined);

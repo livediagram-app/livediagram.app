@@ -2,7 +2,7 @@
 
 How an agent (the MCP tools and the CLI's verbs, [Agents](README.md)) reads and makes the pages of a tab:
 logo and wireframe pages ([Pages](../007-editor/pages-mode.md), [Logo pages](../007-editor/logo-pages.md),
-[Wireframe pages](../007-editor/wireframe-pages.md)). People with the document open see an agent's pages arrive at
+[Wireframe pages](../007-editor/wireframe-pages.md)). People with the design open see an agent's pages arrive at
 once, as anyone's.
 
 The bar: an agent asked to "make a poster" or "design a logo" makes it on the right kind of page on the first try, and
@@ -19,16 +19,16 @@ is never told a change worked when it shows on no page.
 ## The front doors
 
 - **MCP**: one tool, `change_pages` ([MCP server](../015-api/mcp-server.md#49d-the-pages-tools)), and the `pages`
-  view of `read_document`.
+  view of `read_design`.
 - **CLI**: `page ls` (the `pages` view) and `page set` (`change_pages`) ([CLI](../015-api/cli.md)).
-- Both go through one api route, `POST /api/documents/:id/tabs/:tabId/pages`, over one pure engine shared with
+- Both go through one api route, `POST /api/designs/:id/tabs/:tabId/pages`, over one pure engine shared with
   the editor, so an agent's page edit is exactly the edit the page panel makes.
-- `create_document` and `add_tab` with a Pages template (`logo-design`, a wireframe flow, `blank-illustration`, ...)
+- `create_design` and `add_tab` with a Pages template (`logo-design`, a wireframe flow, `blank-illustration`, ...)
   still make a tab on its pages; `change_pages` then changes it.
 
 ## Which tab
 
-- `change_pages` takes an optional `tabId`. Absent, it acts on the document's first tab.
+- `change_pages` takes an optional `tabId`. Absent, it acts on the design's first tab.
 - A locked tab is refused (`tab_locked`).
 
 ## Naming a page
@@ -59,7 +59,7 @@ changes before it would have done.
 - **The first page's choice**: while the tab's only page is unchosen and empty, an `add` of a kind makes that page
   the kind (`withPageKindChosen`) instead of adding a second page, so a fresh Pages tab does not keep an empty
   first page. Likewise a blank of the kind asked for (the tab's only page already of that kind, unnamed and holding
-  nothing, as the Blank Infographic makes it) becomes the page added, so a document made from it does not open on an
+  nothing, as the Blank Infographic makes it) becomes the page added, so a design made from it does not open on an
   empty page.
 - **A delete of the page an add took**: once an `add` has taken the first page that way, the empty page is gone, so a
   later `delete` in the same call naming that page (by place or id) means the empty page and is done already: it
@@ -87,21 +87,21 @@ deleted.`). An agent replacing a starter page writes `[add, delete 1]`, and with
 - **The answer**: one line per change ("Added page 3 (infographic, A4) from layout Report Cover", "Deleted page 2 and 4
   elements on it"), then the tab's pages as they now are: place, id, name, kind, size and orientation, the page's
   rectangle on the canvas (`x, y, width, height`) and how many elements are on it. Elements are put onto a page with
-  `update_document`, at coordinates inside its rectangle.
+  `update_design`, at coordinates inside its rectangle.
 
 ## Reading: the `pages` view
 
-`read_document` with `view: "pages"` (the CLI's `page ls`, and `read --view pages`) answers, for a Pages tab:
+`read_design` with `view: "pages"` (the CLI's `page ls`, and `read --view pages`) answers, for a Pages tab:
 
 - each page in row order: place, id, name, kind, size and orientation, the rectangle, background, locked, and the
-  refs of the elements on it (the outline's refs, [Document views](document-views.md));
+  refs of the elements on it (the outline's refs, [Design views](design-views.md));
 - the layouts each kind on the tab offers, by id and label.
 
 The view keeps to the read budget. The outline's header names a Pages tab's page count and points at the view.
 
 ## The route
 
-`POST /api/documents/:id/tabs/:tabId/pages` with `{ pages: PageChange[], base?: rev }`.
+`POST /api/designs/:id/tabs/:tabId/pages` with `{ pages: PageChange[], base?: rev }`.
 
 - Open to anyone who may edit the tab (a person's session or an API token); a read-only token is refused as every
   write is.
@@ -109,7 +109,7 @@ The view keeps to the read budget. The outline's header names a Pages tab's page
   changeset write (so their ops are recorded, merged into later saves, relayed and revertible), the pages with
   them in the same batch. A revision that moved meanwhile is read again and applied
   once more; a second move answers `409 tab_busy`.
-- Relays to the document's room what an editor's own edit sends: the changeset's element ops, a `tab-meta`
+- Relays to the design's room what an editor's own edit sends: the changeset's element ops, a `tab-meta`
   `{ pages }` patch. The room relays without
   reading them, as it does an editor's.
 - **Known gap** (the tab rename's, [Agent changesets](agent-changesets.md#whole-tab-saves-and-tab-renames)): a
@@ -120,7 +120,7 @@ The view keeps to the read budget. The outline's header names a Pages tab's page
 
 ## Observability
 
-Every decision logs with the `[pages-agent]` fingerprint: `applied` (document, tab, changes, rev), `refused`
+Every decision logs with the `[pages-agent]` fingerprint: `applied` (design, tab, changes, rev), `refused`
 (code, change index), `stale-retry`, `relay-missed`.
 
 ## Telemetry

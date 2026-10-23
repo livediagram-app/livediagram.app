@@ -1,14 +1,14 @@
-// The verbs that make, name, share and remove documents and tabs (docs/specs/015-api/cli.md "Commands"). A new
-// document is compiled by POST /api/documents and a new tab is a `replace` changeset on a new tab id (CLI58,
+// The verbs that make, name, share and remove designs and tabs (docs/specs/015-api/cli.md "Commands"). A new
+// design is compiled by POST /api/designs and a new tab is a `replace` changeset on a new tab id (CLI58,
 // CLI75), so the CLI never writes a tab whole; names change through their own routes.
 
 import { z } from 'zod';
 import { ApiError } from '@livedesign/api-client';
 import type {
   ChangesetReplaceBody,
-  DocumentResponse,
+  DesignResponse,
   ShareLink,
-  TrashedDocument,
+  TrashedDesign,
 } from '@livedesign/api-schema';
 import { TRASH_RETENTION_DAYS } from '@livedesign/api-schema';
 import { resolveTab } from '../addressing';
@@ -16,7 +16,7 @@ import { defineVerb, VerbRefusal, type VerbContext } from '../define';
 import { shortestUniquePrefixes } from '../refs';
 import { classifySource } from '../source-kind';
 import { submitChangeset, writeFlags, type WriteFlags } from '../write';
-import { documentOf } from './shared';
+import { designOf } from './shared';
 
 const docArg = z.string().describe('A name, id prefix or livedesign URL');
 const sourceFlags = {
@@ -24,7 +24,7 @@ const sourceFlags = {
   template: z.string().optional().describe('A template kind to build it from'),
 };
 
-// A document ref in what a lifecycle verb prints: eight characters of its id, unique in practice and short.
+// A design ref in what a lifecycle verb prints: eight characters of its id, unique in practice and short.
 const REF_LENGTH = 8;
 const refOf = (id: string) => id.slice(0, REF_LENGTH);
 // A request whose answer has no body worth reading (204): its failure still throws the api's error.
@@ -33,7 +33,7 @@ async function send(ctx: VerbContext, path: string, init: RequestInit): Promise<
   if (!res.ok) throw new ApiError(res.status, await res.text());
 }
 
-const docPath = (id: string) => `/documents/${encodeURIComponent(id)}`;
+const docPath = (id: string) => `/designs/${encodeURIComponent(id)}`;
 
 // What a new tab is made from: a file's elements, a template, or nothing (an empty tab).
 async function replaceSourceOf(
@@ -74,18 +74,18 @@ const lineOutput = z.object({ text: z.string(), id: z.string() });
 const lineText = ({ text }: { text: string }) => [text];
 const quietId = ({ id }: { id: string }) => [id];
 
-export const documentCreate = defineVerb({
-  id: 'document.create',
-  summary: 'Create a document, empty or from elements or a template',
+export const designCreate = defineVerb({
+  id: 'design.create',
+  summary: 'Create a design, empty or from elements or a template',
   description:
-    'Creates a document with one tab, compiled by the api from -f (elements) or --template; empty without either. Prints its ref, name and link.',
+    'Creates a design with one tab, compiled by the api from -f (elements) or --template; empty without either. Prints its ref, name and link.',
   behaviour: 'write',
   input: z.object({
-    name: z.string().min(1).describe('The new document\u2019s name'),
+    name: z.string().min(1).describe('The new design\u2019s name'),
     tab: z
       .string()
       .optional()
-      .describe('The first tab\u2019s name; the document\u2019s name by default'),
+      .describe('The first tab\u2019s name; the design\u2019s name by default'),
     ...sourceFlags,
   }),
   output: lineOutput,
@@ -94,18 +94,18 @@ export const documentCreate = defineVerb({
     const source = await replaceSourceOf(
       ctx,
       input,
-      `livedesign document create ${JSON.stringify(input.name)}, then livedesign edit`,
+      `livedesign design create ${JSON.stringify(input.name)}, then livedesign edit`,
     );
     const { theme: _t, layout: _l, name: _n, ...tabSource } = source;
     const tab = { id: ctx.newId(), name: input.tab ?? input.name, ...tabSource };
-    const { document } = await ctx.api.json<DocumentResponse>('/documents', {
+    const { design } = await ctx.api.json<DesignResponse>('/designs', {
       method: 'POST',
       body: JSON.stringify({ id, name: input.name, source: 'cli', tabs: [tab] }),
     });
-    const tabs = document.tabs.length;
+    const tabs = design.tabs.length;
     return {
-      id: document.id,
-      text: `+ document ${refOf(document.id)} ${JSON.stringify(document.name)} · ${tabs} tab${tabs === 1 ? '' : 's'} · ${ctx.host}/document/${document.id}`,
+      id: design.id,
+      text: `+ design ${refOf(design.id)} ${JSON.stringify(design.name)} · ${tabs} tab${tabs === 1 ? '' : 's'} · ${ctx.host}/design/${design.id}`,
     };
   },
   text: lineText,
@@ -114,29 +114,29 @@ export const documentCreate = defineVerb({
     positionals: ['name'],
     flags: { file: { short: 'f' } },
     examples: [
-      'livedesign document create "Shop" -f screens.json',
-      'livedesign document create "Crumb & Co" --template logo-design',
+      'livedesign design create "Shop" -f screens.json',
+      'livedesign design create "Crumb & Co" --template logo-design',
     ],
-    prints: '+ document <ref> "<name>" · <n> tabs · <link>',
+    prints: '+ design <ref> "<name>" · <n> tabs · <link>',
   },
 });
 
-export const documentRename = defineVerb({
-  id: 'document.rename',
-  summary: 'Rename a document',
-  description: 'Gives a document a new name.',
+export const designRename = defineVerb({
+  id: 'design.rename',
+  summary: 'Rename a design',
+  description: 'Gives a design a new name.',
   behaviour: 'write',
   input: z.object({ doc: docArg, name: z.string().min(1).describe('The new name') }),
   output: lineOutput,
   run: async (ctx, input) => {
-    const found = await documentOf(ctx, input.doc);
-    const { document } = await ctx.api.json<DocumentResponse>(docPath(found.id), {
+    const found = await designOf(ctx, input.doc);
+    const { design } = await ctx.api.json<DesignResponse>(docPath(found.id), {
       method: 'PUT',
       body: JSON.stringify({ name: input.name }),
     });
     return {
       id: found.id,
-      text: `~ document ${refOf(found.id)} ${JSON.stringify(found.name)}→${JSON.stringify(document.name)}`,
+      text: `~ design ${refOf(found.id)} ${JSON.stringify(found.name)}→${JSON.stringify(design.name)}`,
     };
   },
   text: lineText,
@@ -144,18 +144,18 @@ export const documentRename = defineVerb({
   cli: {
     positionals: ['doc', 'name'],
     examples: [
-      'livedesign document rename "Auth flow" "Sign-in flow"',
-      'livedesign document rename 3f9c "Sign-in flow"',
+      'livedesign design rename "Auth flow" "Sign-in flow"',
+      'livedesign design rename 3f9c "Sign-in flow"',
     ],
-    prints: '~ document <ref> "<old>"→"<new>"',
+    prints: '~ design <ref> "<old>"→"<new>"',
   },
 });
 
-export const documentShare = defineVerb({
-  id: 'document.share',
+export const designShare = defineVerb({
+  id: 'design.share',
   summary: 'Make a share link',
   description:
-    'Creates a share link to a document: view (default) lets people open and read it, participate also lets them comment, react and add stickies and text without reshaping it, edit lets them change anything; none needs sign-in. Expires never (default), in a week, a month or six months.',
+    'Creates a share link to a design: view (default) lets people open and read it, participate also lets them comment, react and add stickies and text without reshaping it, edit lets them change anything; none needs sign-in. Expires never (default), in a week, a month or six months.',
   behaviour: 'write',
   input: z.object({
     doc: docArg,
@@ -175,12 +175,12 @@ export const documentShare = defineVerb({
     expiresAt: z.number().nullable(),
   }),
   run: async (ctx, input) => {
-    const found = await documentOf(ctx, input.doc);
+    const found = await designOf(ctx, input.doc);
     const { link } = await ctx.api.json<{ link: ShareLink }>(`${docPath(found.id)}/share`, {
       method: 'POST',
       body: JSON.stringify({ role: input.role, expiry: input.expiry }),
     });
-    const url = `${ctx.host}/document/shared?s=${encodeURIComponent(link.code)}`;
+    const url = `${ctx.host}/design/shared?s=${encodeURIComponent(link.code)}`;
     return { text: url, url, role: link.role, expiresAt: link.expiresAt };
   },
   text: lineText,
@@ -188,47 +188,47 @@ export const documentShare = defineVerb({
   cli: {
     positionals: ['doc'],
     examples: [
-      'livedesign document share "Auth flow"',
-      'livedesign document share 3f9c --role edit --expiry week',
+      'livedesign design share "Auth flow"',
+      'livedesign design share 3f9c --role edit --expiry week',
     ],
     prints: 'the link',
   },
 });
 
-export const documentRm = defineVerb({
-  id: 'document.rm',
-  summary: `Move a document to the Trash for ${TRASH_RETENTION_DAYS} days`,
-  description: `Moves a document to the Trash, where it can be restored for ${TRASH_RETENTION_DAYS} days.`,
+export const designRm = defineVerb({
+  id: 'design.rm',
+  summary: `Move a design to the Trash for ${TRASH_RETENTION_DAYS} days`,
+  description: `Moves a design to the Trash, where it can be restored for ${TRASH_RETENTION_DAYS} days.`,
   behaviour: 'destructive',
   input: z.object({ doc: docArg }),
   output: lineOutput,
   run: async (ctx, input) => {
-    const found = await documentOf(ctx, input.doc);
+    const found = await designOf(ctx, input.doc);
     await send(ctx, docPath(found.id), { method: 'DELETE' });
     return {
       id: found.id,
-      text: `- document ${refOf(found.id)} ${JSON.stringify(found.name)} · in the Trash for ${TRASH_RETENTION_DAYS} days · restore: livedesign document restore ${found.id}`,
+      text: `- design ${refOf(found.id)} ${JSON.stringify(found.name)} · in the Trash for ${TRASH_RETENTION_DAYS} days · restore: livedesign design restore ${found.id}`,
     };
   },
   text: lineText,
   quiet: quietId,
   cli: {
     positionals: ['doc'],
-    examples: ['livedesign document rm "Old draft"', 'livedesign document rm 3f9c'],
-    prints: '- document <ref> "<name>" · in the Trash · the restore command',
+    examples: ['livedesign design rm "Old draft"', 'livedesign design rm 3f9c'],
+    prints: '- design <ref> "<name>" · in the Trash · the restore command',
   },
 });
 
-export const documentRestore = defineVerb({
-  id: 'document.restore',
-  summary: 'Bring a document back from the Trash',
+export const designRestore = defineVerb({
+  id: 'design.restore',
+  summary: 'Bring a design back from the Trash',
   description:
-    'Restores a document from the Trash to its folder, or the root of its space when that folder is gone.',
+    'Restores a design from the Trash to its folder, or the root of its space when that folder is gone.',
   behaviour: 'write',
-  input: z.object({ doc: z.string().describe('A name or id prefix of a document in the Trash') }),
+  input: z.object({ doc: z.string().describe('A name or id prefix of a design in the Trash') }),
   output: lineOutput,
   run: async (ctx, input) => {
-    const { trash } = await ctx.api.json<{ trash: TrashedDocument[] }>('/trash');
+    const { trash } = await ctx.api.json<{ trash: TrashedDesign[] }>('/trash');
     const lower = input.doc.toLowerCase();
     const matches = trash.filter(
       (d) =>
@@ -242,7 +242,7 @@ export const documentRestore = defineVerb({
         status: 404,
         code: matches.length ? 'ambiguous' : 'not_found',
         message: matches.length
-          ? `"${input.doc}" matches ${matches.length} documents in the Trash`
+          ? `"${input.doc}" matches ${matches.length} designs in the Trash`
           : `nothing in the Trash matches "${input.doc}"`,
         lines: (matches.length ? matches : trash.slice(0, 5)).map(
           (d) => `${refs.get(d.id)}  ${JSON.stringify(d.name)}  ${d.teamName ?? 'personal'}`,
@@ -253,15 +253,15 @@ export const documentRestore = defineVerb({
     await ctx.api.json(`/trash/${encodeURIComponent(doc!.id)}/restore`, { method: 'POST' });
     return {
       id: doc!.id,
-      text: `+ document ${refOf(doc!.id)} ${JSON.stringify(doc!.name)} restored`,
+      text: `+ design ${refOf(doc!.id)} ${JSON.stringify(doc!.name)} restored`,
     };
   },
   text: lineText,
   quiet: quietId,
   cli: {
     positionals: ['doc'],
-    examples: ['livedesign document restore "Old draft"', 'livedesign document restore 3f9c2a71'],
-    prints: '+ document <ref> "<name>" restored',
+    examples: ['livedesign design restore "Old draft"', 'livedesign design restore 3f9c2a71'],
+    prints: '+ design <ref> "<name>" restored',
   },
 });
 
@@ -269,7 +269,7 @@ export const tabAdd = defineVerb({
   id: 'tab.add',
   summary: 'Add a tab, empty or from elements or a template',
   description:
-    'Adds a tab to a document as one changeset on a new tab, filled from -f (elements) or --template; empty without either. Prints the tab, the result lines and the tab rm that undoes it.',
+    'Adds a tab to a design as one changeset on a new tab, filled from -f (elements) or --template; empty without either. Prints the tab, the result lines and the tab rm that undoes it.',
   behaviour: 'write',
   input: z.object({
     doc: docArg,
@@ -283,14 +283,14 @@ export const tabAdd = defineVerb({
     changeset: z.object({ id: z.string(), rev: z.number() }).nullable(),
   }),
   run: async (ctx, input) => {
-    const document = await documentOf(ctx, input.doc);
+    const design = await designOf(ctx, input.doc);
     const source = await replaceSourceOf(
       ctx,
       input,
       `livedesign tab add ${JSON.stringify(input.doc)} ${JSON.stringify(input.name)}, then livedesign edit`,
     );
     const target = {
-      documentId: document.id,
+      designId: design.id,
       tabId: ctx.newId(),
       tabName: input.name,
       doc: input.doc,
@@ -305,7 +305,7 @@ export const tabAdd = defineVerb({
     // Reverting the changeset takes the tab's elements back but leaves the tab, so the footer names what removes it.
     const footer = response.text.replace(
       /revert: livedesign changeset revert \S+ \S+$/m,
-      `undo: livedesign tab rm ${document.id} ${target.tabId}`,
+      `undo: livedesign tab rm ${design.id} ${target.tabId}`,
     );
     return {
       // The tab first, as `tab rename` names it: an empty tab has no element lines, so this is all that says which.
@@ -340,10 +340,10 @@ export const tabRename = defineVerb({
   }),
   output: lineOutput,
   run: async (ctx, input) => {
-    const document = await documentOf(ctx, input.doc);
-    const tab = resolveTab(document.tabs, input.tab, input.doc, ctx.log);
+    const design = await designOf(ctx, input.doc);
+    const tab = resolveTab(design.tabs, input.tab, input.doc, ctx.log);
     const { tab: renamed } = await ctx.api.json<{ tab: { name: string } }>(
-      `${docPath(document.id)}/tabs/${encodeURIComponent(tab.id)}/name`,
+      `${docPath(design.id)}/tabs/${encodeURIComponent(tab.id)}/name`,
       {
         method: 'PUT',
         body: JSON.stringify({ name: input.name }),
@@ -369,14 +369,14 @@ export const tabRename = defineVerb({
 export const tabRm = defineVerb({
   id: 'tab.rm',
   summary: 'Delete a tab',
-  description: 'Deletes one tab of a document; the other tabs stay.',
+  description: 'Deletes one tab of a design; the other tabs stay.',
   behaviour: 'destructive',
   input: z.object({ doc: docArg, tab: z.string().describe('The tab, by name or id prefix') }),
   output: lineOutput,
   run: async (ctx, input) => {
-    const document = await documentOf(ctx, input.doc);
-    const tab = resolveTab(document.tabs, input.tab, input.doc, ctx.log);
-    await send(ctx, `${docPath(document.id)}/tabs/${encodeURIComponent(tab.id)}`, {
+    const design = await designOf(ctx, input.doc);
+    const tab = resolveTab(design.tabs, input.tab, input.doc, ctx.log);
+    await send(ctx, `${docPath(design.id)}/tabs/${encodeURIComponent(tab.id)}`, {
       method: 'DELETE',
     });
     return { id: tab.id, text: `- tab ${tab.id} ${JSON.stringify(tab.name)}` };

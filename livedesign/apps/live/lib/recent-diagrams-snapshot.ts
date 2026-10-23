@@ -1,5 +1,5 @@
 // The editor's half of the returning visitor (docs/specs/019-marketing/returning-visitor.md): every time
-// it lists your documents it leaves a note of your six most recent diagrams in the browser, and keeps
+// it lists your designs it leaves a note of your six most recent diagrams in the browser, and keeps
 // their snapshot SVGs in Cache Storage, for the landing page's Welcome back window to read without
 // calling the api. Signing out forgets both.
 
@@ -10,7 +10,7 @@ import {
   pickRecentDiagrams,
   recentThumbPath,
   serializeRecentDiagrams,
-  type DocumentSummary,
+  type DesignSummary,
   type RecentDiagram,
 } from '@livedesign/api-schema';
 import { USER_PREFERENCES_STORAGE_KEY } from '@livedesign/telemetry-client';
@@ -24,12 +24,12 @@ import {
 // the request itself failed, which is worth trying again on the next list.
 type FetchSnapshotSvg = (id: string, savedAt: number) => Promise<string | null>;
 
-// Set once the note is forgotten (sign-out): a document list still in flight from the signed-in
+// Set once the note is forgotten (sign-out): a design list still in flight from the signed-in
 // session must not write it back before the page leaves.
 let forgotten = false;
 // The latest list and its fetcher, so hiding a diagram from Recent takes it off the note at once
 // rather than at the next list.
-let latest: { documents: readonly DocumentSummary[]; fetchSnapshotSvg: FetchSnapshotSvg } | null =
+let latest: { designs: readonly DesignSummary[]; fetchSnapshotSvg: FetchSnapshotSvg } | null =
   null;
 let listening = false;
 // One thumbnail sync at a time; a list that lands mid-sync asks for one more pass after it.
@@ -37,13 +37,13 @@ let syncing = false;
 let syncAgain = false;
 
 export function rememberRecentDiagrams(
-  documents: readonly DocumentSummary[],
+  designs: readonly DesignSummary[],
   fetchSnapshotSvg: FetchSnapshotSvg,
 ): void {
   if (forgotten || typeof window === 'undefined') return;
-  latest = { documents, fetchSnapshotSvg };
+  latest = { designs, fetchSnapshotSvg };
   listenForHiddenChanges();
-  const diagrams = pickRecentDiagrams(documents, hiddenFromRecent());
+  const diagrams = pickRecentDiagrams(designs, hiddenFromRecent());
   const next = diagrams.length > 0 ? serializeRecentDiagrams(diagrams) : null;
   if (next !== readLocalStorageSafe(RECENT_DIAGRAMS_KEY)) {
     if (next) writeLocalStorageSafe(RECENT_DIAGRAMS_KEY, next);
@@ -79,7 +79,7 @@ function listenForHiddenChanges(): void {
   if (listening) return;
   listening = true;
   const repick = () => {
-    if (latest) rememberRecentDiagrams(latest.documents, latest.fetchSnapshotSvg);
+    if (latest) rememberRecentDiagrams(latest.designs, latest.fetchSnapshotSvg);
   };
   window.addEventListener(PREFERENCES_CHANGED_EVENT, repick);
   window.addEventListener('storage', (e) => {
@@ -109,7 +109,7 @@ async function syncThumbnails(
   }
   syncing = true;
   try {
-    // The v1 cache held "no preview" for every document in This Browser; v2 draws them (lib/local-snapshot.ts).
+    // The v1 cache held "no preview" for every design in This Browser; v2 draws them (lib/local-snapshot.ts).
     // On its own, so a refusal here never stops the sync.
     await dropLegacyCache();
     const cache = await caches.open(RECENT_THUMBS_CACHE);
@@ -145,7 +145,7 @@ async function syncThumbnails(
     syncing = false;
     if (syncAgain && latest && !forgotten) {
       syncAgain = false;
-      rememberRecentDiagrams(latest.documents, latest.fetchSnapshotSvg);
+      rememberRecentDiagrams(latest.designs, latest.fetchSnapshotSvg);
     }
   }
 }

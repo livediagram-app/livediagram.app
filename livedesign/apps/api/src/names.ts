@@ -1,10 +1,10 @@
-// The server half of the name cap (docs/specs/006-document/name-length.md): every
-// document and tab name the worker stores passes through here, so API-token
+// The server half of the name cap (docs/specs/006-design/name-length.md): every
+// design and tab name the worker stores passes through here, so API-token
 // callers, MCP tools and copies meet the same NAME_MAX_LENGTH the editor applies.
 
-import { NAME_MAX_LENGTH, truncateName } from '@livedesign/document';
+import { NAME_MAX_LENGTH, truncateName } from '@livedesign/design';
 
-type CappedNameKind = 'document' | 'tab';
+type CappedNameKind = 'design' | 'tab';
 
 // Shortens a new or changed name with the shared truncateName. A name sent back
 // identical to the stored one is left alone, so an autosave or reorder echoing

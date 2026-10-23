@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { CloseIcon, useClickOutside, useEscape, Portal } from '@livedesign/ui';
 import { useReposition } from '@/hooks/canvas/useReposition';
-import type { CommentMention, CommentThread } from '@livedesign/document';
+import type { CommentMention, CommentThread } from '@livedesign/design';
 import { isMobileViewportSync } from '@/lib/responsive';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
 import { CommentComposer, CommentResolveToggle, CommentThreadList } from './comment-thread-parts';

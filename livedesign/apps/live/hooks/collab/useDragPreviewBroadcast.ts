@@ -6,7 +6,7 @@
 // DRAG_PREVIEW_MAX_ELEMENTS elements sends nothing: collaborators see it on release.
 
 import { useEffect, useEffectEvent, type RefObject } from 'react';
-import type { Element } from '@livedesign/document';
+import type { Element } from '@livedesign/design';
 import {
   DRAG_PREVIEW_ARROW_FIELDS,
   DRAG_PREVIEW_BOX_FIELDS,
@@ -36,7 +36,7 @@ function patchOf(el: Element): DragPreviewPatch {
 
 export function useDragPreviewBroadcast(deps: {
   roomRef: RefObject<{ send: (msg: RoomOutgoing) => void } | null>;
-  // The room is open for this document (hydrated, and shared or a team's).
+  // The room is open for this design (hydrated, and shared or a team's).
   live: boolean;
   activeId: string;
 }): void {

@@ -8,7 +8,7 @@
 import { getTheme, resetThemeElementsToTheme } from '@/lib/themes';
 import { withThemeApplied } from '@/lib/tab-theme-apply';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
-import type { Tab } from '@livedesign/document';
+import type { Tab } from '@livedesign/design';
 import { track } from '@/lib/telemetry';
 
 // The default theme a tab reverts to when its custom theme is deleted —
@@ -46,7 +46,7 @@ export function useTabTheme(deps: {
   };
 
   // Called when a custom theme (docs/specs/011-theme/custom-themes.md) is deleted: every tab in THIS
-  // document still pointing at the now-dead `custom:<uuid>` id falls back
+  // design still pointing at the now-dead `custom:<uuid>` id falls back
   // to the default theme — backdrop AND element colours — so the deletion
   // is visible immediately instead of stranding the old colours on a dead
   // id. A hard reset (not preserve-customs): the deleted theme is gone, so

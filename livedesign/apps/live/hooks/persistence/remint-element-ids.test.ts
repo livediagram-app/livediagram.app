@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, ShapeElement } from '@livedesign/document';
+import type { Element, ShapeElement } from '@livedesign/design';
 import { remintElements } from './useTabImport';
 
 const remintElementIds = (elements: Element[]) => remintElements(elements).elements;

@@ -8,10 +8,10 @@ import {
   BUILD_ID_HEADER,
   CHANGESET_SEEN_HEADER,
   CLIENT_HEADER,
-  DOCUMENT_CONVERSION_HEADER,
-  DOCUMENT_FORMAT_HEADER,
-  DOCUMENT_OPEN_HEADER,
-  DOCUMENT_TRASHED_ERROR,
+  DESIGN_CONVERSION_HEADER,
+  DESIGN_FORMAT_HEADER,
+  DESIGN_OPEN_HEADER,
+  DESIGN_TRASHED_ERROR,
 } from '@livedesign/api-schema';
 
 // CORS for the browser. Live app runs at the same hostname as the
@@ -31,13 +31,13 @@ export const CORS_HEADERS = {
   // rejects the POST preflight if any header the client sends isn't
   // in this list, which surfaces as "Failed to fetch" with no other
   // signal, so each new header has to land here too. Take Offline and Sync
-  // Document declare themselves with DOCUMENT_CONVERSION_HEADER.
-  'Access-Control-Allow-Headers': `Authorization, Content-Type, X-Owner-Id, X-Owner-Sig, X-Share-Code, X-Share-Password, X-Allow-Empty, X-Room-Cursor, X-Image-Sha256, X-Image-Width, X-Image-Height, X-Image-Original-Name, ${DOCUMENT_CONVERSION_HEADER}, ${DOCUMENT_OPEN_HEADER}, ${CHANGESET_SEEN_HEADER}, ${CLIENT_HEADER}`,
+  // Design declare themselves with DESIGN_CONVERSION_HEADER.
+  'Access-Control-Allow-Headers': `Authorization, Content-Type, X-Owner-Id, X-Owner-Sig, X-Share-Code, X-Share-Password, X-Allow-Empty, X-Room-Cursor, X-Image-Sha256, X-Image-Width, X-Image-Height, X-Image-Original-Name, ${DESIGN_CONVERSION_HEADER}, ${DESIGN_OPEN_HEADER}, ${CHANGESET_SEEN_HEADER}, ${CLIENT_HEADER}`,
   'Access-Control-Max-Age': '86400',
   // The server release signal (docs/specs/016-platform/new-version-prompt.md, stale-builds.md), readable
   // by an editor on another origin (local dev, a self-host with a separate api host).
   // The tab revision as an ETag (docs/specs/024-agents/agent-changesets.md).
-  'Access-Control-Expose-Headers': `${DOCUMENT_FORMAT_HEADER}, ${BUILD_ID_HEADER}, ETag`,
+  'Access-Control-Expose-Headers': `${DESIGN_FORMAT_HEADER}, ${BUILD_ID_HEADER}, ETag`,
 };
 
 // An answer is the caller's live state, so a browser asks again before reusing it unless the route
@@ -52,8 +52,8 @@ export function json(body: unknown, init: ResponseInit = {}): Response {
   return new Response(JSON.stringify(body), { ...init, headers });
 }
 
-// A text body with the JSON helper's CORS and caching (docs/specs/024-agents/document-views.md): a
-// document view, which an agent reads as plain text.
+// A text body with the JSON helper's CORS and caching (docs/specs/024-agents/design-views.md): a
+// design view, which an agent reads as plain text.
 export function textPlain(body: string, init: ResponseInit = {}): Response {
   const headers = new Headers(init.headers);
   headers.set('Content-Type', 'text/plain; charset=utf-8');
@@ -66,7 +66,7 @@ export function notFound(): Response {
   return json({ error: 'not_found' }, { status: 404 });
 }
 
-// An SVG image body (docs/specs/006-document/document-snapshots.md document snapshots). Same CORS treatment as
+// An SVG image body (docs/specs/006-design/design-snapshots.md design snapshots). Same CORS treatment as
 // `json` so the live app's blob-URL fetch works cross-origin in dev; the
 // caller picks the `Cache-Control` (private + long for the owner
 // thumbnail, public + short for the live share image).
@@ -78,7 +78,7 @@ export function svgImage(body: string, cacheControl: string): Response {
   const headers = new Headers(CORS_HEADERS);
   headers.set('Content-Type', 'image/svg+xml; charset=utf-8');
   headers.set('Cache-Control', cacheControl);
-  // Served on the app's own origin, so opened directly an SVG is a document
+  // Served on the app's own origin, so opened directly an SVG is a design
   // that could run script. The renderer escapes everything it writes; this
   // keeps a future slip there from becoming stored XSS. Fonts and inline
   // data images (what a snapshot actually uses) still load.
@@ -127,7 +127,7 @@ export function methodNotAllowed(): Response {
 
 // 413 for a body over a route's size cap. Canonical home for the
 // `{ error: 'payload_too_large' }` literal the body gate in index.ts and the
-// per-field / per-tab caps in the document, tab, and custom-theme routes share.
+// per-field / per-tab caps in the design, tab, and custom-theme routes share.
 // Image uploads answer with their own `file_too_large` + `limitBytes` instead.
 export function payloadTooLarge(): Response {
   return json({ error: 'payload_too_large' }, { status: 413 });
@@ -158,10 +158,10 @@ export function signInRequired(): Response {
   return json({ error: 'sign_in_required' }, { status: 401 });
 }
 
-// A document in the Trash (docs/specs/013-workspace/trash.md), answered only to a
+// A design in the Trash (docs/specs/013-workspace/trash.md), answered only to a
 // caller who could have opened it: the deleted state, not a not-found.
-export function documentTrashed(): Response {
-  return json({ error: DOCUMENT_TRASHED_ERROR }, { status: 410 });
+export function designTrashed(): Response {
+  return json({ error: DESIGN_TRASHED_ERROR }, { status: 410 });
 }
 
 // A write that collides with existing state (duplicate invite email,

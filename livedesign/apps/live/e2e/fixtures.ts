@@ -5,7 +5,7 @@ import {
   type Locator,
   type Page,
 } from '@playwright/test';
-import type { StoredDocument, StoredTab } from './stored';
+import type { StoredDesign, StoredTab } from './stored';
 import { DEBUG_STORAGE_KEY } from '../lib/debug-log';
 
 // Shared fixture (docs/specs/003-system-architecture/e2e-smoke.md): every smoke test fails on an uncaught
@@ -130,7 +130,7 @@ export function expectNoPageErrors(pageErrors: string[]): void {
 }
 
 // The wizard is a static export: its buttons are in the HTML before React attaches their handlers. A mode
-// card clicked in that gap is kept and acted on at hydration (new-document-route.md "A choice before
+// card clicked in that gap is kept and acted on at hydration (new-design-route.md "A choice before
 // hydration"), but every other control's click in that gap does nothing, more often the busier the
 // machine. React tags every element it has hydrated with a `__reactProps$` key; wait for it on the
 // element about to be used.
@@ -142,13 +142,13 @@ export async function untilHydrated(locator: Locator): Promise<void> {
     .toBe(true);
 }
 
-// The wizard asks only for a mode (docs/specs/007-editor/new-document-route.md "One-step wizard"): choosing one
-// creates the document there and then, and lands on the editor with the mode's start screen over the canvas
+// The wizard asks only for a mode (docs/specs/007-editor/new-design-route.md "One-step wizard"): choosing one
+// creates the design there and then, and lands on the editor with the mode's start screen over the canvas
 // (docs/specs/007-editor/start-diagramming.md).
-// Resolves to the new document's id; `url` carries a `/new?folder=` / `?team=` context.
+// Resolves to the new design's id; `url` carries a `/new?folder=` / `?team=` context.
 export async function createInMode(page: Page, mode: string, url = '/new'): Promise<string> {
   await page.goto(url);
-  await page.getByText('New Document', { exact: false }).waitFor();
+  await page.getByText('New Design', { exact: false }).waitFor();
   const card = page.locator(`[data-new-mode="${mode}"]`);
   await untilHydrated(card);
   await card.click();
@@ -160,10 +160,10 @@ export async function createInMode(page: Page, mode: string, url = '/new'): Prom
 const startScreen = (page: Page, title: RegExp = /^Start /) =>
   page.getByRole('region', { name: title });
 
-// Start a document from a named TEMPLATE in a named group of Start Diagramming: a Diagram document from the
+// Start a design from a named TEMPLATE in a named group of Start Diagramming: a Diagram design from the
 // wizard, then the template picked on its start screen, so template creation (builders, layers, per-template
 // canvas overrides, the tab kind) is its own path, as a person takes it.
-export async function startTemplateDocument(
+export async function startTemplateDesign(
   page: Page,
   group: string,
   template: RegExp,
@@ -192,7 +192,7 @@ export async function dismissQuickTour(page: Page): Promise<void> {
 }
 
 // A blank canvas straight away: /new?blank=1, the wizard bypass Start Blank
-// links to (docs/specs/007-editor/new-document-route.md).
+// links to (docs/specs/007-editor/new-design-route.md).
 export async function openStartBlank(page: Page): Promise<void> {
   await page.goto('/new?blank=1');
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
@@ -218,9 +218,9 @@ export async function openBlankSession(page: Page): Promise<void> {
   await dismissQuickTour(page);
 }
 
-// A blank Diagram document through the wizard: Diagram on the Mode step, Create, then the start screen's × (a blank
+// A blank Diagram design through the wizard: Diagram on the Mode step, Create, then the start screen's × (a blank
 // canvas, docs/specs/007-editor/start-diagramming.md "Bringing it back").
-export async function startBlankDocument(page: Page): Promise<void> {
+export async function startBlankDesign(page: Page): Promise<void> {
   await createInMode(page, 'diagram');
   const start = startScreen(page, /^Start Diagramming$/);
   await start.getByRole('button', { name: 'Close' }).click();
@@ -229,7 +229,7 @@ export async function startBlankDocument(page: Page): Promise<void> {
 
 export type Seed = Record<string, unknown>[];
 
-// Write the seed into the new document's first tab through the api, reload.
+// Write the seed into the new design's first tab through the api, reload.
 export async function seedTab(page: Page, elements: Seed): Promise<void> {
   const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
   const headers = await pageOwnerHeaders(page, { 'Content-Type': 'application/json' });
@@ -240,19 +240,19 @@ export async function seedTab(page: Page, elements: Seed): Promise<void> {
       let tabId = '';
       for (let i = 0; i < 50 && !tab; i += 1) {
         const liveDoc = (await (
-          await fetch(`${base}/documents/${id}`, { headers })
-        ).json()) as StoredDocument;
-        tabId = liveDoc.document?.tabs?.[0]?.id ?? '';
+          await fetch(`${base}/designs/${id}`, { headers })
+        ).json()) as StoredDesign;
+        tabId = liveDoc.design?.tabs?.[0]?.id ?? '';
         if (tabId) {
           const got = (await (
-            await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })
+            await fetch(`${base}/designs/${id}/tabs/${tabId}`, { headers })
           ).json()) as StoredTab;
           tab = got.tab ?? null;
         }
         if (!tab) await new Promise((r) => setTimeout(r, 100));
       }
-      if (!tab) throw new Error('the new document never saved its first tab');
-      const res = await fetch(`${base}/documents/${id}/tabs/${tabId}`, {
+      if (!tab) throw new Error('the new design never saved its first tab');
+      const res = await fetch(`${base}/designs/${id}/tabs/${tabId}`, {
         method: 'PUT',
         headers,
         body: JSON.stringify({ ...tab, elements }),

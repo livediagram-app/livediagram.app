@@ -35,7 +35,7 @@ describe('the view transition guard', () => {
   it('skips it into the editor, the help centre and the dashboard, and says so', () => {
     for (const path of [
       '/new?via=Home.Hero',
-      '/document/abc',
+      '/design/abc',
       '/explorer',
       '/help/tabs',
       '/telemetry',

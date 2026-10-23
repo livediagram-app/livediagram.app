@@ -1,7 +1,7 @@
 # Timeline
 
 The Timeline is a chronological feed of everything that has happened
-across the user's documents, teams, and account, grouped by day as a
+across the user's designs, teams, and account, grouped by day as a
 grid of cards, stacked when a day gets busy, and switchable into a
 calendar month grid. Its page is **Timeline**, with a row of its own in the
 sidebar's Overview group, under the Inbox (§8).
@@ -12,12 +12,12 @@ adapted to livedesign's data model and its light/dark UI.
 
 ## Why
 
-Today the Explorer opens on **Recent**, a list of document rows ordered
+Today the Explorer opens on **Recent**, a list of design rows ordered
 by `updated_at`. It answers exactly one question — "what did I touch
 last?" — and it is the only answer the Explorer gives. Everything else
 that happens to a user is invisible until they go looking for it:
 
-- Someone commented on a document you own. You find out by email ([Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md)
+- Someone commented on a design you own. You find out by email ([Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md)
   #1), or you don't.
 - Someone assigned you an action ([Assigned actions](../012-collaboration/assigned-actions.md)). Same.
 - A team invite arrived. It sits behind a badge in a sidebar section
@@ -33,13 +33,13 @@ has happened since they were last here**, not just a list of files.
 ## Non-goals
 
 - **Not an element-level audit log.** The Timeline never renders an
-  element diff and never offers Revert. Document editing appears here as
-  one coalesced "worked on" event per person per document per day (§4.2).
+  element diff and never offers Revert. Design editing appears here as
+  one coalesced "worked on" event per person per design per day (§4.2).
   (The editor's per-tab Activity panel, which did keep element diffs with
   per-entry revert, was removed on 2026-10-03.)
 - **Not realtime.** No Durable Object fan-out, no per-user socket. The
   feed is read on load, with a Refresh button and a stale-read refresh
-  (§6.3). livedesign's realtime rooms are per-document; a per-user
+  (§6.3). livedesign's realtime rooms are per-design; a per-user
   channel is a whole new object type for a screen the user looks at
   once a session.
 - **No favourites / starring.** The Manager Toolkit timeline has them
@@ -66,21 +66,21 @@ been proven there.
 One thing that happened. Carries:
 
 - `sourceType` + `sourceId` — the domain object it is about
-  (`document` + the document id, `team` + the team id). Synthesised for
+  (`design` + the design id, `team` + the team id). Synthesised for
   events with no single object (`account` + the owner id).
-- `eventType` — what happened (`document_created`, `comment_added`,
-  `team_member_joined`). Distinct from `sourceType`: one document
+- `eventType` — what happened (`design_created`, `comment_added`,
+  `team_member_joined`). Distinct from `sourceType`: one design
   produces many event types over its life.
 - `title` / `description` — first-class columns, not snapshot fields.
   Every event has a title; they are the universal backbone and the
   thing a future search would index.
 - `occurredAt` — the sort key.
-- `snapshot` — JSON extras the renderer needs (the document's thumbnail
+- `snapshot` — JSON extras the renderer needs (the design's thumbnail
   key, the commenter's colour, the team's member count) captured at
   emit time so rendering the feed never fans out into other tables.
 - `actorId` — who did it, as an owner id (Clerk `sub` or guest
   participant id). `NULL` for system events like a token expiry
-  warning. An owner id is a credential, so a `document:` scope (which a
+  warning. An owner id is a credential, so a `design:` scope (which a
   share-link visitor can read) returns only the reader's own id; every
   other actor goes out as `NULL` and renders by its snapshot name.
 
@@ -92,14 +92,14 @@ v1 ships exactly one scope type: `user`, where `scopeId` is an owner id.
 The Timeline page reads `user:<caller>`.
 
 `scopeType` is a free-text column with no CHECK constraint, so a later
-per-document timeline (`document:<id>`) or a team activity feed (`team:<id>`) is a new
+per-design timeline (`design:<id>`) or a team activity feed (`team:<id>`) is a new
 scope value plus a renderer — no migration, no change to the read path.
 That is the whole reason for the join table below; see §3.4.
 
 ### Membership
 
-One event, many scopes. A comment on a document that lives in a team
-library reaches the document's owner **and** every joined member of that
+One event, many scopes. A comment on a design that lives in a team
+library reaches the design's owner **and** every joined member of that
 team — one event row, N membership rows. Without the join table the
 event would have to be duplicated per recipient, and a team of twelve
 would multiply every comment by twelve.
@@ -119,8 +119,8 @@ existing `ExplorerPane` dispatch.
 │  │  ┃  │  (snapshot)  │ │  (snapshot)  │ │   ║ ✎ ║ ▒▒   │  (stack)   │
 │  │  ┃  │              │ │              │ │   ╚═══╝      │            │
 │  │  ┃  ├──────────────┤ ├──────────────┤ ├──────────────┤            │
-│  │  ┃  │ Payments   ⋯ │ │ Onboarding ⋯ │ │ Documents    │            │
-│  │  ┃  │ 🗑 Document   │ │ 💬 Comment    │ │ Renamed      │            │
+│  │  ┃  │ Payments   ⋯ │ │ Onboarding ⋯ │ │ Designs    │            │
+│  │  ┃  │ 🗑 Design   │ │ 💬 Comment    │ │ Renamed      │            │
 │  │  ┃  │   Deleted    │ │   Added      │ │ 3 events ·   │            │
 │  │  ┃  │ 09:12        │ │ 10:40 · Priya│ │ click to open│            │
 │  │  ┃  └──────────────┘ └──────────────┘ └──────────────┘            │
@@ -147,53 +147,53 @@ dot and rail.
 the same responsive grid the Explorer's Recent card view uses** (one
 column on a phone, two from `sm:`, three from `lg:`), not as one
 full-width row per event. The row layout this replaced put a 44px
-thumbnail at the far right of a line of text, which made a document
+thumbnail at the far right of a line of text, which made a design
 event unrecognisable at a glance and a day of six events a wall of
 near-identical lines. A card leads with the picture, so a day reads the
-way Recent does: you recognise the document before you read a word.
+way Recent does: you recognise the design before you read a word.
 
 A card has four regions, top to bottom:
 
 1. **Preview.** A fixed-height letterbox (the same `h-48` as a Recent
-   card, so the two grids look like one product). A document event shows
-   the document's cached SVG snapshot ([Document SVG snapshots](../006-document/document-snapshots.md)), reusing the Explorer's
-   `DocumentThumbnail` and inheriting its lazy intersection-observer
+   card, so the two grids look like one product). A design event shows
+   the design's cached SVG snapshot ([Design SVG snapshots](../006-design/design-snapshots.md)), reusing the Explorer's
+   `DesignThumbnail` and inheriting its lazy intersection-observer
    fetch, so a feed of fifty cards doesn't trigger fifty server renders
-   for documents nobody scrolls to. An event with **no picture** (a team,
-   a folder, a token, a theme, a comment on a deleted document) fills the
+   for designs nobody scrolls to. An event with **no picture** (a team,
+   a folder, a token, a theme, a comment on a deleted design) fills the
    same box with the event's **glyph, large, on the event's tone tint**.
    The box is the same height either way, so a row of cards stays
    aligned whatever mix of kinds it holds; a shorter card for pictureless
    events was considered and rejected for exactly that reason.
-2. **Title row.** The **subject** of the event (the document's name, the
+2. **Title row.** The **subject** of the event (the design's name, the
    team's name, the token's name) as the card title, and the **⋯ menu
    trigger** at the right for cards that have one (§2.8). The title is
    the thing the reader scans for, and it sits in the same place on
    every card.
 3. **Reason line.** The event's glyph in its tone colour, then the
-   **reason the card is on the timeline** in Title Case: "Document
-   Created", "Document Updated", "Comment Added", "Member Joined". This
+   **reason the card is on the timeline** in Title Case: "Design
+   Created", "Design Updated", "Comment Added", "Member Joined". This
    is the stored event `title` verbatim (§4), which is Title Case by
    contract, so a card never says "created" while the stack beside it
-   says "Documents Created". Then the time, and any quiet meta the
+   says "Designs Created". Then the time, and any quiet meta the
    renderer adds ("by Priya", "Now: New name", the commenter's words).
 4. **Description**, when the renderer wants one (a comment's text).
 
 **A card is one big click target.** Clicking anywhere on it that isn't
-the menu opens whatever the event is about: the document, the team, your
+the menu opens whatever the event is about: the design, the team, your
 invites, your tokens. Cards that lead nowhere are dimmed to 60%, and the
 common case is a tombstone for a folder, theme or team: the emit
 deliberately omits its id, so the renderer has nothing to link and the
 dimming is structural rather than a rule someone has to remember. (A
-deleted document has no tombstone at all; see §3.5.) For the keyboard and a screen reader the target is one real
-button stretched across the card, named by its subject and reason ("Payments, Document Created"); the card itself is
+deleted design has no tombstone at all; see §3.5.) For the keyboard and a screen reader the target is one real
+button stretched across the card, named by its subject and reason ("Payments, Design Created"); the card itself is
 no button, and the ⋯ menu and an inline rename sit above that button as controls of their own, never nested in it.
 
 ### Colour means what happened, not where
 
 The card's tint keys on the **event type**, not the source type.
 A reader scanning a busy day asks "is any of this alarming?" long
-before they ask "was that a document or a team", and only the first
+before they ask "was that a design or a team", and only the first
 question has a useful colour answer. Three tones, deliberately few —
 a palette with six meanings is a legend the reader has to learn:
 
@@ -239,7 +239,7 @@ the dimming is structural rather than a rule someone has to remember.
 **Copy rules.** A card separates the **subject** from the **reason**,
 and each has one home:
 
-- The **title is the subject**: the document, the team, the token, the
+- The **title is the subject**: the design, the team, the token, the
   folder. Never "Folder Deleted" as a title with the name underneath,
   and never a sentence. The subject is what the reader scans for, and
   the picture above it already says what kind of thing it is.
@@ -250,7 +250,7 @@ and each has one home:
   "Created" the way the sentence-per-row layout had. A renderer may
   override the reason only with another Title Case phrase.
 - **People go in the meta**, not the title: "by Priya", "Priya joined",
-  "Now: Payments v2". The reader chose to look at a document's card; who
+  "Now: Payments v2". The reader chose to look at a design's card; who
   did it is the second thing they want, not the first.
 - A comment's words go in the **description** (§4.3), the one place a
   card carries free text.
@@ -266,7 +266,7 @@ into a single **stack card** reading **"N events · click to expand"**,
 rendered with one or two faux-card layers stepping out behind it so the
 pile reads as depth. It takes one cell of the day's grid, like any other
 card; its preview box carries the kind's glyph and the count rather than
-one member's thumbnail, because one document's snapshot can't speak for a
+one member's thumbnail, because one design's snapshot can't speak for a
 run spanning five. Clicking expands the run **in place**: the stack card
 stays in its cell as the head of the run, reading **"N events · click
 to collapse"** with its layers gone and a ring on it, and the member
@@ -301,27 +301,27 @@ functions over the entry list, tested directly.
 
 ### 2.1a Created and updated on the same day
 
-A document made this morning and worked on this afternoon produces two
-events: `document_created` at 07:22 and the coalesced `document_edited`
+A design made this morning and worked on this afternoon produces two
+events: `design_created` at 07:22 and the coalesced `design_edited`
 whose `occurred_at` walks forward through the day (§4.2). Shown side by
 side under Today they are the same card twice, "Created" and "Updated"
 with the same thumbnail, and the second one tells the reader nothing the
-first didn't: of course a new document was edited on the day it was made.
+first didn't: of course a new design was edited on the day it was made.
 
-So **the feed hides a document's `document_edited` event on any local day
-that also holds its `document_created` event.** The rule:
+So **the feed hides a design's `design_edited` event on any local day
+that also holds its `design_created` event.** The rule:
 
-- Keyed on the document (`snapshot.documentId`) and the reader's local
+- Keyed on the design (`snapshot.designId`) and the reader's local
   `dateKey`, the same boundary the day groups use, so the two cards it
   is collapsing are exactly the two that would have sat together.
 - Applied **client-side, in `useTimelineControls`, to `visibleEvents`**,
   so the list, the calendar's dots, and the mini-calendar's marked days
   all agree. The stored rows are untouched: the edit event is still
   real, still counts for the sidebar's unread badge if a teammate made
-  it, and still reaches a per-document History feed on a later day. Only
+  it, and still reaches a per-design History feed on a later day. Only
   the reading of "this day" is de-duplicated.
 - The created card keeps its own time. It doesn't borrow the edit's
-  later timestamp: the card says when the document was made, and "then
+  later timestamp: the card says when the design was made, and "then
   edited until 16:40" is the kind of detail the sentence-per-row layout
   tried to carry and nobody read.
 - Only the create/edit pair. A share, or a comment on the day of
@@ -341,13 +341,13 @@ There is no Week mode. There was one, the same grid over seven days with
 taller cells, and it went in the card redesign: it showed nothing the
 month grid's dots didn't, at a page-per-week cost the month grid doesn't
 charge, and a third mode is a third thing to explain on a header that
-also carries Filter, Help and New Document. The month grid's day popover
+also carries Filter, Help and New Design. The month grid's day popover
 already answers "what happened on Wednesday".
 
 **Calendar** renders a month grid. Each day cell carries one
 coloured dot **per tone** present that day, with a count above one —
 so a month view answers "when did something get deleted?" at a glance,
-which "document vs team" would not. Dots sit in a fixed severity order
+which "design vs team" would not. Dots sit in a fixed severity order
 (danger, structural, create) so the eye can rely on position. Clicking
 one opens a popover listing that day's events of that tone as the
 same cards the list uses — the same renderers, so there is one card
@@ -391,20 +391,20 @@ chip and the list it filters can never disagree.
 Calendar switch leaves the header and moves to the top of the filter
 popover, under a **View** heading, above the filters it applies to.
 Collapsing its labels to icons bought room for a while, but two of
-them beside Filter, Help and New Document still crowded a phone header
+them beside Filter, Help and New Design still crowded a phone header
 into a scrum of glyphs — and the mode is a thing you set occasionally,
 not a thing you need permanently on screen. One button that opens
 everything beats five that technically fit. The trigger keeps its
 Filter label and dot; its accessible name says "View and filter
 timeline", because on that width it is both.
 
-**The header also carries New Document**, at the row's right edge where
+**The header also carries New Design**, at the row's right edge where
 every other Explorer section puts its create action. A feed is a record
 of what happened rather than a container you add to, so this page
 originally left creation to the empty state's CTA (§2.4). That was
 wrong once Timeline became the landing page (§8.1): the empty state is
 precisely what a returning user never sees, so the first screen of the
-app offered no way to start a document. Timeline is still not a
+app offered no way to start a design. Timeline is still not a
 container — the button is a page-level action that navigates to `/new`,
 not an "add to this feed" verb, and it takes no folder or team
 argument the way the browse sections' create action does.
@@ -413,7 +413,7 @@ Because Timeline offers no **New folder**, this is the one create verb
 on the page, and `PaneHeader` renders a lone verb as itself rather than
 behind the `+ Create` dropdown (see `pane-create-action.ts`). A
 dropdown holding a single tile costs a click and hides the word
-"document" behind the word "Create". Recent, the other one-verb section,
+"design" behind the word "Create". Recent, the other one-verb section,
 gets the same treatment. Below `sm` the label collapses to its icon and
 `aria-label` carries the name — the same idiom, and the same reason, as
 the mode buttons in §2.2.
@@ -425,22 +425,22 @@ the mode buttons in §2.2.
   it: nobody did those, and they're exactly what the filter is looking
   for. It began as an "Others" button in the header — the wrong place,
   and a word that doesn't say others-what.
-- **Category chips** — Comments, Actions, New documents, Edits, Renames,
+- **Category chips** — Comments, Actions, New designs, Edits, Renames,
   Deletions, Sharing, Teams, Organisation, Account. (The Organisation
   chip's id stays `filing` in code and telemetry; only the label changed.)
 
   These key on **what happened**, not on the source type. Chips keyed on
   source type were the first attempt and were nearly useless: comments,
   edits, renames, actions, sharing and deletions all carry
-  `sourceType: 'document'`, so one chip covered most of a personal feed
-  and turning it off left almost nothing. "Hide the document stuff" is
+  `sourceType: 'design'`, so one chip covered most of a personal feed
+  and turning it off left almost nothing. "Hide the design stuff" is
   not a thing anyone wants.
 
   The categories are coarser than the event type — nobody wants
   `comment_resolved` separately from `comment_added` — and finer than
   the tone, which answers a different question: tone is _how alarming_,
   category is _what happened_. Grouped by consequence rather than by
-  table: losing a document, a folder, a team or a working token are all
+  table: losing a design, a folder, a team or a working token are all
   **Deletions**, because someone scanning for "did anything disappear?"
   wants them in one place.
 
@@ -490,10 +490,10 @@ popover is clipped no matter its z-index.
   the empty state. The feed popping in after a fetch reads as a layout
   jump.
 - **Empty (new user)**: the shared `EmptyState` from `@livedesign/ui`,
-  copy "No activity yet" ("Create a document, comment on one, or join a
-  team, and it will show up here."), with a New Document action. In practice a signed-up user is
+  copy "No activity yet" ("Create a design, comment on one, or join a
+  team, and it will show up here."), with a New Design action. In practice a signed-up user is
   rarely empty because of the backfill (§5) — which is exactly why this
-  CTA can't be the page's only route to a new document, and why the
+  CTA can't be the page's only route to a new design, and why the
   header carries one too (§2.3).
 - **Empty (all filtered out)**: the shared empty state
   ([Empty states](../004-interface-design/empty-states.md)), "No events match these filters", with a
@@ -510,7 +510,7 @@ popover is clipped no matter its z-index.
   came back to a sleeping laptop was told nothing had ever happened to
   them, and only a manual browser refresh proved otherwise. That is the
   same lie §2.4 already forbids for the filtered case, and the Explorer
-  already refuses to tell it about documents: a failed list there keeps
+  already refuses to tell it about designs: a failed list there keeps
   its prior value and says so. The feed follows suit — on a failure it
   keeps whatever it had, and shows this state only when it has nothing.
 
@@ -518,7 +518,7 @@ popover is clipped no matter its z-index.
 
 The feed is fetched on mount and there is no realtime push (§13), so a
 tab left open overnight shows last night's feed. On **return** — the
-document becoming visible again, or the browser reporting the network
+design becoming visible again, or the browser reporting the network
 back — the first page is re-read and merged in at the head, so coming
 back to the tab and coming back to the app agree with each other. This
 is also what recovers the failed state above without the user having to
@@ -534,10 +534,10 @@ came back to look at.
 
 ### 2.4b Your own actions
 
-The feed is also where the reader ACTS: every document card carries the
+The feed is also where the reader ACTS: every design card carries the
 Recent menu (§2.8), so a delete, a rename, a duplicate or a move can
 start on the Timeline. Those used to be the one kind of change the feed
-never noticed. The worker swept the deleted document's cards, and the
+never noticed. The worker swept the deleted design's cards, and the
 page sat exactly as it was — the old cards up — until a browser refresh
 proved otherwise. A feed that doesn't show what you just did on it
 reads as broken.
@@ -559,13 +559,13 @@ Two timings, both deliberate (`useAfterApiWrite`):
   resolves lands before the tombstone does and shows the feed minus
   the thing the reader just did.
 - **At most one re-read per five seconds**, trailing. The editor
-  autosaves every ~600ms, and a document's History dialog reads the same
+  autosaves every ~600ms, and a design's History dialog reads the same
   hook; a read per save would be a request storm. Writes inside the
   interval collapse into one read at its end, so the last write is
   always followed by a read.
 
 **The re-read reconciles, it doesn't just add.** A plain merge would
-leave a deleted document's older cards up, and would keep the stale copy
+leave a deleted design's older cards up, and would keep the stale copy
 of the coalesced edit event the worker upserts in place. Within the stretch of time the page covers, the page
 is authoritative: a loaded card the page no longer holds is gone, and a
 loaded card the page holds takes the page's copy. Cards older than the
@@ -574,11 +574,11 @@ page's floor can't be judged from that read and stay
 
 **A DELETE that ends an entity also names it.** `apiDelete` takes an
 optional `purge: { sourceType, sourceId }`, set by the four wrappers
-that end a document, folder, theme or team, and the feed drops that
+that end a design, folder, theme or team, and the feed drops that
 entity's cards on the spot with the worker's own cascade predicate
 (§3.5): keyed on the id, or referencing it from the snapshot under
 `<sourceType>Id`. This is what covers pages the re-read won't reach — a
-document created three months ago has its "Created" card well below page
+design created three months ago has its "Created" card well below page
 one — and it is why the reader sees the cards go as the menu closes
 rather than a second later.
 
@@ -677,7 +677,7 @@ deliberate:
   get a small rise and a fade instead.
 - **Staggered by `nth-child` on the container**, not by threading an
   index prop through four row/card components. That also makes folders
-  and documents in one view cascade in document order for free, instead
+  and designs in one view cascade in document order for free, instead
   of each list restarting its own count.
 
 The search panel uses the same class but only for a window after it
@@ -700,38 +700,38 @@ navigation should not resurrect an old target.
 
 ### 2.8 The card menu
 
-A document card carries the **same ⋯ menu as a Recent card**, and it is
-the same component: `DocumentActionsMenu` from the Explorer, anchored to
+A design card carries the **same ⋯ menu as a Recent card**, and it is
+the same component: `DesignActionsMenu` from the Explorer, anchored to
 the same `EllipsisTriggerButton`, opening on the trigger or on
 right-click. Rename, Duplicate, Change Folder, Favourite, History, Hide
-from Recent, Open Team, Sync Document / Take Offline, Delete: whatever
-Recent offers that document, Timeline offers it too. A reader who sees
-yesterday's document on the feed and wants to file it shouldn't have to
+from Recent, Open Team, Sync Design / Take Offline, Delete: whatever
+Recent offers that design, Timeline offers it too. A reader who sees
+yesterday's design on the feed and wants to file it shouldn't have to
 find it again in a folder first. Rename happens inline, in the card's
 title slot, exactly as it does on a Recent card.
 
-**The menu needs a document the event only names.** An event's snapshot
-carries the document's id and name, not its folder, share code, team or
+**The menu needs a design the event only names.** An event's snapshot
+carries the design's id and name, not its folder, share code, team or
 owner, and the menu's items depend on all of those. So the live app
 resolves the id against the Explorer's already-loaded lists (personal,
 team, and shared-with-you), which is the same set Recent draws from, and
-hands the menu the `PaneDocument` it finds. When nothing is found (the
-document has since been deleted, or a team document the sidebar hasn't
+hands the menu the `PaneDesign` it finds. When nothing is found (the
+design has since been deleted, or a team design the sidebar hasn't
 loaded), the card gets **no menu**: a menu of guesses is worse than
-none, and the card still opens the document on click. Tombstones have no
+none, and the card still opens the design on click. Tombstones have no
 id to look up and get no menu for the same reason.
 
 **Where the menu comes from.** The Timeline components in
-`@livedesign/ui` know nothing about documents, so they can't build this
+`@livedesign/ui` know nothing about designs, so they can't build this
 menu. `<Timeline>` takes an optional **`cardSlots(event)`** hook
 returning `{ title?, menu? }`; the card places `menu` in its title row
 and stops the card's own click from firing under it, and renders
 `title` in place of the subject when given (the inline rename input).
 The live app's `useTimelineCardSlots` implements it against the Explorer
-context. `ScopedTimeline` (a team's activity, a document's history) passes
+context. `ScopedTimeline` (a team's activity, a design's history) passes
 nothing and gets plain cards: those surfaces sit outside the Explorer
-context that supplies the handlers, and on a document's own history page
-every card is the same document.
+context that supplies the handlers, and on a design's own history page
+every card is the same design.
 
 **A folder card carries the Explorer's folder menu**, by the same
 argument and the same mechanism: `FolderActionsMenu`, the one the
@@ -753,10 +753,10 @@ the Explorer's own handlers (`useTimelineEntityMenus`):
 | Invite received                        | Open Invites · **Accept Invite** · **Decline Invite**                                                    |
 | Theme saved                            | Open Themes · Edit Theme (the same builder modal the Themes pane opens) · Delete Theme                   |
 | Images uploaded                        | Open Images                                                                                              |
-| Document the Explorer can't resolve    | Open Document                                                                                            |
+| Design the Explorer can't resolve    | Open Design                                                                                            |
 
 Plus **Remove from Timeline** on all of them (§2.9), and the destructive
-verbs last, under their own separator (never red), the way the document menu
+verbs last, under their own separator (never red), the way the design menu
 keeps Delete. The first version gave these cards only the remove verb,
 on the argument that a ⋯ holding a single "Open" that duplicated the
 card's own click was a control that exists to look consistent. Half
@@ -770,13 +770,13 @@ Themes or Team page.
 token, an answered invite, a team the reader has left, a deleted theme —
 keeps only the "open the section" row: a menu of guesses is worse than
 none. The same `TimelineCardMenu` component renders all three shapes
-(document, folder, items) behind the same trigger, so they can't drift on
+(design, folder, items) behind the same trigger, so they can't drift on
 how a menu opens.
 
-**Every document card also offers Share**, which opens the document with
+**Every design card also offers Share**, which opens the design with
 its Share dialog up (the editor honours `?share=1`). The natural next
 step from a share-link card, and no worse from any other; offline
-documents, which have nothing to share, leave it out.
+designs, which have nothing to share, leave it out.
 
 Telemetry: opening a card menu fires `Timeline` / `Opened` / `Menu`
 (§10).
@@ -784,7 +784,7 @@ Telemetry: opening a card menu fires `Timeline` / `Opened` / `Menu`
 ### 2.9 Remove from Timeline
 
 A busy day clutters. A reader who saved six themes, made a folder and
-renamed three documents before lunch has a Today full of cards that were
+renamed three designs before lunch has a Today full of cards that were
 all true and are all now noise, and the only way to thin it was to wait
 for tomorrow. **Every card's ⋯ menu ends with "Remove from Timeline"**,
 which takes that one card off the reader's feed.
@@ -799,7 +799,7 @@ which takes that one card off the reader's feed.
 - **Soft so a re-emit can't resurrect it.** An emit attaches its scopes
   with INSERT OR IGNORE against the composite key, so the coalesced editing
   event — which re-attaches on every save — finds the dismissed row and
-  leaves it dismissed. Removing today's "Document Updated" and then
+  leaves it dismissed. Removing today's "Design Updated" and then
   saving again does not bring it back; the reader said they'd seen
   enough of that one today.
 - **Invisible everywhere a membership is read.** The feed and the
@@ -809,14 +809,14 @@ which takes that one card off the reader's feed.
 - **Optimistic.** The card goes as the menu closes and comes back only
   if the worker refused. No confirm: the action is ambient tidying,
   and the card vanishing is its own feedback.
-- On the document and folder menus it sits with the other "how you see
+- On the design and folder menus it sits with the other "how you see
   it" verbs, apart from Delete: it says nothing about the thing itself.
 - **A stack card has the same ⋯**, and its one verb removes every
-  member of the run at once. A day's "Documents Renamed · 12 events" is
+  member of the run at once. A day's "Designs Renamed · 12 events" is
   one thing to the reader, so it is one click to be rid of. Opening the
   menu must not expand the run: the card stops the trigger's click at
   the slot, the same boundary that keeps a single card's menu from
-  opening the document behind it. The `<Timeline>` takes a separate
+  opening the design behind it. The `<Timeline>` takes a separate
   `stackSlots(stack)` hook for this, since a stack has no single event
   to hand `cardSlots`. The run goes in one request
   (`POST /api/timeline/events/dismiss`, §6.2a), not one per member.
@@ -838,9 +838,9 @@ The baseline migration, `0001_livedesign_baseline.sql`. Three tables, owned by t
 CREATE TABLE timeline_events (
   id           TEXT PRIMARY KEY,          -- UUID
   actor_id     TEXT,                      -- owner id of who did it; NULL for system events
-  source_type  TEXT NOT NULL,             -- 'document' | 'team' | 'account' | ...
+  source_type  TEXT NOT NULL,             -- 'design' | 'team' | 'account' | ...
   source_id    TEXT NOT NULL,
-  event_type   TEXT NOT NULL,             -- 'document_created' | 'comment_added' | ...
+  event_type   TEXT NOT NULL,             -- 'design_created' | 'comment_added' | ...
   dedupe_key   TEXT NOT NULL DEFAULT '',  -- '' for one-shot events; see §4.2
   title        TEXT NOT NULL,
   description  TEXT,
@@ -859,7 +859,7 @@ covers ground a live emit already covered — updates the existing row
 rather than duplicating it.
 
 `dedupe_key` is empty for events that happen **once per source** (a
-document is created once; a tombstone is written once; an invite arrives
+design is created once; a tombstone is written once; an invite arrives
 once). It carries `<actorId>:<YYYY-MM-DD>` for the coalesced events —
 the editing event (§4.2), image uploads, and a theme's saves — which
 deliberately extend one row through the day.
@@ -869,8 +869,8 @@ deliberately extend one row through the day.
 / sync toggle, a team rename, a role change, a member joining, leaving
 or being removed, an invite answered, the invite link toggled. This was
 a bug: they carried the empty key, so the UNIQUE index took the second
-rename of a document for a retry of the first and **upserted** it. Three
-renames in a day showed one "Document Renamed" card instead of a stack
+rename of a design for a retry of the first and **upserted** it. Three
+renames in a day showed one "Design Renamed" card instead of a stack
 of three, and a rename this month silently moved last month's card to
 today. The idempotency the empty key buys — a retry or a backfill
 overlap landing on the existing row — only matters for events the
@@ -887,7 +887,7 @@ column has no such failure mode; use it.
 ```sql
 CREATE TABLE timeline_event_scopes (
   event_id   TEXT NOT NULL REFERENCES timeline_events(id) ON DELETE CASCADE,
-  scope_type TEXT NOT NULL,               -- v1: 'user'. Reserved: 'document', 'team'.
+  scope_type TEXT NOT NULL,               -- v1: 'user'. Reserved: 'design', 'team'.
   scope_id   TEXT NOT NULL,               -- an owner id when scope_type = 'user'
   added_at   INTEGER NOT NULL,
   deleted_at INTEGER,                     -- set by Remove from Timeline (§2.9)
@@ -931,12 +931,12 @@ stale-read threshold.
 The join table and the free-text `scope_type` were the forward plan, and
 two of the three have since shipped:
 
-- **A per-document timeline** (`scope_type = 'document'`) — every document
+- **A per-design timeline** (`scope_type = 'design'`) — every design
   keeps its own history, surfaced from the row menu as **History**. It
-  carries _document-level_ events (rename, share toggle, theme change),
+  carries _design-level_ events (rename, share toggle, theme change),
   never element diffs. Its read gate defers to
-  the document's OWN gate rather than re-deriving one, which is what lets
-  a share-link visitor read the history of a document they can open but
+  the design's OWN gate rather than re-deriving one, which is what lets
+  a share-link visitor read the history of a design they can open but
   which sits in nobody's `user` scope.
 - **A team activity feed** (`scope_type = 'team'`), rendered on the team
   pane. This wasn't only a feature: per-member scopes are written when
@@ -961,7 +961,7 @@ exactly when the first-page effect re-runs.
 
 Read authorisation is explicit per scope type with an unrecognised type
 **refused**, so a scope added later is inert until somebody writes its
-rule. A missing document is a 403 rather than a 404, so the endpoint
+rule. A missing design is a 403 rather than a 404, so the endpoint
 can't be used to probe ids for existence. A team scope needs a _joined_
 membership: an invite grants no access to team content, and a feed is
 content.
@@ -980,23 +980,23 @@ Favourites are not built. Everything here is additive.
 
 ### 3.5 Deletion and retention
 
-- **A document in the [Trash](trash.md) is hidden, not swept.** Deleting a
-  document moves it to the Trash for 30 days; while it waits, `readTimeline`
+- **A design in the [Trash](trash.md) is hidden, not swept.** Deleting a
+  design moves it to the Trash for 30 days; while it waits, `readTimeline`
   and `countUnseen` leave out every event whose source or snapshot names a
-  trashed document (`NOT_IN_TRASH` in `db/timeline.ts`, a primary-key probe
+  trashed design (`NOT_IN_TRASH` in `db/timeline.ts`, a primary-key probe
   per event), so a restore brings its history back. The purge is what
-  cascades, as described next, through `documentsTimelineSweepStatement`
+  cascades, as described next, through `designsTimelineSweepStatement`
   (the set form of the helper below). Take Offline still sweeps at once.
-- **Removing a document for good cascades**, matching Manager Toolkit. The purge
+- **Removing a design for good cascades**, matching Manager Toolkit. The purge
   hard-removes every `timeline_events` row with
-  `source_type = 'document' AND source_id = <id>`; the
+  `source_type = 'design' AND source_id = <id>`; the
   `ON DELETE CASCADE` on `timeline_event_scopes.event_id` takes the
-  membership rows with them. A feed that keeps narrating a document
+  membership rows with them. A feed that keeps narrating a design
   nobody can open any more is noise, and every one of those cards
   links to a 404.
-  **And a deleted document leaves no tombstone.** From the Timeline's
+  **And a deleted design leaves no tombstone.** From the Timeline's
   point of view it never existed: nothing is written in its place, and
-  there is no `document_deleted` event type. There was one — "Document
+  there is no `design_deleted` event type. There was one — "Design
   Deleted / Payments architecture", in danger red, surviving the sweep
   by being written after it — and it was noise the reader had asked to
   be rid of: the delete was their own act, and a red card for it told
@@ -1009,7 +1009,7 @@ Favourites are not built. Everything here is additive.
 - **Deleting a folder, a theme, or a team cascades the same way.** They
   didn't at first: a folder delete wrote its tombstone and left "Folder
   Created" standing beside it, and every "Theme Saved" for a deleted
-  theme stayed up, where a document's history had always been swept.
+  theme stayed up, where a design's history had always been swept.
   Same helper, same order — the sweep runs first, then the tombstone,
   whose `:deleted` source id keeps it out of any later sweep. Folder and
   theme events live under the `account` source type keyed on the
@@ -1044,20 +1044,20 @@ emitTimelineEvent(env, draft: TimelineEventDraft, scopes: TimelineScopeRef[]): P
 
 Fire-and-forget from the caller's perspective — wrapped in
 `ctx.waitUntil` so a timeline write can never slow down or fail a
-document save. A thrown error is swallowed and counted as an
+design save. A thrown error is swallowed and counted as an
 `Error`/`Api` telemetry event; a missing timeline row is a cosmetic
 loss, a failed save is not.
 
 ### 4.1 Resolving the audience
 
-One helper decides who sees a document event:
+One helper decides who sees a design event:
 
 ```ts
-audienceForDocument(env, document): Promise<string[]>   // owner ids
+audienceForDesign(env, design): Promise<string[]>   // owner ids
 ```
 
-- Always the document's `owner_id`.
-- Plus, when `documents.team_id` is set ([Team shared documents](team-shared-documents.md)), every `team_members`
+- Always the design's `owner_id`.
+- Plus, when `designs.team_id` is set ([Team shared designs](team-shared-designs.md)), every `team_members`
   row for that team with `status = 'joined'` and a non-null `user_id`.
 - The **actor is not excluded**. "You commented on X" is a legitimate
   entry in your own history; the renderer says "You" rather than your
@@ -1065,42 +1065,42 @@ audienceForDocument(env, document): Promise<string[]>   // owner ids
 
 Team events use the analogous `audienceForTeam(env, teamId)`.
 
-### 4.2 Document lifecycle and editing
+### 4.2 Design lifecycle and editing
 
-**A document rename is not an event.** Every entry names its document as it is
-called **now**: the feed reads each document's current name when it is served
-(`readTimeline` joins `documents` on the event's document and overrides the
-snapshot's `documentName`), so renaming a document updates every older entry
+**A design rename is not an event.** Every entry names its design as it is
+called **now**: the feed reads each design's current name when it is served
+(`readTimeline` joins `designs` on the event's design and overrides the
+snapshot's `designName`), so renaming a design updates every older entry
 about it, and a separate "Renamed" card would only repeat what those now say.
-Nothing records `document_renamed` any more, and the rows written before this
-change are filtered out of every feed and the unread count. A document that no
+Nothing records `design_renamed` any more, and the rows written before this
+change are filtered out of every feed and the unread count. A design that no
 longer exists keeps the name it had, and so does one the reader can no longer
-open: the override applies only to a document in the reader's visible set (the
-documents they own, their joined teams' documents, and live shares, as
-`VISIBLE_DOCUMENTS_CTES` defines it), so leaving a team or losing a link never
-leaks a later rename. A document feed passed that document's own read gate, so
+open: the override applies only to a design in the reader's visible set (the
+designs they own, their joined teams' designs, and live shares, as
+`VISIBLE_DESIGNS_CTES` defines it), so leaving a team or losing a link never
+leaks a later rename. A design feed passed that design's own read gate, so
 its live name always shows there. Team renames are still events: a team's
 name is not re-read onto older entries.
 
 | `eventType`                            | Fires when                                                                                                                                       | Title / description                                             |
 | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------- |
-| `document_created`                     | `POST /api/documents`                                                                                                                            | "Document Created" / "Payments architecture"                    |
-| `document_duplicated`                  | duplicate route                                                                                                                                  | "Document Duplicated" / "Copy of Payments architecture"         |
-| `document_moved`                       | folder change                                                                                                                                    | "Moved to a Folder" / "Payments architecture → Architecture"    |
-| `document_edited`                      | tab save (coalesced)                                                                                                                             | "Document Updated" / "You worked on Payments architecture"      |
-| `document_opened_by_visitor`           | a share-code visitor reads a tab (`GET /api/documents/:id/tabs/:tabId`); owner only, coalesced per visitor per day ("Opened by a visitor" below) | "Opened by a Visitor" / "Payments architecture"                 |
-| `document_copied_by_visitor`           | a share-code visitor copies it (`POST /api/documents/:id/copy`); owner only                                                                      | "Copied by a Visitor" / "Payments architecture"                 |
-| `document_offline` / `document_synced` | Take Offline / Sync Document ([Offline Mode](../006-document/offline-mode.md))                                                                   | "Taken Offline" / "Synced to the Cloud"                         |
-| `document_renamed`                     | never: retired, no longer emitted (see above)                                                                                                    | Legacy rows are filtered out of every feed and the unread count |
+| `design_created`                     | `POST /api/designs`                                                                                                                            | "Design Created" / "Payments architecture"                    |
+| `design_duplicated`                  | duplicate route                                                                                                                                  | "Design Duplicated" / "Copy of Payments architecture"         |
+| `design_moved`                       | folder change                                                                                                                                    | "Moved to a Folder" / "Payments architecture → Architecture"    |
+| `design_edited`                      | tab save (coalesced)                                                                                                                             | "Design Updated" / "You worked on Payments architecture"      |
+| `design_opened_by_visitor`           | a share-code visitor reads a tab (`GET /api/designs/:id/tabs/:tabId`); owner only, coalesced per visitor per day ("Opened by a visitor" below) | "Opened by a Visitor" / "Payments architecture"                 |
+| `design_copied_by_visitor`           | a share-code visitor copies it (`POST /api/designs/:id/copy`); owner only                                                                      | "Copied by a Visitor" / "Payments architecture"                 |
+| `design_offline` / `design_synced` | Take Offline / Sync Design ([Offline Mode](../006-design/offline-mode.md))                                                                   | "Taken Offline" / "Synced to the Cloud"                         |
+| `design_renamed`                     | never: retired, no longer emitted (see above)                                                                                                    | Legacy rows are filtered out of every feed and the unread count |
 
 **The two Offline Mode conversions declare themselves**, because they reuse
 ordinary endpoints and are otherwise indistinguishable from them: "Take
-offline" is a plain `DELETE /documents/:id` (the server copy really does go)
-and "Sync document" a plain `POST /documents`. Undeclared, the worker treated
-them as a deletion and a `document_created` — so the feed lost a document the
+offline" is a plain `DELETE /designs/:id` (the server copy really does go)
+and "Sync design" a plain `POST /designs`. Undeclared, the worker treated
+them as a deletion and a `design_created` — so the feed lost a design the
 owner had just moved into this browser, and told them one they had just
 uploaded was brand **new**. The editor therefore
-sends `X-Document-Conversion: offline | sync` on the request that performs it,
+sends `X-Design-Conversion: offline | sync` on the request that performs it,
 and the route picks the honest event. Header name, values and the reader live in
 `packages/api-schema` beside the event types they select, since it is a
 two-sided contract and two copies of a string is how these drift. An
@@ -1108,15 +1108,15 @@ unrecognised value falls back to the truthful default: the header is
 client-supplied.
 
 **Only the owner's conversion is honoured**, and that clause is load-bearing
-rather than defensive. `document_offline` is owner-scoped — an offline document
+rather than defensive. `design_offline` is owner-scoped — an offline design
 exists in exactly one browser, so no teammate has a stake in it — but the DELETE
-is also reachable by any joined member of the document's team ([Team shared documents](team-shared-documents.md)), and the
+is also reachable by any joined member of the design's team ([Team shared designs](team-shared-designs.md)), and the
 Explorer offers Take Offline on a team-library row without checking who owns it.
-When a teammate does it the document lands in **their** browser and leaves the
+When a teammate does it the design lands in **their** browser and leaves the
 owner's account for good; from the owner's and the team's side that is a
 deletion, not something they can still reach, and a deletion records nothing
 (§3.5) — so honouring the conversion would hand the teammate an owner-scoped
-"Taken Offline" card for a document they took from someone else. A non-owner's
+"Taken Offline" card for a design they took from someone else. A non-owner's
 DELETE is therefore a plain delete. The source cascade (§3.5) runs either way:
 whatever the server held is gone, so its prior events would point at a 404.
 
@@ -1129,11 +1129,11 @@ everything else even with stacking.
 - `dedupe_key = "<actorId>:<YYYY-MM-DD>"` in UTC. The first save of the
   day inserts; every later save that day hits the `UNIQUE` constraint
   and **updates** `occurred_at` to now (with the title, description and
-  snapshot, so a rename shows). One row per person per document per day.
+  snapshot, so a rename shows). One row per person per design per day.
   The upsert and its scope rows are one D1 batch: the scopes attach to
   whichever row survived the upsert, found by its unique key.
 - Description is actor-relative at render time: "You worked on X" for
-  your own, "Priya edited your document X" for someone else's. The row
+  your own, "Priya edited your design X" for someone else's. The row
   stores the actor id; the renderer resolves the pronoun.
 - This is a deliberate departure from Manager Toolkit's
   **additive-only** refresh rule (existing rows are never mutated
@@ -1143,13 +1143,13 @@ everything else even with stacking.
   event's mutation needs revisiting.
 
 **A person's own opens are recorded here but are not part of this feed.** [Explorer Home](explorer-home.md#opens)
-keeps a coalesced `document_opened` row per person per document per UTC day, in that person's `user` scope only
+keeps a coalesced `design_opened` row per person per design per UTC day, in that person's `user` scope only
 (opens are private); Jump Back In counts them as use days. It is outside the
 feed's vocabulary: `readTimeline` and `countUnseen` leave it out the way they leave out legacy renames, and no
-renderer, tone or chip knows it. Deletion, retention, the document sweep and sign-up migration treat it like every
+renderer, tone or chip knows it. Deletion, retention, the design sweep and sign-up migration treat it like every
 other row.
 
-Offline documents ([Offline Mode](../006-document/offline-mode.md)) live only in IndexedDB and never reach the
+Offline designs ([Offline Mode](../006-design/offline-mode.md)) live only in IndexedDB and never reach the
 worker, so they emit nothing. Their absence from the Timeline is
 correct and matches the rest of the product's server-side surfaces.
 
@@ -1159,17 +1159,17 @@ correct and matches the rest of the product's server-side surfaces.
 | -------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | `comment_added`      | both comment paths                                          | See below                                                                                            |
 | `comment_resolved`   | thread flips to `resolved` on tab save                      | Diffed the same way; description is the thread's opening comment, so the card says what was resolved |
-| `action_assigned`    | an `ElementAction` appears on save, or via `/notify-action` | Audience is the assignee plus the document audience                                                  |
+| `action_assigned`    | an `ElementAction` appears on save, or via `/notify-action` | Audience is the assignee plus the design audience                                                  |
 | `action_completed`   | an action's `status` flips to `done`                        |                                                                                                      |
 | `share_link_created` | share link minted                                           | Audience is the owner only                                                                           |
 
 **Comments have two write paths and both must emit.** Comments live
-inside element JSON on the tab (`packages/document/src/comments.ts`),
+inside element JSON on the tab (`packages/design/src/comments.ts`),
 not in a table — there is no comments table to hang a trigger off. The
 worker already has to reason about which comments are _new_ on every
 save, in `apps/api/src/comments.ts`:
 
-- `POST /api/documents/:id/tabs/:tabId/comments` — the explicit path a
+- `POST /api/designs/:id/tabs/:tabId/comments` — the explicit path a
   view-role visitor uses. Emit directly; the comment object is right
   there.
 - The ordinary tab `PUT`, where `rewriteCommentAuthors` already
@@ -1180,12 +1180,12 @@ save, in `apps/api/src/comments.ts`:
 The comment **text** goes in the description, truncated to 240
 characters with an ellipsis. A comment feed you can't read the comment
 in is a notification list, not a timeline. This is the same trust
-boundary as the document's own content: everyone in the audience already
+boundary as the design's own content: everyone in the audience already
 has read access to that thread. (Note that this is _narrower_ than the
 email notification in [Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md) #1, which deliberately never includes
 comment text — an email leaves the product's authorisation boundary
 and can sit in an inbox forever; the Timeline is behind the same auth
-as the document itself.)
+as the design itself.)
 
 **A comment event's actor is the comment's author, never simply the saver.** A
 tab save can carry a peer's new comment that reached the saver live before the
@@ -1207,9 +1207,9 @@ Deleting a whole tab retracts every comment it held the same
 way (`retractTabComments`): the tab delete route unlinks the
 tab and reads its stored body in one statement (`deleteTabRow`), so a comment written a
 moment before can never slip between a read and the delete. Every comment event is
-pinned to the document whose write recorded it, so a tab unlinked from one document
-loses only that document's events; another document still holding the tab keeps
-its own, until the tab leaves it too. Purging a document from the Trash, or deleting
+pinned to the design whose write recorded it, so a tab unlinked from one design
+loses only that design's events; another design still holding the tab keeps
+its own, until the tab leaves it too. Purging a design from the Trash, or deleting
 it outright, sweeps all of its events (§3.5), its tabs' and cards' comments among
 them. An undone card delete brings the card's comments back without their events: a
 card's comments are recorded only by the comment routes.
@@ -1236,8 +1236,8 @@ calls it.
 | `team_member_left`          | member deletes own row                                                                   | The team                                   |
 | `team_member_removed`       | admin removes someone                                                                    | The team, and the removed person           |
 | `team_role_changed`         | `PUT .../members/:id`                                                                    | The team                                   |
-| `team_document_added`       | document published to a team library ([Team shared documents](team-shared-documents.md)) | The team                                   |
-| `team_document_removed`     | document pulled back out of a team library                                               | The team it left, resolved BEFORE the move |
+| `team_design_added`       | design published to a team library ([Team shared designs](team-shared-designs.md)) | The team                                   |
+| `team_design_removed`     | design pulled back out of a team library                                               | The team it left, resolved BEFORE the move |
 | `team_renamed`              | `PUT /api/teams/:id` with a new name: "Team Renamed" / "Design → Product design"         | The team                                   |
 | `team_deleted`              | `DELETE /api/teams/:id`: "Team Deleted" / the team's name, no team link                  | The team, resolved BEFORE the delete       |
 | `team_invite_link_enabled`  | `POST /api/teams/:id/invite-link` (generate or rotate): "Invite Link Turned On"          | Team admins                                |
@@ -1291,14 +1291,14 @@ Three constraints shaped it:
   Erasing the record that a token was ever created, in order to withdraw a
   warning about it, would be a worse lie than the warning.
 - **Self-healing rather than exhaustive.** `share_link_expiring` is keyed
-  on the document, one warning however many links are expiring, so revoking
+  on the design, one warning however many links are expiring, so revoking
   one of two retracts a warning the other still justifies. The daily sweep
   re-emits whatever is still inside its window, so the cost is at most a
   day of silence — strictly better than a deadline the owner has already
   dealt with standing indefinitely.
 
-**"Opened by a visitor" hangs off the TAB read, not the document GET.**
-The document endpoint is hit by link previews and polling; fetching tab
+**"Opened by a visitor" hangs off the TAB read, not the design GET.**
+The design endpoint is hit by link previews and polling; fetching tab
 content means a person is actually looking at the canvas. It is also the
 one event a stranger can trigger at will, so it coalesces per visitor
 per day — otherwise anyone holding a link could flood an owner's feed by
@@ -1307,31 +1307,31 @@ refreshing.
 **A "visitor" is somebody who presented a SHARE CODE**, not merely somebody
 who isn't the owner. That distinction is the whole meaning of both
 visitor-facing events, and keying them on `owner !== ownerId` got it wrong:
-the read gate also admits every joined member of the document's team
-([Team shared documents](team-shared-documents.md)), and a teammate presents no code. So browsing your own team's
-library told the document's owner _"opened by a visitor · Someone with the
-share link"_, under the **sharing** filter, for a document they had never
+the read gate also admits every joined member of the design's team
+([Team shared designs](team-shared-designs.md)), and a teammate presents no code. So browsing your own team's
+library told the design's owner _"opened by a visitor · Someone with the
+share link"_, under the **sharing** filter, for a design they had never
 shared a link for — once per teammate per day, so a twelve-person library
-could put eleven false cards a day on one document. Duplicating a
-team-library document reported _"copied by a visitor"_, which is simply
+could put eleven false cards a day on one design. Duplicating a
+team-library design reported _"copied by a visitor"_, which is simply
 untrue. Both now require a share code to have been presented. The
-teammate's own `document_duplicated` event is unaffected: they really did
+teammate's own `design_duplicated` event is unaffected: they really did
 copy it.
 
 **Leaving a team library is its own event, and its audience is resolved
 before the move.** Publishing into a team and pulling back out of one are not
-one event with a direction: the out case takes the document away from everybody
-else, and when the mover isn't the owner [Team shared documents](team-shared-documents.md) hands them ownership, so the
-previous owner loses it too. It used to fall through to `document_moved` and
+one event with a direction: the out case takes the design away from everybody
+else, and when the mover isn't the owner [Team shared designs](team-shared-designs.md) hands them ownership, so the
+previous owner loses it too. It used to fall through to `design_moved` and
 read "Moved to a Folder → Unsorted" — in the **mover's** feed only, because
-`recordDocumentMoved` resolves its audience from the document and by then the
-document is personal. A document could leave a shared library and change hands
-with nothing in the team's feed or the old owner's. And since a document at the
+`recordDesignMoved` resolves its audience from the design and by then the
+design is personal. A design could leave a shared library and change hands
+with nothing in the team's feed or the old owner's. And since a design at the
 library root already has `folderId === null`, moving it to personal Unsorted
 changed no folder, so that arm didn't fire either and **no event was written at
-all**. `team_document_removed` now covers it, carrying the new owner's name for
-the readers who no longer have the document, and the audience is read from the
-outgoing team before `setDocumentFolder` — the same ordering, for the same
+all**. `team_design_removed` now covers it, carrying the new owner's name for
+the readers who no longer have the design, and the audience is read from the
+outgoing team before `setDesignFolder` — the same ordering, for the same
 reason, as the delete tombstone.
 
 **Invite-link toggles go to admins only.** Whether a join credential is
@@ -1341,7 +1341,7 @@ nudge to go and find it.
 **Anything whose row is about to vanish reads its name first** and omits
 the id from the snapshot, so a folder / theme / team tombstone can't
 link at something that no longer exists — the same structural guard the
-document tombstone uses.
+design tombstone uses.
 
 Future-dated events are why the day rail renders future groups above
 Today with a distinct tint. They are the feed's only forward-looking
@@ -1351,14 +1351,14 @@ breaks rather than after.
 ## 5. Backfill
 
 A brand-new Timeline that is empty for an existing user with 60
-documents is a broken-looking feature. On the first read of a scope
+designs is a broken-looking feature. On the first read of a scope
 (`timeline_scope_state.backfilled_at IS NULL`), the worker seeds it:
 
-- For the caller's 200 most recently updated documents: a
-  `document_created` event at `documents.created_at`, which never
+- For the caller's 200 most recently updated designs: a
+  `design_created` event at `designs.created_at`, which never
   overwrites a creation already recorded (whose snapshot may say the
-  making counts as a use, [Explorer Home](explorer-home.md#making-a-document)), and a
-  `document_edited` event at `updated_at` with the matching
+  making counts as a use, [Explorer Home](explorer-home.md#making-a-design)), and a
+  `design_edited` event at `updated_at` with the matching
   `<actorId>:<date>` dedupe key. The worker cannot know who made that
   last save, so the edit is a reconstruction: its snapshot carries
   `backfilled: true`, and it never overwrites a real edit already
@@ -1368,7 +1368,7 @@ documents is a broken-looking feature. On the first read of a scope
 - For each team the caller has joined: a `team_member_joined` event at
   their `team_members.created_at`.
 - Nothing else. Comments and actions are inside tab JSON and
-  backfilling them would mean parsing every tab of every document in a
+  backfilling them would mean parsing every tab of every design in a
   request — a cost with no ceiling. The feed's older reaches are
   thinner than its recent ones; that is the honest trade and it is
   invisible within a week of use.
@@ -1376,7 +1376,7 @@ documents is a broken-looking feature. On the first read of a scope
 The backfill is idempotent by construction (every insert hits the
 `UNIQUE` key), runs inside `ctx.waitUntil` after the response is
 served, and stamps `backfilled_at` so it never runs twice. The 200 cap
-is logged rather than silent — a user with 400 documents should not be
+is logged rather than silent — a user with 400 designs should not be
 told their history starts in March when it doesn't.
 
 ## 6. API
@@ -1405,14 +1405,14 @@ Response:
   "items": [
     {
       "id": "...",
-      "sourceType": "document",
+      "sourceType": "design",
       "sourceId": "...",
       "eventType": "comment_added",
       "title": "Comment Added",
       "description": "Priya on Payments architecture",
       "occurredAt": 1754380800000,
       "actorId": "user_...",
-      "snapshot": { "documentName": "Payments architecture", "text": "Should the retry budget…" }
+      "snapshot": { "designName": "Payments architecture", "text": "Should the retry budget…" }
     }
   ],
   "nextCursor": "1754380800000:abc",
@@ -1472,7 +1472,7 @@ lives there.
 Client wrappers go in `apps/live/lib/api/timeline.ts` and are
 re-exported from the `lib/api-client.ts` barrel, matching every other
 domain. **Offline mode is a no-op here**: `isOfflineId` doesn't apply
-(the scope is an owner, not a document), and an offline-only browser has
+(the scope is an owner, not a design), and an offline-only browser has
 no server events.
 
 `apiListTimeline` returns `null` when the read fails rather than
@@ -1482,7 +1482,7 @@ page, and an empty page is indistinguishable from a genuinely empty
 feed, which is exactly how "nothing has happened yet" came to be shown
 to people with years of history (§2.4). `null` is the third answer —
 "we don't know" — and the caller keeps what it had. This matches the
-Explorer's document list, which already keeps its prior value on a
+Explorer's design list, which already keeps its prior value on a
 failed read and toasts rather than flashing its empty state.
 
 ## 7. UI packaging
@@ -1511,7 +1511,7 @@ types.ts                 TimelineEvent, renderer contracts
 ```
 
 The **renderers** — the functions that turn a `TimelineEvent` into a
-card's parts (`subject`, `label`, `meta`, `preview`, `onClick`), and that know a document event links to `/document/<id>` and a
+card's parts (`subject`, `label`, `meta`, `preview`, `onClick`), and that know a design event links to `/design/<id>` and a
 team event to `/explorer/team?id=<id>` — live in
 **`apps/live/app/explorer/timeline/renderers.tsx`**, keyed by
 `sourceType`. The package takes a registry prop; it never imports a
@@ -1519,7 +1519,7 @@ route. The one thing a renderer can't supply, the ⋯ menu, comes in
 through the separate `cardSlots` hook (§2.8), because it needs the
 Explorer's loaded lists and handlers rather than the event alone.
 
-This split is what lets a per-document timeline (§3.4) adopt the same
+This split is what lets a per-design timeline (§3.4) adopt the same
 components without inheriting Explorer-specific copy.
 
 **Colour.** Each tone gets a CSS variable pair
@@ -1555,7 +1555,7 @@ entry point, so the landing is applied in several places, all reading one consta
 `apps/live/app/explorer/routes.ts`'s `selectedFromRoute` `default:` case, which catches mangled URLs and id-less
 `folder`/`team` links, returns `{ kind: 'home' }`; its test holds the route table to the constant.
 
-The feed keeps its route, `/explorer/timeline`, and its page is titled **Timeline** (heading, document title and
+The feed keeps its route, `/explorer/timeline`, and its page is titled **Timeline** (heading, design title and
 breadcrumb). Home says what the person was working on and what others did; the Timeline is the whole record, the
 person's own doings included, with its filters, calendar and paging.
 
@@ -1599,13 +1599,13 @@ users who never switch modes.
 ## 9. Guests
 
 Guests get the Timeline, keyed to their signed participant id
-([Auth + guest access](../014-identity/auth-and-guest-access.md)). They see document lifecycle, editing, comments on their own
-documents, and share-link events. Team, invite, and token events never
+([Auth + guest access](../014-identity/auth-and-guest-access.md)). They see design lifecycle, editing, comments on their own
+designs, and share-link events. Team, invite, and token events never
 reach them because those features are Clerk-only — the feed is simply
 thinner, with no sign-in wall and no empty-section prompt.
 
 **On sign-up, timeline history migrates.** `POST /api/migrate` already
-moves documents from the guest participant id to the Clerk user id; it
+moves designs from the guest participant id to the Clerk user id; it
 gains two statements in the same transaction:
 
 ```sql
@@ -1638,7 +1638,7 @@ New category `Timeline` in the closed enum in
   whole run, removed from the feed (§2.9). If this is common, the day
   is too noisy and the answer is a coarser emit, not a faster menu.
 
-No event ever carries a document name, team name, or comment text; the
+No event ever carries a design name, team name, or comment text; the
 `type` slot is a fixed token, bounded by the existing
 `TELEMETRY_TYPE_PATTERN`.
 
@@ -1666,7 +1666,7 @@ Per [Testing](../003-system-architecture/testing.md):
   pagination and cursor stability, filter params, and the
   `UNIQUE`-constraint idempotence of `emitTimelineEvent` — emit the
   same draft twice, assert one row.
-- **Audience resolution**: a comment on a team document fans out to
+- **Audience resolution**: a comment on a team design fans out to
   every joined member and to nobody who is merely `invited`.
 - **Coalescing**: three saves in one UTC day produce one row whose
   `occurred_at` advances; a save the next day produces a second row.
@@ -1709,7 +1709,7 @@ Per [Testing](../003-system-architecture/testing.md):
 
 - Favourites / starring, manual entries. (Per-entry removal shipped: §2.9.)
 - An unread badge on the Timeline row (the count sits on Home, §8.2).
-- Per-document and per-team timeline scopes (the schema is ready; the
+- Per-design and per-team timeline scopes (the schema is ready; the
   renderers, routes, and UI are not).
 - AI day summaries.
 - Realtime push. A fresh read on mount, the re-read on return to the

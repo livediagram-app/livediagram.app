@@ -11,18 +11,18 @@ import { makeTestRouteContext } from './test-route-context';
 
 const { db, access } = vi.hoisted(() => ({
   db: {
-    getDocument: vi.fn(),
-    documentLinksTab: vi.fn(),
+    getDesign: vi.fn(),
+    designLinksTab: vi.fn(),
     tabBelongsElsewhere: vi.fn(),
   },
   access: {
-    canReadDocument: vi.fn(),
-    canEditDocument: vi.fn(),
-    resolveDocumentGrant: vi.fn(),
+    canReadDesign: vi.fn(),
+    canEditDesign: vi.fn(),
+    resolveDesignGrant: vi.fn(),
   },
 }));
 vi.mock('../db', async (importOriginal) => ({ ...(await importOriginal<object>()), ...db }));
-vi.mock('../auth/document-access', async (importOriginal) => ({
+vi.mock('../auth/design-access', async (importOriginal) => ({
   ...(await importOriginal<object>()),
   ...access,
 }));
@@ -59,11 +59,11 @@ beforeEach(() => {
   env = made.env;
   sql = made.sql;
   for (const fn of [...Object.values(db), ...Object.values(access)]) fn.mockReset();
-  db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'owner-1', teamId: null });
-  db.documentLinksTab.mockResolvedValue(true);
+  db.getDesign.mockResolvedValue({ id: 'd1', ownerId: 'owner-1', teamId: null });
+  db.designLinksTab.mockResolvedValue(true);
   db.tabBelongsElsewhere.mockResolvedValue(false);
-  access.canReadDocument.mockResolvedValue(true);
-  access.canEditDocument.mockResolvedValue(true);
+  access.canReadDesign.mockResolvedValue(true);
+  access.canEditDesign.mockResolvedValue(true);
 });
 
 const ctx = (method: string, path: string, opts: Parameters<typeof makeTestRouteContext>[2] = {}) =>
@@ -82,7 +82,7 @@ async function upload(
     })),
   );
   const body = encodeBlobBatch(entries);
-  const c = ctx('POST', `/api/documents/d1/tabs/${tab}/photo-blobs`);
+  const c = ctx('POST', `/api/designs/d1/tabs/${tab}/photo-blobs`);
   const request = new Request(c.request.url, {
     method: 'POST',
     body,
@@ -94,14 +94,14 @@ async function upload(
 describe('photo blob routes', () => {
   it('passes other paths by', async () => {
     expect(
-      await handlePhotoBlobRoutes(ctx('GET', '/api/documents/d1/tabs/t1/comment-pictures')),
+      await handlePhotoBlobRoutes(ctx('GET', '/api/designs/d1/tabs/t1/comment-pictures')),
     ).toBeNull();
   });
 
   it('answers 503 without image storage', async () => {
     const c = makeTestRouteContext(
       'GET',
-      '/api/documents/d1/tabs/t1/photo-blobs/abcdefghijklmnopqrstuv',
+      '/api/designs/d1/tabs/t1/photo-blobs/abcdefghijklmnopqrstuv',
       { owner: 'owner-1', env: { DB: env.DB } as Env },
     );
     expect((await handlePhotoBlobRoutes(c))!.status).toBe(503);
@@ -119,7 +119,7 @@ describe('photo blob routes', () => {
     await upload([{ bytes: PNG(1), type: 'image/png' }], 't2');
     expect(bucket.put).toHaveBeenCalledTimes(2);
     const got = (await handlePhotoBlobRoutes(
-      ctx('GET', `/api/documents/d1/tabs/t1/photo-blobs/${ids[0]}`),
+      ctx('GET', `/api/designs/d1/tabs/t1/photo-blobs/${ids[0]}`),
     ))!;
     expect(got.status).toBe(200);
     expect(got.headers.get('Content-Type')).toBe('image/png');
@@ -128,11 +128,11 @@ describe('photo blob routes', () => {
     expect(new Uint8Array(await got.arrayBuffer())).toEqual(PNG(1));
     // A tab that never named it reads nothing.
     expect(
-      (await handlePhotoBlobRoutes(ctx('GET', `/api/documents/d1/tabs/t3/photo-blobs/${ids[0]}`)))!
+      (await handlePhotoBlobRoutes(ctx('GET', `/api/designs/d1/tabs/t3/photo-blobs/${ids[0]}`)))!
         .status,
     ).toBe(404);
     expect(
-      (await handlePhotoBlobRoutes(ctx('GET', `/api/documents/d1/tabs/t1/photo-blobs/nope`)))!
+      (await handlePhotoBlobRoutes(ctx('GET', `/api/designs/d1/tabs/t1/photo-blobs/nope`)))!
         .status,
     ).toBe(404);
   });
@@ -140,13 +140,13 @@ describe('photo blob routes', () => {
   it('says which blobs a tab holds', async () => {
     const { ids } = await upload([{ bytes: PNG(2), type: 'image/png' }]);
     const res = (await handlePhotoBlobRoutes(
-      ctx('POST', '/api/documents/d1/tabs/t1/photo-blobs-held', {
+      ctx('POST', '/api/designs/d1/tabs/t1/photo-blobs-held', {
         body: { ids: [ids[0], 'abcdefghijklmnopqrstuv'] },
       }),
     ))!;
     expect(await res.json()).toEqual({ has: [ids[0]] });
     const bad = (await handlePhotoBlobRoutes(
-      ctx('POST', '/api/documents/d1/tabs/t1/photo-blobs-held', { body: { ids: ['x'] } }),
+      ctx('POST', '/api/designs/d1/tabs/t1/photo-blobs-held', { body: { ids: ['x'] } }),
     ))!;
     expect(bad.status).toBe(400);
   });
@@ -161,7 +161,7 @@ describe('photo blob routes', () => {
     expect(await mismatch.res.json()).toEqual({ error: 'blob_mismatch' });
     const wrongType = await upload([{ bytes: JPG, type: 'image/png' }]);
     expect(wrongType.res.status).toBe(415);
-    const c = ctx('POST', '/api/documents/d1/tabs/t1/photo-blobs');
+    const c = ctx('POST', '/api/designs/d1/tabs/t1/photo-blobs');
     const junk = await handlePhotoBlobRoutes({
       ...c,
       request: new Request(c.request.url, {
@@ -171,12 +171,12 @@ describe('photo blob routes', () => {
     });
     expect(junk!.status).toBe(400);
     expect(
-      await handlePhotoBlobRoutes(ctx('POST', '/api/documents/d1/tabs/t1/photo-blobs/other')),
+      await handlePhotoBlobRoutes(ctx('POST', '/api/designs/d1/tabs/t1/photo-blobs/other')),
     ).toBeNull();
     expect(
-      await handlePhotoBlobRoutes(ctx('DELETE', '/api/documents/d1/tabs/t1/photo-blobs')),
+      await handlePhotoBlobRoutes(ctx('DELETE', '/api/designs/d1/tabs/t1/photo-blobs')),
     ).toBeNull();
-    const huge = ctx('POST', '/api/documents/d1/tabs/t1/photo-blobs', {
+    const huge = ctx('POST', '/api/designs/d1/tabs/t1/photo-blobs', {
       headers: { 'Content-Length': String(100 * 1024 * 1024) },
     });
     expect((await handlePhotoBlobRoutes(huge))!.status).toBe(413);
@@ -193,42 +193,42 @@ describe('photo blob routes', () => {
     expect((await upload([{ bytes: PNG(4), type: 'image/png' }])).res.status).toBe(200);
   });
 
-  it('refuses writes from those who may not edit, from tokens, and onto another document’s tab', async () => {
-    access.canEditDocument.mockResolvedValue(false);
+  it('refuses writes from those who may not edit, from tokens, and onto another design’s tab', async () => {
+    access.canEditDesign.mockResolvedValue(false);
     expect((await upload([{ bytes: PNG(6), type: 'image/png' }])).res.status).toBe(403);
-    access.canEditDocument.mockResolvedValue(true);
-    const token = ctx('POST', '/api/documents/d1/tabs/t1/photo-blobs-held', {
+    access.canEditDesign.mockResolvedValue(true);
+    const token = ctx('POST', '/api/designs/d1/tabs/t1/photo-blobs-held', {
       body: { ids: [] },
       token: { id: 'tok' },
     });
     expect((await handlePhotoBlobRoutes(token))!.status).toBe(403);
     db.tabBelongsElsewhere.mockResolvedValue(true);
     expect((await upload([{ bytes: PNG(6), type: 'image/png' }])).res.status).toBe(403);
-    db.getDocument.mockResolvedValue(null);
+    db.getDesign.mockResolvedValue(null);
     expect(
       (await handlePhotoBlobRoutes(
-        ctx('POST', '/api/documents/d1/tabs/t1/photo-blobs-held', { body: { ids: [] } }),
+        ctx('POST', '/api/designs/d1/tabs/t1/photo-blobs-held', { body: { ids: [] } }),
       ))!.status,
     ).toBeGreaterThanOrEqual(400);
   });
 
-  it('refuses reads to those who may not read, and of a tab not in the document', async () => {
+  it('refuses reads to those who may not read, and of a tab not in the design', async () => {
     const { ids } = await upload([{ bytes: PNG(7), type: 'image/png' }]);
-    access.canReadDocument.mockResolvedValue(false);
+    access.canReadDesign.mockResolvedValue(false);
     expect(
-      (await handlePhotoBlobRoutes(ctx('GET', `/api/documents/d1/tabs/t1/photo-blobs/${ids[0]}`)))!
+      (await handlePhotoBlobRoutes(ctx('GET', `/api/designs/d1/tabs/t1/photo-blobs/${ids[0]}`)))!
         .status,
     ).toBe(404);
-    access.canReadDocument.mockResolvedValue(true);
-    db.documentLinksTab.mockResolvedValue(false);
+    access.canReadDesign.mockResolvedValue(true);
+    db.designLinksTab.mockResolvedValue(false);
     expect(
-      (await handlePhotoBlobRoutes(ctx('GET', `/api/documents/d1/tabs/t1/photo-blobs/${ids[0]}`)))!
+      (await handlePhotoBlobRoutes(ctx('GET', `/api/designs/d1/tabs/t1/photo-blobs/${ids[0]}`)))!
         .status,
     ).toBe(404);
-    db.documentLinksTab.mockResolvedValue(true);
+    db.designLinksTab.mockResolvedValue(true);
     bucket.store.clear();
     expect(
-      (await handlePhotoBlobRoutes(ctx('GET', `/api/documents/d1/tabs/t1/photo-blobs/${ids[0]}`)))!
+      (await handlePhotoBlobRoutes(ctx('GET', `/api/designs/d1/tabs/t1/photo-blobs/${ids[0]}`)))!
         .status,
     ).toBe(404);
   });
@@ -236,24 +236,24 @@ describe('photo blob routes', () => {
   it('adopts a readable tab’s blobs into another tab', async () => {
     const { ids } = await upload([{ bytes: PNG(8), type: 'image/png' }]);
     const res = (await handlePhotoBlobRoutes(
-      ctx('POST', '/api/documents/d1/tabs/t9/photo-blobs-adopt', {
-        body: { fromDocument: 'd1', fromTab: 't1', ids: [ids[0], 'abcdefghijklmnopqrstuv'] },
+      ctx('POST', '/api/designs/d1/tabs/t9/photo-blobs-adopt', {
+        body: { fromDesign: 'd1', fromTab: 't1', ids: [ids[0], 'abcdefghijklmnopqrstuv'] },
       }),
     ))!;
     expect(await res.json()).toEqual({ adopted: [ids[0]] });
     expect(
-      (await handlePhotoBlobRoutes(ctx('GET', `/api/documents/d1/tabs/t9/photo-blobs/${ids[0]}`)))!
+      (await handlePhotoBlobRoutes(ctx('GET', `/api/designs/d1/tabs/t9/photo-blobs/${ids[0]}`)))!
         .status,
     ).toBe(200);
-    access.canReadDocument.mockResolvedValue(false);
+    access.canReadDesign.mockResolvedValue(false);
     const refused = (await handlePhotoBlobRoutes(
-      ctx('POST', '/api/documents/d1/tabs/t8/photo-blobs-adopt', {
-        body: { fromDocument: 'd1', fromTab: 't1', ids },
+      ctx('POST', '/api/designs/d1/tabs/t8/photo-blobs-adopt', {
+        body: { fromDesign: 'd1', fromTab: 't1', ids },
       }),
     ))!;
     expect(refused.status).toBe(403);
     const bad = (await handlePhotoBlobRoutes(
-      ctx('POST', '/api/documents/d1/tabs/t8/photo-blobs-adopt', { body: { ids } }),
+      ctx('POST', '/api/designs/d1/tabs/t8/photo-blobs-adopt', { body: { ids } }),
     ))!;
     expect(bad.status).toBe(400);
     expect(sql.prepare('SELECT COUNT(*) AS n FROM photo_blob_refs').get()!.n).toBe(2);

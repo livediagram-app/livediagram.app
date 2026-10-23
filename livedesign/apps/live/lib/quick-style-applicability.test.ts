@@ -5,7 +5,7 @@ import {
   createPath,
   createShape,
   type Element,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { quickStyleApplicability, quickStyleCaption } from './quick-style-applicability';
 import { applyQuickFill, applyQuickStroke, applyQuickWidth, quickStyleView } from './quick-style';
 import { applyPenStyle, strokesPenStyle } from './quick-style-pen';

@@ -5,7 +5,7 @@
 // with the colours they bound, and so does a stock colour stored by name
 // (docs/specs/008-canvas/canvas-and-palette.md "Colours"), which would otherwise
 // show again the moment the explicit colour is cleared.
-import type { Element, ThemeDefinition } from '@livedesign/document';
+import type { Element, ThemeDefinition } from '@livedesign/design';
 
 export function resetElementColours(el: Element, theme: ThemeDefinition): Element {
   if (el.type === 'shape') {

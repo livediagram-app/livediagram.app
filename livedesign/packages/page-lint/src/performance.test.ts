@@ -4,7 +4,7 @@
 // the texts cost under eight times as much.
 import { describe, expect, it } from 'vitest';
 import { cpuMsOf } from '@livedesign/vitest-config/cpu-time';
-import type { Element } from '@livedesign/document';
+import type { Element } from '@livedesign/design';
 import { box, lint, tabOf, text } from './fixtures/build';
 
 // `n` labelled boxes and `n` texts on a grid, as a long wireframe page holds them.

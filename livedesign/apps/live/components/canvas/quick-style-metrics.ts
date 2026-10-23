@@ -1,4 +1,4 @@
-import { PEN_COLOUR_NAMES } from '@livedesign/document';
+import { PEN_COLOUR_NAMES } from '@livedesign/design';
 
 // The quick style panel's measures (docs/specs/008-canvas/quick-style-panel.md "Where it sits"):
 // the panel's width is derived from these, so a swatch row never wraps and is never clipped.

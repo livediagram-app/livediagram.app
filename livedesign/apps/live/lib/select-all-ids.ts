@@ -1,5 +1,5 @@
 // Select All's reach (the canvas's Cmd/Ctrl+A): every element a press could reach, less those on
-// hidden or locked layers (docs/specs/006-document/layers.md); in Pages mode only those on the page
+// hidden or locked layers (docs/specs/006-design/layers.md); in Pages mode only those on the page
 // someone is on (docs/specs/007-editor/pages-mode.md "Selecting on a page"), so a tab of many
 // pages never selects across them. Off every page, or with no page known yet, the whole tab.
 import {
@@ -8,7 +8,7 @@ import {
   pagesOf,
   type EditorMode,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 
 export function selectAllIds(
   tab: Pick<Tab, 'elements' | 'pages'> & { pageOrientation?: unknown },

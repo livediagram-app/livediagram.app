@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
-import type { Tab } from '@livedesign/document';
+import type { Tab } from '@livedesign/design';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { copyDocument } from './documents';
+import { copyDesign } from './designs';
 import { tabStatsOf } from './tab-stats';
 import { seedTabs, swapTabData, upsertTab, upsertTabAtRev } from './tabs';
 
@@ -12,11 +12,11 @@ import { seedTabs, swapTabData, upsertTab, upsertTabAtRev } from './tabs';
 
 const T0 = 1_700_000_000_000;
 
-function withDocument(id = 'A'): SqliteD1 {
+function withDesign(id = 'A'): SqliteD1 {
   const db = sqliteD1();
   db.sql
     .prepare(
-      'INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, ?, ?)',
+      'INSERT INTO designs (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, ?, ?)',
     )
     .run(id, 'owner', id, T0, T0);
   return db;
@@ -77,14 +77,14 @@ function expected(sql: DatabaseSync, tabId: string): Row {
 
 describe('upsertTab and upsertTabAtRev', () => {
   it('write the stats of the stored body', async () => {
-    const db = withDocument();
+    const db = withDesign();
     await upsertTab(db.env, 'A', tab('t1', 'pages', 2, 0, 1), 0);
     expect(statsRow(db.sql, 't1')).toEqual(expected(db.sql, 't1'));
     expect(statsRow(db.sql, 't1')).toMatchObject({ element_count: 3, comment_count: 3 });
   });
 
   it('replace them on the next write', async () => {
-    const db = withDocument();
+    const db = withDesign();
     await upsertTab(db.env, 'A', tab('t1', 'pages', 2), 0);
     const rev = await upsertTab(db.env, 'A', tab('t1', 'pages'), 0);
     await upsertTabAtRev(db.env, 'A', tab('t1', 'pages', 0, 0), 0, rev);
@@ -95,7 +95,7 @@ describe('upsertTab and upsertTabAtRev', () => {
 
 describe('seedTabs', () => {
   it('writes every seeded tab its stats', async () => {
-    const db = withDocument();
+    const db = withDesign();
     await seedTabs(db.env, 'A', [tab('t1', undefined, 1), tab('t2', 'pages')]);
     expect(statsRow(db.sql, 't1')).toEqual(expected(db.sql, 't1'));
     expect(statsRow(db.sql, 't2')).toEqual(expected(db.sql, 't2'));
@@ -105,7 +105,7 @@ describe('seedTabs', () => {
 
 describe('swapTabData (participant writes)', () => {
   it('writes the next body stats on a won swap, and nothing on a lost one', async () => {
-    const db = withDocument();
+    const db = withDesign();
     await upsertTab(db.env, 'A', tab('t1', 'pages'), 0);
     const before = statsRow(db.sql, 't1');
     const stored = db.sql.prepare('SELECT data FROM tabs WHERE id = ?').get('t1')!.data as string;
@@ -123,11 +123,11 @@ describe('swapTabData (participant writes)', () => {
   });
 });
 
-describe('copyDocument', () => {
+describe('copyDesign', () => {
   it("counts the copy's tabs from the copied bodies", async () => {
-    const db = withDocument();
+    const db = withDesign();
     await upsertTab(db.env, 'A', tab('t1', 'pages', 2), 0);
-    const copy = await copyDocument(db.env, 'A', 'B', 'visitor', 'Copy of A');
+    const copy = await copyDesign(db.env, 'A', 'B', 'visitor', 'Copy of A');
     const copied = copy!.tabs[0]!.id;
     expect(statsRow(db.sql, copied)).toEqual(expected(db.sql, copied));
   });

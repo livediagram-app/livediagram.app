@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react';
 import { PLACEMENT_DEFAULT_KEYS, type PlacementDefaultKey } from '@livedesign/api-schema';
-import type { EditorMode } from '@livedesign/document';
+import type { EditorMode } from '@livedesign/design';
 import { lucideGlyph, type IconProps, EDITOR_MODE_ICONS } from '@livedesign/ui';
 import { lucideFolderCheck } from '@livedesign/icons/lucide';
 

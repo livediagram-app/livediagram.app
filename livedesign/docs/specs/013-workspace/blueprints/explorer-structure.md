@@ -31,32 +31,32 @@ on the `nav`.
 | `apps/telemetry/app/catalogue/features.ts`                               | `EXPLORER_SIDEBAR_PICKS`, in the Organisation stack                                                                                                                                                                                                                                  |
 | `apps/telemetry/app/computed-emitters.ts`                                | The sidebar's computed `UI·Selected` values, read from `SidebarTelemetryRow`                                                                                                                                                                                                         |
 | `apps/telemetry/app/event-explanation.ts`                                | The `UI·Selected·Sidebar.<Row>` sentence                                                                                                                                                                                                                                             |
-| `apps/live/components/panels/explorer-tree/PanelExplorerTree.tsx`        | A tree section's rows: the open folder's folders then documents (`folderId` from the host, `paneFolderParent`), the "Folder path" breadcrumb, `EmptyPane compact`; This Browser's and Shared With Me's documents                                                                     |
-| `apps/live/components/panels/explorer-tree/PanelTreeContext.ts`          | `PanelTree`, `PanelTreeProvider`, `usePanelTree`: expansion, the open document and the host's verbs                                                                                                                                                                                  |
+| `apps/live/components/panels/explorer-tree/PanelExplorerTree.tsx`        | A tree section's rows: the open folder's folders then designs (`folderId` from the host, `paneFolderParent`), the "Folder path" breadcrumb, `EmptyPane compact`; This Browser's and Shared With Me's designs                                                                     |
+| `apps/live/components/panels/explorer-tree/PanelTreeContext.ts`          | `PanelTree`, `PanelTreeProvider`, `usePanelTree`: expansion, the open design and the host's verbs                                                                                                                                                                                  |
 | `apps/live/components/panels/explorer-panel/panel-sections.ts`           | `PanelSection`, `panelSectionGroups`, `sectionKey` / `sectionFromKey`, `sectionLabel`, `sectionPage`, `sectionTelemetryRow`, `resolveSection`                                                                                                                                        |
 | `apps/live/components/panels/explorer-panel/useExplorerPanelSection.ts`  | `useExplorerPanelSection(groups)`: the shown section, remembered under `PANEL_SECTION_STORAGE_KEY` (try/catch), else Home                                                                                                                                                            |
 | `apps/live/components/panels/explorer-panel/ExplorerRail.tsx`            | The rail `nav` "Explorer sections": grouped entries (desktop) or a chip row (phone), `aria-current`, arrow keys, My Work as a drop target                                                                                                                                            |
 | `apps/live/components/panels/explorer-panel/ExplorerPanelPane.tsx`       | The pane: title, New Folder (New Subfolder with `inFolder`), Open Page, then the tree or a lazily loaded view (`PanelViews`)                                                                                                                                                         |
 | `apps/live/components/panels/explorer-panel/PanelViews.tsx`              | `HomeSection` (Jump Back In rows, What Happened only when non-empty), `InboxSection` (`ActivityPane compact`), `TimelineSection` (day-grouped rows via `pickRenderer`), `TrashSection` (rows, Restore, Delete with `ConfirmPopover`), `LibrarySection` (tabs over the compact panes) |
-| `apps/live/components/panels/explorer-panel/ExplorerCurrentDocument.tsx` | The Current Document card: thumbnail, the name as a fitted rename button (dotted underline and pencil on hover), `SharedBadge portal` from `useDocumentVisibility`, the document menu                                                                                                |
-| `apps/live/hooks/editor/document-visibility-store.ts`                    | `usePublishDocumentVisibility` (EditorView), `useDocumentVisibility` (the card)                                                                                                                                                                                                      |
+| `apps/live/components/panels/explorer-panel/ExplorerCurrentDesign.tsx` | The Current Design card: thumbnail, the name as a fitted rename button (dotted underline and pencil on hover), `SharedBadge portal` from `useDesignVisibility`, the design menu                                                                                                |
+| `apps/live/hooks/editor/design-visibility-store.ts`                    | `usePublishDesignVisibility` (EditorView), `useDesignVisibility` (the card)                                                                                                                                                                                                      |
 | `packages/ui/src/ProductNav.tsx`                                         | `ProductNavLinks`: the product's surfaces as the Explorer footer's links (`nav` "Go to")                                                                                                                                                                                             |
 | `apps/live/components/panels/explorer-tree/PanelFolderItem.tsx`          | A pane folder row (`PaneRow`): counts, opens the folder (`tree.onOpenFolder`), folder menu with Show in Explorer, drop target opening on a resting drag, pending rename                                                                                                              |
-| `apps/live/components/panels/explorer-tree/PanelDocumentItem.tsx`        | A pane document row (`PaneRow`): thumbnail, "Updated <time>", opens the document, the document menu, star, This Browser pill, drag source                                                                                                                                            |
+| `apps/live/components/panels/explorer-tree/PanelDesignItem.tsx`        | A pane design row (`PaneRow`): thumbnail, "Updated <time>", opens the design, the design menu, star, This Browser pill, drag source                                                                                                                                            |
 | `apps/live/components/panels/Explorer.tsx`                               | Composes the card, rail, pane and `ProductNavLinks`; `w-[38rem]` popover (`POPOVER_WIDTHS.explorer` 608); sets `body[data-explorer-open]` while shown so the palette trays hide                                                                                                      |
 | `apps/live/app/explorer/sidebar/library-pages.ts`                        | `LIBRARY_PAGES`, shared by the sidebar and the panel                                                                                                                                                                                                                                 |
-| `apps/live/app/explorer/view-titles.ts`                                  | `VIEW_TITLES`, `viewDocumentTitle`: every view named by its row                                                                                                                                                                                                                      |
-| `apps/live/lib/document-space.ts`                                        | `isInThisBrowser`, `documentSpace` (`mine` / `team` / `shared`)                                                                                                                                                                                                                      |
+| `apps/live/app/explorer/view-titles.ts`                                  | `VIEW_TITLES`, `viewDesignTitle`: every view named by its row                                                                                                                                                                                                                      |
+| `apps/live/lib/design-space.ts`                                        | `isInThisBrowser`, `designSpace` (`mine` / `team` / `shared`)                                                                                                                                                                                                                      |
 | `apps/live/components/primitives/ThisBrowserPill.tsx`                    | `ThisBrowserPill`, `THIS_BROWSER_LABEL`, `THIS_BROWSER_DESCRIPTION`, `THIS_BROWSER_TONE`                                                                                                                                                                                             |
-| `apps/live/lib/search.ts`                                                | A document result carries `localOnly`; `SearchPanel.tsx` shows the pill as a label                                                                                                                                                                                                   |
+| `apps/live/lib/search.ts`                                                | A design result carries `localOnly`; `SearchPanel.tsx` shows the pill as a label                                                                                                                                                                                                   |
 | `apps/live/components/panels/TrashPane.tsx`                              | This Browser's Trash rows carry the pill                                                                                                                                                                                                                                             |
 | `apps/live/components/chrome/SharedBadge.tsx`                            | The editor header's This Browser state: the pill's label, sentence (`aria-describedby`), tone and glyph                                                                                                                                                                              |
-| `apps/live/components/primitives/explorer-icons.tsx`                     | `HomeIcon` (lucide `house`), `InboxIcon` (a tray with a tick), `TimelineIcon` (a spine with entries), `LibraryIcon` (lucide `library`), `ThisBrowserIcon` (lucide `app-window`), `MyDocumentsIcon` (lucide `folder-root`)                                                            |
+| `apps/live/components/primitives/explorer-icons.tsx`                     | `HomeIcon` (lucide `house`), `InboxIcon` (a tray with a tick), `TimelineIcon` (a spine with entries), `LibraryIcon` (lucide `library`), `ThisBrowserIcon` (lucide `app-window`), `MyDesignsIcon` (lucide `folder-root`)                                                            |
 | `apps/live/components/primitives/EllipsisTriggerButton.tsx`              | `tabIndex` prop: -1 for the folder rows, whose tree owns the tab stop; `reveal` hides it under a fine pointer until hover or row focus                                                                                                                                               |
-| `apps/live/components/panels/useDocumentDropTarget.ts`                   | `useDocumentDropTarget`, `DRAG_HOVER_TOGGLE_MS`, `DROP_TARGET_RING`: a place taking a dragged document, its long-hover toggle                                                                                                                                                        |
-| `apps/live/components/panels/explorer-drag-mime.ts`                      | `DOCUMENT_DRAG_MIME`, `DOCUMENT_LOCAL_ONLY_DRAG_MIME`, `startDocumentDrag`                                                                                                                                                                                                           |
-| `apps/live/app/explorer/useExplorerDropTarget.ts`                        | A page place (sidebar row, folder row or card) filing a dropped document through `moveDocumentTo`; logs `[explorer-drop]`                                                                                                                                                            |
-| `apps/live/app/explorer/document-drop.ts`                                | `planDocumentDrop`: `move`, `already-there` or `refused-local-only`                                                                                                                                                                                                                  |
+| `apps/live/components/panels/useDesignDropTarget.ts`                   | `useDesignDropTarget`, `DRAG_HOVER_TOGGLE_MS`, `DROP_TARGET_RING`: a place taking a dragged design, its long-hover toggle                                                                                                                                                        |
+| `apps/live/components/panels/explorer-drag-mime.ts`                      | `DESIGN_DRAG_MIME`, `DESIGN_LOCAL_ONLY_DRAG_MIME`, `startDesignDrag`                                                                                                                                                                                                           |
+| `apps/live/app/explorer/useExplorerDropTarget.ts`                        | A page place (sidebar row, folder row or card) filing a dropped design through `moveDesignTo`; logs `[explorer-drop]`                                                                                                                                                            |
+| `apps/live/app/explorer/design-drop.ts`                                | `planDesignDrop`: `move`, `already-there` or `refused-local-only`                                                                                                                                                                                                                  |
 
 ## Domain and naming
 
@@ -67,26 +67,26 @@ on the `nav`.
 | row         | `SidebarRowKind`                                | The top-level rows a group may hold (below)                                     |
 | row label   | `SIDEBAR_LABELS[key]`                           | Title Case copy for every fixed row                                             |
 | divider     | `SidebarDivider`                                | `'titles' \| 'separators'`                                                      |
-| expand key  | `MY_DOCUMENTS_EXPAND_KEY`, `LIBRARY_EXPAND_KEY` | Entries of the shared `expanded` set, prefixed so no folder or team id collides |
+| expand key  | `MY_DESIGNS_EXPAND_KEY`, `LIBRARY_EXPAND_KEY` | Entries of the shared `expanded` set, prefixed so no folder or team id collides |
 
-`SidebarRowKind`: `home`, `inbox`, `timeline`, `shared`, `myDocuments`, `teams` (zero or more team rows), `invites`, `newTeam`,
+`SidebarRowKind`: `home`, `inbox`, `timeline`, `shared`, `myDesigns`, `teams` (zero or more team rows), `invites`, `newTeam`,
 `signInNudge`, `thisBrowser`, `library`, `trash`. "Space" in code means My Work or a team; "Offline" stays the
 name of the view (`kind: 'offline'`), whose row reads "This Browser".
 
 ## Behaviour and state
 
-1. **Layout** (`sidebarGroups(input)`), input `{ signedIn, signInAvailable, pendingInvites, offlineDocuments, selected, surface? }`
+1. **Layout** (`sidebarGroups(input)`), input `{ signedIn, signInAvailable, pendingInvites, offlineDesigns, selected, surface? }`
    (`selected` null in the panel; `surface` `'page'` by default):
    - `overview`: `home`, `inbox`, `timeline`, `shared`.
-   - `spaces`: `myDocuments`; then `teams` when `signedIn`; `invites` when `signedIn` and (`pendingInvites > 0` or
+   - `spaces`: `myDesigns`; then `teams` when `signedIn`; `invites` when `signedIn` and (`pendingInvites > 0` or
      `selected === 'invites'`); `newTeam` when `signedIn`; `signInNudge` when `!signedIn && signInAvailable`.
-   - `more`: `thisBrowser` when `offlineDocuments > 0` or `selected === 'offline'`; `library`; `trash`.
+   - `more`: `thisBrowser` when `offlineDesigns > 0` or `selected === 'offline'`; `library`; `trash`.
    - `surface: 'panel'`: no `invites`, `newTeam` or `signInNudge`.
 2. **Divider** (`sidebarDivider(minimalChrome)`): `'separators'` when `isMinimalChrome(prefs)`, else `'titles'`.
    The shell renders in the browser only (`useExplorerState` calls `use(browser())`), so the sidebar first draws with
    the device's preferences already read.
 3. **Expansion** (`useSidebarExpansion`): `expanded` starts as `initialExpanded(selected)`: always
-   `MY_DOCUMENTS_EXPAND_KEY`, plus `LIBRARY_EXPAND_KEY` when `isLibraryView(selected.kind)` (`gallery`, `themes`).
+   `MY_DESIGNS_EXPAND_KEY`, plus `LIBRARY_EXPAND_KEY` when `isLibraryView(selected.kind)` (`gallery`, `themes`).
    When `selected.kind` changes to a Library view, `LIBRARY_EXPAND_KEY` is added during that render
    (state adjusted in render, not an effect). Toggling is `toggleExpand(key)`; `expand(key)` opens idempotently, used to
    reveal a new folder's parent (My Work for a root folder).
@@ -94,7 +94,7 @@ name of the view (`kind: 'offline'`), whose row reads "This Browser".
    Library, `setTeamModalOpen(true)` and `setMobileNavOpen(false)` for New Team, `window.location.assign` for a team
    folder. Home also clears the Timeline unread count. Each activation calls `trackSidebar(row)` first.
 5. **Chevron**: a click on the gutter toggles that row; it never activates it. My Work is expandable only while it
-   has a root folder (the page) or a root folder or document (the panel).
+   has a root folder (the page) or a root folder or design (the panel).
 6. **Roving tab stop** (`useTreeNavigation`): after every render exactly one `treeitem` in the `nav` has
    `tabIndex = 0`: the focused one while focus is inside the `nav`, else the `aria-selected` one, else the first.
 7. **Keys** on a focused `treeitem` (ignored when the event comes from an `input`, `textarea` or a descendant control):
@@ -105,13 +105,13 @@ name of the view (`kind: 'offline'`), whose row reads "This Browser".
 8. **Page titles** (`VIEW_TITLES`): the pane title is `VIEW_TITLES[kind]` (a folder or team by its name); the
    breadcrumb is `[My Work, …ancestors, folder]` for a folder, `[Home, leaf]` for Recent (`leadsBackHome`), and
    the single leaf otherwise (the Timeline included: it has a row); each static page's `metadata.title` is
-   `viewDocumentTitle(kind)`. The Inbox is `VIEW_TITLES.inbox = SIDEBAR_LABELS.inbox` ("Inbox"), the Timeline
+   `viewDesignTitle(kind)`. The Inbox is `VIEW_TITLES.inbox = SIDEBAR_LABELS.inbox` ("Inbox"), the Timeline
    `VIEW_TITLES.timeline = SIDEBAR_LABELS.timeline` ("Timeline").
    **Retired Activity route.** `selectedFromRoute` reads `/explorer/activity` as `{ kind: 'inbox' }`, so the Inbox row
    highlights at once, and `app/explorer/activity/page.tsx` renders `RetiredViewRedirect from="activity"`, which
    `router.replace`s to `RETIRED_VIEW_TARGETS.activity` (`/explorer/inbox`).
-9. **Panel**: `panelSectionGroups({ teams, hasBrowserDocuments })` lists the rail's sections (overview: home, inbox,
-   timeline, shared; spaces: mine and `team:<id>`; more: browser while it holds documents, library, trash).
+9. **Panel**: `panelSectionGroups({ teams, hasBrowserDesigns })` lists the rail's sections (overview: home, inbox,
+   timeline, shared; spaces: mine and `team:<id>`; more: browser while it holds designs, library, trash).
    `resolveSection` shows the remembered key while it is still listed, else home. A pick calls
    `trackSidebar(sectionTelemetryRow(s), 'panel')` (`ExplorerPanel.<Row>`) and stores the key. Tree sections render
    `PanelExplorerTree` (a folder opens in the pane under its breadcrumb); the others render their `PanelViews`
@@ -123,8 +123,8 @@ name of the view (`kind: 'offline'`), whose row reads "This Browser".
    a folder card's New Subfolder opens its folder in the pane, so the new folder shows with its name field.
 10. **This Browser**: `isInThisBrowser(doc)` (`ownerId === OFFLINE_OWNER_ID`) shows `ThisBrowserPill` beside a list row's
     name, first in a card's meta row, in the panel rows (link out of the tab order; the row's `aria-describedby` is
-    `THIS_BROWSER_DESCRIPTION`), in the panel's Current Document row and search results (`asLabel`), and in the Trash's
-    local group; `VisibilityBadge` renders nothing for such a document. `ownerLabelFor` reads `documentSpace`.
+    `THIS_BROWSER_DESCRIPTION`), in the panel's Current Design row and search results (`asLabel`), and in the Trash's
+    local group; `VisibilityBadge` renders nothing for such a design. `ownerLabelFor` reads `designSpace`.
 11. **Folder menu by keyboard**: the `treeitem` carries the row's `onContextMenu`; Shift+F10 and the Menu key fire
     `contextmenu` on the focused element, which opens the menu. The handler stops propagation so an ancestor folder's
     menu never opens too.
@@ -143,7 +143,7 @@ export type SidebarRowKind =
   | 'inbox'
   | 'timeline'
   | 'shared'
-  | 'myDocuments'
+  | 'myDesigns'
   | 'teams'
   | 'invites'
   | 'newTeam'
@@ -155,7 +155,7 @@ export type SidebarLayoutInput = {
   signedIn: boolean; // teamsEnabled: a Clerk session
   signInAvailable: boolean; // clerkEnabled: the deployment offers sign-in
   pendingInvites: number;
-  offlineDocuments: number;
+  offlineDesigns: number;
   selected: SelectedNode['kind'];
 };
 export type SidebarGroupLayout = { id: SidebarGroupId; rows: SidebarRowKind[] };
@@ -174,7 +174,7 @@ export function initialExpanded(selected: SelectedNode): Set<string>;
 
 | Case                                                  | Handling                                                                           |
 | ----------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| On `/explorer/offline` with no offline documents left | This Browser stays while selected                                                  |
+| On `/explorer/offline` with no offline designs left | This Browser stays while selected                                                  |
 | On `/explorer/invites` with none pending              | Invites stays while selected                                                       |
 | Current view has no row (Recent, Favourites, Search)  | No row is `aria-selected`; the tab stop falls back to the first row                |
 | Selected folder hidden inside a collapsed parent      | Same fallback; expansion is the reader's                                           |
@@ -200,7 +200,7 @@ keystroke and per render (tens to low hundreds of nodes). No new fetch.
 - Tile (`SidebarRow tone`): `size-6 rounded-lg grid place-items-center`, its icon a 14 px block (a 13 px one sits on a half
   pixel and fails the optical audit), `SIDEBAR_TONES[tone]`: the tone's 100 tint
   under its 700 ink in light (`bg-sky-100 text-sky-700`), its 400 at 15 % under its 300 ink in dark
-  (`dark:bg-sky-400/15 dark:text-sky-300`). Tones: `home`, `myDocuments` sky; `inbox` violet; `timeline` amber;
+  (`dark:bg-sky-400/15 dark:text-sky-300`). Tones: `home`, `myDesigns` sky; `inbox` violet; `timeline` amber;
   `shared` emerald; `team` indigo; `invites` rose. A row without a tone keeps the bare `text-slate-400` icon.
 - Current row (`SIDEBAR_CURRENT`): `bg-white border border-rose-200 shadow-[0_6px_18px_-8px_rgba(225,29,72,0.35)]`,
   label `font-semibold text-rose-900`; its tile `bg-rose-700 text-white`, a bare icon `text-rose-700`. Dark:
@@ -255,10 +255,10 @@ creation).
 | Telemetry values charted and explained               | `apps/telemetry` `metric-emitters.test.ts`, `event-explanation.test.ts`                                                                                                                                                                                               |
 | Gutter on every row; ARIA attributes                 | `SidebarRow.test.tsx`                                                                                                                                                                                                                                                 |
 | Keyboard model and roving tab stop                   | `useTreeNavigation.test.tsx`                                                                                                                                                                                                                                          |
-| Panel sections, rail, pane, card, footer             | `panel-sections.test.ts`, `useExplorerPanelSection.test.tsx`, `ExplorerRail.test.tsx`, `ExplorerCurrentDocument.test.tsx`, `Explorer.test.tsx`, `PanelExplorerTree.test.tsx`, `PanelFolderItem.test.tsx`, `document-visibility-store.test.tsx`, `ProductNav.test.tsx` |
+| Panel sections, rail, pane, card, footer             | `panel-sections.test.ts`, `useExplorerPanelSection.test.tsx`, `ExplorerRail.test.tsx`, `ExplorerCurrentDesign.test.tsx`, `Explorer.test.tsx`, `PanelExplorerTree.test.tsx`, `PanelFolderItem.test.tsx`, `design-visibility-store.test.tsx`, `ProductNav.test.tsx` |
 | Retired `/explorer/activity` reads as the Inbox      | `routes.test.ts`, `RetiredViewRedirect.test.tsx`                                                                                                                                                                                                                      |
 | Page titles follow the rows                          | `view-titles.test.ts`                                                                                                                                                                                                                                                 |
-| This Browser: space, pill, rows, search, Trash       | `document-space.test.ts`, `ThisBrowserPill.test.tsx`, `explorer-route-document-row.test.tsx`, `document-badges.test.tsx`, `search.test.ts`, `SearchPanel.test.tsx`, `TrashPane.test.tsx`, `SharedBadge.test.tsx`                                                      |
+| This Browser: space, pill, rows, search, Trash       | `design-space.test.ts`, `ThisBrowserPill.test.tsx`, `explorer-route-design-row.test.tsx`, `design-badges.test.tsx`, `search.test.ts`, `SearchPanel.test.tsx`, `TrashPane.test.tsx`, `SharedBadge.test.tsx`                                                      |
 | Real browser: groups, keyboard, drawer               | `e2e/explorer-sidebar.spec.ts` (page and editor panel), `e2e/clerk-stub/explorer-sidebar.spec.ts`                                                                                                                                                                     |
 
 ## Constants and configuration
@@ -268,7 +268,7 @@ creation).
 | `INDENT_STEP`             | 16 px                                     | Unchanged from the previous tree |
 | `SIDEBAR_TONES`           | sky, violet, amber, emerald, indigo, rose | Spec (Look); `D170`              |
 | Chevron gutter            | 20 px (`h-5 w-5`)                         | Unchanged; now always reserved   |
-| `MY_DOCUMENTS_EXPAND_KEY` | `'space:my-documents'`                    | Prefix keeps it apart from UUIDs |
+| `MY_DESIGNS_EXPAND_KEY` | `'space:my-designs'`                    | Prefix keeps it apart from UUIDs |
 | `LIBRARY_EXPAND_KEY`      | `'more:library'`                          | Same                             |
 
 ## Assets and external resources

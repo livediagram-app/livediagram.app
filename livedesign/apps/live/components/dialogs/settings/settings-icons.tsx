@@ -19,7 +19,7 @@ import { SlideDeckIcon } from '@/components/palette/palette-icons';
 // API Tokens under Account) draws none of its own.
 export type SettingsIconId =
   | 'account'
-  | 'documents'
+  | 'designs'
   | 'editor'
   | 'appearance'
   | 'keyboard'
@@ -49,7 +49,7 @@ export type SettingsCategoryId = SettingsIconId | SettingsSubcategoryId;
 // glyphs differ too, the colour is a second channel, never the only one.
 const TILE: Record<SettingsIconId, string> = {
   account: 'bg-teal-600',
-  documents: 'bg-lime-700',
+  designs: 'bg-lime-700',
   editor: 'bg-blue-500',
   appearance: 'bg-sky-600',
   keyboard: 'bg-orange-500',
@@ -98,8 +98,8 @@ const KeyboardGlyph = (
   </Svg>
 );
 
-// Documents: a folder, where new documents go (docs/specs/013-workspace/default-folders.md).
-const DocumentsGlyph = (
+// Designs: a folder, where new designs go (docs/specs/013-workspace/default-folders.md).
+const DesignsGlyph = (
   <Svg>
     <path d="M3 6.5a1.5 1.5 0 0 1 1.5-1.5h3.2l1.6 1.8h6.2A1.5 1.5 0 0 1 17 8.3v6.2a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3 14.5Z" />
   </Svg>
@@ -183,7 +183,7 @@ const PrivacyGlyph = (
 
 export const CATEGORY_GLYPHS: Record<SettingsIconId, ReactNode> = {
   account: AccountGlyph,
-  documents: DocumentsGlyph,
+  designs: DesignsGlyph,
   editor: EditorGlyph,
   appearance: AppearanceGlyph,
   keyboard: KeyboardGlyph,

@@ -3,7 +3,7 @@ import {
   AXIS_TICK_GAP,
   type BarMarks,
   type LineMarks,
-} from '@livedesign/document';
+} from '@livedesign/design';
 
 // Show Axis (docs/specs/009-elements/pie-chart.md): the value axis the marks laid out (chart-axis.ts), drawn as the
 // exporter draws it, a faint gridline and a label at each tick.

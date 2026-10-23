@@ -1,34 +1,34 @@
 // The Trash (docs/specs/013-workspace/trash.md): the cloud Trash over
 // /api/trash (personal + every joined team's) and the Offline Mode local
 // Trash in IndexedDB, behind one set of calls. Restore and purge dispatch on
-// the offline index like every other document call (lib/api-client.ts).
+// the offline index like every other design call (lib/api-client.ts).
 
-import type { LiveDoc, DocumentResponse, TrashedDocument } from '@livedesign/api-schema';
+import type { LiveDoc, DesignResponse, TrashedDesign } from '@livedesign/api-schema';
 import { isOfflineId } from '../offline/offline-store';
 import {
   offlineListTrash,
-  offlinePurgeDocument,
+  offlinePurgeDesign,
   offlinePurgeExpiredTrash,
-  offlineRestoreDocument,
+  offlineRestoreDesign,
 } from '../offline/offline-trash';
-import { unmarkDocumentDeleted } from '../document-tombstones';
+import { unmarkDesignDeleted } from '../design-tombstones';
 import { API_BASE, apiDelete, apiFetch, apiHeaders, expectOk } from './core';
 
 export type TrashListing = {
   // The api's rows, or null when the cloud Trash couldn't be reached: the
   // view still shows this browser's Trash rather than failing whole.
-  cloud: TrashedDocument[] | null;
+  cloud: TrashedDesign[] | null;
   // This Browser only (Offline Mode).
-  local: TrashedDocument[];
+  local: TrashedDesign[];
 };
 
 export async function apiListTrash(ownerId: string, now = Date.now()): Promise<TrashListing> {
   // The local Trash keeps its 30 days by being swept whenever it is read.
   await offlinePurgeExpiredTrash(now).catch(() => 0);
-  const local = await offlineListTrash().catch(() => [] as TrashedDocument[]);
+  const local = await offlineListTrash().catch(() => [] as TrashedDesign[]);
   try {
     const res = await apiFetch(`${API_BASE}/trash`, { headers: await apiHeaders(ownerId) });
-    const { trash } = await expectOk<{ trash: TrashedDocument[] }>(res, 'list trash');
+    const { trash } = await expectOk<{ trash: TrashedDesign[] }>(res, 'list trash');
     return { cloud: trash, local };
   } catch (err) {
     console.warn('[trash] cloud list failed', err);
@@ -36,44 +36,44 @@ export async function apiListTrash(ownerId: string, now = Date.now()): Promise<T
   }
 }
 
-// Restore one document to where it was. Returns the document (null for an
+// Restore one design to where it was. Returns the design (null for an
 // offline one, which the caller re-lists), and lets this page write it again.
-export async function apiRestoreDocument(ownerId: string, id: string): Promise<LiveDoc | null> {
+export async function apiRestoreDesign(ownerId: string, id: string): Promise<LiveDoc | null> {
   if (await isOfflineId(id)) {
-    if (!(await offlineRestoreDocument(id))) throw new Error('not in the local Trash');
-    unmarkDocumentDeleted(id);
+    if (!(await offlineRestoreDesign(id))) throw new Error('not in the local Trash');
+    unmarkDesignDeleted(id);
     return null;
   }
   const res = await apiFetch(`${API_BASE}/trash/${encodeURIComponent(id)}/restore`, {
     method: 'POST',
     headers: await apiHeaders(ownerId),
   });
-  const { document: liveDoc } = await expectOk<DocumentResponse>(res, 'restore document');
-  unmarkDocumentDeleted(id);
+  const { design: liveDoc } = await expectOk<DesignResponse>(res, 'restore design');
+  unmarkDesignDeleted(id);
   return liveDoc;
 }
 
-// Delete one trashed document for good.
-export async function apiPurgeDocument(ownerId: string, id: string): Promise<void> {
+// Delete one trashed design for good.
+export async function apiPurgeDesign(ownerId: string, id: string): Promise<void> {
   if (await isOfflineId(id)) {
-    await offlinePurgeDocument(id);
+    await offlinePurgeDesign(id);
     return;
   }
   await apiDelete(`${API_BASE}/trash/${encodeURIComponent(id)}`, ownerId, {
-    action: 'purge document',
+    action: 'purge design',
     allow404: false,
   });
 }
 
 // Empty one Trash: the personal one, a team's, or this browser's. Returns how
-// many documents went.
+// many designs went.
 export async function apiEmptyTrash(
   ownerId: string,
   scope: { kind: 'personal' } | { kind: 'team'; teamId: string } | { kind: 'local' },
 ): Promise<number> {
   if (scope.kind === 'local') {
     const rows = await offlineListTrash();
-    for (const row of rows) await offlinePurgeDocument(row.id);
+    for (const row of rows) await offlinePurgeDesign(row.id);
     return rows.length;
   }
   const query = scope.kind === 'team' ? `?team=${encodeURIComponent(scope.teamId)}` : '';

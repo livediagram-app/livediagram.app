@@ -21,9 +21,9 @@ export const generateWorkbenchSecret = () =>
 
 // The scope part of a row, as the context carries it.
 const reachOfRow = (row: WorkbenchReach): WorkbenchReach =>
-  row.scope === 'document'
-    ? { scope: 'document', documentId: row.documentId, folderId: null }
-    : { scope: 'workspace', documentId: null, folderId: row.folderId };
+  row.scope === 'design'
+    ? { scope: 'design', designId: row.designId, folderId: null }
+    : { scope: 'workspace', designId: null, folderId: row.folderId };
 
 export async function hashWorkbenchSecret(secret: string): Promise<string> {
   return sha256Hex(new TextEncoder().encode(secret));

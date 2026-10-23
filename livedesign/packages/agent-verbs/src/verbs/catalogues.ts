@@ -55,7 +55,7 @@ export const ICON_SEARCH_MAX_LIMIT = 50;
 export const templateLs = defineVerb({
   id: 'template.ls',
   summary: 'The template library',
-  description: 'Lists the templates a document or tab can start from: kind, title and category.',
+  description: 'Lists the templates a design or tab can start from: kind, title and category.',
   behaviour: 'read',
   input: z.object({}),
   output: z.object({

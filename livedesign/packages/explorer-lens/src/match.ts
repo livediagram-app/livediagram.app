@@ -1,5 +1,5 @@
 // Narrowing a list by a lens (docs/specs/013-workspace/explorer-filters.md "Dimensions", "Matching").
-// Rows are first reduced to subjects, so one rule serves documents, shared rows and, later, events.
+// Rows are first reduced to subjects, so one rule serves designs, shared rows and, later, events.
 
 import { isMadeByAiSource } from '@livedesign/api-schema';
 import { OPENS_IN_VALUES, type EditedValue, type OpensInValue } from './dimensions';
@@ -7,9 +7,9 @@ import type { Lens, LensSubject } from './types';
 
 const DAY_MS = 86_400_000;
 
-/** The fields of a document summary the lens reads. `opensIn` is the recorded creation intent; absent, null or
- *  retired values read as unknown. A document in this browser (Offline Mode) has no team, so it reads as `mine`. */
-type LensDocumentSummary = {
+/** The fields of a design summary the lens reads. `opensIn` is the recorded creation intent; absent, null or
+ *  retired values read as unknown. A design in this browser (Offline Mode) has no team, so it reads as `mine`. */
+type LensDesignSummary = {
   name: string;
   savedAt: number;
   ownerId: string;
@@ -22,8 +22,8 @@ function known<T extends string>(values: readonly T[], value: string | null | un
   return values.find((candidate) => candidate === value) ?? null;
 }
 
-/** A personal, team or this-browser document as the reader sees it. */
-export function documentSubject(summary: LensDocumentSummary, viewerId: string): LensSubject {
+/** A personal, team or this-browser design as the reader sees it. */
+export function designSubject(summary: LensDesignSummary, viewerId: string): LensSubject {
   return {
     name: summary.name,
     savedAt: summary.savedAt,

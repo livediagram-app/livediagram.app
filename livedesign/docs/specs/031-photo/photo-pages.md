@@ -16,7 +16,7 @@ store](photo-store.md).
 | Term               | Means                                                                                               | Never called          |
 | ------------------ | --------------------------------------------------------------------------------------------------- | --------------------- |
 | **photo page**     | A page of kind `photo` (`Page.kind`).                                                               | image page, canvas    |
-| **photo**          | The photo page's picture: its pixel size and its layer stack (`Tab.photos[pageId]`).                | document, project     |
+| **photo**          | The photo page's picture: its pixel size and its layer stack (`Tab.photos[pageId]`).                | design, project     |
 | **pixel size**     | The photo's width and height in pixels, each 1 to the pixel cap.                                    | resolution, dimension |
 | **layer**          | One entry of the photo's layer stack ([Photo layers](photo-layers.md)).                             | element, sheet        |
 | **active layer**   | The layer the tools act on: each person's own, for the session.                                     | current, focused      |
@@ -274,7 +274,7 @@ All on the active photo, each one edit:
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Editor**      | Everything: every tool, every layer change, adjustments, filters, size changes, making and deleting photo pages.                                                                                                                                |
 | **Participant** | Sees the photo and the layer stack (read-only Layers tab: no actions, no toggles), may use the Eyedropper and the info line, and may add elements on top where they may add content. No tool that changes pixels or layers, no title-bar menus. |
-| **Viewer**      | Sees the photo; no photo tools, no options flyout, no panel; may export where the document allows exports.                                                                                                                                      |
+| **Viewer**      | Sees the photo; no photo tools, no options flyout, no panel; may export where the design allows exports.                                                                                                                                      |
 
 The server refuses a photo blob write from anyone who may not edit the tab, and the room refuses a `photo` op from
 a Participant or a Viewer.
@@ -320,7 +320,7 @@ a Participant or a Viewer.
 
 ## Agents
 
-- An agent reads a photo page as a page: `read_document`'s pages view names its kind, pixel size and layers (each
+- An agent reads a photo page as a page: `read_design`'s pages view names its kind, pixel size and layers (each
   layer's name, kind, visibility, opacity and blend mode), and the preview shows its composite.
 - An agent may add a photo page (`change_pages` `{ "op": "add", "kind": "photo" }`, an empty transparent 1920 x
   1080 photo, or with `width` and `height`), rename one and delete one. It may not change pixels or layers: an
@@ -343,8 +343,8 @@ a Participant or a Viewer.
 `PhotoStartedBlank`, `PhotoEditAsPhoto`, `PhotoImageSize`, `PhotoCanvasSize`, `PhotoRotated`, `PhotoFlipped`,
 `PhotoCropped`, `PhotoTrimmed`; `Element · Used ·` each tool once per stroke or use (`PhotoBrush`, `PhotoEraser`,
 ... the tool's id in Pascal case); `Element · Changed ·` each adjustment and filter applied (`PhotoAdjust<Id>`,
-`PhotoFilter<Id>`), each layer operation (`PhotoLayer<Operation>`); `Document · Exported · Photo<Format>`,
-`Document · Imported · PhotoPsd`; `UI · Opened · PhotoPanel<Tab>`. Never a colour, a size, a name or text.
+`PhotoFilter<Id>`), each layer operation (`PhotoLayer<Operation>`); `Design · Exported · Photo<Format>`,
+`Design · Imported · PhotoPsd`; `UI · Opened · PhotoPanel<Tab>`. Never a colour, a size, a name or text.
 
 ## Non-goals
 

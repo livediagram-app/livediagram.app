@@ -9,7 +9,7 @@
 // the chip) the shown shape follows `shaped()`, so what shows is what lands.
 
 import { useEffect, useState } from 'react';
-import type { RecognisedShape } from '@livedesign/document';
+import type { RecognisedShape } from '@livedesign/design';
 import type { LiveStroke } from '@/lib/live-stroke';
 import {
   RECOGNITION_PREVIEW_DWELL_MS,

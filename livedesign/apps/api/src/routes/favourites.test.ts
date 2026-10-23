@@ -1,8 +1,8 @@
 import { makeTestRouteContext } from './test-route-context';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Route surface for per-user document stars (docs/specs/013-workspace/favourites.md). Favourites are
-// deliberately owner-scoped with NO document-access check — a star is a
+// Route surface for per-user design stars (docs/specs/013-workspace/favourites.md). Favourites are
+// deliberately owner-scoped with NO design-access check — a star is a
 // private bookmark that grants nothing — so what matters here is that the
 // owner gate holds and that every id reaching the db layer is scoped to
 // the resolved owner.
@@ -47,16 +47,16 @@ describe('handleFavourites', () => {
     expect(db.listFavouriteIds).toHaveBeenCalledWith({}, 'owner-1');
   });
 
-  it('PUT stars the document for THIS owner', async () => {
+  it('PUT stars the design for THIS owner', async () => {
     db.addFavourite.mockResolvedValue(true);
     const res = await handleFavourites(makeCtx('PUT', '/api/favourites/d1'));
     expect(res.status).toBe(204);
     expect(db.addFavourite).toHaveBeenCalledWith({}, 'owner-1', 'd1');
   });
 
-  // A star on a document that is not there (deleted meanwhile, or an offline id) is refused by the table's foreign
+  // A star on a design that is not there (deleted meanwhile, or an offline id) is refused by the table's foreign
   // key: a 404, not the 500 the raw constraint error made.
-  it('404s a star on a document that does not exist', async () => {
+  it('404s a star on a design that does not exist', async () => {
     db.addFavourite.mockResolvedValue(false);
     const res = await handleFavourites(makeCtx('PUT', '/api/favourites/gone'));
     expect(res.status).toBe(404);
@@ -75,7 +75,7 @@ describe('handleFavourites', () => {
     expect(db.addFavourite).toHaveBeenCalledWith({}, 'owner-2', 'd1');
   });
 
-  it('404s a write with no document id, rather than starring nothing', async () => {
+  it('404s a write with no design id, rather than starring nothing', async () => {
     const res = await handleFavourites(makeCtx('PUT', '/api/favourites'));
     expect(res.status).toBe(404);
     expect(db.addFavourite).not.toHaveBeenCalled();

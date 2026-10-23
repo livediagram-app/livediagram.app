@@ -12,7 +12,7 @@ import {
   type Page,
   type PageOrientation,
   type PageSizeId,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { ACTIVE_SEGMENT, Glyph, SEGMENT_TRACK, Tooltip } from '@livedesign/ui';
 import { SegmentSlider } from '@/components/primitives/SegmentSlider';
 

@@ -3,17 +3,17 @@ import {
   __setOfflineBackend,
   isOfflineId,
   isOfflineIdSync,
-  OfflineDocumentMissingError,
-  offlineDeleteDocument,
+  OfflineDesignMissingError,
+  offlineDeleteDesign,
   offlinePutRecord,
-  offlineSaveDocumentMeta,
+  offlineSaveDesignMeta,
   offlineSaveTab,
 } from './offline-store';
 import { OFFLINE_IDS_CHANNEL, subscribeOfflineIds, type OfflineIdChange } from './offline-ids';
 import { memBackend, testRecord as rec, testTab as tab } from './offline-test-utils';
 import type { OfflineBackend } from './offline-backend';
 
-// docs/specs/006-document/offline-mode.md "Persistence architecture": every tab of a browser keeps
+// docs/specs/006-design/offline-mode.md "Persistence architecture": every tab of a browser keeps
 // its own cache of offline ids, told about the other tabs' changes on a BroadcastChannel.
 
 // Another tab of the same browser: its own channel on the same name.
@@ -44,7 +44,7 @@ describe('offline ids across tabs', () => {
   it('tells the other tabs when an id is registered and removed', async () => {
     await isOfflineId('d1');
     await offlinePutRecord(rec({ id: 'd1' }));
-    await offlineDeleteDocument('d1');
+    await offlineDeleteDesign('d1');
     await settle();
     expect(heard).toEqual([
       { kind: 'add', id: 'd1' },
@@ -81,7 +81,7 @@ describe('offline ids across tabs', () => {
     await settle();
     expect(told).toEqual(['d1', 'd2']);
     stop();
-    await offlineDeleteDocument('d1');
+    await offlineDeleteDesign('d1');
     expect(told).toEqual(['d1', 'd2']);
   });
 
@@ -100,17 +100,17 @@ describe('a write whose record another tab removed', () => {
     // Another tab synced or purged it: the record goes, and this tab missed the message.
     await backend.delete('d1');
     await expect(offlineSaveTab('d1', tab('t1'), 200)).rejects.toBeInstanceOf(
-      OfflineDocumentMissingError,
+      OfflineDesignMissingError,
     );
     expect(isOfflineIdSync('d1')).toBe(false);
     expect(await backend.get('d1')).toBeUndefined();
   });
 
-  it('stays a quiet no-op once this tab has forgotten the id itself (its own Sync Document)', async () => {
+  it('stays a quiet no-op once this tab has forgotten the id itself (its own Sync Design)', async () => {
     await offlinePutRecord(rec({ id: 'd1' }));
-    await offlineDeleteDocument('d1');
+    await offlineDeleteDesign('d1');
     await expect(offlineSaveTab('d1', tab('t1'), 200)).resolves.toBeUndefined();
-    await expect(offlineSaveDocumentMeta('d1', { name: 'x' }, 200)).resolves.toBeUndefined();
+    await expect(offlineSaveDesignMeta('d1', { name: 'x' }, 200)).resolves.toBeUndefined();
     expect(await backend.get('d1')).toBeUndefined();
   });
 });

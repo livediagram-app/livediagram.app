@@ -26,9 +26,9 @@ import { requestBarFocus, takeBarFocus } from './lens-focus-handoff';
 // The Explorer's top-bar search, the lens field (docs/specs/013-workspace/explorer-filters.md
 // "The field"): the lens string's tokens as removable pills, then the draft in a WAI-ARIA combobox
 // with a listbox of suggestions. One line high; pills and text scroll sideways inside it. On Home it is drawn large in
-// the hero (`size="hero"`, explorer-home.md "The hero"), with New document as its `trailing` button.
+// the hero (`size="hero"`, explorer-home.md "The hero"), with New design as its `trailing` button.
 
-const FIELD_PLACEHOLDER = 'Search or filter documents';
+const FIELD_PLACEHOLDER = 'Search or filter designs';
 
 const SIZES = {
   bar: {
@@ -86,7 +86,7 @@ export function LensField({
   subjects: readonly LensSubject[];
   /** The header's field, or Home's hero field. */
   size?: keyof typeof SIZES;
-  /** A control inside the field's end (the hero's New document). */
+  /** A control inside the field's end (the hero's New design). */
   trailing?: ReactNode;
 }) {
   const { input, caret, context, now, setField, setInput, blur } = lens;
@@ -272,7 +272,7 @@ export function LensField({
           ref={field}
           type="text"
           role="combobox"
-          aria-label="Filter documents"
+          aria-label="Filter designs"
           aria-autocomplete="list"
           aria-expanded={listOpen}
           aria-controls={listId}

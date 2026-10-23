@@ -1,4 +1,4 @@
-// The comment verbs (docs/specs/015-api/cli.md "Commands"; agent-presence "Comments"): the threads of a document, and
+// The comment verbs (docs/specs/015-api/cli.md "Commands"; agent-presence "Comments"): the threads of a design, and
 // adding, replying to, resolving and reopening one, through the same endpoints the editor uses. A thread is named by
 // its element's ref, resolved over the plain tab (CLI78).
 
@@ -7,13 +7,13 @@ import { ApiError } from '@livedesign/api-client';
 import {
   COMMENT_LIST_STATUSES,
   type CommentListStatus,
-  type DocumentCommentsResponse,
+  type DesignCommentsResponse,
 } from '@livedesign/api-schema';
-import { computeRefs, resolveRef, type CommentThread, type Tab } from '@livedesign/document';
-import { threadListingLines } from '@livedesign/document-views';
+import { computeRefs, resolveRef, type CommentThread, type Tab } from '@livedesign/design';
+import { threadListingLines } from '@livedesign/design-views';
 import { resolveTab } from '../addressing';
 import { defineVerb, VerbRefusal, type VerbContext } from '../define';
-import { documentOf, tabOf, tabPath } from './shared';
+import { designOf, tabOf, tabPath } from './shared';
 
 const docArg = z.string().describe('A name, id prefix or livedesign URL');
 const tabFlag = z
@@ -43,9 +43,9 @@ const EMPTY: Record<CommentListStatus, string> = {
 
 export const commentLs = defineVerb({
   id: 'comment.ls',
-  summary: 'The comment threads of a document, open by default',
+  summary: 'The comment threads of a design, open by default',
   description:
-    'Lists the comment threads of a document, or of one tab, in the outline\u2019s order: each element\u2019s ref, label, state and comments in full.',
+    'Lists the comment threads of a design, or of one tab, in the outline\u2019s order: each element\u2019s ref, label, state and comments in full.',
   behaviour: 'read',
   input: z.object({
     doc: docArg,
@@ -58,10 +58,10 @@ export const commentLs = defineVerb({
   output: z.object({ status: z.enum(COMMENT_LIST_STATUSES), threads: z.array(threadOutput) }),
   listKey: 'threads',
   run: async (ctx, { doc, tab, status }) => {
-    const document = await documentOf(ctx, doc);
-    const tabId = tab === undefined ? null : resolveTab(document.tabs, tab, doc, ctx.log).id;
-    const { threads } = await ctx.api.json<DocumentCommentsResponse>(
-      `/documents/${encodeURIComponent(document.id)}/comments?status=${status}`,
+    const design = await designOf(ctx, doc);
+    const tabId = tab === undefined ? null : resolveTab(design.tabs, tab, doc, ctx.log).id;
+    const { threads } = await ctx.api.json<DesignCommentsResponse>(
+      `/designs/${encodeURIComponent(design.id)}/comments?status=${status}`,
     );
     const shown = tabId === null ? threads : threads.filter((t) => t.tabId === tabId);
     ctx.log(`comments ${shown.length} of ${threads.length} threads`);
@@ -94,7 +94,7 @@ export const commentLs = defineVerb({
 });
 
 type Target = {
-  documentId: string;
+  designId: string;
   tabId: string;
   tabName: string;
   elementId: string;
@@ -103,8 +103,8 @@ type Target = {
 
 // The element a ref names on the tab, over every element of the plain tab (VW2), refused as the views refuse it.
 async function targetOf(ctx: VerbContext, doc: string, tab: string | undefined, ref: string) {
-  const { document, tab: summary } = await tabOf(ctx, doc, tab);
-  const { tab: plain } = await ctx.api.json<{ tab: Tab }>(tabPath(document.id, summary.id));
+  const { design, tab: summary } = await tabOf(ctx, doc, tab);
+  const { tab: plain } = await ctx.api.json<{ tab: Tab }>(tabPath(design.id, summary.id));
   const table = computeRefs(plain.elements.map((el) => el.id));
   const found = resolveRef(ref, table);
   const where = `on tab ${JSON.stringify(summary.name)}`;
@@ -125,7 +125,7 @@ async function targetOf(ctx: VerbContext, doc: string, tab: string | undefined, 
       hint: 'give more of the ref',
     });
   return {
-    documentId: document.id,
+    designId: design.id,
     tabId: summary.id,
     tabName: summary.name,
     elementId: found.id,
@@ -148,7 +148,7 @@ function lastCommentOf(target: Target, ref: string): string {
   return last.id;
 }
 
-const commentsPath = (t: Target) => `${tabPath(t.documentId, t.tabId)}/comments`;
+const commentsPath = (t: Target) => `${tabPath(t.designId, t.tabId)}/comments`;
 
 const lineOutput = z.object({ text: z.string(), id: z.string() });
 const lineText = ({ text }: { text: string }) => [text];

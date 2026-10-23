@@ -6,8 +6,8 @@ import { onMouseHover } from '@/components/primitives/hover-preview';
 import { FontGlyph } from '@/components/rich-text/rich-text-toolbar-icons';
 import { DotsIcon, NonePaddingIcon, PaddingIcon } from './palette-icons';
 import { TextSizeControl, type PresetPx } from './TextSizeControl';
-import { FONTS, legendFontPx, resolveFontStack } from '@livedesign/document';
-import type { Padding, TextSize } from '@livedesign/document';
+import { FONTS, legendFontPx, resolveFontStack } from '@livedesign/design';
+import type { Padding, TextSize } from '@livedesign/design';
 
 // The typography controls — Font / Size / Padding — as three collapsible
 // accordion sections, used by the element context menus' "Text" flyouts

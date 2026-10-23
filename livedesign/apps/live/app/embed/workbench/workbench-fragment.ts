@@ -1,6 +1,6 @@
 // The workbench page's address (docs/specs/013-workspace/workbench-embeds.md "The handoff", blueprint
-// "The workbench page" step 1, "The workspace frame"): `/embed/workbench?d=<documentId>#ticket=<ticket>` for the
-// document scope, `/embed/workbench/explorer[/folder/<id>]#ticket=<ticket>` for the workspace scope. The ticket is
+// "The workbench page" step 1, "The workspace frame"): `/embed/workbench?d=<designId>#ticket=<ticket>` for the
+// design scope, `/embed/workbench/explorer[/folder/<id>]#ticket=<ticket>` for the workspace scope. The ticket is
 // read from the fragment and the fragment cleared before any request, so it never outlives the page load in the
 // address bar, the history or a reload. The page the address names is the scope its session must carry.
 import { WORKBENCH_HANDLE_PATTERN, type WorkbenchScope } from '@livedesign/api-schema';
@@ -8,16 +8,16 @@ import { WORKBENCH_HANDLE_PATTERN, type WorkbenchScope } from '@livedesign/api-s
 type Address = Pick<Location, 'hash' | 'pathname' | 'search'>;
 type AddressHistory = Pick<History, 'replaceState'>;
 
-// What the address asks for: its scope, and the document scope's document (`?d=`).
-export type WorkbenchAddress = { scope: WorkbenchScope; documentId: string | null };
+// What the address asks for: its scope, and the design scope's design (`?d=`).
+export type WorkbenchAddress = { scope: WorkbenchScope; designId: string | null };
 
-const DOCUMENT_PAGE = '/embed/workbench';
+const DESIGN_PAGE = '/embed/workbench';
 
 export function addressOf(location: Pick<Location, 'pathname' | 'search'>): WorkbenchAddress {
-  const documentPage = location.pathname.replace(/\/+$/, '') === DOCUMENT_PAGE;
-  return documentPage
-    ? { scope: 'document', documentId: new URLSearchParams(location.search).get('d') }
-    : { scope: 'workspace', documentId: null };
+  const designPage = location.pathname.replace(/\/+$/, '') === DESIGN_PAGE;
+  return designPage
+    ? { scope: 'design', designId: new URLSearchParams(location.search).get('d') }
+    : { scope: 'workspace', designId: null };
 }
 
 export function takeTicketFromAddress(

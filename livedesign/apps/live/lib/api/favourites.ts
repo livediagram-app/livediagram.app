@@ -1,14 +1,14 @@
-// Per-user document favourites (docs/specs/013-workspace/favourites.md).
+// Per-user design favourites (docs/specs/013-workspace/favourites.md).
 //
 // A star lives in its own D1 table rather than the preferences blob:
 // favourites are meant to be unlimited, and that blob is capped at 4 KB
 // server-side (~100 UUIDs), where overflowing would start failing EVERY
 // preference write rather than just this one.
 //
-// Ids only. The Explorer already holds the personal and team document rows
+// Ids only. The Explorer already holds the personal and team design rows
 // it needs to render the Favourites view, so the server shipping full rows
 // would duplicate that and have to re-derive the team-visibility rules the
-// document list already applies.
+// design list already applies.
 
 import { API_BASE, apiHeaders, apiFetch } from './core';
 import {
@@ -17,8 +17,8 @@ import {
   offlineSetFavourite,
 } from '../offline/offline-store';
 
-// Like the document list (see api-client), this MERGES rather than
-// dispatches: the Favourites view shows cloud and offline documents in one
+// Like the design list (see api-client), this MERGES rather than
+// dispatches: the Favourites view shows cloud and offline designs in one
 // place, so it needs both sets, and the offline ones still answer when the
 // cloud fetch fails.
 export async function apiListFavourites(ownerId: string): Promise<string[]> {
@@ -50,20 +50,20 @@ export async function fetchCloudFavouriteIds(ownerId: string): Promise<string[]>
 // for a failed bookmark sync would be more annoying than useful.
 export async function apiSetFavourite(
   ownerId: string,
-  documentId: string,
+  designId: string,
   favourite: boolean,
 ): Promise<void> {
-  // An offline document has no row in `documents`, and the favourites table's
-  // document_id is a foreign key into it (migration 0040), so sending this
+  // An offline design has no row in `designs`, and the favourites table's
+  // design_id is a foreign key into it (migration 0040), so sending this
   // star to the server does not just go unused, it is REJECTED with
-  // "FOREIGN KEY constraint failed". Keep it local, as docs/specs/006-document/offline-mode.md requires of
+  // "FOREIGN KEY constraint failed". Keep it local, as docs/specs/006-design/offline-mode.md requires of
   // every offline row: no server fetch, "list, thumbnail, or otherwise".
-  if (await isOfflineId(documentId)) {
-    await offlineSetFavourite(documentId, favourite).catch(() => {});
+  if (await isOfflineId(designId)) {
+    await offlineSetFavourite(designId, favourite).catch(() => {});
     return;
   }
   try {
-    await apiFetch(`${API_BASE}/favourites/${encodeURIComponent(documentId)}`, {
+    await apiFetch(`${API_BASE}/favourites/${encodeURIComponent(designId)}`, {
       method: favourite ? 'PUT' : 'DELETE',
       headers: await apiHeaders(ownerId),
     });

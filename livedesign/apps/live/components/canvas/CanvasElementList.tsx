@@ -1,5 +1,5 @@
 import { Fragment, memo } from 'react';
-import { arrowLabelFontStack, exportFontFamily, isBoxed, type Element } from '@livedesign/document';
+import { arrowLabelFontStack, exportFontFamily, isBoxed, type Element } from '@livedesign/design';
 import type { ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
 import type {
   LayerDrawn,
@@ -15,7 +15,7 @@ import type { BoxedShared } from './boxed-shared';
 
 // Every element of the canvas in paint order (arrows and boxed views interleaved, so `bringToFront` /
 // `sendToBack` reorder arrows relative to boxes), each a PreviewedElement drawn from its drag preview
-// entry or the document. Memoised: every prop is identity-stable across editor renders that change
+// entry or the design. Memoised: every prop is identity-stable across editor renders that change
 // nothing it draws, so a press or a release that renders the editor (a drag beginning or ending) does
 // not walk the board's element views (docs/specs/008-canvas/canvas-performance.md "A move re-renders
 // what moved").

@@ -8,13 +8,13 @@ Scope, by file:
 
 | File                                                     | Role                                                                       |
 | -------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `packages/document/src/element-types.ts`                 | `LinkCardElement`, `LinkCardMeta`                                          |
-| `packages/document/src/factories.ts`                     | `createLinkCard`: 280×120, no link, no meta                                |
-| `packages/document/src/index.ts`                         | `isBoxed` includes `link-card`; `elementSupportsText` excludes it          |
-| `packages/document/src/colors.ts`                        | Default fill, stroke, text; `supportsColours` true                         |
-| `packages/document/src/themes.ts`                        | `THEME_COLOUR_FIELDS['link-card'] = []`                                    |
-| `packages/document/src/validate.ts`                      | Link card carries no extra required fields                                 |
-| `packages/document/src/svg-render.ts`                    | Export: generic `rect` branch                                              |
+| `packages/design/src/element-types.ts`                   | `LinkCardElement`, `LinkCardMeta`                                          |
+| `packages/design/src/factories.ts`                       | `createLinkCard`: 280×120, no link, no meta                                |
+| `packages/design/src/index.ts`                           | `isBoxed` includes `link-card`; `elementSupportsText` excludes it          |
+| `packages/design/src/colors.ts`                          | Default fill, stroke, text; `supportsColours` true                         |
+| `packages/design/src/themes.ts`                          | `THEME_COLOUR_FIELDS['link-card'] = []`                                    |
+| `packages/design/src/validate.ts`                        | Link card carries no extra required fields                                 |
+| `packages/design/src/svg-render.ts`                      | Export: generic `rect` branch                                              |
 | `packages/api-schema/src/index.ts`                       | `UnfurlResult`                                                             |
 | `apps/api/src/routes/unfurl.ts`                          | `handleUnfurl`, `isBlockedHost`, `parsePublicHttpUrl`, `buildUnfurlResult` |
 | `apps/api/src/index.ts`                                  | Dispatch of `unfurl`                                                       |
@@ -29,7 +29,7 @@ Scope, by file:
 | `apps/live/components/canvas/EditorCanvasHost.tsx`       | `onEditLink={isReadOnly ? undefined : setLinkPickerOpenForId}`             |
 | `apps/live/components/dialogs/LinkPickerDialog.tsx`      | The shared link editor                                                     |
 | `apps/live/components/palette/palette-tile-defs.tsx`     | `tools:link-card` tile                                                     |
-| `apps/live/app/document/[id]/useElementCreation.ts`      | `addLinkCard`: arms the draw gesture                                       |
+| `apps/live/app/design/[id]/useElementCreation.ts`        | `addLinkCard`: arms the draw gesture                                       |
 | `apps/live/hooks/canvas/useShapeDrawing.ts`              | Commit: `track('Element', 'Added', 'LinkCard')`                            |
 | `apps/live/lib/search.ts`                                | Palette search entry                                                       |
 
@@ -71,7 +71,7 @@ favicon }` on each selected link card whose link is still that URL (D50), and tr
 4. **Sync.** `meta` rides the tab body and the element op; peers and reloads never re-fetch.
 5. **Render.** `LinkCardView` trusts `meta` only when `meta.url === link.url`. The title is the
    trusted `meta.title` else the host without `www.` (GB11); the destination is the URL, the
-   document name, or the tab name. The banner shows `meta.image` until it errors, then the globe
+   design name, or the tab name. The banner shows `meta.image` until it errors, then the globe
    placeholder (D54); the favicon shows until it errors, then the kind glyph. Both reset when
    their URL changes (GB12).
 6. **Follow.** Only the info row follows (D55): a `<button aria-label="Open link">` that stops
@@ -119,7 +119,7 @@ Invariants:
 ## Interfaces and contracts
 
 ```ts
-// packages/document/src/element-types.ts
+// packages/design/src/element-types.ts
 export type LinkCardMeta = {
   url: string;
   title?: string;
@@ -194,7 +194,7 @@ export function apiUnfurl(url: string): Promise<UnfurlResult | null>;
 | E7  | Slow-drip body                          | Aborted at `FETCH_TIMEOUT_MS` (GB10)                           |
 | E8  | OG image or favicon 404 / blocked       | Globe banner / kind glyph                                      |
 | E9  | Multi-selection mixing cards and shapes | All get the link; only cards get `meta`                        |
-| E10 | Non-URL link                            | No unfurl; title "Document" / "Tab" / "Element" `[QB11]`       |
+| E10 | Non-URL link                            | No unfurl; title "Design" / "Tab" / "Element" `[QB11]`         |
 | E11 | View role                               | No double-click edit; info row still follows                   |
 | E12 | Stored `javascript:` URL                | `isSafeFollowUrl` refuses to open it                           |
 
@@ -257,24 +257,24 @@ LinkUnfurled` exist.
 
 ## Testing
 
-| Rule                                                    | Test                                                        | File                                             |
-| ------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------ |
-| Blocked hosts and ranges                                | `blocks loopback / localhost / .local / metadata + private` | `apps/api/src/routes/unfurl.test.ts`             |
-| Public hosts allowed                                    | `allows public hosts + public IPs`                          | `apps/api/src/routes/unfurl.test.ts`             |
-| Domains starting `fc` / `fd` allowed `[QB12]`           | none                                                        |                                                  |
-| http(s) only                                            | `parsePublicHttpUrl` suite                                  | `apps/api/src/routes/unfurl.test.ts`             |
-| og:\* precedence, relative resolution, favicon fallback | `buildUnfurlResult` suite                                   | `apps/api/src/routes/unfurl.test.ts`             |
-| Rate limit, redirect re-check, non-HTML, timeout, cap   | none (GB16)                                                 |                                                  |
-| 280×120 factory, no link or meta                        | `createLinkCard is a 280x120 boxed bookmark…`               | `packages/document/src/factories.test.ts`        |
-| Drawn to size                                           | `draws a link card to the dragged box`                      | `apps/live/lib/draw-commit.test.ts`              |
-| Draw banner copy                                        | `drawBannerMessage` case                                    | `apps/live/lib/draw-mode.test.ts`                |
-| Telemetry token `LinkCard`                              | `elementTelemetryType` case                                 | `apps/live/lib/element-telemetry.test.ts`        |
-| Boxed                                                   | `isBoxed is true for every boxed-element kind…`             | `packages/document/src/geometry.test.ts`         |
-| No inline text                                          | `is false for label-less kinds…`                            | `packages/document/src/element-has-text.test.ts` |
-| Shadow supported                                        | `supportsShadow` suite                                      | `packages/document/src/shadow.test.ts`           |
-| Theme leaves cards alone                                | none                                                        |                                                  |
-| Stale-meta guard, unfurl only for cards, meta commit    | none (GB9, GB11, GB16)                                      |                                                  |
-| Contrast                                                | none (GB14)                                                 |                                                  |
+| Rule                                                    | Test                                                        | File                                           |
+| ------------------------------------------------------- | ----------------------------------------------------------- | ---------------------------------------------- |
+| Blocked hosts and ranges                                | `blocks loopback / localhost / .local / metadata + private` | `apps/api/src/routes/unfurl.test.ts`           |
+| Public hosts allowed                                    | `allows public hosts + public IPs`                          | `apps/api/src/routes/unfurl.test.ts`           |
+| Domains starting `fc` / `fd` allowed `[QB12]`           | none                                                        |                                                |
+| http(s) only                                            | `parsePublicHttpUrl` suite                                  | `apps/api/src/routes/unfurl.test.ts`           |
+| og:\* precedence, relative resolution, favicon fallback | `buildUnfurlResult` suite                                   | `apps/api/src/routes/unfurl.test.ts`           |
+| Rate limit, redirect re-check, non-HTML, timeout, cap   | none (GB16)                                                 |                                                |
+| 280×120 factory, no link or meta                        | `createLinkCard is a 280x120 boxed bookmark…`               | `packages/design/src/factories.test.ts`        |
+| Drawn to size                                           | `draws a link card to the dragged box`                      | `apps/live/lib/draw-commit.test.ts`            |
+| Draw banner copy                                        | `drawBannerMessage` case                                    | `apps/live/lib/draw-mode.test.ts`              |
+| Telemetry token `LinkCard`                              | `elementTelemetryType` case                                 | `apps/live/lib/element-telemetry.test.ts`      |
+| Boxed                                                   | `isBoxed is true for every boxed-element kind…`             | `packages/design/src/geometry.test.ts`         |
+| No inline text                                          | `is false for label-less kinds…`                            | `packages/design/src/element-has-text.test.ts` |
+| Shadow supported                                        | `supportsShadow` suite                                      | `packages/design/src/shadow.test.ts`           |
+| Theme leaves cards alone                                | none                                                        |                                                |
+| Stale-meta guard, unfurl only for cards, meta commit    | none (GB9, GB11, GB16)                                      |                                                |
+| Contrast                                                | none (GB14)                                                 |                                                |
 
 ## Constants and configuration
 

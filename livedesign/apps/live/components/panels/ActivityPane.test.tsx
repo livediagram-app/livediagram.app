@@ -15,8 +15,8 @@ vi.mock('@/app/explorer/views', () => ({ SkeletonRows: () => <div>loading rows</
 import { ActivityPane } from './ActivityPane';
 
 const place = {
-  documentId: 'd1',
-  documentName: 'Payments',
+  designId: 'd1',
+  designName: 'Payments',
   teamId: 'tm',
   via: 'team' as const,
   shareCode: null,
@@ -47,7 +47,7 @@ const thread = (over: Partial<ActivityThread> = {}): ThreadRow => ({
   latest: { text: 'Any news?', authorName: 'Priya', authorColor: '#336699', at: 4 },
   firstAt: 1,
   youCommented: false,
-  onYourDocument: true,
+  onYourDesign: true,
   mentionsYou: false,
   ...over,
 });
@@ -70,7 +70,7 @@ describe('ActivityPane', () => {
       <ActivityPane feed={feed({ assignedToMe: [{ kind: 'action', ...action('a1', true) }] })} />,
     );
     expect(screen.getByText('Assigned to You')).toBeTruthy();
-    expect(linkTo('Action a1').getAttribute('href')).toBe('/document/d1#t=t1&el=e-a1&open=action');
+    expect(linkTo('Action a1').getAttribute('href')).toBe('/design/d1#t=t1&el=e-a1&open=action');
     fireEvent.click(linkTo('Action a1'));
     expect(track).toHaveBeenCalledWith('Activity', 'Selected', 'Action');
   });
@@ -86,20 +86,20 @@ describe('ActivityPane', () => {
     );
     expect(screen.getByText('You Assigned')).toBeTruthy();
     expect(screen.getByText('Open Comment Threads')).toBeTruthy();
-    expect(screen.getByText('Your document')).toBeTruthy();
+    expect(screen.getByText('Your design')).toBeTruthy();
     expect(screen.getByText('Mentioned You')).toBeTruthy();
     fireEvent.click(linkTo('Pay'));
     expect(track).toHaveBeenCalledWith('Activity', 'Selected', 'Thread');
   });
 
-  // docs/specs/013-workspace/inbox.md §1, §2.6: a row from a document saved only in this browser says so, as a
+  // docs/specs/013-workspace/inbox.md §1, §2.6: a row from a design saved only in this browser says so, as a
   // label inside the row's link; a cloud row carries no pill.
   it('marks a row in This Browser with the This Browser pill, and no other row', () => {
     render(
       <ActivityPane
         feed={feed({
           assignedToMe: [
-            { kind: 'action', ...action('local', true), documentName: 'Retro', local: true },
+            { kind: 'action', ...action('local', true), designName: 'Retro', local: true },
             { kind: 'action', ...action('cloud', true) },
           ],
         })}
@@ -108,7 +108,7 @@ describe('ActivityPane', () => {
     const local = linkTo('Action local');
     expect(local.textContent).toContain('This Browser');
     expect(local.querySelector('a')).toBeNull();
-    expect(local.getAttribute('href')).toBe('/document/d1#t=t1&el=e-local&open=action');
+    expect(local.getAttribute('href')).toBe('/design/d1#t=t1&el=e-local&open=action');
     expect(linkTo('Action cloud').textContent).not.toContain('This Browser');
     expect(screen.getAllByText('This Browser')).toHaveLength(1);
   });

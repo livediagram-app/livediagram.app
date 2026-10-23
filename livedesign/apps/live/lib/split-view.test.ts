@@ -139,7 +139,7 @@ describe('split view rules', () => {
     expect(restoredPair(null, 'a', ['a'])).toBeNull();
   });
 
-  it('remembers the pair per document and the width once', () => {
+  it('remembers the pair per design and the width once', () => {
     expect(readStoredPair('doc')).toBeNull();
     writeStoredPair('doc', { leftId: 'a', rightId: 'b' });
     expect(readStoredPair('doc')).toEqual({ leftId: 'a', rightId: 'b' });

@@ -79,7 +79,7 @@ export default function HelpHome() {
       <HelpHero
         home
         title="How can we help?"
-        lede="Guides and answers for every part of livedesign, from your first document onwards."
+        lede="Guides and answers for every part of livedesign, from your first design onwards."
       >
         <div className="mx-auto mt-5 flex flex-wrap justify-center gap-2">
           <span className="inline-flex items-center gap-2 rounded-full border border-(--hero-chip-border) bg-(--hero-chip-bg) px-3 py-1 text-xs font-medium text-(--hero-chip-text)">

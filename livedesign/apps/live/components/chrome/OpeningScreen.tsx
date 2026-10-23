@@ -1,7 +1,7 @@
-import { DocumentLoading } from './DocumentLoading';
+import { DesignLoading } from './DesignLoading';
 
-// The editor's "opening" wait (docs/specs/007-editor/new-document-route.md), wherever it shows:
-// the editor chunk loading after /new's handoff, and the document loading.
+// The editor's "opening" wait (docs/specs/007-editor/new-design-route.md), wherever it shows:
+// the editor chunk loading after /new's handoff, and the design loading.
 export function OpeningScreen() {
-  return <DocumentLoading stage="opening" />;
+  return <DesignLoading stage="opening" />;
 }

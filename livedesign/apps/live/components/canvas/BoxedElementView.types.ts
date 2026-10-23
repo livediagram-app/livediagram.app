@@ -6,7 +6,7 @@ import type {
   IconPosition,
   TextRun,
   WebRows,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import type { DragMode } from '@/lib/canvas';
 
 export type BoxedElementViewProps = {
@@ -36,7 +36,7 @@ export type BoxedElementViewProps = {
   // Shift-click on an element fires this with the element id so the
   // page can toggle membership in the marquee multi-selection.
   onShiftSelect?: (id: string) => void;
-  // Whole-layer opacity (docs/specs/006-document/layers.md), multiplied over the element's own
+  // Whole-layer opacity (docs/specs/006-design/layers.md), multiplied over the element's own
   // `opacity`. Undefined = 1 (kept undefined at full opacity so the
   // memoised view's props stay stable).
   layerOpacity?: number;
@@ -53,14 +53,14 @@ export type BoxedElementViewProps = {
   // edit toolbar (docs/specs/008-canvas/canvas-and-palette.md). They operate on the current selection (= the
   // editing element). Optional so read-only paths can omit them.
   onSetTextAlign?: (
-    x: import('@livedesign/document').TextAlignX,
-    y: import('@livedesign/document').TextAlignY,
+    x: import('@livedesign/design').TextAlignX,
+    y: import('@livedesign/design').TextAlignY,
   ) => void;
   onCommitTable: (
     id: string,
     patch: Partial<
       Pick<
-        import('@livedesign/document').TableElement,
+        import('@livedesign/design').TableElement,
         'cells' | 'colWidths' | 'rowHeights' | 'cellStyles'
       >
     >,
@@ -68,7 +68,7 @@ export type BoxedElementViewProps = {
   // Theme-derived default slice colours for pie charts (docs/specs/009-elements/pie-chart.md).
   chartPalette?: readonly string[];
   onCancelEdit: () => void;
-  onFollowLink: (link: import('@livedesign/document').ElementLink) => void;
+  onFollowLink: (link: import('@livedesign/design').ElementLink) => void;
   onOpenComments: (id: string) => void;
   // Open the element's assigned-action popover (docs/specs/012-collaboration/assigned-actions.md). The badge only
   // renders while the element carries an OPEN action; everyone (including
@@ -77,12 +77,12 @@ export type BoxedElementViewProps = {
   onOpenAction: (id: string) => void;
   // Image element context: the editor passes these so the inner
   // ImageElementView can fetch the bitmap with the right
-  // owner / share / document identity (the bytes are auth-gated by
+  // owner / share / design identity (the bytes are auth-gated by
   // the API, see docs/specs/009-elements/images.md). View-role visitors are still allowed to
   // see images; they just can't upload new ones via the picker.
   imageContext?: {
     ownerId: string;
-    documentId: string;
+    designId: string;
     shareCode: string | null;
     onOpenPicker?: (elementId: string) => void;
   };
@@ -127,7 +127,7 @@ export type BoxedElementViewProps = {
   // True when the tab as a whole is locked. Shows the LockBadge on
   // every element regardless of its own per-element lock state.
   tabLocked: boolean;
-  // This document's tabs (id + name), so a link badge's hover card can
+  // This design's tabs (id + name), so a link badge's hover card can
   // name the tab/element it points at (docs/specs/008-canvas/canvas-and-palette.md). Stable reference.
   tabSummaries: { id: string; name: string }[];
   // True for view-role share visitors (session read-only). Shape / text

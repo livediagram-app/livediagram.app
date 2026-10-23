@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, createSticky, createText, type Element } from '@livedesign/document';
-import { SHAPE_MOTIONS } from '@livedesign/document';
+import { createShape, createSticky, createText, type Element } from '@livedesign/design';
+import { SHAPE_MOTIONS } from '@livedesign/design';
 import { animationCategoriesOf, sharedShapeAnimations } from './AnimationSections';
 
 const of = (type: string) =>

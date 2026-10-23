@@ -14,10 +14,10 @@ import {
 const none = {
   loading: false,
   failed: false,
-  documents: 0,
+  designs: 0,
   shared: 0,
-  teamDocuments: 0,
-  offlineDocuments: 0,
+  teamDesigns: 0,
+  offlineDesigns: 0,
 };
 
 describe('isFirstRun', () => {
@@ -34,7 +34,7 @@ describe('isFirstRun', () => {
   });
 
   it('is not a first run with anything at all: own, shared, team or this browser', () => {
-    for (const key of ['documents', 'shared', 'teamDocuments', 'offlineDocuments'] as const) {
+    for (const key of ['designs', 'shared', 'teamDesigns', 'offlineDesigns'] as const) {
       expect(isFirstRun({ ...none, [key]: 1 }), key).toBe(false);
     }
   });

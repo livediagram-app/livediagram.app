@@ -1,16 +1,16 @@
-// Test fixtures for Home's components: one document, a person, an action, a group, a Jump Back In
-// document.
+// Test fixtures for Home's components: one design, a person, an action, a group, a Jump Back In
+// design.
 import type {
   HomeAction,
-  HomeDocument,
+  HomeDesign,
   HomeGroup,
   HomePerson,
   HomeVerb,
 } from '@livedesign/api-schema';
 import type { JumpBackInItem } from '@/app/explorer/home/home-model';
 
-export const fixtureDoc: HomeDocument = {
-  documentId: 'd1',
+export const fixtureDoc: HomeDesign = {
+  designId: 'd1',
   name: 'Payments architecture',
   via: 'team',
   shareCode: null,
@@ -48,7 +48,7 @@ export function fixtureGroup(
   }));
   return {
     ...fixtureDoc,
-    id: `${fixtureDoc.documentId}:2026-08-30`,
+    id: `${fixtureDoc.designId}:2026-08-30`,
     day: '2026-08-30',
     summary: over.people.length > 1,
     verbs,
@@ -59,12 +59,12 @@ export function fixtureGroup(
 }
 
 export const fixtureJumpItem = (
-  documentId: string,
+  designId: string,
   over: Partial<JumpBackInItem> = {},
 ): JumpBackInItem => ({
-  documentId,
-  name: `Doc ${documentId}`,
-  href: `/document/${documentId}`,
+  designId,
+  name: `Doc ${designId}`,
+  href: `/design/${designId}`,
   savedAt: 1,
   empty: true,
   shareCode: null,

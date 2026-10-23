@@ -9,7 +9,7 @@ import { Spinner } from '@/components/palette/template-picker-icons';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { useLocalMovePrompt } from '@/hooks/persistence/useLocalMovePrompt';
 
-// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving documents in This Browser
+// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving designs in This Browser
 // after signing in"), mounted by the Explorer and the editor. Renders nothing until there is
 // something to offer.
 export function LocalMovePrompt({ enabled = true }: { enabled?: boolean }) {
@@ -18,7 +18,7 @@ export function LocalMovePrompt({ enabled = true }: { enabled?: boolean }) {
   const { phase } = prompt;
   if (phase.kind === 'idle') return null;
 
-  const title = 'Move Documents in This Browser to Your Account?';
+  const title = 'Move Designs in This Browser to Your Account?';
   if (phase.kind === 'moving') {
     return (
       <Dialog open onClose={() => {}} ariaLabel={title} size="md">
@@ -39,7 +39,7 @@ export function LocalMovePrompt({ enabled = true }: { enabled?: boolean }) {
   if (phase.kind === 'partial') {
     return (
       <Dialog open onClose={prompt.finish} ariaLabel={title} size="md">
-        <DialogHeader title="Some Documents Stayed in This Browser">
+        <DialogHeader title="Some Designs Stayed in This Browser">
           <DialogCloseButton onClick={prompt.finish} />
         </DialogHeader>
         <div className="px-6 py-5 text-sm text-slate-700 dark:text-slate-200">
@@ -54,7 +54,7 @@ export function LocalMovePrompt({ enabled = true }: { enabled?: boolean }) {
             ))}
           </ul>
           <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
-            Try Sync Document on it later from the Explorer.
+            Try Sync Design on it later from the Explorer.
           </p>
         </div>
         <DialogFooter>
@@ -77,7 +77,7 @@ export function LocalMovePrompt({ enabled = true }: { enabled?: boolean }) {
       </DialogHeader>
       <div className="px-6 py-5">
         <ImportChecklist
-          legend="Documents in This Browser"
+          legend="Designs in This Browser"
           rows={prompt.rows}
           checked={prompt.checked}
           onToggle={prompt.toggle}

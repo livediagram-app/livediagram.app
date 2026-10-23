@@ -17,7 +17,7 @@ export default function PrivacyAndSecurityPage() {
     <BrowsePage
       listing={{ appPath: '/privacy-and-security/', articles: articles }}
       title="Privacy and Security"
-      lede="How your data is handled and how to keep your documents safe."
+      lede="How your data is handled and how to keep your designs safe."
     >
       {articles.map((article) => (
         <ArticleCard key={article.slug} article={article} />

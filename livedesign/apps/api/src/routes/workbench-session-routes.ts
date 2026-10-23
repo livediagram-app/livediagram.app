@@ -1,6 +1,6 @@
 // POST /api/workbench/sessions and DELETE /api/workbench/sessions/current
 // (docs/specs/013-workspace/blueprints/workbench-embeds.md "Redemption"). Redemption is credential-free: the
-// ticket is the bearer. A document session acts as the ticket's owner on its one document, at the lower of the
+// ticket is the bearer. A design session acts as the ticket's owner on its one design, at the lower of the
 // ticket's level and the owner's access now; a workspace session acts as them in their workspace at the ticket's
 // level, each route capping it by their access now. Both last WORKBENCH_SESSION_TTL_MS or until the token's expiry.
 
@@ -25,7 +25,7 @@ import {
 } from '../db/workbench';
 import { badRequest, forbidden, json, noContent } from '../responses';
 import { readBody, type RouteContext } from './context';
-import { ownerDocumentAccess } from './workbench-access';
+import { ownerDesignAccess } from './workbench-access';
 
 export async function redeemWorkbenchTicket(ctx: RouteContext): Promise<Response> {
   if (ctx.workbench) return forbidden('workbench_confined');
@@ -44,13 +44,13 @@ export async function redeemWorkbenchTicket(ctx: RouteContext): Promise<Response
   }
   const t = consumed.ticket;
   let ceiling = t.role;
-  if (t.scope === 'document') {
-    const access = await ownerDocumentAccess(ctx.env, t.documentId, t.ownerId);
+  if (t.scope === 'design') {
+    const access = await ownerDesignAccess(ctx.env, t.designId, t.ownerId);
     if (access instanceof Response) {
       console.warn('[workbench] session-refused', {
         reason: 'access',
         scope: t.scope,
-        documentId: t.documentId,
+        designId: t.designId,
         tokenId: t.tokenId,
       });
       return access;
@@ -60,9 +60,9 @@ export async function redeemWorkbenchTicket(ctx: RouteContext): Promise<Response
 
   const role = capWorkbenchRole(ceiling, t.tokenReadOnly ? 'view' : undefined);
   const reach: WorkbenchReach =
-    t.scope === 'document'
-      ? { scope: 'document', documentId: t.documentId, folderId: null }
-      : { scope: 'workspace', documentId: null, folderId: t.folderId };
+    t.scope === 'design'
+      ? { scope: 'design', designId: t.designId, folderId: null }
+      : { scope: 'workspace', designId: null, folderId: t.folderId };
   const session = generateWorkbenchSecret();
   const id = crypto.randomUUID();
   const expiresAt = Math.min(now + WORKBENCH_SESSION_TTL_MS, t.tokenExpiresAt);
@@ -82,14 +82,14 @@ export async function redeemWorkbenchTicket(ctx: RouteContext): Promise<Response
   const participant = await getParticipant(ctx.env, t.ownerId);
   console.log('[workbench] session-opened', {
     scope: t.scope,
-    documentId: t.documentId,
+    designId: t.designId,
     tokenId: t.tokenId,
     sessionPrefix: sessionPrefixOf(id),
     role,
   });
   const answer: WorkbenchSessionResponse = {
     session,
-    ...(reach.scope === 'document' ? { ...reach, tabId: t.tabId } : { ...reach, tabId: null }),
+    ...(reach.scope === 'design' ? { ...reach, tabId: t.tabId } : { ...reach, tabId: null }),
     origin: t.origin,
     role,
     expiresAt,
@@ -112,7 +112,7 @@ export async function endCurrentWorkbenchSession(ctx: RouteContext): Promise<Res
   console.log('[workbench] session-ended', {
     reason: 'ended',
     scope: workbench.scope,
-    documentId: workbench.documentId,
+    designId: workbench.designId,
     tokenId: workbench.tokenId,
     sessionPrefix: sessionPrefixOf(workbench.sessionId),
   });

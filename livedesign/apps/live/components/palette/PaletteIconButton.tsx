@@ -1,4 +1,4 @@
-import { SHAPE_DEFAULT_SIZE, type ShapeKind } from '@livedesign/document';
+import { SHAPE_DEFAULT_SIZE, type ShapeKind } from '@livedesign/design';
 import { PALETTE_DND_MIME } from '@/lib/icons';
 import { setPaletteDragPreview, suppressNativeDragImage } from '@/lib/palette-drag-preview';
 import { tileCaption } from './tile-caption';
@@ -71,7 +71,7 @@ type IconButtonProps = {
   active?: boolean;
   // Single-key shortcut letter (e.g. "R"). Renders a corner badge
   // whenever the user is holding Cmd/Ctrl, so the palette becomes a
-  // self-documenting cheat sheet without permanent visual clutter.
+  // self-designing cheat sheet without permanent visual clutter.
   // The shortcut itself is bound centrally in useEditorKeyboardShortcuts;
   // this prop is purely the visual reveal.
   shortcut?: string;

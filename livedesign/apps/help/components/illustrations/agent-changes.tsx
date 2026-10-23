@@ -1,6 +1,6 @@
 // Agent changesets in the editor (docs/specs/024-agents/agent-changesets.md "In the editor"): the
 // change arrives outlined in its author's colour, and an information toast at the bottom names it
-// with Show and Undo (apps/live/hooks/ui/useToast.tsx, apps/live/app/document/[id]/useChangesetFeed.ts).
+// with Show and Undo (apps/live/hooks/ui/useToast.tsx, apps/live/app/design/[id]/useChangesetFeed.ts).
 
 import { Arrow, Button, Label, Scene, Shape } from './primitives';
 

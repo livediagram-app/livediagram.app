@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { Element } from '@livedesign/document';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import type { Element } from '@livedesign/design';
+import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';

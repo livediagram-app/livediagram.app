@@ -24,22 +24,22 @@ const CAPABILITIES = [
   {
     icon: lucideGlyph(lucideLayoutGrid, 20),
     title: 'Templates',
-    body: 'Starts a document from any template in the library, from a logo to a wireframe, then fills it in.',
+    body: 'Starts a design from any template in the library, from a logo to a wireframe, then fills it in.',
   },
   {
     icon: lucideGlyph(lucideSearch, 20),
     title: 'Find and read',
-    body: 'Searches your documents and your teams’, and reads any tab back as an outline and a picture.',
+    body: 'Searches your designs and your teams’, and reads any tab back as an outline and a picture.',
   },
   {
     icon: lucideGlyph(lucideShare2, 20),
     title: 'Share links',
-    body: 'Turns a document into a link for your team, at the level of access you ask for.',
+    body: 'Turns a design into a link for your team, at the level of access you ask for.',
   },
   {
     icon: lucideGlyph(lucideUndo2, 20),
     title: 'Live, and undoable',
-    body: 'Changes land on an open document as they happen, outlined so you can see them, with Undo one click away.',
+    body: 'Changes land on an open design as they happen, outlined so you can see them, with Undo one click away.',
   },
 ];
 

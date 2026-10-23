@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, type Ref } from 'react';
-import type { Element as CanvasElement } from '@livedesign/document';
+import type { Element as CanvasElement } from '@livedesign/design';
 import { doubleTapFitsTab, doubleTapFrameView, doubleTapZoomView } from '@/lib/double-tap-zoom';
 import { tabFitView } from '@/lib/tab-fit-view';
 import { glideViewport, type ViewPose } from '@/lib/viewport-glide';

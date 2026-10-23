@@ -18,18 +18,18 @@ import { ExplorerProvider } from '../ExplorerContext';
 import type { ExplorerStateValue } from '../useExplorerState';
 import { useFirstRun } from './useFirstRun';
 
-const KEY = 'livedesign:v2:home-has-documents';
+const KEY = 'livedesign:v2:home-has-designs';
 
 function wrap(over: Partial<Record<string, unknown>> = {}) {
   const value = {
     ownerId: 'me',
     loading: false,
-    documents: [],
+    designs: [],
     shared: [],
-    teamDocuments: [],
-    offlineDocuments: [],
+    teamDesigns: [],
+    offlineDesigns: [],
     clerkUserId: null,
-    failedReads: { documents: false, shared: false },
+    failedReads: { designs: false, shared: false },
     ...over,
   } as unknown as ExplorerStateValue;
   return ({ children }: { children: ReactNode }) => (
@@ -69,17 +69,17 @@ describe('useFirstRun', () => {
     );
   });
 
-  it('is not a first run with a document', () => {
+  it('is not a first run with a design', () => {
     const { result } = renderHook(() => useFirstRun(), {
-      wrapper: wrap({ documents: [{ id: 'a' }] }),
+      wrapper: wrap({ designs: [{ id: 'a' }] }),
     });
     expect(result.current).toMatchObject({ firstRun: false, heroFirstRun: false });
   });
 
   it('is no first run when a list failed to load, and remembers nothing from it', () => {
     for (const failedReads of [
-      { documents: true, shared: false },
-      { documents: false, shared: true },
+      { designs: true, shared: false },
+      { designs: false, shared: true },
     ]) {
       const { result } = renderHook(() => useFirstRun(), { wrapper: wrap({ failedReads }) });
       expect(result.current).toMatchObject({ firstRun: false, heroFirstRun: false });
@@ -88,7 +88,7 @@ describe('useFirstRun', () => {
   });
 
   it('remembers the answer for this person once the lists land', () => {
-    renderHook(() => useFirstRun(), { wrapper: wrap({ documents: [{ id: 'a' }] }) });
+    renderHook(() => useFirstRun(), { wrapper: wrap({ designs: [{ id: 'a' }] }) });
     expect(JSON.parse(localStorage.getItem(KEY)!)).toEqual({ ownerId: 'me', has: true });
   });
 

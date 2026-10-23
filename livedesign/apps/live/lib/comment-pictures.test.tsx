@@ -65,7 +65,7 @@ describe('comment pictures', () => {
     expect(c2.result.current).toBeNull();
     rerender();
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(fetchMock.mock.calls[0]![0]).toBe('/api/documents/d1/tabs/t1/comment-pictures');
+    expect(fetchMock.mock.calls[0]![0]).toBe('/api/designs/d1/tabs/t1/comment-pictures');
     expect(fetchMock.mock.calls[0]![1]).toEqual({ headers: { 'X-Share-Code': 'CODE' } });
   });
 

@@ -1,5 +1,5 @@
-import type { ArrowElement, Element, Tab, ThemeDefinition } from '@livedesign/document';
-import { COMPONENT_SIZE } from '@livedesign/document';
+import type { ArrowElement, Element, Tab, ThemeDefinition } from '@livedesign/design';
+import { COMPONENT_SIZE } from '@livedesign/design';
 import { describe, expect, it } from 'vitest';
 import {
   buildDrawnArrow,

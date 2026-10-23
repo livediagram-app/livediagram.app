@@ -20,7 +20,7 @@ words genuinely do not fit: the message wraps first, and the actions then drop t
 to the toast's end. The close button stays in the top row's corner, whatever wraps.
 
 The copy is written to fit. A message is one short sentence, or two very short ones: what happened, then what to do
-("Couldn't duplicate that document. Try again."). Aim for about 50 characters, so it sits on one line on a laptop with
+("Couldn't duplicate that design. Try again."). Aim for about 50 characters, so it sits on one line on a laptop with
 its actions; never over 90. Filler ("Please", "so your recent changes", a restated reason) is cut first.
 
 - **Messages are sentence case**, ending with a full stop when they are a sentence with advice, and without one when
@@ -30,7 +30,7 @@ its actions; never over 90. Filler ("Please", "so your recent changes", a restat
 
 ## Naming what it acted on
 
-A toast about a document, a folder or a tab names it, so someone who acted on one of several, or on a row that has
+A toast about a design, a folder or a tab names it, so someone who acted on one of several, or on a row that has
 scrolled away, can tell which one it was: "“Roadmap” deleted", "“Roadmap” moved to “Plans”", "Could not rename
 “Plans”. Try again.", "“Slides” added to “Roadmap”".
 
@@ -38,12 +38,12 @@ scrolled away, can tell which one it was: "“Roadmap” deleted", "“Roadmap�
 - **It is cut to 30 characters**, the last one an ellipsis (`TOAST_NAME_MAX`, `apps/live/lib/toast-name.ts`), cut
   between characters so an emoji is never split. Two cut names and the words round them stay under the 90-character
   ceiling; where they would not, the advice is dropped first ("Could not add “Slides” to “Roadmap”.").
-- **A blank or unknown name falls back to the generic word**: "Document deleted", "Could not move the document. Try
+- **A blank or unknown name falls back to the generic word**: "Design deleted", "Could not move the design. Try
   again.", "moved to the team library". The surface never shows empty quotes.
 - **Where it went is named too**: the folder, or My Work. A team is named when the surface knows it, else "the
   team library".
-- The wording lives in one place per family, so every surface says the same: `apps/live/lib/document-toast-copy.ts`
-  (delete, restore, move, duplicate) and `apps/live/lib/write-failure-copy.ts` (a failed folder or document write).
+- The wording lives in one place per family, so every surface says the same: `apps/live/lib/design-toast-copy.ts`
+  (delete, restore, move, duplicate) and `apps/live/lib/write-failure-copy.ts` (a failed folder or design write).
 
 ## Tones
 
@@ -77,7 +77,7 @@ lists its decline before its confirm.
 - A plain toast times out after its tone's time (above).
 - **Every toast times out; none stays for good.** One with buttons (an action toast, an offer) stays up for 10 seconds
   (`TOAST_ANSWER_TIMEOUT_MS`), long enough to reach for Undo, and then leaves. What its button offered is still
-  reachable elsewhere (a deleted document waits in the Trash, an agent's change in the document's history), so a
+  reachable elsewhere (a deleted design waits in the Trash, an agent's change in the design's history), so a
   toast that has gone loses nothing. The pause below is how someone who needs longer keeps it (WCAG 2.2.1).
 - **Hovering or focusing a toast pauses its timer**, and leaving it resumes with the time it had left, never a fresh
   start, so a toast someone is reading never disappears under them. A hidden page (another browser tab) pauses it too.

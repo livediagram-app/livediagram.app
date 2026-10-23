@@ -23,7 +23,7 @@ import {
   type SankeyFlow,
   type SankeyNodeStyle,
   type ShapeElement,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { SankeyView } from '@/components/canvas/SankeyView';

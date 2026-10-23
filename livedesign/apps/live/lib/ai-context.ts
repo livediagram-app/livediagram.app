@@ -4,7 +4,7 @@
 // with a message saying so rather than "Something went wrong".
 
 import { AI_MAX_ELEMENTS } from '@livedesign/api-schema';
-import type { Element } from '@livedesign/document';
+import type { Element } from '@livedesign/design';
 
 type AiContext = { ok: true; elements: Element[] } | { ok: false; message: string };
 

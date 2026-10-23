@@ -1,5 +1,5 @@
 // The editor-window scenes (docs/specs/019-marketing/marketing-site.md "Story beats"): one live
-// document per kind of page at work, each in the editor window it is drawn in. Each landing beat and
+// design per kind of page at work, each in the editor window it is drawn in. Each landing beat and
 // feature category page plays the one that shows its feature (FeatureScene.tsx), so a scene is
 // declared once, here.
 //
@@ -12,7 +12,7 @@ export type HeroSceneKey = 'slides' | 'logo' | 'together';
 
 export type HeroSceneData = {
   key: HeroSceneKey;
-  // The document's name in the window's header.
+  // The design's name in the window's header.
   title: string;
   tabs: TabDef[];
   shared: boolean;

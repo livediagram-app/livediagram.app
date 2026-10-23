@@ -1,5 +1,5 @@
-import type { EmbedProvider } from '@livedesign/document';
-import type { ShapeKind } from '@livedesign/document';
+import type { EmbedProvider } from '@livedesign/design';
+import type { ShapeKind } from '@livedesign/design';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTint } from '@/components/palette/palette-controls';
 
@@ -80,7 +80,7 @@ export type PaletteProps = {
   // on either end by default (i.e. a plain line). Users can flip the
   // arrowEnds afterwards via the Pointer accordion.
   // `ends`: the Arrow tool's pointer at its end by default, `'none'` for the Line tool.
-  onAddArrow: (ends?: import('@livedesign/document').ArrowEnds) => void;
+  onAddArrow: (ends?: import('@livedesign/design').ArrowEnds) => void;
   // Pencil tool: enters one-shot freehand draw mode. Unlike the
   // other add-element callbacks, this never drops at the viewport
   // centre, the pencil is gestural by design. See docs/specs/008-canvas/canvas-and-palette.md Pencil

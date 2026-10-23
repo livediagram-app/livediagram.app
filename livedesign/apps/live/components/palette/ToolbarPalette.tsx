@@ -1,7 +1,7 @@
 'use client';
 
 import { onPaletteCategoryRequest } from '@/lib/palette-category-request';
-import type { Element } from '@livedesign/document';
+import type { Element } from '@livedesign/design';
 import {
   useEffect,
   useEffectEvent,

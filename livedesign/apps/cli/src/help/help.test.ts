@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { COMMAND_ALIASES, defineVerb, RESOURCES, TOP_LEVEL, VERBS } from '@livedesign/agent-verbs';
-import { estimateTokens } from '@livedesign/document-views';
+import { estimateTokens } from '@livedesign/design-views';
 import {
   HELP_RESOURCE_MAX_TOKENS,
   HELP_TOP_MAX_TOKENS,
@@ -22,7 +22,7 @@ describe('help', () => {
       ...Object.keys(COMMAND_ALIASES),
     ])
       expect(named(word), word).toBe(true);
-    expect(text).toContain('document (doc)');
+    expect(text).toContain('design (doc)');
     expect(text).toMatch(
       /\n {2}presence +set, clear\n {2}wait, watch +block until, or stream, comments and changes\n/,
     );

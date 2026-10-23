@@ -1,6 +1,6 @@
 import type { PickerFolder } from './PlacementBrowser';
 
-// Where the placement browser opens for a selection (docs/specs/006-document/save-locations.md,
+// Where the placement browser opens for a selection (docs/specs/006-design/save-locations.md,
 // "It opens where its selection is"; blueprint default-folders.md "Browser view"): a folder opens
 // the level that lists it, so its own card is the checked one; a space's root opens the overview.
 

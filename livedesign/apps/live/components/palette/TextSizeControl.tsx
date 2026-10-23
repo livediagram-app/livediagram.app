@@ -16,7 +16,7 @@ import {
   TEXT_PX_MIN,
   type TextSize,
   type TextSizePreset,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { onMouseHover } from '@/components/primitives/hover-preview';
 import { Tooltip } from '@livedesign/ui';
 import { PreviewSliderRow } from '@/components/primitives/PreviewSliderRow';

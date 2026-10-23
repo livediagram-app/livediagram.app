@@ -8,7 +8,7 @@ import {
   type Element,
   type Page,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { pageElementBuckets } from './page-element-buckets';
 import { slideThumbFor, tabArrowLabels } from './slide-thumb';
 

@@ -11,7 +11,7 @@ import {
   PROCESS_MIN_STEPS,
   STATS_MIN,
   type WebRows,
-} from '@livedesign/document';
+} from '@livedesign/design';
 
 import {
   ConceptRowsEditor,

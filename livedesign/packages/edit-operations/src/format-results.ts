@@ -110,6 +110,6 @@ export function formatResultFooter(footer: ResultFooter): string {
     `rev ${footer.previousRev}→${footer.rev}${rebased}`,
     footer.changesetId,
     footer.lint,
-    `revert: livedesign changeset revert ${footer.documentId} ${footer.changesetId}`,
+    `revert: livedesign changeset revert ${footer.designId} ${footer.changesetId}`,
   ].join(' · ');
 }

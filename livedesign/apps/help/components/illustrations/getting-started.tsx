@@ -1,5 +1,5 @@
 // Getting-started-category illustrations (docs/specs/018-help/help-app.md): beginner walkthroughs for
-// the new-document welcome flow, quick-connecting arrows,
+// the new-design welcome flow, quick-connecting arrows,
 // guest vs account, and the essential keyboard shortcuts. Composed only from
 // the shared primitives so the house style holds.
 

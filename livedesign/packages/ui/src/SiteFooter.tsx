@@ -27,7 +27,7 @@ const COLUMNS: { title: string; links: (FooterLink | typeof GITHUB)[] }[] = [
   {
     title: 'Product',
     links: [
-      { href: '/new', label: 'New Document', icon: lucideGlyph(lucidePenTool, ICON_SIZE) },
+      { href: '/new', label: 'New Design', icon: lucideGlyph(lucidePenTool, ICON_SIZE) },
       {
         href: '/ai',
         label: 'AI & MCP',

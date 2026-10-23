@@ -17,8 +17,8 @@ Scope, by file (all under `apps/api/`):
 | `src/db/image-retention.ts`                        | The sweep and its tripwire                                                     |
 | `src/db/images.ts`                                 | The usage map and the share-read check, reading the index                      |
 | `src/db/tabs.ts`                                   | `upsertTab`, `seedTabs`, `swapTabData`, `deleteTabRow` carry index statements  |
-| `src/db/documents.ts`                              | `copyDocument` carries index statements                                        |
-| `src/db/document-removal.ts`                       | `documentRemovalStatements` prunes the dropped tabs' references                |
+| `src/db/designs.ts`                              | `copyDesign` carries index statements                                        |
+| `src/db/design-removal.ts`                       | `designRemovalStatements` prunes the dropped tabs' references                |
 | `src/index.ts`                                     | `scheduled()` hands the daily run to `runImageRetention`                       |
 | `src/image-refs/writer-census.test.ts`             | Fails when SQL writing `tabs` appears outside the known writers                |
 
@@ -49,10 +49,10 @@ Each writer appends statements to the D1 batch that writes the body.
 | --------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | `upsertTab`                 | after the collab statements: `imageRefReplaceStatements(env, id, imageRefIds(tab.elements))`                 |
 | `seedTabs`                  | the same, per seeded tab                                                                                     |
-| `copyDocument`              | per copied tab: `imageRefAddStatements(env, freshTabId, imageRefIdsFromData(data))`                          |
+| `copyDesign`              | per copied tab: `imageRefAddStatements(env, freshTabId, imageRefIdsFromData(data))`                          |
 | `swapTabData`               | batch `[UPDATE tabs … WHERE data = ?, ...imageRefAddStatements(nextData ids)]`; result 0's `changes` decides |
 | `deleteTabRow`              | when no link is left: batch `[imageRefPruneTabStatement, DELETE tabs]`                                       |
-| `documentRemovalStatements` | first: `DELETE FROM image_refs WHERE tab_id IN (doomed tabs)`; then the tabs and documents deletes           |
+| `designRemovalStatements` | first: `DELETE FROM image_refs WHERE tab_id IN (doomed tabs)`; then the tabs and designs deletes           |
 
 `imageRefReplaceStatements(env, tabId, ids)`, with `ids` bound as one JSON array:
 
@@ -60,9 +60,9 @@ Each writer appends statements to the D1 batch that writes the body.
 2. `imageRefAddStatements`: when `ids` is non-empty,
    `INSERT OR IGNORE INTO image_refs (tab_id, image_id) SELECT ?1, value FROM json_each(?2)`
 
-A save whose image set is unchanged deletes nothing and inserts nothing. "Doomed tabs" in `documentRemovalStatements`
-is the same predicate its `DELETE FROM tabs` uses (linked into a doomed document and into nothing else), evaluated first
-while the links still exist; the `DELETE FROM documents` stays last, its `meta.changes` the count callers read.
+A save whose image set is unchanged deletes nothing and inserts nothing. "Doomed tabs" in `designRemovalStatements`
+is the same predicate its `DELETE FROM tabs` uses (linked into a doomed design and into nothing else), evaluated first
+while the links still exist; the `DELETE FROM designs` stays last, its `meta.changes` the count callers read.
 
 ### Extraction in SQL
 
@@ -77,8 +77,8 @@ body failing the statement whatever order SQLite evaluates the join in, and keep
 | Statement                        | `tabWhere`                                                                                                         |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | `imageRefIndexPageStatement`     | `t.rowid > ?1 AND t.rowid <= ?2`                                                                                   |
-| `imageRefIndexOwnerStatement`    | `t.id IN (SELECT dt.tab_id FROM document_tabs dt JOIN documents d ON d.id = dt.document_id WHERE d.owner_id = ?1)` |
-| `imageRefIndexDocumentStatement` | `t.id IN (SELECT tab_id FROM document_tabs WHERE document_id = ?1)`                                                |
+| `imageRefIndexOwnerStatement`    | `t.id IN (SELECT dt.tab_id FROM design_tabs dt JOIN designs d ON d.id = dt.design_id WHERE d.owner_id = ?1)` |
+| `imageRefIndexDesignStatement` | `t.id IN (SELECT tab_id FROM design_tabs WHERE design_id = ?1)`                                                |
 
 ### Backfill
 
@@ -125,34 +125,34 @@ the isolate's life (`D2`); `resetImageRefIndexMemo()` clears it for tests.
 `sweepTripped(old, unused) = unused > IMAGE_SWEEP_TRIPWIRE_MIN && unused / old > IMAGE_SWEEP_TRIPWIRE_RATIO`.
 
 **Usage** `imageUsageByOwner(env, ownerId)`: when not complete, run `imageRefIndexOwnerStatement` first. Then
-`SELECT DISTINCT r.image_id, d.id, d.name FROM documents d JOIN document_tabs dt ON dt.document_id = d.id JOIN image_refs r ON r.tab_id = dt.tab_id WHERE d.owner_id = ? ORDER BY d.name, d.id`
+`SELECT DISTINCT r.image_id, d.id, d.name FROM designs d JOIN design_tabs dt ON dt.design_id = d.id JOIN image_refs r ON r.tab_id = dt.tab_id WHERE d.owner_id = ? ORDER BY d.name, d.id`
 (`D3`), folded into `Record<imageId, { id, name }[]>`.
 
-**Share read** `documentServesImage(env, documentId, imageId, onlyTabId)` (`db/image-grants.ts`): when not
-complete, run `imageRefIndexDocumentStatement` first. Then one query: the document places the image
-(`document_tabs` ⋈ `image_refs`, `[AND dt.tab_id = ?]`) AND `SERVES`, where
-`SERVES = i.owner_id = d.owner_id OR EXISTS (SELECT 1 FROM image_grants g WHERE g.document_id = d.id AND g.image_id = i.id)`.
-A refusal logs `[images] not servable by document` with the document and image ids.
+**Share read** `designServesImage(env, designId, imageId, onlyTabId)` (`db/image-grants.ts`): when not
+complete, run `imageRefIndexDesignStatement` first. Then one query: the design places the image
+(`design_tabs` ⋈ `image_refs`, `[AND dt.tab_id = ?]`) AND `SERVES`, where
+`SERVES = i.owner_id = d.owner_id OR EXISTS (SELECT 1 FROM image_grants g WHERE g.design_id = d.id AND g.image_id = i.id)`.
+A refusal logs `[images] not servable by design` with the design and image ids.
 
-**Render read** `servableImageIds(env, documentId, ids)`: of a tab's ids, those `SERVES` admits, one query over a
+**Render read** `servableImageIds(env, designId, ids)`: of a tab's ids, those `SERVES` admits, one query over a
 bound JSON array. `thumbnail.ts` `loadEmbeddedImages` reads R2 only for those; the rest keep the placeholder.
 
 ### Placement grants
 
-`image_grants (document_id, image_id, created_at)`, primary key `(document_id, image_id)`, `WITHOUT ROWID`, no
+`image_grants (design_id, image_id, created_at)`, primary key `(design_id, image_id)`, `WITHOUT ROWID`, no
 foreign keys (migration 0075, which also grants every reference that already crossed owners).
 
 - **Placement writer** `imageGrantPlacementStatements(env, tabId, ids, now)`, appended after the index statements by
-  `upsertTab`, `seedTabs` and `swapTabData`: `INSERT OR IGNORE` one row per (document holding the tab, placed image)
+  `upsertTab`, `seedTabs` and `swapTabData`: `INSERT OR IGNORE` one row per (design holding the tab, placed image)
   where `i.owner_id <> d.owner_id` AND (a `team_members` row with `team_id = d.team_id`, `user_id = i.owner_id`,
-  `status = 'joined'`, OR a `shared_with` row with `owner_id = i.owner_id`, `document_id = d.id`, `role = 'edit'`).
+  `status = 'joined'`, OR a `shared_with` row with `owner_id = i.owner_id`, `design_id = d.id`, `role = 'edit'`).
   No row for an empty id list.
-- **Copy writer** `imageGrantCopyStatements(env, sourceId, targetId, ids, now)`, per copied tab in `copyDocument`:
+- **Copy writer** `imageGrantCopyStatements(env, sourceId, targetId, ids, now)`, per copied tab in `copyDesign`:
   `INSERT OR IGNORE` the target for each id the source `SERVES`.
-- **Link writer** `imageGrantLinkStatement(env, targetId, tabId, now)`, run by `linkTabToDocument` after the link:
+- **Link writer** `imageGrantLinkStatement(env, targetId, tabId, now)`, run by `linkTabToDesign` after the link:
   `INSERT OR IGNORE` the target for each image the tab places that another holder of the tab `SERVES`.
-- **Removal** `imageGrantRemovalStatement`, in `documentRemovalStatements`, keyed on the doomed documents.
-- I5: a document serves an image only if `SERVES` holds; a grant is written only by the writers above and migration 0075.
+- **Removal** `imageGrantRemovalStatement`, in `designRemovalStatements`, keyed on the doomed designs.
+- I5: a design serves an image only if `SERVES` holds; a grant is written only by the writers above and migration 0075.
 
 ### Invariants
 
@@ -192,7 +192,7 @@ export function imageRefIndexPageStatement(
   toRowId: number,
 ): D1PreparedStatement;
 export function imageRefIndexOwnerStatement(env: Env, ownerId: string): D1PreparedStatement;
-export function imageRefIndexDocumentStatement(env: Env, documentId: string): D1PreparedStatement;
+export function imageRefIndexDesignStatement(env: Env, designId: string): D1PreparedStatement;
 export type ImageRefsBackfillRow = {
   created_at: number;
   cursor: number;
@@ -264,7 +264,7 @@ rebuilds `tabs` must keep tab ids (the index is keyed on them); nothing cascades
 | `elements` is an object, or missing                    | No references, on both extractors                                         |
 | Corrupt body at backfill                               | Text scan; every id after `"imageId"` counts, image or not (over-keeps)   |
 | Corrupt body with no usable id                         | Warned with `(0 ids)`; nothing written                                    |
-| Corrupt body at the lazy owner / document index        | No references from it; the backfill still covers it                       |
+| Corrupt body at the lazy owner / design index        | No references from it; the backfill still covers it                       |
 | Swap loses its compare                                 | Add-only statements may add references the stored body lacks: over-keeps  |
 | Backfill races a save                                  | `INSERT OR IGNORE` from an older body: an extra reference until next save |
 | Worker from before 0050 still saving                   | The settle hour; its writes precede the backfill's reads                  |
@@ -281,11 +281,11 @@ rebuilds `tabs` must keep tab ids (the index is keyed on them); nothing cascades
 
 ## Security and trust
 
-The share-read check authorises bytes to a share visitor, so it must never say yes to an image the document doesn't
-place, nor to one it places but may not serve (an id written into a document its owner has no tie to; see
+The share-read check authorises bytes to a share visitor, so it must never say yes to an image the design doesn't
+place, nor to one it places but may not serve (an id written into a design its owner has no tie to; see
 [Placement grants](#placement-grants)). The server renderer applies the same rule before reading R2. A reference exists only from a body that placed the image; the add-only writers can leave one behind only when
 a concurrent write or the backfill raced, and only for an id that tab's body carried. Before completion, a share
-visitor's image read writes index rows from that document's own tabs, derived data only. No input reaches SQL unbound:
+visitor's image read writes index rows from that design's own tabs, derived data only. No input reaches SQL unbound:
 ids travel as one bound JSON array read by `json_each`. The modules above are held to 100% coverage
 ([Testing](../../003-system-architecture/testing.md)).
 
@@ -335,7 +335,7 @@ bodies inside D1; the run stops after 60 s of wall clock, inside the cron's limi
 | SQL extraction equals the JavaScript extractor               | `src/db/image-refs.test.ts` "the SQL extractor" |
 | Migration on an empty and a populated database               | `src/db/image-refs.test.ts` "migration 0050"    |
 | Each writer maintains the index (I1), routes included        | `src/db/image-refs-writers.test.ts`             |
-| Deleting a tab / document / account prunes; shared tab keeps | `src/db/image-refs-writers.test.ts`             |
+| Deleting a tab / design / account prunes; shared tab keeps | `src/db/image-refs-writers.test.ts`             |
 | No unknown writer of `tabs`, code or migration               | `src/image-refs/writer-census.test.ts`          |
 | Backfill states, pages, chase, corrupt body, idempotence     | `src/image-refs/backfill.test.ts`               |
 | Backfill before sweep; failures logged                       | `src/image-refs/retention.test.ts`              |

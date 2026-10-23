@@ -1,7 +1,7 @@
 'use client';
 
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
-import { canvasSurface, tabWindowNames, type Tab } from '@livedesign/document';
+import { canvasSurface, tabWindowNames, type Tab } from '@livedesign/design';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { loadTabImages } from '@/lib/export-tab';
 import { renderTabDrawingSvg } from '@/lib/tab-drawing';
@@ -10,7 +10,7 @@ import type { SvgMotion } from '@/lib/export-tab';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { svgFrameOf } from '@/lib/svg-frame';
 import { useAppearance } from '@/hooks/ui/useAppearance';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useEditorContext } from '@/app/design/[id]/EditorContext';
 
 export type TabSvg = {
   markup: string;
@@ -39,7 +39,7 @@ export function useTabSvg(
 ): TabSvg | null {
   const { imageContext, tabs } = useEditorContext();
   // A window inside this tab is named for the tab it shows, as the export names it. Keyed on the tabs' names, not the
-  // tabs, so an edit anywhere in the document does not redraw this one.
+  // tabs, so an edit anywhere in the design does not redraw this one.
   const nameKey = tabs.map((t) => `${t.id}\u0000${t.name}`).join('\u0001');
   // oxlint-disable-next-line react/exhaustive-deps
   const windowNames = useMemo(() => tabWindowNames(tabs), [nameKey]);

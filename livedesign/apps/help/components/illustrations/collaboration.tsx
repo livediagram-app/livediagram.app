@@ -196,10 +196,10 @@ export function OneTabShare() {
   );
 }
 
-/** A live document embedded in another page: the canvas with the embed's only chrome (the
+/** A live design embedded in another page: the canvas with the embed's only chrome (the
  *  Open in livedesign badge and the tab switcher bottom-left, the zoom dock bottom-right),
  *  beside the iframe snippet the Share dialog copies. */
-export function EmbeddedDocument() {
+export function EmbeddedDesign() {
   return (
     <Scene w={420} h={240} bg="plain">
       {/* Host page card */}
@@ -214,7 +214,7 @@ export function EmbeddedDocument() {
       />
       <TextBar x={30} y={26} w={120} h={8} />
       <TextBar x={30} y={42} w={360} tone="faint" />
-      {/* Embedded document frame */}
+      {/* Embedded design frame */}
       <rect
         x={30}
         y={58}
@@ -465,12 +465,12 @@ export function RolesAndInvites() {
   );
 }
 
-/** A team's shared library: the Team documents breadcrumb with the view toggle and Create, above
- *  the folders and documents of the level you are in. */
+/** A team's shared library: the Team designs breadcrumb with the view toggle and Create, above
+ *  the folders and designs of the level you are in. */
 export function TeamSharedTree() {
   const rows: { label: string; folder: boolean; meta: string }[] = [
-    { label: 'Architecture', folder: true, meta: '4 documents' },
-    { label: 'Onboarding', folder: true, meta: '2 documents' },
+    { label: 'Architecture', folder: true, meta: '4 designs' },
+    { label: 'Onboarding', folder: true, meta: '2 designs' },
     { label: 'System overview', folder: false, meta: 'Edited 2h ago' },
     { label: 'Retro notes', folder: false, meta: 'Edited yesterday' },
   ];
@@ -480,7 +480,7 @@ export function TeamSharedTree() {
         <rect x={51} y={17} width={318} height={32} rx={9} className="fill-slate-50" />
         <line x1={51} y1={49} x2={369} y2={49} className="stroke-slate-200" strokeWidth={1} />
         <Label x={66} y={34} size={9.5} weight={700} tone="muted">
-          TEAM DOCUMENTS
+          TEAM DESIGNS
         </Label>
         {/* View toggle: list and grid. */}
         <rect

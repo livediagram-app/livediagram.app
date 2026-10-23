@@ -25,14 +25,14 @@ export const HOME_TZ_MAX_LENGTH = 64;
 /** The event type of a person's own coalesced open: the open-day record Jump back in counts.
  *  Recorded in their `user` scope only, and deliberately outside the Timeline feed's vocabulary
  *  (docs/specs/013-workspace/timeline.md §4.2). */
-export const HOME_OPENED_EVENT_TYPE = 'document_opened';
+export const HOME_OPENED_EVENT_TYPE = 'design_opened';
 
 /** The editor's declaration that a tab read is an open (docs/specs/013-workspace/explorer-home.md
  *  "Opens"). Nothing else sends it, so a duplicate, an embed or a resync is never counted. */
-export const DOCUMENT_OPEN_HEADER = 'X-Document-Open';
+export const DESIGN_OPEN_HEADER = 'X-Design-Open';
 
-/** True when a request's `X-Document-Open` value declares an open. */
-export function readDocumentOpen(value: string | null): boolean {
+/** True when a request's `X-Design-Open` value declares an open. */
+export function readDesignOpen(value: string | null): boolean {
   return value === '1';
 }
 
@@ -62,11 +62,11 @@ export function isHomeRejection(code: string | null): code is HomeRejection {
   return code !== null && REJECTIONS.has(code);
 }
 
-/** A document as every part of Home names it: enough to open it, show its thumbnail and say
+/** A design as every part of Home names it: enough to open it, show its thumbnail and say
  *  where it lives. */
-export type HomeDocument = {
-  documentId: string;
-  /** The document's current name. */
+export type HomeDesign = {
+  designId: string;
+  /** The design's current name. */
   name: string;
   /** How the person reaches it: their own, a joined team's, or shared with them by a link. */
   via: 'own' | 'team' | 'shared';
@@ -77,7 +77,7 @@ export type HomeDocument = {
   /** Null for `shared`: the owner's filing is theirs. */
   teamId: string | null;
   teamName: string | null;
-  /** Null for `shared`, and for a document at its space's root. */
+  /** Null for `shared`, and for a design at its space's root. */
   folderId: string | null;
   folderName: string | null;
   ownerName: string | null;
@@ -87,8 +87,8 @@ export type HomeDocument = {
   empty: boolean;
 };
 
-/** One document of Jump back in, with the two measures Within reach places it by. */
-export type HomeJumpBackInItem = HomeDocument & {
+/** One design of Jump back in, with the two measures Within reach places it by. */
+export type HomeJumpBackInItem = HomeDesign & {
   /** UTC days in the use window on which the person opened or edited it: most used. */
   useDays: number;
   /** The later of the person's last open and last real edit: recent. */
@@ -116,9 +116,9 @@ export type HomeAction = {
 
 export type HomeVerbCount = { verb: HomeVerb; count: number };
 
-/** One document's actions on one of the reader's days. */
-export type HomeGroup = HomeDocument & {
-  /** `<documentId>:<day>`. */
+/** One design's actions on one of the reader's days. */
+export type HomeGroup = HomeDesign & {
+  /** `<designId>:<day>`. */
   id: string;
   /** YYYY-MM-DD in the reader's time zone. */
   day: string;

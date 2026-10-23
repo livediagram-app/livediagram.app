@@ -13,20 +13,20 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 function event(id: string): TimelineEvent {
   return {
     id,
-    sourceType: 'document',
+    sourceType: 'design',
     sourceId: id,
-    eventType: 'document_renamed',
-    title: 'Document Renamed',
+    eventType: 'design_renamed',
+    title: 'Design Renamed',
     description: null,
     occurredAt: 1,
     actorId: 'me',
-    snapshot: { documentId: id, documentName: id },
+    snapshot: { designId: id, designName: id },
   };
 }
 
 const stack: TimelineStack = {
   key: 'a',
-  bucket: 'document::document_renamed',
+  bucket: 'design::design_renamed',
   events: [event('a'), event('b'), event('c')],
 };
 
@@ -40,7 +40,7 @@ describe('useTimelineStackSlots', () => {
     // through the element's props rather than a full render: the menu
     // itself is the single-card component, tested on its own.
     const props = (slots!.menu as { props: { onRemove: () => void; subject: string } }).props;
-    expect(props.subject).toBe('Documents Renamed · 3 events');
+    expect(props.subject).toBe('Designs Renamed · 3 events');
     props.onRemove();
     expect(onDismiss).toHaveBeenCalledWith(['a', 'b', 'c']);
   });

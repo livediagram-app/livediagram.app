@@ -8,7 +8,7 @@ import {
   type Element,
   type LaidOutPage,
   type Layer,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { ChartGroundsProvider, PageSurfacesProvider } from './CanvasSurfaceContext';
 import { usePageBackgroundPreview, withPreviewedBackgrounds } from '@/lib/page-background-preview';
 

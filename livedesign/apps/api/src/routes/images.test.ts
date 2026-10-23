@@ -5,29 +5,29 @@ import type { Env } from '../types';
 // Characterisation tests for handleImages' authorisation surface
 // (docs/specs/009-elements/images.md). Covers: the 503 fallback when R2 is absent (self-host), the
 // owner gate on the gallery list / usage / delete, and the byte-read
-// access policy (image owner OR a share-readable document that references
+// access policy (image owner OR a share-readable design that references
 // the image). Pins behaviour ahead of the requireOwner extraction.
 
-const { db, canReadDocument, resolveDocumentGrant } = vi.hoisted(() => ({
+const { db, canReadDesign, resolveDesignGrant } = vi.hoisted(() => ({
   db: {
     deleteImage: vi.fn(),
-    documentServesImage: vi.fn(),
+    designServesImage: vi.fn(),
     findImageBySha: vi.fn(),
-    getDocumentMeta: vi.fn(),
+    getDesignMeta: vi.fn(),
     getImage: vi.fn(),
     imageTotalsByOwner: vi.fn(),
     imageUsageByOwner: vi.fn(),
     insertImage: vi.fn(),
     listImagesByOwner: vi.fn(),
   },
-  canReadDocument: vi.fn(),
-  resolveDocumentGrant: vi.fn(),
+  canReadDesign: vi.fn(),
+  resolveDesignGrant: vi.fn(),
 }));
 vi.mock('../db', () => db);
-vi.mock('../auth/document-access', () => ({
-  canReadDocument,
-  canEditDocument: vi.fn(),
-  resolveDocumentGrant,
+vi.mock('../auth/design-access', () => ({
+  canReadDesign,
+  canEditDesign: vi.fn(),
+  resolveDesignGrant,
 }));
 
 import type { RouteContext } from './context';
@@ -54,12 +54,12 @@ const makeCtx = (
 
 beforeEach(() => {
   for (const fn of Object.values(db)) fn.mockReset();
-  canReadDocument.mockReset();
-  resolveDocumentGrant.mockReset();
-  // The byte-read gate asks for the grant; drive it from canReadDocument so
+  canReadDesign.mockReset();
+  resolveDesignGrant.mockReset();
+  // The byte-read gate asks for the grant; drive it from canReadDesign so
   // the allow / deny cases below keep reading as they did.
-  resolveDocumentGrant.mockImplementation(async (...args: unknown[]) =>
-    (await canReadDocument(...args)) ? { role: 'view', tabScope: null } : null,
+  resolveDesignGrant.mockImplementation(async (...args: unknown[]) =>
+    (await canReadDesign(...args)) ? { role: 'view', tabScope: null } : null,
   );
 });
 
@@ -146,17 +146,17 @@ describe('handleImages', () => {
     expect(res.status).toBe(200);
   });
 
-  it('byte-read 404 for a non-owner with no document hint', async () => {
+  it('byte-read 404 for a non-owner with no design hint', async () => {
     db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'someone-else' });
     const res = await handleImages(makeCtx('GET', '/api/images/i1'));
     expect(res.status).toBe(404);
   });
 
-  it('byte-read 200 for a non-owner via a share-readable document that references the image', async () => {
+  it('byte-read 200 for a non-owner via a share-readable design that references the image', async () => {
     db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'someone-else' });
-    db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'someone-else' });
-    canReadDocument.mockResolvedValue(true);
-    db.documentServesImage.mockResolvedValue(true);
+    db.getDesignMeta.mockResolvedValue({ id: 'd1', ownerId: 'someone-else' });
+    canReadDesign.mockResolvedValue(true);
+    db.designServesImage.mockResolvedValue(true);
     const ctx = makeCtx('GET', '/api/images/i1?d=d1');
     (ctx.env.IMAGES as unknown as ReturnType<typeof imagesBinding>).get.mockResolvedValue({
       body: 'bytes',
@@ -166,13 +166,13 @@ describe('handleImages', () => {
     expect(res.status).toBe(200);
   });
 
-  // docs/specs/009-elements/images.md, "Placement grants": a readable document that places the
+  // docs/specs/009-elements/images.md, "Placement grants": a readable design that places the
   // image but may not serve it (an id pasted where its owner has no tie) answers 404.
-  it('404s a readable document that places the image but may not serve it', async () => {
+  it('404s a readable design that places the image but may not serve it', async () => {
     db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'victim' });
-    db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'reader' });
-    canReadDocument.mockResolvedValue(true);
-    db.documentServesImage.mockResolvedValue(false);
+    db.getDesignMeta.mockResolvedValue({ id: 'd1', ownerId: 'reader' });
+    canReadDesign.mockResolvedValue(true);
+    db.designServesImage.mockResolvedValue(false);
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const ctx = makeCtx('GET', '/api/images/i1?d=d1');
     const res = await handleImages(ctx);
@@ -180,52 +180,52 @@ describe('handleImages', () => {
     expect(
       (ctx.env.IMAGES as unknown as ReturnType<typeof imagesBinding>).get,
     ).not.toHaveBeenCalled();
-    expect(warn).toHaveBeenCalledWith('[images] not servable by document', {
-      documentId: 'd1',
+    expect(warn).toHaveBeenCalledWith('[images] not servable by design', {
+      designId: 'd1',
       imageId: 'i1',
     });
     warn.mockRestore();
   });
 
   // docs/specs/013-workspace/tab-scoped-share-links.md: a tab-scoped visitor reads images their tab uses.
-  it('asks whether the scoped tab, not the whole document, uses the image', async () => {
+  it('asks whether the scoped tab, not the whole design, uses the image', async () => {
     db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'someone-else' });
-    db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'someone-else' });
-    resolveDocumentGrant.mockResolvedValue({ role: 'view', tabScope: 't2' });
-    db.documentServesImage.mockResolvedValue(false);
+    db.getDesignMeta.mockResolvedValue({ id: 'd1', ownerId: 'someone-else' });
+    resolveDesignGrant.mockResolvedValue({ role: 'view', tabScope: 't2' });
+    db.designServesImage.mockResolvedValue(false);
     const res = await handleImages(makeCtx('GET', '/api/images/i1?d=d1'));
     expect(res.status).toBe(404);
-    expect(db.documentServesImage).toHaveBeenCalledWith(expect.anything(), 'd1', 'i1', 't2');
+    expect(db.designServesImage).toHaveBeenCalledWith(expect.anything(), 'd1', 'i1', 't2');
   });
 
-  // docs/specs/013-workspace/workbench-embeds.md: a workbench session reads images through its own document
+  // docs/specs/013-workspace/workbench-embeds.md: a workbench session reads images through its own design
   // only, never by owning them, so it cannot walk its owner's gallery by id.
   describe('under a workbench session', () => {
     const session = (path: string) =>
       makeTestRouteContext('GET', path, {
         owner: 'owner-1',
         env: { IMAGES: imagesBinding() } as unknown as Env,
-        workbench: { documentId: 'd1', ownerId: 'owner-1' } as never,
+        workbench: { designId: 'd1', ownerId: 'owner-1' } as never,
       });
 
-    it('skips the owner shortcut: no document, no bytes', async () => {
+    it('skips the owner shortcut: no design, no bytes', async () => {
       db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'owner-1' });
       const res = await handleImages(session('/api/images/i1'));
       expect(res.status).toBe(404);
     });
 
-    it('refuses any document but the session own', async () => {
+    it('refuses any design but the session own', async () => {
       db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'owner-1' });
       const res = await handleImages(session('/api/images/i1?d=d2'));
       expect(res.status).toBe(404);
-      expect(db.getDocumentMeta).not.toHaveBeenCalled();
+      expect(db.getDesignMeta).not.toHaveBeenCalled();
     });
 
-    it('serves an image its own document serves', async () => {
+    it('serves an image its own design serves', async () => {
       db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'owner-1' });
-      db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'owner-1' });
-      canReadDocument.mockResolvedValue(true);
-      db.documentServesImage.mockResolvedValue(true);
+      db.getDesignMeta.mockResolvedValue({ id: 'd1', ownerId: 'owner-1' });
+      canReadDesign.mockResolvedValue(true);
+      db.designServesImage.mockResolvedValue(true);
       const ctx = session('/api/images/i1?d=d1');
       (ctx.env.IMAGES as unknown as ReturnType<typeof imagesBinding>).get.mockResolvedValue({
         body: 'bytes',
@@ -339,7 +339,7 @@ describe('POST /api/images hash-only dedupe shortcut', () => {
       owner: 'owner-1',
       env: { IMAGES: images } as unknown as Env,
       ...(opts.workbench
-        ? { workbench: { documentId: 'd1', ownerId: 'owner-1', sessionId: 's1' } as never }
+        ? { workbench: { designId: 'd1', ownerId: 'owner-1', sessionId: 's1' } as never }
         : {}),
       ...(opts.token ? { token: { id: 'tok-1' } } : {}),
     });

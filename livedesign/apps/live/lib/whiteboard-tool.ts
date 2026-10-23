@@ -1,6 +1,6 @@
 // A marker's armed intent (docs/specs/023-draw-mode/drawing-tools.md "Markers"), the Pen's path as
 // it lands, and how a pen stroke is picked by its drawn line.
-import { INK_PEN_COLOUR, type PathElement } from '@livedesign/document';
+import { INK_PEN_COLOUR, type PathElement } from '@livedesign/design';
 import type { PendingDraw } from './draw-mode';
 import type { WhiteboardPen, WhiteboardPrefs } from './whiteboard-prefs';
 

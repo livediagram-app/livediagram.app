@@ -5,7 +5,7 @@ import {
   applyElementOps,
   type Element,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { applyEditOperations } from './apply';
 import { EDIT_MAX_ERRORS } from './vocabulary';
 import { parseEditOperations } from './parse';

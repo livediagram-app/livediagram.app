@@ -1,7 +1,7 @@
 // What the chips, the pills and the live region show and announce (docs/specs/013-workspace/
 // explorer-filters.md "The field", "Accessibility"). The copy lives here, once.
 
-import { withArticle } from '@livedesign/document';
+import { withArticle } from '@livedesign/design';
 import {
   DIMENSION_LABELS,
   LENS_DIMENSIONS,
@@ -130,7 +130,7 @@ export function issueMessage(issue: LensIssue): string {
 
 /** What the live region says once typing settles. */
 export function announceResults(shown: number, total: number): string {
-  if (shown === 0) return 'No documents match';
-  const noun = total === 1 ? 'document' : 'documents';
+  if (shown === 0) return 'No designs match';
+  const noun = total === 1 ? 'design' : 'designs';
   return shown === total ? `${total} ${noun}` : `${shown} of ${total} ${noun}`;
 }

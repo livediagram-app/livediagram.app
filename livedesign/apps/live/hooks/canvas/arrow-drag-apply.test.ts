@@ -4,7 +4,7 @@ import {
   type ArrowDragMoveArgs,
   type ArrowDragState,
 } from './arrow-drag-apply';
-import { planArrowBend, type ArrowElement, type Element } from '@livedesign/document';
+import { planArrowBend, type ArrowElement, type Element } from '@livedesign/design';
 
 // A free-floating arrow: no pinned ends, so translate/endpoint maths stay
 // self-contained and don't need surrounding boxes to anchor against.

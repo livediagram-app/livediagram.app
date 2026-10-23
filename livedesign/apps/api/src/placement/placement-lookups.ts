@@ -1,4 +1,4 @@
-// The database reads behind placement (docs/specs/013-workspace/blueprints/document-placement.md,
+// The database reads behind placement (docs/specs/013-workspace/blueprints/design-placement.md,
 // docs/specs/013-workspace/blueprints/default-folders.md), kept apart from the resolver so its
 // judgements stay pure.
 

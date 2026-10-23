@@ -1,7 +1,7 @@
 import { Label } from '@/components/illustrations/primitives';
 import { Card, Stage } from './parts';
 
-// Pages: a document as a row of pages. An article page of flowing text, a slide with its title and a chart, and a
+// Pages: a design as a row of pages. An article page of flowing text, a slide with its title and a chart, and a
 // square logo artboard with its construction circle, each labelled above its corner the way the editor labels them.
 export function PagesArt() {
   return (

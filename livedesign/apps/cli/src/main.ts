@@ -3,11 +3,11 @@
 // exit code is one of eight; stdout carries data only.
 
 import { renderSkill, type Verb, type VerbContext } from '@livedesign/agent-verbs';
-import { DOCUMENT_FORMAT } from '@livedesign/api-schema';
+import { DESIGN_FORMAT } from '@livedesign/api-schema';
 import { resolveCredential } from './auth/credentials';
 import { callApi, guideOf, installSkill, login, logout, status } from './commands/local';
 import { exportAll, type ExportInput } from './commands/export';
-import { pullDocument, type PullInput } from './commands/pull';
+import { pullDesign, type PullInput } from './commands/pull';
 import { pullFileOf, pullFileView, type ViewInput } from './commands/pull-file-views';
 import { pushFile, type PushInput } from './commands/push';
 import { waitFor, type WaitInput } from './commands/wait';
@@ -75,14 +75,14 @@ async function runOnline(
       code: 'auth',
       message: `${profile.host} has no sign-in, so the CLI cannot act there`,
     });
-  // A verb that works on document files reads and writes them in the bundled format; a host storing a newer one
-  // would hand it documents it cannot keep (step 6).
-  if (verb.files && caps.documentFormat !== undefined && caps.documentFormat > DOCUMENT_FORMAT) {
-    log(`format refused ${caps.documentFormat} > ${DOCUMENT_FORMAT}`);
+  // A verb that works on design files reads and writes them in the bundled format; a host storing a newer one
+  // would hand it designs it cannot keep (step 6).
+  if (verb.files && caps.designFormat !== undefined && caps.designFormat > DESIGN_FORMAT) {
+    log(`format refused ${caps.designFormat} > ${DESIGN_FORMAT}`);
     throw new CliError({
       exit: EXIT.rejected,
       code: 'version',
-      message: `${profile.host} stores documents in format ${caps.documentFormat}; this livedesign reads format ${DOCUMENT_FORMAT}`,
+      message: `${profile.host} stores designs in format ${caps.designFormat}; this livedesign reads format ${DESIGN_FORMAT}`,
       hint: UPGRADE_HINT,
     });
   }
@@ -138,7 +138,7 @@ async function runOnline(
     return renderTab(io, ctx, input as { doc: string; tab?: string; png?: string; svg?: string });
   }
   if (verb.id === 'export') return exportAll(io, ctx, profile.host, input as ExportInput);
-  if (verb.id === 'pull') return pullDocument(io, ctx, input as PullInput);
+  if (verb.id === 'pull') return pullDesign(io, ctx, input as PullInput);
   if (verb.id === 'push') return pushFile(io, ctx, profile.host, input as PushInput);
   if (verb.id === 'wait') return waitFor(io, ctx, caps.apiBase, input as WaitInput);
   if (verb.id === 'watch') return watch(io, ctx, caps.apiBase, input as WatchInput, json);

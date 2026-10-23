@@ -1,21 +1,21 @@
-import { migrateStoredTab, type Tab } from '@livedesign/document';
+import { migrateStoredTab, type Tab } from '@livedesign/design';
 import type { TabDTO, TabSummaryDTO } from './types';
 
 // tabs row shape as read from D1. The `data` column is the
 // JSON-serialised Tab body, MINUS the `id` and `name` fields, which
-// live as real columns alongside the document link's `order_index` and
+// live as real columns alongside the design link's `order_index` and
 // the tab's `updated_at`; the parser below reassembles the canonical Tab shape.
 
 export type TabRow = {
   id: string;
-  document_id: string;
+  design_id: string;
   name: string;
   order_index: number;
   data: string;
   updated_at: number;
   // The tab revision (docs/specs/024-agents/agent-changesets.md "The tab revision").
   rev: number;
-  // Per-document folder name from the document_tabs link (docs/specs/006-document/tab-folders.md).
+  // Per-design folder name from the design_tabs link (docs/specs/006-design/tab-folders.md).
   // NULL when the tab is loose. Read sites that don't join the link
   // for folder (none today) leave it undefined, which maps the same
   // as NULL.
@@ -29,14 +29,14 @@ export type TabRow = {
 //
 // Critical because every tab read in the editor passes through this:
 // a regression that dropped a field from the spread, swapped id with
-// documentId, or mis-cased a column would corrupt documents silently on
+// designId, or mis-cased a column would corrupt designs silently on
 // next load (no other surface signal, the data just looks wrong).
 //
 // The data column carries the entire Tab body except id + name (those
 // duplicate to real columns for SQL queries that don't need to parse
 // JSON), so `JSON.parse(row.data)` returns an `Omit<Tab, 'id' | 'name'>`.
 // Spread it first, then overwrite/extend with the row-column fields so
-// a forged `data` blob can't override id / name / documentId / orderIndex
+// a forged `data` blob can't override id / name / designId / orderIndex
 // / updatedAt with its own values.
 export function rowToTab(row: TabRow): TabDTO {
   // Every tab read passes through here, so this is where stored tabs are
@@ -47,7 +47,7 @@ export function rowToTab(row: TabRow): TabDTO {
     ...data,
     id: row.id,
     name: row.name,
-    documentId: row.document_id,
+    designId: row.design_id,
     orderIndex: row.order_index,
     updatedAt: row.updated_at,
     rev: row.rev,
@@ -64,7 +64,7 @@ export function rowToTab(row: TabRow): TabDTO {
 export function rowToTabSummary(row: TabRow): TabSummaryDTO {
   return {
     id: row.id,
-    documentId: row.document_id,
+    designId: row.design_id,
     name: row.name,
     orderIndex: row.order_index,
     updatedAt: row.updated_at,

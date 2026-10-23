@@ -16,7 +16,7 @@ import { EYEBROW } from '@/components/eyebrow';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 
-// Build with AI (docs/specs/019-marketing/build-with-ai.md): from "I use an AI tool" to "it just made a document in
+// Build with AI (docs/specs/019-marketing/build-with-ai.md): from "I use an AI tool" to "it just made a design in
 // livedesign" in the fewest steps. One client island (the picker and the copy buttons); the rest is static.
 
 export const metadata = pageMetadata({

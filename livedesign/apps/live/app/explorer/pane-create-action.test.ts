@@ -5,19 +5,19 @@ describe('paneCreateMode', () => {
   it('groups both actions behind the compact Create dropdown', () => {
     // A folder is the one place both verbs apply, and it's also where the
     // title is longest — the dropdown exists to keep that title roomy.
-    expect(paneCreateMode({ hasCreateDocument: true, hasCreateFolder: true })).toEqual({
+    expect(paneCreateMode({ hasCreateDesign: true, hasCreateFolder: true })).toEqual({
       kind: 'menu',
     });
   });
 
   it('renders a lone action directly rather than hiding it in a menu', () => {
-    // Timeline and Recent offer only New Document; a one-tile dropdown would
-    // cost a click and drop the word "document" from the button.
-    expect(paneCreateMode({ hasCreateDocument: true, hasCreateFolder: false })).toEqual({
+    // Timeline and Recent offer only New Design; a one-tile dropdown would
+    // cost a click and drop the word "design" from the button.
+    expect(paneCreateMode({ hasCreateDesign: true, hasCreateFolder: false })).toEqual({
       kind: 'single',
-      action: 'document',
+      action: 'design',
     });
-    expect(paneCreateMode({ hasCreateDocument: false, hasCreateFolder: true })).toEqual({
+    expect(paneCreateMode({ hasCreateDesign: false, hasCreateFolder: true })).toEqual({
       kind: 'single',
       action: 'folder',
     });
@@ -25,7 +25,7 @@ describe('paneCreateMode', () => {
 
   it('renders nothing for the read-only sections', () => {
     // Shared / Gallery / Themes / Tokens / Profile pass neither verb.
-    expect(paneCreateMode({ hasCreateDocument: false, hasCreateFolder: false })).toEqual({
+    expect(paneCreateMode({ hasCreateDesign: false, hasCreateFolder: false })).toEqual({
       kind: 'none',
     });
   });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { TextElement } from '@livedesign/document';
+import type { TextElement } from '@livedesign/design';
 import { withTextStyle } from './useTextStyleSetters';
 
 // docs/specs/007-editor/logo-pages.md "Wordmark type": the Bold button sets bold and clears a

@@ -1,10 +1,10 @@
 'use client';
 
 // The mounted workspace frame (docs/specs/013-workspace/workbench-embeds.md "What renders", blueprint "The workspace
-// frame"): the Explorer as it is at /explorer, without the app's surroundings, or the editor of the document opened
+// frame"): the Explorer as it is at /explorer, without the app's surroundings, or the editor of the design opened
 // in it, with Back. The place is the frame's own address; every move is the frame's own (useWorkspaceNavigation),
 // told to the workbench as `livedesign:place`, and the workbench may move it with `livedesign:open`. The
-// Explorer unmounts while a document is open, so the editor's shortcuts and panels are the only ones listening.
+// Explorer unmounts while a design is open, so the editor's shortcuts and panels are the only ones listening.
 import dynamic from 'next/dynamic';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
@@ -14,7 +14,7 @@ import { WorkbenchReconnectLine } from '@/components/chrome/WorkbenchChrome';
 import {
   useWorkbenchSession,
   WorkbenchSessionContext,
-  type DocumentPlace,
+  type DesignPlace,
   type WorkbenchSession,
 } from '@/components/providers/workbench-session-context';
 import { useToast } from '@/hooks/ui/useToast';
@@ -36,25 +36,25 @@ import {
 } from './useWorkspacePlaceMessages';
 import { WorkbenchStatus } from './WorkbenchStatus';
 
-const EditorPage = dynamic(() => import('../../document/[id]/editor-page'), {
+const EditorPage = dynamic(() => import('../../design/[id]/editor-page'), {
   ssr: false,
   loading: () => <WorkbenchStatus phase={{ phase: 'reading' }} scope="workspace" />,
 });
 
-const CREATE_FAILED = 'Couldn’t create the document. Try again.';
-const DOCUMENT_TRASHED = 'That document is in the Trash.';
+const CREATE_FAILED = 'Couldn’t create the design. Try again.';
+const DESIGN_TRASHED = 'That design is in the Trash.';
 
 // The place `livedesign:open` asks for.
 function placeOfOpen(to: WorkbenchOpenTarget): WorkspacePlace {
   if ('view' in to) return { kind: 'explorer', node: { kind: 'home' } };
   if ('folderId' in to) return { kind: 'explorer', node: { kind: 'folder', id: to.folderId } };
-  return { kind: 'document', documentId: to.documentId, tabId: to.tabId ?? null, shareCode: null };
+  return { kind: 'design', designId: to.designId, tabId: to.tabId ?? null, shareCode: null };
 }
 
 const openKindOf = (to: WorkbenchOpenTarget) =>
-  'view' in to ? 'home' : 'folderId' in to ? 'folder' : 'document';
+  'view' in to ? 'home' : 'folderId' in to ? 'folder' : 'design';
 
-// What Back says it returns to: the view the document was opened from.
+// What Back says it returns to: the view the design was opened from.
 function backTitleOf(win: Window): string {
   const from = (win.history.state as { workbenchFrom?: string } | null)?.workbenchFrom;
   if (!from) return VIEW_TITLES.home;
@@ -121,28 +121,28 @@ function MountedFrame({ session }: { session: WorkbenchSession }) {
   );
 
   const { back } = nav;
-  const documentSession = useMemo<WorkbenchSession | null>(() => {
-    if (place.kind !== 'document') return null;
-    const reportDocumentPlace = (at: DocumentPlace) =>
+  const designSession = useMemo<WorkbenchSession | null>(() => {
+    if (place.kind !== 'design') return null;
+    const reportDesignPlace = (at: DesignPlace) =>
       report({
-        view: 'document',
+        view: 'design',
         folderId: null,
         folderName: null,
-        documentCount: null,
+        designCount: null,
         ...at,
       });
     return {
       ...session,
-      documentId: place.documentId,
+      designId: place.designId,
       tabId: place.tabId,
       shareCode: place.shareCode,
-      // A trashed document ends nothing here: the frame returns to the Explorer (WB60).
+      // A trashed design ends nothing here: the frame returns to the Explorer (WB60).
       end: (reason) => {
         if (reason !== 'trashed') return session.end(reason);
-        toast.info(DOCUMENT_TRASHED);
+        toast.info(DESIGN_TRASHED);
         back();
       },
-      frame: { back, backTitle: backTitleOf(window), reportDocumentPlace },
+      frame: { back, backTitle: backTitleOf(window), reportDesignPlace },
     };
   }, [place, session, report, back, toast]);
 
@@ -154,9 +154,9 @@ function MountedFrame({ session }: { session: WorkbenchSession }) {
 
   return (
     <div ref={rootRef}>
-      {documentSession && place.kind === 'document' ? (
-        <WorkbenchSessionContext.Provider value={documentSession}>
-          <EditorPage key={`${place.documentId}:${place.shareCode ?? ''}`} surface="workbench" />
+      {designSession && place.kind === 'design' ? (
+        <WorkbenchSessionContext.Provider value={designSession}>
+          <EditorPage key={`${place.designId}:${place.shareCode ?? ''}`} surface="workbench" />
         </WorkbenchSessionContext.Provider>
       ) : (
         <>
@@ -172,7 +172,7 @@ function MountedFrame({ session }: { session: WorkbenchSession }) {
 }
 
 // Tells the workbench which Explorer view the frame shows, once its lists are in: the folder shown and how many
-// documents sit directly in it, so a workbench can offer something of its own beside an empty folder.
+// designs sit directly in it, so a workbench can offer something of its own beside an empty folder.
 function ExplorerPlaceReporter({
   report,
   role,
@@ -180,7 +180,7 @@ function ExplorerPlaceReporter({
   report: (fields: PlaceFields) => void;
   role: WorkbenchRole;
 }) {
-  const { selected, loading, folderById, documentsByFolder, teamFolders } = useExplorer();
+  const { selected, loading, folderById, designsByFolder, teamFolders } = useExplorer();
   const folderId = selected.kind === 'folder' ? selected.id : null;
   // A team's folder lives on its team's page (WB52): a frame started on one moves there, in place.
   const teamFolder =
@@ -191,10 +191,10 @@ function ExplorerPlaceReporter({
     if (teamFolder) replaceAppLocation(teamFolderPath(teamFolder.teamId, teamFolder.id));
   }, [teamFolder]);
   const folderName = folderId ? (folderById.get(folderId)?.name ?? null) : null;
-  const documentCount = folderId ? (documentsByFolder.get(folderId)?.length ?? 0) : null;
+  const designCount = folderId ? (designsByFolder.get(folderId)?.length ?? 0) : null;
   useEffect(() => {
     if (loading || teamFolder) return;
-    report(explorerPlaceFields({ view: selected.kind, folderId, folderName, documentCount, role }));
-  }, [report, loading, teamFolder, selected.kind, folderId, folderName, documentCount, role]);
+    report(explorerPlaceFields({ view: selected.kind, folderId, folderName, designCount, role }));
+  }, [report, loading, teamFolder, selected.kind, folderId, folderName, designCount, role]);
   return null;
 }

@@ -1,7 +1,7 @@
 // Whether an empty tab shows its template start (docs/specs/007-editor/start-diagramming.md "When it shows"): Start
 // Making Pages, to someone who can edit, while the tab is empty, outside zen and embed, with no draw tool armed. Empty
 // is no elements and its one page still unchosen (the page's own What Is This Page For? waits under the panel).
-import type { EditorMode, Page } from '@livedesign/document';
+import type { EditorMode, Page } from '@livedesign/design';
 
 export function templateStartMode(at: {
   hydrated: boolean;

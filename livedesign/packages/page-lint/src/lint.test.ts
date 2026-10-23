@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeRefs, type Element } from '@livedesign/document';
+import { computeRefs, type Element } from '@livedesign/design';
 import { box, lint, tabOf, text } from './fixtures/build';
 import { lintTab } from './lint';
 

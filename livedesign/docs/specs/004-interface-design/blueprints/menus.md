@@ -9,7 +9,7 @@ Scope, by file:
 | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
 | `packages/ui/src/menu/menu-constants.ts`                    | Every selector, attribute and timing, named                                                 |
 | `packages/ui/src/menu/menu-keys.ts`                         | Pure keyboard model: key to intent, index stepping, typeahead, initial index                |
-| `packages/ui/src/menu/input-modality.ts`                    | The last interaction (key or pointer) and the last focused element, tracked on the document |
+| `packages/ui/src/menu/input-modality.ts`                    | The last interaction (key or pointer) and the last focused element, tracked on the design |
 | `packages/ui/src/menu/menu-dom.ts`                          | DOM reads: a menu's own items, focusables, tabbable neighbour, focus ownership              |
 | `packages/ui/src/menu/menu-tree.ts`                         | `MenuTreeContext`: the kind and id of the menu a component renders inside                   |
 | `packages/ui/src/menu/useMenu.ts`                           | Command menu hook: roles, label, initial focus, keys, Tab, focus return                     |
@@ -131,11 +131,11 @@ Options: `onClose()`, `onEscape?()` (default `onClose`), `trigger?`, `label: str
 | #   | When              | Does                                                                                                                                                  |
 | --- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | C1  | Element appears   | Records `returnTarget`; with `focusOnOpen` and no text edit, focuses the first focusable with `preventScroll`                                         |
-| C2  | Escape            | Root: a `document` listener that skips a `defaultPrevented` event. Sub-panel: a listener on its element that `preventDefault`s. Both call `onClose()` |
+| C2  | Escape            | Root: a `design` listener that skips a `defaultPrevented` event. Sub-panel: a listener on its element that `preventDefault`s. Both call `onClose()` |
 | C3  | Element goes away | As M10                                                                                                                                                |
 
 `openedFromKeyboard()` is true when the last interaction was a key press rather than a pointer press, tracked by
-`input-modality.ts` on the document (D51).
+`input-modality.ts` on the design (D51).
 
 ### Hosts
 
@@ -208,7 +208,7 @@ export function isInMenuSurface(target: EventTarget | null): boolean;
 | Safari does not focus a clicked button                  | `returnTarget` is `body`, so the trigger is used                                                 |
 | Trigger in a composite widget (tree row, `tabIndex -1`) | Return target is the tree row that held focus, so the tree keeps its one tab stop                |
 | Hover-opened menu                                       | `initialFocus: 'none'`; keys still work once focus is inside                                     |
-| Pointer-opened control menu                             | No focus moves; Escape on the document still closes it                                           |
+| Pointer-opened control menu                             | No focus moves; Escape on the design still closes it                                           |
 | Disabled item                                           | Focusable, announced, never activated                                                            |
 | Typeahead finds nothing                                 | Focus stays; the query keeps building until the reset                                            |
 
@@ -220,7 +220,7 @@ None: no input crosses a trust boundary; labels are rendered text.
 
 - Item lookup is one `querySelectorAll` per key press over at most ~40 items (the element menu's open sections): well
   under 1 ms. Nothing runs per frame or per pointer move.
-- One native `keydown` listener per open menu; no global listener except a control menu's `document` Escape.
+- One native `keydown` listener per open menu; no global listener except a control menu's `design` Escape.
 
 ## Presentation and UX
 

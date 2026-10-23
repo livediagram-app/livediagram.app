@@ -916,7 +916,7 @@ export const STICKER_CATALOG: StickerDef[] = [
     kind: 'emoji',
     glyph: '📝',
     label: 'Memo',
-    keywords: 'note notes write pencil document todo list',
+    keywords: 'note notes write pencil design todo list',
   },
   {
     id: 'emoji-clipboard',
@@ -1071,7 +1071,7 @@ export const STICKER_CATALOG: StickerDef[] = [
     kind: 'emoji',
     glyph: '📁',
     label: 'Folder',
-    keywords: 'file directory documents organise organize archive',
+    keywords: 'file directory designs organise organize archive',
   },
   {
     id: 'emoji-file-cabinet',

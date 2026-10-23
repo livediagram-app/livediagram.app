@@ -38,13 +38,13 @@ export function PlacePictureDialog({
   return (
     <ImagePicker
       ownerId={scope.ownerId}
-      documentId={scope.documentId}
+      designId={scope.designId}
       forElementId={null}
       onClose={onClose}
       onSelect={(img) => {
         onClose();
         void apiFetchImageBlob(scope.ownerId, img.id, {
-          documentId: scope.documentId,
+          designId: scope.designId,
           shareCode: scope.shareCode,
         }).then((blob) => placeBlob(photo, blob));
       }}

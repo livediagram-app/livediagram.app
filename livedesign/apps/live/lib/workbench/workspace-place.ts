@@ -1,8 +1,8 @@
 // Where a workspace frame is, and its address (docs/specs/013-workspace/workbench-embeds.md "What renders", blueprint
-// "The workspace frame", WB56). A place is an Explorer view or a document. Inside the frame each place has a path
+// "The workspace frame", WB56). A place is an Explorer view or a design. Inside the frame each place has a path
 // under /embed/workbench, walked by the frame's own history: Home is /embed/workbench/explorer, a folder
-// /embed/workbench/explorer/folder/<id>, every other view its /explorer path under /embed/workbench, and a document
-// /embed/workbench/document/<id>. The Explorer itself keeps speaking its own /explorer hrefs; these functions
+// /embed/workbench/explorer/folder/<id>, every other view its /explorer path under /embed/workbench, and a design
+// /embed/workbench/design/<id>. The Explorer itself keeps speaking its own /explorer hrefs; these functions
 // translate both ways, so nothing inside it learns where it runs.
 
 import { explorerPathFor, selectedFromRoute } from '@/app/explorer/routes';
@@ -11,13 +11,13 @@ import { WORKSPACE_FRAME_PAGE } from './workbench-frame-path';
 
 export type WorkspacePlace =
   | { kind: 'explorer'; node: SelectedNode }
-  | { kind: 'document'; documentId: string; tabId: string | null; shareCode: string | null };
+  | { kind: 'design'; designId: string; tabId: string | null; shareCode: string | null };
 
 const FRAME_PREFIX = '/embed/workbench';
 const FOLDER_ROOT = `${WORKSPACE_FRAME_PAGE}/folder/`;
-const DOCUMENT_ROOT = `${FRAME_PREFIX}/document/`;
-// The editor's placeholder page name is never a document (lib/legacy-editor-path).
-const NOT_A_DOCUMENT = 'placeholder';
+const DESIGN_ROOT = `${FRAME_PREFIX}/design/`;
+// The editor's placeholder page name is never a design (lib/legacy-editor-path).
+const NOT_A_DESIGN = 'placeholder';
 
 const HOME: WorkspacePlace = { kind: 'explorer', node: { kind: 'home' } };
 
@@ -27,11 +27,11 @@ const withQuery = (path: string, search: URLSearchParams) => {
 };
 
 export function workspaceFramePath(place: WorkspacePlace): string {
-  if (place.kind === 'document') {
+  if (place.kind === 'design') {
     const search = new URLSearchParams();
     if (place.shareCode) search.set('s', place.shareCode);
     if (place.tabId) search.set('tab', place.tabId);
-    return withQuery(`${DOCUMENT_ROOT}${encodeURIComponent(place.documentId)}`, search);
+    return withQuery(`${DESIGN_ROOT}${encodeURIComponent(place.designId)}`, search);
   }
   const { node } = place;
   if (node.kind === 'home') return WORKSPACE_FRAME_PAGE;
@@ -57,12 +57,12 @@ export function explorerRouteOfFrame(
 }
 
 export function workspacePlaceOf(pathname: string, search: URLSearchParams): WorkspacePlace {
-  if (pathname.startsWith(DOCUMENT_ROOT)) {
-    const id = decodeURIComponent(pathname.slice(DOCUMENT_ROOT.length).replace(/\/+$/, ''));
-    if (!id || id.includes('/') || id === NOT_A_DOCUMENT) return HOME;
+  if (pathname.startsWith(DESIGN_ROOT)) {
+    const id = decodeURIComponent(pathname.slice(DESIGN_ROOT.length).replace(/\/+$/, ''));
+    if (!id || id.includes('/') || id === NOT_A_DESIGN) return HOME;
     return {
-      kind: 'document',
-      documentId: id,
+      kind: 'design',
+      designId: id,
       tabId: search.get('tab'),
       shareCode: search.get('s'),
     };
@@ -74,7 +74,7 @@ export function workspacePlaceOf(pathname: string, search: URLSearchParams): Wor
 
 const sameOrigin = (url: URL, origin: string) => url.origin === origin;
 
-// An app href (`/explorer/...`, `/document/<id>...`) as the frame path that shows it, or a frame path as itself; null
+// An app href (`/explorer/...`, `/design/<id>...`) as the frame path that shows it, or a frame path as itself; null
 // for anything else (the wizard, help, sign-in, another site), which the frame does not hold.
 export function framePathOfAppHref(href: string, origin: string): string | null {
   const url = new URL(href, origin);
@@ -93,16 +93,16 @@ export function framePathOfAppHref(href: string, origin: string): string | null 
     return withQuery(`${FOLDER_ROOT}${encodeURIComponent(id)}`, rest);
   }
   if (path.startsWith('/explorer/')) return withQuery(`${FRAME_PREFIX}${path}`, search);
-  if (path.startsWith('/document/')) {
-    const id = path.slice('/document/'.length);
-    if (!id || id.includes('/') || id === NOT_A_DOCUMENT) return null;
-    return withQuery(`${DOCUMENT_ROOT}${id}`, search);
+  if (path.startsWith('/design/')) {
+    const id = path.slice('/design/'.length);
+    if (!id || id.includes('/') || id === NOT_A_DESIGN) return null;
+    return withQuery(`${DESIGN_ROOT}${id}`, search);
   }
   return null;
 }
 
-// The new-document wizard: inside a workspace frame a new document is made in place instead (WB58).
-export function isNewDocumentHref(href: string, origin: string): boolean {
+// The new-design wizard: inside a workspace frame a new design is made in place instead (WB58).
+export function isNewDesignHref(href: string, origin: string): boolean {
   const url = new URL(href, origin);
   return sameOrigin(url, origin) && url.pathname.replace(/\/+$/, '') === '/new';
 }
@@ -110,11 +110,11 @@ export function isNewDocumentHref(href: string, origin: string): boolean {
 // The same place in a full tab: Open in livedesign.
 export function appHrefOfPlace(place: WorkspacePlace): string {
   if (place.kind === 'explorer') return explorerPathFor(place.node);
-  const path = `/document/${encodeURIComponent(place.documentId)}`;
+  const path = `/design/${encodeURIComponent(place.designId)}`;
   return place.shareCode ? `${path}?s=${encodeURIComponent(place.shareCode)}` : path;
 }
 
-// The place's name for `livedesign:place`: the Explorer view's kind, or `document`.
+// The place's name for `livedesign:place`: the Explorer view's kind, or `design`.
 export function placeView(place: WorkspacePlace): string {
-  return place.kind === 'document' ? 'document' : place.node.kind;
+  return place.kind === 'design' ? 'design' : place.node.kind;
 }

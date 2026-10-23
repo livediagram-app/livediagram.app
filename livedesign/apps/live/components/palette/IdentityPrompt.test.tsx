@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Participant } from '@/lib/identity';
 import { IdentityPrompt } from './IdentityPrompt';
 
-// The visitor name prompt (docs/specs/007-editor/new-document-route.md): a visitor confirms the name others will see.
+// The visitor name prompt (docs/specs/007-editor/new-design-route.md): a visitor confirms the name others will see.
 afterEach(cleanup);
 
 const ada: Participant = { id: 'p1', name: 'Ada', color: '#0ea5e9', status: 'online' };
@@ -19,12 +19,12 @@ function prompt(over: Partial<Parameters<typeof IdentityPrompt>[0]> = {}) {
 }
 
 describe('IdentityPrompt', () => {
-  it('greets the visitor by the document', () => {
-    prompt({ documentName: '  API sketch ' });
+  it('greets the visitor by the design', () => {
+    prompt({ designName: '  API sketch ' });
     expect(screen.getByRole('heading', { name: "Welcome to 'API sketch'" })).toBeTruthy();
     cleanup();
     prompt();
-    expect(screen.getByRole('heading', { name: 'Welcome to this document' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Welcome to this design' })).toBeTruthy();
   });
 
   it('joins with the name typed, or the one they had when left empty', () => {

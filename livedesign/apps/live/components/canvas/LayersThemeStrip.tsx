@@ -12,7 +12,7 @@ import { useDockNames } from '@/hooks/ui/useDockNames';
 // they sit together. A canvas without Layers (Pages) or a session without the Theme & canvas button (a view-only
 // visitor) keeps whichever of the two it has.
 //
-// Layers opens its panel as a popover above it (docs/specs/006-document/layers.md); the palette
+// Layers opens its panel as a popover above it (docs/specs/006-design/layers.md); the palette
 // opens the CanvasThemeDialog (docs/specs/011-theme/canvas-and-theme-dialog.md).
 export function LayersThemeStrip({
   layers,

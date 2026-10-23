@@ -5,19 +5,19 @@ mention shows as a chip in the thread, puts the thread on the teammate's
 [Inbox](../013-workspace/inbox.md), and, if their settings allow, emails them.
 
 It is the comment-thread sibling of [Assigned actions](assigned-actions.md): the same
-people can be named (the document's team), the same Inbox collects it,
+people can be named (the design's team), the same Inbox collects it,
 and the same kind of best-effort, server-verified email carries it.
 
 ## Who can be mentioned
 
-The **members of the team whose library holds the document**, joined and
+The **members of the team whose library holds the design**, joined and
 invited, except yourself. That is exactly the Assign Action picker's rule
 ([Assigned actions](assigned-actions.md) §2), for the same reason: a mention should reach someone
-who can open the document and read the thread, and a teammate on another team
+who can open the design and read the thread, and a teammate on another team
 almost certainly cannot.
 
-- On a **personal document** or for a **guest** there is nobody to mention.
-  Typing `@` then shows one quiet row, "Mention teammates on a team document",
+- On a **personal design** or for a **guest** there is nobody to mention.
+  Typing `@` then shows one quiet row, "Mention teammates on a team design",
   and nothing is inserted.
 - An **invited** member (no account yet) can be mentioned. They are keyed by
   their membership row, like an invited assignee, and get the email at their
@@ -62,7 +62,7 @@ list is sanitised (shape, caps, string fields only; anything malformed is
 dropped); on an **existing** comment it is locked to what was stored, so
 nobody can retarget someone else's mention. A forged mention can at worst put
 a thread on the named person's Inbox, and that page only ever lists
-documents they can already open (the library scoping, [Inbox](../013-workspace/inbox.md) §4).
+designs they can already open (the library scoping, [Inbox](../013-workspace/inbox.md) §4).
 
 ## Reading a mention
 
@@ -77,15 +77,15 @@ written.
 The thread index (`collab_threads`) gains `mentioned_ids`: the distinct user
 ids and member ids mentioned anywhere in the thread. The Inbox's
 thread query includes a thread when the reader is **mentioned** in it, as
-well as when they commented or own the document, still scoped to documents they
+well as when they commented or own the design, still scoped to designs they
 can open. The thread row carries `mentionsYou`, and its hint reads
-**Mentioned You** (it wins over "Your document"). A resolved thread leaves the
+**Mentioned You** (it wins over "Your design"). A resolved thread leaves the
 page as every thread does.
 
 ## The email
 
 After a comment with mentions is added, the author's editor asks the api to
-notify: `POST /api/teams/<teamId>/notify-mention` with `{ documentId,
+notify: `POST /api/teams/<teamId>/notify-mention` with `{ designId,
 commentText, mentions: [{ userId?, memberId? }] }`. It is signed-in only (the
 teams mutation gate) and best-effort: the comment has already persisted, a
 failure is swallowed, the response is `202`.
@@ -93,19 +93,19 @@ failure is swallowed, the response is `202`.
 The server decides everything that matters:
 
 - The caller is a **joined** member of the team, and the team is the
-  document's team (`documents.team_id`), and the caller can access the document.
+  design's team (`designs.team_id`), and the caller can access the design.
   Otherwise `404`, never probing.
 - Each mention resolves to a member of that team (joined or invited) other
   than the caller; anything else is skipped silently. At most 20.
 - The author name comes from the caller's verified identity (participant
-  profile, else email), and the document name from the document row, never the
+  profile, else email), and the design name from the design row, never the
   body.
 - Each recipient's **"Someone Mentions Me in a Comment"** preference
   (`notifyMentions`, default on) is honoured; an invited member with no
   account has no preferences and is emailed at their invite address.
 - `commentText` is required, at most 5000 characters; the email
   quotes the first 280, cut at a word with an ellipsis.
-- Each email is **claimed** before it goes (`notify_email_claims`): a hash of the author, document, recipient and the comment's text is sent at most once per 24 hours
+- Each email is **claimed** before it goes (`notify_email_claims`): a hash of the author, design, recipient and the comment's text is sent at most once per 24 hours
   (`NOTIFY_EMAIL_DEDUPE_MS`), so a replayed request emails nobody twice, and one
   author's action-assigned and mention emails together are capped at 60 an hour
   (`NOTIFY_EMAILS_PER_SENDER_PER_HOUR`). A refused claim sends nothing and logs
@@ -116,8 +116,8 @@ The server decides everything that matters:
   (both reach D1 only with the next tab save), so a client that rewords each
   request gets past the dedupe, and the hourly cap is the bound.
 
-The email reads **"{author} mentioned you in {document}"**, quotes the
-comment, and has one button, **Open the document**. It is sent only when email is
+The email reads **"{author} mentioned you in {design}"**, quotes the
+comment, and has one button, **Open the design**. It is sent only when email is
 configured (`RESEND_API_KEY`, [Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md)).
 
 ## Setting
@@ -132,6 +132,6 @@ not sent), alongside the existing `Comment · Added`.
 
 ## Not in scope
 
-- Mentioning people outside the document's team, or everyone (`@here`).
+- Mentioning people outside the design's team, or everyone (`@here`).
 - In-app notifications beyond the Inbox.
 - Editing a comment's mentions after sending (comments are not editable).

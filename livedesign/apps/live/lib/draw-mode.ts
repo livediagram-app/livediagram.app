@@ -1,7 +1,7 @@
 import { penCursor } from './whiteboard-pen-cursor';
 import { shapeKindLabel } from './element-names';
-import type { ArrowEnds, ComponentKind, EmbedProvider, ShapeKind } from '@livedesign/document';
-import { EMBED_PROVIDER_LABEL, penColourCss, type PenColour } from '@livedesign/document';
+import type { ArrowEnds, ComponentKind, EmbedProvider, ShapeKind } from '@livedesign/design';
+import { EMBED_PROVIDER_LABEL, penColourCss, type PenColour } from '@livedesign/design';
 
 // Draw-to-size intent. Picking any element from the palette except the
 // annotation (docs/specs/008-canvas/canvas-and-palette.md "Placement on add") stashes the intent here; the canvas
@@ -23,7 +23,7 @@ export type PendingDraw =
       iconId?: string;
       stickerId?: string;
       label?: string;
-      // A creation-time variant of the kind (packages/document shape-variants.ts): the Callout card, a Funnel.
+      // A creation-time variant of the kind (packages/design shape-variants.ts): the Callout card, a Funnel.
       variant?: string;
       // What the tile that armed it calls it ("Funnel", "Callout"), for the banner: a variant or a
       // compound kind reads wrong named by its kind alone (a Funnel is a pyramid underneath).
@@ -57,7 +57,7 @@ export type PendingDraw =
   // gestural by definition) and the gesture collects a
   // stream of pointer samples during the drag, simplified +
   // smoothed on release into a FreehandElement (see docs/specs/008-canvas/canvas-and-palette.md Pencil
-  // (freehand) subsection, docs/specs/006-document/document-structure.md FreehandElement). The
+  // (freehand) subsection, docs/specs/006-design/design-structure.md FreehandElement). The
   // 'highlighter' variant (docs/specs/008-canvas/highlighter.md) rides the same gesture but
   // commits the marker recipe: no shape recognition, no
   // close-to-fill, wide translucent stroke.

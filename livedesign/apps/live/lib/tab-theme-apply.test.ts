@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { type ArrowElement, type Element, type ShapeElement, type Tab } from '@livedesign/document';
+import { type ArrowElement, type Element, type ShapeElement, type Tab } from '@livedesign/design';
 import { getTheme } from '@/lib/themes';
 import { withThemeApplied } from './tab-theme-apply';
 

@@ -13,7 +13,7 @@ import {
   runsPlainText,
   trimRuns,
   type TextRun,
-} from '@livedesign/document';
+} from '@livedesign/design';
 
 type NoteFields = {
   // Empty string means "no note" — the caller strips both fields.

@@ -22,7 +22,7 @@ import {
   type IconWeight,
   type IconAnimation,
   type IconSize,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { SizeButton } from '@/components/palette/palette-controls';
 import { AnimationPreviewTile } from '@/components/palette/AnimationPreviewTile';
 import {

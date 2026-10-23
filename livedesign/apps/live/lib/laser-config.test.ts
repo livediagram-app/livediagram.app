@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { penColourHex } from '@livedesign/document';
+import { penColourHex } from '@livedesign/design';
 import {
   DEFAULT_LASER_CONFIG,
   laserColour,

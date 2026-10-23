@@ -1,8 +1,8 @@
 'use client';
 
 // The folder card's content preview (docs/specs/013-workspace/folder-content-previews.md): a centred 2x2 mosaic of
-// up to four small sheets — the documents the folder holds (the same
-// cached SVG snapshot the document cards use, so nothing new is fetched
+// up to four small sheets — the designs the folder holds (the same
+// cached SVG snapshot the design cards use, so nothing new is fetched
 // or rendered server-side), its subfolders, and a "+N" tile when there
 // is more inside than fits.
 //
@@ -12,12 +12,12 @@
 
 import { EmptyStateArt } from '@livedesign/ui';
 import { FolderSolidIcon } from '@/components/primitives/explorer-icons';
-import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
+import { DesignThumbnail } from '@/components/panels/DesignThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { folderPreviewTiles, type FolderPreviewContents } from './folder-preview-tiles';
 
-// Half the box each way whatever the count, so a one-document folder and
-// a four-document folder use the same tile scale across the grid. The
+// Half the box each way whatever the count, so a one-design folder and
+// a four-design folder use the same tile scale across the grid. The
 // flex-wrap centring is what puts one tile in the middle and two side by
 // side without a per-count layout.
 const tileBox =
@@ -45,15 +45,15 @@ export function FolderPreview({
   return (
     <span className="flex h-full w-full flex-wrap content-center items-center justify-center gap-2 p-3">
       {tiles.map((tile) =>
-        tile.kind === 'document' ? (
-          <span key={`d:${tile.document.id}`} className={tileBox}>
-            <DocumentThumbnail
+        tile.kind === 'design' ? (
+          <span key={`d:${tile.design.id}`} className={tileBox}>
+            <DesignThumbnail
               ownerId={ownerId}
-              documentId={tile.document.id}
-              version={tile.document.savedAt}
-              empty={tile.document.empty}
-              shareCode={tile.document.shared?.shareCode}
-              offline={tile.document.ownerId === OFFLINE_OWNER_ID}
+              designId={tile.design.id}
+              version={tile.design.savedAt}
+              empty={tile.design.empty}
+              shareCode={tile.design.shared?.shareCode}
+              offline={tile.design.ownerId === OFFLINE_OWNER_ID}
               className="h-full w-full"
             />
           </span>

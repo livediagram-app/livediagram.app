@@ -7,7 +7,7 @@ snapping to it, and exporting it.
 
 ## One mode
 
-The mode stays a named value (`EditorMode`, `packages/document/src/editor-mode.ts`) whose only id is
+The mode stays a named value (`EditorMode`, `packages/design/src/editor-mode.ts`) whose only id is
 `pages`, so the places that name a mode (a tab's `opensIn`, a `/new?mode=` link, an `opens-in:` Explorer
 filter) read through one function. A stored mode from livediagram (`diagram`, `draw`, `workshop`, `plan`
 and Pages' older names, `illustrate` and `infographic`) reads as Pages (`parseEditorMode`); anything else
@@ -25,7 +25,7 @@ page is and offers; this section is the basics.
   of the one before, every page centred on the row's horizontal axis.
   - A page is **A4** unless it has a size of its own: at 96 px per inch,
     **794 x 1123** in portrait, **1123 x 794** in landscape (`A4_SHORT_SIDE`,
-    `A4_LONG_SIDE`, `packages/document/src/page.ts`); the other
+    `A4_LONG_SIDE`, `packages/design/src/page.ts`); the other
     sizes are in "Sizes".
   - The pages are the tab's (`Tab.pages`: `Page[]`, in row
     order), so everyone lays out on the same ones. A tab with no `pages` has one
@@ -439,7 +439,7 @@ fill twice changes nothing the second time.
   judged from the author's own colour: restored when that reads on the new fill, else re-inked
   from it. So Midnight and back to the paper returns every colour as it was, and two fills in turn
   never drift. A colour changed since (by anyone) is the author's new choice, and its memory goes.
-  The memory is not stored in the document: it would go stale the moment an element is recoloured,
+  The memory is not stored in the design: it would go stale the moment an element is recoloured,
   and every reader (the api, the AI tools, the exports) would have to carry it; Undo restores
   exactly in any case. A fill set by an AI tool re-inks from the colours as they are.
 - **Theme**: a re-inked colour is no longer the theme's, so a later theme switch keeps it as the
@@ -553,7 +553,7 @@ Image category: a logo goes over other things, so its artboard stays a colour or
   picker's Search, [Image search](../009-elements/image-search.md), three tiles across), under
   them **Choose From My Images** (the person's own gallery, three tiles across, in a popover that
   opens beside the panel so the panel stays in view; one press picks and closes it; an offline
-  document embeds the picture as the picker's Gallery does) and **Upload an Image** (a file, as
+  design embeds the picture as the picker's Gallery does) and **Upload an Image** (a file, as
   the picker's Upload takes one: the same types and size limit). Once the page has a picture: the picture in a strip with **Remove** (back to the paper,
   one edit), its **Credit** line when it came from a search (the image element's Credit row: the
   text, **Source** and **Licence**), then **Overlay**, **Strength** and **Position**, then the
@@ -567,7 +567,7 @@ Image category: a logo goes over other things, so its artboard stays a colour or
 - **Hover previews**: hovering or focusing a result paints its Openverse thumbnail on the page
   under the overlay a pick would get; leaving the results puts the page back. A press downloads
   and stores the picture as the picker's pick does (into the gallery, or embedded in an
-  [Offline Mode](../006-document/offline-mode.md) document), with the same stages and failure
+  [Offline Mode](../006-design/offline-mode.md) design), with the same stages and failure
   copy, then commits **one edit**: the fill with its credit and tone, and the overlay. An upload
   commits the same way, with no credit.
 - **Fit**: the picture **covers** the sheet, cropped and never stretched, centred across.
@@ -593,11 +593,11 @@ Image category: a logo goes over other things, so its artboard stays a colour or
   the Slide Deck's thumbnails and layout previews paint the page in its tone: a picture at their size is a
   smudge, and they draw without the image store.
 - **Stored like an image element's picture**, never as a web address: `imageId` is a gallery id
-  (1 to 128 letters, digits, `-` or `_`) or an Offline Mode document's base64 PNG, JPEG, GIF or WebP
+  (1 to 128 letters, digits, `-` or `_`) or an Offline Mode design's base64 PNG, JPEG, GIF or WebP
   data URI. A fill with anything else, or an overlay or position it does not know, is dropped on
   read (the overlay's strength is clamped to 0 to 0.9). A page background counts as a reference in
   the image reference index ([Images](../009-elements/images.md) "Reference index"), so retention
-  keeps its bytes and a share visitor can load it; Take Offline embeds it and Sync Document uploads
+  keeps its bytes and a share visitor can load it; Take Offline embeds it and Sync Design uploads
   it, as for image elements. A new page carries it over with the rest of the background.
 - **The credit** stays on the fill while its picture does; replacing or removing the picture
   replaces or drops it. Exports do not print it, as for image elements.
@@ -644,7 +644,7 @@ given in one go rather than page by page.
 - **Share roles**: as any background, an Editor's alone. A Participant's or a Viewer's press on a
   page with the Format tool is an empty-canvas press, and they see no Apply to All.
 - The pure edits are `pageBackgroundSpread` and `pageBackgroundCopied`
-  (`packages/document/src/pages-background-copy.ts`), shared by the panel, the Format tool and
+  (`packages/design/src/pages-background-copy.ts`), shared by the panel, the Format tool and
   the agents.
 
 ### Beside the cog
@@ -1178,7 +1178,7 @@ in any theme.
 ## Contents
 
 **Contents** is every page of the Pages tab in one list, in every Pages tab and for every role:
-finding your way round a long document is everyone's. It has two homes on a desktop, and the person
+finding your way round a long design is everyone's. It has two homes on a desktop, and the person
 chooses between them. Each row's picture is the page as the canvas shows it: a page with no fill on
 the canvas's own paper (white, or slate `#0f172a` in dark mode, as the Map draws it) in the
 canvas's ink; the Slide Deck's pictures the same.
@@ -1201,7 +1201,7 @@ canvas's ink; the Slide Deck's pictures the same.
   "Keep Contents open beside the canvas."), which closes the popover and docks the sidebar.
 
 Which home is the person's own, kept in their synced preferences (`contentsPlacement`,
-[User preferences](user-preferences.md)), so it follows them across devices and documents; Settings
+[User preferences](user-preferences.md)), so it follows them across devices and designs; Settings
 › Editor › Pages › **Contents** (Sidebar or Button) sets it too. The sidebar docks only while
 the tab has more than one page: a single page has nothing to find your way round, so it keeps the
 button (and its popover offers no Dock as Sidebar). A phone never has the sidebar, whatever the
@@ -1401,7 +1401,7 @@ is while the rest of the tab is worked on.
   never loses your place. The page you are on is the one under the middle of the view (else the
   nearest), taken once the view has rested for 400 ms (`LAST_PAGE_SETTLE_MS`), and
   straight away as you leave the tab or close the page. It is each person's, kept in this browser
-  per document and tab (the latest 200 tabs), never in the document: a collaborator lands on their
+  per design and tab (the latest 200 tabs), never in the design: a collaborator lands on their
   own page. The first time, or once that page is deleted, landing fits the first page. For everyone
   who can see the pages, whatever their role.
 - **A page is something in view**: the canvas's "Nothing's in view" nudge counts every page, an
@@ -1420,7 +1420,7 @@ The Export dialog exports **pages**, not the tab's content bounds.
   - **PNG / SVG, one page**: that page's image.
   - **PNG / SVG, all pages**: a **.zip** holding one image per page, in order, each named
     `NN <page label>.png` (two-digit place, then the label).
-- The download is named `<document> - <tab>` (`.pdf`, `.zip`), or with ` - <page label>` for one
+- The download is named `<design> - <tab>` (`.pdf`, `.zip`), or with ` - <page label>` for one
   page.
 - The preview shows the chosen page, or with All pages a page picked to preview.
 - Each page exports **exactly its sheet**: its size, its background (a picture embedded under its overlay) and pattern, and the elements on
@@ -1449,7 +1449,7 @@ The Import dialog offers **JSON** (a livedesign tab, which may carry pages).
 `PageFitToContent` (content put onto a page on opening), `PagesLaidOut` (Split Into Pages),
 `LogoPageAdded` and `WireframePageAdded` (the other kinds' adds), `PageKindInfographic` / `PageKindLogo` /
 `PageKindWireframe` (the first page's own choice);
-`Document · Exported · PagesPNG / PagesSVG / PagesPDF / PagesGIF` (one page) and
+`Design · Exported · PagesPNG / PagesSVG / PagesPDF / PagesGIF` (one page) and
 `PagesPNGPages / PagesSVGPages / PagesPDFPages / PagesGIFPages` (all pages);
 `UI · Added · PageSlide`; `UI · Opened · SlideDeck`; `UI · Used · PageSwipe` (a short pan or a flick
 turning to the neighbouring page, never the snap itself); `Tab · Aligned · PageTidyUp` (an infographic

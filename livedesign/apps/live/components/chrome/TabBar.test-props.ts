@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react';
 import { vi } from 'vitest';
-import type { Tab } from '@livedesign/document';
+import type { Tab } from '@livedesign/design';
 import type { TabBar } from './TabBar';
 
 // Shared fixture for the TabBar component tests: every callback a no-op,
@@ -17,7 +17,7 @@ export function tabBarProps(over: Partial<TabBarProps>): TabBarProps {
     tabs: TWO_TABS,
     activeId: 't1',
     activeTabHasContent: false,
-    otherDocuments: [],
+    otherDesigns: [],
     participantsByTab: new Map(),
     selfId: 'me',
     selfRole: 'edit' as const,

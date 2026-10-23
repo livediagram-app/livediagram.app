@@ -4,7 +4,7 @@
 
 import type {
   HomeAction,
-  HomeDocument,
+  HomeDesign,
   HomeGroup,
   HomePerson,
   HomeVerb,
@@ -17,11 +17,11 @@ export const HOME_COPY = {
   whatHappened: 'What Happened',
   seeMore: 'See More',
   seeTimeline: 'See Timeline',
-  jumpBackInEmptyTitle: 'No documents yet',
-  jumpBackInEmpty: 'The documents you use most and last will gather here.',
-  // The editor pane leaves out the open document; when it was the only one, there is a document, just no other.
+  jumpBackInEmptyTitle: 'No designs yet',
+  jumpBackInEmpty: 'The designs you use most and last will gather here.',
+  // The editor pane leaves out the open design; when it was the only one, there is a design, just no other.
   jumpBackInOnlyOpenTitle: 'Nothing else yet',
-  jumpBackInOnlyOpen: 'The other documents you use most and last will gather here.',
+  jumpBackInOnlyOpen: 'The other designs you use most and last will gather here.',
   readFailed: 'Home could not load. Check your connection and try again.',
   tryAgain: 'Try again',
 } as const;
@@ -38,7 +38,7 @@ export const VERB_PHRASES: Readonly<Record<HomeVerb, string>> = {
   shared: 'shared',
 };
 
-/** The same, as one person's entry reads before the document's name. */
+/** The same, as one person's entry reads before the design's name. */
 const ACTION_PHRASES: Readonly<Record<HomeVerb, string>> = {
   commented: 'commented on',
   replied: 'replied on',
@@ -50,7 +50,7 @@ const ACTION_PHRASES: Readonly<Record<HomeVerb, string>> = {
   shared: 'shared',
 };
 
-/** Verbs that take the document directly ("edited Payments"), not through "in". */
+/** Verbs that take the design directly ("edited Payments"), not through "in". */
 const DIRECT: ReadonlySet<HomeVerb> = new Set(['edited', 'shared']);
 
 /** Verbs whose detail is words worth quoting: a comment, or an action's name. */
@@ -88,22 +88,22 @@ export function verbList(verbs: readonly HomeVerbCount[]): string {
   return joinAnd(verbs.map((v) => VERB_PHRASES[v.verb]));
 }
 
-/** The parts of a summary's sentence; the view bolds the document. */
+/** The parts of a summary's sentence; the view bolds the design. */
 export function summarySentence(group: Pick<HomeGroup, 'people' | 'verbs' | 'name'>): {
   people: string;
   verbs: string;
   preposition: 'in' | null;
-  document: string;
+  design: string;
 } {
   return {
     people: peopleList(group.people),
     verbs: verbList(group.verbs),
     preposition: group.verbs.every((v) => DIRECT.has(v.verb)) ? null : 'in',
-    document: group.name,
+    design: group.name,
   };
 }
 
-/** One person's action, before the document's name: "commented on", "edited". */
+/** One person's action, before the design's name: "commented on", "edited". */
 export function actionPhrase(verb: HomeVerb): string {
   return ACTION_PHRASES[verb];
 }
@@ -118,12 +118,12 @@ export function updatesLabel(total: number): string {
   return `${total} ${total === 1 ? 'update' : 'updates'}`;
 }
 
-/** Where a document lives: its space, then its folder; a shared one by its owner. */
+/** Where a design lives: its space, then its folder; a shared one by its owner. */
 export function locationLabel(
-  doc: Pick<HomeDocument, 'via' | 'teamName' | 'folderName' | 'ownerName'>,
+  doc: Pick<HomeDesign, 'via' | 'teamName' | 'folderName' | 'ownerName'>,
 ): string {
   if (doc.via === 'shared') return doc.ownerName ? `Shared by ${doc.ownerName}` : 'Shared with you';
-  // A team document lives in its team whoever reaches it: its owner reads it as `own`.
+  // A team design lives in its team whoever reaches it: its owner reads it as `own`.
   const space = doc.teamName ?? 'My Work';
   return doc.folderName ? `${space} › ${doc.folderName}` : space;
 }

@@ -17,7 +17,7 @@ vi.mock('../db', () => db);
 import type { Env } from '../types';
 import { handleEvents } from './events';
 
-const EVENT = { category: 'Mcp', action: 'Used', type: 'ReadDocument' };
+const EVENT = { category: 'Mcp', action: 'Used', type: 'ReadDesign' };
 
 const makeCtx = (opts: { env?: Partial<Env>; headers?: Record<string, string> } = {}) =>
   makeTestRouteContext('POST', '/api/events', {
@@ -101,12 +101,12 @@ describe('handleEvents page views (docs/specs/017-telemetry/page-view-telemetry.
       body: {
         events: [
           { category: 'Page', action: 'View', type: '/help/canvas/the-canvas' },
-          { category: 'Page', action: 'View', type: '/document' },
+          { category: 'Page', action: 'View', type: '/design' },
           // A raw URL with a query, an un-normalised id, the old id placeholder
           // and a bare token.
           { category: 'Page', action: 'View', type: '/join?token=abc' },
           { category: 'Page', action: 'View', type: '/Diagram/ABC' },
-          { category: 'Page', action: 'View', type: '/document/[id]' },
+          { category: 'Page', action: 'View', type: '/design/[id]' },
           { category: 'Page', action: 'View', type: 'help' },
         ],
       },
@@ -117,7 +117,7 @@ describe('handleEvents page views (docs/specs/017-telemetry/page-view-telemetry.
       expect.anything(),
       [
         { category: 'Page', action: 'View', type: '/help/canvas/the-canvas' },
-        { category: 'Page', action: 'View', type: '/document' },
+        { category: 'Page', action: 'View', type: '/design' },
       ],
       expect.any(Number),
     );
@@ -129,10 +129,10 @@ describe('handleEvents timings (docs/specs/017-telemetry/timing-telemetry.md)', 
     const ctx = makeTestRouteContext('POST', '/api/events', {
       body: {
         events: [
-          { category: 'Timing', action: 'Measured', type: 'DocumentLoad.Under1000ms' },
+          { category: 'Timing', action: 'Measured', type: 'DesignLoad.Under1000ms' },
           { category: 'Timing', action: 'Measured', type: 'Lcp.Help.Over10000ms' },
           // A raw number, a bucket from another scale, an unknown metric, another action.
-          { category: 'Timing', action: 'Measured', type: 'DocumentLoad.812' },
+          { category: 'Timing', action: 'Measured', type: 'DesignLoad.812' },
           { category: 'Timing', action: 'Measured', type: 'Save.Under200ms' },
           { category: 'Timing', action: 'Measured', type: 'Secret.Under100ms' },
           { category: 'Timing', action: 'Used', type: 'Save.Under100ms' },
@@ -144,7 +144,7 @@ describe('handleEvents timings (docs/specs/017-telemetry/timing-telemetry.md)', 
     expect(db.insertTelemetryEvents).toHaveBeenCalledWith(
       expect.anything(),
       [
-        { category: 'Timing', action: 'Measured', type: 'DocumentLoad.Under1000ms' },
+        { category: 'Timing', action: 'Measured', type: 'DesignLoad.Under1000ms' },
         { category: 'Timing', action: 'Measured', type: 'Lcp.Help.Over10000ms' },
       ],
       expect.any(Number),

@@ -6,7 +6,7 @@ import {
   TAB_SCHEMA_VERSION,
   tabToJsonText,
   type ExportedTabEnvelope,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { exportScale, exportTabAsSvg, MAX_EXPORT_CANVAS_SIDE, renderTabToSvg } from './export-tab';
 import { parseImportedTab } from './import-tab';
 

@@ -30,7 +30,7 @@ import {
   withAttached,
   type Element,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { track } from '@/lib/telemetry';
 
 type NudgeDeps = {
@@ -38,7 +38,7 @@ type NudgeDeps = {
   // Read on each press (docs/specs/008-canvas/blueprints/selection-store.md).
   readSelection: () => Selection;
   activeTab: Tab;
-  // History coalescing helpers from useDocumentHistory: the first
+  // History coalescing helpers from useDesignHistory: the first
   // press of a burst takes a checkpoint, subsequent presses tick.
   markCheckpoint: () => void;
   tick: (mapElements: (els: Element[]) => Element[]) => void;

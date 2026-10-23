@@ -6,7 +6,7 @@
 // its checkpoint), the History, the previews made after commits, the blob store's transports, and the
 // pages' view with `photo` in it.
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import { photoOfPage, photosOf, withPhoto, type LaidOutPage, type Tab } from '@livedesign/document';
+import { photoOfPage, photosOf, withPhoto, type LaidOutPage, type Tab } from '@livedesign/design';
 import { PHOTO_PREVIEW_DELAY_MS, type Photo } from '@livedesign/photo-engine';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import type { useToast } from '@/hooks/ui/useToast';
@@ -63,7 +63,7 @@ export type PhotoEditorView = {
   ctx: ToolCtx | null;
   overlay: OverlayStore;
   history: PhotoHistory;
-  // The document timeline's depth now, and stepping it to a History entry.
+  // The design timeline's depth now, and stepping it to a History entry.
   depth: number;
   stepHistory: (steps: number) => void;
   // A press on a photo page takes it into focus.
@@ -139,7 +139,7 @@ export function usePhotoEditor<V extends PagesModeView>({
     photoUploads.setTransport(apiTransport(() => scopeRef.current!));
     return () => photoUploads.setTransport(null);
   }, [ready, scopeRef]);
-  // The working parts arrive once the tab has a photo page (runtime.ts): a document without one never
+  // The working parts arrive once the tab has a photo page (runtime.ts): a design without one never
   // downloads the pixel engine.
   const hasPhotoPage = !!pages?.some((p) => p.kind === 'photo');
   const [rt, setRt] = useState<PhotoRuntime | null>(null);
@@ -376,7 +376,7 @@ export function usePhotoEditor<V extends PagesModeView>({
             pendingStart.current = {
               pageId,
               blob: apiFetchImageBlob(scope.ownerId, imageId, {
-                documentId: scope.documentId,
+                designId: scope.designId,
                 shareCode: scope.shareCode,
               }),
             };

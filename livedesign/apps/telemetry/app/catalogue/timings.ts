@@ -31,9 +31,9 @@ const timingChart = (timing: string, title: string, blurb: string): TimingChart 
 });
 
 const EDITOR_COPY: Record<EditorTimingMetric, [title: string, blurb: string]> = {
-  DocumentLoad: [
-    'Document Load',
-    'Opening a document: from the page being asked for (including downloading the app on a fresh page) to the first frame with the document on screen.',
+  DesignLoad: [
+    'Design Load',
+    'Opening a design: from the page being asked for (including downloading the app on a fresh page) to the first frame with the design on screen.',
   ],
   TabLoad: [
     'Tab Switch',
@@ -45,7 +45,7 @@ const EDITOR_COPY: Record<EditorTimingMetric, [title: string, blurb: string]> = 
   ],
   RoomConnect: [
     'Live Connect',
-    "Joining a document's live room: from the first connection attempt to other people's presence appearing.",
+    "Joining a design's live room: from the first connection attempt to other people's presence appearing.",
   ],
   RoomReconnect: [
     'Live Reconnect',

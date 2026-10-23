@@ -52,7 +52,7 @@ export function ToolbarExplorerButton({
     <ToolbarMenuCard inline={inline} dockButton tourId="dock-explorer">
       {/* No hover card while open: it would sit over the panel it names. Disabled, not unwrapped, so the
           button keeps its focus as the panel opens. */}
-      <HoverCard title="Explorer" description="Your documents, folders and teams." disabled={open}>
+      <HoverCard title="Explorer" description="Your designs, folders and teams." disabled={open}>
         {button}
       </HoverCard>
       {/* The open tab's name (not on a phone). */}

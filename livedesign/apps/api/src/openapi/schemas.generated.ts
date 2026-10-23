@@ -77,10 +77,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "description": {
         "type": "string"
       },
-      "documentId": {
+      "designId": {
         "type": "string"
       },
-      "documentName": {
+      "designName": {
         "type": "string"
       },
       "elementId": {
@@ -132,8 +132,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "createdAt",
       "createdByMe",
       "description",
-      "documentId",
-      "documentName",
+      "designId",
+      "designName",
       "elementId",
       "elementLabel",
       "id",
@@ -153,10 +153,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "commentCount": {
         "type": "number"
       },
-      "documentId": {
+      "designId": {
         "type": "string"
       },
-      "documentName": {
+      "designName": {
         "type": "string"
       },
       "elementId": {
@@ -195,7 +195,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "mentionsYou": {
         "type": "boolean"
       },
-      "onYourDocument": {
+      "onYourDesign": {
         "type": "boolean"
       },
       "shareCode": {
@@ -230,14 +230,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "commentCount",
-      "documentId",
-      "documentName",
+      "designId",
+      "designName",
       "elementId",
       "elementLabel",
       "firstAt",
       "latest",
       "mentionsYou",
-      "onYourDocument",
+      "onYourDesign",
       "shareCode",
       "tabId",
       "tabName",
@@ -1020,7 +1020,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         ],
         "type": "object"
       },
-      "documentFormat": {
+      "designFormat": {
         "type": "number"
       },
       "emailEnabled": {
@@ -2545,83 +2545,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "DiffView": {
-    "additionalProperties": false,
-    "properties": {
-      "changes": {
-        "items": {
-          "additionalProperties": false,
-          "properties": {
-            "changes": {
-              "items": {
-                "additionalProperties": false,
-                "properties": {
-                  "after": {},
-                  "before": {},
-                  "field": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "field",
-                  "before",
-                  "after"
-                ],
-                "type": "object"
-              },
-              "type": "array"
-            },
-            "kind": {
-              "type": "string"
-            },
-            "label": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "op": {
-              "enum": [
-                "+",
-                "-",
-                "~"
-              ],
-              "type": "string"
-            },
-            "ref": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "op",
-            "ref",
-            "kind",
-            "label",
-            "changes"
-          ],
-          "type": "object"
-        },
-        "type": "array"
-      },
-      "elision": {
-        "$ref": "#/components/schemas/Elision"
-      },
-      "header": {
-        "$ref": "#/components/schemas/ViewHeader"
-      },
-      "since": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "header",
-      "since",
-      "changes",
-      "elision"
-    ],
-    "type": "object"
-  },
-  "Document": {
+  "Design": {
     "additionalProperties": false,
     "properties": {
       "createdAt": {
@@ -2685,7 +2609,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "source": {
         "anyOf": [
           {
-            "$ref": "#/components/schemas/DocumentSource"
+            "$ref": "#/components/schemas/DesignSource"
           },
           {
             "type": "null"
@@ -2735,7 +2659,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "DocumentCommentThread": {
+  "DesignCommentThread": {
     "additionalProperties": false,
     "properties": {
       "comments": {
@@ -2814,7 +2738,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "DocumentSource": {
+  "DesignSource": {
     "enum": [
       "ai",
       "mcp",
@@ -2822,7 +2746,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "DocumentStats": {
+  "DesignStats": {
     "additionalProperties": false,
     "properties": {
       "bytes": {
@@ -2846,7 +2770,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "DocumentSummary": {
+  "DesignSummary": {
     "additionalProperties": false,
     "properties": {
       "createdAt": {
@@ -2895,7 +2819,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "source": {
         "anyOf": [
           {
-            "$ref": "#/components/schemas/DocumentSource"
+            "$ref": "#/components/schemas/DesignSource"
           },
           {
             "type": "null"
@@ -2905,7 +2829,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "stats": {
         "anyOf": [
           {
-            "$ref": "#/components/schemas/DocumentStats"
+            "$ref": "#/components/schemas/DesignStats"
           },
           {
             "type": "null"
@@ -2944,6 +2868,82 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "stats",
       "tabKind",
       "teamId"
+    ],
+    "type": "object"
+  },
+  "DiffView": {
+    "additionalProperties": false,
+    "properties": {
+      "changes": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "changes": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "after": {},
+                  "before": {},
+                  "field": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "field",
+                  "before",
+                  "after"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "kind": {
+              "type": "string"
+            },
+            "label": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "op": {
+              "enum": [
+                "+",
+                "-",
+                "~"
+              ],
+              "type": "string"
+            },
+            "ref": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "op",
+            "ref",
+            "kind",
+            "label",
+            "changes"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "elision": {
+        "$ref": "#/components/schemas/Elision"
+      },
+      "header": {
+        "$ref": "#/components/schemas/ViewHeader"
+      },
+      "since": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "header",
+      "since",
+      "changes",
+      "elision"
     ],
     "type": "object"
   },
@@ -3155,11 +3155,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       {
         "additionalProperties": false,
         "properties": {
-          "documentId": {
+          "designId": {
             "type": "string"
           },
           "kind": {
-            "const": "document",
+            "const": "design",
             "type": "string"
           },
           "name": {
@@ -3168,7 +3168,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "required": [
           "kind",
-          "documentId",
+          "designId",
           "name"
         ],
         "type": "object"
@@ -3638,7 +3638,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "number"
       },
       "packedPoints": {
-        "description": "The stroke's points, normalised into its box, and a pen's pressure at each when it reported one, packed into one block: base64 of a version byte, a flags byte and a little-endian record per point (x u16, y u16, optional pressure u8). See docs/specs/006-document/stroke-points.md.",
+        "description": "The stroke's points, normalised into its box, and a pen's pressure at each when it reported one, packed into one block: base64 of a version byte, a flags byte and a little-endian record per point (x u16, y u16, optional pressure u8). See docs/specs/006-design/stroke-points.md.",
         "format": "byte",
         "type": "string"
       },
@@ -4001,7 +4001,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "HomeGroup": {
     "additionalProperties": false,
-    "description": "One document's actions on one of the reader's days.",
+    "description": "One design's actions on one of the reader's days.",
     "properties": {
       "actions": {
         "description": "Every action, newest first.",
@@ -4014,7 +4014,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "description": "YYYY-MM-DD in the reader's time zone.",
         "type": "string"
       },
-      "documentId": {
+      "designId": {
         "type": "string"
       },
       "empty": {
@@ -4022,7 +4022,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "boolean"
       },
       "folderId": {
-        "description": "Null for `shared`, and for a document at its space's root.",
+        "description": "Null for `shared`, and for a design at its space's root.",
         "type": [
           "string",
           "null"
@@ -4035,14 +4035,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         ]
       },
       "id": {
-        "description": "`<documentId>:<day>`.",
+        "description": "`<designId>:<day>`.",
         "type": "string"
       },
       "latestAt": {
         "type": "number"
       },
       "name": {
-        "description": "The document's current name.",
+        "description": "The design's current name.",
         "type": "string"
       },
       "ownerName": {
@@ -4116,7 +4116,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "required": [
       "actions",
       "day",
-      "documentId",
+      "designId",
       "empty",
       "folderId",
       "folderName",
@@ -4139,9 +4139,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "HomeJumpBackInItem": {
     "additionalProperties": false,
-    "description": "One document of Jump back in, with the two measures Within reach places it by.",
+    "description": "One design of Jump back in, with the two measures Within reach places it by.",
     "properties": {
-      "documentId": {
+      "designId": {
         "type": "string"
       },
       "empty": {
@@ -4149,7 +4149,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "boolean"
       },
       "folderId": {
-        "description": "Null for `shared`, and for a document at its space's root.",
+        "description": "Null for `shared`, and for a design at its space's root.",
         "type": [
           "string",
           "null"
@@ -4166,7 +4166,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "number"
       },
       "name": {
-        "description": "The document's current name.",
+        "description": "The design's current name.",
         "type": "string"
       },
       "ownerName": {
@@ -4221,7 +4221,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     },
     "required": [
-      "documentId",
+      "designId",
       "empty",
       "folderId",
       "folderName",
@@ -4672,15 +4672,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "KnownTimelineEventType": {
     "enum": [
-      "document_created",
-      "document_renamed",
-      "document_duplicated",
-      "document_moved",
-      "document_edited",
-      "document_offline",
-      "document_synced",
-      "document_opened_by_visitor",
-      "document_copied_by_visitor",
+      "design_created",
+      "design_renamed",
+      "design_duplicated",
+      "design_moved",
+      "design_edited",
+      "design_offline",
+      "design_synced",
+      "design_opened_by_visitor",
+      "design_copied_by_visitor",
       "folder_created",
       "folder_deleted",
       "comment_added",
@@ -4697,8 +4697,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "team_member_left",
       "team_member_removed",
       "team_role_changed",
-      "team_document_added",
-      "team_document_removed",
+      "team_design_added",
+      "team_design_removed",
       "team_renamed",
       "team_deleted",
       "team_invite_link_enabled",
@@ -5574,7 +5574,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "OverviewView": {
     "additionalProperties": false,
     "properties": {
-      "document": {
+      "design": {
         "additionalProperties": false,
         "properties": {
           "id": {
@@ -5609,7 +5609,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     },
     "required": [
-      "document",
+      "design",
       "tabs",
       "elision"
     ],
@@ -7971,7 +7971,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "createdAt": {
         "type": "number"
       },
-      "documentId": {
+      "designId": {
         "type": "string"
       },
       "expiresAt": {
@@ -7995,7 +7995,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "code",
-      "documentId",
+      "designId",
       "role",
       "createdAt",
       "expiry",
@@ -8019,7 +8019,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "SharedTabsSummary": {
     "additionalProperties": false,
     "properties": {
-      "documents": {
+      "designs": {
         "type": "number"
       },
       "tabs": {
@@ -8028,7 +8028,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "tabs",
-      "documents"
+      "designs"
     ],
     "type": "object"
   },
@@ -8626,7 +8626,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "defaultTextSize": {
         "$ref": "#/components/schemas/TextSize"
       },
-      "documentId": {
+      "designId": {
         "type": "string"
       },
       "elements": {
@@ -8706,7 +8706,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     },
     "required": [
-      "documentId",
+      "designId",
       "elements",
       "id",
       "name",
@@ -8719,7 +8719,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "TabSummary": {
     "additionalProperties": false,
     "properties": {
-      "documentId": {
+      "designId": {
         "type": "string"
       },
       "folder": {
@@ -8744,7 +8744,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "id",
-      "documentId",
+      "designId",
       "name",
       "orderIndex",
       "updatedAt"
@@ -10019,7 +10019,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       {
         "enum": [
-          "document",
+          "design",
           "team",
           "account"
         ],
@@ -10034,7 +10034,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "TrashedDocument": {
+  "TrashedDesign": {
     "additionalProperties": false,
     "properties": {
       "id": {
@@ -10713,7 +10713,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "WorkbenchScope": {
     "enum": [
-      "document",
+      "design",
       "workspace"
     ],
     "type": "string"
@@ -10735,7 +10735,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       {
         "additionalProperties": false,
         "properties": {
-          "documentId": {
+          "designId": {
             "type": "string"
           },
           "expiresAt": {
@@ -10754,7 +10754,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "$ref": "#/components/schemas/WorkbenchRole"
           },
           "scope": {
-            "const": "document",
+            "const": "design",
             "type": "string"
           },
           "session": {
@@ -10768,7 +10768,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           }
         },
         "required": [
-          "documentId",
+          "designId",
           "expiresAt",
           "folderId",
           "origin",
@@ -10783,7 +10783,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       {
         "additionalProperties": false,
         "properties": {
-          "documentId": {
+          "designId": {
             "type": "null"
           },
           "expiresAt": {
@@ -10816,7 +10816,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           }
         },
         "required": [
-          "documentId",
+          "designId",
           "expiresAt",
           "folderId",
           "origin",
@@ -10835,14 +10835,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       {
         "additionalProperties": false,
         "properties": {
-          "documentId": {
+          "designId": {
             "type": "string"
           },
           "origin": {
             "type": "string"
           },
           "scope": {
-            "const": "document",
+            "const": "design",
             "type": "string"
           },
           "tabId": {
@@ -10850,7 +10850,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           }
         },
         "required": [
-          "documentId",
+          "designId",
           "origin"
         ],
         "type": "object"
@@ -10880,7 +10880,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "WorkbenchTicketResponse": {
     "additionalProperties": false,
     "properties": {
-      "documentId": {
+      "designId": {
         "type": "string"
       },
       "expiresAt": {
@@ -10898,7 +10898,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "url",
-      "documentId",
+      "designId",
       "tabId",
       "expiresAt"
     ],

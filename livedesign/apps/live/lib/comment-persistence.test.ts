@@ -14,7 +14,7 @@ import { commentPersisters } from './comment-persistence';
 // comment never left their screen.
 const session = {
   readOnly: true,
-  documentId: 'doc',
+  designId: 'doc',
   tabId: 'tab',
   selfId: 'me',
   shareCode: 'CODE',
@@ -68,9 +68,9 @@ describe('commentPersisters', () => {
     expect(p.threadState({ comments: [{ id: 'first' }] }, true)).toBeUndefined();
   });
 
-  it('has nothing to resolve on an empty thread, nor any endpoint without a document', () => {
+  it('has nothing to resolve on an empty thread, nor any endpoint without a design', () => {
     expect(commentPersisters(session).threadState({ comments: [] }, true)).toBeUndefined();
     expect(commentPersisters(session).threadState(undefined, true)).toBeUndefined();
-    expect(commentPersisters({ ...session, documentId: null }).add('el', 'hi')).toBeUndefined();
+    expect(commentPersisters({ ...session, designId: null }).add('el', 'hi')).toBeUndefined();
   });
 });

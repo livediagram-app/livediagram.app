@@ -1,6 +1,6 @@
 // Single source of truth for the browser-local identity state that
 // guests rely on (docs/specs/014-identity/auth-and-guest-access.md). The key strings used to be inlined at
-// every read/write site across editor-page, the new-document page and
+// every read/write site across editor-page, the new-design page and
 // the Clerk bootstrap hook — renaming the namespace or evolving the
 // schema needed a grep + sweep across several files. Centralising
 // them here means a v3 migration is a one-line edit and the intent
@@ -44,7 +44,7 @@ const KEYS = {
   pendingUpgrade: `${NS}pending-signed-id`,
   // Boolean flag — '1' once the user has confirmed their display
   // name via the welcome modal at least once. Used to suppress the
-  // identity prompt on subsequent document opens. Only meaningful
+  // identity prompt on subsequent design opens. Only meaningful
   // for guests; signed-in users derive their name from Clerk.
   nameConfirmed: `${NS}name-confirmed`,
   // UTC day string (YYYY-MM-DD) of this browser's most recent app
@@ -131,7 +131,7 @@ export function setGuestIdentity(id: string, sig: string | null): void {
 }
 
 // Read the existing guest id, or mint + persist a fresh one. The
-// editor / new-document / explorer routes all need this exact "find
+// editor / new-design / explorer routes all need this exact "find
 // or create" gesture as the X-Owner-Id fallback for signed-out
 // visitors, and the inline `getGuestSelfId() ?? randomUUID() +
 // setGuestSelfId()` chunk was duplicated at every call site. SSR-safe

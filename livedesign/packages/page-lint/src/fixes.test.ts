@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { LINT_CODES } from '@livedesign/api-schema';
-import type { Element, Tab } from '@livedesign/document';
+import type { Element, Tab } from '@livedesign/design';
 import { applyEditOperations, parseEditOperations } from '@livedesign/edit-operations';
 import { box, lint, text } from './fixtures/build';
 

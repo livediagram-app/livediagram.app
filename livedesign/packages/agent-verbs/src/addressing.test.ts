@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   AddressError,
-  parseDocumentUrl,
-  resolveDocument,
+  parseDesignUrl,
+  resolveDesign,
   resolveTab,
   type AddressFailure,
 } from './addressing';
@@ -20,45 +20,45 @@ async function failureOf(promise: Promise<unknown> | (() => unknown)): Promise<A
   throw new Error('expected an AddressError');
 }
 
-describe('parseDocumentUrl', () => {
-  it('reads a document link and a share link, on the host or its www twin', () => {
-    expect(parseDocumentUrl(`${HOST}/document/${DOC_A}`, HOST)).toEqual({ id: DOC_A });
-    expect(parseDocumentUrl(`https://www.livedesign.app/document/${DOC_A}?tab=x`, HOST)).toEqual({
+describe('parseDesignUrl', () => {
+  it('reads a design link and a share link, on the host or its www twin', () => {
+    expect(parseDesignUrl(`${HOST}/design/${DOC_A}`, HOST)).toEqual({ id: DOC_A });
+    expect(parseDesignUrl(`https://www.livedesign.app/design/${DOC_A}?tab=x`, HOST)).toEqual({
       id: DOC_A,
     });
-    expect(parseDocumentUrl(`${HOST}/document/shared?s=abc123`, HOST)).toEqual({
+    expect(parseDesignUrl(`${HOST}/design/shared?s=abc123`, HOST)).toEqual({
       shareCode: 'abc123',
     });
   });
 
   it('is null for what is not a web URL', () => {
-    expect(parseDocumentUrl('Auth flow', HOST)).toBeNull();
-    expect(parseDocumentUrl('mailto:a@b.c', HOST)).toBeNull();
+    expect(parseDesignUrl('Auth flow', HOST)).toBeNull();
+    expect(parseDesignUrl('mailto:a@b.c', HOST)).toBeNull();
   });
 
-  it('refuses another origin, a page that is not a document, and a share link without its code', async () => {
+  it('refuses another origin, a page that is not a design, and a share link without its code', async () => {
     expect(
-      await failureOf(() => parseDocumentUrl(`https://other.example/document/${DOC_A}`, HOST)),
+      await failureOf(() => parseDesignUrl(`https://other.example/design/${DOC_A}`, HOST)),
     ).toMatchObject({
       kind: 'usage',
       hint: '--host https://other.example',
     });
-    expect(await failureOf(() => parseDocumentUrl(`${HOST}/help`, HOST))).toMatchObject({
+    expect(await failureOf(() => parseDesignUrl(`${HOST}/help`, HOST))).toMatchObject({
       kind: 'usage',
-      message: `${HOST}/help is not a document link`,
+      message: `${HOST}/help is not a design link`,
     });
-    expect(await failureOf(() => parseDocumentUrl(`${HOST}/document/shared`, HOST))).toMatchObject({
+    expect(await failureOf(() => parseDesignUrl(`${HOST}/design/shared`, HOST))).toMatchObject({
       kind: 'usage',
-      message: `${HOST}/document/shared has no share code`,
+      message: `${HOST}/design/shared has no share code`,
     });
   });
 });
 
-describe('resolveDocument', () => {
+describe('resolveDesign', () => {
   it('takes a name ignoring case, or an id prefix of four or more', async () => {
     const api = fakeApi(library);
-    expect(await resolveDocument(api, 'auth FLOW', HOST)).toEqual({ id: DOC_A, name: 'Auth flow' });
-    expect(await resolveDocument(api, 'aaaa2', HOST)).toEqual({ id: DOC_B, name: 'Auth flow v2' });
+    expect(await resolveDesign(api, 'auth FLOW', HOST)).toEqual({ id: DOC_A, name: 'Auth flow' });
+    expect(await resolveDesign(api, 'aaaa2', HOST)).toEqual({ id: DOC_B, name: 'Auth flow v2' });
   });
 
   it('finds a 36-character name by name, never reading it as an id', async () => {
@@ -66,35 +66,35 @@ describe('resolveDocument', () => {
     expect(name).toHaveLength(36);
     const api = fakeApi({
       ...library,
-      '/documents': {
-        documents: [{ id: DOC_C, name, savedAt: Date.UTC(2026, 9, 2), ownerId: 'u' }],
+      '/designs': {
+        designs: [{ id: DOC_C, name, savedAt: Date.UTC(2026, 9, 2), ownerId: 'u' }],
       },
     });
-    expect(await resolveDocument(api, name, HOST)).toEqual({ id: DOC_C, name });
+    expect(await resolveDesign(api, name, HOST)).toEqual({ id: DOC_C, name });
   });
 
-  it('reads a full id and a document link directly, without the list', async () => {
+  it('reads a full id and a design link directly, without the list', async () => {
     const api = fakeApi({
-      [`/documents/${DOC_A}`]: { document: { id: DOC_A, name: 'Auth flow' } },
+      [`/designs/${DOC_A}`]: { design: { id: DOC_A, name: 'Auth flow' } },
     });
-    expect(await resolveDocument(api, DOC_A, HOST)).toEqual({ id: DOC_A, name: 'Auth flow' });
-    expect(await resolveDocument(api, `${HOST}/document/${DOC_A}`, HOST)).toEqual({
+    expect(await resolveDesign(api, DOC_A, HOST)).toEqual({ id: DOC_A, name: 'Auth flow' });
+    expect(await resolveDesign(api, `${HOST}/design/${DOC_A}`, HOST)).toEqual({
       id: DOC_A,
       name: 'Auth flow',
     });
-    expect(api.calls).toEqual([`/documents/${DOC_A}`, `/documents/${DOC_A}`]);
+    expect(api.calls).toEqual([`/designs/${DOC_A}`, `/designs/${DOC_A}`]);
   });
 
   it('lets the api answer an unknown full id', async () => {
-    await expect(resolveDocument(fakeApi({}), DOC_A, HOST)).rejects.toMatchObject({
+    await expect(resolveDesign(fakeApi({}), DOC_A, HOST)).rejects.toMatchObject({
       status: 404,
       code: 'not_found',
     });
   });
 
-  it('resolves a share link to its document and keeps the code', async () => {
-    const api = fakeApi({ '/share/abc123': { document: { id: DOC_A, name: 'Auth flow' } } });
-    expect(await resolveDocument(api, `${HOST}/document/shared?s=abc123`, HOST)).toEqual({
+  it('resolves a share link to its design and keeps the code', async () => {
+    const api = fakeApi({ '/share/abc123': { design: { id: DOC_A, name: 'Auth flow' } } });
+    expect(await resolveDesign(api, `${HOST}/design/shared?s=abc123`, HOST)).toEqual({
       id: DOC_A,
       name: 'Auth flow',
       shareCode: 'abc123',
@@ -103,23 +103,23 @@ describe('resolveDocument', () => {
 
   it('refuses no match with the nearest names, and several with the candidates', async () => {
     const api = fakeApi(library);
-    expect(await failureOf(resolveDocument(api, 'Auth', HOST))).toMatchObject({
+    expect(await failureOf(resolveDesign(api, 'Auth', HOST))).toMatchObject({
       kind: 'not-found',
-      message: 'no document matches "Auth"',
+      message: 'no design matches "Auth"',
       candidates: [
         { ref: 'aaaa2', name: 'Auth flow v2', detail: 'personal' },
         { ref: 'aaaa1', name: 'Auth flow', detail: 'personal' },
       ],
     });
-    expect(await failureOf(resolveDocument(api, 'aaaa', HOST))).toMatchObject({
+    expect(await failureOf(resolveDesign(api, 'aaaa', HOST))).toMatchObject({
       kind: 'ambiguous',
-      message: '"aaaa" matches 2 documents',
+      message: '"aaaa" matches 2 designs',
       hint: 'aaaa2',
     });
   });
 
   it('never treats a prefix shorter than four as an id', async () => {
-    expect(await failureOf(resolveDocument(fakeApi(library), 'aaa', HOST))).toMatchObject({
+    expect(await failureOf(resolveDesign(fakeApi(library), 'aaa', HOST))).toMatchObject({
       kind: 'not-found',
       candidates: [],
     });
@@ -142,7 +142,7 @@ describe('resolveTab', () => {
     expect(resolveTab(tabs, 'tab-thr', 'Auth')).toMatchObject({ id: 'tab-thr-0000' });
   });
 
-  it('refuses none and several with the tab list, and a document without tabs', async () => {
+  it('refuses none and several with the tab list, and a design without tabs', async () => {
     expect(await failureOf(() => resolveTab(tabs, 'Nope', 'Auth'))).toMatchObject({
       kind: 'not-found',
       message: 'no tab matches "Nope"',
@@ -170,27 +170,27 @@ describe('the address log', () => {
     const log = (line: string) => void logs.push(line);
     const api = fakeApi({
       ...library,
-      [`/documents/${DOC_A}`]: { document: { id: DOC_A, name: 'Auth flow' } },
-      '/share/abc123': { document: { id: DOC_A, name: 'Auth flow' } },
+      [`/designs/${DOC_A}`]: { design: { id: DOC_A, name: 'Auth flow' } },
+      '/share/abc123': { design: { id: DOC_A, name: 'Auth flow' } },
     });
-    await resolveDocument(api, 'Auth flow', HOST, log);
-    await resolveDocument(api, 'aaaa2', HOST, log);
-    await failureOf(resolveDocument(api, 'Nope', HOST, log));
-    await resolveDocument(api, DOC_A, HOST, log);
-    await resolveDocument(api, `${HOST}/document/${DOC_A}`, HOST, log);
-    await resolveDocument(api, `${HOST}/document/shared?s=abc123`, HOST, log);
+    await resolveDesign(api, 'Auth flow', HOST, log);
+    await resolveDesign(api, 'aaaa2', HOST, log);
+    await failureOf(resolveDesign(api, 'Nope', HOST, log));
+    await resolveDesign(api, DOC_A, HOST, log);
+    await resolveDesign(api, `${HOST}/design/${DOC_A}`, HOST, log);
+    await resolveDesign(api, `${HOST}/design/shared?s=abc123`, HOST, log);
     const tabs = [{ id: 'tab-one-0000', name: 'Overview', orderIndex: 0 }];
     resolveTab(tabs, undefined, 'Auth', log);
     resolveTab(tabs, 'overview', 'Auth', log);
     resolveTab(tabs, 'tab-o', 'Auth', log);
     await failureOf(() => resolveTab([], undefined, 'Auth', log));
     expect(logs).toEqual([
-      'address document name 1 matches',
-      'address document prefix 1 matches',
-      'address document name 0 matches',
-      'address document exact 1 matches',
-      'address document url 1 matches',
-      'address document url 1 matches',
+      'address design name 1 matches',
+      'address design prefix 1 matches',
+      'address design name 0 matches',
+      'address design exact 1 matches',
+      'address design url 1 matches',
+      'address design url 1 matches',
       'address tab first 1 matches',
       'address tab name 1 matches',
       'address tab prefix 1 matches',

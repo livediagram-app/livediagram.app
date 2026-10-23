@@ -6,7 +6,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { PALETTE_ADD_HANDLER_KEYS, type PaletteAddHandlers } from './palette-add-handlers';
 import { ToolbarPalette } from './ToolbarPalette';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
-import type { Element } from '@livedesign/document';
+import type { Element } from '@livedesign/design';
 import type { ReactNode } from 'react';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
 import { requestToolbarSearch } from '@/lib/toolbar-search-request';

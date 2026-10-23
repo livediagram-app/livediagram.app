@@ -2,7 +2,7 @@
 // a definition, a token of its own, and steps that end on a closing card.
 
 import { describe, expect, it, vi } from 'vitest';
-import { applyShapeVariant, createShape, type Element } from '@livedesign/document';
+import { applyShapeVariant, createShape, type Element } from '@livedesign/design';
 import { ELEMENT_TOUR_KINDS } from '@/lib/element-tours';
 import { ELEMENT_TOUR_DEFS, elementTourStepTelemetryType } from './element-tour-defs';
 import type { ElementTourApi } from './element-tour-api';

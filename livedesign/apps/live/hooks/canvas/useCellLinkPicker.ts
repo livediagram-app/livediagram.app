@@ -5,7 +5,7 @@
 // (history-committed; null clears it).
 
 import { useState } from 'react';
-import { setCellStyle, type Element, type ElementLink } from '@livedesign/document';
+import { setCellStyle, type Element, type ElementLink } from '@livedesign/design';
 
 type CellLinkPickerDeps = {
   // Locked tab or view-only session: no cell-link mutations may land.

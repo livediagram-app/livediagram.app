@@ -3,20 +3,20 @@
 import { useMemo, useRef, useState } from 'react';
 import {
   apiCreateFolder,
-  apiSetDocumentFolder,
+  apiSetDesignFolder,
   apiUpdateFolder,
-  type DocumentListItem,
+  type DesignListItem,
   type Folder,
   type TeamListItem,
 } from '@/lib/api-client';
 import { logMoveFailure } from '@/lib/move-failure';
-import { DOCUMENT_FAILURE, FOLDER_FAILURE } from '@/lib/write-failure-copy';
+import { DESIGN_FAILURE, FOLDER_FAILURE } from '@/lib/write-failure-copy';
 import { toastName } from '@/lib/toast-name';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { track } from '@/lib/telemetry';
-import type { TeamDocumentRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
+import type { TeamDesignRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
 
-// The unified move-picker slice (docs/specs/013-workspace/team-shared-documents.md), lifted out of
+// The unified move-picker slice (docs/specs/013-workspace/team-shared-designs.md), lifted out of
 // useExplorerState: the picker's open-target state, the per-placement
 // move handlers (personal folder / into a team / within a team / out
 // of a team), the one routing entry point the picker calls, and the
@@ -24,43 +24,43 @@ import type { TeamDocumentRow, TeamFolderRow } from '@/hooks/persistence/useTeam
 // of the lists themselves and passes the mutators in.
 export function useExplorerMoves({
   ownerId,
-  documents: liveDocs,
-  setDocuments,
+  designs: liveDocs,
+  setDesigns,
   folders,
   teams,
   teamFolders,
-  teamDocuments,
+  teamDesigns,
   descendantSet,
   refreshFolders,
   refreshTeamLibraries,
   refreshPersonal,
-  moveDocumentToFolder,
+  moveDesignToFolder,
   toast,
 }: {
   ownerId: string | null;
-  documents: DocumentListItem[];
-  setDocuments: React.Dispatch<React.SetStateAction<DocumentListItem[]>>;
+  designs: DesignListItem[];
+  setDesigns: React.Dispatch<React.SetStateAction<DesignListItem[]>>;
   folders: Folder[];
   teams: TeamListItem[];
   teamFolders: TeamFolderRow[];
-  teamDocuments: TeamDocumentRow[];
+  teamDesigns: TeamDesignRow[];
   descendantSet: (rootId: string) => Set<string>;
   refreshFolders: () => Promise<void>;
   refreshTeamLibraries: () => void;
   refreshPersonal: (ownerId: string) => Promise<void>;
-  moveDocumentToFolder: (id: string, folderId: string | null) => void;
+  moveDesignToFolder: (id: string, folderId: string | null) => void;
   toast: { error: (message: string) => void };
 }) {
   // Move picker target. The picker uses moveAnchorRef for placement.
-  // `kind` discriminates whether we're moving a document or a folder
+  // `kind` discriminates whether we're moving a design or a folder
   // so the picker can filter (a folder can't be moved into itself
   // or its descendants — the server cycle-checks but the picker
   // hides those rows up-front to make the rejection less surprising).
-  // One modal serves every document, personal or team (docs/specs/013-workspace/team-shared-documents.md): it
-  // shows the full destination tree and `moveDocumentTo` routes the
+  // One modal serves every design, personal or team (docs/specs/013-workspace/team-shared-designs.md): it
+  // shows the full destination tree and `moveDesignTo` routes the
   // pick from the subject's current placement.
   const [moveTarget, setMoveTarget] = useState<
-    { kind: 'document'; id: string } | { kind: 'folder'; id: string } | null
+    { kind: 'design'; id: string } | { kind: 'folder'; id: string } | null
   >(null);
   const moveAnchorRef = useRef<HTMLElement | null>(null);
 
@@ -88,93 +88,93 @@ export function useExplorerMoves({
       });
   };
 
-  // Send one of the caller's own documents into a team's shared
-  // library (docs/specs/013-workspace/team-shared-documents.md) — straight into a team folder when the move
+  // Send one of the caller's own designs into a team's shared
+  // library (docs/specs/013-workspace/team-shared-designs.md) — straight into a team folder when the move
   // picker chose one, else the team's root. Leaves the personal
   // lists either way, so the local row is dropped optimistically.
-  const moveDocumentToTeam = (id: string, teamId: string, folderId: string | null = null) => {
+  const moveDesignToTeam = (id: string, teamId: string, folderId: string | null = null) => {
     if (!ownerId) return;
     const row = liveDocs.find((d) => d.id === id) ?? null;
-    // Re-sweep on success so the document appears under the team in
+    // Re-sweep on success so the design appears under the team in
     // Recent / the sidebar / the move picker (the sibling team moves do
     // the same; omitting it left the row invisible until a later bump).
     // On failure, roll the optimistic removal back and say so — the
-    // silent path left the document in neither list, looking deleted
-    // (mirrors moveDocumentToFolder's rollback).
-    void apiSetDocumentFolder(ownerId, id, folderId, teamId)
+    // silent path left the design in neither list, looking deleted
+    // (mirrors moveDesignToFolder's rollback).
+    void apiSetDesignFolder(ownerId, id, folderId, teamId)
       .then(() => {
         refreshTeamLibraries();
-        track('Team', 'Added', 'Document');
+        track('Team', 'Added', 'Design');
       })
       .catch((err: unknown) => {
-        logMoveFailure('document-to-team', ` document=${id}`, err);
-        if (row) setDocuments((prev) => (prev.some((d) => d.id === id) ? prev : [row, ...prev]));
+        logMoveFailure('design-to-team', ` design=${id}`, err);
+        if (row) setDesigns((prev) => (prev.some((d) => d.id === id) ? prev : [row, ...prev]));
         toast.error(
-          `Couldn’t move ${toastName(row?.name) ?? 'the document'} to the team. Try again.`,
+          `Couldn’t move ${toastName(row?.name) ?? 'the design'} to the team. Try again.`,
         );
       });
-    setDocuments((prev) => prev.filter((d) => d.id !== id));
+    setDesigns((prev) => prev.filter((d) => d.id !== id));
   };
 
-  // Re-folder a team-library document WITHIN its team (folderId null =
+  // Re-folder a team-library design WITHIN its team (folderId null =
   // the team's root), then re-sweep so Recent's rows repaint.
-  // Same call the team page's own move uses (docs/specs/013-workspace/team-shared-documents.md).
-  const moveTeamDocumentToFolder = (id: string, teamId: string, folderId: string | null) => {
+  // Same call the team page's own move uses (docs/specs/013-workspace/team-shared-designs.md).
+  const moveTeamDesignToFolder = (id: string, teamId: string, folderId: string | null) => {
     if (!ownerId) return;
     // .then BEFORE .catch, deliberately: chained the other way round the
     // success handler also runs after a swallowed rejection, which is harmless
     // for a refresh but would keep counting moves that never happened.
-    void apiSetDocumentFolder(ownerId, id, folderId, teamId)
+    void apiSetDesignFolder(ownerId, id, folderId, teamId)
       .then(() => {
         refreshTeamLibraries();
-        track('Team', 'Moved', 'Document');
+        track('Team', 'Moved', 'Design');
       })
       .catch((err: unknown) => {
-        logMoveFailure('team-document', ` document=${id}`, err);
-        toast.error(DOCUMENT_FAILURE.move(teamDocuments.find((d) => d.id === id)?.name));
+        logMoveFailure('team-design', ` design=${id}`, err);
+        toast.error(DESIGN_FAILURE.move(teamDesigns.find((d) => d.id === id)?.name));
       });
   };
 
-  // Move a team-library document OUT of its team — either to the
+  // Move a team-library design OUT of its team — either to the
   // caller's personal library (toTeamId null; the server transfers
-  // ownership to the mover, docs/specs/013-workspace/team-shared-documents.md) or on to another team
+  // ownership to the mover, docs/specs/013-workspace/team-shared-designs.md) or on to another team
   // (toTeamId set). Refreshes both the team sweep (the row leaves /
   // moves) and the personal list (it lands there when going personal).
-  const moveTeamDocumentOut = (id: string, toTeamId: string | null, folderId: string | null) => {
+  const moveTeamDesignOut = (id: string, toTeamId: string | null, folderId: string | null) => {
     if (!ownerId) return;
-    void apiSetDocumentFolder(ownerId, id, folderId, toTeamId)
+    void apiSetDesignFolder(ownerId, id, folderId, toTeamId)
       .then(() => {
         refreshTeamLibraries();
         void refreshPersonal(ownerId);
-        track('Team', toTeamId === null ? 'Removed' : 'Moved', 'Document');
+        track('Team', toTeamId === null ? 'Removed' : 'Moved', 'Design');
       })
       .catch((err: unknown) => {
-        logMoveFailure('team-document-out', ` document=${id}`, err);
-        const name = toastName(teamDocuments.find((d) => d.id === id)?.name);
-        toast.error(`Couldn’t move ${name ?? 'the document'} out of the team. Try again.`);
+        logMoveFailure('team-design-out', ` design=${id}`, err);
+        const name = toastName(teamDesigns.find((d) => d.id === id)?.name);
+        toast.error(`Couldn’t move ${name ?? 'the design'} out of the team. Try again.`);
       });
   };
 
-  // One entry point for the unified move picker (docs/specs/013-workspace/team-shared-documents.md): route a
+  // One entry point for the unified move picker (docs/specs/013-workspace/team-shared-designs.md): route a
   // pick to the right handler from the subject's CURRENT placement
   // (personal vs which team) and its destination.
-  const moveDocumentTo = (id: string, dest: { teamId: string | null; folderId: string | null }) => {
-    const fromTeamId = teamDocuments.find((d) => d.id === id)?.team.id ?? null;
+  const moveDesignTo = (id: string, dest: { teamId: string | null; folderId: string | null }) => {
+    const fromTeamId = teamDesigns.find((d) => d.id === id)?.team.id ?? null;
     if (fromTeamId === null) {
       // Currently personal: file into a folder, or hand off to a team.
-      if (dest.teamId === null) moveDocumentToFolder(id, dest.folderId);
-      else moveDocumentToTeam(id, dest.teamId, dest.folderId);
+      if (dest.teamId === null) moveDesignToFolder(id, dest.folderId);
+      else moveDesignToTeam(id, dest.teamId, dest.folderId);
       return;
     }
     // Currently in a team: re-folder within it, or move it out
     // (to personal, or on to another team).
-    if (dest.teamId === fromTeamId) moveTeamDocumentToFolder(id, fromTeamId, dest.folderId);
-    else moveTeamDocumentOut(id, dest.teamId, dest.folderId);
+    if (dest.teamId === fromTeamId) moveTeamDesignToFolder(id, fromTeamId, dest.folderId);
+    else moveTeamDesignOut(id, dest.teamId, dest.folderId);
   };
 
-  const openMovePickerForDocument = (id: string, anchor: HTMLElement | null) => {
+  const openMovePickerForDesign = (id: string, anchor: HTMLElement | null) => {
     moveAnchorRef.current = anchor;
-    setMoveTarget({ kind: 'document', id });
+    setMoveTarget({ kind: 'design', id });
   };
 
   const openMovePickerForFolder = (id: string, anchor: HTMLElement | null) => {
@@ -193,14 +193,14 @@ export function useExplorerMoves({
       .map((f) => ({ id: f.id, name: f.name, parentId: f.parentId }));
   }, [folders, moveTarget, descendantSet]);
 
-  // Team destinations for the move picker (document moves only): each
-  // team with its folder tree, so a document can land in a team folder
+  // Team destinations for the move picker (design moves only): each
+  // team with its folder tree, so a design can land in a team folder
   // in one move. Folders carry parentId for the indented tree. An
-  // offline document (docs/specs/006-document/offline-mode.md) gets none — a team's shared library is
+  // offline design (docs/specs/006-design/offline-mode.md) gets none — a team's shared library is
   // server-side, so a team move could never land.
   const moveTeamDests = useMemo(() => {
     if (
-      moveTarget?.kind === 'document' &&
+      moveTarget?.kind === 'design' &&
       liveDocs.find((d) => d.id === moveTarget.id)?.ownerId === OFFLINE_OWNER_ID
     ) {
       return [];
@@ -245,11 +245,11 @@ export function useExplorerMoves({
     moveAnchorRef,
     moveFolderToParent,
     createMoveFolder,
-    moveDocumentToTeam,
-    moveTeamDocumentToFolder,
-    moveTeamDocumentOut,
-    moveDocumentTo,
-    openMovePickerForDocument,
+    moveDesignToTeam,
+    moveTeamDesignToFolder,
+    moveTeamDesignOut,
+    moveDesignTo,
+    openMovePickerForDesign,
     openMovePickerForFolder,
     movePersonalFolders,
     moveTeamDests,

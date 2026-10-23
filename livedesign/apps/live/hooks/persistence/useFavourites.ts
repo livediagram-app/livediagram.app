@@ -1,6 +1,6 @@
 'use client';
 
-// Per-user document favourites (docs/specs/013-workspace/favourites.md), shared by the Explorer page and
+// Per-user design favourites (docs/specs/013-workspace/favourites.md), shared by the Explorer page and
 // the editor's Explorer panel so the two can't drift on what a star means.
 //
 // The set is fetched once per owner and then kept in memory. Toggling is
@@ -40,17 +40,17 @@ export function useFavourites(ownerId: string | null) {
   }, [ownerId]);
 
   const toggleFavourite = useCallback(
-    (documentId: string) => {
+    (designId: string) => {
       if (!ownerId) return;
-      const next = !idsRef.current.has(documentId);
+      const next = !idsRef.current.has(designId);
       const optimistic = new Set(idsRef.current);
-      if (next) optimistic.add(documentId);
-      else optimistic.delete(documentId);
+      if (next) optimistic.add(designId);
+      else optimistic.delete(designId);
       // Update the ref too, so a second click before the re-render lands
       // reads the value this one just chose rather than the old one.
       idsRef.current = optimistic;
       setFavouriteIds(optimistic);
-      void apiSetFavourite(ownerId, documentId, next);
+      void apiSetFavourite(ownerId, designId, next);
     },
     [idsRef, ownerId],
   );

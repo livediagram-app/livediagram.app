@@ -2,8 +2,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
 import { sqliteD1 } from '../test-sqlite-d1';
 import {
-  documentStatsSql,
-  readDocumentStats,
+  designStatsSql,
+  readDesignStats,
   tabStatsOfData,
   tabStatsStatement,
 } from './tab-stats';
@@ -19,7 +19,7 @@ function arrange() {
   const doc = (id: string) =>
     db.sql
       .prepare(
-        'INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, ?, ?)',
+        'INSERT INTO designs (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, ?, ?)',
       )
       .run(id, 'owner', id, T0, T0);
   const tab = (docId: string, tabId: string, order: number) => {
@@ -28,7 +28,7 @@ function arrange() {
       .run(tabId, tabId, '{}', T0);
     db.sql
       .prepare(
-        'INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES (?, ?, ?, ?)',
+        'INSERT INTO design_tabs (design_id, tab_id, order_index, added_at) VALUES (?, ?, ?, ?)',
       )
       .run(docId, tabId, order, T0);
   };
@@ -51,12 +51,12 @@ function arrange() {
 
 function docStats(sql: DatabaseSync, id: string) {
   const row = sql
-    .prepare(`SELECT ${documentStatsSql('documents.id')} FROM documents WHERE id = ?`)
+    .prepare(`SELECT ${designStatsSql('designs.id')} FROM designs WHERE id = ?`)
     .get(id) as { doc_stats: string | null };
-  return readDocumentStats(row.doc_stats);
+  return readDesignStats(row.doc_stats);
 }
 
-describe('documentStatsSql', () => {
+describe('designStatsSql', () => {
   it('sums every tab', async () => {
     const { db, doc, tab, stats } = arrange();
     doc('D');
@@ -81,7 +81,7 @@ describe('documentStatsSql', () => {
     expect(docStats(db.sql, 'D')).toBeNull();
   });
 
-  it('is null for a document with no tab', () => {
+  it('is null for a design with no tab', () => {
     const { db, doc } = arrange();
     doc('D');
     expect(docStats(db.sql, 'D')).toBeNull();
@@ -97,11 +97,11 @@ describe('documentStatsSql', () => {
   });
 });
 
-describe('readDocumentStats', () => {
+describe('readDesignStats', () => {
   it('is null, with a warning, for a value it cannot read', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    expect(readDocumentStats('not json')).toBeNull();
-    expect(readDocumentStats('{"mode":"bogus","elements":1,"comments":0,"bytes":1}')).toBeNull();
+    expect(readDesignStats('not json')).toBeNull();
+    expect(readDesignStats('{"mode":"bogus","elements":1,"comments":0,"bytes":1}')).toBeNull();
     expect(warn).toHaveBeenCalledTimes(2);
     expect(String(warn.mock.calls[0]![0])).toContain('tab-stats: unreadable doc_stats');
   });

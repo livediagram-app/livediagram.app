@@ -16,7 +16,7 @@ describe('whenTabSaved', () => {
     expect(done).toBe(true);
   });
 
-  it('resolves at once for a tab already saved, and keeps documents and tabs apart', async () => {
+  it('resolves at once for a tab already saved, and keeps designs and tabs apart', async () => {
     noteTabSaved('doc2', 'tabB');
     await expect(whenTabSaved('doc2', 'tabB')).resolves.toBe(true);
     vi.useFakeTimers();

@@ -30,7 +30,7 @@ vi.mock('./routes/ai', () => stub('handleAi'));
 vi.mock('./routes/catalogues', () => stub('handleCatalogues'));
 vi.mock('./routes/capabilities', () => stub('handleCapabilities'));
 vi.mock('./routes/custom-themes', () => stub('handleCustomThemes'));
-vi.mock('./routes/documents', () => stub('handleDocuments'));
+vi.mock('./routes/designs', () => stub('handleDesigns'));
 vi.mock('./routes/folders', () => stub('handleFolders'));
 vi.mock('./routes/forms', () => stub('handleForms'));
 vi.mock('./routes/images', () => stub('handleImages'));
@@ -64,7 +64,7 @@ const SESSION: WorkbenchContext = {
   tokenId: 'tok1',
   pairingId: 'pair1',
   scope: 'workspace',
-  documentId: null,
+  designId: null,
   folderId: null,
   tabId: null,
   origin: 'https://w.example',
@@ -95,15 +95,15 @@ describe('a workspace session at the front door', () => {
     ['GET', 'preferences', 'handlePreferences'],
     ['GET', 'participants/user_1', 'handleParticipants'],
     ['GET', 'share/CODE2345', 'handleShare'],
-    ['GET', 'documents', 'handleDocuments'],
-    ['POST', 'documents', 'handleDocuments'],
-    ['GET', 'documents/any-doc', 'handleDocuments'],
-    ['PUT', 'documents/any-doc/tabs/t1', 'handleDocuments'],
-    ['PUT', 'documents/any-doc/folder', 'handleDocuments'],
-    ['POST', 'documents/any-doc/copy', 'handleDocuments'],
-    ['POST', 'documents/any-doc/share', 'handleDocuments'],
-    ['DELETE', 'documents/any-doc', 'handleDocuments'],
-    ['POST', 'documents/any-doc/room-ticket', 'handleDocuments'],
+    ['GET', 'designs', 'handleDesigns'],
+    ['POST', 'designs', 'handleDesigns'],
+    ['GET', 'designs/any-doc', 'handleDesigns'],
+    ['PUT', 'designs/any-doc/tabs/t1', 'handleDesigns'],
+    ['PUT', 'designs/any-doc/folder', 'handleDesigns'],
+    ['POST', 'designs/any-doc/copy', 'handleDesigns'],
+    ['POST', 'designs/any-doc/share', 'handleDesigns'],
+    ['DELETE', 'designs/any-doc', 'handleDesigns'],
+    ['POST', 'designs/any-doc/room-ticket', 'handleDesigns'],
     ['GET', 'folders', 'handleFolders'],
     ['POST', 'folders', 'handleFolders'],
     ['DELETE', 'folders/f1', 'handleFolders'],
@@ -156,7 +156,7 @@ describe('a workspace session at the front door', () => {
     ['POST', 'teams/team1/members'],
     ['DELETE', 'teams/team1/members/user_2'],
     ['GET', 'teams/team1/invite-link'],
-    ['PUT', 'documents/any-doc/tabs/t1/presence'],
+    ['PUT', 'designs/any-doc/tabs/t1/presence'],
     ['GET', 'forms/abc'],
   ])('refuses %s %s as workbench_confined before any route runs', async (method, path) => {
     const res = await call(method, path);
@@ -167,8 +167,8 @@ describe('a workspace session at the front door', () => {
   });
 
   it('refuses the guest header but lets a share link reach the route', async () => {
-    const guest = await call('GET', 'documents/any-doc', { 'X-Owner-Id': 'guest-1' });
-    const link = await call('GET', 'documents/any-doc', { 'X-Share-Code': 'CODE2345' });
+    const guest = await call('GET', 'designs/any-doc', { 'X-Owner-Id': 'guest-1' });
+    const link = await call('GET', 'designs/any-doc', { 'X-Share-Code': 'CODE2345' });
 
     expect(guest.status).toBe(403);
     expect(link.status).toBe(204);
@@ -181,8 +181,8 @@ describe('a workspace session at the front door', () => {
     });
 
     const write = await call('POST', 'folders');
-    const list = await call('GET', 'documents/any-doc/share');
-    const read = await call('GET', 'documents');
+    const list = await call('GET', 'designs/any-doc/share');
+    const read = await call('GET', 'designs');
 
     expect([write.status, list.status, read.status]).toEqual([403, 403, 204]);
     expect(await write.json()).toEqual({ error: 'workbench_read_only' });

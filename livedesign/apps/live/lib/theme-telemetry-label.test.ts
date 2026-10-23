@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { THEMES } from '@livedesign/document';
+import { THEMES } from '@livedesign/design';
 import { TELEMETRY_TYPE_PATTERN } from '@livedesign/api-schema';
 import { themeTelemetryLabel } from './custom-theme-registry';
 
@@ -31,7 +31,7 @@ describe('themeTelemetryLabel', () => {
   });
 
   it('title-cases an id the catalogue no longer knows', () => {
-    // A built-in retired from THEMES while a document still names it. Still
+    // A built-in retired from THEMES while a design still names it. Still
     // ours, so still a preset token — not user content.
     expect(themeTelemetryLabel('retired-hue')).toBe('Retired-hue');
   });

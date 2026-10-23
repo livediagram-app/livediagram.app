@@ -1,10 +1,10 @@
 # Inbox
 
 **Status: implemented.** An Explorer section, the **Inbox** at
-`/explorer/inbox`, that lists across every document the reader can
+`/explorer/inbox`, that lists across every design the reader can
 open: the **open actions assigned to them**, the **open actions they
 assigned** to other people, and the **unresolved comment threads they
-are in**. Each row opens the document on the right tab with the element
+are in**. Each row opens the design on the right tab with the element
 selected and its action / comment popover already open.
 
 The Inbox was once called **Activity**, and its data layer keeps that name: it reads the
@@ -22,10 +22,10 @@ Actions and comment threads are element-level collaboration metadata:
 they live inside the element, inside the tab JSON, and the only place
 that lists them today is the in-editor **Collaborate Panel**
 ([Assigned actions](../012-collaboration/assigned-actions.md) §5), which is scoped to the tab that is open. Somebody who
-has been assigned work on four documents has to remember which four.
-[Assigned actions](../012-collaboration/assigned-actions.md) §9 called the cross-document inbox out of scope and named the
+has been assigned work on four designs has to remember which four.
+[Assigned actions](../012-collaboration/assigned-actions.md) §9 called the cross-design inbox out of scope and named the
 reason: the per-element blob model is right for the editor, and a
-listing across documents needs a table. This spec adds that table
+listing across designs needs a table. This spec adds that table
 without moving the source of truth.
 
 The Timeline ([Timeline](timeline.md)) is not this. It records that an action _was
@@ -66,16 +66,16 @@ count, and each hidden entirely when empty:
 3. **Open Comment Threads** — unresolved threads the reader is in.
    "In" means one of two things, and the row says which:
    - the reader wrote at least one comment in the thread, or
-   - the thread is on a document the reader **owns** (owners are
+   - the thread is on a design the reader **owns** (owners are
      already treated as included: [Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md) emails them every new
-     comment). The row carries a quiet **Your document** hint.
+     comment). The row carries a quiet **Your design** hint.
 
 Rows share one anatomy with the Collaborate Panel's ([Assigned actions](../012-collaboration/assigned-actions.md) §5) so a
 user recognises them: kind glyph far left (the action clipboard, the
 comment bubble); name + one-line detail in the middle; person avatar
 over a relative time far right. The detail line is where the row is
-_from_: **element label · tab name**, with a **document chip** naming the
-document (a team document's chip also names the team). An action row's
+_from_: **element label · tab name**, with a **design chip** naming the
+design (a team design's chip also names the team). An action row's
 title is the action name, its avatar the assignee (brand-tinted when
 that is the reader, labelled "You"); a **You Assigned** row shows the
 assignee's avatar with "Assigned to <name>" on hover. A thread row's
@@ -87,15 +87,15 @@ Ordering within a section is **newest activity first**: an action's
 comment. The page is capped at 100 rows per kind; the cap is a
 ceiling on a page nobody scrolls that far down, not a paging design.
 
-**Row click opens the element.** The link is the document's normal URL
-(the share-code form for a document shared with the reader, [Read-only embeds (`/embed`)](embeds.md))
+**Row click opens the element.** The link is the design's normal URL
+(the share-code form for a design shared with the reader, [Read-only embeds (`/embed`)](embeds.md))
 with a fragment the editor reads on load:
 
 ```
-/document/<id>[?s=<code>]#t=<tabId>&el=<elementId>&open=action|comments
+/design/<id>[?s=<code>]#t=<tabId>&el=<elementId>&open=action|comments
 ```
 
-`#t=` is the existing tab pin ([Per-tab storage](../006-document/per-tab-storage.md)); `el` and `open` are new. Once
+`#t=` is the existing tab pin ([Per-tab storage](../006-design/per-tab-storage.md)); `el` and `open` are new. Once
 the pinned tab's elements have loaded the editor selects the element,
 scrolls it into view, and opens the named popover, exactly what a
 Collaborate Panel row click does in-editor. The fragment is captured by
@@ -113,15 +113,15 @@ States:
 - **Empty** (nothing open in any section): one `EmptyState` — "Nothing
   waiting on you", with a line explaining what lands here (actions
   assigned to you, actions you assigned, threads you're in) and a link to
-  the assigned-actions help article. No New Document CTA: a new document
+  the assigned-actions help article. No New Design CTA: a new design
   does not put anything on this page.
 - **Failed**: "Couldn't load your activity" with **Try again**. Distinct
   from empty for the same reason the Timeline keeps them apart
   ([Timeline](timeline.md) §2.4): "we couldn't ask" and "there is nothing" are
   different answers.
 
-**rows in This Browser.** A row from a document saved only in this browser ([Offline Mode](../006-document/offline-mode.md))
-carries the [This Browser pill](../006-document/offline-mode.md#this-browser-pill) in its "where" line, after the document
+**rows in This Browser.** A row from a design saved only in this browser ([Offline Mode](../006-design/offline-mode.md))
+carries the [This Browser pill](../006-design/offline-mode.md#this-browser-pill) in its "where" line, after the design
 chip, as a label (the row is already a link): the same amber words and glyph, and on hover "Lives only in this browser.
 Clearing this browser's site data deletes it." Nobody reads such a row as saved on livedesign or visible to anyone
 else. Its rows are found in the browser (§2.4) and listed among the server's, in the same sections and the same
@@ -166,10 +166,10 @@ CREATE TABLE collab_threads (
 );
 ```
 
-- **Keyed by tab, not document.** A tab can belong to several documents
-  ([Tab ↔ document many-to-many](../006-document/tab-document-many-to-many.md)); the document is resolved at read time through
-  `document_tabs`, which is also what makes deletion free: a tab's rows
-  die with it (FK cascade), and a document's tabs die with the document.
+- **Keyed by tab, not design.** A tab can belong to several designs
+  ([Tab ↔ design many-to-many](../006-design/tab-design-many-to-many.md)); the design is resolved at read time through
+  `design_tabs`, which is also what makes deletion free: a tab's rows
+  die with it (FK cascade), and a design's tabs die with the design.
 - **One row per action, one per thread.** An element carries at most
   one action, keyed `(tab_id, element_id, action_id)` in `collab_actions`, and one
   thread. Either way a save is a full replace of the
@@ -199,16 +199,16 @@ by accident without also forgetting to write the tab:
 | tab autosave `PUT …/tabs/:tabId`                                                                             | `upsertTab`                | statements appended to the tab's batch       |
 | view-role comment `POST …/comments`                                                                          | `upsertTab`                | same                                         |
 | delete-own comment `DELETE …/comments/:id`                                                                   | `upsertTab`                | same                                         |
-| create (`POST /documents`, templates, import)                                                                | `seedTabs`                 | same, per tab                                |
-| duplicate / copy from a share link                                                                           | `copyDocument`             | `INSERT … SELECT` from the source tab's rows |
-| MCP `update_document` / `add_tab` ([MCP server](../015-api/mcp-server.md))                                   | goes through the tab `PUT` | covered                                      |
-| tab / document delete, account delete                                                                        | FK cascade from `tabs`     | nothing to do                                |
-| tab link into another document ([Tab ↔ document many-to-many](../006-document/tab-document-many-to-many.md)) | rows are per tab           | nothing to do                                |
+| create (`POST /designs`, templates, import)                                                                | `seedTabs`                 | same, per tab                                |
+| duplicate / copy from a share link                                                                           | `copyDesign`             | `INSERT … SELECT` from the source tab's rows |
+| MCP `update_design` / `add_tab` ([MCP server](../015-api/mcp-server.md))                                   | goes through the tab `PUT` | covered                                      |
+| tab / design delete, account delete                                                                        | FK cascade from `tabs`     | nothing to do                                |
+| tab link into another design ([Tab ↔ design many-to-many](../006-design/tab-design-many-to-many.md)) | rows are per tab           | nothing to do                                |
 
 The rows are derived by a pure function over the tab's elements
-(`collabIndexRowsFromElements` in `packages/document`, shared with the browser's read of documents in This Browser, §2.4), which reuses the element-label rule
+(`collabIndexRowsFromElements` in `packages/design`, shared with the browser's read of designs in This Browser, §2.4), which reuses the element-label rule
 the Collaborate Panel already applies (`elementDisplayLabel`, moved
-into `packages/document` so the panel and the index cannot disagree on
+into `packages/design` so the panel and the index cannot disagree on
 what a row is called).
 
 ### 2.2 Identity across sign-up: `owner_aliases`
@@ -216,10 +216,10 @@ what a row is called).
 Comment `authorId`s and self-assigned `assignee.userId`s are written
 with whatever identity the writer had at the time, a guest participant
 id for anyone signed out ([Auth + guest access](../014-identity/auth-and-guest-access.md)). When that guest signs up, their
-documents migrate to the Clerk id (`POST /api/migrate`) but the ids
+designs migrate to the Clerk id (`POST /api/migrate`) but the ids
 inside the blobs do not, and a later re-index of an untouched tab
 would faithfully re-write the guest id. Rewriting blobs on migration
-is the wrong fix (every tab of every document, on the sign-up path).
+is the wrong fix (every tab of every design, on the sign-up path).
 
 So the migration records the relationship instead:
 
@@ -249,7 +249,7 @@ current id; extending them is a separate change.
 Existing tabs have no index rows until they are saved again. On the
 first `GET /api/activity` for an owner (no `collab_index_state` row),
 the worker seeds the index off the response path (`waitUntil`) from
-the tabs of every document the reader can see (owned, joined-team,
+the tabs of every design the reader can see (owned, joined-team,
 shared-with), cheaply pre-filtered in SQL to tabs whose JSON contains
 a `commentThread` or `action` key, capped at 300 tabs (logged when
 hit), and stamps `backfilled_at`. The write is the same full-replace
@@ -260,24 +260,24 @@ skipped rather than written over it. The
 same state row moves with the owner on migration so the seed does not
 run twice against the new id.
 
-### 2.4 documents in This Browser
+### 2.4 designs in This Browser
 
-A document in This Browser ([Offline Mode](../006-document/offline-mode.md)) never reaches the worker, so the index above
-never holds it. The editor reads those documents itself, from the browser's offline store, and lists what it finds with
+A design in This Browser ([Offline Mode](../006-design/offline-mode.md)) never reaches the worker, so the index above
+never holds it. The editor reads those designs itself, from the browser's offline store, and lists what it finds with
 the server's rows (`readOfflineActivity`, `apps/live/lib/offline/offline-activity.ts`):
 
 - **The same derivation.** Actions and element threads come from `collabIndexRowsFromElements` (in
-  `packages/document`), so a document in This Browser lists exactly what the same
-  document would list once synced.
+  `packages/design`), so a design in This Browser lists exactly what the same
+  design would list once synced.
 - **Who "me" is.** The reader's owner id and, when this browser still holds one, its guest participant id: a guest's
   self-assignments and comments carry the guest id, and stay theirs after signing in on the same browser. There are no team members offline, so no member-id match.
-- **What is listed.** The rules of §4 with the reader as the owner of every document in This Browser: an open
-  action assigned to or by the reader, and every unresolved thread ("Your document"). Documents in the local Trash are
+- **What is listed.** The rules of §4 with the reader as the owner of every design in This Browser: an open
+  action assigned to or by the reader, and every unresolved thread ("Your design"). Designs in the local Trash are
   skipped.
-- **The shape.** The same wire types, `via: 'own'`, no team and no share code (the plain document URL opens it), marked
+- **The shape.** The same wire types, `via: 'own'`, no team and no share code (the plain design URL opens it), marked
   local in the editor so the row shows the pill (§1). Capped at `ACTIVITY_LIST_MAX` per kind, like the server read.
 - **Failure.** The offline store failing to answer is logged (`[inbox] offline-read-failed`) and lists nothing local;
-  the page's failed state stays the server read's. A browser with no documents in This Browser reads nothing more than the
+  the page's failed state stays the server read's. A browser with no designs in This Browser reads nothing more than the
   index of ids it already holds.
 
 ## 3. API
@@ -295,10 +295,10 @@ the OpenAPI manifest + schema roots ([API documentation (OpenAPI)](../015-api/ap
 
 ```ts
 type ActivityPlace = {
-  documentId: string;
-  documentName: string;
+  designId: string;
+  designName: string;
   teamId: string | null;
-  // 'own' | 'team' | 'shared' — how the reader reaches the document;
+  // 'own' | 'team' | 'shared' — how the reader reaches the design;
   // shareCode is set only for 'shared', so the client can build the
   // visitor URL (docs/specs/013-workspace/embeds.md).
   via: 'own' | 'team' | 'shared';
@@ -324,36 +324,36 @@ type ActivityThread = ActivityPlace & {
   latest: { text: string; authorName: string; authorColor: string; at: number };
   firstAt: number;
   youCommented: boolean;
-  onYourDocument: boolean;
+  onYourDesign: boolean;
   mentionsYou: boolean; // an entry of mentioned_ids ∈ me ∪ my team_members rows
 };
 ```
 
 ## 4. The read, and who sees what
 
-Every row is scoped **first** by the documents the reader can open, the
-same three sets the Explorer's Recent already merges: documents they
-own, documents in a team they have _joined_ (an `invited` row grants
-nothing, [Teams](teams.md)), and documents shared with them whose share is still
+Every row is scoped **first** by the designs the reader can open, the
+same three sets the Explorer's Recent already merges: designs they
+own, designs in a team they have _joined_ (an `invited` row grants
+nothing, [Teams](teams.md)), and designs shared with them whose share is still
 live. Only then is the involvement test applied:
 
 - an action is theirs to see when its `assignee_user_id` ∈ me, its
   `assigner_id` ∈ me, or its `assignee_member_id` is one of their
   `team_members` rows (this is how an action assigned to an
   _invited_ address finds its owner once they join, [Assigned actions](../012-collaboration/assigned-actions.md) §1);
-- a thread is theirs when they own the document, an author id ∈ me, or
+- a thread is theirs when they own the design, an author id ∈ me, or
   they are @-mentioned in it: a `mentioned_ids` entry ∈ me or is one of
   their `team_members` rows ([Comment mentions](../012-collaboration/comment-mentions.md)). The row carries
   `mentionsYou`, and its hint reads **Mentioned You** (it wins over "Your
-  document").
+  design").
 
 That order is the security boundary: a name can never leak a row from
-a document the reader has lost access to, and it is what keeps the
+a design the reader has lost access to, and it is what keeps the
 `json_each` participant scan bounded to one person's library.
 
-A tab linked into two visible documents would list twice; the read
+A tab linked into two visible designs would list twice; the read
 dedupes on (tab, element) for a thread and (tab, element, action) for an
-action, preferring the document the reader owns,
+action, preferring the design the reader owns,
 then a team's, then a shared one.
 
 ## 5. Explorer integration
@@ -365,7 +365,7 @@ The section checklist from [Timeline](timeline.md) §8.3: `views.tsx` gains
 gets the Overview row (with `InboxIcon` in
 `components/primitives/explorer-icons.tsx`),
 `useExplorerPane` names it, `ExplorerPane` dispatches to the
-lazy-loaded `ActivityPane` (not a `BROWSE_KIND`; no New Document / New
+lazy-loaded `ActivityPane` (not a `BROWSE_KIND`; no New Design / New
 Folder header actions; Help links the new article), and
 `routes.test.ts`'s `STATIC_NODES` lists it. The sidebar badge and the
 pane read the same fetch (`useActivityFeed`, held in Explorer state
@@ -383,11 +383,11 @@ A new `Activity` category in `TELEMETRY_CATEGORIES` ([Telemetry + public transpa
 The category keeps the data layer's name. Picking the sidebar row is `UI` / `Selected` / `Sidebar.Inbox`
 ([Explorer structure](explorer-structure.md#telemetry)).
 
-Never an action name, comment text, document name, or any identity.
+Never an action name, comment text, design name, or any identity.
 
 ## 7. Testing
 
-- `collab-index-rows.test.ts` (`packages/document`): the pure derivation (labels, statuses,
+- `collab-index-rows.test.ts` (`packages/design`): the pure derivation (labels, statuses,
   participant sets, latest-comment selection, tables' first-cell rule).
 - `activity.test.ts` (routes): owner gate, the db call is scoped to the
   resolved owner, backfill is dispatched only when unseeded, the
@@ -400,8 +400,8 @@ Never an action name, comment text, document name, or any identity.
   element, unknown `open`, junk).
 - `useActivityFeed.test.tsx`: sections split from one read, error vs
   empty, retry, rows in This Browser merged in order and counted.
-- `offline-activity.test.ts`: the browser read of documents in This Browser (§2.4): assigned to and by the reader, the
-  guest id, threads, trashed documents, the cap.
+- `offline-activity.test.ts`: the browser read of designs in This Browser (§2.4): assigned to and by the reader, the
+  guest id, threads, trashed designs, the cap.
 - Help: the registry / icon / colour / articleCount tests pick the new
   article up automatically.
 

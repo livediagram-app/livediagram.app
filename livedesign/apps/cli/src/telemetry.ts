@@ -14,7 +14,7 @@ import { isNetworkFailure } from './output/failure-of';
 const TELEMETRY_FLUSH_TIMEOUT_MS = 300;
 
 export const telemetryNotice = (host: string) =>
-  `livedesign counts which commands succeed (the command's name only: never arguments, documents or hosts) and sends the count to ${host}. Turn it off: livedesign telemetry off, or LIVEDESIGN_TELEMETRY=0.`;
+  `livedesign counts which commands succeed (the command's name only: never arguments, designs or hosts) and sends the count to ${host}. Turn it off: livedesign telemetry off, or LIVEDESIGN_TELEMETRY=0.`;
 
 export type TelemetrySink = { io: CliIo; apiBase: string; log: DebugLog };
 
@@ -83,7 +83,7 @@ export async function reportApiFailure(
 ): Promise<void> {
   if (telemetryOffReason(sink.io, config)) return;
   // errorTypeToken, as the mcp builds it, so a long verb is clipped to the ingest's type limit, never refused there.
-  // The dotted verb id is one part (`document.ls` → DocumentLs).
+  // The dotted verb id is one part (`design.ls` → DesignLs).
   const verb = pascalToken(verbId);
   if (err instanceof ApiError && err.status >= 500)
     await report('Error', 'Api', errorTypeToken(`Http${err.status}`, verb), sink);

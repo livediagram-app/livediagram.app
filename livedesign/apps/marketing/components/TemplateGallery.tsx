@@ -16,7 +16,7 @@ import { EYEBROW } from '@/components/eyebrow';
 // Spreadsheet); every other category sits folded underneath as a card (CategoryTiles) that opens it
 // in the open one's place, the shelf it replaces folding back (Blank Slate leading the folds). It only
 // browses: the search is the hero's (components/HeroSearch.tsx), which finds across every shelf. Every
-// card is a link that creates that document straight away and opens it in the editor (TemplateCard).
+// card is a link that creates that design straight away and opens it in the editor (TemplateCard).
 
 // Every shelf, dealt once: the gallery has no filters, so they never change.
 const SHELVES = galleryShelves();

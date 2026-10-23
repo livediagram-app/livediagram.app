@@ -24,7 +24,7 @@
     "react-dom": "^19.3.1"
   },
   "devDependencies": {
-    "@livedesign/document": "workspace:*",
+    "@livedesign/design": "workspace:*",
     "@livedesign/help-registry": "workspace:*",
     "@livedesign/licences": "workspace:*",
     "@livedesign/next-config": "workspace:*",

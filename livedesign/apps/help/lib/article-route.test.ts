@@ -19,8 +19,8 @@ describe('parentRouteHref', () => {
     expect(parentRouteHref('/palette/tools/data-elements/legend')).toBe(
       '/palette/tools/data-elements/',
     );
-    expect(parentRouteHref('/developers/working-with-documents/edit-operations/')).toBe(
-      '/developers/working-with-documents/',
+    expect(parentRouteHref('/developers/working-with-designs/edit-operations/')).toBe(
+      '/developers/working-with-designs/',
     );
     expect(parentRouteHref('/about/what-is-livedesign/')).toBe('/about/');
     expect(parentRouteHref('/canvas/')).toBe('/');

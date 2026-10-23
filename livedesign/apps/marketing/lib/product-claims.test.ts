@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { EDITOR_MODES, editorModeLabel } from '@livedesign/document';
+import { EDITOR_MODES, editorModeLabel } from '@livedesign/design';
 
 import { COMPETITOR_LOOK } from '@/components/compare/competitor-look';
 
@@ -30,7 +30,7 @@ const FALSE_CLAIMS: { pattern: RegExp; why: string }[] = [
     why: 'a Figma link embeds live on the canvas (the Embed element)',
   },
   {
-    pattern: /as large as it needs to be|no limits on documents/i,
+    pattern: /as large as it needs to be|no limits on designs/i,
     why: 'a tab is capped at 10,000 elements; only plan limits are absent',
   },
   {

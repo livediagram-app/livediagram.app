@@ -6,48 +6,48 @@ import { ShareLiveImageMenu } from '@/components/illustrations/sharing';
 export const metadata = helpMetadata({
   title: 'Live Image',
   description:
-    'Copy an always-current image URL of a document to embed in a README, wiki, or doc where an interactive iframe is not allowed.',
+    'Copy an always-current image URL of a design to embed in a README, wiki, or doc where an interactive iframe is not allowed.',
   path: '/help/collaboration/sharing/live-image/',
 });
 
-<ArticleLayout title="Live Image" description="An image URL that follows your document, so a README or doc always shows the latest version." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "live-image")}>
+<ArticleLayout title="Live Image" description="An image URL that follows your design, so a README or doc always shows the latest version." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "live-image")}>
 
-A live image is a plain image URL for a document that **follows the document as it changes**: the server keeps an SVG snapshot that is redrawn on the first load after each save, so wherever you place the URL shows the current document. It is the companion to an [embed](/help/collaboration/sharing/embeds/): the embed is interactive (pan, zoom, live updates), while a live image is a single static picture, which is exactly what you need somewhere an `<iframe>` is not allowed, like a **GitHub README** or a Markdown file.
+A live image is a plain image URL for a design that **follows the design as it changes**: the server keeps an SVG snapshot that is redrawn on the first load after each save, so wherever you place the URL shows the current design. It is the companion to an [embed](/help/collaboration/sharing/embeds/): the embed is interactive (pan, zoom, live updates), while a live image is a single static picture, which is exactly what you need somewhere an `<iframe>` is not allowed, like a **GitHub README** or a Markdown file.
 
 ## How it differs from an embed
 
 Both come from a share link and both stay current, but they suit different homes:
 
 - An **embed** is an interactive frame: readers can pan and zoom, and it updates in real time. Best for wikis, Notion, and your own pages.
-- A **live image** is a static SVG served at a URL. It does not pan or zoom, but it drops into anywhere that accepts an image, including places that strip iframes. The server refreshes its snapshot after the document is saved, so the image catches up to your edits on the next load.
+- A **live image** is a static SVG served at a URL. It does not pan or zoom, but it drops into anywhere that accepts an image, including places that strip iframes. The server refreshes its snapshot after the design is saved, so the image catches up to your edits on the next load.
 
 ## Getting a live image
 
-<Step n={1}>Open the **Share** dialog and create or pick a pass for the document.</Step>
+<Step n={1}>Open the **Share** dialog and create or pick a pass for the design.</Step>
 <Step n={2}>Open the pass's **Live image** menu, beside **Embed**, and choose the format you need: **Copy image URL** for the bare link, **Copy Markdown** for a `![diagram](…)` snippet, or **Copy HTML** for an `<img>` tag.</Step>
 <Step n={3}>Paste it where you want the picture to appear. A README takes the Markdown; a web page takes the HTML or the raw URL.</Step>
 
-<Figure caption="The Live image menu copies the image as a URL, Markdown or HTML, with a Tab picker on documents with several tabs.">
+<Figure caption="The Live image menu copies the image as a URL, Markdown or HTML, with a Tab picker on designs with several tabs.">
   <ShareLiveImageMenu />
 </Figure>
 
-The image serves a cached snapshot that is redrawn on the first load after the document is saved, so editing the document updates the image the next time it loads (an image of another tab is drawn fresh on each load). Browsers and sites may keep a copy for about 30 seconds, and may show it for up to five minutes more while they fetch a fresh one, so a page can show the previous version briefly after an edit.
+The image serves a cached snapshot that is redrawn on the first load after the design is saved, so editing the design updates the image the next time it loads (an image of another tab is drawn fresh on each load). Browsers and sites may keep a copy for about 30 seconds, and may show it for up to five minutes more while they fetch a fresh one, so a page can show the previous version briefly after an edit.
 
 ## Scoping the image to one tab
 
-By default the image shows the document's first tab. When the document has more than one tab, the **Live image** menu also shows a **Tab** dropdown: pick a tab and every copy option (image URL, Markdown, HTML) carries a tab parameter that scopes the image to that tab. That way a README can show the overview tab while a design doc shows the detail tab, each from its own URL. The choice applies to every pass while the dialog is open.
+By default the image shows the design's first tab. When the design has more than one tab, the **Live image** menu also shows a **Tab** dropdown: pick a tab and every copy option (image URL, Markdown, HTML) carries a tab parameter that scopes the image to that tab. That way a README can show the overview tab while a design doc shows the detail tab, each from its own URL. The choice applies to every pass while the dialog is open.
 
 A pass scoped to [one tab](/help/collaboration/sharing/one-tab/) always shows its own tab, so its menu has no **Tab** dropdown.
 
 ## When it is not offered
 
-The **Live image** menu is hidden on every pass while the document has a [share password](/help/collaboration/sharing/share-passwords/). An `<img>` request cannot supply a password, so the server refuses an image for a protected document rather than leak it, and offering the option would only mislead. That includes image URLs you copied before setting the password: they stop showing the document. Remove the password to use a live image, or use the [embed](/help/collaboration/sharing/embeds/), which can prompt for the password inside its frame.
+The **Live image** menu is hidden on every pass while the design has a [share password](/help/collaboration/sharing/share-passwords/). An `<img>` request cannot supply a password, so the server refuses an image for a protected design rather than leak it, and offering the option would only mislead. That includes image URLs you copied before setting the password: they stop showing the design. Remove the password to use a live image, or use the [embed](/help/collaboration/sharing/embeds/), which can prompt for the password inside its frame.
 
 A live image also stops working when its share link is revoked or [expires](/help/collaboration/sharing/share-link-expiry/), so keep the link alive for as long as the image is in use.
 
 ## Privacy and self-hosting
 
-A live image only exposes what its share link exposes, as a flat picture with no editing actions. It works on self-hosted instances once the optional R2 bucket is set up (without it, image URLs return not found): the URL is built from your own origin, so a self-hosted document produces a self-hosted image.
+A live image only exposes what its share link exposes, as a flat picture with no editing actions. It works on self-hosted instances once the optional R2 bucket is set up (without it, image URLs return not found): the URL is built from your own origin, so a self-hosted design produces a self-hosted image.
 
 <Tip>
   A live image in your project's README keeps the architecture diagram beside the code and always

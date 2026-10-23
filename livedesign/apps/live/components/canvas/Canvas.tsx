@@ -7,7 +7,7 @@ import { useViewportOf, useViewportStore } from '@/hooks/canvas/useViewportStore
 import { useDoubleTapZoom } from '@/hooks/canvas/useDoubleTapZoom';
 import { useSmallElementDoubleTap } from '@/hooks/canvas/useSmallElementDoubleTap';
 import { useCallback, useEffect, useMemo, useRef, ViewTransition } from 'react';
-import { isAnimatedPattern } from '@livedesign/document';
+import { isAnimatedPattern } from '@livedesign/design';
 import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
 import { useObservedSize } from '@/hooks/canvas/useObservedSize';
 import { AnimatedCanvasBackground } from '@/components/canvas/AnimatedCanvasBackground';
@@ -691,7 +691,7 @@ function CanvasView(props: CanvasProps) {
               onIsoOrbit={isoCamera.startOrbit}
               onIsoReset={isoCamera.reset}
             />
-            {/* Lazy per-tab load (docs/specs/006-document/per-tab-storage.md). Last child + z-[var(--z-overlay)] so it covers the
+            {/* Lazy per-tab load (docs/specs/006-design/per-tab-storage.md). Last child + z-[var(--z-overlay)] so it covers the
           canvas AND the floating palette, blocking any edit that would
           otherwise overwrite an unfetched tab's real content. */}
             {tabLoadState && tabLoadState !== 'ready' ? (

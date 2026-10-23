@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { penColourHex } from '@livedesign/document';
+import { penColourHex } from '@livedesign/design';
 import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
 import { DEFAULT_LASER_CONFIG } from '@/lib/laser-config';
 import { LaserColourRow } from './LaserColourRow';

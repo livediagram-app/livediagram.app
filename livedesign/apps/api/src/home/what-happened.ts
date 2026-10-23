@@ -1,11 +1,11 @@
 // What happened (docs/specs/013-workspace/explorer-home.md; blueprint "Verbs", "Grouping"):
-// other people's actions on documents the reader can open, one group per document per local day.
+// other people's actions on designs the reader can open, one group per design per local day.
 // Pure: the read hands in rows newest first, already scoped and filtered to other people.
 
 import {
   HOME_VERBS,
   type HomeAction,
-  type HomeDocument,
+  type HomeDesign,
   type HomeGroup,
   type HomePerson,
   type HomeVerb,
@@ -20,7 +20,7 @@ export type WhatHappenedRow = {
   occurredAt: number;
   description: string | null;
   snapshot: Record<string, unknown>;
-  document: HomeDocument;
+  design: HomeDesign;
   actor: Omit<HomePerson, 'id'>;
 };
 
@@ -28,10 +28,10 @@ export type WhatHappenedRow = {
 export const WHAT_HAPPENED_EVENT_TYPES = [
   'comment_added',
   'comment_resolved',
-  'document_edited',
+  'design_edited',
   'action_assigned',
   'action_completed',
-  'team_document_added',
+  'team_design_added',
 ] as const;
 
 function text(snapshot: Record<string, unknown>, key: string): string | null {
@@ -52,7 +52,7 @@ export function verbOf(
       return { verb: snapshot.reply === true ? 'replied' : 'commented', detail: description };
     case 'comment_resolved':
       return { verb: 'resolved', detail: description };
-    case 'document_edited':
+    case 'design_edited':
       return { verb: 'edited', detail: null };
     case 'action_assigned': {
       const assignee = text(snapshot, 'assigneeId');
@@ -61,7 +61,7 @@ export function verbOf(
     }
     case 'action_completed':
       return { verb: 'completed', detail: text(snapshot, 'actionName') };
-    case 'team_document_added':
+    case 'team_design_added':
       return { verb: 'shared', detail: text(snapshot, 'teamName') };
     default:
       return null;
@@ -70,7 +70,7 @@ export function verbOf(
 
 const VERB_ORDER = new Map<HomeVerb, number>(HOME_VERBS.map((verb, i) => [verb, i]));
 
-/** Group rows (newest first) per document per day in `timeZone`; groups newest first. */
+/** Group rows (newest first) per design per day in `timeZone`; groups newest first. */
 export function groupWhatHappened(
   rows: readonly WhatHappenedRow[],
   timeZone: string,
@@ -81,12 +81,12 @@ export function groupWhatHappened(
     const mapped = verbOf(row.eventType, row.snapshot, row.description, me);
     if (!mapped) continue;
     const day = localDay(row.occurredAt, timeZone);
-    const id = `${row.document.documentId}:${day}`;
+    const id = `${row.design.designId}:${day}`;
     let entry = groups.get(id);
     if (!entry) {
       entry = {
         group: {
-          ...row.document,
+          ...row.design,
           id,
           day,
           summary: false,

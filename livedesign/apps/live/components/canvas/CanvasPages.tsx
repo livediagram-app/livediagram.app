@@ -28,7 +28,7 @@ import {
   pageScreenRect,
   pageUnits,
   type LaidOutPage,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { HoverCard, lucideGlyph, Tooltip } from '@livedesign/ui';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { PageLayoutPreview } from './PageLayoutPreview';

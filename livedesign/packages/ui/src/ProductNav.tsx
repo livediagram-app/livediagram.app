@@ -69,8 +69,8 @@ const ICONS: Record<ProductNavKey, () => ReactNode> = {
 
 const ITEMS: { key: ProductNavKey; label: string; href: string; desc: string }[] = [
   { key: 'home', label: 'Home', href: '/', desc: 'Learn about our features' },
-  { key: 'editor', label: 'Editor', href: '/new', desc: 'Start or edit a document' },
-  { key: 'explorer', label: 'Explorer', href: '/explorer', desc: 'Your documents & folders' },
+  { key: 'editor', label: 'Editor', href: '/new', desc: 'Start or edit a design' },
+  { key: 'explorer', label: 'Explorer', href: '/explorer', desc: 'Your designs & folders' },
   { key: 'help', label: 'Help', href: '/help/', desc: 'Guides, tutorials & answers' },
   {
     key: 'telemetry',

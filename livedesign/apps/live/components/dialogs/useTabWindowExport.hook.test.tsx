@@ -3,7 +3,7 @@
 
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Element, Tab } from '@livedesign/document';
+import type { Element, Tab } from '@livedesign/design';
 
 const loadTabImages = vi.fn(async () => new Map());
 vi.mock('@/lib/export-tab', async (real) => ({
@@ -32,7 +32,7 @@ const box = {
   width: 10,
   height: 10,
 } as Element;
-const ctx = { ownerId: 'o', documentId: 'd', shareCode: null };
+const ctx = { ownerId: 'o', designId: 'd', shareCode: null };
 
 describe('useTabWindowExport', () => {
   it('is ready for a window whose tab was deleted, photos and all', async () => {

@@ -153,19 +153,19 @@ describe('useTimelineEntityMenus', () => {
     expect(labels(gone)).toEqual(['Open Themes']);
   });
 
-  it('opens an unresolved document, and returns nothing for a folder tombstone', () => {
+  it('opens an unresolved design, and returns nothing for a folder tombstone', () => {
     const m = menuFor();
     expect(
       labels(
         m(
           event({
-            sourceType: 'document',
-            eventType: 'document_renamed',
-            snapshot: { documentId: 'd9' },
+            sourceType: 'design',
+            eventType: 'design_renamed',
+            snapshot: { designId: 'd9' },
           }),
         ),
       ),
-    ).toEqual(['Open Document']);
+    ).toEqual(['Open Design']);
     expect(m(event({ eventType: 'folder_deleted', snapshot: { folderName: 'Gone' } }))).toBeNull();
   });
 });

@@ -1,4 +1,4 @@
-// A text box that fits or wraps hugs its text (docs/specs/006-document/document-structure.md):
+// A text box that fits or wraps hugs its text (docs/specs/006-design/design-structure.md):
 // the box is the text's own line box plus a little padding, never a default size. This module
 // is the pure geometry: what the box is for a measured block of text, where a click or a drag
 // puts a new one, and what a resize handle does to it. The measuring itself is the DOM's
@@ -11,7 +11,7 @@ import {
   TEXT_SCALE_MIN,
   type Element,
   type TextElement,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import type { DragMode, ShapeBounds } from '@/lib/canvas';
 
 // Canvas px around the text's line box, left and right, then top and bottom.

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Redirect } from '@/components/Redirect';
 
-// The space was "My Work", became "My Documents", and is "My Work" again (docs/specs/013-workspace/team-shared-documents.md); its article moved
+// The space was "My Work", became "My Designs", and is "My Work" again (docs/specs/013-workspace/team-shared-designs.md); its article moved
 // to personal-space along the way.
 // This stub keeps the old help URL alive (it redirects there) but is noindex
 // so search engines consolidate on the canonical article rather than this

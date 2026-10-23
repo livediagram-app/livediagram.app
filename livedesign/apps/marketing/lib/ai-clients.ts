@@ -241,7 +241,7 @@ export const AI_CLIENTS: readonly AiClient[] = [
 type StarterPrompt = { title: string; prompt: string };
 
 // Each maps to a shipped MCP tool (docs/specs/015-api/mcp-server.md §4): change_pages for wireframe
-// and logo pages, create_document from a template, find + read_document, share_document.
+// and logo pages, create_design from a template, find + read_design, share_design.
 export const STARTER_PROMPTS: readonly StarterPrompt[] = [
   {
     title: 'Wireframe a website',
@@ -261,11 +261,11 @@ export const STARTER_PROMPTS: readonly StarterPrompt[] = [
   {
     title: 'Start from a template',
     prompt:
-      'Start a livedesign document from the template that suits an app launch, fill it in from the notes I paste below, and share a link I can send.',
+      'Start a livedesign design from the template that suits an app launch, fill it in from the notes I paste below, and share a link I can send.',
   },
   {
     title: 'Find and improve',
     prompt:
-      'Find my livedesign document about onboarding, show it to me, and suggest three ways to make it clearer. Make the changes once I agree.',
+      'Find my livedesign design about onboarding, show it to me, and suggest three ways to make it clearer. Make the changes once I agree.',
   },
 ];

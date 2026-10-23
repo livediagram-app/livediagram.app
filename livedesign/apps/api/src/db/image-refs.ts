@@ -97,24 +97,24 @@ export function imageRefIndexPageStatement(
   return env.DB.prepare(indexTabsSql('t.rowid > ?1 AND t.rowid <= ?2')).bind(fromRowId, toRowId);
 }
 
-// Every tab of the owner's documents: the usage map's lazy index while the
+// Every tab of the owner's designs: the usage map's lazy index while the
 // backfill is incomplete.
 export function imageRefIndexOwnerStatement(env: Env, ownerId: string): D1PreparedStatement {
   return env.DB.prepare(
     indexTabsSql(
-      `t.id IN (SELECT dt.tab_id FROM document_tabs dt
-                  JOIN documents d ON d.id = dt.document_id
+      `t.id IN (SELECT dt.tab_id FROM design_tabs dt
+                  JOIN designs d ON d.id = dt.design_id
                  WHERE d.owner_id = ?1)`,
     ),
   ).bind(ownerId);
 }
 
-// Every tab of one document: the share read's lazy index while the backfill is
+// Every tab of one design: the share read's lazy index while the backfill is
 // incomplete.
-export function imageRefIndexDocumentStatement(env: Env, documentId: string): D1PreparedStatement {
+export function imageRefIndexDesignStatement(env: Env, designId: string): D1PreparedStatement {
   return env.DB.prepare(
-    indexTabsSql('t.id IN (SELECT tab_id FROM document_tabs WHERE document_id = ?1)'),
-  ).bind(documentId);
+    indexTabsSql('t.id IN (SELECT tab_id FROM design_tabs WHERE design_id = ?1)'),
+  ).bind(designId);
 }
 
 // ---------- Backfill state --------------------------------------------

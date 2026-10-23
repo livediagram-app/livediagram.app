@@ -1,28 +1,28 @@
-// A document as its owner may reach it, for the workbench mint and redemption
+// A design as its owner may reach it, for the workbench mint and redemption
 // (docs/specs/013-workspace/blueprints/workbench-embeds.md, mint step 5 and redemption step 4): the owner's own
 // access (personal ownership or team membership), never a share code, whatever the request carries (WB3).
 // Redemption has no caller identity of its own, so this cannot ride the request context's gates.
 
 import type { WorkbenchRole } from '@livedesign/api-schema';
-import { resolveDocumentGrant } from '../auth/document-access';
-import { getDocumentMeta, getFolder, getMembership, getTrashedDocumentMeta } from '../db';
-import { documentTrashed, notFound } from '../responses';
+import { resolveDesignGrant } from '../auth/design-access';
+import { getDesignMeta, getFolder, getMembership, getTrashedDesignMeta } from '../db';
+import { designTrashed, notFound } from '../responses';
 import type { Env } from '../types';
 
-type OwnerDocumentAccess = { documentId: string; role: WorkbenchRole };
+type OwnerDesignAccess = { designId: string; role: WorkbenchRole };
 
-export async function ownerDocumentAccess(
+export async function ownerDesignAccess(
   env: Env,
-  documentId: string,
+  designId: string,
   ownerId: string,
-): Promise<OwnerDocumentAccess | Response> {
-  const live = await getDocumentMeta(env, documentId);
+): Promise<OwnerDesignAccess | Response> {
+  const live = await getDesignMeta(env, designId);
   if (!live) {
-    const trashed = await getTrashedDocumentMeta(env, documentId);
+    const trashed = await getTrashedDesignMeta(env, designId);
     if (!trashed) return notFound();
-    const could = await resolveDocumentGrant(
+    const could = await resolveDesignGrant(
       env,
-      documentId,
+      designId,
       ownerId,
       null,
       trashed.ownerId,
@@ -30,11 +30,11 @@ export async function ownerDocumentAccess(
       trashed.teamId,
       ownerId,
     );
-    return could ? documentTrashed() : notFound();
+    return could ? designTrashed() : notFound();
   }
-  const grant = await resolveDocumentGrant(
+  const grant = await resolveDesignGrant(
     env,
-    documentId,
+    designId,
     ownerId,
     null,
     live.ownerId,
@@ -43,7 +43,7 @@ export async function ownerDocumentAccess(
     ownerId,
   );
   if (!grant) return notFound();
-  return { documentId, role: grant.role };
+  return { designId, role: grant.role };
 }
 
 // A folder a workspace ticket may start on (WB52): one of the owner's personal folders, or a folder of a team they

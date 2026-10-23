@@ -14,7 +14,7 @@ import {
   type Element,
   type Tab,
   detachChip,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import { PASTE_OFFSET } from '@/lib/paste-placement';
 

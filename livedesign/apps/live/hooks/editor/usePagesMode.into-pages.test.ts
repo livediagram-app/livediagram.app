@@ -5,7 +5,7 @@
 
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Element, Tab } from '@livedesign/document';
+import type { Element, Tab } from '@livedesign/design';
 import { track } from '@/lib/telemetry';
 import { usePagesMode } from './usePagesMode';
 

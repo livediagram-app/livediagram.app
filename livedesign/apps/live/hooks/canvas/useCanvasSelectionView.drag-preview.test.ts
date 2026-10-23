@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Element } from '@livedesign/document';
+import type { Element } from '@livedesign/design';
 import { useCanvasSelectionView } from './useCanvasSelectionView';
 import { resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
 

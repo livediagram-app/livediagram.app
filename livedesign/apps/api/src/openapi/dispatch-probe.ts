@@ -82,7 +82,7 @@ export function routeSourceFiles(): string[] {
 
 /** The `case '<segment>':` blocks of index.ts's dispatch switch, with the source
  *  of every route module each block reaches (transitively through sibling
- *  `./<module>` imports, since the document routes are split across files). */
+ *  `./<module>` imports, since the design routes are split across files). */
 function dispatchSources(): Map<string, string[]> {
   const index = readSource('index.ts')!;
   const handlerFile = new Map<string, string>();
@@ -130,7 +130,7 @@ export function routeVocabulary(): RouteVocabulary {
   return out;
 }
 
-/** `/documents/{id}/copy` → `['documents', '{id}', 'copy']`. */
+/** `/designs/{id}/copy` → `['designs', '{id}', 'copy']`. */
 export function templateSegments(template: string): string[] {
   return template.replace(/^\//, '').split('/');
 }
@@ -176,7 +176,7 @@ export async function probeDispatch(
   const env = {
     DB: trap('DB'),
     IMAGES: trap('IMAGES'),
-    DOCUMENT_ROOM: trap('DOCUMENT_ROOM'),
+    DESIGN_ROOM: trap('DESIGN_ROOM'),
     TELEMETRY_ENABLED: 'true',
     OPENAI_API_KEY: 'probe-key',
   } as unknown as Env;

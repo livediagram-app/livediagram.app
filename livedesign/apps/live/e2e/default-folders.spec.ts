@@ -12,7 +12,7 @@ import {
 
 // Default folders for a guest, in dark mode (docs/specs/013-workspace/default-folders.md
 // "Surfaces"; folders.md "Deleting a folder"): set from the folder menu and shown by the marker,
-// where the New Document wizard files a new document without asking, listed in Settings, and left
+// where the New Design wizard files a new design without asking, listed in Settings, and left
 // dangling (and said so) when the folder is deleted, its contents moving up to its parent.
 
 type Seeded = { owner: string; headers: Record<string, string> };
@@ -63,10 +63,10 @@ async function defaults(page: Page, s: Seeded): Promise<Record<string, string>> 
   return Object.fromEntries(body.defaults.map((d) => [d.key, d.folderId]));
 }
 
-async function documentFolder(page: Page, s: Seeded, id: string): Promise<string | null> {
-  const res = await page.request.get(`${apiBase}/documents`, { headers: s.headers });
-  const body = (await res.json()) as { documents: { id: string; folderId: string | null }[] };
-  return body.documents.find((d) => d.id === id)?.folderId ?? null;
+async function designFolder(page: Page, s: Seeded, id: string): Promise<string | null> {
+  const res = await page.request.get(`${apiBase}/designs`, { headers: s.headers });
+  const body = (await res.json()) as { designs: { id: string; folderId: string | null }[] };
+  return body.designs.find((d) => d.id === id)?.folderId ?? null;
 }
 
 const nav = (page: Page) => page.getByRole('navigation', { name: 'Explorer' }).first();
@@ -90,7 +90,7 @@ test.describe('default folders', () => {
 
     await row.locator('[data-tree-row]').first().click({ button: 'right' });
     await page.getByRole('menuitem', { name: 'Use as Default for' }).click();
-    await expect(page.getByText('New documents that open as')).toBeVisible();
+    await expect(page.getByText('New designs that open as')).toBeVisible();
     await page.getByRole('menuitemcheckbox', { name: 'Retrospectives' }).click();
     await expect(page.getByRole('menuitemcheckbox', { name: 'Retrospectives' })).toHaveAttribute(
       'aria-checked',
@@ -120,7 +120,7 @@ test.describe('default folders', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('the wizard files a new document in its default folder without asking, else at the root', async ({
+  test('the wizard files a new design in its default folder without asking, else at the root', async ({
     page,
     pageErrors,
     baseURL,
@@ -132,10 +132,10 @@ test.describe('default folders', () => {
 
     // No Location step: choosing Draw makes the whiteboard, in the whiteboards' default folder.
     const whiteboard = await createInMode(page, 'draw');
-    expect(await documentFolder(page, s, whiteboard)).toBe(workshops);
+    expect(await designFolder(page, s, whiteboard)).toBe(workshops);
     // Diagrams have no default: the root of My Work.
     const diagram = await createInMode(page, 'diagram');
-    expect(await documentFolder(page, s, diagram)).toBeNull();
+    expect(await designFolder(page, s, diagram)).toBeNull();
     expectNoPageErrors(pageErrors);
   });
 
@@ -157,7 +157,7 @@ test.describe('default folders', () => {
     await menu.click();
     await page.getByRole('menuitem', { name: 'Delete', exact: true }).click();
     const confirm = page.getByRole('dialog').filter({ hasText: 'Delete "Workshops"?' });
-    await expect(confirm).toContainText('Its documents and subfolders move to "Projects".');
+    await expect(confirm).toContainText('Its designs and subfolders move to "Projects".');
     await expect(confirm).toContainText('New whiteboards are saved here by default.');
     await confirm.getByRole('button', { name: 'Delete folder' }).click();
 
@@ -170,7 +170,7 @@ test.describe('default folders', () => {
       .toBe(projects);
     expect(await defaults(page, s)).toEqual({ 'mode:draw': workshops });
 
-    await page.goto(`/explorer/folder?id=${projects}&settings=documents`);
+    await page.goto(`/explorer/folder?id=${projects}&settings=designs`);
     await expect(page.getByText('Workshops (deleted), using My Work')).toBeVisible({
       timeout: 30_000,
     });
@@ -179,7 +179,7 @@ test.describe('default folders', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('a /new?folder= context files the document there, ahead of the default', async ({
+  test('a /new?folder= context files the design there, ahead of the default', async ({
     page,
     pageErrors,
     baseURL,
@@ -190,7 +190,7 @@ test.describe('default folders', () => {
     const workshops = await folder(page, s, 'Workshops');
     await setDefault(page, s, 'mode:draw', workshops);
     const id = await createInMode(page, 'draw', `/new?folder=${sprints}`);
-    expect(await documentFolder(page, s, id)).toBe(sprints);
+    expect(await designFolder(page, s, id)).toBe(sprints);
     expectNoPageErrors(pageErrors);
   });
 });

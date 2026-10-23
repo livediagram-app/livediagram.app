@@ -45,7 +45,7 @@ Invariants: no item in both groups; `mostUsed.length <= n`, `recent.length <= n`
 **Merge property** (spec "cheap to merge"): for lists `A` and `B`, with `flat(S) = [...S.mostUsed, ...S.recent]`,
 `withinReach([...A, ...B], n)` equals `withinReach([...flat(withinReach(A, n)), ...flat(withinReach(B, n))], n)`
 whenever the given order is the same total order on both sides (callers sort by a stable key, such as the
-document id, before allocating).
+design id, before allocating).
 
 ## Interfaces and contracts
 
@@ -77,7 +77,7 @@ Items are compared by identity; a caller never passes the same item twice.
 ## Performance and limits
 
 `O(k log k)` for `k` items: two sorts of copies. Callers pass at most a few hundred items (Home's 8 server items plus this
-browser's opened local documents).
+browser's opened local designs).
 
 ## Testing
 

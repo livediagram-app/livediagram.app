@@ -78,7 +78,7 @@ export const viewport: Viewport = PUBLIC_VIEWPORT;
 
 // JSON-LD structured data, see docs/specs/019-marketing/marketing-site.md "SEO and
 // metadata". Two schemas under one @graph: WebSite for brand-name
-// search results, SoftwareApplication for "document editor"
+// search results, SoftwareApplication for "design editor"
 // category browse. Both restate facts already on the page; the
 // free-tier offer is truthful (the hosted product is currently
 // free to use).
@@ -144,7 +144,7 @@ const JSON_LD = {
 };
 
 // The cross-page transition opt-in (page-motion.css, docs/specs/019-marketing/marketing-site.md), inline in the
-// <head>. The browser only runs a cross-document view transition if the NEW
+// <head>. The browser only runs a cross-design view transition if the NEW
 // page has opted in by its first paint; from the bundled stylesheet the rule
 // sometimes landed after that, the transition was skipped, and the old page
 // logged "Transition was skipped". Inline, it is parsed before anything draws.

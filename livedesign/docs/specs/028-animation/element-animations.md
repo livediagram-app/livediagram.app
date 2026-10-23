@@ -118,7 +118,7 @@ A text element's old value lives in `animation`. Picking a Text animation for it
 - **Loops and reveals.** A **loop** repeats a motion around the rest frame. A **reveal** brings the element or its
   words in. With Repeat on, a reveal cycles: reveal, hold, clear, again. With Repeat off, it plays once and stays
   revealed; a loop plays one cycle and settles on its rest frame.
-- **When a play-once runs.** When the element appears with it: the document opening, a tab switch, or the moment it
+- **When a play-once runs.** When the element appears with it: the design opening, a tab switch, or the moment it
   is picked.
 - **Text plays once by default.** A Text animation's Repeat starts off: words type in (or ripple, or glow)
   once and stay revealed. Every other set loops by default.
@@ -269,7 +269,7 @@ to appear.
   (every other animation loops by default and stores Repeat only when false).
 - The fields are cosmetic. Validation is lenient on them as on every cosmetic field: an unknown value renders as no
   animation.
-- No migration: old documents render as they did.
+- No migration: old designs render as they did.
 
 ## Telemetry
 

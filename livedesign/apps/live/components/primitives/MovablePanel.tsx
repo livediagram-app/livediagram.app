@@ -355,7 +355,7 @@ export function MovablePanel({
           style={!growBody && bodyMaxH !== null ? { maxHeight: px(bodyMaxH) } : undefined}
           // Horizontal overflow is always CLIPPED: panels are fixed-width by
           // design, so any x-overflow is a row failing to truncate (e.g. a
-          // long document name), and a horizontal scrollbar would surface the
+          // long design name), and a horizontal scrollbar would surface the
           // bug instead of containing it.
           // `overflow-hidden` is required for the grid-rows-[0fr] collapse to
           // actually clip the body: without an overflow set, the grid item's

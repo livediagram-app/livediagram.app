@@ -10,7 +10,7 @@ import {
   type ImageElement,
   type ShapeElement,
   type TextElement,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { pageLayoutById } from './layout-catalogue';
 import { carryPageContent, warmLayoutPlaceholders } from './page-layout-carry';
 import type { PageLayoutId } from './page-layouts';

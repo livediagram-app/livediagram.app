@@ -4,7 +4,7 @@ How to check what the Export dialog really produces for a tab (a new page kind, 
 renderer), in the browser, without saving files to the Downloads folder. Spec: [Export fidelity](../specs/020-import-export/export-fidelity.md)
 for what an image draws.
 
-1. Use the running dev server and a document of your own (never someone's real document). Make it from `/new`
+1. Use the running dev server and a design of your own (never someone's real design). Make it from `/new`
    with a template that has the page kind you are checking (a slide deck, an article, an infographic, a logo or a
    wireframe).
 2. Put real content in first: a few pages with text, a chart and a picture. An empty page only proves the empty

@@ -1,4 +1,4 @@
-import { isFixedSizeShape } from '@livedesign/document';
+import { isFixedSizeShape } from '@livedesign/design';
 import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
 import {
   createComponent,
@@ -18,9 +18,9 @@ import {
   type Element,
   type Endpoint,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { deriveNewBoxedColours } from '@/lib/themes';
-import type { ThemeDefinition } from '@livedesign/document';
+import type { ThemeDefinition } from '@livedesign/design';
 import { isTechIconId } from '@/lib/tech-icons';
 import { getSticker, stickerDropSize } from '@/lib/stickers';
 import type { PendingDraw } from '@/lib/draw-mode';

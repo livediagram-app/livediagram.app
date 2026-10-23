@@ -4,10 +4,10 @@ import { ApiError } from '@livedesign/api-client';
 
 const BY_STATUS: Readonly<Record<number, string>> = {
   401: 'the token is not accepted: sign in again.',
-  403: 'you may view this document but not change it (or not this part of it).',
-  404: 'no such document, or it is not shared with you. find_documents lists them.',
-  410: 'that document is in the Trash: restore it with restore_document first.',
-  413: 'that is more than the document can hold.',
+  403: 'you may view this design but not change it (or not this part of it).',
+  404: 'no such design, or it is not shared with you. find_designs lists them.',
+  410: 'that design is in the Trash: restore it with restore_design first.',
+  413: 'that is more than the design can hold.',
   // A burst past the per-token limit (docs/specs/015-api/public-api-and-tokens.md §3.5): the window is a minute.
   429: 'too many calls in the last minute (the limit is per token). Wait about a minute, then make the same call again.',
 };

@@ -8,7 +8,7 @@ import {
   withReadableLabelInks,
   type Appearance,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { withPageBackgroundsFollowingTheme } from './page-theme-follow';
 import { getResolvedAppearance } from '@livedesign/ui';
 import {
@@ -40,7 +40,7 @@ export function withThemeApplied(
   // reads as "stuck on the deleted theme". Hard-reset to the new
   // theme instead so picking a theme always visibly applies.
   //
-  // A tab whose theme was simply NEVER SET (a fresh document, an
+  // A tab whose theme was simply NEVER SET (a fresh design, an
   // added tab, the Blank template) is NOT that case: its baseline
   // is the default theme, and the preserve-customs walk against it
   // works — hard-resetting here wiped a user's hand-picked colours

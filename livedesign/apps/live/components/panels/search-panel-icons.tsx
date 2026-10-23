@@ -11,7 +11,7 @@ import {
 } from '@livedesign/icons/lucide';
 import type { IconPrim } from '@livedesign/icons';
 import type { SearchResultItem } from '@/lib/search';
-import { DocumentIcon } from '@/components/primitives/explorer-icons';
+import { DesignIcon } from '@/components/primitives/explorer-icons';
 import { Glyph, Prims } from '@livedesign/ui';
 
 // The search panel's result-kind glyphs (docs/specs/008-canvas/canvas-and-palette.md Search panel), lifted
@@ -34,7 +34,7 @@ const KIND_PRIMS: Partial<Record<SearchResultItem['kind'], readonly IconPrim[]>>
 };
 
 export function SearchResultIcon({ item }: { item: SearchResultItem }) {
-  if (item.kind === 'document') return <DocumentIcon size={13} />;
+  if (item.kind === 'design') return <DesignIcon size={13} />;
   return (
     <Glyph size={13} units={24}>
       <Prims prims={KIND_PRIMS[item.kind] ?? lucideCircle} />

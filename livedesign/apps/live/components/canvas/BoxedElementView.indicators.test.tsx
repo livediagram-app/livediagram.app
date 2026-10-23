@@ -2,7 +2,7 @@
 import { render } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, type BoxedElement } from '@livedesign/document';
+import { createShape, type BoxedElement } from '@livedesign/design';
 import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 import {
   ElementIndicatorStyleProvider,

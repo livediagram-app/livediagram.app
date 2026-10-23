@@ -1,10 +1,10 @@
 // Placement on create (docs/specs/013-workspace/folders.md "Placement on create"): where a new
-// document is filed, and the named refusals when that cannot be honoured. The api answers these
+// design is filed, and the named refusals when that cannot be honoured. The api answers these
 // tokens and the editor branches on them, so both read them from here.
 
-/** Where a document is filed: a team's library (My Work when null) and a folder in it (the
+/** Where a design is filed: a team's library (My Work when null) and a folder in it (the
  *  space's root when null). */
-export type DocumentPlacement = { teamId: string | null; folderId: string | null };
+export type DesignPlacement = { teamId: string | null; folderId: string | null };
 
 /** Every refusal of a create's placement, as the response's `error` token. */
 export const PLACEMENT_REJECTIONS = [

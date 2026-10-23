@@ -1,7 +1,7 @@
 // docs/specs/008-canvas/canvas-performance.md "A selection change re-renders what it touches": the
 // selection chrome reads the selection store, and follows it through select, reselect, select-all,
 // a free arrow, delete and undo.
-import { expect, expectNoPageErrors, seedTab, startBlankDocument, test } from './fixtures';
+import { expect, expectNoPageErrors, seedTab, startBlankDesign, test } from './fixtures';
 
 const square = (id: string, label: string, x: number, y: number) => ({
   id,
@@ -31,7 +31,7 @@ const shot = async (page: import('@playwright/test').Page, n: string) => {
 test('the selection chrome follows the selection', async ({ page, pageErrors }) => {
   test.setTimeout(120_000);
   await page.emulateMedia({ colorScheme: 'dark' });
-  await startBlankDocument(page);
+  await startBlankDesign(page);
   await seedTab(page, board);
   const plus = page.getByRole('button', { name: 'Quick add and connect' });
   const box = (id: string) => page.locator(`[data-element-id="${id}"]`).first();

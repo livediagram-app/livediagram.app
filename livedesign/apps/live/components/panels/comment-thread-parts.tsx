@@ -14,7 +14,7 @@ import {
   Tooltip,
   identityVars,
 } from '@livedesign/ui';
-import type { Comment, CommentMention, CommentThread } from '@livedesign/document';
+import type { Comment, CommentMention, CommentThread } from '@livedesign/design';
 import { MentionMenu } from '@/components/primitives/MentionMenu';
 import { MentionText } from '@/components/primitives/MentionText';
 import { useMentionAutocomplete } from '@/hooks/ui/useMentionAutocomplete';

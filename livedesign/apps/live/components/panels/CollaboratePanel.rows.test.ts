@@ -4,7 +4,7 @@ import {
   createShape,
   type BoxedElement,
   type ElementAction,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { actionRowsFromElements } from './CollaboratePanel';
 import { rowsFor } from './collaborate/collaborate-model';
 

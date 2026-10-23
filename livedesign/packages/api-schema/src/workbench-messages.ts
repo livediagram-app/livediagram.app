@@ -15,29 +15,29 @@ type WorkbenchColourScheme = 'light' | 'dark';
 
 export type HelloMessage = { type: 'livedesign:hello'; v: 1 };
 export type HelloAckMessage = { type: 'livedesign:hello-ack'; v: 1; name: string };
-export type DocumentReadyMessage = {
+export type DesignReadyMessage = {
   type: 'livedesign:ready';
   v: 1;
-  documentId: string;
-  documentName: string;
+  designId: string;
+  designName: string;
   tabId: string;
   tabName: string;
   role: WorkbenchRole;
 };
-// A workspace frame is ready once its Explorer mounts: no document yet.
+// A workspace frame is ready once its Explorer mounts: no design yet.
 export type WorkspaceReadyMessage = {
   type: 'livedesign:ready';
   v: 1;
   scope: 'workspace';
   role: WorkbenchRole;
 };
-export type ReadyMessage = DocumentReadyMessage | WorkspaceReadyMessage;
+export type ReadyMessage = DesignReadyMessage | WorkspaceReadyMessage;
 export type TabMessage = { type: 'livedesign:tab'; v: 1; tabId: string; tabName: string };
 export type SelectionMessage = {
   type: 'livedesign:selection';
   v: 1;
-  documentId: string;
-  documentName: string;
+  designId: string;
+  designName: string;
   tabId: string;
   rev: number;
   // 0 when nothing is selected; `reference` then reads `whole tab` (blueprint WB28).
@@ -53,23 +53,23 @@ export type ThemeMessage = {
   colourScheme: WorkbenchColourScheme;
 };
 export type EndedMessage = { type: 'livedesign:ended'; v: 1; reason: WorkbenchEndReason };
-// Where a workspace frame is, sent on every move. `view` is the Explorer view's name, or `document`.
+// Where a workspace frame is, sent on every move. `view` is the Explorer view's name, or `design`.
 export type PlaceMessage = {
   type: 'livedesign:place';
   v: 1;
   view: string;
   folderId: string | null;
   folderName: string | null;
-  // The documents directly in the folder shown; null on every other view.
-  documentCount: number | null;
-  documentId: string | null;
-  documentName: string | null;
+  // The designs directly in the folder shown; null on every other view.
+  designCount: number | null;
+  designId: string | null;
+  designName: string | null;
   tabId: string | null;
   tabName: string | null;
   role: WorkbenchRole;
 };
 export type WorkbenchOpenTarget =
-  { view: 'home' } | { folderId: string } | { documentId: string; tabId?: string };
+  { view: 'home' } | { folderId: string } | { designId: string; tabId?: string };
 // The workbench moves a workspace frame.
 export type OpenMessage = { type: 'livedesign:open'; v: 1; to: WorkbenchOpenTarget };
 
@@ -118,7 +118,7 @@ type Parser = (m: Fields) => WorkbenchMessage | null;
 const isString = (v: unknown): v is string => typeof v === 'string';
 const isStringOrNull = (v: unknown): v is string | null => v === null || isString(v);
 const isCountOrNull = (v: unknown): v is number | null => v === null || isCount(v);
-// A document, folder or tab id the workbench names (1 to 64 characters, as a ref).
+// A design, folder or tab id the workbench names (1 to 64 characters, as a ref).
 const isId = (v: unknown): v is string =>
   isString(v) && v.length >= 1 && v.length <= REF_MAX_LENGTH;
 const isCount = (v: unknown): v is number => Number.isInteger(v) && (v as number) >= 0;
@@ -140,16 +140,16 @@ const TO_WORKBENCH: Record<string, Parser> = {
         ? { type: 'livedesign:ready', v: 1, scope: 'workspace', role: m.role as WorkbenchRole }
         : null;
     }
-    return isString(m.documentId) &&
-      isString(m.documentName) &&
+    return isString(m.designId) &&
+      isString(m.designName) &&
       isString(m.tabId) &&
       isString(m.tabName) &&
       ROLES.includes(m.role)
       ? {
           type: 'livedesign:ready',
           v: 1,
-          documentId: m.documentId,
-          documentName: m.documentName,
+          designId: m.designId,
+          designName: m.designName,
           tabId: m.tabId,
           tabName: m.tabName,
           role: m.role as WorkbenchRole,
@@ -162,9 +162,9 @@ const TO_WORKBENCH: Record<string, Parser> = {
     m.view.length <= REF_MAX_LENGTH &&
     isStringOrNull(m.folderId) &&
     isStringOrNull(m.folderName) &&
-    isCountOrNull(m.documentCount) &&
-    isStringOrNull(m.documentId) &&
-    isStringOrNull(m.documentName) &&
+    isCountOrNull(m.designCount) &&
+    isStringOrNull(m.designId) &&
+    isStringOrNull(m.designName) &&
     isStringOrNull(m.tabId) &&
     isStringOrNull(m.tabName) &&
     ROLES.includes(m.role)
@@ -174,9 +174,9 @@ const TO_WORKBENCH: Record<string, Parser> = {
           view: m.view,
           folderId: m.folderId,
           folderName: m.folderName,
-          documentCount: m.documentCount,
-          documentId: m.documentId,
-          documentName: m.documentName,
+          designCount: m.designCount,
+          designId: m.designId,
+          designName: m.designName,
           tabId: m.tabId,
           tabName: m.tabName,
           role: m.role as WorkbenchRole,
@@ -187,8 +187,8 @@ const TO_WORKBENCH: Record<string, Parser> = {
       ? { type: 'livedesign:tab', v: 1, tabId: m.tabId, tabName: m.tabName }
       : null,
   'livedesign:selection': (m) =>
-    isString(m.documentId) &&
-    isString(m.documentName) &&
+    isString(m.designId) &&
+    isString(m.designName) &&
     isString(m.tabId) &&
     isCount(m.rev) &&
     isCount(m.count) &&
@@ -196,8 +196,8 @@ const TO_WORKBENCH: Record<string, Parser> = {
       ? {
           type: 'livedesign:selection',
           v: 1,
-          documentId: m.documentId,
-          documentName: m.documentName,
+          designId: m.designId,
+          designName: m.designName,
           tabId: m.tabId,
           rev: m.rev,
           count: m.count,
@@ -216,9 +216,9 @@ function openTargetOf(to: unknown): WorkbenchOpenTarget | null {
   const t = to as Fields;
   if (t.view === 'home') return { view: 'home' };
   if (isId(t.folderId)) return { folderId: t.folderId };
-  if (!isId(t.documentId)) return null;
-  if (t.tabId === undefined) return { documentId: t.documentId };
-  return isId(t.tabId) ? { documentId: t.documentId, tabId: t.tabId } : null;
+  if (!isId(t.designId)) return null;
+  if (t.tabId === undefined) return { designId: t.designId };
+  return isId(t.tabId) ? { designId: t.designId, tabId: t.tabId } : null;
 }
 
 const TO_PAGE: Record<string, Parser> = {

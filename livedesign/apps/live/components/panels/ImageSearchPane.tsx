@@ -41,7 +41,7 @@ const GRID_COLUMNS = { 3: 'grid-cols-3', 4: 'grid-cols-4' } as const;
 
 export function ImageSearchPane({
   ownerId,
-  documentId,
+  designId,
   onPicked,
   filters,
   onPreview,
@@ -49,7 +49,7 @@ export function ImageSearchPane({
   autoFocus = true,
 }: {
   ownerId: string;
-  documentId: string;
+  designId: string;
   onPicked: (image: PickedImage, result: OpenverseImage) => void;
   // Openverse's shape and size filters; the picker passes none.
   filters?: OpenverseFilters;
@@ -59,7 +59,7 @@ export function ImageSearchPane({
   autoFocus?: boolean;
 }) {
   const [draft, setDraft] = useState('');
-  const search = useImageSearch({ ownerId, documentId, onPicked, filters });
+  const search = useImageSearch({ ownerId, designId, onPicked, filters });
   const grid = GRID_COLUMNS[columns];
   const loading = search.status === 'loading';
   // A new search swaps the grid for placeholders; a further page adds a row of them under it.

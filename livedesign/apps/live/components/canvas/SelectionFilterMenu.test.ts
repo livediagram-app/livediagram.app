@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livedesign/document';
+import type { Element } from '@livedesign/design';
 import { buildFilterGroups } from './SelectionFilterMenu';
 
 // Minimal element stubs — buildFilterGroups only reads `id`, `type`, `shape`.

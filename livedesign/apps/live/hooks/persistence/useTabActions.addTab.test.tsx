@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livedesign/document';
+import type { Tab } from '@livedesign/design';
 import { useTabActions } from './useTabActions';
 
 // docs/specs/007-editor/pages-mode.md "One mode": every tab opens in Pages.

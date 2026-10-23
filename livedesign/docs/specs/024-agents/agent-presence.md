@@ -22,14 +22,14 @@ person's, and comments are how people and agents talk on the canvas when nobody 
 - The owner sees their own agent's status on their own avatar when both are on the tab, and as an avatar in their
   name on any other tab.
 - Two tokens of one owner on one tab show as one avatar, with the status set last.
-- A personal document's stack, otherwise hidden, shows while its owner's agent is present.
+- A personal design's stack, otherwise hidden, shows while its owner's agent is present.
 - The Collaborators modal lists an agent under its tab with its status line, offers no Follow, and leaves it out of
   the people count.
-- The room recognises the owner's own sessions by a per-document tag derived from the owner id, held inside the room
+- The room recognises the owner's own sessions by a per-design tag derived from the owner id, held inside the room
   and never sent to a socket, so no owner id reaches the room.
 - **Every changeset** applied or reverted with a token refreshes that token's presence on that tab for
   `AGENT_PRESENCE_TTL_MS`. A dry run or a refused changeset refreshes nothing.
-- An agent may set presence explicitly: `PUT /api/documents/:id/tabs/:tabId/presence` with `status` (up to 80
+- An agent may set presence explicitly: `PUT /api/designs/:id/tabs/:tabId/presence` with `status` (up to 80
   characters), `focus` (up to 20 element ids, shown with a ring in the owner's colour) and `ttl` (up to
   `AGENT_PRESENCE_MAX_TTL_MS`). `DELETE` on the same path clears it. The agent holds no socket.
 - The room keeps agent presence entries beside people's and expires them on their ttl. An agent's presence never
@@ -42,7 +42,7 @@ person's, and comments are how people and agents talk on the canvas when nobody 
   the room as an `el-delta` like add. Agents and people use the same endpoints.
 - An editor that may comment but not edit resolves and reopens through these endpoints, as it adds; an editor that
   may edit keeps the room and its save.
-- `GET /api/documents/:id/comments?status=open|resolved|all` lists threads across tabs with their element's ref and
+- `GET /api/designs/:id/comments?status=open|resolved|all` lists threads across tabs with their element's ref and
   label, so an agent can read the conversation without reading the tab. It is not capped: it reads one tab at a
   time.
 - Agents cannot be mentioned. An agent that answers comments reads new ones as they arrive ([CLI](../015-api/cli.md)
@@ -56,7 +56,7 @@ as a share link: reading needs read access; comments, taking part and presence n
 submits no changesets; a view token reads and writes nothing, comments and presence included.
 
 Until [share roles](../013-workspace/share-roles.md) are built, `gateParticipate` names today's rule: read access to
-the document or tab, as a view link may already comment, with a read-only token refused every write at the choke
+the design or tab, as a view link may already comment, with a read-only token refused every write at the choke
 point. It becomes the Participant check when share roles land, and no route changes then.
 
 ## Limits
@@ -68,5 +68,5 @@ point. It becomes the Participant check when share roles land, and no route chan
 
 ## Observability
 
-Logs `[agent-presence] set`, `[agent-presence] cleared`, `[agent-presence] expired` with the document, tab and token
+Logs `[agent-presence] set`, `[agent-presence] cleared`, `[agent-presence] expired` with the design, tab and token
 id. Telemetry: category `Agent`, action `Present`, type the front door, counted once when a `PUT` creates an entry.

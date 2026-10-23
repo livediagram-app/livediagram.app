@@ -18,7 +18,7 @@ touching validation, both export renderers, Markdown,
 the MCP tools and the API schema, to arrive at something that
 behaves like a shape in every one of them.
 
-A shape already carries what a document needs:
+A shape already carries what a design needs:
 
 - **`richText` runs** for the body, with `label` as the plain-text mirror
   ([Canvas and palette](../008-canvas/canvas-and-palette.md)). The formatting algebra, the contentEditable bridge, search,
@@ -40,7 +40,7 @@ one search box. And the selection toolbar names an element by its kind, so a
 tile called Document selecting into "Selected Page" made the editor look like
 it disagreed with itself.
 
-Page is also simply more accurate: it is one sheet, not a document that flows
+Page is also simply more accurate: it is one sheet, not a design that flows
 across sheets (see Out of scope).
 
 The shape keeps its name: palette layouts and search address it by id,
@@ -91,7 +91,7 @@ touched.
 - **420 × 594** — √2, the A-series ratio, at a size that reads as a page next
   to a 120px square without dominating the canvas.
 - **Body top-left**, not centred. Centred prose is the single strongest tell
-  that something is a label pretending to be a document.
+  that something is a label pretending to be a design.
 - **A wide margin** (`padding: 'lg'`), like a word processor's. Text running
   to the edge of a sheet is the other half of "this isn't paper".
 - **A white body, a hairline border and a soft shadow**, so it reads as paper
@@ -114,7 +114,7 @@ would draw nothing. A white sheet is a rectangle, so it belongs with square.
 
 It resizes like any shape. Nothing is locked to the aspect ratio: a landscape
 page is a legitimate thing to want, and locking it would be the tool telling
-the user what their document is.
+the user what their design is.
 
 ## Editing
 
@@ -124,11 +124,11 @@ page when it outgrows it rather than the page growing without bound.
 
 ## Out of scope
 
-- **Pagination.** One element is one page-shaped surface, not a document that
+- **Pagination.** One element is one page-shaped surface, not a design that
   flows onto a second sheet. A canvas is not a word processor, and the moment
   it pretends to be, every missing word-processor feature becomes a bug.
 - **Tables, images or embeds inside the body.** The runs model is a flat text
   algebra; block content inside it is a different data structure and a much
   larger feature. Put an image element next to the page.
-- **Import / export as a document format.** It exports exactly like any shape:
+- **Import / export as a design format.** It exports exactly like any shape:
   its plain-text mirror in Markdown, its box in PNG / SVG.

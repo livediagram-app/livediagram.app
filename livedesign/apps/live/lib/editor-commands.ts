@@ -1,7 +1,7 @@
 // The contextual command catalogue for the SearchPanel "Actions" group
 // (docs/specs/008-canvas/canvas-and-palette.md "Search panel"). A pure, handler-injected builder so the
 // applicability logic (which commands apply to the current selection /
-// document) is unit-testable without React; `useEditorCommands` binds the
+// design) is unit-testable without React; `useEditorCommands` binds the
 // handlers to the live editor and matching/capping happens in `lib/search.ts`.
 //
 // Every command maps 1:1 to an existing editor action (the same handler the
@@ -14,7 +14,7 @@ import {
   AUTO_LAYOUT_STYLE_IDS,
   type AutoLayoutChoice,
 } from './auto-layout-choices';
-import type { ShapeMarker } from '@livedesign/document';
+import type { ShapeMarker } from '@livedesign/design';
 import type { CommandSearchItem } from './search';
 import { selectionCommands } from './editor-commands-selection';
 
@@ -56,14 +56,14 @@ export type CommandContext = {
   // The single shape's current marker, or null — gates "Clear marker" and
   // hides the redundant "add <current marker>" entry.
   marker: ShapeMarker | null;
-  // The owner, or a joined member of a team document: the Share command is hidden for
+  // The owner, or a joined member of a team design: the Share command is hidden for
   // visitors (one with an edit link gets "Make a copy" instead, which isn't a palette command).
   canShare: boolean;
-  // Offline document (docs/specs/006-document/offline-mode.md): nothing on the server to share, so the Share
+  // Offline design (docs/specs/006-design/offline-mode.md): nothing on the server to share, so the Share
   // command is withheld even though the session counts as the owner's.
   isOffline: boolean;
   // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table):
-  // no ownership powers, so neither Share nor Delete document.
+  // no ownership powers, so neither Share nor Delete design.
   workbench?: boolean;
   // The canvas tool in force, so the command for the CURRENT tool is dropped
   // (offering "Hand tool" while holding the hand does nothing).
@@ -96,8 +96,8 @@ export type CommandHandlers = {
   addComment: () => void;
   editNote: () => void;
   createTab: () => void;
-  renameDocument: () => void;
-  deleteDocument: () => void;
+  renameDesign: () => void;
+  deleteDesign: () => void;
   renameTab: () => void;
   openTheme: () => void;
   openCanvasOptions: () => void;
@@ -133,7 +133,7 @@ export const CANVAS_TOOLS: {
   keywords: string;
   // Acts on existing content, so it goes away on an empty canvas.
   needsContent?: boolean;
-  // Changes the document, so a view-only visitor never sees it.
+  // Changes the design, so a view-only visitor never sees it.
   mutates?: boolean;
   // Edits the tab's elements, so it goes on a locked tab and in Plan mode, as in the dropdown.
   editsElements?: boolean;
@@ -215,7 +215,7 @@ function toolCommands(ctx: CommandContext, h: CommandHandlers): EditorCommand[] 
 export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): EditorCommand[] {
   // The view-safe subset (docs/specs/007-editor/command-palette.md): navigation / presentation verbs that
   // read-only visitors can run too. Everything below the read-only return
-  // mutates the document (or opens an edit surface) and stays editor-only.
+  // mutates the design (or opens an edit surface) and stays editor-only.
   const viewSafe: EditorCommand[] = [
     {
       id: 'zen',
@@ -238,7 +238,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     {
       // View-safe on purpose: it opens a panel and changes nothing, and a
       // view-only visitor has as much reason to ask who else is here as the
-      // owner does. Not gated on the document being shared or on anyone else
+      // owner does. Not gated on the design being shared or on anyone else
       // being present either — "nobody yet" is a real answer to the question.
       id: 'collaborators',
       name: 'Collaborators',
@@ -273,7 +273,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     });
   }
 
-  // --- Document / tab commands. Always available in-document (independent of
+  // --- Design / tab commands. Always available in-design (independent of
   // the selection), so a power user can share / rename / theme without first
   // clearing what's selected.
   out.push({
@@ -289,17 +289,17 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     run: h.renameTab,
   });
   out.push({
-    id: 'rename-document',
-    name: 'Rename Document',
-    keywords: 'rename document diagram title name relabel',
-    run: h.renameDocument,
+    id: 'rename-design',
+    name: 'Rename Design',
+    keywords: 'rename design diagram title name relabel',
+    run: h.renameDesign,
   });
   if (!ctx.workbench) {
     out.push({
-      id: 'delete-document',
-      name: 'Delete Document',
-      keywords: 'delete document diagram remove trash destroy',
-      run: h.deleteDocument,
+      id: 'delete-design',
+      name: 'Delete Design',
+      keywords: 'delete design diagram remove trash destroy',
+      run: h.deleteDesign,
     });
   }
   out.push({
@@ -317,14 +317,14 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   if (ctx.canShare && !ctx.isOffline && !ctx.workbench) {
     out.push({
       id: 'share',
-      name: 'Share Document',
-      keywords: 'share document design link invite collaborate publish embed',
+      name: 'Share Design',
+      keywords: 'share design design link invite collaborate publish embed',
       run: h.openShare,
     });
   }
 
   // Layout cleanup (docs/specs/008-canvas/layout-cleanup.md, here and nowhere else) + the app-level dialogs, then the
-  // view-safe verbs last so selection / document commands keep the better
+  // view-safe verbs last so selection / design commands keep the better
   // ranks for ambiguous queries.
   // Layout cleanup moves the tab's elements, so a locked tab offers none of it.
   if (!ctx.tabLocked) {

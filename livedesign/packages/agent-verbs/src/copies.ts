@@ -3,16 +3,16 @@
 // without one passes null and writes send no base.
 
 import { revOfEtag, type ChangesetBase } from '@livedesign/api-schema';
-import { elementFingerprint, type Tab } from '@livedesign/document';
+import { elementFingerprint, type Tab } from '@livedesign/design';
 import type { VerbContext } from './define';
 
 export type ReadCopy = { rev: number; tab: Tab };
 
 export type ReadCopies = {
-  latest(documentId: string, tabId: string): Promise<ReadCopy | null>;
-  at(documentId: string, tabId: string, rev: number): Promise<ReadCopy | null>;
-  revisions(documentId: string, tabId: string): Promise<number[]>;
-  record(documentId: string, tabId: string, copy: ReadCopy): Promise<void>;
+  latest(designId: string, tabId: string): Promise<ReadCopy | null>;
+  at(designId: string, tabId: string, rev: number): Promise<ReadCopy | null>;
+  revisions(designId: string, tabId: string): Promise<number[]>;
+  record(designId: string, tabId: string, copy: ReadCopy): Promise<void>;
 };
 
 // What a write tells the api it read: the revision and every element's fingerprint (CS9).
@@ -23,16 +23,16 @@ export function baseFromCopy(copy: ReadCopy): ChangesetBase {
   };
 }
 
-const tabUrl = (documentId: string, tabId: string) =>
-  `/documents/${encodeURIComponent(documentId)}/tabs/${encodeURIComponent(tabId)}`;
+const tabUrl = (designId: string, tabId: string) =>
+  `/designs/${encodeURIComponent(designId)}/tabs/${encodeURIComponent(tabId)}`;
 
 // The plain tab and the revision its ETag names; null when the answer names none.
 export async function readPlainTab(
   ctx: VerbContext,
-  documentId: string,
+  designId: string,
   tabId: string,
 ): Promise<ReadCopy | null> {
-  const { body, etag } = await ctx.api.text(tabUrl(documentId, tabId));
+  const { body, etag } = await ctx.api.text(tabUrl(designId, tabId));
   const rev = revOfEtag(etag);
   if (rev === null) return null;
   return { rev, tab: (JSON.parse(body) as { tab: Tab }).tab };
@@ -41,13 +41,13 @@ export async function readPlainTab(
 // Reads the plain tab and keeps it as a read copy; the copy, or null when the store or the revision is absent.
 export async function recordCopy(
   ctx: VerbContext,
-  documentId: string,
+  designId: string,
   tabId: string,
 ): Promise<ReadCopy | null> {
   if (!ctx.copies) return null;
-  const copy = await readPlainTab(ctx, documentId, tabId);
+  const copy = await readPlainTab(ctx, designId, tabId);
   if (!copy) return null;
-  await ctx.copies.record(documentId, tabId, copy);
-  ctx.log(`copy recorded ${documentId}/${tabId} rev ${copy.rev}`);
+  await ctx.copies.record(designId, tabId, copy);
+  ctx.log(`copy recorded ${designId}/${tabId} rev ${copy.rev}`);
   return copy;
 }

@@ -4,11 +4,11 @@
 
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
-import type { ShapeElement, Tab } from '@livedesign/document';
+import type { ShapeElement, Tab } from '@livedesign/design';
 
 const editor = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
-vi.mock('@/app/document/[id]/EditorContext', () => ({ useEditorContext: () => editor.value }));
-vi.mock('@/app/document/[id]/useSelectTab', () => ({ useSelectTab: () => vi.fn() }));
+vi.mock('@/app/design/[id]/EditorContext', () => ({ useEditorContext: () => editor.value }));
+vi.mock('@/app/design/[id]/useSelectTab', () => ({ useSelectTab: () => vi.fn() }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 import { ElementDataSections } from './ElementDataSections';

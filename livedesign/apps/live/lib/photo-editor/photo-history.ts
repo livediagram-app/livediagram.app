@@ -1,6 +1,6 @@
 // The Photo panel's History (docs/specs/031-photo/photo-pages.md "The Photo panel"): this person's
 // photo edits this session, each named, newest last, at most PHOTO_HISTORY_LIMIT. Each remembers the
-// undo depth it left the document at, so a press on one undoes (or redoes) the document's timeline to
+// undo depth it left the design at, so a press on one undoes (or redoes) the design's timeline to
 // there; the steps past where the timeline now is show dimmed, and the next edit drops them.
 
 export const PHOTO_HISTORY_LIMIT = 50;

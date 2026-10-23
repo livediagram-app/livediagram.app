@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { labelBoxSize, type Element } from '@livedesign/document';
+import { labelBoxSize, type Element } from '@livedesign/design';
 import { applyLabel, fitToLabel } from './labels';
 
 const square = {

@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useRef, type Ref } from 'react';
-import type { Tab } from '@livedesign/document';
+import type { Tab } from '@livedesign/design';
 import { isTextEditFocused } from '@livedesign/ui';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import { anyModalOpen } from '@/lib/modal-guard';
 import { SPLIT_HOVER_FOCUS_MS } from '@/lib/split-view';
 import type { CanvasAnchor } from '@/lib/split-pane-view';
@@ -16,7 +16,7 @@ import { useTabBackdropPaint } from './useTabBackdropPaint';
 // panels sit in the other pane, and come here when the person clicks in, or rests the pointer here
 // for a moment. A small chip names the tab. Its Fit and Close live on the seam (SplitDivider), which
 // belongs to neither pane, so reaching for them never moves the editor. Loaded on demand, so a
-// document never split pays nothing for it.
+// design never split pays nothing for it.
 export function SplitStaticPane({
   tab,
   loaded,

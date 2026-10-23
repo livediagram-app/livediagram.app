@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livedesign/document';
+import type { Tab } from '@livedesign/design';
 import { mergeImportedTab } from './import-merge';
 
 const tab = (over: Partial<Tab> = {}): Tab => ({ id: 't', name: 'T', elements: [], ...over });

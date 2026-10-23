@@ -98,7 +98,7 @@ emoji glyph, or a word on a tone-coloured pill whose font size is computed from
 the character count so "P0" and "OUT OF SCOPE" both fit).
 
 Deliberately **no SVG `<filter>`** for the shadow. A filter needs a `defs` id,
-and the export packs every element into one document where those ids collide;
+and the export packs every element into one design where those ids collide;
 the shadow is an offset rounded rect at low opacity instead, which renders
 identically everywhere including headless.
 
@@ -124,9 +124,9 @@ rotated shape, or paste one, and it now enters at its angle.
 
 ## Legacy emoji stay icons
 
-[Emoji section in the Icons tab](emoji-icons.md) shipped ~60 of these emoji as **icons**, so saved documents hold
+[Emoji section in the Icons tab](emoji-icons.md) shipped ~60 of these emoji as **icons**, so saved designs hold
 `{ shape: 'icon', iconId: 'emoji-thumbs-up' }` elements. Those are **not
-migrated**: silently restyling somebody's saved document with a plate, a shadow
+migrated**: silently restyling somebody's saved design with a plate, a shadow
 and a tilt is not ours to do.
 
 So the icon catalogue keeps rendering them exactly as it always has. Those

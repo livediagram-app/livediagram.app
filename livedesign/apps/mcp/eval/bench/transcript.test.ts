@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { documentIdsIn, metricsOf, parseTranscript } from './transcript.mjs';
+import { designIdsIn, metricsOf, parseTranscript } from './transcript.mjs';
 
 const DOC = '981c336f-c993-4206-a00c-8d1cc03822ff';
 const line = (o: unknown) => JSON.stringify(o);
@@ -20,7 +20,7 @@ const transcript = [
           type: 'tool_use',
           id: 't1',
           name: 'mcp__livedesign__change_pages',
-          input: { documentId: 'd1' },
+          input: { designId: 'd1' },
         },
       ],
     },
@@ -46,7 +46,7 @@ const transcript = [
           type: 'tool_use',
           id: 't2',
           name: 'mcp__livedesign__change_pages',
-          input: { documentId: 'd1' },
+          input: { designId: 'd1' },
         },
       ],
     },
@@ -59,7 +59,7 @@ const transcript = [
           type: 'tool_result',
           tool_use_id: 't2',
           content: [
-            { type: 'text', text: `{"documentId":"${DOC}"}` },
+            { type: 'text', text: `{"designId":"${DOC}"}` },
             { type: 'image', source: { type: 'base64', data: 'AA' } },
           ],
         },
@@ -69,7 +69,7 @@ const transcript = [
   line({
     type: 'assistant',
     message: {
-      content: [{ type: 'tool_use', id: 't3', name: 'mcp__livedesign__find_documents', input: {} }],
+      content: [{ type: 'tool_use', id: 't3', name: 'mcp__livedesign__find_designs', input: {} }],
     },
   }),
   line({
@@ -104,17 +104,17 @@ describe('parseTranscript', () => {
     expect(run.calls.map((c) => [c.tool, c.isError])).toEqual([
       ['change_pages', true],
       ['change_pages', false],
-      ['find_documents', false],
+      ['find_designs', false],
     ]);
     expect(run.calls[0].error).toBe('Give a layout or elements, not both.');
     expect(run.calls[1].images).toBe(1);
     // A successful result's text is kept for checks; a refusal's is not.
-    expect(run.calls[1].result).toBe(`{"documentId":"${DOC}"}`);
+    expect(run.calls[1].result).toBe(`{"designId":"${DOC}"}`);
     expect(run.calls[0].result).toBeNull();
   });
 
-  it('finds the documents a successful result names', () => {
-    expect(run.documentIds).toEqual([DOC]);
+  it('finds the designs a successful result names', () => {
+    expect(run.designIds).toEqual([DOC]);
   });
 
   it('reads the model, session, reply and usage', () => {
@@ -151,7 +151,7 @@ describe('mcpConnected', () => {
 
 describe('metricsOf', () => {
   it('counts errors, retries of the failed tool and deprecated calls', () => {
-    const m = metricsOf(parseTranscript(transcript), new Set(['find_documents']));
+    const m = metricsOf(parseTranscript(transcript), new Set(['find_designs']));
     expect(m).toMatchObject({
       calls: 3,
       errors: 1,
@@ -163,12 +163,12 @@ describe('metricsOf', () => {
   });
 });
 
-describe('documentIdsIn', () => {
-  it('reads ids from documentId fields and document links', () => {
+describe('designIdsIn', () => {
+  it('reads ids from designId fields and design links', () => {
     const other = '11111111-2222-3333-4444-555555555555';
     expect(
-      documentIdsIn(`"documentId": "${DOC}" https://livedesign.app/document/${other}`),
+      designIdsIn(`"designId": "${DOC}" https://livedesign.app/design/${other}`),
     ).toEqual([DOC, other]);
-    expect(documentIdsIn(`"tabId":"${DOC}"`)).toEqual([]);
+    expect(designIdsIn(`"tabId":"${DOC}"`)).toEqual([]);
   });
 });

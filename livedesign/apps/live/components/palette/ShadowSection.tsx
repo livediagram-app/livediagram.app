@@ -15,7 +15,7 @@ import {
   SHADOW_PRESETS,
   shadowBoxCss,
   type ElementShadow,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { onMouseHover } from '@/components/primitives/hover-preview';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { SizeButton } from '@/components/palette/palette-controls';

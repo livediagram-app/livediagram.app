@@ -21,7 +21,7 @@ const GROUPED_ROWS = [
   {
     words: ['pull', 'push'],
     after: 'presence',
-    summary: 'one document to a file and back; export --all',
+    summary: 'one design to a file and back; export --all',
   },
 ] as const;
 const NAMED_ONLY = [
@@ -55,7 +55,7 @@ export function topHelp(): string {
   );
   const pad = (s: string) => s.padEnd(width + 2);
   return [
-    'livedesign: read, build, edit and discuss documents.',
+    'livedesign: read, build, edit and discuss designs.',
     'Usage: livedesign <resource> <verb> [args] [flags]',
     '',
     ...rows.flatMap((r) => [
@@ -71,7 +71,7 @@ export function topHelp(): string {
     'Exit 0 done, 1 refused, 2 usage, 3 not found, 4 auth, 5 conflict, 6 rate limit, 7 network.',
     '',
     'Start',
-    '  livedesign document ls auth        find a document',
+    '  livedesign design ls auth        find a design',
     '  livedesign tab view "Auth flow"    its first tab, as an outline',
     '  livedesign tab lint "Auth flow"    text that does not fit where it is drawn',
     '  livedesign guide edit              change a tab with edit operations',

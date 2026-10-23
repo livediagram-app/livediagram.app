@@ -11,14 +11,14 @@ import {
   type ResolveTabWindow,
   type Tab,
   type TabWindowArt,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { loadTabImages } from '@/lib/export-tab';
 import { renderTabDrawingSvg, tabDrawingFontIdsOf } from '@/lib/tab-drawing';
 import { tabImageKey, type ExportImageMap } from '@/lib/export-tab-images';
 import { svgFrameOf } from '@/lib/svg-frame';
 
-type ImageContext = { ownerId: string; documentId: string; shareCode: string | null };
+type ImageContext = { ownerId: string; designId: string; shareCode: string | null };
 
 /** The tabs this tab's windows show, by id, in the order they are met. */
 export function tabWindowTargets(tab: Pick<Tab, 'id' | 'elements'>): string[] {

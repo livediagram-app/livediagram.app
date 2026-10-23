@@ -4,7 +4,7 @@
 // layout on the page"): the page's own words carried in, as placing it lands them.
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { pagesOf, layOutPages, type Element } from '@livedesign/document';
+import { pagesOf, layOutPages, type Element } from '@livedesign/design';
 import { buildPageLayout } from '@livedesign/templates';
 import { PageLayoutPreview } from './PageLayoutPreview';
 import { PageImageAccessProvider } from './page-image-access';
@@ -33,7 +33,7 @@ describe('PageLayoutPreview', () => {
 
   it('carries the page words into the previewed layout', () => {
     const { container } = render(
-      <PageImageAccessProvider access={{ ownerId: 'o', documentId: 'd', shareCode: null }}>
+      <PageImageAccessProvider access={{ ownerId: 'o', designId: 'd', shareCode: null }}>
         <PageLayoutPreview page={page} layout="logo-stacked" elements={written()} pages={pages} />
       </PageImageAccessProvider>,
     );

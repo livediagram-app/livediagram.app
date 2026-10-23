@@ -33,7 +33,7 @@ export function ImageExportPanel({
   label: string;
   busy: boolean;
   error: string | null;
-  // True when the tab has at least one hidden layer (docs/specs/006-document/layers.md) — only then
+  // True when the tab has at least one hidden layer (docs/specs/006-design/layers.md) — only then
   // does the include-hidden-layers toggle render at all.
   hasHiddenLayers: boolean;
   // Build the preview SVG markup for the given options (same content the
@@ -60,7 +60,7 @@ export function ImageExportPanel({
   // Backdrop pattern (docs/specs/010-palette/style-presets.md): paint the tab's grid / dots / … pattern. On by
   // default so the export matches the canvas; switch off for a clean backdrop.
   const [pattern, setPattern] = useState(true);
-  // Hidden layers (docs/specs/006-document/layers.md): include layers the user has hidden. Off by
+  // Hidden layers (docs/specs/006-design/layers.md): include layers the user has hidden. Off by
   // default — what you see is what you export.
   const [hiddenLayers, setHiddenLayers] = useState(false);
 
@@ -73,7 +73,7 @@ export function ImageExportPanel({
   return (
     <div>
       {/* The shared two-level "back to the overview" bar (docs/specs/018-help/contextual-help-links.md house
-          style), the same control the New Document wizard's location step
+          style), the same control the New Design wizard's location step
           uses — not a small text link buried in the footer beside the
           commit button, where the way back sat next to the way forward. */}
       <BackBar label="All formats" current={label} onClick={onBack} disabled={busy} />
@@ -156,7 +156,7 @@ export function ImageExportPanel({
           </button>
         </>
       )}
-      {/* Hidden-layers toggle (docs/specs/006-document/layers.md) — only offered when a layer is
+      {/* Hidden-layers toggle (docs/specs/006-design/layers.md) — only offered when a layer is
           actually hidden, alongside the other image options. */}
       {hasHiddenLayers ? (
         <button

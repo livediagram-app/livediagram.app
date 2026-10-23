@@ -1,10 +1,10 @@
-import type { Tab } from '@livedesign/document';
+import type { Tab } from '@livedesign/design';
 import { hasNewComments } from '../comments';
 import { emailEnabled } from '../email/client';
 import { notifyNewComment } from '../email/notifications';
 import { reportServerEvent } from '../server-telemetry';
 import { recordTabSave } from '../timeline';
-import type { DocumentDTO, Env } from '../types';
+import type { DesignDTO, Env } from '../types';
 import type { FrontDoor } from './front-door';
 import type { Author } from './write';
 
@@ -32,7 +32,7 @@ function telemetry(env: Env, action: AgentAction, frontDoor: FrontDoor): Promise
 async function run(
   env: Env,
   w: {
-    document: DocumentDTO;
+    design: DesignDTO;
     author: Author;
     next: Tab;
     stored: Tab | null;
@@ -43,17 +43,17 @@ async function run(
 ): Promise<void> {
   const previous = w.stored?.elements ?? [];
   const work: Promise<unknown>[] = [
-    recordTabSave(env, w.document, w.author.id, w.next.elements, previous),
+    recordTabSave(env, w.design, w.author.id, w.next.elements, previous),
   ];
   if (
     emailEnabled(env) &&
-    w.author.id !== w.document.ownerId &&
+    w.author.id !== w.design.ownerId &&
     hasNewComments(w.next.elements, previous, w.author.id)
   ) {
     work.push(
       notifyNewComment(
         env,
-        { id: w.document.id, ownerId: w.document.ownerId, name: w.document.name },
+        { id: w.design.id, ownerId: w.design.ownerId, name: w.design.name },
         w.author.name,
       ),
     );
@@ -63,7 +63,7 @@ async function run(
   for (const s of settled) {
     if (s.status === 'rejected') {
       console.warn('[changeset] after-work failed', {
-        documentId: w.document.id,
+        designId: w.design.id,
         error: String(s.reason),
       });
     }

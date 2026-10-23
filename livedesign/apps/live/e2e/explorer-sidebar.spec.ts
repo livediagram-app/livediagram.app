@@ -52,10 +52,10 @@ test.describe('explorer sidebar', () => {
     // This Browser holds nothing yet, so it is hidden.
     expect(await rowNames(page, 'More')).toEqual(['Library', 'Trash']);
     // My Work starts open on its root folders: no Unsorted or Generated bucket.
-    const myDocuments = row(page, 'My Work');
+    const myDesigns = row(page, 'My Work');
     await expect(row(page, 'Projects')).toBeVisible();
-    await expect(myDocuments).toHaveAttribute('aria-expanded', 'true');
-    const children = await myDocuments
+    await expect(myDesigns).toHaveAttribute('aria-expanded', 'true');
+    const children = await myDesigns
       .locator(':scope > [role="group"] > [role="treeitem"]')
       .evaluateAll((els) => els.map((el) => el.getAttribute('data-tree-label')));
     expect(children).toEqual(['Projects']);
@@ -119,7 +119,7 @@ test.describe('explorer sidebar', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('shows This Browser while it holds a document', async ({ page, pageErrors }) => {
+  test('shows This Browser while it holds a design', async ({ page, pageErrors }) => {
     await darkVisitor(page, await mintSignedGuest(page.request));
     // Seeded through the store the app upgrades on load (e2e/legacy-offline-store.spec.ts).
     await page.goto('/icon.svg');
@@ -209,7 +209,7 @@ test.describe('editor Explorer panel', () => {
     await page.addInitScript(() => localStorage.setItem('livedesign:v2:tour-seen', '1'));
     const id = crypto.randomUUID();
     const make = async (docId: string, name: string) => {
-      const res = await page.request.post(`${apiBase}/documents`, {
+      const res = await page.request.post(`${apiBase}/designs`, {
         headers: ownerHeaders(owner, { Origin: origin }),
         data: { id: docId, name, tabs: [{ id: crypto.randomUUID(), name: 'Tab 1', elements: [] }] },
       });
@@ -217,12 +217,12 @@ test.describe('editor Explorer panel', () => {
     };
     await make(id, 'Open one');
     await make(crypto.randomUUID(), 'Another');
-    await page.goto(`/document/${id}`);
+    await page.goto(`/design/${id}`);
     await page.getByRole('button', { name: 'Explorer', exact: true }).click();
     const rail = page.getByRole('navigation', { name: 'Explorer sections' });
     await expect(rail.getByRole('button', { name: 'Home' })).toBeVisible({ timeout: 30_000 });
     await expect(rail.getByRole('heading')).toHaveText(['Overview', 'Spaces', 'More']);
-    // Opens on Home; My Work lists its documents as rows, the open one current.
+    // Opens on Home; My Work lists its designs as rows, the open one current.
     await expect(rail.getByRole('button', { name: 'Home' })).toHaveAttribute(
       'aria-current',
       'true',
@@ -242,7 +242,7 @@ test.describe('editor Explorer panel', () => {
     await page.keyboard.press('Enter');
     // Timeline, now current.
     await expect(page.getByRole('heading', { name: 'Timeline', exact: true })).toBeVisible();
-    await expect(page).toHaveURL(new RegExp(`/document/${id}`));
+    await expect(page).toHaveURL(new RegExp(`/design/${id}`));
     // The product's links live in the panel's footer, not the header.
     await expect(
       page.getByRole('navigation', { name: 'Go to' }).getByRole('link', { name: 'Help' }),

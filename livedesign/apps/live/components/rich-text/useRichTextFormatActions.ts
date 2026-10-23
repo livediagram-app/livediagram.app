@@ -12,7 +12,7 @@ import {
   type RunHeading,
   type RunPatch,
   type TextRun,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { domSelectionToOffsets } from '@/components/rich-text/rich-text-dom';
 import { wordRangeAt, type RunDefaults } from '@/components/rich-text/rich-text-format';
 
@@ -26,7 +26,7 @@ import { wordRangeAt, type RunDefaults } from '@/components/rich-text/rich-text-
 // `collapsedScope` decides what a command with NO selection acts on:
 //   'all'  — the whole text. Right for a label, which is one short string.
 //   'word' — the word under the caret for inline commands, the line under it
-//            for block commands. Right for a note, which is a document.
+//            for block commands. Right for a note, which is a design.
 export function useRichTextFormatActions({
   editorRef,
   runsRef,

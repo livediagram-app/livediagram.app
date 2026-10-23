@@ -2,7 +2,7 @@
 // 1200 x 630 frame every link preview (Slack, Teams, Discord, iMessage, X, LinkedIn) draws at full width. Pure, so
 // the fit is tested without the rasteriser; share-card-png.ts turns the result into a PNG.
 
-import type { Rect } from '@livedesign/document';
+import type { Rect } from '@livedesign/design';
 
 // The Open Graph card size. Every preview surface takes 1.91:1 and draws this at full width.
 export const SHARE_CARD_WIDTH = 1200;
@@ -10,7 +10,7 @@ export const SHARE_CARD_HEIGHT = 630;
 // The drawing's breathing room on every side, so no preview's rounded corners clip it.
 export const SHARE_CARD_MARGIN = 48;
 // How much a small drawing (one box, one sticky) may grow to fill the card. Past twice its size a single shape
-// reads as a blown-up blob rather than a document. Safe range: 1 to 4.
+// reads as a blown-up blob rather than a design. Safe range: 1 to 4.
 export const SHARE_CARD_MAX_UPSCALE = 2;
 // The card's paper when the drawing names none it can be filled with (transparent, a pattern).
 const FALLBACK_BACKGROUND = '#ffffff';

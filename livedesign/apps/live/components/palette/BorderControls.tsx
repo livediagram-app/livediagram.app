@@ -1,4 +1,4 @@
-import type { BorderRadius, BorderStroke, BorderStyle } from '@livedesign/document';
+import type { BorderRadius, BorderStroke, BorderStyle } from '@livedesign/design';
 import { BORDER_RADII, BORDER_STROKES, BORDER_STYLES } from './context-menu-constants';
 import { SizeButton } from '@/components/palette/palette-controls';
 import {

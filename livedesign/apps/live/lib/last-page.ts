@@ -3,7 +3,7 @@
 // a reload) frames that page rather than the first. Not a synced preference: those are capped at
 // 4 KB, and tab ids would fill it. The most recent tabs are kept, the oldest dropped past
 // LAST_PAGE_MAX.
-import type { LaidOutPage } from '@livedesign/document';
+import type { LaidOutPage } from '@livedesign/design';
 import { readLocalStorageSafe, safeJson, writeLocalStorageSafe } from '@/lib/local-storage-safe';
 
 // Kept under the mode's old name (Illustrate), so nobody loses the page they were on.
@@ -14,9 +14,9 @@ export const LAST_PAGE_MAX = 200;
  *  glide across the row records once, where it stops, not every page it passes. */
 export const LAST_PAGE_SETTLE_MS = 400;
 
-/** A tab's entry: its document's id with its own, so a tab id repeated across documents (a
- *  template's, a copy's) never borrows another document's page. */
-export const lastPageKey = (documentId: string, tabId: string) => `${documentId}:${tabId}`;
+/** A tab's entry: its design's id with its own, so a tab id repeated across designs (a
+ *  template's, a copy's) never borrows another design's page. */
+export const lastPageKey = (designId: string, tabId: string) => `${designId}:${tabId}`;
 
 type Remembered = Readonly<Record<string, string>>;
 

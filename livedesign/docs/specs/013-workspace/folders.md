@@ -1,15 +1,15 @@
 # Folders
 
-Documents in the Explorer are organised into a tree of folders. Every
-document belongs to exactly one folder (or none); folders themselves
-can nest under other folders. Documents without an explicit folder
+Designs in the Explorer are organised into a tree of folders. Every
+design belongs to exactly one folder (or none); folders themselves
+can nest under other folders. Designs without an explicit folder
 sit at the **root** of their space, listed beside its root folders.
 
 ## Motivation
 
-The Explorer's Recent Documents accordion is fine for the last few
-documents the user touched, but as the library grows it stops being a
-useful surface for "find that document I made three weeks ago". A
+The Explorer's Recent Designs accordion is fine for the last few
+designs the user touched, but as the library grows it stops being a
+useful surface for "find that design I made three weeks ago". A
 single flat list also has no story for users who want to group work
 by project / customer / topic.
 
@@ -24,20 +24,20 @@ In scope:
 
 - A new `folders` table in D1 with a self-referential `parent_id`
   for nesting.
-- A nullable `folder_id` column on `documents`.
+- A nullable `folder_id` column on `designs`.
 - REST endpoints to create / rename / delete / move folders, plus a
-  move-document-to-folder endpoint.
-- Explorer UI: recursive accordion tree under each space. Documents
+  move-design-to-folder endpoint.
+- Explorer UI: recursive accordion tree under each space. Designs
   without a folder are listed at the space's root, beside its root
-  folders, so a freshly created document is in plain sight.
-- A per-document-row "Move to folder…" menu item. The picker is a
+  folders, so a freshly created design is in plain sight.
+- A per-design-row "Move to folder…" menu item. The picker is a
   centred modal (`MoveToFolderDialog`) around the **shared placement
   browser** — the same two-level space -> folder tile-grid browse as
-  the New Document wizard's Save In step ([Offline Mode](../006-document/offline-mode.md),
+  the New Design wizard's Save In step ([Offline Mode](../006-design/offline-mode.md),
   `components/placement/PlacementBrowser`), so the product has exactly
-  one way to choose where a document lives. Spaces first (My Work +
-  each team, [Team shared documents](team-shared-documents.md), on an overview that is shown even when My
-  documents is the only space, so the choice is deliberate and the screen has
+  one way to choose where a design lives. Spaces first (My Work +
+  each team, [Team shared designs](team-shared-designs.md), on an overview that is shown even when My
+  designs is the only space, so the choice is deliberate and the screen has
   room for a create-team option; only team-scoped surfaces skip it and
   open straight inside their team), then the folder drill-down with a
   "here" card at every level, an inline New Folder tile, and a
@@ -52,12 +52,12 @@ In scope:
   single-line field no Enter key, so tapping away is the only submit
   gesture there); blurring it empty, or pressing Escape, cancels. The dialog opens with the subject's current placement
   pre-selected ("always something selected"), at the level that lists it when it is a folder
-  ([Save locations](../006-document/save-locations.md), "It opens where its selection is"); the "Move Here" button
+  ([Save locations](../006-design/save-locations.md), "It opens where its selection is"); the "Move Here" button
   stays disabled until the choice changes, and double-clicking a
   destination card commits the move in one gesture. Shared by the
   /explorer page, the editor's Explorer, and the team library —
-  and every document-move surface offers every space (My Work + each
-  team, [Team shared documents](team-shared-documents.md)), so a document is never trapped in a scope; only folder
+  and every design-move surface offers every space (My Work + each
+  team, [Team shared designs](team-shared-designs.md)), so a design is never trapped in a scope; only folder
   moves stay scoped to their own tree. It replaced the earlier
   filterable indented-tree modal, which itself outgrew an anchored
   popover.
@@ -72,8 +72,8 @@ Every Explorer section is its own page under `/explorer` (the chrome — header,
 | Inbox ([Inbox](inbox.md))                                      | `/explorer/inbox`                                                  |
 | Timeline ([Timeline](timeline.md))                             | `/explorer/timeline`                                               |
 | Shared With Me                                                 | `/explorer/shared`                                                 |
-| Recent documents                                               | `/explorer/recent` (no sidebar row)                                |
-| Favourites ([Favourite documents](favourites.md))              | `/explorer/favourites` (no sidebar row)                            |
+| Recent designs                                               | `/explorer/recent` (no sidebar row)                                |
+| Favourites ([Favourite designs](favourites.md))              | `/explorer/favourites` (no sidebar row)                            |
 | My Work, the root of the personal tree                         | `/explorer/all`                                                    |
 | Search results ([Explorer filters](explorer-filters.md#views)) | `/explorer/search` (no sidebar row)                                |
 | Retired: Unsorted and Dynamic                                  | `/explorer/unsorted`, `/explorer/dynamic`, opening `/explorer/all` |
@@ -82,43 +82,43 @@ Every Explorer section is its own page under `/explorer` (the chrome — header,
 | A folder                                                       | `/explorer/folder?id=<id>`                                         |
 | A team ([Teams](teams.md))                                     | `/explorer/team?id=<id>`                                           |
 | Invites ([Teams](teams.md))                                    | `/explorer/invites`                                                |
-| This Browser ([Offline Mode](../006-document/offline-mode.md)) | `/explorer/offline`                                                |
+| This Browser ([Offline Mode](../006-design/offline-mode.md)) | `/explorer/offline`                                                |
 | Image gallery                                                  | `/explorer/images`                                                 |
 | Themes                                                         | `/explorer/themes`                                                 |
 | Trash ([Trash](trash.md))                                      | `/explorer/trash`                                                  |
 
-A retired address replaces itself with its successor, so links already out there keep working, and the sidebar highlights the successor's row at once; the Inbox was once called Activity, hence `/explorer/activity`. `/explorer` itself redirects to `/explorer/home` (worker-level 302 in production, client replace in dev). Folder and team ids ride the **query string**, not a path segment: `output: 'export'` can't enumerate user-minted ids, and the `/document/<id>` placeholder-rewrite workaround ([Dedicated route for new-document creation](../007-editor/new-document-route.md)) is deliberately kept single-purpose. The sidebar's groups, rows, labels and visibility rules are [Explorer structure](explorer-structure.md).
+A retired address replaces itself with its successor, so links already out there keep working, and the sidebar highlights the successor's row at once; the Inbox was once called Activity, hence `/explorer/activity`. `/explorer` itself redirects to `/explorer/home` (worker-level 302 in production, client replace in dev). Folder and team ids ride the **query string**, not a path segment: `output: 'export'` can't enumerate user-minted ids, and the `/design/<id>` placeholder-rewrite workaround ([Dedicated route for new-design creation](../007-editor/new-design-route.md)) is deliberately kept single-purpose. The sidebar's groups, rows, labels and visibility rules are [Explorer structure](explorer-structure.md).
 
 Out of scope (V1):
 
 - Drag-and-drop reordering between folders.
 - Shared / collaborative folder ownership — folders are scoped to
-  the owner just like documents.
+  the owner just like designs.
 - Per-folder permissions or sharing.
 - Folder colour / icon customisation.
-- Bulk move (multi-select documents + assign).
+- Bulk move (multi-select designs + assign).
 
 ## Data model
 
 ```
 folders
   id          TEXT PRIMARY KEY        -- UUID
-  owner_id    TEXT NOT NULL           -- matches documents.owner_id
+  owner_id    TEXT NOT NULL           -- matches designs.owner_id
   parent_id   TEXT NULL REFERENCES folders(id) ON DELETE SET NULL
   name        TEXT NOT NULL
   created_at  INTEGER NOT NULL
   updated_at  INTEGER NOT NULL
 
-documents
+designs
   ...
   folder_id   TEXT NULL REFERENCES folders(id) ON DELETE SET NULL
   source      TEXT NULL   -- provenance: NULL = user-made; 'ai' / 'mcp' = made by AI; 'cli' = the CLI
 ```
 
-- `folder_id IS NULL` means the document sits at the root of its space
+- `folder_id IS NULL` means the design sits at the root of its space
   (My Work, or its team). The root has no row in the folders
   table, so it can't be renamed or deleted.
-- `source` records how the document came to exist (the baseline migration): NULL
+- `source` records how the design came to exist (the baseline migration): NULL
   for one a person made in the editor; `'mcp'` for one an external AI tool
   created through the MCP server ([MCP server](../015-api/mcp-server.md)); `'ai'` reserved for the
   in-editor AI assistant (no producer today); `'cli'` for one the [CLI](../015-api/cli.md) created, which
@@ -126,19 +126,19 @@ documents
   (`isMadeByAiSource`). Set once on create and never
   rewritten by the metadata upsert (rename / autosave / move can't clear
   it). Provenance is a **filter**, not a place: the `made-by:ai` token of
-  [Explorer filters](explorer-filters.md) finds AI-made documents wherever
+  [Explorer filters](explorer-filters.md) finds AI-made designs wherever
   they are filed.
 
 ### The root, and the retired buckets
 
-The root of a space lists its root folders, then its root documents
-(`folder_id IS NULL`), newest first, AI-made documents included. The
+The root of a space lists its root folders, then its root designs
+(`folder_id IS NULL`), newest first, AI-made designs included. The
 Explorer once split the personal root into two synthetic buckets,
 **Unsorted** (made by a person) and **Generated** (made by AI), under a
 **Dynamic** overview. They are gone; their addresses still answer
 ([Explorer routes](#explorer-routes)), and the **Made by AI** filter
 (`made-by:ai`, [Explorer filters](explorer-filters.md)) finds AI-made
-documents wherever they are filed.
+designs wherever they are filed.
 
 - `parent_id IS NULL` means the folder is at the tree root.
 - Deleting a folder never deletes its contents: they **move up to the
@@ -158,7 +158,7 @@ documents wherever they are filed.
 - Folder names are non-empty strings of at most `MAX_NAME_LEN`
   characters; a missing, empty or non-string `name` (or a non-string
   `id` / `parentId` / `teamId`) is `400` before anything is written.
-- Filing a document (`PUT /api/documents/:id/folder`) checks the
+- Filing a design (`PUT /api/designs/:id/folder`) checks the
   folder's existence and scope inside the same UPDATE that files it, so
   a folder deleted after the route's own read files nothing and the
   move answers `404`.
@@ -168,26 +168,26 @@ the `folder_id` column.
 
 ### Deleting a folder
 
-- A deleted folder's **direct documents and direct subfolders move to
+- A deleted folder's **direct designs and direct subfolders move to
   its parent**: the folder it sat in, or the root of its space (My
-  documents, or the team's root) when it sat at the top. Its subfolders
+  designs, or the team's root) when it sat at the top. Its subfolders
   keep their own contents, so a whole branch moves up one level intact.
-- Documents in the [Trash](trash.md) that were in the folder move with
+- Designs in the [Trash](trash.md) that were in the folder move with
   the rest, so a later restore lands in the parent.
 - **One transaction.** `DELETE /api/folders/:id` re-parents the
-  subfolders, re-files the documents and deletes
+  subfolders, re-files the designs and deletes
   the folder in one D1 batch: either all of it happens or none of it.
   The parent is read inside the batch, so a concurrent move of the
   folder cannot strand its contents under a parent it has left.
 - The same rule holds for personal and team folders.
-- The delete confirmation names where the contents go: "Its documents
+- The delete confirmation names where the contents go: "Its designs
   and subfolders move to <parent>.", <parent> being the parent
   folder's name, "My Work", or "the team's root". When the folder
   is one of the reader's [default folders](default-folders.md), it adds
   the default-folder line ([Deleting a default
   folder](default-folders.md#deleting-a-default-folder)).
 - A dangling [default folder](default-folders.md#dangling-defaults) is
-  kept; documents created afterwards skip it.
+  kept; designs created afterwards skip it.
 - The api logs `folders: deleted scope=<personal|team> moved_up=<parent|root>`
   for every delete.
 
@@ -201,25 +201,25 @@ All endpoints continue the existing `X-Owner-Id` convention.
 | POST   | `/api/folders`              | `{ id, name, parentId? }`            | `{ folder: Folder }`    |
 | PUT    | `/api/folders/:id`          | `{ name?, parentId? }` (cycle check) | `{ folder: Folder }`    |
 | DELETE | `/api/folders/:id`          |                                      | 204                     |
-| PUT    | `/api/documents/:id/folder` | `{ folderId \| null }`               | 204                     |
+| PUT    | `/api/designs/:id/folder` | `{ folderId \| null }`               | 204                     |
 
 `Folder` = `{ id, name, parentId, createdAt, updatedAt }`.
 
-`GET /api/documents` is extended to include `folderId` on each row (camelCase DTO; null for the root). No new endpoint needed for "documents in folder X": the Explorer already has the full list client-side.
+`GET /api/designs` is extended to include `folderId` on each row (camelCase DTO; null for the root). No new endpoint needed for "designs in folder X": the Explorer already has the full list client-side.
 
 ### Placement on create
 
-A document is placed by the write that creates it. `POST /api/documents` carries the
+A design is placed by the write that creates it. `POST /api/designs` carries the
 **placement** beside `id` and `name`: `teamId` (absent or null = My Work, a string =
 that team's library) and `folderId` (a string = that folder; `null` = the root of that space,
 chosen on purpose; absent = no folder chosen). There is no second placement request
-after a create, so a document never exists, even for a moment, in a place the caller did not ask
+after a create, so a design never exists, even for a moment, in a place the caller did not ask
 for.
 
 - **Chosen or not.** A placement is **chosen** when the body names a team or carries the
   `folderId` key at all, `null` included. `folderId: null` with no team is the **explicit root**
-  of My Work. A body with neither is **no choice**: the document lands at the root of My
-  documents unless a [default folder](default-folders.md) answers for its `intent`. A `teamId: null`
+  of My Work. A body with neither is **no choice**: the design lands at the root of My
+  designs unless a [default folder](default-folders.md) answers for its `intent`. A `teamId: null`
   alone is no choice, like an absent one.
 
 - **Resolution order.** The space first, then the folder: a chosen placement (a folder, or a
@@ -243,7 +243,7 @@ for.
     `teamId`, a folder of a team they have joined with no or another `teamId`) is
     `folder_scope_mismatch`.
 - **Named rejections, never a fallback.** An invalid placement refuses the whole create
-  before anything is written: the document is not filed somewhere else instead.
+  before anything is written: the design is not filed somewhere else instead.
 
   | Rejection               | Status | When                                                             |
   | ----------------------- | ------ | ---------------------------------------------------------------- |
@@ -257,11 +257,11 @@ for.
   row; the caller is the owner, in a team as in My Work.
 - **A re-commit keeps its place.** A create naming an id the caller already owns is the editor
   re-committing it: the stored placement stands and the body's placement is not applied
-  (moving is `PUT /api/documents/:id/folder`'s job). A malformed placement is still
+  (moving is `PUT /api/designs/:id/folder`'s job). A malformed placement is still
   `placement_invalid`.
-- **One feed event.** A create into a team records one `document_created` event whose
+- **One feed event.** A create into a team records one `design_created` event whose
   audience is the team ([Timeline](timeline.md)); there is no separate "Shared with a Team"
-  event, because the document was never personal.
+  event, because the design was never personal.
 - **Observability.** Every decision logs one line with the `placement:` fingerprint:
   `placement: resolved scope=personal|team folder=set|root via=explicit|default|root` (`explicit`
   for any chosen placement, a chosen root included; `root` only when nothing was chosen and no
@@ -270,10 +270,10 @@ for.
   `placement: rejected reason=<code> scope=personal|team`, and
   `placement: skipped reason=existing` for a re-commit.
 
-What a caller does with a rejection is its own: the New Document wizard shows it
-([Dedicated route for new-document creation](../007-editor/new-document-route.md)), an Offline
-Mode sync files the document at the root of My Work on a refused folder, saying so in its log
-([Offline Mode](../006-document/offline-mode.md)).
+What a caller does with a rejection is its own: the New Design wizard shows it
+([Dedicated route for new-design creation](../007-editor/new-design-route.md)), an Offline
+Mode sync files the design at the root of My Work on a refused folder, saying so in its log
+([Offline Mode](../006-design/offline-mode.md)).
 
 ## Explorer UI — two surfaces
 
@@ -284,46 +284,46 @@ layouts because they're solving different problems.
 
 This is the Explorer the editor's menu button opens as a popover
 ([Toolbar layout](../007-editor/toolbar-layout.md)), a stand-alone corner panel on the status screens: a rail of
-sections beside a pane that shows the picked one, so the whole library is browsable without leaving the document
+sections beside a pane that shows the picked one, so the whole library is browsable without leaving the design
 ([Explorer structure: the editor's Explorer](explorer-structure.md#the-editors-explorer)). The panel header carries a single
 **⋯** button, left of the help `?`, whose click-open menu of full-width
-icon-left rows holds the document's and the app's verbs in three bands
+icon-left rows holds the design's and the app's verbs in three bands
 split by separators:
 
-1. **New Document**, **Open Explorer** (the full-page Explorer's Recent
+1. **New Design**, **Open Explorer** (the full-page Explorer's Recent
    list, `/explorer/recent`).
 
 The panel does not carry the import entry: its header holds only
-**⋯** and **?**. Importing Markdown lives on the full-page Explorer (below). 2. **Share** (the owner, or any joined member of a team document's team: the header Share button's gate) and
+**⋯** and **?**. Importing Markdown lives on the full-page Explorer (below). 2. **Share** (the owner, or any joined member of a team design's team: the header Share button's gate) and
 **Export** (the active tab, as the tab menu's Export). 3. **Search**, **GitHub** (the open-source repo, new tab), **Licences** (the
 third-party licences page, new tab, see
 [Third-party licences](../002-project-scope/third-party-licences.md)), **Settings**.
 
 A row whose handler the host doesn't pass is absent, and a band left
 empty takes its separator with it (the Explorer behind an error screen
-has no document, so no Share / Export). This replaced a **+ New** chip
+has no design, so no Share / Export). This replaced a **+ New** chip
 whose hover-open popover held only band 1, and took GitHub off the
 editor's bottom bar, which keeps Search, Settings and the appearance
 toggle ([Live app](../007-editor/live-app.md)). The full-page Explorer's bottom bar keeps its GitHub
 link.
 
-- A "Current Document" card sits at the top. Beneath it, the panel shows
+- A "Current Design" card sits at the top. Beneath it, the panel shows
   the sidebar's three groups, Overview, Spaces and More, built from the
   same rows ([Explorer structure: the editor's Explorer](explorer-structure.md#the-editors-explorer)).
   In the panel, My Work, each folder and each team expand to show
-  their folders, then their documents, as rows; expansion is local state
+  their folders, then their designs, as rows; expansion is local state
   (not persisted) and starts collapsed so the panel stays compact.
 - A folder with nothing inside shows no expand chevron (its gutter stays,
   so names line up).
 - Team folders are the **same folder row** as the personal tree, handed
   a team's rows: same chevron rule, same right-click menu, and team
-  document rows play the same slide-out when deleted. What differs is
+  design rows play the same slide-out when deleted. What differs is
   data, not markup: team folders take no drag-and-drop, and Show in
   Explorer opens the team page.
-- **Right-clicking anywhere on a folder or document row** opens that row's ellipsis menu (suppressing the browser's default context menu), anchored to the row's ellipsis button: the same menu the `⋯` click opens. Applies in both the editor's Explorer and the full-page `/explorer`, including the page's sidebar folder tree (a no-op while a row is being renamed). Every row and card shares one `useRowMenu` hook and one `EllipsisTriggerButton`, so the trigger always reports `aria-expanded` and, on the panel's hover-revealed rows, stays visible while its menu is open.
+- **Right-clicking anywhere on a folder or design row** opens that row's ellipsis menu (suppressing the browser's default context menu), anchored to the row's ellipsis button: the same menu the `⋯` click opens. Applies in both the editor's Explorer and the full-page `/explorer`, including the page's sidebar folder tree (a no-op while a row is being renamed). Every row and card shares one `useRowMenu` hook and one `EllipsisTriggerButton`, so the trigger always reports `aria-expanded` and, on the panel's hover-revealed rows, stays visible while its menu is open.
 - Folder-row ellipsis menu: Rename, New subfolder, Change Folder, Use as Default for (the [default folder](default-folders.md#use-as-default-for) submenu), Delete.
-- Deleting a document moves it to the [Trash](trash.md) for 30 days. A document restored after its folder was deleted lands in that folder's parent (the folder delete moved it there, [Deleting a folder](#deleting-a-folder)).
-  Rename is inline (same pattern as the document-row rename). Delete
+- Deleting a design moves it to the [Trash](trash.md) for 30 days. A design restored after its folder was deleted lands in that folder's parent (the folder delete moved it there, [Deleting a folder](#deleting-a-folder)).
+  Rename is inline (same pattern as the design-row rename). Delete
   pops a confirmation dialog ("Delete <name>?" naming where the
   contents go, [Deleting a folder](#deleting-a-folder)) via the
   shared `useConfirm` hook. The cascade is genuinely non-destructive
@@ -331,27 +331,27 @@ link.
   startling enough that the confirmation is worth the extra click;
   both the editor and the standalone `/explorer` page wire delete
   through the same prompt.
-- Document-row ellipsis menu gains a "Change Folder" sub-action that
+- Design-row ellipsis menu gains a "Change Folder" sub-action that
   opens the shared placement browser (personal folders + the root,
   and teams with their folders — see the move-picker note above).
-  Picking one calls `PUT /api/documents/:id/folder`.
-- **Drag-and-drop**: document rows are HTML5-draggable. Drop targets
+  Picking one calls `PUT /api/designs/:id/folder`.
+- **Drag-and-drop**: design rows are HTML5-draggable. Drop targets
   are personal folder rows (any nested depth) and the My Work
-  row, which files the document at the root. Drag-over highlights the target with a brand-blue ring so
-  the user sees where the document will land. Drop fires the same
-  `onMoveDocumentToFolder(documentId, targetFolderId)` callback the
+  row, which files the design at the root. Drag-over highlights the target with a brand-blue ring so
+  the user sees where the design will land. Drop fires the same
+  `onMoveDesignToFolder(designId, targetFolderId)` callback the
   picker uses, so the move travels through the same API path and
   optimistic update. Drag transfer uses a custom MIME type
-  (`application/x-livedesign-id`) so dragging a document never
+  (`application/x-livedesign-id`) so dragging a design never
   triggers a browser navigation when dropped outside any target.
   The editor's Explorer floats over the canvas, so the canvas's own drop
   handling stands aside for a drag a target inside it has already
   accepted; otherwise its "dropped back on a panel" guard would turn the
   folder's accepted move into a no-drop (`usePaletteDrop`).
-  On the Explorer page a document, or one of the reader's own folders, can also be dragged onto the sidebar's
+  On the Explorer page a design, or one of the reader's own folders, can also be dragged onto the sidebar's
   **Trash** row to delete it ([Explorer structure: Dragging to the Trash](explorer-structure.md#dragging-to-the-trash)).
   **Resting a drag on a row with a chevron** for 800 ms
-  (`DRAG_HOVER_TOGGLE_MS`) opens it, so a document reaches a subfolder in
+  (`DRAG_HOVER_TOGGLE_MS`) opens it, so a design reaches a subfolder in
   one gesture; resting on an open row closes it. One rest toggles once:
   the row toggles again only after the drag has left it and come back.
   A drag passing over a row never toggles it.
@@ -364,7 +364,7 @@ link.
 This is the full-page library view. Open to both guests and signed-in
 users: the owner id resolves the same way every other surface in the
 live app does (Clerk userId when signed in, the `livedesign:v2:self-id`
-localStorage UUID otherwise), so a guest sees the documents + folders +
+localStorage UUID otherwise), so a guest sees the designs + folders +
 Image Gallery their per-browser id owns. AuthControls in the page header
 surfaces a "Sign in" CTA for guests who want to upgrade. The page is
 modelled on Windows Explorer: a sidebar tree drives navigation, a
@@ -387,64 +387,64 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
     ancestor of the focused folder. Each segment is a button that
     jumps the focus.
   - List view with four columns: Name, Updated, Visibility, action.
-    The Visibility column shows a "Shared" badge on documents that
+    The Visibility column shows a "Shared" badge on designs that
     have an active share link (blank otherwise), and is hidden below
     the mobile breakpoint to keep rows readable. Direct subfolders and
-    direct documents render in the same list (Windows Explorer pattern).
-    Folder rows open the folder; document rows open the document.
+    direct designs render in the same list (Windows Explorer pattern).
+    Folder rows open the folder; design rows open the design.
   - "Shared With Me" replaces the list with a Role + Updated table
-    of accepted shares; each row is a link into the shared document.
+    of accepted shares; each row is a link into the shared design.
   - "Image Gallery" replaces the list with a drop-zone (upload via
     drag, paste, or click) above a grid of thumbnails. Each tile
     shows the file name, dimensions, byte size, a delete action,
-    and a "Used in N documents" badge backed by `GET /api/images/usage`
+    and a "Used in N designs" badge backed by `GET /api/images/usage`
     (see [11-api.md](../015-api/api.md)). The badge expands inline to a
-    list of links into those documents so the user can spot
+    list of links into those designs so the user can spot
     orphaned bytes that are safe to delete. Upload validation +
     hashing share the editor's path via `apps/live/lib/upload-image.ts`.
 - **Create:** a single floating action button at the bottom-right
-  opens a popover with "New Document" and "New folder" (or "New
-  subfolder" when a folder is focused). The documents-page FAB on the
-  editor / new-document routes is unrelated.
-- **Drag-and-drop:** any document the reader can move (their own, a
+  opens a popover with "New Design" and "New folder" (or "New
+  subfolder" when a folder is focused). The designs-page FAB on the
+  editor / new-design routes is unrelated.
+- **Drag-and-drop:** any design the reader can move (their own, a
   team's, one in this browser) drags from its list row or card; a
-  document shared with them does not, nor one being renamed. It drops on
+  design shared with them does not, nor one being renamed. It drops on
   a sidebar folder, My Work (the root), a team or team folder, or a
   folder row or card in the pane. The drop takes the move picker's path
-  (`moveDocumentTo`), so it moves within a space or across spaces exactly
+  (`moveDesignTo`), so it moves within a space or across spaces exactly
   as a pick does, with the same toast, rollback and telemetry. Dropping
-  on the place the document already is does nothing. A document in this
+  on the place the design already is does nothing. A design in this
   browser shows no drop on a team (the team's library is server-side).
   The target wears the brand-blue ring while the drag is over it, and
   sidebar rows open and close on a resting drag as in the editor's
   Explorer (above). The page logs `[explorer-drop] <move|already-there|refused-local-only>`
   for every drop.
-- **Move:** documents and folders share the move-to-folder picker.
+- **Move:** designs and folders share the move-to-folder picker.
   For a folder move, the target folder's own subtree is filtered
   out client-side so cycle-creating choices don't appear (the server
   still rejects them via the cycle check on `PUT /api/folders/:id`).
 - **A move that fails says so.** Every move the picker or a drop starts
   either lands or ends in an error toast; none fails silently. A move that
   took the row away first puts it back.
-  - Each names the document or folder it failed on, quoted and cut to fit
+  - Each names the design or folder it failed on, quoted and cut to fit
     ([Toasts](../004-interface-design/toasts.md#naming-what-it-acted-on));
-    "the document" / "the folder" stands in for a blank or unknown name.
-  - A document into a folder of My Work: the row goes back to its
+    "the design" / "the folder" stands in for a blank or unknown name.
+  - A design into a folder of My Work: the row goes back to its
     folder; "Could not move “Roadmap”. Try again."
-  - A document into a team: the row comes back to My Work; "Couldn’t
+  - A design into a team: the row comes back to My Work; "Couldn’t
     move “Roadmap” to the team. Try again."
-  - A team document to another folder of its team: "Could not move
+  - A team design to another folder of its team: "Could not move
     “Roadmap”. Try again."
-  - A team document out of its team, to My Work or another team:
+  - A team design out of its team, to My Work or another team:
     "Couldn’t move “Roadmap” out of the team. Try again."
   - A folder under another folder: "Could not move “Plans”. Try again."
   - A folder made from the picker's New Folder tile: "Could not create
     “Plans”. Try again.", the tile keeping the name typed.
   - Each failure logs
-    `[explorer-move] <document|document-to-team|team-document|team-document-out|folder|new-folder> failed`
+    `[explorer-move] <design|design-to-team|team-design|team-design-out|folder|new-folder> failed`
     with the subject's id and the error.
 - **A write that fails says so.** The same holds for every other folder and
-  document write the Explorer page, the editor's Explorer panel and a team's
+  design write the Explorer page, the editor's Explorer panel and a team's
   library make: it lands or ends in an error toast, and a change shown at
   once is put back. One wording per verb (`lib/write-failure-copy.ts`), each
   naming its subject, so a failure reads the same wherever it happened:
@@ -453,9 +453,9 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
   - A folder rename: "Could not rename “Plans”. Try again.", the
     old name back.
   - A folder delete: "Could not delete “Plans”. Try again."
-  - A document's rename: "Could not rename “Roadmap”. Try again."; its
+  - A design's rename: "Could not rename “Roadmap”. Try again."; its
     duplicate: "Could not duplicate “Roadmap”. Try again."
-  - Within a team's library, a folder or document move says what the
+  - Within a team's library, a folder or design move says what the
     Explorer's own moves say (above), with the same log line.
   - Each other failure logs `[folders] <verb> failed`,
     `[team-folders] <verb> failed` or `[team-library] <what> failed` with
@@ -468,14 +468,14 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
 
 Empty states:
 
-- No folders and no documents: My Work shows its empty state.
-  With documents but no folders, it lists the documents.
+- No folders and no designs: My Work shows its empty state.
+  With designs but no folders, it lists the designs.
 
 ## Non-goals for V1
 
 - Folder-scoped sharing. The folder is an organisational shell for
-  the owner; share state remains per-document.
-- Bulk move (multi-select documents + assign). One-at-a-time menu
+  the owner; share state remains per-design.
+- Bulk move (multi-select designs + assign). One-at-a-time menu
   action for now.
 - Persisted expansion state across reloads. V1 always starts
   collapsed for a clean entry point.

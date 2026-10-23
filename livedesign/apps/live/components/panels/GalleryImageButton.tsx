@@ -20,7 +20,7 @@ import { DISPLAY_EDGE_TILE } from '@/lib/image-display';
 type GalleryImageButtonProps = {
   image: ImageSummary;
   ownerId: string;
-  documentId: string;
+  designId: string;
   // Optional share code. The bytes endpoint accepts an X-Share-Code
   // header for visitors authorised via a share link; owners pass
   // null. Picker callers (owner-only) omit it entirely.
@@ -32,14 +32,14 @@ type GalleryImageButtonProps = {
 export function GalleryImageButton({
   image,
   ownerId,
-  documentId,
+  designId,
   shareCode,
   onClick,
   ariaLabel,
 }: GalleryImageButtonProps) {
   // A tile is small: a tile-sized copy, so a gallery of camera photos stays light (image-display.ts).
   const state = useImageBlobUrl(ownerId, image.id, {
-    documentId,
+    designId,
     shareCode: shareCode ?? null,
     maxEdge: DISPLAY_EDGE_TILE,
   });

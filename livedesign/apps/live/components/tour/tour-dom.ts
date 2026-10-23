@@ -16,7 +16,7 @@ function isRendered(el: Element): boolean {
   return el.getClientRects().length > 0;
 }
 
-/** Whether a selector's first match is on screen: in the document and laid out. */
+/** Whether a selector's first match is on screen: in the design and laid out. */
 export function isOnScreen(selector: string): boolean {
   const el = document.querySelector(selector);
   return !!el && isRendered(el);

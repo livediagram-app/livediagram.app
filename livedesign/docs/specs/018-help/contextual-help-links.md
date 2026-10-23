@@ -101,7 +101,7 @@ Grouped by priority; each links the keyed article.
 - AI panel - **Connect agent** button (on the Ask / Clean row) -> `connect-ai-mcp`. Uses the
   `button` variant with a custom `label` + plug `icon` (the variant now accepts both; absent
   a custom label it still reads "Help").
-- Export dialog header -> `exporting-documents` (isometric toggle -> `isometric-mode`)
+- Export dialog header -> `exporting-designs` (isometric toggle -> `isometric-mode`)
 - Import dialog header -> `import-tabs`.
 - Team form / invite -> `team-roles-and-invites`
 
@@ -116,7 +116,7 @@ Grouped by priority; each links the keyed article.
 
 **Onboarding / empty states**
 
-- Empty-canvas card -> `your-first-document`
+- Empty-canvas card -> `your-first-design`
 - Template starts -> `templates` (Start Making Pages)
 - Settings - Keyboard category (was the Shortcuts dialog) -> `keyboard-shortcuts`
 - Sign-in reasons modal -> `guest-vs-account`

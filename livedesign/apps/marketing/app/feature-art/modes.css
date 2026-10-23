@@ -1,4 +1,4 @@
-/* ── Documents and page-look card art (components/feature-art/documents.tsx, article-looks.tsx,
+/* ── Designs and page-look card art (components/feature-art/designs.tsx, article-looks.tsx,
    slide-layouts.tsx, mode-parts.tsx) ──
    Each picture is whole at rest: the finished scene is the base state, and these loops only move
    the accents (a stroke drawing on, a caret, a flip). One 7s cycle; a piece's

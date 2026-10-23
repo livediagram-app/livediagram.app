@@ -15,7 +15,7 @@ export const metadata = helpMetadata({
   categorySlug="developers"
 >
 
-Comments are how people and agents talk in a document when nobody is chatting. An agent holding an [API token](/help/account-and-data/api-tokens/) reads, adds to, resolves and reopens comment threads through the same endpoints the editor uses, and can show the people on a tab what it is doing while it works. Everything it writes appears under the name and colour of the person who owns the token, never as a new person.
+Comments are how people and agents talk in a design when nobody is chatting. An agent holding an [API token](/help/account-and-data/api-tokens/) reads, adds to, resolves and reopens comment threads through the same endpoints the editor uses, and can show the people on a tab what it is doing while it works. Everything it writes appears under the name and colour of the person who owns the token, never as a new person.
 
 The examples use the [CLI](/help/developers/cli/) and `curl`. Paths are relative to `https://livedesign.app/api`, and the `curl` examples assume your token is in `$TOKEN`.
 
@@ -23,7 +23,7 @@ The examples use the [CLI](/help/developers/cli/) and `curl`. Paths are relative
 
 What an agent may do follows its token, through the same gates as a share link:
 
-- A **full-access token** on a document you can comment on adds, replies, resolves, reopens and shows presence. Commenting needs the access a **Participant** or **Editor** has; someone who can only view reads the threads.
+- A **full-access token** on a design you can comment on adds, replies, resolves, reopens and shows presence. Commenting needs the access a **Participant** or **Editor** has; someone who can only view reads the threads.
 - A **read-only token** lists threads but writes nothing: no comments and no presence.
 - Presence is for API tokens only. A signed-in browser session already shows itself in the editor, so the presence endpoints answer it `403 presence_requires_token`.
 
@@ -39,11 +39,11 @@ livedesign comment ls "Shop" --status all     # resolved ones too
 ```
 
 ```bash
-curl "https://livedesign.app/api/documents/$DOC/comments?status=open" \
+curl "https://livedesign.app/api/designs/$DOC/comments?status=open" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-`status` is `open` (the default), `resolved` or `all`; anything else is `400 invalid_status`. The answer lists every thread across the document's tabs, in tab order and then outline order, with the element's **ref** and label so you can act on it straight away:
+`status` is `open` (the default), `resolved` or `all`; anything else is `400 invalid_status`. The answer lists every thread across the design's tabs, in tab order and then outline order, with the element's **ref** and label so you can act on it straight away:
 
 ```json
 {
@@ -69,11 +69,11 @@ curl "https://livedesign.app/api/documents/$DOC/comments?status=open" \
 }
 ```
 
-To read one tab's threads as text, ask for its comments view: `GET /documents/$DOC/tabs/$TAB?view=comments` (add `all=1` for resolved ones).
+To read one tab's threads as text, ask for its comments view: `GET /designs/$DOC/tabs/$TAB?view=comments` (add `all=1` for resolved ones).
 
 ## Reply, Resolve and Reopen
 
-In the CLI, a thread is named by its element's ref, from any [view](/help/developers/working-with-documents/#read-a-tab-as-text):
+In the CLI, a thread is named by its element's ref, from any [view](/help/developers/working-with-designs/#read-a-tab-as-text):
 
 ```bash
 livedesign comment add "Shop" n2 "Should this be idempotent?"   # starts a thread, or adds to one
@@ -88,19 +88,19 @@ Over the API, a thread is named by **any comment in it**, so take a comment id f
 
 ```bash
 # Start a thread on an element (or add to its thread)
-curl -X POST https://livedesign.app/api/documents/$DOC/tabs/$TAB/comments \
+curl -X POST https://livedesign.app/api/designs/$DOC/tabs/$TAB/comments \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "elementId": "n2", "text": "Should this be idempotent?" }'
 
 # Reply on the thread that holds comment c1f0…
-curl -X POST https://livedesign.app/api/documents/$DOC/tabs/$TAB/comments/$COMMENT/reply \
+curl -X POST https://livedesign.app/api/designs/$DOC/tabs/$TAB/comments/$COMMENT/reply \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "text": "Yes, keyed by order id" }'
 
 # Resolve it, or reopen it
-curl -X POST https://livedesign.app/api/documents/$DOC/tabs/$TAB/comments/$COMMENT/resolve \
+curl -X POST https://livedesign.app/api/designs/$DOC/tabs/$TAB/comments/$COMMENT/resolve \
   -H "Authorization: Bearer $TOKEN"
-curl -X POST https://livedesign.app/api/documents/$DOC/tabs/$TAB/comments/$COMMENT/reopen \
+curl -X POST https://livedesign.app/api/designs/$DOC/tabs/$TAB/comments/$COMMENT/reopen \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -109,7 +109,7 @@ curl -X POST https://livedesign.app/api/documents/$DOC/tabs/$TAB/comments/$COMME
 - `DELETE …/comments/$COMMENT` deletes a comment you wrote. Removing someone else's is left to the editor.
 - Arrows cannot carry a thread; every boxed element can.
 
-Everyone with the document open sees each change arrive at once, exactly as if you had typed it. See [Comments](/help/collaboration/comments/) for how threads look in the editor.
+Everyone with the design open sees each change arrive at once, exactly as if you had typed it. See [Comments](/help/collaboration/comments/) for how threads look in the editor.
 
 ## Show What Your Agent Is Doing
 
@@ -122,7 +122,7 @@ livedesign presence clear "Shop"
 ```
 
 ```bash
-curl -X PUT https://livedesign.app/api/documents/$DOC/tabs/$TAB/presence \
+curl -X PUT https://livedesign.app/api/designs/$DOC/tabs/$TAB/presence \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "status": "Adding the payment flow", "focus": ["api", "db"], "ttl": 60000 }'
 ```
@@ -148,7 +148,7 @@ Setting presence again replaces both the status and the focus. `DELETE` on the s
 
 **You rarely need to keep it alive yourself.** Every changeset your token applies or reverts on a tab keeps its presence there for 30 seconds, so an agent that is busy editing stays visible and one that stops leaves on its own within two minutes at most. A dry run or a refused changeset refreshes nothing.
 
-Refusals name what was wrong: `400` with `status_too_long`, `invalid_status`, `too_many_focus`, `invalid_focus`, `ttl_out_of_range`, `focus_not_found` (listing the refs) or `focus_ambiguous` (listing the candidates); `409 agent_presence_full` when a document already shows 32 agents; and `503 room_unavailable` when the live room could not be reached, which is worth one retry.
+Refusals name what was wrong: `400` with `status_too_long`, `invalid_status`, `too_many_focus`, `invalid_focus`, `ttl_out_of_range`, `focus_not_found` (listing the refs) or `focus_ambiguous` (listing the candidates); `409 agent_presence_full` when a design already shows 32 agents; and `503 room_unavailable` when the live room could not be reached, which is worth one retry.
 
 ## What People See
 
@@ -157,7 +157,7 @@ Presence shows in the editor as its owner, never as a new person:
 - **The status line** appears in the hover card on the owner's avatar, on their row in Collaborators, and in what a screen reader announces. It never shows as text in the tab bar. When the owner is not on that tab, the agent gets an avatar in their name and colour there.
 - **The focus** is outlined with a thin ring in the owner's colour. It never locks anything: people keep working on those elements.
 - An agent is listed in Collaborators under its tab, but it is not counted as a person, cannot be followed.
-- Two of your tokens on one tab show as one avatar, with the status set last. A private document's presence stack, otherwise hidden, shows while your agent is on it.
+- Two of your tokens on one tab show as one avatar, with the status set last. A private design's presence stack, otherwise hidden, shows while your agent is on it.
 
 [Live Presence](/help/collaboration/live-presence/#agents-at-work) has what this looks like for the people working beside your agent.
 

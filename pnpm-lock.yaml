@@ -83,12 +83,12 @@ importers:
       '@livedesign/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
-      '@livedesign/document':
+      '@livedesign/design':
         specifier: workspace:*
-        version: link:../../packages/document
-      '@livedesign/document-views':
+        version: link:../../packages/design
+      '@livedesign/design-views':
         specifier: workspace:*
-        version: link:../../packages/document-views
+        version: link:../../packages/design-views
       '@livedesign/edit-operations':
         specifier: workspace:*
         version: link:../../packages/edit-operations
@@ -153,12 +153,12 @@ importers:
       '@livedesign/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
-      '@livedesign/document':
+      '@livedesign/design':
         specifier: workspace:*
-        version: link:../../packages/document
-      '@livedesign/document-views':
+        version: link:../../packages/design
+      '@livedesign/design-views':
         specifier: workspace:*
-        version: link:../../packages/document-views
+        version: link:../../packages/design-views
       '@livedesign/icons':
         specifier: workspace:*
         version: link:../../packages/icons
@@ -293,12 +293,12 @@ importers:
       '@livedesign/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
-      '@livedesign/document':
+      '@livedesign/design':
         specifier: workspace:*
-        version: link:../../packages/document
-      '@livedesign/document-views':
+        version: link:../../packages/design
+      '@livedesign/design-views':
         specifier: workspace:*
-        version: link:../../packages/document-views
+        version: link:../../packages/design-views
       '@livedesign/explorer-lens':
         specifier: workspace:*
         version: link:../../packages/explorer-lens
@@ -424,9 +424,9 @@ importers:
         specifier: ^19.3.1
         version: 19.3.1(react@19.3.1)
     devDependencies:
-      '@livedesign/document':
+      '@livedesign/design':
         specifier: workspace:*
-        version: link:../../packages/document
+        version: link:../../packages/design
       '@livedesign/help-registry':
         specifier: workspace:*
         version: link:../../packages/help-registry
@@ -490,9 +490,9 @@ importers:
       '@livedesign/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
-      '@livedesign/document':
+      '@livedesign/design':
         specifier: workspace:*
-        version: link:../../packages/document
+        version: link:../../packages/design
       '@livedesign/edit-operations':
         specifier: workspace:*
         version: link:../../packages/edit-operations
@@ -657,12 +657,12 @@ importers:
       '@livedesign/api-schema':
         specifier: workspace:*
         version: link:../api-schema
-      '@livedesign/document':
+      '@livedesign/design':
         specifier: workspace:*
-        version: link:../document
-      '@livedesign/document-views':
+        version: link:../design
+      '@livedesign/design-views':
         specifier: workspace:*
-        version: link:../document-views
+        version: link:../design-views
       '@livedesign/edit-operations':
         specifier: workspace:*
         version: link:../edit-operations
@@ -721,9 +721,9 @@ importers:
 
   livedesign/packages/api-schema:
     dependencies:
-      '@livedesign/document':
+      '@livedesign/design':
         specifier: workspace:*
-        version: link:../document
+        version: link:../design
       '@livedesign/photo-engine':
         specifier: workspace:*
         version: link:../photo-engine
@@ -744,7 +744,7 @@ importers:
         specifier: ^5.0.1
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
-  livedesign/packages/document:
+  livedesign/packages/design:
     dependencies:
       '@livedesign/icons':
         specifier: workspace:*
@@ -781,14 +781,14 @@ importers:
         specifier: ^5.0.1
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
-  livedesign/packages/document-views:
+  livedesign/packages/design-views:
     dependencies:
       '@livedesign/api-schema':
         specifier: workspace:*
         version: link:../api-schema
-      '@livedesign/document':
+      '@livedesign/design':
         specifier: workspace:*
-        version: link:../document
+        version: link:../design
       '@livedesign/photo-engine':
         specifier: workspace:*
         version: link:../photo-engine
@@ -823,9 +823,9 @@ importers:
       '@livedesign/api-schema':
         specifier: workspace:*
         version: link:../api-schema
-      '@livedesign/document':
+      '@livedesign/design':
         specifier: workspace:*
-        version: link:../document
+        version: link:../design
       '@livedesign/icons':
         specifier: workspace:*
         version: link:../icons
@@ -836,9 +836,9 @@ importers:
         specifier: workspace:*
         version: link:../templates
     devDependencies:
-      '@livedesign/document-views':
+      '@livedesign/design-views':
         specifier: workspace:*
-        version: link:../document-views
+        version: link:../design-views
       '@livedesign/oxlint-config':
         specifier: workspace:*
         version: link:../oxlint-config
@@ -863,9 +863,9 @@ importers:
       '@livedesign/api-schema':
         specifier: workspace:*
         version: link:../api-schema
-      '@livedesign/document':
+      '@livedesign/design':
         specifier: workspace:*
-        version: link:../document
+        version: link:../design
     devDependencies:
       '@livedesign/oxlint-config':
         specifier: workspace:*
@@ -1017,9 +1017,9 @@ importers:
       '@livedesign/api-schema':
         specifier: workspace:*
         version: link:../api-schema
-      '@livedesign/document':
+      '@livedesign/design':
         specifier: workspace:*
-        version: link:../document
+        version: link:../design
     devDependencies:
       '@livedesign/edit-operations':
         specifier: workspace:*
@@ -1177,9 +1177,9 @@ importers:
 
   livedesign/packages/template-previews:
     dependencies:
-      '@livedesign/document':
+      '@livedesign/design':
         specifier: workspace:*
-        version: link:../document
+        version: link:../design
       '@livedesign/icons':
         specifier: workspace:*
         version: link:../icons
@@ -1229,9 +1229,9 @@ importers:
       '@livedesign/api-schema':
         specifier: workspace:*
         version: link:../api-schema
-      '@livedesign/document':
+      '@livedesign/design':
         specifier: workspace:*
-        version: link:../document
+        version: link:../design
     devDependencies:
       '@livedesign/oxlint-config':
         specifier: workspace:*
@@ -1254,9 +1254,9 @@ importers:
       '@livedesign/api-schema':
         specifier: workspace:*
         version: link:../api-schema
-      '@livedesign/document':
+      '@livedesign/design':
         specifier: workspace:*
-        version: link:../document
+        version: link:../design
       '@livedesign/help-registry':
         specifier: workspace:*
         version: link:../help-registry

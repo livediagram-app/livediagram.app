@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { packFreehandPoints, type Element, type Tab } from '@livedesign/document';
+import { packFreehandPoints, type Element, type Tab } from '@livedesign/design';
 import { useTidyUpStrokes } from './useTidyUpStrokes';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

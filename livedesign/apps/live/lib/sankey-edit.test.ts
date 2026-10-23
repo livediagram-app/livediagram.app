@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape } from '@livedesign/document';
+import { createShape } from '@livedesign/design';
 import { canEditSankey } from './sankey-edit';
 import { resolveEditorCapabilities } from './editor-capabilities';
 

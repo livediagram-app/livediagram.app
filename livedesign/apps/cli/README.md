@@ -1,6 +1,6 @@
 # livedesign CLI
 
-`livedesign` is the command line agents and scripts read, lint and change livedesign documents with. The
+`livedesign` is the command line agents and scripts read, lint and change livedesign designs with. The
 behaviour is specified in [CLI](../../docs/specs/015-api/cli.md) and its
 [blueprint](../../docs/specs/015-api/blueprints/cli.md); the verbs themselves live in `@livedesign/agent-verbs`.
 

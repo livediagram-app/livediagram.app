@@ -23,7 +23,7 @@ redistributed and/or sold with any software provided that any reserved
 names are not used by derivative works. The fonts and derivatives,
 however, cannot be released under any other type of license. The
 requirement for fonts to remain under this license does not apply
-to any document created using the fonts or their derivatives.
+to any design created using the fonts or their derivatives.
 
 DEFINITIONS
 "Font Software" refers to the set of files released by the Copyright
@@ -74,7 +74,7 @@ permission.
 5) The Font Software, modified or unmodified, in part or in whole,
 must be distributed entirely under this license, and must not be
 distributed under any other license. The requirement for fonts to
-remain under this license does not apply to any document created
+remain under this license does not apply to any design created
 using the Font Software.
 
 TERMINATION

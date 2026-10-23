@@ -1,4 +1,4 @@
-import type { CommentListStatus, DocumentCommentThread } from '@livedesign/api-schema';
+import type { CommentListStatus, DesignCommentThread } from '@livedesign/api-schema';
 import {
   sanitizeMentions,
   type Comment,
@@ -6,8 +6,8 @@ import {
   type CommentThread,
   type Element,
   type Tab,
-} from '@livedesign/document';
-import { buildViewModel, commentHosts } from '@livedesign/document-views';
+} from '@livedesign/design';
+import { buildViewModel, commentHosts } from '@livedesign/design-views';
 import type { ParticipantDTO } from './types';
 
 // An element's comment thread, when it has one.
@@ -179,13 +179,13 @@ export function findCommentHost(
 }
 
 // Blank the author id on every comment a given visitor did NOT write,
-// before serving a tab to a non-owner. The author id is the document /
+// before serving a tab to a non-owner. The author id is the design /
 // guest owner id of whoever posted the comment; exposing other people's
 // ids to a visitor would re-open the observe-then-claim vector that
-// `redactOwner` closes for the document owner id. A visitor still sees
+// `redactOwner` closes for the design owner id. A visitor still sees
 // their OWN author id (which they already know — it's their own id), so
 // the client can light up a delete button on their own comments. Pass
-// the document owner's id as `viewerId` to no-op (the owner sees all).
+// the design owner's id as `viewerId` to no-op (the owner sees all).
 export function redactCommentAuthorIds(elements: Element[], viewerId: string | null): Element[] {
   return elements.map((el) =>
     mapCommentThread(el, (thread) => {
@@ -219,7 +219,7 @@ export function redactTabDataAuthors(data: string, viewerId: string): string {
 
 // docs/specs/014-identity/transactional-email.md (#1): true when `nextElements` adds at least one
 // comment id not in `prevElements` written by `authorId`. Used by the tab-autosave handler to fire
-// the "someone commented on your document" notification only when a genuinely new comment landed
+// the "someone commented on your design" notification only when a genuinely new comment landed
 // (not on every autosave), and only for the writer's own: a save can carry a peer's comment that
 // reached the writer live first, which is not the writer commenting. Pass the elements after
 // rewriteCommentAuthors, whose author ids the server set.
@@ -240,14 +240,14 @@ export function hasNewComments(
   return false;
 }
 
-// One tab's threads as the document listing serves them (agent-presence blueprint "REST"): in the outline's order,
+// One tab's threads as the design listing serves them (agent-presence blueprint "REST"): in the outline's order,
 // with each element's ref and label, author ids redacted for everyone but their author, and threads filtered by
 // status. A thread on a hidden layer is left out, as the views leave its element out.
 export function threadsOfTab(
   tab: Tab & { name: string },
   status: CommentListStatus,
   viewerId: string | null,
-): DocumentCommentThread[] {
+): DesignCommentThread[] {
   const elements = redactCommentAuthorIds(tab.elements, viewerId);
   const byId = new Map(elements.map((el) => [el.id, el]));
   return commentHosts(buildViewModel({ ...tab, elements })).flatMap(({ el, ref, label }) => {

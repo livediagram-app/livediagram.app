@@ -5,7 +5,7 @@ import { run } from './main';
 import { capabilities, fakeIo, NOW, TOKEN, type Route } from './testing/fake-io';
 
 const DOC = 'aaaa1111-0000-4000-8000-000000000001';
-const TAB = `/api/documents/${DOC}/tabs/main`;
+const TAB = `/api/designs/${DOC}/tabs/main`;
 const tabV = (rev: number, labels: string[]) => ({
   tab: {
     id: 'main',
@@ -24,18 +24,18 @@ const tabV = (rev: number, labels: string[]) => ({
   rev,
 });
 
-// A one-document host whose tab moves on with each write; `refuse` answers the next writes instead.
+// A one-design host whose tab moves on with each write; `refuse` answers the next writes instead.
 function host(options: { refuse?: () => Response | undefined } = {}) {
   const state = { current: tabV(5, ['A']), requests: [] as ChangesetRequest[] };
   const route: Route = async (request, url) => {
-    if (url.pathname === '/api/documents')
+    if (url.pathname === '/api/designs')
       return Response.json({
-        documents: [{ id: DOC, name: 'Auth flow', savedAt: NOW, ownerId: 'u' }],
+        designs: [{ id: DOC, name: 'Auth flow', savedAt: NOW, ownerId: 'u' }],
       });
     if (url.pathname === '/api/teams') return Response.json({ teams: [] });
-    if (url.pathname === `/api/documents/${DOC}`)
+    if (url.pathname === `/api/designs/${DOC}`)
       return Response.json({
-        document: {
+        design: {
           id: DOC,
           name: 'Auth flow',
           tabs: [{ id: 'main', name: 'Main', orderIndex: 0 }],
@@ -177,10 +177,10 @@ describe('writing from the CLI', () => {
 });
 
 describe('creating from the CLI', () => {
-  it("creates a document from a file with a fresh id, as the CLI's", async () => {
+  it("creates a design from a file with a fresh id, as the CLI's", async () => {
     const posted: unknown[] = [];
     const create: Route = async (request, url) => {
-      if (url.pathname !== '/api/documents' || request.method !== 'POST') return undefined;
+      if (url.pathname !== '/api/designs' || request.method !== 'POST') return undefined;
       const body = JSON.parse(await request.text()) as {
         id: string;
         name: string;
@@ -188,7 +188,7 @@ describe('creating from the CLI', () => {
       };
       posted.push(body);
       return Response.json(
-        { document: { id: body.id, name: body.name, tabs: body.tabs } },
+        { design: { id: body.id, name: body.name, tabs: body.tabs } },
         { status: 201 },
       );
     };
@@ -196,7 +196,7 @@ describe('creating from the CLI', () => {
       { id: 'a', type: 'shape', shape: 'square', x: 0, y: 0, width: 120, height: 60, label: 'A' },
     ];
     const io = session(create, { files: { '/work/page.json': JSON.stringify(elements) } });
-    const result = await cli(io, ['document', 'create', 'Shop', '-f', 'page.json']);
+    const result = await cli(io, ['design', 'create', 'Shop', '-f', 'page.json']);
     expect(result.code).toBe(0);
     const [body] = posted as {
       id: string;
@@ -210,7 +210,7 @@ describe('creating from the CLI', () => {
       tabs: [{ name: 'Shop', elements }],
     });
     expect(result.out).toBe(
-      `+ document ${body!.id.slice(0, 8)} "Shop" · 1 tab · https://livedesign.app/document/${body!.id}\n`,
+      `+ design ${body!.id.slice(0, 8)} "Shop" · 1 tab · https://livedesign.app/design/${body!.id}\n`,
     );
   });
 });

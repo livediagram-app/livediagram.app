@@ -85,7 +85,7 @@ const DOCS: { title: string; kind: 'logo' | 'wireframe' }[] = [
   { title: 'Settings screen', kind: 'wireframe' },
 ];
 
-// A tiny drawing of a document's first page inside its card's thumbnail, in the box (x, y, 64 by 34).
+// A tiny drawing of a design's first page inside its card's thumbnail, in the box (x, y, 64 by 34).
 function Thumb({ x, y, kind }: { x: number; y: number; kind: (typeof DOCS)[number]['kind'] }) {
   switch (kind) {
     case 'logo':
@@ -139,7 +139,7 @@ function Thumb({ x, y, kind }: { x: number; y: number; kind: (typeof DOCS)[numbe
   }
 }
 
-// Explorer: the document library. The sidebar with My Work open, and a grid of documents, each card a
+// Explorer: the design library. The sidebar with My Work open, and a grid of designs, each card a
 // glimpse of what is inside it.
 export function ExplorerArt() {
   return (

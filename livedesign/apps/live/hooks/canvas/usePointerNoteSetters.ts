@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { isPointerNote, snapPointerTip, withPointerTip, type Element } from '@livedesign/document';
+import { isPointerNote, snapPointerTip, withPointerTip, type Element } from '@livedesign/design';
 import { track } from '@/lib/telemetry';
 import { useLatest } from '@/hooks/ui/useLatest';
 

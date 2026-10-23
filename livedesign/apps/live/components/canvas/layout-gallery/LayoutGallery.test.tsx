@@ -4,7 +4,7 @@
 // the gallery's chips, search, Surprise Me and tiles, and Choose a Layout's dialog.
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { layOutPages, newWireframePage, pageDeviceClass } from '@livedesign/document';
+import { layOutPages, newWireframePage, pageDeviceClass } from '@livedesign/design';
 import { layoutCatalogueFor } from '@livedesign/templates';
 import { EmptyPageInvite } from '../EmptyPageInvite';
 import { LayoutGalleryDialog } from '../LayoutGalleryDialog';

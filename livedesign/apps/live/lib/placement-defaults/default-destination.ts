@@ -1,4 +1,4 @@
-// Where a person's new documents go, read on the client (docs/specs/013-workspace/default-folders.md
+// Where a person's new designs go, read on the client (docs/specs/013-workspace/default-folders.md
 // "Surfaces"; blueprint "Behaviour and state (surfaces)"). Pure: the defaults and the folders the
 // surface has loaded go in, and the server's precedence comes out, skipping a default whose folder
 // is not among them exactly as the server skips a dangling one.
@@ -8,7 +8,7 @@ import {
   type CreationIntent,
   type PlacementDefaultKey,
 } from '@livedesign/api-schema';
-import type { EditorMode } from '@livedesign/document';
+import type { EditorMode } from '@livedesign/design';
 
 export type IndexedFolder = {
   id: string;
@@ -85,7 +85,7 @@ export function resolveDefaultFor(
   return { resolved: null, skipped };
 }
 
-/** What a new document of this entry is made as. */
+/** What a new design of this entry is made as. */
 export function representativeIntent(key: PlacementDefaultKey): CreationIntent {
   return { mode: key.slice('mode:'.length) as EditorMode, tabKind: 'diagram' };
 }
@@ -101,11 +101,11 @@ export type DefaultDestination =
       /** From this browser's memory; null when it never saw the folder. */
       name: string | null;
       reason: 'deleted' | 'unavailable';
-      /** Where these documents go instead; null = My Work. */
+      /** Where these designs go instead; null = My Work. */
       fallback: IndexedFolder | null;
     };
 
-/** Where new documents of this entry go now, as Settings shows it. */
+/** Where new designs of this entry go now, as Settings shows it. */
 export function destinationOf(
   key: PlacementDefaultKey,
   defaults: PlacementDefaults,

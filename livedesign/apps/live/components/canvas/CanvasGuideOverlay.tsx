@@ -4,7 +4,7 @@ import {
   deriveTextColorForBg,
   type AlignmentGuide,
   type DistributionGuide,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { getTheme, type ThemeId } from '@/lib/themes';
 import type { SnapTarget } from '@/components/canvas/Canvas.types';
 import { useCanvasClientOrigin } from '@/hooks/canvas/useCanvasClientOrigin';

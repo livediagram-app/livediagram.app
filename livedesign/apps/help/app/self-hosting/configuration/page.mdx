@@ -22,7 +22,7 @@ Secrets and settings never live in source code, since the repository is public. 
 - **Workers** receive secret values via `wrangler secret put`, and non-secret settings as `[vars]` in the Worker's `wrangler.toml`. Set plain settings in the file rather than the Cloudflare dashboard: every deploy replaces them with what the file declares.
 - **Static frontends** only ever bundle values explicitly marked as publishable, prefixed `NEXT_PUBLIC_` so it is obvious they are safe to ship to the browser, and baked in at build time. Server-only secrets stay on the Worker side and never reach client code.
 
-Each app that needs configuration ships an example file documenting which variables it expects, so you can see at a glance what to set.
+Each app that needs configuration ships an example file designing which variables it expects, so you can see at a glance what to set.
 
 <Figure caption="Workers read secrets and settings at runtime and frontends bake publishable values in at build time, so no secrets ever live in the public source.">
   <ConfigSources />
@@ -36,7 +36,7 @@ Authentication is provided by an optional integration with Clerk, and the app su
 2. **Guest-only**, the typical self-host: leave the auth variables unset. The app runs without an account system, sign-in routes say sign-in isn't enabled and offer **Continue as guest**, and the editor is unchanged.
 3. A partial misconfiguration (frontend configured, API not) exists only for debugging and is not meant for production: people can sign in, but the API treats everyone as a guest.
 
-With sign-in on, also set `GUEST_ID_HMAC_SECRET` so guest ids are signed and nobody can claim another guest's documents when they sign up. Accounts unlock the features that need one: [teams](/help/collaboration/teams/), [API tokens](/help/account-and-data/api-tokens/), and, if you set them up, email and the MCP server.
+With sign-in on, also set `GUEST_ID_HMAC_SECRET` so guest ids are signed and nobody can claim another guest's designs when they sign up. Accounts unlock the features that need one: [teams](/help/collaboration/teams/), [API tokens](/help/account-and-data/api-tokens/), and, if you set them up, email and the MCP server.
 
 Guest-only is what lets a self-hoster run with zero outbound runtime traffic beyond their own hosting if they want to.
 

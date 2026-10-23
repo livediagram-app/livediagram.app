@@ -21,7 +21,7 @@ import { announce } from '@/lib/announcer';
 import { isPressableControl } from '@livedesign/ui';
 import { presentedSlideName } from '@/lib/slide-headline';
 
-import { type BoxedElement, type Slide, type Tab } from '@livedesign/document';
+import { type BoxedElement, type Slide, type Tab } from '@livedesign/design';
 
 import {
   PresentationElementPopover,
@@ -160,7 +160,7 @@ export function PresentationOverlay({
     return () => window.clearTimeout(id);
   }, [at, atEnd, config.autoAdvanceSeconds, detail, jumpOpen, notesOpen, settingsOpen]);
 
-  // Browser fullscreen where available, on the whole document (docs/specs/012-collaboration/presentation-mode.md
+  // Browser fullscreen where available, on the whole design (docs/specs/012-collaboration/presentation-mode.md
   // "Full screen"). It needs a user gesture and can be refused; the overlay is already full-viewport either way, so
   // the deck runs in the window and the refusal is logged with its reason, never swallowed.
   useEffect(() => {
@@ -280,7 +280,7 @@ export function PresentationOverlay({
       else onExit();
       return;
     }
-    // The pointing tools (docs/specs/012-collaboration/presentation-mode.md). Neither touches the document, and the
+    // The pointing tools (docs/specs/012-collaboration/presentation-mode.md). Neither touches the design, and the
     // laser was built for exactly this room — docs/specs/008-canvas/laser-panel.md opens by calling it
     // "the presenting tool". Pressing the same key again puts the pointer
     // back, so arming one is never a trap.
@@ -389,7 +389,7 @@ export function PresentationOverlay({
           
           It steps aside entirely while a POINTING tool is armed. The laser and
           the spotlight need the pointer on the canvas to work at all, and
-          neither can change the document — they are the two tools whose whole
+          neither can change the design — they are the two tools whose whole
           job is to point at it. The cost is that click-to-advance goes with the
           catcher, which is the right trade: while you are drawing a laser
           stroke a click means "point", not "next slide". The keys and the HUD
@@ -408,7 +408,7 @@ export function PresentationOverlay({
           <div className="flex flex-col items-center gap-2 text-center">
             <span className="text-sm font-semibold text-white/90">End of the deck</span>
             <span className="text-[11px] text-white/70">
-              Click, press Space, or hit Esc to go back to the document.
+              Click, press Space, or hit Esc to go back to the design.
             </span>
           </div>
         </div>

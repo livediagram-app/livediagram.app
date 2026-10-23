@@ -5,16 +5,16 @@ import { WorkbenchPage } from '../WorkbenchPage';
 import { WorkbenchStatus } from '../WorkbenchStatus';
 
 // The workspace frame (docs/specs/013-workspace/workbench-embeds.md "Two scopes", "What renders"): the Explorer and
-// every document in it, inside a developer tool's frame, signed in by a workbench session. One static page backs
+// every design in it, inside a developer tool's frame, signed in by a workbench session. One static page backs
 // every place in the frame: the live worker serves it for /embed/workbench/explorer/** and
-// /embed/workbench/document/** (lib/workbench/workbench-frame-path.ts), and the page reads the real address. Under
+// /embed/workbench/design/** (lib/workbench/workbench-frame-path.ts), and the page reads the real address. Under
 // /embed, so frameable; the page binds to the minting workbench before it shows anything.
 export const metadata: Metadata = {
   title: 'Workbench | livedesign',
   robots: { index: false },
 };
 
-// The canvas owns zoom when a document is open, so the page is pinned at 1 (lib/page-viewport.ts).
+// The canvas owns zoom when a design is open, so the page is pinned at 1 (lib/page-viewport.ts).
 export const viewport = EDITOR_VIEWPORT;
 
 // The frame reads its place from the address (useSearchParams), which a static export must hold in a Suspense

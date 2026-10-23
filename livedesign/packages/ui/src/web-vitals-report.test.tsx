@@ -30,7 +30,7 @@ describe('webVitalOf', () => {
 describe('webVitalApp', () => {
   it('names the app that serves the page', () => {
     expect(webVitalApp('/')).toBe('Marketing');
-    expect(webVitalApp('/document/abc-123')).toBe('Live');
+    expect(webVitalApp('/design/abc-123')).toBe('Live');
     expect(webVitalApp('/help/canvas/the-canvas')).toBe('Help');
     expect(webVitalApp('/telemetry')).toBe('Dashboard');
   });

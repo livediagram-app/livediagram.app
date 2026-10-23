@@ -2,7 +2,7 @@
 // logo page's Draw and the Toolbar strip's Search (docs/specs/007-editor/toolbar-layout.md "Search:
 // every element type"), each with the colour and width this person gave it. A tile is that marker
 // as it is now, picked up through onBeginMarker.
-import { penColourCss, type CanvasSurface } from '@livedesign/document';
+import { penColourCss, type CanvasSurface } from '@livedesign/design';
 import { PenGlyph } from '@/components/canvas/whiteboard/whiteboard-icons';
 import {
   colourLabel,

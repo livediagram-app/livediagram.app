@@ -11,7 +11,7 @@ import {
   type CanvasSurface,
   type Tab,
   type ThemeDefinition,
-} from '@livedesign/document';
+} from '@livedesign/design';
 
 export type StartPalette = {
   surface: string;

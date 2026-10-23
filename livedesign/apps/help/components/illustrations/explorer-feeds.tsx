@@ -40,7 +40,7 @@ function SectionHeading({ y, title, link }: { y: number; title: string; link: st
   );
 }
 
-/** A small document snapshot: a box or two joined by a line, on a pale well. */
+/** A small design snapshot: a box or two joined by a line, on a pale well. */
 function Snapshot({
   x,
   y,
@@ -190,7 +190,7 @@ function FeedCard({
   reason: string;
   meta?: string;
   tone: Tone;
-  /** A document snapshot motif, or a glyph drawn on the tone's tint. */
+  /** A design snapshot motif, or a glyph drawn on the tone's tint. */
   preview: { motif: number } | { glyph: ReactNode };
   isNew?: boolean;
   /** A card with nothing left to open (a deleted folder) is dimmed. */
@@ -269,7 +269,7 @@ function BigGlyph({ kind, tone }: { kind: 'team' | 'folder' | 'pencil'; tone: To
   );
 }
 
-/** The row of the Inbox: kind glyph, title (and hint), the document chip and where, the person. */
+/** The row of the Inbox: kind glyph, title (and hint), the design chip and where, the person. */
 function InboxRow({
   y,
   kind,
@@ -382,7 +382,7 @@ function InboxSectionTitle({ y, title, count }: { y: number; title: string; coun
   );
 }
 
-/** A small folder chip beside a document's name on Recent. */
+/** A small folder chip beside a design's name on Recent. */
 function FolderChip({ x, y, label }: { x: number; y: number; label: string }) {
   const w = label.length * 5.6 + 24;
   return (
@@ -544,7 +544,7 @@ export function TimelineStack() {
         x={x}
         y={y}
         w={w}
-        subject="Documents Updated"
+        subject="Designs Updated"
         reason="5 events · click to expand"
         tone="create"
         preview={{ glyph: <BigGlyph kind="pencil" tone="create" /> }}
@@ -632,7 +632,7 @@ export function InboxSections() {
   );
 }
 
-/** Recent: Home › Recent, newest first, each row naming where the document lives. */
+/** Recent: Home › Recent, newest first, each row naming where the design lives. */
 export function RecentView() {
   const rows: { name: string; chip?: string; meta: string }[] = [
     { name: 'Q3 roadmap', chip: 'Planning', meta: '4m ago' },

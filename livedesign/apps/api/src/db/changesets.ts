@@ -2,7 +2,7 @@
 // ops, inverse and result lines beside it, one row per part
 // (docs/specs/024-agents/blueprints/agent-changesets.md "Data and persistence").
 
-import type { ElementOp } from '@livedesign/document';
+import type { ElementOp } from '@livedesign/design';
 import { CHANGESET_MERGE_PAGE, type ChangesetCounts } from '@livedesign/api-schema';
 import type { Env } from '../types';
 
@@ -19,7 +19,7 @@ export type ChangesetFingerprints = {
 
 export type ChangesetRecord = {
   id: string;
-  documentId: string;
+  designId: string;
   tabId: string;
   rev: number;
   baseRev: number | null;
@@ -37,7 +37,7 @@ export type ChangesetRecord = {
 
 type ChangesetRow = {
   id: string;
-  document_id: string;
+  design_id: string;
   tab_id: string;
   rev: number;
   base_rev: number | null;
@@ -55,7 +55,7 @@ type ChangesetRow = {
   created_at: number;
 };
 
-const COLUMNS = `id, document_id, tab_id, rev, base_rev, author_id, author_name, author_color, token_id,
+const COLUMNS = `id, design_id, tab_id, rev, base_rev, author_id, author_name, author_color, token_id,
   summary, fingerprints, added, changed, removed, created_tab, revert_of, created_at`;
 const PREFIXED = COLUMNS.split(',')
   .map((c) => `c.${c.trim()}`)
@@ -64,7 +64,7 @@ const PREFIXED = COLUMNS.split(',')
 function rowToRecord(row: ChangesetRow): ChangesetRecord {
   return {
     id: row.id,
-    documentId: row.document_id,
+    designId: row.design_id,
     tabId: row.tab_id,
     rev: row.rev,
     baseRev: row.base_rev,
@@ -95,7 +95,7 @@ export function insertChangesetStatement(env: Env, r: ChangesetRecord): D1Prepar
     `INSERT INTO agent_changesets (${COLUMNS}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   ).bind(
     r.id,
-    r.documentId,
+    r.designId,
     r.tabId,
     r.rev,
     r.baseRev,
@@ -133,16 +133,16 @@ export async function lastChangesetRev(env: Env, tabId: string): Promise<number 
   return row?.rev ?? null;
 }
 
-// One changeset of this document; null when the document holds no such record.
+// One changeset of this design; null when the design holds no such record.
 export async function getChangeset(
   env: Env,
-  documentId: string,
+  designId: string,
   changesetId: string,
 ): Promise<ChangesetRecord | null> {
   const row = await env.DB.prepare(
-    `SELECT ${COLUMNS} FROM agent_changesets WHERE id = ? AND document_id = ?`,
+    `SELECT ${COLUMNS} FROM agent_changesets WHERE id = ? AND design_id = ?`,
   )
-    .bind(changesetId, documentId)
+    .bind(changesetId, designId)
     .first<ChangesetRow>();
   return row ? rowToRecord(row) : null;
 }
@@ -160,20 +160,20 @@ export async function getChangesetPart(
   return row?.data ?? null;
 }
 
-// A document's changesets, newest first (CS26).
+// A design's changesets, newest first (CS26).
 export async function listChangesets(
   env: Env,
-  documentId: string,
+  designId: string,
   opts: { tabId?: string; limit: number },
 ): Promise<ChangesetRecord[]> {
   const byTab = opts.tabId !== undefined;
   const res = await env.DB.prepare(
     `SELECT ${COLUMNS} FROM agent_changesets
-      WHERE document_id = ?${byTab ? ' AND tab_id = ?' : ''}
+      WHERE design_id = ?${byTab ? ' AND tab_id = ?' : ''}
       ORDER BY created_at DESC, rev DESC
       LIMIT ?`,
   )
-    .bind(...(byTab ? [documentId, opts.tabId, opts.limit] : [documentId, opts.limit]))
+    .bind(...(byTab ? [designId, opts.tabId, opts.limit] : [designId, opts.limit]))
     .all<ChangesetRow>();
   return (res.results ?? []).map(rowToRecord);
 }
@@ -184,7 +184,7 @@ export type MergeEntry = { record: ChangesetRecord; ops: ElementOp[] };
 // step 8): this tab's records after the revision the editor has seen, or, for a save without one,
 // those newer than `since`; ascending by revision, each with its element ops, in pages of
 // CHANGESET_MERGE_PAGE so a long-offline editor never holds them all at once (CS18). Keyed by tab,
-// not document: a tab linked into several documents merges every one of its changesets.
+// not design: a tab linked into several designs merges every one of its changesets.
 export async function* changesetMergePages(
   env: Env,
   tabId: string,

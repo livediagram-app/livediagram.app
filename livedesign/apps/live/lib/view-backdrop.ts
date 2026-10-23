@@ -2,7 +2,7 @@
 // colour (its theme's canvas, or the custom colour). Pages are the paper, so the surround is plain while the
 // tab's pattern is still its theme's: a pattern someone picked always shows. Exports and thumbnails use the
 // tab's backdrop (resolveTabBackdrop).
-import type { Appearance, BackgroundPattern, Tab } from '@livedesign/document';
+import type { Appearance, BackgroundPattern, Tab } from '@livedesign/design';
 import { getResolvedAppearance } from '@livedesign/ui';
 import { getTheme, resolveTabBackdrop, type ResolvedBackdrop } from './themes';
 

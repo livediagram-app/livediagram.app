@@ -1,6 +1,6 @@
 // `push <file>` (docs/specs/015-api/blueprints/cli.md "Pull and push", CLI28): each tab whose elements changed in a
 // pull file goes back as a `replace` changeset based on its pulled revision, strictly, so a tab changed on the server
-// since is refused as stale and nothing is overwritten blindly. A tab the document lacks is created. Only elements
+// since is refused as stale and nothing is overwritten blindly. A tab the design lacks is created. Only elements
 // travel: changed settings and a tab gone from the file are named, never applied. The file's revisions and hashes
 // follow the tabs that landed.
 
@@ -10,8 +10,8 @@ import {
   type VerbContext,
   type WriteFlags,
 } from '@livedesign/agent-verbs';
-import type { ChangesetResponse, DocumentResponse } from '@livedesign/api-schema';
-import type { Tab } from '@livedesign/document';
+import type { ChangesetResponse, DesignResponse } from '@livedesign/api-schema';
+import type { Tab } from '@livedesign/design';
 import type { CliIo } from '../io';
 import { CliError, formatError } from '../output/cli-error';
 import { EXIT, type ExitCode } from '../output/exit-codes';
@@ -43,7 +43,7 @@ type TabPlan = { tab: Tab; create: boolean; hashes: { hash: string; settingsHash
 async function planOf(ctx: VerbContext, file: PullFile, onServer: Set<string>): Promise<TabPlan[]> {
   const { tabs: pulled } = file.livedesignSync;
   const plans: TabPlan[] = [];
-  for (const tab of file.document.tabs) {
+  for (const tab of file.design.tabs) {
     const hashes = await tabHashes(tab);
     const was = pulled[tab.id];
     const create = !was || !onServer.has(tab.id);
@@ -51,7 +51,7 @@ async function planOf(ctx: VerbContext, file: PullFile, onServer: Set<string>): 
       ctx.notice(`not pushed: the name, theme or background of tab ${quoted(tab.name)}`);
     if (create || hashes.hash !== was.hash) plans.push({ tab, create, hashes });
   }
-  const inFile = new Set(file.document.tabs.map((t) => t.id));
+  const inFile = new Set(file.design.tabs.map((t) => t.id));
   for (const id of Object.keys(pulled))
     if (!inFile.has(id) && onServer.has(id)) ctx.notice(`not pushed: removing tab ${id}`);
   return plans;
@@ -71,12 +71,12 @@ export async function pushFile(
       message: `${input.file} was pulled from ${file.livedesignSync.host}, not ${host}`,
       hint: `livedesign push ${input.file} --host ${file.livedesignSync.host}`,
     });
-  const documentId = file.document.id;
-  const { document } = await ctx.api.json<DocumentResponse>(
-    `/documents/${encodeURIComponent(documentId)}`,
+  const designId = file.design.id;
+  const { design } = await ctx.api.json<DesignResponse>(
+    `/designs/${encodeURIComponent(designId)}`,
   );
-  const plans = await planOf(ctx, file, new Set(document.tabs.map((t) => t.id)));
-  ctx.log(`push ${documentId} ${plans.length} changed tabs`);
+  const plans = await planOf(ctx, file, new Set(design.tabs.map((t) => t.id)));
+  ctx.log(`push ${designId} ${plans.length} changed tabs`);
   if (plans.length === 0) return { lines: ['nothing to push'], exit: EXIT.done };
   const lines: string[] = [];
   let exit: ExitCode = EXIT.done;
@@ -87,7 +87,7 @@ export async function pushFile(
     ...(input.waitHeld ? { waitHeld: input.waitHeld } : {}),
   };
   for (const { tab, create, hashes } of plans) {
-    const target = { documentId, tabId: tab.id, tabName: tab.name, doc: documentId };
+    const target = { designId, tabId: tab.id, tabName: tab.name, doc: designId };
     let response: ChangesetResponse;
     try {
       response = await submitChangeset(

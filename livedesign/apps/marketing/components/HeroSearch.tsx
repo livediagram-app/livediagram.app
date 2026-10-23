@@ -11,7 +11,7 @@ import { heroSearch } from '@/lib/hero-starts';
 // best matches list under the bar as real links, each creating its template. Enter opens the top
 // match, Down moves into the list (Up and Down walk it, Up off the top returns to the box), Escape
 // clears the box. The list shows while focus is inside the search and the box holds a query. Start
-// Blank sits inside the bar, a plain link that opens a new document on one empty page.
+// Blank sits inside the bar, a plain link that opens a new design on one empty page.
 
 const createHref = (kind: TemplateKind) => ctaHref(templateCreateHref(kind), 'Home.HeroSearch');
 

@@ -6,7 +6,7 @@ OG image. The URL is edited the same way every other element's link is.
 
 ## The element
 
-`LinkCardElement` (`type: 'link-card'`, `@livedesign/document`, declared in
+`LinkCardElement` (`type: 'link-card'`, `@livedesign/design`, declared in
 `src/element-types.ts`) is a
 boxed element added through the standard new-type surface: `isBoxed`, `createLinkCard` (280×120 default), the `colors.ts`
 defaults + `supportsColours`, `element-variant.ts` (a bordered, rounded card:

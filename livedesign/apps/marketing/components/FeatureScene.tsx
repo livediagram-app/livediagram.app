@@ -103,7 +103,7 @@ export function FeatureScene({ scene: key }: { scene: HeroSceneKey }) {
         viewBox={scene.landscapeViewBox}
         playing={playing}
         veil={veil}
-        document={drawn ? <Board /> : null}
+        design={drawn ? <Board /> : null}
         canvasClassName={CANVAS_ASPECT}
       />
     </div>

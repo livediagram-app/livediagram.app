@@ -52,18 +52,18 @@ export function capWorkbenchRole(role: WorkbenchRole, ceiling?: WorkbenchRole): 
 // Scopes (docs/specs/013-workspace/workbench-embeds.md "Two scopes")
 // ---------------------------------------------------------------------
 
-// What a ticket, session or pairing reaches: one document, or the person's whole workspace.
-export const WORKBENCH_SCOPES = ['document', 'workspace'] as const;
+// What a ticket, session or pairing reaches: one design, or the person's whole workspace.
+export const WORKBENCH_SCOPES = ['design', 'workspace'] as const;
 export type WorkbenchScope = (typeof WORKBENCH_SCOPES)[number];
 
 export function isWorkbenchScope(value: unknown): value is WorkbenchScope {
   return WORKBENCH_SCOPES.some((scope) => scope === value);
 }
 
-// A workspace pairing also covers the document scope; a document pairing never covers the workspace, so reaching
+// A workspace pairing also covers the design scope; a design pairing never covers the workspace, so reaching
 // the whole workspace is always its own approval.
 export function pairingCoversScope(pairing: WorkbenchScope, asked: WorkbenchScope): boolean {
-  return pairing === 'workspace' || asked === 'document';
+  return pairing === 'workspace' || asked === 'design';
 }
 
 // ---------------------------------------------------------------------
@@ -119,13 +119,13 @@ export const WORKBENCH_ERROR_CODES = [
 // Wire types (blueprint "Wire types")
 // ---------------------------------------------------------------------
 
-// `scope` absent is `document`, so the callers from before scopes read unchanged.
+// `scope` absent is `design`, so the callers from before scopes read unchanged.
 export type WorkbenchTicketRequest =
-  | { scope?: 'document'; documentId: string; tabId?: string; origin: string }
+  | { scope?: 'design'; designId: string; tabId?: string; origin: string }
   | { scope: 'workspace'; folderId?: string; origin: string };
 export type WorkbenchTicketResponse = {
   url: string;
-  documentId: string;
+  designId: string;
   tabId: string | null;
   expiresAt: number;
 };
@@ -154,12 +154,12 @@ export type WorkbenchSessionResponse = {
   expiresAt: number;
   person: WorkbenchPerson;
 } & (
-  | { scope: 'document'; documentId: string; folderId: null; tabId: string | null }
-  | { scope: 'workspace'; documentId: null; folderId: string | null; tabId: null }
+  | { scope: 'design'; designId: string; folderId: null; tabId: string | null }
+  | { scope: 'workspace'; designId: null; folderId: string | null; tabId: null }
 );
-export type WorkbenchDocumentSessionResponse = Extract<
+export type WorkbenchDesignSessionResponse = Extract<
   WorkbenchSessionResponse,
-  { scope: 'document' }
+  { scope: 'design' }
 >;
 export type WorkbenchWorkspaceSessionResponse = Extract<
   WorkbenchSessionResponse,
@@ -210,21 +210,21 @@ export function normaliseWorkbenchName(value: unknown): string | null {
 // Confinement (blueprint "A request bearing lvw_", "The choke point by scope")
 // ---------------------------------------------------------------------
 
-type WorkbenchRouteVerdict = 'allow' | 'confined' | 'other-document';
+type WorkbenchRouteVerdict = 'allow' | 'confined' | 'other-design';
 
-// What the verdict reads of a session: its scope, its document (the document scope's only) and its owner.
+// What the verdict reads of a session: its scope, its design (the design scope's only) and its owner.
 export type WorkbenchConfinementSession =
-  | { scope: 'document'; documentId: string; ownerId: string }
-  | { scope: 'workspace'; documentId: null; ownerId: string };
+  | { scope: 'design'; designId: string; ownerId: string }
+  | { scope: 'workspace'; designId: null; ownerId: string };
 
-// Headers that would lend a session someone else's access. The document scope refuses all three; the workspace
-// scope lets a share link's code and password through, since a document shared with the person is reached by its
+// Headers that would lend a session someone else's access. The design scope refuses all three; the workspace
+// scope lets a share link's code and password through, since a design shared with the person is reached by its
 // link (WB53), and still refuses the guest header, so a session never acts as someone else.
 export function workbenchAmbientHeaders(scope: WorkbenchScope): readonly string[] {
-  return scope === 'document' ? ['X-Share-Code', 'X-Owner-Id', 'X-Share-Password'] : ['X-Owner-Id'];
+  return scope === 'design' ? ['X-Share-Code', 'X-Owner-Id', 'X-Share-Password'] : ['X-Owner-Id'];
 }
 
-// One allowed route shape: methods and a path under /api. `:doc` must be the session's document, `:owner` the
+// One allowed route shape: methods and a path under /api. `:doc` must be the session's design, `:owner` the
 // session's owner, `:p` any one segment (except the words in WORKBENCH_RESERVED_SEGMENTS), and a trailing `**`
 // any rest of the path, none included.
 type RouteShape = { methods: readonly string[]; path: readonly string[] };
@@ -236,7 +236,7 @@ const shape = (methods: string, path: string): RouteShape => ({
 
 const ALL_METHODS = 'GET,POST,PUT,DELETE';
 
-// The document scope: what the editor of one document needs.
+// The design scope: what the editor of one design needs.
 const WORKBENCH_ROUTES: readonly RouteShape[] = [
   shape('GET', 'capabilities'),
   shape('GET', 'openapi.json'),
@@ -250,26 +250,26 @@ const WORKBENCH_ROUTES: readonly RouteShape[] = [
   shape('GET', 'custom-themes'),
   shape('POST', 'images'),
   shape('GET', 'images/:p'),
-  shape('GET,PUT', 'documents/:doc'),
-  shape('GET,PUT,DELETE', 'documents/:doc/tabs/:p'),
-  shape('PUT', 'documents/:doc/tabs/:p/name'),
-  shape('POST', 'documents/:doc/tabs/:p/changesets'),
-  shape('POST', 'documents/:doc/changesets/:p/revert'),
-  shape('GET', 'documents/:doc/changesets'),
-  shape('GET', 'documents/:doc/changesets/:p'),
-  shape('GET', 'documents/:doc/comments'),
-  shape('GET', 'documents/:doc/tabs/:p/render.svg'),
-  shape('GET', 'documents/:doc/tabs/:p/comment-pictures'),
-  shape('POST', 'documents/:doc/tabs/:p/comments'),
-  shape('POST', 'documents/:doc/tabs/:p/comments/:p/reply'),
-  shape('POST', 'documents/:doc/tabs/:p/comments/:p/resolve'),
-  shape('POST', 'documents/:doc/tabs/:p/comments/:p/reopen'),
-  shape('DELETE', 'documents/:doc/tabs/:p/comments/:p'),
-  shape('POST', 'documents/:doc/room-ticket'),
+  shape('GET,PUT', 'designs/:doc'),
+  shape('GET,PUT,DELETE', 'designs/:doc/tabs/:p'),
+  shape('PUT', 'designs/:doc/tabs/:p/name'),
+  shape('POST', 'designs/:doc/tabs/:p/changesets'),
+  shape('POST', 'designs/:doc/changesets/:p/revert'),
+  shape('GET', 'designs/:doc/changesets'),
+  shape('GET', 'designs/:doc/changesets/:p'),
+  shape('GET', 'designs/:doc/comments'),
+  shape('GET', 'designs/:doc/tabs/:p/render.svg'),
+  shape('GET', 'designs/:doc/tabs/:p/comment-pictures'),
+  shape('POST', 'designs/:doc/tabs/:p/comments'),
+  shape('POST', 'designs/:doc/tabs/:p/comments/:p/reply'),
+  shape('POST', 'designs/:doc/tabs/:p/comments/:p/resolve'),
+  shape('POST', 'designs/:doc/tabs/:p/comments/:p/reopen'),
+  shape('DELETE', 'designs/:doc/tabs/:p/comments/:p'),
+  shape('POST', 'designs/:doc/room-ticket'),
   shape('DELETE', 'workbench/sessions/current'),
 ];
 
-// The workspace scope: everything the Explorer does, and the editor of every document in it. Never the account
+// The workspace scope: everything the Explorer does, and the editor of every design in it. Never the account
 // (profile, preferences' writes, the guest migration, tokens and pairings, team administration, the account, the AI
 // assistant), and never a route the minting token could not call (Clerk only, WB51).
 const WORKSPACE_ROUTES: readonly RouteShape[] = [
@@ -282,7 +282,7 @@ const WORKSPACE_ROUTES: readonly RouteShape[] = [
   shape('GET', 'participants/:owner'),
   shape('GET', 'share/**'),
   ...[
-    'documents',
+    'designs',
     'folders',
     'shared',
     'favourites',
@@ -304,7 +304,7 @@ const WORKSPACE_ROUTES: readonly RouteShape[] = [
 
 // Inside an allowed workspace resource, the door that stays closed: an agent's presence.
 const WORKSPACE_CLOSED: readonly RouteShape[] = [
-  shape(ALL_METHODS, 'documents/:p/tabs/:p/presence'),
+  shape(ALL_METHODS, 'designs/:p/tabs/:p/presence'),
 ];
 
 // Words a `:p` never matches: sibling routes that share a prefix with an allowed shape but are confined
@@ -321,7 +321,7 @@ function matches(
   if (wild ? rest.length < fixed.length : rest.length !== fixed.length) return false;
   return fixed.every((part, i) => {
     const seg = rest[i]!;
-    if (part === ':doc') return seg === session.documentId;
+    if (part === ':doc') return seg === session.designId;
     if (part === ':owner') return seg === session.ownerId;
     if (part === ':p') return seg.length > 0 && !WORKBENCH_RESERVED_SEGMENTS.has(seg);
     return seg === part;
@@ -335,9 +335,9 @@ const anyMatches = (
   session: WorkbenchConfinementSession,
 ) => routes.some((route) => route.methods.includes(method) && matches(route, rest, session));
 
-// `segments` as the api splits the path: `['api', 'documents', ...]`. In the document scope, a document route naming
-// any other document answers as if that document were absent, whatever follows, so nothing leaks its existence. In
-// the workspace scope every document is the person's to try: the route decides, with the owner's identity.
+// `segments` as the api splits the path: `['api', 'designs', ...]`. In the design scope, a design route naming
+// any other design answers as if that design were absent, whatever follows, so nothing leaks its existence. In
+// the workspace scope every design is the person's to try: the route decides, with the owner's identity.
 export function workbenchRouteVerdict(
   method: string,
   segments: readonly string[],
@@ -350,8 +350,8 @@ export function workbenchRouteVerdict(
       !anyMatches(WORKSPACE_CLOSED, method, rest, session);
     return allowed ? 'allow' : 'confined';
   }
-  if (rest[0] === 'documents' && rest.length >= 2 && rest[1] !== session.documentId) {
-    return 'other-document';
+  if (rest[0] === 'designs' && rest.length >= 2 && rest[1] !== session.designId) {
+    return 'other-design';
   }
   return anyMatches(WORKBENCH_ROUTES, method, rest, session) ? 'allow' : 'confined';
 }

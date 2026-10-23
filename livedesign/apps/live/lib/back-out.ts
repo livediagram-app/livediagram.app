@@ -1,5 +1,5 @@
-// Where Escape takes someone backing out of the New Document wizard
-// (docs/specs/007-editor/new-document-route.md "Escape backs out"): back to the page of ours that
+// Where Escape takes someone backing out of the New Design wizard
+// (docs/specs/007-editor/new-design-route.md "Escape backs out"): back to the page of ours that
 // opened it, as the browser's Back would, or home when there is none to go back to.
 type BackOutTarget = 'back' | 'home';
 

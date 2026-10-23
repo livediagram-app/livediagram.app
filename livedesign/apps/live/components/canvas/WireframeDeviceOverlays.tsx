@@ -11,7 +11,7 @@ import {
   wireframeFrameSvg,
   type LaidOutPage,
   type WireframeFrameTheme,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { usePageBackgroundPreview, withPreviewedBackgrounds } from '@/lib/page-background-preview';
 
 export function WireframeDeviceOverlays({
@@ -62,7 +62,7 @@ const DeviceOver = memo(function DeviceOver({
       width={page.rect.width}
       height={page.rect.height}
       viewBox={`0 0 ${page.rect.width} ${page.rect.height}`}
-      // This app's own markup (packages/document wireframe-device-svg), never content.
+      // This app's own markup (packages/design wireframe-device-svg), never content.
       dangerouslySetInnerHTML={{ __html: trustedHtml(over) }}
     />
   );

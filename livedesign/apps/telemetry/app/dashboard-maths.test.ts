@@ -31,7 +31,7 @@ describe('pct', () => {
   });
 
   it('returns a non-finite value for a zero whole rather than pretending', () => {
-    // A bar with no total is a real state on a quiet day. This documents that
+    // A bar with no total is a real state on a quiet day. This designs that
     // the guard belongs to the CALLER: anything rendering pct() into a width
     // or a label has to handle it, because NaN reaches the DOM silently and
     // Infinity draws a bar off the end of the chart.

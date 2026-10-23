@@ -3,13 +3,13 @@
 // A tab window's section (docs/specs/009-elements/tab-window.md "The menu"): Shows (the tabs it may show, an
 // Editor's to change) and Open <name> (everyone's who sees the tab). Read from the editor itself: the menu renders
 // outside the canvas, so the windows' own context is not here.
-import { tabWindowMayShow, type ShapeElement } from '@livedesign/document';
+import { tabWindowMayShow, type ShapeElement } from '@livedesign/design';
 import { lucideAppWindow, lucideArrowUpRight } from '@livedesign/icons/lucide';
 import { lucideGlyph } from '@livedesign/ui';
 import { MenuAccordionSection, MenuActionRow } from '@/components/primitives/PortalMenu';
 import { TabWindowTabList } from '@/components/canvas/tab-window/TabWindowTabList';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
-import { useSelectTab } from '@/app/document/[id]/useSelectTab';
+import { useEditorContext } from '@/app/design/[id]/EditorContext';
+import { useSelectTab } from '@/app/design/[id]/useSelectTab';
 import type { ElementStyleOps } from '@/lib/element-style-ops';
 import { track } from '@/lib/telemetry';
 

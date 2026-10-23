@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Folder } from '@livedesign/api-schema';
 import { VerbRefusal } from './define';
-import type { Libraries } from './find-documents';
+import type { Libraries } from './find-designs';
 import { folderChoices, matchFolders, resolveFolderRef } from './folders';
 
 // The person's folders as paths (blueprint CLI86): personal first, then each team by name, depth first.
@@ -18,7 +18,7 @@ const folder = (id: string, name: string, parentId: string | null = null): Folde
 
 const libraries: Libraries = {
   personal: {
-    documents: [],
+    designs: [],
     folders: [
       folder('f-screens', 'Screens', 'f-games'),
       folder('f-games', 'Minigames'),
@@ -26,8 +26,8 @@ const libraries: Libraries = {
     ],
   },
   teams: [
-    { id: 't2', name: 'Zed', documents: [], folders: [folder('f-z', 'Zone')] },
-    { id: 't1', name: 'Platform', documents: [], folders: [folder('f-arch', 'Architecture')] },
+    { id: 't2', name: 'Zed', designs: [], folders: [folder('f-z', 'Zone')] },
+    { id: 't1', name: 'Platform', designs: [], folders: [folder('f-arch', 'Architecture')] },
   ],
 };
 const choices = folderChoices(libraries);
@@ -46,7 +46,7 @@ describe('folderChoices', () => {
   it('keeps siblings of one name both, in the order the library gave them', () => {
     const twins: Libraries = {
       personal: {
-        documents: [],
+        designs: [],
         folders: [
           folder('c', 'Alpha'),
           folder('z', 'Zeta'),

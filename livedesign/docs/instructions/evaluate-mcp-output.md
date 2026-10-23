@@ -36,7 +36,7 @@ The kit lives in `apps/mcp/eval/`:
 --concurrency 6`. `--tasks` takes `all`, an area (`pages`) or ids (`I1,I4`), mixed. A whole-bank round takes
    about a minute per run at that concurrency.
 7. Each run gets a token minted into local D1 for a throwaway owner, so it starts in an empty library and never sees
-   another run's documents ("our launch deck" finds its own). The tokens are kept in `runs/<round>/tokens.json` so a
+   another run's designs ("our launch deck" finds its own). The tokens are kept in `runs/<round>/tokens.json` so a
    run's library can be read again.
 8. Each run is `claude -p` from an empty temp directory outside the repo, with `--strict-mcp-config`, `--tools ""`,
    `--setting-sources ""`, a short chat-app system prompt (with a fixed date) and `ENABLE_TOOL_SEARCH=false`, so the
@@ -59,7 +59,7 @@ The kit lives in `apps/mcp/eval/`:
     (a field name, a page line it could not parse, a miscount in the prompt's own arithmetic).
 16. Cross-test the bank after changing checks: run each task's checks on every other task's snapshot. A check that
     passes on unrelated output (or on none) is vacuous: make it require the thing it is about.
-17. A task that needs something to exist first (a deck to fill, a document to edit) makes it in `setup`, and answers
+17. A task that needs something to exist first (a deck to fill, a design to edit) makes it in `setup`, and answers
     the ids of what it made so the snapshot reads them too.
 
 ## Act on the findings
@@ -84,7 +84,7 @@ The kit lives in `apps/mcp/eval/`:
 
 ## Look at the pictures
 
-26. Checks judge content and structure, not looks. For layout and polish, open the renders: a run's `read_document`
+26. Checks judge content and structure, not looks. For layout and polish, open the renders: a run's `read_design`
     with `image: true` in its transcript, or render a snapshot's tab again with `mcp-call.mjs`.
 27. When judging looks, a subagent may stand in for the user with `brief.md`; record what it saw as defects with
     element ids, never as a score, and change the product only where two runs agree.
@@ -107,7 +107,7 @@ The kit lives in `apps/mcp/eval/`:
   step 8 instead.
 - A tool result can carry its JSON and then a lint as separate text parts; read the first part that parses, not the
   joined text (`resultJson` in `apps/mcp/eval/bench/mcp-client.mjs`).
-- `read_document` with `format: "json"` puts the elements under `tab.elements`, not at the top.
+- `read_design` with `format: "json"` puts the elements under `tab.elements`, not at the top.
 - A token minted into an earlier session's D1 copy is refused after copying main's state again ("the token is not
   accepted"); `run.mjs` mints its own into the copy each round.
 - A check written from one model's output can quietly fit that model: the cross-test (step 16) and a second model's

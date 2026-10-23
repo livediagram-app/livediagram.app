@@ -6,7 +6,7 @@
 import { useId } from 'react';
 import { Scene, Shape, Panel, Button, Label } from './primitives';
 
-/** A document stuck mid-load, as DocumentLoading draws it: the diagram building itself, the title
+/** A design stuck mid-load, as DesignLoading draws it: the diagram building itself, the title
  *  and detail line over the loading sweep, and, after 10 seconds, the "taking longer" line with
  *  a small secondary Refresh. */
 export function StuckCanvas() {
@@ -34,7 +34,7 @@ export function StuckCanvas() {
         strokeDasharray="4 3"
       />
       <Label x={210} y={78} anchor="middle" size={12} weight={600} tone="strong">
-        Opening your document
+        Opening your design
       </Label>
       <Label x={210} y={96} anchor="middle" size={10} tone="muted">
         Getting everything in place

@@ -10,10 +10,10 @@ are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 | `apps/api/migrations/0001_livedesign_baseline.sql`                                       | `participants.picture_url`, `ws_tickets.account`                                                                                                 |
 | `apps/api/src/db/participants.ts`                                                        | Reads `picture_url`; `setParticipantPicture`                                                                                                     |
 | `apps/api/src/routes/participants.ts`                                                    | `PUT /participants/<id>/picture`; GET gates `pictureUrl` on a signed-in caller                                                                   |
-| `apps/api/src/routes/comment-pictures-routes.ts`                                         | `GET /documents/<id>/tabs/<tabId>/comment-pictures`                                                                                              |
+| `apps/api/src/routes/comment-pictures-routes.ts`                                         | `GET /designs/<id>/tabs/<tabId>/comment-pictures`                                                                                              |
 | `apps/api/src/db/teams.ts`                                                               | Joined members carry `pictureUrl`                                                                                                                |
-| `apps/api/src/db/ws-tickets.ts`, `routes/document-room-routes.ts`                        | Ticket `account` bit; `X-Verified-Account` stamped on every upgrade                                                                              |
-| `apps/api/src/document-room.ts`, `room-roster.ts`, `document-room-rules.ts`              | Session `account`; hello keeps `picture` for accounts only; `identity` frames; roster stripped per recipient                                     |
+| `apps/api/src/db/ws-tickets.ts`, `routes/design-room-routes.ts`                        | Ticket `account` bit; `X-Verified-Account` stamped on every upgrade                                                                              |
+| `apps/api/src/design-room.ts`, `room-roster.ts`, `design-room-rules.ts`              | Session `account`; hello keeps `picture` for accounts only; `identity` frames; roster stripped per recipient                                     |
 | `apps/api/src/openapi/manifest.ts`                                                       | The two new routes documented                                                                                                                    |
 | `apps/live/lib/account-avatar.ts`                                                        | `resolveProfilePicture` (upload > Google > copy), `clerkImageSource`; `pictureSrc`, `pictureSrcSet` live in `packages/ui/src/profile-picture.ts` |
 | `apps/live/lib/user-preferences.ts`                                                      | `showProfilePicture`, `SHOW_PROFILE_PICTURE_DEFAULT`, `showProfilePictureEnabled`                                                                |
@@ -23,8 +23,8 @@ are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 | `apps/live/lib/comment-pictures.ts`                                                      | `useCommentPicturesLoader`, `useCommentAuthorPicture`                                                                                            |
 | `packages/ui/src/PictureDisc.tsx`, `apps/live/components/primitives/AuthorDisc.tsx`      | GlyphDisc + picture overlay; a comment author's disc                                                                                             |
 | `apps/live/components/providers/ClerkBridge.tsx`, `deferred-auth.tsx`                    | `pictureUrl` on the auth user                                                                                                                    |
-| `apps/live/lib/api/room.ts`, `app/document/[id]/useRoomConnection.ts`                    | hello `picture`; `updateSelf` sends `identity`; signed-in joins mint a ticket                                                                    |
-| `apps/live/app/document/[id]/usePresenceRows.ts`, `lib/presence-rows.ts`                 | Own entry carries our picture; cursor rows carry `picture`                                                                                       |
+| `apps/live/lib/api/room.ts`, `app/design/[id]/useRoomConnection.ts`                    | hello `picture`; `updateSelf` sends `identity`; signed-in joins mint a ticket                                                                    |
+| `apps/live/app/design/[id]/usePresenceRows.ts`, `lib/presence-rows.ts`                 | Own entry carries our picture; cursor rows carry `picture`                                                                                       |
 | Surfaces                                                                                 | `AuthControls`, `SettingsAccountRows`, `ParticipantAvatar`, `RemoteCursor`, `CommentThreadPopover`, `CommentBubbles`, `team-pane-parts`          |
 | `apps/live/e2e/clerk-stub/*`, `apps/live/scripts/build-clerk-stub.mjs`                   | Fake `window.Clerk`, signed-in and collaborator specs, the Clerk-enabled export                                                                  |
 | `scripts/e2e-stack.mjs`, `apps/live/playwright.config.ts`                                | `E2E_LIVE_OUT`, `E2E_CLERK_JWKS` (`/e2e/jwks.json`, `/e2e/token`), the `clerk-stub` project                                                      |
@@ -77,7 +77,7 @@ account has no picture either way, and a fresh account's first page load would o
 
 Room:
 
-- Join: a signed-in client mints a ticket for every room (not only team documents). The ticket
+- Join: a signed-in client mints a ticket for every room (not only team designs). The ticket
   row records `account = 1` when `ctx.clerkUserId` is set. Consume returns it; the upgrade
   stamps `X-Verified-Account: 1|0` on every path; the DO pins it on the attachment.
 - `helloPresence(claimed, session)`: `picture` kept when `session.account` and
@@ -92,7 +92,7 @@ Room:
   reconnects and sends an `identity` frame when the socket is open. `useRoomConnection` calls it
   when the published picture changes.
 
-Comment pictures: `useCommentPicturesLoader(documentId, tabId, elements, shareCode)` (from
+Comment pictures: `useCommentPicturesLoader(designId, tabId, elements, shareCode)` (from
 `useEditorState`) asks `comment-pictures` for the open tab when a signed-in reader holds a comment id
 the page has not asked about. `useCommentAuthorPicture(commentId, authorId)` answers our own
 picture for our own comments, else the reported one, read through the `useSyncExternalStore`
@@ -140,7 +140,7 @@ export function PictureDisc(props: GlyphDiscProps & { pictureUrl?: string | null
 | Hello picture from a non-account session                  | Dropped, logged                                                                         |
 | Anonymous recipient                                       | Roster without pictures                                                                 |
 | Switch flipped with a room open                           | `updateSelf` → hello → roster rebroadcast                                               |
-| Ticket mint fails for a signed-in personal-document owner | Falls back to the `o` leg: account 0, no picture in that room (logged by the connector) |
+| Ticket mint fails for a signed-in personal-design owner | Falls back to the `o` leg: account 0, no picture in that room (logged by the connector) |
 | Comment without `authorId`                                | Initial                                                                                 |
 | Participant lookup fails / 404                            | Initial; cached as null for the page                                                    |
 | Picture 404 / blocked                                     | `error` → initial, one log line                                                         |
@@ -198,8 +198,8 @@ CLS 0: fixed boxes, the cursor pill is a transient absolutely positioned overlay
 | Identity frame on the open socket                                                                                                                      | `apps/live/lib/api/room.test.ts`                                                         |
 | PUT / GET gating                                                                                                                                       | `apps/api/src/routes/participants.test.ts`                                               |
 | D1 rows, team members, ticket bit                                                                                                                      | `apps/api/src/db/profile-pictures.test.ts`, `db/ws-tickets.test.ts`                      |
-| Account bit through the upgrade                                                                                                                        | `apps/api/src/routes/document-room-routes.test.ts`                                       |
-| Hello keeps / drops, per-recipient roster, identity frames                                                                                             | `apps/api/src/document-room.test.ts`                                                     |
+| Account bit through the upgrade                                                                                                                        | `apps/api/src/routes/design-room-routes.test.ts`                                       |
+| Hello keeps / drops, per-recipient roster, identity frames                                                                                             | `apps/api/src/design-room.test.ts`                                                     |
 | Comment pictures route, anonymous empty                                                                                                                | `apps/api/src/routes/comment-pictures-routes.test.ts`                                    |
 | End to end: own chrome, fallback, framing at 2x, the switch                                                                                            | `apps/live/e2e/clerk-stub/profile-picture.spec.ts`                                       |
 | End to end: collaborator sees presence / cursor / comment pictures, anonymous visitor sees initials and never requests one, switch off removes it live | `apps/live/e2e/clerk-stub/collaborator-pictures.spec.ts`                                 |

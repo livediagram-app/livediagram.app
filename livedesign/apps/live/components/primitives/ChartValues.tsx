@@ -4,7 +4,7 @@
 // `chart-values` layout the export draws, a wedge's number in the ink that reads on its colour. Static text, drawn
 // over the marks and outside the animated group, so it stays put while the marks grow.
 
-import { labelOn, type ChartValueLabel } from '@livedesign/document';
+import { labelOn, type ChartValueLabel } from '@livedesign/design';
 
 export function ChartValues({
   labels,

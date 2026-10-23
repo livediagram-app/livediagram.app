@@ -8,7 +8,7 @@ import {
   withAccentEdgeColor,
   type AccentEdge,
   type Element,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { Glyph } from '@livedesign/ui';
 import { SizeButton } from '@/components/palette/palette-controls';
 import { BorderGrid } from '@/components/palette/context-menu-rows';

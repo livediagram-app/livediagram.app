@@ -18,7 +18,7 @@ restores exactly what was there.
 - Every tab has a finish, `Tab.finish`, unset meaning **Flexible**.
 - An element may carry its own, `finish` on the element, unset meaning **it follows its tab**.
 - The finish an element is drawn in is its own when set, else its tab's, else Flexible. This one resolution
-  (`resolveFinish` in `@livedesign/document`) is read by the canvas and every export, so what is seen and what is
+  (`resolveFinish` in `@livedesign/design`) is read by the canvas and every export, so what is seen and what is
   exported agree.
 - Changing a tab's finish restyles every element that follows it; an element with its own finish keeps it.
 
@@ -199,7 +199,7 @@ Draws exactly as livedesign did before finishes existed.
   note) in the chosen finish on the tab's own background and font. Picking a finish applies to the whole tab at once: every
   element's own finish on the tab is cleared so they all follow it again.
 - **New tabs** start Flexible. Duplicated and imported tabs keep their finish.
-- **Agents (MCP):** `create_document` and `add_tab` take an optional `finish`; an element's `finish` is an
+- **Agents (MCP):** `create_design` and `add_tab` take an optional `finish`; an element's `finish` is an
   ordinary element field agents may set.
 
 ## Where it shows

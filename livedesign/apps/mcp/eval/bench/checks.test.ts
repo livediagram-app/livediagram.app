@@ -13,7 +13,7 @@ const text = (id: string, label: string) => ({
 });
 
 const screens = {
-  documents: [
+  designs: [
     {
       id: 'd1',
       name: 'Coffee app',
@@ -63,7 +63,7 @@ describe('pagesOf', () => {
       'page 2 "Tip 2" page-99 · blank A4 · at 636,-540 794x1123 · 16 elements',
       'page 3 "Badge" page-3 · logo 1024 x 1024 · at -512,-512 1024x1024 · background #fdf3e3 · 5 elements',
     ].join('\n');
-    const snap = { documents: [{ id: 'd', tabs: [{ id: 't', elements: [], pages }] }] };
+    const snap = { designs: [{ id: 'd', tabs: [{ id: 't', elements: [], pages }] }] };
     expect(pagesOf(snap)).toEqual([
       {
         tabId: 't',
@@ -138,7 +138,7 @@ describe('runChecks', () => {
       { name: 'throws', pass: false, detail: 'check threw: boom' },
     ]);
     expect(
-      runChecks({ checks: [] }, { snap: { documents: [] }, run: { finalText: ' ' } }).map(
+      runChecks({ checks: [] }, { snap: { designs: [] }, run: { finalText: ' ' } }).map(
         (c: { pass: boolean }) => c.pass,
       ),
     ).toEqual([false, false]);

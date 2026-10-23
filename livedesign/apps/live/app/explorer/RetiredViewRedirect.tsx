@@ -6,7 +6,7 @@ import { debugLog } from '@/lib/debug-log';
 
 // An Explorer address that no longer has a view of its own
 // (docs/specs/013-workspace/folders.md#explorer-routes): Unsorted and Dynamic became the My
-// documents root, Generated the Made by AI filter, and Activity was renamed the Inbox. The route
+// designs root, Generated the Made by AI filter, and Activity was renamed the Inbox. The route
 // survives so links already out there keep working. `selectedFromRoute` reads these paths as
 // their successors, so the sidebar highlights the right row while this replaces the address.
 export const RETIRED_VIEW_TARGETS = {

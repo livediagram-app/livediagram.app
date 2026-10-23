@@ -6,8 +6,8 @@
 // elements on the page over the photo while Include Elements is on.
 import { useContext, useState } from 'react';
 import { Button } from '@livedesign/ui';
-import type { LaidOutPage, Tab } from '@livedesign/document';
-import { EditorContext } from '@/app/document/[id]/EditorContext';
+import type { LaidOutPage, Tab } from '@livedesign/design';
+import { EditorContext } from '@/app/design/[id]/EditorContext';
 import { loadTabImages } from '@/lib/export-tab-images';
 import {
   download,
@@ -33,15 +33,15 @@ const pascal = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 export function PhotoExportPanel({
   tab,
   pages,
-  documentName,
+  designName,
   imageContext,
   onDone,
   onBack,
 }: {
   tab: Tab;
   pages: readonly LaidOutPage[];
-  documentName: string;
-  imageContext?: { ownerId: string; documentId: string; shareCode: string | null } | null;
+  designName: string;
+  imageContext?: { ownerId: string; designId: string; shareCode: string | null } | null;
   onDone: () => void;
   onBack: () => void;
 }) {
@@ -77,7 +77,7 @@ export function PhotoExportPanel({
           : null;
       const file = await photoFile(
         session,
-        `${documentName || 'Photo'} - ${page.name ?? 'Photo'}`,
+        `${designName || 'Photo'} - ${page.name ?? 'Photo'}`,
         {
           format,
           quality,

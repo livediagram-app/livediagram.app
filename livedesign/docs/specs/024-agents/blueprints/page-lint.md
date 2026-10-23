@@ -1,7 +1,7 @@
 # Page lint: blueprint
 
 Derived from [Page lint](../page-lint.md), with the result footer of [Edit operations](../edit-operations.md#results),
-the refs and `?view=` route of [Document views](../document-views.md), the write path of
+the refs and `?view=` route of [Design views](../design-views.md), the write path of
 [Agent changesets](../agent-changesets.md) and the commands of the [CLI](../../015-api/cli.md). The spec decides; this
 file only adds engineering precision. Defaults applied where the spec is silent or qualitative are ledgered in
 [DEFAULTS.md](DEFAULTS.md) and cited as `LNn`.
@@ -10,7 +10,7 @@ Scope, by file:
 
 | File                                                               | Role                                                                                                                                                  |
 | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/page-lint/{package.json,tsconfig.json,oxlint.config.ts}` | The package `@livedesign/page-lint`; depends on `@livedesign/document` and `@livedesign/api-schema` (tests also on `templates` and `edit-operations`) |
+| `packages/page-lint/{package.json,tsconfig.json,oxlint.config.ts}` | The package `@livedesign/page-lint`; depends on `@livedesign/design` and `@livedesign/api-schema` (tests also on `templates` and `edit-operations`) |
 | `packages/page-lint/vitest.config.ts`                              | `defineProject`, node environment, 100% coverage thresholds                                                                                           |
 | `packages/page-lint/src/index.ts`                                  | The barrel: `lintTab`, the formatters, the logger, the constants                                                                                      |
 | `packages/page-lint/src/lint.ts`                                   | `lintTab`: prepare, measure, check, order, log                                                                                                        |
@@ -62,8 +62,8 @@ Every measure is the headless one (`estimatedLabelMeasure`, LN4, LN33), so the l
 | Changeset revert (api)            | The tab after the inverse (LN31)                          | As above: a revert is a changeset                                                                        |
 | Rejected changeset                | nothing                                                   | No lint: nothing was applied                                                                             |
 | `GET …/tabs/:tabId?view=lint`     | The stored tab, after the route's read gate and redaction | `formatLintReport` as `text/plain`; with `json=1` the `LintReport`                                       |
-| MCP `update_document`, `add_tab`  | The changeset response's `lint`                           | `lint` (the summary line) in structured content and a second text block (LN24)                           |
-| MCP `create_document`             | `?view=lint&json=1` for each created tab                  | `lint: string[]`, one summary line per tab in `tabIds` order (LN24)                                      |
+| MCP `update_design`, `add_tab`  | The changeset response's `lint`                           | `lint` (the summary line) in structured content and a second text block (LN24)                           |
+| MCP `create_design`             | `?view=lint&json=1` for each created tab                  | `lint: string[]`, one summary line per tab in `tabIds` order (LN24)                                      |
 | CLI `tab lint <doc> [--tab]`      | `?view=lint` (text), or `?view=lint&json=1` with `--json` | The text as served; `--json` prints `report.findings` (LN38)                                             |
 
 The MCP's other write tools (rename, share, comments, trash) change no drawing and carry no lint. A lint that throws
@@ -147,7 +147,7 @@ export type LintReport = {
 - The worst case is many texts stacked on the same rows, where the sweep compares every pair that shares them; a tab
   holds at most `MAX_ELEMENTS_PER_TAB` elements, and pages lay text out in rows.
 - Changesets: one lint per changeset in the api worker, inside the request it already handles; no extra subrequest.
-  The view lints the tab it read; MCP `create_document` adds one view request per created tab.
+  The view lints the tab it read; MCP `create_design` adds one view request per created tab.
 - Output: about 100 tokens for a typical tab; at most `LINT_MAX_LINES_PER_CODE` lines per code, then one elision line.
 
 ## Presentation and UX
@@ -167,7 +167,7 @@ The lint has no web surface; its text output is its interface (CLI, MCP text, ch
 
 Each run logs `[lint] run` with `elements`, `boxes`, `texts`, `skipped`, the severity counts, a count per code and
 `ms`. The pure package logs through an injected `LintLogger`, by default `console.info` (LN30); the api adds where it
-ran (`documentId`, `tabId`). A throw logs `[lint] failed` at the caller. No telemetry event is sent.
+ran (`designId`, `tabId`). A throw logs `[lint] failed` at the caller. No telemetry event is sent.
 
 ## Testing
 

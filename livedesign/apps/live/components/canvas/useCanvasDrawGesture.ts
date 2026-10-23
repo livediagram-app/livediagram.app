@@ -1,5 +1,5 @@
 import { useEffect, useEffectEvent, useState, type RefObject } from 'react';
-import { snapResizeBounds, snapToAlignment, snapToArrowPoint } from '@livedesign/document';
+import { snapResizeBounds, snapToAlignment, snapToArrowPoint } from '@livedesign/design';
 import { ARROW_SNAP_THRESHOLD_PX, pointerToCanvas, snapLeadingAxis } from '@/lib/canvas';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { isWhiteboardPenIntent } from '@/lib/draw-mode';

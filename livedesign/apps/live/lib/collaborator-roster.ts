@@ -3,7 +3,7 @@ import { relativeSince } from '@/lib/relative-time';
 import { withoutAgentRows } from '@/lib/agent-presence-rows';
 import { parseStoredLevel, type AccessLevel } from '@livedesign/api-schema';
 
-// The Collaborators modal's roster (docs/specs/012-collaboration/collaborator-enhancements.md): everyone in the document,
+// The Collaborators modal's roster (docs/specs/012-collaboration/collaborator-enhancements.md): everyone in the design,
 // grouped by the tab they are on. Built from the same `participantsByTab`
 // map the tab bar's presence stacks render, so the modal and the stacks can
 // never disagree about who is where.

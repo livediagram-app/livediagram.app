@@ -6,9 +6,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 // docs/specs/013-workspace/folder-content-previews.md: an empty folder's card shows the empty state's art; a folder
 // with something in it shows its tiles.
 
-vi.mock('@/components/panels/DocumentThumbnail', () => ({
-  DocumentThumbnail: ({ documentId }: { documentId: string }) => (
-    <span data-testid={`thumb-${documentId}`} />
+vi.mock('@/components/panels/DesignThumbnail', () => ({
+  DesignThumbnail: ({ designId }: { designId: string }) => (
+    <span data-testid={`thumb-${designId}`} />
   ),
 }));
 
@@ -20,7 +20,7 @@ afterEach(cleanup);
 describe('FolderPreview', () => {
   it('shows an empty folder the empty state art: the floating badge over its rings', () => {
     const { container } = render(
-      <FolderPreview contents={{ folders: [], documents: [] }} ownerId="me" />,
+      <FolderPreview contents={{ folders: [], designs: [] }} ownerId="me" />,
     );
     const empty = container.querySelector('[data-folder-empty]')!;
     expect(empty).not.toBeNull();
@@ -31,7 +31,7 @@ describe('FolderPreview', () => {
   it('shows the tiles of a folder with something in it, and no empty art', () => {
     const contents = {
       folders: [],
-      documents: [{ id: 'd1', name: 'One', savedAt: 1, ownerId: 'me' }],
+      designs: [{ id: 'd1', name: 'One', savedAt: 1, ownerId: 'me' }],
     } as unknown as FolderPreviewContents;
     const { container, getByTestId } = render(<FolderPreview contents={contents} ownerId="me" />);
     expect(getByTestId('thumb-d1')).toBeTruthy();

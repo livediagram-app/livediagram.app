@@ -28,7 +28,7 @@ function props(over: Partial<Props> = {}): Props {
     onToggleLock: noop,
     locked: false,
     selfId: 'me',
-    otherDocuments: [],
+    otherDesigns: [],
     folderNames: [],
     currentFolder: null,
     onMoveToFolder: noop,

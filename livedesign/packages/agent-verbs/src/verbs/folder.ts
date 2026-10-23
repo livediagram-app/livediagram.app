@@ -5,7 +5,7 @@
 import { z } from 'zod';
 import type { Folder } from '@livedesign/api-schema';
 import { defineVerb } from '../define';
-import { readLibraries } from '../find-documents';
+import { readLibraries } from '../find-designs';
 import { folderChoices, resolveFolderRef } from '../folders';
 import { columns } from './shared';
 

@@ -2,7 +2,7 @@
 import { renderHook } from '@testing-library/react';
 import type { ReactElement } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { layOutPages } from '@livedesign/document';
+import { layOutPages } from '@livedesign/design';
 import { track } from '@/lib/telemetry';
 import { readUserPreferences, writeUserPreferences } from '@/lib/user-preferences';
 import type { CanvasChromeProps } from './CanvasChrome';

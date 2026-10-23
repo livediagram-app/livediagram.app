@@ -7,7 +7,7 @@ import {
   layOutPages,
   CHART_MARK_CONTRAST,
   type ShapeElement,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { useChartGround } from './CanvasSurfaceContext';
 import { PageClip } from './PageClip';
 import { LineChartView } from './LineChartView';

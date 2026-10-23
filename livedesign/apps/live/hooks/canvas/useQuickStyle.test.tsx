@@ -9,7 +9,7 @@ import {
   PEN_INK,
   type Element,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { DEFAULT_WHITEBOARD_PREFS, type WhiteboardPen } from '@/lib/whiteboard-prefs';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { useQuickStyle } from './useQuickStyle';

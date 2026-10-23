@@ -1,7 +1,7 @@
 'use client';
 
-import type { AccessLevel, DocumentStats } from '@livedesign/api-schema';
-import { editorModeLabel } from '@livedesign/document';
+import type { AccessLevel, DesignStats } from '@livedesign/api-schema';
+import { editorModeLabel } from '@livedesign/design';
 import { lucideKey, lucideMessageSquare, lucideShapes } from '@livedesign/icons/lucide';
 import { EDITOR_MODE_ICONS, Glyph, Prims, Tooltip, lucideGlyph } from '@livedesign/ui';
 import { ROLE_PASS } from '@/components/dialogs/share-dialog-parts';
@@ -68,7 +68,7 @@ export function NoValue({ label }: { label: string }) {
 
 export const NOT_COUNTED = 'Not counted yet';
 
-export function TypeCell({ stats }: { stats: DocumentStats | null | undefined }) {
+export function TypeCell({ stats }: { stats: DesignStats | null | undefined }) {
   if (!stats) return <NoValue label={NOT_COUNTED} />;
   const Icon = EDITOR_MODE_ICONS[stats.mode];
   return (
@@ -104,7 +104,7 @@ export function CommentsCell({
   stats,
   dense = false,
 }: {
-  stats: DocumentStats | null | undefined;
+  stats: DesignStats | null | undefined;
   dense?: boolean;
 }) {
   if (!stats) return <NoValue label={NOT_COUNTED} />;

@@ -66,7 +66,7 @@ Workers and server-only code read these from `env` bindings — not from `proces
 
 ## `.env.example`
 
-Each app or worker that needs env vars ships a `.env.example` documenting **which variables are required** with placeholder values:
+Each app or worker that needs env vars ships a `.env.example` designing **which variables are required** with placeholder values:
 
 ```
 # Required for production builds
@@ -81,7 +81,7 @@ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
 1. **Rotate immediately** in the relevant provider (Clerk, Cloudflare, etc.).
 2. Update the secret in the env-var store (`wrangler secret put`, Pages dashboard).
 3. Force-push and `git filter-repo` are **not** sufficient — rotation comes first because Git history is forever public.
-4. Open a tracking note in specs (or wherever incidents live, TBD) to document what leaked, when, and what was rotated.
+4. Open a tracking note in specs (or wherever incidents live, TBD) to design what leaked, when, and what was rotated.
 
 ## Tooling (to be added)
 

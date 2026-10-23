@@ -5,7 +5,7 @@ import { placementViewFor as viewFor, type PlacementSpaces } from './placement-v
 const placementViewFor = (placement: string, s: PlacementSpaces) =>
   viewFor(parsePlacement(placement), s);
 
-// Where the placement browser opens for a selection (docs/specs/006-document/save-locations.md,
+// Where the placement browser opens for a selection (docs/specs/006-design/save-locations.md,
 // "It opens where its selection is"): at the level that lists the selected folder.
 
 const FOLDERS: PickerFolder[] = [

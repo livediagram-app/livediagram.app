@@ -26,7 +26,7 @@ render/copy/export branches.
 - `ShapeElement.rating?` (0..`RATING_MAX` = 5), `ratingAnim?` (`RatingAnim`),
   `ratingAnimSpeed?`, `ratingAnimRepeat?`. The `RatingAnim` union +
   `RATING_ANIMS` + `clampRating()` + `isRatingShape()` live in
-  `@livedesign/document` (`src/data-shapes.ts`).
+  `@livedesign/design` (`src/data-shapes.ts`).
 - Rendered by `RatingView` (`apps/live/components/canvas/RatingView.tsx`): five star
   SVGs sized to the box, filled up to the score; the filled stars carry the
   `lvd-rating-*` animation (CSS in `apps/live/app/canvas-motion.css`, reduced-motion-safe) with

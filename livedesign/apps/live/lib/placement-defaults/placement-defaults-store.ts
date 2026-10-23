@@ -107,7 +107,7 @@ export function setPlacementDefault(
   return write(key, folderId, surface);
 }
 
-/** Clears the key's default: its documents go back to the root. Resolves whether it held. */
+/** Clears the key's default: its designs go back to the root. Resolves whether it held. */
 export function clearPlacementDefault(
   key: PlacementDefaultKey,
   surface: DefaultSurface,

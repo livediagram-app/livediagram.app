@@ -4,9 +4,9 @@
 import { sha256Hex } from '@livedesign/api-schema';
 import {
   deleteImage,
-  documentServesImage,
+  designServesImage,
   findImageBySha,
-  getDocumentMeta,
+  getDesignMeta,
   getImage,
   imageTotalsByOwner,
   imageUsageByOwner,
@@ -241,7 +241,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
 
   // GET /api/images/usage: owner-only. Returns the inverse
   // index used by the Explorer Image Gallery: imageId →
-  // [{ id, name }] for every owned document that references
+  // [{ id, name }] for every owned design that references
   // it. Empty arrays for images that aren't placed on any
   // canvas yet (the entry simply doesn't appear in the map).
   // See docs/specs/013-workspace/folders.md + docs/specs/009-elements/images.md.
@@ -253,33 +253,33 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
   }
 
   // GET /api/images/:id: byte read. Auth: owner of the
-  // image, OR caller has read access to the document named
-  // by `?d=<documentId>` (owner or X-Share-Code) AND that
-  // document references this image.
+  // image, OR caller has read access to the design named
+  // by `?d=<designId>` (owner or X-Share-Code) AND that
+  // design references this image.
   if (segments.length === 3 && request.method === 'GET') {
     const imageId = segments[2]!;
     const meta = await getImage(env, imageId);
     if (!meta) return notFound();
     const callerOwner = resolveOwner();
-    // A document-scope workbench session (docs/specs/013-workspace/workbench-embeds.md) never takes the owner
-    // shortcut and reads through its own document only, so it cannot walk its owner's gallery by id. A workspace
+    // A design-scope workbench session (docs/specs/013-workspace/workbench-embeds.md) never takes the owner
+    // shortcut and reads through its own design only, so it cannot walk its owner's gallery by id. A workspace
     // session reaches the gallery, as the Explorer does, so it reads as its person.
-    const workbench = ctx.workbench?.scope === 'document' ? ctx.workbench : null;
+    const workbench = ctx.workbench?.scope === 'design' ? ctx.workbench : null;
     let allowed = !workbench && callerOwner === meta.ownerId;
     if (!allowed) {
       const d = url.searchParams.get('d');
-      if (d && (!workbench || d === workbench.documentId)) {
-        // Reader must be able to read document `d` (owner OR
+      if (d && (!workbench || d === workbench.designId)) {
+        // Reader must be able to read design `d` (owner OR
         // a valid share code that resolves to it), AND that
-        // document must place this image AND may serve it: the
+        // design must place this image AND may serve it: the
         // image's owner owns `d`, or `d` holds a placement grant
         // (a teammate's or collaborator's upload, or a copy).
-        // The owner and team are all the gate needs: one row, not the full document load (its
+        // The owner and team are all the gate needs: one row, not the full design load (its
         // participants and tab summary), which ran once for every image a visitor's page shows.
-        const liveDoc = await getDocumentMeta(env, d);
+        const liveDoc = await getDesignMeta(env, d);
         if (liveDoc) {
-          // canReadDocument (owner OR any valid share code
-          // mapping to this document, see auth/document-access.ts)
+          // canReadDesign (owner OR any valid share code
+          // mapping to this design, see auth/design-access.ts)
           // is the same access policy spelled out inline here
           // before commit 069b785 / 5527329 extracted it.
           // Reusing the helper keeps the image-read auth in
@@ -288,14 +288,14 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
           // explicit expiry, IP throttling) lands once and
           // both routes follow.
           // A tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md) reads the images their
-          // own tab uses, not every image in the document.
+          // own tab uses, not every image in the design.
           const grant = await gateGrant(ctx, d, liveDoc.ownerId, liveDoc.teamId);
           if (grant) {
-            // Placed by the document AND servable by it (docs/specs/009-elements/images.md,
-            // "Placement grants"): an id pasted into an unrelated document serves nothing.
-            allowed = await documentServesImage(env, d, imageId, grant.tabScope);
+            // Placed by the design AND servable by it (docs/specs/009-elements/images.md,
+            // "Placement grants"): an id pasted into an unrelated design serves nothing.
+            allowed = await designServesImage(env, d, imageId, grant.tabScope);
             if (!allowed) {
-              console.warn('[images] not servable by document', { documentId: d, imageId });
+              console.warn('[images] not servable by design', { designId: d, imageId });
             }
           }
         }
@@ -318,7 +318,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
 
   // DELETE /api/images/:id: gallery delete. Owner only.
   // Removes the D1 row, then the R2 object. Existing references
-  // on documents stay; the renderer falls back to a broken-
+  // on designs stay; the renderer falls back to a broken-
   // image placeholder.
   if (segments.length === 3 && request.method === 'DELETE') {
     const imageId = segments[2]!;

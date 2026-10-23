@@ -5,9 +5,9 @@ the note's own tip. Defaults in [DEFAULTS.md](DEFAULTS.md) as `Dn`.
 
 | File                                                      | Role                                                                |
 | --------------------------------------------------------- | ------------------------------------------------------------------- |
-| `packages/document/src/pointer-note.ts`                   | Kind guard, tip read / write, leader geometry, tip snapping         |
-| `packages/document/src/attachment.ts`                     | `settleChips` settles a pointer note; `withAttached` carries it     |
-| `packages/document/src/svg-render-pointer-note.ts`        | Headless body: panel, leader, tip                                   |
+| `packages/design/src/pointer-note.ts`                   | Kind guard, tip read / write, leader geometry, tip snapping         |
+| `packages/design/src/attachment.ts`                     | `settleChips` settles a pointer note; `withAttached` carries it     |
+| `packages/design/src/svg-render-pointer-note.ts`        | Headless body: panel, leader, tip                                   |
 | `apps/live/components/canvas/PointerNoteOverlay.tsx`      | Canvas face: leader, tip, the tip handle while selected             |
 | `apps/live/components/palette/PointerNoteMenuSection.tsx` | Detach                                                              |
 | `apps/live/hooks/canvas/usePointerNoteSetters.ts`         | `setPointerTip(id, tipAbs)`: snap, attach or free, one history step |
@@ -129,11 +129,11 @@ on key-up.
 
 | Rule                                | Test file                                                                                                                    |
 | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Settling (I1, I2, deletes, carries) | `packages/document/src/pointer-note.test.ts`                                                                                 |
+| Settling (I1, I2, deletes, carries) | `packages/design/src/pointer-note.test.ts`                                                                                 |
 | Leader, snapping, export (I3)       | same                                                                                                                         |
 | Face, tip handle drag and keys      | `apps/live/components/canvas/PointerNoteOverlay.test.tsx`                                                                    |
 | Menu section                        | `apps/live/components/palette/PointerNoteMenuSection.test.tsx`                                                               |
-| E5, no turn kept or offered         | `packages/document/src/unturnable-rotation.test.ts`; `apps/live/components/palette/MultiPlacementSections.rotation.test.tsx` |
+| E5, no turn kept or offered         | `packages/design/src/unturnable-rotation.test.ts`; `apps/live/components/palette/MultiPlacementSections.rotation.test.tsx` |
 
 ## Constants and configuration
 

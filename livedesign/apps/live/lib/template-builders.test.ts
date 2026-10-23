@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { layOutPages, type Element } from '@livedesign/document';
+import { layOutPages, type Element } from '@livedesign/design';
 import { templateCanvasOverrides, type TemplateKind } from '@livedesign/templates';
 import { buildTemplate, buildTemplatedTab } from './template-builders';
 
@@ -133,7 +133,7 @@ describe('buildTemplate', () => {
   it.each(ALL_KINDS)('%s: returns a fresh array per call (no shared mutable state)', (kind) => {
     // Builders are documented as pure, returning "a fresh array of
     // Element". A future revision that memoised or returned a
-    // module-level constant would silently let one document's edits
+    // module-level constant would silently let one design's edits
     // leak into another template instantiation. Asserting distinct
     // references rules that out.
     const a = buildTemplate(kind, 0, 0);

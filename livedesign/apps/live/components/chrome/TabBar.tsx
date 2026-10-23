@@ -4,11 +4,11 @@ import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { scrollLeftToReveal } from './tab-strip-scroll';
 import {
-  folderNamesInDocument,
+  folderNamesInDesign,
   groupTabsIntoRuns,
   tabFolderName,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import type { Participant } from '@/lib/identity';
 import { TabsLabelIcon, safeInlinePadding, safeInset } from '@livedesign/ui';
@@ -66,7 +66,7 @@ type TabBarProps = {
   workbenchLink?: (labelled: boolean) => ReactNode;
   tabs: Tab[];
   activeId: string;
-  // Folder membership actions (docs/specs/006-document/tab-folders.md), menu-only. Move the active tab
+  // Folder membership actions (docs/specs/006-design/tab-folders.md), menu-only. Move the active tab
   // into a folder by name (new or existing), make it loose again, or
   // rename a folder (rewrites every member).
   onMoveTabToFolder: (tabId: string, folderName: string) => void;
@@ -90,14 +90,14 @@ type TabBarProps = {
   // all live in one place).
   onImportTab: () => void;
   onExportTab: () => void;
-  // The user's other documents (excluding the current one). Drives the
-  // "Add to Document" submenu in the tab ellipsis; savedAt versions the
-  // destination-picker thumbnails (docs/specs/006-document/document-snapshots.md).
-  otherDocuments: { id: string; name: string; savedAt?: number }[];
-  // Copy the active tab into another document. Callee handles the
+  // The user's other designs (excluding the current one). Drives the
+  // "Add to Design" submenu in the tab ellipsis; savedAt versions the
+  // destination-picker thumbnails (docs/specs/006-design/design-snapshots.md).
+  otherDesigns: { id: string; name: string; savedAt?: number }[];
+  // Copy the active tab into another design. Callee handles the
   // round-trip to the API. Returns a promise so the menu can dismiss
   // after the operation completes.
-  onCopyTabTo: (targetDocumentId: string) => Promise<void> | void;
+  onCopyTabTo: (targetDesignId: string) => Promise<void> | void;
   // Flip tab.locked. Disables every mutator until toggled back on.
   // The lock icon appears on the tab itself + on every element.
   onToggleLockTab: () => void;
@@ -156,7 +156,7 @@ export function TabBar({
   onClearContent,
   onImportTab,
   onExportTab,
-  otherDocuments,
+  otherDesigns,
   onCopyTabTo,
   onToggleLockTab,
   onReorder,
@@ -202,9 +202,9 @@ export function TabBar({
   const { appearance } = useAppearance();
   const isDark = appearance === 'dark';
 
-  // Distinct folder names in this document, for the "Add to Folder"
-  // menu's pick list (docs/specs/006-document/tab-folders.md).
-  const folderNames = folderNamesInDocument(tabs);
+  // Distinct folder names in this design, for the "Add to Folder"
+  // menu's pick list (docs/specs/006-design/tab-folders.md).
+  const folderNames = folderNamesInDesign(tabs);
 
   // The tab-menu callbacks for a given tab, shared by the per-tab ellipsis
   // menu and the canvas right-click menu so both drive the exact same
@@ -216,7 +216,7 @@ export function TabBar({
     canClearContent: activeTabHasContent && !tab.locked,
     locked: tab.locked === true,
     selfId,
-    otherDocuments,
+    otherDesigns,
     folderNames,
     currentFolder: tabFolderName(tab),
     onMoveToFolder: (name: string) => {
@@ -392,7 +392,7 @@ export function TabBar({
           onOpenSearch={onOpenSearch}
           onOpenSettings={onOpenSettings}
           settingsLabel="Application settings"
-          settingsDescription="Your editor preferences. They follow your account, not this document."
+          settingsDescription="Your editor preferences. They follow your account, not this design."
           // Icons only under Minimal chrome or with Button Labels off; each keeps its hover card,
           // titled with its name.
           labelled={labelled}
@@ -420,4 +420,4 @@ export function TabBar({
 // UI light / dark mode toggle, pinned to the right edge of the
 // TabBar. Distinct from the per-tab theme grid (Palette →
 // Theme accordion): this only flips editor chrome, not the canvas.
-// docs/specs/007-editor/live-app.md "UI light / dark mode" documents the full surface.
+// docs/specs/007-editor/live-app.md "UI light / dark mode" designs the full surface.

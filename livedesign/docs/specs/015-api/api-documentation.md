@@ -6,7 +6,7 @@
 > `@livedesign/api-schema`, with a drift test pinning both to the real
 > handlers. The recommended approach in this spec is what shipped; the
 > "As built" note at the end records the concrete file layout. A
-> human-facing reference in the help centre links to this document
+> human-facing reference in the help centre links to this design
 > (`apps/help`, the **Developers** category — see [Help app](../018-help/help-app.md)).
 
 ## Why
@@ -18,11 +18,11 @@ The api worker ([API app](api.md)) is documented two ways today:
 
 What's missing is a **single, machine-readable description of the surface**: the paths, methods, auth requirements, and status codes. The TS types cover payload _shape_ but say nothing about URL shape, verbs, or auth; the prose isn't discoverable, testable, or consumable by tooling. A self-hoster or integrator can't point a client generator, a Postman import, or a docs viewer at anything.
 
-The goal is an **OpenAPI 3.1 document** for `/api/*` that is generated from the existing source of truth (not hand-maintained in parallel, which would drift — the one thing this repo most wants to avoid) and cannot fall behind the real routes without turning CI red, within the bounds the drift test states below.
+The goal is an **OpenAPI 3.1 design** for `/api/*` that is generated from the existing source of truth (not hand-maintained in parallel, which would drift — the one thing this repo most wants to avoid) and cannot fall behind the real routes without turning CI red, within the bounds the drift test states below.
 
 ## Goals
 
-- One OpenAPI 3.1 document covering every `/api/*` endpoint (the surface enumerated in [API app](api.md)): path template, method, summary, auth scheme, request body schema, response schema(s), and the meaningful status codes (200/201/204/400/401/403/404/409).
+- One OpenAPI 3.1 design covering every `/api/*` endpoint (the surface enumerated in [API app](api.md)): path template, method, summary, auth scheme, request body schema, response schema(s), and the meaningful status codes (200/201/204/400/401/403/404/409).
 - Served at **`GET /api/openapi.json`** — public, no auth, cacheable. It's the contract, not data, so a token holder isn't needed.
 - **Component schemas reuse `@livedesign/api-schema`**: DTO shapes are generated from those TS types, never re-typed by hand. Adding a field to a DTO updates the doc automatically.
 - **A drift test** (CI) that fails when a `(method, path-template)` is reachable in the worker's dispatch but absent from the OpenAPI doc, or vice versa, to the precision stated under "Drift test" below. This mirrors the test-pinned template / theme catalogues ([Canvas and palette](../008-canvas/canvas-and-palette.md)): the doc cannot fall behind the code without turning CI red.
@@ -32,7 +32,7 @@ The goal is an **OpenAPI 3.1 document** for `/api/*` that is generated from the 
 
 - **Runtime request validation.** The handlers today cast `request.json()` to a TS type with no runtime check. Adding Zod (or similar) validators would be a real upgrade and would let the OpenAPI doc fall straight out of the validators, but it's a large migration touching every handler. Out of scope here; noted as a future direction below.
 - **Generated client SDKs** and an interactive "try it" console with live auth.
-- **Documenting the realtime WebSocket protocol** (`GET /api/documents/:id/ws` and the Durable Object op messages). OpenAPI describes the REST surface; the WS upgrade is listed as an endpoint but its message protocol stays in [API app](api.md) prose.
+- **Designing the realtime WebSocket protocol** (`GET /api/designs/:id/ws` and the Durable Object op messages). OpenAPI describes the REST surface; the WS upgrade is listed as an endpoint but its message protocol stays in [API app](api.md) prose.
 
 ## Approach
 
@@ -64,9 +64,9 @@ What the test then proves:
 4. Every literal the route code discriminates on appears at that position in a manifest template of its segment, so a literal route shadowed by a parameter sibling (`/teams/stats` beside `/teams/{id}`) cannot hide behind the parameter's template.
 5. Every verb a segment's route modules compare `request.method` against is documented for that segment.
 
-And what it does not: for a handler that touches storage before branching on the verb, method parity holds per resource segment (rule 5), not per path; a new verb on such a path passes when the segment already documents that verb elsewhere. The vocabulary also depends on route code reading path segments only as `segments[<digit>]` or `segments.length` and never comparing an alias of one against a literal; the test enforces both, since a literal reached any other way would be invisible to the probe.
+And what it does not: for a handler that touches storage before branching on the verb, method parity holds per resource segment (rule 5), not per path; a new verb on such a path passes when the segment already designs that verb elsewhere. The vocabulary also depends on route code reading path segments only as `segments[<digit>]` or `segments.length` and never comparing an alias of one against a literal; the test enforces both, since a literal reached any other way would be invisible to the probe.
 
-Two consequences for route code: every handler matches its **full** path, so an unknown suffix (`/api/capabilities/x`) is a 404 rather than an undocumentable alias; and a handler routes before it loads, so an unknown path under a resource 404s without a storage read.
+Two consequences for route code: every handler matches its **full** path, so an unknown suffix (`/api/capabilities/x`) is a 404 rather than an undesignable alias; and a handler routes before it loads, so an unknown path under a resource 404s without a storage read.
 
 ### Auth + secrets
 
@@ -96,14 +96,14 @@ The recommended route-manifest approach shipped. Concrete layout, all under
   `x-token-usable` hint for external-token callers, optional query params, and
   request/response bodies). A body is either a component name (a `$ref` into the
   generated schemas) or an inline JSON Schema for the small response envelopes
-  (`{ documents: DocumentSummary[] }` etc.) that aren't named DTOs.
+  (`{ designs: DesignSummary[] }` etc.) that aren't named DTOs.
 - **`schemas.generated.ts`** — committed, generated by
   `scripts/gen-openapi-schemas.mjs` (`pnpm --filter @livedesign/api gen:openapi`)
   from the api-schema TS types via `ts-json-schema-generator` (`expose: 'export'`
   so only exported DTOs become named components; `Record<…>`/`Partial<…>`
   utilities inline). The generator is a dev dependency only and is **not** in the
   worker bundle — nothing on the runtime path imports it.
-- **`document.ts`** — `buildOpenApiDocument()` assembles the manifest + generated
+- **`design.ts`** — `buildOpenApiDesign()` assembles the manifest + generated
   schemas + the two security schemes (`Bearer` = Clerk JWT **or** API token;
   `GuestId` = the `X-Owner-Id` header) + a shared `Error` envelope into the 3.1
   object. Path parameters are derived from the `{param}` placeholders, so the
@@ -117,16 +117,16 @@ path-template)` parity described under "Drift test", run in the api worker's
 - **`manifest.test.ts`** — the remaining guards: (1) the manifest's segment set
   equals the `case '…':` labels in `index.ts`'s dispatch, in both directions,
   and every verb a segment's handlers compare against is documented for it;
-  (2) every schema the manifest / assembled document references exists; (3) the
+  (2) every schema the manifest / assembled design references exists; (3) the
   committed `schemas.generated.ts` deep-equals a fresh generation, so a DTO
   change that wasn't regenerated fails CI; (4) the 429 each operation declares
   mirrors `index.ts`'s limiters. The (method, path) pairs are also asserted
   unique.
 - **Media types** — a success body is `application/json` unless the entry sets
-  `responseMediaType`; the two SVG snapshot reads (`GET /documents/{id}/thumbnail`,
+  `responseMediaType`; the two SVG snapshot reads (`GET /designs/{id}/thumbnail`,
   `GET /share/{code}/image.svg`) declare `image/svg+xml`.
 
-The served document validates as OpenAPI 3.1 (checked with `@redocly/cli`). The
+The served design validates as OpenAPI 3.1 (checked with `@redocly/cli`). The
 realtime WebSocket op protocol stays in [API app](api.md) prose, as planned;
 the `GET …/ws` upgrade is listed but its message protocol is not.
 

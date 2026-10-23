@@ -14,7 +14,7 @@ import {
   type Element,
   type Endpoint,
   type LaidOutPage,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import {
   ALIGN_SNAP_THRESHOLD,
   ARROW_SNAP_REVEAL_PX,

@@ -1,5 +1,5 @@
 // The wire shapes of an agent's Pages edits (docs/specs/024-agents/pages-for-agents.md):
-// the page changes `POST /api/documents/:id/tabs/:tabId/pages` takes,
+// the page changes `POST /api/designs/:id/tabs/:tabId/pages` takes,
 // and what it answers. Shared by the api route, the engine (@livedesign/edit-operations), the
 // verbs (CLI and MCP) and the views.
 import type {
@@ -9,7 +9,7 @@ import type {
   PageSizeId,
   WireframeDeviceId,
   WireframeFrameLook,
-} from '@livedesign/document';
+} from '@livedesign/design';
 
 // A wireframe page's device fields (docs/specs/007-editor/wireframe-pages.md): all on add; on set
 // its frame look and system bars alone, its device being its own for good.

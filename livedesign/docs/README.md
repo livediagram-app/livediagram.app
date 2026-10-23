@@ -2,7 +2,7 @@
 
 Follow the references below only as needed; never upfront.
 
-Documentation for livedesign, the open-source real-time editor for documents made of pages.
+Documentation for livedesign, the open-source real-time editor for designs made of pages.
 
 livedesign is a multiplayer page editor in the browser: teams write articles, build slide decks, lay out infographics and design logos and wireframes together in real time, with shared cursors and live selections, then present them full screen. The editor works without signing in, so starting is "open the link, start writing". The hosted product runs free at [livedesign.app](https://livedesign.app), and the MIT-licensed codebase is self-hostable end to end. Who it is for lives in [Purpose](./specs/001-project-vision/purpose.md), what is built and still ahead in [Build phase](./specs/005-project-roadmap/prototype-scope.md).
 

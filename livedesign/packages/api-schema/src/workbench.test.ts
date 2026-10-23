@@ -77,7 +77,7 @@ describe('capWorkbenchRole', () => {
 });
 
 describe('workbenchRouteVerdict', () => {
-  const session = { scope: 'document' as const, documentId: 'doc1', ownerId: 'user_1' };
+  const session = { scope: 'design' as const, designId: 'doc1', ownerId: 'user_1' };
   const verdict = (method: string, path: string) =>
     workbenchRouteVerdict(method, ['api', ...path.split('/')], session);
 
@@ -94,44 +94,44 @@ describe('workbenchRouteVerdict', () => {
     ['GET', 'custom-themes'],
     ['POST', 'images'],
     ['GET', 'images/img1'],
-    ['GET', 'documents/doc1'],
-    ['PUT', 'documents/doc1'],
-    ['GET', 'documents/doc1/tabs/t1'],
-    ['PUT', 'documents/doc1/tabs/t1'],
-    ['DELETE', 'documents/doc1/tabs/t1'],
-    ['PUT', 'documents/doc1/tabs/t1/name'],
-    ['POST', 'documents/doc1/tabs/t1/changesets'],
-    ['POST', 'documents/doc1/changesets/cs_1/revert'],
-    ['GET', 'documents/doc1/changesets'],
-    ['GET', 'documents/doc1/changesets/cs_1'],
-    ['GET', 'documents/doc1/comments'],
-    ['GET', 'documents/doc1/tabs/t1/render.svg'],
-    ['GET', 'documents/doc1/tabs/t1/comment-pictures'],
-    ['POST', 'documents/doc1/tabs/t1/comments'],
-    ['POST', 'documents/doc1/tabs/t1/comments/c1/reply'],
-    ['POST', 'documents/doc1/tabs/t1/comments/c1/resolve'],
-    ['POST', 'documents/doc1/tabs/t1/comments/c1/reopen'],
-    ['DELETE', 'documents/doc1/tabs/t1/comments/c1'],
-    ['POST', 'documents/doc1/room-ticket'],
+    ['GET', 'designs/doc1'],
+    ['PUT', 'designs/doc1'],
+    ['GET', 'designs/doc1/tabs/t1'],
+    ['PUT', 'designs/doc1/tabs/t1'],
+    ['DELETE', 'designs/doc1/tabs/t1'],
+    ['PUT', 'designs/doc1/tabs/t1/name'],
+    ['POST', 'designs/doc1/tabs/t1/changesets'],
+    ['POST', 'designs/doc1/changesets/cs_1/revert'],
+    ['GET', 'designs/doc1/changesets'],
+    ['GET', 'designs/doc1/changesets/cs_1'],
+    ['GET', 'designs/doc1/comments'],
+    ['GET', 'designs/doc1/tabs/t1/render.svg'],
+    ['GET', 'designs/doc1/tabs/t1/comment-pictures'],
+    ['POST', 'designs/doc1/tabs/t1/comments'],
+    ['POST', 'designs/doc1/tabs/t1/comments/c1/reply'],
+    ['POST', 'designs/doc1/tabs/t1/comments/c1/resolve'],
+    ['POST', 'designs/doc1/tabs/t1/comments/c1/reopen'],
+    ['DELETE', 'designs/doc1/tabs/t1/comments/c1'],
+    ['POST', 'designs/doc1/room-ticket'],
     ['DELETE', 'workbench/sessions/current'],
   ])('allows %s %s', (method, path) => {
     expect(verdict(method, path)).toBe('allow');
   });
 
   it.each([
-    ['DELETE', 'documents/doc1'],
-    ['POST', 'documents/doc1/copy'],
-    ['PUT', 'documents/doc1/folder'],
-    ['GET', 'documents/doc1/shared-tabs'],
-    ['GET', 'documents/doc1/share'],
-    ['POST', 'documents/doc1/share'],
-    ['PUT', 'documents/doc1/share-password'],
-    ['DELETE', 'documents/doc1/share/abc'],
-    ['PUT', 'documents/doc1/thumbnail'],
-    ['POST', 'documents/doc1/tabs/t1/link'],
-    ['PUT', 'documents/doc1/tabs/t1/presence'],
-    ['GET', 'documents'],
-    ['POST', 'documents'],
+    ['DELETE', 'designs/doc1'],
+    ['POST', 'designs/doc1/copy'],
+    ['PUT', 'designs/doc1/folder'],
+    ['GET', 'designs/doc1/shared-tabs'],
+    ['GET', 'designs/doc1/share'],
+    ['POST', 'designs/doc1/share'],
+    ['PUT', 'designs/doc1/share-password'],
+    ['DELETE', 'designs/doc1/share/abc'],
+    ['PUT', 'designs/doc1/thumbnail'],
+    ['POST', 'designs/doc1/tabs/t1/link'],
+    ['PUT', 'designs/doc1/tabs/t1/presence'],
+    ['GET', 'designs'],
+    ['POST', 'designs'],
     ['GET', 'folders'],
     ['GET', 'shared'],
     ['GET', 'favourites'],
@@ -157,18 +157,18 @@ describe('workbenchRouteVerdict', () => {
     ['POST', 'workbench/tickets'],
     ['POST', 'workbench/sessions'],
     ['GET', 'workbench/pairings'],
-    ['PATCH', 'documents/doc1'],
+    ['PATCH', 'designs/doc1'],
   ])('confines %s %s', (method, path) => {
     expect(verdict(method, path)).toBe('confined');
   });
 
   it.each([
-    ['GET', 'documents/doc2'],
-    ['PUT', 'documents/doc2/tabs/t1'],
-    ['GET', 'documents/doc2/share'],
-    ['DELETE', 'documents/doc2'],
-  ])('answers %s %s as another document', (method, path) => {
-    expect(verdict(method, path)).toBe('other-document');
+    ['GET', 'designs/doc2'],
+    ['PUT', 'designs/doc2/tabs/t1'],
+    ['GET', 'designs/doc2/share'],
+    ['DELETE', 'designs/doc2'],
+  ])('answers %s %s as another design', (method, path) => {
+    expect(verdict(method, path)).toBe('other-design');
   });
 });
 
@@ -187,17 +187,17 @@ describe('normaliseWorkbenchName', () => {
 });
 
 describe('pairingCoversScope', () => {
-  it('lets a workspace pairing through for both scopes, a document pairing for its own only', () => {
+  it('lets a workspace pairing through for both scopes, a design pairing for its own only', () => {
     expect(pairingCoversScope('workspace', 'workspace')).toBe(true);
-    expect(pairingCoversScope('workspace', 'document')).toBe(true);
-    expect(pairingCoversScope('document', 'document')).toBe(true);
-    expect(pairingCoversScope('document', 'workspace')).toBe(false);
+    expect(pairingCoversScope('workspace', 'design')).toBe(true);
+    expect(pairingCoversScope('design', 'design')).toBe(true);
+    expect(pairingCoversScope('design', 'workspace')).toBe(false);
   });
 });
 
 describe('workbenchAmbientHeaders', () => {
-  it('refuses every borrowed credential in the document scope, only the guest header in the workspace', () => {
-    expect(workbenchAmbientHeaders('document')).toEqual([
+  it('refuses every borrowed credential in the design scope, only the guest header in the workspace', () => {
+    expect(workbenchAmbientHeaders('design')).toEqual([
       'X-Share-Code',
       'X-Owner-Id',
       'X-Share-Password',
@@ -207,7 +207,7 @@ describe('workbenchAmbientHeaders', () => {
 });
 
 describe('workbenchRouteVerdict, workspace scope', () => {
-  const session = { scope: 'workspace' as const, documentId: null, ownerId: 'user_1' };
+  const session = { scope: 'workspace' as const, designId: null, ownerId: 'user_1' };
   const verdict = (method: string, path: string) =>
     workbenchRouteVerdict(method, ['api', ...path.split('/')], session);
 
@@ -220,18 +220,18 @@ describe('workbenchRouteVerdict, workspace scope', () => {
     ['GET', 'preferences'],
     ['GET', 'participants/user_1'],
     ['GET', 'share/abc123'],
-    ['GET', 'documents'],
-    ['POST', 'documents'],
-    ['GET', 'documents/any-doc'],
-    ['PUT', 'documents/any-doc/tabs/t1'],
-    ['DELETE', 'documents/any-doc'],
-    ['POST', 'documents/any-doc/copy'],
-    ['PUT', 'documents/any-doc/folder'],
-    ['GET', 'documents/any-doc/share'],
-    ['POST', 'documents/any-doc/share'],
-    ['PUT', 'documents/any-doc/share-password'],
-    ['POST', 'documents/any-doc/room-ticket'],
-    ['POST', 'documents/any-doc/tabs/t1/link'],
+    ['GET', 'designs'],
+    ['POST', 'designs'],
+    ['GET', 'designs/any-doc'],
+    ['PUT', 'designs/any-doc/tabs/t1'],
+    ['DELETE', 'designs/any-doc'],
+    ['POST', 'designs/any-doc/copy'],
+    ['PUT', 'designs/any-doc/folder'],
+    ['GET', 'designs/any-doc/share'],
+    ['POST', 'designs/any-doc/share'],
+    ['PUT', 'designs/any-doc/share-password'],
+    ['POST', 'designs/any-doc/room-ticket'],
+    ['POST', 'designs/any-doc/tabs/t1/link'],
     ['GET', 'folders'],
     ['POST', 'folders'],
     ['PUT', 'folders/f1'],
@@ -281,9 +281,9 @@ describe('workbenchRouteVerdict, workspace scope', () => {
     ['POST', 'teams/team1/members'],
     ['GET', 'teams/team1/invite-link'],
     ['GET', 'teams/invite-link/tok'],
-    ['PUT', 'documents/any-doc/tabs/t1/presence'],
+    ['PUT', 'designs/any-doc/tabs/t1/presence'],
     ['GET', 'telemetry'],
-    ['PATCH', 'documents/any-doc'],
+    ['PATCH', 'designs/any-doc'],
   ])('confines %s %s', (method, path) => {
     expect(verdict(method, path)).toBe('confined');
   });

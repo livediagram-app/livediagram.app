@@ -7,13 +7,13 @@ and which query views earn a place beside the default outline? Measured on 2026-
 ## Summary
 
 - **Raw tab JSON is 11x the cost of an outline that carries nearly the same meaning.** For a 30-element
-  architecture tab, the pretty JSON the MCP's `read_document` returns today costs **4,213 tokens**; the proposed
+  architecture tab, the pretty JSON the MCP's `read_design` returns today costs **4,213 tokens**; the proposed
   outline costs **386**; Mermaid costs 232 but drops ids, notes, comments and every non-graph element.
 - **Identifiers are the single biggest lever.** UUIDs are 37% of minified JSON (55 UUIDs at 22 tokens each).
   The same outline costs 970 tokens with UUIDs and 386 with short refs.
 - **Use shortest-unique id prefixes (git-style, at least 4 characters) as refs**, and use a slug id verbatim when the
   element already has one. Avoid positional refs (`e1..eN`, as in Playwright): they are cheap but change between
-  reads, and these documents are edited live by other people.
+  reads, and these designs are edited live by other people.
 - **The default read is an indented outline**: one line per element, containment by indentation, outgoing edges
   inline on the source line, reading order standing in for position, no geometry and no styling.
 - **Ship eight views over one model**: `overview`, `outline` (default), `graph`, `layout`, `comments`, `show <ref>`,
@@ -30,7 +30,7 @@ serve all of them cheaply:
 
 | Need                | Typical prompt                               | Wants                                       | Does not want                 |
 | ------------------- | -------------------------------------------- | ------------------------------------------- | ----------------------------- |
-| Orient              | "What is in this document?"                  | tabs, sizes, open threads, freshness        | any element                   |
+| Orient              | "What is in this design?"                  | tabs, sizes, open threads, freshness        | any element                   |
 | Understand          | "Explain this architecture"                  | labels, grouping, connections, notes        | coordinates, colours, anchors |
 | Reason on structure | "What depends on Orders?", "find cycles"     | nodes and edges only, with edge ids         | prose, styling                |
 | Edit precisely      | "Rename Payments, add Redis under Auth"      | stable refs, containment, one element fully | the rest of the canvas        |
@@ -60,7 +60,7 @@ serve all of them cheaply:
 
 Two things inside this repo are prior art too:
 
-- `packages/document/src/export-tab-text.ts` (`tabToMarkdownText`) already writes a tab as Markdown, but it drops every
+- `packages/design/src/export-tab-text.ts` (`tabToMarkdownText`) already writes a tab as Markdown, but it drops every
   unlabelled arrow (7 of 11 in the test tab), every id, notes, comments, containment and table content.
 - `mermaid-serialise.ts` (`mermaidFromTab`) derives containment geometrically ("the smallest
   frame containing its centre"), the same rule the outline uses below.
@@ -69,7 +69,7 @@ Two things inside this repo are prior art too:
 
 ### 3.1 The tab
 
-A 30-element architecture tab ("Checkout platform"), built from the real factories in `packages/document`
+A 30-element architecture tab ("Checkout platform"), built from the real factories in `packages/design`
 (`createShape`, `createText`, `createTable`, `createSticky`, `createPinnedArrow`), so every element carries the
 defaults the editor writes. `isValidTab` accepts it. Ids are deterministic pseudo-UUIDs so the counts reproduce.
 
@@ -90,7 +90,7 @@ a scratch directory and are not part of the repo; the formats are reproduced in 
 
 | Format                                                  | chars  | chars/4 | cl100k | o200k     | vs JSON |
 | ------------------------------------------------------- | ------ | ------- | ------ | --------- | ------- |
-| JSON, pretty (`read_document` text block today)         | 12,665 | 3,166   | 4,219  | **4,213** | 100%    |
+| JSON, pretty (`read_design` text block today)         | 12,665 | 3,166   | 4,219  | **4,213** | 100%    |
 | JSON, minified                                          | 7,558  | 1,890   | 2,893  | 2,910     | 69%     |
 | tldraw-style blurry shapes (JSON, geometry, short refs) | 2,439  | 610     | 883    | 882       | 21%     |
 | Outline with full UUIDs                                 | 2,144  | 536     | 977    | 970       | 23%     |
@@ -100,7 +100,7 @@ a scratch directory and are not part of the repo; the formats are reproduced in 
 | Graphviz DOT                                            | 1,039  | 260     | 388    | 387       | 9%      |
 | **Outline, prefix refs (proposed default)**             | 1,184  | 296     | 388    | **386**   | **9%**  |
 | Outline, positional refs `e1..eN`                       | 1,141  | 285     | 357    | 355       | 8%      |
-| Outline, slug ids (an agent-authored document)          | 1,315  | 329     | 345    | 343       | 8%      |
+| Outline, slug ids (an agent-authored design)          | 1,315  | 329     | 345    | 343       | 8%      |
 | Outline, prefix refs, notes omitted                     | 992    | 248     | 330    | 329       | 8%      |
 | Mermaid (`mermaidFromTab` today)                        | 608    | 152     | 232    | 232       | 6%      |
 | Markdown export (`tabToMarkdownText` today)             | 730    | 183     | 202    | 201       | 5%      |
@@ -132,8 +132,8 @@ Cost of one reference, o200k, as it appears in an edge list (` → <ref>,`):
 | slug (`orders`)       | 1            | 3          |
 | slug (`orders-svc`)   | 3            | 5          |
 
-The inline image is the other large cost today: `read_document`, `create_document`, `add_tab` and
-`update_document` each return a PNG, which a vision model bills at roughly a thousand tokens or more per image,
+The inline image is the other large cost today: `read_design`, `create_design`, `add_tab` and
+`update_design` each return a PNG, which a vision model bills at roughly a thousand tokens or more per image,
 on every write as well as every read.
 
 ### 3.4 What each format loses
@@ -212,7 +212,7 @@ edge   := ref [SP label] [SP "~" lineStyle]
 **Refs.**
 
 - A ref is the element's own id when the id is already a slug (`^[a-z][a-z0-9_-]{0,23}$`); graph input keeps
-  the model's node ids as element ids (`graph-authoring.ts`), so agent-built documents read with semantic refs.
+  the model's node ids as element ids (`graph-authoring.ts`), so agent-built designs read with semantic refs.
 - Otherwise it is the shortest unique prefix of the id, minimum 4 characters, computed across the whole tab
   (git's short-SHA rule). At 300 elements expect under one colliding pair of 4-hex prefixes (300²/2 ÷ 65,536 ≈ 0.7); those two print 5.
 - The CLI accepts any unique prefix and any full id. An ambiguous prefix is an error that lists the candidates;
@@ -223,8 +223,8 @@ edge   := ref [SP label] [SP "~" lineStyle]
   a different element on the next read.
 - Labels are never refs: they are not unique and they change.
 - The CLI should default new element ids to a unique slug of the label (`redis-cache`) unless the agent passes
-  `--id`, so documents built through the CLI stay cheap to read. Before adopting this, verify nothing outside
-  `packages/document` assumes element ids are UUIDs (realtime ops, D1 indexes, element links across tabs).
+  `--id`, so designs built through the CLI stay cheap to read. Before adopting this, verify nothing outside
+  `packages/design` assumes element ids are UUIDs (realtime ops, D1 indexes, element links across tabs).
 
 **Containment.** There is no parent field on elements; containment is geometric. The outline nests an element
 under the smallest frame or lane containing its centre (the rule `mermaidFromTab` already uses), to any depth.
@@ -285,12 +285,12 @@ a read form; see [open question 1](#9-open-questions).
 One model, many views (Structurizr's split; tldraw's fidelity tiers; Figma's skeleton-then-detail). Every view
 takes `--json` for the same view's data as JSON, and `--raw` gives the stored tab.
 
-### 5.1 `overview`: the document at a glance
+### 5.1 `overview`: the design at a glance
 
 For orienting before choosing a tab. About 90 tokens for three tabs.
 
 ```text
-doc 7f3a "Checkout platform" · 3 tabs · edited 3m ago by Sam · https://livedesign.app/document/7f3a…
+doc 7f3a "Checkout platform" · 3 tabs · edited 3m ago by Sam · https://livedesign.app/design/7f3a…
   tab 0b34 "Architecture"       30 elements: 16 boxes, 3 frames, 11 arrows · 1 open thread
   tab 51c9 "Payment sequence"   42 elements: 6 lanes, 18 boxes, 18 arrows
   tab 9e02 "Incident retro"     24 elements: 22 stickies, 2 text · opens in draw · 3 open threads
@@ -483,11 +483,11 @@ budget 2k: 82 of 300 elements shown · --budget 8k or --in <ref> for more
 1. Make the outline the default read of a tab, with the grammar in [§4.2](#42-grammar).
 2. Use shortest-unique id prefixes (min 4) as refs, slug ids verbatim, and resolve any unique prefix on input with
    a hard error on ambiguity.
-3. Default ids the CLI creates to label slugs, once the UUID assumption is checked outside `packages/document`.
+3. Default ids the CLI creates to label slugs, once the UUID assumption is checked outside `packages/design`.
 4. Ship the views `overview`, `outline`, `graph` (`--as mermaid`), `layout` (`--exact`, `--png <file>`),
    `comments`, `show`, `find`, `diff`, with `--json` and `--raw` on all of them.
-5. Put the outline renderer, ref resolver, containment derivation and diff in `packages/document`, pure, so the
-   CLI, the MCP and the editor's text export share one implementation; then let `read_document` return the outline
+5. Put the outline renderer, ref resolver, containment derivation and diff in `packages/design`, pure, so the
+   CLI, the MCP and the editor's text export share one implementation; then let `read_design` return the outline
    instead of pretty JSON (and stop sending the PNG unless asked).
 6. Answer every write with a diff of what it changed.
 7. Budget with chars/3, degrade in steps, and always print the elision line.

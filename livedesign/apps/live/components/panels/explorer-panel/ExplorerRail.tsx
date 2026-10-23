@@ -2,14 +2,14 @@
 
 // The editor's Explorer rail (docs/specs/013-workspace/explorer-structure.md "The rail"): every section as an entry,
 // the picked one marked. A column of rows on a desktop, a sideways-scrolling row of chips on a phone. Up and Down (Left
-// and Right on a phone) move between entries; Enter or Space picks one. My Work takes a dragged document, filing
+// and Right on a phone) move between entries; Enter or Space picks one. My Work takes a dragged design, filing
 // it at the root.
 import { useEffect, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import {
   HomeIcon,
   InboxIcon,
   LibraryIcon,
-  MyDocumentsIcon,
+  MyDesignsIcon,
   ShareIcon,
   TagIcon,
   ThisBrowserIcon,
@@ -22,7 +22,7 @@ import {
   SIDEBAR_GROUP_TITLES,
   type SidebarDivider,
 } from '@/app/explorer/sidebar/sidebar-structure';
-import { useDocumentDropTarget } from '../useDocumentDropTarget';
+import { useDesignDropTarget } from '../useDesignDropTarget';
 import {
   sectionKey,
   sectionLabel,
@@ -35,7 +35,7 @@ const ICONS: Record<PanelSection['kind'], () => ReactNode> = {
   inbox: () => <InboxIcon />,
   timeline: () => <TimelineIcon />,
   shared: () => <ShareIcon />,
-  mine: () => <MyDocumentsIcon />,
+  mine: () => <MyDesignsIcon />,
   team: () => <TeamIcon />,
   browser: () => <ThisBrowserIcon />,
   tags: () => <TagIcon />,
@@ -51,11 +51,11 @@ export function ExplorerRail({
   teamName,
   divider,
   phone,
-  onDropToMyDocuments,
-  onNewDocument,
+  onDropToMyDesigns,
+  onNewDesign,
 }: {
-  // One click to a new document, first in the rail.
-  onNewDocument?: () => void;
+  // One click to a new design, first in the rail.
+  onNewDesign?: () => void;
   groups: PanelSectionGroup[];
   selected: PanelSection;
   onPick: (s: PanelSection) => void;
@@ -64,12 +64,12 @@ export function ExplorerRail({
   teamName: (id: string) => string | undefined;
   divider: SidebarDivider;
   phone: boolean;
-  onDropToMyDocuments?: (documentId: string) => void;
+  onDropToMyDesigns?: (designId: string) => void;
 }) {
-  const newDocument = onNewDocument ? (
+  const newDesign = onNewDesign ? (
     <button
       type="button"
-      onClick={onNewDocument}
+      onClick={onNewDesign}
       className={`flex cursor-pointer items-center justify-center gap-1.5 bg-brand-700 font-semibold text-white shadow-sm transition hover:bg-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:bg-brand-600 dark:hover:bg-brand-500 ${
         phone
           ? 'relative h-9 shrink-0 touch-target-y whitespace-nowrap rounded-lg px-3 text-[13px]'
@@ -77,11 +77,11 @@ export function ExplorerRail({
       }`}
     >
       <PlusIcon size={13} />
-      <span className={phone ? 'text-optical-centre' : ''}>{phone ? 'New' : 'New Document'}</span>
+      <span className={phone ? 'text-optical-centre' : ''}>{phone ? 'New' : 'New Design'}</span>
     </button>
   ) : null;
   const navRef = useRef<HTMLElement>(null);
-  const drop = useDocumentDropTarget(onDropToMyDocuments);
+  const drop = useDesignDropTarget(onDropToMyDesigns);
   const onKeyDown = (e: KeyboardEvent) => {
     const keys = phone ? ['ArrowLeft', 'ArrowRight'] : ['ArrowUp', 'ArrowDown'];
     if (!keys.includes(e.key)) return;
@@ -106,7 +106,7 @@ export function ExplorerRail({
     const on = key === selectedKey;
     const label = sectionLabel(s, teamName);
     const badge = badges[key];
-    const dropProps = s.kind === 'mine' && onDropToMyDocuments ? drop.handlers : undefined;
+    const dropProps = s.kind === 'mine' && onDropToMyDesigns ? drop.handlers : undefined;
     const highlighted = s.kind === 'mine' && drop.isDragOver;
     const icon = ICONS[s.kind]();
     return (
@@ -164,12 +164,12 @@ export function ExplorerRail({
     >
       {phone ? (
         <ul className="flex gap-1.5">
-          {newDocument ? <li className="shrink-0">{newDocument}</li> : null}
+          {newDesign ? <li className="shrink-0">{newDesign}</li> : null}
           {groups.flatMap((g) => g.sections).map(entry)}
         </ul>
       ) : (
         <>
-          {newDocument}
+          {newDesign}
           {groups.map((g, i) =>
             g.sections.length ? (
               <section key={g.id} aria-label={SIDEBAR_GROUP_TITLES[g.id]}>

@@ -1,12 +1,12 @@
-// New document in a workspace frame (docs/specs/013-workspace/workbench-embeds.md "What renders", blueprint "New
-// document in place", WB58): never the /new wizard. The wizard's href says where and what (`folder`, `team`,
+// New design in a workspace frame (docs/specs/013-workspace/workbench-embeds.md "What renders", blueprint "New
+// design in place", WB58): never the /new wizard. The wizard's href says where and what (`folder`, `team`,
 // `template`); the place the frame shows fills in where it says nothing, a folder view its folder and a team page its
-// team. The document is made as /new makes it (lib/new-document-content.ts) and opened in the frame.
+// team. The design is made as /new makes it (lib/new-design-content.ts) and opened in the frame.
 import { creationIntentOf } from '@livedesign/api-schema';
 import { untitledNameForTemplate, type TemplateKind } from '@livedesign/templates';
-import { apiCreateDocument } from '@/lib/api-client';
-import { NEW_DOCUMENT_THEME_ID, newDocumentContent } from '@/lib/new-document-content';
-import { newDocumentKind } from '@/lib/new-document-params';
+import { apiCreateDesign } from '@/lib/api-client';
+import { NEW_DESIGN_THEME_ID, newDesignContent } from '@/lib/new-design-content';
+import { newDesignKind } from '@/lib/new-design-params';
 import type { WorkspacePlace } from '@/lib/workbench/workspace-place';
 
 export type CreateInPlace = {
@@ -23,7 +23,7 @@ export function createInPlaceOf(
   place: WorkspacePlace,
 ): CreateInPlace {
   const search = new URL(href, origin).searchParams;
-  const templateKind = newDocumentKind(search.toString());
+  const templateKind = newDesignKind(search.toString());
   const folder = search.get('folder');
   const team = search.get('team');
   if (folder || team) return { folderId: folder ?? undefined, teamId: team, templateKind };
@@ -34,28 +34,28 @@ export function createInPlaceOf(
   return { folderId: undefined, teamId: null, templateKind };
 }
 
-// Makes the document and answers its id; throws when the api refuses or cannot be reached.
-export async function createDocumentInPlace(
+// Makes the design and answers its id; throws when the api refuses or cannot be reached.
+export async function createDesignInPlace(
   ownerId: string,
   request: CreateInPlace,
 ): Promise<string> {
   const { templateKind } = request;
-  const documentId = crypto.randomUUID();
+  const designId = crypto.randomUUID();
   const tabId = crypto.randomUUID();
-  const { tabs, tab } = await newDocumentContent({
+  const { tabs, tab } = await newDesignContent({
     templateKind,
-    themeId: NEW_DOCUMENT_THEME_ID,
+    themeId: NEW_DESIGN_THEME_ID,
     tabId,
     // No template asked for: the editor opens on its start, where the templates are.
     templateChosen: templateKind !== null,
   });
-  await apiCreateDocument(ownerId, {
-    id: documentId,
+  await apiCreateDesign(ownerId, {
+    id: designId,
     name: untitledNameForTemplate(templateKind),
     tabs: tabs ?? [tab],
     teamId: request.teamId,
     folderId: request.folderId,
     intent: creationIntentOf(tab),
   });
-  return documentId;
+  return designId;
 }

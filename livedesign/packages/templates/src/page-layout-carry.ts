@@ -10,7 +10,7 @@ import {
   type ImageElement,
   type ShapeElement,
   type TextElement,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { LOGO_LAYOUTS } from './logo-layouts';
 
 // What a shape carries into the next shape of its kind: its words and its data, never its

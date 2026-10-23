@@ -16,7 +16,7 @@ import {
   isBoxed,
   type Element,
   type Tab,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import type { DragMode } from '@/lib/canvas';
 import { applyOverlay, localPreview, resetDragPreviewForTests } from '@/lib/drag-preview';
 import { useEditorDrag } from './useEditorDrag';
@@ -110,7 +110,7 @@ function harness(element: Element) {
     alignmentGuidesRef: { current: false },
     isPinchingRef: { current: false },
   } as unknown as EditorDragDeps;
-  // The board as drawn: the document with the gesture's preview over it (docs/specs/008-canvas/drag-preview.md).
+  // The board as drawn: the design with the gesture's preview over it (docs/specs/008-canvas/drag-preview.md).
   const shown = () => {
     const o = localPreview();
     return o ? applyOverlay(elements, o) : elements;
@@ -203,7 +203,7 @@ describe('Shift pressed or released mid-drag', () => {
   });
 });
 
-// docs/specs/006-document/document-structure.md (a text box's sizing): Shift keeps a hugging
+// docs/specs/006-design/design-structure.md (a text box's sizing): Shift keeps a hugging
 // text box's ratio by scaling its text with the box; the height hugs the scaled text.
 // Keyed on the box's sizing, never the editor mode; the drag machine has no mode at all.
 describe('Shift resize of a hugging text box', () => {

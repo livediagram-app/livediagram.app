@@ -24,7 +24,7 @@ describe('buildParticipantsByTab', () => {
     activeId: 't1',
     selfParticipant: self,
     tabs: [{ id: 't1' }, { id: 't2' }],
-    documentTeamId: null,
+    designTeamId: null,
     now: 1000,
   };
 
@@ -34,7 +34,7 @@ describe('buildParticipantsByTab', () => {
     const m = buildParticipantsByTab({
       ...common,
       tabs: [{ id: 't1' }, { id: 't2' }, { id: 't3' }],
-      documentShareable: true,
+      designShareable: true,
       remoteTabFocus: new Map([['peer', 't2']]),
       remoteBesideTabs: new Map([['peer', 't1']]),
       selfBesideTabId: 't3',
@@ -49,10 +49,10 @@ describe('buildParticipantsByTab', () => {
     expect(m.get('t3')?.map((x) => x.id)).toEqual(['me']);
   });
 
-  it('returns an empty map for a private (unshared) document', () => {
+  it('returns an empty map for a private (unshared) design', () => {
     const m = buildParticipantsByTab({
       ...common,
-      documentShareable: false,
+      designShareable: false,
       remoteTabFocus: new Map(),
       livePresence: [self],
       livePresenceById: byId(self),
@@ -61,11 +61,11 @@ describe('buildParticipantsByTab', () => {
     expect(m.size).toBe(0);
   });
 
-  it('shows presence for a team document even when not shared (docs/specs/013-workspace/team-shared-documents.md)', () => {
+  it('shows presence for a team design even when not shared (docs/specs/013-workspace/team-shared-designs.md)', () => {
     const m = buildParticipantsByTab({
       ...common,
-      documentShareable: false,
-      documentTeamId: 'team-1',
+      designShareable: false,
+      designTeamId: 'team-1',
       remoteTabFocus: new Map(),
       livePresence: [self],
       livePresenceById: byId(self),
@@ -77,7 +77,7 @@ describe('buildParticipantsByTab', () => {
   it('always puts self online on the active tab when shared', () => {
     const m = buildParticipantsByTab({
       ...common,
-      documentShareable: true,
+      designShareable: true,
       remoteTabFocus: new Map(),
       livePresence: [self],
       livePresenceById: byId(self),
@@ -91,7 +91,7 @@ describe('buildParticipantsByTab', () => {
     const b = p('b');
     const m = buildParticipantsByTab({
       ...common,
-      documentShareable: true,
+      designShareable: true,
       remoteTabFocus: new Map([
         ['a', 't1'],
         ['b', 't2'],
@@ -111,7 +111,7 @@ describe('buildParticipantsByTab', () => {
     const a = p('a');
     const m = buildParticipantsByTab({
       ...common,
-      documentShareable: true,
+      designShareable: true,
       remoteTabFocus: new Map([['a', 't1']]), // on my tab...
       livePresence: [self, a],
       livePresenceById: byId(self, a),
@@ -124,7 +124,7 @@ describe('buildParticipantsByTab', () => {
     const a = p('a');
     const m = buildParticipantsByTab({
       ...common,
-      documentShareable: true,
+      designShareable: true,
       remoteTabFocus: new Map(), // no focus op yet
       livePresence: [self, a],
       livePresenceById: byId(self, a),
@@ -140,7 +140,7 @@ describe('buildParticipantsByTab', () => {
     const m = buildParticipantsByTab({
       ...common,
       selfParticipant: me,
-      documentShareable: true,
+      designShareable: true,
       remoteTabFocus: new Map([['sock-2', 't2']]),
       livePresence: [me, myOtherTab],
       livePresenceById: byId(me, myOtherTab),
@@ -154,7 +154,7 @@ describe('buildParticipantsByTab', () => {
     const fresh = p('sock-a2', { key: 'k-a' });
     const m = buildParticipantsByTab({
       ...common,
-      documentShareable: true,
+      designShareable: true,
       remoteTabFocus: new Map([
         ['sock-a1', 't1'],
         ['sock-a2', 't2'],
@@ -175,7 +175,7 @@ describe('buildParticipantsByTab', () => {
     const b = p('b');
     const m = buildParticipantsByTab({
       ...common,
-      documentShareable: true,
+      designShareable: true,
       remoteTabFocus: new Map([
         ['a', 't1'],
         ['b', 't1'],
@@ -266,9 +266,9 @@ describe('resolveOwnerBadge', () => {
     isOwner: false,
     selfParticipant: p('me'),
     livePresence: [] as Participant[],
-    documentOwnerId: null as string | null,
-    documentOwnerName: null as string | null,
-    documentOwnerColor: null as string | null,
+    designOwnerId: null as string | null,
+    designOwnerName: null as string | null,
+    designOwnerColor: null as string | null,
   };
 
   it('returns self when the viewer IS the owner', () => {
@@ -280,7 +280,7 @@ describe('resolveOwnerBadge', () => {
     const out = resolveOwnerBadge({
       ...base,
       livePresence: [p('other'), owner],
-      documentOwnerId: 'owner-1',
+      designOwnerId: 'owner-1',
     });
     expect(out).toBe(owner);
   });
@@ -292,8 +292,8 @@ describe('resolveOwnerBadge', () => {
     const out = resolveOwnerBadge({
       ...base,
       livePresence: [owner],
-      documentOwnerName: 'Ada',
-      documentOwnerColor: '#abcdef',
+      designOwnerName: 'Ada',
+      designOwnerColor: '#abcdef',
     });
     expect(out).toBe(owner);
   });
@@ -301,8 +301,8 @@ describe('resolveOwnerBadge', () => {
   it('falls back to a synthetic offline row keyed off the joined name', () => {
     const out = resolveOwnerBadge({
       ...base,
-      documentOwnerName: 'Ada',
-      documentOwnerColor: '#abcdef',
+      designOwnerName: 'Ada',
+      designOwnerColor: '#abcdef',
     });
     expect(out).toEqual({ id: 'owner', name: 'Ada', color: '#abcdef', status: 'offline' });
   });

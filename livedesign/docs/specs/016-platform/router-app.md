@@ -14,7 +14,7 @@ A small Cloudflare Worker that fronts the apex domain (`livedesign.app`) and rou
 | `/telemetry`, `/telemetry/*`                                                                                                                    | telemetry app (`apps/telemetry`) |
 | `/help`, `/help/*`                                                                                                                              | help app (`apps/help`), stripped |
 | `/live/*` (the live app's `_next` assets only)                                                                                                  | live app (`apps/live`), stripped |
-| live page routes: `/document/*`, `/explorer/*`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed`, `/oauth/*`, `/sso-callback`, `/icon.svg` | live app (`apps/live`), as-is    |
+| live page routes: `/design/*`, `/explorer/*`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed`, `/oauth/*`, `/sso-callback`, `/icon.svg` | live app (`apps/live`), as-is    |
 | a help category segment with no `/help` prefix (`/canvas/*`, `/policies/*`, ...)                                                                | 308 redirect to `/help/<path>`   |
 | everything else                                                                                                                                 | marketing app (`apps/marketing`) |
 
@@ -32,7 +32,7 @@ The one thing that keeps a `/live` prefix is the live app's bundled **`_next` as
 have a typo.", with a way back to the site's home (marketing: **Go to the Home Page**; the help centre: **Browse Help
 Centre** and **Troubleshooting**), then **Help Centre**. It is still a 404, so search
 engines drop it. The editor answers an unknown address with its own card instead
-([New document route](../007-editor/new-document-route.md) "Unknown addresses").
+([New design route](../007-editor/new-design-route.md) "Unknown addresses").
 
 Two properties keep it safe. It sits **after** the live-route check, so `/explorer/*` (a segment the help centre and the live app both use) still reaches the editor — which is why `explorer` is absent from the set. And `index.test.ts` walks the registry's own categories and asserts each one redirects, so a new help category cannot silently stop working.
 

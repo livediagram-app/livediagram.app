@@ -8,7 +8,7 @@ const { track } = vi.hoisted(() => ({ track: vi.fn() }));
 vi.mock('@/lib/telemetry', () => ({ track }));
 
 // docs/specs/013-workspace/explorer-structure.md "The rail": the pick is remembered for this viewer.
-const groups = panelSectionGroups({ teams: [], hasBrowserDocuments: true });
+const groups = panelSectionGroups({ teams: [], hasBrowserDesigns: true });
 
 afterEach(() => {
   localStorage.clear();

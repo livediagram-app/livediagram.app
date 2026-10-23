@@ -11,7 +11,7 @@ import {
   planArrowBend,
   type ArrowElement,
   type FrameHandle,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { track } from '@/lib/telemetry';
 import { pointerToCanvas, type ArrowEnd, type DragState } from '@/lib/canvas';
 import type { EditorDragDeps } from './useEditorDrag.types';

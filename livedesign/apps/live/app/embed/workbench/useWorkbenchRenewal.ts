@@ -3,7 +3,7 @@
 // Renewal (docs/specs/013-workspace/blueprints/workbench-embeds.md "The workbench page" step 5, WB14,
 // WB38): WORKBENCH_RENEW_LEAD_MS before the session expires the page posts `renew`, then again every
 // WORKBENCH_RENEW_RETRY_MS until a ticket lands or the session expires. Any `ticket` while mounted is
-// redeemed: one for the bound document and origin swaps the session and ends the old one; anything else
+// redeemed: one for the bound design and origin swaps the session and ends the old one; anything else
 // is logged and the asking goes on. Unrenewed, the session ends `expired` at its expiry.
 import { useEffect, useEffectEvent, type Dispatch } from 'react';
 import {

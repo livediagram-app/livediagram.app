@@ -64,12 +64,12 @@ async function api(request: Request): Promise<Response> {
   const path = url.pathname.replace(/^\/api/, '');
   if (request.method === 'DELETE') return new Response(null, { status: 204 });
   const json = (body: unknown) => Response.json(body);
-  // A document view: text with the tab revision as its ETag, as the api answers it.
+  // A design view: text with the tab revision as its ETag, as the api answers it.
   if (url.searchParams.has('view')) {
     return new Response('tab t1 "Tab 1" · 0 elements · rev 3', { headers: { ETag: 'W/"3"' } });
   }
-  if (path === '/documents' && request.method === 'GET') {
-    return json({ documents: [{ id: 'd1', name: 'Roadmap', savedAt: 1_700_000_000_000 }] });
+  if (path === '/designs' && request.method === 'GET') {
+    return json({ designs: [{ id: 'd1', name: 'Roadmap', savedAt: 1_700_000_000_000 }] });
   }
   if (path === '/teams') return json({ teams: [] });
   if (path === '/images') {
@@ -92,66 +92,66 @@ async function api(request: Request): Promise<Response> {
       trash: [{ id: 'd2', name: 'Old', teamId: null, trashedAt: 1, purgeAt: 2, reason: 'empty' }],
     });
   }
-  if (path.endsWith('/restore')) return json({ document: LIVE_DOC });
+  if (path.endsWith('/restore')) return json({ design: LIVE_DOC });
   if (path.endsWith('/share'))
     return json({ link: { code: 'abc', role: 'view', expiresAt: null } });
   if (path.endsWith('/pages')) return json(PAGES);
   if (path.endsWith('/changesets')) return json(CHANGESET);
   if (path.endsWith('/name')) return json({ tab: { id: 't1', name: 'Renamed', orderIndex: 0 } });
   if (/\/tabs\/[^/]+$/.test(path)) return json({ tab: TAB });
-  return json({ document: LIVE_DOC });
+  return json({ design: LIVE_DOC });
 }
 
 // Each tool, with both result branches of rename and delete.
 const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, unknown> }[] = [
-  { tool: 'find_documents', output: 'findDocumentsOutput', args: {} },
-  { tool: 'read_document', output: 'readDocumentOutput', args: { documentId: 'd1' } },
+  { tool: 'find_designs', output: 'findDesignsOutput', args: {} },
+  { tool: 'read_design', output: 'readDesignOutput', args: { designId: 'd1' } },
   {
-    tool: 'read_document',
-    output: 'readDocumentOutput',
-    args: { documentId: 'd1', format: 'json' },
+    tool: 'read_design',
+    output: 'readDesignOutput',
+    args: { designId: 'd1', format: 'json' },
   },
   { tool: 'list_templates', output: 'listTemplatesOutput', args: {} },
   { tool: 'search_icons', output: 'searchIconsOutput', args: { query: 'database' } },
   {
-    tool: 'create_document',
-    output: 'createDocumentOutput',
+    tool: 'create_design',
+    output: 'createDesignOutput',
     args: { name: 'New', tabs: [{ name: 'Tab', elements: [] }] },
   },
   {
     tool: 'add_tab',
     output: 'addTabOutput',
-    args: { documentId: 'd1', name: 'Detail', elements: [] },
+    args: { designId: 'd1', name: 'Detail', elements: [] },
   },
   {
-    tool: 'update_document',
-    output: 'updateDocumentOutput',
-    args: { documentId: 'd1', mode: 'replace', elements: [] },
+    tool: 'update_design',
+    output: 'updateDesignOutput',
+    args: { designId: 'd1', mode: 'replace', elements: [] },
   },
-  { tool: 'share_document', output: 'shareDocumentOutput', args: { documentId: 'd1' } },
+  { tool: 'share_design', output: 'shareDesignOutput', args: { designId: 'd1' } },
   {
-    tool: 'rename_document',
-    output: 'renameDocumentOutput',
-    args: { documentId: 'd1', name: 'Renamed' },
+    tool: 'rename_design',
+    output: 'renameDesignOutput',
+    args: { designId: 'd1', name: 'Renamed' },
   },
   {
-    tool: 'rename_document',
-    output: 'renameDocumentOutput',
-    args: { documentId: 'd1', tabId: 't1', name: 'Renamed' },
+    tool: 'rename_design',
+    output: 'renameDesignOutput',
+    args: { designId: 'd1', tabId: 't1', name: 'Renamed' },
   },
-  { tool: 'delete_document', output: 'deleteDocumentOutput', args: { documentId: 'd1' } },
+  { tool: 'delete_design', output: 'deleteDesignOutput', args: { designId: 'd1' } },
   {
-    tool: 'delete_document',
-    output: 'deleteDocumentOutput',
-    args: { documentId: 'd1', tabId: 't1' },
+    tool: 'delete_design',
+    output: 'deleteDesignOutput',
+    args: { designId: 'd1', tabId: 't1' },
   },
   { tool: 'list_trash', output: 'listTrashOutput', args: {} },
   { tool: 'list_images', output: 'listImagesOutput', args: { query: 'shot' } },
-  { tool: 'restore_document', output: 'restoreDocumentOutput', args: { documentId: 'd2' } },
+  { tool: 'restore_design', output: 'restoreDesignOutput', args: { designId: 'd2' } },
   {
     tool: 'change_pages',
     output: 'changePagesOutput',
-    args: { documentId: 'd1', changes: [{ op: 'add', kind: 'logo', layout: 'slide-title' }] },
+    args: { designId: 'd1', changes: [{ op: 'add', kind: 'logo', layout: 'slide-title' }] },
   },
 ];
 
@@ -185,7 +185,7 @@ describe('tool output schemas', () => {
         .strict()
         .parse(structured);
       // The text block carries the same object for clients that ignore structuredContent; a view
-      // carries its text, then one line naming the document, the tab and its revision (VW55).
+      // carries its text, then one line naming the design, the tab and its revision (VW55).
       const [first] = result.content as { type: string; text: string }[];
       const view = z.object({ tab: z.object({ text: z.string() }) }).safeParse(structured);
       if (view.success) {
@@ -203,7 +203,7 @@ describe('tool output schemas', () => {
   it('sends no structuredContent on an error result', async () => {
     const client = await connectTestClient(api);
     const result = await client.callTool({
-      name: 'create_document',
+      name: 'create_design',
       arguments: { name: 'New', tabs: [{ name: 'Tab', template: 'no-such-template' }] },
     });
     expect(result.isError).toBe(true);
@@ -246,7 +246,7 @@ describe('tool parameter descriptions', () => {
 });
 
 // docs/specs/013-workspace/share-roles.md: an agent's link is a Participant link unless it names a level.
-describe('share_document level', () => {
+describe('share_design level', () => {
   it('asks the api for participate by default, and for what the agent names', async () => {
     const roles: unknown[] = [];
     const recording = async (request: Request) => {
@@ -255,10 +255,10 @@ describe('share_document level', () => {
       return api(request);
     };
     const client = await connectTestClient(recording);
-    await client.callTool({ name: 'share_document', arguments: { documentId: 'd1' } });
+    await client.callTool({ name: 'share_design', arguments: { designId: 'd1' } });
     await client.callTool({
-      name: 'share_document',
-      arguments: { documentId: 'd1', role: 'view' },
+      name: 'share_design',
+      arguments: { designId: 'd1', role: 'view' },
     });
     expect(roles).toEqual(['participate', 'view']);
   });

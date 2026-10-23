@@ -7,7 +7,7 @@ const PILLS: { label: string; x: number; w: number; active?: boolean }[] = [
   { label: 'Roadmap', x: 228, w: 70 },
 ];
 
-// Tabs: one document holding several tabs of pages, stacked behind each other, each with its own content: a roadmap
+// Tabs: one design holding several tabs of pages, stacked behind each other, each with its own content: a roadmap
 // at the back, an article in the middle, an architecture page in front, and the tab bar to move between them.
 export function TabsArt() {
   return (

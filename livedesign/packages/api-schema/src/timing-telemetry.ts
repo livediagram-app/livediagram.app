@@ -36,7 +36,7 @@ export const WEB_VITALS: readonly WebVital[] = ['Lcp', 'Inp', 'Cls'];
 
 /** The editor's own timings, each on the Duration scale. */
 export const EDITOR_TIMING_METRICS = [
-  'DocumentLoad',
+  'DesignLoad',
   'TabLoad',
   'Save',
   'RoomConnect',

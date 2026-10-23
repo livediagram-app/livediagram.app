@@ -1,6 +1,6 @@
 'use client';
 
-// Where a path lands in the document (docs/specs/023-draw-mode/path-tool.md; blueprint path-tool
+// Where a path lands in the design (docs/specs/023-draw-mode/path-tool.md; blueprint path-tool
 // "Drawing" and "Edit mode"): a drawn path, a continued one, and every edit-mode gesture, each one
 // `commit`, so each is one undo step.
 import {
@@ -10,7 +10,7 @@ import {
   reshapePath,
   type Element,
   type PathAnchor,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { track } from '@/lib/telemetry';
 import type { PathCommit } from '@/components/canvas/path/usePathDrawGesture';
 import { debugLog } from '@/lib/debug-log';

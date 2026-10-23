@@ -1,8 +1,8 @@
-// `pull <doc> [--to <dir>] [--svg]` (docs/specs/015-api/blueprints/cli.md "Pull and push", CLI27): the document and
+// `pull <doc> [--to <dir>] [--svg]` (docs/specs/015-api/blueprints/cli.md "Pull and push", CLI27): the design and
 // every tab with its revision, written as a pull file, each tab kept as a read copy; `--svg` adds a drawing per tab.
 
-import { resolveDocument, tabPath, type VerbContext } from '@livedesign/agent-verbs';
-import { DOCUMENT_ENVELOPE_KIND, DOCUMENT_SCHEMA_VERSION } from '@livedesign/document';
+import { resolveDesign, tabPath, type VerbContext } from '@livedesign/agent-verbs';
+import { DESIGN_ENVELOPE_KIND, DESIGN_SCHEMA_VERSION } from '@livedesign/design';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
 import { EXIT } from '../output/exit-codes';
@@ -16,27 +16,27 @@ import {
   tabHashes,
   type PullFile,
 } from '../sync/pull-file';
-import { readDocumentSnapshot } from './snapshot';
+import { readDesignSnapshot } from './snapshot';
 
 export type PullInput = { doc: string; to?: string; svg?: boolean; force?: boolean };
 
 const joinPath = (dir: string, name: string) => `${dir.replace(/\/+$/, '')}/${name}`;
 
-// `<slug>.livedesign.json`, or `<slug>-<id8>` when the file there is another document's (CLI27); `there` is this
-// document's pull file already at that path.
-async function pullPath(io: CliIo, dir: string, document: { id: string; name: string }) {
-  const slug = fileSlug(document.name, document.id);
+// `<slug>.livedesign.json`, or `<slug>-<id8>` when the file there is another design's (CLI27); `there` is this
+// design's pull file already at that path.
+async function pullPath(io: CliIo, dir: string, design: { id: string; name: string }) {
+  const slug = fileSlug(design.name, design.id);
   const plain = joinPath(dir, `${slug}${PULL_FILE_SUFFIX}`);
   const existing = await io.files.read(plain);
   if (existing === null) return { path: plain, slug, there: null };
   const there = parsePullFile(existing);
-  if (there.ok && there.file.document.id === document.id)
+  if (there.ok && there.file.design.id === design.id)
     return { path: plain, slug, there: there.file };
-  const own = `${slug}-${idSlug(document.id)}`;
+  const own = `${slug}-${idSlug(design.id)}`;
   const path = joinPath(dir, `${own}${PULL_FILE_SUFFIX}`);
   const text = await io.files.read(path);
   const parsed = text === null ? null : parsePullFile(text);
-  const mine = parsed?.ok && parsed.file.document.id === document.id ? parsed.file : null;
+  const mine = parsed?.ok && parsed.file.design.id === design.id ? parsed.file : null;
   return { path, slug: own, there: mine };
 }
 
@@ -45,7 +45,7 @@ async function pullPath(io: CliIo, dir: string, document: { id: string; name: st
 async function refuseUnpushed(path: string, file: PullFile | null, input: PullInput) {
   if (!file || input.force) return;
   const hashes: Record<string, { hash: string; settingsHash: string }> = {};
-  for (const tab of file.document.tabs) hashes[tab.id] = await tabHashes(tab);
+  for (const tab of file.design.tabs) hashes[tab.id] = await tabHashes(tab);
   if (!isLocallyChanged(file, hashes)) return;
   throw new CliError({
     exit: EXIT.rejected,
@@ -55,27 +55,27 @@ async function refuseUnpushed(path: string, file: PullFile | null, input: PullIn
   });
 }
 
-export async function pullDocument(
+export async function pullDesign(
   io: CliIo,
   ctx: VerbContext,
   input: PullInput,
 ): Promise<{ paths: string[] }> {
-  const resolved = await resolveDocument(ctx.api, input.doc, ctx.host, ctx.log);
+  const resolved = await resolveDesign(ctx.api, input.doc, ctx.host, ctx.log);
   if (resolved.shareCode) ctx.useShareCode(resolved.shareCode);
-  const { document, tabs, pulled } = await readDocumentSnapshot(ctx, resolved.id);
+  const { design, tabs, pulled } = await readDesignSnapshot(ctx, resolved.id);
   const dir = input.to ?? io.cwd;
   await io.files.mkdir(dir);
-  const { path, slug, there } = await pullPath(io, dir, document);
+  const { path, slug, there } = await pullPath(io, dir, design);
   await refuseUnpushed(path, there, input);
   const file: PullFile = {
-    kind: DOCUMENT_ENVELOPE_KIND,
-    schemaVersion: DOCUMENT_SCHEMA_VERSION,
+    kind: DESIGN_ENVELOPE_KIND,
+    schemaVersion: DESIGN_SCHEMA_VERSION,
     exportedAt: ctx.now(),
-    document: { ...document, tabs },
+    design: { ...design, tabs },
     livedesignSync: { host: ctx.host, pulledAt: ctx.now(), tabs: pulled },
   };
   await io.files.write(path, pullFileText(file));
-  ctx.log(`pull ${document.id} ${tabs.length} tabs`);
+  ctx.log(`pull ${design.id} ${tabs.length} tabs`);
   const paths = [path];
   if (input.svg) {
     const taken = new Set<string>();
@@ -83,7 +83,7 @@ export async function pullDocument(
       const name = fileSlug(tab.name, tab.id);
       const tabSlug = taken.has(name) ? `${name}-${idSlug(tab.id)}` : name;
       taken.add(tabSlug);
-      const { body } = await ctx.api.text(`${tabPath(document.id, tab.id)}/render.svg`);
+      const { body } = await ctx.api.text(`${tabPath(design.id, tab.id)}/render.svg`);
       const svgPath = joinPath(dir, `${slug}.${tabSlug}.svg`);
       await io.files.write(svgPath, body);
       paths.push(svgPath);

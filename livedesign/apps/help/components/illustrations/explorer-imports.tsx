@@ -23,19 +23,19 @@ function Picture({ x, y, w, h, hue }: { x: number; y: number; w: number; h: numb
 // --- Scenes ------------------------------------------------------------------
 
 /** The Image gallery: the upload drop zone, then cards with the image, its name and size, a trash
- *  button, and a Used in N documents or Not used badge. */
+ *  button, and a Used in N designs or Not used badge. */
 export function GalleryCards() {
   const cards = [
     {
       name: 'logo.png',
       size: '640 × 320 · 48 KB',
-      used: 'Used in 2 documents',
+      used: 'Used in 2 designs',
       hue: 'fill-brand-200',
     },
     {
       name: 'team-photo.jpg',
       size: '1600 × 900 · 1.1 MB',
-      used: 'Used in 1 document',
+      used: 'Used in 1 design',
       hue: 'fill-emerald-200',
     },
     { name: 'old-sketch.png', size: '800 × 600 · 210 KB', used: 'Not used', hue: 'fill-amber-200' },

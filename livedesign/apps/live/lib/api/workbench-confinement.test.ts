@@ -13,7 +13,7 @@ import {
 
 const SECRET = `lvw_${'s'.repeat(43)}`;
 const BEARER = { Authorization: `Bearer ${SECRET}` };
-const SESSION = { scope: 'document' as const, documentId: 'doc-1', ownerId: 'user_1' };
+const SESSION = { scope: 'design' as const, designId: 'doc-1', ownerId: 'user_1' };
 
 let warn: ReturnType<typeof vi.spyOn>;
 
@@ -28,31 +28,31 @@ afterEach(() => {
 
 describe('confinementRefusal', () => {
   it('lets every request through while no session is confined', () => {
-    expect(confinementRefusal('/api/documents', { headers: BEARER })).toBeNull();
+    expect(confinementRefusal('/api/designs', { headers: BEARER })).toBeNull();
   });
 
   it('lets an allowed route through', () => {
     setWorkbenchConfinement(SESSION);
 
-    expect(confinementRefusal('/api/documents/doc-1', { headers: BEARER })).toBeNull();
+    expect(confinementRefusal('/api/designs/doc-1', { headers: BEARER })).toBeNull();
     expect(
-      confinementRefusal('/api/documents/doc-1/tabs/t1', { method: 'PUT', headers: BEARER }),
+      confinementRefusal('/api/designs/doc-1/tabs/t1', { method: 'PUT', headers: BEARER }),
     ).toBeNull();
   });
 
   it('refuses a confined route presenting the session', () => {
     setWorkbenchConfinement(SESSION);
 
-    const refusal = confinementRefusal('/api/documents', { headers: BEARER });
+    const refusal = confinementRefusal('/api/designs', { headers: BEARER });
 
     expect(refusal).toBeInstanceOf(WorkbenchConfinedError);
-    expect(refusal?.route).toBe('Get.Documents');
+    expect(refusal?.route).toBe('Get.Designs');
   });
 
-  it('refuses another document', () => {
+  it('refuses another design', () => {
     setWorkbenchConfinement(SESSION);
 
-    expect(confinementRefusal('/api/documents/doc-2', { headers: BEARER })).toBeInstanceOf(
+    expect(confinementRefusal('/api/designs/doc-2', { headers: BEARER })).toBeInstanceOf(
       WorkbenchConfinedError,
     );
   });
@@ -84,10 +84,10 @@ describe('confinementRefusal', () => {
 
     expect(confinementRefusal('/api/events', { method: 'POST' })).toBeNull();
     expect(
-      confinementRefusal('/api/documents', { headers: { Authorization: 'Bearer clerk-jwt' } }),
+      confinementRefusal('/api/designs', { headers: { Authorization: 'Bearer clerk-jwt' } }),
     ).toBeNull();
     expect(
-      confinementRefusal('/api/documents', { headers: new Headers({ 'X-Owner-Id': 'g' }) }),
+      confinementRefusal('/api/designs', { headers: new Headers({ 'X-Owner-Id': 'g' }) }),
     ).toBeNull();
   });
 

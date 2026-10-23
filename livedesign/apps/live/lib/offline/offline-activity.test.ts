@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Element } from '@livedesign/document';
+import type { Element } from '@livedesign/design';
 import { ACTIVITY_LIST_MAX } from '@livedesign/api-schema';
 import { __setOfflineBackend, offlinePutRecord } from './offline-store';
 import {
@@ -10,8 +10,8 @@ import {
 } from './offline-activity';
 import { memBackend, testRecord, testTab } from './offline-test-utils';
 
-// The Inbox's read of documents in This Browser (docs/specs/013-workspace/inbox.md §2.6): the server's rules, applied
-// in the browser, with the reader owning every document.
+// The Inbox's read of designs in This Browser (docs/specs/013-workspace/inbox.md §2.6): the server's rules, applied
+// in the browser, with the reader owning every design.
 
 afterEach(() => __setOfflineBackend(null));
 
@@ -46,7 +46,7 @@ async function reader(...ids: string[]): Promise<OfflineReader> {
 }
 
 describe('offlineActivityFromRecords', () => {
-  it('lists an open action assigned to the reader, as one of their own documents', async () => {
+  it('lists an open action assigned to the reader, as one of their own designs', async () => {
     const rec = testRecord({
       name: 'Retro',
       tabs: [
@@ -56,8 +56,8 @@ describe('offlineActivityFromRecords', () => {
     const { actions } = offlineActivityFromRecords([rec], await reader('guest-1'));
     expect(actions).toEqual([
       expect.objectContaining({
-        documentId: 'd1',
-        documentName: 'Retro',
+        designId: 'd1',
+        designName: 'Retro',
         via: 'own',
         teamId: null,
         shareCode: null,
@@ -96,7 +96,7 @@ describe('offlineActivityFromRecords', () => {
     ]);
   });
 
-  it('lists every unresolved thread as on the reader’s document, with whether they wrote or were mentioned', async () => {
+  it('lists every unresolved thread as on the reader’s design, with whether they wrote or were mentioned', async () => {
     const c = (id: string, at: number, authorId?: string, mentions?: unknown[]) => ({
       id,
       text: `c-${id}`,
@@ -126,14 +126,14 @@ describe('offlineActivityFromRecords', () => {
     });
     const { threads } = offlineActivityFromRecords([rec], await reader('guest-1'));
     expect(
-      threads.map((t) => [t.elementId, t.youCommented, t.mentionsYou, t.onYourDocument]),
+      threads.map((t) => [t.elementId, t.youCommented, t.mentionsYou, t.onYourDesign]),
     ).toEqual([
       ['b', false, true, true],
       ['a', true, false, true],
     ]);
   });
 
-  it('skips a document in the local Trash', async () => {
+  it('skips a design in the local Trash', async () => {
     const rec = testRecord({
       trashedAt: 5,
       tabs: [testTab('t1', { elements: [shape('s1', 'S', { action: action() })] })],
@@ -162,7 +162,7 @@ describe('readOfflineActivity', () => {
     expect(actions.map((a) => a.id)).toEqual(['a1']);
   });
 
-  it('hands the main thread back between documents once a slice has run', async () => {
+  it('hands the main thread back between designs once a slice has run', async () => {
     __setOfflineBackend(memBackend());
     for (const id of ['d1', 'd2', 'd3']) await offlinePutRecord(testRecord({ id }));
     let clock = 0;
@@ -174,7 +174,7 @@ describe('readOfflineActivity', () => {
     timeout.mockRestore();
   });
 
-  it('reads nothing when the browser holds no documents in This Browser', async () => {
+  it('reads nothing when the browser holds no designs in This Browser', async () => {
     __setOfflineBackend(memBackend());
     expect(await readOfflineActivity(['guest-1'])).toEqual({
       actions: [],

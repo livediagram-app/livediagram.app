@@ -1,7 +1,7 @@
 // Error card surfaced when an API call FAILS (network down, 5xx) rather
-// than legitimately 404s — e.g. the document load couldn't reach the
-// server, or creating a new document never succeeded. Distinct from
-// NotFound (which means "this document doesn't exist / isn't yours"): a
+// than legitimately 404s — e.g. the design load couldn't reach the
+// server, or creating a new design never succeeded. Distinct from
+// NotFound (which means "this design doesn't exist / isn't yours"): a
 // failure is retryable, so this card leads with a Retry action. Designed
 // to drop into the same chrome as NotFound (EditorHeader above), and
 // renders as an absolute overlay so anything behind stays interactive.

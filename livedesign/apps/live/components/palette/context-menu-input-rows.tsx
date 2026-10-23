@@ -2,12 +2,12 @@ import { useState, type ReactNode } from 'react';
 import { Glyph } from '@livedesign/ui';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { DirArrow } from '@/components/palette/context-menu-icons';
-import { type IconPosition, type StandardTone } from '@livedesign/document';
+import { type IconPosition, type StandardTone } from '@livedesign/design';
 import { onMouseHover } from '@/components/primitives/hover-preview';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { ColourPopover } from '@/components/colour/ColourPopover';
 import { noColour, standardGroup, themeOptions } from '@/components/colour/colour-options';
-import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
+import { useDesignColours } from '@/hooks/ui/useDesignColours';
 
 // "No colour". A real value, not an absence: it is what a frame defaults to,
 // and what you want when a shape should show the canvas through it.
@@ -68,7 +68,7 @@ export function ColourRow({
   const surface = useCanvasSurface();
   // In state, not a ref: a row can mount already open, and the popover needs its anchor then.
   const [trigger, setTrigger] = useState<HTMLButtonElement | null>(null);
-  const yours = useDocumentColoursWhen(open, presets);
+  const yours = useDesignColoursWhen(open, presets);
   const theme = themeOptions(presets);
   return (
     <div>
@@ -119,9 +119,9 @@ export function ColourRow({
   );
 }
 
-// Custom colours only while the row's picker is open, so a closed menu row never walks the document.
-function useDocumentColoursWhen(open: boolean, offered: readonly string[]): string[] {
-  const colours = useDocumentColours(open ? offered : NO_COLOURS);
+// Custom colours only while the row's picker is open, so a closed menu row never walks the design.
+function useDesignColoursWhen(open: boolean, offered: readonly string[]): string[] {
+  const colours = useDesignColours(open ? offered : NO_COLOURS);
   return open ? colours : [];
 }
 const NO_COLOURS: readonly string[] = [];

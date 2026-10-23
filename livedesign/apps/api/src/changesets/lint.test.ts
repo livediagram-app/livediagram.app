@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Element } from '@livedesign/document';
+import type { Element } from '@livedesign/design';
 import { lintResult } from './lint';
 
 const text = (id: string, y: number): Element => ({
@@ -11,7 +11,7 @@ const text = (id: string, y: number): Element => ({
   height: 40,
   label: id,
 });
-const where = { documentId: 'D', tabId: 't1' };
+const where = { designId: 'D', tabId: 't1' };
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -23,7 +23,7 @@ describe('lintResult', () => {
     expect(report?.counts.warning).toBe(1);
     expect(infos[0]).toEqual([
       '[lint] run',
-      expect.objectContaining({ documentId: 'D', tabId: 't1' }),
+      expect.objectContaining({ designId: 'D', tabId: 't1' }),
     ]);
   });
 });

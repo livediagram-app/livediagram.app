@@ -84,10 +84,10 @@ export function formatBrowserIdentity(
       : 'Guest id in this browser: none',
     `Identity upgrade pending: ${yesNo(id.pendingUpgrade)}`,
   ];
-  // Signing in moves a guest's documents to the account and then clears the guest id, so one still
-  // here while signed in means that move has not happened: the classic "my documents went missing".
+  // Signing in moves a guest's designs to the account and then clears the guest id, so one still
+  // here while signed in means that move has not happened: the classic "my designs went missing".
   if (signedIn && id.guestIdPrefix) {
-    lines.push('Guest documents moved to the account: NOT YET (guest id still present)');
+    lines.push('Guest designs moved to the account: NOT YET (guest id still present)');
   }
   return lines;
 }

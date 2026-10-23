@@ -28,7 +28,7 @@ let now: number;
 const deps = (extra: Record<string, unknown> = {}) => ({
   online: () => true,
   storage: storage as unknown as Storage,
-  url: 'https://x.test/document/d1',
+  url: 'https://x.test/design/d1',
   now: () => now,
   ...extra,
 });
@@ -60,9 +60,9 @@ describe('armLoadWatchdog', () => {
 
   it('keeps the step a failed load reached, for the diagnostics', () => {
     const w = armLoadWatchdog(vi.fn(), deps());
-    setLoadStep('document');
+    setLoadStep('design');
     w.finish();
-    expect(getLoadProgress().step).toBe('document');
+    expect(getLoadProgress().step).toBe('design');
   });
 
   it('reloads once on the first timeout in a tab, saying so first', () => {
@@ -70,12 +70,12 @@ describe('armLoadWatchdog', () => {
     const reload = vi.fn();
     const warn = vi.fn();
     armLoadWatchdog(onTimedOut, deps({ reload, warn }));
-    setLoadStep('document');
+    setLoadStep('design');
     vi.advanceTimersByTime(LOAD_TIMEOUT_MS);
     expect(getLoadProgress()).toMatchObject({ timedOut: true, healing: true });
     expect(warn.mock.calls.map((c): unknown => c[0])).toEqual([
-      'DocumentLoad.TimedOut.Document',
-      'DocumentLoad.AutoReload',
+      'DesignLoad.TimedOut.Design',
+      'DesignLoad.AutoReload',
     ]);
     expect(reload).not.toHaveBeenCalled();
     vi.advanceTimersByTime(AUTO_RELOAD_DELAY_MS);
@@ -123,13 +123,13 @@ describe('armLoadWatchdog', () => {
     // Second timeout in the tab: the error shows, no reload pending.
     storage.setItem(
       'livedesign:load-auto-reloads',
-      JSON.stringify({ 'https://x.test/document/d1': now }),
+      JSON.stringify({ 'https://x.test/design/d1': now }),
     );
     const warn = vi.fn();
     const w = armLoadWatchdog(vi.fn(), deps({ warn }));
     vi.advanceTimersByTime(LOAD_TIMEOUT_MS);
     expect(w.finish()).toBe(true);
-    expect(warn).toHaveBeenCalledWith('DocumentLoad.Late');
+    expect(warn).toHaveBeenCalledWith('DesignLoad.Late');
     // finish is once only.
     expect(w.finish()).toBe(false);
   });

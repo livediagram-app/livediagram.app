@@ -1,4 +1,4 @@
-import type { Element } from '@livedesign/document';
+import type { Element } from '@livedesign/design';
 import type { EditorCapabilities } from '@/lib/editor-capabilities';
 
 // Who may edit a Sankey diagram (docs/specs/009-elements/sankey.md "Who may do what"): an Editor, on a diagram

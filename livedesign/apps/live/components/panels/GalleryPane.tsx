@@ -69,7 +69,7 @@ export function GalleryPane({
   const handleDelete = async (image: ImageSummary) => {
     const refs = usage[image.id] ?? [];
     const detail = refs.length
-      ? `It's still attached to ${refs.length} document${
+      ? `It's still attached to ${refs.length} design${
           refs.length === 1 ? '' : 's'
         }: those tiles will render as broken images.`
       : 'This image will be permanently removed from your gallery. This can’t be undone.';
@@ -137,7 +137,7 @@ export function GalleryPane({
             compact={compact}
             icon={<ImageIcon />}
             title="No images yet"
-            description="Drop an image onto the canvas (or the area above) and every image you add collects here, ready to reuse in any document."
+            description="Drop an image onto the canvas (or the area above) and every image you add collects here, ready to reuse in any design."
           />
         ) : (
           <ul className={grid}>
@@ -174,9 +174,9 @@ function GalleryCard({
       <GalleryImageButton
         image={image}
         ownerId={ownerId}
-        // Owner-only context, no documentId / shareCode needed: the
+        // Owner-only context, no designId / shareCode needed: the
         // byte-read endpoint allows the image's owner unconditionally.
-        documentId=""
+        designId=""
         onClick={() => setOpen((o) => !o)}
         ariaLabel={image.originalName ?? 'image'}
       />
@@ -210,7 +210,7 @@ function GalleryCard({
             className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-medium text-brand-700 transition hover:bg-brand-100 dark:bg-brand-500/15 dark:text-brand-300 dark:hover:bg-brand-500/25"
             aria-expanded={open}
           >
-            Used in {usage.length} {usage.length === 1 ? 'document' : 'documents'}
+            Used in {usage.length} {usage.length === 1 ? 'design' : 'designs'}
           </button>
         )}
       </div>
@@ -219,10 +219,10 @@ function GalleryCard({
           {usage.map((d) => (
             <li key={d.id} className="truncate text-[11px]">
               <a
-                href={`/document/${encodeURIComponent(d.id)}`}
+                href={`/design/${encodeURIComponent(d.id)}`}
                 className="text-brand-700 transition hover:text-brand-800 hover:underline dark:text-brand-300 dark:hover:text-brand-200"
               >
-                {d.name || 'Untitled document'}
+                {d.name || 'Untitled design'}
               </a>
             </li>
           ))}

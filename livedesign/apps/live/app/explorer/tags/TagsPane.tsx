@@ -1,37 +1,37 @@
 'use client';
 
 // The Tags page's body (docs/specs/013-workspace/tags.md "The Tags page"): one section per tag, alphabetical, each its
-// heading (the chip, the count, the tag's menu) over its documents in the view the toggle picked; or one tag's
-// documents. A document with two tags shows under both: that is the grouping.
+// heading (the chip, the count, the tag's menu) over its designs in the view the toggle picked; or one tag's
+// designs. A design with two tags shows under both: that is the grouping.
 
 import { useEffect, useId, type ReactNode } from 'react';
 import { Button, EmptyState } from '@livedesign/ui';
 import type { Tag } from '@livedesign/api-schema';
 import { PlusIcon, TagIcon } from '@/components/primitives/explorer-icons';
-import { useDocumentTags } from '@/components/tags/DocumentTagsProvider';
+import { useDesignTags } from '@/components/tags/DesignTagsProvider';
 import { useTagActionsMenu } from '@/components/tags/TagActionsMenu';
 import { TagChip } from '@/components/tags/TagChip';
-import { documentCountLabel } from '@/components/tags/tag-copy';
+import { designCountLabel } from '@/components/tags/tag-copy';
 import { LoadFailed } from '../lens/LensStates';
-import { SkeletonRows, type PaneDocument } from '../views';
+import { SkeletonRows, type PaneDesign } from '../views';
 
-const TAGS_EMPTY_TITLE = 'Group related documents with tags';
+const TAGS_EMPTY_TITLE = 'Group related designs with tags';
 const TAGS_EMPTY_DESCRIPTION =
-  "Make a tag here, or choose Tags in any document's menu. Your tags are yours alone: nobody else sees them.";
+  "Make a tag here, or choose Tags in any design's menu. Your tags are yours alone: nobody else sees them.";
 
 type Props = {
-  // Every document the reader's tags can sit on (their own and their teams'), newest first.
-  documents: readonly PaneDocument[];
+  // Every design the reader's tags can sit on (their own and their teams'), newest first.
+  designs: readonly PaneDesign[];
   // One tag's page, or every tag's sections.
   tagId: string | undefined;
   onOpenTag: (tagId: string | null) => void;
   onNewTag: () => void;
-  // The documents in the view the toggle picked, with the rows and menus every Explorer list has.
-  renderDocuments: (documents: PaneDocument[]) => ReactNode;
+  // The designs in the view the toggle picked, with the rows and menus every Explorer list has.
+  renderDesigns: (designs: PaneDesign[]) => ReactNode;
 };
 
-export function TagsPane({ documents, tagId, onOpenTag, onNewTag, renderDocuments }: Props) {
-  const { status, tags, tagById, documentsFor, reload } = useDocumentTags();
+export function TagsPane({ designs, tagId, onOpenTag, onNewTag, renderDesigns }: Props) {
+  const { status, tags, tagById, designsFor, reload } = useDesignTags();
   const tag = tagId ? tagById.get(tagId) : undefined;
   // A tag that is not the reader's (deleted since, or someone else's link) opens the Tags page.
   const missing = tagId !== undefined && status === 'ready' && !tag;
@@ -40,8 +40,8 @@ export function TagsPane({ documents, tagId, onOpenTag, onNewTag, renderDocument
   }, [missing, onOpenTag]);
 
   const docsOf = (id: string) => {
-    const ids = documentsFor(id);
-    return ids.size === 0 ? [] : documents.filter((d) => ids.has(d.id));
+    const ids = designsFor(id);
+    return ids.size === 0 ? [] : designs.filter((d) => ids.has(d.id));
   };
 
   if (status === 'error') return <LoadFailed onRetry={() => void reload()} />;
@@ -49,12 +49,12 @@ export function TagsPane({ documents, tagId, onOpenTag, onNewTag, renderDocument
   if (tag) {
     const docs = docsOf(tag.id);
     return docs.length > 0 ? (
-      <>{renderDocuments(docs)}</>
+      <>{renderDesigns(docs)}</>
     ) : (
       <EmptyState
         icon={<TagIcon />}
         title={`Nothing tagged ${tag.name} yet`}
-        description="Choose Tags in a document's menu to add this tag to it."
+        description="Choose Tags in a design's menu to add this tag to it."
       />
     );
   }
@@ -74,9 +74,9 @@ export function TagsPane({ documents, tagId, onOpenTag, onNewTag, renderDocument
         <TagSection
           key={t.id}
           tag={t}
-          documents={docsOf(t.id)}
+          designs={docsOf(t.id)}
           onOpen={() => onOpenTag(t.id)}
-          renderDocuments={renderDocuments}
+          renderDesigns={renderDesigns}
         />
       ))}
     </div>
@@ -85,14 +85,14 @@ export function TagsPane({ documents, tagId, onOpenTag, onNewTag, renderDocument
 
 function TagSection({
   tag,
-  documents,
+  designs,
   onOpen,
-  renderDocuments,
+  renderDesigns,
 }: {
   tag: Tag;
-  documents: PaneDocument[];
+  designs: PaneDesign[];
   onOpen: () => void;
-  renderDocuments: Props['renderDocuments'];
+  renderDesigns: Props['renderDesigns'];
 }) {
   const headingId = useId();
   const menu = useTagActionsMenu(tag);
@@ -103,17 +103,17 @@ function TagSection({
           <TagChip tag={tag} size="md" onOpen={onOpen} />
         </h2>
         <span className="text-xs text-slate-500 dark:text-slate-400">
-          {documentCountLabel(documents.length)}
+          {designCountLabel(designs.length)}
         </span>
         <span className="flex-1" />
         {menu.trigger}
         {menu.layers}
       </div>
-      {documents.length > 0 ? (
-        renderDocuments(documents)
+      {designs.length > 0 ? (
+        renderDesigns(designs)
       ) : (
         <p className="rounded-xl border border-dashed border-slate-200 px-4 py-3 text-[13px] text-slate-500 dark:border-slate-700 dark:text-slate-400">
-          Nothing tagged yet. Choose Tags in a document&rsquo;s menu to add some.
+          Nothing tagged yet. Choose Tags in a design&rsquo;s menu to add some.
         </p>
       )}
     </section>

@@ -11,7 +11,7 @@ import {
   type PageFill,
   type Tab,
   type ThemeDefinition,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { themeBackgroundPresets } from './page-paint';
 import { colouringOf, motionFill } from './page-motion';
 import { themePresetColors } from './themes';

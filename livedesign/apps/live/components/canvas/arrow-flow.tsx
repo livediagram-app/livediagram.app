@@ -4,7 +4,7 @@ import {
   DEFAULT_ANIMATION_SPEED,
   type ArrowElement,
   type ArrowFlow,
-} from '@livedesign/document';
+} from '@livedesign/design';
 
 // The flowing-arrow rendering slice (docs/specs/008-canvas/canvas-and-palette.md), lifted out of ArrowView:
 // the per-flow path class / dash tables, the phase-sync pinning hook,
@@ -51,7 +51,7 @@ const COMET_DOTS = [0, 1, 2, 3];
 // Flow derivations + phase sync. CSS animations start counting from
 // when each element's animation is applied, so arrows whose flow was
 // turned on at different times drift apart. Pin every flow animation's
-// startTime to the shared document-timeline origin (0) via the Web
+// startTime to the shared design-timeline origin (0) via the Web
 // Animations API, so all flowing arrows are measured against ONE clock
 // and same-speed siblings stay in phase no matter when they were added
 // or last changed. Re-runs on flow / speed change (a speed change
@@ -68,7 +68,7 @@ export function useArrowFlow(arrow: ArrowElement) {
   useEffect(() => {
     if (!arrow.flow || typeof window === 'undefined') return;
     // A play-once flow (flowRepeat false, docs/specs/008-canvas/canvas-and-palette.md) must NOT be pinned to the
-    // document-timeline origin: with one iteration, startTime 0 lands it in
+    // design-timeline origin: with one iteration, startTime 0 lands it in
     // the finished state before the user ever sees it play. It starts when
     // applied instead — phase sync only matters for loops.
     if (arrow.flowRepeat === false) return;

@@ -44,7 +44,7 @@ limit, and the pick fails as too large rather than reading the rest.
 The bytes then go through the [Import image pipeline](../020-import-export/import-image-pipeline.md)
 unchanged: decoded, resized to at most 2048 px on the longer edge, re-encoded (which also drops any
 metadata), deduped and uploaded to the gallery, or embedded for an
-[Offline Mode](../006-document/offline-mode.md) document. Because the pipeline rasterises SVG, an SVG
+[Offline Mode](../006-design/offline-mode.md) design. Because the pipeline rasterises SVG, an SVG
 result is accepted and stored as a bitmap; SVG is still never stored as SVG.
 
 The user's search terms and IP address reach Openverse. The hosted service's

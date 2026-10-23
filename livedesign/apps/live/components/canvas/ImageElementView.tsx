@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, useMemo } from 'react';
-import { imageCornerPx, type ImageElement } from '@livedesign/document';
+import { imageCornerPx, type ImageElement } from '@livedesign/design';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 import { useCanvasTheme, useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { ImageEmptyFace } from '@/components/canvas/ImageEmptyFace';
@@ -33,13 +33,13 @@ import { Glyph } from '@livedesign/ui';
 // or selection flag changed on the surrounding tab.
 type ImageElementViewProps = {
   element: ImageElement;
-  // Owner identifying the requester. Either the document owner (when
-  // viewing one of their own documents) or a share-link visitor; the
+  // Owner identifying the requester. Either the design owner (when
+  // viewing one of their own designs) or a share-link visitor; the
   // api-client picks Authorization vs X-Owner-Id internally.
   ownerId: string;
-  // Document the element lives on; required for share-code reads so
-  // the API can verify the document references this image.
-  documentId: string;
+  // Design the element lives on; required for share-code reads so
+  // the API can verify the design references this image.
+  designId: string;
   // Share code carried by the visitor, when any. Null for the owner
   // session. Drives the X-Share-Code header on the fetch.
   shareCode: string | null;
@@ -57,13 +57,13 @@ type ImageElementViewProps = {
 function ImageElementViewImpl({
   element,
   ownerId,
-  documentId,
+  designId,
   shareCode,
   onOpenPicker,
   fontFamily,
 }: ImageElementViewProps) {
   const { imageId } = element;
-  const state = useImageBlobUrl(ownerId, imageId, { documentId, shareCode });
+  const state = useImageBlobUrl(ownerId, imageId, { designId, shareCode });
 
   // Corner radius follows the element's borderRadius so a circular avatar
   // ('full' → clamped to 50%) and a rounded hero ('lg') clip correctly;

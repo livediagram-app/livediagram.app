@@ -8,7 +8,7 @@
 import { useState } from 'react';
 import { lucideImagePlus, lucideX } from '@livedesign/icons/lucide';
 import { Button, lucideGlyph, Tooltip } from '@livedesign/ui';
-import type { LaidOutPage } from '@livedesign/document';
+import type { LaidOutPage } from '@livedesign/design';
 import { PHOTO_DEFAULT_HEIGHT, PHOTO_DEFAULT_WIDTH } from '@livedesign/photo-engine';
 import { ImagePicker } from '@/components/panels/ImagePicker';
 import type { PhotoEditorView } from '@/hooks/editor/usePhotoEditor';
@@ -218,14 +218,14 @@ export function StartPhotoCard({
       {picking && photo.scope ? (
         <ImagePicker
           ownerId={photo.scope.ownerId}
-          documentId={photo.scope.documentId}
+          designId={photo.scope.designId}
           forElementId={null}
           onClose={() => setPicking(false)}
           onSelect={(img) => {
             setPicking(false);
             const scope = photo.scope!;
             void apiFetchImageBlob(scope.ownerId, img.id, {
-              documentId: scope.documentId,
+              designId: scope.designId,
               shareCode: scope.shareCode,
             }).then(async (blob) =>
               blob

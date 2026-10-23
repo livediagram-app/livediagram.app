@@ -46,7 +46,7 @@ export function teamRemovalTelemetryType(
 export function teamDeleteCopy(teamName: string | undefined) {
   return {
     title: 'Delete Team?',
-    message: `"${teamName}" and its member list will be permanently deleted. Documents are not affected.`,
+    message: `"${teamName}" and its member list will be permanently deleted. Designs are not affected.`,
     confirmLabel: 'Delete Team',
   };
 }

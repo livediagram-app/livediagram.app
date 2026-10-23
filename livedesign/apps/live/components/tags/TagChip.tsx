@@ -54,7 +54,7 @@ export function TagChip({
   tag: Tag;
   onOpen?: () => void;
   size?: 'sm' | 'md';
-  // In a row's group (DocumentTagChips): truncate rather than overflow when the row is squeezed.
+  // In a row's group (DesignTagChips): truncate rather than overflow when the row is squeezed.
   shrinks?: boolean;
 }) {
   const hex = useTagHex(tag.colour);
@@ -76,13 +76,13 @@ export function TagChip({
   return (
     <HoverCard
       title={tag.name}
-      description="Show every document with this tag."
+      description="Show every design with this tag."
       className={shrinks ? SHRINKS : FIXED}
     >
       <button
         type="button"
         onClick={(e: MouseEvent) => {
-          // The row or card is a link to the document; the chip goes to the tag instead.
+          // The row or card is a link to the design; the chip goes to the tag instead.
           e.preventDefault();
           e.stopPropagation();
           onOpen();
@@ -100,7 +100,7 @@ export function TagChip({
 // The +N's floor: it never shrinks, and "+N" at 11px with its padding fits in this.
 const MORE_FLOOR_REM = 2;
 const GAP_REM = 0.25;
-// Half the name's pull: a squeezed row truncates the document's name faster than its tags, which give up room too
+// Half the name's pull: a squeezed row truncates the design's name faster than its tags, which give up room too
 // rather than overflow. Safe range 0.25 to 1: lower and a long tag truncates the name to nothing first.
 const GROUP_SHRINK = 'shrink-[0.5]';
 
@@ -112,15 +112,15 @@ export function chipsFloor(chips: number, more: boolean): string {
   return `${rem}rem`;
 }
 
-/** A document's tags on a row or card: the first ROW_CHIP_MAX as chips, then +N naming the rest on hover. */
-export function DocumentTagChips({
+/** A design's tags on a row or card: the first ROW_CHIP_MAX as chips, then +N naming the rest on hover. */
+export function DesignTagChips({
   tags,
   onOpenTag,
   hiddenOnPhone = false,
 }: {
   tags: readonly Tag[];
   onOpenTag?: (tagId: string) => void;
-  // A list row shows dots below `sm` instead (DocumentRowTags).
+  // A list row shows dots below `sm` instead (DesignRowTags).
   hiddenOnPhone?: boolean;
 }) {
   if (tags.length === 0) return null;
@@ -159,7 +159,7 @@ export function DocumentTagChips({
 }
 
 /** A narrow panel row's tags: up to PANEL_DOT_MAX dots, named together on hover. Not buttons. */
-export function DocumentTagDots({ tags }: { tags: readonly Tag[] }) {
+export function DesignTagDots({ tags }: { tags: readonly Tag[] }) {
   if (tags.length === 0) return null;
   const names = tags.map((t) => t.name).join(', ');
   return (

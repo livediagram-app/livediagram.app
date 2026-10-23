@@ -3,7 +3,7 @@
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useLocalStorageValue, writeLocalStorageValue } from '@/hooks/ui/useLocalStorageValue';
 
-// List, card or details layout for the Explorer browse views (docs/specs/006-document/document-snapshots.md,
+// List, card or details layout for the Explorer browse views (docs/specs/006-design/design-snapshots.md,
 // docs/specs/013-workspace/explorer-details-view.md). Device-
 // local: a view preference, not account data, so it lives in
 // localStorage like the panel-docking / notifications prefs.
@@ -13,7 +13,7 @@ const MODES: readonly ExplorerViewMode[] = ['list', 'card', 'details'];
 
 const STORAGE_KEY = 'livedesign:explorer-view';
 
-// Cards, not rows, for somebody who has never chosen. A document is a picture,
+// Cards, not rows, for somebody who has never chosen. A design is a picture,
 // and a wall of names in one typeface makes you read every line to find the one
 // you would have recognised on sight. The people who prefer the density of rows
 // know where the toggle is; the people arriving for the first time don't know

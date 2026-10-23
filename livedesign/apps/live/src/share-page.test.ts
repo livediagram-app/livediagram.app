@@ -9,7 +9,7 @@ import {
 } from './share-page';
 
 // The share page's head (docs/specs/013-workspace/share-link-previews.md "The share page's head"): a working share
-// link previews with its document's name and card; anything else is the shell as built.
+// link previews with its design's name and card; anything else is the shell as built.
 
 // HTMLRewriter is a Workers runtime global. This stand-in runs every handler against one recording element per
 // selector and answers what was set, so a test reads exactly what the worker wrote into the head.
@@ -79,16 +79,16 @@ afterEach(() => {
 
 describe('isSharePagePath', () => {
   it('is the share page, with or without its slash, and its legacy address', () => {
-    expect(isSharePagePath('/document/shared')).toBe(true);
-    expect(isSharePagePath('/document/shared/')).toBe(true);
+    expect(isSharePagePath('/design/shared')).toBe(true);
+    expect(isSharePagePath('/design/shared/')).toBe(true);
     expect(isSharePagePath('/diagram/shared')).toBe(true);
-    expect(isSharePagePath('/document/abc')).toBe(false);
-    expect(isSharePagePath('/document/shared/x')).toBe(false);
+    expect(isSharePagePath('/design/abc')).toBe(false);
+    expect(isSharePagePath('/design/shared/x')).toBe(false);
   });
 });
 
 describe('shareHead', () => {
-  it('names the document and points at its share card on this origin', () => {
+  it('names the design and points at its share card on this origin', () => {
     expect(shareHead('Payments flow', 'Ab 12', 'https://staging.livedesign.app')).toEqual({
       title: 'Payments flow',
       description: SHARE_PITCH,
@@ -100,19 +100,19 @@ describe('shareHead', () => {
   it('keeps a preview to one tidy line, and never blank', () => {
     expect(shareHead('  Q3\n\n  plan  ', 'c', 'https://x').title).toBe('Q3 plan');
     expect(shareHead('x'.repeat(500), 'c', 'https://x').title).toHaveLength(200);
-    expect(shareHead('   ', 'c', 'https://x').title).toBe('Untitled document');
+    expect(shareHead('   ', 'c', 'https://x').title).toBe('Untitled design');
   });
 });
 
 describe('live worker: the share page', () => {
-  it("fills the shell's head with the document the link names, asking the api once", async () => {
+  it("fills the shell's head with the design the link names, asking the api once", async () => {
     const seen: string[] = [];
     const { env, assets } = makeEnv((path) => {
       seen.push(path);
       return Response.json({ name: 'Payments flow' });
     });
-    const res = await get('/document/shared?s=CODE1234', env);
-    expect(assets).toEqual(['/document/placeholder']);
+    const res = await get('/design/shared?s=CODE1234', env);
+    expect(assets).toEqual(['/design/placeholder']);
     expect(seen).toEqual(['/api/share/CODE1234/card']);
     expect(res.status).toBe(200);
     // Still the editor page's headers.
@@ -138,66 +138,66 @@ describe('live worker: the share page', () => {
       init = i;
       return Response.json({ name: 'n' });
     });
-    await get('/document/shared?s=C', env, { headers: { 'CF-Connecting-IP': '203.0.113.9' } });
+    await get('/design/shared?s=C', env, { headers: { 'CF-Connecting-IP': '203.0.113.9' } });
     expect(new Headers(init!.headers).get('CF-Connecting-IP')).toBe('203.0.113.9');
     expect(init!.signal).toBeInstanceOf(AbortSignal);
-    await get('/document/shared?s=C', env);
+    await get('/design/shared?s=C', env);
     expect(new Headers(init!.headers).has('CF-Connecting-IP')).toBe(false);
   });
 
   it('serves the shell as built when the api says the link previews as livedesign', async () => {
     const { env } = makeEnv(() => Response.json({ error: 'not_found' }, { status: 404 }));
-    const res = await get('/document/shared?s=GATED', env);
+    const res = await get('/design/shared?s=GATED', env);
     expect(await res.text()).toBe(SHELL);
     expect(console.warn).not.toHaveBeenCalled();
   });
 
   it('serves the shell as built, and says so, when the api fails or cannot be reached', async () => {
     const failing = makeEnv(() => new Response('boom', { status: 500 }));
-    expect(await (await get('/document/shared?s=C', failing.env)).text()).toBe(SHELL);
+    expect(await (await get('/design/shared?s=C', failing.env)).text()).toBe(SHELL);
     expect(console.warn).toHaveBeenCalledWith('[share-page] api answered', 500);
 
     const down = makeEnv(() => Promise.reject(new Error('timeout')));
-    expect(await (await get('/document/shared?s=C', down.env)).text()).toBe(SHELL);
+    expect(await (await get('/design/shared?s=C', down.env)).text()).toBe(SHELL);
     expect(console.warn).toHaveBeenCalledWith('[share-page] api unreachable', 'Error: timeout');
   });
 
   it('ignores an answer with no name in it', async () => {
     const { env } = makeEnv(() => Response.json({}));
-    expect(await (await get('/document/shared?s=C', env)).text()).toBe(SHELL);
+    expect(await (await get('/design/shared?s=C', env)).text()).toBe(SHELL);
   });
 
   it('waits on the api no longer than its budget', async () => {
     const timeout = vi.spyOn(AbortSignal, 'timeout');
     const { env } = makeEnv(() => Response.json({ name: 'n' }));
-    await get('/document/shared?s=C', env);
+    await get('/design/shared?s=C', env);
     expect(timeout).toHaveBeenCalledWith(SHARE_CARD_TIMEOUT_MS);
   });
 
   it('asks nothing without a code, a GET, or an api binding', async () => {
     const api = vi.fn(() => Response.json({ name: 'n' }));
     const { env } = makeEnv(api);
-    expect(await (await get('/document/shared', env)).text()).toBe(SHELL);
-    expect((await get('/document/shared?s=C', env, { method: 'HEAD' })).status).toBe(200);
+    expect(await (await get('/design/shared', env)).text()).toBe(SHELL);
+    expect((await get('/design/shared?s=C', env, { method: 'HEAD' })).status).toBe(200);
     expect(api).not.toHaveBeenCalled();
 
     const unbound = makeEnv();
-    const res = await get('/document/shared?s=C', unbound.env);
-    expect(unbound.assets).toEqual(['/document/placeholder']);
+    const res = await get('/design/shared?s=C', unbound.env);
+    expect(unbound.assets).toEqual(['/design/placeholder']);
     expect(await res.text()).toBe(SHELL);
   });
 
   it('leaves a failed shell alone', async () => {
     const { env } = makeEnv(() => Response.json({ name: 'n' }), 503);
-    const res = await get('/document/shared?s=C', env);
+    const res = await get('/design/shared?s=C', env);
     expect(res.status).toBe(503);
     expect(await res.text()).toBe(SHELL);
   });
 
-  it("never asks about a document's own address, which only its owner can open", async () => {
+  it("never asks about a design's own address, which only its owner can open", async () => {
     const api = vi.fn(() => Response.json({ name: 'n' }));
     const { env } = makeEnv(api);
-    expect(await (await get('/document/abc?s=C', env)).text()).toBe(SHELL);
+    expect(await (await get('/design/abc?s=C', env)).text()).toBe(SHELL);
     expect(api).not.toHaveBeenCalled();
   });
 });

@@ -10,15 +10,15 @@ const getSharePasswordMock = vi.fn<(env: Env, id: string) => Promise<string | nu
 const upgradeMock = vi.fn<(env: Env, id: string, from: string, to: string) => Promise<void>>();
 vi.mock('../db', () => ({
   getShareLink: (env: Env, code: string) => getShareLinkMock(env, code),
-  getDocumentSharePassword: (env: Env, id: string) => getSharePasswordMock(env, id),
-  upgradeDocumentSharePassword: (env: Env, id: string, from: string, to: string) =>
+  getDesignSharePassword: (env: Env, id: string) => getSharePasswordMock(env, id),
+  upgradeDesignSharePassword: (env: Env, id: string, from: string, to: string) =>
     upgradeMock(env, id, from, to),
 }));
 
 import {
   clearVerifiedSharePasswords,
   isPersonalOwner,
-  shareLinkForDocument,
+  shareLinkForDesign,
   sharePasswordOk,
   sharePasswordStatus,
   VERIFIED_MAX,
@@ -32,7 +32,7 @@ const FAST = 1_000;
 const attempt = (value: string, rateKey = 'net-1') => ({ value, rateKey });
 
 const ENV = {} as Env;
-const link = (documentId: string, role: 'edit' | 'view') => ({ documentId, role }) as ShareLink;
+const link = (designId: string, role: 'edit' | 'view') => ({ designId, role }) as ShareLink;
 
 beforeEach(() => {
   clearVerifiedSharePasswords();
@@ -45,10 +45,10 @@ beforeEach(() => {
 });
 
 describe('isPersonalOwner', () => {
-  it('accepts a matching owner on a personal document', () => {
+  it('accepts a matching owner on a personal design', () => {
     expect(isPersonalOwner('a', 'a', null)).toBe(true);
   });
-  it('never accepts the bare owner id on a team document', () => {
+  it('never accepts the bare owner id on a team design', () => {
     expect(isPersonalOwner('a', 'a', 'team-1')).toBe(false);
   });
   it('rejects a missing or different owner', () => {
@@ -57,24 +57,24 @@ describe('isPersonalOwner', () => {
   });
 });
 
-describe('shareLinkForDocument', () => {
-  it('returns the link when it belongs to the document', async () => {
+describe('shareLinkForDesign', () => {
+  it('returns the link when it belongs to the design', async () => {
     getShareLinkMock.mockResolvedValue(link('d1', 'view'));
-    expect(await shareLinkForDocument(ENV, 'code', 'd1')).toEqual(link('d1', 'view'));
+    expect(await shareLinkForDesign(ENV, 'code', 'd1')).toEqual(link('d1', 'view'));
   });
-  it('refuses a code for a different document', async () => {
+  it('refuses a code for a different design', async () => {
     getShareLinkMock.mockResolvedValue(link('d2', 'edit'));
-    expect(await shareLinkForDocument(ENV, 'code', 'd1')).toBeNull();
+    expect(await shareLinkForDesign(ENV, 'code', 'd1')).toBeNull();
   });
   it('skips the lookup for a missing or empty code', async () => {
-    expect(await shareLinkForDocument(ENV, null, 'd1')).toBeNull();
-    expect(await shareLinkForDocument(ENV, '', 'd1')).toBeNull();
+    expect(await shareLinkForDesign(ENV, null, 'd1')).toBeNull();
+    expect(await shareLinkForDesign(ENV, '', 'd1')).toBeNull();
     expect(getShareLinkMock).not.toHaveBeenCalled();
   });
 });
 
 describe('sharePasswordStatus', () => {
-  it('is ok when the document has no password', async () => {
+  it('is ok when the design has no password', async () => {
     expect(await sharePasswordStatus(ENV, 'd1', null)).toBe('ok');
   });
 
@@ -191,7 +191,7 @@ describe('the guess budget', () => {
     expect(await sharePasswordStatus(env, 'd1', attempt('wrong'))).toBe('invalid');
   });
 
-  it('does not spend budget on a document with no password, or a missing one', async () => {
+  it('does not spend budget on a design with no password, or a missing one', async () => {
     const limit = vi.fn(async () => ({ success: true }));
     const env = { SHARE_RATE_LIMITER: { limit } } as unknown as Env;
     await sharePasswordStatus(env, 'd1', attempt('anything'));

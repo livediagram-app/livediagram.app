@@ -102,8 +102,8 @@ describe('eventExplanation', () => {
     expect(eventExplanation('UI', 'Selected', 'Sidebar.SharedWithMe')).toBe(
       "Someone picked the shared with me row in the Explorer's sidebar.",
     );
-    expect(eventExplanation('UI', 'Selected', 'ExplorerPanel.MyDocuments')).toBe(
-      "Someone picked the my documents row in the editor's Explorer panel.",
+    expect(eventExplanation('UI', 'Selected', 'ExplorerPanel.MyDesigns')).toBe(
+      "Someone picked the my designs row in the editor's Explorer panel.",
     );
     expect(eventExplanation('UI', 'Selected', 'SignInBannerExplorer')).toBe(
       EXACT['UI|Selected|SignInBannerExplorer'],
@@ -143,8 +143,8 @@ describe('eventExplanation', () => {
   });
 
   it('reads a client error code as where it broke', () => {
-    expect(eventExplanation('Error', 'Client', 'Uncaught.Document.TypeError')).toBe(
-      'The document page hit an unexpected missing or wrong kind of value that nothing in the code caught.',
+    expect(eventExplanation('Error', 'Client', 'Uncaught.Design.TypeError')).toBe(
+      'The design page hit an unexpected missing or wrong kind of value that nothing in the code caught.',
     );
   });
 

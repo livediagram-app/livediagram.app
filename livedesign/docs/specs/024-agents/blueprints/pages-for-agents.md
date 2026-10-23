@@ -12,9 +12,9 @@ function and a test here; nothing here adds design.
 | page summary    | `PageSummary` `{ place, id, name, kind, size, orientation, rect, background?, locked?, elements }`                                                                                            | `packages/api-schema/src/pages.ts`                                            |
 | refusal         | `PagesRefusal` `{ code: PagesRefusalCode, message, change? }`                                                                                                                                 | `packages/api-schema/src/pages.ts`                                            |
 | the engine      | `applyPageChanges(tab, changes, ctx)`                                                                                                                                                         | `packages/edit-operations/src/pages/`                                         |
-| pure page edits | `pageAdded`, `pageRenamed`, `pageResized`, `pageTurned`, `pageBackgroundSet`, `pageLockSet`, `pageLaidOut`, `pageMovedTo`, `pageDuplicated`, `pageRemoved`; `pagesSharing`, `pageLockRefuses` | `packages/document/src/pages-edits.ts`                                        |
+| pure page edits | `pageAdded`, `pageRenamed`, `pageResized`, `pageTurned`, `pageBackgroundSet`, `pageLockSet`, `pageLaidOut`, `pageMovedTo`, `pageDuplicated`, `pageRemoved`; `pagesSharing`, `pageLockRefuses` | `packages/design/src/pages-edits.ts`                                        |
 | layout build    | `buildPageLayout(layout, page)` (moved)                                                                                                                                                       | `packages/templates/src/page-layout-build.ts`                                 |
-| page paint      | `withBackgroundPatch`, `sameFill`, `PAGE_GRADIENT_ANGLE` (moved)                                                                                                                              | `packages/document/src/page-paint.ts`                                         |
+| page paint      | `withBackgroundPatch`, `sameFill`, `PAGE_GRADIENT_ANGLE` (moved)                                                                                                                              | `packages/design/src/page-paint.ts`                                         |
 | summaries       | `pageSummaries`, `describeBackground`                                                                                                                                                         | `packages/api-schema/src/pages-summary.ts`                                    |
 | submit          | `submitPages`, `pagesRoomOps`                                                                                                                                                                 | `apps/api/src/changesets/pages.ts`                                            |
 | relay           | `relayPages`                                                                                                                                                                                  | `apps/api/src/room-client.ts`                                                 |
@@ -23,7 +23,7 @@ function and a test here; nothing here adds design.
 | verbs           | `changePages`, `pagesTabOf`                                                                                                                                                                   | `packages/agent-verbs/src/pages/pages-calls.ts`                               |
 | MCP tools       | `change_pages` (`mcpChangePages`)                                                                                                                                                             | `packages/agent-verbs/src/mcp/pages-schema.ts`, `apps/mcp/src/pages-tools.ts` |
 | CLI verbs       | `page.ls`, `page.set` (`pagesVerbs`)                                                                                                                                                          | `packages/agent-verbs/src/verbs/pages.ts`                                     |
-| view            | `pages` in `TAB_VIEW_NAMES`, rendered by `pagesView`                                                                                                                                          | `packages/document-views/src/pages.ts`                                        |
+| view            | `pages` in `TAB_VIEW_NAMES`, rendered by `pagesView`                                                                                                                                          | `packages/design-views/src/pages.ts`                                        |
 
 Banned synonyms: "slide deck" for a tab of pages (it is a tab of pages; the deck presents them),
 "template" for a layout.
@@ -35,10 +35,10 @@ Banned synonyms: "slide deck" for a tab of pages (it is a tab of pages; the deck
 1. `buildPageLayout` now lives in `packages/templates/src/page-layout-build.ts`; the editor's callers import it
    from `@livedesign/templates`.
 2. `withBackgroundPatch`, `sameFill` and `PAGE_GRADIENT_ANGLE` now live in
-   `packages/document/src/page-paint.ts`; the editor's paint module re-exports them and keeps only what
+   `packages/design/src/page-paint.ts`; the editor's paint module re-exports them and keeps only what
    draws.
 3. The tab transforms inside `apps/live/hooks/editor/page-edits.ts` became pure functions in
-   `packages/document/src/pages-edits.ts`. Each takes the tab and answers `{ tab } | { refused: PageEditRefusal }`
+   `packages/design/src/pages-edits.ts`. Each takes the tab and answers `{ tab } | { refused: PageEditRefusal }`
    (`PageEditRefusal = 'locked' | 'no_orientation' | 'size_not_offered' | 'pattern_not_offered' | 'page_limit' |
 'last_page' | 'unknown_page'`); the hook keeps telemetry, toasts, `onGoTo` and debug
    logs, and calls them inside `commitTab`. The lock rule (`refusedLocked` with `shared`) and `sharing` move with
@@ -79,7 +79,7 @@ which change 1 made the page it added; nothing deleted.`; otherwise `pageRemoved
 
 ### Route
 
-`POST /api/documents/:id/tabs/:tabId/pages`, JSON body:
+`POST /api/designs/:id/tabs/:tabId/pages`, JSON body:
 
 ```ts
 { pages: PageChange[] }                // 1..50
@@ -107,7 +107,7 @@ Answer `200`:
 { tab: { id, rev }, lines: string[], pages: PageSummary[], changesetId: string | null }
 ```
 
-Refusals: `400 { error, message, change? }` for every engine code and `invalid_body`, `403` gate, `404` document or
+Refusals: `400 { error, message, change? }` for every engine code and `invalid_body`, `403` gate, `404` design or
 tab, `409 tab_busy`, `413 tab_too_large`.
 
 `PagesRefusalCode`: `invalid_body`, `invalid_value`, `tab_locked`, `tab_kind`, `page_unknown`,
@@ -116,17 +116,17 @@ tab, `409 tab_busy`, `413 tab_too_large`.
 
 ### MCP
 
-- `change_pages` `{ documentId, tabId?, changes: PageChange[] (1..50) }`, behaviour `destructive`, output
-  `{ documentId, tabId, lines, pages, rev, url }`; a refusal is a tool error, `Change n: …`
+- `change_pages` `{ designId, tabId?, changes: PageChange[] (1..50) }`, behaviour `destructive`, output
+  `{ designId, tabId, lines, pages, rev, url }`; a refusal is a tool error, `Change n: …`
   counting from 1.
 - Which tab, before the route (`pagesTabOf`): the one named, else the first.
 - Every input and output property `.describe()`d; layout ids described by kind in `change_pages`'s `layout`
   description, generated from `layoutCatalogueFor`.
-- `read_document` `view` enum gains `pages`.
+- `read_design` `view` enum gains `pages`.
 - The server instructions (`packages/agent-verbs/src/mcp/schema.ts`) gain a paragraph: what Pages tabs hold,
-  which page makes what (a poster → an infographic page, a logo → a logo page, a screen → a wireframe page), how a document
-  for pages starts (`create_document` with template `blank-illustration`), and that a layout's sample text is
-  found in the `pages` view and replaced with `update_document`.
+  which page makes what (a poster → an infographic page, a logo → a logo page, a screen → a wireframe page), how a design
+  for pages starts (`create_design` with template `blank-illustration`), and that a layout's sample text is
+  found in the `pages` view and replaced with `update_design`.
 
 ### CLI
 
@@ -186,10 +186,10 @@ tab, `409 tab_busy`, `413 tab_too_large`.
 
 ## Observability
 
-- `[pages-agent] applied` `{ documentId, tabId, changes, rev }`.
-- `[pages-agent] refused` `{ documentId, tabId, code, change }`.
-- `[pages-agent] stale-retry` `{ documentId, tabId }`; `[pages-agent] busy`.
-- `[pages-agent] relay-missed` `{ documentId, tabId, op }`.
+- `[pages-agent] applied` `{ designId, tabId, changes, rev }`.
+- `[pages-agent] refused` `{ designId, tabId, code, change }`.
+- `[pages-agent] stale-retry` `{ designId, tabId }`; `[pages-agent] busy`.
+- `[pages-agent] relay-missed` `{ designId, tabId, op }`.
 
 ## Testing
 
@@ -199,9 +199,9 @@ tab, `409 tab_busy`, `413 tab_too_large`.
 | Which tab, switch, locked tab                 | `packages/edit-operations/src/pages/page-changes.test.ts` "which tab"              |
 | Naming a page (id, place, name, order)        | `page-changes.test.ts` "naming a page", `summary.test.ts`                          |
 | Each change and each refusal, the fresh tab   | `page-changes.test.ts`                                                             |
-| Pure edits match the editor                   | `packages/document/src/pages-edits.test.ts`, the editor's own page-edit tests      |
+| Pure edits match the editor                   | `packages/design/src/pages-edits.test.ts`, the editor's own page-edit tests      |
 | Route gate, write, changeset, relay, refusals | `apps/api/src/routes/tab-pages-route.test.ts`                                      |
-| The `pages` view and header                   | `packages/document-views/src/pages.test.ts`, `render-view.test.ts`                 |
+| The `pages` view and header                   | `packages/design-views/src/pages.test.ts`, `render-view.test.ts`                 |
 | Tools, parity, output schema                  | `apps/mcp/src/pages-tools.test.ts`, `verb-parity.test.ts`, `output-schema.test.ts` |
 | Which tab (verbs), CLI verbs                  | `packages/agent-verbs/src/verbs/pages.test.ts`                                     |
 | Icon ids                                      | `packages/edit-operations/src/fields.test.ts`, `packages/icons/src/search.test.ts` |
@@ -215,7 +215,7 @@ Not unit tested: the route's stale retry and `tab_busy` (they follow the changes
 | --------------------- | ----- | ------------------------------------------------------- | ---------- |
 | `PAGE_CHANGES_MAX`    | 50    | A batch large enough for a whole deck                   | 1 to 100   |
 | `PAGES_REF_MAX`       | 64    | The longest page ref or layout id taken                 | fixed      |
-| `PAGE_GRADIENT_ANGLE` | 160   | The page panel's gradients (moved to packages/document) | 0 to 359   |
+| `PAGE_GRADIENT_ANGLE` | 160   | The page panel's gradients (moved to packages/design) | 0 to 359   |
 
 ## Defaults ledger
 

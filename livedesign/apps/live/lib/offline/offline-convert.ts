@@ -1,34 +1,34 @@
-// Offline Mode conversions (docs/specs/006-document/offline-mode.md): move a document between the browser-only
+// Offline Mode conversions (docs/specs/006-design/offline-mode.md): move a design between the browser-only
 // IndexedDB store and the cloud API, in both directions.
 //
-// Ordering is chosen so a failure never loses the document: the destination is
-// written before the source is removed. Taking a cloud document offline is
+// Ordering is chosen so a failure never loses the design: the destination is
+// written before the source is removed. Taking a cloud design offline is
 // destructive on the server (the whole point — it must leave the account and
 // every other device), so the UI gates it behind a confirmation.
 
-import { apiLoadDocument, apiLoadTab, fetchCloudFavouriteIds } from '@/lib/api-client';
+import { apiLoadDesign, apiLoadTab, fetchCloudFavouriteIds } from '@/lib/api-client';
 import { fetchCloudTags } from '@/lib/api/tags';
-import { DOCUMENT_CONVERSION_HEADER } from '@livedesign/api-schema';
+import { DESIGN_CONVERSION_HEADER } from '@livedesign/api-schema';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
 import { embedTabImages, isDataImageId, tabImageIds } from './offline-images';
 import {
-  offlineCreateDocument,
-  offlineDeleteDocument,
+  offlineCreateDesign,
+  offlineDeleteDesign,
   offlinePutRecord,
-  type OfflineDocumentRecord,
+  type OfflineDesignRecord,
 } from './offline-store';
 import {
   OfflineSyncIncompleteError,
-  syncOfflineDocument,
+  syncOfflineDesign,
   type OfflineSyncResult,
 } from './offline-sync';
 
-// One conversion per document at a time, in this tab: two overlapping ones (a second menu, or the
+// One conversion per design at a time, in this tab: two overlapping ones (a second menu, or the
 // Share gate beside a menu) would each upload, or each delete, behind the other's back. Kept here
 // rather than in the menu that starts it, which unmounts when it closes and forgets.
 const converting = new Set<string>();
 
-// Thrown by a conversion started while another of the same document runs. Callers stay quiet: the
+// Thrown by a conversion started while another of the same design runs. Callers stay quiet: the
 // first one reports for both.
 export class ConversionInProgressError extends Error {
   constructor() {
@@ -37,49 +37,49 @@ export class ConversionInProgressError extends Error {
   }
 }
 
-export function conversionInProgress(documentId: string): boolean {
-  return converting.has(documentId);
+export function conversionInProgress(designId: string): boolean {
+  return converting.has(designId);
 }
 
-async function oneAtATime<T>(documentId: string, run: () => Promise<T>): Promise<T> {
-  if (converting.has(documentId)) throw new ConversionInProgressError();
-  converting.add(documentId);
+async function oneAtATime<T>(designId: string, run: () => Promise<T>): Promise<T> {
+  if (converting.has(designId)) throw new ConversionInProgressError();
+  converting.add(designId);
   try {
     return await run();
   } finally {
-    converting.delete(documentId);
+    converting.delete(designId);
   }
 }
 
-// Offline → Cloud ("Sync Document"), in ./offline-sync. Returns the (unchanged) document id and the images it
+// Offline → Cloud ("Sync Design"), in ./offline-sync. Returns the (unchanged) design id and the images it
 // re-homed (data URI -> gallery id), for an editor syncing in place.
 export function saveOfflineToCloud(offlineId: string, ownerId: string): Promise<OfflineSyncResult> {
-  return oneAtATime(offlineId, () => syncOfflineDocument(offlineId, ownerId));
+  return oneAtATime(offlineId, () => syncOfflineDesign(offlineId, ownerId));
 }
 
-// Cloud → Offline ("Take offline"). Downloads the whole document, writes it to
+// Cloud → Offline ("Take offline"). Downloads the whole design, writes it to
 // IndexedDB, then DELETES the server record (and thus any share links). The
 // local write happens first so a failed delete leaves a (harmless) duplicate
 // rather than nothing. The server delete goes through the raw `apiDelete` so it
 // isn't re-routed to the local store once the id is registered offline.
 export function takeCloudOffline(
-  documentId: string,
+  designId: string,
   ownerId: string,
   shareCode: string | null = null,
 ): Promise<void> {
-  return oneAtATime(documentId, () => downloadAndRemoveCloudCopy(documentId, ownerId, shareCode));
+  return oneAtATime(designId, () => downloadAndRemoveCloudCopy(designId, ownerId, shareCode));
 }
 
 async function downloadAndRemoveCloudCopy(
-  documentId: string,
+  designId: string,
   ownerId: string,
   shareCode: string | null,
 ): Promise<void> {
-  const liveDoc = await apiLoadDocument(ownerId, documentId);
-  if (!liveDoc) throw new Error('document not found');
+  const liveDoc = await apiLoadDesign(ownerId, designId);
+  if (!liveDoc) throw new Error('design not found');
   const fetchedTabs = (
     await Promise.all(
-      liveDoc.tabs.map((s) => apiLoadTab(ownerId, documentId, s.id, shareCode).catch(() => null)),
+      liveDoc.tabs.map((s) => apiLoadTab(ownerId, designId, s.id, shareCode).catch(() => null)),
     )
   ).filter((t): t is NonNullable<typeof t> => t !== null);
   // EVERY tab, or nothing. A tab can come back null from two directions — a
@@ -90,7 +90,7 @@ async function downloadAndRemoveCloudCopy(
   // the tab's elements would exist nowhere, and the user would be told the
   // conversion worked.
   //
-  // The best-effort filter is borrowed from duplicate-document.ts, where it's
+  // The best-effort filter is borrowed from duplicate-design.ts, where it's
   // correct because duplication leaves the source intact. Here the source is
   // destroyed, which inverts the trade. Abort exactly as the image-embed guard
   // below does, and for a stronger reason: that one protects bytes a reaper
@@ -98,10 +98,10 @@ async function downloadAndRemoveCloudCopy(
   // immediately.
   if (fetchedTabs.length !== liveDoc.tabs.length) throw new Error('tab load incomplete');
   // Embed referenced R2 images as data URIs BEFORE the server delete below:
-  // once the document row is gone, its images count as unused and the api's
-  // 30-day retention reaper would delete the bytes the offline document still
+  // once the design row is gone, its images count as unused and the api's
+  // 30-day retention reaper would delete the bytes the offline design still
   // points at (docs/specs/009-elements/images.md + /76).
-  const tabs = await embedTabImages(fetchedTabs, { ownerId, documentId, shareCode });
+  const tabs = await embedTabImages(fetchedTabs, { ownerId, designId, shareCode });
   // Embedding is best-effort per image, but the DELETE below is not: if any
   // image failed to embed, aborting here keeps the server copy (and its
   // images) alive instead of quietly signing the stragglers up for the
@@ -109,22 +109,22 @@ async function downloadAndRemoveCloudCopy(
   const unembedded = tabs.some((t) => tabImageIds(t).some((id) => !isDataImageId(id)));
   if (unembedded) throw new Error('image embed incomplete');
 
-  // The cloud star is a row keyed on the document, so the server delete below
+  // The cloud star is a row keyed on the design, so the server delete below
   // takes it too; carry it onto the offline record (docs/specs/013-workspace/favourites.md). A failed
   // read aborts here, before anything is written: taken as "not starred" it would drop the star.
   const starred = (await fetchCloudFavouriteIds(ownerId)).includes(liveDoc.id);
-  // Its tags too (docs/specs/013-workspace/tags.md "An offline document's tags live in the browser"), read the same
+  // Its tags too (docs/specs/013-workspace/tags.md "An offline design's tags live in the browser"), read the same
   // way: a failed read aborts rather than dropping them with the server row.
   const tagIds = (await fetchCloudTags(ownerId)).links
-    .filter((l) => l.documentId === liveDoc.id)
+    .filter((l) => l.designId === liveDoc.id)
     .map((l) => l.tagId);
   const now = Date.now();
-  const rec: OfflineDocumentRecord = {
+  const rec: OfflineDesignRecord = {
     id: liveDoc.id,
     name: liveDoc.name,
     // Keep its place and its deck: the server row, the only other copy, is
     // deleted below. A team folder isn't a place in the personal tree the
-    // offline record lives in, so a team document lands at the root of My Work.
+    // offline record lives in, so a team design lands at the root of My Work.
     folderId: liveDoc.teamId ? null : (liveDoc.folderId ?? null),
     createdAt: liveDoc.createdAt ?? now,
     savedAt: now,
@@ -135,35 +135,35 @@ async function downloadAndRemoveCloudCopy(
   };
   await offlinePutRecord(rec);
   // Raw server delete — the id is now in the offline index, so the dispatching
-  // apiDeleteDocument would target the local store instead of the server.
+  // apiDeleteDesign would target the local store instead of the server.
   try {
     // Declare the conversion: this DELETE is indistinguishable from a real
     // delete at the boundary, and undeclared the feed told the owner their
-    // document had been deleted (docs/specs/006-document/offline-mode.md + docs/specs/013-workspace/timeline.md).
-    await apiDelete(`${API_BASE}/documents/${documentId}`, ownerId, {
+    // design had been deleted (docs/specs/006-design/offline-mode.md + docs/specs/013-workspace/timeline.md).
+    await apiDelete(`${API_BASE}/designs/${designId}`, ownerId, {
       action: 'take offline',
-      extra: { [DOCUMENT_CONVERSION_HEADER]: 'offline' },
+      extra: { [DESIGN_CONVERSION_HEADER]: 'offline' },
     });
   } catch (e) {
     // The server copy survived, so ROLL BACK the local copy: leaving both
-    // registered under one id would shadow the live cloud document behind a
+    // registered under one id would shadow the live cloud design behind a
     // stale offline fork (and duplicate the Explorer row). Data-safe: the
     // server still holds everything.
-    await offlineDeleteDocument(rec.id).catch(() => {});
+    await offlineDeleteDesign(rec.id).catch(() => {});
     throw e;
   }
 }
 
-// Toast copy for a failed Sync Document, shared by the Explorer menus (via
+// Toast copy for a failed Sync Design, shared by the Explorer menus (via
 // useOfflineConversion) and the Share dialog's offline gate. A 413 is the
 // hard per-tab size cap (usually a large embedded image whose gallery
 // upload failed, leaving the data URI in the tab JSON): retrying won't
 // help, so it must not read as a connection problem.
 // A sync from inside the editor that found this browser's last save still going after
-// SYNC_SAVE_WAIT_MS (app/document/[id]/useSyncInPlace.ts): refused rather than racing it.
+// SYNC_SAVE_WAIT_MS (app/design/[id]/useSyncInPlace.ts): refused rather than racing it.
 export class SyncStillSavingError extends Error {
   constructor() {
-    super('Still saving this document. Try again in a moment.');
+    super('Still saving this design. Try again in a moment.');
     this.name = 'SyncStillSavingError';
   }
 }
@@ -173,12 +173,12 @@ export class SyncStillSavingError extends Error {
 export function syncFailureMessage(e: unknown): string {
   if (e instanceof SyncStillSavingError) return e.message;
   if (e instanceof OfflineSyncIncompleteError)
-    return 'This document kept changing while syncing. Your copy is safe: try again soon.';
+    return 'This design kept changing while syncing. Your copy is safe: try again soon.';
   return e instanceof ApiError && e.status === 413
     ? 'Too large to sync, usually a big image on a tab. Shrink it and try again.'
-    : 'Could not sync this document. Check your connection and try again.';
+    : 'Could not sync this design. Check your connection and try again.';
 }
 
-// Re-exported for callers that only need to create an offline document from
+// Re-exported for callers that only need to create an offline design from
 // scratch (kept here so conversion + creation share one import site).
-export { offlineCreateDocument };
+export { offlineCreateDesign };

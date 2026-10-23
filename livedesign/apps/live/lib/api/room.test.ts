@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DOCUMENT_FORMAT } from '@livedesign/api-schema';
-import { resetServerReleaseForTests, serverBuild, serverDocumentFormat } from '../server-release';
+import { DESIGN_FORMAT } from '@livedesign/api-schema';
+import { resetServerReleaseForTests, serverBuild, serverDesignFormat } from '../server-release';
 import {
   connectRoom,
   ROOM_KEEPALIVE_IDLE_MS,
@@ -125,7 +125,7 @@ describe('connectRoom reconnect cursor', () => {
     });
   });
 
-  it('notes the document format number the room sends on joining', () => {
+  it('notes the design format number the room sends on joining', () => {
     // docs/specs/016-platform/new-version-prompt.md.
     const room = connectRoom(
       'd1',
@@ -134,8 +134,8 @@ describe('connectRoom reconnect cursor', () => {
     );
     const socket = FakeSocket.all[0]!;
     socket.fire('open');
-    socket.fire('message', { kind: 'format', format: DOCUMENT_FORMAT + 1, build: 'b2' });
-    expect(serverDocumentFormat()).toBe(DOCUMENT_FORMAT + 1);
+    socket.fire('message', { kind: 'format', format: DESIGN_FORMAT + 1, build: 'b2' });
+    expect(serverDesignFormat()).toBe(DESIGN_FORMAT + 1);
     expect(serverBuild()).toBe('b2');
     room.close();
     resetServerReleaseForTests();
@@ -517,10 +517,10 @@ describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening
   });
 });
 
-// The room ends every session when the document goes to the Trash
+// The room ends every session when the design goes to the Trash
 // (docs/specs/013-workspace/trash.md): close code 4004. The client hears it
 // and stops, rather than reconnecting into an upgrade that will be refused.
-describe('connectRoom when the document is trashed', () => {
+describe('connectRoom when the design is trashed', () => {
   class ClosingSocket {
     static all: ClosingSocket[] = [];
     readyState = 1;
@@ -549,21 +549,21 @@ describe('connectRoom when the document is trashed', () => {
   });
 
   it('reports it once and never reconnects', () => {
-    const onDocumentTrashed = vi.fn();
+    const onDesignTrashed = vi.fn();
     connectRoom(
       'd1',
       { id: 'me', name: 'Me', color: '#000' },
-      { onPresence() {}, onOp() {}, onDocumentTrashed },
+      { onPresence() {}, onOp() {}, onDesignTrashed },
     );
     ClosingSocket.all[0]!.fire('open');
     ClosingSocket.all[0]!.fire('close', { code: 4004 });
     vi.runAllTimers();
 
-    expect(onDocumentTrashed).toHaveBeenCalledTimes(1);
+    expect(onDesignTrashed).toHaveBeenCalledTimes(1);
     expect(ClosingSocket.all).toHaveLength(1);
   });
 
-  // A document trashed between the editor's load and its join: the upgrade is refused (the browser
+  // A design trashed between the editor's load and its join: the upgrade is refused (the browser
   // reports only an abnormal close, never opened), so the room says so and the editor asks the api.
   it('reports a join refused before the socket opened, and still retries', () => {
     const onRefused = vi.fn();
@@ -595,18 +595,18 @@ describe('connectRoom when the document is trashed', () => {
   // instead of reconnecting into a join the gates may refuse.
   it('reports an access change once and never reconnects', () => {
     const onAccessChanged = vi.fn();
-    const onDocumentTrashed = vi.fn();
+    const onDesignTrashed = vi.fn();
     connectRoom(
       'd1',
       { id: 'me', name: 'Me', color: '#000' },
-      { onPresence() {}, onOp() {}, onAccessChanged, onDocumentTrashed },
+      { onPresence() {}, onOp() {}, onAccessChanged, onDesignTrashed },
     );
     ClosingSocket.all[0]!.fire('open');
     ClosingSocket.all[0]!.fire('close', { code: 4005 });
     vi.runAllTimers();
 
     expect(onAccessChanged).toHaveBeenCalledTimes(1);
-    expect(onDocumentTrashed).not.toHaveBeenCalled();
+    expect(onDesignTrashed).not.toHaveBeenCalled();
     expect(ClosingSocket.all).toHaveLength(1);
   });
 
@@ -630,16 +630,16 @@ describe('connectRoom when the document is trashed', () => {
   });
 
   it('still reconnects after an ordinary drop', () => {
-    const onDocumentTrashed = vi.fn();
+    const onDesignTrashed = vi.fn();
     connectRoom(
       'd1',
       { id: 'me', name: 'Me', color: '#000' },
-      { onPresence() {}, onOp() {}, onDocumentTrashed },
+      { onPresence() {}, onOp() {}, onDesignTrashed },
     );
     ClosingSocket.all[0]!.fire('close', { code: 1006 });
     vi.runOnlyPendingTimers();
 
-    expect(onDocumentTrashed).not.toHaveBeenCalled();
+    expect(onDesignTrashed).not.toHaveBeenCalled();
     expect(ClosingSocket.all).toHaveLength(2);
   });
 });

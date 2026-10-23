@@ -1,4 +1,4 @@
-import type { Element } from '@livedesign/document';
+import type { Element } from '@livedesign/design';
 import { DuplicateIcon, EllipsisIcon, LockIcon, TrashIcon, HoverCard, Glyph } from '@livedesign/ui';
 import type { CombineOp } from '@/lib/combine/combine';
 import { CombineMenuButton } from '@/components/canvas/CombineMenu';

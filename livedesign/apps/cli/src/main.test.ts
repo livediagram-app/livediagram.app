@@ -16,20 +16,20 @@ const current = {
 };
 
 const library: Route = (_, url) => {
-  if (url.pathname === '/api/documents')
+  if (url.pathname === '/api/designs')
     return Response.json({
-      documents: [{ id: DOC, name: 'Auth flow', savedAt: NOW, ownerId: 'u1' }],
+      designs: [{ id: DOC, name: 'Auth flow', savedAt: NOW, ownerId: 'u1' }],
     });
   if (url.pathname === '/api/teams') return Response.json({ teams: [] });
-  if (url.pathname === `/api/documents/${DOC}`)
+  if (url.pathname === `/api/designs/${DOC}`)
     return Response.json({
-      document: {
+      design: {
         id: DOC,
         name: 'Auth flow',
         tabs: [{ id: 'tab1-0000', name: 'Overview', orderIndex: 0 }],
       },
     });
-  if (url.pathname === `/api/documents/${DOC}/tabs/tab1-0000` && url.searchParams.get('json'))
+  if (url.pathname === `/api/designs/${DOC}/tabs/tab1-0000` && url.searchParams.get('json'))
     return Response.json({
       measures: { extent: { width: 10, height: 10 }, boxes: 0, texts: 2 },
       findings: [
@@ -74,7 +74,7 @@ describe('run', () => {
   });
 
   it('reads with the token, the CLI headers, and the compact text on stdout', async () => {
-    const { code, out, err, io } = await cli(['document', 'ls']);
+    const { code, out, err, io } = await cli(['design', 'ls']);
     expect({ code, out, err }).toEqual({
       code: 0,
       out: `aaaa  "Auth flow"  personal  2026-10-05\n`,
@@ -107,34 +107,34 @@ describe('run', () => {
   it("sends a share link's code with every request after it resolves", async () => {
     const share: Route = (_, url) =>
       url.pathname === '/api/share/abc'
-        ? Response.json({ document: { id: DOC, name: 'Auth flow' } })
+        ? Response.json({ design: { id: DOC, name: 'Auth flow' } })
         : undefined;
     const io = signedIn({ routes: [capabilities, share, library, tokens] });
     expect(
-      (await cli(['tab', 'ls', 'https://livedesign.app/document/shared?s=abc'], io)).code,
+      (await cli(['tab', 'ls', 'https://livedesign.app/design/shared?s=abc'], io)).code,
     ).toBe(0);
     expect(io.requests.at(-1)!.headers.get('X-Share-Code')).toBe('abc');
     expect(io.requests[1]!.headers.get('X-Share-Code')).toBeNull();
   });
 
-  it('refuses usage with exit 2, a missing document with exit 3, as text or JSON on stderr', async () => {
+  it('refuses usage with exit 2, a missing design with exit 3, as text or JSON on stderr', async () => {
     expect(await cli(['tab', 'vew'])).toMatchObject({ code: 2, out: '' });
     const missing = await cli(['tab', 'ls', 'nope']);
     expect(missing).toMatchObject({
       code: 3,
       out: '',
-      err: 'error: no document matches "nope"\nhint: livedesign document ls\n',
+      err: 'error: no design matches "nope"\nhint: livedesign design ls\n',
     });
     const json = await cli(['tab', 'ls', 'nope', '--json']);
     expect(JSON.parse(json.err)).toEqual({
       error: 'not_found',
-      message: 'no document matches "nope"',
-      hint: 'livedesign document ls',
+      message: 'no design matches "nope"',
+      hint: 'livedesign design ls',
     });
   });
 
   it('needs a credential and a host with sign-in', async () => {
-    const none = await cli(['document', 'ls'], fakeIo({ routes: [capabilities] }));
+    const none = await cli(['design', 'ls'], fakeIo({ routes: [capabilities] }));
     expect(none).toMatchObject({
       code: 4,
       err: expect.stringContaining('not signed in to https://livedesign.app'),
@@ -143,7 +143,7 @@ describe('run', () => {
       env: { LIVEDESIGN_TOKEN: TOKEN },
       routes: [() => Response.json({ aiEnabled: false })],
     });
-    expect(await cli(['document', 'ls'], guestOnly)).toMatchObject({
+    expect(await cli(['design', 'ls'], guestOnly)).toMatchObject({
       code: 4,
       err: expect.stringContaining('has no sign-in'),
     });
@@ -158,7 +158,7 @@ describe('run', () => {
         },
       ],
     });
-    expect(await cli(['document', 'ls'], io)).toMatchObject({
+    expect(await cli(['design', 'ls'], io)).toMatchObject({
       code: 7,
       err: expect.stringContaining('could not reach https://diagrams.example (fetch failed)'),
     });
@@ -171,18 +171,18 @@ describe('run', () => {
         : undefined;
     const routes = [floor, library, tokens];
     const io = fakeIo({ env: { LIVEDESIGN_TOKEN: TOKEN }, routes });
-    expect((await cli(['api', 'POST', '/documents'], io)).code).toBe(1);
+    expect((await cli(['api', 'POST', '/designs'], io)).code).toBe(1);
     expect(io.err()).toContain('accepts writes from livedesign 99.0.0 or later');
     expect(
       (
         await cli(
-          ['api', 'GET', '/documents'],
+          ['api', 'GET', '/designs'],
           fakeIo({ env: { LIVEDESIGN_TOKEN: TOKEN }, routes }),
         )
       ).code,
     ).toBe(0);
     expect(
-      (await cli(['document', 'ls'], fakeIo({ env: { LIVEDESIGN_TOKEN: TOKEN }, routes }))).code,
+      (await cli(['design', 'ls'], fakeIo({ env: { LIVEDESIGN_TOKEN: TOKEN }, routes }))).code,
     ).toBe(0);
   });
 
@@ -194,10 +194,10 @@ describe('run', () => {
       '[cli] profile default host https://livedesign.app source default',
       '[cli] capabilities miss',
       '[cli] credential env',
-      '[cli] request GET /api/documents 200 0',
+      '[cli] request GET /api/designs 200 0',
       '[cli] request GET /api/teams 200 0',
-      '[cli] address document name 1 matches',
-      `[cli] request GET /api/documents/${DOC} 200 0`,
+      '[cli] address design name 1 matches',
+      `[cli] request GET /api/designs/${DOC} 200 0`,
       '[cli] exit 0',
       '[cli] telemetry skipped env',
     ]);
@@ -226,7 +226,7 @@ describe('a self-hosted profile', () => {
     };
     const io = fakeIo({ env: { LIVEDESIGN_TOKEN: TOKEN }, routes: [selfHost], files });
     for (const argv of [
-      ['document', 'ls'],
+      ['design', 'ls'],
       ['tab', 'ls', 'Auth flow'],
       ['tab', 'lint', 'Auth flow'],
       ['auth', 'status'],
@@ -287,17 +287,17 @@ describe('the local verbs', () => {
   });
 
   it('refuse a bad method, a URL, a whole-tab save and a missing body file', async () => {
-    expect((await cli(['api', 'FETCH', '/documents'])).err).toContain(
+    expect((await cli(['api', 'FETCH', '/designs'])).err).toContain(
       'FETCH is not one of GET, POST, PUT, PATCH, DELETE',
     );
     expect((await cli(['api', 'GET', 'https://evil.example/x'])).err).toContain('is a URL');
     expect((await cli(['api', 'GET', '//evil.example/x'])).err).toContain('is a URL');
-    expect((await cli(['api', 'PUT', '/documents//tabs/main'])).code).toBe(2);
-    expect(await cli(['api', 'PUT', '/documents/d/tabs/t'])).toMatchObject({
+    expect((await cli(['api', 'PUT', '/designs//tabs/main'])).code).toBe(2);
+    expect(await cli(['api', 'PUT', '/designs/d/tabs/t'])).toMatchObject({
       code: 2,
       err: expect.stringContaining('never saves a whole tab'),
     });
-    expect((await cli(['api', 'POST', '/documents', '--body', 'nope.json'])).err).toContain(
+    expect((await cli(['api', 'POST', '/designs', '--body', 'nope.json'])).err).toContain(
       'no file nope.json',
     );
   });

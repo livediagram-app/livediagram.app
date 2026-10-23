@@ -44,10 +44,10 @@ export function seedFolder(
     .run(id, ownerId, teamId, `Folder ${id}`, PLACEMENT_T0, PLACEMENT_T0);
 }
 
-/** Where a document was filed, or undefined when nothing was written. */
+/** Where a design was filed, or undefined when nothing was written. */
 export function storedPlacement(db: SqliteD1, id = 'd1') {
   return db.sql
-    .prepare('SELECT owner_id, folder_id, team_id FROM documents WHERE id = ?')
+    .prepare('SELECT owner_id, folder_id, team_id FROM designs WHERE id = ?')
     .get(id) as { owner_id: string; folder_id: string | null; team_id: string | null } | undefined;
 }
 

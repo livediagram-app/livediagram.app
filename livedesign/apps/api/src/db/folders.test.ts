@@ -2,11 +2,11 @@ import type { DatabaseSync } from 'node:sqlite';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { deleteFolder, moveFolder } from './folders';
-import { trashDocument } from './trash';
+import { trashDesign } from './trash';
 
 // Deleting a folder on a real schema (docs/specs/013-workspace/folders.md "Deleting a folder",
-// blueprint folder-delete.md): its direct documents and subfolders move up to its parent, the space
-// root for a top-level folder, trashed documents included, in one batch.
+// blueprint folder-delete.md): its direct designs and subfolders move up to its parent, the space
+// root for a top-level folder, trashed designs included, in one batch.
 
 const T0 = 1_700_000_000_000;
 let db: SqliteD1;
@@ -31,7 +31,7 @@ function folder(id: string, parent: string | null, team: string | null = null) {
 }
 
 function doc(id: string, folderId: string | null, team: string | null = null) {
-  insert(db.sql, 'documents', {
+  insert(db.sql, 'designs', {
     id,
     owner_id: 'owner',
     name: id,
@@ -51,7 +51,7 @@ const parentOf = (id: string) =>
   ).parent_id;
 const folderOf = (id: string) =>
   (
-    db.sql.prepare('SELECT folder_id FROM documents WHERE id = ?').get(id) as {
+    db.sql.prepare('SELECT folder_id FROM designs WHERE id = ?').get(id) as {
       folder_id: string | null;
     }
   ).folder_id;
@@ -63,7 +63,7 @@ beforeEach(() => {
 });
 
 describe('deleteFolder', () => {
-  it('moves a nested folder’s documents and subfolders to its parent', async () => {
+  it('moves a nested folder’s designs and subfolders to its parent', async () => {
     folder('projects', null);
     folder('workshops', 'projects');
     folder('archive', 'workshops');
@@ -100,11 +100,11 @@ describe('deleteFolder', () => {
     expect(folderOf('old')).toBe('archive');
   });
 
-  it('moves trashed documents up too, so a restore lands in the parent', async () => {
+  it('moves trashed designs up too, so a restore lands in the parent', async () => {
     folder('projects', null);
     folder('workshops', 'projects');
     doc('binned', 'workshops');
-    await trashDocument(db.env, 'binned', T0);
+    await trashDesign(db.env, 'binned', T0);
 
     await deleteFolder(db.env, 'workshops');
 

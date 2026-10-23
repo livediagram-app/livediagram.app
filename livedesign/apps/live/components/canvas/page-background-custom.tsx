@@ -5,11 +5,11 @@
 // (docs/specs/004-interface-design/colour-picker.md), the Angle, and Swap. Each previews while
 // changed and commits once.
 import { useState } from 'react';
-import type { PageFill } from '@livedesign/document';
+import type { PageFill } from '@livedesign/design';
 import { MenuSliderRow } from '@/components/primitives/MenuSliderRow';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardOptions, type ColourGroup } from '@/components/colour/colour-options';
-import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
+import { useDesignColours } from '@/hooks/ui/useDesignColours';
 
 // The gradient Angle slider's step, in degrees.
 const ANGLE_STEP = 5;
@@ -41,7 +41,7 @@ export function CustomGradientEditor({
   // The angle while the slider is dragged; committed once on release.
   const [dragAngle, setDragAngle] = useState<number | null>(null);
   const angle = dragAngle ?? fill.angle;
-  const yours = useDocumentColours();
+  const yours = useDesignColours();
   const well = (end: 'from' | 'to', label: string) => (
     <span className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">
       <ColourSwatchButton

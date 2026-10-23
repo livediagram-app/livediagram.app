@@ -8,7 +8,7 @@ import {
   type BoxedElement,
   type FreehandElement,
   type PathElement,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { combineElements } from './combine/combine';
 import { mergeWithTwins } from './mirror-merge';
 import { isTidyable } from './stroke-tidy';

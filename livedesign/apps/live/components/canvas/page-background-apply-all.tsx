@@ -3,7 +3,7 @@
 // Apply to All at the foot of a page's Background tab (docs/specs/007-editor/pages-mode.md
 // "Copying a background"): the page's background, its fill and its pattern, onto every other page
 // of its kind in one edit. Shown only while there is another page of the kind to reach.
-import { pageKindOf, type Page } from '@livedesign/document';
+import { pageKindOf, type Page } from '@livedesign/design';
 import { Button } from '@livedesign/ui';
 import { kindPages } from '@/hooks/editor/pages-background-copy-edits';
 

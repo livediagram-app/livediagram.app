@@ -7,7 +7,7 @@
 // held emit has to land in the buffer first, and the engine's listeners are
 // ordinary bubble-phase listeners attached on its first track() call, which is
 // usually long before the host's. Both events are dispatched AT their target
-// (window / document), where capture-phase listeners run before bubble-phase
+// (window / design), where capture-phase listeners run before bubble-phase
 // ones regardless of registration order, so listening in the capture phase is
 // what guarantees "emit, then flush" rather than "flush, then emit into a
 // buffer nobody will send".

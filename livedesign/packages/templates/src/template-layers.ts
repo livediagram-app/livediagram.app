@@ -1,5 +1,5 @@
 // Pre-assigned layers for templates whose scaffold stays put while
-// their content moves (docs/specs/006-document/layers.md "Layered templates"). A layered
+// their content moves (docs/specs/006-design/layers.md "Layered templates"). A layered
 // template's builder stamps these ids onto the elements it returns,
 // and `templateCanvasOverrides` ships the matching `Tab.layers` array,
 // so every application path (editor picker, /new, MCP) lands scaffold
@@ -15,7 +15,7 @@
 // scaffold. Scaffold layers ship named but unlocked; locking is one
 // click in the panel.
 
-import type { Layer } from '@livedesign/document';
+import type { Layer } from '@livedesign/design';
 import type { TemplateKind } from './templates';
 
 export const TEMPLATE_SCAFFOLD_LAYER_ID = 'layer:template:scaffold';

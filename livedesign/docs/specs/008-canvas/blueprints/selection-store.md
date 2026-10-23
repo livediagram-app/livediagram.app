@@ -14,7 +14,7 @@ who re-renders when it changes.
 | `apps/live/hooks/ui/useStableEventProps.ts`                | `useStableEventProps`: every `on*` function prop identity-stable                    |
 | `apps/live/hooks/ui/useStableObject.ts`                    | `useStableObject`: a rebuilt data-and-actions object, stable until its data changes |
 | `apps/live/components/primitives/withStableEventProps.tsx` | `withStableEventProps(Inner)`: `memo` plus stable `on…` props                       |
-| `apps/live/app/document/[id]/editor-ui-state.ts`           | Creates the store; `selectedId` / setters come from it                              |
+| `apps/live/app/design/[id]/editor-ui-state.ts`           | Creates the store; `selectedId` / setters come from it                              |
 | `apps/live/components/canvas/EditorCanvasHost.tsx`         | Provides the store; passes the canvas stable event props                            |
 | `apps/live/components/canvas/Canvas.tsx`                   | `memo`; no `selectedId` / `multiSelectedIds` props                                  |
 | `apps/live/components/canvas/CanvasElementsLayer.tsx`      | No selection props; each view reads its own flags                                   |

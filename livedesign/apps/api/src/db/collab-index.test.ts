@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { Element } from '@livedesign/document';
+import type { Element } from '@livedesign/design';
 import type { Env } from '../types';
 import {
   collabIndexCopyStatements,
@@ -146,9 +146,9 @@ describe('readActivity', () => {
     tab_id: 't1',
     element_id: 'e1',
     element_label: 'Checkout',
-    document_id: 'd1',
-    document_name: 'Payments',
-    document_team_id: null,
+    design_id: 'd1',
+    design_name: 'Payments',
+    design_team_id: null,
     tab_name: 'Flow',
   };
   const actionRow = (over: Record<string, unknown>) => ({
@@ -199,8 +199,8 @@ describe('readActivity', () => {
     const { actions } = await readActivity(env, 'me', { limit: 10 });
     expect(actions).toEqual([
       {
-        documentId: 'd1',
-        documentName: 'Payments',
+        designId: 'd1',
+        designName: 'Payments',
         teamId: null,
         via: 'own',
         shareCode: null,
@@ -224,14 +224,14 @@ describe('readActivity', () => {
   it('keeps one row per element, preferring own > team > shared', async () => {
     const { env } = fakeEnv([
       [
-        actionRow({ via: 'shared', share_code: 'abc', document_id: 'd-shared' }),
-        actionRow({ via: 'own', document_id: 'd-own' }),
-        actionRow({ via: 'team', document_id: 'd-team', document_team_id: 'tm' }),
+        actionRow({ via: 'shared', share_code: 'abc', design_id: 'd-shared' }),
+        actionRow({ via: 'own', design_id: 'd-own' }),
+        actionRow({ via: 'team', design_id: 'd-team', design_team_id: 'tm' }),
       ],
       [],
     ]);
     const { actions } = await readActivity(env, 'me', { limit: 10 });
-    expect(actions.map((a) => a.documentId)).toEqual(['d-own']);
+    expect(actions.map((a) => a.designId)).toEqual(['d-own']);
   });
 
   it('drops a shared row whose link has lapsed (nowhere to open it)', async () => {
@@ -254,7 +254,7 @@ describe('readActivity', () => {
           ...place,
           via: 'team',
           share_code: null,
-          document_team_id: 'tm',
+          design_team_id: 'tm',
           comment_count: 3,
           latest_text: 'ok',
           latest_author_name: 'Priya',
@@ -262,7 +262,7 @@ describe('readActivity', () => {
           first_at: 1,
           latest_at: 9,
           you_commented: 1,
-          on_your_document: 0,
+          on_your_design: 0,
           mentions_you: 0,
         },
       ],
@@ -270,8 +270,8 @@ describe('readActivity', () => {
     const { threads } = await readActivity(env, 'me', { limit: 10 });
     expect(threads).toEqual([
       {
-        documentId: 'd1',
-        documentName: 'Payments',
+        designId: 'd1',
+        designName: 'Payments',
         teamId: 'tm',
         via: 'team',
         shareCode: null,
@@ -283,7 +283,7 @@ describe('readActivity', () => {
         latest: { text: 'ok', authorName: 'Priya', authorColor: '#p', at: 9 },
         firstAt: 1,
         youCommented: true,
-        onYourDocument: false,
+        onYourDesign: false,
         mentionsYou: false,
       },
     ]);

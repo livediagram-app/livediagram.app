@@ -4,29 +4,29 @@
 //   GET /api/share/<code>/image.png  the share card, a 1200 x 630 PNG of the link's live-image drawing.
 //
 // Both answer exactly where the live image (GET /api/share/<code>/image.svg) answers, so a preview never says more
-// about a link than its image already does: an unknown, revoked or expired code, a trashed document, a document with a
+// about a link than its image already does: an unknown, revoked or expired code, a trashed design, a design with a
 // share password are all 404.
 
 import { BRAND_CARD_PATH, type SharePreviewResponse } from '@livedesign/api-schema';
 import {
-  getDocumentSharePassword,
-  getDocumentThumbMeta,
+  getDesignSharePassword,
+  getDesignThumbMeta,
   getShareLink,
   shareCardKey,
-  type DocumentThumbMeta,
+  type DesignThumbMeta,
 } from '../db';
-import { documentImageSvg } from '../document-image';
+import { designImageSvg } from '../design-image';
 import { json, notFound, pngImage } from '../responses';
 import { shareCardPng } from '../share-card-png';
 import type { RouteContext } from './context';
 
-// A link's card changes only when its document is saved, and a chat app keeps its own copy for far longer, so a
+// A link's card changes only when its design is saved, and a chat app keeps its own copy for far longer, so a
 // few minutes fresh and an hour stale costs nothing in accuracy.
 export const SHARE_CARD_CACHE = 'public, max-age=300, stale-while-revalidate=3600';
-// The brand card stands in for a document with nothing to draw yet; short, so its first drawing shows soon after.
+// The brand card stands in for a design with nothing to draw yet; short, so its first drawing shows soon after.
 export const BRAND_CARD_REDIRECT_CACHE = 'public, max-age=300';
 
-type PreviewSubject = { doc: DocumentThumbMeta; tabId: string | null };
+type PreviewSubject = { doc: DesignThumbMeta; tabId: string | null };
 
 // The one gate both doors share: the live image's rules, in the live image's order.
 async function previewSubject(
@@ -35,10 +35,10 @@ async function previewSubject(
 ): Promise<PreviewSubject | null> {
   const link = await getShareLink(env, code);
   if (!link) return null;
-  // A trashed document reads as missing here.
-  const doc = await getDocumentThumbMeta(env, link.documentId);
+  // A trashed design reads as missing here.
+  const doc = await getDesignThumbMeta(env, link.designId);
   if (!doc) return null;
-  if (await getDocumentSharePassword(env, doc.id)) return null;
+  if (await getDesignSharePassword(env, doc.id)) return null;
   return { doc, tabId: link.tabId };
 }
 
@@ -82,7 +82,7 @@ async function shareCardImage(ctx: RouteContext, code: string): Promise<Response
   const subject = await previewSubject(env, code);
   if (!subject) return notFound();
   const { doc, tabId } = subject;
-  // A tab-scoped link's card is drawn per request, as its tab's live image is: one object per document holds the
+  // A tab-scoped link's card is drawn per request, as its tab's live image is: one object per design holds the
   // first tab only.
   const key = tabId !== null ? null : shareCardKey(doc.id);
   const images = env.IMAGES;
@@ -94,17 +94,17 @@ async function shareCardImage(ctx: RouteContext, code: string): Promise<Response
   }
   // Stamped before the drawing is read, so a save landing mid-render leaves the stored card stale, never fresh.
   const drawnAt = Date.now();
-  const svg = await documentImageSvg(env, doc, tabId, { defer: ctx.waitUntil });
+  const svg = await designImageSvg(env, doc, tabId, { defer: ctx.waitUntil });
   if (svg == null) return brandCard(url);
   let png: Uint8Array | null;
   try {
     png = await shareCardPng(svg);
   } catch (err) {
-    console.warn('[share-card] render failed', { documentId: doc.id, error: String(err) });
+    console.warn('[share-card] render failed', { designId: doc.id, error: String(err) });
     return brandCard(url);
   }
   if (png === null) {
-    console.warn('[share-card] drawing has no sized root', { documentId: doc.id });
+    console.warn('[share-card] drawing has no sized root', { designId: doc.id });
     return brandCard(url);
   }
   if (key && images) {
@@ -115,7 +115,7 @@ async function shareCardImage(ctx: RouteContext, code: string): Promise<Response
       })
       .catch((err: unknown) => {
         // Best effort: the card is still served; the next preview draws it again.
-        console.warn('[share-card] cache write failed', { documentId: doc.id, error: String(err) });
+        console.warn('[share-card] cache write failed', { designId: doc.id, error: String(err) });
       });
     ctx.waitUntil?.(write);
   }

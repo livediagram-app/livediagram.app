@@ -7,7 +7,7 @@
 
 // Ops that carry no tab and say nothing about one, which a scoped session
 // still receives: the worker's share-link and Trash notices.
-const TAB_LESS_DELIVERED = new Set(['share-revoked', 'share-rescoped', 'document-trashed']);
+const TAB_LESS_DELIVERED = new Set(['share-revoked', 'share-rescoped', 'design-trashed']);
 
 // The tab-less ops a scoped session may itself send.
 // A follow (docs/specs/012-collaboration/follow-me-viewport.md) names a person, not a tab, so a scoped visitor may follow too.
@@ -34,7 +34,7 @@ export function opForScope(op: unknown, tabScope: string | null): unknown {
   if (tabScope === null) return op;
   const o = asOp(op);
   if (!o) return null;
-  if (o.kind === 'document-meta') return redactDocumentMeta(o, tabScope);
+  if (o.kind === 'design-meta') return redactDesignMeta(o, tabScope);
   const mine = onScope(o, tabScope);
   if (mine !== undefined) return mine ? op : null;
   return typeof o.kind === 'string' && TAB_LESS_DELIVERED.has(o.kind) ? op : null;
@@ -45,16 +45,16 @@ export function opForScope(op: unknown, tabScope: string | null): unknown {
 export function scopedSenderMayRelay(op: unknown, tabScope: string | null): boolean {
   if (tabScope === null) return true;
   const o = asOp(op);
-  if (!o || o.kind === 'document-meta') return false;
+  if (!o || o.kind === 'design-meta') return false;
   const mine = onScope(o, tabScope);
   if (mine !== undefined) return mine;
   return typeof o.kind === 'string' && TAB_LESS_SENDABLE.has(o.kind);
 }
 
-// document-meta carries every tab's name and folder. Other tabs keep their id
-// and position and are marked out of scope, exactly like the REST document
-// (redactDocumentForScope).
-function redactDocumentMeta(o: LooseOp, tabScope: string): unknown {
+// design-meta carries every tab's name and folder. Other tabs keep their id
+// and position and are marked out of scope, exactly like the REST design
+// (redactDesignForScope).
+function redactDesignMeta(o: LooseOp, tabScope: string): unknown {
   if (!Array.isArray(o.tabs)) return null;
   return {
     ...o,

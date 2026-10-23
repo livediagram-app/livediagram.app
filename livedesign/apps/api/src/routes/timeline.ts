@@ -31,7 +31,7 @@ import {
   markScopeSeen,
   readTimeline,
 } from '../db/timeline';
-import { getDocument, getMembership } from '../db';
+import { getDesign, getMembership } from '../db';
 import { backfillUserScope } from '../timeline';
 import { isNewVisit } from '../timeline/seen';
 import { badRequest, forbidden, json, missingAuth, noContent, notFound } from '../responses';
@@ -102,12 +102,12 @@ export async function handleTimeline(ctx: RouteContext): Promise<Response> {
     }
 
     // An owner id is a credential (a guest's X-Owner-Id is their whole
-    // workspace), and a document feed is readable by anyone holding a share
-    // code. So a document scope only names the reader themself; every other
+    // workspace), and a design feed is readable by anyone holding a share
+    // code. So a design scope only names the reader themself; every other
     // actor goes out as null, and the renderers fall back to the snapshot's
     // display name. The client only ever compares actorId with its own id.
     const items =
-      scope.scopeType === 'document'
+      scope.scopeType === 'design'
         ? page.items.map((e) => (e.actorId === ownerId ? e : { ...e, actorId: null }))
         : page.items;
 
@@ -203,7 +203,7 @@ function resolveScope(url: URL, ownerId: string): TimelineScopeRef | null {
 // Who may read which feed.
 //
 // This is the security boundary of the whole surface: a feed carries
-// document names and comment text, so getting it wrong hands one owner
+// design names and comment text, so getting it wrong hands one owner
 // another's work. Each scope type is allowed explicitly and anything
 // unrecognised is refused, so a scope type added later is inert until
 // somebody writes its rule here.
@@ -213,12 +213,12 @@ async function canReadScope(
   ownerId: string,
 ): Promise<boolean> {
   if (scope.scopeType === 'user') return scope.scopeId === ownerId;
-  if (scope.scopeType === 'document') {
-    // Exactly the document's own read gate: its owner, a joined member of
-    // its team, or a valid share-code visitor. A missing document is a
+  if (scope.scopeType === 'design') {
+    // Exactly the design's own read gate: its owner, a joined member of
+    // its team, or a valid share-code visitor. A missing design is a
     // refusal rather than a 404, so a guessed id can't be probed for
     // existence through this endpoint either.
-    const liveDoc = await getDocument(ctx.env, scope.scopeId);
+    const liveDoc = await getDesign(ctx.env, scope.scopeId);
     if (!liveDoc) return false;
     return gateRead(ctx, scope.scopeId, liveDoc.ownerId, liveDoc.teamId);
   }

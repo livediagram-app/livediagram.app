@@ -7,7 +7,7 @@ import {
   type ConceptRow,
   type LayoutRect,
   type WebRows,
-} from '@livedesign/document';
+} from '@livedesign/design';
 import { FLOATING_CONTROL_CLASS } from '@/components/chrome/floating-controls';
 import { rectStyle } from '@/components/canvas/web/web-face-props';
 import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';

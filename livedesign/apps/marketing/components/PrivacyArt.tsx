@@ -72,7 +72,7 @@ export function NoTrackersArt() {
   );
 }
 
-/* Your data is yours: a folder/document label arcs from a generic
+/* Your data is yours: a folder/design label arcs from a generic
    server icon back into the user's avatar — the "comes home" beat. */
 export function DataIsYoursArt() {
   return (
@@ -86,7 +86,7 @@ export function DataIsYoursArt() {
           <rect x="20" y="42" width="28" height="4" rx="1" fill={SLATE} />
           <rect x="20" y="50" width="28" height="4" rx="1" fill={SLATE} />
         </g>
-        {/* A document label travelling along the arc */}
+        {/* A design label travelling along the arc */}
         <path
           id="arc-path"
           d="M54 45 Q 110 -10 165 45"
@@ -97,7 +97,7 @@ export function DataIsYoursArt() {
         <g className="fa-fade" style={{ animationDuration: '4s' }}>
           <rect x="100" y="14" width="40" height="14" rx="3" fill={SKY} />
           <text x="120" y="24" textAnchor="middle" fontSize="9" fontWeight="600" fill={ON_SKY}>
-            document
+            design
           </text>
         </g>
         {/* User avatar on the right */}
@@ -232,13 +232,13 @@ export function EncryptedArt() {
   );
 }
 
-/* Private by default: a document tile gated by a small lock; an
+/* Private by default: a design tile gated by a small lock; an
    "Open" button to the side toggles on/off with the fa-pulse beat. */
 export function PrivateByDefaultArt() {
   return (
     <PrivacyFrame>
       <svg viewBox="0 0 220 90" className="absolute inset-0 h-full w-full">
-        {/* Private document */}
+        {/* Private design */}
         <rect
           x="20"
           y="20"

@@ -18,8 +18,8 @@ type Seen = { method: string; url: string; headers: Headers; body: unknown };
 
 const SESSION: WorkbenchSessionResponse = {
   session: `lvw_${'a'.repeat(43)}`,
-  scope: 'document',
-  documentId: 'doc-1',
+  scope: 'design',
+  designId: 'doc-1',
   folderId: null,
   tabId: null,
   origin: 'https://127.0.0.1:5175',
@@ -96,14 +96,14 @@ describe('apiRedeemWorkbenchTicket', () => {
     expect(await apiRedeemWorkbenchTicket('t'.repeat(22))).toMatchObject({ reason: null });
   });
 
-  it('reads a missing or trashed document as refused', async () => {
+  it('reads a missing or trashed design as refused', async () => {
     answer = reply(404, { error: 'not_found' });
     expect(await apiRedeemWorkbenchTicket('t'.repeat(22))).toEqual({
       kind: 'refused',
       status: 404,
       reason: null,
     });
-    answer = reply(410, { error: 'document_trashed' });
+    answer = reply(410, { error: 'design_trashed' });
     expect((await apiRedeemWorkbenchTicket('t'.repeat(22))).kind).toBe('refused');
   });
 

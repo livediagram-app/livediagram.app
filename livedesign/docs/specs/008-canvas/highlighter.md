@@ -14,7 +14,7 @@ A highlighter stroke **is a `FreehandElement`** with one optional field:
 pen?: 'highlighter'; // absent = ordinary pencil sketch
 ```
 
-No new element type. The stroke reuses the freehand pipeline end to end: normalised `points`, RDP simplification, bbox, history, sync, layers, eraser, export. `closed` is always `false` for highlighter strokes (no auto-close, no fill). Wire validation (`packages/document/src/validate.ts`) accepts the optional literal. `penWidth?: number` (wire-validated 1..100) carries the stroke's width when it is not the default 14 px (Thin or Bold, an earlier Strength setting, imported highlighter ink).
+No new element type. The stroke reuses the freehand pipeline end to end: normalised `points`, RDP simplification, bbox, history, sync, layers, eraser, export. `closed` is always `false` for highlighter strokes (no auto-close, no fill). Wire validation (`packages/design/src/validate.ts`) accepts the optional literal. `penWidth?: number` (wire-validated 1..100) carries the stroke's width when it is not the default 14 px (Thin or Bold, an earlier Strength setting, imported highlighter ink).
 
 ## Visual treatment
 
@@ -56,7 +56,7 @@ The current colour and width are **session-local editor state**, not a persisted
 
 ## Not a selection mode
 
-`'highlighter'` is not on the editor's `CanvasTool` union, not in the tool dropdown, and not a `SelectionMode` (`packages/document/src/selection-mode.ts`).
+`'highlighter'` is not on the editor's `CanvasTool` union, not in the tool dropdown, and not a `SelectionMode` (`packages/design/src/selection-mode.ts`).
 
 ## Popular
 

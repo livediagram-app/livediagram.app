@@ -3,7 +3,7 @@ import { ButtonContent, buttonClassName } from './Button';
 
 // Start Blank on the public sites (docs/specs/019-marketing/marketing-site.md "Start Blank"): a plain link to the
 // wizard, never a menu of blanks. The wizard still asks what the visitor is making, and `start=blank` opens the
-// chosen mode's blank with its start screen closed (docs/specs/007-editor/new-document-route.md "Start Blank after
+// chosen mode's blank with its start screen closed (docs/specs/007-editor/new-design-route.md "Start Blank after
 // a mode"), so whoever asked for a blank is not offered templates again.
 export const START_BLANK_HREF = '/new?start=blank';
 

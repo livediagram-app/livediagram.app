@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Element, Tab } from '@livedesign/document';
+import type { Element, Tab } from '@livedesign/design';
 import { useNudgeSelection } from './useNudgeSelection';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

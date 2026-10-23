@@ -9,7 +9,7 @@
 // page panel's Layouts tab and a phone's sheet.
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { lucideDices } from '@livedesign/icons/lucide';
-import { pageDeviceClass, pageKindOf, type LaidOutPage } from '@livedesign/document';
+import { pageDeviceClass, pageKindOf, type LaidOutPage } from '@livedesign/design';
 import {
   layoutCatalogueFor,
   warmLayoutPlaceholders,

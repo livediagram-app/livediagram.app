@@ -16,7 +16,7 @@ Status: shipped
 2. **Three steps** (`#how-it-works`), one row: **Add livedesign** (paste the address into your tool), **Approve** (a livedesign page opens: sign in or create a free account, check where access goes, Connect), **Ask** (request a diagram, board, sheet or deck; it lands in your account).
 3. **Pick your tool** (`#connect`): a tab list of clients, grouped Chat apps, Coding agents, Editors, Anything else. Selecting one shows its steps. The choice is mirrored into the URL hash (`/ai#cursor`) with `history.replaceState`, and a hash on arrival selects that client, so a link can open straight onto one tool. Every panel is in the HTML (inactive ones `hidden`), so the instructions are indexable and work before hydration (the first client shows until then).
 4. **Try it** (`#prompts`): starter prompts, each a card with a Copy button, each mapped to a shipped MCP tool.
-5. **What it can do**: a grid of the MCP's capabilities in plain words (logos and wireframes, templates, find and read with a picture, share links, live changes on an open document with Undo).
+5. **What it can do**: a grid of the MCP's capabilities in plain words (logos and wireframes, templates, find and read with a picture, share links, live changes on an open design with Undo).
 6. **In your control**: account needed (free), the approval page shows where access goes, Read-only access, revoke from Settings › Account › API Tokens, six-month tokens, livedesign runs no AI model of its own.
 7. **If it doesn't connect**: the three failure lines from the help article (expired request, token limit, keeps asking to sign in) plus self-hosting (use your own MCP host), and a link to the full help article.
 
@@ -46,7 +46,7 @@ Third-party menu names drift, so a client whose menus are known to move (ChatGPT
 
 ## Share roles
 
-The page is public marketing, outside any document, so Editor, Participant and Viewer do not apply. What the connected AI may do is the token's business ([MCP server §4.11](../015-api/mcp-server.md#411-read-only-tokens-the-one-scope)).
+The page is public marketing, outside any design, so Editor, Participant and Viewer do not apply. What the connected AI may do is the token's business ([MCP server §4.11](../015-api/mcp-server.md#411-read-only-tokens-the-one-scope)).
 
 ## Funnel and telemetry
 
