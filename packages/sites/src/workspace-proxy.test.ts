@@ -43,6 +43,8 @@ describe('which paths go to liveworkspace', () => {
     }
     expect(EXPLORER_ON_APP_ORIGIN.liveplanner).toBe(true);
     expect(EXPLORER_ON_APP_ORIGIN.livedesign).toBe(true);
+    expect(EXPLORER_ON_APP_ORIGIN.livedocuments).toBe(true);
+    expect(EXPLORER_ON_APP_ORIGIN.livediagram).toBe(false);
   });
 
   it('answers null for a path it does not own, so the router carries on', () => {

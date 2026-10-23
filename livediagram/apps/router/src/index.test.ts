@@ -397,3 +397,20 @@ describe('the caching rules', () => {
     );
   });
 });
+
+describe("liveworkspace's Explorer under this address, switched off (@liveworkspace/sites/workspace-proxy)", () => {
+  it("keeps /explorer with livediagram's own editor, and fetches nothing from liveworkspace, until its switch is on", async () => {
+    const fetchMock = vi.fn((_req: Request) => Promise.resolve(new Response('ok')));
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      const { env, live, api } = makeEnv();
+      await dispatch('/explorer/recent', env);
+      await dispatch('/api/workspace/account/people', env);
+      expect(live.urls).toEqual(['https://livediagram.app/explorer/recent']);
+      expect(api.urls).toEqual(['https://livediagram.app/api/workspace/account/people']);
+      expect(fetchMock).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});

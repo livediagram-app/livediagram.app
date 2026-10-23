@@ -22,7 +22,7 @@ export const WORKSPACE_PROXY_HEADER = 'X-Liveworkspace-Proxy';
 export const EXPLORER_ON_APP_ORIGIN: Record<AppName, boolean> = {
   livediagram: false,
   liveplanner: true,
-  livedocuments: false,
+  livedocuments: true,
   livedesign: true,
 };
 

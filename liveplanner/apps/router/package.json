@@ -15,6 +15,7 @@
     "clean": "rm -rf dist .wrangler node_modules .turbo"
   },
   "dependencies": {
+    "@liveworkspace/sites": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*"
   },
   "devDependencies": {

@@ -6,6 +6,7 @@
 import { applyCachePolicy } from './cache-policy';
 import { LIVE_ROUTE_SEGMENTS } from '@livedesign/api-schema';
 import { TELEMETRY_DASHBOARD_URL } from '@liveworkspace/telemetry';
+import { routeToWorkspace } from '@liveworkspace/sites/workspace-proxy';
 
 export interface Env {
   // Production service bindings (absent in the `local` env).
@@ -22,6 +23,10 @@ export interface Env {
   // response noindex so the public staging mirror can't compete with
   // production in search results. Absent in production and in local dev.
   DEPLOY_ENV?: string;
+  // liveworkspace.app, whose pages this router serves under this app's address while the app's switch is on
+  // (liveworkspace/docs/one-explorer.md "The Explorer on each app's address"). Unset means production's; staging
+  // and local dev name their own.
+  WORKSPACE_ORIGIN?: string;
   // The central telemetry dashboard /telemetry redirects to (liveworkspace/docs/telemetry.md): unset means
   // production's, staging and local dev name their own.
   TELEMETRY_DASHBOARD_URL?: string;
@@ -199,6 +204,10 @@ export default {
 // has a single return value to decorate instead of nine.
 async function route(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
+  // liveworkspace's Explorer under this address, while livedesign's switch is on (@liveworkspace/sites/workspace-proxy):
+  // `/explorer/*` and the account reads it makes, fetched from liveworkspace.app with the address bar unchanged.
+  const workspace = routeToWorkspace(request, { app: 'livedesign', origin: env.WORKSPACE_ORIGIN });
+  if (workspace) return workspace;
   // The Explorer's own calls (liveworkspace/docs/one-explorer-contracts.md): the index answers them, so the editor
   // reaches it on its own origin with no CORS preflight. Path and query kept, Authorization passed through.
   if (hasPrefix(url.pathname, INDEX_PATH)) {

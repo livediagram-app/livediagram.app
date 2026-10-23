@@ -6,6 +6,7 @@
 import { applyCachePolicy } from './cache-policy';
 import { legacyEditorRedirect, legacyHelpRedirect } from './legacy-editor-route';
 import { LIVE_ROUTE_SEGMENTS } from '@livediagram/api-schema';
+import { routeToWorkspace } from '@liveworkspace/sites/workspace-proxy';
 
 export interface Env {
   // Production service bindings (absent in the `local` env).
@@ -27,6 +28,10 @@ export interface Env {
   // The central index (liveworkspace/docs/one-explorer.md): `/api/index/*` goes there, not to the api. Unset means
   // production's.
   INDEX_ORIGIN?: string;
+  // liveworkspace.app, whose pages this router serves under this app's address while the app's switch is on
+  // (liveworkspace/docs/one-explorer.md "The Explorer on each app's address"). Unset means production's; staging
+  // and local dev name their own.
+  WORKSPACE_ORIGIN?: string;
 }
 
 const LIVE_PATH = '/live';
@@ -211,6 +216,10 @@ export default {
 // has a single return value to decorate instead of nine.
 async function route(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
+  // liveworkspace's Explorer under this address, while livediagram's switch is on (@liveworkspace/sites/workspace-proxy):
+  // `/explorer/*` and the account reads it makes, fetched from liveworkspace.app with the address bar unchanged.
+  const workspace = routeToWorkspace(request, { app: 'livediagram', origin: env.WORKSPACE_ORIGIN });
+  if (workspace) return workspace;
   // The Explorer's own calls (liveworkspace/docs/one-explorer-contracts.md): the index answers them.
   if (hasPrefix(url.pathname, INDEX_PATH)) {
     return forwardToIndex(request, url, env.INDEX_ORIGIN || PRODUCTION_INDEX_ORIGIN);

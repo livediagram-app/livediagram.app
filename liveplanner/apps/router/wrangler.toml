@@ -33,6 +33,9 @@ service = "liveplanner-help"
 # Tells the router it fronts `next dev`, whose chunks are not content-hashed, so their own
 # no-cache header passes through (docs/specs/016-platform/stale-builds.md "Caching rules").
 DEPLOY_ENV = "local"
+# liveworkspace.app, run locally by liveworkspace/apps/site: its Explorer is served at /explorer while the app's
+# switch is on (liveworkspace/docs/one-explorer.md); production's (https://liveworkspace.app) needs no var.
+WORKSPACE_ORIGIN = "http://localhost:3000"
 MARKETING_ORIGIN = "http://127.0.0.1:3201"
 EDITOR_ORIGIN = "http://127.0.0.1:3202"
 API_ORIGIN = "http://127.0.0.1:8887"
@@ -86,5 +89,6 @@ service = "liveplanner-help-staging"
 # production's router has no DEPLOY_ENV, so the header is impossible there.
 [env.staging.vars]
 DEPLOY_ENV = "staging"
+WORKSPACE_ORIGIN = "https://staging.liveworkspace.app"
 TELEMETRY_DASHBOARD_URL = "https://staging.liveworkspace.app/telemetry"
 INDEX_ORIGIN = "https://staging.liveworkspace.app"
