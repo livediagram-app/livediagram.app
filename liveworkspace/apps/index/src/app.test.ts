@@ -6,10 +6,12 @@ import type {
   InboxResponse,
   Item,
 } from '@liveworkspace/index-client';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import worker from './index';
 import { sweep } from './purge';
-import { body, call, h, makeItem, person, useHarness } from './test-support';
+import { NOTICE_GIVE_UP_MS, NOTICE_RETRY_AFTER_MS } from './person-notices';
+import { drainPersonMerges } from './person-merges';
+import { body, call, h, makeItem, person, settle, useHarness } from './test-support';
 
 useHarness();
 
@@ -330,5 +332,48 @@ describe('the daily purge', () => {
       `DELETE https://liveplanner.app/api/internal/items/${old.id}`,
       `DELETE https://liveplanner.app/api/internal/items/${old.id}`,
     ]);
+  });
+});
+
+describe('telling the apps a guest became an account', () => {
+  const merge = (payload: unknown) =>
+    call('/internal/merge', { method: 'POST', auth: 'merge-key', body: payload });
+  const pending = () =>
+    h.db.sql.prepare('SELECT app, user_id FROM person_app_merges ORDER BY app').all() as {
+      app: string;
+      user_id: string;
+    }[];
+
+  it('asks every app to move the guest to the account, at once, and forgets each that confirms', async () => {
+    h.appAnswer = (c) =>
+      new Response(null, { status: c.url.startsWith('https://livediagram') ? 503 : 200 });
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect((await merge({ guestId: 'guest_g9', userId: 'user_u9' })).status).toBe(200);
+    await settle();
+    const told = h.appCalls.filter((c) => c.url.includes('/api/internal/people/guest_g9/merge'));
+    expect(told.length).toBeGreaterThan(0);
+    expect(told.every((c) => c.method === 'POST')).toBe(true);
+    expect(told[0]!.body).toEqual({ into: 'user_u9' });
+    // What the app did not take waits for the next run, an hour on.
+    const left = pending();
+    expect(left.every((r) => r.user_id === 'user_u9')).toBe(true);
+    h.appAnswer = () => new Response(null, { status: 200 });
+    h.appCalls = [];
+    await drainPersonMerges(h.db.env, Date.now() + 1000);
+    expect(h.appCalls).toHaveLength(0);
+    await drainPersonMerges(h.db.env, Date.now() + NOTICE_RETRY_AFTER_MS + 1);
+    expect(pending()).toEqual([]);
+  });
+
+  it('gives up on an app after a week', async () => {
+    h.db.sql
+      .prepare(
+        `INSERT INTO person_app_merges (guest_id, user_id, app, created_at) VALUES ('guest_old', 'user_x', 'livediagram', 1)`,
+      )
+      .run();
+    h.appAnswer = () => new Response(null, { status: 503 });
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    await drainPersonMerges(h.db.env, 1 + NOTICE_GIVE_UP_MS + 1);
+    expect(pending()).toEqual([]);
   });
 });

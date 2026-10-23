@@ -1,5 +1,6 @@
 // A guest becoming an account (liveworkspace/docs/one-explorer-contracts.md "Becoming an account"):
-// accounts calls this with its own key, and everything the guest had moves to the account in one batch.
+// accounts calls this with its own key, and everything the guest had moves to the account in one batch. Each
+// app is then told (person-merges.ts), so it moves what it keeps for the guest beside their items.
 // Where the account already has the same thing (a tag of the same name, a favourite, a default), the
 // account's stays. Running it again finds nothing left to move.
 
@@ -7,8 +8,13 @@ import { isMergeCaller } from './auth';
 import { isId } from './codec';
 import type { Env } from './env';
 import { badRequest, json, notFound, readObject, unauthorized } from './http';
+import { drainPersonMerges, recordPersonMerges } from './person-merges';
 
-export async function handleMerge(request: Request, env: Env): Promise<Response> {
+export async function handleMerge(
+  request: Request,
+  env: Env,
+  waitUntil: (promise: Promise<unknown>) => void = (p) => void p,
+): Promise<Response> {
   if (request.method !== 'POST') return notFound();
   if (!(await isMergeCaller(request, env))) return unauthorized();
   const body = await readObject(request);
@@ -26,6 +32,8 @@ export async function handleMerge(request: Request, env: Env): Promise<Response>
   const db = env.INDEX_DB;
   const personal = `p:${user}`;
   const results = await db.batch([
+    // First, so the apps hear of it however the rest goes.
+    recordPersonMerges(db, guest, user, Date.now()),
     db
       .prepare(
         `UPDATE items SET owner_id = ?, scope = CASE WHEN team_id IS NULL THEN ? ELSE scope END
@@ -135,7 +143,12 @@ export async function handleMerge(request: Request, env: Env): Promise<Response>
       .bind(user, guest),
     db.prepare('DELETE FROM collab_form_reads WHERE person_id = ?').bind(guest),
   ]);
-  const items = (results[0] as D1Result).meta.changes ?? 0;
+  const items = (results[1] as D1Result).meta.changes ?? 0;
+  waitUntil(
+    drainPersonMerges(env).catch((err: unknown) => {
+      console.warn('[index] person merges failed', { error: String(err) });
+    }),
+  );
   console.log('[index] merged a guest into an account', { items });
   return json({ items });
 }

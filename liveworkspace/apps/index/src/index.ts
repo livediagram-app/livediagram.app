@@ -15,6 +15,7 @@ import { fail, json, notFound, unauthorized } from './http';
 import { handleInbox } from './inbox';
 import { createItem, handleItem, handleItemList, handleTrash } from './items';
 import { handleMerge } from './merge';
+import { drainPersonMerges } from './person-merges';
 import {
   handleFavourites,
   handlePlacementDefaults,
@@ -98,7 +99,7 @@ const worker = {
     // Server to server: an app's pushes, and accounts' merge. No person, no browser.
     if (segments[0] === 'app') return handleApp(request, env, segments);
     if (segments[0] === 'internal' && segments[1] === 'merge' && segments.length === 2) {
-      return handleMerge(request, env);
+      return handleMerge(request, env, (promise) => ctx.waitUntil(promise));
     }
     if (segments[0] === 'internal' && segments[1] === 'purge-person' && segments.length === 2) {
       return handlePersonPurge(request, env, (promise) => ctx.waitUntil(promise));
@@ -120,13 +121,14 @@ const worker = {
     });
   },
 
-  // Every 15 minutes: carry on closed accounts' purges and tell the apps what was purged. Once a day:
-  // purge items 30 days in the Trash, and retry apps that missed a purge.
+  // Every 15 minutes: carry on closed accounts' purges, and tell the apps what was purged and which guests
+  // became accounts. Once a day: purge items 30 days in the Trash, and retry apps that missed a purge.
   async scheduled(event: ScheduledController, env: Env): Promise<void> {
     if (!indexEnabled(env)) return;
     if (event.cron === FREQUENT_CRON) {
       const done = await continuePurges(env);
-      console.log('[index] purges', JSON.stringify(done));
+      const merges = await drainPersonMerges(env);
+      console.log('[index] purges', JSON.stringify({ ...done, merges }));
       return;
     }
     const { purged, confirmed } = await sweep(env);

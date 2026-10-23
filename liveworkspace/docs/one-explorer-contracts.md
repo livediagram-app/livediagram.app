@@ -60,7 +60,9 @@ resource, `sub: guest_<uuid>`, `kind: "guest"`, valid for a year. A newer one re
 **Becoming an account.** When someone signs in or signs up on liveworkspace.app with an `lw_guest`
 cookie, accounts tells the index (`POST /internal/merge`, accounts' own key), which moves the guest's
 items, folders, tags, favourites, opens and placement defaults to the account in one batch, and clears the
-cookie. A link visitor with no identity needs no redirect: a share code is enough for a grant.
+cookie. The index then tells each app, `POST /api/internal/people/:guest/merge {into}` (at once, and from its
+frequent cron until the app confirms, for up to a week), so the app moves what it keeps for the guest beside
+their items, such as their images or its own per-person store (`personMerged` in `@liveworkspace/index-app`). A link visitor with no identity needs no redirect: a share code is enough for a grant.
 
 A guest's things stay until the guest deletes them, or becomes an account; nothing expires on its own.
 
