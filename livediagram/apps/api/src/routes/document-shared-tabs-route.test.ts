@@ -44,20 +44,8 @@ function get(db: SqliteD1, opts: Parameters<typeof makeTestRouteContext>[2] = {}
 }
 
 describe('GET /api/documents/:id/shared-tabs', () => {
-  it('counts the tabs also in other documents, and those documents', async () => {
-    const db = sqliteD1();
-    for (const id of ['A', 'B', 'C']) liveDoc(db.sql, id);
-    tabIn(db.sql, 'glossary', 'A', 'B');
-    tabIn(db.sql, 'timeline', 'A', 'B', 'C');
-    tabIn(db.sql, 'solo', 'A');
-    tabIn(db.sql, 'elsewhere', 'B', 'C');
-
-    const res = await get(db, { owner: 'owner' });
-
-    expect(res?.status).toBe(200);
-    expect(await res.json()).toEqual({ sharedTabs: { tabs: 2, documents: 2 } });
-  });
-
+  // Each document holds its own tabs (docs/specs/015-api/api.md "Storage"): nothing is ever shared, so the answer is
+  // always none.
   it('answers zero for a document that shares nothing', async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'A');

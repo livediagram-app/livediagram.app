@@ -4,7 +4,6 @@ import {
   toLegacyResponse,
 } from './legacy-documents-alias';
 import { flushMediaRefs } from './media';
-import { runTabStatsBackfill } from './tab-stats-backfill';
 import { accountCredentials, getAccountIdentity } from './auth/accounts';
 import { AccountsUnavailable, sweepRevokedTokens, type ResolvedApiToken } from './db/api-tokens';
 import { catchUpTeams, syncTeams } from './db/team-sync';
@@ -12,10 +11,8 @@ import { endWorkbenchAccess } from './workbench-end';
 import { handleAuth } from './routes/auth';
 import { NOTIFY_EMAIL_DEDUPE_MS } from './email/notifications';
 import { runTimelineExpirySweep } from './timeline';
-import { runImageRetention } from './image-refs/retention';
 import {
   deleteOldEvents,
-  deleteOldChangesets,
   deleteOldNotifyEmailClaims,
   deleteOldTimelineEvents,
   purgeExpiredTrash,
@@ -24,7 +21,6 @@ import {
 } from './db';
 import {
   apiRouteLabel,
-  CHANGESET_RETENTION_MS,
   bearerTokenOf,
   errorTypeToken,
   isAccountIdShape,
@@ -40,7 +36,8 @@ import { verifyOwnerId } from './auth/owner-signature';
 import { guestSignatureEnforced, OWNER_SCOPED_SEGMENTS } from './auth/guest-rest';
 import { handleTokens } from './routes/tokens';
 import { handleOauthExchange } from './routes/oauth';
-import { DocumentRoom } from './document-room';
+import { DocumentRoom } from './document-room/document-room';
+import { handleInternalItems } from './routes/internal-items';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
 import { deleteOldDocumentOpens } from './db/document-opens';
 import { reportServerEvent } from './server-telemetry';
@@ -121,6 +118,11 @@ async function routeApiRequest(
   if (segments[1] === 'auth') {
     return handleAuth(request, env, segments, (p) => executionCtx?.waitUntil(p));
   }
+
+  // The One Explorer index's server-to-server doors into a document's content (routes/internal-items.ts): their
+  // own key, never a person's identity, so answered before identity and the per-owner limits.
+  if (segments[1] === 'internal')
+    return handleInternalItems(request, env, (p) => executionCtx?.waitUntil(p));
 
   // Hybrid identity (docs/specs/014-identity/auth-and-guest-access.md). Verify the accounts
   // access token once at the top of the handler: null when sign-in isn't configured, no Bearer
@@ -530,16 +532,8 @@ const worker = {
         now - TIMELINE_RETENTION_MS,
         deleteOldDocumentOpens,
       );
-      // docs/specs/024-agents/agent-changesets.md "Revert": a changeset can be reverted while its
-      // record exists, as long as the Trash keeps a document (CS28).
-      scheduleSweep(
-        ctx,
-        env,
-        'changesets',
-        'rows',
-        now - CHANGESET_RETENTION_MS,
-        deleteOldChangesets,
-      );
+      // A document's changesets are kept by the document's own Durable Object, swept by its daily upkeep alarm
+      // (document-room/document-room.ts `maintain`), not from here.
       // docs/specs/012-collaboration/assigned-actions.md §4: a notify-email claim past its dedupe window
       // decides nothing any more.
       scheduleSweep(
@@ -571,16 +565,6 @@ const worker = {
         trashEmptyDocuments(env, now)
           .then((count) => console.log(`empty sweep: moved ${count} documents to the Trash`))
           .catch((err) => console.error('empty sweep failed', err)),
-      );
-      // docs/specs/009-elements/images.md "Retention": advance the reference-index backfill,
-      // then reap unused images. runImageRetention logs its own outcome.
-      ctx.waitUntil(runImageRetention(env, now));
-      // docs/specs/013-workspace/explorer-details-view.md "Counting the existing tabs": count the
-      // tabs written before tab stats existed, a bounded number a run. Logs its own outcome.
-      ctx.waitUntil(
-        runTabStatsBackfill(env)
-          .then(() => undefined)
-          .catch((err) => console.error('tab-stats: backfill failed', err)),
       );
       // docs/specs/013-workspace/blueprints/workbench-embeds.md "Retention": spent tickets and requests,
       // sessions past their grace, pairings of tokens no longer live.

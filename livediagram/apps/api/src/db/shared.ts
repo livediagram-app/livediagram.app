@@ -2,7 +2,7 @@
 
 import type { SharedWithItem } from '@livediagram/api-schema';
 import type { Env, ShareRole } from '../types';
-import { firstTabCountSql, isEmptyCount } from './tabs';
+import { firstTabCountSql, isEmptyCount } from './content-summary';
 import { legacyRoleColumn, levelColumn, storedLevelOf } from '../share-link-row';
 import { visitLinkSql } from './visit-link';
 import { getParticipants } from '../liveworkspace/profiles';
@@ -133,16 +133,16 @@ export async function listSharedWith(env: Env, ownerId: string): Promise<SharedW
     rows.map((r) => r.owner_id),
   );
   return rows.map((r) => ({
-      id: r.id,
-      name: r.name,
-      savedAt: r.saved_at,
-      role: storedLevelOf(r),
-      shareCode: r.share_code as string,
-      tabId: r.tab_id ?? null,
-      ownerName: owners.get(r.owner_id)?.name ?? null,
-      ownerColor: owners.get(r.owner_id)?.color ?? null,
-      empty: isEmptyCount(r.first_tab_count),
-    }));
+    id: r.id,
+    name: r.name,
+    savedAt: r.saved_at,
+    role: storedLevelOf(r),
+    shareCode: r.share_code as string,
+    tabId: r.tab_id ?? null,
+    ownerName: owners.get(r.owner_id)?.name ?? null,
+    ownerColor: owners.get(r.owner_id)?.color ?? null,
+    empty: isEmptyCount(r.first_tab_count),
+  }));
 }
 
 // Drop a single "shared with you" reference — used when the visitor

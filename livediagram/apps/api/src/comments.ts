@@ -35,10 +35,7 @@ function withThread(el: Element, thread: CommentThread | undefined): Element {
 }
 
 // The element with its thread mapped; the same element when the thread is unchanged.
-function mapThread(
-  el: Element,
-  fn: (thread: CommentThread) => CommentThread | undefined,
-): Element {
+function mapThread(el: Element, fn: (thread: CommentThread) => CommentThread | undefined): Element {
   const thread = threadOf(el);
   if (!thread) return el;
   const mapped = fn(thread);

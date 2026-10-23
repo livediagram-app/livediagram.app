@@ -3,7 +3,7 @@ import type { DatabaseSync } from 'node:sqlite';
 import { sqliteD1 } from '../test-sqlite-d1';
 import { runTimelineExpirySweep } from '../timeline/expiry-sweep';
 import { readActivity } from './collab-index';
-import { tabLinkedToOwnedDocument, upsertTab } from './tabs';
+import { upsertTab } from './tabs';
 import { countUnseen, readTimeline } from './timeline';
 import { restoreDocument, trashDocument } from './trash';
 
@@ -86,37 +86,44 @@ describe('Activity, while a document is in the Trash', () => {
   it('leaves out its open actions', async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'A');
-    await upsertTab(db.env, 'A', { id: 't1', name: 't1', elements: [] }, 0);
-    insert(db.sql, 'collab_actions', {
-      tab_id: 't1',
-      element_id: 'e1',
-      action_id: 'a1',
-      element_label: 'Box',
-      name: 'Do it',
-      description: '',
-      status: 'open',
-      assigner_id: 'owner',
-      created_at: T0,
-      updated_at: T0,
-    });
+    await upsertTab(
+      db.env,
+      'A',
+      {
+        id: 't1',
+        name: 't1',
+        elements: [
+          {
+            id: 'e1',
+            type: 'shape',
+            shape: 'square',
+            x: 0,
+            y: 0,
+            width: 10,
+            height: 10,
+            label: 'Box',
+            action: {
+              id: 'a1',
+              name: 'Do it',
+              description: '',
+              assignee: { userId: 'owner', name: 'Owner' },
+              teamId: null,
+              assignerId: 'owner',
+              assignerName: 'Owner',
+              status: 'open',
+              createdAt: T0,
+              updatedAt: T0,
+            },
+          } as never,
+        ],
+      },
+      0,
+    );
     expect((await readActivity(db.env, 'owner', { limit: 10 })).actions).toHaveLength(1);
 
     await trashDocument(db.env, 'A', T0);
 
     expect((await readActivity(db.env, 'owner', { limit: 10 })).actions).toEqual([]);
-  });
-});
-
-describe('linking a tab, while its only owned document is in the Trash', () => {
-  it('is refused', async () => {
-    const db = sqliteD1();
-    liveDoc(db.sql, 'A');
-    await upsertTab(db.env, 'A', { id: 't1', name: 't1', elements: [] }, 0);
-    expect(await tabLinkedToOwnedDocument(db.env, 't1', 'owner')).toBe(true);
-
-    await trashDocument(db.env, 'A', T0);
-
-    expect(await tabLinkedToOwnedDocument(db.env, 't1', 'owner')).toBe(false);
   });
 });
 

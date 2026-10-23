@@ -37,8 +37,6 @@ import {
   readReorderEntries,
   reorderTabs,
   seedTabs,
-  setDocumentPresentation,
-  tabIdsHeldElsewhere,
   upsertDocumentMeta,
 } from '../db';
 import { getParticipant } from '../liveworkspace/profiles';
@@ -75,7 +73,6 @@ import { handleDocumentDelete } from './document-delete-route';
 import { handleDocumentPlacement } from './document-placement-route';
 import { handleDocumentSharedTabs } from './document-shared-tabs-route';
 import { handleCommunityOwnerRoutes } from './community-owner-routes';
-import { forkTakenTabIds } from '../tab-id-fork';
 import { relayDocumentRename } from '../room-client';
 import { handleDocumentRoomRoutes } from './document-room-routes';
 import { handleDocumentSubresources } from './document-subresource-routes';
@@ -91,6 +88,9 @@ import {
 } from '../placement/placement-log';
 import { intentRejected, placementRejected } from '../placement/placement-response';
 import type { DocumentDTO } from '../types';
+import { initDocument, setDocumentPresentation } from '../document-room/document-content';
+import { identityOf } from '../document-room/document-route';
+import { documentRoom } from '../document-client';
 import {
   gateEdit,
   COMMUNITY_CONTENT,
@@ -99,33 +99,119 @@ import {
   requireOwner,
   shareCodeOf,
   sharePasswordOf,
+  type DocumentRouteContext,
   type RouteContext,
   readBody,
 } from './context';
 import { sharePasswordOk } from '../auth/share-access';
 
+function isDocumentContext(ctx: RouteContext): ctx is DocumentRouteContext {
+  return 'DOCUMENT_DB' in ctx.env;
+}
+
+// The longest document id the worker names a Durable Object by. Ids are UUIDs; this only stops a hostile create from
+// naming objects with megabyte ids.
+const MAX_DOCUMENT_ID = 200;
+
+// /api/documents in the worker. What reads no content is answered here: the document list (D1), a document's
+// thumbnail (a fresh cache from R2; a stale one is drawn by the document) and the realtime room's ticket and upgrade.
+// Everything else about one document, a create included, runs inside that document's Durable Object
+// (docs/specs/015-api/api.md "Storage"), with the caller's identity as resolved here.
 export async function handleDocuments(ctx: RouteContext): Promise<Response> {
+  const { request, segments } = ctx;
+  if (segments[1] !== 'documents') return notFound();
+  if (segments.length === 2 && request.method === 'GET') return listDocuments(ctx);
+  if (segments.length === 4 && segments[3] === 'thumbnail') return documentThumbnail(ctx);
+  // Realtime-room admission (docs/specs/015-api/api.md): the one-time WS ticket mint +
+  // the Durable Object upgrade — see document-room-routes.ts.
+  const roomResp = await handleDocumentRoomRoutes(ctx);
+  if (roomResp) return roomResp;
+  if (isDocumentContext(ctx)) return handleDocumentRequest(ctx);
+  return forwardToDocument(ctx);
+}
+
+// Hand a request about one document to its Durable Object. A create names its document in the body, read here from a copy
+// so the request goes on whole; the answers for a body that names none are the create's own.
+async function forwardToDocument(ctx: RouteContext): Promise<Response> {
+  const { request, segments } = ctx;
+  let documentId = segments[2] ?? '';
+  if (segments.length === 2) {
+    if (request.method !== 'POST') return notFound();
+    const read = await readBody({ ...ctx, request: request.clone() });
+    if (read instanceof Response) return read;
+    const owner = requireOwner(ctx);
+    if (owner instanceof Response) return owner;
+    const { id: named, name } = read;
+    if (typeof named !== 'string' || !named || typeof name !== 'string') {
+      return badRequest('missing id/name');
+    }
+    documentId = named;
+  }
+  if (!documentId || documentId.length > MAX_DOCUMENT_ID) return notFound();
+  return documentRoom(ctx.env, documentId).route(request, identityOf(ctx));
+}
+
+async function listDocuments(ctx: RouteContext): Promise<Response> {
+  const { env } = ctx;
+  const owner = requireOwner(ctx);
+  if (owner instanceof Response) return owner;
+  // `?include=team-recent` (docs/specs/019-marketing/returning-visitor.md): the newest documents of
+  // the teams the caller has joined, for their recent diagrams. Membership is read from the
+  // verified account only, never the guest header, which anyone can set to any id.
+  if (ctx.url.searchParams.get('include') === TEAM_RECENT_INCLUDE) {
+    const [liveDocs, teamRecent] = await Promise.all([
+      listDocumentsByOwner(env, owner),
+      ctx.verifiedUserId ? listRecentTeamDocuments(env, ctx.verifiedUserId, TEAM_RECENT_LIMIT) : [],
+    ]);
+    return json({ documents: liveDocs, teamRecent });
+  }
+  const liveDocs = await listDocumentsByOwner(env, owner);
+  return json({ documents: liveDocs });
+}
+
+// /api/documents/<id>/thumbnail — cached SVG snapshot (docs/specs/006-document/document-snapshots.md). Read-
+// gated exactly like GET /api/documents/<id>: the owner, a joined team
+// member, or a valid share-code visitor. A native <img> can't send
+// auth headers, so the editor app fetches this with headers and wraps
+// the bytes in a blob URL; a miss (no document, no read access, no R2
+// binding, empty document) is a 404 the row turns into its icon.
+async function documentThumbnail(ctx: RouteContext): Promise<Response> {
+  const { request, env, segments } = ctx;
+  const id = segments[2]!;
+  if (request.method !== 'GET') return notFound();
+  // One query for the gate AND the cache-freshness check: this runs for
+  // every preview in the Explorer grid, so its D1 round trips are the
+  // floor on how fast a card can paint.
+  const d = await getDocumentThumbMeta(env, id);
+  if (!d) return notFound();
+  const grant = await gateGrant(ctx, id, d.ownerId, d.teamId, COMMUNITY_CONTENT);
+  if (!grant) return notFound();
+  // A tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md) gets their tab, never the
+  // first-tab snapshot. A Community visitor's thumbnail is drawn from the redacted tab, never the owner's snapshot.
+  const svg = await documentImageSvg(env, d, {
+    tabId: grant.tabScope,
+    community: grant.community === true,
+  });
+  // Nothing drawn (or no snapshot store). Past the gate, so this says
+  // nothing about access, and the URL carries `?v=<savedAt>`: the answer
+  // cannot change until the document does, so let the browser keep it
+  // instead of re-asking on every Explorer visit.
+  if (svg == null) {
+    return json(
+      { error: 'not_found' },
+      { status: 404, headers: { 'Cache-Control': 'private, max-age=86400' } },
+    );
+  }
+  // The client cache-busts via a `?v=<savedAt>` query param, so a
+  // long private max-age is safe: a changed document changes the URL.
+  return svgImage(svg, 'private, max-age=86400');
+}
+
+// Everything about one document, inside its Durable Object (document-room/document-route.ts).
+export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<Response> {
   const { request, env, segments } = ctx;
   if (segments[1] !== 'documents') return notFound();
   if (segments.length === 2) {
-    if (request.method === 'GET') {
-      const owner = requireOwner(ctx);
-      if (owner instanceof Response) return owner;
-      // `?include=team-recent` (docs/specs/019-marketing/returning-visitor.md): the newest documents of
-      // the teams the caller has joined, for their recent diagrams. Membership is read from the
-      // verified account only, never the guest header, which anyone can set to any id.
-      if (ctx.url.searchParams.get('include') === TEAM_RECENT_INCLUDE) {
-        const [liveDocs, teamRecent] = await Promise.all([
-          listDocumentsByOwner(env, owner),
-          ctx.verifiedUserId
-            ? listRecentTeamDocuments(env, ctx.verifiedUserId, TEAM_RECENT_LIMIT)
-            : [],
-        ]);
-        return json({ documents: liveDocs, teamRecent });
-      }
-      const liveDocs = await listDocumentsByOwner(env, owner);
-      return json({ documents: liveDocs });
-    }
     if (request.method === 'POST') {
       const read = await readBody(ctx);
       if (read instanceof Response) return read;
@@ -246,21 +332,10 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         logPlacementResolved(outcome.placement, outcome);
         placement = outcome.placement;
       }
-      // A seeded tab whose id another document holds is created under a fresh
-      // id, never upserted over it: that is how a synced-back offline copy of a
-      // shared tab forks (docs/specs/006-document/offline-mode.md), and why a
-      // create can't rewrite someone else's tab by naming its id.
-      const seeded = incomingTabs
-        ? forkTakenTabIds(
-            incomingTabs,
-            typeof body.presentation === 'string' ? body.presentation : null,
-            await tabIdsHeldElsewhere(
-              env,
-              body.id,
-              incomingTabs.map((t) => t.id),
-            ),
-          )
-        : null;
+      // Tab ids belong to the document (each lives in its own document's store), so seeded tabs are written
+      // under the ids they carry.
+      const seeded = incomingTabs;
+      const presentation = typeof body.presentation === 'string' ? body.presentation : null;
       // Only a genuine create takes the body's dates: a re-commit keeps the stored created date
       // (the upsert never rewrites it) and is modified now.
       const savedAt = clash ? Date.now() : dates.savedAt;
@@ -273,11 +348,6 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         shareCode: body.shareCode ?? null,
         folderId: placement.folderId,
         teamId: placement.teamId,
-        // Usually none. An Offline Mode sync carries the deck it built
-        // offline (docs/specs/006-document/offline-mode.md), which would otherwise be lost with the local copy.
-        presentation:
-          seeded?.presentation ??
-          (typeof body.presentation === 'string' ? body.presentation : null),
         // Provenance (docs/specs/013-workspace/folders.md): only the closed set of generated sources
         // is accepted; anything else (or absent) is a user-made document.
         source: isDocumentSource(body.source) ? body.source : null,
@@ -289,13 +359,20 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         tabKind: intent.intent?.tabKind ?? null,
         templateFamily: intent.intent?.templateFamily ?? null,
       });
+      // The document's own row: its dates and, usually none, the slide deck an Offline Mode sync built
+      // offline (docs/specs/006-document/offline-mode.md); a re-commit keeps the deck it has.
+      await initDocument(env, body.id, {
+        savedAt,
+        createdAt: dates.createdAt,
+        presentation: clash ? null : presentation,
+      });
       // Seed tabs if the caller provided them. The editor app's
       // welcome flow uses this when it commits a fresh document
       // id — it ships the templated tab inline so the very
       // first per-tab fetch already has data.
       if (seeded) {
         try {
-          await seedTabs(env, body.id, seeded.tabs, savedAt);
+          await seedTabs(env, body.id, seeded, savedAt);
         } catch (error) {
           if (error instanceof TabTooLargeError) return payloadTooLarge();
           throw error;
@@ -427,8 +504,6 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         // Preserve provenance (the upsert never rewrites it anyway, but
         // pass the existing value so the DTO is complete).
         source: existing.source ?? null,
-        // The deck has its own write below; the meta upsert never touches it.
-        presentation: existing.presentation ?? null,
         savedAt: now,
         createdAt: existing.createdAt,
       });
@@ -576,54 +651,8 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
     if (sharedTabsResp) return sharedTabsResp;
   }
 
-  // /api/documents/<id>/thumbnail — cached SVG snapshot (docs/specs/006-document/document-snapshots.md). Read-
-  // gated exactly like GET /api/documents/<id>: the owner, a joined team
-  // member, or a valid share-code visitor. A native <img> can't send
-  // auth headers, so the editor app fetches this with headers and wraps
-  // the bytes in a blob URL; a miss (no document, no read access, no R2
-  // binding, empty document) is a 404 the row turns into its icon.
-  if (segments.length === 4 && segments[3] === 'thumbnail') {
-    const id = segments[2]!;
-    if (request.method === 'GET') {
-      // One query for the gate AND the cache-freshness check: this runs for
-      // every preview in the Explorer grid, so its D1 round trips are the
-      // floor on how fast a card can paint.
-      const d = await getDocumentThumbMeta(env, id);
-      if (!d) return notFound();
-      const grant = await gateGrant(ctx, id, d.ownerId, d.teamId, COMMUNITY_CONTENT);
-      if (!grant) return notFound();
-      // A tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md) gets their tab, never the
-      // first-tab snapshot.
-      // A Community visitor's thumbnail is drawn from the redacted tab, never the owner's snapshot.
-      const svg = await documentImageSvg(
-        env,
-        d,
-        { tabId: grant.tabScope, community: grant.community === true },
-        { defer: ctx.waitUntil },
-      );
-      // Nothing drawn (or no snapshot store). Past the gate, so this says
-      // nothing about access, and the URL carries `?v=<savedAt>`: the answer
-      // cannot change until the document does, so let the browser keep it
-      // instead of re-asking on every Explorer visit.
-      if (svg == null) {
-        return json(
-          { error: 'not_found' },
-          { status: 404, headers: { 'Cache-Control': 'private, max-age=86400' } },
-        );
-      }
-      // The client cache-busts via a `?v=<savedAt>` query param, so a
-      // long private max-age is safe: a changed document changes the URL.
-      return svgImage(svg, 'private, max-age=86400');
-    }
-  }
-
   const subResp = await handleDocumentSubresources(ctx);
   if (subResp) return subResp;
-
-  // Realtime-room admission (docs/specs/015-api/api.md): the one-time WS ticket mint +
-  // the Durable Object upgrade — see document-room-routes.ts.
-  const roomResp = await handleDocumentRoomRoutes(ctx);
-  if (roomResp) return roomResp;
 
   return notFound();
 }

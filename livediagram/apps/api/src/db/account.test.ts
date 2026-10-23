@@ -44,8 +44,7 @@ describe('deleteAccount snapshot cleanup (docs/specs/006-document/document-snaps
 
     await deleteAccount(env, 'owner-1');
 
-    // Image bytes AND document snapshots both leave R2.
-    expect(del).toHaveBeenCalledWith(['i1']);
+    // Document snapshots leave R2 (images are the media service's).
     expect(del).toHaveBeenCalledWith([
       'thumb/d1',
       'thumb-community/d1',

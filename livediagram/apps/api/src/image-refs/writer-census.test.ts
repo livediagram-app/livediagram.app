@@ -18,15 +18,15 @@ const WRITES_TABS =
 // db/image-refs-writers.test.ts.
 const KNOWN_WRITERS: Record<string, number> = {
   // tabWriteStatements (upsertTab, upsertTabAtRev), seedTabs, deleteTabRow, swapTabData; and
-  // stampTabElementCount and renameTab, which write element_count or the name, never `data`, so
-  // they have no image reference to keep.
+  // renameTab and stampTabElementCount, which write the name or the count, never `data`, so they have no image
+  // reference to keep.
   'api/src/db/tabs.ts': 6,
-  // copyDocument
-  'api/src/db/documents.ts': 1,
-  // documentRemovalStatements
-  'api/src/db/document-removal.ts': 1,
+  // importDocumentCopy (a copy lands in its new document's own store)
+  'api/src/document-room/document-content.ts': 1,
+  // The test database's stand-in for a document's purge (its object deletes everything it stores); the
+  // references go with the tabs by their foreign key.
+  'api/src/test-sqlite-d1.ts': 1,
 };
-
 function sourceFiles(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
     const path = join(dir, name);
@@ -54,5 +54,4 @@ describe('writers of tabs', () => {
     }
     expect(found).toEqual(KNOWN_WRITERS);
   });
-
 });

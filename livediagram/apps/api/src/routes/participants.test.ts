@@ -113,7 +113,12 @@ describe('handleParticipants', () => {
   });
 
   it('PUT 200 when the caller updates their own participant, kept by liveworkspace', async () => {
-    db.setParticipant.mockResolvedValue({ id: 'owner-1', name: 'Ann', color: '#abc', createdAt: 5 });
+    db.setParticipant.mockResolvedValue({
+      id: 'owner-1',
+      name: 'Ann',
+      color: '#abc',
+      createdAt: 5,
+    });
     const res = await handleParticipants(
       makeCtx('PUT', '/api/participants/owner-1', {
         owner: 'owner-1',

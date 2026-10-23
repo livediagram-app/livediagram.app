@@ -20,10 +20,10 @@ function outerLoops(sql: string, ...args: (string | number)[]): string[] {
 }
 
 describe('reads that start from the reader’s documents', () => {
-  it('Inbox threads: the reader’s documents, then their tabs, then those tabs’ threads', () => {
+  it('Inbox threads: the reader’s documents, then those documents’ threads', () => {
     const loops = outerLoops(THREADS_SQL, 'reader', 1, 50);
     expect(loops[0]).toBe('SCAN vi');
-    expect(loops.some((d) => /^SEARCH ct .*\(tab_id=\?\)/.test(d))).toBe(true);
+    expect(loops.some((d) => /^SEARCH ct .*\(document_id=\?\)/.test(d))).toBe(true);
     expect(loops.filter((d) => /collab_threads_open_idx/.test(d))).toEqual([]);
   });
 

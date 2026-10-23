@@ -19,7 +19,7 @@ vi.mock('./db', async (orig) => ({
   },
 }));
 
-import { DocumentRoom } from './document-room';
+import { DocumentRoom } from './document-room/document-room';
 import { ANSWERS_FLUSH_MS } from './room-participant';
 
 const ME = 'a'.repeat(32);

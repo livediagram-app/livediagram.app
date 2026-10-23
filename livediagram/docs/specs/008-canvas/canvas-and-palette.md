@@ -736,11 +736,11 @@ cards are a short curated list **per mode filter** (`POPULAR_BY_MODE` in `packag
 `popularKindsFor(choice)`), each a list of that mode's templates with its blank first, so the shelf always fits
 the mode chosen:
 
-| Filter     | Popular                                                                                                                                                  |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Filter     | Popular                                                                                                                                                   |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Everything | Blank Diagram, Blank Whiteboard, Blank Workshop, Mind map, Flowchart, Sailboat retrospective, Org chart, Sketchnote, Gantt Chart, Retrospective, Timeline |
-| Diagram    | Blank Diagram, Flowchart, Mind map, Org chart, Gantt Chart, Timeline, System architecture                                                                |
-| Draw       | Blank Whiteboard, Sketchnote, Journey Doodle, Comic Strip, Idea Garden, Rich Picture                                                                     |
+| Diagram    | Blank Diagram, Flowchart, Mind map, Org chart, Gantt Chart, Timeline, System architecture                                                                 |
+| Draw       | Blank Whiteboard, Sketchnote, Journey Doodle, Comic Strip, Idea Garden, Rich Picture                                                                      |
 | Workshop   | Blank Workshop, Sailboat retrospective, Retrospective, Town Hall Q&A, Lean Coffee, Crazy 8s, Pub Quiz                                                     |
 
 **Search** (a start's search box; also the marketing gallery's) matches a template when **every word
@@ -1304,7 +1304,7 @@ The active tab carries a **`⋯` ellipsis button** to the right of its name. Cli
 - **Duplicate** — creates a copy of the tab (same elements, same pattern, name suffixed with " copy") inserted directly after the source, and switches to it.
 - **Clear content** — wipes every element from the tab in one undoable commit. Disabled when the tab is already empty or when the tab is locked.
 - **Lock / Unlock** — toggles `tab.locked`. While locked, every element on the tab is read-only (matches per-element lock semantics), the palette's Add buttons stop firing, theme / canvas changes are blocked, **the tab itself can't be deleted** (the Delete row is disabled — unlock first), and the tab pill shows the padlock icon (see above).
-- **Add to another document** — submenu listing every other document the participant owns. Picking one links the tab into that document via `POST /api/documents/:id/tabs/:tabId/link` (the source tab stays put; both documents now share the same `tabs.data` row so edits propagate, see [Tab ↔ document many-to-many](../006-document/tab-document-many-to-many.md)).
+- **Add to another document** — submenu listing every other document the participant owns. Picking one copies the tab into that document under fresh ids (the source tab stays put; each document holds its own content, so later edits on either side stay on that side, see [Tab ↔ document many-to-many](../006-document/tab-document-many-to-many.md)).
 - **Delete** — removes the tab and falls back to a neighbouring tab. Disabled when only one tab remains.
 
 The menu renders through a **portal** to `document.body` so it isn't clipped by the tab bar's horizontal scroll. It positions itself from the ellipsis button's bounding rect (tab surface) or at the cursor / footer-button point (canvas surface), clamping back on-screen at every viewport edge.

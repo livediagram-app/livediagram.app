@@ -27,6 +27,7 @@
     "@livediagram/render-png": "workspace:*",
     "@livediagram/templates": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
+    "@liveworkspace/index-app": "workspace:*",
     "@liveworkspace/media": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*",

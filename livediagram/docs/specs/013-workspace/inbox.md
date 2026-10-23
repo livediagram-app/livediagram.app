@@ -133,14 +133,17 @@ Coming back to a tab that has been open a while re-reads the list
 
 ## 2. Data model: the collaboration index
 
-Two index tables in D1, written by the api worker **in the same batch
-as the tab row**, so they can never drift from the blob they mirror.
+Two index tables in D1, pushed by each document's Durable Object from the
+outbox its tab writes fill **in the same transaction as the tab row**
+([API app, Storage](../015-api/api.md#storage)), so no write path can
+forget them; they follow a write by up to about a minute.
 The tab JSON stays the source of truth ([Assigned actions](../012-collaboration/assigned-actions.md) §1); the index is a
 projection of it that SQL can filter.
 
 ```sql
 CREATE TABLE collab_actions (
-  tab_id TEXT NOT NULL, element_id TEXT NOT NULL,
+  document_id TEXT NOT NULL REFERENCES documents (id) ON DELETE CASCADE,
+  tab_id TEXT NOT NULL, tab_name TEXT NOT NULL, element_id TEXT NOT NULL,
   action_id TEXT NOT NULL,
   element_label TEXT NOT NULL,          -- the row's "where": label / first table cell
   name TEXT NOT NULL, description TEXT NOT NULL,
@@ -149,12 +152,12 @@ CREATE TABLE collab_actions (
   assigner_id TEXT NOT NULL, assigner_name TEXT,
   team_id TEXT,
   created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL,
-  PRIMARY KEY (tab_id, element_id, action_id),
-  FOREIGN KEY (tab_id) REFERENCES tabs(id) ON DELETE CASCADE
+  PRIMARY KEY (document_id, tab_id, element_id, action_id)
 );
 
 CREATE TABLE collab_threads (
-  tab_id TEXT NOT NULL, element_id TEXT NOT NULL,
+  document_id TEXT NOT NULL REFERENCES documents (id) ON DELETE CASCADE,
+  tab_id TEXT NOT NULL, tab_name TEXT NOT NULL, element_id TEXT NOT NULL,
   element_label TEXT NOT NULL,
   resolved INTEGER NOT NULL,
   comment_count INTEGER NOT NULL,
@@ -162,18 +165,17 @@ CREATE TABLE collab_threads (
   mentioned_ids TEXT NOT NULL DEFAULT '[]', -- JSON array of @-mentioned user ids + member ids
   latest_text TEXT NOT NULL, latest_author_name TEXT NOT NULL, latest_author_color TEXT NOT NULL,
   first_at INTEGER NOT NULL, latest_at INTEGER NOT NULL,
-  PRIMARY KEY (tab_id, element_id),
-  FOREIGN KEY (tab_id) REFERENCES tabs(id) ON DELETE CASCADE
+  PRIMARY KEY (document_id, tab_id, element_id)
 );
 ```
 
-- **Keyed by tab, not document.** A tab can belong to several documents
-  ([Tab ↔ document many-to-many](../006-document/tab-document-many-to-many.md)); the document is resolved at read time through
-  `document_tabs`, which is also what makes deletion free: a tab's rows
-  die with it (FK cascade), and a document's tabs die with the document.
-- **One row per action, one per thread.** An ordinary element carries at most
-  one action and an Action panel a list ([The Action Panel](../012-collaboration/action-panel.md)), so `collab_actions` is keyed
-  `(tab_id, element_id, action_id)` (migration 0053); an element has one
+- **Keyed by document and tab, carrying the tab's name.** The tabs live
+  in each document's own Durable Object, out of D1's reach, so a row says
+  everything the read needs. A document's rows die with it (FK cascade);
+  a tab's go on the document's next push, which also drops that tab's
+  tab-scoped share links.
+- **One row per action, one per thread.** An element carries at most
+  one action, keyed `(tab_id, element_id, action_id)` in `collab_actions`, and one
   thread. Either way a save is a full replace of the
   tab's rows: `DELETE … WHERE tab_id = ?` for each table, then one
   `INSERT` per element that carries the thing. Idempotent, and it
@@ -191,21 +193,23 @@ CREATE TABLE collab_threads (
 
 ### 2.1 Where the writes happen
 
-Every path that writes `tabs.data` contributes the index statements to
-its own batch, all via one helper (`collabIndexStatements` in
-`apps/api/src/db/collab-index.ts`), so a fifth write path cannot forget
-by accident without also forgetting to write the tab:
+Every path that writes a tab's `data`, `name` or `element_count` keys
+the tab in its document's outbox, by a trigger in the same transaction
+(`apps/api/src/document-room/document-schema.ts`), so a new write path
+cannot forget. The document's alarm drains the outbox: for each keyed
+tab, one function, `onTabCollabChanged` in
+`apps/api/src/document-room/document-outbox.ts`, replaces that tab's rows
+(or deletes them when the tab is gone), in the drain's one D1 batch. The
+One Explorer index step points that function at liveworkspace's index
+with the same rows.
 
-| Path                                                                                                         | Where                      | How                                          |
-| ------------------------------------------------------------------------------------------------------------ | -------------------------- | -------------------------------------------- |
-| tab autosave `PUT …/tabs/:tabId`                                                                             | `upsertTab`                | statements appended to the tab's batch       |
-| view-role comment `POST …/comments`                                                                          | `upsertTab`                | same                                         |
-| delete-own comment `DELETE …/comments/:id`                                                                   | `upsertTab`                | same                                         |
-| create (`POST /documents`, templates, import)                                                                | `seedTabs`                 | same, per tab                                |
-| duplicate / copy from a share link                                                                           | `copyDocument`             | `INSERT … SELECT` from the source tab's rows |
-| MCP `update_document` / `add_tab` ([MCP server](../015-api/mcp-server.md))                                   | goes through the tab `PUT` | covered                                      |
-| tab / document delete, account delete                                                                        | FK cascade from `tabs`     | nothing to do                                |
-| tab link into another document ([Tab ↔ document many-to-many](../006-document/tab-document-many-to-many.md)) | rows are per tab           | nothing to do                                |
+| Path                                                                       | How                                       |
+| -------------------------------------------------------------------------- | ----------------------------------------- |
+| tab autosave `PUT …/tabs/:tabId`, comment routes, changesets               | the tab's update keys it                  |
+| create (`POST /documents`, templates, import), copy                        | the new tab's link keys it                |
+| MCP `update_document` / `add_tab` ([MCP server](../015-api/mcp-server.md)) | goes through the tab `PUT` or a changeset |
+| tab delete                                                                 | the link's delete keys it; rows deleted   |
+| document delete, account delete                                            | FK cascade from `documents`               |
 
 The rows are derived by a pure function over the tab's elements
 (`collabIndexRowsFromElements` in `packages/document`, shared with the browser's read of documents in This Browser, §2.4), which reuses the element-label rule
@@ -246,21 +250,11 @@ This is deliberately the only consumer in v1. The editor's own
 "mine" highlight and delete-own check keep comparing against the
 current id; extending them is a separate change.
 
-### 2.3 Backfill
+### 2.3 No backfill
 
-Existing tabs have no index rows until they are saved again. On the
-first `GET /api/activity` for an owner (no `collab_index_state` row),
-the worker seeds the index off the response path (`waitUntil`) from
-the tabs of every document the reader can see (owned, joined-team,
-shared-with), cheaply pre-filtered in SQL to tabs whose JSON contains
-a `commentThread` or `action` key, capped at 300 tabs (logged when
-hit), and stamps `backfilled_at`. The write is the same full-replace
-per tab as a save, guarded on the tab's `rev` still being the one the
-backfill read: a save landing between the read and the write has already
-indexed the newer blob in its own batch, so that tab's older rows are
-skipped rather than written over it. The
-same state row moves with the owner on migration so the seed does not
-run twice against the new id.
+There is none. Every tab write keys its tab in the document's outbox
+(§2.1), and livediagram ships fresh with the index, so
+no tab exists without its rows once its document's push has landed.
 
 ### 2.4 documents in This Browser
 

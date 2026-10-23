@@ -36,9 +36,6 @@ const db = vi.hoisted(() => ({
   listSharedWith: vi.fn(async () => [] as unknown[]),
   upsertTab: vi.fn(async () => {}),
   deleteTabRow: vi.fn(),
-  documentsContainingTab: vi.fn(),
-  linkTabToDocument: vi.fn(),
-  tabLinkedToOwnedDocument: vi.fn(),
   // Community link check on the tab read (docs/specs/025-community/community.md): an ordinary link here.
   getShareLink: vi.fn(async () => null),
 }));

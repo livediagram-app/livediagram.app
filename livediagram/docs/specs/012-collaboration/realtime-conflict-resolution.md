@@ -10,7 +10,7 @@ not prevent them.
 
 ## The problem it fixed
 
-The realtime room (`apps/api/src/document-room.ts`) was a **stateless relay**: it
+The realtime room (`apps/api/src/document-room/document-room.ts`) was a **stateless relay**: it
 broadcast ops between peers and tracked presence, but held no document state and
 merged nothing. The conflict unit was a **whole tab** — editing anything on a tab
 broadcast the tab's entire element array and receivers **replaced** their copy.
@@ -242,7 +242,7 @@ verified end-to-end and turned on properly, not carried as dormant code.
 - `packages/document` — `element-deltas.ts` (`applyElementDelta`,
   `mergeIncomingElement`), `collab-ledger.ts` (the ledger's entries and the
   save merge), `comments.ts` (`opForTheWire`, `stampCommentAuthor`).
-- `apps/api/src/document-room.ts` — the role / class gate, seq + epoch
+- `apps/api/src/document-room/document-room.ts` — the role / class gate, seq + epoch
   (persisted as `order-state`), the bounded in-memory op log and the
   `sync` → `catchup` handler (`resolveCatchup` in `document-room-rules.ts`). It
   rewrites comment authors in every mutation it relays and keeps collaboration

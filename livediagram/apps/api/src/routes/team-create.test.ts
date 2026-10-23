@@ -21,7 +21,10 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-const create = (body: unknown, opts: { user?: string | null; token?: string | null; env?: Env } = {}) => {
+const create = (
+  body: unknown,
+  opts: { user?: string | null; token?: string | null; env?: Env } = {},
+) => {
   const user = opts.user === undefined ? 'user_a' : opts.user;
   const token = opts.token === undefined ? `token-for-${user}` : opts.token;
   return handleTeams(
@@ -41,9 +44,14 @@ describe('POST /api/teams (docs/specs/013-workspace/teams.md "Making a team")', 
     expect(res.status).toBe(201);
     const { team } = (await res.json()) as { team: { id: string; name: string } };
     expect(team).toMatchObject({ id: 'team_1', name: 'Design', organisation: 'Acme' });
-    expect(accounts.teams).toEqual([{ id: 'team_1', name: 'Design', organisation: 'Acme', admin: 'user_a' }]);
+    expect(accounts.teams).toEqual([
+      { id: 'team_1', name: 'Design', organisation: 'Acme', admin: 'user_a' },
+    ]);
     expect(await getTeam(db.env, 'team_1')).toMatchObject({ name: 'Design' });
-    expect(await getMembership(db.env, 'team_1', 'user_a')).toMatchObject({ role: 'admin', status: 'joined' });
+    expect(await getMembership(db.env, 'team_1', 'user_a')).toMatchObject({
+      role: 'admin',
+      status: 'joined',
+    });
   });
 
   it('cuts a long name as liveworkspace does, and refuses an empty one', async () => {

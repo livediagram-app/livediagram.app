@@ -28,7 +28,8 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import worker from '../index';
-import type { Env } from '../types';
+import { answerDocumentRequest, type RouteIdentity } from '../document-room/document-route';
+import type { Env, DocumentEnv } from '../types';
 
 const PROBE_METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'] as const;
 export type ProbeMethod = (typeof PROBE_METHODS)[number];
@@ -190,6 +191,26 @@ export async function probeDispatch(
     GOOGLE_CLIENT_SECRET: 'probe-secret',
     DRIVE_TOKEN_KEY: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
   } as unknown as Env;
+  // The worker hands every request about one document to the document's Durable Object (`route`), which answers it with
+  // the same handlers against its own store. The probe runs that answer in process, the document's store a trap too,
+  // so a path the document does not serve is still a clean 404; any other use of the room is storage.
+  const documentEnv = { ...env, DOCUMENT_DB: trap('DOCUMENT_DB') } as unknown as DocumentEnv;
+  const room = new Proxy(
+    {},
+    {
+      get(_, method) {
+        if (method === 'route') {
+          return (_documentId: string, request: Request, identity: RouteIdentity) =>
+            answerDocumentRequest(documentEnv, request, identity, (p) => {
+              pending.push(p.catch(() => undefined));
+            });
+        }
+        state.touched = true;
+        throw new StorageTrap(`probe touched DOCUMENT_ROOM.${String(method)}`);
+      },
+    },
+  );
+  Reflect.set(env, 'DOCUMENT_ROOM', { idFromName: (name: string) => name, get: () => room });
   const pending: Promise<unknown>[] = [];
   const executionCtx = {
     waitUntil: (p: Promise<unknown>) => pending.push(p.catch(() => undefined)),

@@ -25,9 +25,8 @@ const R2_DELETE_CHUNK = 1000;
 // (docs/specs/009-elements/images.md). account-owner-columns.test.ts holds
 // both functions here to that list against the real schema. Called from
 // DELETE /api/account when the user opts in via the "Delete account"
-// dialog. The documents go through documentRemovalStatements, which drops
-// the tabs (and their history) no other owner's document still holds;
-// share links and the other per-document rows cascade from `documents.id`.
+// dialog. The documents go through documentRemovalStatements, and their content with each document's own
+// Durable Object (purgeRooms); share links and the other per-document rows cascade from `documents.id`.
 // Folders carry their own owner_id and need their
 // own DELETE. Images carry owner_id on their D1 row and
 // the R2 object key matches the row id, so we enumerate before the
@@ -53,29 +52,13 @@ export async function deleteAccount(
   let mediaDeleted = 0;
   if (media) {
     const forgotten = await media.forgetOwner(await mediaOwner(ownerId));
-    if (!forgotten.ok) throw new Error(`media: deleting the owner's images answered ${forgotten.status}`);
+    if (!forgotten.ok)
+      throw new Error(`media: deleting the owner's images answered ${forgotten.status}`);
     mediaDeleted = forgotten.value.deleted;
   }
   await env.DB.prepare('DELETE FROM media_images WHERE owner_id = ?').bind(ownerId).run();
-  // R2 cleanup first. Enumerate the owner's image ids while the
-  // index row still exists, then delete each from R2. If R2 is
-  // unbound (self-host without R2), skip silently: the index rows
-  // come out via the DELETE FROM images below regardless. R2's
-  // batch delete takes up to 1000 keys per call which is well
-  // above any realistic per-owner gallery cap.
-  const imageRows = await env.DB.prepare('SELECT id FROM images WHERE owner_id = ?')
-    .bind(ownerId)
-    .all<{ id: string }>();
-  const imageIds = (imageRows.results ?? []).map((r) => r.id);
-  if (env.IMAGES && imageIds.length > 0) {
-    await env.IMAGES.delete(imageIds);
-  }
-  const imagesRes = await env.DB.prepare('DELETE FROM images WHERE owner_id = ?')
-    .bind(ownerId)
-    .run();
   // Document SVG snapshots (docs/specs/006-document/document-snapshots.md) live in R2 under thumb/<documentId>,
-  // keyed off the document id rather than carried on a D1 row, so — like
-  // the images above — the cascade can't reach them. Enumerate the
+  // keyed off the document id rather than carried on a D1 row, so — the cascade can't reach them. Enumerate the
   // owner's document ids while the rows still exist, then bulk-delete
   // their snapshot objects before the documents DELETE drops the ids.
   const documentRows = await env.DB.prepare('SELECT id FROM documents WHERE owner_id = ?')
@@ -139,9 +122,9 @@ export async function deleteAccount(
   await env.DB.prepare('DELETE FROM favourites WHERE owner_id = ?').bind(ownerId).run();
   // placement_defaults (docs/specs/013-workspace/default-folders.md): no foreign key reaches them.
   await env.DB.prepare('DELETE FROM placement_defaults WHERE owner_id = ?').bind(ownerId).run();
-  // agent_changesets (docs/specs/024-agents/agent-changesets.md, CS27): the ones they wrote on other
-  // people's documents; those on their own went with the documents. Parts follow by cascade.
-  await env.DB.prepare('DELETE FROM agent_changesets WHERE author_id = ?').bind(ownerId).run();
+  // agent_changesets (docs/specs/024-agents/agent-changesets.md, CS27): those on their own documents went with
+  // the documents. The ones they wrote on other people's are in those documents' own stores now (each document's
+  // Durable Object), out of reach of one D1 statement; they age out with the 30-day changeset retention there.
   // Community posts (docs/specs/025-community/community.md): the links of their own posts went with their
   // documents; this closes one whose document outlives them (moved to a team), so nothing stays published under a
   // deleted account. A post whose link is gone is gone: the Community sync tells the service, which deletes it with
@@ -157,8 +140,8 @@ export async function deleteAccount(
   // and the scope-state row. Hard, not soft — soft delete is a
   // user-facing affordance in this product, never a retention strategy.
   await deleteTimelineForOwner(env, ownerId);
-  // Activity (docs/specs/013-workspace/inbox.md): the alias rows + the backfill stamp. The index
-  // rows themselves went with the tabs documentRemovalStatements dropped above.
+  // Activity (docs/specs/013-workspace/inbox.md): the alias rows. The index rows themselves went with the
+  // documents documentRemovalStatements dropped above.
   await deleteCollabIndexForOwner(env, ownerId);
   // Explorer Home (docs/specs/013-workspace/explorer-home.md "Opens"): this owner's opens. Other
   // people's opens of this owner's documents went with the documents (foreign key cascade);
@@ -167,7 +150,7 @@ export async function deleteAccount(
   return {
     documents: documentsRes.meta.changes ?? 0,
     folders: foldersRes.meta.changes ?? 0,
-    images: (imagesRes.meta.changes ?? 0) + mediaDeleted,
+    images: mediaDeleted,
   };
 }
 
@@ -190,19 +173,10 @@ export async function deleteAccount(
 // rows keep the role + last_seen they already had (which is the
 // more recent of the two paths the user actually used).
 //
-// images has a UNIQUE (owner_id, sha256) index that drives the
-// dedupe. UPDATE OR IGNORE skips rows whose sha256 already exists
-// on the account side (the user uploaded the same bytes under both
-// identities). The skipped guest row stays at fromOwnerId, so a
-// formerly-guest document (now account-owned) no longer serves it by
-// ownership. Before the documents move, every guest image those
-// documents place is granted to them, in the same batch
-// (docs/specs/009-elements/images.md "Placement grants"), so the
-// canvas keeps rendering the dedupe loser. Only the gallery list
-// filters by owner_id, so the dedupe loser stops showing up there,
-// which is the right outcome (the account twin is identical bytes anyway).
+// Before the documents move, every guest image those documents place is granted to them, in the same
+// batch (docs/specs/009-elements/images.md "Placement grants"), so the canvas keeps rendering them.
 //
-// Other tables (`share_links`, `tabs`) don't carry
+// Other tables (`share_links`, `document_images`) don't carry
 // their own owner_id, they link via `document_id` which is
 // owner-bound, so updating the documents cascade-fixes them
 // implicitly.
@@ -225,7 +199,10 @@ export async function migrateOwnerId(
   const media = mediaClient(env);
   let mediaMoved = 0;
   if (media) {
-    const merged = await media.mergeOwner(await mediaOwner(fromOwnerId), await mediaOwner(toOwnerId));
+    const merged = await media.mergeOwner(
+      await mediaOwner(fromOwnerId),
+      await mediaOwner(toOwnerId),
+    );
     if (!merged.ok) throw new Error(`media: merging the guest's images answered ${merged.status}`);
     mediaMoved = merged.value.moved.length;
   }
@@ -282,16 +259,6 @@ export async function migrateOwnerId(
     placementDrop: move('DELETE FROM placement_defaults WHERE owner_id = ?', fromOwnerId),
     // Community copies (docs/specs/025-community/community.md "Likes") are the Community service's: the migrate
     // route moves the guest's to the account there (mergeCommunityCopier).
-    // images (docs/specs/009-elements/images.md). UPDATE OR IGNORE walks the unique (owner_id,
-    // sha256) collision case (same bytes on both identities) and
-    // leaves those guest rows in place; the grants written with the
-    // documents move above keep them served by every formerly-guest
-    // document that places them.
-    images: move(
-      'UPDATE OR IGNORE images SET owner_id = ? WHERE owner_id = ?',
-      toOwnerId,
-      fromOwnerId,
-    ),
     // media_images (src/media.ts): after the grant above, which reads it. Every one moves, those the
     // service kept on the guest too (the account already had those bytes): the grant keeps them served
     // in the guest's documents, and the bytes are read by id.
@@ -300,13 +267,8 @@ export async function migrateOwnerId(
       toOwnerId,
       fromOwnerId,
     ),
-    // agent_changesets (docs/specs/024-agents/agent-changesets.md, CS27): what they wrote and reverted
-    // as a guest stays theirs.
-    changesets: move(
-      'UPDATE agent_changesets SET author_id = ? WHERE author_id = ?',
-      toOwnerId,
-      fromOwnerId,
-    ),
+    // agent_changesets (docs/specs/024-agents/agent-changesets.md, CS27) are each document's own now (its Durable
+    // Object): a guest's stay under the guest id there until they age out (30 days).
   };
   const keys = Object.keys(statements) as (keyof typeof statements)[];
   const results = await env.DB.batch(keys.map((key) => statements[key]));
@@ -332,7 +294,7 @@ export async function migrateOwnerId(
     documents: changes('documents'),
     folders: changes('folders'),
     shared: changes('shared'),
-    images: changes('images') + mediaMoved,
+    images: mediaMoved,
   };
 }
 

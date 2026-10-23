@@ -15,7 +15,7 @@ import {
 import { WHAT_HAPPENED_EVENT_TYPES, type WhatHappenedRow } from '../home/what-happened';
 import type { Env } from '../types';
 import { VISIBLE_DOCUMENTS_CTES } from './document-visibility';
-import { firstTabCountSql, isEmptyCount } from './tabs';
+import { firstTabCountSql, isEmptyCount } from './content-summary';
 import { DAY_MS } from '../home/local-day';
 import { getParticipants } from '../liveworkspace/profiles';
 
@@ -226,7 +226,10 @@ export async function readWhatHappenedRows(
     description: r.description,
     snapshot: parseSnapshot(r.snapshot),
     document: placeOf(r, names),
-    actor: { name: names.get(r.actor_id)?.name ?? null, color: names.get(r.actor_id)?.color ?? null },
+    actor: {
+      name: names.get(r.actor_id)?.name ?? null,
+      color: names.get(r.actor_id)?.color ?? null,
+    },
   }));
 }
 

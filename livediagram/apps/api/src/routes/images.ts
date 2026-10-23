@@ -3,7 +3,8 @@
 // who may do what, and the service keeps the bytes, the dedupe and the caps.
 
 import { ACCEPTED_IMAGE_TYPES, MAX_IMAGE_BYTES, ORIGINAL_NAME_MAX } from '@liveworkspace/media';
-import { documentServesImage, getDocumentMeta, imageUsageByOwner } from '../db';
+import { documentMayServeImage, getDocumentMeta, imageUsageByOwner } from '../db';
+import { documentRoom } from '../document-client';
 import {
   imageSummary,
   mediaClient,
@@ -47,7 +48,10 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     if (owner instanceof Response) return owner;
     const declaredType = (request.headers.get('Content-Type') ?? '').toLowerCase();
     if (!(ACCEPTED_IMAGE_TYPES as readonly string[]).includes(declaredType)) {
-      return json({ error: 'unsupported_type', acceptedTypes: ACCEPTED_IMAGE_TYPES }, { status: 415 });
+      return json(
+        { error: 'unsupported_type', acceptedTypes: ACCEPTED_IMAGE_TYPES },
+        { status: 415 },
+      );
     }
     const declaredLen = Number(request.headers.get('Content-Length') ?? '0');
     if (!Number.isFinite(declaredLen) || declaredLen <= 0) {
@@ -61,7 +65,8 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     // them, and could probe the gallery for any file it can hash. They upload the body, and the service
     // still dedupes on its real hash.
     const headerSha = (request.headers.get('X-Image-Sha256') ?? '').toLowerCase();
-    const sha256 = !ctx.workbench && !ctx.token && /^[0-9a-f]{64}$/.test(headerSha) ? headerSha : null;
+    const sha256 =
+      !ctx.workbench && !ctx.token && /^[0-9a-f]{64}$/.test(headerSha) ? headerSha : null;
     // Read whole (at most MAX_IMAGE_BYTES, checked above) so the service gets an exact length.
     const bytes = await request.arrayBuffer();
     if (bytes.byteLength > MAX_IMAGE_BYTES) {
@@ -133,8 +138,14 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
           const grant = await gateGrant(ctx, d, liveDoc.ownerId, liveDoc.teamId, COMMUNITY_CONTENT);
           if (grant) {
             // Placed by the document AND servable by it (docs/specs/009-elements/images.md,
-            // "Placement grants"): an id pasted into an unrelated document serves nothing.
-            allowed = await documentServesImage(env, d, imageId, grant.tabScope);
+            // "Placement grants"): an id pasted into an unrelated document serves nothing. The placement is the
+            // document's own to answer (its Durable Object, so an image placed a moment ago serves at once); who
+            // may serve whose image is D1's. Asked together.
+            const [places, serves] = await Promise.all([
+              documentRoom(env, d).placesImage(imageId, grant.tabScope),
+              documentMayServeImage(env, d, imageId),
+            ]);
+            allowed = places && serves;
             if (!allowed) {
               console.warn('[images] not servable by document', { documentId: d, imageId });
             }

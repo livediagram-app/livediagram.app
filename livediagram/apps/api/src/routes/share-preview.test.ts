@@ -148,12 +148,10 @@ describe('GET /api/share/<code>/image.png', () => {
     expect(res.headers.get('Content-Type')).toBe('image/png');
     expect(res.headers.get('Cache-Control')).toBe(SHARE_CARD_CACHE);
     expect(new Uint8Array(await res.arrayBuffer())).toEqual(PNG);
-    expect(documentImageSvg).toHaveBeenCalledWith(
-      expect.anything(),
-      doc,
-      { tabId: null, community: false },
-      expect.objectContaining({ defer: expect.any(Function) }),
-    );
+    expect(documentImageSvg).toHaveBeenCalledWith(expect.anything(), doc, {
+      tabId: null,
+      community: false,
+    });
     await Promise.all(waits);
     expect(images.put).toHaveBeenCalledWith('og/d1', PNG, {
       httpMetadata: { contentType: 'image/png' },
@@ -192,12 +190,10 @@ describe('GET /api/share/<code>/image.png', () => {
     const { result, waits } = call('/share/CODE1234/image.png', { images });
     expect((await result)!.status).toBe(200);
     await Promise.all(waits);
-    expect(documentImageSvg).toHaveBeenCalledWith(
-      expect.anything(),
-      doc,
-      { tabId: 't2', community: false },
-      expect.anything(),
-    );
+    expect(documentImageSvg).toHaveBeenCalledWith(expect.anything(), doc, {
+      tabId: 't2',
+      community: false,
+    });
     expect(images.get).not.toHaveBeenCalled();
     expect(images.put).not.toHaveBeenCalled();
   });
@@ -208,12 +204,10 @@ describe('GET /api/share/<code>/image.png', () => {
     const { result, waits } = call('/share/CODE1234/image.png', { images });
     const res = (await result)!;
     expect(res.headers.get('Cache-Control')).toBe(COMMUNITY_SHARE_CARD_CACHE);
-    expect(documentImageSvg).toHaveBeenCalledWith(
-      expect.anything(),
-      doc,
-      { tabId: null, community: true },
-      expect.anything(),
-    );
+    expect(documentImageSvg).toHaveBeenCalledWith(expect.anything(), doc, {
+      tabId: null,
+      community: true,
+    });
     await Promise.all(waits);
     expect(images.put).toHaveBeenCalledWith('og-community/d1', PNG, expect.anything());
   });

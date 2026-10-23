@@ -6,12 +6,11 @@ import { makeTestRouteContext } from '../routes/test-route-context';
 import { handleDocuments } from '../routes/documents';
 import { deleteAccount } from './account';
 import { deleteDocument } from './documents';
-import { deleteTabRow, linkTabToDocument, upsertTab } from './tabs';
+import { upsertTab } from './tabs';
 
-// Deleting a document removes its links, never a tab another document still
-// holds (docs/specs/006-document/tab-document-many-to-many.md, "Delete a
-// diagram"). Proven on a real SQLite with foreign keys on: the loss this
-// guards against was a five-table cascade that no recorded-SQL test could see.
+// Deleting a document for good removes its D1 row (the Inbox's index rows cascade from it) and everything its
+// document stored (docs/specs/015-api/api.md "Storage", "Purging a room"). Each document holds its own tabs, so another
+// document's content is never touched. Proven on a real SQLite with foreign keys on.
 
 const T0 = 1_700_000_000_000;
 
@@ -34,34 +33,56 @@ function liveDoc(sql: DatabaseSync, id: string, ownerId = 'owner', teamId: strin
   });
 }
 
-// A tab created in `documentId` through the real autosave path, with one
-// collaboration-index row hanging off it.
+// A tab created in `documentId` through the real autosave path, holding one action the document pushes to the
+// Inbox's index.
 async function tab(db: SqliteD1, documentId: string, id: string): Promise<void> {
-  await upsertTab(db.env, documentId, { id, name: id, elements: [] }, 0);
-  insert(db.sql, 'collab_actions', {
-    tab_id: id,
-    element_id: `el-${id}`,
-    action_id: `act-${id}`,
-    element_label: 'Box',
-    name: 'Do it',
-    description: '',
-    status: 'open',
-    assigner_id: 'owner',
-    created_at: T0,
-    updated_at: T0,
-  });
+  await upsertTab(
+    db.env,
+    documentId,
+    {
+      id,
+      name: id,
+      elements: [
+        {
+          id: `el-${id}`,
+          type: 'shape',
+          shape: 'square',
+          x: 0,
+          y: 0,
+          width: 10,
+          height: 10,
+          label: 'Box',
+          action: {
+            id: `act-${id}`,
+            name: 'Do it',
+            description: '',
+            assignee: { userId: 'owner', name: 'Owner' },
+            teamId: null,
+            assignerId: 'owner',
+            assignerName: 'Owner',
+            status: 'open',
+            createdAt: T0,
+            updatedAt: T0,
+          },
+        } as never,
+      ],
+    },
+    0,
+  );
 }
 
 function count(sql: DatabaseSync, table: string, where: string, ...args: string[]): number {
   return Number(sql.prepare(`SELECT COUNT(*) AS n FROM ${table} WHERE ${where}`).get(...args)?.n);
 }
 
-// Everything a tab owns, so a survivor is checked whole rather than by body.
-function tabFootprint(sql: DatabaseSync, id: string) {
+// Everything a document holds of a tab, and the index rows D1 keeps for it.
+async function tabFootprint(db: SqliteD1, id: string) {
+  // Reading D1 lets the documents' push land first (test-sqlite-d1.ts).
+  await db.env.DB.prepare('SELECT 1').first();
   return {
-    body: count(sql, 'tabs', 'id = ?', id),
-    actions: count(sql, 'collab_actions', 'tab_id = ?', id),
-    links: sql
+    body: count(db.sql, 'tabs', 'id = ?', id),
+    actions: count(db.sql, 'collab_actions', 'tab_id = ?', id),
+    links: db.sql
       .prepare('SELECT document_id FROM document_tabs WHERE tab_id = ? ORDER BY document_id')
       .all(id)
       .map((r) => r.document_id),
@@ -71,114 +92,54 @@ function tabFootprint(sql: DatabaseSync, id: string) {
 const GONE = { body: 0, actions: 0, links: [] };
 
 describe('deleteDocument', () => {
-  it('removes the tabs only it holds, with their index rows', async () => {
+  it('removes its tabs, with their index rows', async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'A');
     await tab(db, 'A', 't1');
+    expect(await tabFootprint(db, 't1')).toEqual({ body: 1, actions: 1, links: ['A'] });
 
     await deleteDocument(db.env, 'A');
 
     expect(count(db.sql, 'documents', 'id = ?', 'A')).toBe(0);
-    expect(tabFootprint(db.sql, 't1')).toEqual(GONE);
+    expect(count(db.sql, 'document', 'id = ?', 'A')).toBe(0);
+    expect(await tabFootprint(db, 't1')).toEqual(GONE);
   });
 
-  it('keeps a tab it shares with another document, whole', async () => {
+  it("leaves another document's tabs exactly as they are", async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'A');
     liveDoc(db.sql, 'B');
-    await tab(db, 'A', 'shared');
-    await linkTabToDocument(db.env, 'B', 'shared');
+    await tab(db, 'A', 'a1');
+    await tab(db, 'B', 'b1');
 
     await deleteDocument(db.env, 'A');
 
-    expect(tabFootprint(db.sql, 'shared')).toEqual({
-      body: 1,
-      actions: 1,
-      links: ['B'],
-    });
-  });
-
-  it('keeps a tab that was unlinked from the document it was created in', async () => {
-    // The tab no longer shows in A at all, so deleting A must not touch it.
-    const db = sqliteD1();
-    liveDoc(db.sql, 'A');
-    liveDoc(db.sql, 'B');
-    liveDoc(db.sql, 'C');
-    await tab(db, 'A', 'wanderer');
-    await linkTabToDocument(db.env, 'B', 'wanderer');
-    await linkTabToDocument(db.env, 'C', 'wanderer');
-    await deleteTabRow(db.env, 'A', 'wanderer');
-
-    await deleteDocument(db.env, 'A');
-
-    expect(tabFootprint(db.sql, 'wanderer')).toEqual({
-      body: 1,
-      actions: 1,
-      links: ['B', 'C'],
-    });
-  });
-
-  it('leaves the survivor where it sits in the other document', async () => {
-    const db = sqliteD1();
-    liveDoc(db.sql, 'A');
-    liveDoc(db.sql, 'B');
-    await tab(db, 'B', 'own');
-    await tab(db, 'A', 'shared');
-    await linkTabToDocument(db.env, 'B', 'shared');
-    db.sql.prepare("UPDATE document_tabs SET folder = 'Ref' WHERE tab_id = 'shared'").run();
-
-    await deleteDocument(db.env, 'A');
-
-    const row = db.sql
-      .prepare(
-        "SELECT order_index, folder FROM document_tabs WHERE document_id = 'B' AND tab_id = 'shared'",
-      )
-      .get();
-    expect({ ...row }).toEqual({ order_index: 1, folder: 'Ref' });
-  });
-
-  it('removes a shared tab once the last document holding it goes', async () => {
-    const db = sqliteD1();
-    liveDoc(db.sql, 'A');
-    liveDoc(db.sql, 'B');
-    await tab(db, 'A', 'shared');
-    await linkTabToDocument(db.env, 'B', 'shared');
-
-    await deleteDocument(db.env, 'A');
-    await deleteDocument(db.env, 'B');
-
-    expect(tabFootprint(db.sql, 'shared')).toEqual(GONE);
+    expect(await tabFootprint(db, 'a1')).toEqual(GONE);
+    expect(await tabFootprint(db, 'b1')).toEqual({ body: 1, actions: 1, links: ['B'] });
   });
 });
 
 // Removal proper is the permanent delete (a plain delete moves the document to
 // the Trash, docs/specs/013-workspace/trash.md) and Take Offline.
-describe('DELETE /api/documents/:id?permanent=true with a shared tab', () => {
+describe('DELETE /api/documents/:id?permanent=true', () => {
   function del(db: SqliteD1, opts: Parameters<typeof makeTestRouteContext>[2]) {
     return handleDocuments(
       makeTestRouteContext('DELETE', '/api/documents/A?permanent=true', { env: db.env, ...opts }),
     );
   }
 
-  async function sharedFromA(db: SqliteD1, ownerId: string, teamId: string | null = null) {
-    liveDoc(db.sql, 'A', ownerId, teamId);
-    liveDoc(db.sql, 'B', ownerId);
-    await tab(db, 'A', 'shared');
-    await linkTabToDocument(db.env, 'B', 'shared');
-  }
-
-  it('keeps the tab when the owner deletes from the Explorer', async () => {
+  it('removes the content when the owner deletes from the Explorer', async () => {
     const db = sqliteD1();
-    await sharedFromA(db, 'owner');
+    liveDoc(db.sql, 'A');
+    await tab(db, 'A', 'a1');
 
     const res = await del(db, { owner: 'owner' });
 
     expect(res?.status).toBe(204);
-    expect(tabFootprint(db.sql, 'shared').links).toEqual(['B']);
-    expect(tabFootprint(db.sql, 'shared').body).toBe(1);
+    expect(await tabFootprint(db, 'a1')).toEqual(GONE);
   });
 
-  it('keeps the tab when a teammate deletes a team document', async () => {
+  it('removes the content when a teammate deletes a team document', async () => {
     const db = sqliteD1();
     insert(db.sql, 'teams', { id: 'team', name: 'Team', created_at: T0, updated_at: T0 });
     insert(db.sql, 'team_members', {
@@ -190,21 +151,19 @@ describe('DELETE /api/documents/:id?permanent=true with a shared tab', () => {
       created_at: T0,
       updated_at: T0,
     });
-    await sharedFromA(db, 'user_alice', 'team');
+    liveDoc(db.sql, 'A', 'user_alice', 'team');
+    await tab(db, 'A', 'a1');
 
     const res = await del(db, { owner: 'user_bob', accountUserId: 'user_bob' });
 
     expect(res?.status).toBe(204);
-    expect(tabFootprint(db.sql, 'shared')).toEqual({
-      body: 1,
-      actions: 1,
-      links: ['B'],
-    });
+    expect(await tabFootprint(db, 'a1')).toEqual(GONE);
   });
 
-  it('keeps the tab when the document is taken offline', async () => {
+  it('removes the document when it is taken offline', async () => {
     const db = sqliteD1();
-    await sharedFromA(db, 'owner');
+    liveDoc(db.sql, 'A');
+    await tab(db, 'A', 'a1');
 
     const res = await del(db, {
       owner: 'owner',
@@ -213,29 +172,21 @@ describe('DELETE /api/documents/:id?permanent=true with a shared tab', () => {
 
     expect(res?.status).toBe(204);
     expect(count(db.sql, 'documents', 'id = ?', 'A')).toBe(0);
-    expect(tabFootprint(db.sql, 'shared').links).toEqual(['B']);
-    expect(tabFootprint(db.sql, 'shared').body).toBe(1);
+    expect(await tabFootprint(db, 'a1')).toEqual(GONE);
   });
 });
 
-describe('deleteAccount with a tab shared into someone else’s document', () => {
-  it('keeps the shared tab and removes the rest', async () => {
-    // A document moved out of a team, or transferred on a teammate's account
-    // deletion, can hold a tab whose other documents belong to the leaver.
+describe('deleteAccount', () => {
+  it("removes the leaver's documents' content and keeps everyone else's", async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'mine', 'user_leaver');
     liveDoc(db.sql, 'theirs', 'user_stays');
     await tab(db, 'mine', 'private');
-    await tab(db, 'mine', 'shared');
-    await linkTabToDocument(db.env, 'theirs', 'shared');
+    await tab(db, 'theirs', 'kept');
 
     await deleteAccount(db.env, 'user_leaver');
 
-    expect(tabFootprint(db.sql, 'private')).toEqual(GONE);
-    expect(tabFootprint(db.sql, 'shared')).toEqual({
-      body: 1,
-      actions: 1,
-      links: ['theirs'],
-    });
+    expect(await tabFootprint(db, 'private')).toEqual(GONE);
+    expect(await tabFootprint(db, 'kept')).toEqual({ body: 1, actions: 1, links: ['theirs'] });
   });
 });

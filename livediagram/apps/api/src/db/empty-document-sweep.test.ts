@@ -24,6 +24,13 @@ function tab(sql: DatabaseSync, id: string, data: unknown, ...documentIds: strin
     name: id,
     data: typeof data === 'string' ? data : JSON.stringify(data),
     updated_at: 0,
+    // The count every write stamps: the elements a body holds, 0 for one that is not JSON.
+    element_count:
+      typeof data === 'object' &&
+      data !== null &&
+      Array.isArray((data as { elements?: unknown }).elements)
+        ? (data as { elements: unknown[] }).elements.length
+        : 0,
   });
   documentIds.forEach((documentId, i) =>
     insert(sql, 'document_tabs', {
@@ -102,7 +109,7 @@ describe('trashEmptyDocuments', () => {
     expect(state(db.sql, 'blank').trash_reason).toBe('empty');
   });
 
-  it('keeps a document whose only content is a former Form tab\'s form, which is not an element', async () => {
+  it("keeps a document whose only content is a former Form tab's form, which is not an element", async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'survey', { savedAt: STALE - DAY });
     liveDoc(db.sql, 'blank', { savedAt: STALE - DAY });

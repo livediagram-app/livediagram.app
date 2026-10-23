@@ -44,7 +44,7 @@ import {
   missingDocument,
   readBody,
   requireOwner,
-  type RouteContext,
+  type DocumentRouteContext,
 } from './context';
 
 type ThreadVerb = 'reply' | 'resolve' | 'reopen';
@@ -58,7 +58,7 @@ const threadOf = (el: Element): CommentThread | undefined =>
 
 // The caller and the document, when the caller may take part on the tab.
 async function participant(
-  ctx: RouteContext,
+  ctx: DocumentRouteContext,
   id: string,
   tabId: string,
 ): Promise<Caller | Response> {
@@ -79,7 +79,7 @@ type Mutation = Change | 'unchanged' | Response;
 // Reads the tab, applies `mutate` and writes at the revision read; a lost race re-reads and repeats once, then
 // answers 409 `tab_busy` (PR22). The delta is relayed after the write lands.
 async function writeTab(
-  ctx: RouteContext,
+  ctx: DocumentRouteContext,
   id: string,
   tabId: string,
   mutate: (tab: TabDTO) => Mutation,
@@ -107,7 +107,7 @@ async function writeTab(
 
 // A new comment from the caller, its author fields server-stamped (and the token id, for an agent: PR23).
 export async function newComment(
-  ctx: RouteContext,
+  ctx: DocumentRouteContext,
   owner: string,
   body: Record<string, unknown>,
 ): Promise<Comment | Response> {
@@ -144,9 +144,9 @@ function appended(tab: TabDTO, elementId: string, comment: Comment): Mutation {
   };
 }
 
-// The timeline and the owner's email for a posted comment (add and reply alike, on the canvas or on a card).
+// The timeline and the owner's email for a posted comment (add and reply alike).
 export function afterCommentPosted(
-  ctx: RouteContext,
+  ctx: DocumentRouteContext,
   caller: Caller,
   comment: Comment,
   reply: boolean,
@@ -176,7 +176,7 @@ export function afterCommentPosted(
     );
 }
 
-async function addComment(ctx: RouteContext, id: string, tabId: string): Promise<Response> {
+async function addComment(ctx: DocumentRouteContext, id: string, tabId: string): Promise<Response> {
   const caller = await participant(ctx, id, tabId);
   if (caller instanceof Response) return caller;
   const body = await readBody(ctx);
@@ -203,7 +203,7 @@ async function addComment(ctx: RouteContext, id: string, tabId: string): Promise
 
 // Delete-own only: removing someone else's comment goes through the edit-gated tab save.
 async function deleteOwn(
-  ctx: RouteContext,
+  ctx: DocumentRouteContext,
   id: string,
   tabId: string,
   commentId: string,
@@ -217,8 +217,7 @@ async function deleteOwn(
     if (host.comment.authorId !== caller.owner) return forbidden();
     const el = tab.elements.find((e) => e.id === host.elementId)!;
     // The opening comment's text is what the thread's resolved event says.
-    threadKey =
-      threadOf(el)?.comments[0]?.id === commentId ? `${id}:${host.elementId}` : null;
+    threadKey = threadOf(el)?.comments[0]?.id === commentId ? `${id}:${host.elementId}` : null;
     return {
       elements: removeComment(tab.elements, commentId),
       elementId: host.elementId,
@@ -232,7 +231,7 @@ async function deleteOwn(
 }
 
 async function threadVerb(
-  ctx: RouteContext,
+  ctx: DocumentRouteContext,
   id: string,
   tabId: string,
   commentId: string,
@@ -291,7 +290,7 @@ async function threadVerb(
 
 // GET /api/documents/:id/comments?status=: the threads across the document, one tab read at a time (PR21). A
 // grant confined to one tab lists that tab only.
-async function listThreads(ctx: RouteContext, id: string): Promise<Response> {
+async function listThreads(ctx: DocumentRouteContext, id: string): Promise<Response> {
   const status = ctx.url.searchParams.get('status') ?? 'open';
   if (!isCommentListStatus(status)) return json({ error: 'invalid_status' }, { status: 400 });
   const doc = await getDocument(ctx.env, id);
@@ -320,7 +319,7 @@ async function listThreads(ctx: RouteContext, id: string): Promise<Response> {
 }
 
 // The comment routes, or null for a path that is not theirs. Every refusal is logged here, once, with its code.
-export async function handleCommentRoutes(ctx: RouteContext): Promise<Response | null> {
+export async function handleCommentRoutes(ctx: DocumentRouteContext): Promise<Response | null> {
   const res = await commentRoute(ctx);
   if (res && res.status >= 400)
     await logRefusal('[comments] refused', res, {
@@ -332,7 +331,7 @@ export async function handleCommentRoutes(ctx: RouteContext): Promise<Response |
   return res;
 }
 
-async function commentRoute(ctx: RouteContext): Promise<Response | null> {
+async function commentRoute(ctx: DocumentRouteContext): Promise<Response | null> {
   const { segments, request } = ctx;
   const id = segments[2]!;
   if (segments.length === 4 && segments[3] === 'comments')

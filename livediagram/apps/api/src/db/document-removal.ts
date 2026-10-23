@@ -1,12 +1,7 @@
-// Removing documents without taking shared tabs with them
-// (docs/specs/006-document/tab-document-many-to-many.md, "Delete a diagram").
-//
-// A tab can sit in several documents, so deleting a container is the
-// document-scoped form of deleteTabRow: the doomed documents' links go, a tab
-// with no link left goes with its history and index rows (their FKs cascade
-// from `tabs`; `image_refs` has none, so it is pruned first), and a tab still linked elsewhere stays exactly as it is there.
-// Nothing cascades from `diagrams` into `tabs` (migration 0049), so a tab this
-// doesn't drop would be stranded with no document to reach it from.
+// Removing documents' D1 rows (the Trash purge, account deletion, a delete for good). Everything keyed by a
+// document cascades from its row (share links, the Inbox's index rows) or goes in the same batch (its image
+// index and grants, which have no foreign key). The content is each document's own Durable Object's, which the
+// caller purges after (room-purge-client.ts `purgeRooms`).
 
 import type { Env } from '../types';
 import { imageGrantRemovalStatement } from './image-grants';
@@ -32,20 +27,13 @@ export function documentRemovalStatements(
 ): D1PreparedStatement[] {
   const { where, value } = selectorWhere(selector);
   const doomed = `SELECT id FROM documents WHERE ${where}`;
-  // The tabs that go: linked into a doomed document and into nothing else.
-  const doomedTabs = `SELECT dt.tab_id FROM document_tabs dt
-                       WHERE dt.document_id IN (${doomed})
-                         AND NOT EXISTS (SELECT 1 FROM document_tabs o
-                                          WHERE o.tab_id = dt.tab_id AND o.document_id NOT IN (${doomed}))`;
   return [
     // The media service hears that these documents place nothing any more (src/media.ts), before the
     // references below go.
     mediaRefQueueDocumentsStatement(env, `d.id IN (${doomed.replace('?', '?2')})`, [value]),
-    // image_refs has no FK (docs/specs/009-elements/images.md, "Reference index"), so the doomed
-    // tabs' references go explicitly, first, while the links that name them still exist.
-    env.DB.prepare(`DELETE FROM image_refs WHERE tab_id IN (${doomedTabs})`).bind(value, value),
-    // Placement grants are keyed by document, also without an FK
-    // (docs/specs/009-elements/images.md, "Placement grants").
+    // document_images and the placement grants are keyed by document without an FK
+    // (docs/specs/009-elements/images.md, "Reference index", "Placement grants").
+    env.DB.prepare(`DELETE FROM document_images WHERE document_id IN (${doomed})`).bind(value),
     imageGrantRemovalStatement(env, doomed, [value]),
     // The Google Drive mirror's rows (docs/specs/022-drive-mirror/drive-mirror.md, "Data"):
     // a removed document is no longer mirrored. The browser finishes the Drive
@@ -53,13 +41,6 @@ export function documentRemovalStatements(
     env.DB.prepare(
       `DELETE FROM drive_items WHERE item_kind = 'document' AND ld_id IN (${doomed})`,
     ).bind(value),
-    // Before the documents DELETE: its cascade takes the links this reads.
-    env.DB.prepare(
-      `DELETE FROM tabs
-        WHERE id IN (SELECT tab_id FROM document_tabs WHERE document_id IN (${doomed}))
-          AND NOT EXISTS (SELECT 1 FROM document_tabs o
-                           WHERE o.tab_id = tabs.id AND o.document_id NOT IN (${doomed}))`,
-    ).bind(value, value),
     env.DB.prepare(`DELETE FROM documents WHERE ${where}`).bind(value),
   ];
 }

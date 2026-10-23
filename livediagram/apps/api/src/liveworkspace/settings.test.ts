@@ -41,7 +41,9 @@ describe('readPreferences / writePreferences (liveworkspace settings)', () => {
 
   it('splits a patch: shared keys to all, the rest to livediagram.app; null deletes', async () => {
     accounts.settings.set('user_a livediagram.app', { gridSnap: true, gone: 1 });
-    expect(await writePreferences(env, 'user_a', { reduceMotion: false, gridSnap: false, gone: null })).toBe(true);
+    expect(
+      await writePreferences(env, 'user_a', { reduceMotion: false, gridSnap: false, gone: null }),
+    ).toBe(true);
     expect(accounts.settings.get('user_a all')).toEqual({ reduceMotion: false });
     expect(accounts.settings.get('user_a livediagram.app')).toEqual({ gridSnap: false });
   });

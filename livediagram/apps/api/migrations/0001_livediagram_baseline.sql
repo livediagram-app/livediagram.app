@@ -5,12 +5,28 @@
 
 
 CREATE TABLE documents (
-  id           TEXT    PRIMARY KEY,
-  owner_id     TEXT    NOT NULL,
-  name         TEXT    NOT NULL,
-  saved_at     INTEGER NOT NULL,
-  created_at   INTEGER NOT NULL
-, shareable INTEGER NOT NULL DEFAULT 0, folder_id TEXT NULL, share_password TEXT, team_id TEXT NULL, source TEXT NULL, comment_notified_at INTEGER, thumb_rendered_at INTEGER, presentation TEXT NULL, trashed_at INTEGER NULL, trash_reason TEXT NULL, opens_in TEXT, tab_kind TEXT, template_family TEXT, items_rev INTEGER NOT NULL DEFAULT 0, items_next_key INTEGER NOT NULL DEFAULT 1, item_types TEXT NULL, item_types_rev INTEGER NOT NULL DEFAULT 0, join_notified_at INTEGER);
+  id                  TEXT    PRIMARY KEY,
+  owner_id            TEXT    NOT NULL,
+  name                TEXT    NOT NULL,
+  saved_at            INTEGER NOT NULL,
+  created_at          INTEGER NOT NULL,
+  shareable           INTEGER NOT NULL DEFAULT 0,
+  folder_id           TEXT    NULL,
+  share_password      TEXT,
+  team_id             TEXT    NULL,
+  source              TEXT    NULL,
+  comment_notified_at INTEGER,
+  thumb_rendered_at   INTEGER,
+  trashed_at          INTEGER NULL,
+  trash_reason        TEXT    NULL,
+  opens_in            TEXT,
+  tab_kind            TEXT,
+  template_family     TEXT,
+  join_notified_at    INTEGER,
+  -- What the listings show of the content, pushed by the document's Durable Object
+  -- (document-room/document-outbox.ts): JSON. NULL until its first push.
+  content_summary     TEXT    NULL
+);
 
 CREATE TABLE share_links (
   code        TEXT    PRIMARY KEY,
@@ -40,28 +56,6 @@ CREATE TABLE shared_with (
   CHECK (level IS NULL OR level IN ('view', 'participate', 'edit')), share_code TEXT NULL,
   PRIMARY KEY (owner_id, document_id),
   FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
-);
-
-CREATE TABLE document_tabs (
-  document_id  TEXT    NOT NULL,
-  tab_id      TEXT    NOT NULL,
-  order_index INTEGER NOT NULL,
-  added_at    INTEGER NOT NULL, folder TEXT,
-  PRIMARY KEY (document_id, tab_id),
-  FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE,
-  FOREIGN KEY (tab_id)     REFERENCES tabs(id)     ON DELETE CASCADE
-);
-
-CREATE TABLE images (
-  id            TEXT PRIMARY KEY,
-  owner_id      TEXT NOT NULL,
-  content_type  TEXT NOT NULL,
-  byte_size     INTEGER NOT NULL,
-  width         INTEGER NOT NULL,
-  height        INTEGER NOT NULL,
-  sha256        TEXT NOT NULL,
-  original_name TEXT,
-  created_at    INTEGER NOT NULL
 );
 
 CREATE TABLE events (
@@ -177,24 +171,23 @@ CREATE TABLE timeline_scope_state (
 );
 
 CREATE TABLE collab_threads (
+  document_id         TEXT    NOT NULL REFERENCES documents (id) ON DELETE CASCADE,
   tab_id              TEXT    NOT NULL,
+  tab_name            TEXT    NOT NULL,
   element_id          TEXT    NOT NULL,
   element_label       TEXT    NOT NULL,
-  resolved            INTEGER NOT NULL,           -- 0 | 1
+  resolved            INTEGER NOT NULL,
   comment_count       INTEGER NOT NULL,
-  -- JSON array of the distinct comment author ids (server-stamped
-  -- `authorId`s), queried with json_each. Not indexable and not needing
-  -- to be: the read is bounded by the reader's library first.
+  -- JSON array of the distinct comment author ids, queried with json_each.
   participant_ids     TEXT    NOT NULL,
-  -- What the row shows: the newest comment. Every other comment stays
-  -- in the blob; no email address ever lands here (docs/specs/012-collaboration/assigned-actions.md §1).
+  -- What the row shows: the newest comment. No email address ever lands here.
   latest_text         TEXT    NOT NULL,
   latest_author_name  TEXT    NOT NULL,
   latest_author_color TEXT    NOT NULL,
   first_at            INTEGER NOT NULL,
-  latest_at           INTEGER NOT NULL, mentioned_ids TEXT NOT NULL DEFAULT '[]',
-  PRIMARY KEY (tab_id, element_id),
-  FOREIGN KEY (tab_id) REFERENCES tabs(id) ON DELETE CASCADE
+  latest_at           INTEGER NOT NULL,
+  mentioned_ids       TEXT    NOT NULL DEFAULT '[]',
+  PRIMARY KEY (document_id, tab_id, element_id)
 );
 
 CREATE TABLE owner_aliases (
@@ -204,34 +197,10 @@ CREATE TABLE owner_aliases (
   PRIMARY KEY (owner_id, alias_id)
 );
 
-CREATE TABLE collab_index_state (
-  owner_id      TEXT    PRIMARY KEY,
-  backfilled_at INTEGER NOT NULL
-);
-
-CREATE TABLE tabs (
-  id          TEXT    PRIMARY KEY,
-  name        TEXT    NOT NULL,
-  -- The live app's Tab minus { id, name }: elements + per-tab settings.
-  data        TEXT    NOT NULL,
-  updated_at  INTEGER NOT NULL
-, element_count INTEGER NULL, rev INTEGER NOT NULL DEFAULT 0);
-
-CREATE TABLE image_refs (
-  tab_id   TEXT NOT NULL,
-  image_id TEXT NOT NULL,
-  PRIMARY KEY (tab_id, image_id)
-) WITHOUT ROWID;
-
-CREATE TABLE image_refs_backfill (
-  id           INTEGER PRIMARY KEY CHECK (id = 1),
-  created_at   INTEGER NOT NULL,
-  cursor       INTEGER NOT NULL DEFAULT 0,
-  completed_at INTEGER
-);
-
 CREATE TABLE collab_actions (
+  document_id        TEXT    NOT NULL REFERENCES documents (id) ON DELETE CASCADE,
   tab_id             TEXT    NOT NULL,
+  tab_name           TEXT    NOT NULL,
   element_id         TEXT    NOT NULL,
   action_id          TEXT    NOT NULL,
   element_label      TEXT    NOT NULL,
@@ -246,8 +215,7 @@ CREATE TABLE collab_actions (
   team_id            TEXT,
   created_at         INTEGER NOT NULL,
   updated_at         INTEGER NOT NULL,
-  PRIMARY KEY (tab_id, element_id, action_id),
-  FOREIGN KEY (tab_id) REFERENCES tabs(id) ON DELETE CASCADE
+  PRIMARY KEY (document_id, tab_id, element_id, action_id)
 );
 
 CREATE TABLE drive_connections (
@@ -306,33 +274,6 @@ CREATE TABLE document_opens (
   PRIMARY KEY (owner_id, document_id)
 );
 
-CREATE TABLE agent_changesets (
-  id TEXT PRIMARY KEY,
-  document_id TEXT NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
-  tab_id TEXT NOT NULL REFERENCES tabs(id) ON DELETE CASCADE,
-  rev INTEGER NOT NULL,
-  base_rev INTEGER,
-  author_id TEXT NOT NULL,
-  author_name TEXT NOT NULL,
-  author_color TEXT NOT NULL,
-  token_id TEXT,
-  summary TEXT,
-  fingerprints TEXT NOT NULL,
-  added INTEGER NOT NULL,
-  changed INTEGER NOT NULL,
-  removed INTEGER NOT NULL,
-  created_tab INTEGER NOT NULL DEFAULT 0,
-  revert_of TEXT,
-  created_at INTEGER NOT NULL
-);
-
-CREATE TABLE agent_changeset_parts (
-  changeset_id TEXT NOT NULL REFERENCES agent_changesets(id) ON DELETE CASCADE,
-  part TEXT NOT NULL CHECK (part IN ('ops', 'inverse', 'results')),
-  data TEXT NOT NULL,
-  PRIMARY KEY (changeset_id, part)
-);
-
 CREATE TABLE image_grants (
   document_id TEXT NOT NULL,
   image_id    TEXT NOT NULL,
@@ -371,15 +312,6 @@ CREATE TABLE workbench_pairings (
   created_at INTEGER NOT NULL, scope TEXT NOT NULL DEFAULT 'document'
   CHECK (scope IN ('document', 'workspace')),
   UNIQUE (token_id, origin)
-);
-
-CREATE TABLE tab_stats (
-  tab_id        TEXT    PRIMARY KEY REFERENCES tabs(id) ON DELETE CASCADE,
-  mode          TEXT    NOT NULL,
-  element_count INTEGER NOT NULL,
-  comment_count INTEGER NOT NULL,
-  data_bytes    INTEGER NOT NULL,
-  written_at    INTEGER NOT NULL
 );
 
 CREATE TABLE notify_email_claims (
@@ -463,10 +395,6 @@ CREATE INDEX folders_parent_idx ON folders(parent_id);
 
 CREATE INDEX shared_with_by_owner ON shared_with(owner_id, last_seen DESC);
 
-CREATE UNIQUE INDEX images_owner_sha_idx ON images (owner_id, sha256);
-
-CREATE INDEX images_owner_created_idx ON images (owner_id, created_at DESC);
-
 CREATE INDEX events_ts_idx ON events (ts);
 
 CREATE INDEX team_members_team_idx ON team_members(team_id);
@@ -495,8 +423,6 @@ CREATE INDEX collab_threads_open_idx ON collab_threads (resolved, latest_at);
 
 CREATE INDEX owner_aliases_alias_idx ON owner_aliases (alias_id);
 
-CREATE INDEX image_refs_image_idx ON image_refs (image_id);
-
 CREATE INDEX collab_actions_assignee_idx ON collab_actions (assignee_user_id, status);
 
 CREATE INDEX collab_actions_assigner_idx ON collab_actions (assigner_id, status);
@@ -513,10 +439,6 @@ CREATE INDEX documents_source_idx ON documents (source);
 
 CREATE INDEX documents_trashed_idx ON documents (trashed_at) WHERE trashed_at IS NOT NULL;
 
-CREATE INDEX document_tabs_by_document ON document_tabs (document_id, order_index);
-
-CREATE INDEX document_tabs_by_tab ON document_tabs (tab_id);
-
 CREATE INDEX idx_share_links_document_created ON share_links (document_id, created_at);
 
 CREATE INDEX idx_share_links_document_role_created ON share_links (document_id, role, created_at);
@@ -528,12 +450,6 @@ CREATE INDEX shape_libraries_owner_created_idx ON shape_libraries (owner_id, cre
 CREATE INDEX document_opens_last_idx ON document_opens (last_opened_at);
 
 CREATE INDEX timeline_events_actor_idx ON timeline_events (actor_id, occurred_at DESC, id DESC);
-
-CREATE UNIQUE INDEX agent_changesets_tab_rev ON agent_changesets(tab_id, rev);
-
-CREATE INDEX agent_changesets_document_created ON agent_changesets(document_id, created_at);
-
-CREATE INDEX agent_changesets_created ON agent_changesets(created_at);
 
 CREATE INDEX ws_tickets_expires_at ON ws_tickets(expires_at);
 
@@ -553,8 +469,6 @@ CREATE INDEX notify_email_claims_created ON notify_email_claims (created_at);
 CREATE INDEX favourites_document_idx ON favourites (document_id);
 
 CREATE INDEX document_opens_document_idx ON document_opens (document_id);
-
-CREATE INDEX agent_changesets_author_idx ON agent_changesets (author_id);
 
 CREATE INDEX team_members_pending_idx ON team_members (clock_started_at)
   WHERE status = 'invited';
@@ -576,9 +490,9 @@ CREATE INDEX workbench_session_rooms_document_idx ON workbench_session_rooms (do
 
 CREATE INDEX media_images_owner_idx ON media_images (owner_id);
 
-CREATE TRIGGER tabs_rev_advances BEFORE UPDATE OF data ON tabs
-  WHEN NEW.rev IS NOT OLD.rev + 1
-  BEGIN SELECT RAISE(ABORT, 'tab_rev_stale'); END;
-
--- A fresh database has no tabs written before the reference index, so its backfill starts complete.
-INSERT INTO image_refs_backfill (id, created_at, cursor, completed_at) VALUES (1, 0, 0, 0);
+CREATE TABLE document_images (
+  document_id TEXT NOT NULL,
+  image_id    TEXT NOT NULL,
+  PRIMARY KEY (document_id, image_id)
+) WITHOUT ROWID;
+CREATE INDEX document_images_image_idx ON document_images (image_id);

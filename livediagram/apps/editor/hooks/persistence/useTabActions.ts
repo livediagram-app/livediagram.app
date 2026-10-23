@@ -24,7 +24,7 @@ import {
   type Element,
   type Tab,
 } from '@livediagram/document';
-import { apiLinkTab } from '@/lib/api-client';
+import { apiCopyTabTo } from '@/lib/api-client';
 import { newTabOpening, newTabSeed } from '@/lib/new-tab-seed';
 import { track } from '@/lib/telemetry';
 import { useBoardSceneImport } from './useBoardSceneImport';
@@ -183,21 +183,25 @@ export function useTabActions(deps: TabActionsDeps) {
     track('Tab', 'Renamed');
   };
 
-  // Link the active tab into another of the user's documents (docs/specs/006-document/tab-document-many-to-many.md).
-  // Goes through POST /api/documents/<target>/tabs/<tabId>/link so the
-  // server inserts one `document_tabs` row pointing at the existing
-  // tab body. The previous implementation cloned the tab into a fresh
-  // row with a new id; that duplicated the content (edits on either
-  // side stayed siloed) and the menu label promised the linking
-  // behaviour the user actually wanted. After this call, edits to
-  // the tab from either document write to the same `tabs.data` row.
+  // Copy the active tab into another of the user's documents. Each document holds its own content (its Durable Object,
+  // docs/specs/015-api/api.md "Storage"), so this is a copy under fresh ids, not a tab shared by both: edits on
+  // either side stay on that side.
   const linkActiveTabTo = async (targetDocumentId: string) => {
     const source = tabs.find((t) => t.id === activeId);
     if (!source) return;
     const target =
       toastName(documentList.find((d) => d.id === targetDocumentId)?.name) ?? 'that document';
+    // A still-loading source is an empty placeholder: copying it would save an empty tab there.
+    if (!isTabLoaded(source.id)) {
+      toast.error('That tab is still loading. Try again in a moment.');
+      return;
+    }
     try {
-      await apiLinkTab(ownerId, targetDocumentId, source.id);
+      await apiCopyTabTo(
+        ownerId,
+        targetDocumentId,
+        remintTabElements({ ...source, elements: source.elements.map((el) => ({ ...el })) }),
+      );
       toast.success(`${toastName(source.name) ?? 'Tab'} added to ${target}`);
       track('Tab', 'Linked');
     } catch {

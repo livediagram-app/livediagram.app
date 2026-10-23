@@ -33,9 +33,19 @@ describe('getParticipants (liveworkspace profiles)', () => {
     accounts.profiles.set(`guest_${GUEST}`, { name: 'Gus', color: null, createdAt: 7 });
     const found = await getParticipants(env, ['user_a', GUEST, 'user_a', 'user_gone']);
     expect(accounts.calls).toEqual(['POST /profiles/read']);
-    expect(found.get('user_a')).toEqual({ id: 'user_a', name: 'Ann', color: '#111111', createdAt: 5 });
+    expect(found.get('user_a')).toEqual({
+      id: 'user_a',
+      name: 'Ann',
+      color: '#111111',
+      createdAt: 5,
+    });
     // No colour of their own: the palette's pick for the id.
-    expect(found.get(GUEST)).toEqual({ id: GUEST, name: 'Gus', color: colorForKey(GUEST), createdAt: 7 });
+    expect(found.get(GUEST)).toEqual({
+      id: GUEST,
+      name: 'Gus',
+      color: colorForKey(GUEST),
+      createdAt: 7,
+    });
     expect(found.has('user_gone')).toBe(false);
   });
 

@@ -6,8 +6,9 @@
 // What this api keeps (migration 0101):
 //   - media_images: whose each image is, as this api names owners, for the placement grants
 //     (db/image-grants.ts). Filled when an image is uploaded here, listed in a gallery here, or asked for.
-//   - media_ref_outbox: the documents whose images changed since the service last heard. The ref writers
-//     (db/image-refs.ts) queue them in the batch that changes them; the every-minute cron sends them.
+//   - media_ref_outbox: the documents whose images changed since the service last heard. Each document's
+//     Durable Object queues itself as it pushes its images to `document_images` (document-room/document-outbox.ts),
+//     a removal queues what it removes; the every-minute cron sends them.
 
 import {
   createMediaClient,
@@ -80,32 +81,29 @@ export async function mediaImageOwner(
 
 // ---------- References (liveworkspace/docs/media.md "References") ----------
 
-// Queue the documents holding tab `tabId` when its images change: before a body write's reference
-// statements, so it compares the new set with the one stored. A save that changes no image queues nothing.
-export function mediaRefQueueTabStatement(
+// The document's images as its Durable Object pushes them (document-room/document-outbox.ts): queue it for the
+// service when the set differs from the one `document_images` holds, before the push replaces those rows. A push
+// whose set is unchanged queues nothing. A document D1 no longer has queues nothing either.
+export function mediaRefQueueSetStatement(
   env: Env,
-  tabId: string,
+  documentId: string,
   ids: string[],
-  addOnly: boolean,
 ): D1PreparedStatement {
-  const removed = addOnly
-    ? ''
-    : `OR EXISTS (SELECT 1 FROM image_refs r
-                   WHERE r.tab_id = ?1 AND r.image_id NOT IN (SELECT value FROM json_each(?2)))`;
   return env.DB.prepare(
     `INSERT INTO media_ref_outbox (document_id, queued_at)
-     SELECT dt.document_id, ?3 FROM document_tabs dt
-      WHERE dt.tab_id = ?1
+     SELECT d.id, ?3 FROM documents d
+      WHERE d.id = ?1
         AND (EXISTS (SELECT 1 FROM json_each(?2) j
-                      WHERE NOT EXISTS (SELECT 1 FROM image_refs r
-                                         WHERE r.tab_id = ?1 AND r.image_id = j.value))
-             ${removed})
+                      WHERE NOT EXISTS (SELECT 1 FROM document_images r
+                                         WHERE r.document_id = ?1 AND r.image_id = j.value))
+             OR EXISTS (SELECT 1 FROM document_images r
+                         WHERE r.document_id = ?1 AND r.image_id NOT IN (SELECT value FROM json_each(?2))))
      ON CONFLICT (document_id) DO UPDATE SET queued_at = excluded.queued_at`,
-  ).bind(tabId, JSON.stringify(ids), Date.now());
+  ).bind(documentId, JSON.stringify(ids), Date.now());
 }
 
-// Queue the documents `where` picks (a SQL condition on `d`, its params bound from ?2 on): a tab linked
-// in, a document removed. Only those placing an image, unless `where` already says why it changed.
+// Queue the documents `where` picks (a SQL condition on `d`, its params bound from ?2 on): a document removed.
+// Only those placing an image, unless `where` already says why it changed.
 export function mediaRefQueueDocumentsStatement(
   env: Env,
   where: string,
@@ -113,8 +111,7 @@ export function mediaRefQueueDocumentsStatement(
   onlyPlacing = true,
 ): D1PreparedStatement {
   const placing = onlyPlacing
-    ? `AND EXISTS (SELECT 1 FROM document_tabs dt JOIN image_refs r ON r.tab_id = dt.tab_id
-                    WHERE dt.document_id = d.id)`
+    ? `AND EXISTS (SELECT 1 FROM document_images r WHERE r.document_id = d.id)`
     : '';
   return env.DB.prepare(
     `INSERT INTO media_ref_outbox (document_id, queued_at)
@@ -150,9 +147,9 @@ export async function flushMediaRefs(env: Env, announce = false): Promise<number
   }
   const ids = rows.map((r) => r.document_id);
   const placed = await env.DB.prepare(
-    `SELECT DISTINCT dt.document_id, r.image_id
-       FROM document_tabs dt JOIN image_refs r ON r.tab_id = dt.tab_id
-      WHERE dt.document_id IN (SELECT value FROM json_each(?))`,
+    `SELECT r.document_id, r.image_id
+       FROM document_images r
+      WHERE r.document_id IN (SELECT value FROM json_each(?))`,
   )
     .bind(JSON.stringify(ids))
     .all<{ document_id: string; image_id: string }>();

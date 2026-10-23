@@ -15,14 +15,14 @@ Derived from [New version prompt](../new-version-prompt.md).
 
 ## Modules
 
-| File                                               | Responsibility                                                                                        |
-| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `packages/api-schema/src/document-format.ts`       | `DOCUMENT_FORMAT`, `DOCUMENT_FORMAT_HEADER`, `parseDocumentFormat`                                    |
-| `apps/api/src/server-release-header.ts`            | `withServerRelease(response, buildId)`: the headers on every response but a 101                       |
-| `apps/api/src/index.ts`                            | The worker's `fetch` returns `withServerRelease(..., env.BUILD_ID)`                                   |
-| `apps/api/src/responses.ts`                        | `CORS_HEADERS` exposes the header                                                                     |
-| `apps/api/src/document-room.ts`                    | Sends the room format message on `hello`                                                              |
-| `packages/api-schema/src/room-messages.ts`         | The `format` kind on `ServerMessage` and `RoomIncoming`                                               |
+| File                                                 | Responsibility                                                                                        |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `packages/api-schema/src/document-format.ts`         | `DOCUMENT_FORMAT`, `DOCUMENT_FORMAT_HEADER`, `parseDocumentFormat`                                    |
+| `apps/api/src/server-release-header.ts`              | `withServerRelease(response, buildId)`: the headers on every response but a 101                       |
+| `apps/api/src/index.ts`                              | The worker's `fetch` returns `withServerRelease(..., env.BUILD_ID)`                                   |
+| `apps/api/src/responses.ts`                          | `CORS_HEADERS` exposes the header                                                                     |
+| `apps/api/src/document-room/document-room.ts`        | Sends the room format message on `hello`                                                              |
+| `packages/api-schema/src/room-messages.ts`           | The `format` kind on `ServerMessage` and `RoomIncoming`                                               |
 | `apps/editor/lib/server-release.ts`                  | The page's server release store (format number and build id, docs/specs/016-platform/stale-builds.md) |
 | `apps/editor/lib/api/core.ts`                        | `apiFetch` notes the header                                                                           |
 | `apps/editor/lib/api/room.ts`                        | The room client notes the message                                                                     |
@@ -135,17 +135,17 @@ The number is not a secret and grants nothing; a forged value can only show a re
 
 ## Testing
 
-| Rule                                                     | Test                                                               |
-| -------------------------------------------------------- | ------------------------------------------------------------------ |
-| Format parsing                                           | `packages/api-schema/src/document-format.test.ts`                  |
-| Header on responses, not on a 101; CORS exposes it       | `apps/api/src/server-release-header.test.ts`                       |
-| Room sends its format on hello                           | `apps/api/src/document-room.test.ts`                               |
-| Store keeps the maximum, notifies on rise, ignores junk  | `apps/editor/lib/server-release.test.ts`                             |
+| Rule                                                     | Test                                                                   |
+| -------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Format parsing                                           | `packages/api-schema/src/document-format.test.ts`                      |
+| Header on responses, not on a 101; CORS exposes it       | `apps/api/src/server-release-header.test.ts`                           |
+| Room sends its format on hello                           | `apps/api/src/document-room.test.ts`                                   |
+| Store keeps the maximum, notifies on rise, ignores junk  | `apps/editor/lib/server-release.test.ts`                               |
 | `apiFetch` and the room client note the number           | `apps/editor/lib/api/core.test.ts`, `apps/editor/lib/api/room.test.ts` |
-| Reload waits for a settled save, gives up after the wait | `apps/editor/lib/reload-when-saved.test.ts`                          |
-| Prompt states, copy, role, keyboard, telemetry           | `apps/editor/components/chrome/NewVersionPrompt.test.tsx`            |
-| `hasUnsavedChanges`                                      | `apps/editor/app/document/[id]/useAutosave.test.tsx`                 |
-| An older editor against a newer server (Playwright)      | `apps/editor/e2e/new-version-prompt.spec.ts`                         |
+| Reload waits for a settled save, gives up after the wait | `apps/editor/lib/reload-when-saved.test.ts`                            |
+| Prompt states, copy, role, keyboard, telemetry           | `apps/editor/components/chrome/NewVersionPrompt.test.tsx`              |
+| `hasUnsavedChanges`                                      | `apps/editor/app/document/[id]/useAutosave.test.tsx`                   |
+| An older editor against a newer server (Playwright)      | `apps/editor/e2e/new-version-prompt.spec.ts`                           |
 
 ## Constants and configuration
 

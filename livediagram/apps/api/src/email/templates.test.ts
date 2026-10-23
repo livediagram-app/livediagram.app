@@ -59,7 +59,6 @@ describe('email templates', () => {
     expect(e.html).not.toContain('<img src=x');
     expect(e.html).toContain('&lt;img');
   });
-
 });
 
 describe('mentionedEmail (docs/specs/012-collaboration/comment-mentions.md)', () => {

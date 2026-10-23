@@ -9,7 +9,7 @@ import {
   SYSTEM_OP_KINDS,
 } from '@livediagram/api-schema';
 import type { TelemetryWireEvent } from '@liveworkspace/telemetry';
-import { DocumentRoom } from './document-room';
+import { DocumentRoom } from './document-room/document-room';
 import type { Env } from './types';
 import { captureTelemetry, TELEMETRY_ON } from './test-telemetry';
 

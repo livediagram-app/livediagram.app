@@ -2,7 +2,6 @@ import {
   getCommunityThumbnailSvg,
   getDocumentTabImageSvg,
   getDocumentThumbnailSvg,
-  type ThumbnailOptions,
   type ThumbnailSubject,
 } from './thumbnail';
 import type { Env } from './types';
@@ -14,10 +13,9 @@ export async function documentImageSvg(
   env: Env,
   liveDoc: ThumbnailSubject,
   reader: { tabId: string | null; community: boolean },
-  opts: ThumbnailOptions = {},
 ): Promise<string | null> {
   if (reader.tabId) return getDocumentTabImageSvg(env, liveDoc, reader.tabId, reader.community);
   return reader.community
-    ? getCommunityThumbnailSvg(env, liveDoc, opts)
-    : getDocumentThumbnailSvg(env, liveDoc, opts);
+    ? getCommunityThumbnailSvg(env, liveDoc)
+    : getDocumentThumbnailSvg(env, liveDoc);
 }

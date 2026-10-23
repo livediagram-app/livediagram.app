@@ -7,12 +7,12 @@ import { handleDocuments } from '../routes/documents';
 import { handleDocumentSubresources } from '../routes/document-subresource-routes';
 import { deleteAccount } from './account';
 import { copyDocument, deleteDocument } from './documents';
-import { deleteTabRow, linkTabToDocument, seedTabs, swapTabData, upsertTab } from './tabs';
+import { deleteTabRow, seedTabs, swapTabData, upsertTab } from './tabs';
 import { tabStatsOfData } from './tab-stats';
 
 // Every writer of `tabs.data` keeps `image_refs` in step with the body
-// (docs/specs/009-elements/images.md, "Reference index"). A writer that
-// forgets is how a placed image gets reaped by the retention sweep, so each
+// (docs/specs/009-elements/images.md, "Reference index"), and the document's push hands D1's `document_images` the
+// whole set. A writer that forgets is how a placed image gets reaped by the retention sweep, so each
 // path is proven here against a real SQLite with every migration applied.
 
 const T0 = 1_700_000_000_000;
@@ -50,6 +50,15 @@ function allRefs(sql: DatabaseSync): string[] {
     .prepare('SELECT tab_id, image_id FROM image_refs ORDER BY tab_id, image_id')
     .all()
     .map((r) => `${r.tab_id as string}:${r.image_id as string}`);
+}
+
+// What D1 holds for each document once its push has landed.
+async function d1Images(db: SqliteD1): Promise<string[]> {
+  await db.flush();
+  return db.sql
+    .prepare('SELECT document_id, image_id FROM document_images ORDER BY document_id, image_id')
+    .all()
+    .map((r) => `${r.document_id as string}:${r.image_id as string}`);
 }
 
 function withDocument(ownerId = 'owner', id = 'A'): SqliteD1 {
@@ -161,42 +170,46 @@ describe('swapTabData (Q&A board)', () => {
 });
 
 describe('deleteTabRow', () => {
-  it("prunes a dropped tab's references", async () => {
+  it("prunes a dropped tab's references, here and in D1", async () => {
     const db = withDocument();
     await upsertTab(db.env, 'A', tabWith('t1', 'img-1'), 0);
+    await upsertTab(db.env, 'A', tabWith('t2', 'img-2'), 1);
+    expect(await d1Images(db)).toEqual(['A:img-1', 'A:img-2']);
     await deleteTabRow(db.env, 'A', 't1');
-    expect(allRefs(db.sql)).toEqual([]);
+    expect(allRefs(db.sql)).toEqual(['t2:img-2']);
+    expect(await d1Images(db)).toEqual(['A:img-2']);
   });
+});
 
-  it('keeps them while another document still links the tab', async () => {
+describe("D1's document_images", () => {
+  it('holds each image the document places once, across its tabs', async () => {
     const db = withDocument();
-    liveDoc(db.sql, 'B');
-    await upsertTab(db.env, 'A', tabWith('t1', 'img-1'), 0);
-    await linkTabToDocument(db.env, 'B', 't1');
-    await deleteTabRow(db.env, 'A', 't1');
-    expect(refs(db.sql, 't1')).toEqual(['img-1']);
+    await upsertTab(db.env, 'A', tabWith('t1', 'img-1', 'img-2'), 0);
+    await upsertTab(db.env, 'A', tabWith('t2', 'img-1'), 1);
+    expect(await d1Images(db)).toEqual(['A:img-1', 'A:img-2']);
+    await upsertTab(db.env, 'A', tabWith('t1'), 0);
+    expect(await d1Images(db)).toEqual(['A:img-1']);
   });
 });
 
 describe('documentRemovalStatements (document delete, Take Offline, account deletion)', () => {
-  it("prunes the dropped tabs' references and keeps a shared tab's", async () => {
+  it("drops the document's references with its content", async () => {
     const db = withDocument();
-    liveDoc(db.sql, 'B');
     await upsertTab(db.env, 'A', tabWith('own', 'img-1'), 0);
-    await upsertTab(db.env, 'A', tabWith('shared', 'img-2'), 1);
-    await linkTabToDocument(db.env, 'B', 'shared');
+    await upsertTab(db.env, 'A', tabWith('other', 'img-2'), 1);
     await deleteDocument(db.env, 'A');
-    expect(allRefs(db.sql)).toEqual(['shared:img-2']);
+    expect(allRefs(db.sql)).toEqual([]);
+    expect(await d1Images(db)).toEqual([]);
   });
 
-  it('prunes on account deletion, keeping a tab shared into another owner', async () => {
+  it("drops them on account deletion, and keeps another owner's", async () => {
     const db = withDocument('leaver');
     liveDoc(db.sql, 'B', 'stayer');
     await upsertTab(db.env, 'A', tabWith('own', 'img-1'), 0);
-    await upsertTab(db.env, 'A', tabWith('shared', 'img-2'), 1);
-    await linkTabToDocument(db.env, 'B', 'shared');
+    await upsertTab(db.env, 'B', tabWith('theirs', 'img-2'), 0);
     await deleteAccount(db.env, 'leaver');
-    expect(allRefs(db.sql)).toEqual(['shared:img-2']);
+    expect(allRefs(db.sql)).toEqual(['theirs:img-2']);
+    expect(await d1Images(db)).toEqual(['B:img-2']);
   });
 });
 

@@ -7,10 +7,10 @@ import { getDocument, renameTab } from '../db';
 import { capStoredName } from '../names';
 import { forbidden, json, notFound } from '../responses';
 import { relayTabRename } from '../room-client';
-import { gateEdit, missingDocument, requireOwner, type RouteContext } from './context';
+import { gateEdit, missingDocument, requireOwner, type DocumentRouteContext } from './context';
 
 export async function handleTabRename(
-  ctx: RouteContext,
+  ctx: DocumentRouteContext,
   id: string,
   tabId: string,
 ): Promise<Response> {

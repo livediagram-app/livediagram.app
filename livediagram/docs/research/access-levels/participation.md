@@ -75,7 +75,7 @@ write, and they disagree in effect though each is coherent on its own:
 - **Presence-class ops** relay from any role (`PRESENCE_OP_KINDS`, `packages/api-schema/src/room-messages.ts`).
   `poll-answer` was placed there on purpose, because "audiences are usually on view links"
   ([Live poll](../../specs/012-collaboration/live-poll.md#roles)).
-- **Mutation-class ops** relay only from `edit` (`apps/api/src/document-room.ts:663`). A dot (`vote`) and every
+- **Mutation-class ops** relay only from `edit` (`apps/api/src/document-room/document-room.ts:663`). A dot (`vote`) and every
   `el-delta` (estimate, temperature, Done check, quiz pick, idea) are mutations, so a viewer cannot cast them
   ([Session tools](../../specs/012-collaboration/session-tools.md#roles),
   [Per-participant responses](../../specs/012-collaboration/participant-responses.md)).

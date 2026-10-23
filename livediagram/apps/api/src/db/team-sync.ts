@@ -101,7 +101,13 @@ export async function mirrorCreatedTeam(
   now = Date.now(),
 ): Promise<void> {
   const me = team.members.find((m) => m.role === 'admin') ?? team.members[0];
-  await applyTeam(env, { id: team.id, name: team.name, deleted: false, createdAt: now, updatedAt: now });
+  await applyTeam(env, {
+    id: team.id,
+    name: team.name,
+    deleted: false,
+    createdAt: now,
+    updatedAt: now,
+  });
   if (me) {
     await applyMember(env, {
       id: me.id,

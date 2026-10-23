@@ -98,7 +98,12 @@ describe('documentStatsSql', () => {
     tab('D', 't1', 0);
     await stats('t1', 'draw', 4, 1, 1000, T0);
     await stats('t1', 'workshop', 2, 0, 200, T0 + 5);
-    expect(docStats(db.sql, 'D')).toEqual({ mode: 'workshop', elements: 2, comments: 0, bytes: 200 });
+    expect(docStats(db.sql, 'D')).toEqual({
+      mode: 'workshop',
+      elements: 2,
+      comments: 0,
+      bytes: 200,
+    });
   });
 });
 

@@ -220,6 +220,8 @@ describe('an Action panel list past the cap', () => {
       data: string;
     };
     expect(JSON.parse(stored.data)).toHaveProperty(['elements', 0, 'actions', 'length'], 50);
+    // The Inbox's rows follow from the document's outbox, pushed before D1 answers.
+    await db.env.DB.prepare('SELECT 1').first();
     const rows = db.sql.prepare('SELECT COUNT(*) AS n FROM collab_actions').get() as { n: number };
     expect(rows.n).toBe(50);
   });

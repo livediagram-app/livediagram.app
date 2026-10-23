@@ -1,50 +1,69 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { purgeRooms, ROOM_PURGE_CONCURRENCY } from './room-purge-client';
 
-const roomFetch = vi.fn<typeof import('./room-client').roomFetch>();
-vi.mock('./room-client', () => ({
-  roomFetch: (...args: Parameters<typeof roomFetch>) => roomFetch(...args),
-}));
-const { purgeRooms, ROOM_PURGE_CONCURRENCY } = await import('./room-purge-client');
+afterEach(() => vi.restoreAllMocks());
 
-afterEach(() => {
-  roomFetch.mockReset();
-  vi.restoreAllMocks();
-});
+// A DOCUMENT_ROOM namespace whose stubs' purge() runs `purge(documentId)`.
+function envWith(purge: (documentId: string) => Promise<void>) {
+  return {
+    DOCUMENT_ROOM: {
+      idFromName: (name: string) => name,
+      get: (id: string) => ({
+        purge: (documentId: string) => (expect(documentId).toBe(id), purge(documentId)),
+      }),
+    },
+  } as never;
+}
 
 // docs/specs/015-api/api.md "Purging a room"
 describe('purgeRooms', () => {
-  it("asks each document's room to purge, a bounded batch at a time", async () => {
+  it("asks each document's document to purge, a bounded batch at a time", async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     let inFlight = 0;
     let peak = 0;
-    roomFetch.mockImplementation(async () => {
+    const purged: string[] = [];
+    const env = envWith(async (id) => {
       peak = Math.max(peak, ++inFlight);
       await Promise.resolve();
       inFlight--;
-      return new Response(null, { status: 204 });
+      purged.push(id);
     });
     const ids = Array.from({ length: 25 }, (_, i) => `doc-${i}`);
-    const out = await purgeRooms({} as never, ids);
+    const out = await purgeRooms(env, ids);
     expect(out).toEqual({ rooms: 25, unreached: 0 });
-    expect(roomFetch).toHaveBeenCalledTimes(25);
-    expect(roomFetch.mock.calls[0]?.slice(1, 3)).toEqual(['doc-0', '/purge']);
+    expect(purged).toHaveLength(25);
+    expect(purged[0]).toBe('doc-0');
     expect(peak).toBeLessThanOrEqual(ROOM_PURGE_CONCURRENCY);
   });
 
-  it('counts a room it cannot reach, and never throws', async () => {
+  it('counts a document it cannot reach, and never throws', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    roomFetch
-      .mockRejectedValueOnce(new Error('room timeout'))
-      .mockResolvedValueOnce(new Response('no', { status: 500 }))
-      .mockResolvedValueOnce(new Response(null, { status: 204 }));
-    const out = await purgeRooms({} as never, ['a', 'b', 'c']);
+    const env = envWith(async (id) => {
+      if (id !== 'c') throw new Error('room unreachable');
+    });
+    const out = await purgeRooms(env, ['a', 'b', 'c']);
     expect(out).toEqual({ rooms: 3, unreached: 2 });
     expect(warn).toHaveBeenCalledTimes(2);
   });
 
+  it('gives up on a document that does not answer in time', async () => {
+    vi.useFakeTimers();
+    try {
+      vi.spyOn(console, 'info').mockImplementation(() => {});
+      vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const env = envWith(() => new Promise<void>(() => {}));
+      const out = purgeRooms(env, ['slow']);
+      await vi.advanceTimersByTimeAsync(3_000);
+      expect(await out).toEqual({ rooms: 1, unreached: 1 });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('does nothing for no documents', async () => {
-    expect(await purgeRooms({} as never, [])).toEqual({ rooms: 0, unreached: 0 });
-    expect(roomFetch).not.toHaveBeenCalled();
+    const purge = vi.fn(async () => {});
+    expect(await purgeRooms(envWith(purge), [])).toEqual({ rooms: 0, unreached: 0 });
+    expect(purge).not.toHaveBeenCalled();
   });
 });

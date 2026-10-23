@@ -71,7 +71,9 @@ export async function handleParticipants(ctx: RouteContext): Promise<Response> {
     }
     // Nowhere to keep it (a guest-only self-host, docs/specs/015-api/api.md "participants"): the
     // editor keeps the name it chose, and presence carries it to everyone in the room.
-    return json({ participant: p ?? { id, name: body.name, color: body.color, createdAt: Date.now() } });
+    return json({
+      participant: p ?? { id, name: body.name, color: body.color, createdAt: Date.now() },
+    });
   }
   return notFound();
 }

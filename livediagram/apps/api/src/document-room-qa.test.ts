@@ -34,7 +34,7 @@ vi.mock('./db', async (orig) => ({
   },
 }));
 
-import { DocumentRoom } from './document-room';
+import { DocumentRoom } from './document-room/document-room';
 
 const board = (notes: QaNote[], rev: number) =>
   JSON.stringify({

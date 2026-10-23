@@ -40,8 +40,8 @@ import { readRoomSelections } from '../room-client';
 import { getTab, tabBodiesInOrder } from '../db/tabs';
 import { json, textPlain } from '../responses';
 import { reportServerEvent } from '../server-telemetry';
-import type { DocumentDTO, Env, TabDTO } from '../types';
-import type { RouteContext } from './context';
+import type { DocumentDTO, DocumentEnv, TabDTO } from '../types';
+import type { DocumentRouteContext } from './context';
 
 export type ParsedView = { request: ViewRequest; json: boolean };
 // `view=lint` (docs/specs/024-agents/diagram-lint.md): answered by the lint, not by `renderView`.
@@ -190,7 +190,7 @@ const TITLE_CASE: Record<DocumentViewName | TabViewName | typeof LINT_VIEW_NAME,
 };
 
 function countViewed(
-  ctx: RouteContext,
+  ctx: DocumentRouteContext,
   view: DocumentViewName | TabViewName | typeof LINT_VIEW_NAME,
 ): void {
   const { env } = ctx;
@@ -212,7 +212,7 @@ function logUnknownKinds(tab: TabDTO): void {
 // The lint of a tab (docs/specs/024-agents/diagram-lint.md "Where it runs"), as text or (`json=1`) the
 // report. A lint that throws answers 500 with `lint unavailable` and logs `[lint] failed` (LN23).
 function answerLintView(
-  ctx: RouteContext,
+  ctx: DocumentRouteContext,
   parsed: ParsedLintView,
   document: DocumentDTO,
   tab: TabDTO,
@@ -232,7 +232,7 @@ function answerLintView(
 // What the caller has selected on the tab now, for `show selected` only (blueprint "REST"): the `mine` selections
 // of the room, as the changeset submit reads them; null when the room could not answer. No other view asks.
 async function ownerSelection(
-  ctx: RouteContext,
+  ctx: DocumentRouteContext,
   request: ViewRequest,
   documentId: string,
   tabId: string,
@@ -258,7 +258,7 @@ async function ownerSelection(
 
 // A tab view, after the tab GET's gate and redaction; `owner` is the caller the GET resolved.
 export async function answerTabView(
-  ctx: RouteContext,
+  ctx: DocumentRouteContext,
   parsed: ParsedView | ParsedLintView,
   document: DocumentDTO,
   tab: TabDTO,
@@ -309,7 +309,7 @@ export async function answerTabView(
 }
 
 async function inScopeFacts(
-  env: Env,
+  env: DocumentEnv,
   document: DocumentDTO,
   tabScope: string | null,
   community: boolean,
@@ -342,7 +342,7 @@ async function inScopeFacts(
 // The document overview, after the document GET's gate and scope redaction: in-scope tab bodies are
 // read a batch at a time and reduced to their header facts; out-of-scope tabs are never read.
 export async function answerOverview(
-  ctx: RouteContext,
+  ctx: DocumentRouteContext,
   parsed: ParsedView,
   document: DocumentDTO,
   tabScope: string | null,

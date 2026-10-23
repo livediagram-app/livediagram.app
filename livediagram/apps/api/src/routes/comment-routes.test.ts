@@ -54,7 +54,14 @@ type Call = {
   token?: string;
 };
 
-function call({ method = 'POST', path, body, owner = '00000000-0000-4000-8000-000000000001', code, token }: Call) {
+function call({
+  method = 'POST',
+  path,
+  body,
+  owner = '00000000-0000-4000-8000-000000000001',
+  code,
+  token,
+}: Call) {
   return handleDocuments(
     makeTestRouteContext(method, `/api/documents/d1${path}`, {
       env: sql.env,
@@ -228,7 +235,10 @@ describe('delete-own', () => {
       shape('a', {
         commentThread: {
           resolved: false,
-          comments: [comment('c1', { authorId: '00000000-0000-4000-8000-000000000001' }), comment('c2')],
+          comments: [
+            comment('c1', { authorId: '00000000-0000-4000-8000-000000000001' }),
+            comment('c2'),
+          ],
         },
       }),
     ]);
@@ -241,7 +251,10 @@ describe('delete-own', () => {
   it('takes the comment’s words off the Timeline, with its thread’s resolved snippet', async () => {
     seed([
       shape('a', {
-        commentThread: { resolved: false, comments: [comment('c1', { authorId: '00000000-0000-4000-8000-000000000001' })] },
+        commentThread: {
+          resolved: false,
+          comments: [comment('c1', { authorId: '00000000-0000-4000-8000-000000000001' })],
+        },
       }),
     ]);
     // Posted and resolved: two events carrying c1's text.
@@ -347,7 +360,9 @@ describe('the thread listing', () => {
         shape('a', {
           commentThread: {
             resolved: false,
-            comments: [comment('c1', { authorId: '00000000-0000-4000-8000-000000000001', tokenId: 'tok_1' })],
+            comments: [
+              comment('c1', { authorId: '00000000-0000-4000-8000-000000000001', tokenId: 'tok_1' }),
+            ],
           },
         }),
         shape('b', { commentThread: { resolved: true, comments: [comment('c2')] } }),
@@ -357,7 +372,11 @@ describe('the thread listing', () => {
     ),
   );
 
-  const list = async (query = '', owner: string | null = '00000000-0000-4000-8000-000000000001', code?: string) => {
+  const list = async (
+    query = '',
+    owner: string | null = '00000000-0000-4000-8000-000000000001',
+    code?: string,
+  ) => {
     const res = await call({
       method: 'GET',
       path: `/comments${query}`,
@@ -378,7 +397,10 @@ describe('the thread listing', () => {
       ['Detail', 'd', 'D'],
     ]);
     expect(body.threads[0]!.ref).toBeTypeOf('string');
-    expect(body.threads[0]!.comments[0]).toMatchObject({ authorId: '00000000-0000-4000-8000-000000000001', tokenId: 'tok_1' });
+    expect(body.threads[0]!.comments[0]).toMatchObject({
+      authorId: '00000000-0000-4000-8000-000000000001',
+      tokenId: 'tok_1',
+    });
     expect(body.threads[1]!.comments[0]).not.toHaveProperty('authorId');
   });
 

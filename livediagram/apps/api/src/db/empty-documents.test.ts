@@ -4,7 +4,7 @@
 
 import type { Tab } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
-import { migrateFrom, sqliteD1 } from '../test-sqlite-d1';
+import { sqliteD1 } from '../test-sqlite-d1';
 import { copyDocument, listDocumentsByOwner, listDocumentsByTeam } from './documents';
 import { listSharedWith } from './shared';
 import { seedTabs, stampTabElementCount, swapTabData, upsertTab } from './tabs';
@@ -83,13 +83,14 @@ describe('a document list says which documents are empty', () => {
 
   it('keeps the count in the write itself: no trigger re-parses the body', () => {
     const { sql } = setUp();
-    // The one trigger on tabs is the revision guard (docs/specs/024-agents/agent-changesets.md,
-    // CS3), which compares two integers and never reads the body.
+    // The triggers on tabs are the revision guard (docs/specs/024-agents/agent-changesets.md, CS3),
+    // which compares two integers, and the outbox's key (document-room/document-schema.ts), which notes the tab
+    // id: neither reads the body.
     const triggers = sql
       .prepare("SELECT name, sql FROM sqlite_master WHERE type = 'trigger' AND tbl_name = 'tabs'")
       .all();
-    expect(triggers.map((t) => t.name)).toEqual(['tabs_rev_advances']);
-    for (const t of triggers) expect(String(t.sql)).not.toMatch(/json|\bdata\b\s*[,)=]/i);
+    expect(triggers.map((t) => t.name).sort()).toEqual(['outbox_tab_update', 'tabs_rev_advances']);
+    for (const t of triggers) expect(String(t.sql)).not.toMatch(/json|(NEW|OLD)\.data\b/i);
   });
 
   it('says the same on the team library', async () => {
@@ -123,36 +124,6 @@ describe('a document list says which documents are empty', () => {
       whole: true,
       scoped: false,
     });
-  });
-});
-
-describe('migration 0059 adds the count without reading a body', () => {
-  it('leaves every stored tab unknown, which reads as not empty until it is stamped', async () => {
-    const { env, sql } = sqliteD1({}, { before: '0059' });
-    sql.exec(`INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
-              VALUES ('old-blank', '${OWNER}', 'a', 0, 1, 1), ('old-drawn', '${OWNER}', 'b', 0, 1, 1),
-                     ('old-odd', '${OWNER}', 'c', 0, 1, 1)`);
-    sql.exec(`INSERT INTO tabs (id, name, data, updated_at)
-              VALUES ('ob', 'x', '{"elements":[]}', 1), ('od', 'x', '{"elements":[{"id":"a"},{"id":"b"}]}', 1),
-                     ('oo', 'x', 'not json', 1)`);
-    sql.exec(`INSERT INTO document_tabs (document_id, tab_id, order_index, added_at)
-              VALUES ('old-blank', 'ob', 0, 1), ('old-drawn', 'od', 0, 1), ('old-odd', 'oo', 0, 1)`);
-    // 0059 and every migration after it: the list projection below reads today's schema.
-    migrateFrom(sql, '0059');
-    const counts = sql.prepare('SELECT id, element_count FROM tabs ORDER BY id').all();
-    expect(counts.map((c) => ({ ...c }))).toEqual([
-      { id: 'ob', element_count: null },
-      { id: 'od', element_count: null },
-      { id: 'oo', element_count: null },
-    ]);
-    expect(await emptiness(env)).toEqual({
-      'old-blank': false,
-      'old-drawn': false,
-      'old-odd': false,
-    });
-    // The thumbnail route, having parsed the first tab, stamps what it found.
-    await stampTabElementCount(env, 'ob', 0);
-    expect((await emptiness(env))['old-blank']).toBe(true);
   });
 });
 

@@ -19,7 +19,7 @@ import type { WorkbenchReach } from '../db/workbench';
 import { clientRateKey } from '../client-ip';
 import { getDocument, getMembership, getTrashedDocumentMeta } from '../db';
 import { badRequest, documentTrashed, forbidden, missingAuth, notFound } from '../responses';
-import type { DocumentDTO, Env } from '../types';
+import type { DocumentDTO, Env, DocumentEnv } from '../types';
 
 // A workbench session as the choke point resolved it (blueprint "A request bearing lvw_", "The choke point by
 // scope"): one document in the document scope, the workspace (from an optional folder) in the workspace scope.
@@ -77,6 +77,9 @@ export type RouteContext = {
   // guard with `ctx.waitUntil?.(...)`.
   waitUntil?: (promise: Promise<unknown>) => void;
 };
+
+// A RouteContext inside a document's Durable Object (document-room/document-route.ts): its env reaches the document's content.
+export type DocumentRouteContext = RouteContext & { env: DocumentEnv };
 
 // Visitor share code carried on edit/view-link requests so a non-owner
 // can authorise against a document they don't own.

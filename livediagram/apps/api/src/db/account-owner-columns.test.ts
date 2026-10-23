@@ -42,7 +42,6 @@ const OWNER_COLUMNS: OwnerColumn[] = [
   { table: 'shape_libraries', column: 'owner_id', migrate: { kind: 'moves' } },
   // Explorer Home's opens (docs/specs/013-workspace/explorer-home.md): guests open documents too.
   { table: 'document_opens', column: 'owner_id', migrate: { kind: 'moves' } },
-  { table: 'images', column: 'owner_id', migrate: { kind: 'moves' } },
   // Whose each media-service image is (src/media.ts): guests upload too.
   { table: 'media_images', column: 'owner_id', migrate: { kind: 'moves' } },
   { table: 'timeline_events', column: 'actor_id', migrate: { kind: 'moves' } },
@@ -58,16 +57,21 @@ const OWNER_COLUMNS: OwnerColumn[] = [
     scope: "scope_type = 'user'",
     migrate: { kind: 'moves' },
   },
-  { table: 'collab_index_state', column: 'owner_id', migrate: { kind: 'moves' } },
   { table: 'owner_aliases', column: 'owner_id', migrate: { kind: 'moves' } },
   {
     table: 'owner_aliases',
     column: 'alias_id',
     migrate: { kind: 'stays', why: 'the guest id is recorded as an alias of the account' },
   },
-  // Agent changesets (docs/specs/024-agents/agent-changesets.md, CS27): a guest with an edit link
-  // writes and reverts changesets too.
-  { table: 'agent_changesets', column: 'author_id', migrate: { kind: 'moves' } },
+  // Agent changesets (docs/specs/024-agents/agent-changesets.md, CS27): a guest with an edit link writes and
+  // reverts changesets too. They are each document's own (its Durable Object; one database holds every document here),
+  // out of reach of the account's D1 sweep: those on someone else's document stay until its retention ages them out.
+  {
+    table: 'agent_changesets',
+    column: 'author_id',
+    deleteKeeps: { when: '1 = 1', why: "a document's own store, aged out after 30 days" },
+    migrate: { kind: 'stays', why: "a document's own store, aged out after 30 days" },
+  },
   // Community (docs/specs/025-community/community.md): only a signed-in person publishes a post. The copies a guest
   // takes are the Community service's, which the migrate route merges there.
   {
@@ -191,16 +195,6 @@ function seedGuestHoldable(sql: DatabaseSync, id: string, peerDocument: string) 
     updated_at: T0,
   });
   insert(sql, 'media_images', { id: `media-${id}`, owner_id: id });
-  insert(sql, 'images', {
-    id: `i-${id}`,
-    owner_id: id,
-    content_type: 'image/png',
-    byte_size: 1,
-    width: 1,
-    height: 1,
-    sha256: `sha-${id}`,
-    created_at: T0,
-  });
   insert(sql, 'timeline_events', {
     id: `e-${id}`,
     actor_id: id,
@@ -219,7 +213,6 @@ function seedGuestHoldable(sql: DatabaseSync, id: string, peerDocument: string) 
     added_at: T0,
   });
   insert(sql, 'timeline_scope_state', { scope_type: 'user', scope_id: id, backfilled_at: T0 });
-  insert(sql, 'collab_index_state', { owner_id: id, backfilled_at: T0 });
   insert(sql, 'owner_aliases', { owner_id: id, alias_id: `legacy-${id}`, created_at: T0 });
   // A changeset they wrote on the peer's document, which outlives their own documents.
   insert(sql, 'tabs', { id: `tab-${id}`, name: 'Board', data: '{"elements":[]}', updated_at: T0 });

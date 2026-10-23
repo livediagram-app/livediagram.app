@@ -1,211 +1,77 @@
-// image_refs + image_refs_backfill: the image reference index
-// (docs/specs/009-elements/images.md, "Reference index"). A projection of
-// the image elements inside `tabs.data`, so retention, the usage map and
-// share-visitor reads never read a tab body.
+// image_refs: the image reference index (docs/specs/009-elements/images.md, "Reference index"), in the
+// document's own SQLite (docs/specs/015-api/api.md "Storage"). A projection of the image elements inside
+// `tabs.data`, so the share check and the push to D1 never read a tab body.
 //
-// Writes are STATEMENTS appended to the batch that writes the body, so the
-// index lands in the same transaction as the blob it mirrors (the pattern of
-// collab-index.ts). There are no foreign keys: a dangling row (its tab gone)
-// is ignored by every reader, which is what makes every gap here fail
-// towards keeping bytes.
+// Writes are STATEMENTS appended to the batch that writes the body, so the index lands in the same transaction
+// as the blob it mirrors. Each change fills the document's outbox (document-room/document-schema.ts), and the
+// room's next push hands D1's `document_images` the document's whole set, queues it for the media service
+// (src/media.ts) and writes its placement grants (document-room/document-outbox.ts). A tab's rows go with the tab
+// (a foreign key).
 
-import { IMAGE_REF_ID_MAX_LENGTH } from '../image-refs/extract';
-import { mediaRefQueueTabStatement } from '../media';
-import type { Env } from '../types';
+import type { DocumentEnv } from '../types';
 
 // ---------- Writers ---------------------------------------------------
 
-// A body replace: drop the tab's references the new body no longer has, then
-// add the ones it does. A save that changes no image writes no row. A change queues the tab's documents
-// for the media service first, while the old set is still there to compare (src/media.ts).
+// A body replace: drop the tab's references the new body no longer has, then add the ones it does. A save that
+// changes no image writes no row, so it owes D1 nothing.
 export function imageRefReplaceStatements(
-  env: Env,
+  env: DocumentEnv,
   tabId: string,
   ids: string[],
 ): D1PreparedStatement[] {
   return [
-    mediaRefQueueTabStatement(env, tabId, ids, false),
-    env.DB.prepare(
+    env.DOCUMENT_DB.prepare(
       'DELETE FROM image_refs WHERE tab_id = ?1 AND image_id NOT IN (SELECT value FROM json_each(?2))',
     ).bind(tabId, JSON.stringify(ids)),
-    ...insertRefs(env, tabId, ids),
+    ...imageRefAddStatements(env, tabId, ids),
   ];
 }
 
-// Add only: for a write that may have lost a race (the Q&A swap, the
-// backfill), where deleting could remove a reference the winner wrote.
+// Add only: for a write that may have lost a race (a participant swap, the Q&A swap), where deleting could remove a
+// reference the winner wrote.
 export function imageRefAddStatements(
-  env: Env,
+  env: DocumentEnv,
   tabId: string,
   ids: string[],
 ): D1PreparedStatement[] {
-  if (ids.length === 0) return [];
-  return [mediaRefQueueTabStatement(env, tabId, ids, true), ...insertRefs(env, tabId, ids)];
-}
-
-// Add without telling the media service: for the backfill, which indexes tabs saved before images moved
-// there, so none of their images is the service's.
-export function imageRefBackfillAddStatements(
-  env: Env,
-  tabId: string,
-  ids: string[],
-): D1PreparedStatement[] {
-  return insertRefs(env, tabId, ids);
-}
-
-function insertRefs(env: Env, tabId: string, ids: string[]): D1PreparedStatement[] {
   if (ids.length === 0) return [];
   return [
-    env.DB.prepare(
+    env.DOCUMENT_DB.prepare(
       'INSERT OR IGNORE INTO image_refs (tab_id, image_id) SELECT ?1, value FROM json_each(?2)',
     ).bind(tabId, JSON.stringify(ids)),
   ];
 }
 
-export function imageRefPruneTabStatement(env: Env, tabId: string): D1PreparedStatement {
-  return env.DB.prepare('DELETE FROM image_refs WHERE tab_id = ?').bind(tabId);
-}
+// ---------- Readers ---------------------------------------------------
 
-// ---------- The extractor, in SQL -------------------------------------
-
-// The SQL twin of image-refs/extract.ts `imageRefIds`, held to it by a parity
-// test. Indexes the tabs matching `tabWhere` without a body leaving D1. The
-// nested CASE hands json_each an empty object unless the body mentions
-// "imageId" at all (D1 bills every element json_each walks, so image-free
-// tabs must not be walked; the JavaScript side has the same fast path) and is
-// valid JSON with an `elements` ARRAY, so a corrupt tab can't fail the
-// statement (in whatever order SQLite evaluates the join) and an object
-// isn't walked.
-// A tab stored while it was in Pages mode may still hold its pages until it is next saved (docs/specs/007-editor/
-// editor-modes.md "Pages moved to livedocuments"), so their pictures are walked the same way over `$.pages`, the id at
-// `$.background.fill.imageId` of a `kind: 'image'` fill, and stay referenced until then.
-function walkSql(
-  tabWhere: string,
-  array: '$.elements' | '$.pages',
-  typeAt: string,
-  kind: string,
-  idAt: string,
-): string {
-  return `SELECT t.id AS tab_id, json_extract(e.value, '${idAt}') AS image_id
-      FROM tabs t,
-           json_each(CASE WHEN instr(t.data, '"imageId"') = 0 THEN '{}'
-                          WHEN NOT json_valid(t.data) THEN '{}'
-                          WHEN json_type(t.data, '${array}') = 'array' THEN t.data
-                          ELSE '{}' END, '${array}') e
-     WHERE (${tabWhere})
-       AND e.type = 'object'
-       AND json_extract(e.value, '${typeAt}') = '${kind}'
-       AND json_type(e.value, '${idAt}') = 'text'
-       AND length(json_extract(e.value, '${idAt}')) BETWEEN 1 AND ${IMAGE_REF_ID_MAX_LENGTH}
-       AND substr(json_extract(e.value, '${idAt}'), 1, 5) <> 'data:'`;
-}
-
-function indexTabsSql(tabWhere: string): string {
-  return `INSERT OR IGNORE INTO image_refs (tab_id, image_id)
-    ${walkSql(tabWhere, '$.elements', '$.type', 'image', '$.imageId')}
-    UNION ALL
-    ${walkSql(tabWhere, '$.pages', '$.background.fill.kind', 'image', '$.background.fill.imageId')}`;
-}
-
-// Backfill page: tabs with rowid in (fromRowId, toRowId].
-export function imageRefIndexPageStatement(
-  env: Env,
-  fromRowId: number,
-  toRowId: number,
-): D1PreparedStatement {
-  return env.DB.prepare(indexTabsSql('t.rowid > ?1 AND t.rowid <= ?2')).bind(fromRowId, toRowId);
-}
-
-// Every tab of the owner's documents: the usage map's lazy index while the
-// backfill is incomplete.
-export function imageRefIndexOwnerStatement(env: Env, ownerId: string): D1PreparedStatement {
-  return env.DB.prepare(
-    indexTabsSql(
-      `t.id IN (SELECT dt.tab_id FROM document_tabs dt
-                  JOIN documents d ON d.id = dt.document_id
-                 WHERE d.owner_id = ?1)`,
-    ),
-  ).bind(ownerId);
-}
-
-// Every tab of one document: the share read's lazy index while the backfill is
-// incomplete.
-export function imageRefIndexDocumentStatement(env: Env, documentId: string): D1PreparedStatement {
-  return env.DB.prepare(
-    indexTabsSql('t.id IN (SELECT tab_id FROM document_tabs WHERE document_id = ?1)'),
-  ).bind(documentId);
-}
-
-// ---------- Backfill state --------------------------------------------
-
-type ImageRefsBackfillRow = {
-  created_at: number;
-  cursor: number;
-  completed_at: number | null;
-};
-
-export async function readImageRefsBackfill(env: Env): Promise<ImageRefsBackfillRow | null> {
-  return await env.DB.prepare(
-    'SELECT created_at, cursor, completed_at FROM image_refs_backfill WHERE id = 1',
-  ).first<ImageRefsBackfillRow>();
-}
-
-// Start (or restart) the backfill from the first tab.
-export async function restartImageRefsBackfill(env: Env, now: number): Promise<void> {
-  await env.DB.prepare(
-    `INSERT INTO image_refs_backfill (id, created_at, cursor, completed_at) VALUES (1, ?, 0, NULL)
-     ON CONFLICT (id) DO UPDATE SET created_at = excluded.created_at, cursor = 0, completed_at = NULL`,
+// Every image the document places, each once: what D1's document_images holds for it after the next push.
+export async function documentImageIds(env: DocumentEnv, documentId: string): Promise<string[]> {
+  const { results } = await env.DOCUMENT_DB.prepare(
+    `SELECT DISTINCT r.image_id
+       FROM document_tabs dt JOIN image_refs r ON r.tab_id = dt.tab_id
+      WHERE dt.document_id = ?
+      ORDER BY r.image_id`,
   )
-    .bind(now)
-    .run();
+    .bind(documentId)
+    .all<{ image_id: string }>();
+  return results.map((r) => r.image_id);
 }
 
-// A statement, so a page and its cursor land in one batch.
-export function imageRefsBackfillAdvanceStatement(env: Env, cursor: number): D1PreparedStatement {
-  return env.DB.prepare('UPDATE image_refs_backfill SET cursor = ? WHERE id = 1').bind(cursor);
-}
-
-export async function completeImageRefsBackfill(env: Env, now: number): Promise<void> {
-  await env.DB.prepare('UPDATE image_refs_backfill SET completed_at = ? WHERE id = 1')
-    .bind(now)
-    .run();
-}
-
-export async function maxTabRowId(env: Env): Promise<number> {
-  const row = await env.DB.prepare('SELECT MAX(rowid) AS max FROM tabs').first<{
-    max: number | null;
-  }>();
-  return row?.max ?? 0;
-}
-
-// The next corrupt tab in (fromRowId, toRowId] that mentions an image: read
-// one at a time, because a corrupt body can be as large as any other.
-export async function nextCorruptTabMentioningImages(
-  env: Env,
-  fromRowId: number,
-  toRowId: number,
-): Promise<{ rid: number; id: string; data: string } | null> {
-  return await env.DB.prepare(
-    `SELECT rowid AS rid, id, data FROM tabs
-      WHERE rowid > ? AND rowid <= ? AND NOT json_valid(data) AND instr(data, '"imageId"') > 0
-      ORDER BY rowid LIMIT 1`,
+// Whether the document places image `imageId` (on `onlyTabId` only, for a tab-scoped visitor): the byte
+// endpoint's first question, answered from the document itself so an image placed a moment ago serves at once.
+export async function documentPlacesImage(
+  env: DocumentEnv,
+  documentId: string,
+  imageId: string,
+  onlyTabId: string | null = null,
+): Promise<boolean> {
+  const row = await env.DOCUMENT_DB.prepare(
+    `SELECT 1 AS present
+       FROM document_tabs dt JOIN image_refs r ON r.tab_id = dt.tab_id AND r.image_id = ?1
+      WHERE dt.document_id = ?2${onlyTabId === null ? '' : ' AND dt.tab_id = ?3'}
+      LIMIT 1`,
   )
-    .bind(fromRowId, toRowId)
-    .first<{ rid: number; id: string; data: string }>();
-}
-
-// Once complete, always complete: remembered for the isolate's life so the
-// readers stop asking.
-let knownComplete = false;
-
-export async function isImageRefIndexComplete(env: Env): Promise<boolean> {
-  if (knownComplete) return true;
-  const row = await readImageRefsBackfill(env);
-  // A missing row is never complete: the backfill recreates it and starts over.
-  knownComplete = row !== null && row.completed_at !== null;
-  return knownComplete;
-}
-
-export function resetImageRefIndexMemo(): void {
-  knownComplete = false;
+    .bind(...(onlyTabId === null ? [imageId, documentId] : [imageId, documentId, onlyTabId]))
+    .first<{ present: number }>();
+  return row !== null;
 }

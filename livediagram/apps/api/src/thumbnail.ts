@@ -13,12 +13,7 @@
 // invalidates the snapshot uniformly because they all bump saved_at.
 
 import { embedTabImages } from '@livediagram/api-schema';
-import {
-  drawnCount,
-  migrateStoredTab,
-  renderElementsToSvg,
-  type Tab,
-} from '@livediagram/document';
+import { drawnCount, migrateStoredTab, renderElementsToSvg, type Tab } from '@livediagram/document';
 // Static-import icon resolver (bundle size is fine in a Worker) so icon
 // elements render their real glyph in the snapshot / live image instead of
 // the renderer's box-with-label fallback.
@@ -37,7 +32,8 @@ import {
 import { imageRefIds } from './image-refs/extract';
 import { redactTabForCommunity } from './community-redact';
 import { mediaClient } from './media';
-import type { DocumentDTO, Env } from './types';
+import { documentRoom } from './document-client';
+import type { DocumentDTO, DocumentEnv, Env } from './types';
 
 // Content type for the cached SVG snapshot. Local to this module — the
 // HTTP responses set their own header (responses.ts); this only stamps
@@ -61,20 +57,20 @@ export type ThumbnailSubject = Pick<DocumentDTO, 'id' | 'name' | 'savedAt'> & {
   thumbRenderedAt?: number | null;
 };
 
-// `defer` hands the cache write (R2 put + freshness stamp) to the
-// request's waitUntil, so a stale snapshot's response goes out as soon as
-// it is rendered instead of after two more round trips. Without it the
-// write is awaited inline, as before.
+// `defer` hands the cache write (R2 put + freshness stamp) to a waitUntil, so a stale snapshot's response goes out
+// as soon as it is rendered. Without it the write is awaited inline.
 export type ThumbnailOptions = { defer?: (write: Promise<unknown>) => void };
 
 // Resolve a document's cached SVG snapshot, rendering + caching it first
 // if stale. Returns null — caller should 404 / fall back to an icon —
 // when there's nothing to show: no R2 binding (self-host without
 // storage), no tab, or an empty / unparseable first tab.
+//
+// The worker's side: a fresh cache is streamed from R2 without waking the document; a stale one is drawn by the
+// document's Durable Object, where the content is (renderDocumentImage), which also writes the cache back.
 export async function getDocumentThumbnailSvg(
   env: Env,
   liveDoc: ThumbnailSubject,
-  opts: ThumbnailOptions = {},
 ): Promise<string | null> {
   // No object store: nothing to cache into or read from. The endpoints
   // 404 and the Explorer row keeps its generic icon, same graceful
@@ -82,8 +78,8 @@ export async function getDocumentThumbnailSvg(
   if (!env.IMAGES) return null;
   const key = thumbnailKey(liveDoc.id);
 
-  // Fresh = rendered at or after the last save. saved_at is bumped by
-  // every tab write, so any content change makes the snapshot stale.
+  // Fresh = rendered at or after the last save. saved_at follows every content write (the document pushes it,
+  // document-room/document-outbox.ts), so any content change makes the snapshot stale.
   const renderedAt =
     liveDoc.thumbRenderedAt !== undefined
       ? liveDoc.thumbRenderedAt
@@ -96,27 +92,7 @@ export async function getDocumentThumbnailSvg(
     // content.
     if (cached) return await cached.text();
   }
-
-  const svg = await renderTabBodyToSvg(env, liveDoc, await getTabBody(env, liveDoc.id), opts);
-  if (svg == null) return null;
-
-  // Best effort: a write failure (R2 hiccup) must not fail the read —
-  // we still return the freshly rendered SVG, just without caching it,
-  // so the next read renders again. Only stamp the row as fresh once the
-  // object is actually in R2, or a later read would trust a stale/absent
-  // object and skip the re-render.
-  const images = env.IMAGES;
-  const write = (async () => {
-    try {
-      await images.put(key, svg, { httpMetadata: { contentType: THUMBNAIL_CONTENT_TYPE } });
-      await markThumbRendered(env, liveDoc.id, Date.now());
-    } catch {
-      // Swallow: the SVG is still returned to the caller below.
-    }
-  })();
-  if (opts.defer) opts.defer(write);
-  else await write;
-  return svg;
+  return documentRoom(env, liveDoc.id).image(subjectOf(liveDoc), null);
 }
 
 // Live image for a SPECIFIC tab (docs/specs/013-workspace/live-image-share.md's per-tab picker, now surfaced
@@ -138,30 +114,75 @@ export async function getDocumentTabImageSvg(
   // Gate on the same optional R2 binding as the cached path, so the
   // whole live-image feature is uniformly off on a binding-less deploy.
   if (!env.IMAGES) return null;
-  return renderTabBodyToSvg(env, liveDoc, await getTabBody(env, liveDoc.id, tabId), {}, community);
+  return documentRoom(env, liveDoc.id).image(subjectOf(liveDoc), tabId, community);
+}
+
+// What crosses to the document: plain fields only.
+function subjectOf(liveDoc: ThumbnailSubject): ThumbnailSubject {
+  return { id: liveDoc.id, name: liveDoc.name, savedAt: liveDoc.savedAt };
+}
+
+// The document's side (its Durable Object): draw the first tab and write the cache back, or draw one tab uncached.
+// `defer` hands the cache write (R2 put + freshness stamp) to the object's waitUntil, so the image goes out as
+// soon as it is drawn. `community`: a Community visitor's image, drawn from the redacted tab (no comments, no
+// people); its first-tab snapshot is cached under its own key (renderCommunitySnapshot).
+export async function renderDocumentImage(
+  env: DocumentEnv,
+  liveDoc: ThumbnailSubject,
+  tabId: string | null,
+  opts: ThumbnailOptions = {},
+  community = false,
+): Promise<string | null> {
+  if (!env.IMAGES) return null;
+  if (tabId) {
+    return renderTabBodyToSvg(
+      env,
+      liveDoc,
+      await getTabBody(env, liveDoc.id, tabId),
+      {},
+      community,
+    );
+  }
+  if (community) return renderCommunitySnapshot(env, liveDoc, opts);
+  const svg = await renderTabBodyToSvg(env, liveDoc, await getTabBody(env, liveDoc.id), opts);
+  if (svg == null) return null;
+
+  // Best effort: a write failure (R2 hiccup) must not fail the read —
+  // we still return the freshly rendered SVG, just without caching it,
+  // so the next read renders again. Only stamp the row as fresh once the
+  // object is actually in R2, or a later read would trust a stale/absent
+  // object and skip the re-render.
+  const images = env.IMAGES;
+  const key = thumbnailKey(liveDoc.id);
+  const write = (async () => {
+    try {
+      await images.put(key, svg, { httpMetadata: { contentType: THUMBNAIL_CONTENT_TYPE } });
+      await markThumbRendered(env, liveDoc.id, Date.now());
+    } catch {
+      // Swallow: the SVG is still returned to the caller below.
+    }
+  })();
+  if (opts.defer) opts.defer(write);
+  else await write;
+  return svg;
 }
 
 // The first-tab snapshot as a Community visitor sees it (docs/specs/025-community/community.md "Viewing a post's
-// document"): drawn from the redacted tab, so comment threads, their authors, action assignees, roll-call names and
-// Q&A authors never reach the public card image or a Community thumbnail. Cached under its own key, so the owner's
-// snapshot (`thumb/<id>`) is never served to the public; its freshness is the render time in the object's own
-// metadata, since the document row's stamp belongs to the owner's snapshot.
-export async function getCommunityThumbnailSvg(
-  env: Env,
+// document"), drawn in the document's Durable Object from the redacted tab, so comment threads, their authors,
+// action assignees, roll-call names and Q&A authors never reach the public card image or a Community thumbnail.
+// Cached under its own key, so the owner's snapshot (`thumb/<id>`) is never served to the public; its freshness is
+// the render time in the object's own metadata, since the document row's stamp belongs to the owner's snapshot.
+async function renderCommunitySnapshot(
+  env: DocumentEnv,
   liveDoc: ThumbnailSubject,
-  opts: ThumbnailOptions = {},
+  opts: ThumbnailOptions,
 ): Promise<string | null> {
   if (!env.IMAGES) return null;
   const images = env.IMAGES;
-  const key = communityThumbnailKey(liveDoc.id);
-  const cached = await images.get(key);
-  if (cached && Number(cached.customMetadata?.renderedAt ?? 0) >= liveDoc.savedAt) {
-    return await cached.text();
-  }
   const svg = await renderTabBodyToSvg(env, liveDoc, await getTabBody(env, liveDoc.id), opts, true);
   if (svg == null) return null;
   const write = images
-    .put(key, svg, {
+    .put(communityThumbnailKey(liveDoc.id), svg, {
       httpMetadata: { contentType: THUMBNAIL_CONTENT_TYPE },
       customMetadata: { renderedAt: String(Date.now()) },
     })
@@ -173,11 +194,23 @@ export async function getCommunityThumbnailSvg(
   return svg;
 }
 
+// The worker's side of the Community snapshot: a fresh cache from R2 without waking the document, else drawn by it.
+export async function getCommunityThumbnailSvg(
+  env: Env,
+  liveDoc: ThumbnailSubject,
+): Promise<string | null> {
+  if (!env.IMAGES) return null;
+  const cached = await env.IMAGES.get(communityThumbnailKey(liveDoc.id));
+  if (cached && Number(cached.customMetadata?.renderedAt ?? 0) >= liveDoc.savedAt) {
+    return await cached.text();
+  }
+  return documentRoom(env, liveDoc.id).image(subjectOf(liveDoc), null, true);
+}
 // One tab drawn by the shared renderer, for `GET .../tabs/:tabId/render.svg` (docs/specs/015-api/api.md): the
 // CLI's pull --svg and tab render, and any script. Unlike a snapshot it draws an empty tab too, and with no image
 // store its images keep their placeholders. Null when the tab is not in the document or its body does not parse.
 export async function renderTabSvg(
-  env: Env,
+  env: DocumentEnv,
   documentId: string,
   tabId: string,
 ): Promise<string | null> {
@@ -202,7 +235,7 @@ export async function renderTabSvg(
 // from the parse a render does anyway, so the lists know an old empty document after one ask. Best effort:
 // a failed stamp leaves the count unknown, which only means the row asks again.
 function stampUnknownCount(
-  env: Env,
+  env: DocumentEnv,
   body: StoredTabBody,
   count: number,
   opts: ThumbnailOptions,
@@ -223,7 +256,7 @@ function stampUnknownCount(
 // absent, unparseable, or has nothing to draw (an empty canvas has no
 // meaningful thumbnail; the row shows its icon instead).
 async function renderTabBodyToSvg(
-  env: Env,
+  env: DocumentEnv,
   liveDoc: ThumbnailSubject,
   body: StoredTabBody | null,
   opts: ThumbnailOptions = {},
@@ -266,7 +299,7 @@ async function renderTabBodyToSvg(
 // re-auth, and the same rule decides which: only an image the document may serve
 // (docs/specs/009-elements/images.md, "Placement grants") is read, one query for the tab.
 async function loadEmbeddedImages(
-  env: Env,
+  env: DocumentEnv,
   documentId: string,
   tab: Tab,
 ): Promise<Map<string, string>> {

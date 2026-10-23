@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { DocumentRoom } from './document-room';
+import { DocumentRoom } from './document-room/document-room';
 import { rescopeShareLink, deleteShareLink } from './db/share';
 import { recheckAdmittedLink, shareLinkChange } from './room-link-recheck';
 import { sqliteD1 } from './test-sqlite-d1';

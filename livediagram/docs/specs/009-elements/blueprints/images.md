@@ -26,8 +26,8 @@ Scope, by file:
 | `apps/api/src/media.ts`                                | The service client, owner naming, the owner index, the reference queue  |
 | `apps/api/src/routes/images.ts`                        | `handleImages`: the five `/api/images*` routes; `originalNameOf`        |
 | `apps/api/src/db/images.ts`                            | `imageUsageByOwner`                                                     |
-| `apps/api/src/db/image-grants.ts`                      | `documentServesImage`, `servableImageIds`: read `media_images`          |
-| `apps/api/src/index.ts`                                | Pre-dispatch size gate, write limiter, `scheduled()` sweep and refs     |
+| `apps/api/src/db/image-grants.ts`                      | `documentMayServeImage`, `servableImageIds`: read `media_images`        |
+| `apps/api/src/index.ts`                                | Pre-dispatch size gate, write limiter, `scheduled()` refs flush         |
 | `apps/api/src/thumbnail.ts`                            | `loadEmbeddedImages` for the preview and live image                     |
 | `apps/api/wrangler.toml`                               | `IMAGES` bucket (legacy images and snapshots), `MEDIA_KEY` note         |
 | `apps/api/hosted-vars.json`                            | Hosted livediagram.app's `MEDIA_URL` per environment                    |
@@ -151,10 +151,11 @@ Invariants:
    workbench session, and the caller's resolved owner equals it → allowed.
 2. Otherwise, with `?d=<documentId>` (for a document-scope workbench session, only its own
    document): `getDocumentMeta` finds the document outside the Trash, `gateGrant` returns a grant,
-   and `documentServesImage(d, id, grant.tabScope)` is true (placed, and servable by
-   [placement grant](../images.md#placement-grants) or ownership) → allowed; a placed but
-   unservable image logs `[images] not servable by document`. The reference is read from the index
-   ([Image reference index](image-reference-index.md#readers)). A tab-scoped visitor counts only
+   and, asked in parallel, the document places it (`documentRoom(env, d).placesImage(id,
+grant.tabScope)`, from the document's own index, [Image reference index](image-reference-index.md#readers))
+   and may serve it (`documentMayServeImage(d, id)`: ownership, the owner's live entitlement or a
+   [placement grant](../images.md#placement-grants)) → allowed; a placed but unservable image logs
+   `[images] not servable by document`. A tab-scoped visitor counts only
    their tab ([Tab-scoped share links](../../013-workspace/tab-scoped-share-links.md)). `[QB8]`
 3. Not allowed, or `media.bytes(id)` has no body → 404. Allowed → the bytes, `Content-Type` as
    the service stored it, `X-Content-Type-Options: nosniff`, `Cache-Control: private,
@@ -169,7 +170,7 @@ max-age=86400`.
 - `GET /api/images`: owner only; `media.list(mediaOwner(owner))`, newest first, from every app;
   `rememberMediaImages` for the listed ids (one statement that writes only changed rows).
 - `GET /api/images/usage`: owner only; `imageUsageByOwner` reads the owner's `documents →
-document_tabs → image_refs` ([Image reference index](image-reference-index.md#readers)), no tab
+document_images` ([Image reference index](image-reference-index.md#readers)), no tab
   body read, each document once per image, this app's documents only. A document in the Trash
   still counts ([Trash](../../013-workspace/trash.md)).
 
@@ -178,19 +179,15 @@ document_tabs → image_refs` ([Image reference index](image-reference-index.md#
 The media service sweeps its own images; this api reports what its documents place
 ([spec](../images.md#retention-unused-image-cleanup)):
 
-1. **Queue.** `mediaRefQueueTabStatement(env, tabId, ids, addOnly)` runs first in
-   `imageRefReplaceStatements` and `imageRefAddStatements`, in the body's batch: it upserts
-   `(document_id, now)` for every document holding the tab when the new set adds an id not in
-   `image_refs` or (not add-only) the stored set has one the new set lacks.
+1. **Queue.** `mediaRefQueueSetStatement(env, documentId, ids)` runs first in a document's image
+   push (`document-room/document-outbox.ts`), in the push's D1 batch: it upserts
+   `(document_id, now)` when the document's set differs from its `document_images` rows.
    `mediaRefQueueDocumentsStatement(env, where, params, onlyPlacing)` queues by a condition on
-   `documents d`: a tab linked in (`linkTabToDocument`, in the grant's batch), a tab unlinked
-   (`deleteTabRow`, when the tab had references, `onlyPlacing = false`) and a removed document
-   (`documentRemovalStatements`, first in its batch). The backfill's
-   `imageRefBackfillAddStatements` queues nothing.
+   `documents d`: a removed document that placed images (`documentRemovalStatements`, first in its
+   batch).
 2. **Flush.** `scheduled()` calls `flushMediaRefs(env, cron === '0 3 * * *')` on both crons:
    without a client it deletes the queue and returns 0; else it reads at most
-   `MEDIA_REFS_SYNC_MAX` rows oldest first, sends each document's distinct `image_refs` through
-   `document_tabs` (at most `MEDIA_REFS_PER_DOCUMENT_MAX`, logging past it), `complete` when fewer
+   `MEDIA_REFS_SYNC_MAX` rows oldest first, sends each document's `document_images` (at most `MEDIA_REFS_PER_DOCUMENT_MAX`, logging past it), `complete` when fewer
    than the maximum were read, and on success deletes exactly the `(document_id, queued_at)` pairs
    it read. An empty queue sends nothing unless `announce`, which sends `{ documents: [],
 complete: true }`. A failed send logs `[media] refs sync failed` and keeps the queue.
@@ -210,8 +207,8 @@ gate, the tripwire and the sweep. A null or `data:` id references nothing.
 - Server: `loadEmbeddedImages` reads each id with `media.bytes(id)` through `embedTabImages`
   with `totalBudgetBytes: IMAGE_EMBED_BUDGET_BYTES`, in document order, one at a time; an image
   that does not fit is skipped and later smaller ones may still fit (D44). Only ids
-  `servableImageIds` returns are read (one query over `image_refs`, `media_images` and
-  `image_grants`). No client: no embed. `[QB7]`
+  `servableImageIds` returns are read (one query over `media_images` and `image_grants`). The
+  snapshot is drawn in the document's Durable Object (`renderDocumentImage`). No client: no embed. `[QB7]`
 
 ### Availability
 
@@ -274,11 +271,10 @@ export function imageUsageByOwner(
 ): Promise<Record<string, { id: string; name: string }[]>>;
 
 // apps/api/src/db/image-grants.ts
-export function documentServesImage(
+export function documentMayServeImage(
   env: Env,
   documentId: string,
   imageId: string,
-  onlyTabId?: string | null,
 ): Promise<boolean>;
 export function servableImageIds(env: Env, documentId: string, ids: string[]): Promise<Set<string>>;
 
@@ -294,11 +290,10 @@ export function mediaImageOwner(
   id: string,
   caller: string | null,
 ): Promise<string | null>;
-export function mediaRefQueueTabStatement(
+export function mediaRefQueueSetStatement(
   env: Env,
-  tabId: string,
+  documentId: string,
   ids: string[],
-  addOnly: boolean,
 ): D1PreparedStatement;
 export function mediaRefQueueDocumentsStatement(
   env: Env,
@@ -368,14 +363,14 @@ read a 503 as `null` and `{}`.
   owns the documents, moves the documents, moves the legacy `images` (`UPDATE OR IGNORE`) and moves
   every `media_images` row of the guest to the account. Every guest image the documents place
   keeps serving in them by grant.
-- **Trash**: a trashed document keeps its tabs, so its images stay referenced until the purge
+- **Trash**: a trashed document keeps its content, so its images stay referenced until the purge
   ([Trash](../../013-workspace/trash.md)); its share link grants no image read meanwhile.
-- **Reference index**: `image_refs` is derived from tab bodies and owned by the
-  [Image reference index](image-reference-index.md) blueprint.
+- **Reference index**: `image_refs` (in each document's own SQLite) and `document_images` (D1) are
+  derived from tab bodies and owned by the [Image reference index](image-reference-index.md) blueprint.
 - **Offline documents** hold `data:` URIs in `imageId`; Take Offline and Sync Document convert
   ([Offline Mode](../../006-document/offline-mode.md)).
-- **Migration**: `0014` for the legacy `images`; `0101` for `media_images` and `media_ref_outbox`;
-  `0050_image_refs.sql` belongs to the index blueprint.
+- **Migration**: `media_images` and `media_ref_outbox` are in `0001_livediagram_baseline.sql`;
+  `document_images`, in the same baseline, belongs to the index blueprint.
 
 ## Errors and edge cases
 
@@ -432,14 +427,15 @@ read a 503 as `null` and `{}`.
 - Upload: the body read whole here (at most 10 MiB in memory), one service request (which does the
   hash, the caps, the strip and the store), one `media_images` upsert.
 - Read: one `media_images` lookup (a miss adds one service `GET` and one insert, once per id), one
-  document row and one indexed grant query when read through a document, one service fetch whose
+  document row, and one call to the document beside one indexed grant query when read through a document, one service fetch whose
   body is streamed on, not buffered.
 - Gallery list: one service request and one upsert that writes only changed rows.
-- Saves: one queue statement in the body's batch, indexed on `image_refs (tab_id, image_id)`;
-  nothing is written when the set is unchanged.
+- Saves: the index statements in the body's own transaction, in the document's SQLite; nothing is
+  written, and nothing pushed, when the set is unchanged. A changed set costs one push (one queue
+  statement, the set's rows, the grants) within about a minute.
 - Reference flush: per minute, one indexed read of at most 500 queued rows, one join for their
   images, one service request, one delete; nothing when the queue is empty.
-- Usage: one join over the owner's documents and `image_refs`, no tab body read; deduped in
+- Usage: one join over the owner's documents and `document_images`, no tab body read; deduped in
   flight on the client (`dedupeInFlight`).
 - Retention: budgets in [Image reference index](image-reference-index.md#performance-and-limits).
 - Snapshot: at most `IMAGE_EMBED_BUDGET_BYTES` raw (about 4 MiB base64) per snapshot, read one

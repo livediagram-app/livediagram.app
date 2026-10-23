@@ -41,11 +41,19 @@ CREATE TABLE tabs (
 );
 ```
 
-A `tabs` row is the tab's body and nothing else. Which documents contain it, and its order and folder in each, live on the `document_tabs` link ([Tab ↔ document many-to-many](tab-document-many-to-many.md)). Nothing on the row points at a document, so nothing cascades from `documents` into `tabs`: removing a tab from a document, deleting a document and deleting an account each drop a tab explicitly once no document links it. `collab_actions` and `collab_threads` cascade from `tabs(id)`, so a dropped tab takes its index rows with it. `image_refs` has no foreign key ([Images, Reference index](../009-elements/images.md#reference-index)), so each delete path prunes a dropped tab's image references in the same batch.
+A `tabs` row is the tab's body and nothing else. It lives in its document's own SQLite, in the document's Durable
+Object ([API app, Storage](../015-api/api.md#storage)), with the document's other content; its order and folder
+live on the `document_tabs` row beside it ([Tab ↔ document many-to-many](tab-document-many-to-many.md)). Its stats
+(`tab_stats`), image references (`image_refs`, [Images, Reference index](../009-elements/images.md#reference-index))
+and changesets cascade from `tabs(id)`, so a dropped tab takes them with it; the D1 index rows it fed
+(`collab_actions`, `collab_threads`, `document_images`) follow on the document's next push.
 
-The table was introduced by `0005_tabs.sql` and has this shape since `0049_tabs_drop_legacy_columns.sql`, which removed the original `document_id` + `order_index` columns and the `document_id` foreign key.
+The table is created by the document's schema (`apps/api/src/document-room/document-schema.ts`), with
+`element_count` ([Document snapshots](document-snapshots.md)) and `rev` ([Agent changesets](../024-agents/agent-changesets.md)).
+D1's baseline migration, `0001_livediagram_baseline.sql`, has no `tabs`.
 
-`documents` keeps `id`, `owner_id`, `name`, `shareable`, `folder_id`, `saved_at`, `created_at`. The `data` column was dropped in migration 0006 once the editor app had been on the new schema for a release window.
+`documents` (in D1) keeps `id`, `owner_id`, `name`, `shareable`, `folder_id`, `saved_at`, `created_at` and the
+listing's `content_summary`.
 
 ## API surface
 
@@ -297,20 +305,12 @@ row. An empty write over an already-empty / brand-new row, and any
 non-empty write, are unaffected. This is intentionally independent of the
 client guard — belt and suspenders against the most destructive failure.
 
-### A save never adopts another document's tab
+### A save only ever reaches its own document's tab
 
-The save upserts by tab id, so a tab id seen elsewhere (a share link, a
-Community post's document) could otherwise overwrite that tab and link it
-into the caller's own document. So when this document has no tab with the
-id, and the id already names a tab not linked to this document, the save
-is **refused with 409 `tab_id_taken`**, never overwritten or adopted, and
-the worker logs `[tabs] refused a save onto another document's tab`.
-Linking an existing tab into a document has its own route
-(`POST /api/documents/:id/tabs/:tabId/link`,
-[Tab ↔ document many-to-many](tab-document-many-to-many.md)). The check
-(`tabBelongsElsewhere` in `apps/api/src/db/tabs.ts`, called from
-`apps/api/src/routes/tab-put-route.ts`) runs only when the document has no
-such tab, so the common autosave pays nothing.
+The save upserts by tab id, against the document's own store: another document's tabs are in another document's
+object, so a tab id seen elsewhere (a share link) can name only a new tab here. The check that used to refuse a
+save onto another document's tab (`409 tab_id_taken`) has nothing left to guard, and is gone with the shared tab
+table.
 
 ## Cutover (historical)
 
@@ -322,16 +322,13 @@ How this rolled out, recorded here so future schema changes can repeat the patte
 
 ## Risk
 
-- D1 doesn't currently support cross-row transactions cleanly, so the
-  backfill is per-document in its own statement set. If the backfill
-  step partially fails, the migration tracker re-runs it.
-- Tab reorder is a `UPDATE tabs SET order_index = ? WHERE id = ?` per
-  tab. Acceptable for the small tab counts (< 20) we see in practice.
+- Tab reorder is an `UPDATE document_tabs SET order_index = ?` per
+  tab, in one transaction in the document's object. Acceptable for the small tab counts (< 20) we see in practice.
 
 ## What this does NOT change
 
 - Realtime presence (still room-level).
-- Sharing (per-document share codes; no per-tab sharing yet). Tab-level reuse across documents is a server-side relationship under [Tab ↔ document many-to-many](tab-document-many-to-many.md), not user-visible sharing.
+- Sharing (per-document share codes; no per-tab sharing yet). A tab belongs to one document ([Tab ↔ document many-to-many](tab-document-many-to-many.md)).
 - The frontend `Tab` type shape (just where it's persisted).
 
 ## Import carries identity, not just content

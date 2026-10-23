@@ -74,7 +74,7 @@ prints the resolved binding table.
 
 Staging gets its own **D1 database**, **R2 bucket** and **KV namespace**. Durable Objects
 come free: a different script is a different DO namespace, so the staging
-`DOCUMENT_ROOM` is already separate.
+`DOCUMENT_ROOM` (and every document's content in it) is already separate.
 
 Rate-limiter namespace ids are deliberately **left identical** to production's. They are
 scoped per script by Cloudflare, so the staging worker's `1001` is not production's
@@ -126,9 +126,9 @@ Two deliberate non-changes:
 its own build** — the two workflows never share an artifact. Staging's build differs
 from production's in exactly one value:
 
-| Variable                            | Production                                        | Staging                               |
-| ----------------------------------- | ------------------------------------------------- | ------------------------------------- |
-| `NEXT_PUBLIC_MCP_ORIGIN`            | empty (blank falls back to `mcp.livediagram.app`) | `https://mcp-staging.livediagram.app` |
+| Variable                 | Production                                        | Staging                               |
+| ------------------------ | ------------------------------------------------- | ------------------------------------- |
+| `NEXT_PUBLIC_MCP_ORIGIN` | empty (blank falls back to `mcp.livediagram.app`) | `https://mcp-staging.livediagram.app` |
 
 Everything else matches, on purpose: `NEXT_PUBLIC_API_BASE` stays unset so staging
 resolves `/api` same-origin through its own router, and
@@ -145,12 +145,12 @@ set. `GET /api/capabilities` is the authoritative answer at any moment; as of th
 first deploy it returns `{"aiEnabled":false,"emailEnabled":false}` on staging against
 `{"aiEnabled":true,"emailEnabled":true}` on production.
 
-| Integration        | Staging setup                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Integration        | Staging setup                                                                                                                                                                                                                                                                                                                                                                                                |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Sign-in** — ON   | Staging is its **own OAuth client** of the liveworkspace accounts Worker (`ACCOUNTS_CLIENT_ID_STAGING` / `ACCOUNTS_CLIENT_SECRET_STAGING`) with its **own resource** (`API_RESOURCE_STAGING`), so its access tokens carry an audience production's api refuses: a staging session cannot reach production data. The client's registered redirect URI is `https://staging.livediagram.app/api/auth/callback`. |
-| **Telemetry** — ON | Events land in staging's own D1, so the **public** `/telemetry` dashboard on production is unaffected; staging's dashboard shows staging's own traffic, which is how you verify a new event actually lands.                                                                                                                                                                                                                                                                                                                            |
-| **Resend** — OFF   | Wired but keyless. `APP_BASE_URL` and `RESEND_FROM` are set, so setting `RESEND_API_KEY --env staging` turns it on and every link points back at staging. Left unset on purpose: staging runs the same daily lifecycle cron as production, from the same verified domain, so switching it on mails **real people** (see the warning below). Turn it on for a specific test, then take the key off again.                                                                                                                               |
-| **AI models** — ON | Keyed by hand, as production is: `wrangler secret put GOOGLE_AI_STUDIO_API_KEY --env staging`, which turns on the server reader for the event-storming photo import ([Note reader](../021-event-storming/note-reader.md)). `AI_ALLOWED_ORIGINS` restricts the endpoint to the staging origin. It spends real money per request; `GET /api/capabilities` reports whether it is on.                                                                                                                                                      |
+| **Telemetry** — ON | Events land in staging's own D1, so the **public** `/telemetry` dashboard on production is unaffected; staging's dashboard shows staging's own traffic, which is how you verify a new event actually lands.                                                                                                                                                                                                  |
+| **Resend** — OFF   | Wired but keyless. `APP_BASE_URL` and `RESEND_FROM` are set, so setting `RESEND_API_KEY --env staging` turns it on and every link points back at staging. Left unset on purpose: staging runs the same daily lifecycle cron as production, from the same verified domain, so switching it on mails **real people** (see the warning below). Turn it on for a specific test, then take the key off again.     |
+| **AI models** — ON | Keyed by hand, as production is: `wrangler secret put GOOGLE_AI_STUDIO_API_KEY --env staging`, which turns on the server reader for the event-storming photo import ([Note reader](../021-event-storming/note-reader.md)). `AI_ALLOWED_ORIGINS` restricts the endpoint to the staging origin. It spends real money per request; `GET /api/capabilities` reports whether it is on.                            |
 
 > **Email warning.** Staging runs the same daily lifecycle-email cron as production
 > (welcome / week-1 / week-2, token-expiry warnings). With `RESEND_API_KEY` set, any
@@ -165,14 +165,14 @@ first deploy it returns `{"aiEnabled":false,"emailEnabled":false}` on staging ag
 Production's secrets are untouched. Staging adds a `_STAGING`-suffixed twin for each
 value the deploy workflow syncs:
 
-| GitHub secret                               | Synced to                       | Notes                                                                                                                                                                                                              |
-| ------------------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `ACCOUNTS_URL_STAGING` | staging api | The accounts Worker staging signs in through. |
-| `API_RESOURCE_STAGING` | staging api | Staging's own resource (the access-token audience). Never production's. |
-| `ACCOUNTS_CLIENT_ID_STAGING` | staging api, build step | Staging's own OAuth client; set, it also turns sign-in on in the staging build. |
-| `ACCOUNTS_CLIENT_SECRET_STAGING` | staging api | That client's secret. |
-| `GUEST_ID_HMAC_SECRET_STAGING`              | staging api                     | Own value — `openssl rand -hex 32`. Never production's.                                                                                                                                                            |
-| `TELEMETRY_KEY_STAGING`                     | staging api **and** staging mcp | livediagram's key on the staging telemetry service; same value on both and on the service, or server-side counts silently go missing ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)). |
+| GitHub secret                    | Synced to                       | Notes                                                                                                                                                                                                              |
+| -------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ACCOUNTS_URL_STAGING`           | staging api                     | The accounts Worker staging signs in through.                                                                                                                                                                      |
+| `API_RESOURCE_STAGING`           | staging api                     | Staging's own resource (the access-token audience). Never production's.                                                                                                                                            |
+| `ACCOUNTS_CLIENT_ID_STAGING`     | staging api, build step         | Staging's own OAuth client; set, it also turns sign-in on in the staging build.                                                                                                                                    |
+| `ACCOUNTS_CLIENT_SECRET_STAGING` | staging api                     | That client's secret.                                                                                                                                                                                              |
+| `GUEST_ID_HMAC_SECRET_STAGING`   | staging api                     | Own value — `openssl rand -hex 32`. Never production's.                                                                                                                                                            |
+| `TELEMETRY_KEY_STAGING`          | staging api **and** staging mcp | livediagram's key on the staging telemetry service; same value on both and on the service, or server-side counts silently go missing ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)). |
 
 `CF_API_TOKEN` and `CF_ACCOUNT_ID` are shared — same account.
 

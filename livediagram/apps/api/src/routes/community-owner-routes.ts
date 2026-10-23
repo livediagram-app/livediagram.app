@@ -27,7 +27,7 @@ import {
   updateCommunityLink,
 } from '../db/community-links';
 import { conflict, json, noContent, notFound, signInRequired } from '../responses';
-import { requireOwnedDocument, type RouteContext } from './context';
+import { requireOwnedDocument, type DocumentRouteContext } from './context';
 
 function ownPost(post: CommunityAppPost): CommunityOwnPost {
   const { own: _own, ...rest } = post;
@@ -36,7 +36,7 @@ function ownPost(post: CommunityAppPost): CommunityOwnPost {
 
 // How the owner is shown on a post that is not anonymous: their participant name and colour (no picture: accounts
 // have none).
-async function authorOf(ctx: RouteContext, ownerId: string): Promise<CommunityAuthor> {
+async function authorOf(ctx: DocumentRouteContext, ownerId: string): Promise<CommunityAuthor> {
   const p = await getParticipant(ctx.env, ownerId);
   if (!p) return COMMUNITY_UNKNOWN_AUTHOR;
   return {
@@ -55,7 +55,9 @@ async function passThrough(res: Response): Promise<Response> {
 }
 
 // Returns null when the request isn't this route.
-export async function handleCommunityOwnerRoutes(ctx: RouteContext): Promise<Response | null> {
+export async function handleCommunityOwnerRoutes(
+  ctx: DocumentRouteContext,
+): Promise<Response | null> {
   const { request, env, segments } = ctx;
   if (segments.length !== 4 || segments[3] !== 'community') return null;
   const method = request.method;

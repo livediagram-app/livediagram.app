@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
 import { sqliteD1 } from '../test-sqlite-d1';
 import { copyDocument, setDocumentFolder } from './documents';
@@ -6,38 +6,39 @@ import { handTeamWorkToHeir } from './teams';
 import { migrateOwnerId } from './account';
 import { documentRemovalStatements } from './document-removal';
 import {
-  documentServesImage,
+  documentMayServeImage,
   imageGrantCopyStatements,
   imageGrantPlacementStatements,
   servableImageIds,
 } from './image-grants';
-import { resetImageRefIndexMemo } from './image-refs';
-import { linkTabToDocument, upsertTab } from './tabs';
-import { hasTable, tabWith } from './test-image-fixtures';
+import { documentPlacesImage } from './image-refs';
+import { upsertTab } from './tabs';
+import type { DocumentEnv } from '../types';
+import { tabWith } from './test-image-fixtures';
 import { insert, liveDoc, team } from './test-trash-fixtures';
 
 // Placement grants (docs/specs/009-elements/images.md, "Placement grants"): a
 // document serves an image only when the image's owner owns it, or it holds a
 // grant earned when the owner placed the image there or carried in by a copy.
 
-afterEach(() => resetImageRefIndexMemo());
-
-// Whose an image is, as the media service's images are known here (src/media.ts); before 0101, a gallery row.
+// Whose an image is, as the media service's images are known here (src/media.ts).
 function image(sql: DatabaseSync, id: string, ownerId: string) {
-  if (hasTable(sql, 'media_images')) {
-    insert(sql, 'media_images', { id, owner_id: ownerId });
-    return;
-  }
-  insert(sql, 'images', {
-    id,
-    owner_id: ownerId,
-    content_type: 'image/png',
-    byte_size: 1,
-    width: 1,
-    height: 1,
-    sha256: id,
-    created_at: 0,
-  });
+  insert(sql, 'media_images', { id, owner_id: ownerId });
+}
+
+// The byte endpoint's whole share check (routes/images.ts): the document places the image (asked of the document
+// itself) and may serve it (D1).
+async function documentServesImage(
+  env: DocumentEnv,
+  documentId: string,
+  imageId: string,
+  onlyTabId: string | null = null,
+): Promise<boolean> {
+  const [placed, may] = await Promise.all([
+    documentPlacesImage(env, documentId, imageId, onlyTabId),
+    documentMayServeImage(env, documentId, imageId),
+  ]);
+  return placed && may;
 }
 
 function grants(sql: DatabaseSync): string[] {
@@ -55,6 +56,7 @@ describe('documentServesImage', () => {
     await upsertTab(db.env, 'D', tabWith('t1', 'mine'), 0);
     expect(await documentServesImage(db.env, 'D', 'mine')).toBe(true);
     expect([...(await servableImageIds(db.env, 'D', ['mine', 'missing']))]).toEqual(['mine']);
+    await db.flush();
     expect(grants(db.sql)).toEqual([]);
   });
 
@@ -66,6 +68,7 @@ describe('documentServesImage', () => {
     image(db.sql, 'alice-img', 'alice');
     await upsertTab(db.env, 'theirs', tabWith('t1', 'alice-img'), 0);
     expect(await documentServesImage(db.env, 'theirs', 'alice-img')).toBe(false);
+    await db.flush();
     expect(grants(db.sql)).toEqual([]);
     expect([...(await servableImageIds(db.env, 'theirs', ['alice-img']))]).toEqual([]);
   });
@@ -83,6 +86,7 @@ describe('documentServesImage', () => {
     liveDoc(db.sql, 'D', { owner: 'user_alice', team: 'T' });
     image(db.sql, 'bob-img', 'user_bob');
     await upsertTab(db.env, 'D', tabWith('t1', 'bob-img'), 0);
+    await db.flush();
     expect(grants(db.sql)).toEqual(['D:bob-img']);
     db.sql.exec("DELETE FROM team_members WHERE user_id = 'user_bob'");
     expect(await documentServesImage(db.env, 'D', 'bob-img')).toBe(true);
@@ -104,7 +108,7 @@ describe('documentServesImage', () => {
     image(db.sql, 'editor-img', 'guest-editor');
     image(db.sql, 'participant-img', 'guest-participant');
     image(db.sql, 'viewer-img', 'guest-viewer');
-    // A Participant's row keeps the two-valued role at 'view' (migration 0080); its level says participate.
+    // A Participant's row keeps the two-valued role at 'view' (the baseline migration); its level says participate.
     for (const [owner, role, level] of [
       ['guest-editor', 'edit', null],
       ['guest-participant', 'view', 'participate'],
@@ -116,7 +120,6 @@ describe('documentServesImage', () => {
         role,
         level,
         created_at: 0,
-        purpose: 'share',
       });
       insert(db.sql, 'shared_with', {
         owner_id: owner,
@@ -188,22 +191,6 @@ describe('copies', () => {
   });
 });
 
-// "Add a Tab to Another Document": the new holder serves what the tab already showed.
-describe('linked tabs', () => {
-  it("carries a teammate's image into a document the tab is linked into, and nothing planted", async () => {
-    const db = sqliteD1();
-    team(db.sql, 'T', [['user_bob', 'joined']]);
-    liveDoc(db.sql, 'teamDoc', { owner: 'user_alice', team: 'T' });
-    liveDoc(db.sql, 'personal', { owner: 'user_alice' });
-    image(db.sql, 'bob-img', 'user_bob');
-    image(db.sql, 'planted', 'carol');
-    await upsertTab(db.env, 'teamDoc', tabWith('t1', 'bob-img', 'planted'), 0);
-    expect(await linkTabToDocument(db.env, 'personal', 't1')).toBe(true);
-    expect(await documentServesImage(db.env, 'personal', 'bob-img')).toBe(true);
-    expect(await documentServesImage(db.env, 'personal', 'planted')).toBe(false);
-  });
-});
-
 describe('empty id lists', () => {
   it('write and read nothing for a body that places no image', async () => {
     const db = sqliteD1();
@@ -221,12 +208,10 @@ describe('removal', () => {
     image(db.sql, 'bob-img', 'user_bob');
     await upsertTab(db.env, 'D', tabWith('t1', 'bob-img'), 0);
     await db.env.DB.batch(documentRemovalStatements(db.env, { column: 'id', value: 'D' }));
+    await db.flush();
     expect(grants(db.sql)).toEqual([]);
   });
 });
-
-// Migration 0075 cannot tell an old paste from a legitimate placement, so
-// every reference that already crossed owners keeps rendering.
 
 // A document changing owner keeps serving the images its previous owner placed (docs/specs/009-elements/images.md
 // "Placement grants": a grant outlives the membership).

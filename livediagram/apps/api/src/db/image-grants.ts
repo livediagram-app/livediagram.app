@@ -4,23 +4,41 @@
 // Whose an image is comes from media_images (src/media.ts): the images live in liveworkspace's media
 // service, and an image this api has never met joins nothing, so it serves nowhere.
 //
-// A reference alone (image_refs) does not let a document serve an image: an id
+// A reference alone (image_refs, in the document's own SQLite) does not let a document serve an image: an id
 // pasted into an unrelated document must not keep the bytes reachable after its
 // reader loses access to the original. A document serves image X when X's
-// owner owns the document, or the document holds a grant for X. Grants are
-// written only at trusted moments, in the same batch as the body they follow:
-// when X's owner is tied to the document as the body is saved, and when a copy
-// carries an image its source could serve.
+// owner owns the document, X's owner is entitled to place it there right now, or the document holds a grant for
+// X. Grants are written only at trusted moments: when the document's Durable Object pushes the images its bodies
+// place (document-room/document-outbox.ts) while X's owner is entitled, and when a copy carries an image its source
+// could serve. The live entitlement serves a placement before that push lands; the grant keeps serving it after
+// the entitlement ends.
 
 import type { Env } from '../types';
 import { visitLinkSql } from './visit-link';
-import { imageRefIndexDocumentStatement, isImageRefIndexComplete } from './image-refs';
+
+// Image `i`'s owner may place it in document `d` right now: a joined member of the document's team, or an edit
+// collaborator whose visit's link is still live. A Participant edits text only and places no image
+// (docs/specs/013-workspace/share-roles.md). A revoked or expired link earns nothing, so an id pasted after access
+// went cannot be laundered into a grant. `now` is the bound parameter holding the current time.
+function entitledSql(now: string): string {
+  return `((d.team_id IS NOT NULL AND EXISTS (
+              SELECT 1 FROM team_members m
+               WHERE m.team_id = d.team_id AND m.user_id = i.owner_id AND m.status = 'joined'))
+           OR EXISTS (
+              SELECT 1 FROM shared_with s
+               WHERE s.owner_id = i.owner_id AND s.document_id = d.id
+                 AND (s.role = 'edit' OR s.level = 'participate')
+                 AND d.shareable = 1 AND ${visitLinkSql(now)} IS NOT NULL))`;
+}
 
 // The one predicate every reader shares: document `d` (aliased) may serve image
 // `i` (aliased). Owner match first, so the common case never touches the
-// grants table; the grant lookup is a primary-key probe.
-const SERVES = `(i.owner_id = d.owner_id
-   OR EXISTS (SELECT 1 FROM image_grants g WHERE g.document_id = d.id AND g.image_id = i.id))`;
+// grants table; the grant lookup is a primary-key probe, and the entitlement two indexed probes.
+function servesSql(now: string): string {
+  return `(i.owner_id = d.owner_id
+   OR EXISTS (SELECT 1 FROM image_grants g WHERE g.document_id = d.id AND g.image_id = i.id)
+   OR (i.owner_id <> '' AND ${entitledSql(now)}))`;
+}
 
 // ---------- Writers ---------------------------------------------------
 
@@ -39,24 +57,19 @@ export function imageGrantOwnerChangeStatement(
     `INSERT OR IGNORE INTO image_grants (document_id, image_id, created_at)
      SELECT DISTINCT d.id, i.id, ?1
        FROM documents d
-       JOIN document_tabs dt ON dt.document_id = d.id
-       JOIN image_refs r ON r.tab_id = dt.tab_id
+       JOIN document_images r ON r.document_id = d.id
        JOIN media_images i ON i.id = r.image_id AND i.owner_id = d.owner_id
       WHERE ${where}`,
   ).bind(now, ...params);
 }
 
-// For each image a saved body places, in each document holding the tab: grant it
-// when the image's owner is entitled to place it there right now, as a joined
-// member of the document's team, or a collaborator who may add content whose visit's
-// link is still live: an edit collaborator, or a Participant
-// (docs/specs/013-workspace/share-roles.md), who places images too. A revoked or
-// expired link earns nothing, so an id pasted after access went cannot be laundered
-// into a grant. The writer's identity is not needed. An image the document's owner
-// owns needs no row.
+// For each image the document places, grant it when the image's owner is entitled to place it there right now
+// (entitledSql). The writer's identity is not needed. An image the document's owner owns needs no row. Run by the
+// document's push with its whole set (document-room/document-outbox.ts), so a placement keeps serving after the
+// entitlement that let it in ends.
 export function imageGrantPlacementStatements(
   env: Env,
-  tabId: string,
+  documentId: string,
   ids: string[],
   now: number,
 ): D1PreparedStatement[] {
@@ -65,20 +78,12 @@ export function imageGrantPlacementStatements(
     env.DB.prepare(
       `INSERT OR IGNORE INTO image_grants (document_id, image_id, created_at)
        SELECT d.id, i.id, ?3
-         FROM document_tabs dt
-         JOIN documents d ON d.id = dt.document_id
+         FROM documents d
          JOIN media_images i ON i.id IN (SELECT value FROM json_each(?2))
-        WHERE dt.tab_id = ?1
+        WHERE d.id = ?1
           AND i.owner_id <> d.owner_id
-          AND ((d.team_id IS NOT NULL AND EXISTS (
-                  SELECT 1 FROM team_members m
-                   WHERE m.team_id = d.team_id AND m.user_id = i.owner_id AND m.status = 'joined'))
-               OR EXISTS (
-                  SELECT 1 FROM shared_with s
-                   WHERE s.owner_id = i.owner_id AND s.document_id = d.id
-                     AND (s.role = 'edit' OR s.level = 'participate')
-                     AND d.shareable = 1 AND ${visitLinkSql('?3')} IS NOT NULL))`,
-    ).bind(tabId, JSON.stringify(ids), now),
+          AND ${entitledSql('?3')}`,
+    ).bind(documentId, JSON.stringify(ids), now),
   ];
 }
 
@@ -100,34 +105,12 @@ export function imageGrantCopyStatements(
          FROM documents d
          JOIN media_images i ON i.id IN (SELECT value FROM json_each(?3))
         WHERE d.id = ?1
-          AND ${SERVES}`,
+          AND ${servesSql('?4')}`,
     ).bind(sourceId, targetId, JSON.stringify(ids), now),
   ];
 }
 
-// A tab linked into another document ("Add a Tab to Another Document") carries
-// what it already shows: every image the tab places that some document already
-// holding it may serve, granted to the new holder. Nothing is laundered: the
-// grant is derived from an existing holder's right to serve.
-export function imageGrantLinkStatement(
-  env: Env,
-  targetId: string,
-  tabId: string,
-  now: number,
-): D1PreparedStatement {
-  return env.DB.prepare(
-    `INSERT OR IGNORE INTO image_grants (document_id, image_id, created_at)
-     SELECT DISTINCT ?1, i.id, ?3
-       FROM image_refs r
-       JOIN media_images i ON i.id = r.image_id
-       JOIN document_tabs dt ON dt.tab_id = r.tab_id AND dt.document_id <> ?1
-       JOIN documents d ON d.id = dt.document_id
-      WHERE r.tab_id = ?2
-        AND ${SERVES}`,
-  ).bind(targetId, tabId, now);
-}
-
-// Document removal: the grants go with the document (no foreign key, like image_refs).
+// Document removal: the grants go with the document (no foreign key, like document_images).
 export function imageGrantRemovalStatement(
   env: Env,
   doomedDocuments: string,
@@ -140,30 +123,23 @@ export function imageGrantRemovalStatement(
 
 // ---------- Readers ---------------------------------------------------
 
-// The byte endpoint's share check: document `documentId` places image `imageId`
-// (a tab-scoped visitor's tab only) AND may serve it. Answered from the
-// reference index, never a tab body; while the index backfill is incomplete,
-// the document's own tabs are indexed first. One indexed query.
-export async function documentServesImage(
+// The byte endpoint's share check, its D1 half: document `documentId` may serve image `imageId`. That the
+// document places it (a tab-scoped visitor's tab only) is the other half, asked of the document itself
+// (db/image-refs.ts documentPlacesImage). One indexed query.
+export async function documentMayServeImage(
   env: Env,
   documentId: string,
   imageId: string,
-  onlyTabId: string | null = null,
 ): Promise<boolean> {
-  if (!(await isImageRefIndexComplete(env))) {
-    await imageRefIndexDocumentStatement(env, documentId).run();
-  }
   const row = await env.DB.prepare(
     `SELECT 1 AS present
-       FROM document_tabs dt
-       JOIN image_refs r ON r.tab_id = dt.tab_id AND r.image_id = ?1
-       JOIN documents d ON d.id = dt.document_id
-       JOIN media_images i ON i.id = r.image_id
-      WHERE dt.document_id = ?2${onlyTabId === null ? '' : ' AND dt.tab_id = ?3'}
-        AND ${SERVES}
+       FROM documents d
+       JOIN media_images i ON i.id = ?1
+      WHERE d.id = ?2
+        AND ${servesSql('?3')}
       LIMIT 1`,
   )
-    .bind(...(onlyTabId === null ? [imageId, documentId] : [imageId, documentId, onlyTabId]))
+    .bind(imageId, documentId, Date.now())
     .first<{ present: number }>();
   return row !== null;
 }
@@ -181,9 +157,9 @@ export async function servableImageIds(
        FROM documents d
        JOIN media_images i ON i.id IN (SELECT value FROM json_each(?2))
       WHERE d.id = ?1
-        AND ${SERVES}`,
+        AND ${servesSql('?3')}`,
   )
-    .bind(documentId, JSON.stringify(ids))
+    .bind(documentId, JSON.stringify(ids), Date.now())
     .all<{ id: string }>();
   return new Set(rows.results.map((r) => r.id));
 }

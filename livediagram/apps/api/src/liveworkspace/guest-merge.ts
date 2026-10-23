@@ -9,7 +9,12 @@
 // Best effort: a failure is logged and the migrate still answers, since the documents have moved.
 // The guest's settings stay put to move again on the next migrate.
 
-import { readProfiles, readSettings, writeProfile, writeSettings } from '@liveworkspace/auth-client';
+import {
+  readProfiles,
+  readSettings,
+  writeProfile,
+  writeSettings,
+} from '@liveworkspace/auth-client';
 import type { SettingsPrefs } from '@liveworkspace/auth-client';
 import type { Env } from '../types';
 import { forgetParticipant } from './profiles';
@@ -17,7 +22,10 @@ import { liveworkspaceTarget } from './owner';
 import { LIVEDIAGRAM_SETTINGS_APP } from './settings';
 
 // The keys of `from` that `into` lacks, and a patch deleting every key of `from`.
-function gaps(from: SettingsPrefs, into: SettingsPrefs): { fill: SettingsPrefs; clear: SettingsPrefs } {
+function gaps(
+  from: SettingsPrefs,
+  into: SettingsPrefs,
+): { fill: SettingsPrefs; clear: SettingsPrefs } {
   const fill: SettingsPrefs = {};
   const clear: SettingsPrefs = {};
   for (const [key, value] of Object.entries(from)) {
@@ -29,7 +37,11 @@ function gaps(from: SettingsPrefs, into: SettingsPrefs): { fill: SettingsPrefs; 
 
 const nonEmpty = (prefs: SettingsPrefs) => (Object.keys(prefs).length > 0 ? prefs : undefined);
 
-export async function mergeGuestIntoOwner(env: Env, guestId: string, ownerId: string): Promise<void> {
+export async function mergeGuestIntoOwner(
+  env: Env,
+  guestId: string,
+  ownerId: string,
+): Promise<void> {
   const guest = liveworkspaceTarget(env, guestId);
   const owner = liveworkspaceTarget(env, ownerId);
   if (!guest || !owner || guest.owner === owner.owner) return;

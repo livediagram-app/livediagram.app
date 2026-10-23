@@ -145,7 +145,7 @@ describe('consumeWsTicket (docs/specs/007-editor/editor-app.md room auth)', () =
       role: 'edit',
       tabScope: null,
       shareCode: null,
-          personTag: null,
+      personTag: null,
       workbenchPairing: null,
       adderKey: null,
       owner: false,

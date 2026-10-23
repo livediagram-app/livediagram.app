@@ -22,7 +22,9 @@ afterEach(() => {
 describe('reportOwnerActivity', () => {
   it('reports an account’s save at most once a minute per document', async () => {
     await reportOwnerActivity(env, 'user_a', 'd1', 1000);
-    expect(reportOwnerActivity(env, 'user_a', 'd1', 1000 + ACTIVITY_REPORT_INTERVAL_MS - 1)).toBeNull();
+    expect(
+      reportOwnerActivity(env, 'user_a', 'd1', 1000 + ACTIVITY_REPORT_INTERVAL_MS - 1),
+    ).toBeNull();
     await reportOwnerActivity(env, 'user_a', 'd2', 2000);
     await reportOwnerActivity(env, 'user_a', 'd1', 1000 + ACTIVITY_REPORT_INTERVAL_MS);
     expect(accounts.activity).toEqual([
@@ -50,7 +52,9 @@ describe('getOwnerEmails / claimMilestone', () => {
   it('asks once for the accounts among the ids, leaving guests and the unverified out', async () => {
     accounts.accounts.set('user_a', { name: null, email: 'a@example.test' });
     accounts.accounts.set('user_b', { name: null, email: null });
-    expect(await getOwnerEmails(env, ['user_a', 'user_b', GUEST])).toEqual({ 'user_a': 'a@example.test' });
+    expect(await getOwnerEmails(env, ['user_a', 'user_b', GUEST])).toEqual({
+      user_a: 'a@example.test',
+    });
     expect(accounts.calls).toEqual(['POST /emails']);
     expect(await getOwnerEmail(env, 'user_b')).toBeNull();
     expect(await getOwnerEmails(env, [GUEST])).toEqual({});

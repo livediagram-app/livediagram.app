@@ -38,10 +38,54 @@ vi.mock('./media', () => ({
 }));
 
 import {
-  getCommunityThumbnailSvg,
-  getDocumentTabImageSvg,
-  getDocumentThumbnailSvg,
+  getCommunityThumbnailSvg as workerCommunityThumbnail,
+  getDocumentTabImageSvg as workerTabImage,
+  getDocumentThumbnailSvg as workerThumbnail,
+  renderDocumentImage,
+  type ThumbnailOptions,
+  type ThumbnailSubject,
 } from './thumbnail';
+
+// The worker's reads, with the document's Durable Object answered in place: a stale snapshot (or one tab) is
+// drawn by the document (renderDocumentImage), with the options its room would give it.
+function withRoom(env: Env, opts: ThumbnailOptions = {}): Env {
+  const room = {
+    image: (
+      _documentId: string,
+      subject: ThumbnailSubject,
+      tabId: string | null,
+      community = false,
+    ) => renderDocumentImage(env as never, subject, tabId, opts, community),
+  };
+  return Object.assign(env, {
+    DOCUMENT_ROOM: { idFromName: (n: string) => n, get: () => room },
+  });
+}
+
+function getDocumentThumbnailSvg(
+  env: Env,
+  liveDoc: ThumbnailSubject,
+  opts: ThumbnailOptions = {},
+): Promise<string | null> {
+  return workerThumbnail(withRoom(env, opts), liveDoc);
+}
+
+function getDocumentTabImageSvg(
+  env: Env,
+  liveDoc: ThumbnailSubject,
+  tabId: string,
+  community = false,
+): Promise<string | null> {
+  return workerTabImage(withRoom(env), liveDoc, tabId, community);
+}
+
+function getCommunityThumbnailSvg(
+  env: Env,
+  liveDoc: ThumbnailSubject,
+  opts: ThumbnailOptions = {},
+): Promise<string | null> {
+  return workerCommunityThumbnail(withRoom(env, opts), liveDoc);
+}
 
 function r2() {
   return { get: vi.fn(), put: vi.fn().mockResolvedValue(undefined), delete: vi.fn() };
@@ -204,7 +248,15 @@ describe('getDocumentThumbnailSvg', () => {
   it('draws nothing for a former Board or Form tab', async () => {
     const env = { IMAGES: r2() } as unknown as Env;
     db.getThumbRenderedAt.mockResolvedValue(null);
-    const board = { id: 'b1', type: 'shape', shape: 'plan-board', x: 0, y: 0, width: 1400, height: 720 };
+    const board = {
+      id: 'b1',
+      type: 'shape',
+      shape: 'plan-board',
+      x: 0,
+      y: 0,
+      width: 1400,
+      height: 720,
+    };
     db.getTabBody.mockResolvedValue(stored(JSON.stringify({ kind: 'board', elements: [board] })));
     expect(await getDocumentThumbnailSvg(env, liveDoc())).not.toContain('plan-board');
     const form = { v: 1, heading: 'Contact Us', sections: [] };

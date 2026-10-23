@@ -217,7 +217,9 @@ describe('a copy through a Community link', () => {
     for (const s of ['private note', 'user_jane', 'Jane', 'Ada', 'commentThread']) {
       expect(copied.data).not.toContain(s);
     }
-    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM collab_threads').get()).toEqual({ n: 0 });
+    expect(
+      db.sql.prepare("SELECT COUNT(*) AS n FROM collab_threads WHERE document_id = 'copy-1'").get(),
+    ).toEqual({ n: 0 });
 
     await copyDocument(db.env, 'd1', 'copy-2', 'user_author', 'Copy', null);
     const plain = db.sql

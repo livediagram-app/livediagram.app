@@ -38,7 +38,11 @@ describe('mergeGuestIntoOwner (docs/specs/014-identity/auth-and-guest-access.md)
     expect(accounts.settings.get(`guest_${GUEST} all`)).toEqual({});
     expect(accounts.settings.get(`guest_${GUEST} livediagram.app`)).toEqual({});
     // The name was missing, so it comes over; the colour was the account's own, so it stays.
-    expect(accounts.profiles.get('user_a')).toMatchObject({ name: 'Gus', color: '#abcdef', createdAt: 9 });
+    expect(accounts.profiles.get('user_a')).toMatchObject({
+      name: 'Gus',
+      color: '#abcdef',
+      createdAt: 9,
+    });
     expect(accounts.profiles.get(`guest_${GUEST}`)).toMatchObject({ name: null, color: null });
     // The remembered copy was forgotten, so the merged name shows at once.
     expect((await getParticipant(env, 'user_a'))?.name).toBe('Gus');
