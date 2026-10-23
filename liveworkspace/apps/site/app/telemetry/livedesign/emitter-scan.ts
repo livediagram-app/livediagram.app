@@ -4,8 +4,8 @@
 // event this card counts?", and the answer used to be a regex that only saw
 // `track('A', 'B', 'C')` written out literally. The Settings catalogue, a
 // ternary, a lookup table and a forwarding helper were all invisible to it, so
-// a card could read an event nothing sends (UI·Toggled·AiOn, when the Settings
-// row sends AI·Toggled·AiOn) and nothing noticed.
+// a card could read an event nothing sends (UI·Toggled·X, when the Settings
+// row sends another category's ·Toggled·X) and nothing noticed.
 //
 // It parses with the TypeScript compiler API and resolves:
 //   - string literals, `undefined`, ternaries (both branches), parens / `as`;

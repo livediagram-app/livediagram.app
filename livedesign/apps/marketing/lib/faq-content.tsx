@@ -495,8 +495,8 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           'Yes. It is MIT-licensed and the source is on GitHub. Deploy the static frontends and the Cloudflare Workers backend to your own Cloudflare account and you get every feature. See deploying livedesign.',
       },
       {
-        q: 'Do I need sign-in or an AI key to self-host?',
-        a: 'No. Without sign-in configured, your copy runs in guest mode with persistence, sharing and real-time collaboration all working. AI assistance switches on when you add an AI key, and email once sign-in and its own key are set up.',
+        q: 'Do I need sign-in to self-host?',
+        a: 'No. Without sign-in configured, your copy runs in guest mode with persistence, sharing and real-time collaboration all working. Email switches on once sign-in and its own key are set up.',
       },
     ],
   },

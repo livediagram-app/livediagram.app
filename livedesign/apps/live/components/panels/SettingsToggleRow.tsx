@@ -8,7 +8,7 @@ import { ToggleSwitch } from '@/components/palette/palette-controls';
 //
 // Every settings popover in the editor had this. Three of them had already
 // pulled it into a local component and given it three different names —
-// SettingRow in the palette's, ToggleRow in the AI one, SettingsRow in the
+// SettingRow in the palette's, ToggleRow in a since-removed one, SettingsRow in the
 // Layers one — while Map, Activity, and (despite owning one of those three)
 // Layers still had rows typed out inline. Seven copies of one idea.
 //

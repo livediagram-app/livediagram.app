@@ -15,8 +15,6 @@
 // is both invisible and costly, are pinned separately in
 // packages/api-schema's PALETTE_TELEMETRY_TYPES.
 export const EMITTED_EVENT_PAIRS: readonly string[] = [
-  'AI·Toggled',
-  'AI·Used',
   'Action·Changed',
   'Action·Created',
   'Action·Deleted',

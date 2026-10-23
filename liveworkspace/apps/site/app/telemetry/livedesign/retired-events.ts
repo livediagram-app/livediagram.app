@@ -83,8 +83,24 @@ function isRetiredCustomTheme(category: string, action: string, type: string | n
   return category === 'Error' && CUSTOM_THEME_ROUTE.test(type ?? '');
 }
 
+// The editor's AI assistant (removed 2026-10-23; AI tools connect over MCP, docs/specs/015-api/mcp-server.md):
+// its Ask and Clean requests and its Settings switches (the whole `AI` category), the AI Tools Settings
+// category opening, its help articles, and the failed calls to the route that served it.
+const AI_ASSISTANT_HELP_IDS = new Set(['ai', 'ai-tools']);
+const AI_ASSISTANT_ROUTE = /(?:^|\.)(?:Post\.Ai|AiStream)(?:\.|$)/;
+
+function isRetiredAiAssistant(category: string, action: string, type: string | null): boolean {
+  if (category === 'AI') return true;
+  if (category === 'UI' && action === 'Opened' && type === 'SettingsAi') return true;
+  if (category === 'Help' || (category === 'UI' && action === 'Opened')) {
+    if (AI_ASSISTANT_HELP_IDS.has(type ?? '')) return true;
+  }
+  return category === 'Error' && AI_ASSISTANT_ROUTE.test(type ?? '');
+}
+
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
   if (category === 'Document' && action === 'Reverted') return true;
+  if (isRetiredAiAssistant(category, action, type)) return true;
   if (isRetiredCustomTheme(category, action, type)) return true;
   if (category === 'UI' && PALETTE_FAVOURITES_UI.has(`${action}|${type ?? ''}`)) return true;
   if (category === 'UI' && EXPERIMENTAL_SETTINGS_UI.has(`${action}|${type ?? ''}`)) return true;

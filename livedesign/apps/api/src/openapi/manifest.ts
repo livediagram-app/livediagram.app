@@ -170,7 +170,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/capabilities',
     segment: 'capabilities',
     tag: 'Meta',
-    summary: 'Which optional server features are configured (e.g. AI).',
+    summary: 'Which optional server features are configured (e.g. email).',
     auth: 'public',
     responseSchema: 'CapabilitiesResponse',
     statuses: [200],
@@ -318,7 +318,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         },
         source: {
           anyOf: [ref('DesignSource'), { type: 'null' }],
-          description: 'The agent front door that made it; `ai` and `mcp` count as Made by AI.',
+          description: 'The agent front door that made it; `mcp` counts as Made by AI.',
         },
         // Placement (docs/specs/013-workspace/folders.md "Placement on create").
         teamId: {
@@ -1866,18 +1866,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'clerk',
     requestSchema: { type: 'object', properties: { clientName: { type: 'string' } } },
     statuses: [201, 400, 403, 404, 409],
-  },
-
-  // ---- AI ----
-  {
-    method: 'POST',
-    path: '/ai',
-    segment: 'ai',
-    tag: 'AI',
-    summary: 'Tidy or ask about a tab with the optional AI assistant (streamed).',
-    auth: 'guest-or-clerk',
-    requestSchema: 'AiRequest',
-    statuses: [200, 401, 403, 500, 502, 503],
   },
 
   // ---- Link unfurl ----

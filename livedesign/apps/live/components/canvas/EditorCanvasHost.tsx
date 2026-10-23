@@ -112,13 +112,9 @@ export function EditorCanvasHost() {
     addTable,
     addTechIcon,
     addText,
-    aiCapable,
-    aiPanelPosition,
-    aiPanelVisible,
     anyWelcomeOpen,
     appendTableColumnSelected,
     appendTableRowSelected,
-    applyAiElements,
     beginAnchorDrag,
     beginArrowCurveDrag,
     beginArrowCurvePointDrag,
@@ -233,7 +229,6 @@ export function EditorCanvasHost() {
     selectMarquee,
     confirm,
     selfParticipant,
-    setAiPanelPosition,
     followMe,
     tabs,
     setCanvasTool,
@@ -903,19 +898,6 @@ export function EditorCanvasHost() {
               explorerHidden={workbenchMode || landscapePhone}
               workbenchBack={workbenchFrame}
               onToggleZen={embedMode ? undefined : toggleZenMode}
-              aiPanel={
-                aiCapable && userPreferences.aiAssistanceEnabled && aiPanelVisible && !isReadOnly
-                  ? {
-                      position: aiPanelPosition,
-                      onMove: (x, y) => setAiPanelPosition({ x, y }),
-                      onReset: () => setAiPanelPosition(null),
-                      contextElements: activeTab.elements,
-                      onApplyElements: applyAiElements,
-                      ownerId: selfParticipant.id,
-                      tabId: activeTab.id,
-                    }
-                  : undefined
-              }
             />
             {lockedMenu ? (
               <LockedElementMenu

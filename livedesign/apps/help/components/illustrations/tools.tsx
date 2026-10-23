@@ -1,83 +1,9 @@
-// Tools-category illustrations (docs/specs/018-help/help-app.md): AI assistance, zen mode, light/dark
+// Tools-category illustrations (docs/specs/018-help/help-app.md): zen mode, light/dark
 // mode, and the two layout tidiers (Auto-Align, Auto Layout).
 // Composed only from the shared primitives so the house style holds.
 
 import { useId } from 'react';
-import { Scene, Shape, Arrow, SelectionBox, Panel, Tile, Label, Button } from './primitives';
-
-// --- AI ---------------------------------------------------------------------
-
-/** The AI Assistant panel: the Ask / Clean mode buttons with the
- *  Connect agent link, the context line, the prompt box, and Send. Reused
- *  across the AI articles. */
-export function AiPanel() {
-  return (
-    <Scene w={400} h={240} bg="canvas">
-      <Shape x={18} y={60} w={70} h={38} label="Order" />
-      <Shape x={18} y={140} w={70} h={38} label="Pay" />
-      <Arrow from={[53, 98]} to={[53, 140]} />
-      <SelectionBox x={18} y={60} w={70} h={38} />
-      <Panel x={112} y={16} w={272} h={210} title="AI ASSISTANT">
-        {/* Mode buttons: the active one is a solid brand pill. */}
-        <rect x={124} y={46} width={46} height={24} rx={6} className="fill-brand-500" />
-        <Label x={147} y={59} size={11} weight={600} anchor="middle" tone="onAccent">
-          Ask
-        </Label>
-        <Label x={196} y={59} size={11} weight={500} anchor="middle" tone="muted">
-          Clean
-        </Label>
-        <rect
-          x={280}
-          y={46}
-          width={92}
-          height={24}
-          rx={7}
-          className="fill-white stroke-slate-200"
-          strokeWidth={1.5}
-        />
-        <Label x={326} y={59} size={10} weight={600} anchor="middle">
-          Connect agent
-        </Label>
-        {/* The suggestion chips for the active mode (on by default). */}
-        {[
-          { x: 124, w: 120, t: 'Summarise this diagram' },
-          { x: 250, w: 108, t: 'What could go wrong?' },
-        ].map((c) => (
-          <g key={c.t}>
-            <rect
-              x={c.x}
-              y={78}
-              width={c.w}
-              height={18}
-              rx={9}
-              className="fill-white stroke-slate-200"
-              strokeWidth={1.2}
-            />
-            <Label x={c.x + c.w / 2} y={88} size={8.5} anchor="middle" tone="body">
-              {c.t}
-            </Label>
-          </g>
-        ))}
-        <Label x={124} y={112} size={10} tone="muted">
-          Context: 1 selected element
-        </Label>
-        <rect
-          x={124}
-          y={122}
-          width={248}
-          height={52}
-          rx={8}
-          className="fill-slate-50 stroke-slate-200"
-          strokeWidth={1.5}
-        />
-        <Label x={134} y={138} size={11} tone="muted">
-          Ask a question about the diagram…
-        </Label>
-        <Button x={124} y={184} w={248} h={28} label="Send" variant="primary" />
-      </Panel>
-    </Scene>
-  );
-}
+import { Scene, Shape, Arrow, Tile, Label } from './primitives';
 
 // --- Zen mode ---------------------------------------------------------------
 

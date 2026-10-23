@@ -216,8 +216,8 @@ export const categories: Category[] = [
     slug: 'tools',
     title: 'Tools',
     description:
-      'Do more with less effort using the editor helpers: AI, zen mode, light and dark mode, and cleanup.',
-    articleCount: 4,
+      'Do more with less effort using the editor helpers: zen mode, light and dark mode, and cleanup.',
+    articleCount: 3,
     kind: 'feature',
   },
   {
@@ -302,7 +302,7 @@ export const articles: Article[] = [
     title: 'Settings',
     description: 'Every preference toggle, what it does, and which device it follows you to.',
     keywords:
-      'settings preferences options config configure gear cog toggles panel opacity toolbar minimap welcome tour notifications toasts reduce motion animation accessibility ai assistant telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings ui scale element indicators badges dock position draw default folders where new designs go plan email api tokens trash delete',
+      'settings preferences options config configure gear cog toggles panel opacity toolbar minimap welcome tour notifications toasts reduce motion animation accessibility telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings ui scale element indicators badges dock position draw default folders where new designs go plan email api tokens trash delete',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -687,8 +687,7 @@ export const articles: Article[] = [
     slug: 'privacy-policy',
     title: 'Privacy Policy',
     description: 'The full privacy policy for the hosted livedesign service.',
-    keywords:
-      'legal privacy gdpr data protection personal information openai ai retention security',
+    keywords: 'legal privacy gdpr data protection personal information ai retention security',
     category: 'Policies',
     categorySlug: 'policies',
     parentSlug: 'policies',
@@ -789,7 +788,7 @@ export const articles: Article[] = [
     title: 'Configuration and Optional Auth',
     description: 'Environment variables, optional sign-in, and guest-only mode.',
     keywords:
-      'env vars environment sign-in accounts setup secrets settings configure resend email ai openai mcp telemetry r2',
+      'env vars environment sign-in accounts setup secrets settings configure resend email mcp telemetry r2',
     category: 'Self-Hosting',
     categorySlug: 'self-hosting',
     parentSlug: 'self-hosting',
@@ -1666,15 +1665,6 @@ export const articles: Article[] = [
     categorySlug: 'tools',
   },
   {
-    slug: 'ai',
-    title: 'AI Assistance',
-    description: 'An optional assistant that answers questions about, and tidies, the active tab.',
-    keywords:
-      'assistant ask clean generate artificial intelligence helper suggest question summarise summarize typo llm',
-    category: 'Tools',
-    categorySlug: 'tools',
-  },
-  {
     slug: 'style-presets',
     title: 'Style Presets',
     description: 'One-click colour and line-style variations for shapes and arrows.',
@@ -2140,18 +2130,6 @@ export const articles: Article[] = [
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',
-  },
-
-  // ---- Sub-articles: AI ----
-  {
-    slug: 'ai-tools',
-    title: 'Ask and Clean',
-    description: 'What each AI helper does and when to reach for it.',
-    keywords:
-      'ai assistant helpers question tidy generate review ask clean summarise summarize typo prompt',
-    category: 'Tools',
-    categorySlug: 'tools/ai',
-    parentSlug: 'ai',
   },
 
   // ---- Sub-articles: Session Tools ----

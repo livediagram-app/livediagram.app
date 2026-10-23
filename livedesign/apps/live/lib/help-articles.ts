@@ -39,7 +39,6 @@ export const HELP_ARTICLES = {
   formatPainter: 'selection-modes/format-painter',
   slideDeck: 'selection-modes/slide-deck',
   // AI
-  aiTools: 'tools/ai/ai-tools',
   connectAiTool: 'account-and-data/connect-ai-mcp',
   // Tabs / import-export
   exportingDiagrams: 'account-and-data/exporting-designs',
@@ -166,10 +165,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   slideDeck: {
     title: 'Learn about the Slide Deck',
     description: 'Tips for building and presenting slides from your design.',
-  },
-  aiTools: {
-    title: 'Learn about the AI tools',
-    description: 'What the Ask and Clean modes do, and how to get the most from them.',
   },
   connectAiTool: {
     title: 'Learn about connecting AI tools',

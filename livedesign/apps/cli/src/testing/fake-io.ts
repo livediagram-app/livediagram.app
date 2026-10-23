@@ -234,7 +234,6 @@ export function fakeIo(
 export const capabilities: Route = (_, url) =>
   url.pathname === '/api/capabilities'
     ? Response.json({
-        aiEnabled: false,
         apiBase: 'https://livedesign.app/api',
         authEnabled: true,
         designFormat: 2,

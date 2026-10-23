@@ -5,7 +5,7 @@ import { SHAPE_KINDS } from './validate';
 
 // The shape vocabulary exists twice: as the `ShapeKind` union in
 // shape-kind.ts, and as the runtime `SHAPE_KINDS` set in validate.ts that
-// guards untrusted input (the MCP server and the AI panel both hand us a
+// guards untrusted input (the MCP server hands us a
 // shape name from outside). The union is compile-time only, so nothing made
 // the two agree until this.
 //

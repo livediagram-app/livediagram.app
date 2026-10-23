@@ -12,13 +12,13 @@ This guide is the practical path: provision Cloudflare resources, configure secr
 | **D1 database**                      | `apps/api`        | Designs, tabs, comments, folders, share links, shared-with index, image metadata, user preferences, teams + membership + team library.                                                                                                                                                                             |
 | **Durable Object namespace**         | `apps/api`        | One stateful room per design for realtime presence + ops.                                                                                                                                                                                                                                                          |
 | **R2 bucket** (optional)             | `apps/api`        | Design SVG snapshots ([Design SVG snapshots](../specs/006-design/design-snapshots.md): Explorer thumbnails + the live image share) and the images uploaded before images moved to liveworkspace's media service ([Images](#images)). Without it, snapshot endpoints `404` (the Explorer row shows a generic icon). |
-| **Rate Limiter bindings** (optional) | `apps/api`        | Abuse throttles: per-owner writes, plus the CLI's telemetry relay, share-code lookups, link unfurls, AI calls and API-token reads. Any binding you don't provision falls through to "allow", so none are required.                                                                                                 |
+| **Rate Limiter bindings** (optional) | `apps/api`        | Abuse throttles: per-owner writes, plus the CLI's telemetry relay, share-code lookups, link unfurls and API-token reads. Any binding you don't provision falls through to "allow", so none are required.                                                                                                           |
 | **Custom domain**                    | `apps/router`     | The router worker serves your hostname; downstream workers don't need their own domain.                                                                                                                                                                                                                            |
 
 What you do NOT need:
 
 - Sign-in: it is optional. Without it, every user is a guest (a per-browser id stored in `localStorage`, carried as `X-Owner-Id`). With sign-in configured, the api worker fetches the accounts Worker's public keys (`${ACCOUNTS_URL}/api/auth/jwks`) to check access tokens, and calls it when someone signs in or a session refreshes.
-- No _required_ SaaS: no Stripe (no paid tier) and no analytics vendor. The other integrations are all optional and stay off until you add a key: Resend for transactional email ([Transactional & lifecycle email (Resend)](../specs/014-identity/transactional-email.md)) and a model key for the AI features ([AI Assistance](../specs/007-editor/ai-assistance.md)), each covered in its own section below. The telemetry endpoint is first-party only and off by default.
+- No _required_ SaaS: no Stripe (no paid tier) and no analytics vendor. The other integration is optional and stays off until you add a key: Resend for transactional email ([Transactional & lifecycle email (Resend)](../specs/014-identity/transactional-email.md)), covered in its own section below. The telemetry endpoint is first-party only and off by default.
 - A separate database host: D1 covers everything.
 
 ## One-time Cloudflare setup
@@ -184,34 +184,6 @@ tool does the thinking. See [MCP server](../specs/015-api/mcp-server.md).
 Telemetry is off unless you set `TELEMETRY_ENABLED = "true"` under `[vars]` in `apps/api/wrangler.toml`. OSS forks send nothing by default: the committed config leaves it unset, and the deploy workflow only adds it (with the rest of the hosted profile in `apps/api/hosted-vars.json`) when it runs in livedesign.app's own repository ([Deployment](../specs/016-platform/deployment.md) "Hosted profile"). See [Telemetry + public transparency dashboard](../specs/017-telemetry/telemetry.md).
 
 livedesign.app's events go to liveworkspace's telemetry service, which stores them and serves the public dashboard; this repository no longer holds an ingest or a dashboard of its own. That service only takes livedesign.app's own pages and key, so turning telemetry on for a fork also means running a service of your own that takes the same batches, and pointing the fork at it: `TELEMETRY_URL` and the `TELEMETRY_KEY` secret on the api and mcp workers, and `NEXT_PUBLIC_TELEMETRY_URL` plus `NEXT_PUBLIC_TELEMETRY_ENABLED=true` on every frontend build. Without that, nothing is stored anywhere. Per-user opt-out via the Settings dialog ([User preferences](../specs/007-editor/user-preferences.md)) still overrides every app's emission when off, since they share one origin and one preferences key.
-
-## AI assistance: off by default, needs a model key
-
-The in-editor AI panel ([AI Assistance](../specs/007-editor/ai-assistance.md)) is hidden entirely unless the api worker has a model key. Forks that don't want it provision nothing and get zero AI surface: `GET /api/capabilities` reports `{ aiEnabled: false }`, `POST /api/ai` returns 503, and the editor never renders the toggle or panel.
-
-To turn it on, set the key as a worker secret:
-
-```bash
-# One key turns AI on:
-pnpm --filter @livedesign/api exec wrangler secret put GOOGLE_AI_STUDIO_API_KEY
-# or OPENAI_API_KEY, or AI_API_KEY (with AI_BASE_URL + AI_MODEL as [vars]).
-```
-
-Optional knobs (all plain `[vars]` in `apps/api/wrangler.toml`, the dashboard, or `.dev.vars`):
-
-The provider is inferred from WHICH key you set ([AI Assistance](../specs/007-editor/ai-assistance.md)): a Google AI Studio
-key means Google, an OpenAI key means OpenAI, and `AI_API_KEY` means "anything
-else that speaks the OpenAI wire" — which needs `AI_BASE_URL` too (a local
-llama.cpp is `http://127.0.0.1:8080/v1`). The assistant prefers OpenAI, falling back to
-whichever key exists, and `AI_API_KEY` is used only when neither named key is set.
-
-- `AI_MODEL`: the assistant's model, overriding its preset default
-  (`gemini-3.6-flash` for Google, `gpt-4o` for OpenAI). Required when using
-  `AI_API_KEY`.
-- `AI_ALLOWED_ORIGINS`: comma-separated `Origin` allow-list for `POST /api/ai` (e.g. `https://your-host,http://localhost:3402`). Unset = no origin check. Matched verbatim, case-sensitive. `apps/api/wrangler.toml` commits livedesign.app's origins here, so a fork sets its own or deletes the line, or every AI request answers 403.
-- `AI_REQUIRE_SIGN_IN`: set to `"true"` to reject the guest (`X-Owner-Id`) path on `/api/ai` only, requiring a verified account access token. Unset = guests can use AI (so a fork without sign-in still works).
-
-The last two are the spend-DoS defence: on a public deployment they stop a third-party site from minting fresh owner ids to drain your model budget. The hosted livedesign.app sets `AI_ALLOWED_ORIGINS` and deliberately leaves `AI_REQUIRE_SIGN_IN` unset so guests keep AI; a private fork, or one without sign-in, can leave both unset. Two further defences live alongside them: the `AI_RATE_LIMITER` binding (declared in `apps/api/wrangler.toml` as a Cloudflare rate-limit binding, 20 requests / 60 s per IP) caps how fast one client can drive the endpoint; absent binding falls through to "allow" so a self-host without the paid Cloudflare feature still works. AI is also per-user opt-in via the Settings dialog even once the key is present.
 
 ## Email (optional, Resend)
 

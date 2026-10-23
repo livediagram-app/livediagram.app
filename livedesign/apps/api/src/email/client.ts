@@ -1,7 +1,6 @@
 // docs/specs/014-identity/transactional-email.md: Resend client. The whole email feature is gated on RESEND_API_KEY:
 // absent, every send is a no-op and the lifecycle table is never touched, so a
-// deployment with email off does zero extra work (mirrors the OPENAI_API_KEY ->
-// AI-hidden pattern). Sends are best-effort: this never throws, so an email or
+// deployment with email off does zero extra work. Sends are best-effort: this never throws, so an email or
 // network failure can't fail or delay the request that triggered it (callers
 // run sends inside ctx.waitUntil or the daily cron).
 

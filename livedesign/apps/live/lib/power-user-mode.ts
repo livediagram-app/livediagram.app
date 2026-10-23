@@ -9,7 +9,6 @@ export const POWER_USER_PRESET = {
   autoRebindArrows: { autoRebindArrows: true },
   pagesTourSeen: { pagesTourSeen: true },
   elementToursSeen: { elementToursSeen: true },
-  aiSuggestedPrompts: { aiSuggestedPrompts: false },
   minimalChrome: { minimalChrome: true },
 } as const satisfies Record<string, Partial<UserPreferences>>;
 

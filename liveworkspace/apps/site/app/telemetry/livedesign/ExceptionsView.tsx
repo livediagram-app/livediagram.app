@@ -23,7 +23,7 @@ import { rankTrend, windowLabel } from './windows';
 // exceptions from the editor + help centre
 // (`Error·Client·Uncaught.<Page>.<ErrorName>`, `Render.<Area>.<ErrorName>`),
 // and warnings (`Error·Warning·*`): a degradation the author was carried
-// through, such as a spent AI budget failing over to the in-browser reader.
+// through, such as a design that was slow to open.
 // Every count is generic by construction (statuses, route words, pages, areas
 // and a closed list of error names), so there is nothing personal to show. An
 // empty view is the goal state. Load Recovery (the repairs people ran) follows the rankings.
@@ -108,7 +108,7 @@ export function ExceptionsView({
           <RankCard
             trend={trend}
             title="Warnings"
-            subtitle="Degradations the author was carried through, such as a spent AI budget reading on the device"
+            subtitle="Degradations the author was carried through, such as a design that was slow to open"
             category="Error"
             action="Warning"
             items={warning}

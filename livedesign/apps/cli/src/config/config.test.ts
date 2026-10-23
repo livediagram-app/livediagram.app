@@ -124,7 +124,6 @@ describe('loadCapabilities', () => {
   const profile = { name: 'default', host: DEFAULT_HOST, source: 'default' as const };
   const cache = '/home/agent/.cache/livedesign/capabilities/default.json';
   const answer = {
-    aiEnabled: false,
     apiBase: `${DEFAULT_HOST}/api`,
     authEnabled: true,
     oauthIssuer: 'https://mcp.livedesign.app',
@@ -174,7 +173,7 @@ describe('loadCapabilities', () => {
   });
 
   it("reads an older worker's answer with the defaults", async () => {
-    const io = fakeIo({ routes: [() => Response.json({ aiEnabled: false })] });
+    const io = fakeIo({ routes: [() => Response.json({})] });
     expect(await loadCapabilities(io, profile, () => {})).toEqual({
       apiBase: `${DEFAULT_HOST}/api`,
       authEnabled: false,

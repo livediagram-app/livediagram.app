@@ -30,30 +30,6 @@ globs = ["**/*.ttf", "**/*.otf"]
 # `TELEMETRY_URL=http://localhost:8790/api/telemetry` in .dev.vars.
 [vars]
 
-# Origin allow-list for POST /api/ai (docs/specs/007-editor/ai-assistance.md). Stated HERE, not in the
-# Cloudflare dashboard, for the reason docs/specs/016-platform/staging-environment.md calls a known sharp edge: a
-# dashboard-only value is invisible to code review, so the repo read as though
-# this endpoint were locked down while production served it wide open. A probe
-# of production (POST /api/ai with no Origin) answered `400 invalid mode`
-# rather than `403 origin_not_allowed`, which is only possible with this unset —
-# so the key behind `aiEnabled: true` was spendable from any page.
-#
-# BOTH hosts, and `www` is the one that matters: livedesign.app 301-redirects
-# to www.livedesign.app, so that is the origin a real browser sends. Listing
-# only the apex — which is what the Env comment in src/types.ts suggested, and
-# what staging does for its own single host — would 403 every genuine AI request
-# in the editor. The apex stays listed so dropping the redirect can't break it.
-#
-# Scope of the protection, honestly: this stops a third-party WEB PAGE spending
-# the key, because a browser sets Origin and cannot forge it. It does NOT stop a
-# non-browser caller, which can send any Origin it likes. Bounding the budget
-# against that needs AI_REQUIRE_SIGN_IN (deliberately NOT set here: the editor
-# offers AI to guests and /api/capabilities reports `aiEnabled` from the key's
-# presence alone, so requiring sign-in would leave guests a visible panel that
-# 401s — see the note in src/routes/capabilities.ts). AI_RATE_LIMITER (20/60s
-# per IP) remains the only other control.
-AI_ALLOWED_ORIGINS = "https://www.livedesign.app,https://livedesign.app"
-
 # Guest signature enforcement (docs/specs/015-api/public-api-and-tokens.md §4). Stated here,
 # never only in the dashboard: every `wrangler deploy` replaces the worker's
 # plain vars with the ones this file declares, so a dashboard-only value is
@@ -166,17 +142,6 @@ renamed_classes = [{ from = "DiagramRoom", to = "DesignRoom" }]
 [triggers]
 crons = ["0 3 * * *", "* * * * *"]
 
-# Per-IP rate limiter for the AI assistance endpoint (POST /api/ai,
-# docs/specs/007-editor/ai-assistance.md). Separate namespace so AI abuse never eats into design-write
-# or telemetry budgets. 20 requests / 60s per IP is generous for a
-# real user session while bounding runaway OpenAI spend. Absent binding
-# → helper allows, so self-host still works without this feature.
-[[unsafe.bindings]]
-name = "AI_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1003"
-simple = { limit = 20, period = 60 }
-
 # Per-IP limiter for share-code resolution (GET /api/share/<code>). That
 # read carries the optional share password and is otherwise unauthed +
 # exempt from the write limiter, so without this an attacker holding a
@@ -236,26 +201,6 @@ name = "TEAM_INVITE_RATE_LIMITER"
 type = "ratelimit"
 namespace_id = "1012"
 simple = { limit = 20, period = 60 }
-
-# The AI features (docs/specs/007-editor/ai-assistance.md) talk to ANY OpenAI-compatible chat-completions
-# endpoint, and WHICH provider is inferred from which key is set — a key is
-# provider-specific, so its name says whose it is (see src/ai-provider.ts):
-#
-#   GOOGLE_AI_STUDIO_API_KEY -> Google, at its OpenAI-compatible endpoint
-#   OPENAI_API_KEY           -> OpenAI
-#   AI_API_KEY               -> anything else, with AI_BASE_URL + AI_MODEL
-#
-# All three are SECRETS, provisioned out-of-band:
-#   Local dev: drop one into `apps/api/.dev.vars` (gitignored).
-#   Production: `wrangler secret put <NAME>`.
-#
-# The assistant (/api/ai) takes the first key that is set, OpenAI before Google.
-# AI_BASE_URL / AI_MODEL are plain [vars]; AI_MODEL is the
-# assistant's model (docs/specs/007-editor/ai-assistance.md).
-#
-# With no key the whole surface is hidden: GET /api/capabilities answers
-# { aiEnabled: false }, the editor shows no AI panel, and
-# the AI routes answer 503. That is the self-host default.
 
 # The image gallery's caps (100 images and 100 MB per person, across every app) are the media service's
 # (liveworkspace/docs/media.md "Uploads"), not this worker's.
@@ -346,7 +291,7 @@ simple = { limit = 20, period = 60 }
 # carry over from the production config above.
 #
 # The values that genuinely differ from production are the D1 database, the
-# R2 bucket, and the email/AI vars that name the public origin. Everything
+# R2 bucket, and the email vars that name the public origin. Everything
 # else agreeing with production is the point: staging is a rehearsal.
 # ---------------------------------------------------------------------------
 
@@ -364,13 +309,6 @@ name = "livedesign-api-staging"
 # back at staging (docs/specs/014-identity/transactional-email.md, docs/specs/013-workspace/workbench-embeds.md).
 RESEND_FROM = "livedesign staging <hello@livedesign.app>"
 
-# Lock the AI endpoint to the staging origin so the OpenAI key behind it
-# can't be spent from a third-party page (docs/specs/007-editor/ai-assistance.md). Production states the
-# equivalent in the top-level [vars] above, for the same reason: the
-# environment is reproducible from the repo alone — see docs/specs/016-platform/staging-environment.md "Known sharp
-# edge".
-AI_ALLOWED_ORIGINS = "https://staging.livedesign.app"
-
 # Guest signature enforcement, matching production (see the top-level [vars]).
 # Staging's own database dates from 2026-09-17 and signs with its own secret;
 # its test guests take the same dates rather than drift from production.
@@ -379,9 +317,6 @@ GUEST_SIG_ENFORCE_AFTER = ""
 
 # The staging MCP worker's OAuth server, for the CLI against staging.
 OAUTH_ISSUER = "https://mcp-staging.livedesign.app"
-# No AI_REQUIRE_SIGN_IN, matching production: the editor offers AI to guests, so
-# requiring sign-in here made staging refuse what production allows (the photo
-# reader stopped with "sign in required"), which is drift, not a staging test.
 
 # Own database, created 2026-09-17. Empty until the first staging deploy
 # applies the migrations in `migrations/` against it — which is the whole
@@ -418,12 +353,6 @@ name = "EVENTS_RATE_LIMITER"
 type = "ratelimit"
 namespace_id = "1002"
 simple = { limit = 120, period = 60 }
-
-[[env.staging.unsafe.bindings]]
-name = "AI_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1003"
-simple = { limit = 20, period = 60 }
 
 [[env.staging.unsafe.bindings]]
 name = "SHARE_RATE_LIMITER"
@@ -484,9 +413,8 @@ crons = ["0 3 * * *", "* * * * *"]
 
 # The four ACCOUNTS_* / API_RESOURCE values, GUEST_ID_HMAC_SECRET and
 # TELEMETRY_KEY come from the
-# `_STAGING` GitHub secrets via the deploy workflow. RESEND_API_KEY and the
-# model keys (OPENAI_API_KEY and/or GOOGLE_AI_STUDIO_API_KEY) are provisioned by
-# hand exactly as they are for production:
+# `_STAGING` GitHub secrets via the deploy workflow. RESEND_API_KEY is provisioned by
+# hand exactly as it is for production:
 #   cd apps/api && wrangler secret put RESEND_API_KEY --env staging
 # Worker secrets are per-environment, so staging's never collide with
 # production's.

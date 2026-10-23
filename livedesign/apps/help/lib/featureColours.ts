@@ -37,14 +37,12 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   teams: '#a855f7',
   sharing: '#0284c7',
   'zen-mode': '#475569',
-  ai: '#7c3aed',
-  // The last ten cards
+  // The last cards
   'building-a-deck': '#0ea5e9',
   presenting: '#6366f1',
   'presenter-controls': '#8b5cf6',
   'locking-tabs': '#64748b',
   'side-by-side': '#0ea5e9',
-  'ai-tools': '#7c3aed',
   'auto-align': '#22c55e',
   'auto-layout': '#2563eb',
   minimap: '#94a3b8',

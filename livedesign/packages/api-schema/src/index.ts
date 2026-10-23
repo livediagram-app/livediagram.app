@@ -471,37 +471,8 @@ export {
   oauthRedirectUrl,
 } from './request-auth';
 
-export type AiMode = 'clean' | 'ask';
-
-export type AiConversationTurn = { role: 'user' | 'assistant'; content: string };
-
-// The bounds POST /api/ai holds a request to (docs/specs/007-editor/ai-assistance.md), shared so the panel can
-// keep within them rather than meet a bare 400.
-export const AI_MAX_PROMPT_CHARS = 1000;
-export const AI_MAX_ELEMENTS = 200;
-
-// Request body for POST /api/ai.
-export type AiRequest = {
-  mode: AiMode;
-  // Free-text instruction from the user (max 1 000 chars, enforced server-side).
-  prompt: string;
-  // All elements on the active tab (full context). Server uses focusIds
-  // to tell the model which subset to act on; the rest is read-only context.
-  elements: unknown[];
-  // Name of the active tab, included in the system prompt for context.
-  tabName: string;
-  // IDs of the currently selected elements. When non-empty the model is
-  // asked to focus its changes on these elements while treating the rest
-  // as context only. Empty / absent = act on all elements.
-  focusIds?: string[];
-  // Last N conversation turns for multi-turn context. Kept short (≤ 6
-  // turns) so the token cost stays bounded.
-  history?: AiConversationTurn[];
-};
-
 // Response body for GET /api/capabilities.
 export type CapabilitiesResponse = {
-  aiEnabled: boolean;
   // For the CLI (docs/specs/015-api/blueprints/cli.md "Capabilities"), each optional so an older worker parses:
   // where the api answers, whether sign-in exists, the OAuth server, the stored design format, and the
   // oldest CLI accepted for writes.

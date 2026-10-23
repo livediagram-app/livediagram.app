@@ -108,7 +108,6 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   'schema',
   'openapi.json',
   'unfurl',
-  'ai',
   'events',
   'share',
   'shared',

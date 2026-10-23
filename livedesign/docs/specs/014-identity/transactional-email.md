@@ -2,7 +2,7 @@
 
 **Status: in progress.** Optional, off by default. Wires [Resend](https://resend.com)
 into the api worker so the product can send a small set of account emails. Like
-sign-in ([Auth + guest access](auth-and-guest-access.md)) and AI ([AI Assistance](../007-editor/ai-assistance.md)), it is **entirely gated on a secret**: when
+sign-in ([Auth + guest access](auth-and-guest-access.md)), it is **entirely gated on a secret**: when
 `RESEND_API_KEY` is absent the whole feature is inert — no sends, no new request
 work — and everything else behaves exactly as before. Guests and the canvas stay
 account-free and never receive email.
@@ -86,7 +86,7 @@ help article.
 - `RESEND_API_KEY` (secret) — when **unset**, `emailEnabled(env)` is false and
   every send is a no-op. No `email_lifecycle` writes happen either (the
   first-sighting upsert is itself guarded), so a deployment with email off does
-  zero extra work. This mirrors the model-key-absent → AI-hidden pattern.
+  zero extra work.
 - `RESEND_FROM` (plain var, optional) — the From identity. Default
   `livedesign <hello@livedesign.app>`. Requires a domain verified in Resend.
 - `APP_BASE_URL` (plain var, optional) — public origin for links in emails.

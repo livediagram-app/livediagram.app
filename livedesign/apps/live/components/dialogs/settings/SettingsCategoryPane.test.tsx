@@ -108,18 +108,18 @@ describe('SettingsCategoryPane: targeting a section', () => {
 
 describe('SettingsCategoryPane link rows', () => {
   it('opens the linked category in place', () => {
-    const ai = SETTINGS_CATEGORIES.find((c) => c.id === 'ai')!;
+    const accessibility = SETTINGS_CATEGORIES.find((c) => c.id === 'accessibility')!;
     const onOpenCategory = vi.fn();
     render(
       <SettingsCategoryPane
-        category={{ ...ai, rows: ai.rows.filter((r) => r.kind === 'link') }}
+        category={{ ...accessibility, rows: accessibility.rows.filter((r) => r.kind === 'link') }}
         settings={{}}
         onChange={vi.fn()}
         onOpenCategory={onOpenCategory}
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Manage API Tokens' }));
-    expect(onOpenCategory).toHaveBeenCalledWith('tokens');
+    fireEvent.click(screen.getByRole('button', { name: 'Open Appearance' }));
+    expect(onOpenCategory).toHaveBeenCalledWith('appearance');
   });
 });
 

@@ -553,7 +553,6 @@ hint: livedesign skill install --to ~/.claude/skills
 
 ```ts
 type CapabilitiesResponse = {
-  aiEnabled: boolean;
   emailEnabled?: boolean;
   apiBase?: string; // `${url.origin}/api` (CLI9)
   authEnabled?: boolean; // ACCOUNTS_URL and API_RESOURCE are set (CLI11)

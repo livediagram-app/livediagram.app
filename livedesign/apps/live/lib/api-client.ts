@@ -1,6 +1,6 @@
 // Barrel for the livedesign HTTP/WS client. The implementation is split
 // by domain under lib/api/* (core plumbing + designs / tabs / share /
-// folders / self / room / images / preferences / ai); this
+// folders / self / room / images / preferences / capabilities); this
 // file re-exports the public surface so existing `@/lib/api-client`
 // imports keep working unchanged.
 
@@ -58,7 +58,7 @@ export * from './api/timeline';
 export * from './api/activity';
 export * from './api/home';
 export * from './api/preferences';
-export * from './api/ai';
+export * from './api/capabilities';
 export * from './api/unfurl';
 export * from './api/trash';
 // Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).

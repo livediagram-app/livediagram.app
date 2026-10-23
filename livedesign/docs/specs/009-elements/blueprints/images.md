@@ -209,7 +209,7 @@ null or `data:` id references nothing.
 - The editor withholds `onAddImage` when the deployment has no images, which hides every
   `needsImage` tile (`tools:image`, avatar, hero) and the `9` shortcut. It learns this from
   `GET /api/capabilities` through the proposed field `imagesEnabled` `[QB1]`; the endpoint
-  reports only `aiEnabled` and `emailEnabled`.
+  reports only `emailEnabled` and the CLI fields.
 
 ## Interfaces and contracts
 

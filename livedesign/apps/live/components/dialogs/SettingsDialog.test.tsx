@@ -34,13 +34,12 @@ function renderDialog(overrides: Partial<UserPreferences> = {}) {
       settings={overrides as UserPreferences}
       onChange={onChange}
       onClose={onClose}
-      aiCapable
     />,
   );
   return { onChange, onClose };
 }
 
-const FIRST_CATEGORY = visibleCategories(true, { emailEnabled: true, signedIn: false })[0]!;
+const FIRST_CATEGORY = visibleCategories({ emailEnabled: true, signedIn: false })[0]!;
 
 afterEach(() => {
   clerk.accountUserId = null;
@@ -123,7 +122,6 @@ describe('SettingsDialog', () => {
         settings={{}}
         onChange={() => {}}
         onClose={() => {}}
-        aiCapable
         initialCategoryId="privacy"
       />,
     );
@@ -195,7 +193,6 @@ describe('SettingsDialog', () => {
           settings={{}}
           onChange={() => {}}
           onClose={() => {}}
-          aiCapable
           initialCategoryId="editor"
         />,
       );

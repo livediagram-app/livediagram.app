@@ -17,7 +17,6 @@ import {
   lucidePencilLine,
   lucideRoute,
   lucideSearch,
-  lucideSparkles,
   lucideSquarePlus,
   lucideStarHalf,
   lucideUsers,
@@ -344,12 +343,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M3 12h4l2 5 4-12 2 7h6" />
     </Glyph>
   ),
-  ai: (
-    <Glyph>
-      <path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8L12 3z" />
-      <path d="M19 14l.9 2.1L22 17l-2.1.9L19 20l-.9-2.1L16 17l2.1-.9L19 14z" />
-    </Glyph>
-  ),
   // An envelope with the invitee on it, which is how a role reaches someone.
   'roles-and-invites': (
     <Glyph>
@@ -622,8 +615,8 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <Prims prims={lucideCircleDot} />
     </Glyph>
   ),
-  // The last ten cards: the slide-deck trio, Locking a Tab, the two Tools
-  // cleanups, Ask and Clean, and the three User Interface guides. With these the
+  // The last cards: the slide-deck trio, Locking a Tab, the two Tools
+  // cleanups, and the three User Interface guides. With these the
   // catalogue is fully drawn, and the category fallback becomes a safety net for
   // cards not yet written rather than something a reader actually sees.
   'building-a-deck': (
@@ -667,12 +660,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M14 6h4a2 2 0 012 2v2" />
       <rect x="13" y="14" width="8" height="6" rx="1.5" />
       <path d="M15 14v-1.5a2 2 0 014 0V14" />
-    </Glyph>
-  ),
-  // Two helpers, not one: a question asked, and a sweep that tidies.
-  'ai-tools': (
-    <Glyph>
-      <Prims prims={lucideSparkles} />
     </Glyph>
   ),
   // An element snapped onto the grid, with the nudge that put it there. Drawn as

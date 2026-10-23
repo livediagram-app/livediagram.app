@@ -548,19 +548,6 @@ export type CanvasProps = {
   // section (right-hand inspector) houses them next to theme +
   // canvas, where the user is editing the tab anyway. Optional so
   // welcome-flow surfaces with no tab loaded yet can omit them.
-  aiPanel?: {
-    position: { x: number; y: number } | null;
-    onMove: (x: number, y: number) => void;
-    onReset: () => void;
-    contextElements: Element[];
-    onApplyElements: (elements: Element[], mode: 'clean') => void;
-    ownerId: string;
-    // The active tab's ID — the conversation-reset key. The NAME must
-    // not be the key: renaming a tab would wipe the conversation, and
-    // two same-named tabs wouldn't reset on switch (cross-tab history
-    // contamination).
-    tabId: string;
-  };
   // Recent-images list for the Current Tab "Images" accordion (docs/specs/009-elements/images.md).
   // Forwarded through to TabSection unchanged.
   onToggleAspectLock: () => void;

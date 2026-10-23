@@ -13,21 +13,6 @@ async function capabilities(env: Partial<Env>) {
   return await res.json<Record<string, unknown>>();
 }
 
-describe('aiEnabled (docs/specs/007-editor/ai-assistance.md)', () => {
-  it('is off with no model key', async () => {
-    expect((await capabilities({})).aiEnabled).toBe(false);
-  });
-
-  it('is on with one key', async () => {
-    expect((await capabilities({ GOOGLE_AI_STUDIO_API_KEY: 'g' })).aiEnabled).toBe(true);
-  });
-
-  it('stays on with both named keys: they split the features, they do not cancel out', async () => {
-    const both = { GOOGLE_AI_STUDIO_API_KEY: 'g', OPENAI_API_KEY: 'o' };
-    expect((await capabilities(both)).aiEnabled).toBe(true);
-  });
-});
-
 describe('the route', () => {
   it('is only GET', () => {
     const res = handleCapabilities(

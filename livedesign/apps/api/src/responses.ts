@@ -133,13 +133,6 @@ export function payloadTooLarge(): Response {
   return json({ error: 'payload_too_large' }, { status: 413 });
 }
 
-// 502 when the upstream AI provider fails or returns something unusable
-// (docs/specs/007-editor/ai-assistance.md). One token for every failure mode so the client shows a single
-// "try again" state; the specific cause goes to the worker log instead.
-export function aiError(): Response {
-  return json({ error: 'ai_error' }, { status: 502 });
-}
-
 export function imagesUnavailable(): Response {
   return json({ error: 'images_unavailable' }, { status: 503 });
 }

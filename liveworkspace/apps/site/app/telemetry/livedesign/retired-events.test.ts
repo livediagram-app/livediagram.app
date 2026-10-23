@@ -49,13 +49,27 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Template', 'Used', 'Kanban')).toBe(false);
   });
 
+  it('retires the AI assistant, not the AI tools that connect over MCP', () => {
+    for (const type of ['AiOn', 'AiOff', 'AiSuggestedPromptsOn', 'AiSuggestedPromptsOff'])
+      expect(isRetiredEvent('AI', 'Toggled', type)).toBe(true);
+    expect(isRetiredEvent('AI', 'Used', 'Ask')).toBe(true);
+    expect(isRetiredEvent('AI', 'Used', 'Clean')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'SettingsAi')).toBe(true);
+    expect(isRetiredEvent('Help', 'View', 'ai-tools')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'ai')).toBe(true);
+    expect(isRetiredEvent('Error', 'Api', 'Network.Post.Ai')).toBe(true);
+    expect(isRetiredEvent('Mcp', 'Used', 'CreateDesign')).toBe(false);
+    expect(isRetiredEvent('Help', 'View', 'ai-clients')).toBe(false);
+    expect(isRetiredEvent('Error', 'Api', 'Network.Post.Designs')).toBe(false);
+  });
+
   it('retires Settings › Experimental and its mode switches, not the modes', () => {
     expect(isRetiredEvent('UI', 'Opened', 'SettingsExperimental')).toBe(true);
     expect(isRetiredEvent('UI', 'Toggled', 'PagesModeOn')).toBe(true);
     expect(isRetiredEvent('UI', 'Toggled', 'PagesModeOff')).toBe(true);
     expect(isRetiredEvent('UI', 'Toggled', 'PlanModeOn')).toBe(true);
     expect(isRetiredEvent('UI', 'Toggled', 'PlanModeOff')).toBe(true);
-    expect(isRetiredEvent('UI', 'Opened', 'SettingsAi')).toBe(false);
+    expect(isRetiredEvent('UI', 'Opened', 'SettingsAccessibility')).toBe(false);
   });
 
   it('retires the custom themes, not the built-in theme picks', () => {

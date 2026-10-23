@@ -1,4 +1,4 @@
-// Which features carry the work: AI, layers, the palette and canvas modes, look and feel, search, dialogs, chrome, notes, actions, organisation (docs/specs/017-telemetry/telemetry.md).
+// Which features carry the work: layers, the palette and canvas modes, look and feel, search, dialogs, chrome, notes, actions, organisation (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import { isHelpArticleType, isSettingsCategory } from '../opened-types';
@@ -138,41 +138,6 @@ export const MODE_OPTIONS = chart(
   'Settings inside a canvas mode: eraser, laser, spotlight and format painter options.',
   { typeIn: (t) => /^(Eraser|Laser|Spotlight|Format)/.test(t ?? '') },
 );
-
-// AI assistance (Editing tab). Ask and Clean split AI Requests by mode.
-export const AI_REQUESTS: Metric = {
-  category: 'AI',
-  action: 'Used',
-  typeIn: (type) => type === 'Ask' || type === 'Clean',
-  title: 'AI Requests',
-  blurb:
-    'A completed request in the editor AI panel, across both modes (Ask, Clean). Refusals and failures are not counted.',
-};
-
-export const AI_ASK: Metric = {
-  category: 'AI',
-  action: 'Used',
-  type: 'Ask',
-  title: 'Ask Requests',
-  blurb: 'AI requests in Ask mode: read-only questions about the diagram. Part of AI Requests.',
-};
-
-export const AI_CLEAN: Metric = {
-  category: 'AI',
-  action: 'Used',
-  type: 'Clean',
-  title: 'Clean Requests',
-  blurb:
-    'AI requests in Clean mode: tidy-the-tab runs, the one mode that changes the canvas. Part of AI Requests.',
-};
-
-export const AI_ASSISTANCE: MetricStack = {
-  stack: true,
-  title: 'AI Assistance',
-  blurb: 'Requests in the editor AI panel, and how they split between Ask and Clean.',
-  members: [AI_REQUESTS, AI_ASK, AI_CLEAN],
-  headline: AI_REQUESTS,
-};
 
 // The markers (docs/specs/023-draw-mode/drawing-tools.md), on a logo page's Draw tab: how people
 // tune them and recognise shapes with them. All settings.

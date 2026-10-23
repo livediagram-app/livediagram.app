@@ -112,7 +112,7 @@ The editor works without sign-in. To exercise the signed-in code paths, run live
    ADMIN_TOKEN=local-admin-token node liveworkspace/apps/accounts/scripts/register-client.ts \
      --accounts http://localhost:3000 \
      --name livedesign-dev \
-     --redirect http://localhost:3300/api/auth/callback \
+     --redirect http://localhost:3400/api/auth/callback \
      --resource http://localhost/api
    ```
 
@@ -127,10 +127,10 @@ The editor works without sign-in. To exercise the signed-in code paths, run live
    API_RESOURCE=http://localhost/api
    ACCOUNTS_CLIENT_ID=...
    ACCOUNTS_CLIENT_SECRET=...
-   AUTH_ORIGIN=http://localhost:3300
+   AUTH_ORIGIN=http://localhost:3400
    ```
 
-4. Restart `pnpm dev` and open the app through the router (`http://localhost:3300`), so the sign-in cookies and the callback share one origin.
+4. Restart `pnpm dev` and open the app through the router (`http://localhost:3400`), so the sign-in cookies and the callback share one origin.
 
 With these set, `/sign-in` hands off to the accounts site and comes back signed in. The api worker verifies the access token and derives the owner id from the `sub` claim instead of falling back to the `X-Owner-Id` header.
 
@@ -151,20 +151,6 @@ apps/cli/dist/livedesign.mjs design ls
 `$XDG_CONFIG_HOME/livedesign` and `$XDG_CACHE_HOME/livedesign` (`~/.config` and `~/.cache` by default); point
 both at a scratch directory to keep a test run apart from your own sign-in.
 
-## Enabling AI assistance locally (optional)
-
-The AI panel ([AI Assistance](../specs/007-editor/ai-assistance.md)) is hidden entirely unless the api worker has a model key. To turn it on locally:
-
-```sh
-# apps/api/.dev.vars (gitignored).
-OPENAI_API_KEY=...             # or GOOGLE_AI_STUDIO_API_KEY=...
-# AI_API_KEY=...               # any other OpenAI-compatible provider, used only when
-# AI_BASE_URL=http://127.0.0.1:8080/v1  # neither named key is set; needs both of these
-# AI_MODEL=gpt-4o              # the assistant's model; optional for the named keys
-```
-
-Restart `pnpm dev`. `GET /api/capabilities` will start reporting `{ aiEnabled: true }`, the Settings dialog grows an "AI Assistant" toggle, and the editor surfaces the panel once the user opts in. The two spend-DoS knobs `AI_ALLOWED_ORIGINS` and `AI_REQUIRE_SIGN_IN` are hosted-only; leave them unset locally so the guest path keeps working. Production declares `AI_ALLOWED_ORIGINS` in `apps/api/wrangler.toml` `[vars]`, which `wrangler dev` also reads, so the api's `dev` script (and the e2e stack) blank it with `--var AI_ALLOWED_ORIGINS:`; without that, every AI request from a localhost editor answers 403 `origin_not_allowed`. See `apps/api/.env.example` for the full set of vars the worker reads.
-
 ## Running tests
 
 ```sh
@@ -177,18 +163,17 @@ Tests live alongside the code they cover, as `*.test.ts` / `*.test.tsx` files. T
 
 Workbench embeds have an opt-in end-to-end run ([Workbench embeds](../specs/013-workspace/workbench-embeds.md)): `pnpm --filter @livedesign/live test:e2e:workbench`. It rebuilds `apps/live/out` with the test-only session bridge (`NEXT_PUBLIC_E2E_AUTH=1`), then boots the e2e stack with `E2E_WORKBENCH=1` on its own ports (live 3021, api 8791, marketing 3022): the stack acts as the accounts Worker (as under `E2E_ACCOUNTS_STUB`, minting access tokens on `/e2e/token`) and gives the api worker `APP_BASE_URL=http://localhost:3421`, so its workbench and pairing URLs point at the live server. The spec serves a fake workbench (`apps/live/e2e/fixtures/fake-workbench.html`) from `127.0.0.1` on a free port, pairs it on the pairing page, and frames `/embed/workbench` in it; `workbench-workspace.spec.ts` pairs it again for the whole workspace and frames `/embed/workbench/explorer`, whose places (`/embed/workbench/explorer/**`, `/embed/workbench/design/**`) the stack serves from that one page, as the live worker does.
 
-## Trying the editor without an AI key
+## Serving the editor a second time
 
 The e2e stack (`scripts/e2e-stack.mjs`) can serve the built editor a second
-time, beside a running stack, as a deployment WITHOUT an AI key runs it:
+time, beside a running stack:
 
 ```bash
-E2E_LIVE_PORT=3402 E2E_API_PORT=8887 E2E_LIVE_ONLY=1 E2E_NO_AI=1 node scripts/e2e-stack.mjs
+E2E_LIVE_PORT=3402 E2E_API_PORT=8887 E2E_LIVE_ONLY=1 node scripts/e2e-stack.mjs
 ```
 
 `E2E_LIVE_ONLY=1` serves the static editor only, proxying to the api already
-on `E2E_API_PORT`; `E2E_NO_AI=1` answers `/api/capabilities` with
-`aiEnabled: false`.
+on `E2E_API_PORT`.
 
 `E2E_LIVE_OUT=<dir>` serves another export of the live app (the signed-in specs use
 `.next/out-signed-in`), and `E2E_ACCOUNTS_STUB=1` makes the stack stand in for the accounts Worker:

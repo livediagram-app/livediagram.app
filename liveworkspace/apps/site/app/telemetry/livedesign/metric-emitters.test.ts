@@ -33,8 +33,8 @@ import { SELECTION_MODES } from './PaletteView';
 //    emitter that can send a type (a card that wants them says `allTypes` or
 //    `typeIn`).
 //  - A card that asks for a specific type counts nothing if the emitter sends
-//    it under another category: "AI Turned On" read UI·Toggled·AiOn while the
-//    Settings row sends AI·Toggled·AiOn. So a typed card must have an emitter
+//    it under another category: a card once read UI·Toggled·X while the
+//    Settings row sent the same type under its own category. So a typed card must have an emitter
 //    that can send exactly that category·action·type.
 //
 // emitter-scan.ts resolves literals, ternaries, lookup tables, forwarding
@@ -108,7 +108,7 @@ describe('the emitter scan', () => {
     expect(
       has('Document', 'Exported', COMPUTED as never) || has('Document', 'Exported', 'PNG'),
     ).toBe(true);
-    expect(has('AI', 'Toggled', 'AiOn')).toBe(true); // Settings catalogue row
+    expect(has('UI', 'Toggled', 'AlignmentGuidesOn')).toBe(true); // Settings catalogue row
     expect(has('Tab', 'Moved', 'Folder')).toBe(true); // ternary action
     expect(has('Tab', 'Removed', 'Folder')).toBe(true);
     expect(has('Document', 'Created', 'Offline')).toBe(true); // ternary type
@@ -245,8 +245,8 @@ describe('every event has a chart', () => {
 // caught team invite copies). Two overlaps are by design, and only these:
 //  - a Settings Changed category chart rolls up the setting charts in it;
 //  - inside one stack, a chart and its subset, with the headline counting
-//    only one of them (AI Requests over Ask / Clean, Returning Visitors over
-//    its guest / signed-in split), so the head never adds them together.
+//    only one of them (Returning Visitors over its guest / signed-in split),
+//    so the head never adds them together.
 describe('no event is counted by two unrelated charts', () => {
   const stacks = ALL.flatMap((g) => g.metrics).filter(isStack);
   const rollups = new Set<Metric>(SETTINGS_CHANGED.members);

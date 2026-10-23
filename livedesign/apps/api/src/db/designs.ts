@@ -15,12 +15,7 @@ import { imageRefAddStatements } from './image-refs';
 import { designRemovalStatements } from './design-removal';
 import { purgeRooms } from '../room-purge-client';
 import { firstTabCountSql, isEmptyCount } from './tabs';
-import {
-  designStatsSql,
-  readDesignStats,
-  tabStatsOfData,
-  tabStatsStatement,
-} from './tab-stats';
+import { designStatsSql, readDesignStats, tabStatsOfData, tabStatsStatement } from './tab-stats';
 import type { RecordedIntent } from '@livedesign/api-schema';
 import { readRecordedIntent, type RecordedIntentRow } from '../design-intent-row';
 
@@ -31,7 +26,7 @@ type DesignRow = {
   shareable: number;
   folder_id: string | null;
   team_id: string | null;
-  // Provenance (docs/specs/013-workspace/folders.md): null = user-made; 'ai' / 'mcp' = generated.
+  // Provenance (docs/specs/013-workspace/folders.md): null = user-made; 'mcp' / 'cli' = generated.
   source: string | null;
   // Slide deck (docs/specs/012-collaboration/presentation-mode.md): serialised StoredPresentation, or null for no deck.
   presentation: string | null;
@@ -144,10 +139,7 @@ export type DesignThumbMeta = {
   thumbRenderedAt: number | null;
 };
 
-export async function getDesignThumbMeta(
-  env: Env,
-  id: string,
-): Promise<DesignThumbMeta | null> {
+export async function getDesignThumbMeta(env: Env, id: string): Promise<DesignThumbMeta | null> {
   const row = await env.DB.prepare(
     'SELECT id, owner_id, team_id, name, saved_at, thumb_rendered_at FROM designs WHERE id = ? AND trashed_at IS NULL',
   )
@@ -370,9 +362,7 @@ export async function setDesignSharePassword(
   id: string,
   stored: string | null,
 ): Promise<void> {
-  await env.DB.prepare('UPDATE designs SET share_password = ? WHERE id = ?')
-    .bind(stored, id)
-    .run();
+  await env.DB.prepare('UPDATE designs SET share_password = ? WHERE id = ?').bind(stored, id).run();
 }
 
 // Rewrite a legacy plain-text value as its hash, only if the column still
@@ -383,9 +373,7 @@ export async function upgradeDesignSharePassword(
   from: string,
   to: string,
 ): Promise<void> {
-  await env.DB.prepare(
-    'UPDATE designs SET share_password = ? WHERE id = ? AND share_password = ?',
-  )
+  await env.DB.prepare('UPDATE designs SET share_password = ? WHERE id = ? AND share_password = ?')
     .bind(to, id, from)
     .run();
 }
@@ -437,9 +425,7 @@ export async function getThumbRenderedAt(env: Env, id: string): Promise<number |
 // successful R2 write so the next read streams the cached bytes instead
 // of re-rendering.
 export async function markThumbRendered(env: Env, id: string, now: number): Promise<void> {
-  await env.DB.prepare('UPDATE designs SET thumb_rendered_at = ? WHERE id = ?')
-    .bind(now, id)
-    .run();
+  await env.DB.prepare('UPDATE designs SET thumb_rendered_at = ? WHERE id = ?').bind(now, id).run();
 }
 
 // "Copy this design to my own files" — duplicates the source design

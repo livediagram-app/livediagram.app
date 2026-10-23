@@ -172,7 +172,7 @@ export async function probeDispatch(
       },
     );
   // Feature gates open, so a handler reaches its own routing instead of
-  // answering "not configured" for every path: telemetry on, a model key set.
+  // answering "not configured" for every path: telemetry on.
   const env = {
     DB: trap('DB'),
     IMAGES: trap('IMAGES'),
@@ -181,7 +181,6 @@ export async function probeDispatch(
     MEDIA_KEY: 'probe-key',
     DESIGN_ROOM: trap('DESIGN_ROOM'),
     TELEMETRY_ENABLED: 'true',
-    OPENAI_API_KEY: 'probe-key',
   } as unknown as Env;
   const pending: Promise<unknown>[] = [];
   const executionCtx = {

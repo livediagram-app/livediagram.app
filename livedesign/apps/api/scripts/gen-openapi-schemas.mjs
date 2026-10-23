@@ -83,7 +83,6 @@ export const ROOT_TYPES = [
   'TeamInviteLink',
   'TeamInviteLinkInfo',
   'TeamInviteDecline',
-  'AiRequest',
   'CapabilitiesResponse',
   'CurrentTokenResponse',
   'DesignCommentThread',

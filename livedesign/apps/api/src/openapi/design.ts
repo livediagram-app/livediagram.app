@@ -202,10 +202,6 @@ const TAGS = [
   { name: 'Participants', description: 'Display name and colour for a collaborator.' },
   { name: 'Account', description: 'Account-level data, preferences, and migration.' },
   {
-    name: 'AI',
-    description: 'Optional AI design assistant.',
-  },
-  {
     name: 'Telemetry',
     description: 'Anonymous first-party usage events, passed on to liveworkspace.',
   },

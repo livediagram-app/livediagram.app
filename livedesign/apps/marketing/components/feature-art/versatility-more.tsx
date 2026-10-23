@@ -1,4 +1,4 @@
-// The rest of the versatility feature illustrations: the AI assistant, rotation and size, Zen mode
+// The rest of the versatility feature illustrations: Zen mode
 // and fonts. Split from ./versatility (which re-exports them) to
 // keep each file a readable size; built from the same parts, on the same 300 by 96 stage, with the
 // same fa-c-* loops.
@@ -17,8 +17,6 @@ import {
   Selection,
   delay,
 } from './versatility-parts';
-
-/* ──────────────── AI, rotation and size ──────────────── */
 
 /* ──────────────── Zen, fonts ──────────────── */
 

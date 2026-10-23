@@ -93,7 +93,6 @@ _require the server_, which are hidden or gated (not broken) for an offline desi
 | Live presence / realtime                                              | N/A — a private design never opens the room anyway ([Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)).                                                                                                                                    |
 | Teams / shared library                                                | Hidden — a team library is server-side ([Teams](../013-workspace/teams.md), /35).                                                                                                                                                                                             |
 | Comments                                                              | Local-only (just you), stored in the design; no cross-user.                                                                                                                                                                                                                   |
-| AI assistance                                                         | Works online — it reads the current canvas, not the stored design ([AI Assistance](../007-editor/ai-assistance.md)); only a lost connection stops it.                                                                                                                         |
 | Duplicate                                                             | Makes **another offline design** — a copy never uploads what the user chose to keep local.                                                                                                                                                                                    |
 | Folders                                                               | Personal-tree placement stored in the record; team moves are impossible (the shared library is server-side).                                                                                                                                                                  |
 | Tab linking ([Tab ↔ design many-to-many](tab-design-many-to-many.md)) | Unavailable in either direction — linked tabs are one shared server row.                                                                                                                                                                                                      |
@@ -318,7 +317,7 @@ Share dialog gate and the move prompt after signing in).
   of a design while one runs (a second menu, or the Share gate) does nothing; the
   guard lives with the conversion, not with the menu that started it, which closes.
 - On success the **local copy is removed** from IndexedDB so there's one source
-  of truth; the design is now a cloud design (Share / AI / Teams reappear). The
+  of truth; the design is now a cloud design (Share / Teams reappear). The
   id is unchanged, so the route stays the same: from the Share dialog the editor
   turns into the cloud design in place ([Syncing in place](#syncing-in-place));
   from the Explorer it reloads.
@@ -447,7 +446,7 @@ covers:
   you clear site data — the durability warning, stated plainly.
 - **Converting**: "Sync Design" (Offline → Cloud) and "Take Offline"
   (Cloud → Offline, which deletes the server copy).
-- What's unavailable offline: sharing, live collaboration, teams, and AI.
+- What's unavailable offline: sharing, live collaboration and teams.
 
 Also add the standard contextual help link ([Contextual help links](../018-help/contextual-help-links.md)) from the New Design
 wizard's data-loss warning to this article.

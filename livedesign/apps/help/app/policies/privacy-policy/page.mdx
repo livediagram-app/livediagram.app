@@ -16,7 +16,7 @@ livedesign is built to need as little of your data as possible, and the whole co
 
 ## What we store
 
-- **Your designs.** The content you create is saved so it is there when you come back, and so the people you share it with can see it. Each design is stored on its own on Cloudflare, with its comments beside what they are about. A design you create in [Offline Mode](/help/privacy-and-security/offline-mode/) is the exception: it stays in your browser and never reaches our servers, unless you ask the AI assistant about it (see **AI features**), or add a web link to it (our server fetches the link's preview).
+- **Your designs.** The content you create is saved so it is there when you come back, and so the people you share it with can see it. Each design is stored on its own on Cloudflare, with its comments beside what they are about. A design you create in [Offline Mode](/help/privacy-and-security/offline-mode/) is the exception: it stays in your browser and never reaches our servers, unless you add a web link to it (our server fetches the link's preview).
 - **Images you upload.** Images placed in a design are kept in Cloudflare object storage and served back through the same API. Before a JPEG is stored, identifying metadata such as GPS location and camera details is stripped from it, so it never reaches anyone you share the design with.
 - **A guest id.** If you use livedesign without an account, liveworkspace.app gives your browser a random guest id, the same in every liveworkspace app, to link your designs to your browser. It is not tied to your name or email. If you later sign in or create an account, what you made as a guest becomes your account's.
 - **Your display name and colour.** The name and cursor colour collaborators see are stored on our server against your guest id or account.
@@ -27,14 +27,11 @@ livedesign is built to need as little of your data as possible, and the whole co
 - **Your Explorer.** liveworkspace.app keeps one list of what you make in every liveworkspace app, so the [Explorer](/help/explorer/) can show all of it: each design's title, owner, team, folder, tags, favourite and Trash state, its share links, when you last opened it, and a small summary for its card. For the Inbox it also keeps, for each comment thread and action, who is in it, whether it is resolved or done, and the start of the latest comment (up to 500 characters).
 - **Basic operational logs.** Our host, Cloudflare, keeps standard request logs that help us run the service securely.
 
-## AI features
+## Connected AI tools
 
-The AI features run only when you use them, and only on a deployment that has an AI provider configured.
+If you [connect an AI tool](/help/account-and-data/connect-ai-mcp/) such as Claude, that tool reads and changes your designs through our API using the token you approved. What the tool does with what it reads is governed by that tool's own terms and privacy policy, not this one.
 
-- **The AI assistant.** When you ask the assistant something, your prompt, the tab's name, the elements on the current tab (their text, shapes and positions) and your last few messages in that conversation are sent through our API to **OpenAI**, which writes the answer. Nothing is sent until you ask, and the assistant is off until you turn it on in Settings.
-- **Connected AI tools.** If you [connect an AI tool](/help/account-and-data/connect-ai-mcp/) such as Claude, that tool reads and changes your designs through our API using the token you approved. What the tool does with what it reads is governed by that tool's own terms and privacy policy, not this one.
-
-We do not use your designs to train AI models. The providers above process what is sent to them under their own API terms.
+We do not use your designs to train AI models.
 
 ## What we do not do
 
@@ -68,7 +65,6 @@ We rely on a small number of providers to run the service:
 
 - **Cloudflare**, for hosting, database storage and image storage.
 - **Resend**, for delivering every email described above, and the sign-in codes liveworkspace.app emails you.
-- **OpenAI**, for the AI assistant (only when you use it; see **AI features** above).
 
 These providers process data on our behalf so that we can run the service.
 

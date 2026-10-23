@@ -480,7 +480,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
       ) : (
         <>
           {panelEls.collaborate}
-          {panelEls.ai}
           {panelEls.minimap}
           {panelEls.laser}
           {panelEls.spotlight}

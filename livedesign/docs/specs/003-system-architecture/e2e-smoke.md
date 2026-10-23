@@ -128,8 +128,7 @@ The stack serves whatever `apps/live/out` holds and never rebuilds it, so locall
 1. **api**: `wrangler dev --local` (`apps/api`) on a fixed port, with
    `db:migrate:local` applied to a fresh local D1 so persistence works.
    `TELEMETRY_ENABLED` unset (the suite asserts on the app, not the
-   events pipe), and `AI_ALLOWED_ORIGINS` blanked with `--var` (production
-   declares it in `[vars]`, which would refuse the localhost editor).
+   events pipe).
 2. **live**: the static `apps/live/out` served by a minimal Node
    server that reproduces the three things the production router +
    live worker do (so clean routes and the design placeholder resolve
@@ -158,8 +157,7 @@ The stack serves whatever `apps/live/out` holds and never rebuilds it, so locall
    since marketing owns `/` in production.
 
 The stack also runs the editor alone beside a running one (`E2E_LIVE_ONLY`,
-`E2E_LIVE_PORT`, `E2E_API_PORT`) and can pose as a deployment without an AI
-key (`E2E_NO_AI`) or with its AI budget spent (`E2E_AI_BUDGET_SPENT`); see
+`E2E_LIVE_PORT`, `E2E_API_PORT`); see
 [Local development](../../development/local-development.md).
 
 Locally the same `playwright.config.ts` sets `reuseExistingServer`, so a
