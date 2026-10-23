@@ -36,7 +36,7 @@ links: Jump Back In is the way in. For assistive technology they are one group o
 short fade as they land, and none under reduced motion. On a phone or a tablet the column is not drawn.
 
 On liveworkspace.app, which carries none of the editor's code, the same previews ship as data in
-`@livedocuments/templates/hero.json`, written from these components by
+`packages/templates/hero.json` (the templates package's `hero.json` export), written from these components by
 [`hero-manifest.test.tsx`](../../../apps/editor/components/panels/home/hero-manifest.test.tsx) through
 `@liveworkspace/explorer/hero-manifest` (`HERO_WRITE=1 pnpm vitest run components/panels/home/hero-manifest.test.tsx`
 in `apps/editor`; without it the test fails when the file has drifted), and drawn there by the Explorer's
