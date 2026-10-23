@@ -159,7 +159,7 @@ export const categories: Category[] = [
     title: 'Explorer',
     description:
       'Organise everything you build: one library, shared by every liveworkspace app, that keeps your plans, folders and teams easy to find and manage.',
-    articleCount: 12,
+    articleCount: 13,
     kind: 'feature',
     groups: ['Your Library', 'Activity'],
   },
@@ -920,6 +920,17 @@ export const articles: Article[] = [
     description: 'Toggle browse views between compact rows, cards and a sortable details table.',
     keywords:
       'card grid view toggle layout rows tiles gallery details table columns sort type comments access size created updated date',
+    category: 'Explorer',
+    categorySlug: 'explorer',
+    group: 'Your Library',
+  },
+  {
+    slug: 'filters',
+    title: 'Search and Filter Plans',
+    description:
+      'Narrow any plan list with words, chips or typed filters like made-by:ai, and share it as a link.',
+    keywords:
+      'search find filter filters chips narrow refine query token tokens pill pills made by ai generated template retrospective kanban edited date last week recent people me others owner space team shared unsorted folder name subfolders lens results clear plan project',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',

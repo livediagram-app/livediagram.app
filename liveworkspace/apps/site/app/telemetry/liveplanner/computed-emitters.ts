@@ -42,6 +42,14 @@ function tokensAfter(source: string, marker: string, close: string): string[] {
   return [...block.matchAll(/'([A-Za-z0-9-]+)'/g)].map((m) => m[1]!);
 }
 
+// The Explorer filter lens's facets (docs/specs/013-workspace/explorer-filters.md "Telemetry"): the values of the shared
+// Explorer's LENS_TELEMETRY_TYPES, whose keys are lower case.
+const LENS_FACETS = tokensAfter(
+  read('../../packages/explorer/src/lens/dimensions.ts'),
+  'export const LENS_TELEMETRY_TYPES',
+  '}',
+).filter((token) => /^[A-Z]/.test(token));
+
 // The api's email templates: `export type EmailKind = 'Welcome' | ...;`.
 const EMAIL_KINDS = tokensAfter(read('api/src/email/templates.ts'), 'export type EmailKind', ';');
 
@@ -322,6 +330,8 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ['WhatHappened', 'SeeTimeline'],
   },
   'apps/editor/app/explorer/ExplorerShell.tsx Home·Opened': { values: ['Group'] },
+  // The filter lens, through the Explorer's onLensSelected prop.
+  'apps/editor/app/explorer/ExplorerShell.tsx Explorer·Selected': { values: LENS_FACETS },
   'apps/editor/app/new/page.tsx Theme·Changed': { values: THEMES, open: THEME_WHY },
   'apps/editor/app/new/page.tsx Template·Used': { values: TEMPLATES, open: TEMPLATE_WHY },
   // The landing funnel (docs/specs/019-marketing/landing-funnel.md): the CTA a /new visit came from.

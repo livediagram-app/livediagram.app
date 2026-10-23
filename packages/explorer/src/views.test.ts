@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { APPS } from '@liveworkspace/index-client';
-import { explorerPath, viewFromLocation, type ExplorerView } from './views';
+import { explorerPath, sameView, viewFromLocation, type ExplorerView } from './views';
 import { kindWords, listWords, siteOf } from './words';
 
 describe('views and their addresses', () => {
@@ -31,6 +31,20 @@ describe('views and their addresses', () => {
     expect(viewFromLocation('/explorer/tags', 'id=t1')).toEqual({ kind: 'home' });
     expect(viewFromLocation('/explorer/folder')).toEqual({ kind: 'home' });
     expect(viewFromLocation('/explorer')).toEqual({ kind: 'home' });
+  });
+
+  it('carries a list’s lens as q, and none on a view with no list', () => {
+    const view = { kind: 'team', id: 'T1', folderId: 'f1', q: 'made-by:ai road' } as const;
+    expect(explorerPath(view)).toBe('/explorer/team?id=T1&folder=f1&q=made-by%3Aai%20road');
+    expect(viewFromLocation('/explorer/team', 'id=T1&folder=f1&q=made-by%3Aai%20road')).toEqual(
+      view,
+    );
+    expect(viewFromLocation('/explorer/recent', 'q=%20%20')).toEqual({ kind: 'recent' });
+    expect(viewFromLocation('/explorer/inbox', 'q=road')).toEqual({ kind: 'inbox' });
+    // The old Generated view is Search results, made by AI.
+    expect(viewFromLocation('/explorer/generated')).toEqual({ kind: 'search', q: 'made-by:ai' });
+    // The sidebar's highlight is the place, whatever the lens.
+    expect(sameView({ kind: 'recent', q: 'edited:7d' }, { kind: 'recent' })).toBe(true);
   });
 
   it('honours a host base path', () => {

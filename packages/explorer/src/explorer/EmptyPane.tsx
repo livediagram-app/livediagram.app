@@ -94,7 +94,7 @@ export function emptyCopy(
         : {
             icon: <SearchIcon />,
             title: 'Search everything',
-            description: `Type to find ${w.lowerMany} by name or folder.`,
+            description: `Type to find ${w.lowerMany} by name or folder, or filter them: made-by:ai, edited:7d.`,
             cta: false,
           };
     case 'folder':

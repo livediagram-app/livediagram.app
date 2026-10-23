@@ -62,6 +62,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   activity: '#f43f5e',
   timeline: '#d97706',
   folders: '#f59e0b',
+  filters: '#6366f1',
   profile: '#0891b2',
   recent: '#0ea5e9',
   'shared-with-you': '#10b981',

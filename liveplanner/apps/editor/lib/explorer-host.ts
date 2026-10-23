@@ -91,8 +91,8 @@ export function useTokenTeams(signedIn: boolean | undefined): TeamRef[] {
   return signedIn ? teams : [];
 }
 
-// Each Explorer view's Help article: the Help button in its page header, and Home's in the hero's corner. Views with
-// no article of their own (Search, Favourites) open the Explorer's.
+// Each Explorer view's Help article: the Help button in its page header, and Home's in the hero's corner. Search opens
+// Search and Filter Plans; Favourites, with no article of its own, the Explorer's.
 const VIEW_HELP: Record<ExplorerView['kind'], HelpArticleKey> = {
   home: 'home',
   all: 'myWork',
@@ -105,7 +105,7 @@ const VIEW_HELP: Record<ExplorerView['kind'], HelpArticleKey> = {
   inbox: 'inbox',
   timeline: 'timeline',
   trash: 'trash',
-  search: 'explorerPage',
+  search: 'explorerFilters',
 };
 
 export const explorerHelpHref: HelpHref = (view) => helpArticleHref(VIEW_HELP[view.kind]);

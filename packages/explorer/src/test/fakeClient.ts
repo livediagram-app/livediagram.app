@@ -8,7 +8,9 @@ import {
   type InboxResponse,
   type IndexClient,
   type Item,
+  type ItemFilters,
   type ItemListQuery,
+  type SharedListQuery,
   type TimelineEvent,
   type TimelineQuery,
 } from '@liveworkspace/index-client';
@@ -131,6 +133,43 @@ export function createFakeIndex(
     return { slice, next };
   }
 
+  // The index's lens filters (one-explorer-contracts.md "The lens's filters"), the asker being user_me.
+  function narrow(out: Item[], q: ItemFilters): Item[] {
+    const words = q.q ? q.q.toLowerCase().split(/\s+/).filter(Boolean) : [];
+    const last = (intent: string | null) =>
+      intent ? intent.slice(intent.lastIndexOf(':') + 1) : null;
+    return out.filter(
+      (i) =>
+        words.every((w) => i.title.toLowerCase().includes(w)) &&
+        (!q.source?.length || (i.source !== null && q.source.includes(i.source))) &&
+        (q.since === undefined || i.updatedAt >= q.since) &&
+        (!q.owner || (q.owner === 'me') === (i.ownerId === 'user_me')) &&
+        (!q.intent?.length || q.intent.includes(last(i.intent) ?? '')) &&
+        (!q.space?.length ||
+          q.space.some((s) =>
+            s === 'shared'
+              ? Boolean(i.sharedVia)
+              : s === 'mine'
+                ? !i.sharedVia && i.teamId === null
+                : !i.sharedVia && i.teamId === s.slice('team:'.length),
+          )),
+    );
+  }
+
+  function subtree(root: string): Set<string> {
+    const out = new Set([root]);
+    for (let grew = true; grew;) {
+      grew = false;
+      for (const f of folders) {
+        if (f.parentId && out.has(f.parentId) && !out.has(f.id)) {
+          out.add(f.id);
+          grew = true;
+        }
+      }
+    }
+    return out;
+  }
+
   function select(q: ItemListQuery): Item[] {
     let out = items.filter((i) => i.trashedAt === null);
     if (q.app) out = out.filter((i) => i.app === q.app);
@@ -139,9 +178,11 @@ export function createFakeIndex(
     if (q.view === 'recent') out = out.filter((i) => i.lastOpenedAt !== null);
     if (q.team === 'personal') out = out.filter((i) => i.teamId === null);
     else if (q.team) out = out.filter((i) => i.teamId === q.team);
-    if (q.folder) out = out.filter((i) => i.folderId === q.folder);
-    if (q.q) out = out.filter((i) => i.title.toLowerCase().includes(q.q!.toLowerCase()));
-    return out;
+    if (q.folder) {
+      const reach = q.deep ? subtree(q.folder) : new Set([q.folder]);
+      out = out.filter((i) => i.folderId !== null && reach.has(i.folderId));
+    }
+    return narrow(out, q);
   }
 
   const find = (id: string) => {
@@ -182,12 +223,12 @@ export function createFakeIndex(
         const { slice, next } = page(all, query.limit, query.cursor);
         return { items: slice.map((i) => ({ ...i })), nextCursor: next };
       }),
-    listShared: (
-      query: { app?: App; limit?: number; cursor?: string } = {},
-      options: { signal?: AbortSignal } = {},
-    ) =>
+    listShared: (query: SharedListQuery = {}, options: { signal?: AbortSignal } = {}) =>
       answer('listShared', [query], options.signal, () => {
-        const all = items.filter((i) => i.sharedVia && (!query.app || i.app === query.app));
+        const all = narrow(
+          items.filter((i) => i.sharedVia && (!query.app || i.app === query.app)),
+          query,
+        );
         const { slice, next } = page(all, query.limit, query.cursor);
         return {
           shared: slice.map((i) => ({

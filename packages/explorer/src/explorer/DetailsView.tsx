@@ -12,7 +12,7 @@ import { RelativeTimeChip } from '../ui/RelativeTimeChip';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
 import { FolderSolidIcon } from '../ui/icons';
 import { kindWords } from '../words';
-import { AppMark, FavouriteMarker } from './badges';
+import { AppMark, FavouriteMarker, MadeByAiBadge } from './badges';
 import { DROP_ROW, useDropTarget, useFolderDrag, useItemDrag } from '../drag/drag';
 import { useExplorer } from './context';
 import { useItemBits } from './rows';
@@ -218,6 +218,7 @@ const DetailsRow = memo(function DetailsRow({
             {title}
           </Link>
         )}
+        <MadeByAiBadge item={item} />
       </span>
       <span className="hidden truncate text-xs text-slate-600 md:block dark:text-slate-300">
         {kindWords(item.app).one}

@@ -519,6 +519,16 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Home|Selected|WhatHappened':
     "Someone opened a plan from an entry in Explorer Home's What Happened: what other people did to their plans.",
   'Home|Selected|SeeTimeline': "Someone followed See Timeline from Explorer Home's What Happened.",
+  'Explorer|Selected|Text':
+    'Someone typed words into the Explorer’s search to narrow a list of plans.',
+  'Explorer|Selected|Template':
+    'Someone filtered an Explorer list by the template family plans were made from (Retrospective, Kanban).',
+  'Explorer|Selected|MadeBy': 'Someone filtered an Explorer list to the plans an AI made.',
+  'Explorer|Selected|Edited': 'Someone filtered an Explorer list by when plans were last edited.',
+  'Explorer|Selected|People':
+    'Someone filtered an Explorer list by who owns the plans (Me or Others).',
+  'Explorer|Selected|Space':
+    'Someone filtered an Explorer list across places by where plans live (My Work, Shared With Me, a team).',
   'Home|Opened|Group':
     "Someone dealt out a What Happened summary on Explorer Home, where several people's doings on one plan in a day fold into one sentence.",
   'Layer|Added|': 'A new layer was added in the Layers panel.',
@@ -2189,6 +2199,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'Someone searched the help centre. Counted once per finished search; the search words are never recorded.',
   'Help|Unhelpful':
     'Someone said a help-centre article was not helpful, using the "Was this helpful?" control at the end of the article. Counted once per article per visit, using whichever answer the reader leaves the page on.',
+  'Explorer|Selected': 'Someone narrowed an Explorer list with a filter.',
   'Home|Selected':
     "Someone acted on Explorer Home's What Happened: opened a plan from one of its entries, or followed See Timeline.",
   'Home|Opened': "Someone dealt out a summary in Explorer Home's What Happened.",

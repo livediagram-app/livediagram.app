@@ -17,9 +17,12 @@ import {
   Explorer,
   viewFromLocation,
   type ExplorerView,
+  type LensOption,
+  type LensTelemetryType,
   type TimelineTelemetry,
   type HomeTelemetry,
 } from '@liveworkspace/explorer';
+import { TEMPLATE_FAMILIES, type TemplateFamily } from '@liveplanner/api-schema';
 import { Brand, SITE_ID, SiteSwitcher } from '@liveplanner/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
@@ -89,6 +92,21 @@ const trackHome: HomeTelemetry = (action, type) => {
   }
 };
 
+// The filter lens (docs/specs/013-workspace/explorer-filters.md "Telemetry"): a facet that gained a value, never the
+// value. Literal calls, so the telemetry manifest scan sees the pair.
+const trackLens = (type: LensTelemetryType) => track('Explorer', 'Selected', type);
+
+// The lens's Template filter: liveplanner's template families, which a plan's creation intent ends with
+// ("plan:board:kanban").
+const FAMILY_LABELS: Record<TemplateFamily, string> = {
+  retrospective: 'Retrospective',
+  kanban: 'Kanban',
+};
+const LENS_TEMPLATES: readonly LensOption[] = TEMPLATE_FAMILIES.map((value) => ({
+  value,
+  label: FAMILY_LABELS[value],
+}));
+
 /** What the host's chrome around the Explorer needs: the person's synced preferences and whose they are. */
 export type ExplorerChrome = { prefs: UserPreferences; ownerId: string | null; signedIn: boolean };
 
@@ -143,7 +161,10 @@ export function ExplorerHost({
         app="liveplanner"
         client={indexClient}
         view={view}
-        onNavigate={(_view, href) => router.push(href)}
+        // The filter field's writes replace the entry, so typing leaves one history entry, not one per pause.
+        onNavigate={(_view, href, options) =>
+          options?.replace ? router.replace(href) : router.push(href)
+        }
         itemHref={itemHref}
         onCreate={(placement) => router.push(newPlanHref(placement))}
         onOpenItem={(href) =>
@@ -162,6 +183,8 @@ export function ExplorerHost({
         onHideHero={hideHero}
         onTimeline={trackTimeline}
         onHome={trackHome}
+        lensTemplates={LENS_TEMPLATES}
+        onLensSelected={trackLens}
         header={header ? ({ search }) => header(search, chrome) : undefined}
       />
       {children?.(chrome)}

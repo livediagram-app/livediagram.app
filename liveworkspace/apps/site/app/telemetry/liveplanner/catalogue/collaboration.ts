@@ -309,6 +309,16 @@ export const WHAT_HAPPENED_GROUPS = chart(
   'A summary of several people’s doings on one plan dealt out on Home.',
 );
 
+// The Explorer's filter lens (docs/specs/013-workspace/explorer-filters.md "Telemetry"): Explorer·Selected·<Facet>,
+// one per facet that gained a value, by kind (never what was picked).
+export const EXPLORER_FILTERS_PICKED = chart(
+  'Explorer',
+  'Selected',
+  'Explorer Filters Used',
+  'A filter reached for on an Explorer list, by kind: words, Template, Made by AI, Edited, People or Space, from a chip, a suggestion or a typed token.',
+  { rising: 'good' },
+);
+
 export const TIMELINE: MetricStack = {
   stack: true,
   title: 'Timeline',

@@ -8,6 +8,7 @@ import {
   API_TOKEN_ACTIVITY,
   COUNTDOWNS,
   DISCUSSION,
+  EXPLORER_FILTERS_PICKED,
   STOPWATCHES,
   TEAM_ACTIVITY,
   TIMELINE,
@@ -28,7 +29,7 @@ export const FACILITATION_GROUPS: MetricGroup[] = [
     title: 'Facilitation tools',
     metrics: [DISCUSSION, TEAM_ACTIVITY, COUNTDOWNS, STOPWATCHES],
   },
-  { title: 'Explorer', metrics: [TIMELINE] },
+  { title: 'Explorer', metrics: [TIMELINE, EXPLORER_FILTERS_PICKED] },
 ];
 
 export const CONNECTIONS_GROUPS: MetricGroup[] = [

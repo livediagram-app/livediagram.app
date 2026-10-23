@@ -20,6 +20,8 @@ export {
   type ExplorerViewKind,
 } from './views';
 export { kindWords, heroWords, type AppFilter, type HeroWords, type Words } from './words';
+export type { LensOption, LensTelemetryType } from './lens';
+export type { NavigateOptions } from './explorer/context';
 export type { HelpHref } from './explorer/context';
 export type {
   ItemHref,

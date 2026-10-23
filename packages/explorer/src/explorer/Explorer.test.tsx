@@ -92,21 +92,6 @@ describe('<Explorer>', () => {
     expect(localStorage.getItem('liveworkspace:explorer-filter:liveplanner')).toBe('all');
   });
 
-  it('debounces search by 250 ms before going to the Search view', async () => {
-    const index = createFakeIndex();
-    const { onNavigate } = renderExplorer(index, { kind: 'all' });
-    const field = screen.getByRole('searchbox', { name: 'Search' });
-    fireEvent.change(field, { target: { value: 'r' } });
-    fireEvent.change(field, { target: { value: 'ro' } });
-    fireEvent.change(field, { target: { value: 'road' } });
-    expect(onNavigate).not.toHaveBeenCalled();
-    await waitFor(() => expect(onNavigate).toHaveBeenCalledTimes(1), { timeout: 1000 });
-    expect(onNavigate).toHaveBeenCalledWith(
-      { kind: 'search', q: 'road' },
-      '/explorer/search?q=road',
-    );
-  });
-
   it('links an Inbox row to its app, item, tab and element', async () => {
     const index = createFakeIndex();
     index.inbox.actions.push({

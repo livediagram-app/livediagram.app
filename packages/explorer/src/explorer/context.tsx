@@ -4,7 +4,15 @@
 // the item actions, the Inbox, and the host's routing callbacks. Lists, rows, the sidebar and the
 // dialogs read it, so nothing is fetched twice and every surface shows a change at once.
 
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import type { App, IndexClient, Item } from '@liveworkspace/index-client';
 import { createItemOverlay, type ItemOverlay } from '../data/overlay';
 import { useFolderStore, type FolderStore } from '../data/useFolders';
@@ -12,7 +20,8 @@ import { DragProvider } from '../drag/store';
 import { useItemActions, type HostTrash, type ItemActions } from '../data/useItemActions';
 import { useInbox, type InboxState } from '../data/useInbox';
 import { useToast, type ToastApi } from '../ui/Toasts';
-import { explorerPath, type ExplorerView } from '../views';
+import type { LensOption, LensSubject, LensTelemetryType } from '../lens';
+import { explorerPath, lensViewOf, viewLens, withLens, type ExplorerView } from '../views';
 import {
   heroWords as heroWordsFor,
   kindWords,
@@ -63,7 +72,9 @@ export type ExplorerContextValue = {
   teamName: (id: string | null) => string | null;
   viewerId: string | null;
   view: ExplorerView;
-  navigate: (view: ExplorerView) => void;
+  // Goes to a view; from one aggregate list to another the lens comes along. `replace`: no new history entry
+  // (the lens field's writes).
+  navigate: (view: ExplorerView, options?: NavigateOptions) => void;
   viewHref: (view: ExplorerView) => string;
   itemHref: ItemHref;
   // Opens an item from a menu (rows and cards are links): the host's onOpenItem, or a page load.
@@ -88,7 +99,24 @@ export type ExplorerContextValue = {
   onTimeline?: TimelineTelemetry;
   // Home's What Happened reports, for the host's telemetry.
   onHome?: HomeTelemetry;
+  // The lens's Template values: the host's template families (none: no Template filter).
+  lensTemplates: readonly LensOption[];
+  // A facet of the lens gained a value (`Explorer / Selected / <Facet>`).
+  onLensSelected?: (type: LensTelemetryType) => void;
+  // The rows the list on screen holds, as the lens reads them, when it is loaded whole (null while pages
+  // remain): the field marks a suggestion that would match none. Written by the list, read by the field.
+  lensSubjects: { current: readonly LensSubject[] | null };
 };
+
+export type NavigateOptions = { replace?: boolean };
+
+/** Where a move lands: from one aggregate list to another (Recent to Favourites) the lens comes along. */
+export function carryLens(from: ExplorerView, to: ExplorerView): ExplorerView {
+  if (from.kind === to.kind) return to;
+  if (lensViewOf(from.kind) !== 'aggregate' || lensViewOf(to.kind) !== 'aggregate') return to;
+  if (to.kind === 'search' || viewLens(to) !== '') return to;
+  return withLens(to, viewLens(from));
+}
 
 export type HelpHref = (view: ExplorerView) => string | undefined;
 
@@ -125,7 +153,7 @@ export type ExplorerProviderProps = {
   view: ExplorerView;
   filter: AppFilter;
   setFilter: (filter: AppFilter) => void;
-  onNavigate: (view: ExplorerView, href: string) => void;
+  onNavigate: (view: ExplorerView, href: string, options?: NavigateOptions) => void;
   itemHref: ItemHref;
   onCreate: (placement: Placement) => void;
   onOpenItem?: (href: string, item: Item) => void;
@@ -141,6 +169,8 @@ export type ExplorerProviderProps = {
   heroWords?: HeroWords;
   onTimeline?: TimelineTelemetry;
   onHome?: HomeTelemetry;
+  lensTemplates?: readonly LensOption[];
+  onLensSelected?: (type: LensTelemetryType) => void;
   // Trashes an item the host handles itself (see HostTrash); stable, or the actions are rebuilt.
   hostTrash?: HostTrash;
   // After an item took a new title (the host follows it for the item it has open); stable.
@@ -151,6 +181,7 @@ export type ExplorerProviderProps = {
 const NO_NAV = () => {};
 
 const NO_TEAMS: TeamRef[] = [];
+const NO_TEMPLATES: readonly LensOption[] = [];
 
 export function ExplorerProvider({
   app,
@@ -174,6 +205,8 @@ export function ExplorerProvider({
   heroWords,
   onTimeline,
   onHome,
+  lensTemplates = NO_TEMPLATES,
+  onLensSelected,
   hostTrash,
   onItemRenamed,
   children,
@@ -199,8 +232,17 @@ export function ExplorerProvider({
   const [dialog, openDialog] = useState<DialogTarget>(null);
 
   const viewHref = useCallback((v: ExplorerView) => explorerPath(v, basePath), [basePath]);
+  // Read when moving, so `navigate` stays the same function across lens writes.
+  const viewRef = useRef(view);
+  viewRef.current = view;
+  const lensSubjects = useRef<readonly LensSubject[] | null>(null);
   const navigate = useCallback(
-    (v: ExplorerView) => onNavigate(v, explorerPath(v, basePath)),
+    (v: ExplorerView, options?: NavigateOptions) => {
+      const to = carryLens(viewRef.current, v);
+      const href = explorerPath(to, basePath);
+      if (options) onNavigate(to, href, options);
+      else onNavigate(to, href);
+    },
     [onNavigate, basePath],
   );
   const openItem = useCallback(
@@ -255,6 +297,9 @@ export function ExplorerProvider({
       heroWords: heroWords ?? heroWordsFor(app),
       onTimeline,
       onHome,
+      lensTemplates,
+      onLensSelected,
+      lensSubjects,
     }),
     [
       app,
@@ -289,6 +334,8 @@ export function ExplorerProvider({
       heroWords,
       onTimeline,
       onHome,
+      lensTemplates,
+      onLensSelected,
     ],
   );
   return (

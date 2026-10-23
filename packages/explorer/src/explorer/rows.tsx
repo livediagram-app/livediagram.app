@@ -14,7 +14,7 @@ import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
 import { CARD_PREVIEW, CARD_SHELL, DROP_TARGET_RING, RENAME_INPUT } from '../ui/classes';
 import { DROP_ROW, useDropTarget, useFolderDrag, useItemDrag } from '../drag/drag';
 import { FolderSolidIcon, ItemIcon } from '../ui/icons';
-import { AppMark, FavouriteMarker, FolderChip, VisibilityBadge } from './badges';
+import { AppMark, FavouriteMarker, FolderChip, MadeByAiBadge, VisibilityBadge } from './badges';
 import { useExplorer } from './context';
 import { FolderMosaic } from './FolderMosaic';
 import { FolderMenu, ItemMenu } from './menus';
@@ -144,6 +144,7 @@ export const ItemRow = memo(function ItemRow({
             <FolderChip label={bits.place.label} onOpen={bits.place.open} />
           </span>
         ) : null}
+        <MadeByAiBadge item={item} />
       </span>
       {showOwner ? (
         <span className="hidden truncate text-xs text-slate-500 sm:block dark:text-slate-400">
@@ -356,6 +357,7 @@ export const ItemCard = memo(function ItemCard({
         </div>
         <div className="flex min-w-0 items-center gap-x-2 [&>*]:shrink-0">
           <VisibilityBadge item={item} />
+          <MadeByAiBadge item={item} />
           {item.favourite ? <FavouriteMarker /> : null}
           {options.showFolder && bits.place ? (
             <FolderChip label={bits.place.label} onOpen={bits.place.open} />

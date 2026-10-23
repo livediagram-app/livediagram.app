@@ -422,6 +422,12 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // A spine with two events on it and their lines of text: what happened, in order (the Explorer sidebar's mark).
+  // A funnel: a list, narrowed.
+  filters: (
+    <Glyph>
+      <path d="M3 4.5h18l-7 8v6l-4 2v-8z" />
+    </Glyph>
+  ),
   timeline: (
     <Glyph>
       <path d="M6 3.5v17" />

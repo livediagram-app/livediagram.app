@@ -5,16 +5,27 @@
 // in the chosen layout. As livediagram's: cards by default; Shared With Me is a fixed list and the Trash its
 // own grouped page, neither with the layout toggle; New Folder only where folders live.
 
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Folder } from '@liveworkspace/index-client';
-import { folderPath } from '../data/useFolders';
+import { folderPath, type FolderStore } from '../data/useFolders';
 import { useItemList } from '../data/useItemList';
-import { viewList, type SharedMeta } from '../data/viewLists';
-import { explorerPath, SIDEBAR_LABELS, VIEW_TITLES, type ExplorerView } from '../views';
+import { makeListLens, viewList, type ListLens, type SharedMeta } from '../data/viewLists';
+import { isLensSet, itemSubject, parseLens, type ParsedLens } from '../lens';
+import {
+  explorerPath,
+  lensViewOf,
+  SIDEBAR_LABELS,
+  VIEW_TITLES,
+  viewLens,
+  withLens,
+  type ExplorerView,
+} from '../views';
 import { CardView } from './CardView';
 import { useExplorer } from './context';
 import { DetailsView } from './DetailsView';
 import { EmptyPane, SkeletonRows } from './EmptyPane';
+import { FilteredEmpty, LensAnnouncer, LensBar } from './Lens';
+import { useLensContext } from './SearchField';
 import { TrashNote, TrashPane } from './TrashPane';
 import { ListView } from './ListView';
 import { PaneHeader, type Crumb, type ViewMode } from './PaneHeader';
@@ -51,15 +62,23 @@ export function ItemsPane({
   onOpenNav?: () => void;
 }) {
   const ctx = useExplorer();
-  const { client, app, filter, overlay, epoch, folders, words, onCreate } = ctx;
+  const { client, app, filter, overlay, epoch, folders, words, onCreate, viewerId } = ctx;
   const [mode, setMode] = useViewMode();
   const sharedMeta = useRef(new Map<string, SharedMeta>());
-  // Keyed on the view's address, so a host that builds a new view object each render keeps the same list.
-  const viewKey = explorerPath(view);
+  // The lens the address carries (the field writes it at most every 250 ms): parsed once per change.
+  const lensKind = lensViewOf(view.kind);
+  const lensContext = useLensContext();
+  const q = viewLens(view);
+  const parsed = useMemo(() => parseLens(q, lensContext), [q, lensContext]);
+  const lensOn = lensKind !== null && isLensSet(parsed.lens);
+  const listLens = useListLens(lensOn ? parsed : null, lensKind, view, folders, viewerId);
+  // Keyed on the view's place (its lens is in `listLens.key`), so a host that builds a new view object each
+  // render keeps the same list.
+  const viewKey = explorerPath(withLens(view, ''));
   const list = useMemo(
-    () => viewList(client, view, app, filter, sharedMeta.current),
+    () => viewList(client, view, app, filter, sharedMeta.current, listLens),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [client, viewKey, app, filter],
+    [client, viewKey, app, filter, listLens],
   );
   const state = useItemList({
     key: list?.key ?? 'none',
@@ -70,10 +89,21 @@ export function ItemsPane({
     enabled: Boolean(list?.enabled),
   });
 
-  // The folder rows: a scope's folders under the open folder (or its root).
+  // The rows the lens reads, for the field's "No matches" marks: only a list loaded whole can say.
+  const { lensSubjects } = ctx;
+  useEffect(() => {
+    lensSubjects.current = state.hasMore
+      ? null
+      : state.items.map((item) => itemSubject(item, viewerId));
+  }, [lensSubjects, state.items, state.hasMore, viewerId]);
+  useEffect(() => () => void (lensSubjects.current = null), [lensSubjects]);
+
+  // The folder rows: a scope's folders under the open folder (or its root). They step aside while a lens is
+  // set: the list is then the whole scope, flat.
   const place = placement(view);
   const folderRows: Folder[] = useMemo(() => {
     // `view` is read through `viewKey`.
+    if (lensOn) return NO_FOLDERS;
     if (view.kind === 'all') return folders.childrenOf(null, null);
     if (view.kind === 'folder') {
       const f = folders.byId.get(view.id);
@@ -82,13 +112,14 @@ export function ItemsPane({
     if (view.kind === 'team') return folders.childrenOf(view.folderId ?? null, view.id);
     return NO_FOLDERS;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [viewKey, folders]);
+  }, [viewKey, folders, lensOn]);
 
   const { title, crumbs } = heading(view, ctx);
   const layouts = !FIXED_LAYOUT.has(view.kind);
   // Lists that span places name where each item lives (livediagram's location chip) and, on Recent and Search,
   // whose it is.
-  const showFolder = ['recent', 'favourites', 'search', 'shared'].includes(view.kind);
+  // A lensed scope lists its subfolders' items too, so each names its folder.
+  const showFolder = lensOn || ['recent', 'favourites', 'search', 'shared'].includes(view.kind);
   const showOwner = view.kind === 'recent' || view.kind === 'search';
   const options = useMemo<RowOptions>(
     () => ({ showApp: filter === 'all', showFolder, showOwner }),
@@ -131,6 +162,16 @@ export function ItemsPane({
         viewMode={layouts ? mode : undefined}
         onSetViewMode={layouts ? setMode : undefined}
       />
+      {lensKind !== null ? <LensBar parsed={parsed} showIssues={!(empty && lensOn)} /> : null}
+      {lensKind !== null ? (
+        <LensAnnouncer
+          lens={q}
+          loading={state.loading}
+          shown={state.items.length}
+          more={state.hasMore}
+          words={words}
+        />
+      ) : null}
       {view.kind === 'trash' ? <TrashNote words={words} /> : null}
       {state.error ? (
         <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200">
@@ -147,6 +188,12 @@ export function ItemsPane({
           hasMore={state.hasMore}
           loadingMore={state.loadingMore}
           onLoadMore={state.loadMore}
+        />
+      ) : empty && lensOn ? (
+        <FilteredEmpty
+          issues={parsed.issues}
+          words={words}
+          onClear={() => ctx.navigate(withLens(view, ''), { replace: true })}
         />
       ) : empty ? (
         <EmptyPane
@@ -169,6 +216,43 @@ export function ItemsPane({
 }
 
 const NO_FOLDERS: Folder[] = [];
+
+/**
+ * The lens as the list takes it, stable while the filters it sends are the same: the index's filters (Edited's
+ * cutoff worked out when the lens changed), a key, the check a changed row must still pass, and for a folder, its
+ * subtree (a lens inside a folder reaches its subfolders).
+ */
+function useListLens(
+  parsed: ParsedLens | null,
+  lensKind: 'scoped' | 'aggregate' | null,
+  view: ExplorerView,
+  folders: FolderStore,
+  viewerId: string | null,
+): ListLens | null {
+  const folderId =
+    view.kind === 'folder' ? view.id : view.kind === 'team' ? (view.folderId ?? null) : null;
+  return useMemo(() => {
+    if (!parsed || lensKind === null) return null;
+    const subtree = folderId ? subtreeOf(folders, folderId) : undefined;
+    return makeListLens(parsed.lens, lensKind, viewerId, Date.now(), subtree);
+  }, [parsed, lensKind, folderId, folders, viewerId]);
+}
+
+/** A folder and every folder under it, from the folder tree already loaded. */
+function subtreeOf(folders: FolderStore, root: string): ReadonlySet<string> {
+  const out = new Set<string>([root]);
+  const stack = [root];
+  while (stack.length > 0) {
+    const id = stack.pop()!;
+    const teamId = folders.byId.get(id)?.teamId ?? null;
+    for (const child of folders.childrenOf(id, teamId)) {
+      if (out.has(child.id)) continue;
+      out.add(child.id);
+      stack.push(child.id);
+    }
+  }
+  return out;
+}
 // Where New Folder applies: the places folders live.
 const FOLDER_VIEWS: ReadonlySet<ExplorerView['kind']> = new Set(['all', 'folder', 'team']);
 // Shared With Me and the Trash keep one layout (livediagram's fixed lists).

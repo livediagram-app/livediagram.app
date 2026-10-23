@@ -3,7 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
 import { createItemOverlay } from './overlay';
 import { useItemList } from './useItemList';
-import { viewList } from './viewLists';
+import { isLensSet, parseLens } from '../lens';
+import { makeListLens, viewList } from './viewLists';
 import type { ExplorerView } from '../views';
 
 const many = (n: number) => Array.from({ length: n }, (_, i) => makeItem(i));
@@ -13,7 +14,11 @@ function useView(
   view: ExplorerView,
   overlay = createItemOverlay(),
 ) {
-  const list = viewList(index.client, view, 'liveplanner', 'app')!;
+  // The lens a search carries, as the pane makes it.
+  const q = view.kind === 'search' ? view.q : '';
+  const parsed = parseLens(q, { view: 'aggregate', teams: [], templates: [] });
+  const lens = isLensSet(parsed.lens) ? makeListLens(parsed.lens, 'aggregate', 'user_me', 0) : null;
+  const list = viewList(index.client, view, 'liveplanner', 'app', undefined, lens)!;
   return useItemList({
     key: list.key,
     load: list.load,

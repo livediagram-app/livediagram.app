@@ -329,6 +329,10 @@ const EXPLORER_TIMELINE = new Set([
   'UI|Selected|ExplorerPanel.Timeline',
 ]);
 
+// The Explorer filters liveplanner's Explorer had and the shared one does not (docs/specs/013-workspace/
+// explorer-filters.md "Dimensions"): Opens in, which the Plans / All switch replaced, and Kind.
+const EXPLORER_RETIRED_FILTERS = new Set(['Explorer|Selected|OpensIn', 'Explorer|Selected|Kind']);
+
 // The agents' icon search (removed 2026-10-22, docs/specs/015-api/mcp-server.md): the MCP's search_icons and the CLI's
 // `icon search`, which found ids for diagram boxes.
 const AGENT_ICON_SEARCH = new Set(['Mcp|Used|SearchIcons', 'Cli|Used|IconSearch']);
@@ -408,6 +412,7 @@ export function isRetiredEvent(category: string, action: string, type: string | 
   if (category === 'Project' && action === 'Reverted') return true;
   if (CUSTOM_THEMES.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (EXPLORER_TIMELINE.has(`${category}|${action}|${type ?? ''}`)) return true;
+  if (EXPLORER_RETIRED_FILTERS.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (isPagesModeEvent(`${category}|${action}|${type ?? ''}`)) return true;
   if (isRetiredEditorModeEvent(category, action, type)) return true;
   if (category === 'UI' && PALETTE_FAVOURITES_UI.has(`${action}|${type ?? ''}`)) return true;

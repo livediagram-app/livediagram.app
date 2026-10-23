@@ -96,7 +96,9 @@ describe('Home’s hero', () => {
     renderHome(createFakeIndex(), {
       heroWords: { question: 'what shall we map?', lead: 'Your maps, close at hand.' },
     });
-    expect(await screen.findByRole('heading', { level: 1, name: /what shall we map\?$/ })).toBeTruthy();
+    expect(
+      await screen.findByRole('heading', { level: 1, name: /what shall we map\?$/ }),
+    ).toBeTruthy();
     expect(screen.getByText('Your maps, close at hand.')).toBeTruthy();
   });
 
@@ -151,7 +153,7 @@ describe('Home’s hero', () => {
 
   it('puts New inside the large search field', async () => {
     const { onCreate } = renderHome(createFakeIndex());
-    const field = await screen.findByRole('searchbox', { name: 'Search' });
+    const field = await screen.findByRole('combobox', { name: 'Filter plans' });
     expect(field.dataset.searchField).toBe('hero');
     const box = field.parentElement!;
     fireEvent.click(within(box).getByRole('button', { name: 'New Plan' }));
@@ -177,7 +179,7 @@ describe('Home’s hero', () => {
     await waitFor(() => expect(document.querySelector('[data-home-hero]')).toBeNull());
     expect(localStorage.getItem('liveworkspace:explorer-hero-hidden:liveplanner')).toBe('1');
     expect(screen.getByRole('heading', { level: 1, name: 'Home' })).toBeTruthy();
-    expect(screen.getByRole('searchbox', { name: 'Search' }).dataset.searchField).toBe('bar');
+    expect(screen.getByRole('combobox', { name: 'Filter plans' }).dataset.searchField).toBe('bar');
   });
 
   it('stays away, and asks for no count, when the host says it is hidden', async () => {

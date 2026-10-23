@@ -1,10 +1,18 @@
 // Which index list each Explorer view reads, and which items still belong in it once a change is laid over
 // them. One request a page, at most LIST_PAGE items; never a request per row or folder.
 
-import type { App, IndexClient, Item, Level } from '@liveworkspace/index-client';
+import type { App, IndexClient, Item, ItemFilters, Level } from '@liveworkspace/index-client';
 import type { ExplorerView } from '../views';
 import type { AppFilter } from '../words';
 import type { ShownItem } from './overlay';
+import {
+  compileLens,
+  filtersKey,
+  itemSubject,
+  lensFilters,
+  type Lens,
+  type LensView,
+} from '../lens';
 import { relativeSince } from '../time';
 import { LIST_PAGE, type ListLoader } from './useItemList';
 
@@ -19,7 +27,36 @@ export type ViewList = {
 
 const live = (i: ShownItem) => i.trashedAt === null;
 
-/** The list behind a view, or null for a view with no item list (Home, Inbox, Timeline). */
+/** The list's lens, as the index takes it: set, the filters sent with every page, their key (a new key reads the
+ *  list again), whether a row still matches once changed here, and a folder's subtree for a lens set inside it
+ *  (it reaches the subfolders). */
+export type ListLens = {
+  filters: ItemFilters;
+  key: string;
+  matches: (item: ShownItem) => boolean;
+  subtree?: ReadonlySet<string>;
+};
+
+/** A parsed lens as a list takes it. `now` fixes Edited's cutoff for as long as the lens stands. */
+export function makeListLens(
+  lens: Lens,
+  kind: LensView,
+  viewerId: string | null,
+  now: number,
+  subtree?: ReadonlySet<string>,
+): ListLens {
+  const filters = lensFilters(lens, kind, now);
+  const match = compileLens(lens, now, { text: false });
+  return {
+    filters,
+    key: filtersKey(filters),
+    matches: (item) => match(itemSubject(item, viewerId)),
+    ...(subtree ? { subtree } : {}),
+  };
+}
+
+/** The list behind a view, or null for a view with no item list (Home, Inbox, Timeline). With a lens, a scoped
+ *  view lists its whole scope, subfolders included, as one flat list. */
 export function viewList(
   client: IndexClient,
   view: ExplorerView,
@@ -27,21 +64,27 @@ export function viewList(
   filter: AppFilter,
   // Filled by the Shared list with each row's link details.
   sharedMeta?: Map<string, SharedMeta>,
+  lens?: ListLens | null,
 ): ViewList | null {
   const only = filter === 'app' ? app : undefined;
-  const ofApp = (i: ShownItem) => only === undefined || i.app === only;
+  const narrowed = lens ? lens.matches : () => true;
+  const ofApp = (i: ShownItem) => (only === undefined || i.app === only) && narrowed(i);
   const page = (cursor: string | null) => ({
     limit: LIST_PAGE,
     ...(cursor ? { cursor } : {}),
     ...(only ? { app: only } : {}),
+    ...lens?.filters,
   });
+  const inTree = (folder: string) => (i: ShownItem) =>
+    i.folderId !== null && (lens?.subtree ?? new Set([folder])).has(i.folderId);
   const items =
     (query: Parameters<IndexClient['listItems']>[0]): ListLoader =>
     async (cursor, signal) => {
       const res = await client.listItems({ ...query, ...page(cursor) }, { signal });
       return { items: res.items, nextCursor: res.nextCursor };
     };
-  const key = (...parts: (string | undefined)[]) => [only ?? 'all', ...parts].join(':');
+  const key = (...parts: (string | undefined)[]) =>
+    [only ?? 'all', ...parts, ...(lens ? ['lens', lens.key] : [])].join(':');
 
   switch (view.kind) {
     case 'home':
@@ -49,6 +92,15 @@ export function viewList(
     case 'timeline':
       return null;
     case 'all':
+      // With a lens: every item of mine, at any depth.
+      if (lens) {
+        return {
+          key: key('mine'),
+          load: items({ view: 'all', team: 'personal' }),
+          belongs: (i) => live(i) && ofApp(i) && i.teamId === null,
+          enabled: true,
+        };
+      }
       // My Work: my own items in no folder (its folders are rows from the folder tree).
       return {
         key: key('mine'),
@@ -109,21 +161,22 @@ export function viewList(
         belongs: (i) => i.trashedAt !== null && ofApp(i),
         enabled: true,
       };
-    case 'search': {
-      const q = view.q.trim();
+    case 'search':
+      // Every item the person can open, theirs and shared, narrowed by the lens; nothing until it narrows.
       return {
-        key: key('search', q),
-        load: items({ view: 'all', q }),
+        key: key('search'),
+        load: items({ view: 'search' }),
         belongs: (i) => live(i) && ofApp(i),
-        enabled: q.length > 0,
+        enabled: lens !== null && lens !== undefined,
       };
-    }
     case 'folder': {
       const folder = view.id;
       return {
         key: key('folder', folder),
-        load: items({ view: 'all', folder }),
-        belongs: (i) => live(i) && ofApp(i) && i.folderId === folder,
+        load: items(lens ? { view: 'all', folder, deep: true } : { view: 'all', folder }),
+        belongs: lens
+          ? (i) => live(i) && ofApp(i) && inTree(folder)(i)
+          : (i) => live(i) && ofApp(i) && i.folderId === folder,
         enabled: true,
       };
     }
@@ -132,8 +185,22 @@ export function viewList(
       if (folderId) {
         return {
           key: key('team', team, folderId),
-          load: items({ view: 'all', folder: folderId }),
-          belongs: (i) => live(i) && ofApp(i) && i.folderId === folderId,
+          load: items(
+            lens
+              ? { view: 'all', folder: folderId, deep: true }
+              : { view: 'all', folder: folderId },
+          ),
+          belongs: lens
+            ? (i) => live(i) && ofApp(i) && inTree(folderId)(i)
+            : (i) => live(i) && ofApp(i) && i.folderId === folderId,
+          enabled: true,
+        };
+      }
+      if (lens) {
+        return {
+          key: key('team', team),
+          load: items({ view: 'all', team }),
+          belongs: (i) => live(i) && ofApp(i) && i.teamId === team,
           enabled: true,
         };
       }

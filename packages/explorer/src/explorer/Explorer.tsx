@@ -24,7 +24,13 @@ import type {
   TimelineTelemetry,
   HomeTelemetry,
 } from '../types';
-import { ExplorerProvider, useExplorer as useExplorerContext, type HelpHref } from './context';
+import type { LensOption, LensTelemetryType } from '../lens';
+import {
+  ExplorerProvider,
+  useExplorer as useExplorerContext,
+  type HelpHref,
+  type NavigateOptions,
+} from './context';
 import { ExplorerDialogs } from './Dialogs';
 import { HomeHero } from './HomeHero';
 import { HomePane } from './HomePane';
@@ -40,8 +46,9 @@ export type ExplorerProps = {
   app: App;
   client: IndexClient;
   view: ExplorerView;
-  /** Go to another view; `href` is its address under `basePath`. */
-  onNavigate: (view: ExplorerView, href: string) => void;
+  /** Go to another view; `href` is its address under `basePath`. `replace`: replace the history entry rather
+   *  than add one (the filter field's writes, at most every 250 ms while typing). */
+  onNavigate: (view: ExplorerView, href: string, options?: NavigateOptions) => void;
   /** An item's address in its own app (another app's item opens there), optionally at a tab and element. */
   itemHref: ItemHref;
   /** New: make an item of this app's kind at this placement, then open it. */
@@ -88,6 +95,11 @@ export type ExplorerProps = {
   onTimeline?: TimelineTelemetry;
   /** Home's What Happened reports (an entry opened, a summary dealt out), for the host's telemetry. */
   onHome?: HomeTelemetry;
+  /** The filter lens's Template values: the host app's template families, matched against the last word of each
+   *  item's creation intent. Without them there is no Template filter. */
+  lensTemplates?: readonly LensOption[];
+  /** A facet of the filter lens gained a value (`Explorer / Selected / <Facet>`), for the host's telemetry. */
+  onLensSelected?: (type: LensTelemetryType) => void;
 };
 
 const FILTER_KEY = (app: App) => `liveworkspace:explorer-filter:${app}`;
@@ -181,6 +193,8 @@ function ExplorerInner({
   trashedOnArrival,
   onTimeline,
   onHome,
+  lensTemplates,
+  onLensSelected,
 }: ExplorerProps) {
   const [filter, setFilter] = useFilter(app, controlledFilter, onFilterChange);
   const [heroHidden, hideHero] = useHeroHidden(app, controlledHeroHidden, onHideHero);
@@ -188,9 +202,10 @@ function ExplorerInner({
   const hero = useHeroPresence(heroOnHome);
   const [navOpen, setNavOpen] = useState(false);
   const navigate = useCallback(
-    (v: ExplorerView, href: string) => {
+    (v: ExplorerView, href: string, options?: NavigateOptions) => {
       setNavOpen(false);
-      onNavigate(v, href);
+      if (options) onNavigate(v, href, options);
+      else onNavigate(v, href);
     },
     [onNavigate],
   );
@@ -218,6 +233,8 @@ function ExplorerInner({
       heroWords={heroWords}
       onTimeline={onTimeline}
       onHome={onHome}
+      lensTemplates={lensTemplates}
+      onLensSelected={onLensSelected}
     >
       <div data-explorer="" className="flex min-w-0 flex-1 flex-col">
         {header ? (

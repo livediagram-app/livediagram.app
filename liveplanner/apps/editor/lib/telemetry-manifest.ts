@@ -67,6 +67,8 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Error·Client',
   // A degradation the load was carried through rather than stopped by (lib/api/error-report.ts).
   'Error·Warning',
+  // The Explorer's filter lens (docs/specs/013-workspace/explorer-filters.md "Telemetry"): a facet that gained a value.
+  'Explorer·Selected',
   'Folder·Created',
   'Folder·Renamed',
   'Form·Added',

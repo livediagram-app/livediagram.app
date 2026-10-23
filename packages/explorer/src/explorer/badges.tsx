@@ -1,7 +1,7 @@
 'use client';
 
 // The marks an item carries in rows, cards and its menu header (liveplanner's project-badges.tsx): the
-// visibility badge (Shared, Team, Private), the favourite star, the folder chip, and, in the All filter,
+// visibility badge (Shared, Team, Private), Made by AI, the favourite star, the folder chip, and, in the All filter,
 // which app it belongs to.
 
 import { memo, type MouseEvent } from 'react';
@@ -10,6 +10,7 @@ import {
   FolderOutlineIcon,
   PrivateBadgeGlyph,
   SharedDotGlyph,
+  SparkleIcon,
   StarIcon,
   TeamBadgeGlyph,
 } from '../ui/icons';
@@ -48,6 +49,21 @@ export function VisibilityBadge({ item }: { item: Pick<Item, 'sharedVia' | 'team
     >
       <PrivateBadgeGlyph />
       Private
+    </span>
+  );
+}
+
+/** An item an AI tool made through MCP (its source is `ai`): what the Made by AI filter reads, shown. */
+export function MadeByAiBadge({ item }: { item: Pick<Item, 'source'> }) {
+  if (item.source !== 'ai') return null;
+  return (
+    <span
+      data-made-by-ai=""
+      title="Made by AI: an AI tool made it."
+      className="inline-flex shrink-0 items-center gap-1 rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-semibold text-violet-700 ring-1 ring-violet-200 dark:bg-violet-500/10 dark:text-violet-300 dark:ring-violet-500/30"
+    >
+      <SparkleIcon size={10} />
+      Made by AI
     </span>
   );
 }

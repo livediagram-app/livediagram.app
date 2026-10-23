@@ -82,6 +82,7 @@ export const HELP_ARTICLES = {
   timeline: 'explorer/timeline',
   teamSpaces: 'explorer/team-spaces',
   explorerPage: 'explorer/explorer-page',
+  explorerFilters: 'explorer/filters',
   dataElements: 'plan/visualisations',
   sankeyDiagram: 'plan/visualisations',
   // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md).
@@ -264,6 +265,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   inbox: {
     title: 'Learn about the Inbox',
     description: 'Comments and actions that wait on you, from every app.',
+  },
+  explorerFilters: {
+    title: 'Learn about search and filters',
+    description: 'Narrow any list with words, chips or typed filters like made-by:ai.',
   },
   timeline: {
     title: 'Learn about the Timeline',
