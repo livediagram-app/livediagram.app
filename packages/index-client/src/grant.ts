@@ -34,7 +34,7 @@ export function createGrantVerifier(options: GrantVerifierOptions) {
         ...(options.issuer ? { issuer: options.issuer } : {}),
         requiredClaims: ['iss', 'sub', 'exp', 'iat', 'jti'],
       });
-      const { iss, aud, sub, item, level, tab, team, iat, exp, jti } = payload as Record<
+      const { iss, aud, sub, item, level, tab, team, owner, iat, exp, jti } = payload as Record<
         string,
         unknown
       >;
@@ -48,13 +48,26 @@ export function createGrantVerifier(options: GrantVerifierOptions) {
         !isLevel(level) ||
         !nullableString(tab) ||
         !nullableString(team) ||
+        (owner !== undefined && (typeof owner !== 'string' || owner.length === 0)) ||
         typeof iat !== 'number' ||
         typeof exp !== 'number' ||
         typeof jti !== 'string'
       ) {
         return null;
       }
-      return { iss, aud, sub, item, level, tab, team, iat, exp, jti };
+      return {
+        iss,
+        aud,
+        sub,
+        item,
+        level,
+        tab,
+        team,
+        ...(owner === undefined ? {} : { owner }),
+        iat,
+        exp,
+        jti,
+      };
     } catch {
       return null;
     }

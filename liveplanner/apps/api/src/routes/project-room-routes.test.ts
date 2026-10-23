@@ -77,6 +77,8 @@ const SPOOFED = {
   'X-Verified-Adder': 'evil',
   'X-Verified-Project': 'evil',
   'X-Verified-Grant-Exp': '99999999999',
+  'X-Verified-Owner': 'user_evil',
+  'X-Verified-Team': 'team_evil',
 };
 
 async function upgrade(env: Env, path: string) {
@@ -88,7 +90,7 @@ async function upgrade(env: Env, path: string) {
 describe('WebSocket upgrade', () => {
   it("admits an owner's grant as an editor, overwriting every spoofed trust header", async () => {
     const { env, seen } = roomEnv();
-    const t = grantFor({ item: 'p1', sub: 'user_a', level: 'edit' });
+    const t = grantFor({ item: 'p1', sub: 'user_a', level: 'edit', owner: 'user_o', team: 't1' });
     const res = await upgrade(env, `/api/projects/p1/ws?t=${encodeURIComponent(t)}`);
     expect(res?.status).toBe(REACHED_ROOM);
     const h = seen[0]!.headers;
@@ -100,6 +102,9 @@ describe('WebSocket upgrade', () => {
     expect(h.get('X-Verified-Adder')).toBe('');
     expect(h.get('X-Verified-Project')).toBe('p1');
     expect(h.get('X-Verified-Grant-Exp')).toBe(String(NOW + 600));
+    // The plan's owner and team as the index has them, for the room's own copy.
+    expect(h.get('X-Verified-Owner')).toBe('user_o');
+    expect(h.get('X-Verified-Team')).toBe('t1');
   });
 
   it('never reaches the room without a ticket, with a forged one, or with a lapsed one', async () => {

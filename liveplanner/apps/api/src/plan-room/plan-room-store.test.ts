@@ -297,6 +297,48 @@ describe("a plan's content lives in its own Durable Object", () => {
   });
 });
 
+describe("the plan's owner and team, from the index's grant", () => {
+  const grantNaming = (owner: string | undefined, team: string | null) =>
+    `G.${btoa(JSON.stringify({ item: 'A', sub: 'user_merged', level: 'edit', tab: null, team, owner, exp: 9e9 }))}`;
+  const head = (plan: Plan) => plan.db.prepare('SELECT owner_id, team_id FROM plan').get();
+  const cardsQueued = (plan: Plan) =>
+    plan.db.prepare("SELECT 1 FROM outbox WHERE kind = 'tab' AND key = '~cards'").all().length;
+
+  it("takes a guest's merge and a team move from the next request's grant, and re-pushes the cards", async () => {
+    const w = world();
+    await createPlan(w, 'A');
+    const plan = w.plans.get('A')!;
+    plan.db.exec('DELETE FROM outbox');
+
+    const merged = await w.send('GET', '/api/projects/A/tabs/t1', undefined, {
+      'X-Index-Grant': grantNaming('user_merged', null),
+    });
+    expect(merged.status).toBe(200);
+    expect(head(plan)).toEqual({ owner_id: 'user_merged', team_id: null });
+    expect(cardsQueued(plan)).toBe(1);
+
+    await w.send('GET', '/api/projects/A/tabs/t1', undefined, {
+      'X-Index-Grant': grantNaming('user_merged', 'team_1'),
+    });
+    expect(head(plan)).toEqual({ owner_id: 'user_merged', team_id: 'team_1' });
+  });
+
+  it('leaves the copy alone for a grant that names no owner, or says the same', async () => {
+    const w = world();
+    await createPlan(w, 'A');
+    const plan = w.plans.get('A')!;
+    plan.db.exec('DELETE FROM outbox');
+    await w.send('GET', '/api/projects/A/tabs/t1', undefined, {
+      'X-Index-Grant': grantNaming(undefined, 'team_1'),
+    });
+    await w.send('GET', '/api/projects/A/tabs/t1', undefined, {
+      'X-Index-Grant': grantNaming('guest_owner', null),
+    });
+    expect(head(plan)).toEqual({ owner_id: 'guest_owner', team_id: null });
+    expect(cardsQueued(plan)).toBe(0);
+  });
+});
+
 describe('/api/internal/items (docs/specs/015-api/api.md "Internal")', () => {
   const auth = { Authorization: 'Bearer index-key' };
 

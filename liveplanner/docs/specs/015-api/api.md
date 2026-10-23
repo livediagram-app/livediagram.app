@@ -273,7 +273,12 @@ plan id. liveplanner has no D1: where a plan is and who may reach it is the inde
 
 **What the plan's object holds** (`plan-schema.ts`, created on first use, `CREATE ... IF NOT EXISTS`):
 
-- `plan`: the plan's own row: item type catalogue, the item counters, `saved_at`, `created_at`.
+- `plan`: the plan's own row: item type catalogue, the item counters, `saved_at`, `created_at`, and a copy of its
+  name, owner and team for the work it does with no request in hand (emails, Inbox pushes, the alarm). The index
+  decides the owner and team; every grant names both, and the object takes them from each grant it is handed (a
+  socket's ticket, a renewal, an API request's grant; `createItemHeadSync` in `@liveworkspace/index-app`), so a
+  guest's merge into an account or a move to another team reaches the plan the next time anyone opens it. A change
+  re-pushes the plan's cards to the Inbox.
 - `tabs` (the body, one JSON row per tab) and `plan_tabs` (order and folder), with `tab_stats` (the Details view's
   numbers).
 - `items` (Plan cards; board columns live on the board elements in the tab bodies).

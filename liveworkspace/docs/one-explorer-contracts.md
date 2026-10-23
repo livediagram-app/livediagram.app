@@ -230,11 +230,17 @@ A grant is a JWT, ES256, signed by the index's own key; its public keys are at `
   "level": "edit",
   "tab": null,
   "team": null,
+  "owner": "user_…",
   "iat": 0,
   "exp": 0,
   "jti": "…"
 }
 ```
+
+`team` and `owner` are the item's team and owner as the index has them when it signs. The item's Durable Object
+keeps its own copy of both (for its emails, its pushes and its alarm), and takes it from every grant it is handed
+(`@liveworkspace/index-app` `createItemHeadSync`), so a guest's merge into an account or a move to another team
+reaches the item the next time anyone opens it.
 
 It lasts 10 minutes. The editor fetches it while the item's code loads and asks for a fresh one a minute
 before it runs out; the item's Durable Object checks each against the cached keys and drops a socket

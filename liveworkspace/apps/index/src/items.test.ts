@@ -459,6 +459,7 @@ describe('grants', () => {
       level: 'edit',
       tab: null,
       team: null,
+      owner: 'user_a',
     });
     expect(claims!.exp - claims!.iat).toBe(600);
     expect(await (await verifierFor('livediagram'))(grant.grant)).toBeNull();
@@ -475,6 +476,8 @@ describe('grants', () => {
       sub: 'user_b',
       level: 'edit',
       team: 'team1',
+      // The item's owner, not the caller: the item keeps it (@liveworkspace/index-app item-head.ts).
+      owner: 'user_a',
     });
   });
 

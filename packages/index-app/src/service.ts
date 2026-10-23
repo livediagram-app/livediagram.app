@@ -42,6 +42,8 @@ export type ItemGrant = {
   // `user_…`, `guest_…`, or `link:<code>` for a link visitor with no identity.
   sub: string;
   team: string | null;
+  // The item's owner as the index has it now (null from a grant signed before the index named it).
+  owner?: string | null;
   // Epoch seconds.
   exp: number;
   shareCode: string | null;
@@ -77,6 +79,7 @@ export function itemGrantOf(
     tab: claims.tab,
     sub: claims.sub,
     team: claims.team,
+    owner: claims.owner ?? null,
     exp: claims.exp,
     shareCode: linkCodeOf(claims.sub) ?? shareCode,
   };

@@ -60,6 +60,15 @@ describe('createGrantVerifier', () => {
     expect(out!.exp - out!.iat).toBe(600);
   });
 
+  it("reads the item's owner, and a grant signed before it was named", async () => {
+    expect(await verify(await grant({ owner: 'user_9' }))).toMatchObject({ owner: 'user_9' });
+    const before = await verify(await grant());
+    expect(before).not.toBeNull();
+    expect(before).not.toHaveProperty('owner');
+    await expect(verify(await grant({ owner: 7 }))).resolves.toBeNull();
+    await expect(verify(await grant({ owner: '' }))).resolves.toBeNull();
+  });
+
   it("refuses another app's grant", async () => {
     await expect(verify(await grant({}, { aud: 'livediagram' }))).resolves.toBeNull();
   });

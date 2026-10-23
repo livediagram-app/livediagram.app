@@ -78,6 +78,9 @@ type VerifiedSession = {
   adderKey: string | null;
   projectId: string | null;
   grantExp?: number | null;
+  // The plan's owner and team as the grant names them (null owner: a grant that names none). Not pinned to the
+  // session: the room takes them as its own copy (plan-room.ts takeHead).
+  head?: { owner: string | null; team: string | null };
 };
 
 // The grant's `exp` (epoch seconds) as epoch ms, or null.
@@ -104,6 +107,7 @@ export function verifiedSessionOf(request: Request): VerifiedSession {
     adderKey: header('X-Verified-Adder'),
     projectId: header('X-Verified-Project'),
     grantExp: grantExpOf(request.headers.get('X-Verified-Grant-Exp')),
+    head: { owner: header('X-Verified-Owner'), team: header('X-Verified-Team') },
   };
 }
 

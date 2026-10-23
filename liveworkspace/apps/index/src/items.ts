@@ -307,6 +307,7 @@ export async function createItem(ctx: PersonContext): Promise<Response> {
     itemId: row.id,
     level: 'edit',
     tabId: null,
+    ownerId: row.owner_id,
     teamId,
   });
   console.log('[index] created', {
@@ -733,6 +734,7 @@ async function grantItem(ctx: RouteContext, id: string): Promise<Response> {
     itemId: row.id,
     level: access.level,
     tabId: access.tabId,
+    ownerId: row.owner_id,
     teamId: row.team_id,
   });
   if (!grant) return fail(503, 'grants_unavailable');

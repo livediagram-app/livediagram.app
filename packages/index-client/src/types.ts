@@ -252,6 +252,8 @@ export type GrantClaims = {
   level: Level;
   tab: string | null;
   team: string | null;
+  // The item's owner as the index has it now. Absent from a grant signed before the index named it.
+  owner?: string;
   iat: number;
   exp: number;
   jti: string;

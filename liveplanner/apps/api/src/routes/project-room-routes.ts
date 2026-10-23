@@ -73,6 +73,9 @@ export async function handleProjectRoomRoutes(ctx: RouteContext): Promise<Respon
     // When the grant lapses (epoch seconds): the room asks for a fresh one before then, and drops the socket
     // after (plan-room.ts).
     forwarded.headers.set('X-Verified-Grant-Exp', String(claims.exp));
+    // The plan's owner and team as the index has them now: the room keeps its copy from these.
+    forwarded.headers.set('X-Verified-Owner', claims.owner ?? '');
+    forwarded.headers.set('X-Verified-Team', claims.team ?? '');
     const stub = env.PLAN_ROOM.get(env.PLAN_ROOM.idFromName(id));
     return stub.fetch(forwarded);
   }

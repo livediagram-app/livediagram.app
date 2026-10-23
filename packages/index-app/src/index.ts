@@ -16,3 +16,4 @@ export * from './room-ticket';
 export * from './tabs';
 export * from './forms';
 export * from './cards';
+export * from './item-head';

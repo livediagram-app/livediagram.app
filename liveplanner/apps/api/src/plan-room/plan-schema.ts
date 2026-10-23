@@ -329,7 +329,8 @@ BEGIN
   DELETE FROM outbox WHERE (plan_id, kind, key) IN (SELECT plan_id, 'tab', '~cards' FROM plan_tabs WHERE tab_id = NEW.id);
   INSERT INTO outbox (plan_id, kind, key) SELECT plan_id, 'tab', '~cards' FROM plan_tabs WHERE tab_id = NEW.id;
 END;
-CREATE TRIGGER IF NOT EXISTS outbox_cards_types AFTER UPDATE OF item_types ON plan
+CREATE TRIGGER IF NOT EXISTS outbox_cards_plan AFTER UPDATE OF item_types, owner_id, team_id ON plan
+  WHEN OLD.item_types IS NOT NEW.item_types OR OLD.owner_id IS NOT NEW.owner_id OR OLD.team_id IS NOT NEW.team_id
 BEGIN
   DELETE FROM outbox WHERE plan_id = NEW.id AND kind = 'tab' AND key = '~cards';
   INSERT INTO outbox (plan_id, kind, key) VALUES (NEW.id, 'tab', '~cards');
@@ -357,5 +358,7 @@ export function migratePlanSchema(exec: Exec): void {
 // Whether the plan's SQLite holds a schema at all: a read that writes nothing, for a Durable Object woken
 // by an id with no plan behind it.
 export function hasPlanSchema(exec: Exec): boolean {
-  return exec("SELECT 1 AS present FROM sqlite_master WHERE name = '_plan_schema'").toArray().length > 0;
+  return (
+    exec("SELECT 1 AS present FROM sqlite_master WHERE name = '_plan_schema'").toArray().length > 0
+  );
 }

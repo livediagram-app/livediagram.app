@@ -70,6 +70,9 @@ export type GrantSubject = {
   itemId: string;
   level: Level;
   tabId: string | null;
+  // The item's owner and team as the index has them now: the item's Durable Object takes its copy from these
+  // (@liveworkspace/index-app item-head.ts), so a guest's merge or a team move reaches it on the next grant.
+  ownerId: string;
   teamId: string | null;
 };
 
@@ -83,6 +86,7 @@ export async function mintGrant(env: Env, subject: GrantSubject): Promise<GrantR
     level: subject.level,
     tab: subject.tabId,
     team: subject.teamId,
+    owner: subject.ownerId,
   })
     .setProtectedHeader({ alg: GRANT_ALG, kid: key.kid, typ: 'JWT' })
     .setIssuer(grantIssuer(env))
