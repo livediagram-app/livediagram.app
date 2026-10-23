@@ -25,7 +25,6 @@ import {
   accountDeletedEmail,
   activationEmail,
   commentNotificationEmail,
-  tokenExpiringEmail,
   week1Email,
   week2Email,
   welcomeEmail,
@@ -73,7 +72,6 @@ describe.skipIf(!ENABLED)('live email send (manual harness)', () => {
     'win-back': winBackEmail(env),
     // Transactional
     'account-deleted': accountDeletedEmail(env),
-    'token-expiry': tokenExpiringEmail(env, 'CI deploy token', Date.UTC(2026, 0, 5)),
     // Opt-out notifications
     'comment-notification': commentNotificationEmail(env, 'Q3 Roadmap', 'diagram-id-123', 'Anna'),
   };

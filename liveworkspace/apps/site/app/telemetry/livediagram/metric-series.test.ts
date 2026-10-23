@@ -48,7 +48,7 @@ describe('the Emails Sent stack', () => {
   const kinds = [...union.matchAll(/'([A-Za-z0-9]+)'/g)].map((m) => m[1]);
 
   it('reads the template kinds', () => {
-    expect(kinds.length).toBeGreaterThan(10);
+    expect(kinds.length).toBeGreaterThan(5);
   });
 
   it('has one chart per email template, the onboarding series the accounts Worker sends among them', () => {

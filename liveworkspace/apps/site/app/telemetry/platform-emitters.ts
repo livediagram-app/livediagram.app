@@ -3,7 +3,9 @@
 // email under the app it speaks for (liveworkspace/apps/accounts src/telemetry.ts), so an app's
 // Welcome, Week 1, Week 2, Activation and Win-Back charts are fed from there as well as, or instead
 // of, the app's own api. Its team invitations, reminders and answers likewise feed the Team Invites,
-// Invite Reminders and Invite Responses charts, under the app the inviter signed up through. Each app's scan covers only its own folder, so it adds these.
+// Invite Reminders and Invite Responses charts, under the app the inviter signed up through, and its
+// expiring-token warnings the Token Expiry Warnings chart, under the app the token's owner signed up
+// through. Each app's scan covers only its own folder, so it adds these.
 
 import { resolve } from 'node:path';
 import { scanEmitters, type Emit } from './livediagram/emitter-scan';

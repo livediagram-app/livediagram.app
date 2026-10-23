@@ -77,6 +77,12 @@ CREATE TABLE api_token (
   createdAt  INTEGER NOT NULL,
   lastUsedAt INTEGER,
   expiresAt  INTEGER NOT NULL,
-  revokedAt  INTEGER
+  revokedAt  INTEGER,
+  -- When its owner was warned it expires soon (liveworkspace/docs/accounts.md "API tokens"): once per
+  -- token, so the daily run never warns twice.
+  expiryWarnedAt INTEGER
 );
 CREATE INDEX api_token_user_idx ON api_token (userId);
+-- The daily expiry warning's list: live tokens not yet warned, soonest to expire first.
+CREATE INDEX api_token_expiry_warning_idx ON api_token (expiresAt)
+  WHERE revokedAt IS NULL AND expiryWarnedAt IS NULL;

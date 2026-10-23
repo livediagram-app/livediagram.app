@@ -138,6 +138,27 @@ the account, its verified email, read-only and the account's teams. `createToken
 ten seconds), so a burst of MCP calls costs one check; it is also how long a revoked token can go on
 working in an isolate that had just checked it.
 
+### Expiry warnings
+
+A week before a token expires, its owner is emailed once about it, so a script or connected AI tool
+doesn't stop without warning (`src/token-expiry.ts`, the email in `src/email.ts`). It is an account
+message, so it can't be turned off.
+
+- **The email**, "Your liveworkspace API token expires soon", names the token and the day it
+  expires, says what stops working when it lapses, and gives the three steps: make a fresh token,
+  update whatever uses the old one, revoke the old one. Its button, "Manage your tokens", goes to
+  `<BASE_URL>/account/tokens`. Tokens last six months, and this is the only reminder sent for each.
+- **Sending.** The daily cron (`17 9 * * *`) picks the live tokens (not revoked, not expired) that
+  expire within seven days and haven't been warned, whose owner has a verified address: at most 100
+  a run, the soonest to expire first, in one query on a partial index holding only those not yet
+  warned, each joined by primary key to its owner. The emails go one at a time, then one write
+  stamps every token whose email went (`api_token.expiryWarnedAt`), so none is warned twice. A failed
+  send isn't stamped, and the next day's run tries it again while the token is still in its week.
+- **Telemetry.** Each warning sent is counted as `Email·Sent·TokenExpiring`, the kind the apps used,
+  under the app the token's owner signed up through, as the team emails are; an owner who signed up
+  on liveworkspace.app, or before the sign-up app was recorded, isn't counted. The events go with the
+  daily run's one batch per app.
+
 ## Guests
 
 Someone using an app without an account is a guest, and the guest is the same person in every app

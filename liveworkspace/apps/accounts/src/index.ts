@@ -16,6 +16,7 @@ import { SIGN_IN_OPTIONS_PATH, signInOptions } from './sign-in-options.ts';
 import { sendEmail, sendTeamInviteEmail } from './email.ts';
 import { runLifecycle, sendWelcomes, takeWelcomes, type SendEmail } from './lifecycle.ts';
 import { sweepInvitations } from './teams.ts';
+import { sweepExpiringTokens } from './token-expiry.ts';
 import { flushServerEvents, flushServerEventsAfter } from './telemetry.ts';
 
 // The accounts API. Only the paths routed to this Worker reach it (wrangler.toml): /api/auth/*,
@@ -92,7 +93,8 @@ export default {
   // Every 15 minutes (wrangler.toml): closed accounts' purges the index hasn't taken yet are sent
   // again, and welcomes that failed are tried again; once a day the rest of the onboarding series goes
   // (liveworkspace/docs/accounts.md "Onboarding emails"). Once a day as well: team invitations nobody answered expire, and the rest hear their
-  // reminders (liveworkspace/docs/accounts.md "Reminders and expiry"); and the settings and profiles
+  // reminders (liveworkspace/docs/accounts.md "Reminders and expiry"); owners of API tokens that expire
+  // within a week are warned, once per token ("API tokens"); and the settings and profiles
   // of guests who can never come back are deleted ("Guests who never come back").
   async scheduled(controller: ScheduledController, env: Env): Promise<void> {
     const purges = await retryPendingPurges(env.AUTH_DB, indexPurgeConfig(env));
@@ -120,9 +122,18 @@ export default {
         app: reminder.inviterApp,
       }),
     );
-    // The reminders that went, one batch per app once the sweep is done.
-    await flushServerEvents(env);
     console.log('[teams] invitation sweep', JSON.stringify(result));
+    try {
+      const tokens = await sweepExpiringTokens(env.AUTH_DB, env, (email) => sendEmail(env, email));
+      if (tokens.sent + tokens.failed > 0) {
+        console.log('[tokens] expiry warnings', JSON.stringify(tokens));
+      }
+    } catch (error) {
+      console.error('[tokens] expiry warning sweep failed', error);
+    } finally {
+      // The reminders and warnings that went, one batch per app once both sweeps are done.
+      await flushServerEvents(env);
+    }
     // Guests who can never come back: what is kept against their ids goes (src/guest-sweep.ts).
     const guests = await sweepIdleGuests(env.AUTH_DB);
     if (guests > 0) console.log('[guests] idle guests swept', guests);

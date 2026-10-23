@@ -74,7 +74,6 @@ export type EmailKind =
   | 'Mentioned'
   | 'FormResponse'
   | 'FormSuspended'
-  | 'TokenExpiring'
   | 'AccountDeleted';
 
 export type RenderedEmail = {
@@ -262,52 +261,6 @@ const escapeHtml = xmlEscape;
 
 function escapeText(s: string): string {
   return s.replace(/[\r\n]+/g, ' ').slice(0, 80);
-}
-
-// docs/specs/014-identity/transactional-email.md (#3): a one-time heads-up that an API token (docs/specs/015-api/public-api-and-tokens.md) is within a week
-// of its 6-month expiry, so a script / connected tool doesn't silently break.
-// Transactional (account-important); not opt-out.
-const EXPIRY_MONTHS = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-];
-export function tokenExpiringEmail(
-  env: Env,
-  tokenName: string | null,
-  expiresAt: number,
-): RenderedEmail {
-  const base = appBaseUrl(env);
-  const name = tokenName && tokenName.trim() ? escapeHtml(tokenName.trim()) : 'an API token';
-  const d = new Date(expiresAt);
-  const when = `${EXPIRY_MONTHS[d.getUTCMonth()]!} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
-  return {
-    kind: 'TokenExpiring',
-    subject: 'Your liveplanner API token expires soon',
-    html: shell(env, {
-      heading: 'An API token is about to expire',
-      intro: `Your API token <strong>${name}</strong> expires on ${when}. Once it lapses, any script or connected tool using it will stop being able to reach your plans.`,
-      points: [
-        'Create a fresh token in Settings, API Tokens before this one expires.',
-        'Update whatever uses it (your scripts, or a connected AI tool) with the new token.',
-        'Revoke the old token once the switch is done.',
-      ],
-      outro: 'Tokens last six months; this is the only reminder we send for each one.',
-      ctaText: 'Manage your tokens',
-      ctaHref: `${base}/explorer?settings=tokens`,
-      footer:
-        'You’re receiving this because an API token on your liveplanner account is nearing its expiry.',
-    }),
-  };
 }
 
 // docs/specs/014-identity/transactional-email.md (#4): a gentle nudge for someone who signed up but hasn't created a

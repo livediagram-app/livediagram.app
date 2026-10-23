@@ -27,7 +27,6 @@ import {
   documentJoinedEmail,
   firstShareEmail,
   milestoneEmail,
-  tokenExpiringEmail,
 } from './templates';
 
 function devVars(): Record<string, string> {
@@ -68,7 +67,6 @@ describe.skipIf(!ENABLED)('live email send (manual harness)', () => {
     'first-share': firstShareEmail(env),
     // Transactional
     'account-deleted': accountDeletedEmail(env),
-    'token-expiry': tokenExpiringEmail(env, 'CI deploy token', Date.UTC(2026, 0, 5)),
     // Opt-out notifications
     'comment-notification': commentNotificationEmail(env, 'Q3 Roadmap', 'diagram-id-123', 'Anna'),
     'document-joined': documentJoinedEmail(env, 'Q3 Roadmap', 'Anna'),

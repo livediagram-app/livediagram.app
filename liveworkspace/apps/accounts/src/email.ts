@@ -200,3 +200,57 @@ export async function sendInviteResponseEmails(
     }),
   );
 }
+
+const EXPIRY_MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+
+// To a token's owner a week before it expires (token-expiry.ts), so a script or connected AI tool
+// doesn't stop without warning. An account message, sent once per token: it can't be turned off.
+export function tokenExpiringEmail(baseUrl: string, tokenName: string, expiresAt: number) {
+  const name = tokenName.trim();
+  const which = (n: string) => (name ? `Your API token ${n}` : 'One of your API tokens');
+  const d = new Date(expiresAt);
+  const when = `${EXPIRY_MONTHS[d.getUTCMonth()]!} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
+  const link = `${origin(baseUrl)}/account/tokens`;
+  const subject = 'Your liveworkspace API token expires soon';
+  const rest = `expires on ${when}. Once it lapses, any script or connected AI tool using it will stop being able to reach your work in the liveworkspace apps.`;
+  const lead = `${which(name)} ${rest}`;
+  const steps = [
+    'Make a fresh token on your account’s Tokens page before this one expires.',
+    'Update whatever uses it (your scripts, or a connected AI tool) with the new token.',
+    'Revoke the old token once the switch is done.',
+  ];
+  const outro = 'Tokens last six months; this is the only reminder we send for each one.';
+  const footer =
+    'You’re receiving this because an API token on your liveworkspace account is nearing its expiry.';
+  const text = [
+    lead,
+    '',
+    ...steps.map((s) => `- ${s}`),
+    '',
+    `Manage your tokens: ${link}`,
+    '',
+    outro,
+    footer,
+  ].join('\n');
+  const html = `<!doctype html><html><body style="font-family:system-ui,sans-serif;color:#111;padding:24px">
+<p>${which(`<strong>${escapeHtml(name)}</strong>`)} ${rest}</p>
+<ol>${steps.map((s) => `<li>${s}</li>`).join('')}</ol>
+<p style="margin:24px 0"><a href="${link}" style="background:#0f172a;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none">Manage your tokens</a></p>
+<p style="color:#555">${outro}</p>
+<p style="color:#555">${footer}</p>
+</body></html>`;
+  return { subject, text, html };
+}
