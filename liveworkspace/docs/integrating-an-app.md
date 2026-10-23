@@ -170,6 +170,7 @@ once per environment with its callback on each origin it serves:
 ADMIN_TOKEN=… node apps/accounts/scripts/register-client.ts \
   --accounts https://liveworkspace.app \
   --name liveplanner \
+  --app liveplanner.app \
   --redirect https://www.liveplanner.app/api/auth/callback \
   --redirect https://liveplanner.app/api/auth/callback \
   --resource https://liveplanner.app/api

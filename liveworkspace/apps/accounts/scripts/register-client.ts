@@ -4,6 +4,7 @@
 //   ADMIN_TOKEN=… node scripts/register-client.ts \
 //     --accounts https://liveworkspace.app \
 //     --name livediagram \
+//     --app livediagram.app \
 //     --redirect https://www.livediagram.app/auth/callback \
 //     --redirect https://livediagram.app/auth/callback \
 //     --resource https://livediagram.app/api
@@ -15,13 +16,15 @@ const { values } = parseArgs({
     name: { type: 'string' },
     redirect: { type: 'string', multiple: true },
     resource: { type: 'string' },
+    // The app it is, as @liveworkspace/sites spells it: what of a person's it may reach.
+    app: { type: 'string' },
   },
 });
 
 const adminToken = process.env.ADMIN_TOKEN;
-if (!adminToken || !values.name || !values.redirect?.length || !values.resource) {
+if (!adminToken || !values.name || !values.redirect?.length || !values.resource || !values.app) {
   console.error(
-    'Needs ADMIN_TOKEN in the environment, plus --name, --redirect (1+) and --resource.',
+    'Needs ADMIN_TOKEN in the environment, plus --name, --app, --redirect (1+) and --resource.',
   );
   process.exit(1);
 }
@@ -33,6 +36,7 @@ const response = await fetch(new URL('/api/auth/internal/clients', values.accoun
     name: values.name,
     redirectUris: values.redirect,
     resource: values.resource,
+    app: values.app,
   }),
 });
 const body = await response.text();

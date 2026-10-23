@@ -195,8 +195,9 @@ the settings as they now are.
   `POST /api/account/internal/settings/read` and `.../settings/write` (`readSettings` and
   `writeSettings` in `@liveworkspace/auth-client`). It names the owner: an id it has already verified,
   an access token's `sub` or a guest token's, the same trust as the teams feed. The owner must look
-  like an account id (`user_…`) or a guest id (`guest_<uuid>`). Any app may read or write any app's
-  scope, and `all`.
+  like an account id (`user_…`) or a guest id (`guest_<uuid>`). An app reads and writes its own
+  scope and `all`, and no other app's: naming another app is `403 wrong_app`
+  ([Which app a client is](#which-app-a-client-is)).
 - **liveworkspace.app** reads and patches the signed-in person's `all` scope with their session
   cookie: `GET` and `PATCH /api/account/settings`.
 
@@ -237,6 +238,28 @@ The account is closed whatever the index answers. A request it doesn't take (an 
 the Worker's cron sends it again every 15 minutes (`*/15 * * * *`, 25 a run, the longest-waiting first)
 until it lands. Each failure is logged, as an error from the third on. The index's purge is idempotent,
 so a request sent twice does no harm.
+
+## Which app a client is
+
+Each app's OAuth client is registered as that app (`--app livediagram.app` to
+`scripts/register-client.ts`; the `oauth_client_app` table, `migrations/0005_client_apps.sql`). What
+belongs to one app is reached only by that app's client: its settings scope (beside `all`), and its own
+sign-up sightings and milestones. Every other internal route (tokens, the teams feed, profiles, emails)
+serves any of our clients. A client with no app is refused the per-app routes with
+`403 client_has_no_app`. The app is looked up with the client's credentials and remembered with them per
+isolate for five minutes, so it costs one primary-key read per five minutes per client.
+
+`scripts/map-clients.ts` sets the app for a client registered without one. Run with `--local` (or
+`--remote`, with `--env staging` for staging), it gives every client named after an app
+(`livediagram`, or `livediagram-dev` as the local setup registers it) that app; with
+`--client <id> --app <site id>` it sets one. After pulling this change, run it once against your local
+database so the local dev clients keep working:
+
+```sh
+cd liveworkspace/apps/accounts
+corepack pnpm db:migrate:local
+node scripts/map-clients.ts --local
+```
 
 ## The API
 

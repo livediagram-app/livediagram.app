@@ -8,7 +8,14 @@ import { AUTH_BASE_PATH } from './auth-options.ts';
 import type { Auth } from './auth.ts';
 import type { Env } from './env.ts';
 import { sendInviteResponseEmails, sendTeamInviteEmail } from './email.ts';
-import { isSettingsApp, isSettingsOwner, readSettings, writeSettings } from './settings.ts';
+import { clientApp } from './clients.ts';
+import {
+  isSettingsApp,
+  isSettingsOwner,
+  readSettings,
+  writeSettings,
+  type SettingsApp,
+} from './settings.ts';
 import {
   answerInvitation,
   clearInviteLink,
@@ -309,10 +316,11 @@ async function handleSignedIn(
 
 // --- The apps' servers ---
 
-// Client credentials already checked in this isolate, by a hash of the header, so an app's burst of
-// token checks costs one credential check, not one each.
+// Client credentials already checked in this isolate, by a hash of the header, with the app the
+// client is, so an app's burst of token checks costs one credential check, not one each.
 const CLIENT_CHECK_TTL_MS = 5 * 60_000;
-const checkedClients = new Map<string, { clientId: string; until: number }>();
+type CheckedClient = { clientId: string; app: SettingsApp | null };
+const checkedClients = new Map<string, CheckedClient & { until: number }>();
 
 function basicClientId(header: string | null): string | null {
   const encoded = header?.match(/^Basic\s+(.+)$/i)?.[1];
@@ -331,19 +339,21 @@ async function digest(value: string): Promise<string> {
   return btoa(String.fromCharCode(...new Uint8Array(bytes)));
 }
 
-// An app's client id when the request carries its client credentials. The OAuth provider checks
-// them, through token introspection: it answers 401 for a wrong secret and 200 otherwise.
+// An app's client id, and the app it is, when the request carries its client credentials. The
+// OAuth provider checks them, through token introspection: it answers 401 for a wrong secret and 200
+// otherwise.
 async function verifiedClient(
   request: Request,
   auth: Auth,
+  db: D1Database,
   now = Date.now(),
-): Promise<string | null> {
+): Promise<CheckedClient | null> {
   const authorization = request.headers.get('authorization');
   const clientId = basicClientId(authorization);
   if (!authorization || !clientId) return null;
   const key = await digest(authorization);
   const known = checkedClients.get(key);
-  if (known && known.until > now) return known.clientId;
+  if (known && known.until > now) return { clientId: known.clientId, app: known.app };
   const checked = await auth.handler(
     new Request(new URL(`${AUTH_BASE_PATH}/oauth2/introspect`, request.url), {
       method: 'POST',
@@ -359,9 +369,10 @@ async function verifiedClient(
     }),
   );
   if (!checked.ok) return null;
+  const app = await clientApp(db, clientId);
   if (checkedClients.size > 100) checkedClients.clear();
-  checkedClients.set(key, { clientId, until: now + CLIENT_CHECK_TTL_MS });
-  return clientId;
+  checkedClients.set(key, { clientId, app, until: now + CLIENT_CHECK_TTL_MS });
+  return { clientId, app };
 }
 
 interface Introspection {
@@ -409,9 +420,10 @@ async function handleInternal(
   parts: string[],
   url: URL,
 ): Promise<Response> {
-  const clientId = await verifiedClient(request, auth);
-  if (!clientId) return error(401, 'invalid_client');
   const db = env.AUTH_DB;
+  const client = await verifiedClient(request, auth, db);
+  if (!client) return error(401, 'invalid_client');
+  const { clientId } = client;
   const route = `${request.method} ${parts.join('/')}`;
 
   if (route === 'POST tokens/verify') {
@@ -470,10 +482,13 @@ async function handleInternal(
 
   // Someone's settings for one app. The app vouches for the owner, as it does for the teams it
   // applies from the feed: an id it has already verified (an access token's sub, or a guest token's).
+  // It reaches only its own scope, beside 'all'.
   if (route === 'POST settings/read' || route === 'POST settings/write') {
     const body = await readBody(request);
     if (!isSettingsOwner(body.owner)) return error(400, 'invalid_owner');
     if (!isSettingsApp(body.app)) return error(400, 'invalid_app');
+    if (!client.app) return error(403, 'client_has_no_app');
+    if (body.app !== client.app) return error(403, 'wrong_app');
     if (route === 'POST settings/read') return json(await readSettings(db, body.owner, body.app));
     const patch = body.patch ?? {};
     if (typeof patch !== 'object' || Array.isArray(patch)) return error(400, 'invalid_patch');

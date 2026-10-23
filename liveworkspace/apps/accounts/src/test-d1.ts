@@ -80,3 +80,15 @@ export function addUser(
       '2026',
     );
 }
+
+// An OAuth client, as clients.ts registers one, and the app it is (none when `app` is null).
+export function addClient(sql: DatabaseSync, clientId: string, app: string | null) {
+  sql
+    .prepare(
+      `INSERT INTO oauthClient (id, clientId, redirectUris, createdAt, updatedAt) VALUES (?, ?, '[]', '2026', '2026')`,
+    )
+    .run(`id-${clientId}`, clientId);
+  if (app) {
+    sql.prepare('INSERT INTO oauth_client_app (clientId, app) VALUES (?, ?)').run(clientId, app);
+  }
+}

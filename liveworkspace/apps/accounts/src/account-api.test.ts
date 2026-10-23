@@ -2,22 +2,32 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { handleAccountApi } from './account-api.ts';
 import type { Auth } from './auth.ts';
 import type { Env } from './env.ts';
-import { addUser, testD1 } from './test-d1.ts';
+import { addClient, addUser, testD1 } from './test-d1.ts';
 
 const BASE = 'https://liveworkspace.app';
 const CLIENT = `Basic ${btoa('liveplanner:secret')}`;
+// Two more clients with the right secret: livediagram's, and one registered without an app.
+const DIAGRAM = `Basic ${btoa('livediagram:secret')}`;
+const NO_APP = `Basic ${btoa('lonely:secret')}`;
+const CLIENTS: Record<string, string> = {
+  [CLIENT]: 'liveplanner',
+  [DIAGRAM]: 'livediagram',
+  [NO_APP]: 'lonely',
+};
 
 let env: Env;
 let sent: { to: string[]; subject: string }[];
 // Who the stub session belongs to, or null for signed out.
 let signedIn: { id: string; name: string; email: string; emailVerified: boolean } | null;
 
-// Stands in for Better Auth: the session from `signedIn`, and introspection that knows one client
-// (liveplanner:secret) and one access token ('jwt-ada', minted for liveplanner).
+// Stands in for Better Auth: the session from `signedIn`, and introspection that knows three clients
+// (CLIENTS) and one access token ('jwt-ada', minted for liveplanner).
 const auth = {
   api: { getSession: async () => (signedIn ? { user: signedIn, session: {} } : null) },
   handler: async (request: Request) => {
-    if (request.headers.get('authorization') !== CLIENT) return new Response(null, { status: 401 });
+    if (!CLIENTS[request.headers.get('authorization') ?? '']) {
+      return new Response(null, { status: 401 });
+    }
     const token = new URLSearchParams(await request.text()).get('token');
     return Response.json(
       token === 'jwt-ada'
@@ -31,6 +41,9 @@ beforeEach(() => {
   const d1 = testD1();
   addUser(d1.sql, { id: 'user_ada', email: 'ada@example.com', name: 'Ada' });
   addUser(d1.sql, { id: 'user_bea', email: 'bea@example.com', name: 'Bea' });
+  addClient(d1.sql, 'liveplanner', 'liveplanner.app');
+  addClient(d1.sql, 'livediagram', 'livediagram.app');
+  addClient(d1.sql, 'lonely', null);
   sent = [];
   vi.stubGlobal('fetch', async (_url: string, init: RequestInit) => {
     sent.push(JSON.parse(String(init.body)) as { to: string[]; subject: string });
@@ -163,34 +176,56 @@ describe('the account API, for the apps', () => {
 
   it("reads and writes someone's settings for one app", async () => {
     const owner = 'guest_0b0e8c9a-6d7e-4f3b-9a51-2c1d0e9f8a7b';
-    const written = await internal('/settings/write', {
-      owner,
-      app: 'livediagram.app',
-      patch: { all: { theme: 'dark' }, app: { snap: true } },
-    });
+    const written = await internal(
+      '/settings/write',
+      { owner, app: 'livediagram.app', patch: { all: { theme: 'dark' }, app: { snap: true } } },
+      DIAGRAM,
+    );
     expect(written.status).toBe(200);
     expect(await written.json()).toMatchObject({ all: { theme: 'dark' }, app: { snap: true } });
     const read = await internal('/settings/read', { owner, app: 'liveplanner.app' });
     expect(await read.json()).toMatchObject({ all: { theme: 'dark' }, app: {} });
 
     expect(
-      (await internal('/settings/read', { owner: 'nobody', app: 'livediagram.app' })).status,
+      (await internal('/settings/read', { owner: 'nobody', app: 'liveplanner.app' })).status,
     ).toBe(400);
-    expect((await internal('/settings/read', { owner, app: 'livediagram' })).status).toBe(400);
+    expect((await internal('/settings/read', { owner, app: 'liveplanner' })).status).toBe(400);
     expect(
-      (await internal('/settings/write', { owner, app: 'livediagram.app', patch: [] })).status,
+      (await internal('/settings/write', { owner, app: 'liveplanner.app', patch: [] })).status,
     ).toBe(400);
     const tooBig = await internal('/settings/write', {
       owner,
-      app: 'livediagram.app',
+      app: 'liveplanner.app',
       patch: { app: { big: 'x'.repeat(20_000) } },
     });
     expect(tooBig.status).toBe(400);
     expect(await tooBig.json()).toEqual({ error: 'settings_too_large' });
     expect(
-      (await internal('/settings/read', { owner, app: 'livediagram.app' }, `Basic ${btoa('x:y')}`))
+      (await internal('/settings/read', { owner, app: 'liveplanner.app' }, `Basic ${btoa('x:y')}`))
         .status,
     ).toBe(401);
+  });
+
+  it("keeps each app to its own settings scope, beside 'all'", async () => {
+    const owner = 'guest_0b0e8c9a-6d7e-4f3b-9a51-2c1d0e9f8a7b';
+    // liveplanner's client can't read or write livediagram's scope, even to touch only 'all'.
+    const read = await internal('/settings/read', { owner, app: 'livediagram.app' });
+    expect(read.status).toBe(403);
+    expect(await read.json()).toEqual({ error: 'wrong_app' });
+    expect(
+      (
+        await internal('/settings/write', {
+          owner,
+          app: 'livediagram.app',
+          patch: { all: { theme: 'dark' } },
+        })
+      ).status,
+    ).toBe(403);
+    // A client registered without an app reaches no one's settings, but still checks tokens.
+    const lonely = await internal('/settings/read', { owner, app: 'liveplanner.app' }, NO_APP);
+    expect(lonely.status).toBe(403);
+    expect(await lonely.json()).toEqual({ error: 'client_has_no_app' });
+    expect((await internal('/tokens/verify', { token: 'lwt_nope' }, NO_APP)).status).toBe(404);
   });
 
   it('refuses wrong client credentials', async () => {

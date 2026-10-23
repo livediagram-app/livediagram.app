@@ -150,6 +150,7 @@ Other checks, from the repo root: `corepack pnpm test`, `corepack pnpm typecheck
    ADMIN_TOKEN=… node apps/accounts/scripts/register-client.ts \
      --accounts https://liveworkspace.app \
      --name livediagram \
+     --app livediagram.app \
      --redirect https://www.livediagram.app/auth/callback \
      --redirect https://livediagram.app/auth/callback \
      --redirect https://livediagram.app/auth/guest \
@@ -158,7 +159,9 @@ Other checks, from the repo root: `corepack pnpm test`, `corepack pnpm typecheck
 
    `https://<app>/auth/guest` is where the guest hand-off returns
    ([docs/accounts.md](docs/accounts.md#guests)); an app registered before it needs it added to its
-   client's `redirectUris`.
+   client's `redirectUris`. `--app` is the app the client is, which keeps it to that app's own
+   settings and records ([docs/accounts.md](docs/accounts.md#which-app-a-client-is)); a client
+   registered without one is given it with `scripts/map-clients.ts`.
 
 3. Wire the app up: [docs/integrating-an-app.md](docs/integrating-an-app.md).
 
