@@ -58,6 +58,7 @@ import { useFolderRowMenu, useMyWorkMenu } from './sidebar/rowMenus';
 import { useTreeNavigation } from './sidebar/useTreeNavigation';
 import { useExtras } from './extras';
 import { SidebarSignInNudge, teamMemberBadge } from './SidebarSignInNudge';
+import { MailIcon } from '../ui/library-icons';
 
 type Tone = 'sky' | 'violet' | 'amber' | 'emerald' | 'indigo' | 'rose';
 
@@ -542,15 +543,16 @@ export function Sidebar() {
             </SidebarRow>
           );
         })}
-        {signedIn && invites > 0 && manageTeamsUrl ? (
+        {/* Shown while an invitation waits, or while its view is open, so the highlight never vanishes. */}
+        {signedIn && (invites > 0 || view.kind === 'invites') ? (
           <SidebarRow
-            icon={<InboxIcon />}
+            icon={<MailIcon />}
             tone="violet"
             label={SIDEBAR_LABELS.invites}
-            selected={false}
-            onActivate={() => window.location.assign(manageTeamsUrl)}
+            selected={view.kind === 'invites'}
+            onActivate={() => navigate({ kind: 'invites' })}
             depth={0}
-            badge={invites}
+            badge={invites || undefined}
             badgeLabel={`${invites} waiting`}
             badgeTone="brand"
           />

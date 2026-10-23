@@ -28,7 +28,9 @@ export type ExplorerView =
   | { kind: 'search'; q: string }
   | ({ kind: 'folder'; id: string } & Lensed)
   // A team's library, at its root or one of its folders.
-  | ({ kind: 'team'; id: string; folderId?: string } & Lensed);
+  | ({ kind: 'team'; id: string; folderId?: string } & Lensed)
+  // The team invitations waiting for the person, each answered where teams are run.
+  | { kind: 'invites' };
 
 /** How a view takes the lens: `scoped` (its breadcrumb is the place), `aggregate` (it lists every place), or
  *  null for a view that lists no items of its own (typing there opens Search results). */
@@ -64,6 +66,12 @@ export function withLens(view: ExplorerView, q: string): ExplorerView {
 }
 
 export type ExplorerViewKind = ExplorerView['kind'];
+
+/** The views that list items (and folders): every view but those drawn by panes of their own. */
+export type ItemsView = Exclude<
+  ExplorerView,
+  { kind: 'home' | 'inbox' | 'timeline' | 'invites' }
+>;
 
 export const DEFAULT_BASE_PATH = '/explorer';
 
@@ -112,6 +120,7 @@ export function viewFromLocation(
     case 'inbox':
     case 'timeline':
     case 'home':
+    case 'invites':
       return { kind: section };
     case 'search':
       return { kind: 'search', q };
@@ -147,6 +156,8 @@ export const SIDEBAR_LABELS = {
   trash: 'Trash',
   manageTeams: 'Manage Teams',
   invites: 'Invites',
+  gallery: 'Image Gallery',
+  shapeLibraries: 'Shape Libraries',
 } as const;
 
 export const VIEW_TITLES: Record<Exclude<ExplorerViewKind, 'folder' | 'team'>, string> = {
@@ -160,4 +171,5 @@ export const VIEW_TITLES: Record<Exclude<ExplorerViewKind, 'folder' | 'team'>, s
   recent: 'Recent',
   favourites: 'Favourites',
   search: 'Search results',
+  invites: SIDEBAR_LABELS.invites,
 };

@@ -32,9 +32,12 @@ export type PendingInvitation = {
   id: string;
   teamId: string;
   teamName: string;
+  organisation?: string | null;
   role: TeamRole;
   invitedByName: string | null;
   memberCount: number;
+  // When the invitation was sent.
+  createdAt?: number;
 };
 
 export type MyTeams = {

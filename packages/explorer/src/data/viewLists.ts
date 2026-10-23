@@ -96,6 +96,7 @@ export function viewList(
     case 'home':
     case 'inbox':
     case 'timeline':
+    case 'invites':
       return null;
     case 'all':
       // With a lens: every item of mine, at any depth.

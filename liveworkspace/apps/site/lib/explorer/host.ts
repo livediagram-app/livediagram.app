@@ -111,7 +111,8 @@ export function offlineHref(app: App): string | null {
 }
 
 // Each view's Help article, in the app's own help centre (every app's has the Explorer's articles).
-const VIEW_HELP: Record<ExplorerView['kind'], string> = {
+// A view with no article (Invites) shows no Help button.
+const VIEW_HELP: Partial<Record<ExplorerView['kind'], string>> = {
   home: 'explorer/home',
   all: 'explorer/my-work',
   folder: 'explorer/folders',
@@ -132,7 +133,7 @@ export function helpHrefFor(app: App): HelpHref {
   return (view) => {
     const slug =
       view.kind === 'home' ? (HOME_ARTICLE[app] ?? 'explorer/explorer-page') : VIEW_HELP[view.kind];
-    return `${appUrl(app)}/help/${slug}/`;
+    return slug ? `${appUrl(app)}/help/${slug}/` : undefined;
   };
 }
 

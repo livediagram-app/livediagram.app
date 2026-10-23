@@ -52,7 +52,7 @@ export function Glyph({
 type IconProps = { size?: number; className?: string };
 
 // A lucide drawing on its 24-unit grid.
-function lucide(children: ReactNode, defaultSize: number) {
+export function lucide(children: ReactNode, defaultSize: number) {
   return function LucideIcon({ size = defaultSize, className }: IconProps) {
     return (
       <Glyph size={size} units={24} className={className}>

@@ -141,7 +141,7 @@ export function memberName(m: Pick<TeamMember, 'name' | 'email'>, self: boolean)
   return self ? 'You' : 'Member';
 }
 
-function initialsOf(name: string): string {
+export function initialsOf(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   return (
     ((parts[0]?.[0] ?? '') + (parts.length > 1 ? (parts.at(-1)?.[0] ?? '') : '')).toUpperCase() ||

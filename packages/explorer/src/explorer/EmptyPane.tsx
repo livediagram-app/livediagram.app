@@ -19,6 +19,7 @@ import {
   TrashIcon,
   UnsortedIcon,
 } from '../ui/icons';
+import { MailIcon } from '../ui/library-icons';
 import type { ExplorerView } from '../views';
 import type { Words } from '../words';
 
@@ -110,6 +111,13 @@ export function emptyCopy(
         title: `No team ${w.lowerMany} yet`,
         description: `${w.many} here are open to everyone in the team.`,
         cta: true,
+      };
+    case 'invites':
+      return {
+        icon: <MailIcon />,
+        title: 'No pending invites',
+        description: 'Sign in to see the team invitations waiting for you.',
+        cta: false,
       };
     case 'home':
       return {

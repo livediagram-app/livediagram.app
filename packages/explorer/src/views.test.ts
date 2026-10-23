@@ -18,6 +18,7 @@ describe('views and their addresses', () => {
     { kind: 'folder', id: 'f1' },
     { kind: 'team', id: 'team-1' },
     { kind: 'team', id: 'team-1', folderId: 'f2' },
+    { kind: 'invites' },
   ];
   it.each(views)('round-trips %o', (view) => {
     const path = explorerPath(view, '/explorer');

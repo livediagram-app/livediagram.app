@@ -16,6 +16,7 @@ import {
   lensViewOf,
   SIDEBAR_LABELS,
   VIEW_TITLES,
+  type ItemsView,
   viewLens,
   withLens,
   type ExplorerView,
@@ -38,7 +39,7 @@ export function ItemsPane({
   view,
   onOpenNav,
 }: {
-  view: Exclude<ExplorerView, { kind: 'home' } | { kind: 'inbox' } | { kind: 'timeline' }>;
+  view: ItemsView;
   onOpenNav?: () => void;
 }) {
   const ctx = useExplorer();
