@@ -9,7 +9,7 @@ This guide is the practical path: provision Cloudflare resources, configure secr
 | Resource                             | Used by           | Why                                                                                                                                                                                                                                                                                                                                        |
 | ------------------------------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Workers paid plan**                | All eight workers | Durable Objects (per-document realtime room) need the paid plan.                                                                                                                                                                                                                                                                           |
-| **D1 database**                      | `apps/api`        | Documents, tabs, comments, folders, share links, shared-with index, image metadata, user preferences, teams + membership + team library, telemetry rows.                                                                                                                                                                                   |
+| **D1 database**                      | `apps/api`        | Documents, tabs, comments, folders, share links, shared-with index, image metadata, teams + membership + team library, telemetry rows. People's preferences, display names and colours are kept by the accounts Worker when sign-in is on, and in each browser otherwise.                                                                  |
 | **Durable Object namespace**         | `apps/api`        | One stateful room per document for realtime presence + ops.                                                                                                                                                                                                                                                                                |
 | **R2 bucket** (optional)             | `apps/api`        | Image uploads ([Image element + per-owner gallery](../specs/009-elements/images.md)) + document SVG snapshots ([Document SVG snapshots](../specs/006-document/document-snapshots.md): Explorer thumbnails + the live image share). Without it, image endpoints `503` and snapshot endpoints `404` (the Explorer row shows a generic icon). |
 | **Rate Limiter bindings** (optional) | `apps/api`        | Abuse throttles: per-owner writes, plus telemetry ingest, share-code lookups, link unfurls, AI calls, API-token reads, and Community likes and reports. Any binding you don't provision falls through to "allow", so none are required.                                                                                                    |
@@ -67,7 +67,7 @@ Those two are the only **required** ones — the deploy workflow uses raw `pnpm 
 
 The hosted version signs people in with their liveworkspace account, through the liveworkspace accounts Worker. To enable sign-in on your self-host:
 
-1. Register your deployment as an OAuth client of an accounts Worker. Its redirect URI is `https://<your-host>/api/auth/callback`, and it needs its own resource (the audience its access tokens carry). You get a client id and a client secret.
+1. Register your deployment as an OAuth client of an accounts Worker. Its redirect URI is `https://<your-host>/api/auth/callback`, and it needs its own resource (the audience its access tokens carry). Register it for the app `livediagram.app` (`register-client.ts --app livediagram.app`), under which the accounts Worker keeps its settings, sign-ups and milestone emails. You get a client id and a client secret.
 2. Set the values on the apps:
    - **Editor and Community (build-time, browser-side)**: set `NEXT_PUBLIC_SIGN_IN_ENABLED=true` in your CI build env, or in `apps/editor/.env.production` and `apps/community/.env.production` (Community uses it only for My Shares).
    - **API (worker secrets)**:
@@ -102,7 +102,7 @@ The hosted version signs people in with their liveworkspace account, through the
 
 5. **API tokens ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md)) come with sign-in.** They're a signed-in-only feature: tokens are liveworkspace account tokens (`lwt_`), made and revoked on liveworkspace.app, and the api worker checks each one with liveworkspace. A guest-only self-host has no accounts and therefore no tokens (nothing to configure).
 
-Without the sign-in values set, the api worker treats every request as a guest (resolves owner from `X-Owner-Id`), and the live frontend mounts no session bridge, so it renders the editor without any auth UI. Self-host without sign-in is a fully-supported path; the canvas works identically (and guest-id signing is moot, since there's no migrate without accounts).
+Without the sign-in values set, the api worker treats every request as a guest (resolves owner from `X-Owner-Id`), and the live frontend mounts no session bridge, so it renders the editor without any auth UI. Self-host without sign-in is a fully-supported path; the canvas works identically (and guest-id signing is moot, since there's no migrate without accounts). Preferences and display names are the accounts Worker's to keep, so without it they stay in each browser: Settings work and persist there, and a person's name shows to others live in the room, but a name is not stored on the server, so places that read it later (a document's owner, comment authors in the api, team members) show their placeholder instead (a team member's email address, "Anonymous" for a comment author).
 
 See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for the hybrid auth model.
 
@@ -215,7 +215,7 @@ The last two are the spend-DoS defence: on a public deployment they stop a third
 
 ## Email (optional, Resend)
 
-The api worker can send a small set of account emails via [Resend](https://resend.com) ([Transactional & lifecycle email (Resend)](../specs/014-identity/transactional-email.md)): a welcome on first sign-in; week-1 (Explorer) and week-2 (Teams) onboarding tips, an activation nudge and a win-back note off the daily cron; a warning before an API token expires; notifications (someone opened, commented on or mentioned you in a document, assigned you an action, or answered your team invite) plus first-share and document-count milestone notes; and transactional team-invite (with a Decline link that needs no account), team-invite reminder (1, 7 and 21 days after an unanswered invite) and account-deleted messages. The whole feature is **off until you provide a key** — no key, no sends, and the `email_lifecycle` table is never touched. Guests never receive email (it's authenticated-only).
+The api worker can send a small set of account emails via [Resend](https://resend.com) ([Transactional & lifecycle email (Resend)](../specs/014-identity/transactional-email.md)): notifications (someone opened, commented on or mentioned you in a document, or assigned you an action), first-share and document-count milestone notes, and the account-deleted confirmation. It needs sign-in, since the addresses are the accounts Worker's: it answers each account's verified address and keeps which milestone notes have gone. The welcome, onboarding tips and team-invite emails are the accounts Worker's own, sent once for every liveworkspace app. The whole feature is **off until you provide a key** — no key, no sends. Guests never receive email (it's authenticated-only).
 
 To turn it on, verify a sending domain in Resend, then:
 
@@ -227,8 +227,6 @@ Optional knobs (plain `[vars]`):
 
 - `RESEND_FROM`: the From identity, e.g. `livediagram <hello@livediagram.app>` (the default). Must be on your verified domain.
 - `APP_BASE_URL`: public origin for links in emails, defaults to `https://livediagram.app`.
-
-If you enable this on a deployment that already has signed-in users, run the one-time backfill in [Transactional & lifecycle email (Resend) §4](../specs/014-identity/transactional-email.md) first, so existing users aren't "welcomed" on their next sign-in.
 
 ## Teams
 

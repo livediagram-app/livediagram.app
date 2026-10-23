@@ -84,11 +84,14 @@ setting it can't honour.
 
 ## 3. Email notification preferences
 
-Two new per-user flags, stored in the **same `user_preferences` JSON blob**
-as the editor flags ([User preferences](../007-editor/user-preferences.md)) — reusing that synced store rather than minting
-a parallel one (no migration; the blob already round-trips D1 ↔ localStorage
+Per-user flags, stored in the **same preferences** as the editor flags
+([User preferences](../007-editor/user-preferences.md)), which liveworkspace keeps — reusing that synced store rather than minting
+a parallel one (it already round-trips to the server and localStorage
 and survives the sign-up migration). They are account/email settings that
-happen to share [User preferences](../007-editor/user-preferences.md)'s storage:
+happen to share [User preferences](../007-editor/user-preferences.md)'s storage. All but `notifyDocumentJoin` are in
+the `all` scope every liveworkspace app shares, so a switch flipped here is
+flipped in every app (`notifyInviteResponse` governs liveworkspace's own
+invite-answer email):
 
 ```ts
 // added to UserPreferences (docs/specs/007-editor/user-preferences.md)
@@ -101,27 +104,27 @@ Both **default on** (undefined === true): the user asked to be told, so the
 toggle is an opt-**out**, mirroring [User preferences](../007-editor/user-preferences.md)'s `notificationsEnabled`. The
 profile page reads/writes them through the existing
 `readUserPreferences` / `writeUserPreferences(prefs, ownerId)` round-trip, so
-a flip persists to D1 immediately and syncs across devices. Each flip emits
+a flip persists to the server immediately and syncs across devices. Each flip emits
 `UI` / `Toggled` / `NotifyDocumentJoin{On,Off}` /
 `NotifyInviteResponse{On,Off}` telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)) before persisting.
 
 ### Server-side read
 
 The api worker decides whether to send a notification by reading the
-recipient's preference blob server-side: `getNotificationPrefs(env, ownerId)`
-does a single `SELECT prefs FROM user_preferences` and parses it, returning
-`{}` (→ all defaults → notify) on a missing/corrupt row. A missing key means
+recipient's preferences server-side: `getNotificationPrefs(env, ownerId)`
+(`apps/api/src/liveworkspace/notification-prefs.ts`) makes one accounts read
+of both scopes, falling back to all defaults (→ notify) when nothing is kept
+or liveworkspace can't be reached. A missing key means
 the default (on), so a user who has never touched the toggle still gets
 notified.
 
-## 4. The two notifications
+## 4. The notifications
 
-Both are **transactional** (sent whenever email is on AND the recipient
+They are **transactional** (sent whenever email is on AND the recipient
 hasn't opted out), best-effort in `ctx.waitUntil`, and never on the
 request's critical path — same contract as every [Transactional & lifecycle email (Resend)](transactional-email.md) send. Recipients'
-addresses come only from trusted server state (the verified
-`email_lifecycle.email` written at first sighting, or the inviter-typed
-`team_members.email`), never from a client header.
+addresses come only from liveworkspace, which answers each account's
+verified address (`getOwnerEmails`, [Transactional & lifecycle email (Resend)](transactional-email.md) §3), never from a client header.
 
 ### a. Someone joins my document — `notifyDocumentJoin`
 
@@ -137,9 +140,9 @@ a guest visit is still recorded in `shared_with` and counted as
 `Document·Joined`, but never emails. `notifyDocumentJoin`:
 
 - no-ops unless `emailEnabled(env)`;
-- resolves the owner's email from `email_lifecycle` (so it only fires for a
-  signed-in owner who has a stored verified address — a guest-owned
-  document has no address and is silently skipped);
+- resolves the owner's verified address from liveworkspace (so it only fires
+  for a signed-in owner with a verified address — a guest-owned document has
+  no address and is silently skipped);
 - no-ops when the owner's `notifyDocumentJoin` pref is `false`;
 - no-ops unless it wins the per-document throttle: at most one join email per
   document per 15 minutes (`claimJoinNotify`, an atomic conditional `UPDATE` of
@@ -164,22 +167,10 @@ Object are deliberately **not** wired (they'd be far too chatty).
 
 ### b. Someone responds to a team invite — `notifyInviteResponse`
 
-When an invitee **accepts** (`POST …/members/<id>/accept`) or **declines**
-(the `DELETE …/members/<id>` on a still-`invited` row), the worker fires
-`notifyInviteResponse(env, team, responderEmail, accepted)` which:
-
-- no-ops unless `emailEnabled(env)`;
-- finds the team's **joined admins** (`listTeamAdminUserIds`), resolves each
-  one's email from `email_lifecycle`;
-- skips any admin whose `notifyInviteResponse` pref is `false`;
-- sends each remaining admin the **invite-response** email: "_{email}_
-  accepted / declined your invitation to _{team name}_".
-
-The responder address and team name are both already known to the inviting
-admin (they typed the address, they named the team), so this stays within
-[Transactional & lifecycle email (Resend)](transactional-email.md) §7. **Leaving** a team (removing a `joined` row) is not an invite
-_response_ and does not notify; only the invited→accepted / invited→declined
-transitions do.
+Team invitations are liveworkspace's ([Teams](../013-workspace/teams.md)), and so is the email
+telling a team's admins an invite was accepted or declined: liveworkspace sends
+it and counts it. livediagram keeps the switch in Settings, in the shared `all`
+scope liveworkspace reads, and sends nothing itself.
 
 ## 5. Privacy / security
 
@@ -187,7 +178,7 @@ transitions do.
   never a client header (consistent with [Teams](../013-workspace/teams.md)'s removal of
   `X-Owner-Email` and [Transactional & lifecycle email (Resend)](transactional-email.md) §7).
 - The only user-influenced strings in a notification body (a document name, a
-  joiner name, a responder email, a team name) are HTML-escaped, and each is
+  joiner name) are HTML-escaped, and each is
   either the recipient's own content or already known to the recipient.
 - Off by default at the deployment level (no `RESEND_API_KEY` → no sends, no
   UI), and off per-notification when the recipient opts out. Self-hosting
@@ -195,7 +186,6 @@ transitions do.
 
 ## 6. Out of scope (for now)
 
-A global "all email off" master switch (the lifecycle onboarding series still
-has no unsubscribe, [Transactional & lifecycle email (Resend)](transactional-email.md) §8), notification batching/digests, in-app
+A global "all email off" master switch, notification batching/digests, in-app
 (non-email) notifications, and editing name/avatar from the profile page
 (identity belongs to the liveworkspace account). The page reads identity; it doesn't write it.

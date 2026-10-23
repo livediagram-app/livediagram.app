@@ -73,8 +73,9 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
   requests, `pageOwnerHeaders` for calls made inside the page (`apps/editor/e2e/fixtures.ts`). A
   hand-made `crypto.randomUUID()` owner is refused (401), and so is any entry path that sends an
   unsigned id. The api cannot make a legacy guest under enforcement, so the stack writes one:
-  `POST /__e2e/legacy-guest` puts a participant row dated before `GUEST_SIGNING_LIVE_AT` (1000 on
-  the stack) and one folder straight into the local D1, for `guest-upgrade.spec.ts`.
+  `POST /__e2e/legacy-guest` gives the accounts stand-in a profile dated before
+  `GUEST_SIGNING_LIVE_AT` (1000 on the stack) and puts one folder straight into the local D1, for
+  `guest-upgrade.spec.ts`.
 - **Sharded** (`--shard=i/6`, the matrix in `e2e.yml`): Playwright splits the `chromium` project's
   tests evenly by count across six jobs; each boots its own stack, so shards share nothing.
 - **Shards sized to the floor, not beyond.** Every shard pays about two minutes before its first
@@ -183,7 +184,10 @@ page loads, so a chosen user (name, email) is signed in with no accounts Worker,
 `pnpm --filter @livediagram/editor test:e2e:signed-in` sets `E2E_SIGNED_IN=1`, which adds the
 `signed-in` project and boots the stack with `E2E_EDITOR_OUT=.next/out-signed-in` on its own ports
 (live `:3115`, api `:8115`, marketing `:3116`), so a guest stack already up on `:3102` is never
-reused for it. The stack also stands in for the accounts Worker (`E2E_ACCOUNTS_STUB=1`): it makes a
+reused for it. The stack also stands in for the accounts Worker (on in every run but the Drive one,
+`E2E_ACCOUNTS_STUB=0` turns it off; the api keeps no settings or profiles of its own, so guest runs
+need it too, and it answers the settings, profile, sighting, milestone, email, activity and
+team-making routes from memory): it makes a
 signing key at boot, serves its JWKS on the issuer's own path (`/e2e/accounts/api/auth/jwks`),
 starts the api worker with `ACCOUNTS_URL` and `API_RESOURCE` pointing at it, and mints an access
 token with that issuer and audience for any test account on `/e2e/token?sub=user_…`, which

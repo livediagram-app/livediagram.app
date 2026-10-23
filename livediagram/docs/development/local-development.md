@@ -134,6 +134,7 @@ The editor works without sign-in. To exercise the signed-in code paths, run live
    ADMIN_TOKEN=local-admin-token node liveworkspace/apps/accounts/scripts/register-client.ts \
      --accounts http://localhost:3000 \
      --name livediagram-dev \
+     --app livediagram.app \
      --redirect http://localhost:3100/api/auth/callback \
      --resource http://localhost/api
    ```
@@ -157,7 +158,7 @@ The editor works without sign-in. To exercise the signed-in code paths, run live
 
 4. Restart `pnpm dev` and open the app through the router (`http://localhost:3100`), so the sign-in cookies and the callback share one origin.
 
-With these set, `/sign-in` hands off to the accounts site and comes back signed in. The api worker verifies the access token and derives the owner id from the `sub` claim instead of falling back to the `X-Owner-Id` header.
+With these set, `/sign-in` hands off to the accounts site and comes back signed in. The api worker verifies the access token and derives the owner id from the `sub` claim instead of falling back to the `X-Owner-Id` header. `--app livediagram.app` names the app the client is for: the accounts Worker keeps livediagram's settings, sign-ups and milestone emails under it. With the client registered, every person's preferences, display name and colour live in the accounts Worker's local D1 (`liveworkspace/apps/accounts`), guests' included; without it, the preferences stay in the browser and names are not kept on the server.
 
 Without these set: the api worker silently treats every request as a guest (the `X-Owner-Id` header path), and the editor mounts no session bridge, so it renders the editor without any auth UI. This is the self-host default. See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for the full hybrid model.
 
@@ -239,8 +240,9 @@ on `E2E_API_PORT`; `E2E_NO_AI=1` answers `/api/capabilities` with
 `aiEnabled: false`.
 
 `E2E_EDITOR_OUT=<dir>` serves another export of the editor app (the signed-in specs use
-`.next/out-signed-in`), and `E2E_ACCOUNTS_STUB=1` makes the stack stand in for the accounts Worker:
-the api verifies access tokens the stack mints on `/e2e/token?sub=user_…` ([End-to-end tests](../specs/003-system-architecture/e2e-smoke.md)).
+`.next/out-signed-in`). The stack stands in for the accounts Worker unless `E2E_ACCOUNTS_STUB=0`
+(the Drive run serves its own): it keeps settings and profiles in memory, and the api verifies access
+tokens the stack mints on `/e2e/token?sub=user_…` ([End-to-end tests](../specs/003-system-architecture/e2e-smoke.md)).
 
 To try a hosted reader whose free budget is spent, swap `E2E_NO_AI=1` for
 `E2E_AI_BUDGET_SPENT=1`: the api still reports a model, every

@@ -14,17 +14,24 @@ once per account / device and apply everywhere.
 
 ## Where preferences live
 
-Preferences live in **D1** as the source of truth, with
-`localStorage` as a fast warm cache so the editor never blocks on
-a network round-trip at boot.
+Preferences are kept by the **liveworkspace accounts Worker**
+(liveworkspace/docs/accounts.md "Settings"), the same store every
+liveworkspace app uses, with `localStorage` as a fast warm cache so the
+editor never blocks on a network round-trip at boot. livediagram keeps no
+table of its own for them.
 
-- **D1 table** `user_preferences` (migration `0016_user_preferences.sql`),
-  one row per owner (account user id for signed-in users, the per-
-  browser participant id for guests). Columns: `owner_id TEXT
-PRIMARY KEY`, `prefs TEXT NOT NULL` (serialised JSON blob),
-  `updated_at INTEGER NOT NULL` (Unix ms). The JSON blob shape
-  keeps the migration count low when new flags arrive: adding a
-  field never requires altering the table.
+- **Two scopes.** The accounts Worker holds each person's settings in
+  two scopes: `all`, the keys every app shares (`ALL_SETTING_KEYS` in
+  `@liveworkspace/settings`: privacy and accessibility, the
+  notification switches, the editors' chrome, custom swatches), and
+  livediagram's own, `livediagram.app`. The api joins them into the one
+  flat blob the editor knows (`joinSettings`) and splits a change back
+  (`splitSettings`), in `apps/api/src/liveworkspace/settings.ts`. A shared
+  key changed here changes in every app, and Settings marks those rows
+  with a quiet "All apps" note.
+- **Owners.** An account's settings are kept under its account id. A
+  guest's are kept under `guest_<their guest id>`, so a guest who
+  clears localStorage but keeps the same guest id still recovers them.
 - **localStorage cache** keyed `livediagram:user-preferences:v1`
   (legacy key, unchanged). Read synchronously at page-load so the
   Settings dialog and gate caches (telemetry, draw-to-add, etc.)
@@ -32,63 +39,72 @@ PRIMARY KEY`, `prefs TEXT NOT NULL` (serialised JSON blob),
 
 ### Sync flow
 
-- **On editor open**: read the localStorage cache synchronously
-  (zero-blocking), then fire-and-forget `GET /api/preferences`.
-  When the server response arrives, merge it over the cache
+- **On page load**: read the localStorage cache synchronously
+  (zero-blocking), then fire-and-forget `GET /api/preferences`, once per
+  page load however many surfaces ask (the Explorer, then the editor it
+  opens, read the cache the first fetch merged): one accounts read per
+  load. When the server response arrives, merge it over the cache
   (server wins for any key present on both sides), persist back
   to localStorage, and dispatch the existing
   `livediagram:preferences-changed` window event so in-process
   listeners refresh. If the fetch fails the cache value stays
-  authoritative for the session.
+  authoritative for the session, and the next load asks again.
 - **On toggle**: update localStorage immediately (so the UI
   reflects the change without waiting for the network), then
-  `PUT /api/preferences` with the full updated blob in the
-  background. Last-write-wins per device.
+  `PUT /api/preferences` with what changed, in the background.
 - **Saving to the server** (`apps/editor/lib/preferences-sync.ts`):
-  - **It fits.** The blob is trimmed to the api's cap (4,096
-    characters of `{"prefs":...}`) before it is cached or sent:
+  - **Only what changed.** A save sends the keys that differ from what
+    the server last confirmed (its answer on load, then each save that
+    landed), each key's value whole (a nested value such as the shape
+    picks is replaced, not merged), and `null` for a key that was
+    removed. A setting changed in another app, or another tab, since
+    this one loaded is therefore never put back. Before the server's
+    copy is known (the load's fetch failed), the whole blob goes, and
+    nothing is deleted.
+  - **It fits.** The blob is trimmed to 4,096 characters of
+    `{"prefs":...}` before it is cached or sent:
     the oldest hidden-from-Recent ids go first
     ([Hide from Recent](../013-workspace/hide-from-recent.md)), then the
     least recently used shape picks
     ([Draw mode, Shape slots](../023-draw-mode/draw-mode.md)); every
-    other key stays whole. A full account measured 4,967 characters,
-    past which every save was refused. A trim logs
-    `[preferences] trimmed to fit dropped=<n> length=<n>`.
+    other key stays whole. A full account measured 4,967 characters.
+    A trim logs `[preferences] trimmed to fit dropped=<n> length=<n>`.
+    The api takes a patch of up to 8,192 characters (a blob plus a
+    null for each key dropped), and the accounts Worker holds each scope
+    to 16 KB.
   - **One save at a time, the latest wins.** A save made while one
     is in flight waits, and replaces any save already waiting, so
-    the server can never end on an older blob than the last one sent.
+    a burst of changes (a slider dragged) costs one request in flight
+    and one after it, never one per change.
   - **A save that did not land keeps this device's copy.** From the
     moment a save is queued until one succeeds, this browser is
     marked unsynced for that owner
     (`livediagram:user-preferences:unsynced`, holding the owner id).
     A refused or failed save (logged `[preferences] save-refused
 status=<n>` or `save-not-confirmed`) leaves the mark, and the
-    next load lets the cache win over the server's blob and sends it
-    again, instead of the server reverting settings it never received.
+    next load lets the cache win over the server's blob and sends
+    what differs again, instead of the server reverting settings it
+    never received.
 - **Cross-tab updates**: the browser's native `storage` event on
   the preferences key still fires across tabs in the same
   browser, so toggling in one tab updates every open editor and
   Explorer: both follow the cache live rather than holding their
-  own copy. Because every save sends the WHOLE blob, a change is
+  own copy. The cache holds the WHOLE blob, so a change is
   always built on the freshest cache, never on a render's snapshot
   (`rebaseUserPreferences`: only the keys the change touched are
   applied over the cache); built on a snapshot, it would undo a
   change another tab made since.
 
-### Why D1 instead of localStorage-only
+### Why on the server instead of localStorage-only
 
 The original v1 shape was localStorage-only on the grounds that
 flags were UI-only and a server round-trip per toggle was
 overkill. That trade-off was wrong for the user experience:
 signed-in users who use livediagram on a laptop and a phone had
 to re-flip every setting on each device. Per-account sync is the
-expected behaviour for an account-bound app.
-
-Guests get the same persistence model (the api keys them by
-their `X-Owner-Id` participant id), so server-side storage is
-effectively a remote copy of localStorage for that device, but
-with a cross-browser bonus: a guest who clears localStorage but
-keeps the same browser session still recovers their preferences.
+expected behaviour for an account-bound app, and with the shared
+scope the chrome, accessibility and notification choices follow the
+person into every liveworkspace app.
 
 **Panel corner layout is the deliberate exception.** Which corner
 each corner panel docks into ([Panel corner docking](panel-docking.md)) is a
@@ -99,18 +115,20 @@ blob. Don't fold panel placement into `UserPreferences`.
 
 ### Sign-up migration
 
-`POST /api/migrate` ([Auth + guest access](../014-identity/auth-and-guest-access.md)) moves `user_preferences.owner_id`
-along with the documents + folders + shared-with rows, so a guest
-who signs up keeps the settings they'd already chosen. Idempotent
-in the same shape as the existing migrations: a second call with
-the same `guestOwnerId` moves zero rows.
+`POST /api/migrate` ([Auth + guest access](../014-identity/auth-and-guest-access.md)) moves a guest's
+preferences along with the documents + folders + shared-with rows
+(`apps/api/src/liveworkspace/guest-merge.ts`), so a guest who signs up
+keeps the settings they'd already chosen: each key the account has no
+value for takes the guest's, the account's own values stay, and the
+guest's copy is then cleared. Idempotent: a second call finds nothing
+left to move.
 
 <!-- legacy-names -->
 
 ### Renamed keys
 
 - **Renamed key.** `notifyDiagramJoin` became `notifyDocumentJoin` when the container became a
-  document. Migration 0055 renames it in D1; `upgradeLegacyPreferences`
+  document. `upgradeLegacyPreferences`
   (`packages/api-schema/src/legacy-preferences.ts`) renames it wherever an older copy can still
   arrive: the browser's cache on read, the server's copy before the merge, and the api's
   notification check. An opt-out is never lost; when both keys exist, the new one wins.
@@ -119,12 +137,13 @@ the same `guestOwnerId` moves zero rows.
 
 ### Self-host degradation
 
-When the api worker is unset (pure-guest self-host without a D1
-binding configured) the client treats the fetch as a no-op
-failure: the localStorage cache acts as the only persistence,
-which is the same behaviour as the original v1 design and works
-exactly like it did before. No required SaaS calls, self-hosting
-stays viable.
+Without the accounts Worker (a guest-only self-host, no `ACCOUNTS_URL`)
+there is nowhere to keep them: `GET /api/preferences` answers
+`{ prefs: null }`, and the editor keeps them in localStorage alone and
+sends no saves (a `PUT` there answers 409 `preferences_local_only`, which
+stops sending too). That is the original v1 behaviour, so self-hosting
+needs no SaaS for it. When the api worker itself is unreachable the
+fetch fails and the cache stays authoritative, as above.
 
 ## Schema
 
@@ -451,9 +470,8 @@ Missing key === undefined === default behaviour. Concretely:
 - `powerUserOfferShown` undefined → the offer may still be made, once its
   thresholds are met.
 
-Empty (or missing entirely) localStorage entry, AND no row in
-`user_preferences` for this owner, is therefore the "everything
-on" state.
+Empty (or missing entirely) localStorage entry, AND no settings kept
+for this owner, is therefore the "everything on" state.
 
 ## UI placement
 
@@ -821,23 +839,25 @@ Live in `apps/editor/lib/user-preferences.ts`:
   reads localStorage only, so the editor can use it during render.
 - `writeUserPreferences(prefs, ownerId?): void` trims the blob to
   fit, serialises and writes it back to localStorage AND, when
-  `ownerId` is supplied, queues a `PUT /api/preferences` (one at a
-  time, latest wins) so the value round-trips to D1. Also dispatches a
+  `ownerId` is supplied, queues a `PUT /api/preferences` of what
+  changed (one at a time, latest wins) so the value reaches the
+  server. Also dispatches a
   `livediagram:preferences-changed` window event so same-tab
   listeners (notably `lib/telemetry.ts`) can refresh their cached
   gate without polling. Callers without an `ownerId` (unit tests,
   the editor before identity resolves) skip the network step and
   still get the localStorage write; the next call with an
-  ownerId catches D1 up.
+  ownerId catches the server up.
 - `fetchUserPreferences(ownerId): Promise<UserPreferences | null>`
   does a single `GET /api/preferences` for the resolved owner,
   merges the server's value over the localStorage cache (server
   wins on conflict, unless this browser holds an unconfirmed save
   for the owner, when the cache wins and is sent again), writes the merged blob back to localStorage,
   and dispatches `livediagram:preferences-changed`. Returns the
-  merged preferences, or null on failure / when the api worker
-  is unreachable (the caller can treat that as "stick with the
-  cache"). Called once at editor mount.
+  merged preferences, or null on failure, when the api worker
+  is unreachable, or when the deployment keeps none (the caller can
+  treat that as "stick with the cache"). A second call in the same
+  page load answers the cache without asking again.
 
 - `rebaseUserPreferences(snapshot, next)` moves a change built on a
   render's snapshot onto the freshest cache, and
@@ -849,12 +869,17 @@ event on the preferences key.
 
 ## API
 
-- **`GET /api/preferences`** — returns `{ prefs: UserPreferences }`
-  for the resolved owner. Empty object when no row exists. Auth:
-  the standard hybrid identity (account Bearer OR `X-Owner-Id`).
-- **`PUT /api/preferences`** — body `{ prefs: UserPreferences }`,
-  upserts the row for the resolved owner. Returns 204. The blob
-  is opaque to the api worker beyond a size cap (4 KB; defends
-  against runaway clients). No per-field validation: the client
-  is responsible for the shape, and a malformed client just
-  reflects malformed prefs back to itself.
+- **`GET /api/preferences`** — returns `{ prefs }` for the resolved owner: the
+  two scopes joined into one flat set, `{}` when nothing is kept yet, or
+  `{ prefs: null }` where the deployment keeps none (no accounts Worker, or
+  an owner id it can't hold). 503 `preferences_unavailable` when the
+  accounts Worker can't be reached. Auth: the standard hybrid identity
+  (account Bearer OR `X-Owner-Id`).
+- **`PUT /api/preferences`** — body `{ prefs }`, a patch: each key it names
+  takes its new value whole, `null` deletes the key, and keys it leaves out
+  stay. Shared keys go to the `all` scope, the rest to `livediagram.app`.
+  Returns 204; 409 `preferences_local_only` where nothing is kept; 400 for a
+  body that is not an object or is past 8,192 characters; the accounts
+  Worker's refusal passed on (413 past its 16 KB a scope). The values are
+  opaque to the api worker: the client is responsible for the shape, and
+  a malformed client just reflects malformed prefs back to itself.
