@@ -44,7 +44,7 @@ Turbo spins up all seven dev servers in parallel:
 | `apps/editor`      | `http://localhost:3102` (clean routes: /new, /explorer, ...)                                       |
 | `apps/help`      | `http://localhost:3104/help`                                                                       |
 | `apps/community` | `http://localhost:3105/community`                                                                  |
-| `apps/api`       | `http://localhost:8787/api`                                                                        |
+| `apps/api`       | `http://localhost:8687/api`                                                                        |
 | `apps/mcp`       | `http://localhost:8788` (MCP server, [MCP server](../specs/015-api/mcp-server.md); signed-in only) |
 
 The telemetry dashboard is not one of them: it is liveworkspace's (`liveworkspace/apps/telemetry`, [Telemetry](../specs/017-telemetry/telemetry.md)), and `localhost:3100/telemetry` redirects to the local service. To see events locally, run that service and set `NEXT_PUBLIC_TELEMETRY_URL`, `TELEMETRY_URL` and `TELEMETRY_KEY` as the `.env.example` files describe.
@@ -55,7 +55,7 @@ The `router` dev server (`wrangler dev --env local`, port 3000) gives you the pr
 
 ```sh
 # apps/editor/.env.local  (gitignored; see apps/editor/.env.example)
-NEXT_PUBLIC_API_BASE=http://localhost:8787/api
+NEXT_PUBLIC_API_BASE=http://localhost:8687/api
 ```
 
 A remote api works too, and there are now two of them: `https://staging.livediagram.app/api`
@@ -163,7 +163,7 @@ above, sign in, and create a token in Settings › API Tokens. Then build the bu
 
 ```bash
 pnpm --filter @livediagram/cli build
-export LIVEDIAGRAM_HOST=http://localhost:8787 LIVEDIAGRAM_TOKEN=lvd_...
+export LIVEDIAGRAM_HOST=http://localhost:8687 LIVEDIAGRAM_TOKEN=lvd_...
 apps/cli/dist/livediagram.mjs document ls
 ```
 

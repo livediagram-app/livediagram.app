@@ -2,6 +2,11 @@ name = "livediagram-api"
 main = "src/index.ts"
 compatibility_date = "2026-05-29"
 
+# Local dev port, off wrangler's 8787 default, which the liveworkspace accounts Worker holds, so
+# livediagram's stack runs beside it (the router's API_ORIGIN and the docs name the same port).
+[dev]
+port = 8687
+
 # Bundle the share card's fonts (packages/render-png/fonts, Inter Regular and Bold) as raw bytes for the resvg PNG
 # renderer (docs/specs/013-workspace/share-link-previews.md): a Worker has no system fonts, so without this the card
 # draws shapes but no text. Inheritable, so staging takes it too.

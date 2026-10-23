@@ -91,7 +91,7 @@ function assetsOutOfCacheFor(req) {
 }
 
 const EDITOR_PORT = Number(process.env.E2E_EDITOR_PORT ?? 3002);
-const API_PORT = Number(process.env.E2E_API_PORT ?? 8787);
+const API_PORT = Number(process.env.E2E_API_PORT ?? 8687);
 // The other sites, for the audits that open them (docs/specs/004-interface-design/blueprints/
 // optical-alignment.md, "Ink audit"). Help and the Community sit under their basePath on the
 // live origin, as the router mounts them; marketing owns "/" in production, so it gets its own port.

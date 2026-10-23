@@ -166,7 +166,7 @@ key (`E2E_NO_AI`) or with its AI budget spent (`E2E_AI_BUDGET_SPENT`); see
 [Local development](../../development/local-development.md).
 
 Locally the same `playwright.config.ts` sets `reuseExistingServer`, so a
-developer with `pnpm dev` already running (live :3002 + api :8787) runs
+developer with `pnpm dev` already running (live :3002 + api :8687) runs
 `pnpm --filter @livediagram/editor test:e2e` against that stack with no
 extra boot.
 

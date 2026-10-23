@@ -102,7 +102,7 @@ The router **also runs locally**, so `pnpm dev` gives you the production URL sha
 | live      | `http://localhost:3102/new`, `/explorer/recent`, ... (clean routes) |
 | help      | `http://localhost:3104/help` (basePath baked in)                    |
 | community | `http://localhost:3105/community` (basePath baked in)               |
-| api       | `http://localhost:8787/api/...` (wrangler dev)                      |
+| api       | `http://localhost:8687/api/...` (wrangler dev)                      |
 
 **How local mode works.** Service bindings only exist between deployed Workers, so the router's `wrangler.toml` carries an `[env.local]` environment that defines no service bindings and instead sets `<APP>_ORIGIN` vars (`http://127.0.0.1:<port>` for each downstream app). The worker resolves each target as _binding if present, else proxy to the origin_; `pnpm --filter @livediagram/router dev` runs `wrangler dev --env local --port 3100`, and the root `pnpm dev` includes it.
 

@@ -45,7 +45,7 @@ import {
 // `API_BASE` resolution:
 //   1. `NEXT_PUBLIC_API_BASE` env var if set — used for local dev (e.g.
 //      `https://www.livediagram.app/api` to hit prod, or
-//      `http://localhost:8787/api` to point at a local `wrangler dev`
+//      `http://localhost:8687/api` to point at a local `wrangler dev`
 //      session of `@livediagram/api`). Baked into the static export at
 //      build time so it works in deployed builds too.
 //   2. Default `/api` — same-origin, served by the router worker in
