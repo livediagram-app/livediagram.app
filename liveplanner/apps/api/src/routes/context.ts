@@ -9,7 +9,6 @@ import { objectOrEmpty, type WorkbenchRole } from '@liveplanner/api-schema';
 
 import { capWorkbenchRole, levelAtLeast, type AccessLevel } from '@liveplanner/api-schema';
 import type { TeamClaim } from '@liveworkspace/auth-client';
-import type { ShareAccess } from '@liveworkspace/index-client';
 import type { WorkbenchReach } from '../db/workbench';
 import type { GrantCaller, PlanGrant } from '../index-service';
 import { badRequest, forbidden, missingAuth, notFound } from '../responses';
@@ -87,19 +86,9 @@ export type RouteContext = {
 // A RouteContext inside a plan's Durable Object (plan-room/plan-route.ts): its env reaches the plan's content.
 export type PlanRouteContext = RouteContext & { env: PlanEnv };
 
-// The share code a link visitor's request carries (X-Share-Code), with its password (X-Share-Password). Its
-// PRESENCE is the only honest signal that a caller arrived through a share link: a joined team member reads every
-// team plan without one.
-export function shareCodeOf(request: Request): string | null {
-  return request.headers.get('X-Share-Code');
-}
-
-export function shareAccessOf(request: Request): ShareAccess | null {
-  const code = shareCodeOf(request);
-  if (!code) return null;
-  const password = request.headers.get('X-Share-Password');
-  return password === null ? { code } : { code, password };
-}
+// A link visitor's share code (X-Share-Code) and its password (X-Share-Password), as @liveworkspace/index-app
+// reads them.
+export { shareAccessOf, shareCodeOf } from '@liveworkspace/index-app';
 
 // Who the index is asked for on this request's behalf (index-service.ts): an API token's or a workbench session's
 // account, vouched for with this app's key, or the browser's own bearer (none for a link visitor).

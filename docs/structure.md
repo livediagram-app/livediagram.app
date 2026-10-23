@@ -8,6 +8,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ auth-client              sign-in redirect, code swap, refresh, token check
 │  ├─ explorer                 the One Explorer UI over the index, rendered at every app's /explorer
 │  ├─ index-client             the One Explorer index contract: types, a client, the grant check
+│  ├─ index-app                the server side of an app on the index: grants, internal doors, purge, outbox
 │  ├─ community                the Community contract: apps, vocabulary, limits, wire shapes
 │  ├─ media                    the media contract: apps, upload limits, wire shapes, a client
 │  ├─ sites                    liveworkspace's sites, for every logo's site switcher

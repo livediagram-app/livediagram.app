@@ -10,11 +10,10 @@
 //   GET    /api/trash, POST /api/trash/:id/restore, DELETE /api/trash/:id              trash.ts
 //
 // The editor calls the index itself, through `/api/index/*`. Each list is paged at the index (at most 200 a
-// page); these read at most LIST_PAGES pages (1,000 plans), which is what the clients that call them can use.
+// page); these read at most @liveworkspace/index-app's LIST_PAGES pages (1,000 plans), which is what the clients that call them can use.
 
+import { allPages, indexRefusal, listAllFolders, listAllItems } from '@liveworkspace/index-app';
 import {
-  IndexError,
-  LIST_LIMIT_MAX,
   type Folder as IndexFolder,
   type IndexClient,
   type Item,
@@ -30,8 +29,6 @@ import { INDEX_APP, indexFor } from '../index-service';
 import { json } from '../responses';
 import { grantCallerOf, type RouteContext } from './context';
 
-const LIST_PAGES = 5;
-
 // The index as this caller reaches it, or the 503 a deployment without one answers.
 export function clientFor(ctx: RouteContext): IndexClient | Response {
   const client = indexFor(ctx.env, grantCallerOf(ctx));
@@ -40,24 +37,11 @@ export function clientFor(ctx: RouteContext): IndexClient | Response {
 
 // The index's refusal as this api answers it: its status and code.
 export function refusal(err: unknown): Response {
-  if (err instanceof IndexError) return json({ error: err.code }, { status: err.status });
-  console.error('[index] unreachable', { error: String(err) });
-  return json({ error: 'index_unavailable' }, { status: 503 });
+  const { status, error } = indexRefusal(err);
+  return json({ error }, { status });
 }
 
-export async function allPages<T>(
-  read: (cursor: string | undefined) => Promise<{ list: T[]; nextCursor: string | null }>,
-): Promise<T[]> {
-  const out: T[] = [];
-  let cursor: string | undefined;
-  for (let page = 0; page < LIST_PAGES; page++) {
-    const { list, nextCursor } = await read(cursor);
-    out.push(...list);
-    if (!nextCursor) break;
-    cursor = nextCursor;
-  }
-  return out;
-}
+export { allPages };
 
 // An index item as a plan summary. What the index does not keep (the stats' mode, the creation intent) reads as
 // unknown.
@@ -124,15 +108,6 @@ export function shareLinkOf(link: {
 }
 
 export const listItems = (client: IndexClient, team: string) =>
-  allPages((cursor) =>
-    client
-      .listItems({ app: INDEX_APP, team, limit: LIST_LIMIT_MAX, ...(cursor ? { cursor } : {}) })
-      .then((p) => ({ list: p.items, nextCursor: p.nextCursor })),
-  );
+  listAllItems(client, INDEX_APP, team);
 
-export const listFolders = (client: IndexClient, team: string) =>
-  allPages((cursor) =>
-    client
-      .listFolders({ team, limit: LIST_LIMIT_MAX, ...(cursor ? { cursor } : {}) })
-      .then((p) => ({ list: p.folders, nextCursor: p.nextCursor })),
-  );
+export const listFolders = listAllFolders;

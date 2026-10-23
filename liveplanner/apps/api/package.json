@@ -31,6 +31,7 @@
     "@liveplanner/sheets": "workspace:*",
     "@liveplanner/templates": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
+    "@liveworkspace/index-app": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*",

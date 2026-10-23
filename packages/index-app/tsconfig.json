@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // The server side of an app on the index: its api Worker and its items' Durable Objects.
+    "lib": ["ES2023"],
+    "types": ["@cloudflare/workers-types", "node"],
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts"]
+}
