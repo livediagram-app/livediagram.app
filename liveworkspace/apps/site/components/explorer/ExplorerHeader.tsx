@@ -13,7 +13,7 @@
 // are kept for the account (`settingsHref`), as the app's own Explorer had them on its bottom bar.
 
 import { useSyncExternalStore, type ReactNode } from 'react';
-import { lucideGlyph, SiteAppearanceToggle, SiteSwitcher } from '@livediagram/ui';
+import { lucideGlyph, SiteAppearanceToggle, SiteSwitcher, Tooltip } from '@livediagram/ui';
 import { lucideSettings } from '@livediagram/icons/lucide';
 import { siteOfApp, type AppName } from '@liveworkspace/sites';
 import { AccountControl } from '@/components/AccountControl';
@@ -74,14 +74,16 @@ export function ExplorerHeader({
         </div>
         <div className="flex shrink-0 items-center gap-1">
           {settingsHref ? (
-            <a
-              href={settingsHref}
-              aria-label={`${listed?.name ?? 'App'} Settings`}
-              title="Settings"
-              className="relative touch-target inline-flex size-9 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-            >
-              <SettingsIcon />
-            </a>
+            <Tooltip label={`${listed?.name ?? 'App'} Settings`}>
+              <a
+                href={settingsHref}
+                aria-label={`${listed?.name ?? 'App'} Settings`}
+                data-explorer-settings=""
+                className="relative touch-target inline-flex size-9 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+              >
+                <SettingsIcon />
+              </a>
+            </Tooltip>
           ) : null}
           <SiteAppearanceToggle />
           {host ? <AppAccountControl /> : <AccountControl />}

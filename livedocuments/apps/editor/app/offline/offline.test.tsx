@@ -18,8 +18,9 @@ vi.mock('@/hooks/persistence/useAccountBootstrap', () => ({
 }));
 vi.mock('@/hooks/persistence/useSignedGuestId', () => ({ useSignedGuestId: () => null }));
 vi.mock('@/hooks/persistence/useConversionHandoff', () => ({
-  useConversionHandoff: (ownerId: string | null, signedIn: boolean) =>
-    store.handoff(ownerId, signedIn),
+  useConversionHandoff: (ownerId: string | null, signedIn: boolean) => {
+    store.handoff(ownerId, signedIn);
+  },
 }));
 vi.mock('@/components/dialogs/LocalMovePrompt', () => ({ LocalMovePrompt: () => null }));
 vi.mock('@/hooks/persistence/useOfflineConversion', () => ({

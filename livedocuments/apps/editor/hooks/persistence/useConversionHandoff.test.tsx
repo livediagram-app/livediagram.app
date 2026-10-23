@@ -84,7 +84,7 @@ describe('Take Offline and Sync handed over by the Explorer', () => {
     ['one the person can only view', { access: 'view' }],
   ] as const)('refuses %s', async (_, extra) => {
     at('?convert=take-offline&item=d1');
-    h.item = doc(extra as Partial<Item>);
+    h.item = doc(extra);
     renderHook(() => useConversionHandoff('user_ada', true));
     await waitFor(() => expect(h.error).toHaveBeenCalled());
     expect(h.takeOffline).not.toHaveBeenCalled();
