@@ -18,8 +18,7 @@ import {
 const FolderIcon = lucideGlyph(lucideFolder, 20);
 
 // What every app shares (liveworkspace/docs/site.md "The front door"): the promises that hold in
-// whichever app you open, each with a small piece of the product drawn above it. The header's
-// "What you get" lands here.
+// whichever app you open, each with a small piece of the product drawn above it.
 export function Promises() {
   return (
     <section

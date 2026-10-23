@@ -2,12 +2,13 @@
 
 import { useState, useSyncExternalStore } from 'react';
 import { signInHref } from '@/lib/accounts';
+import { initials } from '@/lib/initials';
 import { signOut, useSession } from '@/lib/session';
 
 const noChange = () => () => {};
 
 // The header's account control (liveworkspace/docs/site.md "The header"): Sign in, or the signed-in
-// name, a link to their teams and API tokens, and Sign out. Until the page knows who is signed in (lib/session.ts), it holds its place
+// person's avatar (their initials; accounts keep no pictures) and name, a link to their teams and API tokens, and Sign out. Until the page knows who is signed in (lib/session.ts), it holds its place
 // without showing either, so nothing jumps.
 export function AccountControl() {
   const session = useSession();
@@ -33,9 +34,11 @@ export function AccountControl() {
       <span className="flex items-center gap-1">
         <a
           href="/account/teams"
-          className={`${link} max-w-40 truncate font-medium text-slate-900 max-sm:hidden dark:text-white`}
+          aria-label={session.name}
+          className={`${link} inline-flex max-w-48 items-center gap-2 font-medium text-slate-900 dark:text-white`}
         >
-          {session.name}
+          <Avatar name={session.name} />
+          <span className="truncate max-sm:hidden">{session.name}</span>
         </a>
         <button
           type="button"
@@ -60,5 +63,17 @@ export function AccountControl() {
     >
       Sign in
     </a>
+  );
+}
+
+// The signed-in person's initials in a disc, as the apps draw people.
+function Avatar({ name }: { name: string }) {
+  return (
+    <span
+      aria-hidden
+      className="flex size-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-slate-600 to-slate-900 text-[11px] font-semibold text-white ring-2 ring-white dark:from-slate-300 dark:to-slate-500 dark:text-slate-950 dark:ring-slate-900"
+    >
+      <span className="text-optical-centre">{initials(name)}</span>
+    </span>
   );
 }

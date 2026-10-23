@@ -26,7 +26,7 @@ The two APIs are Workers on more specific routes of the same origin, so the page
 ### The header
 
 Every page has the same header: the liveworkspace wordmark, with the site switcher on hover
-(the current site highlighted), links to Our Apps, What You Get and Telemetry, each with its icon, the Appearance toggle (Light, Dark, System, as on the
+(the current site highlighted), links to Our Apps and Telemetry, each with its icon, the Appearance toggle (Light, Dark, System, as on the
 apps' sites; the boot script applies the choice before paint), and the account control. On a phone the wordmark, the Appearance toggle and the account control show; the footer has
 the rest.
 
