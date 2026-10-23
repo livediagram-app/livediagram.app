@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { db } = vi.hoisted(() => ({
   db: {
-    listApiTokensByOwner: vi.fn(),
     // The revoke itself is tested in db/api-tokens.test.ts; here it is a seam.
     revokePresentedToken: vi.fn(),
     retractTimelineWarning: vi.fn(),
@@ -14,9 +13,8 @@ vi.mock('../db', () => db);
 // The account's name is its profile at the accounts Worker (person/profiles.ts).
 vi.mock('../person/profiles', () => ({ getParticipant: db.getParticipant }));
 
-
-const { workbenchEnd } = vi.hoisted(() => ({ workbenchEnd: { endWorkbenchAccess: vi.fn() } }));
-vi.mock('../workbench-end', () => workbenchEnd);
+const { endAccess } = vi.hoisted(() => ({ endAccess: vi.fn() }));
+vi.mock('../workbench-store', () => ({ workbenchStore: () => ({ endAccess }) }));
 
 import type { RouteContext } from './context';
 import { handleTokens } from './tokens';
@@ -37,10 +35,9 @@ const makeCtx = (
 
 beforeEach(() => {
   for (const fn of Object.values(db)) if (typeof fn === 'function') fn.mockReset();
-  db.listApiTokensByOwner.mockResolvedValue([]);
+  endAccess.mockReset();
   db.revokePresentedToken.mockResolvedValue(undefined);
   db.retractTimelineWarning.mockResolvedValue(undefined);
-  workbenchEnd.endWorkbenchAccess.mockReset();
 });
 
 // Tokens are made, listed and revoked on liveworkspace.app (liveworkspace/docs/accounts.md "API
@@ -70,24 +67,16 @@ describe('token management is on liveworkspace.app', () => {
 });
 
 describe('/api/tokens/current (docs/specs/015-api/blueprints/cli.md "Token self-service")', () => {
-  const live = {
-    id: 'tok_1',
-    name: 'liveplanner CLI',
-    expiresAt: 99,
-    createdAt: 1,
-    lastUsedAt: null,
-  };
   const tokenCtx = (method: string, readOnly = false, waitUntil?: (p: Promise<unknown>) => void) =>
     makeTestRouteContext(method, '/api/tokens/current', {
       accountUserId: null,
       owner: 'user_1',
-      token: { id: 'tok_1', readOnly },
+      token: { id: 'tok_1', readOnly, name: 'liveplanner CLI', expiresAt: 99 },
       headers: { Authorization: 'Bearer lwt_secret' },
       ...(waitUntil ? { waitUntil } : {}),
     });
 
   it('reads the token the request presented, its account and role', async () => {
-    db.listApiTokensByOwner.mockResolvedValue([live]);
     db.getParticipant.mockResolvedValue({ id: 'user_1', name: 'Webber' });
     const res = await handleTokens(tokenCtx('GET', true));
     expect(res.status).toBe(200);
@@ -109,20 +98,29 @@ describe('/api/tokens/current (docs/specs/015-api/blueprints/cli.md "Token self-
   });
 
   it('revokes itself, ending its workbench access', async () => {
-    db.listApiTokensByOwner.mockResolvedValue([live]);
     const work: Promise<unknown>[] = [];
     const res = await handleTokens(tokenCtx('DELETE', false, (p) => void work.push(p)));
     expect(res.status).toBe(204);
-    expect(db.revokePresentedToken).toHaveBeenCalledWith(expect.anything(), {
-      id: 'tok_1',
-      secret: 'lwt_secret',
-    });
-    expect(workbenchEnd.endWorkbenchAccess).toHaveBeenCalledWith(
-      expect.anything(),
-      { tokenId: 'tok_1' },
-      'revoked',
-    );
+    expect(db.revokePresentedToken).toHaveBeenCalledWith(expect.anything(), 'lwt_secret');
+    expect(endAccess).toHaveBeenCalledWith({ tokenId: 'tok_1' }, 'revoked');
     await Promise.all(work);
+  });
+
+  it('revokes without a bearer to pass on, and reads a token with no name', async () => {
+    const ctx = makeTestRouteContext('DELETE', '/api/tokens/current', {
+      accountUserId: null,
+      owner: 'user_1',
+      token: { id: 'tok_1', expiresAt: 99 },
+    });
+    expect((await handleTokens(ctx)).status).toBe(204);
+    expect(db.revokePresentedToken).not.toHaveBeenCalled();
+    expect(endAccess).toHaveBeenCalledWith({ tokenId: 'tok_1' }, 'revoked');
+    const read = makeTestRouteContext('GET', '/api/tokens/current', {
+      accountUserId: null,
+      owner: 'user_1',
+      token: { id: 'tok_1', expiresAt: 99 },
+    });
+    expect(await (await handleTokens(read)).json()).toMatchObject({ tokenName: null });
   });
 
   it('answers not_a_token to a session, a guest, or a revoked token, and refuses other methods', async () => {
@@ -135,9 +133,13 @@ describe('/api/tokens/current (docs/specs/015-api/blueprints/cli.md "Token self-
       token: { id: 'tok_1' },
     });
     expect((await handleTokens(guest)).status).toBe(403);
-    db.listApiTokensByOwner.mockResolvedValue([]);
-    expect((await handleTokens(tokenCtx('GET'))).status).toBe(404);
-    db.listApiTokensByOwner.mockResolvedValue([live]);
+    // A token liveworkspace described without an expiry is no token this route can answer for.
+    const undescribed = makeTestRouteContext('GET', '/api/tokens/current', {
+      accountUserId: null,
+      owner: 'user_1',
+      token: { id: 'tok_1' },
+    });
+    expect((await handleTokens(undescribed)).status).toBe(404);
     expect((await handleTokens(tokenCtx('POST'))).status).toBe(405);
   });
 });

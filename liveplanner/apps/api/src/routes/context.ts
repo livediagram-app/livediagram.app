@@ -9,7 +9,7 @@ import { objectOrEmpty, type WorkbenchRole } from '@liveplanner/api-schema';
 
 import { capWorkbenchRole, levelAtLeast, type AccessLevel } from '@liveplanner/api-schema';
 import type { TeamClaim } from '@liveworkspace/auth-client';
-import type { WorkbenchReach } from '../db/workbench';
+import type { WorkbenchReach } from '../workbench-store';
 import type { GrantCaller, PlanGrant } from '../index-service';
 import { badRequest, forbidden, missingAuth, notFound } from '../responses';
 import type { ProjectDTO, Env, PlanEnv, ShareRole } from '../types';
@@ -61,7 +61,8 @@ export type RouteContext = {
   // The API token the request presented, or null for a signed-in session or a guest. Only a token
   // makes a changeset an agent's, and a token may never do a whole-tab save
   // (docs/specs/024-agents/agent-changesets.md). Optional so unit tests can leave it out.
-  token?: { id: string; readOnly?: boolean } | null;
+  // Its name and expiry are liveworkspace's answer when it was checked (the CLI's auth status, the workbench).
+  token?: { id: string; readOnly?: boolean; name?: string | null; expiresAt?: number } | null;
   // The presenting workbench session (docs/specs/013-workspace/workbench-embeds.md), or null for every other
   // caller. Under one, `accountUserId` and `token` are null and `resolveOwner()` is the owner: a person's editor on
   // one project, never a token and never an administrator. Optional so unit tests can leave it out.

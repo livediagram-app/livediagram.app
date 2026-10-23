@@ -1,7 +1,7 @@
 import type { TeamClaim } from '@liveworkspace/auth-client';
 import type { PlanGrant } from '../index-service';
 import { TEST_GRANT_HOOK, type TestGrantCaller } from '../test-sqlite-d1';
-import type { PlanRouteContext, WorkbenchContext } from './context';
+import type { PlanRouteContext, RouteContext, WorkbenchContext } from './context';
 import type { Env, PlanEnv } from '../types';
 
 // Shared test builder for RouteContext (docs/specs/003-system-architecture/testing.md). Eight route test
@@ -29,7 +29,7 @@ export function makeTestRouteContext(
     verifiedUserId?: string | null;
     accountEmail?: string | null;
     // The API token the request presented (docs/specs/024-agents/agent-changesets.md).
-    token?: { id: string; readOnly?: boolean } | null;
+    token?: RouteContext['token'];
     // The workbench session the request presented (docs/specs/013-workspace/workbench-embeds.md).
     workbench?: WorkbenchContext | null;
     // JSON-encoded into the request body when present.
@@ -85,12 +85,16 @@ function testGrant(
   env: Env | PlanEnv,
   segments: string[],
   method: string,
-  opts: { owner?: string | null; teams?: TeamClaim[] | null; headers?: Record<string, string>; body?: unknown },
+  opts: {
+    owner?: string | null;
+    teams?: TeamClaim[] | null;
+    headers?: Record<string, string>;
+    body?: unknown;
+  },
   verifiedUserId: string | null,
 ): PlanGrant | null {
   const hook = (env as unknown as Record<string, unknown>)[TEST_GRANT_HOOK] as
-    | ((planId: string, who: TestGrantCaller) => PlanGrant | null)
-    | undefined;
+    ((planId: string, who: TestGrantCaller) => PlanGrant | null) | undefined;
   if (!hook || segments[1] !== 'projects') return null;
   const create = segments.length === 2 && method === 'POST';
   const planId = create

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
 import { sqliteD1 } from '../test-sqlite-d1';
+import { workbenchStore } from '../workbench-store';
 import { deleteAccount } from './account';
 
 // Every column that holds an owner id, and what account deletion does with it (docs/specs/015-api/api.md,
@@ -21,12 +22,6 @@ type OwnerColumn = {
 const OWNER_COLUMNS: OwnerColumn[] = [
   // What a reader has seen of a form's responses (docs/specs/030-forms/forms.md).
   { table: 'form_reads', column: 'owner_id' },
-  { table: 'api_tokens', column: 'owner_id' },
-  // Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).
-  { table: 'workbench_pairing_requests', column: 'owner_id' },
-  { table: 'workbench_pairings', column: 'owner_id' },
-  { table: 'workbench_tickets', column: 'owner_id' },
-  { table: 'workbench_sessions', column: 'owner_id' },
   // A plan's own row (its Durable Object; one database holds every plan here): the index purges the owner's
   // plans, and each purge drops the plan's whole store.
   {
@@ -69,8 +64,19 @@ function insert(sql: DatabaseSync, table: string, row: Record<string, string | n
 
 // One row in every owner-keyed column, keyed on `id`.
 function seed(sql: DatabaseSync, id: string) {
-  insert(sql, 'test_plans', { id: `d-${id}`, owner_id: id, name: id, saved_at: T0, created_at: T0 });
-  insert(sql, 'form_links', { code: `form-${id}`, project_id: `d-${id}`, tab_id: `t-${id}`, created_at: T0 });
+  insert(sql, 'test_plans', {
+    id: `d-${id}`,
+    owner_id: id,
+    name: id,
+    saved_at: T0,
+    created_at: T0,
+  });
+  insert(sql, 'form_links', {
+    code: `form-${id}`,
+    project_id: `d-${id}`,
+    tab_id: `t-${id}`,
+    created_at: T0,
+  });
   insert(sql, 'form_reads', { code: `form-${id}`, owner_id: id, seen_number: 3 });
   insert(sql, 'tabs', { id: `tab-${id}`, name: 'Board', data: '{"elements":[]}', updated_at: T0 });
   insert(sql, 'agent_changesets', {
@@ -87,35 +93,6 @@ function seed(sql: DatabaseSync, id: string) {
     removed: 0,
     created_at: T0,
   });
-  insert(sql, 'api_tokens', {
-    id: `tok-${id}`,
-    owner_id: id,
-    token_hash: `hash-${id}`,
-    created_at: T0,
-    expires_at: T0 * 2,
-    revoked: 0,
-    read_only: 0,
-  });
-  const workbenchRow = { owner_id: id, token_id: `tok-${id}`, origin: 'https://w.example' };
-  insert(sql, 'workbench_pairing_requests', {
-    ...workbenchRow,
-    id: `wr-${id}`,
-    code: `code-${id}`,
-    status: 'pending',
-    created_at: T0,
-    expires_at: T0 * 2,
-  });
-  insert(sql, 'workbench_pairings', { ...workbenchRow, id: `wp-${id}`, created_at: T0 });
-  const opened = {
-    ...workbenchRow,
-    pairing_id: `wp-${id}`,
-    project_id: `d-${id}`,
-    role: 'edit',
-    created_at: T0,
-    expires_at: T0 * 2,
-  };
-  insert(sql, 'workbench_tickets', { ...opened, ticket_hash: `th-${id}` });
-  insert(sql, 'workbench_sessions', { ...opened, id: `ws-${id}`, secret_hash: `sh-${id}` });
 }
 
 function schemaOwnerColumns(sql: DatabaseSync): string[] {
@@ -178,5 +155,27 @@ describe('deleteAccount erases every owner-keyed row (docs/specs/015-api/api.md)
     await deleteAccount(env, ACCOUNT);
 
     for (const c of OWNER_COLUMNS) expect(count(sql, c, OTHER), label(c)).toBeGreaterThan(0);
+  });
+
+  it("closes the person's workbench store and no one else's", async () => {
+    const { env } = arrange();
+    const ask = (personId: string) =>
+      workbenchStore(env, personId).openPairingRequest({
+        personId,
+        token: { id: `tok-${personId}`, name: null, readOnly: false, expiresAt: T0 * 2 },
+        origin: 'https://w.example',
+        scope: 'project',
+        name: null,
+        now: T0,
+      });
+    const mine = await ask(ACCOUNT);
+    const theirs = await ask(OTHER);
+
+    await deleteAccount(env, ACCOUNT);
+
+    const status = (personId: string, code: string) =>
+      workbenchStore(env, personId).pairingRequestStatus(code, `tok-${personId}`, T0);
+    expect(await status(ACCOUNT, mine.code)).toBeNull();
+    expect(await status(OTHER, theirs.code)).toMatchObject({ status: 'pending' });
   });
 });

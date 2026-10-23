@@ -89,18 +89,19 @@ export async function getProjectThumbMeta(env: Env, id: string): Promise<Project
   const outline = await planRoom(env, id).outline();
   const meta = outline.meta;
   if (!meta) return null;
-  return { id, name: meta.name, savedAt: outline.savedAt, thumbRenderedAt: meta.thumbRenderedAt ?? null };
+  return {
+    id,
+    name: meta.name,
+    savedAt: outline.savedAt,
+    thumbRenderedAt: meta.thumbRenderedAt ?? null,
+  };
 }
 
 // What D1 and R2 hold about a plan, for when the index purges it (routes/internal-items.ts): its form links (their
-// reads and reports cascade), the workbench tickets and sessions scoped to it, and its cached snapshots. One D1
-// batch and one R2 delete, whatever the plan held.
+// reads and reports cascade) and its cached snapshots. One D1 statement and one R2 delete, whatever the plan held.
+// Workbench tickets and sessions scoped to it are in their owners' workbench stores: a ticket lapses in a minute,
+// and a session's every request is gated on the plan's grant, which a purged plan never gets again.
 export async function purgePlanRows(env: Env, id: string): Promise<void> {
-  await env.DB.batch([
-    env.DB.prepare('DELETE FROM form_links WHERE project_id = ?').bind(id),
-    env.DB.prepare('DELETE FROM workbench_tickets WHERE project_id = ?').bind(id),
-    env.DB.prepare('DELETE FROM workbench_session_rooms WHERE project_id = ?').bind(id),
-    env.DB.prepare('DELETE FROM workbench_sessions WHERE project_id = ?').bind(id),
-  ]);
+  await env.DB.prepare('DELETE FROM form_links WHERE project_id = ?').bind(id).run();
   if (env.SNAPSHOTS) await env.SNAPSHOTS.delete(snapshotKeys(id));
 }

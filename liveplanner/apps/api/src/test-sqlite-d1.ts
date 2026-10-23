@@ -7,12 +7,11 @@ import { migratePlanSchema } from './plan-room/plan-schema';
 import { nodePlanSql, nodeTransaction } from './test-plan-sql';
 import type { AccessLevel } from '@liveplanner/api-schema';
 import type { GrantCaller, GrantOutcome, PlanGrant } from './index-service';
-import {
-  IndexError,
-  type IndexClient,
-  type ShareAccess,
-} from '@liveworkspace/index-client';
+import { IndexError, type IndexClient, type ShareAccess } from '@liveworkspace/index-client';
 import type { Env, PlanEnv } from './types';
+import { memoryWorkbenchNamespace } from '@liveworkspace/index-app/testing';
+import { accountCredentials } from './auth/accounts';
+import { closeWorkbenchSessions } from './room-access-client';
 
 // A REAL D1 for tests: an in-memory SQLite database with every migration in
 // apps/api/migrations applied, behind the D1 prepare/bind/first/all/run/batch
@@ -96,7 +95,9 @@ export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
     if (sql.prepare('SELECT 1 FROM outbox LIMIT 1').all().length === 0) return;
     pushing = inPush.run(true, async () => {
       const { drainOutbox } = await import('./plan-room/plan-outbox');
-      const plans = sql.prepare('SELECT DISTINCT plan_id FROM outbox').all() as { plan_id: string }[];
+      const plans = sql.prepare('SELECT DISTINCT plan_id FROM outbox').all() as {
+        plan_id: string;
+      }[];
       for (const { plan_id } of plans) {
         let more = true;
         while (more) more = (await drainOutbox(env, plan_id)).more;
@@ -194,6 +195,13 @@ export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
       rooms = testPlanRooms(env, sql, next);
     },
   });
+  // Each person's workbench store, in memory (@liveworkspace/index-app/testing), closing rooms as the real one does.
+  if (!base.WORKBENCH) {
+    env.WORKBENCH = memoryWorkbenchNamespace<'project'>({
+      credentials: () => accountCredentials(env),
+      closeRoom: (planId, pairingId) => closeWorkbenchSessions(env, planId, pairingId),
+    }) as unknown as DurableObjectNamespace;
+  }
   return { env, sql, flush: push };
 }
 
@@ -215,7 +223,12 @@ export function testIndexFor(env: unknown, caller: GrantCaller): IndexClient | n
         create: false,
       });
       if (!grant) throw new IndexError(404, 'not_found');
-      return { grant: grant.token, level: grant.level, tabId: grant.tab, expiresAt: grant.exp * 1000 };
+      return {
+        grant: grant.token,
+        level: grant.level,
+        tabId: grant.tab,
+        expiresAt: grant.exp * 1000,
+      };
     },
     listFolders: async () => {
       const rows = sql
@@ -279,7 +292,12 @@ function testGrantFor(sql: DatabaseSync, planId: string, who: TestGrantCaller): 
   const plan = sql
     .prepare('SELECT owner_id, team_id, created_at FROM plan WHERE id = ?')
     .get(planId) as { owner_id: string; team_id: string | null; created_at: number } | undefined;
-  const grant = (level: AccessLevel, tab: string | null, sub: string, code: string | null): PlanGrant => ({
+  const grant = (
+    level: AccessLevel,
+    tab: string | null,
+    sub: string,
+    code: string | null,
+  ): PlanGrant => ({
     item: planId,
     level,
     tab,
@@ -289,13 +307,16 @@ function testGrantFor(sql: DatabaseSync, planId: string, who: TestGrantCaller): 
     shareCode: code,
     token: `test-grant:${planId}:${sub}`,
   });
-  if (!plan || !plan.created_at) return who.create && who.person ? grant('edit', null, who.person, null) : null;
+  if (!plan || !plan.created_at)
+    return who.create && who.person ? grant('edit', null, who.person, null) : null;
   if (who.person && who.person === plan.owner_id) return grant('edit', null, who.person, null);
   if (who.person && plan.team_id && who.teams.includes(plan.team_id))
     return grant('edit', null, who.person, null);
   if (who.code) {
     const link = sql
-      .prepare('SELECT role, level, tab_id, expires_at FROM test_share_links WHERE code = ? AND project_id = ?')
+      .prepare(
+        'SELECT role, level, tab_id, expires_at FROM test_share_links WHERE code = ? AND project_id = ?',
+      )
       .get(who.code, planId) as
       | { role: string; level: string | null; tab_id: string | null; expires_at: number | null }
       | undefined;
@@ -318,18 +339,19 @@ function testPlanRooms(
   const roomOf = (id: FakeId) =>
     rooms ? (rooms.get(id.roomId as DurableObjectId) as { fetch: typeof fetch }) : null;
   const ns = {
-    idFromName: (name: string): FakeId =>
-      ({
-        planName: name,
-        roomId: rooms ? rooms.idFromName(name) : name,
-        name,
-        toString: () => name,
-        equals: (other: DurableObjectId) => (other as FakeId).planName === name,
-      }),
+    idFromName: (name: string): FakeId => ({
+      planName: name,
+      roomId: rooms ? rooms.idFromName(name) : name,
+      name,
+      toString: () => name,
+      equals: (other: DurableObjectId) => (other as FakeId).planName === name,
+    }),
     get: (id: FakeId) => ({
       fetch: (input: RequestInfo | URL, init?: RequestInit) => {
         const room = roomOf(id);
-        return room ? room.fetch(input, init) : Promise.resolve(new Response(null, { status: 404 }));
+        return room
+          ? room.fetch(input, init)
+          : Promise.resolve(new Response(null, { status: 404 }));
       },
       outline: async (planId: string) =>
         (await import('./plan-room/plan-content')).readPlanOutline(env, planId),
@@ -351,11 +373,9 @@ function testPlanRooms(
       joined: async (planId: string, personId: string) => {
         const meta = await (await import('./plan-room/plan-content')).readPlanMeta(env, planId);
         if (!meta) return;
-        await (await import('./email/notifications')).notifyProjectJoin(
-          env,
-          { id: planId, ownerId: meta.ownerId, name: meta.name },
-          personId,
-        );
+        await (
+          await import('./email/notifications')
+        ).notifyProjectJoin(env, { id: planId, ownerId: meta.ownerId, name: meta.name }, personId);
       },
       importCopy: async (planId: string, copy: unknown) =>
         (await import('./plan-room/plan-content')).importPlanCopy(env, planId, copy as never),

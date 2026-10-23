@@ -9,7 +9,7 @@ import {
   type RoomTicketResponse,
 } from '@liveplanner/api-schema';
 import { adderKeyFor } from '../adder-key';
-import { noteWorkbenchSessionRoom } from '../db/workbench';
+import { workbenchStore } from '../workbench-store';
 import { linkCodeOf } from '../index-service';
 import { forbidden, json, notFound } from '../responses';
 import { openRoomTicket, sealRoomTicket } from '../room-ticket';
@@ -36,7 +36,7 @@ export async function handleProjectRoomRoutes(ctx: RouteContext): Promise<Respon
     );
     // A workspace session joins many rooms; each is recorded so ending its access closes them all (WB55).
     if (workbench?.scope === 'workspace')
-      await noteWorkbenchSessionRoom(env, workbench.sessionId, id);
+      await workbenchStore(env, workbench.ownerId).noteSessionRoom(workbench.sessionId, id);
     // A Participant's adder key (docs/specs/013-workspace/share-roles.md "Integrity"): what the room stamps on the
     // stickies and text it adds, so its editor knows which are its own.
     const person = linkCodeOf(grant.sub) ? null : grant.sub;
@@ -50,12 +50,13 @@ export async function handleProjectRoomRoutes(ctx: RouteContext): Promise<Respon
     const opened = await openRoomTicket(env, url.searchParams.get('t'), id);
     if (!opened) return forbidden();
     const { claims, workbench } = opened;
-    const role: AccessLevel = workbench ? capWorkbenchRole(claims.level, workbench.cap) : claims.level;
+    const role: AccessLevel = workbench
+      ? capWorkbenchRole(claims.level, workbench.cap)
+      : claims.level;
     const person = linkCodeOf(claims.sub) ? null : claims.sub;
     // The share code a session came in by, so revoking it closes exactly its sockets: a link visitor's grant
     // names it; a person who opened a link says so on `?s=` (it only ever closes, so it needs no proof).
-    const shareCode =
-      linkCodeOf(claims.sub) ?? (url.searchParams.get('s')?.slice(0, 64) || null);
+    const shareCode = linkCodeOf(claims.sub) ?? (url.searchParams.get('s')?.slice(0, 64) || null);
     const forwarded = new Request(request);
     // Every trust header is stamped UNCONDITIONALLY: `new Request` copies the client's own headers, and the room
     // believes whatever arrives under these names (room-session.ts).

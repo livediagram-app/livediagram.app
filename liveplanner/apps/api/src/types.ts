@@ -12,7 +12,6 @@ export type {
   TabSummary as TabSummaryDTO,
   TabRecord as TabDTO,
   Folder as FolderDTO,
-  ApiToken as ApiTokenDTO,
   ParticipantRecord as ParticipantDTO,
   ParticipantPresence,
   ShareRole,
@@ -26,12 +25,15 @@ import type { PlanRoom } from './plan-room/plan-room';
 // Worker bindings injected by Cloudflare at runtime. Not part of the
 // wire format (purely a server-side capability handle).
 export type Env = {
-  // What is neither a plan's content nor the index's (docs/specs/015-api/api.md "Storage"): API tokens, form
-  // links and workbench embeds. A person's settings and profile are the liveworkspace accounts Worker's.
+  // What is neither a plan's content nor the index's (docs/specs/015-api/api.md "Storage"): form links. A
+  // person's settings, profile and API tokens are the liveworkspace accounts Worker's.
   DB: D1Database;
   // Each plan's Durable Object (src/plan-room/plan-room.ts): its content, in its own SQLite, and its
   // realtime room. Reached through plan-client.ts `planRoom(env, planId)`.
   PLAN_ROOM: DurableObjectNamespace<PlanRoom>;
+  // Each person's workbench (src/workbench-store.ts, @liveworkspace/index-app workbench.ts): their pairing
+  // requests, pairings, tickets and sessions, in its own SQLite.
+  WORKBENCH: DurableObjectNamespace;
   // liveworkspace's index (liveworkspace/docs/one-explorer.md, src/index-service.ts): where every plan is and who
   // may open it. INDEX_ORIGIN is its origin (`https://liveworkspace.app`; locally `http://127.0.0.1:8793`): the
   // grants this api checks are signed by `${INDEX_ORIGIN}/api/index/jwks`. INDEX_KEY is this app's key there, a

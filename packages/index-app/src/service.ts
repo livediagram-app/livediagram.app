@@ -150,19 +150,19 @@ export function createIndexService<A extends App>(app: A) {
     app,
 
     // Tests check grants against a local key set (or a stub) instead of fetching the index's.
-    setGrantVerifierForTests(verify: GrantVerifier | null): void {
+    setGrantVerifierForTests: (verify: GrantVerifier | null): void => {
       verifierOverride = verify;
     },
-    clearGrantCacheForTests(): void {
+    clearGrantCacheForTests: (): void => {
       grantCache.clear();
     },
 
     // The claims of a grant for this item, or null for a missing, forged, expired or misaddressed one.
-    async verifyGrant(
+    verifyGrant: async (
       env: Pick<IndexEnv, 'INDEX_ORIGIN'>,
       token: string | null | undefined,
       itemId: string,
-    ): Promise<GrantClaims | null> {
+    ): Promise<GrantClaims | null> => {
       if (!token) return null;
       const verify = verifierFor(env);
       if (!verify) return null;
@@ -178,13 +178,13 @@ export function createIndexService<A extends App>(app: A) {
       return claims;
     },
 
-    async requestGrant(
+    requestGrant: async (
       env: IndexEnv,
       caller: GrantCaller,
       itemId: string,
       share: ShareAccess | null,
       now = Date.now(),
-    ): Promise<GrantOutcome> {
+    ): Promise<GrantOutcome> => {
       const key = cacheKey(caller, itemId, share);
       const cached = grantCache.get(key);
       if (cached && cached.until > now) return { ok: true, grant: cached.grant };
@@ -211,7 +211,7 @@ export function createIndexService<A extends App>(app: A) {
     appOptions,
 
     // What an item pushes (outbox.ts): its summary, each tab's comments and actions, its Timeline events.
-    appClient(env: IndexEnv): IndexAppClient | null {
+    appClient: (env: IndexEnv): IndexAppClient | null => {
       const options = appOptions(env);
       return options ? createIndexAppClient(options) : null;
     },

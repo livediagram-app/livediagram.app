@@ -32,8 +32,8 @@ vi.mock('next/dynamic', () => ({
     },
 }));
 
-const SECRET = `lvw_${'a'.repeat(43)}`;
-const RENEWED = `lvw_${'b'.repeat(43)}`;
+const SECRET = `lvw_${'a'.repeat(43)}.${'0f'.repeat(32)}`;
+const RENEWED = `lvw_${'b'.repeat(43)}.${'0f'.repeat(32)}`;
 
 function sessionOf(secret = SECRET): WorkbenchSession {
   return {

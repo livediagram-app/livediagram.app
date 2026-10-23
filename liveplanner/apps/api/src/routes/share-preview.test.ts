@@ -14,14 +14,18 @@ vi.mock('../db/projects', () => ({
   shareCardKey: (id: string) => `og/${id}`,
 }));
 vi.mock('../index-service', () => ({
-  indexFor: () => ({
-    resolveShare: async (code: string, password: string | null) => {
-      const link = (await getShareLink(code, password)) as Link | 'password' | null;
-      if (!link) throw new IndexError(404, 'not_found');
-      if (link === 'password') throw new IndexError(401, 'password_required');
-      return { item: { id: link.projectId }, level: link.role, tabId: link.tabId };
-    },
-  }),
+  // A deployment without an index (NO_INDEX here) reaches none.
+  indexFor: (env: { NO_INDEX?: boolean }) =>
+    env.NO_INDEX
+      ? null
+      : {
+          resolveShare: async (code: string, password: string | null) => {
+            const link = (await getShareLink(code, password)) as Link | 'password' | null;
+            if (!link) throw new IndexError(404, 'not_found');
+            if (link === 'password') throw new IndexError(401, 'password_required');
+            return { item: { id: link.projectId }, level: link.role, tabId: link.tabId };
+          },
+        },
 }));
 vi.mock('../project-image', () => ({ projectImageSvg: vi.fn() }));
 vi.mock('../share-card-png', () => ({ shareCardPng: vi.fn() }));
@@ -64,9 +68,15 @@ function bucket(stored: Stored | null = null) {
   };
 }
 
-function call(path: string, opts: { images?: ReturnType<typeof bucket>; method?: string } = {}) {
+function call(
+  path: string,
+  opts: { images?: ReturnType<typeof bucket>; method?: string; noIndex?: boolean } = {},
+) {
   const waits: Promise<unknown>[] = [];
-  const env = (opts.images ? { SNAPSHOTS: opts.images } : {}) as unknown as Env;
+  const env = {
+    ...(opts.images ? { SNAPSHOTS: opts.images } : {}),
+    ...(opts.noIndex ? { NO_INDEX: true } : {}),
+  } as unknown as Env;
   const ctx = makeTestRouteContext(opts.method ?? 'GET', `/api${path}`, {
     env,
     waitUntil: (p) => void waits.push(p),
@@ -114,6 +124,11 @@ describe('GET /api/share/<code>/card', () => {
   it('is 404 for an unknown, revoked or expired code', async () => {
     vi.mocked(getShareLink).mockResolvedValue(null);
     expect((await call('/share/NOPE/card').result)!.status).toBe(404);
+  });
+
+  it('is 404 on a deployment without an index', async () => {
+    expect((await call('/share/CODE1234/card', { noIndex: true }).result)!.status).toBe(404);
+    expect(getShareLink).not.toHaveBeenCalled();
   });
 
   it('is 404 for a trashed or missing project', async () => {

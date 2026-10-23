@@ -60,7 +60,7 @@ describe('getPersonIdentity (guest fall-through)', () => {
 
   it.each([
     ['an API token', `lwt_${'a'.repeat(43)}`],
-    ['a workbench session', `lvw_${'w'.repeat(43)}`],
+    ['a workbench session', `lvw_${'w'.repeat(43)}.${'0f'.repeat(32)}`],
   ])('passes %s through to the token paths without verifying', async (_kind, bearer) => {
     expect(await getPersonIdentity(CONFIGURED, request(`Bearer ${bearer}`))).toBeNull();
     expect(verifyMock).not.toHaveBeenCalled();
@@ -121,6 +121,10 @@ describe('getPersonIdentity (verified token)', () => {
       email: 'ada@example.com',
     });
     verifyMock.mockResolvedValue(claims({ email: 'ada@example.com', emailVerified: false }));
+    expect(await getPersonIdentity(CONFIGURED, request('Bearer t'))).toMatchObject({
+      email: null,
+    });
+    verifyMock.mockResolvedValue(claims({ email: '   ', emailVerified: true }));
     expect(await getPersonIdentity(CONFIGURED, request('Bearer t'))).toMatchObject({
       email: null,
     });

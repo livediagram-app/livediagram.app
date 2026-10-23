@@ -25,11 +25,8 @@ type AuthSighting = 'SignedUp' | 'SignedIn' | null;
 export async function reportSignIn(env: Env, userId: string): Promise<AuthSighting> {
   const first = await recordOwnerSighting(env, userId);
   if (first === null || !telemetryEnabled(env)) return null;
-  try {
-    const action = first ? 'SignedUp' : 'SignedIn';
-    await reportServerEvent(env, 'Session', action);
-    return action;
-  } catch {
-    return null;
-  }
+  // Never throws: a telemetry service that can't be reached counts nothing.
+  const action = first ? 'SignedUp' : 'SignedIn';
+  await reportServerEvent(env, 'Session', action);
+  return action;
 }

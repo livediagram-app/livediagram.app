@@ -1,5 +1,5 @@
-// Thin wrappers over what the api stores, split by resource: D1 for API tokens, form links and workbench embeds,
-// and each plan's own SQLite (`env.PLAN_DB`, inside its Durable Object) for its content.
+// Thin wrappers over what the api stores, split by resource: D1 for form links, and each plan's own SQLite (inside
+// its Durable Object) for its content. API tokens are checked with liveworkspace (api-tokens.ts).
 //
 // This barrel re-exports every resource module so callers keep
 // importing from '../db'. Add a new query to its resource module (or

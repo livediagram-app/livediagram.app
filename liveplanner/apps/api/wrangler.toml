@@ -42,7 +42,7 @@ INDEX_ORIGIN = "https://liveworkspace.app"
 # from an older CLI.
 OAUTH_ISSUER = "https://mcp.liveplanner.app"
 
-# D1 database holding API tokens, form links and workbench embeds. A plan's
+# D1 database holding form links. A plan's
 # content is its Durable Object's, where it is filed the index's, and a person's
 # settings and profile the liveworkspace accounts Worker's. The local binding name
 # (`DB`) is what `src/db.ts` reads via the Env type. The `database_name`
@@ -100,23 +100,17 @@ simple = { limit = 120, period = 60 }
 name = "PLAN_ROOM"
 class_name = "PlanRoom"
 
-# liveplanner has never been deployed, so the class starts SQLite-backed with no rename history.
+# Each person's workbench (src/workbench-store.ts, docs/specs/013-workspace/blueprints/workbench-embeds.md "Data
+# and persistence"): one SQLite-backed instance per person, holding their pairing requests, pairings, tickets and
+# sessions. Its alarm checks the tokens behind live sessions and sweeps spent rows.
+[[durable_objects.bindings]]
+name = "WORKBENCH"
+class_name = "WorkbenchStore"
+
+# liveplanner has never been deployed, so the classes start SQLite-backed with no rename history.
 [[migrations]]
 tag = "v1"
-new_sqlite_classes = ["PlanRoom"]
-
-# Scheduled jobs the worker handles via the `scheduled` export. One
-# entry per cron; each fires the same handler with `event.cron` set
-# to the matching pattern so the body can dispatch.
-#
-# `0 3 * * *`: daily at 03:00 UTC. Fires independent retention sweeps
-# on this trigger (telemetry's retention is liveworkspace's, liveworkspace/docs/telemetry.md; the
-# onboarding emails are liveworkspace's, liveworkspace/docs/accounts.md "Onboarding emails").
-#
-# `*/5 * * * *`: every five minutes, follow liveworkspace's teams change feed into this app's copy
-# and mark tokens revoked on liveworkspace.app (liveworkspace/docs/accounts.md "How an app keeps up").
-[triggers]
-crons = ["0 3 * * *", "*/5 * * * *"]
+new_sqlite_classes = ["PlanRoom", "WorkbenchStore"]
 
 # Per-IP limiter for share-code resolution (GET /api/share/<code>). That
 # read carries the optional share password and is otherwise unauthed +
@@ -332,15 +326,13 @@ simple = { limit = 60, period = 60 }
 name = "PLAN_ROOM"
 class_name = "PlanRoom"
 
+[[env.staging.durable_objects.bindings]]
+name = "WORKBENCH"
+class_name = "WorkbenchStore"
+
 [[env.staging.migrations]]
 tag = "v1"
-new_sqlite_classes = ["PlanRoom"]
-
-# The daily 03:00 UTC sweeps (retention, the workbench sweep) run on
-# staging too, against staging's own data. Restated rather than inherited so
-# that reading this block tells you what the staging worker actually does.
-[env.staging.triggers]
-crons = ["0 3 * * *", "*/5 * * * *"]
+new_sqlite_classes = ["PlanRoom", "WorkbenchStore"]
 
 # The four ACCOUNTS_* / API_RESOURCE values, INDEX_KEY and
 # TELEMETRY_KEY come from the

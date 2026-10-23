@@ -9,6 +9,7 @@
 // or someone's first time in through a link (the owner's "someone joined" email).
 import { handleInternalItems as handle } from '@liveworkspace/index-app';
 import { notifyFirstShare } from '../email/notifications';
+import { deleteAccount } from '../db/account';
 import { purgePlanRows } from '../db/projects';
 import { planRoom } from '../plan-client';
 import type { Env } from '../types';
@@ -33,8 +34,9 @@ export function handleInternalItems(
         notice.type === 'shared'
           ? notifyFirstShare(env, notice.actorId)
           : planRoom(env, id).joined(notice.personId),
-      // A closed account: their name off each plan of someone else's that names them. What liveplanner keeps
-      // for them beside their plans goes with their account (routes/account.ts).
+      // A closed account, wherever it was closed: what liveplanner keeps for them beside their plans (their
+      // workbench, what they had seen of forms), and their name off each plan of someone else's that names them.
+      personClosed: (personId) => deleteAccount(env, personId),
       anonymise: (id, personId) => planRoom(env, id).anonymise(personId),
       copy: async (from, to, tabId) => {
         const copy = await planRoom(env, from).exportCopy(tabId, null);

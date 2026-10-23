@@ -31,7 +31,7 @@ It provides these names to sibling blueprints ([CLI](../../015-api/blueprints/cl
 | `workbenchRouteVerdict(method, segments, session)`                   | The confinement allow-list, shared by the api choke point and the editor |
 | `parseWorkbenchOrigin(input)`                                        | The one origin rule, shared by the api, the CLI and the page             |
 | `WORKBENCH_SESSION_PREFIX` `lvw_`, `isWorkbenchSessionFormat`        | The third bearer kind                                                    |
-| `endWorkbenchAccess(env, target, reason)`                            | Unpair and token revocation: rows gone, rooms closed                     |
+| `workbenchStore(env, personId).endAccess(target, reason)`            | Unpair and token revocation: rows gone, rooms closed                     |
 | `WorkbenchScope = 'project' \| 'workspace'`, `WORKBENCH_SCOPES`      | The scope of a ticket, session and pairing                               |
 | `pairingCoversScope(pairingScope, asked)`                            | Whether a pairing lets a mint of that scope through                      |
 | `workspaceFramePath(place)`, `workspacePlaceOf(pathname, search)`    | The workspace frame's addresses, both ways                               |
@@ -45,16 +45,15 @@ It provides these names to sibling blueprints ([CLI](../../015-api/blueprints/cl
 
 | File                                                                                                                                                                               | Role                                                                                                                                                                                                |
 | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/api/migrations/0001_liveplanner_baseline.sql`                                                                                                                                | Tables `workbench_pairing_requests`, `workbench_pairings`, `workbench_tickets`, `workbench_sessions`; `ws_tickets.workbench_pairing`                                                                |
+| `apps/api/wrangler.toml`                                                                                                                                                           | The `WORKBENCH` Durable Object binding and its SQLite class                                                                                                                                         |
 | `packages/api-schema/src/workbench.ts` (new, + test)                                                                                                                               | Constants; wire types of every route; `parseWorkbenchOrigin`; `isWorkbenchSessionFormat`; `WorkbenchRole`, `capWorkbenchRole`; `WORKBENCH_ERROR_CODES`; `WORKBENCH_ROUTES`, `workbenchRouteVerdict` |
 | `packages/api-schema/src/workbench-messages.ts` (new, + test)                                                                                                                      | The ten message types, `WORKBENCH_MESSAGE_TYPES`, `parseWorkbenchMessage`                                                                                                                           |
 | `packages/api-schema/src/room-messages.ts`                                                                                                                                         | `WORKBENCH_ENDED_CLOSE = 4006`                                                                                                                                                                      |
 | `packages/api-schema/src/page-views.ts`                                                                                                                                            | `LIVE_ROUTE_SEGMENTS` gains `workbench`, so the router sends `/workbench/pair` to the editor app                                                                                                    |
 | `packages/api-schema/src/index.ts`                                                                                                                                                 | Re-exports the two new modules                                                                                                                                                                      |
-| `apps/api/src/db/workbench.ts` (new, + test)                                                                                                                                       | Every query on the four tables (Data and persistence)                                                                                                                                               |
-| `apps/api/src/auth/workbench-session.ts` (new, + test)                                                                                                                             | `generateWorkbenchSecret`, `generateWorkbenchTicket`, `generatePairingCode`, `hashWorkbenchSecret`, `resolveWorkbenchSession`                                                                       |
+| `apps/api/src/workbench-store.ts`, `workbench-store-do.ts`, `packages/index-app/src/workbench.ts` (+ test)                                                                         | The person's workbench store and every query on it (Data and persistence)                                                                                                                           |
+| `apps/api/src/auth/workbench-session.ts` (new, + test)                                                                                                                             | `resolveWorkbenchSession`: the store a secret names, one read                                                                                                                                       |
 | `apps/api/src/auth/workbench-confinement.ts` (new, + test)                                                                                                                         | `workbenchRefusal(ctx-like, method, segments, headers)`: the choke point's verdict to a `Response`                                                                                                  |
-| `apps/api/src/workbench-end.ts` (new, + test)                                                                                                                                      | `endWorkbenchAccess`: list sessions, delete rows, close rooms, log                                                                                                                                  |
 | `apps/api/src/routes/workbench.ts`                                                                                                                                                 | `handleWorkbench(ctx)`: dispatch of `segments[2]` to the three modules below                                                                                                                        |
 | `apps/api/src/routes/workbench-ticket-route.ts` (new, + test)                                                                                                                      | `POST /api/workbench/tickets`                                                                                                                                                                       |
 | `apps/api/src/routes/workbench-session-routes.ts` (new, + test)                                                                                                                    | `POST /api/workbench/sessions`, `DELETE /api/workbench/sessions/current`                                                                                                                            |
@@ -62,14 +61,14 @@ It provides these names to sibling blueprints ([CLI](../../015-api/blueprints/cl
 | `apps/api/src/routes/workbench-access.ts`                                                                                                                                          | `ownerProjectAccess`: the owner's own access to a project, shared by the mint and redemption (WB3)                                                                                                  |
 | `apps/api/src/routes/workbench-test-fixtures.ts`                                                                                                                                   | The route suites' shared real-SQLite arrangement (not a suite)                                                                                                                                      |
 | `apps/api/src/routes/context.ts`                                                                                                                                                   | `RouteContext.workbench`; `WorkbenchContext`                                                                                                                                                        |
-| `apps/api/src/index.ts`                                                                                                                                                            | `lvw_` resolution beside `lwt_`; confinement; level refusal; rate limiter; `case 'workbench'`; the daily sweep                                                                                      |
+| `apps/api/src/index.ts`                                                                                                                                                            | `lvw_` resolution beside `lwt_`; confinement; level refusal; rate limiter; `case 'workbench'`; exports the `WorkbenchStore` class                                                                   |
 | `apps/api/src/routes/project-room-routes.ts`                                                                                                                                       | Ticket mint under a session: `account` true, owner's person tag, role capped at the session's level, `workbenchPairing`; upgrade forwards `X-Verified-Workbench-Pairing`                            |
 | apps/api/src/db/ws-tickets.ts (removed)                                                                                                                                            | `WsAdmission.workbenchPairing`; insert and consume the column                                                                                                                                       |
 | `apps/api/src/plan-room/plan-room.ts`, `room-session.ts`                                                                                                                           | Attachment `workbenchPairing` from the header; `/close-sessions` closes a `workbench` match with 4006                                                                                               |
 | `apps/api/src/room-access.ts`                                                                                                                                                      | `AccessCloseMatch` gains `{ match: 'workbench'; pairingId }`; parse and match                                                                                                                       |
 | `apps/api/src/room-access-client.ts`                                                                                                                                               | `closeWorkbenchSessions(env, projectId, pairingId)`                                                                                                                                                 |
-| `apps/api/src/routes/tokens.ts`                                                                                                                                                    | Both revokes call `endWorkbenchAccess({ tokenId }, 'revoked')` after `revokeApiToken`                                                                                                               |
-| `apps/api/src/db/account.ts`, `apps/api/src/db/account-owner-columns.test.ts`                                                                                                      | `deleteAccount` deletes the four tables' rows before `api_tokens`; four `account-only` ledger rows                                                                                                  |
+| `apps/api/src/routes/tokens.ts`                                                                                                                                                    | The self-revoke ends the token's access in the person's store after liveworkspace revokes it                                                                                                        |
+| `apps/api/src/db/account.ts`, `apps/api/src/db/account-owner-columns.test.ts`                                                                                                      | `deleteAccount` closes the person's workbench store                                                                                                                                                 |
 | `apps/api/src/responses.ts`                                                                                                                                                        | `workbenchConfined()`, `pairingRequired(body)`                                                                                                                                                      |
 | `apps/api/src/types.ts`, `apps/api/wrangler.toml`                                                                                                                                  | `WORKBENCH_TICKET_RATE_LIMITER` (namespace `1010`, 30 per 60 s), production and `[env.staging]`                                                                                                     |
 | `apps/api/src/openapi/manifest.ts`, `project.ts`, `schemas.generated.ts`                                                                                                           | Eleven operations under segment `workbench`, tag `Workbench`; the 428 and 401 bodies                                                                                                                |
@@ -144,7 +143,6 @@ The workspace scope adds or changes, by file:
 | `apps/api/src/routes/workbench-ticket-route.ts`, `workbench-session-routes.ts`, `workbench-pairing-routes.ts`                                                              | The scoped mint, redemption, requests and pairings                                                                                                        |
 | `apps/api/src/routes/workbench-access.ts`                                                                                                                                  | `ownerReachesFolder` beside `ownerProjectAccess`                                                                                                          |
 | `apps/api/src/routes/project-room-routes.ts`                                                                                                                               | A workspace session's room ticket records its project (`noteWorkbenchSessionRoom`)                                                                        |
-| `apps/api/src/workbench-end.ts`                                                                                                                                            | Rooms of workspace sessions from `workbench_session_rooms`                                                                                                |
 | `apps/editor/lib/workbench/workspace-place.ts` (new, + test)                                                                                                               | `WorkspacePlace`, `workspacePlaceOf`, `workspaceFramePath`, `framePathOfAppHref`, `appHrefOfPlace`, `placeView`                                           |
 | `apps/editor/lib/workbench/workbench-frame-path.ts` (new, + test)                                                                                                          | `WORKBENCH_FRAME_PAGE` `/embed/workbench/explorer`, `isWorkspaceFramePath`: the rewrite the editor worker and the e2e stack share                         |
 | `apps/editor/lib/app-location.ts` (new, + test)                                                                                                                            | `assignAppLocation`, `setAppNavigationInterceptor`; every `window.location.assign` the Explorer makes goes through it                                     |
@@ -179,12 +177,12 @@ The workspace scope adds or changes, by file:
 | Workbench           | the frame's parent, known by its origin                               | A developer tool that frames the editor beside an agent                   |
 | Workbench name      | `name` (pairing, request), `hello-ack.name`                           | The tool's display name ("Acme Editor"), shown in copy, never enforced    |
 | Origin              | `WorkbenchOrigin` (branded string), `parseWorkbenchOrigin`            | `scheme://host[:port]`, the enforced identity of a workbench              |
-| Pairing request     | `workbench_pairing_requests` row, `PairingRequestStatus`              | One ask to pair a token with an origin, answered once                     |
+| Pairing request     | `wb_pairing_requests` row, `PairingRequestStatus`                     | One ask to pair a token with an origin, answered once                     |
 | Pairing code        | `code` (`?code=`)                                                     | The request's public handle in the pairing URL                            |
-| Pairing             | `workbench_pairings` row, `WorkbenchPairing`                          | A token and an origin its owner approved                                  |
+| Pairing             | `wb_pairings` row, `WorkbenchPairing`                                 | A token and an origin its owner approved                                  |
 | Unpair              | `DELETE /api/workbench/pairings/:id`                                  | Removing a pairing and ending its sessions                                |
-| Workbench ticket    | `workbench_tickets` row; the 22-character secret                      | Single-use, one-minute credential that opens one session                  |
-| Workbench session   | `workbench_sessions` row; `lvw_` secret; `WorkbenchContext`           | The frame acting as the person on one project                             |
+| Workbench ticket    | `wb_tickets` row; the routed secret                                   | Single-use, one-minute credential that opens one session                  |
+| Workbench session   | `wb_sessions` row; `lvw_` secret; `WorkbenchContext`                  | The frame acting as the person on one project                             |
 | Session level       | `WorkbenchRole` (`role` on the wire)                                  | `view` or `edit` (participate reserved), the token's level on the project |
 | Confinement         | `WORKBENCH_ROUTES`, `workbenchRouteVerdict`, `403 workbench_confined` | What a session may reach                                                  |
 | Workbench page      | `/embed/workbench`, `WorkbenchPage`, `WorkbenchPhase`                 | The frameable page that binds and hosts the editor                        |
@@ -235,7 +233,7 @@ Don't allow).
                                                         └──now ≥ expires_at──▶ expired (read as such)
 ```
 
-1. **Ask from a mint.** `POST /api/workbench/tickets` for an origin with no `workbench_pairings` row for the token
+1. **Ask from a mint.** `POST /api/workbench/tickets` for an origin with no pairing for the token
    calls `livePairingRequest(tokenId, origin)` (`status = 'pending' AND expires_at > now`); none creates one with
    `name` null. The answer is `428 pairing_required { pairingUrl, expiresAt }`. Log `[workbench] pairing-requested`.
 2. **Ask from `workbench pair`.** `POST /api/workbench/pairing-requests { origin, name? }` returns
@@ -253,9 +251,9 @@ Don't allow).
    `{ status, expiresAt, interval }`; the CLI polls it every `interval` seconds.
 6. **Paired.** Mints for that token and origin now pass the pairing check.
 7. **Unpair.** `DELETE /api/workbench/pairings/:id` (signed-in session, the token's owner) runs
-   `endWorkbenchAccess({ pairingId }, 'unpaired')`.
-8. **Token revoked.** Both revoke routes run `endWorkbenchAccess({ tokenId }, 'revoked')`: pairings, pending
-   requests, tickets and sessions of the token go.
+   the person's store's `endAccess({ pairingId }, 'unpaired')`.
+8. **Token revoked.** `DELETE /api/tokens/current`, and the store's own check of its tokens with liveworkspace, run
+   `endAccess({ tokenId }, 'revoked')`: pairings, pending requests, tickets and sessions of the token go.
 
 A request row stays after its answer until the sweep, so the waiting CLI reads the answer; it is never answered
 twice (the `status = 'pending'` guard).
@@ -285,9 +283,9 @@ In order; the first failure answers:
 
 Credential-free: an `Authorization` other than `lvw_` is ignored; `lvw_` is confined (WB5).
 
-1. Body `{ ticket }`, `ticket` matching `^[A-Za-z0-9_-]{22}$`, else `400 bad_request` (`invalid ticket`).
-2. Consume: `UPDATE workbench_tickets SET used_at = ? WHERE ticket_hash = ? AND used_at IS NULL AND expires_at > ?
-RETURNING ...`. No row: `SELECT used_at, expires_at` classifies `used`, `expired` or `unknown`, logged
+1. Body `{ ticket }`, `ticket` matching `WORKBENCH_TICKET_PATTERN`, else `400 bad_request` (`invalid ticket`).
+2. Consume, in the store the ticket names: `UPDATE wb_tickets SET used_at = ? WHERE ticket_hash = ? AND used_at IS
+NULL AND expires_at > ? RETURNING ...`. No row: `SELECT used_at` classifies `used`, `expired` or `unknown`, logged
    `[workbench] session-refused`, answered `401 invalid_ticket { reason }`.
 3. The token must be live and the pairing present (joined in step 2's `RETURNING` query through `token_id` and
    `pairing_id`); else `401 invalid_ticket { reason: 'unknown' }`.
@@ -302,9 +300,8 @@ RETURNING ...`. No row: `SELECT used_at, expires_at` classifies `used`, `expired
 
 Resolved where `lwt_` is, only when no account access token verified:
 
-1. `bearer` matching `isWorkbenchSessionFormat` → `resolveWorkbenchSession(env, bearer, now)`:
-   `SELECT s.*, t.read_only, t.revoked, t.expires_at AS token_expires_at FROM workbench_sessions s JOIN api_tokens t
-ON t.id = s.token_id WHERE s.secret_hash = ?`. No row → `unknown`; token revoked or expired → `revoked`;
+1. `bearer` matching `isWorkbenchSessionFormat` → `resolveWorkbenchSession(env, bearer, now)`: one `readSession`
+   call on the store the secret names, the session by its hash with its token's state. No row → `unknown`; token revoked or expired → `revoked`;
    `s.expires_at <= now` → `expired`. Refused: log `[workbench] bearer-refused { reason, sessionPrefix }`, answer
    `401 invalid_session` with `WWW-Authenticate: Bearer error="invalid_token"`.
 2. `ctx.workbench = { sessionId, ownerId, tokenId, pairingId, projectId, tabId, origin, level }`, `level` lowered to
@@ -360,16 +357,15 @@ Everything else is `confined`, among it: `projects/:doc` `DELETE`, `copy`, `fold
   socket `mine` through the person tag, so it never holds against the owner's agent, and the CLI's `selected`
   reads it.
 
-### Ending access (`endWorkbenchAccess`)
+### Ending access (the store's `endAccess`)
 
-`target` is `{ pairingId }` or `{ tokenId }`; `reason` is `unpaired` or `revoked`.
+`target` is `{ pairingId }` or `{ tokenId }`; `reason` is `unpaired`, `revoked` or `closed` (the account closed).
 
-1. Read the target's pairings with every project any of their sessions names (`SELECT DISTINCT pairing_id,
-project_id FROM workbench_sessions WHERE pairing_id IN (...)`).
-2. One batch: `DELETE FROM workbench_pairings` of the target (sessions and tickets cascade); for a token, also
-   `DELETE FROM workbench_pairing_requests WHERE token_id = ?`.
-3. Close: `closeWorkbenchSessions(env, projectId, pairingId)` per pair, `TEAM_ROOM_CLOSE_CONCURRENCY` at a time,
-   best-effort (the D1 delete is the change).
+1. Read the target's pairings with every plan any of their sessions names or joined (`wb_session_rooms`).
+2. Delete the target's pairings (sessions, tickets and rooms cascade); for a token, also its pairing requests, and
+   it is marked revoked.
+3. Close: `closeWorkbenchSessions(env, projectId, pairingId)` per pair, 10 at a time, best-effort (the delete is
+   the change).
 4. Log `[workbench] session-ended { reason, projectId, tokenId, sessionPrefix }` per session read in step 1, and
    `[workbench] unpaired { tokenId, pairingId, rooms, unreached }` for each pairing.
 
@@ -396,7 +392,7 @@ Transitions, in order:
 
 1. `reading`: `takeTicketFromAddress` reads `location.hash` as `URLSearchParams`, takes `ticket`, and calls
    `history.replaceState(null, '', pathname + search)` before any request. `d` from `?d=`. A ticket failing the
-   22-character shape, or none: `refused('no-ticket')`.
+   ticket shape (`WORKBENCH_TICKET_PATTERN`), or none: `refused('no-ticket')`.
 2. `redeeming`: `apiRedeemWorkbenchTicket(ticket)` with no credential. `401 invalid_ticket`, 404 or 410:
    `refused('ticket')`. A 201 whose `projectId` differs from `d`: `apiEndWorkbenchSession(secret)`, post
    `ended { reason: 'refused' }` to `origin`, `refused('mismatch')`.
@@ -620,11 +616,10 @@ Everything else is `confined`, among it (Never the account): `account`, `migrate
 #### Route effects under a workspace session
 
 - `project-room-routes.ts` mint: as the project scope (`account` true, the owner's person tag, the role capped at
-  the session's level, `workbenchPairing`), and `noteWorkbenchSessionRoom(env, sessionId, projectId)` (`INSERT OR
-IGNORE`) so ending access finds the room (WB55).
-- `endWorkbenchAccess`: step 1 reads the (pairing, project) pairs from `workbench_sessions.project_id` and from
-  `workbench_session_rooms` joined to the sessions, so a workspace session's rooms close with 4006 like a project
-  session's.
+  the session's level, `workbenchPairing`), and the store's `noteSessionRoom(sessionId, projectId)` so ending access
+  finds the room (WB55).
+- `endAccess`: step 1 reads the (pairing, plan) pairs from `wb_sessions.item_id` and from `wb_session_rooms` joined
+  to the sessions, so a workspace session's rooms close with 4006 like a project session's.
 
 #### The workspace frame (`/embed/workbench/explorer...`)
 
@@ -959,113 +954,55 @@ covers them by dispatch probe.
 
 ## Data and persistence
 
-The baseline migration, `apps/api/migrations/0001_liveplanner_baseline.sql` (WB40, WB64), creates the four tables,
-the rooms table, and the `ws_tickets.workbench_pairing TEXT NULL` column:
+A person's workbench is their own Durable Object, `WORKBENCH` (`apps/api/src/workbench-store.ts`, the class in
+`workbench-store-do.ts`), built on the shared store in `@liveworkspace/index-app` (`packages/index-app/src/workbench.ts`).
+It is reached by the person's id (`idFromName`), and holds in its own SQLite:
 
-```sql
-CREATE TABLE workbench_pairings (
-  id         TEXT    PRIMARY KEY,
-  owner_id   TEXT    NOT NULL,
-  token_id   TEXT    NOT NULL REFERENCES api_tokens (id) ON DELETE CASCADE,
-  origin     TEXT    NOT NULL,
-  name       TEXT    NULL,
-  created_at INTEGER NOT NULL,
-  scope      TEXT    NOT NULL DEFAULT 'project' CHECK (scope IN ('project', 'workspace')),
-  UNIQUE (token_id, origin)
-);
-CREATE INDEX workbench_pairings_owner ON workbench_pairings (owner_id);
+- `wb_pairing_requests`: code, token, origin, name, scope, status, created, expires, answered. One live (`pending`)
+  request per token, origin and scope (a partial unique index).
+- `wb_pairings`: id, token, origin, name, scope, created. One per token and origin.
+- `wb_tickets`: the SHA-256 of the ticket, token, pairing, scope, item, folder, tab, origin, role, created,
+  expires, used. Cascades with its pairing.
+- `wb_sessions`: id, the SHA-256 of the secret, token, pairing, scope, item, folder, tab, origin, role, created,
+  expires. Cascades with its pairing.
+- `wb_session_rooms`: the plans a workspace session joined (WB55). Cascades with its session.
+- `wb_tokens`: what the store knows of the person's tokens (name, read-only, expiry, revoked), noted from
+  liveworkspace's verify answer when a token pairs or mints. Never the secret.
+- `wb_meta`: whose store it is, and its last sweep.
 
-CREATE TABLE workbench_pairing_requests (
-  id          TEXT    PRIMARY KEY,
-  code        TEXT    NOT NULL UNIQUE,
-  owner_id    TEXT    NOT NULL,
-  token_id    TEXT    NOT NULL REFERENCES api_tokens (id) ON DELETE CASCADE,
-  origin      TEXT    NOT NULL,
-  name        TEXT    NULL,
-  status      TEXT    NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'declined')),
-  created_at  INTEGER NOT NULL,
-  expires_at  INTEGER NOT NULL,
-  answered_at INTEGER NULL,
-  scope       TEXT    NOT NULL DEFAULT 'project' CHECK (scope IN ('project', 'workspace'))
-);
-CREATE INDEX workbench_pairing_requests_expiry ON workbench_pairing_requests (expires_at);
-CREATE UNIQUE INDEX workbench_pairing_requests_live
-  ON workbench_pairing_requests (token_id, origin, scope) WHERE status = 'pending';
+A store is made by its first write; a read of a store never written makes nothing.
 
-CREATE TABLE workbench_tickets (
-  ticket_hash TEXT    PRIMARY KEY,
-  owner_id    TEXT    NOT NULL,
-  token_id    TEXT    NOT NULL REFERENCES api_tokens (id) ON DELETE CASCADE,
-  pairing_id  TEXT    NOT NULL REFERENCES workbench_pairings (id) ON DELETE CASCADE,
-  scope       TEXT    NOT NULL DEFAULT 'project' CHECK (scope IN ('project', 'workspace')),
-  project_id TEXT    NULL REFERENCES projects (id) ON DELETE CASCADE,
-  folder_id   TEXT    NULL,
-  tab_id      TEXT    NULL,
-  origin      TEXT    NOT NULL,
-  role        TEXT    NOT NULL CHECK (role IN ('view', 'participate', 'edit')),
-  created_at  INTEGER NOT NULL,
-  expires_at  INTEGER NOT NULL,
-  used_at     INTEGER NULL,
-  CHECK ((scope = 'project') = (project_id IS NOT NULL)),
-  CHECK (scope = 'workspace' OR folder_id IS NULL)
-);
-CREATE INDEX workbench_tickets_project_idx ON workbench_tickets (project_id);
-CREATE INDEX workbench_tickets_expiry ON workbench_tickets (expires_at);
+**Reaching a store without the person.** Redeeming a ticket and presenting a session happen with no one signed in,
+so both secrets end in a dot and the store's id (64 hex): a ticket is `<16 random bytes base64url>.<store id>`
+(`WORKBENCH_TICKET_PATTERN`), a session `lvw_<32 random bytes base64url>.<store id>`. The suffix is no credential:
+the store keeps only the secret's hash, so a suffix pointed at another store finds nothing there. A pairing code is
+16 random bytes with no suffix: the pairing page is the signed-in person's and the CLI's poll is the token's, so
+both know whose store to ask.
 
-CREATE TABLE workbench_sessions (
-  id          TEXT    PRIMARY KEY,
-  secret_hash TEXT    NOT NULL UNIQUE,
-  owner_id    TEXT    NOT NULL,
-  token_id    TEXT    NOT NULL REFERENCES api_tokens (id) ON DELETE CASCADE,
-  pairing_id  TEXT    NOT NULL REFERENCES workbench_pairings (id) ON DELETE CASCADE,
-  scope       TEXT    NOT NULL DEFAULT 'project' CHECK (scope IN ('project', 'workspace')),
-  project_id TEXT    NULL REFERENCES projects (id) ON DELETE CASCADE,
-  folder_id   TEXT    NULL,
-  tab_id      TEXT    NULL,
-  origin      TEXT    NOT NULL,
-  role        TEXT    NOT NULL CHECK (role IN ('view', 'participate', 'edit')),
-  created_at  INTEGER NOT NULL,
-  expires_at  INTEGER NOT NULL,
-  CHECK ((scope = 'project') = (project_id IS NOT NULL)),
-  CHECK (scope = 'workspace' OR folder_id IS NULL)
-);
-CREATE INDEX workbench_sessions_project_idx ON workbench_sessions (project_id);
-CREATE INDEX workbench_sessions_expiry ON workbench_sessions (expires_at);
-CREATE INDEX workbench_sessions_pairing ON workbench_sessions (pairing_id);
+| Field                              | Class      | Notes                                                                                                                                            |
+| ---------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `wb_pairing_requests.code`         | handle     | 16 random bytes base64url, stored in the clear: it grants nothing without the owner's session and is served again while the request lives (WB29) |
+| `*.origin`                         | identity   | Normalised by `parseWorkbenchOrigin`                                                                                                             |
+| `*.name`                           | display    | 1 to 40 characters, trimmed; never enforced                                                                                                      |
+| `wb_tickets.ticket_hash`           | credential | SHA-256 hex of the ticket                                                                                                                        |
+| `wb_sessions.secret_hash`          | credential | SHA-256 hex of the `lvw_` secret                                                                                                                 |
+| `wb_sessions.id`                   | handle     | UUID; its first 8 characters are the logged prefix                                                                                               |
+| `*.role`                           | grant      | `view` or `edit` written today (WB1)                                                                                                             |
+| Room attachment `workbenchPairing` | ephemeral  | Per socket, survives hibernation                                                                                                                 |
+| The page's secret, session, origin | memory     | Never in storage                                                                                                                                 |
 
--- The projects a workspace-scoped session has opened rooms on, so revoking the session closes them.
-CREATE TABLE workbench_session_rooms (
-  session_id  TEXT NOT NULL REFERENCES workbench_sessions (id) ON DELETE CASCADE,
-  project_id TEXT NOT NULL REFERENCES projects (id) ON DELETE CASCADE,
-  PRIMARY KEY (session_id, project_id)
-);
-CREATE INDEX workbench_session_rooms_project_idx ON workbench_session_rooms (project_id);
-```
-
-- `folder_id` has no foreign key: a folder deleted since is only a start place the Explorer reports as gone.
-- `workbench_session_rooms` is ephemeral with its session (cascade, and the sweep's session delete); it carries no
-  owner id, so account deletion reaches it through `workbench_sessions`.
-
-| Field                                    | Class      | Notes                                                                                                                                            |
-| ---------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `workbench_pairing_requests.code`        | handle     | 16 random bytes base64url, stored in the clear: it grants nothing without the owner's session and is served again while the request lives (WB29) |
-| `*.owner_id`                             | identity   | The token's owner (an account id); account-only                                                                                                  |
-| `*.origin`                               | identity   | Normalised by `parseWorkbenchOrigin`                                                                                                             |
-| `*.name`                                 | display    | 1 to 40 characters, trimmed; never enforced                                                                                                      |
-| `workbench_tickets.ticket_hash`          | credential | SHA-256 hex of the 16-byte ticket                                                                                                                |
-| `workbench_sessions.secret_hash`         | credential | SHA-256 hex of the `lvw_` secret                                                                                                                 |
-| `workbench_sessions.id`                  | handle     | UUID; its first 8 characters are the logged prefix                                                                                               |
-| `*.role`                                 | grant      | `view` or `edit` written today (WB1)                                                                                                             |
-| `ws_tickets.workbench_pairing`           | ephemeral  | 60 s like the ticket                                                                                                                             |
-| Room attachment `workbenchPairing`       | ephemeral  | Per socket, survives hibernation                                                                                                                 |
-| The page's secret, session, origin, name | memory     | Never in storage                                                                                                                                 |
-
-- **Retention.** The daily `0 3 * * *` run calls `sweepWorkbench(env, now)`: tickets past expiry, pairing requests
-  past expiry, sessions expired more than `WORKBENCH_SESSION_GRACE_MS` ago (WB30), and pairings whose token is
-  revoked or expired. Logged `workbench sweep: deleted <n> rows`.
-- **Account deletion.** `deleteAccount` deletes the four tables' rows by `owner_id` before `api_tokens`.
-- **Owner migration.** Account-only: a guest id never holds these rows.
-- **Project purge.** Tickets and sessions cascade; pairings are per origin and stay.
+- **A token revoked on liveworkspace.app.** While any session lives, the store's alarm asks liveworkspace every five
+  minutes (`WORKBENCH_TOKEN_CHECK_MS`) whether the tokens behind live sessions still work, and ends the access of any
+  that don't. Listing pairings (Settings) asks about their tokens first, so a revoked token's pairing drops off at
+  once.
+- **Retention.** Daily (`WORKBENCH_SWEEP_MS`), the alarm checks every paired token and deletes tickets and pairing
+  requests past expiry, sessions expired more than `WORKBENCH_SESSION_GRACE_MS` ago (WB30), pairings of tokens no
+  longer live, and tokens nothing hangs off. A store left with nothing deletes itself.
+- **Account deletion.** `deleteAccount` closes the store: every pairing ends (its rooms closed), then the store is
+  deleted. It runs on `DELETE /api/account` and when the index says the account closed, wherever it was closed.
+- **Owner migration.** Account-only: a guest never has a store.
+- **Project purge.** A ticket lapses in a minute, and every request of a session is gated on the plan's grant, which
+  a purged plan never gets again; pairings are per origin and stay.
 - **Snapshot and restore.** None: these rows are credentials, not content; restoring a project from the Trash
   revives no session.
 
@@ -1171,13 +1108,14 @@ CREATE INDEX workbench_session_rooms_project_idx ON workbench_session_rooms (pro
 
 ## Performance and limits
 
-- Each `lvw_` request: one indexed `SELECT` (`secret_hash` unique) joined to `api_tokens` by primary key, about the
-  cost of `resolveApiToken` without its once-a-minute `last_used_at` write (WB32). The autosave's cadence (one save per debounce)
-  adds one such read per save.
+- Each `lvw_` request: one call to the person's store, which hashes the secret and does one indexed `SELECT`
+  (`secret_hash` unique) joined to `wb_tokens` by primary key; well under a millisecond inside the store among a
+  thousand sessions (`packages/index-app/src/workbench.test.ts` holds the budget). No write (WB32). The autosave's
+  cadence (one save per debounce) adds one such call per save.
 - `workbenchRouteVerdict`: a walk over at most 40 patterns of at most 8 segments, constant per request.
 - Mint: four indexed reads (pairing, project meta, grant, tab link) and one insert. Redemption: one update, one
   read, one insert, one participant read.
-- `endWorkbenchAccess` for a token: at most the token's pairings (a handful) times their projects; rooms closed
+- `endAccess` for a token: at most the token's pairings (a handful) times their projects; rooms closed
   10 at a time, 3 s each at most.
 - `selectionReference`: `buildViewModel` over the tab, O(n log n) for refs; a 5,000-element tab builds in well under
   `VIEW_SLOW_MS`; run once per settled selection, never per pointer move.
@@ -1331,7 +1269,7 @@ and the two CLI rows.
 | Origin shapes: every accepted and refused form of the spec and E1                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | `packages/api-schema/src/workbench.test.ts`                                                                               |
 | Allow-list: every row allowed, every listed confined route refused, another project `other-project`                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | `packages/api-schema/src/workbench.test.ts` (table-driven)                                                                |
 | Message parse: each type, bounds, unknown, `v: 2`, invalid fields                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | `packages/api-schema/src/workbench-messages.test.ts`                                                                      |
-| Baseline migration: tables, indexes, cascades from `api_tokens`, `projects`, `workbench_pairings`                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | `apps/api/src/db/workbench.test.ts` (real SQLite)                                                                         |
+| The store: tables, indexes, cascades from `wb_pairings`, routed secrets, the alarm's token check and sweep                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | `apps/api/src/db/workbench.test.ts` (real SQLite)                                                                         |
 | Account deletion and the owner-keyed ledger                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | `apps/api/src/db/account-owner-columns.test.ts`                                                                           |
 | Unpaired mint 428 with a URL; second mint same request; expired request replaced                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `apps/api/src/routes/workbench-ticket-route.test.ts`                                                                      |
 | Mint refusals: token required, confined, origin, body, 404, 410, tab not linked, 429; share code ignored                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | `workbench-ticket-route.test.ts`                                                                                          |

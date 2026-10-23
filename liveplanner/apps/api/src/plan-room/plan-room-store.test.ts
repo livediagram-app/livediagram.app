@@ -146,7 +146,12 @@ type World = {
 
 function world(extra: Partial<Env> = {}): World {
   const d1 = sqliteD1();
-  const env = { DB: d1.env.DB, INDEX_ORIGIN: 'https://index.test', ...extra } as unknown as Env;
+  const env = {
+    DB: d1.env.DB,
+    WORKBENCH: d1.env.WORKBENCH,
+    INDEX_ORIGIN: 'https://index.test',
+    ...extra,
+  } as unknown as Env;
   const { ns, plans, calls } = planNamespace(() => env);
   Reflect.set(env, 'PLAN_ROOM', ns);
   const executionCtx = {

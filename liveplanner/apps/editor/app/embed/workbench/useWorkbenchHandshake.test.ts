@@ -24,9 +24,9 @@ vi.mock('@/lib/api/workbench', () => ({
 const { runWorkbenchHandshake, useWorkbenchHandshake } = await import('./useWorkbenchHandshake');
 
 const ORIGIN = 'https://127.0.0.1:5175';
-const TICKET = 'Ab3_-xYz0123456789abcd';
+const TICKET = `Ab3_-xYz0123456789abcd.${'0f'.repeat(32)}`;
 const SESSION: WorkbenchProjectSessionResponse = {
-  session: `lvw_${'a'.repeat(43)}`,
+  session: `lvw_${'a'.repeat(43)}.${'0f'.repeat(32)}`,
   scope: 'project',
   projectId: 'doc-1',
   folderId: null,
@@ -81,9 +81,7 @@ describe('runWorkbenchHandshake', () => {
 
     expect(await runWorkbenchHandshake(win, dispatch)).toBeNull();
 
-    expect(events).toEqual([
-      { type: 'read', ticket: null, scope: 'project', projectId: 'doc-1' },
-    ]);
+    expect(events).toEqual([{ type: 'read', ticket: null, scope: 'project', projectId: 'doc-1' }]);
     expect(redeem).not.toHaveBeenCalled();
     expect(warn).toHaveBeenCalledWith('[workbench] redeem-failed', {
       status: null,
