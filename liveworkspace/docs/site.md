@@ -85,7 +85,8 @@ moves between them, and the one account that joins them.
    terminal); open about data (a public chart, linking `/telemetry`); yours to keep (a sign-in code
    and one close for every app); completely free.
 4. **Closing call to action**: "One account. Every app. Always live."
-5. **Footer**: Our Apps (each app's logo, linking to its site), Platform (Product Comparison and the telemetry dashboard) and Legal (the
+5. **Footer**: Our Apps (each app's logo, linking to its site), Platform (Product Comparison, which points at each app's
+   comparisons, and the telemetry dashboard) and Legal (the
    privacy policy and terms).
 
 The illustrations are drawn in the page (HTML and SVG with the apps' own logos), not images. Their
@@ -99,12 +100,18 @@ footer. They were built from the apps' own policies, which said the same things 
 feature only one app has (livediagram's Google Drive mirror, its Offline Mode) says which. Both share `components/LegalPage.tsx`, and their date and contact
 form are in `lib/legal.ts`. Change them when what an app stores or who it uses changes.
 
-### Product Comparison (`/alternatives`, `/alternatives/<slug>`)
+### Product Comparison (`/compare`)
 
-Every app's comparison with another tool, and comparisons of the whole suite with one: a hub grouped
-by what answers each competitor, and one static page per competitor in the colours of the app it
-speaks for. The apps' own `/alternatives` addresses redirect here. See
-[comparison-pages.md](comparison-pages.md).
+Each app compares itself with the tools it answers on its own site, at `/alternatives` and
+`/alternatives/<slug>` ([@liveworkspace/comparisons](../../packages/comparisons/README.md)). This page
+only points at them: a card per app (its logo, its pitch and **See how <app> compares**, in its deep
+accent), linked from the footer as **Product Comparison**. It has no data of its own, so a comparison
+added in an app needs nothing here.
+
+The comparisons lived here for a while, so every old address redirects permanently from
+`public/_redirects`: `/alternatives` to `/compare`, each `/alternatives/<slug>` to the same slug on the
+app that speaks for it (`https://livediagram.app/alternatives/miro`, say), and any other
+`/alternatives/*` to `/compare`. `lib/comparison-redirects.test.ts` pins every one.
 
 ### Telemetry (`/telemetry`)
 
@@ -277,8 +284,8 @@ and send no Referer, since the address carries the signed request.
   account pages also call their APIs. All of it is on this origin.
 - Light and dark, following the device (the shared appearance boot script).
 - Works at phone width with a 16px gutter. Tap targets are 44px on touch screens.
-- The front door and the dashboard are indexable: title, description, canonical, Open Graph,
-  `robots.txt` and `sitemap.xml`.
+- The front door, Product Comparison and the dashboard are indexable: title, description, canonical,
+  Open Graph, `robots.txt` and `sitemap.xml`.
 
 ## Hosting
 

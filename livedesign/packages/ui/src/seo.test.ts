@@ -147,7 +147,7 @@ describe('pageMetadata', () => {
     // pin (a) the exact format, and (b) that the factory does the
     // toISOString() conversion itself (so callers can pass a
     // friendly Date and not worry about the wire format). See
-    // liveworkspace/docs/comparison-pages.md "Metadata".
+    // packages/comparisons/README.md "Metadata".
     const date = new Date('2026-06-02T00:00:00.000Z');
     const md = pageMetadata({
       title: 't',

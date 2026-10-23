@@ -16,7 +16,7 @@ is `https://liveworkspace.app/api/auth`.
 apps/site              liveworkspace.app: every page, the sign-in pages included (a Next static export)
 apps/accounts          the accounts API at liveworkspace.app/api/auth: codes, Google, tokens, JWKS
 packages/auth-client   what each app imports: sign-in redirect, code swap, refresh, token check
-docs/                  the site, adding an app, moving off Clerk, every product's comparison pages
+docs/                  the site, adding an app, moving off Clerk
 ```
 
 Every app's logo lists liveworkspace's sites on hover: see [docs/site-switcher.md](docs/site-switcher.md).

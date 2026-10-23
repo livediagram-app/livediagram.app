@@ -1,3 +1,45 @@
 # Every team's page is one exported file (app/account/teams/[id]/page.tsx): serve it for any team id,
 # keeping the address, so the page can read the id from it (liveworkspace/docs/site.md "Your account").
 /account/teams/:id /account/teams/team 200
+
+# The comparison pages are each app's own again (packages/comparisons/README.md). The hub here moves to
+# /compare, which points at each app's, and every comparison to the same slug on the app it speaks
+# for, permanently, so old links and search results keep landing. lib/comparison-redirects.test.ts
+# pins every one; any other old comparison address lands on /compare.
+/alternatives /compare 301
+/alternatives/ /compare 301
+/alternatives/microsoft-whiteboard https://livediagram.app/alternatives/microsoft-whiteboard 301
+/alternatives/microsoft-whiteboard/ https://livediagram.app/alternatives/microsoft-whiteboard 301
+/alternatives/miro https://livediagram.app/alternatives/miro 301
+/alternatives/miro/ https://livediagram.app/alternatives/miro 301
+/alternatives/xmind https://livediagram.app/alternatives/xmind 301
+/alternatives/xmind/ https://livediagram.app/alternatives/xmind 301
+/alternatives/excalidraw https://livediagram.app/alternatives/excalidraw 301
+/alternatives/excalidraw/ https://livediagram.app/alternatives/excalidraw 301
+/alternatives/drawio https://livediagram.app/alternatives/drawio 301
+/alternatives/drawio/ https://livediagram.app/alternatives/drawio 301
+/alternatives/figjam https://livediagram.app/alternatives/figjam 301
+/alternatives/figjam/ https://livediagram.app/alternatives/figjam 301
+/alternatives/lucidchart https://livediagram.app/alternatives/lucidchart 301
+/alternatives/lucidchart/ https://livediagram.app/alternatives/lucidchart 301
+/alternatives/trello https://liveplanner.app/alternatives/trello 301
+/alternatives/trello/ https://liveplanner.app/alternatives/trello 301
+/alternatives/asana https://liveplanner.app/alternatives/asana 301
+/alternatives/asana/ https://liveplanner.app/alternatives/asana 301
+/alternatives/monday https://liveplanner.app/alternatives/monday 301
+/alternatives/monday/ https://liveplanner.app/alternatives/monday 301
+/alternatives/notion https://liveplanner.app/alternatives/notion 301
+/alternatives/notion/ https://liveplanner.app/alternatives/notion 301
+/alternatives/jira https://liveplanner.app/alternatives/jira 301
+/alternatives/jira/ https://liveplanner.app/alternatives/jira 301
+/alternatives/clickup https://liveplanner.app/alternatives/clickup 301
+/alternatives/clickup/ https://liveplanner.app/alternatives/clickup 301
+/alternatives/airtable https://liveplanner.app/alternatives/airtable 301
+/alternatives/airtable/ https://liveplanner.app/alternatives/airtable 301
+/alternatives/smartsheet https://liveplanner.app/alternatives/smartsheet 301
+/alternatives/smartsheet/ https://liveplanner.app/alternatives/smartsheet 301
+/alternatives/google-slides https://livedocuments.app/alternatives/google-slides 301
+/alternatives/google-slides/ https://livedocuments.app/alternatives/google-slides 301
+/alternatives/figma https://livedesign.app/alternatives/figma 301
+/alternatives/figma/ https://livedesign.app/alternatives/figma 301
+/alternatives/* /compare 301

@@ -5447,9 +5447,6 @@ importers:
       '@livedesign/agent-verbs':
         specifier: workspace:*
         version: link:../../../livedesign/packages/agent-verbs
-      '@livedesign/design':
-        specifier: workspace:*
-        version: link:../../../livedesign/packages/design
       '@livedesign/photo-engine':
         specifier: workspace:*
         version: link:../../../livedesign/packages/photo-engine
@@ -5465,9 +5462,6 @@ importers:
       '@livediagram/agent-verbs':
         specifier: workspace:*
         version: link:../../../livediagram/packages/agent-verbs
-      '@livediagram/document':
-        specifier: workspace:*
-        version: link:../../../livediagram/packages/document
       '@livediagram/next-config':
         specifier: workspace:*
         version: link:../../../livediagram/packages/next-config
@@ -5489,9 +5483,6 @@ importers:
       '@livedocuments/agent-verbs':
         specifier: workspace:*
         version: link:../../../livedocuments/packages/agent-verbs
-      '@livedocuments/document':
-        specifier: workspace:*
-        version: link:../../../livedocuments/packages/document
       '@livedocuments/source-ast':
         specifier: workspace:*
         version: link:../../../livedocuments/packages/source-ast
