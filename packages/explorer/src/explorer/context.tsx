@@ -25,6 +25,7 @@ import {
   type PlacementDefaultsStore,
 } from '../defaults/usePlacementDefaults';
 import { useToast, type ToastApi } from '../ui/Toasts';
+import { createExpansion, type Expansion } from './sidebar/expansion';
 import type { LensOption, LensSubject, LensTelemetryType } from '../lens';
 import {
   explorerPath,
@@ -129,6 +130,8 @@ export type ExplorerContextValue = {
   // The rows the list on screen holds, as the lens reads them, when it is loaded whole (null while pages
   // remain): the field marks a suggestion that would match none. Written by the list, read by the field.
   lensSubjects: { current: readonly LensSubject[] | null };
+  // Which sidebar rows are open: shared by every sidebar on the page and opened by what makes a folder.
+  expansion: Expansion;
 };
 
 export type NavigateOptions = { replace?: boolean };
@@ -271,6 +274,7 @@ export function ExplorerProvider({
   const inbox = useInbox(client, app, filter);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [dialog, openDialog] = useState<DialogTarget>(null);
+  const [expansion] = useState(createExpansion);
 
   const viewHref = useCallback((v: ExplorerView) => explorerPath(v, basePath), [basePath]);
   // Read when moving, so `navigate` stays the same function across lens writes.
@@ -344,6 +348,7 @@ export function ExplorerProvider({
       lensTemplates,
       onLensSelected,
       lensSubjects,
+      expansion,
     }),
     [
       app,
@@ -383,6 +388,7 @@ export function ExplorerProvider({
       onHome,
       lensTemplates,
       onLensSelected,
+      expansion,
     ],
   );
   return (

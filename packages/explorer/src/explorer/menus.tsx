@@ -26,6 +26,7 @@ import {
   TrashIcon,
 } from '../ui/icons';
 import { useExplorer } from './context';
+import { rowsAbove } from './sidebar/expansion';
 import { VisibilityBadge } from './badges';
 
 export function canManage(item: ShownItem): boolean {
@@ -146,12 +147,17 @@ export function FolderMenu({
   folder,
   anchor,
   onClose,
+  onRename,
 }: {
   folder: Folder;
   anchor: HTMLElement | null;
   onClose: () => void;
+  // Where Rename (and a new subfolder's name) is typed: in the sidebar's row when opened there; else wherever the
+  // folder is listed.
+  onRename?: (folderId: string) => void;
 }) {
-  const { folders, setRenamingId, openDialog, navigate } = useExplorer();
+  const { folders, setRenamingId, openDialog, navigate, expansion } = useExplorer();
+  const rename = onRename ?? setRenamingId;
   const run = (fn: () => void) => () => {
     onClose();
     fn();
@@ -166,18 +172,16 @@ export function FolderMenu({
     <PortalMenu anchor={anchor} onClose={onClose} label={`Actions for ${folder.name}`}>
       <MenuHeader title={folder.name} />
       <MenuActionRow label="Open" icon={<OpenIcon />} onClick={run(open)} />
-      <MenuActionRow
-        label="Rename"
-        icon={<PencilIcon />}
-        onClick={run(() => setRenamingId(folder.id))}
-      />
+      <MenuActionRow label="Rename" icon={<PencilIcon />} onClick={run(() => rename(folder.id))} />
       <MenuActionRow
         label="New Subfolder"
         icon={<NewFolderIcon />}
         onClick={run(() => {
+          // The sidebar opens down to the parent, so the new row is in sight.
+          expansion.expand(...rowsAbove(folder.id, folders.byId));
           void folders
             .create({ name: 'New Folder', parentId: folder.id, teamId: folder.teamId })
-            .then((made) => made && setRenamingId(made.id));
+            .then((made) => made && rename(made.id));
         })}
       />
       <MenuActionRow

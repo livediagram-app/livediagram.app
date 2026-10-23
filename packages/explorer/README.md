@@ -179,6 +179,26 @@ only the targets do (`drag.test.tsx` holds a 2,000-row page to two commits).
 
 Also exported: `explorerPath`, `viewFromLocation`, `kindWords`, and the types above.
 
+## The sidebar
+
+The sidebar is one keyboard tree (the WAI-ARIA tree pattern, as livediagram's):
+
+- **One tab stop.** Tab lands on the row focus last sat on, else the current view's row. Up and Down move a row,
+  Home and End go to the first and last, Right opens a folded row or steps into an open one, Left folds an open row
+  or steps out to its parent, Enter and Space go there, and a typed letter moves to the next row starting with it.
+- **The chevron** is a labelled button ("Expand My Work", "Collapse Projects"), so a click or Enter on it folds or
+  opens the row too.
+- **Menus.** Each folder row has the folder menu (Open, Rename, New Subfolder, Move Folder, Delete Folder) and My
+  Work its own (Open, New Folder), from the row's ⋯, a right-click, or Shift+F10 / the Menu key on the focused row.
+- **Rename in place.** Rename, and the name of a folder just made from the sidebar, are typed in the row itself:
+  Enter or a press outside keeps it, Escape leaves it.
+- **Open rows.** Which rows are open is remembered in this browser and read as the sidebar first renders, so the
+  tree paints the way it was left. Making a folder (New Subfolder, New Folder) opens the rows above it, so the new
+  row is in sight. A Library page opens the Library.
+
+A key press stays cheap however big the tree: `sidebar.test.tsx` holds 2,000 open folder rows to a budget per
+Down Arrow (about 9 ms in jsdom).
+
 ## How it loads
 
 Every list is one request per page of at most 200 (`LIST_LIMIT_MAX`). The next page loads as the end of

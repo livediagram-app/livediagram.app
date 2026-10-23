@@ -97,7 +97,12 @@ describe('in the Explorer', () => {
   it('sets a default from a folder’s menu, and marks the folder', async () => {
     const index = createFakeIndex({ folders: [folder('Boards')] });
     page(index);
-    fireEvent.click(await screen.findByRole('button', { name: 'Menu for Boards' }));
+    // The pane's row (the sidebar's row has its own ⋯ too).
+    fireEvent.click(
+      (await screen.findAllByRole('button', { name: 'Menu for Boards' })).find(
+        (b) => !b.closest('nav'),
+      )!,
+    );
     fireEvent.click(await screen.findByRole('menuitem', { name: 'Use as Default for…' }));
     const dialog = await screen.findByRole('dialog');
     const kanban = within(dialog).getByRole('checkbox', { name: 'Kanban plans' });
@@ -124,7 +129,12 @@ describe('in the Explorer', () => {
     });
     page(index);
     await screen.findAllByText('Default folder for new plans', { selector: '.sr-only' });
-    fireEvent.click(await screen.findByRole('button', { name: 'Menu for Boards' }));
+    // The pane's row (the sidebar's row has its own ⋯ too).
+    fireEvent.click(
+      (await screen.findAllByRole('button', { name: 'Menu for Boards' })).find(
+        (b) => !b.closest('nav'),
+      )!,
+    );
     fireEvent.click(await screen.findByRole('menuitem', { name: 'Delete Folder' }));
     const dialog = await screen.findByRole('dialog');
     expect(dialog.textContent).toContain('Its plans and subfolders move to My Work.');

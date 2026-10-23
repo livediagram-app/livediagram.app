@@ -4,8 +4,20 @@
 // (My Work and its folders, each team and its folders), and More (the Library's Recent, Favourites and
 // Unsorted, then the Trash). Rows carry toned tiles and the current row is a raised pill, in the
 // host app's brand colour. The tree reads the folder store, so it costs no request of its own.
+//
+// It is one keyboard tree (sidebar/useTreeNavigation): one tab stop, arrows, Home and End, Left and Right to fold and
+// open, type-ahead. Folder rows and My Work carry a menu (⋯, right-click, Shift+F10) and rename in place.
 
-import { useCallback, useEffect, useId, useState, type DragEvent, type ReactNode } from 'react';
+import {
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type DragEvent,
+  type MouseEvent,
+  type ReactNode,
+} from 'react';
 import { TIMELINE_NEW_CAP, type Folder } from '@liveworkspace/index-client';
 import {
   TRASH_BIN,
@@ -35,10 +47,14 @@ import {
   UnsortedIcon,
 } from '../ui/icons';
 import { inboxCount } from '../data/useInbox';
+import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { sameView, SIDEBAR_LABELS, type ExplorerView } from '../views';
 import { useExplorer } from './context';
 import { BrowserIcon, useHostExtras } from './host';
 import { DefaultFolderMarker } from '../defaults/DefaultFolderMarker';
+import { LIBRARY, MY_WORK, teamKey } from './sidebar/expansion';
+import { useFolderRowMenu, useMyWorkMenu } from './sidebar/rowMenus';
+import { useTreeNavigation } from './sidebar/useTreeNavigation';
 
 type Tone = 'sky' | 'violet' | 'amber' | 'emerald' | 'indigo' | 'rose';
 
@@ -58,10 +74,6 @@ const CURRENT =
 const RESTING = 'border-transparent hover:bg-slate-100 dark:hover:bg-slate-800';
 const INDENT_STEP = 16;
 
-const EXPANDED_KEY = 'liveworkspace:explorer-expanded';
-const MY_WORK = 'my-work';
-const LIBRARY = 'library';
-
 // The Library's pages: opening one unfolds the Library, so the current row is never hidden.
 const LIBRARY_VIEWS: ReadonlySet<ExplorerView['kind']> = new Set([
   'recent',
@@ -69,36 +81,23 @@ const LIBRARY_VIEWS: ReadonlySet<ExplorerView['kind']> = new Set([
   'unsorted',
 ]);
 
+const START_FOLDS: ReadonlySet<string> = new Set([MY_WORK]);
+const startFolds = () => START_FOLDS;
+
+/** The open rows, from the Explorer's expansion store: read as the sidebar first renders, so it paints open where it
+ *  was left. The Library opens before paint when one of its pages is current, so the current row is never hidden. */
 function useExpanded(view: ExplorerView) {
-  // As livediagram's tree starts: My Work unfolded, the Library folded unless one of its pages is open.
-  const [expanded, setExpanded] = useState<Set<string>>(() => new Set([MY_WORK]));
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(EXPANDED_KEY);
-      if (saved) setExpanded(new Set(JSON.parse(saved) as string[]));
-    } catch {
-      // Private mode or no storage: the starting folds.
-    }
-  }, []);
+  const { expansion } = useExplorer();
+  const expanded = useSyncExternalStore(expansion.subscribe, expansion.get, startFolds);
   const inLibrary = LIBRARY_VIEWS.has(view.kind);
-  useEffect(() => {
-    if (inLibrary) setExpanded((prev) => (prev.has(LIBRARY) ? prev : new Set([...prev, LIBRARY])));
-  }, [inLibrary]);
-  const toggle = useCallback((key: string) => {
-    setExpanded((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      try {
-        localStorage.setItem(EXPANDED_KEY, JSON.stringify([...next]));
-      } catch {
-        // Ignored: expansion is a convenience.
-      }
-      return next;
-    });
-  }, []);
-  return { expanded, toggle };
+  useLayoutEffect(() => {
+    if (inLibrary) expansion.expand(LIBRARY);
+  }, [inLibrary, expansion]);
+  return { expanded, toggle: expansion.toggle };
 }
+
+/** Which sidebar row is being renamed in place (only one, and only here: the pane's rows rename their own). */
+type SidebarRename = { renamingId: string | null; setRenamingId: (id: string | null) => void };
 
 export function SidebarRow({
   icon,
@@ -119,6 +118,9 @@ export function SidebarRow({
   marker,
   rowClassName = '',
   rowHandlers,
+  trailing,
+  onContextMenu,
+  renaming = null,
   children,
 }: {
   icon: ReactNode;
@@ -148,12 +150,18 @@ export function SidebarRow({
   rowHandlers?: Partial<
     Record<'onDragEnter' | 'onDragOver' | 'onDragLeave' | 'onDrop', (e: DragEvent) => void>
   >;
+  // After the label: the row's ⋯.
+  trailing?: ReactNode;
+  // The row's menu, from a right-click or Shift+F10 on the row.
+  onContextMenu?: (e: MouseEvent) => void;
+  // The rename field in place of the label; the row neither drags nor goes anywhere while it shows.
+  renaming?: ReactNode;
   children?: ReactNode;
 }) {
-  const drop = useDropTarget(dropTo, {
+  const drop = useDropTarget(renaming ? null : dropTo, {
     onLongHover: expandable && !expanded ? onToggleExpand : undefined,
   });
-  const drag = useFolderDrag(dragFolder);
+  const drag = useFolderDrag(renaming ? null : dragFolder);
   return (
     <li
       role="treeitem"
@@ -161,10 +169,25 @@ export function SidebarRow({
       aria-level={depth + 1}
       aria-selected={selected}
       aria-expanded={expandable ? expanded : undefined}
+      aria-current={selected ? 'page' : undefined}
+      data-tree-label={label}
+      // The tree keeps one row tabbable (useTreeNavigation); every other is reached with the arrows.
+      tabIndex={-1}
+      className="outline-none"
+      onContextMenu={
+        onContextMenu
+          ? (e) => {
+              // The nearest row's menu only, never an ancestor folder's too.
+              e.stopPropagation();
+              onContextMenu(e);
+            }
+          : undefined
+      }
     >
       <div
+        data-tree-row
         data-drop-over={drop.over || undefined}
-        className={`group flex items-center gap-1 rounded-xl border px-1 transition ${selected ? CURRENT : RESTING} ${
+        className={`group flex items-center gap-1 rounded-xl border px-1 transition [li:focus-visible>&]:ring-2 [li:focus-visible>&]:ring-brand-500 ${selected ? CURRENT : RESTING} ${
           drop.over ? DROP_TARGET_RING : ''
         } ${rowClassName}`}
         style={{ paddingLeft: depth * INDENT_STEP + 4 }}
@@ -172,47 +195,69 @@ export function SidebarRow({
         {...rowHandlers}
         {...drag}
       >
-        <button
-          type="button"
-          tabIndex={-1}
-          aria-hidden
-          onClick={() => expandable && onToggleExpand?.()}
-          // On a touch screen the chevron is a 44 px disclosure at the row's end, the row's full height.
-          className={`flex h-5 w-5 shrink-0 items-center justify-center text-slate-400 transition pointer-coarse:order-last pointer-coarse:-mr-1 pointer-coarse:h-auto pointer-coarse:w-11 pointer-coarse:self-stretch ${
-            expandable
-              ? 'cursor-pointer hover:text-slate-700 dark:hover:text-slate-200'
-              : 'pointer-events-none pointer-coarse:hidden'
-          }`}
-        >
-          {expandable ? <TreeChevronIcon open={expanded} /> : null}
-        </button>
-        <button
-          type="button"
-          onClick={onActivate}
-          aria-current={selected ? 'page' : undefined}
-          className={`flex min-w-0 flex-1 items-center gap-2.5 rounded text-left text-sm leading-5 outline-none focus-visible:ring-2 focus-visible:ring-brand-500 pointer-coarse:text-[15px] ${
-            tone ? 'py-1.5 pointer-coarse:py-2.5' : 'py-2 pointer-coarse:py-3'
-          } ${
-            selected
-              ? 'font-semibold text-brand-900 dark:text-white'
-              : 'font-medium text-slate-700 dark:text-slate-200'
-          }`}
-        >
-          {tone ? (
-            <span className={`${TILE} ${selected ? TILE_CURRENT : TONES[tone]}`}>{icon}</span>
-          ) : (
-            <span
-              className={`shrink-0 pointer-coarse:[&_svg]:size-[17px] ${selected ? 'text-brand-600 dark:text-brand-300' : 'text-slate-400'}`}
-            >
+        {expandable ? (
+          // A real control: a click (or Enter on it once focused) folds or opens the row; the tree's Left and
+          // Right do the same from the keyboard.
+          <button
+            type="button"
+            tabIndex={-1}
+            data-tree-toggle
+            aria-label={`${expanded ? 'Collapse' : 'Expand'} ${label}`}
+            aria-expanded={expanded}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleExpand?.();
+            }}
+            // On a touch screen the chevron is a 44 px disclosure at the row's end, the row's full height.
+            className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded text-slate-400 outline-none transition hover:text-slate-700 focus-visible:ring-2 focus-visible:ring-brand-500 pointer-coarse:order-last pointer-coarse:-mr-1 pointer-coarse:h-auto pointer-coarse:w-11 pointer-coarse:self-stretch dark:hover:text-slate-200"
+          >
+            <TreeChevronIcon open={expanded} />
+          </button>
+        ) : (
+          <span aria-hidden className="h-5 w-5 shrink-0 pointer-coarse:hidden" />
+        )}
+        {renaming ? (
+          <span
+            className={`flex min-w-0 flex-1 items-center gap-2.5 text-sm leading-5 pointer-coarse:text-[15px] ${
+              tone ? 'py-1.5 pointer-coarse:py-2.5' : 'py-2 pointer-coarse:py-3'
+            }`}
+          >
+            <span className="shrink-0 text-slate-400 pointer-coarse:[&_svg]:size-[17px]">
               {icon}
             </span>
-          )}
-          <span className="min-w-0 flex-1 truncate">{shownLabel ?? label}</span>
-          {marker}
-          {badge !== undefined ? (
-            <CountBadge count={badge} tone={badgeTone} className="ml-1" />
-          ) : null}
-        </button>
+            {renaming}
+          </span>
+        ) : (
+          <button
+            type="button"
+            tabIndex={-1}
+            data-tree-activate
+            onClick={onActivate}
+            className={`flex min-w-0 flex-1 items-center gap-2.5 rounded text-left text-sm leading-5 outline-none pointer-coarse:text-[15px] ${
+              tone ? 'py-1.5 pointer-coarse:py-2.5' : 'py-2 pointer-coarse:py-3'
+            } ${
+              selected
+                ? 'font-semibold text-brand-900 dark:text-white'
+                : 'font-medium text-slate-700 dark:text-slate-200'
+            }`}
+          >
+            {tone ? (
+              <span className={`${TILE} ${selected ? TILE_CURRENT : TONES[tone]}`}>{icon}</span>
+            ) : (
+              <span
+                className={`shrink-0 pointer-coarse:[&_svg]:size-[17px] ${selected ? 'text-brand-600 dark:text-brand-300' : 'text-slate-400'}`}
+              >
+                {icon}
+              </span>
+            )}
+            <span className="min-w-0 flex-1 truncate">{shownLabel ?? label}</span>
+            {marker}
+            {badge !== undefined ? (
+              <CountBadge count={badge} tone={badgeTone} className="ml-1" />
+            ) : null}
+          </button>
+        )}
+        {trailing}
       </div>
       {expandable && expanded && children ? <ul role="group">{children}</ul> : null}
     </li>
@@ -251,21 +296,42 @@ function FolderSubtree({
   depth,
   expanded,
   toggle,
+  rename,
 }: {
   folder: Folder;
   depth: number;
-  expanded: Set<string>;
+  expanded: ReadonlySet<string>;
   toggle: (key: string) => void;
+  rename: SidebarRename;
 }) {
   const { folders, view, navigate } = useExplorer();
   const kids = folders.childrenOf(folder.id, folder.teamId);
   const target: ExplorerView = folder.teamId
     ? { kind: 'team', id: folder.teamId, folderId: folder.id }
     : { kind: 'folder', id: folder.id };
+  const renaming = rename.renamingId === folder.id;
+  const menu = useFolderRowMenu(folder, { renaming, onRename: rename.setRenamingId });
   return (
     <SidebarRow
       icon={<FolderSolidIcon open={expanded.has(folder.id)} />}
       label={folder.name}
+      onContextMenu={menu.onContextMenu}
+      trailing={menu.trailing}
+      renaming={
+        renaming ? (
+          <InlineRenameInput
+            initial={folder.name}
+            ariaLabel={`Rename ${folder.name}`}
+            onCommit={(name) => {
+              rename.setRenamingId(null);
+              const next = name.trim();
+              if (next && next !== folder.name) void folders.rename(folder.id, next);
+            }}
+            onCancel={() => rename.setRenamingId(null)}
+            className="min-w-0 flex-1 rounded border border-brand-300 bg-white px-1 py-0 text-sm dark:border-brand-500/50 dark:bg-slate-900 dark:text-slate-100"
+          />
+        ) : null
+      }
       selected={sameView(view, target)}
       onActivate={() => navigate(target)}
       depth={depth}
@@ -283,6 +349,7 @@ function FolderSubtree({
           depth={depth + 1}
           expanded={expanded}
           toggle={toggle}
+          rename={rename}
         />
       ))}
     </SidebarRow>
@@ -355,10 +422,22 @@ export function Sidebar() {
   const { view, navigate, folders, teams, inbox, viewerId, manageTeamsUrl } = useExplorer();
   const { sidebarLinks } = useHostExtras();
   const { expanded, toggle } = useExpanded(view);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const rename: SidebarRename = { renamingId, setRenamingId };
+  const myWorkMenu = useMyWorkMenu({ onRename: setRenamingId });
+  const navRef = useRef<HTMLElement>(null);
+  const tree = useTreeNavigation(navRef);
   const is = (v: ExplorerView) => sameView(view, v);
   const myRoots = folders.childrenOf(null, null);
   return (
-    <nav aria-label="Sections" className="text-sm">
+    <nav
+      ref={navRef}
+      aria-label="Sections"
+      className="text-sm"
+      onKeyDown={tree.onKeyDown}
+      onFocus={tree.onFocus}
+      onBlur={tree.onBlur}
+    >
       <SidebarGroup title="Overview" first>
         <SidebarRow
           icon={<HomeIcon />}
@@ -407,14 +486,23 @@ export function Sidebar() {
           expandable={myRoots.length > 0}
           expanded={expanded.has(MY_WORK)}
           onToggleExpand={() => toggle(MY_WORK)}
+          onContextMenu={myWorkMenu.onContextMenu}
+          trailing={myWorkMenu.trailing}
         >
           {myRoots.map((f) => (
-            <FolderSubtree key={f.id} folder={f} depth={1} expanded={expanded} toggle={toggle} />
+            <FolderSubtree
+              key={f.id}
+              folder={f}
+              depth={1}
+              expanded={expanded}
+              toggle={toggle}
+              rename={rename}
+            />
           ))}
         </SidebarRow>
         {teams.map((t) => {
           const roots = folders.childrenOf(null, t.id);
-          const key = `team:${t.id}`;
+          const key = teamKey(t.id);
           return (
             <SidebarRow
               key={t.id}
@@ -436,6 +524,7 @@ export function Sidebar() {
                   depth={1}
                   expanded={expanded}
                   toggle={toggle}
+                  rename={rename}
                 />
               ))}
             </SidebarRow>
