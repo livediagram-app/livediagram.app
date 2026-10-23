@@ -16,6 +16,9 @@ import type { ExplorerView } from '../views';
 import { heroGreeting, type Words } from '../words';
 import { useExplorer } from './context';
 import { SearchField } from './SearchField';
+import { useFirstRun } from '../welcome/context';
+import { WelcomeSearch } from '../welcome/HomeWelcome';
+import { WELCOME_COPY } from '../welcome/types';
 
 const HEADING_ID = 'explorer-home-hero';
 
@@ -99,8 +102,27 @@ export function HomeHero({
 }) {
   const { kind, inbox, viewerId, viewHref, navigate, onCreate, openNav, heroWords } = useExplorer();
   const hour = useHour();
-  const pills = heroPills({ items, inbox: inboxCount(inbox.data, viewerId) }, kind);
-  const greeting = hour === null ? '' : heroGreeting(hour);
+  const { heroFirstRun, welcome } = useFirstRun();
+  // A first run greets rather than asks what the person is doing today, and searches templates, not their work.
+  const firstRun = heroFirstRun && welcome ? welcome : null;
+  const pills: { id: string; label: string; tone: keyof typeof PILL_DOT; view?: ExplorerView }[] =
+    firstRun
+      ? [
+          { id: 'free', label: firstRun.manifest?.pillFree ?? '', tone: 'emerald' as const },
+          {
+            id: 'account',
+            label: firstRun.signedIn ? WELCOME_COPY.pillSignedIn : WELCOME_COPY.pillGuest,
+            tone: 'sky' as const,
+          },
+        ].filter((p) => p.label)
+      : heroPills({ items, inbox: inboxCount(inbox.data, viewerId) }, kind);
+  const greeting = firstRun
+    ? `Welcome to ${firstRun.manifest?.name ?? ''}.`
+    : hour === null
+      ? ''
+      : heroGreeting(hour);
+  const question = firstRun ? WELCOME_COPY.question : heroWords.question;
+  const lead = firstRun ? WELCOME_COPY.lead : heroWords.lead;
 
   const newItem = (
     <button
@@ -142,22 +164,29 @@ export function HomeHero({
           </div>
           {/* Holds a pill's height before the counts arrive, so nothing under it moves when they do. */}
           <div className="flex min-h-8 flex-wrap items-center gap-2">
-            {pills.map((pill) => (
-              <a
-                key={pill.id}
-                href={viewHref(pill.view)}
-                data-hero-pill={pill.id}
-                onClick={(e) => {
-                  if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
-                  e.preventDefault();
-                  navigate(pill.view);
-                }}
-                className={`${PILL} transition hover:border-slate-300 dark:hover:border-slate-600 ${FOCUS_RING}`}
-              >
-                <span aria-hidden className={`size-[7px] rounded-full ${PILL_DOT[pill.tone]}`} />
-                <span>{pill.label}</span>
-              </a>
-            ))}
+            {pills.map((pill) =>
+              !pill.view ? (
+                <span key={pill.id} data-hero-pill={pill.id} className={PILL}>
+                  <span aria-hidden className={`size-[7px] rounded-full ${PILL_DOT[pill.tone]}`} />
+                  <span>{pill.label}</span>
+                </span>
+              ) : (
+                <a
+                  key={pill.id}
+                  href={viewHref(pill.view)}
+                  data-hero-pill={pill.id}
+                  onClick={(e) => {
+                    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+                    e.preventDefault();
+                    navigate(pill.view!);
+                  }}
+                  className={`${PILL} transition hover:border-slate-300 dark:hover:border-slate-600 ${FOCUS_RING}`}
+                >
+                  <span aria-hidden className={`size-[7px] rounded-full ${PILL_DOT[pill.tone]}`} />
+                  <span>{pill.label}</span>
+                </a>
+              ),
+            )}
             {/* Help and the close end the pills' row from `sm` to `lg`; from `lg` they stand at the hero's
                 top right, over the art; on a phone they sit beside the menu button above. */}
             <span className="ml-auto hidden sm:inline-flex lg:hidden">
@@ -170,13 +199,13 @@ export function HomeHero({
             // line heights, so everything under the hero lands on whole pixels.
             className="min-h-[2lh] max-w-3xl text-4xl leading-[37px] font-extrabold tracking-[-0.04em] text-[#17153a] sm:text-5xl sm:leading-[49px] lg:text-[3.5rem] lg:leading-[57px] dark:text-white"
           >
-            {greeting ? `${greeting} ${heroWords.question}` : null}
+            {greeting ? `${greeting} ${question}` : null}
           </h1>
           <p className="min-h-[2lh] max-w-2xl text-[17px] leading-[28px] text-slate-600 dark:text-slate-300">
-            {heroWords.lead}
+            {lead}
           </p>
           <div className="max-w-2xl">
-            <SearchField size="hero" trailing={newItem} />
+            {firstRun ? <WelcomeSearch /> : <SearchField size="hero" trailing={newItem} />}
           </div>
         </div>
         <div className="absolute right-4 top-6 z-20 hidden sm:right-6 lg:block">

@@ -43,3 +43,10 @@ export {
   moveOnTemplatePick,
   type TemplatePickHandoff,
 } from './defaults/template-pick';
+export type {
+  WelcomeManifest,
+  WelcomeOptions,
+  WelcomeStart,
+  WelcomeTelemetryType,
+} from './welcome/types';
+export type { SidebarLink } from './explorer/host';

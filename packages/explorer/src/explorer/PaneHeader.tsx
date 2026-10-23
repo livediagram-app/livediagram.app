@@ -21,6 +21,7 @@ import {
 import { siteOf, type AppFilter } from '../words';
 import { useExplorer } from './context';
 import { HelpButton } from './HomeHero';
+import { useHostExtras } from './host';
 
 export type ViewMode = 'list' | 'card' | 'details';
 
@@ -210,6 +211,7 @@ const segment = (active: boolean) =>
 /** This app's items, or every app's. */
 export function FilterToggle() {
   const { app, filter, setFilter, kind } = useExplorer();
+  const { allLabel } = useHostExtras();
   const choose = (next: AppFilter) => () => setFilter(next);
   return (
     <div role="group" aria-label="Show" className={SEGMENTS}>
@@ -229,7 +231,7 @@ export function FilterToggle() {
         title="Every app's items"
         className={segment(filter === 'all')}
       >
-        All
+        {allLabel}
       </button>
     </div>
   );

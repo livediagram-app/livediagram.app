@@ -7,7 +7,7 @@
 // Explorer does: the host's header (with the search field in its middle), Home's hero across the full width
 // under it, then the sidebar and the pane.
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { CloseIcon } from '../ui/icons';
 import { useItemCount } from '../data/useItemCount';
 import type { App, IndexClient, Item } from '@liveworkspace/index-client';
@@ -40,6 +40,10 @@ import { SearchField } from './SearchField';
 import { Sidebar } from './Sidebar';
 import { TimelinePane } from './TimelinePane';
 import { useHeroPresence } from './useHeroPresence';
+import { HostExtrasProvider, type SidebarLink } from './host';
+import { WelcomeProvider, useFirstRun } from '../welcome/context';
+import { WelcomeFan } from '../welcome/HomeWelcome';
+import type { WelcomeOptions } from '../welcome/types';
 
 export type ExplorerProps = {
   /** The host app: its kind is what New makes and what "this app" shows. */
@@ -100,6 +104,13 @@ export type ExplorerProps = {
   lensTemplates?: readonly LensOption[];
   /** A facet of the filter lens gained a value (`Explorer / Selected / <Facet>`), for the host's telemetry. */
   onLensSelected?: (type: LensTelemetryType) => void;
+  /** Home's first run: for a person with nothing yet, the app's starting points in place of empty lists, and the
+   *  hero's welcome. Without it Home shows its empty sections. */
+  welcome?: WelcomeOptions;
+  /** The host's own rows in the sidebar's More group, before the Trash (This Browser, say). */
+  sidebarLinks?: readonly SidebarLink[];
+  /** The filter's every-app choice, "All" by default ("All apps" where the Explorer is no one app's). */
+  allLabel?: string;
 };
 
 const FILTER_KEY = (app: App) => `liveworkspace:explorer-filter:${app}`;
@@ -195,6 +206,9 @@ function ExplorerInner({
   onHome,
   lensTemplates,
   onLensSelected,
+  welcome,
+  sidebarLinks,
+  allLabel,
 }: ExplorerProps) {
   const [filter, setFilter] = useFilter(app, controlledFilter, onFilterChange);
   const [heroHidden, hideHero] = useHeroHidden(app, controlledHeroHidden, onHideHero);
@@ -210,6 +224,10 @@ function ExplorerInner({
     [onNavigate],
   );
   const openNav = useCallback(() => setNavOpen(true), []);
+  const extras = useMemo(
+    () => ({ sidebarLinks: sidebarLinks ?? [], allLabel: allLabel ?? 'All' }),
+    [sidebarLinks, allLabel],
+  );
   return (
     <ExplorerProvider
       app={app}
@@ -236,43 +254,47 @@ function ExplorerInner({
       lensTemplates={lensTemplates}
       onLensSelected={onLensSelected}
     >
-      <div data-explorer="" className="flex min-w-0 flex-1 flex-col">
-        {header ? (
-          header({ search: heroOnHome ? null : <BarSearch toolbar={toolbar} /> })
-        ) : heroOnHome ? null : (
-          <div className="sticky top-0 z-30 flex h-12 shrink-0 items-center border-b border-slate-200 bg-white/85 px-4 backdrop-blur dark:border-slate-700 dark:bg-slate-900/85">
-            <div className="w-full sm:mx-auto sm:max-w-md">
-              <BarSearch toolbar={toolbar} />
-            </div>
+      <HostExtrasProvider value={extras}>
+        <WelcomeProvider welcome={welcome} active={view.kind === 'home'}>
+          <div data-explorer="" className="flex min-w-0 flex-1 flex-col">
+            {header ? (
+              header({ search: heroOnHome ? null : <BarSearch toolbar={toolbar} /> })
+            ) : heroOnHome ? null : (
+              <div className="sticky top-0 z-30 flex h-12 shrink-0 items-center border-b border-slate-200 bg-white/85 px-4 backdrop-blur dark:border-slate-700 dark:bg-slate-900/85">
+                <div className="w-full sm:mx-auto sm:max-w-md">
+                  <BarSearch toolbar={toolbar} />
+                </div>
+              </div>
+            )}
+            {hero.mounted ? (
+              <div
+                data-home-hero-fold={hero.open ? 'open' : 'closed'}
+                inert={!hero.open}
+                aria-hidden={!hero.open || undefined}
+                className={`grid transition-[grid-template-rows,opacity] duration-long ease-out motion-reduce:transition-none ${
+                  hero.open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                }`}
+              >
+                <div className="min-h-0 overflow-hidden">
+                  <HeroWithCount art={heroArt} onHide={hideHero} />
+                </div>
+              </div>
+            ) : null}
+            <main className="mx-auto flex w-full max-w-7xl flex-1 gap-8 px-4 pb-16 pt-8 sm:px-6">
+              {/* No box: the tree sits on the page. Hidden on a phone, where the drawer holds it. */}
+              <aside className="hidden w-64 shrink-0 self-start sm:block" aria-label="Sections">
+                <div className="sticky top-20 px-1 py-1">
+                  <Sidebar />
+                </div>
+              </aside>
+              {navOpen ? <SectionsDrawer onClose={() => setNavOpen(false)} /> : null}
+              <section className="min-w-0 flex-1">
+                <Pane view={view} onOpenNav={openNav} hero={heroOnHome} />
+              </section>
+            </main>
           </div>
-        )}
-        {hero.mounted ? (
-          <div
-            data-home-hero-fold={hero.open ? 'open' : 'closed'}
-            inert={!hero.open}
-            aria-hidden={!hero.open || undefined}
-            className={`grid transition-[grid-template-rows,opacity] duration-long ease-out motion-reduce:transition-none ${
-              hero.open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
-            }`}
-          >
-            <div className="min-h-0 overflow-hidden">
-              <HeroWithCount art={heroArt} onHide={hideHero} />
-            </div>
-          </div>
-        ) : null}
-        <main className="mx-auto flex w-full max-w-7xl flex-1 gap-8 px-4 pb-16 pt-8 sm:px-6">
-          {/* No box: the tree sits on the page. Hidden on a phone, where the drawer holds it. */}
-          <aside className="hidden w-64 shrink-0 self-start sm:block" aria-label="Sections">
-            <div className="sticky top-20 px-1 py-1">
-              <Sidebar />
-            </div>
-          </aside>
-          {navOpen ? <SectionsDrawer onClose={() => setNavOpen(false)} /> : null}
-          <section className="min-w-0 flex-1">
-            <Pane view={view} onOpenNav={openNav} hero={heroOnHome} />
-          </section>
-        </main>
-      </div>
+        </WelcomeProvider>
+      </HostExtrasProvider>
       <ExplorerDialogs />
       {trashedOnArrival ? <ArrivalUndo trashed={trashedOnArrival} /> : null}
     </ExplorerProvider>
@@ -319,7 +341,10 @@ function BarSearch({ toolbar }: { toolbar?: ReactNode }) {
 function HeroWithCount({ art, onHide }: { art?: ReactNode; onHide: () => void }) {
   const { client, app, filter, epoch } = useExplorerContext();
   const items = useItemCount(client, app, filter, true, epoch);
-  return <HomeHero items={items} art={art} onHide={onHide} />;
+  // A first run fans the app's starts in the art's place.
+  const { heroFirstRun, welcome } = useFirstRun();
+  const shown = heroFirstRun && welcome?.manifest ? <WelcomeFan /> : art;
+  return <HomeHero items={items} art={shown} onHide={onHide} />;
 }
 
 function Pane({

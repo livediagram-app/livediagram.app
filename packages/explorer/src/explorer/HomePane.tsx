@@ -29,6 +29,8 @@ import { useExplorer } from './context';
 import { ItemMenu } from './menus';
 import { PaneHeader } from './PaneHeader';
 import { useItemBits } from './rows';
+import { useFirstRun } from '../welcome/context';
+import { HomeWelcome } from '../welcome/HomeWelcome';
 import {
   useWhatHappened,
   useWhatHappenedGroups,
@@ -111,6 +113,22 @@ export function HomePane({ onOpenNav, hero }: { onOpenNav?: () => void; hero: bo
   const wide = useWide();
   const showApp = filter === 'all';
   const empty = !recent.loading && recent.items.length === 0;
+  const { firstRun } = useFirstRun();
+
+  // A first run (the host's welcome, and nothing the person can open yet): starting points in place of the lists.
+  if (firstRun)
+    return (
+      <div data-explorer-view="home">
+        {hero ? null : (
+          <PaneHeader
+            title="Home"
+            onOpenNav={onOpenNav}
+            onCreateItem={() => onCreate({ folderId: null, teamId: null })}
+          />
+        )}
+        <HomeWelcome withSearch={!hero} />
+      </div>
+    );
 
   return (
     <div data-explorer-view="home">

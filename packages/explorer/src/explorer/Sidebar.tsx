@@ -37,6 +37,7 @@ import {
 import { inboxCount } from '../data/useInbox';
 import { sameView, SIDEBAR_LABELS, type ExplorerView } from '../views';
 import { useExplorer } from './context';
+import { BrowserIcon, useHostExtras } from './host';
 import { DefaultFolderMarker } from '../defaults/DefaultFolderMarker';
 
 type Tone = 'sky' | 'violet' | 'amber' | 'emerald' | 'indigo' | 'rose';
@@ -352,6 +353,7 @@ export function timelineBadge(count: number | undefined): {
 
 export function Sidebar() {
   const { view, navigate, folders, teams, inbox, viewerId, manageTeamsUrl } = useExplorer();
+  const { sidebarLinks } = useHostExtras();
   const { expanded, toggle } = useExpanded(view);
   const is = (v: ExplorerView) => sameView(view, v);
   const myRoots = folders.childrenOf(null, null);
@@ -482,6 +484,17 @@ export function Sidebar() {
             depth={1}
           />
         </SidebarRow>
+        {/* The host's own rows (This Browser on liveworkspace.app): each leaves for its page. */}
+        {sidebarLinks.map((link) => (
+          <SidebarRow
+            key={link.id}
+            icon={link.icon === 'browser' ? <BrowserIcon /> : <LibraryIcon />}
+            label={link.label}
+            selected={false}
+            onActivate={() => window.location.assign(link.href)}
+            depth={0}
+          />
+        ))}
         <TrashRow />
       </SidebarGroup>
     </nav>
