@@ -29,6 +29,9 @@ export type ItemGrantOptions = {
   bootGlobal: string | null;
   /** The api path segment items live under: `designs` for `/api/designs/<id>`. */
   itemsSegment: string;
+  /** Reads that name their item in the query rather than the path: an image read through the item that places it,
+   *  `/api/images/<image>?d=<item>`, is `{ segment: 'images', param: 'd' }`. */
+  queryItems?: readonly { segment: string; param: string }[];
 };
 
 export type ItemGrants = {
@@ -128,6 +131,11 @@ export function createItemGrants(opts: ItemGrantOptions): ItemGrants {
   };
 
   const itemIdOfPath = (apiBase: string, url: string): string | null => {
+    for (const { segment, param } of opts.queryItems ?? []) {
+      if (!url.startsWith(`${apiBase}/${segment}/`)) continue;
+      const query = url.split('#')[0]!.split('?')[1];
+      return (query ? new URLSearchParams(query).get(param) : null) || null;
+    }
     const prefix = `${apiBase}/${opts.itemsSegment}/`;
     if (!url.startsWith(prefix)) return null;
     const id = url.slice(prefix.length).split(/[/?#]/)[0];

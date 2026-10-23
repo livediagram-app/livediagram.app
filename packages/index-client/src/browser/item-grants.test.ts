@@ -111,6 +111,21 @@ describe('withGrant', () => {
     expect(grants.itemIdOfPath('/api', '/api/self')).toBeNull();
   });
 
+  it('names the item a read carries in its query, for the segments the app says', () => {
+    const withImages = createItemGrants({
+      client: () => index,
+      bootGlobal: null,
+      itemsSegment: 'documents',
+      queryItems: [{ segment: 'images', param: 'd' }],
+    });
+    expect(withImages.itemIdOfPath('/api', '/api/images/i1?d=doc%201')).toBe('doc 1');
+    expect(withImages.itemIdOfPath('/api', '/api/images/i1?w=200&d=d2#x')).toBe('d2');
+    expect(withImages.itemIdOfPath('/api', '/api/images/i1')).toBeNull();
+    expect(withImages.itemIdOfPath('/api', '/api/documents/d3/tabs')).toBe('d3');
+    // Without the option an image read names nothing.
+    expect(grants.itemIdOfPath('/api', '/api/images/i1?d=d1')).toBeNull();
+  });
+
   it('adds the grant for the item and link the request names', async () => {
     index.grant.mockResolvedValue(grantOf('g-share'));
     const init = await grants.withGrant('/api', '/api/designs/d1/tabs/t1', {
