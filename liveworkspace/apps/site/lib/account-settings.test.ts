@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ALL_SETTING_KEYS } from '@liveworkspace/settings';
+import { ALL_SETTING_KEYS, PRESENCE_COLOURS as SHARED_PALETTE } from '@liveworkspace/settings';
 import { APP_SITES } from '@liveworkspace/sites';
 import {
   appSettingsLinks,
@@ -50,10 +50,9 @@ describe('the settings catalogue', () => {
 });
 
 describe('the profile', () => {
-  it('offers the apps’ ten presence colours, as lower-case hex', () => {
+  it('offers the apps’ shared palette, ten colours', () => {
+    expect(PRESENCE_COLOURS).toBe(SHARED_PALETTE);
     expect(PRESENCE_COLOURS).toHaveLength(10);
-    for (const { value } of PRESENCE_COLOURS) expect(value).toMatch(/^#[0-9a-f]{6}$/);
-    expect(new Set(PRESENCE_COLOURS.map((c) => c.value)).size).toBe(10);
   });
 
   it('names a colour, or says it is the app’s pick or set elsewhere', () => {

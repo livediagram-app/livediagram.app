@@ -130,8 +130,9 @@ of their settings and their profile ([accounts.md](accounts.md#settings)). Every
 turned off links here, so someone signed out signs in and comes back.
 
 - **Profile**: the display name and presence colour collaborators see in every app, with a preview
-  of their cursor and avatar. The colours are the apps' own ten presence colours, plus Automatic (no
-  colour of their own, so each app picks); dark mode paints each in its deeper shade, as the apps do.
+  of their cursor and avatar. The colours are the apps' one palette (`PRESENCE_COLOURS` in
+  `@liveworkspace/settings`), plus Automatic (no colour of their own, so each app picks); dark mode
+  paints each in the palette's deeper shade, as the apps do.
   Leaving the name empty shows the name they signed up with.
 - **Notifications**: each email that can be turned off (comments, mentions, actions assigned,
   invitation answers, tips and check-ins, milestones) and the apps' in-editor notes, worded as in the

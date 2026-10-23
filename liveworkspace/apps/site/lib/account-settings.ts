@@ -3,7 +3,12 @@
 // Settings word them (livediagram's settings-catalogue.ts), so a switch reads the same here as in
 // any app. The editors' chrome (UI scale, panel opacity and the rest) is left out: it means nothing
 // without an editor, and each app shows it in its own Settings.
-import { ALL_SETTING_KEYS, type AllSettingKey } from '@liveworkspace/settings';
+import {
+  ALL_SETTING_KEYS,
+  PRESENCE_COLOURS,
+  presenceColour,
+  type AllSettingKey,
+} from '@liveworkspace/settings';
 import { APP_SITES, type SiteId } from '@liveworkspace/sites';
 
 export type SettingsBlob = Record<string, unknown>;
@@ -128,26 +133,14 @@ export function readToggle(all: SettingsBlob, row: ToggleRow): boolean {
   return typeof value === 'boolean' ? value : row.fallback;
 }
 
-// The presence colours every app offers (each app's lib/identity.ts PARTICIPANT_COLORS), in the
-// apps' order: the colours collaborators see on your cursor, comments and avatar. Dark mode paints
-// each one's 700 step under white text (@livediagram/ui identityVars).
-export const PRESENCE_COLOURS: readonly { value: string; name: string }[] = [
-  { value: '#0ea5e9', name: 'Sky' },
-  { value: '#10b981', name: 'Emerald' },
-  { value: '#f59e0b', name: 'Amber' },
-  { value: '#ef4444', name: 'Red' },
-  { value: '#8b5cf6', name: 'Violet' },
-  { value: '#ec4899', name: 'Pink' },
-  { value: '#14b8a6', name: 'Teal' },
-  { value: '#f97316', name: 'Orange' },
-  { value: '#6366f1', name: 'Indigo' },
-  { value: '#84cc16', name: 'Lime' },
-];
+// The presence colours are every app's one palette (@liveworkspace/settings PRESENCE_COLOURS), each
+// with its dark-mode shade: what collaborators see on your cursor, comments and avatar.
+export { PRESENCE_COLOURS };
 
 // A colour's name for the page, or "Custom" for one set elsewhere that isn't in the palette.
 export function colourName(color: string | null): string {
   if (!color) return 'Automatic';
-  return PRESENCE_COLOURS.find((c) => c.value === color.toLowerCase())?.name ?? 'Custom';
+  return presenceColour(color)?.name ?? 'Custom';
 }
 
 // The display name's limit (the accounts API's PROFILE_NAME_MAX), and how long typing must pause

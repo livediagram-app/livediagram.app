@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useId, useRef, useState, type CSSProperties, type KeyboardEvent } from 'react';
-import { identityVars, lucideGlyph } from '@livediagram/ui';
+import { identityDeep, lucideGlyph } from '@livediagram/ui';
+import { presenceColour } from '@liveworkspace/settings';
 import { lucideCheck } from '@livediagram/icons/lucide';
 import { ACCOUNT_API, accountApi } from '@/lib/account-api';
 import {
@@ -26,10 +27,19 @@ export interface Profile {
   color: string | null;
 }
 
-// A runtime colour under white text: the colour itself in light, its 700 step in dark, from the
-// custom properties identityVars sets (@livediagram/ui IDENTITY_FILL, written out so this site's
+// A runtime colour under white text: the colour itself in light, its palette shade in dark, from the
+// custom properties presenceVars sets (@livediagram/ui IDENTITY_FILL, written out so this site's
 // Tailwind sees it).
 const IDENTITY_FILL = 'bg-(--identity) dark:bg-(--identity-deep)';
+
+// The two shades IDENTITY_FILL reads: a palette colour's own dark shade (@liveworkspace/settings), or
+// a custom one (set elsewhere) darkened until white reads.
+function presenceVars(color: string): CSSProperties {
+  return {
+    '--identity': color,
+    '--identity-deep': presenceColour(color)?.deep ?? identityDeep(color),
+  } as CSSProperties;
+}
 // The fill for no colour of their own: the site's slate, as the header's avatar is.
 const AUTOMATIC_FILL =
   'bg-gradient-to-br from-slate-600 to-slate-900 dark:from-slate-300 dark:to-slate-500';
@@ -253,7 +263,7 @@ function ColourPicker({
               tabIndex={index === checkedIndex ? 0 : -1}
               onClick={() => onPick(value)}
               onKeyDown={(event) => onKeyDown(event, index)}
-              style={value === null ? AUTOMATIC_SWATCH : identityVars(value)}
+              style={value === null ? AUTOMATIC_SWATCH : presenceVars(value)}
               className={`relative touch-target flex size-9 cursor-pointer items-center justify-center rounded-full text-white ring-offset-2 ring-offset-white transition-transform duration-micro hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 motion-reduce:transition-none motion-reduce:hover:scale-100 dark:ring-offset-slate-900 ${
                 value === null ? '' : IDENTITY_FILL
               } ${checked ? 'ring-2 ring-slate-900 focus-visible:ring-slate-900 dark:ring-white dark:focus-visible:ring-white' : ''}`}
@@ -272,7 +282,7 @@ function ColourPicker({
 // What collaborators see: a cursor with the name beside it, and the avatar in the presence list.
 function Preview({ name, color }: { name: string; color: string | null }) {
   const fill = color ? IDENTITY_FILL : AUTOMATIC_FILL;
-  const style = color ? identityVars(color) : undefined;
+  const style = color ? presenceVars(color) : undefined;
   return (
     <figure className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/60">
       <figcaption className="text-xs font-semibold tracking-[.14em] text-slate-500 uppercase dark:text-slate-400">

@@ -243,6 +243,9 @@ for every app. An app keeps no participants table of its own.
 - A name is trimmed, 1 to 120 characters, with no control characters; a colour at most 64, and refused
   when it could load something or break out of a CSS value (the apps' `isSafeColourValue`), since it is
   painted into every peer's page. Either may be null: no name of its own, or the app's own pick of colour.
+- The colours offered are one palette, `PRESENCE_COLOURS` in `@liveworkspace/settings`
+  (`packages/settings`): ten named colours, each with the deeper shade dark mode paints it in under
+  white text. Every app and liveworkspace.app's Settings offer the same swatches from it.
 
 An app reads up to 100 ids at once (a presence list, a page of comments): one query, each id found by
 primary key in the profiles and the accounts, so an account that never set anything still answers with

@@ -60,3 +60,10 @@ export function joinSettings(all: SettingsBlob, app: SettingsBlob): SettingsBlob
   for (const [key, value] of Object.entries(all)) if (ALL.has(key)) joined[key] = value;
   return joined;
 }
+
+export {
+  PRESENCE_COLOUR_VALUES,
+  PRESENCE_COLOURS,
+  presenceColour,
+  type PresenceColour,
+} from './presence';
