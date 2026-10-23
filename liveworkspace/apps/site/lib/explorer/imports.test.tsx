@@ -9,7 +9,7 @@ describe('Import from on liveworkspace.app', () => {
     const host = importsHost('livediagram')!;
     expect(host.sources.map((s) => s.id)).toEqual(['microsoft-whiteboard', 'excalidraw', 'drawio']);
     expect(host.sources.filter((s) => s.libraries).map((s) => s.id)).toEqual(['drawio']);
-    expect(host.sources.every((s) => s.icon)).toBe(true);
+    expect(host.sources.every((s) => Boolean(s.icon))).toBe(true);
     expect(importsHost('livediagram')).toBe(host);
   });
 
