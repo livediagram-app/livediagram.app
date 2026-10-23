@@ -2,6 +2,7 @@
 // and each app's internal routes), the grant key, and a caller. Not a `.test.ts` file, so vitest doesn't
 // collect it.
 
+import { clearFreshTeamsForTests } from './fresh-teams';
 import { exportJWK, generateKeyPair, SignJWT, type JWK } from 'jose';
 import { afterEach, beforeAll, beforeEach, vi } from 'vitest';
 import worker from './index';
@@ -47,6 +48,7 @@ export function useHarness(overrides: Partial<Env> = {}) {
     h.appCalls = [];
     h.appAnswer = () => new Response(null, { status: 200 });
     h.pending = [];
+    clearFreshTeamsForTests();
     vi.stubGlobal('fetch', async (input: RequestInfo | URL, init: RequestInit = {}) => {
       const url = String(input instanceof Request ? input.url : input);
       if (url === `${ISSUER}/jwks`) return Response.json({ keys: [accountsJwk] });

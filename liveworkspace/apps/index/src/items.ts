@@ -1,6 +1,7 @@
 // Items (liveworkspace/docs/one-explorer-contracts.md "Items"): listing, making, reading, renaming and
 // moving, the Trash, copies, opens and grants.
 
+import { inTeamNow, inTeamsNow } from './fresh-teams';
 import {
   APP_KINDS,
   FILTER_VALUES_MAX,
@@ -60,7 +61,11 @@ function readList(raw: string, ok: (value: string) => boolean): string[] | null 
 }
 
 // The Explorer's filters (its lens) from a query string, checked: GET /items and GET /shared.
-export function parseListFilters(person: Person, params: URLSearchParams): ListFilters | Response {
+export async function parseListFilters(
+  env: Env,
+  person: Person,
+  params: URLSearchParams,
+): Promise<ListFilters | Response> {
   const filters: ListFilters = {};
   const q = params.get('q')?.trim();
   if (q) {
@@ -103,7 +108,7 @@ export function parseListFilters(person: Person, params: URLSearchParams): ListF
     const values = readList(space, (v) => v === 'mine' || v === 'shared' || v.startsWith('team:'));
     if (!values) return badRequest('invalid_query');
     const teams = values.filter((v) => v.startsWith('team:')).map((v) => v.slice(5));
-    if (teams.some((t) => !person.teams.includes(t))) return forbidden('not_team_member');
+    if (!(await inTeamsNow(env, person, teams))) return forbidden('not_team_member');
     filters.space = { mine: values.includes('mine'), shared: values.includes('shared'), teams };
   }
   return filters;
@@ -122,7 +127,7 @@ export async function parseListSpec(
   if (limit === null) return badRequest('invalid_query');
   const cursor = decodeCursor(params.get('cursor'));
   if (cursor === null) return badRequest('invalid_cursor');
-  const scopes = teamFilter(person, params.get('team'));
+  const scopes = await teamFilter(env, person, params.get('team'));
   if (scopes instanceof Response) return scopes;
   const spec: ListSpec = { view, limit };
   if (app) spec.app = app;
@@ -148,7 +153,7 @@ export async function parseListSpec(
     if (deep !== '1' || !spec.folder) return badRequest('invalid_query');
     spec.deep = true;
   }
-  const filters = parseListFilters(person, params);
+  const filters = await parseListFilters(env, person, params);
   if (filters instanceof Response) return filters;
   Object.assign(spec, filters);
   const used = params.get('used');
@@ -185,7 +190,7 @@ export async function handleTrash(ctx: PersonContext): Promise<Response> {
   // An app acting for a person may empty its own items, never every app's.
   if (person.app && appParam !== person.app) return forbidden('wrong_app');
   const team = url.searchParams.get('team');
-  if (team && !person.teams.includes(team)) return forbidden('not_team_member');
+  if (team && !(await inTeamNow(env, person, team))) return forbidden('not_team_member');
   const scope = team ? teamScope(team) : personalScope(person.id);
   const { results } = await env.INDEX_DB.prepare(
     `SELECT id, app FROM items WHERE scope = ? AND trashed_at IS NOT NULL${appParam ? ' AND app = ?' : ''}
@@ -238,7 +243,7 @@ export async function createItem(ctx: PersonContext): Promise<Response> {
   if (source !== null && !(ITEM_SOURCES as readonly unknown[]).includes(source))
     return badRequest();
   let teamId = body.teamId ?? null;
-  if (teamId && !person.teams.includes(teamId)) return forbidden('not_team_member');
+  if (teamId && !(await inTeamNow(env, person, teamId))) return forbidden('not_team_member');
   let scope = scopeOf(person.id, teamId);
   let folderId = body.folderId ?? null;
   if (folderId) {
@@ -390,8 +395,9 @@ async function updateItem(ctx: RouteContext, id: string): Promise<Response> {
   if (person && body.teamId !== undefined && (body.teamId ?? null) !== row.team_id) {
     const target = body.teamId ?? null;
     // Into or out of a team: joined membership of each team involved.
-    if (row.team_id && !person.teams.includes(row.team_id)) return forbidden('not_team_member');
-    if (target && !person.teams.includes(target)) return forbidden('not_team_member');
+    if (row.team_id && !(await inTeamNow(env, person, row.team_id)))
+      return forbidden('not_team_member');
+    if (target && !(await inTeamNow(env, person, target))) return forbidden('not_team_member');
     // Leaving a team, it becomes the mover's own.
     if (!target) ownerId = person.id;
     teamId = target;

@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@liveworkspace/auth-client": "workspace:*",
+    "@liveworkspace/index-app": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",
     "jose": "^6.2.12"
   },

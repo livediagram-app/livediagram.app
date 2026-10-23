@@ -2,6 +2,7 @@
 // per person and one per team, holding items from any app. A folder's parent is always in its own scope.
 // Deleting one moves its folders and items up a level.
 
+import { inTeamNow } from './fresh-teams';
 import { FOLDER_NAME_MAX, type Folder } from '@liveworkspace/index-client';
 import { personalScope, scopeOf, scopesOf, teamScope, type Person } from './auth';
 import { decodeCursor, encodeCursor, isId, parseLimit } from './codec';
@@ -47,10 +48,14 @@ export async function reachableFolder(
 
 // The `team` filter as scopes: a joined team's, `personal`, or (absent) every one the person has. A
 // team they have not joined is refused.
-export function teamFilter(person: Person, team: string | null): string[] | Response | undefined {
+export async function teamFilter(
+  env: Env,
+  person: Person,
+  team: string | null,
+): Promise<string[] | Response | undefined> {
   if (team === null || team === '') return undefined;
   if (team === 'personal') return [personalScope(person.id)];
-  if (!person.teams.includes(team)) return forbidden('not_team_member');
+  if (!(await inTeamNow(env, person, team))) return forbidden('not_team_member');
   return [teamScope(team)];
 }
 
@@ -66,7 +71,7 @@ export async function handleFolders(ctx: PersonContext): Promise<Response> {
 
   if (segments.length === 1) {
     if (method === 'GET') {
-      const scopes = teamFilter(person, url.searchParams.get('team'));
+      const scopes = await teamFilter(env, person, url.searchParams.get('team'));
       if (scopes instanceof Response) return scopes;
       const limit = parseLimit(url.searchParams.get('limit'), 200);
       const cursor = decodeCursor(url.searchParams.get('cursor'));
@@ -127,7 +132,7 @@ async function createFolder(ctx: PersonContext): Promise<Response> {
   if (body.id !== undefined && !isId(body.id)) return badRequest('invalid_folder');
   if (body.teamId != null && !isId(body.teamId)) return badRequest('invalid_team');
   const teamId = (body.teamId as string | null | undefined) ?? null;
-  if (teamId && !person.teams.includes(teamId)) return forbidden('not_team_member');
+  if (teamId && !(await inTeamNow(env, person, teamId))) return forbidden('not_team_member');
   const scope = scopeOf(person.id, teamId);
   let parentId: string | null = null;
   if (body.parentId != null) {

@@ -365,7 +365,7 @@ export async function handleShared(ctx: PersonContext): Promise<Response> {
   if (cursor === null) return badRequest('invalid_cursor');
   const app = url.searchParams.get('app');
   if (app !== null && !isApp(app)) return badRequest('invalid_app');
-  const filters = parseListFilters(person, url.searchParams);
+  const filters = await parseListFilters(env, person, url.searchParams);
   if (filters instanceof Response) return filters;
   const narrow = filterClauses(person, filters);
   const { results } = await db

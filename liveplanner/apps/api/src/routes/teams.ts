@@ -3,10 +3,16 @@
 // (assigned-actions.md, comment-mentions.md).
 
 import type { TeamListItem, TeamMember } from '@liveplanner/api-schema';
+import { accountsTeamReader, createTeamAccess } from '@liveworkspace/index-app';
+import { accountCredentials } from '../auth/accounts';
 import { teamPeople } from '../person/notify';
 import { json, notFound } from '../responses';
 import { requireOwner, type RouteContext } from './context';
 import { clientFor, folderOf, listFolders, listItems, refusal, summaryOf } from './index-adapters';
+
+// Team access as every app on the index has it (@liveworkspace/index-app teams.ts): the token's claim, and accounts
+// for a team made or joined since it was minted.
+const teamAccess = createTeamAccess();
 
 // GET /api/teams, /api/teams/:id/library and /api/teams/:id/members. Teams are the caller's token's
 // (liveworkspace manages them).
@@ -30,7 +36,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
   }
   if (segments.length === 4 && segments[3] === 'library') {
     const teamId = segments[2]!;
-    if (!teams.some((t) => t.id === teamId)) return notFound();
+    if (!(await inTeam(ctx, owner, teamId))) return notFound();
     const client = clientFor(ctx);
     if (client instanceof Response) return client;
     try {
@@ -49,7 +55,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
     const teamId = segments[2]!;
     // A team the caller is not in answers as missing, by name, whoever asks.
     const noTeam = () => json({ error: 'team_not_found' }, { status: 404 });
-    if (ctx.token || !teams.some((t) => t.id === teamId)) return noTeam();
+    if (ctx.token || !(await inTeam(ctx, owner, teamId))) return noTeam();
     const people = await teamPeople(ctx.env, teamId);
     if (!people) return noTeam();
     const members: TeamMember[] = people.map((p) => ({
@@ -66,4 +72,13 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
     return json({ members });
   }
   return notFound();
+}
+
+function inTeam(ctx: RouteContext, owner: string, teamId: string): Promise<boolean> {
+  return teamAccess.inTeam(
+    accountsTeamReader(accountCredentials(ctx.env)),
+    owner,
+    ctx.teams ?? null,
+    teamId,
+  );
 }

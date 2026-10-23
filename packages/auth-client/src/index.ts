@@ -33,6 +33,7 @@ export {
   MAX_NOTIFY_OWNERS,
   readNotifySettings,
   readProfiles,
+  readAccountTeams,
   readTeamPeople,
   recordSighting,
   reportActivity,

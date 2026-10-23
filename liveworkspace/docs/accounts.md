@@ -20,6 +20,14 @@ can't step down or leave while others remain, and the last member leaving delete
 Closing an account leaves every team first: a team it ran alone goes, and one where it was the only
 admin passes to the longest-standing member.
 
+**How an app and the index know someone's teams.** Neither keeps a copy. Every access token carries the
+person's teams (`teams`, up to an hour old), and so does every API token check. A team made or joined
+since then is usable at once: when a request names a team the claim doesn't hold, the app asks
+`POST /api/account/internal/teams/of {userId}`, and the index asks `POST /api/account/index/teams` (with
+the key it shares with accounts). Each gets the list a token minted now would carry. Only a miss asks,
+and the answer is remembered for a moment (`@liveworkspace/index-app` `createTeamAccess`). Leaving a
+team takes effect when the person's token is next minted.
+
 | Who may                                                        | Admin                                      | Member |
 | -------------------------------------------------------------- | ------------------------------------------ | ------ |
 | See the team, its members and invitations                      | ✓                                          | ✓      |

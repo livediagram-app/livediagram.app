@@ -392,6 +392,28 @@ describe('the account API, for the apps', () => {
     expect((await internal('/teams/members', {})).status).toBe(400);
   });
 
+  it("answers the teams someone is in now, to an app and to the index's key", async () => {
+    const made = await call('/teams', { method: 'POST', body: { name: 'Design' } });
+    const team = (await made.json()) as { id: string };
+    const now = await internal('/teams/of', { userId: 'user_ada' });
+    expect(await now.json()).toEqual({ teams: [{ id: team.id, name: 'Design', role: 'admin' }] });
+    expect((await internal('/teams/of', { userId: 'robert' })).status).toBe(400);
+    const index = (key: string) =>
+      handleAccountApi(
+        new Request(`${BASE}/api/account/index/teams`, {
+          method: 'POST',
+          headers: { authorization: `Bearer ${key}`, 'content-type': 'application/json' },
+          body: JSON.stringify({ userId: 'user_ada' }),
+        }),
+        { ...env, INDEX_MERGE_KEY: 'merge-key' },
+        auth,
+      );
+    expect(await (await index('merge-key')).json()).toEqual({
+      teams: [{ id: team.id, name: 'Design', role: 'admin' }],
+    });
+    expect((await index('nope')).status).toBe(401);
+  });
+
   it('refuses wrong client credentials', async () => {
     const response = await internal(
       '/teams/changes',

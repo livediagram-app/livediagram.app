@@ -5239,6 +5239,9 @@ importers:
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
+      '@liveworkspace/index-app':
+        specifier: workspace:*
+        version: link:../../../packages/index-app
       '@liveworkspace/index-client':
         specifier: workspace:*
         version: link:../../../packages/index-client

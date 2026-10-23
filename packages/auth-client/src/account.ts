@@ -557,6 +557,18 @@ export interface TeamPerson {
   status: 'invited' | 'joined';
 }
 
+// The teams an account is in now, as an access token would carry them minted this moment: for an app whose
+// token claim (up to an hour old) may not hold a team made or joined a moment ago.
+export async function readAccountTeams(
+  credentials: ClientCredentials,
+  userId: string,
+  fetcher: typeof fetch = fetch,
+): Promise<TeamClaim[]> {
+  const response = await call(credentials, '/teams/of', { method: 'POST', body: { userId } }, fetcher);
+  if (!response.ok) throw new Error(`account teams failed: ${response.status}`);
+  return readTeamsClaim(((await response.json()) as { teams?: unknown }).teams) ?? [];
+}
+
 // A live team's name and its joined and invited people, or null when there is no such team. Show it
 // only to someone the app has checked is in the team (their token's `teams` claim).
 export async function readTeamPeople(

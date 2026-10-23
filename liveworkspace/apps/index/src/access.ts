@@ -1,11 +1,12 @@
 // The access rule (liveworkspace/docs/one-explorer-contracts.md "Sharing and access"): the owner, and
 // every joined member of the item's team, edit everything; anyone else needs a live share link, at its
 // level and on its tab, and the item's share password when it has one. Team membership comes from the
-// token's `teams` claim.
+// token's `teams` claim, and from accounts for a team the claim does not hold yet (fresh-teams.ts).
 
 import { levelAtLeast, type Level } from '@liveworkspace/index-client';
 import type { Caller } from './auth';
 import type { Env } from './env';
+import { inTeamNow } from './fresh-teams';
 import { fail, notFound, unauthorized } from './http';
 import { verifySharePassword } from './password-hash';
 import { directAccess, getItemRow, LIVE_LINK, type Access, type ItemRow } from './rows';
@@ -52,6 +53,10 @@ export async function linkAccess(
 export async function accessTo(env: Env, row: ItemRow, caller: Caller): Promise<Access | Response> {
   const direct = directAccess(row, caller.person);
   if (direct) return direct;
+  // A team made or joined since their token was minted (fresh-teams.ts).
+  if (row.team_id && caller.person && (await inTeamNow(env, caller.person, row.team_id))) {
+    return { level: 'edit', tabId: null, via: 'team', code: null };
+  }
   if (!caller.person && !caller.share) return unauthorized();
   if (row.trashed_at !== null) return notFound();
   const link = await linkFor(env, row.id, caller);

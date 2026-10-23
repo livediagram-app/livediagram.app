@@ -20,6 +20,7 @@ import {
 } from './account-apps.ts';
 import { clientApp } from './clients.ts';
 import { GUEST_ID, USER_ID } from './ids.ts';
+import { sameSecret } from './secrets.ts';
 import { pendingInvitations } from './internal-invitations.ts';
 import { recordActivity, signupAppOf } from './lifecycle.ts';
 import {
@@ -98,7 +99,24 @@ export async function handleAccountApi(request: Request, env: Env, auth: Auth): 
   const url = new URL(request.url);
   const parts = url.pathname.slice(ACCOUNT_API_PATH.length).split('/').filter(Boolean);
   if (parts[0] === 'internal') return handleInternal(request, env, auth, parts.slice(1), url);
+  if (parts[0] === 'index' && parts[1] === 'teams' && parts.length === 2) {
+    return handleIndexTeams(request, env);
+  }
   return handleSignedIn(request, env, auth, parts);
+}
+
+// --- The index, with the key it shares with accounts (INDEX_MERGE_KEY) ---
+
+// POST /api/account/index/teams {userId}: the teams an account is in now, for the index when a request names a
+// team its access token does not claim yet (a team made or joined since the token was minted).
+async function handleIndexTeams(request: Request, env: Env): Promise<Response> {
+  const key = env.INDEX_MERGE_KEY?.trim();
+  const sent = request.headers.get('Authorization')?.match(/^Bearer\s+(\S+)$/i)?.[1];
+  if (request.method !== 'POST') return error(404, 'not_found');
+  if (!key || !sent || !(await sameSecret(sent, key))) return error(401, 'unauthorized');
+  const { userId } = await readBody(request);
+  if (typeof userId !== 'string' || !USER_ID.test(userId)) return error(400, 'invalid_user');
+  return json({ teams: await teamsClaim(env.AUTH_DB, userId) });
 }
 
 // --- The signed-in person, on liveworkspace.app ---
@@ -672,6 +690,14 @@ async function handleInternal(
     }
     const found = await teamPeople(db, teamId);
     return found ? json(found) : error(404, 'not_found');
+  }
+
+  // The teams an account is in now, for an app whose token claim may be older than a team made or joined a
+  // moment ago (@liveworkspace/index-app teams.ts). The same list an access token carries.
+  if (route === 'POST teams/of') {
+    const { userId } = await readBody(request);
+    if (typeof userId !== 'string' || !USER_ID.test(userId)) return error(400, 'invalid_user');
+    return json({ teams: await teamsClaim(db, userId) });
   }
 
   if (route === 'GET teams/changes') {

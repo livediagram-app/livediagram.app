@@ -9,3 +9,4 @@ export * from './internal';
 export * from './outbox';
 export * from './activity';
 export * from './anonymise';
+export * from './teams';
