@@ -42,6 +42,8 @@ export type Item = {
   lastOpenedAt: number | null;
   // The share code, when they reach it only through a link.
   sharedVia: string | null;
+  // Most Used only: the distinct days in the window the person opened it.
+  useDays?: number;
 };
 
 export type Folder = {
@@ -176,6 +178,8 @@ export type ItemListQuery = {
   q?: string;
   limit?: number;
   cursor?: string;
+  // Recent's first page only: also up to this many (MOST_USED_MAX) Most Used items, as `mostUsed`.
+  used?: number;
 };
 
 export type CreateItemInput = {

@@ -239,6 +239,23 @@ describe('POST /internal/purge-person', () => {
     );
   });
 
+  it("drops the person's use days (Most Used), on others' items too, and leaves everyone else's", async () => {
+    addItem('bea-used', BEA);
+    addItem('ada-used', ADA);
+    const use = (person: string, item: string, day: number) =>
+      run('INSERT INTO use_days (person_id, item_id, day) VALUES (?, ?, ?)', person, item, day);
+    use(ADA, 'bea-used', 20_000);
+    use(ADA, 'bea-used', 20_001);
+    use(ADA, 'ada-used', 20_001);
+    use(BEA, 'bea-used', 20_001);
+    expect((await purge({ personId: ADA, teamIds: [] })).status).toBe(200);
+    await settle();
+    expect(count('SELECT COUNT(*) AS n FROM use_days WHERE person_id = ?', ADA)).toBe(0);
+    expect(rows('SELECT person_id, item_id FROM use_days')).toEqual([
+      { person_id: BEA, item_id: 'bea-used' },
+    ]);
+  });
+
   it('is safe to run again, and remembers the request until the linger window ends', async () => {
     arrange();
     await purge({ personId: ADA, teamIds: ['D'] });

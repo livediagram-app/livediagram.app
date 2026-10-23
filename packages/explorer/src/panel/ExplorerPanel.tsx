@@ -21,7 +21,12 @@ import {
 import { type App, type Folder, type IndexClient, type Item } from '@liveworkspace/index-client';
 import { useFolderPreviews } from '../data/useFolderPreviews';
 import { useItemList } from '../data/useItemList';
-import { recentLoader, viewList } from '../data/viewLists';
+import {
+  JUMP_BACK_IN_PER_GROUP,
+  jumpBackInLine,
+  jumpBackInLoader,
+  viewList,
+} from '../data/viewLists';
 import type { ShownItem } from '../data/overlay';
 import { inboxCount } from '../data/useInbox';
 import { ExplorerProvider, useExplorer } from '../explorer/context';
@@ -780,9 +785,9 @@ function HomeSection({
   onOpenExplorer?: (view: ExplorerView) => void;
 }) {
   const { client, app, filter, overlay, epoch, words } = useExplorer();
-  // One more than the pane lists, so leaving out the open item still fills it.
+  // Most used then recent (one request), one more than the pane lists, so leaving out the open item still fills it.
   const load = useMemo(
-    () => recentLoader(client, app, filter, JUMP_BACK_IN_ROWS + 1),
+    () => jumpBackInLoader(client, app, filter, JUMP_BACK_IN_PER_GROUP, 1),
     [client, app, filter],
   );
   const list = useItemList({
@@ -913,9 +918,7 @@ const JumpBackInCard = memo(function JumpBackInCard({ item }: { item: ShownItem 
       meta={
         <span className="flex items-center gap-1.5">
           {filter === 'all' ? <AppMark app={item.app} size={12} /> : null}
-          <span className="truncate">
-            Opened {relativeSince(item.lastOpenedAt ?? item.updatedAt, now || Date.now())}
-          </span>
+          <span className="truncate">{jumpBackInLine(item, now || Date.now())}</span>
         </span>
       }
       onActivate={editing ? undefined : () => openItem(item)}

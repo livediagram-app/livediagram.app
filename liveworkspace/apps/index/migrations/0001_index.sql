@@ -98,6 +98,18 @@ CREATE TABLE opens (
 CREATE INDEX opens_recent ON opens (person_id, last_opened_at DESC, item_id DESC);
 CREATE INDEX opens_item ON opens (item_id);
 
+-- The UTC days (ms / 86,400,000) each person opened each item: Most Used counts them over USE_WINDOW_DAYS. One row
+-- per person, item and day (INSERT OR IGNORE on open); days past the window are pruned, so a person's rows stay
+-- bounded by what they opened in it.
+CREATE TABLE use_days (
+  person_id TEXT    NOT NULL,
+  item_id   TEXT    NOT NULL REFERENCES items (id) ON DELETE CASCADE,
+  day       INTEGER NOT NULL,
+  PRIMARY KEY (person_id, item_id, day)
+);
+CREATE INDEX use_days_person_day ON use_days (person_id, day);
+CREATE INDEX use_days_item ON use_days (item_id);
+
 -- Share links, as the apps have them today. A link whose `expires_at` has passed opens nothing but stays
 -- listed for its owner to extend or delete.
 CREATE TABLE share_links (

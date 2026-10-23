@@ -1,6 +1,6 @@
 # Explorer Home
 
-**Moved to liveworkspace's index (October 2026).** liveplanner's own Home (Jump Back In with its Within reach set, then What Happened, read from `/api/home`) is gone. `/explorer` and `/explorer/home` render the shared Explorer's Home view: the hero, Jump Back In (your most recently opened items, from every app) and Shared With You Recently, read from the index. What Happened went with the [Timeline](timeline.md).
+**Moved to liveworkspace's index (October 2026).** liveplanner's own Home (Jump Back In with its Within reach set, then What Happened, read from `/api/home`) is gone. `/explorer` and `/explorer/home` render the shared Explorer's Home view: the hero, Jump Back In (Most Used: the items you used on the most days in the last 90, then your most recently opened, up to eight from every app, each with a line such as "Used on 6 days" or "Opened 2 hours ago") and Shared With You Recently, read from the index. What Happened went with the [Timeline](timeline.md).
 
 ## The hero
 
@@ -53,6 +53,6 @@ With the banner hidden, Home is drawn like every other Explorer page: the header
 and Home takes the ordinary page header (the title "Home", its Help link and, on a phone, the menu button), so it
 keeps its `h1`.
 
-What liveplanner still does is say when a plan is opened: the editor records the open with the index (`POST /items/:id/open`, debounced there to one write a minute) when it loads the plan, and that is what Recent and Jump Back In sort by.
+What liveplanner still does is say when a plan is opened: the editor records the open with the index (`POST /items/:id/open`, debounced there to one write a minute) when it loads the plan. The index keeps the time for Recent and the day as a use day for Most Used, and Jump Back In reads both in one request.
 
 The plan is [one-explorer.md](../../../../liveworkspace/docs/one-explorer.md); the calls and types are in [one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Items". The Explorer that shows it is the shared package, [`@liveworkspace/explorer`](../../../../packages/explorer/README.md).

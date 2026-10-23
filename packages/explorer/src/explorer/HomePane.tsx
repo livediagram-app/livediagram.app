@@ -1,21 +1,27 @@
 'use client';
 
-// Home (livediagram's HomePane, without What Happened): under the hero, Jump Back In, the person's latest
-// opens, as livediagram draws its two groups (four large cards, then four compact ones), and Shared With You
-// Recently. The index keeps when each item was last opened, not how often, so the groups are Recent and
-// Earlier rather than livediagram's Most Used and Recent. On a phone Jump Back In is one scrolling strip.
-// With the hero hidden, Home takes the ordinary page header. Two requests, each one small page.
+// Home (livediagram's HomePane): under the hero, Jump Back In as livediagram draws it, Most Used (four large cards,
+// the items opened on the most days of the last 90, "Used on N days") then Recent (four compact ones, the latest
+// opened of the rest), and Shared With You Recently. On a phone Jump Back In is one scrolling strip, the two groups
+// alternating. With the hero hidden, Home takes the ordinary page header. Two requests, each one small page: Recent
+// carries Most Used beside it (the index's `used`).
 
 import { memo, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { ShownItem } from '../data/overlay';
 import { useItemList } from '../data/useItemList';
-import { recentLoader, sharedRecentlyLoader } from '../data/viewLists';
+import {
+  isMostUsed,
+  JUMP_BACK_IN_PER_GROUP,
+  jumpBackInLine,
+  jumpBackInLoader,
+  sharedRecentlyLoader,
+} from '../data/viewLists';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
 import { FOCUS_RING, MUTED, RENAME_INPUT } from '../ui/classes';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { useItemDrag } from '../drag/drag';
 import { ChevronRightIcon, ClockIcon, ItemIcon } from '../ui/icons';
-import { relativeSince, useNow } from '../time';
+import { useNow } from '../time';
 import type { ExplorerView } from '../views';
 import { AppMark } from './badges';
 import { useExplorer } from './context';
@@ -23,18 +29,15 @@ import { ItemMenu } from './menus';
 import { PaneHeader } from './PaneHeader';
 import { useItemBits } from './rows';
 
-export const HOME_RECENT = 8;
 export const HOME_SHARED = 4;
-// The large group's size; the rest of Recent is compact.
-const LARGE_COUNT = 4;
 
 export const HOME_COPY = {
   jumpBackIn: 'Jump Back In',
   sharedRecently: 'Shared With You Recently',
   seeMore: 'See More',
   seeAll: 'See All',
+  mostUsed: 'Most Used',
   recent: 'Recent',
-  earlier: 'Earlier',
 } as const;
 
 const SECTION_HEADING =
@@ -75,10 +78,7 @@ function useWide(): boolean {
 
 export function HomePane({ onOpenNav, hero }: { onOpenNav?: () => void; hero: boolean }) {
   const { client, app, filter, overlay, epoch, onCreate } = useExplorer();
-  const recentLoad = useMemo(
-    () => recentLoader(client, app, filter, HOME_RECENT),
-    [client, app, filter],
-  );
+  const recentLoad = useMemo(() => jumpBackInLoader(client, app, filter), [client, app, filter]);
   const sharedLoad = useMemo(
     () => sharedRecentlyLoader(client, app, filter, HOME_SHARED),
     [client, app, filter],
@@ -126,7 +126,7 @@ export function HomePane({ onOpenNav, hero }: { onOpenNav?: () => void; hero: bo
             recent.loading ? (
               <StripSkeleton />
             ) : (
-              <Strip items={recent.items} empty={empty} />
+              <Strip items={phoneOrder(recent.items)} empty={empty} />
             )
           ) : recent.loading ? (
             <GridSkeleton />
@@ -144,14 +144,14 @@ export function HomePane({ onOpenNav, hero }: { onOpenNav?: () => void; hero: bo
           ) : (
             <div className="flex flex-col gap-4">
               <CardGroup
-                label={HOME_COPY.recent}
-                items={recent.items.slice(0, LARGE_COUNT)}
+                label={HOME_COPY.mostUsed}
+                items={recent.items.filter(isMostUsed)}
                 large
                 showApp={showApp}
               />
               <CardGroup
-                label={HOME_COPY.earlier}
-                items={recent.items.slice(LARGE_COUNT)}
+                label={HOME_COPY.recent}
+                items={recent.items.filter((i) => !isMostUsed(i))}
                 large={false}
                 showApp={showApp}
               />
@@ -174,6 +174,18 @@ export function HomePane({ onOpenNav, hero }: { onOpenNav?: () => void; hero: bo
 }
 
 const live = (i: ShownItem) => i.trashedAt === null;
+
+/** The phone's strip: most used and recent alternating, the rest of the longer group after. */
+export function phoneOrder(items: ShownItem[]): ShownItem[] {
+  const used = items.filter(isMostUsed);
+  const recent = items.filter((i) => !isMostUsed(i));
+  const out: ShownItem[] = [];
+  for (let k = 0; k < Math.max(used.length, recent.length); k++) {
+    if (used[k]) out.push(used[k]!);
+    if (recent[k]) out.push(recent[k]!);
+  }
+  return out;
+}
 
 function EmptyWords() {
   const { kind } = useExplorer();
@@ -267,16 +279,14 @@ function Thumb({ item, className }: { item: ShownItem; className: string }) {
   );
 }
 
-/** "Opened 2 hours ago": when the person last opened it, or else last changed it. */
 function OpenedLine({ item, id, large }: { item: ShownItem; id: string; large: boolean }) {
   const now = useNow();
-  const at = item.lastOpenedAt ?? item.updatedAt;
   return (
     <span
       id={id}
       className={`block truncate leading-[18px] ${large ? 'text-[12.5px]' : 'text-xs'} ${MUTED}`}
     >
-      {now ? `${item.lastOpenedAt ? 'Opened' : 'Changed'} ${relativeSince(at, now)}` : ''}
+      {now ? jumpBackInLine(item, now) : ''}
     </span>
   );
 }
@@ -418,7 +428,7 @@ function GridSkeleton() {
       <div>
         <div className={`mb-2.5 h-4 w-20 ${SKELETON}`} />
         <div className={LARGE_GRID}>
-          {Array.from({ length: LARGE_COUNT }, (_, i) => (
+          {Array.from({ length: JUMP_BACK_IN_PER_GROUP }, (_, i) => (
             <div key={i} className={`h-[12.5rem] rounded-[18px] ${SKELETON}`} />
           ))}
         </div>
@@ -426,7 +436,7 @@ function GridSkeleton() {
       <div>
         <div className={`mb-2.5 h-4 w-16 ${SKELETON}`} />
         <div className={COMPACT_GRID}>
-          {Array.from({ length: LARGE_COUNT }, (_, i) => (
+          {Array.from({ length: JUMP_BACK_IN_PER_GROUP }, (_, i) => (
             <div key={i} className={`h-[3.875rem] rounded-[14px] ${SKELETON}`} />
           ))}
         </div>

@@ -129,7 +129,10 @@ export function createIndexClient({
   return {
     // Items
     listItems: (query: ItemListQuery = {}, options: RequestOptions = {}) =>
-      call<Page<Item, 'items'>>('/items', { query: query as Query, signal: options.signal }),
+      call<Page<Item, 'items'> & { mostUsed?: Item[] }>('/items', {
+        query: query as Query,
+        signal: options.signal,
+      }),
     createItem: (input: CreateItemInput) =>
       call<{ item: Item; grant: GrantResponse }>('/items', { method: 'POST', body: input }),
     getItem: (id: string, share?: ShareAccess | null) =>

@@ -119,7 +119,22 @@ export function createFakeIndex(seed: { items?: Item[]; folders?: Folder[] } = {
     listItems: (query: ItemListQuery = {}, options: { signal?: AbortSignal } = {}) =>
       answer('listItems', [query], options.signal, () => {
         const { slice, next } = page(select(query), query.limit, query.cursor);
-        return { items: slice.map((i) => ({ ...i })), nextCursor: next };
+        // A seeded item's `useDays` is the index's use_days for it: only Most Used carries it.
+        const bare = ({ useDays: _days, ...i }: Item) => i;
+        const result: { items: Item[]; nextCursor: string | null; mostUsed?: Item[] } = {
+          items: slice.map(bare),
+          nextCursor: next,
+        };
+        if (query.used && query.view === 'recent' && !query.cursor) {
+          result.mostUsed = select(query)
+            .filter((i) => (i.useDays ?? 0) > 0)
+            .sort(
+              (a, b) => b.useDays! - a.useDays! || (b.lastOpenedAt ?? 0) - (a.lastOpenedAt ?? 0),
+            )
+            .slice(0, query.used)
+            .map((i) => ({ ...i }));
+        }
+        return result;
       }),
     listTrash: (
       query: { app?: App; limit?: number; cursor?: string } = {},

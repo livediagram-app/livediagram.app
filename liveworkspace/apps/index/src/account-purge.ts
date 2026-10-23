@@ -3,11 +3,11 @@
 // for that person goes.
 //
 // - Their own items, in every app and the Trash included, are purged as a permanent delete is: the rows go
-//   with a tombstone each (their tags, favourites, opens, links, passwords, Shared with me and Inbox rows
+//   with a tombstone each (their tags, favourites, opens, use days, links, passwords, Shared with me and Inbox rows
 //   cascade), and the apps are asked to drop the content.
 // - Items and folders in a team stay with the team, their owner anonymised; those in a team that closed
 //   with the account (one they ran alone, named in `teamIds`) are theirs alone and go too.
-// - Their folders, tags, favourites, opens (Recent), Shared with me rows and placement defaults go.
+// - Their folders, tags, favourites, opens (Recent), use days (Most Used), Shared with me rows and placement defaults go.
 // - Rows on other people's items that only name them (comment threads they are in, actions assigned to
 //   or by them) keep the row but name ANONYMISED_PERSON instead.
 //
@@ -171,6 +171,7 @@ function personalStatements(db: Db, person: string): (() => D1PreparedStatement)
         .bind(person, CHUNK),
     byPerson('favourites'),
     byPerson('opens'),
+    byPerson('use_days'),
     byPerson('shared_with'),
     byPerson('placement_defaults'),
     anonymiseAction('assignee_id'),

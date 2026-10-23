@@ -5,6 +5,7 @@ import type { App, IndexClient, Item, Level } from '@liveworkspace/index-client'
 import type { ExplorerView } from '../views';
 import type { AppFilter } from '../words';
 import type { ShownItem } from './overlay';
+import { relativeSince } from '../time';
 import { LIST_PAGE, type ListLoader } from './useItemList';
 
 export type SharedMeta = { level: Level; tabId: string | null; lastSeenAt: number };
@@ -145,19 +146,44 @@ export function viewList(
   }
 }
 
-/** The person's Recent, newest first, for Home's Jump back in (one request, no paging). */
-export function recentLoader(
+// Jump Back In's groups: this many most used, then this many recent not among them (liveplanner's Within reach).
+export const JUMP_BACK_IN_PER_GROUP = 4;
+
+/** Whether an item came to Jump Back In as one of the most used (only those carry their use days). */
+export const isMostUsed = (item: Pick<Item, 'useDays'>) => typeof item.useDays === 'number';
+
+/**
+ * Jump Back In's set: the `n` most used (used on at least one day), then the `n + extra` most recent not among
+ * them. Nothing is padded. Most used first, in their order (days, then the latest open), then recent.
+ */
+export function jumpBackInSet<T extends Pick<Item, 'id' | 'useDays'>>(
+  mostUsed: readonly T[],
+  recent: readonly T[],
+  n = JUMP_BACK_IN_PER_GROUP,
+  extra = 0,
+): T[] {
+  const used = mostUsed.filter((i) => (i.useDays ?? 0) > 0).slice(0, n);
+  const taken = new Set(used.map((i) => i.id));
+  return [...used, ...recent.filter((i) => !taken.has(i.id)).slice(0, n + extra)];
+}
+
+/**
+ * Jump Back In for Home and the panel: one request, Recent's first page carrying the Most Used items beside it
+ * (the index's `used`). Asks for enough recent ones that `n + extra` remain once the most used are taken out.
+ */
+export function jumpBackInLoader(
   client: IndexClient,
   app: App,
   filter: AppFilter,
-  limit: number,
+  n = JUMP_BACK_IN_PER_GROUP,
+  extra = 0,
 ): ListLoader {
   return async (_cursor, signal) => {
     const res = await client.listItems(
-      { view: 'recent', limit, ...(filter === 'app' ? { app } : {}) },
+      { view: 'recent', limit: 2 * n + extra, used: n, ...(filter === 'app' ? { app } : {}) },
       { signal },
     );
-    return { items: res.items, nextCursor: null };
+    return { items: jumpBackInSet(res.mostUsed ?? [], res.items, n, extra), nextCursor: null };
   };
 }
 
@@ -181,3 +207,15 @@ export function sharedRecentlyLoader(
 }
 
 export type { Item };
+
+/** Why a card is there: "Used on 5 days" for a most used one; otherwise "Opened 2 hours ago" (or when it last
+ * changed, for one never opened). */
+export function jumpBackInLine(
+  item: Pick<Item, 'useDays' | 'lastOpenedAt' | 'updatedAt'>,
+  now: number,
+): string {
+  if (typeof item.useDays === 'number')
+    return item.useDays === 1 ? 'Used on 1 day' : `Used on ${item.useDays} days`;
+  const at = item.lastOpenedAt ?? item.updatedAt;
+  return `${item.lastOpenedAt ? 'Opened' : 'Changed'} ${relativeSince(at, now)}`;
+}

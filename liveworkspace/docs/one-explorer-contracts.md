@@ -104,7 +104,9 @@ type ItemSummary = {
 | `GET /items`                   | person              | Lists. Filters: `app`, `view` (`all`, `recent`, `favourites`,                |
 |                                |                     | `shared`, `trash`, `unsorted`), `folder`, `team`, `tag`, `q`                 |
 |                                |                     | (title, tag and folder search). Sorted by `updatedAt`, or by                 |
-|                                |                     | `lastOpenedAt` for `recent`.                                                 |
+|                                |                     | `lastOpenedAt` for `recent`. `used=N` (1 to 8, `recent` only, first          |
+|                                |                     | page) adds `mostUsed`: up to N items ranked by the days used in the last     |
+|                                |                     | 90, each with `useDays`, in the same response (Jump Back In).                |
 | `POST /items`                  | person              | `{app, id?, title?, folderId?, teamId?, intent?, source?}` → 201             |
 |                                |                     | `{item, grant}`. The index makes the id unless the client names the one it   |
 |                                |                     | minted (409 `item_exists` when taken); the item's Durable Object             |
@@ -116,7 +118,8 @@ type ItemSummary = {
 | `POST /items/:id/restore`      | owner / team        | `{item}`                                                                     |
 | `POST /items/:id/copy`         | anyone who can view | `{title?}` → 201 `{item}`. The index makes the row, then asks the            |
 |                                |                     | app to copy the content (`POST <app>/api/internal/items/:from/copy-to/:to`). |
-| `POST /items/:id/open`         | person or link      | Records an open for Recent. Debounced: at most one write a minute            |
+| `POST /items/:id/open`         | person or link      | Records an open for Recent, and the day as a use day for Most Used           |
+|                                |                     | (`use_days`, kept 90 days). Debounced: at most one write a minute            |
 |                                |                     | per person and item.                                                         |
 | `POST /items/:id/grant`        | person or link      | `→ {grant, level, tabId, expiresAt}`. A link visitor sends                   |
 |                                |                     | `X-Share-Code` (and `X-Share-Password` when set).                            |
@@ -137,8 +140,8 @@ holds for that person:
 - **Purged**, as a permanent delete is, with the content dropped by each app: every item they own in
   every app, the Trash included, and with each one its tags, favourites, opens, share links, password,
   Shared with me rows and comment and action rows.
-- **Deleted**: their folders, tags (and their tags on anyone's items), favourites, opens (Recent),
-  Shared with me rows and placement defaults.
+- **Deleted**: their folders, tags (and their tags on anyone's items), favourites, opens (Recent), use
+  days (Most Used), Shared with me rows and placement defaults.
 - **Kept by the team**: an item or folder they made in a team stays with that team, its owner anonymised.
   `teamIds` names the teams that closed with the account (one it ran alone); their items and folders in
   those go too, while anyone else's stay theirs.
@@ -159,8 +162,8 @@ Folders are not per app: one tree per person, and one per team, holding items fr
 - `GET/POST /folders`, `PATCH/DELETE /folders/:id` — `{id, name, parentId, teamId, ownerId, createdAt,
 updatedAt}`; 409 `folder_exists`, `cycle`. Deleting moves children (folders and items) up a level.
 - `GET /folders/previews?ids=a,b,…&app=` — what folder cards show of their insides: for each of up to 60 folders
-the person reaches, `{folderId, itemCount, items}` with its 4 newest live items (of `app`, when given) and a count
-that stops at 1000. One batch however many folders; folders out of reach are left out.
+  the person reaches, `{folderId, itemCount, items}` with its 4 newest live items (of `app`, when given) and a count
+  that stops at 1000. One batch however many folders; folders out of reach are left out.
 - `GET/POST /tags`, `PATCH/DELETE /tags/:id`, `PUT/DELETE /tags/:id/items/:itemId` — personal; `{id, name,
 colour}`; 409 `tag_name_taken`, `tag_limit`.
 - `GET /favourites`, `PUT/DELETE /favourites/:itemId`.

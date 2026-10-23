@@ -6,8 +6,10 @@ import {
   ITEM_SOURCES,
   ITEM_VIEWS,
   isApp,
+  MOST_USED_MAX,
   OPEN_DEBOUNCE_MS,
   SEARCH_MAX,
+  USE_WINDOW_DAYS,
   TITLE_MAX,
   type ItemSource,
   type ItemView,
@@ -17,11 +19,22 @@ import { callApp } from './app-calls';
 import { personalScope, scopeOf, teamScope, type Person } from './auth';
 import { decodeCursor, isId, parseLimit } from './codec';
 import { INTENT_MAX, OPEN_MEMORY_MAX, PURGE_NOW_MAX } from './config';
+
+const DAY_MS = 86_400_000;
 import type { PersonContext, RouteContext } from './context';
 import type { Env } from './env';
 import { getFolderRow, readName, reachableFolder, teamFilter } from './folders';
 import { mintGrant, signingKey } from './grants';
-import { badRequest, conflict, fail, forbidden, json, noContent, notFound, readObject } from './http';
+import {
+  badRequest,
+  conflict,
+  fail,
+  forbidden,
+  json,
+  noContent,
+  notFound,
+  readObject,
+} from './http';
 import { listItems, type ListSpec } from './lists';
 import { drainTombstones, purgeRows } from './purge';
 import { decorate, getItemRow, type Access, type ItemRow } from './rows';
@@ -68,6 +81,13 @@ export async function parseListSpec(
   if (q) {
     if (q.length > SEARCH_MAX) return badRequest('invalid_query');
     spec.q = q;
+  }
+  const used = params.get('used');
+  if (used !== null) {
+    const n = Number(used);
+    if (view !== 'recent' || !Number.isInteger(n) || n < 1 || n > MOST_USED_MAX)
+      return badRequest('invalid_query');
+    spec.used = n;
   }
   return spec;
 }
@@ -391,6 +411,43 @@ async function copyItem(ctx: RouteContext, id: string): Promise<Response> {
 
 // Recent opens this isolate has written, so a burst never reaches D1. Oldest out first.
 const recentOpens = new Map<string, number>();
+// The UTC day each person's use days were last pruned here, so a prune runs at most once a day per person per
+// isolate. Bounded like recentOpens.
+const prunedOn = new Map<string, number>();
+
+/** The UTC day number of `at`: what a use day counts by. */
+export const useDayOf = (at: number) => Math.floor(at / DAY_MS);
+
+function pruneDue(personId: string, day: number): boolean {
+  if (prunedOn.get(personId) === day) return false;
+  prunedOn.delete(personId);
+  prunedOn.set(personId, day);
+  if (prunedOn.size > OPEN_MEMORY_MAX) {
+    const oldest = prunedOn.keys().next().value;
+    if (oldest !== undefined) prunedOn.delete(oldest);
+  }
+  return true;
+}
+
+/** The statements that count today as a use day of `itemId` for `personId`, and, at most once a day, drop the
+ * person's days that have left the window. Both read through use_days' (person_id, …) indexes. */
+export function useDayStatements(env: Env, personId: string, itemId: string, at: number) {
+  const db = env.INDEX_DB;
+  const day = useDayOf(at);
+  const statements = [
+    db
+      .prepare('INSERT OR IGNORE INTO use_days (person_id, item_id, day) VALUES (?, ?, ?)')
+      .bind(personId, itemId, day),
+  ];
+  if (pruneDue(personId, day)) {
+    statements.push(
+      db
+        .prepare('DELETE FROM use_days WHERE person_id = ? AND day < ?')
+        .bind(personId, day - USE_WINDOW_DAYS + 1),
+    );
+  }
+  return statements;
+}
 
 function rememberOpen(key: string, at: number): boolean {
   const last = recentOpens.get(key);
@@ -439,6 +496,8 @@ async function recordOpen(ctx: RouteContext, id: string): Promise<Response> {
          WHERE excluded.last_opened_at - opens.last_opened_at >= ?`,
       )
       .bind(person.id, id, now, OPEN_DEBOUNCE_MS),
+    // Most Used: today counts once, however many opens.
+    ...useDayStatements(env, person.id, id, now),
   ];
   if (loaded.access.via === 'link' && loaded.access.code) {
     statements.push(sharedWithUpsert(env, person.id, id, loaded.access.code, now));
