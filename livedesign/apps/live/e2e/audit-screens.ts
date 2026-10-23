@@ -1,6 +1,12 @@
 import type { Browser, Page } from '@playwright/test';
-import { expect, guestSigFor, ownerHeaders, test } from './fixtures';
-import { openDesign } from './home-seed';
+import {
+  adoptGuest,
+  designHeaders,
+  expect,
+  ownerHeaders,
+  seedDesign as createDesign,
+  test,
+} from './fixtures';
 
 // Screens the dark-mode audits (contrast, optical alignment) open: a seeded diagram shaped like a real one,
 // a dark visitor, a share link, and a fresh identity-less visitor.
@@ -8,18 +14,13 @@ import { openDesign } from './home-seed';
 export const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 export const CANVAS = '[data-canvas-a11y-root]';
 
-// A minted guest (mintSignedGuest) brings its signature, so the browser keeps the identity across
-// page loads; a hand-made id is upgraded to a new one on each.
+// A minted guest (mintGuest) brings its guest token, so the browser is that guest on every page load.
 export async function darkVisitor(page: Page, owner?: string): Promise<void> {
-  await page.addInitScript(
-    ({ id, sig }) => {
-      localStorage.setItem('livedesign:v2:ui-mode', 'dark');
-      localStorage.setItem('livedesign:v2:name-confirmed', '1');
-      if (id) localStorage.setItem('livedesign:v2:self-id', id);
-      if (sig) localStorage.setItem('livedesign:v2:self-sig', sig);
-    },
-    { id: owner ?? null, sig: owner ? guestSigFor(owner) : null },
-  );
+  if (owner) await adoptGuest(page, owner);
+  await page.addInitScript(() => {
+    localStorage.setItem('livedesign:v2:ui-mode', 'dark');
+    localStorage.setItem('livedesign:v2:name-confirmed', '1');
+  });
 }
 
 // A diagram shaped like a real one: an actor, boxes, and solid and dashed labelled arrows, on the
@@ -27,25 +28,6 @@ export async function darkVisitor(page: Page, owner?: string): Promise<void> {
 export async function seedDesign(page: Page, owner: string, origin: string): Promise<string> {
   return (await seedDrawnDesign(page, owner, origin)).id;
 }
-
-// The seeded diagram as a returning owner left it: opened once, as the editor opens it, so it is
-// in Home's Jump Back In (docs/specs/013-workspace/explorer-home.md: a design made but never
-// opened is not, D133).
-export async function seedOpenedDesign(
-  page: Page,
-  owner: string,
-  origin: string,
-): Promise<string> {
-  const doc = await seedDrawnDesign(page, owner, origin);
-  await openDesign(page.request, owner, doc);
-  return doc.id;
-}
-
-// The opened design's thumbnail in Home's Jump Back In, and its row on a listing view.
-export const jumpBackIn = (page: Page, name: string) =>
-  page.getByRole('region', { name: 'Jump Back In' }).getByRole('link', { name });
-export const designRow = (page: Page, name: string) =>
-  page.locator('main section').getByRole('link', { name, exact: true });
 
 async function seedDrawnDesign(
   page: Page,
@@ -90,9 +72,10 @@ async function seedDrawnDesign(
     arrow('x2', 'actor', 's', 'UI'),
     arrow('x3', 'a', 'r', 'Use personal assistant', true),
   ];
-  const res = await page.request.post(`${apiBase}/designs`, {
-    headers: ownerHeaders(owner, { Origin: origin }),
-    data: { id, name: 'Contrast', tabs: [{ id: tabId, name: 'Runa', elements }] },
+  const res = await createDesign(page.request, ownerHeaders(owner, { Origin: origin }), {
+    id,
+    name: 'Contrast',
+    tabs: [{ id: tabId, name: 'Runa', elements }],
   });
   expect(res.ok(), `seeding failed: ${res.status()}`).toBe(true);
   return { id, tabId };
@@ -105,7 +88,10 @@ export async function shareLink(
   id: string,
 ): Promise<string> {
   const res = await page.request.post(`${apiBase}/designs/${id}/share`, {
-    headers: ownerHeaders(owner, { Origin: origin, 'Content-Type': 'application/json' }),
+    headers: await designHeaders(page.request, owner, id, {
+      Origin: origin,
+      'Content-Type': 'application/json',
+    }),
     data: {},
   });
   expect(res.ok()).toBe(true);

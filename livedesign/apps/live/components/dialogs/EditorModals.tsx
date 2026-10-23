@@ -64,7 +64,6 @@ export function EditorModals() {
               commitUserPreferences(userPreferences, next, selfParticipant?.id ?? null),
             );
           }}
-          ownerId={selfParticipant?.id ?? null}
           onClose={closeSettings}
           focus={settingsFocus}
           initialCategoryId={settingsCategory}

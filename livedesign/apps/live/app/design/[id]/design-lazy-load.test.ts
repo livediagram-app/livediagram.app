@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest';
 const root = join(__dirname, '..', '..', '..');
 const read = (path: string) => readFileSync(join(root, path), 'utf8');
 const staticImports = (src: string) =>
-  [...src.matchAll(/^import\s+(?!type\b)[^;]*?from\s+'([^']+)'/gms)].map((m) => m[1]!);
+  [...src.matchAll(/^(?:import|export)\s+(?!type\b)[^;]*?from\s+'([^']+)'/gms)].map((m) => m[1]!);
 const importsOf = (path: string) => staticImports(read(path));
 
 describe('the design page’s first load', () => {

@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, test, pageOwnerHeaders } from './fixtures';
+import { expect, test, pageOwnerHeaders, seedDesign as createDesign } from './fixtures';
 
 // Stale HTML after a deploy (docs/specs/016-platform/stale-builds.md), the way people meet it: open
 // the Explorer, open a design (a full page load), a deploy lands, press back. Back is a history
@@ -15,28 +15,18 @@ import { expect, test, pageOwnerHeaders } from './fixtures';
 
 // A design of this guest's, listed at the root of the Explorer's My Work.
 async function seedDesign(page: Page, name: string): Promise<string> {
-  // The guest's signed id is minted asynchronously; seed under the final one.
+  // The guest's token arrives asynchronously; seed as the guest it names.
   await expect
-    .poll(() => page.evaluate(() => localStorage.getItem('livedesign:v2:self-sig')))
+    .poll(() => page.evaluate(() => localStorage.getItem('livedesign:v2:guest-token')))
     .toBeTruthy();
-  const headers = await pageOwnerHeaders(page, { 'Content-Type': 'application/json' });
-  return page.evaluate(
-    async ({ docName, headers }) => {
-      const id = crypto.randomUUID();
-      const res = await fetch('/api/designs', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          id,
-          name: docName,
-          tabs: [{ id: crypto.randomUUID(), name: 'Tab 1', elements: [] }],
-        }),
-      });
-      if (!res.ok) throw new Error(`seeding failed: ${res.status}`);
-      return id;
-    },
-    { docName: name, headers },
-  );
+  const id = crypto.randomUUID();
+  const res = await createDesign(page.request, await pageOwnerHeaders(page), {
+    id,
+    name,
+    tabs: [{ id: crypto.randomUUID(), name: 'Tab 1', elements: [] }],
+  });
+  expect(res.ok(), `seeding failed: ${res.status()}`).toBe(true);
+  return id;
 }
 
 // The suite runs in parallel: a simulated deploy is this context's alone, never the stack's.

@@ -21,7 +21,7 @@ describe('the header primary', () => {
     document.cookie = 'ldes_signed_in=1; path=/';
     const signedIn = render(<HeaderPrimaryCta ctaSurface="Home" />).container.querySelector('a')!;
     expect(signedIn.getAttribute('aria-label')).toBe('Open Explorer');
-    expect(signedIn.getAttribute('href')).toBe('/explorer/home');
+    expect(signedIn.getAttribute('href')).toBe('https://liveworkspace.app/explorer?from=livedesign');
     document.cookie = 'ldes_signed_in=0; path=/';
     const signedOut = render(<HeaderPrimaryCta />).container.querySelector('a')!;
     expect(signedOut.getAttribute('href')).toBe('/new');

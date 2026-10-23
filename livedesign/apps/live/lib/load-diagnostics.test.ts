@@ -28,8 +28,6 @@ const base: DiagnosticsInput = {
   identity: {
     signedIn: false,
     guestIdPrefix: '6f1c2d3e',
-    guestSigned: true,
-    pendingUpgrade: false,
   },
 };
 
@@ -48,7 +46,7 @@ describe('formatDiagnostics', () => {
   it('describes a guest by id prefix, never the whole credential', () => {
     const text = formatDiagnostics(base);
     expect(text).toContain('Signed in: no');
-    expect(text).toContain('Guest id in this browser: 6f1c2d3e… (signed: yes)');
+    expect(text).toContain('Guest id in this browser: 6f1c2d3e…');
     expect(text).not.toContain('123456789abc');
   });
 
@@ -73,12 +71,11 @@ describe('formatDiagnostics', () => {
       ownerId: null,
       buildId: null,
       progress: { step: null, startedAt: null, timedOut: false, healing: false },
-      identity: { signedIn: null, guestIdPrefix: null, guestSigned: false, pendingUpgrade: true },
+      identity: { signedIn: null, guestIdPrefix: null },
     });
     expect(text).toContain('Load step: not started');
     expect(text).toContain('Build: unknown');
     expect(text).toContain('Signed in: unknown');
     expect(text).toContain('Guest id in this browser: none');
-    expect(text).toContain('Identity upgrade pending: yes');
   });
 });

@@ -6,8 +6,8 @@
 // destructive on the server (the whole point — it must leave the account and
 // every other device), so the UI gates it behind a confirmation.
 
-import { apiLoadDesign, apiLoadTab, fetchCloudFavouriteIds } from '@/lib/api-client';
-import { fetchCloudTags } from '@/lib/api/tags';
+import { apiLoadDesign, apiLoadTab } from '@/lib/api-client';
+import { indexClient } from '@/lib/index-client';
 import { DESIGN_CONVERSION_HEADER } from '@livedesign/api-schema';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
 import { embedTabImages, isDataImageId, tabImageIds } from './offline-images';
@@ -109,15 +109,11 @@ async function downloadAndRemoveCloudCopy(
   const unembedded = tabs.some((t) => tabImageIds(t).some((id) => !isDataImageId(id)));
   if (unembedded) throw new Error('image embed incomplete');
 
-  // The cloud star is a row keyed on the design, so the server delete below
-  // takes it too; carry it onto the offline record (docs/specs/013-workspace/favourites.md). A failed
-  // read aborts here, before anything is written: taken as "not starred" it would drop the star.
-  const starred = (await fetchCloudFavouriteIds(ownerId)).includes(liveDoc.id);
-  // Its tags too (docs/specs/013-workspace/tags.md "An offline design's tags live in the browser"), read the same
-  // way: a failed read aborts rather than dropping them with the server row.
-  const tagIds = (await fetchCloudTags(ownerId)).links
-    .filter((l) => l.designId === liveDoc.id)
-    .map((l) => l.tagId);
+  // The person's star is the index's, on the design's item, which the server delete below takes too; carry it onto
+  // the offline record (docs/specs/013-workspace/favourites.md). A failed read aborts here, before anything is
+  // written: taken as "none" it would drop it.
+  const { item } = await indexClient.getItem(liveDoc.id);
+  const starred = item.favourite;
   const now = Date.now();
   const rec: OfflineDesignRecord = {
     id: liveDoc.id,
@@ -131,7 +127,6 @@ async function downloadAndRemoveCloudCopy(
     tabs,
     ...(liveDoc.presentation ? { presentation: liveDoc.presentation } : {}),
     ...(starred ? { favourite: true } : {}),
-    ...(tagIds.length ? { tagIds } : {}),
   };
   await offlinePutRecord(rec);
   // Raw server delete — the id is now in the offline index, so the dispatching

@@ -1,14 +1,10 @@
 import type { Metadata } from 'next';
-import { ExplorerPane } from '../ExplorerPane';
-import { viewDesignTitle } from '../view-titles';
 
-// /explorer/recent — the default landing section: last N owned designs.
-// The layout's ExplorerShell provides the chrome + state; this page
-// only pins the route and the tab title (docs/specs/013-workspace/folders.md, routes.ts).
+// The Explorer's Recent view: ExplorerShell (the layout) renders it from the address.
 export const metadata: Metadata = {
-  title: viewDesignTitle('recent'),
+  title: 'Recent | livedesign',
 };
 
 export default function Page() {
-  return <ExplorerPane />;
+  return null;
 }

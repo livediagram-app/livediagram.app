@@ -4,7 +4,7 @@
 // app's own api (/api/auth/*, apps/api/src/routes/auth.ts). Other deployments
 // (per docs/specs/002-project-scope/open-source-and-business-model.md + docs/specs/014-identity/auth-and-guest-access.md)
 // can ship livedesign without it: the canvas runs in pure guest mode using
-// the X-Owner-Id header, which is also how a signed-in deployment handles
+// liveworkspace's guest token, which is also how a signed-in deployment handles
 // signed-out visitors.
 //
 // `NEXT_PUBLIC_*` env vars are baked into the static export at build time, so

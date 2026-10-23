@@ -2,6 +2,7 @@ import { STORAGE_KEY as USER_PREFERENCES_STORAGE_KEY } from '@/lib/user-preferen
 import { silentSignInBootScript, silentCookiesForHint } from '@liveworkspace/auth-client/silent';
 import { SIGNED_IN_HINT_COOKIE } from '@livedesign/api-schema';
 import { API_BASE } from '@/lib/api/base';
+import { GUEST_TOKEN_STORAGE_KEY } from '@/lib/guest-token-key';
 
 // The editor-only snippet the root layout inlines into a `<script>` that runs
 // BEFORE first paint (the appearance one is shared by every app and lives in
@@ -32,6 +33,14 @@ export const REDUCE_MOTION_BOOT_SCRIPT = `try{var p=JSON.parse(localStorage.getI
 // already paints it while a face downloads, and useFontEpoch re-measures as the faces land.
 export const WEBFONTS_STYLESHEET_ID = 'livedesign-webfonts';
 export const WEBFONTS_SWAP_SCRIPT = `try{var l=document.getElementById('${WEBFONTS_STYLESHEET_ID}');if(l){var on=function(){l.media='all'};if(l.sheet)on();else l.addEventListener('load',on)}}catch(e){}`;
+
+// The design's grant, asked for while the editor's code loads (liveworkspace/docs/one-explorer-contracts.md "Grants"):
+// on /design/<id>, a guest's token (or a link's code from `?s=`, with its remembered password) is all the request
+// needs, and both are in storage, so it need not wait for the bundle. The promise is left on `window.__ldesGrant`
+// for lib/api/design-grants.ts to adopt. A signed-in browser (the hint cookie) skips it: its token arrives with the
+// session, and its grant is asked for then.
+export const SHARE_PASSWORD_STORAGE_PREFIX = 'livedesign:share-password:';
+export const DESIGN_GRANT_BOOT_SCRIPT = `try{var m=location.pathname.match(/^\\/design\\/([^/]+)\\/?$/);if(m&&m[1]!=='placeholder'&&m[1]!=='shared'&&!/(?:^|; )${SIGNED_IN_HINT_COOKIE}=1/.test(document.cookie)){var t=localStorage.getItem('${GUEST_TOKEN_STORAGE_KEY}');var s=new URLSearchParams(location.search).get('s');if(t||s){var h={};if(t)h.Authorization='Bearer '+t;if(s){h['X-Share-Code']=s;var pw=localStorage.getItem('${SHARE_PASSWORD_STORAGE_PREFIX}'+s);if(pw)h['X-Share-Password']=pw}var id=decodeURIComponent(m[1]);window.__ldesGrant={id:id,share:s||'',p:fetch('${API_BASE}/index/items/'+encodeURIComponent(id)+'/grant',{method:'POST',headers:h}).then(function(r){return r.ok?r.json():null}).catch(function(){return null})}}}}catch(e){}`;
 
 // Signing in without a click (liveworkspace/docs/accounts.md "Signing in without a click"): once per browser
 // session, a browser with no session here is bounced through the accounts site and straight back, signed in when

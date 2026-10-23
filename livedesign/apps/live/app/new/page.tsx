@@ -23,9 +23,14 @@ import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { titleCaseType, track } from '@/lib/telemetry';
 import { trackDailyReturn } from '@/lib/daily-return';
 import { markNameConfirmed } from '@/lib/local-identity';
-import { ensureSignedGuestIdentity } from '@/lib/guest-identity';
+import { ensureGuestIdentity } from '@/lib/guest-identity';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
-import { untitledNameForTemplate, type TemplateKind } from '@livedesign/templates';
+import { handTemplatePick } from '@liveworkspace/explorer';
+import {
+  isBlankTemplate,
+  untitledNameForTemplate,
+  type TemplateKind,
+} from '@livedesign/templates';
 import { creationIntentOf } from '@livedesign/api-schema';
 import {
   choosePlacementAgainUrl,
@@ -40,8 +45,6 @@ import { useLatest } from '@/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
 import { handStartQuery } from '@/components/start/start-query';
 import { closeStartForBlank } from '@/components/start/close-start-for-blank';
-import { handTemplatePick } from '@/lib/placement-defaults/template-pick-handoff';
-import { isBlankTemplate } from '@livedesign/templates';
 import { NEW_DESIGN_THEME_ID, newDesignContent } from '@/lib/new-design-content';
 
 // In-place handoff (docs/specs/007-editor/new-design-route.md): once a design is created, this page
@@ -99,6 +102,7 @@ export default function NewDesignPage() {
   const [createError, setCreateError] = useState<CreateFailure | null>(null);
   const lastCreateArgs = useRef<{
     kind: TemplateKind | null;
+    // string, not ThemeId: the picker hands back a theme id as a plain string.
     // Where it goes (new-design-settings.ts): store and placement, decided at commit.
     settings: NewDesignSettings;
     // The ids it wrote under, reused by its Retry (createIdsFor).
@@ -111,7 +115,7 @@ export default function NewDesignPage() {
 
   // Where a new design is stored: This Browser for a guest (docs/specs/006-design/save-locations.md), decided at
   // commit.
-  const { resolveSaveLocation } = useNewDesignLocation({ authLoaded, accountUserId });
+  const { resolveSaveLocation } = useNewDesignLocation();
 
   useEffect(() => {
     document.title = 'New Design | livedesign';
@@ -186,7 +190,7 @@ export default function NewDesignPage() {
     }
     if (selfRef.current.id !== 'pending') return selfRef.current;
     // Still pending (auth never settled): resolve the guest's signed id here.
-    const fallback = { ...selfRef.current, id: (await ensureSignedGuestIdentity()).id };
+    const fallback = { ...selfRef.current, id: (await ensureGuestIdentity()).id };
     setSelf(fallback);
     return fallback;
   };
@@ -214,7 +218,7 @@ export default function NewDesignPage() {
     // (docs/specs/013-workspace/default-folders.md "A template picked after creation").
     handTemplatePick(
       !offline && (!templateKind || isBlankTemplate(templateKind))
-        ? { designId, tabId, placementChosen: settings.placementChosen === true }
+        ? { itemId: designId, tabId, placementChosen: settings.placementChosen === true }
         : null,
     );
     // A Retry re-runs the create, not the preference write below.
@@ -294,14 +298,13 @@ export default function NewDesignPage() {
     setOpenedId(designId);
   };
 
-  // Every create from /new goes where new designs go by default (docs/specs/007-editor/new-design-route.md): the
-  // store for who is creating, decided now (a guest at once, a signed-in browser once identity settles), and the
-  // /new?folder= / ?team= context when there is one; without one it carries no placement, so a default folder may
-  // answer (docs/specs/013-workspace/default-folders.md "Precedence").
+  // Every create from /new goes where new designs go by default (docs/specs/007-editor/new-design-route.md): livedesign,
+  // whoever is creating, and the /new?folder= / ?team= context when there is one; without one the index files it at
+  // the root of the person's space.
   const createByDefault = async (kind: TemplateKind | null) => {
     const placement = placementParamsFromSearch(window.location.search);
     const placed = !!(placement.folderId || placement.teamId);
-    const saveLocation = await resolveSaveLocation(placed, resolveSelf);
+    const saveLocation = await resolveSaveLocation();
     await commitNewDesign(kind, { saveLocation, ...placement, placementChosen: placed });
   };
 

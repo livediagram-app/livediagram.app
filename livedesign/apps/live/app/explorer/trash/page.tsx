@@ -1,15 +1,10 @@
 import type { Metadata } from 'next';
-import { ExplorerPane } from '../ExplorerPane';
-import { viewDesignTitle } from '../view-titles';
 
-// /explorer/trash — the Trash (docs/specs/013-workspace/trash.md): deleted
-// designs waiting out their 30 days. No sidebar row; Settings links here.
-// The layout's ExplorerShell provides the chrome + state; this page only pins
-// the route and the tab title.
+// The Explorer's Trash view: ExplorerShell (the layout) renders it from the address.
 export const metadata: Metadata = {
-  title: viewDesignTitle('trash'),
+  title: 'Trash | livedesign',
 };
 
 export default function Page() {
-  return <ExplorerPane />;
+  return null;
 }

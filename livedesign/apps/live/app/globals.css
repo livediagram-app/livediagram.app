@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 @import '@livedesign/tailwind-config';
+/* The shared Explorer's classes (@liveworkspace/explorer, liveworkspace/docs/one-explorer.md). */
+@import '@liveworkspace/explorer/explorer.css';
 @import '@livedesign/template-previews/preview-art-tile.css';
 @import '@livedesign/template-previews/preview-motion.css';
 @import './collab-cards.css';

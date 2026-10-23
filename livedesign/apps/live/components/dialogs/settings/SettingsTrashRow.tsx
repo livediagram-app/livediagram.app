@@ -1,5 +1,6 @@
 'use client';
 
+import { explorerHref } from '@/lib/explorer-redirect';
 import { SETTINGS_ROW_BUTTON, SettingsRowShell } from './SettingsRowShell';
 import type { SettingsTrashRowSpec } from './settings-catalogue';
 import { track } from '@/lib/telemetry';
@@ -13,7 +14,7 @@ export function SettingsTrashRow({ row }: { row: SettingsTrashRowSpec }) {
       row={row}
       control={
         <a
-          href="/explorer/trash"
+          href={explorerHref('trash')}
           onClick={() => track('Trash', 'Opened', 'Settings')}
           aria-describedby={`${row.key}-description`}
           className={SETTINGS_ROW_BUTTON}

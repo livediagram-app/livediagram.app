@@ -23,12 +23,9 @@ const OUTSIDE_RENDER: Record<string, string> = {
   'packages/ui/src/useVisualViewportBand.ts': 'subscribe and snapshot of an external store',
   'apps/live/app/design/[id]/useTabEntryEffects.ts': 'inside an effect',
   'apps/live/app/design/[id]/useCollabDeepLink.ts': 'inside an effect',
-  'apps/live/app/explorer/useTimelineFeed.ts':
-    'ENTRY_HASH, module state; the Explorer renders in the browser only',
   'apps/live/hooks/ui/usePanelDock.ts': 'inside an effect',
   'apps/live/hooks/canvas/useDesignActions.ts': 'inside a handler',
   'apps/live/hooks/canvas/useClipboard.ts': 'inside a handler',
-  'apps/live/hooks/persistence/useDesignListActions.ts': 'inside handlers',
   'apps/live/components/primitives/useHandleReorder.ts':
     'prefersReducedMotion, called from a drag handler',
   'apps/live/components/primitives/useMovablePanelMeasure.ts': 'inside an effect',

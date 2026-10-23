@@ -26,7 +26,6 @@ describe('RetiredViewRedirect', () => {
 
   it('replaces the retired buckets with their successors', () => {
     expect(RETIRED_VIEW_TARGETS).toEqual({
-      unsorted: '/explorer/all',
       dynamic: '/explorer/all',
       generated: '/explorer/search?q=made-by%3Aai',
       activity: '/explorer/inbox',

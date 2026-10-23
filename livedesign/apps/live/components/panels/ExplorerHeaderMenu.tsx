@@ -1,5 +1,6 @@
 'use client';
 
+import { explorerHref } from '@/lib/explorer-redirect';
 import { OpenIcon, PlusIcon } from '@/components/primitives/explorer-icons';
 import { useState, type ReactNode } from 'react';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
@@ -62,7 +63,7 @@ export function ExplorerHeaderMenu({
           icon={<OpenIcon />}
           label="Open Explorer"
           onClick={run(() => {
-            assignAppLocation('/explorer');
+            assignAppLocation(explorerHref());
           })}
         />,
       ],

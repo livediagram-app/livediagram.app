@@ -16,19 +16,22 @@ async function openBoard(page: Page): Promise<void> {
 
 // The saved elements of the design's first tab, read through the api.
 async function savedElements(page: Page): Promise<El[]> {
-  const headers = await pageOwnerHeaders(page);
-  return page.evaluate(async (headers) => {
-    const id = location.pathname.split('/').filter(Boolean).pop()!;
-    const liveDoc = (await (
-      await fetch(`/api/designs/${id}`, { headers })
-    ).json()) as StoredDesign;
-    const tabId = liveDoc.design?.tabs?.[0]?.id;
-    if (!tabId) return [];
-    const got = (await (
-      await fetch(`/api/designs/${id}/tabs/${tabId}`, { headers })
-    ).json()) as StoredTab<El>;
-    return got.tab?.elements ?? [];
-  }, headers);
+  const id = new URL(page.url()).pathname.split('/').filter(Boolean).pop()!;
+  const headers = await pageOwnerHeaders(page, {}, id);
+  return page.evaluate(
+    async ({ id, headers }) => {
+      const liveDoc = (await (
+        await fetch(`/api/designs/${id}`, { headers })
+      ).json()) as StoredDesign;
+      const tabId = liveDoc.design?.tabs?.[0]?.id;
+      if (!tabId) return [];
+      const got = (await (
+        await fetch(`/api/designs/${id}/tabs/${tabId}`, { headers })
+      ).json()) as StoredTab<El>;
+      return got.tab?.elements ?? [];
+    },
+    { id, headers },
+  );
 }
 
 // Autosave is debounced: wait until the saved tab satisfies `ok`.

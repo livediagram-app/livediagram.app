@@ -193,10 +193,13 @@ describe('EditorHeader Present button', () => {
     expect(button).toHaveProperty('disabled', true);
   });
 
-  it('links the logo to the Explorer home, not the homepage', () => {
+});
+
+describe('EditorHeader logo', () => {
+  it('links the logo to the Explorer on liveworkspace.app, not the homepage', () => {
     renderHeader();
     expect(screen.getByRole('link', { name: 'livedesign' }).getAttribute('href')).toBe(
-      '/explorer/home',
+      'https://liveworkspace.app/explorer?from=livedesign',
     );
   });
 });
