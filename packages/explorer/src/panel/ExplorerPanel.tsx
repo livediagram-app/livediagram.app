@@ -51,7 +51,8 @@ import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
 import { ToastProvider } from '../ui/Toasts';
-import { LibraryHostProvider } from '../library/context';
+import { LibraryHostProvider, useLibraryHost } from '../library/context';
+import { PanelLibrary, PanelTimeline, libraryTabs } from './PanelLibraryTimeline';
 import type { LibraryHostProps } from '../library/types';
 import { useLatest } from '../ui/useLatest';
 import {
@@ -60,6 +61,7 @@ import {
   HomeIcon,
   InboxIcon,
   ItemIcon,
+  LibraryIcon,
   MyWorkIcon,
   OpenIcon,
   PencilIcon,
@@ -68,6 +70,7 @@ import {
   ShareIcon,
   StarIcon,
   TeamIcon,
+  TimelineIcon,
   TrashIcon,
 } from '../ui/icons';
 import { relativeSince, useNow } from '../time';
@@ -107,6 +110,7 @@ import {
   sectionKey,
   sectionLabel,
   sectionPage,
+  type LibraryTab,
   usePanelSection,
   type PanelSection,
   type PanelSectionGroup,
@@ -211,7 +215,11 @@ function PanelInner({
 }: Omit<ExplorerPanelProps, keyof LibraryHostProps>) {
   const sheet = layout === 'sheet';
   const stacked = layout !== 'side';
-  const groups = useMemo(() => panelSectionGroups(teams), [teams]);
+  const { gallery, shapeLibraries } = useLibraryHost();
+  const library = Boolean(gallery || shapeLibraries);
+  const groups = useMemo(() => panelSectionGroups(teams, { library }), [teams, library]);
+  // The Library's tab, held here so a menu's Shape Libraries opens on it and Open Page goes to the page shown.
+  const [libraryTab, setLibraryTab] = useState<LibraryTab>('gallery');
   const [section, pickSection] = usePanelSection(app, groups, { homeOnOpen: sheet, open });
   // The folder open in the pane, for the section it was opened in: another section starts at its root.
   const [openFolder, setOpenFolder] = useState<{ section: string; id: string | null }>({
@@ -239,6 +247,7 @@ function PanelInner({
       }
       pickSection(at.section);
       setOpenFolder({ section: sectionKey(at.section), id: at.folderId });
+      if (at.libraryTab) setLibraryTab(at.libraryTab);
     },
     [pickSection, onOpenExplorer],
   );
@@ -318,6 +327,8 @@ function PanelInner({
               onOpenExplorer={onOpenExplorer}
               basePath={basePath}
               narrow={stacked}
+              libraryTab={libraryTab}
+              setLibraryTab={setLibraryTab}
             />
           </div>
         </div>
@@ -336,16 +347,24 @@ function paneView(section: PanelSection, folderId: string | null): ExplorerView 
       return folderId
         ? { kind: 'team', id: section.id, folderId }
         : { kind: 'team', id: section.id };
+    case 'library':
+      return { kind: 'gallery' };
     default:
       return { kind: section.kind };
   }
 }
 
 // Where a view the shared menus ask for sits in the panel, or null for one only the Explorer page shows.
-function sectionOfView(v: ExplorerView): { section: PanelSection; folderId: string | null } | null {
+function sectionOfView(
+  v: ExplorerView,
+): { section: PanelSection; folderId: string | null; libraryTab?: LibraryTab } | null {
   switch (v.kind) {
+    case 'gallery':
+    case 'shape-libraries':
+      return { section: { kind: 'library' }, folderId: null, libraryTab: v.kind };
     case 'home':
     case 'inbox':
+    case 'timeline':
     case 'shared':
     case 'favourites':
     case 'trash':
@@ -472,6 +491,10 @@ function SectionIcon({ kind }: { kind: PanelSection['kind'] }) {
       return <TeamIcon />;
     case 'favourites':
       return <StarIcon />;
+    case 'timeline':
+      return <TimelineIcon />;
+    case 'library':
+      return <LibraryIcon />;
     case 'trash':
       return <TrashIcon />;
   }
@@ -703,6 +726,8 @@ function Pane({
   onOpenExplorer,
   basePath,
   narrow,
+  libraryTab,
+  setLibraryTab,
 }: {
   section: PanelSection;
   folderId: string | null;
@@ -711,8 +736,11 @@ function Pane({
   onOpenExplorer?: (view: ExplorerView) => void;
   basePath?: string;
   narrow: boolean;
+  libraryTab: LibraryTab;
+  setLibraryTab: (tab: LibraryTab) => void;
 }) {
   const { teamName, folders } = useExplorer();
+  const libraryHost = useLibraryHost();
   const title = sectionLabel(section, (id) => teamName(id));
   const space = section.kind === 'mine' || section.kind === 'team';
   // The folder open, while it is still one of the space's (a folder deleted or moved away goes back to the root).
@@ -731,7 +759,9 @@ function Pane({
           })
           .then((f) => f && pendingRename.current?.(f.id))
     : undefined;
-  const page = sectionPage(section, here);
+  // The Library opens the tab shown, or the only page it has.
+  const tabs = libraryTabs(libraryHost);
+  const page = sectionPage(section, here, tabs.includes(libraryTab) ? libraryTab : tabs[0]);
   const openPage = onOpenExplorer
     ? (e: React.MouseEvent) => {
         e.preventDefault();
@@ -743,6 +773,10 @@ function Pane({
       <HomeSection currentId={currentId} onOpenExplorer={onOpenExplorer} />
     ) : section.kind === 'inbox' ? (
       <InboxPane compact />
+    ) : section.kind === 'timeline' ? (
+      <PanelTimeline />
+    ) : section.kind === 'library' ? (
+      <PanelLibrary tab={libraryTab} setTab={setLibraryTab} />
     ) : section.kind === 'trash' ? (
       <TrashSection />
     ) : (
@@ -770,7 +804,7 @@ function Pane({
           </button>
         ) : null}
         {section.kind === 'mine' ? <MyWorkHeaderMenu onOpenRoot={() => onOpenFolder(null)} /> : null}
-        <FilterToggle />
+        {section.kind === 'library' ? null : <FilterToggle />}
         <a href={explorerPath(page, basePath)} onClick={openPage} className={HEADER_BUTTON}>
           <span className={narrow ? 'sr-only' : 'max-sm:sr-only'}>Open Page</span>
           <OpenIcon />

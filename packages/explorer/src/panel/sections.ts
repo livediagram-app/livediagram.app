@@ -10,11 +10,16 @@ import { SIDEBAR_LABELS, type ExplorerView } from '../views';
 export type PanelSection =
   | { kind: 'home' }
   | { kind: 'inbox' }
+  | { kind: 'timeline' }
   | { kind: 'shared' }
   | { kind: 'mine' }
   | { kind: 'team'; id: string }
   | { kind: 'favourites' }
+  | { kind: 'library' }
   | { kind: 'trash' };
+
+/** The Library section's tabs, each one of its pages. */
+export type LibraryTab = 'gallery' | 'shape-libraries';
 
 export type PanelSectionGroup = { id: 'overview' | 'spaces' | 'more'; sections: PanelSection[] };
 
@@ -23,7 +28,16 @@ export const SECTION_GROUP_TITLES = { overview: 'Overview', spaces: 'Spaces', mo
 export const sectionKey = (s: PanelSection): string =>
   s.kind === 'team' ? `team:${s.id}` : s.kind;
 
-const SIMPLE = ['home', 'inbox', 'shared', 'mine', 'favourites', 'trash'] as const;
+const SIMPLE = [
+  'home',
+  'inbox',
+  'timeline',
+  'shared',
+  'mine',
+  'favourites',
+  'library',
+  'trash',
+] as const;
 
 export function sectionFromKey(key: string | null | undefined): PanelSection | null {
   if (!key) return null;
@@ -31,15 +45,28 @@ export function sectionFromKey(key: string | null | undefined): PanelSection | n
   return (SIMPLE as readonly string[]).includes(key) ? ({ kind: key } as PanelSection) : null;
 }
 
-/** The rail's entries: the sidebar's three groups, each team under Spaces. */
-export function panelSectionGroups(teams: readonly TeamRef[]): PanelSectionGroup[] {
+/** The rail's entries: the sidebar's three groups, each team under Spaces, the Library while the host keeps one. */
+export function panelSectionGroups(
+  teams: readonly TeamRef[],
+  { library = false }: { library?: boolean } = {},
+): PanelSectionGroup[] {
   return [
-    { id: 'overview', sections: [{ kind: 'home' }, { kind: 'inbox' }, { kind: 'shared' }] },
+    {
+      id: 'overview',
+      sections: [{ kind: 'home' }, { kind: 'inbox' }, { kind: 'timeline' }, { kind: 'shared' }],
+    },
     {
       id: 'spaces',
       sections: [{ kind: 'mine' }, ...teams.map((t) => ({ kind: 'team' as const, id: t.id }))],
     },
-    { id: 'more', sections: [{ kind: 'favourites' }, { kind: 'trash' }] },
+    {
+      id: 'more',
+      sections: [
+        { kind: 'favourites' },
+        ...(library ? [{ kind: 'library' as const }] : []),
+        { kind: 'trash' },
+      ],
+    },
   ];
 }
 
@@ -49,6 +76,8 @@ export function sectionLabel(s: PanelSection, teamName: (id: string) => string |
       return SIDEBAR_LABELS.home;
     case 'inbox':
       return SIDEBAR_LABELS.inbox;
+    case 'timeline':
+      return SIDEBAR_LABELS.timeline;
     case 'shared':
       return SIDEBAR_LABELS.shared;
     case 'mine':
@@ -57,14 +86,22 @@ export function sectionLabel(s: PanelSection, teamName: (id: string) => string |
       return teamName(s.id) ?? 'Team';
     case 'favourites':
       return 'Favourites';
+    case 'library':
+      return SIDEBAR_LABELS.library;
     case 'trash':
       return SIDEBAR_LABELS.trash;
   }
 }
 
-/** The Explorer page a section's Open Page goes to, at the folder open in it. */
-export function sectionPage(s: PanelSection, folderId: string | null): ExplorerView {
+/** The Explorer page a section's Open Page goes to, at the folder open in it (the Library's at the tab shown). */
+export function sectionPage(
+  s: PanelSection,
+  folderId: string | null,
+  libraryTab: LibraryTab = 'gallery',
+): ExplorerView {
   switch (s.kind) {
+    case 'library':
+      return { kind: libraryTab };
     case 'mine':
       return folderId ? { kind: 'folder', id: folderId } : { kind: 'all' };
     case 'team':
