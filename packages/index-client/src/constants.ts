@@ -87,6 +87,30 @@ export const USE_WINDOW_DAYS = 90;
 // How many Most Used items one Recent request may ask for alongside its page (`used`).
 export const MOST_USED_MAX = 8;
 
+// The Timeline (liveworkspace/docs/one-explorer-contracts.md "Timeline"). The index records the first eight
+// itself; an app reports the rest from its server, in batches (APP_TIMELINE_EVENT_TYPES).
+export const TIMELINE_EVENT_TYPES = [
+  'created',
+  'renamed',
+  'moved',
+  'trashed',
+  'restored',
+  'shared',
+  'unshared',
+  'favourited',
+  'edited',
+] as const;
+export type TimelineEventType = (typeof TIMELINE_EVENT_TYPES)[number];
+// What an app may report. `edited` is one event per person, item and UTC day, its time moving on with each
+// report, and counts that day towards the person's Most Used.
+export const APP_TIMELINE_EVENT_TYPES = ['edited'] as const;
+export type AppTimelineEventType = (typeof APP_TIMELINE_EVENT_TYPES)[number];
+// One Timeline page: this many by default, at most TIMELINE_LIMIT_MAX.
+export const TIMELINE_PAGE = 30;
+export const TIMELINE_LIMIT_MAX = 100;
+// Events one app report may carry.
+export const APP_EVENTS_MAX = 100;
+
 // Share links, as the apps have them today: a lifetime chosen when made, `never` by default.
 export const SHARE_LINK_EXPIRIES = ['never', 'week', 'month', 'sixMonths'] as const;
 export type ShareLinkExpiry = (typeof SHARE_LINK_EXPIRIES)[number];
@@ -140,6 +164,7 @@ export const INDEX_ERRORS = [
   'invalid_key',
   'invalid_summary',
   'invalid_collab',
+  'invalid_events',
   'invalid_password',
   'not_team_member',
   'folder_exists',

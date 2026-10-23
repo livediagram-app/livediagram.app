@@ -62,7 +62,7 @@ import {
   type PlanCopy,
   type PlanOutline,
 } from './plan-content';
-import { drainOutbox } from './plan-outbox';
+import { drainOutbox, recordEditor } from './plan-outbox';
 import { answerPlanRequest, type RouteIdentity } from './plan-route';
 
 // One SQLite-backed Durable Object per plan id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It is
@@ -210,6 +210,8 @@ export class PlanRoom extends DurableObject<Env> {
   private flushAt: number | null = null;
   private lastFlushAt = 0;
   private draining = false;
+  // Content writes so far (noteWrite), so route() can tell a request that wrote from one that didn't.
+  private writes = 0;
   // The next daily upkeep (persisted, so a wake keeps the day).
   private maintenanceAt: number | null = null;
 
@@ -328,6 +330,7 @@ export class PlanRoom extends DurableObject<Env> {
   // itself makes (its outbox delete) schedule nothing.
   private noteWrite(): void {
     if (this.draining) return;
+    this.writes++;
     if (this.maintenanceAt === null) {
       this.maintenanceAt = Date.now() + MAINTENANCE_EVERY_MS;
       void this.state.storage.put(MAINTENANCE_KEY, this.maintenanceAt);
@@ -412,7 +415,17 @@ export class PlanRoom extends DurableObject<Env> {
 
   async route(planId: string, request: Request, identity: RouteIdentity): Promise<Response> {
     this.bindPlan(planId);
-    return answerPlanRequest(this.requireEnv(), request, identity, (p) => this.state.waitUntil(p));
+    const env = this.requireEnv();
+    const writesBefore = this.writes;
+    const response = await answerPlanRequest(env, request, identity, (p) => this.state.waitUntil(p));
+    // A request that wrote is an edit by whoever asked: their Timeline entry and a Most Used day
+    // (plan-outbox.ts recordEditor). Reads, refusals and requests that changed nothing are not.
+    if (response.ok && identity.owner && this.writes > writesBefore) {
+      const sql = this.state.storage.sql;
+      recordEditor((q, ...b) => sql.exec(q, ...b), planId, identity.owner, Date.now());
+      this.noteWrite();
+    }
+    return response;
   }
 
   async image(

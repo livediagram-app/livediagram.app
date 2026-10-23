@@ -141,12 +141,14 @@ holds for that person:
   every app, the Trash included, and with each one its tags, favourites, opens, share links, password,
   Shared with me rows and comment and action rows.
 - **Deleted**: their folders, tags (and their tags on anyone's items), favourites, opens (Recent), use
-  days (Most Used), Shared with me rows and placement defaults.
+  days (Most Used), Shared with me rows, placement defaults, and the Timeline only they saw (their own
+  space's events and their favourites) with when they last looked at it.
 - **Kept by the team**: an item or folder they made in a team stays with that team, its owner anonymised.
   `teamIds` names the teams that closed with the account (one it ran alone); their items and folders in
   those go too, while anyone else's stay theirs.
-- **Anonymised**: on other people's items, a comment thread they are in or are mentioned in, and an
-  action assigned to or by them, keeps its row, naming `deleted` (no account or guest) in their place.
+- **Anonymised**: on other people's items, a comment thread they are in or are mentioned in, an action
+  assigned to or by them, and a Timeline event they did (in a team, or an edit of someone else's item),
+  keeps its row, naming `deleted` (no account or guest) in their place, with no name.
 
 Grants are not stored (they lapse within 10 minutes), and the link codes of their own items go with the
 items. The request is recorded first and done in chunks of 500 rows, so it holds for any number of items:
@@ -237,6 +239,35 @@ latestAuthorName, firstAt, latestAt}], actions: [{elementId, actionId, elementLa
 assigneeId, assignerId, teamId, createdAt, updatedAt}]}`. The comment text itself stays in the
   content, beside what it is about; the index keeps what the Inbox needs.
 
+- `PUT /app/items/:id/events` — `{events: [{type: 'edited', actorId, actorName?, at}]}`, up to 100: who
+  wrote to the item and when, for the Timeline and Most Used. Each person's `edited` lands on one event per
+  item and UTC day (a later report moves its time on), and counts that day as one of their use days, as an
+  open does. liveplanner sends one per person who wrote since its last push, with the time of their latest
+  write.
+
+## Timeline
+
+What happened to the items a person reaches as owner or team member, newest first: in their own space,
+and in each team they are in (a newcomer sees what happened before they joined). Items shared with them
+by link are not on it.
+
+- The index records `created` (with `source` when an AI or import made it, `copiedFrom` for a copy),
+  `renamed` (`from`), `moved` (`folderName`, `teamId`), `trashed`, `restored`, `shared` (`level`),
+  `unshared` and `favourited` in the same batch as the change. A favourite is on its person's Timeline
+  only. An empty item its app tidies away is not news.
+- Apps report `edited` (above).
+- Each event is stored once, with a row per scope that sees it (`p:<person>` or `t:<team>`, as items
+  are scoped), carrying its app and time. An item that changes scope takes its events with it.
+- `GET /timeline?app=&limit=&cursor=` — `{events, nextCursor, seenAt}`. `app` unset: every app. `limit`
+  30 by default, at most 100. Each event: `{id, app, type, actorId, actorName, itemId, title, detail,
+occurredAt, item}`, `title` being the item's name then and `item` the item as it is now. One statement
+  a page: an index range of at most `limit + 1` rows per scope (by scope, then app, then time), the
+  newest of those joined to their events and items.
+- `POST /timeline/seen` — `{seenAt}`: what came before is no longer new.
+
+The index keeps no names of people. An event shows its person as "You" to them; to anyone else, by the
+name an app reported, or as a teammate.
+
 ## Inbox
 
 `GET /inbox?app=` — `{threads, actions}` across every app: open actions assigned to or by me, and
@@ -246,5 +277,6 @@ reach. Each row carries `app`, `itemId`, `tabId` and `elementId`, so opening it 
 ## What goes away in each app, as it moves
 
 Its tables for folders, tags, favourites, opens, Trash state, share links, shared-with, placement
-defaults, the collab index, the Timeline, the teams mirror and guest ids, and the routes over them. Its
+defaults, the collab index, its own Timeline (the index's replaces it), the teams mirror and guest ids,
+and the routes over them. Its
 content tables move into the item's Durable Object.

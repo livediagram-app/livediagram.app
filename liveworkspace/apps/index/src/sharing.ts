@@ -30,6 +30,7 @@ import type { Env } from './env';
 import { badRequest, conflict, json, noContent, notFound, readObject } from './http';
 import { sharedWithUpsert } from './items';
 import { hashSharePassword } from './password-hash';
+import { eventStatements } from './timeline';
 import {
   decorate,
   directAccess,
@@ -167,25 +168,34 @@ export async function handleItemShare(ctx: RouteContext, id: string): Promise<Re
       expires_at: expiry === 'never' ? null : now + SHARE_LINK_EXPIRY_MS[expiry],
       created_at: now,
     };
-    // The cap is checked inside the insert.
-    const res = await db
-      .prepare(
-        `INSERT INTO share_links (${LINK_COLUMNS}) SELECT ?, ?, ?, ?, ?, ?, ?
+    // The cap is checked inside the insert; the event only when it made one.
+    const [res] = await db.batch([
+      db
+        .prepare(
+          `INSERT INTO share_links (${LINK_COLUMNS}) SELECT ?, ?, ?, ?, ?, ?, ?
          WHERE (SELECT COUNT(*) FROM share_links WHERE item_id = ?) < ?`,
-      )
-      .bind(
-        link.code,
-        id,
-        link.level,
-        link.tab_id,
-        link.expiry,
-        link.expires_at,
-        now,
-        id,
-        SHARE_LINKS_PER_ITEM,
-      )
-      .run();
-    if (res.meta.changes === 0) return conflict('share_link_limit');
+        )
+        .bind(
+          link.code,
+          id,
+          link.level,
+          link.tab_id,
+          link.expiry,
+          link.expires_at,
+          now,
+          id,
+          SHARE_LINKS_PER_ITEM,
+        ),
+      ...eventStatements(db, {
+        itemId: id,
+        type: 'shared',
+        actorId: caller.person?.id ?? null,
+        detail: { level: link.level },
+        at: now,
+        when: { sql: 'EXISTS (SELECT 1 FROM share_links WHERE code = ?)', args: [link.code] },
+      }),
+    ]);
+    if (res!.meta.changes === 0) return conflict('share_link_limit');
     return json({ link: toLink(link) }, { status: 201 });
   }
 
@@ -197,6 +207,14 @@ export async function handleItemShare(ctx: RouteContext, id: string): Promise<Re
     await db.batch([
       db.prepare('DELETE FROM share_links WHERE item_id = ?').bind(id),
       db.prepare('DELETE FROM shared_with WHERE item_id = ?').bind(id),
+      ...(results.length > 0
+        ? eventStatements(db, {
+            itemId: id,
+            type: 'unshared',
+            actorId: caller.person?.id ?? null,
+            at: Date.now(),
+          })
+        : []),
     ]);
     tellRevoked(
       ctx,
@@ -253,6 +271,12 @@ export async function handleShareCode(ctx: RouteContext): Promise<Response> {
       db
         .prepare('DELETE FROM shared_with WHERE item_id = ? AND share_code = ?')
         .bind(link.item_id, link.code),
+      ...eventStatements(db, {
+        itemId: link.item_id,
+        type: 'unshared',
+        actorId: caller.person?.id ?? null,
+        at: Date.now(),
+      }),
     ]);
     tellRevoked(ctx, loaded.row, [link.code]);
     return noContent();

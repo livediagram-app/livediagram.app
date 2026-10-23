@@ -110,6 +110,48 @@ CREATE TABLE use_days (
 CREATE INDEX use_days_person_day ON use_days (person_id, day);
 CREATE INDEX use_days_item ON use_days (item_id);
 
+-- The Timeline (src/timeline.ts): what happened to the items people reach. One row per event, whatever its
+-- audience. The index writes created, renamed, moved, trashed, restored, shared, unshared and favourited in
+-- the same batch as the change; an app reports `edited` (one row per person, item and UTC day, its id
+-- `ed:<item>:<person>:<day>`, its time moving on). The item's name when it happened is kept in `title`;
+-- `detail` is JSON (the old name, the folder moved to). Names of people are never kept, only `actor_name`
+-- when an app reports one. A purged item's events go with it.
+CREATE TABLE timeline_events (
+  id          TEXT    PRIMARY KEY,
+  app         TEXT    NOT NULL,
+  item_id     TEXT    NOT NULL REFERENCES items (id) ON DELETE CASCADE,
+  -- An account or guest id, or 'deleted' once their account is closed.
+  actor_id    TEXT,
+  actor_name  TEXT,
+  type        TEXT    NOT NULL,
+  title       TEXT    NOT NULL,
+  detail      TEXT,
+  occurred_at INTEGER NOT NULL
+);
+CREATE INDEX timeline_events_item ON timeline_events (item_id, occurred_at DESC);
+CREATE INDEX timeline_events_actor ON timeline_events (actor_id);
+
+-- Who sees each event: the item's scope when it happened (`p:<owner>` or `t:<team>`, the same strings as
+-- items.scope), so a team's events reach everyone in it, newcomers included; a favourite reaches only the
+-- person who starred it. An item that changes scope takes its events' rows with it. `app` and
+-- `occurred_at` are copied in, so a page is one index range per scope: by scope, then app, then time.
+CREATE TABLE timeline_event_scopes (
+  scope       TEXT    NOT NULL,
+  event_id    TEXT    NOT NULL REFERENCES timeline_events (id) ON DELETE CASCADE,
+  app         TEXT    NOT NULL,
+  occurred_at INTEGER NOT NULL,
+  PRIMARY KEY (scope, event_id)
+);
+CREATE INDEX timeline_scopes_app ON timeline_event_scopes (scope, app, occurred_at DESC, event_id DESC);
+CREATE INDEX timeline_scopes_all ON timeline_event_scopes (scope, occurred_at DESC, event_id DESC);
+CREATE INDEX timeline_scopes_event ON timeline_event_scopes (event_id);
+
+-- When each person last looked at their Timeline: what is new since is marked so.
+CREATE TABLE timeline_scope_state (
+  person_id    TEXT    PRIMARY KEY,
+  last_seen_at INTEGER NOT NULL
+);
+
 -- Share links, as the apps have them today. A link whose `expires_at` has passed opens nothing but stays
 -- listed for its owner to extend or delete.
 CREATE TABLE share_links (

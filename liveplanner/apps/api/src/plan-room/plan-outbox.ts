@@ -1,8 +1,9 @@
 // What a plan pushes from its Durable Object (liveworkspace/docs/one-explorer-contracts.md "What an item pushes";
 // docs/specs/015-api/api.md "Storage"): its summary to the index (`PUT /app/items/:id/summary`), each changed
-// tab's comment threads and actions for the Inbox (`PUT /app/items/:id/collab/:tabId`), both with this app's
-// key, a Form tab's name and heading on its form link (D1, form_links), and the owner's newest save for the
-// lifecycle email (D1, email_lifecycle.active_at).
+// tab's comment threads and actions for the Inbox (`PUT /app/items/:id/collab/:tabId`), who edited it for the
+// Timeline and their Most Used (`PUT /app/items/:id/events`), all with this app's key, a Form tab's name and
+// heading on its form link (D1, form_links), and the owner's newest save for the lifecycle email (D1,
+// email_lifecycle.active_at).
 //
 // The plan's triggers fill `outbox` with a key per changed thing (plan-schema.ts), in the same transaction as the
 // write, so no write path can forget one and a save makes no network call. The room's alarm drains it on idle,
@@ -17,9 +18,11 @@ import {
   type Element,
 } from '@liveplanner/project';
 import {
+  APP_EVENTS_MAX,
   COLLAB_MAX_ACTIONS,
   COLLAB_MAX_THREADS,
   IndexError,
+  type AppTimelineEvent,
   type CollabPush,
   type IndexAppClient,
   type ItemSummary,
@@ -177,6 +180,42 @@ export function itemSummaryOf(summary: ContentSummary): ItemSummary {
   };
 }
 
+// ---------- Who edited -----------------------------------------------------------------------------------------
+
+// An `edit` key is `<person>@<time>`: one per person, the time of their latest write, so a morning of saves is
+// one key and the drain reports it as one `edited` event (the index keeps one per person, item and day).
+const EDITOR_SEP = '@';
+
+/**
+ * A person's write to the plan, for the Timeline and their Most Used: replaces their key with one at `at`. The
+ * room calls it after a request that wrote (plan-room.ts route()), so the edit is the person's who asked, never a
+ * guess from the content. Two plain statements on the room's storage, outside the save's transaction.
+ */
+export function recordEditor(
+  exec: (query: string, ...bindings: (string | number)[]) => unknown,
+  planId: string,
+  personId: string,
+  at: number,
+): void {
+  const prefix = `${personId}${EDITOR_SEP}`;
+  // The key range of this person's keys: '@' + 1 is 'A'.
+  exec(
+    `DELETE FROM outbox WHERE plan_id = ? AND kind = 'edit' AND key >= ? AND key < ?`,
+    planId,
+    prefix,
+    `${personId}A`,
+  );
+  exec(`INSERT INTO outbox (plan_id, kind, key) VALUES (?, 'edit', ?)`, planId, `${prefix}${at}`);
+}
+
+function editedOf(key: string): AppTimelineEvent | null {
+  const at = key.lastIndexOf(EDITOR_SEP);
+  const actorId = key.slice(0, at);
+  const time = Number(key.slice(at + 1));
+  if (at <= 0 || !Number.isFinite(time)) return null;
+  return { type: 'edited', actorId, at: time };
+}
+
 // ---------- The drain ----------------------------------------------------------------------------------------
 
 // `more`: keys were left for the next drain (a drain takes at most DRAIN_TABS tabs).
@@ -213,8 +252,13 @@ export async function drainOutbox(
   ).results;
   if (all.length === 0) return { keys: 0, pushes: 0, more: false };
   const taken = new Set(all.filter((r) => r.kind === 'tab').map((r) => r.key).slice(0, DRAIN_TABS));
-  const pending = all.filter((r) => r.kind !== 'tab' || taken.has(r.key));
+  const editors = new Set(all.filter((r) => r.kind === 'edit').slice(0, APP_EVENTS_MAX).map((r) => r.id));
+  const pending = all.filter(
+    (r) => (r.kind !== 'tab' || taken.has(r.key)) && (r.kind !== 'edit' || editors.has(r.id)),
+  );
   const more = pending.length < all.length;
+  // Every editor in one report.
+  const edits: { id: number; event: AppTimelineEvent }[] = [];
   const done: number[] = [];
   const failures: unknown[] = [];
   const formStmts: D1PreparedStatement[] = [];
@@ -255,10 +299,28 @@ export async function drainOutbox(
           else failures.push(err);
         }
       });
+    } else if (row.kind === 'edit') {
+      const event = editedOf(row.key);
+      if (event) edits.push({ id: row.id, event });
+      else done.push(row.id);
     } else {
       // A kind no longer pushed.
       done.push(row.id);
     }
+  }
+  if (edits.length > 0) {
+    tasks.push(async () => {
+      try {
+        await client?.pushEvents(
+          planId,
+          edits.map((e) => e.event),
+        );
+        done.push(...edits.map((e) => e.id));
+      } catch (err) {
+        if (pushed(err)) done.push(...edits.map((e) => e.id));
+        else failures.push(err);
+      }
+    });
   }
 
   await inBatches(tasks);

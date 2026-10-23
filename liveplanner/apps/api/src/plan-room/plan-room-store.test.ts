@@ -257,12 +257,16 @@ describe("a plan's content lives in its own Durable Object", () => {
     const plan = w.plans.get('A')!;
     expect(count(plan.db, 'outbox')).toBeGreaterThan(0);
     expect(indexCalls).toEqual([]);
+    // The save was the person's who asked: one edit key for them, at its time.
+    const editors = plan.db.prepare("SELECT key FROM outbox WHERE kind = 'edit'").all();
+    expect(editors.map((r) => String(r.key))).toEqual([expect.stringMatching(/^guest_owner@\d+$/)]);
 
     await plan.room.drain();
 
     expect(count(plan.db, 'outbox')).toBe(0);
     expect(indexCalls.sort()).toEqual([
       'PUT /api/index/app/items/A/collab/t1',
+      'PUT /api/index/app/items/A/events',
       'PUT /api/index/app/items/A/summary',
     ]);
   });
@@ -413,7 +417,8 @@ describe('speed', () => {
     });
     console.info('[perf] 200-tab plan', { readMs, drainMs, requestsPerDrain: sizes });
     expect(sizes).toHaveLength(Math.ceil(200 / DRAIN_TABS));
-    expect(Math.max(...sizes)).toBeLessThanOrEqual(DRAIN_TABS + 1);
+    // DRAIN_TABS tabs, the summary and who edited.
+    expect(Math.max(...sizes)).toBeLessThanOrEqual(DRAIN_TABS + 2);
     expect(readMs).toBeLessThan(cpuBudgetMs(50));
     expect(drainMs).toBeLessThan(cpuBudgetMs(200));
   });

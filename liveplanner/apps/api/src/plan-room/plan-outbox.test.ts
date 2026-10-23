@@ -2,9 +2,10 @@ import { describe, expect, it } from 'vitest';
 import type { Element } from '@liveplanner/project';
 import { deleteTabRow, upsertTab } from '../db/tabs';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { DRAIN_TABS, drainOutbox, readContentSummary } from './plan-outbox';
+import { DRAIN_TABS, drainOutbox, readContentSummary, recordEditor } from './plan-outbox';
 import {
   IndexError,
+  type AppTimelineEvent,
   type CollabPush,
   type IndexAppClient,
   type ItemSummary,
@@ -60,7 +61,13 @@ const keys = (db: SqliteD1) =>
 function fakeIndex(fail: (kind: string) => Error | null = () => null) {
   const collab: { tab: string; push: CollabPush }[] = [];
   const summaries: { summary: ItemSummary; savedAt: number | undefined }[] = [];
+  const events: AppTimelineEvent[][] = [];
   const client = {
+    pushEvents: async (_id: string, batch: AppTimelineEvent[]) => {
+      const err = fail('events');
+      if (err) throw err;
+      events.push(batch);
+    },
     pushCollab: async (_id: string, tab: string, push: CollabPush) => {
       const err = fail('collab');
       if (err) throw err;
@@ -72,10 +79,41 @@ function fakeIndex(fail: (kind: string) => Error | null = () => null) {
       summaries.push({ summary, savedAt });
     },
   } as unknown as IndexAppClient;
-  return { client, collab, summaries };
+  return { client, collab, summaries, events };
 }
 
 describe('the outbox', () => {
+  it('keeps one edit key per person at their latest write, and reports them all in one batch', async () => {
+    const db = plan();
+    await drainOutbox(db.env, 'P', fakeIndex().client);
+    const exec = (q: string, ...b: (string | number)[]) => db.sql.prepare(q).run(...b);
+    recordEditor(exec, 'P', 'user_a', T0 + 1);
+    recordEditor(exec, 'P', 'user_b', T0 + 2);
+    recordEditor(exec, 'P', 'user_a', T0 + 3);
+    // A person whose id starts like another's keeps their own key.
+    recordEditor(exec, 'P', 'user_ab', T0 + 4);
+    expect(keys(db)).toEqual([
+      `edit:user_b@${T0 + 2}`,
+      `edit:user_a@${T0 + 3}`,
+      `edit:user_ab@${T0 + 4}`,
+    ]);
+
+    const failing = fakeIndex((kind) => (kind === 'events' ? new Error('down') : null));
+    await expect(drainOutbox(db.env, 'P', failing.client)).rejects.toThrow('down');
+    expect(keys(db)).toHaveLength(3);
+
+    const index = fakeIndex();
+    await drainOutbox(db.env, 'P', index.client);
+    expect(index.events).toEqual([
+      [
+        { type: 'edited', actorId: 'user_b', at: T0 + 2 },
+        { type: 'edited', actorId: 'user_a', at: T0 + 3 },
+        { type: 'edited', actorId: 'user_ab', at: T0 + 4 },
+      ],
+    ]);
+    expect(keys(db)).toEqual([]);
+  });
+
   it('keys a tab write in the same transaction, and a drain pushes its Inbox rows and summary and empties it', async () => {
     const db = plan();
     await upsertTab(db.env, 'P', { id: 't1', name: 'Board', elements: [actionOn('a')] }, 0);

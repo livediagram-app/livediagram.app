@@ -38,6 +38,7 @@ import {
 import { listItems, type ListSpec } from './lists';
 import { drainTombstones, purgeRows } from './purge';
 import { decorate, getItemRow, type Access, type ItemRow } from './rows';
+import { eventStatements, moveScopeStatements } from './timeline';
 
 const DEFAULT_TITLE = 'Untitled';
 // Emptying the Trash purges at most this many per call; the Explorer calls again while some remain.
@@ -193,7 +194,11 @@ export async function createItem(ctx: PersonContext): Promise<Response> {
     trash_reason: null,
   };
   try {
-    await insertItem(env, row);
+    await insertItem(
+      env,
+      row,
+      row.source && row.source !== 'person' ? { source: row.source } : null,
+    );
   } catch (err) {
     if (String(err).includes('UNIQUE')) return conflict('item_exists');
     throw err;
@@ -211,11 +216,18 @@ export async function createItem(ctx: PersonContext): Promise<Response> {
   return json({ item: await itemFor(env, person, row, access), grant }, { status: 201 });
 }
 
-async function insertItem(env: Env, row: ItemRow): Promise<void> {
-  await env.INDEX_DB.prepare(
-    `INSERT INTO items (id, app, kind, owner_id, team_id, scope, folder_id, title, source, intent, summary,
+// The row, and its `created` event in the same batch.
+async function insertItem(
+  env: Env,
+  row: ItemRow,
+  detail: Record<string, string | null> | null = null,
+): Promise<void> {
+  const db = env.INDEX_DB;
+  const insert = db
+    .prepare(
+      `INSERT INTO items (id, app, kind, owner_id, team_id, scope, folder_id, title, source, intent, summary,
        created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  )
+    )
     .bind(
       row.id,
       row.app,
@@ -230,8 +242,17 @@ async function insertItem(env: Env, row: ItemRow): Promise<void> {
       row.summary,
       row.created_at,
       row.updated_at,
-    )
-    .run();
+    );
+  await db.batch([
+    insert,
+    ...eventStatements(db, {
+      itemId: row.id,
+      type: 'created',
+      actorId: row.owner_id,
+      detail,
+      at: row.created_at,
+    }),
+  ]);
 }
 
 // /items/:id and below.
@@ -296,21 +317,54 @@ async function updateItem(ctx: RouteContext, id: string): Promise<Response> {
     folderId = null;
   }
   const scope = scopeOf(ownerId, teamId);
+  let folderName: string | null = null;
   if (body.folderId !== undefined) {
     folderId = body.folderId ?? null;
     if (folderId) {
       const folder = await getFolderRow(env, folderId);
       if (!folder || folder.scope !== scope) return notFound('folder_not_found');
+      folderName = folder.name;
     }
   }
   // updatedAt is the last content or title change, so a move leaves it.
-  const updatedAt = title !== row.title ? Date.now() : row.updated_at;
-  await env.INDEX_DB.prepare(
-    `UPDATE items SET title = ?, owner_id = ?, team_id = ?, scope = ?, folder_id = ?, updated_at = ?
-     WHERE id = ?`,
-  )
-    .bind(title, ownerId, teamId, scope, folderId, updatedAt, id)
-    .run();
+  const now = Date.now();
+  const updatedAt = title !== row.title ? now : row.updated_at;
+  const db = env.INDEX_DB;
+  const actorId = person?.id ?? null;
+  const events: D1PreparedStatement[] = [];
+  if (title !== row.title) {
+    events.push(
+      ...eventStatements(db, {
+        itemId: id,
+        type: 'renamed',
+        actorId,
+        detail: { from: row.title },
+        at: now,
+      }),
+    );
+  }
+  if (folderId !== row.folder_id || teamId !== row.team_id) {
+    // Its events go where it went (who sees its history is who reaches it), then the move is recorded there.
+    events.push(...moveScopeStatements(db, id, row.scope, scope));
+    events.push(
+      ...eventStatements(db, {
+        itemId: id,
+        type: 'moved',
+        actorId,
+        detail: { folderName, teamId },
+        at: now,
+      }),
+    );
+  }
+  await db.batch([
+    db
+      .prepare(
+        `UPDATE items SET title = ?, owner_id = ?, team_id = ?, scope = ?, folder_id = ?, updated_at = ?
+         WHERE id = ?`,
+      )
+      .bind(title, ownerId, teamId, scope, folderId, updatedAt, id),
+    ...events,
+  ]);
   const next: ItemRow = {
     ...row,
     title,
@@ -337,11 +391,27 @@ async function deleteItem(ctx: RouteContext, id: string): Promise<Response> {
     return noContent();
   }
   const reason = url.searchParams.get('reason') === 'empty' ? 'empty' : 'deleted';
-  await env.INDEX_DB.prepare(
-    'UPDATE items SET trashed_at = ?, trash_reason = ? WHERE id = ? AND trashed_at IS NULL',
-  )
-    .bind(Date.now(), reason, id)
-    .run();
+  const db = env.INDEX_DB;
+  const now = Date.now();
+  const statements = [
+    db
+      .prepare(
+        'UPDATE items SET trashed_at = ?, trash_reason = ? WHERE id = ? AND trashed_at IS NULL',
+      )
+      .bind(now, reason, id),
+  ];
+  // An empty item tidied away by its app is not news; one already in the Trash was recorded going there.
+  if (reason === 'deleted' && row.trashed_at === null) {
+    statements.push(
+      ...eventStatements(db, {
+        itemId: id,
+        type: 'trashed',
+        actorId: caller.person?.id ?? null,
+        at: now,
+      }),
+    );
+  }
+  await db.batch(statements);
   return noContent();
 }
 
@@ -349,9 +419,21 @@ async function restoreItem(ctx: RouteContext, id: string): Promise<Response> {
   const { env, caller } = ctx;
   const loaded = await loadItem(env, id, caller, 'edit', { manage: true });
   if (loaded instanceof Response) return loaded;
-  await env.INDEX_DB.prepare('UPDATE items SET trashed_at = NULL, trash_reason = NULL WHERE id = ?')
-    .bind(id)
-    .run();
+  const db = env.INDEX_DB;
+  const statements = [
+    db.prepare('UPDATE items SET trashed_at = NULL, trash_reason = NULL WHERE id = ?').bind(id),
+  ];
+  if (loaded.row.trashed_at !== null) {
+    statements.push(
+      ...eventStatements(db, {
+        itemId: id,
+        type: 'restored',
+        actorId: caller.person?.id ?? null,
+        at: Date.now(),
+      }),
+    );
+  }
+  await db.batch(statements);
   const row = await getItemRow(env, id);
   return json({ item: await itemFor(env, caller.person, row!, loaded.access) });
 }
@@ -391,7 +473,7 @@ async function copyItem(ctx: RouteContext, id: string): Promise<Response> {
     trashed_at: null,
     trash_reason: null,
   };
-  await insertItem(env, row);
+  await insertItem(env, row, { copiedFrom: from.title });
   // A link scoped to one tab copies only that tab.
   const copied = await callApp(
     env,

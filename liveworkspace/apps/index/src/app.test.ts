@@ -277,6 +277,20 @@ describe('the guest merge', () => {
       await call('/placement-defaults', { auth: user.auth }),
     );
     expect(defaults.defaults).toEqual([{ key: 'mode:plan', folderId: folder.folder.id }]);
+    // Their Timeline is the account's: what they did, under the account's id.
+    const timeline = await body<{ events: { type: string; actorId: string }[] }>(
+      await call('/timeline', { auth: user.auth }),
+    );
+    expect(timeline.events.map((e) => [e.type, e.actorId]).sort()).toEqual([
+      ['created', 'user_u1'],
+      ['favourited', 'user_u1'],
+      ['moved', 'user_u1'],
+    ]);
+    expect(
+      h.db.sql
+        .prepare("SELECT COUNT(*) AS n FROM timeline_event_scopes WHERE scope = 'p:guest_g1'")
+        .get(),
+    ).toEqual({ n: 0 });
     for (const table of ['favourites', 'opens', 'shared_with', 'placement_defaults']) {
       expect(
         h.db.sql.prepare(`SELECT COUNT(*) AS n FROM ${table} WHERE person_id = 'guest_g1'`).get(),

@@ -3,11 +3,13 @@
 // putting a tag on an item grants and reveals nothing, so it checks only that the item exists.
 
 import { isTagColour, TAG_LIMIT, TAG_NAME_MAX, type Tag } from '@liveworkspace/index-client';
+import { personalScope, scopesOf } from './auth';
 import { decodeCursor, encodeCursor, isId, parseLimit } from './codec';
 import { DEFAULT_KEY_MAX } from './config';
 import type { PersonContext } from './context';
 import { reachableFolder } from './folders';
 import { badRequest, conflict, json, noContent, notFound, readObject } from './http';
+import { eventStatements } from './timeline';
 
 type TagRow = { id: string; name: string; colour: string; created_at: number };
 
@@ -173,13 +175,29 @@ export async function handleFavourites(ctx: PersonContext): Promise<Response> {
   if (segments.length === 2 && isId(segments[1])) {
     const itemId = segments[1];
     if (request.method === 'PUT') {
+      const now = Date.now();
       try {
-        await db
-          .prepare(
-            'INSERT OR IGNORE INTO favourites (person_id, item_id, created_at) VALUES (?, ?, ?)',
-          )
-          .bind(person.id, itemId, Date.now())
-          .run();
+        // A new favourite is on the person's own Timeline (theirs alone), when they reach the item.
+        await db.batch([
+          db
+            .prepare(
+              'INSERT OR IGNORE INTO favourites (person_id, item_id, created_at) VALUES (?, ?, ?)',
+            )
+            .bind(person.id, itemId, now),
+          ...eventStatements(db, {
+            itemId,
+            type: 'favourited',
+            actorId: person.id,
+            at: now,
+            scope: personalScope(person.id),
+            when: {
+              sql: `(SELECT created_at FROM favourites WHERE person_id = ? AND item_id = items.id) = ?
+                    AND (scope IN (SELECT value FROM json_each(?))
+                         OR EXISTS (SELECT 1 FROM shared_with WHERE person_id = ? AND item_id = items.id))`,
+              args: [person.id, now, JSON.stringify(scopesOf(person)), person.id],
+            },
+          }),
+        ]);
       } catch (err) {
         if (isForeignKeyError(err)) return notFound();
         throw err;

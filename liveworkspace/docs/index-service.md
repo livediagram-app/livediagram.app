@@ -3,8 +3,8 @@
 The index is the One Explorer's service: one Worker at **liveworkspace.app/api/index**, with its own D1
 database, holding where every Canvas, Plan, Document and Design is and who can reach it. It keeps
 everything about an item except its content: title, owner, team, folder, tags, favourites, Trash
-state, opens, share links and passwords, Shared with me, placement defaults, and what the Inbox needs
-about comments and actions. The content stays in each item's Durable Object in its app.
+state, opens and use days, share links and passwords, Shared with me, placement defaults, what the Inbox
+needs about comments and actions, and the Timeline. The content stays in each item's Durable Object in its app.
 
 The plan is [one-explorer.md](one-explorer.md). The calls, types and tokens are
 [one-explorer-contracts.md](one-explorer-contracts.md), and `@liveworkspace/index-client`
@@ -20,8 +20,9 @@ apps/index/src/lists.ts       the Explorer's lists, one indexed and keyset-paged
 apps/index/src/items.ts       items: make, read, rename, move, Trash, copy, open, grant
 apps/index/src/sharing.ts     share links, passwords, what a link opens, Shared with me
 apps/index/src/personal.ts    tags, favourites, placement defaults (folders.ts: folders)
-apps/index/src/app-routes.ts  what an item pushes: its summary, and each tab's comments and actions
+apps/index/src/app-routes.ts  what an item pushes: its summary, each tab's comments and actions, its edits
 apps/index/src/inbox.ts       the Inbox query
+apps/index/src/timeline.ts    the Timeline: recording events, and a person's feed
 apps/index/src/purge.ts       purging, tombstones and the daily sweep
 apps/index/src/merge.ts       a guest becoming an account
 apps/index/src/account-purge.ts  a closed account's purge, and the 15-minute cron
@@ -93,7 +94,12 @@ Every list is one query, keyset-paged (`limit` ≤ 200), driven by an index that
 for the person (favourite, tags, last opened, link access) is one D1 batch. `lists.test.ts` pins each
 list's query plan and times 2,000 of a person's items among 20,000 others' (each page a few
 milliseconds). Opens are written at most once a minute per person and item, in memory and in SQL. Comment
-pushes go in through `json_each`, one statement per table. Each list sorts the person's matching rows to
+pushes go in through `json_each`, one statement per table. Most Used rides Recent's first page as one more
+query on `use_days`' person index (`most-used.test.ts`: 14 ms beside 100,000 other rows). A Timeline page is
+one statement reading one index range of at most `limit + 1` rows per scope the person has (their own, and
+each team's), never the whole feed (`timeline.test.ts`: two pages from 10,000 of a person's events among
+100,000 others in about 15 ms); an event is recorded in the batch of the change it is about, two or three
+statements more. Each list sorts the person's matching rows to
 page them, so a page's cost grows with what that person holds (a few milliseconds at 2,000).
 
 ## Running it locally

@@ -1,6 +1,6 @@
 // What an item pushes (liveworkspace/docs/one-explorer-contracts.md "What an item pushes"), from its app's
-// server with the app's key: the summary derived from its content, and each tab's comment threads and
-// actions for the Inbox. Only the item's own app may push for it.
+// server with the app's key: the summary derived from its content, each tab's comment threads and
+// actions for the Inbox, and its Timeline events (timeline.ts). Only the item's own app may push for it.
 
 import {
   COLLAB_MAX_ACTIONS,
@@ -14,6 +14,7 @@ import { callerApp } from './auth';
 import { isId } from './codec';
 import type { Env } from './env';
 import { badRequest, fail, noContent, notFound, readObject, unauthorized } from './http';
+import { pushAppEvents } from './timeline';
 
 // Shown text is cut to these rather than refused.
 const LABEL_MAX = 200;
@@ -108,7 +109,7 @@ function parseAction(value: unknown): CollabActionInput | null {
 export async function handleApp(request: Request, env: Env, segments: string[]): Promise<Response> {
   const app = await callerApp(request, env);
   if (!app) return unauthorized();
-  // /app/items/:id/summary, /app/items/:id/collab/:tabId
+  // /app/items/:id/summary, /app/items/:id/collab/:tabId, /app/items/:id/events
   if (segments[1] !== 'items' || !isId(segments[2]) || request.method !== 'PUT') return notFound();
   const itemId = segments[2];
   const item = await env.INDEX_DB.prepare('SELECT app FROM items WHERE id = ?')
@@ -139,6 +140,12 @@ export async function handleApp(request: Request, env: Env, segments: string[]):
       .bind(text, Math.floor(body.updatedAt), itemId)
       .run();
     return noContent();
+  }
+
+  if (segments.length === 4 && segments[3] === 'events') {
+    const body = await readObject(request);
+    if (!body) return badRequest();
+    return pushAppEvents(env, itemId, body);
   }
 
   if (segments.length === 5 && segments[3] === 'collab' && isId(segments[4])) {

@@ -17,6 +17,7 @@ import { createItem, handleItem, handleItemList, handleTrash } from './items';
 import { handleMerge } from './merge';
 import { handleFavourites, handlePlacementDefaults, handleTags } from './personal';
 import { sweep } from './purge';
+import { handleTimeline } from './timeline';
 import { handleItemShare, handleShareCode, handleShared } from './sharing';
 
 const under = (pathname: string, base: string) =>
@@ -31,7 +32,7 @@ function splitPath(path: string): string[] | null {
 }
 
 // The lists an app acting for a person sees filtered to that app.
-const LISTS = new Set(['items', 'trash', 'shared', 'inbox']);
+const LISTS = new Set(['items', 'trash', 'shared', 'inbox', 'timeline']);
 
 // The routes that need a person: anything listing or changing a person's own things.
 const PERSON_ROUTES: Record<string, (ctx: PersonContext) => Promise<Response>> = {
@@ -42,6 +43,7 @@ const PERSON_ROUTES: Record<string, (ctx: PersonContext) => Promise<Response>> =
   shared: handleShared,
   inbox: handleInbox,
   trash: handleTrash,
+  timeline: handleTimeline,
 };
 
 async function route(ctx: RouteContext): Promise<Response> {

@@ -101,7 +101,9 @@ the item's content, beside what it is about, so it saves, undoes and copies with
 Explorer is then one query across every app: threads you are in, mentions, and actions assigned to you or by you. Comment and mention emails
 are sent from liveworkspace too.
 
-The Timeline (and its Activity view) is removed rather than moved.
+The Timeline moves too, and spans apps the same way: the index records what it changes itself (made,
+renamed, moved, trashed, restored, shared, favourited) and each app reports who edited what. The
+Explorer shows it filtered to the app it is in, or All, and Home's What Happened is read from it.
 
 ### 6. Content lives in one Durable Object per item
 
@@ -130,8 +132,8 @@ walks the index, asks each item's app for an export of its content, and keeps Dr
    Trash, comments, actions, the Inbox query, and grants. Starts empty.
 4. **`@liveworkspace/explorer`**, built against the index service and tried on liveworkspace.app.
 5. **liveplanner first** (it holds no data): `PlanRoom` holds content, creation registers in the
-   index, `/explorer` renders the shared package, comments and actions go to liveworkspace, and its
-   own folders, tags, sharing, Timeline, Inbox, teams mirror and content tables are removed.
+   index, `/explorer` renders the shared package, comments, actions and the Timeline go to liveworkspace,
+   and its own folders, tags, sharing, Timeline, Inbox, teams mirror and content tables are removed.
 6. **livedocuments, then livedesign**, the same way.
 7. **livediagram last.** It has real documents, so it needs a migration; that is planned separately.
 
@@ -157,7 +159,7 @@ walks the index, asks each item's app for an export of its content, and keeps Dr
 - Guests have one identity across every app.
 - The Explorer UI is one package rendered inside each app, filterable to that app or All, and New
   creates that app's kind.
-- Search covers the index only. The Timeline goes. Comments, actions and the Inbox are centralised.
+- Search covers the index only. The Timeline, comments, actions and the Inbox are centralised.
 - The Drive mirror covers every app.
 - Item names: Canvas, Plan, Document, Design, applied as each app moves.
 

@@ -1,7 +1,16 @@
 // The index's wire shapes (liveworkspace/docs/one-explorer-contracts.md). Times are epoch milliseconds,
 // except in tokens, which keep JWT seconds.
 
-import type { App, ItemSource, ItemView, Kind, Level, ShareLinkExpiry } from './constants';
+import type {
+  App,
+  AppTimelineEventType,
+  ItemSource,
+  ItemView,
+  Kind,
+  Level,
+  ShareLinkExpiry,
+  TimelineEventType,
+} from './constants';
 
 export type ItemSummary = {
   elements?: number;
@@ -218,5 +227,45 @@ export type UpdateShareLinkInput = { level?: Level; tabId?: string | null };
 export type ShareAccess = { code: string; password?: string | null };
 
 export type ShareResolution = { item: Item; level: Level; tabId: string | null };
+
+// One Timeline entry: what happened, to which item, by whom, as it was then. `title` is the item's name
+// when it happened; `item` is the item as it is now (its name since, its place, its Trash), drawn by the
+// Explorer's cards.
+export type TimelineEvent = {
+  id: string;
+  app: App;
+  type: TimelineEventType;
+  // Who did it: an account or guest id, or `deleted` once their account is closed. The index holds no
+  // names; an app's report may carry one (`actorName`).
+  actorId: string | null;
+  actorName: string | null;
+  itemId: string;
+  title: string;
+  // renamed: { from }; moved: { folderName, teamId } (null folderName: the top of the space);
+  // shared: { level }; created: { source, copiedFrom }.
+  detail: Record<string, string | null> | null;
+  occurredAt: number;
+  item: Item;
+};
+
+export type TimelineQuery = {
+  // One app's events; unset, every app's.
+  app?: App;
+  limit?: number;
+  cursor?: string;
+};
+
+export type TimelinePage = Page<TimelineEvent, 'events'> & {
+  // When the person last marked their Timeline seen (POST /timeline/seen), or null for never.
+  seenAt: number | null;
+};
+
+// What an app reports: `edited` by `actorId` at `at`, with the name the app knows them by.
+export type AppTimelineEvent = {
+  type: AppTimelineEventType;
+  actorId: string;
+  actorName?: string | null;
+  at: number;
+};
 
 export type MergeRequest = { guestId: string; userId: string };

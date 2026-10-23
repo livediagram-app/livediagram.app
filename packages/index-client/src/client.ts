@@ -35,6 +35,9 @@ import type {
   ShareResolution,
   SharedWithItem,
   Tag,
+  TimelinePage,
+  TimelineQuery,
+  AppTimelineEvent,
   UpdateFolderInput,
   UpdateItemInput,
   UpdateShareLinkInput,
@@ -236,6 +239,11 @@ export function createIndexClient({
     ) => call<Page<SharedWithItem, 'shared'>>('/shared', { query, signal: options.signal }),
     removeShared: (itemId: string) => call<void>(`/shared/${enc(itemId)}`, { method: 'DELETE' }),
 
+    // Timeline: newest first, a page at a time.
+    timeline: (query: TimelineQuery = {}, options: RequestOptions = {}) =>
+      call<TimelinePage>('/timeline', { query, signal: options.signal }),
+    markTimelineSeen: () => call<{ seenAt: number }>('/timeline/seen', { method: 'POST' }),
+
     // Inbox
     inbox: (query: { app?: App; limit?: number } = {}, options: RequestOptions = {}) =>
       call<InboxResponse>('/inbox', { query, signal: options.signal }),
@@ -316,6 +324,10 @@ export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: Inde
       put(`/items/${enc(itemId)}/summary`, { summary, updatedAt }),
     pushCollab: (itemId: string, tabId: string, push: CollabPush) =>
       put(`/items/${enc(itemId)}/collab/${enc(tabId)}`, push),
+    // Up to APP_EVENTS_MAX Timeline events about one item. Safe to send again: an `edited` is one event per
+    // person and day whatever the count.
+    pushEvents: (itemId: string, events: readonly AppTimelineEvent[]) =>
+      put(`/items/${enc(itemId)}/events`, { events }),
   };
 }
 

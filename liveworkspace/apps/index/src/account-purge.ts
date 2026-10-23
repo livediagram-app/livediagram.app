@@ -7,9 +7,10 @@
 //   cascade), and the apps are asked to drop the content.
 // - Items and folders in a team stay with the team, their owner anonymised; those in a team that closed
 //   with the account (one they ran alone, named in `teamIds`) are theirs alone and go too.
-// - Their folders, tags, favourites, opens (Recent), use days (Most Used), Shared with me rows and placement defaults go.
+// - Their folders, tags, favourites, opens (Recent), use days (Most Used), Shared with me rows, placement
+//   defaults and Timeline rows only they see go.
 // - Rows on other people's items that only name them (comment threads they are in, actions assigned to
-//   or by them) keep the row but name ANONYMISED_PERSON instead.
+//   or by them, Timeline events they did) keep the row but name ANONYMISED_PERSON instead.
 //
 // Everything is done in chunks of CHUNK rows, so a person with any number of items stays inside D1's
 // limits, and every step deletes or rewrites only what still names them, so running it again (a retry,
@@ -172,6 +173,32 @@ function personalStatements(db: Db, person: string): (() => D1PreparedStatement)
     byPerson('favourites'),
     byPerson('opens'),
     byPerson('use_days'),
+    // The Timeline: what only they saw (their own space's rows; their own items' events went with the
+    // items), then the events of theirs no one else sees, then their name off the rest (team items,
+    // other people's items they edited).
+    () =>
+      db
+        .prepare(
+          `DELETE FROM timeline_event_scopes WHERE rowid IN (
+             SELECT rowid FROM timeline_event_scopes WHERE scope = ? LIMIT ?)`,
+        )
+        .bind(`p:${person}`, CHUNK),
+    () =>
+      db
+        .prepare(
+          `DELETE FROM timeline_events WHERE rowid IN (
+             SELECT rowid FROM timeline_events e WHERE e.actor_id = ?
+             AND NOT EXISTS (SELECT 1 FROM timeline_event_scopes s WHERE s.event_id = e.id) LIMIT ?)`,
+        )
+        .bind(person, CHUNK),
+    () =>
+      db
+        .prepare(
+          `UPDATE timeline_events SET actor_id = ?, actor_name = NULL WHERE rowid IN (
+             SELECT rowid FROM timeline_events WHERE actor_id = ? LIMIT ?)`,
+        )
+        .bind(ANONYMISED_PERSON, person, CHUNK),
+    byPerson('timeline_scope_state'),
     byPerson('shared_with'),
     byPerson('placement_defaults'),
     anonymiseAction('assignee_id'),

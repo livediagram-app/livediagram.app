@@ -187,6 +187,7 @@ END;
 -- triggers below so no write path can forget it, drained by the room's alarm.
 --   tab:     a tab's comment threads and actions (the Inbox), and a Form tab's name and heading on its link
 --   summary: the plan's listing summary and its last change, for the Explorer
+--   edit:    who wrote to it and when (<person>@<time>, one per person), for the Timeline and Most Used
 -- A key written again while a flush is in flight is deleted and inserted again under a new id, so the flush's delete
 -- (by the ids it read) keeps it for the next one. Not INSERT OR REPLACE: inside a trigger, the conflict policy of
 -- the statement that fired it wins, and an upsert's is ABORT. A Durable Object holds one plan, so plan_id is always the same there; it keeps
