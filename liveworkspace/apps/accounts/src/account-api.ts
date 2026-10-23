@@ -354,6 +354,18 @@ async function handleSignedIn(
     }
   }
 
+  // One app's own settings, for its dialog on the settings page: GET answers both scopes (the app's
+  // rows can depend on a shared switch), PATCH `{ app }` changes only the app's. Always the signed-in
+  // person's own rows.
+  if (section === 'settings' && id && !sub) {
+    if (!isSettingsApp(id)) return error(404, 'not_found');
+    if (method === 'GET') return json(await readSettings(db, actor.id, id));
+    if (method === 'PATCH') {
+      const result = await writeSettings(db, actor.id, id, { app: (await readBody(request)).app });
+      return result.ok ? json(result.value) : answer(result);
+    }
+  }
+
   return error(404, 'not_found');
 }
 

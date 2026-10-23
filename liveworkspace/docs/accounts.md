@@ -203,7 +203,17 @@ Each setting is stored in one scope:
   as `APP_SITES` in `@liveworkspace/sites` spells them): shown by that app only.
 
 An app reads its own scope and `all`, and shows only the settings that mean something to it. It
-decides which scope a setting belongs in. liveworkspace.app shows and changes `all`.
+decides which scope a setting belongs in. liveworkspace.app shows and changes `all` on its settings
+page, and each app's own scope in that app's dialog there.
+
+Which of an app's settings the site can show is plain data, `@liveworkspace/settings/catalogues/<app>`:
+for each setting the app's own label, description, section and order, the stored key (or the field
+of an object kept under a key) and the value for each of its states. `deriveCatalogue`
+(`packages/settings/src/catalogue.ts`) works it out from the app's Settings catalogue by running each
+row's read and write against probe values, and a test beside each app's catalogue
+(`settings-site-catalogue.test.ts`) fails when the copy drifts; `UPDATE_SITE_CATALOGUE=1` writes it
+again. A row that isn't one stored value (a list, several keys at once) or isn't a preference at all
+(appearance, tokens, shortcuts) stays in the app's own Settings.
 
 A scope is one row, keyed by owner and scope, holding a JSON object of setting names to values.
 
@@ -236,7 +246,10 @@ the settings as they now are.
   ([Which app a client is](#which-app-a-client-is)).
 - **liveworkspace.app** reads and patches the signed-in person's `all` scope with their session
   cookie: `GET` and `PATCH /api/account/settings`, from its settings page
-  ([Your account](site.md#your-account-account)), where the profile is set too.
+  ([Your account](site.md#your-account-account)), where the profile is set too. An app's dialog there
+  reads both of that person's scopes for the app, `GET /api/account/settings/:app`, and patches the
+  app's scope alone, `PATCH /api/account/settings/:app` `{ app }`. A body's `all` is ignored there,
+  and only the four apps' site ids are scopes.
 
 Reading is one query on the primary key; writing is one upsert per scope plus that read, in one
 batch.
@@ -474,6 +487,8 @@ For the signed-in person, by their session cookie. Writes must come from the sit
 | `PATCH /api/account/profile` `{ name?, color? }`        | sets their display name or colour (null clears); answers `{ profile }`                  |
 | `GET /api/account/settings`                             | their `all` settings: `{ all, updatedAt }`                                              |
 | `PATCH /api/account/settings` `{ all }`                 | patches `all`; answers `{ all, updatedAt }`                                             |
+| `GET /api/account/settings/:app`                        | `all` and that app's own scope: `{ all, app, updatedAt }`                               |
+| `PATCH /api/account/settings/:app` `{ app }`            | patches the app's own scope; answers `{ all, app, updatedAt }`                          |
 
 For an app's server, by its OAuth client credentials (`Authorization: Basic`, checked by the OAuth
 provider's own introspection and remembered per isolate for five minutes):

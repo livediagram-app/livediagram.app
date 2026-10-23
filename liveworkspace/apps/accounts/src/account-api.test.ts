@@ -172,6 +172,36 @@ describe('the account API, signed in', () => {
     });
     expect(crossOrigin.status).toBe(403);
   });
+
+  it("reads and patches one app's own settings, and only that app's", async () => {
+    await call('/settings', { method: 'PATCH', body: { all: { reduceMotion: true } } });
+    expect(await (await call('/settings/livediagram.app')).json()).toEqual({
+      all: { reduceMotion: true },
+      app: {},
+      updatedAt: expect.any(Number),
+    });
+    const patched = await call('/settings/livediagram.app', {
+      method: 'PATCH',
+      body: { app: { showMinimap: false }, all: { reduceMotion: false } },
+    });
+    // `all` in the body is ignored: the dialog changes the app's scope alone.
+    expect(await patched.json()).toMatchObject({
+      all: { reduceMotion: true },
+      app: { showMinimap: false },
+    });
+    expect(await (await call('/settings/liveplanner.app')).json()).toMatchObject({ app: {} });
+    expect((await call('/settings/liveworkspace.app')).status).toBe(404);
+    expect((await call('/settings/nope.app')).status).toBe(404);
+    expect(
+      (await call('/settings/livediagram.app', { method: 'PATCH', body: { app: [1] } })).status,
+    ).toBe(400);
+    const crossOrigin = await call('/settings/livediagram.app', {
+      method: 'PATCH',
+      body: { app: { showMinimap: true } },
+      headers: { origin: 'https://evil.example' },
+    });
+    expect(crossOrigin.status).toBe(403);
+  });
 });
 
 describe('the account API, for the apps', () => {
