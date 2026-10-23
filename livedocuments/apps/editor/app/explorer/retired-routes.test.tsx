@@ -9,6 +9,7 @@ vi.mock('@/hooks/navigation/useAppNavigation', () => ({
 
 import { RetiredViewRedirect, RETIRED_VIEW_TARGETS } from './RetiredViewRedirect';
 import { PROFILE_TARGET, ProfileRedirect } from './profile/ProfileRedirect';
+import { INVITES_TARGET, InvitesRedirect } from './invites/InvitesRedirect';
 
 afterEach(() => {
   replace.mockClear();
@@ -30,5 +31,13 @@ describe('retired Explorer addresses', () => {
     render(<ProfileRedirect />);
     expect(PROFILE_TARGET).toBe('/explorer?settings=notifications');
     expect(locationReplace).toHaveBeenCalledWith(PROFILE_TARGET);
+  });
+
+  it('/explorer/invites, where old invitation emails lead, opens the invitations on liveworkspace.app', () => {
+    const locationReplace = vi.fn();
+    vi.stubGlobal('location', { ...window.location, replace: locationReplace });
+    render(<InvitesRedirect />);
+    expect(locationReplace).toHaveBeenCalledWith(INVITES_TARGET);
+    expect(INVITES_TARGET).toMatch(/\/account\/teams#invitations$/);
   });
 });
