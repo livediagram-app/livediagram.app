@@ -58,8 +58,7 @@ moves between them, and the one account that joins them.
 2. **The apps** (`#apps`): one section per app in `@liveworkspace/sites`, in that order, each with
    its own logo, a tagline, its summary, three things it does, a window onto its work with someone in
    it (a flowchart; a board with a card on the move; an article with its slides; a logo, a wireframe
-   and a photo being cropped), **Open <app>** in its deep accent, and "Signs in with your
-   liveworkspace account". Below `lg` the window sits between the summary and the three things it does.
+   and a photo being cropped), and **Open <app>** in its deep accent. Below `lg` the window sits between the summary and the three things it does.
    Every logo is the app's own UI package `Brand`, with its hover
    shimmer, "live" pointed at the app's deep and accent colours (`components/landing/AppLogo.tsx`). The copy is
    `lib/apps.ts`; tests require it for every app and that white text on each deep accent passes

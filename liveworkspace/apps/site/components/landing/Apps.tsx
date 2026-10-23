@@ -1,6 +1,5 @@
-import { BrandMark, lucideGlyph } from '@livediagram/ui';
+import { lucideGlyph } from '@livediagram/ui';
 import { lucideCheck } from '@livediagram/icons/lucide';
-import { PLATFORM_SITE } from '@liveworkspace/sites';
 import type { ReactNode } from 'react';
 import { type AppArt, listedApps } from '@/lib/apps';
 import { AppLogo } from './AppLogo';
@@ -86,10 +85,6 @@ export function Apps() {
                         Open {app.id}
                         <span aria-hidden>→</span>
                       </a>
-                      <span className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                        <BrandMark accentColor={PLATFORM_SITE.accent} className="size-4 shrink-0" />
-                        Signs in with your liveworkspace account
-                      </span>
                     </div>
                   </div>
                   <div className={`order-2 mt-8 lg:mt-0 ${i % 2 ? 'lg:order-1' : 'lg:order-none'}`}>
