@@ -19,6 +19,8 @@ export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
   'join',
   'new',
   'oauth',
+  // This Browser, the plans kept only in this browser (docs/specs/013-workspace/explorer-structure.md).
+  'offline',
   'sign-in',
   // The workbench pairing page, /workbench/pair (docs/specs/013-workspace/workbench-embeds.md "Pairing").
   'workbench',

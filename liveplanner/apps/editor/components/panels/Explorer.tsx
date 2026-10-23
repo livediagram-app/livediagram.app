@@ -11,6 +11,7 @@ import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 import { SignInPrompt } from '@/components/chrome/SignInPrompt';
 import { ExplorerHeaderMenu } from '@/components/panels/ExplorerHeaderMenu';
+import { ThisBrowserRow } from '@/components/panels/ThisBrowserRow';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
 import { getSessionSharePassword } from '@/lib/api-client';
@@ -149,11 +150,15 @@ function ExplorerImpl({
         // The sign-in note under the card (an onboarding notice: Minimal chrome drops it).
         notice={minimalChrome ? null : <SignInPrompt bar />}
         footer={
-          // The product's surfaces, which the editor header no longer carries as a menu.
-          <ProductNavLinks
-            current="editor"
-            className={`overflow-x-auto border-t border-slate-200 px-1.5 py-1 [scrollbar-width:none] dark:border-slate-700/70 ${sheet ? 'justify-between' : ''}`}
-          />
+          <>
+            {/* The plans kept only in this browser, which no Explorer list holds. */}
+            <ThisBrowserRow />
+            {/* The product's surfaces, which the editor header no longer carries as a menu. */}
+            <ProductNavLinks
+              current="editor"
+              className={`overflow-x-auto border-t border-slate-200 px-1.5 py-1 [scrollbar-width:none] dark:border-slate-700/70 ${sheet ? 'justify-between' : ''}`}
+            />
+          </>
         }
       />
     </MovablePanel>
