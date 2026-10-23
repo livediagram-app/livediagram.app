@@ -319,6 +319,8 @@ export type CanvasProps = {
   currentProjectId: string | null;
   // The link this session came in on, so the Explorer panel reads the open plan as the link allows.
   currentShareCode?: string | null;
+  // The open plan renamed from the Explorer panel: the editor's title follows at once.
+  onRenameCurrentProject?: (name: string) => void;
   onNewProject: () => void;
   // The Explorer panel's ⋯ menu verbs beyond new / open (docs/specs/013-workspace/folders.md).
   explorerMenuActions?: import('@/components/panels/Explorer.types').ExplorerMenuActions;

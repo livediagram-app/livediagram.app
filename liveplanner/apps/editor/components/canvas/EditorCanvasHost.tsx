@@ -132,6 +132,7 @@ export function EditorCanvasHost() {
     deleteSelected,
     projectId,
     projectName,
+    nameProject,
     dropPaletteItem,
     duplicateMultiSelected,
     contextMenu,
@@ -616,6 +617,7 @@ export function EditorCanvasHost() {
           }
           currentProjectId={projectId}
           currentShareCode={sessionShareCode}
+          onRenameCurrentProject={nameProject}
           onNewProject={newProject}
           explorerMenuActions={{
             // The header's Share gate: the owner, or a joined member of the project's team

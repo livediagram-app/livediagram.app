@@ -11,7 +11,9 @@ import type { ShownItem } from '../data/overlay';
 import { useItemList } from '../data/useItemList';
 import { recentLoader, sharedRecentlyLoader } from '../data/viewLists';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
-import { FOCUS_RING, MUTED } from '../ui/classes';
+import { FOCUS_RING, MUTED, RENAME_INPUT } from '../ui/classes';
+import { InlineRenameInput } from '../ui/InlineRenameInput';
+import { useItemDrag } from '../drag/drag';
 import { ChevronRightIcon, ClockIcon, ItemIcon } from '../ui/icons';
 import { relativeSince, useNow } from '../time';
 import type { ExplorerView } from '../views';
@@ -19,6 +21,7 @@ import { AppMark } from './badges';
 import { useExplorer } from './context';
 import { ItemMenu } from './menus';
 import { PaneHeader } from './PaneHeader';
+import { useItemBits } from './rows';
 
 export const HOME_RECENT = 8;
 export const HOME_SHARED = 4;
@@ -287,50 +290,72 @@ const JumpBackInCard = memo(function JumpBackInCard({
   large: boolean;
   showApp: boolean;
 }) {
-  const { Link, itemHref } = useExplorer();
-  const menu = useRowMenu();
+  const { Link, renamingId } = useExplorer();
+  const bits = useItemBits(item);
+  const renaming = renamingId === item.id;
+  const menu = useRowMenu({ disabled: renaming });
+  const drag = useItemDrag(item, renaming);
   const title = item.title || 'Untitled';
   const lineId = `jbi-${item.id}-${large ? 'l' : 'c'}`;
+  const nameSize = large ? 'text-[15px] leading-5' : 'text-sm leading-5';
+  const cardClass = `flex min-w-0 ${
+    large
+      ? 'h-[12.5rem] flex-col gap-2.5 rounded-[18px] p-2 pb-3'
+      : 'h-[3.875rem] items-center gap-3 rounded-[14px] p-2 pr-11'
+  } ${CARD_SURFACE} ${FOCUS_RING}`;
+  const body = (
+    <>
+      <Thumb
+        item={item}
+        className={large ? 'h-32 w-full rounded-xl' : 'h-11 w-16 shrink-0 rounded-lg'}
+      />
+      <span className={`flex min-w-0 flex-col gap-0.5 ${large ? 'px-1' : ''}`}>
+        <span className="flex min-w-0 items-center gap-1.5">
+          {showApp ? <AppMark app={item.app} size={14} /> : null}
+          {renaming ? (
+            <InlineRenameInput
+              initial={item.title}
+              ariaLabel={`Rename ${title}`}
+              onCommit={bits.commitRename}
+              onCancel={bits.cancelRename}
+              className={`min-w-0 flex-1 ${RENAME_INPUT} ${nameSize}`}
+            />
+          ) : (
+            <span
+              className={`block truncate font-semibold text-[#17153a] dark:text-slate-100 ${nameSize}`}
+            >
+              {title}
+            </span>
+          )}
+        </span>
+        <OpenedLine item={item} id={lineId} large={large} />
+      </span>
+    </>
+  );
   return (
     <div
       data-item-card={item.id}
       className="group relative min-w-0"
       onContextMenu={menu.onContextMenu}
+      {...drag}
     >
-      <Link
-        href={itemHref(item)}
-        aria-label={title}
-        className={`flex min-w-0 ${
-          large
-            ? 'h-[12.5rem] flex-col gap-2.5 rounded-[18px] p-2 pb-3'
-            : 'h-[3.875rem] items-center gap-3 rounded-[14px] p-2 pr-11'
-        } ${CARD_SURFACE} ${FOCUS_RING}`}
-      >
-        <Thumb
-          item={item}
-          className={large ? 'h-32 w-full rounded-xl' : 'h-11 w-16 shrink-0 rounded-lg'}
+      {renaming ? (
+        // While renaming the card doesn't open: the field keeps its focus and its clicks.
+        <div className={cardClass}>{body}</div>
+      ) : (
+        <Link href={bits.href} aria-label={title} className={cardClass}>
+          {body}
+        </Link>
+      )}
+      {renaming ? null : (
+        <EllipsisTriggerButton
+          {...menu.triggerProps}
+          reveal
+          size="md"
+          label={`Menu for ${title}`}
+          className={`${MENU_CHIP} ${large ? 'right-3.5 top-3.5' : 'right-2.5 top-1/2 -translate-y-1/2'}`}
         />
-        <span className={`flex min-w-0 flex-col gap-0.5 ${large ? 'px-1' : ''}`}>
-          <span className="flex min-w-0 items-center gap-1.5">
-            {showApp ? <AppMark app={item.app} size={14} /> : null}
-            <span
-              className={`block truncate font-semibold text-[#17153a] dark:text-slate-100 ${
-                large ? 'text-[15px] leading-5' : 'text-sm leading-5'
-              }`}
-            >
-              {title}
-            </span>
-          </span>
-          <OpenedLine item={item} id={lineId} large={large} />
-        </span>
-      </Link>
-      <EllipsisTriggerButton
-        {...menu.triggerProps}
-        reveal
-        size="md"
-        label={`Menu for ${title}`}
-        className={`${MENU_CHIP} ${large ? 'right-3.5 top-3.5' : 'right-2.5 top-1/2 -translate-y-1/2'}`}
-      />
+      )}
       {menu.open ? (
         <ItemMenu item={item} anchor={menu.triggerRef.current} onClose={menu.close} />
       ) : null}

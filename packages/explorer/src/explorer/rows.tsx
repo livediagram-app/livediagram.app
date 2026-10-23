@@ -33,7 +33,7 @@ export type RowOptions = {
   showFolder: boolean;
 };
 
-function useItemBits(item: ShownItem) {
+export function useItemBits(item: ShownItem) {
   const { folders, navigate, actions, setRenamingId, itemHref } = useExplorer();
   const folder = item.folderId ? folders.byId.get(item.folderId) : undefined;
   const openFolder = useCallback(() => {

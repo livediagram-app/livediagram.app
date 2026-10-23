@@ -34,6 +34,7 @@ export function createItemActions({
   reloadLists,
   hostTrash,
   onPlaced,
+  onRenamed,
 }: {
   client: IndexClient;
   overlay: ItemOverlay;
@@ -42,6 +43,8 @@ export function createItemActions({
   hostTrash?: HostTrash;
   // After an item changed place (moved, to the Trash, back, gone): what folders hold has changed.
   onPlaced?: () => void;
+  // After the index took a new title.
+  onRenamed?: (item: Item, title: string) => void;
 }): ItemActions {
   // Patch, call, and on a refusal take the patch back and say why.
   async function optimistic(
@@ -63,15 +66,17 @@ export function createItemActions({
   }
 
   const actions: ItemActions = {
-    rename: (item, title) => {
+    rename: async (item, title) => {
       const next = title.trim();
-      if (!next || next === item.title) return Promise.resolve(true);
-      return optimistic(
+      if (!next || next === item.title) return true;
+      const ok = await optimistic(
         item,
         { title: next },
         () => client.updateItem(item.id, { title: next }),
         'Couldn’t rename it. Try again.',
       );
+      if (ok) onRenamed?.(item, next);
+      return ok;
     },
     setFavourite: (item, favourite) =>
       optimistic(
@@ -165,9 +170,10 @@ function sharedAccess(item: Item) {
 }
 
 export function useItemActions(deps: Parameters<typeof createItemActions>[0]): ItemActions {
-  const { client, overlay, toast, reloadLists, hostTrash, onPlaced } = deps;
+  const { client, overlay, toast, reloadLists, hostTrash, onPlaced, onRenamed } = deps;
   return useMemo(
-    () => createItemActions({ client, overlay, toast, reloadLists, hostTrash, onPlaced }),
-    [client, overlay, toast, reloadLists, hostTrash, onPlaced],
+    () =>
+      createItemActions({ client, overlay, toast, reloadLists, hostTrash, onPlaced, onRenamed }),
+    [client, overlay, toast, reloadLists, hostTrash, onPlaced, onRenamed],
   );
 }

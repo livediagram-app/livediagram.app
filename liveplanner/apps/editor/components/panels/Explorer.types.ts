@@ -10,6 +10,8 @@ export type ExplorerProps = {
   currentProjectId: string | null;
   // The link the open plan was reached through, so the panel reads it as that visitor.
   currentShareCode?: string | null;
+  // The open plan renamed from the panel (its card, or its row's menu): the editor's title follows.
+  onRenameCurrent?: (name: string) => void;
   onMoveTo: (x: number, y: number) => void;
   onReset?: () => void;
   // The editor's own New (the in-editor flow); without it New goes to /new.

@@ -7,7 +7,7 @@
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import type { Folder } from '@liveworkspace/index-client';
 import type { ShownItem } from '../data/overlay';
-import { LIST_CARD } from '../ui/classes';
+import { LIST_CARD, RENAME_INPUT } from '../ui/classes';
 import { RelativeTimeChip } from '../ui/RelativeTimeChip';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
 import { FolderSolidIcon } from '../ui/icons';
@@ -15,6 +15,8 @@ import { kindWords } from '../words';
 import { AppMark, FavouriteMarker } from './badges';
 import { DROP_ROW, useDropTarget, useFolderDrag, useItemDrag } from '../drag/drag';
 import { useExplorer } from './context';
+import { useItemBits } from './rows';
+import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { ItemMenu } from './menus';
 import { ROW_HEIGHT, type RowOptions } from './rows';
 import { useWindowedRange } from './useWindow';
@@ -183,9 +185,11 @@ const DetailsRow = memo(function DetailsRow({
   item: ShownItem;
   options: RowOptions;
 }) {
-  const { Link, itemHref } = useExplorer();
-  const menu = useRowMenu();
-  const drag = useItemDrag(item);
+  const { Link, renamingId } = useExplorer();
+  const bits = useItemBits(item);
+  const renaming = renamingId === item.id;
+  const menu = useRowMenu({ disabled: renaming });
+  const drag = useItemDrag(item, renaming);
   const title = item.title || 'Untitled';
   return (
     <li
@@ -198,12 +202,22 @@ const DetailsRow = memo(function DetailsRow({
       <span className="flex min-w-0 items-center gap-2">
         {options.showApp ? <AppMark app={item.app} /> : null}
         {item.favourite ? <FavouriteMarker /> : null}
-        <Link
-          href={itemHref(item)}
-          className="truncate text-sm font-medium text-slate-900 hover:text-brand-700 dark:text-slate-100 dark:hover:text-brand-300"
-        >
-          {title}
-        </Link>
+        {renaming ? (
+          <InlineRenameInput
+            initial={item.title}
+            ariaLabel={`Rename ${title}`}
+            onCommit={bits.commitRename}
+            onCancel={bits.cancelRename}
+            className={`min-w-0 flex-1 ${RENAME_INPUT}`}
+          />
+        ) : (
+          <Link
+            href={bits.href}
+            className="truncate text-sm font-medium text-slate-900 hover:text-brand-700 dark:text-slate-100 dark:hover:text-brand-300"
+          >
+            {title}
+          </Link>
+        )}
       </span>
       <span className="hidden truncate text-xs text-slate-600 md:block dark:text-slate-300">
         {kindWords(item.app).one}
@@ -223,7 +237,11 @@ const DetailsRow = memo(function DetailsRow({
       <span className="flex min-w-0 items-center">
         <RelativeTimeChip at={item.updatedAt} />
       </span>
-      <EllipsisTriggerButton {...menu.triggerProps} label={`Menu for ${title}`} />
+      {renaming ? (
+        <span />
+      ) : (
+        <EllipsisTriggerButton {...menu.triggerProps} label={`Menu for ${title}`} />
+      )}
       {menu.open ? (
         <ItemMenu item={item} anchor={menu.triggerRef.current} onClose={menu.close} />
       ) : null}

@@ -134,6 +134,8 @@ export type ExplorerProviderProps = {
   heroWords?: HeroWords;
   // Trashes an item the host handles itself (see HostTrash); stable, or the actions are rebuilt.
   hostTrash?: HostTrash;
+  // After an item took a new title (the host follows it for the item it has open); stable.
+  onItemRenamed?: (item: Item, title: string) => void;
   children: ReactNode;
 };
 
@@ -162,6 +164,7 @@ export function ExplorerProvider({
   helpHref,
   heroWords,
   hostTrash,
+  onItemRenamed,
   children,
 }: ExplorerProviderProps) {
   const toast = useToast();
@@ -171,7 +174,15 @@ export function ExplorerProvider({
   const folders = useFolderStore(client, toast.error, reloadLists);
   const [placedEpoch, setPlacedEpoch] = useState(0);
   const onPlaced = useCallback(() => setPlacedEpoch((n) => n + 1), []);
-  const actions = useItemActions({ client, overlay, toast, reloadLists, hostTrash, onPlaced });
+  const actions = useItemActions({
+    client,
+    overlay,
+    toast,
+    reloadLists,
+    hostTrash,
+    onPlaced,
+    onRenamed: onItemRenamed,
+  });
   const inbox = useInbox(client, app, filter);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [dialog, openDialog] = useState<DialogTarget>(null);

@@ -27,6 +27,7 @@ function ExplorerImpl({
   position,
   currentProjectId,
   currentShareCode = null,
+  onRenameCurrent,
   onMoveTo,
   onReset,
   onNewProject,
@@ -116,6 +117,7 @@ function ExplorerImpl({
         currentId={currentProjectId ?? null}
         // The open plan stops saving before it goes, then the editor leaves for the Explorer and its Undo.
         onTrashCurrent={trashCurrent}
+        onRenameCurrent={onRenameCurrent}
         onCreate={(placement) =>
           onNewProject && !placement.folderId && !placement.teamId
             ? onNewProject()

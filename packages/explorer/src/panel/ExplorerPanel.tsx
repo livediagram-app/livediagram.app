@@ -52,6 +52,7 @@ import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
 import { ToastProvider } from '../ui/Toasts';
+import { useLatest } from '../ui/useLatest';
 import {
   ClockIcon,
   FolderSolidIcon,
@@ -125,6 +126,8 @@ export type ExplorerPanelProps = {
   // Trashes the item open in the editor, from any of the panel's menus: the host stops saving it first, then leaves
   // it (the Explorer offers the Undo). Settles true once it is in the Trash.
   onTrashCurrent?: (item: Item) => Promise<boolean>;
+  // The item open in the editor took a new title, from its card or any menu: the editor's title follows.
+  onRenameCurrent?: (title: string) => void;
   // Opens the full Explorer at a view (Open Page, See all).
   onOpenExplorer?: (view: ExplorerView) => void;
   renderThumbnail?: RenderThumbnail;
@@ -162,6 +165,7 @@ function PanelInner({
   current = null,
   currentId = null,
   onTrashCurrent,
+  onRenameCurrent,
   onOpenExplorer,
   renderThumbnail,
   Link,
@@ -217,9 +221,18 @@ function PanelInner({
     [onTrashCurrent, openId],
   );
 
+  const renamed = useLatest(onRenameCurrent);
+  const onItemRenamed = useCallback(
+    (item: Item, title: string) => {
+      if (item.id === openId) renamed.current?.(title);
+    },
+    [openId, renamed],
+  );
+
   return (
     <ExplorerProvider
       hostTrash={hostTrash}
+      onItemRenamed={onItemRenamed}
       app={app}
       client={client}
       view={view}
@@ -338,9 +351,16 @@ export function folderCountLabel(
 // ---- The current item's card ----------------------------------------------------------------------------
 
 function CurrentItem({ item: base }: { item: Item }) {
-  const { overlay, kind, renderThumbnail, actions, openItem } = useExplorer();
+  const { overlay, kind, renderThumbnail, actions, openItem, renamingId, setRenamingId } =
+    useExplorer();
   const item = overlay.apply(base);
-  const [editing, setEditing] = useState(false);
+  // Its pencil, or Rename on its menu (which names it for renaming, as every row's does).
+  const [pencil, setPencil] = useState(false);
+  const editing = pencil || renamingId === item.id;
+  const setEditing = (on: boolean) => {
+    setPencil(on);
+    if (!on && renamingId === item.id) setRenamingId(null);
+  };
   const menu = useRowMenu({ disabled: editing });
   const now = useNow();
   const name = item.title || `Untitled ${kind.lowerOne}`;
@@ -884,14 +904,33 @@ function usePaneItemMenu(item: ShownItem) {
 }
 
 const JumpBackInCard = memo(function JumpBackInCard({ item }: { item: ShownItem }) {
-  const { openItem, filter, kind } = useExplorer();
+  const { openItem, filter, kind, actions, renamingId, setRenamingId } = useExplorer();
   const menu = usePaneItemMenu(item);
-  const drag = useItemDrag(item);
+  const editing = renamingId === item.id;
+  const drag = useItemDrag(item, editing);
   const now = useNow();
+  const name = item.title || `Untitled ${kind.lowerOne}`;
+  const commit = (next: string) => {
+    setRenamingId(null);
+    void actions.rename(item, next);
+  };
   return (
     <PaneCard
       preview={<Preview item={item} size="card" />}
-      title={item.title || `Untitled ${kind.lowerOne}`}
+      title={
+        editing ? (
+          <InlineRenameInput
+            initial={item.title}
+            ariaLabel={`Rename ${name}`}
+            onCommit={commit}
+            onCancel={() => setRenamingId(null)}
+            className="w-full rounded border border-brand-300 bg-white px-1.5 py-0.5 text-[13px] dark:border-brand-500/50 dark:bg-slate-900 dark:text-slate-100"
+          />
+        ) : (
+          name
+        )
+      }
+      label={name}
       meta={
         <span className="flex items-center gap-1.5">
           {filter === 'all' ? <AppMark app={item.app} size={12} /> : null}
@@ -900,9 +939,9 @@ const JumpBackInCard = memo(function JumpBackInCard({ item }: { item: ShownItem 
           </span>
         </span>
       }
-      onActivate={() => openItem(item)}
+      onActivate={editing ? undefined : () => openItem(item)}
       rowProps={{ onContextMenu: menu.onContextMenu, ...drag }}
-      trailing={menu.trailing}
+      trailing={editing ? null : menu.trailing}
     />
   );
 });
@@ -1097,7 +1136,8 @@ const ItemRow = memo(function ItemRow({ item, current }: { item: ShownItem; curr
   const menu = usePaneItemMenu(item);
   const now = useNow();
   const name = item.title || `Untitled ${kind.lowerOne}`;
-  const editing = renamingId === item.id;
+  // The open item renames on its card on top, never twice.
+  const editing = renamingId === item.id && !current;
   const drag = useItemDrag(item, editing);
   const commit = (next: string) => {
     const trimmed = next.trim();

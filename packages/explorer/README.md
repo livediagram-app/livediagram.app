@@ -127,8 +127,11 @@ The content of the editor's floating Explorer panel. The host wraps it in its ow
 - the chosen section as compact rows, paged.
 
 Props: `app`, `client`, `itemHref`, `onCreate`, `current?`, `onOpenExplorer?(view)`, `onTrashCurrent?(item)` (the
-host trashes the item open in its editor itself, from any of the panel's menus or a drop on its Trash), and the
-same optional props as `<Explorer>`.
+host trashes the item open in its editor itself, from any of the panel's menus or a drop on its Trash),
+`onRenameCurrent?(title)` (the open item was renamed, from its pencil or any menu's Rename, so the editor's title
+follows), and the same optional props as `<Explorer>`.
+
+Rename works in place wherever an item shows: list rows, cards, Details rows, Home's Jump Back In and the panel.
 
 ## Drag and drop
 

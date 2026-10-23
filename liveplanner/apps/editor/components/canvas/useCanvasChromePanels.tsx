@@ -98,6 +98,7 @@ export function useCanvasChromePanels({
     commentsPanelPosition,
     currentProjectId,
     currentShareCode,
+    onRenameCurrentProject,
     elements,
     tabVote,
     voteResults,
@@ -185,6 +186,7 @@ export function useCanvasChromePanels({
         position={null}
         currentProjectId={currentProjectId}
         currentShareCode={currentShareCode ?? null}
+        onRenameCurrent={onRenameCurrentProject}
         onMoveTo={NO_MOVE}
         onNewProject={explorerHandlers.onNewProject}
         menuActions={explorerMenu}
