@@ -148,12 +148,12 @@ tests," not a number.
 One set of files is the exception, held at **100% statements, branches,
 functions and lines** by per-glob thresholds in `apps/api/vitest.config.ts`:
 
-| Files                                                                  | Why                                                                                                  |
-| ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `src/auth/**`                                                          | Decides WHO a request is — access-token checks, guest-id signatures, api tokens, the read/edit gates |
-| `src/api-token-row.ts`, `src/db/api-tokens.ts`, `src/routes/tokens.ts` | Mint, resolve and revoke the credentials that act as an account                                      |
-| `src/room-ticket.ts`, `src/routes/plan-grant.ts`                       | The index's grant as the room ticket, and settling a request's grant before it reaches the plan      |
-| `src/routes/share.ts`                                                  | The only unauthenticated read path into a project                                                    |
+| Files                                            | Why                                                                                                  |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| `src/auth/**`                                    | Decides WHO a request is — access-token checks, guest-id signatures, api tokens, the read/edit gates |
+| `src/db/api-tokens.ts`, `src/routes/tokens.ts`   | Resolve and revoke the credentials that act as an account                                            |
+| `src/room-ticket.ts`, `src/routes/plan-grant.ts` | The index's grant as the room ticket, and settling a request's grant before it reaches the plan      |
+| `src/routes/share.ts`                            | The only unauthenticated read path into a project                                                    |
 
 The rest of the worker fails visibly. These fail by serving the right response
 to the **wrong person**, or by deleting work another project still shows: an outcome no amount of production monitoring

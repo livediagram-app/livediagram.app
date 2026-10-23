@@ -40,11 +40,13 @@ const DOM_WORDS =
 // Another liveworkspace app's own address for its items (livediagram's and livedocuments' `/document/`), which the
 // shared Explorer opens on that app's site.
 const OTHER_APP_PATHS = /^\s*(livediagram|livedocuments): '\/document\/',$/;
+// livedocuments, the liveworkspace app whose items are Documents, named as the app it is.
+const OTHER_APP_NAME = /\blivedocuments(\.app)?\b/g;
 // A line stating the rule itself.
 const RULE = /never "document"/;
 const NAMED = /document/i;
 const misnames = (line: string) =>
-  NAMED.test(line.replace(DOM_WORDS, '')) &&
+  NAMED.test(line.replace(DOM_WORDS, '').replace(OTHER_APP_NAME, '')) &&
   !DOM_DOCUMENT.test(line) &&
   !FLOWCHART_DOCUMENT.test(line) &&
   !PAGE_SEARCH_WORDS.test(line) &&
