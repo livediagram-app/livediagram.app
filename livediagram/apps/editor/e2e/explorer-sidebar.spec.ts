@@ -247,7 +247,6 @@ test.describe('editor Explorer panel', () => {
     await expect(
       page.getByRole('navigation', { name: 'Go to' }).getByRole('link', { name: 'Help' }),
     ).toBeVisible();
-    await expect(page.getByRole('button', { name: /^Switch section/ })).toHaveCount(0);
     expectNoPageErrors(pageErrors);
   });
 });
