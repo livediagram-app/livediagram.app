@@ -254,7 +254,50 @@ CREATE INDEX IF NOT EXISTS notify_claims_sender ON notify_claims (sender, at);
 CREATE INDEX IF NOT EXISTS notify_claims_at ON notify_claims (at);
 `;
 
-const STEPS: readonly string[] = [V1, V2];
+// The plan's form links and the reports against them (db/forms.ts; docs/specs/030-forms/forms.md). A link's code
+// is also the index's (forms/form-inbox.ts), which is how the worker finds the plan a public form request names.
+// project_id is always the plan's own id here; it keeps the queries the same where one SQLite holds several plans.
+const V3 = `
+CREATE TABLE IF NOT EXISTS form_links (
+  code             TEXT    PRIMARY KEY,
+  project_id       TEXT    NOT NULL,
+  tab_id           TEXT    NOT NULL,
+  open             INTEGER NOT NULL DEFAULT 1,
+  created_at       INTEGER NOT NULL,
+  -- The response number last given: never reused.
+  responses        INTEGER NOT NULL DEFAULT 0,
+  -- When the last response arrived (the Inbox's row time).
+  last_response_at INTEGER,
+  -- The per-form hourly cap's window and count.
+  hour_start       INTEGER NOT NULL DEFAULT 0,
+  hour_count       INTEGER NOT NULL DEFAULT 0,
+  suspended_at     INTEGER,
+  -- The new-response email's throttle: when one last went, and how many arrived since.
+  last_email_at    INTEGER,
+  held_emails      INTEGER NOT NULL DEFAULT 0,
+  deleted_at       INTEGER,
+  -- The form tab's name, heading and response board, for the Inbox, kept by the plan's outbox.
+  tab_name         TEXT,
+  heading          TEXT,
+  board_tab_id     TEXT
+);
+CREATE INDEX IF NOT EXISTS form_links_project ON form_links (project_id);
+CREATE UNIQUE INDEX IF NOT EXISTS form_links_live_tab ON form_links (project_id, tab_id)
+  WHERE suspended_at IS NULL AND deleted_at IS NULL;
+
+-- Abuse reports against a form, one per browser.
+CREATE TABLE IF NOT EXISTS form_reports (
+  code       TEXT    NOT NULL REFERENCES form_links (code) ON DELETE CASCADE,
+  browser    TEXT    NOT NULL,
+  network    TEXT    NOT NULL,
+  reason     TEXT    NOT NULL,
+  note       TEXT,
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY (code, browser)
+);
+`;
+
+const STEPS: readonly string[] = [V1, V2, V3];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;
 

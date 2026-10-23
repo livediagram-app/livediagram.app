@@ -42,21 +42,6 @@ INDEX_ORIGIN = "https://liveworkspace.app"
 # from an older CLI.
 OAUTH_ISSUER = "https://mcp.liveplanner.app"
 
-# D1 database holding form links. A plan's
-# content is its Durable Object's, where it is filed the index's, and a person's
-# settings and profile the liveworkspace accounts Worker's. The local binding name
-# (`DB`) is what `src/db.ts` reads via the Env type. The `database_name`
-# is the Cloudflare-side name (must be created via `wrangler d1 create
-# liveplanner` or the dashboard). `database_id` is filled in after the
-# database is created on the liveplanner Cloudflare account. The id below is a
-# placeholder (all zeros), so a deploy fails loudly until the real one is pasted;
-# `wrangler dev` runs against a local SQLite file and does not care.
-[[d1_databases]]
-binding = "DB"
-database_name = "liveplanner"
-database_id = "8c7e45fd-6a13-42f4-bd59-fd115fdc3087"
-migrations_dir = "migrations"
-
 # R2 bucket caching each project's SVG snapshot (`thumb/<id>`, the Explorer thumbnail and
 # live image) and share card (docs/specs/006-project/project-snapshots.md). The binding
 # name `SNAPSHOTS` is what `src/types.ts` reads via the Env type. The bucket must be created
@@ -227,13 +212,13 @@ simple = { limit = 60, period = 60 }
 # `wrangler deploy --env staging`.
 #
 # Everything below is restated ON PURPOSE. Wrangler does NOT inherit
-# bindings into a named environment: `vars`, `d1_databases`, `r2_buckets`,
+# bindings into a named environment: `vars`, `r2_buckets`,
 # `durable_objects`, `migrations` and `unsafe` are all non-inheritable, so a
 # block omitted here is a binding MISSING from the deployed staging worker,
 # with no warning. Only `main`, `compatibility_date`, `rules` and `triggers`
 # carry over from the production config above.
 #
-# The values that genuinely differ from production are the D1 database, the
+# The values that genuinely differ from production are the
 # R2 snapshot bucket, and the email vars that name the public origin. Everything
 # else agreeing with production is the point: staging is a rehearsal.
 # ---------------------------------------------------------------------------
@@ -257,15 +242,6 @@ INDEX_ORIGIN = "https://staging.liveworkspace.app"
 
 # The staging MCP worker's OAuth server, for the CLI against staging.
 OAUTH_ISSUER = "https://mcp-staging.liveplanner.app"
-
-# Placeholder id: create the database on the liveplanner Cloudflare account and paste its id.
-# applies the migrations in `migrations/` against it — which is the whole
-# reason this environment exists (docs/specs/016-platform/staging-environment.md).
-[[env.staging.d1_databases]]
-binding = "DB"
-database_name = "liveplanner-staging"
-database_id = "08c233ed-6c77-4bb9-9c4c-3462efac9496"
-migrations_dir = "migrations"
 
 # Own bucket: `wrangler r2 bucket create liveplanner-snapshots-staging`. Sharing
 # production's would let staging overwrite or delete real snapshots.

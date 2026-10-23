@@ -4,7 +4,7 @@
 
 import { SUMMARY_MAX_BYTES, type App } from '@liveworkspace/index-client';
 import { callerApp } from './auth';
-import { pushCollab, pushForm, pushFormSeen } from './collab-push';
+import { formByCode, formSeen, pushCollab, pushForm, pushFormSeen } from './collab-push';
 import { isId } from './codec';
 import type { Env } from './env';
 import { badRequest, fail, noContent, notFound, readObject, unauthorized } from './http';
@@ -19,14 +19,28 @@ export async function handleApp(request: Request, env: Env, segments: string[]):
   if (!app) return unauthorized();
   // /app/people/:id/count (notices.ts).
   if (segments[1] === 'people') return handleAppPeople(request, env, app, segments);
+  // /app/forms/:code: the item and tab a live form's code names (collab-push.ts).
+  if (segments[1] === 'forms' && segments.length === 3 && request.method === 'GET') {
+    return formByCode(env, app, segments[2] ?? '');
+  }
+  // /app/items/:id/forms/:tabId/seen/:personId: how far a person has read a form (the app's unseen count).
+  const seenRead =
+    request.method === 'GET' &&
+    segments.length === 7 &&
+    segments[3] === 'forms' &&
+    segments[5] === 'seen' &&
+    isId(segments[4]) &&
+    isId(segments[6]);
   // /app/items/:id/summary, /app/items/:id/collab/:tabId, /app/items/:id/events, /app/items/:id/forms/:tabId
-  if (segments[1] !== 'items' || !isId(segments[2]) || request.method !== 'PUT') return notFound();
+  if (segments[1] !== 'items' || !isId(segments[2])) return notFound();
+  if (request.method !== 'PUT' && !seenRead) return notFound();
   const itemId = segments[2];
   const item = await env.INDEX_DB.prepare('SELECT app FROM items WHERE id = ?')
     .bind(itemId)
     .first<{ app: App }>();
   if (!item) return notFound();
   if (item.app !== app) return fail(403, 'wrong_app');
+  if (seenRead) return formSeen(env, itemId, segments[4]!, segments[6]!);
 
   if (segments.length === 4 && segments[3] === 'summary') {
     const body = await readObject(request);

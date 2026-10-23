@@ -254,6 +254,43 @@ describe('Inbox forms', () => {
       (await asApp(`/app/items/${item.id}/forms/f1`, form, 'livediagram', 'ld-key')).status,
     ).toBe(403);
   });
+  it('find a live form by its code, for its own app only, and read how far a person has seen it', async () => {
+    const ada = await person('user_a');
+    const item = await makeItem(ada.auth);
+    const asGet = (path: string, app = 'liveplanner', key = 'lp-key') =>
+      call(path, { auth: key, headers: { 'X-Index-App': app } });
+    const form = (patch: Record<string, unknown> = {}) => ({
+      form: { heading: 'H', boardTabId: null, responses: 2, latestAt: 1, ...patch },
+    });
+    expect((await asApp(`/app/items/${item.id}/forms/f1`, form({ code: 'Ab3_x' }))).status).toBe(
+      204,
+    );
+    expect(await body(await asGet('/app/forms/Ab3_x'))).toEqual({ itemId: item.id, tabId: 'f1' });
+    // A push without a code keeps it; another app, an unknown or a malformed code is missing.
+    await asApp(`/app/items/${item.id}/forms/f1`, form({ responses: 3 }));
+    expect((await asGet('/app/forms/Ab3_x')).status).toBe(200);
+    expect((await asGet('/app/forms/Ab3_x', 'livediagram', 'ld-key')).status).toBe(404);
+    expect((await asGet('/app/forms/nope')).status).toBe(404);
+    expect((await asGet('/app/forms/a.b')).status).toBe(404);
+    expect(
+      await body(await asApp(`/app/items/${item.id}/forms/f1`, form({ code: 'bad code' }))),
+    ).toEqual({ error: 'invalid_form' });
+
+    expect(await body(await asGet(`/app/items/${item.id}/forms/f1/seen/user_a`))).toEqual({
+      seen: 0,
+    });
+    await asApp(`/app/items/${item.id}/forms/f1/seen`, { personId: 'user_a', seen: 2 });
+    expect(await body(await asGet(`/app/items/${item.id}/forms/f1/seen/user_a`))).toEqual({
+      seen: 2,
+    });
+    expect(
+      (await asGet(`/app/items/${item.id}/forms/f1/seen/user_a`, 'livediagram', 'ld-key')).status,
+    ).toBe(403);
+
+    // Taken off the Inbox, the code goes with it.
+    await asApp(`/app/items/${item.id}/forms/f1`, { form: null });
+    expect((await asGet('/app/forms/Ab3_x')).status).toBe(404);
+  });
   it('follow a guest into their account, keeping the further read', async () => {
     const owner = await person('user_o', { teams: [{ id: 'team1' }] });
     await person('guest_g1', { guest: true });

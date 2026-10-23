@@ -1,7 +1,4 @@
-import { AsyncLocalStorage } from 'node:async_hooks';
-import { readdirSync, readFileSync } from 'node:fs';
-import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
-import { fileURLToPath } from 'node:url';
+import { DatabaseSync } from 'node:sqlite';
 import { PlanDb } from './plan-room/plan-db';
 import { migratePlanSchema } from './plan-room/plan-schema';
 import { nodePlanSql, nodeTransaction } from './test-plan-sql';
@@ -13,53 +10,27 @@ import { memoryWorkbenchNamespace } from '@liveworkspace/index-app/testing';
 import { accountCredentials } from './auth/accounts';
 import { closeWorkbenchSessions } from './room-access-client';
 
-// A REAL D1 for tests: an in-memory SQLite database with every migration in
-// apps/api/migrations applied, behind the D1 prepare/bind/first/all/run/batch
-// surface the db/ modules call.
-//
-// test-d1.ts records which SQL ran; this one answers whether it WORKED. Use it
-// where the behaviour lives in the schema: foreign-key cascades, primary-key
-// collisions, INSERT OR IGNORE outcomes. D1 enforces foreign keys, so this
-// turns them on too.
-//
-// The plans' content (docs/specs/015-api/api.md "Storage") is each plan's own Durable Object in production. Here
-// every plan's tables sit in the same database as D1's (their names do not overlap), behind `env.PLAN_DB`, so a
-// test arranges and asserts on both through one handle, and a handler runs as it does inside a plan's object.
-// `env.PLAN_ROOM` answers the plan RPCs (plan-client.ts) from those same tables, and hands `fetch` (the room's
-// relays) to the PLAN_ROOM the test passed, if any. A project row inserted into D1 gets its plan row, as a
-// create does, and what a plan owes D1 (plan-outbox.ts) is pushed before every D1 call, so a test reads D1 as
-// it would be once the plan's push has landed.
+// The plans' storage for tests (docs/specs/015-api/api.md "Storage"): each plan's own SQLite is its Durable
+// Object's in production; here every plan's tables sit in one in-memory node:sqlite database behind `env.PLAN_DB`,
+// so a test arranges and asserts on them through one handle, and a handler runs as it does inside a plan's object.
+// Foreign keys are on, as in a Durable Object. `env.PLAN_ROOM` answers the plan RPCs (plan-client.ts) from those
+// same tables, and hands `fetch` (the room's relays) to the PLAN_ROOM the test passed, if any. `env.WORKBENCH` is
+// each person's workbench store, in memory. `flush` drains what the plans owe the index (plan-outbox.ts) now.
 //
 // Not a `.test.ts` file, so vitest doesn't collect it as a suite.
 
-const MIGRATIONS_DIR = fileURLToPath(new URL('../migrations/', import.meta.url).href);
-
 export type SqliteD1 = {
-  // The worker's bindings and the plans' (PLAN_DB): every content module and every D1 module runs against it.
+  // The worker's bindings and the plans' (PLAN_DB): every content module runs against it.
   env: PlanEnv;
   // The raw handle, for arranging rows and asserting on them directly.
   sql: DatabaseSync;
-  // Land what the plans owe D1 now (every D1 call does this first), for a test that reads D1 through `sql`.
+  // Drain what the plans owe the index now (plan-outbox.ts), as a plan's alarm would.
   flush: () => Promise<void>;
 };
-
-// D1 binds a boolean as 1 / 0; node:sqlite refuses one outright.
-function toSql(value: unknown): SQLInputValue {
-  if (typeof value === 'boolean') return value ? 1 : 0;
-  if (value === undefined) throw new TypeError('D1_TYPE_ERROR: undefined is not a bindable value');
-  return value as SQLInputValue;
-}
-
-function migrationFiles(): string[] {
-  return readdirSync(MIGRATIONS_DIR)
-    .filter((f) => f.endsWith('.sql'))
-    .sort();
-}
 
 export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
   const sql = new DatabaseSync(':memory:');
   sql.exec('PRAGMA foreign_keys = ON');
-  for (const file of migrationFiles()) sql.exec(readFileSync(MIGRATIONS_DIR + file, 'utf8'));
   const planSql = nodePlanSql(sql);
   migratePlanSchema((q) => planSql.exec(q));
   // Test scaffolding for what the index holds in production (liveworkspace/docs/one-explorer.md): `test_plans`
@@ -85,15 +56,12 @@ export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
     code TEXT PRIMARY KEY, project_id TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'edit', level TEXT NULL,
     tab_id TEXT NULL, created_at INTEGER NOT NULL DEFAULT 0, expires_at INTEGER NULL, expiry TEXT NULL)`);
 
-  // Push what the plans owe D1 before D1 answers anything. A call made while a push runs waits for it; the
-  // push's own D1 batch (inside it, by its async context) goes straight through.
-  const inPush = new AsyncLocalStorage<true>();
+  // One drain at a time, every plan with keys, until each is empty.
   let pushing: Promise<void> | null = null;
   const push = async (): Promise<void> => {
-    if (inPush.getStore()) return;
     while (pushing) await pushing;
     if (sql.prepare('SELECT 1 FROM outbox LIMIT 1').all().length === 0) return;
-    pushing = inPush.run(true, async () => {
+    pushing = (async () => {
       const { drainOutbox } = await import('./plan-room/plan-outbox');
       const plans = sql.prepare('SELECT DISTINCT plan_id FROM outbox').all() as {
         plan_id: string;
@@ -102,7 +70,7 @@ export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
         let more = true;
         while (more) more = (await drainOutbox(env, plan_id)).more;
       }
-    });
+    })();
     try {
       await pushing;
     } finally {
@@ -110,77 +78,12 @@ export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
     }
   };
 
-  const statement = (query: string, args: SQLInputValue[]) => {
-    const rows = () =>
-      sql
-        .prepare(query)
-        .all(...args)
-        .map((row) => ({ ...row }));
-    return {
-      bind: (...next: unknown[]) => statement(query, next.map(toSql)),
-      first: async (column?: string) => {
-        await push();
-        const row = rows()[0] ?? null;
-        return column && row ? (row[column] ?? null) : row;
-      },
-      all: async () => {
-        await push();
-        return { results: rows(), success: true, meta: {} };
-      },
-      run: async () => {
-        await push();
-        const res = sql.prepare(query).run(...args);
-        return {
-          success: true,
-          meta: { changes: Number(res.changes), last_row_id: Number(res.lastInsertRowid) },
-        };
-      },
-      // What D1's batch hands back per statement: a read's rows, a write's
-      // change count.
-      batchResult: async () => {
-        const prepared = sql.prepare(query);
-        if (prepared.columns().length > 0) {
-          return { results: rows(), success: true, meta: { changes: 0 } };
-        }
-        const res = prepared.run(...args);
-        return { results: [], success: true, meta: { changes: Number(res.changes) } };
-      },
-    };
-  };
-
-  // D1 isolates each batch from every other. Each batch here awaits between its statements, so two run
-  // concurrently (the cron's sweeps, under waitUntil) would interleave inside one SQLite connection and the
-  // second BEGIN would fail. Batches therefore queue behind one another, as D1 serialises them.
-  let batches: Promise<unknown> = Promise.resolve();
-  const runBatch = async (statements: { batchResult: () => Promise<unknown> }[]) => {
-    sql.exec('BEGIN');
-    try {
-      const results = [];
-      for (const s of statements) results.push(await s.batchResult());
-      sql.exec('COMMIT');
-      return results;
-    } catch (err) {
-      sql.exec('ROLLBACK');
-      throw err;
-    }
-  };
-  const db = {
-    prepare: (query: string) => statement(query, []),
-    // D1 runs a batch as one transaction: all of it lands or none of it does.
-    // A batch does not push first: the drain's own D1 batch (plan-outbox.ts) must not set off a second drain.
-    batch: async (statements: { batchResult: () => Promise<unknown> }[]) => {
-      const run = batches.then(() => runBatch(statements));
-      batches = run.catch(() => undefined);
-      return run;
-    },
-  };
-
   const planDb = new PlanDb(planSql, {
     transaction: nodeTransaction(sql),
     ensureSchema: () => {},
     onWrite: () => {},
   });
-  const env = { ...base, DB: db, PLAN_DB: planDb.asD1() } as unknown as PlanEnv;
+  const env = { ...base, PLAN_DB: planDb.asD1() } as unknown as PlanEnv;
   Object.defineProperty(env, TEST_GRANT_HOOK, {
     value: (planId: string, who: TestGrantCaller) => testGrantFor(sql, planId, who),
     enumerable: false,

@@ -2,7 +2,7 @@
 // docs/specs/015-api/api.md "Storage"): its summary to the index (`PUT /app/items/:id/summary`), each changed
 // tab's comment threads and actions for the Inbox (`PUT /app/items/:id/collab/:tabId`), who edited it for the
 // Timeline and their Most Used (`PUT /app/items/:id/events`), all with this app's key, a Form tab's name and
-// heading on its form link (D1, form_links), and the owner's newest save to the liveworkspace accounts Worker
+// heading on its form link (the plan's own form_links, then the index's form row), and the owner's newest save to the liveworkspace accounts Worker
 // for its onboarding emails (person/account-app.ts reportOwnerActivity).
 //
 // The plan's triggers fill `outbox` with a key per changed thing (plan-schema.ts), in the same transaction as the
@@ -81,7 +81,7 @@ export function collabPushOf(
   });
 }
 
-// A Form tab's name and heading on its link (the form's public page reads them without waking the plan).
+// A Form tab's name, heading and response board on its link, for the Inbox's form row (forms/form-inbox.ts).
 function formLinkStatement(
   env: PlanEnv,
   planId: string,
@@ -89,7 +89,7 @@ function formLinkStatement(
   tab: TabRow,
   form: { heading: string | null; boardTabId: string | null } | null,
 ): D1PreparedStatement {
-  return env.DB.prepare(
+  return env.PLAN_DB.prepare(
     'UPDATE form_links SET tab_name = ?3, heading = ?4, board_tab_id = ?5 WHERE project_id = ?1 AND tab_id = ?2',
   ).bind(planId, tabId, tab.name, form?.heading ?? null, form?.boardTabId ?? null);
 }
@@ -251,7 +251,7 @@ export async function drainOutbox(
     onSummary: (ownerId, at) => reportOwnerActivity(env, ownerId, at),
   });
   if (formStmts.length > 0) {
-    await env.DB.batch(formStmts);
+    await env.PLAN_DB.batch(formStmts);
     // A form's heading and board as the Inbox shows them (forms/form-inbox.ts).
     await Promise.all(formTabs.map((tabId) => pushFormInbox(env, planId, tabId)));
   }

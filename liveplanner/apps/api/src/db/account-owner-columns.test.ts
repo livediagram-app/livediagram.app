@@ -10,7 +10,7 @@ import { deleteAccount } from './account';
 // code does not honour fails too. Where a person's plans are, and everything the Explorer keeps about them, is
 // liveworkspace's index: account deletion has the index purge the plans (routes/account.ts). A person's name and
 // colour, settings, address and sign-up are the liveworkspace accounts Worker's, which deletes them itself when it
-// closes the account.
+// closes the account, and what they had seen of forms is the index's, which drops it with them.
 
 type OwnerColumn = {
   table: string;
@@ -20,8 +20,6 @@ type OwnerColumn = {
 };
 
 const OWNER_COLUMNS: OwnerColumn[] = [
-  // What a reader has seen of a form's responses (docs/specs/030-forms/forms.md).
-  { table: 'form_reads', column: 'owner_id' },
   // A plan's own row (its Durable Object; one database holds every plan here): the index purges the owner's
   // plans, and each purge drops the plan's whole store.
   {
@@ -77,7 +75,6 @@ function seed(sql: DatabaseSync, id: string) {
     tab_id: `t-${id}`,
     created_at: T0,
   });
-  insert(sql, 'form_reads', { code: `form-${id}`, owner_id: id, seen_number: 3 });
   insert(sql, 'tabs', { id: `tab-${id}`, name: 'Board', data: '{"elements":[]}', updated_at: T0 });
   insert(sql, 'agent_changesets', {
     id: `cs-${id}`,

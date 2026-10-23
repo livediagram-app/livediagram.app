@@ -1,15 +1,14 @@
 #!/usr/bin/env node
 // E2E stack (docs/specs/003-system-architecture/e2e-smoke.md): the three-process stack the Playwright smoke suite
 // runs against — the real static `apps/editor/out` build served with the
-// production router/worker rewrites, the api worker on a local D1, and liveworkspace's index
+// production router/worker rewrites, the api worker (its Durable Objects local), and liveworkspace's index
 // (liveworkspace/apps/index, liveworkspace/docs/one-explorer.md) on its own local D1.
 // Dependency-free (node builtins) so it adds nothing to install cost.
 //
 // Boots:
 //   1. index — `wrangler dev --local` (liveworkspace/apps/index) on E2E_INDEX_PORT (8219), its D1 kept apart from
 //      a developer's own local index, trusting this stack's accounts stand-in and calling this api.
-//   2. api — `wrangler dev --local` (apps/api) after applying the D1
-//      migrations to a fresh local database, so persistence works.
+//   2. api — `wrangler dev --local` (apps/api): plans and workbenches in local Durable Objects.
 //   3. live — a static file server for `out/` that reproduces the four
 //      things production does (docs/specs/003-system-architecture/e2e-smoke.md): strip the `/live` assetPrefix,
 //      rewrite `/project/*` to the single placeholder, forward `/api/index/*` to the index, and proxy
@@ -608,10 +607,6 @@ async function main() {
       'MERGE_KEY:e2e-merge-key',
     ],
     { cwd: INDEX_DIR },
-  );
-  console.log('[e2e] applying local D1 migrations…');
-  await waitForExit(
-    run('pnpm', ['--filter', '@liveplanner/api', 'run', 'db:migrate:local'], { cwd: ROOT }),
   );
   console.log('[e2e] starting api worker…');
   run(

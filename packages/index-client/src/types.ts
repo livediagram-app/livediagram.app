@@ -169,7 +169,12 @@ export type CollabFormInput = {
   boardTabId: string | null;
   responses: number;
   latestAt: number;
+  // The live link's public code, so `formByCode` finds this form. Left out, the form keeps the code it has.
+  code?: string;
 };
+
+/** Where a live form's public code points (`GET /app/forms/:code`). */
+export type CollabFormPlace = { itemId: string; tabId: string };
 
 /** A person has seen a form's first `seen` responses (`PUT /app/items/:id/forms/:tabId/seen`). */
 export type CollabFormSeen = { personId: string; seen: number };

@@ -6,6 +6,7 @@ import { deleteFormLinksForTab, deleteTabRow, getProject, getProjectForSave, get
 import { conflict, forbidden, json, noContent, notFound } from '../responses';
 import { tabEtag } from '@liveplanner/api-schema';
 import { handleFormLinkRoutes } from './form-link-routes';
+import { pushFormInbox } from '../forms/form-inbox';
 import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
 import { handleTabRename } from './tab-name-route';
 import { handleTabForm } from './tab-form-route';
@@ -139,7 +140,8 @@ export async function handleProjectSubresources(ctx: PlanRouteContext): Promise<
       // A link scoped to it (the index's) now opens nothing here: the tab reads as missing.
       // A Form tab's link goes with it, and a form whose board or sheet it was stops taking responses (its link kept)
       // (docs/specs/030-forms/forms.md "Publishing and the form link").
-      await deleteFormLinksForTab(env, id, tabId);
+      // Its form, if it had one, comes off the Inbox and its code stops naming the plan.
+      if ((await deleteFormLinksForTab(env, id, tabId)) > 0) await pushFormInbox(env, id, tabId);
       await pauseFormsFeeding(env, id, tabId);
       return noContent();
     }

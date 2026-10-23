@@ -199,7 +199,7 @@ apps/
   marketing/    # static marketing site (Next.js, /)
   editor/       # the planner app: the project editor, hosting the shared Explorer (@liveworkspace/explorer) (Next.js, clean routes)
   help/         # help centre (Next.js export + MDX, /help)
-  api/          # Cloudflare Worker REST + WebSocket API (D1 + Durable Objects, /api)
+  api/          # Cloudflare Worker REST + WebSocket API (Durable Objects, /api)
   mcp/          # Cloudflare Worker MCP server for AI tools (OAuth + tools, mcp.liveplanner.app)
   router/       # Cloudflare Worker stitching the apps under one hostname
   cli/          # the liveplanner command line for agents and scripts (Node, one esbuild bundle)
@@ -258,7 +258,7 @@ See [Secrets policy](docs/specs/002-project-scope/secrets-policy.md). **No secre
 
 - All secrets via env vars: `.env.local` (gitignored) for dev, `wrangler secret put` for Workers, dashboard env vars for Pages.
 - Client bundles only carry values explicitly prefixed `NEXT_PUBLIC_*` and only when documented as publishable (e.g. `NEXT_PUBLIC_SIGN_IN_ENABLED`).
-- Server-only secrets (the accounts client secret, Resend, D1 access) never appear in client code.
+- Server-only secrets (the accounts client secret, Resend, the index key) never appear in client code.
 - Each app/worker that needs env vars ships a `.env.example` documenting what's required.
 
 ## Auth model
@@ -307,7 +307,7 @@ When the right place for code is genuinely unclear, default to `packages/`.
 
 - **All websites must be static and deployable to Cloudflare Pages.** Next.js apps use `output: 'export'` — no SSR, no Node runtime, no Next API routes (use a Cloudflare Worker), no server-required image loader.
 - Server-side logic lives in Cloudflare Workers, **not** in Next.js. Frontends call those Workers.
-- Database access goes through a Worker that holds the D1 binding — never from the browser.
+- Storage access goes through a Worker that holds the binding — never from the browser.
 
 ## Tech stack
 
@@ -327,7 +327,7 @@ See [Deployment](docs/specs/016-platform/deployment.md) and [Staging environment
 - **One colour picker.** Anything that lets someone choose a colour uses the shared picker in `apps/editor/components/colour/` (see [Colour picker](docs/specs/004-interface-design/colour-picker.md#the-rule-for-new-work)); never build a new swatch grid, custom colour editor or `<input type="color">`. If no skin fits, extend the picker.
 - Rely on CI rather than running full E2E locally before a PR
 - Worker apps target the Cloudflare Workers runtime — prefer Web APIs (`fetch`, `Request`, `Response`, `crypto.subtle`) over Node-only APIs.
-- D1 schemas and migrations (when they arrive) live with the Worker that owns the binding.
+- Durable Object schemas live with the Worker that owns the binding (`plan-room/plan-schema.ts`).
 - The router worker (`apps/router`) holds **no business logic** — only routing. If you're tempted to add logic to it, that logic belongs in the service it forwards to.
 - **Track key new functionality** via the anonymous-events schema ([spec](docs/specs/017-telemetry/telemetry.md)).
 - A feature that meaningfully changes user behaviour gets a one-liner `track(category, action, type)` in its handler.

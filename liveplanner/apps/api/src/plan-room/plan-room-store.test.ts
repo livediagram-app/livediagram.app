@@ -147,7 +147,6 @@ type World = {
 function world(extra: Partial<Env> = {}): World {
   const d1 = sqliteD1();
   const env = {
-    DB: d1.env.DB,
     WORKBENCH: d1.env.WORKBENCH,
     INDEX_ORIGIN: 'https://index.test',
     ...extra,
@@ -336,22 +335,19 @@ describe('/api/internal/items (docs/specs/015-api/api.md "Internal")', () => {
     expect(again.status).toBe(409);
   });
 
-  it('purges a plan: every row, every session, and what D1 keeps about it', async () => {
+  it('purges a plan: every row, its form links with it, and every session', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const w = world({ INDEX_KEY: 'index-key' });
     await createPlan(w, 'A');
     const plan = w.plans.get('A')!;
-    w.d1.sql
-      .exec(`INSERT INTO form_links (code, project_id, tab_id, created_at) VALUES ('f1', 'A', 't1', 1),
-                   ('f2', 'B', 't1', 1);
-                   INSERT INTO form_reads (code, owner_id, seen_number) VALUES ('f1', 'u', 1);`);
+    plan.db.exec(
+      `INSERT INTO form_links (code, project_id, tab_id, created_at) VALUES ('f1', 'A', 't1', 1)`,
+    );
     const res = await w.send('DELETE', '/api/internal/items/A', undefined, auth);
     expect(res.status).toBe(200);
     expect(
       plan.db.prepare("SELECT COUNT(*) AS n FROM sqlite_master WHERE type = 'table'").get()!.n,
     ).toBe(0);
-    expect(w.d1.sql.prepare('SELECT code FROM form_links').all()).toEqual([{ code: 'f2' }]);
-    expect(count(w.d1.sql, 'form_reads')).toBe(0);
   });
 
   it("takes a closed account's name off the plans that name them, and starts none", async () => {

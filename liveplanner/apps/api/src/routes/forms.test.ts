@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { sentJson } from '@liveplanner/vitest-config/sent-request';
 import type { FormLinkResponse, PublicFormResponse } from '@liveplanner/api-schema';
 import { FROM_FORM_FIELD, type FormDefinition } from '@liveplanner/forms';
@@ -9,6 +9,7 @@ import { makeTestRouteContext } from './test-route-context';
 import { handleProjects } from './projects';
 import { handleForms } from './forms';
 import { FORM_RESPONSES_PER_HOUR } from '../forms/respond';
+import { stubFormIndex } from '../forms/test-form-index';
 
 // Form links (docs/specs/030-forms/forms.md, blueprint §11): publishing by role, the public read, responses made
 // into cards, every refusal, reports, and a deleted tab taking its link.
@@ -89,8 +90,14 @@ async function publish(): Promise<string> {
 
 const items = () => listItems(sql.env, 'd1');
 
+let index: ReturnType<typeof stubFormIndex>;
+
+afterEach(() => vi.unstubAllGlobals());
+
 beforeEach(() => {
-  sql = sqliteD1();
+  // The index keeps each live link's code and who has seen how many responses (forms/form-inbox.ts).
+  index = stubFormIndex();
+  sql = sqliteD1(index.env);
   relayed = [];
   (sql.env as unknown as { PLAN_ROOM: unknown }).PLAN_ROOM = {
     idFromName: (n: string) => n,
@@ -228,6 +235,42 @@ describe('publishing (docs/specs/030-forms/forms.md "Publishing and the form lin
     expect(res.status).toBe(204);
     expect((await pub('GET', code)).status).toBe(404);
     expect(sql.sql.prepare('SELECT COUNT(*) AS n FROM form_links').get()).toEqual({ n: 0 });
+    // Off the Inbox, its code with it.
+    expect(index.forms.has('d1/ftab')).toBe(false);
+  });
+
+  it('puts the code on the index before answering, and takes it off when the link goes', async () => {
+    const code = await publish();
+    expect(index.forms.get('d1/ftab')).toMatchObject({ code, responses: 0 });
+    // The publisher has seen every response so far.
+    expect(index.seen.get('d1/ftab/owner')).toBe(0);
+    expect((await owner('DELETE', 'form-link')).status).toBe(200);
+    expect(index.forms.has('d1/ftab')).toBe(false);
+  });
+
+  it('publishes nothing when the index cannot take the code', async () => {
+    vi.stubGlobal('fetch', async () => Response.json({ error: 'down' }, { status: 500 }));
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const res = await owner('POST', 'form-link');
+    expect(res).toEqual({ status: 503, body: { error: 'index_unavailable' } });
+    expect(sql.sql.prepare('SELECT COUNT(*) AS n FROM form_links').get()).toEqual({ n: 0 });
+    warn.mockRestore();
+  });
+
+  it('answers a public request in the worker by the plan the index names for its code', async () => {
+    const code = await publish();
+    const { PLAN_DB: _inPlan, ...worker } = sql.env;
+    // The worker's env: no plan store (the test context would give a forms path a stand-in one).
+    const ask = async (path: string) => {
+      const ctx = makeTestRouteContext('GET', `/api/forms/${path}`, { env: sql.env, owner: null });
+      return handleForms({ ...ctx, env: worker });
+    };
+    expect((await ask(code)).status).toBe(200);
+    expect((await ask('A'.repeat(22))).status).toBe(404);
+    vi.stubGlobal('fetch', async () => Response.json({ error: 'down' }, { status: 500 }));
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect((await ask('B'.repeat(22))).status).toBe(503);
+    warn.mockRestore();
   });
 
   // The user's call (2026-10-15): deleting the board a form sends to pauses the form, its link kept.

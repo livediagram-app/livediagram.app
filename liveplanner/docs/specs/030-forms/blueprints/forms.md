@@ -10,7 +10,7 @@ Derived from [Forms](../forms.md). Implementation contracts: files, types, const
 | The `form` tab kind, `Tab.form`                                                                  | `packages/project` (`tab-kind.ts`, `index.ts`)                                                                                                                                                                                                                                                        |
 | Multiple Choice and Rating field kinds                                                           | `packages/items` (`item-types.ts`, `type-catalogue.ts`, `card-text.ts`, `board-csv.ts`, `type-changes.ts`, `plan-names.ts`); agents in `packages/agent-verbs/src/plan/plan-listing.ts` and `packages/agent-verbs/src/mcp/plan-schema.ts`                                                              |
 | Wire DTOs (`FormLinkResponse`, `PublicFormResponse`, `FormResponseBody`, report reasons)         | `packages/api-schema` (`forms.ts`); the Inbox's `ActivityFormResponses` in `activity.ts`; `/form` in `page-views.ts`; `forms` in `error-telemetry.ts`; `Form` in `telemetry-schema.ts`                                                                                                                |
-| `form_links`, `form_reports`, `form_reads`                                                       | `apps/api/migrations/0001_liveplanner_baseline.sql`, `apps/api/src/db/forms.ts`                                                                                                                                                                                                                       |
+| `form_links`, `form_reports`                                                                     | `apps/api/src/plan-room/plan-schema.ts`, `apps/api/src/db/forms.ts`, `apps/api/src/forms/form-inbox.ts`                                                                                                                                                                                               |
 | Owner routes, public routes, the response write                                                  | `apps/api/src/routes/form-link-routes.ts`, `apps/api/src/routes/forms.ts`, `apps/api/src/forms/respond.ts`, `apps/api/src/forms/form-tab.ts`                                                                                                                                                          |
 | Emails                                                                                           | `apps/api/src/email/templates.ts` (`formResponseEmail`, `formSuspendedEmail`), `notifications.ts` (`notifyFormResponse`, `notifyFormSuspended`)                                                                                                                                                       |
 | The Form tab                                                                                     | `apps/editor/components/forms/FormPage.tsx` and `components/forms/builder/*`; actions in `apps/editor/hooks/forms/*`                                                                                                                                                                                  |
@@ -246,16 +246,21 @@ for rating. No item store change: a list of strings and a number are already val
 
 ### Tables
 
+In the plan's own Durable Object (`apps/api/src/plan-room/plan-schema.ts`, step 3), gone with it when the plan is purged:
+
 ```sql
-form_links (code PK, project_id → projects ON DELETE CASCADE, tab_id, open, created_at, responses,
-            last_response_at, hour_start, hour_count, suspended_at, deleted_at, last_email_at, held_emails)
+form_links (code PK, project_id, tab_id, open, created_at, responses, last_response_at, hour_start, hour_count,
+            suspended_at, deleted_at, last_email_at, held_emails, tab_name, heading, board_tab_id)
   UNIQUE (project_id, tab_id) WHERE suspended_at IS NULL AND deleted_at IS NULL; INDEX (project_id)
 form_reports (code → form_links ON DELETE CASCADE, browser, network, reason, note, created_at, PK (code, browser))
-form_reads (code → form_links ON DELETE CASCADE, owner_id, seen_number, PK (code, owner_id)); INDEX (owner_id)
 ```
 
-`form_reads.owner_id` is owner-keyed data (`docs/specs/015-api/api.md` "Owner-keyed data"): deleted with an account,
-moved by the guest migration. Unseen = `responses - seen_number`.
+In liveworkspace's index (`apps/api/src/forms/form-inbox.ts`): each live link's form row (`collab_forms`, with its
+`code`), registered before the publish answers (a refused registration takes the link back, 503
+`index_unavailable`) and taken off when the link is deleted, suspended or its tab goes; and how far each reader has
+seen it (`collab_form_reads`), which the index drops with an account and moves with a guest. Unseen =
+`responses - seen`, the seen count read from the index (`GET /app/items/:id/forms/:tabId/seen/:personId`). A public
+request finds its plan by `GET /app/forms/:code` (cached per isolate for a minute).
 
 ### `db/forms.ts`
 
@@ -381,7 +386,7 @@ editor modules: `forms-public.ts`, the shared controls and `@liveplanner/ui`.
 | Public read, every miss alike, responses, refusals, cap, full, hidden field, reports, suspensions                                | `apps/api/src/routes/forms.test.ts`                                                                                                                                                                     |
 | Code generation, the email throttle, the Inbox read                                                                              | `apps/api/src/db/forms.test.ts`                                                                                                                                                                         |
 | The response and suspension emails                                                                                               | `apps/api/src/email/notifications.test.ts`                                                                                                                                                              |
-| `form_reads` owner-keyed                                                                                                         | `apps/api/src/db/account-owner-columns.test.ts`                                                                                                                                                         |
+| The index's code and seen counts                                                                                                 | `apps/api/src/forms/form-inbox.test.ts`                                                                                                                                                                 |
 | Builder edits                                                                                                                    | `packages/forms/src/edits.test.ts`                                                                                                                                                                      |
 | Starting a form                                                                                                                  | `packages/templates/src/form-start.test.ts`                                                                                                                                                             |
 | Builder by role, selection, options, sections, rename                                                                            | `apps/editor/components/forms/builder/FormBuilderColumn.test.tsx`                                                                                                                                       |

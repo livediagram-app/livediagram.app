@@ -14,7 +14,7 @@ import {
 } from '@liveworkspace/index-client';
 import { isId } from './codec';
 import type { Env } from './env';
-import { badRequest, noContent, readObject } from './http';
+import { badRequest, json, noContent, notFound, readObject } from './http';
 
 const LABEL_MAX = 200;
 const TEXT_MAX = 500;
@@ -37,6 +37,8 @@ const idList = (value: unknown): string[] | null =>
     ? [...new Set(value)]
     : null;
 const nullableId = (value: unknown): value is string | null => value === null || isId(value);
+// A form's public code: letters, digits, `-` and `_`, as the app makes them.
+const FORM_CODE = /^[A-Za-z0-9_-]{1,64}$/;
 
 /** A card's facts, or null for an element's row; undefined when malformed. */
 export function parseCard(value: unknown): CollabCard | null | undefined {
@@ -251,8 +253,10 @@ export function parseForm(value: unknown): CollabFormInput | null | undefined {
   if (!f || typeof f !== 'object' || Array.isArray(f)) return undefined;
   const heading = clip(f.heading, LABEL_MAX);
   const boardTabId = f.boardTabId ?? null;
+  const code = f.code ?? null;
   if (
     heading === null ||
+    !(code === null || (typeof code === 'string' && FORM_CODE.test(code))) ||
     !nullableId(boardTabId) ||
     !isCount(f.responses) ||
     f.responses > RESPONSES_MAX ||
@@ -260,10 +264,17 @@ export function parseForm(value: unknown): CollabFormInput | null | undefined {
   ) {
     return undefined;
   }
-  return { heading, boardTabId, responses: f.responses, latestAt: f.latestAt };
+  return {
+    heading,
+    boardTabId,
+    responses: f.responses,
+    latestAt: f.latestAt,
+    ...(code === null ? {} : { code }),
+  };
 }
 
-/** A form's response count (`{ form }`), or `{ form: null }` to take it off the Inbox with everyone's reads. */
+/** A form's response count (`{ form }`), or `{ form: null }` to take it off the Inbox with everyone's reads. A push
+ * with a `code` names the live link's public code (`GET /app/forms/:code`); one without keeps the code it has. */
 export async function pushForm(
   request: Request,
   env: Env,
@@ -286,13 +297,23 @@ export async function pushForm(
   }
   await db
     .prepare(
-      `INSERT INTO collab_forms (app, item_id, tab_id, heading, board_tab_id, responses, latest_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?)
+      `INSERT INTO collab_forms (app, item_id, tab_id, heading, board_tab_id, responses, latest_at, code)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT (item_id, tab_id) DO UPDATE SET heading = excluded.heading,
          board_tab_id = excluded.board_tab_id, responses = excluded.responses,
-         latest_at = MAX(collab_forms.latest_at, excluded.latest_at)`,
+         latest_at = MAX(collab_forms.latest_at, excluded.latest_at),
+         code = COALESCE(excluded.code, collab_forms.code)`,
     )
-    .bind(app, itemId, tabId, form.heading, form.boardTabId, form.responses, form.latestAt)
+    .bind(
+      app,
+      itemId,
+      tabId,
+      form.heading,
+      form.boardTabId,
+      form.responses,
+      form.latestAt,
+      form.code ?? null,
+    )
     .run();
   return noContent();
 }
@@ -315,4 +336,30 @@ export async function pushFormSeen(
     .bind(body.personId, itemId, tabId, body.seen)
     .run();
   return noContent();
+}
+
+/** The item and tab a live form's public code names, for the app that pushed it (`GET /app/forms/:code`). */
+export async function formByCode(env: Env, app: App, code: string): Promise<Response> {
+  if (!FORM_CODE.test(code)) return notFound();
+  const row = await env.INDEX_DB.prepare(
+    'SELECT item_id, tab_id FROM collab_forms WHERE code = ? AND app = ?',
+  )
+    .bind(code, app)
+    .first<{ item_id: string; tab_id: string }>();
+  return row ? json({ itemId: row.item_id, tabId: row.tab_id }) : notFound();
+}
+
+/** How many of a form's responses a person has seen (`GET /app/items/:id/forms/:tabId/seen/:personId`). */
+export async function formSeen(
+  env: Env,
+  itemId: string,
+  tabId: string,
+  personId: string,
+): Promise<Response> {
+  const row = await env.INDEX_DB.prepare(
+    'SELECT seen FROM collab_form_reads WHERE person_id = ? AND item_id = ? AND tab_id = ?',
+  )
+    .bind(personId, itemId, tabId)
+    .first<{ seen: number }>();
+  return json({ seen: row?.seen ?? 0 });
 }

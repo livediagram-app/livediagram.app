@@ -178,7 +178,6 @@ export async function probeDispatch(
   // An index configured (its calls are the trapped `fetch`), and every request carrying an edit grant on the
   // placeholder plan, so a plan route reaches its own routing instead of answering "no access".
   const env = {
-    DB: trap('DB'),
     SNAPSHOTS: trap('SNAPSHOTS'),
     TELEMETRY_ENABLED: 'true',
     INDEX_ORIGIN: 'https://index.probe',

@@ -14,9 +14,7 @@
     "test:coverage": "vitest run --coverage",
     "gen:openapi": "node scripts/gen-openapi-schemas.mjs",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist .wrangler node_modules .turbo coverage",
-    "db:migrate:local": "wrangler d1 migrations apply liveplanner --local",
-    "db:migrate:remote": "wrangler d1 migrations apply liveplanner --remote"
+    "clean": "rm -rf dist .wrangler node_modules .turbo coverage"
   },
   "dependencies": {
     "@liveplanner/api-schema": "workspace:*",

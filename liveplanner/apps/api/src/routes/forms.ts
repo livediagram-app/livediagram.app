@@ -11,7 +11,8 @@ import { formLook } from '@liveplanner/project';
 import { FORM_CODE_PATTERN, closedMessageOf, closedReason, publicForm } from '@liveplanner/forms';
 import { typesOf } from '@liveplanner/items';
 import { clientIp, clientNetwork } from '../client-ip';
-import { addFormReport, countSuspendedFormLinks, getFormLink, suspendFormLink } from '../db';
+import { addFormReport, countSuspendedFormLinks, suspendFormLink } from '../db';
+import { formPlaceOf, pushFormInbox } from '../forms/form-inbox';
 import { planRoom } from '../plan-client';
 import { identityOf } from '../plan-room/plan-route';
 import { notifyFormSuspended } from '../email/notifications';
@@ -97,6 +98,8 @@ async function fileReport(ctx: PlanRouteContext, code: string): Promise<Response
   if (distinct >= FORM_REPORTS_TO_SUSPEND && (await suspendFormLink(ctx.env, code, now))) {
     const suspensions = await countSuspendedFormLinks(ctx.env, opened.doc.id);
     console.warn('[forms] form.suspended', { projectId: opened.doc.id, suspensions });
+    // Off the Inbox, and its code no longer names the plan.
+    ctx.waitUntil?.(pushFormInbox(ctx.env, opened.doc.id, opened.link.tab_id));
     ctx.waitUntil?.(
       notifyFormSuspended(
         ctx.env,
@@ -130,12 +133,19 @@ export async function handleForms(ctx: RouteContext): Promise<Response> {
   if (action instanceof Response) return action;
   // A code that cannot be one is answered as any missing form is.
   if (!FORM_CODE_PATTERN.test(code)) return formNotFound();
-  // In the worker: the form's plan is found from its link (D1), and the request is answered inside that plan's
-  // Durable Object, where its tab and destinations are (docs/specs/015-api/api.md "Storage").
+  // In the worker: the index names the plan a live code is on (forms/form-inbox.ts, cached briefly), and the
+  // request is answered inside that plan's Durable Object, where its links, tab and destinations are
+  // (docs/specs/015-api/api.md "Storage"). The plan's own check answers a link deleted or suspended meanwhile.
   if (!('PLAN_DB' in ctx.env)) {
-    const link = await getFormLink(ctx.env, code);
-    if (!link || link.suspended_at !== null || link.deleted_at !== null) return formNotFound();
-    return planRoom(ctx.env, link.project_id).route(request, identityOf(ctx));
+    let place;
+    try {
+      place = await formPlaceOf(ctx.env, code);
+    } catch (err) {
+      console.warn('[forms] form.lookup-failed', { err: String(err) });
+      return json({ error: 'index_unavailable' }, { status: 503 });
+    }
+    if (!place) return formNotFound();
+    return planRoom(ctx.env, place.itemId).route(request, identityOf(ctx));
   }
   const inPlan = ctx as PlanRouteContext;
   if (action === 'read') return read(inPlan, code);

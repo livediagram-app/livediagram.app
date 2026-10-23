@@ -25,9 +25,6 @@ import type { PlanRoom } from './plan-room/plan-room';
 // Worker bindings injected by Cloudflare at runtime. Not part of the
 // wire format (purely a server-side capability handle).
 export type Env = {
-  // What is neither a plan's content nor the index's (docs/specs/015-api/api.md "Storage"): form links. A
-  // person's settings, profile and API tokens are the liveworkspace accounts Worker's.
-  DB: D1Database;
   // Each plan's Durable Object (src/plan-room/plan-room.ts): its content, in its own SQLite, and its
   // realtime room. Reached through plan-client.ts `planRoom(env, planId)`.
   PLAN_ROOM: DurableObjectNamespace<PlanRoom>;

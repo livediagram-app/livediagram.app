@@ -1,5 +1,5 @@
 // The worker's way into a plan's Durable Object (docs/specs/015-api/api.md "Storage"): one typed stub per plan,
-// its RPC methods with the plan id filled in. Every content read and write goes through here; D1 holds none.
+// its RPC methods with the plan id filled in. Every content read and write goes through here.
 //
 // Inside the plan's own Durable Object the same call is a plain method call on the room itself (plan-room.ts
 // `localNamespace`), so code shared by the worker and the room (getProject's outline, the room relays) costs no

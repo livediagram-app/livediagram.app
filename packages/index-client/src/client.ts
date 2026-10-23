@@ -17,6 +17,7 @@ import {
 } from './constants';
 import type {
   CollabFormInput,
+  CollabFormPlace,
   CollabFormSeen,
   CollabPush,
   CreateFolderInput,
@@ -327,6 +328,10 @@ export type IndexAppClientOptions = {
 // What an app's server (its api Worker or an item's Durable Object) pushes about an item.
 export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: IndexAppClientOptions) {
   const base = (baseUrl || `https://liveworkspace.app${INDEX_API_PATH}`).replace(/\/+$/, '');
+  const failed = async (res: Response): Promise<IndexError> => {
+    const parsed = (await res.json().catch(() => null)) as { error?: unknown } | null;
+    return new IndexError(res.status, typeof parsed?.error === 'string' ? parsed.error : 'unknown');
+  };
   async function put(path: string, body: unknown): Promise<void> {
     const res = await (doFetch ?? fetch)(`${base}/app${path}`, {
       method: 'PUT',
@@ -337,13 +342,16 @@ export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: Inde
       },
       body: JSON.stringify(body),
     });
-    if (!res.ok) {
-      const parsed = (await res.json().catch(() => null)) as { error?: unknown } | null;
-      throw new IndexError(
-        res.status,
-        typeof parsed?.error === 'string' ? parsed.error : 'unknown',
-      );
-    }
+    if (!res.ok) throw await failed(res);
+  }
+  // A read; null when the index answers 404.
+  async function get<T>(path: string): Promise<T | null> {
+    const res = await (doFetch ?? fetch)(`${base}/app${path}`, {
+      headers: { Authorization: `Bearer ${key}`, [INDEX_APP_HEADER]: app },
+    });
+    if (res.status === 404) return null;
+    if (!res.ok) throw await failed(res);
+    return (await res.json()) as T;
   }
   return {
     pushSummary: (itemId: string, summary: ItemSummary, updatedAt: number) =>
@@ -356,6 +364,15 @@ export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: Inde
     // A person has seen a form's first `seen` responses.
     pushFormSeen: (itemId: string, tabId: string, seen: CollabFormSeen) =>
       put(`/items/${enc(itemId)}/forms/${enc(tabId)}/seen`, seen),
+    // The item and tab a live form's public code names (one this app pushed), or null.
+    formByCode: (code: string) => get<CollabFormPlace>(`/forms/${enc(code)}`),
+    // How many of a form's responses a person has seen (0 when they have not opened it).
+    formSeen: async (itemId: string, tabId: string, personId: string) =>
+      (
+        await get<{ seen: number }>(
+          `/items/${enc(itemId)}/forms/${enc(tabId)}/seen/${enc(personId)}`,
+        )
+      )?.seen ?? 0,
     // Up to APP_EVENTS_MAX Timeline events about one item. Safe to send again: an `edited` is one event per
     // person and day whatever the count.
     pushEvents: (itemId: string, events: readonly AppTimelineEvent[]) =>

@@ -14,8 +14,7 @@ import { workbenchStore } from '../workbench-store';
 // re-running with the same owner id is a no-op once the rows are gone.
 export async function deleteAccount(env: Env, ownerId: string): Promise<void> {
   await workbenchStore(env, ownerId).close();
-  // form_reads (docs/specs/030-forms/forms.md "Hearing about responses"): what they had seen of forms.
-  await env.DB.prepare('DELETE FROM form_reads WHERE owner_id = ?').bind(ownerId).run();
+  // What they had seen of forms is the index's (collab_form_reads), which drops it with the account.
   // agent_changesets (docs/specs/024-agents/agent-changesets.md, CS27) they wrote on other people's plans are in
   // those plans' own stores (each plan's Durable Object), out of reach of one statement; they age out with the
   // 30-day changeset retention there.

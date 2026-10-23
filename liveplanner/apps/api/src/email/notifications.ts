@@ -75,7 +75,7 @@ export async function notifyNewComment(
 // A respondent filled in a form on a project the owner owns (docs/specs/030-forms/forms.md "Hearing about
 // responses"). Opt-out (notifyFormResponses), throttled per form; never blocks the response.
 export async function notifyFormResponse(
-  env: Env,
+  env: PlanEnv,
   liveDoc: { id: string; ownerId: string; name: string },
   form: { code: string; heading: string },
   cardTitle: string,

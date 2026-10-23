@@ -97,11 +97,11 @@ export async function getProjectThumbMeta(env: Env, id: string): Promise<Project
   };
 }
 
-// What D1 and R2 hold about a plan, for when the index purges it (routes/internal-items.ts): its form links (their
-// reads and reports cascade) and its cached snapshots. One D1 statement and one R2 delete, whatever the plan held.
-// Workbench tickets and sessions scoped to it are in their owners' workbench stores: a ticket lapses in a minute,
-// and a session's every request is gated on the plan's grant, which a purged plan never gets again.
+// What R2 holds about a plan, for when the index purges it (routes/internal-items.ts): its cached snapshots, in one
+// delete. Its form links and reports are in its own Durable Object (wiped with it), and the index's form row and
+// code cascade with the item. Workbench tickets and sessions scoped to it are in their owners' workbench stores: a
+// ticket lapses in a minute, and a session's every request is gated on the plan's grant, which a purged plan
+// never gets again.
 export async function purgePlanRows(env: Env, id: string): Promise<void> {
-  await env.DB.prepare('DELETE FROM form_links WHERE project_id = ?').bind(id).run();
   if (env.SNAPSHOTS) await env.SNAPSHOTS.delete(snapshotKeys(id));
 }

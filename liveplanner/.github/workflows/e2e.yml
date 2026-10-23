@@ -65,7 +65,7 @@ jobs:
           NEXT_PUBLIC_BUILD_ID: e2e-build
         run: bash scripts/next-build-cold-retry.sh pnpm --filter @liveplanner/editor build
 
-      # Playwright's webServer boots scripts/e2e-stack.mjs (api worker on local D1 + the static
+      # Playwright's webServer boots scripts/e2e-stack.mjs (index on local D1, api worker + the static
       # serve). CI=1 makes it always start fresh.
       - name: Run smoke shard
         run: pnpm --filter @liveplanner/editor test:e2e:smoke --shard=${{ matrix.shard }}/${{ strategy.job-total }}

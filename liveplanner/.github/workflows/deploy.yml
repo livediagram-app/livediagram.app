@@ -27,7 +27,7 @@ jobs:
     uses: ./.github/workflows/deploy-reusable.yml
     with:
       # Empty: the top-level wrangler.toml config, unsuffixed worker names,
-      # the production D1 / R2 / KV.
+      # the production R2 / KV.
       wrangler_env: ''
       environment_name: production
       environment_url: https://liveplanner.app

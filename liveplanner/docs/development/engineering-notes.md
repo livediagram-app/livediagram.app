@@ -56,8 +56,8 @@ Drop an entry once an upstream release makes it redundant.
 A merge to `main` that passes CI **deploys automatically to staging** —
 [staging.liveplanner.app](https://staging.liveplanner.app), a complete copy of the
 platform with its own database ([Staging environment](../specs/016-platform/staging-environment.md)). Nobody
-presses anything. Within a few minutes your change is running on a reachable host, and any
-D1 migration in it has been applied to a real remote database.
+presses anything. Within a few minutes your change is running on a reachable host, its Durable Objects
+running any new schema step against real remote storage.
 
 Production is **not** affected: that deploy stays manual (`Deploy Production` in the
 Actions tab) and someone decides when to press it.
