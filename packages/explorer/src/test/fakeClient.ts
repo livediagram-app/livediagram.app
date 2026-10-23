@@ -44,7 +44,7 @@ export function makeEvent(
   i: number,
   over: Partial<TimelineEvent> = {},
   item: Partial<Item> = {},
-): TimelineEvent {
+): TimelineEvent & { item: Item; itemId: string } {
   const it = makeItem(i, item);
   return {
     id: `ev-${i}`,
@@ -58,7 +58,7 @@ export function makeEvent(
     occurredAt: Date.now() - i * 60_000,
     item: it,
     ...over,
-  };
+  } as TimelineEvent & { item: Item; itemId: string };
 }
 
 export type Call = { method: string; args: unknown[] };

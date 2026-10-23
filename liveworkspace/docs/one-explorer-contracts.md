@@ -103,35 +103,35 @@ type ItemSummary = {
 }; // ≤ 2 KB
 ```
 
-| Call                           | Who                 | Does                                                                         |
-| ------------------------------ | ------------------- | ---------------------------------------------------------------------------- |
-| `GET /items`                   | person              | Lists. Filters: `app`, `view` (`all`, `recent`, `favourites`,                |
-|                                |                     | `shared`, `trash`, `unsorted`, `search`: every live item the person can      |
-|                                |                     | open, links included), `folder` (`deep=1`: its subfolders too), `team`,      |
-|                                |                     | `tag`, and the lens's (below). Sorted by `updatedAt`, or by                  |
-|                                |                     | `lastOpenedAt` for `recent`. `used=N` (1 to 8, `recent` only, first          |
-|                                |                     | page) adds `mostUsed`: up to N items ranked by the days used in the last     |
-|                                |                     | 90, each with `useDays`, in the same response (Jump Back In). On any first   |
-|                                |                     | page, `mine=N` (1 to 200) adds `mine: {count, more}`, the person's own live  |
+| Call                           | Who                 | Does                                                                          |
+| ------------------------------ | ------------------- | ----------------------------------------------------------------------------- |
+| `GET /items`                   | person              | Lists. Filters: `app`, `view` (`all`, `recent`, `favourites`,                 |
+|                                |                     | `shared`, `trash`, `unsorted`, `search`: every live item the person can       |
+|                                |                     | open, links included), `folder` (`deep=1`: its subfolders too), `team`,       |
+|                                |                     | `tag`, and the lens's (below). Sorted by `updatedAt`, or by                   |
+|                                |                     | `lastOpenedAt` for `recent`. `used=N` (1 to 8, `recent` only, first           |
+|                                |                     | page) adds `mostUsed`: up to N items ranked by the days used in the last      |
+|                                |                     | 90, each with `useDays`, in the same response (Jump Back In). On any first    |
+|                                |                     | page, `mine=N` (1 to 200) adds `mine: {count, more}`, the person's own live   |
 |                                |                     | items in `app` counted up to N (Home's pill), and `any=1` adds `any`, whether |
-|                                |                     | they can open anything in `app` (Home's first run): Home's reads in one.     |
-| `POST /items`                  | person              | `{app, id?, title?, folderId?, teamId?, intent?, source?}` → 201             |
-|                                |                     | `{item, grant}`. The index makes the id unless the client names the one it   |
-|                                |                     | minted (409 `item_exists` when taken); the item's Durable Object             |
-|                                |                     | starts empty the first time it is opened with a grant.                       |
-| `GET /items/:id`               | person or link      | `{item}`                                                                     |
-| `PATCH /items/:id`             | editor              | `{title?, folderId?, teamId?}` → `{item}`. Moving into or out of a           |
-|                                |                     | team needs joined membership.                                                |
-| `DELETE /items/:id`            | owner / team        | To the Trash; `?permanent=true` purges (below).                              |
-| `POST /items/:id/restore`      | owner / team        | `{item}`                                                                     |
-| `POST /items/:id/copy`         | anyone who can view | `{title?}` → 201 `{item}`. The index makes the row, then asks the            |
-|                                |                     | app to copy the content (`POST <app>/api/internal/items/:from/copy-to/:to`). |
-| `POST /items/:id/open`         | person or link      | Records an open for Recent, and the day as a use day for Most Used           |
-|                                |                     | (`use_days`, kept 90 days). Debounced: at most one write a minute            |
-|                                |                     | per person and item.                                                         |
-| `POST /items/:id/grant`        | person or link      | `→ {grant, level, tabId, expiresAt}`. A link visitor sends                   |
-|                                |                     | `X-Share-Code` (and `X-Share-Password` when set).                            |
-| `GET /trash` / `DELETE /trash` | person              | List, empty (`?team=`; `?app=` empties that app's items only).               |
+|                                |                     | they can open anything in `app` (Home's first run): Home's reads in one.      |
+| `POST /items`                  | person              | `{app, id?, title?, folderId?, teamId?, intent?, source?}` → 201              |
+|                                |                     | `{item, grant}`. The index makes the id unless the client names the one it    |
+|                                |                     | minted (409 `item_exists` when taken); the item's Durable Object              |
+|                                |                     | starts empty the first time it is opened with a grant.                        |
+| `GET /items/:id`               | person or link      | `{item}`                                                                      |
+| `PATCH /items/:id`             | editor              | `{title?, folderId?, teamId?}` → `{item}`. Moving into or out of a            |
+|                                |                     | team needs joined membership.                                                 |
+| `DELETE /items/:id`            | owner / team        | To the Trash; `?permanent=true` purges (below).                               |
+| `POST /items/:id/restore`      | owner / team        | `{item}`                                                                      |
+| `POST /items/:id/copy`         | anyone who can view | `{title?}` → 201 `{item}`. The index makes the row, then asks the             |
+|                                |                     | app to copy the content (`POST <app>/api/internal/items/:from/copy-to/:to`).  |
+| `POST /items/:id/open`         | person or link      | Records an open for Recent, and the day as a use day for Most Used            |
+|                                |                     | (`use_days`, kept 90 days). Debounced: at most one write a minute             |
+|                                |                     | per person and item.                                                          |
+| `POST /items/:id/grant`        | person or link      | `→ {grant, level, tabId, expiresAt}`. A link visitor sends                    |
+|                                |                     | `X-Share-Code` (and `X-Share-Password` when set).                             |
+| `GET /trash` / `DELETE /trash` | person              | List, empty (`?team=`; `?app=` empties that app's items only).                |
 
 **The lens's filters**, on `GET /items` and `GET /shared` (the Explorer's filter field and chips): `q`, words
 (at most 16), each in the title or the item's folder's name, taken literally; `apps`, the apps the items open in
@@ -278,9 +278,10 @@ minute, with retries:
 - `PUT /app/items/:id/summary` — `{summary, updatedAt}`.
 - `PUT /app/items/:id/collab/:tabId` — the tab's comment threads and actions, replacing that tab's rows:
   `{tabName?, threads: [{elementId, elementLabel, resolved, commentCount, participantIds, mentionedIds,
-latestText, latestAuthorName, latestAuthorColor?, card?, firstAt, latestAt}], actions: [{elementId, actionId,
-elementLabel, name, description?, status, assigneeId, assigneeName?, assignerId, assignerName?, teamId, card?,
-createdAt, updatedAt}]}`. The comment text itself stays in the content, beside what it is about; the index
+latestText, latestAuthorName, latestAuthorColor?, latestAuthorId?, resolvedById?, card?, firstAt, latestAt}],
+actions: [{elementId, actionId, elementLabel, name, description?, status, assigneeId, assigneeName?, assignerId,
+assignerName?, teamId, doneById?, card?, createdAt, updatedAt}]}`. The same push makes the Timeline's
+  collaboration events (below); the optional ids say who wrote, resolved or closed. The comment text itself stays in the content, beside what it is about; the index
   keeps what the Inbox needs: the latest comment's opening, the action's note, and the names on it. Shown text
   is cut to length rather than refused.
 - Cards and their threads go under the tab id `~cards` (`COLLAB_CARDS_TAB`): each card assigned to someone is an
@@ -299,6 +300,9 @@ typeLabel, title, board: {tabId, elementId, title, tabName} | null}` (`board` is
   item and UTC day (a later report moves its time on), and counts that day as one of their use days, as an
   open does. liveplanner sends one per person who wrote since its last push, with the time of their latest
   write.
+- `PUT /app/people/events` — `{events: [{type: 'image_uploaded', actorId, at, count?}]}`, up to 100, from the
+  app's server when a person uploads images (not a deduped re-upload): each adds `count` (default 1) to that
+  person's one `image_uploaded` event for the app and UTC day, seen by them alone.
 
 ## Notices
 
@@ -329,15 +333,34 @@ by link are not on it.
 - The index records `created` (with `source` when an AI or import made it, `copiedFrom` for a copy),
   `renamed` (`from`), `moved` (`folderName`, `teamId`), `trashed`, `restored`, `shared` (`level`),
   `unshared` and `favourited` in the same batch as the change. A favourite is on its person's Timeline
-  only. An empty item its app tidies away is not news.
-- Apps report `edited` (above).
-- Each event is stored once, with a row per scope that sees it (`p:<person>` or `t:<team>`, as items
-  are scoped), carrying its app and time. An item that changes scope takes its events with it.
+  only. An empty item its app tidies away is not news. An item created with `synced: true` (kept offline in
+  one browser, put back under its own id) records `synced` instead of `created`; `DELETE
+/items/:id?permanent=true&reason=offline` (taken offline into one browser) records `taken_offline` on its
+  person's Timeline, keeping the item's name after it has gone.
+- From each collab push, in the batch that replaces the tab's rows, the index compares the tab with what it
+  held: a thread with more comments is `commented` (`text`, `count`, `reply`, `on`), one turned resolved
+  `comment_resolved`, an action or open card with a new assignee `action_assigned` (`action`, `assigneeId`,
+  `assigneeName`; the assignee sees it too, wherever the item is), one turned done `action_done`. Each id is
+  made from what it says, so a push sent again records nothing new, and nothing dated before the item was made
+  (a copy's threads) is news. At most `COLLAB_EVENTS_MAX` (100) a push, the newest.
+- Apps report `edited` and `image_uploaded` (above).
+- liveworkspace accounts reports its teams' and API tokens' events, `POST /internal/timeline {events}` with
+  its key (up to 100, each `{id, type, actorId, actorName?, title, detail?, at, scopes}`): `team_invite_sent`,
+  `team_joined`, `team_declined`, `team_role_changed`, `team_member_removed` (`left` when they left),
+  `team_renamed` (`from`), `team_deleted`, `token_created`, `token_revoked` and `token_expiring` (dated at the
+  expiry, so it waits in Upcoming). Their app is `liveworkspace` (`TIMELINE_PLATFORM`); `scopes` (at most 250)
+  say who sees each: a team's events its team (`t:<team>`) and the people they are about, a token's its owner.
+  Accounts writes each to an outbox in the batch that makes the change and sends them after the response,
+  resending until the index takes them; the ids make a resend change nothing.
+- An event about no item (a team's, a token's, images, an item taken offline) has `itemId` and `item` null and
+  keeps its own `app` and `title`. Filtered to one app, a Timeline shows that app's events and the account's
+  own (`liveworkspace`); All shows everything. One no scope sees any more is swept daily.
 - `GET /timeline?app=&limit=&cursor=` — `{events, nextCursor, seenAt}`. `app` unset: every app. `limit`
   30 by default, at most 100. Each event: `{id, app, type, actorId, actorName, itemId, title, detail,
-occurredAt, item}`, `title` being the item's name then and `item` the item as it is now. One statement
-  a page: an index range of at most `limit + 1` rows per scope (by scope, then app, then time), the
-  newest of those joined to their events and items.
+occurredAt, item}`, `title` being the item's name then and `item` the item as it is now (null for an event
+  about no item). One statement a page: an index range of at most `limit + 1` rows per scope (by scope, then
+  app, then time; filtered, a second for `liveworkspace`), the newest of those joined to their events and
+  items.
 - `GET /timeline?item=<id>&limit=&cursor=` — one item's history (an item menu's History), the same shape:
   only that item's events, read through the events' item index, each kept when one of the person's scopes
   sees it and they haven't removed it.

@@ -48,7 +48,7 @@ import { listItems, type ListFilters, type ListSpec } from './lists';
 import { firstVisitStatement, tellApp, wasFirstVisit } from './notices';
 import { drainTombstones, purgeRows } from './purge';
 import { decorate, getItemRow, type Access, type ItemRow } from './rows';
-import { eventStatements, moveScopeStatements } from './timeline';
+import { bulkEventStatements, eventStatements, moveScopeStatements } from './timeline';
 
 const DEFAULT_TITLE = 'Untitled';
 // Emptying the Trash purges at most this many per call; the Explorer calls again while some remain.
@@ -294,6 +294,7 @@ export async function createItem(ctx: PersonContext): Promise<Response> {
       env,
       row,
       row.source && row.source !== 'person' ? { source: row.source } : null,
+      body.synced === true ? 'synced' : 'created',
     );
   } catch (err) {
     if (String(err).includes('UNIQUE')) return conflict('item_exists');
@@ -316,11 +317,12 @@ export async function createItem(ctx: PersonContext): Promise<Response> {
   return json({ item: await itemFor(env, person, row, access), grant }, { status: 201 });
 }
 
-// The row, and its `created` event in the same batch.
+// The row, and its `created` event (`synced` for an offline item put back) in the same batch.
 async function insertItem(
   env: Env,
   row: ItemRow,
   detail: Record<string, string | null> | null = null,
+  type: 'created' | 'synced' = 'created',
 ): Promise<void> {
   const db = env.INDEX_DB;
   const insert = db
@@ -347,7 +349,7 @@ async function insertItem(
     insert,
     ...eventStatements(db, {
       itemId: row.id,
-      type: 'created',
+      type,
       actorId: row.owner_id,
       detail,
       at: row.created_at,
@@ -486,6 +488,26 @@ async function deleteItem(ctx: RouteContext, id: string): Promise<Response> {
   if (loaded instanceof Response) return loaded;
   const { row } = loaded;
   if (url.searchParams.get('permanent') === 'true') {
+    // Taken offline into one browser: the item goes, and its person's Timeline says where (an event about no
+    // item, keeping its name and app).
+    if (url.searchParams.get('reason') === 'offline') {
+      const actor = caller.person?.id ?? row.owner_id;
+      const now = Date.now();
+      await env.INDEX_DB.batch(
+        bulkEventStatements(env.INDEX_DB, [
+          {
+            id: `off:${row.id}:${now}`,
+            app: row.app,
+            itemId: null,
+            type: 'taken_offline',
+            actorId: actor,
+            title: row.title,
+            at: now,
+            scopes: [`p:${actor}`],
+          },
+        ]),
+      );
+    }
     await purgeRows(env, [{ id: row.id, app: row.app }]);
     ctx.waitUntil(drainTombstones(env, { ids: [row.id] }));
     console.log('[index] purged', { app: row.app });

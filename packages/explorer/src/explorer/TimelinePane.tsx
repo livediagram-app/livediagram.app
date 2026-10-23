@@ -16,7 +16,12 @@ import {
   useSyncExternalStore,
   type MouseEvent,
 } from 'react';
-import { TIMELINE_DISMISS_MAX, type Item, type TimelineEvent } from '@liveworkspace/index-client';
+import {
+  TIMELINE_DISMISS_MAX,
+  isApp,
+  type Item,
+  type TimelineEvent,
+} from '@liveworkspace/index-client';
 import { RENAME_INPUT } from '../ui/classes';
 import { DismissIcon } from '../ui/icons';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
@@ -71,8 +76,9 @@ type OpenMenu = {
   key: string;
   anchor: HTMLElement;
   eventIds: string[];
-  // The card's item; null for a stack, whose menu only removes its run.
+  // The card's item; null for a stack, whose menu only removes its run, and for an event about no item.
   item: Item | null;
+  stack: boolean;
   title: string;
 };
 
@@ -90,17 +96,128 @@ export function actorWords(event: TimelineEvent, viewerId: string | null): strin
   return 'a teammate';
 }
 
+const cap = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
+
+/** An account page beside Manage Teams' (`/account/teams` → `/account/tokens`), for a token's card. */
+export function accountPageUrl(manageTeamsUrl: string | undefined, page: 'teams' | 'tokens') {
+  if (!manageTeamsUrl) return undefined;
+  return page === 'teams' ? manageTeamsUrl : manageTeamsUrl.replace(/\/teams\/?$/, `/${page}`);
+}
+
+const leave = (url: string | undefined) => (url ? () => window.location.assign(url) : undefined);
+
+/** What an event about no item says: a team's, an API token's, images uploaded, an item taken offline. */
+function renderLooseEvent(
+  event: TimelineEvent,
+  ctx: Pick<ExplorerContextValue, 'viewerId' | 'filter' | 'navigate' | 'manageTeamsUrl'> & {
+    onOpen?: (event: TimelineEvent) => void;
+  },
+): TimelineCardRender {
+  const detail = event.detail ?? {};
+  const mine = (id: string | null | undefined) =>
+    Boolean(id && ctx.viewerId && id === ctx.viewerId);
+  const who = actorWords(event, ctx.viewerId);
+  const by = `by ${who}`;
+  const member = mine(detail.personId) ? 'you' : (detail.memberName ?? 'a member');
+  const opened = (run: (() => void) | undefined) =>
+    run
+      ? () => {
+          ctx.onOpen?.(event);
+          run();
+        }
+      : undefined;
+  const team = detail.teamId ? () => ctx.navigate({ kind: 'team', id: detail.teamId! }) : undefined;
+  const base: TimelineCardRender = {
+    icon: eventIcon(event.type),
+    subject: event.title,
+    label: eventLabel(event),
+    meta: by,
+    badge:
+      ctx.filter === 'all' && isApp(event.app) ? <AppMark app={event.app} size={18} /> : undefined,
+  };
+  switch (event.type) {
+    case 'image_uploaded': {
+      const count = Number(detail.count ?? '1') || 1;
+      return { ...base, subject: count === 1 ? '1 image' : `${count} images`, meta: undefined };
+    }
+    case 'taken_offline':
+      return {
+        ...base,
+        subject: event.title || 'Untitled',
+        meta: `Kept only in one browser · ${by}`,
+      };
+    case 'team_invite_sent':
+      // To the person invited: answered where invitations are, on liveworkspace.app.
+      if (mine(detail.personId)) {
+        return {
+          ...base,
+          label: 'Invited to a Team',
+          meta: `From ${who}`,
+          onClick: opened(leave(ctx.manageTeamsUrl)),
+        };
+      }
+      return {
+        ...base,
+        meta: `${cap(detail.memberName ?? 'someone')} · ${by}`,
+        onClick: opened(team),
+      };
+    case 'team_joined':
+      return mine(event.actorId)
+        ? { ...base, label: 'Joined a Team', meta: undefined, onClick: opened(team) }
+        : { ...base, meta: cap(who), onClick: opened(team) };
+    case 'team_declined':
+      return { ...base, meta: cap(who), onClick: opened(team) };
+    case 'team_role_changed':
+      return {
+        ...base,
+        meta: `${cap(member)} ${member === 'you' ? 'are' : 'is'} now ${detail.role === 'admin' ? 'an Admin' : 'a Member'} · ${by}`,
+        onClick: opened(team),
+      };
+    case 'team_member_removed':
+      if (detail.left) return { ...base, meta: cap(who) };
+      return mine(detail.personId)
+        ? { ...base, label: 'Removed from a Team', meta: cap(by) }
+        : { ...base, meta: `${cap(member)} · ${by}`, onClick: opened(team) };
+    case 'team_renamed':
+      return {
+        ...base,
+        meta: detail.from ? `Was \u201c${detail.from}\u201d · ${by}` : by,
+        onClick: opened(team),
+      };
+    case 'team_deleted':
+      return base;
+    case 'token_created':
+    case 'token_revoked':
+      return { ...base, onClick: opened(leave(accountPageUrl(ctx.manageTeamsUrl, 'tokens'))) };
+    case 'token_expiring':
+      return {
+        ...base,
+        meta: 'Rotate it before it lapses to keep connected tools working',
+        onClick: opened(leave(accountPageUrl(ctx.manageTeamsUrl, 'tokens'))),
+      };
+    default:
+      return base;
+  }
+}
+
 /** What an event says on its card: the item as it is now, why it is here, and its detail. */
 export function renderTimelineEvent(
   event: TimelineEvent,
   ctx: Pick<
     ExplorerContextValue,
     'viewerId' | 'filter' | 'renderThumbnail' | 'openItem' | 'navigate' | 'teamName'
-  > & { onOpen?: (event: TimelineEvent) => void },
+  > & {
+    manageTeamsUrl?: string;
+    onOpen?: (event: TimelineEvent) => void;
+  },
 ): TimelineCardRender {
+  const item = event.item;
+  if (!item) return renderLooseEvent(event, ctx);
   const by = `by ${actorWords(event, ctx.viewerId)}`;
   const detail = event.detail ?? {};
   let meta: string | undefined = by;
+  // Free text under the reason line: a comment's words, an action's name.
+  let description: string | undefined;
   switch (event.type) {
     case 'renamed':
       meta = detail.from ? `Was “${detail.from}” · ${by}` : by;
@@ -116,8 +233,28 @@ export function renderTimelineEvent(
     case 'favourited':
       meta = undefined;
       break;
+    case 'commented': {
+      const count = Number(detail.count ?? '1') || 1;
+      description = detail.text ?? undefined;
+      meta = count > 1 ? `${count} comments · ${by}` : by;
+      break;
+    }
+    case 'comment_resolved':
+      description = detail.text ?? undefined;
+      break;
+    case 'action_assigned': {
+      description = detail.action ?? undefined;
+      const to =
+        detail.assigneeId && detail.assigneeId === ctx.viewerId
+          ? 'you'
+          : (detail.assigneeName ?? 'a teammate');
+      meta = `To ${to} · ${by}`;
+      break;
+    }
+    case 'action_done':
+      description = detail.action ?? undefined;
+      break;
   }
-  const item = event.item;
   // An item in the Trash opens the Trash, where it can be restored; anything else opens in its own app.
   const open = item.trashedAt
     ? () => {
@@ -132,9 +269,10 @@ export function renderTimelineEvent(
     icon: eventIcon(event.type, detail.source),
     subject: item.title || event.title || 'Untitled',
     label: eventLabel(event),
+    description,
     meta,
     preview: item.trashedAt ? undefined : (ctx.renderThumbnail?.(item, 'card') ?? undefined),
-    badge: ctx.filter === 'all' ? <AppMark app={event.app} size={18} /> : undefined,
+    badge: ctx.filter === 'all' ? <AppMark app={item.app} size={18} /> : undefined,
     onClick: open,
   };
 }
@@ -164,7 +302,7 @@ export function TimelinePane({ onOpenNav }: { onOpenNav?: () => void }) {
   // Who did it, by name: the index keeps ids only.
   const named = useNamedEvents(feed.events);
   const events = useMemo(
-    () => named.filter((e) => !overlay.apply(e.item).gone),
+    () => named.filter((e) => !e.item || !overlay.apply(e.item).gone),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- overlayVersion is what changes overlay.apply
     [named, overlay, overlayVersion],
   );
@@ -186,7 +324,7 @@ export function TimelinePane({ onOpenNav }: { onOpenNav?: () => void }) {
       [onTimeline],
     ),
   });
-  const { renderThumbnail, openItem, navigate, teamName } = explorer;
+  const { renderThumbnail, openItem, navigate, teamName, manageTeamsUrl } = explorer;
   const render: TimelineRenderer = useMemo(() => {
     const ctx = {
       viewerId,
@@ -195,9 +333,11 @@ export function TimelinePane({ onOpenNav }: { onOpenNav?: () => void }) {
       openItem,
       navigate,
       teamName,
+      manageTeamsUrl,
       onOpen: () => onTimeline?.('Opened', 'Card'),
     };
-    return (event) => renderTimelineEvent({ ...event, item: overlay.apply(event.item) }, ctx);
+    return (event) =>
+      renderTimelineEvent({ ...event, item: event.item ? overlay.apply(event.item) : null }, ctx);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- overlayVersion is what changes overlay.apply
   }, [
     viewerId,
@@ -206,6 +346,7 @@ export function TimelinePane({ onOpenNav }: { onOpenNav?: () => void }) {
     openItem,
     navigate,
     teamName,
+    manageTeamsUrl,
     onTimeline,
     overlay,
     overlayVersion,
@@ -247,10 +388,11 @@ export function TimelinePane({ onOpenNav }: { onOpenNav?: () => void }) {
 
   const cardSlots = useCallback(
     (event: TimelineEvent): TimelineCardSlots => {
-      const item = overlay.apply(event.item);
-      const title = item.title || event.title || 'Untitled';
-      const target = { key: event.id, eventIds: [event.id], item: event.item, title };
-      if (renamingId === item.id && renameFrom === event.id) {
+      const item = event.item ? overlay.apply(event.item) : null;
+      const title = item?.title || event.title || 'Untitled';
+      // An event about no item has only Remove from Timeline.
+      const target = { key: event.id, eventIds: [event.id], item: event.item, title, stack: false };
+      if (item && renamingId === item.id && renameFrom === event.id) {
         return {
           title: (
             <InlineRenameInput
@@ -292,6 +434,7 @@ export function TimelinePane({ onOpenNav }: { onOpenNav?: () => void }) {
         key: stack.key,
         eventIds: stack.events.map((e) => e.id),
         item: null,
+        stack: true,
         title: stackLabel(stack),
       };
       return {
@@ -333,7 +476,7 @@ export function TimelinePane({ onOpenNav }: { onOpenNav?: () => void }) {
       onClick={() => {
         const ids = menu.eventIds;
         closeMenu();
-        remove(ids, menu.item ? 'Entry' : 'Stack');
+        remove(ids, menu.stack ? 'Stack' : 'Entry');
       }}
     />
   ) : null;

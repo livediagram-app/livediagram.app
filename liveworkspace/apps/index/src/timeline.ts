@@ -2,35 +2,48 @@
 // reaches as owner or team member, newest first, in every app or one.
 //
 // Recording. The index writes its own events (created, renamed, moved, trashed, restored, shared,
-// unshared, favourited) in the same batch as the change, each statement reading the item's app, name and
-// scope from its row. An app reports `edited` from its server (PUT /app/items/:id/events): one event per
-// person, item and UTC day, whose time moves on with each report, which also counts the day towards the
-// person's Most Used.
+// unshared, favourited, synced, taken_offline) in the same batch as the change, each statement reading the
+// item's app, name and scope from its row. From an item's collab push it writes commented,
+// comment_resolved, action_assigned and action_done (collab-push.ts). An app reports `edited` from its
+// server (PUT /app/items/:id/events): one event per person, item and UTC day, whose time moves on with each
+// report, which also counts the day towards the person's Most Used; and image_uploaded (PUT
+// /app/people/events), one per person, app and day, counting. liveworkspace accounts reports its team and
+// API token events (POST /internal/timeline), under TIMELINE_PLATFORM, each with the scopes that see it.
+// An event about no item (`item_id` NULL) keeps its own app and title.
 //
 // Reading. Each event has a row per scope that sees it (the item's `p:<owner>` or `t:<team>`; a favourite,
 // only its person's), carrying the app and time. A page is one statement: for each of the person's scopes
 // (their own, and each team's: at most 1 + DELEGATED_TEAMS_MAX), one index range of at most limit + 1 rows,
-// by scope, then app when filtered, then time; then the newest limit + 1 of those, joined to their events
-// and items. Nothing is read per event.
+// by scope, then app when filtered, then time (filtered, a second range for TIMELINE_PLATFORM's events, which
+// every app's view shows); then the newest limit + 1 of those, joined to their events and items. Nothing is
+// read per event.
 
 import {
+  ACCOUNT_EVENT_AHEAD_MS,
+  ACCOUNT_EVENT_SCOPES_MAX,
+  ACCOUNT_TIMELINE_EVENT_TYPES,
   APP_EVENTS_MAX,
+  APP_PERSON_EVENT_TYPES,
   APP_TIMELINE_EVENT_TYPES,
+  TIMELINE_PLATFORM,
   TIMELINE_DISMISS_MAX,
   TIMELINE_LIMIT_MAX,
   TIMELINE_NEW_CAP,
   TIMELINE_PAGE,
   isApp,
+  type AccountTimelineEvent,
   type App,
+  type AppPersonEvent,
   type AppTimelineEvent,
+  type TimelineApp,
   type TimelineEvent,
   type TimelineEventType,
 } from '@liveworkspace/index-client';
-import { scopesOf, type Person } from './auth';
+import { isMergeCaller, scopesOf, type Person } from './auth';
 import { decodeCursor, encodeCursor, isId } from './codec';
 import type { PersonContext } from './context';
 import type { Env } from './env';
-import { badRequest, json, noContent, notFound } from './http';
+import { badRequest, json, noContent, notFound, readObject, unauthorized } from './http';
 import { useDayOf, useDayStatements } from './items';
 import { ITEM_COLUMNS, directAccess, toItem, type Access, type ItemRow } from './rows';
 
@@ -128,6 +141,72 @@ export function moveScopeStatements(
   ];
 }
 
+/** One event of a batch written whole (bulkEventStatements): its scopes named, its title given. */
+export type BulkEvent = {
+  id: string;
+  app: TimelineApp;
+  // Null for an event about no item.
+  itemId: string | null;
+  type: TimelineEventType;
+  actorId: string | null;
+  actorName?: string | null;
+  title: string;
+  detail?: Record<string, string | null> | null;
+  at: number;
+  scopes: string[];
+};
+
+/**
+ * Any number of events in three statements, whatever the count: the events, then a scope row per (scope,
+ * event), then the scope rows' times for an event sent again later. Sending one again (same id) moves its
+ * time on and takes its newest title and detail, so a retry never makes a second card.
+ */
+export function bulkEventStatements(db: Db, events: readonly BulkEvent[]): D1PreparedStatement[] {
+  if (events.length === 0) return [];
+  const rows = events.map((e) => ({
+    id: e.id,
+    app: e.app,
+    item: e.itemId,
+    actor: e.actorId,
+    name: e.actorName ?? null,
+    type: e.type,
+    title: e.title,
+    detail: e.detail ? JSON.stringify(e.detail) : null,
+    at: e.at,
+  }));
+  const pairs = events.flatMap((e) => [...new Set(e.scopes)].map((scope) => [scope, e.id]));
+  return [
+    db
+      .prepare(
+        `INSERT INTO timeline_events (id, app, item_id, actor_id, actor_name, type, title, detail, occurred_at)
+         SELECT json_extract(value, '$.id'), json_extract(value, '$.app'), json_extract(value, '$.item'),
+           json_extract(value, '$.actor'), json_extract(value, '$.name'), json_extract(value, '$.type'),
+           json_extract(value, '$.title'), json_extract(value, '$.detail'), json_extract(value, '$.at')
+         FROM json_each(?) WHERE true
+         ON CONFLICT (id) DO UPDATE SET
+           occurred_at = MAX(timeline_events.occurred_at, excluded.occurred_at),
+           title = excluded.title,
+           detail = COALESCE(excluded.detail, timeline_events.detail),
+           actor_name = COALESCE(excluded.actor_name, timeline_events.actor_name)`,
+      )
+      .bind(JSON.stringify(rows)),
+    db
+      .prepare(
+        `INSERT OR IGNORE INTO timeline_event_scopes (scope, event_id, app, occurred_at)
+         SELECT json_extract(p.value, '$[0]'), e.id, e.app, e.occurred_at
+         FROM json_each(?) p JOIN timeline_events e ON e.id = json_extract(p.value, '$[1]')`,
+      )
+      .bind(JSON.stringify(pairs)),
+    db
+      .prepare(
+        `UPDATE timeline_event_scopes SET occurred_at = (
+           SELECT occurred_at FROM timeline_events WHERE id = timeline_event_scopes.event_id)
+         WHERE event_id IN (SELECT value FROM json_each(?))`,
+      )
+      .bind(JSON.stringify(events.map((e) => e.id))),
+  ];
+}
+
 /** The id of a person's `edited` event on an item for the day of `at`. */
 export const editedEventId = (itemId: string, personId: string, at: number) =>
   `ed:${itemId}:${personId}:${useDayOf(at)}`;
@@ -159,8 +238,9 @@ function buildItemHistoryQuery(person: Person, spec: TimelineSpec & { item: stri
   const sql = `SELECT s.seen_at, x.* FROM (
       SELECT (SELECT last_seen_at FROM timeline_scope_state WHERE person_id = ?) AS seen_at
     ) s LEFT JOIN (
-      SELECT e.id AS e_id, e.actor_id AS e_actor_id, e.actor_name AS e_actor_name, e.type AS e_type,
-             e.title AS e_title, e.detail AS e_detail, e.occurred_at AS e_occurred_at, ${ITEM_COLUMNS}
+      SELECT e.id AS e_id, e.app AS e_app, e.item_id AS e_item_id, e.actor_id AS e_actor_id,
+             e.actor_name AS e_actor_name, e.type AS e_type, e.title AS e_title, e.detail AS e_detail,
+             e.occurred_at AS e_occurred_at, ${ITEM_COLUMNS}
       FROM timeline_events e JOIN items i ON i.id = e.item_id
       WHERE e.item_id = ?
         AND EXISTS (SELECT 1 FROM timeline_event_scopes sc
@@ -177,31 +257,36 @@ export function buildTimelineQuery(person: Person, spec: TimelineSpec): BuiltQue
   const take = spec.limit + 1;
   const args: unknown[] = [person.id];
   const ranges: string[] = [];
+  // Filtered to one app, the account's own events (teams, tokens) show too: a second range per scope.
+  const apps: (TimelineApp | null)[] = spec.app ? [spec.app, TIMELINE_PLATFORM] : [null];
   for (const scope of scopesOf(person)) {
-    // An event the person removed from their Timeline is skipped in the range; removals are rare, so the
-    // range reads at most limit + 1 rows plus those.
-    let sql = `SELECT event_id FROM timeline_event_scopes s WHERE scope = ?
+    for (const app of apps) {
+      // An event the person removed from their Timeline is skipped in the range; removals are rare, so the
+      // range reads at most limit + 1 rows plus those.
+      let sql = `SELECT event_id FROM timeline_event_scopes s WHERE scope = ?
       AND NOT EXISTS (SELECT 1 FROM timeline_dismissals d WHERE d.person_id = ? AND d.event_id = s.event_id)`;
-    args.push(scope, person.id);
-    if (spec.app) {
-      sql += ' AND app = ?';
-      args.push(spec.app);
+      args.push(scope, person.id);
+      if (app) {
+        sql += ' AND app = ?';
+        args.push(app);
+      }
+      if (spec.cursor) {
+        sql += ' AND (occurred_at < ? OR (occurred_at = ? AND event_id < ?))';
+        args.push(spec.cursor.at, spec.cursor.at, spec.cursor.id);
+      }
+      sql += ' ORDER BY occurred_at DESC, event_id DESC LIMIT ?';
+      args.push(take);
+      ranges.push(`SELECT event_id FROM (${sql})`);
     }
-    if (spec.cursor) {
-      sql += ' AND (occurred_at < ? OR (occurred_at = ? AND event_id < ?))';
-      args.push(spec.cursor.at, spec.cursor.at, spec.cursor.id);
-    }
-    sql += ' ORDER BY occurred_at DESC, event_id DESC LIMIT ?';
-    args.push(take);
-    ranges.push(`SELECT event_id FROM (${sql})`);
   }
   args.push(take);
   const sql = `SELECT s.seen_at, x.* FROM (
       SELECT (SELECT last_seen_at FROM timeline_scope_state WHERE person_id = ?) AS seen_at
     ) s LEFT JOIN (
-      SELECT e.id AS e_id, e.actor_id AS e_actor_id, e.actor_name AS e_actor_name, e.type AS e_type,
-             e.title AS e_title, e.detail AS e_detail, e.occurred_at AS e_occurred_at, ${ITEM_COLUMNS}
-      FROM timeline_events e JOIN items i ON i.id = e.item_id
+      SELECT e.id AS e_id, e.app AS e_app, e.item_id AS e_item_id, e.actor_id AS e_actor_id,
+             e.actor_name AS e_actor_name, e.type AS e_type, e.title AS e_title, e.detail AS e_detail,
+             e.occurred_at AS e_occurred_at, ${ITEM_COLUMNS}
+      FROM timeline_events e LEFT JOIN items i ON i.id = e.item_id
       WHERE e.id IN (${ranges.join(' UNION ALL ')})
       ORDER BY e.occurred_at DESC, e.id DESC LIMIT ?
     ) x ON 1`;
@@ -211,6 +296,8 @@ export function buildTimelineQuery(person: Person, spec: TimelineSpec): BuiltQue
 type EventRow = ItemRow & {
   seen_at: number | null;
   e_id: string | null;
+  e_app: TimelineApp;
+  e_item_id: string | null;
   e_actor_id: string | null;
   e_actor_name: string | null;
   e_type: TimelineEventType;
@@ -237,18 +324,22 @@ const LINK_VIEW: Access = { level: 'view', tabId: null, via: 'link', code: null 
 const NO_EXTRAS = { favourite: false, tagIds: [], lastOpenedAt: null, hiddenFromRecent: false };
 
 function toEvent(row: EventRow, person: Person): TimelineEvent {
-  const access = directAccess(row, person) ?? LINK_VIEW;
+  // An event about no item: a team's, a token's, images uploaded, an item taken offline.
+  const item =
+    row.id === null || row.id === undefined
+      ? null
+      : toItem(row, directAccess(row, person) ?? LINK_VIEW, NO_EXTRAS);
   return {
     id: row.e_id!,
-    app: row.app,
+    app: row.e_app,
     type: row.e_type,
     actorId: row.e_actor_id,
     actorName: row.e_actor_name,
-    itemId: row.id,
+    itemId: row.e_item_id,
     title: row.e_title,
     detail: parseDetail(row.e_detail),
     occurredAt: row.e_occurred_at,
-    item: toItem(row, access, NO_EXTRAS),
+    item,
   };
 }
 
@@ -282,20 +373,23 @@ export function timelineNewQuery(person: Person, app: App | null, now: number): 
   const take = TIMELINE_NEW_CAP + 1;
   const args: unknown[] = [person.id];
   const ranges: string[] = [];
+  const apps: (TimelineApp | null)[] = app ? [app, TIMELINE_PLATFORM] : [null];
   for (const scope of scopesOf(person)) {
-    let sql = `SELECT s.event_id FROM timeline_event_scopes s JOIN timeline_events e ON e.id = s.event_id
+    for (const one of apps) {
+      let sql = `SELECT s.event_id FROM timeline_event_scopes s JOIN timeline_events e ON e.id = s.event_id
       WHERE s.scope = ?`;
-    args.push(scope);
-    if (app) {
-      sql += ' AND s.app = ?';
-      args.push(app);
-    }
-    sql += ` AND s.occurred_at > (SELECT seen FROM st) AND s.occurred_at <= ?
+      args.push(scope);
+      if (one) {
+        sql += ' AND s.app = ?';
+        args.push(one);
+      }
+      sql += ` AND s.occurred_at > (SELECT seen FROM st) AND s.occurred_at <= ?
       AND (e.actor_id IS NULL OR e.actor_id != ?)
       AND NOT EXISTS (SELECT 1 FROM timeline_dismissals d WHERE d.person_id = ? AND d.event_id = s.event_id)
       ORDER BY s.occurred_at DESC LIMIT ?`;
-    args.push(now, person.id, person.id, take);
-    ranges.push(`SELECT event_id FROM (${sql})`);
+      args.push(now, person.id, person.id, take);
+      ranges.push(`SELECT event_id FROM (${sql})`);
+    }
   }
   args.push(take);
   const sql = `WITH st AS (SELECT last_seen_at AS seen FROM timeline_scope_state WHERE person_id = ?)
@@ -415,5 +509,156 @@ export async function pushAppEvents(
     );
   }
   await db.batch(statements);
+  return noContent();
+}
+
+// ---------- Events about people rather than an item, from an app ----------------------------------------------
+
+// Images one report may count.
+const COUNT_MAX = 1000;
+
+/** The id of a person's `image_uploaded` event in one app for the day of `at`. */
+export const imagesEventId = (app: App, personId: string, at: number) =>
+  `im:${app}:${personId}:${useDayOf(at)}`;
+
+/**
+ * PUT /app/people/events from an app's server: up to APP_EVENTS_MAX `image_uploaded` reports. Each adds its
+ * count to the person's event for that app and UTC day (one card a day, "3 images"), whose time moves on.
+ * Only the person sees it.
+ */
+export async function pushPersonEvents(
+  env: Env,
+  app: App,
+  body: Record<string, unknown>,
+): Promise<Response> {
+  const list = body.events;
+  if (!Array.isArray(list) || list.length > APP_EVENTS_MAX) return badRequest('invalid_events');
+  const now = Date.now();
+  const byId = new Map<string, AppPersonEvent & { count: number }>();
+  for (const value of list) {
+    const e = value as Record<string, unknown> | null;
+    if (!e || typeof e !== 'object') return badRequest('invalid_events');
+    if (!(APP_PERSON_EVENT_TYPES as readonly unknown[]).includes(e.type)) {
+      return badRequest('invalid_events');
+    }
+    const count = e.count === undefined ? 1 : e.count;
+    if (!isId(e.actorId) || !isTime(e.at)) return badRequest('invalid_events');
+    if (typeof count !== 'number' || !Number.isInteger(count) || count < 1 || count > COUNT_MAX) {
+      return badRequest('invalid_events');
+    }
+    const at = Math.min(Math.floor(e.at), now + FUTURE_SLACK_MS);
+    const id = imagesEventId(app, e.actorId, at);
+    const seen = byId.get(id);
+    byId.set(id, {
+      type: 'image_uploaded',
+      actorId: e.actorId,
+      at: Math.max(at, seen?.at ?? 0),
+      count: count + (seen?.count ?? 0),
+    });
+  }
+  if (byId.size === 0) return noContent();
+  const db = env.INDEX_DB;
+  const rows = [...byId].map(([id, e]) => ({ id, actor: e.actorId, at: e.at, count: e.count }));
+  await db.batch([
+    db
+      .prepare(
+        `INSERT INTO timeline_events (id, app, item_id, actor_id, type, title, detail, occurred_at)
+         SELECT json_extract(value, '$.id'), ?, NULL, json_extract(value, '$.actor'), 'image_uploaded', '',
+           json_object('count', CAST(json_extract(value, '$.count') AS TEXT)), json_extract(value, '$.at')
+         FROM json_each(?) WHERE true
+         ON CONFLICT (id) DO UPDATE SET
+           occurred_at = MAX(timeline_events.occurred_at, excluded.occurred_at),
+           detail = json_object('count', CAST(
+             COALESCE(CAST(json_extract(timeline_events.detail, '$.count') AS INTEGER), 0)
+             + CAST(json_extract(excluded.detail, '$.count') AS INTEGER) AS TEXT))`,
+      )
+      .bind(app, JSON.stringify(rows)),
+    db
+      .prepare(
+        `INSERT INTO timeline_event_scopes (scope, event_id, app, occurred_at)
+         SELECT 'p:' || e.actor_id, e.id, e.app, e.occurred_at
+         FROM json_each(?) j JOIN timeline_events e ON e.id = json_extract(j.value, '$.id') WHERE true
+         ON CONFLICT (scope, event_id) DO UPDATE SET occurred_at = excluded.occurred_at`,
+      )
+      .bind(JSON.stringify(rows)),
+  ]);
+  return noContent();
+}
+
+// ---------- Teams and API tokens, from liveworkspace accounts --------------------------------------------------
+
+const EVENT_ID_MAX = 300;
+const TITLE_MAX = 200;
+const DETAIL_KEYS_MAX = 12;
+const DETAIL_VALUE_MAX = 500;
+const SCOPE = /^[pt]:.+$/;
+
+function parseDetailInput(value: unknown): Record<string, string | null> | null | undefined {
+  if (value === undefined || value === null) return null;
+  if (typeof value !== 'object' || Array.isArray(value)) return undefined;
+  const entries = Object.entries(value as Record<string, unknown>);
+  if (entries.length > DETAIL_KEYS_MAX) return undefined;
+  const out: Record<string, string | null> = {};
+  for (const [key, v] of entries) {
+    if (v !== null && typeof v !== 'string') return undefined;
+    out[key] = v === null ? null : v.slice(0, DETAIL_VALUE_MAX);
+  }
+  return out;
+}
+
+export function parseAccountEvent(value: unknown, now: number): AccountTimelineEvent | null {
+  const e = value as Record<string, unknown> | null;
+  if (!e || typeof e !== 'object') return null;
+  if (!(ACCOUNT_TIMELINE_EVENT_TYPES as readonly unknown[]).includes(e.type)) return null;
+  if (typeof e.id !== 'string' || e.id.length === 0 || e.id.length > EVENT_ID_MAX) return null;
+  if (e.actorId !== null && e.actorId !== undefined && !isId(e.actorId)) return null;
+  const name = e.actorName ?? null;
+  if (name !== null && typeof name !== 'string') return null;
+  if (typeof e.title !== 'string' || !isTime(e.at)) return null;
+  const detail = parseDetailInput(e.detail);
+  if (detail === undefined) return null;
+  const scopes = e.scopes;
+  if (
+    !Array.isArray(scopes) ||
+    scopes.length === 0 ||
+    scopes.length > ACCOUNT_EVENT_SCOPES_MAX ||
+    !scopes.every((s) => typeof s === 'string' && s.length <= EVENT_ID_MAX && SCOPE.test(s))
+  ) {
+    return null;
+  }
+  return {
+    id: e.id,
+    type: e.type as AccountTimelineEvent['type'],
+    actorId: (e.actorId as string | null | undefined) ?? null,
+    actorName: name ? name.slice(0, ACTOR_NAME_MAX) : null,
+    title: e.title.slice(0, TITLE_MAX),
+    detail,
+    // A token's expiry is dated ahead (Upcoming), at most a little past the warning's week.
+    at: Math.min(Math.floor(e.at), now + ACCOUNT_EVENT_AHEAD_MS),
+    scopes: scopes as string[],
+  };
+}
+
+/**
+ * POST /internal/timeline from liveworkspace accounts (its key, as for the merge): up to APP_EVENTS_MAX team
+ * and token events in three statements. Each event's id is accounts' own and stable, so a batch sent again
+ * (accounts resends until it lands) changes nothing.
+ */
+export async function handleAccountTimeline(request: Request, env: Env): Promise<Response> {
+  if (request.method !== 'POST') return notFound();
+  if (!(await isMergeCaller(request, env))) return unauthorized();
+  const body = await readObject(request);
+  const list = body?.events;
+  if (!Array.isArray(list) || list.length === 0 || list.length > APP_EVENTS_MAX) {
+    return badRequest('invalid_events');
+  }
+  const now = Date.now();
+  const events: BulkEvent[] = [];
+  for (const value of list) {
+    const event = parseAccountEvent(value, now);
+    if (!event) return badRequest('invalid_events');
+    events.push({ ...event, app: TIMELINE_PLATFORM, itemId: null });
+  }
+  await env.INDEX_DB.batch(bulkEventStatements(env.INDEX_DB, events));
   return noContent();
 }

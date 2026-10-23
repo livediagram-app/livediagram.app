@@ -97,5 +97,20 @@ export async function sweep(
     .all<Purgeable>();
   await purgeRows(env, results, now);
   const confirmed = await drainTombstones(env, {}, now);
+  await sweepLooseEvents(env);
   return { purged: results.length, confirmed };
+}
+
+// Timeline events about no item (a team's, a token's, images uploaded) that no scope sees any more (every
+// person they reached has closed their account): at most this many a day.
+export const LOOSE_EVENTS_SWEEP_MAX = 1000;
+
+export async function sweepLooseEvents(env: Env): Promise<void> {
+  await env.INDEX_DB.prepare(
+    `DELETE FROM timeline_events WHERE rowid IN (
+       SELECT e.rowid FROM timeline_events e WHERE e.item_id IS NULL
+       AND NOT EXISTS (SELECT 1 FROM timeline_event_scopes s WHERE s.event_id = e.id) LIMIT ?)`,
+  )
+    .bind(LOOSE_EVENTS_SWEEP_MAX)
+    .run();
 }

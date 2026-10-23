@@ -23,7 +23,7 @@ import {
   handleTags,
 } from './personal';
 import { sweep } from './purge';
-import { handleTimeline } from './timeline';
+import { handleAccountTimeline, handleTimeline } from './timeline';
 import { handleItemShare, handleShareCode, handleShared } from './sharing';
 
 const under = (pathname: string, base: string) =>
@@ -100,6 +100,10 @@ const worker = {
     if (segments[0] === 'app') return handleApp(request, env, segments);
     if (segments[0] === 'internal' && segments[1] === 'merge' && segments.length === 2) {
       return handleMerge(request, env, (promise) => ctx.waitUntil(promise));
+    }
+    // Accounts' team and API token events for the Timeline.
+    if (segments[0] === 'internal' && segments[1] === 'timeline' && segments.length === 2) {
+      return handleAccountTimeline(request, env);
     }
     if (segments[0] === 'internal' && segments[1] === 'purge-person' && segments.length === 2) {
       return handlePersonPurge(request, env, (promise) => ctx.waitUntil(promise));

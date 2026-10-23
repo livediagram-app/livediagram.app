@@ -2,7 +2,12 @@
 // card is made of, the day an event falls on, which events fold into one card, what colour and filter chip each
 // kind of event gets, and whether it is new. No React here beyond the types, so each rule is tested on its own.
 
-import { APP_KINDS, type TimelineEvent, type TimelineEventType } from '@liveworkspace/index-client';
+import {
+  APP_KINDS,
+  isApp,
+  type TimelineEvent,
+  type TimelineEventType,
+} from '@liveworkspace/index-client';
 import type { MouseEvent, ReactNode } from 'react';
 import { kindWords } from '../words';
 
@@ -138,7 +143,8 @@ export function formatMonth(monthKey: string): string {
 
 // ---------- What an event says ---------------------------------------------------------------------------------
 
-const VERBS: Record<TimelineEventType, string> = {
+// An item's kind, then this ("Plan Renamed").
+const VERBS: Partial<Record<TimelineEventType, string>> = {
   created: 'Created',
   edited: 'Updated',
   renamed: 'Renamed',
@@ -150,15 +156,41 @@ const VERBS: Record<TimelineEventType, string> = {
   favourited: 'Added to Favourites',
 };
 
-const isTimelineType = (type: string): type is TimelineEventType => type in VERBS;
+// The rest say what happened on their own, in livediagram's words.
+const LABELS: Partial<Record<TimelineEventType, string>> = {
+  commented: 'Comment Added',
+  comment_resolved: 'Comment Resolved',
+  action_assigned: 'Action Assigned',
+  action_done: 'Action Completed',
+  image_uploaded: 'Images Uploaded',
+  taken_offline: 'Taken Offline',
+  synced: 'Synced to the Cloud',
+  team_invite_sent: 'Invite Sent',
+  team_joined: 'Member Joined',
+  team_declined: 'Invite Declined',
+  team_role_changed: 'Role Changed',
+  team_member_removed: 'Member Removed',
+  team_renamed: 'Team Renamed',
+  team_deleted: 'Team Deleted',
+  token_created: 'API Token Created',
+  token_revoked: 'API Token Revoked',
+  token_expiring: 'API Token Expiring',
+};
 
-/** The reason line, Title Case: the item's kind and what happened ("Plan Renamed", "Canvas Made by AI"). */
+const isTimelineType = (type: string): type is TimelineEventType => type in TONE_BY_TYPE_KEYS;
+
+/** The reason line, Title Case: the item's kind and what happened ("Plan Renamed", "Canvas Made by AI"), or what
+ *  happened alone ("Comment Added", "Team Renamed"). */
 export function eventLabel(event: TimelineEvent): string {
-  const kind = kindWords(event.app).one;
-  if (event.type === 'created' && event.detail?.source === 'ai') return `${kind} Made by AI`;
-  if (event.type === 'created' && event.detail?.source === 'import') return `${kind} Imported`;
-  if (event.type === 'created' && event.detail?.copiedFrom) return `${kind} Copied`;
-  return `${kind} ${isTimelineType(event.type) ? VERBS[event.type] : 'Changed'}`;
+  const type = event.type as string;
+  if (type === 'team_member_removed' && event.detail?.left) return 'Member Left';
+  const own = isTimelineType(type) ? LABELS[type] : undefined;
+  if (own) return own;
+  const kind = isApp(event.app) ? kindWords(event.app).one : 'Item';
+  if (type === 'created' && event.detail?.source === 'ai') return `${kind} Made by AI`;
+  if (type === 'created' && event.detail?.source === 'import') return `${kind} Imported`;
+  if (type === 'created' && event.detail?.copiedFrom) return `${kind} Copied`;
+  return `${kind} ${(isTimelineType(type) && VERBS[type]) || 'Changed'}`;
 }
 
 // ---------- Tone: what an event's colour means ------------------------------------------------------------------
@@ -167,17 +199,37 @@ export function eventLabel(event: TimelineEvent): string {
 // worked on (create). Anything else is neutral rather than a guess.
 export type TimelineTone = 'danger' | 'structural' | 'create' | 'neutral';
 
+// Exhaustive, so a new event type fails the build until it has a colour (livediagram's tones).
 const TONE_BY_TYPE: Record<TimelineEventType, TimelineTone> = {
   trashed: 'danger',
+  team_member_removed: 'danger',
+  team_deleted: 'danger',
+  token_revoked: 'danger',
   renamed: 'structural',
   moved: 'structural',
   shared: 'structural',
   unshared: 'structural',
+  taken_offline: 'structural',
+  synced: 'structural',
+  team_invite_sent: 'structural',
+  team_joined: 'structural',
+  team_declined: 'structural',
+  team_role_changed: 'structural',
+  team_renamed: 'structural',
+  // Forward-dated: access is about to change, the amber a reader expects for "before it bites".
+  token_expiring: 'structural',
   created: 'create',
   edited: 'create',
   restored: 'create',
   favourited: 'create',
+  commented: 'create',
+  comment_resolved: 'create',
+  action_assigned: 'create',
+  action_done: 'create',
+  image_uploaded: 'create',
+  token_created: 'create',
 };
+const TONE_BY_TYPE_KEYS: Record<string, unknown> = TONE_BY_TYPE;
 
 export function eventTone(type: string): TimelineTone {
   return isTimelineType(type) ? TONE_BY_TYPE[type] : 'neutral';
@@ -206,18 +258,46 @@ export const toneSoftColor = (tone: TimelineTone) =>
 // ---------- Categories: the filter's chips ----------------------------------------------------------------------
 
 export type TimelineCategory =
-  'new' | 'edits' | 'renames' | 'deletions' | 'sharing' | 'filing' | 'favourites' | 'other';
+  | 'comments'
+  | 'actions'
+  | 'new'
+  | 'edits'
+  | 'renames'
+  | 'deletions'
+  | 'sharing'
+  | 'teams'
+  | 'filing'
+  | 'favourites'
+  | 'account'
+  | 'other';
 
 const CATEGORY_BY_TYPE: Record<TimelineEventType, TimelineCategory> = {
+  commented: 'comments',
+  comment_resolved: 'comments',
+  action_assigned: 'actions',
+  action_done: 'actions',
   created: 'new',
   edited: 'edits',
   renamed: 'renames',
+  team_renamed: 'renames',
   trashed: 'deletions',
   restored: 'deletions',
   shared: 'sharing',
   unshared: 'sharing',
+  team_invite_sent: 'teams',
+  team_joined: 'teams',
+  team_declined: 'teams',
+  team_role_changed: 'teams',
+  team_member_removed: 'teams',
+  team_deleted: 'teams',
   moved: 'filing',
+  taken_offline: 'filing',
+  synced: 'filing',
   favourited: 'favourites',
+  token_created: 'account',
+  token_revoked: 'account',
+  token_expiring: 'account',
+  image_uploaded: 'account',
 };
 
 export function eventCategory(type: string): TimelineCategory {
@@ -225,25 +305,33 @@ export function eventCategory(type: string): TimelineCategory {
 }
 
 export const CATEGORY_LABELS: Record<TimelineCategory, string> = {
+  comments: 'Comments',
+  actions: 'Actions',
   new: 'Created',
   edits: 'Edits',
   renames: 'Renames',
   deletions: 'Trash',
   sharing: 'Sharing',
+  teams: 'Teams',
   filing: 'Organisation',
   favourites: 'Favourites',
+  account: 'Account',
   other: 'Other',
 };
 
 // A fixed order, so the chips never rearrange as the feed changes under them.
 const CATEGORY_ORDER: TimelineCategory[] = [
+  'comments',
+  'actions',
   'new',
   'edits',
   'renames',
   'deletions',
   'sharing',
+  'teams',
   'filing',
   'favourites',
+  'account',
   'other',
 ];
 
@@ -261,6 +349,22 @@ const BUCKET_ALIASES: Partial<Record<TimelineEventType, string>> = {
   unshared: 'sharing',
   trashed: 'trash',
   restored: 'trash',
+  commented: 'comments',
+  comment_resolved: 'comments',
+  action_assigned: 'actions',
+  action_done: 'actions',
+  taken_offline: 'offline',
+  synced: 'offline',
+  team_invite_sent: 'team',
+  team_joined: 'team',
+  team_declined: 'team',
+  team_role_changed: 'team',
+  team_member_removed: 'team',
+  team_renamed: 'team',
+  team_deleted: 'team',
+  token_created: 'tokens',
+  token_revoked: 'tokens',
+  token_expiring: 'tokens',
 };
 
 export function bucketFor(event: TimelineEvent): string {
@@ -294,11 +398,23 @@ const STACK_VERBS: Record<string, string> = {
   favourited: 'Added to Favourites',
 };
 
+// A stack of these says what it holds on its own.
+const STACK_LABELS: Record<string, string> = {
+  comments: 'Comments Added or Resolved',
+  actions: 'Actions Assigned or Completed',
+  offline: 'Taken Offline or Synced',
+  team: 'Team Changes',
+  tokens: 'API Token Changes',
+  image_uploaded: 'Images Uploaded',
+};
+
 /** A stack's headline, true of every member: "Plans Updated", or "Items Updated" across apps. */
 export function stackLabel(stack: TimelineStack): string {
+  const own = STACK_LABELS[stack.bucket];
+  if (own) return own;
   const apps = new Set(stack.events.map((e) => e.app));
   const first = stack.events[0]!;
-  const many = apps.size === 1 ? kindWords(first.app).many : 'Items';
+  const many = apps.size === 1 && isApp(first.app) ? kindWords(first.app).many : 'Items';
   return `${many} ${STACK_VERBS[stack.bucket] ?? 'Changed'}`;
 }
 
@@ -306,7 +422,8 @@ export function stackLabel(stack: TimelineStack): string {
 export function collapseSameDayCreate(events: readonly TimelineEvent[]): TimelineEvent[] {
   const created = new Set<string>();
   for (const e of events) {
-    if (e.type === 'created') created.add(`${e.itemId}|${dateKey(e.occurredAt)}`);
+    if (e.type === 'created' || e.type === 'synced')
+      created.add(`${e.itemId}|${dateKey(e.occurredAt)}`);
   }
   if (created.size === 0) return [...events];
   return events.filter(
@@ -328,8 +445,8 @@ export function isNewEvent(
   return event.occurredAt > lastSeenAt && event.occurredAt <= now;
 }
 
-/** The kind an app's events are, for its words. */
-export const kindOfApp = (app: TimelineEvent['app']) => APP_KINDS[app];
+/** The kind an app's events are, for its words (null for an account's own: teams, tokens). */
+export const kindOfApp = (app: TimelineEvent['app']) => (isApp(app) ? APP_KINDS[app] : null);
 
 // ---------- Motion ---------------------------------------------------------------------------------------------
 

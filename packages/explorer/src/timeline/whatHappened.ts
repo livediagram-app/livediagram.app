@@ -21,6 +21,11 @@ export const WHAT_HAPPENED_VERBS = [
   'unshared',
   'trashed',
   'restored',
+  'synced',
+  'commented',
+  'comment_resolved',
+  'action_assigned',
+  'action_done',
 ] as const satisfies readonly TimelineEventType[];
 export type WhatHappenedVerb = (typeof WHAT_HAPPENED_VERBS)[number];
 
@@ -36,6 +41,11 @@ export const ACTION_PHRASES: Readonly<Record<WhatHappenedVerb, [string, string |
   unshared: ['stopped sharing', null],
   trashed: ['moved', 'to the Trash'],
   restored: ['restored', 'from the Trash'],
+  synced: ['synced', 'back to the cloud'],
+  commented: ['commented on', null],
+  comment_resolved: ['resolved a comment on', null],
+  action_assigned: ['assigned an action on', null],
+  action_done: ['finished an action on', null],
 };
 
 /** Each verb as a summary lists it: "Sam and Ana edited and renamed ‹Budget›". */
@@ -48,6 +58,11 @@ export const VERB_PHRASES: Readonly<Record<WhatHappenedVerb, string>> = {
   unshared: 'stopped sharing',
   trashed: 'trashed',
   restored: 'restored',
+  synced: 'synced',
+  commented: 'commented on',
+  comment_resolved: 'resolved comments on',
+  action_assigned: 'assigned actions on',
+  action_done: 'finished actions on',
 };
 
 export type WhatHappenedPerson = { id: string; name: string };
@@ -56,7 +71,7 @@ export type WhatHappenedGroup = {
   // `<itemId>:<day>`
   id: string;
   day: string;
-  item: TimelineEvent['item'];
+  item: NonNullable<TimelineEvent['item']>;
   app: TimelineEvent['app'];
   // Newest first.
   actions: TimelineEvent[];
@@ -79,9 +94,10 @@ export function personName(event: Pick<TimelineEvent, 'actorId' | 'actorName'>):
   return 'A teammate';
 }
 
-/** Others' doings only: the reader's own, and events nobody did, are not news to them. */
+/** Others' doings to an item only: the reader's own, events nobody did, and those about no item (a team, a
+ *  token) are not Home's news. */
 export function isOthers(event: TimelineEvent, viewerId: string | null): boolean {
-  if (!event.actorId) return false;
+  if (!event.actorId || !event.item) return false;
   if (viewerId && event.actorId === viewerId) return false;
   return isVerb(event.type);
 }
@@ -101,7 +117,7 @@ export function groupWhatHappened(
       group = {
         id,
         day,
-        item: event.item,
+        item: event.item!,
         app: event.app,
         actions: [],
         people: [],

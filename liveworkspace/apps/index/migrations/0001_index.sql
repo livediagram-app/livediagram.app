@@ -113,16 +113,20 @@ CREATE TABLE use_days (
 CREATE INDEX use_days_person_day ON use_days (person_id, day);
 CREATE INDEX use_days_item ON use_days (item_id);
 
--- The Timeline (src/timeline.ts): what happened to the items people reach. One row per event, whatever its
--- audience. The index writes created, renamed, moved, trashed, restored, shared, unshared and favourited in
--- the same batch as the change; an app reports `edited` (one row per person, item and UTC day, its id
--- `ed:<item>:<person>:<day>`, its time moving on). The item's name when it happened is kept in `title`;
--- `detail` is JSON (the old name, the folder moved to). Names of people are never kept, only `actor_name`
--- when an app reports one. A purged item's events go with it.
+-- The Timeline (src/timeline.ts): what happened to the items people reach, to their teams and to their API
+-- tokens. One row per event, whatever its audience. The index writes created, renamed, moved, trashed, restored,
+-- shared, unshared, favourited, synced and taken_offline in the same batch as the change, and commented,
+-- comment_resolved, action_assigned and action_done from an item's collab push; an app reports `edited` (one
+-- row per person, item and UTC day, its id `ed:<item>:<person>:<day>`, its time moving on) and image_uploaded
+-- (one per person, app and day); liveworkspace accounts reports its team and token events. The item's name
+-- when it happened is kept in `title` (the team's or token's for an account event); `detail` is JSON (the old
+-- name, the folder moved to, a comment's words). Names of people are never kept, only `actor_name` when a
+-- report carries one. An event about no item (`item_id` NULL: a team, a token, images, an item taken offline)
+-- keeps its own `app` (`liveworkspace` for accounts'). A purged item's events go with it.
 CREATE TABLE timeline_events (
   id          TEXT    PRIMARY KEY,
   app         TEXT    NOT NULL,
-  item_id     TEXT    NOT NULL REFERENCES items (id) ON DELETE CASCADE,
+  item_id     TEXT    NULL REFERENCES items (id) ON DELETE CASCADE,
   -- An account or guest id, or 'deleted' once their account is closed.
   actor_id    TEXT,
   actor_name  TEXT,
@@ -136,7 +140,8 @@ CREATE INDEX timeline_events_actor ON timeline_events (actor_id);
 
 -- Who sees each event: the item's scope when it happened (`p:<owner>` or `t:<team>`, the same strings as
 -- items.scope), so a team's events reach everyone in it, newcomers included; a favourite reaches only the
--- person who starred it. An item that changes scope takes its events' rows with it. `app` and
+-- person who starred it; an action assigned reaches its assignee too; an account event reaches the scopes it
+-- names. An event about no item that no scope sees any more is swept daily. An item that changes scope takes its events' rows with it. `app` and
 -- `occurred_at` are copied in, so a page is one index range per scope: by scope, then app, then time.
 CREATE TABLE timeline_event_scopes (
   scope       TEXT    NOT NULL,

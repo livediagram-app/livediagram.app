@@ -97,9 +97,18 @@ export const USE_WINDOW_DAYS = 90;
 // How many Most Used items one Recent request may ask for alongside its page (`used`).
 export const MOST_USED_MAX = 8;
 
-// The Timeline (liveworkspace/docs/one-explorer-contracts.md "Timeline"). The index records the first eight
-// itself; an app reports the rest from its server, in batches (APP_TIMELINE_EVENT_TYPES).
-export const TIMELINE_EVENT_TYPES = [
+// The Timeline (liveworkspace/docs/one-explorer-contracts.md "Timeline"). Where each kind comes from:
+// - the index, in the batch that makes the change: created, renamed, moved, trashed, restored, shared,
+//   unshared, favourited, synced (an offline item created again) and taken_offline (an item purged to live in
+//   one browser);
+// - the index, from an item's pushed comment threads and actions (`PUT /app/items/:id/collab/:tab`), so every
+//   app that reports its Inbox gets them: commented, comment_resolved, action_assigned, action_done;
+// - an app's server: edited (APP_TIMELINE_EVENT_TYPES, about one item) and image_uploaded (APP_PERSON_EVENT_TYPES,
+//   about the person's gallery).
+// PERSON_TIMELINE_EVENT_TYPES are about no item (image_uploaded; taken_offline, whose item has gone): each keeps
+// its app and title, and reaches only its person.
+// - liveworkspace accounts (ACCOUNT_TIMELINE_EVENT_TYPES): its teams and API tokens, under TIMELINE_PLATFORM.
+export const ITEM_TIMELINE_EVENT_TYPES = [
   'created',
   'renamed',
   'moved',
@@ -109,12 +118,50 @@ export const TIMELINE_EVENT_TYPES = [
   'unshared',
   'favourited',
   'edited',
+  'commented',
+  'comment_resolved',
+  'action_assigned',
+  'action_done',
+  'synced',
+] as const;
+export const PERSON_TIMELINE_EVENT_TYPES = ['image_uploaded', 'taken_offline'] as const;
+export const ACCOUNT_TIMELINE_EVENT_TYPES = [
+  'team_invite_sent',
+  'team_joined',
+  'team_declined',
+  'team_role_changed',
+  'team_member_removed',
+  'team_renamed',
+  'team_deleted',
+  'token_created',
+  'token_revoked',
+  'token_expiring',
+] as const;
+export const TIMELINE_EVENT_TYPES = [
+  ...ITEM_TIMELINE_EVENT_TYPES,
+  ...PERSON_TIMELINE_EVENT_TYPES,
+  ...ACCOUNT_TIMELINE_EVENT_TYPES,
 ] as const;
 export type TimelineEventType = (typeof TIMELINE_EVENT_TYPES)[number];
-// What an app may report. `edited` is one event per person, item and UTC day, its time moving on with each
-// report, and counts that day towards the person's Most Used.
+export type AccountTimelineEventType = (typeof ACCOUNT_TIMELINE_EVENT_TYPES)[number];
+// What an app may report about one item. `edited` is one event per person, item and UTC day, its time moving on
+// with each report, and counts that day towards the person's Most Used.
 export const APP_TIMELINE_EVENT_TYPES = ['edited'] as const;
 export type AppTimelineEventType = (typeof APP_TIMELINE_EVENT_TYPES)[number];
+// What an app may report about a person rather than an item (`PUT /app/people/events`): `image_uploaded` is one
+// event per person, app and UTC day, counting the images.
+export const APP_PERSON_EVENT_TYPES = ['image_uploaded'] as const;
+export type AppPersonEventType = (typeof APP_PERSON_EVENT_TYPES)[number];
+// The app an account's events (teams, API tokens) are under: liveworkspace.app itself. They show under every
+// app's filter as well as All.
+export const TIMELINE_PLATFORM = 'liveworkspace' as const;
+export type TimelineApp = App | typeof TIMELINE_PLATFORM;
+// People one account event may reach directly (`p:<id>` or `t:<team>` scopes): a team's members and then some.
+export const ACCOUNT_EVENT_SCOPES_MAX = 250;
+// An account event may be dated ahead (an API token's expiry) by at most this.
+export const ACCOUNT_EVENT_AHEAD_MS = 8 * 24 * 60 * 60 * 1000;
+// Collaboration events one collab push may make; past it, the newest.
+export const COLLAB_EVENTS_MAX = 100;
 // One Timeline page: this many by default, at most TIMELINE_LIMIT_MAX.
 export const TIMELINE_PAGE = 30;
 export const TIMELINE_LIMIT_MAX = 100;

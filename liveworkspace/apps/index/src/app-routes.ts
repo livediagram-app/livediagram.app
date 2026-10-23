@@ -9,7 +9,7 @@ import { isId } from './codec';
 import type { Env } from './env';
 import { badRequest, fail, noContent, notFound, readObject, unauthorized } from './http';
 import { handleAppPeople } from './notices';
-import { pushAppEvents } from './timeline';
+import { pushAppEvents, pushPersonEvents } from './timeline';
 
 const isTime = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value) && value >= 0;
@@ -17,6 +17,13 @@ const isTime = (value: unknown): value is number =>
 export async function handleApp(request: Request, env: Env, segments: string[]): Promise<Response> {
   const app = await callerApp(request, env);
   if (!app) return unauthorized();
+  // /app/people/events: the Timeline's events about people (images uploaded), timeline.ts.
+  if (segments[1] === 'people' && segments[2] === 'events' && segments.length === 3) {
+    if (request.method !== 'PUT') return notFound();
+    const body = await readObject(request);
+    if (!body) return badRequest();
+    return pushPersonEvents(env, app, body);
+  }
   // /app/people/:id/count (notices.ts).
   if (segments[1] === 'people') return handleAppPeople(request, env, app, segments);
   // /app/forms/:code: the item and tab a live form's code names (collab-push.ts).

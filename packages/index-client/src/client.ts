@@ -43,6 +43,7 @@ import type {
   TimelinePage,
   TimelineQuery,
   AppTimelineEvent,
+  AppPersonEvent,
   UpdateFolderInput,
   UpdateItemInput,
   UpdateShareLinkInput,
@@ -159,7 +160,11 @@ export function createIndexClient({
     updateItem: (id: string, input: UpdateItemInput) =>
       call<{ item: Item }>(`/items/${enc(id)}`, { method: 'PATCH', body: input }),
     // To the Trash, or with `permanent` gone for good.
-    deleteItem: (id: string, options: { permanent?: boolean; reason?: 'deleted' | 'empty' } = {}) =>
+    // `reason: 'offline'` (with `permanent`): taken offline into one browser, which the Timeline says.
+    deleteItem: (
+      id: string,
+      options: { permanent?: boolean; reason?: 'deleted' | 'empty' | 'offline' } = {},
+    ) =>
       call<void>(`/items/${enc(id)}`, {
         method: 'DELETE',
         query: { permanent: options.permanent ? 'true' : undefined, reason: options.reason },
@@ -377,6 +382,9 @@ export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: Inde
     // person and day whatever the count.
     pushEvents: (itemId: string, events: readonly AppTimelineEvent[]) =>
       put(`/items/${enc(itemId)}/events`, { events }),
+    // Up to APP_EVENTS_MAX Timeline events about people rather than an item (images uploaded). Safe to send
+    // again only as a count: each report adds its `count` to the person's event for that day.
+    pushPersonEvents: (events: readonly AppPersonEvent[]) => put('/people/events', { events }),
   };
 }
 

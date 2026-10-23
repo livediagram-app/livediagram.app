@@ -95,7 +95,7 @@ export function useWhatHappenedGroups(state: WhatHappenedState): WhatHappenedGro
     () =>
       groupWhatHappened(
         events
-          .map((e) => ({ ...e, item: overlay.apply(e.item) }))
+          .flatMap((e) => (e.item ? [{ ...e, item: overlay.apply(e.item) }] : []))
           .filter((e) => !(e.item as { gone?: boolean }).gone),
         viewerId,
       ),
@@ -284,7 +284,7 @@ function ActionEntry({
           ) : null}
           <span className={`mt-0.5 flex items-center gap-1 text-xs ${MUTED}`}>
             {isNew ? <NewPill /> : null}
-            {filter === 'all' ? <AppMark app={group.app} size={14} /> : null}
+            {filter === 'all' ? <AppMark app={group.item.app} size={14} /> : null}
             <span className="truncate">
               {location} ·{' '}
               <time dateTime={new Date(action.occurredAt).toISOString()} className="tabular-nums">
@@ -327,7 +327,7 @@ function SummaryEntry({ group, isNew }: { group: WhatHappenedGroup; isNew: boole
           </span>
           <span className={`mt-0.5 flex items-center gap-1 text-xs ${MUTED}`}>
             {isNew ? <NewPill /> : null}
-            {filter === 'all' ? <AppMark app={group.app} size={14} /> : null}
+            {filter === 'all' ? <AppMark app={group.item.app} size={14} /> : null}
             <span className="truncate">
               {location} · {updatesLabel(group.actions.length)} ·{' '}
               <time dateTime={new Date(group.latestAt).toISOString()} className="tabular-nums">

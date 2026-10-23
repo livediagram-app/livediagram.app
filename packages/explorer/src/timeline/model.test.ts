@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TIMELINE_EVENT_TYPES } from '@liveworkspace/index-client';
+import { TIMELINE_EVENT_TYPES, type TimelineEventType } from '@liveworkspace/index-client';
 import { makeEvent } from '../test/fakeClient';
 import { EVENT_GLYPH_PATHS } from './icons';
 import {
@@ -81,6 +81,34 @@ describe('the Timeline’s rules', () => {
       'Plan Made by AI',
     );
     expect(eventLabel(makeEvent(1, { type: 'edited' }))).toBe('Plan Updated');
+  });
+
+  it('says what collaboration, offline, team and token events are in livediagram’s words', () => {
+    const loose = (type: TimelineEventType, over = {}) =>
+      makeEvent(1, { type, app: 'liveworkspace', item: null, itemId: null, ...over } as never);
+    expect(eventLabel(makeEvent(1, { type: 'commented' }))).toBe('Comment Added');
+    expect(eventLabel(makeEvent(1, { type: 'action_done' }))).toBe('Action Completed');
+    expect(eventLabel(makeEvent(1, { type: 'synced' }))).toBe('Synced to the Cloud');
+    expect(eventLabel(loose('team_renamed'))).toBe('Team Renamed');
+    expect(eventLabel(loose('team_member_removed', { detail: { left: '1' } }))).toBe('Member Left');
+    expect(eventLabel(loose('token_expiring'))).toBe('API Token Expiring');
+    expect(eventTone('team_deleted')).toBe('danger');
+    expect(eventTone('token_expiring')).toBe('structural');
+    expect(eventCategory('comment_resolved')).toBe('comments');
+    const stacks = buildStacks([
+      loose('team_joined'),
+      loose('team_role_changed', { id: 'b' }),
+      makeEvent(2, { type: 'commented' }),
+      makeEvent(3, { type: 'comment_resolved' }),
+    ]);
+    expect(stacks.map((st) => stackLabel(st))).toEqual([
+      'Team Changes',
+      'Comments Added or Resolved',
+    ]);
+    // An item synced back and edited the same day is one card.
+    const synced = makeEvent(1, { type: 'synced', occurredAt: noon - 1000 });
+    const edit = makeEvent(1, { id: 'ed', type: 'edited', occurredAt: noon });
+    expect(collapseSameDayCreate([edit, synced]).map((e) => e.id)).toEqual([synced.id]);
   });
 
   it('gives every event type a tone, a category and a glyph of its own', () => {

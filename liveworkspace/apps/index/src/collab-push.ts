@@ -2,8 +2,16 @@
 // with the app's key: each tab's comment threads and actions, its cards and their threads (under COLLAB_CARDS_TAB),
 // and each form's response count and who has seen how many. Shown text is cut rather than refused; ids and times
 // must be well formed.
+//
+// The Timeline's collaboration events come from the same push (collabEvents): the index compares what a tab
+// pushes with what it held, in the batch that replaces it, so every app that reports its Inbox reports them too.
+// A thread with more comments than before is `commented`, one turned resolved `comment_resolved`, an action
+// (or open card) with a new assignee `action_assigned` (seen by the assignee too), one turned done
+// `action_done`. Each event's id is made from what it says, so a push sent again records nothing new, and
+// anything dated before the item was made (a copy's threads) is not news.
 
 import {
+  COLLAB_EVENTS_MAX,
   COLLAB_MAX_ACTIONS,
   COLLAB_MAX_THREADS,
   type App,
@@ -15,6 +23,7 @@ import {
 import { isId } from './codec';
 import type { Env } from './env';
 import { badRequest, json, noContent, notFound, readObject } from './http';
+import { bulkEventStatements, type BulkEvent } from './timeline';
 
 const LABEL_MAX = 200;
 const TEXT_MAX = 500;
@@ -101,6 +110,8 @@ export function parseThread(value: unknown): CollabThreadInput | null {
     latestText,
     latestAuthorName,
     latestAuthorColor,
+    latestAuthorId: isId(t.latestAuthorId) ? t.latestAuthorId : null,
+    resolvedById: isId(t.resolvedById) ? t.resolvedById : null,
     firstAt: t.firstAt,
     latestAt: t.latestAt,
     card,
@@ -149,6 +160,7 @@ export function parseAction(value: unknown): CollabActionInput | null {
     assignerId: a.assignerId,
     assignerName,
     teamId: (a.teamId as string | null | undefined) ?? null,
+    doneById: isId(a.doneById) ? a.doneById : null,
     createdAt: a.createdAt,
     updatedAt: a.updatedAt,
     card,
@@ -172,6 +184,15 @@ export async function pushCollab(
     return badRequest('invalid_collab');
   }
   const tabName = body.tabName === undefined ? '' : clip(body.tabName, LABEL_MAX);
+  // The Timeline: who may say who wrote, resolved or closed.
+  for (const t of body.threads as Record<string, unknown>[]) {
+    if (!nullableId(t?.latestAuthorId ?? null) || !nullableId(t?.resolvedById ?? null)) {
+      return badRequest('invalid_collab');
+    }
+  }
+  for (const a of body.actions as Record<string, unknown>[]) {
+    if (!nullableId(a?.doneById ?? null)) return badRequest('invalid_collab');
+  }
   if (tabName === null) return badRequest('invalid_collab');
   // Keyed by element (and action): a repeated key keeps its last entry.
   const threads = new Map<string, CollabThreadInput>();
@@ -196,7 +217,35 @@ export async function pushCollab(
 
   const db = env.INDEX_DB;
   const key = [app, itemId, tabId];
+  // What the tab held, to tell what changed: one round trip of three primary-key ranges.
+  const [itemRead, threadRead, actionRead] = await db.batch<Record<string, unknown>>([
+    db.prepare('SELECT title, scope, created_at FROM items WHERE id = ?').bind(itemId),
+    db
+      .prepare(
+        `SELECT element_id, resolved, comment_count FROM collab_threads
+         WHERE app = ? AND item_id = ? AND tab_id = ?`,
+      )
+      .bind(...key),
+    db
+      .prepare(
+        `SELECT element_id, action_id, status, assignee_id FROM collab_actions
+         WHERE app = ? AND item_id = ? AND tab_id = ?`,
+      )
+      .bind(...key),
+  ]);
+  const item = itemRead?.results[0] as HeldItem | undefined;
+  const events = item
+    ? collabEvents(
+        { app, itemId, tabId, ...item },
+        (threadRead?.results ?? []) as HeldThread[],
+        (actionRead?.results ?? []) as HeldAction[],
+        [...threads.values()],
+        [...actions.values()],
+        Date.now(),
+      )
+    : [];
   await db.batch([
+    ...bulkEventStatements(db, events),
     db
       .prepare('DELETE FROM collab_threads WHERE app = ? AND item_id = ? AND tab_id = ?')
       .bind(...key),
@@ -245,6 +294,93 @@ export async function pushCollab(
       .bind(...key, tabName, JSON.stringify([...actions.values()])),
   ]);
   return noContent();
+}
+
+type HeldItem = { title: string; scope: string; created_at: number };
+type HeldThread = { element_id: string; resolved: number; comment_count: number };
+type HeldAction = {
+  element_id: string;
+  action_id: string;
+  status: string;
+  assignee_id: string | null;
+};
+
+/** The Timeline events one tab's push makes, against what the tab held (at most COLLAB_EVENTS_MAX, newest). */
+export function collabEvents(
+  item: { app: App; itemId: string; tabId: string } & HeldItem,
+  heldThreads: readonly HeldThread[],
+  heldActions: readonly HeldAction[],
+  threads: readonly CollabThreadInput[],
+  actions: readonly CollabActionInput[],
+  now: number,
+): BulkEvent[] {
+  const { app, itemId, tabId } = item;
+  const base = { app, itemId, title: item.title, scopes: [item.scope] };
+  const at = (time: number) => Math.min(time, now);
+  const events: BulkEvent[] = [];
+  const oldThreads = new Map(heldThreads.map((t) => [t.element_id, t]));
+  for (const t of threads) {
+    const was = oldThreads.get(t.elementId);
+    const before = was?.comment_count ?? 0;
+    if (t.commentCount > before && t.latestAt >= item.created_at) {
+      events.push({
+        ...base,
+        id: `cm:${itemId}:${tabId}:${t.elementId}:${t.commentCount}`,
+        type: 'commented',
+        actorId: t.latestAuthorId ?? null,
+        actorName: t.latestAuthorName || null,
+        detail: {
+          text: t.latestText,
+          count: String(t.commentCount - before),
+          reply: t.commentCount > 1 ? '1' : null,
+          on: t.card?.title ?? t.elementLabel,
+        },
+        at: at(t.latestAt),
+      });
+    }
+    if (was && !was.resolved && t.resolved) {
+      events.push({
+        ...base,
+        id: `cr:${itemId}:${tabId}:${t.elementId}:${t.commentCount}`,
+        type: 'comment_resolved',
+        actorId: t.resolvedById ?? null,
+        detail: { text: t.latestText, on: t.card?.title ?? t.elementLabel },
+        at: now,
+      });
+    }
+  }
+  const oldActions = new Map(heldActions.map((a) => [`${a.element_id}\u0000${a.action_id}`, a]));
+  for (const a of actions) {
+    const was = oldActions.get(`${a.elementId}\u0000${a.actionId}`);
+    if (a.updatedAt < item.created_at) continue;
+    const name = a.card?.title ?? a.name;
+    if (a.assigneeId && a.status === 'open' && a.assigneeId !== (was?.assignee_id ?? null)) {
+      events.push({
+        ...base,
+        id: `aa:${itemId}:${tabId}:${a.elementId}:${a.actionId}:${a.assigneeId}`,
+        type: 'action_assigned',
+        actorId: a.assignerId,
+        actorName: a.assignerName ?? null,
+        detail: { action: name, assigneeId: a.assigneeId, assigneeName: a.assigneeName ?? null },
+        at: at(a.updatedAt),
+        // The assignee sees it too, wherever the item is.
+        scopes: [item.scope, `p:${a.assigneeId}`],
+      });
+    }
+    if (was && was.status === 'open' && a.status === 'done') {
+      events.push({
+        ...base,
+        id: `ad:${itemId}:${tabId}:${a.elementId}:${a.actionId}:${a.updatedAt}`,
+        type: 'action_done',
+        actorId: a.doneById ?? a.assigneeId ?? null,
+        actorName: a.doneById ? null : (a.assigneeName ?? null),
+        detail: { action: name },
+        at: at(a.updatedAt),
+      });
+    }
+  }
+  if (events.length <= COLLAB_EVENTS_MAX) return events;
+  return events.sort((x, y) => y.at - x.at).slice(0, COLLAB_EVENTS_MAX);
 }
 
 export function parseForm(value: unknown): CollabFormInput | null | undefined {
