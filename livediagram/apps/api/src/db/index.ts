@@ -30,4 +30,3 @@ export * from './trash';
 export * from './empty-document-sweep';
 export * from './changesets';
 export * from './community-links';
-export * from './retired-events';

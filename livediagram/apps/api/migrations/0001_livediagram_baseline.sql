@@ -58,14 +58,6 @@ CREATE TABLE shared_with (
   FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
 );
 
-CREATE TABLE events (
-  id       INTEGER PRIMARY KEY AUTOINCREMENT,
-  category TEXT NOT NULL,
-  action   TEXT NOT NULL,
-  type     TEXT,
-  ts       INTEGER NOT NULL
-);
-
 CREATE TABLE teams (
   id            TEXT PRIMARY KEY,
   name          TEXT NOT NULL,
@@ -395,7 +387,6 @@ CREATE INDEX folders_parent_idx ON folders(parent_id);
 
 CREATE INDEX shared_with_by_owner ON shared_with(owner_id, last_seen DESC);
 
-CREATE INDEX events_ts_idx ON events (ts);
 
 CREATE INDEX team_members_team_idx ON team_members(team_id);
 

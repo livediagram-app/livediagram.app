@@ -35,7 +35,7 @@ In practice a `type` is either a literal or derived from a closed vocabulary —
 
 Since October 2026 every event goes to the liveworkspace telemetry service, which stores it, with the app it came from (`livediagram.app`) and a server-stamped time, in the `events` table of its **own** D1 database (`liveworkspace-telemetry`), apart from documents and accounts. The wire format, the per-app filter and the service's abuse controls are its spec's: [liveworkspace/docs/telemetry.md](../../../../liveworkspace/docs/telemetry.md). The service validates every batch against **this** app's closed vocabulary (`isValidTelemetryEvent` and the server-emitted pairs in `packages/api-schema`), so the vocabulary stays here, beside the code that emits it.
 
-The switch-over started fresh: nothing was copied from the api's own D1. Its old `events` table (migration `0015_*`) is **retired**: nothing writes or reads it any more, and the daily sweep below goes on deleting its rows past 60 days, so the history already stored ages out under the promise it was collected with and the table is empty 60 days after the switch.
+livediagram's own `DB` has no telemetry table: events are stored only by liveworkspace.
 
 <!-- legacy-names -->
 
@@ -45,7 +45,7 @@ The switch-over started fresh: nothing was copied from the api's own D1. Its old
 
 ## Retention
 
-The dashboard surfaces three fixed windows that top out at **30 days**, and compares each with the span before it, so it reads 59 days back. The liveworkspace service deletes events older than **60 days** daily. The api worker's `scheduled` handler still runs its own 60-day sweep at 03:00 UTC, over the retired `events` table only (`db/retired-events.ts`).
+The dashboard surfaces three fixed windows that top out at **30 days**, and compares each with the span before it, so it reads 59 days back. The liveworkspace service deletes events older than **60 days** daily.
 
 ## Sending events
 

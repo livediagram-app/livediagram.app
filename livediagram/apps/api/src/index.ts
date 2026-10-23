@@ -12,7 +12,6 @@ import { handleAuth } from './routes/auth';
 import { NOTIFY_EMAIL_DEDUPE_MS } from './email/notifications';
 import { runTimelineExpirySweep } from './timeline';
 import {
-  deleteOldEvents,
   deleteOldNotifyEmailClaims,
   deleteOldTimelineEvents,
   purgeExpiredTrash,
@@ -512,7 +511,6 @@ const worker = {
     }
     if (event.cron === '0 3 * * *') {
       const now = Date.now();
-      scheduleSweep(ctx, env, 'events', 'rows', now - EVENTS_RETENTION_MS, deleteOldEvents);
       // docs/specs/013-workspace/timeline.md §3.5: the Timeline feed keeps a year.
       scheduleSweep(
         ctx,
@@ -617,6 +615,3 @@ function scheduleSweep(
   );
 }
 
-// 60 days in ms: the retention the retired events table's rows were collected under
-// (docs/specs/017-telemetry/telemetry.md "Retention").
-const EVENTS_RETENTION_MS = 60 * 24 * 60 * 60 * 1000;
