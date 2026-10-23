@@ -32,6 +32,10 @@ export const LOCAL_PORTS: Record<SiteId, number> = {
   'livedesign.app': 3400,
 };
 
+// Declared here rather than through @types/node: the apps that compile this source don't all load
+// Node's types, and the bundlers replace `process.env.NODE_ENV` by name at build time.
+declare const process: { env: Record<string, string | undefined> } | undefined;
+
 const LOCAL = typeof process !== 'undefined' && process.env.NODE_ENV === 'development';
 
 /** A site's address: its live origin, or its local port when `local` (a dev server by default). */
