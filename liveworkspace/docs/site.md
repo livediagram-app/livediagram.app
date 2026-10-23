@@ -66,7 +66,8 @@ moves between them, and the one account that joins them.
    `lib/apps.ts`; tests require it for every app and that white text on each deep accent passes
    WCAG AA.
 3. **How it fits together** (`#how-it-fits`): the path a piece of work takes, one step per app
-   (sketch the idea, plan the work, write it up, make it look right), each a link to its app, then
+   (sketch the idea, plan the work, write it up, make it look right), each a link to its app's New
+   page (**Build a diagram**, **Start planning**, **Start writing**, **Start designing**), then
    "share one link", and what every app shares: one account (the large tile, with Create your
    account), live by default, share by link, open about data (linking `/telemetry`), yours to keep
    (closing the account closes it everywhere), completely free (no paywalls or subscriptions).

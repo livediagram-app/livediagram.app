@@ -18,23 +18,27 @@ const ShieldIcon = lucideGlyph(lucideShieldCheck, 20);
 const GiftIcon = lucideGlyph(lucideGift, 20);
 const ActivityIcon = lucideGlyph(lucideChartLine, 20);
 
-// What each app does for a piece of work, in the order work moves through them.
-const STEPS: Partial<Record<SiteId, { title: string; body: string }>> = {
+// What each app does for a piece of work, in the order work moves through them, and the way to start it.
+const STEPS: Partial<Record<SiteId, { title: string; body: string; action: string }>> = {
   'livediagram.app': {
     title: 'Sketch the idea',
     body: 'Draw it out together on one canvas: the flow, the map, the whiteboard mess that finally makes sense.',
+    action: 'Build a diagram',
   },
   'liveplanner.app': {
     title: 'Plan the work',
     body: 'Turn it into cards, owners and dates. Track it on a board, total it in a sheet, collect it with a form.',
+    action: 'Start planning',
   },
   'livedocuments.app': {
     title: 'Write it up',
     body: 'Tell people what happened and why: an article, a report, or slides to present from the same link.',
+    action: 'Start writing',
   },
   'livedesign.app': {
     title: 'Make it look right',
     body: 'Give it a face: the logo, the wireframe for the site, the photos that go with it.',
+    action: 'Start designing',
   },
 };
 
@@ -74,7 +78,7 @@ export function Journey() {
               style={{ animationDelay: `${i * 100}ms` }}
             >
               <a
-                href={app.url}
+                href={`${app.url}/new`}
                 className="group flex h-full flex-col items-center rounded-3xl border border-slate-200 bg-slate-50/80 p-6 text-center backdrop-blur transition-[translate,box-shadow,border-color] duration-micro ease-out hover:-translate-y-1 hover:border-[var(--lw-accent)] hover:shadow-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--lw-accent)] dark:border-slate-800 dark:bg-slate-900/80"
                 style={
                   {
@@ -97,7 +101,7 @@ export function Journey() {
                   {step.body}
                 </p>
                 <span className="mt-auto pt-4 text-sm font-semibold text-[var(--lw-ink)] dark:text-[var(--lw-ink-dark)]">
-                  Open {app.id}{' '}
+                  {step.action}{' '}
                   <span
                     aria-hidden
                     className="inline-block transition-transform duration-micro group-hover:translate-x-0.5"
