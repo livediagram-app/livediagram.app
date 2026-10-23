@@ -36,6 +36,7 @@ import {
   type AppScopes,
 } from '@/lib/app-settings';
 import type { ListedApp } from '@/lib/apps';
+import { reportAppSetting } from '@/lib/settings-telemetry';
 import { AppMark } from '../landing/AppLogo';
 import { ErrorNote } from './AccountShell';
 import { settingsErrorMessage, useSavedFlash } from './settings-ui';
@@ -267,6 +268,8 @@ export function AppSettingsBody({
       const had = Object.hasOwn(before.app, key);
       const previous = before.app[key];
       const patch = storedPatch(before.app, binding, stored);
+      // Counted as the app's own Settings counts it, before the write as there.
+      reportAppSetting(app, binding, stored);
       const turn = (latest.current[key] ?? 0) + 1;
       latest.current[key] = turn;
       setError(null);

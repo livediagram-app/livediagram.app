@@ -2147,12 +2147,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Project|Shared|Rescoped': 'Someone changed which tab an existing share link opens on.',
   'Project|Shared|PasswordSet': "Someone set a password on a project's share link.",
   'Project|Shared|PasswordCleared': "Someone removed the password from a project's share link.",
-  'Project|Joined|Edit':
-    'Someone came into a project through an edit-role share link. Counted once per person per project, not on every revisit.',
   'Project|Joined|View':
     'Someone came into a project through a view-only share link. Counted once per person per project, not on every revisit.',
-  'Project|Joined|Participate':
-    'Someone came into a project through a Participant share link. Counted once per person per project, not on every revisit.',
   'Folder|Created|': 'A new folder was made in the Explorer.',
   'Folder|Created|Team': "A new folder was made in a team's library in the Explorer.",
   'Folder|Moved|': 'A folder was re-parented under another folder (or the root).',
@@ -2452,8 +2448,6 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'UI|View': 'The welcome tour advanced to (or back to) a particular stage.',
   'Project|Shared':
     "Someone made a project's share link or changed one: its level, how long it lasts, its tab, or its password.",
-  'Project|Joined':
-    'Someone came into a project through a share link. Counted once per person per project, not on every revisit.',
   'Folder|Moved': 'A folder was re-parented under another folder (or the root).',
   'Folder|Deleted': 'A folder was deleted in the Explorer.',
   'Folder|Changed':

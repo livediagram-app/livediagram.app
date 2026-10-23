@@ -5518,6 +5518,9 @@ importers:
       '@liveplanner/api-schema':
         specifier: workspace:*
         version: link:../../../liveplanner/packages/api-schema
+      '@liveworkspace/settings':
+        specifier: workspace:*
+        version: link:../../../packages/settings
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry

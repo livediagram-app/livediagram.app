@@ -15,11 +15,23 @@ import { isAllSetting, type SettingsBlob } from './index';
 
 export type StoredValue = string | number | boolean | null;
 
+// What the app's own Settings reports when the row changes (each editor's settings-catalogue.ts `event`): a switch's
+// `<Category>·Toggled·<on|off>`, a choice's `<Category>·Changed·<changed><Option>`, a slider's
+// `<Category>·Changed·<changed>`. liveworkspace.app reports the same when the row is changed there, so each app's
+// dashboard counts a change once, wherever it was made.
+export interface SettingEvent {
+  category: string;
+  on?: string;
+  off?: string;
+  changed?: string;
+}
+
 // Where a row's value lives in the app's scope: a key, or one field of an object kept under a key
 // (a presenter's settings, say, kept as one object). Writing a field keeps the object's other fields.
 export interface CatalogueBinding {
   key: string;
   field?: string;
+  event?: SettingEvent;
 }
 
 interface RowCommon {
@@ -79,8 +91,16 @@ export interface CatalogueCategory {
   rows: CatalogueRow[];
 }
 
+// A switch the app's Settings keeps in the `all` scope every app shares (a notification email, say), with what the
+// app reports when it flips: the settings page on liveworkspace.app reports a flip in the name of the app it was
+// opened for.
+export interface SharedToggle extends ToggleBinding {
+  event: SettingEvent;
+}
+
 export interface AppCatalogue {
   categories: CatalogueCategory[];
+  shared: SharedToggle[];
 }
 
 // --- Reading and writing a row against the stored scopes ---
@@ -143,6 +163,7 @@ type Prefs = Record<string, unknown>;
 export interface SourceToggle {
   key: string;
   label: string;
+  event?: SettingEvent;
   read(prefs: Prefs): unknown;
   write(prefs: Prefs, next: boolean): Prefs;
 }
@@ -163,6 +184,7 @@ export interface SourceRow {
   step?: number;
   format?(value: number): string;
   toggles?: readonly SourceToggle[];
+  event?: SettingEvent;
 }
 
 export interface SourceCategory {
@@ -303,6 +325,9 @@ function availability(row: SourceRow): 'always' | 'powerUser' | 'never' {
 
 const appScoped = (binding: CatalogueBinding) => !isAllSetting(binding.key);
 
+// The row's event, as plain data.
+const withEvent = (event: SettingEvent | undefined) => (event ? { event: { ...event } } : {});
+
 function deriveRow(row: SourceRow, category: SourceCategory): CatalogueRow | null {
   const offered = availability(row);
   if (offered === 'never') return null;
@@ -320,20 +345,28 @@ function deriveRow(row: SourceRow, category: SourceCategory): CatalogueRow | nul
   }
   if (row.kind === 'toggle') {
     const toggle = deriveToggle(row);
-    return toggle && appScoped(toggle) ? { kind: 'toggle', ...common, ...toggle } : null;
+    return toggle && appScoped(toggle)
+      ? { kind: 'toggle', ...common, ...toggle, ...withEvent(row.event) }
+      : null;
   }
   if (row.kind === 'choice') {
     const choice = deriveChoice(row);
-    return choice && appScoped(choice) ? { kind: 'choice', ...common, ...choice } : null;
+    return choice && appScoped(choice)
+      ? { kind: 'choice', ...common, ...choice, ...withEvent(row.event) }
+      : null;
   }
   if (row.kind === 'slider') {
     const slider = deriveSlider(row);
-    return slider && appScoped(slider) ? { kind: 'slider', ...common, ...slider } : null;
+    return slider && appScoped(slider)
+      ? { kind: 'slider', ...common, ...slider, ...withEvent(row.event) }
+      : null;
   }
   if (row.kind === 'toggleGroup' && row.toggles) {
     const toggles = row.toggles.flatMap((toggle) => {
       const bound = probeToggle(toggle.read.bind(toggle), toggle.write.bind(toggle) as Write);
-      return bound && appScoped(bound) ? [{ id: toggle.key, label: toggle.label, ...bound }] : [];
+      return bound && appScoped(bound)
+        ? [{ id: toggle.key, label: toggle.label, ...bound, ...withEvent(toggle.event) }]
+        : [];
     });
     return toggles.length > 0 ? { kind: 'toggleGroup', ...common, toggles } : null;
   }
@@ -341,11 +374,26 @@ function deriveRow(row: SourceRow, category: SourceCategory): CatalogueRow | nul
   return null;
 }
 
+// The app's switches over one whole `all` key, with their events, for the settings page. The first row for a key
+// wins (an app shows each shared switch once).
+function deriveShared(categories: readonly SourceCategory[]): SharedToggle[] {
+  const shared = new Map<string, SharedToggle>();
+  for (const row of categories.flatMap((category) => category.rows)) {
+    if (row.kind !== 'toggle' || !row.event) continue;
+    const toggle = deriveToggle(row);
+    if (!toggle || appScoped(toggle) || toggle.field !== undefined || shared.has(toggle.key))
+      continue;
+    shared.set(toggle.key, { ...toggle, event: { ...row.event } });
+  }
+  return [...shared.values()].sort((a, b) => a.key.localeCompare(b.key));
+}
+
 // An app's catalogue as the site shows it: its categories in order, each with the rows the site can
-// show, and none left empty.
+// show, and none left empty; and its shared switches' events.
 export function deriveCatalogue(categories: readonly SourceCategory[]): AppCatalogue {
   const labelOf = new Map(categories.map((category) => [category.id, category.label]));
   return {
+    shared: deriveShared(categories),
     categories: categories.flatMap((category) => {
       const rows = category.rows.flatMap((row) => deriveRow(row, category) ?? []);
       if (rows.length === 0) return [];
@@ -370,4 +418,97 @@ import type { AppCatalogue } from '../catalogue';
 
 export const CATALOGUE: AppCatalogue = ${JSON.stringify(catalogue, null, 2)};
 `;
+}
+
+// --- What a change reports ---
+
+export interface SettingTelemetryEvent {
+  category: string;
+  action: 'Toggled' | 'Changed';
+  type: string;
+}
+
+// A choice's type: the setting's name and the option's id, capitalised (every editor's choiceTelemetryType).
+export function choiceTelemetryType(changed: string, optionId: string): string {
+  return `${changed}${optionId.charAt(0).toUpperCase()}${optionId.slice(1)}`;
+}
+
+function isChoice(binding: CatalogueBinding): binding is CatalogueChoice {
+  return Array.isArray((binding as Partial<CatalogueChoice>).options);
+}
+
+/** What the app's own Settings would report for storing `stored` through a row (or one switch of a group), or
+ *  null when the row carries no event. */
+export function settingChangeEvent(
+  binding: CatalogueBinding,
+  stored: StoredValue,
+): SettingTelemetryEvent | null {
+  const event = binding.event;
+  if (!event) return null;
+  if (isChoice(binding)) {
+    const option = binding.options.find((o) => o.value === stored);
+    return option && event.changed
+      ? {
+          category: event.category,
+          action: 'Changed',
+          type: choiceTelemetryType(event.changed, option.id),
+        }
+      : null;
+  }
+  if (event.on !== undefined && event.off !== undefined) {
+    const on = (binding as Partial<ToggleBinding>).on;
+    return {
+      category: event.category,
+      action: 'Toggled',
+      type: stored === on ? event.on : event.off,
+    };
+  }
+  return event.changed
+    ? { category: event.category, action: 'Changed', type: event.changed }
+    : null;
+}
+
+/** What flipping a shared switch on the settings page reports for this app, or null when the app has no such
+ *  switch. */
+export function sharedToggleEvent(
+  catalogue: AppCatalogue,
+  key: string,
+  next: boolean,
+): SettingTelemetryEvent | null {
+  const toggle = catalogue.shared.find((t) => t.key === key);
+  if (!toggle?.event.on || !toggle.event.off) return null;
+  return {
+    category: toggle.event.category,
+    action: 'Toggled',
+    type: next ? toggle.event.on : toggle.event.off,
+  };
+}
+
+/** Every event a change made through this catalogue can report: the closed list liveworkspace.app may send in the
+ *  app's name. */
+export function catalogueEvents(catalogue: AppCatalogue): SettingTelemetryEvent[] {
+  const out: SettingTelemetryEvent[] = [];
+  const toggle = (event: SettingEvent | undefined) => {
+    if (event?.on && event.off) {
+      out.push({ category: event.category, action: 'Toggled', type: event.on });
+      out.push({ category: event.category, action: 'Toggled', type: event.off });
+    }
+  };
+  for (const row of catalogue.categories.flatMap((category) => category.rows)) {
+    if (row.kind === 'toggle') toggle(row.event);
+    else if (row.kind === 'toggleGroup') for (const t of row.toggles) toggle(t.event);
+    else if (row.kind === 'choice' && row.event?.changed) {
+      for (const option of row.options) {
+        out.push({
+          category: row.event.category,
+          action: 'Changed',
+          type: choiceTelemetryType(row.event.changed, option.id),
+        });
+      }
+    } else if (row.kind === 'slider' && row.event?.changed) {
+      out.push({ category: row.event.category, action: 'Changed', type: row.event.changed });
+    }
+  }
+  for (const shared of catalogue.shared) toggle(shared.event);
+  return out;
 }

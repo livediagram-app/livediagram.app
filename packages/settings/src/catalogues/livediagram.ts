@@ -4,6 +4,140 @@
 import type { AppCatalogue } from '../catalogue';
 
 export const CATALOGUE: AppCatalogue = {
+  shared: [
+    {
+      key: 'dockButtonNames',
+      on: true,
+      off: false,
+      fallback: true,
+      event: {
+        category: 'UI',
+        on: 'DockButtonNamesOn',
+        off: 'DockButtonNamesOff',
+      },
+    },
+    {
+      key: 'middleMousePan',
+      on: true,
+      off: false,
+      fallback: true,
+      event: {
+        category: 'UI',
+        on: 'MiddleMousePanOn',
+        off: 'MiddleMousePanOff',
+      },
+    },
+    {
+      key: 'minimalChrome',
+      on: true,
+      off: false,
+      fallback: true,
+      event: {
+        category: 'UI',
+        on: 'MinimalChromeOn',
+        off: 'MinimalChromeOff',
+      },
+    },
+    {
+      key: 'notificationsEnabled',
+      on: true,
+      off: false,
+      fallback: true,
+      event: {
+        category: 'UI',
+        on: 'NotificationsOn',
+        off: 'NotificationsOff',
+      },
+    },
+    {
+      key: 'notifyActionAssigned',
+      on: true,
+      off: false,
+      fallback: true,
+      event: {
+        category: 'UI',
+        on: 'NotifyActionAssignedOn',
+        off: 'NotifyActionAssignedOff',
+      },
+    },
+    {
+      key: 'notifyComments',
+      on: true,
+      off: false,
+      fallback: true,
+      event: {
+        category: 'UI',
+        on: 'NotifyCommentsOn',
+        off: 'NotifyCommentsOff',
+      },
+    },
+    {
+      key: 'notifyInviteResponse',
+      on: true,
+      off: false,
+      fallback: true,
+      event: {
+        category: 'UI',
+        on: 'NotifyInviteResponseOn',
+        off: 'NotifyInviteResponseOff',
+      },
+    },
+    {
+      key: 'notifyMentions',
+      on: true,
+      off: false,
+      fallback: true,
+      event: {
+        category: 'UI',
+        on: 'NotifyMentionsOn',
+        off: 'NotifyMentionsOff',
+      },
+    },
+    {
+      key: 'notifyMilestones',
+      on: true,
+      off: false,
+      fallback: true,
+      event: {
+        category: 'UI',
+        on: 'NotifyMilestonesOn',
+        off: 'NotifyMilestonesOff',
+      },
+    },
+    {
+      key: 'notifyTips',
+      on: true,
+      off: false,
+      fallback: true,
+      event: {
+        category: 'UI',
+        on: 'NotifyTipsOn',
+        off: 'NotifyTipsOff',
+      },
+    },
+    {
+      key: 'reduceMotion',
+      on: true,
+      off: false,
+      fallback: false,
+      event: {
+        category: 'UI',
+        on: 'ReduceMotionOn',
+        off: 'ReduceMotionOff',
+      },
+    },
+    {
+      key: 'telemetryEnabled',
+      on: true,
+      off: false,
+      fallback: true,
+      event: {
+        category: 'UI',
+        on: 'TelemetryOn',
+        off: 'TelemetryOff',
+      },
+    },
+  ],
   categories: [
     {
       id: 'editor',
@@ -20,6 +154,11 @@ export const CATALOGUE: AppCatalogue = {
           on: true,
           off: false,
           fallback: true,
+          event: {
+            category: 'UI',
+            on: 'AlignmentGuidesOn',
+            off: 'AlignmentGuidesOff',
+          },
         },
         {
           kind: 'toggle',
@@ -32,6 +171,11 @@ export const CATALOGUE: AppCatalogue = {
           on: true,
           off: false,
           fallback: true,
+          event: {
+            category: 'UI',
+            on: 'AutoRebindOn',
+            off: 'AutoRebindOff',
+          },
         },
         {
           kind: 'choice',
@@ -59,6 +203,10 @@ export const CATALOGUE: AppCatalogue = {
             },
           ],
           fallback: 'top',
+          event: {
+            category: 'UI',
+            changed: 'ElementIndicators',
+          },
         },
         {
           kind: 'toggle',
@@ -71,6 +219,11 @@ export const CATALOGUE: AppCatalogue = {
           on: true,
           off: false,
           fallback: false,
+          event: {
+            category: 'UI',
+            on: 'QuickAddHoverOn',
+            off: 'QuickAddHoverOff',
+          },
         },
       ],
     },
@@ -98,6 +251,10 @@ export const CATALOGUE: AppCatalogue = {
             },
           ],
           fallback: 'top',
+          event: {
+            category: 'UI',
+            changed: 'WhiteboardDockPosition',
+          },
         },
       ],
     },
@@ -131,6 +288,10 @@ export const CATALOGUE: AppCatalogue = {
             },
           ],
           fallback: 'slide',
+          event: {
+            category: 'UI',
+            changed: 'Presentation-transition',
+          },
         },
         {
           kind: 'choice',
@@ -158,6 +319,10 @@ export const CATALOGUE: AppCatalogue = {
             },
           ],
           fallback: 'normal',
+          event: {
+            category: 'UI',
+            changed: 'Presentation-speed',
+          },
         },
         {
           kind: 'choice',
@@ -181,6 +346,10 @@ export const CATALOGUE: AppCatalogue = {
             },
           ],
           fallback: 'fill',
+          event: {
+            category: 'UI',
+            changed: 'Presentation-zoom',
+          },
         },
         {
           kind: 'choice',
@@ -219,6 +388,10 @@ export const CATALOGUE: AppCatalogue = {
             },
           ],
           fallback: '0',
+          event: {
+            category: 'UI',
+            changed: 'Presentation-autoAdvanceSeconds',
+          },
         },
         {
           kind: 'toggle',
@@ -231,6 +404,11 @@ export const CATALOGUE: AppCatalogue = {
           on: true,
           off: false,
           fallback: true,
+          event: {
+            category: 'UI',
+            on: 'Presentation-advanceOnClickOn',
+            off: 'Presentation-advanceOnClickOff',
+          },
         },
         {
           kind: 'toggle',
@@ -243,6 +421,11 @@ export const CATALOGUE: AppCatalogue = {
           on: true,
           off: false,
           fallback: false,
+          event: {
+            category: 'UI',
+            on: 'Presentation-loopOn',
+            off: 'Presentation-loopOff',
+          },
         },
         {
           kind: 'toggle',
@@ -255,6 +438,11 @@ export const CATALOGUE: AppCatalogue = {
           on: true,
           off: false,
           fallback: true,
+          event: {
+            category: 'UI',
+            on: 'Presentation-showPositionOn',
+            off: 'Presentation-showPositionOff',
+          },
         },
         {
           kind: 'toggle',
@@ -267,6 +455,11 @@ export const CATALOGUE: AppCatalogue = {
           on: true,
           off: false,
           fallback: false,
+          event: {
+            category: 'UI',
+            on: 'Presentation-keepControlsOn',
+            off: 'Presentation-keepControlsOff',
+          },
         },
         {
           kind: 'toggle',
@@ -279,6 +472,11 @@ export const CATALOGUE: AppCatalogue = {
           on: true,
           off: false,
           fallback: true,
+          event: {
+            category: 'UI',
+            on: 'Presentation-hidePointerOn',
+            off: 'Presentation-hidePointerOff',
+          },
         },
         {
           kind: 'toggle',
@@ -291,6 +489,11 @@ export const CATALOGUE: AppCatalogue = {
           on: true,
           off: false,
           fallback: false,
+          event: {
+            category: 'UI',
+            on: 'Presentation-showElapsedOn',
+            off: 'Presentation-showElapsedOff',
+          },
         },
         {
           kind: 'toggle',
@@ -303,6 +506,11 @@ export const CATALOGUE: AppCatalogue = {
           on: true,
           off: false,
           fallback: false,
+          event: {
+            category: 'UI',
+            on: 'Presentation-showBudgetOn',
+            off: 'Presentation-showBudgetOff',
+          },
         },
       ],
     },
@@ -320,6 +528,11 @@ export const CATALOGUE: AppCatalogue = {
           on: true,
           off: false,
           fallback: true,
+          event: {
+            category: 'UI',
+            on: 'LayersPanelOn',
+            off: 'LayersPanelOff',
+          },
         },
         {
           kind: 'toggle',
@@ -336,6 +549,11 @@ export const CATALOGUE: AppCatalogue = {
           on: true,
           off: false,
           fallback: true,
+          event: {
+            category: 'UI',
+            on: 'LayerPreviewOn',
+            off: 'LayerPreviewOff',
+          },
         },
         {
           kind: 'toggle',
@@ -352,6 +570,11 @@ export const CATALOGUE: AppCatalogue = {
           on: true,
           off: false,
           fallback: true,
+          event: {
+            category: 'UI',
+            on: 'LayerCountOn',
+            off: 'LayerCountOff',
+          },
         },
         {
           kind: 'toggle',
@@ -368,6 +591,11 @@ export const CATALOGUE: AppCatalogue = {
           on: true,
           off: false,
           fallback: true,
+          event: {
+            category: 'UI',
+            on: 'LayerHoverPreviewOn',
+            off: 'LayerHoverPreviewOff',
+          },
         },
       ],
     },
@@ -385,6 +613,11 @@ export const CATALOGUE: AppCatalogue = {
           on: true,
           off: false,
           fallback: true,
+          event: {
+            category: 'UI',
+            on: 'MinimapOn',
+            off: 'MinimapOff',
+          },
         },
         {
           kind: 'toggle',
@@ -401,6 +634,11 @@ export const CATALOGUE: AppCatalogue = {
           on: true,
           off: false,
           fallback: true,
+          event: {
+            category: 'UI',
+            on: 'MapDimOn',
+            off: 'MapDimOff',
+          },
         },
         {
           kind: 'choice',
@@ -432,6 +670,10 @@ export const CATALOGUE: AppCatalogue = {
             },
           ],
           fallback: 'medium',
+          event: {
+            category: 'UI',
+            changed: 'MapSize',
+          },
         },
       ],
     },
@@ -449,6 +691,11 @@ export const CATALOGUE: AppCatalogue = {
           on: true,
           off: false,
           fallback: true,
+          event: {
+            category: 'UI',
+            on: 'CollaboratePanelOn',
+            off: 'CollaboratePanelOff',
+          },
         },
       ],
     },
@@ -466,6 +713,11 @@ export const CATALOGUE: AppCatalogue = {
           on: true,
           off: false,
           fallback: true,
+          event: {
+            category: 'UI',
+            on: 'QuickStylePanelOn',
+            off: 'QuickStylePanelOff',
+          },
         },
       ],
     },
@@ -483,6 +735,11 @@ export const CATALOGUE: AppCatalogue = {
           on: false,
           off: true,
           fallback: true,
+          event: {
+            category: 'UI',
+            on: 'TourSeenOff',
+            off: 'TourSeenOn',
+          },
         },
         {
           kind: 'toggle',
@@ -494,6 +751,11 @@ export const CATALOGUE: AppCatalogue = {
           on: false,
           off: true,
           fallback: true,
+          event: {
+            category: 'UI',
+            on: 'WorkshopTourSeenOff',
+            off: 'WorkshopTourSeenOn',
+          },
         },
         {
           kind: 'toggle',
@@ -505,6 +767,11 @@ export const CATALOGUE: AppCatalogue = {
           on: false,
           off: true,
           fallback: true,
+          event: {
+            category: 'UI',
+            on: 'DrawTourSeenOff',
+            off: 'DrawTourSeenOn',
+          },
         },
         {
           kind: 'toggle',
@@ -516,6 +783,11 @@ export const CATALOGUE: AppCatalogue = {
           on: false,
           off: true,
           fallback: true,
+          event: {
+            category: 'UI',
+            on: 'AvatarTourSeenOff',
+            off: 'AvatarTourSeenOn',
+          },
         },
       ],
     },
@@ -534,6 +806,11 @@ export const CATALOGUE: AppCatalogue = {
           on: true,
           off: false,
           fallback: true,
+          event: {
+            category: 'UI',
+            on: 'HomeBannerOn',
+            off: 'HomeBannerOff',
+          },
         },
       ],
     },
@@ -551,6 +828,11 @@ export const CATALOGUE: AppCatalogue = {
           on: true,
           off: false,
           fallback: true,
+          event: {
+            category: 'UI',
+            on: 'NotifyDocumentJoinOn',
+            off: 'NotifyDocumentJoinOff',
+          },
         },
       ],
     },

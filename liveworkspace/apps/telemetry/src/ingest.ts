@@ -16,7 +16,7 @@ import {
 import { insertEvents } from './db';
 import { appKey, type Env } from './env';
 import { timingSafeEqual } from './timing-safe';
-import { VOCABULARIES } from './vocabularies';
+import { isSiteSettingsEvent, VOCABULARIES } from './vocabularies';
 
 // A batch is at most 100 three-field events: anything far larger is not one of ours.
 const MAX_BODY_BYTES = 64 * 1024;
@@ -51,8 +51,11 @@ export async function handleIngest(request: Request, env: Env): Promise<Response
     .filter(vocabulary.isValid)
     // What only the app's Workers count, a browser can't add to: a stale bundle would count it twice.
     .filter((e) => sender === 'server' || !vocabulary.isServerOnly(e))
-    // liveworkspace.app speaks for an app only through its Explorer, so only the Explorer's events.
-    .filter((e) => sender !== 'platform' || isExplorerTelemetryEvent(e))
+    // liveworkspace.app speaks for an app only through its Explorer and the app's settings changed there, so only
+    // those events.
+    .filter(
+      (e) => sender !== 'platform' || isExplorerTelemetryEvent(e) || isSiteSettingsEvent(app, e),
+    )
     .slice(0, TELEMETRY_BATCH_MAX);
   try {
     await insertEvents(env, app, valid, Date.now());
@@ -66,7 +69,8 @@ export async function handleIngest(request: Request, env: Env): Promise<Response
 //   - 'server': it carries that app's own Worker key (Workers send no Origin);
 //   - 'browser': its Origin is one of that app's pages, or a localhost page in development;
 //   - 'platform': its Origin is liveworkspace.app, whose Explorer speaks for the app it is filtered to,
-//     or for liveworkspace.app itself (All Apps). Only the Explorer's events are taken from it.
+//     or for liveworkspace.app itself (All Apps), and for an app whose settings are changed there. Only the
+//     Explorer's events and the app's settings events are taken from it.
 // Spoofable by curl, like any Origin check, which is what the rate limit and the closed vocabulary
 // are for: the worst a forger can do is add plausible counts at a bounded rate.
 async function senderOf(

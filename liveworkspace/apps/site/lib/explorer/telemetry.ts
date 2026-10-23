@@ -30,6 +30,7 @@ import type {
   ViewModeTelemetry,
   WelcomeTelemetryType,
 } from '@liveworkspace/explorer';
+import type { SettingTelemetryEvent } from '@liveworkspace/settings/catalogue';
 import { APP_ITEMS, isAppName, type AppName } from '@liveworkspace/sites';
 import { pageApp, workspaceOrigin } from './page-app';
 
@@ -94,8 +95,12 @@ export function setExplorerConsent(telemetryEnabled: boolean | null) {
 // (apps/site/app/telemetry/platform-emitters.ts) reads each pair; the type is checked against the Explorer's
 // closed list before anything is kept.
 function track(category: string, action: string, type?: string | null, app = sender) {
-  if (!ENABLED) return;
   if (!isExplorerTelemetryEvent({ category, action, type: type ?? null })) return;
+  send(app, category, action, type);
+}
+
+function send(app: TelemetrySender, category: string, action: string, type?: string | null) {
+  if (!ENABLED) return;
   if (consent === 'unknown') {
     if (waiting.length < TELEMETRY_MAX_BUFFER)
       waiting.push({ app, category, action, type: type ?? null });
@@ -229,4 +234,14 @@ export function __resetExplorerTelemetry() {
   consent = 'unknown';
   sender = PLATFORM_TELEMETRY_APP;
   waiting = [];
+}
+
+// ---------- Settings changed on liveworkspace.app ------------------------------------------------------------
+
+/** One of an app's settings changed on the settings page or in the app's dialog there, reported in the app's name
+ *  as the app's own Settings reports it (@liveworkspace/settings settingChangeEvent: the event comes from the app's
+ *  catalogue, the closed list the service takes from liveworkspace.app). Its category and action come from that
+ *  catalogue, so the dashboards' emitter scan reads them at their source, each app's Settings catalogue. */
+export function trackSetting(app: TelemetrySender, event: SettingTelemetryEvent) {
+  send(app, event.category, event.action, event.type);
 }

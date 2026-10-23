@@ -67,7 +67,10 @@ describe('ingest', () => {
       env,
     );
     await handleIngest(
-      post({ app: 'liveworkspace.app', events: [view, created] }, fromPage('https://liveworkspace.app')),
+      post(
+        { app: 'liveworkspace.app', events: [view, created] },
+        fromPage('https://liveworkspace.app'),
+      ),
       env,
     );
     // An unknown token for a known pair is not the Explorer's either.
@@ -82,6 +85,36 @@ describe('ingest', () => {
       ['liveplanner.app', 'Explorer', 'OpensIn'],
       ['liveplanner.app', 'UI', 'ExplorerViewCard'],
       ['liveworkspace.app', 'UI', 'ExplorerViewCard'],
+    ]);
+  });
+
+  it('takes an app’s settings events from liveworkspace.app, and only that app’s', async () => {
+    const env = testEnv({ ENVIRONMENT: 'production' });
+    const comments = { category: 'UI', action: 'Toggled', type: 'NotifyCommentsOff' };
+    const join = { category: 'UI', action: 'Toggled', type: 'NotifyProjectJoinOff' };
+    await handleIngest(
+      post(
+        { app: 'liveplanner.app', events: [comments, join] },
+        fromPage('https://liveworkspace.app'),
+      ),
+      env,
+    );
+    // livediagram has no Project Joined switch, and liveworkspace.app's own name takes no settings.
+    await handleIngest(
+      post(
+        { app: 'livediagram.app', events: [join, comments] },
+        fromPage('https://liveworkspace.app'),
+      ),
+      env,
+    );
+    await handleIngest(
+      post({ app: 'liveworkspace.app', events: [comments] }, fromPage('https://liveworkspace.app')),
+      env,
+    );
+    expect(env.rows.map((r) => [r.app, r.type])).toEqual([
+      ['liveplanner.app', 'NotifyCommentsOff'],
+      ['liveplanner.app', 'NotifyProjectJoinOff'],
+      ['livediagram.app', 'NotifyCommentsOff'],
     ]);
   });
 

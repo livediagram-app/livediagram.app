@@ -3,6 +3,7 @@
 import {
   lazy,
   Suspense,
+  useEffect,
   useId,
   useRef,
   useState,
@@ -28,6 +29,8 @@ import {
 } from '@/lib/account-settings';
 import { appFromParam, loadCatalogue, type AppId } from '@/lib/app-settings';
 import { listedApps, type ListedApp } from '@/lib/apps';
+import { setExplorerConsent } from '@/lib/explorer/telemetry';
+import { reportSharedSetting } from '@/lib/settings-telemetry';
 import { AppMark } from '../landing/AppLogo';
 import { ErrorNote } from './AccountShell';
 import { ProfileCard, type Profile } from './ProfileCard';
@@ -58,6 +61,12 @@ const SECTION_ICONS: Record<string, typeof MailIcon> = {
 export function SettingsPanel() {
   const [settings] = useAccountData<{ all: SettingsBlob }>('/settings');
   const [profile] = useAccountData<{ profile: Profile | null }>('/profile');
+  // Whether a setting changed here may be counted: the person's own choice, as in every app.
+  const telemetryEnabled =
+    settings.state === 'ready' ? settings.data.all.telemetryEnabled : undefined;
+  useEffect(() => {
+    if (settings.state === 'ready') setExplorerConsent(telemetryEnabled !== false);
+  }, [settings.state, telemetryEnabled]);
 
   return (
     <div className="space-y-6">
@@ -173,6 +182,9 @@ function ToggleList({ section, initial }: { section: ToggleSection; initial: Set
     latest.current[row.key] = turn;
     setError(null);
     setValues((v) => ({ ...v, [row.key]: next }));
+    // Counted for the app the page was opened for; turning telemetry off waits for its own event to be handed over.
+    const reported = reportSharedSetting(row.key, next);
+    if (row.key === 'telemetryEnabled') void reported.then(() => setExplorerConsent(next));
     const result = await accountApi('/settings', 'PATCH', { all: { [row.key]: next } });
     if (latest.current[row.key] !== turn) return;
     if (result.ok) flashSaved();

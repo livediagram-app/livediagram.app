@@ -18,6 +18,11 @@ import {
   isServerEmittedEvent as isLiveplannerServerEvent,
   isValidTelemetryEvent as isLiveplannerEvent,
 } from '@liveplanner/api-schema';
+import { catalogueEvents, type AppCatalogue } from '@liveworkspace/settings/catalogue';
+import { CATALOGUE as LIVEDESIGN_SETTINGS } from '@liveworkspace/settings/catalogues/livedesign';
+import { CATALOGUE as LIVEDIAGRAM_SETTINGS } from '@liveworkspace/settings/catalogues/livediagram';
+import { CATALOGUE as LIVEDOCUMENTS_SETTINGS } from '@liveworkspace/settings/catalogues/livedocuments';
+import { CATALOGUE as LIVEPLANNER_SETTINGS } from '@liveworkspace/settings/catalogues/liveplanner';
 import {
   isExplorerTelemetryEvent,
   TELEMETRY_TYPE_PATTERN,
@@ -62,3 +67,20 @@ export const VOCABULARIES: Record<TelemetrySender, Vocabulary> = {
     isServerOnly: isLivedesignServerEvent,
   },
 };
+
+// What liveworkspace.app may report in an app's name besides the Explorer's events: a setting of the app's changed
+// on the settings page or in its dialog there, as the app's own Settings reports it (@liveworkspace/settings
+// catalogueEvents over the app's catalogue). Each app's set is built once per isolate.
+const keyOf = (e: { category: string; action: string; type?: string | null }) =>
+  `${e.category}·${e.action}·${e.type ?? ''}`;
+const settingsSet = (catalogue: AppCatalogue) => new Set(catalogueEvents(catalogue).map(keyOf));
+const SITE_SETTINGS: Partial<Record<TelemetrySender, Set<string>>> = {
+  'livediagram.app': settingsSet(LIVEDIAGRAM_SETTINGS),
+  'liveplanner.app': settingsSet(LIVEPLANNER_SETTINGS),
+  'livedocuments.app': settingsSet(LIVEDOCUMENTS_SETTINGS),
+  'livedesign.app': settingsSet(LIVEDESIGN_SETTINGS),
+};
+
+export function isSiteSettingsEvent(app: TelemetrySender, event: TelemetryWireEvent): boolean {
+  return SITE_SETTINGS[app]?.has(keyOf(event)) ?? false;
+}

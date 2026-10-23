@@ -4,6 +4,129 @@
 import type { AppCatalogue } from '../catalogue';
 
 export const CATALOGUE: AppCatalogue = {
+  shared: [
+    {
+      key: 'dockButtonNames',
+      on: true,
+      off: false,
+      fallback: true,
+      event: {
+        category: 'UI',
+        on: 'DockButtonNamesOn',
+        off: 'DockButtonNamesOff',
+      },
+    },
+    {
+      key: 'minimalChrome',
+      on: true,
+      off: false,
+      fallback: true,
+      event: {
+        category: 'UI',
+        on: 'MinimalChromeOn',
+        off: 'MinimalChromeOff',
+      },
+    },
+    {
+      key: 'notificationsEnabled',
+      on: true,
+      off: false,
+      fallback: true,
+      event: {
+        category: 'UI',
+        on: 'NotificationsOn',
+        off: 'NotificationsOff',
+      },
+    },
+    {
+      key: 'notifyActionAssigned',
+      on: true,
+      off: false,
+      fallback: true,
+      event: {
+        category: 'UI',
+        on: 'NotifyActionAssignedOn',
+        off: 'NotifyActionAssignedOff',
+      },
+    },
+    {
+      key: 'notifyComments',
+      on: true,
+      off: false,
+      fallback: true,
+      event: {
+        category: 'UI',
+        on: 'NotifyCommentsOn',
+        off: 'NotifyCommentsOff',
+      },
+    },
+    {
+      key: 'notifyInviteResponse',
+      on: true,
+      off: false,
+      fallback: true,
+      event: {
+        category: 'UI',
+        on: 'NotifyInviteResponseOn',
+        off: 'NotifyInviteResponseOff',
+      },
+    },
+    {
+      key: 'notifyMentions',
+      on: true,
+      off: false,
+      fallback: true,
+      event: {
+        category: 'UI',
+        on: 'NotifyMentionsOn',
+        off: 'NotifyMentionsOff',
+      },
+    },
+    {
+      key: 'notifyMilestones',
+      on: true,
+      off: false,
+      fallback: true,
+      event: {
+        category: 'UI',
+        on: 'NotifyMilestonesOn',
+        off: 'NotifyMilestonesOff',
+      },
+    },
+    {
+      key: 'notifyTips',
+      on: true,
+      off: false,
+      fallback: true,
+      event: {
+        category: 'UI',
+        on: 'NotifyTipsOn',
+        off: 'NotifyTipsOff',
+      },
+    },
+    {
+      key: 'reduceMotion',
+      on: true,
+      off: false,
+      fallback: false,
+      event: {
+        category: 'UI',
+        on: 'ReduceMotionOn',
+        off: 'ReduceMotionOff',
+      },
+    },
+    {
+      key: 'telemetryEnabled',
+      on: true,
+      off: false,
+      fallback: true,
+      event: {
+        category: 'UI',
+        on: 'TelemetryOn',
+        off: 'TelemetryOff',
+      },
+    },
+  ],
   categories: [
     {
       id: 'collaborate',
@@ -19,6 +142,11 @@ export const CATALOGUE: AppCatalogue = {
           on: true,
           off: false,
           fallback: true,
+          event: {
+            category: 'UI',
+            on: 'CollaboratePanelOn',
+            off: 'CollaboratePanelOff',
+          },
         },
       ],
     },
@@ -36,6 +164,11 @@ export const CATALOGUE: AppCatalogue = {
           on: false,
           off: true,
           fallback: true,
+          event: {
+            category: 'UI',
+            on: 'FormTourSeenOff',
+            off: 'FormTourSeenOn',
+          },
         },
       ],
     },
@@ -54,6 +187,11 @@ export const CATALOGUE: AppCatalogue = {
           on: true,
           off: false,
           fallback: true,
+          event: {
+            category: 'UI',
+            on: 'HomeBannerOn',
+            off: 'HomeBannerOff',
+          },
         },
       ],
     },
@@ -71,6 +209,11 @@ export const CATALOGUE: AppCatalogue = {
           on: true,
           off: false,
           fallback: true,
+          event: {
+            category: 'UI',
+            on: 'NotifyProjectJoinOn',
+            off: 'NotifyProjectJoinOff',
+          },
         },
         {
           kind: 'toggle',
@@ -83,6 +226,11 @@ export const CATALOGUE: AppCatalogue = {
           on: true,
           off: false,
           fallback: true,
+          event: {
+            category: 'UI',
+            on: 'NotifyFormResponsesOn',
+            off: 'NotifyFormResponsesOff',
+          },
         },
       ],
     },
