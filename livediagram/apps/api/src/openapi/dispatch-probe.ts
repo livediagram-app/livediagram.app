@@ -178,6 +178,7 @@ export async function probeDispatch(
     DB: trap('DB'),
     IMAGES: trap('IMAGES'),
     DOCUMENT_ROOM: trap('DOCUMENT_ROOM'),
+    PERSON_STORE: trap('PERSON_STORE'),
     TELEMETRY_ENABLED: 'true',
     GOOGLE_AI_STUDIO_API_KEY: 'probe-key',
     // The Community, which lives in liveworkspace's service (liveworkspace/docs/community.md); never reached.

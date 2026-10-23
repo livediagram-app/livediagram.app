@@ -151,11 +151,16 @@ simple = { limit = 120, period = 60 }
 name = "DOCUMENT_ROOM"
 class_name = "DocumentRoom"
 
-# livedocuments has never been deployed with data, so the class starts SQLite-backed with no history: the
-# key-value DocumentRoom's v1 entry is replaced rather than migrated.
+# Each person's Durable Object (src/person-store/person-store.ts): one SQLite-backed instance per person id,
+# holding what livediagram keeps for the person rather than for one canvas (their shape libraries).
+[[durable_objects.bindings]]
+name = "PERSON_STORE"
+class_name = "PersonStore"
+
+# livediagram ships fresh on new infrastructure, so both classes start SQLite-backed with no history.
 [[migrations]]
 tag = "v1"
-new_sqlite_classes = ["DocumentRoom"]
+new_sqlite_classes = ["DocumentRoom", "PersonStore"]
 
 # Scheduled jobs the worker handles via the `scheduled` export. One
 # entry per cron; each fires the same handler with `event.cron` set
@@ -490,9 +495,13 @@ simple = { limit = 30, period = 60 }
 name = "DOCUMENT_ROOM"
 class_name = "DocumentRoom"
 
+[[env.staging.durable_objects.bindings]]
+name = "PERSON_STORE"
+class_name = "PersonStore"
+
 [[env.staging.migrations]]
 tag = "v1"
-new_sqlite_classes = ["DocumentRoom"]
+new_sqlite_classes = ["DocumentRoom", "PersonStore"]
 
 # The daily 03:00 UTC sweeps (retention + the docs/specs/014-identity/transactional-email.md email crons) run on
 # staging too, against staging's own data. Restated rather than inherited so

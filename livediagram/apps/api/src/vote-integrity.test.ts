@@ -40,7 +40,9 @@ describe('admitGuestVoter', () => {
   it("keeps the voters in the document's own store", async () => {
     const { env, sql } = seeded();
     await admitGuestVoter(env, 'd1', 'net-a', 'p0');
-    expect(sql.prepare("SELECT COUNT(*) AS n FROM guest_voters WHERE document_id = 'd1'").get()).toEqual({
+    expect(
+      sql.prepare("SELECT COUNT(*) AS n FROM guest_voters WHERE document_id = 'd1'").get(),
+    ).toEqual({
       n: 1,
     });
   });

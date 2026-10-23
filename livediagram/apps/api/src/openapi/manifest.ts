@@ -1078,7 +1078,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       },
     },
     responseSchema: wrap('library', 'ShapeLibrary'),
-    statuses: [200, 400, 401, 403, 404, 409, 413],
+    statuses: [200, 400, 401, 404, 409, 413],
   },
   {
     method: 'DELETE',
@@ -1088,7 +1088,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     summary: 'Delete a shape library. Placed shapes stay in their documents.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
-    statuses: [204, 401, 403, 404],
+    statuses: [204, 401, 404],
   },
 
   // ---- API tokens ----

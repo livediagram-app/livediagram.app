@@ -33,15 +33,19 @@ export async function admitGuestVoter(
 ): Promise<boolean> {
   const db = env.DOCUMENT_DB;
   const results = await db.batch([
-    db.prepare(
-      `INSERT OR IGNORE INTO guest_voters (document_id, network_tag, person_tag, created_at)
+    db
+      .prepare(
+        `INSERT OR IGNORE INTO guest_voters (document_id, network_tag, person_tag, created_at)
        SELECT ?1, ?2, ?3, ?4
         WHERE (SELECT COUNT(*) FROM guest_voters WHERE document_id = ?1 AND network_tag = ?2) < ?5`,
-    ).bind(documentId, networkTag, personTag, now, GUEST_VOTERS_PER_NETWORK),
-    db.prepare(
-      `SELECT 1 AS admitted FROM guest_voters
+      )
+      .bind(documentId, networkTag, personTag, now, GUEST_VOTERS_PER_NETWORK),
+    db
+      .prepare(
+        `SELECT 1 AS admitted FROM guest_voters
         WHERE document_id = ? AND network_tag = ? AND person_tag = ?`,
-    ).bind(documentId, networkTag, personTag),
+      )
+      .bind(documentId, networkTag, personTag),
   ]);
   return (results[1]?.results?.length ?? 0) > 0;
 }

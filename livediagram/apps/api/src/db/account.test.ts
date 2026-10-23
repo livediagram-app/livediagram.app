@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { deleteAccount } from './account';
+import { testPersonStores } from '../test-person-store';
 import type { Env } from '../types';
 
 // deleteAccount wipes an owner's D1 rows AND the R2 objects the cascade
@@ -34,7 +35,11 @@ function fakeEnv(opts: {
   };
   const batch = (stmts: { run: () => Promise<unknown> }[]) =>
     Promise.all(stmts.map((s) => s.run()));
-  return { DB: { prepare, batch }, IMAGES: opts.images } as unknown as Env;
+  return {
+    DB: { prepare, batch },
+    IMAGES: opts.images,
+    PERSON_STORE: testPersonStores(),
+  } as unknown as Env;
 }
 
 describe('deleteAccount snapshot cleanup (docs/specs/006-document/document-snapshots.md)', () => {

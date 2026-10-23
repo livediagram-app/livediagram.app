@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { DocumentDb } from './document-room/document-db';
 import { migrateDocumentSchema } from './document-room/document-schema';
 import { nodeDocumentSql, nodeTransaction } from './test-document-sql';
+import { testPersonStores } from './test-person-store';
 import type { Env, DocumentEnv } from './types';
 
 // A REAL D1 for tests: an in-memory SQLite database with every migration in
@@ -176,7 +177,12 @@ export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
     ensureSchema: () => {},
     onWrite: () => {},
   });
-  const env = { ...base, DB: db, DOCUMENT_DB: documentDb.asD1() } as unknown as DocumentEnv;
+  const env = {
+    PERSON_STORE: testPersonStores(),
+    ...base,
+    DB: db,
+    DOCUMENT_DB: documentDb.asD1(),
+  } as unknown as DocumentEnv;
   // A test that sets env.DOCUMENT_ROOM later (its relay recorder) gets it wrapped the same way.
   let rooms = testDocumentRooms(env, sql, base.DOCUMENT_ROOM);
   Object.defineProperty(env, 'DOCUMENT_ROOM', {

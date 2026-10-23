@@ -352,6 +352,7 @@ one per document id. D1 keeps only what is not content, and the indexes the cros
 - `image_refs`: which gallery images each tab places ([Images, Reference index](../009-elements/images.md#reference-index)),
   written in the same transaction as the body.
 - `agent_changesets` and `agent_changeset_parts` (the changeset log).
+- `guest_voters`: the guests who have voted, counted per network ([Vote integrity](../012-collaboration/vote-integrity.md)).
 - `outbox`: what D1 still has to hear (below).
 - In the object's key-value storage, as before: the order state (`epoch`, `seq`), the collaboration ledger,
   selections and agent presence.
@@ -360,9 +361,15 @@ A tab is one row. A tab over 2 MB does not fit a SQLite row in a Durable Object 
 stands; storing a large tab in chunks is the follow-up.
 
 **What D1 keeps**: `documents` (with the listing's `content_summary` and `saved_at`), `share_links`, teams, folders,
-tags, favourites, tokens, the timeline and telemetry tables, the images' side (`media_images`, `image_grants`,
+tags, favourites, tokens, the timeline tables, the images' side (`media_images`, `image_grants`,
 `media_ref_outbox`, and `document_images`, each document's whole set of placed images) and the index tables the Inbox
 reads: `collab_actions`, `collab_threads`. No tab body, slide deck, image reference by tab or changeset is in D1.
+
+**What each person's object holds.** What livediagram keeps for one person rather than for one canvas lives in
+their own SQLite-backed Durable Object, `PersonStore` (`apps/api/src/person-store/`, binding `PERSON_STORE`, one per
+person id, reached through `person-client.ts`): their shape libraries
+([Shape libraries](../013-workspace/shape-libraries.md)). Deleting an account purges it; a guest signing in has
+theirs adopted by the account's.
 
 **Routing.** The worker authenticates the caller, applies its cross-cutting gates (rate limits, read-only tokens,
 workbench confinement, body caps) and hands every request under `/api/documents/:id/...` to the document's object,
@@ -376,9 +383,9 @@ endpoint's share check), `exportCopy` / `importCopy` (a document copy), `purge` 
 **A save is one call and one transaction.** The tab `PUT` reaches the object in one RPC and writes the body, its
 `document_tabs` row, its stats, `document.saved_at` and its image references in one `transactionSync`, with no D1
 round trip on its path. A read is one RPC. Measured on a laptop (CPU time, node:sqlite standing in for the object's
-SQLite; `document-room-store.test.ts` keeps budgets on them): a 1 MB tab saves in about 50 ms and reads in about
-13 ms; a tab placing 500 images saves in about 7 ms, and saves again unchanged in about 3 ms; a 200-tab document's
-read takes about 1.5 ms.
+SQLite; `document-room-store.test.ts` keeps budgets on them): a 1 MB tab saves in about 40 ms and reads in about
+20 ms; a tab placing 500 images saves in about 6 ms, and saves again in about 10 ms; a 200-tab document's read
+takes about 4 ms.
 
 **Images.** The byte endpoint (`GET /api/images/:id`) asks the document whether it places the image (`placesImage`,
 from `image_refs`, so an image placed a moment ago serves at once) and D1 whether the document may serve it

@@ -23,6 +23,7 @@ export type {
 } from '@livediagram/api-schema';
 
 import type { DocumentRoom } from './document-room/document-room';
+import type { PersonStore } from './person-store/person-store';
 
 // Worker bindings injected by Cloudflare at runtime. Not part of the
 // wire format (purely a server-side capability handle).
@@ -33,6 +34,9 @@ export type Env = {
   // Each document's Durable Object (src/document-room/document-room.ts): its content, in its own SQLite, and its
   // realtime room. Reached through document-client.ts `documentRoom(env, documentId)`.
   DOCUMENT_ROOM: DurableObjectNamespace<DocumentRoom>;
+  // Each person's Durable Object (src/person-store/person-store.ts): what livediagram keeps for one person rather
+  // than for one canvas (their shape libraries). Reached through person-client.ts `personStore(env, personId)`.
+  PERSON_STORE: DurableObjectNamespace<PersonStore>;
   // The key liveworkspace's index presents on this app's internal endpoints (`/api/internal/items/*`,
   // liveworkspace/docs/one-explorer-contracts.md). A secret; unset, those endpoints answer 404.
   INDEX_KEY?: string;

@@ -109,34 +109,34 @@ The Explorer's **Library** section gains **Shape Libraries** beside Image galler
 
 ## API
 
-A REST resource at `/api/shape-libraries`, like `/api/folders` (the same owner guard, the
-same 400 / 403 / 404 conventions and envelopes):
+A REST resource at `/api/shape-libraries` (the owner guard and the 400 / 404 conventions and envelopes of
+the api's other routes):
 
 - `GET /api/shape-libraries` → `{ libraries: ShapeLibrary[] }`, the owner's, newest first.
 - `POST /api/shape-libraries` `{ id, name, source, items }` → `{ library }` (201); the api applies the
   name-clash suffix and returns the name it stored. 409 `shape_library_cap` past the cap; 413 over the
   size budget.
 - `PUT /api/shape-libraries/:id` `{ name?, items? }` → `{ library }`: renaming, and deleting items
-  (the client sends the remaining items). Owner-gated.
-- `DELETE /api/shape-libraries/:id` → 204. Owner-gated.
+  (the client sends the remaining items). Someone else's library answers 404, as a missing one does.
+- `DELETE /api/shape-libraries/:id` → 204; 404 for a missing library or someone else's.
 
 Items are validated as the tab endpoints validate elements (`isValidElement`, after the same
 element migration), and stored as JSON in one column. 400 for a missing or invalid field, an item
 that fails validation, more than `MAX_SHAPE_LIBRARY_ITEMS` items, or a name over 120 characters;
 409 `shape_library_name_taken` for a rename onto a name the owner already uses.
 
-The route is owner-scoped in the guest-id guard (`OWNER_SCOPED_SEGMENTS`), like `folders`. Deleting
-an account deletes its libraries; `POST /api/migrate` moves a guest's libraries to the signed-in
+The route is owner-scoped in the guest-id guard (`OWNER_SCOPED_SEGMENTS`). Deleting an account deletes
+its libraries; `POST /api/migrate` moves a guest's libraries to the signed-in
 owner, renaming any that clash with a name the account already uses by the same " (2)" rule.
 
 ## Storage
 
-A D1 table `shape_libraries` (`id`, `owner_id`, `name`, `source`, `items` JSON, `created_at`,
-`updated_at`), indexed by owner and by (owner, created) for the newest-first list. Migration
-`0060_shape_libraries.sql`: 0059 is taken by an open pull request; if the merge order changes, this
-takes the next free number and this line follows. No new binding: the table lives in the api's
-existing D1 database, so staging applies the migration with the others and `pnpm staging:check` has
-nothing new to compare.
+Each person's libraries live in their own Durable Object, `PersonStore` (binding `PERSON_STORE`, one
+SQLite-backed instance per person id, `apps/api/src/person-store/`), in a table `shape_libraries`
+(`id`, `name`, `source`, `items` JSON, `created_at`, `updated_at`). Every row is that person's, so
+there is no owner column, and the cap, the id check and the name rules run inside the store with the
+write they guard. The worker reaches the store through `apps/api/src/person-client.ts`. A read of a
+store that never held anything gives it no storage.
 
 ## Telemetry
 

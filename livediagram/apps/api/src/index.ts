@@ -36,6 +36,7 @@ import { guestSignatureEnforced, OWNER_SCOPED_SEGMENTS } from './auth/guest-rest
 import { handleTokens } from './routes/tokens';
 import { handleOauthExchange } from './routes/oauth';
 import { DocumentRoom } from './document-room/document-room';
+import { PersonStore } from './person-store/person-store';
 import { handleInternalItems } from './routes/internal-items';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
 import { deleteOldDocumentOpens } from './db/document-opens';
@@ -78,7 +79,7 @@ import { sweepWorkbench } from './db/workbench';
 import { withServerRelease } from './server-release-header';
 import type { Env } from './types';
 
-export { DocumentRoom };
+export { DocumentRoom, PersonStore };
 
 // Per-owner write rate limit (security audit item). Returns true
 // when the caller is over the configured cap (wrangler.toml's
@@ -614,4 +615,3 @@ function scheduleSweep(
       }),
   );
 }
-

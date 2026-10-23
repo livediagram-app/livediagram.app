@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
 import { sqliteD1 } from '../test-sqlite-d1';
+import { personStore } from '../person-client';
 import { deleteAccount, migrateOwnerId } from './account';
 
 // Every column that holds an owner id, and what account deletion and the
@@ -39,7 +40,6 @@ const OWNER_COLUMNS: OwnerColumn[] = [
   // Default folders (docs/specs/013-workspace/default-folders.md): guests have them too.
   { table: 'placement_defaults', column: 'owner_id', migrate: { kind: 'moves' } },
   // Shape libraries (docs/specs/013-workspace/shape-libraries.md): guests have them too.
-  { table: 'shape_libraries', column: 'owner_id', migrate: { kind: 'moves' } },
   // Explorer Home's opens (docs/specs/013-workspace/explorer-home.md): guests open documents too.
   { table: 'document_opens', column: 'owner_id', migrate: { kind: 'moves' } },
   // Whose each media-service image is (src/media.ts): guests upload too.
@@ -183,15 +183,6 @@ function seedGuestHoldable(sql: DatabaseSync, id: string, peerDocument: string) 
     owner_id: id,
     default_key: 'mode:draw',
     folder_id: `f-${id}`,
-    updated_at: T0,
-  });
-  insert(sql, 'shape_libraries', {
-    id: `l-${id}`,
-    owner_id: id,
-    name: 'Team icons',
-    source: 'drawio',
-    items: '[]',
-    created_at: T0,
     updated_at: T0,
   });
   insert(sql, 'media_images', { id: `media-${id}`, owner_id: id });
@@ -360,6 +351,18 @@ describe('deleteAccount erases every owner-keyed row (docs/specs/015-api/api.md)
     }
   });
 
+  it("empties the owner's own store (their shape libraries), and no one else's", async () => {
+    const { env } = arrange();
+    const lib = { id: 'l-1', name: 'Team icons', source: 'drawio' as const, items: [] };
+    await personStore(env, ACCOUNT).createShapeLibrary(lib, 10);
+    await personStore(env, OTHER).createShapeLibrary(lib, 10);
+
+    await deleteAccount(env, ACCOUNT);
+
+    expect(await personStore(env, ACCOUNT).shapeLibraries()).toEqual([]);
+    expect(await personStore(env, OTHER).shapeLibraries()).toHaveLength(1);
+  });
+
   it("erases the stars the owner placed on other people's documents", async () => {
     const { env, sql } = arrange();
 
@@ -459,27 +462,21 @@ describe('migrateOwnerId moves every guest-holdable row (docs/specs/015-api/api.
     expect(visits.map((v) => ({ ...v }))).toEqual([{ owner_id: ACCOUNT, document_id: 'd-other' }]);
   });
 
-  it('renames a guest library whose name the account already uses', async () => {
-    const { env, sql } = arrange();
-    insert(sql, 'shape_libraries', {
-      id: 'l-account',
-      owner_id: ACCOUNT,
-      name: 'team ICONS',
-      source: 'drawio',
-      items: '[]',
-      created_at: T0 - 5,
-      updated_at: T0 - 5,
-    });
+  // Shape libraries live in each person's store (person-store.ts), not D1: the guest's move into the account's.
+  it('moves the guest library into the account, renaming one whose name the account already uses', async () => {
+    const { env } = arrange();
+    const lib = (id: string, name: string) => ({ id, name, source: 'drawio' as const, items: [] });
+    await personStore(env, GUEST).createShapeLibrary(lib(`l-${GUEST}`, 'Team icons'), 10);
+    await personStore(env, ACCOUNT).createShapeLibrary(lib('l-account', 'team ICONS'), 10);
 
     await migrateOwnerId(env, GUEST, ACCOUNT);
 
-    const libraries = sql
-      .prepare('SELECT id, owner_id, name FROM shape_libraries ORDER BY id')
-      .all();
-    expect(libraries.map((l) => ({ ...l }))).toEqual([
-      { id: `l-${GUEST}`, owner_id: ACCOUNT, name: 'Team icons (2)' },
-      { id: 'l-account', owner_id: ACCOUNT, name: 'team ICONS' },
+    const libraries = await personStore(env, ACCOUNT).shapeLibraries();
+    expect(libraries.map((l) => [l.id, l.ownerId, l.name]).sort()).toEqual([
+      [`l-${GUEST}`, ACCOUNT, 'Team icons (2)'],
+      ['l-account', ACCOUNT, 'team ICONS'],
     ]);
+    expect(await personStore(env, GUEST).shapeLibraries()).toEqual([]);
   });
 
   it('is a no-op on a second run', async () => {

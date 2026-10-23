@@ -16,7 +16,6 @@ export * from './shared';
 export * from './folders';
 export * from './favourites';
 export * from './placement-defaults';
-export * from './shape-libraries';
 export * from './teams';
 export * from './api-tokens';
 export * from './notify-email-claims';

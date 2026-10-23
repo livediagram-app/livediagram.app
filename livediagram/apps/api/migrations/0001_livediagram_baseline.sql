@@ -240,16 +240,6 @@ CREATE TABLE drive_items (
   UNIQUE (owner_id, drive_file_id)
 );
 
-CREATE TABLE shape_libraries (
-  id          TEXT PRIMARY KEY,
-  owner_id    TEXT NOT NULL,
-  name        TEXT NOT NULL,
-  source      TEXT NOT NULL,
-  items       TEXT NOT NULL,
-  created_at  INTEGER NOT NULL,
-  updated_at  INTEGER NOT NULL
-);
-
 CREATE TABLE placement_defaults (
   owner_id    TEXT NOT NULL,
   default_key TEXT NOT NULL,
@@ -428,7 +418,6 @@ CREATE INDEX idx_share_links_document_role_created ON share_links (document_id, 
 
 CREATE INDEX drive_items_ld_idx ON drive_items (item_kind, ld_id);
 
-CREATE INDEX shape_libraries_owner_created_idx ON shape_libraries (owner_id, created_at DESC);
 
 CREATE INDEX document_opens_last_idx ON document_opens (last_opened_at);
 
