@@ -1,6 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  accountsApi,
+  afterSignIn,
   displayName,
+  handoffBind,
+  onAppAddress,
   EMAIL_PATTERN,
   isRegistering,
   nextUrl,
@@ -69,5 +73,82 @@ describe('going back after signing in', () => {
     expect(displayName({ givenName: '', name: 'Ada Lovelace' })).toBe('Ada Lovelace');
     expect(displayName({ email: 'ada@example.com' })).toBe('ada@example.com');
     expect(displayName({})).toBe('Your account');
+  });
+});
+
+describe("on an app's own address", () => {
+  const BIND = 'a'.repeat(43);
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  function at(origin: string, answer?: Response) {
+    const store = new Map<string, string>();
+    vi.stubGlobal('window', { location: new URL(`${origin}/sign-in`) });
+    vi.stubGlobal('sessionStorage', {
+      getItem: (k: string) => store.get(k) ?? null,
+      setItem: (k: string, v: string) => void store.set(k, v),
+      removeItem: (k: string) => void store.delete(k),
+    });
+    const fetched = vi.fn(async () => answer ?? Response.json({}, { status: 500 }));
+    vi.stubGlobal('fetch', fetched);
+    return fetched;
+  }
+
+  it('knows an app’s address from liveworkspace.app’s, staging’s and the local one', () => {
+    expect(onAppAddress('https://www.livediagram.app')).toBe(true);
+    expect(onAppAddress('https://staging.liveplanner.app')).toBe(true);
+    expect(onAppAddress('http://localhost:3300')).toBe(true);
+    expect(onAppAddress('https://liveworkspace.app')).toBe(false);
+    expect(onAppAddress('https://staging.liveworkspace.app')).toBe(false);
+    expect(onAppAddress('http://localhost:3000')).toBe(false);
+  });
+
+  it('reaches the accounts API through the app’s router there, and directly here', () => {
+    expect(accountsApi('https://livediagram.app')).toBe('/api/workspace/auth');
+    expect(accountsApi('https://liveworkspace.app')).toBe('/api/auth');
+  });
+
+  it('links to the app’s own sign-in there, which keeps the address on the app', () => {
+    expect(signInHref('/explorer/recent', 'https://liveplanner.app')).toBe(
+      '/api/auth/sign-in?return_to=%2Fexplorer%2Frecent',
+    );
+    expect(signInHref('/explorer/recent', 'https://liveworkspace.app')).toBe(
+      '/sign-in?return=%2Fexplorer%2Frecent',
+    );
+  });
+
+  it('keeps the hand-off’s binding for the tab, and only one that looks like a hash', () => {
+    at('https://livediagram.app');
+    expect(handoffBind(`?handoff=${BIND}`)).toBe(BIND);
+    expect(handoffBind('?sig=s')).toBe(BIND);
+    expect(handoffBind('?handoff=short')).toBe(BIND);
+  });
+
+  it('goes back by way of liveworkspace.app’s hand-off, or straight back when it can’t be made', async () => {
+    const hop = 'https://liveworkspace.app/api/auth/handoff?token=t';
+    const fetched = at('https://livediagram.app', Response.json({ url: hop }));
+    const next = 'https://livediagram.app/api/auth/callback?code=c&state=s';
+    expect(await afterSignIn(next, `?handoff=${BIND}`)).toBe(hop);
+    expect(fetched).toHaveBeenCalledWith('/api/workspace/auth/handoff/start', expect.anything());
+    expect(
+      JSON.parse((fetched.mock.calls[0] as unknown as [string, RequestInit])[1].body as string),
+    ).toEqual({
+      return: next,
+      bind: BIND,
+    });
+    at('https://livediagram.app');
+    expect(await afterSignIn(next, `?handoff=${BIND}`)).toBe(next);
+    // No binding: straight back.
+    const none = at('https://livediagram.app');
+    expect(await afterSignIn(next, '')).toBe(next);
+    expect(none).not.toHaveBeenCalled();
+    // A consent step still to come keeps the session where it is.
+    expect(await afterSignIn('/consent?sig=s', `?handoff=${BIND}`)).toBe('/consent?sig=s');
+    // liveworkspace.app itself has its session already.
+    const home = at('https://liveworkspace.app');
+    expect(await afterSignIn(next, `?handoff=${BIND}`)).toBe(next);
+    expect(home).not.toHaveBeenCalled();
   });
 });

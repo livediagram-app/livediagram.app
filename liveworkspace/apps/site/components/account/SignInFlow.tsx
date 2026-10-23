@@ -2,9 +2,12 @@
 
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 import {
+  afterSignIn,
   call,
   EMAIL_PATTERN,
+  handoffBind,
   isRegistering,
+  onAppAddress,
   nextUrl,
   returnPath,
   signedOAuthQuery,
@@ -253,10 +256,13 @@ export function SignInFlow({ flow }: { flow: Flow }) {
       const next = nextUrl(
         await call('/oauth2/continue', { created: true, oauth_query: signedOAuthQuery(query) }),
       );
-      if (next) return window.location.assign(next);
+      // Under an app's address, by way of liveworkspace.app, so the session is there too.
+      if (next) return window.location.assign(await afterSignIn(next, query));
       return setError('That sign-in has expired. Go back to the app and try again.');
     }
-    if (continueTo.current) return window.location.assign(continueTo.current);
+    if (continueTo.current) {
+      return window.location.assign(await afterSignIn(continueTo.current, query));
+    }
     // Signed in from the site's header: back to the page it was on.
     const back = returnPath(query);
     if (back) return window.location.assign(back);
@@ -272,9 +278,16 @@ export function SignInFlow({ flow }: { flow: Flow }) {
     if (sent) setNotice('We sent you a new code.');
   }
 
-  async function google() {
+  async function google(given: SignInOptions | null = options) {
     setError('');
     setBusy('google');
+    // Under an app's address, until Google may come back to it: the same request on liveworkspace.app's own page,
+    // which starts Google there (`#google`) and signs in there, as it always has.
+    if (onAppAddress() && given && !given.googleOnApps) {
+      return window.location.assign(
+        `${given.accountsUrl}${window.location.pathname}${window.location.search}#google`,
+      );
+    }
     storage((s) => s.setItem(GOOGLE_MARK, '1'));
     const here = window.location.pathname + window.location.search;
     const next = nextUrl(
@@ -297,12 +310,22 @@ export function SignInFlow({ flow }: { flow: Flow }) {
     void call('/sign-in-options').then((result) => {
       if (cancelled) return;
       const data = result.data as Partial<SignInOptions>;
-      setOptions({
+      const given: SignInOptions = {
         turnstileSiteKey: typeof data.turnstileSiteKey === 'string' ? data.turnstileSiteKey : '',
         google: data.google === true,
         nameMaxLength: typeof data.nameMaxLength === 'number' ? data.nameMaxLength : 80,
-      });
+        accountsUrl: typeof data.accountsUrl === 'string' ? data.accountsUrl : '',
+        googleOnApps: data.googleOnApps === true,
+      };
+      setOptions(given);
+      // Sent here from an app's address to sign in with Google (`#google`): start it at once.
+      if (given.google && !onAppAddress() && window.location.hash === '#google') {
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        void google(given);
+      }
     });
+    // Kept for the tab: the hand-off at the end needs it, whatever pages come between.
+    handoffBind(window.location.search);
     // Back from Google: signed in, or with Google's refusal in the query.
     if (storage((st) => st.getItem(GOOGLE_MARK)) === '1') {
       storage((st) => st.removeItem(GOOGLE_MARK));

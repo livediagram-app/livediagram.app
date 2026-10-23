@@ -18,8 +18,15 @@ const TELEMETRY_DEV = process.env.TELEMETRY_DEV_ORIGIN ?? 'http://localhost:8790
 const COMMUNITY_DEV = process.env.COMMUNITY_DEV_ORIGIN ?? 'http://localhost:8791';
 const INDEX_DEV = process.env.INDEX_DEV_ORIGIN ?? 'http://localhost:8793';
 
+// The build's assets under a path of their own (@liveworkspace/sites/workspace-proxy SITE_ASSET_PREFIX), because the
+// sign-in pages and the Explorer are also served under each app's own address, whose `/_next` is the app's. The
+// export still writes them to out/_next; `build` moves them under the prefix (scripts/asset-prefix.mjs), so
+// liveworkspace.app serves them at the same path. Locally the dev server serves the prefix itself.
+const ASSET_PREFIX = '/_liveworkspace';
+
 const nextConfig: NextConfig = {
   ...livediagramNextConfig({ exportInDev: false }),
+  assetPrefix: ASSET_PREFIX,
   transpilePackages: [
     '@livediagram/ui',
     '@livediagram/api-schema',
