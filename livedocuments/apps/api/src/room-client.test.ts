@@ -92,7 +92,7 @@ describe('parseRoomCursor', () => {
 
 // The worker telling a room a share link changed (docs/specs/013-workspace/tab-scoped-share-links.md): the
 // op reaches the room's broadcast endpoint, and a room that can't be reached
-// is logged, never thrown, because the D1 write it follows is the real change.
+// is logged, never thrown, because the stored write it follows is the real change.
 describe('broadcastShareOp', () => {
   it("posts the op to the document's room", async () => {
     const { env, stubFetch } = envWith(async () => new Response(null, { status: 204 }));

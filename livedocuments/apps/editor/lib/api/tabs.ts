@@ -240,7 +240,10 @@ export function flushDocumentSavesBeacon(args: {
     return;
   }
   if (args.shareCode) base['X-Share-Code'] = args.shareCode;
-  const grant = heldDocumentGrant(args.documentId, args.shareCode ? { code: args.shareCode } : null);
+  const grant = heldDocumentGrant(
+    args.documentId,
+    args.shareCode ? { code: args.shareCode } : null,
+  );
   if (grant) base[INDEX_GRANT_HEADER] = grant;
   // The share password (docs/specs/013-workspace/share-password.md) is a synchronous session read too —
   // without it an edit-role visitor's flush 403s on a protected

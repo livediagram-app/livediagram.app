@@ -24,6 +24,10 @@ Top to bottom, left column:
   drawn, so the page never shows two. Typing in it opens Search results, and the header's field there takes the
   focus with the caret after what was typed, so the typing carries on uninterrupted.
 
+**The first run.** When Home finds nothing yet, the shared Explorer shows its welcome in place of empty lists, from
+livedocuments' welcome manifest (`packages/templates/welcome.json`, the templates it offers to start from),
+loaded once, only then, in a chunk of its own (`welcome` in `apps/editor/app/explorer/ExplorerShell.tsx`).
+
 The right column, on a wide screen only (`lg` and up), shows livedocuments' **hero art**, the Explorer's `heroArt`
 ([`apps/editor/components/panels/home/HeroTemplateFan.tsx`](../../../apps/editor/components/panels/home/HeroTemplateFan.tsx)):
 three template previews (`HERO_FAN`: a slide deck, an event poster and a year in review) fanned out, each on a

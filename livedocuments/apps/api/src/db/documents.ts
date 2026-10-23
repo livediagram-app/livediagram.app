@@ -77,7 +77,10 @@ export type DocumentThumbMeta = {
   thumbRenderedAt: number | null;
 };
 
-export async function getDocumentThumbMeta(env: Env, id: string): Promise<DocumentThumbMeta | null> {
+export async function getDocumentThumbMeta(
+  env: Env,
+  id: string,
+): Promise<DocumentThumbMeta | null> {
   const outline = await documentRoom(env, id).outline();
   const meta = outline.meta;
   if (!meta) return null;

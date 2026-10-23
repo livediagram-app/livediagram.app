@@ -29,7 +29,9 @@ afterEach(() => vi.unstubAllGlobals());
 
 const pending = () =>
   (
-    db.sql.prepare(`SELECT document_id FROM outbox WHERE kind = 'images' ORDER BY document_id`).all() as {
+    db.sql
+      .prepare(`SELECT document_id FROM outbox WHERE kind = 'images' ORDER BY document_id`)
+      .all() as {
       document_id: string;
     }[]
   ).map((r) => r.document_id);
@@ -101,7 +103,11 @@ describe("a document's images", () => {
 describe('whose an image is', () => {
   it('asks the service once per image, and forgets an image its owner deleted', async () => {
     mediaImages(media, 'user_ada', ['a']);
-    const client = createMediaClient({ app: MEDIA_APP, key: db.env.MEDIA_KEY!, url: db.env.MEDIA_URL });
+    const client = createMediaClient({
+      app: MEDIA_APP,
+      key: db.env.MEDIA_KEY!,
+      url: db.env.MEDIA_URL,
+    });
     expect(await mediaImageOwner(client, 'a')).toBe('user_ada');
     expect(await mediaImageOwner(client, 'a')).toBe('user_ada');
     expect(await mediaImageOwner(client, 'nope')).toBe('');

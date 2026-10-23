@@ -130,7 +130,12 @@ describe('apiLoadShared', () => {
     grants.documentGrantRefusal.mockReset().mockReturnValue(null);
   });
 
-  const GRANT = { grant: 'g', level: 'participate', tabId: 'tab-2', expiresAt: Date.now() + 600_000 };
+  const GRANT = {
+    grant: 'g',
+    level: 'participate',
+    tabId: 'tab-2',
+    expiresAt: Date.now() + 600_000,
+  };
 
   it('asks for a password the link needs', async () => {
     grants.documentGrant.mockResolvedValue(null);
@@ -340,7 +345,6 @@ describe('apiDelete (internal, via public DELETE callers)', () => {
       const headers = init.headers as Record<string, string>;
       expect(headers['X-Share-Code']).toBeUndefined();
     });
-
   });
 });
 
@@ -390,7 +394,13 @@ describe('apiCreateDocument persisted body (docs/specs/006-document/tab-folders.
       teamId: 'team1',
     });
     expect(index.createItem).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 'd2', app: 'livedocuments', title: 'N', folderId: 'f1', teamId: 'team1' }),
+      expect.objectContaining({
+        id: 'd2',
+        app: 'livedocuments',
+        title: 'N',
+        folderId: 'f1',
+        teamId: 'team1',
+      }),
     );
     const [, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
     expect(new Headers(init.headers).get('X-Index-Grant')).toBe('g');
@@ -398,7 +408,6 @@ describe('apiCreateDocument persisted body (docs/specs/006-document/tab-folders.
     expect(body).not.toHaveProperty('folderId');
     expect(body).not.toHaveProperty('teamId');
   });
-
 });
 
 describe('apiCreateDocument placement (docs/specs/013-workspace/folders.md "Placement on create")', () => {

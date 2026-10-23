@@ -94,7 +94,10 @@ describe('handleImages', () => {
   it('uploads to the service and dedupes the same bytes', async () => {
     const first = await upload(PNG);
     expect(first.status).toBe(200);
-    const body = (await first.json()) as { image: Record<string, unknown>; deduped: boolean };
+    const body = (await first.json()) as {
+      image: Record<string, unknown> & { id: string };
+      deduped: boolean;
+    };
     expect(body.deduped).toBe(false);
     expect(body.image).toMatchObject({ contentType: 'image/png', width: 4, height: 3 });
     expect(body.image).not.toHaveProperty('app');
@@ -263,7 +266,12 @@ describe('handleImages', () => {
   });
 
   describe('usage', () => {
-    const item = (id: string, title: string, ownerId = 'user_ada', trashedAt: number | null = null) => ({
+    const item = (
+      id: string,
+      title: string,
+      ownerId = 'user_ada',
+      trashedAt: number | null = null,
+    ) => ({
       id,
       title,
       ownerId,
@@ -273,7 +281,11 @@ describe('handleImages', () => {
     it("maps each image to the owner's documents that place it, once each, by name", async () => {
       mediaImages(media, 'user_ada', ['a', 'b']);
       const { createMediaClient } = await import('@liveworkspace/media');
-      const client = createMediaClient({ app: 'livedocuments.app', key: db.env.MEDIA_KEY!, url: db.env.MEDIA_URL });
+      const client = createMediaClient({
+        app: 'livedocuments.app',
+        key: db.env.MEDIA_KEY!,
+        url: db.env.MEDIA_URL,
+      });
       await client.syncRefs({
         documents: [
           { document: 'Z', images: ['a'] },

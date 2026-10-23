@@ -73,7 +73,7 @@ Scope, by file:
 | `apps/cli/src/update-check.ts` (planned)                                                                                                                     | The npm check                                                                                                                                                                                                                                                                                                                                                             |
 | `../liveworkspace/apps/site/app/telemetry/livedocuments/cli-commands.ts`, `../liveworkspace/apps/site/app/telemetry/livedocuments/catalogue/cli-commands.ts` | `CLI_COMMANDS` (one row a counted verb), `cliCommandSentence`; the CLI Commands stack (CLI56)                                                                                                                                                                                                                                                                             |
 | `apps/api/src/routes/capabilities.ts`, `types.ts`, `wrangler.toml`                                                                                           | `apiBase`, `authEnabled`, `oauthIssuer`, `documentFormat`, `cli`; vars `OAUTH_ISSUER`, `CLI_MIN_VERSION` (CLI10)                                                                                                                                                                                                                                                          |
-| `apps/api/src/routes/tokens.ts`                                                                                                                              | `GET` and `DELETE /api/tokens/current`, reading the token's row from `listApiTokensByOwner`                                                                                                                                                                                                                                                                               |
+| `apps/api/src/routes/tokens.ts`                                                                                                                              | `GET` and `DELETE /api/tokens/current`, answered from the token liveworkspace checked                                                                                                                                                                                                                                                                                     |
 | `apps/api/src/routes/catalogues.ts` (+ test), `index.ts`                                                                                                     | `GET /api/templates[/:kind]`, `/api/icons`, `/api/schema[/:kind]`; dispatch of the three segments                                                                                                                                                                                                                                                                         |
 | `apps/api/src/index.ts`                                                                                                                                      | The token write choke point admits `DELETE /api/tokens/current` and the room-ticket mint                                                                                                                                                                                                                                                                                  |
 | `apps/api/src/openapi/{manifest,document}.ts`                                                                                                                | The capabilities fields; `tokens/current`; the catalogue routes                                                                                                                                                                                                                                                                                                           |
@@ -568,12 +568,12 @@ false, an absent `documentFormat` as equal to its own.
 ### Token self-service (api)
 
 - `GET /api/tokens/current` (token callers only: another method is 405 first; a session or guest gets 403
-  `not_a_token`; a dead token never arrives, as the front door answers 401 `invalid_token`; a row revoked between
-  resolution and the read gets 404, CLI39) →
+  `not_a_token`; a dead token never arrives, as the front door answers 401 `invalid_token`; a token whose check
+  carried no expiry gets 404, CLI39) →
   200 `CurrentTokenResponse = { accountId, accountName, tokenId, tokenName, role, expiresAt }`; `role` is
-  `ctx.token.role`, printed as the api names it. `accountName` is the owner's participant name, `null` when none.
-- `DELETE /api/tokens/current` → 204 after `revokeApiToken(env, owner, ctx.token.id)` and the
-  `recordTokenRevoked` Timeline entry `/api/tokens/:id` writes.
+  `read-only` or `full` from the checked token's read-only flag, printed as the api names it. `accountName` is the owner's participant name, `null` when none.
+- `DELETE /api/tokens/current` → 204 after `revokePresentedToken` revokes it at liveworkspace (so it stops in every
+  app) and the person's workbench store ends what was paired through it (`endAccess({ tokenId }, 'revoked')`).
 - Both are reached before the session-only gate in `handleTokens`, through `ctx.token`. The token write choke point
   admits `DELETE /api/tokens/current` for a token of any role, as revoking itself escalates nothing.
 
@@ -742,7 +742,7 @@ whatever the answer; a newer `version` prints the notice (CLI43).
 
 ## Data and persistence
 
-No D1 table, no migration. Local files (CLI5):
+No server table. Local files (CLI5):
 
 | File                                                    | Class   | Notes                                                                                                                                                                             |
 | ------------------------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -760,7 +760,7 @@ No D1 table, no migration. Local files (CLI5):
 SHA-256 over `<profile>|<documentId>|<tabId>`. Every write is a temporary file in the same directory then
 `rename`. An unreadable or wrong-version derived file is ignored and rewritten; a malformed `config.toml` or
 `credentials.json` exits 2 naming the file and the line. Server state: the device grant's three KV keys, TTL 600 s;
-nothing in D1.
+nothing in the api.
 
 ## Errors and edge cases
 

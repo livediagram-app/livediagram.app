@@ -20,7 +20,10 @@ describe('the document grant boot script', () => {
   });
 
   it('asks for the grant on a document’s address, with the link it came in on', () => {
-    vi.stubGlobal('fetch', vi.fn(async () => new Response('{}')));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response('{}')),
+    );
     expect(run('/document/p1?s=CODE2345')).toMatchObject({ id: 'p1', share: 'CODE2345' });
     expect(fetch).toHaveBeenCalledWith(
       expect.stringMatching(/\/index\/items\/p1\/grant$/),

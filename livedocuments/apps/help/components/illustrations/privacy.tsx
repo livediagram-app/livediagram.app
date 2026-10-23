@@ -28,7 +28,7 @@ function Shield({ x, y, scale = 1 }: { x: number; y: number; scale?: number }) {
 }
 
 /** Where documents live: the browser sends edits through one API to Cloudflare
- *  storage (D1, a Durable Object room, object storage), all behind a shield. */
+ *  storage (each document's Durable Object, the index, the images), all behind a shield. */
 export function DocumentStorage() {
   return (
     <Scene w={420} h={240}>
@@ -55,9 +55,9 @@ export function DocumentStorage() {
       <Label x={334} y={44} anchor="middle" size={10} weight={700} tone="muted">
         CLOUDFLARE
       </Label>
-      <Shape x={284} y={54} w={100} h={30} kind="cylinder" label="D1" labelTone="strong" />
-      <Shape x={284} y={94} w={100} h={30} kind="rect" label="Room" labelTone="strong" />
-      <Shape x={284} y={134} w={100} h={30} kind="rect" label="Images (R2)" labelTone="strong" />
+      <Shape x={284} y={54} w={100} h={30} kind="cylinder" label="Document" labelTone="strong" />
+      <Shape x={284} y={94} w={100} h={30} kind="rect" label="Index" labelTone="strong" />
+      <Shape x={284} y={134} w={100} h={30} kind="rect" label="Images" labelTone="strong" />
       {/* One bus out of the API, one level arrowhead per store. */}
       <path
         d="M228 120 H252 M252 69 V149"

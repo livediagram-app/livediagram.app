@@ -47,7 +47,9 @@ describe('GET /api/teams/:id/members', () => {
   it('lists the joined and invited people for someone whose token names the team', async () => {
     const res = await members();
     expect(res.status).toBe(200);
-    const { members: people } = (await res.json()) as { members: { userId: string | null; status: string }[] };
+    const { members: people } = (await res.json()) as {
+      members: { userId: string | null; status: string }[];
+    };
     expect(people.map((p) => [p.userId, p.status])).toEqual([
       ['user_ada', 'joined'],
       ['user_bob', 'joined'],

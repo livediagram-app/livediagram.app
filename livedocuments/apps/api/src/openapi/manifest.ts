@@ -678,7 +678,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Documents',
     summary:
-      'Email a teammate that an action on this document was assigned to them (docs/specs/012-collaboration/assigned-actions.md). The caller has joined the team and can open the document; the assignee is one of the team\'s joined or invited people. Best-effort; the assignee may have turned these emails off.',
+      "Email a teammate that an action on this document was assigned to them (docs/specs/012-collaboration/assigned-actions.md). The caller has joined the team and can open the document; the assignee is one of the team's joined or invited people. Best-effort; the assignee may have turned these emails off.",
     auth: 'clerk',
     requestSchema: {
       type: 'object',
@@ -1026,9 +1026,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [204, 400, 401, 404, 413, 503],
   },
 
-
-
-
   // ---- Trash (docs/specs/013-workspace/trash.md) ----
   {
     method: 'GET',
@@ -1064,9 +1061,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tokenUsable: true,
     statuses: [204, 400, 401, 404],
   },
-
-
-
 
   // ---- Account ----
   {

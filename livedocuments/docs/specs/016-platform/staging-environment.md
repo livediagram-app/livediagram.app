@@ -5,8 +5,8 @@ A second, complete copy of the platform at **https://staging.livedocuments.app**
 as it is: manual, `workflow_dispatch`-only ([Deployment](deployment.md)).
 
 The point is to have somewhere a change is _running_ before anyone decides to ship it —
-in particular somewhere a **D1 migration runs against a real remote database** before it
-runs against the one holding people's documents.
+in particular somewhere a change runs against **real remote Workers, Durable Objects and
+liveworkspace's staging index** before it runs against the ones holding people's documents.
 
 ## The two environments
 
@@ -17,7 +17,7 @@ runs against the one holding people's documents.
 | Trigger      | Manual (`workflow_dispatch`)         | Automatic, on every green CI run on `main` |
 | Workflow     | `deploy.yml` (**Deploy Production**) | `deploy-staging.yml` (**Deploy Staging**)  |
 | Worker names | `livedocuments-<app>`                | `livedocuments-<app>-staging`              |
-| D1           | `livedocuments`                      | `livedocuments-staging`                    |
+| Index        | `liveworkspace.app`                  | `staging.liveworkspace.app`                |
 | R2           | `livedocuments-images`               | `livedocuments-images-staging`             |
 | Indexable    | Yes                                  | **No** — `X-Robots-Tag: noindex, nofollow` |
 
@@ -72,9 +72,10 @@ prints the resolved binding table.
 
 ## Data isolation
 
-Staging gets its own **D1 database**, **R2 bucket** and **KV namespace**. Durable Objects
-come free: a different script is a different DO namespace, so the staging
-`DOCUMENT_ROOM` (and every document's content in it) is already separate.
+Staging gets its own **R2 bucket** and **KV namespace**, and talks to liveworkspace's
+staging index (`INDEX_ORIGIN`). The api has no database. Durable Objects come free: a
+different script is a different DO namespace, so the staging `DOCUMENT_ROOM` (every
+document's content) and `WORKBENCH` (every person's workbench) are already separate.
 
 Rate-limiter namespace ids are deliberately **left identical** to production's. They are
 scoped per script by Cloudflare, so the staging worker's `1001` is not production's
@@ -82,19 +83,19 @@ scoped per script by Cloudflare, so the staging worker's `1001` is not productio
 something.
 
 Consequence worth stating plainly: **staging has no production data.** It starts empty
-and stays a scratch environment. It is for exercising code paths and migrations, not for
+and stays a scratch environment. It is for exercising code paths, not for
 reproducing a specific user's document.
 
-## Migrations run on staging first
+## Every change runs on staging first
 
-`deploy-staging.yml` applies `wrangler d1 migrations apply DB --remote --env staging`
-before the staging api worker deploys, exactly as production does. That makes every
-merge to `main` a rehearsal of the production migration step against a real remote D1,
-one manual deploy earlier than the rehearsal used to happen, which was never.
+The api has no SQL migration step: each Durable Object makes its own schema on first use,
+so a schema change ships in the worker's code. Every merge to `main` deploys that code to
+staging one manual deploy before production, where it meets real remote Durable Objects
+and liveworkspace's staging index.
 
-A migration that fails halts the staging deploy and turns the `main` build red — which
-is the whole point, and the reason the staging deploy is chained to CI rather than fired
-in parallel with it.
+A deploy that fails halts the staging run and turns the `main` build red — which is the
+whole point, and the reason the staging deploy is chained to CI rather than fired in
+parallel with it.
 
 ## noindex, at the edge
 
@@ -148,7 +149,7 @@ first deploy it returns `{"emailEnabled":false}` on staging against
 | Integration        | Staging setup                                                                                                                                                                                                                                                                                                                                                                                                  |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Sign-in** — ON   | Staging is its **own OAuth client** of the liveworkspace accounts Worker (`ACCOUNTS_CLIENT_ID_STAGING` / `ACCOUNTS_CLIENT_SECRET_STAGING`) with its **own resource** (`API_RESOURCE_STAGING`), so its access tokens carry an audience production's api refuses: a staging session cannot reach production data. The client's registered redirect URI is `https://staging.livedocuments.app/api/auth/callback`. |
-| **Telemetry** — ON | Events land in staging's own D1, so the **public** `/telemetry` dashboard on production is unaffected; staging's dashboard shows staging's own traffic, which is how you verify a new event actually lands.                                                                                                                                                                                                    |
+| **Telemetry** — ON | Events land in liveworkspace's staging telemetry service (`TELEMETRY_URL` from the hosted profile), so the **public** `/telemetry` dashboard on production is unaffected; staging's dashboard shows staging's own traffic, which is how you verify a new event actually lands.                                                                                                                                 |
 | **Resend** — OFF   | Wired but keyless. `APP_BASE_URL` and `RESEND_FROM` are set, so setting `RESEND_API_KEY --env staging` turns it on and every link points back at staging. Left unset on purpose: staging sends the same notification emails as production, from the same verified domain, so switching it on mails **real people** (see the warning below). Turn it on for a specific test, then take the key off again.       |
 
 > **Email warning.** Staging sends the same notification and milestone emails as
@@ -209,11 +210,10 @@ is worse than queueing.
 Deploys fail loudly until these exist. Resource ids are committed to `wrangler.toml`
 (they are identifiers, not secrets — [Secrets policy](../002-project-scope/secrets-policy.md)).
 
-**Done** — the three data stores exist, and their ids are committed:
+**Done** — the two data stores exist:
 
 | Resource | Name                           | Where the id lives       |
 | -------- | ------------------------------ | ------------------------ |
-| D1       | `livedocuments-staging`        | `apps/api/wrangler.toml` |
 | R2       | `livedocuments-images-staging` | bound by name, no id     |
 | KV       | `mcp-oauth-kv-staging`         | `apps/mcp/wrangler.toml` |
 

@@ -9,11 +9,7 @@ import {
   type DocumentConversion,
   type SharedTabsSummary,
 } from '@livedocuments/api-schema';
-import type {
-  LiveDoc,
-  DocumentResponse,
-  DocumentSummary,
-} from '@livedocuments/api-schema';
+import type { LiveDoc, DocumentResponse, DocumentSummary } from '@livedocuments/api-schema';
 import type { Tab } from '@livedocuments/document';
 import { dedupeInFlight } from '../dedupe';
 import {
@@ -89,7 +85,10 @@ function renameInIndex(id: string, name: string, shareCode: string | null): void
     console.warn('[index] rename not recorded', { shareCode: !!shareCode, err });
   });
 }
-export const apiLoadDocument = dedupeInFlight(_apiLoadDocument, (ownerId, id) => `${ownerId}|${id}`);
+export const apiLoadDocument = dedupeInFlight(
+  _apiLoadDocument,
+  (ownerId, id) => `${ownerId}|${id}`,
+);
 
 // How many of the document's tabs are also in other documents, and how many
 // documents (docs/specs/006-document/tab-document-many-to-many.md, "Shared-tab

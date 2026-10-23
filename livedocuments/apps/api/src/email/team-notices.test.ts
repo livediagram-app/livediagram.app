@@ -27,7 +27,7 @@ import { notifyMentions, notifyMilestone } from './notifications';
 // The five notification emails that ride on liveworkspace (docs/specs/014-identity/profile-and-email-notifications.md):
 // the tenth document and the first share link (milestones, claimed once at accounts), someone joining a shared document
 // (the index's notice, throttled in the document), an action assigned and a mention (the document's team at accounts,
-// claimed once in the document, capped per sender). Addresses and switches are accounts'; nothing is kept in D1.
+// claimed once in the document, capped per sender). Addresses and switches are accounts'; nothing else is kept.
 
 const OWNER = 'user_owner';
 const BOB = 'user_bob';

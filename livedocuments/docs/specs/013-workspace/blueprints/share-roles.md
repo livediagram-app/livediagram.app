@@ -24,7 +24,7 @@ socket) are not derived here.
 | `packages/api-schema/src/room-messages.ts`                                                                                                                      | `isPresenceOpKind`, `isSystemOpKind`: the op classes the gate reads; the `article` frame's `grow`                                           |
 | `packages/document/src/participant-content.ts` (new)                                                                                                            | The participant content rule: `applyParticipantOp`, `PARTICIPANT_TEXT_FIELDS`, `participantTabChange`                                       |
 | `packages/document/src/participant-article.ts` (new)                                                                                                            | The participant writing rule: `applyParticipantArticleOps`, `participantArticlesChange`                                                     |
-| `apps/api/migrations/0001_livedocuments_baseline.sql` (new)                                                                                                     | A `level` column on `share_links` and `shared_with`                                                                                         |
+| liveworkspace's index (sharing)                                                                                                                                 | A link's level and a visitor's, kept by the index with the link; the grant it signs carries the level                                       |
 | apps/api/src/share-link-row.ts, db/ws-tickets.ts, db/shared.ts (removed: links and grants are the index's)                                                      | Readers through `parseStoredLevel`                                                                                                          |
 | apps/api/src/auth/document-access.ts (removed)                                                                                                                  | Gates compare levels; `canParticipateDocument`                                                                                              |
 | `apps/api/src/routes/context.ts`                                                                                                                                | `gateParticipate` is the Participant check                                                                                                  |
@@ -196,7 +196,7 @@ Invariants:
 
 - **I1** Every level gate compares through `levelAtLeast`; no gate reads `role === 'edit'` by itself.
 - **I2** Every reader parses through `parseStoredLevel`: an unknown level reads as `view`.
-- **I3** A Participant's change reaches D1 and peers only through `applyParticipantOp` or
+- **I3** A Participant's change reaches the document's store and peers only through `applyParticipantOp` or
   `applyParticipantArticleOps`.
 - **I4** A Participant's write never adds or removes an element or an article, and never changes a field outside
   `PARTICIPANT_TEXT_FIELDS` or a block outside the writing blocks.
@@ -306,16 +306,13 @@ anything; right for a review. "view": they only look, with no comments or votes.
 
 ## Data and persistence
 
-| Field                                    | Class      | Notes                                                               |
-| ---------------------------------------- | ---------- | ------------------------------------------------------------------- |
-| `share_links.role`, `shared_with.role`   | credential | Legacy `CHECK (role IN ('edit', 'view'))`: `view` for a Participant |
-| `share_links.level`, `shared_with.level` | credential | `NULL` or a level; set only for `participate` (SR11)                |
-| `ws_tickets.role`                        | ephemeral  | The effective level; no CHECK                                       |
+| Field                                   | Class      | Notes                                                                                                                                                                                    |
+| --------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A share link's level, a visitor's level | credential | Kept by liveworkspace's index with the link ([One Explorer: contracts](../../../../../liveworkspace/docs/one-explorer-contracts.md#sharing-and-access)); `view`, `participate` or `edit` |
+| The grant's level                       | ephemeral  | The effective level, signed into the index's grant the room admits a socket by                                                                                                           |
 
-The baseline migration, `0001_livedocuments_baseline.sql`: a `level` column on `share_links` and the same on
-`shared_with` (`CHECK (level IS NULL OR level IN ('view', 'participate', 'edit'))`). No row changes level (SR11).
-Readers take `parseStoredLevel(level ?? role)` (`storedLevelOf`); writers keep `role` two-valued (`legacyRoleColumn`)
-and set `level` only for `participate` (`levelColumn`); the Shared lists join on `COALESCE(level, role)`. A
+livedocuments keeps no share link or visitor row: sharing is the index's, and the room reads the level from the grant.
+Readers take a level through `parseStoredLevel`, so an unknown one reads as `view`. A
 Participant's writes change only text already in the tab, so nothing new is stored on an element or a ticket.
 Image grants (`db/image-grants.ts`) come from edit collaborators only: a Participant never places a picture.
 
@@ -361,18 +358,18 @@ Image grants (`db/image-grants.ts`) come from edit collaborators only: a Partici
   every stored field of every kind new values and checks only the listed ones land.
 - A Participant cannot place a picture, so it never mints an image grant: a document serves an image its owner does
   not own only through an edit collaborator's grant.
-- Rate: room frames ride `OP_RATE_CAP`; each applied write is one D1 read and one compare-and-swap.
+- Rate: room frames ride `OP_RATE_CAP`; each applied write is one read of the document's store and one compare-and-swap.
 
 ## Performance and limits
 
 - `gateClientOp` is constant-time on `op.kind`.
-- A Participant op or article frame costs one D1 read and one compare-and-swap write of the tab row
+- A Participant op or article frame costs one read of the document's store and one compare-and-swap write of the tab row
   (≤ `MAX_TAB_BYTES`), serialised per document on the tab write queue. Measured CPU for one element op (parse, rule,
   stringify), before the rule narrowed to text: 0.23 ms on a 200-element tab (23 KB), 2.2 ms at 2,000 elements
   (242 KB), 4.5 ms at 5,000 (611 KB). The editor's commit guard (`participantTabChange`) cost 0.10 ms, 1.5 ms and
   1.6 ms on the same tabs, once per commit.
 - The autosave's 600 ms debounce batches a person's typing into one op per element and one frame per article. What
-  is not bounded is D1 round trips: one per op or frame, and a room of people all writing at once queues behind one
+  is not bounded is store writes: one per op or frame, and a room of people all writing at once queues behind one
   another. Recorded as a risk; the mitigation, if it bites, is to batch a socket's ops per tab into one write.
 - `applyParticipantOp` is linear in the tab's element count for one op; `applyParticipantArticleOps` is linear in
   the article's block count per op.
@@ -455,7 +452,7 @@ The Share dialog is a lazy chunk; a third card adds no request. A Participant's 
 | `PARTICIPANT_PENDING_MAX` | 64                                   | SR12                                | 8 to 512            |
 | `HELD_BACK_NOTICE_MS`     | 4000                                 | SR13                                | 1000 to 30000       |
 
-No new environment variable or binding; self-hosting needs the baseline migration.
+No new environment variable or binding.
 
 ## Assets and external resources
 

@@ -72,7 +72,13 @@ export function OfflineDocuments() {
   );
 }
 
-function OfflineRow({ document: d, ownerId }: { document: DocumentSummary; ownerId: string | null }) {
+function OfflineRow({
+  document: d,
+  ownerId,
+}: {
+  document: DocumentSummary;
+  ownerId: string | null;
+}) {
   const { syncToCloud } = useOfflineConversion({ id: d.id, name: d.name }, ownerId, () => {});
   return (
     <li className="flex items-center gap-2 pr-3">

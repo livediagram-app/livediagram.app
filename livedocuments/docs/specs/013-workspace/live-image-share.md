@@ -50,7 +50,7 @@ export).
 3. Load the rendered tab (default: the first tab; `?tab=<id>` selects another). A tab-scoped link ([Tab-scoped share links](tab-scoped-share-links.md)) always renders its own tab, and a `?tab=` naming any other is a 404.
 4. Render it to SVG (a Pages tab as its first page alone, [Document SVG snapshots](../006-document/document-snapshots.md) "Pages tabs") and return `Content-Type: image/svg+xml` with a short
    `Cache-Control` (e.g. `max-age=30, stale-while-revalidate=300`) so embeds
-   update without hammering D1.
+   update without hammering the document's Durable Object.
 
 The router already forwards `/api/*` to the api worker, so no router change.
 

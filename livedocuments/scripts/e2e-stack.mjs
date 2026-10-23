@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // E2E stack (docs/specs/003-system-architecture/e2e-smoke.md): the three-process stack the Playwright smoke suite
 // runs against — the real static `apps/editor/out` build served with the
-// production router/worker rewrites, the api worker on a local D1, and liveworkspace's index
+// production router/worker rewrites, the api worker with local Durable Objects, and liveworkspace's index
 // (liveworkspace/apps/index, liveworkspace/docs/one-explorer.md) on its own local D1.
 // Dependency-free (node builtins) so it adds nothing to install cost.
 //
@@ -551,7 +551,9 @@ function startMarketingServer() {
 // --- Boot ---------------------------------------------------------------
 async function main() {
   if (!existsSync(OUT_DIR)) {
-    console.error(`[e2e] ${OUT_DIR} missing — run \`pnpm --filter @livedocuments/editor build\` first`);
+    console.error(
+      `[e2e] ${OUT_DIR} missing — run \`pnpm --filter @livedocuments/editor build\` first`,
+    );
     process.exit(1);
   }
   if (EDITOR_ONLY) {

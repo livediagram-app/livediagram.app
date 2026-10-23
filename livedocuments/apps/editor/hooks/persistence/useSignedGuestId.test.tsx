@@ -3,8 +3,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const ensureGuestIdentity =
-  vi.fn<typeof import('@/lib/guest-identity').ensureGuestIdentity>();
+const ensureGuestIdentity = vi.fn<typeof import('@/lib/guest-identity').ensureGuestIdentity>();
 vi.mock('@/lib/guest-identity', () => ({
   ensureGuestIdentity: () => ensureGuestIdentity(),
 }));

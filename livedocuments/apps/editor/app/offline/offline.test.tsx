@@ -17,7 +17,9 @@ vi.mock('@/hooks/persistence/useAccountBootstrap', () => ({
 }));
 vi.mock('@/hooks/persistence/useOfflineConversion', () => ({
   useOfflineConversion: (doc: { id: string }) => ({
-    syncToCloud: async () => store.sync(doc.id),
+    syncToCloud: async () => {
+      store.sync(doc.id);
+    },
     takeOffline: async () => {},
   }),
 }));

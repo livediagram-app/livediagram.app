@@ -30,7 +30,10 @@ const OWNER_COLUMNS: OwnerColumn[] = [
   {
     table: 'image_owners',
     column: 'owner_id',
-    deleteKeeps: { when: '1 = 1', why: "a document's own store; the images themselves go from the media service" },
+    deleteKeeps: {
+      when: '1 = 1',
+      why: "a document's own store; the images themselves go from the media service",
+    },
   },
   // Agent changesets (docs/specs/024-agents/agent-changesets.md, CS27), in each document's own store: those on
   // someone else's document stay until its retention ages them out.
@@ -67,9 +70,21 @@ function insert(sql: DatabaseSync, table: string, row: Record<string, string | n
 
 // One row in every owner-keyed column, keyed on `id`.
 function seed(sql: DatabaseSync, id: string) {
-  insert(sql, 'test_documents', { id: `d-${id}`, owner_id: id, name: id, saved_at: T0, created_at: T0 });
+  insert(sql, 'test_documents', {
+    id: `d-${id}`,
+    owner_id: id,
+    name: id,
+    saved_at: T0,
+    created_at: T0,
+  });
   insert(sql, 'image_owners', { image_id: `img-${id}`, owner_id: id });
-  insert(sql, 'tabs', { id: `tab-${id}`, name: 'Board', data: '{"elements":[]}', updated_at: T0, element_count: 0 });
+  insert(sql, 'tabs', {
+    id: `tab-${id}`,
+    name: 'Board',
+    data: '{"elements":[]}',
+    updated_at: T0,
+    element_count: 0,
+  });
   insert(sql, 'agent_changesets', {
     id: `cs-${id}`,
     document_id: `d-${id}`,

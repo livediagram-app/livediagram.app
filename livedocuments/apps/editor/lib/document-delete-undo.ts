@@ -61,7 +61,10 @@ export function takeDeleteUndo(now = Date.now()): TrashedDocument | null {
 }
 
 // Taken once per page load and kept, so a remount (or Strict Mode's second call) sees the same answer.
-let arrival: { taken: boolean; document: TrashedDocument | null } = { taken: false, document: null };
+let arrival: { taken: boolean; document: TrashedDocument | null } = {
+  taken: false,
+  document: null,
+};
 
 /** The document deleted just before this page opened, for the Explorer's Undo; null on the server or when none. */
 export function arrivedTrashed(): TrashedDocument | null {

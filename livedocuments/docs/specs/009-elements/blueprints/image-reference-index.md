@@ -20,14 +20,14 @@ Scope, by file (all under `apps/api/`):
 
 ## Domain and naming
 
-| Term          | Identifier                                          | Meaning                                                                     |
-| ------------- | --------------------------------------------------- | --------------------------------------------------------------------------- |
-| Reference     | row of `image_refs` `(tab_id, image_id)`            | Tab `tab_id` places gallery image `image_id` (in the document's own SQLite) |
-| Document set  | rows of `document_images` `(document_id, image_id)` | Every image the document places, as its last push left it (D1)              |
-| Gallery id    | `isGalleryImageId(value)`                           | A string of 1 to `IMAGE_REF_ID_MAX_LENGTH` characters, not `data:`-prefixed |
-| Reference ids | `imageRefIds(elements)`                             | Distinct gallery ids of top-level `type: 'image'` elements, document order  |
-| Text scan     | `imageRefIdsFromText(data)`                         | Gallery ids after every `"imageId"` key in a body that isn't valid JSON     |
-| Body ids      | `imageRefIdsFromData(data)`                         | `[]` without `"imageId"` text, else `imageRefIds` of the parse or text scan |
+| Term          | Identifier                               | Meaning                                                                                      |
+| ------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Reference     | row of `image_refs` `(tab_id, image_id)` | Tab `tab_id` places gallery image `image_id` (in the document's own SQLite)                  |
+| Document set  | `documentImageIds(env, documentId)`      | Every image the document places, read from its references; pushed whole to the media service |
+| Gallery id    | `isGalleryImageId(value)`                | A string of 1 to `IMAGE_REF_ID_MAX_LENGTH` characters, not `data:`-prefixed                  |
+| Reference ids | `imageRefIds(elements)`                  | Distinct gallery ids of top-level `type: 'image'` elements, document order                   |
+| Text scan     | `imageRefIdsFromText(data)`              | Gallery ids after every `"imageId"` key in a body that isn't valid JSON                      |
+| Body ids      | `imageRefIdsFromData(data)`              | `[]` without `"imageId"` text, else `imageRefIds` of the parse or text scan                  |
 
 Banned synonyms: "image usage table", "image links", "refcount". A reference is never counted, only present or absent.
 
@@ -58,60 +58,53 @@ A save whose image set is unchanged deletes nothing and inserts nothing, so it k
 A trigger on `image_refs` (insert, delete) and on `document_tabs` (insert, delete; a tab's references find their
 document through its link, which a create writes after the tab and a delete removes before it) keys `images` in the
 document's outbox, in the writer's transaction. The drain (`drainOutbox`) reads the document's set
-(`documentImageIds`) and appends to its one D1 batch, in order:
+(`documentImageIds`) and, in `pushImageRefs`:
 
-1. `mediaRefQueueSetStatement(env, documentId, ids)`: queues the document for the media service when the set differs
-   from its `document_images` rows ([Images](images.md#retention)).
-2. `DELETE FROM document_images WHERE document_id = ?`, then one `INSERT` of the set.
-3. `imageGrantPlacementStatements(env, documentId, ids, now)`.
+1. `grantPlacedImages(env, documentId, ids, editorKeys, now)`: the [placement grants](#placement-grants) the set
+   earns.
+2. `media.syncRefs({ documents: [{ document, images }], complete: true })`: the whole set to the media service
+   ([Images](images.md#retention)).
 
 ### Readers
 
-**Usage** `imageUsageByOwner(env, ownerId)`:
-`SELECT DISTINCT r.image_id, d.id, d.name FROM documents d JOIN document_images r ON r.document_id = d.id WHERE d.owner_id = ? ORDER BY d.name, d.id`
-(`D3`), folded into `Record<imageId, { id, name }[]>`.
+**Usage** `usageOf` (`routes/images.ts`): the media service's answer of which documents place each of the owner's
+images, kept to this app's documents the index answers as the owner's and not in the Trash, folded into
+`Record<imageId, { id, name }[]>` ordered by name (`D3`).
 
-**Share read**, two questions asked in parallel by the byte route (`routes/images.ts`):
+**Share read**, one `servesImage` RPC to the document from the byte route (`routes/images.ts`), answered from its own
+SQLite in order:
 
-- `documentPlacesImage(env, documentId, imageId, onlyTabId)` (`db/image-refs.ts`), through the `placesImage` RPC: the
-  document places the image (`document_tabs` ⋈ `image_refs`, `[AND dt.tab_id = ?]`), answered from its own SQLite,
-  so a placement serves before any push.
-- `documentMayServeImage(env, documentId, imageId)` (`db/image-grants.ts`): one D1 query, `SERVES`, where
-  `SERVES = i.owner_id = d.owner_id OR EXISTS (SELECT 1 FROM image_grants g WHERE g.document_id = d.id AND g.image_id = i.id) OR ENTITLED`,
-  `ENTITLED` being the placement writer's condition below at the current time, and `i` the image's `media_images` row
-  (whose it is, as this api names owners; [Images](images.md#data-and-persistence)).
+- `documentPlacesImage(env, documentId, imageId, onlyTabId)` (`db/image-refs.ts`): the document places the image
+  (`document_tabs` ⋈ `image_refs`, `[AND dt.tab_id = ?]`), so a placement serves before any push.
+- `documentMayServeImage(env, documentId, imageId)` (`db/image-grants.ts`, the kit's placement grants): the image's
+  owner (its `image_owners` row, else asked of the media service once and kept) owns the document, the document
+  holds an `image_grants` row for it, or the owner is entitled right now (below).
 
-An image with no `media_images` row serves nowhere and earns no grant until this api meets it (an upload, a gallery
-list, or the first byte read, which fills the row). A refusal logs `[images] not servable by document` with the
-document and image ids.
+A refusal logs `[images] not servable by document` with the document and image ids.
 
-**Render read** `servableImageIds(env, documentId, ids)`: of a tab's ids, those `SERVES` admits, one query over a
-bound JSON array. `thumbnail.ts` `loadEmbeddedImages` reads the media service only for those; the rest keep the placeholder.
+**Render read** `servableImageIds(env, documentId, ids)`: of a tab's ids, those the same rule admits.
+`thumbnail.ts` `loadEmbeddedImages` reads the media service only for those; the rest keep the placeholder.
 
 ### Placement grants
 
-`image_grants (document_id, image_id, created_at)`, primary key `(document_id, image_id)`, `WITHOUT ROWID`, no
-foreign keys (in `0001_livedocuments_baseline.sql`).
+`image_grants (image_id, created_at)`, primary key `image_id`, `WITHOUT ROWID`, in the document's own SQLite
+(`document-schema.ts`), with `image_owners (image_id, owner_id)` beside it.
 
-- **Placement writer** `imageGrantPlacementStatements(env, documentId, ids, now)`, run by the push with the
-  document's whole set: `INSERT OR IGNORE` one row per placed image where `i.owner_id <> d.owner_id` AND (a
-  `team_members` row with `team_id = d.team_id`, `user_id = i.owner_id`, `status = 'joined'`, OR a `shared_with` row
-  with `owner_id = i.owner_id`, `document_id = d.id`, `role = 'edit'` whose link is still live). No row for an empty
-  id list.
-- **Copy writer** `imageGrantCopyStatements(env, sourceId, targetId, ids, now)`, after the import in `copyDocument`
-  and the internal copy: `INSERT OR IGNORE` the target for each id the source `SERVES`.
-- **Owner-change writer** `imageGrantOwnerChangeStatement`, in the owner change's batch: each image of
-  `document_images` that the outgoing owner owns.
-- **Removal** `imageGrantRemovalStatement`, in `documentRemovalStatements`, keyed on the doomed documents.
-- I5: a document serves an image only if `SERVES` holds; a grant is written only by the writers above.
+- **Placement writer** `grantPlacedImages(env, documentId, ids, editorKeys, now)`, run by the push with the
+  document's whole set: one row per placed image whose owner is not the document's owner and is entitled now, a
+  joined member of the document's team (liveworkspace's team people) or someone who wrote to the document since its
+  last push (`editorKeys`, the outbox's edit keys). No row for an empty id list.
+- **Copy writer** `grantImages`, in `importCopy` (the index's copy door): the target gets a grant for each id the
+  source could serve, carried in the copy.
+- **Removal**: the document's purge deletes its whole storage, grants and owners with it.
+- I5: a document serves an image only if the rule holds; a grant is written only by the writers above.
 
 ### Invariants
 
 - I1: after any committed writer batch, the tab's references equal its body ids (replace writers) or include them
   (add-only writers).
-- I2: after a push, the document's `document_images` rows equal the distinct ids of its references.
-- I3: a push that changes a document's set queues it in `media_ref_outbox`, so the media service, whose sweep reads
-  only what this api reports, hears of every reference (the spec's
+- I2: every change to a document's references keys its outbox, and its push sends the whole set, so the media
+  service, whose sweep reads only what the apps report, hears of every reference within about a minute (the spec's
   [Retention](../images.md#retention-unused-image-cleanup)).
 
 ## Interfaces and contracts
@@ -156,18 +149,11 @@ CREATE TABLE image_refs (
   image_id TEXT NOT NULL,
   PRIMARY KEY (tab_id, image_id)
 ) WITHOUT ROWID;
-
--- D1 (0001_livedocuments_baseline.sql)
-CREATE TABLE document_images (
-  document_id TEXT NOT NULL,
-  image_id    TEXT NOT NULL,
-  PRIMARY KEY (document_id, image_id)
-) WITHOUT ROWID;
-CREATE INDEX document_images_image_idx ON document_images (image_id);
+CREATE INDEX image_refs_image_idx ON image_refs (image_id);
 ```
 
-Both are derived data, rebuilt from `tabs.data` by the writers and the push. Not owner-keyed, so neither account
-deletion nor owner migration lists them in [Owner-keyed data](../../015-api/api.md#owner-keyed-data).
+Derived data, rebuilt from `tabs.data` by the writers. Not owner-keyed, so neither account deletion nor owner
+migration lists it in [Owner-keyed data](../../015-api/api.md#owner-keyed-data).
 
 ## Errors and edge cases
 
@@ -178,10 +164,10 @@ deletion nor owner migration lists them in [Owner-keyed data](../../015-api/api.
 | `elements` is an object, or missing                    | No references, on both extractors                                        |
 | Corrupt body with no usable id                         | Warned with `(0 ids)`; nothing written                                   |
 | Swap loses its compare                                 | Add-only statements may add references the stored body lacks: over-keeps |
-| Tab deleted                                            | Its references go with it; the push drops them from `document_images`    |
+| Tab deleted                                            | Its references go with it; the next push sends the smaller set           |
 | Image deleted from the gallery, references left behind | Harmless; they go when the element does                                  |
 | A push fails                                           | Its keys stay; the next drain, a minute later, sends the whole set again |
-| No `MEDIA_KEY`                                         | The index is still maintained; the queue is dropped each minute          |
+| No `MEDIA_KEY`                                         | The index is still maintained; the push sends nothing                    |
 
 ## Security and trust
 
@@ -195,10 +181,10 @@ bound JSON array read by `json_each`. The modules above are held to 100% coverag
 
 ## Performance and limits
 
-The writers run in the document's own SQLite, inside the save's one transaction: no D1 round trip on a save. Measured
+The writers run in the document's own SQLite, inside the save's one transaction: no network round trip on a save. Measured
 on a laptop (CPU time, node:sqlite standing in for the object's SQLite; `document-room-store.test.ts` keeps budgets on
 them): a tab placing 500 images saves in about 7 ms, its push takes about 1.5 ms, and a save that keeps the set takes
-about 3 ms and keys no push. The byte endpoint's share read is one RPC to the document and one D1 query, in parallel.
+about 3 ms and keys no push. The byte endpoint's share read is one RPC to the document, answered from its own SQLite.
 
 ## Observability
 
@@ -211,7 +197,7 @@ reports (`[media] refs sync failed`) are in [Images](images.md#observability).
 | ------------------------------------------------------ | ----------------------------------------------- |
 | What a reference is                                    | `src/image-refs/extract.test.ts`                |
 | Each writer maintains the index (I1), routes included  | `src/db/image-refs-writers.test.ts`             |
-| The push keeps `document_images` (I2) and queues (I3)  | `src/document-room/document-outbox.test.ts`     |
+| The push sends the whole set and grants (I2)           | `src/document-room/document-outbox.test.ts`     |
 | Deleting a tab / document / account drops them         | `src/db/image-refs-writers.test.ts`             |
 | No unknown writer of `tabs`, code or migration         | `src/image-refs/writer-census.test.ts`          |
 | Placement grants (I5)                                  | `src/db/image-grants.test.ts`                   |

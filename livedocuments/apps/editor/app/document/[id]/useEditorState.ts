@@ -71,10 +71,7 @@ import { useBurstCheckpoint } from '@/hooks/canvas/useBurstCheckpoint';
 import { useNudgeSelection } from '@/hooks/canvas/useNudgeSelection';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { useToast } from '@/hooks/ui/useToast';
-import {
-  commitUserPreferences,
-  writeUserPreferences,
-} from '@/lib/user-preferences';
+import { commitUserPreferences, writeUserPreferences } from '@/lib/user-preferences';
 import { track } from '@/lib/telemetry';
 import { useEditorBroadcast } from '@/hooks/collab/useEditorBroadcast';
 import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
@@ -1791,7 +1788,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setNameConfirmed(true);
     if (wasOpen) track('UI', 'Closed', 'Welcome');
   };
-
 
   // Name the open document: its own name, and its row in the Explorer panel's in-memory list, which would otherwise
   // show the old name until a reload (autosave persists the name). Shared by the header's rename and a template naming

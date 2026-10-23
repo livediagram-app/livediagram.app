@@ -173,10 +173,17 @@ function ExplorerPlaceReporter({
   report: (fields: PlaceFields) => void;
   role: WorkbenchRole;
 }) {
-  const folderId = view.kind === 'folder' ? view.id : view.kind === 'team' ? (view.folderId ?? null) : null;
+  const folderId =
+    view.kind === 'folder' ? view.id : view.kind === 'team' ? (view.folderId ?? null) : null;
   useEffect(() => {
     report(
-      explorerPlaceFields({ view: view.kind, folderId, folderName: null, documentCount: null, role }),
+      explorerPlaceFields({
+        view: view.kind,
+        folderId,
+        folderName: null,
+        documentCount: null,
+        role,
+      }),
     );
   }, [report, view.kind, folderId, role]);
   return null;

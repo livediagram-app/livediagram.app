@@ -5,7 +5,7 @@ import type { DocumentDTO, Env } from './types';
 // The render-cache reads/writes the snapshot freshness + first-tab body
 // through the db layer; mock it so the test pins the cache decision tree
 // (fresh → stream R2, stale → render+put+stamp, empty → null) without a
-// live D1. renderElementsToSvg stays real — it's pure.
+// live store. renderElementsToSvg stays real — it's pure.
 const db = vi.hoisted(() => ({
   getTabBody: vi.fn(),
   getThumbRenderedAt: vi.fn(),
@@ -172,7 +172,7 @@ describe('getDocumentThumbnailSvg', () => {
     const deferred: Promise<unknown>[] = [];
 
     // Resolves while the put is still pending: the response is not held
-    // behind the R2 write + D1 stamp.
+    // behind the R2 write + stamp.
     const out = await getDocumentThumbnailSvg(
       env,
       { ...liveDoc(), thumbRenderedAt: null },

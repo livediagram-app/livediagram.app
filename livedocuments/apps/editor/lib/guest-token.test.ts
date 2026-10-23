@@ -49,7 +49,11 @@ describe('refresh window', () => {
   it('asks again with fewer than 30 days left', () => {
     const now = Date.now();
     expect(guestTokenNeedsRefresh(null, now)).toBe(true);
-    const fresh = { token: 't', id: 'guest_a', expiresAt: now + GUEST_TOKEN_REFRESH_BEFORE_MS + 1000 };
+    const fresh = {
+      token: 't',
+      id: 'guest_a',
+      expiresAt: now + GUEST_TOKEN_REFRESH_BEFORE_MS + 1000,
+    };
     expect(guestTokenNeedsRefresh(fresh, now)).toBe(false);
     expect(guestTokenNeedsRefresh({ ...fresh, expiresAt: now + 1000 }, now)).toBe(true);
   });

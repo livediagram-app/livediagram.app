@@ -125,7 +125,7 @@ Inputs: the document (`getDocument`), the tab id, the parsed `ChangesetRequest`,
 6. **No-op.** No element op and no new tab: answer 200 with `changeset: null`; nothing is written (CS11).
 7. **Bound.** `CHANGESET_MAX_OPERATIONS` is checked before compile; after it, each part against
    `CHANGESET_PART_MAX_BYTES` (CS43) and the tab through `storeTab`, all `too_large`.
-8. **Write and record** in one D1 batch: `upsertTabAtRev(env, documentId, tab, orderIndex, stored?.rev ?? 0)`,
+8. **Write and record** in one batch on the document's store: `upsertTabAtRev(env, documentId, tab, orderIndex, stored?.rev ?? 0)`,
    `insertChangesetStatement(...)` and three `insertChangesetPartStatement(...)`. The trigger aborts the batch
    when the row moved (`tab_rev_stale`).
 9. **Lost race.** On `tab_rev_stale`, or a primary-key or unique failure on a create, repeat from step 1 once;
@@ -382,7 +382,7 @@ the room records `elementIds` whenever it is non-empty, a multi-selection withou
 Internal: `POST /mutation { op }` accepts `changeset` and `tab-meta`; `GET /selections` above. The person tag
 on the attachment comes from the ticket as the [agent presence blueprint](agent-presence.md) describes it
 (`personTagFor`, the mint storing it for a verified account, the upgrade forwarding `X-Verified-Person`); it is built
-with this file, its column `ws_tickets.person_tag` in the baseline migration, since the held check needs it.
+with this file, since the held check needs it; the upgrade works it out from the index's grant, so nothing stores it.
 
 ### Shared functions
 
@@ -427,7 +427,7 @@ layout, theme, name } }`, no base; then reads the tab to render the PNG (CS36). 
 
 ## Data and persistence
 
-The baseline migration, `0001_livedocuments_baseline.sql`:
+The document's schema, `apps/api/src/document-room/document-schema.ts` (each document's own SQLite):
 
 ```sql
 -- tabs: rev INTEGER NOT NULL DEFAULT 0
@@ -436,7 +436,7 @@ CREATE TRIGGER tabs_rev_advances BEFORE UPDATE OF data ON tabs
   BEGIN SELECT RAISE(ABORT, 'tab_rev_stale'); END;
 CREATE TABLE agent_changesets (
   id TEXT PRIMARY KEY,
-  document_id TEXT NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
+  document_id TEXT NOT NULL REFERENCES document(id) ON DELETE CASCADE,
   tab_id TEXT NOT NULL REFERENCES tabs(id) ON DELETE CASCADE,
   rev INTEGER NOT NULL,
   base_rev INTEGER,
@@ -560,8 +560,8 @@ document's object from its alarm once a day (`MAINTENANCE_EVERY_MS`); parts foll
 
 ## Performance and limits
 
-- Submit, worst case: 5 D1 reads (document, gate, tab, last revision, participant), one room fetch, the engine over
-  500 operations on a tab at the byte cap, one lint, one D1 batch (tab, link, `saved_at`, collaboration index, image
+- Submit, worst case: 5 reads (document, gate, tab, last revision, participant), one room fetch, the engine over
+  500 operations on a tab at the byte cap, one lint, one batch (tab, link, `saved_at`, collaboration index, image
   refs, record, three parts), one relay. Twice on a lost race. The route adds no pass over the tab beyond
   fingerprinting the targets (O(targets)).
 - Tab PUT adds one indexed read (`agent_changesets_tab_rev`) that returns nothing in the common case, and the
@@ -569,7 +569,7 @@ document's object from its alarm once a day (`MAINTENANCE_EVERY_MS`); parts foll
 - Merge on save, worst case: an editor offline for the retention period on a busy tab. Records stream in pages of
   20 with their `ops` part; one page holds at most 20 x `CHANGESET_PART_MAX_BYTES`, about 40 MB, under the 128 MB
   isolate (CS18). Fingerprints are computed only for elements a record names.
-- Rows: each part at most `CHANGESET_PART_MAX_BYTES` (1,991,808), so every row fits D1's 2,000,000 bytes; only the
+- Rows: each part at most `CHANGESET_PART_MAX_BYTES` (1,991,808), so every row fits SQLite's 2,000,000 bytes (D1's limit too); only the
   tab cap bounds a changeset.
 - Room: each `changeset` takes one of the 256 catch-up slots; at most 192 KiB each, the log holds at most 48 MiB,
   inside the 64 MiB a log of maximum `tab` ops already allows. Selection writes: one DO storage put per selection
@@ -716,7 +716,7 @@ In `packages/api-schema/src/changesets.ts` (CS35):
 | `CHANGESET_REVEAL_MS`            | 2,000                    | Spec                                                 | 1,000 to 5,000    |
 | `CHANGESET_TOAST_COALESCE_MS`    | 10,000                   | Spec                                                 | 2,000 to 60,000   |
 | `CHANGESET_SUMMARY_MAX`          | 80                       | Spec                                                 | 40 to 200         |
-| `CHANGESET_PART_MAX_BYTES`       | 1,991,808                | `MAX_TAB_BYTES`: one D1 row per part (CS43)          | fixed by D1       |
+| `CHANGESET_PART_MAX_BYTES`       | 1,991,808                | `MAX_TAB_BYTES`: one row per part (CS43)             | fixed by SQLite   |
 | `CHANGESET_MERGE_PAGE`           | 20                       | CS18                                                 | 5 to 50           |
 | `CHANGESET_LIST_DEFAULT`, `_MAX` | 20, 100                  | CS26                                                 | 10 to 500         |
 | `CHANGESET_ID_LENGTH`            | 10                       | Spec; 50 bits                                        | 10 to 16          |
@@ -728,7 +728,7 @@ In `packages/api-schema/src/changesets.ts` (CS35):
 | `CHANGESET_SEEN_HEADER`          | `X-Changeset-Seen`       | Spec                                                 | fixed             |
 | `CLIENT_HEADER`                  | `X-Livedocuments-Client` | CS25                                                 | fixed             |
 
-No new binding or environment variable; self-hosting needs only the migration. Staging needs no `[env.staging]`
+No new binding or environment variable; the document's schema makes the tables on first use. Staging needs no `[env.staging]`
 change.
 
 ## Defaults ledger

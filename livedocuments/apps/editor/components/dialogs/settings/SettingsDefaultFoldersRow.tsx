@@ -15,11 +15,7 @@ export function SettingsDefaultFoldersRow({ row }: { row: SettingsDefaultFolders
   return (
     <SettingsRowShell row={row}>
       <div className="mt-2">
-        <DefaultFoldersSettings
-          client={indexClient}
-          app="livedocuments"
-          teams={teams}
-        />
+        <DefaultFoldersSettings client={indexClient} app="livedocuments" teams={teams} />
       </div>
     </SettingsRowShell>
   );

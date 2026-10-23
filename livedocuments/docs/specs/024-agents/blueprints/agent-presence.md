@@ -33,7 +33,7 @@ Scope, by file:
 | `packages/api-schema/src/index.ts`                                                                                          | Re-exports the two new modules                                                                                                                          |
 | `packages/api-schema/src/telemetry-schema.ts`, `server-emitted-events.ts`                                                   | Action `Present` (category `Agent`); `Agent·Present` is server-emitted                                                                                  |
 | `packages/document/src/comments.ts`                                                                                         | `Comment.tokenId`; `withoutCommentAuthorId` strips it too                                                                                               |
-| `apps/api/migrations/0001_livedocuments_baseline.sql`                                                                       | `ws_tickets.person_tag` (PR1), which agent changesets' held check also reads                                                                            |
+| `apps/api/src/routes/document-room-routes.ts`                                                                               | The upgrade stamps `X-Verified-Person` (PR1): the person tag of the account the index's grant names, which agent changesets' held check also reads      |
 | `apps/api/src/db/tabs.ts`                                                                                                   | `tabIdsWithComments(env, documentId)`                                                                                                                   |
 | `apps/api/src/person-tag.ts`                                                                                                | `personTagFor(documentId, ownerId)`                                                                                                                     |
 | `apps/api/src/comments.ts`                                                                                                  | `tokenId` locked by `rewriteCommentAuthors`, blanked by `redactCommentAuthorIds`; `threadsOfTab`                                                        |
@@ -73,7 +73,7 @@ Scope, by file:
 | Focus           | `focus: string[]` (element ids), `AgentFocusOverlay`                     | Elements the agent marks, drawn with a ring in the owner's colour       |
 | Time to live    | `ttl` (request, ms), `expiresAt` (epoch ms)                              | How long the entry lives without a refresh                              |
 | Refresh         | `refreshAgentPresence`, room mode `refresh`                              | A changeset extending the entry, keeping status and focus               |
-| Person tag      | `personTag`, `X-Verified-Person`, `ws_tickets.person_tag`                | Opaque per-document stand-in for an owner id, held inside the room only |
+| Person tag      | `personTag`, `X-Verified-Person`                                         | Opaque per-document stand-in for an owner id, held inside the room only |
 | Joins           | `AgentPresence.joins`, `AgentPresence.self`, `AgentPresence.person`      | Which roster sessions are the same person as the agent, per recipient   |
 | Thread verbs    | reply, resolve, reopen (`CommentVerb`)                                   | The comment endpoints beside add and delete-own                         |
 | Thread listing  | `DocumentCommentThread`, `CommentListStatus` (`open`, `resolved`, `all`) | One thread across the document, with its element's ref and label        |
@@ -329,19 +329,20 @@ none, and the room pins it on the session attachment as `personTag`.
 
 ## Data and persistence
 
-| Field                                 | Class     | Notes                                                      |
-| ------------------------------------- | --------- | ---------------------------------------------------------- |
-| `ws_tickets.person_tag`               | transient | TEXT NULL; lives as long as the ticket (60 s)              |
-| Session attachment `personTag`        | transient | Per socket, survives hibernation, gone with the socket     |
-| DO storage `agent-presence:<t>:<tab>` | ephemeral | `AgentPresenceRecord`, at most 120 s without a refresh     |
-| `Comment.tokenId`                     | audit     | Inside `tabs.data`; written once; deleted with its comment |
+| Field                                 | Class     | Notes                                                                             |
+| ------------------------------------- | --------- | --------------------------------------------------------------------------------- |
+| `X-Verified-Person`                   | transient | Worked out at the upgrade from the index's grant; held on the socket's attachment |
+| Session attachment `personTag`        | transient | Per socket, survives hibernation, gone with the socket                            |
+| DO storage `agent-presence:<t>:<tab>` | ephemeral | `AgentPresenceRecord`, at most 120 s without a refresh                            |
+| `Comment.tokenId`                     | audit     | Inside `tabs.data`; written once; deleted with its comment                        |
 
 `AgentPresenceRecord = { id, documentId, tokenId, tabId, personTag, shareCode, name, color, role, status, focus,
 setAt, expiresAt }`.
 
-- The baseline migration holds the nullable column, shared with agent changesets.
+- The person tag is stored nowhere: the upgrade works it out from the grant (`personTagFor`) and the socket's
+  attachment keeps it, shared with agent changesets.
 - The room restores every entry in its constructor (`storage.list({ prefix: 'agent-presence:' })` inside
-  `blockConcurrencyWhile`), drops the expired ones and arms the alarm. Nothing about presence reaches D1.
+  `blockConcurrencyWhile`), drops the expired ones and arms the alarm. Nothing about presence reaches the document's tables.
 - `Comment.tokenId` is optional: every stored comment without one parses, an Offline Mode copy keeps it unread,
   a document copy carries it (redacted for every viewer but its author). Account deletion removes the account's
   tokens; a comment's token id then names nothing.
@@ -370,7 +371,7 @@ setAt, expiresAt }`.
 - **E17** A reply that pushes the tab over `MAX_TAB_BYTES`: 413, nothing written, nothing relayed.
 - **E18** A lost compare-and-swap twice: 409 `tab_busy`, nothing written.
 - **E19** A relay that fails: the write stands; `[room-mutation] el-delta did not reach the room` warns (PR26); editors get
-  it from D1 on their next read, and the ledger merge does not apply because the room never saw it.
+  it from the store on their next read, and the ledger merge does not apply because the room never saw it.
 - **E20** A list over a document with no threads: 200 `{ threads: [] }` after one query.
 - **E21** A tab body that fails to parse during the list: skipped, logged `[comment] list skipped tab`.
 
@@ -394,7 +395,7 @@ setAt, expiresAt }`.
 
 ## Performance and limits
 
-- `PUT .../presence`: at most five D1 reads (document meta, grant, tab, participant, a team membership) and one
+- `PUT .../presence`: at most five reads (document meta, grant, tab, participant, a team membership) and one
   room call; the room does one storage write, one `setAlarm` and one roster broadcast.
 - A roster broadcast is O(S x (S + A)) for S sockets and A entries: the person-tag index is built once per frame,
   then each recipient's projection is linear. With A at most 32 and an entry under 3 KiB (20 ids of at most
@@ -503,7 +504,7 @@ Room and route tests run on the in-memory storage and SQLite fakes with a fixed 
 | `AGENT_PRESENCE_ROOM_MAX`   | 32     | Keeps `agents` under 96 KiB of a 256 KiB frame (PR12)     | 8 to 64         |
 | `COMMENT_TEXT_MAX`          | 2000   | The add route's existing literal, now named               | 500 to 5000     |
 
-No new environment variable or binding. Its one column, on the ticket, is in the baseline migration.
+No new environment variable or binding, and no stored column.
 
 ## Assets and external resources
 

@@ -13,7 +13,7 @@ anything on the canvas. A document in This Browser still says what it is on the 
 
 | Location          | What it means                                                                                                |
 | ----------------- | ------------------------------------------------------------------------------------------------------------ |
-| **livedocuments** | A normal cloud document, saved to the api (D1), reachable from any device.                                   |
+| **livedocuments** | A normal cloud document, saved to the api (its Durable Object), reachable from any device.                   |
 | **This Browser**  | Offline Mode ([Offline Mode](offline-mode.md)): saved only in this browser's IndexedDB, never to the server. |
 
 ## The default

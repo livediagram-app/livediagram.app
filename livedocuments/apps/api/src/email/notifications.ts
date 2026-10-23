@@ -22,7 +22,12 @@ import {
 } from '@liveworkspace/auth-client';
 import { MENTIONS_MAX, type Comment } from '@livedocuments/document';
 import { ownerEmail } from '../person/account-app';
-import { claimOwnerMilestone, notifyRecipients, documentsMadeBy, teamPeople } from '../person/notify';
+import {
+  claimOwnerMilestone,
+  notifyRecipients,
+  documentsMadeBy,
+  teamPeople,
+} from '../person/notify';
 import { isAccountOwner } from '../person/owner';
 import { getParticipant } from '../person/profiles';
 import { getNotificationPrefs } from '../person/settings';
@@ -113,7 +118,9 @@ export async function notifyDocumentJoin(
   joinerId: string,
 ): Promise<void> {
   if (!emailEnabled(env) || !isAccountOwner(joinerId) || joinerId === document.ownerId) return;
-  const to = (await notifyRecipients(env, [document.ownerId], 'notifyDocumentJoin')).get(document.ownerId);
+  const to = (await notifyRecipients(env, [document.ownerId], 'notifyDocumentJoin')).get(
+    document.ownerId,
+  );
   if (!to) return;
   const now = Date.now();
   const claimed = await claimNotice(env, {

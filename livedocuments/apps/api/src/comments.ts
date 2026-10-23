@@ -43,7 +43,7 @@ function mapCommentThread(
 // colour onto a comment, or relabel someone else's existing one).
 //
 // A save can also carry SOMEBODY ELSE's new comment: it reached the saver
-// live, and their save landed in D1 before the author's own. That comment is
+// live, and their save landed before the author's own. That comment is
 // credited by `roomAuthors`, the name the room stamped it with when it was
 // posted (docs/specs/012-collaboration/collab-race-hardening.md), not to the saver, which is what used to happen. Its
 // author id stays empty (the saver's copy has none: it is stripped from every

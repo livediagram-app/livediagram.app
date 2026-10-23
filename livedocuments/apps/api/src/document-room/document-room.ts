@@ -76,9 +76,9 @@ import { answerDocumentRequest, type RouteIdentity } from './document-route';
 //   - The document's content: tabs (with their stats) and the changeset log, in its own SQLite
 //     (document-schema.ts), which the content modules reach as `env.DOCUMENT_DB` (document-db.ts). Every API
 //     request about the document runs here (`route`, document-route.ts), so a save is one call to this object and
-//     one SQLite transaction, with no D1 round trip on its path. What D1's cross-document reads need (the Inbox's
-//     index, the listing summary, saved_at, the media service's image references) is pushed from the outbox on
-//     idle (document-outbox.ts).
+//     one SQLite transaction, with no round trip on its path. What other services need (the index's summary, the
+//     Inbox's comments and actions, who edited it, the media service's image references) is pushed from the
+//     outbox on idle (document-outbox.ts).
 //   - The realtime room: connected WebSockets and their identity, presence, and the ordered op stream. It
 //     classifies each op by kind, orders mutations (seq within an epoch, kept in storage), rewrites comment
 //     authors, and keeps collaboration state (the ledger). Payloads stay `op: unknown` so the editor can evolve
@@ -127,7 +127,7 @@ const MAX_MESSAGE_CHARS = 256 * 1024;
 
 // How many recent mutation ops the room keeps for reconnect catch-up
 // (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1). A reconnecting client within this many ops of the
-// live tail replays the delta; further behind, it re-hydrates from D1.
+// live tail replays the delta; further behind, it re-hydrates from the document's stored tabs.
 // Bounded so an idle-but-connected room can't grow the buffer without end;
 // the log lives in memory (like opRates) and resets on hibernation, which
 // only ever forces the safe path (a resync), never data loss.
@@ -146,7 +146,7 @@ const SHARE_LINK_CHANGED_CLOSE = 4003;
 // How long the outbox waits after a write before it pushes, the least gap between two pushes, and the retry after a
 // failed one: @liveworkspace/index-app's (outbox.ts), the same for every app's items.
 export { FLUSH_IDLE_MS, FLUSH_MIN_GAP_MS } from '@liveworkspace/index-app';
-// The document's own daily upkeep: old changesets go (a D1 cron before).
+// The document's own daily upkeep: old changesets go.
 export const MAINTENANCE_EVERY_MS = 24 * 60 * 60 * 1000;
 const MAINTENANCE_KEY = 'maintenance-at';
 
@@ -203,7 +203,7 @@ export class DocumentRoom extends DurableObject<Env> {
   // DOCUMENT_ROOM that answers this document's own id with this object (no hop). Undefined only for a unit test that
   // builds a room from a fake state alone; then the content and telemetry paths are skipped.
   roomEnv: DocumentEnv | undefined;
-  // The document's SQLite behind the D1 surface (document-db.ts).
+  // The document's SQLite behind the D1-shaped surface the content modules use (document-db.ts).
   readonly db: DocumentDb;
   // The document this object is, from the first call that names it (every RPC and room join does).
   private documentId: string | null = null;
@@ -220,7 +220,7 @@ export class DocumentRoom extends DurableObject<Env> {
 
   // The tab write queue. Every write this room makes to this document's tabs
   // runs through here ONE AT A TIME. A Durable Object only serialises the
-  // synchronous parts of its handlers: while one write is awaiting D1, the
+  // synchronous parts of its handlers: while one write is awaiting, the
   // runtime happily starts the next request, and two read-modify-writes of the
   // same row would be exactly the race that loses one of the two writes.
   // In memory because a queue only matters while requests are in flight; a
@@ -298,7 +298,7 @@ export class DocumentRoom extends DurableObject<Env> {
 
   // ---------- The document's content ----------------------------------------------------------------------
 
-  // After a wake: the document id and anything the outbox still owes D1. Reads only; a document with no schema yet
+  // After a wake: the document id and anything the outbox still owes. Reads only; a document with no schema yet
   // (an id nothing has written) stays without one.
   private restoreContentState(maintenanceAt: number | undefined): void {
     this.maintenanceAt = maintenanceAt ?? null;
@@ -336,7 +336,7 @@ export class DocumentRoom extends DurableObject<Env> {
     }
   }
 
-  // A content write happened: push to D1 on idle, at most once a minute (document-outbox.ts). Writes the drain
+  // A content write happened: push to the index and the media service on idle, at most once a minute (document-outbox.ts). Writes the drain
   // itself makes (its outbox delete) schedule nothing.
   private noteWrite(): void {
     if (this.draining) return;
@@ -353,7 +353,7 @@ export class DocumentRoom extends DurableObject<Env> {
     this.armAlarm();
   }
 
-  // Push what the outbox holds to D1 now. A failure keeps it and retries later.
+  // Push what the outbox holds now. A failure keeps it and retries later.
   async drain(): Promise<void> {
     const env = this.roomEnv;
     const documentId = this.documentId;
@@ -523,7 +523,8 @@ export class DocumentRoom extends DurableObject<Env> {
     const started =
       sql.exec(`SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'document'`).toArray()
         .length > 0 &&
-      sql.exec('SELECT 1 FROM document WHERE id = ? AND created_at > 0', documentId).toArray().length > 0;
+      sql.exec('SELECT 1 FROM document WHERE id = ? AND created_at > 0', documentId).toArray()
+        .length > 0;
     if (!started) return 0;
     const changed = await anonymiseDocument(this.requireEnv(), documentId, personId);
     if (changed > 0) console.info('[room] anonymised a closed account', { rows: changed });
@@ -1003,7 +1004,7 @@ export class DocumentRoom extends DurableObject<Env> {
   //     hold the ops it missed).
   //   - Fresh client (no epoch, lastSeq 0) → replay the whole current log;
   //     element ops apply idempotently by id, so re-applying ops the client
-  //     already has from its D1 hydrate is harmless.
+  //     already has from its hydrate is harmless.
   //   - Any other epoch mismatch with prior progress → resync: the client
   //     saw a previous room instance and we can't map its seq onto ours.
   private sendCatchup(ws: WebSocket, epoch: string | null, lastSeq: number): void {

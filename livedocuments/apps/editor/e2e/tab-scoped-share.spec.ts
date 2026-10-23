@@ -1,4 +1,11 @@
-import { test, expect, expectNoPageErrors, adoptGuest, mintGuest, seedDocumentItem } from './fixtures';
+import {
+  test,
+  expect,
+  expectNoPageErrors,
+  adoptGuest,
+  mintGuest,
+  seedDocumentItem,
+} from './fixtures';
 
 // Tab-scoped share links (docs/specs/013-workspace/tab-scoped-share-links.md), end to end: the owner scopes a
 // link to one tab in the Share dialog; a visitor on it sees that tab, the rest

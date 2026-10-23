@@ -32,22 +32,19 @@ export function useTemplatePickMove(at: {
     if (tabHasContent && documentId && readTemplatePick()?.itemId === documentId)
       handTemplatePick(null);
   }, [tabHasContent, documentId]);
-  return useCallback(
-    () => {
-      if (!documentId) return;
-      // Taken now, before the template's elements land and the effect above would drop it.
-      const handoff = takeTemplatePick(documentId, tabId);
-      if (!handoff || handoff.placementChosen) return;
-      void moveOnTemplatePick(indexClient, {
-        app: 'livedocuments',
-        itemId: documentId,
-        handoff,
-        intent: '',
-        noun: nounOf,
-      }).then((message) => {
-        if (message) toast.info(message);
-      });
-    },
-    [documentId, tabId, toast],
-  );
+  return useCallback(() => {
+    if (!documentId) return;
+    // Taken now, before the template's elements land and the effect above would drop it.
+    const handoff = takeTemplatePick(documentId, tabId);
+    if (!handoff || handoff.placementChosen) return;
+    void moveOnTemplatePick(indexClient, {
+      app: 'livedocuments',
+      itemId: documentId,
+      handoff,
+      intent: '',
+      noun: nounOf,
+    }).then((message) => {
+      if (message) toast.info(message);
+    });
+  }, [documentId, tabId, toast]);
 }

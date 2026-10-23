@@ -45,15 +45,13 @@ export function useCommentMentions({
     void apiTeamMembers(ownerId, team.id)
       .then((members) => {
         const rows = teamMemberRows(members, team, ownerId);
-        const list = assignHandles(rows).map(
-          (m): MentionCandidate => ({
-            userId: m.userId,
-            memberId: m.memberId!,
-            name: m.name,
-            handle: m.handle,
-            pending: !!m.pending,
-          }),
-        );
+        const list = assignHandles(rows).map((m): MentionCandidate => ({
+          userId: m.userId,
+          memberId: m.memberId!,
+          name: m.name,
+          handle: m.handle,
+          pending: !!m.pending,
+        }));
         if (!cancelled) setLoaded({ key, list });
       })
       .catch(() => {

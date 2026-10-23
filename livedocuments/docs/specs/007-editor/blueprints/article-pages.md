@@ -124,7 +124,7 @@ is `break-after: column` (`article-pages.css`).
 
 - **Stored**: `Page.kind: 'article'` and `flow` on each page of an article
   ([Pages blueprint](pages-mode.md)), and `Tab.articles[flow] = { blocks,
-style? }`. Saved with the tab (D1 row, `MAX_TAB_BYTES` has the last word), carried in the
+style? }`. Saved with the tab (one row in the document's store, `MAX_TAB_BYTES` has the last word), carried in the
   OpenAPI `Tab` schema (`ArticleFlow`, generated). Defaults are absent, never stored: `style:
 'body'`, `align: 'left'`, `level: 0`, `wrap: 'inline'`, zone `align: 'center'`, an empty style.
 - **Field classes**: `blocks` and `style` are document content, synced block by block; `at` on a

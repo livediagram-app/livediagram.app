@@ -45,7 +45,10 @@ function room() {
     blockConcurrencyWhile: async (fn: () => Promise<void>) => fn(),
     waitUntil: () => {},
   };
-  const document = new DocumentRoom(state as unknown as DurableObjectState, { INDEX_KEY: 'k' } as Env);
+  const document = new DocumentRoom(
+    state as unknown as DurableObjectState,
+    { INDEX_KEY: 'k' } as Env,
+  );
   const join = (opts: {
     role?: 'edit' | 'view';
     tab?: string | null;

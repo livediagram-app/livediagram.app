@@ -9,7 +9,10 @@
 import { createItemGrants } from '@liveworkspace/index-client/browser';
 import { indexClient } from '../index-client';
 
-export { GRANT_RENEW_BEFORE_MS, type ItemShare as DocumentShare } from '@liveworkspace/index-client/browser';
+export {
+  GRANT_RENEW_BEFORE_MS,
+  type ItemShare as DocumentShare,
+} from '@liveworkspace/index-client/browser';
 
 // The window global app/pre-hydration-scripts.ts DOCUMENT_GRANT_BOOT_SCRIPT leaves the early grant on.
 export const DOCUMENT_GRANT_BOOT_GLOBAL = '__ldocGrant';

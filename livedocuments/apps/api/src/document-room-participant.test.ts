@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // A Participant in the room (docs/specs/013-workspace/share-roles.md "Integrity"): it edits text only. Its element
-// ops and article frames go through the participant rules against what D1 holds and only the rules' result reaches
+// ops and article frames go through the participant rules against what the document holds and only the rules' result reaches
 // anyone; everything else from a Participant is dropped.
 
 const { store } = vi.hoisted(() => {

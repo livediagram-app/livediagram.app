@@ -15,7 +15,9 @@ export function liveDoc(
   teamId: string | null = null,
 ) {
   sql
-    .prepare('INSERT INTO test_documents (id, owner_id, name, team_id, saved_at, created_at) VALUES (?, ?, ?, ?, 0, 1)')
+    .prepare(
+      'INSERT INTO test_documents (id, owner_id, name, team_id, saved_at, created_at) VALUES (?, ?, ?, ?, 0, 1)',
+    )
     .run(id, ownerId, name, teamId);
 }
 

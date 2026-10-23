@@ -16,9 +16,9 @@ import { MAINTENANCE_EVERY_MS, DocumentRoom } from './document-room';
 
 // Each document's content in its own SQLite-backed Durable Object (docs/specs/015-api/api.md "Storage"), end to end:
 // the real worker resolves the caller and forwards to the document's object, which answers from its own SQLite and
-// pushes what D1's cross-document reads need through its outbox. Every document here gets its OWN in-memory database (the
-// object's `ctx.storage.sql`, node:sqlite behind the SqlStorage surface), so nothing is shared between documents but
-// D1, as in production.
+// pushes what the index and the media service need through its outbox. Every document here gets its OWN in-memory
+// database (the object's `ctx.storage.sql`, node:sqlite behind the SqlStorage surface), so nothing is shared between
+// documents, as in production.
 
 vi.mock('../auth/accounts', () => ({
   getPersonIdentity: async () => ({ kind: 'guest', guestId: 'guest_owner' }),
@@ -206,7 +206,7 @@ afterEach(() => {
 });
 
 describe("a document's content lives in its own Durable Object", () => {
-  it('keeps each document in its own SQLite, D1 holding none of it', async () => {
+  it('keeps each document in its own SQLite', async () => {
     const w = world();
     await createDocument(w, 'A');
     await createDocument(w, 'B', [
@@ -214,7 +214,7 @@ describe("a document's content lives in its own Durable Object", () => {
     ]);
     expect(count(w.documents.get('A')!.db, 'tabs')).toBe(1);
     expect(count(w.documents.get('B')!.db, 'tabs')).toBe(1);
-    // Each document knows itself (its own `document` row); D1 has none of the content.
+    // Each document knows itself (its own `document` row), and none of another's.
     expect(w.documents.get('A')!.db.prepare('SELECT owner_id FROM document').all()).toEqual([
       { owner_id: 'guest_owner' },
     ]);
@@ -263,7 +263,11 @@ describe("a document's content lives in its own Durable Object", () => {
       },
     } as unknown as Element;
     indexCalls.length = 0;
-    await w.send('PUT', '/api/documents/A/tabs/t1', { id: 't1', name: 'Board', elements: [action] });
+    await w.send('PUT', '/api/documents/A/tabs/t1', {
+      id: 't1',
+      name: 'Board',
+      elements: [action],
+    });
     const document = w.documents.get('A')!;
     expect(count(document.db, 'outbox')).toBeGreaterThan(0);
     expect(indexCalls).toEqual([]);
@@ -294,7 +298,9 @@ describe("a document's content lives in its own Durable Object", () => {
     ]);
     const document = w.documents.get('A')!;
     expect(
-      document.db.prepare('SELECT tab_id, image_id FROM image_refs ORDER BY tab_id, image_id').all(),
+      document.db
+        .prepare('SELECT tab_id, image_id FROM image_refs ORDER BY tab_id, image_id')
+        .all(),
     ).toEqual([
       { tab_id: 't1', image_id: 'img-1' },
       { tab_id: 't1', image_id: 'img-3' },
@@ -422,7 +428,9 @@ describe('/api/internal/items (docs/specs/015-api/api.md "Internal")', () => {
       ['deleted', 'Deleted account'],
       ['user_bea', 'Bea'],
     ]);
-    expect(document.db.prepare('SELECT owner_id FROM document').get()).toEqual({ owner_id: 'deleted' });
+    expect(document.db.prepare('SELECT owner_id FROM document').get()).toEqual({
+      owner_id: 'deleted',
+    });
     // Z was never started: its storage stays empty.
     const z = w.documents.get('Z');
     expect(

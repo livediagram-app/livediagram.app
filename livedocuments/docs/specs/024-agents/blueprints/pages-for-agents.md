@@ -266,7 +266,7 @@ pageNumbers? }`, behaviour `destructive`, output as `change_pages` plus `article
 - Markdown parse is a single pass of line regexes with no backtracking across lines; the inline pattern is
   bounded per line. Measured: 400,000 characters (4,654 blocks) read in 77 to 346 ms on a loaded machine (load average 50), most of it the editor's own inline reading (`parseInline`, ~20 µs a paragraph); a test holds it at 1,000 ms. A paragraph past `MAX_ARTICLE_BLOCK_TEXT` is refused before it is read (`tooLong`), never cut.
 - `articleToMarkdown` is linear in runs.
-- The route does one D1 read and one batch write (two of each on a stale retry), and at most three room calls.
+- The route does one read of the document's store and one batch write (two of each on a stale retry), and at most three room calls.
 - Room frames: an article's ops ride in frames of 200,000 characters as the editor's (`tabArticleOps`).
 - The `pages` view respects the read budget (8,000 tokens by default on the MCP).
 

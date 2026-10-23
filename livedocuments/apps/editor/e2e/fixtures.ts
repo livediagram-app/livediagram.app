@@ -308,7 +308,11 @@ export async function documentHeaders(
   extra: Record<string, string> = {},
 ): Promise<Record<string, string>> {
   const headers = ownerHeaders(owner);
-  return { ...headers, 'X-Index-Grant': await documentGrant(request, headers, documentId), ...extra };
+  return {
+    ...headers,
+    'X-Index-Grant': await documentGrant(request, headers, documentId),
+    ...extra,
+  };
 }
 
 // A document made as the app makes one: the item at the index first, then its content with the grant the create
@@ -340,7 +344,9 @@ export async function pageOwnerHeaders(
   extra: Record<string, string> = {},
   documentId?: string,
 ): Promise<Record<string, string>> {
-  const token = await page.evaluate(() => localStorage.getItem('livedocuments:v2:guest-token') ?? '');
+  const token = await page.evaluate(
+    () => localStorage.getItem('livedocuments:v2:guest-token') ?? '',
+  );
   const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
   if (documentId) headers['X-Index-Grant'] = await documentGrant(page.request, headers, documentId);
   return { ...headers, ...extra };

@@ -26,7 +26,11 @@ import { markNameConfirmed } from '@/lib/local-identity';
 import { ensureGuestIdentity } from '@/lib/guest-identity';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
 import { handTemplatePick } from '@liveworkspace/explorer';
-import { isBlankTemplate, untitledNameForTemplate, type TemplateKind } from '@livedocuments/templates';
+import {
+  isBlankTemplate,
+  untitledNameForTemplate,
+  type TemplateKind,
+} from '@livedocuments/templates';
 import { CREATION_INTENT } from '@livedocuments/api-schema';
 import {
   choosePlacementAgainUrl,

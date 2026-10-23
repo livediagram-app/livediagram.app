@@ -17,7 +17,6 @@ import { handleDocumentRoomRoutes } from './document-room-routes';
 import { personTagFor } from '../person-tag';
 import type { WorkbenchContext } from './context';
 
-
 const NOW = Math.floor(Date.now() / 1000);
 
 // A stand-in for the index's signature: `G.<base64 claims>`. Anything else is forged.

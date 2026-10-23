@@ -44,7 +44,13 @@ import {
 } from '../document-room/document-content';
 import { identityOf } from '../document-room/document-route';
 import { documentRoom } from '../document-client';
-import { INDEX_APP, indexFor, linkCodeOf, documentGrantOf, verifyDocumentGrant } from '../index-service';
+import {
+  INDEX_APP,
+  indexFor,
+  linkCodeOf,
+  documentGrantOf,
+  verifyDocumentGrant,
+} from '../index-service';
 import { handleDocumentIndexRoutes, handleDocumentList } from './document-index-routes';
 import { resolveDocumentGrant } from './document-grant';
 import {
@@ -142,8 +148,10 @@ async function createForCaller(
 ): Promise<Awaited<ReturnType<typeof resolveDocumentGrant>>> {
   const client = indexFor(ctx.env, grantCallerOf(ctx));
   if (!client) return json({ error: 'index_unavailable' }, { status: 503 });
-  const title = capStoredName(typeof body.name === 'string' ? body.name : '', null, 'document') || undefined;
-  const source: ItemSource | null = body.source === 'mcp' ? 'ai' : body.source === 'cli' ? 'import' : null;
+  const title =
+    capStoredName(typeof body.name === 'string' ? body.name : '', null, 'document') || undefined;
+  const source: ItemSource | null =
+    body.source === 'mcp' ? 'ai' : body.source === 'cli' ? 'import' : null;
   try {
     const { grant } = await client.createItem({
       id: documentId,
@@ -156,7 +164,8 @@ async function createForCaller(
     const claims = await verifyDocumentGrant(ctx.env, grant.grant, documentId);
     return claims ? documentGrantOf(claims, null, grant.grant) : null;
   } catch (err) {
-    if (err instanceof IndexError && err.code === 'item_exists') return resolveDocumentGrant(ctx, documentId);
+    if (err instanceof IndexError && err.code === 'item_exists')
+      return resolveDocumentGrant(ctx, documentId);
     if (err instanceof IndexError) return json({ error: err.code }, { status: err.status });
     console.error('[index] create failed', { documentId, error: String(err) });
     return json({ error: 'index_unavailable' }, { status: 503 });
@@ -269,7 +278,7 @@ export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<
         body.tabs = body.tabs.map((tab) => migrateIncomingTab(tab) as Tab);
         for (const tab of body.tabs) {
           if (!isValidTab(tab)) return badRequest('invalid tab');
-          // The cap D1's row sets (docs/specs/015-api/api.md "Tab size"), measured as stored,
+          // The tab size cap (docs/specs/015-api/api.md "Tab size"), measured as stored,
           // before anything is written, so a create never leaves a document without its tabs.
           const bytes = tabDataBytes(tab);
           if (bytes > MAX_TAB_BYTES) {
@@ -337,7 +346,8 @@ export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<
         }
       }
       const liveDoc = await getDocument(env, body.id);
-      if (!clash) console.info('[documents] created', { documentId: body.id, marked: making.markUsed });
+      if (!clash)
+        console.info('[documents] created', { documentId: body.id, marked: making.markUsed });
       // A genuine create may be the owner's tenth document (docs/specs/014-identity/transactional-email.md #6).
       if (!clash) ctx.waitUntil?.(notifyMilestone(env, owner));
       // Making a document is activity for liveworkspace's onboarding series (it has made something), even before
@@ -414,7 +424,8 @@ export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<
       await renameDocument(env, id, name, Date.now());
       // Only when the caller actually sent the field: `undefined` means "not my business", which is what every
       // existing client sends.
-      if (body.presentation !== undefined) await setDocumentPresentation(env, id, body.presentation);
+      if (body.presentation !== undefined)
+        await setDocumentPresentation(env, id, body.presentation);
       if (order) await reorderTabs(env, id, order);
       const liveDoc = await getDocument(env, id);
       // An agent's rename reaches the open editors (docs/specs/024-agents/agent-changesets.md "Whole-tab saves and tab

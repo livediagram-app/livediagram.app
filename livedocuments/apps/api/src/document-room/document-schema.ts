@@ -13,7 +13,7 @@
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
-// follow-up for tabs over 2 MB; until then the cap refuses them, as it did on D1.
+// follow-up for tabs over 2 MB; until then the cap refuses them.
 const V1 = `
 CREATE TABLE IF NOT EXISTS document (
   id                  TEXT    PRIMARY KEY,

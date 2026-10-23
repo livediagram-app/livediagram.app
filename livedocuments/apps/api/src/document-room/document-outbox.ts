@@ -213,10 +213,16 @@ export async function pushImageRefs(
 
 // A purged document places nothing: the media service is told so, and the images only it placed can be swept.
 // Without the service there is nobody to tell.
-export async function forgetImageRefs(env: Pick<DocumentEnv, 'MEDIA_KEY' | 'MEDIA_URL'>, documentId: string): Promise<void> {
+export async function forgetImageRefs(
+  env: Pick<DocumentEnv, 'MEDIA_KEY' | 'MEDIA_URL'>,
+  documentId: string,
+): Promise<void> {
   const media = mediaClient(env);
   if (!media) return;
-  const sent = await media.syncRefs({ documents: [{ document: documentId, images: [] }], complete: true });
+  const sent = await media.syncRefs({
+    documents: [{ document: documentId, images: [] }],
+    complete: true,
+  });
   if (!sent.ok) throw new Error(`media refs sync failed: ${sent.status}`);
 }
 

@@ -18,7 +18,7 @@ A guest can open `/new`, create a document, and use the full canvas without an a
 
 ## Persistence
 
-The editor talks to the Cloudflare Worker API documented in [11-api.md](../015-api/api.md). `apps/editor/lib/api-client.ts` is the single boundary — the editor never reads or writes document state to `localStorage`. D1 holds the durable snapshot; per-tab content is split into its own rows (see [13-per-tab-storage.md](../006-document/per-tab-storage.md)) so autosave scope shrinks to the tab being edited.
+The editor talks to the Cloudflare Worker API documented in [11-api.md](../015-api/api.md). `apps/editor/lib/api-client.ts` is the single boundary — the editor never reads or writes document state to `localStorage`. Each document's Durable Object holds the durable copy; per-tab content is split into its own rows (see [13-per-tab-storage.md](../006-document/per-tab-storage.md)) so autosave scope shrinks to the tab being edited.
 
 `localStorage` is still used for **identity bootstrap only** — a `crypto.randomUUID()` participant id under `livedocuments:v2:self-id`, plus a `livedocuments:v2:name-confirmed` flag once the user has named themselves. Everything else flows through the API.
 

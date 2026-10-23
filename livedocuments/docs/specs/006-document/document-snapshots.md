@@ -93,9 +93,9 @@ renders it lazily.
   (the same pattern image elements use, [Image element + per-owner gallery](../009-elements/images.md)). `?v=<savedAt>` busts
   the browser cache when the document changes; the worker ignores it.
   `Cache-Control: private, max-age=86400`.
-- One D1 read gates it: `getDocumentThumbMeta` returns the owner, team,
-  name, `saved_at` and `thumb_rendered_at` in one query, so a fresh
-  snapshot costs that query, the access gate and the R2 read. The full
+- One call to the document's Durable Object gates it: `getDocumentThumbMeta` returns the
+  name, `saved_at` and `thumb_rendered_at` in one RPC, so a fresh
+  snapshot costs that call, the access gate and the R2 read. The full
   document (participant and tab summaries) is never loaded for a preview.
 - A stale snapshot is returned as soon as it is rendered; the R2 write
   and the freshness stamp run in the request's `waitUntil`.
@@ -139,7 +139,7 @@ renders it lazily.
   loaded, and keeps what the list said when it is not.
 - **The count is written with the body, never by a trigger.** Nothing
   fills a count later: there is no tab from before the column to fill.
-- **Why no trigger** (measured with SQLite, D1's engine, sync off to
+- **Why no trigger** (measured with SQLite, the engine of the document's store, sync off to
   isolate the work itself):
 
   | Tab body | Save, no count | Save, bound count | Save, trigger re-parse |

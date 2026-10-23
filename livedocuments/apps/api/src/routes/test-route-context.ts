@@ -94,8 +94,7 @@ function testGrant(
   verifiedUserId: string | null,
 ): DocumentGrant | null {
   const hook = (env as unknown as Record<string, unknown>)[TEST_GRANT_HOOK] as
-    | ((documentId: string, who: TestGrantCaller) => DocumentGrant | null)
-    | undefined;
+    ((documentId: string, who: TestGrantCaller) => DocumentGrant | null) | undefined;
   if (!hook || segments[1] !== 'documents') return null;
   const create = segments.length === 2 && method === 'POST';
   const documentId = create

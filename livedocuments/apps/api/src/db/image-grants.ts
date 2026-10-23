@@ -4,7 +4,11 @@
 // who owns an image, how the service names a person (a guest's id is a one-way hash there: media.ts mediaOwner), and a
 // team's joined people (liveworkspace accounts). See the kit's image-grants.ts for the rules.
 
-import { createImageGrants, imageGrantSqlOfD1, type ImageGrantItem } from '@liveworkspace/index-app';
+import {
+  createImageGrants,
+  imageGrantSqlOfD1,
+  type ImageGrantItem,
+} from '@liveworkspace/index-app';
 import { mediaClient, mediaOwner } from '../media';
 import { teamPeople } from '../person/notify';
 import type { DocumentEnv } from '../types';

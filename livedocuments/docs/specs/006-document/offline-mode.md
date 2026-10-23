@@ -165,9 +165,13 @@ Explorer lists follow after the paint.
   pill and the legend has no button. For the eye only: the badge carries the current state's words for
   assistive technology.
 - **Explorer.** The shared Explorer lists what liveworkspace's index holds, so an offline document is in none
-  of its lists, Home, the Inbox or search. livedocuments adds a **This Browser** row to the sidebar's More group
-  (a host row of `@liveworkspace/explorer`), shown while this browser holds at least one offline document; it
-  opens the list of them, read from this browser alone, never a server fetch.
+  of its lists, Home or search. They have a page of their own, **This Browser** at `/offline`
+  (`apps/editor/app/offline`): every offline document in this browser, newest first, each opening in the editor,
+  read from this browser alone, never a server fetch. For a signed-in person each row has **Sync Document**, which
+  moves it to the account. The Explorer's sidebar carries a **This Browser** link to it (a host link of
+  `@liveworkspace/explorer`), and the editor's Explorer panel a **This Browser** row with the count, shown while this
+  browser holds at least one. `/explorer/offline` replaces itself with `/offline`
+  ([Explorer structure](../013-workspace/explorer-structure.md#this-browser)).
 
 ### This Browser pill
 

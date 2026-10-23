@@ -60,7 +60,7 @@ const stored = (db: SqliteD1) =>
 const revOf = (db: SqliteD1) => db.sql.prepare("SELECT rev FROM tabs WHERE id = 't1'").get()!.rev;
 
 // A changeset recorded as the pipeline records it: the tab advanced to `rev` with `n` added.
-// Straight through SQLite, so a test may run it from inside an intercepted D1 batch.
+// Straight through SQLite, so a test may run it from inside an intercepted batch.
 function recordAdd(db: SqliteD1, n: Element, createdAt = Date.now()): number {
   const rev = Number(revOf(db)) + 1;
   const elements = [...stored(db), n];

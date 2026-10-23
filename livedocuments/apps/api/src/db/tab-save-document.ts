@@ -13,7 +13,10 @@ export type TabSaveDocument = Pick<
 };
 
 // Runs inside the document's Durable Object. Null for a document never started.
-export async function getDocumentForSave(env: DocumentEnv, id: string): Promise<TabSaveDocument | null> {
+export async function getDocumentForSave(
+  env: DocumentEnv,
+  id: string,
+): Promise<TabSaveDocument | null> {
   // Both reads start before either is awaited; the count is its own async step so a throw while preparing it
   // rejects with the meta read settled, never leaving that one unhandled.
   const countTabs = async () =>

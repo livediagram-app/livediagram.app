@@ -117,7 +117,7 @@ describe('submitChangeset', () => {
     expect(db.sql.prepare('SELECT COUNT(*) AS n FROM agent_changesets').get()!.n).toBe(0);
   });
 
-  it('answers 200 when the relay throws: D1 holds the changeset, and the warning says so', async () => {
+  it('answers 200 when the relay throws: the document holds the changeset, and the warning says so', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const db = await setUp('throws');

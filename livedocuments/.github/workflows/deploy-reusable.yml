@@ -18,7 +18,7 @@ on:
         description: >-
           Wrangler environment name. Empty deploys the top-level config
           (production). "staging" deploys the `[env.staging]` blocks, which
-          name every worker `-staging` and bind staging's own D1 / R2 / KV.
+          name every worker `-staging` and bind staging's own Durable Objects / R2 / KV.
         type: string
         default: ''
       environment_name:
@@ -126,7 +126,7 @@ jobs:
 
       # The hosted profile's build-time half: NEXT_PUBLIC_TELEMETRY_ENABLED,
       # mirrored from hosted-vars.json so the frontends emit exactly when the api
-      # ingests. On in staging too, against staging's own D1 — that is how you
+      # ingests. On in staging too, against staging's own telemetry — that is how you
       # verify a new event lands before production sees it. Skipped on a fork,
       # whose frontends then emit nothing unless its own build env opts in.
       - name: Apply hosted profile to the build
@@ -254,7 +254,7 @@ jobs:
   deploy-editor:
     name: Deploy live
     # After the api, so a new editor never calls an api that lacks its routes
-    # (docs/specs/016-platform/deployment.md, "Renaming migrations").
+    # (docs/specs/016-platform/deployment.md, "Deploy order").
     needs: [build, deploy-api]
     runs-on: ubuntu-latest
     timeout-minutes: 10

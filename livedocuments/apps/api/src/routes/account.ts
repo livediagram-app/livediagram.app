@@ -50,7 +50,8 @@ export async function handleAccount(ctx: RouteContext): Promise<Response> {
   if (request.method === 'DELETE') {
     if (!accountUserId) return missingAuth();
     const purged = await purgeOwnDocuments(ctx);
-    if (purged.more) return json({ error: 'documents_remaining', deleted: purged }, { status: 409 });
+    if (purged.more)
+      return json({ error: 'documents_remaining', deleted: purged }, { status: 409 });
     await deleteAccount(env, accountUserId);
     const deleted = { documents: purged.documents };
     const accounts = configured(env);

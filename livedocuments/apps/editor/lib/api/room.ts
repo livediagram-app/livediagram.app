@@ -302,8 +302,7 @@ export function connectRoom(
               asking.send(JSON.stringify({ kind: 'grant', grant } satisfies RoomOutgoing));
             }
           });
-        }
-        else if (msg.kind === 'cursor') {
+        } else if (msg.kind === 'cursor') {
           // Our own op's seq, or where the stream stood when we joined. A
           // different epoch is a restarted room: leave the cursor for the
           // sync / catchup exchange to reconcile.

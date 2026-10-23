@@ -67,7 +67,7 @@ describe('useAssigneeOptions', () => {
     expect(api.apiTeamMembers).not.toHaveBeenCalled();
   });
 
-  it("knows who can open the document: Myself and a joined teammate yes, an invitation on accepting", () => {
+  it('knows who can open the document: Myself and a joined teammate yes, an invitation on accepting', () => {
     const pick = (p: Partial<PickableMember>): PickableMember => ({
       userId: 'u2',
       name: 'X',

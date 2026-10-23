@@ -58,7 +58,7 @@ many people in one go (`notificationRecipients`), a team's people
 (`readTeamPeople`), and the milestone claim, all in `@liveworkspace/auth-client`
 (`notify.ts`), which every app shares, with the windows and caps. The once-only
 state of the join, assignment and mention emails is the document's own
-(`notify_claims` in its SQLite, pruned to a day); livedocuments' D1 holds none.
+(`notify_claims` in its SQLite, pruned to a day); the api keeps no other email state.
 
 The opt-out categories livedocuments reads (`notifyComments`,
 `notifyDocumentJoin`, `notifyMilestones`, `notifyActionAssigned`, `notifyMentions`)
@@ -91,7 +91,7 @@ Production: `wrangler secret put RESEND_API_KEY`.
 
 ## 3. Data model
 
-None in livedocuments' D1. An owner's address is looked up when an email is sent
+None beside the document's `notify_claims`: the api keeps no address. An owner's address is looked up when an email is sent
 (`accountEmails` from `@liveworkspace/auth-client`, up to 100 ids in one call,
 verified addresses only, accounts only). A guest is never emailed. Each document
 keeps its own `notify_claims` rows (key, sender, time) for the join, assignment
@@ -137,8 +137,8 @@ All sends use `ctx.waitUntil` — email is never on the request's critical path.
 anonymous `Email·Sent·<kind>` event (`reportServerEvent`), and a failure
 writes `Error·Api·Http<status>.SendEmail` (or `Network.SendEmail` when the
 request never completed). Server-side rather than through `POST /api/events`
-because nothing about an email reaches a browser: the send happens in a cron or
-a `waitUntil` after the response has gone, so this is the only place that can
+because nothing about an email reaches a browser: the send happens in a
+`waitUntil` after the response has gone (in the worker or the document's Durable Object), so this is the only place that can
 count it. Before this, every email was unmeasurable and a dead
 `RESEND_API_KEY` was invisible — every failure went to `console.error` and
 nowhere else. Gated on `TELEMETRY_ENABLED` like every other emit, and its own

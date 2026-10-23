@@ -7,7 +7,7 @@ How to run livedocuments on your machine.
 - **Node** `>= 22` (Wrangler 4 requires it).
 - **pnpm** `>= 9` (the lockfile and workspaces depend on it).
 
-Cloudflare is not required for local development. The api worker runs locally via Wrangler against a local D1 SQLite file; the Next.js apps run via Next's dev server.
+Cloudflare is not required for local development. The api worker runs locally via Wrangler, its Durable Objects (one per document, one per person's workbench) kept in Wrangler's local state; the Next.js apps run via Next's dev server.
 
 ## Clone and install
 
@@ -19,15 +19,11 @@ pnpm install
 
 This installs every workspace at once, including TypeScript 7 ([Contributing](contributing.md#typescript)).
 
-## Apply the local database migrations (once, before first `pnpm dev`)
+## No database to set up
 
-`wrangler dev` does NOT auto-apply migrations: a fresh local D1 starts empty. Run this once after cloning, and again whenever a new migration lands under `apps/api/migrations/`:
-
-```sh
-pnpm --filter @livedocuments/api db:migrate:local
-```
-
-It applies every SQL file in `apps/api/migrations/` to the local SQLite file Wrangler keeps at `apps/api/.wrangler/state/v3/d1/`. The production deploy runs the equivalent `db:migrate:remote` step automatically in CI (see [Self-hosting](../operations/self-hosting.md)).
+The api worker has no D1 database and no migrations. Each Durable Object makes its own schema the first time it is
+used, so a fresh clone needs nothing applied before `pnpm dev`. Wrangler keeps their local state under
+`apps/api/.wrangler/state/`.
 
 ## Run everything
 
@@ -61,7 +57,7 @@ the one to reach for; the production api reads and writes real people's document
 
 Without it the editor loads, the canvas works, and the first save fails with **“Couldn’t create the document”** — which reads like a broken api worker rather than a missing variable, so it is worth setting up front. `apps/help` reads the same variable. Telemetry is liveworkspace's (liveworkspace/docs/telemetry.md): to see local events, run its service (`wrangler dev` in liveworkspace/apps/telemetry, port 8790) and point the frontends at it with `NEXT_PUBLIC_TELEMETRY_URL=http://localhost:8790/api/telemetry`, and the api and mcp workers with `TELEMETRY_URL` and `TELEMETRY_KEY` in their `.dev.vars`. Its dashboard is liveworkspace.app's site (`pnpm dev:site` from the monorepo root, `http://localhost:3000/telemetry?app=livedocuments.app`).
 
-The editor works in pure-guest mode without any auth setup: `pnpm dev` and open `http://localhost:3300/new`. Documents persist to the local D1 file the api worker creates on first start. (On `http://localhost:3302/new` instead, set `NEXT_PUBLIC_API_BASE` first — see the note above.)
+The editor works in pure-guest mode without any auth setup: `pnpm dev` and open `http://localhost:3300/new`. Documents persist in each document's local Durable Object, with the index running locally (see [The index](#the-index) below). (On `http://localhost:3302/new` instead, set `NEXT_PUBLIC_API_BASE` first — see the note above.)
 
 ## Scoping commands to one workspace
 
@@ -196,6 +192,6 @@ the api verifies access tokens the stack mints on `/e2e/token?sub=user_…` ([En
 
 - **`/licences` needs its generated data.** `pnpm dev` does not run the generator (it takes about 20 seconds), so the marketing dev server fails that one page with `LicencesManifestMissing` until you run `pnpm licences` once. Don't run `pnpm licences` while a `next build` of the editor, help centre or telemetry dashboard is running: Next's analyzer shares an app's Turbopack build cache (`.next/cache`), and two processes on it corrupt it. `pnpm build` orders them for you.
 
-- **The api worker's local D1 file lives at `apps/api/.wrangler/state/v3/d1/`.** Delete the folder to start over with an empty database.
+- **The api worker's local Durable Object state lives under `apps/api/.wrangler/state/`.** Delete the folder to start over with no documents or workbenches.
 
 - **Open the editor on `localhost`, not on the machine's LAN address.** Over plain `http` from any other address (`http://192.168.x.x:3302`, `http://<machine-name>:3302`) the browser is not in a secure context, withholds `crypto.randomUUID`, and the editor fails to load with "This page couldn't load". A known gap, not yet fixed: the editor calls `crypto.randomUUID` directly in about 75 places. Testing from a phone or a second laptop needs https (a tunnel, or a dev certificate) until it is.

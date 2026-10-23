@@ -1,7 +1,6 @@
-// The document-level reads and writes of a document's own SQLite (docs/specs/015-api/api.md "Storage") that the
-// documents module used to make against D1: the tab outline a document read carries, the slide deck, the document
-// row a create makes, and a copy's export and import. Runs inside the document's Durable Object, on
-// `env.DOCUMENT_DB`.
+// The document-level reads and writes of a document's own SQLite (docs/specs/015-api/api.md "Storage"): the tab
+// outline a document read carries, the slide deck, the document row a create makes, and a copy's export and
+// import. Runs inside the document's Durable Object, on `env.DOCUMENT_DB`.
 
 import { remapTabLinks, type Element } from '@livedocuments/document';
 import { redactTabDataAuthors } from '../comments';
@@ -70,7 +69,9 @@ export async function readDocumentOutline(
         WHERE dt.document_id = ?
         ORDER BY dt.order_index ASC`,
     ).bind(documentId),
-    env.DOCUMENT_DB.prepare(`SELECT ${DOCUMENT_HEAD_COLS} FROM document WHERE id = ?`).bind(documentId),
+    env.DOCUMENT_DB.prepare(`SELECT ${DOCUMENT_HEAD_COLS} FROM document WHERE id = ?`).bind(
+      documentId,
+    ),
   ]);
   const head = (document?.results?.[0] ?? null) as DocumentHeadRow | null;
   return {
@@ -285,7 +286,7 @@ export function remapTabDataLinks(data: string, tabIdMap: Map<string, string>): 
 
 // The target side of a copy: the document's row and every tab the export carried, with its stats and image
 // references from the copied body itself, in one transaction, so a copy lands whole or not at all. The
-// collaboration index, the listing summary and D1's document_images follow from the outbox.
+// collaboration index, the listing summary and the media service's references follow from the outbox.
 export async function importDocumentCopy(
   env: DocumentEnv,
   documentId: string,

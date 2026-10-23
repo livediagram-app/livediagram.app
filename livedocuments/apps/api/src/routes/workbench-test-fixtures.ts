@@ -1,4 +1,4 @@
-// Shared arrangement for the workbench route suites: a real SQLite D1 with one document owned by `user_1`, and
+// Shared arrangement for the workbench route suites: a real SQLite store with one document owned by `user_1`, and
 // each person's workbench store in memory (test-sqlite-d1.ts). `user_1` has a live edit token `tok1` and a
 // read-only token `tok_ro`; `tok2` is another account's. Not a `.test.ts` file, so vitest never collects it as a
 // suite.

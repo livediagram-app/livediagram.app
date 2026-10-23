@@ -120,7 +120,7 @@ type ElementLink =
   | { kind: 'url'; url: string }; // external address, opens in a new tab
 ```
 
-Persistence shape lives in [Api](../015-api/api.md) (per-tab rows + `documents` rows in D1). The `apps/editor/lib/api-client.ts` boundary serialises this same in-memory shape against the api worker.
+Persistence shape lives in [Api](../015-api/api.md) (per-tab rows + the document's own row, in the document's Durable Object). The `apps/editor/lib/api-client.ts` boundary serialises this same in-memory shape against the api worker.
 
 ### Colours are colours
 

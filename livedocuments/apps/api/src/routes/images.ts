@@ -131,7 +131,8 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
         const grant = await resolveDocumentGrant(ctx, d);
         if (grant && !(grant instanceof Response)) {
           allowed = await documentRoom(env, d).servesImage(imageId, grant.tab);
-          if (!allowed) console.warn('[images] not servable by document', { documentId: d, imageId });
+          if (!allowed)
+            console.warn('[images] not servable by document', { documentId: d, imageId });
         }
       }
     }
@@ -182,7 +183,9 @@ async function usageOf(
   }
   const placed = Object.entries(answered.value.usage);
   const documents = [
-    ...new Set(placed.flatMap(([, refs]) => refs.filter((r) => r.app === MEDIA_APP).map((r) => r.document))),
+    ...new Set(
+      placed.flatMap(([, refs]) => refs.filter((r) => r.app === MEDIA_APP).map((r) => r.document)),
+    ),
   ].slice(0, USAGE_DOCUMENTS_MAX);
   const client = indexFor(ctx.env, grantCallerOf(ctx));
   if (!client || documents.length === 0) return usage;

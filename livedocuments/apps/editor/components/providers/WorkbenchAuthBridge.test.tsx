@@ -57,14 +57,13 @@ function sessionOf(secret = SECRET): WorkbenchSession {
 // A fresh module graph per configuration: the bootstrap picks its variant when it loads.
 async function load() {
   vi.resetModules();
-  const [{ AuthProvider }, { WorkbenchAuthBridge }, auth, boot, core] =
-    await Promise.all([
-      import('./AuthProvider'),
-      import('./WorkbenchAuthBridge'),
-      import('./deferred-auth'),
-      import('@/hooks/persistence/useAccountBootstrap'),
-      import('@/lib/api/core'),
-    ]);
+  const [{ AuthProvider }, { WorkbenchAuthBridge }, auth, boot, core] = await Promise.all([
+    import('./AuthProvider'),
+    import('./WorkbenchAuthBridge'),
+    import('./deferred-auth'),
+    import('@/hooks/persistence/useAccountBootstrap'),
+    import('@/lib/api/core'),
+  ]);
   return { AuthProvider, WorkbenchAuthBridge, auth, boot, core };
 }
 

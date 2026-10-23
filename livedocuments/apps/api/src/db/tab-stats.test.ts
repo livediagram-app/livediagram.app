@@ -51,9 +51,9 @@ function arrange() {
 }
 
 function docStats(sql: DatabaseSync, id: string) {
-  const row = sql
-    .prepare(`SELECT ${documentStatsSql('?1')}`)
-    .get(id) as { doc_stats: string | null };
+  const row = sql.prepare(`SELECT ${documentStatsSql('?1')}`).get(id) as {
+    doc_stats: string | null;
+  };
   return readDocumentStats(row.doc_stats);
 }
 

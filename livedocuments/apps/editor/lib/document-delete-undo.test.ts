@@ -5,7 +5,8 @@ const index = vi.hoisted(() => ({ deleteItem: vi.fn() }));
 vi.mock('@/lib/index-client', () => ({ indexClient: index }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-const { handOffDeleteUndo, takeDeleteUndo, trashOpenDocument } = await import('./document-delete-undo');
+const { handOffDeleteUndo, takeDeleteUndo, trashOpenDocument } =
+  await import('./document-delete-undo');
 const { isDocumentDeleted } = await import('./document-tombstones');
 
 afterEach(() => {

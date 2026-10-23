@@ -21,7 +21,8 @@ export async function deleteAccount(env: Env, ownerId: string): Promise<{ images
   let images = 0;
   if (media) {
     const forgotten = await media.forgetOwner(await mediaOwner(ownerId));
-    if (!forgotten.ok) throw new Error(`media: deleting the owner's images answered ${forgotten.status}`);
+    if (!forgotten.ok)
+      throw new Error(`media: deleting the owner's images answered ${forgotten.status}`);
     images = forgotten.value.deleted;
   }
   await workbenchStore(env, ownerId).close();

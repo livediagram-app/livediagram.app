@@ -8,7 +8,7 @@ import { makeTestRouteContext } from './routes/test-route-context';
 import { handleDocuments } from './routes/documents';
 import { tabStatsOfData } from './db/tab-stats';
 
-// docs/specs/015-api/api.md "Tab size": a tab's data fits one D1 row (2,000,000 bytes), which the
+// docs/specs/015-api/api.md "Tab size": a tab's data fits one SQLite row (2,000,000 bytes), which the
 // local sqlite does not enforce, so the worker does, at every write, at the boundary.
 
 const T0 = 1_700_000_000_000;

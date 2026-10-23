@@ -46,7 +46,8 @@ export function handleInternalItems(
         const media = mediaClient(env);
         if (!media) return;
         const merged = await media.mergeOwner(await mediaOwner(guestId), await mediaOwner(userId));
-        if (!merged.ok) throw new Error(`media: merging the guest's images answered ${merged.status}`);
+        if (!merged.ok)
+          throw new Error(`media: merging the guest's images answered ${merged.status}`);
       },
       anonymise: (id, personId) => documentRoom(env, id).anonymise(personId),
       copy: async (from, to, tabId) => {

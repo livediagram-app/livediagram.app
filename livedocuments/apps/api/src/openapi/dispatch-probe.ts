@@ -12,7 +12,7 @@
 //     for every path parameter.
 //   - Probe: every (method, path) built from that vocabulary, one level deeper
 //     than anything known, is sent through `worker.fetch` against an env whose
-//     storage bindings (D1, R2, Durable Objects) and outbound `fetch` are
+//     storage bindings (R2, Durable Objects) and outbound `fetch` are
 //     TRAPS: touching one records the fact and throws.
 //
 // Each probe lands in one of three outcomes:

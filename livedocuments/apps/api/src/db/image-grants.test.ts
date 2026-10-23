@@ -44,9 +44,11 @@ afterEach(() => {
 });
 
 const grants = () =>
-  (db.sql.prepare('SELECT image_id FROM image_grants ORDER BY image_id').all() as { image_id: string }[]).map(
-    (r) => r.image_id,
-  );
+  (
+    db.sql.prepare('SELECT image_id FROM image_grants ORDER BY image_id').all() as {
+      image_id: string;
+    }[]
+  ).map((r) => r.image_id);
 
 const exec = (q: string, ...b: (string | number)[]) => db.sql.prepare(q).run(...b);
 
@@ -55,7 +57,9 @@ describe('servableImageIds', () => {
     liveDoc(db.sql, 'D', 'user_ada');
     mediaImages(media, 'user_ada', ['mine']);
     mediaImages(media, 'user_bob', ['bobs']);
-    expect([...(await servableImageIds(db.env, 'D', ['mine', 'bobs', 'unknown']))]).toEqual(['mine']);
+    expect([...(await servableImageIds(db.env, 'D', ['mine', 'bobs', 'unknown']))]).toEqual([
+      'mine',
+    ]);
   });
 
   it("names a guest owner as the service does: by the hash of the guest's id", async () => {
@@ -74,7 +78,11 @@ describe('servableImageIds', () => {
 
   it("serves a joined teammate's images on a team's document, not an invited person's", async () => {
     liveDoc(db.sql, 'D', 'user_ada', 'D', 'team_1');
-    accounts.teams.set('team_1', [member('user_ada'), member('user_bob'), member('user_cy', 'invited')]);
+    accounts.teams.set('team_1', [
+      member('user_ada'),
+      member('user_bob'),
+      member('user_cy', 'invited'),
+    ]);
     mediaImages(media, 'user_bob', ['bobs']);
     mediaImages(media, 'user_cy', ['cys']);
     expect([...(await servableImageIds(db.env, 'D', ['bobs', 'cys']))]).toEqual(['bobs']);
@@ -139,7 +147,9 @@ describe('placement grants', () => {
     const copy = await exportDocumentCopy(db.env, 'S', null, null);
     expect(copy?.images).toEqual(['adas']);
     await importDocumentCopy(db.env, 'C', copy!);
-    db.sql.prepare(`UPDATE document SET owner_id = 'user_bob', created_at = 1 WHERE id = 'C'`).run();
+    db.sql
+      .prepare(`UPDATE document SET owner_id = 'user_bob', created_at = 1 WHERE id = 'C'`)
+      .run();
     expect(grants()).toEqual(['adas']);
     expect([...(await servableImageIds(db.env, 'C', ['adas', 'pasted']))]).toEqual(['adas']);
   });

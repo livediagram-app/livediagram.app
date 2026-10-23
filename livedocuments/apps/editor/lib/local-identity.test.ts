@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { ensureGuestSelfId, getGuestSelfId, hasConfirmedName, markNameConfirmed } from './local-identity';
+import {
+  ensureGuestSelfId,
+  getGuestSelfId,
+  hasConfirmedName,
+  markNameConfirmed,
+} from './local-identity';
 
 // These tests run in the `node` environment (no `window`), which is
 // exactly the static-export / SSR code path. Every accessor must

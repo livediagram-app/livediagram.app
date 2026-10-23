@@ -195,11 +195,21 @@ export type TestGrantCaller = {
   create: boolean;
 };
 
-function testGrantFor(sql: DatabaseSync, documentId: string, who: TestGrantCaller): DocumentGrant | null {
+function testGrantFor(
+  sql: DatabaseSync,
+  documentId: string,
+  who: TestGrantCaller,
+): DocumentGrant | null {
   const document = sql
     .prepare('SELECT owner_id, team_id, created_at FROM document WHERE id = ?')
-    .get(documentId) as { owner_id: string; team_id: string | null; created_at: number } | undefined;
-  const grant = (level: AccessLevel, tab: string | null, sub: string, code: string | null): DocumentGrant => ({
+    .get(documentId) as
+    { owner_id: string; team_id: string | null; created_at: number } | undefined;
+  const grant = (
+    level: AccessLevel,
+    tab: string | null,
+    sub: string,
+    code: string | null,
+  ): DocumentGrant => ({
     item: documentId,
     level,
     tab,
@@ -209,13 +219,16 @@ function testGrantFor(sql: DatabaseSync, documentId: string, who: TestGrantCalle
     shareCode: code,
     token: `test-grant:${documentId}:${sub}`,
   });
-  if (!document || !document.created_at) return who.create && who.person ? grant('edit', null, who.person, null) : null;
+  if (!document || !document.created_at)
+    return who.create && who.person ? grant('edit', null, who.person, null) : null;
   if (who.person && who.person === document.owner_id) return grant('edit', null, who.person, null);
   if (who.person && document.team_id && who.teams.includes(document.team_id))
     return grant('edit', null, who.person, null);
   if (who.code) {
     const link = sql
-      .prepare('SELECT role, level, tab_id, expires_at FROM test_share_links WHERE code = ? AND document_id = ?')
+      .prepare(
+        'SELECT role, level, tab_id, expires_at FROM test_share_links WHERE code = ? AND document_id = ?',
+      )
       .get(who.code, documentId) as
       | { role: string; level: string | null; tab_id: string | null; expires_at: number | null }
       | undefined;
@@ -266,14 +279,25 @@ function testDocumentRooms(
       hasTab: async (documentId: string, tabId: string) =>
         (await import('./db/tabs')).documentHasTab(env, documentId, tabId),
       servesImage: async (documentId: string, imageId: string, onlyTabId: string | null) =>
-        (await (await import('./db/image-refs')).documentPlacesImage(env, documentId, imageId, onlyTabId)) &&
+        (await (
+          await import('./db/image-refs')
+        ).documentPlacesImage(env, documentId, imageId, onlyTabId)) &&
         (await import('./db/image-grants')).documentMayServeImage(env, documentId, imageId),
       exportCopy: async (documentId: string, onlyTabId: string | null, redact: string | null) =>
-        (await import('./document-room/document-content')).exportDocumentCopy(env, documentId, onlyTabId, redact),
+        (await import('./document-room/document-content')).exportDocumentCopy(
+          env,
+          documentId,
+          onlyTabId,
+          redact,
+        ),
       joined: async (documentId: string, personId: string) => {
-        const meta = await (await import('./document-room/document-content')).readDocumentMeta(env, documentId);
+        const meta = await (
+          await import('./document-room/document-content')
+        ).readDocumentMeta(env, documentId);
         if (!meta) return;
-        await (await import('./email/notifications')).notifyDocumentJoin(
+        await (
+          await import('./email/notifications')
+        ).notifyDocumentJoin(
           env,
           { id: documentId, ownerId: meta.ownerId, name: meta.name },
           personId,

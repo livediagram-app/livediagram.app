@@ -107,7 +107,9 @@ storing tokens itself, the account-level design below supersedes it.
   lists the account's paired workbenches with Unpair.
 - **Self-revoke.** `DELETE /api/tokens/current` revokes the presenting token on liveworkspace
   (`POST /api/account/internal/tokens/revoke`) and ends its pairings here.
-- **Expiry reminders** are not sent: liveworkspace sends none yet.
+- **Expiry reminders** are liveworkspace's: a week before a token expires, its owner gets one email from the
+  accounts Worker's daily run ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)).
+  livedocuments sends none and shows none on the Timeline.
 
 ### 3.1 Token format
 
@@ -115,38 +117,24 @@ storing tokens itself, the account-level design below supersedes it.
   `lwt_<base64url(32 random bytes)>`. The prefix also disambiguates it from a
   account access token (a JWT) in the same `Authorization: Bearer` header.
 - Shown **once** at creation; never retrievable again.
-- Stored **hashed** (SHA-256), never in plaintext. Auth hashes the presented
-  token and looks the hash up by its UNIQUE-indexed column — an indexed
-  equality lookup, not a per-row compare: the hash derives from 256 bits of
-  randomness, so there's no low-entropy value to time-attack (unlike a
-  password) and the lookup leaks nothing useful.
+- Stored **hashed** (SHA-256) by liveworkspace, never in plaintext, and looked up there by the hash: the hash
+  derives from 256 bits of randomness, so there's no low-entropy value to time-attack (unlike a password) and the
+  lookup leaks nothing useful. livedocuments never stores the secret or its hash.
 
-### 3.2 Storage (D1)
+### 3.2 Storage
 
-A new owner-scoped table, migration with the worker that owns the binding:
-
-```
-api_tokens(
-  id            TEXT PRIMARY KEY,     -- public token id (for listing / revoke)
-  owner_id      TEXT NOT NULL,        -- the account userId this token acts as (never a guest id)
-  token_hash    TEXT NOT NULL UNIQUE, -- SHA-256 of the secret
-  name          TEXT,                 -- user label ("CI bot")
-  created_at    INTEGER NOT NULL,
-  last_used_at  INTEGER,
-  expires_at    INTEGER NOT NULL,     -- created_at + 6 months; never null, never "forever"
-  revoked       INTEGER NOT NULL DEFAULT 0
-)
-```
-
-Indexed on `token_hash` (lookup) and `owner_id` (listing).
+livedocuments stores no token and has no database to store one in. liveworkspace keeps each token (its hash, owner,
+name, read-only flag, expiry and last use) with the account ([liveworkspace/docs/accounts.md](../../../../liveworkspace/docs/accounts.md)
+"API tokens"). What hangs off a token here, a workbench pairing or session, is in the person's workbench store, which
+notes the token's id, name, read-only flag and expiry when it pairs or mints ([Workbench embeds](../013-workspace/workbench-embeds.md)).
 
 **Lifetime — fixed 6 months.** Every token expires at `created_at + 6 months`.
 This is a hard maximum AND the only option: `expires_at` is **never null** (no
 never-expires tokens) and there is no shorter / user-chosen value for now — a
 long-lived credential that never lapses is the thing we don't want sitting in
 someone's CI config forever. `expires_at` is therefore always set and always in
-the future at creation; the lookup filters on it (`expires_at > now`) so an
-expired token is rejected exactly like a revoked one. **Rotation is manual**:
+the future at creation, and liveworkspace refuses an
+expired token exactly like a revoked one. **Rotation is manual**:
 mint a fresh token before the old one lapses. A configurable or shorter
 lifetime can be added later if there's demand; six months is the ceiling
 regardless.
@@ -157,15 +145,10 @@ A token authenticates as a third identity path, resolved once in `fetch`
 alongside the account access token + the guest header:
 
 1. An account access token in `Authorization: Bearer`, when it verifies.
-2. Else `Authorization: Bearer lwt_…` → hash → look up a non-revoked,
-   non-expired row → the request's owner id is the row's `owner_id`; stamp
-   `last_used_at`. The column means "the last request this token made, to
-   within a minute": a request writes it only when the stored value is older
-   than `LAST_USED_STAMP_WINDOW_MS` (60 s, `apps/api/src/db/api-tokens.ts`),
-   checked again in the UPDATE's WHERE, so a burst of MCP tool calls (3 to 6
-   api requests each) costs one write a minute rather than one per request.
-   Its only reader, the Settings token card, works at day grain. (A token and a JWT can't both be the bearer.) An `lwt_`
-   bearer with no such row (unknown, revoked or expired), or one too short to be a token at all (cut short or
+2. Else `Authorization: Bearer lwt_…` → checked with liveworkspace (`resolveApiToken`,
+   `apps/api/src/db/api-tokens.ts`, the answer remembered a minute per isolate, an unknown token ten seconds) →
+   the request's owner id is the token's account. Nothing is read or written here. (A token and a JWT can't both
+   be the bearer.) An `lwt_` bearer liveworkspace does not know (unknown, revoked or expired), or one too short to be a token at all (cut short or
    mistyped when pasted), is refused there and then with `401 invalid_token` and `WWW-Authenticate: Bearer
 error="invalid_token"`, on every route: it never falls through to the guest
    path or to no owner, so a script holding a dead token is told so.
@@ -306,7 +289,7 @@ same way the rest of the signed-in surface is. A token can only ever be minted
 by, and act as, a signed-in account. Creation returns the secret **once**
 (shown in the manager to copy, never retrievable again); the row then shows only
 the public id + metadata. Revoke is immediate (the lookup filters
-`revoked = 0`). The category states the fixed 6-month expiry ([§3.2](#32-storage-d1))
+`revoked = 0`). The category states the fixed 6-month expiry ([§3.2](#32-storage))
 so rotation isn't a surprise.
 
 **Per-account cap: 10.** A `POST /api/tokens` is refused (`409`) once the owner
@@ -320,9 +303,10 @@ logs `[api-tokens] mint refused: owner at the token cap` and answers `409
 token_limit_reached`.
 
 **Account deletion removes them.** Deleting an account erases ALL of that
-user's data, tokens included: `DELETE /api/account` ([`routes/account.ts`](../../../apps/api/src/routes/account.ts))
-must delete the owner's `api_tokens` rows in the same cascade as their documents
-/ folders / themes, so no credential outlives the account.
+user's data, tokens included: the tokens are the liveworkspace account's, and closing the account there deletes
+them, so no credential outlives the account. livedocuments keeps no copy; the person's workbench store, which hangs
+off their tokens, closes with the account too (`DELETE /api/account`, [`routes/account.ts`](../../../apps/api/src/routes/account.ts),
+or the index's `personClosed` door).
 
 ### 3.6a A token's view of itself
 
@@ -383,7 +367,7 @@ hardening landed first:
   (`apps/api/src/limits.ts`); a per-frame cap in the realtime room. Document
   and tab names are shortened to the 60-character name cap rather than
   rejected (`apps/api/src/names.ts`, [Tab and document name length](../006-document/name-length.md)).
-- **Already solid** (pre-existing): D1 is fully parameterized; session JWT
+- **Already solid** (pre-existing): SQL is fully parameterized; session JWT
   verification; share-link expiry + constant-time password compare + per-IP
   brute-force limiter; WS-upgrade auth; realtime role re-stamping + op-rate cap.
 

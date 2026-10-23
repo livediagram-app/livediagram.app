@@ -19,7 +19,12 @@ export async function ownerDocumentAccess(
   ownerId: string,
   teams: readonly string[] = [],
 ): Promise<OwnerDocumentAccess | Response> {
-  const outcome = await requestGrant(env, { kind: 'delegate', personId: ownerId, teams }, documentId, null);
+  const outcome = await requestGrant(
+    env,
+    { kind: 'delegate', personId: ownerId, teams },
+    documentId,
+    null,
+  );
   if (outcome.ok) return { documentId, role: outcome.grant.level };
   if (outcome.status >= 500) return json({ error: outcome.error }, { status: outcome.status });
   return notFound();

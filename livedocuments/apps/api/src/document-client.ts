@@ -1,5 +1,5 @@
 // The worker's way into a document's Durable Object (docs/specs/015-api/api.md "Storage"): one typed stub per document,
-// its RPC methods with the document id filled in. Every content read and write goes through here; D1 holds none.
+// its RPC methods with the document id filled in. Every content read and write goes through here.
 //
 // Inside the document's own Durable Object the same call is a plain method call on the room itself (document-room.ts
 // `localNamespace`), so code shared by the worker and the room (getDocument's outline, the room relays) costs no
@@ -81,7 +81,11 @@ export type DocumentRoomRpc = {
   ): Promise<DocumentCopy | null>;
   importCopy(documentId: string, copy: DocumentCopy): Promise<void>;
   purge(documentId: string): Promise<void>;
-  revokeCodes(documentId: string, codes: string[], reason?: 'revoked' | 'rescoped'): Promise<number>;
+  revokeCodes(
+    documentId: string,
+    codes: string[],
+    reason?: 'revoked' | 'rescoped',
+  ): Promise<number>;
   joined(documentId: string, personId: string): Promise<void>;
   anonymise(documentId: string, personId: string): Promise<number>;
   fetch(request: Request): Promise<Response>;

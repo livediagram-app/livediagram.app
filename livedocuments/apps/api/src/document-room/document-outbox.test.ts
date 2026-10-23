@@ -54,8 +54,8 @@ function document(): SqliteD1 {
 
 const rows = (db: SqliteD1, query: string) => db.sql.prepare(query).all();
 const keys = (db: SqliteD1) =>
-  rows(db, "SELECT kind || ':' || key AS k FROM outbox WHERE document_id = 'P' ORDER BY id").map((r) =>
-    String(r.k),
+  rows(db, "SELECT kind || ':' || key AS k FROM outbox WHERE document_id = 'P' ORDER BY id").map(
+    (r) => String(r.k),
   );
 
 // The index as the drain sees it: every push recorded, a failure on demand.

@@ -163,7 +163,7 @@ describe('worker refusal of an unknown API token', () => {
 });
 
 // Room-ticket mints skip the per-owner write budget (autosave shares it), but
-// each is a D1 write, so they have their own bucket keyed on the network.
+// each is a write, so they have their own bucket keyed on the network.
 describe('worker room-ticket throttle', () => {
   beforeEach(() => resolveApiTokenMock.mockResolvedValue(null));
 

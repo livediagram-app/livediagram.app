@@ -345,7 +345,6 @@ export function useIdentityBootstrap(opts: {
         lastPersistedSelfRef.current = { name: self.name, color: self.color };
       }
 
-
       // An address that names no document and carries no share link (docs/specs/007-editor/new-document-route.md
       // "Unknown addresses"): the not-found card over the Explorer. It used to send the reader to /new, so a
       // mistyped or retired page opened the New Document wizard with no word of what went wrong.

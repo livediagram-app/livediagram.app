@@ -26,13 +26,7 @@ import {
 // elements render their real glyph in the snapshot / live image instead of
 // the renderer's box-with-label fallback.
 import { resolveIconExportArt, resolveStickerArt } from '@livedocuments/icons/resolve';
-import {
-  getTab,
-  getTabBody,
-  thumbnailKey,
-  type StoredTabBody,
-  servableImageIds,
-} from './db';
+import { getTab, getTabBody, thumbnailKey, type StoredTabBody, servableImageIds } from './db';
 import { imageRefIds } from './image-refs/extract';
 import { mediaClient } from './media';
 import { markThumbRendered } from './document-room/document-content';

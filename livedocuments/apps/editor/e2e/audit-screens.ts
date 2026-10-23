@@ -1,5 +1,12 @@
 import type { Browser, Page } from '@playwright/test';
-import { adoptGuest, expect, ownerHeaders, documentHeaders, seedDocumentItem, test } from './fixtures';
+import {
+  adoptGuest,
+  expect,
+  ownerHeaders,
+  documentHeaders,
+  seedDocumentItem,
+  test,
+} from './fixtures';
 
 // Screens the dark-mode audits (contrast, optical alignment) open: a seeded diagram shaped like a real one,
 // a dark visitor, a share link, and a fresh identity-less visitor.

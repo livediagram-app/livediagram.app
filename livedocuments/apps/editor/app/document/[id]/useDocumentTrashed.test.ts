@@ -17,7 +17,14 @@ afterEach(() => {
 });
 
 const item = (over: Record<string, unknown>) => ({
-  item: { id: 'd1', trashedAt: 1_000, trashReason: 'deleted', access: 'edit', teamId: null, ...over },
+  item: {
+    id: 'd1',
+    trashedAt: 1_000,
+    trashReason: 'deleted',
+    access: 'edit',
+    teamId: null,
+    ...over,
+  },
 });
 
 const render = (viaShareLink = false) =>

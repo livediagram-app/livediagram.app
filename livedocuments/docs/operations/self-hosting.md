@@ -9,8 +9,7 @@ This guide is the practical path: provision Cloudflare resources, configure secr
 | Resource                             | Used by           | Why                                                                                                                                                                                                                                                                                                  |
 | ------------------------------------ | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Workers paid plan**                | All seven workers | Durable Objects (per-document realtime room) need the paid plan.                                                                                                                                                                                                                                     |
-| **D1 database**                      | `apps/api`        | Documents, folders, share links, shared-with index, image metadata, the Inbox index, teams + membership + team library.                                                                                                                                                                              |
-| **Durable Object namespace**         | `apps/api`        | One SQLite-backed object per document: its content (tabs, comments, changesets) and its realtime room.                                                                                                                                                                                               |
+| **Durable Object namespaces**        | `apps/api`        | One SQLite-backed object per document (`DocumentRoom`: its content, tabs, comments, changesets and image references, and its realtime room) and one per person (`WorkbenchStore`: their workbench pairings, tickets and sessions). Each makes its own schema on first use.                           |
 | **R2 bucket** (optional)             | `apps/api`        | Document SVG snapshots ([Document SVG snapshots](../specs/006-document/document-snapshots.md): Explorer thumbnails + the live image share). Uploaded images live in liveworkspace's media service ([Images](#images)). Without it, snapshot endpoints `404` (the Explorer row shows a generic icon). |
 | **Rate Limiter bindings** (optional) | `apps/api`        | Abuse throttles: per-owner writes, plus the CLI's telemetry relay, share-code lookups, link unfurls, AI calls and API-token reads. Any binding you don't provision falls through to "allow", so none are required.                                                                                   |
 | **Custom domain**                    | `apps/router`     | The router worker serves your hostname; downstream workers don't need their own domain.                                                                                                                                                                                                              |
@@ -19,30 +18,14 @@ What you do NOT need:
 
 - Sign-in: it is optional. Without it, every user is a guest (a per-browser id stored in `localStorage`, carried as `X-Owner-Id`). With sign-in configured, the api worker fetches the accounts Worker's public keys (`${ACCOUNTS_URL}/api/auth/jwks`) to check access tokens, and calls it when someone signs in or a session refreshes.
 - No _required_ SaaS: no Stripe (no paid tier) and no analytics vendor. The other integration is optional and stays off until you add a key: Resend for transactional email ([Transactional email (Resend)](../specs/014-identity/transactional-email.md)), covered in its own section below. The telemetry endpoint is first-party only and off by default.
-- A separate database host: D1 covers everything.
+- A database: the api worker keeps its data in Durable Objects.
 
 ## One-time Cloudflare setup
 
 1. **Create a Cloudflare account** and sign up for the Workers paid plan ($5/mo at the time of writing).
-2. **Create a D1 database**:
+2. **No database to create.** The api worker has no D1 database and no migrations: its data lives in the Durable Objects declared in `apps/api/wrangler.toml` (`new_sqlite_classes`), which make their own schema on first use. Where documents are filed, who may open them, teams, the Trash and API tokens are liveworkspace's (the index at `INDEX_ORIGIN`, reached with `INDEX_KEY`, and the accounts Worker); without `INDEX_KEY` no document opens.
 
-   ```sh
-   pnpm exec wrangler d1 create livedocuments
-   ```
-
-   Copy the `database_id` from the output into `apps/api/wrangler.toml` under the `[[d1_databases]]` block (it already has the binding name `DB`; you only need to update the id).
-
-3. **Apply migrations to the new D1**:
-
-   ```sh
-   pnpm --filter @livedocuments/api db:migrate:remote
-   ```
-
-   (this runs `wrangler d1 migrations apply livedocuments --remote` — note it takes the database **name**, `livedocuments`, not the binding name `DB`).
-
-   This creates every table the worker expects. The same command runs in the deploy workflow on every release, so you only need it once for the first deploy.
-
-4. **Create an R2 bucket** (optional, for document snapshots):
+3. **Create an R2 bucket** (optional, for document snapshots):
 
    ```sh
    pnpm exec wrangler r2 bucket create livedocuments-images
@@ -50,9 +33,9 @@ What you do NOT need:
 
    The bucket name is bound to `IMAGES` in `apps/api/wrangler.toml`.
 
-5. **Get an API token + account id**:
+4. **Get an API token + account id**:
    - Account id is at the bottom-right of any Cloudflare dashboard page.
-   - API token: create one with **Workers Scripts: Edit**, **D1: Edit**, **R2: Edit** (only if using the R2 bucket), **Workers KV: Edit** (for Durable Objects), and **Account → Account Settings: Read** on your account. Save it.
+   - API token: create one with **Workers Scripts: Edit**, **R2: Edit** (only if using the R2 bucket), **Workers KV: Edit** (for Durable Objects), and **Account → Account Settings: Read** on your account. Save it.
 
 ## Required GitHub Actions secrets
 
@@ -137,9 +120,9 @@ Or just push to `main` and use the bundled GitHub Actions workflows:
 - `.github/workflows/deploy.yml` calls it for **production**, **manually** from the Actions tab.
 - `.github/workflows/deploy-staging.yml` calls it for **staging**, automatically, whenever CI goes green on `main`.
 
-Self-hosting needs only the production pair: staging is a second copy of the platform the hosted deployment runs for its own rehearsals (own hostname, own D1 / R2 / KV), and deleting `deploy-staging.yml` costs a fork nothing. Keeping it means adding the `_STAGING` secrets and staging resources from [Staging environment](../specs/016-platform/staging-environment.md); without them the workflow simply fails on every merge.
+Self-hosting needs only the production pair: staging is a second copy of the platform the hosted deployment runs for its own rehearsals (own hostname, own Durable Objects / R2 / KV), and deleting `deploy-staging.yml` costs a fork nothing. Keeping it means adding the `_STAGING` secrets and staging resources from [Staging environment](../specs/016-platform/staging-environment.md); without them the workflow simply fails on every merge.
 
-See [Deployment](../specs/016-platform/deployment.md) for the deeper deploy mechanics, including how D1 migrations run BEFORE the worker deploy so the new code never briefly runs against the old schema.
+See [Deployment](../specs/016-platform/deployment.md) for the deeper deploy mechanics, including the order the workers deploy in.
 
 Serve the editor over HTTPS (Cloudflare does by default, on `workers.dev` and on a custom domain). It also works over plain http, on a LAN address for instance: ids and hashes fall back to plain code there, and only the clipboard buttons need HTTPS ([Secure context](../specs/016-platform/secure-context.md)).
 
@@ -202,9 +185,8 @@ Optional knobs (plain `[vars]`):
 
 ## Teams
 
-Teams need sign-in. They are liveworkspace teams, made and run on liveworkspace.app; the api worker keeps a copy of
-the ones its people are in, following liveworkspace's change feed every five minutes
-([Teams](../specs/013-workspace/teams.md)). There are no team invite emails, reminders or expiry to configure here.
+Teams need sign-in. They are liveworkspace teams, made and run on liveworkspace.app; the api worker reads a person's
+teams from their token's `teams` claim and keeps no copy ([Teams](../specs/013-workspace/teams.md)). There are no team invite emails, reminders or expiry to configure here.
 
 ## Workbenches (optional, needs sign-in)
 
@@ -212,7 +194,7 @@ A workbench is a developer tool that frames the editor signed in, beside an agen
 
 - `APP_BASE_URL` (api `[vars]`): set it to your deployment's public origin. Besides the links in emails, it builds the workbench frame URLs (`/embed/workbench`, and `/embed/workbench/explorer` for the whole workspace) and the pairing URL (`/workbench/pair`) the CLI prints. Use the origin that serves the app without redirecting (for example `https://www.example.com` when the apex redirects to `www`): a workbench checks the frame's messages against the origin of that URL, and a redirect changes it. Left at its default, those links point at livedocuments.app.
 - `WORKBENCH_TICKET_RATE_LIMITER` (optional binding, declared in `apps/api/wrangler.toml`): caps ticket mints and pairing requests per token. Without the binding every request is allowed.
-- The baseline migration creates the four workbench tables; it runs with the others.
+- Each person's workbench is their own Durable Object (`WORKBENCH`, declared in `apps/api/wrangler.toml`); its alarm checks their tokens with liveworkspace and sweeps spent rows, so there is nothing to schedule.
 
 ## Images
 

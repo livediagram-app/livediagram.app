@@ -6,7 +6,8 @@
 import { Scene, Shape, Arrow, Panel, Label, TextBar } from './primitives';
 
 /** The whole stack at a glance: the static apps and the router sitting in
- *  front of the api Worker, which owns D1 and the Durable Object room. */
+ *  front of the api Worker, which owns the Durable Objects (each document and its realtime room) and
+ *  reaches liveworkspace's index. */
 export function StackOverview() {
   return (
     <Scene w={420} h={250}>
@@ -25,17 +26,17 @@ export function StackOverview() {
       <Shape x={134} y={176} w={152} h={40} kind="rect" label="api Worker" labelTone="strong" />
       <Arrow from={[210, 140]} to={[210, 176]} />
 
-      {/* Storage the api owns */}
-      <Shape x={30} y={172} w={84} h={48} kind="cylinder" label="D1" labelTone="strong" />
+      {/* The index it reaches, and the storage it owns */}
+      <Shape x={30} y={172} w={84} h={48} kind="cylinder" label="Index" labelTone="strong" />
       <Shape x={306} y={172} w={88} h={48} kind="hexagon" label="Durable" labelTone="strong" />
       <Arrow from={[134, 196]} to={[114, 196]} tone="muted" />
       <Arrow from={[286, 196]} to={[306, 196]} tone="muted" />
 
       <Label x={73} y={236} anchor="middle" size={10} tone="muted">
-        database
+        liveworkspace
       </Label>
       <Label x={350} y={236} anchor="middle" size={10} tone="muted">
-        realtime room
+        documents + room
       </Label>
     </Scene>
   );

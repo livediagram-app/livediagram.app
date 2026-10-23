@@ -1193,8 +1193,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Where New Documents Go',
         keywords:
           'default folder where new documents go save location place file automatically always save placement template',
-        description:
-          'New documents you make without choosing a place are saved in this folder.',
+        description: 'New documents you make without choosing a place are saved in this folder.',
       },
     ],
   },

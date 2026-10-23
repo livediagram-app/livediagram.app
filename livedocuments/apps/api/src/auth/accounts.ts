@@ -1,4 +1,8 @@
-import { bearerTokenOf, isApiTokenFormat, isWorkbenchSessionFormat } from '@livedocuments/api-schema';
+import {
+  bearerTokenOf,
+  isApiTokenFormat,
+  isWorkbenchSessionFormat,
+} from '@livedocuments/api-schema';
 import {
   createPersonVerifier,
   type ClientCredentials,

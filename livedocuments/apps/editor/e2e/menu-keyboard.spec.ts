@@ -86,10 +86,7 @@ test.describe('menus by keyboard', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('the tab menu is a named dialog', async ({
-    page,
-    pageErrors,
-  }) => {
+  test('the tab menu is a named dialog', async ({ page, pageErrors }) => {
     await startBlankDocument(page);
     await dismissQuickTour(page);
 

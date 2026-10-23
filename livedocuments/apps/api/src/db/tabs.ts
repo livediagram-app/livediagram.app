@@ -7,8 +7,8 @@ import { rowToTab, type TabRow } from '../tab-row';
 import { MAX_TAB_BYTES, TabTooLargeError, byteLength, logTabRefused } from '../limits';
 
 // Every write of a tab's data meets this first (docs/specs/015-api/api.md "Tab size"): data over the
-// cap would fail in D1 with a generic error (and pass locally, where the row cap isn't enforced), so
-// it is refused here, logged, and nothing is written.
+// cap would fail in the document's SQLite with a generic error (and pass locally, where the row cap isn't
+// enforced), so it is refused here, logged, and nothing is written.
 function assertTabDataFits(tabId: string, data: string, write: string): void {
   const bytes = byteLength(data);
   if (bytes <= MAX_TAB_BYTES) return;
@@ -186,8 +186,8 @@ export function isTabRevStale(err: unknown): boolean {
   return err instanceof Error && err.message.includes('tab_rev_stale');
 }
 
-// Full upsert for a single tab, advancing its revision from whatever is stored. One batch: the
-// extra serial D1 hops were once the largest latency item on a save. Answers the new revision.
+// Full upsert for a single tab, advancing its revision from whatever is stored. One batch: extra
+// serial storage hops were once the largest latency item on a save. Answers the new revision.
 export async function upsertTab(
   env: DocumentEnv,
   documentId: string,
