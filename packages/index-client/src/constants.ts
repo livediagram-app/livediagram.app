@@ -77,6 +77,14 @@ export const SHARE_PASSWORD_MAX = 256;
 // Live and lapsed links together, per item.
 export const SHARE_LINKS_PER_ITEM = 100;
 export const SEARCH_MAX = 200;
+// Search's words: each must appear in the title or the folder's name. More are refused.
+export const SEARCH_WORDS_MAX = 16;
+// The most values one list filter (`source`, `intent`, `space`) takes.
+export const FILTER_VALUES_MAX = 8;
+// An `intent` filter value: the last word of an item's creation intent ("plan:board:kanban" → "kanban").
+export const INTENT_WORD = /^[a-z0-9-]{1,32}$/;
+export const ITEM_OWNERS = ['me', 'others'] as const;
+export type ItemOwner = (typeof ITEM_OWNERS)[number];
 
 // Items stay in the Trash this long before the daily sweep purges them.
 export const TRASH_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
@@ -146,7 +154,16 @@ export const isTagColour = (value: unknown): value is string =>
 export const ITEM_SOURCES = ['person', 'ai', 'import', 'template'] as const;
 export type ItemSource = (typeof ITEM_SOURCES)[number];
 
-export const ITEM_VIEWS = ['all', 'recent', 'favourites', 'shared', 'trash', 'unsorted'] as const;
+// `search`: every live item the person can open, their own, their teams' and those shared with them.
+export const ITEM_VIEWS = [
+  'all',
+  'recent',
+  'favourites',
+  'shared',
+  'trash',
+  'unsorted',
+  'search',
+] as const;
 export type ItemView = (typeof ITEM_VIEWS)[number];
 
 // Every `{ "error": "<code>" }` the index answers with.

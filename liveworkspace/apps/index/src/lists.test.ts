@@ -117,6 +117,126 @@ describe('views and filters', () => {
   });
 });
 
+describe('filters', () => {
+  it('narrows by source, last change, owner, intent and space, values or-ed and filters and-ed', async () => {
+    const ada = await person('user_a', { teams: [{ id: 'team1' }] });
+    const bo = await person('user_b', { teams: [{ id: 'team1' }] });
+    const ai = await makeItem(ada.auth, {
+      title: 'AI made',
+      source: 'ai',
+      intent: 'plan:board:kanban',
+    });
+    const retro = await makeItem(ada.auth, { title: 'Retro', intent: 'plan:board:retrospective' });
+    const old = await makeItem(ada.auth, { title: 'Old', intent: 'kanban' });
+    const team = await makeItem(bo.auth, {
+      title: 'Bo’s team plan',
+      teamId: 'team1',
+      source: 'ai',
+    });
+    const set = h.db.sql.prepare('UPDATE items SET updated_at = ? WHERE id = ?');
+    [ai, retro, old, team].forEach((item, i) => set.run([5000, 4000, 1000, 3000][i]!, item.id));
+
+    expect(titles(await list(ada.auth, 'source=ai'))).toEqual(['AI made', 'Bo’s team plan']);
+    expect(titles(await list(ada.auth, 'since=2000'))).toEqual([
+      'AI made',
+      'Retro',
+      'Bo’s team plan',
+    ]);
+    expect(titles(await list(ada.auth, 'owner=others'))).toEqual(['Bo’s team plan']);
+    expect(titles(await list(ada.auth, 'owner=me&source=ai'))).toEqual(['AI made']);
+    expect(titles(await list(ada.auth, 'intent=kanban'))).toEqual(['AI made', 'Old']);
+    expect(titles(await list(ada.auth, 'intent=kanban,retrospective'))).toEqual([
+      'AI made',
+      'Retro',
+      'Old',
+    ]);
+    expect(titles(await list(ada.auth, 'space=team:team1'))).toEqual(['Bo’s team plan']);
+    expect(titles(await list(ada.auth, 'space=mine&since=2000'))).toEqual(['AI made', 'Retro']);
+    for (const bad of [
+      'source=robot',
+      'since=-1',
+      'since=soon',
+      'owner=them',
+      'intent=Kan%20ban',
+      'space=elsewhere',
+      `intent=${Array.from({ length: 9 }, (_, i) => `w${i}`).join(',')}`,
+      'deep=1',
+    ]) {
+      expect((await call(`/items?${bad}`, { auth: ada.auth })).status, bad).toBe(400);
+    }
+    expect((await call('/items?space=team:team9', { auth: ada.auth })).status).toBe(403);
+  });
+
+  it('reaches a folder’s subfolders with deep', async () => {
+    const ada = await person('user_a');
+    const folder = async (name: string, parentId?: string) =>
+      (
+        await body<{ folder: { id: string } }>(
+          await call('/folders', { method: 'POST', auth: ada.auth, body: { name, parentId } }),
+        )
+      ).folder.id;
+    const top = await folder('Top');
+    const mid = await folder('Mid', top);
+    const low = await folder('Low', mid);
+    const other = await folder('Other');
+    await makeItem(ada.auth, { title: 'In top', folderId: top });
+    await makeItem(ada.auth, { title: 'In low', folderId: low });
+    await makeItem(ada.auth, { title: 'Elsewhere', folderId: other });
+    expect(titles(await list(ada.auth, `folder=${top}`))).toEqual(['In top']);
+    expect(new Set(titles(await list(ada.auth, `folder=${top}&deep=1`)))).toEqual(
+      new Set(['In top', 'In low']),
+    );
+  });
+
+  it('the search view lists mine, my teams’ and what was shared with me, never the Trash', async () => {
+    const ada = await person('user_a', { teams: [{ id: 'team1' }] });
+    const eve = await person('user_e');
+    await makeItem(ada.auth, { title: 'Road mine' });
+    await makeItem(ada.auth, { title: 'Road team', teamId: 'team1' });
+    const gone = await makeItem(ada.auth, { title: 'Road gone' });
+    await call(`/items/${gone.id}`, { method: 'DELETE', auth: ada.auth });
+    const theirs = await makeItem(eve.auth, { title: 'Road shared' });
+    await makeItem(eve.auth, { title: 'Road unshared' });
+    const link = await body<{ link: { code: string } }>(
+      await call(`/items/${theirs.id}/share`, { method: 'POST', auth: eve.auth, body: {} }),
+    );
+    await call(`/share/${link.link.code}`, { auth: ada.auth });
+    expect(new Set(titles(await list(ada.auth, 'view=search&q=road')))).toEqual(
+      new Set(['Road mine', 'Road team', 'Road shared']),
+    );
+    expect(titles(await list(ada.auth, 'view=search&q=road&space=shared'))).toEqual([
+      'Road shared',
+    ]);
+    expect(titles(await list(ada.auth, 'view=search&q=road&owner=others'))).toEqual([
+      'Road shared',
+    ]);
+  });
+
+  it('narrows Shared With Me by the same filters', async () => {
+    const ada = await person('user_a');
+    const eve = await person('user_e');
+    for (const title of ['Alpha plan', 'Beta plan']) {
+      const item = await makeItem(eve.auth, {
+        title,
+        ...(title.startsWith('A') ? { source: 'ai' } : {}),
+      });
+      const link = await body<{ link: { code: string } }>(
+        await call(`/items/${item.id}/share`, { method: 'POST', auth: eve.auth, body: {} }),
+      );
+      await call(`/share/${link.link.code}`, { auth: ada.auth });
+    }
+    const shared = async (query: string) =>
+      (
+        await body<{ shared: { item: Item }[] }>(await call(`/shared?${query}`, { auth: ada.auth }))
+      ).shared.map((s) => s.item.title);
+    expect(new Set(await shared(''))).toEqual(new Set(['Alpha plan', 'Beta plan']));
+    expect(await shared('q=beta%20plan')).toEqual(['Beta plan']);
+    expect(await shared('source=ai')).toEqual(['Alpha plan']);
+    expect(await shared('owner=me')).toEqual([]);
+    expect((await call('/shared?owner=nobody', { auth: ada.auth })).status).toBe(400);
+  });
+});
+
 describe('search', () => {
   it('matches titles and folder names, never tag names', async () => {
     const ada = await person('user_a');
@@ -137,6 +257,23 @@ describe('search', () => {
     expect(titles(await list(ada.auth, 'q=budget'))).toEqual(['Plain']);
     expect(titles(await list(ada.auth, 'q=LAUNCH'))).toEqual([]);
     expect(titles(await list(ada.auth, 'q=zzz'))).toEqual([]);
+  });
+
+  it('needs every word, each in the title or the folder’s name', async () => {
+    const ada = await person('user_a');
+    const f = await body<{ folder: { id: string } }>(
+      await call('/folders', { method: 'POST', auth: ada.auth, body: { name: 'Budgets' } }),
+    );
+    await makeItem(ada.auth, { title: 'Road map 2027' });
+    await makeItem(ada.auth, { title: 'Map of the road' });
+    await makeItem(ada.auth, { title: 'Road', folderId: f.folder.id });
+    await makeItem(ada.auth, { title: 'Map' });
+    expect(new Set(titles(await list(ada.auth, 'q=road%20map')))).toEqual(
+      new Set(['Road map 2027', 'Map of the road']),
+    );
+    expect(titles(await list(ada.auth, 'q=road%20budget'))).toEqual(['Road']);
+    const many = Array.from({ length: 17 }, (_, i) => `w${i}`).join('%20');
+    expect((await call(`/items?q=${many}`, { auth: ada.auth })).status).toBe(400);
   });
 
   it('takes %, _ and \\ literally', async () => {
@@ -181,7 +318,24 @@ describe('query plans', () => {
     ['favourites', { view: 'favourites', limit: 50 }, 'favourites_person_created'],
     ['shared', { view: 'shared', limit: 50 }, 'sqlite_autoindex_shared_with_1'],
     ['a tag', { view: 'all', tag: 't1', limit: 50 }, 'sqlite_autoindex_item_tags_1'],
-    ['search', { view: 'all', q: 'road', limit: 50 }, 'items_live'],
+    ['search words', { view: 'all', words: ['road', 'map'], limit: 50 }, 'items_live'],
+    ['the search view', { view: 'search', limit: 50 }, 'items_live'],
+    [
+      'the search view, filtered',
+      {
+        view: 'search',
+        words: ['road'],
+        source: ['ai'],
+        since: 1,
+        owner: 'me',
+        intent: ['kanban'],
+        space: { mine: true, shared: true, teams: ['team1'] },
+        limit: 50,
+      },
+      'items_live',
+    ],
+    ['a folder, deep', { view: 'all', folder: 'f1', deep: true, limit: 50 }, 'items_folder'],
+    ['recent, filtered', { view: 'recent', since: 1, owner: 'others', limit: 50 }, 'opens_recent'],
   ];
 
   function plan(sql: string, args: unknown[]): string[] {
@@ -300,6 +454,15 @@ describe('at 2,000 items', () => {
       'search "roadmap"',
       async () => (await list(ada.auth, 'q=roadmap&limit=200')).items.length,
     );
+    const searchView = await time(
+      'the search view, "roadmap", made in the last while',
+      async () =>
+        (await list(ada.auth, 'view=search&q=roadmap&since=1001000&limit=200')).items.length,
+    );
+    const deepest = await time('every word and filter', async () => {
+      const q = 'view=search&q=item%20roadmap&owner=me&space=mine,team:team1&since=1&limit=200';
+      return (await list(ada.auth, q)).items.length;
+    });
     const tagged = await time(
       'a tag',
       async () => (await list(ada.auth, 'tag=t1&limit=200')).items.length,
@@ -312,7 +475,8 @@ describe('at 2,000 items', () => {
     // Generous for a loaded CI machine; locally each is a few milliseconds.
     expect(firstPage).toBeLessThan(150);
     expect(walk).toBeLessThan(1500);
-    for (const ms of [recent, oneApp, search, tagged, favs]) expect(ms).toBeLessThan(250);
+    for (const ms of [recent, oneApp, search, searchView, deepest, tagged, favs])
+      expect(ms).toBeLessThan(250);
 
     const first = await list(ada.auth, 'limit=200');
     expect(first.items[0]).toMatchObject({ id: 'item-001999', favourite: false });

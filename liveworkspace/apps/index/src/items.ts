@@ -3,14 +3,19 @@
 
 import {
   APP_KINDS,
+  FILTER_VALUES_MAX,
+  INTENT_WORD,
+  ITEM_OWNERS,
   ITEM_SOURCES,
   ITEM_VIEWS,
   isApp,
   MOST_USED_MAX,
   OPEN_DEBOUNCE_MS,
   SEARCH_MAX,
+  SEARCH_WORDS_MAX,
   USE_WINDOW_DAYS,
   TITLE_MAX,
+  type ItemOwner,
   type ItemSource,
   type ItemView,
 } from '@liveworkspace/index-client';
@@ -35,7 +40,7 @@ import {
   notFound,
   readObject,
 } from './http';
-import { listItems, type ListSpec } from './lists';
+import { listItems, type ListFilters, type ListSpec } from './lists';
 import { drainTombstones, purgeRows } from './purge';
 import { decorate, getItemRow, type Access, type ItemRow } from './rows';
 import { eventStatements, moveScopeStatements } from './timeline';
@@ -43,6 +48,57 @@ import { eventStatements, moveScopeStatements } from './timeline';
 const DEFAULT_TITLE = 'Untitled';
 // Emptying the Trash purges at most this many per call; the Explorer calls again while some remain.
 const EMPTY_TRASH_MAX = 1000;
+
+// A comma list of at most FILTER_VALUES_MAX distinct values, each passing `ok`; null when malformed.
+function readList(raw: string, ok: (value: string) => boolean): string[] | null {
+  const values = [...new Set(raw.split(','))];
+  if (values.length > FILTER_VALUES_MAX || !values.every(ok)) return null;
+  return values;
+}
+
+// The Explorer's filters (its lens) from a query string, checked: GET /items and GET /shared.
+export function parseListFilters(person: Person, params: URLSearchParams): ListFilters | Response {
+  const filters: ListFilters = {};
+  const q = params.get('q')?.trim();
+  if (q) {
+    if (q.length > SEARCH_MAX) return badRequest('invalid_query');
+    const words = [...new Set(q.split(/\s+/))];
+    if (words.length > SEARCH_WORDS_MAX) return badRequest('invalid_query');
+    filters.words = words;
+  }
+  const source = params.get('source');
+  if (source !== null) {
+    const values = readList(source, (v) => (ITEM_SOURCES as readonly string[]).includes(v));
+    if (!values) return badRequest('invalid_query');
+    filters.source = values as ItemSource[];
+  }
+  const since = params.get('since');
+  if (since !== null) {
+    const n = Number(since);
+    if (since === '' || !Number.isSafeInteger(n) || n < 0) return badRequest('invalid_query');
+    filters.since = n;
+  }
+  const owner = params.get('owner');
+  if (owner !== null) {
+    if (!(ITEM_OWNERS as readonly string[]).includes(owner)) return badRequest('invalid_query');
+    filters.owner = owner as ItemOwner;
+  }
+  const intent = params.get('intent');
+  if (intent !== null) {
+    const values = readList(intent, (v) => INTENT_WORD.test(v));
+    if (!values) return badRequest('invalid_query');
+    filters.intent = values;
+  }
+  const space = params.get('space');
+  if (space !== null) {
+    const values = readList(space, (v) => v === 'mine' || v === 'shared' || v.startsWith('team:'));
+    if (!values) return badRequest('invalid_query');
+    const teams = values.filter((v) => v.startsWith('team:')).map((v) => v.slice(5));
+    if (teams.some((t) => !person.teams.includes(t))) return forbidden('not_team_member');
+    filters.space = { mine: values.includes('mine'), shared: values.includes('shared'), teams };
+  }
+  return filters;
+}
 
 // The list filters from a query string, checked. A refusal is the response to send.
 export async function parseListSpec(
@@ -78,11 +134,14 @@ export async function parseListSpec(
     if (!mine) return notFound();
     spec.tag = tag;
   }
-  const q = params.get('q')?.trim();
-  if (q) {
-    if (q.length > SEARCH_MAX) return badRequest('invalid_query');
-    spec.q = q;
+  const deep = params.get('deep');
+  if (deep !== null) {
+    if (deep !== '1' || !spec.folder) return badRequest('invalid_query');
+    spec.deep = true;
   }
+  const filters = parseListFilters(person, params);
+  if (filters instanceof Response) return filters;
+  Object.assign(spec, filters);
   const used = params.get('used');
   if (used !== null) {
     const n = Number(used);

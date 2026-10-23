@@ -27,6 +27,7 @@ import type {
   InboxResponse,
   Item,
   ItemListQuery,
+  SharedListQuery,
   ItemSummary,
   Page,
   PlacementDefault,
@@ -69,6 +70,17 @@ export function queryString(query: Query = {}): string {
 }
 
 const enc = encodeURIComponent;
+
+// A list's query on the wire: a filter's values as one comma list, `deep` as 1.
+function listQuery(query: ItemListQuery | SharedListQuery): Query {
+  const out: Query = {};
+  for (const [key, value] of Object.entries(query)) {
+    if (Array.isArray(value)) out[key] = value.length > 0 ? value.join(',') : undefined;
+    else if (key === 'deep') out[key] = value ? 1 : undefined;
+    else out[key] = value as Query[string];
+  }
+  return out;
+}
 
 export type IndexClientOptions = {
   // The index API, e.g. `/api/index` on the app's own origin (the default), or a full URL.
@@ -133,7 +145,7 @@ export function createIndexClient({
     // Items
     listItems: (query: ItemListQuery = {}, options: RequestOptions = {}) =>
       call<Page<Item, 'items'> & { mostUsed?: Item[] }>('/items', {
-        query: query as Query,
+        query: listQuery(query),
         signal: options.signal,
       }),
     createItem: (input: CreateItemInput) =>
@@ -234,10 +246,11 @@ export function createIndexClient({
     // What a link opens; records it under Shared for a signed-in person or guest.
     resolveShare: (code: string, password?: string | null) =>
       call<ShareResolution>(`/share/${enc(code)}`, { share: { code, password } }),
-    listShared: (
-      query: { app?: App; limit?: number; cursor?: string } = {},
-      options: RequestOptions = {},
-    ) => call<Page<SharedWithItem, 'shared'>>('/shared', { query, signal: options.signal }),
+    listShared: (query: SharedListQuery = {}, options: RequestOptions = {}) =>
+      call<Page<SharedWithItem, 'shared'>>('/shared', {
+        query: listQuery(query),
+        signal: options.signal,
+      }),
     removeShared: (itemId: string) => call<void>(`/shared/${enc(itemId)}`, { method: 'DELETE' }),
 
     // Timeline: newest first, a page at a time.

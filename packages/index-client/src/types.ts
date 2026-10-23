@@ -4,6 +4,7 @@
 import type {
   App,
   AppTimelineEventType,
+  ItemOwner,
   ItemSource,
   ItemView,
   Kind,
@@ -183,19 +184,39 @@ export type GrantResponse = {
 
 export type Page<T, K extends string> = { [key in K]: T[] } & { nextCursor: string | null };
 
-export type ItemListQuery = {
+// The Explorer's filters (its lens), on GET /items and GET /shared. Values of one filter combine with or;
+// filters combine with and.
+export type ItemFilters = {
+  // Words, each found in the title or the item's folder's name, taken literally.
+  q?: string;
+  // Only items made this way (`ai`: by an AI tool through MCP).
+  source?: readonly ItemSource[];
+  // Changed at or after this time (epoch ms).
+  since?: number;
+  // The asker's own items, or other people's.
+  owner?: ItemOwner;
+  // The last word of the creation intent (FILTER_VALUES_MAX at most; INTENT_WORD each).
+  intent?: readonly string[];
+  // Where it lives: `mine`, `shared` (reached through a link) or `team:<id>` of a joined team.
+  space?: readonly string[];
+};
+
+export type ItemListQuery = ItemFilters & {
   app?: App;
   view?: ItemView;
   folder?: string;
+  // With `folder`: its subfolders' items too, at any depth.
+  deep?: boolean;
   // A team id, or `personal` for only my own items. Unset: mine and every team I have joined.
   team?: string;
   tag?: string;
-  q?: string;
   limit?: number;
   cursor?: string;
   // Recent's first page only: also up to this many (MOST_USED_MAX) Most Used items, as `mostUsed`.
   used?: number;
 };
+
+export type SharedListQuery = ItemFilters & { app?: App; limit?: number; cursor?: string };
 
 export type CreateItemInput = {
   // The id the client minted (an offline item synced up, an API client's); the index makes one without it.

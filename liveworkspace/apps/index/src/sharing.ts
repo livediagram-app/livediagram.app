@@ -4,6 +4,7 @@
 
 import {
   DEFAULT_LINK_LEVEL,
+  isApp,
   isLevel,
   SHARE_LINK_EXPIRIES,
   SHARE_LINK_EXPIRY_MS,
@@ -28,7 +29,8 @@ import {
 import type { PersonContext, RouteContext } from './context';
 import type { Env } from './env';
 import { badRequest, conflict, json, noContent, notFound, readObject } from './http';
-import { sharedWithUpsert } from './items';
+import { parseListFilters, sharedWithUpsert } from './items';
+import { filterClauses } from './lists';
 import { hashSharePassword } from './password-hash';
 import { eventStatements } from './timeline';
 import {
@@ -344,6 +346,10 @@ export async function handleShared(ctx: PersonContext): Promise<Response> {
   if (limit === null) return badRequest('invalid_query');
   if (cursor === null) return badRequest('invalid_cursor');
   const app = url.searchParams.get('app');
+  if (app !== null && !isApp(app)) return badRequest('invalid_app');
+  const filters = parseListFilters(person, url.searchParams);
+  if (filters instanceof Response) return filters;
+  const narrow = filterClauses(person, filters);
   const { results } = await db
     .prepare(
       `SELECT ${ITEM_COLUMNS}, sw.share_code, sw.last_seen, sl.level AS link_level, sl.tab_id AS link_tab
@@ -353,6 +359,7 @@ export async function handleShared(ctx: PersonContext): Promise<Response> {
        WHERE sw.person_id = ? AND ${LIVE_LINK('sl')} AND i.trashed_at IS NULL
          AND i.scope NOT IN (SELECT value FROM json_each(?))
          ${app ? 'AND i.app = ?' : ''}
+         ${narrow.where.map((clause) => `AND ${clause}`).join(' ')}
          ${cursor ? 'AND (sw.last_seen, sw.item_id) < (?, ?)' : ''}
        ORDER BY sw.last_seen DESC, sw.item_id DESC LIMIT ?`,
     )
@@ -361,6 +368,7 @@ export async function handleShared(ctx: PersonContext): Promise<Response> {
       Date.now(),
       JSON.stringify(scopesOf(person)),
       ...(app ? [app] : []),
+      ...narrow.args,
       ...(cursor ? [cursor.at, cursor.id] : []),
       limit + 1,
     )

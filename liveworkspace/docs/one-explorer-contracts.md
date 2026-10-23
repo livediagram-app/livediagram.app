@@ -103,8 +103,9 @@ type ItemSummary = {
 | Call                           | Who                 | Does                                                                         |
 | ------------------------------ | ------------------- | ---------------------------------------------------------------------------- |
 | `GET /items`                   | person              | Lists. Filters: `app`, `view` (`all`, `recent`, `favourites`,                |
-|                                |                     | `shared`, `trash`, `unsorted`), `folder`, `team`, `tag`, `q`                 |
-|                                |                     | (title and folder search). Sorted by `updatedAt`, or by                      |
+|                                |                     | `shared`, `trash`, `unsorted`, `search`: every live item the person can      |
+|                                |                     | open, links included), `folder` (`deep=1`: its subfolders too), `team`,      |
+|                                |                     | `tag`, and the lens's (below). Sorted by `updatedAt`, or by                  |
 |                                |                     | `lastOpenedAt` for `recent`. `used=N` (1 to 8, `recent` only, first          |
 |                                |                     | page) adds `mostUsed`: up to N items ranked by the days used in the last     |
 |                                |                     | 90, each with `useDays`, in the same response (Jump Back In).                |
@@ -125,6 +126,13 @@ type ItemSummary = {
 | `POST /items/:id/grant`        | person or link      | `→ {grant, level, tabId, expiresAt}`. A link visitor sends                   |
 |                                |                     | `X-Share-Code` (and `X-Share-Password` when set).                            |
 | `GET /trash` / `DELETE /trash` | person              | List, empty (`?team=`; `?app=` empties that app's items only).               |
+
+**The lens's filters**, on `GET /items` and `GET /shared` (the Explorer's filter field and chips): `q`, words
+(at most 16), each in the title or the item's folder's name, taken literally; `source` (`ai`: made by an AI tool
+through MCP); `since`, changed at or after (epoch ms); `owner`, `me` or `others`; `intent`, the creation intent's
+last word (`plan:board:kanban` is `kanban`); and `space`, `mine`, `shared` (reached through a link) or
+`team:<id>` of a joined team (403 otherwise). A filter's values are a comma list of at most 8, combined with or;
+filters combine with and. Anything else is 400 `invalid_query`.
 
 **Purging.** A permanent delete, the daily sweep of items in the Trash for 30 days, or closing an account
 (below) removes the index rows and asks the app to drop the content (`DELETE <app>/api/internal/items/:id`,
@@ -179,7 +187,7 @@ colour}`; 409 `tag_name_taken`, `tag_limit`.
 level, tabId, expiry, expiresAt, createdAt}`. Managing them needs the owner or a joined team member.
 - `GET /share/:code` — public: `{item, level, tabId}`; records the item under Shared for a person who
   opens it; 401 `password_required`, 403 `password_invalid`.
-- `GET /shared`, `DELETE /shared/:itemId`.
+- `GET /shared` (with the lens's filters), `DELETE /shared/:itemId`.
 
 Who gets what, the rule the grant applies: the owner, and every joined member of the item's team, edit
 everything; anyone else needs a live share link (its level, and its tab when it is scoped to one). Team

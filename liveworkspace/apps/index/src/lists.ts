@@ -3,22 +3,43 @@
 // folder, so a page costs what the person holds, never the table. The plans are pinned by a test
 // (lists.test.ts "query plans").
 
-import { USE_WINDOW_DAYS, type App, type Item, type ItemView } from '@liveworkspace/index-client';
-import { scopesOf, type Person } from './auth';
+import {
+  USE_WINDOW_DAYS,
+  type App,
+  type Item,
+  type ItemOwner,
+  type ItemSource,
+  type ItemView,
+} from '@liveworkspace/index-client';
+import { personalScope, scopesOf, teamScope, type Person } from './auth';
 import { containsPattern, encodeCursor, type Cursor } from './codec';
 import type { Env } from './env';
 import { decorate, ITEM_COLUMNS, LIVE_LINK, type ItemRow } from './rows';
 
-export type ListSpec = {
+// The Explorer's filters (its lens), checked by the route. Values of one combine with or.
+export type ListFilters = {
+  // Search words: each in the title or the folder's name.
+  words?: string[];
+  source?: ItemSource[];
+  since?: number;
+  owner?: ItemOwner;
+  // Last words of the creation intent.
+  intent?: string[];
+  // Where it lives: the person's own scope, reached through a link, or these joined teams.
+  space?: { mine: boolean; shared: boolean; teams: string[] };
+};
+
+export type ListSpec = ListFilters & {
   view: ItemView;
   app?: App;
   // A folder the person can reach (checked by the route).
   folder?: string;
+  // With `folder`: its subfolders' items too, at any depth.
+  deep?: boolean;
   // Only these scopes (the `team` filter), or every scope the person has.
   scopes?: string[];
   // One of the person's own tags (checked by the route).
   tag?: string;
-  q?: string;
   limit: number;
   cursor?: Cursor;
   // Recent's first page only: also this many Most Used items, from the same request (Home's Jump Back In).
@@ -69,11 +90,73 @@ export function buildMostUsedQuery(
   return { sql, args };
 }
 
+// A folder and every folder under it, at any depth (the folders_parent index, a step per level).
+const SUBTREE = `IN (WITH RECURSIVE sub(id) AS (SELECT ? UNION SELECT f.id FROM folders f JOIN sub ON f.parent_id = sub.id)
+  SELECT id FROM sub)`;
+
+/**
+ * The filters' clauses over `items i`, for every list and Shared With Me: each word in the title or the
+ * folder's name (the person's own folders, so another's names find nothing), the source, the last change,
+ * whose it is, the intent's last word, and where it lives.
+ */
+export function filterClauses(
+  person: Person,
+  filters: ListFilters,
+): { where: string[]; args: unknown[] } {
+  const where: string[] = [];
+  const args: unknown[] = [];
+  const allScopes = JSON.stringify(scopesOf(person));
+  for (const word of filters.words ?? []) {
+    const pattern = containsPattern(word);
+    where.push(
+      `(i.title LIKE ? ESCAPE '\\'
+        OR i.folder_id IN (SELECT f.id FROM folders f WHERE f.scope ${IN_JSON} AND f.name LIKE ? ESCAPE '\\'))`,
+    );
+    args.push(pattern, allScopes, pattern);
+  }
+  if (filters.source?.length) {
+    where.push(`i.source ${IN_JSON}`);
+    args.push(JSON.stringify(filters.source));
+  }
+  if (filters.since !== undefined) {
+    where.push('i.updated_at >= ?');
+    args.push(filters.since);
+  }
+  if (filters.owner) {
+    where.push(filters.owner === 'me' ? 'i.owner_id = ?' : 'i.owner_id <> ?');
+    args.push(person.id);
+  }
+  if (filters.intent?.length) {
+    // "plan:board:kanban" ends in "kanban"; a one-word intent is its own last word.
+    where.push(
+      `(${filters.intent.map(() => "(i.intent = ? OR i.intent LIKE '%:' || ?)").join(' OR ')})`,
+    );
+    for (const word of filters.intent) args.push(word, word);
+  }
+  if (filters.space) {
+    const { mine, shared, teams } = filters.space;
+    const scopes = [...(mine ? [personalScope(person.id)] : []), ...teams.map(teamScope)];
+    const parts: string[] = [];
+    if (scopes.length > 0) {
+      parts.push(`i.scope ${IN_JSON}`);
+      args.push(JSON.stringify(scopes));
+    }
+    if (shared) {
+      parts.push(`i.scope NOT ${IN_JSON}`);
+      args.push(allScopes);
+    }
+    where.push(parts.length > 0 ? `(${parts.join(' OR ')})` : '0');
+  }
+  return { where, args };
+}
+
 export function buildListQuery(person: Person, spec: ListSpec, now = Date.now()): BuiltQuery {
   const allScopes = JSON.stringify(scopesOf(person));
   const scopes = spec.scopes ? JSON.stringify(spec.scopes) : allScopes;
   const where: string[] = [];
   const args: unknown[] = [];
+  // Bound before the WHERE's: the search view's gathering.
+  const fromArgs: unknown[] = [];
   let from = 'items i';
   let sortCol = 'i.updated_at';
   let idCol = 'i.id';
@@ -97,7 +180,7 @@ export function buildListQuery(person: Person, spec: ListSpec, now = Date.now())
     case 'unsorted':
     case 'trash':
       if (spec.folder && spec.view === 'all') {
-        where.push('i.folder_id = ?');
+        where.push(spec.deep ? `i.folder_id ${SUBTREE}` : 'i.folder_id = ?');
         args.push(spec.folder);
       } else {
         where.push(`i.scope ${IN_JSON}`);
@@ -105,6 +188,23 @@ export function buildListQuery(person: Person, spec: ListSpec, now = Date.now())
       }
       where.push(spec.view === 'trash' ? 'i.trashed_at IS NOT NULL' : 'i.trashed_at IS NULL');
       if (spec.view === 'unsorted') where.push('i.folder_id IS NULL');
+      break;
+    case 'search':
+      // Every live item the person can open: their scopes' (each scope's index), and those reached through a
+      // live link (theirs), gathered first so neither side walks the other's rows; sorted after, so a page
+      // costs what the person can reach.
+      from = `(SELECT li.id FROM items li WHERE li.scope ${IN_JSON} AND li.trashed_at IS NULL
+          UNION SELECT sw.item_id FROM shared_with sw JOIN share_links sl
+            ON sl.code = sw.share_code AND sl.item_id = sw.item_id
+            WHERE sw.person_id = ? AND ${LIVE_LINK('sl')}) reach
+        JOIN items i ON i.id = reach.id`;
+      where.push('i.trashed_at IS NULL');
+      fromArgs.push(scopes, person.id, now);
+      // One team, or only the person's own: what links reach lives elsewhere.
+      if (spec.scopes) {
+        where.push(`i.scope ${IN_JSON}`);
+        args.push(scopes);
+      }
       break;
     case 'recent':
       from = 'opens o JOIN items i ON i.id = o.item_id';
@@ -136,7 +236,7 @@ export function buildListQuery(person: Person, spec: ListSpec, now = Date.now())
   }
 
   if (spec.folder && spec.view !== 'all') {
-    where.push('i.folder_id = ?');
+    where.push(spec.deep ? `i.folder_id ${SUBTREE}` : 'i.folder_id = ?');
     args.push(spec.folder);
   }
   if (spec.app) {
@@ -147,16 +247,9 @@ export function buildListQuery(person: Person, spec: ListSpec, now = Date.now())
     where.push('i.id IN (SELECT item_id FROM item_tags WHERE tag_id = ?)');
     args.push(spec.tag);
   }
-  if (spec.q) {
-    // Title and folder-name search, the person's text taken literally. Tags are no part of it: the Explorer
-    // shows none.
-    const pattern = containsPattern(spec.q);
-    where.push(
-      `(i.title LIKE ? ESCAPE '\\'
-        OR i.folder_id IN (SELECT f.id FROM folders f WHERE f.scope ${IN_JSON} AND f.name LIKE ? ESCAPE '\\'))`,
-    );
-    args.push(pattern, allScopes, pattern);
-  }
+  const filters = filterClauses(person, spec);
+  where.push(...filters.where);
+  args.push(...filters.args);
   if (spec.cursor) {
     where.push(`(${sortCol}, ${idCol}) < (?, ?)`);
     args.push(spec.cursor.at, spec.cursor.id);
@@ -166,7 +259,7 @@ export function buildListQuery(person: Person, spec: ListSpec, now = Date.now())
     WHERE ${where.join(' AND ')}
     ORDER BY ${sortCol} DESC, ${idCol} DESC LIMIT ?`;
   args.push(spec.limit + 1);
-  return { sql, args };
+  return { sql, args: [...fromArgs, ...args] };
 }
 
 export async function listItems(
