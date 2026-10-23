@@ -117,12 +117,45 @@ their own stylesheet, `app/telemetry/telemetry.css`, so the other pages don't ca
 ### Your account (`/account/…`)
 
 Where a signed-in person runs what belongs to their account rather than to an app
-([accounts.md](accounts.md)): `/account/teams` (invitations waiting for them, making a team, and each
-team's name, members, roles and invitations) and `/account/tokens` (making an API token, seeing it
+([accounts.md](accounts.md)): `/account/teams` and `/account/tokens` (making an API token, seeing it
 once, and revoking it, the AI tools connected in an app among them). `/account` opens the teams.
 Signed out, the pages ask them to sign in and come back. They read and write
 `/api/account/*` on this origin with the session cookie (`lib/account-api.ts`), and are kept out of
 search.
+
+**Teams** (`components/teams/`, the logic in `lib/teams.ts`):
+
+- **The list**, `/account/teams`: invitations waiting for them first (team, organisation, member
+  count, who invited them; **Join team** opens the team, **Decline**), then "Your teams", one
+  rounded-3xl card per team: its tile (initials in a tone of its own), name, your role in a pill,
+  organisation, member count, how many invitations are waiting, and the first four members'
+  initials with "+N" for the rest, each disc ringed in the card's colour so the overlapping
+  initials read. The whole card opens the team. One request fills the page: the list answer
+  carries each team's counts and first four members (one query in the accounts API, however many
+  teams). With no teams, an illustrated empty state offers **Create your first team**.
+- **New team** opens a popover beside the button, not a page: the name (focused as it opens) and an
+  optional organisation. **Create team** makes it and opens its page. Escape, Cancel or a click
+  outside closes it and gives focus back to the button; Tab stays inside while it's open.
+- **A team's page**, `/account/teams/<id>`: the apps' breadcrumb bar from their export screens
+  ("All teams", the team named in a chip; copied from livediagram's `BackBar`, a link here), then
+  the team's tile, name, organisation, members and your role. **Members** (role select and Remove
+  for admins; the only admin's own role is pinned) and **Pending invitations** (waiting ones with
+  Withdraw, then any declined or expired, with Clear). In the side column, for admins: **Invite
+  people** (address and Member / Admin), **Invite by link** (turn on, copy, when it ends, a new link,
+  turn off), **Name and organisation**; for everyone, **Leave** (hidden for the only admin while
+  others remain, with why) and, for admins, **Delete team**, each confirmed once. Leaving or
+  deleting goes back to the list. People are shown by name, or an invited address read as one
+  (anna.smith@… is "Anna Smith"), with the address beneath.
+- The site is static, so every team page is one exported file (`app/account/teams/[id]`, at the
+  placeholder id `team`); `public/_redirects` serves it for any `/account/teams/:id` and the page
+  reads the id from the address. Links to it are plain anchors, so no client router asks for
+  per-team files.
+- **`/join?token=…`**: a team's join link. It shows the team; signed in, **Join** adds them and opens
+  it; signed out, **Sign in to join** or **Create an account** come back to the same link; someone
+  already in it goes straight to the team; an off or expired link says so.
+- **`/join/decline?token=…`**: an invitation email's Decline link, signed in or not. Opening it only
+  reads; the **Decline invitation** button declines. It also says when the invitation was already
+  declined, has expired, was already accepted, or isn't valid.
 
 ### Accounts (`/sign-in`, `/sign-up`, `/consent`)
 
@@ -164,5 +197,8 @@ That runs the site's dev server on 3000 and both APIs behind it (accounts on 878
 8790; first-time setup for each is in [the README](../README.md#local-development) and
 [telemetry.md](telemetry.md#running-it-locally)). The dev server forwards `/api/auth/*`,
 `/.well-known/*` and `/api/telemetry/*` to them (`next.config.ts`), so the whole site works from
-one origin, as it does in production. Run `corepack pnpm dev:site` for- **The apps' own policies** still live in each app's help centre; they should point here instead.wn site; the
-footer links to none.
+one origin, as it does in production. Run `corepack pnpm dev:site` for the pages alone.
+
+## Not done yet
+
+- **The apps' own policies** still live in each app's help centre; they should point here instead.

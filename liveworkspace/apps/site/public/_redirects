@@ -1,0 +1,3 @@
+# Every team's page is one exported file (app/account/teams/[id]/page.tsx): serve it for any team id,
+# keeping the address, so the page can read the id from it (liveworkspace/docs/site.md "Your account").
+/account/teams/:id /account/teams/team 200

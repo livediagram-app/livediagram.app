@@ -15,14 +15,17 @@ const noChange = () => () => {};
 
 // The frame of the account pages (liveworkspace/docs/site.md "Your account"): the title, a tab per
 // page, and the page itself once the person is known to be signed in. Signed out, it asks them to
-// sign in and come back here.
+// sign in and come back here. A page inside a tab (one team) leaves the title and tabs out
+// (`hero={false}`) and brings its own heading and the way back.
 export function AccountShell({
   path,
   intro,
+  hero = true,
   children,
 }: {
   path: string;
-  intro: ReactNode;
+  intro?: ReactNode;
+  hero?: boolean;
   children: ReactNode;
 }) {
   const session = useSession();
@@ -36,32 +39,36 @@ export function AccountShell({
     <>
       <Header />
       <main className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6 sm:py-16">
-        <p className="text-sm font-semibold tracking-[.18em] text-slate-500 uppercase dark:text-slate-400">
-          Your account
-        </p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
-          {session.state === 'in' ? `Hello, ${session.name}` : 'Your account'}
-        </h1>
-        <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-600 dark:text-slate-300">
-          {intro}
-        </p>
-        <nav
-          aria-label="Account"
-          className="mt-8 inline-flex rounded-full border border-slate-200 bg-white p-1 text-sm font-medium shadow-sm dark:border-slate-700 dark:bg-slate-900"
-        >
-          {TABS.map((tab) => (
-            <a
-              key={tab.href}
-              href={tab.href}
-              aria-current={tab.href === path ? 'page' : undefined}
-              className="rounded-full px-4 py-1.5 text-slate-600 transition-colors duration-micro hover:text-slate-900 aria-[current=page]:bg-slate-900 aria-[current=page]:text-white dark:text-slate-300 dark:hover:text-white dark:aria-[current=page]:bg-white dark:aria-[current=page]:text-slate-900"
+        {hero && (
+          <>
+            <p className="text-sm font-semibold tracking-[.18em] text-slate-500 uppercase dark:text-slate-400">
+              Your account
+            </p>
+            <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
+              {session.state === 'in' ? `Hello, ${session.name}` : 'Your account'}
+            </h1>
+            <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-600 dark:text-slate-300">
+              {intro}
+            </p>
+            <nav
+              aria-label="Account"
+              className="mt-8 inline-flex rounded-full border border-slate-200 bg-white p-1 text-sm font-medium shadow-sm dark:border-slate-700 dark:bg-slate-900"
             >
-              {tab.label}
-            </a>
-          ))}
-        </nav>
+              {TABS.map((tab) => (
+                <a
+                  key={tab.href}
+                  href={tab.href}
+                  aria-current={tab.href === path ? 'page' : undefined}
+                  className="rounded-full px-4 py-1.5 text-slate-600 transition-colors duration-micro hover:text-slate-900 aria-[current=page]:bg-slate-900 aria-[current=page]:text-white dark:text-slate-300 dark:hover:text-white dark:aria-[current=page]:bg-white dark:aria-[current=page]:text-slate-900"
+                >
+                  {tab.label}
+                </a>
+              ))}
+            </nav>
+          </>
+        )}
 
-        <div className="mt-10">
+        <div className={hero ? 'mt-10' : ''}>
           {session.state === 'checking' && (
             <div aria-busy className="space-y-3">
               <div className="h-24 animate-pulse rounded-2xl bg-slate-200/70 motion-reduce:animate-none dark:bg-slate-800/70" />

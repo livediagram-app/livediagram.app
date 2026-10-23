@@ -5,17 +5,32 @@ export const ACCOUNT_API = '/api/account';
 
 export type TeamRole = 'admin' | 'member';
 
+// One of the first few members a team's card shows.
+export interface MemberPreview {
+  id: string;
+  name: string | null;
+  email: string;
+  role: TeamRole;
+}
+
 export interface MyTeam {
   id: string;
   name: string;
+  organisation: string | null;
   role: TeamRole;
   memberCount: number;
+  // Invitations still waiting.
+  invitedCount: number;
+  // Up to four joined members, admins first.
+  members: MemberPreview[];
 }
 
 export interface Invitation {
   id: string;
   teamId: string;
   teamName: string;
+  organisation: string | null;
+  memberCount: number;
   role: TeamRole;
   invitedByName: string | null;
   createdAt: number;
@@ -27,13 +42,40 @@ export interface Member {
   email: string;
   name: string | null;
   role: TeamRole;
-  status: 'invited' | 'joined';
+  // 'declined': turned down, or left unanswered until it expired (`expired`); kept on the list for
+  // the admins until one clears it.
+  status: 'invited' | 'joined' | 'declined';
+  expired: boolean;
   createdAt: number;
 }
 
+// A team's join link, while an admin has it on.
+export interface InviteLink {
+  url: string;
+  expiresAt: number;
+}
+
 export interface TeamDetail {
-  team: { id: string; name: string; myRole: TeamRole; myMemberId: string };
+  team: {
+    id: string;
+    name: string;
+    organisation: string | null;
+    myRole: TeamRole;
+    myMemberId: string;
+  };
   members: Member[];
+  // The admins' only; null for members, and while the link is off.
+  inviteLink: InviteLink | null;
+}
+
+// What a join link opens onto (GET /join/:token), signed in or not.
+export interface JoinPreview {
+  teamId: string;
+  teamName: string;
+  organisation: string | null;
+  memberCount: number;
+  alreadyMember: boolean;
+  signedIn: boolean;
 }
 
 export interface ApiToken {
@@ -82,6 +124,9 @@ const MESSAGES: Record<string, string> = {
   admin_only: 'Only the team’s admins can do that.',
   email_unverified: 'Sign in with the invited address to answer this.',
   not_found: 'That’s no longer there. It may have changed elsewhere.',
+  invite_not_found: 'This link isn’t valid any more. Ask the team for a new one.',
+  already_joined: 'You’re already in this team.',
+  rate_limited: 'Too many tries just now. Wait a minute and try again.',
   signed_out: 'You’ve been signed out. Sign in again to carry on.',
   offline: 'Couldn’t reach liveworkspace. Check your connection and try again.',
 };
