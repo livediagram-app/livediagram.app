@@ -33,8 +33,10 @@ the rest.
 - **Signed out**: **Sign in**, which opens `/sign-in` with the page to come back to
   (`?return=/telemetry`, say). Once signed in, the page goes back there. Only a path on this site
   is followed, so the link can't send anyone elsewhere.
-- **Signed in**: the account's first name (or full name, or email), linking to
-  [Your account](#your-account-account), and **Sign out**, which ends
+- **Signed in**: an avatar of the account's initials (accounts keep no pictures) and its first
+  name (or full name, or email; the name hides on a phone), opening a menu
+  (`components/AccountControl.tsx`): the name again, **Teams** and **API tokens** (the
+  [Your account](#your-account-account) pages), and **Sign out**, which ends
   the liveworkspace session here. It doesn't sign anyone out of an app: each app holds its own
   tokens.
 
