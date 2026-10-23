@@ -104,14 +104,14 @@ storing tokens itself, the account-level design below supersedes it.
 
 - **Verifying.** An `lwt_` bearer is checked with liveworkspace (`POST /api/account/internal/tokens/verify`,
   client-credentials) by `createTokenChecker` in `apps/api/src/db/api-tokens.ts`. A verified token is cached for
-  `MIRROR_REFRESH_MS` (60 s) per isolate, so a burst of MCP tool calls costs one round trip a minute. A token
+  a minute per isolate, so a burst of MCP tool calls costs one round trip a minute. A token
   liveworkspace refuses gets `401 invalid_token`; if liveworkspace can't be reached, `503 accounts_unavailable`
   with `Retry-After: 5`.
-- **The mirror.** `api_tokens` keeps a row per account token livedesign has seen (id, owner, name, read-only,
-  expiry, last used; never the secret), upserted on verify at most once a minute, because workbench pairings and
-  sessions hang off it by foreign key. Every five minutes the cron asks liveworkspace which of the most recently
-  used tokens (up to 1000, in batches of 100: `POST /api/account/internal/tokens/live`) still work, marks the rest
-  revoked and ends what was paired through them.
+- **No copy.** livedesign keeps no table of tokens. What hangs off one (workbench pairings and sessions) is in
+  the person's workbench store, which notes the token's name, read-only flag and expiry when it pairs or mints.
+  While a session lives, the store asks liveworkspace every five minutes whether its tokens still work
+  (`POST /api/account/internal/tokens/live`, batches of 100), and daily for every paired token, and ends what was
+  paired through a revoked one. `GET /api/tokens/current` answers from the verify response.
 - **Minting for an AI tool.** The OAuth exchange (`POST /api/oauth/exchange`) asks liveworkspace to mint the
   token with the person's access token (`POST /api/account/internal/tokens`). A token the MCP then refuses is
   revoked by presenting it to `DELETE /api/tokens/current`.

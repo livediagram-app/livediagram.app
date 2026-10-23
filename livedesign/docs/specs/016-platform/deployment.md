@@ -2,7 +2,7 @@
 
 All deployments run **via GitHub Actions** to **Cloudflare Workers**. The **production** deploy is **manually triggered** — a green CI run no longer ships on its own.
 
-There is a second environment, **staging**, which does deploy on its own: every green CI run on `main` lands on `staging.livedesign.app`. It runs the same jobs described below through the same reusable workflow, against its own workers and its own D1 / R2 / KV. This spec covers production; [Staging environment](staging-environment.md) covers what staging changes and why.
+There is a second environment, **staging**, which does deploy on its own: every green CI run on `main` lands on `staging.livedesign.app`. It runs the same jobs described below through the same reusable workflow, against its own workers and its own Durable Objects, R2 buckets and KV. This spec covers production; [Staging environment](staging-environment.md) covers what staging changes and why.
 
 ## Apps and their Cloudflare Workers
 
@@ -11,13 +11,13 @@ There is a second environment, **staging**, which does deploy on its own: every 
 | `apps/marketing` | `livedesign-marketing` | Static assets only (Next.js `output: 'export'`).                              |
 | `apps/live`      | `livedesign-live`      | Static assets + a tiny path-rewrite worker.                                   |
 | `apps/help`      | `livedesign-help`      | Static assets only (help centre, [Help app](../018-help/help-app.md)).        |
-| `apps/api`       | `livedesign-api`       | Worker (D1 binding + Durable Object).                                         |
+| `apps/api`       | `livedesign-api`       | Worker (Durable Objects + R2; no database of its own).                        |
 | `apps/mcp`       | `livedesign-mcp`       | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)). |
 | `apps/router`    | `livedesign-router`    | Worker (service bindings to the other five).                                  |
 
 The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`). The live worker serves files from `apps/live/out/` plus a small worker (`apps/live/src/worker.ts`) that rewrites every `/design/<id>` request to the single statically-built `/design/placeholder/` page — see [New design route](../007-editor/new-design-route.md). The help worker is static-assets-only too, served under `/help` ([55-help-app](../018-help/help-app.md)). The api worker holds the REST + WebSocket layer (see [11-api.md](../015-api/api.md)). The mcp worker exposes the AI tools over its own host `mcp.livedesign.app` (it binds to the api worker, not the router; see [62-mcp-server.md](../015-api/mcp-server.md)). The router holds **no application logic** — only `MARKETING`, `LIVE`, `HELP` and `API` service bindings that forward requests to the right downstream worker.
 
-`wrangler.toml` for each app sits at the app root and is the source of truth for the worker's name, compatibility date, `[assets]`, `[[services]]`, `[[d1_databases]]`, and Durable Object bindings. Account-level identifiers (account id, custom domain, secrets) **never** go in `wrangler.toml` — they live in environment variables or the Cloudflare dashboard. See [06-secrets-policy.md](../002-project-scope/secrets-policy.md).
+`wrangler.toml` for each app sits at the app root and is the source of truth for the worker's name, compatibility date, `[assets]`, `[[services]]`, R2 buckets, and Durable Object bindings and their `[[migrations]]` tags. Account-level identifiers (account id, custom domain, secrets) **never** go in `wrangler.toml` — they live in environment variables or the Cloudflare dashboard. See [06-secrets-policy.md](../002-project-scope/secrets-policy.md).
 
 ## Toolchain
 
@@ -74,8 +74,8 @@ Jobs:
 3. **deploy-live** — downloads `live-out`, runs `pnpm exec wrangler deploy` from `apps/live/`.
 4. **deploy-api** — runs:
    - `pnpm exec wrangler whoami` (diagnostic — prints which Cloudflare account the token authenticates against so a `7403 account not authorized` error is debuggable from the log).
-   - `pnpm exec wrangler d1 migrations apply DB --remote` applies any pending migrations BEFORE the worker deploy (after the secret syncs, straight before it) so the new code never briefly runs against an older schema; see Renaming migrations below for the non-additive case. If this step fails the job halts and surfaces a precise error pointing at the missing token scopes. (Wrangler 4 dropped the `--yes` flag; the command is non-interactive by default in CI.)
-   - `pnpm exec wrangler deploy` from `apps/api/`, plus the hosted profile's `--var` flags on livedesign.app's own repository (see "Hosted profile" below), then `node scripts/hosted-vars.mjs verify` against the live version.
+   - The optional secret syncs (`wrangler secret put`, each skipped when its GitHub secret is unset; see below).
+   - `pnpm exec wrangler deploy` from `apps/api/`, which also applies any new Durable Object `[[migrations]]` tag in `wrangler.toml` (see "Durable Object migrations" below), plus the hosted profile's `--var` flags on livedesign.app's own repository (see "Hosted profile" below), then `node scripts/hosted-vars.mjs verify` against the live version.
 5. **deploy-help** — downloads `help-out`, runs `pnpm exec wrangler deploy` from `apps/help/` (in parallel with the others).
 6. **deploy-mcp** — depends on **deploy-api** (the MCP worker has a service binding to the api worker, [MCP server](../015-api/mcp-server.md), so api must exist first). Runs `pnpm exec wrangler deploy` from `apps/mcp/` — no static artifact to download, the worker bundles from source. NOT a `deploy-router` dependency: `mcp.livedesign.app` is its own host, not a path under the main hostname.
 7. **deploy-router** — depends on **deploy-marketing**, **deploy-live**, **deploy-api** and **deploy-help**. Runs `pnpm exec wrangler deploy` from `apps/router/`. The router's service bindings target the four workers above, so it must deploy after they exist. This is the one job carrying a GitHub `environment`, so a run files a single deployment record with the public URL rather than six.
@@ -84,24 +84,20 @@ Jobs:
 
 All six deploy jobs use raw `pnpm exec wrangler` rather than `cloudflare/wrangler-action` — wrangler 4 ships sensible defaults and the explicit invocation makes the workflow log read 1:1 against a local run.
 
-### Renaming migrations
+### Durable Object migrations
 
-Most migrations only add, so the new worker running briefly on the newer schema is harmless. A
-migration that **renames** (`0055_designs.sql`, [Design](../006-design/design.md#renaming-from-diagram))
-is different: from the moment it applies until the new api worker is live, the old worker's queries
-name tables that no longer exist, and the other apps' workers deploy separately, so old and new
-versions briefly serve side by side. The deploy keeps that window short and recoverable:
+The api worker keeps no database of its own. Each design's content lives in its own `DesignRoom` Durable Object (its own SQLite, beside its realtime room), each person's workbench in a `WorkbenchStore`, and snapshots and photo tiles in R2; where every design is filed, and who may open it, is liveworkspace's index. So there is no schema migration to run before a deploy.
 
-- **deploy-api** syncs its secrets first and applies the migration straight before `wrangler deploy`,
-  so the window is the deploy itself.
+The Durable Object classes themselves are declared through `[[migrations]]` tags in `apps/api/wrangler.toml` (and again under `[env.staging]`, since migrations are not inherited), and `wrangler deploy` applies a new tag itself. A new class is a new tag with `new_sqlite_classes`. Renaming or deleting a class is a new tag too (`renamed_classes`, `deleted_classes`), never an edit to an existing one: deleting a class deletes every object's storage, so it ships to **staging first**. Each object's own SQLite tables are made by the class's code on first use (`apps/api/src/design-room/design-schema.ts` for a design).
+
+### Old and new workers side by side
+
+The apps' workers deploy separately, so for a minute or so old and new versions serve side by side. The deploy keeps that window short and recoverable:
+
 - **deploy-live** waits for **deploy-api**, so a new editor never calls an api that lacks its routes;
-  **deploy-router** still waits for the six it binds.
+  **deploy-router** still waits for the four it binds.
 - A save that fails in the window is retried on its own
   ([Per-tab storage](../006-design/per-tab-storage.md#retrying-a-failed-save)).
-- Deploy a renaming migration to **staging first**, and to production at a quiet hour: for a minute or
-  so, api calls from open editors can fail and are retried.
-
-There is no down migration; a problem after a renaming migration is fixed forward.
 
 ## Hosted profile
 
@@ -116,10 +112,10 @@ Some configuration is what **livedesign.app** runs with, not what the software d
 
 Set in the repo under **Settings → Secrets and variables → Actions**:
 
-| Secret          | What it is                                                                      |
-| --------------- | ------------------------------------------------------------------------------- |
-| `CF_API_TOKEN`  | A Cloudflare API token with permissions to deploy Workers and apply migrations. |
-| `CF_ACCOUNT_ID` | The Cloudflare account ID the workers belong to.                                |
+| Secret          | What it is                                                 |
+| --------------- | ---------------------------------------------------------- |
+| `CF_API_TOKEN`  | A Cloudflare API token with permissions to deploy Workers. |
+| `CF_ACCOUNT_ID` | The Cloudflare account ID the workers belong to.           |
 
 **Optional**, each synced into `wrangler secret put` by the deploy workflow and skipped when unset, so a fork that sets none still deploys:
 
@@ -145,12 +141,11 @@ Cloudflare dashboard → **My Profile → API Tokens → Create Token → Custom
 Permissions (all on the account that owns the workers):
 
 - **Workers Scripts → Edit** — deploy & update workers.
-- **D1 → Edit** — apply migrations during deploy.
 - **Workers Routes → Edit** — wire / update custom domain routes.
 - **Account Settings → Read** — required by wrangler.
 - **User → User Details → Read** — `wrangler whoami` introspection.
 
-Scope to **the specific account** that owns the workers. Do **not** issue an "all-account" token. If the deploy-api step emits `7403 The given account is not valid or is not authorized to access this service`, the token is missing D1 Edit (or was minted for a different account than `CF_ACCOUNT_ID`).
+Scope to **the specific account** that owns the workers. Do **not** issue an "all-account" token. If the deploy-api step emits `7403 The given account is not valid or is not authorized to access this service`, the token is missing a permission above (or was minted for a different account than `CF_ACCOUNT_ID`).
 
 ### Getting the account ID
 

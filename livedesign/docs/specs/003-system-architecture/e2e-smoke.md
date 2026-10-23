@@ -5,7 +5,7 @@ the production build and the real api worker. It is the layer Vitest cannot
 reach ([Testing](testing.md)): unit tests exercise pure helpers, and jsdom
 tests render single hooks and components, but none of them runs the whole
 editor with real layout, real pointer and keyboard input, the static export
-and a round trip through the api and D1. Every regression chased by hand in
+and a round trip through the api and its Durable Objects. Every regression chased by hand in
 that layer (the "maximum update depth" pan-loop report, panel-gating bugs,
 dialog behaviour, a board losing its kind on reload) is the reason a focused
 test lives here.
@@ -116,15 +116,16 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
 ## The stack under test
 
 The suite runs against the **real production build**, the live app's
-`output: 'export'` static bundle plus the real api worker on local D1,
+`output: 'export'` static bundle plus the real api worker with its Durable Objects in local storage,
 so it exercises exactly what ships, not a dev-only code path.
 The stack serves whatever `apps/live/out` holds and never rebuilds it, so locally run
 `pnpm --filter @livedesign/live build` first; an old `out/` fails audits for code that has since changed.
 
 `scripts/e2e-stack.mjs` boots the stack Playwright's `webServer` waits on:
 
-1. **api**: `wrangler dev --local` (`apps/api`) on a fixed port, with
-   `db:migrate:local` applied to a fresh local D1 so persistence works.
+1. **api**: `wrangler dev --local` (`apps/api`) on a fixed port. Each design's
+   and each person's Durable Object keeps its own SQLite in wrangler's local
+   storage, so persistence works with no setup step.
    `TELEMETRY_ENABLED` unset (the suite asserts on the app, not the
    events pipe).
 2. **live**: the static `apps/live/out` served by a minimal Node
@@ -182,7 +183,7 @@ starts the api worker with `ACCOUNTS_URL` and `API_RESOURCE` pointing at it, and
 token with that issuer and audience for any test account on `/e2e/token?sub=user_…`, which
 `installSession` hands the bridge. So a stub account is a real verified account to the api and the
 realtime room, and two or three stub browsers can collaborate in one design. A test that changes an
-account's synced settings takes a fresh id (`freshUserId`), since the stack's D1 outlives a test. `e2e.yml` builds and runs them in their own job, beside the smoke shards.
+account's synced settings takes a fresh id (`freshUserId`), since the stack outlives a test. `e2e.yml` builds and runs them in their own job, beside the smoke shards.
 
 The sign-in round trip itself (`/api/auth/*` against the accounts Worker) is covered by the api's unit
 tests (`apps/api/src/routes/auth.test.ts`), not here.

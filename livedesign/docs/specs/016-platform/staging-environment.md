@@ -5,21 +5,21 @@ A second, complete copy of the platform at **https://staging.livedesign.app**, d
 as it is: manual, `workflow_dispatch`-only ([Deployment](deployment.md)).
 
 The point is to have somewhere a change is _running_ before anyone decides to ship it —
-in particular somewhere a **D1 migration runs against a real remote database** before it
-runs against the one holding people's designs.
+in particular somewhere a new Durable Object `[[migrations]]` tag is applied to real
+remote Durable Objects before it reaches the ones holding people's designs.
 
 ## The two environments
 
-|              | Production                           | Staging                                    |
-| ------------ | ------------------------------------ | ------------------------------------------ |
-| Hostname     | `livedesign.app`                     | `staging.livedesign.app`                   |
-| MCP host     | `mcp.livedesign.app`                 | `mcp-staging.livedesign.app`               |
-| Trigger      | Manual (`workflow_dispatch`)         | Automatic, on every green CI run on `main` |
-| Workflow     | `deploy.yml` (**Deploy Production**) | `deploy-staging.yml` (**Deploy Staging**)  |
-| Worker names | `livedesign-<app>`                   | `livedesign-<app>-staging`                 |
-| D1           | `livedesign`                         | `livedesign-staging`                       |
-| R2           | `livedesign-images`                  | `livedesign-images-staging`                |
-| Indexable    | Yes                                  | **No** — `X-Robots-Tag: noindex, nofollow` |
+|               | Production                                       | Staging                                                          |
+| ------------- | ------------------------------------------------ | ---------------------------------------------------------------- |
+| Hostname      | `livedesign.app`                                 | `staging.livedesign.app`                                         |
+| MCP host      | `mcp.livedesign.app`                             | `mcp-staging.livedesign.app`                                     |
+| Trigger       | Manual (`workflow_dispatch`)                     | Automatic, on every green CI run on `main`                       |
+| Workflow      | `deploy.yml` (**Deploy Production**)             | `deploy-staging.yml` (**Deploy Staging**)                        |
+| Worker names  | `livedesign-<app>`                               | `livedesign-<app>-staging`                                       |
+| R2            | `livedesign-snapshots`, `livedesign-photo-blobs` | `livedesign-snapshots-staging`, `livedesign-photo-blobs-staging` |
+| liveworkspace | `liveworkspace.app`                              | `staging.liveworkspace.app`                                      |
+| Indexable     | Yes                                              | **No** — `X-Robots-Tag: noindex, nofollow`                       |
 
 ### "live" is an app, not an environment
 
@@ -48,7 +48,7 @@ resolved, and the router's six service bindings depend on those strings being ex
 right. A name you can read beats a name you have to infer.
 
 The catch that shapes every block below: **wrangler does not inherit bindings into a
-named environment.** `vars`, `d1_databases`, `r2_buckets`, `kv_namespaces`,
+named environment.** `vars`, `r2_buckets`, `kv_namespaces`,
 `durable_objects`, `migrations`, `services` and `unsafe` are all _non-inheritable_ —
 absent from `[env.staging]` means **absent from the deployed staging worker**, silently.
 So every staging block restates its app's bindings in full, even where the value is
@@ -66,15 +66,17 @@ drifting apart unnoticed.
 The router binds six workers and mcp binds one. In `[env.staging]` every `service =`
 value gains the `-staging` suffix, so the staging router forwards to the staging api and
 never to production's. A missed suffix here is the single worst failure mode available —
-staging frontend, production database — so `apps/router/wrangler.toml` keeps its staging
+staging frontend, production designs — so `apps/router/wrangler.toml` keeps its staging
 bindings adjacent to the production ones for eyeball comparison, and the dry-run in CI
 prints the resolved binding table.
 
 ## Data isolation
 
-Staging gets its own **D1 database**, **R2 bucket** and **KV namespace**. Durable Objects
-come free: a different script is a different DO namespace, so the staging
-`DESIGN_ROOM` is already separate.
+Staging gets its own **R2 buckets** and **KV namespace**, and points at staging
+liveworkspace (`INDEX_ORIGIN`, `MEDIA_URL`, `TELEMETRY_URL`), so its designs are filed in
+staging's index, not production's. Durable Objects come free: a different script is a
+different DO namespace, so the staging `DESIGN_ROOM` and `WORKBENCH` are already
+separate. livedesign keeps no database of its own, in either environment.
 
 Rate-limiter namespace ids are deliberately **left identical** to production's. They are
 scoped per script by Cloudflare, so the staging worker's `1001` is not production's
@@ -82,17 +84,18 @@ scoped per script by Cloudflare, so the staging worker's `1001` is not productio
 something.
 
 Consequence worth stating plainly: **staging has no production data.** It starts empty
-and stays a scratch environment. It is for exercising code paths and migrations, not for
+and stays a scratch environment. It is for exercising code paths and Durable Object migrations, not for
 reproducing a specific user's design.
 
-## Migrations run on staging first
+## Durable Object migrations run on staging first
 
-`deploy-staging.yml` applies `wrangler d1 migrations apply DB --remote --env staging`
-before the staging api worker deploys, exactly as production does. That makes every
-merge to `main` a rehearsal of the production migration step against a real remote D1,
-one manual deploy earlier than the rehearsal used to happen, which was never.
+livedesign has no database migrations to apply. The api's Durable Object classes are
+declared through `[[migrations]]` tags in `apps/api/wrangler.toml`, restated under
+`[env.staging]`, and `wrangler deploy --env staging` applies a new tag itself
+([Deployment](deployment.md) "Durable Object migrations"). Every merge to `main` therefore
+applies a new tag to staging's Durable Objects one manual deploy before production's.
 
-A migration that fails halts the staging deploy and turns the `main` build red — which
+A deploy that fails halts the staging run and turns the `main` build red — which
 is the whole point, and the reason the staging deploy is chained to CI rather than fired
 in parallel with it.
 
@@ -148,7 +151,7 @@ first deploy it returns `{"emailEnabled":false}` on staging against
 | Integration        | Staging setup                                                                                                                                                                                                                                                                                                                                                                                               |
 | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Sign-in** — ON   | Staging is its **own OAuth client** of the liveworkspace accounts Worker (`ACCOUNTS_CLIENT_ID_STAGING` / `ACCOUNTS_CLIENT_SECRET_STAGING`) with its **own resource** (`API_RESOURCE_STAGING`), so its access tokens carry an audience production's api refuses: a staging session cannot reach production data. The client's registered redirect URI is `https://staging.livedesign.app/api/auth/callback`. |
-| **Telemetry** — ON | Events land in staging's own D1, so the **public** `/telemetry` dashboard on production is unaffected; staging's dashboard shows staging's own traffic, which is how you verify a new event actually lands.                                                                                                                                                                                                 |
+| **Telemetry** — ON | Events go to staging liveworkspace's telemetry service (`https://staging.liveworkspace.app/api/telemetry`), so the **public** `/telemetry` dashboard on production is unaffected; staging's dashboard shows staging's own traffic, which is how you verify a new event actually lands.                                                                                                                      |
 | **Resend** — OFF   | Wired but keyless. `APP_BASE_URL` and `RESEND_FROM` are set, so setting `RESEND_API_KEY --env staging` turns it on and every link points back at staging. Left unset on purpose: staging runs the same daily email cron as production, from the same verified domain, so switching it on mails **real people** (see the warning below). Turn it on for a specific test, then take the key off again.        |
 
 > **Email warning.** Staging sends the same emails as production
@@ -209,15 +212,16 @@ is worse than queueing.
 Deploys fail loudly until these exist. Resource ids are committed to `wrangler.toml`
 (they are identifiers, not secrets — [Secrets policy](../002-project-scope/secrets-policy.md)).
 
-**Done** — the three data stores exist, and their ids are committed:
+**Done** — the data stores exist, and their ids are committed where they have one:
 
-| Resource | Name                        | Where the id lives       |
-| -------- | --------------------------- | ------------------------ |
-| D1       | `livedesign-staging`        | `apps/api/wrangler.toml` |
-| R2       | `livedesign-images-staging` | bound by name, no id     |
-| KV       | `mcp-oauth-kv-staging`      | `apps/mcp/wrangler.toml` |
+| Resource | Name                             | Where the id lives       |
+| -------- | -------------------------------- | ------------------------ |
+| R2       | `livedesign-snapshots-staging`   | bound by name, no id     |
+| R2       | `livedesign-photo-blobs-staging` | bound by name, no id     |
+| KV       | `mcp-oauth-kv-staging`           | `apps/mcp/wrangler.toml` |
 
-Both were created in `ENAM`, Cloudflare's default for the account rather than a
+The api's Durable Objects need no setup: they exist once the staging api worker deploys.
+The stores were created in `ENAM`, Cloudflare's default for the account rather than a
 deliberate choice; production's region was not readable from the API to mirror. If
 staging ever needs to reproduce production's read latency, that is the knob.
 
@@ -260,7 +264,7 @@ nothing.)
 ## What staging is not
 
 - **Not a preview-per-PR environment.** One long-lived environment tracking `main`.
-  Per-PR previews would need a worker per PR, a database per PR and a wildcard hostname;
+  Per-PR previews would need a worker per PR, their own storage and a wildcard hostname;
   if that's wanted later it's a different spec, not a knob on this one.
 - **Not a production mirror.** No production data is copied in, ever. A staging bug must
   never be debuggable by reading a real user's design.
