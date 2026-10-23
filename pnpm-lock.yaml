@@ -1553,6 +1553,9 @@ importers:
       '@livediagram/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@liveworkspace/settings':
+        specifier: workspace:*
+        version: link:../../../packages/settings
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
@@ -1984,6 +1987,9 @@ importers:
       '@liveworkspace/community':
         specifier: workspace:*
         version: link:../../../packages/community
+      '@liveworkspace/settings':
+        specifier: workspace:*
+        version: link:../../../packages/settings
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
@@ -2552,6 +2558,9 @@ importers:
       '@livediagram/telemetry-client':
         specifier: workspace:*
         version: link:../telemetry-client
+      '@liveworkspace/settings':
+        specifier: workspace:*
+        version: link:../../../packages/settings
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites

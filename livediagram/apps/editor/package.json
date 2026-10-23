@@ -40,6 +40,7 @@
     "@livediagram/template-previews": "workspace:*",
     "@livediagram/templates": "workspace:*",
     "@livediagram/ui": "workspace:*",
+    "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/sites": "workspace:*",
     "@tensorflow/tfjs-backend-wasm": "4.22.0",
     "@tensorflow/tfjs-backend-webgpu": "4.22.0",

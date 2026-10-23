@@ -541,6 +541,7 @@ export type UnfurlResult = {
 };
 
 export * from './access-levels';
+export * from './participant-colours';
 export * from './image-limits';
 export * from './cta-sources';
 export * from './page-views';
