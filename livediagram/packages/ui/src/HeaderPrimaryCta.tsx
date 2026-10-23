@@ -1,6 +1,6 @@
 'use client';
 
-import { APP_ITEMS, explorerUrl } from '@liveworkspace/sites';
+import { explorerHomeHref } from '@liveworkspace/sites/workspace-proxy';
 import { ctaHref, type CtaSurface } from '@livediagram/api-schema';
 import { useSyncExternalStore } from 'react';
 import { signedInFromCookie } from './browser-repair/identity';
@@ -13,11 +13,9 @@ import { ButtonContent, buttonClassName } from './Button';
 // HTML is Choose Template for everyone, and both labels share one cell sized to the wider, so the swap
 // after hydration moves nothing in the bar.
 
-// The Explorer lives on liveworkspace.app, once for every app, opened from livediagram (its logo in the header, its
-// items first). An app whose items the index doesn't list yet keeps its own Explorer until it does.
-export const EXPLORER_HOME_HREF = APP_ITEMS.livediagram.onIndex
-  ? explorerUrl('livediagram')
-  : '/explorer/home';
+// The Explorer is liveworkspace's, served under livediagram's own address while its switch is on
+// (@liveworkspace/sites/workspace-proxy), so its Home is this site's /explorer/home.
+export const EXPLORER_HOME_HREF = explorerHomeHref('livediagram');
 
 const noSubscription = () => () => {};
 const signedInNow = () => signedInFromCookie(document.cookie) === true;

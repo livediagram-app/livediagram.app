@@ -6,7 +6,7 @@
 //
 // Kept dependency-free and Worker-safe (fetch, URL, Headers only): it runs inside each app's router.
 
-import type { AppName } from './index';
+import { APP_ITEMS, explorerUrl, type AppName } from './index';
 
 /** Where liveworkspace.app lives when the router names no other (`WORKSPACE_ORIGIN`). */
 export const PRODUCTION_WORKSPACE_ORIGIN = 'https://liveworkspace.app';
@@ -25,6 +25,14 @@ export const EXPLORER_ON_APP_ORIGIN: Record<AppName, boolean> = {
   livedocuments: true,
   livedesign: true,
 };
+
+/** Where an app's own pages open the Explorer's Home: its own `/explorer/home` while the switch is on (or while its
+ *  items aren't on the index and it keeps its own Explorer), else liveworkspace.app's, opened from the app. */
+export function explorerHomeHref(app: AppName): string {
+  return EXPLORER_ON_APP_ORIGIN[app] || !APP_ITEMS[app].onIndex
+    ? '/explorer/home'
+    : explorerUrl(app);
+}
 
 // ---------- What is forwarded ---------------------------------------------------------------------------------------
 
