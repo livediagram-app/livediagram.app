@@ -273,14 +273,6 @@ CREATE TABLE image_grants (
   PRIMARY KEY (document_id, image_id)
 ) WITHOUT ROWID;
 
-CREATE TABLE guest_voters (
-  document_id TEXT NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
-  network_tag TEXT NOT NULL,
-  person_tag TEXT NOT NULL,
-  created_at INTEGER NOT NULL,
-  PRIMARY KEY (document_id, network_tag, person_tag)
-);
-
 CREATE TABLE workbench_pairing_requests (
   id TEXT PRIMARY KEY,
   code TEXT NOT NULL UNIQUE,

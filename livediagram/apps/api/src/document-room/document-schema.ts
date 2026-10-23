@@ -111,6 +111,16 @@ CREATE TABLE IF NOT EXISTS agent_changeset_parts (
 --
 -- A tab's own triggers find its document through its link and write nothing for a tab no document links: the
 -- link's triggers (a create links after the insert, a delete unlinks before the delete) cover those moments.
+-- Who has voted as a guest (docs/specs/012-collaboration/vote-integrity.md): a guest id costs nothing to make, so a
+-- guest's Q&A upvote is admitted against a cap of guest voters per network (vote-integrity.ts).
+CREATE TABLE IF NOT EXISTS guest_voters (
+  document_id TEXT    NOT NULL,
+  network_tag TEXT    NOT NULL,
+  person_tag  TEXT    NOT NULL,
+  created_at  INTEGER NOT NULL,
+  PRIMARY KEY (document_id, network_tag, person_tag)
+) WITHOUT ROWID;
+
 CREATE TABLE IF NOT EXISTS outbox (
   id          INTEGER PRIMARY KEY,
   document_id TEXT    NOT NULL,

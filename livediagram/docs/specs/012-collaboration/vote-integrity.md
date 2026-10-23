@@ -58,9 +58,10 @@ votes freely. A guest's vote that **adds** a vote (`{ type: 'vote', on: true }`)
 only if the guest has already voted in this document from this network, or the network has fewer than
 `GUEST_VOTERS_PER_NETWORK` guest voters in it. Withdrawing is never refused.
 
-The ledger is `guest_voters (document_id, network_tag, person_tag)`, migration 0076, one row per guest voter per
-network per document, removed with the document. `person_tag` is `personTagFor(documentId, ownerId)`; no owner id is
-stored. Admission is one D1 batch: a conditional insert, then a read of the caller's row.
+The ledger is `guest_voters (document_id, network_tag, person_tag)` in the document's own store (its Durable
+Object, `apps/api/src/document-room/document-schema.ts`), one row per guest voter per network, removed with the
+document. `person_tag` is `personTagFor(documentId, ownerId)`; no owner id is stored. Admission is one batch: a
+conditional insert, then a read of the caller's row.
 
 A refused vote answers `429 { error: 'vote_limit' }` and logs `[vote-integrity] guest voter refused`.
 

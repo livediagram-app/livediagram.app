@@ -33,10 +33,10 @@ import {
   missingDocument,
   readBody,
   requireOwner,
-  type RouteContext,
+  type DocumentRouteContext,
 } from './context';
 
-export async function handleQaBoardRoute(ctx: RouteContext): Promise<Response | null> {
+export async function handleQaBoardRoute(ctx: DocumentRouteContext): Promise<Response | null> {
   const { request, env, segments } = ctx;
   if (!(
     segments.length === 6 &&

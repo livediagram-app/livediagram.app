@@ -37,12 +37,12 @@ describe('admitGuestVoter', () => {
     expect(await admitGuestVoter(env, 'd2', 'net-a', 'other-document')).toBe(true);
   });
 
-  it('is removed with the document', async () => {
+  it("keeps the voters in the document's own store", async () => {
     const { env, sql } = seeded();
     await admitGuestVoter(env, 'd1', 'net-a', 'p0');
-    sql.prepare('PRAGMA foreign_keys = ON').run();
-    sql.prepare("DELETE FROM documents WHERE id = 'd1'").run();
-    expect(sql.prepare('SELECT COUNT(*) AS n FROM guest_voters').get()).toEqual({ n: 0 });
+    expect(sql.prepare("SELECT COUNT(*) AS n FROM guest_voters WHERE document_id = 'd1'").get()).toEqual({
+      n: 1,
+    });
   });
 
   // The cap's whole cost is one batch over a primary-key range; a full network stays cheap.
