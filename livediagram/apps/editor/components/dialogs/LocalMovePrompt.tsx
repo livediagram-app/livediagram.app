@@ -54,7 +54,7 @@ export function LocalMovePrompt({ enabled = true }: { enabled?: boolean }) {
             ))}
           </ul>
           <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
-            Try Sync Document on it later from the Explorer.
+            Try Sync Canvas on it later from the Explorer.
           </p>
         </div>
         <DialogFooter>

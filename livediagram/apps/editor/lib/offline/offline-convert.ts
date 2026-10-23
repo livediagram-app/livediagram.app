@@ -51,7 +51,7 @@ async function oneAtATime<T>(documentId: string, run: () => Promise<T>): Promise
   }
 }
 
-// Offline → Cloud ("Sync Document"), in ./offline-sync. Returns the (unchanged) document id and the images it
+// Offline → Cloud ("Sync Canvas"), in ./offline-sync. Returns the (unchanged) document id and the images it
 // re-homed (data URI -> gallery id), for an editor syncing in place.
 export function saveOfflineToCloud(offlineId: string, ownerId: string): Promise<OfflineSyncResult> {
   return oneAtATime(offlineId, () => syncOfflineDocument(offlineId, ownerId));
@@ -149,7 +149,7 @@ async function downloadAndRemoveCloudCopy(
   }
 }
 
-// Toast copy for a failed Sync Document, shared by the Explorer menus (via
+// Toast copy for a failed Sync Canvas, shared by the Explorer menus (via
 // useOfflineConversion) and the Share dialog's offline gate. A 413 is the
 // hard per-tab size cap (usually a large embedded image whose gallery
 // upload failed, leaving the data URI in the tab JSON): retrying won't

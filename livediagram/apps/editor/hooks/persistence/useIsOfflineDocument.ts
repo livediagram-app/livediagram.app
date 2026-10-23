@@ -22,7 +22,7 @@ export function useIsOfflineDocument(documentId: string | null): boolean {
     let live = true;
     const check = () => void isOfflineId(documentId).then((v) => live && setOffline(v));
     check();
-    // A conversion (Sync Document in place, Take Offline) flips it with no reload.
+    // A conversion (Sync Canvas in place, Take Offline) flips it with no reload.
     const stop = subscribeOfflineIds((id) => {
       if (id === documentId) check();
     });

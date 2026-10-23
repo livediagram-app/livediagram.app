@@ -106,7 +106,7 @@ describe('a write whose record another tab removed', () => {
     expect(await backend.get('d1')).toBeUndefined();
   });
 
-  it('stays a quiet no-op once this tab has forgotten the id itself (its own Sync Document)', async () => {
+  it('stays a quiet no-op once this tab has forgotten the id itself (its own Sync Canvas)', async () => {
     await offlinePutRecord(rec({ id: 'd1' }));
     await offlineDeleteDocument('d1');
     await expect(offlineSaveTab('d1', tab('t1'), 200)).resolves.toBeUndefined();

@@ -1,4 +1,4 @@
-// Offline → Cloud ("Sync Document", docs/specs/006-document/offline-mode.md "Save to server").
+// Offline → Cloud ("Sync Canvas", docs/specs/006-document/offline-mode.md "Save to server").
 // Creates the cloud copy first, then removes the local one, so a network failure leaves the
 // offline document intact. `apiCreateDocument` does not dispatch on the offline index, so it
 // always writes to the server even while the id is still registered offline.
@@ -20,7 +20,7 @@ import {
 
 // How many times a sync uploads a document that keeps changing under it before giving up. Each
 // change during the upload costs one more upload; three covers a person still typing for a few
-// seconds after choosing Sync Document, without retrying forever against a busy other tab.
+// seconds after choosing Sync Canvas, without retrying forever against a busy other tab.
 const SYNC_UPLOAD_ATTEMPTS = 3;
 
 // Why a sync stopped with the local copy kept: it changed during every upload.

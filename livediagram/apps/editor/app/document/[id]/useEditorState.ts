@@ -833,7 +833,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     changesetSeen: realtime.changesetSeen.seen,
     noteTabRevision: tabRevisions.noteSaved,
   });
-  // Sync Document from the Share dialog, with no reload (docs/specs/006-document/offline-mode.md "Syncing
+  // Sync Canvas from the Share dialog, with no reload (docs/specs/006-document/offline-mode.md "Syncing
   // in place").
   const syncToCloud = useSyncInPlace({
     documentId,

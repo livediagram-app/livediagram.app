@@ -79,7 +79,7 @@ export function EditorTabDialogs() {
   );
 
   // Offline documents (docs/specs/006-document/offline-mode.md) can't be shared until they're synced to the
-  // owner's account; the Share dialog says so and offers Sync Document, which converts the open document
+  // owner's account; the Share dialog says so and offers Sync Canvas, which converts the open document
   // in place ("Syncing in place"), and then shows the share options. Never as the 'self' placeholder an
   // early open runs under: the gate waits for the reader (`syncReady`).
   const isOffline = useIsOfflineDocument(documentId);

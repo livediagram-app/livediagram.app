@@ -1,11 +1,13 @@
 // Deleting the document open in the editor (docs/specs/013-workspace/trash.md "Deleting"): from the command palette or
 // any menu in the Explorer panel. The document is tombstoned first (lib/document-tombstones.ts), so neither the autosave
 // debounce nor the unload flush can write it back while it goes to the Trash; then the editor leaves for the
-// Explorer, which offers the Undo on arrival. The handoff lives in sessionStorage for one page load and only for a
-// moment, so a later visit offers nothing.
+// Explorer, which offers the Undo on arrival. The shared Explorer takes the canvas from its address
+// (`?trashed=<id>&title=<name>`, dropped from the address once read); the workbench frame's Explorer takes it from
+// sessionStorage, kept for one page load and only for a moment, so a later visit offers nothing.
 import { indexClient } from '@/lib/index-client';
 import { markDocumentDeleted, unmarkDocumentDeleted } from '@/lib/document-tombstones';
 import { track } from '@/lib/telemetry';
+import { explorerHref } from '@/lib/explorer-href';
 
 const HANDOFF_KEY = 'livediagram:deleted-document';
 const HANDOFF_MAX_AGE_MS = 30_000;
@@ -32,7 +34,9 @@ export async function trashOpenDocument(
   }
   track('Document', 'Deleted');
   handOffDeleteUndo(id, name);
-  leave('/explorer');
+  leave(
+    explorerHref('', `?${new URLSearchParams({ trashed: id, ...(name ? { title: name } : {}) })}`),
+  );
   return true;
 }
 

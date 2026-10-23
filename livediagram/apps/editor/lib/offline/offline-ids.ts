@@ -3,7 +3,7 @@
 // set of record keys, mirrored in memory per browser tab.
 //
 // Every tab of the same browser shares the one IndexedDB store, so a tab's cache goes stale the
-// moment another tab registers or removes an id (Take Offline, Sync Document, a purge). Each change
+// moment another tab registers or removes an id (Take Offline, Sync Canvas, a purge). Each change
 // is therefore told to the other tabs on a BroadcastChannel and applied there; without it a tab
 // kept routing a document's writes to the store it had left.
 
@@ -88,7 +88,7 @@ export function isOfflineIdSync(id: string): boolean {
   return pendingIds.has(id) || (idCache?.has(id) ?? false);
 }
 
-// Told whenever a document joins or leaves this browser's store (a create, Sync Document, Take Offline),
+// Told whenever a document joins or leaves this browser's store (a create, Sync Canvas, Take Offline),
 // in this tab or another: what shows or reads a document's offline-ness follows a conversion without a
 // reload (docs/specs/006-document/offline-mode.md "Syncing in place").
 const idListeners = new Set<(id: string) => void>();

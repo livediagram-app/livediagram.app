@@ -165,7 +165,7 @@ describe('offline store ops (in-memory backend)', () => {
 });
 
 // Both stores must agree on what a tab IS. An offline board that lost its
-// kind would come back from a Sync Document as an ordinary diagram — the
+// kind would come back from a Sync Canvas as an ordinary diagram — the
 // cloud copy would then be wrong too, and nothing could tell.
 describe('upsertTab — tab kind', () => {
   const rec = (): OfflineDocumentRecord =>
@@ -192,7 +192,7 @@ describe('upsertTab — tab kind', () => {
   });
 });
 
-describe('offlineDeleteIfUnchanged (Sync Document, docs/specs/006-document/offline-mode.md)', () => {
+describe('offlineDeleteIfUnchanged (Sync Canvas, docs/specs/006-document/offline-mode.md)', () => {
   it('removes the record and forgets the id when it still matches', async () => {
     __setOfflineBackend(memBackend());
     await offlinePutRecord(rec({ id: 'd1', savedAt: 5 }));

@@ -11,7 +11,7 @@
 //   images "unused", and the api's 30-day retention reaper would delete the
 //   bytes out from under the offline document.
 //
-//   Sync Document: upload each embedded image to the gallery (dedup by
+//   Sync Canvas: upload each embedded image to the gallery (dedup by
 //   SHA-256 server-side) and swap the data URI back to the returned R2 id,
 //   so the cloud copy gets real gallery images instead of bloated tab JSON.
 //
@@ -92,7 +92,7 @@ export async function embedTabImages(
   return rewriteImageIds(tabs, mapping);
 }
 
-// Sync Document: upload each embedded image to the gallery and swap the data
+// Sync Canvas: upload each embedded image to the gallery and swap the data
 // URI for the stored image's id. The server dedupes by SHA-256, so syncing
 // the same picture twice lands on one gallery entry.
 // Also hands back the mapping (data URI -> gallery id), so an editor that already holds these tabs can

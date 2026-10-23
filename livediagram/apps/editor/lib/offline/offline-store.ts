@@ -178,7 +178,7 @@ export function applyMeta(
 export function upsertTab(rec: OfflineDocumentRecord, tab: Tab, at: number): OfflineDocumentRecord {
   // Stamp the tab kind here for the same reason the cloud path stamps it
   // in tabForWire (docs/specs/021-event-storming/event-storming.md): both stores must agree on what a tab IS, or a
-  // Sync Document would hand the cloud a board that has forgotten itself.
+  // Sync Canvas would hand the cloud a board that has forgotten itself.
   const stamped = stampTabKind(tab);
   const i = rec.tabs.findIndex((t) => t.id === stamped.id);
   const tabs =
@@ -262,7 +262,7 @@ export function offlineUpdateRecord(id: string, change: OfflineRecordChange): Pr
 
 // The editor's writes to a live record: `change` runs on it when it is writable. A missing record
 // is a no-op when this tab has already forgotten the id (a queued autosave landing after this
-// tab's own Sync Document), and an OfflineDocumentMissingError when the id is still listed.
+// tab's own Sync Canvas), and an OfflineDocumentMissingError when the id is still listed.
 async function writeLive(
   id: string,
   change: (rec: OfflineDocumentRecord) => OfflineDocumentRecord,
@@ -390,7 +390,7 @@ export async function offlineDeleteDocument(id: string): Promise<void> {
   });
 }
 
-// Sync Document's last step (docs/specs/006-document/offline-mode.md "Save to server"): remove the
+// Sync Canvas's last step (docs/specs/006-document/offline-mode.md "Save to server"): remove the
 // record only if it still matches what was uploaded, judged and done in one transaction so no write
 // (from this tab or another) can land between the check and the delete. Answers what it found:
 // `deleted` (with the record as it was), `changed` (with the record as it is now) or `missing`.

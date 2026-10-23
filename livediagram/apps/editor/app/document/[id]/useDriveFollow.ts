@@ -6,7 +6,8 @@
 // move to the Trash shows the deleted card.
 
 import { useAfterDriveChange } from '@/hooks/persistence/useAfterDriveChange';
-import { ApiError, apiLoadDocument } from '@/lib/api-client';
+import { apiLoadDocument } from '@/lib/api-client';
+import { isDocumentTrashedError, isTrashedInIndex } from '@/lib/document-trashed';
 
 export function useDriveFollow(opts: {
   ownerId: string | null;
@@ -24,11 +25,14 @@ export function useDriveFollow(opts: {
       opts.refreshDocumentList(ownerId);
       const load = opts.loadMeta ?? apiLoadDocument;
       void load(ownerId, documentId)
-        .then((meta) => {
+        .then(async (meta) => {
           if (meta?.name) opts.setDocumentName(meta.name);
+          // Gone from the api: the index says whether Drive sent it to the Trash.
+          else if (meta === null && (await isTrashedInIndex(documentId)))
+            opts.setDocumentTrashed(true);
         })
         .catch((err: unknown) => {
-          if (err instanceof ApiError && err.status === 410) opts.setDocumentTrashed(true);
+          if (isDocumentTrashedError(err)) opts.setDocumentTrashed(true);
         });
     },
     enabled && !!ownerId && !!documentId,

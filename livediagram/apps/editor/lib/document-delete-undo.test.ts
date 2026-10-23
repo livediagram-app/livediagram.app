@@ -21,7 +21,7 @@ describe('trashOpenDocument', () => {
     const leave = vi.fn();
     expect(await trashOpenDocument('a', 'Roadmap', leave)).toBe(true);
     expect(seen).toEqual([true]);
-    expect(leave).toHaveBeenCalledWith('/explorer');
+    expect(leave).toHaveBeenCalledWith('/explorer?trashed=a&title=Roadmap');
     expect(takeDeleteUndo()).toEqual({ id: 'a', title: 'Roadmap' });
   });
 

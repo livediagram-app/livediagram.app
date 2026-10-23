@@ -101,6 +101,17 @@ describe('CommunitySection, every face', () => {
     expect(onPublish).not.toHaveBeenCalled();
   });
 
+  it('offers the illustrated guide before a first publish, and not once listed', () => {
+    render(<CommunitySection {...base()} />);
+    expect(screen.getByText('What Is the Community?')).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { name: 'Show your board to the world', hidden: true }),
+    ).toBeTruthy();
+    cleanup();
+    renderSection('listed');
+    expect(screen.queryByText('What Is the Community?')).toBeNull();
+  });
+
   it('says the Community is public, and holds Share to Community while a password is set', () => {
     const onPublish = vi.fn();
     render(<CommunitySection {...base({ onPublish })} />);

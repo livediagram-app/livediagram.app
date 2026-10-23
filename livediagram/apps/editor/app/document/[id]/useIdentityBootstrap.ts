@@ -26,9 +26,8 @@ import { ensureCollabKey, hasConfirmedName } from '@/lib/local-identity';
 import { trackDailyReturn } from '@/lib/daily-return';
 import { resolveDocumentSession } from './editor-page-helpers';
 import { makeSeedFetchedDocument } from './seed-fetched-document';
-import { isDocumentTrashedError } from '@/lib/document-trashed';
+import { isDocumentTrashedError, isTrashedInIndex } from '@/lib/document-trashed';
 import { documentGrant } from '@/lib/api/document-grants';
-import { indexClient } from '@/lib/index-client';
 import { armLoadWatchdog, getLoadProgress, setLoadStep } from '@/lib/load-progress';
 import { track } from '@/lib/telemetry';
 import { documentLoadOrigin, noteDocumentLoadEnded, startEditorTiming } from '@/lib/timing';
@@ -37,15 +36,6 @@ import type { WorkbenchDocumentSession } from '@/components/providers/workbench-
 import { loadWorkbenchDocument } from './workbench-bootstrap';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
-
-// Whether the index has this canvas in its Trash, for the person (the deleted card rather than not found).
-async function isTrashedInIndex(id: string): Promise<boolean> {
-  try {
-    return (await indexClient.getItem(id)).item.trashedAt !== null;
-  } catch {
-    return false;
-  }
-}
 
 const isCallable = (v: unknown): v is (...args: unknown[]) => unknown => typeof v === 'function';
 

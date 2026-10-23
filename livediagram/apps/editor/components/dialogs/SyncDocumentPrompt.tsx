@@ -72,7 +72,7 @@ export function SyncDocumentPrompt({
             Syncing…
           </span>
         ) : (
-          'Sync Document'
+          'Sync Canvas'
         )}
       </Button>
     </div>

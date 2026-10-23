@@ -14,6 +14,7 @@ import { communityCodeMessage, communityErrorMessage } from '@/lib/community-err
 import { track } from '@/lib/telemetry';
 import { useToast } from '@/hooks/ui/useToast';
 import { communitySectionState } from './community-section-state';
+import { CommunityGuide } from './CommunityGuide';
 
 const GlobeIcon = lucideGlyph(lucideGlobe, 16);
 const OpenIcon = lucideGlyph(lucideExternalLink, 12);
@@ -22,7 +23,8 @@ const NOTE = 'text-xs leading-relaxed text-slate-600 dark:text-slate-300';
 
 // The Share dialog's Community band (docs/specs/025-community/community.md "Publishing"; final copy in
 // the blueprint §9), beneath the passes and the password. Which face it shows is
-// communitySectionState's decision; this only draws it. Publishing and Edit Listing open the publish
+// communitySectionState's decision; this only draws it. Before a first publish, What Is the Community? opens the
+// illustrated guide (CommunityGuide), folded so the band stays short in the shared Share dialog. Publishing and Edit Listing open the publish
 // dialog (the caller's), Remove From Community asks once, here, before it goes.
 export function CommunitySection({
   signedIn,
@@ -132,6 +134,14 @@ export function CommunitySection({
             The Community is <strong className="font-semibold">public</strong>: anyone, with or
             without an account, can find this document there, view it and make their own copy.
           </p>
+          <details className="group rounded-xl border border-slate-200 dark:border-slate-700">
+            <summary className="cursor-pointer rounded-xl px-3 py-2 text-xs font-medium text-slate-700 select-none hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800/60">
+              What Is the Community?
+            </summary>
+            <div className="px-3 pt-1 pb-3">
+              <CommunityGuide />
+            </div>
+          </details>
           <div className="flex flex-wrap items-center gap-2">
             <Button
               size="xs"

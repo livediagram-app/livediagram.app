@@ -63,7 +63,7 @@ describe('useDocumentActions', () => {
     await actions().deleteDocument('p1');
     expect(tombstonedAtDelete).toBe(true);
     expect(isDocumentDeleted('p1')).toBe(true);
-    expect(assign).toHaveBeenCalledWith('/explorer');
+    expect(assign).toHaveBeenCalledWith('/explorer?trashed=p1&title=Roadmap');
     expect(takeDeleteUndo()).toEqual({ id: 'p1', title: 'Roadmap' });
   });
 
