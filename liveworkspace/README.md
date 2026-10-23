@@ -28,6 +28,10 @@ and its dashboard at liveworkspace.app/telemetry: see
 It holds every app's Community listings too, its API at liveworkspace.app/api/community; each app
 hosts its own Community pages, which read it. See [docs/community.md](docs/community.md).
 
+And it keeps every app's uploaded images, its API at liveworkspace.app/api/media, so a person's
+pictures follow them from app to app. Each app still decides who may see one and serves the bytes
+itself. See [docs/media.md](docs/media.md).
+
 ## How signing in works
 
 The apps live on different sites (`livediagram.app`, `liveplanner.app`), so they can't share a

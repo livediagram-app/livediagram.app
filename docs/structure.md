@@ -7,12 +7,14 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 ├─ packages/                   shared by every product (@liveworkspace/*)
 │  ├─ auth-client              sign-in redirect, code swap, refresh, token check
 │  ├─ community                the Community contract: apps, vocabulary, limits, wire shapes
+│  ├─ media                    the media contract: apps, upload limits, wire shapes, a client
 │  ├─ sites                    liveworkspace's sites, for every logo's site switcher
 │  └─ telemetry                the telemetry contract: apps, batch format, dashboard summary
 ├─ liveworkspace/              the platform's own apps
 │  ├─ apps/site                liveworkspace.app, one static site: the front door, /telemetry, /sign-in
 │  ├─ apps/accounts            liveworkspace.app/api/auth: sign-in for every product
 │  ├─ apps/community           liveworkspace.app/api/community: every app's listings, own D1
+│  ├─ apps/media               liveworkspace.app/api/media: every app's images, own D1 and R2
 │  └─ apps/telemetry           liveworkspace.app/api/telemetry: every product's events, own D1
 ├─ livediagram/                imported with full history (main at 82e6ed79a)
 │  ├─ apps/                    live, api, mcp, cli, marketing, help, community, router
@@ -69,6 +71,7 @@ liveworkspace/
 │  ├─ accounts                     sign-in
 │  ├─ telemetry (+ -dashboard)     every product's anonymous events (docs/telemetry.md there)
 │  ├─ community                    every product's Community listings (docs/community.md there)
+│  ├─ media                        every product's uploaded images (docs/media.md there)
 │  └─ home (later)                 one place for all your documents across products
 ├─ livediagram/
 │  ├─ apps/editor                    thin: workbench + mode-draw (+ mode-plan for now)
@@ -126,8 +129,8 @@ So the sharing work should start just after the switch. The switch needs:
   issues, Actions secrets and history links. livediagram's open branches and worktrees would
   need merging or rebasing onto the new layout first.
 - **CI and deploys moved to a root `.github/`**, with each product's workflows filtered to its
-  own paths (`livediagram/**`, `liveplanner/**`, `packages/**`). liveplanner deploys to its own
-  Cloudflare account, so it keeps separate secrets and environments. Until then, the
+  own paths (`livediagram/**`, `liveplanner/**`, `packages/**`). liveplanner deploys to the
+  liveworkspace Cloudflare account, with its own secrets and environments. Until then, the
   `.github/` folders under each product are inert here, and livediagram keeps deploying from its
   current repo.
 - **The pre-push hook** rewritten for the new paths. It assumed `apps/…` at the root, so it isn't

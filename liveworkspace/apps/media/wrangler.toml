@@ -1,0 +1,56 @@
+name = "liveworkspace-media"
+# The liveworkspace Cloudflare account, so a deploy can never land on another one.
+account_id = "851be7d244b76a6557bcbe6c4ded80f5"
+main = "src/index.ts"
+compatibility_date = "2026-05-29"
+# Only its API, /api/media, on liveworkspace.app (liveworkspace/docs/media.md). Browsers never call it:
+# each app's own Worker does, and serves the bytes to the people it lets in.
+routes = [{ pattern = "liveworkspace.app/api/media*", zone_name = "liveworkspace.app" }]
+
+# Secrets (wrangler secret put): each app's Worker key, sent as a bearer token.
+#   MEDIA_KEY_LIVEDIAGRAM, MEDIA_KEY_LIVEPLANNER, MEDIA_KEY_LIVEDOCUMENTS, MEDIA_KEY_LIVEDESIGN
+#   shared with that app's api Worker as MEDIA_KEY. An app without one can't use the service, and the
+#   unused-image sweep doesn't wait for it.
+[vars]
+ENVIRONMENT = "production"
+# Per person, across every app: 100 images and 100 MB, as livediagram.app has today.
+IMAGE_MAX_PER_OWNER = "100"
+IMAGE_MAX_BYTES_PER_OWNER = "104857600"
+
+# Its own database, apart from accounts, telemetry, the Community and every app's own data.
+[[d1_databases]]
+binding = "MEDIA_DB"
+database_name = "liveworkspace-media"
+database_id = "3933275d-680b-43b1-b446-9cbd1d94fc0d"
+migrations_dir = "migrations"
+
+# The images' bytes, keyed by image id.
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "liveworkspace-media"
+
+# Retention: once a day, the unused-image sweep.
+[triggers]
+crons = ["41 3 * * *"]
+
+[env.staging]
+name = "liveworkspace-media-staging"
+routes = [{ pattern = "staging.liveworkspace.app/api/media*", zone_name = "liveworkspace.app" }]
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+IMAGE_MAX_PER_OWNER = "100"
+IMAGE_MAX_BYTES_PER_OWNER = "104857600"
+
+[[env.staging.d1_databases]]
+binding = "MEDIA_DB"
+database_name = "liveworkspace-media-staging"
+database_id = "67d8d63c-db99-4dbd-ba1f-62a0d1e1efc1"
+migrations_dir = "migrations"
+
+[[env.staging.r2_buckets]]
+binding = "MEDIA"
+bucket_name = "liveworkspace-media-staging"
+
+[env.staging.triggers]
+crons = ["41 3 * * *"]
