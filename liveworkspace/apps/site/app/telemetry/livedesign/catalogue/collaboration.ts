@@ -249,14 +249,6 @@ export const TIMELINE_VISITS = chart(
   { types: ['Nav'] },
 );
 
-export const TIMELINE_CARDS_OPENED = chart(
-  'Timeline',
-  'Opened',
-  'Timeline Cards Opened',
-  'A design opened from its card on the Timeline.',
-  { types: ['Card'] },
-);
-
 export const TIMELINE_MENUS = chart(
   'Timeline',
   'Opened',
@@ -357,7 +349,6 @@ export const TIMELINE_AND_ACTIVITY: MetricStack = {
     HOME_GROUPS_EXPANDED,
     TIMELINE_LANDINGS,
     TIMELINE_VISITS,
-    TIMELINE_CARDS_OPENED,
     TIMELINE_MENUS,
     TIMELINE_STACKS_EXPANDED,
     TIMELINE_CARDS_OPENED,
