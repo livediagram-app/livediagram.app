@@ -150,7 +150,7 @@ cannot start. The page lists what is cleared and kept, runs the browser checks
 and the identity lines on open and shows both, and offers Copy Diagnostics
 (identity and browser checks, as it has no load) and Repair This Browser. After a repair it says "Done. Open your document
 again." with a link to the Explorer. The "A Document Will Not Load" article
-gains two sections: "Stuck on "Opening your document"" (the escalation above)
+gains two sections: "Stuck on "Opening your canvas"" (the escalation above)
 and "It opens for a colleague but not for you" (account first, then the share
 link, the repair, another browser or network).
 

@@ -425,7 +425,7 @@ documented Skip defaults (Blank template, Default theme, the template's
 default document name) without walking the wizard:
 
 - **`/new?blank=1`** — the query param bypasses the wizard entirely. The
-  page renders the opening screen (below) at its "Creating your document"
+  page renders the opening screen (below) at its "Creating your canvas"
   stage instead of the wizard, commits the blank document as soon as
   identity resolves, and hands off to the editor in place (below). Any
   truthy presence of `blank` counts.
@@ -536,7 +536,7 @@ it cannot tell the difference from a direct visit.
   chunk as soon as it mounts (a bypass needs it within a second; a wizard
   visitor almost always goes on to create), so the chunk downloads in
   parallel with identity and the create request. If it is not ready at
-  handoff, the opening screen holds at the "Opening your document" stage
+  handoff, the opening screen holds at the "Opening your canvas" stage
   until it is.
 - **The opening screen is the editor's outermost Suspense fallback, so no lazy
   piece inside the editor may suspend up to it.** Every `next/dynamic` import
@@ -557,8 +557,8 @@ it cannot tell the difference from a direct visit.
 One screen covers the whole wait from the click to the editor: `/new`'s
 creating stage and the editor's own load (`DocumentLoading`) render the same
 full-screen component, so the handoff above never visibly changes screens.
-Its label moves from **"Creating your document"** to **"Opening your
-document"**; everything else stays put.
+Its label moves from **"Creating your canvas"** to **"Opening your
+canvas"**; everything else stays put.
 
 - **Surface:** headerless and full height, on the canvas colour
   (`slate-50` / `slate-950`) with the editor's dot grid faded out towards the
