@@ -2,18 +2,13 @@
 
 // Persistence-model prompt shown inside the Explorer. Present for guest
 // sessions so the user understands their designs are browser-local
-// until they sign in; rendered shape depends on what the deployment
-// supports:
+// until they sign in:
 //
-//   - sign-in disabled, any session
-//        → "No sign-in on this deployment": the designs are saved, but
-//          only this browser's guest id can open them.
-//
-//   - sign-in enabled, signed out
+//   - signed out
 //        → "Sign in to keep your designs across devices." + CTA to
 //          /live/sign-in/.
 //
-//   - sign-in enabled, signed in
+//   - signed in
 //        → renders nothing (the user already has the account that
 //          syncs everything).
 //
@@ -21,17 +16,12 @@
 // with browser-local storage can reclaim the panel space; the choice
 // persists per-browser in localStorage (same degradation contract as
 // the other persisted toggles — see local-storage-safe).
-//
-// Same module-load enabled/disabled hook-swap pattern as
-// AuthControls and useAccountBootstrap, chosen from a compile-time
-// constant.
 
 import { useSyncExternalStore } from 'react';
 import { buttonClassName, CloseIcon, ButtonContent } from '@livedesign/ui';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import Link from 'next/link';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
-import { signInEnabled } from '@/lib/auth-config';
 import { useLocalStorageValue, writeLocalStorageValue } from '@/hooks/ui/useLocalStorageValue';
 
 const DISMISS_KEY = 'livedesign:v2:signin-prompt-dismissed';
@@ -119,7 +109,7 @@ function PromptShell({
 // `bar`: the one-line form (the editor's Explorer, under its Current Design card).
 type SignInPromptProps = { fallback?: React.ReactNode; bar?: boolean };
 
-function SignInPromptEnabled({ fallback, bar = false }: SignInPromptProps) {
+export function SignInPrompt({ fallback, bar = false }: SignInPromptProps) {
   const { authLoaded: isLoaded, isSignedIn } = useDeferredAuth();
   const { dismissed, dismiss } = usePromptDismissed();
   const { signInHref } = useAuthHrefs();
@@ -149,26 +139,3 @@ function SignInPromptEnabled({ fallback, bar = false }: SignInPromptProps) {
     />
   );
 }
-
-function SignInPromptDisabled({ fallback, bar = false }: SignInPromptProps) {
-  const { dismissed, dismiss } = usePromptDismissed();
-  if (dismissed === null) return null;
-  if (dismissed) return <>{fallback ?? null}</>;
-  return (
-    <PromptShell
-      bar={bar}
-      // The designs are saved on the server ("Private" on the card), but without sign-in they belong to this
-      // browser's guest id: what clearing site data loses is the way back to them. Never "Browser only", which is
-      // what a This Browser design is.
-      title={bar ? 'No sign-in here' : 'No sign-in on this deployment'}
-      body={
-        bar
-          ? 'Only this browser can open your designs.'
-          : 'Your designs are saved, but only this browser can open them. Clear its site data and you lose them.'
-      }
-      onDismiss={dismiss}
-    />
-  );
-}
-
-export const SignInPrompt = signInEnabled ? SignInPromptEnabled : SignInPromptDisabled;

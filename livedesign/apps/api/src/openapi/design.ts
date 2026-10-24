@@ -39,9 +39,9 @@ function securityFor(auth: AuthMode): Record<string, string[]>[] {
       // Explicit empty requirement = "no auth needed" (and satisfies tooling
       // that wants every operation's security stated).
       return [];
-    case 'clerk':
+    case 'account':
       return [{ Bearer: [] }];
-    case 'guest-or-clerk':
+    case 'guest-or-account':
       // A guest is a Bearer too: the guest token liveworkspace mints (liveworkspace/docs/accounts.md "Guests").
       return [{ Bearer: [] }];
   }

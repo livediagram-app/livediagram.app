@@ -136,8 +136,7 @@ from production's in exactly one value:
 Everything else matches, on purpose: `NEXT_PUBLIC_API_BASE` stays unset so staging
 resolves `/api` same-origin through its own router, and
 `NEXT_PUBLIC_TELEMETRY_ENABLED` (from the hosted profile, [Deployment](deployment.md)
-"Hosted profile") / `NEXT_PUBLIC_SIGN_IN_ENABLED` (on when the environment's
-`ACCOUNTS_CLIENT_ID` is set) are `true` in both so the staging build exercises the same
+"Hosted profile") is `true` in both so the staging build exercises the same
 code as production's.
 
 ## Integrations

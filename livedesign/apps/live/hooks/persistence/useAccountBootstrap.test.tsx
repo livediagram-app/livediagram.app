@@ -14,7 +14,7 @@ import { apiHeaders, setTokenProvider } from '@/lib/api/core';
 import { GUEST_TOKEN_STORAGE_KEY } from '@/lib/guest-token-key';
 import { guestTokenFor } from '@/lib/testing/guest-token';
 
-vi.mock('@/lib/auth-config', () => ({ signInEnabled: true, sessionsEnabled: true }));
+vi.mock('@/lib/auth-config', () => ({ e2eAuthEnabled: false }));
 const { getToken } = vi.hoisted(() => ({
   getToken: vi.fn(async (opts?: { skipCache?: boolean }): Promise<string | null> =>
     opts?.skipCache ? 'jwt-fresh' : 'jwt-1',

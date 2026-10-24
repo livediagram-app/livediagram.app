@@ -9,7 +9,6 @@ import { Suspense, use, useState } from 'react';
 import { browser } from 'react-dom';
 import { useSearchParams } from 'next/navigation';
 import { apiExchangeOauthToken, apiRevokeTokenAsItself } from '@/lib/api-client';
-import { signInEnabled } from '@/lib/auth-config';
 import {
   completeDevice,
   denyDevice,
@@ -67,13 +66,6 @@ function Device() {
 
   if (step.kind === 'cancelled')
     return <Message heading="Connection cancelled" body="Your terminal will stop waiting." />;
-  if (!signInEnabled)
-    return (
-      <Message
-        heading="Connecting apps isn’t available"
-        body="This deployment doesn’t have accounts enabled, so there’s nothing to connect to."
-      />
-    );
   if (!authLoaded)
     return (
       <OauthShell>

@@ -33,7 +33,7 @@ Each app that needs configuration ships an example file designing which variable
 Everyone who uses livedesign is either signed in to their liveworkspace account or a liveworkspace guest, the same guest in every liveworkspace app. Both identities come from a liveworkspace accounts Worker, so a self-host always connects to one: liveworkspace.app's, or one you run.
 
 1. Register your deployment as an OAuth client of the accounts Worker, with `https://<your-host>/api/auth/callback` as its redirect URI and its own resource.
-2. Give the API the accounts Worker's address and your client's details (`ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`), and build the live app with `NEXT_PUBLIC_SIGN_IN_ENABLED=true`.
+2. Give the API the accounts Worker's address and your client's details (`ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`). The live app always offers sign-in.
 
 Guests need nothing more: the first time a browser needs an identity, the accounts Worker hands it a signed guest token, which the API checks the same way it checks a signed-in person's token. When a guest signs in, their designs move to the account. Accounts unlock the features that need one: [teams](/help/collaboration/teams/), [API tokens](/help/account-and-data/api-tokens/), and, if you set them up, email and the MCP server.
 

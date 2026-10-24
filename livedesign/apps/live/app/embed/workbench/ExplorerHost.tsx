@@ -22,7 +22,6 @@ import {
   type WelcomeTelemetryType,
 } from '@liveworkspace/explorer';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
-import { signInEnabled } from '@/lib/auth-config';
 import { loadWelcome } from '@/lib/explorer-welcome';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
@@ -199,7 +198,7 @@ export function ExplorerHost({
           manifest: welcome,
           onFirstRun,
           signedIn: isSignedIn,
-          signInHref: signInEnabled ? signInHref : null,
+          signInHref,
           onSelected: trackWelcome,
           onOpened: trackWelcomeOpened,
         }}

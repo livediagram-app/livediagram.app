@@ -139,7 +139,7 @@ Client state: `usePresenceState` gains `liveAgents: AgentPresence[]`, replaced o
 
 ### REST
 
-All `guest-or-clerk`; tab-scoped grants reach their own tab only; a trashed design answers 410 through
+All `guest-or-account`; tab-scoped grants reach their own tab only; a trashed design answers 410 through
 `missingDesign`.
 
 | Method | Path                                                       | Gate                               | Success                                  |

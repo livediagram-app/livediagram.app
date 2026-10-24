@@ -7,7 +7,7 @@
 // memory and sends as `Authorization: Bearer` (docs/specs/014-identity/auth-and-guest-access.md).
 // A browser with no `ldes_signed_in` hint is a guest and asks nothing.
 //
-// Loaded lazily by AuthProvider, like the Clerk bridge it replaced, so the
+// Loaded lazily by AuthProvider, so the
 // first load of every route stays free of it; it publishes the same distilled
 // DeferredAuthState the app tree already consumes.
 

@@ -6,24 +6,17 @@
 
 We don't put auth in front of the core experience. We add auth where it _enables_ something the user wants (sharing, syncing, collaborating, paying).
 
-## Three deployment modes
+## Sign-in is always on
 
-| Mode                 | Configuration                                                                                                                               | Frontend                                                                                          | API worker                                                   |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| Hybrid (production)  | `NEXT_PUBLIC_SIGN_IN_ENABLED=true` + the api's `ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`               | The accounts bridge asks for the session. Guests + signed-in users coexist.                       | Verifies Bearer: an account's access token or a guest token. |
-| Guest-only           | The flag unset (typical self-host without sign-in per [Open source + distribution](../002-project-scope/open-source-and-business-model.md)) | No bridge. Auth routes show "not enabled" notice. Editor unchanged.                               | No Bearer to verify; every caller is a link visitor.         |
-| Guest-only (partial) | Frontend flag on, api unconfigured                                                                                                          | `/api/auth/*` answers 404 `sign_in_not_configured`, so no visitor gets a guest token or signs in. | No Bearer to verify.                                         |
+The live app always offers sign-in; there is no build-time switch (Clerk and `NEXT_PUBLIC_SIGN_IN_ENABLED` are gone).
+`AuthProvider` always mounts the accounts bridge, `useAccountBootstrap` always reads the session, `AuthControls`
+always shows Sign in or the account, and `/sign-in/` and `/get-started/` always hand off to the accounts site. Only the
+test build differs: `NEXT_PUBLIC_E2E_AUTH=1` (`e2eAuthEnabled` in `apps/live/lib/auth-config.ts`) swaps the bridge for
+the test-only `E2EAuthBridge`.
 
-The first two are the supported modes. The third is a misconfiguration — useful for debugging, not for prod.
-
-The `signInEnabled` flag (`apps/live/lib/auth-config.ts`) is the single source of truth on the frontend. Every sign-in-aware module reads it (or `sessionsEnabled`, which also counts the test-only e2e bridge) and picks one of two implementations at module load:
-
-- `AuthProvider` mounts no bridge, so the deferred auth context settles as a guest.
-- `useAccountBootstrap` returns a stable stub (`isSignedIn: false`, `authLoaded: true`, `accountUserId: null`).
-- `AuthControls` renders nothing.
-- `/sign-in/` and `/get-started/` render an `AuthDisabledNotice` with a "Continue as guest" CTA.
-
-Because `NEXT_PUBLIC_*` vars are baked at build time, the choice is a compile-time constant — no per-render cost and sign-in-only code paths can be tree-shaken out of guest-only builds.
+The api is what needs configuring: `ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID` and `ACCOUNTS_CLIENT_SECRET`.
+Without them `/api/auth/*` answers 404 `sign_in_not_configured`, so no visitor gets a guest token or signs in, and the
+api verifies no Bearer: a misconfiguration, useful for debugging, not a mode to run.
 
 **At most one session request per page load.** The root layout's `AuthProvider` is deferred: the app tree consumes `DeferredAuthContext`, and a lazily-loaded `AccountsBridge` (`apps/live/components/providers/AccountsBridge.tsx`, an async chunk) asks the api for the session with one `POST /api/auth/token` and publishes the result. A browser without the `ldes_signed_in` hint ([below](#who-is-a-guest-before-sign-in-answers)) has no session to find, so it settles as a guest at once and asks nothing: a guest's page load makes no auth request. It holds the access token in memory only, reuses it until a minute before it expires, and shares one refresh among concurrent asks (each refresh rotates the refresh token, so two at once would race). Signing in and out are full-page visits, so no state from before signing in survives into the signed-in page.
 
@@ -176,7 +169,6 @@ A guest's new design is **This Browser** by default ([Offline Mode](../006-desig
 
 **Why.** A guest cloud design belongs to the guest whose token this browser keeps in `localStorage`. Clearing site data loses that token, and with it every design under it: the server keeps the rows for good, but nobody can reach them again. Many first visits are someone trying the product out, so most of those rows are orphans the moment they are written. A design in This Browser is exactly as durable for a guest (the same clear wipes IndexedDB), costs the server nothing, and opens without a round trip ([Offline Mode → Instant open](../006-design/offline-mode.md#instant-open)).
 
-- **Only with sign-in enabled.** Local first applies in the hybrid mode, where a guest has an account to move to. A guest-only deployment ([Three deployment modes](#three-deployment-modes)) keeps livedesign as the default: there is no account to come to, so the server is the only place a design is kept beyond the browser, and the operator chose to run one.
 - **Signed-in people are unchanged.** Their default stays livedesign.
 - **Moving to the server is always the guest's own act**: Sync Design (from the Share dialog, which explains why first, [Offline Mode → Sharing a design in This Browser](../006-design/offline-mode.md#sharing-a-design-in-this-browser), or the Explorer), or the prompt after signing in (below). No guest design is uploaded silently.
 - **Nothing is purged.** Guest cloud designs already on the server stay where they are; this changes where new ones start, not what happens to old ones.

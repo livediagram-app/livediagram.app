@@ -72,7 +72,6 @@ Everyone who uses livedesign is either signed in to their liveworkspace account 
 
 1. Register your deployment as an OAuth client of the accounts Worker. Its redirect URI is `https://<your-host>/api/auth/callback`, and it needs its own resource (the audience its access tokens carry). You get a client id and a client secret.
 2. Set the values on the two apps:
-   - **Live (build-time, browser-side)**: set `NEXT_PUBLIC_SIGN_IN_ENABLED=true` in your CI build env, or in `apps/live/.env.production`. The deploy workflow sets it for you when the `ACCOUNTS_CLIENT_ID` repo secret is set.
    - **API (worker secrets)**:
 
      ```sh

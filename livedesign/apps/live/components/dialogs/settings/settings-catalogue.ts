@@ -131,14 +131,9 @@ function emailSwitch(
 // Power-user-only rows (docs/specs/007-editor/power-user-mode.md) need the mode on; absent otherwise.
 // `preferences` (the live values) lets a nested row follow its parent switch
 // for the same reason: a setting for a panel that is off has nothing to act on.
-// `authEnabled` is whether this deployment offers sign-in at all
-// (`signInEnabled`): API tokens are signed-in only, so on a no-auth self-host they
-// are absent end to end rather than a sign-in prompt with nowhere to go
-// (docs/specs/015-api/public-api-and-tokens.md#37-self-hosting).
 type SettingsRowContext = {
   emailEnabled: boolean;
   signedIn: boolean;
-  authEnabled?: boolean;
   powerUserMode?: boolean;
   preferences?: UserPreferences;
   // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
@@ -1412,7 +1407,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description:
           'Let your scripts, and AI tools connected over MCP, use livedesign as you. Treat each like a password: it lasts six months, and you can revoke it any time.',
         helpArticle: 'apiTokens',
-        available: (ctx) => ctx.authEnabled === true,
       },
     ],
   },

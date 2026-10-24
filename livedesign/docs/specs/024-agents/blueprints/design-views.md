@@ -638,7 +638,7 @@ stale: boolean }`.
 
 ### REST
 
-Both doors are `guest-or-clerk`, token-usable, read-gated exactly like the plain GETs they extend (`gateRead` on the
+Both doors are `guest-or-account`, token-usable, read-gated exactly like the plain GETs they extend (`gateRead` on the
 tab, `gateGrant` on the design), and answer `200 text/plain; charset=utf-8` (or `application/json` with `json=1`)
 through `textPlain`, with `Cache-Control: no-cache`, the CORS set and the `ETag` the tab read carries
 ([Agent changesets](../agent-changesets.md#the-tab-revision)); a view never answers 304 (`VW44`).

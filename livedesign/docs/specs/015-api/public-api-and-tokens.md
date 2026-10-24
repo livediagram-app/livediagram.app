@@ -286,11 +286,9 @@ self-host that hasn't configured sign-in runs in pure-guest mode, and in that
 mode the feature is **absent end to end** — there is no API Tokens category to
 open and no way to mint one:
 
-- **Frontend** — the Settings API Tokens category (and the AI Tools link row to
-  it) renders only when `signInEnabled` (`apps/live/lib/auth-config.ts`, derived
-  from `NEXT_PUBLIC_SIGN_IN_ENABLED === 'true'`). This is the **same
-  flag** that already hides the teams / sign-in sections of the sidebar, so when
-  auth is off the category simply isn't in the list.
+- **Frontend** — the live app always offers sign-in, so the Settings API Tokens
+  category is listed; for a guest it says why it is empty and links to sign in,
+  and signing in there settles as a guest again.
 - **Backend** — the `/api/tokens` routes require a verified account identity, and
   with `ACCOUNTS_URL` or `API_RESOURCE` unset the worker resolves no account identity at all
   ([`auth/accounts.ts`](../../../apps/api/src/auth/accounts.ts) returns null), so the
@@ -365,8 +363,7 @@ hardening landed first:
    gate, [Teams](../013-workspace/teams.md)).
 4. ✅ The **Settings API Tokens category** (`SettingsTokensRow`) — the management
    UI ([§3.6](#36-management--the-settings-dialogs-api-tokens-category)); it
-   replaced the original Explorer "API tokens" page,
-   rendered only when `signInEnabled` so it's absent on a no-auth self-host
+   replaced the original Explorer "API tokens" page
    ([§3.7](#37-self-hosting)).
 5. ✅ Wire token resolution into `resolveOwner`; enforce the read-only flag
    ([§3.4](#34-access--full-read--write-with-an-optional-read-only-flag)).

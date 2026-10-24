@@ -49,7 +49,6 @@ Non-secret configuration (`TELEMETRY_ENABLED`, `RESEND_FROM`, `APP_BASE_URL`, `C
 
 Some keys are designed to be public; they go in `NEXT_PUBLIC_*` vars and end up in the bundle:
 
-- `NEXT_PUBLIC_SIGN_IN_ENABLED` — whether the editor offers sign-in (a flag, not a key).
 - Public URLs (`NEXT_PUBLIC_API_BASE`, etc.).
 
 If a value's documentation calls it "public", "publishable", or "client", it's fine for client bundles.
@@ -69,8 +68,8 @@ Workers and server-only code read these from `env` bindings — not from `proces
 Each app or worker that needs env vars ships a `.env.example` designing **which variables are required** with placeholder values:
 
 ```
-# Required for production builds
-NEXT_PUBLIC_SIGN_IN_ENABLED=
+# Public, baked into the bundle
+NEXT_PUBLIC_API_BASE=
 # (no secret keys here — those go in the Cloudflare dashboard)
 ```
 

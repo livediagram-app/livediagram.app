@@ -104,8 +104,7 @@ reached from Home's What Happened (**See Timeline**). The retired `/explorer/act
   reader by email.
 - **New Team** is the group's last row, for signed-in readers only. Teams are made and run in the Explorer
   ([Teams](teams.md)): it opens the team dialog (name, optional organisation), and the team made opens.
-- A **guest**, on a deployment with sign-in configured, sees the sign-in nudge ("Sign in to access Teams") as the
-  group's last item instead of New Team. A deployment without sign-in shows neither.
+- A **guest** sees the sign-in nudge ("Sign in to access Teams") as the group's last item instead of New Team.
 
 ### More
 
@@ -173,17 +172,17 @@ its own (**Timeline**).
 
 ## Visibility at a glance
 
-| Row           | Guest (sign-in configured) | Guest (no sign-in deployment) | Signed in              |
-| ------------- | -------------------------- | ----------------------------- | ---------------------- |
-| Overview      | All four                   | All four                      | All four               |
-| My Work       | Yes                        | Yes                           | Yes                    |
-| Teams         | None                       | None                          | One row per team       |
-| Invites       | No                         | No                            | While one is pending   |
-| New Team      | No                         | No                            | Yes                    |
-| Sign-in nudge | Yes                        | No                            | No                     |
-| This Browser  | While it holds designs     | While it holds designs        | While it holds designs |
-| Library       | Yes                        | Yes                           | Yes                    |
-| Trash         | Yes                        | Yes                           | Yes                    |
+| Row           | Guest                  | Signed in              |
+| ------------- | ---------------------- | ---------------------- |
+| Overview      | All four               | All four               |
+| My Work       | Yes                    | Yes                    |
+| Teams         | None                   | One row per team       |
+| Invites       | No                     | While one is pending   |
+| New Team      | No                     | Yes                    |
+| Sign-in nudge | Yes                    | No                     |
+| This Browser  | While it holds designs | While it holds designs |
+| Library       | Yes                    | Yes                    |
+| Trash         | Yes                    | Yes                    |
 
 ## Expansion
 
@@ -206,7 +205,7 @@ The groups are told apart in one of two ways, following **Minimal chrome**
 
 Below the first group, a title and its hairline occupy the same box, so switching moves nothing below Home's group;
 only the first title's own height comes or goes. Switching happens at render, from the preference, read once the page
-has hydrated (a deployment without sign-in prerenders the sidebar, and the render that hydrates it matches that HTML);
+has hydrated (the render that hydrates the sidebar matches its prerendered HTML);
 nothing moves on its own.
 
 ## Alignment
@@ -279,8 +278,7 @@ Top to bottom:
    header carries no product menu ([Live app: header](../007-editor/live-app.md)).
 5. **The sign-in note** for a signed-out guest: one quiet line under the Current Design card ("Keep your work. A free
    account saves it across devices." with **Sign in**, on a phone "Keep your work." with **Sign in** alone so it stays one
-   line; on a deployment without sign-in, "No sign-in here. Only this browser can open your designs.": they are saved, but belong to this browser's guest id, so "Browser only" would contradict the card's Private), dismissible as the sign-in
-   notice is. Minimal chrome drops it.
+   line), dismissible as the sign-in notice is. Minimal chrome drops it.
 
 While the panel is open, the trays that hang from the palette strip (a tab's "is empty" tray, the mode banners) step
 aside: the panel reaches under the strip and they would cover its header.

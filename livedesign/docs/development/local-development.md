@@ -106,12 +106,9 @@ The editor works without sign-in. To exercise the signed-in code paths, run live
      --resource http://localhost/api
    ```
 
-3. Drop the values into the two env files:
+3. Drop the values into the api's env file (the live app always offers sign-in):
 
    ```sh
-   # apps/live/.env.local (gitignored)
-   NEXT_PUBLIC_SIGN_IN_ENABLED=true
-
    # apps/api/.dev.vars (gitignored)
    ACCOUNTS_URL=http://localhost:3000
    API_RESOURCE=http://localhost/api

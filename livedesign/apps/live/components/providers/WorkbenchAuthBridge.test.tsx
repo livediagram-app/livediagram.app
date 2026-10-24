@@ -10,16 +10,7 @@ import { useEffect, useLayoutEffect, type ReactNode } from 'react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { WorkbenchSession } from './workbench-session-context';
 
-const config = vi.hoisted(() => ({ signIn: true }));
-vi.mock('@/lib/auth-config', () => ({
-  get signInEnabled() {
-    return config.signIn;
-  },
-  get sessionsEnabled() {
-    return config.signIn;
-  },
-  e2eAuthEnabled: false,
-}));
+vi.mock('@/lib/auth-config', () => ({ e2eAuthEnabled: false }));
 vi.mock('next/navigation', () => ({ usePathname: () => '/embed/workbench/' }));
 const bridges = vi.hoisted(() => ({ mounted: 0 }));
 vi.mock('next/dynamic', () => ({
@@ -155,12 +146,6 @@ describe('WorkbenchAuthBridge', () => {
 });
 
 describe('the workbench page’s surroundings', () => {
-  for (const clerk of [true, false]) {
-    describe(clerk ? 'with sign-in configured' : 'without sign-in', () => {
-      beforeEach(() => {
-        config.signIn = clerk;
-      });
-
       it('never read as a settled guest, however long they wait', async () => {
         vi.useFakeTimers();
         const { AuthProvider, boot, auth } = await load();
@@ -214,6 +199,4 @@ describe('the workbench page’s surroundings', () => {
         core.setTokenProvider(null);
         core.setWorkbenchConfinement(null);
       });
-    });
-  }
 });

@@ -252,7 +252,7 @@ See [Open source + distribution](docs/specs/002-project-scope/open-source-and-bu
 See [Secrets policy](docs/specs/002-project-scope/secrets-policy.md). **Repo is public — no secrets in source. Ever.**
 
 - All secrets via env vars: `.env.local` (gitignored) for dev, `wrangler secret put` for Workers, dashboard env vars for Pages.
-- Client bundles only carry values explicitly prefixed `NEXT_PUBLIC_*` and only when documented as publishable (e.g. `NEXT_PUBLIC_SIGN_IN_ENABLED`).
+- Client bundles only carry values explicitly prefixed `NEXT_PUBLIC_*` and only when documented as publishable (e.g. `NEXT_PUBLIC_API_BASE`).
 - Server-only secrets (the accounts client secret, Resend, the index, media and telemetry keys) never appear in client code.
 - Each app/worker that needs env vars ships a `.env.example` designing what's required.
 

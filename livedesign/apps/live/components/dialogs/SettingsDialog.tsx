@@ -27,7 +27,6 @@ import {
 } from '@/components/dialogs/settings/settings-panel-host';
 import type { UserPreferences } from '@/lib/user-preferences';
 import { isPowerUserMode } from '@/lib/power-user-mode';
-import { signInEnabled } from '@/lib/auth-config';
 import { useWorkbenchSession } from '@/components/providers/workbench-session-context';
 
 type SettingsDialogProps = {
@@ -80,7 +79,6 @@ export function SettingsDialog({
       visibleCategories({
         emailEnabled,
         signedIn,
-        authEnabled: signInEnabled,
         powerUserMode,
         preferences: settings,
         workbench,
