@@ -240,7 +240,7 @@ See [Open source + distribution](docs/specs/002-project-scope/open-source-and-bu
 
 - The codebase is **MIT-licensed** and **publicly viewable**. Anyone can self-host.
 - A free hosted version runs alongside at livediagram.app. **No paid tier and no plan to introduce one.**
-- Don't add code that breaks self-hosting (no required SaaS calls, no license checks gating the core editor). Sign-in (the liveworkspace accounts Worker) is optional: when unset the api worker and live frontend degrade to pure-guest mode.
+- Don't add code that breaks self-hosting (no required SaaS calls, no license checks gating the core editor). Every build offers sign-in through the liveworkspace accounts Worker, which also gives guests their identity; a visitor never has to sign in.
 - No "Pro features" flags, no billing integration. If we ship it, every user gets it.
 
 ## Secrets policy
@@ -248,7 +248,7 @@ See [Open source + distribution](docs/specs/002-project-scope/open-source-and-bu
 See [Secrets policy](docs/specs/002-project-scope/secrets-policy.md). **Repo is public — no secrets in source. Ever.**
 
 - All secrets via env vars: `.env.local` (gitignored) for dev, `wrangler secret put` for Workers, dashboard env vars for Pages.
-- Client bundles only carry values explicitly prefixed `NEXT_PUBLIC_*` and only when documented as publishable (e.g. `NEXT_PUBLIC_SIGN_IN_ENABLED`).
+- Client bundles only carry values explicitly prefixed `NEXT_PUBLIC_*` and only when documented as publishable (e.g. `NEXT_PUBLIC_TELEMETRY_ENABLED`).
 - Server-only secrets (the accounts client secret, Resend, the index and media keys) never appear in client code.
 - Each app/worker that needs env vars ships a `.env.example` documenting what's required.
 

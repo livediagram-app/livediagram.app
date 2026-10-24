@@ -28,10 +28,6 @@ vi.mock('next/link', () => ({
   ),
 }));
 vi.mock('@/lib/telemetry', () => ({ communityTelemetry: h.telemetry }));
-vi.mock('@/lib/session', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/lib/session')>()),
-  signInAvailable: true,
-}));
 // The api's session is not asked for in tests: the session reports whatever the test set.
 vi.mock('../auth/AccountSession', () => ({
   AccountSession: ({ onSession }: { onSession: (s: CommunitySession) => void }) => {

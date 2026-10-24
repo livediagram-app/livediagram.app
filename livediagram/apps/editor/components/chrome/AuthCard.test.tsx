@@ -60,7 +60,7 @@ describe('AuthCard on the Night Band frame', () => {
     expect(field.compareDocumentPosition(pitch) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
-  it('drops the pitch when asked (interstitials, guest-only notice)', () => {
+  it('drops the pitch when asked (interstitials)', () => {
     render(
       <AuthCard title="Signing you in" error="" pitch={false}>
         <span />

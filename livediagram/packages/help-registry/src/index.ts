@@ -792,7 +792,7 @@ export const articles: Article[] = [
   {
     slug: 'configuration',
     title: 'Configuration and Optional Auth',
-    description: 'Environment variables, optional sign-in, and guest-only mode.',
+    description: 'Environment variables, sign-in, and guests.',
     keywords:
       'env vars environment sign-in accounts setup secrets settings configure resend email ai openai google drive mcp telemetry r2 community',
     category: 'Self-Hosting',

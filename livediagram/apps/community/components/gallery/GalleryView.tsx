@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { hasActiveFilters } from '@/lib/query-state';
-import { SESSION_LOAD_TIMEOUT_MS, signInAvailable, type CommunitySession } from '@/lib/session';
+import { SESSION_LOAD_TIMEOUT_MS, type CommunitySession } from '@/lib/session';
 import { communityTelemetry } from '@/lib/telemetry';
 import { AccountSession } from '../auth/AccountSession';
 import { PostGrid } from '../shared/PostGrid';
@@ -35,7 +35,7 @@ export function GalleryView() {
   const { filters, facets, status, posts, setFilters, mine } = gallery;
   // My Shares waiting on a session that never answers (a network failure) says so rather than showing
   // placeholders forever; Try Again reloads the page, which asks afresh.
-  const waitingForSession = mine && signInAvailable && session?.loaded !== true;
+  const waitingForSession = mine && session?.loaded !== true;
   const [sessionTimedOut, setSessionTimedOut] = useState(false);
   // Each wait gets its own 10 seconds: once My Shares stops waiting (sign-in arrived, or My Shares was turned off),
   // an earlier time-out is forgotten, so turning it back on waits afresh.
@@ -70,10 +70,9 @@ export function GalleryView() {
           onTagChosen={onTagChosen}
           onSortChosen={onSortChosen}
           onCategoryChosen={onCategoryChosen}
-          mineAvailable={signInAvailable}
           onMineChosen={onMineChosen}
         />
-        {mine && signInAvailable ? <AccountSession onSession={setSession} /> : null}
+        {mine ? <AccountSession onSession={setSession} /> : null}
       </div>
 
       <section aria-label={mine ? 'My Shares' : 'Documents'}>
@@ -87,8 +86,8 @@ export function GalleryView() {
             title="We couldn't load the Community."
             onRetry={() => window.location.reload()}
           />
-        ) : status === 'signed-out' || (mine && !signInAvailable) ? (
-          <GallerySignedOut available={signInAvailable} />
+        ) : status === 'signed-out' ? (
+          <GallerySignedOut />
         ) : status === 'error' ? (
           <LoadError title="We couldn't load the Community." onRetry={gallery.retry} />
         ) : status === 'ready' && posts.length === 0 ? (

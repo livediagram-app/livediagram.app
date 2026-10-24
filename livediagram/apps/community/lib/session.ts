@@ -1,9 +1,5 @@
 // Who is signed in, for My Shares only (docs/specs/025-community/community.md "My Shares"). The rest of the
-// Community needs no identity, so the session is asked for only once My Shares is chosen (components/auth),
-// and on a build without sign-in (self-hosted, guest only) My Shares is not offered at all.
-
-// Baked in at build time, and on exactly when the editor's is (NEXT_PUBLIC_SIGN_IN_ENABLED, the same flag).
-export const signInAvailable = process.env.NEXT_PUBLIC_SIGN_IN_ENABLED === 'true';
+// Community needs no identity, so the session is asked for only once My Shares is chosen (components/auth).
 
 export type CommunitySession = {
   loaded: boolean;

@@ -103,7 +103,7 @@ are excluded just like today), each gets its own accordion section id
 unchanged. The **Assign Action** tile:
 
 - **Always shows, for everyone.** The feature is not sign-in gated:
-  a signed-out user (or a self-host without sign-in, [Open source + distribution](../002-project-scope/open-source-and-business-model.md)) can assign an
+  a signed-out user can assign an
   action to **themselves** — the picker offers a pinned **Myself** row in
   every session, so actions double as personal to-dos on the document.
   Only assigning to OTHER people needs an account: teammates come from

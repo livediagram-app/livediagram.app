@@ -13,7 +13,6 @@ import { renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { apiHeaders, setTokenProvider } from '@/lib/api/core';
 
-vi.mock('@/lib/auth-config', () => ({ signInEnabled: true, sessionsEnabled: true }));
 const { getToken } = vi.hoisted(() => ({
   getToken: vi.fn(async (opts?: { skipCache?: boolean }): Promise<string | null> =>
     opts?.skipCache ? 'jwt-fresh' : 'jwt-1',

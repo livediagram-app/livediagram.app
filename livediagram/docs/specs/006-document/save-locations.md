@@ -20,15 +20,14 @@ anything on the canvas. A document in This Browser still says what it is on the 
 
 ## The default depends on who is creating
 
-| Who                               | Default          |
-| --------------------------------- | ---------------- |
-| A guest, with sign-in enabled     | **This Browser** |
-| A signed-in person                | **livediagram**  |
-| Anyone on a guest-only deployment | **livediagram**  |
+| Who                | Default          |
+| ------------------ | ---------------- |
+| A guest            | **This Browser** |
+| A signed-in person | **livediagram**  |
 
 Why a guest starts local: [Auth + guest access → Guest documents start local](../014-identity/auth-and-guest-access.md#guest-documents-start-local).
 
-- One function answers it: `defaultSaveLocationFor({ signedIn, signInEnabled })` in
+- One function answers it: `defaultSaveLocationFor({ signedIn })` in
   `apps/editor/lib/save-locations.ts`. Every create from `/new` asks it at commit, through
   `resolveSaveLocation` in `useNewDocumentLocation` (`apps/editor/app/new/useNewDocumentLocation.ts`): a mode chosen
   in the wizard, its **Create** and **Skip**, and the wizard-less links (`/new?template=`, `/new?blank=1`).

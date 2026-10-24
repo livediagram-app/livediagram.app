@@ -7,9 +7,6 @@
 import { renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-const config = vi.hoisted(() => ({ signInEnabled: true }));
-vi.mock('@/lib/auth-config', () => config);
-
 import { useNewDocumentLocation } from './useNewDocumentLocation';
 
 function setHint(signedIn: boolean) {
@@ -25,7 +22,6 @@ const render = (initial: Props) =>
 describe('useNewDocumentLocation', () => {
   afterEach(() => {
     setHint(false);
-    config.signInEnabled = true;
   });
 
   describe('resolveSaveLocation', () => {
@@ -63,12 +59,6 @@ describe('useNewDocumentLocation', () => {
     it('keeps a folder or team link on livediagram', async () => {
       const { result } = render({ authLoaded: false, accountUserId: null });
       await expect(result.current.resolveSaveLocation(true, vi.fn())).resolves.toBe('livediagram');
-    });
-
-    it('keeps everyone on livediagram without sign-in', async () => {
-      config.signInEnabled = false;
-      const { result } = render({ authLoaded: false, accountUserId: null });
-      await expect(result.current.resolveSaveLocation(false, vi.fn())).resolves.toBe('livediagram');
     });
   });
 });

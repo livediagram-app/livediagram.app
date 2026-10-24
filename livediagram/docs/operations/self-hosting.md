@@ -50,11 +50,10 @@ Those two are the only **required** ones — the deploy workflow uses raw `pnpm 
 
 The hosted version signs people in with their liveworkspace account, through the liveworkspace accounts Worker, and the same Worker gives every guest their identity: a year-long guest token (`guest_<uuid>`), fetched once per browser through `/api/auth/guest` and sent as a Bearer like an access token ([Auth + guest access](../specs/014-identity/auth-and-guest-access.md#guest-identity)). So a deployment needs an accounts Worker even if nobody will sign in. Without one, `/api/auth/guest` returns straight to `/auth/guest#error=guest_not_configured`: visitors have no guest identity and cannot own documents on the server. They can still draw in documents in This Browser.
 
-To connect your deployment (steps 1 and 2 are needed for guests; the frontend flag in step 2 turns sign-in on):
+To connect your deployment (needed for guests and for sign-in alike):
 
 1. Register your deployment as an OAuth client of an accounts Worker. Its redirect URI is `https://<your-host>/api/auth/callback`, and it needs its own resource (the audience its access tokens carry). Register it for the app `livediagram.app` (`register-client.ts --app livediagram.app`), under which the accounts Worker keeps its settings, sign-ups and milestone emails. You get a client id and a client secret.
-2. Set the values on the apps:
-   - **Editor and Community (build-time, browser-side)**: set `NEXT_PUBLIC_SIGN_IN_ENABLED=true` in your CI build env, or in `apps/editor/.env.production` and `apps/community/.env.production` (Community uses it only for My Shares).
+2. Set the values on the api:
    - **API (worker secrets)**:
 
      ```sh
@@ -68,9 +67,9 @@ To connect your deployment (steps 1 and 2 are needed for guests; the frontend fl
 
 3. **Teams ([Teams](../specs/013-workspace/teams.md)) need nothing extra.** Invite auto-connection matches pending invites against the verified `email` claim on the access token, which the accounts Worker always includes. The worker never trusts a client-supplied email.
 
-4. **API tokens ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md)) come with sign-in.** They're a signed-in-only feature: tokens are liveworkspace account tokens (`lwt_`), made and revoked on liveworkspace.app, and the api worker checks each one with liveworkspace. A guest-only self-host has no accounts and therefore no tokens (nothing to configure).
+4. **API tokens ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md)) come with sign-in.** They're a signed-in-only feature: tokens are liveworkspace account tokens (`lwt_`), made and revoked on liveworkspace.app, and the api worker checks each one with liveworkspace.
 
-With the api's accounts values set and `NEXT_PUBLIC_SIGN_IN_ENABLED` unset, the deployment is guest-only: every visitor is a guest with a guest token, and the frontend mounts no session bridge, so it renders the editor without any sign-in UI. That is a fully supported path. With the accounts values unset too, the api worker resolves no owner for any request, so only documents in This Browser work. Preferences and display names are the accounts Worker's to keep, so without it they stay in each browser: Settings work and persist there, and a person's name shows to others live in the room, but a name is not stored on the server, so places that read it later (a document's owner, comment authors in the api, team members) show their placeholder instead (a team member's email address, "Anonymous" for a comment author).
+Every build offers sign-in; nobody has to use it, since every visitor is a guest with a guest token until they do. With the accounts values unset, the api worker resolves no owner for any request, so only documents in This Browser work. Preferences and display names are the accounts Worker's to keep, so without it they stay in each browser: Settings work and persist there, and a person's name shows to others live in the room, but a name is not stored on the server, so places that read it later (a document's owner, comment authors in the api, team members) show their placeholder instead (a team member's email address, "Anonymous" for a comment author).
 
 See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for the hybrid auth model.
 

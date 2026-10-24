@@ -162,13 +162,13 @@ export function ConfigSources() {
   );
 }
 
-/** Optional sign-in with a guest-only fallback: a config switch picks the
- *  identity path, but the editor works either way. */
+/** Signed in or a guest: each request takes one identity path, and the
+ *  editor works either way. */
 export function GuestFallback() {
   return (
     <Scene w={420} h={244}>
       {/* The config toggle */}
-      <Shape x={148} y={20} w={124} h={40} kind="diamond" label="Sign-in on?" labelTone="strong" />
+      <Shape x={148} y={20} w={124} h={40} kind="diamond" label="Signed in?" labelTone="strong" />
 
       {/* Configured path */}
       <Shape x={28} y={104} w={132} h={40} kind="rect" label="Signed-in" labelTone="strong" />
@@ -184,7 +184,7 @@ export function GuestFallback() {
       <path d="M272 40 H324 V96" className="fill-none stroke-brand-400" strokeWidth={2} />
       <Arrow from={[324, 94]} to={[324, 104]} tone="accent" />
       <Label x={304} y={34} anchor="middle" size={10} tone="muted">
-        unset
+        no
       </Label>
 
       {/* Both lead to a working editor */}

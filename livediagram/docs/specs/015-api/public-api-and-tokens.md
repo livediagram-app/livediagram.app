@@ -327,28 +327,17 @@ Every other `/api/tokens` route answers `410 tokens_moved` (see the head of §3)
 
 ### 3.7 Self-hosting
 
-API tokens are gated on **auth being enabled**, exactly as teams and sign-in
-are ([Teams](../013-workspace/teams.md), [Auth + guest access](../014-identity/auth-and-guest-access.md)). A
-self-host that hasn't turned sign-in on runs in guest-only mode, and in that
-mode the feature is **absent end to end** — there is no API Tokens category to
-open and no way to mint one:
+API tokens come with sign-in, as teams do ([Teams](../013-workspace/teams.md),
+[Auth + guest access](../014-identity/auth-and-guest-access.md)). Every build offers sign-in, so:
 
-- **Frontend** — the Settings API Tokens category renders only when `signInEnabled` (`apps/editor/lib/auth-config.ts`, from
-  `NEXT_PUBLIC_SIGN_IN_ENABLED`). This is the **same
-  flag** that already hides the teams / sign-in sections of the sidebar, so when
-  auth is off the category simply isn't in the list.
+- **Frontend** — the Settings API Tokens category always shows; to a guest its row says why it is
+  empty and links to sign in.
 - **Backend** — the `/api/tokens` routes require a verified account identity, and
   with `ACCOUNTS_URL` or `API_RESOURCE` unset the worker resolves no account identity at all
   ([`auth/accounts.ts`](../../../apps/api/src/auth/accounts.ts) returns null), so the
-  routes reject every caller. Belt and suspenders: even if the UI were somehow
-  reached, token creation / use is impossible without auth configured.
+  routes reject every caller: token creation and use are impossible without an accounts Worker.
 
-So enabling tokens is opt-in with auth, and disabling auth removes them
-cleanly: no orphaned page, no half-working endpoint. This takes nothing away
-from a guest-only self-host, because the whole canvas and guest model stays
-available without an account ([Auth + guest access](../014-identity/auth-and-guest-access.md);
-guests still need the accounts site configured, which mints their guest
-tokens). No new dependency beyond the sign-in that teams already need.
+No new dependency beyond the sign-in that teams already need.
 
 <!-- legacy-names -->
 
@@ -477,9 +466,7 @@ hardening landed first:
    gate, [Teams](../013-workspace/teams.md)).
 4. ✅ The **Settings API Tokens category** (`SettingsTokensRow`) — the management
    UI ([§3.6](#36-management--the-settings-dialogs-api-tokens-category)); it
-   replaced the original Explorer "API tokens" page,
-   rendered only when `signInEnabled` so it's absent on a no-auth self-host
-   ([§3.7](#37-self-hosting)).
+   replaced the original Explorer "API tokens" page ([§3.7](#37-self-hosting)).
 5. ✅ Wire token resolution into `resolveOwner`; enforce the read-only flag
    ([§3.4](#34-access--full-read--write-with-an-optional-read-only-flag)).
 6. ✅ **Docs + help, shipped WITH the feature** (help articles describe live

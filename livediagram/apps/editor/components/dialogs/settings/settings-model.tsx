@@ -15,7 +15,6 @@ import type { AppearanceSetting } from '@livediagram/ui';
 import { SHORTCUT_SECTIONS } from '@/components/dialogs/shortcut-sections';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
-import { signInEnabled } from '@/lib/auth-config';
 import { track } from '@/lib/telemetry';
 import type { UserPreferences } from '@/lib/user-preferences';
 import { presetSummaryLines } from './power-user-preset-rows';
@@ -41,10 +40,8 @@ import { SettingsTrashRow } from './SettingsTrashRow';
 // it changes in each of them (docs/specs/007-editor/user-preferences.md "Shared with every app").
 // A row's key is its preference's key, except a UI Scale part's (`uiScale-panels` is
 // `uiScalePanels`) and a Presenting option's (`presentation-loop` is a field of `presentation`):
-// settingKeyOfRow. Only where liveworkspace keeps the preferences: without sign-in they stay in
-// this browser.
-export function rowSharedByAllApps(rowKey: string, synced = signInEnabled): boolean {
-  if (!synced) return false;
+// settingKeyOfRow.
+export function rowSharedByAllApps(rowKey: string): boolean {
   return isAllSettingRow(rowKey);
 }
 

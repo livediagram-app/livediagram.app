@@ -624,7 +624,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Do I need sign-in or an AI key to self-host?',
-        a: 'No. Without sign-in configured, your copy runs in guest mode with persistence, sharing and real-time collaboration all working. Photo import reads sticky notes in the browser, or with a hosted model once you add an AI key, and email and the Google Drive mirror switch on once sign-in and their own keys are set up.',
+        a: 'You need a liveworkspace accounts Worker, your own or liveworkspace’s: it signs people in and gives every guest their identity, so nobody has to sign in to use your copy, with persistence, sharing and real-time collaboration all working. You do not need an AI key: photo import reads sticky notes in the browser, or with a hosted model once you add one, and email and the Google Drive mirror switch on once their own keys are set up.',
       },
     ],
   },

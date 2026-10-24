@@ -7,7 +7,6 @@ import {
 } from '@/components/providers/workbench-session-context';
 import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { registerTokenProvider } from '@/lib/api-client';
-import { sessionsEnabled } from '@/lib/auth-config';
 import { clearGuestToken } from '@/lib/guest-token';
 
 // What every page that talks to the api needs once a session can exist:
@@ -21,14 +20,6 @@ import { clearGuestToken } from '@/lib/guest-token';
 // Returns the relevant `useAuth` fields so callers don't need to also
 // destructure them — there's exactly one place those values come from
 // per page.
-//
-// When sign-in isn't configured for the deployment (docs/specs/002-project-scope/open-source-and-business-model.md self-host
-// path, `NEXT_PUBLIC_SIGN_IN_ENABLED` unset), the hook returns
-// a stable stub. The choice between the real session and the stub is
-// made at module load, then frozen — React's
-// rules-of-hooks require the same function to run on every render,
-// which this satisfies because `sessionsEnabled` is a compile-time
-// constant baked from a `NEXT_PUBLIC_*` env var.
 
 type BootstrapResult = {
   isSignedIn: boolean | undefined;
@@ -66,7 +57,7 @@ const HELD: BootstrapResult = {
   accountDisplayName: null,
 };
 
-function useAccountBootstrapEnabled(): BootstrapResult {
+export function useAccountBootstrap(): BootstrapResult {
   const workbench = useWorkbenchSession();
   const auth = useDeferredAuth();
   const held = workbench !== null || auth === DEFERRED_AUTH_PENDING;
@@ -127,24 +118,3 @@ function useAccountBootstrapEnabled(): BootstrapResult {
   if (held) return HELD;
   return { isSignedIn, authLoaded, accountUserId, accountDisplayName };
 }
-
-function useAccountBootstrapDisabled(): BootstrapResult {
-  const workbench = useWorkbenchSession();
-  const auth = useDeferredAuth();
-  if (workbench) return workbenchResult(workbench);
-  if (auth === DEFERRED_AUTH_PENDING) return HELD;
-  // Stable stub for sign-in-disabled deployments. `authLoaded: true`
-  // so anything gated on "has the session reported its state yet?" doesn't
-  // wait forever; `isSignedIn: false` / `accountUserId: null` keep the
-  // caller in pure-guest mode.
-  return {
-    isSignedIn: false,
-    authLoaded: true,
-    accountUserId: null,
-    accountDisplayName: null,
-  };
-}
-
-export const useAccountBootstrap = sessionsEnabled
-  ? useAccountBootstrapEnabled
-  : useAccountBootstrapDisabled;

@@ -1,16 +1,13 @@
 'use client';
 
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
-import { signInEnabled } from '@/lib/auth-config';
 
 // The Sign In link every signed-out Settings message ends with
 // (docs/specs/007-editor/user-preferences.md): the guest identity card, Delete
 // Account, the email stand-in card and the API Tokens manager. It returns to
-// the page the dialog was opened on. Absent where the deployment has no
-// sign-in, since there would be nowhere for it to go.
+// the page the dialog was opened on.
 export function SettingsSignInLink() {
   const { signInHref } = useAuthHrefs();
-  if (!signInEnabled) return null;
   return (
     <>
       {' '}

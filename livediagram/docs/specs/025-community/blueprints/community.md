@@ -306,7 +306,7 @@ Community app (`apps/community`):
 - My Shares: `is:mine` (`COMMUNITY_MINE_TOKEN`) in `q` switches `useGallery` to `fetchMine`, with the signed-in session
   from `AccountSession` (mounted only when My Shares is on: `POST /api/auth/token` on the same origin, skipped without the
   signed-in hint);
-  `apps/community/lib/session.ts` holds the sign-in flag (`signInAvailable` false hides the toggle),
+  `apps/community/lib/session.ts` holds
   `SESSION_LOAD_TIMEOUT_MS` and `signInHref`. `MineSummary` shows the **Your Shares** totals above the grid. Waiting
   past `SESSION_LOAD_TIMEOUT_MS` for the session, `GalleryView` shows `GalleryError` with a reload.
 - Post page (`apps/community/components/post/`): `PostView` over `usePost`, `EmbedFrame` (`/embed?s=<code>`, lazy,
@@ -326,7 +326,6 @@ Community app (`apps/community`):
 | Two first publishes at once             | 409 `already_published` (the one-post-per-document `UNIQUE`)                                                      |
 | A previous owner's post                 | Reads as none; `PUT` replaces it, `DELETE` 404 (G7)                                                               |
 | My Shares, sign-in never loads          | After `SESSION_LOAD_TIMEOUT_MS`: "We couldn't load the Community." Try Again reloads                              |
-| My Shares on a build without sign-in    | "My Shares needs an account."                                                                                     |
 | Owner revokes all share links           | Community link untouched (filtered)                                                                               |
 | Document trashed                        | Hidden everywhere; post page 404; restore lists it again                                                          |
 | Post hidden while a visitor has it open | Likes/reports 404; the UI shows "This post is no longer available."                                               |
@@ -416,7 +415,7 @@ Final copy:
 - Empty (no posts): "Nothing here yet. Be the first to share a document." Empty (filters): "No documents match these
   filters." Button **Clear Filters**. Error: "We couldn't load the Community." Button **Try Again**.
 - My Shares: signed out "Sign in to see your shares." with **Sign In**; nothing shared "You haven't shared anything
-  yet." with **Share Your Own**; a build without sign-in "My Shares needs an account."; totals headed **Your Shares**.
+  yet." with **Share Your Own**; totals headed **Your Shares**.
 - Post not found: "This document isn't in the Community any more." Link **Back to Community**.
 - Community bar: "Shared to the Community by <name>" · **Back to Community** · **Make a Copy**.
 - Report dialog: title **Report This Document**, reasons as radio rows, note optional, button **Send Report**,

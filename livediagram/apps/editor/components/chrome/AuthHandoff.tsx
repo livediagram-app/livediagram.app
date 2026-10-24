@@ -8,10 +8,8 @@
 import { buttonClassName, ButtonContent } from '@livediagram/ui';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect } from 'react';
-import { signInEnabled } from '@/lib/auth-config';
 import {
   AuthCard,
-  AuthDisabledNotice,
   RedirectingCard,
   accountsSignInUrl,
   guestReturnHref,
@@ -46,7 +44,6 @@ function Handoff({ defaultDestination }: { defaultDestination: string }) {
 }
 
 export function AuthHandoff({ defaultDestination }: { defaultDestination: string }) {
-  if (!signInEnabled) return <AuthDisabledNotice />;
   return (
     <Suspense fallback={<RedirectingCard />}>
       <Handoff defaultDestination={defaultDestination} />

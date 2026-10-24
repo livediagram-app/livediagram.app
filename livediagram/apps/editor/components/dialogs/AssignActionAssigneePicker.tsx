@@ -1,5 +1,4 @@
 import { initialsOf } from '@/lib/identity';
-import { signInEnabled } from '@/lib/auth-config';
 import { SOLID_BRAND_DARK, GlyphDisc } from '@livediagram/ui';
 
 // One pickable assignee (docs/specs/012-collaboration/assigned-actions.md): the pinned Myself row, or a joined
@@ -126,7 +125,7 @@ export function AssigneePicker({
       </div>
       {/* Teammate nudges: sign in (guests), join a team (signed-in
           with none), or invite (teams with no other joined member). */}
-      {!signedIn && signInEnabled ? (
+      {!signedIn ? (
         <p className="rounded-lg border border-dashed border-slate-300 px-3 py-2.5 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
           <a href={signInHref} className="font-medium text-brand-700 underline dark:text-brand-400">
             Sign in

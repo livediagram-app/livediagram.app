@@ -6,11 +6,11 @@ import { ConfigSources, GuestFallback } from '@/components/illustrations/self-ho
 export const metadata = helpMetadata({
   title: 'Configuration and Optional Auth',
   description:
-    'How a self-hosted livediagram is configured: environment variables, optional sign-in, and the pure-guest fallback.',
+    'How a self-hosted livediagram is configured: environment variables, sign-in, and guests.',
   path: '/help/self-hosting/configuration/',
 });
 
-<ArticleLayout title="Configuration and Optional Auth" description="The environment variables that shape a self-hosted instance, and how sign-in degrades gracefully to pure-guest mode." categoryTitle="Self-Hosting" categorySlug="self-hosting" subArticles={getSubArticles("configuration")}>
+<ArticleLayout title="Configuration and Optional Auth" description="The environment variables that shape a self-hosted instance, and how sign-in and guests reach the accounts Worker." categoryTitle="Self-Hosting" categorySlug="self-hosting" subArticles={getSubArticles("configuration")}>
 
 A self-hosted livediagram is configured through environment variables, secrets and each Worker's `wrangler.toml`, not application code. A few `wrangler.toml` values ship with livediagram.app's own settings (the MCP Worker's KV ids, the allowed AI origins, the MCP issuer and consent URL, and the guest-signing date), so a fork replaces those with its own. The most important thing to understand is that the optional features are genuinely optional: leave them unset and the editor still works perfectly, just in a simpler mode. This page covers how configuration is supplied and the main toggles you will care about.
 
@@ -28,23 +28,22 @@ Each app that needs configuration ships an example file documenting which variab
   <ConfigSources />
 </Figure>
 
-## Optional sign-in
+## Sign-in and guests
 
-Sign-in is optional, but a liveworkspace accounts Worker is not: it signs people in, and it also gives every guest their identity, a guest token kept in their browser. The app supports three modes depending on what you configure.
+Every livediagram build offers sign-in. What you configure is the API's link to a liveworkspace accounts Worker, which signs people in and also gives every guest their identity, a guest token kept in their browser.
 
-1. **Hybrid**, the production setup: the editor and community builds have `NEXT_PUBLIC_SIGN_IN_ENABLED=true`, and the API has the accounts Worker's address and your client's details (`ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`), so guests and signed-in users coexist.
-2. **Guest-only**, the typical self-host: set the API's accounts values but leave `NEXT_PUBLIC_SIGN_IN_ENABLED` unset. Everyone is a guest with a guest token, sign-in routes say sign-in isn't enabled and offer **Continue as guest**, and the editor is unchanged.
-3. **No accounts Worker at all**: nobody gets a guest identity, so nothing can be kept on the server. Only documents in This Browser work. It exists for trying the editor out, not for production.
+1. **With an accounts Worker**, the normal setup: the API has the accounts Worker's address and your client's details (`ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`), so guests and signed-in users coexist.
+2. **No accounts Worker at all**: nobody gets a guest identity, so nothing can be kept on the server and signing in fails. Only documents in This Browser work. It exists for trying the editor out, not for production.
 
 Signing in unlocks the features that need one: [teams](/help/collaboration/teams/), [API tokens](/help/account-and-data/api-tokens/), and, if you set them up, email, the Google Drive mirror and the MCP server.
 
 The accounts Worker can be your own deployment of liveworkspace's, so a self-hoster can still run with no outbound runtime traffic beyond their own hosting if they want to.
 
-## Guest-only fallback
+## Guests and accounts
 
-The API identifies the owner of a request in one of two equivalent ways, both sent as a bearer token and both checked against the accounts Worker's keys: a signed-in person's access token, or a guest's guest token. When sign-in is not turned on, every request simply uses the guest token, and the editor stays fully usable, with persistence, sharing, and real-time collaboration all working.
+The API identifies the owner of a request in one of two equivalent ways, both sent as a bearer token and both checked against the accounts Worker's keys: a signed-in person's access token, or a guest's guest token. Someone who never signs in simply uses the guest token, and the editor stays fully usable, with persistence, sharing, and real-time collaboration all working.
 
-<Figure caption="Whether sign-in is configured or not, requests resolve to a working editor.">
+<Figure caption="Signed in or not, requests resolve to a working editor.">
   <GuestFallback />
 </Figure>
 

@@ -30,7 +30,6 @@ import {
   useMenuButton,
   GlyphDisc,
 } from '@livediagram/ui';
-import { sessionsEnabled } from '@/lib/auth-config';
 import { track } from '@/lib/telemetry';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { accountInitial } from '@/lib/account-avatar';
@@ -208,12 +207,6 @@ function AccountMenu({
   );
 }
 
-function AuthControlsDisabled(_props: AuthControlsProps) {
-  // Sign-in is not part of this deployment.
-  // Render nothing so the header just shows the Share button.
-  return null;
-}
-
 // Door-with-arrow glyph — same 13px / 1.6 stroke convention as the
 // other header icons (ShareIcon in EditorHeader, etc.) so the
 // Sign-in pill reads as a peer of those buttons. Exported because the
@@ -229,4 +222,4 @@ export function SignInIcon({ size = 13 }: { size?: number } = {}) {
   );
 }
 
-export const AuthControls = sessionsEnabled ? AuthControlsEnabled : AuthControlsDisabled;
+export const AuthControls = AuthControlsEnabled;

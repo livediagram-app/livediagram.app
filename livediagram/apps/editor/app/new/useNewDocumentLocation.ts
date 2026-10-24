@@ -1,5 +1,4 @@
 import { useSyncExternalStore } from 'react';
-import { signInEnabled } from '@/lib/auth-config';
 import { defaultSaveLocationFor, type SaveLocationId } from '@/lib/save-locations';
 import { readSignedInHint } from '@/lib/signed-in-hint';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -26,12 +25,11 @@ export function useNewDocumentLocation(opts: {
     hasPlacementParams: boolean,
     settle: () => Promise<unknown>,
   ): Promise<SaveLocationId> => {
-    if (hasPlacementParams || !signInEnabled) return 'livediagram';
+    if (hasPlacementParams) return 'livediagram';
     if (!latest.current.authLoaded && latest.current.signedInHint) await settle();
     const now = latest.current;
     const location = defaultSaveLocationFor({
       signedIn: now.authLoaded ? !!now.accountUserId : now.signedInHint,
-      signInEnabled,
     });
     debugLog(`[new] save location=${location} settled=${now.authLoaded}`);
     return location;

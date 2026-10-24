@@ -7,24 +7,20 @@ describe('rowSharedByAllApps', () => {
   const rowKeys = SETTINGS_CATEGORIES.flatMap((c) => c.rows.map((r) => r.key));
 
   it('marks the rows whose setting every app shares, and only those', () => {
-    expect(rowSharedByAllApps('reduceMotion', true)).toBe(true);
-    expect(rowSharedByAllApps('uiScale-panels', true)).toBe(true);
-    expect(rowSharedByAllApps('uiScale-cornerButtons', true)).toBe(true);
+    expect(rowSharedByAllApps('reduceMotion')).toBe(true);
+    expect(rowSharedByAllApps('uiScale-panels')).toBe(true);
+    expect(rowSharedByAllApps('uiScale-cornerButtons')).toBe(true);
     // A setting two or more apps have is one shared setting (liveworkspace/docs/accounts.md "Common settings").
-    expect(rowSharedByAllApps('showMinimap', true)).toBe(true);
-    expect(rowSharedByAllApps('presentation-loop', true)).toBe(true);
-    expect(rowSharedByAllApps('presentationAutoAdvance', true)).toBe(true);
+    expect(rowSharedByAllApps('showMinimap')).toBe(true);
+    expect(rowSharedByAllApps('presentation-loop')).toBe(true);
+    expect(rowSharedByAllApps('presentationAutoAdvance')).toBe(true);
     // livediagram's own.
-    expect(rowSharedByAllApps('notifyDocumentJoin', true)).toBe(false);
-    expect(rowSharedByAllApps('whiteboardDockPosition', true)).toBe(false);
-  });
-
-  it('says nothing where preferences stay in this browser (no sign-in)', () => {
-    expect(rowSharedByAllApps('reduceMotion', false)).toBe(false);
+    expect(rowSharedByAllApps('notifyDocumentJoin')).toBe(false);
+    expect(rowSharedByAllApps('whiteboardDockPosition')).toBe(false);
   });
 
   it('marks the shared rows this editor offers', () => {
-    const shared = rowKeys.filter((key) => rowSharedByAllApps(key, true));
+    const shared = rowKeys.filter((key) => rowSharedByAllApps(key));
     expect(shared).toEqual(
       expect.arrayContaining([
         'reduceMotion',

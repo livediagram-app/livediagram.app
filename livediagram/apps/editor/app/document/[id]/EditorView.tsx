@@ -56,7 +56,6 @@ import { EditorAnchoredPopovers } from '@/components/panels/EditorAnchoredPopove
 import { ModifierHint } from '@/components/chrome/ModifierHintBanner';
 import { loadEditorSearchPanel } from '@/lib/editor-deferred-code';
 import { EditorPhotoImport } from '@/components/chrome/EditorPhotoImport';
-import { signInEnabled } from '@/lib/auth-config';
 import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { useDelayedReveal } from '@/hooks/ui/useDelayedReveal';
@@ -222,7 +221,7 @@ export function EditorView() {
   // doesn't restart the countdown; it only hides the card at render.
   const { dismissed: signInDismissed, dismiss: dismissSignIn } =
     useDismissibleBanner(SIGNIN_BANNER_DISMISS_KEY);
-  const signInTimerEnabled = signInEnabled && !accountUserId && appChrome && !signInDismissed;
+  const signInTimerEnabled = !accountUserId && appChrome && !signInDismissed;
   const signInDelayElapsed = useDelayedReveal(SIGNIN_BANNER_DELAY_MS, signInTimerEnabled);
   const showSignInBanner = signInTimerEnabled && !zenMode && signInDelayElapsed;
   const backdrop = resolveViewBackdrop(
