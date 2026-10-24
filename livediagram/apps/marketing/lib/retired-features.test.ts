@@ -45,11 +45,11 @@ describe('retired feature pages', () => {
 
   it('sends each one to a live page', () => {
     // Pages mode's own categories went to livedocuments, and Plan mode's to liveplanner, the apps that now
-    // make them.
+    // make them, at www as the sites registry names them.
     const live = new Set([
       '/',
-      'https://livedocuments.app/',
-      'https://liveplanner.app/',
+      'https://www.livedocuments.app/',
+      'https://www.liveplanner.app/',
       ...LANDING_SECTION_IDS.map((id) => `/features/${id}`),
     ]);
     for (const [from, to] of rules) {
