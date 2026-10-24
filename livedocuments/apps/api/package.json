@@ -22,7 +22,6 @@
     "@livedocuments/document-views": "workspace:*",
     "@livedocuments/edit-operations": "workspace:*",
     "@livedocuments/icons": "workspace:*",
-    "@liveworkspace/render-png": "workspace:*",
     "@livedocuments/templates": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/index-app": "workspace:*",

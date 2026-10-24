@@ -31,17 +31,8 @@ import {
   type CreationIntent,
 } from '@livedocuments/api-schema';
 import { getDocument, readReorderEntries, reorderTabs, seedTabs } from '../db';
-import {
-  badRequest,
-  CORS_HEADERS,
-  forbidden,
-  json,
-  notFound,
-  payloadTooLarge,
-  svgImage,
-} from '../responses';
+import { badRequest, CORS_HEADERS, forbidden, json, notFound, payloadTooLarge } from '../responses';
 import { documentDates, isDocumentSource } from '@livedocuments/api-schema';
-import { documentImageSvg } from '../document-image';
 import { redactDocumentForReader, redactDocumentForScope } from '../redact-document';
 import { answerOverview, parseViewQuery } from './document-views-route';
 import { handleDocumentSharedTabs } from './document-shared-tabs-route';
@@ -230,34 +221,6 @@ async function documentTabs(ctx: DocumentRouteContext, id: string): Promise<Resp
   return itemTabsResponse(itemTabsOf(rows, grant.tabScope), CORS_HEADERS);
 }
 
-// /api/documents/<id>/thumbnail: the cached SVG snapshot (docs/specs/006-document/document-snapshots.md), served by
-// the document (its row holds the cache's freshness), gated by the grant like a read. A native <img> can't send
-// auth headers, so the editor fetches it with headers and wraps the bytes in a blob URL; a miss is a 404 the
-// row turns into its icon.
-async function documentThumbnail(ctx: DocumentRouteContext, id: string): Promise<Response> {
-  const { env } = ctx;
-  const grant = await gateGrant(ctx, id);
-  if (!grant) return notFound();
-  const meta = await readDocumentMeta(env, id);
-  const outline = meta ? await documentRoom(env, id).outline() : null;
-  if (!meta || !outline) return notFound();
-  // A tab-scoped visitor (docs/specs/013-workspace/tab-scoped-share-links.md) gets their tab, never the
-  // first-tab snapshot.
-  const svg = await documentImageSvg(
-    env,
-    { id, name: meta.name, savedAt: outline.savedAt, thumbRenderedAt: meta.thumbRenderedAt },
-    grant.tabScope,
-  );
-  if (svg == null) {
-    return json(
-      { error: 'not_found' },
-      { status: 404, headers: { 'Cache-Control': 'private, max-age=86400' } },
-    );
-  }
-  // The client cache-busts via a `?v=<savedAt>` query param, so a long private max-age is safe.
-  return svgImage(svg, 'private, max-age=86400');
-}
-
 // Everything about one document, inside its Durable Object (document-room/document-route.ts).
 export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<Response> {
   const { request, env, segments } = ctx;
@@ -396,11 +359,6 @@ export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<
   // /api/documents/<id>/tabs
   const tabsOf = itemTabsRequest(request.method, segments, 'documents');
   if (tabsOf) return documentTabs(ctx, tabsOf);
-
-  // /api/documents/<id>/thumbnail
-  if (segments.length === 4 && segments[3] === 'thumbnail' && request.method === 'GET') {
-    return documentThumbnail(ctx, segments[2]!);
-  }
 
   // /api/documents/<id>
   if (segments.length === 3) {

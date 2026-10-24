@@ -11,6 +11,8 @@ import {
   roomGrantStep,
   owesShares,
   ShareSchedule,
+  type ExportQuery,
+  type ExportResult,
 } from '@liveworkspace/index-app';
 import { indexService } from '../index-service';
 import { DurableObject } from 'cloudflare:workers';
@@ -66,7 +68,7 @@ import { deleteOldChangesets } from '../db/changesets';
 import { documentHasTab } from '../db/tabs';
 import { documentMayServeImage } from '../db/image-grants';
 import { documentPlacesImage } from '../db/image-refs';
-import { renderDocumentImage, type ThumbnailSubject } from '../thumbnail';
+import { drawDocument } from '../thumbnail';
 import {
   documentShares,
   type ShareAnswer,
@@ -78,6 +80,7 @@ import { hasDocumentSchema, migrateDocumentSchema } from './document-schema';
 import {
   exportDocumentCopyFor,
   importDocumentCopy,
+  readDocumentHead,
   readDocumentMeta,
   readDocumentOutline,
   type DocumentCopy,
@@ -103,7 +106,7 @@ import { answerDocumentRequest, type RouteIdentity } from './document-route';
 //     its vocabulary without changing the room. Two edits to the same element are last-writer-wins in room order.
 //
 // Duration cost: the object is billed while it runs a request or an alarm, not while sockets idle (hibernation,
-// below). Content requests and thumbnail renders now run here rather than in the worker, so a document with heavy
+// below). Content requests and preview drawings now run here rather than in the worker, so a document with heavy
 // API traffic keeps its object awake for that traffic; an idle document costs nothing.
 //
 // WebSocket HIBERNATION (why this shape): sockets are accepted via
@@ -167,6 +170,9 @@ export { FLUSH_IDLE_MS, FLUSH_MIN_GAP_MS } from '@liveworkspace/index-app';
 // The document's own daily upkeep: old changesets go.
 export const MAINTENANCE_EVERY_MS = 24 * 60 * 60 * 1000;
 const MAINTENANCE_KEY = 'maintenance-at';
+
+// What the export door answers (exportImage).
+const SVG_CONTENT_TYPE = 'image/svg+xml; charset=utf-8';
 
 export class DocumentRoom extends DurableObject<Env> {
   // The object's state under the name the room's code has always used for it (`this.ctx` is the same).
@@ -530,15 +536,27 @@ export class DocumentRoom extends DurableObject<Env> {
     return response;
   }
 
-  async image(
-    documentId: string,
-    subject: ThumbnailSubject,
-    tabId: string | null,
-  ): Promise<string | null> {
+  // The export door (liveworkspace/docs/previews.md "The export door"): the document drawn on request for
+  // liveworkspace's previews, which store and serve it and decide when it is stale; nothing is kept here. Versioned
+  // by the last save, so a preview the service already holds costs one row read. Whether the asker may see the
+  // document (and, through a link, which tab) is the index's, checked before the service calls.
+  async exportImage(documentId: string, query: ExportQuery): Promise<ExportResult> {
+    const sql = this.state.storage.sql;
+    if (this.documentId === null && !hasDocumentSchema((q) => sql.exec(q))) {
+      return { status: 'not_found' };
+    }
     this.bindDocument(documentId);
-    return renderDocumentImage(this.requireEnv(), subject, tabId, {
-      defer: (p) => this.state.waitUntil(p),
-    });
+    const env = this.requireEnv();
+    const { meta, savedAt } = await readDocumentHead(env, documentId);
+    if (!meta) return { status: 'not_found' };
+    if (query.ifVersion === savedAt) return { status: 'unchanged', version: savedAt };
+    if (query.tabId !== null && !(await documentHasTab(env, documentId, query.tabId))) {
+      return { status: 'not_found' };
+    }
+    const svg = await drawDocument(env, { id: documentId, name: meta.name }, query.tabId);
+    return svg === null
+      ? { status: 'empty', version: savedAt }
+      : { status: 'ok', body: svg, contentType: SVG_CONTENT_TYPE, version: savedAt };
   }
 
   async hasTab(documentId: string, tabId: string): Promise<boolean> {

@@ -267,6 +267,23 @@ describe('the Trash, folders, teams and links', () => {
     expect(await res.json()).toEqual({ error: 'index_unavailable' });
   });
 
+  // A link's previews (image.svg, image.png, card) are liveworkspace's: the router sends them there
+  // (liveworkspace/docs/previews.md), so here they are paths like any other.
+  it('404s every share path but the resolve, the previews included, and passes the index refusal on', async () => {
+    for (const [method, path] of [
+      ['POST', '/api/share/CODE2345'],
+      ['GET', '/api/share'],
+      ['GET', '/api/share/CODE2345/image.svg'],
+      ['GET', '/api/share/CODE2345/card'],
+    ] as const) {
+      expect((await handleShare(ctx(method, path))).status, `${method} ${path}`).toBe(404);
+    }
+    routes['GET /share/GONE2345'] = () => Response.json({ error: 'not_found' }, { status: 404 });
+    const gone = await handleShare(ctx('GET', '/api/share/GONE2345'));
+    expect(gone.status).toBe(404);
+    expect(await gone.json()).toEqual({ error: 'not_found' });
+  });
+
   it('resolves a share code to what it opens', async () => {
     routes['GET /share/CODE2345'] = () =>
       Response.json({ item: item('P'), level: 'view', tabId: null });

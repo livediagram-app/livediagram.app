@@ -4,13 +4,14 @@
 // and a copy into a new document.
 //
 // Each is a call to the document's Durable Object (document-client.ts). Where the document is filed, its sharing and its
-// Trash are the index's; a purge also drops what the api keeps about the document beside it (db/documents.ts
-// `purgeDocumentRows`). A notice is worked out off the index's path: a share link made (the first-share milestone),
-// or someone's first time in through a link (the owner's "someone joined" email).
+// Trash are the index's; a purge also tells the media service the document places nothing now and drops its previews
+// there (liveworkspace/docs/previews.md "Purging"). A notice is worked out off the index's path: a share link made
+// (the first-share milestone), or someone's first time in through a link (the owner's "someone joined" email). The
+// export door draws the document for liveworkspace's previews, which call it with MEDIA_KEY.
 import { JOINED_TELEMETRY_TYPE, handleInternalItems as handle } from '@liveworkspace/index-app';
 import { notifyFirstShare } from '../email/notifications';
 import { deleteAccount } from '../db/account';
-import { purgeDocumentRows } from '../db/documents';
+import { purgeDocumentPreviews } from '../db/documents';
 import { forgetImageRefs } from '../document-room/document-outbox';
 import { mediaClient, mediaOwner } from '../media';
 import { documentRoom } from '../document-client';
@@ -24,12 +25,13 @@ export function handleInternalItems(
 ): Promise<Response> {
   return handle(request, {
     key: env.INDEX_KEY,
+    exportKey: env.MEDIA_KEY,
     waitUntil,
     handlers: {
       purge: async (id) => {
         await documentRoom(env, id).purge();
         // The media service hears the document places nothing now, so an image only it placed can be swept.
-        await Promise.all([purgeDocumentRows(env, id), forgetImageRefs(env, id)]);
+        await Promise.all([purgeDocumentPreviews(env, id), forgetImageRefs(env, id)]);
       },
       // A rescoped link (another level or tab) reloads its visitors into what it now opens; a revoked one sends
       // them away.
@@ -55,6 +57,8 @@ export function handleInternalItems(
           throw new Error(`media: merging the guest's images answered ${merged.status}`);
       },
       anonymise: (id, personId) => documentRoom(env, id).anonymise(personId),
+      // The document drawn, for liveworkspace's previews (document-room.ts `exportImage`).
+      export: (id, query) => documentRoom(env, id).exportImage(query),
       copy: async (from, to, tabId, copier) => {
         // The source as the copier may take it: anyone but the owner takes the comments as the tab read serves them
         // to them, other people's authors redacted.

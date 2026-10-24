@@ -7,13 +7,6 @@ compatibility_date = "2026-05-29"
 [dev]
 port = 8987
 
-# Bundle the share card's fonts (packages/render-png/fonts at the repo root, Inter Regular and Bold) as raw bytes for the resvg PNG
-# renderer (docs/specs/013-workspace/share-link-previews.md): a Worker has no system fonts, so without this the card
-# draws shapes but no text. Inheritable, so staging takes it too.
-[[rules]]
-type = "Data"
-globs = ["**/*.ttf", "**/*.otf"]
-
 # Plain (non-secret) vars. Everything here is every fork's default too, so
 # what only livedocuments.app runs with is NOT here: TELEMETRY_ENABLED and the
 # image gallery caps live in `hosted-vars.json`, which the deploy workflow adds
@@ -40,12 +33,9 @@ INDEX_ORIGIN = "https://liveworkspace.app"
 # from an older CLI.
 OAUTH_ISSUER = "https://mcp.livedocuments.app"
 
-# R2 bucket holding document snapshots and share cards (thumb/<documentId>, og/<documentId>,
-# docs/specs/006-document/document-snapshots.md). Uploaded images live in liveworkspace's media service
-# (MEDIA_KEY below), not here. Created out of band via `wrangler r2 bucket create livedocuments-images`.
-[[r2_buckets]]
-binding = "IMAGES"
-bucket_name = "livedocuments-images"
+# No R2 bucket: uploaded images live in liveworkspace's media service (MEDIA_KEY below), and a document's previews
+# (its Explorer picture, live image and share card) are liveworkspace's too, drawn on request through the export
+# door (liveworkspace/docs/previews.md).
 
 # Per-owner rate limiter (Cloudflare Workers Rate Limiting API).
 # Caps writes at 300 / 60s per owner: a generous ceiling for normal
@@ -218,7 +208,7 @@ simple = { limit = 30, period = 60 }
 # carry over from the production config above.
 #
 # The values that genuinely differ from production are the
-# R2 bucket, and the email vars that name the public origin. Everything
+# origins the api names (the index, the media service, the email vars). Everything
 # else agreeing with production is the point: staging is a rehearsal.
 # ---------------------------------------------------------------------------
 
@@ -241,12 +231,6 @@ INDEX_ORIGIN = "https://staging.liveworkspace.app"
 
 # The staging MCP worker's OAuth server, for the CLI against staging.
 OAUTH_ISSUER = "https://mcp-staging.livedocuments.app"
-
-# Own bucket: `wrangler r2 bucket create livedocuments-images-staging`. Sharing
-# production's would let staging's snapshots overwrite production's.
-[[env.staging.r2_buckets]]
-binding = "IMAGES"
-bucket_name = "livedocuments-images-staging"
 
 # Rate limiters. Namespace ids deliberately MATCH production's: Cloudflare
 # scopes a namespace per script, and `livedocuments-api-staging` is a different

@@ -364,9 +364,7 @@ describe('the caching rules', () => {
       DEPLOY_ENV: 'local',
       EDITOR: answering('<html></html>', { headers: { 'Content-Type': 'text/html' } }),
     };
-    expect((await dispatch('/new', page)).headers.get('Cache-Control')).toBe(
-      'no-store',
-    );
+    expect((await dispatch('/new', page)).headers.get('Cache-Control')).toBe('no-store');
   });
 
   it('answers a missing build asset with plain text, not the HTML 404 page', async () => {
@@ -393,6 +391,30 @@ describe('the caching rules', () => {
   });
 });
 
+describe("liveworkspace's previews under this address (liveworkspace/docs/previews.md)", () => {
+  it("sends every item's preview and a link's image and card to the previews service, never the api", async () => {
+    const fetchMock = vi.fn((_req: Request) => Promise.resolve(new Response('ok')));
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      const { env, api } = makeEnv();
+      await router.fetch(new Request('https://livedocuments.app/api/previews/items/d1?v=5'), env);
+      await router.fetch(new Request('https://livedocuments.app/api/share/ABC/image.png'), {
+        ...env,
+        PREVIEWS_ORIGIN: 'http://127.0.0.1:8792',
+      });
+      expect(fetchMock.mock.calls.map(([r]) => r.url)).toEqual([
+        'https://liveworkspace.app/api/previews/items/d1?v=5',
+        'http://127.0.0.1:8792/api/previews/share/ABC/image.png',
+      ]);
+      // What a link opens stays the api's.
+      await router.fetch(new Request('https://livedocuments.app/api/share/ABC'), env);
+      expect(api.urls).toEqual(['https://livedocuments.app/api/share/ABC']);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});
+
 describe("liveworkspace's Explorer under this address (@liveworkspace/sites/workspace-proxy)", () => {
   const page = () =>
     new Response('<!doctype html><title>Explorer</title>', {
@@ -412,7 +434,10 @@ describe("liveworkspace's Explorer under this address (@liveworkspace/sites/work
         '/explorer?settings=notifications',
         '/explorer/offline',
       ]) {
-        const res = await router.fetch(new Request(`https://livedocuments.app${path}#ignored`), env);
+        const res = await router.fetch(
+          new Request(`https://livedocuments.app${path}#ignored`),
+          env,
+        );
         expect(res.status).toBe(200);
         expect(res.headers.get('Cache-Control')).toBe('no-store');
         expect(fetchMock.mock.lastCall![0].url).toBe(`https://liveworkspace.app${path}`);
@@ -430,7 +455,10 @@ describe("liveworkspace's Explorer under this address (@liveworkspace/sites/work
     try {
       const { env, api } = makeEnv();
       const local = { ...env, WORKSPACE_ORIGIN: 'http://localhost:3000' };
-      await router.fetch(new Request('https://livedocuments.app/explorer/recent.txt?_rsc=x'), local);
+      await router.fetch(
+        new Request('https://livedocuments.app/explorer/recent.txt?_rsc=x'),
+        local,
+      );
       expect(fetchMock.mock.calls[0]![0].url).toBe(
         'http://localhost:3000/explorer/recent.txt?_rsc=x',
       );

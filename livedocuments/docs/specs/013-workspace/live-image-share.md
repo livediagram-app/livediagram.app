@@ -1,25 +1,14 @@
 # Live image share link
 
-> **Status: implemented, as part of [Document SVG snapshots](../006-document/document-snapshots.md).** The
-> endpoint below shipped, but two design points here are
-> now superseded by [Document SVG snapshots](../006-document/document-snapshots.md) — read it for the authoritative behaviour:
+> **Status: implemented, as liveworkspace's.** The live image is a platform capability now
+> ([Previews](../../../liveworkspace/docs/previews.md)): liveworkspace's previews serve it, on this app's address
+> through its router, and livedocuments only draws the document when asked ([Document previews](../006-document/document-snapshots.md)
+> "The export door"). Not re-rendered per request: the platform keeps the drawing until the document is saved again.
+> The renderer was never extracted into a new package: `renderElementsToSvg` already lives DOM-free in
+> `@livedocuments/document` and powers the MCP worker ([MCP server](../015-api/mcp-server.md)).
 >
-> - **Not re-rendered per request.** The image serves a **cached SVG snapshot**
->   from R2, refreshed render-on-read when the document has been saved since
->   (`thumb_rendered_at`). Cheaper, and "live" within the cache window + last
->   save. The cache is shared with the Explorer thumbnail ([Document SVG snapshots](../006-document/document-snapshots.md)) — one
->   artifact, two delivery paths.
-> - **Renderer already shared.** The "main work" below (extracting the renderer
->   into a new package) is moot: `renderElementsToSvg` already lives DOM-free in
->   `@livedocuments/document` (`packages/document/src/svg-render.ts`) and powers the
->   MCP worker ([MCP server](../015-api/mcp-server.md)), so the worker imports it directly. No `@livedocuments/render`
->   package was created.
->
-> The rest of this spec (URL shape, password exclusion) holds. The Share-dialog menu it describes went with
-> livedocuments's own Share dialog: the shared one from `@liveworkspace/explorer` has no live-image control.
->
-> The same drawing, fitted onto a 1200 x 630 PNG, is what a pasted share link previews with in a chat app:
-> [Share-link previews](share-link-previews.md).
+> The rest of this spec (URL shape, password exclusion) holds. The same drawing, fitted onto a 1200 x 630 PNG, is
+> what a pasted share link previews with in a chat app: [Share-link previews](share-link-previews.md).
 
 A share option that serves the document as a **live image**: an `<img>`-able URL
 that serves the current document as SVG, so it can be embedded in a README / wiki
@@ -42,17 +31,16 @@ export).
 
 ## Endpoint
 
-`GET /api/share/<code>/image.svg` on the api worker:
+`GET /api/share/<code>/image.svg[?tab=<id>]`, forwarded by the router to liveworkspace's previews
+(`/api/previews/share/<code>/image.svg`):
 
-1. Resolve `<code>` with the index (`resolveShare`, the single authority for expiry,
-   level and tab). 404 if missing / revoked / expired.
-2. If the document has a share password, 404 (no image for gated shares).
-3. Load the rendered tab (default: the first tab; `?tab=<id>` selects another). A tab-scoped link ([Tab-scoped share links](tab-scoped-share-links.md)) always renders its own tab, and a `?tab=` naming any other is a 404.
-4. Render it to SVG (a Pages tab as its first page alone, [Document SVG snapshots](../006-document/document-snapshots.md) "Pages tabs") and return `Content-Type: image/svg+xml` with a short
-   `Cache-Control` (e.g. `max-age=30, stale-while-revalidate=300`) so embeds
-   update without hammering the document's Durable Object.
-
-The router already forwards `/api/*` to the api worker, so no router change.
+1. The code resolves with the index, as an anonymous visitor's would (the single authority for expiry, level and
+   tab). 404 if missing, revoked, expired, trashed, or behind a share password.
+2. The drawn tab is the first (`?tab=<id>` selects another). A tab-scoped link ([Tab-scoped share links](tab-scoped-share-links.md))
+   always draws its own tab, and a `?tab=` naming any other is a 404.
+3. livedocuments draws it through the export door (a Pages tab as its first page alone,
+   [Document previews](../006-document/document-snapshots.md) "Pages tabs"); the platform serves it as
+   `image/svg+xml` with `Cache-Control: public, max-age=30, stale-while-revalidate=300`.
 
 ## Renderer sharing (the build's main work)
 
@@ -89,7 +77,5 @@ regression-free. New top-level package ⇒ update `README.md` +
 ## Share dialog
 
 The shared Share dialog (`@liveworkspace/explorer`) has no **Live image** menu, so the address is
-built by hand from a link's code: `/api/share/<code>/image.svg`, with `?tab=<id>` to pick a tab; see
-[Document SVG snapshots](../006-document/document-snapshots.md#share-dialog) for the caching detail
-(a non-default tab renders on read, uncached). Out of scope for v1: a
-PNG variant (Worker rasterization) and themed cache invalidation.
+built by hand from a link's code: `/api/share/<code>/image.svg`, with `?tab=<id>` to pick a tab. The PNG variant
+is the share card ([Share-link previews](share-link-previews.md)); themed drawings are out of scope.

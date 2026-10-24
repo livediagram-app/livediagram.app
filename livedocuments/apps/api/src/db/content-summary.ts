@@ -11,7 +11,7 @@ export type ContentSummary = {
   hasContent: boolean;
 };
 
-// No tab, or a counted tab with no elements. A count not yet known is not empty: its thumbnail is asked for.
+// No tab, or a counted tab with no elements. A count not yet known is not empty: its preview is asked for.
 export function isEmptyCount(firstTabCount: number | null | undefined): boolean {
   return firstTabCount == null || firstTabCount === 0;
 }

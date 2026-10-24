@@ -1,75 +1,55 @@
-# Document SVG snapshots
+# Document previews
 
-A single cached SVG snapshot per document, used two ways:
+A document's picture (its Explorer thumbnail, the live image a share link embeds, the card a pasted link previews
+with) is a liveworkspace platform capability ([Previews](../../../liveworkspace/docs/previews.md)): liveworkspace's
+media service decides who may see it (the index's access rule), when it is stale (the index's `updatedAt`), stores it
+and serves it, and draws the share card from it. livedocuments only **renders for the platform**: it draws a document
+as SVG when the platform asks, and keeps no picture, bucket or route of its own.
 
-1. **Explorer thumbnails** — a small preview on each row of the Recent /
-   folder lists so you can recognise a document without opening it.
-2. **Live image share** — an `<img>`-able URL ([Live image share link](../013-workspace/live-image-share.md)) that embeds the
-   document in a README / wiki / doc and stays up to date.
+## Why a picture, not element data
 
-Both render the same artifact through the same DOM-free renderer; they
-differ only in how they're authorised and cached.
+The document list (`GET /api/documents`, the index's list) ships no element data ([Per-tab storage](per-tab-storage.md))
+so listing 100 documents stays cheap. A preview per row from element data would re-load exactly what the list avoids,
+so previews are pre-rendered SVG. Because SVG is vector, the one drawing renders crisply as a 36px list thumbnail and
+as a full-size embed.
 
-## Why one artifact, not two
+## The export door
 
-The document list endpoint (`GET /api/documents`) deliberately ships no
-element data ([Per-tab storage](per-tab-storage.md)) so listing 100 documents stays cheap. Rendering a
-preview per row from element data would re-load exactly what the list
-avoids. So previews come from a **pre-rendered SVG**, not from element
-data at list time.
+`GET /api/internal/items/:id/export?format=svg[&tab=<id>]`, served by `@liveworkspace/index-app`'s
+`handleInternalItems` (routes/internal-items.ts) with liveworkspace's media key (`MEDIA_KEY`) or the index's
+(`INDEX_KEY`); every other internal door takes the index's key only. The document's Durable Object answers it
+(`exportImage`, document-room.ts), where the content is:
 
-Because SVG is vector, the same full-fidelity snapshot renders crisply
-as a 36px list thumbnail and as a full-size embed — there is no separate
-"thumbnail size" to generate. One stored artifact serves both surfaces.
+- `200 image/svg+xml` with `ETag: "<saved_at>"`: the first tab (or `tab`) drawn by `renderElementsToSvg`
+  (`@livedocuments/document`, the DOM-free renderer the MCP worker uses). Icon elements draw their real glyph
+  (`@livedocuments/icons/resolve`). Image elements draw their real picture: each upload the document
+  [may serve](../009-elements/images.md#placement-grants) is read from the media service and inlined as a base64
+  data URL through `embedTabImages` (`@livedocuments/api-schema`, shared with the MCP preview), in document order
+  under a 3 MB total budget, so a tab of large photos can't produce a multi-megabyte drawing. An image past the
+  budget, unknown to the media service, or not a recognised raster format keeps its placeholder box.
+- `304` when `If-None-Match` names the current `saved_at`: the platform's copy is still the document's, at the cost
+  of one row read and no drawing.
+- `204` with the ETag: nothing to draw (an empty or unparseable tab, no tab).
+- `404`: no such document, or no such tab in it.
 
-## Render-on-read, cached in R2
-
-The snapshot bytes live in R2 (the existing `IMAGES` bucket, key
-`thumb/<documentId>`); a `documents.thumb_rendered_at` column records when
-they were last rendered.
-
-On a read of either delivery path:
-
-- **Fresh** (`thumb_rendered_at >= saved_at`): stream the stored R2
-  bytes. No render, no element load.
-- **Stale** (or never rendered, or the object is missing): render the
-  first tab with `renderElementsToSvg` (`@livedocuments/document`, the same
-  DOM-free renderer the MCP worker uses), write it to R2, stamp
-  `thumb_rendered_at`, and return it. Icon elements render their real
-  glyph via the `@livedocuments/icons/resolve` resolver the worker passes in. Image elements render their real picture: the
-  worker reads each upload from the media service and inlines it as a base64 data URL
-  through `embedTabImages` (`@livedocuments/api-schema`, shared with the
-  MCP preview, [MCP server](../015-api/mcp-server.md) §5), in document order under a 3 MB total budget
-  so a tab of large photos can't produce a multi-megabyte snapshot. An
-  image past the budget, unknown to the media service, or not a recognised raster
-  format keeps its placeholder box.
-
-This is **render-on-read**, not render-on-save, on purpose:
-
-- **Covers every write path.** `saved_at` is bumped by every tab write
-  (editor, collaborators, MCP server, API token), so the snapshot
-  invalidates uniformly regardless of who edited — no client upload to
-  keep in sync.
-- **No wasted renders.** A document is only rendered when it has been
-  edited _and_ subsequently viewed (in a list or an embed). A document
-  nobody opens never costs a render.
-- **Cheap steady state.** Once cached, reads are a straight R2 stream
-  until the next save.
+Whether the asker may see the document, and which tab a link confines it to, is decided by the index before the
+platform calls; the door draws what it is asked for. Nothing is written: no cache, no stamp. `saved_at` follows every
+content write (editor, collaborators, MCP, API token), so the version covers every write path.
 
 ### Pages tabs
 
 A first tab in Pages (pages: infographics, slides, articles)
-snapshots as **its first page alone**, drawn as the page export draws it
+draws as **its first page alone**, drawn as the page export draws it
 (`renderPageToSvg`, [Pages](../007-editor/pages-mode.md) "Export"): the page's sheet and
 background, an article page's estimated writing, and the elements reaching
 onto it, cut at its edges, at the page's own size. Drawing the whole canvas
-instead put every page side by side, which at thumbnail size shrank to a
+instead put every page side by side, which at preview size shrank to a
 row of slivers nobody could recognise; a deck is recognised by its cover.
 The same rule holds wherever this renderer serves a preview: the Explorer
 thumbnail, the default live image, a `?tab=` live image of a Pages
 tab. Only the first page's images are read for
 it (its elements' images and its picture background), so a long deck of
-photos costs one page's R2 reads.
+photos costs one page's image reads.
 
 Measured on the renderer alone (Node, warm): a 12-slide deck of 10 shapes
 a slide drew in 1.33 ms as a 42 KB whole canvas and draws in 0.14 ms as a
@@ -77,28 +57,16 @@ a slide drew in 1.33 ms as a 42 KB whole canvas and draws in 0.14 ms as a
 600-paragraph article drew in 6.5 ms at 528 KB and draws in 5.6 ms at
 9 KB (the article's writing estimate dominates either way).
 
-An empty / unparseable first tab yields no snapshot (the endpoints 404
-and the row shows its generic icon). Deleting a document clears its R2
-object. Nothing renders ahead of time: the first read of each document
-renders it lazily.
+A document purged by the index has its previews dropped from the platform with it (`purgeDocumentPreviews`,
+db/documents.ts, best effort: a preview the purge misses is unreachable, since every read asks the index).
 
-## Delivery path 1 — Explorer thumbnail (owner-authed)
+## In the Explorer
 
-`GET /api/documents/:id/thumbnail?v=<savedAt>`
+The editor asks `/api/previews/items/<id>?v=<savedAt>` on its own origin (the router forwards it to liveworkspace),
+through the authenticated client, with the viewer's token (or, for a shared row, its share code), and wraps the bytes
+in a blob URL (a native `<img>` can't send auth headers). A 404 (nothing drawn, no access) shows the still, dashed
+sketch, captioned "Nothing drawn yet" where there is room.
 
-- Read-gated exactly like `GET /api/documents/:id`: the owner, a joined
-  team member, or a valid share-code visitor.
-- A native `<img>` can't send auth headers, so the editor app fetches this
-  through the authenticated client and wraps the bytes in a blob URL
-  (the same pattern image elements use, [Image element + per-owner gallery](../009-elements/images.md)). `?v=<savedAt>` busts
-  the browser cache when the document changes; the worker ignores it.
-  `Cache-Control: private, max-age=86400`.
-- One call to the document's Durable Object gates it: `getDocumentThumbMeta` returns the
-  name, `saved_at` and `thumb_rendered_at` in one RPC, so a fresh
-  snapshot costs that call, the access gate and the R2 read. The full
-  document (participant and tab summaries) is never loaded for a preview.
-- A stale snapshot is returned as soon as it is rendered; the R2 write
-  and the freshness stamp run in the request's `waitUntil`.
 - The Explorer row fetches **lazily** (IntersectionObserver): only rows
   scrolled into view fetch, so a long list never fires dozens of
   requests / renders for rows the user never reaches.
@@ -108,7 +76,7 @@ renders it lazily.
   back to the Explorer) paints from it at once, and two thumbnails of one
   document share one request. The cache owns each blob URL and revokes it
   on eviction.
-- While the snapshot is on its way the box shows the **loader**: the
+- While the preview is on its way the box shows the **loader**: the
   placeholder's three-node sketch drawing itself in the placeholder's own
   slate, so it never reads as a real preview. On a 5.4s loop the first
   node traces, then a small spinner appears and turns inside it, the
@@ -117,10 +85,10 @@ renders it lazily.
   card starts at a point in the loop derived from its document id, so a
   loading grid ripples rather than pulsing in step. Under reduced motion
   it is the finished sketch, still.
-- Loader to snapshot is a **crossfade**, never a cut: the image stays
+- Loader to preview is a **crossfade**, never a cut: the image stays
   hidden until the browser has decoded it, then fades and settles in
   (`duration-long`) while the loader fades out, and the box eases into the
-  document's background colour. A snapshot already cached when the
+  document's background colour. A preview already cached when the
   thumbnail mounts paints at once, with no loader. The box never changes
   size.
 - **An empty document is never asked for.** Every document list carries
@@ -152,34 +120,11 @@ renders it lazily.
   ten times the cost of a 2 MB autosave, on the hot path (one save about
   every 600 ms per active editor).
 
-- Degrades gracefully otherwise: no R2 binding or no access → 404 → the row
-  shows the still, dashed sketch, captioned "Nothing drawn yet" where there
-  is room. The no-snapshot 404 (past the access gate)
-  carries the same `private, max-age=86400` as the image, because it is
-  version-keyed too; an access-denied 404 carries no cache header.
+## Live image and share card
 
-## Delivery path 2 — Live image share (public, share-code-scoped)
-
-`GET /api/share/:code/image.svg` — this is [Live image share link](../013-workspace/live-image-share.md)'s endpoint.
-
-- Public: the share code in the URL is the only credential, matching a
-  share link's "anyone with the URL" semantics (an `<img>` can't carry
-  an auth header). Resolves the code with the index, so revoking /
-  expiring the link kills the image too.
-- **Password-protected shares ([Share password](../013-workspace/share-password.md)) get no image**: an `<img>` can't
-  supply the password, so serving one would bypass the gate. The route
-  404s a gated document _before_ rendering.
-- `Cache-Control: public, max-age=30, stale-while-revalidate=300` so an
-  embed stays close to live without hammering the origin (the bytes come
-  from R2; the worker only re-renders when the document was saved since).
-
-## Delivery path 3: Share card (public, share-code-scoped)
-
-`GET /api/share/:code/image.png`, the picture a pasted share link previews with
-([Share-link previews](../013-workspace/share-link-previews.md)): the same drawing,
-behind the same gate, fitted onto a 1200 x 630 PNG. The PNG is cached in R2 beside
-the snapshots (`og/<documentId>`), stamped with its
-own render time, and deleted with them.
+The live image (`/api/share/<code>/image.svg[?tab=<id>]`, [Live image share link](../013-workspace/live-image-share.md))
+and the share card (`/api/share/<code>/image.png`, [Share-link previews](../013-workspace/share-link-previews.md)) are
+the platform's, on this app's address through its router. They draw from the same door.
 
 ### Share dialog
 
@@ -190,38 +135,10 @@ Embed menu. livedocuments supplies the address (`liveImageUrl` in `apps/editor/l
 The menu also carries a **tab picker** (a `<select>` header, shown only when the document has more than one tab
 and the pass opens every tab) so the copied URL / snippet can target any tab, not just the first
 ([Live image share link](../013-workspace/live-image-share.md)'s `?tab=<id>`). Picking the first tab clears back
-to the default (no `?tab=`, so the cached first-tab snapshot serves it); picking another appends `?tab=<id>` and
-the endpoint renders that tab **on read, uncached** (see Scope). The choice applies to every pass while the dialog
+to the default (no `?tab=`); picking another appends `?tab=<id>`. The choice applies to every pass while the dialog
 is open.
-
-### Where thumbnails appear
-
-The shared Explorer draws a row's or card's preview through its host's `renderThumbnail`; livedocuments' draws
-this snapshot, fetched with the viewer's own credentials (or, for a shared row, its share code), so it is
-authorised exactly as the document itself is. A viewer without access gets a 404 and the row falls back to the
-document icon.
-
-## Scope (v1)
-
-- **R2 cache is first-tab only.** The persisted snapshot
-  (`thumb/<documentId>`, one per document, shared by the Explorer
-  thumbnail and the default live image) always renders the **first**
-  tab. The live image's `?tab=<id>` selector ([Live image share link](../013-workspace/live-image-share.md)) is honoured,
-  but a non-default tab is rendered **on read and not
-  written to that cache** — the single per-document key + freshness stamp
-  has no room for a second tab, and per-tab embeds are niche. The
-  endpoint's `max-age=30, stale-while-revalidate=300` keeps repeat views
-  cheap without a persistent cache. So "first tab only" still describes
-  the cached artifact and the Explorer thumbnail, just no longer the
-  live image.
-- **No PNG.** SVG only — vector, tiny, headless-renderable. A rasterised
-  variant is out of scope.
-- The List/Card toggle covers the main browse views and the team
-  library; the "Shared With Me" page keeps its fixed layout (it already
-  shows the thumbnail).
 
 ## Self-hosting
 
-The whole feature is gated on the optional `IMAGES` R2 binding, which holds only snapshots and share
-cards (uploaded images live in liveworkspace's media service, [Image element + per-owner gallery](../009-elements/images.md)):
-with no bucket, both endpoints 404 and the Explorer row shows its icon. No new binding, no required SaaS.
+livedocuments binds no bucket for previews. A deployment without liveworkspace's media service has none: the Explorer
+row shows its sketch and a link previews as the brand card.

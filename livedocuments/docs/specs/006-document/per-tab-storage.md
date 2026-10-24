@@ -47,7 +47,7 @@ and changesets cascade from `tabs(id)`, so a dropped tab takes them with it; wha
 image set) follows on the document's next push.
 
 The table is created by the document's schema (`apps/api/src/document-room/document-schema.ts`), with
-`element_count` ([Document snapshots](document-snapshots.md)) and `rev` ([Agent changesets](../024-agents/agent-changesets.md)).
+`element_count` ([Document previews](document-snapshots.md)) and `rev` ([Agent changesets](../024-agents/agent-changesets.md)).
 The api has no D1 database.
 
 The document's own row (`document`, in the same SQLite) keeps its name, owner, deck, `saved_at` and `created_at`;

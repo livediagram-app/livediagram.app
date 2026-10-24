@@ -6,13 +6,12 @@ This guide is the practical path: provision Cloudflare resources, configure secr
 
 ## What you'll provision on Cloudflare
 
-| Resource                             | Used by           | Why                                                                                                                                                                                                                                                                                                  |
-| ------------------------------------ | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Workers paid plan**                | All seven workers | Durable Objects (per-document realtime room) need the paid plan.                                                                                                                                                                                                                                     |
-| **Durable Object namespaces**        | `apps/api`        | One SQLite-backed object per document (`DocumentRoom`: its content, tabs, comments, changesets and image references, and its realtime room) and one per person (`WorkbenchStore`: their workbench pairings, tickets and sessions). Each makes its own schema on first use.                           |
-| **R2 bucket** (optional)             | `apps/api`        | Document SVG snapshots ([Document SVG snapshots](../specs/006-document/document-snapshots.md): Explorer thumbnails + the live image share). Uploaded images live in liveworkspace's media service ([Images](#images)). Without it, snapshot endpoints `404` (the Explorer row shows a generic icon). |
-| **Rate Limiter bindings** (optional) | `apps/api`        | Abuse throttles: per-owner writes, plus the CLI's telemetry relay, share-code lookups, link unfurls, AI calls and API-token reads. Any binding you don't provision falls through to "allow", so none are required.                                                                                   |
-| **Custom domain**                    | `apps/router`     | The router worker serves your hostname; downstream workers don't need their own domain.                                                                                                                                                                                                              |
+| Resource                             | Used by           | Why                                                                                                                                                                                                                                                                        |
+| ------------------------------------ | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Workers paid plan**                | All seven workers | Durable Objects (per-document realtime room) need the paid plan.                                                                                                                                                                                                           |
+| **Durable Object namespaces**        | `apps/api`        | One SQLite-backed object per document (`DocumentRoom`: its content, tabs, comments, changesets and image references, and its realtime room) and one per person (`WorkbenchStore`: their workbench pairings, tickets and sessions). Each makes its own schema on first use. |
+| **Rate Limiter bindings** (optional) | `apps/api`        | Abuse throttles: per-owner writes, plus the CLI's telemetry relay, share-code lookups, link unfurls, AI calls and API-token reads. Any binding you don't provision falls through to "allow", so none are required.                                                         |
+| **Custom domain**                    | `apps/router`     | The router worker serves your hostname; downstream workers don't need their own domain.                                                                                                                                                                                    |
 
 What you do NOT need:
 
@@ -25,17 +24,11 @@ What you do NOT need:
 1. **Create a Cloudflare account** and sign up for the Workers paid plan ($5/mo at the time of writing).
 2. **No database to create.** The api worker has no D1 database and no migrations: its data lives in the Durable Objects declared in `apps/api/wrangler.toml` (`new_sqlite_classes`), which make their own schema on first use. Where documents are filed, who may open them, teams, the Trash and API tokens are liveworkspace's (the index at `INDEX_ORIGIN`, reached with `INDEX_KEY`, and the accounts Worker); without `INDEX_KEY` no document opens.
 
-3. **Create an R2 bucket** (optional, for document snapshots):
-
-   ```sh
-   pnpm exec wrangler r2 bucket create livedocuments-images
-   ```
-
-   The bucket name is bound to `IMAGES` in `apps/api/wrangler.toml`.
+3. **No bucket to create.** Uploaded images and a document's previews (its Explorer thumbnail, live image and share card) are liveworkspace's media service's ([Previews](../../../liveworkspace/docs/previews.md)); the api draws a document for it on request through the export door, with `MEDIA_KEY`.
 
 4. **Get an API token + account id**:
    - Account id is at the bottom-right of any Cloudflare dashboard page.
-   - API token: create one with **Workers Scripts: Edit**, **R2: Edit** (only if using the R2 bucket), **Workers KV: Edit** (for Durable Objects), and **Account → Account Settings: Read** on your account. Save it.
+   - API token: create one with **Workers Scripts: Edit**, **Workers KV: Edit** (for Durable Objects), and **Account → Account Settings: Read** on your account. Save it.
 
 ## Required GitHub Actions secrets
 
@@ -103,7 +96,7 @@ Or just push to `main` and use the bundled GitHub Actions workflows:
 - `.github/workflows/deploy.yml` calls it for **production**, **manually** from the Actions tab.
 - `.github/workflows/deploy-staging.yml` calls it for **staging**, automatically, whenever CI goes green on `main`.
 
-Self-hosting needs only the production pair: staging is a second copy of the platform the hosted deployment runs for its own rehearsals (own hostname, own Durable Objects / R2 / KV), and deleting `deploy-staging.yml` costs a fork nothing. Keeping it means adding the `_STAGING` secrets and staging resources from [Staging environment](../specs/016-platform/staging-environment.md); without them the workflow simply fails on every merge.
+Self-hosting needs only the production pair: staging is a second copy of the platform the hosted deployment runs for its own rehearsals (own hostname, own Durable Objects / KV), and deleting `deploy-staging.yml` costs a fork nothing. Keeping it means adding the `_STAGING` secrets and staging resources from [Staging environment](../specs/016-platform/staging-environment.md); without them the workflow simply fails on every merge.
 
 See [Deployment](../specs/016-platform/deployment.md) for the deeper deploy mechanics, including the order the workers deploy in.
 

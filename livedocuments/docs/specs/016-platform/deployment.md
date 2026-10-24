@@ -2,7 +2,7 @@
 
 All deployments run **via GitHub Actions** to **Cloudflare Workers**. The **production** deploy is **manually triggered** — a green CI run no longer ships on its own.
 
-There is a second environment, **staging**, which does deploy on its own: every green CI run on `main` lands on `staging.livedocuments.app`. It runs the same jobs described below through the same reusable workflow, against its own workers, Durable Objects and R2 bucket, and liveworkspace's staging index. This spec covers production; [Staging environment](staging-environment.md) covers what staging changes and why.
+There is a second environment, **staging**, which does deploy on its own: every green CI run on `main` lands on `staging.livedocuments.app`. It runs the same jobs described below through the same reusable workflow, against its own workers and Durable Objects, and liveworkspace's staging index and media service. This spec covers production; [Staging environment](staging-environment.md) covers what staging changes and why.
 
 ## Apps and their Cloudflare Workers
 
@@ -11,13 +11,13 @@ There is a second environment, **staging**, which does deploy on its own: every 
 | `apps/marketing` | `livedocuments-marketing` | Static assets only (Next.js `output: 'export'`).                              |
 | `apps/editor`    | `livedocuments-editor`    | Static assets + a tiny path-rewrite worker.                                   |
 | `apps/help`      | `livedocuments-help`      | Static assets only (help centre, [Help app](../018-help/help-app.md)).        |
-| `apps/api`       | `livedocuments-api`       | Worker (Durable Objects + R2; no database).                                   |
+| `apps/api`       | `livedocuments-api`       | Worker (Durable Objects; no database, no bucket).                             |
 | `apps/mcp`       | `livedocuments-mcp`       | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)). |
 | `apps/router`    | `livedocuments-router`    | Worker (service bindings to the other five).                                  |
 
-The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`). The editor worker serves files from `apps/editor/out/` plus a small worker (`apps/editor/src/worker.ts`) that rewrites every `/document/<id>` request to the single statically-built `/document/placeholder/` page — see [New document route](../007-editor/new-document-route.md). The help worker is static-assets-only too, served under `/help` ([55-help-app](../018-help/help-app.md)). The api worker holds the REST + WebSocket layer (see [11-api.md](../015-api/api.md)). The mcp worker exposes the AI tools over its own host `mcp.livedocuments.app` (it binds to the api worker, not the router; see [62-mcp-server.md](../015-api/mcp-server.md)). The router holds **no application logic** — only `MARKETING`, `LIVE`, `HELP` and `API` service bindings that forward requests to the right downstream worker.
+The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`). The editor worker serves files from `apps/editor/out/` plus a small worker (`apps/editor/src/worker.ts`) that rewrites every `/document/<id>` request to the single statically-built `/document/placeholder/` page — see [New document route](../007-editor/new-document-route.md). The help worker is static-assets-only too, served under `/help` ([55-help-app](../018-help/help-app.md)). The api worker holds the REST + WebSocket layer (see [11-api.md](../015-api/api.md)). The mcp worker exposes the AI tools over its own host `mcp.livedocuments.app` (it binds to the api worker, not the router; see [62-mcp-server.md](../015-api/mcp-server.md)). The router holds **no application logic** — only `MARKETING`, `LIVE`, `HELP` and `API` service bindings that forward requests to the right downstream worker, and the forwards to liveworkspace (the index, the Explorer, and every preview, `/api/previews/*` and a share link's image and card, at `PREVIEWS_ORIGIN`).
 
-`wrangler.toml` for each app sits at the app root and is the source of truth for the worker's name, compatibility date, `[assets]`, `[[services]]`, R2 and Durable Object bindings. Account-level identifiers (account id, custom domain, secrets) **never** go in `wrangler.toml` — they live in environment variables or the Cloudflare dashboard. See [06-secrets-policy.md](../002-project-scope/secrets-policy.md).
+`wrangler.toml` for each app sits at the app root and is the source of truth for the worker's name, compatibility date, `[assets]`, `[[services]]` and Durable Object bindings. Account-level identifiers (account id, custom domain, secrets) **never** go in `wrangler.toml` — they live in environment variables or the Cloudflare dashboard. See [06-secrets-policy.md](../002-project-scope/secrets-policy.md).
 
 ## Toolchain
 

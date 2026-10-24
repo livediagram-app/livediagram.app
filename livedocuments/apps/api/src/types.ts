@@ -62,9 +62,6 @@ export type Env = {
   OAUTH_ISSUER?: string;
   // The oldest CLI the api accepts writes from, x.y.z; unset for no floor.
   CLI_MIN_VERSION?: string;
-  // R2 bucket holding document snapshots and share cards (thumb/<documentId>, og/<documentId>,
-  // docs/specs/006-document/document-snapshots.md). Unbound, none are cached.
-  IMAGES?: R2Bucket;
   // liveworkspace's media service (liveworkspace/docs/media.md, src/media.ts), which keeps every app's uploaded
   // images. Unset means production's, https://liveworkspace.app/api/media; staging and local development name
   // their own.

@@ -36,7 +36,7 @@ on the same origin (the router serves `/` and `/explorer` from one host).
 - **When:** every time the editor lists your documents (the Explorer, the editor, the /new page), so it
   is as fresh as your last visit to the app; a diagram hidden from Recent or returned to it changes the
   note at the next list. With none left to show, the note is removed.
-- **Thumbnails:** each diagram's snapshot SVG ([Document snapshots](../006-document/document-snapshots.md))
+- **Thumbnails:** each diagram's snapshot SVG ([Document previews](../006-document/document-snapshots.md))
   is kept beside the note in the browser's Cache Storage (`livedocuments-recent-thumbs-v1`), keyed by id
   and save time, fetched by the editor through its authenticated client when a listed document's entry is
   missing, and pruned to the six in the note. A document the server has no snapshot for (one it could

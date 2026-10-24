@@ -6,6 +6,7 @@
 import type { DocumentDTO, Env } from '../types';
 import { getParticipant } from '../person/profiles';
 import { documentRoom } from '../document-client';
+import { mediaClient } from '../media';
 import { isDocumentSource } from '@livedocuments/api-schema';
 import type { DocumentMeta, DocumentOutline } from '../document-room/document-content';
 
@@ -53,49 +54,17 @@ export async function getDocumentMeta(
   return meta ? { id, ownerId: meta.ownerId, teamId: meta.teamId, name: meta.name } : null;
 }
 
-// The R2 key of a document's cached first-tab snapshot (docs/specs/006-document/document-snapshots.md).
-export function thumbnailKey(documentId: string): string {
-  return `thumb/${documentId}`;
-}
-
-// The R2 key of a document's cached share card (docs/specs/013-workspace/share-link-previews.md).
-export function shareCardKey(documentId: string): string {
-  return `og/${documentId}`;
-}
-
-// Every cached snapshot a document can have, for the paths that delete it.
-export function snapshotKeys(documentId: string): string[] {
-  return [thumbnailKey(documentId), shareCardKey(documentId)];
-}
-
-// What drawing a document's image needs (its name, last save and snapshot stamp), in one call to its Durable Object.
-// Null for a document never started.
-export type DocumentThumbMeta = {
-  id: string;
-  name: string;
-  savedAt: number;
-  thumbRenderedAt: number | null;
-};
-
-export async function getDocumentThumbMeta(
-  env: Env,
-  id: string,
-): Promise<DocumentThumbMeta | null> {
-  const outline = await documentRoom(env, id).outline();
-  const meta = outline.meta;
-  if (!meta) return null;
-  return {
-    id,
-    name: meta.name,
-    savedAt: outline.savedAt,
-    thumbRenderedAt: meta.thumbRenderedAt ?? null,
-  };
-}
-
-// What R2 holds about a document, for when the index purges it (routes/internal-items.ts): its cached snapshots.
-// One R2 delete, whatever the document held. Workbench tickets and sessions scoped to it are in their owners'
+// What liveworkspace keeps of a document's pictures (liveworkspace/docs/previews.md), for when the index purges it
+// (routes/internal-items.ts): its previews go too. Workbench tickets and sessions scoped to it are in their owners'
 // workbench stores: a ticket lapses in a minute, and a session's every request is gated on the document's grant,
-// which a purged document never gets again.
-export async function purgeDocumentRows(env: Env, id: string): Promise<void> {
-  if (env.IMAGES) await env.IMAGES.delete(snapshotKeys(id));
+// which a purged document never gets again. Best effort: a preview the purge misses is unreachable (every read asks
+// the index).
+export async function purgeDocumentPreviews(env: Env, id: string): Promise<void> {
+  const media = mediaClient(env);
+  if (!media) return;
+  try {
+    await media.deletePreviews(id);
+  } catch (err) {
+    console.warn('[purge] previews not dropped', { documentId: id, error: String(err) });
+  }
 }

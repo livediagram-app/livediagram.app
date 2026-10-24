@@ -27,8 +27,8 @@ Scope, by file:
 | `apps/api/src/routes/images.ts`                        | `usageOf`, the Gallery's usage map                                                                                                                 |
 | `apps/api/src/db/image-grants.ts`                      | `documentMayServeImage`, `servableImageIds`, `grantPlacedImages`: the kit's placement grants over the document's `image_owners` and `image_grants` |
 | `apps/api/src/index.ts`                                | Pre-dispatch size gate, write limiter                                                                                                              |
-| `apps/api/src/thumbnail.ts`                            | `loadEmbeddedImages` for the preview and live image                                                                                                |
-| `apps/api/wrangler.toml`                               | `IMAGES` bucket (snapshots only), `MEDIA_KEY` note                                                                                                 |
+| `apps/api/src/thumbnail.ts`                            | `loadEmbeddedImages` for the drawing the export door gives liveworkspace's previews                                                                |
+| `apps/api/wrangler.toml`                               | No bucket; `MEDIA_KEY` note                                                                                                                        |
 | `apps/api/hosted-vars.json`                            | Hosted livedocuments.app's `MEDIA_URL` per environment                                                                                             |
 | `apps/editor/lib/api/images.ts`                        | `apiListImages`, `apiUploadImage`, `apiDeleteImage`, `apiImageUsage`, …                                                                            |
 | `apps/editor/lib/upload-image.ts`                      | `uploadImageFile`, `addImageFileForDocument`, `ImageUploadError`                                                                                   |
@@ -196,7 +196,7 @@ This api sweeps no images of its own. A null or `data:` id references nothing
   with `totalBudgetBytes: IMAGE_EMBED_BUDGET_BYTES`, in document order, one at a time; an image
   that does not fit is skipped and later smaller ones may still fit (D44). Only ids
   `servableImageIds` returns are read (one query over the document's `image_owners` and `image_grants`). The
-  snapshot is drawn in the document's Durable Object (`renderDocumentImage`). No client: no embed. `[QB7]`
+  preview is drawn in the document's Durable Object (`drawDocument`, through the export door). No client: no embed. `[QB7]`
 
 ### Availability
 
@@ -340,8 +340,8 @@ read a 503 as `null` and `{}`.
   INTEGER). All go with the document's purge.
 - **The worker's owner memory**: per isolate, at most 2,000 images, oldest dropped first
   (`mediaImageOwner`, `rememberMediaOwner`). Never stored.
-- **R2 `IMAGES`** holds no uploaded image, only document snapshots and share cards under
-  `thumb/<documentId>` and `og/<documentId>` ([Document SVG snapshots](../../006-document/document-snapshots.md)).
+- **No R2 bucket**: the api binds none. A document's previews are liveworkspace's, drawn through the export door
+  ([Document previews](../../006-document/document-snapshots.md)).
 - **Tab body**: the element fields above, validated by `validate.ts` (`imageId` string or null).
 - **Never on the wire**: the owner and the hash (`imageSummary` also drops `app`).
 - **Snapshot / restore**: a tab snapshot carries only `imageId`; restoring an element whose image
@@ -399,7 +399,7 @@ read a 503 as `null` and `{}`.
 - **Read authorisation.** Owner, or a reader of a document that references the id. Knowing an id
   is therefore a read capability: ids travel in tab JSON to every reader of that tab. `[QB8]`
 - **Server-side embed.** Only ids `servableImageIds` returns are read, and only from the media
-  service, so a tab cannot pull a `thumb/<documentId>` snapshot or another document's image into
+  service, so a tab cannot pull another document's image into
   its public live image. `[QB7]`
 - **The service key.** `MEDIA_KEY` is a Worker secret, sent only to `MEDIA_URL` as a bearer token;
   it speaks for livedocuments.app alone. A guest id never leaves this api: the service sees
@@ -506,7 +506,7 @@ O6 to O9 exist; the cap, R2 and sweep failures are the service's own logs ([medi
 | Whitelist, cap, no SVG                                  | `MAX_IMAGE_BYTES`, `ACCEPTED_IMAGE_TYPES`                 | `packages/api-schema/src/image-limits.test.ts`   |
 | Usage from the media service                            | `usageOf`                                                 | `apps/api/src/routes/images.test.ts`             |
 | Reference index and its writers                         | [Image reference index](image-reference-index.md#testing) |                                                  |
-| Snapshot embeds, missing or unservable placeholder      | three `getDocumentThumbnailSvg` tests                     | `apps/api/src/thumbnail.test.ts`                 |
+| Preview embeds, missing or unservable placeholder       | three `drawDocument` tests                                | `apps/api/src/thumbnail.test.ts`                 |
 | Embed budget in document order                          | `spends a total budget in document order…`                | `packages/api-schema/src/embed-images.test.ts`   |
 | Export embeds `<image>`, placeholder without href       | `image elements` suite                                    | `packages/document/src/svg-render.test.ts`       |
 | Client gate: type, size, empty, error mapping           | `uploadImageFile` suites                                  | `apps/editor/lib/upload-image.test.ts`           |
@@ -521,20 +521,20 @@ O6 to O9 exist; the cap, R2 and sweep failures are the service's own logs ([medi
 
 ## Constants and configuration
 
-| Name                          | Value                                      | Provenance / safe range                                      |
-| ----------------------------- | ------------------------------------------ | ------------------------------------------------------------ |
-| `MAX_IMAGE_BYTES`             | `10 * 1024 * 1024`                         | Spec per-file cap; below the 100 MB Workers body limit       |
-| `MAX_IMAGE_MB`                | `10`                                       | Derived, for copy                                            |
-| `ACCEPTED_IMAGE_TYPES`        | png, jpeg, webp, gif                       | Spec whitelist; SVG must never join                          |
-| `MAX_BODY_BYTES`              | `8 * 1024 * 1024`                          | Non-image write cap in `limits.ts`                           |
-| `MEDIA_URL`                   | `https://liveworkspace.app/api/media`      | Client default; hosted per environment (`hosted-vars.json`)  |
-| `MEDIA_KEY`                   | secret                                     | Matches the service's `MEDIA_KEY_LIVEDOCUMENTS`; unset = off |
-| `MEDIA_APP`                   | `'livedocuments.app'`                      | The service's app name for this api                          |
-| `MEDIA_REFS_PER_DOCUMENT_MAX` | 1000                                       | `@liveworkspace/media`; ten times the gallery cap            |
-| `IMAGE_EMBED_BUDGET_BYTES`    | `3 * 1024 * 1024`                          | Spec; 1 to 8 MiB keeps snapshots streamable                  |
-| Read `Cache-Control`          | `private, max-age=86400`                   | Spec; `private` is load-bearing                              |
-| Sniff window                  | first 16 bytes, minimum 12                 | Longest signature (WebP) needs 12                            |
-| Gallery placement size        | `240` px on the longer side                | D40; literal `max` in `addImageFromGallery`                  |
-| `createImage` size            | 200 × 150                                  | D49                                                          |
-| `WRITE_RATE_LIMITER`          | 300 per 60 s                               | `wrangler.toml`, namespace `1001`                            |
-| Buckets                       | `livedocuments-images`, `…-images-staging` | Snapshots only; separate per environment                     |
+| Name                          | Value                                 | Provenance / safe range                                      |
+| ----------------------------- | ------------------------------------- | ------------------------------------------------------------ |
+| `MAX_IMAGE_BYTES`             | `10 * 1024 * 1024`                    | Spec per-file cap; below the 100 MB Workers body limit       |
+| `MAX_IMAGE_MB`                | `10`                                  | Derived, for copy                                            |
+| `ACCEPTED_IMAGE_TYPES`        | png, jpeg, webp, gif                  | Spec whitelist; SVG must never join                          |
+| `MAX_BODY_BYTES`              | `8 * 1024 * 1024`                     | Non-image write cap in `limits.ts`                           |
+| `MEDIA_URL`                   | `https://liveworkspace.app/api/media` | Client default; hosted per environment (`hosted-vars.json`)  |
+| `MEDIA_KEY`                   | secret                                | Matches the service's `MEDIA_KEY_LIVEDOCUMENTS`; unset = off |
+| `MEDIA_APP`                   | `'livedocuments.app'`                 | The service's app name for this api                          |
+| `MEDIA_REFS_PER_DOCUMENT_MAX` | 1000                                  | `@liveworkspace/media`; ten times the gallery cap            |
+| `IMAGE_EMBED_BUDGET_BYTES`    | `3 * 1024 * 1024`                     | Spec; 1 to 8 MiB keeps snapshots streamable                  |
+| Read `Cache-Control`          | `private, max-age=86400`              | Spec; `private` is load-bearing                              |
+| Sniff window                  | first 16 bytes, minimum 12            | Longest signature (WebP) needs 12                            |
+| Gallery placement size        | `240` px on the longer side           | D40; literal `max` in `addImageFromGallery`                  |
+| `createImage` size            | 200 × 150                             | D49                                                          |
+| `WRITE_RATE_LIMITER`          | 300 per 60 s                          | `wrangler.toml`, namespace `1001`                            |
+| Buckets                       | none                                  | Previews are liveworkspace's                                 |

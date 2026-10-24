@@ -150,7 +150,7 @@ export async function readContentSummary(
 }
 
 // The summary as the index keeps it (≤ 2 KB): the Explorer's Details numbers, and whether there is anything to
-// draw (no tab, or an empty first tab, asks for no thumbnail).
+// draw (no tab, or an empty first tab, asks for no preview).
 export function itemSummaryOf(summary: ContentSummary): ItemSummary {
   return {
     mode: 'pages',

@@ -295,12 +295,7 @@ describe("a document's content lives in its own Durable Object", () => {
     expect(count(item.db, 'outbox')).toBe(0);
     indexCalls.length = 0;
 
-    for (const path of [
-      '/api/documents/A',
-      '/api/documents/A/tabs',
-      '/api/documents/A/tabs/t1',
-      '/api/documents/A/thumbnail',
-    ]) {
+    for (const path of ['/api/documents/A', '/api/documents/A/tabs', '/api/documents/A/tabs/t1']) {
       const res = await w.send('GET', path);
       expect(res.status, path).toBeLessThan(500);
       expect(
@@ -462,6 +457,36 @@ describe('/api/internal/items (docs/specs/015-api/api.md "Internal")', () => {
     });
     expect(wrong.status).toBe(401);
     expect(on.calls).toEqual([]);
+  });
+
+  // liveworkspace/docs/previews.md "The export door": the document draws itself for liveworkspace's previews, on the
+  // index's key or the media service's, and stores nothing.
+  it('draws the document for the previews, versioned by its save, on either key', async () => {
+    const w = world({ INDEX_KEY: 'index-key', MEDIA_KEY: 'media-key' });
+    await createDocument(w, 'A', [
+      { id: 't1', name: 'One', elements: [box('a')] },
+      { id: 't2', name: 'Empty', elements: [] },
+    ]);
+    const exported = (query: string, headers: Record<string, string> = auth) =>
+      w.send('GET', `/api/internal/items/A/export?format=svg${query}`, undefined, headers);
+
+    const first = await exported('');
+    expect(first.status).toBe(200);
+    expect(first.headers.get('Content-Type')).toContain('image/svg+xml');
+    expect(await first.text()).toContain('<svg');
+    const etag = first.headers.get('ETag')!;
+    expect(etag).toBeTruthy();
+
+    const media = { Authorization: 'Bearer media-key' };
+    expect((await exported('', media)).status).toBe(200);
+    expect((await exported('', { ...media, 'If-None-Match': etag })).status).toBe(304);
+    expect((await exported('&tab=t2')).status).toBe(204);
+    expect((await exported('&tab=nope')).status).toBe(404);
+    expect((await exported('', { Authorization: 'Bearer nope' })).status).toBe(401);
+    const missing = await w.send('GET', '/api/internal/items/Z/export?format=svg', undefined, auth);
+    expect(missing.status).toBe(404);
+    // The media service's key opens only this door.
+    expect((await w.send('DELETE', '/api/internal/items/A', undefined, media)).status).toBe(401);
   });
 
   it('copies a document, or one tab of it, into a new document', async () => {

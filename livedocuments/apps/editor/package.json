@@ -36,6 +36,7 @@
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/explorer": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",
+    "@liveworkspace/media": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/settings-ui": "workspace:*",
     "@liveworkspace/sites": "workspace:*",

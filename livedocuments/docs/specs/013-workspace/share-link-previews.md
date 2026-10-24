@@ -26,44 +26,29 @@ gave nobody a reason to tell them apart or click.
 | An unknown, revoked or expired code; a trashed document               | livedocuments       | The editor's pitch | The brand card         |
 | Any other editor address (`/document/<id>`, the Explorer, ...)        | livedocuments       | The editor's pitch | The brand card         |
 
-- **The share pitch** is `Open it in livedocuments: decks, infographics and articles, made together.`
+- **The share pitch** is `Open it in livedocuments: articles, slide decks and infographics, made together.`
 - **The editor's pitch** is the editor's own description, unchanged.
 - **The brand card** is the origin's shared Open Graph image (`/opengraph-image`, `/twitter-image`), the one the
   marketing site and the help centre use.
 - A document's own address (`/document/<id>`) only opens for its owner, so its preview never names the document:
   a private link pasted in a public channel tells the channel nothing.
 
-## The share card
+## The share card and the share page's head are liveworkspace's
 
-`GET /api/share/<code>/image.png`: a 1200 × 630 PNG, the size every preview surface draws at full width.
+Both are built once for every app ([Previews](../../../liveworkspace/docs/previews.md)); livedocuments supplies only
+its drawing (the export door, [Document previews](../006-document/document-snapshots.md)) and its words.
 
-- **The picture is the live image's.** The same tab, the same rules: a tab-scoped link's own tab, otherwise the
-  first tab ([Live image share link](live-image-share.md)). The drawing is fitted inside the card with 48 px of margin, centred,
-  never stretched or cropped, on the drawing's own background colour. A small drawing grows to
-  at most twice its size, so a single box never reads as a blown-up blob.
-- **Nothing to draw** (an empty first tab, no image store on a self-host): the request is redirected (302) to the
-  brand card, so the preview still has a picture.
-- **Withheld exactly where the live image is**: a password-protected document, an unknown, revoked or expired code
-  and a trashed document answer 404, and the page names none of them.
-- **Cached in R2** beside the snapshots: `og/<documentId>` for the first tab, stamped with the time it was drawn and redrawn when the document has been saved since. A
-  tab-scoped link's card is drawn per request and not stored, as its tab's live image is. Deleting a document
-  deletes it with its snapshots.
-- **Drawn by the shared resvg renderer** (`@liveworkspace/render-png/worker`, the MCP server's), with Inter as the
-  one font, so a card's text matches the MCP previews.
-- **Served** `Cache-Control: public, max-age=300, stale-while-revalidate=3600`.
-
-## The share page's head
-
-The editor app's worker fills in the shell's `<head>` for `/document/shared?s=<code>` before it is sent: the
-`<title>`, `description`, `og:title`, `og:description`, `og:image` (with its size and alt text), `twitter:title`,
-`twitter:description` and `twitter:image`. It asks the api for the link's preview with
-`GET /api/share/<code>/card`, which answers `{ name }` for a link whose preview names its document and 404 for every
-other row of the table above.
-
-- **The shell is fetched at the same time as the card**, so a visitor waits for whichever is slower, not both.
-- **The api has 1.5 s.** Slower, failing, or not bound at all (a self-host without the `API` service binding): the
-  shell goes out as built, with the brand card, and the editor works as before.
-- **The editor still sets its own title** once the document loads; the worker only decides what a crawler reads.
+- **The share card** is `GET /api/share/<code>/image.png` on this app's address, which the router forwards to
+  liveworkspace's previews: a 1200 x 630 PNG of the live image's drawing (a tab-scoped link's own tab, otherwise the
+  first tab, [Live image share link](live-image-share.md)), fitted with 48 px of margin, on the drawing's own
+  background, grown at most twice. Nothing to draw redirects (302) to the brand card. It is withheld exactly where the
+  live image is: a password-protected document, an unknown, revoked or expired code and a trashed document answer 404.
+- **The share page's head**: the editor app's worker fills in the shell's `<head>` for `/document/shared?s=<code>`
+  through `createSharePage` (`@liveworkspace/media`, `apps/editor/src/share-page.ts` holds only livedocuments' words:
+  the share pitch, "Untitled document" and the page addresses). It asks liveworkspace's previews for the link's
+  name (`GET /api/previews/share/<code>/card` at `PREVIEWS_ORIGIN`, production's when unset), at the same time as
+  the shell, for at most 1.5 s; slower, failing or a 404, the shell goes out as built with the brand card. The
+  editor still sets its own title once the document loads.
 
 ## Share roles
 
@@ -73,11 +58,7 @@ of that link sees, so it needs no gate beyond the link's own.
 
 ## Limits and abuse
 
-- The card and the share card share one per-network bucket on `SHARE_RATE_LIMITER` (key `share-preview:<network>`),
-  apart from the share resolve's, so an office opening a link together in a meeting never spends the editor's own
-  budget on previews. Both doors answer only what the live image already answers for the same code, so the bucket
-  adds no way to learn more from a guessed code.
-- The editor worker forwards the visitor's `CF-Connecting-IP` to the api, so the limit applies per visitor, not to
-  the editor worker as one caller.
-- The card is drawn at most once per save per document (its first tab), and the PNG's longer side is never
-  more than 1200 px, so a vast board cannot exhaust a Worker's memory.
+The card, its picture and their caching and limits are the platform's
+([Previews](../../../liveworkspace/docs/previews.md) "Cost"). Both doors answer only what the live image already
+answers for the same code, so they add no way to learn more from a guessed code. The api's `SHARE_RATE_LIMITER`
+counts only the share resolve itself.

@@ -7,8 +7,13 @@
 
 import type { DocumentCopy, DocumentOutline } from './document-room/document-content';
 import type { RouteIdentity } from './document-room/document-route';
-import type { ThumbnailSubject } from './thumbnail';
-import type { ShareAnswer, ShareMessage, SharedTabCopy } from '@liveworkspace/index-app';
+import type {
+  ExportQuery,
+  ExportResult,
+  ShareAnswer,
+  ShareMessage,
+  SharedTabCopy,
+} from '@liveworkspace/index-app';
 import type { Env } from './types';
 
 export type DocumentRoomClient = {
@@ -17,8 +22,9 @@ export type DocumentRoomClient = {
   // One API request about this document, answered inside its Durable Object by the same handlers as before
   // (document-route.ts), with the caller's identity as the worker resolved it.
   route(request: Request, identity: RouteIdentity): Promise<Response>;
-  // The snapshot image a reader gets (thumbnail.ts), drawn where the content is.
-  image(subject: ThumbnailSubject, tabId: string | null): Promise<string | null>;
+  // The document drawn for liveworkspace's previews (the export door, liveworkspace/docs/previews.md), where the
+  // content is.
+  exportImage(query: ExportQuery): Promise<ExportResult>;
   // Whether the document holds this tab (a workbench ticket's check).
   hasTab(tabId: string): Promise<boolean>;
   // Whether the document places an image (on one tab, for a tab-scoped visitor) and may serve it: the byte
@@ -55,7 +61,7 @@ export function documentRoom(
   return {
     outline: () => room.outline(documentId),
     route: (request, identity) => room.route(documentId, request, identity),
-    image: (subject, tabId) => room.image(documentId, subject, tabId),
+    exportImage: (query) => room.exportImage(documentId, query),
     hasTab: (tabId) => room.hasTab(documentId, tabId),
     servesImage: (imageId, onlyTabId) => room.servesImage(documentId, imageId, onlyTabId),
     exportCopy: (onlyTabId, copiedBy) => room.exportCopy(documentId, onlyTabId, copiedBy),
@@ -74,11 +80,7 @@ export function documentRoom(
 export type DocumentRoomRpc = {
   outline(documentId: string): Promise<DocumentOutline>;
   route(documentId: string, request: Request, identity: RouteIdentity): Promise<Response>;
-  image(
-    documentId: string,
-    subject: ThumbnailSubject,
-    tabId: string | null,
-  ): Promise<string | null>;
+  exportImage(documentId: string, query: ExportQuery): Promise<ExportResult>;
   hasTab(documentId: string, tabId: string): Promise<boolean>;
   servesImage(documentId: string, imageId: string, onlyTabId: string | null): Promise<boolean>;
   exportCopy(

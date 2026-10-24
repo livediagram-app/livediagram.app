@@ -123,8 +123,8 @@ path-template)` parity described under "Drift test", run in the api worker's
   mirrors `index.ts`'s limiters. The (method, path) pairs are also asserted
   unique.
 - **Media types** — a success body is `application/json` unless the entry sets
-  `responseMediaType`; the two SVG snapshot reads (`GET /documents/{id}/thumbnail`,
-  `GET /share/{code}/image.svg`) declare `image/svg+xml`.
+  `responseMediaType`; the tab render (`GET /documents/{id}/tabs/{tabId}/render.svg`) declares
+  `image/svg+xml`.
 
 The served document validates as OpenAPI 3.1 (checked with `@redocly/cli`). The
 realtime WebSocket op protocol stays in [API app](api.md) prose, as planned;

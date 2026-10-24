@@ -86,7 +86,7 @@ caller, 404 when missing, 403 otherwise.
 ## Add to Document
 
 The tab menu's **Add to Document** row opens `AddTabToDocumentDialog`, a filterable tile grid of the caller's other
-documents with their snapshot previews ([Document SVG snapshots](document-snapshots.md)). Picking one calls
+documents with their snapshot previews ([Document previews](document-snapshots.md)). Picking one calls
 `apiLinkTab` (`apps/editor/lib/api/tabs.ts`), the link route above with this document as `from`. The route answers
 `{ tab }` as the target now holds it; a repeat answers the tab as it is. It is the caller's to make on both sides
 (`linkSharedTab`, `mayLinkTabs`): they must edit the target and `from` as their own, an edit grant from the index on
