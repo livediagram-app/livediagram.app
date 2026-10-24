@@ -3,8 +3,8 @@
 
 import { PALETTE_TELEMETRY_TYPES } from '@livedesign/api-schema';
 import { canonicalElementType, PALETTE_KINDS, type PaletteTab } from '../palette-types';
-import type { Metric, MetricStack } from '../metric-series';
-import { chart } from './helpers';
+import type { Metric, MetricStack } from '../../_shared/metric-series';
+import { chart } from '../../_shared/catalogue-helpers';
 import { LOGO_TOOL_TYPES } from '../logo-types';
 import { LOCAL_MOVE_OFFERED } from './features';
 

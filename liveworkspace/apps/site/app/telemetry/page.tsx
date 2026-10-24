@@ -24,7 +24,7 @@ import {
   subscribeAppFilter,
   summaryUrl,
 } from './apps';
-import { ActivityGlyph } from './livediagram/glyphs';
+import { ActivityGlyph } from './_shared/glyphs';
 
 // Each app's own dashboard loads only when it is picked, so "All apps" ships none of the apps'
 // catalogues of event names and explanations.

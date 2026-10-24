@@ -6,14 +6,15 @@
 /* The telemetry dashboard's own stylesheet, loaded only on /telemetry (app/telemetry/layout.tsx), so
  * the rest of the site doesn't carry the apps' UI. The site's own stylesheet comes first with the
  * base styles; this one adds the theme values and utilities the dashboard uses, repeating the few
- * both use, which is harmless. Tailwind v4 skips node_modules, where the
- * workspace packages are symlinked, so each app's shared UI package is named. */
+ * both use, which is harmless. Tailwind v4 skips node_modules, where the workspace packages are
+ * symlinked, so the UI the dashboard uses is named: every view draws with @livediagram/ui, and the
+ * page's app chips show each other app's Brand. */
 @source './';
 @source '../../components';
 @source '../../../../../livediagram/packages/ui/src';
-@source '../../../../../liveplanner/packages/ui/src';
-@source '../../../../../livedocuments/packages/ui/src';
-@source '../../../../../livedesign/packages/ui/src';
+@source '../../../../../liveplanner/packages/ui/src/Brand.tsx';
+@source '../../../../../livedocuments/packages/ui/src/Brand.tsx';
+@source '../../../../../livedesign/packages/ui/src/Brand.tsx';
 
 /* The telemetry dashboard shows the apps' own numbers in the apps' own accents: livediagram's sky
  * (its tailwind-config's brand scale, which the platform's slate replaced above) for every app and

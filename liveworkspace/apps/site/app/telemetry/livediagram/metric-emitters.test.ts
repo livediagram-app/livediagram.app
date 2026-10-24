@@ -1,21 +1,12 @@
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { GROUPS as EDITING } from './EditingView';
 import { SETTINGS_CHANGED, SETTINGS_STACKS } from './metric-catalogue';
-import { GROUPS as SETTINGS } from './SettingsView';
 import { COMPUTED_EMITTERS, TOUR_STEP_SOURCE } from './computed-emitters';
-import { COMPUTED, scanEmitters, type Emit } from './emitter-scan';
+import { COMPUTED, scanEmitters, type Emit } from '../emitter-scan';
 import { isValidTelemetryEvent } from '@livediagram/api-schema';
 import { platformEmitters } from '../platform-emitters';
-import { GROUPS as EXCEPTIONS, RECOVERY_GROUPS, RECOVERY_TYPES } from './ExceptionsView';
-import { GROUPS as HELP } from './HelpView';
-import { GROUPS as COMMUNITY } from './CommunityView';
-import { GROUPS as DASHBOARD } from './DashboardView';
-import { GROUPS as TIMINGS } from './TimingsView';
-import { GROUPS as PAGES } from './PagesView';
-import { CONNECTIONS_GROUPS, FACILITATION_GROUPS } from './FeaturesView';
-import { TOURS_GROUPS } from './PagesHelpView';
-import { NON_PATTERN_CANVAS_TYPES, THEME_ALIASES } from './LookAndFeelView';
+import { RECOVERY_TYPES } from '../_shared/ExceptionsView';
+import { NON_PATTERN_CANVAS_TYPES, THEME_ALIASES } from '../_shared/LookAndFeelView';
 import * as CATALOGUE from './metric-catalogue';
 import {
   groupMetrics,
@@ -24,9 +15,26 @@ import {
   matches,
   type Metric,
   type MetricGroup,
-} from './metric-series';
-import { SELECTION_MODES } from './PaletteView';
+} from '../_shared/metric-series';
 import { TOUR_STEP_TYPES } from './tour-steps';
+import { LIVEDIAGRAM as APP } from './config';
+
+const EDITING = APP.editing.groups;
+const SETTINGS = APP.settings;
+const EXCEPTIONS = APP.exceptions.groups;
+const RECOVERY_GROUPS = APP.exceptions.recovery;
+const HELP = APP.help.groups;
+const COMMUNITY = APP.community!.groups;
+const DASHBOARD = APP.dashboard;
+const TIMINGS = [
+  { title: 'Editor timings', metrics: [...APP.timings.editor] },
+  { title: 'Core Web Vitals', metrics: [...APP.timings.vitals] },
+];
+const PAGES = APP.pages;
+const CONNECTIONS_GROUPS = APP.connections.groups;
+const FACILITATION_GROUPS = APP.teamwork.groups;
+const TOURS_GROUPS = APP.tours;
+const SELECTION_MODES = APP.modes!.selection;
 
 // Every card and every hard-coded ranking type on the dashboard must be an
 // event something in the repo can actually send. Two ways that went wrong:

@@ -1,9 +1,9 @@
 // Working together: live sessions, sharing, discussion, the Timeline, teams and presenting (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
-import type { Metric, MetricStack } from '../metric-series';
+import type { Metric, MetricStack } from '../../_shared/metric-series';
 import { SLIDE_DECK_OPENED } from './features';
-import { chart } from './helpers';
+import { chart } from '../../_shared/catalogue-helpers';
 
 export const SHARE_LINKS_COPIED = chart(
   'UI',

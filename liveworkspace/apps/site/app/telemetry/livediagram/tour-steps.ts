@@ -1,5 +1,5 @@
 import type { TelemetryCount } from '@livediagram/api-schema';
-import { typeLabel } from './event-vocab';
+import { typeLabel } from '../_shared/event-vocab';
 
 // The Diagram tour's steps (docs/specs/007-editor/editor-tour.md), in the order the tour shows them, as
 // the `UI·View·TourStep<Step>` tokens each sends when it comes on screen. The

@@ -7,8 +7,8 @@ import {
   type TelemetrySummary,
   type TelemetryWindowKey,
 } from '@liveworkspace/telemetry';
-import { WindowPanel } from './livediagram/WindowPanel';
-import { WINDOW_META } from './livediagram/windows';
+import { WindowPanel } from './_shared/WindowPanel';
+import { WINDOW_META } from './_shared/windows';
 
 // How many of the busiest events the overview lists.
 const TOP_EVENTS = 12;

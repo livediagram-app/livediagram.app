@@ -27,7 +27,7 @@ import {
 } from '@livediagram/api-schema';
 import { countedVerbs, SYNC_WATCH_TYPE } from '@livediagram/agent-verbs';
 import { MCP_TOOL_VERBS } from '@livediagram/agent-verbs/mcp';
-import { CANVAS_CONTROLS } from './event-vocab';
+import { CANVAS_CONTROLS } from '../_shared/event-vocab';
 import { EXPLORER_TELEMETRY_EVENTS } from '@liveworkspace/telemetry';
 
 type ComputedValues = {

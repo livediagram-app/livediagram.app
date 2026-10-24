@@ -25,7 +25,7 @@ import {
 } from '@livedesign/api-schema';
 import { countedVerbs } from '@livedesign/agent-verbs';
 import { MCP_TOOL_VERBS } from '@livedesign/agent-verbs/mcp';
-import { CANVAS_CONTROLS } from './event-vocab';
+import { CANVAS_CONTROLS } from '../_shared/event-vocab';
 import { ADJUSTMENT_IDS, FILTERS, LAYER_ADJUSTMENT_IDS } from '@livedesign/photo-engine';
 
 type ComputedValues = {

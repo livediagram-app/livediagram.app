@@ -1,9 +1,9 @@
 // Working together: live sessions, embeds, discussion, the Timeline, teams and the session tools (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
-import type { Metric, MetricStack } from '../metric-series';
+import type { Metric, MetricStack } from '../../_shared/metric-series';
 import { SESSION_TIMER_OPENED, SESSION_VOTE_OPENED } from './features';
-import { chart } from './helpers';
+import { chart } from '../../_shared/catalogue-helpers';
 
 export const VOTES_ENDED = chart(
   'Tab',

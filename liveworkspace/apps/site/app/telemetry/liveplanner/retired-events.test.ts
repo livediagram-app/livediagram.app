@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { metricKey, type TelemetrySummary } from '@liveplanner/api-schema';
-import { dropRetiredEvents, isRetiredEvent } from './retired-events';
+import { dropRetiredEvents as dropRetired } from '../_shared/retired-events';
+import { isRetiredEvent } from './retired-events';
+
+const dropRetiredEvents = (summary: TelemetrySummary) => dropRetired(summary, isRetiredEvent);
 
 // docs/specs/017-telemetry/telemetry.md "Retired features": the removed Activity panel's events never
 // reach a chart.
@@ -201,10 +204,27 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'View', 'WorkshopTourStepOutro')).toBe(true);
     expect(isRetiredEvent('Tab', 'Started', 'Vote')).toBe(false);
     expect(isRetiredEvent('Tab', 'Started', 'CountdownTimer')).toBe(false);
-    expect(isRetiredEvent('Canvas', 'Used', 'Isometric')).toBe(false);
     expect(isRetiredEvent('Element', 'Added', 'Temperature')).toBe(false);
     expect(isRetiredEvent('Element', 'Added', 'Picker')).toBe(false);
     expect(isRetiredEvent('UI', 'Opened', 'SessionVote')).toBe(false);
+  });
+
+  it('retires the Format and Isometric tools, not the isometric image export', () => {
+    expect(isRetiredEvent('Canvas', 'Used', 'FormatPainter')).toBe(true);
+    expect(isRetiredEvent('Canvas', 'Used', 'Isometric')).toBe(true);
+    expect(isRetiredEvent('Element', 'Changed', 'FormatPainter')).toBe(true);
+    expect(isRetiredEvent('UI', 'Changed', 'FormatCopiesFill')).toBe(true);
+    expect(isRetiredEvent('UI', 'Changed', 'FormatMode')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'IsometricExport')).toBe(false);
+    expect(isRetiredEvent('Element', 'Changed', 'TextFormat')).toBe(false);
+  });
+
+  it('retires entity editing, not the elements that carry on', () => {
+    expect(isRetiredEvent('Element', 'Created', 'RelatedEntity')).toBe(true);
+    expect(isRetiredEvent('Element', 'Added', 'EntityField')).toBe(true);
+    expect(isRetiredEvent('Element', 'Changed', 'Entity')).toBe(true);
+    expect(isRetiredEvent('Element', 'Changed', 'Cardinality')).toBe(true);
+    expect(isRetiredEvent('Element', 'Changed', 'Font')).toBe(false);
   });
 
   it('retires the custom-theme builder and its help article, not the built-in themes', () => {

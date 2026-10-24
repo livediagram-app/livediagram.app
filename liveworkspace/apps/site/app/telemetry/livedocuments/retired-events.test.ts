@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { metricKey, type TelemetrySummary } from '@livedocuments/api-schema';
-import { dropRetiredEvents, isRetiredEvent } from './retired-events';
+import { dropRetiredEvents as dropRetired } from '../_shared/retired-events';
+import { isRetiredEvent } from './retired-events';
+
+const dropRetiredEvents = (summary: TelemetrySummary) => dropRetired(summary, isRetiredEvent);
 
 // docs/specs/017-telemetry/telemetry.md "Retired features": the removed Activity panel's events never
 // reach a chart.

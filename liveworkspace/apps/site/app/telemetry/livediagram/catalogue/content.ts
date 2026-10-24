@@ -3,8 +3,8 @@
 
 import { PALETTE_TELEMETRY_TYPES } from '@livediagram/api-schema';
 import { canonicalElementType, PALETTE_KINDS, type PaletteTab } from '../palette-types';
-import type { Metric, MetricStack } from '../metric-series';
-import { chart } from './helpers';
+import type { Metric, MetricStack } from '../../_shared/metric-series';
+import { chart } from '../../_shared/catalogue-helpers';
 import { LOCAL_MOVE_OFFERED, TIDY_UP_OPENED } from './features';
 
 // The Element types that are a table's rows and columns, not elements, and

@@ -1,8 +1,8 @@
 // Programmatic access: API tokens and MCP tool calls (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
-import type { Metric, MetricStack } from '../metric-series';
-import { chart } from './helpers';
+import type { Metric, MetricStack } from '../../_shared/metric-series';
+import { chart } from '../../_shared/catalogue-helpers';
 
 // Tokens made by hand and revoked on liveworkspace.app, counted by accounts under the app their owner signed up
 // through.

@@ -1,7 +1,7 @@
 // Emails sent by the api worker, one chart per template (docs/specs/017-telemetry/telemetry.md, docs/specs/014-identity/transactional-email.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
-import type { Metric, MetricStack, Rising } from '../metric-series';
+import type { Metric, MetricStack, Rising } from '../../_shared/metric-series';
 
 // Emails sent, one per template (docs/specs/014-identity/transactional-email.md), by the `kind` the api worker
 // reports on `Email·Sent`. The kind only, never a recipient. Grouped the way

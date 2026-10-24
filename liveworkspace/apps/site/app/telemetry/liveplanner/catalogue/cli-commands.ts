@@ -1,7 +1,7 @@
 // The CLI Commands stack (docs/specs/015-api/blueprints/cli.md CLI56): one chart per counted CLI verb, from CLI_COMMANDS.
 
 import { CLI_COMMANDS } from '../cli-commands';
-import type { Metric, MetricStack } from '../metric-series';
+import type { Metric, MetricStack } from '../../_shared/metric-series';
 
 export const CLI_COMMAND_METRICS: readonly Metric[] = CLI_COMMANDS.map(
   ({ type, command, what }) => ({

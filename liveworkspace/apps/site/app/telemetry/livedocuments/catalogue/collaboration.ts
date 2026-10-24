@@ -1,9 +1,9 @@
 // Working together: live sessions, the Share dialog and embeds, discussion, the Timeline, teams and presenting (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
-import type { Metric, MetricStack } from '../metric-series';
+import type { Metric, MetricStack } from '../../_shared/metric-series';
 import { SLIDE_DECK_OPENED } from './features';
-import { chart } from './helpers';
+import { chart } from '../../_shared/catalogue-helpers';
 
 // The shared Share dialog (@liveworkspace/explorer ShareDialog), reported through its host's onTelemetry
 // (apps/editor lib/explorer-share-host.ts) and, from the Explorer on liveworkspace.app, in this app's name.

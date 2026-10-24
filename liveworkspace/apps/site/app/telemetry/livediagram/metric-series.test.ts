@@ -5,14 +5,16 @@ import { pascalToken } from '@livediagram/api-schema';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { platformEmailKinds } from '../platform-emitters';
-import { GROUPS as DASHBOARD } from './DashboardView';
 import {
   CLI_COMMAND_METRICS,
   EMAIL_KIND_METRICS,
   NEW_VISITORS,
   RETURNING_VISITORS,
 } from './metric-catalogue';
-import { groupMetrics, headlineCaption, isStack, type MetricGroup } from './metric-series';
+import { groupMetrics, headlineCaption, isStack, type MetricGroup } from '../_shared/metric-series';
+import { LIVEDIAGRAM as APP } from './config';
+
+const DASHBOARD = APP.dashboard;
 
 describe('chart stacks', () => {
   const stack = {
@@ -128,13 +130,13 @@ describe('previousCount (trend arrows)', () => {
   };
 
   it('reads the api previous window, the last 30 days included', async () => {
-    const { previousCount } = await import('./metric-series');
+    const { previousCount } = await import('../_shared/metric-series');
     expect(previousCount(summary, 'last30', NEW_VISITORS, 30)).toBe(60);
     expect(previousCount(summary, 'today', NEW_VISITORS, 1)).toBe(4);
   });
 
   it('has nothing to compare the last 30 days against without it', async () => {
-    const { previousCount } = await import('./metric-series');
+    const { previousCount } = await import('../_shared/metric-series');
     const older = { ...summary, previousWindows: undefined };
     expect(previousCount(older, 'last30', NEW_VISITORS, 30)).toBeNull();
   });

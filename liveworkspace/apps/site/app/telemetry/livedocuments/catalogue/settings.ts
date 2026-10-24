@@ -1,7 +1,7 @@
 // The editor Settings dialog, one stack per category, one chart per row (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
-import type { Metric, MetricStack } from '../metric-series';
+import type { Metric, MetricStack } from '../../_shared/metric-series';
 
 // ---- Settings tab ------------------------------------------------------------
 // One chart per row of the editor's Settings dialog, one stack per Settings

@@ -1,9 +1,9 @@
 // Error health and the help centre (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
-import { isRecovery, isServerCrash, kindOf } from '../error-kinds';
-import type { Metric, MetricStack } from '../metric-series';
-import { chart } from './helpers';
+import { isRecovery, isServerCrash, kindOf } from '../../_shared/error-kinds';
+import type { Metric, MetricStack } from '../../_shared/metric-series';
+import { chart } from '../../_shared/catalogue-helpers';
 
 // Error health (Exceptions tab). One side of each failure only: a server crash
 // is reported twice, the api worker's Internal.<Method>.<Route> and the Http500

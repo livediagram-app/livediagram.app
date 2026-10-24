@@ -11,13 +11,7 @@ import {
   type EditorTimingMetric,
   type WebVital,
 } from '@livedesign/api-schema';
-import type { Metric } from '../metric-series';
-
-/**
- * A timing chart: its metric token beside the curated Metric the coverage tests read, and for a Web
- * Vital, which vital of which app.
- */
-export type TimingChart = Metric & { timing: string; app?: string; vital?: WebVital };
+import type { TimingChart } from '../../_shared/timing-stats';
 
 const timingChart = (timing: string, title: string, blurb: string): TimingChart => ({
   timing,

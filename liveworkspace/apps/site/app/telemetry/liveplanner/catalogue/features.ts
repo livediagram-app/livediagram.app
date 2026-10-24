@@ -1,11 +1,11 @@
 // Which features carry the work: AI, layers, the palette and canvas modes, look and feel, search, dialogs, chrome, notes, actions, organisation (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
-import { isHelpArticleType, isSettingsCategory } from '../opened-types';
-import { SELECTION_MODES } from '../palette-types';
-import { NON_PATTERN_CANVAS_TYPES, isNonThemePick } from '../look-feel-types';
-import type { Metric, MetricStack } from '../metric-series';
-import { chart } from './helpers';
+import { isHelpArticleType, isSettingsCategory } from '../../_shared/opened-types';
+import { NON_PATTERN_CANVAS_TYPES } from '../../_shared/look-feel-types';
+import { isNonThemePick } from '../palette-types';
+import type { Metric, MetricStack } from '../../_shared/metric-series';
+import { chart } from '../../_shared/catalogue-helpers';
 
 export const LAYERS_RENAMED = chart(
   'Layer',
@@ -119,14 +119,6 @@ export const TABS_UNFILED = chart(
   'Tabs Unfiled',
   'A tab taken out of a tab folder.',
   { types: ['Folder'], rising: 'neutral' },
-);
-
-export const MODE_OPTIONS = chart(
-  'UI',
-  'Changed',
-  'Mode Options',
-  'Settings inside a canvas mode: eraser and format painter options.',
-  { typeIn: (t) => /^(Eraser|Format)/.test(t ?? '') },
 );
 
 // A form cover's moving background (docs/specs/030-forms/forms.md "The form card, top to bottom"): set
@@ -422,33 +414,6 @@ export const PALETTE_USE: MetricStack = {
   blurb: 'How the palette gets used beyond adding elements: its groups and the toolbar.',
   members: [PALETTE_GROUPS_OPENED],
   seeAlso: { section: 'palette', label: 'See Each Element in Features › Palette' },
-};
-
-// The canvas selection modes, one chart per mode, and the options set inside
-// them (Canvas Modes tab has the rankings).
-const MODE_TITLES: Record<string, string> = {
-  FormatPainter: 'Format Painter',
-  Isometric: 'Isometric',
-};
-
-export const MODE_METRICS: readonly Metric[] = SELECTION_MODES.map((mode) =>
-  chart(
-    'Canvas',
-    'Used',
-    MODE_TITLES[mode] ?? mode,
-    `The ${(MODE_TITLES[mode] ?? mode).toLowerCase()} mode switched on from the palette.`,
-    { types: [mode] },
-  ),
-);
-
-export const CANVAS_MODES: MetricStack = {
-  stack: true,
-  title: 'Canvas Modes',
-  blurb: 'Ways of working on the canvas picked from the palette, and the options set inside them.',
-  members: [...MODE_METRICS, MODE_OPTIONS],
-  // Modes switched into; tweaking an option inside one is not another use.
-  headline: [...MODE_METRICS],
-  seeAlso: { section: 'modes', label: 'See Each Mode in Features › Modes' },
 };
 
 // Editor chrome: layout and navigation.

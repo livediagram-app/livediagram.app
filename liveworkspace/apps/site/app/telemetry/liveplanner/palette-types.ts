@@ -1,5 +1,6 @@
 import { PALETTE_TELEMETRY_TYPES } from '@liveplanner/api-schema';
-import type { TypeAliases } from './rank';
+import type { TypeAliases } from '../_shared/rank';
+import { nonThemePick } from '../_shared/look-feel-types';
 
 // The palette's element kinds as the dashboard reads them (docs/specs/017-telemetry/telemetry.md): the
 // shared catalogue's tabs, plus the old spellings to fold in. Shared by the
@@ -31,6 +32,6 @@ export const PALETTE_KINDS: ReadonlySet<string> = new Set(
   Object.values(PALETTE_TELEMETRY_TYPES).flat(),
 );
 
-// The canvas selection modes (useCanvasTool's `Canvas·Used` tokens). The ranking
-// names the modes it counts, so a Canvas·Used event that is not a mode stays out.
-export const SELECTION_MODES: readonly string[] = ['FormatPainter', 'Isometric'];
+// The Theme·Changed types that are not a theme pick, for its Themes chart and ranking
+// (../_shared/look-feel-types.ts says why `Unknown` differs between the apps).
+export const isNonThemePick = nonThemePick(true);

@@ -1,11 +1,12 @@
 // Which features carry the work: layers, the palette and canvas modes, look and feel, search, dialogs, chrome, notes, actions, organisation (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
-import { isHelpArticleType, isSettingsCategory } from '../opened-types';
+import { isHelpArticleType, isSettingsCategory } from '../../_shared/opened-types';
 import { SELECTION_MODES } from '../palette-types';
-import { NON_PATTERN_CANVAS_TYPES, isNonThemePick } from '../look-feel-types';
-import type { Metric, MetricStack } from '../metric-series';
-import { chart } from './helpers';
+import { NON_PATTERN_CANVAS_TYPES } from '../../_shared/look-feel-types';
+import { isNonThemePick } from '../palette-types';
+import type { Metric, MetricStack } from '../../_shared/metric-series';
+import { chart } from '../../_shared/catalogue-helpers';
 import { elementTourTokens } from '../element-tour-kinds';
 import { LOGO_TOOL_TYPES } from '../logo-types';
 

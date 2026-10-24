@@ -7,23 +7,12 @@ import {
   type TelemetryWindowKey,
   COMMUNITY_CATEGORY_TYPES,
 } from '@livediagram/api-schema';
-import {
-  COMMUNITY_COPIES,
-  COMMUNITY_DISCOVERY,
-  COMMUNITY_FILTERS,
-  COMMUNITY_MODERATION,
-  COMMUNITY_PUBLISHING,
-  COMMUNITY_LIKES,
-  COMMUNITY_POSTS_OPENED,
-  COMMUNITY_POSTS_SHARED,
-  COMMUNITY_REPORTS,
-  COMMUNITY_SEARCHES,
-} from './metric-catalogue';
-import { MetricGroups, type MetricGroup } from './MetricCards';
-import { CardColumns } from './CardColumns';
-import { RankCard, rank } from './RankCard';
-import { typeLabel } from './event-vocab';
-import { rankTrend, windowLabel } from './windows';
+import { COMMUNITY_GROUPS as GROUPS } from './community-groups';
+import { MetricGroups } from '../_shared/MetricCards';
+import { CardColumns } from '../_shared/CardColumns';
+import { RankCard, rank } from '../_shared/RankCard';
+import { typeLabel } from '../_shared/event-vocab';
+import { rankTrend, windowLabel } from '../_shared/windows';
 
 // Community view (docs/specs/017-telemetry/telemetry.md; docs/specs/025-community/community.md
 // "Telemetry"): how the public gallery is doing. Headline cards for what goes in and what people
@@ -31,25 +20,6 @@ import { rankTrend, windowLabel } from './windows';
 // into, why posts get reported, and which gallery filters people reach for. Every type here is a
 // closed token (a category, a report reason, a filter kind), never post content, so a row reads
 // by the label the product shows for it.
-export const GROUPS: MetricGroup[] = [
-  {
-    title: 'Community',
-    metrics: [
-      COMMUNITY_POSTS_SHARED,
-      COMMUNITY_POSTS_OPENED,
-      COMMUNITY_LIKES,
-      COMMUNITY_COPIES,
-      COMMUNITY_SEARCHES,
-      COMMUNITY_FILTERS,
-      COMMUNITY_REPORTS,
-    ],
-  },
-  // The stacks the Dashboard leaves out (it keeps Community Engagement).
-  {
-    title: 'Publishing, discovery and reports',
-    metrics: [COMMUNITY_PUBLISHING, COMMUNITY_DISCOVERY, COMMUNITY_MODERATION],
-  },
-];
 
 // The label the product shows for a category or reason token, else the shared reading.
 const labelFrom =

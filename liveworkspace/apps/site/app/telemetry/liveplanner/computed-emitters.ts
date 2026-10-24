@@ -27,7 +27,7 @@ import {
 import { countedVerbs } from '@liveplanner/agent-verbs';
 import { FORM_STARTERS, QUESTION_TYPE_TELEMETRY } from '@liveplanner/forms';
 import { MCP_TOOL_VERBS } from '@liveplanner/agent-verbs/mcp';
-import { CANVAS_CONTROLS } from './event-vocab';
+import { CANVAS_CONTROLS } from '../_shared/event-vocab';
 
 type ComputedValues = {
   values: readonly (string | null)[];
@@ -403,10 +403,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/editor/components/tour/FormTourHost.tsx UI·View': { values: FORM_TOUR_STEP_SOURCE },
   'apps/editor/hooks/canvas/useDebouncedCanvasTelemetry.ts Canvas·Changed': {
     values: Object.keys(CANVAS_CONTROLS),
-  },
-  'apps/editor/hooks/canvas/useShapeDrawing.ts Element·Added': {
-    values: ['Banner', 'Callout', 'Image', 'Video', 'LinkCard'],
-    open: 'a drawn component or media kind',
   },
   'apps/editor/hooks/canvas/useTabCanvas.ts Tab·Aligned': {
     values: ['Smart', 'FlowchartDown', 'FlowchartRight', 'Tree', 'Mindmap'],

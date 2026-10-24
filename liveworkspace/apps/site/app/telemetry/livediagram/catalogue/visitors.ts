@@ -2,7 +2,7 @@
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import { pageViewApp, type PageViewApp } from '@livediagram/api-schema';
-import type { Metric, MetricStack } from '../metric-series';
+import type { Metric, MetricStack } from '../../_shared/metric-series';
 import {
   ACTION_SIGN_IN_NUDGE,
   EDITOR_REASONS_OPENED,
@@ -15,7 +15,7 @@ import {
   POWER_USER_OFFERED,
   NEW_VERSION_OFFERED,
 } from './features';
-import { chart } from './helpers';
+import { chart } from '../../_shared/catalogue-helpers';
 import { ELEMENT_TOUR_KINDS, elementTourTokens } from '../element-tour-kinds';
 
 export const NEW_VISITORS: Metric = {

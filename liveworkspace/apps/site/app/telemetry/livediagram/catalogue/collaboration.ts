@@ -1,14 +1,14 @@
 // Working together: live sessions, sharing, discussion, the Timeline, teams and the facilitation tools (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
-import type { Metric, MetricStack } from '../metric-series';
+import type { Metric, MetricStack } from '../../_shared/metric-series';
 import {
   SESSION_POLL_OPENED,
   SESSION_TIMER_OPENED,
   SESSION_VOTE_OPENED,
   SLIDE_DECK_OPENED,
 } from './features';
-import { chart } from './helpers';
+import { chart } from '../../_shared/catalogue-helpers';
 
 export const VOTES_ENDED = chart(
   'Tab',

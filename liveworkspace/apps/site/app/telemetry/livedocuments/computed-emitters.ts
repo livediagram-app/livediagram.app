@@ -25,7 +25,7 @@ import {
 } from '@livedocuments/api-schema';
 import { countedVerbs } from '@livedocuments/agent-verbs';
 import { MCP_TOOL_VERBS } from '@livedocuments/agent-verbs/mcp';
-import { CANVAS_CONTROLS } from './event-vocab';
+import { CANVAS_CONTROLS } from '../_shared/event-vocab';
 
 type ComputedValues = {
   values: readonly (string | null)[];
@@ -298,7 +298,9 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/editor/app/document/[id]/useDocumentTrashed.ts Trash·Restored': { values: TRASH_TYPES },
   // The shared Explorer's Timeline, through ExplorerHost's onTimeline prop (@liveworkspace/explorer TimelinePane.tsx):
   // each a fixed token from the package.
-  'apps/editor/app/embed/workbench/ExplorerHost.tsx Timeline·Changed': { values: ['List', 'Calendar'] },
+  'apps/editor/app/embed/workbench/ExplorerHost.tsx Timeline·Changed': {
+    values: ['List', 'Calendar'],
+  },
   'apps/editor/app/embed/workbench/ExplorerHost.tsx Timeline·Selected': {
     values: [
       'Everyone',
@@ -317,7 +319,9 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/editor/app/embed/workbench/ExplorerHost.tsx Timeline·Opened': {
     values: ['Card', 'Stack', 'Menu'],
   },
-  'apps/editor/app/embed/workbench/ExplorerHost.tsx Timeline·Removed': { values: ['Entry', 'Stack'] },
+  'apps/editor/app/embed/workbench/ExplorerHost.tsx Timeline·Removed': {
+    values: ['Entry', 'Stack'],
+  },
   // Home's What Happened, through the Explorer's onHome prop (@liveworkspace/explorer WhatHappened.tsx).
   'apps/editor/app/embed/workbench/ExplorerHost.tsx Home·Selected': {
     values: ['WhatHappened', 'SeeTimeline'],
