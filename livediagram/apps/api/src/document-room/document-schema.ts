@@ -155,9 +155,6 @@ CREATE TABLE IF NOT EXISTS agent_changeset_parts (
   PRIMARY KEY (changeset_id, part)
 );
 
--- A tab shared with other documents (docs/specs/006-document/tab-document-many-to-many.md): tab_shares lists the
--- OTHER documents holding each, share_outbox what this one owes them (@liveworkspace/index-app tab-shares.ts).
-${tabSharesSchema()}
 -- Who has voted as a guest (docs/specs/012-collaboration/vote-integrity.md): a guest id costs nothing to make, so a
 -- guest's Q&A upvote is admitted against a cap of guest voters per network (vote-integrity.ts).
 CREATE TABLE IF NOT EXISTS guest_voters (
@@ -257,7 +254,13 @@ BEGIN
 END;
 `;
 
-const STEPS: readonly string[] = [V1];
+// A tab shared with other items (@liveworkspace/index-app tab-shares.ts): tab_shares lists the others holding
+// each, share_outbox what this one owes them. Its own step: it was first written into V1, which rooms made before
+// then had already run, so they had neither table and their writes failed ("no such table: share_outbox"). Every
+// statement is IF NOT EXISTS, so a room made in between, which has them, runs it harmlessly.
+const V2 = tabSharesSchema();
+
+const STEPS: readonly string[] = [V1, V2];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;
 

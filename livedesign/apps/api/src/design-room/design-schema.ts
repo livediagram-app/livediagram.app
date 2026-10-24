@@ -142,9 +142,6 @@ CREATE TABLE IF NOT EXISTS photo_blob_refs (
 ) WITHOUT ROWID;
 CREATE INDEX IF NOT EXISTS photo_blob_refs_blob ON photo_blob_refs (blob_id);
 
--- A tab shared with other designs (docs/specs/006-design/tab-design-many-to-many.md): tab_shares lists the OTHER
--- designs holding each, share_outbox what this one owes them (@liveworkspace/index-app tab-shares.ts).
-${tabSharesSchema()}
 -- What the design owes the index (design-outbox.ts): a key per thing whose derived rows changed, filled by the
 -- triggers below so no write path can forget it, drained by the room's alarm.
 --   tab:     a tab's comment threads and actions (the Inbox)
@@ -236,7 +233,13 @@ CREATE INDEX IF NOT EXISTS notify_claims_sender ON notify_claims (sender, at);
 CREATE INDEX IF NOT EXISTS notify_claims_at ON notify_claims (at);
 `;
 
-const STEPS: readonly string[] = [V1];
+// A tab shared with other items (@liveworkspace/index-app tab-shares.ts): tab_shares lists the others holding
+// each, share_outbox what this one owes them. Its own step: it was first written into V1, which rooms made before
+// then had already run, so they had neither table and their writes failed ("no such table: share_outbox"). Every
+// statement is IF NOT EXISTS, so a room made in between, which has them, runs it harmlessly.
+const V2 = tabSharesSchema();
+
+const STEPS: readonly string[] = [V1, V2];
 
 export const DESIGN_SCHEMA_VERSION = STEPS.length;
 
