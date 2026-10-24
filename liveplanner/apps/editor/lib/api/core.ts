@@ -3,13 +3,7 @@
 // shared DELETE shape, and the module-level token / share-password
 // state. The per-domain call collections (projects, tabs, share, …)
 // import from here; callers go through the lib/api-client.ts barrel.
-import type {
-  ApiToken,
-  Project,
-  Folder,
-  ShareLink,
-  ShareRole,
-} from '@liveplanner/api-schema';
+import type { ApiToken, Project, Folder, ShareLink, ShareRole } from '@liveplanner/api-schema';
 import {
   BUILD_ID_HEADER,
   PROJECT_FORMAT_HEADER,

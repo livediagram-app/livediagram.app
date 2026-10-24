@@ -23,9 +23,7 @@ function draw(supported: boolean) {
   vi.stubGlobal('CSS', {
     supports: (p: string, v: string) => supported || !(p === 'fill' && v === 'context-stroke'),
   });
-  const { container } = render(
-    <ArrowForTests arrow={arrow} />,
-  );
+  const { container } = render(<ArrowForTests arrow={arrow} />);
   const line = [...container.querySelectorAll('path')].find(
     (p) => p.getAttribute('stroke') === '#e2e8f0',
   )!;

@@ -1,10 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
-import {
-  takesTypedLabel,
-  type BoxedElement,
-  type Element,
-  type Tab,
-} from '@liveplanner/project';
+import { takesTypedLabel, type BoxedElement, type Element, type Tab } from '@liveplanner/project';
 import { deriveNewBoxedColours } from '@/lib/themes';
 import { inheritedSizeFor } from '@/lib/canvas';
 import { patchTab } from './editor-page-helpers';

@@ -69,13 +69,7 @@ export function LineDataDialog({
   };
 
   return (
-    <Dialog
-      open
-      onClose={close}
-      ariaLabel="Edit chart data"
-      size="xl"
-      className="max-h-[90vh]"
-    >
+    <Dialog open onClose={close} ariaLabel="Edit chart data" size="xl" className="max-h-[90vh]">
       <DialogHeader
         title="Chart Data"
         subtitle="A row per category, a column per series. Or import a CSV (header = series names, first column = categories)."

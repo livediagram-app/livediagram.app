@@ -217,11 +217,7 @@ export function deriveCanvasSelection(input: {
       ? unionRects(elements.filter((el) => multiSelectedIds.has(el.id)).map(selectionExtent))
       : null;
   const showMultiToolbar =
-    !!multiToolbarBounds &&
-    multiSelectedIds.size > 1 &&
-    !canvasCovered &&
-    !tabLocked &&
-    !readOnly;
+    !!multiToolbarBounds && multiSelectedIds.size > 1 && !canvasCovered && !tabLocked && !readOnly;
 
   return {
     multiPrimaryId,

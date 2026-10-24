@@ -69,7 +69,6 @@ describe('canvas background context menu', () => {
     result.current.onContextMenuPointerUp(up(0));
     expect(onCanvasContextMenu).toHaveBeenCalledTimes(1);
   });
-
 });
 
 // docs/specs/008-canvas/canvas-and-palette.md "Selection": right-clicking the empty canvas
@@ -113,7 +112,6 @@ describe('a right-click on the empty canvas', () => {
     result.current.onContextMenu(ctx(0));
     expect(calls).toEqual(['deselect']);
   });
-
 });
 
 describe('a long-press on the empty canvas', () => {
@@ -211,14 +209,14 @@ describe('a press on the canvas cover', () => {
       useCanvasSurfaceGestures({
         canvasTool: 'select',
         middleMousePan: true,
-          viewportOffset: { x: 0, y: 0 },
+        viewportOffset: { x: 0, y: 0 },
         viewportZoom: 1,
         mainRef: { current: null },
         wrapperRef: { current: null },
         spaceHeldRef: { current: false },
         setPan: vi.fn(),
         setMarquee: vi.fn(),
-            onDeselect: vi.fn(),
+        onDeselect: vi.fn(),
         onCanvasDoubleClick: vi.fn(),
         interceptPress,
       } as never),
@@ -286,14 +284,14 @@ describe('a double press on the bare canvas', () => {
       useCanvasSurfaceGestures({
         canvasTool,
         middleMousePan: true,
-          viewportOffset: { x: 0, y: 0 },
+        viewportOffset: { x: 0, y: 0 },
         viewportZoom: 2,
         mainRef: { current: null },
         wrapperRef: { current: wrapper },
         spaceHeldRef: { current: false },
         setPan: vi.fn(),
         setMarquee: vi.fn(),
-          onDeselect: vi.fn(),
+        onDeselect: vi.fn(),
         onCanvasDoubleClick,
       } as never),
     );

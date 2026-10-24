@@ -8,11 +8,7 @@
 // historically imported from here. The canonical definitions live in
 // `@liveplanner/api-schema`; see that package's index.ts for the shapes
 // and per-type rationale.
-export type {
-  ShareLink,
-  ShareLinkExpiry,
-  ShareRole,
-} from '@liveplanner/api-schema';
+export type { ShareLink, ShareLinkExpiry, ShareRole } from '@liveplanner/api-schema';
 
 // Core plumbing the app uses directly (base URL, identity headers,
 // token / share-password session state). The internal helpers

@@ -3,7 +3,12 @@
 // per page load rebuilds it, so the Explorer on this address lists what is kept only here.
 import { afterEach, describe, expect, it } from 'vitest';
 import { readThisBrowser } from '@liveworkspace/explorer/this-browser';
-import { __setOfflineBackend, offlineCreateProject, offlineDeleteProject, isOfflineId } from './offline-store';
+import {
+  __setOfflineBackend,
+  offlineCreateProject,
+  offlineDeleteProject,
+  isOfflineId,
+} from './offline-store';
 import { memBackend, testRecord } from './offline-test-utils';
 
 afterEach(() => {

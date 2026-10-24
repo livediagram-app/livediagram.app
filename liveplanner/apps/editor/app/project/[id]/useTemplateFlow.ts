@@ -95,12 +95,8 @@ export function useTemplateFlow(opts: {
     // actually picks a template. The ~1700 lines of build* code stays
     // out of the editor's initial chunk; returning users opening an
     // existing project never download it.
-    const {
-      templateTabs,
-      templateCanvasOverrides,
-      isDefaultProjectName,
-      untitledNameForTemplate,
-    } = await import('@/lib/template-builders');
+    const { templateTabs, templateCanvasOverrides, isDefaultProjectName, untitledNameForTemplate } =
+      await import('@/lib/template-builders');
     // The first tab's template names a project still on a default name ("Untitled Flowchart",
     // docs/specs/007-editor/templates-by-mode.md "The project's name"); a name someone gave it stays.
     if (tabs[0]?.id === activeId && isDefaultProjectName(projectName)) {

@@ -21,9 +21,7 @@ export type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-rig
 // their buttons, docs/specs/007-editor/toolbar-layout.md), nor are Timer and Vote (popovers off the
 // Session strip, docs/specs/012-collaboration/session-tools.md): a stored layout naming them is read like any
 // unknown id. So is the retired Format Panel's 'format'.
-export type PanelId =
-  | 'collaborate'
-  | 'minimap';
+export type PanelId = 'collaborate' | 'minimap';
 
 export const PANEL_CORNERS: readonly PanelCorner[] = [
   'top-left',

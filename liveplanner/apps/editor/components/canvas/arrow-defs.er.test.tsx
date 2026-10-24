@@ -22,9 +22,7 @@ async function draw(supported: boolean) {
     supports: (p: string, v: string) => supported || !(p === 'fill' && v === 'context-stroke'),
   });
   const { ArrowForTests } = await import('@/lib/testing/render-arrow');
-  const { container } = render(
-    <ArrowForTests arrow={relationship} />,
-  );
+  const { container } = render(<ArrowForTests arrow={relationship} />);
   const line = [...container.querySelectorAll('path')].find(
     (p) => p.getAttribute('stroke') === '#334155',
   )!;

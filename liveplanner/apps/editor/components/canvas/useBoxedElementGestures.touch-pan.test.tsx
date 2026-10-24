@@ -19,13 +19,7 @@ let clock = 5_000_000;
 
 afterEach(() => vi.useRealTimers());
 
-function harness({
-  fits,
-  isSelected = false,
-}: {
-  fits: boolean;
-  isSelected?: boolean;
-}) {
+function harness({ fits, isSelected = false }: { fits: boolean; isSelected?: boolean }) {
   const surface = document.createElement('main');
   surface.setAttribute('data-canvas-root', '');
   const node = document.createElement('div');

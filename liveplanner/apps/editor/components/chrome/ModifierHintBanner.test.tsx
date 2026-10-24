@@ -10,14 +10,7 @@ function holdShift(down: boolean) {
 }
 
 function show(props: Partial<Parameters<typeof ModifierHintBanner>[0]> = {}) {
-  return render(
-    <ModifierHintBanner
-      drag={null}
-      selectedKind={null}
-      hasElements
-      {...props}
-    />,
-  );
+  return render(<ModifierHintBanner drag={null} selectedKind={null} hasElements {...props} />);
 }
 
 afterEach(() => {

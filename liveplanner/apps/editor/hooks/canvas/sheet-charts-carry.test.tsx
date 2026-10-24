@@ -144,7 +144,7 @@ describe('quick-add duplicating a Sheet', () => {
       setSelectedId: () => {},
       setEditingId: () => {},
       setMultiSelectedIds: () => {},
-        lockedByOther: () => false,
+      lockedByOther: () => false,
       layerLockedIds: new Set(),
       layerInertIds: new Set(),
     });
@@ -170,7 +170,7 @@ describe('deleting a Sheet', () => {
       setSelectedId: () => {},
       setEditingId: () => {},
       setMultiSelectedIds: () => {},
-        lockedByOther: () => false,
+      lockedByOther: () => false,
       layerLockedIds: new Set(),
       layerInertIds: new Set(),
     });

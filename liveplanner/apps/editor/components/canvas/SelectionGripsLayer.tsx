@@ -1,10 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useLayoutEffect,
-  useRef,
-  type ReactNode,
-} from 'react';
+import { createContext, useContext, useLayoutEffect, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
 // The grips layer (docs/specs/008-canvas/canvas-and-palette.md "Resize", "The handles are always on

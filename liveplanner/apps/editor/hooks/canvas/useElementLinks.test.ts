@@ -22,7 +22,7 @@ function links(selected: string) {
       setActiveId: () => {},
       setSelectedId: () => {},
       setEditingId: () => {},
-        openProject: () => {},
+      openProject: () => {},
     }),
   ).result.current;
 }
