@@ -9,7 +9,7 @@ Scope, by file:
 | File                                                         | Role                                                                                          |
 | ------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
 | `packages/design/src/data-shapes.ts`                         | `CODE_LANGUAGES`, `CodeLanguage`, `CODE_MAX_LENGTH`, `isCodeBlockShape`                       |
-| `packages/design/src/code-themes.ts`                         | `CodeThemeId`, `CodeTheme`, `CODE_THEMES`, `DEFAULT_CODE_THEME`, `codeTheme`, `isCodeThemeId` |
+| `../packages/document-core/src/code-themes.ts`               | `CodeThemeId`, `CodeTheme`, `CODE_THEMES`, `DEFAULT_CODE_THEME`, `codeTheme`, `isCodeThemeId` |
 | `packages/design/src/element-types.ts`                       | `code`, `codeLanguage`, `codeTheme`, `codeWrap`                                               |
 | `packages/design/src/shape-factory.ts`                       | Size 320 × 180; seeds `codeLanguage: 'plain'`                                                 |
 | `packages/design/src/colors.ts`                              | `supportsColours` false; `SELF_PAINTING_SHAPES` membership                                    |

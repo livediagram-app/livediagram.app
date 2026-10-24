@@ -13,8 +13,8 @@ Scope, by file:
 | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | `packages/project/src/element-refs.ts`                                          | Refs, slug ids and kind words: `computeRefs`, `resolveRef`, `isSlugId`, `slugIdFor`, `kindWordOf`, `isKnownElement`         |
 | `packages/project/src/containment.ts`                                           | The centre rule and the content origin: `boxCentre`, `boxHoldsPoint`, `smallestHolder`, `deriveContainers`, `contentOrigin` |
-| `packages/project/src/style-keys.ts`                                            | `STYLE_KEYS`, `styleKeysFor`: the style keys views print and edit operations write                                          |
-| packages/project/src/mermaid-serialise.ts                                     | `mermaidFromTab` calls `smallestHolder` over frames; its output is byte-identical                                           |
+| `../packages/document-core/src/style-keys.ts`                                   | `STYLE_KEYS`, `styleKeysFor`: the style keys views print and edit operations write                                          |
+| packages/project/src/mermaid-serialise.ts                                       | `mermaidFromTab` calls `smallestHolder` over frames; its output is byte-identical                                           |
 | `packages/project/src/index.ts`                                                 | Re-exports `./element-refs`, `./containment` and `./style-keys`                                                             |
 | `packages/api-schema/src/project-views.ts`                                      | `VIEW_NAMES`, `ViewName`, `VIEW_QUERY`, `ViewDoor`, every view's JSON wire type, `UNKNOWN_VIEW_ERROR`                       |
 | `packages/api-schema/src/ref-errors.ts`                                         | `TARGET_NOT_FOUND_ERROR`, `TARGET_AMBIGUOUS_ERROR`, `RefCandidate`, `RefErrorBody`                                          |
@@ -45,7 +45,7 @@ Scope, by file:
 | `packages/project-views/src/elision.ts`                                         | `buildElision`, `elisionLine`, `elisionCommand`, in the reading door's own syntax                                           |
 | `packages/project-views/src/render-view.ts`                                     | `renderView(request, tab, context)`: resolves `ref` and `only`, then dispatches; the api and the CLI call it                |
 | `packages/project-views/src/performance.test.ts`                                | A 10,000-element tab with 100 containers renders and fits within a second                                                   |
-| `packages/project-views/src/__fixtures__/*.ts`                                  | The checkout tab, its "after" twin, the three-tab project, the 300-element tab, the edge cases                           |
+| `packages/project-views/src/__fixtures__/*.ts`                                  | The checkout tab, its "after" twin, the three-tab project, the 300-element tab, the edge cases                              |
 | `packages/project-views/src/__fixtures__/golden/*`                              | One golden file per view (see [Testing](#testing))                                                                          |
 | `apps/api/package.json`                                                         | Depends on `@liveplanner/project-views`                                                                                     |
 | `apps/api/src/responses.ts`                                                     | `textPlain(body, init)`                                                                                                     |

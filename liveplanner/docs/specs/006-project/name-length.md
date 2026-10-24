@@ -20,7 +20,7 @@ and every share surface.
 enough for a real title ("Q3 platform migration — phase 2 rollout") and short
 enough that a tab pill and a browser tab title can still show something useful.
 
-## Truncation rules (`packages/project/src/names.ts`)
+## Truncation rules (`../packages/document-core/src/names.ts`)
 
 `truncateName(raw)`:
 

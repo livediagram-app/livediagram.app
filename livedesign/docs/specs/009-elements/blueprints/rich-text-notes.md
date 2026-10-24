@@ -9,18 +9,18 @@ Scope, by file:
 
 | File                                                         | Role                                                                             |
 | ------------------------------------------------------------ | -------------------------------------------------------------------------------- |
-| `packages/design/src/rich-text.ts`                         | `TextRun`, `RunHeading`, list / heading / trim algebra, `ATTR_KEYS`              |
-| `packages/design/src/element-types.ts`                     | `note?` + `noteRich?` on every boxed element                                     |
+| `../packages/document-core/src/rich-text.ts`                 | `TextRun`, `RunHeading`, list / heading / trim algebra, `ATTR_KEYS`              |
+| `packages/design/src/element-types.ts`                       | `note?` + `noteRich?` on every boxed element                                     |
 | `apps/live/lib/note-value.ts`                                | `canonicalNote`, `noteFieldsEqual`: the one stored form of a note                |
 | `apps/live/hooks/canvas/useEditorNotes.ts`                   | `noteOpenId`, `openNote`, `closeNote`, `setNote` through history                 |
 | `apps/live/components/panels/EditorAnchoredPopovers.tsx`     | Mounts `NotePopover`; lifecycle telemetry on commit                              |
 | `apps/live/components/notes/NotePopover.tsx`                 | The anchored shell: position, flip, outside-click commit, Delete note            |
 | `apps/live/components/notes/NoteRichTextEditor.tsx`          | The contentEditable surface and its keys                                         |
-| `apps/live/components/notes/useNoteRichTextSession.ts`       | Note session over the shared design hook (`collapsedScope: 'word'`)            |
+| `apps/live/components/notes/useNoteRichTextSession.ts`       | Note session over the shared design hook (`collapsedScope: 'word'`)              |
 | `apps/live/components/notes/NoteFormatToolbar.tsx`           | Docked toolbar and the inline link field                                         |
 | `apps/live/components/notes/NoteRichText.tsx`                | The one read-only renderer; `runsToLines`, `noteRuns`                            |
 | `apps/live/components/notes/note-run-style.ts`               | Note typography; `noteRunHref`, `noteRunStyle`                                   |
-| `apps/live/components/rich-text/useRichTextDesign.ts`      | Runs ⇄ DOM machine shared with the label editor; `liveText`                      |
+| `apps/live/components/rich-text/useRichTextDesign.ts`        | Runs ⇄ DOM machine shared with the label editor; `liveText`                      |
 | `apps/live/components/rich-text/useRichTextFormatActions.ts` | Command dispatch and the collapsed-caret scope rule                              |
 | `apps/live/components/rich-text/rich-text-format.ts`         | `ActiveFormat`, `computeActiveFormat`, `wordRangeAt`, `PLAIN_RUN_DEFAULTS`       |
 | `apps/live/components/rich-text/rich-text-dom.ts`            | DOM read-back, selection offsets, `insertTextAtCaret`                            |
@@ -142,7 +142,7 @@ Derived from [The block-type picker](../block-type-picker.md) "Title and Caption
   (0.65): `effectiveRunStyle` (`opacity`), `svgRichWrappedLabel` (`fill-opacity`), the PNG drawer
   (`ctx.globalAlpha`). Carried on the editor's spans as `data-rt-muted` and read back; `ExportRun.muted` keeps a
   muted fragment from merging with a plain one.
-- `applyTitleCaption(runs)` (`packages/design/src/title-caption.ts`): clears headings and list markers, appends
+- `applyTitleCaption(runs)` (`../packages/document-core/src/title-caption.ts`): clears headings and list markers, appends
   `\nCaption` to a one-line label, then line 0 `{ bold: true, size: undefined, muted: undefined }` and every later
   line `{ bold: false, size: 'sm', muted: true }`; normalised.
 - `useRichTextFormatActions.applyTitleCaptionPreset` applies it to the whole label (one block apply, caret parked at
@@ -156,7 +156,7 @@ Derived from [The block-type picker](../block-type-picker.md) "Title and Caption
 ## Interfaces and contracts
 
 ```ts
-// packages/design/src/rich-text.ts
+// ../packages/document-core/src/rich-text.ts
 export type RunHeading = 1 | 2 | 3;
 export type TextRun = {
   text: string;
@@ -313,32 +313,32 @@ Telemetry (not logs): `Note` / `Opened` / `Added` / `Changed` / `Deleted`; `Note
 
 ## Testing
 
-| Rule                                                   | Test                                                 | File                                                          |
-| ------------------------------------------------------ | ---------------------------------------------------- | ------------------------------------------------------------- |
-| `note` mirrors `noteRich` (I1), trimmed (I3)           | `canonicalNote` keeps runs / trims on the runs       | `apps/live/lib/note-value.test.ts`                            |
-| `noteRich` absent without formatting (I2)              | stores a plain note as text only                     | `apps/live/lib/note-value.test.ts`                            |
-| Empty note strips both fields                          | whitespace-only reads as empty                       | `apps/live/lib/note-value.test.ts`                            |
-| Formatting-only edit reports `Changed`                 | `noteFieldsEqual` spots a formatting-only change     | `apps/live/lib/note-value.test.ts`                            |
-| `link` / `heading` split, merge, count as rich         | link + heading run attributes                        | `packages/design/src/rich-text.test.ts`                     |
-| Heading spans whole lines                              | `expandRangeToLines`, `applyHeadingToLines`          | `packages/design/src/rich-text.test.ts`                     |
-| Lists are prefix text, scoped to touched lines         | `applyListStyle / stripListPrefixes`                 | `packages/design/src/rich-text.test.ts`                     |
-| Only safe links render as anchors (I5)                 | `noteRunHref`, `noteRunStyle` link underline         | `apps/live/components/notes/note-run-style.test.ts`           |
-| Note sizes 13 / 11-13-16 / headings                    | `noteRunStyle` body and heading                      | `apps/live/components/notes/note-run-style.test.ts`           |
-| Renderer splits on `\n`; plain fallback                | `runsToLines`, `noteRuns`                            | `apps/live/components/notes/note-run-style.test.ts`           |
-| Editor opens painted, focused, caret at the end (D79)  | opens painted, focused, with the caret at the end    | `apps/live/components/notes/NoteRichTextEditor.test.tsx`      |
-| A format apply repaints and reports up (E8)            | repaints and reports a format apply over a selection | `apps/live/components/notes/NoteRichTextEditor.test.tsx`      |
-| The plain text follows an edit                         | `useRichTextDesign` live text                      | `apps/live/components/rich-text/useRichTextDesign.test.tsx` |
-| Closed vocabulary; both attributes applied             | `blockTypeApplies` round-trips through `blockTypeOf` | `apps/live/components/rich-text/block-type.test.ts`           |
-| List detection reads the prefix                        | `listStyleOfText`                                    | `apps/live/components/rich-text/block-type.test.ts`           |
-| Detection reads the selection's first line [QD6]       | none                                                 | (GD7)                                                         |
-| Collapsed caret: word / line in a note, all in a label | none                                                 | (GD7)                                                         |
-| `Cmd/Ctrl+B/I/U` drive run toggles                     | none                                                 | (GD7)                                                         |
-| Link field: normalise, refuse, Remove                  | none                                                 | (GD7)                                                         |
-| Read-only viewer gets no toolbar                       | none                                                 | (GD7)                                                         |
-| Popover 416px, editor 11rem to 24rem, flip [QD3]       | none                                                 | (GD7)                                                         |
-| One `Note` / `Used` per command [QD5]                  | none                                                 | (GD7)                                                         |
-| Note edits go through history (undo restores)          | none                                                 | (GD7)                                                         |
-| Label headings in `em`                                 | none                                                 | (GD7)                                                         |
+| Rule                                                   | Test                                                 | File                                                        |
+| ------------------------------------------------------ | ---------------------------------------------------- | ----------------------------------------------------------- |
+| `note` mirrors `noteRich` (I1), trimmed (I3)           | `canonicalNote` keeps runs / trims on the runs       | `apps/live/lib/note-value.test.ts`                          |
+| `noteRich` absent without formatting (I2)              | stores a plain note as text only                     | `apps/live/lib/note-value.test.ts`                          |
+| Empty note strips both fields                          | whitespace-only reads as empty                       | `apps/live/lib/note-value.test.ts`                          |
+| Formatting-only edit reports `Changed`                 | `noteFieldsEqual` spots a formatting-only change     | `apps/live/lib/note-value.test.ts`                          |
+| `link` / `heading` split, merge, count as rich         | link + heading run attributes                        | `../packages/document-core/src/rich-text.test.ts`           |
+| Heading spans whole lines                              | `expandRangeToLines`, `applyHeadingToLines`          | `../packages/document-core/src/rich-text.test.ts`           |
+| Lists are prefix text, scoped to touched lines         | `applyListStyle / stripListPrefixes`                 | `../packages/document-core/src/rich-text.test.ts`           |
+| Only safe links render as anchors (I5)                 | `noteRunHref`, `noteRunStyle` link underline         | `apps/live/components/notes/note-run-style.test.ts`         |
+| Note sizes 13 / 11-13-16 / headings                    | `noteRunStyle` body and heading                      | `apps/live/components/notes/note-run-style.test.ts`         |
+| Renderer splits on `\n`; plain fallback                | `runsToLines`, `noteRuns`                            | `apps/live/components/notes/note-run-style.test.ts`         |
+| Editor opens painted, focused, caret at the end (D79)  | opens painted, focused, with the caret at the end    | `apps/live/components/notes/NoteRichTextEditor.test.tsx`    |
+| A format apply repaints and reports up (E8)            | repaints and reports a format apply over a selection | `apps/live/components/notes/NoteRichTextEditor.test.tsx`    |
+| The plain text follows an edit                         | `useRichTextDesign` live text                        | `apps/live/components/rich-text/useRichTextDesign.test.tsx` |
+| Closed vocabulary; both attributes applied             | `blockTypeApplies` round-trips through `blockTypeOf` | `apps/live/components/rich-text/block-type.test.ts`         |
+| List detection reads the prefix                        | `listStyleOfText`                                    | `apps/live/components/rich-text/block-type.test.ts`         |
+| Detection reads the selection's first line [QD6]       | none                                                 | (GD7)                                                       |
+| Collapsed caret: word / line in a note, all in a label | none                                                 | (GD7)                                                       |
+| `Cmd/Ctrl+B/I/U` drive run toggles                     | none                                                 | (GD7)                                                       |
+| Link field: normalise, refuse, Remove                  | none                                                 | (GD7)                                                       |
+| Read-only viewer gets no toolbar                       | none                                                 | (GD7)                                                       |
+| Popover 416px, editor 11rem to 24rem, flip [QD3]       | none                                                 | (GD7)                                                       |
+| One `Note` / `Used` per command [QD5]                  | none                                                 | (GD7)                                                       |
+| Note edits go through history (undo restores)          | none                                                 | (GD7)                                                       |
+| Label headings in `em`                                 | none                                                 | (GD7)                                                       |
 
 ## Constants and configuration
 

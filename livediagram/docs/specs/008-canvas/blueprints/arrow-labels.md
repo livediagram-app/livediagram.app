@@ -6,13 +6,13 @@ cited as `Dn`.
 
 Scope, by file:
 
-| File                                                                                                 | Role                                                                                     |
-| ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `packages/document/src/arrow-label-layout.ts`                                                        | The layout engine: route, open run, width rule, wrap, slide, beside, knockout            |
-| `packages/document/src/arrow-label-wrap.ts`                                                          | Word metrics, greedy wrap on cached widths, balanced wrap                                |
-| `packages/document/src/arrow-label.ts`                                                               | `arrowLabelFontSize`: the caption size presets                                           |
-| `packages/document/src/svg-render.ts`                                                                | `contentBounds` counts routes and label plates; one pass per render                      |
-| `packages/document/src/svg-render-arrows.ts`                                                         | Export: multi-line caption, plate, knockout mask from the same layout                    |
+| File                                                                                                   | Role                                                                                     |
+| ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| `packages/document/src/arrow-label-layout.ts`                                                          | The layout engine: route, open run, width rule, wrap, slide, beside, knockout            |
+| `../packages/document-core/src/arrow-label-wrap.ts`                                                    | Word metrics, greedy wrap on cached widths, balanced wrap                                |
+| `../packages/document-core/src/arrow-label.ts`                                                         | `arrowLabelFontSize`: the caption size presets                                           |
+| `packages/document/src/svg-render.ts`                                                                  | `contentBounds` counts routes and label plates; one pass per render                      |
+| `packages/document/src/svg-render-arrows.ts`                                                           | Export: multi-line caption, plate, knockout mask from the same layout                    |
 | `apps/editor/hooks/canvas/useArrowLabelLayouts.ts`                                                     | One `arrowLabelPass` per element change; `draftLayout`; `labelRectOf`; `sameLabelRender` |
 | `apps/editor/components/canvas/Canvas.tsx`                                                             | Calls the hook; feeds `labelRectOf` to the selection derivation                          |
 | `apps/editor/components/canvas/CanvasElementsLayer.tsx`                                                | Hands each `ArrowView` its render from the `arrowLabels` it is given                     |
