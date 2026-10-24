@@ -1,5 +1,6 @@
 import { bearerTokenOf, isApiTokenFormat, isWorkbenchSessionFormat } from '@liveplanner/api-schema';
 import {
+  audiencesFor,
   createPersonVerifier,
   type ClientCredentials,
   type TeamClaim,
@@ -54,8 +55,8 @@ type Verify = ReturnType<typeof createPersonVerifier>;
 // set, so building one per request would refetch it every time.
 const verifiers = new Map<string, Verify>();
 
-function verifierFor(issuer: string, audience: string): Verify {
-  const key = `${issuer} ${audience}`;
+function verifierFor(issuer: string, audience: string | string[]): Verify {
+  const key = `${issuer} ${[audience].flat().join(' ')}`;
   let verify = verifiers.get(key);
   if (!verify) {
     verify = createPersonVerifier({ issuer, audience });
@@ -80,7 +81,10 @@ export async function getPersonIdentity(
   if (!token) return null;
   if (isApiTokenFormat(token) || isWorkbenchSessionFormat(token)) return null;
 
-  const claims = await verifierFor(issuer, env.API_RESOURCE)(token);
+  // The Explorer's preview and tabs reads take any app's token (@liveworkspace/auth-client explorer-reads.ts): on
+  // another app's address it asks as that app.
+  const audience = audiencesFor(request, env.API_RESOURCE, 'projects');
+  const claims = await verifierFor(issuer, audience)(token);
   if (!claims) {
     console.warn('[auth] access_token_rejected');
     return null;

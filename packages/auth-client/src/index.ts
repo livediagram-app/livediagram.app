@@ -89,3 +89,4 @@ export {
   teamTargets,
   type NotifyTarget,
 } from './notify';
+export { appApiResources, audiencesFor, isExplorerRead } from './explorer-reads';

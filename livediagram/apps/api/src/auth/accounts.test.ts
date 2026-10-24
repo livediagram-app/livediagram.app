@@ -6,7 +6,8 @@ import type { Env } from '../types';
 // is what this worker does with the verdict, and which tokens it never hands over at all.
 const verifyMock = vi.fn<(token: string) => Promise<PersonClaims | null>>();
 const createVerifierMock = vi.fn((_options: VerifierOptions) => verifyMock);
-vi.mock('@liveworkspace/auth-client', () => ({
+vi.mock('@liveworkspace/auth-client', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@liveworkspace/auth-client')>()),
   createPersonVerifier: (options: VerifierOptions) => createVerifierMock(options),
 }));
 
@@ -170,5 +171,38 @@ describe('accountsIssuer', () => {
       'https://a.example/api/auth',
     );
     expect(accountsIssuer({})).toBeNull();
+  });
+});
+
+// On another app's address the Explorer asks as that app (@liveworkspace/auth-client explorer-reads.ts).
+describe('getPersonIdentity (the Explorer’s reads)', () => {
+  const LIVE = { ...CONFIGURED, API_RESOURCE: 'https://livediagram.app/api' } as unknown as Env;
+  const at = (path: string, method = 'GET') =>
+    new Request(`https://www.livediagram.app${path}`, {
+      method,
+      headers: { Authorization: 'Bearer t' },
+    });
+
+  it('takes any app’s token for an item’s preview and tabs', async () => {
+    verifyMock.mockResolvedValue(claims());
+    await getPersonIdentity(LIVE, at('/api/documents/x1/thumbnail'));
+    await getPersonIdentity(LIVE, at('/api/documents/x1/tabs'));
+    const audiences = createVerifierMock.mock.calls.map(([o]) => o.audience);
+    expect(audiences).toContainEqual([
+      'https://livediagram.app/api',
+      'https://liveplanner.app/api',
+      'https://livedocuments.app/api',
+      'https://livedesign.app/api',
+    ]);
+  });
+
+  it('takes only its own for anything else, a write to the preview included', async () => {
+    verifyMock.mockResolvedValue(claims());
+    await getPersonIdentity(LIVE, at('/api/documents/x2'));
+    await getPersonIdentity(LIVE, at('/api/documents/x2/thumbnail', 'PUT'));
+    expect(createVerifierMock.mock.calls.map(([o]) => o.audience)).toEqual([
+      'https://livediagram.app/api',
+    ]);
+    expect(verifyMock).toHaveBeenCalledTimes(2);
   });
 });

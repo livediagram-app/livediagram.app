@@ -250,6 +250,12 @@ Its audiences are every app's API, so the index takes it, and so does an app's A
 an item's preview. It lasts 15 minutes; the page asks again a minute before it runs out. It answers only this
 origin: there is no CORS, and a cross-site request (by `Sec-Fetch-Site`) is refused.
 
+On an app's own address the Explorer asks as that app, with a token addressed to that app's API alone, yet it
+draws every app's items. So each app's API takes a token addressed to any of the four apps' APIs (in the same
+environment) for the Explorer's two reads of an item, `GET /api/<items>/<id>/thumbnail` and `…/tabs`, and for
+nothing else (`@liveworkspace/auth-client` `explorer-reads.ts`). The route still checks that the person may read
+the item. Every app's API answers any origin (CORS `*`), so the browser lets those reads through.
+
 ## Signing in without a click
 
 Someone signed in to liveworkspace who opens an app they have no session in is signed in by the
