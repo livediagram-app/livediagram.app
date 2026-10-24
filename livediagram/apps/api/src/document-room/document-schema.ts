@@ -11,11 +11,11 @@
 // Made on first use, never on construction (@liveworkspace/index-app item-db.ts `ensureSchema`): a Durable Object a stray id wakes
 // stores nothing. Versioned by `_document_schema`; a later change adds a step to STEPS, never edits one.
 
+import { tabSharesSchema } from '@liveworkspace/index-app';
+
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
 // follow-up for tabs over 2 MB; until then the cap refuses them.
-import { tabSharesSchema } from '@liveworkspace/index-app';
-
 const V1 = `
 CREATE TABLE IF NOT EXISTS document (
   id                  TEXT    PRIMARY KEY,

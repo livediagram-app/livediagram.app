@@ -602,7 +602,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       required: ['from'],
     },
     responseSchema: wrap('tab', 'TabRecord'),
-    statuses: [200, 400, 401, 403, 404],
+    statuses: [200, 400, 401, 403, 404, 409],
   },
   {
     method: 'POST',

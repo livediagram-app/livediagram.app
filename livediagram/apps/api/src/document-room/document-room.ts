@@ -260,7 +260,9 @@ export class DocumentRoom extends DurableObject<Env> {
   private draining = false;
   // The next send to the other holders of its shared tabs (tab-shares.ts): on idle, not held to the outbox's
   // once a minute, since it is a call to another document rather than a push.
-  private readonly shares = new ShareSchedule(() => owesShares(this.state.storage.sql));
+  private readonly shares = new ShareSchedule(
+    () => this.schemaReady && owesShares(this.state.storage.sql),
+  );
   // The next daily upkeep (persisted, so a wake keeps the day).
   private maintenanceAt: number | null = null;
   // Content writes so far (noteWrite), so route() can tell a request that wrote from one that didn't.
@@ -1606,6 +1608,8 @@ export class DocumentRoom extends DurableObject<Env> {
     const now = Date.now();
     this.checkGrants(now);
     if (this.flushAt !== null && this.flushAt <= now) await this.drainIndex();
+    // A shared tab written while the push was in flight (its write armed nothing then).
+    this.shares.noteWrite();
     if (this.shares.due(now)) await this.drainShares();
     if (this.communityAt !== null && this.communityAt <= now) await this.checkCommunity(now);
     if (this.maintenanceAt !== null && this.maintenanceAt <= now) await this.maintain(now);

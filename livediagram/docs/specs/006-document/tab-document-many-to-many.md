@@ -79,9 +79,10 @@ reload, as it always did.
 
 `GET /api/documents/:id/shared-tabs` answers `{ sharedTabs: { tabs, documents } }`: how many of the document's tabs
 are also in other documents, and how many documents, read from its `tab_shares`
-(`sharedTabsSummary`, `apps/api/src/document-room/tab-shares.ts`). The Take Offline and delete confirmations
-(`fetchSharedTabsNotice`, `apps/editor/lib/shared-tabs-notice.ts`) add a sentence saying those tabs stay in the
-other documents. It answers exactly the callers who may delete the document, in the DELETE's order: 400 with no
+(`sharedTabsSummary`, `apps/api/src/document-room/tab-shares.ts`). The Take Offline confirmation
+(`fetchSharedTabsNotice`, `apps/editor/lib/shared-tabs-notice.ts`, waiting at most 1.5 s for it) adds a sentence
+saying those tabs stay in the other documents. Delete asks nothing: it moves the document to the Trash, where its
+shared tabs stay in step, and Undo brings it back. It answers exactly the callers who may delete the document, in the DELETE's order: 400 with no
 caller, 404 when missing, 403 otherwise.
 
 ## Add to Document
