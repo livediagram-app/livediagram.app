@@ -42,7 +42,7 @@ describe('raw icon svg rule', () => {
   });
 
   it('allows art files and tests', () => {
-    expect(svgErrors('components/palette/palette-tile-art.tsx')).toEqual([]);
+    expect(svgErrors('components/palette/palette-style-previews.tsx')).toEqual([]);
     expect(svgErrors('components/feature-art/canvas.tsx')).toEqual([]);
     expect(svgErrors('components/Thing.test.tsx')).toEqual([]);
   });

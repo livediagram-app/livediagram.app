@@ -18,20 +18,16 @@ export const ICON_ART_ALLOWLIST = [
   '**/*.test.tsx',
   // Marketing illustrations and the hero's mimicry of the editor chrome.
   '**/components/feature-art/**',
-  '**/components/HeroIllustration.tsx',
   '**/components/hero-editor-window.tsx',
-  '**/components/PromiseCanvas.tsx',
   '**/components/hero-illustration-glyphs.tsx',
   // Style-value previews, option previews and coloured chips.
   '**/components/palette/palette-style-previews.tsx',
   '**/components/palette/palette-tile-art.tsx',
   '**/components/palette/context-menu-tiles.tsx',
-  '**/components/palette/mind-map-menu-glyphs.tsx',
   '**/components/palette/sankey-menu-glyphs.tsx',
   '**/components/canvas/quick-style-rows.tsx',
   '**/components/canvas/infographic-layout-thumb.tsx',
   '**/components/dialogs/export-format-icons.tsx',
-  '**/components/dialogs/import-source-icons.tsx',
   // Canvas content: a checklist tick and a collaborator's cursor.
   '**/components/canvas/ChecklistView.tsx',
   '**/components/canvas/RemoteCursor.tsx',
