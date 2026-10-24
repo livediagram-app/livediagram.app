@@ -1,9 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TeamPerson } from '@liveworkspace/auth-client';
+import { recordItemEditor } from '@liveworkspace/index-app';
 import { sqliteD1, testCopyDesign, type SqliteD1 } from '../test-sqlite-d1';
 import { mediaServiceFor, type TestMediaService } from '../test-media-service';
 import { ACCOUNTS_ENV, fakeAccounts, type FakeAccounts } from '../test-accounts';
-import { drainOutbox, recordEditor } from '../design-room/design-outbox';
+import { DESIGN_OUTBOX, drainOutbox } from '../design-room/design-outbox';
 import { mediaOwner } from '../media';
 import { upsertTab } from './tabs';
 import { liveDesign, mediaImages, tabWith } from './test-image-fixtures';
@@ -93,7 +94,7 @@ describe('servableImageIds', () => {
     liveDesign(db.sql, 'D', 'user_ada');
     mediaImages(media, 'user_bob', ['bobs']);
     expect([...(await servableImageIds(db.env, 'D', ['bobs']))]).toEqual([]);
-    recordEditor(exec, 'D', 'user_bob', 1);
+    recordItemEditor(exec, DESIGN_OUTBOX, 'D', 'user_bob', 1);
     expect([...(await servableImageIds(db.env, 'D', ['bobs']))]).toEqual(['bobs']);
   });
 
@@ -145,7 +146,7 @@ describe('placement grants', () => {
   it("grants an editor's placed images as the design pushes them, and keeps serving them after", async () => {
     liveDesign(db.sql, 'D', 'user_ada');
     mediaImages(media, 'user_bob', ['bobs']);
-    recordEditor(exec, 'D', 'user_bob', 1);
+    recordItemEditor(exec, DESIGN_OUTBOX, 'D', 'user_bob', 1);
     await upsertTab(db.env, 'D', tabWith('t1', 'bobs'), 0);
     await drainOutbox(db.env, 'D', null);
     expect(grants()).toEqual(['bobs']);
