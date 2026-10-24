@@ -15,13 +15,6 @@ const BARE_EMPTY = [
   />\s*No [a-z][^<>{}'"`]*\b(yet|found)\.?\s*</,
   /^\s+No [a-z][^<>{}'"`=:]*\b(yet|found)\.?\s*$/,
 ];
-// A canvas element's drawn face keeps its own look ("What is not an empty state").
-const DRAWN_FACES = [
-  'components/canvas/entity/EntityView.tsx',
-  'components/canvas/collab/estimate/EstimateEmpty.tsx',
-  'components/canvas/collab/temperature/MoodMeter.tsx',
-  'components/plan/widgets/BoardWidgetView.tsx',
-];
 
 function* sources(dir: string): Generator<string> {
   for (const name of readdirSync(dir)) {
@@ -37,7 +30,6 @@ describe('empty is an empty state', () => {
     for (const dir of DIRS)
       for (const file of sources(join(ROOT, dir))) {
         const rel = file.slice(ROOT.length);
-        if (DRAWN_FACES.includes(rel)) continue;
         readFileSync(file, 'utf8')
           .split('\n')
           .forEach((line, i) => {

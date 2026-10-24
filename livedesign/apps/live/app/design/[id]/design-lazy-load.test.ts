@@ -15,13 +15,11 @@ const importsOf = (path: string) => staticImports(read(path));
 describe('the design page’s first load', () => {
   it.each([
     ['app/design/[id]/EditorView.tsx', '@/components/panels/EditorSearchPanel'],
-    ['components/tour/EditorTours.tsx', '@/components/tour/PlanTourHost'],
     ['components/tour/EditorTours.tsx', '@/components/tour/ElementTourHost'],
     ['app/design/[id]/editor-page.tsx', '@/components/panels/Explorer'],
     ['components/canvas/useCanvasChromePanels.tsx', '@/components/panels/Explorer'],
     ['components/canvas/useCanvasChromePanels.tsx', '@/components/panels/LayersPanel'],
     ['components/canvas/Canvas.tsx', '@/components/canvas/CanvasPages'],
-    ['components/canvas/Canvas.tsx', '@/components/canvas/article/ArticleFlows'],
     ['components/canvas/ElementFaceRouter.tsx', '@/components/canvas/TableView'],
     ['components/canvas/QuickStyleHost.tsx', '@/components/canvas/QuickStylePanel'],
     ['components/canvas/PresentationHost.tsx', '@/components/canvas/PresentationOverlay'],

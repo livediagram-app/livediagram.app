@@ -21,9 +21,8 @@ describe('every route’s first load', () => {
 });
 
 describe('the workspace frame’s Explorer first load', () => {
-  it('loads Settings and the move picker on first open', () => {
+  it('loads Settings on first open', () => {
     const imports = staticImports(read('app/embed/workbench/ExplorerHost.tsx'));
     expect(imports).not.toContain('@/components/dialogs/SettingsDialog');
-    expect(imports).not.toContain('@/components/dialogs/MoveToFolderDialog');
   });
 });

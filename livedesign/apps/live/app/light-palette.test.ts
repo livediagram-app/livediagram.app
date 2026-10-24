@@ -174,7 +174,6 @@ describe('solid brand fills in light mode', () => {
 const DECORATIVE_INK = new Set([
   'apps/live/components/canvas/TabLoadOverlay.tsx', // the loading spinner's arc
   'apps/live/components/canvas/PaletteDragGhost.tsx', // the translucent ghost under a drag
-  'apps/live/components/plan/dashboard/DashboardSheetMetric.tsx', // an aria-hidden sparkline
 ]);
 
 describe('brand ink in light mode', () => {
