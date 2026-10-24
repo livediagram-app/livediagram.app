@@ -15,7 +15,7 @@ design decision. Draw mode's own tools are blueprinted in
 | The next mode (Shift+D)     | `nextEditorMode(mode, step = 1, modes = EDITOR_MODES)`, wrapping round `modes`                                                                                                                                |
 | A stored value is a mode    | `isEditorMode(v)`; read every stored mode through `parseEditorMode(v)` (`LEGACY_EDITOR_MODES`: a retired `'pages'`, `'plan'`, `'illustrate'` or `'infographic'` → `'diagram'`, `'facilitate'` → `'workshop'`) |
 | A switch as one tab edit    | `withEditorModeSwitched(tab, mode)` (`packages/document/src/editor-mode-switch.ts`), `switchedTab(tab, next, alsoChange?)` (`useEditorMode.ts`)                                                               |
-| Legacy names elsewhere      | `parsePlacementDefaultKey`, `legacyPlacementDefaultKeys` (`packages/api-schema/src/placement-defaults.ts`); `planModeEnabled` in `RETIRED` (`legacy-preferences.ts`)                                          |
+| Legacy names elsewhere      | `readCreationIntent` (`packages/api-schema/src/placement-defaults.ts`); `planModeEnabled` in `RETIRED` (`legacy-preferences.ts`)                                                                               |
 | The tab's mode              | `Tab.opensIn?: EditorMode` (stored name kept), read through `opensInOf(tab)`                                                                                                                                  |
 | Setting the mode            | `setTabOpensIn(tab, mode)`                                                                                                                                                                                    |
 | A tab offers the switch     | `editorModeSwitchable(tab)`: false on an event-storming board, new or legacy                                                                                                                                  |
@@ -366,7 +366,7 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 Workshop mode's own rules are blueprinted in
 [Workshop mode](../../012-collaboration/blueprints/workshop-mode.md).
 
-Not covered by a unit test: `parseEditorMode`'s legacy name, `parsePlacementDefaultKey`, the
+Not covered by a unit test: `parseEditorMode`'s legacy name, the
 peer toast's wiring in `useRoomConnection`, and a label edit kept across a peer's switch (browser-checked with two windows). `addTab(mode)` is covered by
 `useTabActions.addTab.test.tsx` and `new-tab-seed.test.ts`.
 

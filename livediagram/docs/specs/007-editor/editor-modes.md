@@ -398,8 +398,8 @@ out into its own product, livedocuments (https://livedocuments.app). livediagram
   template start is **Start a Workshop** and its tour **The Workshop Tour**. It was called **Facilitate**. Every
   stored trace of the old name reads as Workshop: `opensIn: 'facilitate'`, a recorded creation intent, a create's
   intent, a `/new?mode=` link and a recently opened document's mode (`parseEditorMode`), an `opens-in:facilitate`
-  Explorer filter, and a default-folder key `mode:facilitate` (`parsePlacementDefaultKey`; clearing the default
-  clears both names). Tab bodies are not rewritten. The tour's preference `facilitateTourSeen` is renamed
+  Explorer filter, and a default-folder key `mode:facilitate`, which liveworkspace's index, now keeping default folders,
+  reads. Tab bodies are not rewritten. The tour's preference `facilitateTourSeen` is renamed
   `workshopTourSeen` (`upgradeLegacyPreferences` upgrades any older copy), and telemetry history
   moves to the new event names and help slugs. The help articles moved to `/help/canvas/workshop-mode/`, the
   `/help/canvas/facilitate-mode/` addresses redirecting. The **facilitator** keeps its name.

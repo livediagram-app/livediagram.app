@@ -16,7 +16,6 @@ The list a person sets defaults from is titled **New canvases that open as**, an
 | ---------------------- | ------------------------------------ |
 | Canvases               | `livediagram`                        |
 | Retrospective canvases | `livediagram:template:retrospective` |
-| Kanban canvases        | `livediagram:template:kanban`        |
 
 The app's own entry holds every new canvas; a mode's entry (Diagrams, Whiteboards, Sessions) the canvases that
 open in that mode; a specific tab kind's entry (Event Storming boards) the canvases whose first tab is that kind; a
@@ -24,7 +23,7 @@ template family's entry the canvases made from that family (`defaultEntries('liv
 CANVAS_TEMPLATE_FAMILIES, DEFAULT_FOLDER_OPTIONS)`, `apps/editor/lib/canvas-template-families.ts`,
 `DEFAULT_FOLDER_OPTIONS` in `@livediagram/api-schema`). The
 families are livediagram's `TEMPLATE_FAMILIES`: every retrospective format (Retrospective, Start / Stop / Continue,
-Mad / Sad / Glad, 4Ls, Sailboat) is `retrospective`, the Kanban template `kanban`, every other template none
+Mad / Sad / Glad, 4Ls, Sailboat) is `retrospective`, every other template none (Kanban boards left with Plan mode)
 (`templateFamilyOf` in `@livediagram/templates`). A new template is not complete until it is mapped.
 
 ## Filing on create

@@ -6344,7 +6344,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     type: 'object',
   },
   TemplateFamily: {
-    enum: ['retrospective', 'kanban'],
+    const: 'retrospective',
     type: 'string',
   },
   TextAlignX: {

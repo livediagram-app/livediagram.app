@@ -1,67 +1,28 @@
 import { describe, expect, it } from 'vitest';
 import { EDITOR_MODES, ES_BOARD_LAYER_ID } from '@livediagram/document';
 import {
-  PLACEMENT_DEFAULT_KEYS,
+  DEFAULT_FOLDER_OPTIONS,
   SPECIFIC_TAB_KINDS,
   TEMPLATE_FAMILIES,
-  candidateKeysFor,
   creationIntentOf,
-  defaultKeysFor,
   indexIntentOf,
-  isPlacementDefaultKey,
-  legacyPlacementDefaultKeys,
-  parsePlacementDefaultKey,
-  placementDefaultTelemetryType,
   readCreationIntent,
 } from './placement-defaults';
 
-// Default folders (docs/specs/013-workspace/default-folders.md): the keys, generated from three closed
-// lists, the creation intent a create carries, and the order a create's keys are tried in.
+// Default folders (docs/specs/013-workspace/default-folders.md): the entries, generated from closed lists, and the
+// creation intent a create carries.
 
-describe('PLACEMENT_DEFAULT_KEYS', () => {
-  it('holds the six keys in the order the list shows them', () => {
-    expect(PLACEMENT_DEFAULT_KEYS).toEqual([
-      'mode:diagram',
-      'mode:draw',
-      'mode:workshop',
+describe('DEFAULT_FOLDER_OPTIONS', () => {
+  it('has one entry per editor mode, then one per specific tab kind', () => {
+    expect(DEFAULT_FOLDER_OPTIONS.map((o) => `${o.dimension}:${o.value}`)).toEqual([
+      ...EDITOR_MODES.map((mode) => `mode:${mode}`),
       'kind:event-storming',
-      'template:retrospective',
-      'template:kanban',
     ]);
-  });
-
-  it('has one mode key per editor mode, in their order', () => {
-    expect(PLACEMENT_DEFAULT_KEYS.filter((k) => k.startsWith('mode:'))).toEqual(
-      EDITOR_MODES.map((mode) => `mode:${mode}`),
-    );
-  });
-
-  it('has one kind key per specific tab kind, the general tab having none', () => {
     expect(SPECIFIC_TAB_KINDS).toEqual(['event-storming']);
   });
 
-  it('has one template key per template family', () => {
-    expect(TEMPLATE_FAMILIES).toEqual(['retrospective', 'kanban']);
-  });
-});
-
-describe('isPlacementDefaultKey', () => {
-  it.each([['mode:draw'], ['kind:event-storming'], ['template:kanban']])('accepts %s', (key) => {
-    expect(isPlacementDefaultKey(key)).toBe(true);
-  });
-
-  it.each([
-    ['board:kanban'],
-    ['kind:diagram'],
-    ['kind:whiteboard'],
-    ['template:mindmap'],
-    ['mode:'],
-    ['draw'],
-    [''],
-    [3],
-    [null],
-  ])('refuses %j', (value) => {
-    expect(isPlacementDefaultKey(value)).toBe(false);
+  it('has the one template family, the retrospective', () => {
+    expect(TEMPLATE_FAMILIES).toEqual(['retrospective']);
   });
 });
 
@@ -146,10 +107,10 @@ describe('readCreationIntent', () => {
 
   it('reads every field', () => {
     expect(
-      readCreationIntent({ mode: 'diagram', tabKind: 'event-storming', templateFamily: 'kanban' }),
+      readCreationIntent({ mode: 'diagram', tabKind: 'event-storming', templateFamily: 'retrospective' }),
     ).toEqual({
       ok: true,
-      intent: { mode: 'diagram', tabKind: 'event-storming', templateFamily: 'kanban' },
+      intent: { mode: 'diagram', tabKind: 'event-storming', templateFamily: 'retrospective' },
     });
   });
 
@@ -163,72 +124,14 @@ describe('readCreationIntent', () => {
   it.each([
     ['a string', 'mode:draw'],
     ['an array', ['diagram']],
-    ['a missing mode', { templateFamily: 'kanban' }],
+    ['a missing mode', { templateFamily: 'retrospective' }],
     ['an unknown mode', { mode: 'pixel' }],
     ['the legacy whiteboard kind', { mode: 'draw', tabKind: 'whiteboard' }],
     ['an unknown template family', { mode: 'diagram', templateFamily: 'mindmap' }],
+    ['the retired Kanban family', { mode: 'diagram', templateFamily: 'kanban' }],
     ['a template family that is not a string', { mode: 'diagram', templateFamily: 3 }],
   ])('refuses %s', (_label, value) => {
     expect(readCreationIntent(value)).toEqual({ ok: false });
-  });
-});
-
-describe('parsePlacementDefaultKey', () => {
-  it('reads a key for Pages mode, or either of its old names, as none', () => {
-    expect(parsePlacementDefaultKey('mode:illustrate')).toBeNull();
-    expect(parsePlacementDefaultKey('mode:infographic')).toBeNull();
-    expect(parsePlacementDefaultKey('mode:pages')).toBeNull();
-    expect(parsePlacementDefaultKey('mode:pixel')).toBeNull();
-  });
-
-  it("reads a key stored under Workshop mode's old name as today's", () => {
-    expect(parsePlacementDefaultKey('mode:facilitate')).toBe('mode:workshop');
-    expect(parsePlacementDefaultKey('mode:workshop')).toBe('mode:workshop');
-    expect(legacyPlacementDefaultKeys('mode:workshop')).toEqual(['mode:facilitate']);
-  });
-});
-
-describe('candidateKeysFor', () => {
-  it('names the kind, then the template, then the mode', () => {
-    expect(
-      candidateKeysFor({ mode: 'diagram', tabKind: 'event-storming', templateFamily: 'kanban' }),
-    ).toEqual(['kind:event-storming', 'template:kanban', 'mode:diagram']);
-  });
-
-  it('names no kind key for the general tab', () => {
-    expect(candidateKeysFor({ mode: 'draw', tabKind: 'diagram' })).toEqual(['mode:draw']);
-  });
-});
-
-describe('defaultKeysFor', () => {
-  it('tries the mode key of a diagram', () => {
-    expect(defaultKeysFor({ mode: 'diagram', tabKind: 'diagram' })).toEqual(['mode:diagram']);
-  });
-
-  it('tries the template key, then the mode key, of a retrospective', () => {
-    expect(
-      defaultKeysFor({ mode: 'diagram', tabKind: 'diagram', templateFamily: 'retrospective' }),
-    ).toEqual(['template:retrospective', 'mode:diagram']);
-  });
-
-  it('tries the kind key, then the mode key, of an event-storming board', () => {
-    expect(defaultKeysFor({ mode: 'diagram', tabKind: 'event-storming' })).toEqual([
-      'kind:event-storming',
-      'mode:diagram',
-    ]);
-  });
-});
-
-describe('placementDefaultTelemetryType', () => {
-  it('names one closed value per key', () => {
-    expect(PLACEMENT_DEFAULT_KEYS.map(placementDefaultTelemetryType)).toEqual([
-      'DefaultModeDiagram',
-      'DefaultModeDraw',
-      'DefaultModeWorkshop',
-      'DefaultKindEventStorming',
-      'DefaultTemplateRetrospective',
-      'DefaultTemplateKanban',
-    ]);
   });
 });
 
