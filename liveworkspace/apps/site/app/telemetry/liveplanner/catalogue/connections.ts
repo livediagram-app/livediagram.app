@@ -39,21 +39,13 @@ export const CLI_SIGN_INS: Metric = {
   blurb: 'The liveplanner CLI signed in, through the browser or with a code on another device.',
 };
 
-export const WORKBENCHES_PAIRED: Metric = {
-  category: 'Token',
-  action: 'Linked',
-  type: 'Workbench',
-  title: 'Workbenches Paired',
-  blurb: 'A token’s owner allowed a developer tool to open their projects.',
-};
-
 export const API_TOKEN_ACTIVITY: MetricStack = {
   rising: 'neutral',
   stack: true,
   title: 'API Token Activity',
   blurb:
-    'Every token event: created by hand, by an AI tool connecting over MCP, by the CLI signing in, paired with a workbench, and revoked.',
-  members: [TOKENS_CREATED, AI_TOOLS_CONNECTED, CLI_SIGN_INS, WORKBENCHES_PAIRED, TOKENS_REVOKED],
+    'Every token event: created by hand, by an AI tool connecting over MCP or by the CLI signing in, and revoked.',
+  members: [TOKENS_CREATED, AI_TOOLS_CONNECTED, CLI_SIGN_INS, TOKENS_REVOKED],
 };
 
 // MCP tool calls, one chart per tool the MCP server registers (apps/mcp
