@@ -44,6 +44,8 @@
         "$TURBO_ROOT$/pnpm-lock.yaml",
         "$TURBO_ROOT$/livediagram/apps/**",
         "$TURBO_ROOT$/livediagram/packages/**",
+        // The shared @liveworkspace/* packages ship in these bundles too.
+        "$TURBO_ROOT$/packages/**",
         // Explicit root globs ignore .gitignore: keep build output out.
         "!$TURBO_ROOT$/**/node_modules/**",
         "!$TURBO_ROOT$/**/.next*/**",
@@ -137,6 +139,8 @@
         "$TURBO_ROOT$/pnpm-lock.yaml",
         "$TURBO_ROOT$/liveplanner/apps/**",
         "$TURBO_ROOT$/liveplanner/packages/**",
+        // The shared @liveworkspace/* packages ship in these bundles too.
+        "$TURBO_ROOT$/packages/**",
         "!$TURBO_ROOT$/**/node_modules/**",
         "!$TURBO_ROOT$/**/.next*/**",
         "!$TURBO_ROOT$/**/out/**",
@@ -203,6 +207,8 @@
         "$TURBO_ROOT$/pnpm-lock.yaml",
         "$TURBO_ROOT$/livedesign/apps/**",
         "$TURBO_ROOT$/livedesign/packages/**",
+        // The shared @liveworkspace/* packages ship in these bundles too.
+        "$TURBO_ROOT$/packages/**",
         // Explicit root globs ignore .gitignore: keep build output out.
         "!$TURBO_ROOT$/**/node_modules/**",
         "!$TURBO_ROOT$/**/.next*/**",
@@ -270,6 +276,8 @@
         "$TURBO_ROOT$/pnpm-lock.yaml",
         "$TURBO_ROOT$/livedocuments/apps/**",
         "$TURBO_ROOT$/livedocuments/packages/**",
+        // The shared @liveworkspace/* packages ship in these bundles too.
+        "$TURBO_ROOT$/packages/**",
         // Explicit root globs ignore .gitignore: keep build output out.
         "!$TURBO_ROOT$/**/node_modules/**",
         "!$TURBO_ROOT$/**/.next*/**",
