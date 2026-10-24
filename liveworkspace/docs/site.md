@@ -110,7 +110,7 @@ added in an app needs nothing here.
 
 The comparisons lived here for a while, so every old address redirects permanently from
 `public/_redirects`: `/alternatives` to `/compare`, each `/alternatives/<slug>` to the same slug on the
-app that speaks for it (`https://livediagram.app/alternatives/miro`, say), and any other
+app that speaks for it (`https://www.livediagram.app/alternatives/miro`, say), and any other
 `/alternatives/*` to `/compare`. `lib/comparison-redirects.test.ts` pins every one.
 
 ### Telemetry (`/telemetry`)

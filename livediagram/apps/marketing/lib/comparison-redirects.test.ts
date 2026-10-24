@@ -22,7 +22,7 @@ describe('the comparison redirects', () => {
   it('send the retired Google Slides comparison to livedocuments, with and without a slash', () => {
     for (const from of ['/alternatives/google-slides', '/alternatives/google-slides/']) {
       expect(redirects).toContain(
-        `${from} https://livedocuments.app/alternatives/google-slides 301`,
+        `${from} https://www.livedocuments.app/alternatives/google-slides 301`,
       );
     }
   });

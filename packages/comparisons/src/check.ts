@@ -82,6 +82,10 @@ export function comparisonProblems(c: Comparisons): string[] {
 // What an app's public/_redirects must not do to its comparisons: catch the hub or a live page (a
 // rule for a retired comparison is fine, and must be permanent). Each app with redirects under
 // /alternatives runs it from a test.
+// An app's bare address: a redirect names the app at www, as the sites registry (@liveworkspace/sites) does, so a
+// visitor lands on the one address in a single hop.
+const BARE_APP = /^https:\/\/live(diagram|planner|documents|design)\.app(\/|$)/;
+
 export function redirectProblems(redirects: string, c: Comparisons): string[] {
   const live = new Set([
     '/alternatives',
@@ -89,7 +93,7 @@ export function redirectProblems(redirects: string, c: Comparisons): string[] {
   ]);
   const problems: string[] = [];
   for (const line of redirects.split('\n')) {
-    const [from, , status] = line.trim().split(/\s+/);
+    const [from, to, status] = line.trim().split(/\s+/);
     if (!from || from.startsWith('#') || !from.startsWith('/alternatives')) continue;
     const path = from.replace(/\/$/, '');
     const pattern = new RegExp(
@@ -100,6 +104,7 @@ export function redirectProblems(redirects: string, c: Comparisons): string[] {
     );
     for (const page of live) if (pattern.test(page)) problems.push(`${from} catches ${page}`);
     if (status !== '301') problems.push(`${from} is not a permanent (301) redirect`);
+    if (to && BARE_APP.test(to)) problems.push(`${from} sends to ${to}, not the app's www address`);
   }
   return problems;
 }

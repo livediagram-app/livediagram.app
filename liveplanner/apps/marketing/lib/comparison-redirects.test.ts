@@ -15,14 +15,14 @@ const redirects = readFileSync(
 );
 
 const RETIRED: Record<string, string> = {
-  'microsoft-whiteboard': 'https://livediagram.app',
-  miro: 'https://livediagram.app',
-  xmind: 'https://livediagram.app',
-  excalidraw: 'https://livediagram.app',
-  drawio: 'https://livediagram.app',
-  figjam: 'https://livediagram.app',
-  lucidchart: 'https://livediagram.app',
-  'google-slides': 'https://livedocuments.app',
+  'microsoft-whiteboard': 'https://www.livediagram.app',
+  miro: 'https://www.livediagram.app',
+  xmind: 'https://www.livediagram.app',
+  excalidraw: 'https://www.livediagram.app',
+  drawio: 'https://www.livediagram.app',
+  figjam: 'https://www.livediagram.app',
+  lucidchart: 'https://www.livediagram.app',
+  'google-slides': 'https://www.livedocuments.app',
 };
 
 describe('the comparison redirects', () => {

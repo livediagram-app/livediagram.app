@@ -70,6 +70,16 @@ describe('redirectProblems', () => {
     expect(redirectProblems(rules, c)).toEqual([]);
   });
 
+  it("finds a redirect to an app's bare address instead of its www one", () => {
+    const rules = [
+      '/alternatives/notion https://liveplanner.app/alternatives/notion 301',
+      '/alternatives/asana https://www.liveplanner.app/alternatives/asana 301',
+    ].join('\n');
+    expect(redirectProblems(rules, c)).toEqual([
+      "/alternatives/notion sends to https://liveplanner.app/alternatives/notion, not the app's www address",
+    ]);
+  });
+
   it('finds a rule that catches the hub or a live page, however it is written', () => {
     const rules = [
       '/alternatives/ https://elsewhere.example/ 301',
