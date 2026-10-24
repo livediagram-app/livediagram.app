@@ -145,7 +145,7 @@ The stack serves whatever `apps/editor/out` holds and never rebuilds it, so loca
      keeps a page but not its chunks. Both hold only for the browser context that asked (a cookie
      each, `e2e-deploy` and `e2e-assets-out-of-cache`, which `page.request` shares with its page):
      the suite runs in parallel, and the tests beside it keep the build they loaded.
-3. **marketing**: `apps/marketing/out` on its own port (`E2E_MARKETING_PORT`, default `3013`),
+3. **marketing**: `apps/marketing/out` on its own port (`E2E_MARKETING_PORT`, default `3203`),
    since marketing owns `/` in production.
 
 The stack also runs the editor alone beside a running one (`E2E_EDITOR_ONLY`,
@@ -153,23 +153,23 @@ The stack also runs the editor alone beside a running one (`E2E_EDITOR_ONLY`,
 [Local development](../../development/local-development.md).
 
 Locally the same `playwright.config.ts` sets `reuseExistingServer`, so a
-developer with `pnpm dev` already running (live :3102 + api :8887) runs
+developer with `pnpm dev` already running (live :3202 + api :8887) runs
 `pnpm --filter @liveplanner/editor test:e2e` against that stack with no
 extra boot.
 
 ## Signed-in specs
 
-Sign-in is a build-time switch ([Auth + guest access](../014-identity/auth-and-guest-access.md)), so the
+The test-only session bridge is a build-time switch ([Auth + guest access](../014-identity/auth-and-guest-access.md)), so the
 guest-mode `out/` can never show a signed-in user. The specs in `apps/editor/e2e/signed-in/` run
 against a second export, `apps/editor/.next/out-signed-in/` (inside `.next/`, so every ignore and
-source scanner already skips it), built by `pnpm build:signed-in` with sign-in on and
+source scanner already skips it), built by `pnpm build:signed-in` with
 `NEXT_PUBLIC_E2E_AUTH=1`, which swaps the accounts bridge for the test-only `E2EAuthBridge`. Each
 spec puts a session in `localStorage` (`installSession` in `e2e/signed-in/session.ts`) before the
 page loads, so a chosen user (name, email) is signed in with no accounts Worker, secret or network.
 
 `pnpm --filter @liveplanner/editor test:e2e:signed-in` sets `E2E_SIGNED_IN=1`, which adds the
 `signed-in` project and boots the stack with `E2E_EDITOR_OUT=.next/out-signed-in` on its own ports
-(live `:3215`, api `:8888`, marketing `:3216`), so a guest stack already up on `:3202` is never
+(live `:3215`, api `:8225`, marketing `:3216`), so a guest stack already up on `:3202` is never
 reused for it. The stack also stands in for the accounts Worker (`E2E_ACCOUNTS_STUB=1`): it makes a
 signing key at boot, serves its JWKS on the issuer's own path (`/e2e/accounts/api/auth/jwks`),
 starts the api worker with `ACCOUNTS_URL` and `API_RESOURCE` pointing at it, and mints an access

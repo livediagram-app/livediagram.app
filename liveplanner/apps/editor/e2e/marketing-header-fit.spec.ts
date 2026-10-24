@@ -6,7 +6,7 @@ import { expect, test } from './fixtures';
 // wordmark fit. The e2e stack serves the marketing build on its own port; against a dev stack, point
 // E2E_MARKETING_URL at the dev server.
 const marketing =
-  process.env.E2E_MARKETING_URL ?? `http://localhost:${process.env.E2E_MARKETING_PORT ?? '3013'}`;
+  process.env.E2E_MARKETING_URL ?? `http://localhost:${process.env.E2E_MARKETING_PORT ?? '3203'}`;
 
 for (const width of [320, 360, 390, 430]) {
   test(`the marketing header fits a ${width}px phone`, async ({ page }) => {

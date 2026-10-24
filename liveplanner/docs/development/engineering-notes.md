@@ -108,17 +108,11 @@ pnpm --filter @liveplanner/editor test:e2e
 
 Without a dev stack, it boots its own (`scripts/e2e-stack.mjs`) over the existing `apps/editor/out`, which it never rebuilds: run `pnpm --filter @liveplanner/editor build` first, or it exits naming the missing build.
 
-The signed-in specs (`apps/editor/e2e/signed-in/`) need sign-in switched on, so they have their own build and run, on their own ports:
+The signed-in specs (`apps/editor/e2e/signed-in/`) need the test-only session bridge, so they have their own build and run, on their own ports:
 
 ```sh
 pnpm --filter @liveplanner/editor build:signed-in
 pnpm --filter @liveplanner/editor test:e2e:signed-in
-```
-
-The armed guest-signature specs (`apps/editor/e2e/armed/`) run against the usual build, on their own stack with guest signature enforcement on (`:3117`):
-
-```sh
-pnpm --filter @liveplanner/editor test:e2e:armed
 ```
 
 Those ports are defaults, not fixtures. Three environment variables move them, which is what you want when `:3202` is already taken (a second checkout, a worktree):
@@ -126,9 +120,9 @@ Those ports are defaults, not fixtures. Three environment variables move them, w
 | Variable             | Default                 | What it moves                                                         |
 | -------------------- | ----------------------- | --------------------------------------------------------------------- |
 | `E2E_BASE_URL`       | `http://localhost:3202` | Where Playwright points, and the URL it waits on before starting      |
-| `E2E_EDITOR_PORT`    | `3102`                  | The port `e2e-stack.mjs` serves the built editor app on               |
-| `E2E_API_PORT`       | `8887`                  | The api worker's port, and the target its `/api/*` proxy forwards to  |
-| `E2E_MARKETING_PORT` | `3013`                  | The port the stack serves the built marketing site on (optical audit) |
+| `E2E_EDITOR_PORT`    | `3202`                  | The port `e2e-stack.mjs` serves the built editor app on               |
+| `E2E_API_PORT`       | `8289`                  | The api worker's port, and the target its `/api/*` proxy forwards to  |
+| `E2E_MARKETING_PORT` | `3203`                  | The port the stack serves the built marketing site on (optical audit) |
 
 `E2E_API_PORT` is self-contained: it sets the worker's port and the proxy that reaches it together. The other two are **not**. Playwright waits on `E2E_BASE_URL` while the stack binds `E2E_EDITOR_PORT`, so moving the editor app means setting both. Set only one and the run hangs until the 180-second `webServer` timeout, with nothing said about why.
 

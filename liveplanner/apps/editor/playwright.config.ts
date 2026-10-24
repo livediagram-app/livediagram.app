@@ -8,17 +8,17 @@ const isCI = !!process.env.CI;
 const CI_WORKERS = 4;
 // The signed-in specs (e2e/signed-in/, docs/specs/003-system-architecture/e2e-smoke.md) need
 // the signed-in export (`pnpm build:signed-in`). They run as their own invocation
-// (`pnpm test:e2e:signed-in`) on their own ports, so a guest stack already up on :3102 is never
+// (`pnpm test:e2e:signed-in`) on their own ports, so a guest stack already up on :3202 is never
 // mistaken for it.
 const signedIn = process.env.E2E_SIGNED_IN === '1';
-const SIGNED_IN_PORTS = { live: '3215', api: '8888', marketing: '3216', index: '8229' };
+const SIGNED_IN_PORTS = { live: '3215', api: '8225', marketing: '3216', index: '8229' };
 // The workbench embed e2e (docs/specs/013-workspace/blueprints/workbench-embeds.md "Testing") needs the
 // NEXT_PUBLIC_E2E_AUTH export and the stack acting as the accounts Worker, so it runs as its own invocation
 // (`pnpm test:e2e:workbench`) on its own ports. Pairing, tickets and sessions are liveworkspace's now
 // (liveworkspace/docs/workbench.md), so the suite also needs liveworkspace's accounts Worker and site, which the
 // stack does not start yet: until it does, the suite stops at its first mint.
 const workbench = process.env.E2E_WORKBENCH === '1';
-const WORKBENCH_PORTS = { live: '3121', api: '8791', marketing: '3122', index: '8239' };
+const WORKBENCH_PORTS = { live: '3221', api: '8235', marketing: '3222', index: '8239' };
 const BASE_URL =
   process.env.E2E_BASE_URL ??
   (signedIn
