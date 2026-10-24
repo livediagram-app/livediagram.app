@@ -154,6 +154,12 @@ export async function afterSignIn(next: string, search: string): Promise<string>
   return handoff ?? next;
 }
 
+// The account's full name where the header's name (a given name) isn't it already, for the avatar's initials.
+export function fullNameOf(user: Record<string, unknown>): string | null {
+  const full = typeof user.name === 'string' ? user.name.trim() : '';
+  return full && full !== displayName(user) ? full : null;
+}
+
 // The name the header shows for a signed-in account.
 export function displayName(user: Record<string, unknown>): string {
   for (const key of ['givenName', 'name', 'email']) {

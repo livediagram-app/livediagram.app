@@ -51,7 +51,13 @@ describe('appAccountOf', () => {
   it('reads the hint and the name beside it', () => {
     expect(appAccountOf('', HINT)).toBe('out');
     expect(appAccountOf('lp_signed_in=0; lp_account=Ada', HINT)).toBe('out');
-    expect(appAccountOf('lp_signed_in=1; lp_account=Zo%C3%AB', HINT)).toEqual({ name: 'Zoë' });
+    expect(appAccountOf('lp_signed_in=1; lp_account=Zo%C3%AB', HINT)).toEqual({
+      name: 'Zoë',
+      fullName: null,
+    });
+    expect(
+      appAccountOf('lp_signed_in=1; lp_account=Ada; lp_account_full=Ada%20Lovelace', HINT),
+    ).toEqual({ name: 'Ada', fullName: 'Ada Lovelace' });
     expect(appAccountOf('lp_signed_in=1', HINT)).toBe('pending');
     expect(appAccountOf('lp_signed_in=1', HINT, true)).toBe('out');
   });

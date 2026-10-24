@@ -41,11 +41,7 @@ import {
   silentCookiesForHint,
   startSilentSignIn,
 } from '@liveworkspace/auth-client/silent';
-import {
-  accountNameCookie,
-  accountNameCookieFor,
-  accountNameOf,
-} from '@liveworkspace/auth-client/account-name';
+import { accountNameCookies, accountNameCookieFor } from '@liveworkspace/auth-client/account-name';
 import { clientRateKey } from '../client-ip';
 import { reportSignIn } from '../auth/session-telemetry';
 import { json, notFound, rateLimited } from '../responses';
@@ -136,20 +132,20 @@ const clearCookie = (name: string) => cookie(name, '', 0, 'Lax');
 const hintCookie = (signedIn: boolean) =>
   `${SIGNED_IN_HINT_COOKIE}=${signedIn ? '1' : '0'}; Path=/; Secure; SameSite=Lax; Max-Age=${REFRESH_MAX_AGE_SECONDS}`;
 
-// The account's readable name, kept as long as the hint; cleared with no account.
-const nameCookie = (user: AuthUser | null) =>
-  accountNameCookie(ACCOUNT_NAME_COOKIE, accountNameOf(user), REFRESH_MAX_AGE_SECONDS);
+// The account's readable name and full name, kept as long as the hint; cleared with no account.
+const nameCookies = (user: AuthUser | null) =>
+  accountNameCookies(ACCOUNT_NAME_COOKIE, user, REFRESH_MAX_AGE_SECONDS);
 
 // The refresh token, the hint and the name, set together.
 const sessionCookies = (refreshToken: string, user: AuthUser | null) => [
   cookie(REFRESH_COOKIE, refreshToken, REFRESH_MAX_AGE_SECONDS, 'Strict'),
   hintCookie(true),
-  nameCookie(user),
+  ...nameCookies(user),
 ];
 export const signedOutCookies = () => [
   clearCookie(REFRESH_COOKIE),
   hintCookie(false),
-  nameCookie(null),
+  ...nameCookies(null),
 ];
 
 // The PKCE verifier, the state and the return path ride one short-lived cookie. It needs no
@@ -322,7 +318,7 @@ async function token(request: Request, config: Configured): Promise<Response> {
   const user = userOf(tokens);
   const cookies = tokens.refreshToken
     ? sessionCookies(tokens.refreshToken, user)
-    : [nameCookie(user)];
+    : nameCookies(user);
   return json(
     { signedIn: true, accessToken: tokens.accessToken, expiresAt: tokens.expiresAt, user },
     { headers: noStore(cookies) },

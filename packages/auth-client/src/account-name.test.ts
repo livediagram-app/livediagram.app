@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  accountFullNameOf,
+  accountNameCookies,
   ACCOUNT_NAME_MAX_LENGTH,
   accountNameCookie,
   accountNameCookieFor,
@@ -62,5 +64,31 @@ describe('readAccountName', () => {
     expect(readAccountName('lp_account=', 'lp_account')).toBeNull();
     expect(readAccountName('lp_account=%E0%A4%A', 'lp_account')).toBeNull();
     expect(readAccountName('ld_account=Ada; xlp_account=Bo', 'lp_account')).toBeNull();
+  });
+});
+
+describe('accountFullNameOf', () => {
+  it('gives the full name when the header shows only the given name', () => {
+    expect(accountFullNameOf({ givenName: 'Wendy', name: 'Wendy Tran' })).toBe('Wendy Tran');
+  });
+
+  it('gives nothing when the header name is already the full name, or there is none', () => {
+    expect(accountFullNameOf({ name: 'Wendy Tran' })).toBeNull();
+    expect(accountFullNameOf({ givenName: 'Wendy' })).toBeNull();
+    expect(accountFullNameOf(null)).toBeNull();
+  });
+});
+
+describe('accountNameCookies', () => {
+  it('sets the name and the full name beside it, and clears both with no account', () => {
+    const [name, full] = accountNameCookies(
+      'ld_account',
+      { givenName: 'Wendy', name: 'Wendy Tran' },
+      60,
+    );
+    expect(name).toMatch(/^ld_account=Wendy;.*Max-Age=60/);
+    expect(full).toMatch(/^ld_account_full=Wendy%20Tran;.*Max-Age=60/);
+    const cleared = accountNameCookies('ld_account', null, 60);
+    expect(cleared.every((c) => c.endsWith('Max-Age=0'))).toBe(true);
   });
 });

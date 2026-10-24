@@ -22,7 +22,14 @@ export function AccountControl() {
   );
 
   if (session.state === 'in') {
-    return <AccountMenu name={session.name} kit={ACCOUNT_MENU_KIT} onSignOut={signOut} />;
+    return (
+      <AccountMenu
+        name={session.name}
+        fullName={session.fullName}
+        kit={ACCOUNT_MENU_KIT}
+        onSignOut={signOut}
+      />
+    );
   }
 
   return (

@@ -1,13 +1,14 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
-import { call, displayName } from './accounts';
+import { call, displayName, fullNameOf } from './accounts';
 import { pageApp } from './explorer/page-app';
 
 // Who is signed in to liveworkspace.app, asked of the accounts API once per page however many parts
 // of the page want to know (the header's account control, the home page's hero). The site is
 // static, so this is the one way a page learns it.
-export type Session = { state: 'checking' } | { state: 'out' } | { state: 'in'; name: string };
+export type Session =
+  { state: 'checking' } | { state: 'out' } | { state: 'in'; name: string; fullName: string | null };
 
 let current: Session = { state: 'checking' };
 let asked = false;
@@ -28,7 +29,11 @@ function ask() {
     const user = result.ok ? result.data.user : null;
     set(
       user && typeof user === 'object'
-        ? { state: 'in', name: displayName(user as Record<string, unknown>) }
+        ? {
+            state: 'in',
+            name: displayName(user as Record<string, unknown>),
+            fullName: fullNameOf(user as Record<string, unknown>),
+          }
         : { state: 'out' },
     );
   });

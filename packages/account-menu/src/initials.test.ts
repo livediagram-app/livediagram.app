@@ -27,7 +27,18 @@ describe('avatarColour', () => {
   });
 
   it('spreads names across the palette', () => {
-    const names = ['Ada', 'Grace', 'Wendy', 'Tom', 'Priya', 'Kenji', 'Amara', 'Lucas', 'Sofia', 'Omar'];
+    const names = [
+      'Ada',
+      'Grace',
+      'Wendy',
+      'Tom',
+      'Priya',
+      'Kenji',
+      'Amara',
+      'Lucas',
+      'Sofia',
+      'Omar',
+    ];
     expect(new Set(names.map((n) => avatarColour(n).name)).size).toBeGreaterThan(4);
   });
 });

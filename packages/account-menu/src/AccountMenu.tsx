@@ -74,11 +74,14 @@ export const ACCOUNT_PAGES = [
  *  address); `onSignOut` ends the session, resolving false when it was refused (the menu stays open). */
 export function AccountMenu({
   name,
+  fullName,
   kit,
   onSignOut,
   pageHref = (path) => path,
 }: {
   name: string;
+  // The full name, where the account has one beyond `name` (a given name): the avatar's initials come from it.
+  fullName?: string | null;
   kit: AccountMenuKit;
   onSignOut: () => Promise<boolean>;
   pageHref?: (path: string) => string;
@@ -115,7 +118,7 @@ export function AccountMenu({
           open ? 'bg-slate-100 dark:bg-slate-800' : ''
         }`}
       >
-        <Avatar name={name} />
+        <Avatar name={fullName || name} />
         <span className="truncate max-sm:hidden">{name}</span>
         <ChevronIcon
           aria-hidden
@@ -130,7 +133,7 @@ export function AccountMenu({
           className="absolute top-full right-0 z-50 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800"
         >
           <div className="flex items-center gap-3 px-2.5 pt-2 pb-3">
-            <Avatar name={name} large />
+            <Avatar name={fullName || name} large />
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
                 {name}

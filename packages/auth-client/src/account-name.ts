@@ -33,6 +33,31 @@ export function accountNameOf(user: NamedUser | null | undefined): string | null
   return name ? Array.from(name).slice(0, ACCOUNT_NAME_MAX_LENGTH).join('') : null;
 }
 
+/** The full-name cookie beside the name cookie (`ld_account` → `ld_account_full`), for the avatar's initials. */
+export function accountFullNameCookieFor(nameCookie: string): string {
+  return `${nameCookie}_full`;
+}
+
+/** The account's full name, when it has one the header name doesn't already give (a header shows the given name),
+ *  so an avatar can take the first and last names' first letters. Null otherwise. */
+export function accountFullNameOf(user: NamedUser | null | undefined): string | null {
+  const full = text(user?.name);
+  if (!full || full === accountNameOf(user)) return null;
+  return Array.from(full).slice(0, ACCOUNT_NAME_MAX_LENGTH).join('');
+}
+
+/** Both readable cookies' `Set-Cookie` values, the name and the full name, set or cleared together. */
+export function accountNameCookies(
+  cookie: string,
+  user: NamedUser | null | undefined,
+  maxAge: number,
+): string[] {
+  return [
+    accountNameCookie(cookie, accountNameOf(user), maxAge),
+    accountNameCookie(accountFullNameCookieFor(cookie), accountFullNameOf(user), maxAge),
+  ];
+}
+
 /** The `Set-Cookie` value: the name, readable from script on the whole site, for `maxAge` seconds; or, with no
  *  name, the cookie cleared. */
 export function accountNameCookie(cookie: string, name: string | null, maxAge: number): string {

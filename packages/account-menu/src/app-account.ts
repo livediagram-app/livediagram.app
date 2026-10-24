@@ -7,11 +7,15 @@
 // `POST /api/auth/token` once, whose answer sets it.
 
 import { useSyncExternalStore } from 'react';
-import { accountNameCookieFor, readAccountName } from '@liveworkspace/auth-client/account-name';
+import {
+  accountFullNameCookieFor,
+  accountNameCookieFor,
+  readAccountName,
+} from '@liveworkspace/auth-client/account-name';
 import { workspaceOriginFor } from '@liveworkspace/sites';
 
 /** Signed out (or not known to be signed in), the name still on its way, or the person. */
-export type AppAccount = 'out' | 'pending' | { name: string };
+export type AppAccount = 'out' | 'pending' | { name: string; fullName: string | null };
 
 function hintOf(cookies: string, hint: string): boolean {
   for (const part of cookies.split(';')) {
@@ -24,8 +28,10 @@ function hintOf(cookies: string, hint: string): boolean {
 /** What the cookies say. `asked`: the token was already asked for, so a missing name now means there is none. */
 export function appAccountOf(cookies: string, hint: string, asked = false): AppAccount {
   if (!hintOf(cookies, hint)) return 'out';
-  const name = readAccountName(cookies, accountNameCookieFor(hint));
-  if (name) return { name };
+  const nameCookie = accountNameCookieFor(hint);
+  const name = readAccountName(cookies, nameCookie);
+  if (name)
+    return { name, fullName: readAccountName(cookies, accountFullNameCookieFor(nameCookie)) };
   return asked ? 'out' : 'pending';
 }
 

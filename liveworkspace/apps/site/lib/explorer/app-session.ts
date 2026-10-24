@@ -7,6 +7,7 @@ import { SIGNED_IN_HINT_COOKIE as PLANNER_HINT } from '@liveplanner/api-schema';
 import { SIGNED_IN_HINT_COOKIE as DOCUMENTS_HINT } from '@livedocuments/api-schema';
 import { SIGNED_IN_HINT_COOKIE as DESIGN_HINT } from '@livedesign/api-schema';
 import type { AppName } from '@liveworkspace/sites';
+import { fullNameOf } from '../accounts';
 import { pageApp } from './page-app';
 
 // Each app's readable "this browser has a session here" cookie (`1`), set beside its refresh cookie.
@@ -27,6 +28,8 @@ export type AppAccount = {
   expiresAt: number;
   sub: string;
   name: string;
+  // The full name where it isn't `name` already (a given name), for the avatar's initials.
+  fullName: string | null;
 };
 
 const RENEW_BEFORE_MS = 60_000;
@@ -70,6 +73,7 @@ async function askToken(): Promise<AppAccount | null> {
       expiresAt: typeof body.expiresAt === 'number' ? body.expiresAt : Date.now() + 5 * 60_000,
       sub,
       name: nameOf(body.user ?? null),
+      fullName: body.user ? fullNameOf(body.user) : null,
     };
   } catch {
     return null;

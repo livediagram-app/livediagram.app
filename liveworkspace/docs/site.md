@@ -43,8 +43,8 @@ shareable as it is, and the device's own setting applies through System.
 - **Signed out**: **Sign in**, which opens `/sign-in` with the page to come back to
   (`?return=/telemetry`, say). Once signed in, the page goes back there. Only a path on this site
   is followed, so the link can't send anyone elsewhere.
-- **Signed in**: an avatar of the account's initials (accounts keep no pictures: always two letters, the first
-  and last names' or a single name's first two, on a disc in the deep shade of a presence colour picked from the name, so
+- **Signed in**: an avatar of the account's initials (accounts keep no pictures: always two letters: the first
+  letters of the first and last names (the full name, where the account has one), else a single name's first two, on a disc in the deep shade of a presence colour picked from the name, so
   the same person has the same colour in every app) and its first
   name (or full name, or email; the name hides on a phone), opening a menu
   (`components/AccountControl.tsx`): the name again over "Your account", **API tokens** and **Settings** (the

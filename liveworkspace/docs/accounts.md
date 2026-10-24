@@ -321,7 +321,7 @@ background request one day, but neither works in every browser, so the bounce st
 
 ### An app's signed-in cookies
 
-Beside its HttpOnly refresh cookie (on `/api/auth`), each app's API keeps two readable cookies on its
+Beside its HttpOnly refresh cookie (on `/api/auth`), each app's API keeps three readable cookies on its
 whole site, so its public pages can tell who is signed in without loading the session:
 
 - `<prefix>signed_in`: `1` with a session, `0` once it ends. It says whether.
@@ -329,8 +329,12 @@ whole site, so its public pages can tell who is signed in without loading the se
   at most 64 characters, URI-encoded). It says who. Set beside the hint at every sign-in and token
   refresh, cleared beside it at sign-out, a refused refresh and closing the account
   (`@liveworkspace/auth-client/account-name`).
+- `<prefix>account_full`: the account's full name, when it has one that differs from `<prefix>account`
+  (the same limits), so the avatar can show the first letters of the first and last names. Set and
+  cleared with the name cookie; absent, the avatar reads the name cookie instead. A cookie of its own,
+  not a second field in the name cookie, so a page built before it existed never shows a joined value.
 
-Neither holds a secret or authenticates anything. The marketing header's account menu reads both, so a
+None holds a secret or authenticates anything. The marketing header's account menu reads them, so a
 signed-in visitor sees their menu with no request, and a visitor makes none at all. Only a session from
 before the name cookie existed (the hint without the name) asks `POST /api/auth/token` once, which sets it.
 
