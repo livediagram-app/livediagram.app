@@ -355,7 +355,14 @@ by link are not on it.
   `comment_resolved`, an action or open card with a new assignee `action_assigned` (`action`, `assigneeId`,
   `assigneeName`; the assignee sees it too, wherever the item is), one turned done `action_done`. Each id is
   made from what it says, so a push sent again records nothing new, and nothing dated before the item was made
-  (a copy's threads) is news. At most `COLLAB_EVENTS_MAX` (100) a push, the newest.
+  (a copy's threads) is news. At most `COLLAB_EVENTS_MAX` (100) a push, the newest. A deleted comment's words
+  leave the Timeline with it: a thread with fewer comments than it held drops its `commented` events past its
+  count, and a thread that is gone drops its `comment_resolved` too (never read from a push at the thread cap).
+- `opened_by_visitor` and `copied_by_visitor`: someone who came in through a share link, on the item owner's
+  Timeline alone. An open (a grant through a link) is one event per visitor, item and UTC day, its time moving on;
+  a copy through a link is one per visitor and item. The actor is the visitor's account or guest id, or null for
+  one with no identity (known by the link they came in through). Written off the response path, an open at most
+  once a day per isolate.
 - `share_link_expiring` warns an item's owner (them alone) before its share links stop working: one per item,
   dated at the soonest expiry among its live links that lapse within `SHARE_EXPIRY_WARNING_MS` (a week), so it
   waits in Upcoming (`expiresAt`, `links`: how many lapse in the week). Making, extending or deleting a link works

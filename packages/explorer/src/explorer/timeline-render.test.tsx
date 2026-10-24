@@ -126,6 +126,19 @@ describe('collaboration cards', () => {
 });
 
 describe('share link cards', () => {
+  it('names a visitor who opened or copied the item, or calls them a visitor', () => {
+    const opened = renderTimelineEvent(
+      makeEvent(1, { type: 'opened_by_visitor', actorId: 'user_ana', actorName: 'Ana' }),
+      ctx(),
+    );
+    expect([opened.label, opened.meta]).toEqual(['Opened by a Visitor', 'by Ana']);
+    const copied = renderTimelineEvent(
+      makeEvent(1, { type: 'copied_by_visitor', actorId: null, actorName: null }),
+      ctx(),
+    );
+    expect([copied.label, copied.meta]).toEqual(['Copied by a Visitor', 'by a visitor']);
+  });
+
   it('warns ahead of a share link lapsing, and opens the item to extend it', () => {
     const c = ctx();
     const expiresAt = Date.UTC(2026, 10, 3, 12);

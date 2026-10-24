@@ -103,7 +103,9 @@ export const MOST_USED_MAX = 8;
 //   one browser);
 // - the index, from an item's pushed comment threads and actions (`PUT /app/items/:id/collab/:tab`), so every
 //   app that reports its Inbox gets them: commented, comment_resolved, action_assigned, action_done;
-// - the index: share_link_expiring, dated at the soonest expiry of the item's live links that lapse within
+// - the index, from who reaches an item through a share link: opened_by_visitor (once per visitor, item and UTC
+//   day) and copied_by_visitor (once per visitor and item), each seen by the item's owner alone; and
+//   share_link_expiring, dated at the soonest expiry of the item's live links that lapse within
 //   SHARE_EXPIRY_WARNING_MS (a daily pass, and at once when a link is made, extended or deleted), for its owner;
 // - an app's server: edited (APP_TIMELINE_EVENT_TYPES, about one item) and image_uploaded (APP_PERSON_EVENT_TYPES,
 //   about the person's gallery).
@@ -126,6 +128,8 @@ export const ITEM_TIMELINE_EVENT_TYPES = [
   'action_done',
   'synced',
   'share_link_expiring',
+  'opened_by_visitor',
+  'copied_by_visitor',
 ] as const;
 export const PERSON_TIMELINE_EVENT_TYPES = ['image_uploaded', 'taken_offline'] as const;
 export const ACCOUNT_TIMELINE_EVENT_TYPES = [

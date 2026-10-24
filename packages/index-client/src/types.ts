@@ -383,7 +383,8 @@ export type TimelineEvent = {
   // comment_resolved: { text }; action_assigned: { action, assigneeId, assigneeName }; action_done: { action };
   // image_uploaded: { count }; team_*: { teamId, memberName, role, from, inviteeId, left };
   // token_*: { tokenId }; token_expiring: { expiresAt }; share_link_expiring: { expiresAt, links } (the soonest
-  // expiry and how many links lapse in the week).
+  // expiry and how many links lapse in the week); opened_by_visitor, copied_by_visitor: none (the actor is the
+  // visitor, null for one with no identity).
   detail: Record<string, string | null> | null;
   occurredAt: number;
   item: Item | null;

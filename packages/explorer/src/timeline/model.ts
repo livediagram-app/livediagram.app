@@ -166,6 +166,8 @@ const LABELS: Partial<Record<TimelineEventType, string>> = {
   taken_offline: 'Taken Offline',
   synced: 'Synced to the Cloud',
   share_link_expiring: 'Share Link Expiring',
+  opened_by_visitor: 'Opened by a Visitor',
+  copied_by_visitor: 'Copied by a Visitor',
   team_invite_sent: 'Invite Sent',
   team_joined: 'Member Joined',
   team_declined: 'Invite Declined',
@@ -230,6 +232,8 @@ const TONE_BY_TYPE: Record<TimelineEventType, TimelineTone> = {
   action_done: 'create',
   image_uploaded: 'create',
   token_created: 'create',
+  opened_by_visitor: 'create',
+  copied_by_visitor: 'create',
 };
 const TONE_BY_TYPE_KEYS: Record<string, unknown> = TONE_BY_TYPE;
 
@@ -287,6 +291,8 @@ const CATEGORY_BY_TYPE: Record<TimelineEventType, TimelineCategory> = {
   shared: 'sharing',
   unshared: 'sharing',
   share_link_expiring: 'sharing',
+  opened_by_visitor: 'sharing',
+  copied_by_visitor: 'sharing',
   team_invite_sent: 'teams',
   team_joined: 'teams',
   team_declined: 'teams',
@@ -351,6 +357,8 @@ const BUCKET_ALIASES: Partial<Record<TimelineEventType, string>> = {
   shared: 'sharing',
   unshared: 'sharing',
   share_link_expiring: 'sharing',
+  opened_by_visitor: 'visitors',
+  copied_by_visitor: 'visitors',
   trashed: 'trash',
   restored: 'trash',
   commented: 'comments',
@@ -410,6 +418,7 @@ const STACK_LABELS: Record<string, string> = {
   team: 'Team Changes',
   tokens: 'API Token Changes',
   image_uploaded: 'Images Uploaded',
+  visitors: 'Opened or Copied by Visitors',
 };
 
 /** A stack's headline, true of every member: "Plans Updated", or "Items Updated" across apps. */

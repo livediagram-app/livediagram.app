@@ -3,6 +3,7 @@
 // collect it.
 
 import { clearFreshTeamsForTests } from './fresh-teams';
+import { clearVisitorMemoryForTests } from './visitors';
 import { exportJWK, generateKeyPair, SignJWT, type JWK } from 'jose';
 import { afterEach, beforeAll, beforeEach, vi } from 'vitest';
 import worker from './index';
@@ -49,6 +50,7 @@ export function useHarness(overrides: Partial<Env> = {}) {
     h.appAnswer = () => new Response(null, { status: 200 });
     h.pending = [];
     clearFreshTeamsForTests();
+    clearVisitorMemoryForTests();
     vi.stubGlobal('fetch', async (input: RequestInfo | URL, init: RequestInit = {}) => {
       const url = String(input instanceof Request ? input.url : input);
       if (url === `${ISSUER}/jwks`) return Response.json({ keys: [accountsJwk] });

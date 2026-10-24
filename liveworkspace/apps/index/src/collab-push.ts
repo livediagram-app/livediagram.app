@@ -8,7 +8,9 @@
 // A thread with more comments than before is `commented`, one turned resolved `comment_resolved`, an action
 // (or open card) with a new assignee `action_assigned` (seen by the assignee too), one turned done
 // `action_done`. Each event's id is made from what it says, so a push sent again records nothing new, and
-// anything dated before the item was made (a copy's threads) is not news.
+// anything dated before the item was made (a copy's threads) is not news. A deleted comment's words leave the
+// Timeline with it (retractedComments): a thread with fewer comments than it held drops the `commented` events past
+// its count, and one that is gone drops its `commented` and `comment_resolved` events too.
 
 import {
   COLLAB_EVENTS_MAX,
@@ -244,8 +246,13 @@ export async function pushCollab(
         Date.now(),
       )
     : [];
+  const retracted =
+    item && threads.size < COLLAB_MAX_THREADS
+      ? retractedComments(itemId, tabId, (threadRead?.results ?? []) as HeldThread[], threads)
+      : [];
   await db.batch([
     ...bulkEventStatements(db, events),
+    ...(retracted.length > 0 ? [retractStatement(db, itemId, retracted)] : []),
     db
       .prepare('DELETE FROM collab_threads WHERE app = ? AND item_id = ? AND tab_id = ?')
       .bind(...key),
@@ -294,6 +301,39 @@ export async function pushCollab(
       .bind(...key, tabName, JSON.stringify([...actions.values()])),
   ]);
   return noContent();
+}
+
+/** The comment events a push takes back: for each thread it held with more comments than it now has, its event id
+ *  prefix and the count to keep (`commented` past it goes; a thread that is gone keeps nothing, its
+ *  `comment_resolved` included). A push at the thread cap is never read as deletions (the oldest were cut). */
+export function retractedComments(
+  itemId: string,
+  tabId: string,
+  held: readonly HeldThread[],
+  threads: ReadonlyMap<string, CollabThreadInput>,
+): [prefix: string, keep: number][] {
+  const out: [string, number][] = [];
+  for (const was of held) {
+    const now = threads.get(was.element_id)?.commentCount ?? 0;
+    if (now >= was.comment_count) continue;
+    out.push([`cm:${itemId}:${tabId}:${was.element_id}:`, now]);
+    if (now === 0) out.push([`cr:${itemId}:${tabId}:${was.element_id}:`, 0]);
+  }
+  return out;
+}
+
+// One statement through the item's events (timeline_events_item): each event of these prefixes whose count is past
+// what is kept. Its scope rows and dismissals go with it (ON DELETE CASCADE).
+function retractStatement(db: D1Database, itemId: string, pairs: [string, number][]) {
+  return db
+    .prepare(
+      `DELETE FROM timeline_events WHERE item_id = ?1 AND type IN ('commented', 'comment_resolved')
+       AND EXISTS (SELECT 1 FROM json_each(?2) j
+         WHERE substr(timeline_events.id, 1, length(json_extract(j.value, '$[0]'))) = json_extract(j.value, '$[0]')
+           AND CAST(substr(timeline_events.id, length(json_extract(j.value, '$[0]')) + 1) AS INTEGER)
+               > json_extract(j.value, '$[1]'))`,
+    )
+    .bind(itemId, JSON.stringify(pairs));
 }
 
 type HeldItem = { title: string; scope: string; created_at: number };

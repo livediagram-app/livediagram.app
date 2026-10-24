@@ -49,6 +49,7 @@ import { firstVisitStatement, tellApp, wasFirstVisit } from './notices';
 import { drainTombstones, purgeRows } from './purge';
 import { decorate, getItemRow, type Access, type ItemRow } from './rows';
 import { bulkEventStatements, eventStatements, moveScopeStatements } from './timeline';
+import { recordVisitorCopy, recordVisitorOpen } from './visitors';
 
 const DEFAULT_TITLE = 'Untitled';
 // Emptying the Trash purges at most this many per call; the Explorer calls again while some remain.
@@ -612,6 +613,8 @@ async function copyItem(ctx: RouteContext, id: string): Promise<Response> {
     console.warn('[index] copy failed', { app: from.app, error: copied.error });
     return fail(502, 'copy_failed');
   }
+  // Through a link: Copied by a Visitor, on the source's owner's Timeline.
+  recordVisitorCopy(env, ctx.waitUntil, from, person, access, now);
   const ownAccess: Access = { level: 'edit', tabId: null, via: 'owner', code: null };
   return json({ item: await itemFor(env, person, row, ownAccess) }, { status: 201 });
 }
@@ -739,5 +742,7 @@ async function grantItem(ctx: RouteContext, id: string): Promise<Response> {
     teamId: row.team_id,
   });
   if (!grant) return fail(503, 'grants_unavailable');
+  // Through a link: Opened by a Visitor, on the owner's Timeline.
+  recordVisitorOpen(env, ctx.waitUntil, row, caller.person, access);
   return json(grant);
 }

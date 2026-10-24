@@ -254,6 +254,11 @@ export function renderTimelineEvent(
     case 'action_done':
       description = detail.action ?? undefined;
       break;
+    // Someone who came in by a share link: named when they have an account, else a visitor.
+    case 'opened_by_visitor':
+    case 'copied_by_visitor':
+      meta = `by ${event.actorName ?? 'a visitor'}`;
+      break;
     case 'share_link_expiring': {
       const links = Number(detail.links ?? '1') || 1;
       const when = Number(detail.expiresAt ?? event.occurredAt) || event.occurredAt;

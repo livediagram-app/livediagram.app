@@ -56,9 +56,13 @@ const KEY =
   'M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z';
 const KEY_OFF = 'M3 3l18 18M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912M9.75 14.25L2.909 21.09';
 const CLOCK = 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z';
-// livediagram's glyph for a share link about to expire.
+// livediagram's glyphs for a share link's visitors and its expiry.
 const BELL =
   'M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0';
+const EYE =
+  'M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178zM15 12a3 3 0 11-6 0 3 3 0 016 0z';
+const CLIPBOARD_COPY =
+  'M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75';
 
 // Exhaustive over the event types, so a new type fails the build until it has a mark; a test keeps them distinct.
 export const EVENT_GLYPH_PATHS: Record<TimelineEventType, string> = {
@@ -78,6 +82,8 @@ export const EVENT_GLYPH_PATHS: Record<TimelineEventType, string> = {
   image_uploaded: PHOTO,
   taken_offline: CLOUD_OFF,
   synced: CLOUD,
+  opened_by_visitor: EYE,
+  copied_by_visitor: CLIPBOARD_COPY,
   share_link_expiring: BELL,
   team_invite_sent: ENVELOPE,
   team_joined: USER_PLUS,

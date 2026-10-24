@@ -400,6 +400,38 @@ describe('collaboration, from the collab push', () => {
     expect(kinds((await feed(bea.auth)).events)).toEqual(['action_assigned Roadmap']);
   });
 
+  it("takes a deleted comment's words off the Timeline, and a deleted thread's resolution", async () => {
+    const next = tick();
+    const ada = await person('user_c4');
+    const item = await makeItem(ada.auth, { title: 'Notes' });
+    next();
+    const push = (threads: unknown[]) =>
+      asApp(`/app/items/${item.id}/collab/tab1`, { threads, actions: [] });
+    await push([thread({ elementId: 'el1' }), thread({ elementId: 'el2' })]);
+    await push([
+      thread({ elementId: 'el1', commentCount: 3, latestAt: TODAY * DAY + 6000 }),
+      thread({ elementId: 'el2', resolved: true }),
+    ]);
+    const types = async () =>
+      (await feed(ada.auth)).events
+        .filter((e) => e.type !== 'created')
+        .map((e) => `${e.type} ${e.detail?.count ?? ''}`.trim())
+        .sort();
+    expect(await types()).toEqual([
+      'comment_resolved',
+      'commented 1',
+      'commented 1',
+      'commented 2',
+    ]);
+    // el1 loses its last two comments, el2 goes altogether: their words and its resolution leave with them.
+    await push([thread({ elementId: 'el1', commentCount: 1 })]);
+    expect(await types()).toEqual(['commented 1']);
+    // A comment added again is news again.
+    next();
+    await push([thread({ elementId: 'el1', commentCount: 2, latestAt: TODAY * DAY + 7000 })]);
+    expect(await types()).toEqual(['commented 1', 'commented 1']);
+  });
+
   it("isn't news for a copy's threads, dated before the item was made", async () => {
     const next = tick();
     const ada = await person('user_c3');
