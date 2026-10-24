@@ -2,71 +2,80 @@
 
 The canonical, true-today facts all marketing copy is built from. If something
 below stops being true, fix it here first, then propagate to the taglines and
-descriptions. Mirrors [Build phase](../../docs/specs/005-project-roadmap/prototype-scope.md)
-and [Purpose](../../docs/specs/001-project-vision/purpose.md).
+descriptions. Mirrors [Purpose](../../docs/specs/001-project-vision/purpose.md)
+and the site-wide pitch in `packages/ui/src/site.ts` (`SITE_PITCH`: "a real-time
+editor for logos and wireframes").
 
 ## One line
 
-A collaborative diagram editor that works without signing in. Open a link,
-draw, share.
+A real-time editor for logos, wireframes and photos that works without signing
+in. Open a link, design together, show it.
 
 ## What it is
 
-A real-time multiplayer canvas in the browser for building diagrams and
-mindmaps together. The canvas never sits behind an auth wall, so the friction
-to start is "open the link, start drawing."
+A multiplayer page editor in the browser. A design holds tabs, and every tab is
+a run of pages of one kind: a logo artboard, a wireframe of a screen, or a photo
+edited in layers. The editor never sits behind a sign-in wall, so the friction
+to start is "open the link, start designing."
 
 ## Who it's for
 
-Teams that think visually together: engineers sketching architecture and system
-designs, product and design teams mapping journeys and brainstorms, and
-cross-functional groups in workshops, planning, and retros. The unit of value
-is the team, not the individual.
+Teams who design and show their work together:
+
+- Founders, marketers and designers making a logo and the kit of files that
+  goes with it.
+- Product teams sketching the screens of an app or a site as wireframes, and
+  walking through them.
+- Anyone touching up a photo, a banner or a social image in layers, without a
+  desktop image editor.
+
+The unit of value is the team, not the individual.
 
 ## Shipped today
 
-- Real-time multiplayer: live cursors, selection rings, comment threads, and
-  laser-pointer broadcast, one Durable Object room per design.
-- Canvas: ten core shapes, sticky notes, text, images, arrows (straight /
-  curved / angled with draggable handles, configurable thickness and arrowheads,
-  optional labels), freehand Pencil tool with optional shape recognition,
-  per-element links and locks.
-- Multi-select: marquee drag, shift-click, format painter, groups.
-- 17 templates (Blank, Mind map, Flowchart, Kanban, SWOT, Retrospective, Org
-  chart, Timeline, Fishbone, Pyramid, Flywheel, Venn, User journey, Logo
-  design, plus three UI wireframes).
-- 18 themes that recolor the whole canvas in one click.
-- Undo and redo (Cmd/Ctrl+Z, Cmd/Ctrl+Shift+Z), personal to each editor.
-- Tabs per design (link across them, copy a tab into another design), nested
-  folders in the Explorer.
-- Editor or view-only share links, revocable any time. "Shared with you"
-  visitors can make their own copy.
-- Export / import the active tab to Markdown / PDF / PNG / JSON.
-- Hybrid auth: guests get the full feature set keyed to a per-browser id;
-  signed-in users (a liveworkspace account) add cross-device sync and account self-delete.
-- Anonymous first-party telemetry with a public dashboard at `/telemetry`. No
-  third-party analytics, no identifiers on the wire. Off in self-hosted forks
-  unless configured.
+- Real-time multiplayer: live cursors, selection awareness, per-element merge,
+  comments with mentions, Follow Me, one realtime room per design.
+- Logo pages: artboards with guides, mirroring and shape combining, exported as
+  a Logo Kit.
+- Wireframe pages: a screen per page, sized to its device, with ready-made
+  layouts and web components that lay themselves out.
+- Photo pages: a layered pixel editor with adjustments and filters, exported as
+  PNG, JPEG, WebP or PSD.
+- On any page: text, shapes, images, charts, tables, icons, stickers and
+  embeds.
+- Templates for logos, wireframes and photos; themes that restyle a whole tab.
+- Present: the Slides view steps through a tab's pages full screen, with a
+  laser pointer and a spotlight.
+- Export pages as PDF, PNG or SVG; import and export a design as JSON.
+- Tabs, tab folders and layers; nested folders in the Explorer.
+- Editor or view-only share links, revocable any time; read-only embeds.
+- Teams with a shared library of designs.
+- Undo and redo, personal to each editor; every change saves on its own.
+- Offline Mode: a design can be kept in this browser only.
+- Machine access: a public REST API, an MCP server and a CLI.
+- Guests get the full editor keyed to their browser; signing in (a
+  liveworkspace account) adds sync across devices.
+- Anonymous first-party telemetry with a public dashboard at `/telemetry`.
+
+## What it is not
+
+- Not a diagramming tool or a whiteboard (that is livediagram).
+- Not a deck builder or a word processor (that is livedocuments).
+- Not a desktop app, and not a paid product.
 
 ## Open source and price
 
 - MIT-licensed, publicly viewable, self-hostable end to end.
 - Hosted free at livedesign.app. No paid tier and no plan to introduce one.
-- The OSS core never calls home and never gates features behind a license
-  check. Sign-in through liveworkspace accounts is the one optional dependency;
-  without it the app degrades to full-featured guest mode.
+- The open-source core never calls home and never gates features behind a
+  license check. Sign-in through liveworkspace accounts is the one optional
+  dependency; without it the app runs in full-featured guest mode.
 
 ## Stack
 
-Runs entirely on Cloudflare: Workers for the API and routing, D1 for storage,
-Durable Objects for realtime, Static Assets for the Next.js frontends. No
-Node-hosted backend, no SSR.
-
-## Not yet shipped (do not imply these exist)
-
-- Team workspaces (a design belongs to one identity today).
-- Transactional email (Resend).
-- Operational transform / CRDT (realtime is last-writer-wins today).
+Runs entirely on Cloudflare: Workers for the API and routing, Durable Objects
+for each design and its realtime room, Static Assets for the Next.js frontends.
+No Node-hosted backend, no SSR.
 
 ## Links
 
