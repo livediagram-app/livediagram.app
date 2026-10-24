@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@liveworkspace/auth-client": "workspace:*",
+    "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/sites": "workspace:*"
   },
   "peerDependencies": {

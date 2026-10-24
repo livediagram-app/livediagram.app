@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  type CSSProperties,
   useRef,
   useState,
   type ComponentType,
@@ -8,7 +9,7 @@ import {
   type KeyboardEvent,
   type RefObject,
 } from 'react';
-import { initials } from './initials';
+import { avatarColour, initials } from './initials';
 
 // The signed-in person's account menu (liveworkspace/docs/site.md "The header"): their avatar (initials; accounts
 // keep no pictures) and name, opening a menu of their API tokens, Settings and Sign out. One component for
@@ -192,12 +193,15 @@ function SignOutIcon() {
   );
 }
 
-// The signed-in person's initials in a disc, as the apps draw people.
+// The signed-in person's initials in a disc of their colour, as the apps draw people: the colour's deeper 700
+// step, since white text on the 500 step falls below AA.
 function Avatar({ name, large = false }: { name: string; large?: boolean }) {
+  const colour = avatarColour(name);
   return (
     <span
       aria-hidden
-      className={`flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-slate-600 to-slate-900 font-semibold text-white dark:from-slate-300 dark:to-slate-500 dark:text-slate-950 ${
+      style={{ '--avatar': colour.deep } as CSSProperties}
+      className={`flex shrink-0 items-center justify-center rounded-full bg-[var(--avatar)] font-semibold text-white ring-1 ring-black/5 ring-inset dark:ring-white/10 ${
         large ? 'size-10 text-sm' : 'size-7 text-[11px]'
       }`}
     >
