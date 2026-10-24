@@ -166,7 +166,7 @@ export default function NewDocumentPage() {
   const bypassKind = useSyncExternalStore(subscribeNever, bypassKindFromUrl, noBypass);
   // Where a new document is stored: This Browser for a guest (docs/specs/006-document/save-locations.md), decided at
   // commit.
-  const { resolveSaveLocation } = useNewDocumentLocation();
+  const { resolveSaveLocation } = useNewDocumentLocation({ authLoaded, accountUserId });
   useLayoutEffect(() => {
     if (!bypassKindFromUrl()) document.documentElement.removeAttribute('data-just-draw');
   }, []);
@@ -389,7 +389,8 @@ export default function NewDocumentPage() {
   };
 
   // Every create from /new goes where new documents go by default (docs/specs/007-editor/new-document-route.md
-  // "One-step wizard"): livediagram, whoever is creating, and the /new?folder= / ?team= context when there is one;
+  // "One-step wizard"): This Browser for a guest, livediagram for a signed-in person or anyone with a /new?folder= /
+  // ?team= context (docs/specs/006-document/save-locations.md), and that context when there is one;
   // without one it carries no placement, so a default folder may answer (docs/specs/013-workspace/default-folders.md
   // "Precedence"). `blank` opens it with its start closed (Skip, Start Blank, a blank's link). The ref holds a second
   // choice off while the create runs.
@@ -402,7 +403,7 @@ export default function NewDocumentPage() {
     const placement = placementParamsFromSearch(window.location.search);
     const placed = !!(placement.folderId || placement.teamId);
     try {
-      const saveLocation = await resolveSaveLocation();
+      const saveLocation = await resolveSaveLocation(placed, resolveSelf);
       explicitBlank.current = blank;
       await commitNewDocument(kind, { saveLocation, ...placement, placementChosen: placed });
     } finally {
