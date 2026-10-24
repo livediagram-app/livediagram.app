@@ -22,7 +22,10 @@ function stubUser(id: string): StubUser {
 async function signedIn(page: Page, userId: string): Promise<Record<string, string>> {
   await page.addInitScript(() => {
     localStorage.setItem('livedocuments:v2:name-confirmed', '1');
-    localStorage.setItem('livedocuments:user-preferences:v1', JSON.stringify({ pagesTourSeen: true }));
+    localStorage.setItem(
+      'livedocuments:user-preferences:v1',
+      JSON.stringify({ pagesTourSeen: true }),
+    );
   });
   await installSession(page, stubUser(userId));
   const token = await (await page.request.get(`/e2e/token?sub=${userId}`)).text();
@@ -45,9 +48,12 @@ async function apiCreate(
 
 // Jump Back In's documents, as the Explorer reads them: Recent's first page and its Most Used.
 async function jumpBackIn(page: Page, headers: Record<string, string>): Promise<string[]> {
-  const res = await page.request.get('/api/index/items?app=livedocuments&view=recent&limit=10&used=5', {
-    headers,
-  });
+  const res = await page.request.get(
+    '/api/index/items?app=livedocuments&view=recent&limit=10&used=5',
+    {
+      headers,
+    },
+  );
   expect(res.ok(), `index recent: ${res.status()}`).toBe(true);
   const body = (await res.json()) as { items: { title: string }[]; mostUsed?: { title: string }[] };
   return [...(body.mostUsed ?? []), ...body.items].map((item) => item.title);
@@ -60,6 +66,8 @@ test('an API client’s document is in Jump Back In unless it says markUsed: fal
   await apiCreate(page, headers, 'Made by a script');
   await apiCreate(page, headers, 'One of a batch', { markUsed: false });
 
-  await expect.poll(() => jumpBackIn(page, headers), { timeout: 30_000 }).toContain('Made by a script');
+  await expect
+    .poll(() => jumpBackIn(page, headers), { timeout: 30_000 })
+    .toContain('Made by a script');
   expect(await jumpBackIn(page, headers)).not.toContain('One of a batch');
 });

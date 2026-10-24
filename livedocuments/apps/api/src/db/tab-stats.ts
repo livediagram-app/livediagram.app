@@ -65,4 +65,3 @@ export function documentStatsSql(documentIdSql: string): string {
            LEFT JOIN tab_stats s ON s.tab_id = dt.tab_id
           WHERE dt.document_id = ${documentIdSql}) AS doc_stats`;
 }
-

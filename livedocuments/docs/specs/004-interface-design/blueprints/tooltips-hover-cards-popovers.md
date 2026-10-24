@@ -28,13 +28,13 @@ One term, one identifier. The left column is the only spelling used in code, tes
 
 | Term          | Identifier                                                 | Meaning                                                            |
 | ------------- | ---------------------------------------------------------- | ------------------------------------------------------------------ |
-| Hint          | `HintKind` (`'tooltip' \| 'hover-card'`)                     | Floating, non-interactive content shown for hover or focus         |
+| Hint          | `HintKind` (`'tooltip' \| 'hover-card'`)                   | Floating, non-interactive content shown for hover or focus         |
 | Tooltip       | `Tooltip`, `data-hint="tooltip"`                           | The control's name, after 500 ms or at once on keyboard focus      |
 | Hover card    | `HoverCard`, `data-hint="hover-card"`                      | Bold title over a description, at once                             |
 | Popover       | (unchanged homes)                                          | Click-opened and interactive; never a hint                         |
 | Hint surface  | `HintSurface`                                              | The portalled box that paints either hint                          |
 | Open source   | `HintOpenSource` (`'pointer' \| 'focus' \| 'touch'`)       | What opened the hint                                               |
-| Warm-up       | `isHintWarm(kind, now)`                                    | A tooltip may skip its delay                                     |
+| Warm-up       | `isHintWarm(kind, now)`                                    | A tooltip may skip its delay                                       |
 | Grace         | `HINT_CLOSE_GRACE_MS`                                      | Time the pointer has to cross from trigger to surface              |
 | Dismissed     | `dismissed` (ref in `useHint`)                             | Escape or a press closed it; stays closed until leave or blur      |
 | Placement     | `HintPlacement` (`'top' \| 'bottom' \| 'right' \| 'left'`) | Side of the trigger the surface sits on                            |

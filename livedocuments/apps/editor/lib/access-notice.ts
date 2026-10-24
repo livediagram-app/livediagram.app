@@ -38,4 +38,3 @@ export function takeAccessEnded(documentId?: string, now: number = Date.now()): 
     return null;
   }
 }
-

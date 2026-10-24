@@ -122,13 +122,13 @@ Service bindings target deployed Workers. The downstream apps deploy as their ow
 
 The router **also runs locally**, so `pnpm dev` gives you the production URL shape on one port — `http://localhost:3300` serves marketing at `/`, the editor at `/new` etc., `/help` and `/api` (and `/telemetry` redirects to the central dashboard, a local liveworkspace site on `:3000` in dev), with no per-app port to remember. Each app still runs on its own port underneath and stays directly reachable:
 
-| App       | Local URL                                                           |
-| --------- | ------------------------------------------------------------------- |
-| router    | `http://localhost:3300/` — everything, stitched like production     |
-| marketing | `http://localhost:3301/`                                            |
-| live      | `http://localhost:3302/new`, `/offline`, ... (clean routes) |
-| help      | `http://localhost:3304/help` (basePath baked in)                    |
-| api       | `http://localhost:8987/api/...` (wrangler dev)                      |
+| App       | Local URL                                                       |
+| --------- | --------------------------------------------------------------- |
+| router    | `http://localhost:3300/` — everything, stitched like production |
+| marketing | `http://localhost:3301/`                                        |
+| live      | `http://localhost:3302/new`, `/offline`, ... (clean routes)     |
+| help      | `http://localhost:3304/help` (basePath baked in)                |
+| api       | `http://localhost:8987/api/...` (wrangler dev)                  |
 
 **How local mode works.** Service bindings only exist between deployed Workers, so the router's `wrangler.toml` carries an `[env.local]` environment that defines no service bindings and instead sets `<APP>_ORIGIN` vars (`http://127.0.0.1:<port>` for each downstream app). The worker resolves each target as _binding if present, else proxy to the origin_; `pnpm --filter @livedocuments/router dev` runs `wrangler dev --env local --port 3300`, and the root `pnpm dev` includes it.
 

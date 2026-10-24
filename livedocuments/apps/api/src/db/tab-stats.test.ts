@@ -1,11 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
 import { sqliteD1 } from '../test-sqlite-d1';
-import {
-  documentStatsSql,
-  tabStatsOfData,
-  tabStatsStatement,
-} from './tab-stats';
+import { documentStatsSql, tabStatsOfData, tabStatsStatement } from './tab-stats';
 
 // docs/specs/013-workspace/explorer-details-view.md "Where the numbers come from".
 

@@ -37,7 +37,7 @@ Turbo spins up all six dev servers in parallel:
 | ---------------- | -------------------------------------------------------------------------------------------------- |
 | `apps/router`    | `http://localhost:3300` — **everything on one port**, stitched like production                     |
 | `apps/marketing` | `http://localhost:3301`                                                                            |
-| `apps/editor`    | `http://localhost:3302` (clean routes: /new, /document/<id>, /offline, ...)                                       |
+| `apps/editor`    | `http://localhost:3302` (clean routes: /new, /document/<id>, /offline, ...)                        |
 | `apps/help`      | `http://localhost:3304/help`                                                                       |
 | `apps/api`       | `http://localhost:8987/api`                                                                        |
 | `apps/mcp`       | `http://localhost:8988` (MCP server, [MCP server](../specs/015-api/mcp-server.md); signed-in only) |

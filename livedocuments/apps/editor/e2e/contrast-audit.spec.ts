@@ -1,11 +1,5 @@
 import { auditContrast, type ContrastReport } from './contrast';
-import {
-  CANVAS,
-  darkVisitor,
-  freshDarkPage,
-  seedDocument,
-  shareLink,
-} from './audit-screens';
+import { CANVAS, darkVisitor, freshDarkPage, seedDocument, shareLink } from './audit-screens';
 import { dismissQuickTour, expect, expectNoPageErrors, test, mintGuest } from './fixtures';
 
 // Contrast audit, dark mode (docs/specs/003-system-architecture/e2e-smoke.md; the palette it guards is

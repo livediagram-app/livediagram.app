@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  Fragment,
-  useEffect,
-  useRef,
-  useState,
-  type KeyboardEvent,
-  type RefObject,
-} from 'react';
+import { Fragment, useEffect, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 import { STRIP_RAIL_SCROLL } from '@/components/chrome/toolbar-surface';
 import { track } from '@/lib/telemetry';
 import type { PendingDraw } from '@/lib/draw-mode';

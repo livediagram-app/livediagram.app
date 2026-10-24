@@ -11,11 +11,7 @@ import {
   type GrantOutcome,
   type ItemGrant,
 } from '@liveworkspace/index-app';
-import type {
-  IndexAppClient,
-  IndexClient,
-  ShareAccess,
-} from '@liveworkspace/index-client';
+import type { IndexAppClient, IndexClient, ShareAccess } from '@liveworkspace/index-client';
 import type { Env } from './types';
 
 export { indexApiUrl, linkCodeOf };

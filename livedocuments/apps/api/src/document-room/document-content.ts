@@ -291,7 +291,8 @@ export async function exportDocumentCopyFor(
   onlyTabId: string | null,
   copiedBy: string | null,
 ): Promise<DocumentCopy | null> {
-  const ownerId = copiedBy === null ? null : ((await readDocumentMeta(env, documentId))?.ownerId ?? null);
+  const ownerId =
+    copiedBy === null ? null : ((await readDocumentMeta(env, documentId))?.ownerId ?? null);
   const redact = copiedBy !== null && copiedBy !== ownerId ? copiedBy : null;
   return exportDocumentCopy(env, documentId, onlyTabId, redact);
 }

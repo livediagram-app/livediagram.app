@@ -1,11 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import {
-  CANVAS,
-  darkVisitor,
-  freshDarkPage,
-  seedDocument,
-  shareLink,
-} from './audit-screens';
+import { CANVAS, darkVisitor, freshDarkPage, seedDocument, shareLink } from './audit-screens';
 import { dismissQuickTour, expect, expectNoPageErrors, test, mintGuest } from './fixtures';
 import { auditOptical, OPTICAL_TOLERANCE_PX } from './optical';
 

@@ -57,4 +57,3 @@ export async function saveParticipant(
   people.set(id, person);
   return { ...person };
 }
-
