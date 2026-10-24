@@ -38,6 +38,24 @@ describe('filing on create', () => {
     ).toBeNull();
   });
 
+  it('files by the kind, then the template, then the mode, then the app', async () => {
+    const ada = await person('user_a');
+    const canvases = await folder(ada.auth, { name: 'Canvases' });
+    const boards = await folder(ada.auth, { name: 'Whiteboards' });
+    const storms = await folder(ada.auth, { name: 'Storms' });
+    const retros = await folder(ada.auth, { name: 'Retros' });
+    await setDefault(ada.auth, 'livediagram', canvases);
+    await setDefault(ada.auth, 'livediagram:mode:draw', boards);
+    await setDefault(ada.auth, 'livediagram:kind:event-storming', storms);
+    await setDefault(ada.auth, 'livediagram:template:retrospective', retros);
+    const filed = async (intent: string) =>
+      (await makeItem(ada.auth, { app: 'livediagram', intent })).folderId;
+    expect(await filed('draw:diagram')).toBe(boards);
+    expect(await filed('diagram:diagram')).toBe(canvases);
+    expect(await filed('draw:diagram:retrospective')).toBe(retros);
+    expect(await filed('draw:event-storming:retrospective')).toBe(storms);
+  });
+
   it('never overrides a place the create names, the root chosen on purpose included', async () => {
     const ada = await person('user_a', { teams: [{ id: 'team1' }] });
     const plans = await folder(ada.auth);

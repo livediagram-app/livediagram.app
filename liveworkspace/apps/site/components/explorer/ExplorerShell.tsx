@@ -61,6 +61,7 @@ import {
   ENDED_PARAM,
   helpHrefFor,
   itemHref,
+  defaultFolderOptionsFor,
   lensTemplatesFor,
   newItemHref,
   offlineHref,
@@ -404,8 +405,7 @@ export function ExplorerShell() {
 
   // The app's own settings, on liveworkspace.app (where they are kept for the account): the Settings button the app's
   // bottom bar had.
-  const settingsHref =
-    host && signedIn ? workspaceHref(`/account/settings?app=${host}`) : null;
+  const settingsHref = host && signedIn ? workspaceHref(`/account/settings?app=${host}`) : null;
   const header = useCallback(
     ({ search }: { search: ReactNode }) => (
       <ExplorerHeader app={arrived.app} search={search} settingsHref={settingsHref} />
@@ -473,6 +473,7 @@ export function ExplorerShell() {
           onHome={trackHome}
           onOrganise={trackOrganise}
           lensTemplates={lensTemplatesFor(app)}
+          defaultFolderOptions={defaultFolderOptionsFor(app)}
           onLensSelected={trackLens}
           onViewToggled={trackViewToggled}
         />

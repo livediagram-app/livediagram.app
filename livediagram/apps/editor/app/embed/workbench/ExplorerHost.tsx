@@ -19,6 +19,7 @@ import {
   type TimelineTelemetry,
   type HomeTelemetry,
 } from '@liveworkspace/explorer';
+import { DEFAULT_FOLDER_OPTIONS } from '@livediagram/api-schema';
 import { CANVAS_TEMPLATE_FAMILIES } from '@/lib/canvas-template-families';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
@@ -167,6 +168,7 @@ export function ExplorerHost({
         onHome={trackHome}
         onOrganise={trackOrganise}
         lensTemplates={CANVAS_TEMPLATE_FAMILIES}
+        defaultFolderOptions={DEFAULT_FOLDER_OPTIONS}
         gallery={library.gallery}
         shapeLibraries={library.shapeLibraries}
         imports={explorerImports}

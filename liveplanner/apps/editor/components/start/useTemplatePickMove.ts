@@ -44,7 +44,8 @@ export function useTemplatePickMove(at: {
         app: 'liveplanner',
         itemId: projectId,
         handoff,
-        intent: `plan:${family}`,
+        // Mode and family: the index's intent is `<mode>:<kind>:<family>`, the kind left to the create.
+        intent: `plan::${family}`,
         noun: nounOf,
       }).then((message) => {
         if (message) toast.info(message);

@@ -31,6 +31,7 @@ import type {
   OrganiseTelemetry,
 } from '../types';
 import type { LensOption, LensTelemetryType } from '../lens';
+import type { DefaultFolderOption } from '../defaults/entries';
 import {
   ExplorerProvider,
   useExplorer as useExplorerContext,
@@ -123,6 +124,9 @@ export type ExplorerProps = {
   /** The filter lens's Template values: the host app's template families, matched against the last word of each
    *  item's creation intent. Without them there is no Template filter. */
   lensTemplates?: readonly LensOption[];
+  /** Default Folders' entries for what the host's items open in and the kinds of their first tabs (livediagram's
+   *  Diagrams, Whiteboards, Sessions, Event Storming boards), between the app's own and its templates'. */
+  defaultFolderOptions?: readonly DefaultFolderOption[];
   /** A facet of the filter lens gained a value (`Explorer / Selected / <Facet>`), for the host's telemetry. */
   onLensSelected?: (type: LensTelemetryType) => void;
   /** Home's first run: for a person with nothing yet, the app's starting points in place of empty lists, and the
@@ -269,6 +273,7 @@ function ExplorerInner({
   onHome,
   onOrganise,
   lensTemplates,
+  defaultFolderOptions,
   onLensSelected,
   welcome,
   sidebarLinks,
@@ -332,6 +337,7 @@ function ExplorerInner({
       onHome={onHome}
       onOrganise={onOrganise}
       lensTemplates={lensTemplates}
+      defaultFolderOptions={defaultFolderOptions}
       onLensSelected={onLensSelected}
     >
       <ExtrasProvider

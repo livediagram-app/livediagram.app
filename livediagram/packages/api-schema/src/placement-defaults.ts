@@ -59,6 +59,34 @@ export const PLACEMENT_DEFAULT_KEYS: readonly PlacementDefaultKey[] = [
   ...TEMPLATE_FAMILIES.map((family) => `template:${family}` as const),
 ];
 
+type EntryWords = { label: string; noun: string };
+const MODE_WORDS: Record<EditorMode, EntryWords> = {
+  diagram: { label: 'Diagrams', noun: 'diagrams' },
+  draw: { label: 'Whiteboards', noun: 'whiteboards' },
+  workshop: { label: 'Sessions', noun: 'sessions' },
+};
+const KIND_WORDS: Record<SpecificTabKind, EntryWords> = {
+  'event-storming': { label: 'Event Storming boards', noun: 'Event Storming boards' },
+};
+
+/** Default Folders' entries for each editor mode and specific tab kind, as the shared Explorer takes them
+ *  (@liveworkspace/explorer DefaultFolderOption), between "Canvases" and the template families: "Whiteboards" holds
+ *  new canvases that open in Draw mode (`livediagram:mode:draw` at the index). Typed per dimension, so a new mode
+ *  or kind does not compile until it is named here. */
+export const DEFAULT_FOLDER_OPTIONS: readonly {
+  dimension: 'mode' | 'kind';
+  value: string;
+  label: string;
+  noun: string;
+}[] = [
+  ...EDITOR_MODES.map((mode) => ({ dimension: 'mode' as const, value: mode, ...MODE_WORDS[mode] })),
+  ...SPECIFIC_TAB_KINDS.map((kind) => ({
+    dimension: 'kind' as const,
+    value: kind,
+    ...KIND_WORDS[kind],
+  })),
+];
+
 /** One person's default folder for one key, as `GET /api/placement-defaults` answers it. */
 export type PlacementDefault = { key: PlacementDefaultKey; folderId: string };
 

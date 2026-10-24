@@ -57,7 +57,7 @@ export {
   DefaultFoldersSettings,
   type DefaultFoldersSettingsProps,
 } from './defaults/DefaultFolders';
-export { defaultEntries, type DefaultEntry } from './defaults/entries';
+export { defaultEntries, type DefaultEntry, type DefaultFolderOption } from './defaults/entries';
 export {
   handTemplatePick,
   readTemplatePick,

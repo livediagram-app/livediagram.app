@@ -10,6 +10,8 @@ import {
   takeTemplatePick,
 } from '@liveworkspace/explorer';
 import { templateFamilyOf, type TemplateKind } from '@livediagram/templates';
+import { creationIntentOf, DEFAULT_FOLDER_OPTIONS, indexIntentOf } from '@livediagram/api-schema';
+import { buildTemplatedTab } from '@/lib/template-builders';
 import { useToast } from '@/hooks/ui/useToast';
 import { CANVAS_TEMPLATE_FAMILIES } from '@/lib/canvas-template-families';
 import { indexClient } from '@/lib/index-client';
@@ -18,7 +20,12 @@ import { indexClient } from '@/lib/index-client';
 // default for new canvases (docs/specs/013-workspace/default-folders.md "A template picked after creation"). Once per
 // canvas: the note /new left is taken at the first pick, and dropped if the tab gains content any other way first.
 // Cheap until it matters: only a pick on a noted canvas asks the index anything.
-const ENTRIES = defaultEntries('livediagram', kindWords('livediagram'), CANVAS_TEMPLATE_FAMILIES);
+const ENTRIES = defaultEntries(
+  'livediagram',
+  kindWords('livediagram'),
+  CANVAS_TEMPLATE_FAMILIES,
+  DEFAULT_FOLDER_OPTIONS,
+);
 const nounOf = (key: string) => ENTRIES.find((e) => e.key === key)?.noun ?? 'canvases';
 
 export function useTemplatePickMove(at: {
@@ -39,13 +46,19 @@ export function useTemplatePickMove(at: {
       // Taken now, before the template's elements land and the effect above would drop it.
       const handoff = takeTemplatePick(documentId, tabId);
       if (!handoff || handoff.placementChosen) return;
-      // The template's family, when it has one, else the app's own default.
-      const family = templateFamilyOf(kind);
+      // What the template makes the canvas, as a create would record it: its tab's kind, its family, the mode it
+      // opens in. Their defaults apply in that order, then the default for new canvases.
+      const intent = indexIntentOf(
+        creationIntentOf(
+          buildTemplatedTab(kind, 'brand', 'intent', 'Tab 1'),
+          templateFamilyOf(kind),
+        ),
+      );
       void moveOnTemplatePick(indexClient, {
         app: 'livediagram',
         itemId: documentId,
         handoff,
-        intent: family ? `diagram:${family}` : '',
+        intent: intent ?? '',
         noun: nounOf,
       }).then((message) => {
         if (message) toast.info(message);

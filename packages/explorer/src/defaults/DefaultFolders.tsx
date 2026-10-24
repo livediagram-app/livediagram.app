@@ -24,7 +24,12 @@ import { useExplorer } from '../explorer/context';
 import type { LensOption } from '../lens';
 import type { OrganiseTelemetry, TeamRef } from '../types';
 import { kindWords } from '../words';
-import { defaultEntries, destinationOf, type DefaultEntry } from './entries';
+import {
+  defaultEntries,
+  destinationOf,
+  type DefaultEntry,
+  type DefaultFolderOption,
+} from './entries';
 import { usePlacementDefaults, type PlacementDefaultsStore } from './usePlacementDefaults';
 
 type Lists = {
@@ -267,12 +272,15 @@ export type DefaultFoldersSettingsProps = {
   teams?: readonly TeamRef[];
   // The host's template families, each an entry of its own (the Explorer's `lensTemplates`).
   templates?: readonly LensOption[];
+  // The host's modes and kinds, between the app's entry and its templates' (DefaultFolderOption).
+  options?: readonly DefaultFolderOption[];
   // A folder made here, and a default set or cleared (OrganiseTelemetry), for the host's telemetry; stable.
   onOrganise?: OrganiseTelemetry;
 };
 
 const NO_TEAMS: readonly TeamRef[] = [];
 const NO_TEMPLATES: readonly LensOption[] = [];
+const NO_OPTIONS: readonly DefaultFolderOption[] = [];
 
 /** Default Folders for a host's Settings page: the same rows, loading the folders and defaults itself. */
 export function DefaultFoldersSettings(props: DefaultFoldersSettingsProps) {
@@ -288,12 +296,16 @@ function DefaultFoldersSettingsInner({
   app,
   teams = NO_TEAMS,
   templates = NO_TEMPLATES,
+  options = NO_OPTIONS,
   onOrganise,
 }: DefaultFoldersSettingsProps) {
   const toast = useToast();
   const folders = useFolderStore(client, toast.error, NOOP, onOrganise);
   const defaults = usePlacementDefaults(client, toast.error, onOrganise);
-  const entries = useMemo(() => defaultEntries(app, kindWords(app), templates), [app, templates]);
+  const entries = useMemo(
+    () => defaultEntries(app, kindWords(app), templates, options),
+    [app, templates, options],
+  );
   const lists = useMemo<Lists>(
     () => ({
       folders: folders.folders,

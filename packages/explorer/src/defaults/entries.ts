@@ -1,9 +1,15 @@
 // Default folders: where a person's new items land when they make one without choosing a place. One default
-// per entry: the host app's kind ("Plans": every new plan no more specific entry holds), then each of the host's
-// template families ("Kanban plans"). Per person and per app; the index keeps them (`/placement-defaults`) and
-// files a new item by them (placementDefaultKeysFor). These are the entries' words.
+// per entry: the host app's kind ("Plans": every new plan no more specific entry holds), then each mode and kind the
+// host names ("Whiteboards", "Event Storming boards"), then each of its template families ("Kanban plans"). Per
+// person and per app; the index keeps them (`/placement-defaults`) and files a new item by them
+// (placementDefaultKeysFor: kind, then template, then mode, then the app's). These are the entries' words.
 
-import { placementDefaultKey, type App, type Folder } from '@liveworkspace/index-client';
+import {
+  placementDefaultKey,
+  placementDimensionKey,
+  type App,
+  type Folder,
+} from '@liveworkspace/index-client';
 import type { LensOption } from '../lens';
 import type { Words } from '../words';
 
@@ -15,14 +21,32 @@ export type DefaultEntry = {
   noun: string;
 };
 
-/** The entries, in the order every surface lists them: the app's kind, then its template families. */
+/** A default the host offers for what its items open in (`mode`) or the kind of their first tab (`kind`), from
+ *  the parts of its creation intent: livediagram's Diagrams, Whiteboards, Sessions, Event Storming boards. */
+export type DefaultFolderOption = {
+  dimension: 'mode' | 'kind';
+  value: string;
+  // In a list: "Whiteboards".
+  label: string;
+  // Inside a sentence: "whiteboards".
+  noun: string;
+};
+
+/** The entries, in the order every surface lists them: the app's kind, the host's modes and kinds, then its
+ *  template families. */
 export function defaultEntries(
   app: App,
   kind: Words,
   templates: readonly LensOption[],
+  options: readonly DefaultFolderOption[] = [],
 ): DefaultEntry[] {
   return [
     { key: placementDefaultKey(app), label: kind.many, noun: kind.lowerMany },
+    ...options.map((o) => ({
+      key: placementDimensionKey(app, o.dimension, o.value),
+      label: o.label,
+      noun: o.noun,
+    })),
     ...templates.map((t) => ({
       key: placementDefaultKey(app, t.value),
       label: `${t.label} ${kind.lowerMany}`,

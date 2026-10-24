@@ -4,6 +4,7 @@
 
 import {
   placeHash,
+  type DefaultFolderOption,
   type ExplorerView,
   type HelpHref,
   type ItemHref,
@@ -12,7 +13,10 @@ import {
   type ShareUrl,
 } from '@liveworkspace/explorer';
 import type { App } from '@liveworkspace/index-client';
-import { TEMPLATE_FAMILIES as DIAGRAM_FAMILIES } from '@livediagram/api-schema';
+import {
+  DEFAULT_FOLDER_OPTIONS as DIAGRAM_FOLDER_OPTIONS,
+  TEMPLATE_FAMILIES as DIAGRAM_FAMILIES,
+} from '@livediagram/api-schema';
 import { TEMPLATE_FAMILIES as PLAN_FAMILIES } from '@liveplanner/api-schema';
 import {
   APP_ITEMS,
@@ -157,6 +161,16 @@ const LENS_TEMPLATES: Partial<Record<App, readonly LensOption[]>> = {
 
 export function lensTemplatesFor(app: App): readonly LensOption[] | undefined {
   return LENS_TEMPLATES[app];
+}
+
+// Default Folders' entries per editor mode and specific kind, for an app that files new items by them (its
+// api-schema's DEFAULT_FOLDER_OPTIONS), between the app's own entry and its template families.
+const DEFAULT_FOLDER_OPTIONS: Partial<Record<App, readonly DefaultFolderOption[]>> = {
+  livediagram: DIAGRAM_FOLDER_OPTIONS,
+};
+
+export function defaultFolderOptionsFor(app: App): readonly DefaultFolderOption[] | undefined {
+  return DEFAULT_FOLDER_OPTIONS[app];
 }
 
 // ---------- Settings, asked for on the Explorer's address ------------------------------------------------------

@@ -19,7 +19,7 @@ import { useFolderStore, type FolderStore } from '../data/useFolders';
 import { DragProvider } from '../drag/store';
 import { useItemActions, type HostTrash, type ItemActions } from '../data/useItemActions';
 import { useInbox, type InboxState } from '../data/useInbox';
-import { defaultEntries, type DefaultEntry } from '../defaults/entries';
+import { defaultEntries, type DefaultEntry, type DefaultFolderOption } from '../defaults/entries';
 import {
   usePlacementDefaults,
   type PlacementDefaultsStore,
@@ -204,6 +204,9 @@ export type ExplorerProviderProps = {
   onTimeline?: TimelineTelemetry;
   onHome?: HomeTelemetry;
   lensTemplates?: readonly LensOption[];
+  // Default Folders' entries for what the host's items open in and their kinds (DefaultFolderOption), between the
+  // app's own and its templates'; none by default.
+  defaultFolderOptions?: readonly DefaultFolderOption[];
   onLensSelected?: (type: LensTelemetryType) => void;
   // Folders, default folders, the Trash and team libraries (OrganiseTelemetry), for the host's telemetry; stable.
   onOrganise?: OrganiseTelemetry;
@@ -218,6 +221,7 @@ const NO_NAV = () => {};
 
 const NO_TEAMS: TeamRef[] = [];
 const NO_TEMPLATES: readonly LensOption[] = [];
+const NO_DEFAULT_OPTIONS: readonly DefaultFolderOption[] = [];
 
 export function ExplorerProvider({
   app,
@@ -244,6 +248,7 @@ export function ExplorerProvider({
   onTimeline,
   onHome,
   lensTemplates = NO_TEMPLATES,
+  defaultFolderOptions = NO_DEFAULT_OPTIONS,
   onLensSelected,
   onOrganise,
   hostTrash,
@@ -257,8 +262,8 @@ export function ExplorerProvider({
   const folders = useFolderStore(client, toast.error, reloadLists, onOrganise);
   const defaults = usePlacementDefaults(client, toast.error, onOrganise);
   const entries = useMemo(
-    () => defaultEntries(app, kindWords(app), lensTemplates),
-    [app, lensTemplates],
+    () => defaultEntries(app, kindWords(app), lensTemplates, defaultFolderOptions),
+    [app, lensTemplates, defaultFolderOptions],
   );
   const [placedEpoch, setPlacedEpoch] = useState(0);
   const onPlaced = useCallback(() => setPlacedEpoch((n) => n + 1), []);

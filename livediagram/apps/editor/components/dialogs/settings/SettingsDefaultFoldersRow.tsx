@@ -1,6 +1,7 @@
 'use client';
 
 import { DefaultFoldersSettings } from '@liveworkspace/explorer';
+import { DEFAULT_FOLDER_OPTIONS } from '@livediagram/api-schema';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useTokenTeams } from '@/lib/explorer-host';
 import { trackOrganise } from '@/lib/explorer-organise';
@@ -22,6 +23,7 @@ export function SettingsDefaultFoldersRow({ row }: { row: SettingsDefaultFolders
           app="livediagram"
           teams={teams}
           templates={CANVAS_TEMPLATE_FAMILIES}
+          options={DEFAULT_FOLDER_OPTIONS}
           onOrganise={trackOrganise}
         />
       </div>

@@ -265,17 +265,31 @@ export const INDEX_ERRORS = [
 export type IndexErrorCode = (typeof INDEX_ERRORS)[number];
 
 // Default folders: where a person's new items land when they are made without a place
-// (`/placement-defaults`). Per person and per app: an app's key holds every new item of its kind, and a template
-// family's key (the last word of the creation intent, "plan:board:kanban" → "kanban") the items made from it. A
-// create tries the template's key first, then the app's.
+// (`/placement-defaults`). Per person and per app. A creation intent is `<mode>:<kind>[:<family>]` (what it opens
+// in, the kind of its first tab, the template family it came from: "draw:diagram", "plan:board:kanban"), or one word,
+// a template family. Each part has its key: `<app>:kind:<kind>`, `<app>:template:<family>`, `<app>:mode:<mode>`,
+// and the app's own key holds every new item no more specific key does. A create tries them in that order.
+export type PlacementDimension = 'mode' | 'kind' | 'template';
 export const placementDefaultKey = (app: App, family?: string | null): string =>
   family ? `${app}:template:${family}` : app;
+/** The key of one part of a creation intent ("livediagram:mode:draw"). */
+export const placementDimensionKey = (app: App, dimension: PlacementDimension, value: string) =>
+  `${app}:${dimension}:${value}`;
 
-/** The keys a create of this app with this creation intent tries, most specific first. */
+const INTENT_PART = /^[A-Za-z0-9_.-]+$/;
+
+/** The keys a create of this app with this creation intent tries, most specific first: kind, template, mode, app. */
 export function placementDefaultKeysFor(app: App, intent: string | null | undefined): string[] {
-  const at = intent ? intent.lastIndexOf(':') : -1;
-  const family = intent ? (at === -1 ? intent : intent.slice(at + 1)) : '';
-  return family && /^[A-Za-z0-9_.-]+$/.test(family)
-    ? [placementDefaultKey(app, family), placementDefaultKey(app)]
-    : [placementDefaultKey(app)];
+  const parts = intent ? intent.split(':') : [];
+  const [mode, kind, family] =
+    parts.length === 1 ? [null, null, parts[0]] : [parts[0], parts[1], parts[2] ?? null];
+  const keys: string[] = [];
+  const add = (dimension: PlacementDimension, value: string | null | undefined) => {
+    if (value && INTENT_PART.test(value)) keys.push(placementDimensionKey(app, dimension, value));
+  };
+  add('kind', kind);
+  add('template', family);
+  add('mode', mode);
+  keys.push(placementDefaultKey(app));
+  return keys;
 }

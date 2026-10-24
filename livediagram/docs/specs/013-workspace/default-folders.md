@@ -18,16 +18,20 @@ The list a person sets defaults from is titled **New canvases that open as**, an
 | Retrospective canvases | `livediagram:template:retrospective` |
 | Kanban canvases        | `livediagram:template:kanban`        |
 
-The app's own entry holds every new canvas; a template family's entry holds the canvases made from that family
-(`defaultEntries('livediagram', …, CANVAS_TEMPLATE_FAMILIES)`, `apps/editor/lib/canvas-template-families.ts`). The
+The app's own entry holds every new canvas; a mode's entry (Diagrams, Whiteboards, Sessions) the canvases that
+open in that mode; a specific tab kind's entry (Event Storming boards) the canvases whose first tab is that kind; a
+template family's entry the canvases made from that family (`defaultEntries('livediagram', …,
+CANVAS_TEMPLATE_FAMILIES, DEFAULT_FOLDER_OPTIONS)`, `apps/editor/lib/canvas-template-families.ts`,
+`DEFAULT_FOLDER_OPTIONS` in `@livediagram/api-schema`). The
 families are livediagram's `TEMPLATE_FAMILIES`: every retrospective format (Retrospective, Start / Stop / Continue,
 Mad / Sad / Glad, 4Ls, Sailboat) is `retrospective`, the Kanban template `kanban`, every other template none
 (`templateFamilyOf` in `@livediagram/templates`). A new template is not complete until it is mapped.
 
 ## Filing on create
 
-A create carries its creation intent (`diagram:<family>` for a template with a family). The index tries the
-family's key first, then the app's (`placementDefaultKeysFor` in `@liveworkspace/index-client`). An explicit
+A create carries its creation intent, `<mode>:<tabKind>[:<family>]` (`indexIntentOf`). The index tries the
+kind's key first, then the family's, then the mode's, then the app's (`placementDefaultKeysFor` in
+`@liveworkspace/index-client`). An explicit
 `folderId: null` is My Work's top chosen on purpose and wins over any default. A default whose folder is gone, or
 is in a team the person has left, is skipped; with none left the canvas lands at the top of My Work. Deleting a
 folder drops the defaults that point at it.

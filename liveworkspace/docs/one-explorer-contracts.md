@@ -198,10 +198,14 @@ colour}`; 409 `tag_name_taken`, `tag_limit`.
 - `PUT/DELETE /recent-hidden/:itemId` — Hide from Recent and Show in Recent: the person's own; a hidden item
   leaves their `view=recent` and Most Used, and says `hiddenFromRecent: true` everywhere else.
 - `GET /placement-defaults`, `PUT/DELETE /placement-defaults/:key` — default folders: where a person's new items
-  land when made without a place, per app. The key is the app (`liveplanner`) for every new item of its kind, or
-  `<app>:template:<family>` for one made from a template family (the last word of its intent). `POST /items` with
-  no `folderId` key, no team and an `intent` files the item in the first working default of the template's key,
-  then the app's (`placementDefaultKeysFor`); a default in a gone folder or a left team is skipped. An explicit
+  land when made without a place, per app. The key is the app (`liveplanner`) for every new item of its kind,
+  `<app>:kind:<kind>` for one whose first tab is that kind, `<app>:template:<family>` for one made from a template
+  family, or `<app>:mode:<mode>` for one that opens in that mode. An intent is `<mode>:<kind>[:<family>]`
+  (`draw:diagram`, `plan:board:kanban`), or one word naming a family. `POST /items` with no `folderId` key, no team
+  and an `intent` files the item in the first working default of its kind's key, its template's, its mode's, then
+  the app's (`placementDefaultKeysFor`); a default in a gone folder or a left team is skipped. The Explorer's
+  Default Folders lists the app's entry, the app's modes and kinds (`defaultFolderOptions`), then its template
+  families. An explicit
   `folderId: null` is the root chosen on purpose and wins over any default.
 
 ## Sharing and access

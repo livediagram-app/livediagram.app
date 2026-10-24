@@ -64,6 +64,28 @@ describe('the entries', () => {
     );
   });
 
+  it('put the host’s modes and kinds between the app’s entry and its templates', () => {
+    const entries = defaultEntries('livediagram', kindWords('livediagram'), TEMPLATES, [
+      { dimension: 'mode', value: 'draw', label: 'Whiteboards', noun: 'whiteboards' },
+      {
+        dimension: 'kind',
+        value: 'event-storming',
+        label: 'Event Storming boards',
+        noun: 'Event Storming boards',
+      },
+    ]);
+    expect(entries.map((e) => e.key)).toEqual([
+      'livediagram',
+      'livediagram:mode:draw',
+      'livediagram:kind:event-storming',
+      'livediagram:template:retrospective',
+      'livediagram:template:kanban',
+    ]);
+    expect(defaultFolderDescription(entries.slice(1, 3))).toBe(
+      'Default folder for new whiteboards and Event Storming boards',
+    );
+  });
+
   it('name where a deleted folder’s contents go, and warn about a default', () => {
     const kind = kindWords('liveplanner');
     expect(
@@ -236,7 +258,7 @@ describe('a template picked after creation', () => {
       app: 'liveplanner',
       itemId: 'item-1',
       handoff: handoff!,
-      intent: 'plan:kanban',
+      intent: 'plan:board:kanban',
       noun: () => 'Kanban plans',
     });
     expect(message).toBe('Moved to Boards, your default folder for Kanban plans.');
@@ -246,7 +268,7 @@ describe('a template picked after creation', () => {
       app: 'liveplanner',
       itemId: 'item-1',
       handoff: { itemId: 'item-1', tabId: 't1', placementChosen: true },
-      intent: 'plan:kanban',
+      intent: 'plan:board:kanban',
       noun: () => 'Kanban plans',
     });
     expect(chosen).toBeNull();
@@ -275,4 +297,3 @@ describe('the defaults read', () => {
     expect(index.count('listPlacementDefaults')).toBe(1);
   });
 });
-

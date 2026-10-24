@@ -1,6 +1,7 @@
 // Filing on create: where a new item lands when it is made without a place. A create that names no folder
-// and no team, and carries a creation intent, goes to the person's default folder for it: the template
-// family's key first ("liveplanner:template:kanban"), then the app's ("liveplanner"). A default whose folder
+// and no team, and carries a creation intent, goes to the person's default folder for it: its tab kind's key, its
+// template family's ("liveplanner:template:kanban"), its mode's ("livediagram:mode:draw"), then the app's
+// ("liveplanner"), as placementDefaultKeysFor lists them. A default whose folder
 // is gone, or is in a team the person has left, is skipped; with none left the item lands at the root of
 // their own space. An explicit `folderId: null` is the root chosen on purpose and never consults defaults.
 
