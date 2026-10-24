@@ -5192,6 +5192,9 @@ importers:
       '@liveworkspace/icons':
         specifier: workspace:*
         version: link:../icons
+      '@liveworkspace/licences':
+        specifier: workspace:*
+        version: link:../licences
       '@liveworkspace/ui':
         specifier: workspace:*
         version: link:../ui

@@ -4,8 +4,9 @@ import { join } from 'node:path';
 import { LICENCES_SCHEMA_VERSION, type LicencesManifest } from '@liveworkspace/licences';
 
 // The /licences page's data, written by the licences generator before
-// `next build` (docs/specs/002-project-scope/third-party-licences.md). Read at
-// build time only: the page is a static export.
+// `next build` (docs/specs/002-project-scope/third-party-licences.md, in each
+// product). Read at build time only, from the marketing app's directory: the
+// page is a static export.
 class LicencesManifestError extends Error {
   constructor(name: 'LicencesManifestMissing' | 'LicencesManifestInvalid', message: string) {
     super(`${name}: ${message}`);

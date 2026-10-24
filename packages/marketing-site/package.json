@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@liveworkspace/icons": "workspace:*",
+    "@liveworkspace/licences": "workspace:*",
     "@liveworkspace/ui": "workspace:*"
   },
   "peerDependencies": {

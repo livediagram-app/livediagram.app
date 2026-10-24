@@ -44,14 +44,22 @@ const manifest: LicencesManifest = {
   },
 };
 
-const html = renderToStaticMarkup(<LicencesView manifest={manifest} />);
+const html = renderToStaticMarkup(
+  <LicencesView
+    manifest={manifest}
+    title="Open-source licences"
+    lede="livediagram is built on the work of many open-source projects."
+    browserIntro="Sent to your browser by the editor, this website and the help centre."
+  />,
+);
 
 describe('LicencesView', () => {
   it('titles the page and names both sections with their counts', () => {
     expect(html).toContain('<h1');
-    expect(html).toContain('Third-party licences');
+    expect(html).toContain('Open-source licences');
     expect(html).toMatch(/<h2[^>]*>In your browser<\/h2>/);
     expect(html).toMatch(/<h2[^>]*>On our servers<\/h2>/);
+    expect(html).toContain('Sent to your browser by the editor, this website and the help centre.');
     expect(html).toContain('2 works');
     expect(html).toContain('0 works');
   });

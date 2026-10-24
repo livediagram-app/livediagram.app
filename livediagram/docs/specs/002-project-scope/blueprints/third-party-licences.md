@@ -31,10 +31,10 @@ script that hands them to the shared generator.
 | `../packages/licences/src/verify-export.ts`                                | What is wrong with an exported page, and the HTML budget                      |
 | `../packages/licences/scripts/verify.ts`                                   | Post-build check of the exported page                                         |
 | `../packages/licences/scripts/log.ts`                                      | The fingerprinted log lines                                                   |
-| `apps/marketing/lib/licences-manifest.ts`                                  | Loads and checks `generated/licences.json` at build time                      |
+| `../packages/marketing-site/src/lib/licences-manifest.ts`                  | Loads and checks `generated/licences.json` at build time                      |
 | `apps/marketing/app/licences/page.tsx`                                     | The `/licences` route                                                         |
-| `apps/marketing/components/licences/LicencesView.tsx`                      | Server-rendered sections and entries                                          |
-| `apps/marketing/components/licences/LicenceTexts.tsx`                      | Client: lazy texts in fixed-height boxes                                      |
+| `../packages/marketing-site/src/components/licences/LicencesView.tsx`      | Server-rendered sections and entries                                          |
+| `../packages/marketing-site/src/components/licences/LicenceTexts.tsx`      | Client: lazy texts in fixed-height boxes                                      |
 | `../packages/marketing-site/src/css/licences.css`                          | The entries' short `lic-*` classes, imported by `globals.css`                 |
 | `apps/marketing/app/sitemap.ts`                                            | Lists `/licences`                                                             |
 | `packages/ui/src/SiteFooter.tsx`                                           | "Licences" footer link; legal strip at AA contrast                            |
@@ -304,29 +304,29 @@ Every line is `[licences] <fingerprint> key=value …` on stdout (errors on stde
 
 ## Testing
 
-| Spec rule                                                      | Test                                              |
-| -------------------------------------------------------------- | ------------------------------------------------- |
-| Every app is registered, sides right                           | `apps.test.ts` (reads `apps/*`)                   |
-| Client output only; strict analyze format                      | `analyze-data.test.ts`                            |
-| Worker bundles from the metafile; strict format                | `metafile.test.ts`                                |
-| Package root, store-path version, vendored boundaries          | `package-path.test.ts`                            |
-| Licence files incl. NOTICE; normalisation; hash                | `licence-files.test.ts`                           |
-| Licence id rules and allowlist                                 | `licence-id.test.ts`                              |
-| Missing text fails; override applies to exact version only     | `collect.test.ts`                                 |
-| Unreviewed binary fails; embedded works by asset and source    | `collect.test.ts`                                 |
-| Committed texts listed and intact; tables reference real files | `texts.test.ts`                                   |
-| Sections, merged apps, dedup, order, unused report             | `manifest.test.ts`                                |
-| Runs for real on the real apps                                 | CI build job (`pnpm build`)                       |
-| Exported page, texts and HTML budget                           | `verify-export.test.ts`; `verify.ts` in the build |
-| Source links https only                                        | `homepage.test.ts`                                |
-| Named error codes                                              | `errors.test.ts`                                  |
-| Page renders sections, entries, links; fixed box heights       | `apps/marketing/components/licences/*.test.tsx`   |
-| Manifest missing or invalid fails the page                     | `apps/marketing/lib/licences-manifest.test.ts`    |
-| Footer link; AA small print                                    | `packages/ui/src/SiteFooter.test.tsx`             |
-| Share rail label at AA                                         | `packages/ui/src/ShareRail.test.tsx`              |
-| Sitemap lists `/licences`                                      | `apps/marketing/app/sitemap.test.ts`              |
-| Explorer ⋯ row opens `/licences` in a new tab                  | `ExplorerHeaderMenu.test.tsx`                     |
-| `/licences` and its texts reach marketing                      | `apps/router/src/index.test.ts`                   |
+| Spec rule                                                      | Test                                                            |
+| -------------------------------------------------------------- | --------------------------------------------------------------- |
+| Every app is registered, sides right                           | `apps.test.ts` (reads `apps/*`)                                 |
+| Client output only; strict analyze format                      | `analyze-data.test.ts`                                          |
+| Worker bundles from the metafile; strict format                | `metafile.test.ts`                                              |
+| Package root, store-path version, vendored boundaries          | `package-path.test.ts`                                          |
+| Licence files incl. NOTICE; normalisation; hash                | `licence-files.test.ts`                                         |
+| Licence id rules and allowlist                                 | `licence-id.test.ts`                                            |
+| Missing text fails; override applies to exact version only     | `collect.test.ts`                                               |
+| Unreviewed binary fails; embedded works by asset and source    | `collect.test.ts`                                               |
+| Committed texts listed and intact; tables reference real files | `texts.test.ts`                                                 |
+| Sections, merged apps, dedup, order, unused report             | `manifest.test.ts`                                              |
+| Runs for real on the real apps                                 | CI build job (`pnpm build`)                                     |
+| Exported page, texts and HTML budget                           | `verify-export.test.ts`; `verify.ts` in the build               |
+| Source links https only                                        | `homepage.test.ts`                                              |
+| Named error codes                                              | `errors.test.ts`                                                |
+| Page renders sections, entries, links; fixed box heights       | `../packages/marketing-site/src/components/licences/*.test.tsx` |
+| Manifest missing or invalid fails the page                     | `../packages/marketing-site/src/lib/licences-manifest.test.ts`  |
+| Footer link; AA small print                                    | `packages/ui/src/SiteFooter.test.tsx`                           |
+| Share rail label at AA                                         | `packages/ui/src/ShareRail.test.tsx`                            |
+| Sitemap lists `/licences`                                      | `apps/marketing/app/sitemap.test.ts`                            |
+| Explorer ⋯ row opens `/licences` in a new tab                  | `ExplorerHeaderMenu.test.tsx`                                   |
+| `/licences` and its texts reach marketing                      | `apps/router/src/index.test.ts`                                 |
 
 ## Constants and configuration
 
