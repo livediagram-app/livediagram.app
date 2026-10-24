@@ -83,7 +83,7 @@ const thread = (patch: Partial<InboxThread> = {}): InboxThread => ({
   commentCount: 3,
   latestText: 'Can we halve it?',
   latestAuthorName: 'Ada King',
-  latestAuthorColor: '#ff0000',
+  latestAuthorColor: '#f97316',
   card: null,
   mentionsYou: false,
   youCommented: true,
@@ -173,7 +173,8 @@ describe('the Inbox', () => {
     expect(elementThread!.textContent).toContain('Can we halve it?');
     const disc = elementThread!.querySelector<HTMLElement>('[data-inbox-avatar]')!;
     expect(disc.textContent).toBe('AK');
-    expect(disc.style.backgroundColor).toBe('rgb(255, 0, 0)');
+    // Their orange, darkened in its own hue until the white initials read at AA (ui/avatar-fill.ts).
+    expect(disc.style.backgroundColor).toBe('rgb(187, 86, 17)');
     expect(cardThread!.getAttribute('href')).toContain('cardId=card-7');
     expect(cardThread!.querySelector('[data-inbox-hint]')!.textContent).toBe('Mentioned You');
 

@@ -18,6 +18,7 @@ import {
 } from '@liveworkspace/index-client';
 import { initials } from '../../timeline/whatHappened';
 import type { ItemPlace, Located } from '../../types';
+import { avatarFill } from '../../ui/avatar-fill';
 import { RelativeTimeChip } from '../../ui/RelativeTimeChip';
 import { ActionIcon, CardIcon, CommentIcon, FormIcon, TeamIcon } from '../../ui/icons';
 import { AppMark } from '../badges';
@@ -110,7 +111,9 @@ function RowShell(p: ShellProps) {
 }
 
 function AvatarDisc({ avatar }: { avatar: Avatar }) {
-  const fill = avatar.color
+  // The author's colour, dark enough for the white initials (ui/avatar-fill.ts).
+  const color = avatar.color ? avatarFill(avatar.color) : null;
+  const fill = color
     ? ''
     : avatar.tone === 'brand'
       ? 'bg-brand-700 dark:bg-brand-600'
@@ -121,7 +124,7 @@ function AvatarDisc({ avatar }: { avatar: Avatar }) {
       title={`${avatar.name}: ${avatar.detail}`}
       aria-label={`${avatar.name}, ${avatar.detail}`}
       className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-semibold text-white ${fill}`}
-      style={avatar.color ? { backgroundColor: avatar.color } : undefined}
+      style={color ? { backgroundColor: color } : undefined}
     >
       {initials(avatar.name) ?? '?'}
     </span>

@@ -3,6 +3,7 @@
 // "Sharing as", for a guest: the name people in the item see on cursors and comments, in the footer so it stays in
 // view without leading the dialog with a form. Controlled: the dialog holds the draft and saves it.
 
+import { avatarFill } from '../../ui/avatar-fill';
 import { ShuffleGlyph } from './glyphs';
 import type { ShareIdentity } from './types';
 
@@ -25,13 +26,15 @@ export function IdentityRow({
   onChange: (name: string) => void;
 }) {
   const shown = name.trim() || identity.name;
+  // Their colour, dark enough for the white initials (ui/avatar-fill.ts).
+  const color = identity.color ? avatarFill(identity.color) : null;
   return (
     <div className="flex min-w-0 flex-1 items-center gap-2" data-share-identity="">
       <span
         role="img"
         aria-label="Your avatar"
         className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-500 text-[11px] font-semibold text-white"
-        style={identity.color ? { backgroundColor: identity.color } : undefined}
+        style={color ? { backgroundColor: color } : undefined}
       >
         {initialsOf(shown)}
       </span>
