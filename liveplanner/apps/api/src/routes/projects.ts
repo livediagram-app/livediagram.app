@@ -42,6 +42,7 @@ import { relayProjectRename } from '../room-client';
 import { handleProjectRoomRoutes } from './project-room-routes';
 import { handleProjectSubresources } from './project-subresource-routes';
 import { compileSeededTabs, seedIntentOf } from './project-seed';
+import { tokenTabsElementIssue } from './token-tab-elements';
 import { hasTemplateSheets } from '@liveplanner/templates';
 import { materialiseTemplateSheets } from '@liveplanner/templates/template-sheets';
 import type { ProjectDTO } from '../types';
@@ -259,6 +260,12 @@ export async function handlePlanRequest(ctx: PlanRouteContext): Promise<Response
       let derivedIntent: CreationIntent | null = null;
       let templateElements: Tab['elements'] = [];
       if (Array.isArray(body.tabs)) {
+        // An API token seeds Plan elements only, refused as the MCP refuses them (token-tab-elements.ts).
+        const notPlan = ctx.token ? tokenTabsElementIssue(body.tabs) : null;
+        if (notPlan) {
+          console.warn('projects: rejected reason=not_plan_element');
+          return badRequest(notPlan);
+        }
         const seed = compileSeededTabs(body.tabs, body.id);
         if ('refusal' in seed) return json(seed.refusal.body, { status: seed.refusal.status });
         body.tabs = seed.tabs as Tab[];
