@@ -1,10 +1,9 @@
 import type { Metadata } from 'next';
 import { ManagedOnLiveworkspace } from '@/components/panels/ManagedOnLiveworkspace';
-import { manageTeamsUrl } from '@/lib/auth-config';
 
 // /join/decline — where a team invite email's Decline link used to land (docs/specs/013-workspace/
-// teams.md). Invitations are answered on liveworkspace.app now (liveworkspace/docs/accounts.md), so
-// this points there. `index: false` is inherited from the root layout.
+// teams.md). Invitations are answered in the Explorer now (liveworkspace/docs/one-explorer.md), so
+// this points at its Invites. `index: false` is inherited from the root layout.
 export const metadata: Metadata = {
   title: 'Decline a team invite | liveplanner',
 };
@@ -12,9 +11,9 @@ export const metadata: Metadata = {
 export default function DeclineInvitePage() {
   return (
     <ManagedOnLiveworkspace
-      title="Invitations are on liveworkspace.app"
-      body="Team invitations are answered on liveworkspace.app, where you can join a team or decline."
-      href={manageTeamsUrl}
+      title="Invitations are in the Explorer"
+      body="Team invitations are answered in the Explorer's Invites, where you can accept or decline."
+      href="/explorer/invites"
       cta="Open your invitations"
     />
   );

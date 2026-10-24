@@ -21,7 +21,7 @@ import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
 import { getSessionSharePassword } from '@/lib/api-client';
 import { indexClient } from '@/lib/index-client';
 import { explorerLibrary } from '@/lib/explorer-library';
-import { useExplorerNewTeam } from '@/lib/explorer-new-team';
+import { explorerTeamsHost } from '@/lib/explorer-teams-host';
 import { itemHref, newDesignHref, shareUrl, useTokenTeams } from '@/lib/explorer-host';
 import { explorerShareHost } from '@/lib/explorer-share-host';
 import { explorerInboxHost } from '@/lib/explorer-inbox-host';
@@ -66,9 +66,8 @@ function ExplorerImpl({
   const itemMenu = useOfflineItemMenu(viewerId);
   const shareHost = useMemo(() => explorerShareHost(viewerId), [viewerId]);
   const inboxHost = useMemo(() => explorerInboxHost(viewerId), [viewerId]);
-  // The person's teams, with New Team in the Move dialog making one on the spot.
-  const tokenTeams = useTokenTeams(isSignedIn);
-  const { teams, onCreateTeam } = useExplorerNewTeam(!!isSignedIn, tokenTeams);
+  // The person's teams, made and run in place (New Team, a team's Members) for a signed-in person.
+  const teams = useTokenTeams(isSignedIn);
 
   // The open design as the index has it (its title, place and star), for the card on top.
   const [current, setCurrent] = useState<Item | null>(null);
@@ -164,7 +163,7 @@ function ExplorerImpl({
         itemMenu={itemMenu}
         // The Library section: the Image Gallery over this app's API.
         {...explorerLibrary}
-        onCreateTeam={onCreateTeam}
+        teamsHost={isSignedIn ? explorerTeamsHost : null}
         onOrganise={trackOrganise}
         // Side by side in a desktop popover; chips over the pane on a phone and in the corner panel that stands
         // beside the new-design wizard and the status screens, which must stay narrow or it covers their card.

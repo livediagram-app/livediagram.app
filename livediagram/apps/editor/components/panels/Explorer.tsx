@@ -19,6 +19,7 @@ import { useGuestId } from '@/hooks/persistence/useGuestId';
 import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
 import { getSessionSharePassword } from '@/lib/api-client';
 import { indexClient } from '@/lib/index-client';
+import { explorerTeamsHost } from '@/lib/explorer-teams-host';
 import { itemHref, newDocumentHref, shareUrl, useTokenTeams } from '@/lib/explorer-host';
 import { explorerShareHost } from '@/lib/explorer-share-host';
 import { explorerInboxHost } from '@/lib/explorer-inbox-host';
@@ -67,6 +68,7 @@ function ExplorerImpl({
   const shareHost = useMemo(() => explorerShareHost(accountUserId ?? null), [accountUserId]);
   const inboxHost = useMemo(() => explorerInboxHost(accountUserId ?? null), [accountUserId]);
   const library = useMemo(() => explorerLibraryHosts(), []);
+  // The person's teams, made and run in place (New Team, a team's Members) for a signed-in person.
   const teams = useTokenTeams(isSignedIn);
 
   // The open canvas as the index has it (its title, place and star), for the card on top.
@@ -156,6 +158,7 @@ function ExplorerImpl({
         renderItemMark={driveItemMarks(accountUserId ?? null)}
         Link={Link}
         teams={teams}
+        teamsHost={isSignedIn ? explorerTeamsHost : null}
         viewerId={accountUserId ?? null}
         shareUrl={shareUrl}
         share={shareHost}

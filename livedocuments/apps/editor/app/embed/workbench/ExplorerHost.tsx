@@ -26,7 +26,7 @@ import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
 import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
-import { manageTeamsUrl, signInEnabled } from '@/lib/auth-config';
+import { signInEnabled } from '@/lib/auth-config';
 import { indexClient } from '@/lib/index-client';
 import { explorerShareHost } from '@/lib/explorer-share-host';
 import { explorerInboxHost } from '@/lib/explorer-inbox-host';
@@ -202,7 +202,6 @@ export function ExplorerHost({
         shareUrl={shareUrl}
         share={shareHost}
         inbox={inboxHost}
-        manageTeamsUrl={isSignedIn ? manageTeamsUrl : undefined}
         sidebarLinks={SIDEBAR_LINKS}
         welcome={welcome}
         helpHref={explorerHelpHref}

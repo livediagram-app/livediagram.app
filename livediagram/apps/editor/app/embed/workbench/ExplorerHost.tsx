@@ -26,7 +26,6 @@ import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { useGuestId } from '@/hooks/persistence/useGuestId';
 import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
-import { manageTeamsUrl } from '@/lib/auth-config';
 import { indexClient } from '@/lib/index-client';
 import { driveItemMarks } from '@/lib/explorer-item-marks';
 import { explorerShareHost } from '@/lib/explorer-share-host';
@@ -162,7 +161,6 @@ export function ExplorerHost({
         shareUrl={shareUrl}
         share={shareHost}
         inbox={inboxHost}
-        manageTeamsUrl={isSignedIn ? manageTeamsUrl : undefined}
         helpHref={explorerHelpHref}
         heroArt={HERO_ART}
         renderThumbnail={renderDocumentThumbnail}
