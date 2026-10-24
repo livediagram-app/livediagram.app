@@ -1110,7 +1110,7 @@ Groups were removed in [Web components are elements; groups are gone](../009-ele
 ## Format painter (removed)
 
 liveplanner has **no format painter**: it was the palette's Format tool, and Plan has no palette. The field lists
-in `apps/editor/lib/format-painter.ts` stay only while livediagram's flowchart and mind-map dressing still read
+in format-painter.ts stay only while livediagram's flowchart and mind-map dressing still read
 them.
 
 ## Text size

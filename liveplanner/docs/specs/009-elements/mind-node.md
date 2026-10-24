@@ -276,7 +276,7 @@ go to the node being left, to the canvas as shortcuts, or nowhere: labels come
 out blank, and a Tab pressed during the gap grows from the wrong node,
 stacking two nodes on one spot.
 
-So a growth opens a **handoff** (`apps/editor/lib/mind-handoff.ts`): until the new
+So a growth opens a **handoff** (mind-handoff.ts): until the new
 node is on screen, selected, every keystroke is captured
 for it, as a queue of segments (the text for one node and the key that left
 it). Characters and Backspace edit the open segment, which the editor types in

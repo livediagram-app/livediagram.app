@@ -20,7 +20,7 @@ Scope, by file:
 | `packages/project/src/theme-graph.ts`                                         | The four theme walks call the re-derive last                                                                     |
 | `apps/editor/lib/style-presets.ts`                                            | Hand-set colour and presets clear the matching binding                                                           |
 | `apps/editor/hooks/canvas/useColorStyleSetters.ts`, `useShapeStyleSetters.ts` | Resets clear both bindings                                                                                       |
-| `apps/editor/lib/format-painter.ts`, `format-config.ts`                       | The painter carries a binding only together with its colour                                                      |
+| format-painter.ts, `format-config.ts`                       | The painter carries a binding only together with its colour                                                      |
 | apps/editor/lib/quick-style.ts                                              | Pure: eligibility, sections, shared values, the apply transforms, clear                                          |
 | `apps/editor/lib/style-memory.ts`                                             | Pure: memory shape, record from an edit, apply to a new element, forget, parse                                   |
 | apps/editor/lib/quick-style-placement.ts                                    | Pure: the candidate walk that keeps the panel clear of chrome                                                    |

@@ -20,14 +20,14 @@ Scope, by file:
 | `packages/project/src/validate-shape.ts`                  | The three fields validated                                                                                                     |
 | `packages/project/src/duplicate.ts`                       | Copies remap the three ids                                                                                                     |
 | `packages/project/src/participant-content.ts`             | A Participant's growth may move the chart's steps, connectors and lanes                                                        |
-| `apps/editor/app/project/[id]/useFlowchartGrowth.ts`        | Tab / Enter / toolbar / ring growth, Escape removal, one commit each                                                           |
-| `apps/editor/app/project/[id]/useGrowthLanding.ts`          | Shared with mind growth: reveal, typed-ahead landing, Escape on an empty grown node                                            |
-| `apps/editor/hooks/canvas/useFlowchartSetters.ts`            | Step type, direction, Add Lane, lane move, Tidy Flowchart from the menu and toolbar                                            |
-| `apps/editor/lib/flowchart-dress.ts`                         | `dressFlowchartStep`, `dressFlowchartConnector`: the look a new step and connector take                                        |
+| useFlowchartGrowth.ts        | Tab / Enter / toolbar / ring growth, Escape removal, one commit each                                                           |
+| useGrowthLanding.ts          | Shared with mind growth: reveal, typed-ahead landing, Escape on an empty grown node                                            |
+| useFlowchartSetters.ts            | Step type, direction, Add Lane, lane move, Tidy Flowchart from the menu and toolbar                                            |
+| flowchart-dress.ts                         | `dressFlowchartStep`, `dressFlowchartConnector`: the look a new step and connector take                                        |
 | `apps/editor/components/palette/palette-tile-defs.tsx`       | `tools:flowchart` tile (component action `flowchart`)                                                                          |
 | `apps/editor/components/canvas/SelectionPopover.tsx`         | Add Step, Add Branch, Step Type, Lane                                                                                          |
 | `apps/editor/components/canvas/quick-connect-options.tsx`    | The ring's Add Step and Add Branch                                                                                             |
-| `apps/editor/components/flowchart/FlowchartMenuSections.tsx` | The Flowchart flyout row: Chart, Step Type and Direction categories                                                            |
+| FlowchartMenuSections.tsx | The Flowchart flyout row: Chart, Step Type and Direction categories                                                            |
 
 ## Domain and naming
 

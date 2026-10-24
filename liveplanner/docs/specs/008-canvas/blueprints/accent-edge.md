@@ -11,7 +11,7 @@ Derived from [Accent edge](../accent-edge.md). Defaults in [DEFAULTS.md](DEFAULT
 | `apps/editor/components/canvas/AccentEdgeOverlay.tsx`     | The canvas bar, clipped by the wrapper's own radius                 |
 | `apps/editor/components/canvas/BoxedElementView.tsx`      | Mounts the overlay (one line)                                       |
 | `apps/editor/components/palette/AccentEdgeRow.tsx`        | The Border category's Accent Edge row + colour well                 |
-| `apps/editor/lib/format-painter.ts`, `format-config.ts`   | Copied with Border                                                  |
+| format-painter.ts, `format-config.ts`   | Copied with Border                                                  |
 | `apps/editor/lib/element-telemetry.ts` / telemetry schema | `Element·Changed·AccentEdge`                                        |
 
 ## Domain and naming
