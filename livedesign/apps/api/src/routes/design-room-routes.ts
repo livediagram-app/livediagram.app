@@ -73,6 +73,10 @@ export async function handleDesignRoomRoutes(ctx: RouteContext): Promise<Respons
     // When the grant lapses (epoch seconds): the room asks for a fresh one before then, and drops the socket
     // after (design-room.ts).
     forwarded.headers.set('X-Verified-Grant-Exp', String(claims.exp));
+    // The design's owner and team as the index has them now: the room keeps its copy in line
+    // (@liveworkspace/index-app item-head.ts).
+    forwarded.headers.set('X-Verified-Owner', claims.owner ?? '');
+    forwarded.headers.set('X-Verified-Team', claims.team ?? '');
     const stub = env.DESIGN_ROOM.get(env.DESIGN_ROOM.idFromName(id));
     return stub.fetch(forwarded);
   }

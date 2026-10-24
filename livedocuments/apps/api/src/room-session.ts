@@ -76,6 +76,9 @@ type VerifiedSession = {
   workbenchPairing: string | null;
   documentId: string | null;
   grantExp?: number | null;
+  // The document's owner and team as the grant names them (null owner: a grant that names none). Not pinned to the
+  // session: the room takes them as its own copy (document-room.ts takeHead).
+  head?: { owner: string | null; team: string | null };
 };
 
 // The grant's `exp` (epoch seconds) as epoch ms, or null.
@@ -101,6 +104,7 @@ export function verifiedSessionOf(request: Request): VerifiedSession {
     workbenchPairing: header('X-Verified-Workbench-Pairing'),
     documentId: header('X-Verified-Document'),
     grantExp: grantExpOf(request.headers.get('X-Verified-Grant-Exp')),
+    head: { owner: header('X-Verified-Owner'), team: header('X-Verified-Team') },
   };
 }
 

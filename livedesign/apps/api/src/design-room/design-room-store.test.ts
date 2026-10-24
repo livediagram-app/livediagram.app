@@ -320,6 +320,46 @@ describe("a design's content lives in its own Durable Object", () => {
   });
 });
 
+describe("the design's owner and team, from the index's grant", () => {
+  const grantNaming = (owner: string | undefined, team: string | null) =>
+    `G.${btoa(JSON.stringify({ item: 'A', sub: 'user_merged', level: 'edit', tab: null, team, owner, exp: 9e9 }))}`;
+  const head = (design: Design) => design.db.prepare('SELECT owner_id, team_id FROM design').get();
+  const editsQueued = (design: Design) =>
+    design.db.prepare("SELECT 1 FROM outbox WHERE kind = 'edit'").all().length;
+
+  it("takes a guest's merge and a team move from the next request's grant, as no edit", async () => {
+    const w = world();
+    await createDesign(w, 'A');
+    const design = w.designs.get('A')!;
+    design.db.exec('DELETE FROM outbox');
+
+    const merged = await w.send('GET', '/api/designs/A/tabs/t1', undefined, {
+      'X-Index-Grant': grantNaming('user_merged', null),
+    });
+    expect(merged.status).toBe(200);
+    expect(head(design)).toEqual({ owner_id: 'user_merged', team_id: null });
+
+    await w.send('GET', '/api/designs/A/tabs/t1', undefined, {
+      'X-Index-Grant': grantNaming('user_merged', 'team_1'),
+    });
+    expect(head(design)).toEqual({ owner_id: 'user_merged', team_id: 'team_1' });
+    expect(editsQueued(design)).toBe(0);
+  });
+
+  it('leaves the copy alone for a grant that names no owner, or says the same', async () => {
+    const w = world();
+    await createDesign(w, 'A');
+    const design = w.designs.get('A')!;
+    await w.send('GET', '/api/designs/A/tabs/t1', undefined, {
+      'X-Index-Grant': grantNaming(undefined, 'team_1'),
+    });
+    await w.send('GET', '/api/designs/A/tabs/t1', undefined, {
+      'X-Index-Grant': grantNaming('guest_owner', null),
+    });
+    expect(head(design)).toEqual({ owner_id: 'guest_owner', team_id: null });
+  });
+});
+
 describe('/api/internal/items (docs/specs/015-api/api.md "Internal")', () => {
   const auth = { Authorization: 'Bearer index-key' };
 
@@ -347,7 +387,9 @@ describe('/api/internal/items (docs/specs/015-api/api.md "Internal")', () => {
 
     const one = await w.send('POST', '/api/internal/items/A/copy-to/D', { tabId: 't2' }, auth);
     expect(one.status).toBe(201);
-    expect(w.designs.get('D')!.db.prepare('SELECT name FROM tabs').all()).toEqual([{ name: 'Two' }]);
+    expect(w.designs.get('D')!.db.prepare('SELECT name FROM tabs').all()).toEqual([
+      { name: 'Two' },
+    ]);
 
     const missing = await w.send(
       'POST',

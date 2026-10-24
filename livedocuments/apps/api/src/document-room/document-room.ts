@@ -1,9 +1,11 @@
 import {
+  createItemHeadSync,
   FLUSH_IDLE_MS,
   FLUSH_RETRY_MS,
   ItemDb,
   nextFlushAt,
   openRoomTicket,
+  type ItemHeadSync,
 } from '@liveworkspace/index-app';
 import { indexService } from '../index-service';
 import { DurableObject } from 'cloudflare:workers';
@@ -236,6 +238,10 @@ export class DocumentRoom extends DurableObject<Env> {
   private readonly internal: InternalRoom;
   // A Participant's text (docs/specs/013-workspace/share-roles.md), see room-participant.ts.
   private participantWrites: RoomParticipantWrites;
+  // The document's owner and team, kept from every grant the room is handed (a socket's ticket, a renewal, an API
+  // request's grant), so a guest's merge into an account or a move to another team reaches the document's emails,
+  // pushes and alarm (@liveworkspace/index-app item-head.ts).
+  private readonly head: ItemHeadSync;
 
   constructor(state: DurableObjectState, env?: Env) {
     super(state, env as Env);
@@ -253,6 +259,29 @@ export class DocumentRoom extends DurableObject<Env> {
         }
       : undefined;
     this.ledger = new RoomLedgerStore(state.storage);
+    this.head = createItemHeadSync({
+      read: async () => {
+        if (this.documentId === null) return null;
+        this.ensureSchema();
+        const row = state.storage.sql
+          .exec<{ owner_id: string | null; team_id: string | null }>(
+            'SELECT owner_id, team_id FROM document WHERE id = ? AND created_at > 0',
+            this.documentId,
+          )
+          .toArray()[0];
+        return row ? { ownerId: row.owner_id ?? '', teamId: row.team_id ?? null } : null;
+      },
+      write: async (h) => {
+        state.storage.sql.exec(
+          'UPDATE document SET owner_id = ?, team_id = ? WHERE id = ?',
+          h.ownerId,
+          h.teamId,
+          this.documentId,
+        );
+        console.info('[room] owner or team taken from the grant', { team: h.teamId !== null });
+        this.noteWrite();
+      },
+    });
     this.participantWrites = new RoomParticipantWrites({
       env: this.roomEnv,
       enqueue: (step) => this.queueTabWrite(step),
@@ -431,6 +460,8 @@ export class DocumentRoom extends DurableObject<Env> {
   async route(documentId: string, request: Request, identity: RouteIdentity): Promise<Response> {
     this.bindDocument(documentId);
     const env = this.requireEnv();
+    // Before the write counter is read: taking the owner and team is no edit.
+    if (identity.grant?.item === documentId) await this.takeHead(identity.grant);
     const writesBefore = this.writes;
     const response = await answerDocumentRequest(env, request, identity, (p) =>
       this.state.waitUntil(p),
@@ -532,8 +563,21 @@ export class DocumentRoom extends DurableObject<Env> {
         .length > 0;
     if (!started) return 0;
     const changed = await anonymiseDocument(this.requireEnv(), documentId, personId);
+    // The owner may have been the one anonymised: the next grant reads the stored copy again.
+    this.head.forget();
     if (changed > 0) console.info('[room] anonymised a closed account', { rows: changed });
     return changed;
+  }
+
+  // Take the owner and team a grant names as the document's own copy. A failure is logged, never the caller's: the
+  // next grant tries again.
+  private async takeHead(grant: { owner?: string | null; team: string | null }): Promise<void> {
+    if (!this.roomEnv) return;
+    try {
+      await this.head.sync(grant);
+    } catch (err) {
+      console.warn('[room] owner and team not taken from the grant', { error: String(err) });
+    }
   }
 
   private requireEnv(): DocumentEnv {
@@ -576,7 +620,10 @@ export class DocumentRoom extends DurableObject<Env> {
       v.documentId,
       v.grantExp ?? null,
     );
-    if (v.documentId) this.bindDocument(v.documentId);
+    if (v.documentId) {
+      this.bindDocument(v.documentId);
+      if (v.head) await this.takeHead(v.head);
+    }
     this.armAlarm();
     return new Response(null, { status: 101, webSocket: client });
   }
@@ -641,6 +688,7 @@ export class DocumentRoom extends DurableObject<Env> {
       return;
     }
     const { claims, workbench } = opened;
+    await this.takeHead(claims);
     const level = workbench ? capWorkbenchRole(claims.level, workbench.cap) : claims.level;
     if (level !== session.verifiedRole || (claims.tab ?? null) !== (session.tabScope ?? null)) {
       console.info('[grant] renewal changed access', { from: session.verifiedRole, to: level });

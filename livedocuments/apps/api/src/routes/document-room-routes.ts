@@ -63,6 +63,10 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // When the grant lapses (epoch seconds): the room asks for a fresh one before then, and drops the socket
     // after (document-room.ts).
     forwarded.headers.set('X-Verified-Grant-Exp', String(claims.exp));
+    // The document's owner and team as the index has them now: the room keeps its copy in line
+    // (@liveworkspace/index-app item-head.ts).
+    forwarded.headers.set('X-Verified-Owner', claims.owner ?? '');
+    forwarded.headers.set('X-Verified-Team', claims.team ?? '');
     const stub = env.DOCUMENT_ROOM.get(env.DOCUMENT_ROOM.idFromName(id));
     return stub.fetch(forwarded);
   }
