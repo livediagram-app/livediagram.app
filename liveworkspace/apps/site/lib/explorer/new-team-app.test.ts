@@ -5,6 +5,7 @@
 // teamsPath), then the app is asked for a fresh token that names the team.
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SIGNED_IN_HINT_COOKIE } from '@livedocuments/api-schema';
+import { APP_NAMES } from '@liveworkspace/sites';
 import { canMakeTeam, makeTeam } from './new-team';
 import { resetAppSession } from './app-session';
 import { resetWorkspaceIdentity } from './token';
@@ -68,10 +69,8 @@ describe('New Team on an app address', () => {
     expect(await makeTeam('')).toBeNull();
   });
 
-  it('is offered where the app makes teams, and always on liveworkspace.app', () => {
-    expect(canMakeTeam('livedocuments')).toBe(true);
-    expect(canMakeTeam('livedesign')).toBe(true);
-    expect(canMakeTeam('liveplanner')).toBe(false);
+  it('is offered on every app’s address, each making teams, and always on liveworkspace.app', () => {
+    for (const app of APP_NAMES) expect(canMakeTeam(app)).toBe(true);
     expect(canMakeTeam(null)).toBe(true);
   });
 });

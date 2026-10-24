@@ -4,4 +4,8 @@
 
 Team members are no longer listed anywhere in liveplanner, so comment mentions, the assignee list on actions and team email notifications have no member source for now and suggest nobody from a team. `GET /api/teams` lists the caller's teams from the token for API clients.
 
+## Making a team
+
+**New Team** in the Explorer on liveplanner's address (its Move dialog) makes a team without leaving liveplanner, and files the plan being moved into it. `POST /api/teams` `{ name, organisation? }` (`apps/api/src/routes/team-create.ts`, over `makeTeamFor` in `@liveworkspace/index-app`) asks liveworkspace to make it for the person signed in, vouching for them with the access token they sent (`createTeamFor` in `@liveworkspace/auth-client`); they become its admin. A signed-in session only: an API token or a workbench can't make one. It is usable on the very next request: a team the caller's token does not name yet is asked of accounts. It is the same team on liveworkspace.app and in every app, and managed there.
+
 The plan is [one-explorer.md](../../../../liveworkspace/docs/one-explorer.md); the calls and types are in [one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Sharing and access". The Explorer that shows it is the shared package, [`@liveworkspace/explorer`](../../../../packages/explorer/README.md).

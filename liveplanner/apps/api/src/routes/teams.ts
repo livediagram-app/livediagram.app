@@ -1,6 +1,7 @@
 // The caller's teams (from its token: liveworkspace manages them), a team's library, for API clients
 // (index-adapters.ts), and a team's people, for the editor's assignee picker and @-mention list
-// (assigned-actions.md, comment-mentions.md).
+// (assigned-actions.md, comment-mentions.md). Making a team is the one write: liveworkspace makes it for the
+// person signed in (team-create.ts, @liveworkspace/index-app makeTeamFor).
 
 import type { TeamListItem, TeamMember } from '@liveplanner/api-schema';
 import { accountsTeamReader, createTeamAccess } from '@liveworkspace/index-app';
@@ -8,16 +9,18 @@ import { accountCredentials } from '../auth/accounts';
 import { teamPeople } from '../person/notify';
 import { json, notFound } from '../responses';
 import { requireOwner, type RouteContext } from './context';
+import { createTeam } from './team-create';
 import { clientFor, folderOf, listFolders, listItems, refusal, summaryOf } from './index-adapters';
 
 // Team access as every app on the index has it (@liveworkspace/index-app teams.ts): the token's claim, and accounts
 // for a team made or joined since it was minted.
 const teamAccess = createTeamAccess();
 
-// GET /api/teams, /api/teams/:id/library and /api/teams/:id/members. Teams are the caller's token's
-// (liveworkspace manages them).
+// GET /api/teams, /api/teams/:id/library and /api/teams/:id/members, and POST /api/teams. Teams are the caller's
+// token's (liveworkspace manages them).
 export async function handleTeams(ctx: RouteContext): Promise<Response> {
   const { request, segments } = ctx;
+  if (segments.length === 2 && request.method === 'POST') return createTeam(ctx);
   if (request.method !== 'GET') return notFound();
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;

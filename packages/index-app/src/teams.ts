@@ -12,7 +12,9 @@
 // is never narrowed here.
 
 import {
+  createTeamFor,
   readAccountTeams,
+  TeamError,
   type ClientCredentials,
   type TeamClaim,
 } from '@liveworkspace/auth-client';
@@ -97,4 +99,72 @@ export function createTeamAccess() {
     },
     clearForTests: () => cache.clear(),
   };
+}
+
+// ---------- New Team: POST /api/teams `{ name, organisation? }` in every app's API --------------------------------
+// Makes a team for the person signed in, on liveworkspace, with them as its admin (liveworkspace/docs/accounts.md
+// "Teams", createTeamFor): the same team on liveworkspace.app and in every app, managed there. It is usable at
+// once, since a team the caller's token does not name yet is asked of accounts (createTeamAccess above, and the
+// index's own check). The app checks the interactive session (an API token or a workbench can't make one) and
+// hands over the access token the person sent, which vouches for them; this answers the rest.
+
+// A team's name and organisation, as liveworkspace caps them: longer is cut, as it cuts them.
+export const TEAM_NAME_MAX = 80;
+export const TEAM_ORGANISATION_MAX = 80;
+
+export type MadeTeam = {
+  id: string;
+  name: string;
+  organisation: string | null;
+  createdAt: number;
+  updatedAt: number;
+};
+
+export type MakeTeamAnswer =
+  { status: 201; body: { team: MadeTeam } } | { status: number; body: { error: string } };
+
+/** Makes the team `body` names for the person whose `accessToken` it is, and answers the route's status and body:
+ *  201 `{ team }`, 400 for a missing name, liveworkspace's own refusal (400, 401, 409) passed on, and 503 when
+ *  sign-in is not configured or liveworkspace is out of reach. */
+export async function makeTeamFor(
+  credentials: ClientCredentials | null,
+  accessToken: string,
+  body: unknown,
+  now = Date.now(),
+  fetcher?: typeof fetch,
+): Promise<MakeTeamAnswer> {
+  if (!credentials) return { status: 503, body: { error: 'teams_not_configured' } };
+  const { name: rawName, organisation: rawOrganisation } = (body ?? {}) as {
+    name?: unknown;
+    organisation?: unknown;
+  };
+  const name = typeof rawName === 'string' ? rawName.trim().slice(0, TEAM_NAME_MAX) : '';
+  if (!name) return { status: 400, body: { error: 'name_required' } };
+  const organisation =
+    typeof rawOrganisation === 'string'
+      ? rawOrganisation.trim().slice(0, TEAM_ORGANISATION_MAX) || null
+      : null;
+  try {
+    const made = await createTeamFor(credentials, { accessToken, name, organisation }, fetcher);
+    console.info('[teams] created');
+    return {
+      status: 201,
+      body: {
+        team: {
+          id: made.id,
+          name: made.name,
+          organisation: made.organisation,
+          createdAt: now,
+          updatedAt: now,
+        },
+      },
+    };
+  } catch (err) {
+    if (err instanceof TeamError) {
+      console.warn('[teams] create_refused', { status: err.status, code: err.code });
+      return { status: err.status, body: { error: err.code } };
+    }
+    console.error('[teams] create_failed', String(err));
+    return { status: 503, body: { error: 'teams_unavailable' } };
+  }
 }

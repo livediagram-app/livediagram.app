@@ -1,22 +1,16 @@
 // POST /api/teams `{ name, organisation? }` (docs/specs/013-workspace/teams.md "Making a team"): makes a
-// team for the person signed in, on liveworkspace, with them as its admin (liveworkspace/docs/
-// accounts.md "Teams", createTeamFor). It is the same team on liveworkspace.app and in every app; it is
-// managed there. It is usable at once: a team the caller's token does not name yet is asked of accounts
-// (@liveworkspace/index-app createTeamAccess, and the index's own check), so a document can be filed into it
-// straight away.
+// team for the person signed in, on liveworkspace, with them as its admin (@liveworkspace/index-app makeTeamFor).
+// It is the same team on liveworkspace.app and in every app, managed there, and usable at once, so a canvas
+// can be filed into it straight away.
 //
 // The interactive session only (an API token or a workbench can't make one), and the app vouches for
 // the person with the access token they sent.
 
-import { bearerTokenOf, type Team } from '@livediagram/api-schema';
-import { createTeamFor, TeamError } from '@liveworkspace/auth-client';
+import { bearerTokenOf } from '@livediagram/api-schema';
+import { makeTeamFor } from '@liveworkspace/index-app';
 import { accountCredentials } from '../auth/accounts';
-import { badRequest, json, signInRequired } from '../responses';
+import { json, signInRequired } from '../responses';
 import { readBody, type RouteContext } from './context';
-
-// A team's name and organisation, as liveworkspace caps them: longer is cut, as it cuts them.
-const TEAM_NAME_MAX = 80;
-const TEAM_ORGANISATION_MAX = 80;
 
 export async function createTeam(ctx: RouteContext): Promise<Response> {
   const { request, env, accountUserId } = ctx;
@@ -24,34 +18,8 @@ export async function createTeam(ctx: RouteContext): Promise<Response> {
   if (!accountUserId || !accessToken) return signInRequired();
   const credentials = accountCredentials(env);
   if (!credentials) return json({ error: 'teams_not_configured' }, { status: 503 });
-  const read = await readBody(ctx);
-  if (read instanceof Response) return read;
-  const body = read as { name?: unknown; organisation?: unknown };
-  const name = typeof body.name === 'string' ? body.name.trim().slice(0, TEAM_NAME_MAX) : '';
-  if (!name) return badRequest('name_required');
-  const organisation =
-    typeof body.organisation === 'string'
-      ? body.organisation.trim().slice(0, TEAM_ORGANISATION_MAX) || null
-      : null;
-  let made;
-  try {
-    made = await createTeamFor(credentials, { accessToken, name, organisation });
-  } catch (err) {
-    if (err instanceof TeamError) {
-      console.warn('[teams] create_refused', { status: err.status, code: err.code });
-      return json({ error: err.code }, { status: err.status === 401 ? 401 : err.status });
-    }
-    console.error('[teams] create_failed', String(err));
-    return json({ error: 'teams_unavailable' }, { status: 503 });
-  }
-  const now = Date.now();
-  console.info('[teams] created');
-  const team: Team = {
-    id: made.id,
-    name: made.name,
-    organisation: made.organisation,
-    createdAt: now,
-    updatedAt: now,
-  };
-  return json({ team }, { status: 201 });
+  const body = await readBody(ctx);
+  if (body instanceof Response) return body;
+  const made = await makeTeamFor(credentials, accessToken, body);
+  return json(made.body, { status: made.status });
 }

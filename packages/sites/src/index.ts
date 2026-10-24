@@ -212,7 +212,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     newPath: '/new',
     offlinePath: '/offline',
     offlineConversions: false,
-    teamsPath: null,
+    teamsPath: '/api/teams',
     onIndex: true,
     sharePath: '/project/shared?s=',
     previewPath: '/api/projects/:id/thumbnail',

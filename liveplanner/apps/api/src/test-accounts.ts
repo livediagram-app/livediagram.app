@@ -1,6 +1,6 @@
 // Tests' view of the liveworkspace accounts Worker's internal routes (liveworkspace/docs/accounts.md
-// "The API"): settings, profiles, sightings, milestones, emails, teams' people and activity, kept in
-// memory with the same rules (a write is a patch per key, null deletes; a milestone claims once, and only
+// "The API"): settings, profiles, sightings, milestones, emails, teams' people, the teams it makes and activity,
+// kept in memory with the same rules (a write is a patch per key, null deletes; a milestone claims once, and only
 // after a sighting). Stubs the global fetch; batches posted to the telemetry service are kept too, and the
 // index's count of a person's plans (`planCounts`, at INDEX_ON's origin) is answered as well. Pair with
 // ACCOUNTS_ON (and INDEX_ON) in the env, and restore with vi.unstubAllGlobals.
@@ -33,6 +33,8 @@ export type FakeAccounts = {
   activity: { userId: string; at?: number }[];
   // Each team's joined and invited people, by team id.
   teams: Map<string, TeamPerson[]>;
+  // Teams made through POST internal/teams, the admin read off the stand-in's `token-for-<id>` tokens.
+  madeTeams: { id: string; name: string; organisation: string | null; admin: string }[];
   // How many plans each person has made, as the index counts them.
   planCounts: Map<string, number>;
   // Every internal call, as `<path> <json body>`.
@@ -62,6 +64,7 @@ export function stubAccounts(): FakeAccounts {
     emails: new Map(),
     activity: [],
     teams: new Map(),
+    madeTeams: [],
     planCounts: new Map(),
     calls: [],
     telemetry: [],
@@ -122,6 +125,37 @@ export function stubAccounts(): FakeAccounts {
           if (stored) settings[owner] = { all: pick(stored.all), app: pick(stored.app) };
         }
         return answer({ settings });
+      }
+      case '/teams': {
+        const admin = String(body.accessToken).replace(/^token-for-/, '');
+        const name = typeof body.name === 'string' ? body.name.trim() : '';
+        if (!name) return answer({ error: 'name_required' }, 400);
+        const team = {
+          id: `team_${fake.madeTeams.length + 1}`,
+          name,
+          organisation: (body.organisation as string | null) ?? null,
+          admin,
+        };
+        fake.madeTeams.push(team);
+        return answer(
+          {
+            id: team.id,
+            name: team.name,
+            organisation: team.organisation,
+            role: 'admin',
+            memberCount: 1,
+            invitedCount: 0,
+            members: [
+              {
+                id: `member_${team.id}`,
+                name: null,
+                email: fake.emails.get(admin) ?? `${admin}@example.test`,
+                role: 'admin',
+              },
+            ],
+          },
+          201,
+        );
       }
       case '/teams/members': {
         const members = fake.teams.get(body.teamId as string);
