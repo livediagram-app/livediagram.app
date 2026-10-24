@@ -13,8 +13,8 @@ Add the dev dependencies to a workspace:
 // package.json
 "devDependencies": {
   "@liveworkspace/vitest-config": "workspace:*",
-  "@vitest/coverage-v8": "^2.1.8",
-  "vitest": "^2.1.8"
+  "@vitest/coverage-v8": "^5.0.3",
+  "vitest": "^5.0.3"
 }
 ```
 
@@ -47,6 +47,8 @@ Add the scripts:
 
 - `baseConfig` — the shared Vitest config object.
 - `defineProject(overrides?)` — `baseConfig` merged with per-workspace overrides.
+- `@liveworkspace/vitest-config/react-cleanup`: a setup file that unmounts every tree React Testing
+  Library rendered after each test.
 - `@liveworkspace/vitest-config/cpu-time`: CPU-time measures and budgets for speed tests.
 - `@liveworkspace/vitest-config/inline-script`: `runInlineScript(source, globals)`, which runs an
   inline `<script>`'s source as a browser would, against stub globals.

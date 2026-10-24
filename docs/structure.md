@@ -131,8 +131,8 @@ Each step is its own PR, and both products build and pass their tests after ever
 1. **Move the identical packages** (`api-client`, `telemetry-client`, `render-png`, `source-ast`,
    the style guards and the config packages) to `packages/` as `@liveworkspace/*`, then repoint
    imports in every product. This is mechanical and checked by typecheck. **Done**:
-   - `prettier-config`, `vitest-config`, `oxlint-config`, `next-config` and `api-client` are one
-     copy each. The platform packages and liveworkspace's site no longer borrow livediagram's
+   - `prettier-config`, `vitest-config`, `oxlint-config`, `next-config`, `api-client`, `render-png`,
+     `source-ast` and `style-guards` are one copy each. The platform packages and liveworkspace's site no longer borrow livediagram's
      configs. The lint plugin is `liveworkspace` (`liveworkspace/no-native-title`,
      `liveworkspace/no-raw-icon-svg`), the coverage variable `LIVEWORKSPACE_COVERAGE`, and every
      Next app spreads `liveworkspaceNextConfig()`.

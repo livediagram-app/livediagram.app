@@ -1,6 +1,6 @@
-// The network a request comes from (liveworkspace/docs/community.md "Likes"): the caller's address range rather
-// than the exact address, so one person cannot pass for many by rotating addresses inside what they hold (an IPv6
-// user typically holds a whole /56 or /64, and an IPv4 one can often hop within a /24). IPv4 keeps its /24, IPv6 its
+// The network a request comes from (liveworkspace/docs/community.md "Public routes"): the caller's address range
+// rather than the exact address, so one person cannot pass for many by rotating addresses inside what they hold (an
+// IPv6 user typically holds a whole /56 or /64, and an IPv4 one can often hop within a /24). IPv4 keeps its /24, IPv6 its
 // /56. Anything unparseable is its own network. The Community service counts likes, copies and reports per network;
 // the apps key their per-network rate limits on it.
 
@@ -16,4 +16,3 @@ export function communityNetwork(ip: string): string {
   // /56: the first three hextets and the high byte of the fourth.
   return `${hextets.slice(0, 3).join(':')}:${hextets[3]!.slice(0, 2)}00::/56`;
 }
-

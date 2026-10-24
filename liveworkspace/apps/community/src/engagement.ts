@@ -1,4 +1,4 @@
-// What people do to posts (liveworkspace/docs/community.md "Likes", "Reports"): likes keyed by the
+// What people do to posts (liveworkspace/docs/community.md "Public routes"): likes keyed by the
 // community key, distinct copiers, and reports with automatic hiding, the only moderation there is.
 // Counts are recomputed in the same batch as the row that changes them, so they cannot drift.
 

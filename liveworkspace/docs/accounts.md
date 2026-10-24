@@ -804,7 +804,8 @@ provider's own introspection and remembered per isolate for five minutes):
 | `POST /api/account/internal/tokens`            | `{ accessToken, name, readOnly }` → a token, shown once                                  |
 | `POST /api/account/internal/teams`             | `{ accessToken, name, organisation? }` → 201 the team made, the person its admin         |
 | `POST /api/account/internal/invitations`       | `{ userId }` → `{ invitations }`: those waiting for the account's verified address       |
-| `GET /api/account/internal/teams/changes`      | `?cursor=` → the next page of the change feed                                            |
+| `POST /api/account/internal/teams/of`          | `{ userId }` → `{ teams }`: the claim a token minted now would carry                     |
+| `GET /api/account/internal/teams/changes`      | `?cursor=` → the next page of the change feed (no app reads it now)                      |
 | `POST /api/account/internal/tokens/revoke`     | `{ token }` → revokes it (a CLI signing out), or 404                                     |
 | `POST /api/account/internal/tokens/live`       | `{ ids }` (up to 100) → which still work, so an app can end what hangs off a revoked one |
 | `POST /api/account/internal/settings/read`     | `{ owner, app }` → `{ all, app, updatedAt }`                                             |

@@ -3,16 +3,20 @@
 liveworkspace.app is one static website. Every page is in it: the front door that says what
 liveworkspace is and sends people on to the app that fits their work, the public telemetry
 dashboard, and the sign-in, registration and consent pages every app sends people to. The apps
-(livediagram.app, liveplanner.app) each keep their own marketing site for the detail.
+(livediagram.app, liveplanner.app, livedocuments.app, livedesign.app) each keep their own marketing site for the
+detail.
 
 ```
 apps/site          the website (a Next static export, Cloudflare static assets)
-apps/accounts      the accounts API, /api/auth/* (README.md)
+apps/accounts      the accounts API, /api/auth/* and /api/account/* (accounts.md)
+apps/index         the index, /api/index/* (the Explorer's lists)
+apps/media         media, /api/media/* and /api/previews/* (previews.md)
 apps/telemetry     the telemetry API, /api/telemetry/* (telemetry.md)
+apps/community     the Community API, /api/community/* (community.md)
 ```
 
-The two APIs are Workers on more specific routes of the same origin, so the pages call them as
-`/api/auth/…` and `/api/telemetry/…` with no cross-site requests.
+The APIs are Workers on more specific routes of the same origin, so the pages call them as
+`/api/auth/…`, `/api/index/…` and so on, with no cross-site requests.
 
 ## Who it's for
 
@@ -128,7 +132,7 @@ ambient motion (the current along the lines, drifting cursors, the cards settlin
 
 One privacy policy and one set of terms for liveworkspace and every app in it, linked from the
 footer. They were built from the apps' own policies, which said the same things app by app; a
-feature only one app has (livediagram's Google Drive mirror, its Offline Mode) says which. Both share `components/LegalPage.tsx`, and their date and contact
+feature only one app has (livediagram's Google Drive mirror) says which; Offline Mode is every app's. Both share `components/LegalPage.tsx`, and their date and contact
 form are in `lib/legal.ts`. Change them when what an app stores or who it uses changes.
 
 ### Comparison (`/compare`)
@@ -438,15 +442,16 @@ they never meet an app's own `/_next`, and one build serves both addresses.
   Settings panel also call their APIs. All of it is on this origin.
 - Light and dark, following the device (the shared appearance boot script).
 - Works at phone width with a 16px gutter. Tap targets are 44px on touch screens.
-- The front door, Comparison and the dashboard are indexable: title, description, canonical,
+- The front door, Comparison, the dashboard and the privacy policy and terms are indexable: title, description, canonical,
   Open Graph, `robots.txt` and `sitemap.xml`.
 
 ## Hosting
 
 One Worker, `liveworkspace-site`, static assets only, on the route `liveworkspace.app/*` (and
-`www.`). The APIs' routes are more specific, so Cloudflare sends `/api/auth/*` and the two
-`.well-known` discovery documents to the accounts Worker, `/api/telemetry/*` to the telemetry
-Worker, and everything else here. Security headers come from `public/_headers`.
+`www.`). The APIs' routes are more specific, so Cloudflare sends `/api/auth/*`, `/api/account/*` and
+the two `.well-known` discovery documents to the accounts Worker, `/api/index*` to the index, `/api/media*` and
+`/api/previews*` to media, `/api/telemetry*` to telemetry, `/api/community*` to the Community, and everything else
+here. Security headers come from `public/_headers`.
 
 Every page enforces Trusted Types with the policies every app shares (`@liveworkspace/trusted-types`;
 livediagram/docs/specs/016-platform/trusted-types.md). Each app's router passes these same headers through for the
@@ -461,11 +466,11 @@ the real header, failing on any Trusted Types refusal.
 corepack pnpm dev:workspace           # from the repo root: http://localhost:3000
 ```
 
-That runs the site's dev server on 3000 and both APIs behind it (accounts on 8787, telemetry on
-8790; first-time setup for each is in [the README](../README.md#local-development) and
-[telemetry.md](telemetry.md#running-it-locally)). The dev server forwards `/api/auth/*`,
-`/.well-known/*`, `/api/index/*` (the index, 8793) and `/api/telemetry/*` to them (`next.config.ts`), so the whole site works from
-one origin, as it does in production. Run `corepack pnpm dev:site` for the pages alone.
+That runs the site's dev server on 3000 and the five APIs behind it (accounts on 8787, telemetry on 8790, the
+Community on 8791, media on 8792, the index on 8793; first-time setup for each is in
+[the README](../README.md#local-development) and the API's own doc). The dev server forwards `/api/auth/*`,
+`/api/account/*`, `/.well-known/*`, `/api/index/*`, `/api/previews/*`, `/api/telemetry/*` and `/api/community/*`
+to them (`next.config.ts`), so the whole site works from one origin, as it does in production. Run `corepack pnpm dev:site` for the pages alone.
 
 ## Not done yet
 

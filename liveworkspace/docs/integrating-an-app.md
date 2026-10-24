@@ -160,9 +160,9 @@ session-token claim that Teams invites needed.
 
 ## Installing the package
 
-It isn't published yet. Until it is, copy `packages/auth-client/src` into the app's own
-`packages/`. It's two files that depend only on `jose`, which livediagram already uses. When a
-second app needs it, publish it to GitHub Packages, or move this repo into the apps' workspace.
+It is a workspace package, `@liveworkspace/auth-client` in `packages/auth-client`: add it to the app's
+`package.json` as `"@liveworkspace/auth-client": "workspace:*"` (`corepack pnpm --filter <package> add
+@liveworkspace/auth-client@workspace:*`).
 
 ## liveplanner
 

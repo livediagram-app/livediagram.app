@@ -1,4 +1,4 @@
-// Where a like, copy or report comes from (liveworkspace/docs/community.md "Likes"): the caller's network
+// Where a like, copy or report comes from (liveworkspace/docs/community.md "Public routes"): the caller's network
 // (communityNetwork, shared with the apps' rate limits), only ever stored as a one-way hash salted with the post
 // id, so it cannot be compared across posts.
 

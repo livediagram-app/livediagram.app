@@ -31,8 +31,8 @@ The same three fields as before, plus the app it came from:
 
 There is no identity, IP address, owner id or document id. Each app keeps its own closed vocabulary
 in its own api-schema (`telemetry-schema.ts`), because its editors and its vocabulary change
-together. The service imports each sending app's vocabulary (livediagram's, liveplanner's and
-livedocuments'), and only stores an event that its app could have sent.
+together. The service imports each sending app's vocabulary (livediagram's, liveplanner's,
+livedocuments' and livedesign's), and only stores an event that its app could have sent.
 
 ## Sending events
 
@@ -200,9 +200,8 @@ event has an explanation (`event-explanation.test.ts`). An event of a removed fe
 
 ## First deploy
 
-1. Create the databases and put their ids in `apps/telemetry/wrangler.toml` (they are
-   placeholders): `wrangler d1 create liveworkspace-telemetry` (and
-   `liveworkspace-telemetry-staging`).
+1. The databases exist and their ids are in `apps/telemetry/wrangler.toml`; for a new environment,
+   create one with `wrangler d1 create liveworkspace-telemetry` (and `liveworkspace-telemetry-staging`).
 2. Set one key per app, and give each app's api and mcp Workers the same value as `TELEMETRY_KEY`:
    `openssl rand -hex 32`, then `wrangler secret put TELEMETRY_KEY_LIVEDIAGRAM`,
    `TELEMETRY_KEY_LIVEPLANNER`, `TELEMETRY_KEY_LIVEDOCUMENTS` and `TELEMETRY_KEY_LIVEDESIGN`.

@@ -59,7 +59,8 @@ access or guest token, `X-Share-Code` and `X-Share-Password` for an item reached
 the index `GET /items/:id` with the same headers, so the preview is never more visible than the item: the same rule,
 the same answer, in one indexed read. `v` only keys the browser's cache.
 
-- `200 image/svg+xml`, `Cache-Control: private, max-age=86400`: the URL changes when the item does.
+- `200 image/svg+xml`, `Cache-Control: private, max-age=86400`: the URL changes when the item does. Reached
+  through a public link (a Community post's), `private, max-age=30`, so the picture can't outlive the post.
 - `404` with the same cache header: nothing to draw (an empty item, a tab with nothing on it). Version-keyed too.
 - `404` with `Cache-Control: no-store`: no such item, or no access. Says nothing more.
 - A reader whose link is confined to one tab gets that tab's picture, never the first tab's. A reader through a
@@ -84,7 +85,9 @@ crawler asked), `public, max-age=300`.
 ### `GET /api/previews/share/:code/card`
 
 `{ name }`: the item's title, for the app's share page, which writes it into the page's head
-(`og:title`, and `og:image` pointing at `image.png`). Answers exactly where the card image does.
+(`og:title`, and `og:image` pointing at `image.png`). Behind the same gate as the images (an unknown, revoked,
+expired or password-protected link is `404`); a public link's name is answered only while its app still draws
+the link anything, and any other link's without asking the app. `Cache-Control: no-store`.
 
 ## The share page's head
 
@@ -99,7 +102,8 @@ brand card. No app's web Worker needs its API bound for this any more.
 ## Storage
 
 One bucket, the media service's own (`liveworkspace-media`, `liveworkspace-media-staging`), under `previews/`. Image
-ids never contain a slash, so the two never meet, and nothing in media lists the bucket.
+ids never contain a slash, so the two never meet. The only listing is an item's own prefix, when its app purges
+the item's previews (`deleteItemPreviews`).
 
 ```
 previews/<app>/<itemId>/<view>-<tab>.svg   view: full | public; tab: first | <tabId>

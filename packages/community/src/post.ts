@@ -148,7 +148,7 @@ export const COMMUNITY_FEATURED_COUNT = 6;
 export const COMMUNITY_FEATURED_WINDOW_MS = 90 * 24 * 60 * 60 * 1000;
 export const COMMUNITY_SEARCH_TERM_MAX = 40;
 
-// The header the Community pages' per-browser key travels under (liveworkspace/docs/community.md "Likes"; each app keeps it
+// The header the Community pages' per-browser key travels under (liveworkspace/docs/community.md "Public routes"; each app keeps it
 // under its own storage key). Deliberately not the guest owner id: a like must never put an owner credential on
 // the wire.
 export const COMMUNITY_KEY_HEADER = 'X-Community-Key';
