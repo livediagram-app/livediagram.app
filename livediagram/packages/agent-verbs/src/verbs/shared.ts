@@ -1,6 +1,6 @@
 // What the read verbs share: the list limits, dates, and reading a document's tabs.
 
-import type { ApiClient } from '@livediagram/api-client';
+import type { ApiClient } from '@liveworkspace/api-client';
 import { resolveDocument, resolveTab, type ResolvedDocument, type TabSummary } from '../addressing';
 import type { VerbContext } from '../define';
 

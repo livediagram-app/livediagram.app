@@ -10,7 +10,7 @@ import {
   tabPath,
   type VerbContext,
 } from '@liveplanner/agent-verbs';
-import { ApiError } from '@liveplanner/api-client';
+import { ApiError } from '@liveworkspace/api-client';
 import type { ProjectResponse } from '@liveplanner/api-schema';
 import {
   projectToEnvelopeText,

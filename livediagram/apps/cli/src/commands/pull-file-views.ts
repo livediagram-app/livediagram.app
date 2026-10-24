@@ -3,7 +3,7 @@
 // any other verb given one exits 2. No host, profile or credential is read.
 
 import { resolveTab, tabListOf, type Verb } from '@livediagram/agent-verbs';
-import { ApiError } from '@livediagram/api-client';
+import { ApiError } from '@liveworkspace/api-client';
 import { headerFactsOf, overviewView, renderView } from '@livediagram/document-views';
 import { INVALID_VIEW_VALUE_ERROR, TAB_VIEW_NAMES, VIEW_REQUIRED } from '@livediagram/api-schema';
 import type { CliIo } from '../io';

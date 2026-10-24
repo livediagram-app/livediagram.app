@@ -18,7 +18,7 @@
     "clean": "rm -rf node_modules .turbo coverage"
   },
   "dependencies": {
-    "@livedesign/api-client": "workspace:*",
+    "@liveworkspace/api-client": "workspace:*",
     "@livedesign/api-schema": "workspace:*",
     "@livedesign/page-lint": "workspace:*",
     "@livedesign/design": "workspace:*",

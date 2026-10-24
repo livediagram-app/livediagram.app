@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { AddressError, verbById, VerbRefusal } from '@livedocuments/agent-verbs';
-import { ApiError } from '@livedocuments/api-client';
+import { ApiError } from '@liveworkspace/api-client';
 import { CliError, formatError } from './cli-error';
 import { EXIT, exitCodeForStatus } from './exit-codes';
 import { failureOf, ISSUES_URL } from './failure-of';

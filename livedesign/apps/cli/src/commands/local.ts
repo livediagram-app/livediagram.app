@@ -10,7 +10,7 @@ import {
 } from '@livedesign/agent-verbs';
 import { discover, loginWithBrowser, loginWithDevice } from '../auth/oauth';
 import type { DebugLog } from '../debug';
-import type { ApiClient } from '@livedesign/api-client';
+import type { ApiClient } from '@liveworkspace/api-client';
 import { isApiTokenFormat, type CurrentTokenResponse } from '@livedesign/api-schema';
 import {
   forgetCredential,

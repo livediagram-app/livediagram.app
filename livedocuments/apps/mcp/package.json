@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@livedocuments/agent-verbs": "workspace:*",
-    "@livedocuments/api-client": "workspace:*",
+    "@liveworkspace/api-client": "workspace:*",
     "@livedocuments/api-schema": "workspace:*",
     "@livedocuments/diagram-lint": "workspace:*",
     "@livedocuments/document": "workspace:*",

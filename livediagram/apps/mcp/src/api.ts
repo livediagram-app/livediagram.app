@@ -1,8 +1,8 @@
 // Thin client for the api worker over the service binding (docs/specs/015-api/mcp-server.md §2), over the
-// shared `@livediagram/api-client`. Every call forwards the caller's Bearer lwt_ token; the api resolves it
+// shared `@liveworkspace/api-client`. Every call forwards the caller's Bearer lwt_ token; the api resolves it
 // to the owning account and applies the SAME authorization every route already enforces, so the MCP needs
 // no special privilege and adds no business logic.
-import { ApiError, createApiClient, type ApiClient } from '@livediagram/api-client';
+import { ApiError, createApiClient, type ApiClient } from '@liveworkspace/api-client';
 import { errorTypeToken } from '@livediagram/api-schema';
 import {
   TELEMETRY_EVENTS_PATH,

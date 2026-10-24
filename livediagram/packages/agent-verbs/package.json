@@ -18,7 +18,7 @@
     "clean": "rm -rf node_modules .turbo coverage"
   },
   "dependencies": {
-    "@livediagram/api-client": "workspace:*",
+    "@liveworkspace/api-client": "workspace:*",
     "@livediagram/api-schema": "workspace:*",
     "@livediagram/diagram-lint": "workspace:*",
     "@livediagram/document": "workspace:*",

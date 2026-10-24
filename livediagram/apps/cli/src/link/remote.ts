@@ -3,7 +3,7 @@
 // failure that keeps its files (RL14).
 
 import type { VerbContext } from '@livediagram/agent-verbs';
-import { ApiError } from '@livediagram/api-client';
+import { ApiError } from '@liveworkspace/api-client';
 import type { DocumentResponse, OverviewView } from '@livediagram/api-schema';
 import { EXIT } from '../output/exit-codes';
 import { failureOf } from '../output/failure-of';

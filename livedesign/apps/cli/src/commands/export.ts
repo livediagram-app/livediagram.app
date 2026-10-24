@@ -10,7 +10,7 @@ import {
   tabPath,
   type VerbContext,
 } from '@livedesign/agent-verbs';
-import { ApiError } from '@livedesign/api-client';
+import { ApiError } from '@liveworkspace/api-client';
 import type { DesignResponse } from '@livedesign/api-schema';
 import { designToEnvelopeText, type EnvelopeTab, type Tab } from '@livedesign/design';
 import type { CliIo } from '../io';

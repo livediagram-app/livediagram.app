@@ -4,7 +4,7 @@
 // api answers with the write as it landed, which is applied here so the next change reads what is stored. A refused
 // change stops the rest and says which went through. A change is checked against the store's caps whole before any
 // part is sent (writesCapsProblem), and one whose later part is still refused says how much of it landed.
-import type { ApiClient } from '@liveplanner/api-client';
+import type { ApiClient } from '@liveworkspace/api-client';
 import {
   CLIENT_HEADER,
   type ChangesetRequest,

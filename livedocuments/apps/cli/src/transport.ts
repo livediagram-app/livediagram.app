@@ -1,7 +1,7 @@
 // The api client a command uses (blueprint CLI45): the profile's api base, the credential, the CLI's headers,
 // a share code once a pasted link resolved, a timeout, and a debug line per request.
 
-import { createApiClient, type ApiClient } from '@livedocuments/api-client';
+import { createApiClient, type ApiClient } from '@liveworkspace/api-client';
 import { CLI_VERSION } from './config/version';
 import type { DebugLog } from './debug';
 import type { CliIo } from './io';

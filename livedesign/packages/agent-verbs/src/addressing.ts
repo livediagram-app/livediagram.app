@@ -2,7 +2,7 @@
 // a full id, an id prefix or a name; a tab by name or id prefix, the first by default. None or several refuse
 // with the nearest names or the candidates, never a guess.
 
-import type { ApiClient } from '@livedesign/api-client';
+import type { ApiClient } from '@liveworkspace/api-client';
 import { listAllDesigns, type FoundDesign } from './find-designs';
 import { REF_MIN_PREFIX, shortestUniquePrefixes } from './refs';
 

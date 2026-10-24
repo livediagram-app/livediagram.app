@@ -1,8 +1,7 @@
 {
-  "name": "@liveplanner/api-client",
+  "name": "@liveworkspace/api-client",
   "version": "0.0.0",
   "private": true,
-  "license": "UNLICENSED",
   "type": "module",
   "sideEffects": false,
   "main": "./src/index.ts",

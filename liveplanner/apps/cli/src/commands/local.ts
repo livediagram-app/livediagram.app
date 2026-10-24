@@ -10,7 +10,7 @@ import {
 } from '@liveplanner/agent-verbs';
 import { discover, loginWithBrowser, loginWithDevice } from '../auth/oauth';
 import type { DebugLog } from '../debug';
-import type { ApiClient } from '@liveplanner/api-client';
+import type { ApiClient } from '@liveworkspace/api-client';
 import { isApiTokenFormat, type CurrentTokenResponse } from '@liveplanner/api-schema';
 import {
   forgetCredential,

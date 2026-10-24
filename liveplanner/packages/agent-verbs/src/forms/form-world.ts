@@ -1,7 +1,7 @@
 // What every form verb reads first (docs/specs/030-forms/forms.md "Agents", blueprint §15 "Engine flow"): the
 // project's plan, whose tabs name each tab's kind and a Sheet tab's sheets and whose boards name their columns and
 // card types, so no tab body is read but the Form tab's own. One plan read a call, whatever the project's size.
-import type { ApiClient } from '@liveplanner/api-client';
+import type { ApiClient } from '@liveworkspace/api-client';
 import type {
   FormLinkResponse,
   PlanResponse,

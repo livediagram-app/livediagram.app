@@ -4,7 +4,7 @@
 // config; the first send prints what is counted, once.
 
 import { errorTypeToken, pascalToken } from '@livedocuments/api-schema';
-import { ApiError, postEvents } from '@livedocuments/api-client';
+import { ApiError, postEvents } from '@liveworkspace/api-client';
 import type { ConfigFile } from './config/config-file';
 import { cacheDir } from './config/paths';
 import type { DebugLog } from './debug';

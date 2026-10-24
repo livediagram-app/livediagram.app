@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ApiClient } from '@liveplanner/api-client';
+import type { ApiClient } from '@liveworkspace/api-client';
 import { PLACED_BOARD_GAP } from '@liveplanner/items';
 import { PROJECT_CELLS_MAX, SHEET_WRITE_CELLS_MAX } from '@liveplanner/sheets';
 import { DOC_A, fakeApi, tabsOfA } from '../testing/fake-api';

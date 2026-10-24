@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@liveplanner/agent-verbs": "workspace:*",
-    "@liveplanner/api-client": "workspace:*",
+    "@liveworkspace/api-client": "workspace:*",
     "@liveplanner/api-schema": "workspace:*",
     "@liveplanner/project": "workspace:*",
     "@liveplanner/project-views": "workspace:*",

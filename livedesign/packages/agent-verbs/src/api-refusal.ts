@@ -1,6 +1,6 @@
 // The api's refusals as agents read them: what was wrong and the next call to make, the same words on the CLI and
 // the MCP. A 5xx or anything not from the api is not a refusal: the caller lets it throw.
-import { ApiError } from '@livedesign/api-client';
+import { ApiError } from '@liveworkspace/api-client';
 
 const BY_STATUS: Readonly<Record<number, string>> = {
   401: 'the token is not accepted: sign in again.',

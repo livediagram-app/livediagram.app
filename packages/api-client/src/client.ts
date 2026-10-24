@@ -1,10 +1,10 @@
-// The api client the MCP and the CLI share (docs/specs/015-api/blueprints/cli.md "api-client"): one injected
+// The api client every product's MCP and CLI share (a product's docs/specs/015-api/blueprints/cli.md "api-client"): one injected
 // fetch, the caller's headers, JSON and text answers, and an `ApiError` naming the status and the body's
 // error code. A 5xx or a request that never completed is reported through `onFailure`; a 4xx is the
 // caller's to handle, never reported.
 
 type ApiClientOptions = {
-  // Where the api answers: `https://livedesign-api/api` over the MCP's binding, the host's api base for the CLI.
+  // Where the api answers: `https://livediagram-api/api` (or its sibling's) over the MCP's binding, the host's api base for the CLI.
   baseUrl: string;
   fetch: (request: Request) => Promise<Response>;
   // Authorization, the client header, a share code when addressed by a link.
@@ -86,7 +86,9 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
   };
 }
 
-// Anonymous telemetry to the api's public `/api/events`: no Authorization, never throws into the caller.
+// Anonymous telemetry to the api's public `/api/events`, which relays it to the liveworkspace telemetry
+// service (a product's docs/specs/017-telemetry/telemetry.md "The relay"; livedesign's api still stores it
+// itself): no Authorization, never throws into the caller.
 export async function postEvents(
   baseUrl: string,
   fetch: ApiClientOptions['fetch'],

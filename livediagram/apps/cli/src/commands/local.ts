@@ -10,7 +10,7 @@ import {
 } from '@livediagram/agent-verbs';
 import { discover, loginWithBrowser, loginWithDevice } from '../auth/oauth';
 import type { DebugLog } from '../debug';
-import type { ApiClient } from '@livediagram/api-client';
+import type { ApiClient } from '@liveworkspace/api-client';
 import { isApiTokenFormat, type CurrentTokenResponse } from '@livediagram/api-schema';
 import {
   forgetCredential,

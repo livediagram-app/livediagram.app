@@ -6,7 +6,7 @@
 
 import { posix } from 'node:path';
 import type { VerbContext } from '@livediagram/agent-verbs';
-import { ApiError } from '@livediagram/api-client';
+import { ApiError } from '@liveworkspace/api-client';
 import { DOCUMENT_ENVELOPE_KIND, DOCUMENT_SCHEMA_VERSION } from '@livediagram/document';
 import { readDocumentSnapshot } from '../commands/snapshot';
 import type { CliIo } from '../io';

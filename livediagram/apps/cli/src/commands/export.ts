@@ -10,7 +10,7 @@ import {
   tabPath,
   type VerbContext,
 } from '@livediagram/agent-verbs';
-import { ApiError } from '@livediagram/api-client';
+import { ApiError } from '@liveworkspace/api-client';
 import type { DocumentResponse } from '@livediagram/api-schema';
 import {
   documentToEnvelopeText,

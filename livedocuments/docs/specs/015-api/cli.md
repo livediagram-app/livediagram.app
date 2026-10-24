@@ -179,7 +179,7 @@ In order of precedence:
 
 Every command and every MCP tool is a projection of one **verb** in `@livedocuments/agent-verbs`: its id
 (`tab.view`, `element.set`), input and output schemas, a factual description, its behaviour (read, write,
-destructive) and a handler calling the api through `@livedocuments/api-client`. The MCP keeps its tool names and
+destructive) and a handler calling the api through `@liveworkspace/api-client`. The MCP keeps its tool names and
 schemas: each tool is its own verb, a command whose shape differs is another, and the two share handlers. A parity
 test fails when a verb is exposed by neither, or a tool's schema drifts from its verb.
 

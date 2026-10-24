@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { ProjectSummary } from '@liveplanner/api-schema';
 import { fetchTeamLibraries, listAllProjects, matchProjects, readLibraries } from './find-projects';
-import { createApiClient, type ApiClient } from '@liveplanner/api-client';
+import { createApiClient, type ApiClient } from '@liveworkspace/api-client';
 
 function summary(overrides: Partial<ProjectSummary>): ProjectSummary {
   return {

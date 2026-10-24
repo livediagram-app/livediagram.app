@@ -4,7 +4,7 @@
 // `loginWithDevice` waits for the device grant's.
 
 import { workbenchNameOf, workbenchOriginOf } from '@livediagram/agent-verbs';
-import { ApiError, type ApiClient } from '@livediagram/api-client';
+import { ApiError, type ApiClient } from '@liveworkspace/api-client';
 import {
   DEVICE_SLOW_DOWN_S,
   type WorkbenchPairingRequestCreated,

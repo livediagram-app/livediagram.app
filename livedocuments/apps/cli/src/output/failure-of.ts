@@ -2,7 +2,7 @@
 // its exit code, a stable code, one line, candidates and a runnable fix. Never a stack trace.
 
 import { AddressError, VerbRefusal } from '@livedocuments/agent-verbs';
-import { ApiError } from '@livedocuments/api-client';
+import { ApiError } from '@liveworkspace/api-client';
 import { CliError, type CliFailure } from './cli-error';
 import { EXIT, exitCodeForStatus } from './exit-codes';
 

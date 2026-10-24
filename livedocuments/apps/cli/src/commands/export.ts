@@ -10,7 +10,7 @@ import {
   tabPath,
   type VerbContext,
 } from '@livedocuments/agent-verbs';
-import { ApiError } from '@livedocuments/api-client';
+import { ApiError } from '@liveworkspace/api-client';
 import type { DocumentResponse } from '@livedocuments/api-schema';
 import {
   documentToEnvelopeText,

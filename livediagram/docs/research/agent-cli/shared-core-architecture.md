@@ -28,7 +28,7 @@ Specs read: [MCP server](../../specs/015-api/mcp-server.md), [Public API and API
 | `find-documents.ts`                                                    | 72    | Personal + team library sweep, name match, ranking                                                                     | **Move server-side** as `GET /api/documents?query=` (one round trip instead of 2 + N teams)                                                                                            |
 | `tool-annotations.ts`                                                  | 110   | `registerTool` wrapper: required behaviour + outputSchema, telemetry, legacy names                                     | **Stays** (MCP adapter); reads behaviour from the catalogue                                                                                                                            |
 | `tool-helpers.ts`, `tool-scope.ts`, `request-scope.ts`                 | ~120  | Result shaping, token guard, AsyncLocalStorage scopes                                                                  | **Stays** (MCP adapter)                                                                                                                                                                |
-| `api.ts`                                                               | 103   | Service-binding fetch, `ApiError`, 5xx telemetry                                                                       | **Generalise** into `@livediagram/api-client` with an injected `fetch` (service binding in the worker, global `fetch` in the CLI)                                                      |
+| `api.ts`                                                               | 103   | Service-binding fetch, `ApiError`, 5xx telemetry                                                                       | **Generalise** into `@liveworkspace/api-client` with an injected `fetch` (service binding in the worker, global `fetch` in the CLI)                                                      |
 | `render.ts`, `image-result.ts`                                         | 106   | resvg-wasm + embedded Inter, image prefetch                                                                            | **Extract** the rasteriser to `@liveworkspace/render-png` (wasm init injected: Worker `Data` module vs Node `readFile`); image prefetch already sits on `embedTabImages` in `api-schema` |
 | `oauth.ts`                                                             | 278   | OAuth 2.1 AS: discovery, DCR, authorize, session read, token                                                           | **Stays in `apps/mcp`** for now; two changes for the CLI (§6). Becomes `@livediagram/oauth-server` only if a second host appears                                                       |
 | `prompts.ts`, `server.ts`, `legacy-tool-names.ts`, `created-folder.ts` |       | MCP-only                                                                                                               | **Stays**                                                                                                                                                                              |
@@ -130,7 +130,7 @@ export interface Operation<I extends z.ZodType, O extends z.ZodType> {
 }
 
 export interface OperationContext {
-  api: ApiClient; // @livediagram/api-client, fetch injected
+  api: ApiClient; // @liveworkspace/api-client, fetch injected
   signal: AbortSignal;
 }
 ```

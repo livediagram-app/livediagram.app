@@ -4,7 +4,7 @@
 // person's browser, so the CLI runs it (CLI55).
 
 import { z } from 'zod';
-import { ApiError } from '@livedesign/api-client';
+import { ApiError } from '@liveworkspace/api-client';
 import {
   normaliseWorkbenchName,
   parseWorkbenchOrigin,

@@ -2,7 +2,7 @@
 // range's non-empty cells by A1, each with its input as typed (a formula with its =), the value the engine works
 // out and what the cell shows, plus the layout facts a reader needs (freeze, merges, filter). Bounded twice: the
 // range by AGENT_READ_CELLS_MAX cells, the answer by SHEET_READ_CHARS_MAX characters.
-import type { ApiClient } from '@liveplanner/api-client';
+import type { ApiClient } from '@liveworkspace/api-client';
 import {
   formatA1,
   formatRange,
