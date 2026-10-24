@@ -4,7 +4,7 @@
 
 import { remapTabLinks, type Element } from '@livedesign/design';
 import { redactTabDataAuthors } from '../comments';
-import { imageGrantImportStatement, servableImageIds } from '../db/image-grants';
+import { servableImageIds } from '../db/image-grants';
 import { imageRefAddStatements } from '../db/image-refs';
 import { blobRefsOfTabs, markBlobsHeld, type PhotoBlobMeta } from '../db/photo-blobs';
 import { tabStatsOfData, tabStatsStatement } from '../db/tab-stats';
@@ -160,7 +160,11 @@ export async function renameDesign(
 }
 
 // The snapshot cache's freshness stamp (thumbnail.ts).
-export async function markThumbRendered(env: DesignEnv, designId: string, now: number): Promise<void> {
+export async function markThumbRendered(
+  env: DesignEnv,
+  designId: string,
+  now: number,
+): Promise<void> {
   await env.DESIGN_DB.prepare('UPDATE design SET thumb_rendered_at = ? WHERE id = ?')
     .bind(now, designId)
     .run();
@@ -220,7 +224,7 @@ export type DesignCopy = {
   }[];
   // Images of the copied bodies the source may serve: granted on the copy.
   grants: string[];
-  // Whose the copied bodies' images are, as the source learned them (media_images), so the copy need not ask.
+  // Whose the copied bodies' images are, as the source learned them (image_owners), so the copy need not ask.
   owners: [id: string, owner: string][];
   // Photo blobs the copied tabs hold, by the copy's tab id.
   blobs: (PhotoBlobMeta & { tabId: string })[];
@@ -274,7 +278,7 @@ export async function exportDesignCopy(
   const placed = [...new Set(rows.flatMap((row) => imageRefIdsFromData(row.data)))];
   const grants = [...(await servableImageIds(env, designId, placed))];
   const owners = await env.DESIGN_DB.prepare(
-    'SELECT id, owner_id FROM media_images WHERE id IN (SELECT value FROM json_each(?))',
+    'SELECT image_id AS id, owner_id FROM image_owners WHERE image_id IN (SELECT value FROM json_each(?))',
   )
     .bind(JSON.stringify(placed))
     .all<{ id: string; owner_id: string }>();
@@ -357,13 +361,23 @@ export async function importDesignCopy(
     stmts.push(
       db
         .prepare(
-          `INSERT OR IGNORE INTO media_images (id, owner_id)
+          `INSERT OR IGNORE INTO image_owners (image_id, owner_id)
            SELECT value ->> '$[0]', value ->> '$[1]' FROM json_each(?)`,
         )
         .bind(JSON.stringify(copy.owners)),
     );
   }
-  if (copy.grants.length > 0) stmts.push(imageGrantImportStatement(env, designId, copy.grants, now));
+  // The placement grants the copy carries (db/image-grants.ts): the images its source could serve. The copier's own
+  // need none, and one more grant than needed serves nothing the copy's owner could not already.
+  if (copy.grants.length > 0) {
+    stmts.push(
+      db
+        .prepare(
+          'INSERT OR IGNORE INTO image_grants (image_id, created_at) SELECT value, ? FROM json_each(?)',
+        )
+        .bind(now, JSON.stringify(copy.grants)),
+    );
+  }
   if (copy.blobs.length > 0) {
     stmts.push(
       db

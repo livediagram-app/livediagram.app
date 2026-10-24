@@ -17,15 +17,17 @@ function assertTabDataFits(tabId: string, data: string, write: string): void {
 import type { DesignEnv, TabDTO } from '../types';
 import { imageRefIds, imageRefIdsFromData } from '../image-refs/extract';
 import { tabStatsOf, tabStatsStatement, type TabStats } from './tab-stats';
-import { imageGrantPlacementStatements } from './image-grants';
-import { learnMediaOwners } from '../media';
 import {
   imageRefAddStatements,
   imageRefPruneTabStatement,
   imageRefReplaceStatements,
 } from './image-refs';
 
-export async function getTab(env: DesignEnv, designId: string, tabId: string): Promise<TabDTO | null> {
+export async function getTab(
+  env: DesignEnv,
+  designId: string,
+  tabId: string,
+): Promise<TabDTO | null> {
   // Resolve via the design_tabs link table so a
   // linked tab surfaces from every design that contains it. The link
   // also carries the per-design order_index, so the returned summary's
@@ -113,8 +115,14 @@ export async function firstTabElementCount(env: DesignEnv, designId: string): Pr
 
 // The lazy backfill (the baseline migration): a reader that has parsed a body whose count is still unknown
 // records it. Only ever fills a null, so it can never undo a write's own count.
-export async function stampTabElementCount(env: DesignEnv, tabId: string, count: number): Promise<void> {
-  await env.DESIGN_DB.prepare('UPDATE tabs SET element_count = ? WHERE id = ? AND element_count IS NULL')
+export async function stampTabElementCount(
+  env: DesignEnv,
+  tabId: string,
+  count: number,
+): Promise<void> {
+  await env.DESIGN_DB.prepare(
+    'UPDATE tabs SET element_count = ? WHERE id = ? AND element_count IS NULL',
+  )
     .bind(count, tabId)
     .run();
 }
@@ -197,9 +205,6 @@ export function tabWriteStatements(
     // The image reference index (docs/specs/009-elements/images.md, "Reference index"): a reference
     // this batch missed is an image the retention sweep reaps.
     ...imageRefReplaceStatements(env, id, imageRefIds(tab.elements, tab.pages)),
-    // Placement grants (docs/specs/009-elements/images.md, "Placement grants"), after the
-    // design_tabs upsert above, which they read.
-    ...imageGrantPlacementStatements(env, id, imageRefIds(tab.elements, tab.pages), now),
   ];
 }
 
@@ -224,7 +229,6 @@ export async function upsertTab(
   input: Tab,
   orderIndex: number,
 ): Promise<number> {
-  await learnMediaOwners(env, imageRefIds(input.elements, input.pages));
   const results = await env.DESIGN_DB.batch(
     tabWriteStatements(env, designId, input, orderIndex, { advance: true }),
   );
@@ -240,7 +244,6 @@ export async function upsertTabAtRev(
   orderIndex: number,
   expectedRev: number,
 ): Promise<number> {
-  await learnMediaOwners(env, imageRefIds(input.elements, input.pages));
   const results = await env.DESIGN_DB.batch(
     tabWriteStatements(env, designId, input, orderIndex, { expected: expectedRev }),
   );
@@ -249,7 +252,11 @@ export async function upsertTabAtRev(
 
 // A tab rename (docs/specs/024-agents/agent-changesets.md "Whole-tab saves and tab renames"): the
 // name column only, advancing the revision (CS42). Answers the new revision, or null for no tab.
-export async function renameTab(env: DesignEnv, tabId: string, name: string): Promise<number | null> {
+export async function renameTab(
+  env: DesignEnv,
+  tabId: string,
+  name: string,
+): Promise<number | null> {
   const row = await env.DESIGN_DB.prepare(
     'UPDATE tabs SET name = ?, rev = rev + 1, updated_at = ? WHERE id = ? RETURNING rev',
   )
@@ -302,18 +309,15 @@ export async function seedTabs(
     ];
   });
   stmts.push(
-    env.DESIGN_DB.prepare('UPDATE design SET saved_at = ? WHERE id = ?').bind(savedAt ?? now, designId),
+    env.DESIGN_DB.prepare('UPDATE design SET saved_at = ? WHERE id = ?').bind(
+      savedAt ?? now,
+      designId,
+    ),
   );
   // The collaboration index of every seeded tab follows from the outbox (design-room/design-outbox.ts): a JSON
   // import or a copy from a share link can carry actions and threads in on create.
-  await learnMediaOwners(
-    env,
-    capped.flatMap((tab) => imageRefIds(tab.elements, tab.pages)),
-  );
   for (const tab of capped) {
-    const ids = imageRefIds(tab.elements, tab.pages);
-    stmts.push(...imageRefReplaceStatements(env, tab.id, ids));
-    stmts.push(...imageGrantPlacementStatements(env, tab.id, ids, now));
+    stmts.push(...imageRefReplaceStatements(env, tab.id, imageRefIds(tab.elements, tab.pages)));
   }
   await env.DESIGN_DB.batch(stmts);
 }
@@ -394,7 +398,9 @@ export async function reorderTabs(
     ).bind(idx, folder, designId, tabId);
   });
   if (batch.length > 0) await env.DESIGN_DB.batch(batch);
-  await env.DESIGN_DB.prepare('UPDATE design SET saved_at = ? WHERE id = ?').bind(now, designId).run();
+  await env.DESIGN_DB.prepare('UPDATE design SET saved_at = ? WHERE id = ?')
+    .bind(now, designId)
+    .run();
 }
 
 // Compare-and-swap one tab's `data` blob (docs/specs/013-workspace/share-roles.md "Integrity"). Writes
@@ -418,7 +424,6 @@ export async function swapTabData(
   nextStats: TabStats,
 ): Promise<boolean> {
   assertTabDataFits(tabId, nextData, 'swapTabData');
-  await learnMediaOwners(env, imageRefIdsFromData(nextData));
   const now = Date.now();
   const [res] = await env.DESIGN_DB.batch([
     env.DESIGN_DB.prepare(
@@ -427,10 +432,11 @@ export async function swapTabData(
     // Only if the swap above won: then the tab stores exactly `nextData`.
     tabStatsStatement(env, tabId, nextStats, now, nextData),
     ...imageRefAddStatements(env, tabId, imageRefIdsFromData(nextData)),
-    ...imageGrantPlacementStatements(env, tabId, imageRefIdsFromData(nextData), now),
   ]);
   if ((res?.meta?.changes ?? 0) === 0) return false;
-  await env.DESIGN_DB.prepare('UPDATE design SET saved_at = ? WHERE id = ?').bind(now, designId).run();
+  await env.DESIGN_DB.prepare('UPDATE design SET saved_at = ? WHERE id = ?')
+    .bind(now, designId)
+    .run();
   return true;
 }
 

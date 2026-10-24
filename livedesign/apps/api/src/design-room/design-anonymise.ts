@@ -35,8 +35,6 @@ export async function anonymiseDesign(
     }
   }
   writes.push(
-    // They can add nothing any more, so no image of theirs is granted here again (db/image-grants.ts).
-    db.prepare('DELETE FROM entitled WHERE person_id = ?').bind(personId),
     db
       .prepare(
         'UPDATE agent_changesets SET author_id = ?, author_name = ? WHERE design_id = ? AND author_id = ?',

@@ -112,27 +112,19 @@ CREATE TABLE IF NOT EXISTS image_refs (
 ) WITHOUT ROWID;
 CREATE INDEX IF NOT EXISTS image_refs_image ON image_refs (image_id);
 
--- The images the design may serve beyond its owner's own ("Placement grants", db/image-grants.ts).
-CREATE TABLE IF NOT EXISTS image_grants (
-  design_id  TEXT    NOT NULL,
-  image_id   TEXT    NOT NULL,
-  created_at INTEGER NOT NULL,
-  PRIMARY KEY (design_id, image_id)
-) WITHOUT ROWID;
-
--- Whose each image the design has met is, as this api names owners (src/media.ts mediaImageOwner): an account
--- id, a guest id, or '' for an id the media service does not know (so it is not asked again on every read).
-CREATE TABLE IF NOT EXISTS media_images (
-  id       TEXT PRIMARY KEY,
+-- Who owns each image the design places, as the media service names them (a guest's id is a one-way hash there),
+-- or '' for an id it does not know (docs/specs/009-elements/images.md "Placement grants"): learned once per image,
+-- so the share check never asks the service on an image request (@liveworkspace/index-app image-grants.ts).
+CREATE TABLE IF NOT EXISTS image_owners (
+  image_id TEXT PRIMARY KEY,
   owner_id TEXT NOT NULL
 ) WITHOUT ROWID;
 
--- Who may add content to the design now, and until when (epoch ms): each person whose index grant at edit or
--- participate reached the design, kept to that grant's expiry (design-room.ts noteEntitled). A placement grant
--- is earned while the image's owner is here (db/image-grants.ts).
-CREATE TABLE IF NOT EXISTS entitled (
-  person_id TEXT    PRIMARY KEY,
-  until     INTEGER NOT NULL
+-- The images this design may serve beyond its owner's own ("Placement grants", db/image-grants.ts): one its
+-- owner's collaborator placed while entitled to, or one a copy carried from a source that could serve it.
+CREATE TABLE IF NOT EXISTS image_grants (
+  image_id   TEXT    PRIMARY KEY,
+  created_at INTEGER NOT NULL
 ) WITHOUT ROWID;
 
 -- The photo blobs a tab may read (docs/specs/031-photo/photo-store.md): it uploaded the bytes, or a copy
@@ -260,5 +252,8 @@ export function migrateDesignSchema(exec: Exec): void {
 // Whether the design's SQLite holds a schema at all: a read that writes nothing, for a Durable Object woken
 // by an id with no design behind it.
 export function hasDesignSchema(exec: Exec): boolean {
-  return exec("SELECT 1 AS present FROM sqlite_master WHERE name = '_design_schema'").toArray().length > 0;
+  return (
+    exec("SELECT 1 AS present FROM sqlite_master WHERE name = '_design_schema'").toArray().length >
+    0
+  );
 }

@@ -82,8 +82,8 @@ async function uploaded(bytes = PNG, opts: Opts = {}): Promise<string> {
 }
 
 const mirror = () =>
-  db.sql.prepare('SELECT id, owner_id FROM media_images ORDER BY id').all() as {
-    id: string;
+  db.sql.prepare('SELECT image_id, owner_id FROM image_owners ORDER BY image_id').all() as {
+    image_id: string;
     owner_id: string;
   }[];
 
@@ -248,8 +248,8 @@ describe('handleImages', () => {
       resolveDesignGrant.mockResolvedValue(viewGrant());
       const res = await call('GET', '/api/images/from-docs?d=d1', { owner: 'visitor' });
       expect(res.status).toBe(200);
-      // The design learnt whose it is as it was placed.
-      expect(mirror()).toEqual([{ id: 'from-docs', owner_id: 'user_ada' }]);
+      // The design learnt whose it is the first time it judged it.
+      expect(mirror()).toEqual([{ image_id: 'from-docs', owner_id: 'user_ada' }]);
     });
 
     it('404s a readable design that places the image but may not serve it', async () => {

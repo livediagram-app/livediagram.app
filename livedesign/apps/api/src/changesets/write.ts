@@ -4,8 +4,6 @@ import {
   type ChangesetWritten,
   type ResultLine,
 } from '@livedesign/api-schema';
-import { learnMediaOwners } from '../media';
-import { imageRefIds } from '../image-refs/extract';
 import {
   diffToElementOps,
   elementFingerprint,
@@ -107,8 +105,6 @@ export async function writeChangeset(env: DesignEnv, w: ChangesetWrite): Promise
   if (Object.values(parts).some((p) => byteLength(p) > CHANGESET_PART_MAX_BYTES)) {
     return { kind: 'too_large' };
   }
-  // Whose the images it places are, before the statements that grant them (db/image-grants.ts).
-  await learnMediaOwners(env, imageRefIds(w.next.elements, w.next.pages));
   // One re-mint inside the attempt on an id collision (CS7, E21).
   for (let mint = 0; mint < 2; mint += 1) {
     try {

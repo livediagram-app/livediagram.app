@@ -28,7 +28,8 @@ import { designStatsSql } from '../db/tab-stats';
 import { isEmptyCount, type ContentSummary } from '../db/content-summary';
 import { indexAppClient } from '../index-service';
 import { accountsClient } from '../accounts/client';
-import { pushDesignMediaRefs } from '../media';
+import { grantPlacedImages } from '../db/image-grants';
+import { designImageIds, mediaClient, pushDesignMediaRefs } from '../media';
 import type { DesignEnv } from '../types';
 
 type TabRow = {
@@ -196,9 +197,17 @@ export async function drainOutbox(
   const failures = [...outcome.failures];
   let pushes = outcome.pushes;
   if (media.length > 0) {
-    // The images the design places now, its whole set, to the media service (src/media.ts).
+    // The images the design places now, its whole set, to the media service (src/media.ts), once the ones whose
+    // owners may place them here right now are granted (db/image-grants.ts): whoever wrote since the last push (the
+    // outbox's edit keys, read with this drain's rows) and the team's joined people. Without the service there is
+    // no image to serve, and nobody to tell.
     try {
-      await pushDesignMediaRefs(env, designId);
+      if (mediaClient(env)) {
+        const images = await designImageIds(env, designId);
+        const editorKeys = rows.filter((r) => r.kind === 'edit').map((r) => r.key);
+        await grantPlacedImages(env, designId, images, editorKeys, Date.now());
+        await pushDesignMediaRefs(env, designId, images);
+      }
       done.push(...media.map((r) => r.id));
       pushes += 1;
     } catch (err) {

@@ -8,8 +8,7 @@ import {
   recordItemEditor,
 } from '@liveworkspace/index-app';
 import { DurableObject } from 'cloudflare:workers';
-import { levelAtLeast } from '@liveworkspace/index-client';
-import { designServesImage, noteEntitled } from '../db/image-grants';
+import { designServesImage } from '../db/image-grants';
 import {
   ACCESS_CHANGED_CLOSE,
   GRANT_LAPSED_CLOSE,
@@ -466,13 +465,8 @@ export class DesignRoom extends DurableObject<Env> {
   async route(designId: string, request: Request, identity: RouteIdentity): Promise<Response> {
     this.bindDesign(designId);
     const env = this.requireEnv();
-    // Who may add content now: an image they own placed here earns a placement grant (db/image-grants.ts).
-    // Bookkeeping about the caller, not an edit by them, so it is counted before the request's own writes.
-    const grant = identity.grant;
-    // Taking the owner and team the grant names is no edit either.
-    if (grant?.item === designId) await this.takeHead(grant);
-    if (grant && levelAtLeast(grant.level, 'participate') && !grant.sub.startsWith('link:'))
-      await noteEntitled(env, grant.sub, grant.exp * 1000);
+    // Before the write counter is read: taking the owner and team is no edit.
+    if (identity.grant?.item === designId) await this.takeHead(identity.grant);
     const writesBefore = this.writes;
     const response = await answerDesignRequest(env, request, identity, (p) =>
       this.state.waitUntil(p),

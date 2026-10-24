@@ -4,8 +4,9 @@
 // carries MEDIA_KEY as a bearer token and names this app.
 //
 // What each design keeps of it, in its own SQLite (design-room/design-schema.ts):
-//   - media_images: whose each image it has met is, as this api names owners, for the placement grants
-//     (db/image-grants.ts). Filled when a write first places an image (learnMediaOwners).
+//   - image_owners: whose each image it places is, as the service names them, for the placement grants
+//     (db/image-grants.ts, @liveworkspace/index-app image-grants.ts). Learned once per image, when the design
+//     first judges it.
 //   - an outbox key: the design's images changed since the service last heard. The image reference triggers
 //     queue it in the transaction that changes them; the design's alarm sends the whole set
 //     (pushDesignMediaRefs).
@@ -39,41 +40,6 @@ export function imageSummary({ app: _app, ...image }: MediaImage): ImageSummary 
   return image;
 }
 
-// The owners of `ids` the design has not met yet, asked of the service and remembered (media_images), so the
-// placement and serving rules (db/image-grants.ts) can join them. Run before a write's statements. A guest's image
-// comes back from the service under a hash of their id (mediaOwner); it is named here as the design's owner or an
-// entitled person whose hash it is, and otherwise under a name no owner has, so it serves nowhere but through a
-// grant. At most MEDIA_LOOKUPS_PER_WRITE asks a write: a body naming more unknown images than that learns the
-// rest on the next write.
-export const MEDIA_LOOKUPS_PER_WRITE = 25;
-
-export async function learnMediaOwners(env: DesignEnv, ids: readonly string[]): Promise<void> {
-  const client = mediaClient(env);
-  if (!client || ids.length === 0) return;
-  const known = await env.DESIGN_DB.prepare(
-    'SELECT id FROM media_images WHERE id IN (SELECT value FROM json_each(?))',
-  )
-    .bind(JSON.stringify(ids))
-    .all<{ id: string }>();
-  const have = new Set(known.results.map((r) => r.id));
-  const unknown = [...new Set(ids)].filter((id) => !have.has(id)).slice(0, MEDIA_LOOKUPS_PER_WRITE);
-  if (unknown.length === 0) return;
-  const people = await env.DESIGN_DB.prepare(
-    `SELECT owner_id AS id FROM design WHERE owner_id <> ''
-     UNION SELECT person_id FROM entitled WHERE until > ?`,
-  )
-    .bind(Date.now())
-    .all<{ id: string }>();
-  const candidates = people.results.map((r) => r.id);
-  const owners = await Promise.all(unknown.map((id) => askMediaOwner(client, id, candidates)));
-  await env.DESIGN_DB.prepare(
-    `INSERT OR IGNORE INTO media_images (id, owner_id)
-     SELECT value ->> '$[0]', value ->> '$[1]' FROM json_each(?)`,
-  )
-    .bind(JSON.stringify(unknown.map((id, i) => [id, owners[i]])))
-    .run();
-}
-
 // Whose image `id` is, as this api names owners ('' for an id the service does not know). A guest's image is
 // named after whichever of `candidates` it belongs to.
 async function askMediaOwner(
@@ -85,7 +51,11 @@ async function askMediaOwner(
   const owner = found?.owner ?? '';
   if (!isGuestOwner(owner)) return owner;
   for (const candidate of candidates) {
-    if (candidate !== null && !candidate.startsWith('user_') && owner === (await mediaOwner(candidate)))
+    if (
+      candidate !== null &&
+      !candidate.startsWith('user_') &&
+      owner === (await mediaOwner(candidate))
+    )
       return candidate;
   }
   return owner;
@@ -118,20 +88,30 @@ export async function mediaImageOwnerFor(
 
 // ---------- References (liveworkspace/docs/media.md "References") ----------
 
-// Send the design's images to the service: its whole set, replacing what the service held for it (an empty set
-// for a design that places none, or is gone). Each design sends its own when they change, so every design that
-// places an image has been sent at least once: `complete` holds from the first. Without the service there is
-// nobody to tell. Throws when the service refuses, so the outbox keeps the key and retries.
-export async function pushDesignMediaRefs(env: DesignEnv, designId: string): Promise<void> {
-  const client = mediaClient(env);
-  if (!client) return;
+// The images the design places now, from the reference index.
+export async function designImageIds(env: DesignEnv, designId: string): Promise<string[]> {
   const placed = await env.DESIGN_DB.prepare(
     `SELECT DISTINCT r.image_id FROM design_tabs dt JOIN image_refs r ON r.tab_id = dt.tab_id
       WHERE dt.design_id = ?`,
   )
     .bind(designId)
     .all<{ image_id: string }>();
-  const images = placed.results.map((r) => r.image_id);
+  return placed.results.map((r) => r.image_id);
+}
+
+// Send the design's images to the service: its whole set, replacing what the service held for it (an empty set
+// for a design that places none, or is gone). Each design sends its own when they change, so every design that
+// places an image has been sent at least once: `complete` holds from the first. Without the service there is
+// nobody to tell. Throws when the service refuses, so the outbox keeps the key and retries. `images`: the set, when
+// the caller has read it already (designImageIds).
+export async function pushDesignMediaRefs(
+  env: DesignEnv,
+  designId: string,
+  images?: readonly string[],
+): Promise<void> {
+  const client = mediaClient(env);
+  if (!client) return;
+  images ??= await designImageIds(env, designId);
   if (images.length > MEDIA_REFS_PER_DOCUMENT_MAX) {
     // Past any gallery's cap: the rest stay unreported, so the sweep could take one of them.
     console.error('[media] a design places more images than one sync carries', {
@@ -159,7 +139,10 @@ export async function announceMediaRefs(env: Env): Promise<void> {
 export async function forgetDesignMediaRefs(env: Env, designId: string): Promise<void> {
   const client = mediaClient(env);
   if (!client) return;
-  const sent = await client.syncRefs({ documents: [{ document: designId, images: [] }], complete: true });
+  const sent = await client.syncRefs({
+    documents: [{ document: designId, images: [] }],
+    complete: true,
+  });
   if (!sent.ok) console.error('[media] refs clear failed', sent.status, sent.body);
 }
 

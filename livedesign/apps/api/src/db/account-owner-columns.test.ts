@@ -27,12 +27,15 @@ const OWNER_COLUMNS: OwnerColumn[] = [
     column: 'owner_id',
     deleteKeeps: { when: '1 = 1', why: "a design's own store, purged through the index" },
   },
-  // Whose each image a design places is (src/media.ts), in each design's own store: the media service deletes the
-  // account's images themselves (deleteAccount), and a design that placed one serves nothing once it is gone.
+  // Whose each image a design places is (db/image-grants.ts), in each design's own store: the media service deletes
+  // the account's images themselves (deleteAccount), and a design that placed one serves nothing once it is gone.
   {
-    table: 'media_images',
+    table: 'image_owners',
     column: 'owner_id',
-    deleteKeeps: { when: '1 = 1', why: "a design's own store; the images go from the media service" },
+    deleteKeeps: {
+      when: '1 = 1',
+      why: "a design's own store; the images go from the media service",
+    },
   },
   // Agent changesets (docs/specs/024-agents/agent-changesets.md, CS27), in each design's own store: those on
   // someone else's design stay until its retention ages them out.
@@ -69,8 +72,14 @@ function insert(sql: DatabaseSync, table: string, row: Record<string, string | n
 
 // One row in every owner-keyed column, keyed on `id`.
 function seed(sql: DatabaseSync, id: string) {
-  insert(sql, 'test_designs', { id: `d-${id}`, owner_id: id, name: id, saved_at: T0, created_at: T0 });
-  insert(sql, 'media_images', { id: `img-${id}`, owner_id: id });
+  insert(sql, 'test_designs', {
+    id: `d-${id}`,
+    owner_id: id,
+    name: id,
+    saved_at: T0,
+    created_at: T0,
+  });
+  insert(sql, 'image_owners', { image_id: `img-${id}`, owner_id: id });
   insert(sql, 'tabs', { id: `tab-${id}`, name: 'Board', data: '{"elements":[]}', updated_at: T0 });
   insert(sql, 'agent_changesets', {
     id: `cs-${id}`,

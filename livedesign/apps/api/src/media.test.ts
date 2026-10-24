@@ -9,17 +9,14 @@ import { drainOutbox } from './design-room/design-outbox';
 import {
   announceMediaRefs,
   forgetDesignMediaRefs,
-  learnMediaOwners,
-  MEDIA_LOOKUPS_PER_WRITE,
   mergeMediaOwner,
   mediaOwner,
   pushDesignMediaRefs,
 } from './media';
-import { noteEntitled } from './db/image-grants';
 
 // livedesign's side of the media service (liveworkspace/docs/media.md): each design's own outbox queues it when
-// the images it places change, and its drain sends the design's whole set; a design learns whose each image it
-// places is, once, for its serving rules; an account's images go with the account.
+// the images it places change, and its drain sends the design's whole set (whose each image is, for its serving
+// rules, is db/image-grants.test.ts'); an account's images go with the account.
 
 let db: SqliteD1;
 let media: TestMediaService;
@@ -50,9 +47,8 @@ const upload = (owner: string, sha: string) => {
 };
 
 const queued = (design: string) =>
-  db.sql
-    .prepare("SELECT 1 FROM outbox WHERE design_id = ? AND kind = 'media'")
-    .all(design).length > 0;
+  db.sql.prepare("SELECT 1 FROM outbox WHERE design_id = ? AND kind = 'media'").all(design).length >
+  0;
 
 const serviceRefs = () =>
   (
@@ -132,51 +128,6 @@ describe("a design's references", () => {
     await announceMediaRefs(db.env);
     expect(media.calls).toEqual(['POST /app/refs']);
     expect(completed()).toHaveLength(1);
-  });
-});
-
-describe('whose an image is', () => {
-  it('learns the owner of each image a save places, once', async () => {
-    start('D', 'user_ada');
-    const id = upload('user_ada', 'a');
-    await upsertTab(db.env, 'D', tabWith('t1', id), 0);
-    expect(db.sql.prepare('SELECT id, owner_id FROM media_images').all()).toEqual([
-      { id, owner_id: 'user_ada' },
-    ]);
-    const asked = media.calls.length;
-    await upsertTab(db.env, 'D', tabWith('t1', id), 0);
-    expect(media.calls.length).toBe(asked);
-  });
-
-  it("names a guest's image after the guest it belongs to", async () => {
-    start('D', 'guest-1');
-    await noteEntitled(db.env, 'guest-2', Date.now() + 60_000);
-    const mine = upload(await mediaGuestOwner('livedesign.app', 'guest-1'), 'a');
-    const theirs = upload(await mediaGuestOwner('livedesign.app', 'guest-2'), 'b');
-    await learnMediaOwners(db.env, [mine, theirs]);
-    const owners = db.sql.prepare('SELECT id, owner_id FROM media_images ORDER BY id').all();
-    expect(owners).toEqual([
-      { id: mine, owner_id: 'guest-1' },
-      { id: theirs, owner_id: 'guest-2' },
-    ]);
-  });
-
-  it('records an image the service does not know as owned by no one', async () => {
-    start('D', 'user_ada');
-    await learnMediaOwners(db.env, ['nope']);
-    expect(db.sql.prepare('SELECT owner_id FROM media_images').all()).toEqual([{ owner_id: '' }]);
-  });
-
-  it(`asks about at most ${MEDIA_LOOKUPS_PER_WRITE} new images a write`, async () => {
-    start('D', 'user_ada');
-    const ids = Array.from({ length: MEDIA_LOOKUPS_PER_WRITE + 5 }, (_, i) => `img-${i}`);
-    await learnMediaOwners(db.env, ids);
-    expect(media.calls.filter((c) => c.startsWith('GET /app/images/'))).toHaveLength(
-      MEDIA_LOOKUPS_PER_WRITE,
-    );
-    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM media_images').get()).toEqual({
-      n: MEDIA_LOOKUPS_PER_WRITE,
-    });
   });
 });
 
