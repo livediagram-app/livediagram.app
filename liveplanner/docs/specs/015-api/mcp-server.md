@@ -93,7 +93,7 @@ This implements the OAuth flow Manager Toolkit uses:
    admits another scheme such as `javascript:`, and never with a fragment, per RFC 6749
    §3.1.2; one rule shared with the api's Drive redirect, `oauthRedirectUrl` in
    `@liveplanner/api-schema`), stored in KV with a TTL.
-   Rate-limited per IP. Authorize re-checks the scheme of the requested
+   Rate-limited per IP, an IPv6 caller by its /64 (`clientRateKey`, as the api keys its limiters). Authorize re-checks the scheme of the requested
    redirect URI, and the consent page only ever navigates to an http(s) URL.
    The token endpoint refuses a code presented with another `client_id`.
 3. **Authorize** — `GET /oauth/authorize` creates a short-lived session in KV and

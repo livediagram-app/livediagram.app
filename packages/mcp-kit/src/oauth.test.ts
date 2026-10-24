@@ -145,6 +145,23 @@ describe('dynamic client registration', () => {
     for (let i = 0; i < 20; i++) expect((await reqOnce()).status).toBe(201);
     expect((await reqOnce()).status).toBe(429);
   });
+
+  // One host is routinely handed a whole IPv6 /64: every address in it shares one budget.
+  it('counts an IPv6 caller by its /64, not by each address', async () => {
+    const fromIp = (ip: string) =>
+      app.request(
+        '/oauth/register',
+        {
+          method: 'POST',
+          body: JSON.stringify({ redirect_uris: [REDIRECT] }),
+          headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': ip },
+        },
+        env,
+      );
+    for (let i = 0; i < 20; i++) expect((await fromIp(`2001:db8:1:2::${i + 1}`)).status).toBe(201);
+    expect((await fromIp('2001:db8:1:2:ffff::9')).status).toBe(429);
+    expect((await fromIp('2001:db8:1:3::1')).status).toBe(201);
+  });
 });
 
 // Start a real authorize and hand back its session id — the same value the

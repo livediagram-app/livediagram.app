@@ -829,7 +829,7 @@ minted token revoked`, or `[oauth] handover revoke failed` when the revoke itsel
   anti-phishing line still shows the redirect host the server read. `clientId` on the session lookup is not a
   secret and decides nothing but the telemetry type.
 - **The device grant.** User codes have 20⁸ (2.6 × 10¹⁰) values, live 10 minutes, are single use, and their lookup
-  is rate limited per IP (`DEVICE_LOOKUP_RATE_MAX`); `device_authorization` is limited like registration
+  is rate limited per IP, an IPv6 caller by its /64 (`DEVICE_LOOKUP_RATE_MAX`, keyed by `clientRateKey`); `device_authorization` is limited like registration
   (`DEVICE_AUTH_RATE_PER_HOUR`). Only the built-in client may start one. The page names the client from the server
   and warns: "Only enter a code shown by a terminal you are using." The token travels from the page to the trusted
   `MCP_ORIGIN` only, as the consent page's does.

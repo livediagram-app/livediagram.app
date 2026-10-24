@@ -6,6 +6,7 @@
 // model — the heavy lifting (verify, revoke, caps, expiry) is the token's.
 import { DEVICE_CODE_GRANT, pkceChallenge } from '@liveworkspace/api-kit/oauth';
 import { isLoopbackHostname, oauthRedirectUrl } from '@liveworkspace/api-kit/request-auth';
+import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { objectOrEmpty } from '@liveworkspace/api-kit/request-body';
 import type { Hono } from 'hono';
 import { lookupClient, type BuiltInClients, type ClientReg, type OauthEnv } from './oauth-clients';
@@ -110,8 +111,8 @@ export function registerOauthRoutes<E extends OauthEnv>(
   app.post('/oauth/register', async (c) => {
     // Per-IP cap (docs/specs/015-api/mcp-server.md §3.2) so an open registration endpoint can't be used
     // to flood KV. KV-backed, sliding hour window; good enough for DCR abuse.
-    const ip = c.req.header('CF-Connecting-IP') ?? 'unknown';
-    const rateKey = `reg-rate:${ip}`;
+    // Keyed as the api's limiters are: an IPv6 caller by its /64, so rotating addresses inside it buys nothing.
+    const rateKey = `reg-rate:${clientRateKey(c.req.raw, 'unknown')}`;
     const count = Number((await c.env.OAUTH_KV.get(rateKey)) ?? '0');
     if (count >= 20) return c.json({ error: 'rate_limited' }, 429);
     await c.env.OAUTH_KV.put(rateKey, String(count + 1), { expirationTtl: 3600 });

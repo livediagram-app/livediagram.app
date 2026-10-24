@@ -14,6 +14,7 @@ import {
   newUserCode,
   normaliseUserCode,
 } from '@liveworkspace/api-kit/oauth';
+import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { objectOrEmpty } from '@liveworkspace/api-kit/request-body';
 import { randomBase64Url } from '@liveworkspace/api-kit/bytes';
 import type { Context, Hono } from 'hono';
@@ -68,8 +69,8 @@ async function overLimit(
   return false;
 }
 
-const ipOf = (c: { req: { header(name: string): string | undefined } }) =>
-  c.req.header('CF-Connecting-IP') ?? 'unknown';
+// The caller's rate-limit key, as the api's limiters key it: an IPv6 address by its /64.
+const ipOf = (c: { req: { raw: Request } }) => clientRateKey(c.req.raw, 'unknown');
 
 const ttlUntil = (endsAt: number) =>
   Math.max(KV_MIN_TTL_S, Math.ceil((endsAt - Date.now()) / 1000));
@@ -206,7 +207,8 @@ export async function handleDeviceToken<E extends OauthEnv>(
 ): Promise<Response> {
   const deviceCode = formText(form, 'device_code');
   const clientId = formText(form, 'client_id');
-  if (!builtInClient(server.builtInClients, clientId)) return c.json({ error: 'invalid_client' }, 400);
+  if (!builtInClient(server.builtInClients, clientId))
+    return c.json({ error: 'invalid_client' }, 400);
   const record = deviceCode
     ? await c.env.OAUTH_KV.get<DeviceRecord>(deviceKey(deviceCode), 'json')
     : null;
