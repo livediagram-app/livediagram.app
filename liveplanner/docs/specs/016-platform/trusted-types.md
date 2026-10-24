@@ -9,7 +9,7 @@ injection then needs a policy's help, and every policy is small, named and liste
 ## The header
 
 - **Every HTML response carries** `Content-Security-Policy: require-trusted-types-for 'script'; trusted-types
-liveplanner-markup nextjs ProseMirrorClipboard default`, enforced from the start, never
+liveworkspace-markup nextjs ProseMirrorClipboard default`, enforced from the start, never
   report-only.
 - **Where it is set**: the editor's worker (`apps/editor/src/worker.ts`) beside its other security headers; the four
   static apps (marketing, help, telemetry) in their `public/_headers`. The router adds nothing; it holds no
@@ -19,7 +19,11 @@ liveplanner-markup nextjs ProseMirrorClipboard default`, enforced from the start
 
 ## Our policies
 
-Both come from one shared module, `@liveplanner/ui`'s `trusted-types`, and nothing else of ours creates a policy.
+Both come from `@liveworkspace/trusted-types`, built once for every app and for liveworkspace.app, and
+re-exported with this app's header by `@liveplanner/ui`'s `trusted-types`. Nothing else of ours creates a policy. Every
+app creates the same policies under the same names, so a page that renders another app's UI (liveworkspace.app's
+telemetry dashboard, the Explorer each app's router serves from liveworkspace.app) never needs another app's names
+in its header.
 
 - **`default` is created first**, by an inline script at the top of each layout's `<head>`
   (`trustedTypesBootScript`), before any other script can reach a sink. It is what the browser calls for a sink
@@ -29,7 +33,7 @@ Both come from one shared module, `@liveplanner/ui`'s `trusted-types`, and nothi
   any other URL. A `blob:` URL can only be minted by script already running on the page, and a worker has no DOM.
   For HTML it allows exactly `<script></script>`, the empty script React DOM parses to create a `<script>` element on
   a client render (a script inserted through `innerHTML` never runs); any other HTML string is refused.
-- **`liveplanner-markup`** turns markup that liveplanner's own builders produced into `TrustedHTML`
+- **`liveworkspace-markup`** turns markup that liveplanner's own builders produced into `TrustedHTML`
   (`trustedHtml(markup)`). Its callers are the builders that escape every piece of content they place: the icon,
   sticker and template SVG builders (`@liveplanner/icons`, `@liveplanner/templates`), the headless tab renderer's
   thumbnails, the JSON-LD block, and the inline boot scripts in each layout. It does not sanitise; the trust is that
@@ -42,7 +46,9 @@ Because the prerender passes strings through, a **server component** that hands 
 `dangerouslySetInnerHTML` puts a plain string into the RSC payload. The first load is fine (the markup is already in
 the HTML), but a client navigation to that page makes React write the string through `innerHTML`, the `default`
 policy refuses it, and the page crashes to a blank screen. The help centre's breadcrumb and category links all did
-this through the JSON-LD block. So outside the editor (a client app end to end), a sink lives in one of three places:
+this through the JSON-LD block. A `<Suspense>` boundary the static export leaves to the browser does the same on the
+first load: liveworkspace.app's Explorer rendered its silent sign-in script inside one and blanked every `/explorer`
+page, on every app's address. So outside the editor (a client app end to end), a sink lives in one of three places:
 a root `app/layout.tsx` (never re-rendered on navigation), a `'use client'` module (the call mints real `TrustedHTML`
 in the browser), or an app module that only client modules import. A sink in a shared package must be a client
 module itself, since any server page may render it: `JsonLd` is one. `trusted-types-sinks.test.ts` holds every

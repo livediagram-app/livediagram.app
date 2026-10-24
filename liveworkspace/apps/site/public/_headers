@@ -1,6 +1,7 @@
 # Defence-in-depth response headers for every page (liveworkspace/docs/site.md). Static assets only,
-# so Cloudflare applies this file directly. Both apps' Trusted Types policies are named: the
-# telemetry dashboard renders both apps' UI.
+# so Cloudflare applies this file directly. Every app's UI creates the same shared Trusted Types
+# policies (@liveworkspace/trusted-types), so the telemetry dashboard and the Explorer, served here
+# and under every app's own address, need only those (trusted-types-guard.test.ts).
 
 /*
   X-Frame-Options: DENY
@@ -8,4 +9,4 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=()
   Strict-Transport-Security: max-age=31536000; includeSubDomains
-  Content-Security-Policy: require-trusted-types-for 'script'; trusted-types livediagram-markup livediagram-inert-parse liveplanner-markup liveplanner-inert-parse nextjs default; frame-ancestors 'none'
+  Content-Security-Policy: require-trusted-types-for 'script'; trusted-types liveworkspace-markup liveworkspace-inert-parse nextjs default; frame-ancestors 'none'

@@ -40,13 +40,14 @@
   },
   "dependencies": {
     "@liveplanner/api-schema": "workspace:*",
-    "@liveplanner/project": "workspace:*",
     "@liveplanner/help-registry": "workspace:*",
     "@liveplanner/icons": "workspace:^",
     "@liveplanner/items": "workspace:*",
+    "@liveplanner/project": "workspace:*",
     "@liveplanner/tailwind-config": "workspace:*",
     "@liveplanner/telemetry-client": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
-    "@liveworkspace/sites": "workspace:*"
+    "@liveworkspace/sites": "workspace:*",
+    "@liveworkspace/trusted-types": "workspace:*"
   }
 }

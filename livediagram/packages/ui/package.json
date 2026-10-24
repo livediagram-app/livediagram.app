@@ -46,6 +46,7 @@
     "@livediagram/telemetry-client": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
-    "@liveworkspace/sites": "workspace:*"
+    "@liveworkspace/sites": "workspace:*",
+    "@liveworkspace/trusted-types": "workspace:*"
   }
 }

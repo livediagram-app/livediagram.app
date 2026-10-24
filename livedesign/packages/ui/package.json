@@ -45,6 +45,7 @@
     "@livedesign/tailwind-config": "workspace:*",
     "@livedesign/telemetry-client": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
-    "@liveworkspace/sites": "workspace:*"
+    "@liveworkspace/sites": "workspace:*",
+    "@liveworkspace/trusted-types": "workspace:*"
   }
 }

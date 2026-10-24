@@ -13,7 +13,8 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ comparisons              every app's comparison pages, built once; each app's marketing hosts its own
 │  ├─ media                    the media contract: apps, upload limits, wire shapes, a client
 │  ├─ sites                    liveworkspace's sites, for every logo's site switcher
-│  └─ telemetry                the telemetry contract: apps, batch format, dashboard summary
+│  ├─ telemetry                the telemetry contract: apps, batch format, dashboard summary
+│  └─ trusted-types            the Trusted Types policies, boot script and header every app's pages share
 ├─ liveworkspace/              the platform's own apps
 │  ├─ apps/site                liveworkspace.app, one static site: the front door, /telemetry, /sign-in
 │  ├─ apps/accounts            liveworkspace.app/api/auth: sign-in for every product

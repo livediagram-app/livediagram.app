@@ -1,10 +1,9 @@
-// The Trusted Types header and the names of our policies (docs/specs/016-platform/trusted-types.md). Import-free, so
-// the e2e stack (scripts/e2e-stack.mjs) can run it as is and send the editor's header exactly.
+// The Trusted Types header every livedesign page sends (docs/specs/016-platform/trusted-types.md), from the one set of
+// policies every app shares (@liveworkspace/trusted-types). A file of its own, so the e2e stack (scripts/e2e-stack.mjs)
+// can import it under Node and send the pages' header exactly.
+import { MARKUP_POLICY, NEXTJS_POLICY, trustedTypesCsp } from '@liveworkspace/trusted-types/csp';
 
-export const MARKUP_POLICY = 'livedesign-markup';
+export { MARKUP_POLICY } from '@liveworkspace/trusted-types/csp';
 
 // Every policy a page may create: ours, then the third parties' own (Next.js's script helper), then `default`.
-export const TRUSTED_TYPES_CSP = [
-  "require-trusted-types-for 'script'",
-  `trusted-types ${MARKUP_POLICY} nextjs default`,
-].join('; ');
+export const TRUSTED_TYPES_CSP = trustedTypesCsp([MARKUP_POLICY, NEXTJS_POLICY]);

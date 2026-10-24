@@ -42,6 +42,7 @@ const nextConfig: NextConfig = {
     '@liveworkspace/index-client',
     '@liveworkspace/sites',
     '@liveworkspace/telemetry',
+    '@liveworkspace/trusted-types',
   ],
   ...(process.env.NODE_ENV === 'production'
     ? {}

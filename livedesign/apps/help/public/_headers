@@ -10,4 +10,4 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=()
   Strict-Transport-Security: max-age=31536000; includeSubDomains
-  Content-Security-Policy: require-trusted-types-for 'script'; trusted-types livedesign-markup nextjs default
+  Content-Security-Policy: require-trusted-types-for 'script'; trusted-types liveworkspace-markup nextjs default
