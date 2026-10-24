@@ -1,13 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { TOAST_NAME_MAX, toastName } from './toast-name';
 import { DESIGN_FAILURE, FOLDER_FAILURE } from './write-failure-copy';
-import {
-  designRestoreFailedMessage,
-  designRestoredMessage,
-  designDeletedMessage,
-  designDuplicatedMessage,
-  designMovedMessage,
-} from './design-toast-copy';
 
 // docs/specs/004-interface-design/toasts.md "Naming what it acted on".
 describe('toastName', () => {
@@ -43,24 +36,12 @@ describe('the toasts that name a design or folder', () => {
   const longest = 'W'.repeat(200);
 
   it('fall back to a generic word when the name is unknown', () => {
-    expect(designDeletedMessage(undefined)).toBe('Design deleted');
-    expect(designDuplicatedMessage('')).toBe('Design duplicated');
-    expect(designMovedMessage(null, 'my-designs')).toBe('Design moved to My Work');
-    expect(designMovedMessage('Roadmap', { team: '' })).toBe(
-      '“Roadmap” moved to the team library',
-    );
     expect(DESIGN_FAILURE.move()).toBe('Could not move the design. Try again.');
     expect(FOLDER_FAILURE.delete(null)).toBe('Could not delete the folder. Try again.');
   });
 
   it('stay within the 90-character ceiling however long the names are', () => {
     const messages = [
-      designDeletedMessage(longest),
-      designRestoredMessage(longest),
-      designRestoreFailedMessage(longest),
-      designDuplicatedMessage(longest),
-      designMovedMessage(longest, { folder: longest }),
-      designMovedMessage(longest, { team: longest }),
       ...Object.values(DESIGN_FAILURE).map((copy) => copy(longest)),
       ...Object.values(FOLDER_FAILURE).map((copy) => copy(longest)),
     ];

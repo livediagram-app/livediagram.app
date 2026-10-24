@@ -42,8 +42,8 @@ scrolled away, can tell which one it was: "“Roadmap” deleted", "“Roadmap�
   again.", "moved to the team library". The surface never shows empty quotes.
 - **Where it went is named too**: the folder, or My Work. A team is named when the surface knows it, else "the
   team library".
-- The wording lives in one place per family, so every surface says the same: `apps/live/lib/design-toast-copy.ts`
-  (delete, restore, move, duplicate) and `apps/live/lib/write-failure-copy.ts` (a failed folder or design write).
+- The wording lives in one place per family, so every surface says the same: `apps/live/lib/write-failure-copy.ts`
+  for a failed folder or design write.
 
 ## Tones
 
