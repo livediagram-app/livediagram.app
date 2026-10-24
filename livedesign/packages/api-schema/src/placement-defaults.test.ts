@@ -1,48 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { EDITOR_MODES } from '@livedesign/design';
-import {
-  PLACEMENT_DEFAULT_KEYS,
-  creationIntentOf,
-  defaultKeysFor,
-  isPlacementDefaultKey,
-  placementDefaultTelemetryType,
-  readCreationIntent,
-} from './placement-defaults';
+import { creationIntentOf, readCreationIntent } from './placement-defaults';
 
-// Default folders (docs/specs/013-workspace/default-folders.md): the keys, generated from the closed
-// list of editor modes, the creation intent a create carries, and the keys a create tries.
-
-describe('PLACEMENT_DEFAULT_KEYS', () => {
-  it('holds the one Pages key', () => {
-    expect(PLACEMENT_DEFAULT_KEYS).toEqual(['mode:pages']);
-  });
-
-  it('has one mode key per editor mode, in their order', () => {
-    expect(PLACEMENT_DEFAULT_KEYS).toEqual(EDITOR_MODES.map((mode) => `mode:${mode}`));
-  });
-});
-
-describe('isPlacementDefaultKey', () => {
-  it('accepts mode:pages', () => {
-    expect(isPlacementDefaultKey('mode:pages')).toBe(true);
-  });
-
-  it.each([
-    ['mode:diagram'],
-    ['mode:draw'],
-    ['mode:plan'],
-    ['template:kanban'],
-    ['template:retrospective'],
-    ['kind:diagram'],
-    ['mode:'],
-    ['pages'],
-    [''],
-    [3],
-    [null],
-  ])('refuses %j', (value) => {
-    expect(isPlacementDefaultKey(value)).toBe(false);
-  });
-});
+// The creation intent a create carries (docs/specs/013-workspace/default-folders.md).
 
 describe('creationIntentOf', () => {
   it('reads a tab opening in Pages', () => {
@@ -93,17 +52,5 @@ describe('readCreationIntent', () => {
     ['an unknown tab kind', { mode: 'pages', tabKind: 'whiteboard' }],
   ])('refuses %s', (_label, value) => {
     expect(readCreationIntent(value)).toEqual({ ok: false });
-  });
-});
-
-describe('defaultKeysFor', () => {
-  it('tries the mode key', () => {
-    expect(defaultKeysFor({ mode: 'pages', tabKind: 'diagram' })).toEqual(['mode:pages']);
-  });
-});
-
-describe('placementDefaultTelemetryType', () => {
-  it('names one closed value per key', () => {
-    expect(PLACEMENT_DEFAULT_KEYS.map(placementDefaultTelemetryType)).toEqual(['DefaultModePages']);
   });
 });

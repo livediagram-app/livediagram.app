@@ -101,19 +101,6 @@ export async function getTabBody(
   return row ? { id: row.id, data: row.data, elementCount: row.element_count ?? null } : null;
 }
 
-// How much the design's first tab has to draw (drawnCount): its stored count, or a parse of its body while the count is
-// not yet known. Zero with no tab or an unreadable body. Needs no snapshot store, unlike a render.
-export async function firstTabElementCount(env: DesignEnv, designId: string): Promise<number> {
-  const body = await getTabBody(env, designId);
-  if (!body) return 0;
-  if (body.elementCount !== null) return body.elementCount;
-  try {
-    return drawnCount(JSON.parse(body.data) as { elements?: unknown });
-  } catch {
-    return 0;
-  }
-}
-
 // The lazy backfill (the baseline migration): a reader that has parsed a body whose count is still unknown
 // records it. Only ever fills a null, so it can never undo a write's own count.
 export async function stampTabElementCount(

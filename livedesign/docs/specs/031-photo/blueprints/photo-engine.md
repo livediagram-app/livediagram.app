@@ -288,9 +288,7 @@ KEY (tab_id, blob_id)) WITHOUT ROWID`; indexes `photo_blob_refs_blob_idx (blob_i
 - Bytes are sniffed by magic number; no SVG or other active content is accepted; served with
   `X-Content-Type-Options: nosniff`.
 - The batch decoder bounds every length against the body before reading.
-- EXIF: a source picture is re-encoded in the browser before upload (decoding drops metadata), except a JPEG source
-  passes through the same APP-segment strip as gallery uploads (`stripJpegMetadata`, shared from the api into
-  `@livedesign/api-schema` if needed, else re-encoded).
+- EXIF: a source picture, a JPEG included, is re-encoded in the browser before upload (decoding drops metadata).
 
 ## Performance and limits
 

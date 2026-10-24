@@ -102,24 +102,6 @@ export function parseWorkbenchOrigin(
 }
 
 // ---------------------------------------------------------------------
-// Refusal codes
-// ---------------------------------------------------------------------
-
-export const WORKBENCH_ERROR_CODES = [
-  'invalid_origin',
-  'pairing_required',
-  'invalid_ticket',
-  'invalid_session',
-  'workbench_confined',
-  'workbench_read_only',
-  'token_required',
-  'not_a_workbench_session',
-  'pairing_answered',
-  'pairing_expired',
-  'invalid_value',
-] as const;
-
-// ---------------------------------------------------------------------
 // Wire types (blueprint "Wire types")
 // ---------------------------------------------------------------------
 

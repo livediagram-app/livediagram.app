@@ -13,7 +13,6 @@ export const TRASH_RETENTION_MS = TRASH_RETENTION_DAYS * DAY_MS;
 // moves it to the Trash (docs/specs/013-workspace/empty-design-cleanup.md).
 // Operator decision; the help article promises it.
 export const EMPTY_DESIGN_STALE_DAYS = 30;
-export const EMPTY_DESIGN_STALE_MS = EMPTY_DESIGN_STALE_DAYS * DAY_MS;
 
 // Why a design is in the Trash: someone deleted it, or the clean-up moved it
 // because it stayed empty. The database stores NULL for `deleted`.

@@ -78,11 +78,11 @@ drifting.
 ### Cascades
 
 - **CSS cascades** read `min(calc(var(--stagger-i, 0) * var(--motion-cascade-step)), var(--motion-cascade-cap))`.
-  They're `.stagger-enter`, `.lvd-menu-stagger > *`, `.lvd-cascade > *`, and the Timeline fans
-  `.tl-fan-out` / `.tl-fan-out-up` through their inline delays. The `nth-child` ladders in
+  They're `.stagger-enter`, `.lvd-menu-stagger > *`, `.lvd-cascade > *`, and `.tl-fan-out` /
+  `.tl-fan-out-up` through their inline delays. The `nth-child` ladders in
   `.lvd-menu-stagger` and `.lvd-cascade` are rewritten with step 10ms and cap 100ms: the first
   child at 0ms, the eleventh child and every later one at 100ms.
-- **JS cascades** call `cascadeDelayMs`. That's `Timeline` and `ExpandedStack`.
+- **JS cascades** call `cascadeDelayMs`.
 - **Cascade items run at `micro`**: `menu-drop`, `lvd-row-in`, `tl-fan-out(-up)`, and `pop-in` /
   `slide-row-in` / `fade-in` when used with `.stagger-enter`.
 - `ToolbarStripRail` drops its `--stagger-step: 22ms` override and takes the shared step.
@@ -345,7 +345,6 @@ logging, because motion isn't a decision point.
 | Source: classes, hover, inline, templates    | `../packages/style-guards/src/motion-budget.test.ts`                                        |
 | The shared theme is within budget            | `packages/tailwind-config/src/theme-budget.test.ts`                                         |
 | Each workspace is within budget              | `motion-budget.test.ts` in live, help, marketing, ui and template-previews                  |
-| Timeline cascades use the shared cap         | `packages/ui/src/timeline/ExpandedStack.test.tsx`                                           |
 | Exit holds equal their tokens                | `ToolbarStripRail.test.tsx`, `TabPresenceStack.test.tsx`                                    |
 | Reduced motion creates no transitions        | `apps/live/app/reduced-motion.test.ts`                                                      |
 | Canvas entry keeps 360ms                     | `apps/live/app/canvas-motion.test.ts`, `apps/live/components/canvas/canvas-motion.test.tsx` |

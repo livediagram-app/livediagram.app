@@ -11,8 +11,7 @@
 // view or edit, because a view-only visitor has to be able to open the
 // design), and it returned `ownerId` intact — so the redaction guarded one
 // door of two. Hence a module: the rule now has one home, both doors, and a
-// test surface of its own, matching the precedent set by image-strip /
-// origin-check / share-link-row.
+// test surface of its own, as origin-check has.
 //
 // Every non-owner reader already behaved as though this value might be blank:
 // the client reads it only to compute `isOwner` (correctly false for a blank),

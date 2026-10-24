@@ -115,36 +115,6 @@ export type SharedTabsSummary = {
   designs: number;
 };
 
-// One row of the "Shared with you" list (shared_with, migration 0010):
-// a design a non-owner has previously opened via a share link. The api
-// worker (`listSharedWith` in db/shared.ts) builds this by joining
-// shared_with → designs → participants; the live editor's Explorer
-// renders it. Canonical home here so the worker's emit and the client's
-// read can't drift apart (consistency review #7) — both import this one
-// type instead of redeclaring the shape on each side.
-export type SharedWithItem = {
-  id: string;
-  name: string;
-  savedAt: number;
-  // The role the visitor was granted on the share link they used.
-  role: ShareRole;
-  // Still-live share code for that same role, so the client can rebuild
-  // the openable `/design/<id>?s=<code>` URL — without it the link
-  // lands on the owner-only path and 404s. The worker filters out rows
-  // whose share was revoked (no code left), so this is never null here.
-  shareCode: string;
-  // The scope the visitor was granted (docs/specs/013-workspace/tab-scoped-share-links.md); null = All tabs.
-  // `shareCode` always carries this same scope, never a broader one.
-  tabId: string | null;
-  // Owner's display name + avatar colour, joined from participants.
-  // Nullable: signed-in owners may have no participant row yet, so
-  // the UI shows an "Unknown owner" placeholder.
-  ownerName: string | null;
-  ownerColor: string | null;
-  // Nothing drawn on the tab this visitor sees (the scoped tab, else the first); see DesignSummary.empty.
-  empty: boolean;
-};
-
 // ---------------------------------------------------------------------
 // Tabs
 // ---------------------------------------------------------------------
@@ -294,28 +264,6 @@ export type TeamInvite = {
   invitedAt: number;
   role: TeamRole;
   invitedByName: string | null;
-};
-
-// The team's shareable invite link (docs/specs/013-workspace/teams.md): an admin turns it on, it
-// expires after a week, and anyone signed in who opens it can join.
-// Null in the team detail when off / expired. Admin-only.
-export type TeamInviteLink = {
-  token: string;
-  expiresAt: number;
-};
-
-// What a join token resolves to (the /join landing reads this to show
-// "Join <team>?"), plus whether the caller is already a member.
-export type TeamInviteLinkInfo = {
-  team: Team;
-  memberCount: number;
-  alreadyMember: boolean;
-};
-
-// Result of joining via an invite link.
-export type TeamInviteLinkJoin = {
-  teamId: string;
-  alreadyMember: boolean;
 };
 
 // ---------------------------------------------------------------------

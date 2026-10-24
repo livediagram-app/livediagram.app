@@ -10,7 +10,7 @@ import {
   type GrantCaller,
   type ItemGrant,
 } from '@liveworkspace/index-app';
-import type { GrantClaims, IndexAppClient, IndexClient } from '@liveworkspace/index-client';
+import type { IndexAppClient, IndexClient } from '@liveworkspace/index-client';
 import type { Env } from './types';
 
 export { indexApiUrl, linkCodeOf };
@@ -25,13 +25,6 @@ export type DesignGrant = ItemGrant;
 
 export const setGrantVerifierForTests = indexService.setGrantVerifierForTests;
 export const clearGrantCacheForTests = indexService.clearGrantCacheForTests;
-
-// The claims of a grant for this design, or null for a missing, forged, expired or misaddressed one.
-export const verifyDesignGrant = (
-  env: Pick<Env, 'INDEX_ORIGIN'>,
-  token: string | null | undefined,
-  designId: string,
-): Promise<GrantClaims | null> => indexService.verifyGrant(env, token, designId);
 
 export { itemGrantOf as designGrantOf } from '@liveworkspace/index-app';
 
