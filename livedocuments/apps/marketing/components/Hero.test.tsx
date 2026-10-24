@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { RECENT_DIAGRAMS_KEY } from '@livedocuments/api-schema';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { seededRandom } from '@livedocuments/document';
 import {
@@ -15,7 +14,7 @@ import { Hero } from './Hero';
 import { HERO_FAN_SWAP_MS } from './HeroFan';
 
 // docs/specs/019-marketing/marketing-site.md "Hero": the badge and the question, the template search
-// with Start Blank in its bar, a returning visitor's recent documents, and the dealing fan.
+// with Start Blank in its bar, and the dealing fan.
 
 let reduceMotion = false;
 // Whether the window is wide enough for the whole fan (HERO_FAN_FULL_MIN_PX).
@@ -176,7 +175,8 @@ describe('the hero', () => {
           mode: 'pages',
         })),
       });
-    localStorage.setItem(RECENT_DIAGRAMS_KEY, note(6));
+    // The note older editors left (docs/specs/019-marketing/marketing-site.md "Hero").
+    localStorage.setItem('livedocuments:recent-diagrams:v1', note(6));
     render(<Hero />);
     expect(fanTitles()).toHaveLength(HERO_FAN_SLOTS);
     expect(screen.queryByRole('link', { name: /Explorer Home/ })).toBeNull();

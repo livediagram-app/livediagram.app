@@ -1,6 +1,5 @@
-// Relative-time wording shared by the editor's lists (apps/editor/lib/relative-time.ts, which adds the
-// compact formats and the shared clock) and the landing page's Welcome back tiles
-// (docs/specs/019-marketing/returning-visitor.md), so "2 hours ago" reads the same everywhere.
+// Relative-time wording for the editor's lists (apps/editor/lib/relative-time.ts, which adds the
+// compact formats and the shared clock), so "2 hours ago" reads the same everywhere.
 
 // The ladder both the verbose and the compact formatter walk. They agreed on
 // every rung from one minute up — the same singular cases, the same

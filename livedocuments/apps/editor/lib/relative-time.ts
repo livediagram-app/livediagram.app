@@ -14,8 +14,7 @@
 
 import { useSyncExternalStore } from 'react';
 
-// The verbose and short ladders (and relativeSince) live in @livedocuments/ui, so the landing page's
-// Welcome back tiles (docs/specs/019-marketing/returning-visitor.md) read exactly as the app's rows do.
+// The verbose and short ladders (and relativeSince) live in @livedocuments/ui.
 export { formatRelativeTime, formatRelativeTimeShort, relativeSince } from '@livedocuments/ui';
 
 // Forward-looking compact countdown ("6d left" / "3h left"), used by

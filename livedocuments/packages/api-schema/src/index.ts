@@ -532,8 +532,8 @@ export * from './document-views';
 // The diagram lint's report (docs/specs/024-agents/diagram-lint.md).
 export * from './lint';
 export * from './ref-errors';
-// Returning visitor (docs/specs/019-marketing/returning-visitor.md).
-export * from './recent-diagrams';
+// A document snapshot's SVG, for thumbnails (docs/specs/006-document/document-snapshots.md).
+export * from './snapshot-svg';
 
 // GET /api/tokens/current (docs/specs/015-api/blueprints/cli.md "Token self-service"): the token a request
 // presented, for `livedocuments auth status`. `role` is `full` or `read-only`.

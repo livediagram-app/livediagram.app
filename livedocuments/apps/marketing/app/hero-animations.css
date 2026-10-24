@@ -216,20 +216,3 @@
     stroke-dashoffset: -1;
   }
 }
-
-/* A returning visitor's document preview (components/RecentPreview.tsx) fades in as the cache answers. */
-.hero-recent-thumb {
-  animation: hero-recent-thumb-in 240ms ease-out both;
-}
-
-@keyframes hero-recent-thumb-in {
-  from {
-    opacity: 0;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hero-recent-thumb {
-    animation: none;
-  }
-}
