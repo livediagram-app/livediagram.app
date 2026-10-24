@@ -46,6 +46,7 @@
     "@liveworkspace/sites": "workspace:*",
     "@liveworkspace/style-guards": "workspace:*",
     "@liveworkspace/telemetry-client": "workspace:*",
-    "@liveworkspace/trusted-types": "workspace:*"
+    "@liveworkspace/trusted-types": "workspace:*",
+    "@liveworkspace/ui": "workspace:*"
   }
 }

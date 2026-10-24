@@ -18,7 +18,12 @@ const nextConfig: NextConfig = {
   // local router (docs/specs/016-platform/router-app.md) can disambiguate `/_next` the same way prod
   // does; standalone `localhost:3302` keeps working either way.
   assetPrefix: '/live',
-  transpilePackages: ['@livedocuments/ui', '@livedocuments/document', '@livedocuments/api-schema'],
+  transpilePackages: [
+    '@livedocuments/ui',
+    '@liveworkspace/ui',
+    '@livedocuments/document',
+    '@livedocuments/api-schema',
+  ],
 };
 
 export default nextConfig;

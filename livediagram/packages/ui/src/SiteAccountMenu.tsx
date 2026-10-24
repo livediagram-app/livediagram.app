@@ -8,8 +8,7 @@ import {
 import { SIGNED_IN_HINT_COOKIE } from '@livediagram/api-schema';
 import { lucideChevronDown, lucideKey, lucideSettings } from '@livediagram/icons/lucide';
 import { lucideGlyph } from './icons/lucide-glyph';
-import { useMenu, useMenuButton, type MenuInitialFocus } from './menu';
-import { useClickOutside } from './useClickOutside';
+import { useMenu, useMenuButton, type MenuInitialFocus, useClickOutside } from '@liveworkspace/ui';
 
 // The account menu on this app's own pages (@liveworkspace/account-menu's AppAccountMenu), with this package's menu
 // hooks and icons and this app's hint cookie. Loaded lazily by SiteAccount: at once for someone signed in, and for a

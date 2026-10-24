@@ -19,11 +19,11 @@ const OUTSIDE_RENDER: Record<string, string> = {
   // Hooks: read in effects, handlers, store snapshots and subscriptions, or module state the browser-only Explorer reads.
   'packages/ui/src/useBrandShimmer.ts': 'inside an effect',
   'packages/ui/src/useBrandSpin.ts': 'inside an effect',
-  'packages/ui/src/useClickOutside.ts': 'inside an effect',
-  'packages/ui/src/useEscape.ts': 'inside an effect',
-  'packages/ui/src/useFocusTrap.ts': 'coarsePointer, called from the open effect',
-  'packages/ui/src/useMediaQuery.ts': 'subscribe and snapshot of an external store',
-  'packages/ui/src/useVisualViewportBand.ts': 'subscribe and snapshot of an external store',
+  '../packages/ui/src/useClickOutside.ts': 'inside an effect',
+  '../packages/ui/src/useEscape.ts': 'inside an effect',
+  '../packages/ui/src/useFocusTrap.ts': 'coarsePointer, called from the open effect',
+  '../packages/ui/src/useMediaQuery.ts': 'subscribe and snapshot of an external store',
+  '../packages/ui/src/useVisualViewportBand.ts': 'subscribe and snapshot of an external store',
   'apps/editor/app/document/[id]/useTabEntryEffects.ts': 'inside an effect',
   'apps/editor/app/document/[id]/useCollabDeepLink.ts': 'inside an effect',
   'apps/editor/hooks/ui/usePanelDock.ts': 'inside an effect',
@@ -49,7 +49,8 @@ function sources(dir: string, out: string[] = []): string[] {
   return out;
 }
 
-const files = ['apps', 'packages'].flatMap((d) => sources(`${repo}${d}`));
+// The shared design system (@liveworkspace/ui) renders here too, so its hooks are held to the rule as well.
+const files = ['apps', 'packages', '../packages/ui/src'].flatMap((d) => sources(`${repo}${d}`));
 const rel = (path: string) => path.slice(repo.length);
 
 describe('browser globals in components', () => {

@@ -23,7 +23,7 @@
     "@liveplanner/forms": "workspace:*",
     "@liveplanner/icons": "workspace:*",
     "@liveplanner/items": "workspace:*",
-    "@liveplanner/ui": "workspace:*"
+    "@liveworkspace/ui": "workspace:*"
   },
   "devDependencies": {
     "@liveworkspace/oxlint-config": "workspace:*",

@@ -3,7 +3,7 @@
 import { lucideCircleHelp } from '@livediagram/icons/lucide';
 import { COMMUNITY_HELP, type CommunityHelpArticle } from '@livediagram/help-registry/community';
 import { siteTrack } from '@livediagram/telemetry-client';
-import { buttonClassName, ButtonContent } from '../Button';
+import { buttonClassName, ButtonContent } from '@liveworkspace/ui';
 import { lucideGlyph } from '../icons/lucide-glyph';
 
 const HelpIcon = lucideGlyph(lucideCircleHelp, 14);

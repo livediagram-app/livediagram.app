@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 // Marketing's share rail sits beside a max-w-6xl page from xl. A wider max-w-7xl column fills the
 // window there, so its text ran under the rail at 1280px; each one takes RAIL_CLEAR_PADDING
-// (packages/ui/src/share-rail-clearance.ts) instead of its own side padding.
+// (../packages/ui/src/share-rail-clearance.ts) instead of its own side padding.
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 
 function sources(dir: string): string[] {

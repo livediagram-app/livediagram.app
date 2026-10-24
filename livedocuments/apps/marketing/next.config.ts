@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
   ...liveworkspaceNextConfig(),
   transpilePackages: [
     '@livedocuments/ui',
+    '@liveworkspace/ui',
     '@liveworkspace/comparisons',
     '@liveworkspace/account-menu',
   ],

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
-import { Button } from '../Button';
+import { Button } from '@liveworkspace/ui';
 import { CheckIcon, CopyIcon, RefreshIcon } from '../icons';
 import { repairBrowserStorage } from './repair';
 

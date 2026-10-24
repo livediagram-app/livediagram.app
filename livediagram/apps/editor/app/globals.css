@@ -51,6 +51,8 @@
  * components (e.g. the <Brand> mark's hover-rotate) are generated here too.
  * Tailwind v4 skips node_modules, where the workspace package is symlinked. */
 @source '../../../packages/ui/src';
+/* The design system every app shares (@liveworkspace/ui), which the product's ui re-exports. */
+@source '../../../../packages/ui/src';
 /* The shared template-browse art (PreviewFan) carries its own utility classes. */
 @source '../../../packages/template-previews/src/PreviewFan.tsx';
 /* The shared Settings view (@liveworkspace/settings-ui) carries its own utility classes. */
@@ -211,7 +213,7 @@
     forwards;
   /* Empty-state illustration motion (--animate-empty-*) now lives in the
      shared tailwind theme (@livediagram/tailwind-config) so every app's
-     EmptyState animates alike; see packages/ui/src/EmptyState.tsx. */
+     EmptyState animates alike; see ../packages/ui/src/EmptyState.tsx. */
 }
 
 /* The syncing arrows turn about their own centre (transform-box: fill-box). */

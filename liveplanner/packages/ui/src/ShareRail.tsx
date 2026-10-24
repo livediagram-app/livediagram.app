@@ -2,7 +2,7 @@
 
 import { SiteAppearanceToggle } from './appearance/SiteAppearanceToggle';
 import { SITE_PITCH, SITE_URL as SHARE_URL } from './site';
-import { useCopiedFlash } from './useCopiedFlash';
+import { useCopiedFlash } from '@liveworkspace/ui';
 
 // The URL we want people to pass along is the shared site origin (./site), so
 // this rail is shareable from any app that renders the shared SiteHeader.

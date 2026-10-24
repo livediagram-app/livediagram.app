@@ -2,7 +2,7 @@
 
 import type { CommunityAuthor } from '@livediagram/api-schema';
 import { IDENTITY_FILL, identityVars } from '../identity-fill';
-import { GlyphDisc } from '../optical';
+import { GlyphDisc } from '@liveworkspace/ui';
 
 // The one initial shown for an author (docs/specs/025-community/community.md).
 export function communityAuthorInitial(name: string): string {

@@ -8,7 +8,7 @@ import {
   glideStops,
   useLoopPhase,
   type Point,
-} from './build-animation-kit';
+} from '@liveworkspace/ui/build-animation-kit';
 
 // Decorative "someone is filling in a sheet" loop, DiagramBuildAnimation's sibling for data: the same "You" cursor
 // types a value into each row of a small table, a bar in the next column growing with it; then it drags down the

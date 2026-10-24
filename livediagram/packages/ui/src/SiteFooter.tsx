@@ -2,7 +2,7 @@ import { lucideBookOpen, lucidePenTool, lucideSparkles } from '@livediagram/icon
 
 import { Brand } from './Brand';
 import { CommunityFooterLink } from './community/CommunityFooterLink';
-import { CONTRIBUTORS } from './contributors';
+import { CONTRIBUTORS } from '@liveworkspace/ui';
 import { Glyph } from './icons/Glyph';
 import { lucideGlyph } from './icons/lucide-glyph';
 import { REPO_URL } from './site';

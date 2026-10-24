@@ -18,17 +18,15 @@
 @source '../../../../livedocuments/packages/ui/src/Brand.tsx';
 @source '../../../../livedesign/packages/ui/src/Brand.tsx';
 @source '../../../../livediagram/packages/ui/src/appearance';
-@source '../../../../livediagram/packages/ui/src/Tooltip.tsx';
 /* The account menu, shared with every app's marketing header. */
 @source '../../../../packages/account-menu/src';
-/* The Settings panel: the shared Settings view, in livediagram's dialog frame. */
+/* The Settings panel: the shared Settings view, and livediagram's dialog close button. */
 @source '../../../../packages/settings-ui/src';
 @source '../../../../livediagram/packages/ui/src/dialog';
 @source '../../../../livediagram/packages/ui/src/CompactEmptyState.tsx';
-@source '../../../../livediagram/packages/ui/src/HoverCard.tsx';
-/* The surface a hover card and a tooltip draw on (its pill, card, arrow and z-index), which the two files above
- * only place. Unscanned, the Settings dialog's and the Explorer bottom bar's hover cards lost their layer and frame. */
-@source '../../../../livediagram/packages/ui/src/hint';
+/* The design system every app shares (@liveworkspace/ui): the Tooltip and HoverCard with the hint surface they
+ * draw on, the dialog frame, the buttons and fields. All of it, so a piece a page starts using is never unstyled. */
+@source '../../../../packages/ui/src';
 
 /* The platform's own accent: slate, so no one app's colour stands for all of them. */
 :root {
