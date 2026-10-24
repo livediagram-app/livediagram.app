@@ -497,7 +497,7 @@ export * from './telemetry-schema';
 export * from './timing-telemetry';
 export * from './server-emitted-events';
 export * from './error-telemetry';
-export * from './timeline';
+export * from './document-conversion';
 export * from './activity';
 export * from './responses';
 export * from './trash';
@@ -517,10 +517,9 @@ export {
   type PlacementRejection,
 } from './placement';
 
-// Default folders: the keys in force and the creation intent a create carries
-// (docs/specs/013-workspace/default-folders.md).
+// The creation intent a create carries (docs/specs/013-workspace/default-folders.md).
 export * from './placement-defaults';
-// Explorer Home: opens, Jump back in and What happened (docs/specs/013-workspace/explorer-home.md).
+// Explorer Home's use window (docs/specs/013-workspace/explorer-home.md).
 export * from './home';
 export * from './drag-preview';
 export * from './article-caret';
