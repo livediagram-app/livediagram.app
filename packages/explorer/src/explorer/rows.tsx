@@ -5,7 +5,8 @@
 // changed, and the context's callbacks are stable, so a rename or a star re-renders one row, not the list.
 
 import { memo, useCallback, useMemo } from 'react';
-import type { Folder, FolderPreview } from '@liveworkspace/index-client';
+import type { Folder } from '@liveworkspace/index-client';
+import type { ShownFolderPreview } from '../data/useFolderPreviews';
 import type { ShownItem } from '../data/overlay';
 import { CountBadge } from '../ui/CountBadge';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
@@ -16,7 +17,7 @@ import { DROP_ROW, useDropTarget, useFolderDrag, useItemDrag } from '../drag/dra
 import { FolderSolidIcon, ItemIcon } from '../ui/icons';
 import { AppMark, FavouriteMarker, FolderChip, MadeByAiBadge, VisibilityBadge } from './badges';
 import { useExplorer } from './context';
-import { FolderMosaic } from './FolderMosaic';
+import { elsewhereLabel, FolderMosaic } from './FolderMosaic';
 import { FolderMenu, ItemMenu } from './menus';
 import { useExtras } from './extras';
 import { usePersonName } from '../data/usePeople';
@@ -222,14 +223,26 @@ export function useFolderBits(folder: Folder) {
 function FolderCount({
   subfolders,
   items,
+  elsewhere,
   className,
 }: {
   subfolders: number;
   items: number | undefined;
+  // With none of this app's items, how many other apps' it holds: said, so the folder never reads as empty.
+  elsewhere?: number;
   className?: string;
 }) {
   const { words } = useExplorer();
   const count = subfolders + (items ?? 0);
+  if (count === 0 && elsewhere)
+    return (
+      <span
+        data-folder-elsewhere={elsewhere}
+        className={`inline-flex shrink-0 items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300 ${className ?? ''}`}
+      >
+        {elsewhereLabel(elsewhere)}
+      </span>
+    );
   if (count === 0) return null;
   const label = folderCountLabel(subfolders, items, words);
   return (
@@ -246,6 +259,7 @@ export const FolderRow = memo(function FolderRow({
   folder,
   renaming,
   itemCount,
+  elsewhere,
   showOwner = false,
 }: {
   folder: Folder;
@@ -254,6 +268,8 @@ export const FolderRow = memo(function FolderRow({
   showOwner?: boolean;
   // How many items it holds, once the previews have said.
   itemCount?: number;
+  // With none of this app's, how many other apps' items it holds.
+  elsewhere?: number;
 }) {
   const bits = useFolderBits(folder);
   const menu = useRowMenu({ disabled: renaming });
@@ -278,7 +294,12 @@ export const FolderRow = memo(function FolderRow({
         </span>
       )}
       <DefaultFolderMarker folderId={folder.id} />
-      <FolderCount subfolders={bits.childCount} items={itemCount} className="ml-1" />
+      <FolderCount
+        subfolders={bits.childCount}
+        items={itemCount}
+        elsewhere={elsewhere}
+        className="ml-1"
+      />
     </>
   );
   return (
@@ -429,7 +450,7 @@ export const FolderCard = memo(function FolderCard({
   folder: Folder;
   renaming: boolean;
   // What is inside, once the index has said (useFolderPreviews); the plain glyph until then.
-  preview?: FolderPreview;
+  preview?: ShownFolderPreview;
 }) {
   const bits = useFolderBits(folder);
   const { folders } = useExplorer();

@@ -97,6 +97,24 @@ registers it in the index in one step, then opens it.
 What a browser keeps offline belongs to its app's origin. On the app's address the Explorer lists it
 (This Browser); on liveworkspace.app, which can't read it, the sidebar links to the app's own offline view.
 
+#### A place that is empty here but not elsewhere
+
+Filtered to one app, a folder (or My Work, Unsorted, a team) holding only other apps' items would read as empty,
+and someone might delete it thinking so. It never does:
+
+- **The place itself.** Once the app's own list comes back empty, the Explorer asks the place's first page across
+  every app (one request, `useOtherApps`). If other apps keep anything there, the page shows, in place of "This
+  folder is empty", a fan of up to three of those items' own cards, each edged in its app's colour and named,
+  "This folder isn't empty", what it holds ("3 plans and 1 document", "at least …" when there is more than a
+  page), a chip per app, **Show All Apps** (switches the filter) and **New <Kind>**. The editors' Explorer panel
+  shows the same, sized for the pane.
+- **Its card.** A folder card whose preview has none of the app's items is asked again across every app, in one
+  request for all such cards on screen. With any, its mosaic shows those items faded under "N in other apps";
+  the panel's folder card reads "N in other apps".
+
+Deleting a folder never deletes what is in it (its folders and items move up a level), so this is about not
+misleading, not about loss.
+
 #### The Explorer on each app's address
 
 Each app's router answers `/explorer/*` by fetching the same page from liveworkspace.app, so the address bar

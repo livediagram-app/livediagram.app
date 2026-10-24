@@ -34,6 +34,9 @@ import { ExplorerDialogs } from '../explorer/Dialogs';
 import { AppMark, FavouriteMarker, VisibilityBadge } from '../explorer/badges';
 import { FolderMenu, ItemMenu, MyWorkMenu } from '../explorer/menus';
 import { emptyCopy } from '../explorer/EmptyPane';
+import { OtherAppsHere } from '../explorer/OtherAppsHere';
+import { elsewhereLabel } from '../explorer/FolderMosaic';
+import { useOtherApps } from '../data/useOtherApps';
 import { InboxPane } from '../explorer/InboxPane';
 import { daysLeftLabel, trashedOnLabel, trashGroups } from '../explorer/TrashPane';
 import {
@@ -1186,13 +1189,31 @@ function PlaceSection({
     trail.unshift(f);
   const here = trail.at(-1)?.name ?? rootLabel;
 
+  // Empty in this app, a folder may still hold other apps' items: the pane says so (useOtherApps).
+  const emptyView: ExplorerView = folderId ? { kind: 'folder', id: folderId } : view;
+  const others = useOtherApps({
+    client,
+    view: emptyView,
+    app,
+    enabled:
+      space &&
+      filter === 'app' &&
+      !state.loading &&
+      !state.error &&
+      !folders.loading &&
+      folderRows.length + state.items.length === 0,
+    epoch,
+  });
+
   let content: ReactNode;
   if (state.error) {
     content = <PaneFailed message="This list could not load." onRetry={state.retry} />;
   } else if (state.loading || (space && folders.loading)) {
     content = <PaneSkeleton />;
+  } else if (folderRows.length + state.items.length === 0 && others) {
+    content = <OtherAppsHere view={emptyView} others={others} compact />;
   } else if (folderRows.length + state.items.length === 0) {
-    const copy = emptyCopy(folderId ? { kind: 'folder', id: folderId } : view, words);
+    const copy = emptyCopy(emptyView, words);
     content = <PaneEmpty icon={copy.icon} title={copy.title} description={copy.description} />;
   } else {
     content = (
@@ -1205,6 +1226,7 @@ function PlaceSection({
                 key={f.id}
                 folder={f}
                 itemCount={previews.get(f.id)?.itemCount}
+                elsewhere={previews.get(f.id)?.elsewhere?.itemCount}
                 onOpen={() => onOpenFolder(f.id)}
               />
             ))}
@@ -1248,11 +1270,14 @@ function PlaceSection({
 const FolderCard = memo(function FolderCard({
   folder,
   itemCount,
+  elsewhere,
   onOpen,
 }: {
   folder: Folder;
   // How many items it holds, once the index has said.
   itemCount?: number;
+  // With none of this app's, how many other apps' items it holds (useFolderPreviews).
+  elsewhere?: number;
   onOpen: () => void;
 }) {
   const { folders, renamingId, setRenamingId, words } = useExplorer();
@@ -1260,11 +1285,17 @@ const FolderCard = memo(function FolderCard({
   const menu = useRowMenu({ disabled: editing });
   const drop = useDropTarget({ teamId: folder.teamId, folderId: folder.id });
   const drag = useFolderDrag(folder, editing);
-  const count = folderCountLabel(
+  const own = folderCountLabel(
     folders.childrenOf(folder.id, folder.teamId).length,
-    itemCount,
+    elsewhere ? undefined : itemCount,
     words,
   );
+  // "2 folders · 3 in other apps": a folder of another app's items never reads as empty.
+  const count = elsewhere
+    ? own === 'Folder'
+      ? elsewhereLabel(elsewhere)
+      : `${own} · ${elsewhereLabel(elsewhere)}`
+    : own;
   const commit = (name: string) => {
     const next = name.trim();
     if (next && next !== folder.name) void folders.rename(folder.id, next);

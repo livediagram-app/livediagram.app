@@ -9,6 +9,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import type { Folder } from '@liveworkspace/index-client';
 import { folderPath, type FolderStore } from '../data/useFolders';
 import { useItemList } from '../data/useItemList';
+import { useOtherApps } from '../data/useOtherApps';
 import { makeListLens, viewList, type ListLens, type SharedMeta } from '../data/viewLists';
 import { isLensSet, itemSubject, parseLens, type ParsedLens } from '../lens';
 import {
@@ -25,6 +26,7 @@ import { CardView } from './CardView';
 import { useExplorer } from './context';
 import { DetailsView } from './DetailsView';
 import { EmptyPane, SkeletonRows } from './EmptyPane';
+import { OtherAppsHere } from './OtherAppsHere';
 import { FilteredEmpty, LensAnnouncer, LensBar } from './Lens';
 import { useLensContext } from './SearchField';
 import { TrashNote, TrashPane } from './TrashPane';
@@ -114,6 +116,14 @@ export function ItemsPane({ view, onOpenNav }: { view: ItemsView; onOpenNav?: ()
   const createItem = place ? () => onCreate(place) : undefined;
 
   const empty = !state.loading && state.items.length === 0 && folderRows.length === 0;
+  // Empty in this app, a place may still hold other apps' items: say so, so it is never deleted as empty.
+  const others = useOtherApps({
+    client,
+    view,
+    app,
+    enabled: empty && !state.error && !lensOn && filter === 'app' && PLACE_VIEWS.has(view.kind),
+    epoch,
+  });
 
   // The folder on screen, told to the host once its list is in (FolderShown).
   const { onFolderShown } = ctx;
@@ -156,6 +166,8 @@ export function ItemsPane({ view, onOpenNav }: { view: ItemsView; onOpenNav?: ()
       words={words}
       onClear={() => ctx.navigate(withLens(view, ''), { replace: true })}
     />
+  ) : empty && others ? (
+    <OtherAppsHere view={view} others={others} onCreate={createItem} />
   ) : empty ? (
     <EmptyPane
       view={view}
@@ -250,6 +262,13 @@ function subtreeOf(folders: FolderStore, root: string): ReadonlySet<string> {
 // Where New Folder applies: the places folders live.
 const FOLDER_VIEWS: ReadonlySet<ExplorerView['kind']> = new Set(['all', 'folder', 'team']);
 // Shared With Me and the Trash keep one layout (livediagram's fixed lists).
+// The places whose emptiness may be only this app's: they also hold other apps' items.
+const PLACE_VIEWS: ReadonlySet<ExplorerView['kind']> = new Set([
+  'all',
+  'folder',
+  'team',
+  'unsorted',
+]);
 const FIXED_LAYOUT: ReadonlySet<ExplorerView['kind']> = new Set(['shared', 'trash']);
 const NO_LOAD = async () => ({ items: [], nextCursor: null });
 

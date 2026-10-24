@@ -213,7 +213,9 @@ export function HomeHero({
         </div>
         {art ? (
           // Set down below the corner's Help and close (top-6, 30px tall), so the sheets never sit under them.
-          <div className="relative mt-14 hidden h-72 min-w-[18rem] flex-[1_1_22rem] lg:block">{art}</div>
+          <div className="relative mt-14 hidden h-72 min-w-[18rem] flex-[1_1_22rem] lg:block">
+            {art}
+          </div>
         ) : null}
       </div>
     </section>

@@ -75,6 +75,7 @@ export function ListView({
           folder={f}
           renaming={renamingId === f.id}
           itemCount={previews.get(f.id)?.itemCount}
+          elsewhere={previews.get(f.id)?.elsewhere?.itemCount}
           showOwner={options.showOwner}
         />,
       );

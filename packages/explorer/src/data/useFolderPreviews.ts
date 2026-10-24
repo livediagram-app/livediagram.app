@@ -14,7 +14,13 @@ import {
   type IndexClient,
 } from '@liveworkspace/index-client';
 
-export type FolderPreviews = ReadonlyMap<string, FolderPreview>;
+/** A folder's preview, and, filtered to one app with none of its items inside, what the other apps keep there
+ *  (liveworkspace/docs/one-explorer.md "A place that is empty here but not elsewhere"). */
+export type ShownFolderPreview = FolderPreview & {
+  elsewhere?: Pick<FolderPreview, 'itemCount' | 'items'>;
+};
+
+export type FolderPreviews = ReadonlyMap<string, ShownFolderPreview>;
 
 const NONE: FolderPreviews = new Map();
 
@@ -37,7 +43,7 @@ export function useFolderPreviews({
   const scope = `${app ?? '*'}|${epoch}`;
   const [answered, setAnswered] = useState<{
     scope: string;
-    map: Map<string, FolderPreview>;
+    map: Map<string, ShownFolderPreview>;
     fresh: Map<string, number>;
   }>({ scope, map: new Map(), fresh: new Map() });
   const same = answered.scope === scope;
@@ -67,6 +73,31 @@ export function useFolderPreviews({
             for (const p of previews) map.set(p.folderId, p);
             return { scope, map, fresh };
           });
+          // Filtered to the app, the folders with none of its items are asked again across every app, in one
+          // request, so their cards can show they are not empty.
+          const bare = app
+            ? ids.filter((id) => !previews.some((p) => p.folderId === id && p.itemCount > 0))
+            : [];
+          if (!bare.length) return;
+          return client
+            .folderPreviews(bare, {}, { signal: controller.signal })
+            .then(({ previews: all }) => {
+              const found = all.filter((p) => p.itemCount > 0);
+              if (!found.length) return;
+              setAnswered((prev) => {
+                if (prev.scope !== scope) return prev;
+                const map = new Map(prev.map);
+                for (const p of found) {
+                  const own = map.get(p.folderId);
+                  if (own && own.itemCount === 0)
+                    map.set(p.folderId, {
+                      ...own,
+                      elsewhere: { itemCount: p.itemCount, items: p.items },
+                    });
+                }
+                return { ...prev, map };
+              });
+            });
         })
         .catch(() => {
           // Aborted, or refused: the cards keep what they show.

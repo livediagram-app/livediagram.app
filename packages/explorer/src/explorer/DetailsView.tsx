@@ -10,6 +10,7 @@ import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import { FOLDER_PREVIEW_IDS_MAX, type Folder } from '@liveworkspace/index-client';
 import type { ShownItem } from '../data/overlay';
 import { useFolderPreviews } from '../data/useFolderPreviews';
+import { elsewhereLabel } from './FolderMosaic';
 import { DefaultFolderMarker } from '../defaults/DefaultFolderMarker';
 import { DROP_ROW, useDropTarget, useFolderDrag, useItemDrag } from '../drag/drag';
 import { LIST_CARD, RENAME_INPUT } from '../ui/classes';
@@ -126,6 +127,7 @@ export function DetailsView({
           folder={f}
           renaming={renamingId === f.id}
           itemCount={previews.get(f.id)?.itemCount}
+          elsewhere={previews.get(f.id)?.elsewhere?.itemCount}
           one={words.lowerOne}
           many={words.lowerMany}
         />,
@@ -193,12 +195,15 @@ const DetailsFolderRow = memo(function DetailsFolderRow({
   folder: f,
   renaming,
   itemCount,
+  elsewhere,
   one,
   many,
 }: {
   folder: Folder;
   renaming: boolean;
   itemCount: number | undefined;
+  // With none of this app's, how many other apps' items it holds.
+  elsewhere?: number;
   one: string;
   many: string;
 }) {
@@ -249,6 +254,8 @@ const DetailsFolderRow = memo(function DetailsFolderRow({
       <span className={`${CELLS.size} text-xs tabular-nums text-slate-600 dark:text-slate-300`}>
         {itemCount === undefined ? (
           <NoValue label={NOT_COUNTED} />
+        ) : itemCount === 0 && elsewhere ? (
+          <span data-folder-elsewhere={elsewhere}>{elsewhereLabel(elsewhere)}</span>
         ) : (
           <span data-folder-held="">{formatHeld(itemCount, one, many)}</span>
         )}

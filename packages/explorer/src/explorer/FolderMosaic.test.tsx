@@ -1,4 +1,4 @@
-import { render, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Folder } from '@liveworkspace/index-client';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
@@ -70,10 +70,11 @@ describe('folder cards on the Explorer page', () => {
       />,
     );
     await waitFor(() => expect(document.querySelectorAll('[data-folder-mosaic]')).toHaveLength(2));
-    expect(index.count('folderPreviews')).toBe(1);
-    expect(index.calls.find((c) => c.method === 'folderPreviews')!.args[1]).toEqual({
-      app: 'liveplanner',
-    });
+    // One for the app's items, then one across every app for the cards with none (f3).
+    await waitFor(() => expect(index.count('folderPreviews')).toBe(2));
+    const asked = index.calls.filter((c) => c.method === 'folderPreviews');
+    expect(asked[0]!.args[1]).toEqual({ app: 'liveplanner' });
+    expect(asked[1]!.args).toEqual([['f3'], {}]);
     const f1 = document.querySelector('[data-folder-card="f1"]')!;
     // Five items and a subfolder: three tiles and +3.
     expect(f1.querySelectorAll('[data-thumb]')).toHaveLength(3);
@@ -108,9 +109,9 @@ describe('rows and cards', () => {
     expect(
       document.querySelector('[data-folder-row="f1"] [data-folder-count]')!.getAttribute('title'),
     ).toBe('1 folder · 5 plans');
-    // An empty folder shows no pill.
+    // An empty folder shows no pill; it is asked once more across every app, in one request.
     expect(document.querySelector('[data-folder-row="f2"] [data-folder-count]')).toBeNull();
-    expect(index.count('folderPreviews')).toBe(1);
+    await waitFor(() => expect(index.count('folderPreviews')).toBe(2));
   });
 
   it("box the host's snapshot on a row, and fall back to the kind's icon when it draws none", async () => {
@@ -133,5 +134,66 @@ describe('rows and cards', () => {
     await waitFor(() => expect(document.querySelector('[data-thumb="item-1:row"]')).toBeTruthy());
     expect(document.querySelector('[data-item-row="item-2"] [data-thumb]')).toBeNull();
     expect(document.querySelector('[data-item-row="item-2"] svg')).toBeTruthy();
+  });
+});
+
+describe("a folder with only other apps' items", () => {
+  beforeEach(() => localStorage.removeItem('liveworkspace:explorer-view-mode'));
+
+  it('shows them on its card, faded, under "N in other apps"', async () => {
+    const folders = [folder('f1')];
+    const items = [1, 2, 3].map((i) =>
+      makeItem(i, { folderId: 'f1', app: 'liveplanner', kind: 'plan' }),
+    );
+    const index = createFakeIndex({ items, folders });
+    render(
+      <Explorer
+        app="livediagram"
+        client={index.client}
+        view={{ kind: 'all' }}
+        onNavigate={vi.fn()}
+        itemHref={(i) => `/p/${i.id}`}
+        onCreate={vi.fn()}
+      />,
+    );
+    await waitFor(() =>
+      expect(
+        document.querySelector('[data-folder-card="f1"] [data-folder-elsewhere="3"]'),
+      ).toBeTruthy(),
+    );
+    expect(document.querySelector('[data-folder-card="f1"]')!.textContent).toContain(
+      '3 in other apps',
+    );
+  });
+
+  it('opens on what other apps keep there, not "This folder is empty", and Show All Apps shows them', async () => {
+    const folders = [folder('f1')];
+    const items = [
+      makeItem(1, { folderId: 'f1', app: 'liveplanner', kind: 'plan' }),
+      makeItem(2, { folderId: 'f1', app: 'liveplanner', kind: 'plan' }),
+      makeItem(3, { folderId: 'f1', app: 'livedocuments', kind: 'document' }),
+    ];
+    const index = createFakeIndex({ items, folders });
+    render(
+      <Explorer
+        app="livediagram"
+        client={index.client}
+        view={{ kind: 'folder', id: 'f1' }}
+        onNavigate={vi.fn()}
+        itemHref={(i) => `/p/${i.id}`}
+        onCreate={vi.fn()}
+      />,
+    );
+    const here = await waitFor(() => {
+      const el = document.querySelector('[data-other-apps]');
+      expect(el).toBeTruthy();
+      return el!;
+    });
+    expect(here.textContent).toContain('This folder isn’t empty');
+    expect(here.textContent).toContain('2 plans and 1 document');
+    expect(document.body.textContent).not.toContain('This folder is empty');
+    fireEvent.click(screen.getByRole('button', { name: /Show All Apps/ }));
+    await waitFor(() => expect(document.querySelector('[data-other-apps]')).toBeNull());
+    await waitFor(() => expect(screen.getAllByText('Item 3').length).toBeGreaterThan(0));
   });
 });

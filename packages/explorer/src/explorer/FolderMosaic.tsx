@@ -3,9 +3,17 @@
 // A folder card's content preview (liveplanner's FolderPreview, docs/specs/013-workspace/folder-content-previews.md):
 // a centred 2x2 mosaic of up to four small sheets, the items the folder holds first (the same snapshot their own
 // cards show, so nothing new is drawn), then its subfolders, and a "+N" tile when there is more inside than fits.
-// An empty folder shows the empty state's art, so an empty card reads as waiting rather than broken.
+// An empty folder shows the empty state's art, so an empty card reads as waiting rather than broken. Filtered to one
+// app, a folder holding only other apps' items shows those, faded, under "N in other apps"
+// (liveworkspace/docs/one-explorer.md "A place that is empty here but not elsewhere"), so it never reads as empty.
 
-import type { Folder, FolderPreview, Item } from '@liveworkspace/index-client';
+import {
+  FOLDER_PREVIEW_COUNT_CAP,
+  type Folder,
+  type FolderPreview,
+  type Item,
+} from '@liveworkspace/index-client';
+import type { ShownFolderPreview } from '../data/useFolderPreviews';
 import { EmptyStateArt } from '../ui/EmptyState';
 import { FolderSolidIcon, ItemIcon } from '../ui/icons';
 import { useExplorer } from './context';
@@ -30,6 +38,11 @@ export function folderTiles(
   return { tiles: ordered.slice(0, TILES - 1), hidden: total - (TILES - 1) };
 }
 
+/** "3 in other apps", "50+ in other apps" once the count reaches the index's cap. */
+export function elsewhereLabel(count: number): string {
+  return `${count >= FOLDER_PREVIEW_COUNT_CAP ? `${FOLDER_PREVIEW_COUNT_CAP}+` : count} in other apps`;
+}
+
 // Half the box each way whatever the count, so every folder uses the same tile scale across the grid; the wrap's
 // centring puts one tile in the middle and two side by side without a per-count layout.
 const TILE =
@@ -39,11 +52,38 @@ export function FolderMosaic({
   preview,
   subfolders,
 }: {
-  preview: FolderPreview;
+  preview: ShownFolderPreview;
   subfolders: readonly Folder[];
 }) {
   const { renderThumbnail } = useExplorer();
   const { tiles, hidden } = folderTiles(preview, subfolders);
+  const elsewhere = preview.elsewhere;
+  if (tiles.length === 0 && hidden === 0 && elsewhere && elsewhere.itemCount > 0) {
+    const shown = folderTiles(elsewhere, []);
+    return (
+      <span
+        data-folder-elsewhere={elsewhere.itemCount}
+        className="relative flex h-full w-full items-center justify-center"
+      >
+        <span className="flex h-full w-full flex-wrap content-center items-center justify-center gap-2 p-3 opacity-45 grayscale-[35%]">
+          {shown.tiles.map((tile) =>
+            tile.kind === 'item' ? (
+              <span key={tile.item.id} className={TILE}>
+                {renderThumbnail?.(tile.item, 'card') ?? (
+                  <span className="text-slate-300 dark:text-slate-600 [&_svg]:h-5 [&_svg]:w-5">
+                    <ItemIcon />
+                  </span>
+                )}
+              </span>
+            ) : null,
+          )}
+        </span>
+        <span className="absolute rounded-full border border-slate-200 bg-white/95 px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-sm dark:border-slate-600 dark:bg-slate-800/95 dark:text-slate-200">
+          {elsewhereLabel(elsewhere.itemCount)}
+        </span>
+      </span>
+    );
+  }
   if (tiles.length === 0 && hidden === 0) {
     return (
       <span
