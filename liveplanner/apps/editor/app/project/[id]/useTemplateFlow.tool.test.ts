@@ -5,12 +5,12 @@ import type { Tab } from '@liveplanner/project';
 import type { TemplateKind } from '@liveplanner/templates';
 import { useTemplateFlow } from './useTemplateFlow';
 
-// docs/specs/007-editor/editor-modes.md: a tab with content opens on Select. A template that lands
-// content makes the tab one, so the pen picked up for the empty tab is put down; Blank lands nothing and leaves it.
+// docs/specs/026-plan/plan-mode.md "Tools": Plan starts on the Hand tool. A template that lands its boards
+// returns to it; Blank lands nothing and leaves the tool as it is.
 
 async function pick(kind: TemplateKind): Promise<ReturnType<typeof vi.fn>> {
   let tabs: Tab[] = [{ id: 't1', name: '', elements: [] }];
-  const putToolDown = vi.fn();
+  const returnToHand = vi.fn();
   const { result } = renderHook(() =>
     useTemplateFlow({
       activeId: 't1',
@@ -28,7 +28,7 @@ async function pick(kind: TemplateKind): Promise<ReturnType<typeof vi.fn>> {
       setSelfParticipant: vi.fn(),
       setIdentityPromptOpen: vi.fn(),
       requestFit: vi.fn(),
-      putToolDown,
+      returnToHand,
       markTabLoaded: vi.fn(),
       bringCardTypes: vi.fn(),
       seedCards: vi.fn(),
@@ -37,11 +37,11 @@ async function pick(kind: TemplateKind): Promise<ReturnType<typeof vi.fn>> {
   await act(async () => {
     await result.current.chooseTemplate(kind);
   });
-  return putToolDown;
+  return returnToHand;
 }
 
 describe('chooseTemplate and the tool in hand', () => {
-  it('puts the tool down when a template lands its board', async () => {
+  it('returns to the Hand tool when a template lands its board', async () => {
     expect(await pick('kanban')).toHaveBeenCalledOnce();
   });
 

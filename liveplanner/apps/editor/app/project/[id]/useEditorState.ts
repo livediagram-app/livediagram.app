@@ -1761,7 +1761,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Template and identity actions. See useTemplateFlow. confirmName
   // stays in the page (also wired into useShareLinks) and is passed in.
   // The draw slice comes later in this hook, so the template flow reaches its cancel through a ref.
-  const putToolDownRef = useRef<() => void>(() => {});
+  const returnToHandRef = useRef<() => void>(() => {});
   const { chooseTemplate, confirmIdentity, cancelIdentity } = useTemplateFlow({
     activeId,
     tabs,
@@ -1776,7 +1776,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setSelfParticipant,
     setIdentityPromptOpen,
     requestFit,
-    putToolDown: () => putToolDownRef.current(),
+    returnToHand: () => returnToHandRef.current(),
     markTabLoaded,
     bringCardTypes: presetCardTypes.bring,
     seedCards: (creates) => void plan.context.addItems?.(creates),
@@ -1922,9 +1922,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       onPlanCardPlace: placePaletteCard,
     });
   useEffect(() => {
-    putToolDownRef.current = () => {
+    returnToHandRef.current = () => {
       cancelDrawShape();
-      setCanvasTool('select');
+      setCanvasTool('pan');
     };
   });
   // Mind-map growth (docs/specs/009-elements/mind-node.md) and flowchart growth
