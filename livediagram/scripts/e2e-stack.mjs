@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// E2E stack (docs/specs/003-system-architecture/e2e-smoke.md): the four-process stack the Playwright smoke suite
+// E2E stack (docs/specs/003-system-architecture/e2e-smoke.md): the three-process stack the Playwright smoke suite
 // runs against — the real static `apps/editor/out` build served with the
 // production router/worker rewrites, the api worker with local Durable Objects, and liveworkspace's index
 // (liveworkspace/apps/index, liveworkspace/docs/one-explorer.md) on its own local D1.
@@ -8,12 +8,8 @@
 // Boots:
 //   1. index — `wrangler dev --local` (liveworkspace/apps/index) on E2E_INDEX_PORT (8119), its D1 kept apart from
 //      a developer's own local index, trusting this stack's accounts stand-in and calling this api.
-//   2. media — liveworkspace's media service (liveworkspace/apps/media, its scripts/e2e-media.mjs) under
-//      `wrangler dev --local` on E2E_MEDIA_PORT (8120), its D1 and R2 fresh each run, so uploads and the gallery
-//      run end to end.
-//   3. api — `wrangler dev --local` (apps/api): each canvas's content in its own local Durable Object, its images
-//      in the stack's media.
-//   4. live — a static file server for `out/` that reproduces what production
+//   2. api — `wrangler dev --local` (apps/api): each canvas's content in its own local Durable Object.
+//   3. live — a static file server for `out/` that reproduces what production
 //      does (docs/specs/003-system-architecture/e2e-smoke.md): strip the `/live` assetPrefix,
 //      rewrite `/document/*` to the single placeholder, forward `/api/index/*` to the index, serve
 //      liveworkspace's Explorer at `/explorer` when its site is built, and proxy the rest of
@@ -56,12 +52,6 @@ import {
 // Every page enforces Trusted Types in production (docs/specs/016-platform/trusted-types.md), so the suite runs
 // against the same header: a violation throws in the page, and the pageErrors fixture fails the spec on it.
 import { TRUSTED_TYPES_CSP } from '../packages/ui/src/trusted-types-csp.ts';
-// The media service's stand-in boot, shared by the products' stacks (liveworkspace/apps/media/scripts/e2e-media.mjs).
-import {
-  e2eMediaKey,
-  MEDIA_DIR,
-  startE2EMedia,
-} from '../../liveworkspace/apps/media/scripts/e2e-media.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // E2E_EDITOR_OUT serves another export of the editor app, e.g. the signed-in `.next/out-signed-in`
@@ -104,10 +94,6 @@ function assetsOutOfCacheFor(req) {
 const EDITOR_PORT = Number(process.env.E2E_EDITOR_PORT ?? 3102);
 const API_PORT = Number(process.env.E2E_API_PORT ?? 8687);
 const INDEX_PORT = Number(process.env.E2E_INDEX_PORT ?? 8119);
-const MEDIA_PORT = Number(process.env.E2E_MEDIA_PORT ?? 8120);
-// The media service's local D1 and R2 for this stack, apart from a developer's `wrangler dev` state.
-const MEDIA_STATE = path.join(MEDIA_DIR, '.wrangler', `e2e-state-${MEDIA_PORT}`);
-const MEDIA_APP = 'livediagram.app';
 // The key the api and the index share (the api's INDEX_KEY, the index's INDEX_KEY_LIVEDIAGRAM). Test-only.
 const INDEX_KEY = 'e2e-index-key';
 // Accounts' key at the index (its MERGE_KEY): what the index's "teams as they are now" call carries to the
@@ -1030,13 +1016,6 @@ async function main() {
     ],
     { cwd: INDEX_DIR },
   );
-  const mediaUrl = await startE2EMedia({
-    run,
-    waitForExit,
-    port: MEDIA_PORT,
-    state: MEDIA_STATE,
-    apps: [MEDIA_APP],
-  });
   console.log('[e2e] starting api worker…');
   run(
     'pnpm',
@@ -1075,11 +1054,6 @@ async function main() {
       `INDEX_ORIGIN:http://127.0.0.1:${INDEX_PORT}`,
       '--var',
       `INDEX_KEY:${INDEX_KEY}`,
-      // The stack's media, never one a developer's .dev.vars names.
-      '--var',
-      `MEDIA_URL:${mediaUrl}`,
-      '--var',
-      `MEDIA_KEY:${e2eMediaKey(MEDIA_APP)}`,
       ...(WORKBENCH ? ['--var', `APP_BASE_URL:http://localhost:${EDITOR_PORT}`] : []),
     ],
     {
@@ -1087,7 +1061,6 @@ async function main() {
     },
   );
   await waitForPort(INDEX_PORT, 'index');
-  await waitForPort(MEDIA_PORT, 'media');
   await waitForPort(API_PORT, 'api worker');
   console.log('[e2e] api worker up; starting live static server…');
   startLiveServer();

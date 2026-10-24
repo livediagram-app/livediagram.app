@@ -82,7 +82,6 @@ import type {
   ItemHref,
   LinkComponent,
   Placement,
-  RenderItemMark,
   RenderThumbnail,
   InboxHost,
   OrganiseTelemetry,
@@ -142,8 +141,6 @@ export type ExplorerPanelProps = {
   // Opens the full Explorer at a view (Open Page, See all).
   onOpenExplorer?: (view: ExplorerView) => void;
   renderThumbnail?: RenderThumbnail;
-  /** The host's own marks on an item, beside its name (RenderItemMark). */
-  renderItemMark?: RenderItemMark;
   Link?: LinkComponent;
   onOpenItem?: (href: string, item: Item) => void;
   basePath?: string;
@@ -205,7 +202,6 @@ function PanelInner({
   onRenameCurrent,
   onOpenExplorer,
   renderThumbnail,
-  renderItemMark,
   Link,
   onOpenItem,
   basePath,
@@ -293,7 +289,6 @@ function PanelInner({
       teams={teams}
       viewerId={viewerId}
       renderThumbnail={renderThumbnail}
-      renderItemMark={renderItemMark}
       shareUrl={shareUrl}
       shareHost={share}
       inboxHost={inboxHost}
@@ -814,9 +809,7 @@ function Pane({
             </span>
           </button>
         ) : null}
-        {section.kind === 'mine' ? (
-          <MyWorkHeaderMenu onOpenRoot={() => onOpenFolder(null)} />
-        ) : null}
+        {section.kind === 'mine' ? <MyWorkHeaderMenu onOpenRoot={() => onOpenFolder(null)} /> : null}
         {section.kind === 'library' ? null : <FilterToggle />}
         <a href={explorerPath(page, basePath)} onClick={openPage} className={HEADER_BUTTON}>
           <span className={narrow ? 'sr-only' : 'max-sm:sr-only'}>Open Page</span>
@@ -1233,8 +1226,7 @@ const FolderCard = memo(function FolderCard({
 });
 
 const ItemRow = memo(function ItemRow({ item, current }: { item: ShownItem; current: boolean }) {
-  const { openItem, filter, kind, actions, renamingId, setRenamingId, renderItemMark } =
-    useExplorer();
+  const { openItem, filter, kind, actions, renamingId, setRenamingId } = useExplorer();
   const menu = usePaneItemMenu(item);
   const now = useNow();
   const name = item.title || `Untitled ${kind.lowerOne}`;
@@ -1262,7 +1254,6 @@ const ItemRow = memo(function ItemRow({ item, current }: { item: ShownItem; curr
           <span className="flex min-w-0 items-center gap-1">
             {filter === 'all' ? <AppMark app={item.app} size={12} /> : null}
             {item.favourite ? <FavouriteMarker /> : null}
-            {renderItemMark?.(item, 'title')}
             <span className="min-w-0 truncate">{name}</span>
           </span>
         )

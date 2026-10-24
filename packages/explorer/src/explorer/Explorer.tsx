@@ -20,7 +20,6 @@ import type {
   ItemHref,
   LinkComponent,
   Placement,
-  RenderItemMark,
   RenderThumbnail,
   InboxHost,
   ShareHost,
@@ -37,7 +36,6 @@ import {
   ExplorerProvider,
   useExplorer as useExplorerContext,
   type HelpHref,
-  type FolderShown,
   type NavigateOptions,
 } from './context';
 import { ExplorerDialogs } from './Dialogs';
@@ -74,8 +72,6 @@ export type ExplorerProps = {
   onCreate: (placement: Placement) => void;
   /** A preview for a row (small) or a card (large); without it rows show the kind's icon. */
   renderThumbnail?: RenderThumbnail;
-  /** The host's own marks on an item, beside its name and its Updated time (RenderItemMark). */
-  renderItemMark?: RenderItemMark;
   /** The host's link component (Next.js `Link`); a plain `<a>` by default. */
   Link?: LinkComponent;
   /** Opens an item from a menu; a page load by default. */
@@ -131,8 +127,6 @@ export type ExplorerProps = {
   /** Default Folders' entries for what the host's items open in and the kinds of their first tabs (livediagram's
    *  Diagrams, Whiteboards, Sessions, Event Storming boards), between the app's own and its templates'. */
   defaultFolderOptions?: readonly DefaultFolderOption[];
-  /** The folder on screen, once its list is in: its name and how many items sit directly in it (FolderShown). */
-  onFolderShown?: (shown: FolderShown) => void;
   /** A facet of the filter lens gained a value (`Explorer / Selected / <Facet>`), for the host's telemetry. */
   onLensSelected?: (type: LensTelemetryType) => void;
   /** Home's first run: for a person with nothing yet, the app's starting points in place of empty lists, and the
@@ -256,7 +250,6 @@ function ExplorerInner({
   itemHref,
   onCreate,
   renderThumbnail,
-  renderItemMark,
   Link,
   onOpenItem,
   basePath,
@@ -281,7 +274,6 @@ function ExplorerInner({
   onOrganise,
   lensTemplates,
   defaultFolderOptions,
-  onFolderShown,
   onLensSelected,
   welcome,
   sidebarLinks,
@@ -334,7 +326,6 @@ function ExplorerInner({
       teams={teams}
       viewerId={viewerId}
       renderThumbnail={renderThumbnail}
-      renderItemMark={renderItemMark}
       shareUrl={shareUrl}
       shareHost={share}
       inboxHost={inboxHost}
@@ -347,7 +338,6 @@ function ExplorerInner({
       onOrganise={onOrganise}
       lensTemplates={lensTemplates}
       defaultFolderOptions={defaultFolderOptions}
-      onFolderShown={onFolderShown}
       onLensSelected={onLensSelected}
     >
       <ExtrasProvider

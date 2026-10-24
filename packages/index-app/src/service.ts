@@ -49,8 +49,6 @@ export type ItemGrant = {
   shareCode: string | null;
   // The grant as the index signed it, for the room's ticket.
   token: string;
-  // The item is in the Trash: only its owner and team hold a grant, and the app answers it as trashed.
-  trashed?: boolean;
 };
 
 // Who the app asks for: an account it checked itself (an API token's, a workbench session's owner) with the
@@ -84,7 +82,6 @@ export function itemGrantOf(
     owner: claims.owner ?? null,
     exp: claims.exp,
     shareCode: linkCodeOf(claims.sub) ?? shareCode,
-    ...(claims.trashed ? { trashed: true } : {}),
   };
 }
 
@@ -199,8 +196,6 @@ export function createIndexService<A extends App>(app: A) {
       if (!client) return { ok: false, status: 503, error: 'index_unavailable' };
       try {
         const grant = await client.grant(itemId, share);
-        // A grant on an item in the Trash is never kept, so a restore is seen on the next request.
-        if (grant.trashed) return { ok: true, grant };
         grantCache.set(key, { grant, until: grant.expiresAt - GRANT_RENEW_BEFORE_S * 1000 });
         while (grantCache.size > GRANT_CACHE_MAX) {
           const oldest = grantCache.keys().next().value;

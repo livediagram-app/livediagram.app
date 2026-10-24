@@ -486,35 +486,6 @@ describe('grants', () => {
     expect(await (await verifierFor('livediagram'))(grant.grant)).toBeNull();
   });
 
-  it('says so on the owner’s grant for an item in the Trash, and on nobody else’s; a restore drops it', async () => {
-    const ada = await person('user_a');
-    const item = await makeItem(ada.auth);
-    const { link } = await body<{ link: { code: string } }>(
-      await call(`/items/${item.id}/share`, { method: 'POST', auth: ada.auth, body: {} }),
-    );
-    const grantOf = async () =>
-      body<GrantResponse>(
-        await call(`/items/${item.id}/grant`, { method: 'POST', auth: ada.auth }),
-      );
-    expect((await grantOf()).trashed).toBeUndefined();
-    await call(`/items/${item.id}`, { method: 'DELETE', auth: ada.auth });
-    const trashed = await grantOf();
-    expect(trashed.trashed).toBe(true);
-    expect(await (await verifierFor('liveplanner'))(trashed.grant)).toMatchObject({
-      trashed: true,
-    });
-    // A link reaches nothing in the Trash.
-    const visitor = await call(`/items/${item.id}/grant`, {
-      method: 'POST',
-      headers: { 'X-Share-Code': link.code },
-    });
-    expect(visitor.status).toBe(404);
-    await call(`/items/${item.id}/restore`, { method: 'POST', auth: ada.auth });
-    const restored = await grantOf();
-    expect(restored.trashed).toBeUndefined();
-    expect(await (await verifierFor('liveplanner'))(restored.grant)).not.toHaveProperty('trashed');
-  });
-
   it('grants a team member edit with the team named', async () => {
     const ada = await person('user_a', { teams: [{ id: 'team1' }] });
     const bob = await person('user_b', { teams: [{ id: 'team1', role: 'admin' }] });

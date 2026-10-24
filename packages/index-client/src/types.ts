@@ -24,8 +24,6 @@ export type ItemSummary = {
   empty?: boolean;
   // A media key, or null.
   thumbnail?: string | null;
-  // Anyone can find it: listed in a public gallery (livediagram's Community). The Explorer's Public badge.
-  public?: boolean;
   [k: string]: unknown;
 };
 
@@ -259,9 +257,6 @@ export type GrantClaims = {
   team: string | null;
   // The item's owner as the index has it now. Absent from a grant signed before the index named it.
   owner?: string;
-  // Set on a grant for an item in the Trash (only its owner and team are granted one): the app answers it as
-  // trashed (410 `document_trashed` on livediagram), not as missing.
-  trashed?: true;
   iat: number;
   exp: number;
   jti: string;
@@ -284,8 +279,6 @@ export type GrantResponse = {
   tabId: string | null;
   // Epoch ms.
   expiresAt: number;
-  // The item is in the Trash (as the grant's `trashed` claim says).
-  trashed?: true;
 };
 
 export type Page<T, K extends string> = { [key in K]: T[] } & { nextCursor: string | null };

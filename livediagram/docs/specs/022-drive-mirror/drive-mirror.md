@@ -465,11 +465,6 @@ marked as coming from Drive so a view re-reads only for those.
 Each document the mirror copies carries a small cloud on its Explorer row and
 card, at the right of its Updated time, on the same centre line as the
 visibility badge and the time ([Optical alignment](../004-interface-design/optical-alignment.md)).
-The shared Explorer draws a host's marks there (`renderItemMark` in `@liveworkspace/explorer`); livediagram's
-(`apps/editor/lib/explorer-item-marks.tsx`) are this cloud and the unseen-folder mark beside the name, on the
-Explorers livediagram's own pages draw: the editor's Explorer panel (the name's mark only) and a workbench's
-workspace frame. The Explorer page itself is liveworkspace.app's, which cannot see this browser's mirror, so it
-shows neither.
 It is a vendored Lucide glyph drawn at a 1px stroke: the cloud in the quiet
 metadata colour, and only its symbol in colour, named on hover and focus.
 

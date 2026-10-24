@@ -74,8 +74,6 @@ export type GrantSubject = {
   // (@liveworkspace/index-app item-head.ts), so a guest's merge or a team move reaches it on the next grant.
   ownerId: string;
   teamId: string | null;
-  // The item is in the Trash: its owner's and team's grant says so, so the app answers it as trashed.
-  trashed?: boolean;
 };
 
 export async function mintGrant(env: Env, subject: GrantSubject): Promise<GrantResponse | null> {
@@ -89,7 +87,6 @@ export async function mintGrant(env: Env, subject: GrantSubject): Promise<GrantR
     tab: subject.tabId,
     team: subject.teamId,
     owner: subject.ownerId,
-    ...(subject.trashed ? { trashed: true } : {}),
   })
     .setProtectedHeader({ alg: GRANT_ALG, kid: key.kid, typ: 'JWT' })
     .setIssuer(grantIssuer(env))
@@ -99,13 +96,7 @@ export async function mintGrant(env: Env, subject: GrantSubject): Promise<GrantR
     .setExpirationTime(exp)
     .setJti(crypto.randomUUID())
     .sign(key.privateKey);
-  return {
-    grant,
-    level: subject.level,
-    tabId: subject.tabId,
-    expiresAt: exp * 1000,
-    ...(subject.trashed ? { trashed: true as const } : {}),
-  };
+  return { grant, level: subject.level, tabId: subject.tabId, expiresAt: exp * 1000 };
 }
 
 export async function publicKeys(env: Env): Promise<{ keys: JWK[] } | null> {

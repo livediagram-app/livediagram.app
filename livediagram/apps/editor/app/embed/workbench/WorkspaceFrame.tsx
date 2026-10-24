@@ -7,7 +7,7 @@
 // Explorer unmounts while a document is open, so the editor's shortcuts and panels are the only ones listening.
 import dynamic from 'next/dynamic';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import type { WorkbenchOpenTarget, WorkbenchRole } from '@livediagram/api-schema';
 import { setAppearanceOverride } from '@livediagram/ui';
 import { WorkbenchReconnectLine } from '@/components/chrome/WorkbenchChrome';
@@ -21,7 +21,7 @@ import { useToast } from '@/hooks/ui/useToast';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { workspacePlaceOf, type WorkspacePlace } from '@/lib/workbench/workspace-place';
-import { VIEW_TITLES, type ExplorerView, type FolderShown } from '@liveworkspace/explorer';
+import { VIEW_TITLES, type ExplorerView } from '@liveworkspace/explorer';
 import { ExplorerHost } from './ExplorerHost';
 import { useWorkspaceNavigation } from './useWorkspaceNavigation';
 import {
@@ -90,8 +90,6 @@ function MountedFrame({ session }: { session: WorkbenchSession }) {
   });
   const { port, level } = session;
   const report = useWorkspacePlaceMessages(port);
-  // The folder on screen, as the Explorer tells it once its list is in.
-  const [shown, setShown] = useState<FolderShown | null>(null);
 
   // Once, before any child reports its place: the workbench hears the frame is ready, the scheme starts as the
   // system's until the workbench sets it, and the mount is counted.
@@ -152,12 +150,10 @@ function MountedFrame({ session }: { session: WorkbenchSession }) {
       ) : (
         <>
           <div className="flex min-h-dvh bg-slate-50 px-4 pb-16 pt-6 dark:bg-slate-900">
-            {place.kind === 'explorer' ? (
-              <ExplorerHost view={place.node} onFolderShown={setShown} />
-            ) : null}
+            {place.kind === 'explorer' ? <ExplorerHost view={place.node} /> : null}
           </div>
           {place.kind === 'explorer' ? (
-            <ExplorerPlaceReporter view={place.node} shown={shown} report={report} role={level} />
+            <ExplorerPlaceReporter view={place.node} report={report} role={level} />
           ) : null}
           <WorkbenchReconnectLine workbenchName={session.workbenchName} ended={session.ended} />
         </>
@@ -166,29 +162,29 @@ function MountedFrame({ session }: { session: WorkbenchSession }) {
   );
 }
 
-// Tells the workbench which Explorer view the frame shows, and on a folder, once its list is in, its name and how many
-// documents sit directly in it, so a workbench can offer something of its own beside an empty folder. A team's
-// folder is shown on its team's page (WB52): the Explorer moves a frame started on one there, in place.
+// Tells the workbench which Explorer view the frame shows, and the folder when it is one. The Explorer's lists are the
+// index's, read inside the Explorer, so the frame names the folder by id only.
 function ExplorerPlaceReporter({
   view,
-  shown,
   report,
   role,
 }: {
   view: ExplorerView;
-  shown: FolderShown | null;
   report: (fields: PlaceFields) => void;
   role: WorkbenchRole;
 }) {
   const folderId =
     view.kind === 'folder' ? view.id : view.kind === 'team' ? (view.folderId ?? null) : null;
-  const known = folderId !== null && shown?.folderId === folderId ? shown : null;
-  const folderName = known?.name ?? null;
-  const documentCount = known?.itemCount ?? null;
   useEffect(() => {
-    // A folder waits for its list, so the workbench hears its name and count in one place message.
-    if (folderId !== null && !known) return;
-    report(explorerPlaceFields({ view: view.kind, folderId, folderName, documentCount, role }));
-  }, [report, view.kind, folderId, known, folderName, documentCount, role]);
+    report(
+      explorerPlaceFields({
+        view: view.kind,
+        folderId,
+        folderName: null,
+        documentCount: null,
+        role,
+      }),
+    );
+  }, [report, view.kind, folderId, role]);
   return null;
 }

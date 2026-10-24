@@ -2,7 +2,6 @@
 
 import { useEffect, useId, useRef, useState } from 'react';
 import { SHARE_SECTION_LABEL as SECTION_LABEL } from '@liveworkspace/explorer';
-import { SHARE_STATE_META } from '@/components/chrome/share-states';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import {
   communityCategoryLabel,
@@ -102,14 +101,6 @@ export function CommunitySection({
         <GlobeIcon />
         {/* The section is named by the word alone, not the help link beside it. */}
         <span id={headingId}>Community</span>
-        {state === 'published' ? (
-          <span
-            data-community-public=""
-            className={`inline-flex items-center rounded-full py-0.5 normal-case tracking-normal ${SHARE_STATE_META.community.badge}`}
-          >
-            {SHARE_STATE_META.community.label}
-          </span>
-        ) : null}
         <HelpArticleLink article="community" className="ml-auto" />
       </p>
 

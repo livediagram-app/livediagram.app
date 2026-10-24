@@ -10,10 +10,6 @@ import { communityCodeMessage } from '@/lib/community-errors';
 import { CommunityPublishDialog } from './CommunityPublishDialog';
 import { CommunitySection } from './CommunitySection';
 
-// The status line's words while the canvas is listed (docs/specs/007-editor/editor-app.md "Layout, top to bottom").
-export const COMMUNITY_PUBLIC_NOTE =
-  'in the Community, where anyone can find it, view it and make a copy.';
-
 // The shared Share dialog (@liveworkspace/explorer) with livediagram's Community band below it
 // (docs/specs/025-community/community.md "Publishing"). Owns the owner's post (read as the dialog opens) and swaps the
 // Share dialog for the publish dialog while a listing is being written, coming back to it afterwards, so two modals
@@ -71,7 +67,6 @@ export function ShareDialogWithCommunity({
       passwordLockedReason={
         community.post?.state === 'listed' ? communityCodeMessage('community_published') : null
       }
-      publicNote={community.post?.state === 'listed' ? COMMUNITY_PUBLIC_NOTE : null}
       appSection={
         <CommunitySection
           signedIn={signedIn}

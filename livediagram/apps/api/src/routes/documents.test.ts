@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DocumentDTO } from '../types';
-import { sqliteD1, testShareLink, testTrash, type SqliteD1 } from '../test-sqlite-d1';
+import { sqliteD1, testShareLink, type SqliteD1 } from '../test-sqlite-d1';
 import type { ItemGrant } from '../index-service';
 
 // The images the thumbnail door draws (thumbnail.ts), stubbed so these cases pin its gate: a refused caller never
@@ -152,30 +152,6 @@ describe('a document read', () => {
       token: 'g',
     };
     expect((await call(db, 'GET', '/api/documents/N', { owner: null, grant })).status).toBe(404);
-  });
-});
-
-describe('a canvas in the Trash', () => {
-  it('answers its owner and team 410 document_trashed, and a link visitor as missing', async () => {
-    const db = await seeded(sqliteD1(), 'team1');
-    testShareLink(db, 'P', 'CODE2345', 'edit');
-    testTrash(db, 'P');
-    const owner = await call(db, 'GET', '/api/documents/P');
-    expect(owner.status).toBe(410);
-    expect(await owner.json()).toEqual({ error: 'document_trashed' });
-    const member = await call(db, 'PUT', '/api/documents/P', {
-      owner: 'user_bob',
-      teams: [{ id: 'team1', name: 'T', role: 'member' }],
-      body: { name: 'Renamed' },
-    });
-    expect(member.status).toBe(410);
-    const visitor = await call(db, 'GET', '/api/documents/P', {
-      owner: 'guest_v',
-      headers: { 'X-Share-Code': 'CODE2345' },
-    });
-    expect(visitor.status).toBe(404);
-    // Its snapshot still serves the Trash's rows (none drawn here, so a plain miss).
-    expect((await call(db, 'GET', '/api/documents/P/thumbnail')).status).toBe(404);
   });
 });
 

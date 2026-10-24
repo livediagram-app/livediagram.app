@@ -12,7 +12,6 @@ import {
   DOCUMENT_CONVERSION_HEADER,
   DOCUMENT_FORMAT_HEADER,
   DOCUMENT_OPEN_HEADER,
-  DOCUMENT_TRASHED_ERROR,
 } from '@livediagram/api-schema';
 
 // CORS for the browser. Editor app runs at the same hostname as the
@@ -157,12 +156,6 @@ export function rateLimited(): Response {
 // so the client can branch to its "sign in to use teams" surface.
 export function signInRequired(): Response {
   return json({ error: 'sign_in_required' }, { status: 401 });
-}
-
-// A canvas in the Trash, to a caller who could open it (its owner or team; docs/specs/013-workspace/trash.md): the
-// index's grant says so. Anyone else gets the 404 a never-existing id gets.
-export function documentTrashed(): Response {
-  return json({ error: DOCUMENT_TRASHED_ERROR }, { status: 410 });
 }
 
 // A write that collides with existing state (duplicate invite email,

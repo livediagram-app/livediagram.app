@@ -90,14 +90,6 @@ async function upgrade(env: Env, path: string) {
 }
 
 describe('WebSocket upgrade', () => {
-  it('answers 410 document_trashed, never reaching the room, for a grant on a canvas in the Trash', async () => {
-    const { env, seen } = roomEnv();
-    const t = grantFor({ item: 'p1', sub: 'user_a', level: 'edit', trashed: true });
-    const res = await upgrade(env, `/api/documents/p1/ws?t=${encodeURIComponent(t)}`);
-    expect(res?.status).toBe(410);
-    expect(seen).toHaveLength(0);
-  });
-
   it("admits an owner's grant as an editor, overwriting every spoofed trust header", async () => {
     const { env, seen } = roomEnv();
     const t = grantFor({ item: 'p1', sub: 'user_a', level: 'edit' });
@@ -187,20 +179,6 @@ describe('POST room-ticket', () => {
     );
     expect(res?.status).toBe(200);
     expect(await res!.json()).toEqual({ ticket: t });
-  });
-
-  it('answers 410 document_trashed, and no ticket, for a canvas its grant says is in the Trash', async () => {
-    const { env } = roomEnv();
-    const t = grantFor({ item: 'p1', sub: 'user_a', level: 'edit', trashed: true });
-    const res = await handleDocumentRoomRoutes(
-      makeTestRouteContext('POST', '/api/documents/p1/room-ticket', {
-        env,
-        headers: { [ITEM_GRANT_HEADER]: t },
-        grant: null,
-      }),
-    );
-    expect(res?.status).toBe(410);
-    expect(await res!.json()).toEqual({ error: 'document_trashed' });
   });
 
   it('404s (no existence leak) without a grant or anyone to ask for one', async () => {

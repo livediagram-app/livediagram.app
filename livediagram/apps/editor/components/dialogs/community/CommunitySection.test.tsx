@@ -31,14 +31,6 @@ function renderSection(state: CommunityOwnPost['state']) {
 
 // docs/specs/025-community/community.md "Reports and moderation": a post hidden by reports is final.
 describe('CommunitySection', () => {
-  it('wears the Public badge while listed, and not once hidden', () => {
-    renderSection('listed');
-    expect(document.querySelector('[data-community-public]')?.textContent).toBe('Public');
-    cleanup();
-    renderSection('hidden');
-    expect(document.querySelector('[data-community-public]')).toBeNull();
-  });
-
   it('offers Edit Listing and Remove for a listed post', () => {
     renderSection('listed');
     expect(screen.getByRole('button', { name: 'Edit Listing' })).toBeTruthy();

@@ -1,12 +1,11 @@
 // A canvas as its owner may reach it, for the workbench mint and redemption
 // (docs/specs/013-workspace/blueprints/workbench-embeds.md, mint step 5 and redemption step 4): the owner's own
 // access, never a share code, whatever the request carries (WB3). That access is the index's: a grant asked for the
-// owner with this app's key (index-service.ts, delegated). A canvas in the Trash answers 410 `document_trashed` (its
-// grant says so); one the owner cannot reach, 404.
+// owner with this app's key (index-service.ts, delegated). A canvas in the Trash gets none and reads as absent.
 
 import type { WorkbenchRole } from '@livediagram/api-schema';
 import { INDEX_APP, indexFor, requestGrant } from '../index-service';
-import { documentTrashed, json, notFound } from '../responses';
+import { json, notFound } from '../responses';
 import type { Env } from '../types';
 
 type OwnerDocumentAccess = { documentId: string; role: WorkbenchRole };
@@ -25,8 +24,7 @@ export async function ownerDocumentAccess(
     documentId,
     null,
   );
-  if (outcome.ok)
-    return outcome.grant.trashed ? documentTrashed() : { documentId, role: outcome.grant.level };
+  if (outcome.ok) return { documentId, role: outcome.grant.level };
   if (outcome.status >= 500) return json({ error: outcome.error }, { status: outcome.status });
   return notFound();
 }

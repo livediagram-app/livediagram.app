@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { WORKBENCH_PAIRING_TTL_MS, WORKBENCH_TICKET_TTL_MS } from '@livediagram/api-schema';
-import { testTrash, type SqliteD1 } from '../test-sqlite-d1';
+import type { SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
 import type { WorkbenchContext } from './context';
 import { makeTestRouteContext } from './test-route-context';
@@ -199,27 +199,6 @@ describe('POST /api/workbench/tickets', () => {
     const tab = await mint(db, { body: { documentId: 'doc1', tabId: 'nope', origin: ORIGIN } });
 
     expect([foreign.status, missing.status, tab.status]).toEqual([404, 404, 404]);
-  });
-
-  it("answers 410 document_trashed for the owner's own canvas in the Trash", async () => {
-    const db = await workbenchDb();
-    await pairToken(db);
-    testTrash(db, 'doc1');
-
-    const res = await mint(db);
-
-    expect(res.status).toBe(410);
-    expect(await res.json()).toEqual({ error: 'document_trashed' });
-  });
-
-  it('answers 404, not 410, for a canvas in the Trash the owner could never open', async () => {
-    const db = await workbenchDb();
-    await pairToken(db);
-    testTrash(db, 'doc2');
-
-    const res = await mint(db, { body: { documentId: 'doc2', origin: ORIGIN } });
-
-    expect(res.status).toBe(404);
   });
 
   it('ignores a share code: only the owner own access counts', async () => {

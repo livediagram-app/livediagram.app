@@ -114,17 +114,6 @@ export function ItemsPane({ view, onOpenNav }: { view: ItemsView; onOpenNav?: ()
   const createItem = place ? () => onCreate(place) : undefined;
 
   const empty = !state.loading && state.items.length === 0 && folderRows.length === 0;
-
-  // The folder on screen, told to the host once its list is in (FolderShown).
-  const { onFolderShown } = ctx;
-  const shownId =
-    view.kind === 'folder' ? view.id : view.kind === 'team' ? (view.folderId ?? null) : null;
-  const shownName = shownId ? (folders.byId.get(shownId)?.name ?? null) : null;
-  const shownCount = lensOn ? null : state.items.length;
-  useEffect(() => {
-    if (!onFolderShown || !shownId || state.loading) return;
-    onFolderShown({ folderId: shownId, name: shownName, itemCount: shownCount });
-  }, [onFolderShown, shownId, shownName, shownCount, state.loading]);
   const sharedProps = {
     folders: folderRows,
     items: state.items,

@@ -269,33 +269,6 @@ describe('readContentSummary', () => {
     expect((await readContentSummary(db.env, 'P')).summary.hasContent).toBe(true);
   });
 
-  it('says the canvas is public while its Community post is listed, and pushes the change each way', async () => {
-    const db = document();
-    await upsertTab(db.env, 'P', { id: 't', name: 'T', elements: [box('a')] }, 0);
-    const index = fakeIndex();
-    await drainOutbox(db.env, 'P', index.client);
-    expect(index.summaries.at(-1)!.summary).not.toHaveProperty('public');
-    db.sql.exec(`INSERT INTO community_post (share_code, author_id, post_id, title)
-                 VALUES ('CODE2345', 'owner', 'post1', 'P')`);
-    expect(keys(db)).toEqual(['summary:']);
-    await drainOutbox(db.env, 'P', index.client);
-    expect(index.summaries.at(-1)!.summary).toMatchObject({ public: true });
-    // The listing heard it is public: nothing changes, nothing is owed.
-    db.sql.exec("UPDATE community_post SET sent_state = 'public', checked_at = 5");
-    await drainOutbox(db.env, 'P', index.client);
-    expect(index.summaries.at(-1)!.summary).toMatchObject({ public: true });
-    db.sql.exec('UPDATE community_post SET checked_at = 6');
-    expect(keys(db)).toEqual([]);
-    // Hidden after reports, or taken down: no longer public.
-    db.sql.exec('UPDATE community_post SET hidden_at = 7');
-    await drainOutbox(db.env, 'P', index.client);
-    expect(index.summaries.at(-1)!.summary).not.toHaveProperty('public');
-    db.sql.exec('UPDATE community_post SET hidden_at = NULL');
-    db.sql.exec('DELETE FROM community_post');
-    await drainOutbox(db.env, 'P', index.client);
-    expect(index.summaries.at(-1)!.summary).not.toHaveProperty('public');
-  });
-
   it('is empty for a document of empty tabs', async () => {
     const db = document();
     await upsertTab(db.env, 'P', { id: 't', name: 'T', elements: [] }, 0);

@@ -81,9 +81,6 @@ export type ShareDialogProps = {
   onPasswordSetChange?: (set: boolean) => void;
   // A section of the host's own below Password Protection (livediagram's Community band).
   appSection?: ReactNode;
-  // Where the item is public, in the host's words, for the status line ("Public: …", pink); null or absent while it
-  // is not (livediagram: a canvas listed in the Community).
-  publicNote?: string | null;
 };
 
 const NO_TABS: ShareTab[] = [];
@@ -105,7 +102,6 @@ export function ShareDialog({
   passwordLockedReason = null,
   onPasswordSetChange,
   appSection,
-  publicNote = null,
 }: ShareDialogProps) {
   const [note, setNote] = useState<{ text: string; tone: 'success' | 'info' | 'error' } | null>(
     null,
@@ -200,7 +196,6 @@ export function ShareDialog({
             password={share.passwordSet}
             team={Boolean(item.teamId)}
             word={word}
-            publicNote={publicNote}
           />
         }
       >
@@ -341,7 +336,7 @@ export function ShareDialog({
           Done
         </Button>
       </DialogFooter>
-      <ShareTourStage tour={tour} helpHref={helpHref?.('sharing')} />
+      <ShareTourStage tour={tour} />
     </Dialog>
   );
 }

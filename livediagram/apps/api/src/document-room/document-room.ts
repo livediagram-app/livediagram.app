@@ -808,9 +808,7 @@ export class DocumentRoom extends DurableObject<Env> {
   async notifyMention(documentId: string, input: MentionNotice): Promise<boolean> {
     const document = await this.noticeDocument(documentId);
     if (!document) return false;
-    this.state.waitUntil(
-      notifyMentioned(this.requireEnv(), { ...input, document }).catch(() => {}),
-    );
+    this.state.waitUntil(notifyMentioned(this.requireEnv(), { ...input, document }).catch(() => {}));
     return true;
   }
 
@@ -981,13 +979,6 @@ export class DocumentRoom extends DurableObject<Env> {
         to: renewal.level,
       });
       this.closeSockets((each) => (each === ws ? [ACCESS_CHANGED_CLOSE, 'access-changed'] : null));
-      return;
-    }
-    // A fresh grant on a canvas since moved to the Trash ends the session, as the trashing itself does.
-    if (renewal.claims.trashed) {
-      this.closeSockets((each) =>
-        each === ws ? [DOCUMENT_TRASHED_CLOSE, 'document-trashed'] : null,
-      );
       return;
     }
     await this.takeHead(renewal.claims);

@@ -33,7 +33,6 @@ import { getDocument, readReorderEntries, reorderTabs, seedTabs } from '../db';
 import {
   badRequest,
   CORS_HEADERS,
-  documentTrashed,
   forbidden,
   json,
   notFound,
@@ -88,10 +87,6 @@ function isDocumentContext(ctx: RouteContext): ctx is DocumentRouteContext {
 // The longest document id the worker names a Durable Object by. Ids are UUIDs; this only stops a hostile create from
 // naming objects with megabyte ids.
 const MAX_DOCUMENT_ID = 200;
-
-// GET /api/documents/<id>/thumbnail.
-const isThumbnailRead = (method: string, segments: readonly string[]) =>
-  method === 'GET' && segments.length === 4 && segments[3] === 'thumbnail';
 
 function intentRejected(): Response {
   return json({ error: INTENT_INVALID }, { status: 400 });
@@ -271,10 +266,6 @@ async function documentThumbnail(ctx: DocumentRouteContext, id: string): Promise
 export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<Response> {
   const { request, env, segments } = ctx;
   if (segments[1] !== 'documents') return notFound();
-  // A canvas in the Trash answers its owner and team 410 `document_trashed`, as the index's grant says
-  // (docs/specs/013-workspace/trash.md); only its snapshot still serves, for the Trash's own rows.
-  if (ctx.grant?.trashed && segments.length >= 3 && !isThumbnailRead(request.method, segments))
-    return documentTrashed();
   if (segments.length === 2) {
     if (request.method === 'POST') {
       const read = await readBody(ctx);

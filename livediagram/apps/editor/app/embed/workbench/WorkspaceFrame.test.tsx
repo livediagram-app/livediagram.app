@@ -41,28 +41,10 @@ vi.mock('next/navigation', () => ({
 }));
 
 vi.mock('./ExplorerHost', () => ({
-  ExplorerHost: ({
-    view,
-    onFolderShown,
-  }: {
-    view: { kind: string; id?: string };
-    onFolderShown?: (shown: {
-      folderId: string;
-      name: string | null;
-      itemCount: number | null;
-    }) => void;
-  }) => (
-    <div>
-      <p>
-        explorer {view.kind} {view.id ?? ''}
-      </p>
-      <button
-        type="button"
-        onClick={() => onFolderShown?.({ folderId: view.id ?? '', name: 'Specs', itemCount: 0 })}
-      >
-        list in
-      </button>
-    </div>
+  ExplorerHost: ({ view }: { view: { kind: string; id?: string } }) => (
+    <p>
+      explorer {view.kind} {view.id ?? ''}
+    </p>
   ),
 }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -187,15 +169,13 @@ describe('WorkspaceFrame', () => {
     expect(track).toHaveBeenCalledWith('Session', 'Opened', 'WorkbenchWorkspace');
   });
 
-  it('names the folder shown and its documents once the Explorer has its list in, in one place message', () => {
+  it('names the folder shown by id; its name and contents are the index’s, read inside the Explorer', () => {
     window.history.replaceState(null, '', '/embed/workbench/explorer/folder/f1');
     mount();
 
     expect(screen.getByText('explorer folder f1')).toBeTruthy();
-    expect(sent('livediagram:place')).toEqual([]);
-    fireEvent.click(screen.getByRole('button', { name: 'list in' }));
     expect(sent('livediagram:place')).toMatchObject([
-      { view: 'folder', folderId: 'f1', folderName: 'Specs', documentCount: 0 },
+      { view: 'folder', folderId: 'f1', folderName: null, documentCount: null },
     ]);
   });
 

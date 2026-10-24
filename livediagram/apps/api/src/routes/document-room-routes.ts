@@ -14,7 +14,7 @@ import { clientRateKey } from '../client-ip';
 import { documentRoom } from '../document-client';
 import { indexService, linkCodeOf } from '../index-service';
 import { personTagFor } from '../person-tag';
-import { documentTrashed, forbidden, json, notFound } from '../responses';
+import { forbidden, json, notFound } from '../responses';
 import { networkTagFor } from '../vote-integrity';
 import { workbenchStore } from '../workbench-store';
 import { type RouteContext } from './context';
@@ -23,11 +23,7 @@ import type { Env } from '../types';
 
 // A Community visitor never joins the author's room (docs/specs/025-community/community.md): no presence, no
 // cursors on the author's board, no live stream. A link visitor's code is checked against the canvas's post.
-async function isCommunityCode(
-  env: Env,
-  documentId: string,
-  code: string | null,
-): Promise<boolean> {
+async function isCommunityCode(env: Env, documentId: string, code: string | null): Promise<boolean> {
   if (!code) return false;
   const post = await documentRoom(env, documentId).community();
   return post !== null && post.code === code;
@@ -54,7 +50,6 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     const grant = await resolveDocumentGrant(ctx, id);
     if (grant instanceof Response) return grant;
     if (!grant) return notFound();
-    if (grant.trashed) return documentTrashed();
     if (await isCommunityCode(env, id, grant.shareCode)) return forbidden('community_link');
     const workbench = ctx.workbench ?? null;
     const ticket = await sealRoomTicket(
@@ -77,7 +72,6 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     const opened = await openRoomTicket(indexService, env, url.searchParams.get('t'), id);
     if (!opened) return forbidden();
     const { claims, workbench } = opened;
-    if (claims.trashed) return documentTrashed();
     const role: AccessLevel = roomTicketLevel(opened);
     const linkCode = linkCodeOf(claims.sub);
     const person = linkCode ? null : claims.sub;

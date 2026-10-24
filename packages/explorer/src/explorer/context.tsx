@@ -8,7 +8,6 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -49,7 +48,6 @@ import type {
   LinkComponent,
   LinkProps,
   Placement,
-  RenderItemMark,
   RenderThumbnail,
   InboxHost,
   ShareHost,
@@ -111,7 +109,6 @@ export type ExplorerContextValue = {
   openItem: (item: Item) => void;
   Link: LinkComponent;
   renderThumbnail?: RenderThumbnail;
-  renderItemMark?: RenderItemMark;
   shareUrl?: ShareUrl;
   shareHost?: ShareHost;
   inboxHost?: InboxHost;
@@ -141,14 +138,7 @@ export type ExplorerContextValue = {
   lensSubjects: { current: readonly LensSubject[] | null };
   // Which sidebar rows are open: shared by every sidebar on the page and opened by what makes a folder.
   expansion: Expansion;
-  // The folder on screen, once its list is in (FolderShown), for the host.
-  onFolderShown?: (shown: FolderShown) => void;
 };
-
-/** The folder a view shows, once its list is in: its name (null while the folders load), and how many of the host's
- *  items sit directly in it (`itemCount`, counted from the pages read so far; null while a lens is set, as the list
- *  then reaches its subfolders). A workbench's place says it (livediagram's `livediagram:place`). */
-export type FolderShown = { folderId: string; name: string | null; itemCount: number | null };
 
 export type NavigateOptions = { replace?: boolean };
 
@@ -204,7 +194,6 @@ export type ExplorerProviderProps = {
   teams?: TeamRef[];
   viewerId?: string | null;
   renderThumbnail?: RenderThumbnail;
-  renderItemMark?: RenderItemMark;
   shareUrl?: ShareUrl;
   shareHost?: ShareHost;
   inboxHost?: InboxHost;
@@ -225,7 +214,6 @@ export type ExplorerProviderProps = {
   hostTrash?: HostTrash;
   // After an item took a new title (the host follows it for the item it has open); stable.
   onItemRenamed?: (item: Item, title: string) => void;
-  onFolderShown?: (shown: FolderShown) => void;
   children: ReactNode;
 };
 
@@ -250,7 +238,6 @@ export function ExplorerProvider({
   teams = NO_TEAMS,
   viewerId = null,
   renderThumbnail,
-  renderItemMark,
   shareUrl,
   shareHost,
   inboxHost,
@@ -266,7 +253,6 @@ export function ExplorerProvider({
   onOrganise,
   hostTrash,
   onItemRenamed,
-  onFolderShown,
   children,
 }: ExplorerProviderProps) {
   const toast = useToast();
@@ -321,16 +307,6 @@ export function ExplorerProvider({
     },
     [onNavigate, basePath],
   );
-  // A team's folder lives on its team's page: a folder view on one (a link to it, a workbench frame started on it)
-  // moves there in place, its lens with it, once the folders say whose it is.
-  const folderId = view.kind === 'folder' ? view.id : null;
-  const folderLens = view.kind === 'folder' ? viewLens(view) : '';
-  const folderTeam = folderId ? (folders.byId.get(folderId)?.teamId ?? null) : null;
-  useEffect(() => {
-    if (!folderId || !folderTeam) return;
-    const to = withLens({ kind: 'team', id: folderTeam, folderId }, folderLens);
-    onNavigate(to, explorerPath(to, basePath), { replace: true });
-  }, [folderId, folderTeam, folderLens, onNavigate, basePath]);
   const openItem = useCallback(
     (item: Item) => {
       const href = itemHref(item);
@@ -373,7 +349,6 @@ export function ExplorerProvider({
       openItem,
       Link,
       renderThumbnail,
-      renderItemMark,
       shareUrl,
       shareHost,
       inboxHost,
@@ -392,7 +367,6 @@ export function ExplorerProvider({
       onLensSelected,
       lensSubjects,
       expansion,
-      onFolderShown,
     }),
     [
       app,
@@ -419,7 +393,6 @@ export function ExplorerProvider({
       openItem,
       Link,
       renderThumbnail,
-      renderItemMark,
       shareUrl,
       shareHost,
       inboxHost,
@@ -435,7 +408,6 @@ export function ExplorerProvider({
       lensTemplates,
       onLensSelected,
       expansion,
-      onFolderShown,
     ],
   );
   return (

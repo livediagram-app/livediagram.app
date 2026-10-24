@@ -227,8 +227,8 @@ export async function ownsDocument(
   return caller !== null && caller === liveDoc.ownerId && grantOn(ctx, liveDoc.id) !== null;
 }
 
-// The answer for a canvas id no started canvas holds: the 404 a never-existing id gets. A canvas in the Trash never
-// reaches here: its grant says so, and the room answers it 410 first (document-room/document-route.ts).
+// The answer for a canvas id no started canvas holds: the 404 a never-existing id gets. The Trash is the index's,
+// so a trashed canvas never gets a grant and never reaches here with one.
 export async function missingDocument(_ctx: RouteContext, _documentId: string): Promise<Response> {
   return notFound();
 }

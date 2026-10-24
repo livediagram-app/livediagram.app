@@ -26,16 +26,8 @@ vi.mock('@/hooks/persistence/useCommunityPost', () => ({
 }));
 vi.mock('@/hooks/persistence/usePublishedPicture', () => ({ usePublishedPicture: () => null }));
 vi.mock('@liveworkspace/explorer', () => ({
-  ShareDialog: (p: {
-    passwordLockedReason?: string | null;
-    publicNote?: string | null;
-    appSection?: ReactNode;
-  }) => (
-    <div
-      data-testid="share"
-      data-locked={p.passwordLockedReason ?? ''}
-      data-public={p.publicNote ?? ''}
-    >
+  ShareDialog: (p: { passwordLockedReason?: string | null; appSection?: ReactNode }) => (
+    <div data-testid="share" data-locked={p.passwordLockedReason ?? ''}>
       {p.appSection}
     </div>
   ),
@@ -123,21 +115,6 @@ describe('ShareDialogWithCommunity', () => {
     h.post = post('hidden');
     renderDialog();
     expect(screen.getByTestId('share').dataset.locked).toBe('');
-  });
-
-  it('says the canvas is public on the status line only while the post is listed', () => {
-    h.post = post('listed');
-    renderDialog();
-    expect(screen.getByTestId('share').dataset.public).toBe(
-      'in the Community, where anyone can find it, view it and make a copy.',
-    );
-    cleanup();
-    for (const state of ['hidden', null] as const) {
-      h.post = state ? post(state) : null;
-      renderDialog();
-      expect(screen.getByTestId('share').dataset.public).toBe('');
-      cleanup();
-    }
   });
 
   it('swaps in the publish dialog, and comes back to the Share dialog after', () => {

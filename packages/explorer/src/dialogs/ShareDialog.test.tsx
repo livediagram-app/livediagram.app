@@ -310,28 +310,6 @@ describe('ShareDialog', () => {
     expect(onTelemetry).toHaveBeenCalledWith('Ended', 'ShareTourSkipped');
     expect(props.onClose).not.toHaveBeenCalled();
   });
-
-  it('ends Show Me with the sharing article, and completes', async () => {
-    const { onTelemetry } = renderDialog({ helpHref: (a) => `https://help.test/${a}` });
-    fireEvent.click(await screen.findByRole('button', { name: 'Show Me' }));
-    for (let i = 0; i < 10 && !screen.queryByRole('dialog', { name: 'That Is Sharing' }); i++)
-      fireEvent.click(screen.getByRole('button', { name: 'Next' }));
-    const outro = screen.getByRole('dialog', { name: 'That Is Sharing' });
-    expect(
-      within(outro).getByRole('link', { name: 'Read about sharing' }).getAttribute('href'),
-    ).toBe('https://help.test/sharing');
-    fireEvent.click(within(outro).getByRole('button', { name: 'Done' }));
-    expect(onTelemetry).toHaveBeenCalledWith('Ended', 'ShareTourCompleted');
-  });
-
-  it('says Public on the status line while the host says the item is public, over any pass', async () => {
-    renderDialog(
-      { publicNote: 'in the Community, where anyone can find it.' },
-      { links: [link('a')] },
-    );
-    const status = await screen.findByText('Public: in the Community, where anyone can find it.');
-    expect(status.closest('[data-share-status]')?.getAttribute('data-share-status')).toBe('public');
-  });
 });
 
 describe('share helpers', () => {
@@ -351,14 +329,5 @@ describe('share helpers', () => {
     expect(shareStatusText({ passes: 1, password: true, team: true, word: 'plan' })).toBe(
       'Shared: every member of the team can open this plan, and anyone holding the pass can get in, with the password.',
     );
-    expect(
-      shareStatusText({
-        passes: 2,
-        password: false,
-        team: true,
-        word: 'canvas',
-        publicNote: 'in the Community.',
-      }),
-    ).toBe('Public: in the Community.');
   });
 });

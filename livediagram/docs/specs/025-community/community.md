@@ -66,9 +66,7 @@ A post shows every tab of the document. A document that is empty (its first tab 
   public (its document in a team library, owned by someone else, or behind a share password) gives no badge: a
   team-library document reads **Team**, or **Shared** with share links. The
   document lists carry only whether the post is listed, never a hidden post's state, so a team member learns nothing
-  the public gallery does not already say: the canvas's index summary says `public: true` while its post is listed
-  and not hidden (pushed again whenever the post is made, hidden, moved or taken down, `document-outbox.ts`), and the
-  shared Explorer's `VisibilityBadge` reads it.
+  the public gallery does not already say.
 - **Something to show**: the document's first tab must have at least one element (counted, so a deploy without image
   storage can still publish). It is the first tab because that tab is the post's card picture; a document with content
   only on later tabs is refused too, and the refusal names the first tab so the owner knows where to add something.
