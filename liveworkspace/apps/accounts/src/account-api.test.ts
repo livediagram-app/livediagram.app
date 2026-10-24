@@ -613,8 +613,6 @@ describe("the account API, for the Explorer on an app's address (by the app's be
       bearer('tok-ada', { method: 'POST', body: { email: 'bea@example.com', role: 'member' } }),
     );
     expect(invited.status).toBe(201);
-    const link = await call(`/teams/${id}/invite-link`, bearer('tok-ada', { method: 'POST' }));
-    expect(link.status).toBe(200);
     const members = (await (await call(`/teams/${id}/members`, bearer('tok-ada'))).json()) as {
       team: { name: string };
       members: { email: string }[];

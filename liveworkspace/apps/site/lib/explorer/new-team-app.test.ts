@@ -21,7 +21,7 @@ describe('renewing the token after a team changes, on an app address', () => {
   it("asks the app's session again, and the new token names the team", async () => {
     document.cookie = `${SIGNED_IN_HINT_COOKIE}=1; path=/`;
     let teams: { id: string; name: string }[] = [];
-    const fetchMock = vi.fn(async () =>
+    const fetchMock = vi.fn(async (_url: string) =>
       Response.json({
         signedIn: true,
         accessToken: jwt({ sub: 'user_1', teams }),

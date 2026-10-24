@@ -21,7 +21,7 @@ const invite = (over: Partial<PendingInvitation> = {}): PendingInvitation => ({
 
 function fakeTeams(invitations: PendingInvitation[]) {
   const answer = vi.fn(
-    async (id: string, accept: boolean): Promise<{ ok: true; value: AnsweredInvitation }> => ({
+    async (_id: string, accept: boolean): Promise<{ ok: true; value: AnsweredInvitation }> => ({
       ok: true,
       value: { teamId: 't9', teamName: 'Ops Crew', status: accept ? 'joined' : 'declined' },
     }),
