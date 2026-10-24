@@ -3,7 +3,7 @@ import type { AddressInfo } from 'node:net';
 import { describe, expect, it } from 'vitest';
 import { createTokenStandIn } from './e2e-token-stand-in';
 
-describe('the e2e stacks’ accounts token stand-in', () => {
+describe('the e2e stacks’ accounts token and profile stand-in', () => {
   it('verifies a seeded token with its teams, reports it live, and forgets it once revoked', () => {
     const standIn = createTokenStandIn('/e2e/accounts', (userId) =>
       userId === 'user_a' ? [{ id: 't1', name: 'Team', role: 'admin' }] : [],
@@ -31,6 +31,42 @@ describe('the e2e stacks’ accounts token stand-in', () => {
     expect(standIn.answer('/settings', {})).toBeNull();
   });
 
+  it('keeps the profiles the api writes, and reads back only the ones it has', () => {
+    const standIn = createTokenStandIn('/e2e/accounts');
+    expect(standIn.answer('/profiles/read', { ids: ['user_a'] })).toEqual({
+      status: 200,
+      body: { profiles: [] },
+    });
+    const written = standIn.answer('/profiles/write', { owner: 'user_a', name: '  Webber  ' });
+    expect(written).toMatchObject({
+      status: 200,
+      body: { profile: { id: 'user_a', name: 'Webber', color: null } },
+    });
+    standIn.answer('/profiles/write', { owner: 'user_a', color: '#f59e0b' });
+    expect(
+      standIn.answer('/profiles/read', { ids: ['user_a', 'user_a', 'guest_b'] }),
+    ).toMatchObject({
+      status: 200,
+      body: { profiles: [{ id: 'user_a', name: 'Webber', color: '#f59e0b' }] },
+    });
+    // A blank name clears it; the refusals are the accounts Worker's.
+    standIn.answer('/profiles/write', { owner: 'user_a', name: ' ' });
+    expect(standIn.answer('/profiles/read', { ids: ['user_a'] })).toMatchObject({
+      body: { profiles: [{ name: null, color: '#f59e0b' }] },
+    });
+    expect(standIn.answer('/profiles/write', { owner: 'user_a' })).toEqual({
+      status: 400,
+      body: { error: 'nothing_to_change' },
+    });
+    expect(standIn.answer('/profiles/write', { owner: 'nobody', name: 'x' })?.status).toBe(400);
+    expect(standIn.answer('/profiles/write', { owner: 'user_a', name: 7 })?.status).toBe(400);
+    expect(standIn.answer('/profiles/read', { ids: 'user_a' })?.status).toBe(400);
+    expect(
+      standIn.answer('/profiles/read', { ids: Array.from({ length: 101 }, (_, i) => `user_${i}`) })
+        ?.status,
+    ).toBe(400);
+  });
+
   it('serves the seed route and the account API over http', async () => {
     const standIn = createTokenStandIn('/e2e/accounts');
     const server = http.createServer((req, res) => {
@@ -52,6 +88,15 @@ describe('the e2e stacks’ accounts token stand-in', () => {
         body: JSON.stringify({ token: secret }),
       });
       expect(await verified.json()).toMatchObject({ userId: 'user_b', readOnly: true });
+      await fetch(`${base}/api/account/internal/profiles/write`, {
+        method: 'POST',
+        body: JSON.stringify({ owner: 'user_b', name: 'Bea' }),
+      });
+      const read = await fetch(`${base}/api/account/internal/profiles/read`, {
+        method: 'POST',
+        body: JSON.stringify({ ids: ['user_b'] }),
+      });
+      expect(await read.json()).toMatchObject({ profiles: [{ id: 'user_b', name: 'Bea' }] });
       expect((await fetch(`${base}/api/account/internal/settings`)).status).toBe(418);
     } finally {
       server.close();

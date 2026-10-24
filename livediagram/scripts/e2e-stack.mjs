@@ -193,20 +193,11 @@ const accountsRecords = {
   seq: Date.now(),
   teams: new Map(),
   members: new Map(),
-  // `${owner} ${scope}` → that scope's settings; owner → { name, color, createdAt }.
+  // `${owner} ${scope}` → that scope's settings. Profiles are the shared stand-in's (accountTokens, below).
   settings: new Map(),
-  profiles: new Map(),
   sightings: new Set(),
   milestones: new Set(),
 };
-
-// A profile as the account API answers one. An account with no profile of its own has no account
-// name here either (the stand-in keeps none), so it is left out, as an unknown id is.
-function profileOf(id) {
-  const own = accountsRecords.profiles.get(id);
-  if (!own) return null;
-  return { id, ...own, updatedAt: own.createdAt };
-}
 
 // The teams an account is in, ordered by team id, as liveworkspace puts them in a token.
 function teamsClaim(userId) {
@@ -339,18 +330,6 @@ async function answerAccountApi(req, route, url, res) {
     }
     return sendJson(res, 200, scopes(body.owner, body.app));
   }
-  if (route === '/profiles/read') {
-    return sendJson(res, 200, { profiles: (body.ids ?? []).map(profileOf).filter(Boolean) });
-  }
-  if (route === '/profiles/write') {
-    const prior = accountsRecords.profiles.get(body.owner);
-    accountsRecords.profiles.set(body.owner, {
-      name: 'name' in body ? body.name : (prior?.name ?? null),
-      color: 'color' in body ? body.color : (prior?.color ?? null),
-      createdAt: prior?.createdAt ?? Date.now(),
-    });
-    return sendJson(res, 200, { profile: profileOf(body.owner) });
-  }
   if (route === '/sightings') {
     const first = !accountsRecords.sightings.has(body.userId);
     accountsRecords.sightings.add(body.userId);
@@ -397,8 +376,9 @@ async function answerAccountApi(req, route, url, res) {
     });
     return sendJson(res, 201, minted);
   }
-  const token = accountTokens.answer(route, body);
-  if (token) return sendJson(res, token.status, token.body);
+  // API tokens and profiles: the stand-in every app's stack shares.
+  const shared = accountTokens.answer(route, body);
+  if (shared) return sendJson(res, shared.status, shared.body);
   return sendJson(res, 404, { error: 'not_found' });
 }
 

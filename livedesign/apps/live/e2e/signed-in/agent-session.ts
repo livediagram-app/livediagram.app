@@ -21,7 +21,7 @@ export async function arrange(page: Page, baseURL: string, userId: string): Prom
   const session = { Authorization: `Bearer ${jwt}`, Origin: new URL(baseURL).origin };
   await page.request.put(`/api/participants/${userId}`, {
     headers: session,
-    data: { name: 'Webber', color: '#f59e0b' },
+    data: { name: 'Webber Takken', color: '#f59e0b' },
   });
   const id = crypto.randomUUID();
   const tabId = crypto.randomUUID();

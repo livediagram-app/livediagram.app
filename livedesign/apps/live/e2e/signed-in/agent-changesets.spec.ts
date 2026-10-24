@@ -18,8 +18,9 @@ const paymentBox = {
         id: 'payments',
         type: 'shape',
         shape: 'square',
-        x: 520,
-        y: 200,
+        // On the tab's A4 page, under the API box: what lies off a page is clipped from view.
+        x: 120,
+        y: 340,
         width: 220,
         height: 80,
         label: 'Payment service',

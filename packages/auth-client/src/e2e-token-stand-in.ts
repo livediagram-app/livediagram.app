@@ -1,9 +1,15 @@
-// The API tokens of the liveworkspace accounts Worker, for an app's e2e stack (its `scripts/e2e-stack.mjs`, which
-// stands in for accounts on `/e2e/accounts`). Test-only. API tokens are made on liveworkspace.app, so a spec seeds
-// one (`POST /e2e/accounts/__seed/token {userId, email?, name?, readOnly?}` → `{id, name, readOnly, expiresAt,
-// secret}`), and the app's api checks it as it does in production, through the account API (account.ts:
-// `/api/account/internal/tokens/verify`, `/tokens/live`, `/tokens/revoke`). Node runs this file as is (erasable
-// TypeScript only), so a stack script imports it by its path.
+// The API tokens and profiles of the liveworkspace accounts Worker, for an app's e2e stack (its
+// `scripts/e2e-stack.mjs`, which stands in for accounts on `/e2e/accounts`), shared by all four apps' stacks.
+// Test-only. Node runs this file as is (erasable TypeScript only), so a stack script imports it by its path.
+//
+// - API tokens are made on liveworkspace.app, so a spec seeds one (`POST /e2e/accounts/__seed/token {userId,
+//   email?, name?, readOnly?}` → `{id, name, readOnly, expiresAt, secret}`), and the app's api checks it as it
+//   does in production, through the account API (account.ts: `/api/account/internal/tokens/verify`,
+//   `/tokens/live`, `/tokens/revoke`).
+// - Profiles (display names and colours, liveworkspace/docs/accounts.md "Profiles") are kept in memory: the api
+//   writes one when someone sets their name (`/profiles/write {owner, name?, color?}`) and reads them for
+//   presence, comments and changeset toasts (`/profiles/read {ids}`), as against the accounts Worker. An id
+//   nobody wrote a profile for is left out of a read, so the app falls back to its own default name.
 
 import { randomBytes, randomUUID } from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
@@ -30,6 +36,21 @@ export type SeededToken = {
 
 const TOKEN_LIFE_MS = 90 * 24 * 60 * 60 * 1000;
 
+// A profile as the account API answers it (account.ts `Profile`).
+export type StandInProfile = {
+  id: string;
+  name: string | null;
+  color: string | null;
+  createdAt: number | null;
+  updatedAt: number | null;
+};
+
+// The accounts Worker's limits (liveworkspace/apps/accounts/src/profiles.ts), so a spec meets the same refusals.
+const MAX_PROFILE_IDS = 100;
+const PROFILE_NAME_MAX = 120;
+const PROFILE_COLOR_MAX = 64;
+const PROFILE_OWNER = /^(user|guest)_[A-Za-z0-9_-]+$/;
+
 export type TokenStandIn = {
   // A token as if the person made it on liveworkspace.app.
   seed(input: {
@@ -38,9 +59,11 @@ export type TokenStandIn = {
     name?: string;
     readOnly?: boolean;
   }): SeededToken;
-  // The account API's token routes (`route` is the path after `/api/account/internal`), or null for another route.
+  // The account API's token and profile routes (`route` is the path after `/api/account/internal`), or null for
+  // another route.
   answer(route: string, body: Record<string, unknown>): { status: number; body?: unknown } | null;
-  // Serves `<accountsPath>/__seed/token` and `<accountsPath>/api/account/internal/tokens/*`; false for anything else.
+  // Serves `<accountsPath>/__seed/token`, `<accountsPath>/api/account/internal/tokens/*` and `…/profiles/*`; false
+  // for anything else.
   serve(req: IncomingMessage, res: ServerResponse, pathname: string): boolean;
 };
 
@@ -50,6 +73,7 @@ export function createTokenStandIn(
   teamsOf: (userId: string) => StandInTeam[] = () => [],
 ): TokenStandIn {
   const tokens = new Map<string, Token>();
+  const profiles = new Map<string, StandInProfile>();
   const seed: TokenStandIn['seed'] = ({
     userId,
     email = null,
@@ -94,6 +118,42 @@ export function createTokenStandIn(
       token.revoked = true;
       return { status: 204 };
     }
+    if (route === '/profiles/read') {
+      const ids = body.ids;
+      if (
+        !Array.isArray(ids) ||
+        !ids.every((id) => typeof id === 'string' && PROFILE_OWNER.test(id))
+      ) {
+        return { status: 400, body: { error: 'ids_required' } };
+      }
+      if (ids.length > MAX_PROFILE_IDS) return { status: 400, body: { error: 'too_many_ids' } };
+      const found = [...new Set(ids as string[])].flatMap((id) => profiles.get(id) ?? []);
+      return { status: 200, body: { profiles: found } };
+    }
+    if (route === '/profiles/write') {
+      const owner = body.owner;
+      if (typeof owner !== 'string' || !PROFILE_OWNER.test(owner)) {
+        return { status: 400, body: { error: 'invalid_owner' } };
+      }
+      const name = cleaned(body.name, PROFILE_NAME_MAX);
+      if (name === false) return { status: 400, body: { error: 'invalid_name' } };
+      const color = cleaned(body.color, PROFILE_COLOR_MAX);
+      if (color === false) return { status: 400, body: { error: 'invalid_color' } };
+      if (name === undefined && color === undefined) {
+        return { status: 400, body: { error: 'nothing_to_change' } };
+      }
+      const now = Date.now();
+      const prior = profiles.get(owner);
+      const profile: StandInProfile = {
+        id: owner,
+        name: name === undefined ? (prior?.name ?? null) : name,
+        color: color === undefined ? (prior?.color ?? null) : color,
+        createdAt: prior?.createdAt ?? now,
+        updatedAt: now,
+      };
+      profiles.set(owner, profile);
+      return { status: 200, body: { profile } };
+    }
     if (route === '/tokens/live') {
       const live = new Set(
         [...tokens.values()].filter((t) => !t.revoked && t.expiresAt > Date.now()).map((t) => t.id),
@@ -106,9 +166,10 @@ export function createTokenStandIn(
   const internal = `${accountsPath}/api/account/internal`;
   const seedPath = `${accountsPath}/__seed/token`;
   const serve: TokenStandIn['serve'] = (req, res, pathname) => {
-    const route = pathname.startsWith(`${internal}/tokens/`)
-      ? pathname.slice(internal.length)
-      : null;
+    const route =
+      pathname.startsWith(`${internal}/tokens/`) || pathname.startsWith(`${internal}/profiles/`)
+        ? pathname.slice(internal.length)
+        : null;
     if (pathname !== seedPath && route === null) return false;
     readJson(req)
       .then((body) => {
@@ -135,6 +196,17 @@ export function createTokenStandIn(
     return true;
   };
   return { seed, answer, serve };
+}
+
+// A profile field as the accounts Worker cleans it: left out (undefined), cleared (null, or blank once
+// trimmed), a trimmed string, or false when it isn't one it takes.
+function cleaned(value: unknown, max: number): string | null | undefined | false {
+  if (value === undefined) return undefined;
+  if (value === null) return null;
+  if (typeof value !== 'string') return false;
+  const text = value.trim();
+  if (text.length > max) return false;
+  return text || null;
 }
 
 function readJson(req: IncomingMessage): Promise<Record<string, unknown>> {

@@ -182,8 +182,9 @@ starts the api worker with `ACCOUNTS_URL` and `API_RESOURCE` pointing at it, and
 token with that issuer and audience for any test account on `/e2e/token?sub=user_…`, which
 `installSession` hands the bridge. API tokens are the liveworkspace account's too: a spec seeds one at
 `POST /e2e/accounts/__seed/token` (its `secret` is the `lwt_…` an agent sends), and the api checks it through the
-account API's `tokens/verify` as in production (`packages/auth-client/src/e2e-token-stand-in.ts`, shared by every
-app's stack). So a stub account is a real verified account to the api and the
+account API's `tokens/verify` as in production. Display names are the account's profiles: the api writes and reads them
+through the account API's `profiles/write` and `profiles/read`, so an agent's changes and comments carry the name the
+person set (`packages/auth-client/src/e2e-token-stand-in.ts` answers both, shared by every app's stack). So a stub account is a real verified account to the api and the
 realtime room, and two or three stub browsers can collaborate in one design. A test that changes an
 account's synced settings takes a fresh id (`freshUserId`), since the stack outlives a test. `e2e.yml` builds and runs them in their own job, beside the smoke shards.
 
