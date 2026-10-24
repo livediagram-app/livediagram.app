@@ -67,7 +67,12 @@ const statusText = () =>
 
 const NOTICE = { kind: 'document' as const, ldId: 'd', name: 'Plan', parentId: 'p' };
 const problemLine = () => document.querySelector('[data-drive-problem]');
-const description = () => document.getElementById(`${ROW.key}-description`)!.textContent ?? '';
+// The row's words as read: a hover card's hidden description copy (for assistive technology) is not part of them.
+const description = () => {
+  const row = document.getElementById(`${ROW.key}-description`)!.cloneNode(true) as HTMLElement;
+  row.querySelectorAll('[hidden]').forEach((n) => n.remove());
+  return row.textContent ?? '';
+};
 
 describe('GoogleDriveSyncRow', () => {
   it('is one row when not connected: Not connected and Connect, nothing else', () => {

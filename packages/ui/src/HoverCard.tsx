@@ -1,6 +1,13 @@
 'use client';
 
-import type { CSSProperties, ReactNode } from 'react';
+import {
+  cloneElement,
+  isValidElement,
+  useId,
+  type CSSProperties,
+  type ReactElement,
+  type ReactNode,
+} from 'react';
 import { HintSurface } from './hint/HintSurface';
 import { useHint } from './hint/useHint';
 
@@ -37,6 +44,21 @@ export function HoverCard({
   children,
 }: HoverCardProps) {
   const { open, attach, anchor, triggerProps, surfaceProps } = useHint('hover-card');
+  // The card is drawn only while open, so assistive technology reads its description from a hidden copy the control
+  // is described by (its title is the name the control already carries): one control element is described
+  // directly; anything else, through the wrapper.
+  const describedBy = useId();
+  const control =
+    description && isValidElement(children) && typeof children.type !== 'symbol'
+      ? cloneElement(children as ReactElement<{ 'aria-describedby'?: string }>, {
+          'aria-describedby': [
+            (children.props as { 'aria-describedby'?: string })['aria-describedby'],
+            describedBy,
+          ]
+            .filter(Boolean)
+            .join(' '),
+        })
+      : null;
   return (
     <>
       <span
@@ -44,8 +66,14 @@ export function HoverCard({
         {...triggerProps}
         className={`${block ? 'flex w-full' : 'inline-flex'}${className ? ` ${className}` : ''}`}
         style={style}
+        aria-describedby={description && !control ? describedBy : undefined}
       >
-        {children}
+        {control ?? children}
+        {description ? (
+          <span id={describedBy} hidden>
+            {description}
+          </span>
+        ) : null}
       </span>
       {open && !disabled ? (
         <HintSurface kind="hover-card" anchor={anchor} surfaceProps={surfaceProps}>

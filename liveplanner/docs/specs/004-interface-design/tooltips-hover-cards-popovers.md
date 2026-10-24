@@ -53,6 +53,8 @@ A control has at most one hint. If a hover card is present, it carries the name 
 - **Opens instantly** on hover and on keyboard-visible focus. It is chosen where the explanation is
   wanted at once: a control whose purpose is not obvious from its glyph.
 - **A bold title over a one-line description.** The description may run to two or three short lines.
+- **Its description is the control's accessible description** (`aria-describedby`), shown or not, so a screen
+  reader hears what the card says; the title is the name the control already carries.
 - **White card** on light pages, with a border, a soft shadow and a pointer.
 - Hover cards are not part of the tooltip warm-up; they have no delay to skip.
 - **Quiet while the control's own popover is open** (the Explorer, a cluster button, a palette group), since it
