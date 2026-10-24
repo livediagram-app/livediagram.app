@@ -12,9 +12,6 @@ const { db } = vi.hoisted(() => ({
 vi.mock('../db', () => db);
 vi.mock('../person/profiles', () => ({ getParticipant: db.getParticipant }));
 
-const { endAccess } = vi.hoisted(() => ({ endAccess: vi.fn() }));
-vi.mock('../workbench-store', () => ({ workbenchStore: () => ({ endAccess }) }));
-
 import type { RouteContext } from './context';
 import { handleTokens } from './tokens';
 
@@ -34,7 +31,6 @@ const makeCtx = (
 
 beforeEach(() => {
   for (const fn of Object.values(db)) if (typeof fn === 'function') fn.mockReset();
-  endAccess.mockReset();
   db.revokePresentedToken.mockResolvedValue(undefined);
   db.retractTimelineWarning.mockResolvedValue(undefined);
 });
@@ -88,12 +84,12 @@ describe('/api/tokens/current (docs/specs/015-api/blueprints/cli.md "Token self-
     });
   });
 
-  it('revokes itself, ending its workbench access', async () => {
+  // Its workbench pairings end at liveworkspace with the revoke (liveworkspace/docs/workbench.md).
+  it('revokes itself at liveworkspace', async () => {
     const work: Promise<unknown>[] = [];
     const res = await handleTokens(tokenCtx('DELETE', false, (p) => void work.push(p)));
     expect(res.status).toBe(204);
     expect(db.revokePresentedToken).toHaveBeenCalledWith(expect.anything(), 'lwt_secret');
-    expect(endAccess).toHaveBeenCalledWith({ tokenId: 'tok_1' }, 'revoked');
     await Promise.all(work);
   });
 
@@ -105,7 +101,6 @@ describe('/api/tokens/current (docs/specs/015-api/blueprints/cli.md "Token self-
     });
     expect((await handleTokens(ctx)).status).toBe(204);
     expect(db.revokePresentedToken).not.toHaveBeenCalled();
-    expect(endAccess).toHaveBeenCalledWith({ tokenId: 'tok_1' }, 'revoked');
     const read = makeTestRouteContext('GET', '/api/tokens/current', {
       accountUserId: null,
       owner: 'user_1',

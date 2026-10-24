@@ -5,15 +5,14 @@ import { WEBBER } from './agent-session';
 import { freshUserId, installSession } from './session';
 
 // Contrast of the workbench pairing surfaces and the OAuth shell they share (docs/specs/013-workspace/blueprints/
-// workbench-embeds.md "Accessibility"), to WCAG 2.2 AA in both colour schemes: the pairing page in its pending
-// state, the device page (docs/specs/015-api/blueprints/cli.md "The device grant") at its code entry and its
+// workbench-embeds.md "Accessibility"), to WCAG 2.2 AA in both colour schemes (the pairing page itself is
+// liveworkspace.app's, liveworkspace/docs/workbench.md): the device page (docs/specs/015-api/blueprints/cli.md "The device grant") at its code entry and its
 // consent, both drawn by OauthShell and its primary fill, and Settings > API Tokens with a paired workbench (the
 // tokens themselves are made and listed on liveworkspace.app, so the row links there and lists only pairings).
 // All need a signed-in person, so they run against the signed-in export here rather than in the guest-mode
 // audit. The api's and the MCP worker's answers are stubbed, so each surface renders exactly the state under
 // audit.
 
-const CODE = 'AAAAAAAAAAAAAAAAAAAAAA';
 const DAY = 86_400_000;
 const NOW = Date.now();
 // The token is the liveworkspace account's (made on liveworkspace.app); the app knows only its id and name.
@@ -58,29 +57,6 @@ async function expectScheme(page: Page, scheme: 'dark' | 'light'): Promise<void>
 for (const scheme of ['dark', 'light'] as const) {
   test.describe(`OAuth shell contrast, ${scheme} mode`, () => {
     test.use({ colorScheme: scheme, reducedMotion: 'reduce', viewport: VIEWPORT });
-
-    test('the pairing page, pending', async ({ page, pageErrors }) => {
-      await signedIn(page, scheme);
-      await page.route(`**/api/workbench/pairing-requests/${CODE}`, (route) =>
-        route.fulfill({
-          json: {
-            request: {
-              origin: PAIRING.origin,
-              name: PAIRING.name,
-              tokenName: TOKEN.name,
-              expiresAt: NOW + 600_000,
-              status: 'pending',
-            },
-          },
-        }),
-      );
-      await page.goto(`/workbench/pair?code=${CODE}`);
-      await expect(page.getByRole('heading', { name: 'Allow this workbench?' })).toBeVisible();
-      await expectScheme(page, scheme);
-      await page.screenshot({ path: test.info().outputPath(`pair-pending-${scheme}.png`) });
-      expectAA(await auditContrast(page), `pairing page, pending, ${scheme}`);
-      expectNoPageErrors(pageErrors);
-    });
 
     test('the device page, entering the code and consenting', async ({ page, pageErrors }) => {
       await signedIn(page, scheme);

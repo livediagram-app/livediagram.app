@@ -573,7 +573,7 @@ false, an absent `documentFormat` as equal to its own.
   200 `CurrentTokenResponse = { accountId, accountName, tokenId, tokenName, role, expiresAt }`; `role` is
   `read-only` or `full` from the checked token's read-only flag, printed as the api names it. `accountName` is the owner's participant name, `null` when none.
 - `DELETE /api/tokens/current` → 204 after `revokePresentedToken` revokes it at liveworkspace (so it stops in every
-  app) and the person's workbench store ends what was paired through it (`endAccess({ tokenId }, 'revoked')`).
+  app), which ends what was paired through it there.
 - Both are reached before the session-only gate in `handleTokens`, through `ctx.token`. The token write choke point
   admits `DELETE /api/tokens/current` for a token of any role, as revoking itself escalates nothing.
 

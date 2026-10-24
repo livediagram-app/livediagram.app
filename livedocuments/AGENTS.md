@@ -262,7 +262,7 @@ See [Auth + guest access](docs/specs/014-identity/auth-and-guest-access.md).
   - **Account**: an account access token from signing in, or from signing in without a click (`/api/auth/silent`) when the browser already has a liveworkspace session.
   - There is no `X-Owner-Id` header, guest signature or `/api/migrate`.
 - **Access is the index's.** Where a document is filed, who may open it and its sharing live in liveworkspace's index ([one-explorer.md](../liveworkspace/docs/one-explorer.md)); the editor sends the index's grant as `X-Index-Grant`, and the room takes it as `?t=`. A share link alone admits a link visitor.
-- **Content is the document's.** Each document's tabs, comments, image references and grants live in its own Durable Object's SQLite (`DocumentRoom`), which pushes its summary, Inbox rows and edits to the index and its images to the media service. Each person's workbench (pairings, tickets, sessions) is a Durable Object of its own (`WorkbenchStore`); API tokens and teams are liveworkspace accounts'. The api has no D1 database.
+- **Content is the document's.** Each document's tabs, comments, image references and grants live in its own Durable Object's SQLite (`DocumentRoom`), which pushes its summary, Inbox rows and edits to the index and its images to the media service. Workbench pairings, tickets and sessions, API tokens and teams are liveworkspace's. The api has no D1 database.
 - Sign-in lives at `/sign-in/` and sign-up at `/get-started/` (both hand off to the liveworkspace accounts site; email code). Signing in moves a guest's items to the account; the index does that, not livedocuments.
 
 ## Core principle: reuse over duplication

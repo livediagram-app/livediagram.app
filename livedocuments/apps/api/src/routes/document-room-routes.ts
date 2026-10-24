@@ -4,7 +4,7 @@
 // headers only it can set, and the room asks for a fresh one before it lapses (document-room.ts).
 
 import { type AccessLevel, type RoomTicketResponse } from '@livedocuments/api-schema';
-import { workbenchStore } from '../workbench-store';
+import { noteWorkbenchRoom } from '../auth/workbench-session';
 import { indexService, linkCodeOf } from '../index-service';
 import { forbidden, json, notFound } from '../responses';
 import { openRoomTicket, roomTicketLevel, sealRoomTicket } from '@liveworkspace/index-app';
@@ -28,9 +28,13 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
       grant.token,
       workbench ? { pairing: workbench.pairingId, cap: workbench.level } : null,
     );
-    // A workspace session joins many rooms; each is recorded so ending its access closes them all (WB55).
-    if (workbench?.scope === 'workspace')
-      await workbenchStore(env, workbench.ownerId).noteSessionRoom(workbench.sessionId, id);
+    // A workspace session joins many rooms; each is recorded at liveworkspace, off the response's path, so ending
+    // its access closes them all (WB55).
+    if (workbench?.scope === 'workspace') {
+      const noted = noteWorkbenchRoom(env, workbench, id);
+      if (ctx.waitUntil) ctx.waitUntil(noted);
+      else await noted;
+    }
     const answer: RoomTicketResponse = { ticket };
     return json(answer);
   }

@@ -100,8 +100,7 @@ export default defineProject({ test: { environment: 'jsdom' } });
   (`node:sqlite`) holding the documents' schema (`document-room/document-schema.ts`), behind `env.DOCUMENT_DB` (the
   D1 surface a document's own Durable Object runs its handlers on), with foreign keys on. Use it wherever the
   behaviour lives in the schema: cascades, primary-key collisions, `INSERT OR IGNORE` outcomes. It answers the
-  `DOCUMENT_ROOM` RPCs from the same tables and pushes each document's outbox on `flush`, and gives each person an
-  in-memory workbench store (`memoryWorkbenchNamespace`, `@liveworkspace/index-app/testing`).
+  `DOCUMENT_ROOM` RPCs from the same tables and pushes each document's outbox on `flush`.
 - **A document's own Durable Object in tests.** `nodeItemSql` and `nodeTransaction` (`@liveworkspace/index-app/testing`) put
   `ctx.storage.sql` (`exec`) and `transactionSync` over `node:sqlite`, and
   `vitest.config.ts` aliases `cloudflare:workers` to a stub base class, so

@@ -2,25 +2,18 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 import { DatabaseSync } from 'node:sqlite';
 import { ItemDb } from '@liveworkspace/index-app';
 import { migrateDocumentSchema } from './document-room/document-schema';
-import {
-  memoryWorkbenchNamespace,
-  nodeItemSql,
-  nodeTransaction,
-} from '@liveworkspace/index-app/testing';
+import { nodeItemSql, nodeTransaction } from '@liveworkspace/index-app/testing';
 import type { AccessLevel } from '@livedocuments/api-schema';
 import type { GrantCaller, GrantOutcome, DocumentGrant } from './index-service';
 import { IndexError, type IndexClient, type ShareAccess } from '@liveworkspace/index-client';
 import type { Env, DocumentEnv } from './types';
-import { accountCredentials } from './auth/accounts';
-import { closeWorkbenchSessions } from './room-access-client';
 
 // The api's storage for tests. A document's content (docs/specs/015-api/api.md "Storage") is its own Durable Object
 // in production; here every document's tables sit in one in-memory SQLite database, behind `env.DOCUMENT_DB`, so a
 // test arranges and asserts on them through one handle, and a handler runs as it does inside a document's object.
 // `env.DOCUMENT_ROOM` answers the document RPCs (document-client.ts) from those same tables, and hands `fetch` (the
 // room's relays) to the DOCUMENT_ROOM the test passed, if any. `flush` drains what the documents owe the index and the
-// media service (document-outbox.ts), for a test that asserts on those pushes. Each person's workbench is an in-memory
-// store (@liveworkspace/index-app/testing).
+// media service (document-outbox.ts), for a test that asserts on those pushes.
 //
 // Not a `.test.ts` file, so vitest doesn't collect it as a suite.
 
@@ -105,13 +98,6 @@ export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
       rooms = testDocumentRooms(env, sql, next);
     },
   });
-  // Each person's workbench store, in memory (@liveworkspace/index-app/testing), closing rooms as the real one does.
-  if (!base.WORKBENCH) {
-    env.WORKBENCH = memoryWorkbenchNamespace<'document'>({
-      credentials: () => accountCredentials(env),
-      closeRoom: (planId, pairingId) => closeWorkbenchSessions(env, planId, pairingId),
-    }) as unknown as DurableObjectNamespace;
-  }
   return { env, sql, flush: push };
 }
 

@@ -189,7 +189,6 @@ const personOf = (headers: Record<string, string>) =>
 function world(extra: Partial<Env> = {}): World {
   const d1 = sqliteD1();
   const env = {
-    WORKBENCH: d1.env.WORKBENCH,
     INDEX_ORIGIN: 'https://index.test',
     ...extra,
   } as unknown as Env;

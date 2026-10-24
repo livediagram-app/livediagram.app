@@ -6,12 +6,12 @@ This guide is the practical path: provision Cloudflare resources, configure secr
 
 ## What you'll provision on Cloudflare
 
-| Resource                             | Used by           | Why                                                                                                                                                                                                                                                                        |
-| ------------------------------------ | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Workers paid plan**                | All seven workers | Durable Objects (per-document realtime room) need the paid plan.                                                                                                                                                                                                           |
-| **Durable Object namespaces**        | `apps/api`        | One SQLite-backed object per document (`DocumentRoom`: its content, tabs, comments, changesets and image references, and its realtime room) and one per person (`WorkbenchStore`: their workbench pairings, tickets and sessions). Each makes its own schema on first use. |
-| **Rate Limiter bindings** (optional) | `apps/api`        | Abuse throttles: per-owner writes, plus the CLI's telemetry relay, share-code lookups, link unfurls, AI calls and API-token reads. Any binding you don't provision falls through to "allow", so none are required.                                                         |
-| **Custom domain**                    | `apps/router`     | The router worker serves your hostname; downstream workers don't need their own domain.                                                                                                                                                                                    |
+| Resource                             | Used by           | Why                                                                                                                                                                                                                |
+| ------------------------------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Workers paid plan**                | All seven workers | Durable Objects (per-document realtime room) need the paid plan.                                                                                                                                                   |
+| **Durable Object namespaces**        | `apps/api`        | One SQLite-backed object per document (`DocumentRoom`: its content, tabs, comments, changesets and image references, and its realtime room) It makes its own schema on first use.                                  |
+| **Rate Limiter bindings** (optional) | `apps/api`        | Abuse throttles: per-owner writes, plus the CLI's telemetry relay, share-code lookups, link unfurls, AI calls and API-token reads. Any binding you don't provision falls through to "allow", so none are required. |
+| **Custom domain**                    | `apps/router`     | The router worker serves your hostname; downstream workers don't need their own domain.                                                                                                                            |
 
 What you do NOT need:
 
@@ -168,9 +168,7 @@ teams from their token's `teams` claim and keeps no copy ([Teams](../specs/013-w
 
 A workbench is a developer tool that frames the editor signed in, beside an agent ([Workbench embeds](../specs/013-workspace/workbench-embeds.md)). It needs API tokens, so it exists only where sign-in is configured; without it the routes answer as for any caller without a token and nothing breaks.
 
-- `APP_BASE_URL` (api `[vars]`): set it to your deployment's public origin. Besides the links in emails, it builds the workbench frame URLs (`/embed/workbench`, and `/embed/workbench/explorer` for the whole workspace) and the pairing URL (`/workbench/pair`) the CLI prints. Use the origin that serves the app without redirecting (for example `https://www.example.com` when the apex redirects to `www`): a workbench checks the frame's messages against the origin of that URL, and a redirect changes it. Left at its default, those links point at livedocuments.app.
-- `WORKBENCH_TICKET_RATE_LIMITER` (optional binding, declared in `apps/api/wrangler.toml`): caps ticket mints and pairing requests per token. Without the binding every request is allowed.
-- Each person's workbench is their own Durable Object (`WORKBENCH`, declared in `apps/api/wrangler.toml`); its alarm checks their tokens with liveworkspace and sweeps spent rows, so there is nothing to schedule.
+- Pairing, tickets and sessions are liveworkspace's: its accounts Worker keeps them, builds the frame URLs from the app's known origin and serves the pairing page on liveworkspace.app ([liveworkspace/docs/workbench.md](../../../liveworkspace/docs/workbench.md)). This api forwards `/api/workbench/*` to `ACCOUNTS_URL` and checks each `lvw_` session there; nothing needs creating here.
 
 ## Images
 

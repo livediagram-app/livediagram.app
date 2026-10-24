@@ -278,4 +278,5 @@ What a workbench does to fit this contract (its own documentation holds the deta
   (the target's kind).
 - Telemetry: `Session·Opened·Workbench` when a page mounts the editor, `Session·Opened·WorkbenchWorkspace` when a
   workspace frame mounts the Explorer; `Cli·Used·WorkbenchOpen` and
-  `Cli·Used·WorkbenchPair` for the commands; `Token·Linked·Workbench` when a pairing is approved.
+  `Cli·Used·WorkbenchPair` for the commands. Approving a pairing happens on liveworkspace.app, which records no
+  app event for it, so `Token·Linked·Workbench` is no longer sent.

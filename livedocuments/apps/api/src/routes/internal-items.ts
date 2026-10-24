@@ -1,7 +1,8 @@
 // /api/internal/items/**: the One Explorer index's doors into a document's content (docs/specs/015-api/api.md
 // "Internal"), served by @liveworkspace/index-app's handleInternalItems with the app's key (INDEX_KEY). See it for
 // the doors: a purge (one document, or up to a hundred for a closed account), revoked links, notices for the emails,
-// and a copy into a new document.
+// a copy into a new document, and a workbench pairing's sessions closed in a document's room
+// (liveworkspace/docs/workbench.md "Ending access").
 //
 // Each is a call to the document's Durable Object (document-client.ts). Where the document is filed, its sharing and its
 // Trash are the index's; a purge also tells the media service the document places nothing now and drops its previews
@@ -15,6 +16,7 @@ import { purgeDocumentPreviews } from '../db/documents';
 import { forgetImageRefs } from '../document-room/document-outbox';
 import { mediaClient, mediaOwner } from '../media';
 import { documentRoom } from '../document-client';
+import { closeWorkbenchSessions } from '../room-access-client';
 import { reportServerEvent } from '../server-telemetry';
 import type { Env } from '../types';
 
@@ -45,7 +47,7 @@ export function handleInternalItems(
               reportServerEvent(env, 'Document', 'Joined', JOINED_TELEMETRY_TYPE[notice.level]),
             ]),
       // A closed account, wherever it was closed: what livedocuments keeps for them beside their documents (their
-      // images and their workbench), and their name off each document of someone else's that names them.
+      // images), and their name off each document of someone else's that names them.
       personClosed: async (personId) => void (await deleteAccount(env, personId)),
       // A guest who became an account (accounts merged them; the index tells each app): their images in
       // liveworkspace's media service become the account's. A guest has no workbench (it needs a token).
@@ -59,6 +61,8 @@ export function handleInternalItems(
       anonymise: (id, personId) => documentRoom(env, id).anonymise(personId),
       // The document drawn, for liveworkspace's previews (document-room.ts `exportImage`).
       export: (id, query) => documentRoom(env, id).exportImage(query),
+      // A workbench pairing's access ended at liveworkspace: its sockets in this document's room close.
+      workbenchClose: (id, pairingId) => closeWorkbenchSessions(env, id, pairingId),
       copy: async (from, to, tabId, copier) => {
         // The source as the copier may take it: anyone but the owner takes the comments as the tab read serves them
         // to them, other people's authors redacted.

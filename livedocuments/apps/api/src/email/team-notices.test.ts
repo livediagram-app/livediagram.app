@@ -371,7 +371,10 @@ describe('a mention', () => {
     });
     const took = performance.now() - started;
     expect(sent()).toHaveLength(60);
+    // The sender's email allowance is liveworkspace's (liveworkspace/docs/workbench.md): one call however many are
+    // mentioned.
     expect(fake.calls.map((c) => c.path).sort()).toEqual([
+      '/allowance',
       '/emails',
       '/settings/notify',
       '/teams/members',

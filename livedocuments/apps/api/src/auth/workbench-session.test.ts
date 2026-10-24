@@ -1,123 +1,127 @@
-import { describe, expect, it } from 'vitest';
-import { isWorkbenchSessionFormat } from '@livedocuments/api-schema';
-import { sqliteD1 } from '../test-sqlite-d1';
-import { workbenchStore } from '../workbench-store';
-import { resolveWorkbenchSession, sessionPrefixOf } from './workbench-session';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { AccountsUnavailable } from '../db/api-tokens';
+import { noteWorkbenchRoom, resolveWorkbenchSession, sessionPrefixOf } from './workbench-session';
 
-const NOW = 1_800_000_000_000;
+// Sessions are liveworkspace's (liveworkspace/docs/workbench.md): the api asks accounts about each with its client
+// credentials and reads the answer in its own words.
+const ENV = {
+  ACCOUNTS_URL: 'https://accounts.test',
+  ACCOUNTS_CLIENT_ID: 'livedocuments',
+  ACCOUNTS_CLIENT_SECRET: 'secret',
+};
+
+const CHECKED = {
+  sessionId: 'sess-1234567',
+  ownerId: 'user_1',
+  tokenId: 'tok1',
+  pairingId: 'pair1',
+  scope: 'item',
+  itemId: 'doc1',
+  folderId: null,
+  tabId: 't1',
+  origin: 'https://w.example',
+  level: 'edit',
+  expiresAt: 1_900_000_000_000,
+  teams: [{ id: 'team1', name: 'T', role: 'member' }],
+};
+
+let secretN = 0;
+// A fresh secret per test: the checker remembers answers for the life of the isolate.
+const secret = () => `lvw_${String(++secretN).padStart(43, 'a')}.${'f'.repeat(64)}`;
+
+function stubAccounts(respond: (path: string, body: Record<string, unknown>) => Response) {
+  const calls: { path: string; body: Record<string, unknown> }[] = [];
+  vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = new URL(input instanceof Request ? input.url : input);
+    const body = JSON.parse(typeof init?.body === 'string' ? init.body : '{}') as Record<
+      string,
+      unknown
+    >;
+    calls.push({ path: url.pathname, body });
+    return respond(url.pathname, body);
+  });
+  return calls;
+}
+
+afterEach(() => vi.unstubAllGlobals());
 
 describe('resolveWorkbenchSession', () => {
-  async function arrange(
-    over: { tokenRevoked?: boolean; tokenReadOnly?: boolean; workspace?: boolean } = {},
-  ) {
-    const db = sqliteD1();
-    const store = workbenchStore(db.env, 'user_1');
-    const token = {
-      id: 'tok1',
-      name: null,
-      readOnly: over.tokenReadOnly ?? false,
-      expiresAt: NOW + 1e9,
-    };
-    const { code } = await store.openPairingRequest({
-      personId: 'user_1',
-      token,
-      origin: 'https://w.example',
-      scope: over.workspace ? 'workspace' : 'document',
-      name: 'Acme Editor',
-      now: NOW,
-    });
-    const answer = await store.answerPairingRequest({ code, answer: 'approve', now: NOW });
-    if (answer.outcome !== 'approved') throw new Error('not paired');
-    const session = await store.openSession({
-      personId: 'user_1',
-      tokenId: 'tok1',
-      pairingId: answer.pairing.id,
-      reach: over.workspace
-        ? { scope: 'workspace', itemId: null, folderId: 'fold1' }
-        : { scope: 'document', itemId: 'doc1', folderId: null },
-      tabId: over.workspace ? null : 't1',
-      origin: 'https://w.example',
-      role: 'edit',
-      now: NOW,
-      expiresAt: NOW + 1000,
-    });
-    if (over.tokenRevoked) await store.endAccess({ tokenId: 'tok1' }, 'revoked');
-    return { db, secret: session.secret, id: session.id, pairingId: answer.pairing.id };
-  }
-
-  it('issues secrets in the lvw_ format, naming their store', async () => {
-    const { secret } = await arrange();
-
-    expect(isWorkbenchSessionFormat(secret)).toBe(true);
-  });
-
-  it('resolves a live session to its context', async () => {
-    const { db, secret, id, pairingId } = await arrange();
-
-    expect(await resolveWorkbenchSession(db.env, secret, NOW)).toEqual({
+  it('reads a document session in the api’s own words', async () => {
+    const calls = stubAccounts(() => Response.json(CHECKED));
+    const s = secret();
+    expect(await resolveWorkbenchSession(ENV, s)).toEqual({
       ok: true,
       workbench: {
-        sessionId: id,
+        sessionId: 'sess-1234567',
         ownerId: 'user_1',
         tokenId: 'tok1',
-        pairingId,
+        pairingId: 'pair1',
         scope: 'document',
         documentId: 'doc1',
         folderId: null,
         tabId: 't1',
         origin: 'https://w.example',
         level: 'edit',
-        expiresAt: NOW + 1000,
+        expiresAt: CHECKED.expiresAt,
+        teams: CHECKED.teams,
       },
     });
+    expect(calls).toEqual([
+      { path: '/api/account/internal/workbench/session', body: { session: s } },
+    ]);
+    // Asked once a minute at most, however many requests the frame makes.
+    await resolveWorkbenchSession(ENV, s);
+    expect(calls).toHaveLength(1);
   });
 
-  it('resolves a workspace session to its folder, with no document', async () => {
-    const { db, secret } = await arrange({ workspace: true });
-
-    const resolved = await resolveWorkbenchSession(db.env, secret, NOW);
-
-    expect(resolved).toMatchObject({
+  it('reads a workspace session with its folder and no document', async () => {
+    stubAccounts(() =>
+      Response.json({
+        ...CHECKED,
+        scope: 'workspace',
+        itemId: null,
+        folderId: 'fold1',
+        tabId: null,
+      }),
+    );
+    expect(await resolveWorkbenchSession(ENV, secret())).toMatchObject({
       ok: true,
-      workbench: { scope: 'workspace', documentId: null, folderId: 'fold1', tabId: null },
+      workbench: { scope: 'workspace', documentId: null, folderId: 'fold1' },
     });
   });
 
-  it('lowers the level to view when the token is read-only', async () => {
-    const { db, secret } = await arrange({ tokenReadOnly: true });
-
-    const resolved = await resolveWorkbenchSession(db.env, secret, NOW);
-
-    expect(resolved.ok && resolved.workbench.level).toBe('view');
+  it('passes on why accounts refused it', async () => {
+    stubAccounts(() =>
+      Response.json({ error: 'invalid_session', reason: 'revoked' }, { status: 404 }),
+    );
+    expect(await resolveWorkbenchSession(ENV, secret())).toEqual({ ok: false, reason: 'revoked' });
   });
 
-  it('refuses an unknown, an unrouted, a revoked token and an expired session', async () => {
-    const { db, secret, id } = await arrange();
-    const revoked = await arrange({ tokenRevoked: true });
-    const elsewhere = `lvw_${'a'.repeat(43)}.${'0f'.repeat(32)}`;
+  it('is unknown with no accounts configured, and unavailable when accounts fails', async () => {
+    expect(await resolveWorkbenchSession({}, secret())).toEqual({ ok: false, reason: 'unknown' });
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    stubAccounts(() => new Response(null, { status: 503 }));
+    await expect(resolveWorkbenchSession(ENV, secret())).rejects.toBeInstanceOf(
+      AccountsUnavailable,
+    );
+  });
 
-    expect(await resolveWorkbenchSession(db.env, elsewhere, NOW)).toEqual({
-      ok: false,
-      reason: 'unknown',
-    });
-    expect(await resolveWorkbenchSession(db.env, `lvw_${'a'.repeat(43)}`, NOW)).toEqual({
-      ok: false,
-      reason: 'unknown',
-    });
-    // Ending a token's access removes its sessions, so its secret is unknown from then on.
-    expect(await resolveWorkbenchSession(revoked.db.env, revoked.secret, NOW)).toEqual({
-      ok: false,
-      reason: 'unknown',
-    });
-    expect(await resolveWorkbenchSession(db.env, secret, NOW + 1000)).toEqual({
-      ok: false,
-      reason: 'expired',
-      sessionPrefix: sessionPrefixOf(id),
-    });
-    expect(await resolveWorkbenchSession(db.env, secret, NOW + 2e9)).toEqual({
-      ok: false,
-      reason: 'revoked',
-      sessionPrefix: sessionPrefixOf(id),
-    });
+  it('logs a session by its id’s first eight characters', () => {
+    expect(sessionPrefixOf('abcdefghijkl')).toBe('abcdefgh');
+  });
+});
+
+describe('noteWorkbenchRoom', () => {
+  it('tells accounts once per session and document', async () => {
+    const calls = stubAccounts(() => new Response(null, { status: 204 }));
+    const session = { ownerId: 'user_1', sessionId: `s-${secret()}` };
+    await noteWorkbenchRoom(ENV, session, 'doc1');
+    await noteWorkbenchRoom(ENV, session, 'doc1');
+    expect(calls).toEqual([
+      {
+        path: '/api/account/internal/workbench/rooms',
+        body: { ownerId: 'user_1', sessionId: session.sessionId, itemId: 'doc1' },
+      },
+    ]);
   });
 });
