@@ -141,6 +141,27 @@ describe('Home’s hero', () => {
     expect(index.count('listItems')).toBe(1);
   });
 
+  it('counts what this browser keeps beside My Work, its trashed ones not', async () => {
+    const index = createFakeIndex({ items: [makeItem(1)] });
+    const kept = (n: number, trashedAt: number | null = null) => ({
+      id: `local-${n}`,
+      title: `Local ${n}`,
+      createdAt: n,
+      updatedAt: n,
+      lastOpenedAt: n,
+      trashedAt,
+      favourite: false,
+    });
+    renderHome(index, {
+      thisBrowser: {
+        items: [kept(1), kept(2), kept(3, 9)],
+        itemHref: (item) => `/project/${item.id}`,
+        helpHref: '/help/offline/',
+      },
+    });
+    expect(await screen.findByRole('link', { name: '3 plans' })).toBeTruthy();
+  });
+
   it('draws no pill while its count is unknown, and none for a count that failed', async () => {
     const index = createFakeIndex({ items: [makeItem(1)] });
     index.hold.add('listItems');

@@ -53,7 +53,7 @@ import { Sidebar } from './Sidebar';
 import { TimelinePane } from './TimelinePane';
 import { useHeroPresence } from './useHeroPresence';
 import { HostExtrasProvider, type SidebarLink } from './host';
-import { ThisBrowserPane, type ThisBrowserHost } from './ThisBrowser';
+import { ThisBrowserPane, useThisBrowserItems, type ThisBrowserHost } from './ThisBrowser';
 import { SignInBanner } from './SignInBanner';
 import { WelcomeProvider, useFirstRun } from '../welcome/context';
 import { WelcomeFan } from '../welcome/HomeWelcome';
@@ -473,7 +473,13 @@ function BarSearch({ toolbar }: { toolbar?: ReactNode }) {
 /** The hero with My Work's count: asked for only while the hero is in the page. */
 function HeroWithCount({ art, onHide }: { art?: ReactNode; onHide: () => void }) {
   const { client, app, filter, epoch } = useExplorerContext();
-  const items = useItemCount(client, app, filter, true, epoch);
+  const indexed = useItemCount(client, app, filter, true, epoch);
+  // What this browser keeps is the person's too, and Jump Back In lists it: the pill counts it beside the index's.
+  const { live: local } = useThisBrowserItems();
+  const items = useMemo(
+    () => (indexed && local.length ? { ...indexed, count: indexed.count + local.length } : indexed),
+    [indexed, local.length],
+  );
   // A first run fans the app's starts in the art's place.
   const { heroFirstRun, welcome } = useFirstRun();
   const shown = heroFirstRun && welcome?.manifest ? <WelcomeFan /> : art;
