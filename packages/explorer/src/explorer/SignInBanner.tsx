@@ -4,7 +4,7 @@
 // foot of the Explorer for someone not signed in, with Sign In, Learn More (the reasons, loaded on first press) and
 // a close that this browser remembers. The Explorer shows it when the host passes `signInBanner`, the person is a
 // guest and there is a `signInHref`. While it shows, a spacer lets the last row scroll clear of it, and the toasts
-// stand above it.
+// stand above it. It stands on a host's bottom bar (`--explorer-floor`).
 
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { CloseIcon, SparkleIcon } from '../ui/icons';
@@ -32,7 +32,7 @@ export function SignInBanner({ href, host }: { href: string; host: SignInBannerH
       <div aria-hidden className="h-28 shrink-0 sm:h-20" />
       <div
         data-sign-in-banner=""
-        className="pointer-events-none fixed inset-x-0 bottom-4 z-40 flex justify-center px-4"
+        className="pointer-events-none fixed inset-x-0 bottom-[calc(1rem+var(--explorer-floor,0px))] z-40 flex justify-center px-4"
       >
         <div
           role="region"

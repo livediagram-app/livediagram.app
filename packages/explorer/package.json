@@ -12,6 +12,7 @@
     "./this-browser": "./src/this-browser.ts",
     "./conversion-handoff": "./src/conversion-handoff.ts",
     "./imports": "./src/library/app-imports.tsx",
+    "./search-panel": "./src/search/SearchPanel.tsx",
     "./explorer.css": "./explorer.css"
   },
   "scripts": {

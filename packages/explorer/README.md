@@ -55,6 +55,9 @@ classes, add one line next to the host's Tailwind entry:
 @import '@liveworkspace/explorer/explorer.css'; /* @source './src' */
 ```
 
+A host with a bar stuck to the foot of the page sets `--explorer-floor` to its height on an ancestor of the
+Explorer; the toasts and the guest's sign-in banner stand on it.
+
 Dark mode follows the host's `.dark` variant. The empty-state art animates only if the host theme defines
 `animate-empty-ring` and `animate-empty-float`; liveplanner's theme does. Without them it stands still.
 
@@ -190,6 +193,19 @@ Lists that span places (Recent, Favourites, Search, Shared With Me) carry a loca
 folder, its team for a team item in no folder, or My Work for one of yours in none; an item reached through a link
 lives in someone else's library and has none. Recent and Search add an Owner column (and a line on each card): You,
 the team's name, or Shared with you (the index keeps no names, so a sharer is not named).
+
+### `<SearchPanel>` (`@liveworkspace/explorer/search-panel`)
+
+The Search panel a host's Search button and Cmd/Ctrl+K open (liveworkspace/docs/site.md "The Explorer"): one field
+over the person's items, folders and teams and the host's own entries, in groups of at most 8 (`SEARCH_GROUP_MAX`).
+Its own entry point, so a host loads it (`React.lazy`) only when it first opens.
+
+- **Items** come from the index's `search` view (the words in the title or folder name), only `app`'s when given,
+  asked 200 ms after the typing pauses with the request before cancelled.
+- **Folders** are read once per opening (the first page, up to 200) and matched by name; **teams** by name.
+- **Entries** are the host's (`SearchEntry`: help articles, which open in a new tab, and settings sections).
+
+Props: `client`, `app?`, `itemHref`, `teams?`, `entries?`, `basePath?`, `renderAppLogo?`, `onOpen(href)`, `onClose`.
 
 ## Teams
 
