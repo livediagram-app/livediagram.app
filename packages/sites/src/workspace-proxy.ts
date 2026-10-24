@@ -6,7 +6,7 @@
 //
 // Kept dependency-free and Worker-safe (fetch, URL, Headers only): it runs inside each app's router.
 
-import { APP_ITEMS, explorerUrl, type AppName } from './index';
+import type { AppName } from './index';
 
 /** Where liveworkspace.app lives when the router names no other (`WORKSPACE_ORIGIN`). */
 export const PRODUCTION_WORKSPACE_ORIGIN = 'https://liveworkspace.app';
@@ -18,23 +18,13 @@ export const WORKSPACE_PROXY_HEADER = 'X-Liveworkspace-Proxy';
 // liveworkspace's per-network limits (a sign-in code's) would otherwise count every app's visitors as one.
 export const WORKSPACE_CLIENT_IP_HEADER = 'X-Liveworkspace-Client-IP';
 
-// ---------- The per-app switch ------------------------------------------------------------------------------------
-// Whether the app serves liveworkspace's Explorer at its own /explorer. An app turns it on once its items are on
-// the index and the Explorer holds everything its own did (scratchpad's index-app kit notes say how). Off, the app's
-// router leaves /explorer to the app's own editor as before.
-export const EXPLORER_ON_APP_ORIGIN: Record<AppName, boolean> = {
-  livediagram: true,
-  liveplanner: true,
-  livedocuments: true,
-  livedesign: true,
-};
+// ---------- The Explorer on the app's address ---------------------------------------------------------------------
+// Every app serves liveworkspace's Explorer at its own /explorer (liveworkspace/docs/one-explorer.md "The Explorer
+// on each app's address"), through EXPLORER_ROUTE below.
 
-/** Where an app's own pages open the Explorer's Home: its own `/explorer/home` while the switch is on (or while its
- *  items aren't on the index and it keeps its own Explorer), else liveworkspace.app's, opened from the app. */
-export function explorerHomeHref(app: AppName): string {
-  return EXPLORER_ON_APP_ORIGIN[app] || !APP_ITEMS[app].onIndex
-    ? '/explorer/home'
-    : explorerUrl(app);
+/** Where an app's own pages open the Explorer's Home: the Explorer on the app's own address. */
+export function explorerHomeHref(_app: AppName): string {
+  return '/explorer/home';
 }
 
 // ---------- What is forwarded ---------------------------------------------------------------------------------------
@@ -128,11 +118,17 @@ export const WORKBENCH_ROUTE: WorkspaceRoute = {
   cookies: 'drop',
 };
 
-/** The routes an app's router forwards to liveworkspace.app: signing in (and the site's assets) and workbenches
- *  always, the Explorer's while the app's switch is on. */
-export function workspaceRoutes(app: AppName): readonly WorkspaceRoute[] {
-  const always = [...SIGN_IN_PAGE_ROUTES, ACCOUNTS_ROUTE, SITE_ASSETS_ROUTE, WORKBENCH_ROUTE];
-  return EXPLORER_ON_APP_ORIGIN[app] ? [EXPLORER_ROUTE, ACCOUNT_ROUTE, ...always] : always;
+/** The routes an app's router forwards to liveworkspace.app: the Explorer and its account reads, signing in (and the
+ *  site's assets) and workbenches. The same for every app. */
+export function workspaceRoutes(_app: AppName): readonly WorkspaceRoute[] {
+  return [
+    EXPLORER_ROUTE,
+    ACCOUNT_ROUTE,
+    ...SIGN_IN_PAGE_ROUTES,
+    ACCOUNTS_ROUTE,
+    SITE_ASSETS_ROUTE,
+    WORKBENCH_ROUTE,
+  ];
 }
 
 function underPrefix(pathname: string, prefix: string): boolean {

@@ -121,8 +121,6 @@ export type AppItems = {
   // (`?convert=take-offline|sync&item=<id>`, @liveworkspace/explorer/this-browser `thisBrowserConvertHref`): it asks
   // the person to confirm and moves the item with the app's own offline code. False: the Explorer offers neither.
   offlineConversions: boolean;
-  // Whether the app's items are listed by the index yet. Until they are, the app keeps its own /explorer.
-  onIndex: boolean;
   // Its share link: `${url}${sharePath}<code>`.
   sharePath: string;
   // What the Share dialog offers beyond a link's address, as the app serves it (address patterns on its site).
@@ -188,7 +186,6 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     newPath: '/new',
     offlinePath: '/offline',
     offlineConversions: true,
-    onIndex: true,
     sharePath: '/document/shared?s=',
     imagesPath: '/api/images',
     shapeLibrariesPath: '/api/shape-libraries',
@@ -209,7 +206,6 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     newPath: '/new',
     offlinePath: '/offline',
     offlineConversions: true,
-    onIndex: true,
     sharePath: '/project/shared?s=',
     imagesPath: null,
     shapeLibrariesPath: null,
@@ -226,7 +222,6 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     newPath: '/new',
     offlinePath: '/offline',
     offlineConversions: true,
-    onIndex: true,
     sharePath: '/document/shared?s=',
     imagesPath: '/api/images',
     shapeLibrariesPath: null,
@@ -243,7 +238,6 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     newPath: '/new',
     offlinePath: '/offline',
     offlineConversions: true,
-    onIndex: true,
     sharePath: '/design/shared?s=',
     imagesPath: '/api/images',
     shapeLibrariesPath: null,

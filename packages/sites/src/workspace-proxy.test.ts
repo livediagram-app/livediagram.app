@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 import {
   ACCOUNT_ROUTE,
-  EXPLORER_ON_APP_ORIGIN,
+  explorerHomeHref,
   EXPLORER_ROUTE,
   locationOnApp,
   PRODUCTION_WORKSPACE_ORIGIN,
@@ -48,17 +48,12 @@ describe('which paths go to liveworkspace', () => {
     expect(workspaceRouteFor(path, ROUTES)).toBe(route);
   });
 
-  it('is the Explorer and its account reads for an app switched on, and signing in and workbenches for every app', () => {
+  it('is the Explorer and its account reads, signing in and workbenches, for every app', () => {
     const signIn = [...SIGN_IN_PAGE_ROUTES, ACCOUNTS_ROUTE, SITE_ASSETS_ROUTE, WORKBENCH_ROUTE];
     for (const app of APP_NAMES) {
-      expect(workspaceRoutes(app)).toEqual(
-        EXPLORER_ON_APP_ORIGIN[app] ? [...ROUTES, ...signIn] : signIn,
-      );
+      expect(workspaceRoutes(app)).toEqual([...ROUTES, ...signIn]);
+      expect(explorerHomeHref(app)).toBe('/explorer/home');
     }
-    expect(EXPLORER_ON_APP_ORIGIN.liveplanner).toBe(true);
-    expect(EXPLORER_ON_APP_ORIGIN.livedesign).toBe(true);
-    expect(EXPLORER_ON_APP_ORIGIN.livedocuments).toBe(true);
-    expect(EXPLORER_ON_APP_ORIGIN.livediagram).toBe(true);
   });
 
   it('sends /api/workbench/* to the accounts Worker, naming the app, with no cookies', async () => {

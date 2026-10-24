@@ -121,8 +121,8 @@ misleading, not about loss.
 
 Each app's router answers `/explorer/*` by fetching the same page from liveworkspace.app, so the address bar
 keeps the app's name (`liveplanner.app/explorer/recent`): path, query and hash unchanged, no redirect. The
-routing is one shared helper, `@liveworkspace/sites/workspace-proxy`, with a switch per app
-(`EXPLORER_ON_APP_ORIGIN`); it is on for all four apps: livediagram, liveplanner, livedocuments and livedesign.
+routing is one shared helper, `@liveworkspace/sites/workspace-proxy`, the same for all four apps: livediagram,
+liveplanner, livedocuments and livedesign.
 What it forwards:
 
 - `/explorer`, `/explorer/…` and the page's payloads (`/explorer.txt`, `/explorer/….txt`) to the same place on

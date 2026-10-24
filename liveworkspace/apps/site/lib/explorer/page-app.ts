@@ -16,7 +16,6 @@ import {
   siteOfApp,
   type AppName,
 } from '@liveworkspace/sites';
-import { EXPLORER_ON_APP_ORIGIN } from '@liveworkspace/sites/workspace-proxy';
 
 // ---------- Which address the page is on ------------------------------------------------------------------------
 
@@ -26,7 +25,6 @@ const bareHost = (host: string) => host.toLowerCase().replace(/^(?:www|staging)\
 export function appHosts(): Record<string, AppName> {
   const hosts: Record<string, AppName> = {};
   for (const app of APP_NAMES) {
-    if (!EXPLORER_ON_APP_ORIGIN[app]) continue;
     hosts[APP_ITEMS[app].site] = app;
     hosts[`localhost:${LOCAL_PORTS[APP_ITEMS[app].site]}`] = app;
   }
