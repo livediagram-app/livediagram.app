@@ -32,8 +32,8 @@ marketing/
     descriptions.md      blurbs bucketed by word / character budget
     tags.md              one-word tags / keywords bucketed by platform
   media/                 see media/README.md
-    desktop/             desktop product screenshots, captioned
-    mobile/              mobile product screenshots, captioned
+    icons/               the brand mark as PNGs
+    logo/                the mark and lockup as SVG
 ```
 
 `copy/facts.md` is the single source the taglines and descriptions are built
@@ -59,4 +59,6 @@ Binary assets live under `marketing/media/` (see its README for the suggested
 sub-layout and brand guidance). Prefer SVG for logos and optimised PNG / WebP
 for screenshots; screenshots should show a real deck or article with visible
 multiplayer cursors, since "no sign-in, real-time" is the pitch. Keep heavy
-binaries out of git where practical.
+binaries out of git where practical. There are no screenshots yet: the ones the fork
+brought showed livediagram, so they were removed; new ones go in `media/desktop/` and
+`media/mobile/`, captioned.
