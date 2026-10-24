@@ -5,7 +5,7 @@
 // is in the Trash. Someone who may restore it gets Restore right here; a
 // share-link visitor only learns that it was deleted. Same card shape as
 // ApiErrorPage, so it drops into the same status chrome.
-import { explorerHref } from '@/lib/explorer-redirect';
+import { explorerHref } from '@/lib/explorer-href';
 import { useState } from 'react';
 import { Button, TrashIcon, buttonClassName } from '@livedesign/ui';
 import { TRASH_RETENTION_MS, type TrashReason } from '@liveworkspace/index-client';

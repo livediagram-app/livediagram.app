@@ -1,6 +1,6 @@
 'use client';
 
-import { explorerHref } from '@/lib/explorer-redirect';
+import { explorerHref } from '@/lib/explorer-href';
 import { SETTINGS_ROW_BUTTON, SettingsRowShell } from './SettingsRowShell';
 import type { SettingsTrashRowSpec } from './settings-catalogue';
 import { track } from '@/lib/telemetry';

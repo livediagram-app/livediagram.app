@@ -9,7 +9,7 @@ import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useConversionHandoff } from '@/hooks/persistence/useConversionHandoff';
 import { useOfflineConversion } from '@/hooks/persistence/useOfflineConversion';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
-import { explorerHref } from '@/lib/explorer-redirect';
+import { explorerHref } from '@/lib/explorer-href';
 import { offlineListDesigns, subscribeOfflineIds } from '@/lib/offline/offline-store';
 
 // This Browser: the designs kept only in this browser (Take Offline, or made with no connection). The index never

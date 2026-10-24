@@ -1,9 +1,9 @@
 'use client';
 
 // The Explorer inside a workbench's workspace frame (WorkspaceFrame.tsx): the shared Explorer
-// (@liveworkspace/explorer, liveworkspace/docs/one-explorer.md) for the person. The Explorer page itself lives on
-// liveworkspace.app (lib/explorer-redirect.ts); a frame keeps its own. Everything it lists comes from the index
-// through /api/index; livedesign supplies the addresses and Help articles
+// (@liveworkspace/explorer, liveworkspace/docs/one-explorer.md) for the person. The Explorer page itself is
+// liveworkspace's, under livedesign's own /explorer (lib/explorer-href.ts); a frame keeps its own. Everything it
+// lists comes from the index through /api/index; livedesign supplies the addresses and Help articles
 // (lib/explorer-host.ts), New (the /new flow), the hero's art (the fanned previews) and its setting (the synced
 // `homeBanner` preference, docs/specs/013-workspace/explorer-home.md "Hiding the banner"), and the person: an
 // account's teams from its token, or a guest's identity from liveworkspace, which the first visit fetches before the

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { explorerHref } from '@/lib/explorer-redirect';
+import { explorerHref } from '@/lib/explorer-href';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 

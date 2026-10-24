@@ -6,7 +6,7 @@ import {
   type MutableRefObject,
   type SetStateAction,
 } from 'react';
-import { explorerHref } from '@/lib/explorer-redirect';
+import { explorerHref } from '@/lib/explorer-href';
 import { setRemoteBesideTab, syncRemoteBesideTabs } from '@/lib/split-presence';
 import { noteAccessEnded } from '@/lib/access-notice';
 import type { Tab } from '@livedesign/design';

@@ -26,13 +26,6 @@ describe('live worker editor route', () => {
     await worker.fetch(new Request('https://livedesign.app/pricing'), e);
     expect(seen).toEqual(['/pricing']);
   });
-
-  it('serves /explorer here while livedesign hosts the Explorer (lib/explorer-redirect.ts)', async () => {
-    const { env: e, seen } = env();
-    const res = await worker.fetch(new Request('https://livedesign.app/explorer/folder?id=f1'), e);
-    expect(res.status).toBe(200);
-    expect(seen).toEqual(['/explorer/folder']);
-  });
 });
 
 describe('live worker security headers', () => {
@@ -88,11 +81,7 @@ describe('live worker security headers', () => {
 
   it('denies framing on the pairing page and the editor', async () => {
     const { env: e } = env();
-    for (const path of [
-      '/workbench/pair?code=x',
-      '/design/doc-1',
-      '/embedded',
-    ]) {
+    for (const path of ['/workbench/pair?code=x', '/design/doc-1', '/embedded']) {
       const res = await worker.fetch(new Request(`https://livedesign.app${path}`), e);
       expect(res.headers.get('X-Frame-Options')).toBe('DENY');
     }
