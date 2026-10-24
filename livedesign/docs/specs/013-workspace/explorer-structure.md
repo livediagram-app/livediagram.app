@@ -7,8 +7,8 @@ served at livedesign's own `/explorer` by livedesign's router ([one-explorer.md]
 "The Explorer on each app's address"): the address bar keeps livedesign's name, it asks the index as livedesign's
 session and wears livedesign's colours. What is livedesign's own reaches it through the sites registry
 (`@liveworkspace/sites` `APP_ITEMS.livedesign`): its addresses, its Image Gallery (`imagesPath`, `/explorer/images`),
-its This Browser page (`offlinePath`, which also runs Take Offline and Sync, `offlineConversions`) and where its API
-makes a team (`teamsPath`, for New Team). Signed in, the header has a **Settings** button beside Appearance that opens
+and its This Browser page (`offlinePath`, which also runs Take Offline and Sync, `offlineConversions`). Teams are made
+and run over liveworkspace's account API through the router (`/api/workspace/account`). Signed in, the header has a **Settings** button beside Appearance that opens
 livedesign's settings on liveworkspace.app, and any `?settings=` address opens them there too. A workbench's
 workspace frame keeps its own copy of the Explorer (`apps/live/app/embed/workbench/ExplorerHost.tsx`).
 

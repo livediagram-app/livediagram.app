@@ -1,6 +1,6 @@
 // The team invitations waiting for an account (liveworkspace/docs/accounts.md "The API",
 // `POST /api/account/internal/invitations`), for an app's Invites view and its sidebar badge. They are
-// answered on liveworkspace.app (/account/teams); an app only shows them.
+// answered in the Explorer's Invites, over liveworkspace's account API; this read only shows them.
 //
 // The Explorer asks on every load, so the answer is remembered per isolate for a short while
 // (INVITATIONS_TTL_MS) and calls for the same account at the same moment share one request. The memory

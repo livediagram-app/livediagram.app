@@ -2,11 +2,11 @@
 
 import { useEffect } from 'react';
 
-// /account has no page of its own: it opens the teams, the page most people come for. The site is
-// static, so the move happens in the browser.
+// /account has no page of its own: it opens Settings, the account's own page (liveworkspace/docs/site.md "Your
+// account"). Teams are the Explorer's. The site is static, so the move happens in the browser.
 export default function Page() {
   useEffect(() => {
-    window.location.replace('/account/teams');
+    window.location.replace('/account/settings');
   }, []);
   return null;
 }

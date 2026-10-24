@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { accountApi, errorMessage } from '@/lib/account-api';
-import { joinTokenFrom, TEAMS_PATH } from '@/lib/teams';
+import { joinTokenFrom, INVITES_PATH } from '@/lib/teams';
 import { BUTTON } from '../settings/AccountShell';
 import { JoinShell, Notice } from './JoinPage';
 
@@ -95,7 +95,7 @@ export function DeclinePage() {
           >
             {busy ? 'Declining…' : 'Decline invitation'}
           </button>
-          <a href={TEAMS_PATH} className={`${BUTTON.secondary} relative touch-target-y py-2.5`}>
+          <a href={INVITES_PATH} className={`${BUTTON.secondary} relative touch-target-y py-2.5`}>
             See your invitations
           </a>
         </Notice>

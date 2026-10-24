@@ -12,9 +12,9 @@
 // The same page is also served under each app's own address (`liveplanner.app/explorer/…`, through the app's router;
 // lib/explorer/page-app.ts). There it is that app's Explorer: it asks as the app's session, shows the app's items kept
 // only in this browser (This Browser), keeps its links on the app's address and sends liveworkspace's own pages
-// (account, teams, settings) to liveworkspace.app. Where the app supplies them (the sites registry), it also offers the
-// app's Take Offline and Sync (lib/explorer/offline-moves.tsx) and makes New Team through the app's API
-// (lib/explorer/new-team.ts).
+// (account, settings) to liveworkspace.app. Where the app supplies them (the sites registry), it also offers the
+// app's Take Offline and Sync (lib/explorer/offline-moves.tsx). Teams are made and run in place, here and there alike,
+// over liveworkspace's account API (createTeamsHost with accountFetch).
 
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -29,6 +29,7 @@ import {
 } from 'react';
 import {
   createExplorerAccounts,
+  createTeamsHost,
   Explorer,
   HeroArt,
   viewFromLocation,
@@ -86,7 +87,7 @@ import {
 import { inboxHost } from '@/lib/explorer/inbox';
 import { libraryHosts } from '@/lib/explorer/library';
 import { importsHost } from '@/lib/explorer/imports';
-import { canMakeTeam, makeTeam } from '@/lib/explorer/new-team';
+import { renewIdentity } from '@/lib/explorer/new-team';
 import { offlineItemMenu, offlineSyncHref } from '@/lib/explorer/offline-moves';
 import { useExplorerSettings } from '@/lib/explorer/settings';
 import { shareHostFor } from '@/lib/explorer/share';
@@ -122,6 +123,18 @@ const client = createIndexClient({ getToken: workspaceToken });
 // and, signed in, a team's members and count and the invitations waiting. On an app's address, through its router
 // with the page's token (accountFetch).
 const accounts = createExplorerAccounts({ fetch: accountFetch });
+// The person's teams, made and run in place: the account API on this origin, or through the app's router with the
+// page's token on an app's address (accountFetch). The list is read once as the page opens; a team's members only
+// when its view opens.
+const identityRenewed = new Set<(identity: WorkspaceIdentity) => void>();
+const teamsHost = createTeamsHost({
+  fetch: accountFetch,
+  // A team made, joined, renamed, left or deleted: the token is read again, so it names the teams as they now are.
+  onTeamsChanged: async () => {
+    const identity = await renewIdentity();
+    if (identity) for (const set of identityRenewed) set(identity);
+  },
+});
 
 const NO_ARRIVAL: Arrival = { app: null, via: null };
 
@@ -308,12 +321,12 @@ export function ExplorerShell() {
   const explorerSignInHref = host
     ? appSignInHref(pathname || '/explorer')
     : signInHref(pathname || '/explorer');
-  // New Team in the Move dialog: made on liveworkspace, then the renewed token lists it among the teams.
-  const onCreateTeam = useCallback(async (name: string) => {
-    const made = await makeTeam(name);
-    if (!made) return null;
-    if (made.identity) setIdentity(made.identity);
-    return made.team;
+  // After a change to the person's teams the renewed token lists them as they now are.
+  useEffect(() => {
+    identityRenewed.add(setIdentity);
+    return () => {
+      identityRenewed.delete(setIdentity);
+    };
   }, []);
   const welcome: WelcomeOptions = useMemo(
     () => ({
@@ -450,7 +463,8 @@ export function ExplorerShell() {
           viewerId={identity.sub}
           shareUrl={shareUrl}
           share={share}
-          manageTeamsUrl={host ? workspaceHref('/account/teams') : '/account/teams'}
+          teamsHost={teamsHost}
+          tokensUrl={host ? workspaceHref('/account/tokens') : '/account/tokens'}
           filter={shownFilter}
           onFilterChange={setFilter}
           header={header}
@@ -473,7 +487,6 @@ export function ExplorerShell() {
           shapeLibraries={library.shapeLibraries}
           imports={imports}
           itemMenu={itemMenu}
-          {...(signedIn && canMakeTeam(host) ? { onCreateTeam } : {})}
           heroHidden={settings.heroHidden}
           onHideHero={settings.onHideHero}
           onTimeline={trackTimeline}

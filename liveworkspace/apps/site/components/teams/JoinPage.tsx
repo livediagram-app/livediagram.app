@@ -3,7 +3,7 @@
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { accountApi, errorMessage, type JoinPreview } from '@/lib/account-api';
 import { signInHref } from '@/lib/accounts';
-import { joinTokenFrom, memberCountLabel, teamPath, TEAMS_PATH } from '@/lib/teams';
+import { joinTokenFrom, memberCountLabel, teamPath, INVITES_PATH } from '@/lib/teams';
 import { Footer } from '../Footer';
 import { Header } from '../Header';
 import { BUTTON } from '../settings/AccountShell';
@@ -12,7 +12,7 @@ import { TeamAvatar } from './Avatars';
 const noChange = () => () => {};
 
 // A team's join link, /join?token=… (liveworkspace/docs/accounts.md "The join link"). It shows the
-// team before anything else: signed in, Join adds them as a member and opens the team; signed out,
+// team before anything else: signed in, Join adds them as a member and opens the team in the Explorer; signed out,
 // they sign in (or make an account) and come back to this same link; already in it, they go straight
 // to the team. An off, expired or unknown link says so.
 export function JoinPage() {
@@ -118,7 +118,7 @@ export function JoinPage() {
               >
                 {busy ? 'Joining…' : `Join ${state.preview.teamName}`}
               </button>
-              <a href={TEAMS_PATH} className={`${BUTTON.secondary} relative touch-target-y py-2.5`}>
+              <a href={INVITES_PATH} className={`${BUTTON.secondary} relative touch-target-y py-2.5`}>
                 Not now
               </a>
             </div>
@@ -186,7 +186,7 @@ export function Notice({
       <p className="mx-auto mt-3 max-w-sm text-slate-600 dark:text-slate-400">{body}</p>
       <div className="mt-8 flex flex-col justify-center gap-2 sm:flex-row">
         {children ?? (
-          <a href={TEAMS_PATH} className={`${BUTTON.primary} relative touch-target-y px-6 py-2.5`}>
+          <a href={INVITES_PATH} className={`${BUTTON.primary} relative touch-target-y px-6 py-2.5`}>
             Go to your teams
           </a>
         )}

@@ -7,7 +7,6 @@ import { Footer } from '../Footer';
 import { Header } from '../Header';
 
 const TABS = [
-  { href: '/account/teams', label: 'Teams' },
   { href: '/account/tokens', label: 'API tokens' },
   { href: '/account/settings', label: 'Settings' },
 ];
@@ -21,7 +20,7 @@ const CONTENTS_LINK =
 
 // The frame of the account pages (liveworkspace/docs/site.md "Your account"): the title, a tab per
 // page, and the page itself once the person is known to be signed in. Signed out, it asks them to
-// sign in and come back here. A page inside a tab (one team) leaves the title and tabs out
+// sign in and come back here. A page inside a tab leaves the title and tabs out
 // (`hero={false}`) and brings its own heading and the way back. A long page passes `contents`, and
 // gets the legal pages' "On this page" list beside it (a fold-out above it on narrow screens).
 export function AccountShell({
@@ -115,7 +114,7 @@ export function AccountShell({
                   Sign in to see your account
                 </p>
                 <p className="mt-2 text-slate-600 dark:text-slate-400">
-                  Your teams, API tokens and settings are here, the same in every app.
+                  Your API tokens and settings are here, the same in every app.
                 </p>
                 <a
                   href={signInHref(here)}

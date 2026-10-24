@@ -79,6 +79,7 @@ describe('addresses the Explorer used to have', () => {
     );
     expect(settingsTarget('?settings=account', null)).toBe('/account/settings#profile');
     expect(settingsTarget('?settings=tokens', null)).toBe('/account/tokens');
+    expect(settingsTarget('?settings=teams', null)).toBe('/explorer/invites');
     expect(settingsTarget('?settings=editor', 'liveplanner')).toBe(
       '/account/settings?app=liveplanner',
     );
@@ -89,7 +90,6 @@ describe('addresses the Explorer used to have', () => {
     expect(retiredTarget('profile', '?from=liveplanner')).toBe('/account/settings#notifications');
     expect(retiredTarget('activity', '?from=liveplanner')).toBe('/explorer/inbox?from=liveplanner');
     expect(retiredTarget('generated', '')).toBe('/explorer/search?q=made-by%3Aai');
-    expect(retiredTarget('invites', '')).toBe('/account/teams');
   });
 
   it("says why a revoked link sent the person here, in the app's words", () => {

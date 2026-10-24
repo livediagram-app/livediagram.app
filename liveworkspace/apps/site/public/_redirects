@@ -1,6 +1,10 @@
-# Every team's page is one exported file (app/account/teams/[id]/page.tsx): serve it for any team id,
-# keeping the address, so the page can read the id from it (liveworkspace/docs/site.md "Your account").
-/account/teams/:id /account/teams/team 200
+# Teams are made and run in the Explorer now (liveworkspace/docs/one-explorer.md "Teams are run in the
+# Explorer"). The old teams pages move there permanently, so links in sent emails keep landing: the list to
+# the Invites, a team's page to its view. lib/teams-redirects.test.ts pins them.
+/account/teams /explorer/invites 301
+/account/teams/ /explorer/invites 301
+/account/teams/:id /explorer/team?id=:id 301
+/account/teams/:id/ /explorer/team?id=:id 301
 
 # The comparison pages are each app's own again (packages/comparisons/README.md). The hub here moves to
 # /compare, which points at each app's, and every comparison to the same slug on the app it speaks

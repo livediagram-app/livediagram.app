@@ -54,8 +54,8 @@ describe('where the page is', () => {
     expect(pageApp()).toBe('liveplanner');
     expect(appOrigin('liveplanner')).toBe('http://localhost:3200');
     expect(appOrigin('livediagram')).toMatch(/livediagram/);
-    expect(workspaceHref('/account/teams')).toMatch(/\/account\/teams$/);
-    expect(workspaceHref('/account/teams')).not.toBe('/account/teams');
+    expect(workspaceHref('/account/tokens')).toMatch(/\/account\/tokens$/);
+    expect(workspaceHref('/account/tokens')).not.toBe('/account/tokens');
     expect(appSignInHref('/explorer/recent')).toBe(
       '/api/auth/sign-in?return_to=%2Fexplorer%2Frecent',
     );

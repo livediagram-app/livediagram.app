@@ -192,7 +192,8 @@ export function settingsTarget(search: string, app: AppName | null): string | nu
     case 'tokens':
       return '/account/tokens';
     case 'teams':
-      return '/account/teams';
+      // Teams are run in the Explorer; the Invites are beside them.
+      return '/explorer/invites';
     case 'privacy':
       return '/account/settings#privacy';
     default:
@@ -223,8 +224,6 @@ export const RETIRED_TARGETS = {
   // Notification switches are the account's: Settings › Notifications on liveworkspace.app. Every notification
   // email ever sent carries this address (or `?settings=notifications`) as its unsubscribe link.
   profile: NOTIFICATIONS_SETTINGS,
-  // Team invitations are answered on the account's Teams page.
-  invites: '/account/teams',
 } as const;
 
 export type RetiredView = keyof typeof RETIRED_TARGETS;
