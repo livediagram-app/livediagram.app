@@ -1,13 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  createTimingSampler,
-  reportTiming,
-  resetTimingForTests,
-  startTiming,
-  wasHiddenSince,
-} from './timing';
+import { createTiming, createTimingSampler, resetTimingForTests, wasHiddenSince } from './timing';
 
 // Plain node with a hand-rolled document and a controllable performance clock, like index.test.ts.
+
+// A stand-in for a product's timingType: the editor's Duration metrics on their scale. Each product's
+// binding test runs its real one.
+const BOUNDS = [100, 250, 500, 1000, 2000, 4000, 8000, 15000, 30000];
+const METRICS = new Set(['DocumentLoad', 'TabLoad', 'Save']);
+const timingType = (metric: string, value: number): string | null => {
+  if (!METRICS.has(metric) || !Number.isFinite(value) || value < 0) return null;
+  const bound = BOUNDS.find((b) => value < b);
+  return `${metric}.${bound === undefined ? `Over${BOUNDS.at(-1)}ms` : `Under${bound}ms`}`;
+};
+const { reportTiming, startTiming } = createTiming(timingType);
 
 let clock = 0;
 let visibility = 'visible';

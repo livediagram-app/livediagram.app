@@ -357,7 +357,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/community/lib/telemetry.ts Community·Selected': { values: COMMUNITY_SELECTIONS },
 
   // Shared packages.
-  'packages/telemetry-client/src/index.ts Error·Client': {
+  'packages/telemetry-client/src/errors.ts Error·Client': {
     values: ['Uncaught.Document.TypeError', 'UnhandledRejection.Explorer.Error'],
     open: 'a kind, the page it happened on, and the error name',
   },

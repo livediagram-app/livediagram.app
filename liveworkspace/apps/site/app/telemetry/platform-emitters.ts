@@ -74,6 +74,21 @@ export function platformEmitters(vocabulary?: Vocabulary, noun?: ItemNoun): Emit
   return allPlatformEmitters().filter((e) => takes(vocabulary, e) && ownNoun(noun, e));
 }
 
+// The shared browser client (@liveworkspace/telemetry-client) sends every app's client errors
+// (Error·Client) and timings (Timing·Measured) through one site each, so each app's scan adds them as
+// its own, with paths from the monorepo root. Only its literal sites: the rest of it forwards an
+// app's own events, which are scanned where the app sends them.
+export const SHARED_CLIENT_ROOTS = ['packages/telemetry-client/src'];
+
+let clientCached: Emit[] | undefined;
+
+export function sharedClientEmitters(): Emit[] {
+  clientCached ??= scanEmitters(MONOREPO, SHARED_CLIENT_ROOTS, '').filter(
+    (e) => typeof e.category === 'string' && typeof e.action === 'string',
+  );
+  return clientCached;
+}
+
 // The values each of the Explorer's computed emit sites can send, by the scan's site key
 // (`<path> <Category>·<Action>`), for the app's computed-emitters.ts: the Explorer's closed list.
 export function platformComputedEmitters(

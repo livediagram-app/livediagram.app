@@ -30,7 +30,7 @@
 // forbidden tab sent `Http403.LoadTab` every 15 to 65 seconds for weeks,
 // nearly half of every stored event.
 import { apiRouteLabel, errorNameToken, errorTypeToken } from '@livedocuments/api-schema';
-import { createPerTypeCap } from '@livedocuments/telemetry-client';
+import { createPerTypeCap } from '@liveworkspace/telemetry-client';
 
 let apiErrorReporter: ((type: string) => void) | null = null;
 let allowReport = createPerTypeCap();

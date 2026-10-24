@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { TELEMETRY_TYPE_PATTERN } from '@livedesign/api-schema';
-import { ERROR_EMIT_CAP_PER_TYPE } from '@livedesign/telemetry-client';
+import { ERROR_EMIT_CAP_PER_TYPE } from '@liveworkspace/telemetry-client';
 import {
   apiErrorType,
   networkErrorType,

@@ -2,7 +2,6 @@
   "name": "@liveplanner/telemetry-client",
   "version": "0.0.0",
   "private": true,
-  "license": "UNLICENSED",
   "type": "module",
   "sideEffects": false,
   "main": "./src/index.ts",
@@ -18,7 +17,8 @@
   },
   "dependencies": {
     "@liveplanner/api-schema": "workspace:*",
-    "@liveworkspace/telemetry": "workspace:*"
+    "@liveworkspace/telemetry": "workspace:*",
+    "@liveworkspace/telemetry-client": "workspace:*"
   },
   "devDependencies": {
     "@liveworkspace/oxlint-config": "workspace:*",

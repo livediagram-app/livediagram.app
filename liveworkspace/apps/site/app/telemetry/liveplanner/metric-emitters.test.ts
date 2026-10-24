@@ -4,7 +4,7 @@ import { SETTINGS_CHANGED, SETTINGS_STACKS } from './metric-catalogue';
 import { COMPUTED_EMITTERS } from './computed-emitters';
 import { COMPUTED, scanEmitters, type Emit } from '../emitter-scan';
 import { isValidTelemetryEvent } from '@liveplanner/api-schema';
-import { platformEmitters } from '../platform-emitters';
+import { platformEmitters, sharedClientEmitters } from '../platform-emitters';
 import { RECOVERY_TYPES } from '../_shared/ExceptionsView';
 import { NON_PATTERN_CANVAS_TYPES, THEME_ALIASES } from '../_shared/LookAndFeelView';
 import * as CATALOGUE from './metric-catalogue';
@@ -58,6 +58,8 @@ const REPO = resolve(__dirname, '../../../../../../liveplanner');
 const EMITS = [
   ...scanEmitters(REPO, ['apps', 'packages'], join(REPO, 'apps', 'telemetry')),
   ...platformEmitters(isValidTelemetryEvent, 'Project'),
+  // Every app's client errors and timings, sent through the shared browser client.
+  ...sharedClientEmitters(),
 ];
 
 type Known = Emit & { category: string; action: string };

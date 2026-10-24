@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { onPageHide } from '@liveplanner/telemetry-client';
+import { onPageHide } from '@liveworkspace/telemetry-client';
 import { createVoteTally, type ArticleVote, type VoteTally } from '@/lib/article-vote';
 import { track } from '@/lib/telemetry';
 

@@ -19,6 +19,7 @@
     "@liveplanner/sheets": "workspace:*",
     "@liveplanner/telemetry-client": "workspace:*",
     "@liveplanner/ui": "workspace:*",
+    "@liveworkspace/telemetry-client": "workspace:*",
     "@mdx-js/loader": "^3.1.0",
     "@mdx-js/react": "^3.1.0",
     "@next/mdx": "^16.4.1",
@@ -28,11 +29,11 @@
     "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
+    "@liveplanner/tailwind-config": "workspace:*",
     "@liveworkspace/next-config": "workspace:*",
     "@liveworkspace/oxlint-config": "workspace:*",
-    "@liveplanner/tailwind-config": "workspace:*",
-    "@liveworkspace/vitest-config": "workspace:*",
     "@liveworkspace/style-guards": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/mdx": "^2.0.13",
     "@types/node": "^26.6.4",

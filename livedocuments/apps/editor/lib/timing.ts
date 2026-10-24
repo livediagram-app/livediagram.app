@@ -10,10 +10,10 @@
 import type { EditorTimingMetric } from '@livedocuments/api-schema';
 import {
   createTimingSampler,
-  startTiming,
   type TimingHandle,
   type TimingTrack,
-} from '@livedocuments/telemetry-client';
+} from '@liveworkspace/telemetry-client';
+import { startTiming } from '@livedocuments/telemetry-client';
 
 let timingTrack: TimingTrack | null = null;
 

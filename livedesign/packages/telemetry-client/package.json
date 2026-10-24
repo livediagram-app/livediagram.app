@@ -17,7 +17,8 @@
   },
   "dependencies": {
     "@livedesign/api-schema": "workspace:*",
-    "@liveworkspace/telemetry": "workspace:*"
+    "@liveworkspace/telemetry": "workspace:*",
+    "@liveworkspace/telemetry-client": "workspace:*"
   },
   "devDependencies": {
     "@liveworkspace/oxlint-config": "workspace:*",

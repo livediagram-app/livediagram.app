@@ -11,7 +11,7 @@
 // the event is in the batch that flush sends.
 
 import { useEffect, useRef } from 'react';
-import { onPageHide } from '@livedocuments/telemetry-client';
+import { onPageHide } from '@liveworkspace/telemetry-client';
 import { track } from '@/lib/telemetry';
 
 // Slider-edit debounce window. docs/specs/017-telemetry/telemetry.md's noise rule excludes "raw colour

@@ -2,7 +2,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DOCUMENT_TRASHED_CLOSE } from '@livedocuments/api-schema';
-import type { TimingTrack } from '@livedocuments/telemetry-client';
+import type { TimingTrack } from '@liveworkspace/telemetry-client';
 import { resetTimingForTests, setTimingTrack } from '../timing';
 import { connectRoom } from './room';
 

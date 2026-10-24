@@ -1,6 +1,7 @@
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { COMPUTED, scanEmitters } from '../emitter-scan';
+import { sharedClientEmitters } from '../platform-emitters';
 import { articleTitle } from '../_shared/event-vocab';
 import { BY_ACTION, EXACT } from './event-explanations';
 import * as CATALOGUE from './metric-catalogue';
@@ -14,7 +15,10 @@ const eventExplanation = APP.explain;
 // the code.
 
 const REPO = resolve(__dirname, '../../../../../../liveplanner');
-const EMITS = scanEmitters(REPO, ['apps', 'packages'], join(REPO, 'apps', 'telemetry'));
+const EMITS = [
+  ...scanEmitters(REPO, ['apps', 'packages'], join(REPO, 'apps', 'telemetry')),
+  ...sharedClientEmitters(),
+];
 const LAST_RESORT = /^Someone did /;
 
 // Words a reader shouldn't meet: spec numbers, infra and vendor names, code
