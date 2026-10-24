@@ -530,12 +530,12 @@ export const updateDesignShape = {
         'fixes are written in. Operations: add <kind> [id=<id>] key=value… [placement]; set <sel> key=value… ' +
         '[all]; rm <sel> [all] [keep-arrows]; move <sel> <placement>|by=dx,dy; connect <a> -> <b> [label=…] ' +
         '[line=straight|angled|curved]; rewire <arrow> from=<x> to=<y>; insert <kind> key=value… between <a> <b> ' +
-        '(puts a node on the a→b arrow and makes room); wrap <sel…> in frame|lane [label=…] [tidy]; unwrap ' +
+        '(puts a node on the a→b arrow and makes room); wrap <sel…> in frame [label=…] [tidy]; unwrap ' +
         '<frame>; order <sel> front|back; layout <sel> [style=flow|tree|mindmap] [direction=down|right]. ' +
         'Selectors: a ref or id, "Label text", type:sticky, shape:diamond, in:<frame>, a->b, from:<x>, to:<x>, ' +
         'downstream:<x>. Placement: right-of:<x> left-of:<x> above:<x> below:<x> [gap:<n>], after:<x>, ' +
         'inside:<frame>, align:<x>, at:x,y; inside:<frame> right-of:<x> places beside x in that frame. A box placed ' +
-        'beside one inside a frame or lane joins it (the container grows); to stay outside, place it against the ' +
+        'beside one inside a frame joins it (the frame grows); to stay outside, place it against the ' +
         'frame itself (below:<frame>), with align:<x> to line it up with a member (below:<frame> align:<x>). ' +
         'Keys: label= note= shape= fill=theme|red|orange|yellow|green|blue|' +
         'violet (a sticky: classic|lemon|peach|rose|lilac|sky|mint|teal|slate) text=sm|md|lg border=solid|dashed|' +

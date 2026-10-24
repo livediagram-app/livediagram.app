@@ -103,8 +103,8 @@ const ELEMENT_OPERATIONS = {
     example: 'square label=Verify between n3 n4',
   },
   wrap: {
-    summary: 'Put elements in a new frame or lane',
-    words: '<selector…> in frame|lane key=value…',
+    summary: 'Put elements in a new frame',
+    words: '<selector…> in frame key=value…',
     example: 'n3 n4 in frame label=Auth',
   },
 } as const;
