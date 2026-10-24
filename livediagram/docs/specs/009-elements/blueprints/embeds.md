@@ -444,4 +444,4 @@ through `elementTelemetryType`), `Element·Used·Video` on play or load.
 | Vimeo / Loom / Figma / Google players  | provider embed URLs above                                                                            | Each provider's embed terms | On **Load embed**            |
 | Play badge, glyphs, draw cursor        | inline SVG and `Glyph` in `VideoView.tsx`, SVG string in `draw-mode.ts`                              | Repository MIT              | Bundled                      |
 | YouTube, Vimeo, Loom, Figma tile marks | inline SVG in `palette-tile-art.tsx`                                                                 | Repository MIT              | Bundled                      |
-| Google Docs, Website tile icons        | `lucideFileText`, `lucideGlobe` in `packages/icons/src/lucide.generated.ts` (`lucide-static` 1.48.0) | ISC (Lucide)                | Bundled                      |
+| Google Docs, Website tile icons        | `lucideFileText`, `lucideGlobe` in `packages/icons/src/lucide.generated.ts` (`lucide-static` 1.52.0) | ISC (Lucide)                | Bundled                      |

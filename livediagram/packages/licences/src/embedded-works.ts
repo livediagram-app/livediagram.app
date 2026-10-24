@@ -191,12 +191,12 @@ export const EMBEDDED_WORKS: readonly EmbeddedWork[] = [
   {
     id: 'lucide',
     name: 'Lucide',
-    version: '1.48.0',
+    version: '1.52.0',
     licence: 'ISC AND MIT',
     carrier: 'livediagram source (icons)',
     homepage: 'https://lucide.dev',
     trigger: { sources: ['packages/icons/src/lucide.generated.ts'] },
-    texts: text('lucide-1.48.0-LICENSE.txt'),
+    texts: text('lucide-1.52.0-LICENSE.txt'),
   },
   {
     id: 'feather',

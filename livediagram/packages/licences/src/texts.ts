@@ -118,8 +118,8 @@ export const TEXT_SOURCES: readonly TextSource[] = [
     sha256: '4d7d9c95e7d7f2f0ebf76d5e0b344826b74e903a34028ee18ab54bb639e45906',
   },
   {
-    file: 'lucide-1.48.0-LICENSE.txt',
-    sources: ['https://unpkg.com/lucide-static@1.48.0/LICENSE'],
+    file: 'lucide-1.52.0-LICENSE.txt',
+    sources: ['https://unpkg.com/lucide-static@1.52.0/LICENSE'],
     sha256: 'b495047bd93a9b06913511076f504daba17d5bbeb3e0650f3bb53a4220329c57',
   },
   {
