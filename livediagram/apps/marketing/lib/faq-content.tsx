@@ -274,13 +274,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Can I write documents or design slides in it?',
         a: (
           <>
-            Not any more. Articles, slide pages, infographics and logos now live in{' '}
-            <a href="https://livedocuments.app">livedocuments</a>, a sister app on the same free
+            Not any more. Articles, slide pages and infographics now live in{' '}
+            <a href="https://livedocuments.app">livedocuments</a>, and logos in{' '}
+            <a href="https://livedesign.app">livedesign</a>, sister apps on the same free
             liveworkspace account. livediagram can still present a canvas as a slide deck.
           </>
         ),
         aText:
-          'Not any more. Articles, slide pages, infographics and logos now live in livedocuments, a sister app on the same free liveworkspace account. livediagram can still present a canvas as a slide deck.',
+          'Not any more. Articles, slide pages and infographics now live in livedocuments, and logos in livedesign, sister apps on the same free liveworkspace account. livediagram can still present a canvas as a slide deck.',
       },
       {
         q: 'Can I use it as a whiteboard?',

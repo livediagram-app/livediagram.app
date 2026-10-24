@@ -65,7 +65,8 @@ const PREVIEWS: { name: string; art: ReactNode }[] = [
     ),
   },
   {
-    name: 'Kanban',
+    // Three columns of notes: Start, Stop, Continue.
+    name: 'Retrospective',
     art: (
       <g>
         {[9, 24, 39].map((x, c) => (
