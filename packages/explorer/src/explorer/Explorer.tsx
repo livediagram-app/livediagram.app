@@ -36,6 +36,7 @@ import {
   ExplorerProvider,
   useExplorer as useExplorerContext,
   type HelpHref,
+  type FolderShown,
   type NavigateOptions,
 } from './context';
 import { ExplorerDialogs } from './Dialogs';
@@ -127,6 +128,8 @@ export type ExplorerProps = {
   /** Default Folders' entries for what the host's items open in and the kinds of their first tabs (livediagram's
    *  Diagrams, Whiteboards, Sessions, Event Storming boards), between the app's own and its templates'. */
   defaultFolderOptions?: readonly DefaultFolderOption[];
+  /** The folder on screen, once its list is in: its name and how many items sit directly in it (FolderShown). */
+  onFolderShown?: (shown: FolderShown) => void;
   /** A facet of the filter lens gained a value (`Explorer / Selected / <Facet>`), for the host's telemetry. */
   onLensSelected?: (type: LensTelemetryType) => void;
   /** Home's first run: for a person with nothing yet, the app's starting points in place of empty lists, and the
@@ -274,6 +277,7 @@ function ExplorerInner({
   onOrganise,
   lensTemplates,
   defaultFolderOptions,
+  onFolderShown,
   onLensSelected,
   welcome,
   sidebarLinks,
@@ -338,6 +342,7 @@ function ExplorerInner({
       onOrganise={onOrganise}
       lensTemplates={lensTemplates}
       defaultFolderOptions={defaultFolderOptions}
+      onFolderShown={onFolderShown}
       onLensSelected={onLensSelected}
     >
       <ExtrasProvider

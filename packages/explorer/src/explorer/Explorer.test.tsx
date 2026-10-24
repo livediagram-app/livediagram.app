@@ -63,6 +63,46 @@ describe('<Explorer>', () => {
     expect(document.querySelector('[data-folder-row="f1"]')).toBeTruthy();
   });
 
+  it("moves a team folder's address onto its team's page in place, keeping its lens", async () => {
+    const index = createFakeIndex({
+      folders: [
+        {
+          id: 'ft',
+          name: 'Team Specs',
+          parentId: null,
+          teamId: 'team1',
+          ownerId: 'u',
+          createdAt: 1,
+          updatedAt: 1,
+        },
+        {
+          id: 'fp',
+          name: 'Mine',
+          parentId: null,
+          teamId: null,
+          ownerId: 'u',
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      ],
+    });
+    const { onNavigate, unmount } = renderExplorer(
+      index,
+      { kind: 'folder', id: 'ft', q: 'road' } as ExplorerView,
+      { teams: [{ id: 'team1', name: 'Team One' }] },
+    );
+    await waitFor(() => expect(onNavigate).toHaveBeenCalled());
+    const [to, href, options] = onNavigate.mock.calls[0]!;
+    expect(to).toMatchObject({ kind: 'team', id: 'team1', folderId: 'ft', q: 'road' });
+    expect(href).toContain('team1');
+    expect(options).toEqual({ replace: true });
+    unmount();
+    // A personal folder stays where it is.
+    const own = renderExplorer(index, { kind: 'folder', id: 'fp' });
+    await screen.findByRole('heading', { name: 'Mine' });
+    expect(own.onNavigate).not.toHaveBeenCalled();
+  });
+
   it('says the app’s kind: New Plan on liveplanner, New Canvas on livediagram', async () => {
     const index = createFakeIndex();
     const { onCreate, unmount } = renderExplorer(index, { kind: 'folder', id: 'f9' });
