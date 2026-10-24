@@ -134,8 +134,8 @@ describe('embedTargetFor', () => {
 
   it('rewrites a Google Doc to its preview form', () => {
     expect(
-      embedTargetFor('https://docs.google.com/project/d/abc123/edit?usp=sharing')?.embedUrl,
-    ).toBe('https://docs.google.com/project/d/abc123/preview');
+      embedTargetFor('https://docs.google.com/document/d/abc123/edit?usp=sharing')?.embedUrl,
+    ).toBe('https://docs.google.com/document/d/abc123/preview');
     expect(embedTargetFor('https://docs.google.com/spreadsheets/d/xyz/edit#gid=0')?.embedUrl).toBe(
       'https://docs.google.com/spreadsheets/d/xyz/preview',
     );

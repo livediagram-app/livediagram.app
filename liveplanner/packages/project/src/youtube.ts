@@ -203,7 +203,7 @@ export function embedTargetFor(url: string | undefined | null): EmbedTarget | nu
   if (host === 'docs.google.com') {
     // /edit -> /preview is the documented read-only embed form for Docs,
     // Sheets and Slides alike.
-    if (!/^\/(project|spreadsheets|presentation)\//.test(path)) return null;
+    if (!/^\/(document|spreadsheets|presentation)\//.test(path)) return null;
     return {
       provider: 'gdocs',
       embedUrl: parsed.toString().replace(/\/(edit|view)(\?|#|$).*$/, '/preview'),
