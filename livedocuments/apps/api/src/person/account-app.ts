@@ -5,12 +5,7 @@
 // guest has no address, sign-up or milestone. None of these throw: without the accounts Worker, or
 // when it can't be reached, each answers as though there were nothing (and logs).
 
-import {
-  accountEmails,
-  claimMilestone,
-  recordSighting,
-  type Milestone,
-} from '@liveworkspace/auth-client';
+import { accountEmails, recordSighting } from '@liveworkspace/auth-client';
 import { reportOwnerActivity as reportActivityOf } from '@liveworkspace/index-app';
 import { accountCredentials } from '../auth/accounts';
 import type { Env } from '../types';
@@ -35,24 +30,6 @@ export async function ownerEmails(
 
 export async function ownerEmail(env: Env, ownerId: string): Promise<string | null> {
   return (await ownerEmails(env, [ownerId])).get(ownerId) ?? null;
-}
-
-// Claims a one-time milestone email before it is sent: true for the first claim only, so a burst of
-// saves at the milestone sends one. False once claimed, for a guest, or when livedocuments has never
-// recorded a sighting of the account.
-export async function claimOwnerMilestone(
-  env: Env,
-  ownerId: string,
-  milestone: Milestone,
-): Promise<boolean> {
-  const credentials = accountCredentials(env);
-  if (!credentials || !isAccountOwner(ownerId)) return false;
-  try {
-    return await claimMilestone(credentials, { userId: ownerId, milestone });
-  } catch (error) {
-    console.warn('[account-app] milestone_claim_failed', { milestone, error: String(error) });
-    return false;
-  }
 }
 
 // Records that livedocuments has seen this account sign in: true only the first time, which counts as a

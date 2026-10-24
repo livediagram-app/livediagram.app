@@ -32,11 +32,6 @@ function storedFor(env: Env, ownerId: string): Stored | null {
   return credentials && owner ? { credentials, owner } : null;
 }
 
-// Whether this deployment keeps preferences server-side at all.
-export function preferencesStored(env: Env): boolean {
-  return accountCredentials(env) !== null;
-}
-
 // The owner's preferences as one flat set, `all` and this app's joined. Null when they can't be
 // stored for this owner; throws when the accounts Worker can't be reached.
 export async function readPreferences(env: Env, ownerId: string): Promise<SettingsPrefs | null> {
@@ -107,39 +102,4 @@ export async function getNotificationPrefs(env: Env, ownerId: string): Promise<N
   return Object.fromEntries(
     NOTIFY_KEYS.map((key) => [key, prefs[key] !== false]),
   ) as NotificationPrefs;
-}
-
-// A guest becoming someone else (routes/migrate.ts): their settings go with them, the way the accounts
-// Worker merges its own guests on sign-in. A key the new owner already has keeps its value; the guest's
-// other keys fill the gaps. Then the guest's keys are deleted. Best effort: a failure (one past the
-// size limit included) leaves the guest's settings where they were, for the next migrate.
-export async function moveGuestSettings(
-  env: Env,
-  fromOwnerId: string,
-  toOwnerId: string,
-): Promise<void> {
-  const from = storedFor(env, fromOwnerId);
-  const to = storedFor(env, toOwnerId);
-  if (!from || !to || from.owner === to.owner) return;
-  try {
-    const guest = await readSettings(from.credentials, { owner: from.owner, app: SETTINGS_APP });
-    const guestKeys = [...Object.keys(guest.all), ...Object.keys(guest.app)];
-    if (guestKeys.length === 0) return;
-    const target = await readSettings(to.credentials, { owner: to.owner, app: SETTINGS_APP });
-    const missing = (mine: SettingsPrefs, theirs: SettingsPrefs) =>
-      Object.fromEntries(Object.entries(mine).filter(([key]) => !(key in theirs)));
-    const fill = { all: missing(guest.all, target.all), app: missing(guest.app, target.app) };
-    if (Object.keys(fill.all).length + Object.keys(fill.app).length > 0) {
-      await writeSettings(to.credentials, { owner: to.owner, app: SETTINGS_APP, patch: fill });
-    }
-    const clear = (prefs: SettingsPrefs) =>
-      Object.fromEntries(Object.keys(prefs).map((key) => [key, null]));
-    await writeSettings(from.credentials, {
-      owner: from.owner,
-      app: SETTINGS_APP,
-      patch: { all: clear(guest.all), app: clear(guest.app) },
-    });
-  } catch (error) {
-    console.warn('[settings] guest_move_failed', { error: String(error) });
-  }
 }

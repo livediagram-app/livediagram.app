@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import type { Comment, Element, ShapeElement } from '@livedocuments/document';
 import {
   findCommentHost,
-  hasNewComments,
   newCommentsBy,
   redactCommentAuthorIds,
   redactTabDataAuthors,
@@ -248,42 +247,6 @@ describe('redactTabDataAuthors', () => {
     const plain = JSON.stringify({ elements: [mkShape('a', [])] });
     expect(redactTabDataAuthors(plain, 'v')).toBe(plain);
     expect(redactTabDataAuthors('{"authorId"', 'v')).toBe('{"authorId"');
-  });
-});
-
-describe('hasNewComments (docs/specs/014-identity/transactional-email.md #1)', () => {
-  const cm = (id: string, authorId: string | null = 'w'): Comment => ({
-    id,
-    text: 't',
-    createdAt: 0,
-    authorName: 'a',
-    authorColor: '#000',
-    ...(authorId ? { authorId } : {}),
-  });
-  it("is true when the writer's own comment id appears that was not in prev", () => {
-    expect(
-      hasNewComments([mkShape('e1', [cm('c1'), cm('c2')])], [mkShape('e1', [cm('c1')])], 'w'),
-    ).toBe(true);
-  });
-  it("is false when the only new comment is a peer's that reached the writer live", () => {
-    // Credited from the room: no author id until its author's own save claims it.
-    const peer = cm('c2', null);
-    expect(
-      hasNewComments([mkShape('e1', [cm('c1'), peer])], [mkShape('e1', [cm('c1')])], 'w'),
-    ).toBe(false);
-    expect(
-      hasNewComments([mkShape('e1', [cm('c1'), cm('c3', 'x')])], [mkShape('e1', [cm('c1')])], 'w'),
-    ).toBe(false);
-  });
-  it('is false when nothing new was added (a removal)', () => {
-    expect(
-      hasNewComments([mkShape('e1', [cm('c1')])], [mkShape('e1', [cm('c1'), cm('c2')])], 'w'),
-    ).toBe(false);
-  });
-  it('is false on identical sets and with empty threads', () => {
-    const els = [mkShape('e1', [cm('c1')])];
-    expect(hasNewComments(els, els, 'w')).toBe(false);
-    expect(hasNewComments([mkShape('e1', [])], [], 'w')).toBe(false);
   });
 });
 

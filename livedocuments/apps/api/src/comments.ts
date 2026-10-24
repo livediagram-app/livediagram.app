@@ -220,22 +220,9 @@ export function redactTabDataAuthors(data: string, viewerId: string): string {
   }
 }
 
-// docs/specs/014-identity/transactional-email.md (#1): true when `nextElements` adds at least one
-// comment id not in `prevElements` written by `authorId`. Used by the tab-autosave handler to fire
-// the "someone commented on your document" notification only when a genuinely new comment landed
-// (not on every autosave), and only for the writer's own: a save can carry a peer's comment that
-// reached the writer live first, which is not the writer commenting. Pass the elements after
-// rewriteCommentAuthors, whose author ids the server set.
-export function hasNewComments(
-  nextElements: Element[],
-  prevElements: Element[],
-  authorId: string,
-): boolean {
-  return newCommentsBy(nextElements, prevElements, authorId).length > 0;
-}
-
 // The comments `nextElements` adds over `prevElements` that `authorId` wrote, in order: what a save's
-// new-comment email and mention emails (docs/specs/012-collaboration/comment-mentions.md) are about. One pass
+// new-comment email (docs/specs/014-identity/transactional-email.md #1; only the writer's own: a save can carry a
+// peer's comment that reached the writer live first, which is not the writer commenting) and mention emails (docs/specs/012-collaboration/comment-mentions.md) are about. One pass
 // over each side's threads.
 export function newCommentsBy(
   nextElements: Element[],

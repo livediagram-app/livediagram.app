@@ -1,7 +1,6 @@
 // Tab stats storage (docs/specs/013-workspace/explorer-details-view.md "Where the numbers come
 // from"): per tab, what the Explorer's Details view sums over a document, kept in `tab_stats`
 // (the baseline migration) beside each tab so a document list reads them without reading any tab body.
-import type { DocumentStats } from '@livedocuments/api-schema';
 import { tabStatsOf, type TabStats } from '@livedocuments/document';
 import type { DocumentEnv } from '../types';
 
@@ -67,19 +66,3 @@ export function documentStatsSql(documentIdSql: string): string {
           WHERE dt.document_id = ${documentIdSql}) AS doc_stats`;
 }
 
-const isCount = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v) && v >= 0;
-
-// The `doc_stats` column as the wire's DocumentStats; null when absent or unreadable.
-export function readDocumentStats(raw: string | null | undefined): DocumentStats | null {
-  if (raw == null) return null;
-  try {
-    const v = JSON.parse(raw) as Record<string, unknown>;
-    if (isCount(v.elements) && isCount(v.comments) && isCount(v.bytes)) {
-      return { elements: v.elements, comments: v.comments, bytes: v.bytes };
-    }
-  } catch {
-    // Reported below with the shape it had.
-  }
-  console.warn('tab-stats: unreadable doc_stats', raw.slice(0, 120));
-  return null;
-}

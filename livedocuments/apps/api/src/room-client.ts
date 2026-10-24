@@ -54,22 +54,6 @@ function mutationInit(op: unknown): RequestInit {
   };
 }
 
-// Send one op to every socket in a document's room. Best-effort: the stored write before it is the
-// authoritative change, so a room that can't be reached is logged as `[room-broadcast] <label> did
-// not reach the room` rather than failing the request.
-async function broadcastOp(
-  env: Env,
-  documentId: string,
-  op: unknown,
-  label: string,
-): Promise<void> {
-  try {
-    await roomStubFor(env, documentId).fetch('https://room/broadcast', mutationInit(op));
-  } catch (err) {
-    console.warn(`[room-broadcast] ${label} did not reach the room`, documentId, err);
-  }
-}
-
 // Merge the room's collaboration ledger into a tab a client is saving
 // (docs/specs/012-collaboration/collab-race-hardening.md phase 3).
 //
@@ -350,28 +334,6 @@ export async function readRoomSelections(
     console.warn(`[${reader}] selections-unreachable`, { documentId, tabId, error: String(err) });
     return null;
   }
-}
-
-// Tell every socket in a document's room that a share link changed: revoked
-// (its holders leave the editor) or rescoped (they reload into the new scope,
-// docs/specs/013-workspace/tab-scoped-share-links.md). The room also closes those sockets. Best-effort: the
-// stored write before it is the authoritative change, so a room that can't be
-// reached is logged rather than failing the request.
-export async function broadcastShareOp(
-  env: Env,
-  documentId: string,
-  op: { kind: 'share-revoked' | 'share-rescoped'; code: string },
-): Promise<void> {
-  await broadcastOp(env, documentId, op, op.kind);
-}
-
-// Tell a document's realtime room that the document was moved to the Trash
-// (docs/specs/013-workspace/trash.md): every open session hears the deleted
-// state, and the room closes every socket. Best-effort like the share-op
-// broadcast: the stored write is the change, and a session the room misses still
-// has every save refused with document_trashed.
-export async function broadcastDocumentTrashed(env: Env, documentId: string): Promise<void> {
-  await broadcastOp(env, documentId, { kind: 'document-trashed' }, 'document-trashed');
 }
 
 // Agent presence in the room (docs/specs/024-agents/blueprints/agent-presence.md "Room"). The room is its only store,

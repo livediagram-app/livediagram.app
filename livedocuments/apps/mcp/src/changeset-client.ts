@@ -160,18 +160,13 @@ export function editsBase(current: Tab & { rev: number }, rev?: number) {
 // A whole-tab body from the tool's template or elements input.
 export function replaceBodyFrom(args: {
   template?: string;
-  dashboard?: Record<string, unknown>;
   elements?: unknown[];
   layout?: 'auto' | 'preserve';
   theme?: string;
   finish?: Finish;
   name?: string;
 }): ChangesetReplaceBody {
-  const source = args.template
-    ? { template: args.template }
-    : args.dashboard
-      ? { dashboard: args.dashboard }
-      : { elements: args.elements ?? [] };
+  const source = args.template ? { template: args.template } : { elements: args.elements ?? [] };
   return {
     ...source,
     ...(args.layout ? { layout: args.layout } : {}),

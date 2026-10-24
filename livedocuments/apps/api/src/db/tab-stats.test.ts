@@ -3,7 +3,6 @@ import type { DatabaseSync } from 'node:sqlite';
 import { sqliteD1 } from '../test-sqlite-d1';
 import {
   documentStatsSql,
-  readDocumentStats,
   tabStatsOfData,
   tabStatsStatement,
 } from './tab-stats';
@@ -54,7 +53,7 @@ function docStats(sql: DatabaseSync, id: string) {
   const row = sql.prepare(`SELECT ${documentStatsSql('?1')}`).get(id) as {
     doc_stats: string | null;
   };
-  return readDocumentStats(row.doc_stats);
+  return row.doc_stats === null ? null : (JSON.parse(row.doc_stats) as unknown);
 }
 
 describe('documentStatsSql', () => {
@@ -94,16 +93,6 @@ describe('documentStatsSql', () => {
     await stats('t1', 4, 1, 1000, T0);
     await stats('t1', 2, 0, 200, T0 + 5);
     expect(docStats(db.sql, 'D')).toEqual({ elements: 2, comments: 0, bytes: 200 });
-  });
-});
-
-describe('readDocumentStats', () => {
-  it('is null, with a warning, for a value it cannot read', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    expect(readDocumentStats('not json')).toBeNull();
-    expect(readDocumentStats('{"elements":-1,"comments":0,"bytes":1}')).toBeNull();
-    expect(warn).toHaveBeenCalledTimes(2);
-    expect(String(warn.mock.calls[0]![0])).toContain('tab-stats: unreadable doc_stats');
   });
 });
 

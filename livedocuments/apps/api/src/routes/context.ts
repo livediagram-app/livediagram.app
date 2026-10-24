@@ -12,7 +12,7 @@ import type { TeamClaim } from '@liveworkspace/auth-client';
 import type { WorkbenchReach } from '../workbench-store';
 import type { GrantCaller, DocumentGrant } from '../index-service';
 import { badRequest, forbidden, missingAuth, notFound } from '../responses';
-import type { DocumentDTO, Env, DocumentEnv, ShareRole } from '../types';
+import type { Env, DocumentEnv, ShareRole } from '../types';
 
 // A workbench session as the choke point resolved it (blueprint "A request bearing lvw_", "The choke point by
 // scope"): one document in the document scope, the workspace (from an optional folder) in the workspace scope.
@@ -181,16 +181,6 @@ export async function gateGrant(
 // The resolved caller id, or the 400 to return when no token identifies the caller.
 export function requireOwner(ctx: RouteContext): string | Response {
   return ctx.resolveOwner() ?? missingAuth();
-}
-
-// Is `ctx` the document's owner, as the document knows it? Only the doors that show the owner more (comment authors,
-// the owner's own notices) ask; who may change or share the document is the index's.
-export async function ownsDocument(
-  ctx: RouteContext,
-  liveDoc: Pick<DocumentDTO, 'id' | 'ownerId'>,
-): Promise<boolean> {
-  const caller = ctx.resolveOwner();
-  return caller !== null && caller === liveDoc.ownerId && grantOn(ctx, liveDoc.id) !== null;
 }
 
 // The answer for a document id no started document holds: the 404 a never-existing id gets. The Trash is the index's, so

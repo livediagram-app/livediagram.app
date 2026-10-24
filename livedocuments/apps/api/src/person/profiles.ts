@@ -142,34 +142,3 @@ export async function saveParticipant(
   remember(accountsOwner, profile, Date.now());
   return toParticipant(ownerId, profile) ?? sent;
 }
-
-// A guest becoming someone else (signing up, or a legacy id moving onto a signed one,
-// routes/migrate.ts): the name and colour go with them, the way the accounts Worker merges its own
-// guests on sign-in. The new owner keeps a colour of its own and takes the guest's when it has none;
-// it takes the guest's name only when it has no name at all (an account always has its account name).
-// Then the guest's fields are cleared. Best effort: a failure leaves the guest's profile where it was.
-export async function moveGuestProfile(env: Env, fromOwnerId: string, toOwnerId: string) {
-  const credentials = accountCredentials(env);
-  const from = accountsOwnerOf(fromOwnerId);
-  const to = accountsOwnerOf(toOwnerId);
-  if (!credentials || !from || !to || from === to) return;
-  try {
-    const profiles = await profilesOf(credentials, [fromOwnerId, toOwnerId]);
-    const guest = profiles.get(fromOwnerId);
-    if (!guest || (!guest.name && !guest.color)) return;
-    const target = profiles.get(toOwnerId) ?? null;
-    const patch: { name?: string; color?: string } = {};
-    if (guest.color && !target?.color) patch.color = guest.color;
-    if (guest.name && !target?.name) patch.name = guest.name;
-    if (patch.name !== undefined || patch.color !== undefined) {
-      remember(to, await writeProfile(credentials, { owner: to, ...patch }), Date.now());
-    }
-    remember(
-      from,
-      await writeProfile(credentials, { owner: from, name: null, color: null }),
-      Date.now(),
-    );
-  } catch (error) {
-    console.warn('[profiles] guest_move_failed', { error: String(error) });
-  }
-}

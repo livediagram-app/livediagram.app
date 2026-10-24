@@ -10,7 +10,6 @@ import {
   gateParticipate,
   gateRead,
   grantCallerOf,
-  ownsDocument,
   requireOwner,
   shareAccessOf,
 } from './context';
@@ -117,18 +116,6 @@ describe('the refusals', () => {
     expect(
       (await deniedParticipate(makeCtx({ grant: grant({ level: 'view' }) }), doc)).status,
     ).toBe(403);
-  });
-});
-
-describe('ownsDocument', () => {
-  it('is the document’s owner holding a grant on it', async () => {
-    expect(await ownsDocument(makeCtx(), { id: 'd1', ownerId: 'user_a' })).toBe(true);
-    expect(await ownsDocument(makeCtx({ owner: 'user_b' }), { id: 'd1', ownerId: 'user_a' })).toBe(
-      false,
-    );
-    expect(await ownsDocument(makeCtx({ grant: null }), { id: 'd1', ownerId: 'user_a' })).toBe(
-      false,
-    );
   });
 });
 

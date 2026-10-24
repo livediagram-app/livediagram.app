@@ -10,8 +10,6 @@ import type { Env } from './types';
 
 // The api never waits on one room longer than this.
 const ROOM_ACCESS_CLOSE_TIMEOUT_MS = 3_000;
-// Rooms closed at once, so a workspace session's many rooms are a steady trickle of small calls.
-export const TEAM_ROOM_CLOSE_CONCURRENCY = 10;
 
 async function closeRoomSessions(
   env: Env,

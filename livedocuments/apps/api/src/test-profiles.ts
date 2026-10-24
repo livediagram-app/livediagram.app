@@ -58,8 +58,3 @@ export async function saveParticipant(
   return { ...person };
 }
 
-export async function moveGuestProfile(_env: Env, from: string, to: string): Promise<void> {
-  const guest = people.get(from);
-  if (guest && !people.has(to)) people.set(to, { ...guest, id: to, createdAt: Date.now() });
-  people.delete(from);
-}
