@@ -7,11 +7,11 @@ import { Header } from '@/components/Header';
 import { AppLogo } from '@/components/landing/AppLogo';
 import { listedApps } from '@/lib/apps';
 
-// Product Comparison (liveworkspace/docs/site.md): each app compares itself with the tools it
+// Comparison (liveworkspace/docs/site.md): each app compares itself with the tools it
 // answers on its own site (packages/comparisons/README.md), so this page only points at them. The
 // old /alternatives addresses redirect here and to each app's pages (public/_redirects).
 
-const TITLE = 'Product Comparison';
+const TITLE = 'Comparison';
 const DESCRIPTION =
   'Honest, side-by-side comparisons of each liveworkspace app with the tools it answers, on each app’s own site.';
 
@@ -32,7 +32,7 @@ export default function ComparePage() {
       <main className="mx-auto max-w-7xl px-4 pt-16 pb-20 sm:px-6 sm:pt-20 sm:pb-24">
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
-            Product Comparison
+            Comparison
           </p>
           <h1 className="mt-3 text-4xl font-semibold tracking-tight text-balance text-slate-900 sm:text-5xl dark:text-white">
             How each app compares

@@ -6,7 +6,7 @@ const linkClass =
   'relative touch-target-y text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white';
 
 // The footer (liveworkspace/docs/site.md "The front door"): every app again, the platform's own
-// pages and services (Product Comparison, which points at each app's comparisons), and the privacy
+// pages and services (Comparison, which points at each app's comparisons), and the privacy
 // policy and terms that cover all of them.
 export function Footer() {
   return (
@@ -32,7 +32,7 @@ export function Footer() {
         </FooterColumn>
         <FooterColumn title="Platform">
           <a href="/compare" className={linkClass}>
-            Product Comparison
+            Comparison
           </a>
           <a href="/telemetry" className={linkClass}>
             Telemetry

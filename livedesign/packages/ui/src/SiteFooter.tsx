@@ -34,7 +34,7 @@ const COLUMNS: { title: string; links: (FooterLink | typeof GITHUB)[] }[] = [
         icon: lucideGlyph(lucideSparkles, ICON_SIZE),
       },
       // This app's own comparisons (packages/comparisons/README.md).
-      { href: '/alternatives', label: 'Product Comparison' },
+      { href: '/alternatives', label: 'Comparison' },
       { href: '/faq', label: 'FAQ' },
     ],
   },

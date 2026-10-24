@@ -86,7 +86,7 @@ export function comparisonSitemap(c: Comparisons) {
 // description (the app's renderSocialCard draws them in its own brand).
 export function comparisonCard(c: Comparisons, alt: Alternative | undefined) {
   return {
-    kicker: alt ? `${c.app} vs ${alt.name}` : 'Product Comparison',
+    kicker: alt ? `${c.app} vs ${alt.name}` : 'Comparison',
     title: alt?.h1 ?? c.hub.heading,
     subtitle: alt?.description ?? c.hub.description,
   };

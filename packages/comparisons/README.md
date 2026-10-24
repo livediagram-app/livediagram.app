@@ -51,7 +51,7 @@ the app it speaks for, so the page, its links and its call to action share that 
 ## Routes
 
 - One page per competitor at **`/alternatives/<slug>`** (e.g. `/alternatives/miro`). One page per competitor is the SEO-correct shape: each targets that competitor's "alternative" query specifically. A slug is unique across every app (each has its own tone in `COMPETITOR_LOOK`), so no two apps compete for one query.
-- A hub at **`/alternatives`**, linked from the app's footer as **Product Comparison**: the hero band, then a grid of `AlternativeCard`s (a tinted header panel in the competitor's tone on a dot grid carrying the `VsBadge` tiles, the page's h1, its description clamped to three lines, its three highlight chips, and "Read the comparison"), closing on the app's `TryItCard`.
+- A hub at **`/alternatives`**, linked from the app's footer as **Comparison**: the hero band, then a grid of `AlternativeCard`s (a tinted header panel in the competitor's tone on a dot grid carrying the `VsBadge` tiles, the page's h1, its description clamped to three lines, its three highlight chips, and "Read the comparison"), closing on the app's `TryItCard`.
 - `generateStaticParams` renders every slug (with `dynamicParams = false`, so only known slugs export under `output: 'export'`), and the sitemap derives its URLs from the same list (`comparisonSitemap`), so adding a competitor is a one-place change.
 
 ## Golden rule, plus a fairness rule
@@ -71,7 +71,7 @@ On comparisons there's a second rule:
 
 Per competitor, `app/alternatives/[slug]/page.tsx` in the app, its body `ComparisonArticle`:
 
-- **Breadcrumb** Home › Product Comparison › `<competitor>` alternative, as the app's visible bar and as a BreadcrumbList.
+- **Breadcrumb** Home › Comparison › `<competitor>` alternative, as the app's visible bar and as a BreadcrumbList.
 - **Hero**: the app's `PageHero` band with an "`<app>` vs `<competitor>`" eyebrow and the `VsBadge` tiles (the app's prism, white on its deep brand tile). The competitor is drawn as a generic glyph of what the tool is (a sticky note for Miro, a kanban board for Trello, a slide for Google Slides), never its logo, in line with the no-vendor-trademarks rule ([Iconography](../../livediagram/docs/specs/004-interface-design/iconography.md)). Each competitor's glyph and tone live in `src/looks.ts`, one tone per competitor across every app; the card's three chips are the app's words (`highlights` in its list).
 - **Layout**: on wide screens a sticky "On this page" index (At a glance, Which to pick, each deep-dive heading, FAQ) sits beside the content.
 - **H1** framed for the target query (e.g. "The open-source Miro alternative", "The free Trello alternative", "A free, open-source Google Slides alternative").

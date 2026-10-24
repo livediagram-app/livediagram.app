@@ -56,14 +56,14 @@ export default async function AlternativePage({ params }: { params: Promise<{ sl
       <JsonLd data={faqJsonLd(alt)} />
       <BreadcrumbJsonLd
         trail={[
-          { name: 'Product Comparison', path: HUB_PATH },
+          { name: 'Comparison', path: HUB_PATH },
           { name: `${alt.name} alternative`, path: comparisonPath(alt.slug) },
         ]}
       />
       <Header surface="Compare" />
       <Breadcrumb
         items={[
-          { label: 'Product Comparison', href: HUB_PATH },
+          { label: 'Comparison', href: HUB_PATH },
           { label: `${alt.name} alternative` },
         ]}
       />

@@ -37,7 +37,7 @@ const COLUMNS: { title: string; links: (FooterLink | typeof COMMUNITY | typeof G
         icon: lucideGlyph(lucideSparkles, ICON_SIZE),
       },
       // This app's own comparisons (packages/comparisons/README.md).
-      { href: '/alternatives', label: 'Product Comparison' },
+      { href: '/alternatives', label: 'Comparison' },
       // The public gallery of shared documents (docs/specs/025-community/community.md), unless switched off.
       COMMUNITY,
       { href: '/faq', label: 'FAQ' },
