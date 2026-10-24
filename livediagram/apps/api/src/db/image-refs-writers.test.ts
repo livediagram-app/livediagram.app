@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
 import type { Tab } from '@livediagram/document';
 import { sqliteD1, testCopyDocument, type SqliteD1 } from '../test-sqlite-d1';
-import { receiveShares } from '../document-room/tab-shares';
+import { documentShares } from '../document-room/tab-shares';
 import { makeTestRouteContext } from '../routes/test-route-context';
 import { handleDocuments } from '../routes/documents';
 import { handleDocumentSubresources } from '../routes/document-subresource-routes';
@@ -230,9 +230,9 @@ describe('receiveShares (a shared tab body from another holder)', () => {
       updatedAt,
       members: ['B'],
     });
-    await receiveShares(db.env, 'A', 'B', [body('img-0', 1)]);
+    await documentShares.receive(db.env, 'A', 'B', [body('img-0', 1)]);
     expect(refs(db.sql, 't1')).toEqual(['img-1']);
-    await receiveShares(db.env, 'A', 'B', [body('img-2', Date.now() + 60_000)]);
+    await documentShares.receive(db.env, 'A', 'B', [body('img-2', Date.now() + 60_000)]);
     expect(refs(db.sql, 't1')).toEqual(['img-2']);
   });
 });

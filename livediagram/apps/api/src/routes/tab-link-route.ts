@@ -4,21 +4,30 @@
 // (document-room/tab-shares.ts). Answers the tab as this document now holds it, so the editor can show it without
 // reading the whole document.
 //
-// Runs in this document's room. Auth: the caller must own this document AND `from` (a grant the index gives them on
-// it), which must hold the tab. The second half stops anyone grafting in a tab they cannot read.
+// Runs in this document's room. The rules and steps are @liveworkspace/index-app's (tab-link.ts `linkSharedTab`):
+// the caller must edit this document AND `from` as their own (an edit grant the index gives them on each, not a
+// share link's, not one tab's, not a workbench's), and `from` must hold the tab. The second half stops anyone
+// grafting in a tab they cannot edit.
 
+import { linkSharedTab, type TabLinkAccess } from '@liveworkspace/index-app';
 import { getDocumentMeta, getTab } from '../db';
 import { documentRoom } from '../document-client';
-import { takeSharedTab } from '../document-room/tab-shares';
+import { documentShares } from '../document-room/tab-shares';
 import { badRequest, forbidden, json, notFound } from '../responses';
 import {
+  grantOn,
   missingDocument,
-  ownsDocument,
   readBody,
   requireOwner,
   type DocumentRouteContext,
+  type RouteContext,
 } from './context';
 import { resolveDocumentGrant } from './document-grant';
+
+function accessOf(ctx: RouteContext, documentId: string): TabLinkAccess | null {
+  const grant = grantOn(ctx, documentId);
+  return grant ? { level: grant.role, tab: grant.tabScope, shareCode: grant.shareCode } : null;
+}
 
 export async function handleTabLink(ctx: DocumentRouteContext): Promise<Response | null> {
   const { request, env, segments } = ctx;
@@ -34,31 +43,30 @@ export async function handleTabLink(ctx: DocumentRouteContext): Promise<Response
   const tabId = segments[4]!;
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
-  const target = await getDocumentMeta(env, id);
-  if (!target) return missingDocument(ctx, id);
-  // `ownsDocument`, not a bare id compare: a team document's owner id is one every teammate can read, so it is
-  // proven by the caller's grant on each canvas, never a bare id compare (routes/context.ts).
-  if (!(await ownsDocument(ctx, target))) return forbidden();
+  if (!(await getDocumentMeta(env, id))) return missingDocument(ctx, id);
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
-  const from = body.from;
-  if (typeof from !== 'string' || from.length === 0) return badRequest('from: a document id');
-  if (from === id) return badRequest('from: another document');
-  const source = await getDocumentMeta(env, from);
-  if (!source) return notFound();
-  // The request carries the grant on this document alone: the caller's on `from` is the index's to give.
-  const sourceGrant = await resolveDocumentGrant(ctx, from);
-  if (sourceGrant instanceof Response) return sourceGrant;
-  if (!(await ownsDocument({ ...ctx, grant: sourceGrant }, source))) return forbidden();
-
-  // Already here (linked before, or the same id by chance): answered as it is, as a repeat link always was.
-  const held = await getTab(env, id, tabId);
-  if (held) return json({ tab: held });
-  const copy = await documentRoom(env, from).sharedTabCopy(tabId);
-  if (!copy) return notFound();
-  if (!(await takeSharedTab(env, id, tabId, copy))) return notFound();
-  // The holder joined through records the join, tells the rest, and sends the tab again if it changed meanwhile.
-  await documentRoom(env, from).shareJoined(tabId, id, copy.updatedAt);
-  const tab = await getTab(env, id, tabId);
-  return tab ? json({ tab }) : notFound();
+  const out = await linkSharedTab({
+    targetId: id,
+    tabId,
+    from: body.from,
+    workbench: !!ctx.workbench,
+    target: accessOf(ctx, id),
+    // The request carries the grant on this document alone: the caller's on `from` is the index's to give.
+    source: async (from) => {
+      if (!(await getDocumentMeta(env, from))) return 'missing';
+      const grant = await resolveDocumentGrant(ctx, from);
+      if (grant instanceof Response) return grant;
+      return accessOf({ ...ctx, grant }, from);
+    },
+    held: () => getTab(env, id, tabId),
+    sourceRoom: (from) => documentRoom(env, from),
+    take: (copy) => documentShares.take(env, id, tabId, copy),
+  });
+  if (out.ok) return json({ tab: out.tab });
+  if ('response' in out) return out.response;
+  if (out.status === 400) return badRequest(out.error);
+  if (out.status === 403) return forbidden();
+  if (out.status === 404) return notFound();
+  return json({ error: out.error }, { status: out.status });
 }

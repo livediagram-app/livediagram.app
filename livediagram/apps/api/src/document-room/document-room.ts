@@ -5,9 +5,11 @@ import {
   FLUSH_RETRY_MS,
   type ItemHeadSync,
   nextFlushAt,
+  owesShares,
   recordItemEditor,
   renewRoomGrant,
   roomGrantStep,
+  ShareSchedule,
 } from '@liveworkspace/index-app';
 import { DurableObject } from 'cloudflare:workers';
 import {
@@ -94,11 +96,7 @@ import {
 } from './document-content';
 import { DOCUMENT_OUTBOX, drainOutbox } from './document-outbox';
 import {
-  allShares,
-  drainShares,
-  receiveShares,
-  recordShareJoin,
-  sharedTabCopy,
+  documentShares,
   type ShareAnswer,
   type ShareMessage,
   type SharedTabCopy,
@@ -261,8 +259,8 @@ export class DocumentRoom extends DurableObject<Env> {
   private lastFlushAt = 0;
   private draining = false;
   // The next send to the other holders of its shared tabs (tab-shares.ts): on idle, not held to the outbox's
-  // once a minute, since it is a call to another document rather than a D1 write.
-  private shareAt: number | null = null;
+  // once a minute, since it is a call to another document rather than a push.
+  private readonly shares = new ShareSchedule(() => owesShares(this.state.storage.sql));
   // The next daily upkeep (persisted, so a wake keeps the day).
   private maintenanceAt: number | null = null;
   // Content writes so far (noteWrite), so route() can tell a request that wrote from one that didn't.
@@ -409,7 +407,7 @@ export class DocumentRoom extends DurableObject<Env> {
     const row = sql.exec('SELECT id FROM document LIMIT 1').toArray()[0];
     if (typeof row?.id === 'string' && this.documentId === null) this.documentId = row.id;
     if (this.owesIndex()) this.flushAt = Date.now();
-    if (this.owesShares()) this.shareAt = Date.now();
+    this.shares.restore();
     const post = sql
       .exec<{ checked_at: number }>('SELECT checked_at FROM community_post LIMIT 1')
       .toArray()[0];
@@ -459,10 +457,7 @@ export class DocumentRoom extends DurableObject<Env> {
       this.armAlarm();
     }
     const now = Date.now();
-    if (this.shareAt === null && this.owesShares()) {
-      this.shareAt = now + FLUSH_IDLE_MS;
-      this.armAlarm();
-    }
+    if (this.shares.noteWrite()) this.armAlarm();
     if (this.flushAt !== null || !this.owesIndex()) return;
     this.flushAt = nextFlushAt(now, this.lastFlushAt);
     this.armAlarm();
@@ -503,24 +498,22 @@ export class DocumentRoom extends DurableObject<Env> {
   private async drainShares(): Promise<void> {
     const env = this.roomEnv;
     const documentId = this.documentId;
-    this.shareAt = null;
-    if (!env || !documentId || !this.schemaReady) return;
+    if (!env || !documentId || !this.schemaReady) {
+      this.shares.clear();
+      return;
+    }
     this.draining = true;
     try {
-      const { sent, failed, more } = await drainShares(env, documentId, (to, messages) =>
-        documentRoom(env, to).receiveShares(documentId, messages),
+      const done = await this.shares.send(() =>
+        documentShares.drain(env, documentId, (to, messages) =>
+          documentRoom(env, to).receiveShares(documentId, messages),
+        ),
       );
-      if (sent > 0) console.debug('[tab-shares] sent', { documentId, sent });
-      if (failed > 0) this.shareAt = Date.now() + FLUSH_RETRY_MS;
-      else if (more) this.shareAt = Date.now() + FLUSH_IDLE_MS;
-    } catch (error) {
-      console.warn('[tab-shares] send failed', { documentId, error: String(error) });
-      this.shareAt = Date.now() + FLUSH_RETRY_MS;
+      if (done && done.sent > 0)
+        console.debug('[tab-shares] sent', { documentId, sent: done.sent });
     } finally {
       this.draining = false;
     }
-    // Anything written while the send was in flight goes next time.
-    if (this.shareAt === null && this.owesShares()) this.shareAt = Date.now() + FLUSH_IDLE_MS;
     if (this.flushAt === null && this.owesIndex()) {
       this.flushAt = nextFlushAt(Date.now(), this.lastFlushAt);
     }
@@ -528,10 +521,6 @@ export class DocumentRoom extends DurableObject<Env> {
 
   private owesIndex(): boolean {
     return this.state.storage.sql.exec('SELECT 1 FROM outbox LIMIT 1').toArray().length > 0;
-  }
-
-  private owesShares(): boolean {
-    return this.state.storage.sql.exec('SELECT 1 FROM share_outbox LIMIT 1').toArray().length > 0;
   }
 
   // The document's daily upkeep, once a day per document with content: changesets past their retention go (CS28).
@@ -816,7 +805,7 @@ export class DocumentRoom extends DurableObject<Env> {
   // A document joining this tab's holders: the tab as held here and who holds it.
   async sharedTabCopy(documentId: string, tabId: string): Promise<SharedTabCopy | null> {
     this.bindDocument(documentId);
-    return sharedTabCopy(this.requireEnv(), documentId, tabId);
+    return documentShares.copyOf(this.requireEnv(), documentId, tabId);
   }
 
   // `member` now holds the tab too.
@@ -827,7 +816,7 @@ export class DocumentRoom extends DurableObject<Env> {
     seenUpdatedAt: number,
   ): Promise<boolean> {
     this.bindDocument(documentId);
-    return recordShareJoin(this.requireEnv(), documentId, tabId, member, seenUpdatedAt);
+    return documentShares.recordJoin(this.requireEnv(), documentId, tabId, member, seenUpdatedAt);
   }
 
   // What another holder of a shared tab sent. A document with nothing stored holds no tab, and makes no schema
@@ -842,7 +831,7 @@ export class DocumentRoom extends DurableObject<Env> {
       return messages.map(() => 'gone');
     }
     this.bindDocument(documentId);
-    return receiveShares(this.requireEnv(), documentId, from, messages);
+    return documentShares.receive(this.requireEnv(), documentId, from, messages);
   }
 
   private requireEnv(): DocumentEnv {
@@ -1151,7 +1140,7 @@ export class DocumentRoom extends DurableObject<Env> {
     this.schemaReady = false;
     this.documentRowReady = false;
     this.flushAt = null;
-    this.shareAt = null;
+    this.shares.clear();
     this.maintenanceAt = null;
     this.communityAt = null;
     this.head.forget();
@@ -1204,13 +1193,9 @@ export class DocumentRoom extends DurableObject<Env> {
     const sql = this.state.storage.sql;
     if (!env || !documentId || !sql || !hasDocumentSchema((q) => sql.exec(q))) return;
     this.ensureSchema();
-    for (const { tabId, to } of await allShares(env)) {
-      try {
-        await documentRoom(env, to).receiveShares(documentId, [{ kind: 'leave', tabId }]);
-      } catch (error) {
-        console.warn('[tab-shares] leave failed', { documentId, to, error: String(error) });
-      }
-    }
+    await documentShares.leaveAll(env, documentId, (to, messages) =>
+      documentRoom(env, to).receiveShares(documentId, messages),
+    );
   }
 
   // After a document-trashed op has gone out, close every socket
@@ -1601,7 +1586,7 @@ export class DocumentRoom extends DurableObject<Env> {
       this.agents.nextExpiry(),
       this.nextGrantDue(),
       this.flushAt,
-      this.shareAt,
+      this.shares.at,
       this.communityAt,
       this.maintenanceAt,
     ].filter((t): t is number => t !== null);
@@ -1621,7 +1606,7 @@ export class DocumentRoom extends DurableObject<Env> {
     const now = Date.now();
     this.checkGrants(now);
     if (this.flushAt !== null && this.flushAt <= now) await this.drainIndex();
-    if (this.shareAt !== null && this.shareAt <= now) await this.drainShares();
+    if (this.shares.due(now)) await this.drainShares();
     if (this.communityAt !== null && this.communityAt <= now) await this.checkCommunity(now);
     if (this.maintenanceAt !== null && this.maintenanceAt <= now) await this.maintain(now);
     this.armAlarm();

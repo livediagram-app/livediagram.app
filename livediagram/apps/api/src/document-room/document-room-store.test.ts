@@ -9,6 +9,7 @@ import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { mediaServiceFor } from '../test-media-service';
 import { mediaImages } from '../db/test-image-fixtures';
 import { mediaOwner } from '../media';
+import { MAX_TAB_HOLDERS } from '@liveworkspace/index-app';
 import { nodeItemSql, nodeTransaction } from '@liveworkspace/index-app/testing';
 import type { Env } from '../types';
 import { DRAIN_TABS } from './document-outbox';
@@ -432,9 +433,9 @@ describe('a tab shared between documents', () => {
   const holders = (w: World, documentId: string, tabId = 't1') =>
     w.documents
       .get(documentId)!
-      .db.prepare('SELECT document_id FROM tab_shares WHERE tab_id = ? ORDER BY document_id')
+      .db.prepare('SELECT item_id FROM tab_shares WHERE tab_id = ? ORDER BY item_id')
       .all(tabId)
-      .map((r) => r.document_id);
+      .map((r) => r.item_id);
   const save = (w: World, documentId: string, label: string, tabId = 't1') =>
     w.send('PUT', `/api/documents/${documentId}/tabs/${tabId}`, {
       id: tabId,
@@ -563,6 +564,26 @@ describe('a tab shared between documents', () => {
     expect(holders(w, 'A')).toEqual([]);
     expect(await sharedTabs(w, 'A')).toEqual({ tabs: 0, documents: 0 });
     expect(labels(w, 'A')).toEqual(['From A']);
+  });
+
+  it('grants the holder taking it in the images its sender may serve, and no others', async () => {
+    const w = world();
+    const media = mediaWithIndex(w.env);
+    mediaImages(media, await mediaOwner('guest_owner'), ['img-1']);
+    mediaImages(media, 'user_mallory', ['img-3']);
+    const picture = (id: string, imageId: string) =>
+      ({ id, type: 'image', x: 0, y: 0, width: 10, height: 10, imageId }) as unknown as Element;
+    await createDocument(w, 'A', [
+      { id: 't1', name: 'Board', elements: [picture('p1', 'img-1'), picture('p3', 'img-3')] },
+    ]);
+    await createDocument(w, 'B', [{ id: 'tb', name: 'Own', elements: [] }]);
+    expect((await link(w, 'B', 't1', 'A')).status).toBe(200);
+    const b = w.documents.get('B')!;
+    expect(b.db.prepare('SELECT image_id FROM image_grants').all()).toEqual([
+      { image_id: 'img-1' },
+    ]);
+    expect(await b.room.servesImage('B', 'img-1', 't1')).toBe(true);
+    expect(await b.room.servesImage('B', 'img-3', 't1')).toBe(false);
   });
 
   it('drops a holder that no longer has the tab when it says so', async () => {
@@ -728,15 +749,16 @@ describe('speed', () => {
     expect(drainMs).toBeLessThan(cpuBudgetMs(200));
   });
 
-  it('sends an edit of a 1 MB tab shared with 20 documents within budget', async () => {
+  it(`sends an edit of a 1 MB tab held by ${MAX_TAB_HOLDERS} documents within budget`, async () => {
     const w = world();
     await createDocument(w, 'A');
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < MAX_TAB_HOLDERS; i++) {
       await createDocument(w, `S${i}`, [{ id: `own${i}`, name: 'Own', elements: [] }]);
       const res = await w.send('POST', `/api/documents/S${i}/tabs/t1/link`, { from: 'A' });
-      expect(res.status).toBe(200);
+      // The fan-out is bounded: one more holder than the cap is refused.
+      expect(res.status).toBe(i < MAX_TAB_HOLDERS - 1 ? 200 : 409);
     }
-    // Each join told the holders before it: 190 messages, a drain of 50 at a time.
+    // Each join told the holders before it: 171 messages, a drain of 50 at a time.
     const a = w.documents.get('A')!;
     while (count(a.db, 'share_outbox') > 0) await a.room.drain();
     const elements = Array.from({ length: 2_500 }, (_, i) => box(`e${i}`, 'x'.repeat(320)));
@@ -749,9 +771,9 @@ describe('speed', () => {
     });
     expect(status).toBe(200);
     const fanOutMs = await cpuMsOfAsync(() => w.documents.get('A')!.room.drain());
-    console.info('[perf] 1 MB tab shared with 20', { saveMs, fanOutMs });
+    console.info('[perf] 1 MB tab held by 20', { saveMs, fanOutMs });
     const last = w.documents
-      .get('S19')!
+      .get(`S${MAX_TAB_HOLDERS - 2}`)!
       .db.prepare("SELECT element_count FROM tabs WHERE id = 't1'");
     expect(last.get()!.element_count).toBe(2_500);
     expect(saveMs).toBeLessThan(cpuBudgetMs(200));

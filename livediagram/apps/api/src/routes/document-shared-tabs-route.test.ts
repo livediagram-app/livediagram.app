@@ -44,7 +44,7 @@ function get(db: SqliteD1, opts: Parameters<typeof makeTestRouteContext>[2] = {}
 
 // The other documents a tab of A's is shared with, as A's room lists them (document-room/tab-shares.ts).
 function sharedWith(sql: DatabaseSync, tabId: string, ...documentIds: string[]) {
-  for (const d of documentIds) row(sql, 'tab_shares', { tab_id: tabId, document_id: d });
+  for (const d of documentIds) row(sql, 'tab_shares', { tab_id: tabId, item_id: d });
 }
 
 describe('GET /api/documents/:id/shared-tabs', () => {

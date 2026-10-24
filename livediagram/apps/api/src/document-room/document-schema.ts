@@ -14,6 +14,8 @@
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
 // follow-up for tabs over 2 MB; until then the cap refuses them.
+import { tabSharesSchema } from '@liveworkspace/index-app';
+
 const V1 = `
 CREATE TABLE IF NOT EXISTS document (
   id                  TEXT    PRIMARY KEY,
@@ -153,35 +155,9 @@ CREATE TABLE IF NOT EXISTS agent_changeset_parts (
   PRIMARY KEY (changeset_id, part)
 );
 
--- A tab shared with other documents (docs/specs/006-document/tab-document-many-to-many.md): every document that
--- holds it keeps its own copy under the same tab id, and this lists the OTHER documents holding it. A write here is
--- pushed to each of them (tab-shares.ts), and theirs to this one, the latest write winning.
-CREATE TABLE IF NOT EXISTS tab_shares (
-  tab_id      TEXT NOT NULL REFERENCES tabs (id) ON DELETE CASCADE,
-  document_id TEXT NOT NULL,
-  PRIMARY KEY (tab_id, document_id)
-) WITHOUT ROWID;
-
--- What this document owes the other holders of its shared tabs, drained by the room's alarm (tab-shares.ts):
---   body:  the tab's current name and body, read when sent
---   join:  member now holds the tab too
---   leave: this document no longer holds the tab
--- A key written again is deleted and inserted under a new id, as in outbox below, so a drain in flight keeps it.
-CREATE TABLE IF NOT EXISTS share_outbox (
-  id          INTEGER PRIMARY KEY,
-  kind        TEXT    NOT NULL CHECK (kind IN ('body', 'join', 'leave')),
-  tab_id      TEXT    NOT NULL,
-  to_document TEXT    NOT NULL,
-  member      TEXT    NOT NULL DEFAULT '',
-  UNIQUE (kind, tab_id, to_document, member)
-);
-CREATE TRIGGER IF NOT EXISTS share_outbox_tab_update AFTER UPDATE OF data, name ON tabs
-  WHEN EXISTS (SELECT 1 FROM tab_shares WHERE tab_id = NEW.id)
-BEGIN
-  DELETE FROM share_outbox WHERE kind = 'body' AND tab_id = NEW.id;
-  INSERT INTO share_outbox (kind, tab_id, to_document) SELECT 'body', NEW.id, document_id FROM tab_shares WHERE tab_id = NEW.id;
-END;
-
+-- A tab shared with other documents (docs/specs/006-document/tab-document-many-to-many.md): tab_shares lists the
+-- OTHER documents holding each, share_outbox what this one owes them (@liveworkspace/index-app tab-shares.ts).
+${tabSharesSchema()}
 -- Who has voted as a guest (docs/specs/012-collaboration/vote-integrity.md): a guest id costs nothing to make, so a
 -- guest's Q&A upvote is admitted against a cap of guest voters per network (vote-integrity.ts).
 CREATE TABLE IF NOT EXISTS guest_voters (
