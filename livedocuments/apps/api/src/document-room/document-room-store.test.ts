@@ -708,7 +708,7 @@ describe('a tab shared between documents', () => {
   const sharedTabs = async (w: World, id: string) => {
     const res = await w.send('GET', `/api/documents/${id}/shared-tabs`);
     expect(res.status).toBe(200);
-    return ((await res.json()) as { sharedTabs: unknown }).sharedTabs;
+    return (await res.json<{ sharedTabs: unknown }>()).sharedTabs;
   };
 
   async function two() {

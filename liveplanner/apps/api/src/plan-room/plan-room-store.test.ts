@@ -612,7 +612,7 @@ describe('a tab shared between plans', () => {
   const sharedTabs = async (w: World, id: string) => {
     const res = await w.send('GET', `/api/projects/${id}/shared-tabs`);
     expect(res.status).toBe(200);
-    return ((await res.json()) as { sharedTabs: unknown }).sharedTabs;
+    return (await res.json<{ sharedTabs: unknown }>()).sharedTabs;
   };
 
   async function two() {
