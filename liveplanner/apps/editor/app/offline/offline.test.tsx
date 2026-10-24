@@ -1,14 +1,35 @@
 // @vitest-environment jsdom
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const store = vi.hoisted(() => ({
   plans: [] as { id: string; name: string; savedAt: number }[],
+  accountUserId: null as string | null,
+  sync: vi.fn(),
+  handoff: vi.fn(),
 }));
 vi.mock('@/lib/offline/offline-store', () => ({
   offlineListProjects: async () => store.plans,
   offlineIdCount: async () => store.plans.length,
   subscribeOfflineIds: () => () => {},
+}));
+vi.mock('@/hooks/persistence/useAccountBootstrap', () => ({
+  useAccountBootstrap: () => ({ accountUserId: store.accountUserId }),
+}));
+vi.mock('@/hooks/persistence/useSignedGuestId', () => ({ useSignedGuestId: () => null }));
+vi.mock('@/hooks/persistence/useConversionHandoff', () => ({
+  useConversionHandoff: (ownerId: string | null, signedIn: boolean) => {
+    store.handoff(ownerId, signedIn);
+  },
+}));
+vi.mock('@/components/dialogs/LocalMovePrompt', () => ({ LocalMovePrompt: () => null }));
+vi.mock('@/hooks/persistence/useOfflineConversion', () => ({
+  useOfflineConversion: (plan: { id: string }) => ({
+    syncToCloud: async () => {
+      store.sync(plan.id);
+    },
+    takeOffline: async () => {},
+  }),
 }));
 
 import { ThisBrowserRow } from '@/components/panels/ThisBrowserRow';
@@ -16,6 +37,8 @@ import { OfflinePlans } from './OfflinePlans';
 
 beforeEach(() => {
   store.plans = [];
+  store.accountUserId = null;
+  store.sync.mockClear();
 });
 
 describe('This Browser', () => {
@@ -31,6 +54,22 @@ describe('This Browser', () => {
     expect(screen.getByRole('link', { name: 'Open the Explorer' }).getAttribute('href')).toMatch(
       /^\/explorer$/,
     );
+    // A guest has no account to sync to.
+    expect(screen.queryByRole('button', { name: 'Sync Plan' })).toBeNull();
+  });
+
+  it('runs a Take Offline or Sync the Explorer hands over, as the person', async () => {
+    store.accountUserId = 'user_ada';
+    render(<OfflinePlans />);
+    await waitFor(() => expect(store.handoff).toHaveBeenCalledWith('user_ada', true));
+  });
+
+  it('offers Sync Plan to a signed-in person', async () => {
+    store.plans = [{ id: 'a', name: 'A', savedAt: 1 }];
+    store.accountUserId = 'user_ada';
+    render(<OfflinePlans />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Sync Plan' }));
+    expect(store.sync).toHaveBeenCalledWith('a');
   });
 
   it('shows the panel row with the count only while there are some', async () => {

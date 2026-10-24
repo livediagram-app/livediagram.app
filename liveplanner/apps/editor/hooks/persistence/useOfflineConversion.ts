@@ -11,23 +11,21 @@ import {
   syncFailureMessage,
   takeCloudOffline,
 } from '@/lib/offline/offline-convert';
+import { dismissLocalMove } from '@/lib/offline/local-move-dismissal';
+import { offlineListProjects } from '@/lib/offline/offline-store';
 
-// Shared Offline Mode conversion handlers (docs/specs/006-project/offline-mode.md) for the Explorer's row and
-// card menus, which otherwise duplicated this logic. `syncToCloud` uploads an
-// offline project to the account; `takeOffline` pulls a cloud project down and
-// deletes the server copy (gated by a confirm). Both reload afterwards so the
-// list reflects the move. A second conversion of the same project while one
-// runs does nothing: the guard is the conversion's own (offline-convert), not
-// this hook's state, which went with the menu the moment it closed.
-// `close` runs first to dismiss the caller's menu.
-export function useOfflineConversion(
-  liveDoc: { id: string; name: string; shareCode?: string | null },
-  ownerId: string | null,
-  close: () => void,
-) {
+// Offline Mode conversions (docs/specs/006-project/offline-mode.md) for the pages that offer them: This Browser's
+// rows (Sync Plan) and the Take Offline or Sync the Explorer on this address hands over (useConversionHandoff).
+// `syncToCloud` uploads an offline plan to the account; `takeOffline` pulls a cloud plan down and deletes the server
+// copy (gated by a confirm). Both reload afterwards so every list reflects the move. A second conversion of the same
+// plan while one runs does nothing: the guard is the conversion's own (offline-convert), not this hook's state,
+// which goes with the menu the moment it closes. `close` runs first to dismiss the caller's menu.
+type ConvertedPlan = { id: string; name: string; shareCode?: string | null };
+
+export function useOfflineConversions(ownerId: string | null) {
   const confirm = useConfirm();
   const toast = useToast();
-  const syncToCloud = async () => {
+  const syncToCloud = async (liveDoc: ConvertedPlan, close: () => void = () => {}) => {
     if (!ownerId || conversionInProgress(liveDoc.id)) return;
     close();
     try {
@@ -42,7 +40,7 @@ export function useOfflineConversion(
     }
   };
 
-  const takeOffline = async () => {
+  const takeOffline = async (liveDoc: ConvertedPlan, close: () => void = () => {}) => {
     if (!ownerId || conversionInProgress(liveDoc.id)) return;
     close();
     // A shared tab stays in its other projects and forks here (docs/specs/006-project/offline-mode.md).
@@ -60,6 +58,11 @@ export function useOfflineConversion(
     if (!ok) return;
     try {
       await takeCloudOffline(liveDoc.id, ownerId, liveDoc.shareCode ?? null);
+      // Kept here on purpose: the move prompt after signing in never offers it back (local-move-dismissal.ts).
+      await offlineListProjects().then(
+        (kept) => dismissLocalMove(ownerId, kept.length),
+        () => {},
+      );
       track('Project', 'Moved', 'TakenOffline');
       window.location.reload();
     } catch (e) {
@@ -71,4 +74,17 @@ export function useOfflineConversion(
   };
 
   return { syncToCloud, takeOffline };
+}
+
+// The same, for one plan's row.
+export function useOfflineConversion(
+  liveDoc: ConvertedPlan,
+  ownerId: string | null,
+  close: () => void,
+) {
+  const { syncToCloud, takeOffline } = useOfflineConversions(ownerId);
+  return {
+    syncToCloud: () => syncToCloud(liveDoc, close),
+    takeOffline: () => takeOffline(liveDoc, close),
+  };
 }

@@ -3,6 +3,7 @@
 // Sync only for a person signed in. Each hands over to that page's address.
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Item } from '@liveworkspace/index-client';
+import { APP_NAMES } from '@liveworkspace/sites';
 import { offlineItemMenu, offlineSyncHref } from './offline-moves';
 
 const item = (extra: Partial<Item> = {}) =>
@@ -28,8 +29,8 @@ describe('Take Offline', () => {
     expect(menu(item({ access: 'view' }))).toEqual([]);
   });
 
-  it("is nowhere the app's page runs no conversions, nor on liveworkspace.app", () => {
-    expect(offlineItemMenu('liveplanner')).toBeUndefined();
+  it("is on every app's address, each page running the conversions, and not on liveworkspace.app", () => {
+    for (const app of APP_NAMES) expect(offlineItemMenu(app)).toBeDefined();
     expect(offlineItemMenu(null)).toBeUndefined();
   });
 });
@@ -39,6 +40,9 @@ describe('Sync', () => {
     const href = offlineSyncHref('livedesign', true)!;
     expect(href({ id: 'x' } as never)).toBe('/offline?convert=sync&item=x');
     expect(offlineSyncHref('livedesign', false)).toBeUndefined();
-    expect(offlineSyncHref('liveplanner', true)).toBeUndefined();
+    expect(offlineSyncHref('liveplanner', true)!({ id: 'p' } as never)).toBe(
+      '/offline?convert=sync&item=p',
+    );
+    expect(offlineSyncHref(null, true)).toBeUndefined();
   });
 });
