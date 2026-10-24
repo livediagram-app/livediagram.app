@@ -25,7 +25,7 @@ const kit: AccountMenuKit = {
   },
   useMenu: () => ({ attach: () => {}, surfaceProps: { role: 'menu' } }),
   useClickOutside: () => {},
-  icons: { chevron: Icon, teams: Icon, tokens: Icon, settings: Icon },
+  icons: { chevron: Icon, tokens: Icon, settings: Icon },
 };
 
 const HINT = 'lp_signed_in';
@@ -84,13 +84,12 @@ describe('AppAccountMenu', () => {
     fireEvent.click(trigger);
     const items = screen.getAllByRole('menuitem');
     expect(items.map((i) => i.textContent)).toEqual([
-      'TeamsWho you work with',
       'API tokensConnect tools and AI',
       'SettingsProfile, emails and privacy',
       'Sign out',
     ]);
     // The account pages are liveworkspace.app's, in full.
-    expect(items[0]!.getAttribute('href')).toMatch(/\/explorer\/invites$/);
+    expect(items[0]!.getAttribute('href')).toMatch(/\/account\/tokens$/);
     expect(items[0]!.getAttribute('href')).toMatch(/^https?:\/\//);
   });
 

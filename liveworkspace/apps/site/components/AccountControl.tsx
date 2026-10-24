@@ -10,7 +10,7 @@ const noChange = () => () => {};
 
 // The header's account control (liveworkspace/docs/site.md "The header"): Sign in, or the signed-in person's menu
 // (AccountMenu from @liveworkspace/account-menu, the one every app's marketing header and the Explorer show too):
-// their avatar and name, opening their Teams, API tokens, Settings and Sign out. Until the page knows who is signed
+// their avatar and name, opening their API tokens, Settings and Sign out. Until the page knows who is signed
 // in (lib/session.ts), it holds its place without showing either, so nothing jumps.
 export function AccountControl() {
   const session = useSession();

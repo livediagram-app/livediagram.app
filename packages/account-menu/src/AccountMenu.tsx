@@ -11,7 +11,7 @@ import {
 import { initials } from './initials';
 
 // The signed-in person's account menu (liveworkspace/docs/site.md "The header"): their avatar (initials; accounts
-// keep no pictures) and name, opening a menu of their Teams, API tokens, Settings and Sign out. One component for
+// keep no pictures) and name, opening a menu of their API tokens, Settings and Sign out. One component for
 // liveworkspace.app's header, the Explorer on an app's address and every app's marketing header.
 //
 // Each caller passes its own UI package's menu hooks and icons (the kit), so the menu keeps the keyboard and focus
@@ -52,16 +52,14 @@ export interface AccountMenuKit<Focus = unknown> {
   ): void;
   icons: {
     chevron: IconComponent;
-    teams: IconComponent;
     tokens: IconComponent;
     settings: IconComponent;
   };
 }
 
 /** The account pages the menu leads to, as paths on liveworkspace.app. Teams are made and run in the Explorer
- *  (liveworkspace/docs/one-explorer.md "Teams are run in the Explorer"), so Teams opens its Invites, beside them. */
+ *  (liveworkspace/docs/one-explorer.md "Teams are run in the Explorer"), so the menu has no Teams entry. */
 export const ACCOUNT_PAGES = [
-  { href: '/explorer/invites', label: 'Teams', hint: 'Who you work with', icon: 'teams' },
   { href: '/account/tokens', label: 'API tokens', hint: 'Connect tools and AI', icon: 'tokens' },
   {
     href: '/account/settings',
@@ -136,7 +134,7 @@ export function AccountMenu({
               <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
                 {name}
               </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">liveworkspace account</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Your account</p>
             </div>
           </div>
           <div className="my-1 h-px bg-slate-200 dark:bg-slate-700" />

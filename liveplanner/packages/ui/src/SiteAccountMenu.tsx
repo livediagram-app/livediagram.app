@@ -6,7 +6,6 @@ import {
   lucideChevronDown,
   lucideKey,
   lucideSettings,
-  lucideUsers,
 } from '@liveplanner/icons/lucide';
 import { lucideGlyph } from './icons/lucide-glyph';
 import { useMenu, useMenuButton, type MenuInitialFocus } from './menu';
@@ -20,7 +19,6 @@ const KIT: AccountMenuKit<MenuInitialFocus> = {
   useClickOutside,
   icons: {
     chevron: lucideGlyph(lucideChevronDown, 16),
-    teams: lucideGlyph(lucideUsers, 16),
     tokens: lucideGlyph(lucideKey, 16),
     settings: lucideGlyph(lucideSettings, 16),
   },
