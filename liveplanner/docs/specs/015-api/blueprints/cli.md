@@ -451,7 +451,7 @@ Positionals in `<>`, optional in `[]`. `<project>` and `--tab` resolve as above.
 | 400, 405 (`use_changesets`), 413, 422                                        | 1    |
 | 401, 403 (`read_only_token` and every other refusal)                         | 4    |
 | 404, 410                                                                     | 3    |
-| 409 (`changeset_conflict`, `elements_held`, `tab_busy`, `tab_id_taken`), 412 | 5    |
+| 409 (`changeset_conflict`, `elements_held`, `tab_busy`), 412                 | 5    |
 | 429                                                                          | 6    |
 | 5xx, a timeout, a network failure                                            | 7    |
 

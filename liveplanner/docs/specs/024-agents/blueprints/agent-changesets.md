@@ -285,7 +285,7 @@ editor`; the toast then reads the outcome.
 
 | Method | Path                                               | Gate                                   | Success                                              | Failures                                                                                                                                                                                                                      |
 | ------ | -------------------------------------------------- | -------------------------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| POST   | `/api/projects/:id/tabs/:tabId/changesets`         | `gateEdit(..., tabId)`                 | 200 `ChangesetResponse`                              | 400 `invalid_body`, `parse_error`, `unknown_operation`, `invalid_base`, `strict_needs_base`; 403; 404; 409 `changeset_conflict`, `elements_held`, `tab_busy`, `tab_id_taken`; 410; 412 `stale_tab`; 413 `too_large`; 422; 429 |
+| POST   | `/api/projects/:id/tabs/:tabId/changesets`         | `gateEdit(..., tabId)`                 | 200 `ChangesetResponse`                              | 400 `invalid_body`, `parse_error`, `unknown_operation`, `invalid_base`, `strict_needs_base`; 403; 404; 409 `changeset_conflict`, `elements_held`, `tab_busy`; 410; 412 `stale_tab`; 413 `too_large`; 422; 429 |
 | GET    | `/api/projects/:id/changesets[?tab=&limit=]`       | `gateRead`; a scoped link its tab only | 200 `{ changesets: ChangesetSummary[] }`             | 400 bad `limit`; 404; 410                                                                                                                                                                                                     |
 | GET    | `/api/projects/:id/changesets/:changesetId`        | `gateRead` on the record's tab         | 200 `{ changeset: ChangesetSummary, results, text }` | 404 (no record for this project, or its tab outside a scoped link); 410                                                                                                                                                       |
 | POST   | `/api/projects/:id/changesets/:changesetId/revert` | `gateEdit` on the record's tab         | 200 `RevertResponse`                                 | 403; 404 (no record for this project, or tab unlinked); 409 `tab_busy`; 410                                                                                                                                                   |
@@ -493,8 +493,8 @@ rows wait with their project and go with its purge (cascade). A tab unlinked fro
 ## Errors and edge cases
 
 - **E1** Submit to a trashed project: 410 through `missingProject`. A stranger: 404.
-- **E2** `replace` on a tab id this project lacks but `tabs` holds (another project's tab): `409 tab_id_taken`;
-  an id over 128 characters: 422 `invalid_value` (CS31).
+- **E2** `replace` on a tab id this project lacks makes that tab here (a tab id is the project's own, so another
+  project holding the same id is no conflict); an id over 128 characters: 422 `invalid_value` (CS31).
 - **E3** Both `operations` and `replace`, or neither: `400 invalid_body`. More than `CHANGESET_MAX_OPERATIONS`
   operations (comment lines excluded; a `replace` counts as one): 413 `too_large` before compile.
 - **E4** Engine refusal: nothing written; codes and the engine's text returned; `[changeset] rejected` logged.
