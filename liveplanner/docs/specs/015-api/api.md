@@ -428,7 +428,7 @@ The plan's object holds both the content and the ordering and collaboration stat
 
 A tab `PUT` is not relayed to the room; it is the editor's autosave and nothing else's. Every other writer of tab content (the MCP server, the CLI, an API-token script) writes a [changeset](../024-agents/agent-changesets.md), which the api records in the plan's store and relays to the room, and which every later editor save re-applies unless that editor has seen it. The comment and Q&A endpoints also tell the room about their writes.
 
-Every tab the api receives (project create, tab save) runs the stored-tab migration (`migrateStoredTab`) before `isValidTab`, as every tab read does, so an element in a former stored shape (for example freehand points before [Stroke points](../006-project/stroke-points.md)) from a browser loaded before a deploy or an API-token script is stored in the current shape rather than refused.
+Every tab the api receives (project create, tab save) is settled by `migrateStoredTab` before `isValidTab`, as every tab read is: malformed styles, ids and bends are dropped and attached elements settled. liveplanner keeps no migrations of livediagram's former shapes (removed 2026-10-24: no liveplanner plan was ever stored in one), so an element in such a shape, for example freehand points before [Stroke points](../006-project/stroke-points.md), is refused.
 
 ## Data model
 

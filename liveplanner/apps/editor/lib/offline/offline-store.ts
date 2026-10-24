@@ -308,8 +308,7 @@ export async function offlineLoadProject(id: string): Promise<Project | null> {
 export async function offlineLoadTab(id: string, tabId: string): Promise<Tab | null> {
   const rec = await offlineBackend().get(id);
   const tab = rec?.tabs.find((t) => t.id === tabId) ?? null;
-  // The offline twin of the api's rowToTab: a project kept in this browser can
-  // still be on a retired scheme (docs/specs/011-theme/retired-schemes.md) or carry retired element fields.
+  // The offline twin of the api's rowToTab: the same settling every stored tab takes on the way in.
   return tab ? migrateStoredTab(tab) : null;
 }
 

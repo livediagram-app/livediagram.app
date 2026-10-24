@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import type { Tab } from '@liveplanner/project';
 import type { OfflineProjectRecord } from './offline-store';
 import {
@@ -102,21 +102,6 @@ describe('offline store ops (in-memory backend)', () => {
     await offlineCreateProject({ id: 'd1', name: 'Doc' }, now);
     expect((await backend.get('d1'))?.opens).toEqual(nextLocalOpens(undefined, now));
     expect((await backend.get('d1'))?.opens).toEqual({ days: ['2026-10-03'], lastOpenedAt: now });
-  });
-
-  it('migrates a tab saved against a retired scheme on load (docs/specs/011-theme/retired-schemes.md)', async () => {
-    vi.spyOn(console, 'info').mockImplementation(() => {});
-    __setOfflineBackend(memBackend());
-    const charcoal = tab('t1', {
-      theme: 'charcoal',
-      backgroundColor: '#2b2b33',
-      patternColor: '#636373',
-    });
-    await offlineCreateProject({ id: 'd1', name: 'Doc', tabs: [charcoal] }, 100);
-    expect(await offlineLoadTab('d1', 't1')).toMatchObject({
-      theme: 'brand',
-      backgroundColor: '#0d121a',
-    });
   });
 
   it('saves + loads + deletes individual tabs', async () => {

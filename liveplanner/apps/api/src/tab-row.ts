@@ -40,9 +40,8 @@ export type TabRow = {
 // a forged `data` blob can't override id / name / projectId / orderIndex
 // / updatedAt with its own values.
 export function rowToTab(row: TabRow): TabDTO {
-  // Every tab read passes through here, so this is where stored tabs are
-  // migrated: retired schemes (docs/specs/011-theme/retired-schemes.md) and retired element fields
-  // (docs/specs/009-elements/web-components-and-no-groups.md groups, anchor docks). The same object for any other tab.
+  // Every tab read passes through here, so this is where stored tabs are settled (migrateStoredTab). The same
+  // object for a tab with nothing to settle.
   const data = migrateStoredTab(JSON.parse(row.data) as Omit<Tab, 'id' | 'name'>);
   return {
     ...data,

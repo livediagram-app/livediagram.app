@@ -279,39 +279,7 @@ describe('drawPlan', () => {
 
 // Retired schemes (docs/specs/011-theme/retired-schemes.md): the thumbnail parses `tabs.data` itself,
 // so it runs the same stored-tab migration as every other read.
-describe('a drawing of a Charcoal tab', () => {
-  it('renders the migrated tab, not the colours Charcoal baked', async () => {
-    vi.spyOn(console, 'info').mockImplementation(() => {});
-    db.getTabBody.mockResolvedValue(
-      stored(
-        JSON.stringify({
-          theme: 'charcoal',
-          backgroundColor: '#2b2b33',
-          patternColor: '#636373',
-          elements: [
-            {
-              id: 'e1',
-              type: 'shape',
-              shape: 'square',
-              x: 0,
-              y: 0,
-              width: 100,
-              height: 80,
-              fillColor: '#2c2c33',
-            },
-          ],
-        }),
-      ),
-    );
-    const out = await draw(liveDoc());
-    expect(out).not.toContain('#2c2c33');
-    expect(out).toContain('#0d121a');
-  });
-});
-
-// Stock colours are first-class (docs/specs/007-editor/editor-modes.md "One look"): a thumbnail
-// draws a colour stored by name in its version for the page, on any tab, whatever mode drew it.
-describe('a drawing of named stock colours', () => {
+describe('a thumbnail of named stock colours', () => {
   it('draws Blue and Ink by name in the light page version', async () => {
     const shape = { type: 'shape', shape: 'square', x: 0, y: 0, width: 100, height: 80 };
     db.getTabBody.mockResolvedValue(

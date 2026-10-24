@@ -9,8 +9,7 @@ import { migrateStoredTab, type Tab } from '@liveplanner/project';
 // `kind` and `layers` are in that last group. An exported Plan tab re-imported without its kind came back
 // as an ordinary diagram (docs/specs/026-plan/plan-tabs.md). Without `layers`, every imported
 // element's `layerId` dangles and the bands it was organised into are lost.
-// A file is a stored tab like any other, so it takes the same migrations on
-// the way in (retired schemes, retired groups and docks).
+// A file is a stored tab like any other, so it is settled the same way on the way in (migrateStoredTab).
 export function mergeImportedTab(receiving: Tab, imported: Tab): Tab {
   return mergeFields(receiving, migrateStoredTab(imported));
 }
