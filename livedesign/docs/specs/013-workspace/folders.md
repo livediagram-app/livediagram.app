@@ -3,8 +3,8 @@
 > **Where folders live.** Folders, and which folder each design is in, are liveworkspace's index's: one tree per
 > person and one per team, shared by every app, managed through the index's folder routes
 > ([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Folders, tags, favourites,
-> defaults") from the shared Explorer. livedesign's api only lists them (`GET /api/folders`) and files a new design
-> where its create asks. The index's contract is the source of truth for the storage, routes and refusals below.
+> defaults") from the shared Explorer. livedesign's api lists them and makes one for API clients (`GET` / `POST /api/folders`)
+> and files a new design where its create asks. The index's contract is the source of truth for the storage, routes and refusals below.
 
 Designs in the Explorer are organised into a tree of folders. Every
 design belongs to exactly one folder (or none); folders themselves
@@ -179,9 +179,10 @@ designs wherever they are filed.
 
 ## API
 
-livedesign's api serves one folder route, for API clients: `GET /api/folders`, the caller's personal tree,
-`{ folders: Folder[] }`, read from the index. Making, renaming, moving and deleting folders, and moving a design
-between them, are the index's routes, which the shared Explorer calls directly. `GET /api/designs` includes
+livedesign's api serves the folder routes API clients need: `GET /api/folders`, the caller's personal tree,
+`{ folders: Folder[] }`, read from the index, and `POST /api/folders` (`{ name, id?, parentId?, teamId? }`), a new
+folder made at the index as the caller (the CLI's `folder create`). Renaming, moving and deleting folders, and
+moving a design between them, are the index's routes, which the shared Explorer calls directly. `GET /api/designs` includes
 `folderId` on each row (null for the root).
 
 ### Placement on create

@@ -5,8 +5,8 @@ app: a canvas can sit beside items from the other apps. Deleting a folder moves 
 shared Explorer's folder views, breadcrumbs and Move dialog (`MoveToFolderDialog`) read and write the index.
 
 New from inside a folder or a team carries the place into the `/new` flow (`?folder=`, `?team=`), and the created
-canvas is registered there. API clients can list the caller's folders at `GET /api/folders` ([API](../015-api/api.md)),
-which reads the index.
+canvas is registered there. API clients can list the caller's folders at `GET /api/folders` and make one with
+`POST /api/folders` ([API](../015-api/api.md)), both at the index as the caller.
 
 The document is [one-explorer.md](../../../../liveworkspace/docs/one-explorer.md); the calls and types are in
 [one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Folders, tags, favourites,

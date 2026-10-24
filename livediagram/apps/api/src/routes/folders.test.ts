@@ -4,8 +4,8 @@ import { handleFolders } from './folders';
 import { makeTestRouteContext } from './test-route-context';
 
 // GET /api/folders for API clients (docs/specs/013-workspace/folders.md; index-adapters.ts): the caller's own
-// folders as the index files them, in the shape the MCP server and the CLI have always read. Making, renaming,
-// moving and deleting a folder are the index's (the editor calls it through /api/index/*).
+// folders as the index files them, in the shape the MCP server and the CLI have always read, and POST for the CLI's
+// `folder create`. Renaming, moving and deleting a folder are the index's (the editor calls it through /api/index/*).
 
 const INDEX_ORIGIN = 'https://index.test';
 
@@ -39,11 +39,16 @@ const folder = (id: string, over: Record<string, unknown> = {}) => ({
   ...over,
 });
 
-const call = (method: string, path: string, opts: { owner?: string | null; env?: Env } = {}) => {
+const call = (
+  method: string,
+  path: string,
+  opts: { owner?: string | null; env?: Env; body?: unknown } = {},
+) => {
   const owner = opts.owner === undefined ? 'user_owner' : opts.owner;
   return handleFolders(
     makeTestRouteContext(method, path, {
       env: opts.env ?? ({ INDEX_ORIGIN, INDEX_KEY: 'k' } as Env),
+      ...(opts.body === undefined ? {} : { body: opts.body }),
       owner,
       verifiedUserId: owner,
       token: { id: 'tok_1' },
@@ -107,10 +112,48 @@ describe('GET /api/folders', () => {
   });
 
   it('answers every other folder route 404 without asking the index', async () => {
-    expect((await call('POST', '/api/folders')).status).toBe(404);
+    expect((await call('PATCH', '/api/folders')).status).toBe(404);
     expect((await call('PUT', '/api/folders/f1')).status).toBe(404);
     expect((await call('DELETE', '/api/folders/f1')).status).toBe(404);
     expect((await call('GET', '/api/folders/f1')).status).toBe(404);
     expect(calls).toEqual([]);
+  });
+});
+
+describe('POST /api/folders', () => {
+  it('makes the folder at the index as the caller, and answers it as the clients read it', async () => {
+    let sent: unknown;
+    index['POST /folders'] = () =>
+      Response.json({ folder: folder('f9', { parentId: 'f0' }) }, { status: 201 });
+    const original = globalThis.fetch;
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (init?.method === 'POST') sent = JSON.parse(String(init.body));
+      return original(input, init);
+    });
+    const res = await call('POST', '/api/folders', {
+      body: { id: 'f9', name: 'Folder f9', parentId: 'f0' },
+    });
+    expect(res.status).toBe(201);
+    expect(await res.json()).toEqual({
+      folder: {
+        id: 'f9',
+        ownerId: 'owner-1',
+        parentId: 'f0',
+        teamId: null,
+        name: 'Folder f9',
+        createdAt: 1,
+        updatedAt: 2,
+      },
+    });
+    expect(sent).toEqual({ id: 'f9', name: 'Folder f9', parentId: 'f0' });
+  });
+
+  it("refuses a malformed body, and passes the index's refusal on", async () => {
+    expect((await call('POST', '/api/folders', { body: { name: 7 } })).status).toBe(400);
+    expect(calls).toEqual([]);
+    index['POST /folders'] = () => Response.json({ error: 'folder_not_found' }, { status: 404 });
+    const res = await call('POST', '/api/folders', { body: { name: 'A', parentId: 'gone' } });
+    expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({ error: 'folder_not_found' });
   });
 });

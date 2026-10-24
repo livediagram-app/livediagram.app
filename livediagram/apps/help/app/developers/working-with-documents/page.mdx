@@ -193,17 +193,19 @@ Images, tab pictures and copies have endpoints of their own: see [Images, Copies
 
 ## Organise into folders
 
-Create a folder, then move a document into it:
+Create a folder (add `"parentId"` to make it inside another, or `"teamId"` for a team's), then create a document straight into it by naming its id as `folderId`. Renaming and moving folders, and moving a document you already have, happens in the Explorer.
 
 ```bash
 curl -X POST https://livediagram.app/api/folders \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "id": "'"$FOLDER"'", "name": "Infrastructure" }'
 
-curl -X PUT https://livediagram.app/api/documents/$DOC/folder \
+curl -X POST https://livediagram.app/api/documents \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{ "folderId": "'"$FOLDER"'" }'
+  -d '{ "id": "'"$(uuidgen)"'", "name": "Network", "folderId": "'"$FOLDER"'" }'
 ```
+
+`GET /api/folders` lists your folders with their ids.
 
 ## Delete and restore
 

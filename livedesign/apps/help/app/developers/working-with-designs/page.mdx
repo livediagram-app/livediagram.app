@@ -187,7 +187,7 @@ Images and pages have endpoints of their own: see [Images, Pages and More](/help
 
 ## Organise into folders
 
-List your folders, then create a design straight into one by naming its id (`$FOLDER` below) as `folderId` (or a team's library with `teamId`). Making, renaming and moving folders happens in the Explorer.
+List your folders, or make one with `POST /api/folders` (`{ "name": "Screens" }`, plus `"parentId"` to make it inside another), then create a design straight into one by naming its id (`$FOLDER` below) as `folderId` (or a team's library with `teamId`). Renaming and moving folders, and moving a design you already have, happens in the Explorer.
 
 ```bash
 curl https://livedesign.app/api/folders \

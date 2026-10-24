@@ -141,9 +141,10 @@ mints it long enough, from the CSPRNG, that guessing one is out of reach ([one-e
 
 **Folders** (for API clients; read from the index). Folders are the index's ([Folders](../013-workspace/folders.md)); the Explorer makes and moves them there.
 
-| Method | Path           | Auth  | Notes                                                   |
-| ------ | -------------- | ----- | ------------------------------------------------------- |
-| GET    | `/api/folders` | owner | The caller's own folders, flat (`parentId` nests them). |
+| Method | Path           | Auth  | Notes                                                                                                                               |
+| ------ | -------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/api/folders` | owner | The caller's own folders, flat (`parentId` nests them).                                                                             |
+| POST   | `/api/folders` | owner | `{ folder }` (201): a new folder (`{ name, id?, parentId?, teamId? }`), made at the index as the caller; the CLI's `folder create`. |
 
 **Realtime + participants**
 

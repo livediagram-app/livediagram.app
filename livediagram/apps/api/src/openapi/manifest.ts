@@ -873,6 +873,29 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     responseSchema: listOf('folders', 'Folder'),
     statuses: [200, 401],
   },
+  {
+    method: 'POST',
+    path: '/folders',
+    segment: 'folders',
+    tag: 'Folders',
+    summary:
+      'Make a folder at the top of My Work, or inside another (`parentId`); inside a team’s folder it is the ' +
+      'team’s (`teamId`). Made at the liveworkspace index as the caller.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', description: 'Optional: a client-made UUID.' },
+        name: { type: 'string' },
+        parentId: { type: ['string', 'null'] },
+        teamId: { type: ['string', 'null'] },
+      },
+      required: ['name'],
+    },
+    responseSchema: wrap('folder', 'Folder'),
+    statuses: [201, 400, 401, 403, 404, 503],
+  },
 
   // ---- Images ----
   {

@@ -6,6 +6,7 @@ import {
   IndexError,
   LIST_LIMIT_MAX,
   type App,
+  type CreateFolderInput,
   type Folder,
   type IndexClient,
   type Item,
@@ -48,3 +49,40 @@ export const listAllFolders = (client: IndexClient, team: string): Promise<Folde
       .listFolders({ team, limit: LIST_LIMIT_MAX, ...(cursor ? { cursor } : {}) })
       .then((p) => ({ list: p.folders, nextCursor: p.nextCursor })),
   );
+
+// POST /api/folders for an API client (the CLI's `folder create`): the body `{name, id?, parentId?, teamId?}` passed
+// to the index as the caller, which checks the name, the parent and the team. Answers the new folder, or a refusal.
+export async function createFolderFor(
+  client: IndexClient,
+  request: Request,
+): Promise<{ folder: Folder } | { status: number; error: string }> {
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return { status: 400, error: 'invalid_json' };
+  }
+  const input = createFolderInputOf(body);
+  if (!input) return { status: 400, error: 'invalid_body' };
+  try {
+    return await client.createFolder(input);
+  } catch (err) {
+    return indexRefusal(err);
+  }
+}
+
+const optionalString = (v: unknown): v is string | null | undefined =>
+  v === undefined || v === null || typeof v === 'string';
+
+export function createFolderInputOf(body: unknown): CreateFolderInput | null {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return null;
+  const { id, name, parentId, teamId } = body as Record<string, unknown>;
+  if (typeof name !== 'string' || id === null || !optionalString(id)) return null;
+  if (!optionalString(parentId) || !optionalString(teamId)) return null;
+  return {
+    name,
+    ...(id !== undefined ? { id } : {}),
+    ...(parentId !== undefined ? { parentId } : {}),
+    ...(teamId !== undefined ? { teamId } : {}),
+  };
+}

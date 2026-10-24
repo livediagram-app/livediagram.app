@@ -221,6 +221,35 @@ describe('the Trash, folders, teams and links', () => {
       });
     const folders = await handleFolders(ctx('GET', '/api/folders'));
     expect((await folders.json<{ folders: { name: string }[] }>()).folders[0]!.name).toBe('Q3');
+    // The CLI's `folder create`: made at the index as the caller.
+    routes['POST /folders'] = () =>
+      Response.json(
+        {
+          folder: {
+            id: 'f2',
+            ownerId: 'user_a',
+            parentId: 'f1',
+            teamId: null,
+            name: 'Q4',
+            createdAt: 3,
+            updatedAt: 3,
+          },
+        },
+        { status: 201 },
+      );
+    const made = await handleFolders(
+      ctx('POST', '/api/folders', { body: { id: 'f2', name: 'Q4', parentId: 'f1' } }),
+    );
+    expect(made.status).toBe(201);
+    expect((await made.json<{ folder: { id: string; parentId: string } }>()).folder).toMatchObject({
+      id: 'f2',
+      parentId: 'f1',
+    });
+    expect(JSON.parse(calls.find((c) => c.method === 'POST')!.body)).toEqual({
+      id: 'f2',
+      name: 'Q4',
+      parentId: 'f1',
+    });
     const teams = await handleTeams(ctx('GET', '/api/teams'));
     expect((await teams.json<{ teams: unknown[] }>()).teams).toMatchObject([
       { id: 'team1', name: 'Design', myRole: 'member' },
