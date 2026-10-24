@@ -18,7 +18,7 @@ import {
   type Page,
 } from './page';
 import { elementAnchorPoint, elementIdsOnPage, withContentFittedToPage } from './page-content';
-import { clampPageSide, FIT_PAGE_MAX_SIDE } from './page-fit';
+import { clampPageSide, FIT_PAGE_MAX_SIDE } from '@liveworkspace/model-core/page-fit';
 import { isBoxed, type Element, type Tab } from './index';
 
 // Two things this close (canvas px, edge to edge) belong together.

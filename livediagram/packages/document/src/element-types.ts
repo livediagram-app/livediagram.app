@@ -6,12 +6,16 @@
 import type { RoomDoor } from './office';
 import type { Finish } from './finish';
 import type { EventStormingNoteKind } from './event-storming';
-import type { TextRun } from './rich-text';
+import type { TextRun } from '@liveworkspace/model-core/rich-text';
 import type { CommentThread } from './comments';
 import type { ElementAction } from './element-action';
-import type { BorderStroke, BorderStyle, BorderRadius } from './border-style';
+import type {
+  BorderStroke,
+  BorderStyle,
+  BorderRadius,
+} from '@liveworkspace/model-core/border-style';
 import type { ElementShadow } from './shadow';
-import type { ShapeMarker } from './shape-marker';
+import type { ShapeMarker } from '@liveworkspace/model-core/shape-marker';
 import type { AccentEdge } from './accent-edge';
 import type { CardMedia } from './card';
 import type { ChipLook } from './chip';
@@ -20,7 +24,7 @@ import type { BoundaryStyle } from './boundary';
 import type { ConceptAnim, ConceptRow, PyramidVariant } from './concept';
 import type { PenColourName } from './pen-colours';
 import type { QuickSwatchSlot } from './quick-swatches';
-import type { CodeThemeId } from './code-themes';
+import type { CodeThemeId } from '@liveworkspace/model-core/code-themes';
 import type { MindFlow, MindSpacing } from './mind-flow';
 import type { FlowchartDirection } from './flowchart';
 import type { ChartPaletteId } from './chart-palettes';
@@ -35,8 +39,8 @@ import type {
   SankeyValueLabel,
 } from './sankey-model';
 import type { PickerSource, SelectionMode, SessionButtonConfig } from './selection-mode';
-import type { IconSize } from './icon-size';
-import type { IconWeight } from './icon-weight';
+import type { IconSize } from '@liveworkspace/model-core/icon-size';
+import type { IconWeight } from '@liveworkspace/model-core/icon-weight';
 import type { EmbedProvider } from './youtube';
 import type { ParticipantResponse } from './responses';
 import type { QaNote } from './qa-board';

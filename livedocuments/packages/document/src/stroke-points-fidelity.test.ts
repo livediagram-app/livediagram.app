@@ -6,7 +6,10 @@ import { migrateLegacyStrokePoints } from './legacy-stroke-points';
 import { freehandPenStroke, penStrokePath } from './pen-stroke';
 import { r2 } from './svg-render-primitives';
 import { svgFreehandShape } from './svg-render-shapes';
-import { STROKE_POINT_MAX_ERROR, STROKE_PRESSURE_MAX_ERROR } from './stroke-points';
+import {
+  STROKE_POINT_MAX_ERROR,
+  STROKE_PRESSURE_MAX_ERROR,
+} from '@liveworkspace/model-core/stroke-points';
 import type { Element, FreehandElement } from './index';
 
 // Export fidelity (docs/specs/006-document/stroke-points.md "Precision guarantee";

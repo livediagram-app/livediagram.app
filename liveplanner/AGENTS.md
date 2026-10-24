@@ -205,7 +205,7 @@ apps/
   cli/          # the liveplanner command line for agents and scripts (Node, one esbuild bundle)
 packages/
   ui/             # this product's own UI (Brand, SiteHeader, Select, chrome icons), re-exporting @liveworkspace/ui
-  project/       # project data model (Tab, Element types + element helpers)
+  project/       # project data model (Tab, Element types + element helpers) over @liveworkspace/model-core
   templates/      # template catalogue + pure element builders (editor template starts + MCP)
   template-previews/ # per-template preview SVGs (editor template starts + marketing template gallery)
   help-registry/  # this product's help-centre articles + categories, bound to @liveworkspace/help-registry's lookups (help app + editor search)
@@ -221,7 +221,7 @@ packages/
   licences/     # this product's licence tables (apps, overrides, embedded works) for @liveworkspace/licences' generator
   tailwind-config/ # this product's brand ramps (violet) over @liveworkspace/tailwind-config's theme
   # Shared with every product, in the monorepo's packages/ as @liveworkspace/*: api-client, api-kit, mcp-kit, cli-kit,
-  # telemetry-client, render-png, source-ast, style-guards, ui (the design system), page-background, help-registry, help-site (the help centre's pages and components), tailwind-config, icons, licences, marketing-site (the marketing pages every product shares), and the oxlint, prettier, vitest, next configs
+  # telemetry-client, render-png, source-ast, style-guards, ui (the design system), model-core, page-background, help-registry, help-site (the help centre's pages and components), tailwind-config, icons, licences, marketing-site (the marketing pages every product shares), and the oxlint, prettier, vitest, next configs
 docs/           # developer docs, indexed in docs/README.md
   specs/        # product specs — read these first
   instructions/ # repeatable processes (e.g. registering a help article)

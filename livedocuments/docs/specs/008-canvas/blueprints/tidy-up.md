@@ -20,7 +20,7 @@ Scope, by file:
 | `packages/document/src/auto-layout-tidy-rank.ts`       | Drawn-order loop breaking, side steps, zero-length side edges in the layering                |
 | `packages/document/src/auto-layout-tidy-flow.ts`       | One component's flow positions: blocks, label-sized gaps, lane centres                       |
 | `packages/document/src/auto-layout-route.ts`           | Square arrow routes around the boxes                                                         |
-| `packages/document/src/auto-layout-route-grid.ts`      | Bucket grid of the boxes a route must clear                                                  |
+| `../packages/model-core/src/auto-layout-route-grid.ts` | Bucket grid of the boxes a route must clear                                                  |
 | `apps/editor/hooks/canvas/useCleanupPreview.ts`        | `previewCleanup(kind)` / `endCleanupPreview()`, `assessCleanupKind`: snapshot, revert, judge |
 | `apps/editor/app/document/[id]/useEditorState.ts`      | Mounts `useCleanupPreview` and returns its functions                                         |
 
@@ -101,17 +101,17 @@ element moves trimmed away by `applyParticipantOp`, which takes text fields only
 
 ## Testing
 
-| Spec rule                                                                                                   | Test                                                                                    |
-| ----------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| Snapshot, no stacking, tab-scoped revert                                                                    | `useCleanupPreview.test.ts`                                                             |
-| Hover budget at the worst case                                                                              | `tab-cleanup.perf.test.ts`                                                              |
-| Palette refusal with a notice                                                                               | `useTabCanvas.test.ts`                                                                  |
-| Every verdict and its copy                                                                                  | `tidy-verdict.test.ts`                                                                  |
-| Checkout survives Auto-align, Smart, Down                                                                   | `tidy-verdict.test.ts`                                                                  |
-| A second press finds a template tidy                                                                        | `tidy-verdict.test.ts`                                                                  |
-| Auto-align keeps lines, spacing, no overlap                                                                 | `auto-align-lines.test.ts`, `auto-align.test.ts`                                        |
-| Tidy profile: spine, side steps, square routes clear of boxes, title, settled, units, riders, dashed arrows | `packages/document/src/auto-layout-tidy.test.ts`                                        |
-| The route grid misses no box a leg could hit; crossings match a pair-by-pair count                          | `packages/document/src/auto-layout-route-grid.test.ts`, `auto-layout-crossings.test.ts` |
+| Spec rule                                                                                                   | Test                                                                                         |
+| ----------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Snapshot, no stacking, tab-scoped revert                                                                    | `useCleanupPreview.test.ts`                                                                  |
+| Hover budget at the worst case                                                                              | `tab-cleanup.perf.test.ts`                                                                   |
+| Palette refusal with a notice                                                                               | `useTabCanvas.test.ts`                                                                       |
+| Every verdict and its copy                                                                                  | `tidy-verdict.test.ts`                                                                       |
+| Checkout survives Auto-align, Smart, Down                                                                   | `tidy-verdict.test.ts`                                                                       |
+| A second press finds a template tidy                                                                        | `tidy-verdict.test.ts`                                                                       |
+| Auto-align keeps lines, spacing, no overlap                                                                 | `auto-align-lines.test.ts`, `auto-align.test.ts`                                             |
+| Tidy profile: spine, side steps, square routes clear of boxes, title, settled, units, riders, dashed arrows | `packages/document/src/auto-layout-tidy.test.ts`                                             |
+| The route grid misses no box a leg could hit; crossings match a pair-by-pair count                          | `../packages/model-core/src/auto-layout-route-grid.test.ts`, `auto-layout-crossings.test.ts` |
 
 ## Constants and configuration
 

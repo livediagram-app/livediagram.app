@@ -2,8 +2,13 @@
 // clipped <image>, and an icon element's glyph nested over its box.
 
 import { techGlyphStrokeUnits } from '@liveworkspace/icons';
-import { DEFAULT_ICON_SIZE, ICON_SIZE_PX, iconBandBounds, techIconMarkBounds } from './icon-size';
-import { iconWeightPx } from './icon-weight';
+import {
+  DEFAULT_ICON_SIZE,
+  ICON_SIZE_PX,
+  iconBandBounds,
+  techIconMarkBounds,
+} from '@liveworkspace/model-core/icon-size';
+import { iconWeightPx } from '@liveworkspace/model-core/icon-weight';
 import type { BoxedElement } from './index';
 import type { ExportIconArt } from './svg-render-describe';
 import { r2, xmlEscape } from './svg-render-primitives';

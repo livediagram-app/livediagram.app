@@ -11,9 +11,13 @@
 // paints its own face (a chart, a panel, a web component, an icon) is its box.
 // Pure; no DOM.
 
-import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE, cornerRadiusPx } from './border-style';
+import {
+  BORDER_STROKE_PX,
+  DEFAULT_BORDER_STROKE,
+  cornerRadiusPx,
+} from '@liveworkspace/model-core/border-style';
 import { defaultFillColor } from './colors';
-import { rotatePoint, type Point } from './geometry-primitives';
+import { rotatePoint, type Point } from '@liveworkspace/model-core/geometry-primitives';
 import type { Element, ShapeElement } from './index';
 import {
   BROWSER_CHROME,
@@ -24,7 +28,11 @@ import {
 } from './shape-geometry';
 import type { ShapeKind } from './shape-kind';
 import { boxFit } from './svg-shape-fit';
-import { PATH_ARC_SEGMENTS, PATH_CURVE_SEGMENTS, svgPathSubpaths } from './svg-path-outline';
+import {
+  PATH_ARC_SEGMENTS,
+  PATH_CURVE_SEGMENTS,
+  svgPathSubpaths,
+} from '@liveworkspace/model-core/svg-path-outline';
 import { insidePolygon, segmentDistance } from './segment-geometry';
 
 type HitLine = { readonly points: readonly Point[]; readonly closed: boolean };

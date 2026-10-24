@@ -5,7 +5,7 @@
 // (svg-shape-fit.ts) with the same fit the canvas uses (stretched for most,
 // `meet` for the proportional actor), so they match it at any aspect ratio
 // without a scaled stroke. A silhouette changes in the table, never here.
-import { BORDER_DASH_ARRAY, BORDER_STROKE_PX } from './border-style';
+import { BORDER_DASH_ARRAY, BORDER_STROKE_PX } from '@liveworkspace/model-core/border-style';
 import { actorFigureRect } from './actor-figure';
 import { finishBorderStroke, type Finish } from './finish';
 import type { BoxedElement, FreehandElement, ShapeKind } from './index';
@@ -15,10 +15,10 @@ import { catmullRomToBezierPath } from './polyline';
 import { freehandPenStroke, isPenStroke, penStrokePath } from './pen-stroke';
 import { freehandCanvasPoints, freehandStrokePoints } from './freehand-points';
 import { isPolygonOutline, polygonStrokePx } from './drawn-outline-finish';
-import { codeTheme } from './code-themes';
+import { codeTheme } from '@liveworkspace/model-core/code-themes';
 import { chartRamp } from './chart-palettes';
 import { isLaneBand, laneEdgeOfElement, laneSizeOfElement } from './lane-gutter';
-import { legendFontPx } from './label-font';
+import { legendFontPx } from '@liveworkspace/model-core/label-font';
 import {
   BROWSER_CHROME,
   browserChromeLayout,

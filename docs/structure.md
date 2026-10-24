@@ -18,6 +18,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ index-app                the server side of an app on the index: grants, internal doors, purge, outbox
 │  ├─ community                the Community contract: apps, vocabulary, limits, wire shapes
 │  ├─ comparisons              every app's comparison pages, built once; each app's marketing hosts its own
+│  ├─ model-core               what every product's model shares and needs nothing of its element union; each re-exports it
 │  ├─ licences                 the /licences generator, its contract and the one pool of licence texts; each product binds its tables
 │  ├─ marketing-site           the marketing pages every product shares (hero, Build with AI, FAQ, licences)
 │  ├─ mcp-kit                  an MCP Worker's app: the Streamable-HTTP transport and CORS, the OAuth 2.1 server with the device grant, request and tool scopes, preview fonts; each product hands in its server and OAuth config
@@ -194,6 +195,28 @@ Each step is its own PR, and both products build and pass their tests after ever
      re-exports it (`export * from '@liveworkspace/ui'`), so callers did not change, and keeps only
      what is its own or still waits on a shared dependency. Apps scan it with
      `@source '../../../../packages/ui/src'`.
+   - `document`, first slice: `@liveworkspace/model-core` (`packages/model-core`) holds what the four
+     model packages (`@livediagram/document`, `@liveplanner/project`, `@livedocuments/document`,
+     `@livedesign/design`) share and that needs nothing of a product's element union: the plain vocabulary
+     that was in each `index.ts` (ids, text size, padding, alignment, icon position, arrow flows, background
+     patterns), geometry primitives, the stroke points codec with its cache and debug decoder, rich-text runs,
+     title captions, fonts, border, label, icon and table-cell sizing, canvas colours, code themes, names,
+     plurals, hashing, seeded random, the SVG markup helpers, the arrow label wrap and avoidance, the tidy-up
+     route grid, and embeds' URL rules: 65 files, about 4,950 lines, 21 of them tests. A few are used by only
+     two or three products (the adder key, page fit, the person card, shape recognition). Every difference
+     between copies was a comment, or one product having dropped an export it no longer used
+     (`MIND_NODE_RADIUS_PX`, `isDefaultTabName`, `BOLD_EM`); the shared copy keeps it. A product that
+     re-exported the whole module with `export *` now exports the kept name too (livedocuments and
+     livedesign: `MIND_NODE_RADIUS_PX` and `isDefaultTabName`), unused there and tree-shaken. The one real setting is the `embed_host` Figma is told, so
+     `createEmbedTargetFor` takes it and each product binds `embedTargetFor` in its own `youtube.ts`.
+     Each module is a subpath (`@liveworkspace/model-core/<module>`), so a product's
+     `export * from './x'` became `export * from '@liveworkspace/model-core/x'` and no caller changed.
+   - Still in each product's model package: everything typed on its element union (`Element`, `ShapeElement`,
+     `ArrowElement`, `BoxedElement`, `Tab`), which differs per product. That is most of the identical code
+     (about 130 more files that read the same in all four, from arrow paths to the SVG renderer), because they
+     import those types. They move only once the union is shared or the files become generic over it, which is
+     a change to the element model rather than a move. The parsers and migrations of stored data stay per
+     product too, so no stored document changes shape.
    - Still in each product's `ui`: the brand files (Brand, the mark's geometry, prism and motion, the
      social card), which move to `@liveworkspace/brand`; anything drawing a chrome icon (`icons/`,
      `Glyph`, `Select`, `DialogCloseButton`, `SiteSwitcher`, `SiteHeader`, `SiteFooter`, `PageNotFound`,

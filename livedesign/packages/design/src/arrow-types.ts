@@ -12,7 +12,7 @@ import type { ArrowFlow, ElementId, ElementLink, TextSize } from './index';
 import type { ArrowheadShape, ArrowheadSize, ArrowStyle } from './arrow-style';
 import type { AnimationSpeed } from './animation';
 import type { PenColourName } from './pen-colours';
-import type { BorderStyle } from './border-style';
+import type { BorderStyle } from '@liveworkspace/model-core/border-style';
 import type { QuickSwatchSlot } from './quick-swatches';
 
 // The sixteen anchors of a boxed element, named after the compass rose

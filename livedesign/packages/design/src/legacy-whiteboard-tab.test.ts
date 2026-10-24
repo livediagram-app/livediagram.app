@@ -9,7 +9,7 @@ import type {
   TextElement,
 } from './index';
 import { migrateWhiteboardKind } from './legacy-whiteboard-tab';
-import { encodeStrokePoints } from './stroke-points';
+import { encodeStrokePoints } from '@liveworkspace/model-core/stroke-points';
 
 // A stored livediagram whiteboard tab (docs/specs/003-system-architecture/domain-language.md "Kind") reads as a general
 // tab stamped to open in Draw (which reads as Pages), looking exactly as it did.

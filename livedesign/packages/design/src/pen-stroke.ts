@@ -12,10 +12,10 @@ import {
   type StrokeOptions,
   type StrokePoint,
 } from 'perfect-freehand';
-import type { Point } from './geometry-primitives';
+import type { Point } from '@liveworkspace/model-core/geometry-primitives';
 import type { FreehandElement } from './element-types';
-import { decodeStrokePoints } from './stroke-points-cache';
-import type { NormalisedPoint, StrokePoints } from './stroke-points';
+import { decodeStrokePoints } from '@liveworkspace/model-core/stroke-points-cache';
+import type { NormalisedPoint, StrokePoints } from '@liveworkspace/model-core/stroke-points';
 
 export type PenPointerKind = 'pen' | 'mouse' | 'touch';
 

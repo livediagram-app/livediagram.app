@@ -16,9 +16,9 @@
 // of rules serves both. The result is ordinary arrow data: angled arrows threaded through their
 // corners (`curvePoints`), which the author can drag like any other.
 
-import type { Rect } from './geometry-primitives';
+import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
 import type { Anchor, ArrowElement, ElementId } from './index';
-import { rectGrid, type RectGrid } from './auto-layout-route-grid';
+import { rectGrid, type RectGrid } from '@liveworkspace/model-core/auto-layout-route-grid';
 
 type Pt = { x: number; y: number };
 

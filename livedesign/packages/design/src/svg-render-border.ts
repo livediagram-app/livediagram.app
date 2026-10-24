@@ -11,7 +11,7 @@ import {
   DEFAULT_BORDER_STYLE,
   DEFAULT_BOX_RADIUS_PX,
   cornerRadiusPx,
-} from './border-style';
+} from '@liveworkspace/model-core/border-style';
 import { finishBorderStroke, finishCornerFallbackPx, finishOwnCorner, type Finish } from './finish';
 import type { BoxedElement } from './index';
 import { r2, xmlEscape } from './svg-render-primitives';

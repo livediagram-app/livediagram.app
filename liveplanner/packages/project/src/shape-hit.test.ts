@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { rotatePoint, type Point } from './geometry-primitives';
+import { rotatePoint, type Point } from '@liveworkspace/model-core/geometry-primitives';
 import type { Element, ShapeElement } from './index';
 import {
   hasVisibleFill,

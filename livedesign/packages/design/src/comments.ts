@@ -7,7 +7,7 @@
 
 import type { Element, Tab } from './index';
 import type { ElementAction } from './element-action';
-import type { CommentMention } from './comment-mentions';
+import type { CommentMention } from '@liveworkspace/model-core/comment-mentions';
 import { isComment, keepLocalTicks } from './element-deltas';
 
 // A single comment inside a thread. The author is the participant who

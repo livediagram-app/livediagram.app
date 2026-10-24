@@ -25,7 +25,7 @@ import { isQuickSwatchSlot } from './quick-swatches';
 import { isImageCredit } from './image-credit';
 import { isBendDelta, isCurvePoints, MAX_CURVE_POINTS } from './malformed-bends';
 import { ELEMENT_KEY_FIELDS, ELEMENT_KEY_MAX, isElementKey } from './malformed-ids';
-import { parseStrokePoints } from './stroke-points';
+import { parseStrokePoints } from '@liveworkspace/model-core/stroke-points';
 import { shapeValidationIssue } from './validate-shape';
 import {
   FONT_WEIGHTS,
@@ -46,10 +46,10 @@ import {
   isNum,
   issue,
   oneOfRule,
-} from './validate-primitives';
-import { isRecord } from './is-record';
+} from '@liveworkspace/model-core/validate-primitives';
+import { isRecord } from '@liveworkspace/model-core/is-record';
 
-export type { ElementValidationIssue } from './validate-primitives';
+export type { ElementValidationIssue } from '@liveworkspace/model-core/validate-primitives';
 
 // Bounds. Generous vs any real document, tight vs an abuse payload.
 export const MAX_ELEMENTS_PER_TAB = 10_000;

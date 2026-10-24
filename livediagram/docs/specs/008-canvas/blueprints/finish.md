@@ -564,5 +564,5 @@ per command letter.
 
 ## Assets and external resources
 
-Caveat and Permanent Marker are already in the font catalogue (`packages/document/src/fonts.ts`, Google Fonts, OFL
+Caveat and Permanent Marker are already in the font catalogue (`../packages/model-core/src/fonts.ts`, Google Fonts, OFL
 and Apache 2.0). No new asset.

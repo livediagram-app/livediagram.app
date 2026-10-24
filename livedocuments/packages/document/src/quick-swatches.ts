@@ -12,7 +12,7 @@ import {
   unpaintedShapeInk,
   type RGB,
 } from './colors';
-import { clamp } from './geometry-primitives';
+import { clamp } from '@liveworkspace/model-core/geometry-primitives';
 import type { ThemeDefinition } from './themes';
 
 export const QUICK_SWATCH_SLOTS = [1, 2, 3, 4, 5, 6] as const;

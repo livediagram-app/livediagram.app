@@ -5,8 +5,8 @@
 
 import { createArrow, createShape, createSticky, createText } from './factories';
 import { glyphWidth } from './glyph-width';
-import { arrowLabelFontSize } from './arrow-label';
-import { wrapBalanced } from './arrow-label-wrap';
+import { arrowLabelFontSize } from '@liveworkspace/model-core/arrow-label';
+import { wrapBalanced } from '@liveworkspace/model-core/arrow-label-wrap';
 import { LABEL_LINE_HEIGHT, labelMeasure } from './svg-render-primitives';
 import { GRAPH_MUTED, withHeaderAndKey } from './graph-header';
 import type { SequenceDiagram, SequenceItem, SequenceMessageKind } from './mermaid-sequence';

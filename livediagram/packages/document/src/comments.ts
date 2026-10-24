@@ -7,7 +7,7 @@
 
 import type { Element, ShapeElement, Tab } from './index';
 import type { ElementAction } from './element-action';
-import type { CommentMention } from './comment-mentions';
+import type { CommentMention } from '@liveworkspace/model-core/comment-mentions';
 import { isComment, keepLocalTicks } from './element-deltas';
 import { reconcileRestoredElement } from './undo-live-reconcile';
 
@@ -84,7 +84,10 @@ export function withoutCommentAuthorId(comment: Comment): Comment {
 function withoutCommentAuthorIds<E extends Element>(el: E): E {
   const thread = (el as { commentThread?: CommentThread }).commentThread;
   if (!thread?.comments.some((c) => c.authorId !== undefined || c.tokenId !== undefined)) return el;
-  return { ...el, commentThread: { ...thread, comments: thread.comments.map(withoutCommentAuthorId) } };
+  return {
+    ...el,
+    commentThread: { ...thread, comments: thread.comments.map(withoutCommentAuthorId) },
+  };
 }
 
 // A room op with every comment author id taken out, whichever kind carries

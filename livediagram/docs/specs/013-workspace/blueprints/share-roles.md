@@ -257,7 +257,7 @@ export function applyParticipantOp(
 export function participantTabChange(before: Tab, after: Tab, adderKey: string | null): Tab | null;
 ```
 
-`packages/document/src/adder.ts`: `ADDER_KEY_LENGTH = 32`.
+`../packages/model-core/src/adder.ts`: `ADDER_KEY_LENGTH = 32`.
 
 `apps/api/src/participant-write.ts`:
 

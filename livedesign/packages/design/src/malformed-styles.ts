@@ -9,7 +9,7 @@
 // design-structure.md "Styles have their types").
 
 import type { Element } from './index';
-import { isRecord } from './is-record';
+import { isRecord } from '@liveworkspace/model-core/is-record';
 
 const isText = (v: unknown) => typeof v === 'string';
 const isNumber = (v: unknown) => typeof v === 'number' && Number.isFinite(v);

@@ -1225,7 +1225,7 @@ type TextRun = {
 **Right-click while editing:** with the label editor open, right-clicking the element surfaces the browser's **native text context menu** (cut / copy / paste / select all) so it acts on the text being edited. The handler stops propagation so the canvas's own right-click doesn't hijack it into the tab / element menu, but deliberately does not `preventDefault`, so the native menu still opens.
 
 **Extra-small runs.** A run's `size` has one step below the element presets: `xs`, drawn at 10 px on every
-label scale (`RUN_XS_PX` in `packages/document/src/label-font.ts`), where `sm` is 14 px on a
+label scale (`RUN_XS_PX` in `../packages/model-core/src/label-font.ts`), where `sm` is 14 px on a
 single-line label, 12 px on a multi-line one and 11 px in a note. It exists for imported text that
 reads smaller than any preset (a draw.io subtitle at 8 px, [draw.io import](../020-import-export/drawio-import.md));
 no control sets it today, and the element-level text size (Quick Style Panel, the Text category) stays
@@ -1234,7 +1234,7 @@ contrast as the rest of the label (4.5:1 against its fill, the normal-text bar, 
 size below large text). The canvas, the SVG export and the PNG and PDF exports drawn from it render it
 at the same 10 px.
 
-An unset run attribute **inherits** the element field (`run.bold ?? el.textBold`, `run.color ?? el.textColor`, `run.size ?? el.textSize`), so the existing whole-element controls keep working as the base layer untouched, and an explicit per-range override wins over a later whole-element toggle (same precedence as table `cellStyles`). `element.label` is always kept equal to the runs' concatenated plain text, so search, auto-rename, markdown export, and every legacy reader work unchanged. When `richText` is absent (or a single override-free run) the label renders via the legacy whole-element path; applying any per-run override opts the label out of `scale` SVG auto-fit into fixed-px rendering (mixing per-run sizes with whole-element auto-fit is contradictory). The pure runs algebra (`runsPlainText` / `normalizeRuns` / `applyFormatToRange` / `toggleFormatInRange`) lives in `packages/document/src/rich-text.ts`; the DOM ↔ offset mapping in `apps/editor/components/rich-text/rich-text-dom.ts`. The field is additive + optional, so it syncs to peers + persists with no backend change, and visual exports (PNG / SVG) render the runs span-by-span on one baseline.
+An unset run attribute **inherits** the element field (`run.bold ?? el.textBold`, `run.color ?? el.textColor`, `run.size ?? el.textSize`), so the existing whole-element controls keep working as the base layer untouched, and an explicit per-range override wins over a later whole-element toggle (same precedence as table `cellStyles`). `element.label` is always kept equal to the runs' concatenated plain text, so search, auto-rename, markdown export, and every legacy reader work unchanged. When `richText` is absent (or a single override-free run) the label renders via the legacy whole-element path; applying any per-run override opts the label out of `scale` SVG auto-fit into fixed-px rendering (mixing per-run sizes with whole-element auto-fit is contradictory). The pure runs algebra (`runsPlainText` / `normalizeRuns` / `applyFormatToRange` / `toggleFormatInRange`) lives in `../packages/model-core/src/rich-text.ts`; the DOM ↔ offset mapping in `apps/editor/components/rich-text/rich-text-dom.ts`. The field is additive + optional, so it syncs to peers + persists with no backend change, and visual exports (PNG / SVG) render the runs span-by-span on one baseline.
 
 ## Quick text drop
 
@@ -1494,7 +1494,7 @@ Two always-on palette tools in the **Draw** category ([Two pens instead of a pen
 
 ### Shape recognition (the Shape Pen)
 
-The **Shape Pen** commit handler runs the simplified polyline through `recogniseShape` (`packages/document/src/recognise-shape.ts`) and, if the score clears the confidence threshold, mints a real shape primitive instead of a `FreehandElement`. Recognised kinds: rectangle (square), circle, diamond, triangle, 5-pointed star, and line (→ arrow). Trapezoid / speech bubble / frame / the device frames aren't recognised — they're ambiguous or not freehand-drawable, so they stay palette-only.
+The **Shape Pen** commit handler runs the simplified polyline through `recogniseShape` (`../packages/model-core/src/recognise-shape.ts`) and, if the score clears the confidence threshold, mints a real shape primitive instead of a `FreehandElement`. Recognised kinds: rectangle (square), circle, diamond, triangle, 5-pointed star, and line (→ arrow). Trapezoid / speech bubble / frame / the device frames aren't recognised — they're ambiguous or not freehand-drawable, so they stay palette-only.
 
 This used to be a **toggle** in the pencil's mode banner, backed by a persisted `recogniseShapes` preference. Both are gone ([Two pens instead of a pen and a mode](two-pens.md)): recognition was an invisible mode you could have set on another device, so whether the next stroke would convert had no answer on screen. It is now which pen you picked, and the gesture reads the armed intent's `variant` rather than any stored setting.
 

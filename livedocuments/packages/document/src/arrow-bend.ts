@@ -8,7 +8,7 @@
 import { arrowResolvedEnds } from './arrow-label-layout';
 import { arrowPathPolyline, curveAnchorPoints, curveControlPoint } from './arrow-path';
 import { arrowStyleOf } from './arrow-style';
-import { distToSegment } from './geometry-primitives';
+import { distToSegment } from '@liveworkspace/model-core/geometry-primitives';
 import type { ArrowElement, Element } from './index';
 
 type Pt = { x: number; y: number };

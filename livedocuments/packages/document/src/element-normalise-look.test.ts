@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { normaliseElements } from './element-normalise';
-import { LOOK_MD_MAX_NODES } from './look-size';
+import { LOOK_MD_MAX_NODES } from '@liveworkspace/model-core/look-size';
 
 // docs/specs/015-api/mcp-server.md "Every element takes the presentation defaults": raw boxes size their text by
 // how many there are.

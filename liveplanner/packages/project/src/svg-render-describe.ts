@@ -19,10 +19,10 @@ import {
   defaultTextColor,
   type CanvasSurface,
 } from './colors';
-import { fontIdsUsed, resolveFontStack } from './fonts';
+import { fontIdsUsed, resolveFontStack } from '@liveworkspace/model-core/fonts';
 import { elementFontId, isFinish, resolveFinish, type Finish } from './finish';
-import { hasRichFormatting } from './rich-text';
-import { iconCaptionBand } from './icon-size';
+import { hasRichFormatting } from '@liveworkspace/model-core/rich-text';
+import { iconCaptionBand } from '@liveworkspace/model-core/icon-size';
 import { fontSizeFor, labelMaxWidth } from './svg-render-primitives';
 import { BEHAVIOUR_FACE_SHAPES } from './svg-render-faces';
 import { isCollabPanelShape } from './collab-shapes';
@@ -35,9 +35,9 @@ import { borderOf } from './svg-render-border';
 import { chipColours, chipLookOf, isChipShape } from './chip';
 import { isUprightTitle, uprightTitleStrip } from './lane-gutter';
 import type { BoxedElement, TextRun } from './index';
-import { runFontPx } from './label-font';
+import { runFontPx } from '@liveworkspace/model-core/label-font';
 import { resolveStockColours } from './stock-colours';
-import { DEFAULT_BACKGROUND_COLOR } from './canvas-colors';
+import { DEFAULT_BACKGROUND_COLOR } from '@liveworkspace/model-core/canvas-colors';
 import { labelBodyInset } from './label-body';
 
 export const EXPORT_PADDING = 32;

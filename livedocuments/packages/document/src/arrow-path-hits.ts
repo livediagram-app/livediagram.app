@@ -11,7 +11,7 @@ import {
 } from './index';
 import { arrowPathPolyline } from './arrow-path';
 import { endpointPosition, type ElementIndex } from './geometry';
-import { rotatePoint, type Point } from './geometry-primitives';
+import { rotatePoint, type Point } from '@liveworkspace/model-core/geometry-primitives';
 import { anchorOutline, connectorBox, pointInsideLocalOutline } from './shape-outline';
 
 // A path must go more than this deep inside an outline to count as passing

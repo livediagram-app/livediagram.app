@@ -34,7 +34,7 @@ the arrow is special afterwards.
 - Never for imports, templates, AI authoring, or auto layout: those paths
   own their geometry ([MCP server](../015-api/mcp-server.md), [Mermaid import & export](../020-import-export/mermaid.md)).
 
-## How (packages/project/src/arrow-avoidance.ts)
+## How (../packages/model-core/src/arrow-avoidance.ts)
 
 `collisionAvoidingCurveOffset(from, to, obstacles)` samples the REAL curve
 the renderer would draw (the quadratic with control `chord midpoint +

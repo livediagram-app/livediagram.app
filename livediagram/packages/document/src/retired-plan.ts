@@ -5,7 +5,7 @@
 // stored or incoming tab by the stored-tab migration (./stored-tab), as ./retired-pages is, so no data migration is
 // needed: a tab is read the new way wherever it is read, and saved the new way the next time it is saved.
 // Pure; the same object back when there is nothing to drop, so the common read allocates nothing.
-import { isRecord } from './is-record';
+import { isRecord } from '@liveworkspace/model-core/is-record';
 
 // The tab kinds Plan had.
 const RETIRED_KINDS: ReadonlySet<unknown> = new Set(['board', 'sheet', 'dashboard', 'form']);

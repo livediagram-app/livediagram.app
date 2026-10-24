@@ -5,7 +5,10 @@
 // Only the tab's own fields change, so it costs the same whatever the tab holds: one prefix test, and for a tab on a
 // custom theme one shallow copy. Element colours stay as they are: with the theme's definition gone nothing can tell a
 // colour it painted from one somebody picked, so each reads as picked, which is how it already looked.
-import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR } from './canvas-colors';
+import {
+  DEFAULT_BACKGROUND_COLOR,
+  DEFAULT_PATTERN_COLOR,
+} from '@liveworkspace/model-core/canvas-colors';
 import { DEFAULT_SCHEME_ID } from './themes';
 import type { Tab } from './index';
 

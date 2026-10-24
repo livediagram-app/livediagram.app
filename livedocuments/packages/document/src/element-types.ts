@@ -4,12 +4,16 @@
 // public `@livedocuments/document` surface is unchanged. ElementLink + the enums
 // stay in index.ts and are imported here (type-only, so no runtime cycle).
 import type { Finish } from './finish';
-import type { TextRun } from './rich-text';
+import type { TextRun } from '@liveworkspace/model-core/rich-text';
 import type { CommentThread } from './comments';
 import type { ElementAction } from './element-action';
-import type { BorderStroke, BorderStyle, BorderRadius } from './border-style';
+import type {
+  BorderStroke,
+  BorderStyle,
+  BorderRadius,
+} from '@liveworkspace/model-core/border-style';
 import type { ElementShadow } from './shadow';
-import type { ShapeMarker } from './shape-marker';
+import type { ShapeMarker } from '@liveworkspace/model-core/shape-marker';
 import type { AccentEdge } from './accent-edge';
 import type { CardMedia } from './card';
 import type { ChipLook } from './chip';
@@ -17,7 +21,7 @@ import type { AttachPoint } from './attachment';
 import type { ConceptAnim, ConceptRow, PyramidVariant } from './concept';
 import type { PenColourName } from './pen-colours';
 import type { QuickSwatchSlot } from './quick-swatches';
-import type { CodeThemeId } from './code-themes';
+import type { CodeThemeId } from '@liveworkspace/model-core/code-themes';
 import type { ChartPaletteId } from './chart-palettes';
 import type { ChartVariant } from './chart-types';
 import type {
@@ -29,8 +33,8 @@ import type {
   SankeyNodeStyle,
   SankeyValueLabel,
 } from './sankey-model';
-import type { IconSize } from './icon-size';
-import type { IconWeight } from './icon-weight';
+import type { IconSize } from '@liveworkspace/model-core/icon-size';
+import type { IconWeight } from '@liveworkspace/model-core/icon-weight';
 import type { EmbedProvider } from './youtube';
 import type { HeroCaption, StatItem } from './web-components';
 import type { ImageCredit } from './image-credit';

@@ -10,7 +10,7 @@ import {
   BORDER_STROKE_PX,
   type BorderStroke,
   type BorderStyle,
-} from './border-style';
+} from '@liveworkspace/model-core/border-style';
 import {
   MIN_TEXT_CONTRAST,
   canvasSurface,

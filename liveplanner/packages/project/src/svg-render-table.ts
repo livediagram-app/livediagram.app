@@ -4,13 +4,13 @@
 // instead of the box-with-nothing the generic renderer used to draw. Shared
 // by the in-app SVG/PNG/PDF export, the api worker's live image / Explorer
 // thumbnail, and the MCP inline render via svgBoxed.
-import { BORDER_DASH_ARRAY, BORDER_STROKE_PX } from './border-style';
+import { BORDER_DASH_ARRAY, BORDER_STROKE_PX } from '@liveworkspace/model-core/border-style';
 import { defaultStrokeColor, defaultTextColor, type CanvasSurface } from './colors';
 import { PADDING_PX, type TableElement } from './index';
-import { tableCellFontPx } from './table-cell-font';
+import { tableCellFontPx } from '@liveworkspace/model-core/table-cell-font';
 import { tableHeaderColours } from './table-header-colours';
 import { LABEL_LINE_HEIGHT, labelMeasure, r2, wrapLabel, xmlEscape } from './svg-render-primitives';
-import { bidiLine } from './svg-bidi';
+import { bidiLine } from '@liveworkspace/model-core/svg-bidi';
 
 // Track sizes for one axis: pinned entries keep their px, the rest share
 // whatever remains evenly (the CSS `minmax(0, 1fr)` behaviour TableView's

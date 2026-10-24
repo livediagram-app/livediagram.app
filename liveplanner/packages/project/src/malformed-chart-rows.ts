@@ -6,8 +6,8 @@
 // dropped, wherever dropping it would shift the line chart's categories against its values.
 
 import type { Element } from './index';
-import { asText } from './as-text';
-import { isRecord } from './is-record';
+import { asText } from '@liveworkspace/model-core/as-text';
+import { isRecord } from '@liveworkspace/model-core/is-record';
 
 /** Whether a pie or bar slice reads as one: an object with a text label. */
 export function isChartSlice(v: unknown): boolean {

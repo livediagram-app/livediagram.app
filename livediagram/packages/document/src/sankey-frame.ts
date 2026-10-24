@@ -5,7 +5,7 @@
 import { chartRamp } from './chart-palettes';
 import { isLightColor } from './colors';
 import type { ShapeElement, TextSize, TextSizePreset } from './index';
-import { readTextSize } from './label-font';
+import { readTextSize } from '@liveworkspace/model-core/label-font';
 import {
   sankeyLayout,
   type SankeyLayout,
@@ -86,10 +86,7 @@ type SankeyFrame = {
   summary: string;
 };
 
-export function sankeyFrame(
-  element: ShapeElement,
-  palette?: readonly string[],
-): SankeyFrame {
+export function sankeyFrame(element: ShapeElement, palette?: readonly string[]): SankeyFrame {
   const w = Math.max(1, element.width);
   const h = Math.max(1, element.height);
   const fontPx = sankeyLabelPx(element.textSize);

@@ -7,41 +7,42 @@ ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
 Scope, by file:
 
-| File                                                       | Role                                                                       |
-| ---------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `packages/document/src/youtube.ts`                         | `youtubeVideoId`, the URL builders, `embedTargetFor`, provider tables      |
-| `packages/document/src/element-types.ts`                   | `VideoElement`                                                             |
-| `packages/document/src/factories.ts`                       | `createVideo`: 480×270, `aspectLocked`, optional `embedProvider`           |
-| `packages/document/src/index.ts`                           | `isBoxed` includes `video`                                                 |
-| `packages/document/src/colors.ts`                          | Default fill / stroke / text, `supportsColours`, paper-independent ink     |
-| `packages/document/src/themes.ts`                          | `THEME_COLOUR_FIELDS.video` is empty                                       |
-| `packages/document/src/shadow.ts`                          | `supportsShadow` includes `video`                                          |
-| `packages/document/src/validate.ts`                        | `ELEMENT_TYPES` has `video`; `embedProvider` must be in `EMBED_PROVIDERS`  |
-| `packages/document/src/element-kind-label.ts`              | `elementKindLabel`: `video` reads "Embed"                                  |
-| `packages/document/src/svg-render-describe.ts`             | Headless export: the generic rect branch [QC2]                             |
-| `apps/editor/components/canvas/VideoView.tsx`              | The face: empty state, poster, load card, player, controls, no-load notice |
-| `../packages/ui/src/Tooltip.tsx`                           | `Tooltip`: names each player control button                                |
-| `../packages/ui/src/HoverCard.tsx`                         | `HoverCard`: explains the website's new-tab link                           |
-| `apps/editor/components/canvas/use-frame-blocked.ts`       | `useFrameBlocked`: the no-load watch                                       |
-| `apps/editor/components/canvas/element-variant.ts`         | The dark rounded frame (`case 'video'`)                                    |
-| `apps/editor/components/canvas/ElementFaceRouter.tsx`      | Routes `video` to `VideoView`                                              |
-| `apps/editor/components/canvas/useBoxedElementGestures.ts` | Double-click opens the link picker                                         |
-| `apps/editor/components/canvas/BoxedElementView.tsx`       | The link badge (`linked`) applies to `video`                               |
-| `apps/editor/components/dialogs/EditorElementDialogs.tsx`  | Builds the `urlOnly` config for a `video` target                           |
-| `apps/editor/components/dialogs/LinkPickerDialog.tsx`      | `UrlOnlyConfig`: URL mode only, validate as you type and at commit         |
-| `apps/editor/lib/url-safety.ts`                            | `normaliseUrl`, `isSafeFollowUrl`                                          |
-| `apps/editor/components/palette/palette-tile-defs.tsx`     | Six `media:embed-*` tiles, `tileGroup: 'embed'`                            |
-| `apps/editor/components/palette/palette-tile-art.tsx`      | `YouTubeTileArt`, `VimeoTileArt`, `LoomTileArt`, `FigmaTileArt`            |
-| `apps/editor/components/palette/palette-create-tabs.tsx`   | `PaletteMediaTab`: the Embed group under Image and Avatar                  |
-| `apps/editor/components/palette/PaletteTileGroup.tsx`      | The collapsible group row                                                  |
-| `apps/editor/components/palette/palette-group-state.tsx`   | `PaletteGroupProvider`, `usePaletteGroup` [QC11]                           |
-| `apps/editor/app/document/[id]/useElementCreation.ts`      | `addVideo(provider?)` arms the draw                                        |
-| `apps/editor/lib/draw-mode.ts`                             | `PendingDraw` `video` intent, banner copy, cursor glyph                    |
-| `apps/editor/lib/draw-commit.ts`                           | `drawnDragBox` 16:9 fit, `buildDrawnBoxed`                                 |
-| `apps/editor/hooks/canvas/useShapeDrawing.ts`              | `Element·Added·Video` on a drawn embed                                     |
-| `apps/editor/lib/element-telemetry.ts`                     | `elementTelemetryType`: `video` → `Video` for copy paths                   |
-| `apps/editor/lib/element-names.ts`                         | `kindLabel`: `video` reads "Embed"                                         |
-| `apps/editor/lib/excalidraw-export.ts`                     | Rectangle labelled with the URL (D70) [QC2]                                |
+| File                                                       | Role                                                                              |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `../packages/model-core/src/youtube.ts`                    | `youtubeVideoId`, the URL builders, `createEmbedTargetFor`, provider tables       |
+| `packages/document/src/youtube.ts`                         | `embedTargetFor`: the shared rules bound to the host Figma is told, `livediagram` |
+| `packages/document/src/element-types.ts`                   | `VideoElement`                                                                    |
+| `packages/document/src/factories.ts`                       | `createVideo`: 480×270, `aspectLocked`, optional `embedProvider`                  |
+| `packages/document/src/index.ts`                           | `isBoxed` includes `video`                                                        |
+| `packages/document/src/colors.ts`                          | Default fill / stroke / text, `supportsColours`, paper-independent ink            |
+| `packages/document/src/themes.ts`                          | `THEME_COLOUR_FIELDS.video` is empty                                              |
+| `packages/document/src/shadow.ts`                          | `supportsShadow` includes `video`                                                 |
+| `packages/document/src/validate.ts`                        | `ELEMENT_TYPES` has `video`; `embedProvider` must be in `EMBED_PROVIDERS`         |
+| `packages/document/src/element-kind-label.ts`              | `elementKindLabel`: `video` reads "Embed"                                         |
+| `packages/document/src/svg-render-describe.ts`             | Headless export: the generic rect branch [QC2]                                    |
+| `apps/editor/components/canvas/VideoView.tsx`              | The face: empty state, poster, load card, player, controls, no-load notice        |
+| `../packages/ui/src/Tooltip.tsx`                           | `Tooltip`: names each player control button                                       |
+| `../packages/ui/src/HoverCard.tsx`                         | `HoverCard`: explains the website's new-tab link                                  |
+| `apps/editor/components/canvas/use-frame-blocked.ts`       | `useFrameBlocked`: the no-load watch                                              |
+| `apps/editor/components/canvas/element-variant.ts`         | The dark rounded frame (`case 'video'`)                                           |
+| `apps/editor/components/canvas/ElementFaceRouter.tsx`      | Routes `video` to `VideoView`                                                     |
+| `apps/editor/components/canvas/useBoxedElementGestures.ts` | Double-click opens the link picker                                                |
+| `apps/editor/components/canvas/BoxedElementView.tsx`       | The link badge (`linked`) applies to `video`                                      |
+| `apps/editor/components/dialogs/EditorElementDialogs.tsx`  | Builds the `urlOnly` config for a `video` target                                  |
+| `apps/editor/components/dialogs/LinkPickerDialog.tsx`      | `UrlOnlyConfig`: URL mode only, validate as you type and at commit                |
+| `apps/editor/lib/url-safety.ts`                            | `normaliseUrl`, `isSafeFollowUrl`                                                 |
+| `apps/editor/components/palette/palette-tile-defs.tsx`     | Six `media:embed-*` tiles, `tileGroup: 'embed'`                                   |
+| `apps/editor/components/palette/palette-tile-art.tsx`      | `YouTubeTileArt`, `VimeoTileArt`, `LoomTileArt`, `FigmaTileArt`                   |
+| `apps/editor/components/palette/palette-create-tabs.tsx`   | `PaletteMediaTab`: the Embed group under Image and Avatar                         |
+| `apps/editor/components/palette/PaletteTileGroup.tsx`      | The collapsible group row                                                         |
+| `apps/editor/components/palette/palette-group-state.tsx`   | `PaletteGroupProvider`, `usePaletteGroup` [QC11]                                  |
+| `apps/editor/app/document/[id]/useElementCreation.ts`      | `addVideo(provider?)` arms the draw                                               |
+| `apps/editor/lib/draw-mode.ts`                             | `PendingDraw` `video` intent, banner copy, cursor glyph                           |
+| `apps/editor/lib/draw-commit.ts`                           | `drawnDragBox` 16:9 fit, `buildDrawnBoxed`                                        |
+| `apps/editor/hooks/canvas/useShapeDrawing.ts`              | `Element·Added·Video` on a drawn embed                                            |
+| `apps/editor/lib/element-telemetry.ts`                     | `elementTelemetryType`: `video` → `Video` for copy paths                          |
+| `apps/editor/lib/element-names.ts`                         | `kindLabel`: `video` reads "Embed"                                                |
+| `apps/editor/lib/excalidraw-export.ts`                     | Rectangle labelled with the URL (D70) [QC2]                                       |
 
 ## Domain and naming
 
@@ -383,7 +384,7 @@ through `elementTelemetryType`), `Element·Used·Video` on play or load.
 
 | Rule                                                                                              | Test                                                                | File                                                        |
 | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ----------------------------------------------------------- |
-| Every YouTube URL form and host                                                                   | watch, other params, youtu.be, embed/shorts/live/v, alternate hosts | `packages/document/src/youtube.test.ts`                     |
+| Every YouTube URL form and host                                                                   | watch, other params, youtu.be, embed/shorts/live/v, alternate hosts | `../packages/model-core/src/youtube.test.ts`                |
 | Host case-insensitive, id case-sensitive                                                          | `is case-insensitive about the host but not the id`                 | `youtube.test.ts`                                           |
 | `?v=` only on a YouTube host; lookalikes refused                                                  | two `returns null` cases                                            | `youtube.test.ts`                                           |
 | Id is exactly 11 URL-safe chars                                                                   | wrong length or alphabet                                            | `youtube.test.ts`                                           |

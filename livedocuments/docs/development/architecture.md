@@ -13,7 +13,7 @@ apps/
   cli/          the livedocuments command line for agents and scripts (Node, one esbuild bundle)
 packages/
   ui/             shared UI primitives + chrome icons (Brand, CloseIcon, etc.)
-  document/       document data model (Tab, Element types + helpers)
+  document/       document data model (Tab, Element types + helpers) over @liveworkspace/model-core
   templates/      template catalogue + pure element builders (editor template starts + MCP)
   template-previews/ per-template preview SVGs (editor template starts + marketing template gallery)
   help-registry/  this product's help-centre articles + categories, bound to @liveworkspace/help-registry's lookups (help app + editor search)
@@ -26,7 +26,7 @@ packages/
   licences/       this product's licence tables (apps, overrides, embedded works) for @liveworkspace/licences' generator
   tailwind-config/ this product's brand ramps (amber) over @liveworkspace/tailwind-config's theme
   (shared with every product, in the monorepo's packages/ as @liveworkspace/*: api-client, api-kit, mcp-kit, cli-kit,
-  telemetry-client, render-png, source-ast, style-guards, page-background, help-registry, tailwind-config, icons, licences, and the oxlint, prettier, vitest, next configs)
+  telemetry-client, render-png, source-ast, style-guards, model-core, page-background, help-registry, tailwind-config, icons, licences, and the oxlint, prettier, vitest, next configs)
 docs/specs/          product source of truth, read these before adding features
 scripts/        repo-wide dev tooling (next-dev.mjs: shared Next.js dev launcher)
 marketing/      off-site copy + media for listings and promotion (see docs/specs/019-marketing/marketing-assets.md)
@@ -61,7 +61,7 @@ The editor route (`apps/editor/app/document/[id]/`) is split three ways so no fi
 
 Each app pulls these in via `workspace:*`:
 
-- **`@livedocuments/document`** owns the document data model: `Tab`, every `Element` type (Shape / Text / Sticky / Image / Freehand / Table / Link card / Arrow), pages and articles, defaults, geometry helpers, snap math, layer ordering, the web components' layouts and the load-time migration of documents saved with groups. It also holds the authoring input every non-editor writer shares: raw elements made safe (`normaliseElement`), finished tabs built (`buildTab`), every stored field per element type (`ELEMENT_FIELD_NAMES`) and validation that names the field and rule it fails (`elementValidationIssue`). The single source of what a document IS.
+- **`@livedocuments/document`** owns the document data model: `Tab`, every `Element` type (Shape / Text / Sticky / Image / Freehand / Table / Link card / Arrow), pages and articles, defaults, geometry helpers, snap math, layer ordering, the web components' layouts and the load-time migration of documents saved with groups. It also holds the authoring input every non-editor writer shares: raw elements made safe (`normaliseElement`), finished tabs built (`buildTab`), every stored field per element type (`ELEMENT_FIELD_NAMES`) and validation that names the field and rule it fails (`elementValidationIssue`). The single source of what a document IS. What every product's model shares and needs nothing of its element union is **`@liveworkspace/model-core`** (the monorepo's `packages/model-core`): the plain vocabulary (ids, text size, padding, alignment, arrow flows, background patterns), geometry primitives, the stroke points codec, rich-text runs, fonts, border, label and icon sizing, names, small helpers (plurals, string hashing, seeded random) and embeds' URL rules. `@livedocuments/document` re-exports it, so callers import from `@livedocuments/document` as before; it binds the one embed setting that is its own, the host Figma is told.
 - **`@livedocuments/api-schema`** owns the wire format between the api worker and the live editor: every request / response shape, plus the response envelopes (`DocumentResponse`, `TabResponse`, ...) the editor and the MCP server both read, the small shared pure helpers it backs (`sha256Hex` for image-upload dedupe, worker-safe `bytesToBase64` / `bytesToBase64Url`, `embedTabImages` which inlines a tab's uploads for the api snapshot and the MCP preview, `titleCase` for display-casing preset values across the editor + telemetry dashboard, and the page-view path normaliser + the editor app's route-segment list, shared by every frontend, the router and the dashboard, [Page view telemetry](../specs/017-telemetry/page-view-telemetry.md)). Adding a field on the server without updating the client used to be routine drift; the typechecker catches it now.
 - **`@liveworkspace/explorer`** (`packages/explorer/src/lens/` at the repo root) owns the Explorer's one filter state: the lens string's grammar (`parseLens` / `serialiseLens`), matching, autocomplete and the chips' view models.
 - **`@livedocuments/diagram-lint`** checks how a tab is laid out ([Diagram lint](../specs/024-agents/diagram-lint.md)): `lintTab` answers the measures (crossings, arrows behind boxes, overlaps, extent) and ten kinds of finding, each with the refs the views print and a fix as edit operations. Pure and deterministic, consumed by the api worker (`?view=lint`, every changeset's footer) and the MCP (the summary line).

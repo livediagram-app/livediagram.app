@@ -4,7 +4,7 @@
 // is repaired as it is read. Most tab fields already have a defensive reader (`pagesOf`,
 // `tagColoursOf`, `readDashboard`, ...); these are the ones read raw.
 import type { Layer } from './layers';
-import { isRecord } from './is-record';
+import { isRecord } from '@liveworkspace/model-core/is-record';
 
 type SettledFields = {
   layers?: unknown;

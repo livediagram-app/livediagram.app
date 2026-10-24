@@ -4,7 +4,7 @@
 // one theme reads in the other. Then the ink (the cell's own text colour, else the Sheet's) is lifted or deepened until
 // it meets WCAG AA on what is behind it. Pure; the editor's cells and the cell editor read it.
 import { contrastRatio, hexToRgb, MIN_TEXT_CONTRAST } from './colors';
-import { mixHex } from './color-wash';
+import { mixHex } from '@liveworkspace/model-core/color-wash';
 
 // A fill this close to white (its contrast with white below this) is pale: a tint drawn for a light canvas.
 const PALE_CONTRAST = 1.35;
