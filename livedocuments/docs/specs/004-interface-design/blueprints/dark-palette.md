@@ -11,7 +11,7 @@ Scope, by file:
 | File                                                    | Role                                                                                     |
 | ------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | `packages/tailwind-config/theme.css`                    | `.dark` surface + Steel tokens                                                           |
-| `packages/ui/src/brand-classes.ts`                      | `SOLID_BRAND_DARK`, `SOLID_BRAND_DARK_CONTROL`                                           |
+| `../packages/ui/src/brand-classes.ts`                   | `SOLID_BRAND_DARK`, `SOLID_BRAND_DARK_CONTROL`                                           |
 | `packages/ui/src/Brand.tsx`                             | Wordmark accent `dark:text-amber-400`                                                    |
 | `packages/document/src/canvas-colors.ts`                | Dark canvas + pattern constants                                                          |
 | `packages/document/src/colors.ts`                       | `DARK_INK`, `defaultArrowLabelColor`                                                     |
@@ -76,7 +76,7 @@ Invariants:
 ## Interfaces and contracts
 
 ```ts
-// packages/ui/src/brand-classes.ts
+// ../packages/ui/src/brand-classes.ts
 export const SOLID_BRAND_DARK = 'dark:bg-brand-600';
 export const SOLID_BRAND_DARK_CONTROL = 'dark:bg-brand-600 dark:hover:bg-brand-700';
 

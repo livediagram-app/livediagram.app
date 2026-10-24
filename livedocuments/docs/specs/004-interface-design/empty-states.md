@@ -29,7 +29,7 @@ small grey text. Every empty state reads alike, wherever it is: an icon in the b
   heading, a 12px line, centred, with 16px of padding.
 - **Small** (`size="small"`): inside a popover, a menu, a dropdown list or a palette tab. A 28px brand badge, a 12px
   semibold heading, an 11px line, centred, with 12px of padding.
-- **Page** (`EmptyState` in `@livedocuments/ui`): a page-sized list (the Explorer's views, the Trash), with the floating badge and its rings. Same copy rules.
+- **Page** (`EmptyState` in `@liveworkspace/ui`): a page-sized list (the Explorer's views, the Trash), with the floating badge and its rings. Same copy rules.
 - **In place of one item.** Where a list's items are cards or rows on a known surface (Home's Jump back in), the empty state takes the size and place of one item, so an empty list looks like a list with one thing
   in it rather than a large centred message.
 - The badge holds the surface's own glyph; a search's empty state defaults to the search glyph.

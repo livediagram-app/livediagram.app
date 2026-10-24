@@ -297,7 +297,7 @@ Community app (`apps/community`):
   (debounced `SEARCH_DEBOUNCE_MS`, Enter commits; the input and the controls in one flex row, so typed text never
   runs under them) holding Clear Search, the My Shares toggle (`aria-pressed`, where sign-in exists), `CategoryMenu`,
   `TagFilter` and `SortMenu` in its right edge, each a `SearchControlMenu` (one trigger, keyboard menu and check-marked rows; a pick closes it or, for Tags, leaves it open) over the shared `SearchControlButton` (icon only below `lg`),
-  the menus sharing `MENU_PANEL` and `menuRadioRowClass` (`packages/ui/src/menu/menu-classes.ts`, also used by the editor mode menus); then `PostGrid` of `PostCard`,
+  the menus sharing `MENU_PANEL` and `menuRadioRowClass` (`../packages/ui/src/menu/menu-classes.ts`, also used by the editor mode menus); then `PostGrid` of `PostCard`,
   `LoadMore`, `GalleryStates`. Clear Search keeps the sort and `is:mine`. Category, tags and sort are words in `q`: `communitySearchCategory`, `communitySearchTags`,
   `communitySearchSort` and their setters (api-schema) read and write them; the worker's list reads them through
   `parseCommunityListQuery` (a word wins over the old parameter) and `listCommunityPosts` (each `#tag` an `EXISTS`);
@@ -510,7 +510,7 @@ app's api errors read `[community] api <status> <code>`. Telemetry per the spec.
 | Sign-in session and switched-off gate      | `apps/community/components/auth-and-gate.test.tsx`                                                                                             |
 | Home page showcase                         | `apps/marketing/components/CommunityShowcase.test.tsx`                                                                                         |
 | Shared card, counts, author                | `packages/ui/src/community/community-pieces.test.tsx`                                                                                          |
-| Focus restore after an unmounting modal    | `packages/ui/src/useFocusTrap.test.tsx`                                                                                                        |
+| Focus restore after an unmounting modal    | `../packages/ui/src/useFocusTrap.test.tsx`                                                                                                     |
 
 ## 14. Defaults ledger
 

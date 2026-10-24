@@ -9,12 +9,12 @@ geometry check are [Iconography](../iconography.md)'s; this blueprint builds eve
 | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | `packages/tailwind-config/theme.css`                     | `@utility text-optical-centre`, `text-optical-line`, `text-optical-caps`, `optical-edges`                                       |
 | `packages/tailwind-config/src/optical-utilities.test.ts` | The utilities' contracts                                                                                                        |
-| `packages/ui/src/optical/GlyphDisc.tsx`                  | Glyph disc                                                                                                                      |
-| `packages/ui/src/optical/Chip.tsx`                       | Chip                                                                                                                            |
-| `packages/ui/src/optical/IconSlot.tsx`                   | Icon slot                                                                                                                       |
-| `packages/ui/src/optical/index.ts`                       | Re-exports; `export * from './optical'` in `packages/ui/src/index.ts`                                                           |
-| `packages/ui/src/optical/optical.test.tsx`               | Primitive contracts                                                                                                             |
-| `packages/ui/src/Button.tsx`                             | `ButtonContent`; `optical-edges` in the button base                                                                             |
+| `../packages/ui/src/optical/GlyphDisc.tsx`               | Glyph disc                                                                                                                      |
+| `../packages/ui/src/optical/Chip.tsx`                    | Chip                                                                                                                            |
+| `../packages/ui/src/optical/IconSlot.tsx`                | Icon slot                                                                                                                       |
+| `../packages/ui/src/optical/index.ts`                    | Re-exports; `export * from './optical'` in `packages/ui/src/index.ts`                                                           |
+| `../packages/ui/src/optical/optical.test.tsx`            | Primitive contracts                                                                                                             |
+| `../packages/ui/src/Button.tsx`                          | `ButtonContent`; `optical-edges` in the button base                                                                             |
 | `apps/live/components/chrome/header-action.tsx`          | `HEADER_ACTION_BTN`, `HEADER_ICON_SLOT_PX`, `HeaderGlyph`                                                                       |
 | `packages/icons/src/svg-cap-band.ts`                     | `CAP_HEIGHT_EM`, `capBandBaselineY` (`icons` is the lowest package both SVG renderers use)                                      |
 | `../packages/style-guards/src/optical-guard.ts`          | Static guard `checkOpticalAlignment(root)`; export `./optical-guard`                                                            |

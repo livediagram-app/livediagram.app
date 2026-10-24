@@ -215,7 +215,7 @@ None. Menus already count the verbs chosen in them; how focus moved is not an ac
 
 ## Where it lives
 
-- `@livediagram/ui` owns the keyboard model and the hooks every app's menus use (`useMenu`,
+- `@liveworkspace/ui` (re-exported by `@livediagram/ui`) owns the keyboard model and the hooks every app's menus use (`useMenu`,
   `useMenuButton`, `useControlMenu`), so the editor, help, telemetry, marketing and Community menus
   behave as one.
 - The editor's menu primitives (`PortalMenu`, `ContextMenu`, `MenuFlyoutSection` and the row

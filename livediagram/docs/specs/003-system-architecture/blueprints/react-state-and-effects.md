@@ -60,7 +60,7 @@ What stays, with where it runs, is the allow-list in `apps/editor/render-browser
 | `apps/editor/components/canvas/whiteboard/ShapesFlyout.tsx` | focus for the search field   | `<Fragment ref>`; `FragmentInstance.focus()` lands on the input  |
 | `apps/editor/components/panels/LayerRowMenu.tsx` (two rows) | the confirm popover's anchor | the click's `currentTarget` (`MenuActionRow` hands its click on) |
 
-Stay, carrying more than a ref: `packages/ui/src/Tooltip.tsx` (React pointer and focus handlers, capture-phase
+Stay, carrying more than a ref: `../packages/ui/src/Tooltip.tsx` (React pointer and focus handlers, capture-phase
 ones among them) and `apps/help/components/ArticleShell.tsx` (reads `textContent`).
 
 ### The React Compiler's reach

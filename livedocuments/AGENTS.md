@@ -202,7 +202,8 @@ apps/
   router/       # Cloudflare Worker stitching the apps under one hostname
   cli/          # the livedocuments command line for agents and scripts (Node, one esbuild bundle)
 packages/
-  ui/             # shared UI primitives (Brand, SiteHeader, Button, TextInput, Select, Tooltip, hooks) + chrome icons (src/icons)
+  ui/             # this product's own UI (Brand, SiteHeader, SiteFooter, Select, chrome icons in src/icons), re-exporting
+                  # @liveworkspace/ui (Button, TextInput, Tooltip, Dialog, menus, hooks)
   document/       # document data model (Tab, Element types + element helpers)
   icons/          # icon catalogues (line-art + stickers) + SVG markup builders + xmlEscape
   templates/      # template catalogue + pure element builders (editor template starts + MCP)
@@ -218,7 +219,8 @@ packages/
   licences/     # build-time generator of the /licences page from what each app bundles
   tailwind-config/# shared Tailwind theme (brand palette)
   # Shared with every product, in the monorepo's packages/ as @liveworkspace/*: api-client,
-  # telemetry-client, render-png, source-ast, style-guards, and the oxlint, prettier, vitest, next configs
+  # telemetry-client, render-png, source-ast, style-guards, ui (the design system), and the oxlint,
+  # prettier, vitest, next configs
 docs/           # developer docs, indexed in docs/README.md
   specs/        # product specs — read these first
   instructions/ # repeatable processes (e.g. registering a help article)

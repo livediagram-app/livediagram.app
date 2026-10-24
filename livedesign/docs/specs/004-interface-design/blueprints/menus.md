@@ -7,15 +7,15 @@ Scope, by file:
 
 | File                                                                   | Role                                                                                                         |
 | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `packages/ui/src/menu/menu-constants.ts`                               | Every selector, attribute and timing, named                                                                  |
-| `packages/ui/src/menu/menu-keys.ts`                                    | Pure keyboard model: key to intent, index stepping, typeahead, initial index                                 |
-| `packages/ui/src/menu/input-modality.ts`                               | The last interaction (key or pointer) and the last focused element, tracked on the design                    |
-| `packages/ui/src/menu/menu-dom.ts`                                     | DOM reads: a menu's own items, focusables, tabbable neighbour, focus ownership                               |
-| `packages/ui/src/menu/menu-tree.ts`                                    | `MenuTreeContext`: the kind and id of the menu a component renders inside                                    |
-| `packages/ui/src/menu/useMenu.ts`                                      | Command menu hook: roles, label, initial focus, keys, Tab, focus return                                      |
-| `packages/ui/src/menu/useMenuButton.ts`                                | Trigger state and props: `aria-haspopup`, `aria-expanded`, Down / Up Arrow to open                           |
-| `packages/ui/src/menu/useControlMenu.ts`                               | Control menu hook: dialog role, keyboard-only initial focus, Escape, focus return                            |
-| `packages/ui/src/menu/index.ts`                                        | Public surface, re-exported from `packages/ui/src/index.ts`                                                  |
+| `../packages/ui/src/menu/menu-constants.ts`                            | Every selector, attribute and timing, named                                                                  |
+| `../packages/ui/src/menu/menu-keys.ts`                                 | Pure keyboard model: key to intent, index stepping, typeahead, initial index                                 |
+| `../packages/ui/src/menu/input-modality.ts`                            | The last interaction (key or pointer) and the last focused element, tracked on the design                    |
+| `../packages/ui/src/menu/menu-dom.ts`                                  | DOM reads: a menu's own items, focusables, tabbable neighbour, focus ownership                               |
+| `../packages/ui/src/menu/menu-tree.ts`                                 | `MenuTreeContext`: the kind and id of the menu a component renders inside                                    |
+| `../packages/ui/src/menu/useMenu.ts`                                   | Command menu hook: roles, label, initial focus, keys, Tab, focus return                                      |
+| `../packages/ui/src/menu/useMenuButton.ts`                             | Trigger state and props: `aria-haspopup`, `aria-expanded`, Down / Up Arrow to open                           |
+| `../packages/ui/src/menu/useControlMenu.ts`                            | Control menu hook: dialog role, keyboard-only initial focus, Escape, focus return                            |
+| `../packages/ui/src/menu/index.ts`                                     | Public surface, re-exported from `../packages/ui/src/index.ts` and so from `packages/ui`                     |
 | `packages/tailwind-config/theme.css`                                   | The inset menu focus ring; the app-wide ring at brand 600 in light                                           |
 | `apps/live/components/primitives/PortalMenu.tsx`                       | Anchored menu (command or control) and its list rows, each role-aware                                        |
 | `apps/live/components/primitives/MenuTiles.tsx`                        | The tile family: `MenuToolbar`, `MenuToolButton`, `MenuTile`, `MenuTileGrid`, role-aware                     |
@@ -251,11 +251,11 @@ spec. No layout shift: roles and `tabIndex` add no box, and `inert` changes no s
 
 | Rule (spec)                                                                                | Test                                                                                      |
 | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
-| Key to intent, wrap, Home/End, typeahead, initial                                          | `packages/ui/src/menu/menu-keys.test.ts`                                                  |
-| Own items, ownership chain, tabbable neighbour                                             | `packages/ui/src/menu/menu-dom.test.ts`                                                   |
-| Focus in, arrows, activate, Escape, Tab, return                                            | `packages/ui/src/menu/useMenu.test.tsx`                                                   |
-| Trigger props, Down / Up open                                                              | `packages/ui/src/menu/useMenuButton.test.tsx`                                             |
-| Keyboard-only focus, Escape layering, return                                               | `packages/ui/src/menu/useControlMenu.test.tsx`                                            |
+| Key to intent, wrap, Home/End, typeahead, initial                                          | `../packages/ui/src/menu/menu-keys.test.ts`                                               |
+| Own items, ownership chain, tabbable neighbour                                             | `../packages/ui/src/menu/menu-dom.test.ts`                                                |
+| Focus in, arrows, activate, Escape, Tab, return                                            | `../packages/ui/src/menu/useMenu.test.tsx`                                                |
+| Trigger props, Down / Up open                                                              | `../packages/ui/src/menu/useMenuButton.test.tsx`                                          |
+| Keyboard-only focus, Escape layering, return                                               | `../packages/ui/src/menu/useControlMenu.test.tsx`                                         |
 | Rows take the kind's roles                                                                 | `apps/live/components/primitives/PortalMenu.test.tsx`                                     |
 | Submenu keys and roles                                                                     | `apps/live/components/primitives/MenuFlyoutSection.test.tsx`, `UseAsDefaultMenu.test.tsx` |
 | Canvas stands down inside a menu                                                           | `apps/live/hooks/canvas/useEditorKeyboardShortcuts.dom.test.tsx`                          |
