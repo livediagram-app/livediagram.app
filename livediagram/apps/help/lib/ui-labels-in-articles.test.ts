@@ -29,6 +29,8 @@ const EXPLORER_PACKAGE = `${ROOT}/../packages/explorer/src`;
 // The Settings dialog likewise is the shared view (@liveworkspace/settings-ui; docs/specs/007-editor/
 // user-preferences.md "One Settings view for every app"), its search field and category list included.
 const SETTINGS_PACKAGE = `${ROOT}/../packages/settings-ui/src`;
+// The shared icon catalogues (@liveworkspace/icons) print the sticker words and icon names the palette shows.
+const ICONS_PACKAGE = `${ROOT}/../packages/icons/src`;
 
 // Every printed spelling per lowercase key: two surfaces can print one name
 // in different case (a dialog's title and its own aria-label, say), and an article matching either is right.
@@ -98,6 +100,7 @@ function editorSource(): string {
   for (const root of ['apps/editor', 'apps/mcp', 'packages']) walk(`${ROOT}/${root}`);
   walk(EXPLORER_PACKAGE);
   walk(SETTINGS_PACKAGE);
+  walk(ICONS_PACKAGE);
   return all.toLowerCase();
 }
 
