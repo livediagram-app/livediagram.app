@@ -22,9 +22,9 @@
     "@livediagram/oxlint-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
     "@tensorflow/tfjs": "4.22.0",
-    "@types/node": "^26.6.4",
+    "@types/node": "^26.6.5",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2",
-    "vitest": "^5.0.3"
+    "vitest": "^5.0.5"
   }
 }
