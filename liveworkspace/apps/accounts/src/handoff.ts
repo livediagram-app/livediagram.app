@@ -23,6 +23,7 @@
 
 import type { BetterAuthPlugin } from 'better-auth';
 import { appOfOrigin, type AppEnvironment, type AppSiteId } from '@liveworkspace/sites';
+import { readCookie } from '@liveworkspace/auth-client/silent';
 import { WORKSPACE_PROXY_HEADER } from '@liveworkspace/sites/workspace-proxy';
 import { createAuthEndpoint, getSessionFromCtx } from 'better-auth/api';
 import { deleteSessionCookie, setSessionCookie } from 'better-auth/cookies';
@@ -58,15 +59,6 @@ const randomToken = () => base64url(crypto.getRandomValues(new Uint8Array(32)));
 /** SHA-256, base64url: a token's and a nonce's stored form. */
 export async function digest(value: string): Promise<string> {
   return base64url(new Uint8Array(await crypto.subtle.digest('SHA-256', encoder.encode(value))));
-}
-
-function cookieValue(header: string | null, name: string): string | null {
-  if (!header) return null;
-  for (const part of header.split(';')) {
-    const eq = part.indexOf('=');
-    if (eq > 0 && part.slice(0, eq).trim() === name) return part.slice(eq + 1).trim() || null;
-  }
-  return null;
 }
 
 // ---------- Where a sign-in may go back to ---------------------------------------------------------------------------
@@ -283,7 +275,7 @@ export function handoffPlugin(config: HandoffPluginConfig): BetterAuthPlugin {
           const back = new URL(row.returnUrl).origin;
           if (row.expiresAt < Date.now()) return refusal('This sign-in link has expired.', back);
           // The browser that started the sign-in holds the nonce; any other does not.
-          const nonce = cookieValue(request.headers.get('cookie'), HANDOFF_NONCE_COOKIE);
+          const nonce = readCookie(request.headers.get('cookie'), HANDOFF_NONCE_COOKIE);
           if (!nonce || !(await sameSecret(await digest(nonce), row.bindHash))) {
             return refusal('This sign-in was started in another browser.', back);
           }

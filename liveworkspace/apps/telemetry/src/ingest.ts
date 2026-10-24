@@ -16,6 +16,7 @@ import {
 import { insertEvents } from './db';
 import { appKey, type Env } from './env';
 import { timingSafeEqual } from '@liveworkspace/index-app/timing-safe';
+import { isLocalhostOrigin } from '@liveworkspace/index-app/worker-http';
 import { isSiteSettingsEvent, VOCABULARIES } from './vocabularies';
 
 // A batch is at most 100 three-field events: anything far larger is not one of ours.
@@ -88,19 +89,10 @@ async function senderOf(
   if (origin === null) return null;
   if (isPlatformOrigin(origin)) return 'platform';
   if (isTelemetryApp(app) && telemetryAppOfOrigin(origin) === app) return 'browser';
-  if (env.ENVIRONMENT !== 'development' || !isLocalhost(origin)) return null;
+  if (env.ENVIRONMENT !== 'development' || !isLocalhostOrigin(origin)) return null;
   // A localhost page in development: the site's Explorer (liveworkspace.app's own name) as the
   // platform, an app as itself.
   return app === PLATFORM_TELEMETRY_APP ? 'platform' : 'browser';
-}
-
-function isLocalhost(origin: string): boolean {
-  try {
-    const { hostname } = new URL(origin);
-    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
-  } catch {
-    return false;
-  }
 }
 
 // The rate-limit key: the exact IPv4 address (one is often a whole office behind NAT), or the IPv6

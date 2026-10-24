@@ -1,13 +1,10 @@
 // Responses, CORS and the edge cache for the Community API (liveworkspace/docs/community.md "The API").
 
 import { communityAppOfOrigin, type CommunityApp } from '@liveworkspace/community';
+import { isLocalhostOrigin, json } from '@liveworkspace/index-app/worker-http';
 import type { Env } from './env';
 
-export function json(body: unknown, init: ResponseInit = {}): Response {
-  const headers = new Headers(init.headers);
-  headers.set('Content-Type', 'application/json');
-  return new Response(JSON.stringify(body), { ...init, headers });
-}
+export { json };
 
 export const notFound = () => json({ error: 'not_found' }, { status: 404 });
 export const badRequest = (error: string) => json({ error }, { status: 400 });
@@ -21,16 +18,7 @@ export function originApp(request: Request, env: Env): CommunityApp | 'localhost
   if (!origin) return null;
   const app = communityAppOfOrigin(origin);
   if (app) return app;
-  return env.ENVIRONMENT === 'development' && isLocalhost(origin) ? 'localhost' : null;
-}
-
-function isLocalhost(origin: string): boolean {
-  try {
-    const { hostname } = new URL(origin);
-    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
-  } catch {
-    return false;
-  }
+  return env.ENVIRONMENT === 'development' && isLocalhostOrigin(origin) ? 'localhost' : null;
 }
 
 // What every app page may do across sites: read (with its community key), like, unlike and report. The

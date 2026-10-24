@@ -11,6 +11,7 @@ import type { Auth } from './auth.ts';
 import { AUTH_BASE_PATH } from './auth-options.ts';
 import type { Env } from './env.ts';
 import { noteGuestSeen } from './guest-sweep.ts';
+import { readCookie } from '@liveworkspace/auth-client/silent';
 import { GUEST_COOKIE, readGuestCookie, signGuestCookie } from './guests.ts';
 import { networkOf } from './rate-limit.ts';
 import { RESOURCES } from './resources.ts';
@@ -23,14 +24,6 @@ export const WORKSPACE_TOKEN_TTL_SECONDS = 15 * 60;
 const COOKIE_MAX_AGE_SECONDS = 10 * 365 * 24 * 60 * 60;
 
 const NO_STORE = { 'cache-control': 'no-store' };
-
-function cookieValue(header: string | null, name: string): string | null {
-  for (const part of header?.split(';') ?? []) {
-    const eq = part.indexOf('=');
-    if (eq > 0 && part.slice(0, eq).trim() === name) return part.slice(eq + 1).trim();
-  }
-  return null;
-}
 
 export type WorkspaceToken = {
   token: string;
@@ -81,7 +74,7 @@ export async function workspaceToken(
   // A guest: the browser's own, or a new one, limited per network as the hand-off is.
   const secret = env.BETTER_AUTH_SECRET;
   const known = await readGuestCookie(
-    cookieValue(request.headers.get('cookie'), GUEST_COOKIE),
+    readCookie(request.headers.get('cookie'), GUEST_COOKIE),
     secret,
   );
   if (!known && env.GUEST_LIMITER) {

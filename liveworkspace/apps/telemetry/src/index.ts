@@ -9,9 +9,7 @@ import type { Env } from './env';
 import { handleIngest } from './ingest';
 import { handleSummary } from './summary';
 import { API_PATH, CORS, RETENTION_MS } from './config';
-
-const under = (pathname: string, base: string) =>
-  pathname === base || pathname.startsWith(`${base}/`);
+import { under } from '@liveworkspace/index-app/worker-http';
 
 const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {

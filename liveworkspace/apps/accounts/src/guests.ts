@@ -4,6 +4,7 @@
 // someone signs in with that cookie, the guest's settings and profile move to the account and the
 // index is told to move the guest's things too.
 import type { GenericEndpointContext } from 'better-auth';
+import { readCookie } from '@liveworkspace/auth-client/silent';
 import { AUTH_BASE_PATH } from './auth-options.ts';
 import type { Auth } from './auth.ts';
 import type { Env } from './env.ts';
@@ -81,15 +82,7 @@ export async function readGuestCookie(
 
 /** The browser's own guest, from its signed `lw_guest` cookie on this request, or null. */
 export function guestOfRequest(request: Request, secret: string): Promise<string | null> {
-  return readGuestCookie(cookieValue(request.headers.get('cookie'), GUEST_COOKIE), secret);
-}
-
-function cookieValue(header: string | null, name: string): string | null {
-  for (const part of header?.split(';') ?? []) {
-    const eq = part.indexOf('=');
-    if (eq > 0 && part.slice(0, eq).trim() === name) return part.slice(eq + 1).trim();
-  }
-  return null;
+  return readGuestCookie(readCookie(request.headers.get('cookie'), GUEST_COOKIE), secret);
 }
 
 function guestCookie(value: string, maxAge: number, secure: boolean): string {
@@ -147,7 +140,7 @@ export async function guestHandoff(request: Request, env: Env, auth: Auth): Prom
 
   const secret = env.BETTER_AUTH_SECRET;
   const guestId =
-    (await readGuestCookie(cookieValue(request.headers.get('cookie'), GUEST_COOKIE), secret)) ??
+    (await readGuestCookie(readCookie(request.headers.get('cookie'), GUEST_COOKIE), secret)) ??
     `guest_${crypto.randomUUID()}`;
 
   // When the id was last handed out, so one that can never be used again is swept (guest-sweep.ts).
@@ -275,7 +268,7 @@ export async function mergeGuestOnSignIn(
   ctx: GenericEndpointContext | null,
 ): Promise<void> {
   const header = ctx?.request?.headers.get('cookie') ?? ctx?.headers?.get('cookie') ?? null;
-  const guestId = await readGuestCookie(cookieValue(header, GUEST_COOKIE), config.secret);
+  const guestId = await readGuestCookie(readCookie(header, GUEST_COOKIE), config.secret);
   if (!ctx || !guestId) return;
   if (!(await mergeGuestInto(config, guestId, userId))) return;
   // Appended beside the session cookie, not in place of it.
@@ -297,7 +290,7 @@ export async function mergeGuestOfRequest(
   userId: string,
 ): Promise<boolean> {
   const guestId = await readGuestCookie(
-    cookieValue(request.headers.get('cookie'), GUEST_COOKIE),
+    readCookie(request.headers.get('cookie'), GUEST_COOKIE),
     config.secret,
   );
   return guestId ? mergeGuestInto(config, guestId, userId) : false;
@@ -326,7 +319,7 @@ export async function mergeGuestOnAuthorize(
   }
   if (!code) return response;
   const guestId = await readGuestCookie(
-    cookieValue(request.headers.get('cookie'), GUEST_COOKIE),
+    readCookie(request.headers.get('cookie'), GUEST_COOKIE),
     config.secret,
   );
   if (!guestId) return response;

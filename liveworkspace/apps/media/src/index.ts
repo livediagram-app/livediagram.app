@@ -12,9 +12,7 @@ import { notFound } from './http';
 import { sweepUnusedImages } from './retention';
 import { handlePreviews } from './previews/routes';
 import { handleApp } from './routes';
-
-const under = (pathname: string, base: string) =>
-  pathname === base || pathname.startsWith(`${base}/`);
+import { under } from '@liveworkspace/index-app/worker-http';
 
 const worker = {
   async fetch(request: Request, env: Env, ctx?: ExecutionContext): Promise<Response> {

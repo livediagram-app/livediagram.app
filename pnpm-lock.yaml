@@ -4714,6 +4714,9 @@ importers:
       '@better-auth/oauth-provider':
         specifier: 1.7.12
         version: 1.7.12(@better-auth/core@1.7.12(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(better-call@1.4.4(zod@4.6.7))(jose@6.2.13)(kysely@0.29.7)(nanostores@1.5.5))(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(better-auth@1.7.12(next@16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(vitest@5.0.5))(better-call@1.4.4(zod@4.6.7))
+      '@liveworkspace/auth-client':
+        specifier: workspace:*
+        version: link:../../../packages/auth-client
       '@liveworkspace/index-client':
         specifier: workspace:^
         version: link:../../../packages/index-client
@@ -4727,9 +4730,6 @@ importers:
       '@cloudflare/workers-types':
         specifier: ^5.20261007.1
         version: 5.20261021.1
-      '@liveworkspace/auth-client':
-        specifier: workspace:*
-        version: link:../../../packages/auth-client
       '@types/node':
         specifier: ^26.6.4
         version: 26.6.5
@@ -5445,6 +5445,9 @@ importers:
       '@liveworkspace/source-ast':
         specifier: workspace:*
         version: link:../source-ast
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
     devDependencies:
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
@@ -5458,9 +5461,6 @@ importers:
       oxlint:
         specifier: ^1.88.0
         version: 1.89.0(oxlint-tsgolint@7.0.2004)
-      typescript:
-        specifier: ^7.0.2
-        version: 7.0.2
       vitest:
         specifier: ^5.0.1
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))

@@ -22,9 +22,7 @@ import { sweepExpiringLinks } from './share-expiry';
 import { handleWorkbenchClose } from './workbench-close';
 import { handleAccountTimeline, handleTimeline } from './timeline';
 import { handleItemShare, handleShareCode, handleShared } from './sharing';
-
-const under = (pathname: string, base: string) =>
-  pathname === base || pathname.startsWith(`${base}/`);
+import { under } from '@liveworkspace/index-app/worker-http';
 
 function splitPath(path: string): string[] | null {
   try {
