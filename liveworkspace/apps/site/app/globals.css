@@ -26,6 +26,9 @@
 @source '../../../../livediagram/packages/ui/src/dialog';
 @source '../../../../livediagram/packages/ui/src/CompactEmptyState.tsx';
 @source '../../../../livediagram/packages/ui/src/HoverCard.tsx';
+/* The surface a hover card and a tooltip draw on (its pill, card, arrow and z-index), which the two files above
+ * only place. Unscanned, the Settings dialog's and the Explorer bottom bar's hover cards lost their layer and frame. */
+@source '../../../../livediagram/packages/ui/src/hint';
 
 /* The platform's own accent: slate, so no one app's colour stands for all of them. */
 :root {
