@@ -91,7 +91,7 @@ design renders lazily.
   (the same pattern image elements use, [Image element + per-owner gallery](../009-elements/images.md)). `?v=<savedAt>` busts
   the browser cache when the design changes; the worker ignores it.
   `Cache-Control: private, max-age=86400`.
-- One D1 read gates it: `getDesignThumbMeta` returns the owner, team,
+- One read gates it: `getDesignThumbMeta` returns the owner, team,
   name, `saved_at` and `thumb_rendered_at` in one query, so a fresh
   snapshot costs that query, the access gate and the R2 read. The full
   design (participant and tab summaries) is never loaded for a preview.

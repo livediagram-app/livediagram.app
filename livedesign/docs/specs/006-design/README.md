@@ -4,7 +4,7 @@ Follow the references below only as needed; never upfront.
 
 - ./design.md - when naming things: a design holds tabs, a tab holds pages; one tab kind and one editor mode (Pages)
 - ./design-structure.md - when working on Design structure: Designs contain tabs; elements can link across tabs
-- ./per-tab-storage.md - when working on Per-tab storage: Split tabs into their own D1 rows so autosave scope shrinks
+- ./per-tab-storage.md - when working on Per-tab storage: Split tabs into their own rows so autosave scope shrinks
 - ./tab-design-many-to-many.md - when working on Tab ↔ design many-to-many: Link table so a tab can live in multiple designs
 - ./tab-folders.md - when working on Tab folders: Group a design's tabs into one-level named folders that fan out from one chip
 - ./design-snapshots.md - when working on Design SVG snapshots: One R2-cached SVG per design, rendered on-read-if-stale: Explorer row thumbnails (owner-authed) + the live image share embed ([Live image share link](../013-workspace/live-image-share.md), share-code-scoped). Gated on the optional R2 binding

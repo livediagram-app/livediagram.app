@@ -4,35 +4,40 @@ The payoff [Teams](teams.md) deferred: every team gets a shared library — a fo
 
 ## Data model
 
-The baseline migration, `0001_livedesign_baseline.sql`, adds a nullable `team_id` to both tables:
+A team's library is liveworkspace's index's ([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md)):
 
-- **`folders.team_id`** — non-null = a team folder. Personal reads/writes always filter `team_id IS NULL`, so the two trees can't bleed into each other. `owner_id` keeps the creator for audit, but authorisation is by team membership, not ownership.
-- **`designs.team_id`** — non-null = the design lives in that team's library. Placement mirrors [Folders](folders.md): `folder_id NULL` = the root of the team's library (listed beside its root folders, not a row, can't be deleted), otherwise a folder of the same team.
+- **A team folder** is an index folder with a `teamId`. The personal tree and each team's tree are kept apart, so
+  the two can't bleed into each other. The creator is kept for audit, but authorisation is by team membership, not
+  ownership.
+- **A team design** is an index item with a `teamId`. Its `folderId` null is the root of the team's library (listed
+  beside its root folders, not a row, can't be deleted), otherwise a folder of the same team.
 
-A design is in exactly one place: personal tree or one team's library. Moving it into a team removes it from the owner's personal lists (`GET /api/designs` filters `team_id IS NULL`). A team design is managed by **every joined member**, not just its creator, so any joined member may move it: re-folder it within the team, move it to another team they belong to, or move it out into **their own** personal library. Moving it out transfers **ownership to the mover** (folders are owner-scoped, so the design follows them into the mover's tree); the owner moving it out keeps ownership. **Any joined member may also rename, duplicate, and delete a team design** (it belongs to the whole team): the api authorises the owner OR a joined member to `DELETE` it, but never a share-link visitor. A delete moves it to the **team Trash** ([Trash](trash.md)), which every joined member sees in Settings › Trash and may restore from or purge, with the same authority. Deleting the **team itself** re-homes its designs to the root of their owners' My Work (members' work is never destroyed) and drops the team's folders.
+A design is in exactly one place: personal tree or one team's library. Moving it into a team removes it from the
+owner's personal lists. A team design is managed by **every joined member**, not just its creator, so any joined
+member may move it.
 
 ## Access
 
-Joined team membership grants **edit** on every design in the team's library, enforced at the same choke points share codes use:
+Joined team membership grants **edit** on every design in the team's library. The index decides it: every request
+about a design carries the index's grant on it (`X-Index-Grant`), and the grant names the caller's level whether it
+came from ownership, the team or a share link ([API app](../015-api/api.md)).
 
-- `canReadDesign` / `canEditDesign` accept the design's `teamId`: joined-member-of-team → share code. **Owning a team design grants nothing on its own**: its owner is a joined member while they are in the team, and once they leave or are removed the row must not stay open to them. The owner-only routes (`ownsDesign`: moving it out) likewise require the owner to still be a joined member. A member who leaves or is removed has their team designs and team folders handed to the remaining joined member account deletion would pick (the earliest admin, else the earliest member), so nothing the team keeps is owned by somebody who has gone. Their open realtime sessions on the team's designs end too: for each team design the api asks its room to close the sessions carrying that member's per-design person tag (close code 4005, "access changed"), so the editor reloads and meets the gates without them. The room still holds no account id; the person tag is a one-way hash of the design and the account and never reaches a client. Bounded to the team's 500 most recently saved designs, ten rooms at a time, off the response path. **Trust boundary:** for a team design the owner + membership legs are checked against the **verified account user id** (`ctx.accountUserId`), never an id a request names — team owner/member ids are account ids shared among teammates, so trusting one would let a removed member forge access. A guest's token never counts for a team. All REST surfaces that gate on them (tabs, comments, images) inherit the rule.
-- The WebSocket upgrade resolves `role = 'edit'` for a joined member of the design's team. The `o=` param was once trusted unverified (browsers can't set a Bearer on the upgrade), carrying the same forgeability the REST header fix above closed; the signed **room ticket** that was named here as the proper follow-up has since shipped — `POST /api/designs/<id>/room-ticket` mints a one-time ticket the client redeems on the upgrade (see [API app](../015-api/api.md)), and team members are admitted by ticket only. Saving still goes through the secured REST path: the room keeps ordering and collaboration state of its own ([API app → Realtime model](../015-api/api.md#realtime-model)).
-- **The OWNER-ONLY surfaces obey the same trust boundary, via `ownsDesign`** (`apps/api/src/routes/context.ts`). The read/edit gates above were fixed for team designs; the owner-only guards beside them were not, and they front a strictly more dangerous set: `GET /api/designs/<id>/share` (which returns the **share password in the clear**), minting an edit-role share link, setting/clearing that password, `DELETE /api/designs/<id>` (and, until its removal on 2026-10-03, wiping a tab's change log). Each compared `resolveOwner() === ownerId` — the hybrid identity — so on a team design anyone holding the owner's account id could reach all of them. `ownsDesign` is now the single answer to "is this caller the owner": **team design → verified account id only; personal design → the hybrid path** (safe there, where the owner id is an unguessable UUID). Four call sites route through it — `requireOwnedDesign` (which fronted the share family until every joined member could share, below), `DELETE /api/designs/:id` (via `managesDesign`), `POST /api/designs/:id/tabs/:tabId/link`, and the `isOwner` scope decision in `PUT /api/designs/:id/folder`. Any new owner-only gate uses it rather than comparing ids by hand; a bare `resolveOwner() === ownerId` is the bug, not the pattern.
-- The ids that make this reachable are handed out on purpose: `GET /api/teams/<id>` lists `members[].userId`. That is the roster the Explorer and the assigned-actions picker need, so the fix is to stop the ids being _credentials_, not to hide them — here, and and the api takes no owner id from a header at all ([Public API and API tokens §2](../015-api/public-api-and-tokens.md#2-who-the-api-accepts)).
+- **Owning a team design grants nothing on its own**: its owner is a joined member while they are in the team, and
+  once they leave or are removed the design must not stay open to them.
 - `invited` (un-accepted) members get nothing, consistent with [Teams](teams.md).
-- **Sharing belongs to every joined member.** The share-link family (`GET`/`POST`/`DELETE /api/designs/<id>/share`, revoking, rescoping and extending one link, and `PUT .../share-password`) is guarded by `requireManagedDesign`: the owner, or a joined member of the design's team on the verified account id (`managesDesign`, the same authority as delete and restore). A share-link visitor never passes, an Editor link included. The Share Link Created timeline event and the first-share email name the member who shared. In the editor, a team design opened without a share code shows **Share** (header button, the canvas menu, the Share Design command) to every joined member, never Make a Copy (`mayShareDesign` in `editor-page-helpers.ts`); a teammate who arrives on a share link is a visitor of that link and still gets Make a Copy.
-- Share links and the share password otherwise work on team designs unchanged — they're orthogonal grants.
+- **Sharing belongs to every joined member.** Share links and the share password are managed by the owner or any
+  joined member of the design's team, through the index.
+- Share links otherwise work on team designs unchanged — they're orthogonal grants.
 
 ## API
 
-- `GET /api/teams/:id/library` — `{ folders, designs }` for the team. Joined members only.
-- `POST /api/folders` body gains `teamId`: creates a team folder (caller must be a joined member; `parentId` must be a folder of the same team). `PUT` / `DELETE /api/folders/:id` authorise team folders by joined membership instead of ownership. Deleting a team folder moves its designs and subfolders up to its parent, the team's root when it sat at the top ([Folders: Deleting a folder](folders.md#deleting-a-folder)).
-- `POST /api/designs` creates a design straight into a team library when its body carries `teamId` (and optionally a `folderId` of that team), in the one write that creates it ([Folders → Placement on create](folders.md#placement-on-create)). The caller must be a joined member, by verified account id only; anything else is a named rejection (`team_forbidden`, `folder_not_found`, `folder_scope_mismatch`), never a design left at the root of the caller's My Work.
-- `PUT /api/designs/:id/folder` body gains `teamId`. Authorisation is by membership (a team design belongs to every joined member):
-  - **Into a team / between teams** (`{teamId: T, folderId}`): the caller must be a joined member of T. A personal design can only be filed into a team by its owner; a team design can be moved on by any joined member of its current team. When a team design moves to another team whose joined members don't include its owner, **ownership transfers to the mover**, the same rule as moving it out to personal: otherwise someone outside the team would keep owner access (owner access is checked before membership) and be the only one able to share it. `folderId` must be T's folder or null.
-  - **Within the current team**: any joined member may re-folder it.
-  - **Out of a team** (`{teamId: null, folderId}`): any joined member may move it into their own personal library; `folderId` must be the **caller's** personal folder (or null for the root of their My Work), and ownership transfers to the caller. When the owner moves it out, ownership is unchanged.
-  - A purely personal move (no team on either side) stays owner-only. Folder/scope mismatches 404.
+- `GET /api/teams/:id/library` — `{ folders, designs }` for the team, read from the index. Joined members only.
+- `POST /api/designs` creates a design straight into a team library when its body carries `teamId` (and optionally
+  a `folderId` of that team), in the one write that creates it ([Folders → Placement on create](folders.md#placement-on-create)).
+  The caller must be a joined member.
+- Making, moving and deleting team folders, and moving a design into, between or out of teams, are the index's
+  routes, called by the shared Explorer. Moving a team design out into a member's personal library makes that member
+  its owner.
 
 ## Explorer UI
 

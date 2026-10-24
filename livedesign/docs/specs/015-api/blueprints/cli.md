@@ -572,8 +572,8 @@ false, an absent `designFormat` as equal to its own.
   resolution and the read gets 404, CLI39) →
   200 `CurrentTokenResponse = { accountId, accountName, tokenId, tokenName, role, expiresAt }`; `role` is
   `ctx.token.role`, printed as the api names it. `accountName` is the owner's participant name, `null` when none.
-- `DELETE /api/tokens/current` → 204 after `revokeApiToken(env, owner, ctx.token.id)` and the
-  `recordTokenRevoked` Timeline entry `/api/tokens/:id` writes.
+- `DELETE /api/tokens/current` → 204 after the token is revoked at liveworkspace (`revokePresentedToken`) and its
+  workbench pairings end.
 - Both are reached before the session-only gate in `handleTokens`, through `ctx.token`. The token write choke point
   admits `DELETE /api/tokens/current` for a token of any role, as revoking itself escalates nothing.
 
@@ -811,7 +811,7 @@ LIVEDESIGN_DEBUG=1 and report it at https://github.com/livedesign-app/livedesign
   `devicepoll:`, so the approval stands and the next poll receives the token.
 - **E32** Connect on the device page after the code expired or was used, or when `/oauth/device/complete` refuses
   the token: the page checks `GET /oauth/device/session/<code>` before minting and shows the expired line without
-  minting; a token minted but refused is revoked at once (`DELETE /api/tokens/<id>`), so a failed Connect never
+  minting; a token minted but refused is revoked at once (presenting it to `DELETE /api/tokens/current`), so a failed Connect never
   leaves a live token counting towards the cap (`apps/live/lib/oauth-handover.ts`, log `[oauth] handover refused;
 minted token revoked`, or `[oauth] handover revoke failed` when the revoke itself fails).
 

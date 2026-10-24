@@ -31,9 +31,10 @@ rev? }`: the pixel size, the layer stack ([Photo layers](photo-layers.md)), the 
 - **One decoded tile, many places**: the browser keeps one decoded copy per blob id, so tiles that read the same (every
   white tile of a blank photo) are one array in memory until painted. A loaded tile is held copy-on-write: the first
   paint on it copies it, never painting every place that shares it.
-- **The photo blob store**: blobs in R2 (the `PHOTO_BLOBS` bucket, under `photo/<blob id>`; its own bucket, apart from the gallery's `IMAGES`), one D1 row each
-  (`photo_blobs`: id, content type, byte size, created at), and the **blob refs** (`photo_blob_refs`: tab id, blob
-  id, created at). A blob is stored once however many tabs name it.
+- **The photo blob store**: blobs in R2 (the `PHOTO_BLOBS` bucket, under `photo/<blob id>`; its own bucket, apart
+  from the media service's gallery), with an empty marker object `photo-refs/<blob id>/<design id>` for each design
+  that holds it, and the **blob refs** in each design's own SQLite (`photo_blob_refs`: tab id, blob id, created at).
+  A blob is stored once however many tabs name it.
 
 ## The routes
 
@@ -117,12 +118,14 @@ ids }` (the stack's order) and `{ op: 'preview', blob }`; or `{ kind: 'photo', t
 
 ## Retention
 
-- Daily, on the api worker's cron, beside the [image sweep](../009-elements/images.md) "Retention": for each tab
-  holding blob refs older than **one day**, the blobs its saved body names now are read from it (`photoBlobIdsOf`:
-  every tile, source and preview of `Tab.photos`), and the tab's other refs older than a day are removed; a ref
-  whose tab is gone is removed. Then every blob no ref names is deleted (D1 first, then R2).
-- Bounded: at most 200 tabs and 5,000 blobs a run, resuming the next day; logs `photo sweep: removed <n> refs,
-deleted <m> blobs`, and `photo sweep: R2 delete failed` with the ids where R2 refuses.
+- Daily, in each design's own upkeep (its Durable Object's alarm, `sweepDesignPhotoBlobs` in
+  `apps/api/src/db/photo-blobs.ts`): for each tab holding blob refs older than **one day**, the blobs its saved body
+  names now are read from it (`photoBlobIdsOf`: every tile, source and preview of `Tab.photos`), and the tab's other
+  refs older than a day are removed; a ref whose tab is gone is removed. The blobs the design no longer holds at all
+  are released: its markers go, and a blob no design marks any more is deleted from R2 (`releaseBlobs`). A purged
+  design releases all of its blobs.
+- Bounded: at most 200 tabs a run, resuming the next day; logs `[photo-blobs] sweep` with the counts, and
+  `[photo-blobs] release failed` where R2 refuses (bytes kept, never a ref without bytes).
 - The day's grace keeps a blob a session's undo or a save in flight still needs. A session open for longer than a
   day re-sends, before its save, any blob of its history it undoes back to.
 

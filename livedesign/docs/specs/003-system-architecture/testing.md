@@ -266,8 +266,9 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     [Optical alignment](../004-interface-design/optical-alignment.md)), and every
     UI workspace's `motion-budget.test.ts` ([Motion](../004-interface-design/motion.md)).
   - `apps/api`: auth guards (account access tokens, guest tokens, index grants, API tokens),
-    every defensive D1 row mapper, the D1 modules against real SQLite
-    (cascades, migrations), the `DesignRoom` Durable Object's rules, ledger
+    every defensive row mapper, the content modules against a design's real
+    schema in in-memory SQLite (`apps/api/src/test-sqlite-d1.ts`, over `nodeItemSql`
+    from `@liveworkspace/index-app/testing`), the `DesignRoom` Durable Object's rules, ledger
     and multiplayer paths, every route family (designs, tabs, share, images,
     thumbnails, folders, teams, trash, timeline, activity, tokens, OAuth, unfurl,
     events, AI), the Timeline's writers and its catalogue
@@ -368,9 +369,9 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
 - **Ahead:**
   - Worker-runtime tests for `apps/api`: the current suites run under plain
     vitest in the `node` environment with fakes for `WebSocket` / Durable
-    Object state, and D1 as either a recorder or in-memory SQLite (see
+    Object state, and each design's SQLite as in-memory SQLite (see
     Conventions); a future move to `@cloudflare/vitest-pool-workers` would
-    let the D1 binding + Durable Object run in a real `workerd` runtime, but
+    let the Durable Objects and their storage run in a real `workerd` runtime, but
     that's an aspiration, not the current setup.
 
 Browser end-to-end tests are not part of this gate; they are specified in

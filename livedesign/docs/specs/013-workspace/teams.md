@@ -31,12 +31,12 @@ Share roles (Editor / Participant / Viewer) do not apply here: the team page is 
 
 All under `/api/teams`, account Bearer or API token required, handled by `apps/api/src/routes/teams.ts`:
 
-- `GET /api/teams` — teams the caller has joined, each with `myRole` and `memberCount`.
+- `GET /api/teams` — teams the caller has joined, from their token's `teams` claim, each with `myRole` (`memberCount` is always 0; the people are `/members`'s).
 - `POST /api/teams` `{ name, organisation? }` — makes a team ([Making a team](#making-a-team)). A signed-in session only.
 - `GET /api/teams/invites` — the invitations waiting for the caller on liveworkspace.app ([Invitations](#invitations)).
-- `GET /api/teams/:id` — team + member list + `myRole` (`inviteLink` is always null). Members only.
-- `GET /api/teams/:id/library` — the team's folders and designs ([Team Shared Designs](team-shared-designs.md)).
-- `GET /api/teams/:id/access-check`, `POST /api/teams/:id/notify-action`, `POST /api/teams/:id/notify-mention` — as [Assigned actions](../012-collaboration/assigned-actions.md) and [Comment mentions](../012-collaboration/comment-mentions.md) describe; the two notices need a signed-in session.
+- `GET /api/teams/:id/members` — the team's joined and invited people, asked of liveworkspace, for the assignee picker and @-mentions. Members only, and never an API token; a team the caller is not in is `404 team_not_found`.
+- `GET /api/teams/:id/library` — the team's folders and designs, read from the index ([Team Shared Designs](team-shared-designs.md)). Members only.
+- The assignment and mention emails are the design's, not the team's: `POST /api/designs/:id/notify-action`, and mentions from the comment post and tab save, as [Assigned actions](../012-collaboration/assigned-actions.md) and [Comment mentions](../012-collaboration/comment-mentions.md) describe.
 - Administering a team (rename, delete, invite, change a role, remove, an invite link, accept, decline) happens on liveworkspace.app's teams page; this API has no routes for it.
 
 Wire DTOs (`Team`, `TeamListItem`, `TeamMember`, `TeamRole`, `TeamInvite`) live in `@livedesign/api-schema`.
@@ -56,7 +56,7 @@ Invitations are made, reminded, expired and answered on liveworkspace.app ([live
 - `GET /api/teams/invites` (`apps/api/src/routes/team-invites.ts`) reads them from liveworkspace (`pendingInvitationsFor` in `@liveworkspace/auth-client`, `POST /api/account/internal/invitations`): each with the team's name, organisation and joined-member count, the role offered, who invited them and when (`TeamInvite` in `@livedesign/api-schema`). An account with no verified address has none.
 - The answer is remembered per isolate for 30 seconds, and calls for the same account at once share one request, so the Explorer's load (one `GET /api/teams/invites`, beside `GET /api/teams`) costs at most one call to liveworkspace. An invitation answered on liveworkspace.app leaves the list within that.
 - Without accounts configured, or with liveworkspace out of reach, the list is empty rather than an error.
-- The Explorer's **Invites** view lists them, newest first, each with **Answer on liveworkspace.app**, which opens `/account/teams#invitations` there. The sidebar's Invites row shows while any wait, with their count as its badge. Once accepted, the team reaches the mirror through the token's claim or the feed ([Keeping the mirror](#keeping-the-mirror)) and shows in the sidebar.
+- The Explorer's **Invites** view lists them, newest first, each with **Answer on liveworkspace.app**, which opens `/account/teams#invitations` there. The sidebar's Invites row shows while any wait, with their count as its badge. Once accepted, the team reaches livedesign through the next token's claim, or is asked of liveworkspace before then ([Where teams come from](#where-teams-come-from)), and shows in the sidebar.
 
 ## Explorer UI
 

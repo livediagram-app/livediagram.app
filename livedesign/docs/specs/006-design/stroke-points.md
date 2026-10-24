@@ -9,7 +9,7 @@ polygon-tool paths.
 - Pen strokes are the bulk of a hand-drawn tab (the format was measured on livediagram's whiteboards, where it
   began). Stored as `{ nx, ny }` objects with full doubles, a
   point costs about 29 to 46 bytes, and a large board's tab outgrows what one database row holds.
-- A tab is saved as one row in Cloudflare D1, which caps a row at 2,000,000 bytes, so a tab must fit
+- A tab is saved as one row in its design's SQLite (a Durable Object), capped like Cloudflare D1 at 2,000,000 bytes a row, so a tab must fit
   within it ([API](../015-api/api.md)). Compact points keep large boards well inside
   it without thinning strokes visibly.
 - Every point as an object also means a large board becomes tens of thousands of small objects
@@ -133,7 +133,7 @@ doubles); timings are medians on a developer machine and move with it, the ratio
 | Measure                                   | Before (`{ nx, ny }`) | After (packed) |
 | ----------------------------------------- | --------------------- | -------------- |
 | Tab bytes                                 | 5,129 KB              | 1,066 KB       |
-| Share of one D1 row (2,000,000 bytes)     | 263%                  | 55%            |
+| Share of one row (2,000,000 bytes)        | 263%                  | 55%            |
 | Bytes per point, pressure included        | 70.8                  | 7.8            |
 | Objects `JSON.parse` allocates            | 75,902                | 3,302          |
 | Heap held after parsing                   | 6,674 KB              | 1,148 KB       |

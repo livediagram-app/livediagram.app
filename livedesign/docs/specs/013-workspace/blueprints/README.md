@@ -3,7 +3,7 @@
 Follow the references below only as needed; never upfront.
 
 - ./share-roles.md - when implementing or changing access levels (Viewer, Participant, Editor): the participant content rule, the room's participant write path and adder keys, editor capabilities, the Share dialog and role pill
-- ./workbench-embeds.md - when implementing or changing workbench embeds: pairing, tickets, `lvw_` sessions and their confinement, the baseline migration, the `/embed/workbench` page and its messages, the selection reference, `/workbench/pair`, Settings pairings, `workbench open` and `pair`
+- ./workbench-embeds.md - when implementing or changing workbench embeds: pairing, tickets, `lvw_` sessions and their confinement, the `/embed/workbench` page and its messages, the selection reference, `/workbench/pair`, Settings pairings, `workbench open` and `pair`
 - ./trash.md - retired: the Trash is the index's
 - ./design-placement.md - retired: where a create files a design is the index's
 - ./default-folders.md - retired: default folders moved to liveworkspace's index

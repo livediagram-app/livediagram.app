@@ -147,7 +147,7 @@ This implements the OAuth flow Manager Toolkit uses:
 
 **State storage.** Add a **KV namespace binding (`OAUTH_KV`) to `apps/mcp`** for
 client registrations, authorize sessions, and codes (all short TTLs). `apps/api`
-needs no KV — minting stays in D1 via the existing token table.
+needs no KV — minting is liveworkspace's accounts service's (`POST /api/oauth/exchange` asks it).
 
 **Why OAuth and not just token-paste.** A static-token-paste connector works in
 Claude Code / custom connectors, but the polished "Connect" button in claude.ai
@@ -157,7 +157,7 @@ caps) is already built — OAuth is the front door, not a new lock.
 
 **Self-hosting / sign-in gating.** OAuth depends on the consent page authenticating
 the user through sign-in and on `/api/oauth/exchange` requiring an account identity — the
-same gate as `/api/tokens` ([Public API and API tokens §3.7](public-api-and-tokens.md)). A
+same gate as every token's ([Public API and API tokens §3.7](public-api-and-tokens.md)). A
 no-auth self-host: the exchange endpoint rejects every caller and the consent
 page has no signed-in user, so the MCP can mint nothing. Operators who don't want
 the MCP simply don't deploy `apps/mcp`; nothing else references it.
@@ -561,8 +561,8 @@ and schema resource.
 ### 4.11 Read-only tokens (the one scope)
 
 A trust story for cautious users: the MCP consent screen offers a **"read-only
-access"** checkbox. When ticked, the minted `lwt_` token carries `read_only = 1`
-([Public API and API tokens](public-api-and-tokens.md) §3.4, migration 0039), and the api worker rejects every write it
+access"** checkbox. When ticked, the minted `lwt_` token carries the read-only flag
+([Public API and API tokens](public-api-and-tokens.md) §3.4), and the api worker rejects every write it
 presents — `POST`/`PUT`/`DELETE` → `403 read_only_token` — at a **single
 dispatch choke point** in `apps/api/src/index.ts`, so no write route can be
 reached, present or future, with no per-route changes. The read tools
@@ -853,8 +853,8 @@ Worker (no DOM, no React).
    These are read-only and prove the schema + render path end to end.
 4. **Write tools** — `create_design`, `update_design` (both modes), reusing
    `validate.ts` + `auto-layout.ts`.
-5. **OAuth** — `/api/oauth/exchange` on the api worker (reusing the token-mint
-   path, signed-in only like `/api/tokens`); `apps/live` consent page; the MCP
+5. **OAuth** — `/api/oauth/exchange` on the api worker (asking liveworkspace to mint
+   the token, signed-in only); `apps/live` consent page; the MCP
    OAuth endpoints + `OAUTH_KV`. Until this lands, the worker can be exercised
    with a hand-pasted `lwt_` Bearer for development.
 6. **Docs + help, shipped WITH the feature** (per the help-centre + docs rules in

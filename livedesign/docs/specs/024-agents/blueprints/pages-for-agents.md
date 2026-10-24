@@ -181,7 +181,7 @@ tab, `409 tab_busy`, `413 tab_too_large`.
   lock, paint) skips the walk. Measured: 50 changes (25 moves, 25 renames) on a 99-page tab with 2,000 elements take
   29 to 57 ms on a loaded machine (load average 50), down from 180 to 310 ms with the linear page scan. A test holds
   it at 2,000 ms (CI headroom).
-- The route does one D1 read and one batch write (two of each on a stale retry), and at most three room calls.
+- The route does one read and one batch write (two of each on a stale retry), and at most three room calls.
 - The `pages` view respects the read budget (8,000 tokens by default on the MCP).
 
 ## Observability

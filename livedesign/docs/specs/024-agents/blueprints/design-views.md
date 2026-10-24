@@ -796,7 +796,7 @@ the tab and its `rev`.
 - `performance.test.ts` gates these as growth: eight times the containers, or the selection, costs under 24 times
   as much.
 - The api reads one tab body per view; `overview` holds at most `OVERVIEW_TAB_BATCH` bodies at once (about 15 MB at
-  the tab cap) and makes one D1 query per batch.
+  the tab cap) and makes one query per batch.
 - `read_design` makes two service-binding calls (design, view), three with `image: true` (the tab, in parallel).
 - `[views] slow` logs any render over `VIEW_SLOW_MS`.
 

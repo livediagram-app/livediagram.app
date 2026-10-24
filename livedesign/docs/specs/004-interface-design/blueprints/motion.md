@@ -338,8 +338,8 @@ logging, because motion isn't a decision point.
 
 | Rule                                         | Test                                                                                        |
 | -------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| Tokens match their constants                 | `../packages/style-guards/src/motion.test.ts`                                               |
-| `cascadeDelayMs` caps and clamps             | `../packages/style-guards/src/motion.test.ts`                                               |
+| Tokens match their constants                 | `packages/tailwind-config/src/motion.test.ts`                                               |
+| `cascadeDelayMs` caps and clamps             | `packages/tailwind-config/src/motion.test.ts`                                               |
 | Bounds for literals, `var`, `min`, `calc`    | `../packages/style-guards/src/motion-budget.test.ts`                                        |
 | Stylesheet: ceiling, hover, ambient, delay   | `../packages/style-guards/src/motion-budget.test.ts`                                        |
 | Source: classes, hover, inline, templates    | `../packages/style-guards/src/motion-budget.test.ts`                                        |

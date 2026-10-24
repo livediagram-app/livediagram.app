@@ -567,7 +567,7 @@ type Element = {
 - The palette is always rendered on top of the canvas, regardless of which tab is active.
 - Each tab owns its own array of elements. Adding a shape adds it to the **active tab** only.
 - Switching tabs swaps the canvas content; each tab's shapes persist while the page is loaded.
-- Reloads restore the design from the api worker (D1), keyed by the design id in the URL. The active tab id is encoded in the URL fragment (`#t=<tabId>`) so refreshing keeps you on the same tab.
+- Reloads restore the design from the api worker (its Durable Object), keyed by the design id in the URL. The active tab id is encoded in the URL fragment (`#t=<tabId>`) so refreshing keeps you on the same tab.
 - When the active tab has zero elements (and the template picker isn't open), an **empty-state card** is centred on the canvas. It contains, top to bottom: a brand-coloured icon (square + circle, evoking diagram primitives), the tab name in bold, an `EMPTY CANVAS` subtitle, a one-paragraph hint explaining the three ways to start ("Open the palette on the left to add shapes, double-click anywhere to drop text, or connect elements by dragging from their anchor dots"), and a **Browse templates** button that opens the template picker. The card sits on top of any background pattern so it stays legible on coloured / patterned canvases.
 - The empty-state card disappears once the active tab has at least one element.
 
@@ -1137,7 +1137,7 @@ The active tab carries a **`⋯` ellipsis button** to the right of its name. Cli
 - **Duplicate** — creates a copy of the tab (same elements, same pattern, name suffixed with " copy") inserted directly after the source, and switches to it.
 - **Clear content** — wipes every element from the tab in one undoable commit. Disabled when the tab is already empty or when the tab is locked.
 - **Lock / Unlock** — toggles `tab.locked`. While locked, every element on the tab is read-only (matches per-element lock semantics), the palette's Add buttons stop firing, theme / canvas changes are blocked, **the tab itself can't be deleted** (the Delete row is disabled — unlock first), and the tab pill shows the padlock icon (see above).
-- **Add to another design** — submenu listing every other design the participant owns. Picking one links the tab into that design via `POST /api/designs/:id/tabs/:tabId/link` (the source tab stays put; both designs now share the same `tabs.data` row so edits propagate, see [Tab ↔ design many-to-many](../006-design/tab-design-many-to-many.md)).
+- **Add to another design** — submenu listing every other design the participant owns. Picking one copies the tab into that design as a new tab (the source tab stays put; each design keeps its own copy, see [Tab ↔ design many-to-many](../006-design/tab-design-many-to-many.md)).
 - **Delete** — removes the tab and falls back to a neighbouring tab. Disabled when only one tab remains.
 
 The menu renders through a **portal** to `document.body` so it isn't clipped by the tab bar's horizontal scroll. It positions itself from the ellipsis button's bounding rect (tab surface) or at the cursor / footer-button point (canvas surface), clamping back on-screen at every viewport edge.

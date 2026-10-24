@@ -1,5 +1,11 @@
 # Tab ↔ design many-to-many
 
+> **No longer how tabs work.** Each design keeps its own content in its own Durable Object
+> ([API app](../015-api/api.md) "Storage"), so a tab belongs to exactly one design and cannot be shared between
+> two. **Add to Design** copies the tab into the other design as a new tab (`apiCopyTabTo`,
+> `apps/live/lib/api/tabs.ts`); there is no link route. The `design_tabs` table survives inside each design's
+> SQLite as its tab order. What follows records the shared-tab design and its migrations, which are gone.
+
 ## Why
 
 Originally every `tabs` row carried a single `design_id` FK — one tab belonged to one design. That worked for the editor's "tabs are folders inside a design" mental model, but it forecloses a category of features the user has flagged for the next phase:

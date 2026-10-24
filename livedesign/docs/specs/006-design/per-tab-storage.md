@@ -1,5 +1,9 @@
 # Per-tab storage
 
+> **Storage today.** The `tabs` rows described here live in each design's own SQLite, in its Durable Object
+> ([API app](../015-api/api.md) "Storage"), not in a shared D1 database; the numbered migrations below are history.
+> A tab belongs to one design ([Tab ↔ design many-to-many](tab-design-many-to-many.md)).
+
 Move from the single-row `diagrams.data` JSON blob (which serialises every
 tab on every save) to a normalised `designs` + `tabs` split where each
 tab is its own row. The autosave path then only ships the tab that

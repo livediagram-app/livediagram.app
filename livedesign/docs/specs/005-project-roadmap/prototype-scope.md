@@ -9,7 +9,7 @@ Seven apps: six deployable to Cloudflare Workers (with Static Assets for the thr
 - **marketing**: static landing site at `/`.
 - **live**: the page editor (clean routes, no `/live` prefix). Statically exported Next.js.
 - **help**: the help centre at `/help`. Statically exported Next.js with MDX articles.
-- **api**: Cloudflare Worker holding the REST endpoints + Durable Object realtime room. D1 is the durable store.
+- **api**: Cloudflare Worker holding the REST endpoints + Durable Object per design, holding its content and running its realtime room.
 - **mcp**: Cloudflare Worker at its own host, `mcp.livedesign.app`, that connects the editor to AI tools ([MCP server](../015-api/mcp-server.md)).
 - **router**: Worker that stitches marketing, live, help and api under one hostname, and redirects `/telemetry` to liveworkspace's dashboard ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 - **cli**: the `livedesign` command line ([CLI](../015-api/cli.md)), published to npm.

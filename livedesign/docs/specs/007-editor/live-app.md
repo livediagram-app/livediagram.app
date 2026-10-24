@@ -18,7 +18,7 @@ A guest can open `/new`, create a design, and use the full canvas without an acc
 
 ## Persistence
 
-The editor talks to the Cloudflare Worker API documented in [11-api.md](../015-api/api.md). `apps/live/lib/api-client.ts` is the single boundary — the editor never reads or writes design state to `localStorage`. D1 holds the durable snapshot; per-tab content is split into its own rows (see [13-per-tab-storage.md](../006-design/per-tab-storage.md)) so autosave scope shrinks to the tab being edited.
+The editor talks to the Cloudflare Worker API documented in [11-api.md](../015-api/api.md). `apps/live/lib/api-client.ts` is the single boundary — the editor never reads or writes design state to `localStorage`. The design's Durable Object holds the durable copy; per-tab content is split into its own rows (see [13-per-tab-storage.md](../006-design/per-tab-storage.md)) so autosave scope shrinks to the tab being edited.
 
 `localStorage` is still used for **identity bootstrap only** — the liveworkspace guest token under `livedesign:v2:guest-token` ([Auth + guest access](../014-identity/auth-and-guest-access.md) "Guests"), plus a `livedesign:v2:name-confirmed` flag once the user has named themselves. Everything else flows through the API.
 

@@ -15,7 +15,7 @@ These docs are the practical guide: what the app does, how to run it locally, ho
 - ./development/architecture.md - when you need the repo shape: eight apps (one a CLI), twenty-four packages, Cloudflare-only deploys
 - ./development/local-development.md - when cloning, installing, and running the apps locally
 - ./development/contributing.md - when proposing a change: specs-first workflow, code style, tests, PRs
-- ./operations/self-hosting.md - when running your own copy on Cloudflare Workers + D1, optionally with sign-in through liveworkspace accounts
+- ./operations/self-hosting.md - when running your own copy on Cloudflare Workers + Durable Objects, with liveworkspace's services, optionally with sign-in through liveworkspace accounts
 - ./research/README.md - when you need measurements and experiment reports
 
 ## How docs relate to specs

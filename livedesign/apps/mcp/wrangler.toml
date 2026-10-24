@@ -52,7 +52,7 @@ service = "livedesign-api"
 
 # OAuth 2.1 state (docs/specs/015-api/mcp-server.md §3): client registrations, authorize sessions, and
 # codes — all short TTLs. Provision with `wrangler kv namespace create OAUTH_KV`
-# and paste the id here (the api worker needs no KV; token storage stays in D1).
+# and paste the id here (the api worker needs no KV, and API tokens are liveworkspace accounts').
 [[kv_namespaces]]
 binding = "OAUTH_KV"
 id = "00000000000040008000000000000001"

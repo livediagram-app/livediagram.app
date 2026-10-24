@@ -1,8 +1,8 @@
 # Presentation mode
 
 > **Status: implemented.** The deck model and its pure helpers live in
-> `packages/design/src/slide-deck.ts`, persistence in the baseline migration
-> (`designs.presentation`), and the editor surface in `useSlideDeck.ts`,
+> `packages/design/src/slide-deck.ts`, persistence in the design's own SQLite
+> (`design.presentation`, `apps/api/src/design-room/design-schema.ts`), and the editor surface in `useSlideDeck.ts`,
 > `SlideDeckPanel.tsx`, `PresentationHost.tsx`, `PresentationOverlay.tsx`,
 > `PresentationHud.tsx` and `PresentationElementPopover.tsx`. The two open
 > questions at the end are follow-ups, not blockers.

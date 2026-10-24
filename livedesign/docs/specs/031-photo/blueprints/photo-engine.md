@@ -254,7 +254,7 @@ params) }`; `FILTERS[id] = { id, name, category, params: ParamSpec[], margin(par
 
 ## Data and persistence
 
-- `Tab.photos` is stored in the tab body (D1 `tabs.data`). Each layer's tile maps are small: 610 tile keys at most.
+- `Tab.photos` is stored in the tab body (`tabs.data`, in the design's own SQLite). Each layer's tile maps are small: 610 tile keys at most.
 - `photo_blobs (id TEXT PRIMARY KEY, content_type TEXT NOT NULL, byte_size INTEGER NOT NULL, created_at INTEGER
 NOT NULL)`; `photo_blob_refs (tab_id TEXT NOT NULL, blob_id TEXT NOT NULL, created_at INTEGER NOT NULL, PRIMARY
 KEY (tab_id, blob_id)) WITHOUT ROWID`; indexes `photo_blob_refs_blob_idx (blob_id)` and `photo_blob_refs_created_idx
@@ -344,7 +344,7 @@ Log fingerprints (`debugLog`, `console.info`, unless stated): `[photo] session-o
 tiles=<n>`, `[photo] commit failed` (warn), `[photo] upload-batch n=<n> bytes=<b>`, `[photo] upload-failed`
 (warn), `[photo] tile-missing` (warn), `[photo] preview-missing` (warn), `[photo] gl-lost` (warn),
 `[photo] gl-unavailable`, `[photo] remote-tiles-held`, `[photo] frame-wait`, `[photo] framed`, `[photo] clipboard` (warn), `[photo-blobs] refused
-<reason>` (api), `photo sweep: removed <n> refs, deleted <m> blobs` (api), `photo sweep: R2 delete failed` (api,
+<reason>` (api), `[photo-blobs] sweep` with its counts (api), `[photo-blobs] release failed` (api,
 error).
 
 ## Testing

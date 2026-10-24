@@ -384,7 +384,7 @@ existing validator). The api, the MCP tools and every import path validate throu
 
 ## Data and persistence
 
-- **Persisted.** `Endpoint.anchor` in element JSON: D1 tab storage, IndexedDB offline designs,
+- **Persisted.** `Endpoint.anchor` in element JSON: the design's stored tabs, IndexedDB offline designs,
   JSON export, templates. The eight old ids keep their meaning; the eight new ones are additive.
   No migration.
 - **`manual`.** Removed from the type. No code writes it. Stored `manual: true` flags are inert,

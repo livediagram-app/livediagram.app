@@ -143,9 +143,9 @@ a guest visit is still recorded in `shared_with` and counted as
   and is silently skipped);
 - no-ops when the owner's `notifyDesignJoin` pref is `false`;
 - no-ops unless it wins the per-design throttle: at most one join email per
-  design per 15 minutes (`claimJoinNotify`, an atomic conditional `UPDATE` of
-  `designs.join_notified_at`, the baseline migration; the new-comment email's rule
-  on its own column);
+  design per 15 minutes (claimed inside the design's Durable Object, which sends the email,
+  `apps/api/src/email/notifications.ts` `notifyDesignJoin`; the new-comment email's rule
+  on its own claim);
 - otherwise sends the **design-joined** email: "Someone just opened
   _{design name}_", with a CTA back to the design.
 

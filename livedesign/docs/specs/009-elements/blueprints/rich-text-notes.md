@@ -211,7 +211,7 @@ response.
 
 ## Data and persistence
 
-- **Persisted:** `note`, `noteRich` on the element, in the tab JSON (D1 or IndexedDB), through the
+- **Persisted:** `note`, `noteRich` on the element, in the tab JSON (the design's Durable Object or IndexedDB), through the
   normal tab sync.
 - **Never persisted:** `noteOpenId`, the popover position, the link field's draft, `ActiveFormat`.
 - **Readers of the mirror:** the note indicator's has-a-note test (`buildIndicatorItems`), the menu's Add / Edit Note
@@ -247,7 +247,7 @@ response.
   `textContent`; paste reads `text/plain` only.
 - **Links.** `target="_blank"` with `rel="noopener noreferrer"`; a click stops propagation so it
   never doubles as a canvas gesture.
-- **Size.** A note is bounded only by `MAX_TAB_BYTES` (just under 2 MB, D1's row cap) at the api.
+- **Size.** A note is bounded only by `MAX_TAB_BYTES` (just under 2 MB, a Durable Object SQLite row's cap) at the api.
 
 ## Performance and limits
 

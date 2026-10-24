@@ -84,17 +84,17 @@ page as every thread does.
 
 ## The email
 
-After a comment with mentions is added, the author's editor asks the api to
-notify: `POST /api/teams/<teamId>/notify-mention` with `{ designId,
-commentText, mentions: [{ userId?, memberId? }] }`. It is signed-in only (the
-teams mutation gate) and best-effort: the comment has already persisted, a
-failure is swallowed, the response is `202`.
+The api sends the mention emails itself, after it stores a comment that
+mentions teammates: a comment posted through the comment routes, or new
+comments arriving with a tab save (`apps/api/src/routes/comment-routes.ts`,
+`tab-put-route.ts`). Only a signed-in person's comment on a team design sends
+them (never an API token's), and they are best-effort: the comment has
+already persisted, and a failure is logged and swallowed.
 
 The server decides everything that matters:
 
-- The caller is a **joined** member of the team, and the team is the
-  design's team (`designs.team_id`), and the caller can access the design.
-  Otherwise `404`, never probing.
+- The design is in a team's library, and its team is the one whose people
+  can be mentioned.
 - Each mention resolves to a member of that team (joined or invited) other
   than the caller; anything else is skipped silently. At most 20.
 - The author name comes from the caller's verified identity (participant
@@ -103,19 +103,18 @@ The server decides everything that matters:
 - Each recipient's **"Someone Mentions Me in a Comment"** preference
   (`notifyMentions`, default on) is honoured; an invited member with no
   account has no preferences and is emailed at their invite address.
-- `commentText` is required, at most 5000 characters; the email
-  quotes the first 280, cut at a word with an ellipsis.
-- Each email is **claimed** before it goes (`notify_email_claims`): a hash of the author, design, recipient and the comment's text is sent at most once per 24 hours
+- The email
+  quotes the first 280 characters of the comment, cut at a word with an ellipsis.
+- Each email is **claimed** before it goes (`notify_claims`, in the design's own SQLite): a hash of the author, design, recipient and the comment's text is sent at most once per 24 hours
   (`NOTIFY_EMAIL_DEDUPE_MS`), so a replayed request emails nobody twice, and one
   author's action-assigned and mention emails together are capped at 60 an hour across all their designs
   (`NOTIFY_EMAILS_PER_SENDER_PER_HOUR`, counted in the author's own per-person store by `@liveworkspace/index-app`
   `claimNotice`). A refused claim sends nothing and logs
-  `[notify-email] skipped`; the daily cron deletes claims past the 24 hours, and
-  deleting an account deletes the claims it sent ([Owner-keyed data](../015-api/api.md#owner-keyed-data)).
+  `[notify-email] skipped`; claims past the longest window are dropped as new ones are claimed, and a purged
+  design takes its claims with it.
 - A comment and an
-  assigned action ([Assigned actions](assigned-actions.md)) are deduped by exact text: neither is stored where the route can read it when the request lands
-  (both reach D1 only with the next tab save), so a client that rewords each
-  request gets past the dedupe, and the hourly cap is the bound.
+  assigned action ([Assigned actions](assigned-actions.md)) are deduped by exact text, so a client that rewords each
+  one gets past the dedupe, and the hourly cap is the bound.
 
 The email reads **"{author} mentioned you in {design}"**, quotes the
 comment, and has one button, **Open the design**. It is sent only when email is

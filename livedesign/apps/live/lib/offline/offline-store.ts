@@ -48,9 +48,8 @@ export type OfflineDesignRecord = {
   // whole product minus the server, not a reduced one. Optional so records
   // written before the field existed stay valid.
   presentation?: string | null;
-  // Starred in the Explorer (docs/specs/013-workspace/favourites.md). Cloud stars live in a D1 table whose
-  // design_id is a foreign key into `designs`, which an offline design has
-  // no row in, so its star has to live here instead. Optional so records
+  // Starred in the Explorer (docs/specs/013-workspace/favourites.md). Cloud stars are liveworkspace's index's,
+  // on an item an offline design does not have, so its star has to live here instead. Optional so records
   // written before the field existed stay valid.
   favourite?: boolean;
   // When the design was moved to this browser's local Trash

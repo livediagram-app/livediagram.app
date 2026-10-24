@@ -120,8 +120,8 @@ A trashed design is gone from everywhere a live one shows up:
 
 Nothing about it is lost: its stars, share links, history, Timeline events and
 images stay where they are and come back on restore. Images it references stay
-referenced until the purge, so the unused-image retention never reaps them from
-under a restorable design ([Images](../009-elements/images.md)).
+referenced until the purge, so the media service's sweep of unused images never
+reaps them from under a restorable design ([Images](../009-elements/images.md)).
 
 Everything that would read or change it answers with a clear **deleted** state
 rather than a generic error:
@@ -149,27 +149,29 @@ could have opened it (its owner, a joined team member, a share-link holder).
 Anyone else gets the same not-found they would for an id that never existed,
 so the state leaks nothing.
 
-## Tabs shared with other designs
+## Tabs copied into other designs
 
-A tab can sit in several designs
-([Tab ↔ design many-to-many](../006-design/tab-design-many-to-many.md)).
-Trashing a design does not touch its tabs, so a tab it shares with another
-design carries on there, editable as before. When the trashed design is
-purged, its tabs go the way every design delete takes them: a tab no other
-design holds goes, a tab still linked elsewhere stays exactly where it is.
+A tab belongs to one design: **Add to Design** copies it
+([Tab ↔ design many-to-many](../006-design/tab-design-many-to-many.md)), so a
+copy in another design is its own tab and carries on there whatever happens to
+this one. Trashing a design does not touch its tabs; purging it removes them
+with the rest of its content.
 
 ## The purge
 
-The api worker's daily `0 3 * * *` cron purges every design that has been in
-the Trash for 30 days or more, through the same removal that deletes a design
-today (`designRemovalStatements`), plus its snapshot, its Timeline events and
-its realtime room's storage ([API](../015-api/api.md) "Purging a room"), where the
-collaboration ledger kept the text of its comments, ideas and answers.
-The purge is set-based and capped per run, so a backlog drains over a few days
-rather than overrunning one invocation. It logs how many it purged.
+liveworkspace's index purges every design that has been in the Trash for 30
+days or more, on its daily cron (04:23 UTC). It removes the design's index rows
+(its filing, share links, stars, Timeline events, comment and action rows) and
+asks the api to drop the content (`DELETE /api/internal/items/:id`, with
+`INDEX_KEY`; `apps/api/src/routes/internal-items.ts`): the design's Durable
+Object drops its storage, tabs, changesets and collaboration ledger included
+([API](../015-api/api.md) "Purging a room"), and the api deletes its snapshot
+from R2. The index keeps a tombstone until the api confirms, and retries a
+missed one, so a purge that fails once still lands
+([one-explorer-contracts.md](../../../../liveworkspace/docs/one-explorer-contracts.md) "Purging").
 
-A purge is therefore due 30 days after deletion and happens at the next 03:00
-UTC after that; a design can sit in the Trash for up to a day beyond its 30.
+A purge is therefore due 30 days after deletion and happens at the index's next
+daily run after that; a design can sit in the Trash for up to a day beyond its 30.
 
 Delete permanently and Empty Trash run the same purge, immediately, for the
 designs they name.
@@ -195,8 +197,10 @@ The Trash has its own resource:
   team's, each row naming its team and its `reason` (`deleted` or `empty`).
 - `POST /api/trash/:id/restore`: restore one.
 - `DELETE /api/trash/:id`: purge one.
-- `DELETE /api/trash`: empty the personal Trash; `?team=<id>` empties that
-  team's.
+
+Each is the index's operation, passed on with the caller's grant. Empty Trash is
+the shared Explorer's, straight to the index (`DELETE /trash`, `?team=<id>` for
+a team's); the api has no route for it.
 
 An API token reaches the Trash like it reaches everything else
 ([Public API and API tokens](../015-api/public-api-and-tokens.md)); a
@@ -226,16 +230,17 @@ back for a deleted design is the question these answer; no names are sent.
 
 ## Decided trade-offs
 
-- **A column, not a table.** Trashing stamps `designs.trashed_at`. Moving rows
-  to a separate table would have to move tabs, links, share links, stars and
-  history with them, and move them back on restore; a timestamp leaves every
-  foreign key standing, which is what makes restore exact.
-- **Fail closed.** The design reads every door uses exclude trashed rows, so a
-  path nobody remembered answers not-found rather than serving a deleted
-  design. Only the doors that owe a person the deleted state look further.
+- **A stamp, not a move.** Trashing stamps the design's index item
+  (`trashedAt`, `trashReason`). Nothing moves: its content stays in its Durable
+  Object and its share links, stars and history stay in the index, which is
+  what makes restore exact.
+- **Fail closed.** The index grants nothing on a trashed item but its Trash
+  operations, so a door nobody remembered answers not-found rather than serving
+  a deleted design. Only the doors that owe a person the deleted state look
+  further.
 - **No "deleted by".** The Trash does not record who binned a design. It would
   be one more owner id to erase on account deletion, and nothing in the view
-  needs it. It records only why, `designs.trash_reason`: unset for a delete,
+  needs it. It records only why, the item's `trashReason`: `deleted` for a delete,
   `empty` for the [clean-up](empty-design-cleanup.md).
 - **Timeline history is hidden, not swept.** A hard delete sweeps a design's
   Timeline events; trashing hides them, so a restored design comes back with

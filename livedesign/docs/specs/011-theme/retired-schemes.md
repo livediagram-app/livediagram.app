@@ -65,8 +65,9 @@ element migrations: retired groups and docks). Every place a stored tab enters a
 - the offline store's tab load, for designs kept only in this browser;
 - a file import, since an exported file is a stored tab like any other.
 
-It runs at read time rather than as a D1 migration because the rewrite needs the element model (per-kind colour
-fields), which SQL over a JSON blob cannot express safely, and because offline designs and files never reach D1.
+It runs at read time rather than as a stored-data migration because the rewrite needs the element model (per-kind
+colour fields), which SQL over a JSON blob cannot express safely, and because offline designs and files never reach
+the api.
 
 ## Properties
 

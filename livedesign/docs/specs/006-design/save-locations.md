@@ -13,7 +13,7 @@ anything on the canvas. A design in This Browser still says what it is on the de
 
 | Location         | What it means                                                                                                |
 | ---------------- | ------------------------------------------------------------------------------------------------------------ |
-| **livedesign**   | A normal cloud design, saved to the api (D1), reachable from any device.                                     |
+| **livedesign**   | A normal cloud design, saved to the api (its Durable Object), reachable from any device.                     |
 | **This Browser** | Offline Mode ([Offline Mode](offline-mode.md)): saved only in this browser's IndexedDB, never to the server. |
 
 ## The default depends on who is creating

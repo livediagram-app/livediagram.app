@@ -113,7 +113,7 @@ collapsible has no such button.
 
 The layout is stored in **`localStorage` only**, under `livedesign:panel-layout:v1`, on
 the browser that set it. It is **not** synced to the account and **not** part of the
-D1-backed user-preferences blob ([User preferences](user-preferences.md)): panel placement is a per-device ergonomic
+account-synced user-preferences blob ([User preferences](user-preferences.md)): panel placement is a per-device ergonomic
 choice (screen size, handedness, external monitor) rather than a portable account setting,
 and guests get it too. This is deliberately a different store from [User preferences](user-preferences.md).
 

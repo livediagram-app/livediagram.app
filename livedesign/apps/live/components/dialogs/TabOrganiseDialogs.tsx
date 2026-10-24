@@ -2,8 +2,8 @@
 
 // The tab bar's two organise pickers as proper centred modals: "Add to
 // Folder" (docs/specs/006-design/tab-folders.md — file the tab into a one-level tab-bar folder) and
-// "Add to Design" (docs/specs/006-design/tab-design-many-to-many.md — link the tab into another design; the tab is
-// shared, not copied). They used to be cramped sub-views squeezed inside the
+// "Add to Design" (docs/specs/006-design/tab-design-many-to-many.md — copy the tab into another design as a new
+// tab; each design keeps its own content). They used to be cramped sub-views squeezed inside the
 // tab portal menu; the modal gives them the same tile-grid language as the
 // shared placement browser (docs/specs/013-workspace/folders.md), with room to breathe and a filter for
 // long design lists. Single-click commits — both are one-shot pickers.

@@ -55,9 +55,9 @@ Drop an entry once an upstream release makes it redundant.
 
 A merge to `main` that passes CI **deploys automatically to staging** —
 [staging.livedesign.app](https://staging.livedesign.app), a complete copy of the
-platform with its own database ([Staging environment](../specs/016-platform/staging-environment.md)). Nobody
+platform with its own data, against staging.liveworkspace.app's services ([Staging environment](../specs/016-platform/staging-environment.md)). Nobody
 presses anything. Within a few minutes your change is running somewhere public, and any
-D1 migration in it has been applied to a real remote database.
+new Durable Object `[[migrations]]` tag in it has been applied for real.
 
 Production is **not** affected: that deploy stays manual (`Deploy Production` in the
 Actions tab) and someone decides when to press it.
@@ -78,7 +78,7 @@ Every workspace that type-checks lists one TypeScript, **TypeScript 7**, the Go 
 TypeScript 7.0 ships no classic compiler API (`import ts from 'typescript'` finds nothing to call). Code that reads TypeScript source does it one of two ways:
 
 - **Linting** is oxlint, which parses TypeScript itself ([Linting](../specs/003-system-architecture/linting.md)).
-- **The repo's static guards** (the palette tests, the telemetry emitter scan, the optical guard) parse with `parseSourceFiles` from `@livedesign/source-ast`, which asks TypeScript 7's native compiler through `typescript/unstable/sync` and hands back `typescript/unstable/ast` trees: the same nodes, `is*` guards and `SyntaxKind` the classic API had, with `node.forEachChild(visit)` in place of `ts.forEachChild(node, visit)` ([Source scanners](../specs/003-system-architecture/source-scanners.md)).
+- **The repo's static guards** (the palette tests, the telemetry emitter scan, the optical guard) parse with `parseSourceFiles` from `@liveworkspace/source-ast`, which asks TypeScript 7's native compiler through `typescript/unstable/sync` and hands back `typescript/unstable/ast` trees: the same nodes, `is*` guards and `SyntaxKind` the classic API had, with `node.forEachChild(visit)` in place of `ts.forEachChild(node, visit)` ([Source scanners](../specs/003-system-architecture/source-scanners.md)).
 
 `apps/help/lib/typescript-version.test.ts` holds every workspace to the root manifest's `typescript` and rejects any alias to another TypeScript, so a second compiler cannot creep back in.
 
