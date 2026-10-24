@@ -18,6 +18,8 @@
   },
   "dependencies": {
     "@liveplanner/api-schema": "workspace:*",
+    "@liveplanner/project": "workspace:*",
+    "@liveplanner/project-views": "workspace:*",
     "@liveplanner/edit-operations": "workspace:*",
     "@liveplanner/forms": "workspace:*",
     "@liveplanner/icons": "workspace:*",
@@ -30,7 +32,7 @@
     "@liveworkspace/index-client": "workspace:*",
     "@liveworkspace/media": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
-    "@liveworkspace/sites": "workspace:^",
+    "@liveworkspace/sites": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*"
   },
   "devDependencies": {

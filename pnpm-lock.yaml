@@ -120,7 +120,7 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/settings
       '@liveworkspace/sites':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../../packages/sites
       '@liveworkspace/telemetry':
         specifier: workspace:*
@@ -1293,7 +1293,7 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/settings
       '@liveworkspace/sites':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../../packages/sites
       '@liveworkspace/telemetry':
         specifier: workspace:*
@@ -2595,7 +2595,7 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/settings
       '@liveworkspace/sites':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../../packages/sites
       '@liveworkspace/telemetry':
         specifier: workspace:*
@@ -3750,7 +3750,7 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/settings
       '@liveworkspace/sites':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../../packages/sites
       '@liveworkspace/telemetry':
         specifier: workspace:*
