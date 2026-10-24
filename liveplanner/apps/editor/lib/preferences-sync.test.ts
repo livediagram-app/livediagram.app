@@ -38,7 +38,7 @@ const mockedPut = vi.mocked(apiPutPreferences);
 // every save was refused.
 function fullAccount(): UserPreferences {
   return {
-    quickSwatchOverrides: { brand: { fill: ['#112233', null, '#445566'] } } as never,
+    quickSwatchOverrides: { brand: { fill: ['#112233', null, '#445566'] } },
     powerUserBaseline: {
       showMinimap: { before: { showMinimap: true }, applied: { showMinimap: false } },
       notificationsEnabled: { before: {}, applied: { notificationsEnabled: false } },

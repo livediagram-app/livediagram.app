@@ -234,7 +234,7 @@ export function readUserPreferences(): UserPreferences {
     if (typeof parsed !== 'object' || parsed === null) return {};
     // Keep unknown keys: forward-compat for future-versioned flags
     // a different client may have written.
-    return parsed as UserPreferences;
+    return parsed;
   } catch {
     return {};
   }
