@@ -111,7 +111,7 @@ describe('Page edits', () => {
       id: 't',
       name: 'T',
       elements: [box('a', 0)],
-      pages: [{ id: 'page-1', orientation: 'portrait', kind: 'infographic' }],
+      pages: [{ id: 'page-1', orientation: 'portrait', kind: 'wireframe' }],
     } as unknown as Tab);
     h.edits().removePage!('page-1');
     expect(h.tab().elements).toEqual([]);

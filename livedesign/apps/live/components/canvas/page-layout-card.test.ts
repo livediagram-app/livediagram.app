@@ -12,7 +12,7 @@ import {
 const page = (over: Partial<LaidOutPage> = {}) =>
   ({
     id: 'p1',
-    kind: 'infographic',
+    kind: 'logo',
     rect: { x: 0, y: 0, width: 1200, height: 900 },
     ...over,
   }) as LaidOutPage;
@@ -27,7 +27,7 @@ const ok: LayoutCardContext = {
 };
 
 describe('layoutCardShows', () => {
-  it('shows on an empty infographic page someone may edit', () => {
+  it('shows on an empty logo page someone may edit', () => {
     expect(layoutCardShows(page(), ok)).toBe(true);
   });
 
@@ -49,6 +49,8 @@ describe('layoutCardShows', () => {
   it('never shows on a locked or blank-started page, or one too small on screen', () => {
     expect(layoutCardShows(page({ locked: true }), ok)).toBe(false);
     expect(layoutCardShows(page({ startedBlank: true }), ok)).toBe(false);
+    // A wireframe's layouts are the Layout button's alone.
+    expect(layoutCardShows(page({ kind: 'wireframe' }), ok)).toBe(false);
     expect(layoutCardShows(page(), { ...ok, zoom: 0.2 })).toBe(false);
   });
 });
