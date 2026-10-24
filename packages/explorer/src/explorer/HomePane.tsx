@@ -18,6 +18,7 @@ import {
   sharedRecentlyLoader,
 } from '../data/viewLists';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
+import { EmptyState } from '../ui/EmptyState';
 import { FOCUS_RING, MUTED, RENAME_INPUT } from '../ui/classes';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { useItemDrag } from '../drag/drag';
@@ -70,8 +71,6 @@ const COMPACT_GRID = 'grid grid-cols-2 gap-2.5 lg:grid-cols-4';
 const THUMB_EDGE =
   'flex items-center justify-center overflow-hidden border border-slate-100 bg-white dark:border-slate-700 dark:bg-slate-900';
 const SKELETON = 'rounded-md bg-slate-200/70 motion-safe:animate-pulse dark:bg-slate-800';
-const EMPTY_SLOT =
-  'border border-dashed border-slate-300 bg-white/60 dark:border-slate-600 dark:bg-slate-800/50';
 // Readable over a thumbnail: a frosted chip rather than the row button's bare glyph.
 const MENU_CHIP =
   '!absolute bg-white/90 shadow-sm ring-1 ring-slate-200 pointer-fine:group-focus-within:opacity-100 dark:bg-slate-900/90 dark:ring-slate-700';
@@ -186,25 +185,16 @@ export function HomePane({ onOpenNav, hero }: { onOpenNav?: () => void; hero: bo
                 Try again
               </button>
             </div>
-          ) : !wide ? (
-            recent.loading ? (
-              <StripSkeleton />
-            ) : (
-              <Strip items={phoneOrder(recent.items)} local={localOpened} empty={empty} />
-            )
           ) : recent.loading ? (
-            <GridSkeleton />
+            wide ? (
+              <GridSkeleton />
+            ) : (
+              <StripSkeleton />
+            )
           ) : empty ? (
-            <div className={LARGE_GRID}>
-              <div
-                className={`flex h-[12.5rem] flex-col items-center justify-center gap-2 rounded-[18px] px-4 text-center ${EMPTY_SLOT}`}
-              >
-                <span className="text-slate-400 [&_svg]:h-6 [&_svg]:w-6">
-                  <ClockIcon />
-                </span>
-                <EmptyWords />
-              </div>
-            </div>
+            <HomeEmpty />
+          ) : !wide ? (
+            <Strip items={phoneOrder(recent.items)} local={localOpened} />
           ) : (
             <div className="flex flex-col gap-4">
               <CardGroup
@@ -277,15 +267,16 @@ export function phoneOrder(items: ShownItem[]): ShownItem[] {
   return out;
 }
 
-function EmptyWords() {
+// Jump Back In with nothing opened yet: the Explorer's one empty state, as every other list shows it.
+function HomeEmpty() {
   const { kind } = useExplorer();
   return (
-    <>
-      <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-        No {kind.lowerMany} yet
-      </span>
-      <span className={`text-xs ${MUTED}`}>The {kind.lowerMany} you open will gather here.</span>
-    </>
+    <EmptyState
+      compact
+      icon={<ClockIcon />}
+      title={`No ${kind.lowerMany} yet`}
+      description={`The ${kind.lowerMany} you open will gather here.`}
+    />
   );
 }
 
@@ -469,74 +460,58 @@ const JumpBackInCard = memo(function JumpBackInCard({
 });
 
 /** A phone's Jump Back In: one strip of small tiles, then See More. */
-function Strip({
-  items,
-  local,
-  empty,
-}: {
-  items: ShownItem[];
-  local: readonly ThisBrowserItem[];
-  empty: boolean;
-}) {
+function Strip({ items, local }: { items: ShownItem[]; local: readonly ThisBrowserItem[] }) {
   const { Link, itemHref, viewHref, navigate } = useExplorer();
   const { host } = useThisBrowserItems();
   return (
     <div className="relative -mx-4 sm:mx-0">
       <div className="flex h-28 snap-x scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 pt-1 sm:-mx-1 sm:scroll-px-1 sm:px-1">
-        {empty ? (
-          <div className="flex w-48 shrink-0 flex-col justify-center gap-1">
-            <EmptyWords />
-          </div>
-        ) : (
-          <>
-            <ul className="flex shrink-0 gap-3">
-              {items.map((item) => (
-                <li key={item.id} className="w-32 shrink-0 snap-start">
-                  <Link
-                    href={itemHref(item)}
-                    aria-label={item.title || 'Untitled'}
-                    className={`group block min-w-0 rounded-md ${FOCUS_RING}`}
-                  >
-                    <Thumb item={item} className="h-20 w-32 rounded-md" />
-                    <span className="mt-1 block h-4 truncate text-xs leading-4 text-slate-700 group-hover:text-slate-900 dark:text-slate-300 dark:group-hover:text-slate-100">
-                      {item.title || 'Untitled'}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-              {local.map((item) => (
-                <li key={item.id} className="w-32 shrink-0 snap-start" data-this-browser-card="">
-                  <a
-                    href={host?.itemHref(item)}
-                    aria-label={item.title || 'Untitled'}
-                    className={`group block min-w-0 rounded-md ${FOCUS_RING}`}
-                  >
-                    <span className="flex h-20 w-32 items-center justify-center rounded-md bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-200">
-                      <BrowserIcon size={20} />
-                    </span>
-                    <span className="mt-1 block h-4 truncate text-xs leading-4 text-slate-700 group-hover:text-slate-900 dark:text-slate-300 dark:group-hover:text-slate-100">
-                      {item.title || 'Untitled'}
-                    </span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-            <a
-              href={viewHref({ kind: 'recent' })}
-              onClick={(e) => {
-                if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
-                e.preventDefault();
-                navigate({ kind: 'recent' });
-              }}
-              className={`group block shrink-0 snap-start rounded-md ${FOCUS_RING}`}
-            >
-              <span className="flex h-20 w-32 flex-col items-center justify-center gap-1 rounded-md border border-dashed border-slate-300 text-xs font-medium text-brand-700 transition group-hover:border-slate-400 group-hover:bg-slate-100 dark:border-slate-600 dark:text-brand-300 dark:group-hover:border-slate-500 dark:group-hover:bg-slate-800/70">
-                <ChevronRightIcon size={16} />
-                {HOME_COPY.seeMore}
-              </span>
-            </a>
-          </>
-        )}
+        <ul className="flex shrink-0 gap-3">
+          {items.map((item) => (
+            <li key={item.id} className="w-32 shrink-0 snap-start">
+              <Link
+                href={itemHref(item)}
+                aria-label={item.title || 'Untitled'}
+                className={`group block min-w-0 rounded-md ${FOCUS_RING}`}
+              >
+                <Thumb item={item} className="h-20 w-32 rounded-md" />
+                <span className="mt-1 block h-4 truncate text-xs leading-4 text-slate-700 group-hover:text-slate-900 dark:text-slate-300 dark:group-hover:text-slate-100">
+                  {item.title || 'Untitled'}
+                </span>
+              </Link>
+            </li>
+          ))}
+          {local.map((item) => (
+            <li key={item.id} className="w-32 shrink-0 snap-start" data-this-browser-card="">
+              <a
+                href={host?.itemHref(item)}
+                aria-label={item.title || 'Untitled'}
+                className={`group block min-w-0 rounded-md ${FOCUS_RING}`}
+              >
+                <span className="flex h-20 w-32 items-center justify-center rounded-md bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-200">
+                  <BrowserIcon size={20} />
+                </span>
+                <span className="mt-1 block h-4 truncate text-xs leading-4 text-slate-700 group-hover:text-slate-900 dark:text-slate-300 dark:group-hover:text-slate-100">
+                  {item.title || 'Untitled'}
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+        <a
+          href={viewHref({ kind: 'recent' })}
+          onClick={(e) => {
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+            e.preventDefault();
+            navigate({ kind: 'recent' });
+          }}
+          className={`group block shrink-0 snap-start rounded-md ${FOCUS_RING}`}
+        >
+          <span className="flex h-20 w-32 flex-col items-center justify-center gap-1 rounded-md border border-dashed border-slate-300 text-xs font-medium text-brand-700 transition group-hover:border-slate-400 group-hover:bg-slate-100 dark:border-slate-600 dark:text-brand-300 dark:group-hover:border-slate-500 dark:group-hover:bg-slate-800/70">
+            <ChevronRightIcon size={16} />
+            {HOME_COPY.seeMore}
+          </span>
+        </a>
       </div>
     </div>
   );

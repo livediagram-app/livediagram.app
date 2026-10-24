@@ -58,6 +58,10 @@ classes, add one line next to the host's Tailwind entry:
 Dark mode follows the host's `.dark` variant. The empty-state art animates only if the host theme defines
 `animate-empty-ring` and `animate-empty-float`; liveplanner's theme does. Without them it stands still.
 
+Every list with nothing to show says so with that one empty state (`ui/EmptyState.tsx`): the views, the
+panel's panes, and Home's Jump Back In ("No <items> yet"), on a phone as on a desktop. No list draws an empty
+box of its own.
+
 ## API
 
 ### `<Explorer>`

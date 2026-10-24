@@ -90,4 +90,23 @@ describe('Home', () => {
       limit: 8,
     });
   });
+
+  it("says it has nothing with the Explorer's one empty state, not a box of its own", async () => {
+    const index = createFakeIndex({ items: [] });
+    const { container } = render(
+      <Explorer
+        app="livedesign"
+        client={index.client}
+        view={{ kind: 'home' }}
+        onNavigate={vi.fn()}
+        itemHref={(i) => `/p/${i.id}`}
+        onCreate={vi.fn()}
+        heroHidden
+      />,
+    );
+    const title = await screen.findByRole('heading', { name: 'No designs yet' });
+    expect(title.closest('[data-empty-state="compact"]')).not.toBeNull();
+    expect(screen.getByText('The designs you open will gather here.')).toBeTruthy();
+    expect(container.querySelector('.border-dashed')).toBeNull();
+  });
 });
