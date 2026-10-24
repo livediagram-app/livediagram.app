@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DOCUMENT_GRANT_BOOT_SCRIPT } from './pre-hydration-scripts';
+import { thisBrowserKey } from '@liveworkspace/explorer/this-browser';
 
 // The grant asked for before the editor's code loads (lib/api/document-grants.ts takeEarlyGrant): only for an address
 // that names a document. A link's own address (`/document/shared?s=<code>`) names none, so the editor resolves the link
@@ -35,5 +36,19 @@ describe('the document grant boot script', () => {
     vi.stubGlobal('fetch', vi.fn());
     expect(run('/document/shared?s=CODE2345')).toBeUndefined();
     expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('asks nothing for an item this browser keeps only here: the index has never heard of it', () => {
+    vi.stubGlobal('fetch', vi.fn());
+    localStorage.setItem(
+      thisBrowserKey('livediagram'),
+      JSON.stringify({ v: 1, items: [{ id: 'local1' }] }),
+    );
+    try {
+      expect(run('/document/local1?s=CODE2345')).toBeUndefined();
+      expect(fetch).not.toHaveBeenCalled();
+    } finally {
+      localStorage.clear();
+    }
   });
 });

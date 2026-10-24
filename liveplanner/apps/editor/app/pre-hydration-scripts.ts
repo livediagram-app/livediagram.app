@@ -3,6 +3,7 @@ import { silentSignInBootScript, silentCookiesForHint } from '@liveworkspace/aut
 import { SIGNED_IN_HINT_COOKIE } from '@liveplanner/api-schema';
 import { API_BASE } from '@/lib/api/base';
 import { GUEST_TOKEN_STORAGE_KEY } from '@/lib/guest-token-key';
+import { thisBrowserKey } from '@liveworkspace/explorer/this-browser';
 
 // The editor-only snippet the root layout inlines into a `<script>` that runs
 // BEFORE first paint (the appearance one is shared by every app and lives in
@@ -40,7 +41,10 @@ export const WEBFONTS_SWAP_SCRIPT = `try{var l=document.getElementById('${WEBFON
 // for lib/api/plan-grants.ts to adopt. A signed-in browser (the hint cookie) skips it: its token arrives with the
 // session, and its grant is asked for then.
 export const SHARE_PASSWORD_STORAGE_PREFIX = 'liveplanner:share-password:';
-export const PLAN_GRANT_BOOT_SCRIPT = `try{var m=location.pathname.match(/^\\/project\\/([^/]+)\\/?$/);if(m&&m[1]!=='placeholder'&&m[1]!=='shared'&&!/(?:^|; )${SIGNED_IN_HINT_COOKIE}=1/.test(document.cookie)){var t=localStorage.getItem('${GUEST_TOKEN_STORAGE_KEY}');var s=new URLSearchParams(location.search).get('s');if(t||s){var h={};if(t)h.Authorization='Bearer '+t;if(s){h['X-Share-Code']=s;var pw=localStorage.getItem('${SHARE_PASSWORD_STORAGE_PREFIX}'+s);if(pw)h['X-Share-Password']=pw}var id=decodeURIComponent(m[1]);window.__lpGrant={id:id,share:s||'',p:fetch('${API_BASE}/index/items/'+encodeURIComponent(id)+'/grant',{method:'POST',headers:h}).then(function(r){return r.ok?r.json():null}).catch(function(){return null})}}}}catch(e){}`;
+// Where this browser lists what it keeps only here (@liveworkspace/explorer/this-browser): the index has never heard
+// of those, so their grant is not asked for.
+const THIS_BROWSER_KEY = thisBrowserKey('liveplanner');
+export const PLAN_GRANT_BOOT_SCRIPT = `try{var m=location.pathname.match(/^\\/project\\/([^/]+)\\/?$/);if(m&&m[1]!=='placeholder'&&m[1]!=='shared'&&!/(?:^|; )${SIGNED_IN_HINT_COOKIE}=1/.test(document.cookie)){var t=localStorage.getItem('${GUEST_TOKEN_STORAGE_KEY}');var s=new URLSearchParams(location.search).get('s');if(t||s){var h={};if(t)h.Authorization='Bearer '+t;if(s){h['X-Share-Code']=s;var pw=localStorage.getItem('${SHARE_PASSWORD_STORAGE_PREFIX}'+s);if(pw)h['X-Share-Password']=pw}var id=decodeURIComponent(m[1]);var k=localStorage.getItem('${THIS_BROWSER_KEY}');if(!(k&&(JSON.parse(k).items||[]).some(function(i){return i&&i.id===id})))window.__lpGrant={id:id,share:s||'',p:fetch('${API_BASE}/index/items/'+encodeURIComponent(id)+'/grant',{method:'POST',headers:h}).then(function(r){return r.ok?r.json():null}).catch(function(){return null})}}}}catch(e){}`;
 
 // Signing in without a click (liveworkspace/docs/accounts.md "Signing in without a click"): once per browser
 // session, a browser with no session here is bounced through the accounts site and straight back, signed in when

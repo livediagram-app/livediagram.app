@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PLAN_GRANT_BOOT_SCRIPT } from './pre-hydration-scripts';
+import { thisBrowserKey } from '@liveworkspace/explorer/this-browser';
 
 // The grant asked for before the editor's code loads (lib/api/plan-grants.ts takeEarlyGrant): only for an address
 // that names a plan. A link's own address (`/project/shared?s=<code>`) names none, so the editor resolves the link
@@ -20,7 +21,10 @@ describe('the plan grant boot script', () => {
   });
 
   it('asks for the grant on a plan’s address, with the link it came in on', () => {
-    vi.stubGlobal('fetch', vi.fn(async () => new Response('{}')));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response('{}')),
+    );
     expect(run('/project/p1?s=CODE2345')).toMatchObject({ id: 'p1', share: 'CODE2345' });
     expect(fetch).toHaveBeenCalledWith(
       expect.stringMatching(/\/index\/items\/p1\/grant$/),
@@ -32,5 +36,19 @@ describe('the plan grant boot script', () => {
     vi.stubGlobal('fetch', vi.fn());
     expect(run('/project/shared?s=CODE2345')).toBeUndefined();
     expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('asks nothing for an item this browser keeps only here: the index has never heard of it', () => {
+    vi.stubGlobal('fetch', vi.fn());
+    localStorage.setItem(
+      thisBrowserKey('liveplanner'),
+      JSON.stringify({ v: 1, items: [{ id: 'local1' }] }),
+    );
+    try {
+      expect(run('/project/local1?s=CODE2345')).toBeUndefined();
+      expect(fetch).not.toHaveBeenCalled();
+    } finally {
+      localStorage.clear();
+    }
   });
 });
