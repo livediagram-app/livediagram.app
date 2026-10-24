@@ -1,6 +1,6 @@
 # livedesign
 
-The command line for [livedesign](https://livedesign.app): read, build, edit and discuss diagrams from a terminal,
+The command line for [livedesign](https://livedesign.app): read, build, edit and discuss designs (logos, wireframes, photos) from a terminal,
 built first for coding agents and second for scripts.
 
 ```bash

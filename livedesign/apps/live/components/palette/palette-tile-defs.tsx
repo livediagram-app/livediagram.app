@@ -619,7 +619,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'media',
     label: 'Add Tab Window',
     description:
-      'Tab Window. Shows another tab of this design, live and fitted inside it, so a slide stays up to date with the diagram it shows.',
+      'Tab Window. Shows another tab of this design, live and fitted inside it, so a page stays up to date with the tab it shows.',
     dividerAfter: true,
     action: { type: 'shape', kind: 'tab-window' },
     icon: (
@@ -736,7 +736,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'components',
     label: 'Add Card',
     description:
-      'Card. A diagram node with slots you switch on: a header band, an icon, a title and meta line, a body and tags. Tap to drop or drag to size.',
+      'Card. A content card with slots you switch on: a header band, an icon, a title and meta line, a body and tags. Tap to drop or drag to size.',
     filled: true,
     action: { type: 'shape', kind: 'card' },
     variants: CARD_PRESET_TILES,
@@ -775,7 +775,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'components',
     label: 'Add Step Number',
     description:
-      'Step number. A numbered disc for walking through a diagram in order; each new one takes the next number.',
+      'Step number. A numbered disc for walking through a design in order; each new one takes the next number.',
     filled: true,
     action: { type: 'shape', kind: 'step' },
     icon: (
@@ -1170,7 +1170,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'components',
     label: 'Add Banner',
     description:
-      'Banner. A themed title block (an accent bar with a title and subtitle) to head your diagram. Tap to drop or drag to size; double-click to edit the title, click the subtitle once it is selected to edit it.',
+      'Banner. A themed title block (an accent bar with a title and subtitle) to head your page. Tap to drop or drag to size; double-click to edit the title, click the subtitle once it is selected to edit it.',
     noTint: true,
     action: { type: 'component', kind: 'banner' },
     icon: (
@@ -1189,7 +1189,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'components',
     label: 'Add Callout',
     description:
-      'Callout. A soft note box with an icon badge, a heading, and a body for annotating a diagram. Tap to drop or drag to size; double-click to edit the body.',
+      'Callout. A soft note box with an icon badge, a heading, and a body for annotating a design. Tap to drop or drag to size; double-click to edit the body.',
     noTint: true,
     action: { type: 'component', kind: 'callout' },
     icon: (

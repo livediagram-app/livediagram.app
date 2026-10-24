@@ -41,7 +41,7 @@ import './globals.css';
 const TRUSTED_TYPES_BOOT = trustedTypesBootScript('/live');
 
 const TITLE = 'livedesign';
-const DESCRIPTION = 'Diagrams, whiteboards, illustrations and designs. Multiplayer canvas.';
+const DESCRIPTION = 'Logos, wireframes and photos, designed together. Multiplayer canvas.';
 
 export const metadata: Metadata = {
   title: TITLE,

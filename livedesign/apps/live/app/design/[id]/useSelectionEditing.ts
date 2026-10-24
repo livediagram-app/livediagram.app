@@ -226,7 +226,7 @@ export function useSelectionEditing(opts: {
       const firstTab = tabs[0];
       const firstEl = firstTab?.elements[0];
       if (firstEl && firstEl.id === elementId) {
-        if (trimmed && trimmed !== 'Blank Diagram') {
+        if (trimmed) {
           setDesignName(trimmed);
         }
       }

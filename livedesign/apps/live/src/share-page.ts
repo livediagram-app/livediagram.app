@@ -30,7 +30,7 @@ export const SHARE_CARD_TIMEOUT_MS = 1500;
 
 // What a named preview says under the design's name.
 export const SHARE_PITCH =
-  'Open it in livedesign: diagrams, whiteboards and designs, made together.';
+  'Open it in livedesign: logos, wireframes and photos, designed together.';
 
 // A preview line is one line: a name with newlines or runs of spaces would wrap oddly in every chat app.
 const NAME_MAX = 200;

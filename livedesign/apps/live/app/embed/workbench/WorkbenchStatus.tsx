@@ -3,7 +3,7 @@
 // The workbench page's status screens and their copy (docs/specs/013-workspace/blueprints/
 // workbench-embeds.md "Presentation and UX", WB33, WB65): bare like an embed's (no header, no Explorer), the
 // copy in a `role="status"` region, `refused` and `unbound` headed by an `h1`. A workspace frame speaks of the
-// workspace, a design frame of the diagram.
+// workspace, a design frame of the design.
 import type { ReactNode } from 'react';
 import type { WorkbenchScope } from '@livedesign/api-schema';
 import { LoadErrorCard } from '@/components/chrome/LoadErrorCard';
@@ -16,9 +16,9 @@ const COPY: Record<
   { opening: string; refusedHeading: string; refusedBody: string }
 > = {
   design: {
-    opening: 'Opening your diagram…',
-    refusedHeading: 'Open this diagram from your workbench',
-    refusedBody: 'This link works once, for a minute. Open the diagram again from your workbench.',
+    opening: 'Opening your design…',
+    refusedHeading: 'Open this design from your workbench',
+    refusedBody: 'This link works once, for a minute. Open the design again from your workbench.',
   },
   workspace: {
     opening: 'Opening your workspace…',
