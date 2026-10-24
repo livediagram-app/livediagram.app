@@ -451,8 +451,9 @@ export function useIdentityBootstrap(opts: {
           setDocumentServerStored(true);
           setDocumentId(fetched.id);
           // A link's own address (`/document/shared?s=<code>`) names no document: the bar names the one it opened, so a
-          // reload, a deep link and the grant all address the document itself.
-          if (!id) {
+          // reload, a deep link and the grant all address the document itself. Only there: an embed's frame
+          // (/embed?s=) keeps its own address, since only /embed may be framed.
+          if (!id && isEditorPath(window.location.pathname)) {
             window.history.replaceState(
               window.history.state,
               '',

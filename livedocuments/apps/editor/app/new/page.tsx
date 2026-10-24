@@ -222,22 +222,24 @@ export default function NewDocumentPage() {
     markNameConfirmed();
     // Never create as the 'pending' placeholder — see resolveSelf above.
     const settleIdentity = resolveSelf;
-    // A document in This Browser has no owner on the server to wait for (docs/specs/006-document/offline-mode.md
-    // "Instant open"): identity settles in the background while it opens. A cloud create needs the owner.
-    const cloudOwner = offline ? null : await settleIdentity();
-    if (offline) {
-      void settleIdentity().catch((err: unknown) =>
-        debugLog(`[new] background identity failed: ${String(err)}`),
-      );
-    }
-    // The template's tabs, or one blank tab: its start open unless a blank was asked for (new-document-content.ts).
-    const { tabs, tab } = await newDocumentContent({
-      templateKind,
-      themeId,
-      tabId,
-      templateChosen: templateKind !== null || startsBlank,
-    });
+    // Inside the try: an identity or template that fails to load shows the Retry card too, never a
+    // screen stuck on "Creating your document".
     try {
+      // A document in This Browser has no owner on the server to wait for (docs/specs/006-document/offline-mode.md
+      // "Instant open"): identity settles in the background while it opens. A cloud create needs the owner.
+      const cloudOwner = offline ? null : await settleIdentity();
+      if (offline) {
+        void settleIdentity().catch((err: unknown) =>
+          debugLog(`[new] background identity failed: ${String(err)}`),
+        );
+      }
+      // The template's tabs, or one blank tab: its start open unless a blank was asked for (new-document-content.ts).
+      const { tabs, tab } = await newDocumentContent({
+        templateKind,
+        themeId,
+        tabId,
+        templateChosen: templateKind !== null || startsBlank,
+      });
       if (offline) {
         // Offline Mode (docs/specs/006-document/offline-mode.md): create the document in IndexedDB only. This
         // also registers its id so every later load / save routes local.

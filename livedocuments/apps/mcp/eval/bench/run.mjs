@@ -7,7 +7,7 @@
 //   node bench/run.mjs --round r1 [--tasks all|<area>|<ids>] [--models haiku,sonnet,opus] [--repeat 2]
 //                      [--concurrency 4] [--api-dir ../../api]
 //
-// Needs the local MCP + api running (MCP_URL, default http://127.0.0.1:8798/mcp) and the `claude` CLI signed in.
+// Needs the local MCP + api running (MCP_URL, default http://127.0.0.1:8988/mcp) and the `claude` CLI signed in.
 import { spawn, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';

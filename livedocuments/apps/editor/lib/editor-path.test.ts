@@ -7,6 +7,7 @@ describe('documentIdFromPath', () => {
   });
   it('ignores the static placeholder and other paths', () => {
     expect(documentIdFromPath('/document/placeholder')).toBeNull();
+    expect(documentIdFromPath('/document/shared')).toBeNull();
     expect(documentIdFromPath('/diagram/abc-123')).toBeNull();
     expect(documentIdFromPath('/explorer/recent')).toBeNull();
   });

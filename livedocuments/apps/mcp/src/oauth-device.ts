@@ -19,7 +19,7 @@ import {
 } from '@livedocuments/api-schema';
 import type { Context, Hono } from 'hono';
 import type { Env } from './env';
-import { BUILT_IN_CLIENTS } from './oauth-clients';
+import { builtInClient } from './oauth-clients';
 import { formText } from './oauth-form';
 
 type DeviceRecord = {
@@ -118,7 +118,7 @@ export function registerDeviceRoutes(app: Hono<{ Bindings: Env }>): void {
   app.post('/oauth/device_authorization', async (c) => {
     const form: Record<string, unknown> = await c.req.parseBody().catch(() => ({}));
     const clientId = formText(form, 'client_id');
-    const client = BUILT_IN_CLIENTS[clientId];
+    const client = builtInClient(clientId);
     if (!client) return c.json({ error: 'invalid_client' }, 400);
     if (await overLimit(c.env, 'device-start', ipOf(c), START_LIMIT))
       return c.json({ error: 'rate_limited' }, 429);
@@ -202,7 +202,7 @@ export async function handleDeviceToken(
 ): Promise<Response> {
   const deviceCode = formText(form, 'device_code');
   const clientId = formText(form, 'client_id');
-  if (!BUILT_IN_CLIENTS[clientId]) return c.json({ error: 'invalid_client' }, 400);
+  if (!builtInClient(clientId)) return c.json({ error: 'invalid_client' }, 400);
   const record = deviceCode
     ? await c.env.OAUTH_KV.get<DeviceRecord>(deviceKey(deviceCode), 'json')
     : null;

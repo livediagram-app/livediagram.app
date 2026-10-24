@@ -7,7 +7,7 @@
 //   node mcp-call.mjs <tool> '<json args>'    call a tool and print its result
 //
 // Environment: LIVEDOCUMENTS_TOKEN (an lwt_ API token; else read from token.env beside this file), MCP_URL (default
-// http://127.0.0.1:8798/mcp), EVAL_LOG (a jsonl of every call; default runs/calls.jsonl) and EVAL_IMG_DIR (where
+// http://127.0.0.1:8988/mcp), EVAL_LOG (a jsonl of every call; default runs/calls.jsonl) and EVAL_IMG_DIR (where
 // image results are saved; default runs/shots). Never commit a token: token.env and runs/ are gitignored.
 
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';

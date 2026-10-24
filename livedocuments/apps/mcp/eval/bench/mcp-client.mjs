@@ -1,7 +1,7 @@
 // A minimal MCP client over JSON-RPC (streamable HTTP), shared by the eval helper (`mcp-call.mjs`) and the
 // benchmark's scorer, which reads back what a run made (docs/instructions/evaluate-mcp-output.md).
 
-export const DEFAULT_MCP_URL = 'http://127.0.0.1:8798/mcp';
+export const DEFAULT_MCP_URL = 'http://127.0.0.1:8988/mcp';
 
 // The local dev server now and then drops a request ("Error: Network connection lost", or no answer at all): a read
 // is retried this many times, a second apart, before the error stands.

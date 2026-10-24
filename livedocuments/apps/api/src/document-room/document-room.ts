@@ -227,6 +227,10 @@ export class DocumentRoom extends DurableObject<Env> {
   // DOCUMENT_ROOM that answers this document's own id with this object (no hop). Undefined only for a unit test that
   // builds a room from a fake state alone; then the content and telemetry paths are skipped.
   roomEnv: DocumentEnv | undefined;
+  // The same env over a database whose writes note nothing: the drains' own bookkeeping (the outbox delete, a
+  // share's sent mark) is not an edit. A separate handle rather than a flag held across the drain's awaits, so a
+  // request that writes while a push is in flight is still noted.
+  private drainEnv: DocumentEnv | undefined;
   // The document's SQLite behind the D1-shaped surface the content modules use (@liveworkspace/index-app item-db.ts).
   readonly db: ItemDb;
   // The document this object is, from the first call that names it (every RPC and room join does).
@@ -241,7 +245,6 @@ export class DocumentRoom extends DurableObject<Env> {
     () => this.schemaReady && owesShares(this.state.storage.sql),
   );
   private lastFlushAt = 0;
-  private draining = false;
   // Content writes so far (noteWrite), so route() can tell a request that wrote from one that didn't.
   private writes = 0;
   // The next daily upkeep (persisted, so a wake keeps the day).
@@ -278,6 +281,16 @@ export class DocumentRoom extends DurableObject<Env> {
           ...env,
           DOCUMENT_DB: this.db.asD1(),
           DOCUMENT_ROOM: this.localNamespace(env.DOCUMENT_ROOM),
+        }
+      : undefined;
+    this.drainEnv = this.roomEnv
+      ? {
+          ...this.roomEnv,
+          DOCUMENT_DB: new ItemDb(state.storage.sql, {
+            transaction: (fn) => state.storage.transactionSync(fn),
+            ensureSchema: () => this.ensureSchema(),
+            onWrite: () => {},
+          }).asD1(),
         }
       : undefined;
     this.ledger = new RoomLedgerStore(state.storage);
@@ -393,10 +406,9 @@ export class DocumentRoom extends DurableObject<Env> {
     }
   }
 
-  // A content write happened: push to the index and the media service on idle, at most once a minute (document-outbox.ts). Writes the drain
-  // itself makes (its outbox delete) schedule nothing.
+  // A content write happened: push to the index and the media service on idle, at most once a minute (document-outbox.ts). Writes the drains
+  // themselves make go through drainEnv and never reach here.
   private noteWrite(): void {
-    if (this.draining) return;
     this.writes++;
     if (this.maintenanceAt === null) {
       this.maintenanceAt = Date.now() + MAINTENANCE_EVERY_MS;
@@ -422,32 +434,25 @@ export class DocumentRoom extends DurableObject<Env> {
 
   // Send the other holders of its shared tabs what they are owed (tab-shares.ts). A failure keeps it for later.
   private async drainShares(): Promise<void> {
-    const env = this.roomEnv;
+    const env = this.drainEnv;
     const documentId = this.documentId;
     if (!env || !documentId || !this.schemaReady) {
       this.shares.clear();
       return;
     }
-    this.draining = true;
-    try {
-      const done = await this.shares.send(() =>
-        documentShares.drain(env, documentId, (to, messages) =>
-          documentRoom(env, to).receiveShares(documentId, messages),
-        ),
-      );
-      if (done && done.sent > 0)
-        console.debug('[tab-shares] sent', { documentId, sent: done.sent });
-    } finally {
-      this.draining = false;
-    }
+    const done = await this.shares.send(() =>
+      documentShares.drain(env, documentId, (to, messages) =>
+        documentRoom(env, to).receiveShares(documentId, messages),
+      ),
+    );
+    if (done && done.sent > 0) console.debug('[tab-shares] sent', { documentId, sent: done.sent });
   }
 
   private async drainIndex(): Promise<void> {
-    const env = this.roomEnv;
+    const env = this.drainEnv;
     const documentId = this.documentId;
     this.flushAt = null;
     if (!env || !documentId || !this.schemaReady) return;
-    this.draining = true;
     try {
       const { keys, pushes, more } = await drainOutbox(env, documentId);
       this.lastFlushAt = Date.now();
@@ -457,8 +462,6 @@ export class DocumentRoom extends DurableObject<Env> {
     } catch (error) {
       console.warn('[document-outbox] push failed', { documentId, error: String(error) });
       this.flushAt = Date.now() + FLUSH_RETRY_MS;
-    } finally {
-      this.draining = false;
     }
     // Anything written while the push was in flight goes next time.
     if (
@@ -1411,7 +1414,13 @@ export class DocumentRoom extends DurableObject<Env> {
     const now = Date.now();
     const agentEntries = this.agents.live().filter((r) => r.expiresAt > now);
     if (agentEntries.length < this.agents.live().length)
-      void this.agents.sweep().then(() => this.armAlarm());
+      void this.agents
+        .sweep()
+        .then(() => this.armAlarm())
+        // The alarm sweeps again; a failed early sweep only waits for it.
+        .catch((error: unknown) =>
+          console.warn('[presence] sweep failed', { error: String(error) }),
+        );
     for (const { ws, participants, agents } of rosterFrames(entries, agentEntries)) {
       try {
         ws.send(JSON.stringify({ kind: 'presence', participants, agents } satisfies ServerMessage));

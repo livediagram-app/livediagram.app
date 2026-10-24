@@ -161,8 +161,8 @@ export function accountDeletedEmail(env: Env): RenderedEmail {
       intro:
         'This confirms that your livedocuments documents and your liveworkspace account have been permanently removed, as you requested. The account is closed for every liveworkspace app. There’s nothing left for you to do.',
       outro:
-        'If this wasn’t you, or you change your mind, you’re always welcome back. The canvas is free and needs no account to start.',
-      ctaText: 'Start a new diagram',
+        'If this wasn’t you, or you change your mind, you’re always welcome back. livedocuments is free and needs no account to start.',
+      ctaText: 'Start a new document',
       ctaHref: `${base}/new`,
       footer:
         'This is a one-time confirmation of your account deletion. We won’t send any further email to this address.',
@@ -389,7 +389,7 @@ export function firstShareEmail(env: Env): RenderedEmail {
         'Revoke a link any time from the Share dialog, and it stops working instantly.',
       ],
       outro:
-        'Collaboration needs no account, so whoever you share with can jump straight onto the canvas.',
+        'Collaboration needs no account, so whoever you share with can jump straight into the document.',
       ctaText: 'Open your Explorer',
       ctaHref: `${base}/explorer`,
       footer: manageNotificationsFooter(

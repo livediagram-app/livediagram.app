@@ -289,10 +289,13 @@ export async function apiCreateRoomTicket(
   for (let attempt = 0; attempt < 3; attempt++) {
     if (attempt > 0) await new Promise((r) => setTimeout(r, 500 * attempt));
     try {
-      const res = await apiFetch(`${API_BASE}/documents/${documentId}/room-ticket`, {
-        method: 'POST',
-        headers: await apiHeaders(ownerId, { share: shareCode }),
-      });
+      const res = await apiFetch(
+        `${API_BASE}/documents/${encodeURIComponent(documentId)}/room-ticket`,
+        {
+          method: 'POST',
+          headers: await apiHeaders(ownerId, { share: shareCode }),
+        },
+      );
       if (res.status >= 400 && res.status < 500 && res.status !== 429) return null;
       if (!res.ok) continue;
       const { ticket } = (await res.json()) as Partial<RoomTicketResponse>;
