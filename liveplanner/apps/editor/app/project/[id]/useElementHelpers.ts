@@ -1,26 +1,21 @@
 import type { Dispatch, SetStateAction } from 'react';
 import {
   takesTypedLabel,
-  isBoxed,
   type BoxedElement,
   type Element,
   type Tab,
 } from '@liveplanner/project';
 import { deriveNewBoxedColours } from '@/lib/themes';
 import { inheritedSizeFor } from '@/lib/canvas';
-import { applyPaint, paintableArrowFields, paintableBoxedFields } from '@/lib/format-painter';
-import { filterPaintedFields, formatPaintsAnything, type FormatConfig } from '@/lib/format-config';
-import { track } from '@/lib/telemetry';
 import { patchTab } from './editor-page-helpers';
 import { selectionIds, type Selection } from '@/lib/selection-store';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
-// Selection + placement + format helpers, lifted out of editor-page.tsx.
+// Selection + placement helpers, lifted out of editor-page.tsx.
 // These back the element-creation and selection handlers (addBoxed
 // sizes/colours a new element from the selection + backdrop;
-// currentSelectionIds / selectionPrimary resolve the working set;
-// applyFormatFromSource runs the format painter). Returned so the
+// currentSelectionIds / selectionPrimary resolve the working set). Returned so the
 // still-inline handlers and the Canvas consume them.
 export function useElementHelpers(opts: {
   // The selection, read where a helper acts (docs/specs/008-canvas/blueprints/selection-store.md).
@@ -28,30 +23,22 @@ export function useElementHelpers(opts: {
   activeId: string;
   activeTab: Tab;
   editsBlocked: boolean;
-  formatSourceId: string | null;
   // The Format Panel's settings (docs/specs/008-canvas/format-panel.md): which parts of a copied style
   // travel, and whether the brush stays loaded.
-  formatConfig: FormatConfig;
   getViewportCenter: () => { x: number; y: number };
-  commit: (updater: (els: Element[]) => Element[]) => void;
   commitTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
   setSelectedId: SetState<string | null>;
   setEditingId: SetState<string | null>;
-  setFormatSourceId: SetState<string | null>;
 }) {
   const {
     readSelection,
     activeId,
     activeTab,
     editsBlocked,
-    formatSourceId,
-    formatConfig,
     getViewportCenter,
-    commit,
     commitTabs,
     setSelectedId,
     setEditingId,
-    setFormatSourceId,
   } = opts;
 
   const addBoxed = <T extends BoxedElement>(make: (x: number, y: number) => T) => {
@@ -165,59 +152,10 @@ export function useElementHelpers(opts: {
     return activeTab.elements.find((el) => ids.has(el.id)) ?? null;
   };
 
-  // --- Modes ---------------------------------------------------------------
-
-  // The Format tool's paint (docs/specs/008-canvas/format-panel.md): "Keep
-  // painting" leaves the source armed after a paint so the user can tap
-  // target after target; "Paint once" empties the brush after one apply.
-  const applyFormatFromSource = (targetId: string) => {
-    if (!formatSourceId) return;
-    // Every toggle off means there is nothing to paint: leave the brush and
-    // the target alone rather than committing an empty change per tap.
-    if (!formatPaintsAnything(formatConfig)) return;
-    const keepSource = formatConfig.mode === 'keep';
-    const source = activeTab.elements.find((el) => el.id === formatSourceId);
-    // The source is gone (deleted, or another tab): the brush holds nothing any more.
-    if (!source) {
-      setFormatSourceId(null);
-      return;
-    }
-    const target = activeTab.elements.find((el) => el.id === targetId);
-    // Only an apply empties a Paint once brush (or counts as a paint): a tap on the source itself, or on an
-    // element of the other kind (a shape's look onto an arrow, a no-op), leaves the brush loaded.
-    const boxedPair = !!target && isBoxed(source) && isBoxed(target);
-    const arrowPair = source.type === 'arrow' && target?.type === 'arrow';
-    if (!target || source.id === target.id || !(boxedPair || arrowPair)) return;
-    track('Element', 'Changed', 'FormatPainter');
-    // Field projections live in lib/format-painter.ts so the list
-    // of painted fields (and the rule that future additions to
-    // BoxedElement / ArrowElement must be opted into the painter
-    // by hand) is one tested source of truth. Boxed-to-arrow and
-    // arrow-to-boxed paints are no-ops: the two kinds share
-    // almost no formattable fields.
-    if (isBoxed(source) && isBoxed(target)) {
-      // The Format Panel (docs/specs/008-canvas/format-panel.md) decides which parts travel; the projection
-      // above still decides which parts CAN.
-      const projection = filterPaintedFields(paintableBoxedFields(source), formatConfig);
-      commit((els) =>
-        els.map((el) => (el.id === targetId && isBoxed(el) ? applyPaint(el, projection) : el)),
-      );
-    } else if (source.type === 'arrow' && target.type === 'arrow') {
-      const projection = filterPaintedFields(paintableArrowFields(source), formatConfig);
-      commit((els) =>
-        els.map((el) =>
-          el.id === targetId && el.type === 'arrow' ? applyPaint(el, projection) : el,
-        ),
-      );
-    }
-    if (!keepSource) setFormatSourceId(null);
-  };
-
   return {
     addBoxed,
     addBoxedAt,
     currentSelectionIds,
     selectionPrimary,
-    applyFormatFromSource,
   };
 }

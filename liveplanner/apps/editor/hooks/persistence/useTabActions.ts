@@ -67,7 +67,6 @@ type TabActionsDeps = {
   setActiveId: (id: string) => void;
   setSelectedId: (id: string | null) => void;
   setEditingId: (id: string | null) => void;
-  setFormatSourceId: (id: string | null) => void;
   // Surfaces an import parse error in the header (null clears it).
   setImportError: (message: string | null) => void;
   // Frames the tab once replaced content has rendered (useTabEntryEffects).
@@ -99,7 +98,6 @@ export function useTabActions(deps: TabActionsDeps) {
     setActiveId,
     setSelectedId,
     setEditingId,
-    setFormatSourceId,
     setImportError,
     requestFit,
     refreshProjectList,
@@ -122,7 +120,6 @@ export function useTabActions(deps: TabActionsDeps) {
     setActiveId(tab.id);
     setSelectedId(null);
     setEditingId(null);
-    setFormatSourceId(null);
   };
 
   // Import (id re-mint, content replace, JSON parsing) lives in useTabImport;
@@ -133,7 +130,6 @@ export function useTabActions(deps: TabActionsDeps) {
     commitTabs,
     setSelectedId,
     setEditingId,
-    setFormatSourceId,
     setImportError,
     requestFit,
     importPlanItems: deps.importPlanItems,
@@ -150,7 +146,6 @@ export function useTabActions(deps: TabActionsDeps) {
       // newly-locked tab.
       setSelectedId(null);
       setEditingId(null);
-      setFormatSourceId(null);
     }
   };
 

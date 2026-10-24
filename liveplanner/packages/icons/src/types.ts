@@ -20,8 +20,7 @@ export type IconPrim =
   | { t: 'text'; text: string; x: number; y: number; size: number };
 
 // Optional paint on ONE primitive, for the few glyphs that mix a filled dot or
-// a heavier / fainter stroke into line art (the selection-mode glyphs,
-// mode-glyphs.ts). Everything else leaves paint to the wrapper, as before.
+// a heavier / fainter stroke into line art. Everything else leaves paint to the wrapper, as before.
 export type PrimStyle = {
   // Filled in the current colour, unstroked (a dot).
   fill?: boolean;

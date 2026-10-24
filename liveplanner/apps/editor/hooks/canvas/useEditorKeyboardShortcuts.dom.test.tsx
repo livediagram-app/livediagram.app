@@ -23,7 +23,6 @@ function deps(overrides: Overrides = {}) {
     setCanvasTool: vi.fn(),
   };
   const target: Record<string, unknown> = {
-    formatSourceId: null,
     selectedId: 'a',
     multiSelectedIds: new Set<string>(),
     editingId: null,

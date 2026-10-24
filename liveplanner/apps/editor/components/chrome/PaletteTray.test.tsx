@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { ModeBanner } from './ModeBanner';
-import { usePaletteStripBox, useToolbarBox } from './PaletteTray';
+import { PaletteTray, usePaletteStripBox, useToolbarBox } from './PaletteTray';
 
 // docs/specs/007-editor/toolbar-layout.md "Layout details": messages hang from the strip as its tray.
 
@@ -23,15 +22,23 @@ function mountStrip({ hidden = false }: { hidden?: boolean } = {}) {
   document.body.append(root);
 }
 
+// A message as the editor hangs one (the Shift hint, ModifierHintBanner): in the tray under the strip, else a pill.
 function Banner({ onAction }: { onAction: () => void }) {
   const tray = usePaletteStripBox();
+  const message = 'Select the board column you want this card to appear in';
+  if (!tray) return <div>{message}</div>;
   return (
-    <ModeBanner
-      icon={<span>✎</span>}
-      message="Select the board column you want this card to appear in"
-      onAction={onAction}
-      tray={tray}
-    />
+    <PaletteTray
+      box={tray}
+      lead={<span>✎</span>}
+      end={
+        <button type="button" onClick={onAction}>
+          Cancel
+        </button>
+      }
+    >
+      {message}
+    </PaletteTray>
   );
 }
 

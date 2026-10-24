@@ -80,10 +80,8 @@ function BoxedElementViewImpl({
   isSelected,
   isMultiSelected = false,
   onPlainClick,
-  onPressArmedAction,
   isEditing,
   editCursorAtEnd = false,
-  isPaintMode,
   showHandles,
   showAnchors,
   onBeginDrag,
@@ -94,7 +92,6 @@ function BoxedElementViewImpl({
   onCommitLabel,
   onSetTextAlign,
   onSetPageHeading,
-  isoDepth,
   chartPalette,
   onCancelEdit,
   onFollowLink,
@@ -218,13 +215,11 @@ function BoxedElementViewImpl({
       isAnnotation,
       isMultiSelected,
       isSelected,
-      isPaintMode,
       vote,
       votableInVote,
       onCastVote,
       onShiftSelect,
       onPlainClick,
-      onPressArmedAction,
       onBeginDrag,
       onBeginEdit,
       onEditLink,
@@ -235,9 +230,7 @@ function BoxedElementViewImpl({
 
   const cursor = remotelyLocked
     ? 'cursor-not-allowed'
-    : isPaintMode
-      ? 'cursor-copy'
-      : isEditing
+    : isEditing
         ? 'cursor-text'
         : isLocked || !movable
           ? 'cursor-default'
@@ -355,8 +348,6 @@ function BoxedElementViewImpl({
         popInClass
       } ${variant.className} ${cursor}`}
       style={{
-        // Isometric depth stagger (docs/specs/008-canvas/isometric-view.md) — see globals.css [data-iso].
-        ...({ '--iso-z': isoDepth } as React.CSSProperties),
         left: element.x,
         top: element.y,
         width: textHug.box?.width ?? element.width,

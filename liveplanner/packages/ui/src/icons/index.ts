@@ -10,7 +10,6 @@ export {
   CopyIcon,
   DuplicateIcon,
   FitViewIcon,
-  FormatPainterIcon,
   IndentIcon,
   LockIcon,
   OutdentIcon,

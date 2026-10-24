@@ -50,7 +50,6 @@ type ElementsExtras = {
   arrowLabels: ArrowLabels;
   // What the selection chrome derives the selection from (it reads the selection from the store).
   selectionInput: CanvasSelectionInput;
-  isPaintMode: boolean;
   handleArrowSelect: (id: string, e: ReactPointerEvent, paired?: boolean) => void;
   handleElementClick: (id: string) => void;
   handleElementContextSelect: (id: string, sx: number, sy: number) => void;
@@ -80,7 +79,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     handleElementContextSelect,
     hasArrows,
     arrowLabels,
-    isPaintMode,
     onBeginArrowCurveDrag,
     onBeginArrowCurvePointDrag,
     onBeginArrowBend,
@@ -90,7 +88,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onBeginArrowLabelDrag,
     onBeginArrowTranslate,
     onBeginDrag,
-    onPressArmedAction,
     onBeginEdit,
     onBeginEndpointDrag,
     onCancelEdit,
@@ -176,7 +173,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onBeginArrowElbowDrag,
     onBeginArrowLabelDrag,
     onBeginDrag,
-    onPressArmedAction,
     onShiftSelect,
     // Voting is taking part: a Participant's as well as an Editor's (docs/specs/013-workspace/share-roles.md).
     onCastVote: readOnly && !takePart ? undefined : onCastVote,
@@ -310,12 +306,10 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   const boxedShared = useMemo<BoxedShared>(
     () => ({
       onPlainClick: h.handleElementClick,
-      isPaintMode,
       tabLocked,
       tabSummaries,
       readOnly,
       onBeginDrag: h.onBeginDrag,
-      onPressArmedAction: h.onPressArmedAction,
       onShiftSelect: h.onShiftSelect,
       vote: tabVote,
       selfId,
@@ -350,7 +344,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     }),
     [
       h,
-      isPaintMode,
       tabLocked,
       tabSummaries,
       readOnly,
@@ -483,7 +476,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             editingId={editingId}
             editCursorAtEnd={editCursorAtEnd}
             reshapingArrowId={props.reshapingArrowId}
-            isPaintMode={isPaintMode}
             tabLocked={tabLocked}
             readOnly={readOnly}
             shiftDupGhostIds={shiftDupGhostIds}
@@ -514,7 +506,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
 
           {/* The grips layer (docs/specs/008-canvas/canvas-and-palette.md "Resize"): above every element, so
           no grip is ever covered. The canvas's own grips go in here; each element's are portalled in. */}
-          <SelectionGripsLayer onHosts={setGripHosts} isoDepth={ordered.length}>
+          <SelectionGripsLayer onHosts={setGripHosts}>
             <LayerSelectionChrome
               selectionInput={props.selectionInput}
               tabId={props.activeTabId ?? ''}

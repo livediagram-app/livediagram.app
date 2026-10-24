@@ -42,7 +42,6 @@ function setup(failed: number) {
     commitTabs: vi.fn(() => void order.push('tab')),
     setSelectedId: vi.fn(),
     setEditingId: vi.fn(),
-    setFormatSourceId: vi.fn(),
     setImportError: vi.fn(),
     requestFit: vi.fn(),
     importPlanItems: vi.fn(async () => {

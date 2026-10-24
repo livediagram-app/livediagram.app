@@ -20,13 +20,10 @@ export type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-rig
 // Explorer and Layers are not corner panels (the strip, and popovers off
 // their buttons, docs/specs/007-editor/toolbar-layout.md), nor are Timer and Vote (popovers off the
 // Session strip, docs/specs/012-collaboration/session-tools.md): a stored layout naming them is read like any
-// unknown id.
+// unknown id. So is the retired Format Panel's 'format'.
 export type PanelId =
   | 'collaborate'
-  | 'minimap'
-  // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, present only while the Format
-  // tool is.
-  | 'format';
+  | 'minimap';
 
 export const PANEL_CORNERS: readonly PanelCorner[] = [
   'top-left',
@@ -35,7 +32,7 @@ export const PANEL_CORNERS: readonly PanelCorner[] = [
   'bottom-right',
 ];
 
-export const PANEL_IDS: readonly PanelId[] = ['collaborate', 'minimap', 'format'];
+export const PANEL_IDS: readonly PanelId[] = ['collaborate', 'minimap'];
 
 // Internal: a free panel's pixel position. Not exported — callers pass
 // plain { x, y } object literals to freePanel().
@@ -58,9 +55,6 @@ export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
   // button, so its corner is only where a stored layout falls back to.
   collaborate: 'bottom-right',
   minimap: 'bottom-left',
-  // The tool panels: bottom-right, above the bottom cluster. Each exists only while its tool does, so it joins and
-  // leaves its corner stack.
-  format: 'bottom-right',
 };
 
 export const STORAGE_KEY = 'liveplanner:panel-layout:v1';

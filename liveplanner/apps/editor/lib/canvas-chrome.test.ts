@@ -84,7 +84,6 @@ describe('canvasCursorClass', () => {
     marquee: false,
     canvasTool: 'pan',
     spaceHeld: false,
-    isPaintMode: false,
   };
 
   it('an active pan shows the grabbing cursor', () => {
@@ -103,9 +102,6 @@ describe('canvasCursorClass', () => {
   it('the resting pan tool shows grab; select shows crosshair', () => {
     expect(canvasCursorClass({ ...rest, canvasTool: 'pan' })).toBe('cursor-grab');
     expect(canvasCursorClass({ ...rest, canvasTool: 'select' })).toBe('cursor-crosshair');
-  });
-  it('format-paint mode shows copy', () => {
-    expect(canvasCursorClass({ ...rest, canvasTool: 'x', isPaintMode: true })).toBe('cursor-copy');
   });
   it('falls back to grab', () => {
     expect(canvasCursorClass({ ...rest, canvasTool: 'x' })).toBe('cursor-grab');

@@ -6,7 +6,6 @@
 // these tables directly.
 
 import type { Selection } from '@/lib/selection-store';
-import type { CanvasTool } from '@/components/palette/palette.types';
 import { isSheetCovering } from '@/hooks/plan/plan-cover-store';
 import { setSheetZoom, stepSheetZoom } from '@/hooks/sheets/sheet-zoom';
 
@@ -18,9 +17,6 @@ export type EditorKeyboardShortcutsDeps = {
   // canvas's own shortcuts stand down (no nudge, delete, select-all, paste, duplicate or tool key), as its pointer
   // input does. Read when a key is pressed.
   canvasCovered?: () => boolean;
-  // Modal-interaction state. Escape clears whichever is active.
-  formatSourceId: string | null;
-  setFormatSourceId: (v: string | null) => void;
   // Selection state. Delete / Backspace acts on whichever is
   // populated (multi wins).
   // Read when a key is pressed (docs/specs/008-canvas/blueprints/selection-store.md).
@@ -43,16 +39,6 @@ export type EditorKeyboardShortcutsDeps = {
   undo: () => void;
   redo: () => void;
   copySelection: () => void;
-  // Canvas tool setter. V / H / I switch between select / pan /
-  // isometric. Mirrors the in-canvas tool picker so a keyboard user
-  // can switch tools without leaving home position. View-role
-  // visitors still get this (panning doesn't mutate
-  // anything; selecting is harmless because the popover hides for
-  // view-role).
-  setCanvasTool: (t: CanvasTool) => void;
-  // Active canvas tool. Read by the Escape handler so Escape exits the
-  // persistent Format tool (back to Select) from either phase.
-  canvasTool: CanvasTool;
   // Mind map (docs/specs/009-elements/mind-node.md): whether Tab / Enter should grow from this element,
   // and the grower itself. Asked per keystroke rather than held as a flag so
   // it can't go stale against the selection.

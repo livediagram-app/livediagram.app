@@ -49,10 +49,6 @@ function harness(answer: 'refused' | undefined) {
     editingId: null,
     isReadOnly: false,
     layerInertIds: new Set<string>(),
-    formatSourceId: null,
-    applyFormatFromSource: vi.fn(),
-    formatToolActive: false,
-    setFormatSourceId: vi.fn(),
     tick: (m: (els: Element[]) => Element[]) => {
       calls.tick += 1;
       elements = m(elements);

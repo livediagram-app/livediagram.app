@@ -161,8 +161,9 @@ Every Project is a Plan project, so what Plan reads is read from the first load:
 
 - **Plan starts on the Hand tool**: a board's cards take the pointer themselves, so a drag on the canvas moves
   it. Select is one pick away, for moving or resizing a board.
-- **Format is left out** of the tool picker and its shortcuts: it works on drawn content a Plan
-  tab does not hold.
+- **No Format or Isometric tool**: the format painter and the isometric view worked on drawn content a Plan tab
+  does not hold, so they are gone (the image export keeps its isometric option,
+  [Isometric export](../008-canvas/isometric-view.md)).
 - **No Layers panel**, as below.
 
 ## No palette

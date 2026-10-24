@@ -11,7 +11,6 @@ import { getSheetZoom, setSheetZoom } from '@/hooks/sheets/sheet-zoom';
 
 function deps(overrides: Partial<EditorKeyboardShortcutsDeps> = {}) {
   const target: Record<string, unknown> = {
-    formatSourceId: null,
     editingId: null,
     isReadOnly: false,
     participant: false,

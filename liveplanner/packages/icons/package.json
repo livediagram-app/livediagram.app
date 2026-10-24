@@ -17,7 +17,6 @@
     "./sticker-catalog": "./src/sticker-catalog.ts",
     "./centring": "./src/centring.ts",
     "./lucide": "./src/lucide.generated.ts",
-    "./mode-glyphs": "./src/mode-glyphs.ts",
     "./search": "./src/search.ts"
   },
   "scripts": {

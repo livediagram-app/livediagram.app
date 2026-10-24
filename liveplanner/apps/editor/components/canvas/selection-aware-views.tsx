@@ -32,7 +32,6 @@ export const SelectableBoxedView = memo(function SelectableBoxedView({
   const flags = useFlagsOf(props.element.id);
   const grips = elementGrips(props.element, flags.single, {
     editingId,
-    isPaintMode: props.isPaintMode === true,
     tabLocked: props.tabLocked === true,
     readOnly: props.readOnly === true,
     resizable: props.resizable,

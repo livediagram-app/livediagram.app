@@ -124,10 +124,8 @@ type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 // 'collaborate' is the merged Comments + Actions panel, a popover over its
 // cluster button that takes no corner. The Vote panel is not a corner panel either: it
 // opens over the Session strip's button (docs/specs/012-collaboration/session-tools.md), and a stored
-// layout naming it is read like any unknown id. One panel is NOT always available — it exists only while
-// its mode is running, so it joins and leaves its
-// corner stack rather than sitting in it: 'format' (docs/specs/008-canvas/format-panel.md, what the painter copies).
-type PanelId = 'collaborate' | 'minimap' | 'format';
+// layout naming it is read like any unknown id, as is the Format Panel's old 'format' (the format painter is gone).
+type PanelId = 'collaborate' | 'minimap';
 
 type PanelLayout = {
   // Ordered stack per corner. Order is top→bottom (top corners) /

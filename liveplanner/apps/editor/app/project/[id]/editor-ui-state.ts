@@ -46,7 +46,6 @@ export function useEditorUiState(
   // editor places the caret at the END instead of select-all, so the
   // seeded first character isn't replaced by the next keystroke.
   const [editCursorAtEnd, setEditCursorAtEnd] = useState(false);
-  const [formatSourceId, setFormatSourceId] = useState<string | null>(null);
   // Multi-selection bag for marquee box-select. Mutually exclusive with the
   // single `selectedId` above: when `multiSelectedIds.size > 0`, single
   // selection / its popover / its accordion controls are suppressed. Both
@@ -78,8 +77,6 @@ export function useEditorUiState(
     setEditingId,
     editCursorAtEnd,
     setEditCursorAtEnd,
-    formatSourceId,
-    setFormatSourceId,
     setMultiSelectedIds,
     identityPromptOpen,
     setIdentityPromptOpen,

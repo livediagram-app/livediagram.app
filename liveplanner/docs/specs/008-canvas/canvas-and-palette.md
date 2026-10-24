@@ -12,7 +12,7 @@ The strip's first control, the selection-mode picker, holds the canvas-tool togg
 
 - **Select** (default on desktop, shortcut `V` — matching Figma / Excalidraw / Miro / tldraw; `S` is kept working as a legacy alias, except where the strip shows its Search, which `S` opens instead, [Toolbar layout](../007-editor/toolbar-layout.md#search-every-element-type)) — drag-on-empty draws a marquee for multi-select. Listed first in the palette.
 - **Hand** (the pan tool; default on mobile / touch viewports, shortcut `H` — the universal hand-tool key) — drag-on-empty scrolls the canvas. Middle-click also pans from any tool.
-- **Format** (no keyboard shortcut; `F` is the Frame): a persistent format-painter mode (the [Format painter](#format-painter) as a tool, so you can paint many targets without re-selecting). Sits after Hand in the tool dropdown, paintbrush icon. Picking it shows a guided two-phase mode banner: first **"Select a base element to copy its style"**, and once you click one, **"Tap elements to paint this style onto them"** — every subsequent element click applies the base's formatting and **keeps the base armed**, so you can format element after element. **Done** (or switching tools) exits; leaving the tool disarms the base. The cursor is the copy cursor in both phases. Editors only (it mutates). It stays on until dismissed, and it is the only way to paint a style: the selection popover carries no paintbrush. Which parts of the copied style actually travel — fill, border, text, effects, size — and whether the brush stays loaded after a paint come from the **Format Panel** ([Format Panel](format-panel.md)), which appears while the tool is active.
+- **No Format or Isometric tool** in liveplanner: the format painter and the isometric view went with the palette ([Plan mode](../026-plan/plan-mode.md#tools)); the image export keeps an isometric option ([Isometric export](isometric-view.md)).
 
 The picker also holds the **Zen mode** button (a fullscreen / expand icon, shortcut `Z`), not a canvas tool but an orthogonal focus toggle that hides all chrome. See [Zen mode](../007-editor/zen-mode.md).
 
@@ -146,7 +146,6 @@ Each boxed element can have its **aspect ratio locked**. Stored as `aspectLocked
   - The leading side follows the pointer; the other is derived from the source ratio.
 - The opposite-corner anchor still stays put; an edge handle anchors the opposite edge, the other axis centred on it.
 - Move/resize on locked-position elements (the other `locked` flag) is still disabled regardless of aspect lock.
-- The format painter copies aspect-lock state (it is in the painter's **Size** group, [Format Panel](format-panel.md)).
 
 ### Current Tab section
 
@@ -773,7 +772,6 @@ The editor's global shortcuts are bound centrally in `useEditorKeyboardShortcuts
 | `V` / `S` | Select (`S` is a legacy alias; with the Toolbar strip's Search, `S` opens it) |
 | `H`       | Hand (pan)                                                                    |
 | `F`       | Frame                                                                         |
-| `I`       | Isometric view (`⇧`+drag orbits the camera once in it)                        |
 | `Z`       | Zen mode (focus)                                                              |
 
 **Add elements**: no key adds an element. Plan has no palette, so the old letter and number keys that dropped a
@@ -808,7 +806,7 @@ shape, a text box, a note or an arrow are gone with it ([Plan mode](../026-plan/
 
 - **Delete** / **Backspace** removes the current selection (the cascading-delete rules in the Marquee section apply).
 - **Arrow keys** nudge the selection 1 px (10 px with `⇧`).
-- **`Escape`** aborts an **in-flight drag first**: pressing it mid move / resize / rotate / arrow-handle gesture snaps the element back to its pre-drag state and leaves **no undo step** behind (the gesture's checkpoint is restored and discarded; mid-draw of a quick-connect arrow it removes the half-drawn arrow). With no drag active it cancels whichever transient mode is active — format painter, the Format / Isometric tools, or Zen — and, when none of those apply, **clears the current selection**. One press does exactly one of these.
+- **`Escape`** aborts an **in-flight drag first**: pressing it mid move / resize / rotate / arrow-handle gesture snaps the element back to its pre-drag state and leaves **no undo step** behind (the gesture's checkpoint is restored and discarded; mid-draw of a quick-connect arrow it removes the half-drawn arrow). With no drag active it cancels whichever transient mode is active — or Zen — and, when none of those apply, **clears the current selection**. One press does exactly one of these.
 - **Space-tap** on a single selected element edits its label; **Space-drag** pans the canvas (the tap-vs-drag split lives in the hook).
 - **Type-to-edit**: a printable key on a single selected, label-bearing element (a character composed with AltGr, such as a German layout's `€`, included: its Ctrl is not a shortcut's, `lib/composed-key.ts`) opens its label editor seeded with that character, instead of firing the tool / add / number shortcuts (so selecting a shape and typing never accidentally drops new elements). The seed replaces the label at once (everyone in the room sees it), so **Escape takes it back**: the label and its formatting are as they were before the first key, for everyone, with no redo step left behind. Leaving the editor any other way keeps what was typed, as **one step**: the commit takes the seed's place in the undo history, so one Cmd/Ctrl+Z puts back the label from before the first key rather than the lone seed character.
 - **`⇧`-Click** toggles an element in the multi-selection.
@@ -831,7 +829,7 @@ Result sections, in order, each capped (8 per section, 12 for elements, 10 for A
 6. **Elements** — the open project's element text (editor only). Matches element labels; **tables match by cell text** (tables have no single label), surfacing the matching cell as the row label. Blank-labelled elements are unmatchable. Opening the panel triggers a **load-all-tabs prefetch**: per-tab lazy loading ([Per-tab storage](../006-project/per-tab-storage.md)) means unvisited tabs are empty placeholders locally, so search pulls every remaining tab's content in one parallel best-effort sweep — without it, element search silently misses tabs the user hasn't opened this session.
 7. **Actions** — synthetic, do-something results rather than navigation: a contextual **command palette** for power users (editor only, non-empty query). The matcher (name + keywords, capped) lives in `lib/search.ts` as a generic `command` result kind; the editor supplies the applicable command list and a dispatcher via `useEditorCommands` (catalogue + applicability logic in `lib/editor-commands.ts`, unit-tested in `editor-commands.test.ts`). The group ranks **below** the navigation + element groups so picking an existing tab / element by name keeps the default Enter; commands are reached by typing their verb (e.g. "delete", "lock", "rotate", "share", "theme", "rename"). Each command reuses the exact same handler (and telemetry) as its menu/toolbar entry point, so behaviour can't drift. Commands never surface on an empty query (no catalogue dump); view-only (`view`-role) sessions keep only the view-safe subset (zen / fit / export / Collaborators, plus the tools that only change how you look at the canvas), mirroring the palette's read-only gate.
 
-   **Tool switches.** The catalogue also carries the **canvas tools** (`tool:select`, `tool:pan`, `tool:format`, `tool:isometric`), which were previously reachable only from the palette's tool dropdown. The tool already in force is dropped (offering "Hand Tool" while holding the hand does nothing), and the gating **matches the dropdown exactly**: everything but Select and Hand needs content on the canvas, and the one that writes to the project (the Format painter) is withheld from a read-only visitor. A test compares the offered ids against `buildCanvasToolOptions` under all three conditions, so a tool added to one surface can't quietly skip the other. Zen stays its own command rather than a `tool:` entry, because it is an action in the dropdown too.
+   **Tool switches.** The catalogue also carries the **canvas tools** (`tool:select`, `tool:pan`; livediagram adds `tool:format`, `tool:isometric`), which were previously reachable only from the palette's tool dropdown. The tool already in force is dropped (offering "Hand Tool" while holding the hand does nothing), and the gating **matches the dropdown exactly**: everything but Select and Hand needs content on the canvas, and the one that writes to the project (the Format painter) is withheld from a read-only visitor. A test compares the offered ids against `buildCanvasToolOptions` under all three conditions, so a tool added to one surface can't quietly skip the other. Zen stays its own command rather than a `tool:` entry, because it is an action in the dropdown too.
 
    The catalogue is **contextual**:
    - **With a selection** (`selectedId` or a multi-selection): **Delete**, **Duplicate**, **Lock / Unlock**, **Bring to Front**, **Send to Back**, and (single, boxed) **Rotate 90° / 180° / 270°** + **Reset Rotation** (not on an annotation marker), **Add / Edit Note**, **Add Comment**, plus **Clear Animation** (when the element has one) and, for a shape, **Clear Marker** (when set) / **Add … Marker** (the `SHAPE_MARKERS` set). Selection commands rank first so they stay in context with what's selected.
@@ -931,7 +929,7 @@ Text + duplication:
 - **Edit Text / Add Text** — enters inline text-edit mode on the selected element (the same path as a double-click). A serif-`T` icon. **Shown on every text-CAPABLE element** (`elementSupportsText` in `packages/project`: shapes minus the self-drawing data shapes, text / sticky / freehand / link-cards / arrows) — including elements with no label yet, where it reads **Add Text** so the affordance teaches that text can be added; with a label it reads **Edit Text**. Absent for kinds with no `label` (tables, images, annotation markers, data shapes).
 - **Add child / Add sibling** — on a **mind node** only, grow the map from it: the same actions as Tab and Enter ([The mind node](../009-elements/mind-node.md)). Hidden on a locked node and in view-role.
 
-There is **no paintbrush** on the popover: the slot it once held went to **Edit Text** when the Format tool arrived, and copying a look is the Format tool's job ([Format painter](#format-painter)).
+There is **no paintbrush** on the popover, and no format painter ([Format painter](#format-painter-removed)).
 
 Relationships:
 
@@ -971,7 +969,7 @@ A **plain wheel with no modifier pans** the canvas (same `useCanvasPinchZoom` ha
 
 On a touch device, the canvas surface declares `touch-action: none` and `user-select: none` (plus the iOS-specific `-webkit-touch-callout: none` and `-webkit-tap-highlight-color: transparent`). Without those, mobile Safari intercepts a one-finger drag for native scrolling, treats a long-press as the system text-selection callout, and shows a tap highlight ring on every element press. Pointer events are then dispatched normally so the same handlers (pan in Hand mode, marquee in Select mode, move / resize on elements) work from a finger or a stylus the same way they work from a mouse. `touch-action` does not carry through a scroll container, so an element face with a scrolling body (the collab panels such as the Q&A board, the Comment Panel, the Action Panel) sets `touch-none` on that body too; otherwise the browser claims a finger on it as a scroll and the element can't be dragged on a phone. Finger scrolling is put back by hand (`useTouchScrollBody`): a finger that lands on the **content** (the cards inside, a Q&A note, a comment) scrolls the body, with a short fling on release; a finger on the body's own padding or the gaps between cards, or on the header or footer, drags the element; and when the content fits (nothing to scroll) every finger drags. A tap on a card inside therefore doesn't select the element, the header does. Mouse and pen are unaffected: a wheel or trackpad scrolls the body as before. The browser's own pinch-to-zoom is off because the canvas owns its zoom: a **two-finger pinch zooms the canvas** about the fingers (`useCanvasPinchZoom`), keeping the canvas point that was between them there and following them as they move together, so one pinch zooms and pans at once, as a phone's maps and photos do. It changes the view at most once a frame, however fast the touch events come.
 
-**A finger moves only an element that fits on the screen.** A finger pressed on an element that runs off the canvas surface on any side (its on-screen box, so zoom and rotation count, with 1px of slack) pans the canvas instead of dragging the element, whatever the tool: on a phone a drag across a big frame, table or image is far more often "show me the rest" than "move this", and the way to move it is to zoom out until it fits, then drag. The press still behaves as a press on that element otherwise: a **tap** selects it (or settles the click on it as a mouse click would, [Selection](#selection)), an armed action (an arrow waiting to connect) still takes the tap, the **long-press** still opens its menu (and its release is not also a tap), and a double-tap still edits. The [format painter](#format-painter) keeps every press, and a mouse or pen always drags. (`lib/fits-on-screen.ts` measures the element against the `data-canvas-root` surface; `useBoxedElementGestures` marks the press as panning through, `hooks/canvas/pan-through.ts`, with the tap it runs.)
+**A finger moves only an element that fits on the screen.** A finger pressed on an element that runs off the canvas surface on any side (its on-screen box, so zoom and rotation count, with 1px of slack) pans the canvas instead of dragging the element, whatever the tool: on a phone a drag across a big frame, table or image is far more often "show me the rest" than "move this", and the way to move it is to zoom out until it fits, then drag. The press still behaves as a press on that element otherwise: a **tap** selects it (or settles the click on it as a mouse click would, [Selection](#selection)), an armed action (an arrow waiting to connect) still takes the tap, the **long-press** still opens its menu (and its release is not also a tap), and a double-tap still edits. The [format painter](#format-painter-removed) (livediagram) kept every press, and a mouse or pen always drags. (`lib/fits-on-screen.ts` measures the element against the `data-canvas-root` surface; `useBoxedElementGestures` marks the press as panning through, `hooks/canvas/pan-through.ts`, with the tap it runs.)
 
 ## Marquee box-select
 
@@ -1014,7 +1012,7 @@ Placement (for Duplicate) matches the gap to the nearest in-line neighbour so a 
 
 Each chosen option emits telemetry (the quick-connect buttons previously emitted nothing): Duplicate → `track('Element', 'Duplicated', <kind>)`; Text → `track('Element', 'Added', 'Text')`; Arrow fires its existing creation event (`'Arrow'`).
 
-The plus buttons are hidden while the element is being edited or while the format painter is active. A marquee multi-selection hides them (a transient selection isn't a unit you chain from). The pluses are not shown for arrows or annotation markers (a marker is a note, not a node). A **stat row, process or header** ([Web components are elements; groups are gone](../009-elements/web-components-and-no-groups.md)) adds one more option while it has room: **Add stat / Add step / Add link** appends a row, the way a concept graphic's ring offers Add Milestone or Add Stage. **Tables get the pluses with a slimmed table ring**: Duplicate / Text don't apply to a grid, so the ring holds **Arrow** plus that side's structural add — **Add Row** on the bottom plus, **Add Column** on the right one (top/left are Arrow-only) — so a table can grow and connect without the hover ⋯ menus.
+The plus buttons are hidden while the element is being edited. A marquee multi-selection hides them (a transient selection isn't a unit you chain from). The pluses are not shown for arrows or annotation markers (a marker is a note, not a node). A **stat row, process or header** ([Web components are elements; groups are gone](../009-elements/web-components-and-no-groups.md)) adds one more option while it has room: **Add stat / Add step / Add link** appends a row, the way a concept graphic's ring offers Add Milestone or Add Stage. **Tables get the pluses with a slimmed table ring**: Duplicate / Text don't apply to a grid, so the ring holds **Arrow** plus that side's structural add — **Add Row** on the bottom plus, **Add Column** on the right one (top/left are Arrow-only) — so a table can grow and connect without the hover ⋯ menus.
 
 ## Layer order
 
@@ -1058,7 +1056,7 @@ A free-floating text element. The text **is** the element — there is no border
   Border, since a text element has neither) and the [Quick style panel](quick-style-panel.md)'s
   **Text colour** row. A multi-selection's Colours category recolours the text elements in it too.
   `supportsColours` in `packages/project/src/colors.ts` is the one gate for both menus.
-- All other behaviour (selection, popover, lock, format painter, layer order, plus button) matches shapes.
+- All other behaviour (selection, popover, lock, layer order, plus button) matches shapes.
 
 Data:
 
@@ -1088,7 +1086,7 @@ A yellow sticky-note element for short notes / annotations on the canvas.
 - Visual: amber-100 background, amber-200 border, soft drop shadow, slightly rounded corners.
 - **Multi-line** text (unlike shapes / text elements). Wraps naturally; long text is clipped (resize to see more).
 - **Double-click** to edit. While editing, **Enter** inserts a newline; **Escape** and blur commit.
-- All other behaviour (drag, resize, lock, format painter, layer order, plus button) matches shapes.
+- All other behaviour (drag, resize, lock, layer order, plus button) matches shapes.
 
 Data:
 
@@ -1109,52 +1107,11 @@ type StickyElement = {
 
 Groups were removed in [Web components are elements; groups are gone](../009-elements/web-components-and-no-groups.md): no `groupId`, no Group / Ungroup, no group mode, no drill-in, no `pinned-group` arrow ends. A multi-selection moves, styles, locks and deletes many elements at once, and a frame keeps a region's contents travelling together. Projects saved with groups load with the grouping dropped and any group-pinned arrow end frozen where it was (`migrateLegacyGroups`).
 
-## Format painter
+## Format painter (removed)
 
-A way to copy an element's **formatting** (size, eventually colour and style) onto another element — same mental model as Word/Figma's format painter.
-
-The painter is the **Format** canvas tool in the palette tool dropdown (after Hand, see the tool list above). There is no one-off brush on the selection popover: it was replaced by **Edit Text** when the persistent tool arrived, so the tool is the single way in.
-
-### Using the Format tool
-
-- Picking the tool enters a **two-phase** mode driven by the top-centre banner. **Phase 1** (no source armed) reads "Select a base element to copy its style"; the first element clicked becomes the **source**.
-- **Phase 2** (source armed) reads "Tap elements to paint this style onto them"; each subsequent click on an element of the same kind (boxed → boxed, arrow → arrow) applies the source's formatting. With the [Format Panel](format-panel.md)'s **Keep the brush** (the default) the source **stays armed**, so the user can format target after target; with **Paint once** the brush empties after one apply and the banner returns to phase 1.
-- **Done** on the banner, **clicking the empty canvas**, pressing **Escape**, or switching to any other tool exits; leaving the tool **disarms** the source and **restores the tool that was active before Format** (falling back to Select). Clicking the source itself is a no-op but keeps the mode going.
-- The cursor is the copy cursor in both phases, on boxed elements and arrows alike.
-- Mechanically the click handler routes through `useEditorDrag` (`formatToolActive`) for boxed elements and through `selectElement` (`useSelectionEditing`) for arrows (arrows have no drag starter in format mode, their clicks land as selections), and both call the same `applyFormatFromSource`, which reads the Format Panel's mode to decide whether the source survives the apply.
-- **Arrows work in both phases**: an arrow can be the **source** (copying its line + label look) and the **target** of another arrow's style. A cross-kind tap (arrow base → boxed target or vice versa) is a no-op that keeps the base armed: the two kinds share almost no formattable fields.
-
-### Properties copied
-
-The painted field lists live in `apps/editor/lib/format-painter.ts` (`paintableBoxedFields` / `paintableArrowFields`, unit-tested in `format-painter.test.ts`) — one explicit, tested source of truth so a new `BoxedElement` / `ArrowElement` field is an opt-in decision, not a silent drag-along.
-
-Between two **boxed** elements (shape, text, sticky, table, image, freehand, annotation, link-card):
-
-- `width`, `height`, `aspectLocked`, `opacity`.
-- `fillColor`, `strokeColor`, `textColor`.
-- All **label text styling**: `textSize`, `textAlignX`, `textAlignY`, `textBold`, `textItalic`, `textUnderline`, `textStrikethrough`, `font`, `padding`.
-- `headerFill` (a table's header row / a lane's title gutter), and a table's `headerTextColor`.
-- Border presets (shape / table / freehand): `strokeWidth`, `strokeStyle`, and (shape / freehand) `borderRadius`.
-- Drop shadow (shape / sticky / image / link-card / video): `shadow`.
-- The theme-preset binding and fill lock (shape): `colorPreset`, `themeLockFill` (see below).
-- The icon fields: glyph animation + speed + repeat (`iconAnimation`, `iconAnimationSpeed`, `iconAnimationRepeat`) and the Technology mark's fixed-size preset (`iconSize`, [Technology icons](../010-palette/technology-icons.md)). Arrows carry `flow` + `flowSpeed` + `flowRepeat` the same way. The glyph identity (`iconId`) is never painted.
-
-**Whole-label rich-text collapse.** Selecting all of a label and bolding it stores the formatting as a single attributed `richText` run, not the element-level `textBold` flag (see [rich text](#text-size) / `hasRichFormatting`). The painter therefore reads the **effective** whole-label value: an attribute every run agrees on (uniform bold / colour / size) is painted onto the target's element-level field; a partially-styled label (runs disagree) has no single value, so that attribute falls back to the element field. `richText` itself is never painted — its runs are bound to the **source's** characters, not the target's.
-
-Between two **arrows** (arrow → arrow): stroke colour / width / pattern, arrowhead colour (`arrowheadColor`), opacity, arrow ends, arrowhead size + shape, line style, route-behind, flow animation, **and** the same label text styling (`textSize` / `textColor` / bold / italic / underline / strikethrough / `font`) plus the label's backing plate (`labelFill`). Boxed → arrow and arrow → boxed paints are no-ops (the kinds share almost no formattable fields).
-
-**A default on the source is painted too.** Most style fields are optional, and absent means "the default" (the theme's arrow colour, no shadow, a solid line). The target ends up looking like the source, so a field the source leaves on its default **clears** that field on the target rather than leaving the target's own override in place: painting a theme-coloured arrow onto a red one makes it theme-coloured. This only applies to fields the source's kind actually carries: a text element has no border presets, so painting it onto a shape leaves the shape's border alone rather than resetting it.
-
-**The target's per-range formatting yields to painted text.** Painted text styling lands on the element-level fields, but a label's `richText` runs override those per character. So when a text attribute is painted, the target's runs lose that attribute (bold, italic, underline, strikethrough, colour, size), and `richText` is dropped once nothing rich is left. Links and headings in the runs stay, because they are content rather than a look.
-
-**The colour-preset binding follows the colours.** `colorPreset` ([Style presets](../010-palette/style-presets.md)) re-derives a shape's fill, stroke and text colour on a theme change. The painter copies the source's binding only when all three colours travel; if only some do, the target's binding is cleared (as any hand-edited colour clears it), otherwise the next theme change would re-derive the target and overwrite the colours just painted.
-
-Explicitly **not** copied — these are per-element identity / content, not formatting:
-
-- `x`, `y` (position).
-- `label` / `richText` (content + character-bound runs).
-- `locked` state, `id`, `type`.
-- For shapes, `shape` itself (you don't turn a circle into a square via format painter).
+liveplanner has **no format painter**: it was the palette's Format tool, and Plan has no palette. The field lists
+in `apps/editor/lib/format-painter.ts` stay only while livediagram's flowchart and mind-map dressing still read
+them.
 
 ## Text size
 
@@ -1385,7 +1342,6 @@ A shape can carry an inline **text label**.
 
 ### Edit vs modes
 
-- **The Format tool blocks double-click edit**: while it is in hand, clicks arm and paint. Leaving the tool restores double-click edit.
 
 ## Locking
 

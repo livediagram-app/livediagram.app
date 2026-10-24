@@ -3,7 +3,6 @@
 import { TagColoursProvider } from '@/components/canvas/TagColoursContext';
 import { openSearchWithPrefetch } from '@/lib/open-search';
 import { pastePointer } from '@/lib/canvas-pointer';
-import { describeOne } from '@/lib/element-names';
 import { canvasSurface, DEFAULT_BACKGROUND_COLOR } from '@liveplanner/project';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { useState } from 'react';
@@ -46,11 +45,6 @@ export function EditorCanvasHost() {
     activeLayerId,
     layerInertIds,
     layerCounts,
-    formatConfig,
-    onToggleFormatGroup,
-    onSetFormatMode,
-    formatPanelPosition,
-    setFormatPanelPosition,
     voteResults,
     jumpToVoteResult,
     setActiveLayer,
@@ -79,7 +73,6 @@ export function EditorCanvasHost() {
     beginArrowLabelDrag,
     beginArrowTranslate,
     beginDrag,
-    pressArmedAction,
     beginEdit,
     beginEndpointDrag,
     broadcastCursor,
@@ -116,10 +109,8 @@ export function EditorCanvasHost() {
     embedMode,
     workbenchMode,
     endVote,
-    exitFormatTool,
     fitToScreen,
     followLink,
-    formatSourceId,
     handleCanvasDoubleClick,
     hydrated,
     identityOnlyScreenOpen,
@@ -182,7 +173,6 @@ export function EditorCanvasHost() {
     setCodeEditOpenForId,
     setSankeyFlowsOpenForId,
     setSequenceOpenForId,
-    setFormatSourceId,
     setLinkPickerOpenForId,
     setMapPosition,
     setMultiSelectedIds,
@@ -317,13 +307,6 @@ export function EditorCanvasHost() {
     setContextMenu,
   });
 
-  // The element the format brush is loaded from (docs/specs/010-palette/stickers.md), for the panel's
-  // preview. Resolved here rather than in the panel so the panel stays a
-  // renderer and never reaches into the tab.
-  const formatSource = formatSourceId
-    ? (activeTab.elements.find((el) => el.id === formatSourceId) ?? null)
-    : null;
-
   // The collaboration elements (docs/specs/012-collaboration/temperature-check.md). One bag for their faces;
   // the write handlers drop out
   // entirely for a view-role visitor. Held stable while nothing a face shows changes, so a render here
@@ -456,7 +439,6 @@ export function EditorCanvasHost() {
           }}
           editingId={editingId}
           editCursorAtEnd={editCursorAtEnd}
-          formatSourceId={formatSourceId}
           canUndo={canUndo && !activeTabLocked}
           canRedo={canRedo && !activeTabLocked}
           onDropFile={isReadOnly ? undefined : dropBoardFile}
@@ -475,24 +457,6 @@ export function EditorCanvasHost() {
           activeLayerId={activeLayerId}
           layerCounts={layerCounts}
           sessionTools={sessionTools}
-          formatConfig={formatConfig}
-          onToggleFormatGroup={onToggleFormatGroup}
-          onSetFormatMode={onSetFormatMode}
-          // What the brush holds, described for the panel's preview (docs/specs/010-palette/stickers.md):
-          // the loaded element's name and the three colours the swatch draws.
-          formatBrushSource={
-            formatSource
-              ? {
-                  name: describeOne(formatSource),
-                  fill: 'fillColor' in formatSource ? formatSource.fillColor : undefined,
-                  stroke: 'strokeColor' in formatSource ? formatSource.strokeColor : undefined,
-                  textColor: 'textColor' in formatSource ? formatSource.textColor : undefined,
-                }
-              : null
-          }
-          formatPanelPosition={formatPanelPosition}
-          onMoveFormatPanel={(x, y) => setFormatPanelPosition({ x, y })}
-          onResetFormatPanel={() => setFormatPanelPosition(null)}
           voteResults={voteResults}
           onJumpToVoteResult={jumpToVoteResult}
           isVoteHost={isVoteHost(activeTab.vote, participantKey(selfParticipant))}
@@ -577,13 +541,9 @@ export function EditorCanvasHost() {
             },
           }}
           onDeselect={() => {
-            // Clicking empty canvas wraps up the Format tool — restoring the pre-Format tool — so a
-            // background click is the quick way out of paint mode (docs/specs/008-canvas/canvas-and-palette.md).
-            if (canvasTool === 'format') exitFormatTool();
             setSelectedId(null);
             setMultiSelectedIds(new Set());
             setEditingId(null);
-            setFormatSourceId(null);
             setContextMenu(null);
           }}
           onSelect={selectElement}
@@ -667,7 +627,6 @@ export function EditorCanvasHost() {
                   })
           }
           onBeginDrag={beginDrag}
-          onPressArmedAction={pressArmedAction}
           onBeginEdit={beginEdit}
           onCommitLabel={commitLabel}
           onAddTableRow={appendTableRowSelected}
@@ -693,7 +652,6 @@ export function EditorCanvasHost() {
           onBeginArrowLabelDrag={beginArrowLabelDrag}
           onBeginArrowElbowDrag={beginArrowElbowDrag}
           onShiftSelect={toggleInMultiSelect}
-          onExitFormatTool={exitFormatTool}
           onSetTextAlign={setTextAlignSelected}
           onFollowLink={followLink}
           onOpenComments={openComments}

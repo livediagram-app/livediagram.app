@@ -20,7 +20,6 @@ export type BoxedShared = Omit<
   | 'isMultiSelected'
   | 'showHandles'
   | 'showAnchors'
-  | 'isoDepth'
   | 'votableInVote'
   | 'layerOpacity'
   | 'remoteSelectors'
@@ -62,7 +61,6 @@ export function useSheetChartRenderer(
           isMultiSelected={false}
           showHandles={false}
           showAnchors={false}
-          isoDepth={0}
           remoteSelectors={NO_REMOTE}
           isEditing={false}
           // The Sheet's frame moves and resizes it; nothing types on a chart.

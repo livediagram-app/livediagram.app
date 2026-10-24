@@ -51,7 +51,6 @@ type CanvasSelection = {
 // The modes that decide whether a selected element shows its grips.
 type GripContext = {
   editingId: string | null;
-  isPaintMode: boolean;
   tabLocked: boolean;
   readOnly: boolean;
   // A read-only session that may still resize this element (a Participant): handles, never edge anchors, since a
@@ -73,7 +72,6 @@ export function elementGrips(
     isBoxed(el) &&
     el.locked !== true &&
     ctx.editingId !== el.id &&
-    !ctx.isPaintMode &&
     !ctx.tabLocked &&
     (!ctx.readOnly || ctx.resizable === true) &&
     !isFixedSizeElement(el);
@@ -87,7 +85,6 @@ export function deriveCanvasSelection(input: {
   selectedId: string | null;
   multiSelectedIds: ReadonlySet<string>;
   editingId: string | null;
-  isPaintMode: boolean;
   tabLocked: boolean;
   readOnly: boolean;
   // An element context menu is open. One question, one answer: a left click
@@ -111,7 +108,6 @@ export function deriveCanvasSelection(input: {
     selectedId,
     multiSelectedIds,
     editingId,
-    isPaintMode,
     tabLocked,
     readOnly,
     elementMenuOpen,
@@ -148,7 +144,6 @@ export function deriveCanvasSelection(input: {
     !canvasCovered &&
     !elementMenuOpen &&
     editingId !== selected.id &&
-    !isPaintMode &&
     multiSelectedIds.size === 0 &&
     !tabLocked
   );
@@ -182,7 +177,6 @@ export function deriveCanvasSelection(input: {
         selected.shape === 'plan-sheet')
     ) &&
     editingId !== selected.id &&
-    !isPaintMode &&
     !selectedLocked &&
     !tabLocked &&
     !readOnly
@@ -192,7 +186,7 @@ export function deriveCanvasSelection(input: {
     const el = elements.find((e) => e.id === id);
     const single = id === selectedId && multiSelectedIds.size === 0;
     return el && single
-      ? elementGrips(el, true, { editingId, isPaintMode, tabLocked, readOnly })
+      ? elementGrips(el, true, { editingId, tabLocked, readOnly })
       : { handles: false, anchors: false };
   };
   const resizeVisible = (id: string) => gripsOf(id).handles;
@@ -208,7 +202,6 @@ export function deriveCanvasSelection(input: {
     !!unionResizePrimaryId &&
     selectedIsBoxed &&
     editingId !== unionResizePrimaryId &&
-    !isPaintMode &&
     !selectedLocked &&
     !tabLocked &&
     !readOnly;
@@ -227,7 +220,6 @@ export function deriveCanvasSelection(input: {
     !!multiToolbarBounds &&
     multiSelectedIds.size > 1 &&
     !canvasCovered &&
-    !isPaintMode &&
     !tabLocked &&
     !readOnly;
 

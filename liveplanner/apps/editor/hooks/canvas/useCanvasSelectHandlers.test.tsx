@@ -8,14 +8,13 @@ import { useCanvasSelectHandlers } from './useCanvasSelectHandlers';
 // settled at canvas level for boxed elements (handleElementClick) and applied to arrows
 // (handleArrowSelect).
 
-function harness(selectedId: string | null, multi: string[] = [], isPaintMode = false) {
+function harness(selectedId: string | null, multi: string[] = []) {
   const onSelect = vi.fn();
   const onDeselect = vi.fn();
   const onShiftSelect = vi.fn();
   const view = renderHook(() =>
     useCanvasSelectHandlers({
       inertIds: new Set(['inert']),
-      isPaintMode,
       readSelection: () => ({ selectedId, multiSelectedIds: new Set(multi) }),
       onSelect,
       onDeselect,
@@ -121,14 +120,6 @@ describe('handleArrowSelect', () => {
     expect(t.onDeselect).not.toHaveBeenCalled();
   });
 
-  it('hands a press on the only selected arrow to the format painter while it is armed', () => {
-    const t = harness('arrow', [], true);
-    t.h.handleArrowSelect('arrow', pointer());
-    expect(t.onSelect).toHaveBeenCalledWith('arrow');
-    releaseAt(10);
-    expect(t.onDeselect).not.toHaveBeenCalled();
-  });
-
   it('selects on the second press of a double-click, whatever the selection', () => {
     const t = harness('arrow');
     t.h.handleArrowSelect('arrow', pointer(), true);
@@ -146,7 +137,6 @@ describe('useCanvasSelectHandlers reading the selection', () => {
     const { result } = renderHook(() =>
       useCanvasSelectHandlers({
         inertIds: new Set<string>(),
-        isPaintMode: false,
         readSelection: () => current,
         onSelect,
         onDeselect,

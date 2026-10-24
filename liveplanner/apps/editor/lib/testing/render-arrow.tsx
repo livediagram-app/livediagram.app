@@ -18,7 +18,6 @@ export function ArrowForTests({ arrow }: { arrow: ArrowElement }) {
         labelRender={NO_LABEL}
         draftLayout={() => null}
         isSelected
-        isPaintMode={false}
         isEditing={false}
         tabLocked={false}
         readOnly

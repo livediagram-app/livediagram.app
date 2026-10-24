@@ -22,7 +22,7 @@ function setup(tabLocked: boolean) {
       tickTabs: vi.fn(),
       undoHistory,
       redoHistory,
-      set: { setSelectedId: vi.fn(), setEditingId: vi.fn(), setFormatSourceId: vi.fn() },
+      set: { setSelectedId: vi.fn(), setEditingId: vi.fn() },
     }),
   );
   return { result, undoHistory, redoHistory };

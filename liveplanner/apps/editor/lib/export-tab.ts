@@ -63,7 +63,7 @@ import { drawBoxed, drawBoxedExtrusion } from './export-tab-canvas-draw';
 import { exportChartInk } from './export-chart-ink';
 
 // Shared options for the image exports (PNG / SVG / PDF). `isometric` tilts
-// the rendered scene into the editor's isometric projection (docs/specs/008-canvas/isometric-view.md / 48),
+// the rendered scene into an isometric projection (docs/specs/008-canvas/isometric-view.md),
 // off by default. `pattern` paints the tab's backdrop pattern (grid / dots /
 // …); on by default, the user can switch it off in the Export dialog.
 // Image elements export as their empty placeholder (pictures are never uploaded); only an inline picture (a
@@ -197,7 +197,7 @@ export async function renderTabToCanvas(
   });
   const bounds = contentBounds(els, labels);
   const pad = EXPORT_PADDING;
-  // Isometric export (docs/specs/008-canvas/isometric-view.md / 48): project the flat content through the iso
+  // Isometric export (docs/specs/008-canvas/isometric-view.md): project the flat content through the iso
   // affine and size the canvas to the tilted footprint so nothing clips. The
   // matrix is applied to the drawing context after positioning, so every
   // element / arrow drawer stays in plain canvas coordinates.
@@ -418,8 +418,7 @@ function svgSilhouette(
 // counterpart of drawBoxedExtrusion. Stepped silhouette copies, dimmed toward
 // the floor, behind the element body.
 function svgBoxedExtrusion(el: BoxedElement, surface: CanvasSurface): string {
-  // Frames / text / icon shapes stay flat (isoExtrudes, shared with the
-  // on-screen IsometricDepthLayer + the canvas exporter).
+  // Frames / text / icon shapes stay flat (isoExtrudes, shared with the canvas exporter).
   if (!isoExtrudes(el)) return '';
   const { shape, opacity } = describeBoxedExport(el, { surface });
   if (shape.kind === 'none' || shape.kind === 'sticker') return '';

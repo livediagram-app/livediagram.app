@@ -1,4 +1,3 @@
-import { IsometricOrbitButton } from '@/components/chrome/IsometricOrbitButton';
 import { ZoomMenu, type ZoomRange } from '@/components/chrome/ZoomMenu';
 import { ZenExitIcon, ZenIcon } from '@/components/palette/palette-icons';
 import { HoverCard, Glyph } from '@liveplanner/ui';
@@ -9,12 +8,6 @@ type ZoomControlsProps = {
   onZoomOut: () => void;
   onSetZoom: (zoom: number) => void;
   onFitToScreen: () => void;
-  // Isometric orbit control (docs/specs/008-canvas/isometric-view.md). When both are set (the isometric
-  // tool is active) the orbit button sits between Fit and Zen: drag to
-  // orbit the camera, click to reset its angle. Omitted on every other
-  // tool → no button.
-  onIsoOrbit?: (clientX: number, clientY: number) => void;
-  onIsoReset?: () => void;
   // Zen / focus mode (docs/specs/007-editor/zen-mode.md). The dock carries the EXIT button, shown
   // while zen is active (it is the only chrome left in zen). Zen is entered with Z or the command
   // palette's Enter zen mode; `zenEnterHere` adds a visible enter button for view-only visitors.
@@ -59,8 +52,6 @@ export function ZoomControls({
   onZoomOut,
   onSetZoom,
   onFitToScreen,
-  onIsoOrbit,
-  onIsoReset,
   onToggleZen,
   zenActive,
   zenEnterHere,
@@ -70,10 +61,9 @@ export function ZoomControls({
   zoomRange,
 }: ZoomControlsProps) {
   const copy = ZOOM_COPY[zoomScope];
-  const iso = onIsoOrbit && onIsoReset;
   const zen = onToggleZen && (zenActive || zenEnterHere);
-  // With zoom hidden and neither Isometric nor Zen to offer, the cluster goes rather than sit empty over the page.
-  if (zoomHidden && !iso && !zen) return null;
+  // With zoom hidden and no Zen to offer, the cluster goes rather than sit empty over the page.
+  if (zoomHidden && !zen) return null;
   return (
     <div
       data-zoom-controls
@@ -131,21 +121,13 @@ export function ZoomControls({
           </span>
         </>
       )}
-      {iso ? (
-        <>
-          {zoomHidden ? null : (
-            <div className="mx-0.5 h-6 w-px bg-slate-200 dark:bg-slate-700" aria-hidden />
-          )}
-          <IsometricOrbitButton onOrbit={onIsoOrbit} onReset={onIsoReset} />
-        </>
-      ) : null}
       {zen ? (
         // Exit-only in normal sessions: zen is entered with Z or the command
         // palette's Enter zen mode, so outside zen the dock stays minimal.
         // Inside zen the dock is the only chrome left, so the exit button
         // lives here. zenEnterHere (view-only sessions) adds an enter button.
         <>
-          {zoomHidden && !iso ? null : (
+          {zoomHidden ? null : (
             <div className="mx-0.5 h-6 w-px bg-slate-200 dark:bg-slate-700" aria-hidden />
           )}
           <HoverCard

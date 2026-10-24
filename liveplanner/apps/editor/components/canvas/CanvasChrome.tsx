@@ -74,22 +74,6 @@ type ChromeExtras = {
   handleZoomIn: () => void;
   handleZoomOut: () => void;
   handleSetZoom: (zoom: number) => void;
-  // Begin an isometric orbit drag from the given screen coordinates
-  // (wired to `isoCamera.startOrbit`). Drives the dock orbit button,
-  // which only renders while the isometric tool is active.
-  onIsoOrbit: (clientX: number, clientY: number) => void;
-  // Reset the isometric camera to its default angle (wired to
-  // `isoCamera.reset`) — fired when the dock orbit button is clicked.
-  onIsoReset: () => void;
-  // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, owned in editor state
-  // (the paint lives there), plus a description of the loaded element.
-  formatConfig?: import('@/lib/format-config').FormatConfig;
-  onToggleFormatGroup?: (group: import('@/lib/format-config').FormatGroup) => void;
-  onSetFormatMode?: (mode: import('@/lib/format-config').FormatMode) => void;
-  formatBrushSource?: import('@/components/panels/FormatPanel').FormatBrushSource | null;
-  formatPanelPosition?: { x: number; y: number } | null;
-  onMoveFormatPanel?: (x: number, y: number) => void;
-  onResetFormatPanel?: () => void;
 };
 
 export type CanvasChromeProps = CanvasProps & ChromeExtras;
@@ -120,7 +104,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     activeDockPanel,
     canRedo,
     canUndo,
-    canvasTool,
     projectName,
     elements,
     handleDockButtonClick,
@@ -135,8 +118,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     offscreenContent,
     onFitToScreen,
     onRedo,
-    onIsoOrbit,
-    onIsoReset,
     onCancelIdentity,
     onUndo,
     readOnly,
@@ -332,7 +313,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
         <>
           {panelEls.collaborate}
           {panelEls.minimap}
-          {panelEls.format}
         </>
       )}
 
@@ -462,8 +442,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
               onZoomOut={handleZoomOut}
               onSetZoom={handleSetZoom}
               onFitToScreen={onFitToScreen}
-              onIsoOrbit={canvasTool === 'isometric' ? onIsoOrbit : undefined}
-              onIsoReset={canvasTool === 'isometric' ? onIsoReset : undefined}
               onToggleZen={onToggleZen}
               zenActive={zenMode}
               // View-only visitors have no palette (so no canvas-tool

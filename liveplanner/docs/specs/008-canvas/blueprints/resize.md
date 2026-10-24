@@ -108,9 +108,6 @@ primaryId, mode, dx, dy, shiftHeld, dragAspectLocked, guidesOn })` returns `{ bo
   nothing. `CanvasElementsLayer` is the only renderer of element views, and it always mounts one.
 - An element on a hidden layer is not drawn, so its grips are not either; a layer-preview solo draws
   only that band's elements and so only their grips.
-- Isometric view: painting goes by depth, not z-index, so `[data-iso] [data-selection-grips]` takes
-  `translate: 0 0 calc(2px + var(--iso-z) * 0.01px)` with `--iso-z` one past the top element's
-  paint index (above the arrows' `1px` nudge).
 - A later element that forms its own stacking context, or a descendant with its own z-index (a
   lane's gutter and a face's settings button, both `z-10`), stays under the layer.
 - Remote cursors (`z-index: 40`) stay above the grips.

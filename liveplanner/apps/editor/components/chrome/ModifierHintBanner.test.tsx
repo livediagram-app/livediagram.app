@@ -15,7 +15,6 @@ function show(props: Partial<Parameters<typeof ModifierHintBanner>[0]> = {}) {
       drag={null}
       selectedKind={null}
       hasElements
-      suppressed={false}
       {...props}
     />,
   );

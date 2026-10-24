@@ -40,7 +40,6 @@ function renderToolbars(multi: boolean) {
   const selectionInput = {
     elements,
     editingId: null,
-    isPaintMode: false,
     tabLocked: false,
     readOnly: false,
   };

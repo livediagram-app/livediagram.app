@@ -25,7 +25,6 @@ function setup(canvasTool = 'select', { readOnly = false } = {}) {
       spaceHeldRef: { current: false },
       setPan,
       setMarquee,
-      isoCamera: {},
       onCanvasContextMenu: readOnly ? undefined : onCanvasContextMenu,
       onDeselect,
       onCanvasDoubleClick: vi.fn(),
@@ -71,13 +70,6 @@ describe('canvas background context menu', () => {
     expect(onCanvasContextMenu).toHaveBeenCalledTimes(1);
   });
 
-  it.each(['isometric'])('never opens in the %s tool', (tool) => {
-    const { result, onCanvasContextMenu } = setup(tool);
-    result.current.onContextMenu(ctx(0));
-    result.current.onContextMenu(ctx(2));
-    result.current.onContextMenuPointerUp(up(2));
-    expect(onCanvasContextMenu).not.toHaveBeenCalled();
-  });
 });
 
 // docs/specs/008-canvas/canvas-and-palette.md "Selection": right-clicking the empty canvas
@@ -122,13 +114,6 @@ describe('a right-click on the empty canvas', () => {
     expect(calls).toEqual(['deselect']);
   });
 
-  it.each(['isometric'])('keeps the selection in the %s tool', (tool) => {
-    const { result, onDeselect } = setup(tool);
-    result.current.onContextMenu(ctx(0));
-    result.current.onContextMenu(ctx(2));
-    result.current.onContextMenuPointerUp(up(2));
-    expect(onDeselect).not.toHaveBeenCalled();
-  });
 });
 
 describe('a long-press on the empty canvas', () => {
@@ -233,8 +218,7 @@ describe('a press on the canvas cover', () => {
         spaceHeldRef: { current: false },
         setPan: vi.fn(),
         setMarquee: vi.fn(),
-        isoCamera: {},
-          onDeselect: vi.fn(),
+            onDeselect: vi.fn(),
         onCanvasDoubleClick: vi.fn(),
         interceptPress,
       } as never),
@@ -284,8 +268,6 @@ describe('a pan-through press with a tap', () => {
 
 // docs/specs/008-canvas/canvas-and-palette.md "Double-tap to zoom": the double-click carries who pressed.
 describe('a double press on the bare canvas', () => {
-  const inertTool = () =>
-    new Proxy({}, { get: (_, key) => (key === 'pos' ? { x: 0, y: 0 } : () => undefined) });
   function dblSetup(canvasTool = 'select') {
     const onCanvasDoubleClick = vi.fn();
     const wrapper = document.createElement('div');
@@ -311,8 +293,6 @@ describe('a double press on the bare canvas', () => {
         spaceHeldRef: { current: false },
         setPan: vi.fn(),
         setMarquee: vi.fn(),
-        // The inert tools handle the press themselves; any of their calls is a no-op here.
-        isoCamera: inertTool(),
           onDeselect: vi.fn(),
         onCanvasDoubleClick,
       } as never),
@@ -354,7 +334,7 @@ describe('a double press on the bare canvas', () => {
     expect(onCanvasDoubleClick).toHaveBeenCalledWith(300, 0, true);
   });
 
-  it('leaves the bare surface alone for a mouse, for anything on it, and in the inert tools', () => {
+  it('leaves the bare surface alone for a mouse and for anything on it', () => {
     const mouse = dblSetup();
     mouse.press('mouse');
     expect(mouse.result.current.pressedByFinger()).toBe(false);
@@ -365,13 +345,6 @@ describe('a double press on the bare canvas', () => {
     child.press('touch');
     child.dblSurface(document.createElement('div'));
     expect(child.onCanvasDoubleClick).not.toHaveBeenCalled();
-
-    for (const tool of ['isometric']) {
-      const inert = dblSetup(tool);
-      inert.press('touch');
-      inert.dblSurface();
-      expect(inert.onCanvasDoubleClick).not.toHaveBeenCalled();
-    }
   });
 
   it("says a finger's double-tap was a finger's, at the tapped canvas point", () => {

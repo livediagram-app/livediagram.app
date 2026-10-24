@@ -4,7 +4,7 @@
 // - Content a board may draw as soon as it opens (tables,
 //   facilitation panels): fetched as the editor mounts, alongside the project request, so a board that has
 //   one finds its code already in. A board without one pays nothing on the critical path.
-// - Surfaces someone opens (the Explorer, search, layers, the style panel, tool panels): fetched
+// - Surfaces someone opens (the Explorer, search, layers, the style panel): fetched
 //   once the opened project has rendered and the page is idle, so a first open does not wait.
 
 export const loadTableView = () => import('@/components/canvas/TableView').then((m) => m.TableView);
@@ -18,7 +18,6 @@ export const loadLayersPanel = () =>
   import('@/components/panels/LayersPanel').then((m) => m.LayersPanel);
 export const loadQuickStylePanel = () =>
   import('@/components/canvas/QuickStylePanel').then((m) => m.QuickStylePanel);
-export const loadToolPanels = () => import('@/components/canvas/tool-panels');
 export const loadSessionElementSettings = () =>
   import('@/components/canvas/SessionElementSettings');
 
@@ -29,6 +28,5 @@ export const EDITOR_SURFACE_CODE = [
   loadEditorSearchPanel,
   loadLayersPanel,
   loadQuickStylePanel,
-  loadToolPanels,
   loadSessionElementSettings,
 ] as const;

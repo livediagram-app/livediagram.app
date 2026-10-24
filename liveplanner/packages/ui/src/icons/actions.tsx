@@ -10,7 +10,6 @@ import {
   lucideLayoutGrid,
   lucideLock,
   lucideLockOpen,
-  lucidePaintRoller,
   lucidePencil,
   lucidePlus,
   lucideRefreshCw,
@@ -42,8 +41,6 @@ export const CloseIcon = lucideGlyph(lucideX, 14);
 // (docs/specs/004-interface-design/iconography.md, "Guarding").
 const CENTRED_CHECK: readonly IconPrim[] = [{ t: 'path', d: 'M20 6.5 9 17.5l-5-5' }];
 export const CheckIcon = lucideGlyph(CENTRED_CHECK, 12);
-// A paint roller: the format painter (copy one element's style onto others).
-export const FormatPainterIcon = lucideGlyph(lucidePaintRoller, 14);
 // Indent / outdent a line of a list, and move a line up or down (the outline editor).
 export const IndentIcon = lucideGlyph(lucideIndentIncrease, 14);
 export const OutdentIcon = lucideGlyph(lucideIndentDecrease, 14);

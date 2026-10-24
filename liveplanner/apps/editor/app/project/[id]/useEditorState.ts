@@ -30,7 +30,7 @@ import { usePlanCoverWiring } from '@/hooks/plan/usePlanCoverWiring';
 import { usePlanTabSweep } from '@/hooks/plan/usePlanTabSweep';
 import { useTeamPeople } from '@/hooks/plan/useTeamPeople';
 import { useItemTypes } from '@/hooks/plan/useItemTypes';
-import { PLAN_LEFT_OUT_TOOLS, usePlanDefaultTool } from '@/hooks/editor/usePlanDefaultTool';
+import { usePlanDefaultTool } from '@/hooks/editor/usePlanDefaultTool';
 import { useItemUndo } from '@/hooks/plan/useItemUndo';
 import { useSheetCsvDrop } from '@/hooks/sheets/useSheetCsvDrop';
 import { useSheetChartInertIds } from '@/hooks/sheets/useSheetChartInertIds';
@@ -55,7 +55,6 @@ import {
 
 import { useCanvasTool } from '@/hooks/canvas/useCanvasTool';
 import { useCommentMentions } from '@/hooks/collab/useCommentMentions';
-import { useFormatConfig } from '@/hooks/canvas/useFormatConfig';
 import { useStyleMemory } from '@/hooks/canvas/useStyleMemory';
 import { getTheme } from '@/lib/themes';
 import { settleFlowcharts } from '@liveplanner/project';
@@ -67,7 +66,6 @@ import { useTagColourSetter } from '@/hooks/editor/useTagColourSetter';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
 import { useCollabElements } from '@/hooks/canvas/useCollabElements';
-import type { CanvasTool } from '@/components/palette/palette.types';
 import { useCellLinkPicker } from '@/hooks/canvas/useCellLinkPicker';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useClipboard } from '@/hooks/canvas/useClipboard';
@@ -147,7 +145,6 @@ import { useLayersState } from './useLayersState';
 import { useInlineIconMutators } from './useInlineIconMutators';
 import { usePresenceBroadcast } from './usePresenceBroadcast';
 import { useSelectionEditing } from './useSelectionEditing';
-import { useFormatTool } from './useFormatTool';
 import { useTabEntryEffects } from './useTabEntryEffects';
 import { useCollabDeepLink, useCollabDeepLinkCapture } from './useCollabDeepLink';
 import { useEditorUiState } from './editor-ui-state';
@@ -330,37 +327,22 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     editingId,
     setEditingId,
     setEditCursorAtEnd,
-    formatSourceId,
-    setFormatSourceId,
     setMultiSelectedIds,
     identityPromptOpen,
     setIdentityPromptOpen,
   } = uiState;
   // Drag state lives inside the useEditorDrag hook, lifted out of
   // this component to keep the page focused on orchestration. The
-  // hook is invoked further down (after `tick`, `commit`,
-  // `applyFormatFromSource` and the rest of the drag dependencies
-  // exist).
+  // hook is invoked further down (after `tick`, `commit` and the rest
+  // of the drag dependencies exist).
   // Panel layout (positions + open/visible flags) is one
   // cohesive slice — see usePanelLayout. Spread wholesale into the
   // returned view-model (see the return below).
   const panelLayout = usePanelLayout();
   const dialogs = useEditorDialogs();
-  // Canvas tool (Pan / Select / ...). See useCanvasTool: the raw
-  // setter serves internal auto-switches, the tracked selectCanvasTool
-  // serves the user-facing pickers.
-  // The format painter's settings (docs/specs/008-canvas/format-panel.md): which parts of a copied style
-  // travel, read by the paint and edited from the Format Panel.
-  const formatSettings = useFormatConfig();
-  const { canvasTool, setCanvasTool, selectCanvasTool } = useCanvasTool({
+  // Canvas tool (Hand / Select). See useCanvasTool.
+  const { canvasTool, setCanvasTool } = useCanvasTool({
     defaultPan: embedMode,
-  });
-  // Persistent Format painter tool (docs/specs/008-canvas/canvas-and-palette.md): the mode-boundary reset +
-  // the exit that restores the pre-Format tool. See useFormatTool.
-  const { formatToolActive, exitFormatTool } = useFormatTool({
-    canvasTool,
-    setCanvasTool,
-    setFormatSourceId,
   });
   // identityPromptOpen (from useEditorUiState) gates the derived
   // `identityOnlyScreenOpen` chrome flag; it closes through useTemplateFlow's
@@ -389,26 +371,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // (no URL params → straight to welcome modal) or once the API call
   // resolves (params → load the project first).
   const [loadingProject, setLoadingProject] = useState(true);
-  // User-facing tool picker. Wraps the tracked selectCanvasTool so every entry
-  // point (palette dropdown, keyboard) routes through it; internal
-  // auto-switches keep using the raw setCanvasTool and are unaffected.
-  // Plan leaves Format out (usePlanDefaultTool).
-  const pickCanvasTool = (tool: CanvasTool) => {
-    if (PLAN_LEFT_OUT_TOOLS.has(tool)) return;
-    // Format / Isometric all act on existing
-    // content, so they're unavailable on an empty canvas — the palette greys
-    // them out, and this guards the keyboard-shortcut path to match. Select +
-    // Hand stay available.
-    const tabForTool = tabs.find((t) => t.id === activeId) ?? tabs[0];
-    if (
-      tabForTool &&
-      tabForTool.elements.length === 0 &&
-      (tool === 'format' || tool === 'isometric')
-    ) {
-      return;
-    }
-    selectCanvasTool(tool);
-  };
   // Local-session participant. Initialised to a stable placeholder so the
   // SSG output and the first client paint agree (Math.random() in a lazy
   // initialiser ran on both server and client and produced different
@@ -1599,15 +1561,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     tickTabs,
     undoHistory,
     redoHistory,
-    set: { setSelectedId, setEditingId, setFormatSourceId },
+    set: { setSelectedId, setEditingId },
   });
   const { tick, undo, redo, canUndo, canRedo } = editorHistory;
   // --- Placement helpers ---------------------------------------------------
 
   // When a boxed element is selected, new elements inherit its size so a
   // user can rapidly build a sequence of similarly-sized nodes.
-  // Selection + placement + format helpers. See useElementHelpers.
-  const { addBoxedAt, currentSelectionIds, selectionPrimary, applyFormatFromSource } =
+  // Selection + placement helpers. See useElementHelpers.
+  const { addBoxedAt, currentSelectionIds, selectionPrimary } =
     useElementHelpers({
       readSelection,
       activeId,
@@ -1622,14 +1584,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
         blocked: createBlocked,
         structureBlocked: structureCreateBlocked,
       }),
-      formatSourceId,
-      formatConfig: formatSettings.config,
       getViewportCenter,
-      commit,
       commitTabs,
       setSelectedId,
       setEditingId,
-      setFormatSourceId,
     });
 
   // --- Tab actions ---------------------------------------------------------
@@ -1675,7 +1633,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setActiveId,
     setSelectedId,
     setEditingId,
-    setFormatSourceId,
     setImportError,
     requestFit,
     refreshProjectList: () => refreshProjectList(),
@@ -2028,7 +1985,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setSelectedId,
     setEditingId,
     setMultiSelectedIds,
-    setFormatSourceId,
     lockedByOther,
     layerLockedIds,
     layerInertIds,
@@ -2279,7 +2235,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setActiveId,
     setSelectedId,
     setEditingId,
-    setFormatSourceId,
     openProject,
   });
 
@@ -2301,8 +2256,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     canWriteText: participant.can.writeText,
     layerInertIds,
     adoptLayerName: layersState.adoptLayerNameFromLabel,
-    formatSourceId,
-    formatToolActive,
     projectName,
     tabs,
     activeTab,
@@ -2310,10 +2263,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commit,
     discardLastStep: cancelToCheckpoint,
     tickTabs,
-    applyFormatFromSource,
     lockedByOther,
     set: {
-      setFormatSourceId,
       setSelectedId,
       setEditingId,
       setEditCursorAtEnd,
@@ -2394,7 +2345,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     snapGuideStore,
     beginDrag,
     beginAnchorDrag,
-    pressArmedAction,
     beginArrowTranslate,
     beginEndpointDrag,
     beginArrowCurveDrag,
@@ -2415,10 +2365,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     isReadOnly,
     canMove: participant.can.move,
     canResize: participant.can.resize,
-    formatSourceId,
-    applyFormatFromSource,
-    formatToolActive,
-    setFormatSourceId,
     tick,
     commit,
     markCheckpoint,
@@ -2491,8 +2437,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // useEditorKeyboardShortcuts and is catalogued in docs/specs/008-canvas/canvas-and-palette.md.
   useEditorKeyboardShortcuts({
     canvasCovered: planCover.canvasCovered,
-    formatSourceId,
-    setFormatSourceId,
     readSelection,
     editingId,
     isReadOnly,
@@ -2502,8 +2446,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     undo,
     redo,
     copySelection,
-    setCanvasTool: pickCanvasTool,
-    canvasTool,
     canGrowMindNode,
     onGrowMindNode: growMindNode,
     onEscapeMindNode: escapeGrownMindNode,
@@ -2716,7 +2658,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     drag,
     beginArrowTranslate,
     beginDrag,
-    pressArmedAction,
     beginEdit,
     beginEndpointDrag,
     bringSelectedToFront,
@@ -2729,7 +2670,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // Side by side (docs/specs/007-editor/split-view.md) hands the editor a tab already aimed.
     skipTabFitRef,
     canvasTool,
-    exitFormatTool,
     chooseTemplate,
     clearTabContent,
     accountDisplayName,
@@ -2984,10 +2924,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setFlowSpeedSelected,
     setIconAnimationRepeatSelected,
     setFlowRepeatSelected,
-    setCanvasTool: pickCanvasTool,
-    formatConfig: formatSettings.config,
-    onToggleFormatGroup: formatSettings.toggleGroup,
-    onSetFormatMode: formatSettings.setMode,
     setContextMenu,
     setFillColorSelected,
     setLinkPickerOpenForId,

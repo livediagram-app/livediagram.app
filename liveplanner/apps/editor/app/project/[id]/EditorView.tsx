@@ -117,7 +117,6 @@ export function EditorView() {
     // workbench-embeds.md, Surface table).
     appChrome,
     workbench,
-    canvasTool,
     drag,
     clearTabContent,
     accountUserId,
@@ -132,7 +131,6 @@ export function EditorView() {
     projectShareable,
     projectTeamId,
     duplicateTab,
-    formatSourceId,
     hydrated,
     setImportOpen,
     canShareProject,
@@ -542,7 +540,6 @@ export function EditorView() {
                                       drag={drag}
                                       elements={activeTab.elements}
                                       hasElements={activeTab.elements.length > 0}
-                                      suppressed={canvasTool === 'format' || formatSourceId !== null}
                                     />
                                   )}
 

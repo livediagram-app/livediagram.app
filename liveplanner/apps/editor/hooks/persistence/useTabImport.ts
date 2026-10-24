@@ -76,7 +76,6 @@ type TabImportDeps = {
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
   setSelectedId: (id: string | null) => void;
   setEditingId: (id: string | null) => void;
-  setFormatSourceId: (id: string | null) => void;
   // Surfaces an import parse error in the header (null clears it).
   setImportError: (message: string | null) => void;
   // Frames the tab once the imported content has rendered (useTabEntryEffects).
@@ -99,7 +98,6 @@ export function useTabImport({
   commitTabs,
   setSelectedId,
   setEditingId,
-  setFormatSourceId,
   setImportError,
   requestFit,
   importPlanItems,
@@ -119,7 +117,6 @@ export function useTabImport({
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? mergeImportedTab(t, imported) : t)));
     setSelectedId(null);
     setEditingId(null);
-    setFormatSourceId(null);
     // The import replaced the tab's content, so frame it.
     if (imported.elements.length > 0) requestFit();
   };

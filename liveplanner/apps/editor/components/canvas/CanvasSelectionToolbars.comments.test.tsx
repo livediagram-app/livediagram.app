@@ -45,7 +45,6 @@ function show(el: Element, takePart: boolean) {
           selectionInput={{
             elements: [el],
             editingId: null,
-            isPaintMode: false,
             tabLocked: false,
             readOnly: true,
           }}

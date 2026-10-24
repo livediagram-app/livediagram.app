@@ -59,7 +59,6 @@ type CanvasElementListProps = Pick<
   | 'editingId'
   | 'editCursorAtEnd'
   | 'reshapingArrowId'
-  | 'isPaintMode'
   | 'tabLocked'
   | 'readOnly'
   | 'shiftDupGhostIds'
@@ -99,7 +98,6 @@ export const CanvasElementList = memo(function CanvasElementList({
   editingId,
   editCursorAtEnd,
   reshapingArrowId,
-  isPaintMode,
   tabLocked,
   readOnly,
   shiftDupGhostIds,
@@ -119,7 +117,7 @@ export const CanvasElementList = memo(function CanvasElementList({
     // elements"): no box of its own, and a cursor of its own (globals.css), so the canvas's cursor
     // changing restyles this node and not the board beneath it.
     <div data-element-plane="" className="contents">
-      {shownOrder.map(({ element: listed, layerOpacity }, isoDepth) => (
+      {shownOrder.map(({ element: listed, layerOpacity }) => (
         <PreviewedElement
           key={listed.id}
           store={previewStore}
@@ -135,13 +133,7 @@ export const CanvasElementList = memo(function CanvasElementList({
                 <Fragment key={element.id}>
                   <svg
                     className="absolute inset-0 h-full w-full"
-                    // Tagged so isometric mode can lift arrows just off the base
-                    // plane (globals.css [data-iso] rule): an arrow's surface is
-                    // coplanar with the boxes it crosses under preserve-3d, and
-                    // coplanar layers z-fight — which is what made a FLOWING arrow
-                    // shimmer in isometric while a static one looked fine (the
-                    // animation repaints every frame, so the fight is visible
-                    // continuously rather than only while the camera orbits).
+                    // Tagged for tests and e2e, which find an arrow's path by it.
                     data-arrow-svg=""
                     style={{
                       pointerEvents: 'none',
@@ -155,7 +147,6 @@ export const CanvasElementList = memo(function CanvasElementList({
                       holes={(entry?.geometry ?? arrowGeometry.get(element.id)!).holes}
                       labelRender={entry?.label ?? arrowLabels.renderOf(element.id)}
                       draftLayout={arrowLabels.draftLayout}
-                      isPaintMode={isPaintMode}
                       isEditing={element.id === editingId}
                       editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
                       tabLocked={tabLocked}
@@ -181,8 +172,7 @@ export const CanvasElementList = memo(function CanvasElementList({
                       element.id === editingId ||
                       element.id === reshapingArrowId ||
                       readOnly ||
-                      tabLocked ||
-                      isPaintMode
+                      tabLocked
                     }
                     onBeginArrowTranslate={h.onBeginArrowTranslate}
                     onBeginArrowScale={h.onBeginArrowScale}
@@ -197,10 +187,6 @@ export const CanvasElementList = memo(function CanvasElementList({
                 editingId={editingId}
                 {...boxedShared}
                 element={element}
-                // Paint index, used only by isometric mode to stagger each element
-                // onto its own z-plane (globals.css --iso-z): coplanar layers
-                // z-fight under preserve-3d, which is the flicker.
-                isoDepth={isoDepth}
                 // Resolved once here, where both the vote and the tab's layers
                 // are in scope, rather than threading `layers` down to the
                 // gesture hook and the overlay separately (docs/specs/012-collaboration/vote-layer-scope.md).

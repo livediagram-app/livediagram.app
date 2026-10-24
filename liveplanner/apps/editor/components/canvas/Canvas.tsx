@@ -36,8 +36,6 @@ import { ElementIndicatorStyleProvider } from '@/components/canvas/ElementIndica
 import { readElementIndicatorStyle } from '@/lib/element-indicator-style';
 import { CanvasArrivalProvider } from '@/components/canvas/CanvasArrivalContext';
 import { CanvasLiveRegion } from '@/components/canvas/CanvasLiveRegion';
-import { IsometricDepthLayer } from '@/components/canvas/IsometricDepthLayer';
-import { useIsometricView } from '@/hooks/canvas/useIsometricView';
 import { useCanvasPointer } from './useCanvasPointer';
 import { useOffscreenContent } from '@/hooks/canvas/useOffscreenContent';
 import { TabLoadOverlay } from '@/components/canvas/TabLoadOverlay';
@@ -90,10 +88,6 @@ function CanvasView(props: CanvasProps) {
 
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  // Paint mode is the Format canvas tool: it reads as paint mode from its
-  // first click (copy cursor, handles/label-drag/dblclick suppressed on boxed
-  // elements AND arrows), not only once a source is armed.
-  const isPaintMode = canvasTool === 'format';
   // Nudge above the Fit button when everything on the canvas has scrolled out of view.
   // Long tasks, with the gesture they fell in, while the canvas-perf debug scope is on
   // (docs/specs/008-canvas/canvas-performance.md "Observability").
@@ -178,13 +172,12 @@ function CanvasView(props: CanvasProps) {
     () => ({
       elements,
       editingId,
-      isPaintMode,
       tabLocked,
       readOnly,
       elementMenuOpen: props.elementMenuOpen === true,
       labelRectOf: arrowLabels.labelRectOf,
     }),
-    [elements, editingId, isPaintMode, tabLocked, readOnly, props.elementMenuOpen, arrowLabels],
+    [elements, editingId, tabLocked, readOnly, props.elementMenuOpen, arrowLabels],
   );
   const { handlePointerMoveCanvas, handlePointerLeaveCanvas } = useCanvasPointer({
     onCanvasPointerMove,
@@ -192,18 +185,11 @@ function CanvasView(props: CanvasProps) {
     viewportZoom,
   });
 
-  // Isometric view (docs/specs/008-canvas/isometric-view.md): the orbit-able camera + the innermost
-  // transform fragment, pivoted on the content centre — see
-  // useIsometricView. Shift-drag on the canvas spins / tilts it (see
-  // the <main> pointerdown handler).
-  const { isoCamera, isoFragment } = useIsometricView({ canvasTool, elements, mainRef });
-
   const cursorClass = canvasCursorClass({
     pan: !!pan,
     marquee: !!marquee,
     canvasTool,
     spaceHeld,
-    isPaintMode,
   });
 
   // Stable selection-routing wrappers for the memo'd element / arrow
@@ -211,7 +197,6 @@ function CanvasView(props: CanvasProps) {
   const { handleElementContextSelect, handleArrowSelect, handleElementClick } =
     useCanvasSelectHandlers({
       inertIds: props.layerInertIds,
-      isPaintMode,
       readSelection: selectionStore.get,
       onSelect,
       onDeselect,
@@ -236,7 +221,6 @@ function CanvasView(props: CanvasProps) {
     spaceHeldRef,
     setPan,
     setMarquee,
-    isoCamera,
     onCanvasContextMenu,
     onDeselect,
     // A finger's double-tap on the bare canvas zooms in on the spot, a mouse's double-click drops text
@@ -357,37 +341,13 @@ function CanvasView(props: CanvasProps) {
             data-canvas-content=""
             onPointerDown={surface.onWrapperPointerDown}
             onDoubleClick={surface.onWrapperDoubleClick}
-            // Isometric view (docs/specs/008-canvas/isometric-view.md): the layer goes pointer-events-none so NO
-            // element kind can be selected / dragged (a per-element capture guard can't catch every select path
-            // — boxed elements, arrow hit-bands, labels, click vs pointerdown) — it's a read-only view tool.
-            // Clicks fall through to <main>, where a drag pans (canvasTool === 'isometric' is added to
-            // `wantsPan`).
-            className={`absolute inset-0 origin-center touch-none ${
-              canvasTool === 'isometric' ? 'pointer-events-none' : ''
-            } ${cursorClass}`}
-            // Scopes the [data-iso] CSS (globals.css): frames settle just under
-            // the base plane while the camera orbits so they can't z-fight
-            // (flicker) with the coplanar contents above them.
-            data-iso={canvasTool === 'isometric' ? '' : undefined}
+            className={`absolute inset-0 origin-center touch-none ${cursorClass}`}
             style={{
               // Translate is in canvas-coords (applied first); scale is centred
               // on the wrapper so zooming keeps the viewport centre stable.
-              // Isometric tilt (docs/specs/008-canvas/isometric-view.md) is appended INNERMOST (last in the list,
-              // so it transforms the content first): that keeps the pan translate
-              // in screen space, so a drag moves the scene the way the cursor
-              // moves at any camera angle. The fragment (built above as
-              // isoFragment) pivots the tilt around the content centre so the
-              // canvas tilts in place / stays centred while orbiting rather than
-              // swinging off-screen. preserve-3d lets the depth layer's
-              // translateZ stack read as real extruded height.
-              transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)${isoFragment}`,
-              ...(canvasTool === 'isometric' ? { transformStyle: 'preserve-3d' as const } : null),
+              transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)`,
             }}
           >
-            {/* Isometric extrusion (docs/specs/008-canvas/isometric-view.md): per-element raised blocks painted
-              behind the real element layer, which caps each column at z=0.
-              Only mounted while the tool is active. */}
-            {canvasTool === 'isometric' ? <IsometricDepthLayer elements={elements} /> : null}
             <CanvasArrivalProvider
               tabId={props.activeTabId ?? ''}
               loaded={props.activeTabLoaded ?? true}
@@ -405,7 +365,6 @@ function CanvasView(props: CanvasProps) {
                         hasArrows={hasArrows}
                         arrowLabels={arrowLabels}
                         selectionInput={selectionInput}
-                        isPaintMode={isPaintMode}
                         handleArrowSelect={handleArrowSelect}
                         handleElementClick={handleElementClick}
                         handleElementContextSelect={handleElementContextSelect}
@@ -427,13 +386,6 @@ function CanvasView(props: CanvasProps) {
           <CanvasChrome
             {...props}
             mainSize={mainSize}
-            formatConfig={props.formatConfig}
-            onToggleFormatGroup={props.onToggleFormatGroup}
-            onSetFormatMode={props.onSetFormatMode}
-            formatBrushSource={props.formatBrushSource}
-            formatPanelPosition={props.formatPanelPosition}
-            onMoveFormatPanel={props.onMoveFormatPanel}
-            onResetFormatPanel={props.onResetFormatPanel}
             offscreenContent={offscreenContent}
             marquee={marquee}
             wrapperRef={wrapperRef}
@@ -445,8 +397,6 @@ function CanvasView(props: CanvasProps) {
             handleZoomIn={handleZoomIn}
             handleZoomOut={handleZoomOut}
             handleSetZoom={handleSetZoom}
-            onIsoOrbit={isoCamera.startOrbit}
-            onIsoReset={isoCamera.reset}
           />
           {/* Lazy per-tab load (docs/specs/006-project/per-tab-storage.md). Last child + z-[var(--z-overlay)] so it covers the
             canvas AND the floating palette, blocking any edit that would

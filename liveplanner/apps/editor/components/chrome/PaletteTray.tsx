@@ -89,19 +89,6 @@ export function useToolbarBox(selector: string, active = true): StripBox | null 
   return box;
 }
 
-// A small text action at the tray's end (Cancel, Done).
-export function PaletteTrayAction({ label, onAction }: { label: string; onAction: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onAction}
-      className="shrink-0 cursor-pointer rounded-md px-2 py-1 text-[12px] font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-    >
-      {label}
-    </button>
-  );
-}
-
 // Where the tray goes on the page: in the editor's own box, beside the strip, so it stacks with the editor's
 // chrome. On the body it stood above the editor's whole stacking context, the header's popovers (who can see
 // this, the account menu) included. A box with a transform (a split pane) holds its fixed children, so the

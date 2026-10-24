@@ -19,7 +19,6 @@ function wrapperFor(props: {
       element={element}
       isSelected={false}
       isEditing={false}
-      isPaintMode={false}
       showHandles={false}
       showAnchors={false}
       onBeginDrag={vi.fn()}
@@ -30,7 +29,6 @@ function wrapperFor(props: {
       onOpenComments={vi.fn()}
       onOpenAction={vi.fn()}
       onOpenNote={vi.fn()}
-      isoDepth={0}
       onSetPageHeading={vi.fn()}
       onContextSelect={vi.fn()}
       tabLocked={false}

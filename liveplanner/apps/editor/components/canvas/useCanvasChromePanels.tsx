@@ -8,7 +8,6 @@ import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
 import { LazyExplorer } from '@/components/panels/LazyExplorer';
 import type { CanvasChromeProps } from './CanvasChrome';
-import { useCanvasToolPanels } from './useCanvasToolPanels';
 import { stripSegmentGone, type SessionStripTools } from './SessionClusterStrip';
 import { useWithheldExplorerCloses } from './useWithheldExplorerCloses';
 
@@ -54,9 +53,7 @@ const SessionPopover = dynamic(() => import('./SessionPopover').then((m) => m.Se
 // wiring per panel, and each panel's element with
 // its own visibility gate. CanvasChrome distributes the returned map into
 // the corner stacks (docking) or renders the elements inline (zen). The
-// Explorer and the cluster popovers render beside the corner layer. The
-// tool-config panels, on screen only while
-// their own tool is active, live in useCanvasToolPanels.
+// Explorer and the cluster popovers render beside the corner layer.
 
 export function useCanvasChromePanels({
   props,
@@ -166,8 +163,6 @@ export function useCanvasChromePanels({
   const trashOpen = activeDockPanel === 'plan-trash';
   const cardFinderOpen = activeDockPanel === 'plan-cards';
   const newCardOpen = activeDockPanel === 'plan-new-card';
-  // The Format tool's panel (useCanvasToolPanels): on screen only while the tool is active.
-  const { formatEl } = useCanvasToolPanels({ props, chromeHidden, panelWiringFor });
 
   // Mounted from its first opening on, never before (its code loads then), and kept mounted after so
   // the folders someone expanded stay expanded.
@@ -289,7 +284,6 @@ export function useCanvasChromePanels({
   const panelEls: Partial<Record<PanelId, ReactNode>> = {
     // Collaborate renders outside the corner layer (collaborateEl, below).
     collaborate: null,
-    format: formatEl,
   };
   return {
     panelEls,

@@ -133,15 +133,6 @@ export type CanvasProps = {
   // The collaboration elements (docs/specs/012-collaboration/temperature-check.md): the viewer's identity and
   // the writes they may make — one prop for their faces.
   collab?: import('@/components/canvas/collab/CollabFaceRouter').CollabApi;
-  // The format painter's settings (docs/specs/008-canvas/format-panel.md) and what its brush holds. Owned
-  // in editor state, where the paint happens; Canvas forwards them.
-  formatConfig?: import('@/lib/format-config').FormatConfig;
-  onToggleFormatGroup?: (group: import('@/lib/format-config').FormatGroup) => void;
-  onSetFormatMode?: (mode: import('@/lib/format-config').FormatMode) => void;
-  formatBrushSource?: import('@/components/panels/FormatPanel').FormatBrushSource | null;
-  formatPanelPosition?: { x: number; y: number } | null;
-  onMoveFormatPanel?: (x: number, y: number) => void;
-  onResetFormatPanel?: () => void;
   // Map of elementId -> remote participants currently focused on that
   // element. Drives a small badge ring on each element so participants
   // can see in real time what others are working on.
@@ -169,7 +160,6 @@ export type CanvasProps = {
   // the editor places the caret at the end instead of select-all so the
   // seeded first character isn't replaced by the next keystroke.
   editCursorAtEnd?: boolean;
-  formatSourceId: string | null;
   canUndo: boolean;
   canRedo: boolean;
   // Any other file dropped on the canvas, at its canvas point (refused with a notice: the canvas takes no files).
@@ -333,9 +323,6 @@ export type CanvasProps = {
   onBeginArrowLabelDrag: (arrowId: string, e: ReactPointerEvent) => void;
   onBeginArrowTranslate: (arrowId: string, e: ReactPointerEvent) => void;
   onShiftSelect: (id: string) => void;
-  // Wrap up the Format canvas tool (the palette tool): drops back to the
-  // tool active before it. Drives the format-tool mode banner's "Done" button.
-  onExitFormatTool: () => void;
   onFollowLink: (link: import('@liveplanner/project').ElementLink) => void;
   onOpenComments: (elementId: string) => void;
   // Open the element's assigned-action popover (docs/specs/012-collaboration/assigned-actions.md). Available in

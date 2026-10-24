@@ -24,13 +24,11 @@ export function useBoxedElementGestures({
   isAnnotation,
   isMultiSelected,
   isSelected,
-  isPaintMode,
   vote,
   votableInVote,
   onCastVote,
   onShiftSelect,
   onPlainClick,
-  onPressArmedAction,
   onBeginDrag,
   onBeginEdit,
   onEditLink,
@@ -46,7 +44,6 @@ export function useBoxedElementGestures({
   | 'onCastVote'
   | 'onShiftSelect'
   | 'onPlainClick'
-  | 'onPressArmedAction'
   | 'onBeginDrag'
   | 'onBeginEdit'
   | 'onEditLink'
@@ -64,13 +61,12 @@ export function useBoxedElementGestures({
   // start the duplicate drag (docs/specs/008-canvas/shift-drag-duplicate.md) instead of only toggling.
   isSelected: boolean;
   // The format painter is armed: a press paints, so it never settles a click.
-  isPaintMode: boolean;
 }) {
   // The click rules (docs/specs/008-canvas/canvas-and-palette.md "Selection", "Marquee
   // box-select"): the host settles a plain click on a selected element (deselect it, or
   // select a multi-selection member alone), and reselects on a double-click's second press.
   // A selected table takes a click as a cell pick (TableCellView), never as a click on the table.
-  const settlesClick = !isPaintMode && onPlainClick !== undefined && element.type !== 'table';
+  const settlesClick = onPlainClick !== undefined && element.type !== 'table';
   // The touch long-press opened the menu on this press, so its release is not also a tap.
   const heldRef = useRef(false);
   const handleShapeDown = (e: ReactPointerEvent) => {
@@ -140,10 +136,10 @@ export function useBoxedElementGestures({
     // A finger on an element that runs off the screen pans (docs/specs/008-canvas/canvas-and-palette.md "Touch (iOS / iPad)"):
     // a drag across a big frame is far more often "show me the rest" than "move this", and zooming out until it
     // fits is the way to move it. A tap still selects it (or settles the click on it), the long-press menu
-    // still opens, and the format painter keeps every press its own.
-    if (e.pointerType === 'touch' && !isPaintMode && !fitsOnCanvas(wrapperRef.current)) {
+    // still opens.
+    if (e.pointerType === 'touch' && !fitsOnCanvas(wrapperRef.current)) {
       markPanThrough(e, () => {
-        if (heldRef.current || onPressArmedAction?.(element.id)) return;
+        if (heldRef.current) return;
         if (settlesClick || !isSelected) onPlainClick?.(element.id);
       });
       return;

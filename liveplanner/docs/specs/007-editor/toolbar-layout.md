@@ -260,8 +260,7 @@ their bottom-row buttons. What changes to fit the width:
   (timer, vote, [Canvas and palette](../008-canvas/canvas-and-palette.md)) moves
   down to clear it.
 - **Messages hang from the strip, as its tray.** The messages that tell you what the next press does (the
-  mode banners: a tile in hand, "Select the board column you want this card to appear in"; the Format tool and
-  the format painter) and the modifier hint (Shift, Alt) attach to the strip's bottom edge instead of floating
+  mode banners: a tile in hand, "Select the board column you want this card to appear in") and the modifier hint (Shift, Alt) attach to the strip's bottom edge instead of floating
   under it as pills:
   - One shared look, the **palette tray**: the strip's own surface (white, hairline border, dark in dark mode),
     no top border, so it joins the strip's bottom edge with no gap; its bottom corners round as the strip's do,

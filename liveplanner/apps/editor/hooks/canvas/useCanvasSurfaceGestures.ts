@@ -7,7 +7,6 @@ import { pointerToCanvas } from '@/lib/canvas';
 import { isDoubleTapZoomPointer } from '@/lib/double-tap-zoom';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
-import type { useIsometricCamera } from '@/hooks/canvas/useIsometricCamera';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
 import { debugLog } from '@/lib/debug-log';
@@ -22,14 +21,11 @@ const inCornerCluster = (target: EventTarget | null): boolean =>
   !!(target as Element | null)?.closest?.('[data-zoom-cluster]');
 
 // How presses on the bare canvas surface route between the tools
-// (docs/specs/008-canvas/canvas-and-palette.md + docs/specs/008-canvas/isometric-view.md), lifted out of Canvas's JSX: the capture-phase
-// intercepts (middle-mouse pan,
-// draw-to-size), the background context menu, and the outer <main> +
-// inner wrapper pointerdowns that arm the long-press menu, the
-// isometric orbit, and the pan-vs-marquee choice. Canvas mounts the
+// (docs/specs/008-canvas/canvas-and-palette.md), lifted out of Canvas's JSX: the capture-phase
+// intercepts (middle-mouse pan), the background context menu, and the outer <main> +
+// inner wrapper pointerdowns that arm the long-press menu and the pan-vs-marquee choice. Canvas mounts the
 // returned handlers verbatim; every piece of state they drive stays
-// owned by its existing hook (pan / marquee, iso camera,
-// the draw gesture).
+// owned by its existing hook (pan / marquee).
 export function useCanvasSurfaceGestures({
   canvasTool,
   middleMousePan,
@@ -40,7 +36,6 @@ export function useCanvasSurfaceGestures({
   spaceHeldRef,
   setPan,
   setMarquee,
-  isoCamera,
   interceptPress,
   onCanvasContextMenu,
   onDeselect,
@@ -56,7 +51,6 @@ export function useCanvasSurfaceGestures({
   spaceHeldRef: PanAndMarquee['spaceHeldRef'];
   setPan: PanAndMarquee['setPan'];
   setMarquee: PanAndMarquee['setMarquee'];
-  isoCamera: ReturnType<typeof useIsometricCamera>;
   // A tool that owns a primary press on the canvas (the Format tool on a page's paper); true when
   // it claimed the press.
   interceptPress?: (e: ReactPointerEvent) => boolean;
@@ -96,7 +90,7 @@ export function useCanvasSurfaceGestures({
     });
 
   const routePanOrMarquee = (e: ReactPointerEvent) => {
-    const wantsPan = spaceHeldRef.current || canvasTool === 'pan' || canvasTool === 'isometric';
+    const wantsPan = spaceHeldRef.current || canvasTool === 'pan';
     if (wantsPan) {
       startPan(e);
     } else {
@@ -201,9 +195,6 @@ export function useCanvasSurfaceGestures({
     // canvas background clicks. Suppress the browser context
     // menu and open a tab-level context menu instead.
     e.preventDefault();
-    // Isometric (docs/specs/008-canvas/isometric-view.md): right-click-drag orbits the camera, so the
-    // canvas / tab menu must never open in that tool or it interrupts the orbit gesture.
-    if (canvasTool === 'isometric') return;
     // A macOS Ctrl+click is a context click on the PRIMARY button, so its
     // pointerdown already armed a marquee (or pan) whose release would
     // deselect, and deselecting closes the menu this click is opening.
@@ -225,15 +216,6 @@ export function useCanvasSurfaceGestures({
     // (touch has no right-click). Armed before the marquee / pan logic;
     // a finger that moves cancels it, so it never fights a drag.
     canvasLongPress.onPointerDown(e);
-    // Isometric (docs/specs/008-canvas/isometric-view.md): holding the RIGHT button and dragging orbits
-    // the camera too — a mouse-only alternative to Shift-drag / the orbit
-    // button. The canvas / tab context menu is suppressed wholesale while
-    // the isometric tool is active (see onContextMenu above), so a
-    // right-press starts an orbit without ever popping a menu.
-    if (canvasTool === 'isometric' && e.button === 2) {
-      isoCamera.startOrbit(e.clientX, e.clientY);
-      return;
-    }
     // Primary button only. A right- (or middle-) click must fall
     // through to onContextMenu untouched: it opens the menu, and if
     // we also armed a marquee here the matching pointerup would fire
@@ -258,13 +240,6 @@ export function useCanvasSurfaceGestures({
     // Restrict to direct hits on `main` so element clicks (which
     // bubble up here) don't also trigger.
     if (e.target !== e.currentTarget) return;
-    // Isometric (docs/specs/008-canvas/isometric-view.md): Shift-drag orbits the camera (spin + tilt)
-    // instead of panning, so the plain drag stays a pan. Self-contained
-    // in the camera hook; take it before the pan branch below.
-    if (canvasTool === 'isometric' && e.shiftKey) {
-      isoCamera.startOrbit(e.clientX, e.clientY);
-      return;
-    }
     routePanOrMarquee(e);
   };
 
@@ -302,11 +277,9 @@ export function useCanvasSurfaceGestures({
 
   // The bare surface around the content layer: the layer is scaled with the zoom, so zoomed out (a phone's usual
   // view) most of the empty canvas is <main> itself. Only a finger's double-tap means anything there: it zooms
-  // (docs/specs/008-canvas/canvas-and-palette.md "Double-tap to zoom"). The isometric view, which makes the layer
-  // inert, gives every press on <main> a meaning of its own.
+  // (docs/specs/008-canvas/canvas-and-palette.md "Double-tap to zoom").
   const onSurfaceDoubleClick = (e: ReactMouseEvent) => {
     if (e.target !== e.currentTarget || !pressedByFinger()) return;
-    if (canvasTool === 'isometric') return;
     const at = doublePressAt(e);
     if (at) onCanvasDoubleClick(at.x, at.y, true);
   };

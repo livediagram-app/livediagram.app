@@ -29,7 +29,6 @@ const pie = (over: Partial<ShapeElement> = {}): ShapeElement => ({
 });
 
 const shared = (): BoxedShared => ({
-  isPaintMode: false,
   onBeginDrag: vi.fn(),
   onBeginEdit: vi.fn(),
   onCommitLabel: vi.fn(),

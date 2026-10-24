@@ -106,7 +106,6 @@ reaches the canvas (the element stops it), so the element menu keeps its own sel
 | Another pointer's release                         | Ignored; the armed press keeps waiting for its own              |
 | Touch held to `LONG_PRESS_MS`                     | Not a click: the long-press context menu owns it                |
 | Slow mouse click                                  | Still a click; no time limit off touch (D58)                    |
-| Format painter or Format tool armed               | Never armed: the press paints                                   |
 | Selected table                                    | Never armed: the click picks a cell                             |
 | Remotely locked, editing, vote cast, right button | Returned before arming (existing guards)                        |
 | Hidden or locked layer                            | `handleElementClick` and `handleArrowSelect` ignore inert ids   |

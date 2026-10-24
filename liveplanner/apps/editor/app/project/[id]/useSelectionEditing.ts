@@ -25,10 +25,8 @@ type SetState<T> = Dispatch<SetStateAction<T>>;
 
 // Selection-editing handlers, lifted out of editor-page.tsx: begin /
 // commit / cancel inline label edits (incl. the first-label ->
-// project/tab auto-rename), type-to-edit, single-select (with the
-// Format tool's arm-then-paint interception), and
-// shift-click multi-select toggling. applyFormatFromSource comes from
-// useElementHelpers and is passed in.
+// project/tab auto-rename), type-to-edit, single-select, and
+// shift-click multi-select toggling.
 export function useSelectionEditing(opts: {
   // Read when an edit runs (docs/specs/008-canvas/blueprints/selection-store.md).
   readSelection: () => Selection;
@@ -43,12 +41,10 @@ export function useSelectionEditing(opts: {
   // Smart layer naming (docs/specs/006-project/layers.md): called with every committed label so a
   // default-named layer can adopt the first one typed onto it.
   adoptLayerName: (elementId: string, label: string) => void;
-  formatSourceId: string | null;
   // Persistent Format canvas tool (docs/specs/008-canvas/canvas-and-palette.md). Boxed elements route their
   // format-tool clicks through useBoxedDragHandlers.beginDrag; arrows have
   // no drag entry for it (their clicks land here via selectElement), so
   // selectElement owns the arm-then-paint cycle for them.
-  formatToolActive: boolean;
   projectName: string;
   tabs: Tab[];
   activeTab: Tab;
@@ -63,13 +59,11 @@ export function useSelectionEditing(opts: {
   // history frame made Cmd+Z look like a no-op (it undid only the
   // invisible rename) and needed two undos for one action.
   tickTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
-  applyFormatFromSource: (targetId: string) => void;
   // True when ANOTHER participant currently has this element selected
   // (concurrent-selection lock, docs/specs/007-editor/editor-app.md). Blocks select / edit so two
   // people don't fight over the same element. Advisory + presence-only.
   lockedByOther: (id: string) => boolean;
   set: {
-    setFormatSourceId: SetState<string | null>;
     setSelectedId: SetState<string | null>;
     setEditingId: SetState<string | null>;
     // Type-to-edit (docs/specs/008-canvas/canvas-and-palette.md) seeds the label with the first typed char,
@@ -94,19 +88,15 @@ export function useSelectionEditing(opts: {
     canWriteText,
     layerInertIds,
     adoptLayerName,
-    formatSourceId,
-    formatToolActive,
     projectName,
     tabs,
     activeTab,
     commit,
     tickTabs,
-    applyFormatFromSource,
     lockedByOther,
     set,
   } = opts;
   const {
-    setFormatSourceId,
     setSelectedId,
     setEditingId,
     setEditCursorAtEnd,
@@ -127,7 +117,6 @@ export function useSelectionEditing(opts: {
     if (opts.tabLocked || !writable(elementId)) return;
     // Another participant has it selected — don't let two people edit it.
     if (lockedByOther(elementId)) return;
-    if (formatSourceId !== null) return;
     // The self-drawing data components (progress / rail / rating / charts)
     // have no editable text label, so no entry point (double-click, Space,
     // type-to-edit) opens the inline editor for them.
@@ -348,22 +337,10 @@ export function useSelectionEditing(opts: {
 
   const selectElement = (id: string) => {
     // Concurrent-selection lock (docs/specs/007-editor/editor-app.md): another participant has this
-    // element selected, so block it — for plain select AND for format-
-    // paint targets, since painting would mutate an element someone
-    // else is working on. The not-allowed cursor + "Locked to <name>"
+    // element selected, so block it. The not-allowed cursor + "Locked to <name>"
     // hover card on the element communicate why. Hidden / locked-layer
     // elements (docs/specs/006-project/layers.md) are equally untouchable.
     if (lockedByOther(id) || layerInertIds.has(id)) return;
-    // Persistent Format tool: first click arms the source, each later click
-    // paints onto the target and KEEPS the source armed. Mirrors the boxed
-    // branch in useBoxedDragHandlers.beginDrag — arrows reach selection
-    // through here instead of a drag starter, so without this branch the
-    // Format tool simply couldn't arm from or paint onto an arrow.
-    if (formatToolActive) {
-      if (formatSourceId === null) setFormatSourceId(id);
-      else applyFormatFromSource(id);
-      return;
-    }
     setSelectedId(id);
     // Clicking a single element always collapses any active multi-selection
     // down to that one element — the user's intent is unambiguous.
@@ -392,7 +369,6 @@ export function useSelectionEditing(opts: {
     setSelectedId(null);
     setMultiSelectedIds(next);
     setEditingId(null);
-    setFormatSourceId(null);
   };
 
   return {

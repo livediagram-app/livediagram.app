@@ -14,25 +14,20 @@ import { useShiftHeld } from '@/hooks/ui/useShiftHeld';
 // The chain / branch / lock / multi-select powers are invisible until tried,
 // and a held modifier nobody has heard of is a feature nobody finds. One
 // concise message, picked most-specific-first; nothing while typing (the hook
-// filters that), while another mode banner owns the slot, or with nothing to
-// act on. Same chrome as the mode banners, minus the action button.
+// filters that) or with nothing to act on. Same chrome as the mode banners, minus the action button.
 export function ModifierHintBanner({
   drag,
   selectedKind,
   hasElements,
-  suppressed,
 }: {
   drag: DragState | null;
   // The primary selection's flavour, for the no-drag hints.
   selectedKind: 'arrow' | 'table' | 'other' | null;
   // False on an empty canvas — nothing to multi-select.
   hasElements: boolean;
-  // True while a mode banner (paint / group / draw) owns the top slot,
-  // or the session is read-only.
-  suppressed: boolean;
 }) {
   const shiftHeld = useShiftHeld();
-  if (suppressed || !shiftHeld) return null;
+  if (!shiftHeld) return null;
   const message = shiftHintMessage(drag, selectedKind, hasElements);
   if (!message) return null;
   return <Hint modifier="⇧ Shift">{message}</Hint>;
