@@ -6,7 +6,6 @@
 import {
   RECENT_DIAGRAMS_KEY,
   RECENT_THUMBS_CACHE,
-  RECENT_THUMBS_CACHE_LEGACY,
   pickRecentDiagrams,
   recentThumbPath,
   serializeRecentDiagrams,
@@ -58,15 +57,6 @@ export function rememberRecentDiagrams(
   later(() => void syncThumbnails(diagrams, fetchSnapshotSvg));
 }
 
-// Drop the pre-v2 cache, which nothing reads now. Best effort: a browser that refuses keeps an orphan.
-async function dropLegacyCache(): Promise<void> {
-  try {
-    await caches.delete(RECENT_THUMBS_CACHE_LEGACY);
-  } catch {
-    // Cache Storage refused, or a partial implementation without delete.
-  }
-}
-
 // Fetch the snapshot of each noted diagram the cache lacks (at its current save), and drop every entry
 // that is no longer noted, so the cache never holds more than the note's six.
 async function syncThumbnails(
@@ -80,9 +70,6 @@ async function syncThumbnails(
   }
   syncing = true;
   try {
-    // The v1 cache held "no preview" for every project in This Browser; v2 draws them (lib/local-snapshot.ts).
-    // On its own, so a refusal here never stops the sync.
-    await dropLegacyCache();
     const cache = await caches.open(RECENT_THUMBS_CACHE);
     const wanted = new Map(
       diagrams.map((d) => [new URL(recentThumbPath(d.id, d.savedAt), location.origin).href, d]),
@@ -129,6 +116,5 @@ export async function forgetRecentDiagrams(): Promise<void> {
   removeLocalStorageSafe(RECENT_DIAGRAMS_KEY);
   if (typeof window !== 'undefined' && 'caches' in window) {
     await caches.delete(RECENT_THUMBS_CACHE).catch(() => false);
-    await dropLegacyCache();
   }
 }

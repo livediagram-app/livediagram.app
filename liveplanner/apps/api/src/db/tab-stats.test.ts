@@ -73,12 +73,12 @@ describe('projectStatsSql', () => {
     expect(docStats(db.sql, 'D')).toEqual({ mode: 'plan', elements: 10, comments: 3, bytes: 1500 });
   });
 
-  it('reads a tab row stored under a retired mode as Plan', async () => {
+  it('reads a tab row under a mode it does not know as not counted', async () => {
     const { db, doc, tab, stats } = arrange();
     doc('D');
     tab('D', 't1', 0);
     await stats('t1', 'draw', 4, 1, 1000, T0);
-    expect(docStats(db.sql, 'D')).toEqual({ mode: 'plan', elements: 4, comments: 1, bytes: 1000 });
+    expect(docStats(db.sql, 'D')).toBeNull();
   });
 
   it('is null while a tab is not counted yet', async () => {

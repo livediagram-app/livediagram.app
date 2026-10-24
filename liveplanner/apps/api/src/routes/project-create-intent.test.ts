@@ -90,17 +90,6 @@ describe('recorded creation intent', () => {
     expect(await summary('old')).toMatchObject(UNKNOWN);
   });
 
-  it('records a create naming a retired mode as Plan', async () => {
-    await create('d1', { intent: { mode: 'draw' } });
-    expect({ ...stored('d1') }).toMatchObject({ opens_in: 'plan' });
-  });
-
-  it('reads a row recorded under a retired mode as Plan', async () => {
-    await create('d1', { intent: { mode: 'plan', templateFamily: 'retrospective' } });
-    db.sql.prepare("UPDATE plan SET opens_in = 'workshop' WHERE id = 'd1'").run();
-    expect(await summary('d1')).toMatchObject(RETRO);
-  });
-
   it('reads a stored value outside the enums as unknown', async () => {
     await create('d1', { intent: { mode: 'plan' } });
     db.sql.prepare("UPDATE plan SET opens_in = 'retired' WHERE id = 'd1'").run();

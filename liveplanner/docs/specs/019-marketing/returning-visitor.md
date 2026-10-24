@@ -40,7 +40,7 @@ on the same origin (the router serves `/` and `/explorer` from one host).
   is as fresh as your last visit to the app; a diagram hidden from Recent or returned to it changes the
   note at the next list. With none left to show, the note is removed.
 - **Thumbnails:** each diagram's snapshot SVG ([Project snapshots](../006-project/project-snapshots.md))
-  is kept beside the note in the browser's Cache Storage (`liveplanner-recent-thumbs-v1`), keyed by id
+  is kept beside the note in the browser's Cache Storage (`liveplanner-recent-thumbs-v2`), keyed by id
   and save time, fetched by the editor through its authenticated client when a listed diagram's entry is
   missing, and pruned to the six in the note. A diagram the server has no snapshot for (one it could
   not draw) is remembered as having none, so it is not asked for again until it is saved, and shows its

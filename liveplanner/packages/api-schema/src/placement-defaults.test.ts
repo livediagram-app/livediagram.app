@@ -35,7 +35,7 @@ describe('isPlacementDefaultKey', () => {
     expect(isPlacementDefaultKey(key)).toBe(true);
   });
 
-  // A retired mode's key, stored before Plan was the only mode, is no longer in force.
+  // Another product's mode, kind or template is not a key here.
   it.each([
     ['mode:diagram'],
     ['mode:draw'],
@@ -106,16 +106,10 @@ describe('readCreationIntent', () => {
     });
   });
 
-  // An older client still names a retired mode.
-  it.each([['diagram'], ['draw'], ['workshop'], ['pages'], ['illustrate'], ['facilitate']])(
-    'reads the retired mode %s as Plan',
-    (mode) => {
-      expect(readCreationIntent({ mode })).toEqual({
-        ok: true,
-        intent: { mode: 'plan', tabKind: 'empty' },
-      });
-    },
-  );
+  // liveplanner never had another mode, so livediagram's are refused like any other word.
+  it.each([['diagram'], ['draw'], ['workshop'], ['pages']])('refuses the mode %s', (mode) => {
+    expect(readCreationIntent({ mode })).toEqual({ ok: false });
+  });
 
   it('reads every field', () => {
     expect(

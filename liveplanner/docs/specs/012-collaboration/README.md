@@ -23,7 +23,7 @@ Follow the references below only as needed; never upfront.
 The per-tab **Activity panel** (Tab Activity) and the change log behind it, which recorded each undoable commit with its author and offered per-entry Revert and Clear Activity, were removed on 2026-10-03. Its spec (`activity-and-audit.md`) is deleted; git history holds it.
 
 - The `change_log` table is gone from the schema; the daily cron no longer sweeps it, the four `/api/projects/:id/log` endpoints are gone from the API and its OpenAPI reference, and the realtime room no longer carries `log` / `log-remove` ops.
-- The `activityPanelEnabled` preference and the revert hover preview are retired ([User preferences](../007-editor/user-preferences.md)).
+- liveplanner has no `activityPanelEnabled` preference and no revert hover preview ([User preferences](../007-editor/user-preferences.md)).
 - **Undo and Redo stay, unchanged in behaviour.** They are snapshot-based (`useProjectHistory`), personal to each editor and session, and sit in the bottom-right cluster and on Cmd/Ctrl+Z, Cmd/Ctrl+Shift+Z and Ctrl+Y. They are no longer paired with any audit entry. A continuous control (a background slider, an element colour or opacity picker) still takes one undo step per burst: the first tick checkpoints and ticks within 500 ms of the last stay in that step (`useBurstCheckpoint`, which inherited the window the log's debounce used to own).
 - Project-level history (renames, sharing, theme changes, a daily "worked on") lived on in the [timeline events](../013-workspace/timeline.md) until the Timeline itself was removed in October 2026; the [Inbox](../013-workspace/inbox.md) is unrelated and is now liveworkspace's index's.
 - Help: the Activity Panel category is gone, and its Undo and Redo articles with it.

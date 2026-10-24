@@ -8,7 +8,6 @@
 // editor keeps its preferences in the browser. A guest who signs in has their settings moved to the
 // account by the accounts Worker itself.
 
-import { upgradeLegacyPreferences } from '@liveplanner/api-schema';
 import {
   readSettings,
   writeSettings,
@@ -84,7 +83,7 @@ const NOTIFY_KEYS: (keyof NotificationPrefs)[] = ['notifyComments', 'notifyFormR
 export async function getNotificationPrefs(env: Env, ownerId: string): Promise<NotificationPrefs> {
   let prefs: SettingsPrefs = {};
   try {
-    prefs = upgradeLegacyPreferences((await readPreferences(env, ownerId)) ?? {});
+    prefs = (await readPreferences(env, ownerId)) ?? {};
   } catch (error) {
     console.warn('[settings] notification_prefs_read_failed', { error: String(error) });
   }

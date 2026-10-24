@@ -506,7 +506,6 @@ export * from './timeline';
 export * from './activity';
 export * from './responses';
 export * from './trash';
-export { upgradeLegacyPreferences } from './legacy-preferences';
 // A project's own dates on create (docs/specs/015-api/api.md "Project dates"): the worker's
 // check, and the editor's before it sends an imported board's dates.
 export * from './project-dates';

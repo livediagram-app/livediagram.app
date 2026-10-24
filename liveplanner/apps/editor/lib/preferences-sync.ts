@@ -40,7 +40,7 @@ export function preferencesBodyLength(prefs: UserPreferences): number {
 }
 
 // Keys nothing reads any more, in the order they go when the blob does not fit.
-const DEAD_KEYS = ['customSwatches', 'drawPattern'] as const;
+const DEAD_KEYS = ['customSwatches'] as const;
 
 // The blob, trimmed to fit: the keys nothing reads go first, one at a time. Every other key is a
 // choice the person made and stays whole; none grows without bound (Hide from Recent is the index's,

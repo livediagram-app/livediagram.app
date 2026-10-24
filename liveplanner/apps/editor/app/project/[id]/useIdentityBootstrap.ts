@@ -7,7 +7,7 @@ import {
   type SetStateAction,
   useEffectEvent,
 } from 'react';
-import { projectIdFromPath, isEditorPath } from '@/lib/legacy-editor-path';
+import { projectIdFromPath, isEditorPath } from '@/lib/editor-path';
 import type { Tab } from '@liveplanner/project';
 import {
   apiLoadProject,
@@ -304,17 +304,8 @@ export function useIdentityBootstrap(opts: {
     const initialUrl = new URL(window.location.href);
     // Clean routing (docs/specs/016-platform/router-app.md): the editor lives at `/project/<id>`, no
     // `/live` prefix. Match the id straight off the path.
-    // `placeholder` (the static-export build artefact) reads as no id. The editor's address from
-    // before the rename (@/lib/legacy-editor-path) can still arrive while a deploy rolls out; the
-    // bar is corrected to /project/<id>.
-    const { id: initialId, legacy } = projectIdFromPath(initialUrl.pathname);
-    if (initialId && legacy) {
-      window.history.replaceState(
-        null,
-        '',
-        `/project/${initialId}${initialUrl.search}${initialUrl.hash}`,
-      );
-    }
+    // `placeholder` (the static-export build artefact) reads as no id.
+    const initialId = projectIdFromPath(initialUrl.pathname);
     const initialShareCode = initialUrl.searchParams.get('s');
     // No path id and no share code on the editor's own route → the user landed on the placeholder
     // route directly. Hand off to /new for the welcome flow. Any other address (a mistyped or retired
@@ -569,7 +560,7 @@ export function useIdentityBootstrap(opts: {
   const tryEarlyOpen = useEffectEvent(async () => {
     if (authLoaded || hydrated || embed || workbench) return;
     const url = new URL(window.location.href);
-    const { id } = projectIdFromPath(url.pathname);
+    const id = projectIdFromPath(url.pathname);
     if (!id || url.searchParams.has('s')) return;
     if (!(await isOfflineId(id))) return;
     // Auth may have answered while the local index loaded: then the ordinary bootstrap has run.

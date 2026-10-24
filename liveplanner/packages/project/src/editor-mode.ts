@@ -23,21 +23,7 @@ export function isEditorMode(v: unknown): v is EditorMode {
   return EDITOR_MODES.includes(v as EditorMode);
 }
 
-// The modes there used to be, under every id each was stored by (a tab's `opensIn`, a recorded intent, a
-// placement-default key, a `/new?mode=` link, an `opens-in:` filter): each reads as Plan now.
-const RETIRED_EDITOR_MODES: readonly string[] = [
-  'diagram',
-  'draw',
-  'workshop',
-  'pages',
-  'illustrate',
-  'infographic',
-  'facilitate',
-];
-
-/** A stored mode as today's id: Plan for a current or retired id, anything else undefined. Read every stored mode
- *  through this. */
+/** A stored mode as a mode id, or undefined for anything that is not one. Read every stored mode through this. */
 export function parseEditorMode(v: unknown): EditorMode | undefined {
-  if (isEditorMode(v)) return v;
-  return typeof v === 'string' && RETIRED_EDITOR_MODES.includes(v) ? 'plan' : undefined;
+  return isEditorMode(v) ? v : undefined;
 }

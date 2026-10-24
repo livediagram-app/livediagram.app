@@ -22,7 +22,6 @@ export type MapSize = 'short' | 'medium' | 'tall';
 // snapshot (see rebaseUserPreferences): another tab's write since that
 // render would otherwise be undone.
 
-import { upgradeLegacyPreferences } from '@liveplanner/api-schema';
 import type { PlanTourTrack } from './plan-tour';
 import { USER_PREFERENCES_STORAGE_KEY } from '@liveplanner/telemetry-client';
 import { apiGetPreferences } from './api-client';
@@ -204,9 +203,6 @@ export type UserPreferences = {
   minimalChrome?: boolean;
   // One-way latch: the power user mode offer has been shown to this account.
   powerUserOfferShown?: boolean;
-  // DEAD: the retired Draw mode's backdrop pattern (docs/specs/007-editor/editor-modes.md "Retired modes").
-  // Nothing reads or writes it; it stays in the type because it may already be stored.
-  drawPattern?: 'blank' | 'grid' | 'graph';
 };
 
 // Re-exported under this module's own name because everything here reads it
@@ -238,7 +234,7 @@ export function readUserPreferences(): UserPreferences {
     if (typeof parsed !== 'object' || parsed === null) return {};
     // Keep unknown keys: forward-compat for future-versioned flags
     // a different client may have written.
-    return upgradeLegacyPreferences(parsed as Record<string, unknown>);
+    return parsed as UserPreferences;
   } catch {
     return {};
   }
@@ -345,7 +341,7 @@ async function loadUserPreferences(ownerId: string): Promise<UserPreferences | n
   }
   if (remote === null) return null;
   const local = readUserPreferences();
-  const server = upgradeLegacyPreferences(remote) as UserPreferences;
+  const server = remote as UserPreferences;
   setServerPreferences(ownerId, remote);
   const unsynced = preferencesUnsynced(ownerId);
   const merged = fitPreferences(unsynced ? { ...server, ...local } : { ...local, ...server });

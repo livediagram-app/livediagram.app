@@ -115,7 +115,6 @@ export function readCreationIntent(
     tabKind?: unknown;
     templateFamily?: unknown;
   };
-  // A create from an older client still names a retired mode, read as Plan.
   const parsedMode = parseEditorMode(mode);
   if (!parsedMode) return { ok: false };
   const kind = tabKind ?? 'empty';

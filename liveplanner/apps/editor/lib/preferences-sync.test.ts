@@ -50,7 +50,6 @@ function fullAccount(): UserPreferences {
     uiScale: 1.1,
     panelOpacity: 0.85,
     elementIndicatorStyle: 'footer',
-    drawPattern: 'graph',
     reduceMotion: true,
     powerUserMode: true,
     notifyTips: false,
@@ -83,8 +82,6 @@ describe('fitPreferences', () => {
     const fitted = fitPreferences(prefs);
     expect(preferencesBodyLength(fitted)).toBeLessThanOrEqual(PREFERENCES_BODY_MAX);
     expect(fitted.customSwatches).toBeUndefined();
-    // It fitted once the colours went: the next dead key stays.
-    expect(fitted.drawPattern).toBe('graph');
     expect(fitted.powerUserBaseline).toEqual(prefs.powerUserBaseline);
   });
 

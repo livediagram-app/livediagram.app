@@ -70,7 +70,7 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     const frameable = url.pathname === '/embed' || url.pathname.startsWith('/embed/');
-    // `/project` (and the editor's address before the rename, see ../lib/legacy-editor-path) shares one HTML file. We
+    // `/project` (../lib/editor-path) shares one HTML file. We
     // rewrite the request rather than redirect so the browser URL
     // stays `/project/<id>` (that's the whole point of the path
     // scheme).
@@ -112,7 +112,7 @@ export default {
     return withSecurityHeaders(await env.ASSETS.fetch(request), { frameable });
   },
 };
-import { isEditorPath } from '../lib/legacy-editor-path';
+import { isEditorPath } from '../lib/editor-path';
 import { FORM_PLACEHOLDER_PATH, isFormPath } from '../lib/form-path';
 import { isWorkspaceFramePath, WORKSPACE_FRAME_PAGE } from '../lib/workbench/workbench-frame-path';
 import { isSharePagePath, sharePage } from './share-page';

@@ -58,15 +58,6 @@ have cloud projects and offline projects side by side.
   (`OfflineBackend.update`), so another tab's write cannot land between them and be
   overwritten. Writes from the same tab are also queued one after another.
 
-<!-- legacy-names -->
-
-- **Store rename (version 2).** Offline projects were kept in the `diagrams` object store until
-  the container became a project ([Project](project.md#renaming-from-diagram)). Opening
-  version 2 of `liveplanner-offline` moves every record into `projects` inside the upgrade
-  transaction, then drops the old store, logging how many moved
-  (`apps/editor/lib/offline/legacy-offline-store.ts`). A tab still running the code from before the upgrade
-  asks for version 1, which the browser refuses once another tab has opened version 2; its offline
-  projects are out of reach in that tab until it reloads.
 - **Durability honesty (important).** An offline project has **no backup**:
   clearing site data, some private-browsing sessions, and browser
   storage-pressure eviction can delete it. We request
@@ -74,8 +65,6 @@ have cloud projects and offline projects side by side.
   trade-off plainly — on the project (see the badge, and its legend), in the Share dialog before a Sync, and in
   the help article. "Offline" means _yours only_, with the responsibility that
   implies.
-
-<!-- /legacy-names -->
 
 ## What's different in an offline project
 

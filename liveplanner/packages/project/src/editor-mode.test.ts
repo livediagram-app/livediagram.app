@@ -20,21 +20,14 @@ describe('the editor mode', () => {
 });
 
 describe('parseEditorMode', () => {
-  it('reads every retired mode, under each name it was stored by, as Plan', () => {
-    for (const id of [
-      'plan',
-      'diagram',
-      'draw',
-      'workshop',
-      'pages',
-      'illustrate',
-      'infographic',
-      'facilitate',
-    ])
-      expect(parseEditorMode(id), id).toBe('plan');
+  it('reads Plan as Plan', () => {
+    expect(parseEditorMode('plan')).toBe('plan');
   });
 
+  // liveplanner never stored another mode's id, so livediagram's are as unknown as any other word.
   it('reads anything else as unknown', () => {
+    for (const id of ['diagram', 'draw', 'workshop', 'pages'])
+      expect(parseEditorMode(id), id).toBeUndefined();
     expect(parseEditorMode('sketch')).toBeUndefined();
     expect(parseEditorMode('whiteboard')).toBeUndefined();
     expect(parseEditorMode('Diagram')).toBeUndefined();

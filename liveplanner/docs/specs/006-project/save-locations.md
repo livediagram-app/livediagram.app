@@ -28,8 +28,7 @@ there.) This Browser is chosen only on purpose, with **Take Offline**.
 - One function answers it: `defaultSaveLocationFor()` in `apps/editor/lib/save-locations.ts`. Every create from
   `/new` asks it at commit, through `resolveSaveLocation` in `useNewProjectLocation`
   (`apps/editor/app/new/useNewProjectLocation.ts`), so the create never waits on sign-in to decide.
-- There is no per-person override: no setting chooses the store. A preference that once did both, "Always save new projects in <place> and skip this step" (`skipLocationStep`),
-  is retired and no longer read ([User preferences](../007-editor/user-preferences.md)).
+- There is no per-person override: no setting chooses the store ([User preferences](../007-editor/user-preferences.md)).
 
 ## The folder browser
 

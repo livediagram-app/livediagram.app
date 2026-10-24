@@ -25,9 +25,6 @@ export type TeamRecentProject = ProjectSummary & { teamName: string };
 
 // The Cache Storage cache holding each noted diagram's snapshot SVG.
 export const RECENT_THUMBS_CACHE = 'liveplanner-recent-thumbs-v2';
-// The cache before v2, when a project in This Browser was cached as having no preview: dropped by the editor's
-// sync, so every browser draws those previews once (docs/specs/019-marketing/returning-visitor.md).
-export const RECENT_THUMBS_CACHE_LEGACY = 'liveplanner-recent-thumbs-v1';
 
 export type RecentDiagram = {
   id: string;

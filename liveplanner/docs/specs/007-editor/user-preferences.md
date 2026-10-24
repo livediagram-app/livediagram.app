@@ -65,8 +65,7 @@ table of its own for them.
 - **Saving to the server** (`apps/editor/lib/preferences-sync.ts`):
   - **It fits.** The blob is trimmed to the api's cap (4,096
     characters of `{"prefs":...}`) before it is cached or sent:
-    the keys nothing reads any more (`customSwatches`, then
-    `drawPattern`) go first; every other key stays whole, and none
+    the key nothing reads any more (`customSwatches`) goes first; every other key stays whole, and none
     grows without bound (Hide from Recent is the index's,
     [Hide from Recent](../013-workspace/hide-from-recent.md)). A trim logs
     `[preferences] trimmed to fit dropped=<keys> length=<n>`.
@@ -123,18 +122,6 @@ moves their plans in the index ([Auth + guest access](../014-identity/auth-and-g
 account already has keeps the account's value; the guest's other keys
 fill the gaps, so a guest who signs up keeps the settings they'd already
 chosen.
-
-<!-- legacy-names -->
-
-### Renamed keys
-
-- **Renamed key.** `notifyDiagramJoin` became `notifyProjectJoin` when the container became a
-  project. `upgradeLegacyPreferences`
-  (`packages/api-schema/src/legacy-preferences.ts`) renames it wherever an older copy can still
-  arrive: the browser's cache on read, the server's copy before the merge, and the api's
-  notification check. An opt-out is never lost; when both keys exist, the new one wins.
-
-<!-- /legacy-names -->
 
 ### Degradation without the api
 
@@ -276,9 +263,6 @@ type UserPreferences = {
   // ('top'), a row along its bottom edge ('footer') or none ('off'). Unset, or anything
   // else, is Top (lib/element-indicator-style).
   elementIndicatorStyle?: 'top' | 'footer' | 'off';
-  // DEAD: the retired Draw mode's backdrop pattern (./editor-modes.md "Retired modes"). Nothing reads
-  // or writes it; it stays in the type because it may already be stored.
-  drawPattern?: 'blank' | 'grid' | 'graph';
 
   // Power user mode (docs/specs/007-editor/power-user-mode.md). True while the mode is on.
   // Switching it on applies the preset once; see powerUserBaseline.
@@ -362,21 +346,10 @@ Missing key === undefined === default behaviour. Concretely:
   feature working (see the data model). Emits `UI`/`Toggled`/
   `LayersPanel{On,Off}`, `CollaboratePanel{On,Off}`
   and `QuickStylePanel{On,Off}`.
-- **Retired keys.** `activityPanelEnabled` and the Activity panel's revert
-  hover preview went with the Activity panel (removed 2026-10-03). A value
-  still stored under either is ignored on read and dropped on the next
-  write; Undo and Redo always show in the bottom-right cluster.
-  `pagesModeEnabled` (and its older name `infographicModeEnabled`) and
-  `planModeEnabled` went with the Settings › Experimental category (removed
-  2026-10-06, [Editor modes](editor-modes.md#every-mode-always-offered)):
-  every mode is always offered, and a stored `false` is dropped the same way.
-  `skipLocationStep` ("Always save new projects in <place> and skip this step") went with the New
-  Project wizard's Location step ([New project route](new-project-route.md#one-step-wizard)): the wizard
-  never asks where a project goes, so a stored place is dropped the same way and new projects follow the
-  [default folders](../013-workspace/default-folders.md).
-  `workshopTourSeen` (and its older name `facilitateTourSeen`), `avatarTourSeen` and the presenter settings'
-  `presentation` went with Workshop mode's facilitation features (removed 2026-10-22): the Workshop and Avatar
-  tours and Presentation mode are gone, so a stored value is dropped the same way.
+- **Retired keys.** The keys livediagram retired (the Activity panel's `activityPanelEnabled`, the Experimental
+  switches, `skipLocationStep`, the Workshop and Avatar tours' seen-guards, `presentation`) and its rename of
+  `notifyDiagramJoin` to `notifyProjectJoin` never reached liveplanner, which was never deployed with them: nothing
+  reads, renames or drops them (the read-time upgrade, `upgradeLegacyPreferences`, was removed on 2026-10-24).
 - `quickAddOnHover` undefined / false → click to open an element's quick-add
   `+` menu (the default; hover-open can feel twitchy, so it's opt-in). `true`
   opens it on hover instead, closing a beat after the pointer leaves both the
