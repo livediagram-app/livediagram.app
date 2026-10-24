@@ -286,12 +286,12 @@ function testDocumentRooms(
           await import('./db/image-refs')
         ).documentPlacesImage(env, documentId, imageId, onlyTabId)) &&
         (await import('./db/image-grants')).documentMayServeImage(env, documentId, imageId),
-      exportCopy: async (documentId: string, onlyTabId: string | null, redact: string | null) =>
-        (await import('./document-room/document-content')).exportDocumentCopy(
+      exportCopy: async (documentId: string, onlyTabId: string | null, copiedBy: string | null) =>
+        (await import('./document-room/document-content')).exportDocumentCopyFor(
           env,
           documentId,
           onlyTabId,
-          redact,
+          copiedBy,
         ),
       joined: async (documentId: string, personId: string) => {
         const meta = await (

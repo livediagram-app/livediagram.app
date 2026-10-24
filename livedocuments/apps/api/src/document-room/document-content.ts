@@ -283,6 +283,19 @@ export async function exportDocumentCopy(
   return copy;
 }
 
+// The source side of a copy for whoever copies (`copiedBy`, as the index names them; null when it does not say):
+// anyone but the owner takes the comments as the tab read serves them, other people's authors redacted.
+export async function exportDocumentCopyFor(
+  env: DocumentEnv,
+  documentId: string,
+  onlyTabId: string | null,
+  copiedBy: string | null,
+): Promise<DocumentCopy | null> {
+  const ownerId = copiedBy === null ? null : ((await readDocumentMeta(env, documentId))?.ownerId ?? null);
+  const redact = copiedBy !== null && copiedBy !== ownerId ? copiedBy : null;
+  return exportDocumentCopy(env, documentId, onlyTabId, redact);
+}
+
 // The images a copy's bodies place, for the placement grants the copy carries (db/image-grants.ts).
 export function copyImageIds(copy: DocumentCopy): string[] {
   return [...new Set(copy.tabs.flatMap((tab) => imageRefIdsFromData(tab.data)))];

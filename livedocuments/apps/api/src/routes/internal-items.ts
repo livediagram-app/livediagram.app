@@ -55,8 +55,10 @@ export function handleInternalItems(
           throw new Error(`media: merging the guest's images answered ${merged.status}`);
       },
       anonymise: (id, personId) => documentRoom(env, id).anonymise(personId),
-      copy: async (from, to, tabId) => {
-        const copy = await documentRoom(env, from).exportCopy(tabId, null);
+      copy: async (from, to, tabId, copier) => {
+        // The source as the copier may take it: anyone but the owner takes the comments as the tab read serves them
+        // to them, other people's authors redacted.
+        const copy = await documentRoom(env, from).exportCopy(tabId, copier.by);
         // No such document, or no such tab in it.
         if (!copy || (tabId && copy.tabs.length === 0)) return 'not_found';
         // The target is a new document: a copy into one that already holds this content fails its keys, and nothing

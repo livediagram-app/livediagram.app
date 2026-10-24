@@ -76,7 +76,7 @@ import {
 import { documentRoom } from '../document-client';
 import { hasDocumentSchema, migrateDocumentSchema } from './document-schema';
 import {
-  exportDocumentCopy,
+  exportDocumentCopyFor,
   importDocumentCopy,
   readDocumentMeta,
   readDocumentOutline,
@@ -559,13 +559,15 @@ export class DocumentRoom extends DurableObject<Env> {
     return documentMayServeImage(env, documentId, imageId);
   }
 
+  // The source side of a copy, for whoever copies (document-content.ts exportDocumentCopyFor): anyone but the owner
+  // takes the comments as the tab read serves them to them.
   async exportCopy(
     documentId: string,
     onlyTabId: string | null,
-    redactAuthorsFor: string | null,
+    copiedBy: string | null,
   ): Promise<DocumentCopy | null> {
     this.bindDocument(documentId);
-    return exportDocumentCopy(this.requireEnv(), documentId, onlyTabId, redactAuthorsFor);
+    return exportDocumentCopyFor(this.requireEnv(), documentId, onlyTabId, copiedBy);
   }
 
   async importCopy(documentId: string, copy: DocumentCopy): Promise<void> {

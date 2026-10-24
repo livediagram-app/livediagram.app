@@ -25,10 +25,8 @@ export type DocumentRoomClient = {
   // endpoint's share check.
   servesImage(imageId: string, onlyTabId: string | null): Promise<boolean>;
   // A copy's two halves (document-content.ts).
-  exportCopy(
-    onlyTabId: string | null,
-    redactAuthorsFor: string | null,
-  ): Promise<DocumentCopy | null>;
+  // `copiedBy`: who copies; anyone but the owner takes other people's comment authors redacted.
+  exportCopy(onlyTabId: string | null, copiedBy: string | null): Promise<DocumentCopy | null>;
   importCopy(copy: DocumentCopy): Promise<void>;
   // The document is gone for good: end every session and drop everything it stored.
   purge(): Promise<void>;
@@ -60,7 +58,7 @@ export function documentRoom(
     image: (subject, tabId) => room.image(documentId, subject, tabId),
     hasTab: (tabId) => room.hasTab(documentId, tabId),
     servesImage: (imageId, onlyTabId) => room.servesImage(documentId, imageId, onlyTabId),
-    exportCopy: (onlyTabId, redact) => room.exportCopy(documentId, onlyTabId, redact),
+    exportCopy: (onlyTabId, copiedBy) => room.exportCopy(documentId, onlyTabId, copiedBy),
     importCopy: (copy) => room.importCopy(documentId, copy),
     purge: () => room.purge(documentId),
     revokeCodes: (codes, reason) => room.revokeCodes(documentId, codes, reason),
@@ -86,7 +84,7 @@ export type DocumentRoomRpc = {
   exportCopy(
     documentId: string,
     onlyTabId: string | null,
-    redact: string | null,
+    copiedBy: string | null,
   ): Promise<DocumentCopy | null>;
   importCopy(documentId: string, copy: DocumentCopy): Promise<void>;
   purge(documentId: string): Promise<void>;
